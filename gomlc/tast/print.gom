@@ -76,7 +76,7 @@ fn write_quoted_string(builder: text::StringBuilder, value: string) -> unit {
 
 fn write_quoted_char(builder: text::StringBuilder, value: char) -> unit {
     builder.write_char('\'');
-    let code = value as uint32;
+    let code = value.to_uint32();
     if value == '\'' {
         builder.write_string("\\'")
     } else if value == '\\' {
@@ -90,7 +90,7 @@ fn write_quoted_char(builder: text::StringBuilder, value: char) -> unit {
     } else if code == 0 {
         builder.write_string("\\0")
     } else if code < 32 || code == 127 {
-        write_control_escape(builder, code as uint8)
+        write_control_escape(builder, code.to_uint8())
     } else {
         builder.write_char(value)
     };

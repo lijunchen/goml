@@ -7,7 +7,7 @@ fn intrinsic_int_type(target: ctir::CtTarget) -> ctir::CtType {
 }
 
 fn intrinsic_int_value(target: ctir::CtTarget, value: int) -> ctir::CtValue {
-    ctir::CtValue::Integer { signed: true, width: target.int_width, bits: value as uint64 }
+    ctir::CtValue::Integer { signed: true, width: target.int_width, bits: value.to_uint64() }
 }
 
 fn one_intrinsic_type(value: ctir::CtType) -> Vec[ctir::CtType] {
@@ -73,9 +73,9 @@ fn intrinsic_string_argument(values: Vec[ctir::CtValue], index: int) -> Result[s
 fn intrinsic_int_argument(values: Vec[ctir::CtValue], index: int) -> Result[int, string] {
     match intrinsic_argument(values, index)? {
         ctir::CtValue::Integer { signed: true, width, bits } => if width == 32 {
-            Result::Ok((bits as uint32) as int32 as int)
+            Result::Ok((bits.to_uint32()).to_int32().to_int())
         } else {
-            Result::Ok(bits as int64 as int)
+            Result::Ok(bits.to_int64().to_int())
         },
         _ => Result::Err("comptime string intrinsic expects an int index"),
     }
@@ -126,7 +126,7 @@ pub fn call_value_intrinsic(target: ctir::CtTarget, name: string, args: Vec[ctir
                         ctir::CtValue::Integer {
                             signed: false,
                             width: 8,
-                            bits: value.byte_get(index) as uint64,
+                            bits: value.byte_get(index).to_uint64(),
                         },
                     )
                 } else {

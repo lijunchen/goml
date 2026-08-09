@@ -121,13 +121,13 @@ pub fn artifact_parse_nonnegative_int(value: string) -> Result[int, string] {
             if byte < b'0' || byte > b'9' {
                 return Result::Err(artifact_decode_error("nonnegative integer"))
             } else {
-                result = result * 10 + (byte - 48) as int64;
+                result = result * 10 + (byte - 48).to_int64();
             };
             if result > 2147483647 {
                 return Result::Err(artifact_decode_error("32-bit integer"))
             } else {}
         }
-        Result::Ok(result as int)
+        Result::Ok(result.to_int())
     }
 }
 

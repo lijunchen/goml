@@ -382,7 +382,7 @@ fn integer_literal_bits(value: string) -> Option[uint64] {
             _ => (),
         }
     } else {};
-    let mut result = 0 as uint64;
+    let mut result = 0.to_uint64();
     let mut found = false;
     while index < value.byte_len() {
         let digit = value.byte_get(index);
@@ -391,18 +391,18 @@ fn integer_literal_bits(value: string) -> Option[uint64] {
             continue
         } else {};
         let part = if digit >= b'0' && digit <= b'9' {
-            (digit - b'0') as int
+            (digit - b'0').to_int()
         } else if digit >= b'a' && digit <= b'f' {
-            (digit - b'a' + 10) as int
+            (digit - b'a' + 10).to_int()
         } else if digit >= b'A' && digit <= b'F' {
-            (digit - b'A' + 10) as int
+            (digit - b'A' + 10).to_int()
         } else {
             return Option::None
         };
         if part >= base {
             return Option::None
         } else {};
-        result = result * (base as uint64) + (part as uint64);
+        result = result * (base.to_uint64()) + (part.to_uint64());
         found = true;
         index = index + 1;
     }
@@ -1569,10 +1569,10 @@ fn evaluate_constants(
 
 fn signed_ct_integer(width: int, bits: uint64) -> int64 {
     if width >= 64 {
-        bits as int64
+        bits.to_int64()
     } else {
         let shift = 64 - width;
-        ((bits << shift) as int64) >> shift
+        ((bits << shift).to_int64()) >> shift
     }
 }
 

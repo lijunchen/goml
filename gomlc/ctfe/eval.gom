@@ -191,9 +191,9 @@ fn allocate_value(state: EvalState, module: ctir::CtModule, origin: int, value: 
 
 fn integer_mask(width: int) -> uint64 {
     if width >= 64 {
-        ~(0 as uint64)
+        ~(0.to_uint64())
     } else {
-        ((1 as uint64) << width) - 1
+        ((1.to_uint64()) << width) - 1
     }
 }
 
@@ -208,10 +208,10 @@ fn integer_bits(value: ctir::CtValue) -> Option[(bool, int, uint64)] {
 
 fn signed_integer(width: int, bits: uint64) -> int64 {
     if width >= 64 {
-        bits as int64
+        bits.to_int64()
     } else {
         let shift = 64 - width;
-        ((bits << shift) as int64) >> shift
+        ((bits << shift).to_int64()) >> shift
     }
 }
 
@@ -226,12 +226,12 @@ fn integer_index(value: ctir::CtValue) -> Option[int] {
             if value < 0 || value > 2147483647 {
                 Option::None
             } else {
-                Option::Some(value as int)
+                Option::Some(value.to_int())
             }
         } else if bits > 2147483647 {
             Option::None
         } else {
-            Option::Some(bits as int)
+            Option::Some(bits.to_int())
         },
         None => Option::None,
     }
@@ -614,7 +614,7 @@ fn eval_integer_binary(
             } else if signed {
                 let left_value = signed_integer(width, left_bits);
                 let right_value = signed_integer(width, right_bits);
-                let min_bits = (1 as uint64) << (width - 1);
+                let min_bits = (1.to_uint64()) << (width - 1);
                 if left_bits == min_bits && right_bits == mask {
                     if match op {
                         ctir::CtBinaryOp::Div => true,
@@ -628,9 +628,9 @@ fn eval_integer_binary(
                     ctir::CtBinaryOp::Div => true,
                     _ => false,
                 } {
-                    integer_value(true, width, (left_value / right_value) as uint64)
+                    integer_value(true, width, (left_value / right_value).to_uint64())
                 } else {
-                    integer_value(true, width, (left_value % right_value) as uint64)
+                    integer_value(true, width, (left_value % right_value).to_uint64())
                 }
             } else if match op {
                 ctir::CtBinaryOp::Div => true,
@@ -657,12 +657,12 @@ fn eval_integer_binary(
                         ),
                     )
                 } else {
-                    value as int
+                    value.to_int()
                 }
             } else if right_bits > 2147483647 {
                 2147483647
             } else {
-                right_bits as int
+                right_bits.to_int()
             };
             if match op {
                 ctir::CtBinaryOp::Shl => true,
@@ -688,7 +688,7 @@ fn eval_integer_binary(
                     integer_value(
                         true,
                         width,
-                        (signed_integer(width, left_bits) >> amount) as uint64,
+                        (signed_integer(width, left_bits) >> amount).to_uint64(),
                     )
                 }
             } else if amount >= 64 {
@@ -850,7 +850,7 @@ fn eval_cast(
         ctir::CtType::Integer { signed, width } => match integer_bits(value) {
             Some((source_signed, source_width, bits)) => {
                 let widened = if source_signed && width > source_width
-                    && bits & ((1 as uint64) << (source_width - 1)) != 0 {
+                    && bits & ((1.to_uint64()) << (source_width - 1)) != 0 {
                     bits | ~integer_mask(source_width)
                 } else {
                     bits
@@ -861,7 +861,7 @@ fn eval_cast(
                 ctir::CtValue::Char(value) => integer_value(
                     signed,
                     width,
-                    value as uint32 as uint64,
+                    value.to_uint32().to_uint64(),
                 ),
                 _ => return Result::Err(
                     ct_error(state, module, origin, "unsupported comptime cast"),

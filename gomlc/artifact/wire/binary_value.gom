@@ -64,7 +64,7 @@ pub fn artifact_binary_string_id(table: ArtifactBinaryStringTable, value: string
 
 pub fn encode_artifact_binary_string_table(table: ArtifactBinaryStringTable) -> bytes::Bytes {
     let writer = new_artifact_binary_writer();
-    artifact_binary_write_uleb128(writer, table.values.len() as uint64);
+    artifact_binary_write_uleb128(writer, table.values.len().to_uint64());
     for value in table.values {
         artifact_binary_write_string(writer, value)
     }
@@ -109,7 +109,7 @@ fn artifact_binary_encode_string_id(
     if id < 0 {
         Result::Err("binary artifact string is missing from table")
     } else {
-        artifact_binary_write_uleb128(writer, id as uint64);
+        artifact_binary_write_uleb128(writer, id.to_uint64());
         Result::Ok(())
     }
 }
@@ -168,7 +168,7 @@ fn artifact_binary_encode_value_at(
         },
         Array(items) => {
             artifact_binary_write_u8(writer, 5);
-            artifact_binary_write_u32(writer, items.len() as uint32);
+            artifact_binary_write_u32(writer, items.len().to_uint32());
             for item in items {
                 artifact_binary_encode_value_at(writer, table, item, depth + 1)?
             }
@@ -176,7 +176,7 @@ fn artifact_binary_encode_value_at(
         },
         Object(fields) => {
             artifact_binary_write_u8(writer, 6);
-            artifact_binary_write_u32(writer, fields.len() as uint32);
+            artifact_binary_write_u32(writer, fields.len().to_uint32());
             for field in fields {
                 artifact_binary_encode_string_id(writer, table, field.0)?;
                 artifact_binary_encode_value_at(writer, table, field.1, depth + 1)?
@@ -219,7 +219,7 @@ fn artifact_binary_decode_value_at(
             Err(error) => Result::Err(error),
         },
         5 => {
-            let count = artifact_binary_read_u32(reader)? as int;
+            let count = artifact_binary_read_u32(reader)?.to_int();
             if count > 10000000 {
                 return Result::Err("binary artifact array exceeds limit")
             } else {};
@@ -230,7 +230,7 @@ fn artifact_binary_decode_value_at(
             Result::Ok(ArtifactValue::Array(values))
         },
         6 => {
-            let count = artifact_binary_read_u32(reader)? as int;
+            let count = artifact_binary_read_u32(reader)?.to_int();
             if count > 10000000 {
                 return Result::Err("binary artifact object exceeds limit")
             } else {};

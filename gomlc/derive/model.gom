@@ -678,7 +678,7 @@ fn unit_value() -> ctir::CtValue {
 }
 
 fn int_value(state: DeriveState, value: int) -> ctir::CtValue {
-    ctir::CtValue::Integer { signed: true, width: state.int_width, bits: value as uint64 }
+    ctir::CtValue::Integer { signed: true, width: state.int_width, bits: value.to_uint64() }
 }
 
 fn argument(values: Vec[ctir::CtValue], index: int) -> Result[ctir::CtValue, string] {
@@ -691,7 +691,7 @@ fn argument(values: Vec[ctir::CtValue], index: int) -> Result[ctir::CtValue, str
 
 fn int_argument(values: Vec[ctir::CtValue], index: int) -> Result[int, string] {
     match argument(values, index)? {
-        ctir::CtValue::Integer { bits, .. } => Result::Ok(bits as int),
+        ctir::CtValue::Integer { bits, .. } => Result::Ok(bits.to_int()),
         _ => Result::Err("derive intrinsic expects an integer argument"),
     }
 }

@@ -82,25 +82,25 @@ fn padded_byte(value: bytes::Bytes, index: int, padded_len: int, bit_len: uint64
     } else if index == value.len() {
         128
     } else if index >= padded_len - 8 {
-        let shift = ((padded_len - 1 - index) * 8) as uint64;
-        ((bit_len >> shift) & 255) as byte
+        let shift = ((padded_len - 1 - index) * 8).to_uint64();
+        ((bit_len >> shift) & 255).to_uint8()
     } else {
         0
     }
 }
 
 fn message_word(value: bytes::Bytes, offset: int, padded_len: int, bit_len: uint64) -> uint32 {
-    ((padded_byte(value, offset, padded_len, bit_len) as uint32) << 24)
-        | ((padded_byte(value, offset + 1, padded_len, bit_len) as uint32) << 16)
-        | ((padded_byte(value, offset + 2, padded_len, bit_len) as uint32) << 8)
-        | (padded_byte(value, offset + 3, padded_len, bit_len) as uint32)
+    ((padded_byte(value, offset, padded_len, bit_len).to_uint32()) << 24)
+        | ((padded_byte(value, offset + 1, padded_len, bit_len).to_uint32()) << 16)
+        | ((padded_byte(value, offset + 2, padded_len, bit_len).to_uint32()) << 8)
+        | (padded_byte(value, offset + 3, padded_len, bit_len).to_uint32())
 }
 
 fn write_hex_word(builder: text::StringBuilder, value: uint32) -> unit {
     let digits = "0123456789abcdef";
     for index in 0..8 {
-        let shift = ((7 - index) * 4) as uint32;
-        builder.write_char(digits.get(((value >> shift) & 15) as int))
+        let shift = ((7 - index) * 4).to_uint32();
+        builder.write_char(digits.get(((value >> shift) & 15).to_int()))
     }
 }
 
@@ -110,7 +110,7 @@ pub fn sha256_bytes_hex(value: bytes::Bytes) -> string {
     while padded_len % 64 != 0 {
         padded_len += 1;
     }
-    let bit_len = (value.len() as uint64) * 8;
+    let bit_len = (value.len().to_uint64()) * 8;
     let mut h0 = 1779033703;
     let mut h1 = 3144134277;
     let mut h2 = 1013904242;

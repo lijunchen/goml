@@ -16,11 +16,11 @@ struct FloatDecimal {
 
 fn char_hex_value(value: uint8) -> Option[uint32] {
     if value >= b'0' && value <= b'9' {
-        Option::Some((value - b'0') as uint32)
+        Option::Some((value - b'0').to_uint32())
     } else if value >= b'A' && value <= b'F' {
-        Option::Some((value - b'A' + 10) as uint32)
+        Option::Some((value - b'A' + 10).to_uint32())
     } else if value >= b'a' && value <= b'f' {
-        Option::Some((value - b'a' + 10) as uint32)
+        Option::Some((value - b'a' + 10).to_uint32())
     } else {
         Option::None
     }
@@ -50,7 +50,7 @@ fn parse_char_literal(value: string) -> Option[char] {
             _ => Option::None,
         }
     } else if value.byte_len() == 6 && value.byte_get(1) == b'u' {
-        let mut code = 0 as uint32;
+        let mut code = 0.to_uint32();
         for index in 2..6 {
             match char_hex_value(value.byte_get(index)) {
                 Some(digit) => {
@@ -102,7 +102,7 @@ fn increment_decimal(value: string) -> string {
     while index >= 0 {
         let byte = digits.get(index);
         if byte == b'9' {
-            digits[index] = 48 as uint8;
+            digits[index] = 48.to_uint8();
             index = index - 1;
         } else {
             digits[index] = byte + 1;

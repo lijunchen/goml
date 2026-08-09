@@ -47,7 +47,7 @@ fn artifact_interface_binary_read_count(
     expected: string,
 ) -> Result[int, string] {
     artifact_interface_binary_expect_tag(reader, tag, expected)?;
-    let count = wire::artifact_binary_read_u32(reader.reader)? as int;
+    let count = wire::artifact_binary_read_u32(reader.reader)?.to_int();
     if count > 10000000 {
         Result::Err(artifact_interface_binary_error(expected))
     } else {

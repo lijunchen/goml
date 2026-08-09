@@ -11,7 +11,7 @@ use std::fs;
 
 fn world_metadata(counter: int) -> bytes::Bytes {
     let writer = wire::new_artifact_binary_writer();
-    wire::artifact_binary_write_u64(writer, counter as uint64);
+    wire::artifact_binary_write_u64(writer, counter.to_uint64());
     wire::artifact_binary_writer_finish(writer)
 }
 
@@ -21,7 +21,7 @@ fn world_decode_counter(data: bytes::Bytes) -> Result[int, string] {
     if value > 2147483647 {
         Result::Err("world artifact counter exceeds supported size")
     } else {
-        Result::Ok(value as int)
+        Result::Ok(value.to_int())
     }
 }
 
@@ -83,36 +83,36 @@ fn world_add_standard_sections(
     value: ArtifactStandardLibrary,
 ) -> Result[unit, string] {
     let packages: Vec[(uint16, ArtifactStandardPackage)] = Vec::[
-        (10 as uint16, value.root),
-        (12 as uint16, value.host),
-        (14 as uint16, value.bytes),
-        (16 as uint16, value.collections),
-        (18 as uint16, value.env),
-        (20 as uint16, value.fs),
-        (22 as uint16, value.io),
-        (24 as uint16, value.json),
-        (26 as uint16, value.path),
-        (28 as uint16, value.process),
-        (30 as uint16, value.testing),
-        (32 as uint16, value.text),
-        (34 as uint16, value.num),
-        (36 as uint16, value.time),
-        (38 as uint16, value.ascii),
-        (40 as uint16, value.iter),
-        (42 as uint16, value.cmp),
-        (44 as uint16, value.internal_task),
-        (46 as uint16, value.task),
-        (48 as uint16, value.serde),
-        (50 as uint16, value.toml),
-        (52 as uint16, value.bincode),
-        (54 as uint16, value.error),
-        (56 as uint16, value.utf8),
-        (58 as uint16, value.unicode),
-        (60 as uint16, value.math),
-        (62 as uint16, value.rand),
-        (64 as uint16, value.crypto),
-        (66 as uint16, value.crypto_hash),
-        (68 as uint16, value.crypto_rand),
+        (10.to_uint16(), value.root),
+        (12.to_uint16(), value.host),
+        (14.to_uint16(), value.bytes),
+        (16.to_uint16(), value.collections),
+        (18.to_uint16(), value.env),
+        (20.to_uint16(), value.fs),
+        (22.to_uint16(), value.io),
+        (24.to_uint16(), value.json),
+        (26.to_uint16(), value.path),
+        (28.to_uint16(), value.process),
+        (30.to_uint16(), value.testing),
+        (32.to_uint16(), value.text),
+        (34.to_uint16(), value.num),
+        (36.to_uint16(), value.time),
+        (38.to_uint16(), value.ascii),
+        (40.to_uint16(), value.iter),
+        (42.to_uint16(), value.cmp),
+        (44.to_uint16(), value.internal_task),
+        (46.to_uint16(), value.task),
+        (48.to_uint16(), value.serde),
+        (50.to_uint16(), value.toml),
+        (52.to_uint16(), value.bincode),
+        (54.to_uint16(), value.error),
+        (56.to_uint16(), value.utf8),
+        (58.to_uint16(), value.unicode),
+        (60.to_uint16(), value.math),
+        (62.to_uint16(), value.rand),
+        (64.to_uint16(), value.crypto),
+        (66.to_uint16(), value.crypto_hash),
+        (68.to_uint16(), value.crypto_rand),
     ];
     for package_value in packages {
         world_add_package_sections(sections, package_value.0, package_value.1)?

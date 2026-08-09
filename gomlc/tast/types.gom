@@ -1490,7 +1490,7 @@ fn parse_array_length(value: string) -> int {
     for index in 0..value.byte_len() {
         let byte = value.byte_get(index);
         if byte >= b'0' && byte <= b'9' {
-            result = result * 10 + (byte - 48) as int;
+            result = result * 10 + (byte - 48).to_int();
         } else {}
     }
     result

@@ -4,11 +4,11 @@ use std::text;
 
 fn integer_digit(value: byte) -> Option[int] {
     if value >= b'0' && value <= b'9' {
-        Option::Some((value - b'0') as int)
+        Option::Some((value - b'0').to_int())
     } else if value >= b'A' && value <= b'F' {
-        Option::Some((value - b'A' + 10) as int)
+        Option::Some((value - b'A' + 10).to_int())
     } else if value >= b'a' && value <= b'f' {
-        Option::Some((value - b'a' + 10) as int)
+        Option::Some((value - b'a' + 10).to_int())
     } else {
         Option::None
     }

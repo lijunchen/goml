@@ -595,8 +595,8 @@ fn validate_package_tests(
 
 fn write_test_json_hex(builder: text::StringBuilder, value: uint8) -> unit {
     let digits = "0123456789abcdef";
-    builder.write_char(digits.get((value / 16) as int));
-    builder.write_char(digits.get((value % 16) as int))
+    builder.write_char(digits.get((value / 16).to_int()));
+    builder.write_char(digits.get((value % 16).to_int()))
 }
 
 fn write_test_json_string(builder: text::StringBuilder, value: string) -> unit {

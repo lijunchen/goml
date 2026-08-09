@@ -271,9 +271,9 @@ fn hex_digit(value: uint8) -> char {
 fn decimal_byte(value: string) -> uint8 {
     let mut result = 0;
     for index in 0..value.byte_len() {
-        result = result * 10 + (value.byte_get(index) - 48) as int;
+        result = result * 10 + (value.byte_get(index) - 48).to_int();
     }
-    result as uint8
+    result.to_uint8()
 }
 
 fn write_byte_literal(builder: text::StringBuilder, value: string) -> unit {

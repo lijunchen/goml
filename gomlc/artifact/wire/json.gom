@@ -162,7 +162,7 @@ fn artifact_binary_stream_end_container(value: ArtifactJsonWriter) -> unit {
         artifact_binary_patch_u32(
             value.binary_writer,
             scope.count_offset,
-            scope.count.get() as uint32,
+            scope.count.get().to_uint32(),
         ),
     )
 }
@@ -242,8 +242,8 @@ fn artifact_json_before_value(value: ArtifactJsonWriter) -> unit {
 
 fn artifact_json_write_hex(value: ArtifactJsonWriter, byte: uint8) -> unit {
     let digits = "0123456789abcdef";
-    value.builder.write_char(digits.get((byte / 16) as int));
-    value.builder.write_char(digits.get((byte % 16) as int))
+    value.builder.write_char(digits.get((byte / 16).to_int()));
+    value.builder.write_char(digits.get((byte % 16).to_int()))
 }
 
 fn artifact_json_write_string_body(value: ArtifactJsonWriter, input: string) -> unit {

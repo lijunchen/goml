@@ -921,7 +921,7 @@ fn byte_string_values(value: string) -> Option[Vec[string]] {
         } else if byte > 127 {
             return Option::None
         } else {
-            result.push((byte as int).to_string());
+            result.push((byte.to_int()).to_string());
             index = index + 1;
         }
     }
@@ -947,7 +947,7 @@ fn raw_byte_string_values(value: string) -> Option[Vec[string]] {
         if byte > 127 {
             return Option::None
         } else {
-            result.push((byte as int).to_string())
+            result.push((byte.to_int()).to_string())
         }
     }
     Option::Some(result)
@@ -956,7 +956,7 @@ fn raw_byte_string_values(value: string) -> Option[Vec[string]] {
 fn byte_literal_value(value: string) -> Option[string] {
     if value.byte_len() == 4 && value.byte_get(0) == b'b' && value.byte_get(1) == b'\''
         && value.byte_get(3) == b'\'' {
-        Option::Some((value.byte_get(2) as int).to_string())
+        Option::Some((value.byte_get(2).to_int()).to_string())
     } else if value.byte_len() == 5 && value.byte_get(0) == b'b' && value.byte_get(1) == b'\''
         && value.byte_get(2) == b'\\'
         && value.byte_get(4) == b'\'' {

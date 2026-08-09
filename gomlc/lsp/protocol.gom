@@ -104,7 +104,7 @@ fn decimal_length(value: string) -> Result[int, string] {
         if byte < b'0' || byte > b'9' {
             return Result::Err("invalid Content-Length")
         } else {
-            result = result * 10 + (byte - b'0') as int;
+            result = result * 10 + (byte - b'0').to_int();
         }
     }
     Result::Ok(result)

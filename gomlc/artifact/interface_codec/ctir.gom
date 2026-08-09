@@ -716,13 +716,13 @@ fn parse_uint64_string(value: string) -> Result[uint64, string] {
     if value == "" {
         return Result::Err(wire::artifact_decode_error("CTIR uint64"))
     } else {};
-    let mut result = 0 as uint64;
+    let mut result = 0.to_uint64();
     for index in 0..value.byte_len() {
         let digit = value.byte_get(index);
         if digit < b'0' || digit > b'9' {
             return Result::Err(wire::artifact_decode_error("CTIR uint64"))
         } else {};
-        let next = result * 10 + ((digit - b'0') as uint64);
+        let next = result * 10 + ((digit - b'0').to_uint64());
         if next < result {
             return Result::Err(wire::artifact_decode_error("CTIR uint64"))
         } else {};

@@ -125,10 +125,10 @@ pub fn encode_artifact_binary_container(kind: uint8, sections: Vec[ArtifactBinar
     artifact_binary_write_u8(writer, kind);
     artifact_binary_write_u8(writer, 0);
     artifact_binary_write_u32(writer, 5);
-    artifact_binary_write_u16(writer, sections.len() as uint16);
+    artifact_binary_write_u16(writer, sections.len().to_uint16());
     artifact_binary_write_u16(writer, 0);
-    artifact_binary_write_u64(writer, artifact_binary_header_size() as uint64);
-    artifact_binary_write_u64(writer, payload.len() as uint64);
+    artifact_binary_write_u64(writer, artifact_binary_header_size().to_uint64());
+    artifact_binary_write_u64(writer, payload.len().to_uint64());
     artifact_binary_write_raw_bytes(writer, artifact_binary_sha256(payload));
     let mut offset = artifact_binary_header_size()
         + artifact_binary_directory_entry_size() * sections.len();
@@ -137,8 +137,8 @@ pub fn encode_artifact_binary_container(kind: uint8, sections: Vec[ArtifactBinar
         artifact_binary_write_u16(writer, section.version);
         artifact_binary_write_u16(writer, section.flags);
         artifact_binary_write_u16(writer, 0);
-        artifact_binary_write_u64(writer, offset as uint64);
-        artifact_binary_write_u64(writer, section.data.len() as uint64);
+        artifact_binary_write_u64(writer, offset.to_uint64());
+        artifact_binary_write_u64(writer, section.data.len().to_uint64());
         artifact_binary_write_raw_bytes(writer, artifact_binary_sha256(section.data));
         offset = offset + section.data.len();
     }
@@ -153,7 +153,7 @@ fn artifact_binary_checked_int(reader: ArtifactBinaryReader, value: uint64, name
     if value > 2147483647 {
         Result::Err(artifact_binary_reader_error(reader, name + " exceeds supported size"))
     } else {
-        Result::Ok(value as int)
+        Result::Ok(value.to_int())
     }
 }
 
@@ -185,7 +185,7 @@ pub fn decode_artifact_binary_container(data: bytes::Bytes) -> Result[
     if compiler_abi != 5 {
         return Result::Err("unsupported binary artifact compiler ABI")
     } else {};
-    let section_count = artifact_binary_read_u16(reader)? as int;
+    let section_count = artifact_binary_read_u16(reader)?.to_int();
     let reserved = artifact_binary_read_u16(reader)?;
     if section_count > 1024 {
         return Result::Err("too many binary artifact sections")

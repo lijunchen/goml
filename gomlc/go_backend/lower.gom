@@ -376,7 +376,7 @@ fn compile_primitive(value: tast::Primitive, ty: tast::Type) -> Expr {
             value: go_float_literal(value, ty),
         },
         String { value } => Expr::String { value },
-        Char { value } => Expr::Int { value: (value as uint32).to_string() },
+        Char { value } => Expr::Int { value: (value.to_uint32()).to_string() },
     }
 }
 
