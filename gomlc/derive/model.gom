@@ -1788,14 +1788,15 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
             ),
         )
     } else if name == "meta_expr_cast" {
+        let ty = type_value(state, args, 1)?;
+        match ty {
+            ast::TypeExpr::Dyn { bounds: _ } => (),
+            _ => return Result::Err("meta_expr_cast target must be a dyn trait type"),
+        };
         Result::Ok(
             push_expr(
                 state,
-                ast::Expr::Cast {
-                    expr: expr_value(state, args, 0)?,
-                    ty: type_value(state, args, 1)?,
-                    span: value_span,
-                },
+                ast::Expr::Cast { expr: expr_value(state, args, 0)?, ty, span: value_span },
             ),
         )
     } else if name == "meta_expr_constructor" || name == "meta_expr_target_constructor" {

@@ -590,6 +590,21 @@ fn coerce_to_dyn(ctx: Checker, value: Expr, expected_ty: Type) -> Expr {
     }
 }
 
+fn require_explicit_dyn_conversion(ctx: Checker, value: Expr, expected_ty: Type) -> Expr {
+    match prune(expr_type(value)) {
+        Dyn { .. } => coerce_direct(ctx, value, expected_ty),
+        _ => {
+            push_diagnostic(
+                ctx,
+                "explicit dyn conversion required; use `value as "
+                    + diagnostic_type_text(expected_ty)
+                    + "`",
+            );
+            value
+        },
+    }
+}
+
 fn coerce_expr(ctx: Checker, value: Expr, expected: Option[Type]) -> Expr {
     match value {
         Break { ty: _, .. } | Continue { ty: _, .. } | Return { expr: _, ty: _ } => value,
@@ -607,7 +622,7 @@ fn coerce_expr(ctx: Checker, value: Expr, expected: Option[Type]) -> Expr {
                     },
                     Link(_) => coerce_direct(ctx, value, expected_ty),
                 },
-                Dyn { .. } => coerce_to_dyn(ctx, value, expected_ty),
+                Dyn { .. } => require_explicit_dyn_conversion(ctx, value, expected_ty),
                 _ => coerce_direct(ctx, value, expected_ty),
             },
             None => value,
@@ -4394,19 +4409,17 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
                 match target_ty {
                     Dyn { .. } => coerce_to_dyn(ctx, source, target),
                     _ => {
-                        let valid = (is_integer_type(source_ty) && is_integer_type(target_ty))
-                            || match (source_ty, target_ty) {
-                                (Char, Uint32) => true,
-                                _ => false,
-                            };
-                        if !valid {
-                            push_diagnostic_at(
-                                ctx,
-                                "Invalid cast from " + diagnostic_type_text(source_ty) + " to "
-                                    + diagnostic_type_text(target_ty),
-                                Option::Some(source_span),
-                            )
-                        } else {};
+                        let message = if builtin_numeric_conversion_types_valid(
+                            source_ty,
+                            target_ty,
+                        ) {
+                            "`as` only creates dyn trait values; use `value.to_"
+                                + diagnostic_type_text(target_ty)
+                                + "()` for numeric conversion"
+                        } else {
+                            "`as` only creates dyn trait values; target must be a dyn trait type"
+                        };
+                        push_diagnostic_at(ctx, message, Option::Some(source_span));
                         Expr::Cast { expr: source, ty: target }
                     },
                 }
