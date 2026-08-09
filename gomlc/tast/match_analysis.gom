@@ -1,5 +1,6 @@
 package tast;
 
+use gomlc::ctir;
 use std::cmp;
 use std::collections;
 use std::text;
@@ -24,6 +25,68 @@ struct CoverageSequence {
     prefix: int,
     suffix: int,
     has_rest: bool,
+}
+
+struct CoverageContext {
+    enums: Vec[EnumInfo],
+    structs: Vec[StructInfo],
+    domains: HashMap[string, Vec[CoverageConstructor]],
+    inhabited: HashMap[string, bool],
+}
+
+fn coverage_context(ctx: Checker) -> CoverageContext {
+    CoverageContext {
+        enums: ctx.enums,
+        structs: ctx.structs,
+        domains: ctx.coverage_domains,
+        inhabited: ctx.coverage_inhabited,
+    }
+}
+
+fn coverage_find_enum(ctx: CoverageContext, name: string) -> Option[EnumInfo] {
+    for value in ctx.enums {
+        if value.name == name {
+            return Option::Some(value)
+        } else {}
+    }
+    if name.contains("::") {
+        Option::None
+    } else {
+        let mut result: Option[EnumInfo] = Option::None;
+        for value in ctx.enums {
+            if short_name(value.name) == name {
+                if result.is_some() {
+                    return Option::None
+                } else {
+                    result = Option::Some(value);
+                }
+            } else {}
+        }
+        result
+    }
+}
+
+fn coverage_find_struct(ctx: CoverageContext, name: string) -> Option[StructInfo] {
+    for value in ctx.structs {
+        if value.name == name {
+            return Option::Some(value)
+        } else {}
+    }
+    if name.contains("::") {
+        Option::None
+    } else {
+        let mut result: Option[StructInfo] = Option::None;
+        for value in ctx.structs {
+            if short_name(value.name) == name {
+                if result.is_some() {
+                    return Option::None
+                } else {
+                    result = Option::Some(value);
+                }
+            } else {}
+        }
+        result
+    }
 }
 
 struct CoveragePat {
@@ -633,7 +696,7 @@ fn coverage_builtin_domain(name: string, ty: Type) -> Option[Vec[CoverageConstru
     }
 }
 
-fn coverage_domain_uncached(ctx: Checker, ty: Type) -> Option[Vec[CoverageConstructor]] {
+fn coverage_domain_uncached(ctx: CoverageContext, ty: Type) -> Option[Vec[CoverageConstructor]] {
     match prune(ty) {
         Unit => Option::Some(Vec::[CoverageConstructor { key: "unit", fields: Vec::[] }]),
         Bool => Option::Some(
@@ -654,11 +717,11 @@ fn coverage_domain_uncached(ctx: Checker, ty: Type) -> Option[Vec[CoverageConstr
             ],
         ),
         Con { name } | App { ty: Con { name }, args: _ } => {
-            match find_enum_by_name(ctx, name) {
+            match coverage_find_enum(ctx, name) {
                 Some(info) => Option::Some(coverage_enum_domain(info, ty)),
                 None => match coverage_builtin_domain(name, ty) {
                     Some(value) => Option::Some(value),
-                    None => match find_struct_by_name(ctx, name) {
+                    None => match coverage_find_struct(ctx, name) {
                         Some(info) => {
                             let fields: Vec[Type] = Vec::[];
                             let substitutions = coverage_substitutions(info.generics, ty);
@@ -684,14 +747,14 @@ fn coverage_type_key(value: Type) -> string {
     builder.finish()
 }
 
-fn coverage_domain(ctx: Checker, ty: Type) -> Option[Vec[CoverageConstructor]] {
+fn coverage_domain(ctx: CoverageContext, ty: Type) -> Option[Vec[CoverageConstructor]] {
     let resolved = prune(ty);
     let key = coverage_type_key(resolved);
-    match ctx.coverage_domains[key] {
+    match ctx.domains[key] {
         Some(value) => Option::Some(value),
         None => match coverage_domain_uncached(ctx, resolved) {
             Some(value) => {
-                ctx.coverage_domains[key] = value;
+                ctx.domains[key] = value;
                 Option::Some(value)
             },
             None => Option::None,
@@ -708,7 +771,7 @@ fn coverage_copy_strings(values: Vec[string]) -> Vec[string] {
 }
 
 fn coverage_constructor_inhabited_at(
-    ctx: Checker,
+    ctx: CoverageContext,
     constructor: CoverageConstructor,
     visiting: Vec[string],
     depth: int,
@@ -721,7 +784,7 @@ fn coverage_constructor_inhabited_at(
     true
 }
 
-fn coverage_type_inhabited_at(ctx: Checker, ty: Type, visiting: Vec[string], depth: int) -> bool {
+fn coverage_type_inhabited_at(ctx: CoverageContext, ty: Type, visiting: Vec[string], depth: int) -> bool {
     if depth >= 128 {
         true
     } else {
@@ -746,20 +809,20 @@ fn coverage_type_inhabited_at(ctx: Checker, ty: Type, visiting: Vec[string], dep
     }
 }
 
-fn coverage_type_inhabited(ctx: Checker, ty: Type) -> bool {
+fn coverage_type_inhabited(ctx: CoverageContext, ty: Type) -> bool {
     let resolved = prune(ty);
     let key = coverage_type_key(resolved);
-    match ctx.coverage_inhabited[key] {
+    match ctx.inhabited[key] {
         Some(value) => value,
         None => {
             let value = coverage_type_inhabited_at(ctx, resolved, Vec::[], 0);
-            ctx.coverage_inhabited[key] = value;
+            ctx.inhabited[key] = value;
             value
         },
     }
 }
 
-fn coverage_inhabited_domain(ctx: Checker, domain: Vec[CoverageConstructor]) -> Vec[
+fn coverage_inhabited_domain(ctx: CoverageContext, domain: Vec[CoverageConstructor]) -> Vec[
     CoverageConstructor,
 ] {
     let result: Vec[CoverageConstructor] = Vec::[];
@@ -913,7 +976,7 @@ fn coverage_sequence_specialize_row(row: Vec[CoveragePat], length: int, element:
 }
 
 fn coverage_useful_sequence(
-    ctx: Checker,
+    ctx: CoverageContext,
     matrix: Vec[Vec[CoveragePat]],
     candidate: Vec[CoveragePat],
     element: Type,
@@ -1080,7 +1143,7 @@ fn coverage_scalar_specialize(matrix: Vec[Vec[CoveragePat]], atom: CoverageScala
 }
 
 fn coverage_useful_scalar(
-    ctx: Checker,
+    ctx: CoverageContext,
     matrix: Vec[Vec[CoveragePat]],
     candidate: Vec[CoveragePat],
     domains: Vec[CoverageScalar],
@@ -1104,7 +1167,7 @@ fn coverage_useful_scalar(
     false
 }
 
-fn coverage_useful(ctx: Checker, matrix: Vec[Vec[CoveragePat]], candidate: Vec[CoveragePat]) -> bool {
+fn coverage_useful(ctx: CoverageContext, matrix: Vec[Vec[CoveragePat]], candidate: Vec[CoveragePat]) -> bool {
     if candidate.is_empty() {
         matrix.is_empty()
     } else {
@@ -1195,7 +1258,7 @@ fn coverage_prepend_witness(head: CoverageWitness, tail: Vec[CoverageWitness]) -
 }
 
 fn coverage_find_scalar_witness(
-    ctx: Checker,
+    ctx: CoverageContext,
     matrix: Vec[Vec[CoveragePat]],
     candidate: Vec[CoveragePat],
     domains: Vec[CoverageScalar],
@@ -1233,9 +1296,11 @@ fn coverage_find_scalar_witness(
     Option::None
 }
 
-fn coverage_find_witness(ctx: Checker, matrix: Vec[Vec[CoveragePat]], candidate: Vec[CoveragePat]) -> Option[
-    Vec[CoverageWitness],
-] {
+fn coverage_find_witness(
+    ctx: CoverageContext,
+    matrix: Vec[Vec[CoveragePat]],
+    candidate: Vec[CoveragePat],
+) -> Option[Vec[CoverageWitness]] {
     if candidate.is_empty() {
         if matrix.is_empty() {
             Option::Some(Vec::[])
@@ -1405,7 +1470,7 @@ fn coverage_scalar_text(value: CoverageScalar) -> string {
     }
 }
 
-fn coverage_witness_list_text(ctx: Checker, values: Vec[CoverageWitness]) -> string {
+fn coverage_witness_list_text(ctx: CoverageContext, values: Vec[CoverageWitness]) -> string {
     let rendered: Vec[string] = Vec::[];
     for value in values {
         rendered.push(coverage_witness_text(ctx, value))
@@ -1414,7 +1479,7 @@ fn coverage_witness_list_text(ctx: Checker, values: Vec[CoverageWitness]) -> str
 }
 
 fn coverage_enum_witness_text(
-    ctx: Checker,
+    ctx: CoverageContext,
     constructor: CoverageConstructor,
     fields: Vec[CoverageWitness],
     ty: Type,
@@ -1424,7 +1489,7 @@ fn coverage_enum_witness_text(
         _ => "<unknown>",
     };
     let mut variant = "<unknown>";
-    match find_enum_by_name(ctx, name) {
+    match coverage_find_enum(ctx, name) {
         Some(info) => for index in 0..info.variants.len() {
             if constructor.key == coverage_enum_key(info.name, index) {
                 variant = info.variants[index].name;
@@ -1452,7 +1517,7 @@ fn coverage_enum_witness_text(
     }
 }
 
-fn coverage_witness_text(ctx: Checker, value: CoverageWitness) -> string {
+fn coverage_witness_text(ctx: CoverageContext, value: CoverageWitness) -> string {
     match value.scalar {
         Some(scalar) => coverage_scalar_text(scalar),
         None => match value.constructor {
@@ -1474,7 +1539,7 @@ fn coverage_witness_text(ctx: Checker, value: CoverageWitness) -> string {
     }
 }
 
-fn match_witnesses(ctx: Checker, ty: Type, arms: Vec[Arm]) -> Vec[string] {
+fn match_witnesses(ctx: CoverageContext, ty: Type, arms: Vec[Arm]) -> Vec[string] {
     if arms.is_empty() && contains_unbound_type_variable(ty) {
         return Vec::["_"]
     } else {};
@@ -1522,7 +1587,7 @@ fn coverage_guard_may_match(value: Option[Expr]) -> bool {
     }
 }
 
-fn match_is_exhaustive(ctx: Checker, ty: Type, arms: Vec[Arm]) -> bool {
+fn match_is_exhaustive(ctx: CoverageContext, ty: Type, arms: Vec[Arm]) -> bool {
     let matrix: Vec[Vec[CoveragePat]] = Vec::[];
     for arm in arms {
         if coverage_guard_may_match(arm.guard) {
@@ -1534,7 +1599,7 @@ fn match_is_exhaustive(ctx: Checker, ty: Type, arms: Vec[Arm]) -> bool {
     !coverage_useful(ctx, matrix, Vec::[coverage_wild(ty)])
 }
 
-fn match_useful_arms(ctx: Checker, arms: Vec[Arm]) -> Vec[bool] {
+fn match_useful_arms(ctx: CoverageContext, arms: Vec[Arm]) -> Vec[bool] {
     let matrix: Vec[Vec[CoveragePat]] = Vec::[];
     let result: Vec[bool] = Vec::[];
     for arm in arms {
@@ -1549,7 +1614,11 @@ fn match_useful_arms(ctx: Checker, arms: Vec[Arm]) -> Vec[bool] {
     result
 }
 
-fn coverage_patterns_useful(ctx: Checker, matrix: Vec[Vec[CoveragePat]], patterns: Vec[CoveragePat]) -> bool {
+fn coverage_patterns_useful(
+    ctx: CoverageContext,
+    matrix: Vec[Vec[CoveragePat]],
+    patterns: Vec[CoveragePat],
+) -> bool {
     for pattern in patterns {
         if coverage_useful(ctx, matrix, Vec::[pattern]) {
             return true
@@ -1558,10 +1627,211 @@ fn coverage_patterns_useful(ctx: Checker, matrix: Vec[Vec[CoveragePat]], pattern
     false
 }
 
-fn pattern_is_irrefutable(ctx: Checker, value: Pat) -> bool {
+fn pattern_is_irrefutable(ctx: CoverageContext, value: Pat) -> bool {
     let matrix: Vec[Vec[CoveragePat]] = Vec::[];
     for pattern in coverage_patterns(value) {
         matrix.push(Vec::[pattern])
     }
     !coverage_useful(ctx, matrix, Vec::[coverage_wild(pat_type(value))])
+}
+
+fn pattern_has_constant(value: Pat) -> bool {
+    match value {
+        Constant { name: _, ty: _ } => true,
+        Constr { constructor: _, args, ty: _ } => patterns_have_constants(args),
+        Tuple { items, ty: _ } => patterns_have_constants(items),
+        Array { prefix, rest: _, suffix, ty: _ } => {
+            patterns_have_constants(prefix) || patterns_have_constants(suffix)
+        },
+        Alias { name: _, pat, ty: _ } => pattern_has_constant(pat),
+        Or { pats, ty: _ } => patterns_have_constants(pats),
+        Var { name: _, is_mut: _, ty: _ } | Prim { value: _, ty: _ } | Range {
+            start: _,
+            end: _,
+            inclusive: _,
+            ty: _,
+        } | Wild { ty: _ } => false,
+    }
+}
+
+fn patterns_have_constants(values: Vec[Pat]) -> bool {
+    for value in values {
+        if pattern_has_constant(value) {
+            return true
+        } else {}
+    }
+    false
+}
+
+fn match_arms_have_constants(values: Vec[Arm]) -> bool {
+    for value in values {
+        if pattern_has_constant(value.pat) {
+            return true
+        } else {}
+    }
+    false
+}
+
+fn deferred_constant_value(
+    module: ctir::CtModule,
+    dependencies: Vec[ctir::CtModule],
+    name: string,
+    ty: Type,
+) -> Option[Primitive] {
+    match module_constant_primitive(module, name, ty) {
+        Some(value) => Option::Some(value),
+        None => {
+            for dependency in dependencies {
+                match module_constant_primitive(dependency, name, ty) {
+                    Some(value) => return Option::Some(value),
+                    None => (),
+                }
+            }
+            Option::None
+        },
+    }
+}
+
+fn resolve_deferred_patterns(
+    values: Vec[Pat],
+    module: ctir::CtModule,
+    dependencies: Vec[ctir::CtModule],
+) -> Vec[Pat] {
+    let result: Vec[Pat] = Vec::[];
+    for value in values {
+        result.push(resolve_deferred_pattern(value, module, dependencies))
+    }
+    result
+}
+
+fn resolve_deferred_pattern(value: Pat, module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) -> Pat {
+    match value {
+        Constant { name, ty } => match deferred_constant_value(module, dependencies, name, ty) {
+            Some(value) => Pat::Prim { value: normalize_pattern_primitive(value, ty), ty },
+            None => Pat::Constant { name, ty },
+        },
+        Constr { constructor, args, ty } => Pat::Constr {
+            constructor,
+            args: resolve_deferred_patterns(args, module, dependencies),
+            ty,
+        },
+        Tuple { items, ty } => Pat::Tuple {
+            items: resolve_deferred_patterns(items, module, dependencies),
+            ty,
+        },
+        Array { prefix, rest, suffix, ty } => Pat::Array {
+            prefix: resolve_deferred_patterns(prefix, module, dependencies),
+            rest,
+            suffix: resolve_deferred_patterns(suffix, module, dependencies),
+            ty,
+        },
+        Alias { name, pat, ty } => Pat::Alias {
+            name,
+            pat: resolve_deferred_pattern(pat, module, dependencies),
+            ty,
+        },
+        Or { pats, ty } => Pat::Or {
+            pats: resolve_deferred_patterns(pats, module, dependencies),
+            ty,
+        },
+        Var { name, is_mut, ty } => Pat::Var { name, is_mut, ty },
+        Prim { value, ty } => Pat::Prim { value, ty },
+        Range { start, end, inclusive, ty } => Pat::Range { start, end, inclusive, ty },
+        Wild { ty } => Pat::Wild { ty },
+    }
+}
+
+fn resolve_deferred_arms(
+    values: Vec[Arm],
+    module: ctir::CtModule,
+    dependencies: Vec[ctir::CtModule],
+) -> Vec[Arm] {
+    let result: Vec[Arm] = Vec::[];
+    for value in values {
+        result.push(
+            Arm {
+                pat: resolve_deferred_pattern(value.pat, module, dependencies),
+                guard: value.guard,
+                body: value.body,
+            },
+        )
+    }
+    result
+}
+
+fn unreachable_match_diagnostic(value: DeferredMatchCheck, index: int) -> Diagnostic {
+    Diagnostic {
+        severity: DiagnosticSeverity::Warning,
+        stage: "typer",
+        message: "Unreachable match arm",
+        source_path: value.source_path,
+        span: Option::Some(value.pattern_spans[index]),
+        primary_label: Option::None,
+        secondary_labels: Vec::[],
+        sort_order: 0,
+    }
+}
+
+fn match_coverage_diagnostics(value: DeferredMatchCheck) -> Vec[Diagnostic] {
+    let diagnostics: Vec[Diagnostic] = Vec::[];
+    let useful_arms = match_useful_arms(value.context, value.analysis_arms);
+    let mut invalid_coverage_seen = false;
+    for index in 0..useful_arms.len() {
+        if value.follows_invalid_coverage[index] || invalid_coverage_seen || !(useful_arms[index]) {
+            diagnostics.push(unreachable_match_diagnostic(value, index))
+        } else {};
+        if value.invalid_pattern_arms[index] {
+            invalid_coverage_seen = true;
+        } else {}
+    }
+    let witnesses = if value.invalid_patterns {
+        Vec::[]
+    } else {
+        match_witnesses(value.context, value.ty, value.arms)
+    };
+    if value.invalid_patterns || witnesses.is_empty() {} else {
+        let builder = text::StringBuilder::new();
+        builder.write_string(
+            "non-exhaustive match: missing pattern"
+                + if witnesses.len() == 1 {
+                    " "
+                } else {
+                    "s "
+                },
+        );
+        builder.write_string(text::join(witnesses, ", "));
+        diagnostics.push(new_diagnostic("typer", builder.finish(), value.source_path, value.span))
+    };
+    diagnostics
+}
+
+fn finalize_deferred_match_diagnostics(
+    values: Vec[DeferredMatchCheck],
+    module: ctir::CtModule,
+    dependencies: Vec[ctir::CtModule],
+) -> Vec[Diagnostic] {
+    let diagnostics: Vec[Diagnostic] = Vec::[];
+    for value in values {
+        let arms = resolve_deferred_arms(value.arms, module, dependencies);
+        let analysis_arms = resolve_deferred_arms(value.analysis_arms, module, dependencies);
+        if match_arms_have_constants(arms) || match_arms_have_constants(analysis_arms) {} else {
+            for diagnostic in match_coverage_diagnostics(
+                DeferredMatchCheck {
+                    context: value.context,
+                    source_path: value.source_path,
+                    span: value.span,
+                    ty: value.ty,
+                    arms,
+                    analysis_arms,
+                    pattern_spans: value.pattern_spans,
+                    invalid_pattern_arms: value.invalid_pattern_arms,
+                    follows_invalid_coverage: value.follows_invalid_coverage,
+                    invalid_patterns: value.invalid_patterns,
+                },
+            ) {
+                diagnostics.push(diagnostic)
+            }
+        }
+    }
+    diagnostics
 }

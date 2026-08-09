@@ -42,6 +42,7 @@ fn function_context(
         struct_short_names: base.struct_short_names,
         coverage_domains: base.coverage_domains,
         coverage_inhabited: base.coverage_inhabited,
+        deferred_matches: base.deferred_matches,
         traits: base.traits,
         functions: base.functions,
         rejected_externs: base.rejected_externs,
@@ -104,6 +105,7 @@ fn closure_context(base: Checker, ret_ty: Type) -> Checker {
         struct_short_names: base.struct_short_names,
         coverage_domains: base.coverage_domains,
         coverage_inhabited: base.coverage_inhabited,
+        deferred_matches: base.deferred_matches,
         traits: base.traits,
         functions: base.functions,
         rejected_externs: base.rejected_externs,
@@ -3156,6 +3158,7 @@ fn check_file_with_package(
         tast: Option::Some(File { items, enums, structs, constants }),
         comptime: ctir::empty_module(ctx.package_name),
         pending_constants,
+        deferred_matches: ctx.deferred_matches,
         diagnostics: order_extern_diagnostics(ctx),
         typeck_results: ctx.typeck_results,
     }
@@ -3326,10 +3329,18 @@ fn finalize_check_comptime(
             for diagnostic in finalized.diagnostics {
                 checked.diagnostics.push(diagnostic)
             }
+            for diagnostic in finalize_deferred_match_diagnostics(
+                checked.deferred_matches,
+                finalized.module,
+                dependencies,
+            ) {
+                checked.diagnostics.push(diagnostic)
+            }
             CheckResult {
                 tast: Option::Some(finalized.file),
                 comptime: finalized.module,
                 pending_constants: Vec::[],
+                deferred_matches: Vec::[],
                 diagnostics: checked.diagnostics,
                 typeck_results: checked.typeck_results,
             }
@@ -3338,6 +3349,7 @@ fn finalize_check_comptime(
             tast: Option::None,
             comptime: ctir::empty_module(package_name),
             pending_constants: Vec::[],
+            deferred_matches: Vec::[],
             diagnostics: checked.diagnostics,
             typeck_results: checked.typeck_results,
         },
@@ -3357,6 +3369,7 @@ pub fn check(value: hir::LowerResult) -> CheckResult {
             tast: Option::None,
             comptime: ctir::empty_module("<unknown>"),
             pending_constants: Vec::[],
+            deferred_matches: Vec::[],
             diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
             typeck_results: empty_typeck_results(),
         },
@@ -3376,6 +3389,7 @@ pub fn check_for_link(value: hir::LowerResult) -> CheckResult {
             tast: Option::None,
             comptime: ctir::empty_module("<unknown>"),
             pending_constants: Vec::[],
+            deferred_matches: Vec::[],
             diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
             typeck_results: empty_typeck_results(),
         },
@@ -3395,6 +3409,7 @@ pub fn check_for_link_with_dependencies(value: hir::LowerResult, dependencies: V
             tast: Option::None,
             comptime: ctir::empty_module("<unknown>"),
             pending_constants: Vec::[],
+            deferred_matches: Vec::[],
             diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
             typeck_results: empty_typeck_results(),
         },
@@ -3417,6 +3432,7 @@ pub fn check_for_link_with_dependencies_allowing_externs(
             tast: Option::None,
             comptime: ctir::empty_module("<unknown>"),
             pending_constants: Vec::[],
+            deferred_matches: Vec::[],
             diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
             typeck_results: empty_typeck_results(),
         },
@@ -3469,6 +3485,7 @@ fn check_package_files_for_link_with_environments_options(
     let structs: Vec[StructDef] = Vec::[];
     let constants: Vec[Constant] = Vec::[];
     let pending_constants: Vec[PendingConstant] = Vec::[];
+    let deferred_matches: Vec[DeferredMatchCheck] = Vec::[];
     let diagnostics: Vec[Diagnostic] = Vec::[];
     let typeck_results = empty_typeck_results();
     let comptime_dependencies: Vec[ctir::CtModule] = Vec::[];
@@ -3500,6 +3517,9 @@ fn check_package_files_for_link_with_environments_options(
         }
         for value in checked.pending_constants {
             pending_constants.push(value)
+        }
+        for value in checked.deferred_matches {
+            deferred_matches.push(value)
         }
         append_typeck_results(typeck_results, checked.typeck_results);
         match checked.tast {
@@ -3542,6 +3562,7 @@ fn check_package_files_for_link_with_environments_options(
         },
         comptime: ctir::empty_module(diagnostic_source),
         pending_constants,
+        deferred_matches,
         diagnostics,
         typeck_results,
     };

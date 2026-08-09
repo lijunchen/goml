@@ -55,6 +55,7 @@ fn failed_check(source_path: string, stage: string, message: string) -> tast::Ch
         tast: Option::None,
         comptime: ctir::empty_module(source_path),
         pending_constants: Vec::[],
+        deferred_matches: Vec::[],
         diagnostics,
         typeck_results: tast::empty_typeck_results(),
     }
@@ -329,6 +330,7 @@ fn check_project(value: Project, overrides: Vec[SourceOverride]) -> ProjectCheck
             tast: Option::None,
             comptime: ctir::empty_module(entry.name),
             pending_constants: Vec::[],
+            deferred_matches: Vec::[],
             diagnostics: Vec::[],
             typeck_results: tast::empty_typeck_results(),
         }

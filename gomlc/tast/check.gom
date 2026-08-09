@@ -3168,7 +3168,7 @@ fn check_match_expr(ctx: Checker, source: hir::Expr, arms: Vec[hir::Arm], expect
             Some(value) => Option::Some(check_expr(ctx, value, Option::Some(Type::Bool))),
             None => Option::None,
         };
-        if coverage_guard(guard) && pattern_is_irrefutable(ctx, pat) {
+        if coverage_guard(guard) && pattern_is_irrefutable(coverage_context(ctx), pat) {
             complete_coverage_found = true;
         } else {};
         let body = check_expr(ctx, arm.body, Option::Some(result_ty));
@@ -3193,34 +3193,25 @@ fn check_match_expr(ctx: Checker, source: hir::Expr, arms: Vec[hir::Arm], expect
             },
         )
     }
-    let useful_arms = match_useful_arms(ctx, analysis_arms);
-    let mut invalid_coverage_seen = false;
-    for index in 0..useful_arms.len() {
-        if follows_invalid_coverage[index] || invalid_coverage_seen || !(useful_arms[index]) {
-            push_warning_at(ctx, "Unreachable match arm", Option::Some(pattern_spans[index]))
-        } else {};
-        if invalid_pattern_arms[index] {
-            invalid_coverage_seen = true;
-        } else {}
-    }
     let invalid_patterns = bool_values_contain(pattern_errors, true);
-    let witnesses = if invalid_patterns {
-        Vec::[]
-    } else {
-        match_witnesses(ctx, expr_type(scrutinee), typed_arms)
+    let coverage_check = DeferredMatchCheck {
+        context: coverage_context(ctx),
+        source_path: ctx.source_path,
+        span: ctx.current_span.get(),
+        ty: expr_type(scrutinee),
+        arms: typed_arms,
+        analysis_arms,
+        pattern_spans,
+        invalid_pattern_arms,
+        follows_invalid_coverage,
+        invalid_patterns,
     };
-    if invalid_patterns || witnesses.is_empty() {} else {
-        let builder = text::StringBuilder::new();
-        builder.write_string(
-            "non-exhaustive match: missing pattern"
-                + if witnesses.len() == 1 {
-                    " "
-                } else {
-                    "s "
-                },
-        );
-        builder.write_string(text::join(witnesses, ", "));
-        push_diagnostic(ctx, builder.finish())
+    if match_arms_have_constants(typed_arms) {
+        ctx.deferred_matches.push(coverage_check)
+    } else {
+        for diagnostic in match_coverage_diagnostics(coverage_check) {
+            ctx.diagnostics.push(diagnostic)
+        }
     };
     Expr::Match { expr: scrutinee, arms: typed_arms, ty: result_ty }
 }
@@ -4063,7 +4054,7 @@ fn check_for_expr(
     } else {};
     let item = into_iterator_item_type(ctx, source_ty);
     let typed_pat = check_pattern(ctx, pat, item);
-    if pattern_is_irrefutable(ctx, typed_pat) {} else {
+    if pattern_is_irrefutable(coverage_context(ctx), typed_pat) {} else {
         push_diagnostic_at(
             ctx,
             "Refutable pattern is not allowed in for loop; use match instead",
@@ -5339,7 +5330,8 @@ fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
                 _ => false,
             };
             let pattern = check_pattern(ctx, pat, pattern_ty);
-            let irrefutable = simple_pattern || pattern_is_irrefutable(ctx, pattern);
+            let irrefutable = simple_pattern
+                || pattern_is_irrefutable(coverage_context(ctx), pattern);
             match else_branch {
                 Some(source_else) => {
                     if irrefutable {
