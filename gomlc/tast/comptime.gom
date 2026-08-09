@@ -962,7 +962,7 @@ fn lower_ct_expr(ctx: CtLowerContext, value: Expr) -> Result[ctir::CtExpr, strin
             },
         ),
         Go { .. } => return Result::Err("go statements are not available in comptime"),
-        Call { func, args, ty: _ } => match func {
+        Call { func, args, ty } => match func {
             Expr::Callable { callable, ty: _ } => match callable {
                 Callable::Intrinsic(name) => if name == "compile_error" {
                     if args.len() != 1 {
@@ -973,6 +973,12 @@ fn lower_ct_expr(ctx: CtLowerContext, value: Expr) -> Result[ctir::CtExpr, strin
                     ctir::CtExprKind::Call {
                         target: ctir::CtCallTarget::Intrinsic(name),
                         args: lower_ct_exprs(ctx, args)?,
+                    }
+                } else if name == "numeric.convert" && args.len() == 1
+                    && builtin_numeric_conversion_types_valid(expr_type(args[0]), ty) {
+                    ctir::CtExprKind::Cast {
+                        value: lower_ct_expr(ctx, args[0])?,
+                        target: lower_ct_type(ctx, ty)?,
                     }
                 } else {
                     return Result::Err("comptime intrinsic `" + name + "` is not supported")
@@ -986,12 +992,26 @@ fn lower_ct_expr(ctx: CtLowerContext, value: Expr) -> Result[ctir::CtExpr, strin
                     ctir::CtExprKind::Call { target, args: lower_ct_exprs(ctx, args)? }
                 },
                 Callable::InherentMethod { receiver_ty, method_name } => {
-                    let Some(name) = string_method_intrinsic(receiver_ty, method_name) else {
-                        return Result::Err("comptime only supports deterministic string methods")
-                    };
-                    ctir::CtExprKind::Call {
-                        target: ctir::CtCallTarget::Intrinsic(name),
-                        args: lower_ct_exprs(ctx, args)?,
+                    match builtin_numeric_conversion_target(receiver_ty, method_name) {
+                        Some(target) => if args.len() == 1 {
+                            ctir::CtExprKind::Cast {
+                                value: lower_ct_expr(ctx, args[0])?,
+                                target: lower_ct_type(ctx, target)?,
+                            }
+                        } else {
+                            return Result::Err("comptime numeric conversion expects one argument")
+                        },
+                        None => {
+                            let Some(name) = string_method_intrinsic(receiver_ty, method_name) else {
+                                return Result::Err(
+                                    "comptime only supports deterministic builtin methods",
+                                )
+                            };
+                            ctir::CtExprKind::Call {
+                                target: ctir::CtCallTarget::Intrinsic(name),
+                                args: lower_ct_exprs(ctx, args)?,
+                            }
+                        },
                     }
                 },
                 _ => return Result::Err("comptime only supports direct #[comptime] function calls"),

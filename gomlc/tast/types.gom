@@ -32,6 +32,55 @@ fn is_integer_type(value: Type) -> bool {
     }
 }
 
+fn integer_conversion_target(name: string) -> Option[Type] {
+    match name {
+        "to_int" => Option::Some(Type::Int),
+        "to_int8" => Option::Some(Type::Int8),
+        "to_int16" => Option::Some(Type::Int16),
+        "to_int32" => Option::Some(Type::Int32),
+        "to_int64" => Option::Some(Type::Int64),
+        "to_uint" => Option::Some(Type::Uint),
+        "to_uint8" => Option::Some(Type::Uint8),
+        "to_uint16" => Option::Some(Type::Uint16),
+        "to_uint32" => Option::Some(Type::Uint32),
+        "to_uint64" => Option::Some(Type::Uint64),
+        _ => Option::None,
+    }
+}
+
+pub fn builtin_numeric_conversion_target(receiver: Type, name: string) -> Option[Type] {
+    let receiver = resolve_type(receiver);
+    let Some(target) = integer_conversion_target(name) else {
+        return Option::None
+    };
+    if match receiver {
+        Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 => true,
+        _ => false,
+    }
+        && !types_equal(receiver, target) {
+        Option::Some(target)
+    } else if types_equal(receiver, Type::Char) && types_equal(target, Type::Uint32) {
+        Option::Some(target)
+    } else {
+        Option::None
+    }
+}
+
+pub fn builtin_numeric_conversion_types_valid(source: Type, target: Type) -> bool {
+    let source = resolve_type(source);
+    let target = resolve_type(target);
+    let source_is_integer = match source {
+        Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 => true,
+        _ => false,
+    };
+    let target_is_integer = match target {
+        Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 => true,
+        _ => false,
+    };
+    (source_is_integer && target_is_integer && !types_equal(source, target))
+        || (types_equal(source, Type::Char) && types_equal(target, Type::Uint32))
+}
+
 fn is_float_type(value: Type) -> bool {
     match prune(value) {
         Float32 | Float64 => true,

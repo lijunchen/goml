@@ -426,7 +426,7 @@ pub const ANSWER: int32 = BASE + 10;
 const NEWLINE: byte = b'\n';
 ```
 
-Constant names may start with an uppercase letter, a lowercase letter, or `_`; `UPPER_SNAKE_CASE` is the preferred convention. Constant expressions support scalar literals, references to other constants, unary and binary operators, and casts. They may use forward references, but cycles are rejected. The allowed constant types are `bool`, numeric types, `string`, `char`, and `byte`. Public constants are available through package-qualified paths.
+Constant names may start with an uppercase letter, a lowercase letter, or `_`; `UPPER_SNAKE_CASE` is the preferred convention. Constant expressions support scalar literals, references to other constants, unary and binary operators, and integer conversion methods. They may use forward references, but cycles are rejected. The allowed constant types are `bool`, numeric types, `string`, `char`, and `byte`. Public constants are available through package-qualified paths.
 
 Visible top-level constants can be used as value patterns in `match`, `if let`, `while let`, and `let else`. Both local names and package-qualified names are supported, and constant patterns can be nested or combined with or-patterns:
 
@@ -468,9 +468,9 @@ fn table() -> [int; 4] {
 
 A top-level constant initializer is an implicit compile-time context, so `const SIX: int = factorial(3);` and an initializer wrapped in `comptime { ... }` are equivalent. Top-level constants retain their scalar-only restriction. A `comptime` expression in ordinary code may produce a reifiable tuple, fixed array, struct, or enum in addition to `unit`, `bool`, integer, `string`, and `char` values.
 
-Compile-time code may use local bindings and assignment, blocks, `if`, `match`, `while`, `loop`, restricted `for`, `break`, `continue`, `return`, recursion, direct calls, and supported integer casts and operators. A compile-time `for` accepts only a fixed array or the builtin `int` ranges `start..end` and `start..=end`; its source and range endpoints are evaluated once, and its pattern must be irrefutable. The deterministic string methods `len`, `byte_len`, `get`, `byte_get`, `byte_slice`, `is_char_boundary`, `starts_with`, `ends_with`, and `contains` are also available. String indexes and slices use byte offsets and reject invalid UTF-8 character boundaries.
+Compile-time code may use local bindings and assignment, blocks, `if`, `match`, `while`, `loop`, restricted `for`, `break`, `continue`, `return`, recursion, direct calls, integer conversion methods, and supported operators. A compile-time `for` accepts only a fixed array or the builtin `int` ranges `start..end` and `start..=end`; its source and range endpoints are evaluated once, and its pattern must be irrefutable. The deterministic string methods `len`, `byte_len`, `get`, `byte_get`, `byte_slice`, `is_char_boundary`, `starts_with`, `ends_with`, and `contains` are also available. String indexes and slices use byte offsets and reject invalid UTF-8 character boundaries.
 
-Compile-time code cannot capture a surrounding runtime parameter or local. Closures, indirect calls, generic functions, methods other than the string whitelist, trait or dynamic dispatch, general iterators, floating-point computation, `Ref`, `Vec`, `HashMap`, channels, goroutines, extern calls, host I/O, environment access, time, randomness, network access, general type reflection, arbitrary declaration generation, compile-time parameters, value generics, and type-level computation are not supported. The constrained programmable derive interface described below is the only reflection and code-generation facility.
+Compile-time code cannot capture a surrounding runtime parameter or local. Closures, indirect calls, generic functions, methods other than the integer conversions and string whitelist, trait or dynamic dispatch, general iterators, floating-point computation, `Ref`, `Vec`, `HashMap`, channels, goroutines, extern calls, host I/O, environment access, time, randomness, network access, general type reflection, arbitrary declaration generation, compile-time parameters, value generics, and type-level computation are not supported. The constrained programmable derive interface described below is the only reflection and code-generation facility.
 
 `compile_error` is accepted only in a `#[comptime]` function, a `comptime` block, or a top-level constant initializer. It terminates compile-time evaluation with its message. If runtime execution of a `#[comptime]` function reaches it, the program traps:
 
@@ -489,9 +489,9 @@ Failures include the compile-time call stack and source locations. Evaluation us
 
 Public `#[comptime]` functions can be called from another package. The defining package's interface contains verified compile-time IR for the public entry and the private compile-time helpers and constants it reaches. Public compile-time constant values are also exported. A compile-time body or value change affects the interface hash; source formatting, local names, and source locations do not. A downstream package needs only the dependency interface for checking and evaluation. A value containing hidden fields from another package cannot currently be reified.
 
-Compile-time integer evaluation uses the same fixed-width, wrapping representation as generated runtime code. Division by zero, a negative shift count, and an out-of-bounds index fail compilation. Signed minimum divided by `-1` yields the signed minimum, and its remainder is zero. Narrowing casts retain the low bits of the destination width; widening a signed source sign-extends before conversion to the destination signedness. The CTIR target specification is part of its semantic hash. `int` and `uint` currently use the 64-bit Linux amd64 toolchain target width.
+Compile-time integer evaluation uses the same fixed-width, wrapping representation as generated runtime code. Division by zero, a negative shift count, and an out-of-bounds index fail compilation. Signed minimum divided by `-1` yields the signed minimum, and its remainder is zero. Narrowing conversions retain the low bits of the destination width; widening a signed source sign-extends before conversion to the destination signedness. The CTIR target specification is part of its semantic hash. `int` and `uint` currently use the 64-bit Linux amd64 toolchain target width.
 
-At runtime, integer addition, subtraction, and multiplication use the same fixed-width wrapping representation. Integer division or remainder by zero terminates the current process with the generated Go runtime failure. Casts use the same narrowing, sign-extension, and signedness rules as compile-time evaluation.
+At runtime, integer addition, subtraction, and multiplication use the same fixed-width wrapping representation. Integer division or remainder by zero terminates the current process with the generated Go runtime failure. Integer conversion methods use the same narrowing, sign-extension, and signedness rules as compile-time evaluation.
 
 ### Structure
 
@@ -807,7 +807,8 @@ GoML supports:
 - Method call `value.method(arg)`
 - Index `value[index]`
 - Unary and binary operations
-- Integer conversion `value as uint32`
+- Integer conversion method `value.to_uint32()`
+- Explicit trait-object conversion `value as dyn Trait`
 - Half-open range expression `start..end`
 - `if`、`if let`、`match`、`while`、`while let`、`loop`、`for`
 - closure
@@ -854,7 +855,7 @@ From low to high:
 | 8 | `<<`、`>>` | shift |
 | 9 | `+`、`-` | Addition, subtraction, string concatenation |
 | 10 | `*`、`/`、`%` | Multiplication, division, remainder |
-| 11 | `as` | explicit integer conversion |
+| 11 | `as` | explicit `dyn Trait` conversion |
 | 12 | Call `()`, index `[]`, `?`, member `.` | suffix |
 | 13 | One dollar `-`, `!`, `~` | prefix |
 
@@ -883,7 +884,8 @@ let valid = !(predicate());
 - `< > <= >=` uses `PartialOrd`. Primitive numbers, `string`, `char`, tuples, fixed arrays, `Vec`, `Slice`, `Option`, and `Result` provide the corresponding conditional implementations.
 - `== !=` uses `PartialEq`. Tuples, fixed arrays, `Vec`, `Slice`, `Option`, and `Result` compare recursively when their elements implement `PartialEq`.
 - Floating-point values implement `PartialEq + PartialOrd`, but not `Eq + Ord + Hash`. In particular, NaN is unequal to itself and its `partial_cmp` result is `None`.
-- `as` supports explicit conversions between integer types, and `char as uint32`.`uint32` to `char` should use `char_from_uint32` which returns `Option[char]`.
+- Every integer type provides `to_int`, `to_int8`, `to_int16`, `to_int32`, `to_int64`, `to_uint`, `to_uint8`, `to_uint16`, `to_uint32`, and `to_uint64` for the other integer types. Identity methods are omitted. `byte` uses the `uint8` methods, `char` provides `to_uint32`, and `uint32` to `char` uses `char_from_uint32`, which returns `Option[char]`.
+- Numeric `as` remains accepted for one compatibility release, but integer conversion methods are the canonical form.
 
 There are no exponentiation, null coalescing or user-defined operators.
 
@@ -1582,7 +1584,7 @@ Trait bounds for type parameters make the corresponding methods available for ge
 
 ## `dyn Trait`
 
-Concrete values ​​that satisfy the dyn-safe trait are implicitly boxed when `dyn Trait` is expected:
+Use `as dyn Trait` to convert a concrete value that satisfies a dyn-safe trait into a trait object:
 
 ```goml
 trait Display {
@@ -1590,13 +1592,15 @@ trait Display {
 }
 
 fn erase[T: Display](value: T) -> dyn Display {
-    value
+    value as dyn Display
 }
 
 fn show_dynamic(value: dyn Display) -> string {
     value.show()
 }
 ```
+
+Implicit boxing when a `dyn Trait` value is expected remains accepted for one compatibility release. New code should use the explicit conversion.
 
 The `dyn` value supports method syntax, and UFCS can also be used; it can be seen that supertrait methods are also available:
 
@@ -1632,7 +1636,6 @@ Current limitations:
 
 - Generic trait object is not supported;
 - Multiple bounds such as `dyn Read + Close` are parsed for forward compatibility but rejected by the type checker;
-- Explicit `as dyn Trait` is not supported;
 - Pattern matching on `dyn Trait` is not supported.
 
 ## Properties and Derivations
@@ -2596,7 +2599,7 @@ Sorting mutates a `Vec[T]` in place. `sort` and `stable_sort` use `cmp::Ord`; `s
 | `switch` | `match` |
 | `null`、`nil` | `Option::None` |
 | `throw`, exception | `Result` and `?` |
-| `float_value as int32` | Floating point to integer conversion is not supported; use dedicated parsing or conversion APIs |
+| `float_value.to_int32()` | Floating point to integer conversion is not supported; use dedicated parsing or conversion APIs |
 | `dyn A + B` | Use one dyn-safe trait; multiple bounds are reserved syntax but not yet supported |
 | `dyn TraitWithAssociatedType` | Bind every associated type, for example `dyn Iterator[Item = int]` |
 | `use pkg::*` | List the required public items explicitly with `use pkg::{A, B};` |
@@ -2673,7 +2676,7 @@ where_predicate = type ":" trait_set | type "=" type
 
 type          = primitive_type
               | path type_args?
-              | "dyn" dyn_bound ("+" dyn_bound)*
+              | dyn_type
               | "[" type ";" integer_literal "]"
               | "(" type_list ")"
               | "()" "->" type
@@ -2684,6 +2687,7 @@ dyn_bound     = path dyn_args?
 dyn_args      = "[" (type ",")* dyn_assoc ("," dyn_assoc)* ","? "]"
               | "[" type_list "]"
 dyn_assoc     = upper_ident "=" type
+dyn_type      = "dyn" dyn_bound ("+" dyn_bound)*
 
 block         = "{" statement* expression? "}"
 statement     = "let" "mut"? pattern (":" type)? "=" expression ("else" block)? ";"
@@ -2739,7 +2743,7 @@ spawn_expression = "spawn" closure
 comptime_expression = "comptime" block
 closure       = "||" (expression | block)
               | "|" closure_params? "|" (expression | block)
-cast          = expression "as" integer_type
+cast          = expression "as" dyn_type
 range_expression = expression (".." | "..=") expression
 
 pattern       = or_pattern

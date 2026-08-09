@@ -541,6 +541,55 @@ fn coerce_direct(ctx: Checker, value: Expr, expected: Type) -> Expr {
     normalize_float_expr(value, expected)
 }
 
+fn coerce_to_dyn(ctx: Checker, value: Expr, expected_ty: Type) -> Expr {
+    let Dyn { trait_name, associated_types, .. } = prune(expected_ty) else {
+        return value
+    };
+    match prune(expr_type(value)) {
+        Dyn { trait_name: actual, .. } => {
+            if !types_equal(expr_type(value), expected_ty) {
+                push_diagnostic(ctx, "dyn trait mismatch")
+            } else {};
+            value
+        },
+        actual => {
+            match find_trait(ctx, trait_name) {
+                Some(_) => if trait_bound_satisfied_at(
+                    ctx,
+                    actual,
+                    TraitRef { name: trait_name, args: Vec::[] },
+                    Vec::[],
+                ) {} else {
+                    require_predicate(
+                        ctx,
+                        TypePredicate::Trait {
+                            for_ty: actual,
+                            trait_ref: TraitRef { name: trait_name, args: Vec::[] },
+                        },
+                        "Type " + type_text(actual) + " does not implement trait " + trait_name,
+                    )
+                },
+                None => expect_type(ctx, actual, expected_ty),
+            };
+            for binding in associated_types {
+                require_predicate(
+                    ctx,
+                    TypePredicate::Equality {
+                        lhs: Type::Projection {
+                            for_ty: actual,
+                            name: binding.0,
+                            trait_ref: Option::Some(TraitRef { name: trait_name, args: Vec::[] }),
+                        },
+                        rhs: binding.1,
+                    },
+                    "Associated type " + binding.0 + " does not match dyn binding",
+                )
+            }
+            Expr::ToDyn { trait_name, for_ty: actual, expr: value, ty: expected_ty }
+        },
+    }
+}
+
 fn coerce_expr(ctx: Checker, value: Expr, expected: Option[Type]) -> Expr {
     match value {
         Break { ty: _, .. } | Continue { ty: _, .. } | Return { expr: _, ty: _ } => value,
@@ -558,52 +607,7 @@ fn coerce_expr(ctx: Checker, value: Expr, expected: Option[Type]) -> Expr {
                     },
                     Link(_) => coerce_direct(ctx, value, expected_ty),
                 },
-                Dyn { trait_name, associated_types, .. } => match prune(expr_type(value)) {
-                    Dyn { trait_name: actual, .. } => {
-                        if !types_equal(expr_type(value), expected_ty) {
-                            push_diagnostic(ctx, "dyn trait mismatch")
-                        } else {};
-                        value
-                    },
-                    actual => {
-                        match find_trait(ctx, trait_name) {
-                            Some(_) => if trait_bound_satisfied_at(
-                                ctx,
-                                actual,
-                                TraitRef { name: trait_name, args: Vec::[] },
-                                Vec::[],
-                            ) {} else {
-                                require_predicate(
-                                    ctx,
-                                    TypePredicate::Trait {
-                                        for_ty: actual,
-                                        trait_ref: TraitRef { name: trait_name, args: Vec::[] },
-                                    },
-                                    "Type " + type_text(actual) + " does not implement trait "
-                                        + trait_name,
-                                )
-                            },
-                            None => expect_type(ctx, actual, expected_ty),
-                        };
-                        for binding in associated_types {
-                            require_predicate(
-                                ctx,
-                                TypePredicate::Equality {
-                                    lhs: Type::Projection {
-                                        for_ty: actual,
-                                        name: binding.0,
-                                        trait_ref: Option::Some(
-                                            TraitRef { name: trait_name, args: Vec::[] },
-                                        ),
-                                    },
-                                    rhs: binding.1,
-                                },
-                                "Associated type " + binding.0 + " does not match dyn binding",
-                            )
-                        }
-                        Expr::ToDyn { trait_name, for_ty: actual, expr: value, ty: expected_ty }
-                    },
-                },
+                Dyn { .. } => coerce_to_dyn(ctx, value, expected_ty),
                 _ => coerce_direct(ctx, value, expected_ty),
             },
             None => value,
@@ -2423,6 +2427,17 @@ fn call_comptime_capability(ctx: Checker, result: Expr) -> ComptimeCapability {
                 Some(function) => function.comptime,
                 None => ComptimeCapability::RuntimeOnly,
             }
+        },
+        Call {
+            func: Callable {
+                callable: Callable::InherentMethod { receiver_ty, method_name },
+                ty: _,
+            },
+            args: _,
+            ty: _,
+        } => match builtin_numeric_conversion_target(receiver_ty, method_name) {
+            Some(_) => ComptimeCapability::Capable,
+            None => ComptimeCapability::RuntimeOnly,
         },
         _ => ComptimeCapability::RuntimeOnly,
     }
@@ -4365,20 +4380,25 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
                 let source = check_expr(ctx, value, Option::None);
                 let source_ty = resolve_type(expr_type(source));
                 let target_ty = resolve_type(target);
-                let valid = (is_integer_type(source_ty) && is_integer_type(target_ty))
-                    || match (source_ty, target_ty) {
-                        (Char, Uint32) => true,
-                        _ => false,
-                    };
-                if !valid {
-                    push_diagnostic_at(
-                        ctx,
-                        "Invalid cast from " + diagnostic_type_text(source_ty) + " to "
-                            + diagnostic_type_text(target_ty),
-                        Option::Some(source_span),
-                    )
-                } else {};
-                Expr::Cast { expr: source, ty: target }
+                match target_ty {
+                    Dyn { .. } => coerce_to_dyn(ctx, source, target),
+                    _ => {
+                        let valid = (is_integer_type(source_ty) && is_integer_type(target_ty))
+                            || match (source_ty, target_ty) {
+                                (Char, Uint32) => true,
+                                _ => false,
+                            };
+                        if !valid {
+                            push_diagnostic_at(
+                                ctx,
+                                "Invalid cast from " + diagnostic_type_text(source_ty) + " to "
+                                    + diagnostic_type_text(target_ty),
+                                Option::Some(source_span),
+                            )
+                        } else {};
+                        Expr::Cast { expr: source, ty: target }
+                    },
+                }
             },
             Try { depth: index, expr: value } => {
                 let source_span = value.span;

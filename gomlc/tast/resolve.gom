@@ -1820,6 +1820,14 @@ fn resolve_builtin_method(ctx: Checker, receiver: Type, name: string, method_exp
     ResolvedCallable,
 ] {
     let receiver = prune(normalize_type(ctx, receiver));
+    match builtin_numeric_conversion_target(receiver, name) {
+        Some(target) => {
+            validate_explicit_method_type_arguments(ctx, name, "method", Vec::[], method_explicit);
+            let owner = resolve_type(receiver);
+            return Option::Some(inherent_callable(owner, name, one_type(owner), target))
+        },
+        None => (),
+    };
     if name == "to_string" {
         validate_explicit_method_type_arguments(ctx, name, "method", Vec::[], method_explicit);
         if is_integer_type(receiver) {

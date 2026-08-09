@@ -332,6 +332,21 @@ fn negated_integer(value: tast::Primitive) -> Option[tast::Primitive] {
 fn lower_call(ctx: Lowerer, function: tast::Expr, arguments: Vec[tast::Expr], ty: tast::Type) -> Expr {
     let args = lower_exprs(ctx, arguments);
     match function {
+        Callable { callable: Intrinsic("numeric.convert"), ty: method_ty } => {
+            if args.len() == 1
+                && tast::builtin_numeric_conversion_types_valid(tast::expr_type(arguments[0]), ty) {
+                Expr::Cast { expr: args[0], ty }
+            } else {
+                Expr::Call {
+                    func: Expr::Callable {
+                        callable: tast::Callable::Intrinsic("numeric.convert"),
+                        ty: method_ty,
+                    },
+                    args,
+                    ty,
+                }
+            }
+        },
         Callable {
             callable: TraitMethod { trait_ref: reference, method_name: name, for_ty, has_receiver },
             ty: _,
@@ -401,16 +416,33 @@ fn lower_call(ctx: Lowerer, function: tast::Expr, arguments: Vec[tast::Expr], ty
             callable: InherentMethod { receiver_ty: owner, method_name: name },
             ty: method_ty,
         } => {
-            Expr::Call {
-                func: Expr::Callable {
-                    callable: tast::Callable::InherentMethod {
-                        receiver_ty: owner,
-                        method_name: name,
-                    },
-                    ty: method_ty,
+            match tast::builtin_numeric_conversion_target(owner, name) {
+                Some(target) => if args.len() == 1 {
+                    Expr::Cast { expr: args[0], ty: target }
+                } else {
+                    Expr::Call {
+                        func: Expr::Callable {
+                            callable: tast::Callable::InherentMethod {
+                                receiver_ty: owner,
+                                method_name: name,
+                            },
+                            ty: method_ty,
+                        },
+                        args,
+                        ty,
+                    }
                 },
-                args,
-                ty,
+                None => Expr::Call {
+                    func: Expr::Callable {
+                        callable: tast::Callable::InherentMethod {
+                            receiver_ty: owner,
+                            method_name: name,
+                        },
+                        ty: method_ty,
+                    },
+                    args,
+                    ty,
+                },
             }
         },
         other => Expr::Call { func: lower_expr(ctx, other), args, ty },
@@ -1956,6 +1988,13 @@ fn lower_file_with_types(
                 }
             } else {
                 for method in block.methods {
+                    let numeric_conversion = match block.trait_ref {
+                        Some(_) => false,
+                        None => tast::builtin_numeric_conversion_target(block.for_type, method.name).is_some(),
+                    };
+                    if numeric_conversion {
+                        continue
+                    } else {};
                     let trait_impl = match block.trait_ref {
                         Some(reference) => Option::Some(
                             TraitImpl {
