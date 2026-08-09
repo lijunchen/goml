@@ -8,12 +8,8 @@ fn maybe_value(flag/0: bool) -> Option__int32 {
 }
 
 fn with_base(base/1: int32, flag/2: bool) -> Option__int32 {
-  let run/4 = closure_env_run_0 { flag_0: flag/2, base_1: base/1 } in
-  let inline212 = flag/2 in
-  let inline213 = base/1 in
   let inline214 = maybe_value(flag/2) in
   join inline_join215(inline216: int32) -> Option__int32 {
-    let inline217 = inline216 in
     let inline218 = (inline216 + base/1) in
     let inline219 = Option__int32::Some(inline218) in
     inline219
@@ -24,7 +20,6 @@ fn with_base(base/1: int32, flag/2: bool) -> Option__int32 {
     },
     Tag_1 => {
       let inline220 = Option__int32::Some._0(inline214) in
-      let inline221 = inline220 in
       jump inline_join215(inline220)
     },
   }
@@ -37,7 +32,6 @@ fn show(opt/5: Option__int32) -> string {
     },
     Tag_1 => {
       let x174 = Option__int32::Some._0(opt/5) in
-      let value/6 = x174 in
       join inline_cont222(t190: string) -> string {
         let t191 = ("some=" + t190) in
         t191
@@ -64,7 +58,6 @@ fn main() -> unit {
             },
             Tag_1 => {
               let inline228 = Option__int32::Some._0(t195) in
-              let inline229 = inline228 in
               let inline230 = inherent#int32#int32#to_string(inline228) in
               let inline231 = ("some=" + inline230) in
               jump inline_cont227(inline231)
@@ -87,7 +80,6 @@ fn main() -> unit {
       },
       Tag_1 => {
         let inline241 = Option__int32::Some._0(t193) in
-        let inline242 = inline241 in
         let inline243 = inherent#int32#int32#to_string(inline241) in
         let inline244 = ("some=" + inline243) in
         jump inline_cont240(inline244)
@@ -123,7 +115,6 @@ fn inherent#closure_env_run_0#closure_env_run_0#apply(env177: closure_env_run_0)
   let base/1 = closure_env_run_0.base_1(env177) in
   join inline_cont251(mtmp172: Option__int32) -> Option__int32 {
     join k207(jp208: int32) -> Option__int32 {
-      let value/3 = jp208 in
       let t209 = (jp208 + base/1) in
       let t210 = Option__int32::Some(t209) in
       t210
@@ -134,7 +125,6 @@ fn inherent#closure_env_run_0#closure_env_run_0#apply(env177: closure_env_run_0)
       },
       Tag_1 => {
         let x173 = Option__int32::Some._0(mtmp172) in
-        let try_value/11 = x173 in
         jump k207(x173)
       },
     }

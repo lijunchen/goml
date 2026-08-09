@@ -20,34 +20,27 @@ fn read_right(ok/1: bool) -> Result__int32__string {
 
 fn choose(choice/2: Choice) -> Result__int32__string {
   join k202(jp203: int32) -> Result__int32__string {
-    let value/6 = jp203 in
     let t204 = Result__int32__string::Ok(jp203) in
     t204
   } in
   match choice/2 {
     Tag_0 => {
       let x172 = Choice::Left._0(choice/2) in
-      let ok/3 = x172 in
       join commute_arm292(commute_field291: int32) -> Result__int32__string {
-        let x176 = commute_field291 in
         jump k202(commute_field291)
       } in
       join commute_arm294(commute_field293: string) -> Result__int32__string {
-        let x177 = commute_field293 in
         let t207 = Result__int32__string::Err(commute_field293) in
         t207
       } in
       if x172 {
-        let inline244 = Result__int32__string::Ok(10) in
         jump commute_arm292(10)
       } else {
-        let inline245 = Result__int32__string::Err("left failed") in
         jump commute_arm294("left failed")
       }
     },
     Tag_1 => {
       let x173 = Choice::Right._0(choice/2) in
-      let ok/4 = x173 in
       join inline_cont246(mtmp178: Result__int32__string) -> Result__int32__string {
         join k208(jp209: int32) -> Result__int32__string {
           let t210 = (jp209 + 1) in
@@ -56,12 +49,10 @@ fn choose(choice/2: Choice) -> Result__int32__string {
         match mtmp178 {
           Tag_0 => {
             let x179 = Result__int32__string::Ok._0(mtmp178) in
-            let try_value/25 = x179 in
             jump k208(x179)
           },
           Tag_1 => {
             let x180 = Result__int32__string::Err._0(mtmp178) in
-            let try_residual/25 = x180 in
             let t211 = Result__int32__string::Err(x180) in
             t211
           },
@@ -77,7 +68,6 @@ fn choose(choice/2: Choice) -> Result__int32__string {
     },
     Tag_2 => {
       let x174 = Choice::Keep._0(choice/2) in
-      let value/5 = x174 in
       jump k202(x174)
     },
   }
@@ -87,7 +77,6 @@ fn show(res/7: Result__int32__string) -> string {
   match res/7 {
     Tag_0 => {
       let x181 = Result__int32__string::Ok._0(res/7) in
-      let value/8 = x181 in
       join inline_cont249(t216: string) -> string {
         let t217 = ("ok " + t216) in
         t217
@@ -97,7 +86,6 @@ fn show(res/7: Result__int32__string) -> string {
     },
     Tag_1 => {
       let x182 = Result__int32__string::Err._0(res/7) in
-      let err/9 = x182 in
       let t218 = ("err " + x182) in
       t218
     },
@@ -131,14 +119,12 @@ fn main() -> unit {
               match t233 {
                 Tag_0 => {
                   let inline255 = Result__int32__string::Ok._0(t233) in
-                  let inline256 = inline255 in
                   let inline257 = inherent#int32#int32#to_string(inline255) in
                   let inline258 = ("ok " + inline257) in
                   jump inline_cont254(inline258)
                 },
                 Tag_1 => {
                   let inline259 = Result__int32__string::Err._0(t233) in
-                  let inline260 = inline259 in
                   let inline261 = ("err " + inline259) in
                   jump inline_cont254(inline261)
                 },
@@ -151,14 +137,12 @@ fn main() -> unit {
           match t230 {
             Tag_0 => {
               let inline266 = Result__int32__string::Ok._0(t230) in
-              let inline267 = inline266 in
               let inline268 = inherent#int32#int32#to_string(inline266) in
               let inline269 = ("ok " + inline268) in
               jump inline_cont265(inline269)
             },
             Tag_1 => {
               let inline270 = Result__int32__string::Err._0(t230) in
-              let inline271 = inline270 in
               let inline272 = ("err " + inline270) in
               jump inline_cont265(inline272)
             },
@@ -171,14 +155,12 @@ fn main() -> unit {
       match t227 {
         Tag_0 => {
           let inline277 = Result__int32__string::Ok._0(t227) in
-          let inline278 = inline277 in
           let inline279 = inherent#int32#int32#to_string(inline277) in
           let inline280 = ("ok " + inline279) in
           jump inline_cont276(inline280)
         },
         Tag_1 => {
           let inline281 = Result__int32__string::Err._0(t227) in
-          let inline282 = inline281 in
           let inline283 = ("err " + inline281) in
           jump inline_cont276(inline283)
         },

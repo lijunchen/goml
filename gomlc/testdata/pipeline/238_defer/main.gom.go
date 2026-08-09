@@ -51,11 +51,6 @@ func ref_set__Ref_6string(reference *ref_string_x, value string) struct{} {
     return struct{}{}
 }
 
-type Tuple2_3int_3int struct {
-    _0 int
-    _1 int
-}
-
 type closure_env_run_0 struct {}
 
 type Option__int interface {

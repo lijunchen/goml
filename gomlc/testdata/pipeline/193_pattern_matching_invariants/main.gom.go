@@ -21,10 +21,6 @@ type _goml_vec_bool struct {
     items []bool
 }
 
-type Tuple1_6Single struct {
-    _0 Single
-}
-
 type Never int32
 
 const (

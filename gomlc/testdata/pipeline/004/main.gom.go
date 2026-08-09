@@ -17,11 +17,6 @@ func _goml_runtime_core_string_print(s string) struct{} {
     return struct{}{}
 }
 
-type Tuple2_5Color_5Color struct {
-    _0 Color
-    _1 Color
-}
-
 type Color int32
 
 const (

@@ -11,7 +11,6 @@ fn parse(flag/0: bool) -> Result__int32__string {
 fn compute(flag/1: bool) -> Result__int32__string {
   join inline_cont210(mtmp172: Result__int32__string) -> Result__int32__string {
     join k186(jp187: int32) -> Result__int32__string {
-      let value/2 = jp187 in
       let t188 = (jp187 + 1) in
       let t189 = Result__int32__string::Ok(t188) in
       t189
@@ -19,13 +18,11 @@ fn compute(flag/1: bool) -> Result__int32__string {
     match mtmp172 {
       Tag_0 => {
         let x173 = Result__int32__string::Err._0(mtmp172) in
-        let try_residual/12 = x173 in
         let t190 = Result__int32__string::Err(x173) in
         t190
       },
       Tag_1 => {
         let x174 = Result__int32__string::Ok._0(mtmp172) in
-        let try_value/12 = x174 in
         jump k186(x174)
       },
     }
@@ -43,12 +40,10 @@ fn show(value/3: Result__int32__string) -> string {
   match value/3 {
     Tag_0 => {
       let x175 = Result__int32__string::Err._0(value/3) in
-      let error/5 = x175 in
       x175
     },
     Tag_1 => {
       let x176 = Result__int32__string::Ok._0(value/3) in
-      let value/4 = x176 in
       let inline214 = @runtime(core.int32_to_string)(x176) in
       inline214
     },
@@ -68,12 +63,10 @@ fn main() -> unit {
         match t199 {
           Tag_0 => {
             let inline219 = Result__int32__string::Err._0(t199) in
-            let inline220 = inline219 in
             jump inline_cont218(inline219)
           },
           Tag_1 => {
             let inline221 = Result__int32__string::Ok._0(t199) in
-            let inline222 = inline221 in
             let inline223 = inherent#int32#int32#to_string(inline221) in
             jump inline_cont218(inline223)
           },
@@ -82,7 +75,6 @@ fn main() -> unit {
       let inline225 = false in
       let inline226 = parse(inline225) in
       join inline_join227(inline228: int32) -> unit {
-        let inline229 = inline228 in
         let inline230 = (inline228 + 1) in
         let inline231 = Result__int32__string::Ok(inline230) in
         jump inline_cont224(inline231)
@@ -90,13 +82,11 @@ fn main() -> unit {
       match inline226 {
         Tag_0 => {
           let inline232 = Result__int32__string::Err._0(inline226) in
-          let inline233 = inline232 in
           let inline234 = Result__int32__string::Err(inline232) in
           jump inline_cont224(inline234)
         },
         Tag_1 => {
           let inline235 = Result__int32__string::Ok._0(inline226) in
-          let inline236 = inline235 in
           jump inline_join227(inline235)
         },
       }
@@ -108,12 +98,10 @@ fn main() -> unit {
   match t197 {
     Tag_0 => {
       let inline241 = Result__int32__string::Err._0(t197) in
-      let inline242 = inline241 in
       jump inline_cont240(inline241)
     },
     Tag_1 => {
       let inline243 = Result__int32__string::Ok._0(t197) in
-      let inline244 = inline243 in
       let inline245 = inherent#int32#int32#to_string(inline243) in
       jump inline_cont240(inline245)
     },

@@ -1,11 +1,7 @@
 fn trait_impl#Describe#Tracker#describe(self/0: Tracker) -> string {
-  let mtmp172 = self/0 in
   let x173 = Tracker.label(self/0) in
   let x174 = Tracker.count(self/0) in
   let x175 = Tracker.toggled(self/0) in
-  let toggled/3 = x175 in
-  let count/2 = x174 in
-  let label/1 = x173 in
   join inline_cont347(current/4: int32) -> string {
     join inline_cont345(flag/5: bool) -> string {
       let with_label/6 = ("Tracker(" + x173) in
@@ -35,7 +31,6 @@ fn trait_impl#Describe#Record__int32#describe(self/10: Record__int32) -> string 
   match self/10 {
     Tag_0 => {
       let x176 = Record__int32::Value._0(self/10) in
-      let value/11 = x176 in
       join inline_cont349(t222: string) -> string {
         let t223 = ("Value(" + t222) in
         let t224 = (t223 + ")") in
@@ -47,8 +42,6 @@ fn trait_impl#Describe#Record__int32#describe(self/10: Record__int32) -> string 
     Tag_1 => {
       let x177 = Record__int32::Pair._0(self/10) in
       let x178 = Record__int32::Pair._1(self/10) in
-      let after/13 = x178 in
-      let before/12 = x177 in
       join inline_cont353(t225: string) -> string {
         let prefix/14 = ("Pair(" + t225) in
         let t226 = (prefix/14 + ", ") in
@@ -73,7 +66,6 @@ fn trait_impl#Describe#Record__string#describe(self/15: Record__string) -> strin
   match self/15 {
     Tag_0 => {
       let x179 = Record__string::Value._0(self/15) in
-      let text/16 = x179 in
       let t234 = ("Value(" + x179) in
       let t235 = (t234 + ")") in
       t235
@@ -81,8 +73,6 @@ fn trait_impl#Describe#Record__string#describe(self/15: Record__string) -> strin
     Tag_1 => {
       let x180 = Record__string::Pair._0(self/15) in
       let x181 = Record__string::Pair._1(self/15) in
-      let after/18 = x181 in
-      let before/17 = x180 in
       let prefix/19 = ("Pair(" + x180) in
       let t236 = (prefix/19 + ", ") in
       let t237 = (t236 + x181) in
@@ -115,11 +105,8 @@ fn triple(value/28: int32) -> int32 {
 }
 
 fn pair_join(parts/29: (string, string)) -> string {
-  let mtmp183 = parts/29 in
   let x184 = parts/29.0 in
   let x185 = parts/29.1 in
-  let right/31 = x185 in
-  let left/30 = x184 in
   let t251 = (x184 + " -> ") in
   let t252 = (t251 + x185) in
   t252
@@ -134,10 +121,8 @@ fn run_transforms(value/32: int32, transforms/33: [(int32) -> int32; 2]) -> [int
   let place_root186 = results/38 in
   let index187 = 1 in
   let place188 = @intrinsic(array.get)(place_root186, index187) in
-  let value189 = second_result/37 in
   let t255 = @intrinsic(array.set)(place_root186, index187, second_result/37) in
   let t256 = results/38 = t255 in
-  let _wild190 = t256 in
   results/38
 }
 
@@ -145,14 +130,11 @@ fn gather(record/39: Record__int32) -> Maybe__int32 {
   match record/39 {
     Tag_0 => {
       let x191 = Record__int32::Value._0(record/39) in
-      let value/40 = x191 in
       let t261 = Maybe__int32::Some(x191) in
       t261
     },
     Tag_1 => {
-      let x192 = Record__int32::Pair._0(record/39) in
       let x193 = Record__int32::Pair._1(record/39) in
-      let after/41 = x193 in
       let t262 = Maybe__int32::Some(x193) in
       t262
     },
@@ -201,10 +183,6 @@ fn main() -> unit {
   let x198 = mtmp196.1 in
   let x199 = mtmp196.2 in
   let x200 = mtmp196.3 in
-  let flip/57 = x200 in
-  let bump/56 = x199 in
-  let snapshot/55 = x198 in
-  let tracker/54 = x197 in
   let tracker_info/58 = trait_impl#Describe#Tracker#describe(x197) in
   let first_record/59 = x198() in
   let bumped_record/60 = x199(5) in
@@ -219,15 +197,12 @@ fn main() -> unit {
     let second_result/69 = @intrinsic(array.get)(results/67, 1) in
     let t275 = (first_result/68 < second_result/69) in
     join k267(jp268: bool) -> unit {
-      let order_check/70 = jp268 in
       let first_text/71 = trait_impl#Describe#Record__int32#describe(first_record/59) in
       let bumped_text/72 = trait_impl#Describe#Record__int32#describe(bumped_record/60) in
       let flipped_text/73 = trait_impl#Describe#Record__string#describe(flipped_record/61) in
       join k269(jp270: string) -> unit {
-        let summary/75 = jp270 in
         join inline_cont395(t271: string) -> unit {
           join inline_cont393(t272: string) -> unit {
-            let t273 = (t271, t272) in
             join inline_cont385(pair_text/76: string) -> unit {
               join inline_cont383(bool_text/77: string) -> unit {
                 join inline_cont380(mtmp202: unit) -> unit {
@@ -267,11 +242,6 @@ fn main() -> unit {
               let inline384 = @runtime(core.bool_to_string)(jp268) in
               jump inline_cont383(inline384)
             } in
-            let inline386 = t273 in
-            let inline387 = t271 in
-            let inline388 = t272 in
-            let inline389 = t272 in
-            let inline390 = t271 in
             let inline391 = (t271 + " -> ") in
             let inline392 = (inline391 + t272) in
             jump inline_cont385(inline392)
@@ -285,7 +255,6 @@ fn main() -> unit {
       match stringified/65 {
         Tag_0 => {
           let x201 = Maybe__string::Some._0(stringified/65) in
-          let text/74 = x201 in
           let t274 = ("Snapshot: " + x201) in
           jump k269(t274)
         },
@@ -309,10 +278,8 @@ fn main() -> unit {
   let inline404 = inline403 in
   let inline405 = 1 in
   let inline406 = @intrinsic(array.get)(inline404, inline405) in
-  let inline407 = inline402 in
   let inline408 = @intrinsic(array.set)(inline404, inline405, inline402) in
   let inline409 = inline403 = inline408 in
-  let inline410 = inline409 in
   jump inline_cont397(inline403)
 }
 
@@ -372,7 +339,6 @@ fn map_maybe__T_int32__U_string(value/23: Maybe__int32, f/24: (int32) -> string)
   match value/23 {
     Tag_0 => {
       let x182 = Maybe__int32::Some._0(value/23) in
-      let inner/25 = x182 in
       let t306 = f/24(x182) in
       let t307 = Maybe__string::Some(t306) in
       t307

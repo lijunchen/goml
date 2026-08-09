@@ -27,7 +27,6 @@ fn counted_range(calls/3: Ref[int32]) -> FnIterator__int {
 fn first_even(values/4: FnIterator__int) -> int {
   join inline_cont406(for_iter174: FnIterator__int) -> int {
     join exit242() -> int {
-      let _wild178 = () in
       -1
     } in
     joinrec {
@@ -39,12 +38,10 @@ fn first_even(values/4: FnIterator__int) -> int {
             },
             Tag_1 => {
               let x176 = Option__int::Some._0(for_next175) in
-              let value/5 = x176 in
               let t246 = (x176 / 2) in
               let t247 = (t246 * 2) in
               let t248 = (t247 == x176) in
               join k245() -> int {
-                let _wild177 = () in
                 jump loop243()
               } in
               if t248 {
@@ -71,11 +68,9 @@ fn main() -> unit {
   let _wild180 = inherent#Vec#Vec[T]#push__T_int32(values/6, 20) in
   let _wild181 = inherent#Vec#Vec[T]#push__T_int32(values/6, 30) in
   let sum/7 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let for_source182 = values/6 in
   let for_limit183 = @intrinsic(vec.len)(values/6) in
   let for_index184 = 0 in
   join exit250() -> unit {
-    let _wild189 = () in
     let t251 = inherent#Ref#Ref[T]#get__T_int32(sum/7) in
     let _wild190 = println__T_int32(t251) in
     let pairs/9 = inherent#Vec#Vec[T]#new__T_(int32,string)() in
@@ -83,17 +78,14 @@ fn main() -> unit {
     let _wild191 = inherent#Vec#Vec[T]#push__T_(int32,string)(pairs/9, t252) in
     let t253 = (2, "b") in
     let _wild192 = inherent#Vec#Vec[T]#push__T_(int32,string)(pairs/9, t253) in
-    let for_source193 = pairs/9 in
     let for_limit194 = @intrinsic(vec.len)(pairs/9) in
     let for_index195 = 0 in
     join exit254() -> unit {
-      let _wild201 = () in
       let calls/12 = inherent#Ref#Ref[T]#new__T_int32(0) in
       let range_sum/13 = inherent#Ref#Ref[T]#new__T_int(0) in
       let t255 = counted_range(calls/12) in
       let for_iter202 = trait_impl#IntoIterator#FnIterator__int#into_iter(t255) in
       join exit256() -> unit {
-        let _wild206 = () in
         let t257 = inherent#Ref#Ref[T]#get__T_int32(calls/12) in
         let _wild207 = println__T_int32(t257) in
         let t258 = inherent#Ref#Ref[T]#get__T_int(range_sum/13) in
@@ -103,17 +95,14 @@ fn main() -> unit {
         let for_limit210 = @intrinsic(slice.len)(for_source209) in
         let for_index211 = 0 in
         join exit259() -> unit {
-          let _wild215 = () in
           let t260 = inherent#Ref#Ref[T]#get__T_int32(slice_sum/15) in
           join inline_cont458(_wild216: unit) -> unit {
             join inline_cont453(t261: FnIterator__int32) -> unit {
               join inline_cont452(for_iter217: FnIterator__int32) -> unit {
                 join exit262() -> unit {
-                  let _wild222 = () in
                   join inline_cont448(empty/18: FnIterator__int) -> unit {
                     join inline_cont447(for_iter223: FnIterator__int) -> unit {
                       join exit263() -> unit {
-                        let _wild226 = () in
                         join inline_cont443(t264: FnIterator__int) -> unit {
                           let t265 = first_even(t264) in
                           join inline_cont440(_wild227: unit) -> unit {
@@ -139,7 +128,6 @@ fn main() -> unit {
                                 jump exit263()
                               },
                               Tag_1 => {
-                                let x225 = Option__int::Some._0(for_next224) in
                                 jump loop266()
                               },
                             }
@@ -167,10 +155,8 @@ fn main() -> unit {
                         },
                         Tag_1 => {
                           let x219 = Option__int32::Some._0(for_next218) in
-                          let value/17 = x219 in
                           let t271 = (x219 == 2) in
                           join k270() -> unit {
-                            let _wild221 = () in
                             jump loop268()
                           } in
                           if t271 {
@@ -209,7 +195,6 @@ fn main() -> unit {
               let for_item212 = @intrinsic(slice.get)(for_source209, for_index211) in
               let t274 = (for_index211 + 1) in
               let _wild213 = for_index211 = t274 in
-              let value/16 = for_item212 in
               join inline_cont425(t275: int32) -> unit {
                 let t276 = (t275 + for_item212) in
                 let inline424 = @intrinsic(ref.set)(slice_sum/15, t276) in
@@ -233,7 +218,6 @@ fn main() -> unit {
               },
               Tag_1 => {
                 let x204 = Option__int::Some._0(for_next203) in
-                let value/14 = x204 in
                 join inline_cont418(t279: int) -> unit {
                   let t280 = (t279 + x204) in
                   let inline417 = @intrinsic(ref.set)(range_sum/13, t280) in
@@ -260,8 +244,6 @@ fn main() -> unit {
           let _wild197 = for_index195 = t283 in
           let x198 = for_item196.0 in
           let x199 = for_item196.1 in
-          let text/11 = x199 in
-          let number/10 = x198 in
           join inline_cont414(t284: string) -> unit {
             let t285 = (t284 + x199) in
             let inline412 = trait_impl#ToString#string#to_string(t285) in
@@ -284,10 +266,8 @@ fn main() -> unit {
         let for_item185 = @intrinsic(vec.get)(values/6, for_index184) in
         let t288 = (for_index184 + 1) in
         let _wild186 = for_index184 = t288 in
-        let value/8 = for_item185 in
         let t292 = (for_item185 == 20) in
         join k289() -> unit {
-          let _wild187 = () in
           join inline_cont409(t290: int32) -> unit {
             let t291 = (t290 + for_item185) in
             let inline408 = @intrinsic(ref.set)(sum/7, t291) in

@@ -2,7 +2,6 @@ fn classify(value/0: First__int) -> string {
   match value/0 {
     Tag_0 => {
       let x172 = First__int::Shared._0(value/0) in
-      let number/1 = x172 in
       join inline_cont346(t215: string) -> string {
         let t216 = ("shared:" + t215) in
         t216
@@ -16,8 +15,6 @@ fn classify(value/0: First__int) -> string {
     Tag_2 => {
       let x173 = First__int::Data._0(value/0) in
       let x174 = First__int::Data._1(value/0) in
-      let label/3 = x174 in
-      let value/2 = x173 in
       let t217 = (x174 + ":") in
       join inline_cont348(t218: string) -> string {
         let t219 = (t217 + t218) in
@@ -39,7 +36,6 @@ fn nested(value/4: Option__Result__int__string) -> string {
       match x175 {
         Tag_0 => {
           let x176 = Result__int__string::Ok._0(x175) in
-          let number/5 = x176 in
           join inline_cont350(t226: string) -> string {
             let t227 = ("ok:" + t226) in
             t227
@@ -49,7 +45,6 @@ fn nested(value/4: Option__Result__int__string) -> string {
         },
         Tag_1 => {
           let x177 = Result__int__string::Err._0(x175) in
-          let message/6 = x177 in
           let t228 = ("err:" + x177) in
           t228
         },
@@ -62,7 +57,6 @@ fn optional_number(value/7: Option__int) -> int {
   match value/7 {
     Tag_1 => {
       let x178 = Option__int::Some._0(value/7) in
-      let number/8 = x178 in
       x178
     },
     _ => {
@@ -74,15 +68,12 @@ fn optional_number(value/7: Option__int) -> int {
 fn is_non_shared(value/9: First__int) -> bool {
   match value/9 {
     Tag_0 => {
-      let x179 = First__int::Shared._0(value/9) in
       false
     },
     Tag_1 => {
       true
     },
     Tag_2 => {
-      let x180 = First__int::Data._0(value/9) in
-      let x181 = First__int::Data._1(value/9) in
       true
     },
   }
@@ -92,7 +83,6 @@ fn take_once(value/10: Option__int) -> int {
   join inline_cont363(current/11: Ref[Option__int]) -> int {
     join inline_cont360(result/12: Ref[int]) -> int {
       join exit239() -> int {
-        let _wild186 = () in
         let inline359 = @intrinsic(ref.get)(result/12) in
         inline359
       } in
@@ -102,7 +92,6 @@ fn take_once(value/10: Option__int) -> int {
             match mtmp182 {
               Tag_1 => {
                 let x183 = Option__int::Some._0(mtmp182) in
-                let number/13 = x183 in
                 join inline_cont354(_wild184: unit) -> int {
                   let inline353 = @intrinsic(ref.set)(current/11, Tag_0) in
                   jump loop241()
@@ -130,11 +119,9 @@ fn take_once(value/10: Option__int) -> int {
 }
 
 fn unbox(value/14: Boxed__int) -> int {
-  let mtmp187 = value/14 in
   match value/14 {
     Tag_0 => {
       let x188 = Boxed__int::Value._0(value/14) in
-      let number/15 = x188 in
       x188
     },
   }
@@ -142,11 +129,9 @@ fn unbox(value/14: Boxed__int) -> int {
 
 fn sum_boxed(values/16: Vec[Boxed__int]) -> int {
   join inline_cont371(result/17: Ref[int]) -> int {
-    let for_source189 = values/16 in
     let for_limit190 = @intrinsic(vec.len)(values/16) in
     let for_index191 = 0 in
     join exit249() -> int {
-      let _wild196 = () in
       let inline370 = @intrinsic(ref.get)(result/17) in
       inline370
     } in
@@ -160,7 +145,6 @@ fn sum_boxed(values/16: Vec[Boxed__int]) -> int {
           match for_item192 {
             Tag_0 => {
               let x194 = Boxed__int::Value._0(for_item192) in
-              let number/18 = x194 in
               join inline_cont367(t255: int) -> int {
                 let t256 = (t255 + x194) in
                 let inline366 = @intrinsic(ref.set)(result/17, t256) in
@@ -188,7 +172,6 @@ fn main() -> unit {
   let _wild197 = inherent#Vec#Vec[T]#push__T_Boxed[int](vec_literal/1450, t258) in
   let t259 = Boxed__int::Value(23) in
   let _wild198 = inherent#Vec#Vec[T]#push__T_Boxed[int](vec_literal/1450, t259) in
-  let boxed/19 = vec_literal/1450 in
   let t260 = First__int::Shared(7) in
   let t261 = classify(t260) in
   let _wild199 = println__T_string(t261) in
@@ -206,67 +189,64 @@ fn main() -> unit {
   let t270 = nested(t269) in
   let _wild203 = println__T_string(t270) in
   let t271 = nested(Tag_0) in
-  join inline_cont410(_wild204: unit) -> unit {
-    let t272 = Option__int::Some(13) in
-    let t273 = optional_number(t272) in
-    join inline_cont407(_wild205: unit) -> unit {
-      join inline_cont404(t274: int) -> unit {
-        join inline_cont401(_wild206: unit) -> unit {
-          join inline_cont397(t275: bool) -> unit {
-            join inline_cont394(_wild207: unit) -> unit {
-              let t276 = First__int::Shared(1) in
-              join inline_cont390(t277: bool) -> unit {
-                join inline_cont387(_wild208: unit) -> unit {
-                  let t278 = Option__int::Some(15) in
-                  let t279 = take_once(t278) in
-                  join inline_cont384(_wild209: unit) -> unit {
-                    let t280 = Boxed__int::Value(17) in
-                    join inline_cont380(t281: int) -> unit {
-                      join inline_cont377(_wild210: unit) -> unit {
-                        let t282 = sum_boxed(vec_literal/1450) in
-                        let inline375 = trait_impl#ToString#int#to_string(t282) in
-                        let inline376 = @runtime(core.string_println)(inline375) in
-                        ()
+  join inline_cont407(_wild204: unit) -> unit {
+    join inline_cont404(t273: int) -> unit {
+      join inline_cont401(_wild205: unit) -> unit {
+        join inline_cont398(t274: int) -> unit {
+          join inline_cont395(_wild206: unit) -> unit {
+            join inline_cont394(t275: bool) -> unit {
+              join inline_cont391(_wild207: unit) -> unit {
+                join inline_cont390(t277: bool) -> unit {
+                  join inline_cont387(_wild208: unit) -> unit {
+                    let t278 = Option__int::Some(15) in
+                    let t279 = take_once(t278) in
+                    join inline_cont384(_wild209: unit) -> unit {
+                      join inline_cont380(t281: int) -> unit {
+                        join inline_cont377(_wild210: unit) -> unit {
+                          let t282 = sum_boxed(vec_literal/1450) in
+                          let inline375 = trait_impl#ToString#int#to_string(t282) in
+                          let inline376 = @runtime(core.string_println)(inline375) in
+                          ()
+                        } in
+                        let inline378 = trait_impl#ToString#int#to_string(t281) in
+                        let inline379 = @runtime(core.string_println)(inline378) in
+                        jump inline_cont377(())
                       } in
-                      let inline378 = trait_impl#ToString#int#to_string(t281) in
-                      let inline379 = @runtime(core.string_println)(inline378) in
-                      jump inline_cont377(())
+                      let inline382 = 17 in
+                      jump inline_cont380(inline382)
                     } in
-                    let inline381 = t280 in
-                    let inline382 = 17 in
-                    let inline383 = inline382 in
-                    jump inline_cont380(inline382)
+                    let inline385 = trait_impl#ToString#int#to_string(t279) in
+                    let inline386 = @runtime(core.string_println)(inline385) in
+                    jump inline_cont384(())
                   } in
-                  let inline385 = trait_impl#ToString#int#to_string(t279) in
-                  let inline386 = @runtime(core.string_println)(inline385) in
-                  jump inline_cont384(())
+                  let inline388 = trait_impl#ToString#bool#to_string(t277) in
+                  let inline389 = @runtime(core.string_println)(inline388) in
+                  jump inline_cont387(())
                 } in
-                let inline388 = trait_impl#ToString#bool#to_string(t277) in
-                let inline389 = @runtime(core.string_println)(inline388) in
-                jump inline_cont387(())
+                jump inline_cont390(false)
               } in
-              let inline391 = 1 in
-              jump inline_cont390(false)
+              let inline392 = trait_impl#ToString#bool#to_string(t275) in
+              let inline393 = @runtime(core.string_println)(inline392) in
+              jump inline_cont391(())
             } in
-            let inline395 = trait_impl#ToString#bool#to_string(t275) in
-            let inline396 = @runtime(core.string_println)(inline395) in
-            jump inline_cont394(())
+            jump inline_cont394(true)
           } in
-          jump inline_cont397(true)
+          let inline396 = trait_impl#ToString#int#to_string(t274) in
+          let inline397 = @runtime(core.string_println)(inline396) in
+          jump inline_cont395(())
         } in
-        let inline402 = trait_impl#ToString#int#to_string(t274) in
-        let inline403 = @runtime(core.string_println)(inline402) in
-        jump inline_cont401(())
+        jump inline_cont398(0)
       } in
-      jump inline_cont404(0)
+      let inline402 = trait_impl#ToString#int#to_string(t273) in
+      let inline403 = @runtime(core.string_println)(inline402) in
+      jump inline_cont401(())
     } in
-    let inline408 = trait_impl#ToString#int#to_string(t273) in
-    let inline409 = @runtime(core.string_println)(inline408) in
-    jump inline_cont407(())
+    let inline405 = 13 in
+    jump inline_cont404(inline405)
   } in
-  let inline411 = trait_impl#ToString#string#to_string(t271) in
-  let inline412 = @runtime(core.string_println)(inline411) in
-  jump inline_cont410(())
+  let inline408 = trait_impl#ToString#string#to_string(t271) in
+  let inline409 = @runtime(core.string_println)(inline408) in
+  jump inline_cont407(())
 }
 
 fn inherent#int#int#to_string(self/34: int) -> string {
@@ -318,29 +298,29 @@ fn inherent#Vec#Vec[T]#push__T_Boxed[int](self/176: Vec[Boxed__int], elem/177: B
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont413(t309: string) -> unit {
+  join inline_cont410(t309: string) -> unit {
     let t310 = @runtime(core.string_println)(t309) in
     ()
   } in
-  jump inline_cont413(value/31)
+  jump inline_cont410(value/31)
 }
 
 fn println__T_int(value/31: int) -> unit {
-  join inline_cont414(t312: string) -> unit {
+  join inline_cont411(t312: string) -> unit {
     let t313 = @runtime(core.string_println)(t312) in
     ()
   } in
-  let inline415 = @runtime(core.int_to_string)(value/31) in
-  jump inline_cont414(inline415)
+  let inline412 = @runtime(core.int_to_string)(value/31) in
+  jump inline_cont411(inline412)
 }
 
 fn println__T_bool(value/31: bool) -> unit {
-  join inline_cont416(t315: string) -> unit {
+  join inline_cont413(t315: string) -> unit {
     let t316 = @runtime(core.string_println)(t315) in
     ()
   } in
-  let inline417 = @runtime(core.bool_to_string)(value/31) in
-  jump inline_cont416(inline417)
+  let inline414 = @runtime(core.bool_to_string)(value/31) in
+  jump inline_cont413(inline414)
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {
@@ -358,9 +338,6 @@ fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
 }
 
 fn trait_impl#PartialEq#Option__int#eq(self/153: Option__int, other/154: Option__int) -> bool {
-  let mtmp61 = (self/153, other/154) in
-  let x62 = self/153 in
-  let x63 = other/154 in
   match other/154 {
     Tag_0 => {
       match self/153 {
@@ -377,10 +354,8 @@ fn trait_impl#PartialEq#Option__int#eq(self/153: Option__int, other/154: Option_
       match self/153 {
         Tag_1 => {
           let x66 = Option__int::Some._0(self/153) in
-          let left/155 = x66 in
-          let right/156 = x64 in
-          let inline419 = (x66 == x64) in
-          inline419
+          let inline416 = (x66 == x64) in
+          inline416
         },
         _ => {
           false
@@ -397,13 +372,12 @@ fn trait_impl#Hash#Option__int#hash(self/157: Option__int) -> uint64 {
     },
     Tag_1 => {
       let x67 = Option__int::Some._0(self/157) in
-      let value/158 = x67 in
-      join inline_cont420(t338: uint64) -> uint64 {
+      join inline_cont417(t338: uint64) -> uint64 {
         let t339 = (14695981039346656039 + t338) in
         t339
       } in
-      let inline421 = @runtime(core.int_hash)(x67) in
-      jump inline_cont420(inline421)
+      let inline418 = @runtime(core.int_hash)(x67) in
+      jump inline_cont417(inline418)
     },
   }
 }

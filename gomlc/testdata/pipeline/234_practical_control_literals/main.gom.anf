@@ -1,9 +1,7 @@
 fn unwrap_or_negative(value/0: Option__int) -> int {
-  let mtmp172 = value/0 in
   match value/0 {
     Tag_1 => {
       let x173 = Option__int::Some._0(value/0) in
-      let result/1 = x173 in
       x173
     },
     _ => {
@@ -22,7 +20,6 @@ fn count_to(limit/2: int) -> int {
         join inline_cont273(current/4: int) -> int {
           let t205 = (current/4 >= limit/2) in
           join k203() -> int {
-            let _wild176 = () in
             let t204 = (current/4 + 1) in
             let inline272 = @intrinsic(ref.set)(counter/3, t204) in
             jump loop_expr202()
@@ -50,11 +47,9 @@ fn loop_option(value/5: Option__int) -> int {
   } in
   joinrec {
     join loop_expr210() -> int {
-      let mtmp178 = value/5 in
       match value/5 {
         Tag_1 => {
           let x179 = Option__int::Some._0(value/5) in
-          let item/6 = x179 in
           jump exit208(x179)
         },
         _ => {
@@ -73,7 +68,6 @@ fn nested_loop_value() -> int {
   joinrec {
     join loop_expr216() -> int {
       join exit217() -> int {
-        let _wild183 = () in
         jump exit214(7)
       } in
       joinrec {
@@ -185,7 +179,6 @@ fn main() -> unit {
           let inline309 = @runtime(core.int_to_string)(t233) in
           jump inline_cont308(inline309)
         } in
-        let inline311 = Tag_0 in
         jump inline_cont310(-1)
       } in
       let inline315 = trait_impl#ToString#string#to_string(t232) in

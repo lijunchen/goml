@@ -49,16 +49,6 @@ type Tuple2_4bool_6string struct {
     _1 string
 }
 
-type Tuple2_11Option__int_11Option__int struct {
-    _0 Option__int
-    _1 Option__int
-}
-
-type Tuple2_14Option__string_14Option__string struct {
-    _0 Option__string
-    _1 Option__string
-}
-
 type Tuple6_4bool_10Vec_5uint8_3int_4bool_3int_6string struct {
     _0 bool
     _1 *_goml_vec_uint8
@@ -80,6 +70,11 @@ type Tuple3_4bool_10Vec_5uint8_6string struct {
     _0 bool
     _1 *_goml_vec_uint8
     _2 string
+}
+
+type Tuple2_11Option__int_11Option__int struct {
+    _0 Option__int
+    _1 Option__int
 }
 
 type Tuple2_3int_4char struct {
@@ -370,17 +365,17 @@ func (_ _goml_m_Option_____o_char_c_int_q__Some) is_goml_m_Option_____o_char_c_i
 
 func main0() struct{} {
     var t1005 *_goml_vec_string
-    var inline1924 *_goml_vec_string = _goml_runtime_std_env_args()
-    t1005 = inline1924
+    var inline1920 *_goml_vec_string = _goml_runtime_std_env_args()
+    t1005 = inline1920
     var t1006 int
-    var inline1922 int = vec_len__Vec_6string(t1005)
-    t1006 = inline1922
+    var inline1918 int = vec_len__Vec_6string(t1005)
+    t1006 = inline1918
     var t1007 bool = t1006 > 0
     var t1008 string
-    var inline1920 string = _goml_runtime_core_bool_to_string(t1007)
-    t1008 = inline1920
-    var inline1917 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1008)
-    _goml_runtime_std_io_println(inline1917)
+    var inline1916 string = _goml_runtime_core_bool_to_string(t1007)
+    t1008 = inline1916
+    var inline1913 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1008)
+    _goml_runtime_std_io_println(inline1913)
     return struct{}{}
 }
 

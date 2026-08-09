@@ -141,16 +141,6 @@ type Tuple2_4bool_6string struct {
     _1 string
 }
 
-type Tuple2_11Option__int_11Option__int struct {
-    _0 Option__int
-    _1 Option__int
-}
-
-type Tuple2_14Option__string_14Option__string struct {
-    _0 Option__string
-    _1 Option__string
-}
-
 type Tuple6_4bool_10Vec_5uint8_3int_4bool_3int_6string struct {
     _0 bool
     _1 *_goml_vec_uint8
@@ -172,11 +162,6 @@ type Tuple3_4bool_10Vec_5uint8_6string struct {
     _0 bool
     _1 *_goml_vec_uint8
     _2 string
-}
-
-type Tuple2_27_goml_m_std_p_fs_p_FileType_27_goml_m_std_p_fs_p_FileType struct {
-    _0 _goml_m_std_p_fs_p_FileType
-    _1 _goml_m_std_p_fs_p_FileType
 }
 
 type Tuple9_4bool_3int_5int64_6uint32_5int64_3int_4bool_3int_6string struct {
@@ -546,16 +531,16 @@ func _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_from__string
 }
 
 func _goml_m_std_p_fs_p_read__file(path__113 string) Result__string__string {
-    var commute_field1482 _goml_m_std_p_bytes_p_Bytes
-    var commute_field1484 string
+    var commute_field1480 _goml_m_std_p_bytes_p_Bytes
+    var commute_field1482 string
     var inline1320 Tuple3_4bool_10Vec_5uint8_6string = _goml_runtime_std_fs_read_bytes(path__113)
     var inline1321 bool = inline1320._0
     var inline1322 *_goml_vec_uint8 = inline1320._1
     var inline1323 string = inline1320._2
     if inline1321 {
         var inline1327 _goml_m_std_p_bytes_p_Bytes = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_from__vec(inline1322)
-        commute_field1482 = inline1327
-        var inline1311 *_goml_vec_uint8 = commute_field1482.values
+        commute_field1480 = inline1327
+        var inline1311 *_goml_vec_uint8 = commute_field1480.values
         var inline1312 Tuple2_4bool_6string = string_from_utf8(inline1311)
         var inline1313 bool = inline1312._0
         var inline1314 string = inline1312._1
@@ -571,9 +556,9 @@ func _goml_m_std_p_fs_p_read__file(path__113 string) Result__string__string {
             return inline1318
         }
     } else {
-        commute_field1484 = inline1323
+        commute_field1482 = inline1323
         var t683 Result__string__string = Result__string__string_Err{
-            _0: commute_field1484,
+            _0: commute_field1482,
         }
         return t683
     }
@@ -1032,15 +1017,15 @@ func _goml_m_inherent_i_string_i_string_i_byte__get(self__41 string, index__42 i
 }
 
 func utf8_valid_decode(value__0 uint32, width__1 int) Tuple3_4bool_4char_3int {
-    var commute_field1487 rune
+    var commute_field1485 rune
     var inline1453 bool = utf8_valid_scalar(value__0)
     if inline1453 {
         var inline1454 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__0)
-        var inline1456 rune = inline1454._1
-        commute_field1487 = inline1456
+        var inline1455 rune = inline1454._1
+        commute_field1485 = inline1455
         var t990 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
             _0: true,
-            _1: commute_field1487,
+            _1: commute_field1485,
             _2: width__1,
         }
         return t990
@@ -1066,18 +1051,18 @@ func utf8_invalid_continuation(value__3 uint32) bool {
 
 func char_from_uint32(value__32 uint32) Option__char {
     var t1001 bool
-    var inline1460 bool = value__32 <= 1114111
-    if inline1460 {
-        var inline1461 bool = value__32 >= 55296
-        var inline1463 bool
-        if inline1461 {
-            var inline1465 bool = value__32 <= 57343
-            inline1463 = inline1465
+    var inline1459 bool = value__32 <= 1114111
+    if inline1459 {
+        var inline1460 bool = value__32 >= 55296
+        var inline1462 bool
+        if inline1460 {
+            var inline1464 bool = value__32 <= 57343
+            inline1462 = inline1464
         } else {
-            inline1463 = false
+            inline1462 = false
         }
-        var inline1464 bool = !inline1463
-        t1001 = inline1464
+        var inline1463 bool = !inline1462
+        t1001 = inline1463
     } else {
         t1001 = false
     }

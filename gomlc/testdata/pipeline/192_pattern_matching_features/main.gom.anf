@@ -1,6 +1,4 @@
 fn unwrap_either(value/0: Either) -> int32 {
-  let match172 = value/0 in
-  let whole/1 = value/0 in
   match value/0 {
     Tag_0 => {
       let shared/2 = Either::Left._0(value/0) in
@@ -10,11 +8,9 @@ fn unwrap_either(value/0: Either) -> int32 {
       } in
       match value/0 {
         Tag_0 => {
-          let x173 = Either::Left._0(value/0) in
           jump k211(0)
         },
         Tag_1 => {
-          let x174 = Either::Right._0(value/0) in
           jump k211(1)
         },
       }
@@ -29,11 +25,9 @@ fn unwrap_either(value/0: Either) -> int32 {
           } in
           match value/0 {
             Tag_0 => {
-              let x173 = Either::Left._0(value/0) in
               jump k216(0)
             },
             Tag_1 => {
-              let x174 = Either::Right._0(value/0) in
               jump k216(1)
             },
           }
@@ -48,7 +42,6 @@ fn unwrap_either(value/0: Either) -> int32 {
 }
 
 fn char_group(value/3: char) -> string {
-  let match177 = value/3 in
   let t224 = (value/3 >= 'a') in
   if t224 {
     let t227 = (value/3 <= 'c') in
@@ -64,17 +57,12 @@ fn char_group(value/3: char) -> string {
 
 fn describe(value/4: Maybe, numbers/5: Vec[int32], view/6: Slice[int32]) -> string {
   join k230(jp231: string) -> string {
-    let from_if/9 = jp231 in
-    let match180 = numbers/5 in
     let t248 = @intrinsic(vec.len)(numbers/5) in
     let t249 = (t248 == 0) in
     join k232(jp233: string) -> string {
-      let from_vec/12 = jp233 in
-      let match181 = view/6 in
       let t240 = @intrinsic(slice.len)(view/6) in
       let t241 = (t240 >= 2) in
       join k234(jp235: string) -> string {
-        let from_slice/15 = jp235 in
         let t236 = (jp231 + "/") in
         let t237 = (t236 + jp233) in
         let t238 = (t237 + "/") in
@@ -139,8 +127,6 @@ fn describe(value/4: Maybe, numbers/5: Vec[int32], view/6: Slice[int32]) -> stri
   match value/4 {
     Tag_1 => {
       let x178 = Maybe::Some._0(value/4) in
-      let n/7 = x178 in
-      let match179 = x178 in
       let t272 = (x178 == 0) in
       if t272 {
         jump k230("small")
@@ -155,7 +141,6 @@ fn describe(value/4: Maybe, numbers/5: Vec[int32], view/6: Slice[int32]) -> stri
             if t281 {
               jump k230("middle")
             } else {
-              let x/8 = x178 in
               let t284 = (x178 > 10) in
               if t284 {
                 jump k230("large")
@@ -164,7 +149,6 @@ fn describe(value/4: Maybe, numbers/5: Vec[int32], view/6: Slice[int32]) -> stri
               }
             }
           } else {
-            let x/8 = x178 in
             let t287 = (x178 > 10) in
             if t287 {
               jump k230("large")
@@ -182,13 +166,8 @@ fn describe(value/4: Maybe, numbers/5: Vec[int32], view/6: Slice[int32]) -> stri
 }
 
 fn main() -> unit {
-  let pair/16 = Pair { left: 3, right: 9 } in
-  let mtmp182 = pair/16 in
   let x183 = 3 in
-  let x184 = 9 in
-  let left/17 = x183 in
   let values/18 = [1, 2, 3, 1] in
-  let mtmp185 = values/18 in
   let first/19 = @intrinsic(array.get)(values/18, 0) in
   let last/21 = @intrinsic(array.get)(values/18, 3) in
   let t289 = @intrinsic(array.get)(values/18, 1) in
@@ -214,14 +193,8 @@ fn main() -> unit {
             let t298 = Maybe::Some(7) in
             join inline_cont371(state/26: Ref[Maybe]) -> unit {
               join exit299() -> unit {
-                let _wild196 = () in
-                let mtmp197 = Maybe::Some(6) in
                 join k300() -> unit {
-                  let _wild200 = () in
-                  let match201 = Maybe::Some(5) in
-                  let whole/29 = match201 in
                   join k301(jp302: int32) -> unit {
-                    let aliased/32 = jp302 in
                     join inline_cont368(_wild204: unit) -> unit {
                       let t303 = Either::Right(11) in
                       let t304 = unwrap_either(t303) in
@@ -232,7 +205,6 @@ fn main() -> unit {
                           ()
                         } in
                         let inline361 = 'b' in
-                        let inline362 = inline361 in
                         let inline363 = (inline361 >= 'a') in
                         if inline363 {
                           let inline364 = (inline361 <= 'c') in
@@ -259,11 +231,9 @@ fn main() -> unit {
                     jump k301(t308)
                   } in
                   let x202 = 5 in
-                  let inner/31 = x202 in
                   jump k306(x202)
                 } in
                 let x198 = 6 in
-                let n/28 = x198 in
                 let inline355 = trait_impl#ToString#int32#to_string(x198) in
                 let inline356 = @runtime(core.string_println)(inline355) in
                 jump k300()
@@ -274,7 +244,6 @@ fn main() -> unit {
                     match mtmp192 {
                       Tag_1 => {
                         let x193 = Maybe::Some._0(mtmp192) in
-                        let n/27 = x193 in
                         join inline_cont349(_wild194: unit) -> unit {
                           let inline348 = @intrinsic(ref.set)(state/26, Tag_0) in
                           jump loop312()

@@ -22,10 +22,6 @@ type Wrapper__int32 struct {
     value int32
 }
 
-type Wrapper__Point struct {
-    value Point
-}
-
 func make_point() Point {
     var t202 Point = Point{
         x: 0,

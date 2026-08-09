@@ -156,8 +156,6 @@ fn typ_is_arrow(ty/15: Typ) -> bool {
       }
     },
     Typ::TArrow(x180, x181) => {
-      let x180 = Typ::TArrow._0(ty/15) in
-      let x181 = Typ::TArrow._1(ty/15) in
       true
     },
     _ => false,
@@ -173,7 +171,6 @@ fn typ_to_string(ty/18: Typ) -> string {
       match mtmp190 {
         Tv::Unbound(x191, x192) => {
           let x191 = Tv::Unbound._0(mtmp190) in
-          let x192 = Tv::Unbound._1(mtmp190) in
           let name/21 = x191 in
           ("'" + name/21)
         },
@@ -281,7 +278,6 @@ fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result__unit__str
                 let mtmp206 = inherent#Ref#Ref[T]#get__T_Tv(tvr/41) in
                 match mtmp206 {
                   Tv::Unbound(x207, x208) => {
-                    let x207 = Tv::Unbound._0(mtmp206) in
                     let x208 = Tv::Unbound._1(mtmp206) in
                     let l/46 = x208 in
                     min_i32(l/46, l2/45)
@@ -308,7 +304,6 @@ fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result__unit__str
       let mtmp211 = occurs(st/40, tvr/41, t1/49) in
       match mtmp211 {
         Result__unit__string::Ok(x212) => {
-          let x212 = Result__unit__string::Ok._0(mtmp211) in
           occurs(st/40, tvr/41, t2/50)
         },
         Result__unit__string::Err(x213) => {
@@ -340,17 +335,12 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
               let mtmp225 = inherent#Ref#Ref[T]#get__T_Tv(r1/55) in
               match mtmp225 {
                 Tv::Unbound(x226, x227) => {
-                  let x226 = Tv::Unbound._0(mtmp225) in
-                  let x227 = Tv::Unbound._1(mtmp225) in
                   let mtmp229 = inherent#Ref#Ref[T]#get__T_Tv(r2/56) in
                   match mtmp229 {
                     Tv::Unbound(x230, x231) => {
-                      let x230 = Tv::Unbound._0(mtmp229) in
-                      let x231 = Tv::Unbound._1(mtmp229) in
                       let mtmp233 = occurs(st/52, r1/55, Typ::TVar(r2/56)) in
                       match mtmp233 {
                         Result__unit__string::Ok(x234) => {
-                          let x234 = Result__unit__string::Ok._0(mtmp233) in
                           let mtmp236 =
                             inherent#Ref#Ref[T]#set__T_Tv(r1/55, Tv::Link(Typ::TVar(r2/56))) in
                           Result__unit__string::Ok(())
@@ -383,12 +373,9 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
           let mtmp237 = inherent#Ref#Ref[T]#get__T_Tv(r2/65) in
           match mtmp237 {
             Tv::Unbound(x238, x239) => {
-              let x238 = Tv::Unbound._0(mtmp237) in
-              let x239 = Tv::Unbound._1(mtmp237) in
               let mtmp241 = occurs(st/52, r2/65, other/64) in
               match mtmp241 {
                 Result__unit__string::Ok(x242) => {
-                  let x242 = Result__unit__string::Ok._0(mtmp241) in
                   let mtmp244 = inherent#Ref#Ref[T]#set__T_Tv(r2/65, Tv::Link(other/64)) in
                   Result__unit__string::Ok(())
                 },
@@ -418,12 +405,9 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
           let mtmp249 = inherent#Ref#Ref[T]#get__T_Tv(r1/60) in
           match mtmp249 {
             Tv::Unbound(x250, x251) => {
-              let x250 = Tv::Unbound._0(mtmp249) in
-              let x251 = Tv::Unbound._1(mtmp249) in
               let mtmp253 = occurs(st/52, r1/60, other/61) in
               match mtmp253 {
                 Result__unit__string::Ok(x254) => {
-                  let x254 = Result__unit__string::Ok._0(mtmp253) in
                   let mtmp256 = inherent#Ref#Ref[T]#set__T_Tv(r1/60, Tv::Link(other/61)) in
                   Result__unit__string::Ok(())
                 },
@@ -451,7 +435,6 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
           let mtmp257 = unify(st/52, a1/68, b1/70) in
           match mtmp257 {
             Result__unit__string::Ok(x258) => {
-              let x258 = Result__unit__string::Ok._0(mtmp257) in
               unify(st/52, a2/69, b2/71)
             },
             Result__unit__string::Err(x259) => {
@@ -473,12 +456,9 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
           let mtmp264 = inherent#Ref#Ref[T]#get__T_Tv(r1/60) in
           match mtmp264 {
             Tv::Unbound(x265, x266) => {
-              let x265 = Tv::Unbound._0(mtmp264) in
-              let x266 = Tv::Unbound._1(mtmp264) in
               let mtmp268 = occurs(st/52, r1/60, other/61) in
               match mtmp268 {
                 Result__unit__string::Ok(x269) => {
-                  let x269 = Result__unit__string::Ok._0(mtmp268) in
                   let mtmp271 = inherent#Ref#Ref[T]#set__T_Tv(r1/60, Tv::Link(other/61)) in
                   Result__unit__string::Ok(())
                 },
@@ -600,7 +580,6 @@ fn inst(st/98: CheckerState, ty/99: Typ) -> Typ {
   let subst0/100 = inherent#Vec#Vec[T]#new__T_SubstEntry() in
   let mtmp296 = inst_loop(st/98, subst0/100, ty/99) in
   let x297 = mtmp296.0 in
-  let x298 = mtmp296.1 in
   let t/101 = x297 in
   t/101
 }
@@ -642,7 +621,6 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result__T
               let mtmp315 = unify(st/102, ty_fun/116, arrow/120) in
               match mtmp315 {
                 Result__unit__string::Ok(x316) => {
-                  let x316 = Result__unit__string::Ok._0(mtmp315) in
                   Result__Typ__string::Ok(ty_res/119)
                 },
                 Result__unit__string::Err(x317) => {

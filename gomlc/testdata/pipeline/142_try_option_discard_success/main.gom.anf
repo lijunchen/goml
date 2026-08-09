@@ -11,7 +11,6 @@ fn cut_pair(ok/0: bool) -> Option__(string,string) {
 fn check(ok/1: bool) -> Option__string {
   join inline_cont204(mtmp172: Option__(string,string)) -> Option__string {
     join k186(jp187: (string, string)) -> Option__string {
-      let mtmp174 = jp187 in
       let t188 = Option__string::Some("ok") in
       t188
     } in
@@ -21,7 +20,6 @@ fn check(ok/1: bool) -> Option__string {
       },
       Tag_1 => {
         let x173 = Option__(string,string)::Some._0(mtmp172) in
-        let try_value/13 = x173 in
         jump k186(x173)
       },
     }
@@ -42,7 +40,6 @@ fn show(opt/2: Option__string) -> string {
     },
     Tag_1 => {
       let x175 = Option__string::Some._0(opt/2) in
-      let value/3 = x175 in
       let t193 = ("some " + x175) in
       t193
     },
@@ -65,7 +62,6 @@ fn main() -> unit {
             },
             Tag_1 => {
               let inline211 = Option__string::Some._0(t197) in
-              let inline212 = inline211 in
               let inline213 = ("some " + inline211) in
               jump inline_cont210(inline213)
             },
@@ -74,7 +70,6 @@ fn main() -> unit {
         let inline215 = false in
         let inline216 = cut_pair(inline215) in
         join inline_join217(inline218: (string, string)) -> unit {
-          let inline219 = inline218 in
           let inline220 = Option__string::Some("ok") in
           jump inline_cont214(inline220)
         } in
@@ -84,7 +79,6 @@ fn main() -> unit {
           },
           Tag_1 => {
             let inline221 = Option__(string,string)::Some._0(inline216) in
-            let inline222 = inline221 in
             jump inline_join217(inline221)
           },
         }
@@ -99,7 +93,6 @@ fn main() -> unit {
       },
       Tag_1 => {
         let inline227 = Option__string::Some._0(t195) in
-        let inline228 = inline227 in
         let inline229 = ("some " + inline227) in
         jump inline_cont226(inline229)
       },
@@ -108,7 +101,6 @@ fn main() -> unit {
   let inline231 = true in
   let inline232 = cut_pair(inline231) in
   join inline_join233(inline234: (string, string)) -> unit {
-    let inline235 = inline234 in
     let inline236 = Option__string::Some("ok") in
     jump inline_cont230(inline236)
   } in
@@ -118,7 +110,6 @@ fn main() -> unit {
     },
     Tag_1 => {
       let inline237 = Option__(string,string)::Some._0(inline232) in
-      let inline238 = inline237 in
       jump inline_join233(inline237)
     },
   }

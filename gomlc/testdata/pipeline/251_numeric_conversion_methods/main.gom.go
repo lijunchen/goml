@@ -26,42 +26,7 @@ const (
     LETTER uint32 = 65
 )
 
-func exercise_int(value__1 int) struct{} {
-    return struct{}{}
-}
-
-func exercise_int8(value__2 int8) struct{} {
-    return struct{}{}
-}
-
-func exercise_int16(value__3 int16) struct{} {
-    return struct{}{}
-}
-
-func exercise_int32(value__4 int32) struct{} {
-    return struct{}{}
-}
-
-func exercise_int64(value__5 int64) struct{} {
-    return struct{}{}
-}
-
-func exercise_uint(value__6 uint) struct{} {
-    return struct{}{}
-}
-
-func exercise_uint8(value__7 uint8) struct{} {
-    return struct{}{}
-}
-
 func main0() struct{} {
-    exercise_int(1)
-    exercise_int8(1)
-    exercise_int16(1)
-    exercise_int32(1)
-    exercise_int64(1)
-    exercise_uint(1)
-    exercise_uint8(1)
     var value__11 int16 = 511
     var t290 uint8 = uint8(int16(value__11))
     var inline328 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(t290)

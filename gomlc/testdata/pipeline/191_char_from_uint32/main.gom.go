@@ -48,13 +48,13 @@ type Some struct {
 func (_ Some) isOption__char() {}
 
 func show_scalar(value__0 uint32) struct{} {
-    var commute_field309 rune
+    var commute_field307 rune
     var inline239 bool = utf8_valid_scalar(value__0)
     if inline239 {
         var inline240 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__0)
-        var inline242 rune = inline240._1
-        commute_field309 = inline242
-        var t187 uint32 = uint32(rune(commute_field309))
+        var inline241 rune = inline240._1
+        commute_field307 = inline241
+        var t187 uint32 = uint32(rune(commute_field307))
         var inline236 string = _goml_m_trait__impl_i_ToString_i_uint32_i_to__string(t187)
         _goml_runtime_core_string_println(inline236)
         return struct{}{}
@@ -72,77 +72,77 @@ func main0() struct{} {
     show_scalar(55295)
     show_scalar(55296)
     show_scalar(57343)
-    var inline279 uint32 = 57344
-    var inline280 Option__char = char_from_uint32(inline279)
-    switch inline280.(type) {
+    var inline277 uint32 = 57344
+    var inline278 Option__char = char_from_uint32(inline277)
+    switch inline278.(type) {
     case None:
         println__T_string("none")
     case Some:
-        var inline282 rune = inline280.(Some)._0
-        var inline284 uint32 = uint32(rune(inline282))
-        println__T_uint32(inline284)
+        var inline280 rune = inline278.(Some)._0
+        var inline282 uint32 = uint32(rune(inline280))
+        println__T_uint32(inline282)
     default:
         panic("non-exhaustive match")
     }
-    var inline271 uint32 = 1114111
-    var inline272 Option__char = char_from_uint32(inline271)
-    switch inline272.(type) {
+    var inline269 uint32 = 1114111
+    var inline270 Option__char = char_from_uint32(inline269)
+    switch inline270.(type) {
     case None:
         println__T_string("none")
     case Some:
-        var inline274 rune = inline272.(Some)._0
-        var inline276 uint32 = uint32(rune(inline274))
-        println__T_uint32(inline276)
+        var inline272 rune = inline270.(Some)._0
+        var inline274 uint32 = uint32(rune(inline272))
+        println__T_uint32(inline274)
     default:
         panic("non-exhaustive match")
     }
-    var inline263 uint32 = 1114112
-    var inline264 Option__char = char_from_uint32(inline263)
-    switch inline264.(type) {
+    var inline261 uint32 = 1114112
+    var inline262 Option__char = char_from_uint32(inline261)
+    switch inline262.(type) {
     case None:
         println__T_string("none")
     case Some:
-        var inline266 rune = inline264.(Some)._0
-        var inline268 uint32 = uint32(rune(inline266))
-        println__T_uint32(inline268)
+        var inline264 rune = inline262.(Some)._0
+        var inline266 uint32 = uint32(rune(inline264))
+        println__T_uint32(inline266)
     default:
         panic("non-exhaustive match")
     }
-    var commute_field312 rune
-    var inline255 uint32 = 128512
-    var inline256 bool = utf8_valid_scalar(inline255)
-    if inline256 {
-        var inline257 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(inline255)
-        var inline259 rune = inline257._1
-        commute_field312 = inline259
+    var commute_field310 rune
+    var inline254 uint32 = 128512
+    var inline255 bool = utf8_valid_scalar(inline254)
+    if inline255 {
+        var inline256 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(inline254)
+        var inline257 rune = inline256._1
+        commute_field310 = inline257
         var t192 string
-        var inline253 string = char_to_string(commute_field312)
-        t192 = inline253
-        var inline250 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t192)
-        _goml_runtime_core_string_println(inline250)
+        var inline252 string = char_to_string(commute_field310)
+        t192 = inline252
+        var inline249 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t192)
+        _goml_runtime_core_string_println(inline249)
         return struct{}{}
     } else {
-        var inline246 string = "none"
-        var inline247 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline246)
-        _goml_runtime_core_string_println(inline247)
+        var inline245 string = "none"
+        var inline246 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline245)
+        _goml_runtime_core_string_println(inline246)
         return struct{}{}
     }
 }
 
 func char_from_uint32(value__32 uint32) Option__char {
     var t198 bool
-    var inline287 bool = value__32 <= 1114111
-    if inline287 {
-        var inline288 bool = value__32 >= 55296
-        var inline290 bool
-        if inline288 {
-            var inline292 bool = value__32 <= 57343
-            inline290 = inline292
+    var inline285 bool = value__32 <= 1114111
+    if inline285 {
+        var inline286 bool = value__32 >= 55296
+        var inline288 bool
+        if inline286 {
+            var inline290 bool = value__32 <= 57343
+            inline288 = inline290
         } else {
-            inline290 = false
+            inline288 = false
         }
-        var inline291 bool = !inline290
-        t198 = inline291
+        var inline289 bool = !inline288
+        t198 = inline289
     } else {
         t198 = false
     }
@@ -167,8 +167,8 @@ func println__T_string(value__31 string) struct{} {
 
 func println__T_uint32(value__31 uint32) struct{} {
     var t204 string
-    var inline295 string = _goml_runtime_core_uint32_to_string(value__31)
-    t204 = inline295
+    var inline293 string = _goml_runtime_core_uint32_to_string(value__31)
+    t204 = inline293
     _goml_runtime_core_string_println(t204)
     return struct{}{}
 }
@@ -203,18 +203,18 @@ func _goml_m_trait__impl_i_ToString_i_uint32_i_to__string(self__76 uint32) strin
 func char_to_string(value__29 rune) string {
     var t228 uint32 = uint32(rune(value__29))
     var t229 bool
-    var inline302 bool = t228 <= 1114111
-    if inline302 {
-        var inline303 bool = t228 >= 55296
-        var inline305 bool
-        if inline303 {
-            var inline307 bool = t228 <= 57343
-            inline305 = inline307
+    var inline300 bool = t228 <= 1114111
+    if inline300 {
+        var inline301 bool = t228 >= 55296
+        var inline303 bool
+        if inline301 {
+            var inline305 bool = t228 <= 57343
+            inline303 = inline305
         } else {
-            inline305 = false
+            inline303 = false
         }
-        var inline306 bool = !inline305
-        t229 = inline306
+        var inline304 bool = !inline303
+        t229 = inline304
     } else {
         t229 = false
     }

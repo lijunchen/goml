@@ -23,7 +23,6 @@ fn shape_value(value/7: Shape__int32) -> int32 {
   match value/7 {
     Tag_0 => {
       let x172 = Shape__int32::Dot._0(value/7) in
-      let point/8 = x172 in
       let t196 = Point.x(x172) in
       let t197 = Point.y(x172) in
       let t198 = (t196 + t197) in
@@ -31,7 +30,6 @@ fn shape_value(value/7: Shape__int32) -> int32 {
     },
     Tag_1 => {
       let x173 = Shape__int32::Wrapped._0(value/7) in
-      let wrapper/9 = x173 in
       let t199 = Wrapper__int32.value(x173) in
       t199
     },
@@ -45,7 +43,6 @@ fn list_value(value/10: List) -> int32 {
   match value/10 {
     Tag_0 => {
       let x174 = List::Cons._0(value/10) in
-      let node/11 = x174 in
       let t204 = Node.value(x174) in
       let t205 = Node.next(x174) in
       let t206 = list_value(t205) in
@@ -60,14 +57,11 @@ fn list_value(value/10: List) -> int32 {
 
 fn main() -> unit {
   let offset/12 = 1 in
-  let add/14 = closure_env_add_0 { offset_0: offset/12 } in
   join inline_cont270(t209: int32) -> unit {
     join inline_cont267(point/15: Point) -> unit {
       join inline_cont265(t210: Point) -> unit {
         join inline_cont257(combined/16: Point) -> unit {
           join inline_cont253(t211: int32) -> unit {
-            let t212 = Wrapper__int32 { value: t211 } in
-            let wrapped/17 = Shape__int32::Wrapped(t212) in
             let t213 = Node { value: 5, next: Tag_1 } in
             let list/18 = List::Cons(t213) in
             let t214 = Point.x(combined/16) in
@@ -85,9 +79,6 @@ fn main() -> unit {
               let inline243 = @runtime(core.int32_to_string)(t220) in
               jump inline_cont242(inline243)
             } in
-            let inline250 = t212 in
-            let inline251 = t212 in
-            let inline252 = t211 in
             jump inline_cont244(t211)
           } in
           let inline254 = 4 in
@@ -112,13 +103,11 @@ fn main() -> unit {
     jump inline_cont267(inline269)
   } in
   let inline271 = 1 in
-  let inline272 = offset/12 in
   let inline273 = (inline271 + offset/12) in
   jump inline_cont270(inline273)
 }
 
 fn wrap__T_int32(value/4: int32) -> int32 {
-  let id/6 = closure_env_id_1 {} in
   value/4
 }
 

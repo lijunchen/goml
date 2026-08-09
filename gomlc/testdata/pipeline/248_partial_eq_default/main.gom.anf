@@ -40,13 +40,9 @@ fn trait_impl#Default#Settings#default() -> Settings {
 }
 
 fn trait_impl#Debug#Settings#debug(self/2: Settings) -> string {
-  let mtmp172 = self/2 in
   let x173 = Settings.enabled(self/2) in
   let x174 = Settings.retries(self/2) in
   let x175 = Settings.label(self/2) in
-  let #derive2_field/5 = x175 in
-  let #derive1_field/4 = x174 in
-  let #derive0_field/3 = x173 in
   let t219 = ("Settings { " + "enabled: ") in
   join inline_cont374(t220: string) -> string {
     let t221 = (t219 + t220) in
@@ -91,7 +87,6 @@ fn trait_impl#Debug#State#debug(self/7: State) -> string {
     },
     Tag_1 => {
       let x176 = State::Running._0(self/7) in
-      let #derive0_field/8 = x176 in
       join inline_cont376(t242: string) -> string {
         let t243 = ("State::Running(" + t242) in
         let t244 = (t243 + ")") in
@@ -119,8 +114,6 @@ fn trait_impl#Debug#Message#debug(self/9: Message) -> string {
     Tag_0 => {
       let x177 = Message::Data._0(self/9) in
       let x178 = Message::Data._1(self/9) in
-      let #derive1_field/11 = x178 in
-      let #derive0_field/10 = x177 in
       join inline_cont382(t254: string) -> string {
         let t255 = ("Message::Data(" + t254) in
         let t256 = (t255 + ", ") in
@@ -157,8 +150,6 @@ fn trait_impl#Debug#Event#debug(self/12: Event) -> string {
     Tag_0 => {
       let x179 = Event::Data._0(self/12) in
       let x180 = Event::Data._1(self/12) in
-      let #derive1_field/14 = x180 in
-      let #derive0_field/13 = x179 in
       let t269 = ("Event::Data { " + "name: ") in
       join inline_cont388(t270: string) -> string {
         let t271 = (t269 + t270) in
@@ -224,14 +215,11 @@ fn main() -> unit {
                             Tag_0 => {
                               let x191 = Selected__int::Values._0(selected/22) in
                               let x192 = Selected__int::Values._1(selected/22) in
-                              let second/24 = x192 in
-                              let first/23 = x191 in
                               let t298 = (x191 + x192) in
                               let inline391 = @runtime(core.int_to_string)(t298) in
                               jump k295(inline391)
                             },
                             Tag_1 => {
-                              let x193 = Selected__int::Ignored._0(selected/22) in
                               jump k295("ignored")
                             },
                           }
@@ -250,7 +238,6 @@ fn main() -> unit {
                         jump k293("empty")
                       },
                       Tag_1 => {
-                        let x189 = Lazy__NoDefault::Value._0(lazy/21) in
                         jump k293("value")
                       },
                     }
@@ -265,8 +252,6 @@ fn main() -> unit {
                 Tag_0 => {
                   let inline407 = Event::Data._0(event/20) in
                   let inline408 = Event::Data._1(event/20) in
-                  let inline409 = inline408 in
-                  let inline410 = inline407 in
                   let inline411 = ("Event::Data { " + "name: ") in
                   let inline412 = trait_impl#Debug#string#debug(inline407) in
                   let inline413 = (inline411 + inline412) in
@@ -389,7 +374,6 @@ fn inherent#Option#Option[T]#is_none__T_int(self/289: Option__int) -> bool {
       jump inline_cont445(false)
     },
     Tag_1 => {
-      let inline446 = Option__int::Some._0(self/289) in
       jump inline_cont445(true)
     },
   }
@@ -400,14 +384,14 @@ fn trait_impl#Default#Lazy__NoDefault#default() -> Lazy__NoDefault {
 }
 
 fn trait_impl#Default#Selected__int#default() -> Selected__int {
-  join inline_cont448(t347: int) -> Selected__int {
-    join inline_cont447(t348: int) -> Selected__int {
+  join inline_cont447(t347: int) -> Selected__int {
+    join inline_cont446(t348: int) -> Selected__int {
       let t349 = Selected__int::Values(t347, t348) in
       t349
     } in
-    jump inline_cont447(0)
+    jump inline_cont446(0)
   } in
-  jump inline_cont448(0)
+  jump inline_cont447(0)
 }
 
 fn trait_impl#ToString#int#to_string(self/69: int) -> string {
@@ -429,7 +413,6 @@ fn inherent#Option#Option[T]#is_some__T_int(self/288: Option__int) -> bool {
       false
     },
     Tag_1 => {
-      let x151 = Option__int::Some._0(self/288) in
       true
     },
   }

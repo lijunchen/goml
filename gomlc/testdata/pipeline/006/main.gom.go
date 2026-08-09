@@ -17,11 +17,6 @@ func _goml_runtime_core_string_print(s string) struct{} {
     return struct{}{}
 }
 
-type Tuple2_4bool_4bool struct {
-    _0 bool
-    _1 bool
-}
-
 func main0() struct{} {
     var x172 bool = true
     var x173 bool = false

@@ -239,7 +239,6 @@ fn string_get(value/17: string, index/18: int) -> char {
   {
     let x7 = mtmp6.0 in
     let x8 = mtmp6.1 in
-    let x9 = mtmp6.2 in
     {
       let character/20 = x8 in
       {
@@ -279,7 +278,6 @@ fn string_byte_slice(value/21: string, start/22: int, end/23: int) -> string {
 fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
   let mtmp10 = @runtime(core.string_from_utf8)(bytes/24) in
   {
-    let x11 = mtmp10.0 in
     let x12 = mtmp10.1 in
     {
       let value/25 = x12 in
@@ -291,7 +289,6 @@ fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
                 let mtmp13 = string_decode_utf8_at(value/25, index/26) in
                 {
                   let x14 = mtmp13.0 in
-                  let x15 = mtmp13.1 in
                   let x16 = mtmp13.2 in
                   {
                     let width/28 = x16 in
@@ -352,7 +349,6 @@ fn char_from_uint32(value/32: uint32) -> Option[char] {
       {
         let mtmp22 = @runtime(core.char_from_uint32)(value/32) in
         {
-          let x23 = mtmp22.0 in
           let x24 = mtmp22.1 in
           {
             let character/33 = x24 in
@@ -1753,7 +1749,6 @@ fn inherent#Option#Option[T]#is_some[T](self/288: Option[T]) -> bool {
     },
     Option::Some(x151) => {
       {
-        let x151 = Option::Some._0(self/288) in
         true
       }
     },
@@ -1802,13 +1797,11 @@ fn inherent#Result#Result[T,E]#is_ok[T, E](self/296: Result[T, E]) -> bool {
   match self/296 {
     Result::Ok(x154) => {
       {
-        let x154 = Result::Ok._0(self/296) in
         true
       }
     },
     Result::Err(x155) => {
       {
-        let x155 = Result::Err._0(self/296) in
         false
       }
     },
@@ -1832,7 +1825,6 @@ fn inherent#Result#Result[T,E]#unwrap_or[T, E](self/298: Result[T, E], fallback/
     },
     Result::Err(x157) => {
       {
-        let x157 = Result::Err._0(self/298) in
         fallback/299
       }
     },
@@ -2045,11 +2037,8 @@ fn main() -> unit {
               },
               Expr::Succ(x182) => {
                 {
-                  let x182 = Expr::Succ._0(x173) in
                   {
-                    let x/2 = x182 in
                     {
-                      let y/3 = x174 in
                       print(2)
                     }
                   }
@@ -2057,7 +2046,6 @@ fn main() -> unit {
               },
               _ =>
                 {
-                  let x/8 = x173 in
                   print(5)
                 },
             }
@@ -2066,11 +2054,8 @@ fn main() -> unit {
             match x173 {
               Expr::Succ(x187) => {
                 {
-                  let x187 = Expr::Succ._0(x173) in
                   {
-                    let x/2 = x187 in
                     {
-                      let y/3 = x174 in
                       print(2)
                     }
                   }
@@ -2078,7 +2063,6 @@ fn main() -> unit {
               },
               _ =>
                 {
-                  let x/9 = a/0 in
                   print(6)
                 },
             },
@@ -2092,28 +2076,21 @@ fn main() -> unit {
         match x175 {
           Expr::Zero => {
             {
-              let x/1 = x176 in
               print(1)
             }
           },
           Expr::Add(x193, x194) => {
             {
-              let x193 = Expr::Add._0(x175) in
-              let x194 = Expr::Add._1(x175) in
               match x176 {
                 Expr::Zero => {
                   {
-                    let x/4 = x175 in
                     print(3)
                   }
                 },
                 _ =>
                   {
-                    let y/6 = x194 in
                     {
-                      let x/5 = x193 in
                       {
-                        let z/7 = x176 in
                         print(4)
                       }
                     }
@@ -2125,13 +2102,11 @@ fn main() -> unit {
             match x176 {
               Expr::Zero => {
                 {
-                  let x/4 = x175 in
                   print(3)
                 }
               },
               _ =>
                 {
-                  let x/9 = a/0 in
                   print(6)
                 },
             },
@@ -2140,7 +2115,6 @@ fn main() -> unit {
     },
     _ =>
       {
-        let x/9 = a/0 in
         print(6)
       },
   }

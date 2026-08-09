@@ -1,9 +1,6 @@
 fn trait_impl#TypeName#Point#type_name(self/0: Point) -> string {
-  let mtmp172 = self/0 in
   let x173 = Point.x(self/0) in
   let x174 = Point.y(self/0) in
-  let y/2 = x174 in
-  let x/1 = x173 in
   join inline_cont213(t181: string) -> string {
     let prefix/3 = ("Point(" + t181) in
     let t182 = (prefix/3 + ", ") in
@@ -26,16 +23,12 @@ fn trait_impl#TypeName#Shape#type_name(self/4: Shape) -> string {
     },
     Tag_1 => {
       let x175 = Shape::Location._0(self/4) in
-      let point/5 = x175 in
       join inline_cont215(t190: string) -> string {
         let t191 = ("Shape::" + t190) in
         t191
       } in
-      let inline216 = x175 in
       let inline217 = Point.x(x175) in
       let inline218 = Point.y(x175) in
-      let inline219 = inline218 in
-      let inline220 = inline217 in
       let inline221 = inherent#int32#int32#to_string(inline217) in
       let inline222 = ("Point(" + inline221) in
       let inline223 = (inline222 + ", ") in
@@ -48,11 +41,8 @@ fn trait_impl#TypeName#Shape#type_name(self/4: Shape) -> string {
 }
 
 fn show_point(point/6: Point) -> string {
-  let inline228 = point/6 in
   let inline229 = Point.x(point/6) in
   let inline230 = Point.y(point/6) in
-  let inline231 = inline230 in
-  let inline232 = inline229 in
   let inline233 = inherent#int32#int32#to_string(inline229) in
   let inline234 = ("Point(" + inline233) in
   let inline235 = (inline234 + ", ") in
@@ -69,7 +59,6 @@ fn show_shape(shape/7: Shape) -> string {
     },
     Tag_1 => {
       let inline240 = Shape::Location._0(shape/7) in
-      let inline241 = inline240 in
       let inline242 = trait_impl#TypeName#Point#type_name(inline240) in
       let inline243 = ("Shape::" + inline242) in
       inline243

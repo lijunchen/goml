@@ -24,7 +24,6 @@ fn bump(counter/0: Ref[int32], ok/1: bool) -> Result__int32__string {
 fn use_try(counter/2: Ref[int32], ok/3: bool) -> Result__int32__string {
   join inline_cont244(mtmp173: Result__int32__string) -> Result__int32__string {
     join k191(jp192: int32) -> Result__int32__string {
-      let value/4 = jp192 in
       join inline_cont242(t193: int32) -> Result__int32__string {
         let t194 = (jp192 + t193) in
         let t195 = Result__int32__string::Ok(t194) in
@@ -36,12 +35,10 @@ fn use_try(counter/2: Ref[int32], ok/3: bool) -> Result__int32__string {
     match mtmp173 {
       Tag_0 => {
         let x174 = Result__int32__string::Ok._0(mtmp173) in
-        let try_value/23 = x174 in
         jump k191(x174)
       },
       Tag_1 => {
         let x175 = Result__int32__string::Err._0(mtmp173) in
-        let try_residual/23 = x175 in
         let t196 = Result__int32__string::Err(x175) in
         t196
       },
@@ -64,7 +61,6 @@ fn show(res/5: Result__int32__string) -> string {
   match res/5 {
     Tag_0 => {
       let x176 = Result__int32__string::Ok._0(res/5) in
-      let value/6 = x176 in
       join inline_cont251(t201: string) -> string {
         let t202 = ("ok " + t201) in
         t202
@@ -74,7 +70,6 @@ fn show(res/5: Result__int32__string) -> string {
     },
     Tag_1 => {
       let x177 = Result__int32__string::Err._0(res/5) in
-      let err/7 = x177 in
       let t203 = ("err " + x177) in
       t203
     },
@@ -100,14 +95,12 @@ fn run(ok/8: bool) -> string {
       match result/10 {
         Tag_0 => {
           let inline258 = Result__int32__string::Ok._0(result/10) in
-          let inline259 = inline258 in
           let inline260 = inherent#int32#int32#to_string(inline258) in
           let inline261 = ("ok " + inline260) in
           jump inline_cont257(inline261)
         },
         Tag_1 => {
           let inline262 = Result__int32__string::Err._0(result/10) in
-          let inline263 = inline262 in
           let inline264 = ("err " + inline262) in
           jump inline_cont257(inline264)
         },
@@ -115,7 +108,6 @@ fn run(ok/8: bool) -> string {
     } in
     let inline266 = bump(counter/9, ok/8) in
     join inline_join267(inline268: int32) -> string {
-      let inline269 = inline268 in
       let inline270 = inherent#Ref#Ref[T]#get__T_int32(counter/9) in
       let inline271 = (inline268 + inline270) in
       let inline272 = Result__int32__string::Ok(inline271) in
@@ -124,12 +116,10 @@ fn run(ok/8: bool) -> string {
     match inline266 {
       Tag_0 => {
         let inline273 = Result__int32__string::Ok._0(inline266) in
-        let inline274 = inline273 in
         jump inline_join267(inline273)
       },
       Tag_1 => {
         let inline275 = Result__int32__string::Err._0(inline266) in
-        let inline276 = inline275 in
         let inline277 = Result__int32__string::Err(inline275) in
         jump inline_cont265(inline277)
       },

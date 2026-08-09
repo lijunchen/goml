@@ -1,9 +1,6 @@
 fn point32_to_string(p/0: Point) -> string {
-  let mtmp172 = p/0 in
   let x173 = Point.x(p/0) in
   let x174 = Point.y(p/0) in
-  let y/2 = x174 in
-  let x/1 = x173 in
   join inline_cont230(t185: string) -> string {
     let t186 = ("Point { x: " + t185) in
     let t187 = (t186 + ", y: ") in
@@ -34,13 +31,9 @@ fn color_to_string(c/3: Color) -> string {
 }
 
 fn line_to_string(l/4: Line) -> string {
-  let mtmp175 = l/4 in
   let x176 = Line.from(l/4) in
   let x177 = Line.to(l/4) in
   let x178 = Line.color(l/4) in
-  let color/7 = x178 in
-  let to/6 = x177 in
-  let from/5 = x176 in
   join inline_cont245(t197: string) -> string {
     let t198 = ("Line { from: " + t197) in
     let t199 = (t198 + ", to: ") in
@@ -64,11 +57,8 @@ fn line_to_string(l/4: Line) -> string {
         },
       }
     } in
-    let inline234 = x177 in
     let inline235 = Point.x(x177) in
     let inline236 = Point.y(x177) in
-    let inline237 = inline236 in
-    let inline238 = inline235 in
     let inline239 = inherent#int32#int32#to_string(inline235) in
     let inline240 = ("Point { x: " + inline239) in
     let inline241 = (inline240 + ", y: ") in
@@ -77,11 +67,8 @@ fn line_to_string(l/4: Line) -> string {
     let inline244 = (inline243 + " }") in
     jump inline_cont233(inline244)
   } in
-  let inline246 = x176 in
   let inline247 = Point.x(x176) in
   let inline248 = Point.y(x176) in
-  let inline249 = inline248 in
-  let inline250 = inline247 in
   let inline251 = inherent#int32#int32#to_string(inline247) in
   let inline252 = ("Point { x: " + inline251) in
   let inline253 = (inline252 + ", y: ") in
@@ -104,7 +91,6 @@ fn point_type(p/8: Point) -> string {
           "up"
         },
         _ => {
-          let y/9 = x180 in
           let mtmp181 = (0 < x180) in
           match mtmp181 {
             true => {
@@ -160,7 +146,6 @@ fn main() -> unit {
           jump inline_cont263("up")
         },
         _ => {
-          let inline266 = inline265 in
           let inline267 = (0 < inline265) in
           match inline267 {
             true => {

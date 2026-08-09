@@ -80,9 +80,9 @@ func find(wanted__0 int) Option__int {
 
 func main0() struct{} {
     var t197 bool
-    var inline248 int = 3
-    var inline249 Option__int = find(inline248)
-    switch inline249.(type) {
+    var inline247 int = 3
+    var inline248 Option__int = find(inline247)
+    switch inline248.(type) {
     case None:
         t197 = false
     case Some:
@@ -90,8 +90,8 @@ func main0() struct{} {
     default:
         panic("non-exhaustive match")
     }
-    var inline245 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t197)
-    _goml_runtime_core_string_println(inline245)
+    var inline244 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t197)
+    _goml_runtime_core_string_println(inline244)
     var t198 bool
     var inline241 int = 8
     var inline242 Option__int = find(inline241)

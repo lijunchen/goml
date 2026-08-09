@@ -82,11 +82,6 @@ func ref_set__Ref_3int(reference *ref_int_x, value int) struct{} {
     return struct{}{}
 }
 
-type Tuple2_11Option__int_11Option__int struct {
-    _0 Option__int
-    _1 Option__int
-}
-
 type Second interface {
     isSecond()
 }
@@ -223,16 +218,6 @@ func nested(value__4 Option__Result__int__string) string {
     }
 }
 
-func optional_number(value__7 Option__int) int {
-    switch value__7.(type) {
-    case Option__int_Some:
-        var x178 int = value__7.(Option__int_Some)._0
-        return x178
-    default:
-        return 0
-    }
-}
-
 func take_once(value__10 Option__int) int {
     var current__11 *ref_Option__int_x
     var inline364 *ref_Option__int_x = ref__Ref_11Option__int(value__10)
@@ -334,22 +319,21 @@ func main0() struct{} {
     var t270 string = nested(t269)
     println__T_string(t270)
     var t271 string = nested(Option__Result__int__string_None{})
-    var inline411 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t271)
-    _goml_runtime_core_string_println(inline411)
-    var t272 Option__int = Option__int_Some{
-        _0: 13,
-    }
-    var t273 int = optional_number(t272)
-    var inline408 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t273)
+    var inline408 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t271)
     _goml_runtime_core_string_println(inline408)
+    var t273 int
+    var inline405 int = 13
+    t273 = inline405
+    var inline402 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t273)
+    _goml_runtime_core_string_println(inline402)
     var t274 int
     t274 = 0
-    var inline402 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t274)
-    _goml_runtime_core_string_println(inline402)
+    var inline396 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t274)
+    _goml_runtime_core_string_println(inline396)
     var t275 bool
     t275 = true
-    var inline395 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t275)
-    _goml_runtime_core_string_println(inline395)
+    var inline392 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t275)
+    _goml_runtime_core_string_println(inline392)
     var t277 bool
     t277 = false
     var inline388 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t277)

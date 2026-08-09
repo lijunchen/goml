@@ -38,22 +38,17 @@ fn trait_impl#Iterator#Counter#next(self/6: Counter) -> Option__int32 {
 }
 
 fn main() -> unit {
-  let t220 = Token {} in
   join inline_cont477(t221: int32) -> unit {
     let _wild173 = println__T_int32(t221) in
-    let t222 = Token {} in
     join inline_cont476(t223: string) -> unit {
       let _wild174 = println__T_string(t223) in
       let t224 = Token {} in
       join inline_cont474(converted/8: int32) -> unit {
         join inline_cont471(_wild175: unit) -> unit {
-          let t225 = Any {} in
           join inline_cont470(t226: string) -> unit {
             join inline_cont467(_wild176: unit) -> unit {
-              let t227 = Any {} in
               join inline_cont466(t228: string) -> unit {
                 join inline_cont463(_wild177: unit) -> unit {
-                  let t229 = Any {} in
                   join inline_cont462(t230: string) -> unit {
                     join inline_cont459(_wild178: unit) -> unit {
                       join inline_cont454(t231: Counter) -> unit {
@@ -65,7 +60,6 @@ fn main() -> unit {
                         join inline_cont446(limited/13: FnIterator__int32) -> unit {
                           join inline_cont445(for_iter179: FnIterator__int32) -> unit {
                             join exit234() -> unit {
-                              let _wild183 = () in
                               join inline_cont441(t235: FnIterator__int) -> unit {
                                 let t236 = closure_env_main_2 {} in
                                 let sum/17 =
@@ -80,11 +74,9 @@ fn main() -> unit {
                                       ) in
                                     let texts/19 =
                                       std::iter::collect__I_FnIterator[string]__T_string(t239) in
-                                    let for_source185 = texts/19 in
                                     let for_limit186 = @intrinsic(vec.len)(texts/19) in
                                     let for_index187 = 0 in
                                     join exit240() -> unit {
-                                      let _wild191 = () in
                                       ()
                                     } in
                                     joinrec {
@@ -95,7 +87,6 @@ fn main() -> unit {
                                             @intrinsic(vec.get)(texts/19, for_index187) in
                                           let t243 = (for_index187 + 1) in
                                           let _wild189 = for_index187 = t243 in
-                                          let text/20 = for_item188 in
                                           let inline432 =
                                             trait_impl#ToString#string#to_string(for_item188) in
                                           let inline433 =
@@ -131,7 +122,6 @@ fn main() -> unit {
                                     },
                                     Tag_1 => {
                                       let x181 = Option__int32::Some._0(for_next180) in
-                                      let value/14 = x181 in
                                       let inline426 = trait_impl#ToString#int32#to_string(x181) in
                                       let inline427 = @runtime(core.string_println)(inline426) in
                                       jump loop244()
@@ -320,7 +310,6 @@ fn std::iter::fold__A_int__I_FnIterator[int]__T_int(
 ) -> int {
   let accumulator/51 = initial/49 in
   join exit292() -> int {
-    let _wild46 = () in
     accumulator/51
   } in
   joinrec {
@@ -332,7 +321,6 @@ fn std::iter::fold__A_int__I_FnIterator[int]__T_int(
           },
           Tag_1 => {
             let x44 = Option__int::Some._0(mtmp43) in
-            let value/52 = x44 in
             let t295 = combine/50(accumulator/51, x44) in
             let _wild45 = accumulator/51 = t295 in
             jump loop_expr293()
@@ -368,7 +356,6 @@ fn std::iter::collect__I_FnIterator[string]__T_string(iterator/53: FnIterator__s
 ] {
   join inline_cont498(values/54: Vec[string]) -> Vec[string] {
     join exit304() -> Vec[string] {
-      let _wild49 = () in
       values/54
     } in
     joinrec {
@@ -380,7 +367,6 @@ fn std::iter::collect__I_FnIterator[string]__T_string(iterator/53: FnIterator__s
             },
             Tag_1 => {
               let x48 = Option__string::Some._0(mtmp47) in
-              let value/55 = x48 in
               let inline494 = @intrinsic(vec.push)(values/54, x48) in
               jump loop_expr305()
             },
@@ -557,7 +543,6 @@ fn inherent#closure_env_std_iter_map_A_int32_B_int32_I_Counter_4#closure_env_std
   let iterator/4 = closure_env_std_iter_map_A_int32_B_int32_I_Counter_4.iterator_0(env196) in
   let map_fn/5 = closure_env_std_iter_map_A_int32_B_int32_I_Counter_4.map_fn_1(env196) in
   join commute_arm537(commute_field536: int32) -> Option__int32 {
-    let x2 = commute_field536 in
     let t386 = map_fn/5(commute_field536) in
     let t387 = Option__int32::Some(t386) in
     t387
@@ -570,7 +555,6 @@ fn inherent#closure_env_std_iter_map_A_int32_B_int32_I_Counter_4#closure_env_std
     let inline507 = Counter.current(iterator/4) in
     let inline508 = (inline504 + 1) in
     let inline509 = inherent#Ref#Ref[T]#set__T_int32(inline507, inline508) in
-    let inline510 = Option__int32::Some(inline504) in
     jump commute_arm537(inline504)
   } else {
     Tag_0
@@ -591,7 +575,6 @@ fn inherent#closure_env_std_iter_filter_I_FnIterator_int32_T_int32_5#closure_env
           },
           Tag_1 => {
             let x4 = Option__int32::Some._0(mtmp3) in
-            let value/9 = x4 in
             let t395 = predicate/8(x4) in
             if t395 {
               let t396 = Option__int32::Some(x4) in
@@ -650,7 +633,6 @@ fn inherent#closure_env_std_iter_map_A_int_B_string_I_FnIterator_int_7#closure_e
       },
       Tag_1 => {
         let x2 = Option__int::Some._0(mtmp1) in
-        let value/6 = x2 in
         let t410 = map_fn/5(x2) in
         let t411 = Option__string::Some(t410) in
         t411

@@ -25,7 +25,6 @@ fn make_enabled() -> bool {
 }
 
 fn comptime_classify(value/0: int) -> int {
-  let match172 = value/0 in
   let t214 = (value/0 == COMPUTED_ANSWER) in
   if t214 {
     1
@@ -60,7 +59,6 @@ fn classify_bool(value/2: bool) -> string {
 }
 
 fn classify_computed_bool(value/3: bool) -> string {
-  let match173 = value/3 in
   let t227 = (value/3 == COMPUTED_ENABLED) in
   if t227 {
     "enabled"
@@ -76,10 +74,8 @@ fn classify_computed_bool(value/3: bool) -> string {
 }
 
 fn classify_comptime_guard(value/4: bool) -> string {
-  let match174 = value/4 in
   let t236 = (value/4 == true) in
   join k234(jp235: string) -> string {
-    let result/5 = jp235 in
     jp235
   } in
   if t236 {
@@ -127,7 +123,6 @@ fn classify_string(value/7: string) -> bool {
 }
 
 fn classify_float(value/8: float64) -> bool {
-  let match177 = value/8 in
   let t261 = (value/8 == RATIO) in
   if t261 {
     true
@@ -142,8 +137,6 @@ fn shadow_constant() -> int {
 }
 
 fn explicit_binding(value/10: int) -> int {
-  let match178 = value/10 in
-  let answer/11 = value/10 in
   value/10
 }
 
@@ -159,7 +152,6 @@ fn matches_if_let(value/12: int) -> bool {
 }
 
 fn matches_let_else(value/13: int) -> bool {
-  let mtmp179 = value/13 in
   match value/13 {
     42 => {
       true
@@ -176,7 +168,6 @@ fn for_binding() -> int {
     let for_limit181 = 2 in
     let for_index182 = 0 in
     join exit276() -> int {
-      let _wild185 = () in
       let inline344 = @intrinsic(ref.get)(total/14) in
       inline344
     } in
@@ -187,7 +178,6 @@ fn for_binding() -> int {
           let for_item183 = @intrinsic(array.get)(for_source180, for_index182) in
           let t280 = (for_index182 + 1) in
           let _wild184 = for_index182 = t280 in
-          let answer/15 = for_item183 in
           join inline_cont341(t281: int) -> int {
             let t282 = (t281 + for_item183) in
             let inline340 = @intrinsic(ref.set)(total/14, t282) in
@@ -264,7 +254,6 @@ fn main() -> unit {
                           jump inline_cont354(())
                         } in
                         let inline358 = 41 in
-                        let inline359 = inline358 in
                         match inline358 {
                           42 => {
                             jump inline_cont357(true)
@@ -279,7 +268,6 @@ fn main() -> unit {
                       jump inline_cont360(())
                     } in
                     let inline364 = 42 in
-                    let inline365 = inline364 in
                     match inline364 {
                       42 => {
                         jump inline_cont363(true)
@@ -322,8 +310,6 @@ fn main() -> unit {
           jump inline_cont376(())
         } in
         let inline380 = 11 in
-        let inline381 = inline380 in
-        let inline382 = inline380 in
         jump inline_cont379(inline380)
       } in
       let inline384 = trait_impl#ToString#int#to_string(t300) in

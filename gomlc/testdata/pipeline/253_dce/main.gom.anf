@@ -1,0 +1,71 @@
+fn touch(counter/0: Ref[int]) -> int {
+  join inline_cont202(t176: int) -> int {
+    let next/1 = (t176 + 1) in
+    let inline201 = @intrinsic(ref.set)(counter/0, next/1) in
+    next/1
+  } in
+  let inline203 = @intrinsic(ref.get)(counter/0) in
+  jump inline_cont202(inline203)
+}
+
+fn main() -> unit {
+  join inline_cont213(counter/8: Ref[int]) -> unit {
+    join inline_cont209(ignored/9: int) -> unit {
+      let divisor/10 = 2 in
+      let quotient/11 = (8 / divisor/10) in
+      join inline_cont207(t178: int) -> unit {
+        let inline205 = trait_impl#ToString#int#to_string(t178) in
+        let inline206 = @runtime(core.string_println)(inline205) in
+        ()
+      } in
+      let inline208 = @intrinsic(ref.get)(counter/8) in
+      jump inline_cont207(inline208)
+    } in
+    let inline210 = inherent#Ref#Ref[T]#get__T_int(counter/8) in
+    let inline211 = (inline210 + 1) in
+    let inline212 = inherent#Ref#Ref[T]#set__T_int(counter/8, inline211) in
+    jump inline_cont209(inline211)
+  } in
+  let inline214 = 0 in
+  let inline215 = @intrinsic(ref.new)(inline214) in
+  jump inline_cont213(inline215)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int(self/258: Ref[int]) -> int {
+  let t182 = @intrinsic(ref.get)(self/258) in
+  t182
+}
+
+fn inherent#Ref#Ref[T]#set__T_int(self/259: Ref[int], value/260: int) -> unit {
+  let t184 = @intrinsic(ref.set)(self/259, value/260) in
+  ()
+}
+
+fn inherent#Ref#Ref[T]#new__T_int(value/257: int) -> Ref[int] {
+  let t187 = @intrinsic(ref.new)(value/257) in
+  t187
+}
+
+fn println__T_int(value/31: int) -> unit {
+  join inline_cont216(t189: string) -> unit {
+    let t190 = @runtime(core.string_println)(t189) in
+    ()
+  } in
+  let inline217 = @runtime(core.int_to_string)(value/31) in
+  jump inline_cont216(inline217)
+}
+
+fn trait_impl#ToString#int#to_string(self/69: int) -> string {
+  let t193 = @runtime(core.int_to_string)(self/69) in
+  t193
+}
+
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
+  let t196 = (self/103 == other/104) in
+  t196
+}
+
+fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
+  let t199 = @runtime(core.int_hash)(self/129) in
+  t199
+}

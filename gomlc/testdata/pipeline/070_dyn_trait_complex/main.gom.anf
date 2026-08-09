@@ -150,7 +150,6 @@ fn show_dyn(x/23: dyn Display) -> string {
 }
 
 fn call_via_closure(x/24: dyn Display, tag/25: string) -> string {
-  let f/28 = closure_env_f_0 {} in
   let inline360 = dyn_call[Display::show_with](x/24, tag/25, tag/25) in
   inline360
 }
@@ -202,13 +201,11 @@ fn main() -> unit {
         join inline_cont403(_wild177: unit) -> unit {
           join inline_cont401(vlen/49: int) -> unit {
             join k284(jp285: int32) -> unit {
-              let delta/50 = jp285 in
               join inline_cont398(mtmp178: unit) -> unit {
                 join inline_cont395(mtmp179: unit) -> unit {
                   join inline_cont392(mtmp180: unit) -> unit {
                     join inline_cont389(i/51: Ref[int32]) -> unit {
                       join exit286() -> unit {
-                        let mtmp183 = () in
                         join inline_cont387(t287: string) -> unit {
                           let t288 = ("len:" + t287) in
                           join inline_cont384(mtmp184: unit) -> unit {

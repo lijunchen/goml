@@ -5,16 +5,10 @@ fn make_array() -> [int32; 3] {
 
 fn main() -> unit {
   join inline_cont188(arr/0: [int32; 3]) -> unit {
-    let inline/1 = [4, 5, 6] in
-    join inline_cont184(mtmp172: unit) -> unit {
-      let mtmp173 = arr/0 in
-      let mtmp174 = inline/1 in
-      ()
-    } in
     let inline185 = "array literal" in
     let inline186 = trait_impl#ToString#string#to_string(inline185) in
     let inline187 = @runtime(core.string_print)(inline186) in
-    jump inline_cont184(())
+    ()
   } in
   let inline189 = [1, 2, 3] in
   jump inline_cont188(inline189)

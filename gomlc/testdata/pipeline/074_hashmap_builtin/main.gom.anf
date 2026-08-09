@@ -49,7 +49,6 @@ fn trait_impl#Hash#Key#hash(self/6: Key) -> uint64 {
     },
     Tag_1 => {
       let x172 = Key::B._0(self/6) in
-      let #derive0_field/8 = x172 in
       let t233 = (0 as uint64) in
       let t234 = (t233 + 14695981039346656037) in
       let h/9 = (t234 + 2) in
@@ -65,7 +64,6 @@ fn trait_impl#Hash#Key#hash(self/6: Key) -> uint64 {
     },
     Tag_2 => {
       let x173 = Key::P._0(self/6) in
-      let #derive1_field/11 = x173 in
       let t239 = (0 as uint64) in
       let t240 = (t239 + 14695981039346656037) in
       let h/12 = (t240 + 3) in
@@ -96,9 +94,6 @@ fn trait_impl#Hash#Key#hash(self/6: Key) -> uint64 {
 }
 
 fn trait_impl#PartialEq#Key#eq(self/14: Key, other/15: Key) -> bool {
-  let mtmp174 = (self/14, other/15) in
-  let x175 = self/14 in
-  let x176 = other/15 in
   match other/15 {
     Tag_0 => {
       match self/14 {
@@ -115,8 +110,6 @@ fn trait_impl#PartialEq#Key#eq(self/14: Key, other/15: Key) -> bool {
       match self/14 {
         Tag_1 => {
           let x181 = Key::B._0(self/14) in
-          let #derive0_left/16 = x181 in
-          let #derive1_right/17 = x177 in
           let inline391 = (x181 == x177) in
           inline391
         },
@@ -130,8 +123,6 @@ fn trait_impl#PartialEq#Key#eq(self/14: Key, other/15: Key) -> bool {
       match self/14 {
         Tag_2 => {
           let x184 = Key::P._0(self/14) in
-          let #derive2_left/18 = x184 in
-          let #derive3_right/19 = x178 in
           join inline_join393(inline394: bool) -> bool {
             if inline394 {
               let inline395 = Point.y(x184) in
@@ -165,7 +156,6 @@ fn print_opt_int(x/20: Option__int32) -> unit {
     },
     Tag_1 => {
       let x185 = Option__int32::Some._0(x/20) in
-      let v/21 = x185 in
       let inline406 = trait_impl#ToString#int32#to_string(x185) in
       let inline407 = @runtime(core.string_println)(inline406) in
       ()
@@ -211,7 +201,6 @@ fn main() -> unit {
                   join inline_cont420(m3/26: HashMap[Ref[Key], int32]) -> unit {
                     let t282 = Key::B(7) in
                     join inline_cont418(k1/27: Ref[Key]) -> unit {
-                      let k2/28 = k1/27 in
                       join inline_cont415(_wild200: unit) -> unit {
                         join inline_cont413(t283: Option__int32) -> unit {
                           match t283 {
@@ -221,7 +210,6 @@ fn main() -> unit {
                             },
                             Tag_1 => {
                               let inline410 = Option__int32::Some._0(t283) in
-                              let inline411 = inline410 in
                               let inline412 = println__T_int32(inline410) in
                               ()
                             },
@@ -254,7 +242,6 @@ fn main() -> unit {
               },
               Tag_1 => {
                 let inline429 = Option__int32::Some._0(t280) in
-                let inline430 = inline429 in
                 let inline431 = println__T_int32(inline429) in
                 jump inline_cont427(())
               },
@@ -273,7 +260,6 @@ fn main() -> unit {
         },
         Tag_1 => {
           let inline438 = Option__int32::Some._0(t278) in
-          let inline439 = inline438 in
           let inline440 = println__T_int32(inline438) in
           jump inline_cont436(())
         },
@@ -289,7 +275,6 @@ fn main() -> unit {
     },
     Tag_1 => {
       let inline445 = Option__int32::Some._0(t277) in
-      let inline446 = inline445 in
       let inline447 = println__T_int32(inline445) in
       jump inline_cont443(())
     },

@@ -1,11 +1,9 @@
 fn absurd(value/0: Never) -> int32 {
-  let _wild172 = value/0 in
   let t186 = @intrinsic(compiler.missing)("") in
   t186
 }
 
 fn absurd_loop(value/1: Loop) -> int32 {
-  let _wild173 = value/1 in
   let t189 = @intrinsic(compiler.missing)("") in
   t189
 }
@@ -19,7 +17,6 @@ fn maybe_never(value/2: MaybeNever) -> int32 {
 }
 
 fn empty_never_vec(value/3: Vec[Never]) -> int32 {
-  let match175 = value/3 in
   let t198 = @intrinsic(vec.len)(value/3) in
   let t199 = (t198 == 0) in
   if t199 {
@@ -31,7 +28,6 @@ fn empty_never_vec(value/3: Vec[Never]) -> int32 {
 }
 
 fn sequence_coverage(value/4: Vec[bool]) -> int32 {
-  let match176 = value/4 in
   let t205 = @intrinsic(vec.len)(value/4) in
   let t206 = (t205 == 0) in
   if t206 {
@@ -88,11 +84,9 @@ fn sequence_coverage(value/4: Vec[bool]) -> int32 {
 }
 
 fn unwrap(value/5: Single) -> int32 {
-  let mtmp177 = value/5 in
   match value/5 {
     Tag_0 => {
       let x178 = Single::Only._0(value/5) in
-      let inner/6 = x178 in
       x178
     },
   }
@@ -121,10 +115,6 @@ fn signed_zero(value/8: float64) -> string {
 }
 
 fn main() -> unit {
-  let t252 = Single::Only(12) in
-  let mtmp179 = (t252) in
-  let x180 = t252 in
-  let single/9 = t252 in
   join inline_cont280(t253: int32) -> unit {
     join inline_cont277(_wild181: unit) -> unit {
       join inline_cont275(t254: int32) -> unit {
@@ -162,9 +152,7 @@ fn main() -> unit {
     let inline279 = @runtime(core.string_println)(inline278) in
     jump inline_cont277(())
   } in
-  let inline281 = t252 in
   let inline282 = 12 in
-  let inline283 = inline282 in
   jump inline_cont280(inline282)
 }
 

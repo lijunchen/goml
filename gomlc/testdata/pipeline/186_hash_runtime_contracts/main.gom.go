@@ -704,8 +704,8 @@ func _goml_m_inherent_i_HashMap_i_H_hd089129fd747b5ac2054f800f07a211e_Key____V__
 
 func println__T_int(value__31 int) struct{} {
     var t1274 string
-    var inline2394 string = _goml_runtime_core_int_to_string(value__31)
-    t1274 = inline2394
+    var inline2393 string = _goml_runtime_core_int_to_string(value__31)
+    t1274 = inline2393
     _goml_runtime_core_string_println(t1274)
     return struct{}{}
 }

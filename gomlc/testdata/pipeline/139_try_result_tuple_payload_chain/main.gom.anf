@@ -23,11 +23,8 @@ fn pair(ok/1: bool) -> Result__(string,string)__string {
 fn render(ok/2: bool) -> Result__string__string {
   join inline_cont220(mtmp172: Result__(string,string)__string) -> Result__string__string {
     join k194(jp195: (string, string)) -> Result__string__string {
-      let mtmp175 = jp195 in
       let x176 = jp195.0 in
       let x177 = jp195.1 in
-      let port/4 = x177 in
-      let host/3 = x176 in
       let t196 = (x176 + "=") in
       let t197 = (t196 + x177) in
       let t198 = Result__string__string::Ok(t197) in
@@ -36,12 +33,10 @@ fn render(ok/2: bool) -> Result__string__string {
     match mtmp172 {
       Tag_0 => {
         let x173 = Result__(string,string)__string::Ok._0(mtmp172) in
-        let try_value/17 = x173 in
         jump k194(x173)
       },
       Tag_1 => {
         let x174 = Result__(string,string)__string::Err._0(mtmp172) in
-        let try_residual/17 = x174 in
         let t199 = Result__string__string::Err(x174) in
         t199
       },
@@ -55,13 +50,11 @@ fn show(res/5: Result__string__string) -> string {
   match res/5 {
     Tag_0 => {
       let x178 = Result__string__string::Ok._0(res/5) in
-      let value/6 = x178 in
       let t204 = ("ok " + x178) in
       t204
     },
     Tag_1 => {
       let x179 = Result__string__string::Err._0(res/5) in
-      let err/7 = x179 in
       let t205 = ("err " + x179) in
       t205
     },
@@ -81,13 +74,11 @@ fn main() -> unit {
       match t209 {
         Tag_0 => {
           let inline226 = Result__string__string::Ok._0(t209) in
-          let inline227 = inline226 in
           let inline228 = ("ok " + inline226) in
           jump inline_cont225(inline228)
         },
         Tag_1 => {
           let inline229 = Result__string__string::Err._0(t209) in
-          let inline230 = inline229 in
           let inline231 = ("err " + inline229) in
           jump inline_cont225(inline231)
         },
@@ -100,13 +91,11 @@ fn main() -> unit {
   match t207 {
     Tag_0 => {
       let inline236 = Result__string__string::Ok._0(t207) in
-      let inline237 = inline236 in
       let inline238 = ("ok " + inline236) in
       jump inline_cont235(inline238)
     },
     Tag_1 => {
       let inline239 = Result__string__string::Err._0(t207) in
-      let inline240 = inline239 in
       let inline241 = ("err " + inline239) in
       jump inline_cont235(inline241)
     },

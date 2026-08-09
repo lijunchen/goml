@@ -91,12 +91,9 @@ fn inherent#std::task::ConcurrencyLimit#std::task::ConcurrencyLimit#new(
 ) -> std::task::ConcurrencyLimit {
   let t241 = (limit/2 > 0) in
   join k233(jp234: int) -> std::task::ConcurrencyLimit {
-    let count/3 = jp234 in
     join inline_cont452(slots/4: Channel[unit]) -> std::task::ConcurrencyLimit {
       let for_index2 = 0 in
-      let for_limit3 = jp234 in
       join exit235() -> std::task::ConcurrencyLimit {
-        let _wild6 = () in
         let t236 = std::task::ConcurrencyLimit { slots: slots/4 } in
         t236
       } in
@@ -104,7 +101,6 @@ fn inherent#std::task::ConcurrencyLimit#std::task::ConcurrencyLimit#new(
         join loop237() -> std::task::ConcurrencyLimit {
           let t238 = (for_index2 < jp234) in
           if t238 {
-            let for_item4 = for_index2 in
             let t239 = (for_index2 + 1) in
             let _wild5 = for_index2 = t239 in
             let inline450 = () in
@@ -198,7 +194,6 @@ fn main() -> unit {
           let nested/12 = std::task::scope__T_int(t271) in
           join inline_cont475(_wild175: unit) -> unit {
             let scope/13 = 3 in
-            let spawn/15 = closure_env_spawn_7 {} in
             join inline_cont473(t272: int) -> unit {
               let inline471 = trait_impl#ToString#int#to_string(t272) in
               let inline472 = @runtime(core.string_println)(inline471) in
@@ -350,7 +345,6 @@ fn inherent#std::task::Task#std::task::Task[T]#join__T_int(self/53: std::task::T
             },
             Tag_1 => {
               let x27 = Option__int::Some._0(mtmp26) in
-              let value/54 = x27 in
               jump exit304(x27)
             },
           }
@@ -361,8 +355,6 @@ fn inherent#std::task::Task#std::task::Task[T]#join__T_int(self/53: std::task::T
       let inline513 = @intrinsic(channel.recv)(t307) in
       let inline514 = inline513.0 in
       let inline515 = inline513.1 in
-      let inline516 = inline515 in
-      let inline517 = inline514 in
       if inline515 {
         let inline518 = Option__unit::Some(inline514) in
         jump inline_cont512(inline518)
@@ -449,7 +441,6 @@ fn std::task::completed_scope_value__T_int(result/0: Ref[Option__int]) -> int {
           },
           Tag_1 => {
             let x1 = Option__int::Some._0(mtmp0) in
-            let value/1 = x1 in
             jump exit331(x1)
           },
         }
@@ -483,8 +474,6 @@ fn inherent#Channel#Channel[T]#recv__T_unit(self/264: Channel[unit]) -> Option__
   let mtmp143 = @intrinsic(channel.recv)(self/264) in
   let x144 = mtmp143.0 in
   let x145 = mtmp143.1 in
-  let ok/266 = x145 in
-  let value/265 = x144 in
   if x145 {
     let t346 = Option__unit::Some(x144) in
     t346
@@ -522,9 +511,6 @@ fn trait_impl#Hash#bool#hash(self/126: bool) -> uint64 {
 }
 
 fn trait_impl#PartialEq#Option__int#eq(self/153: Option__int, other/154: Option__int) -> bool {
-  let mtmp61 = (self/153, other/154) in
-  let x62 = self/153 in
-  let x63 = other/154 in
   match other/154 {
     Tag_0 => {
       match self/153 {
@@ -541,8 +527,6 @@ fn trait_impl#PartialEq#Option__int#eq(self/153: Option__int, other/154: Option_
       match self/153 {
         Tag_1 => {
           let x66 = Option__int::Some._0(self/153) in
-          let left/155 = x66 in
-          let right/156 = x64 in
           let inline532 = (x66 == x64) in
           inline532
         },
@@ -561,7 +545,6 @@ fn trait_impl#Hash#Option__int#hash(self/157: Option__int) -> uint64 {
     },
     Tag_1 => {
       let x67 = Option__int::Some._0(self/157) in
-      let value/158 = x67 in
       join inline_cont533(t376: uint64) -> uint64 {
         let t377 = (14695981039346656039 + t376) in
         t377
@@ -573,9 +556,6 @@ fn trait_impl#Hash#Option__int#hash(self/157: Option__int) -> uint64 {
 }
 
 fn trait_impl#PartialEq#Option__unit#eq(self/153: Option__unit, other/154: Option__unit) -> bool {
-  let mtmp61 = (self/153, other/154) in
-  let x62 = self/153 in
-  let x63 = other/154 in
   match other/154 {
     Tag_0 => {
       match self/153 {
@@ -588,12 +568,8 @@ fn trait_impl#PartialEq#Option__unit#eq(self/153: Option__unit, other/154: Optio
       }
     },
     Tag_1 => {
-      let x64 = Option__unit::Some._0(other/154) in
       match self/153 {
         Tag_1 => {
-          let x66 = Option__unit::Some._0(self/153) in
-          let left/155 = x66 in
-          let right/156 = x64 in
           true
         },
         _ => {
@@ -610,8 +586,6 @@ fn trait_impl#Hash#Option__unit#hash(self/157: Option__unit) -> uint64 {
       14695981039346656038
     },
     Tag_1 => {
-      let x67 = Option__unit::Some._0(self/157) in
-      let value/158 = x67 in
       join inline_cont536(t391: uint64) -> uint64 {
         let t392 = (14695981039346656039 + t391) in
         t392

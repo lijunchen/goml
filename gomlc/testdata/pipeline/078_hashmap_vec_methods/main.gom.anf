@@ -8,7 +8,6 @@ fn trait_impl#Hash#Key#hash(self/0: Key) -> uint64 {
     },
     Tag_1 => {
       let x172 = Key::B._0(self/0) in
-      let #derive0_field/2 = x172 in
       let t201 = (0 as uint64) in
       let t202 = (t201 + 14695981039346656037) in
       let h/3 = (t202 + 2) in
@@ -26,9 +25,6 @@ fn trait_impl#Hash#Key#hash(self/0: Key) -> uint64 {
 }
 
 fn trait_impl#PartialEq#Key#eq(self/5: Key, other/6: Key) -> bool {
-  let mtmp173 = (self/5, other/6) in
-  let x174 = self/5 in
-  let x175 = other/6 in
   match other/6 {
     Tag_0 => {
       match self/5 {
@@ -45,8 +41,6 @@ fn trait_impl#PartialEq#Key#eq(self/5: Key, other/6: Key) -> bool {
       match self/5 {
         Tag_1 => {
           let x178 = Key::B._0(self/5) in
-          let #derive0_left/7 = x178 in
-          let #derive1_right/8 = x176 in
           let inline295 = (x178 == x176) in
           inline295
         },
@@ -68,7 +62,6 @@ fn print_opt_int(x/9: Option__int32) -> unit {
     },
     Tag_1 => {
       let x179 = Option__int32::Some._0(x/9) in
-      let v/10 = x179 in
       let inline301 = trait_impl#ToString#int32#to_string(x179) in
       let inline302 = @runtime(core.string_println)(inline301) in
       ()
@@ -137,7 +130,6 @@ fn main() -> unit {
                         },
                         Tag_1 => {
                           let inline322 = Option__int32::Some._0(t229) in
-                          let inline323 = inline322 in
                           let inline324 = println__T_int32(inline322) in
                           jump inline_cont320(())
                         },

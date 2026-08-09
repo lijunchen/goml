@@ -27,8 +27,6 @@ fn main() -> unit {
               let inline288 = @runtime(core.string_println)(inline287) in
               ()
             } in
-            let inline293 = wrapped/24 in
-            let inline294 = wrapped/24 in
             let inline295 = (0 as uint64) in
             let inline296 = (inline295 + 14695981039346656037) in
             let inline297 = (inline296 + 2) in
@@ -39,8 +37,6 @@ fn main() -> unit {
             let inline302 = (inline300 + inline301) in
             jump inline_cont289(inline302)
           } in
-          let inline307 = wrapped/24 in
-          let inline308 = wrapped/24 in
           let inline309 = (0 as uint64) in
           let inline310 = (inline309 + 14695981039346656037) in
           let inline311 = (inline310 + 2) in
@@ -79,11 +75,6 @@ fn println__T_string(value/31: string) -> unit {
 fn trait_impl#ToString#Generic__NoTraits__NoTraits#to_string(
   self/4: Generic__NoTraits__NoTraits
 ) -> string {
-  let mtmp172 = self/4 in
-  let x173 = Generic__NoTraits__NoTraits.first(self/4) in
-  let x174 = Generic__NoTraits__NoTraits.second(self/4) in
-  let #derive1_field/6 = x174 in
-  let #derive0_field/5 = x173 in
   let t209 = ("Generic { " + "first: ") in
   join inline_cont331(t210: string) -> string {
     let t211 = (t209 + t210) in
@@ -114,15 +105,11 @@ fn trait_impl#PartialEq#Generic__NoTraits__NoTraits#eq(
 ) -> bool {
   join k224(jp225: bool) -> bool {
     if jp225 {
-      let t226 = Generic__NoTraits__NoTraits.second(self/7) in
-      let t227 = Generic__NoTraits__NoTraits.second(other/8) in
       true
     } else {
       false
     }
   } in
-  let t229 = Generic__NoTraits__NoTraits.first(self/7) in
-  let t230 = Generic__NoTraits__NoTraits.first(other/8) in
   jump k224(true)
 }
 
@@ -132,13 +119,11 @@ fn trait_impl#Hash#Generic__NoTraits__NoTraits#hash(self/9: Generic__NoTraits__N
   let t235 = (0 as uint64) in
   let t236 = (t235 + 1099511628211) in
   let t237 = (h/10 * t236) in
-  let t238 = Generic__NoTraits__NoTraits.first(self/9) in
   join inline_cont337(t239: uint64) -> uint64 {
     let h/11 = (t237 + t239) in
     let t240 = (0 as uint64) in
     let t241 = (t240 + 1099511628211) in
     let t242 = (h/11 * t241) in
-    let t243 = Generic__NoTraits__NoTraits.second(self/9) in
     join inline_cont336(t244: uint64) -> uint64 {
       let h/12 = (t242 + t244) in
       h/12
@@ -156,8 +141,6 @@ fn trait_impl#ToString#GenericChoice__NoTraits__NoTraits#to_string(
       "GenericChoice::Empty"
     },
     Tag_1 => {
-      let x175 = GenericChoice__NoTraits__NoTraits::Value._0(self/13) in
-      let #derive0_field/14 = x175 in
       join inline_cont338(t249: string) -> string {
         let t250 = ("GenericChoice::Value(" + t249) in
         let t251 = (t250 + ")") in
@@ -172,9 +155,6 @@ fn trait_impl#PartialEq#GenericChoice__NoTraits__NoTraits#eq(
   self/15: GenericChoice__NoTraits__NoTraits,
   other/16: GenericChoice__NoTraits__NoTraits
 ) -> bool {
-  let mtmp176 = (self/15, other/16) in
-  let x177 = self/15 in
-  let x178 = other/16 in
   match other/16 {
     Tag_0 => {
       match self/15 {
@@ -187,12 +167,8 @@ fn trait_impl#PartialEq#GenericChoice__NoTraits__NoTraits#eq(
       }
     },
     Tag_1 => {
-      let x179 = GenericChoice__NoTraits__NoTraits::Value._0(other/16) in
       match self/15 {
         Tag_1 => {
-          let x181 = GenericChoice__NoTraits__NoTraits::Value._0(self/15) in
-          let #derive0_left/17 = x181 in
-          let #derive1_right/18 = x179 in
           true
         },
         _ => {
@@ -214,8 +190,6 @@ fn trait_impl#Hash#GenericChoice__NoTraits__NoTraits#hash(
       h/20
     },
     Tag_1 => {
-      let x182 = GenericChoice__NoTraits__NoTraits::Value._0(self/19) in
-      let #derive0_field/21 = x182 in
       let t269 = (0 as uint64) in
       let t270 = (t269 + 14695981039346656037) in
       let h/22 = (t270 + 2) in

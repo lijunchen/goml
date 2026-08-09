@@ -36,8 +36,8 @@ func main0() struct{} {
         return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t181, p0)
     })
     var t182 string = text__6.value
-    var inline232 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t182)
-    _goml_runtime_core_string_println(inline232)
+    var inline231 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t182)
+    _goml_runtime_core_string_println(inline231)
     var second__7 Box__int = Box__int{
         value: 7,
     }
@@ -46,8 +46,8 @@ func main0() struct{} {
         return _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(t183, p0)
     })
     var t184 string = explicit__9.value
-    var inline229 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t184)
-    _goml_runtime_core_string_println(inline229)
+    var inline228 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t184)
+    _goml_runtime_core_string_println(inline228)
     var third__10 Box__int = Box__int{
         value: 9,
     }
@@ -56,13 +56,13 @@ func main0() struct{} {
         return _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(t185, p0)
     })
     var t186 string = static_call__12.value
-    var inline226 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t186)
-    _goml_runtime_core_string_println(inline226)
+    var inline225 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t186)
+    _goml_runtime_core_string_println(inline225)
     var rendered__13 string
     var inline221 int = 5
-    var inline223 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline221)
-    var inline224 string = "value:" + inline223
-    rendered__13 = inline224
+    var inline222 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline221)
+    var inline223 string = "value:" + inline222
+    rendered__13 = inline223
     var inline218 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(rendered__13)
     _goml_runtime_core_string_println(inline218)
     return struct{}{}
@@ -87,18 +87,18 @@ func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
 }
 
 func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env177 closure_env_main_0, value__5 int) string {
-    var inline238 string = _goml_runtime_core_int_to_string(value__5)
-    return inline238
+    var inline237 string = _goml_runtime_core_int_to_string(value__5)
+    return inline237
 }
 
 func _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(env178 closure_env_main_1, value__8 int) string {
-    var inline240 string = _goml_runtime_core_int_to_string(value__8)
-    return inline240
+    var inline239 string = _goml_runtime_core_int_to_string(value__8)
+    return inline239
 }
 
 func _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(env179 closure_env_main_2, value__11 int) string {
-    var inline242 string = _goml_runtime_core_int_to_string(value__11)
-    return inline242
+    var inline241 string = _goml_runtime_core_int_to_string(value__11)
+    return inline241
 }
 
 func main() {

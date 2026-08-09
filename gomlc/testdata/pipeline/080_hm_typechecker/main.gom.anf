@@ -220,12 +220,10 @@ fn typ_is_arrow(ty/15: Typ) -> bool {
   match ty/15 {
     Tag_0 => {
       let x178 = Typ::TVar._0(ty/15) in
-      let tvref/16 = x178 in
       join inline_cont984(mtmp182: Tv) -> bool {
         match mtmp182 {
           Tag_1 => {
             let x185 = Tv::Link._0(mtmp182) in
-            let inner/17 = x185 in
             let t420 = typ_is_arrow(x185) in
             t420
           },
@@ -238,8 +236,6 @@ fn typ_is_arrow(ty/15: Typ) -> bool {
       jump inline_cont984(inline985)
     },
     Tag_2 => {
-      let x180 = Typ::TArrow._0(ty/15) in
-      let x181 = Typ::TArrow._1(ty/15) in
       true
     },
     _ => {
@@ -252,19 +248,15 @@ fn typ_to_string(ty/18: Typ) -> string {
   match ty/18 {
     Tag_0 => {
       let x186 = Typ::TVar._0(ty/18) in
-      let tvref/20 = x186 in
       join inline_cont986(mtmp190: Tv) -> string {
         match mtmp190 {
           Tag_0 => {
             let x191 = Tv::Unbound._0(mtmp190) in
-            let x192 = Tv::Unbound._1(mtmp190) in
-            let name/21 = x191 in
             let t427 = ("'" + x191) in
             t427
           },
           Tag_1 => {
             let x193 = Tv::Link._0(mtmp190) in
-            let inner/22 = x193 in
             let t428 = typ_to_string(x193) in
             t428
           },
@@ -275,18 +267,14 @@ fn typ_to_string(ty/18: Typ) -> string {
     },
     Tag_1 => {
       let x187 = Typ::QVar._0(ty/18) in
-      let name/19 = x187 in
       let t429 = ("'" + x187) in
       t429
     },
     Tag_2 => {
       let x188 = Typ::TArrow._0(ty/18) in
       let x189 = Typ::TArrow._1(ty/18) in
-      let t2/24 = x189 in
-      let t1/23 = x188 in
       let t434 = typ_is_arrow(x188) in
       join k430(jp431: string) -> string {
-        let s1/25 = jp431 in
         let s2/26 = typ_to_string(x189) in
         let t432 = (jp431 + " -> ") in
         let t433 = (t432 + s2/26) in
@@ -317,7 +305,6 @@ fn env_lookup(env/28: Vec[EnvEntry], name/29: string) -> Option__Typ {
       join inline_cont1010(found/31: Ref[Option__Typ]) -> Option__Typ {
         join inline_cont1007(done/32: Ref[bool]) -> Option__Typ {
           join exit445() -> Option__Typ {
-            let mtmp195 = () in
             let inline1006 = @intrinsic(ref.get)(found/31) in
             inline1006
           } in
@@ -395,7 +382,6 @@ fn subst_lookup(subst/34: Vec[SubstEntry], name/35: string) -> Option__Typ {
       join inline_cont1036(found/37: Ref[Option__Typ]) -> Option__Typ {
         join inline_cont1033(done/38: Ref[bool]) -> Option__Typ {
           join exit468() -> Option__Typ {
-            let mtmp197 = () in
             let inline1032 = @intrinsic(ref.get)(found/37) in
             inline1032
           } in
@@ -470,7 +456,6 @@ fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result__unit__str
   match ty/42 {
     Tag_0 => {
       let x198 = Typ::TVar._0(ty/42) in
-      let tvr2/43 = x198 in
       let t493 = @intrinsic(ref.ptr_eq)(tvr/41, x198) in
       if t493 {
         let t494 = Result__unit__string::Err("occurs check") in
@@ -481,11 +466,8 @@ fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result__unit__str
             Tag_0 => {
               let x203 = Tv::Unbound._0(mtmp202) in
               let x204 = Tv::Unbound._1(mtmp202) in
-              let l2/45 = x204 in
-              let name/44 = x203 in
               join inline_cont1046(mtmp206: Tv) -> Result__unit__string {
                 join k497(jp498: int32) -> Result__unit__string {
-                  let min_level/47 = jp498 in
                   let t499 = Tv::Unbound(x203, jp498) in
                   join inline_cont1044(mtmp210: unit) -> Result__unit__string {
                     let t500 = Result__unit__string::Ok(()) in
@@ -496,9 +478,7 @@ fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result__unit__str
                 } in
                 match mtmp206 {
                   Tag_0 => {
-                    let x207 = Tv::Unbound._0(mtmp206) in
                     let x208 = Tv::Unbound._1(mtmp206) in
-                    let l/46 = x208 in
                     let inline1043 = (x208 < x204) in
                     if inline1043 {
                       jump k497(x208)
@@ -516,7 +496,6 @@ fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result__unit__str
             },
             Tag_1 => {
               let x205 = Tv::Link._0(mtmp202) in
-              let inner/48 = x205 in
               let t502 = occurs(st/40, tvr/41, x205) in
               t502
             },
@@ -529,18 +508,14 @@ fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result__unit__str
     Tag_2 => {
       let x200 = Typ::TArrow._0(ty/42) in
       let x201 = Typ::TArrow._1(ty/42) in
-      let t2/50 = x201 in
-      let t1/49 = x200 in
       let mtmp211 = occurs(st/40, tvr/41, x200) in
       match mtmp211 {
         Tag_0 => {
-          let x212 = Result__unit__string::Ok._0(mtmp211) in
           let t505 = occurs(st/40, tvr/41, x201) in
           t505
         },
         Tag_1 => {
           let x213 = Result__unit__string::Err._0(mtmp211) in
-          let e/51 = x213 in
           let t506 = Result__unit__string::Err(x213) in
           t506
         },
@@ -554,17 +529,12 @@ fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result__unit__str
 }
 
 fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
-  let mtmp214 = (t1/53, t2/54) in
-  let x215 = t1/53 in
-  let x216 = t2/54 in
   match t2/54 {
     Tag_0 => {
       let x217 = Typ::TVar._0(t2/54) in
       match t1/53 {
         Tag_0 => {
           let x221 = Typ::TVar._0(t1/53) in
-          let r1/55 = x221 in
-          let r2/56 = x217 in
           let t516 = @intrinsic(ref.ptr_eq)(x221, x217) in
           if t516 {
             let t517 = Result__unit__string::Ok(()) in
@@ -573,18 +543,13 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
             join inline_cont1054(mtmp225: Tv) -> Result__unit__string {
               match mtmp225 {
                 Tag_0 => {
-                  let x226 = Tv::Unbound._0(mtmp225) in
-                  let x227 = Tv::Unbound._1(mtmp225) in
                   join inline_cont1052(mtmp229: Tv) -> Result__unit__string {
                     match mtmp229 {
                       Tag_0 => {
-                        let x230 = Tv::Unbound._0(mtmp229) in
-                        let x231 = Tv::Unbound._1(mtmp229) in
                         let t522 = Typ::TVar(x217) in
                         let mtmp233 = occurs(st/52, x221, t522) in
                         match mtmp233 {
                           Tag_0 => {
-                            let x234 = Result__unit__string::Ok._0(mtmp233) in
                             let t525 = Typ::TVar(x217) in
                             let t526 = Tv::Link(t525) in
                             join inline_cont1050(mtmp236: unit) -> Result__unit__string {
@@ -596,7 +561,6 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
                           },
                           Tag_1 => {
                             let x235 = Result__unit__string::Err._0(mtmp233) in
-                            let e/59 = x235 in
                             let t528 = Result__unit__string::Err(x235) in
                             t528
                           },
@@ -604,7 +568,6 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
                       },
                       Tag_1 => {
                         let x232 = Tv::Link._0(mtmp229) in
-                        let inner/58 = x232 in
                         let t529 = Typ::TVar(x221) in
                         let t530 = unify(st/52, t529, x232) in
                         t530
@@ -616,7 +579,6 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
                 },
                 Tag_1 => {
                   let x228 = Tv::Link._0(mtmp225) in
-                  let inner/57 = x228 in
                   let t531 = Typ::TVar(x217) in
                   let t532 = unify(st/52, x228, t531) in
                   t532
@@ -628,17 +590,12 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
           }
         },
         _ => {
-          let r2/65 = x217 in
-          let other/64 = t1/53 in
           join inline_cont1058(mtmp237: Tv) -> Result__unit__string {
             match mtmp237 {
               Tag_0 => {
-                let x238 = Tv::Unbound._0(mtmp237) in
-                let x239 = Tv::Unbound._1(mtmp237) in
                 let mtmp241 = occurs(st/52, x217, t1/53) in
                 match mtmp241 {
                   Tag_0 => {
-                    let x242 = Result__unit__string::Ok._0(mtmp241) in
                     let t537 = Tv::Link(t1/53) in
                     join inline_cont1056(mtmp244: unit) -> Result__unit__string {
                       let t538 = Result__unit__string::Ok(()) in
@@ -649,7 +606,6 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
                   },
                   Tag_1 => {
                     let x243 = Result__unit__string::Err._0(mtmp241) in
-                    let e/67 = x243 in
                     let t539 = Result__unit__string::Err(x243) in
                     t539
                   },
@@ -657,7 +613,6 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
               },
               Tag_1 => {
                 let x240 = Tv::Link._0(mtmp237) in
-                let inner/66 = x240 in
                 let t540 = unify(st/52, t1/53, x240) in
                 t540
               },
@@ -674,17 +629,12 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
       match t1/53 {
         Tag_0 => {
           let x245 = Typ::TVar._0(t1/53) in
-          let r1/60 = x245 in
-          let other/61 = t2/54 in
           join inline_cont1062(mtmp249: Tv) -> Result__unit__string {
             match mtmp249 {
               Tag_0 => {
-                let x250 = Tv::Unbound._0(mtmp249) in
-                let x251 = Tv::Unbound._1(mtmp249) in
                 let mtmp253 = occurs(st/52, x245, t2/54) in
                 match mtmp253 {
                   Tag_0 => {
-                    let x254 = Result__unit__string::Ok._0(mtmp253) in
                     let t547 = Tv::Link(t2/54) in
                     join inline_cont1060(mtmp256: unit) -> Result__unit__string {
                       let t548 = Result__unit__string::Ok(()) in
@@ -695,7 +645,6 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
                   },
                   Tag_1 => {
                     let x255 = Result__unit__string::Err._0(mtmp253) in
-                    let e/63 = x255 in
                     let t549 = Result__unit__string::Err(x255) in
                     t549
                   },
@@ -703,7 +652,6 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
               },
               Tag_1 => {
                 let x252 = Tv::Link._0(mtmp249) in
-                let inner/62 = x252 in
                 let t550 = unify(st/52, x252, t2/54) in
                 t550
               },
@@ -715,20 +663,14 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
         Tag_2 => {
           let x247 = Typ::TArrow._0(t1/53) in
           let x248 = Typ::TArrow._1(t1/53) in
-          let a2/69 = x248 in
-          let a1/68 = x247 in
-          let b2/71 = x220 in
-          let b1/70 = x219 in
           let mtmp257 = unify(st/52, x247, x219) in
           match mtmp257 {
             Tag_0 => {
-              let x258 = Result__unit__string::Ok._0(mtmp257) in
               let t553 = unify(st/52, x248, x220) in
               t553
             },
             Tag_1 => {
               let x259 = Result__unit__string::Err._0(mtmp257) in
-              let e/72 = x259 in
               let t554 = Result__unit__string::Err(x259) in
               t554
             },
@@ -744,17 +686,12 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
       match t1/53 {
         Tag_0 => {
           let x260 = Typ::TVar._0(t1/53) in
-          let r1/60 = x260 in
-          let other/61 = t2/54 in
           join inline_cont1066(mtmp264: Tv) -> Result__unit__string {
             match mtmp264 {
               Tag_0 => {
-                let x265 = Tv::Unbound._0(mtmp264) in
-                let x266 = Tv::Unbound._1(mtmp264) in
                 let mtmp268 = occurs(st/52, x260, t2/54) in
                 match mtmp268 {
                   Tag_0 => {
-                    let x269 = Result__unit__string::Ok._0(mtmp268) in
                     let t562 = Tv::Link(t2/54) in
                     join inline_cont1064(mtmp271: unit) -> Result__unit__string {
                       let t563 = Result__unit__string::Ok(()) in
@@ -765,7 +702,6 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
                   },
                   Tag_1 => {
                     let x270 = Result__unit__string::Err._0(mtmp268) in
-                    let e/63 = x270 in
                     let t564 = Result__unit__string::Err(x270) in
                     t564
                   },
@@ -773,7 +709,6 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
               },
               Tag_1 => {
                 let x267 = Tv::Link._0(mtmp264) in
-                let inner/62 = x267 in
                 let t565 = unify(st/52, x267, t2/54) in
                 t565
               },
@@ -795,14 +730,11 @@ fn gen(st/73: CheckerState, ty/74: Typ) -> Typ {
   match ty/74 {
     Tag_0 => {
       let x272 = Typ::TVar._0(ty/74) in
-      let tvref/75 = x272 in
       join inline_cont1070(mtmp276: Tv) -> Typ {
         match mtmp276 {
           Tag_0 => {
             let x277 = Tv::Unbound._0(mtmp276) in
             let x278 = Tv::Unbound._1(mtmp276) in
-            let l/77 = x278 in
-            let name/76 = x277 in
             let t573 = CheckerState.current_level(st/73) in
             join inline_cont1068(cur/78: int32) -> Typ {
               let t576 = (x278 > cur/78) in
@@ -819,7 +751,6 @@ fn gen(st/73: CheckerState, ty/74: Typ) -> Typ {
           },
           Tag_1 => {
             let x279 = Tv::Link._0(mtmp276) in
-            let inner/79 = x279 in
             let t579 = gen(st/73, x279) in
             t579
           },
@@ -831,15 +762,12 @@ fn gen(st/73: CheckerState, ty/74: Typ) -> Typ {
     Tag_2 => {
       let x274 = Typ::TArrow._0(ty/74) in
       let x275 = Typ::TArrow._1(ty/74) in
-      let t2/81 = x275 in
-      let t1/80 = x274 in
       let t580 = gen(st/73, x274) in
       let t581 = gen(st/73, x275) in
       let t582 = Typ::TArrow(t580, t581) in
       t582
     },
     _ => {
-      let other/82 = ty/74 in
       ty/74
     },
   }
@@ -849,12 +777,10 @@ fn inst_loop(st/83: CheckerState, subst/84: Vec[SubstEntry], ty/85: Typ) -> (Typ
   match ty/85 {
     Tag_0 => {
       let x280 = Typ::TVar._0(ty/85) in
-      let tvref/90 = x280 in
       join inline_cont1072(mtmp284: Tv) -> (Typ, Vec[SubstEntry]) {
         match mtmp284 {
           Tag_1 => {
             let x287 = Tv::Link._0(mtmp284) in
-            let inner/91 = x287 in
             let t589 = inst_loop(st/83, subst/84, x287) in
             t589
           },
@@ -870,7 +796,6 @@ fn inst_loop(st/83: CheckerState, subst/84: Vec[SubstEntry], ty/85: Typ) -> (Typ
     },
     Tag_1 => {
       let x281 = Typ::QVar._0(ty/85) in
-      let name/86 = x281 in
       let mtmp288 = subst_lookup(subst/84, x281) in
       match mtmp288 {
         Tag_0 => {
@@ -890,7 +815,6 @@ fn inst_loop(st/83: CheckerState, subst/84: Vec[SubstEntry], ty/85: Typ) -> (Typ
         },
         Tag_1 => {
           let x289 = Option__Typ::Some._0(mtmp288) in
-          let t/87 = x289 in
           let t596 = (x289, subst/84) in
           t596
         },
@@ -899,18 +823,12 @@ fn inst_loop(st/83: CheckerState, subst/84: Vec[SubstEntry], ty/85: Typ) -> (Typ
     Tag_2 => {
       let x282 = Typ::TArrow._0(ty/85) in
       let x283 = Typ::TArrow._1(ty/85) in
-      let t2/93 = x283 in
-      let t1/92 = x282 in
       let mtmp290 = inst_loop(st/83, subst/84, x282) in
       let x291 = mtmp290.0 in
       let x292 = mtmp290.1 in
-      let subst1/95 = x292 in
-      let ty1/94 = x291 in
       let mtmp293 = inst_loop(st/83, x292, x283) in
       let x294 = mtmp293.0 in
       let x295 = mtmp293.1 in
-      let subst2/97 = x295 in
-      let ty2/96 = x294 in
       let t597 = Typ::TArrow(x291, x294) in
       let t598 = (t597, x295) in
       t598
@@ -922,8 +840,6 @@ fn inst(st/98: CheckerState, ty/99: Typ) -> Typ {
   join inline_cont1081(subst0/100: Vec[SubstEntry]) -> Typ {
     let mtmp296 = inst_loop(st/98, subst0/100, ty/99) in
     let x297 = mtmp296.0 in
-    let x298 = mtmp296.1 in
-    let t/101 = x297 in
     x297
   } in
   let inline1082 = @intrinsic(vec.new)() in
@@ -934,7 +850,6 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result__T
   match e/104 {
     Tag_0 => {
       let x299 = Exp::Var._0(e/104) in
-      let x/105 = x299 in
       let mtmp307 = env_lookup(env/103, x299) in
       match mtmp307 {
         Tag_0 => {
@@ -943,7 +858,6 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result__T
         },
         Tag_1 => {
           let x308 = Option__Typ::Some._0(mtmp307) in
-          let ty/106 = x308 in
           join inline_cont1083(t608: Typ) -> Result__Typ__string {
             let t609 = Result__Typ__string::Ok(t608) in
             t609
@@ -951,8 +865,6 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result__T
           let inline1084 = inherent#Vec#Vec[T]#new__T_SubstEntry() in
           let inline1085 = inst_loop(st/102, inline1084, x308) in
           let inline1086 = inline1085.0 in
-          let inline1087 = inline1085.1 in
-          let inline1088 = inline1086 in
           jump inline_cont1083(inline1086)
         },
       }
@@ -960,46 +872,39 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result__T
     Tag_1 => {
       let x300 = Exp::App._0(e/104) in
       let x301 = Exp::App._1(e/104) in
-      let e2/114 = x301 in
-      let e1/113 = x300 in
       let mtmp309 = typeof(st/102, env/103, x300) in
       match mtmp309 {
         Tag_0 => {
           let x310 = Result__Typ__string::Ok._0(mtmp309) in
-          let ty_fun/116 = x310 in
           let mtmp312 = typeof(st/102, env/103, x301) in
           match mtmp312 {
             Tag_0 => {
               let x313 = Result__Typ__string::Ok._0(mtmp312) in
-              let ty_arg/118 = x313 in
-              join inline_cont1089(ty_res/119: Typ) -> Result__Typ__string {
+              join inline_cont1088(ty_res/119: Typ) -> Result__Typ__string {
                 let arrow/120 = Typ::TArrow(x313, ty_res/119) in
                 let mtmp315 = unify(st/102, x310, arrow/120) in
                 match mtmp315 {
                   Tag_0 => {
-                    let x316 = Result__unit__string::Ok._0(mtmp315) in
                     let t616 = Result__Typ__string::Ok(ty_res/119) in
                     t616
                   },
                   Tag_1 => {
                     let x317 = Result__unit__string::Err._0(mtmp315) in
-                    let e/121 = x317 in
                     let t617 = Result__Typ__string::Err(x317) in
                     t617
                   },
                 }
               } in
-              let inline1090 = gensym(st/102) in
-              let inline1091 = CheckerState.current_level(st/102) in
-              let inline1092 = inherent#Ref#Ref[T]#get__T_int32(inline1091) in
-              let inline1093 = Tv::Unbound(inline1090, inline1092) in
-              let inline1094 = inherent#Ref#Ref[T]#new__T_Tv(inline1093) in
-              let inline1095 = Typ::TVar(inline1094) in
-              jump inline_cont1089(inline1095)
+              let inline1089 = gensym(st/102) in
+              let inline1090 = CheckerState.current_level(st/102) in
+              let inline1091 = inherent#Ref#Ref[T]#get__T_int32(inline1090) in
+              let inline1092 = Tv::Unbound(inline1089, inline1091) in
+              let inline1093 = inherent#Ref#Ref[T]#new__T_Tv(inline1092) in
+              let inline1094 = Typ::TVar(inline1093) in
+              jump inline_cont1088(inline1094)
             },
             Tag_1 => {
               let x314 = Result__Typ__string::Err._0(mtmp312) in
-              let e/117 = x314 in
               let t618 = Result__Typ__string::Err(x314) in
               t618
             },
@@ -1007,7 +912,6 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result__T
         },
         Tag_1 => {
           let x311 = Result__Typ__string::Err._0(mtmp309) in
-          let e/115 = x311 in
           let t619 = Result__Typ__string::Err(x311) in
           t619
         },
@@ -1016,50 +920,42 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result__T
     Tag_2 => {
       let x302 = Exp::Lam._0(e/104) in
       let x303 = Exp::Lam._1(e/104) in
-      let body/108 = x303 in
-      let x/107 = x302 in
-      join inline_cont1096(ty_x/109: Typ) -> Result__Typ__string {
+      join inline_cont1095(ty_x/109: Typ) -> Result__Typ__string {
         let t620 = EnvEntry { name: x302, ty: ty_x/109 } in
         let env2/110 = inherent#Vec#Vec[T]#pushed__T_EnvEntry(env/103, t620) in
         let mtmp318 = typeof(st/102, env2/110, x303) in
         match mtmp318 {
           Tag_0 => {
             let x319 = Result__Typ__string::Ok._0(mtmp318) in
-            let ty_e/111 = x319 in
             let t623 = Typ::TArrow(ty_x/109, x319) in
             let t624 = Result__Typ__string::Ok(t623) in
             t624
           },
           Tag_1 => {
             let x320 = Result__Typ__string::Err._0(mtmp318) in
-            let e/112 = x320 in
             let t625 = Result__Typ__string::Err(x320) in
             t625
           },
         }
       } in
-      let inline1097 = gensym(st/102) in
-      let inline1098 = CheckerState.current_level(st/102) in
-      let inline1099 = inherent#Ref#Ref[T]#get__T_int32(inline1098) in
-      let inline1100 = Tv::Unbound(inline1097, inline1099) in
-      let inline1101 = inherent#Ref#Ref[T]#new__T_Tv(inline1100) in
-      let inline1102 = Typ::TVar(inline1101) in
-      jump inline_cont1096(inline1102)
+      let inline1096 = gensym(st/102) in
+      let inline1097 = CheckerState.current_level(st/102) in
+      let inline1098 = inherent#Ref#Ref[T]#get__T_int32(inline1097) in
+      let inline1099 = Tv::Unbound(inline1096, inline1098) in
+      let inline1100 = inherent#Ref#Ref[T]#new__T_Tv(inline1099) in
+      let inline1101 = Typ::TVar(inline1100) in
+      jump inline_cont1095(inline1101)
     },
     Tag_3 => {
       let x304 = Exp::Let._0(e/104) in
       let x305 = Exp::Let._1(e/104) in
       let x306 = Exp::Let._2(e/104) in
-      let e2/124 = x306 in
-      let e1/123 = x305 in
-      let x/122 = x304 in
-      join inline_cont1109(_wild321: unit) -> Result__Typ__string {
+      join inline_cont1108(_wild321: unit) -> Result__Typ__string {
         let ty_e/125 = typeof(st/102, env/103, x305) in
-        join inline_cont1103(_wild322: unit) -> Result__Typ__string {
+        join inline_cont1102(_wild322: unit) -> Result__Typ__string {
           match ty_e/125 {
             Tag_0 => {
               let x323 = Result__Typ__string::Ok._0(ty_e/125) in
-              let ty1/127 = x323 in
               let t628 = gen(st/102, x323) in
               let t629 = EnvEntry { name: x304, ty: t628 } in
               let env2/128 = inherent#Vec#Vec[T]#pushed__T_EnvEntry(env/103, t629) in
@@ -1068,25 +964,24 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result__T
             },
             Tag_1 => {
               let x324 = Result__Typ__string::Err._0(ty_e/125) in
-              let e/126 = x324 in
               let t631 = Result__Typ__string::Err(x324) in
               t631
             },
           }
         } in
-        let inline1104 = CheckerState.current_level(st/102) in
-        let inline1105 = inherent#Ref#Ref[T]#get__T_int32(inline1104) in
-        let inline1106 = CheckerState.current_level(st/102) in
-        let inline1107 = (inline1105 - 1) in
-        let inline1108 = inherent#Ref#Ref[T]#set__T_int32(inline1106, inline1107) in
-        jump inline_cont1103(())
+        let inline1103 = CheckerState.current_level(st/102) in
+        let inline1104 = inherent#Ref#Ref[T]#get__T_int32(inline1103) in
+        let inline1105 = CheckerState.current_level(st/102) in
+        let inline1106 = (inline1104 - 1) in
+        let inline1107 = inherent#Ref#Ref[T]#set__T_int32(inline1105, inline1106) in
+        jump inline_cont1102(())
       } in
-      let inline1110 = CheckerState.current_level(st/102) in
-      let inline1111 = inherent#Ref#Ref[T]#get__T_int32(inline1110) in
-      let inline1112 = CheckerState.current_level(st/102) in
-      let inline1113 = (inline1111 + 1) in
-      let inline1114 = inherent#Ref#Ref[T]#set__T_int32(inline1112, inline1113) in
-      jump inline_cont1109(())
+      let inline1109 = CheckerState.current_level(st/102) in
+      let inline1110 = inherent#Ref#Ref[T]#get__T_int32(inline1109) in
+      let inline1111 = CheckerState.current_level(st/102) in
+      let inline1112 = (inline1110 + 1) in
+      let inline1113 = inherent#Ref#Ref[T]#set__T_int32(inline1111, inline1112) in
+      jump inline_cont1108(())
     },
   }
 }
@@ -1115,21 +1010,19 @@ fn show_result(label/137: string, res/138: Result__Typ__string) -> unit {
   match res/138 {
     Tag_0 => {
       let x325 = Result__Typ__string::Ok._0(res/138) in
-      let ty/139 = x325 in
       let t646 = (label/137 + ": ") in
       let t647 = typ_to_string(x325) in
       let t648 = (t646 + t647) in
-      let inline1116 = trait_impl#ToString#string#to_string(t648) in
-      let inline1117 = @runtime(core.string_println)(inline1116) in
+      let inline1115 = trait_impl#ToString#string#to_string(t648) in
+      let inline1116 = @runtime(core.string_println)(inline1115) in
       ()
     },
     Tag_1 => {
       let x326 = Result__Typ__string::Err._0(res/138) in
-      let e/140 = x326 in
       let t650 = (label/137 + ": ") in
       let t651 = (t650 + x326) in
-      let inline1119 = trait_impl#ToString#string#to_string(t651) in
-      let inline1120 = @runtime(core.string_println)(inline1119) in
+      let inline1118 = trait_impl#ToString#string#to_string(t651) in
+      let inline1119 = @runtime(core.string_println)(inline1118) in
       ()
     },
   }
@@ -1311,104 +1204,102 @@ fn main() -> unit {
   let t788 = exp_var("x") in
   let t789 = exp_var("y") in
   let t790 = exp_var("y") in
-  join inline_cont1177(t791: Exp) -> unit {
-    join inline_cont1174(t792: Exp) -> unit {
-      join inline_cont1171(t793: Exp) -> unit {
+  join inline_cont1176(t791: Exp) -> unit {
+    join inline_cont1173(t792: Exp) -> unit {
+      join inline_cont1170(t793: Exp) -> unit {
         let t794 = typeof(st/141, t787, t793) in
         let _wild362 = show_result("sound_gen_occurs", t794) in
-        join inline_cont1168(_wild363: unit) -> unit {
-          join inline_cont1166(t795: Vec[EnvEntry]) -> unit {
-            join inline_cont1163(t796: Exp) -> unit {
-              join inline_cont1161(t797: Exp) -> unit {
-                join inline_cont1158(t798: Exp) -> unit {
-                  join inline_cont1155(t799: Exp) -> unit {
-                    join inline_cont1152(t800: Exp) -> unit {
-                      join inline_cont1149(t801: Exp) -> unit {
-                        join inline_cont1146(t802: Exp) -> unit {
+        join inline_cont1167(_wild363: unit) -> unit {
+          join inline_cont1165(t795: Vec[EnvEntry]) -> unit {
+            join inline_cont1162(t796: Exp) -> unit {
+              join inline_cont1160(t797: Exp) -> unit {
+                join inline_cont1157(t798: Exp) -> unit {
+                  join inline_cont1154(t799: Exp) -> unit {
+                    join inline_cont1151(t800: Exp) -> unit {
+                      join inline_cont1148(t801: Exp) -> unit {
+                        join inline_cont1145(t802: Exp) -> unit {
                           let t803 = typeof(st/141, t795, t802) in
-                          join inline_cont1133(_wild364: unit) -> unit {
-                            join inline_cont1129(_wild365: unit) -> unit {
-                              join inline_cont1125(_wild366: unit) -> unit {
-                                let inline1122 = "" in
-                                let inline1123 = trait_impl#ToString#string#to_string(inline1122) in
-                                let inline1124 = @runtime(core.string_println)(inline1123) in
+                          join inline_cont1132(_wild364: unit) -> unit {
+                            join inline_cont1128(_wild365: unit) -> unit {
+                              join inline_cont1124(_wild366: unit) -> unit {
+                                let inline1121 = "" in
+                                let inline1122 = trait_impl#ToString#string#to_string(inline1121) in
+                                let inline1123 = @runtime(core.string_println)(inline1122) in
                                 ()
                               } in
-                              let inline1126 = "All Done" in
-                              let inline1127 = trait_impl#ToString#string#to_string(inline1126) in
-                              let inline1128 = @runtime(core.string_println)(inline1127) in
-                              jump inline_cont1125(())
+                              let inline1125 = "All Done" in
+                              let inline1126 = trait_impl#ToString#string#to_string(inline1125) in
+                              let inline1127 = @runtime(core.string_println)(inline1126) in
+                              jump inline_cont1124(())
                             } in
-                            let inline1130 = "" in
-                            let inline1131 = trait_impl#ToString#string#to_string(inline1130) in
-                            let inline1132 = @runtime(core.string_println)(inline1131) in
-                            jump inline_cont1129(())
+                            let inline1129 = "" in
+                            let inline1130 = trait_impl#ToString#string#to_string(inline1129) in
+                            let inline1131 = @runtime(core.string_println)(inline1130) in
+                            jump inline_cont1128(())
                           } in
-                          let inline1134 = "fun_x_let_y_let_z_x_id_z_y" in
+                          let inline1133 = "fun_x_let_y_let_z_x_id_z_y" in
                           match t803 {
                             Tag_0 => {
-                              let inline1135 = Result__Typ__string::Ok._0(t803) in
-                              let inline1136 = inline1135 in
-                              let inline1137 = (inline1134 + ": ") in
-                              let inline1138 = typ_to_string(inline1135) in
-                              let inline1139 = (inline1137 + inline1138) in
-                              let inline1140 = println__T_string(inline1139) in
-                              jump inline_cont1133(())
+                              let inline1134 = Result__Typ__string::Ok._0(t803) in
+                              let inline1136 = (inline1133 + ": ") in
+                              let inline1137 = typ_to_string(inline1134) in
+                              let inline1138 = (inline1136 + inline1137) in
+                              let inline1139 = println__T_string(inline1138) in
+                              jump inline_cont1132(())
                             },
                             Tag_1 => {
-                              let inline1141 = Result__Typ__string::Err._0(t803) in
-                              let inline1142 = inline1141 in
-                              let inline1143 = (inline1134 + ": ") in
-                              let inline1144 = (inline1143 + inline1141) in
-                              let inline1145 = println__T_string(inline1144) in
-                              jump inline_cont1133(())
+                              let inline1140 = Result__Typ__string::Err._0(t803) in
+                              let inline1142 = (inline1133 + ": ") in
+                              let inline1143 = (inline1142 + inline1140) in
+                              let inline1144 = println__T_string(inline1143) in
+                              jump inline_cont1132(())
                             },
                           }
                         } in
-                        let inline1147 = "x" in
-                        let inline1148 = Exp::Lam(inline1147, t801) in
-                        jump inline_cont1146(inline1148)
+                        let inline1146 = "x" in
+                        let inline1147 = Exp::Lam(inline1146, t801) in
+                        jump inline_cont1145(inline1147)
                       } in
-                      let inline1150 = "y" in
-                      let inline1151 = Exp::Let(inline1150, t799, t800) in
-                      jump inline_cont1149(inline1151)
+                      let inline1149 = "y" in
+                      let inline1150 = Exp::Let(inline1149, t799, t800) in
+                      jump inline_cont1148(inline1150)
                     } in
-                    let inline1153 = "y" in
-                    let inline1154 = Exp::Var(inline1153) in
-                    jump inline_cont1152(inline1154)
+                    let inline1152 = "y" in
+                    let inline1153 = Exp::Var(inline1152) in
+                    jump inline_cont1151(inline1153)
                   } in
-                  let inline1156 = "z" in
-                  let inline1157 = Exp::Let(inline1156, t797, t798) in
-                  jump inline_cont1155(inline1157)
+                  let inline1155 = "z" in
+                  let inline1156 = Exp::Let(inline1155, t797, t798) in
+                  jump inline_cont1154(inline1156)
                 } in
-                let inline1159 = "z" in
-                let inline1160 = Exp::Var(inline1159) in
-                jump inline_cont1158(inline1160)
+                let inline1158 = "z" in
+                let inline1159 = Exp::Var(inline1158) in
+                jump inline_cont1157(inline1159)
               } in
-              let inline1162 = Exp::App(t796, id/142) in
-              jump inline_cont1161(inline1162)
+              let inline1161 = Exp::App(t796, id/142) in
+              jump inline_cont1160(inline1161)
             } in
-            let inline1164 = "x" in
-            let inline1165 = Exp::Var(inline1164) in
-            jump inline_cont1163(inline1165)
+            let inline1163 = "x" in
+            let inline1164 = Exp::Var(inline1163) in
+            jump inline_cont1162(inline1164)
           } in
-          let inline1167 = inherent#Vec#Vec[T]#new__T_EnvEntry() in
-          jump inline_cont1166(inline1167)
+          let inline1166 = inherent#Vec#Vec[T]#new__T_EnvEntry() in
+          jump inline_cont1165(inline1166)
         } in
-        let inline1169 = CheckerState.gensym_counter(st/141) in
-        let inline1170 = inherent#Ref#Ref[T]#set__T_int32(inline1169, 0) in
-        jump inline_cont1168(())
+        let inline1168 = CheckerState.gensym_counter(st/141) in
+        let inline1169 = inherent#Ref#Ref[T]#set__T_int32(inline1168, 0) in
+        jump inline_cont1167(())
       } in
-      let inline1172 = "x" in
-      let inline1173 = Exp::Lam(inline1172, t792) in
-      jump inline_cont1171(inline1173)
+      let inline1171 = "x" in
+      let inline1172 = Exp::Lam(inline1171, t792) in
+      jump inline_cont1170(inline1172)
     } in
-    let inline1175 = "y" in
-    let inline1176 = Exp::Let(inline1175, t788, t791) in
-    jump inline_cont1174(inline1176)
+    let inline1174 = "y" in
+    let inline1175 = Exp::Let(inline1174, t788, t791) in
+    jump inline_cont1173(inline1175)
   } in
-  let inline1178 = Exp::App(t789, t790) in
-  jump inline_cont1177(inline1178)
+  let inline1177 = Exp::App(t789, t790) in
+  jump inline_cont1176(inline1177)
 }
 
 fn inherent#Ref#Ref[T]#new__T_int32(value/257: int32) -> Ref[int32] {
@@ -1427,13 +1318,13 @@ fn inherent#Ref#Ref[T]#get__T_int32(self/258: Ref[int32]) -> int32 {
 }
 
 fn inherent#char#char#to_string(self/36: char) -> string {
-  let inline1180 = (self/36 as uint32) in
-  let inline1181 = utf8_valid_scalar(inline1180) in
-  if inline1181 {
-    let inline1182 = @runtime(core.char_to_string)(self/36) in
-    inline1182
+  let inline1179 = (self/36 as uint32) in
+  let inline1180 = utf8_valid_scalar(inline1179) in
+  if inline1180 {
+    let inline1181 = @runtime(core.char_to_string)(self/36) in
+    inline1181
   } else {
-    let inline1183 = @runtime(core.string_get)("", -1) in
+    let inline1182 = @runtime(core.string_get)("", -1) in
     ""
   }
 }
@@ -1524,46 +1415,44 @@ fn inherent#Ref#Ref[T]#set__T_Tv(self/259: Ref[Tv], value/260: Tv) -> unit {
 fn inherent#Vec#Vec[T]#pushed__T_SubstEntry(self/178: Vec[SubstEntry], elem/179: SubstEntry) -> Vec[
   SubstEntry
 ] {
-  join inline_cont1192(t861: int) -> Vec[SubstEntry] {
+  join inline_cont1191(t861: int) -> Vec[SubstEntry] {
     let t862 = (t861 + 1) in
-    join inline_cont1190(result/180: Vec[SubstEntry]) -> Vec[SubstEntry] {
+    join inline_cont1189(result/180: Vec[SubstEntry]) -> Vec[SubstEntry] {
       let index/181 = 0 in
       join exit863() -> Vec[SubstEntry] {
-        let _wild83 = () in
-        let inline1189 = @intrinsic(vec.push)(result/180, elem/179) in
+        let inline1188 = @intrinsic(vec.push)(result/180, elem/179) in
         result/180
       } in
       joinrec {
         join loop864() -> Vec[SubstEntry] {
-          join inline_cont1186(t865: int) -> Vec[SubstEntry] {
+          join inline_cont1185(t865: int) -> Vec[SubstEntry] {
             let t866 = (index/181 < t865) in
             if t866 {
               let t867 = @intrinsic(vec.get)(self/178, index/181) in
-              join inline_cont1184(_wild79: unit) -> Vec[SubstEntry] {
+              join inline_cont1183(_wild79: unit) -> Vec[SubstEntry] {
                 let compound_old80 = index/181 in
                 let compound_value81 = 1 in
                 let t868 = (compound_old80 + compound_value81) in
                 let t869 = index/181 = t868 in
-                let _wild82 = t869 in
                 jump loop864()
               } in
-              let inline1185 = @intrinsic(vec.push)(result/180, t867) in
-              jump inline_cont1184(())
+              let inline1184 = @intrinsic(vec.push)(result/180, t867) in
+              jump inline_cont1183(())
             } else {
               jump exit863()
             }
           } in
-          let inline1187 = @intrinsic(vec.len)(self/178) in
-          jump inline_cont1186(inline1187)
+          let inline1186 = @intrinsic(vec.len)(self/178) in
+          jump inline_cont1185(inline1186)
         } in
       } in
       jump loop864()
     } in
-    let inline1191 = @intrinsic(vec.with_capacity)(t862) in
-    jump inline_cont1190(inline1191)
+    let inline1190 = @intrinsic(vec.with_capacity)(t862) in
+    jump inline_cont1189(inline1190)
   } in
-  let inline1193 = @intrinsic(vec.len)(self/178) in
-  jump inline_cont1192(inline1193)
+  let inline1192 = @intrinsic(vec.len)(self/178) in
+  jump inline_cont1191(inline1192)
 }
 
 fn inherent#Vec#Vec[T]#new__T_SubstEntry() -> Vec[SubstEntry] {
@@ -1574,59 +1463,57 @@ fn inherent#Vec#Vec[T]#new__T_SubstEntry() -> Vec[SubstEntry] {
 fn inherent#Vec#Vec[T]#pushed__T_EnvEntry(self/178: Vec[EnvEntry], elem/179: EnvEntry) -> Vec[
   EnvEntry
 ] {
-  join inline_cont1202(t875: int) -> Vec[EnvEntry] {
+  join inline_cont1201(t875: int) -> Vec[EnvEntry] {
     let t876 = (t875 + 1) in
-    join inline_cont1200(result/180: Vec[EnvEntry]) -> Vec[EnvEntry] {
+    join inline_cont1199(result/180: Vec[EnvEntry]) -> Vec[EnvEntry] {
       let index/181 = 0 in
       join exit877() -> Vec[EnvEntry] {
-        let _wild83 = () in
-        let inline1199 = @intrinsic(vec.push)(result/180, elem/179) in
+        let inline1198 = @intrinsic(vec.push)(result/180, elem/179) in
         result/180
       } in
       joinrec {
         join loop878() -> Vec[EnvEntry] {
-          join inline_cont1196(t879: int) -> Vec[EnvEntry] {
+          join inline_cont1195(t879: int) -> Vec[EnvEntry] {
             let t880 = (index/181 < t879) in
             if t880 {
               let t881 = @intrinsic(vec.get)(self/178, index/181) in
-              join inline_cont1194(_wild79: unit) -> Vec[EnvEntry] {
+              join inline_cont1193(_wild79: unit) -> Vec[EnvEntry] {
                 let compound_old80 = index/181 in
                 let compound_value81 = 1 in
                 let t882 = (compound_old80 + compound_value81) in
                 let t883 = index/181 = t882 in
-                let _wild82 = t883 in
                 jump loop878()
               } in
-              let inline1195 = @intrinsic(vec.push)(result/180, t881) in
-              jump inline_cont1194(())
+              let inline1194 = @intrinsic(vec.push)(result/180, t881) in
+              jump inline_cont1193(())
             } else {
               jump exit877()
             }
           } in
-          let inline1197 = @intrinsic(vec.len)(self/178) in
-          jump inline_cont1196(inline1197)
+          let inline1196 = @intrinsic(vec.len)(self/178) in
+          jump inline_cont1195(inline1196)
         } in
       } in
       jump loop878()
     } in
-    let inline1201 = @intrinsic(vec.with_capacity)(t876) in
-    jump inline_cont1200(inline1201)
+    let inline1200 = @intrinsic(vec.with_capacity)(t876) in
+    jump inline_cont1199(inline1200)
   } in
-  let inline1203 = @intrinsic(vec.len)(self/178) in
-  jump inline_cont1202(inline1203)
+  let inline1202 = @intrinsic(vec.len)(self/178) in
+  jump inline_cont1201(inline1202)
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont1204(t885: string) -> unit {
+  join inline_cont1203(t885: string) -> unit {
     let t886 = @runtime(core.string_println)(t885) in
     ()
   } in
-  jump inline_cont1204(value/31)
+  jump inline_cont1203(value/31)
 }
 
 fn char_to_string(value/29: char) -> string {
   let t891 = (value/29 as uint32) in
-  join inline_cont1205(t892: bool) -> string {
+  join inline_cont1204(t892: bool) -> string {
     if t892 {
       let t893 = @runtime(core.char_to_string)(value/29) in
       t893
@@ -1635,21 +1522,21 @@ fn char_to_string(value/29: char) -> string {
       ""
     }
   } in
-  let inline1206 = (t891 <= 1114111) in
-  if inline1206 {
-    let inline1207 = (t891 >= 55296) in
-    join inline_join1208(inline1209: bool) -> string {
-      let inline1210 = (!inline1209) in
-      jump inline_cont1205(inline1210)
+  let inline1205 = (t891 <= 1114111) in
+  if inline1205 {
+    let inline1206 = (t891 >= 55296) in
+    join inline_join1207(inline1208: bool) -> string {
+      let inline1209 = (!inline1208) in
+      jump inline_cont1204(inline1209)
     } in
-    if inline1207 {
-      let inline1211 = (t891 <= 57343) in
-      jump inline_join1208(inline1211)
+    if inline1206 {
+      let inline1210 = (t891 <= 57343) in
+      jump inline_join1207(inline1210)
     } else {
-      jump inline_join1208(false)
+      jump inline_join1207(false)
     }
   } else {
-    jump inline_cont1205(false)
+    jump inline_cont1204(false)
   }
 }
 

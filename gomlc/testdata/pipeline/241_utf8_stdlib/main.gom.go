@@ -139,7 +139,7 @@ func check_scalar(bytes__5 *_goml_vec_uint8, expected__6 uint32, expected_width_
     var x178 string = mtmp176._1
     var inline520 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x177)
     _goml_runtime_core_string_println(inline520)
-    var commute_field637 Tuple2_4char_3int
+    var commute_field636 Tuple2_4char_3int
     var inline509 int = 0
     var inline510 Tuple3_4bool_4char_3int = string_decode_utf8_at(x178, inline509)
     var inline511 bool = inline510._0
@@ -150,9 +150,9 @@ func check_scalar(bytes__5 *_goml_vec_uint8, expected__6 uint32, expected_width_
             _0: inline512,
             _1: inline513,
         }
-        commute_field637 = inline517
-        var x184 rune = commute_field637._0
-        var x185 int = commute_field637._1
+        commute_field636 = inline517
+        var x184 rune = commute_field636._0
+        var x185 int = commute_field636._1
         var t287 uint32 = uint32(rune(x184))
         var t288 bool = t287 == expected__6
         var inline506 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t288)
@@ -711,15 +711,15 @@ func _goml_m_inherent_i_string_i_string_i_byte__get(self__41 string, index__42 i
 }
 
 func utf8_valid_decode(value__0 uint32, width__1 int) Tuple3_4bool_4char_3int {
-    var commute_field640 rune
+    var commute_field639 rune
     var inline623 bool = utf8_valid_scalar(value__0)
     if inline623 {
         var inline624 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__0)
-        var inline626 rune = inline624._1
-        commute_field640 = inline626
+        var inline625 rune = inline624._1
+        commute_field639 = inline625
         var t458 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
             _0: true,
-            _1: commute_field640,
+            _1: commute_field639,
             _2: width__1,
         }
         return t458
@@ -745,18 +745,18 @@ func utf8_invalid_continuation(value__3 uint32) bool {
 
 func char_from_uint32(value__32 uint32) Option__char {
     var t469 bool
-    var inline630 bool = value__32 <= 1114111
-    if inline630 {
-        var inline631 bool = value__32 >= 55296
-        var inline633 bool
-        if inline631 {
-            var inline635 bool = value__32 <= 57343
-            inline633 = inline635
+    var inline629 bool = value__32 <= 1114111
+    if inline629 {
+        var inline630 bool = value__32 >= 55296
+        var inline632 bool
+        if inline630 {
+            var inline634 bool = value__32 <= 57343
+            inline632 = inline634
         } else {
-            inline633 = false
+            inline632 = false
         }
-        var inline634 bool = !inline633
-        t469 = inline634
+        var inline633 bool = !inline632
+        t469 = inline633
     } else {
         t469 = false
     }

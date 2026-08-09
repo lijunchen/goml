@@ -11,11 +11,8 @@ fn cut_pair(ok/0: bool) -> Option__(string,string) {
 fn describe(ok/1: bool) -> Option__string {
   join inline_cont208(mtmp172: Option__(string,string)) -> Option__string {
     join k188(jp189: (string, string)) -> Option__string {
-      let mtmp174 = jp189 in
       let x175 = jp189.0 in
       let x176 = jp189.1 in
-      let after/3 = x176 in
-      let before/2 = x175 in
       let t190 = (x175 + "|") in
       let t191 = (t190 + x176) in
       let t192 = Option__string::Some(t191) in
@@ -27,7 +24,6 @@ fn describe(ok/1: bool) -> Option__string {
       },
       Tag_1 => {
         let x173 = Option__(string,string)::Some._0(mtmp172) in
-        let try_value/13 = x173 in
         jump k188(x173)
       },
     }
@@ -48,7 +44,6 @@ fn show(opt/4: Option__string) -> string {
     },
     Tag_1 => {
       let x177 = Option__string::Some._0(opt/4) in
-      let value/5 = x177 in
       let t197 = ("some " + x177) in
       t197
     },
@@ -71,7 +66,6 @@ fn main() -> unit {
           },
           Tag_1 => {
             let inline215 = Option__string::Some._0(t201) in
-            let inline216 = inline215 in
             let inline217 = ("some " + inline215) in
             jump inline_cont214(inline217)
           },
@@ -80,11 +74,8 @@ fn main() -> unit {
       let inline219 = false in
       let inline220 = cut_pair(inline219) in
       join inline_join221(inline222: (string, string)) -> unit {
-        let inline223 = inline222 in
         let inline224 = inline222.0 in
         let inline225 = inline222.1 in
-        let inline226 = inline225 in
-        let inline227 = inline224 in
         let inline228 = (inline224 + "|") in
         let inline229 = (inline228 + inline225) in
         let inline230 = Option__string::Some(inline229) in
@@ -96,7 +87,6 @@ fn main() -> unit {
         },
         Tag_1 => {
           let inline231 = Option__(string,string)::Some._0(inline220) in
-          let inline232 = inline231 in
           jump inline_join221(inline231)
         },
       }
@@ -111,7 +101,6 @@ fn main() -> unit {
     },
     Tag_1 => {
       let inline237 = Option__string::Some._0(t199) in
-      let inline238 = inline237 in
       let inline239 = ("some " + inline237) in
       jump inline_cont236(inline239)
     },

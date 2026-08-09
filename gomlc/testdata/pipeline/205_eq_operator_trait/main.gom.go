@@ -21,11 +21,6 @@ func array_get__Array_2_15AlwaysDifferent(arr [2]AlwaysDifferent, index int) Alw
     return arr[index]
 }
 
-type Tuple2_15AlwaysDifferent_3int struct {
-    _0 AlwaysDifferent
-    _1 int
-}
-
 type AlwaysDifferent struct {
     value int32
 }

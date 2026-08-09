@@ -179,11 +179,6 @@ func ref_set__Ref_4bool(reference *ref_bool_x, value bool) struct{} {
     return struct{}{}
 }
 
-type Tuple2_3Typ_3Typ struct {
-    _0 Typ
-    _1 Typ
-}
-
 type Tuple2_3Typ_16Vec_10SubstEntry struct {
     _0 Typ
     _1 *_goml_vec_SubstEntry
@@ -1082,18 +1077,18 @@ func typeof(st__102 CheckerState, env__103 *_goml_vec_EnvEntry, e__104 Exp) Resu
             case Result__Typ__string_Ok:
                 var x313 Typ = mtmp312.(Result__Typ__string_Ok)._0
                 var ty_res__119 Typ
-                var inline1090 string = gensym(st__102)
-                var inline1091 *ref_int32_x = st__102.current_level
-                var inline1092 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(inline1091)
-                var inline1093 Tv = Unbound{
-                    _0: inline1090,
-                    _1: inline1092,
+                var inline1089 string = gensym(st__102)
+                var inline1090 *ref_int32_x = st__102.current_level
+                var inline1091 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(inline1090)
+                var inline1092 Tv = Unbound{
+                    _0: inline1089,
+                    _1: inline1091,
                 }
-                var inline1094 *ref_Tv_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Tv(inline1093)
-                var inline1095 Typ = TVar{
-                    _0: inline1094,
+                var inline1093 *ref_Tv_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Tv(inline1092)
+                var inline1094 Typ = TVar{
+                    _0: inline1093,
                 }
-                ty_res__119 = inline1095
+                ty_res__119 = inline1094
                 var arrow__120 Typ = TArrow{
                     _0: x313,
                     _1: ty_res__119,
@@ -1136,18 +1131,18 @@ func typeof(st__102 CheckerState, env__103 *_goml_vec_EnvEntry, e__104 Exp) Resu
         var x302 string = e__104.(Lam)._0
         var x303 Exp = e__104.(Lam)._1
         var ty_x__109 Typ
-        var inline1097 string = gensym(st__102)
-        var inline1098 *ref_int32_x = st__102.current_level
-        var inline1099 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(inline1098)
-        var inline1100 Tv = Unbound{
-            _0: inline1097,
-            _1: inline1099,
+        var inline1096 string = gensym(st__102)
+        var inline1097 *ref_int32_x = st__102.current_level
+        var inline1098 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(inline1097)
+        var inline1099 Tv = Unbound{
+            _0: inline1096,
+            _1: inline1098,
         }
-        var inline1101 *ref_Tv_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Tv(inline1100)
-        var inline1102 Typ = TVar{
-            _0: inline1101,
+        var inline1100 *ref_Tv_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Tv(inline1099)
+        var inline1101 Typ = TVar{
+            _0: inline1100,
         }
-        ty_x__109 = inline1102
+        ty_x__109 = inline1101
         var t620 EnvEntry = EnvEntry{
             name: x302,
             ty: ty_x__109,
@@ -1178,17 +1173,17 @@ func typeof(st__102 CheckerState, env__103 *_goml_vec_EnvEntry, e__104 Exp) Resu
         var x304 string = e__104.(Let)._0
         var x305 Exp = e__104.(Let)._1
         var x306 Exp = e__104.(Let)._2
-        var inline1110 *ref_int32_x = st__102.current_level
-        var inline1111 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(inline1110)
-        var inline1112 *ref_int32_x = st__102.current_level
-        var inline1113 int32 = inline1111 + 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(inline1112, inline1113)
+        var inline1109 *ref_int32_x = st__102.current_level
+        var inline1110 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(inline1109)
+        var inline1111 *ref_int32_x = st__102.current_level
+        var inline1112 int32 = inline1110 + 1
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(inline1111, inline1112)
         var ty_e__125 Result__Typ__string = typeof(st__102, env__103, x305)
-        var inline1104 *ref_int32_x = st__102.current_level
-        var inline1105 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(inline1104)
-        var inline1106 *ref_int32_x = st__102.current_level
-        var inline1107 int32 = inline1105 - 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(inline1106, inline1107)
+        var inline1103 *ref_int32_x = st__102.current_level
+        var inline1104 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(inline1103)
+        var inline1105 *ref_int32_x = st__102.current_level
+        var inline1106 int32 = inline1104 - 1
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(inline1105, inline1106)
         switch ty_e__125.(type) {
         case Result__Typ__string_Ok:
             var x323 Typ = ty_e__125.(Result__Typ__string_Ok)._0
@@ -1253,15 +1248,15 @@ func show_result(label__137 string, res__138 Result__Typ__string) struct{} {
         var t646 string = label__137 + ": "
         var t647 string = typ_to_string(x325)
         var t648 string = t646 + t647
-        var inline1116 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t648)
-        _goml_runtime_core_string_println(inline1116)
+        var inline1115 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t648)
+        _goml_runtime_core_string_println(inline1115)
         return struct{}{}
     case Result__Typ__string_Err:
         var x326 string = res__138.(Result__Typ__string_Err)._0
         var t650 string = label__137 + ": "
         var t651 string = t650 + x326
-        var inline1119 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t651)
-        _goml_runtime_core_string_println(inline1119)
+        var inline1118 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t651)
+        _goml_runtime_core_string_println(inline1118)
         return struct{}{}
     default:
         panic("non-exhaustive match")
@@ -1445,106 +1440,106 @@ func main0() struct{} {
     var t789 Exp = exp_var("y")
     var t790 Exp = exp_var("y")
     var t791 Exp
-    var inline1178 Exp = App{
+    var inline1177 Exp = App{
         _0: t789,
         _1: t790,
     }
-    t791 = inline1178
+    t791 = inline1177
     var t792 Exp
-    var inline1175 string = "y"
-    var inline1176 Exp = Let{
-        _0: inline1175,
+    var inline1174 string = "y"
+    var inline1175 Exp = Let{
+        _0: inline1174,
         _1: t788,
         _2: t791,
     }
-    t792 = inline1176
+    t792 = inline1175
     var t793 Exp
-    var inline1172 string = "x"
-    var inline1173 Exp = Lam{
-        _0: inline1172,
+    var inline1171 string = "x"
+    var inline1172 Exp = Lam{
+        _0: inline1171,
         _1: t792,
     }
-    t793 = inline1173
+    t793 = inline1172
     var t794 Result__Typ__string = typeof(st__141, t787, t793)
     show_result("sound_gen_occurs", t794)
-    var inline1169 *ref_int32_x = st__141.gensym_counter
-    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(inline1169, 0)
+    var inline1168 *ref_int32_x = st__141.gensym_counter
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(inline1168, 0)
     var t795 *_goml_vec_EnvEntry
-    var inline1167 *_goml_vec_EnvEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__EnvEntry()
-    t795 = inline1167
+    var inline1166 *_goml_vec_EnvEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__EnvEntry()
+    t795 = inline1166
     var t796 Exp
-    var inline1164 string = "x"
-    var inline1165 Exp = Var{
-        _0: inline1164,
+    var inline1163 string = "x"
+    var inline1164 Exp = Var{
+        _0: inline1163,
     }
-    t796 = inline1165
+    t796 = inline1164
     var t797 Exp
-    var inline1162 Exp = App{
+    var inline1161 Exp = App{
         _0: t796,
         _1: id__142,
     }
-    t797 = inline1162
+    t797 = inline1161
     var t798 Exp
-    var inline1159 string = "z"
-    var inline1160 Exp = Var{
-        _0: inline1159,
+    var inline1158 string = "z"
+    var inline1159 Exp = Var{
+        _0: inline1158,
     }
-    t798 = inline1160
+    t798 = inline1159
     var t799 Exp
-    var inline1156 string = "z"
-    var inline1157 Exp = Let{
-        _0: inline1156,
+    var inline1155 string = "z"
+    var inline1156 Exp = Let{
+        _0: inline1155,
         _1: t797,
         _2: t798,
     }
-    t799 = inline1157
+    t799 = inline1156
     var t800 Exp
-    var inline1153 string = "y"
-    var inline1154 Exp = Var{
-        _0: inline1153,
+    var inline1152 string = "y"
+    var inline1153 Exp = Var{
+        _0: inline1152,
     }
-    t800 = inline1154
+    t800 = inline1153
     var t801 Exp
-    var inline1150 string = "y"
-    var inline1151 Exp = Let{
-        _0: inline1150,
+    var inline1149 string = "y"
+    var inline1150 Exp = Let{
+        _0: inline1149,
         _1: t799,
         _2: t800,
     }
-    t801 = inline1151
+    t801 = inline1150
     var t802 Exp
-    var inline1147 string = "x"
-    var inline1148 Exp = Lam{
-        _0: inline1147,
+    var inline1146 string = "x"
+    var inline1147 Exp = Lam{
+        _0: inline1146,
         _1: t801,
     }
-    t802 = inline1148
+    t802 = inline1147
     var t803 Result__Typ__string = typeof(st__141, t795, t802)
-    var inline1134 string = "fun_x_let_y_let_z_x_id_z_y"
+    var inline1133 string = "fun_x_let_y_let_z_x_id_z_y"
     switch t803.(type) {
     case Result__Typ__string_Ok:
-        var inline1135 Typ = t803.(Result__Typ__string_Ok)._0
-        var inline1137 string = inline1134 + ": "
-        var inline1138 string = typ_to_string(inline1135)
-        var inline1139 string = inline1137 + inline1138
-        println__T_string(inline1139)
+        var inline1134 Typ = t803.(Result__Typ__string_Ok)._0
+        var inline1136 string = inline1133 + ": "
+        var inline1137 string = typ_to_string(inline1134)
+        var inline1138 string = inline1136 + inline1137
+        println__T_string(inline1138)
     case Result__Typ__string_Err:
-        var inline1141 string = t803.(Result__Typ__string_Err)._0
-        var inline1143 string = inline1134 + ": "
-        var inline1144 string = inline1143 + inline1141
-        println__T_string(inline1144)
+        var inline1140 string = t803.(Result__Typ__string_Err)._0
+        var inline1142 string = inline1133 + ": "
+        var inline1143 string = inline1142 + inline1140
+        println__T_string(inline1143)
     default:
         panic("non-exhaustive match")
     }
-    var inline1130 string = ""
-    var inline1131 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline1130)
-    _goml_runtime_core_string_println(inline1131)
-    var inline1126 string = "All Done"
-    var inline1127 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline1126)
-    _goml_runtime_core_string_println(inline1127)
-    var inline1122 string = ""
-    var inline1123 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline1122)
-    _goml_runtime_core_string_println(inline1123)
+    var inline1129 string = ""
+    var inline1130 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline1129)
+    _goml_runtime_core_string_println(inline1130)
+    var inline1125 string = "All Done"
+    var inline1126 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline1125)
+    _goml_runtime_core_string_println(inline1126)
+    var inline1121 string = ""
+    var inline1122 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline1121)
+    _goml_runtime_core_string_println(inline1122)
     return struct{}{}
 }
 
@@ -1570,18 +1565,18 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__EnvEntry() *_goml_vec_EnvEn
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__SubstEntry(self__178 *_goml_vec_SubstEntry, elem__179 SubstEntry) *_goml_vec_SubstEntry {
     var t861 int
-    var inline1193 int = vec_len__Vec_10SubstEntry(self__178)
-    t861 = inline1193
+    var inline1192 int = vec_len__Vec_10SubstEntry(self__178)
+    t861 = inline1192
     var t862 int = t861 + 1
     var result__180 *_goml_vec_SubstEntry
-    var inline1191 *_goml_vec_SubstEntry = vec_with_capacity__Vec_10SubstEntry(t862)
-    result__180 = inline1191
+    var inline1190 *_goml_vec_SubstEntry = vec_with_capacity__Vec_10SubstEntry(t862)
+    result__180 = inline1190
     var index__181 int = 0
     Loop_loop864:
     for {
         var t865 int
-        var inline1187 int = vec_len__Vec_10SubstEntry(self__178)
-        t865 = inline1187
+        var inline1186 int = vec_len__Vec_10SubstEntry(self__178)
+        t865 = inline1186
         var t866 bool = index__181 < t865
         if t866 {
             var t867 SubstEntry = vec_get__Vec_10SubstEntry(self__178, index__181)
@@ -1606,18 +1601,18 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__SubstEntry() *_goml_vec_Sub
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__EnvEntry(self__178 *_goml_vec_EnvEntry, elem__179 EnvEntry) *_goml_vec_EnvEntry {
     var t875 int
-    var inline1203 int = vec_len__Vec_8EnvEntry(self__178)
-    t875 = inline1203
+    var inline1202 int = vec_len__Vec_8EnvEntry(self__178)
+    t875 = inline1202
     var t876 int = t875 + 1
     var result__180 *_goml_vec_EnvEntry
-    var inline1201 *_goml_vec_EnvEntry = vec_with_capacity__Vec_8EnvEntry(t876)
-    result__180 = inline1201
+    var inline1200 *_goml_vec_EnvEntry = vec_with_capacity__Vec_8EnvEntry(t876)
+    result__180 = inline1200
     var index__181 int = 0
     Loop_loop878:
     for {
         var t879 int
-        var inline1197 int = vec_len__Vec_8EnvEntry(self__178)
-        t879 = inline1197
+        var inline1196 int = vec_len__Vec_8EnvEntry(self__178)
+        t879 = inline1196
         var t880 bool = index__181 < t879
         if t880 {
             var t881 EnvEntry = vec_get__Vec_8EnvEntry(self__178, index__181)
@@ -1645,18 +1640,18 @@ func println__T_string(value__31 string) struct{} {
 func char_to_string(value__29 rune) string {
     var t891 uint32 = uint32(rune(value__29))
     var t892 bool
-    var inline1206 bool = t891 <= 1114111
-    if inline1206 {
-        var inline1207 bool = t891 >= 55296
-        var inline1209 bool
-        if inline1207 {
-            var inline1211 bool = t891 <= 57343
-            inline1209 = inline1211
+    var inline1205 bool = t891 <= 1114111
+    if inline1205 {
+        var inline1206 bool = t891 >= 55296
+        var inline1208 bool
+        if inline1206 {
+            var inline1210 bool = t891 <= 57343
+            inline1208 = inline1210
         } else {
-            inline1209 = false
+            inline1208 = false
         }
-        var inline1210 bool = !inline1209
-        t892 = inline1210
+        var inline1209 bool = !inline1208
+        t892 = inline1209
     } else {
         t892 = false
     }

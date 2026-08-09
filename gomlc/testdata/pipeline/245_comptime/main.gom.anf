@@ -16,7 +16,6 @@ fn accumulate(limit/1: int) -> int {
   let index/2 = 0 in
   let total/3 = 0 in
   join exit196() -> int {
-    let _wild174 = () in
     total/3
   } in
   joinrec {
@@ -66,10 +65,8 @@ fn nonnegative(value/6: int) -> int {
 }
 
 fn shadow(value/7: int) -> int {
-  let base/8 = value/7 in
   let base/9 = (value/7 + 1) in
   let t219 = (base/9 * 2) in
-  let nested/10 = t219 in
   let t220 = (base/9 + t219) in
   t220
 }
@@ -81,8 +78,6 @@ fn widen_negative(value/11: int8) -> uint64 {
 
 fn main() -> unit {
   let values/12 = [6, 10, 4] in
-  let pair/13 = Pair { left: 7, right: 8 } in
-  let choice/14 = Choice::Value(9) in
   join inline_cont294(_wild175: unit) -> unit {
     let t225 = @intrinsic(array.get)(values/12, 0) in
     join inline_cont291(_wild176: unit) -> unit {
@@ -95,7 +90,6 @@ fn main() -> unit {
           let t230 = (t228 + t229) in
           join inline_cont282(_wild179: unit) -> unit {
             join k231() -> unit {
-              let _wild181 = () in
               let t232 = factorial(5) in
               let t233 = (t232 == ANSWER) in
               join inline_cont279(_wild182: unit) -> unit {
@@ -126,10 +120,8 @@ fn main() -> unit {
                     jump inline_cont266(())
                   } in
                   let inline270 = 3 in
-                  let inline271 = inline270 in
                   let inline272 = (inline270 + 1) in
                   let inline273 = (inline272 * 2) in
-                  let inline274 = inline273 in
                   let inline275 = (inline272 + inline273) in
                   jump inline_cont269(inline275)
                 } in
@@ -142,7 +134,6 @@ fn main() -> unit {
               jump inline_cont279(())
             } in
             let x180 = 9 in
-            let value/15 = x180 in
             let inline255 = trait_impl#ToString#int#to_string(x180) in
             let inline256 = @runtime(core.string_println)(inline255) in
             jump k231()

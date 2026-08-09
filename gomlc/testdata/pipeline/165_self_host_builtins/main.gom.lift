@@ -1118,7 +1118,6 @@ fn std::fs::try_exists(path/99: string) -> Result__bool__std::fs::Error {
   let mtmp44 = std::fs::metadata(path/99) in
   match mtmp44 {
     Result__std::fs::Metadata__std::fs::Error::Ok(x45) => {
-      let x45 = Result__std::fs::Metadata__std::fs::Error::Ok._0(mtmp44) in
       Result__bool__std::fs::Error::Ok(true)
     },
     Result__std::fs::Metadata__std::fs::Error::Err(x46) => {
@@ -1359,7 +1358,6 @@ fn std::fs::sha256_file(path/146: string) -> Result__string__string {
 fn show_unit(result/0: Result__unit__string) -> string {
   match result/0 {
     Result__unit__string::Ok(x172) => {
-      let x172 = Result__unit__string::Ok._0(result/0) in
       "ok"
     },
     Result__unit__string::Err(x173) => {
@@ -1457,7 +1455,6 @@ fn inherent#Vec#Vec[T]#slice__T_uint8(self/225: Vec[uint8], start/226: int, end/
 
 fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
   let mtmp10 = @runtime(core.string_from_utf8)(bytes/24) in
-  let x11 = mtmp10.0 in
   let x12 = mtmp10.1 in
   let value/25 = x12 in
   let index/26 = 0 in
@@ -1465,7 +1462,6 @@ fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
     while (index/26 < inherent#string#string#byte_len(value/25)) {
         let mtmp13 = string_decode_utf8_at(value/25, index/26) in
         let x14 = mtmp13.0 in
-        let x15 = mtmp13.1 in
         let x16 = mtmp13.2 in
         let width/28 = x16 in
         let valid/27 = x14 in
@@ -1770,7 +1766,6 @@ fn utf8_invalid_continuation(value/3: uint32) -> bool {
 fn char_from_uint32(value/32: uint32) -> Option__char {
   if utf8_valid_scalar(value/32) {
       let mtmp22 = @runtime(core.char_from_uint32)(value/32) in
-      let x23 = mtmp22.0 in
       let x24 = mtmp22.1 in
       let character/33 = x24 in
       Option__char::Some(character/33)

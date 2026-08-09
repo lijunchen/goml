@@ -17,11 +17,6 @@ func _goml_runtime_core_string_println(s string) struct{} {
     return struct{}{}
 }
 
-type Tuple2_33GenericChoice__NoTraits__NoTraits_33GenericChoice__NoTraits__NoTraits struct {
-    _0 GenericChoice__NoTraits__NoTraits
-    _1 GenericChoice__NoTraits__NoTraits
-}
-
 type NoTraits struct {
     value int
 }

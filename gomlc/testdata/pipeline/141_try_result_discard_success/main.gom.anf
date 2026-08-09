@@ -11,19 +11,16 @@ fn parse_text(ok/0: bool) -> Result__string__string {
 fn check(ok/1: bool) -> Result__string__string {
   join inline_cont208(mtmp172: Result__string__string) -> Result__string__string {
     join k188(jp189: string) -> Result__string__string {
-      let mtmp175 = jp189 in
       let t190 = Result__string__string::Ok("ok") in
       t190
     } in
     match mtmp172 {
       Tag_0 => {
         let x173 = Result__string__string::Ok._0(mtmp172) in
-        let try_value/12 = x173 in
         jump k188(x173)
       },
       Tag_1 => {
         let x174 = Result__string__string::Err._0(mtmp172) in
-        let try_residual/12 = x174 in
         let t191 = Result__string__string::Err(x174) in
         t191
       },
@@ -42,13 +39,11 @@ fn show(res/2: Result__string__string) -> string {
   match res/2 {
     Tag_0 => {
       let x176 = Result__string__string::Ok._0(res/2) in
-      let value/3 = x176 in
       let t196 = ("ok " + x176) in
       t196
     },
     Tag_1 => {
       let x177 = Result__string__string::Err._0(res/2) in
-      let err/4 = x177 in
       let t197 = ("err " + x177) in
       t197
     },
@@ -68,13 +63,11 @@ fn main() -> unit {
         match t201 {
           Tag_0 => {
             let inline215 = Result__string__string::Ok._0(t201) in
-            let inline216 = inline215 in
             let inline217 = ("ok " + inline215) in
             jump inline_cont214(inline217)
           },
           Tag_1 => {
             let inline218 = Result__string__string::Err._0(t201) in
-            let inline219 = inline218 in
             let inline220 = ("err " + inline218) in
             jump inline_cont214(inline220)
           },
@@ -83,19 +76,16 @@ fn main() -> unit {
       let inline222 = false in
       let inline223 = parse_text(inline222) in
       join inline_join224(inline225: string) -> unit {
-        let inline226 = inline225 in
         let inline227 = Result__string__string::Ok("ok") in
         jump inline_cont221(inline227)
       } in
       match inline223 {
         Tag_0 => {
           let inline228 = Result__string__string::Ok._0(inline223) in
-          let inline229 = inline228 in
           jump inline_join224(inline228)
         },
         Tag_1 => {
           let inline230 = Result__string__string::Err._0(inline223) in
-          let inline231 = inline230 in
           let inline232 = Result__string__string::Err(inline230) in
           jump inline_cont221(inline232)
         },
@@ -108,13 +98,11 @@ fn main() -> unit {
   match t199 {
     Tag_0 => {
       let inline237 = Result__string__string::Ok._0(t199) in
-      let inline238 = inline237 in
       let inline239 = ("ok " + inline237) in
       jump inline_cont236(inline239)
     },
     Tag_1 => {
       let inline240 = Result__string__string::Err._0(t199) in
-      let inline241 = inline240 in
       let inline242 = ("err " + inline240) in
       jump inline_cont236(inline242)
     },

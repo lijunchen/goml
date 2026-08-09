@@ -11,19 +11,15 @@ fn step(ok/0: bool) -> Result__unit__string {
 fn run(ok/1: bool) -> Result__unit__string {
   join inline_cont208(mtmp172: Result__unit__string) -> Result__unit__string {
     join k188() -> Result__unit__string {
-      let mtmp175 = () in
       let t189 = Result__unit__string::Ok(()) in
       t189
     } in
     match mtmp172 {
       Tag_0 => {
-        let x173 = Result__unit__string::Ok._0(mtmp172) in
-        let try_value/12 = x173 in
         jump k188()
       },
       Tag_1 => {
         let x174 = Result__unit__string::Err._0(mtmp172) in
-        let try_residual/12 = x174 in
         let t190 = Result__unit__string::Err(x174) in
         t190
       },
@@ -50,7 +46,6 @@ fn show(res/2: Result__unit__string) -> string {
     },
     Tag_1 => {
       let x177 = Result__unit__string::Err._0(res/2) in
-      let err/3 = x177 in
       let t197 = ("err " + x177) in
       t197
     },
@@ -78,7 +73,6 @@ fn main() -> unit {
             },
             Tag_1 => {
               let inline216 = Result__unit__string::Err._0(t201) in
-              let inline217 = inline216 in
               let inline218 = ("err " + inline216) in
               jump inline_cont214(inline218)
             },
@@ -87,19 +81,15 @@ fn main() -> unit {
         let inline220 = false in
         let inline221 = step(inline220) in
         join inline_join222() -> unit {
-          let inline223 = () in
           let inline224 = Result__unit__string::Ok(()) in
           jump inline_cont219(inline224)
         } in
         match inline221 {
           Tag_0 => {
-            let inline225 = Result__unit__string::Ok._0(inline221) in
-            let inline226 = inline225 in
             jump inline_join222()
           },
           Tag_1 => {
             let inline227 = Result__unit__string::Err._0(inline221) in
-            let inline228 = inline227 in
             let inline229 = Result__unit__string::Err(inline227) in
             jump inline_cont219(inline229)
           },
@@ -120,7 +110,6 @@ fn main() -> unit {
       },
       Tag_1 => {
         let inline235 = Result__unit__string::Err._0(t199) in
-        let inline236 = inline235 in
         let inline237 = ("err " + inline235) in
         jump inline_cont233(inline237)
       },
@@ -129,19 +118,15 @@ fn main() -> unit {
   let inline239 = true in
   let inline240 = step(inline239) in
   join inline_join241() -> unit {
-    let inline242 = () in
     let inline243 = Result__unit__string::Ok(()) in
     jump inline_cont238(inline243)
   } in
   match inline240 {
     Tag_0 => {
-      let inline244 = Result__unit__string::Ok._0(inline240) in
-      let inline245 = inline244 in
       jump inline_join241()
     },
     Tag_1 => {
       let inline246 = Result__unit__string::Err._0(inline240) in
-      let inline247 = inline246 in
       let inline248 = Result__unit__string::Err(inline246) in
       jump inline_cont238(inline248)
     },

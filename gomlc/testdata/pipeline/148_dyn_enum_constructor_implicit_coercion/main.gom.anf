@@ -7,15 +7,12 @@ fn render(value/1: Boxed) -> string {
   match value/1 {
     Tag_0 => {
       let x172 = Boxed::One._0(value/1) in
-      let inner/2 = x172 in
       let t184 = dyn_call[Display::show](x172) in
       t184
     },
     Tag_1 => {
       let x173 = Boxed::Pair._0(value/1) in
       let x174 = Boxed::Pair._1(value/1) in
-      let right/4 = x174 in
-      let left/3 = x173 in
       let t185 = dyn_call[Display::show](x173) in
       let t186 = (t185 + "-") in
       let t187 = dyn_call[Display::show](x174) in
@@ -30,21 +27,15 @@ fn main() -> unit {
   let left/6 = 7 in
   let right/7 = 9 in
   let t190 = to_dyn[Display]{int32}(one/5) in
-  let t191 = Boxed::One(t190) in
   join inline_cont225(t192: string) -> unit {
     join inline_cont222(_wild175: unit) -> unit {
       let t193 = to_dyn[Display]{int32}(left/6) in
       let t194 = to_dyn[Display]{int32}(right/7) in
-      let t195 = Boxed::Pair(t193, t194) in
       join inline_cont210(t196: string) -> unit {
         let inline208 = trait_impl#ToString#string#to_string(t196) in
         let inline209 = @runtime(core.string_println)(inline208) in
         ()
       } in
-      let inline214 = t193 in
-      let inline215 = t194 in
-      let inline216 = t194 in
-      let inline217 = t193 in
       let inline218 = dyn_call[Display::show](t193) in
       let inline219 = (inline218 + "-") in
       let inline220 = dyn_call[Display::show](t194) in
@@ -55,8 +46,6 @@ fn main() -> unit {
     let inline224 = @runtime(core.string_println)(inline223) in
     jump inline_cont222(())
   } in
-  let inline226 = t190 in
-  let inline227 = t190 in
   let inline228 = dyn_call[Display::show](t190) in
   jump inline_cont225(inline228)
 }

@@ -14,7 +14,6 @@ fn early_return() -> int {
 
 fn maybe(value/0: Option__int) -> Option__int {
   join k226(jp227: int) -> Option__int {
-    let number/1 = jp227 in
     let defer_result183 = Option__int::Some(jp227) in
     let inline310 = "try:cleanup" in
     let inline311 = trait_impl#ToString#string#to_string(inline310) in
@@ -31,7 +30,6 @@ fn maybe(value/0: Option__int) -> Option__int {
     },
     Tag_1 => {
       let x180 = Option__int::Some._0(value/0) in
-      let try_value/15 = x180 in
       jump k226(x180)
     },
   }
@@ -52,7 +50,6 @@ fn loop_cleanup() -> unit {
               join inline_cont328(_wild185: unit) -> unit {
                 let t237 = (current/3 == 0) in
                 join k234() -> unit {
-                  let defer_result186 = () in
                   join inline_cont326(t235: string) -> unit {
                     let t236 = ("loop:" + t235) in
                     let inline324 = trait_impl#ToString#string#to_string(t236) in
@@ -129,16 +126,10 @@ fn observed_at_exit() -> unit {
 }
 
 fn pattern_cleanup(value/5: Option__int) -> int {
-  let mtmp194 = value/5 in
   match value/5 {
     Tag_1 => {
       let x196 = Option__int::Some._0(value/5) in
-      let number/6 = x196 in
-      let mtmp197 = (x196, 2) in
-      let x198 = x196 in
       let x199 = 2 in
-      let right/8 = x199 in
-      let left/7 = x196 in
       let defer_tast_result195 = (x196 + x199) in
       let inline349 = "pattern:cleanup" in
       let inline350 = trait_impl#ToString#string#to_string(inline349) in
@@ -156,7 +147,6 @@ fn pattern_cleanup(value/5: Option__int) -> int {
 }
 
 fn closure_cleanup() -> unit {
-  let run/9 = closure_env_run_0 {} in
   join inline_cont364(_wild206: unit) -> unit {
     join inline_cont360(defer_result207: unit) -> unit {
       let inline357 = "closure:outer" in
@@ -177,7 +167,6 @@ fn closure_cleanup() -> unit {
 fn main() -> unit {
   let defer_result209 = println__T_string("body") in
   let _defer210 = println__T_string("block") in
-  let _wild211 = defer_result209 in
   let t253 = early_return() in
   join inline_cont412(t254: string) -> unit {
     join inline_cont409(_wild212: unit) -> unit {
@@ -216,7 +205,6 @@ fn main() -> unit {
               let inline384 = @runtime(core.int_to_string)(t258) in
               jump inline_cont383(inline384)
             } in
-            let inline386 = Tag_0 in
             let inline396 = 0 in
             let inline397 = println__T_string("pattern:cleanup") in
             jump inline_cont385(inline396)

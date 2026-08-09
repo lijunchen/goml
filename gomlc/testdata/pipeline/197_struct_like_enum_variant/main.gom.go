@@ -21,11 +21,6 @@ func _goml_runtime_core_string_println(s string) struct{} {
     return struct{}{}
 }
 
-type Tuple2_3Key_3Key struct {
-    _0 Key
-    _1 Key
-}
-
 type Key interface {
     isKey()
 }
@@ -99,14 +94,14 @@ func _goml_m_trait__impl_i_PartialEq_i_Key_i_eq(self__10 Key, other__11 Key) boo
 func main0() struct{} {
     var x__22 int32 = 3
     var t249 int32
-    var inline326 int32 = 4
-    var inline330 int32 = x__22 + inline326
-    t249 = inline330
-    var inline321 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t249)
-    _goml_runtime_core_string_println(inline321)
+    var inline323 int32 = 4
+    var inline326 int32 = x__22 + inline323
+    t249 = inline326
+    var inline319 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t249)
+    _goml_runtime_core_string_println(inline319)
     var t250 string
-    var inline318 string = "north"
-    t250 = inline318
+    var inline316 string = "north"
+    t250 = inline316
     var inline311 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t250)
     _goml_runtime_core_string_println(inline311)
     var t252 string

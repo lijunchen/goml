@@ -200,11 +200,6 @@ func hashmap_contains__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key) bool
     return false
 }
 
-type Tuple2_3Key_3Key struct {
-    _0 Key
-    _1 Key
-}
-
 type Key interface {
     isKey()
 }

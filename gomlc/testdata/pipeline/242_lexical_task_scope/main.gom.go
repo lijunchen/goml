@@ -211,16 +211,6 @@ type Tuple2_4unit_4bool struct {
     _1 bool
 }
 
-type Tuple2_11Option__int_11Option__int struct {
-    _0 Option__int
-    _1 Option__int
-}
-
-type Tuple2_12Option__unit_12Option__unit struct {
-    _0 Option__unit
-    _1 Option__unit
-}
-
 type _goml_m_std_p_internal_p_task_p_ScopeHandle struct {
     id int64
 }

@@ -14,11 +14,8 @@ fn add(a/1: int32, b/2: int32) -> int32 {
 }
 
 fn plus_one(flag/3: bool) -> Result__int32__string {
-  let run/5 = closure_env_run_0 { flag_0: flag/3 } in
-  let inline220 = flag/3 in
   let inline221 = parse_flag(flag/3) in
   join inline_join222(inline223: int32) -> Result__int32__string {
-    let inline224 = inline223 in
     let inline225 = add(inline223, 1) in
     let inline226 = Result__int32__string::Ok(inline225) in
     inline226
@@ -26,12 +23,10 @@ fn plus_one(flag/3: bool) -> Result__int32__string {
   match inline221 {
     Tag_0 => {
       let inline227 = Result__int32__string::Ok._0(inline221) in
-      let inline228 = inline227 in
       jump inline_join222(inline227)
     },
     Tag_1 => {
       let inline229 = Result__int32__string::Err._0(inline221) in
-      let inline230 = inline229 in
       let inline231 = Result__int32__string::Err(inline229) in
       inline231
     },
@@ -42,7 +37,6 @@ fn show(res/6: Result__int32__string) -> string {
   match res/6 {
     Tag_0 => {
       let x175 = Result__int32__string::Ok._0(res/6) in
-      let value/7 = x175 in
       join inline_cont232(t196: string) -> string {
         let t197 = ("ok=" + t196) in
         t197
@@ -52,7 +46,6 @@ fn show(res/6: Result__int32__string) -> string {
     },
     Tag_1 => {
       let x176 = Result__int32__string::Err._0(res/6) in
-      let err/8 = x176 in
       let t198 = ("err=" + x176) in
       t198
     },
@@ -72,14 +65,12 @@ fn main() -> unit {
           match t202 {
             Tag_0 => {
               let inline238 = Result__int32__string::Ok._0(t202) in
-              let inline239 = inline238 in
               let inline240 = inherent#int32#int32#to_string(inline238) in
               let inline241 = ("ok=" + inline240) in
               jump inline_cont237(inline241)
             },
             Tag_1 => {
               let inline242 = Result__int32__string::Err._0(t202) in
-              let inline243 = inline242 in
               let inline244 = ("err=" + inline242) in
               jump inline_cont237(inline244)
             },
@@ -97,14 +88,12 @@ fn main() -> unit {
     match t200 {
       Tag_0 => {
         let inline253 = Result__int32__string::Ok._0(t200) in
-        let inline254 = inline253 in
         let inline255 = inherent#int32#int32#to_string(inline253) in
         let inline256 = ("ok=" + inline255) in
         jump inline_cont252(inline256)
       },
       Tag_1 => {
         let inline257 = Result__int32__string::Err._0(t200) in
-        let inline258 = inline257 in
         let inline259 = ("err=" + inline257) in
         jump inline_cont252(inline259)
       },
@@ -139,7 +128,6 @@ fn inherent#closure_env_run_0#closure_env_run_0#apply(
   let flag/3 = closure_env_run_0.flag_0(env179) in
   join inline_cont268(mtmp172: Result__int32__string) -> Result__int32__string {
     join k214(jp215: int32) -> Result__int32__string {
-      let value/4 = jp215 in
       join inline_cont265(t216: int32) -> Result__int32__string {
         let t217 = Result__int32__string::Ok(t216) in
         t217
@@ -151,12 +139,10 @@ fn inherent#closure_env_run_0#closure_env_run_0#apply(
     match mtmp172 {
       Tag_0 => {
         let x173 = Result__int32__string::Ok._0(mtmp172) in
-        let try_value/15 = x173 in
         jump k214(x173)
       },
       Tag_1 => {
         let x174 = Result__int32__string::Err._0(mtmp172) in
-        let try_residual/15 = x174 in
         let t218 = Result__int32__string::Err(x174) in
         t218
       },

@@ -239,7 +239,6 @@ fn string_get(value/17: string, index/18: int) -> char {
   {
     let x7 = mtmp6.0 in
     let x8 = mtmp6.1 in
-    let x9 = mtmp6.2 in
     {
       let character/20 = x8 in
       {
@@ -279,7 +278,6 @@ fn string_byte_slice(value/21: string, start/22: int, end/23: int) -> string {
 fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
   let mtmp10 = @runtime(core.string_from_utf8)(bytes/24) in
   {
-    let x11 = mtmp10.0 in
     let x12 = mtmp10.1 in
     {
       let value/25 = x12 in
@@ -291,7 +289,6 @@ fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
                 let mtmp13 = string_decode_utf8_at(value/25, index/26) in
                 {
                   let x14 = mtmp13.0 in
-                  let x15 = mtmp13.1 in
                   let x16 = mtmp13.2 in
                   {
                     let width/28 = x16 in
@@ -352,7 +349,6 @@ fn char_from_uint32(value/32: uint32) -> Option[char] {
       {
         let mtmp22 = @runtime(core.char_from_uint32)(value/32) in
         {
-          let x23 = mtmp22.0 in
           let x24 = mtmp22.1 in
           {
             let character/33 = x24 in
@@ -1753,7 +1749,6 @@ fn inherent#Option#Option[T]#is_some[T](self/288: Option[T]) -> bool {
     },
     Option::Some(x151) => {
       {
-        let x151 = Option::Some._0(self/288) in
         true
       }
     },
@@ -1802,13 +1797,11 @@ fn inherent#Result#Result[T,E]#is_ok[T, E](self/296: Result[T, E]) -> bool {
   match self/296 {
     Result::Ok(x154) => {
       {
-        let x154 = Result::Ok._0(self/296) in
         true
       }
     },
     Result::Err(x155) => {
       {
-        let x155 = Result::Err._0(self/296) in
         false
       }
     },
@@ -1832,7 +1825,6 @@ fn inherent#Result#Result[T,E]#unwrap_or[T, E](self/298: Result[T, E], fallback/
     },
     Result::Err(x157) => {
       {
-        let x157 = Result::Err._0(self/298) in
         fallback/299
       }
     },
@@ -2169,32 +2161,4 @@ fn main() -> unit {
       @intrinsic(ref.set)(place_ref227, @intrinsic(array.set)(place_root228, index229, value231))
     } in
   let _wild233 = println(@intrinsic(array.get)(inherent#Ref#Ref[[int32;2]]#get(r/11), 1)) in
-}
-
-fn trait_impl#PartialEq#[int32;2]#eq(self: [int32; 2], other: [int32; 2]) -> bool {
-  if trait_call[PartialEq::eq](@intrinsic(array.get)(self, 0), @intrinsic(array.get)(other, 0)) {
-      if trait_call[PartialEq::eq](
-        @intrinsic(array.get)(self, 1),
-        @intrinsic(array.get)(other, 1)
-      ) {
-          true
-      } else {
-          false
-      }
-  } else {
-      false
-  }
-}
-
-fn trait_impl#Hash#[int32;2]#hash(self: [int32; 2]) -> uint64 {
-  {
-    let _structural_hash_0 = 14695981039346656037 in
-    let _structural_hash_1 =
-      ((_structural_hash_0 * 1099511628211) +
-        trait_call[Hash::hash](@intrinsic(array.get)(self, 0))) in
-    let _structural_hash_2 =
-      ((_structural_hash_1 * 1099511628211) +
-        trait_call[Hash::hash](@intrinsic(array.get)(self, 1))) in
-    _structural_hash_2
-  }
 }

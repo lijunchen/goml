@@ -22,18 +22,17 @@ fn main() -> unit {
   let printer/13 = closure_env_printer_2 {} in
   let mtmp173 =
     inherent#closure_env_printer_2#closure_env_printer_2#apply(printer/13, "result: ", result/9) in
-  let unused/15 = closure_env_unused_3 { result_0: result/9 } in
-  let no_capture/17 = closure_env_no_capture_4 {} in
+  let no_capture/17 = closure_env_no_capture_3 {} in
   let doubled/18 =
-    inherent#closure_env_no_capture_4#closure_env_no_capture_4#apply(no_capture/17, 3) in
+    inherent#closure_env_no_capture_3#closure_env_no_capture_3#apply(no_capture/17, 3) in
   let mtmp174 = println__T_string(inherent#int32#int32#to_string(doubled/18)) in
   let mtmp175 = test() in
   let list123/19 = IntList::Cons(1, IntList::Cons(2, IntList::Cons(3, IntList::Nil))) in
   let point/20 = Point { x: 10, y: 20 } in
   let play_list_and_point/25 =
-    closure_env_play_list_and_point_5 { list123_0: list123/19, point_1: point/20 } in
+    closure_env_play_list_and_point_4 { list123_0: list123/19, point_1: point/20 } in
   let mtmp182 =
-    inherent#closure_env_play_list_and_point_5#closure_env_play_list_and_point_5#apply(
+    inherent#closure_env_play_list_and_point_4#closure_env_play_list_and_point_4#apply(
       play_list_and_point/25
     ) in
   ()
@@ -74,34 +73,24 @@ fn inherent#closure_env_printer_2#closure_env_printer_2#apply(
   println__T_string(message/12)
 }
 
-fn inherent#closure_env_unused_3#closure_env_unused_3#apply(
-  env186: closure_env_unused_3,
-  y/14: int32
-) -> int32 {
-  let result/9 = closure_env_unused_3.result_0(env186) in
-  (y/14 + result/9)
-}
-
-fn inherent#closure_env_no_capture_4#closure_env_no_capture_4#apply(
-  env187: closure_env_no_capture_4,
+fn inherent#closure_env_no_capture_3#closure_env_no_capture_3#apply(
+  env186: closure_env_no_capture_3,
   z/16: int32
 ) -> int32 {
   (z/16 * 2)
 }
 
-fn inherent#closure_env_play_list_and_point_5#closure_env_play_list_and_point_5#apply(
-  env188: closure_env_play_list_and_point_5
+fn inherent#closure_env_play_list_and_point_4#closure_env_play_list_and_point_4#apply(
+  env187: closure_env_play_list_and_point_4
 ) -> unit {
-  let list123/19 = closure_env_play_list_and_point_5.list123_0(env188) in
-  let point/20 = closure_env_play_list_and_point_5.point_1(env188) in
+  let list123/19 = closure_env_play_list_and_point_4.list123_0(env187) in
+  let point/20 = closure_env_play_list_and_point_4.point_1(env187) in
   match list123/19 {
     IntList::Nil => {
       println__T_string("Empty list")
     },
     IntList::Cons(x176, x177) => {
       let x176 = IntList::Cons._0(list123/19) in
-      let x177 = IntList::Cons._1(list123/19) in
-      let tail/22 = x177 in
       let head/21 = x176 in
       let mtmp178 = println__T_string(inherent#int32#int32#to_string(head/21)) in
       let x179 = Point.x(point/20) in

@@ -239,7 +239,6 @@ fn string_get(value/17: string, index/18: int) -> char {
   {
     let x7 = mtmp6.0 in
     let x8 = mtmp6.1 in
-    let x9 = mtmp6.2 in
     {
       let character/20 = x8 in
       {
@@ -279,7 +278,6 @@ fn string_byte_slice(value/21: string, start/22: int, end/23: int) -> string {
 fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
   let mtmp10 = @runtime(core.string_from_utf8)(bytes/24) in
   {
-    let x11 = mtmp10.0 in
     let x12 = mtmp10.1 in
     {
       let value/25 = x12 in
@@ -291,7 +289,6 @@ fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
                 let mtmp13 = string_decode_utf8_at(value/25, index/26) in
                 {
                   let x14 = mtmp13.0 in
-                  let x15 = mtmp13.1 in
                   let x16 = mtmp13.2 in
                   {
                     let width/28 = x16 in
@@ -352,7 +349,6 @@ fn char_from_uint32(value/32: uint32) -> Option[char] {
       {
         let mtmp22 = @runtime(core.char_from_uint32)(value/32) in
         {
-          let x23 = mtmp22.0 in
           let x24 = mtmp22.1 in
           {
             let character/33 = x24 in
@@ -1753,7 +1749,6 @@ fn inherent#Option#Option[T]#is_some[T](self/288: Option[T]) -> bool {
     },
     Option::Some(x151) => {
       {
-        let x151 = Option::Some._0(self/288) in
         true
       }
     },
@@ -1802,13 +1797,11 @@ fn inherent#Result#Result[T,E]#is_ok[T, E](self/296: Result[T, E]) -> bool {
   match self/296 {
     Result::Ok(x154) => {
       {
-        let x154 = Result::Ok._0(self/296) in
         true
       }
     },
     Result::Err(x155) => {
       {
-        let x155 = Result::Err._0(self/296) in
         false
       }
     },
@@ -1832,7 +1825,6 @@ fn inherent#Result#Result[T,E]#unwrap_or[T, E](self/298: Result[T, E], fallback/
     },
     Result::Err(x157) => {
       {
-        let x157 = Result::Err._0(self/298) in
         fallback/299
       }
     },
@@ -3498,7 +3490,6 @@ fn trait_impl#std::cmp::PartialOrd#Option[T]#partial_cmp[T](
             },
             Option::Some(x34) => {
               {
-                let x34 = Option::Some._0(x31) in
                 Option::Some(std::cmp::Ordering::Greater)
               }
             },
@@ -3576,7 +3567,6 @@ fn trait_impl#std::cmp::Ord#Option[T]#cmp[T](
             },
             Option::Some(x40) => {
               {
-                let x40 = Option::Some._0(x37) in
                 std::cmp::Ordering::Greater
               }
             },
@@ -3637,7 +3627,6 @@ fn trait_impl#std::cmp::PartialOrd#Result[T,E]#partial_cmp[T, E](
               },
               Result::Err(x48) => {
                 {
-                  let x48 = Result::Err._0(x43) in
                   Option::Some(std::cmp::Ordering::Greater)
                 }
               },
@@ -3650,7 +3639,6 @@ fn trait_impl#std::cmp::PartialOrd#Result[T,E]#partial_cmp[T, E](
             match x43 {
               Result::Ok(x49) => {
                 {
-                  let x49 = Result::Ok._0(x43) in
                   Option::Some(std::cmp::Ordering::Less)
                 }
               },
@@ -3730,7 +3718,6 @@ fn trait_impl#std::cmp::Ord#Result[T,E]#cmp[T, E](
               },
               Result::Err(x57) => {
                 {
-                  let x57 = Result::Err._0(x52) in
                   std::cmp::Ordering::Greater
                 }
               },
@@ -3743,7 +3730,6 @@ fn trait_impl#std::cmp::Ord#Result[T,E]#cmp[T, E](
             match x52 {
               Result::Ok(x58) => {
                 {
-                  let x58 = Result::Ok._0(x52) in
                   std::cmp::Ordering::Less
                 }
               },
@@ -4181,15 +4167,11 @@ fn trait_impl#std::cmp::PartialOrd#Level#partial_cmp(self/23: Level, other/24: L
         },
         Level::Medium(x198, x199) => {
           {
-            let x198 = Level::Medium._0(self/23) in
-            let x199 = Level::Medium._1(self/23) in
             1
           }
         },
         Level::High(x200, x201) => {
           {
-            let x200 = Level::High._0(self/23) in
-            let x201 = Level::High._1(self/23) in
             2
           }
         },
@@ -4201,15 +4183,11 @@ fn trait_impl#std::cmp::PartialOrd#Level#partial_cmp(self/23: Level, other/24: L
         },
         Level::Medium(x202, x203) => {
           {
-            let x202 = Level::Medium._0(other/24) in
-            let x203 = Level::Medium._1(other/24) in
             1
           }
         },
         Level::High(x204, x205) => {
           {
-            let x204 = Level::High._0(other/24) in
-            let x205 = Level::High._1(other/24) in
             2
           }
         },
@@ -4427,15 +4405,11 @@ fn trait_impl#std::cmp::Ord#Level#cmp(self/39: Level, other/40: Level) -> std::c
         },
         Level::Medium(x233, x234) => {
           {
-            let x233 = Level::Medium._0(self/39) in
-            let x234 = Level::Medium._1(self/39) in
             1
           }
         },
         Level::High(x235, x236) => {
           {
-            let x235 = Level::High._0(self/39) in
-            let x236 = Level::High._1(self/39) in
             2
           }
         },
@@ -4447,15 +4421,11 @@ fn trait_impl#std::cmp::Ord#Level#cmp(self/39: Level, other/40: Level) -> std::c
         },
         Level::Medium(x237, x238) => {
           {
-            let x237 = Level::Medium._0(other/40) in
-            let x238 = Level::Medium._1(other/40) in
             1
           }
         },
         Level::High(x239, x240) => {
           {
-            let x239 = Level::High._0(other/40) in
-            let x240 = Level::High._1(other/40) in
             2
           }
         },
@@ -5144,7 +5114,6 @@ fn trait_impl#std::cmp::PartialOrd#PartialLevel#partial_cmp(
       match self/95 {
         PartialLevel::Value(x291) => {
           {
-            let x291 = PartialLevel::Value._0(self/95) in
             0
           }
         },
@@ -5156,7 +5125,6 @@ fn trait_impl#std::cmp::PartialOrd#PartialLevel#partial_cmp(
       match other/96 {
         PartialLevel::Value(x292) => {
           {
-            let x292 = PartialLevel::Value._0(other/96) in
             0
           }
         },
@@ -5491,152 +5459,4 @@ fn main() -> unit {
       "missing"
     )
   )
-}
-
-fn trait_impl#Default#(int,string)#default() -> (int, string) {
-  (trait_call[Default::default](), trait_call[Default::default]())
-}
-
-fn trait_impl#Default#[int;3]#default() -> [int; 3] {
-  [trait_call[Default::default](), trait_call[Default::default](), trait_call[Default::default]()]
-}
-
-fn trait_impl#std::cmp::PartialOrd#(int,int)#lt(self: (int, int), other: (int, int)) -> bool {
-  if trait_call[PartialEq::eq](self.0, other.0) {
-      if trait_call[PartialEq::eq](self.1, other.1) {
-          false
-      } else {
-          trait_call[std::cmp::PartialOrd::lt](self.1, other.1)
-      }
-  } else {
-      trait_call[std::cmp::PartialOrd::lt](self.0, other.0)
-  }
-}
-
-fn trait_impl#std::cmp::Ord#[int;2]#cmp(self: [int; 2], other: [int; 2]) -> std::cmp::Ordering {
-  {
-    let _structural_ordering_0 =
-      trait_call[std::cmp::Ord::cmp](
-        @intrinsic(array.get)(self, 0),
-        @intrinsic(array.get)(other, 0)
-      ) in
-    if trait_call[PartialEq::eq](_structural_ordering_0, std::cmp::Ordering::Equal) {
-        {
-          let _structural_ordering_1 =
-            trait_call[std::cmp::Ord::cmp](
-              @intrinsic(array.get)(self, 1),
-              @intrinsic(array.get)(other, 1)
-            ) in
-          if trait_call[PartialEq::eq](_structural_ordering_1, std::cmp::Ordering::Equal) {
-              std::cmp::Ordering::Equal
-          } else {
-              _structural_ordering_1
-          }
-        }
-    } else {
-        _structural_ordering_0
-    }
-  }
-}
-
-fn trait_impl#std::cmp::PartialOrd#(float64,float64)#partial_cmp(
-  self: (float64, float64),
-  other: (float64, float64)
-) -> Option[std::cmp::Ordering] {
-  {
-    let _structural_partial_ordering_0 =
-      trait_call[std::cmp::PartialOrd::partial_cmp](self.0, other.0) in
-    match _structural_partial_ordering_0 {
-      Option::None => {
-        _structural_partial_ordering_0
-      },
-      Option::Some(_structural_partial_ordering_0_value) => {
-        {
-          let _structural_partial_ordering_0_value =
-            Option::Some._0(_structural_partial_ordering_0) in
-          if trait_call[PartialEq::eq](
-            _structural_partial_ordering_0_value,
-            std::cmp::Ordering::Equal
-          ) {
-              {
-                let _structural_partial_ordering_1 =
-                  trait_call[std::cmp::PartialOrd::partial_cmp](self.1, other.1) in
-                match _structural_partial_ordering_1 {
-                  Option::None => {
-                    _structural_partial_ordering_1
-                  },
-                  Option::Some(_structural_partial_ordering_1_value) => {
-                    {
-                      let _structural_partial_ordering_1_value =
-                        Option::Some._0(_structural_partial_ordering_1) in
-                      if trait_call[PartialEq::eq](
-                        _structural_partial_ordering_1_value,
-                        std::cmp::Ordering::Equal
-                      ) {
-                          Option::Some(std::cmp::Ordering::Equal)
-                      } else {
-                          _structural_partial_ordering_1
-                      }
-                    }
-                  },
-                }
-              }
-          } else {
-              _structural_partial_ordering_0
-          }
-        }
-      },
-    }
-  }
-}
-
-fn trait_impl#PartialEq#(int,string)#eq(self: (int, string), other: (int, string)) -> bool {
-  if trait_call[PartialEq::eq](self.0, other.0) {
-      if trait_call[PartialEq::eq](self.1, other.1) {
-          true
-      } else {
-          false
-      }
-  } else {
-      false
-  }
-}
-
-fn trait_impl#Hash#(int,string)#hash(self: (int, string)) -> uint64 {
-  {
-    let _structural_hash_0 = 14695981039346656037 in
-    let _structural_hash_1 =
-      ((_structural_hash_0 * 1099511628211) + trait_call[Hash::hash](self.0)) in
-    let _structural_hash_2 =
-      ((_structural_hash_1 * 1099511628211) + trait_call[Hash::hash](self.1)) in
-    _structural_hash_2
-  }
-}
-
-fn trait_impl#PartialEq#[int;2]#eq(self: [int; 2], other: [int; 2]) -> bool {
-  if trait_call[PartialEq::eq](@intrinsic(array.get)(self, 0), @intrinsic(array.get)(other, 0)) {
-      if trait_call[PartialEq::eq](
-        @intrinsic(array.get)(self, 1),
-        @intrinsic(array.get)(other, 1)
-      ) {
-          true
-      } else {
-          false
-      }
-  } else {
-      false
-  }
-}
-
-fn trait_impl#Hash#[int;2]#hash(self: [int; 2]) -> uint64 {
-  {
-    let _structural_hash_0 = 14695981039346656037 in
-    let _structural_hash_1 =
-      ((_structural_hash_0 * 1099511628211) +
-        trait_call[Hash::hash](@intrinsic(array.get)(self, 0))) in
-    let _structural_hash_2 =
-      ((_structural_hash_1 * 1099511628211) +
-        trait_call[Hash::hash](@intrinsic(array.get)(self, 1))) in
-    _structural_hash_2
-  }
 }

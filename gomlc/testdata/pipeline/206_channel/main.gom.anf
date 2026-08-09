@@ -35,7 +35,6 @@ fn main() -> unit {
                           },
                           Tag_1 => {
                             let x186 = Option__string::Some._0(mtmp185) in
-                            let value/6 = x186 in
                             jump k200(x186)
                           },
                         }
@@ -62,7 +61,6 @@ fn main() -> unit {
                     jump k198("closed")
                   },
                   Tag_1 => {
-                    let x183 = Option__int::Some._0(mtmp182) in
                     jump k198("open")
                   },
                 }
@@ -70,8 +68,6 @@ fn main() -> unit {
               let inline262 = @intrinsic(channel.recv)(buffered/2) in
               let inline263 = inline262.0 in
               let inline264 = inline262.1 in
-              let inline265 = inline264 in
-              let inline266 = inline263 in
               if inline264 {
                 let inline267 = Option__int::Some(inline263) in
                 jump inline_cont261(inline267)
@@ -89,7 +85,6 @@ fn main() -> unit {
             },
             Tag_1 => {
               let x180 = Option__int::Some._0(mtmp179) in
-              let value/4 = x180 in
               jump k196(x180)
             },
           }
@@ -97,8 +92,6 @@ fn main() -> unit {
         let inline272 = @intrinsic(channel.recv)(buffered/2) in
         let inline273 = inline272.0 in
         let inline274 = inline272.1 in
-        let inline275 = inline274 in
-        let inline276 = inline273 in
         if inline274 {
           let inline277 = Option__int::Some(inline273) in
           jump inline_cont271(inline277)
@@ -116,7 +109,6 @@ fn main() -> unit {
       },
       Tag_1 => {
         let x177 = Option__int::Some._0(mtmp176) in
-        let value/3 = x177 in
         jump k194(x177)
       },
     }
@@ -124,8 +116,6 @@ fn main() -> unit {
   let inline282 = @intrinsic(channel.recv)(buffered/2) in
   let inline283 = inline282.0 in
   let inline284 = inline282.1 in
-  let inline285 = inline284 in
-  let inline286 = inline283 in
   if inline284 {
     let inline287 = Option__int::Some(inline283) in
     jump inline_cont281(inline287)
@@ -167,8 +157,6 @@ fn inherent#Channel#Channel[T]#recv__T_int(self/264: Channel[int]) -> Option__in
   let mtmp143 = @intrinsic(channel.recv)(self/264) in
   let x144 = mtmp143.0 in
   let x145 = mtmp143.1 in
-  let ok/266 = x145 in
-  let value/265 = x144 in
   if x145 {
     let t219 = Option__int::Some(x144) in
     t219
@@ -191,8 +179,6 @@ fn roundtrip__T_string(channel/0: Channel[string], value/1: string) -> Option__s
   let inline292 = @intrinsic(channel.recv)(channel/0) in
   let inline293 = inline292.0 in
   let inline294 = inline292.1 in
-  let inline295 = inline294 in
-  let inline296 = inline293 in
   if inline294 {
     let inline297 = Option__string::Some(inline293) in
     inline297
@@ -227,8 +213,6 @@ fn inherent#Channel#Channel[T]#recv__T_string(self/264: Channel[string]) -> Opti
   let mtmp143 = @intrinsic(channel.recv)(self/264) in
   let x144 = mtmp143.0 in
   let x145 = mtmp143.1 in
-  let ok/266 = x145 in
-  let value/265 = x144 in
   if x145 {
     let t240 = Option__string::Some(x144) in
     t240

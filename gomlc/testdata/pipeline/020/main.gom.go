@@ -231,11 +231,11 @@ func main0() struct{} {
         _0: t251,
     }
     var t253 string = shape_int32_to_string(t252)
-    var inline363 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t253)
-    _goml_runtime_core_string_println(inline363)
+    var inline361 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t253)
+    _goml_runtime_core_string_println(inline361)
     var t254 string = shape_int32_to_string(bounced_origin__30)
-    var inline360 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t254)
-    _goml_runtime_core_string_println(inline360)
+    var inline358 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t254)
+    _goml_runtime_core_string_println(inline358)
     var t255 Point = Point{
         x: 3,
         y: 4,
@@ -244,8 +244,8 @@ func main0() struct{} {
         _0: t255,
     }
     var t257 string = shape_unit_to_string(t256)
-    var inline357 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t257)
-    _goml_runtime_core_string_println(inline357)
+    var inline355 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t257)
+    _goml_runtime_core_string_println(inline355)
     var t258 Wrapper__unit = Wrapper__unit{
         value: struct{}{},
     }
@@ -253,12 +253,12 @@ func main0() struct{} {
         _0: t258,
     }
     var t260 string = shape_unit_to_string(t259)
-    var inline354 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t260)
-    _goml_runtime_core_string_println(inline354)
+    var inline352 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t260)
+    _goml_runtime_core_string_println(inline352)
     var t261 string
     t261 = "Shape::Origin"
-    var inline340 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t261)
-    _goml_runtime_core_string_println(inline340)
+    var inline338 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t261)
+    _goml_runtime_core_string_println(inline338)
     var t262 Shape__int32
     t262 = Shape__int32_Origin{}
     switch t262.(type) {

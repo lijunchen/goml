@@ -415,11 +415,6 @@ func hashmap_set__HashMap_8Ref_3Key_5int32(m *hashmap_Ref_3Key_int32_x, key *ref
     return struct{}{}
 }
 
-type Tuple2_3Key_3Key struct {
-    _0 Key
-    _1 Key
-}
-
 type Point struct {
     x int32
     y int32

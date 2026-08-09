@@ -239,7 +239,6 @@ fn string_get(value/17: string, index/18: int) -> char {
   {
     let x7 = mtmp6.0 in
     let x8 = mtmp6.1 in
-    let x9 = mtmp6.2 in
     {
       let character/20 = x8 in
       {
@@ -279,7 +278,6 @@ fn string_byte_slice(value/21: string, start/22: int, end/23: int) -> string {
 fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
   let mtmp10 = @runtime(core.string_from_utf8)(bytes/24) in
   {
-    let x11 = mtmp10.0 in
     let x12 = mtmp10.1 in
     {
       let value/25 = x12 in
@@ -291,7 +289,6 @@ fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
                 let mtmp13 = string_decode_utf8_at(value/25, index/26) in
                 {
                   let x14 = mtmp13.0 in
-                  let x15 = mtmp13.1 in
                   let x16 = mtmp13.2 in
                   {
                     let width/28 = x16 in
@@ -352,7 +349,6 @@ fn char_from_uint32(value/32: uint32) -> Option[char] {
       {
         let mtmp22 = @runtime(core.char_from_uint32)(value/32) in
         {
-          let x23 = mtmp22.0 in
           let x24 = mtmp22.1 in
           {
             let character/33 = x24 in
@@ -1753,7 +1749,6 @@ fn inherent#Option#Option[T]#is_some[T](self/288: Option[T]) -> bool {
     },
     Option::Some(x151) => {
       {
-        let x151 = Option::Some._0(self/288) in
         true
       }
     },
@@ -1802,13 +1797,11 @@ fn inherent#Result#Result[T,E]#is_ok[T, E](self/296: Result[T, E]) -> bool {
   match self/296 {
     Result::Ok(x154) => {
       {
-        let x154 = Result::Ok._0(self/296) in
         true
       }
     },
     Result::Err(x155) => {
       {
-        let x155 = Result::Err._0(self/296) in
         false
       }
     },
@@ -1832,7 +1825,6 @@ fn inherent#Result#Result[T,E]#unwrap_or[T, E](self/298: Result[T, E], fallback/
     },
     Result::Err(x157) => {
       {
-        let x157 = Result::Err._0(self/298) in
         fallback/299
       }
     },
@@ -2161,7 +2153,6 @@ fn inherent#std::task::ConcurrencyLimit#std::task::ConcurrencyLimit#new(
       let for_limit3 = count/3 in
       while (for_index2 < for_limit3) {
           {
-            let for_item4 = for_index2 in
             let _wild5 = for_index2 = (for_index2 + 1) in
             {
               inherent#Channel#Channel[unit]#send(slots/4, ())
@@ -2756,7 +2747,6 @@ fn std::task::for_each_concurrent(
           let for_limit63 = worker_count/79 in
           while (for_index62 < for_limit63) {
               {
-                let for_item64 = for_index62 in
                 let _wild65 = for_index62 = (for_index62 + 1) in
                 {
                   let mtmp66 =
@@ -2783,7 +2773,6 @@ fn std::task::for_each_concurrent(
           let for_limit69 = total/78 in
           while (for_index68 < for_limit69) {
               {
-                let for_item70 = for_index68 in
                 let _wild71 = for_index68 = (for_index68 + 1) in
                 {
                   inherent#Vec#Vec[Option[E]]#push(ordered/85, Option::None)
@@ -2797,7 +2786,6 @@ fn std::task::for_each_concurrent(
           let for_limit74 = total/78 in
           while (for_index73 < for_limit74) {
               {
-                let for_item75 = for_index73 in
                 let _wild76 = for_index73 = (for_index73 + 1) in
                 {
                   {

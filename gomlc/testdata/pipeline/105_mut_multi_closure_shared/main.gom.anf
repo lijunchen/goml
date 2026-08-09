@@ -1,7 +1,5 @@
 fn main() -> unit {
   let x/0 = @intrinsic(ref.new)(0) in
-  let inc/1 = closure_env_inc_0 { x_0: x/0 } in
-  let get/2 = closure_env_get_1 { x_0: x/0 } in
   join inline_cont210(mtmp173: int) -> unit {
     join inline_cont207(t178: int) -> unit {
       join inline_cont205(t179: string) -> unit {
@@ -12,11 +10,9 @@ fn main() -> unit {
       let inline206 = @runtime(core.int_to_string)(t178) in
       jump inline_cont205(inline206)
     } in
-    let inline208 = x/0 in
     let inline209 = @intrinsic(ref.get)(x/0) in
     jump inline_cont207(inline209)
   } in
-  let inline211 = x/0 in
   let inline212 = @intrinsic(ref.get)(x/0) in
   let inline213 = (inline212 + 1) in
   let inline214 = @intrinsic(ref.set)(x/0, inline213) in
