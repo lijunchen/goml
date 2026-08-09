@@ -62,7 +62,7 @@ pub fn parse_positive_int(value: string) -> Result[int, string] {
         if byte < b'0' || byte > b'9' {
             return Result::Err("expected a positive integer")
         } else {
-            result = result * 10 + (byte - b'0') as int;
+            result = result * 10 + (byte - b'0').to_int();
         }
     }
     if result > 0 {

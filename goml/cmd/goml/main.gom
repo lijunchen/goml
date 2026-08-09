@@ -235,7 +235,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
     let mut test_jobs = 1;
     let test_formats: Vec[string] = Vec::[];
     let mut test_timeout_ms = 30000;
-    let mut test_seed = time::SystemTime::now().unix_nanoseconds() as int;
+    let mut test_seed = time::SystemTime::now().unix_nanoseconds().to_int();
     let mut test_kind = all_test_kind;
     let mut trailing = false;
     let mut index = 2;
