@@ -5,7 +5,7 @@ use tests::braced_imports::api::{
     Choice,
     Describe,
     Label,
-    answer,
+    ANSWER,
     make as create,
 };
 
@@ -14,7 +14,7 @@ fn label(value: Label) -> string {
 }
 
 fn main() -> unit {
-    let value: ImportedBox = create(answer);
+    let value: ImportedBox = create(ANSWER);
     println(value.describe());
     match Choice::Yes {
         Choice::Yes => println("yes"),
