@@ -1061,6 +1061,19 @@ fn checks_match_exhaustiveness_and_irrefutable_bindings() -> unit {
         "const classified: int = classify(42); const answer: int = make_answer(); #[comptime] fn make_answer() -> int { 42 } #[comptime] fn classify(value: int) -> int { match value { answer => 1, _ => 0 } }",
     );
     testing::assert_eq(symbolic_constant.len(), 0);
+    let symbolic_bool = checked_diagnostics(
+        "const enabled: bool = make_enabled(); #[comptime] fn make_enabled() -> bool { true } fn choose(value: bool) -> int { match value { enabled => 1, false => 0 } }",
+    );
+    testing::assert_eq(symbolic_bool.len(), 0);
+    let symbolic_scalar = checked_diagnostics(
+        "const answer: uint8 = make_answer(); #[comptime] fn make_answer() -> uint8 { 42 } fn choose(value: uint8) -> int { match value { 0..=41 => 0, answer => 1, 43..=255 => 2 } }",
+    );
+    testing::assert_eq(symbolic_scalar.len(), 0);
+    let symbolic_duplicate = checked_diagnostics(
+        "const enabled: bool = make_enabled(); #[comptime] fn make_enabled() -> bool { true } fn choose(value: bool) -> int { match value { true => 1, enabled => 2, false => 0 } }",
+    );
+    testing::assert_eq(symbolic_duplicate.len(), 1);
+    testing::assert_eq(symbolic_duplicate.get(0).message, "Unreachable match arm");
     let refutable = check(
         hir::lower(
             ast::lower(

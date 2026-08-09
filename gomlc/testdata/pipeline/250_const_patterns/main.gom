@@ -7,10 +7,16 @@ const ratio: float64 = 1.5;
 
 const classified_at_compile_time: int = comptime_classify(42);
 const computed_answer: int = make_answer();
+const computed_enabled: bool = make_enabled();
 
 #[comptime]
 fn make_answer() -> int {
     42
+}
+
+#[comptime]
+fn make_enabled() -> bool {
+    true
 }
 
 #[comptime]
@@ -31,6 +37,13 @@ fn classify(value: int) -> string {
 fn classify_bool(value: bool) -> string {
     match value {
         enabled => "enabled",
+        false => "disabled",
+    }
+}
+
+fn classify_computed_bool(value: bool) -> string {
+    match value {
+        computed_enabled => "enabled",
         false => "disabled",
     }
 }
@@ -96,6 +109,8 @@ fn main() -> unit {
     println(classify(0));
     println(classify_bool(true));
     println(classify_bool(false));
+    println(classify_computed_bool(true));
+    println(classify_computed_bool(false));
     println(classify_pair((42, b'A')));
     println(classify_pair((42, b'B')));
     println(classify_string("hello"));
