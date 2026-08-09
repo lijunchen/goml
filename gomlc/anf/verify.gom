@@ -1,15 +1,19 @@
 package anf;
 
-use gomlc::tast;
+use gomlc::repr;
+use std::text;
 
 struct JoinSignature {
     name: string,
-    params: Vec[(string, tast::Type)],
-    ret_ty: tast::Type,
+    params: Vec[(string, repr::Type)],
+    ret_ty: repr::Type,
 }
 
 struct VerifyState {
     join_names: HashMap[string, unit],
+    closures: HashMap[string, repr::ClosureDef],
+    structs: HashMap[string, repr::StructDef],
+    enums: HashMap[string, repr::EnumDef],
 }
 
 fn copy_join_signatures(values: Vec[JoinSignature]) -> Vec[JoinSignature] {
@@ -33,29 +37,136 @@ fn find_join_signature(values: Vec[JoinSignature], name: string) -> Option[JoinS
     Option::None
 }
 
-fn verify_type(actual: tast::Type, expected: tast::Type, message: string) -> Result[unit, string] {
-    let actual_resolved = tast::resolve_type(actual);
-    let expected_resolved = tast::resolve_type(expected);
+fn verify_type(actual: repr::Type, expected: repr::Type, message: string) -> Result[unit, string] {
+    repr::validate_type(actual)?;
+    repr::validate_type(expected)?;
+    let actual_resolved = repr::resolve_type(actual);
+    let expected_resolved = repr::resolve_type(expected);
     let compatible = match actual_resolved {
-        Never | Error => true,
-        Con { name } => match expected_resolved {
-            Error => true,
-            Func { params: _, ret_ty: _ } => name.starts_with("closure_env_"),
-            _ => tast::types_equal(actual, expected),
-        },
-        _ => match expected_resolved {
-            Error => true,
-            _ => tast::types_equal(actual, expected),
-        },
+        Never => true,
+        _ => repr::types_equal(actual_resolved, expected_resolved),
     };
     if compatible {
         Result::Ok(())
     } else {
         Result::Err(
-            message + ": expected " + tast::diagnostic_type_text(expected) + ", found "
-                + tast::diagnostic_type_text(actual),
+            message + ": expected " + repr::diagnostic_type_text(expected) + ", found "
+                + repr::diagnostic_type_text(actual),
         )
     }
+}
+
+fn verify_imm(value: Imm) -> Result[unit, string] {
+    repr::validate_type(imm_type(value))
+}
+
+fn verify_imms(values: Vec[Imm]) -> Result[unit, string] {
+    for value in values {
+        verify_imm(value)?
+    }
+    Result::Ok(())
+}
+
+fn nominal_type_name(value: repr::Type) -> Option[string] {
+    match value {
+        Named { name } | ClosureEnvironment { name } => Option::Some(name),
+        _ => Option::None,
+    }
+}
+
+fn constructor_variant_name(value: string) -> string {
+    match text::rfind(value, "::") {
+        Some(index) => value.byte_slice(index + 2, value.byte_len()),
+        None => value,
+    }
+}
+
+fn enum_variant_types(value: repr::EnumVariantFields) -> Vec[repr::Type] {
+    match value {
+        Unit => Vec::[],
+        Tuple(values) => values,
+        Struct(fields) => {
+            let result: Vec[repr::Type] = Vec::with_capacity(fields.len());
+            for field in fields {
+                result.push(field.1)
+            }
+            result
+        },
+    }
+}
+
+fn find_struct_field(value: repr::StructDef, name: string) -> Option[repr::Type] {
+    for field in value.fields {
+        if field.0 == name {
+            return Option::Some(field.1)
+        } else {}
+    }
+    Option::None
+}
+
+fn verify_constructor(
+    state: VerifyState,
+    constructor: repr::Constructor,
+    args: Vec[Imm],
+    ty: repr::Type,
+) -> Result[unit, string] {
+    let owner = match nominal_type_name(ty) {
+        Some(value) => value,
+        None => return Result::Err("constructor result has a non-nominal type"),
+    };
+    let expected: Vec[repr::Type] = if constructor.is_struct {
+        let definition = match state.structs[owner] {
+            Some(value) => value,
+            None => return Result::Err("constructor references unknown struct " + owner),
+        };
+        if constructor.fields.len() == 0 {
+            let fields: Vec[repr::Type] = Vec::with_capacity(definition.fields.len());
+            for field in definition.fields {
+                fields.push(field.1)
+            }
+            fields
+        } else {
+            let fields: Vec[repr::Type] = Vec::with_capacity(constructor.fields.len());
+            for field in constructor.fields {
+                match find_struct_field(definition, field) {
+                    Some(value) => fields.push(value),
+                    None => return Result::Err(
+                        "constructor references unknown field " + owner + "." + field,
+                    ),
+                }
+            }
+            fields
+        }
+    } else {
+        let definition = match state.enums[owner] {
+            Some(value) => value,
+            None => return Result::Err("constructor references unknown enum " + owner),
+        };
+        let name = constructor_variant_name(constructor.name);
+        let mut found: Option[Vec[repr::Type]] = Option::None;
+        for variant in definition.variants {
+            if variant.name == name {
+                found = Option::Some(enum_variant_types(variant.fields));
+            } else {}
+        }
+        match found {
+            Some(value) => value,
+            None => return Result::Err(
+                "constructor references unknown variant " + owner + "::" + name,
+            ),
+        }
+    };
+    if args.len() != expected.len() {
+        return Result::Err("constructor argument count does not match " + constructor.name)
+    } else {};
+    for index in 0..args.len() {
+        verify_type(
+            imm_type(args[index]),
+            expected[index],
+            "constructor argument type does not match " + constructor.name,
+        )?
+    }
+    Result::Ok(())
 }
 
 fn verify_join_name(state: VerifyState, name: string) -> Result[unit, string] {
@@ -71,11 +182,18 @@ fn join_signature(value: JoinBind) -> JoinSignature {
     JoinSignature { name: value.name, params: value.params, ret_ty: value.ret_ty }
 }
 
+fn verify_join_signature(value: JoinBind) -> Result[unit, string] {
+    for param in value.params {
+        repr::validate_type(param.1)?
+    }
+    repr::validate_type(value.ret_ty)
+}
+
 fn verify_jump(
     target: string,
     args: Vec[Imm],
-    ret_ty: tast::Type,
-    expected_ty: tast::Type,
+    ret_ty: repr::Type,
+    expected_ty: repr::Type,
     joins: Vec[JoinSignature],
 ) -> Result[unit, string] {
     let signature = match find_join_signature(joins, target) {
@@ -104,7 +222,7 @@ fn verify_match_arm_type(scrutinee: Imm, arm: Arm) -> Result[unit, string] {
     )
 }
 
-fn verify_term(state: VerifyState, value: Term, expected_ty: tast::Type, joins: Vec[JoinSignature]) -> Result[
+fn verify_term(state: VerifyState, value: Term, expected_ty: repr::Type, joins: Vec[JoinSignature]) -> Result[
     unit,
     string,
 ] {
@@ -116,7 +234,7 @@ fn verify_term(state: VerifyState, value: Term, expected_ty: tast::Type, joins: 
         ),
         Jump { target, args, ret_ty } => verify_jump(target, args, ret_ty, expected_ty, joins),
         If { cond, then_, else_, ret_ty } => {
-            verify_type(imm_type(cond), tast::Type::Bool, "if condition is not bool")?;
+            verify_type(imm_type(cond), repr::Type::Bool, "if condition is not bool")?;
             verify_type(ret_ty, expected_ty, "if result type does not match its block")?;
             verify_block(state, then_, ret_ty, copy_join_signatures(joins))?;
             verify_block(state, else_, ret_ty, copy_join_signatures(joins))
@@ -145,6 +263,7 @@ fn verify_nonrecursive_join(state: VerifyState, value: JoinBind, joins: Vec[Join
     string,
 ] {
     verify_join_name(state, value.name)?;
+    verify_join_signature(value)?;
     verify_block(state, value.body, value.ret_ty, copy_join_signatures(joins))
 }
 
@@ -158,6 +277,7 @@ fn verify_recursive_joins(state: VerifyState, values: Vec[JoinBind], joins: Vec[
     let recursive = copy_join_signatures(joins);
     for value in values {
         verify_join_name(state, value.name)?;
+        verify_join_signature(value)?;
         recursive.push(join_signature(value))
     }
     for value in values {
@@ -166,20 +286,179 @@ fn verify_recursive_joins(state: VerifyState, values: Vec[JoinBind], joins: Vec[
     Result::Ok(recursive)
 }
 
+fn verify_value(state: VerifyState, value: Value) -> Result[unit, string] {
+    match value {
+        Imm(value) => verify_imm(value),
+        Constr { constructor, args, ty } => {
+            verify_imms(args)?;
+            verify_constructor(state, constructor, args, ty)
+        },
+        Tuple { items, ty } => {
+            verify_imms(items)?;
+            match ty {
+                Tuple { items: expected } => {
+                    if items.len() != expected.len() {
+                        return Result::Err("tuple value has the wrong number of items")
+                    } else {};
+                    for index in 0..items.len() {
+                        verify_type(
+                            imm_type(items[index]),
+                            expected[index],
+                            "tuple item type does not match",
+                        )?
+                    }
+                    Result::Ok(())
+                },
+                _ => Result::Err("tuple value has a non-tuple type"),
+            }
+        },
+        Array { items, ty } => {
+            verify_imms(items)?;
+            match ty {
+                Array { len, elem } => {
+                    if len != items.len() {
+                        return Result::Err("array value has the wrong number of items")
+                    } else {};
+                    for item in items {
+                        verify_type(imm_type(item), elem, "array item type does not match")?
+                    }
+                    Result::Ok(())
+                },
+                _ => Result::Err("array value has a non-array type"),
+            }
+        },
+        ConstrGet { expr, constructor, field_index, ty } => {
+            verify_imm(expr)?;
+            let owner = match nominal_type_name(imm_type(expr)) {
+                Some(value) => value,
+                None => return Result::Err("constructor projection has a non-nominal source"),
+            };
+            let fields: Vec[repr::Type] = if constructor.is_struct {
+                let definition = match state.structs[owner] {
+                    Some(value) => value,
+                    None => return Result::Err(
+                        "constructor projection references unknown struct " + owner,
+                    ),
+                };
+                let result: Vec[repr::Type] = Vec::with_capacity(definition.fields.len());
+                for field in definition.fields {
+                    result.push(field.1)
+                }
+                result
+            } else {
+                let definition = match state.enums[owner] {
+                    Some(value) => value,
+                    None => return Result::Err(
+                        "constructor projection references unknown enum " + owner,
+                    ),
+                };
+                let name = constructor_variant_name(constructor.name);
+                let mut found: Option[Vec[repr::Type]] = Option::None;
+                for variant in definition.variants {
+                    if variant.name == name {
+                        found = Option::Some(enum_variant_types(variant.fields));
+                    } else {}
+                }
+                match found {
+                    Some(value) => value,
+                    None => return Result::Err(
+                        "constructor projection references unknown variant " + owner + "::" + name,
+                    ),
+                }
+            };
+            if field_index < 0 || field_index >= fields.len() {
+                Result::Err("constructor projection field index is out of bounds")
+            } else {
+                verify_type(ty, fields[field_index], "constructor projection type does not match")
+            }
+        },
+        Unary { op: _, expr, ty: _ } | Cast { expr, ty: _ } => verify_imm(expr),
+        Binary { op: _, lhs, rhs, ty: _ } => {
+            verify_imm(lhs)?;
+            verify_imm(rhs)
+        },
+        Assign { name: _, value, target_ty, ty: _ } => {
+            verify_imm(value)?;
+            verify_type(imm_type(value), target_ty, "assignment value type does not match")
+        },
+        Call { func, args, ty } => {
+            verify_imm(func)?;
+            verify_imms(args)?;
+            match imm_type(func) {
+                Func { params, ret_ty } => {
+                    if args.len() != params.len() {
+                        return Result::Err("call argument count does not match its function")
+                    } else {};
+                    for index in 0..args.len() {
+                        verify_type(
+                            imm_type(args[index]),
+                            params[index],
+                            "call argument type does not match",
+                        )?
+                    }
+                    verify_type(ty, ret_ty, "call return type does not match")
+                },
+                _ => Result::Err("call target has a non-function type"),
+            }
+        },
+        ToDyn { trait_name: _, for_ty, expr, ty: _ } => {
+            verify_imm(expr)?;
+            verify_type(imm_type(expr), for_ty, "dynamic conversion source type does not match")
+        },
+        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } => {
+            verify_imm(receiver)?;
+            verify_imms(args)
+        },
+        Go { closure, ty: _ } => verify_imm(closure),
+        PackClosure { environment, apply, ty } => {
+            verify_imm(environment)?;
+            match ty {
+                Func { params: _, ret_ty: _ } => (),
+                _ => return Result::Err("closure pack has a non-function type"),
+            };
+            let definition = match state.closures[apply] {
+                Some(value) => value,
+                None => return Result::Err(
+                    "closure pack references unknown apply function " + apply,
+                ),
+            };
+            verify_type(ty, definition.signature, "closure pack signature does not match " + apply)?;
+            match imm_type(environment) {
+                ClosureEnvironment { name } if name == definition.environment => Result::Ok(()),
+                _ => Result::Err("closure pack environment does not match " + apply),
+            }
+        },
+        Proj { tuple, index, ty } => {
+            verify_imm(tuple)?;
+            match imm_type(tuple) {
+                Tuple { items } => if index < 0 || index >= items.len() {
+                    Result::Err("tuple projection index is out of bounds")
+                } else {
+                    verify_type(ty, items[index], "tuple projection type does not match")
+                },
+                _ => Result::Err("tuple projection has a non-tuple source"),
+            }
+        },
+    }
+}
+
 fn verify_block(
     state: VerifyState,
     value: Block,
-    expected_ty: tast::Type,
+    expected_ty: repr::Type,
     parent_joins: Vec[JoinSignature],
 ) -> Result[unit, string] {
     let joins = copy_join_signatures(parent_joins);
     for bind in value.binds {
         match bind {
-            Let(value) => verify_type(
-                value_type(value.value),
-                value.ty,
-                "let binding type does not match " + value.name,
-            )?,
+            Let(value) => {
+                verify_value(state, value.value)?;
+                verify_type(
+                    value_type(value.value),
+                    value.ty,
+                    "let binding type does not match " + value.name,
+                )?
+            },
             Join(value) => {
                 verify_nonrecursive_join(state, value, joins)?;
                 joins.push(join_signature(value))
@@ -195,8 +474,106 @@ fn verify_block(
     verify_term(state, value.term, expected_ty, joins)
 }
 
-fn verify_function(value: Function) -> Result[unit, string] {
-    let state = VerifyState { join_names: HashMap::{} };
+fn verify_const_expr(value: repr::ConstExpr) -> Result[repr::Type, string] {
+    match value {
+        Prim { value: _, ty } | Ref { name: _, ty } => {
+            repr::validate_type(ty)?;
+            Result::Ok(ty)
+        },
+        Unary { op: _, expr, ty } => {
+            verify_const_expr(expr)?;
+            repr::validate_type(ty)?;
+            Result::Ok(ty)
+        },
+        Cast { expr, ty } => {
+            verify_const_expr(expr)?;
+            repr::validate_type(ty)?;
+            Result::Ok(ty)
+        },
+        Binary { op: _, lhs, rhs, ty } => {
+            verify_const_expr(lhs)?;
+            verify_const_expr(rhs)?;
+            repr::validate_type(ty)?;
+            Result::Ok(ty)
+        },
+    }
+}
+
+fn verify_closure_definition(
+    definition: repr::ClosureDef,
+    structs: HashMap[string, repr::StructDef],
+    functions: HashMap[string, Function],
+) -> Result[unit, string] {
+    if structs.contains(definition.environment) {} else {
+        return Result::Err("closure apply function has no environment " + definition.environment)
+    };
+    let function = match functions[definition.apply] {
+        Some(value) => value,
+        None => return Result::Err(
+            "closure environment has no apply function " + definition.environment,
+        ),
+    };
+    match function.origin {
+        Inherent { owner: ClosureEnvironment { name }, method_name } if name
+            == definition.environment
+            && method_name == "apply" => (),
+        _ => return Result::Err("closure apply function has invalid origin " + definition.apply),
+    };
+    match definition.signature {
+        Func { params, ret_ty } => {
+            if function.params.len() != params.len() + 1 {
+                return Result::Err(
+                    "closure apply function has invalid parameters " + definition.apply,
+                )
+            } else {};
+            match function.params[0].1 {
+                ClosureEnvironment { name } if name == definition.environment => (),
+                _ => return Result::Err(
+                    "closure apply function has invalid environment " + definition.apply,
+                ),
+            };
+            for index in 0..params.len() {
+                verify_type(
+                    function.params[index + 1].1,
+                    params[index],
+                    "closure apply function has invalid parameters " + definition.apply,
+                )?
+            }
+            verify_type(
+                function.ret_ty,
+                ret_ty,
+                "closure apply function has invalid return type " + definition.apply,
+            )
+        },
+        _ => Result::Err("closure definition has non-function signature " + definition.apply),
+    }
+}
+
+fn verify_function(
+    value: Function,
+    closures: HashMap[string, repr::ClosureDef],
+    structs: HashMap[string, repr::StructDef],
+    enums: HashMap[string, repr::EnumDef],
+) -> Result[unit, string] {
+    for param in value.params {
+        repr::validate_type(param.1)?
+    }
+    repr::validate_type(value.ret_ty)?;
+    match value.origin {
+        Inherent { owner, method_name: _ } => repr::validate_type(owner)?,
+        Source | TraitImplementation { method_name: _ } => (),
+    };
+    match value.trait_impl {
+        Some(implementation) => {
+            repr::validate_trait_ref(implementation.trait_ref)?;
+            repr::validate_type(implementation.for_ty)?;
+            for associated in implementation.associated_types {
+                repr::validate_type(associated.1)?
+            }
+        },
+        None => (),
+    };
+    let state = VerifyState { join_names: HashMap::{}, closures, structs, enums };
     match verify_block(state, value.body, value.ret_ty, Vec::[]) {
         Ok(_) => Result::Ok(()),
         Err(message) => Result::Err("in function " + value.name + ": " + message),
@@ -204,8 +581,69 @@ fn verify_function(value: Function) -> Result[unit, string] {
 }
 
 pub fn verify(value: File) -> Result[unit, string] {
+    let structs: HashMap[string, repr::StructDef] = HashMap::{};
+    let enums: HashMap[string, repr::EnumDef] = HashMap::{};
+    let type_names: HashMap[string, unit] = HashMap::{};
+    for definition in value.structs {
+        if type_names.contains(definition.name) {
+            return Result::Err("duplicate representation type " + definition.name)
+        } else {
+            type_names[definition.name] = ();
+            structs[definition.name] = definition;
+        }
+        for field in definition.fields {
+            repr::validate_type(field.1)?
+        }
+    }
+    for definition in value.enums {
+        if type_names.contains(definition.name) {
+            return Result::Err("duplicate representation type " + definition.name)
+        } else {
+            type_names[definition.name] = ();
+            enums[definition.name] = definition;
+        }
+        for variant in definition.variants {
+            for field in enum_variant_types(variant.fields) {
+                repr::validate_type(field)?
+            }
+        }
+    }
+    for instance in value.type_instances {
+        for arg in instance.args {
+            repr::validate_type(arg)?
+        }
+    }
+    for constant in value.constants {
+        repr::validate_type(constant.ty)?;
+        let value_ty = verify_const_expr(constant.value)?;
+        verify_type(value_ty, constant.ty, "constant type does not match " + constant.name)?
+    }
+    let functions: HashMap[string, Function] = HashMap::{};
     for function in value.functions {
-        verify_function(function)?
+        if functions.contains(function.name) {
+            return Result::Err("duplicate ANF function " + function.name)
+        } else {
+            functions[function.name] = function;
+        }
+    }
+    let closures: HashMap[string, repr::ClosureDef] = HashMap::{};
+    let environments: HashMap[string, unit] = HashMap::{};
+    for definition in value.closure_defs {
+        if environments.contains(definition.environment) {
+            return Result::Err("duplicate closure environment " + definition.environment)
+        } else if closures.contains(definition.apply) {
+            return Result::Err("duplicate closure apply function " + definition.apply)
+        } else {
+            environments[definition.environment] = ();
+            closures[definition.apply] = definition;
+        }
+    }
+    for function in value.functions {
+        verify_function(function, closures, structs, enums)?
+    }
+    for definition in value.closure_defs {
+        repr::validate_type(definition.signature)?;
+        verify_closure_definition(definition, structs, functions)?
     }
     Result::Ok(())
 }

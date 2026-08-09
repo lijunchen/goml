@@ -1,11 +1,10 @@
 package go_backend;
 
-use gomlc::anf;
-use std::text;
+use gomlc::repr;
 use std::collections;
-use gomlc::tast;
+use std::text;
 
-fn find_enum(values: Vec[tast::EnumDef], name: string) -> Option[tast::EnumDef] {
+fn find_enum(values: Vec[repr::EnumDef], name: string) -> Option[repr::EnumDef] {
     let mut index = values.len() - 1;
     while index >= 0 {
         let value = values[index];
@@ -18,7 +17,7 @@ fn find_enum(values: Vec[tast::EnumDef], name: string) -> Option[tast::EnumDef] 
     Option::None
 }
 
-fn find_struct(values: Vec[tast::StructDef], name: string) -> Option[tast::StructDef] {
+fn find_struct(values: Vec[repr::StructDef], name: string) -> Option[repr::StructDef] {
     let mut index = values.len() - 1;
     while index >= 0 {
         let value = values[index];
@@ -31,40 +30,21 @@ fn find_struct(values: Vec[tast::StructDef], name: string) -> Option[tast::Struc
     Option::None
 }
 
-fn builtin_struct_instance(value: anf::TypeInstance, instances: Vec[anf::TypeInstance]) -> Option[
-    StructDef,
-] {
-    if value.base_name == "FnIterator" && value.args.len() == 1 {
-        let result_ty = match find_instance(instances, "Option", value.args) {
-            Some(instance) => Type::Named { name: go_user_type_name(instance.name) },
-            None => {
-                Type::Named { name: go_user_type_name("Option__" + compact_type(value.args[0])) }
-            },
-        };
-        let params: Vec[Type] = Vec::[];
-        let fields: Vec[(string, Type)] = Vec::[];
-        fields.push(("next_fn", Type::Func { params, ret_ty: result_ty }));
-        Option::Some(StructDef { name: go_user_type_name(value.name), fields })
-    } else {
-        Option::None
-    }
-}
-
-fn type_lists_match(left: Vec[tast::Type], right: Vec[tast::Type]) -> bool {
-    if left.len() != right.len() {
-        false
-    } else {
-        for index in 0..left.len() {
-            if encode_type(left[index]) != encode_type(right[index]) {
-                return false
-            } else {}
+fn instance_by_name(values: Vec[repr::TypeInstance], name: string) -> Option[repr::TypeInstance] {
+    let mut index = values.len() - 1;
+    while index >= 0 {
+        let value = values[index];
+        if value.name == name {
+            return Option::Some(value)
+        } else {
+            index = index - 1;
         }
-        true
     }
+    Option::None
 }
 
-fn find_instance(values: Vec[anf::TypeInstance], base_name: string, args: Vec[tast::Type]) -> Option[
-    anf::TypeInstance,
+fn find_instance(values: Vec[repr::TypeInstance], base_name: string, args: Vec[repr::Type]) -> Option[
+    repr::TypeInstance,
 ] {
     let mut index = values.len() - 1;
     while index >= 0 {
@@ -78,136 +58,35 @@ fn find_instance(values: Vec[anf::TypeInstance], base_name: string, args: Vec[ta
     Option::None
 }
 
-fn lookup_binding(generics: Vec[string], args: Vec[tast::Type], name: string) -> Option[tast::Type] {
-    let mut index = generics.len() - 1;
-    while index >= 0 {
-        if index < args.len() && generics[index] == name {
-            return Option::Some(args[index])
-        } else {
-            index = index - 1;
-        }
-    }
-    Option::None
-}
-
-fn instantiate_types(
-    values: Vec[tast::Type],
-    generics: Vec[string],
-    args: Vec[tast::Type],
-    instances: Vec[anf::TypeInstance],
-) -> Vec[tast::Type] {
-    let result: Vec[tast::Type] = Vec::[];
-    for value in values {
-        result.push(instantiate_type(value, generics, args, instances))
-    }
-    result
-}
-
-fn instantiate_type(
-    value: tast::Type,
-    generics: Vec[string],
-    args: Vec[tast::Type],
-    instances: Vec[anf::TypeInstance],
-) -> tast::Type {
-    match tast::resolve_type(value) {
-        Param { name } => match lookup_binding(generics, args, name) {
-            Some(value) => value,
-            None => tast::Type::Param { name },
-        },
-        Tuple { items: values } => {
-            tast::Type::Tuple { items: instantiate_types(values, generics, args, instances) }
-        },
-        Projection { for_ty: base, name, trait_ref: reference } => tast::Type::Projection {
-            for_ty: instantiate_type(base, generics, args, instances),
-            name,
-            trait_ref: reference,
-        },
-        App { ty: base, args: values } => {
-            let base = instantiate_type(base, generics, args, instances);
-            let values = instantiate_types(values, generics, args, instances);
-            match base {
-                Con { name } => match find_instance(instances, name, values) {
-                    Some(instance) => tast::Type::Con { name: instance.name },
-                    None => tast::Type::App { ty: tast::Type::Con { name }, args: values },
-                },
-                _ => tast::Type::App { ty: base, args: values },
-            }
-        },
-        Array { len: length, elem } => tast::Type::Array {
-            len: length,
-            elem: instantiate_type(elem, generics, args, instances),
-        },
-        Slice { elem } => {
-            tast::Type::Slice { elem: instantiate_type(elem, generics, args, instances) }
-        },
-        VecType { elem } => {
-            tast::Type::VecType { elem: instantiate_type(elem, generics, args, instances) }
-        },
-        RefType { elem } => {
-            tast::Type::RefType { elem: instantiate_type(elem, generics, args, instances) }
-        },
-        Channel { elem } => {
-            tast::Type::Channel { elem: instantiate_type(elem, generics, args, instances) }
-        },
-        HashMap { key, value } => tast::Type::HashMap {
-            key: instantiate_type(key, generics, args, instances),
-            value: instantiate_type(value, generics, args, instances),
-        },
-        Func { params, ret_ty } => tast::Type::Func {
-            params: instantiate_types(params, generics, args, instances),
-            ret_ty: instantiate_type(ret_ty, generics, args, instances),
-        },
-        _ => value,
-    }
-}
-
-fn collect_con_names(result: Vec[string], value: tast::Type) -> unit {
-    match tast::resolve_type(value) {
-        Con { name } => {
-            if !collections::contains(result, name) {
-                result.push(name)
+fn type_lists_match(left: Vec[repr::Type], right: Vec[repr::Type]) -> bool {
+    if left.len() != right.len() {
+        false
+    } else {
+        for index in 0..left.len() {
+            if !repr::types_equal(left[index], right[index]) {
+                return false
             } else {}
-        },
-        Tuple { items: values } => {
-            for value in values {
-                collect_con_names(result, value)
-            }
-        },
-        Projection { for_ty: base, name: _, trait_ref: _ } => collect_con_names(result, base),
-        App { ty: base, args } => {
-            collect_con_names(result, base);
-            for value in args {
-                collect_con_names(result, value)
-            }
-        },
-        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
-            elem,
-        } => collect_con_names(result, elem),
-        HashMap { key, value } => {
-            collect_con_names(result, key);
-            collect_con_names(result, value)
-        },
-        Func { params, ret_ty } => {
-            for value in params {
-                collect_con_names(result, value)
-            }
-            collect_con_names(result, ret_ty)
-        },
-        _ => (),
+        }
+        true
     }
 }
 
-fn instance_by_name(values: Vec[anf::TypeInstance], name: string) -> Option[anf::TypeInstance] {
-    let mut index = values.len() - 1;
-    while index >= 0 {
-        let value = values[index];
-        if value.name == name {
-            return Option::Some(value)
-        } else {
-            index = index - 1;
-        }
+fn builtin_struct_instance(value: repr::TypeInstance, instances: Vec[repr::TypeInstance]) -> Option[
+    StructDef,
+] {
+    if value.base_name == "FnIterator" && value.args.len() == 1 {
+        let result_ty = match find_instance(instances, "Option", value.args) {
+            Some(instance) => Type::Named { name: go_user_type_name(instance.name) },
+            None => {
+                Type::Named { name: go_user_type_name("Option__" + compact_type(value.args[0])) }
+            },
+        };
+        let fields: Vec[(string, Type)] = Vec::[];
+        fields.push(("next_fn", Type::Func { params: Vec::[], ret_ty: result_ty }));
+        Option::Some(StructDef { name: go_user_type_name(value.name), fields })
+    } else {
+        Option::None
     }
-    Option::None
 }
 
 fn enum_marker_name(go_name: string) -> string {
@@ -218,7 +97,7 @@ fn qualified_variant_go_name(owner_name: string, variant_name: string) -> string
     go_generated_ident(go_user_type_name(owner_name) + "_" + go_ident(variant_name))
 }
 
-fn enum_has_variant(value: tast::EnumDef, variant_name: string) -> bool {
+fn enum_has_variant(value: repr::EnumDef, variant_name: string) -> bool {
     for variant in value.variants {
         if variant.name == variant_name {
             return true
@@ -227,45 +106,27 @@ fn enum_has_variant(value: tast::EnumDef, variant_name: string) -> bool {
     false
 }
 
-fn variant_instance_count(
-    enums: Vec[tast::EnumDef],
-    instances: Vec[anf::TypeInstance],
-    variant_name: string,
-) -> int {
-    let owners: Vec[string] = Vec::[];
+fn variant_definition_count(enums: Vec[repr::EnumDef], variant_name: string) -> int {
+    let result = Ref::new(0);
     for definition in enums {
         if enum_has_variant(definition, variant_name) {
-            if definition.generics.is_empty() {
-                if collections::contains(owners, definition.name) {} else {
-                    owners.push(definition.name)
-                }
-            } else {
-                for instance in instances {
-                    if instance.base_name == definition.name {
-                        if collections::contains(owners, instance.name) {} else {
-                            owners.push(instance.name)
-                        }
-                    } else {}
-                }
-            }
+            result.set(result.get() + 1)
         } else {}
     }
-    owners.len()
+    result.get()
 }
 
-fn variant_go_name(
+fn concrete_variant_go_name(
     owner_name: string,
     variant_name: string,
-    enums: Vec[tast::EnumDef],
-    structs: Vec[tast::StructDef],
-    instances: Vec[anf::TypeInstance],
+    enums: Vec[repr::EnumDef],
     function_names: FunctionNames,
 ) -> string {
     let key = owner_name.byte_len().to_string() + ":" + owner_name + variant_name;
     match function_names.variant_names[key] {
         Some(name) => name,
         None => {
-            let candidate = if variant_instance_count(enums, instances, variant_name) > 1 {
+            let candidate = if variant_definition_count(enums, variant_name) > 1 {
                 qualified_variant_go_name(owner_name, variant_name)
             } else {
                 go_ident(variant_name)
@@ -275,6 +136,19 @@ fn variant_go_name(
             name
         },
     }
+}
+
+fn variant_go_name(
+    owner_name: string,
+    variant_name: string,
+    enums: Vec[repr::EnumDef],
+    structs: Vec[repr::StructDef],
+    instances: Vec[repr::TypeInstance],
+    function_names: FunctionNames,
+) -> string {
+    let _ = structs;
+    let _ = instances;
+    concrete_variant_go_name(owner_name, variant_name, enums, function_names)
 }
 
 fn variant_name_reserved(candidate: string, function_names: FunctionNames) -> bool {
@@ -305,7 +179,7 @@ fn unique_variant_go_name(candidate: string, function_names: FunctionNames) -> s
     }
 }
 
-fn tag_only_variant_fields(values: Vec[Vec[tast::Type]]) -> bool {
+fn tag_only_variant_fields(values: Vec[Vec[repr::Type]]) -> bool {
     for fields in values {
         if !fields.is_empty() {
             return false
@@ -329,26 +203,35 @@ fn add_variant_info(variants: VariantInfos, value: VariantInfo) -> unit {
     }
 }
 
+fn enum_field_types(value: repr::EnumVariantFields) -> Vec[repr::Type] {
+    match value {
+        Unit => Vec::[],
+        Tuple(values) => values,
+        Struct(values) => {
+            let result: Vec[repr::Type] = Vec::with_capacity(values.len());
+            for value in values {
+                result.push(value.1)
+            }
+            result
+        },
+    }
+}
+
 fn tag_only_const_specs(
     variants: VariantInfos,
-    definition: tast::EnumDef,
-    fields_by_variant: Vec[Vec[tast::Type]],
-    instance: anf::TypeInstance,
-    enums: Vec[tast::EnumDef],
-    structs: Vec[tast::StructDef],
-    instances: Vec[anf::TypeInstance],
+    definition: repr::EnumDef,
+    fields_by_variant: Vec[Vec[repr::Type]],
+    enums: Vec[repr::EnumDef],
     function_names: FunctionNames,
 ) -> Vec[ConstSpec] {
     let specs: Vec[ConstSpec] = Vec::[];
-    let owner_go_name = go_user_type_name(instance.name);
+    let owner_go_name = go_user_type_name(definition.name);
     for index in 0..definition.variants.len() {
         let variant = definition.variants[index];
-        let variant_name = variant_go_name(
-            instance.name,
+        let variant_name = concrete_variant_go_name(
+            definition.name,
             variant.name,
             enums,
-            structs,
-            instances,
             function_names,
         );
         specs.push(
@@ -361,7 +244,7 @@ fn tag_only_const_specs(
         add_variant_info(
             variants,
             VariantInfo {
-                owner_name: instance.name,
+                owner_name: definition.name,
                 tag: index,
                 variant_name,
                 field_types: fields_by_variant[index],
@@ -372,126 +255,73 @@ fn tag_only_const_specs(
     specs
 }
 
-fn emit_enum_instance(
+fn emit_enum_definition(
     items: Vec[Item],
-    emitted: Vec[string],
     variants: VariantInfos,
-    enums: Vec[tast::EnumDef],
-    structs: Vec[tast::StructDef],
-    instances: Vec[anf::TypeInstance],
+    definition: repr::EnumDef,
+    enums: Vec[repr::EnumDef],
     function_names: FunctionNames,
-    instance: anf::TypeInstance,
 ) -> unit {
-    if collections::contains(emitted, instance.name) {} else {
-        match find_enum(enums, instance.base_name) {
-            Some(definition) => {
-                emitted.push(instance.name);
-                let fields_by_variant: Vec[Vec[tast::Type]] = Vec::[];
-                for variant in definition.variants {
-                    fields_by_variant.push(
-                        instantiate_types(
-                            tast::enum_variant_field_types(variant.fields),
-                            definition.generics,
-                            instance.args,
-                            instances,
-                        ),
-                    )
-                }
-                if !definition.generics.is_empty() {
-                    for fields in fields_by_variant {
-                        for field in fields {
-                            let dependencies: Vec[string] = Vec::[];
-                            collect_con_names(dependencies, field);
-                            for dependency in dependencies {
-                                match instance_by_name(instances, dependency) {
-                                    Some(value) => emit_enum_instance(
-                                        items,
-                                        emitted,
-                                        variants,
-                                        enums,
-                                        structs,
-                                        instances,
-                                        function_names,
-                                        value,
-                                    ),
-                                    None => (),
-                                }
-                            }
-                        }
-                    }
-                } else {};
-                let owner_go_name = go_user_type_name(instance.name);
-                if tag_only_variant_fields(fields_by_variant) {
-                    items.push(Item::TypeDef(TypeDef { name: owner_go_name, ty: Type::Int32 }));
-                    items.push(
-                        Item::ConstGroup(
-                            ConstGroup {
-                                specs: tag_only_const_specs(
-                                    variants,
-                                    definition,
-                                    fields_by_variant,
-                                    instance,
-                                    enums,
-                                    structs,
-                                    instances,
-                                    function_names,
-                                ),
-                            },
-                        ),
-                    )
-                } else {
-                    let marker = enum_marker_name(owner_go_name);
-                    let methods: Vec[InterfaceMethod] = Vec::[];
-                    methods.push(
-                        InterfaceMethod { name: marker, params: Vec::[], ret_ty: Option::None },
-                    );
-                    items.push(Item::Interface(InterfaceDef { name: owner_go_name, methods }));
-                    for index in 0..definition.variants.len() {
-                        let variant = definition.variants[index];
-                        let fields: Vec[(string, Type)] = Vec::[];
-                        let field_types = fields_by_variant[index];
-                        for field_index in 0..field_types.len() {
-                            fields.push(
-                                (
-                                    "_" + field_index.to_string(),
-                                    lower_type(field_types[field_index]),
-                                ),
-                            )
-                        }
-                        let variant_name = variant_go_name(
-                            instance.name,
-                            variant.name,
-                            enums,
-                            structs,
-                            instances,
-                            function_names,
-                        );
-                        items.push(Item::Struct(StructDef { name: variant_name, fields }));
-                        items.push(
-                            Item::Method(
-                                Method {
-                                    receiver: ("_", Type::Named { name: variant_name }),
-                                    name: marker,
-                                    params: Vec::[],
-                                    ret_ty: Option::None,
-                                    body: Block { stmts: Vec::[] },
-                                },
-                            ),
-                        );
-                        add_variant_info(
-                            variants,
-                            VariantInfo {
-                                owner_name: instance.name,
-                                tag: index,
-                                variant_name,
-                                field_types,
-                                tag_only: false,
-                            },
-                        )
-                    }
-                }
-            },
-            None => (),
+    let fields_by_variant: Vec[Vec[repr::Type]] = Vec::with_capacity(definition.variants.len());
+    for variant in definition.variants {
+        fields_by_variant.push(enum_field_types(variant.fields))
+    }
+    let owner_go_name = go_user_type_name(definition.name);
+    if tag_only_variant_fields(fields_by_variant) {
+        items.push(Item::TypeDef(TypeDef { name: owner_go_name, ty: Type::Int32 }));
+        items.push(
+            Item::ConstGroup(
+                ConstGroup {
+                    specs: tag_only_const_specs(
+                        variants,
+                        definition,
+                        fields_by_variant,
+                        enums,
+                        function_names,
+                    ),
+                },
+            ),
+        )
+    } else {
+        let marker = enum_marker_name(owner_go_name);
+        let methods: Vec[InterfaceMethod] = Vec::[];
+        methods.push(InterfaceMethod { name: marker, params: Vec::[], ret_ty: Option::None });
+        items.push(Item::Interface(InterfaceDef { name: owner_go_name, methods }));
+        for index in 0..definition.variants.len() {
+            let variant = definition.variants[index];
+            let field_types = fields_by_variant[index];
+            let fields: Vec[(string, Type)] = Vec::with_capacity(field_types.len());
+            for field_index in 0..field_types.len() {
+                fields.push(("_" + field_index.to_string(), lower_type(field_types[field_index])))
+            }
+            let variant_name = concrete_variant_go_name(
+                definition.name,
+                variant.name,
+                enums,
+                function_names,
+            );
+            items.push(Item::Struct(StructDef { name: variant_name, fields }));
+            items.push(
+                Item::Method(
+                    Method {
+                        receiver: ("_", Type::Named { name: variant_name }),
+                        name: marker,
+                        params: Vec::[],
+                        ret_ty: Option::None,
+                        body: Block { stmts: Vec::[] },
+                    },
+                ),
+            );
+            add_variant_info(
+                variants,
+                VariantInfo {
+                    owner_name: definition.name,
+                    tag: index,
+                    variant_name,
+                    field_types,
+                    tag_only: false,
+                },
+            )
         }
     }
 }
@@ -499,166 +329,60 @@ fn emit_enum_instance(
 pub fn emit_user_type_items(
     items: Vec[Item],
     variants: VariantInfos,
-    enums: Vec[tast::EnumDef],
-    structs: Vec[tast::StructDef],
-    instances: Vec[anf::TypeInstance],
+    enums: Vec[repr::EnumDef],
+    structs: Vec[repr::StructDef],
+    instances: Vec[repr::TypeInstance],
     function_names: FunctionNames,
 ) -> unit {
     let emitted: Vec[string] = Vec::[];
     for definition in structs {
-        if definition.generics.is_empty() && !is_closure_struct_name(definition.name)
-            && !collections::contains(emitted, definition.name) {
-            let fields: Vec[(string, Type)] = Vec::[];
+        if collections::contains(emitted, definition.name) {} else {
+            let fields: Vec[(string, Type)] = Vec::with_capacity(definition.fields.len());
             for field in definition.fields {
-                fields.push(
-                    (
-                        go_ident(field.0),
-                        lower_type(
-                            instantiate_type(field.1, definition.generics, Vec::[], instances),
-                        ),
-                    ),
-                )
+                fields.push((go_ident(field.0), lower_type(field.1)))
             }
             items.push(Item::Struct(StructDef { name: go_user_type_name(definition.name), fields }));
             emitted.push(definition.name)
-        } else {}
-    }
-    for instance in instances {
-        match find_struct(structs, instance.base_name) {
-            Some(definition) => {
-                if !collections::contains(emitted, instance.name) {
-                    let fields: Vec[(string, Type)] = Vec::[];
-                    for field in definition.fields {
-                        fields.push(
-                            (
-                                go_ident(field.0),
-                                lower_type(
-                                    instantiate_type(
-                                        field.1,
-                                        definition.generics,
-                                        instance.args,
-                                        instances,
-                                    ),
-                                ),
-                            ),
-                        )
-                    }
-                    items.push(
-                        Item::Struct(StructDef { name: go_user_type_name(instance.name), fields }),
-                    );
-                    emitted.push(instance.name)
-                } else {}
-            },
-            None => match builtin_struct_instance(instance, instances) {
-                Some(definition) => {
-                    if !collections::contains(emitted, instance.name) {
-                        items.push(Item::Struct(definition));
-                        emitted.push(instance.name)
-                    } else {}
-                },
-                None => (),
-            },
         }
     }
-    for definition in structs {
-        if definition.generics.is_empty() && is_closure_struct_name(definition.name)
-            && !collections::contains(emitted, definition.name) {
-            let fields: Vec[(string, Type)] = Vec::[];
-            for field in definition.fields {
-                fields.push(
-                    (
-                        go_ident(field.0),
-                        lower_type(
-                            instantiate_type(field.1, definition.generics, Vec::[], instances),
-                        ),
-                    ),
-                )
+    for instance in instances {
+        if collections::contains(emitted, instance.name) {} else {
+            match builtin_struct_instance(instance, instances) {
+                Some(definition) => {
+                    items.push(Item::Struct(definition));
+                    emitted.push(instance.name)
+                },
+                None => (),
             }
-            items.push(Item::Struct(StructDef { name: go_user_type_name(definition.name), fields }));
-            emitted.push(definition.name)
-        } else {}
+        }
     }
     for definition in enums {
-        if definition.generics.is_empty() {
-            emit_enum_instance(
-                items,
-                emitted,
-                variants,
-                enums,
-                structs,
-                instances,
-                function_names,
-                anf::TypeInstance {
-                    base_name: definition.name,
-                    args: Vec::[],
-                    name: definition.name,
-                },
-            )
-        } else {}
-    }
-    for instance in instances {
-        if instance.base_name == "FnIterator" && instance.args.len() == 1 {
-            let option_args: Vec[tast::Type] = Vec::[];
-            option_args.push(instance.args[0]);
-            match find_instance(instances, "Option", option_args) {
-                Some(_) => (),
-                None => emit_enum_instance(
-                    items,
-                    emitted,
-                    variants,
-                    enums,
-                    structs,
-                    instances,
-                    function_names,
-                    anf::TypeInstance {
-                        base_name: "Option",
-                        args: option_args,
-                        name: "Option__" + compact_type(instance.args[0]),
-                    },
-                ),
-            }
-        } else {};
-        emit_enum_instance(
-            items,
-            emitted,
-            variants,
-            enums,
-            structs,
-            instances,
-            function_names,
-            instance,
-        )
+        emit_enum_definition(items, variants, definition, enums, function_names)
     }
 }
 
-pub fn variant_type(variants: VariantInfos, owner_ty: tast::Type, tag: int) -> Option[Type] {
+pub fn variant_type(variants: VariantInfos, owner_ty: repr::Type, tag: int) -> Option[Type] {
     match find_variant_info(variants, owner_ty, tag) {
-        Some(value) => {
-            if value.tag_only {
-                Option::None
-            } else {
-                Option::Some(Type::Named { name: value.variant_name })
-            }
+        Some(value) => if value.tag_only {
+            Option::None
+        } else {
+            Option::Some(Type::Named { name: value.variant_name })
         },
         None => Option::None,
     }
 }
 
-pub fn find_variant_info(variants: VariantInfos, owner_ty: tast::Type, tag: int) -> Option[
+pub fn find_variant_info(variants: VariantInfos, owner_ty: repr::Type, tag: int) -> Option[
     VariantInfo,
 ] {
-    match tast::resolve_type(owner_ty) {
-        Con { name: owner_name } => {
-            match variants.by_owner[owner_name] {
-                Some(owner_variants) => {
-                    if tag >= 0 && tag < owner_variants.len() {
-                        Option::Some(owner_variants[tag])
-                    } else {
-                        Option::None
-                    }
-                },
-                None => Option::None,
-            }
+    match repr::resolve_type(owner_ty) {
+        Named { name: owner_name } => match variants.by_owner[owner_name] {
+            Some(owner_variants) => if tag >= 0 && tag < owner_variants.len() {
+                Option::Some(owner_variants[tag])
+            } else {
+                Option::None
+            },
+            None => Option::None,
         },
         _ => Option::None,
     }
@@ -676,7 +400,7 @@ fn last_separator(value: string) -> int {
     result
 }
 
-pub fn constructor_type(value: tast::Constructor) -> Type {
+pub fn constructor_type(value: repr::Constructor) -> Type {
     let separator = last_separator(value.name);
     if value.is_struct || separator < 0 {
         Type::Named { name: go_user_type_name(value.name) }

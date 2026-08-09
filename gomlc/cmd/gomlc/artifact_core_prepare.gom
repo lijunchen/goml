@@ -3,26 +3,13 @@ package main;
 use gomlc::artifact;
 use gomlc::core;
 use gomlc::tast;
-use std::text;
 
-fn artifact_core_type_key(value: tast::Type) -> string {
-    let builder = text::StringBuilder::new();
-    tast::write_type(builder, value);
-    builder.finish()
+fn artifact_core_types_equal(left: core::Type, right: tast::Type) -> bool {
+    core::types_equal(left, core::lower_type(right))
 }
 
-fn artifact_core_types_equal(left: tast::Type, right: tast::Type) -> bool {
-    artifact_core_type_key(left) == artifact_core_type_key(right)
-}
-
-fn artifact_core_trait_ref_key(value: tast::TraitRef) -> string {
-    let builder = text::StringBuilder::new();
-    tast::write_trait_ref(builder, value);
-    builder.finish()
-}
-
-fn artifact_core_trait_refs_equal(left: tast::TraitRef, right: tast::TraitRef) -> bool {
-    artifact_core_trait_ref_key(left) == artifact_core_trait_ref_key(right)
+fn artifact_core_trait_refs_equal(left: core::TraitRef, right: tast::TraitRef) -> bool {
+    core::trait_refs_equal(left, core::lower_trait_ref(right))
 }
 
 fn artifact_core_function_matches_scheme(value: core::Function, scheme: artifact::ArtifactFnScheme) -> bool {
@@ -52,14 +39,22 @@ fn artifact_core_method_name(value: core::Function) -> Option[string] {
 }
 
 fn artifact_core_predicates(inherited: Vec[tast::TypePredicate], own: Vec[tast::TypePredicate]) -> Vec[
-    tast::TypePredicate,
+    core::TypePredicate,
 ] {
-    let mut result: Vec[tast::TypePredicate] = Vec::[];
+    let result: Vec[core::TypePredicate] = Vec::[];
     for predicate in inherited {
-        result.push(predicate)
+        result.push(core::lower_predicate(predicate))
     }
     for predicate in own {
-        result.push(predicate)
+        result.push(core::lower_predicate(predicate))
+    }
+    result
+}
+
+fn artifact_core_associated_types(values: Vec[(string, tast::Type)]) -> Vec[(string, core::Type)] {
+    let result: Vec[(string, core::Type)] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push((value.0, core::lower_type(value.1)))
     }
     result
 }
@@ -71,7 +66,7 @@ fn artifact_prepare_core_function_metadata(
     let mut predicates = value.predicates;
     for function in exports.functions {
         if function.name == value.name && artifact_core_function_matches_scheme(value, function) {
-            predicates = function.constraints;
+            predicates = core::lower_predicates(function.constraints);
         } else {}
     }
     let trait_impl = match value.trait_impl {
@@ -84,7 +79,9 @@ fn artifact_prepare_core_function_metadata(
                 if implementation.definition.valid
                     && artifact_core_trait_refs_equal(metadata.trait_ref, implementation.trait_ref)
                     && artifact_core_types_equal(metadata.for_ty, implementation.for_ty) {
-                    associated_types = implementation.definition.associated_types;
+                    associated_types = artifact_core_associated_types(
+                        implementation.definition.associated_types,
+                    );
                     generic_count = implementation.definition.params.len();
                     predicate_count = implementation.definition.constraints.len();
                     match method_name {
@@ -145,7 +142,7 @@ fn artifact_prepare_core_function_metadata(
     }
 }
 
-fn artifact_fill_constructor_fields(value: tast::Constructor, definitions: Vec[tast::StructDef]) -> unit {
+fn artifact_fill_constructor_fields(value: core::Constructor, definitions: Vec[core::StructDef]) -> unit {
     if value.is_struct && value.fields.is_empty() {
         for definition in definitions {
             if definition.name == value.name {
@@ -157,27 +154,27 @@ fn artifact_fill_constructor_fields(value: tast::Constructor, definitions: Vec[t
     } else {}
 }
 
-fn artifact_prepare_core_exprs(values: Vec[core::Expr], definitions: Vec[tast::StructDef]) -> unit {
+fn artifact_prepare_core_exprs(values: Vec[core::Expr], definitions: Vec[core::StructDef]) -> unit {
     for value in values {
         artifact_prepare_core_expr(value, definitions)
     }
 }
 
-fn artifact_prepare_optional_core_expr(value: Option[core::Expr], definitions: Vec[tast::StructDef]) -> unit {
+fn artifact_prepare_optional_core_expr(value: Option[core::Expr], definitions: Vec[core::StructDef]) -> unit {
     match value {
         Some(value) => artifact_prepare_core_expr(value, definitions),
         None => (),
     }
 }
 
-fn artifact_prepare_core_block(value: core::Block, definitions: Vec[tast::StructDef]) -> unit {
+fn artifact_prepare_core_block(value: core::Block, definitions: Vec[core::StructDef]) -> unit {
     for statement in value.stmts {
         artifact_prepare_core_expr(statement.value, definitions)
     }
     artifact_prepare_optional_core_expr(value.tail, definitions)
 }
 
-fn artifact_prepare_core_expr(value: core::Expr, definitions: Vec[tast::StructDef]) -> unit {
+fn artifact_prepare_core_expr(value: core::Expr, definitions: Vec[core::StructDef]) -> unit {
     match value {
         Constr { constructor, args, ty: _ } => {
             artifact_fill_constructor_fields(constructor, definitions);
@@ -252,9 +249,9 @@ fn artifact_prepare_core_expr(value: core::Expr, definitions: Vec[tast::StructDe
 }
 
 fn artifact_link_struct_definitions(world: PackageWorld, values: Vec[artifact::ArtifactCoreUnit]) -> Vec[
-    tast::StructDef,
+    core::StructDef,
 ] {
-    let mut result: Vec[tast::StructDef] = Vec::[];
+    let result: Vec[core::StructDef] = Vec::[];
     for definition in world.builtins.structs {
         result.push(definition)
     }
@@ -267,7 +264,7 @@ fn artifact_link_struct_definitions(world: PackageWorld, values: Vec[artifact::A
         }
     }
     for value in values {
-        for definition in value.exports.structs {
+        for definition in value.core_ir.structs {
             result.push(definition)
         }
     }
@@ -288,8 +285,8 @@ fn artifact_prepare_core_units(world: PackageWorld, values: Vec[artifact::Artifa
     }
 }
 
-fn artifact_world_struct_definitions(world: PackageWorld) -> Vec[tast::StructDef] {
-    let result: Vec[tast::StructDef] = Vec::[];
+fn artifact_world_struct_definitions(world: PackageWorld) -> Vec[core::StructDef] {
+    let result: Vec[core::StructDef] = Vec::[];
     for definition in world.builtins.structs {
         result.push(definition)
     }
@@ -327,7 +324,7 @@ fn artifact_world_struct_definitions(world: PackageWorld) -> Vec[tast::StructDef
     ];
     for package_value in packages {
         for definition in package_value.environment_exports.structs {
-            result.push(definition)
+            result.push(core::lower_struct_def(definition))
         }
     }
     result
@@ -336,7 +333,7 @@ fn artifact_world_struct_definitions(world: PackageWorld) -> Vec[tast::StructDef
 fn artifact_prepare_world_core(
     value: core::File,
     exports: artifact::ArtifactPackageExports,
-    definitions: Vec[tast::StructDef],
+    definitions: Vec[core::StructDef],
 ) -> unit {
     for index in 0..value.functions.len() {
         let function = artifact_prepare_core_function_metadata(value.functions[index], exports);

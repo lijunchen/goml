@@ -1,0 +1,208 @@
+package lift;
+
+use gomlc::ast;
+use gomlc::mono;
+
+struct LowerFile {
+    functions: Vec[LowerFunction],
+    enums: Vec[mono::EnumDef],
+    structs: Vec[mono::StructDef],
+    type_instances: Vec[mono::TypeInstance],
+    constants: Vec[mono::Constant],
+    closure_defs: Vec[LowerClosureDef],
+}
+
+struct LowerClosureDef {
+    environment: string,
+    apply: string,
+    signature: mono::Type,
+}
+
+struct LowerFunction {
+    name: string,
+    origin: LowerFunctionOrigin,
+    root: bool,
+    trait_impl: Option[LowerTraitImpl],
+    params: Vec[(string, mono::Type)],
+    ret_ty: mono::Type,
+    body: LowerBlock,
+}
+
+enum LowerFunctionOrigin {
+    Source,
+    Inherent {
+        owner: mono::Type,
+        method_name: string,
+    },
+    TraitImplementation {
+        method_name: string,
+    },
+}
+
+struct LowerTraitImpl {
+    trait_ref: mono::TraitRef,
+    for_ty: mono::Type,
+    associated_types: Vec[(string, mono::Type)],
+}
+
+struct LowerLetStmt {
+    name: string,
+    value: LowerExpr,
+    ty: mono::Type,
+}
+
+struct LowerBlock {
+    stmts: Vec[LowerLetStmt],
+    tail: Option[LowerExpr],
+}
+
+enum LowerExpr {
+    Var {
+        name: string,
+        ty: mono::Type,
+    },
+    Callable {
+        callable: mono::Callable,
+        ty: mono::Type,
+    },
+    Prim {
+        value: mono::Primitive,
+        ty: mono::Type,
+    },
+    Constr {
+        constructor: mono::Constructor,
+        args: Vec[LowerExpr],
+        ty: mono::Type,
+    },
+    Tuple {
+        items: Vec[LowerExpr],
+        ty: mono::Type,
+    },
+    Array {
+        items: Vec[LowerExpr],
+        ty: mono::Type,
+    },
+    Block {
+        block: LowerBlock,
+        ty: mono::Type,
+    },
+    Match {
+        expr: LowerExpr,
+        arms: Vec[LowerArm],
+        default: Option[LowerExpr],
+        ty: mono::Type,
+    },
+    If {
+        cond: LowerExpr,
+        then_branch: LowerExpr,
+        else_branch: LowerExpr,
+        ty: mono::Type,
+    },
+    While {
+        cond: LowerExpr,
+        body: LowerExpr,
+        ty: mono::Type,
+    },
+    Loop {
+        body: LowerExpr,
+        ty: mono::Type,
+    },
+    Break {
+        target: int,
+        value: Option[LowerExpr],
+        ty: mono::Type,
+    },
+    Continue {
+        target: int,
+        ty: mono::Type,
+    },
+    Return {
+        expr: Option[LowerExpr],
+        ty: mono::Type,
+    },
+    Go {
+        expr: LowerExpr,
+        ty: mono::Type,
+    },
+    ConstrGet {
+        expr: LowerExpr,
+        constructor: mono::Constructor,
+        field_index: int,
+        ty: mono::Type,
+    },
+    Unary {
+        op: ast::UnaryOp,
+        expr: LowerExpr,
+        ty: mono::Type,
+    },
+    Cast {
+        expr: LowerExpr,
+        ty: mono::Type,
+    },
+    Binary {
+        op: ast::BinaryOp,
+        lhs: LowerExpr,
+        rhs: LowerExpr,
+        ty: mono::Type,
+    },
+    Assign {
+        name: string,
+        value: LowerExpr,
+        target_ty: mono::Type,
+        ty: mono::Type,
+    },
+    Call {
+        func: LowerExpr,
+        args: Vec[LowerExpr],
+        ty: mono::Type,
+    },
+    ToDyn {
+        trait_name: string,
+        for_ty: mono::Type,
+        expr: LowerExpr,
+        ty: mono::Type,
+    },
+    DynCall {
+        trait_name: string,
+        method_name: string,
+        receiver: LowerExpr,
+        args: Vec[LowerExpr],
+        ty: mono::Type,
+    },
+    Proj {
+        tuple: LowerExpr,
+        index: int,
+        ty: mono::Type,
+    },
+    PackClosure {
+        environment: LowerExpr,
+        apply: string,
+        ty: mono::Type,
+    },
+}
+
+struct LowerArm {
+    lhs: LowerExpr,
+    body: LowerExpr,
+}
+
+fn lower_expr_type(value: LowerExpr) -> mono::Type {
+    match value {
+        Var { ty, .. } | Callable { ty, .. } | Prim { ty, .. } | Constr { ty, .. } | Tuple {
+            ty,
+            ..,
+        } | Array { ty, .. } | Block { ty, .. } | Match { ty, .. } | If { ty, .. } | While {
+            ty,
+            ..,
+        } | Loop { ty, .. } | Break { ty, .. } | Continue { ty, .. } | Return { ty, .. } | Go {
+            ty,
+            ..,
+        } | ConstrGet { ty, .. } | Unary { ty, .. } | Cast { ty, .. } | Binary { ty, .. } | Assign {
+            ty,
+            ..,
+        } | Call { ty, .. } | ToDyn { ty, .. } | DynCall { ty, .. } | Proj { ty, .. } | PackClosure {
+            ty,
+            ..,
+        } => ty,
+    }
+}

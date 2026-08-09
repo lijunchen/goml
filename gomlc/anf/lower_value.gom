@@ -203,6 +203,13 @@ fn lower_value(state: State, value: lift::Expr, k: (Value) -> Block) -> Block {
                     k(Value::Go { closure: expr, ty })
                 },
             ),
+            PackClosure { environment, apply, ty: _ } => lower_expr(
+                state,
+                environment,
+                |environment| {
+                    k(Value::PackClosure { environment, apply, ty })
+                },
+            ),
             Proj { tuple: expr, index, ty: _ } => lower_expr(
                 state,
                 expr,

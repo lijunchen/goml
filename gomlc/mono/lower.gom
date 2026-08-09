@@ -1,13 +1,12 @@
 package mono;
 
 use gomlc::core;
-use gomlc::tast;
 use std::collections;
 use std::text;
 
 struct PendingTypeInstance {
     base_name: string,
-    args: Vec[tast::Type],
+    args: Vec[core::Type],
     name: string,
 }
 
@@ -15,8 +14,8 @@ struct TypeCtx {
     instances: Vec[PendingTypeInstance],
     instance_index: HashMap[string, PendingTypeInstance],
     used_names: HashMap[string, unit],
-    enums: Vec[tast::EnumDef],
-    structs: Vec[tast::StructDef],
+    enums: Vec[core::EnumDef],
+    structs: Vec[core::StructDef],
     active_instances: Vec[PendingTypeInstance],
     error: Ref[Option[string]],
 }
@@ -26,7 +25,7 @@ pub struct LowerResult {
     pub error: Option[string],
 }
 
-fn types_are_concrete(values: Vec[tast::Type]) -> bool {
+fn types_are_concrete(values: Vec[core::Type]) -> bool {
     for value in values {
         if type_is_concrete(value) {} else {
             return false
@@ -35,13 +34,13 @@ fn types_are_concrete(values: Vec[tast::Type]) -> bool {
     true
 }
 
-fn type_is_concrete(value: tast::Type) -> bool {
-    tast::type_is_concrete(value)
+fn type_is_concrete(value: core::Type) -> bool {
+    core::type_is_concrete(value)
 }
 
-fn compact_type(value: tast::Type) -> string {
+fn compact_type(value: core::Type) -> string {
     let type_builder = text::StringBuilder::new();
-    tast::write_type(type_builder, value);
+    core::write_type(type_builder, value);
     let builder = text::StringBuilder::new();
     for character in type_builder.finish().chars() {
         if character == ' ' || character == '\n' || character == '\r' || character == '\t' {} else {
@@ -51,7 +50,7 @@ fn compact_type(value: tast::Type) -> string {
     builder.finish()
 }
 
-fn type_instance_lookup_key(base_name: string, args: Vec[tast::Type]) -> string {
+fn type_instance_lookup_key(base_name: string, args: Vec[core::Type]) -> string {
     let builder = text::StringBuilder::new();
     builder.write_string(base_name.byte_len().to_string());
     builder.write_char(':');
@@ -65,7 +64,7 @@ fn type_instance_lookup_key(base_name: string, args: Vec[tast::Type]) -> string 
     builder.finish()
 }
 
-fn find_type_instance(ctx: TypeCtx, base_name: string, args: Vec[tast::Type]) -> Option[
+fn find_type_instance(ctx: TypeCtx, base_name: string, args: Vec[core::Type]) -> Option[
     PendingTypeInstance,
 ] {
     ctx.instance_index[type_instance_lookup_key(base_name, args)]
@@ -94,12 +93,12 @@ fn add_used_type_name(ctx: TypeCtx, name: string) -> unit {
     }
 }
 
-fn type_instance_base_name(name: string, args: Vec[tast::Type]) -> string {
+fn type_instance_base_name(name: string, args: Vec[Type]) -> string {
     let builder = text::StringBuilder::new();
     builder.write_string(name);
     for arg in args {
         builder.write_string("__");
-        builder.write_string(compact_type(arg))
+        builder.write_string(compact_mono_type(arg))
     }
     builder.finish()
 }
@@ -120,7 +119,12 @@ fn unique_type_name(ctx: TypeCtx, base: string) -> string {
     }
 }
 
-fn ensure_type_instance(ctx: TypeCtx, base_name: string, args: Vec[tast::Type]) -> string {
+fn ensure_type_instance(
+    ctx: TypeCtx,
+    base_name: string,
+    args: Vec[core::Type],
+    name_args: Vec[Type],
+) -> string {
     match ctx.error.get() {
         Some(_) => return base_name,
         None => (),
@@ -135,7 +139,7 @@ fn ensure_type_instance(ctx: TypeCtx, base_name: string, args: Vec[tast::Type]) 
                 },
                 None => (),
             };
-            let name = unique_type_name(ctx, type_instance_base_name(base_name, args));
+            let name = unique_type_name(ctx, type_instance_base_name(base_name, name_args));
             let instance = PendingTypeInstance { base_name, args, name };
             ctx.instances.push(instance);
             ctx.instance_index.set(
@@ -150,18 +154,18 @@ fn ensure_type_instance(ctx: TypeCtx, base_name: string, args: Vec[tast::Type]) 
     }
 }
 
-fn expand_specialized_type_aliases_list(ctx: TypeCtx, values: Vec[tast::Type], path: Vec[string]) -> Vec[
-    tast::Type,
+fn expand_specialized_type_aliases_list(ctx: TypeCtx, values: Vec[core::Type], path: Vec[string]) -> Vec[
+    core::Type,
 ] {
-    let result: Vec[tast::Type] = Vec::[];
+    let result: Vec[core::Type] = Vec::[];
     for value in values {
         result.push(expand_specialized_type_aliases_from(ctx, value, path))
     }
     result
 }
 
-fn expand_specialized_trait_ref(ctx: TypeCtx, value: tast::TraitRef, path: Vec[string]) -> tast::TraitRef {
-    tast::TraitRef {
+fn expand_specialized_trait_ref(ctx: TypeCtx, value: core::TraitRef, path: Vec[string]) -> core::TraitRef {
+    core::TraitRef {
         name: value.name,
         args: expand_specialized_type_aliases_list(ctx, value.args, path),
     }
@@ -169,63 +173,63 @@ fn expand_specialized_trait_ref(ctx: TypeCtx, value: tast::TraitRef, path: Vec[s
 
 fn expand_specialized_optional_trait_ref(
     ctx: TypeCtx,
-    value: Option[tast::TraitRef],
+    value: Option[core::TraitRef],
     path: Vec[string],
-) -> Option[tast::TraitRef] {
+) -> Option[core::TraitRef] {
     match value {
         Some(reference) => Option::Some(expand_specialized_trait_ref(ctx, reference, path)),
         None => Option::None,
     }
 }
 
-fn expand_specialized_type_aliases_from(ctx: TypeCtx, value: tast::Type, path: Vec[string]) -> tast::Type {
-    match tast::resolve_type(value) {
+fn expand_specialized_type_aliases_from(ctx: TypeCtx, value: core::Type, path: Vec[string]) -> core::Type {
+    match core::resolve_type(value) {
         Con { name } => if collections::contains(path, name) {
-            tast::Type::Con { name }
+            core::Type::Con { name }
         } else {
             match find_type_instance_by_name(ctx, name) {
                 Some(instance) => {
                     path.push(name);
                     let args = expand_specialized_type_aliases_list(ctx, instance.args, path);
                     let _ = path.pop();
-                    tast::Type::App { ty: tast::Type::Con { name: instance.base_name }, args }
+                    core::Type::App { ty: core::Type::Con { name: instance.base_name }, args }
                 },
-                None => tast::Type::Con { name },
+                None => core::Type::Con { name },
             }
         },
-        Tuple { items: values } => tast::Type::Tuple {
+        Tuple { items: values } => core::Type::Tuple {
             items: expand_specialized_type_aliases_list(ctx, values, path),
         },
-        Projection { for_ty: base, name, trait_ref: reference } => tast::Type::Projection {
+        Projection { for_ty: base, name, trait_ref: reference } => core::Type::Projection {
             for_ty: expand_specialized_type_aliases_from(ctx, base, path),
             name,
             trait_ref: expand_specialized_optional_trait_ref(ctx, reference, path),
         },
-        App { ty: base, args } => tast::Type::App {
+        App { ty: base, args } => core::Type::App {
             ty: expand_specialized_type_aliases_from(ctx, base, path),
             args: expand_specialized_type_aliases_list(ctx, args, path),
         },
-        Array { len: length, elem } => tast::Type::Array {
+        Array { len: length, elem } => core::Type::Array {
             len: length,
             elem: expand_specialized_type_aliases_from(ctx, elem, path),
         },
-        Slice { elem } => tast::Type::Slice {
+        Slice { elem } => core::Type::Slice {
             elem: expand_specialized_type_aliases_from(ctx, elem, path),
         },
-        VecType { elem } => tast::Type::VecType {
+        VecType { elem } => core::Type::VecType {
             elem: expand_specialized_type_aliases_from(ctx, elem, path),
         },
-        RefType { elem } => tast::Type::RefType {
+        RefType { elem } => core::Type::RefType {
             elem: expand_specialized_type_aliases_from(ctx, elem, path),
         },
-        Channel { elem } => tast::Type::Channel {
+        Channel { elem } => core::Type::Channel {
             elem: expand_specialized_type_aliases_from(ctx, elem, path),
         },
-        HashMap { key, value } => tast::Type::HashMap {
+        HashMap { key, value } => core::Type::HashMap {
             key: expand_specialized_type_aliases_from(ctx, key, path),
             value: expand_specialized_type_aliases_from(ctx, value, path),
         },
-        Func { params, ret_ty } => tast::Type::Func {
+        Func { params, ret_ty } => core::Type::Func {
             params: expand_specialized_type_aliases_list(ctx, params, path),
             ret_ty: expand_specialized_type_aliases_from(ctx, ret_ty, path),
         },
@@ -233,11 +237,11 @@ fn expand_specialized_type_aliases_from(ctx: TypeCtx, value: tast::Type, path: V
     }
 }
 
-fn expand_specialized_type_aliases(ctx: TypeCtx, value: tast::Type) -> tast::Type {
+fn expand_specialized_type_aliases(ctx: TypeCtx, value: core::Type) -> core::Type {
     expand_specialized_type_aliases_from(ctx, value, Vec::[])
 }
 
-fn find_generic_enum(ctx: TypeCtx, name: string) -> Option[tast::EnumDef] {
+fn find_generic_enum(ctx: TypeCtx, name: string) -> Option[core::EnumDef] {
     let mut index = ctx.enums.len() - 1;
     while index >= 0 {
         let value = ctx.enums[index];
@@ -250,7 +254,7 @@ fn find_generic_enum(ctx: TypeCtx, name: string) -> Option[tast::EnumDef] {
     Option::None
 }
 
-fn find_generic_struct(ctx: TypeCtx, name: string) -> Option[tast::StructDef] {
+fn find_generic_struct(ctx: TypeCtx, name: string) -> Option[core::StructDef] {
     let mut index = ctx.structs.len() - 1;
     while index >= 0 {
         let value = ctx.structs[index];
@@ -273,7 +277,7 @@ fn type_instance_parameters(ctx: TypeCtx, name: string) -> Vec[string] {
     }
 }
 
-fn type_instance_bindings(ctx: TypeCtx, name: string, args: Vec[tast::Type]) -> Vec[TypeBinding] {
+fn type_instance_bindings(ctx: TypeCtx, name: string, args: Vec[core::Type]) -> Vec[TypeBinding] {
     let result: Vec[TypeBinding] = Vec::[];
     let params = type_instance_parameters(ctx, name);
     for index in 0..params.len() {
@@ -288,7 +292,7 @@ fn discover_type_instance_dependencies(ctx: TypeCtx, instance: PendingTypeInstan
     let bindings = type_instance_bindings(ctx, instance.base_name, instance.args);
     match find_generic_enum(ctx, instance.base_name) {
         Some(value) => for variant in value.variants {
-            for field in tast::enum_variant_field_types(variant.fields) {
+            for field in core::enum_variant_field_types(variant.fields) {
                 let _ = collapse_type(ctx, substitute_type(field, bindings));
             }
         },
@@ -301,7 +305,7 @@ fn discover_type_instance_dependencies(ctx: TypeCtx, instance: PendingTypeInstan
     }
 }
 
-fn recursive_type_specialization_message(ctx: TypeCtx, name: string, args: Vec[tast::Type]) -> Option[
+fn recursive_type_specialization_message(ctx: TypeCtx, name: string, args: Vec[core::Type]) -> Option[
     string,
 ] {
     let params = type_instance_parameters(ctx, name);
@@ -338,122 +342,116 @@ fn recursive_type_specialization_message(ctx: TypeCtx, name: string, args: Vec[t
     Option::None
 }
 
-fn collapse_types(ctx: TypeCtx, values: Vec[tast::Type]) -> Vec[tast::Type] {
-    let result: Vec[tast::Type] = Vec::[];
+fn collapse_types(ctx: TypeCtx, values: Vec[core::Type]) -> Vec[Type] {
+    let result: Vec[Type] = Vec::[];
     for value in values {
         result.push(collapse_type(ctx, value))
     }
     result
 }
 
-fn collapse_named_types(ctx: TypeCtx, values: Vec[(string, tast::Type)]) -> Vec[
-    (string, tast::Type),
-] {
-    let result: Vec[(string, tast::Type)] = Vec::[];
+fn collapse_named_types(ctx: TypeCtx, values: Vec[(string, core::Type)]) -> Vec[(string, Type)] {
+    let result: Vec[(string, Type)] = Vec::[];
     for value in values {
         result.push((value.0, collapse_type(ctx, value.1)))
     }
     result
 }
 
-fn collapse_optional_trait_ref(ctx: TypeCtx, value: Option[tast::TraitRef]) -> Option[
-    tast::TraitRef,
-] {
-    match value {
-        Some(reference) => Option::Some(collapse_trait_ref(ctx, reference)),
-        None => Option::None,
-    }
+fn collapse_trait_ref(ctx: TypeCtx, value: core::TraitRef) -> TraitRef {
+    TraitRef { name: value.name, args: collapse_types(ctx, value.args) }
 }
 
-fn collapse_trait_ref(ctx: TypeCtx, value: tast::TraitRef) -> tast::TraitRef {
-    tast::TraitRef { name: value.name, args: collapse_types(ctx, value.args) }
+fn invalid_type(ctx: TypeCtx, message: string) -> Type {
+    match ctx.error.get() {
+        Some(_) => (),
+        None => ctx.error.set(Option::Some(message)),
+    };
+    Type::Unit
 }
 
-fn collapse_type(ctx: TypeCtx, value: tast::Type) -> tast::Type {
-    match tast::resolve_type(value) {
-        Var(variable) => tast::Type::Var(variable),
-        Unit => tast::Type::Unit,
-        Never => tast::Type::Never,
-        Bool => tast::Type::Bool,
-        Int => tast::Type::Int,
-        Int8 => tast::Type::Int8,
-        Int16 => tast::Type::Int16,
-        Int32 => tast::Type::Int32,
-        Int64 => tast::Type::Int64,
-        Uint => tast::Type::Uint,
-        Uint8 => tast::Type::Uint8,
-        Uint16 => tast::Type::Uint16,
-        Uint32 => tast::Type::Uint32,
-        Uint64 => tast::Type::Uint64,
-        Float32 => tast::Type::Float32,
-        Float64 => tast::Type::Float64,
-        String => tast::Type::String,
-        Char => tast::Type::Char,
-        Tuple { items } => tast::Type::Tuple { items: collapse_types(ctx, items) },
-        Con { name } => tast::Type::Con { name },
+fn collapse_type(ctx: TypeCtx, value: core::Type) -> Type {
+    match core::resolve_type(value) {
+        Unit => Type::Unit,
+        Never => Type::Never,
+        Bool => Type::Bool,
+        Int => Type::Int,
+        Int8 => Type::Int8,
+        Int16 => Type::Int16,
+        Int32 => Type::Int32,
+        Int64 => Type::Int64,
+        Uint => Type::Uint,
+        Uint8 => Type::Uint8,
+        Uint16 => Type::Uint16,
+        Uint32 => Type::Uint32,
+        Uint64 => Type::Uint64,
+        Float32 => Type::Float32,
+        Float64 => Type::Float64,
+        String => Type::String,
+        Char => Type::Char,
+        Tuple { items } => Type::Tuple { items: collapse_types(ctx, items) },
+        Con { name } => Type::Named { name },
         Dyn { trait_name, args, associated_types, additional_bounds } => {
-            let collapsed_associated: Vec[(string, tast::Type)] = Vec::[];
+            let collapsed_associated: Vec[(string, Type)] = Vec::[];
             for binding in associated_types {
                 collapsed_associated.push((binding.0, collapse_type(ctx, binding.1)))
             }
-            let collapsed_additional: Vec[tast::DynTraitBound] = Vec::[];
+            let collapsed_additional: Vec[DynTraitBound] = Vec::[];
             for bound in additional_bounds {
-                let bound_associated: Vec[(string, tast::Type)] = Vec::[];
+                let bound_associated: Vec[(string, Type)] = Vec::[];
                 for binding in bound.associated_types {
                     bound_associated.push((binding.0, collapse_type(ctx, binding.1)))
                 }
                 collapsed_additional.push(
-                    tast::DynTraitBound {
+                    DynTraitBound {
                         trait_name: bound.trait_name,
                         args: collapse_types(ctx, bound.args),
                         associated_types: bound_associated,
                     },
                 )
             }
-            tast::Type::Dyn {
+            Type::Dyn {
                 trait_name,
                 args: collapse_types(ctx, args),
                 associated_types: collapsed_associated,
                 additional_bounds: collapsed_additional,
             }
         },
-        Projection { for_ty: base, name, trait_ref: reference } => tast::Type::Projection {
-            for_ty: collapse_type(ctx, base),
-            name,
-            trait_ref: collapse_optional_trait_ref(ctx, reference),
-        },
+        Projection { .. } => invalid_type(
+            ctx,
+            "associated type projection remained after specialization",
+        ),
         App { ty: base, args } => {
-            let base = collapse_type(ctx, base);
-            let args = collapse_types(ctx, args);
-            match base {
+            match core::resolve_type(base) {
                 Con { name } => {
                     if !args.is_empty() && types_are_concrete(args) {
-                        tast::Type::Con { name: ensure_type_instance(ctx, name, args) }
+                        let name_args = collapse_types(ctx, args);
+                        let instance_name = ensure_type_instance(ctx, name, args, name_args);
+                        Type::Named { name: instance_name }
                     } else {
-                        tast::Type::App { ty: tast::Type::Con { name }, args }
+                        invalid_type(ctx, "generic type " + name + " has non-concrete arguments")
                     }
                 },
-                other => tast::Type::App { ty: other, args },
+                _ => invalid_type(ctx, "type application does not have a nominal constructor"),
             }
         },
-        Array { len: length, elem } => {
-            tast::Type::Array { len: length, elem: collapse_type(ctx, elem) }
-        },
-        Slice { elem } => tast::Type::Slice { elem: collapse_type(ctx, elem) },
-        VecType { elem } => tast::Type::VecType { elem: collapse_type(ctx, elem) },
-        RefType { elem } => tast::Type::RefType { elem: collapse_type(ctx, elem) },
-        Channel { elem } => tast::Type::Channel { elem: collapse_type(ctx, elem) },
+        Array { len: length, elem } => Type::Array { len: length, elem: collapse_type(ctx, elem) },
+        Slice { elem } => Type::Slice { elem: collapse_type(ctx, elem) },
+        VecType { elem } => Type::VecType { elem: collapse_type(ctx, elem) },
+        RefType { elem } => Type::RefType { elem: collapse_type(ctx, elem) },
+        Channel { elem } => Type::Channel { elem: collapse_type(ctx, elem) },
         HashMap { key, value } => {
-            tast::Type::HashMap { key: collapse_type(ctx, key), value: collapse_type(ctx, value) }
+            Type::HashMap { key: collapse_type(ctx, key), value: collapse_type(ctx, value) }
         },
-        Param { name } => tast::Type::Param { name },
-        Func { params, ret_ty } => {
-            tast::Type::Func {
-                params: collapse_types(ctx, params),
-                ret_ty: collapse_type(ctx, ret_ty),
-            }
+        Param { name } => invalid_type(
+            ctx,
+            "generic parameter " + name + " remained after specialization",
+        ),
+        Func { params, ret_ty } => Type::Func {
+            params: collapse_types(ctx, params),
+            ret_ty: collapse_type(ctx, ret_ty),
         },
-        Error => tast::Type::Error,
+        Error => invalid_type(ctx, "error type cannot enter Mono IR"),
     }
 }
 
@@ -473,9 +471,9 @@ fn constructor_variant(name: string) -> string {
     }
 }
 
-fn update_constructor(value: tast::Constructor, owner_type: tast::Type) -> tast::Constructor {
-    match tast::resolve_type(owner_type) {
-        Con { name } => {
+fn update_constructor(value: core::Constructor, owner_type: Type) -> Constructor {
+    match owner_type {
+        Named { name } => {
             let constructor_name = if value.is_struct {
                 name
             } else {
@@ -486,36 +484,158 @@ fn update_constructor(value: tast::Constructor, owner_type: tast::Type) -> tast:
                     name + variant
                 }
             };
-            tast::Constructor {
+            Constructor {
                 name: constructor_name,
                 fields: value.fields,
                 is_struct: value.is_struct,
                 tag: value.tag,
             }
         },
-        _ => value,
+        _ => Constructor {
+            name: value.name,
+            fields: value.fields,
+            is_struct: value.is_struct,
+            tag: value.tag,
+        },
     }
 }
 
-fn collapse_closure_params(ctx: TypeCtx, values: Vec[tast::ClosureParam]) -> Vec[tast::ClosureParam] {
-    let result: Vec[tast::ClosureParam] = Vec::[];
+fn collapse_primitive(value: core::Primitive) -> Primitive {
+    match value {
+        Unit => Primitive::Unit,
+        Bool { value } => Primitive::Bool { value },
+        Int { value } => Primitive::Int { value },
+        Int8 { value } => Primitive::Int8 { value },
+        Int16 { value } => Primitive::Int16 { value },
+        Int32 { value } => Primitive::Int32 { value },
+        Int64 { value } => Primitive::Int64 { value },
+        Uint { value } => Primitive::Uint { value },
+        Uint8 { value } => Primitive::Uint8 { value },
+        Uint16 { value } => Primitive::Uint16 { value },
+        Uint32 { value } => Primitive::Uint32 { value },
+        Uint64 { value } => Primitive::Uint64 { value },
+        Float { value } => Primitive::Float { value },
+        Float32 { value } => Primitive::Float32 { value },
+        Float64 { value } => Primitive::Float64 { value },
+        String { value } => Primitive::String { value },
+        Char { value } => Primitive::Char { value },
+    }
+}
+
+fn collapse_callable(ctx: TypeCtx, value: core::Callable) -> Callable {
+    match value {
+        Function(name) => Callable::Function(name),
+        LangItem { item, function_name } => Callable::LangItem { item, function_name },
+        Runtime(name) => Callable::Runtime(name),
+        Intrinsic(name) => Callable::Intrinsic(name),
+        GoForeign { import_path, symbol } => Callable::GoForeign { import_path, symbol },
+        TraitMethod { trait_ref, method_name, for_ty, has_receiver } => Callable::TraitMethod {
+            trait_ref: collapse_trait_ref(ctx, trait_ref),
+            method_name,
+            for_ty: collapse_type(ctx, for_ty),
+            has_receiver,
+        },
+        DynTraitMethod { trait_name, dispatch_name, method_name } => {
+            Callable::DynTraitMethod { trait_name, dispatch_name, method_name }
+        },
+        InherentMethod { receiver_ty, method_name } => {
+            Callable::InherentMethod { receiver_ty: collapse_type(ctx, receiver_ty), method_name }
+        },
+    }
+}
+
+fn collapse_closure_params(ctx: TypeCtx, values: Vec[core::ClosureParam]) -> Vec[ClosureParam] {
+    let result: Vec[ClosureParam] = Vec::[];
     for value in values {
-        result.push(tast::ClosureParam { name: value.name, ty: collapse_type(ctx, value.ty) })
+        result.push(ClosureParam { name: value.name, ty: collapse_type(ctx, value.ty) })
     }
     result
 }
 
-fn collapse_function_params(ctx: TypeCtx, values: Vec[(string, tast::Type)]) -> Vec[
-    (string, tast::Type),
-] {
-    let result: Vec[(string, tast::Type)] = Vec::[];
+fn collapse_function_params(ctx: TypeCtx, values: Vec[(string, core::Type)]) -> Vec[(string, Type)] {
+    let result: Vec[(string, Type)] = Vec::[];
     for value in values {
         result.push((value.0, collapse_type(ctx, value.1)))
     }
     result
 }
 
-fn trait_impl_name(reference: tast::TraitRef, for_type: tast::Type, method_name: string) -> string {
+fn mono_types_to_core(values: Vec[Type]) -> Vec[core::Type] {
+    let result: Vec[core::Type] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(mono_type_to_core(value))
+    }
+    result
+}
+
+fn mono_named_types_to_core(values: Vec[(string, Type)]) -> Vec[(string, core::Type)] {
+    let result: Vec[(string, core::Type)] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push((value.0, mono_type_to_core(value.1)))
+    }
+    result
+}
+
+fn mono_type_to_core(value: Type) -> core::Type {
+    match value {
+        Unit => core::Type::Unit,
+        Never => core::Type::Never,
+        Bool => core::Type::Bool,
+        Int => core::Type::Int,
+        Int8 => core::Type::Int8,
+        Int16 => core::Type::Int16,
+        Int32 => core::Type::Int32,
+        Int64 => core::Type::Int64,
+        Uint => core::Type::Uint,
+        Uint8 => core::Type::Uint8,
+        Uint16 => core::Type::Uint16,
+        Uint32 => core::Type::Uint32,
+        Uint64 => core::Type::Uint64,
+        Float32 => core::Type::Float32,
+        Float64 => core::Type::Float64,
+        String => core::Type::String,
+        Char => core::Type::Char,
+        Tuple { items } => core::Type::Tuple { items: mono_types_to_core(items) },
+        Named { name } => core::Type::Con { name },
+        Dyn { trait_name, args, associated_types, additional_bounds } => {
+            let bounds: Vec[core::DynTraitBound] = Vec::with_capacity(additional_bounds.len());
+            for bound in additional_bounds {
+                bounds.push(
+                    core::DynTraitBound {
+                        trait_name: bound.trait_name,
+                        args: mono_types_to_core(bound.args),
+                        associated_types: mono_named_types_to_core(bound.associated_types),
+                    },
+                )
+            }
+            core::Type::Dyn {
+                trait_name,
+                args: mono_types_to_core(args),
+                associated_types: mono_named_types_to_core(associated_types),
+                additional_bounds: bounds,
+            }
+        },
+        Array { len, elem } => core::Type::Array { len, elem: mono_type_to_core(elem) },
+        Slice { elem } => core::Type::Slice { elem: mono_type_to_core(elem) },
+        VecType { elem } => core::Type::VecType { elem: mono_type_to_core(elem) },
+        RefType { elem } => core::Type::RefType { elem: mono_type_to_core(elem) },
+        HashMap { key, value } => core::Type::HashMap {
+            key: mono_type_to_core(key),
+            value: mono_type_to_core(value),
+        },
+        Channel { elem } => core::Type::Channel { elem: mono_type_to_core(elem) },
+        Func { params, ret_ty } => core::Type::Func {
+            params: mono_types_to_core(params),
+            ret_ty: mono_type_to_core(ret_ty),
+        },
+    }
+}
+
+fn mono_trait_ref_to_core(value: TraitRef) -> core::TraitRef {
+    core::TraitRef { name: value.name, args: mono_types_to_core(value.args) }
+}
+
+fn core_trait_impl_name(reference: core::TraitRef, for_type: core::Type, method_name: string) -> string {
     let dispatch = if reference.args.is_empty() {
         compact_type(for_type)
     } else {
@@ -532,6 +652,14 @@ fn trait_impl_name(reference: tast::TraitRef, for_type: tast::Type, method_name:
         builder.finish()
     };
     "trait_impl#" + reference.name + "#" + dispatch + "#" + method_name
+}
+
+fn lowered_trait_impl_name(reference: TraitRef, for_type: Type, method_name: string) -> string {
+    core_trait_impl_name(
+        mono_trait_ref_to_core(reference),
+        mono_type_to_core(for_type),
+        method_name,
+    )
 }
 
 fn lower_exprs(ctx: TypeCtx, values: Vec[core::Expr]) -> Vec[Expr] {
@@ -573,13 +701,13 @@ fn lower_block(ctx: TypeCtx, value: core::Block) -> Block {
 
 fn lower_trait_call(
     ctx: TypeCtx,
-    reference: tast::TraitRef,
+    reference: core::TraitRef,
     method_name: string,
     instance_name: Option[string],
-    for_ty: tast::Type,
+    for_ty: core::Type,
     receiver: Option[core::Expr],
     args: Vec[core::Expr],
-    ty: tast::Type,
+    ty: core::Type,
 ) -> Expr {
     let reference = collapse_trait_ref(ctx, reference);
     let for_ty = collapse_type(ctx, for_ty);
@@ -587,7 +715,7 @@ fn lower_trait_call(
     let receiver = lower_optional_expr(ctx, receiver);
     let args = lower_exprs(ctx, args);
     match receiver {
-        Some(value) => match tast::resolve_type(expr_type(value)) {
+        Some(value) => match expr_type(value) {
             Dyn { trait_name: name, .. } => {
                 if reference.args.is_empty() && reference.name == name {
                     Expr::DynCall { trait_name: name, method_name, receiver: value, args, ty }
@@ -626,15 +754,15 @@ fn lower_trait_call(
 }
 
 fn lower_static_trait_call(
-    reference: tast::TraitRef,
+    reference: TraitRef,
     method_name: string,
     instance_name: Option[string],
-    for_ty: tast::Type,
+    for_ty: Type,
     receiver: Option[Expr],
     args: Vec[Expr],
-    ty: tast::Type,
+    ty: Type,
 ) -> Expr {
-    let params: Vec[tast::Type] = Vec::[];
+    let params: Vec[Type] = Vec::[];
     let call_args: Vec[Expr] = Vec::[];
     match receiver {
         Some(value) => {
@@ -649,10 +777,10 @@ fn lower_static_trait_call(
     }
     let name = match instance_name {
         Some(value) => value,
-        None => trait_impl_name(reference, for_ty, method_name),
+        None => lowered_trait_impl_name(reference, for_ty, method_name),
     };
     Expr::Call {
-        func: Expr::Var { name, ty: tast::Type::Func { params, ret_ty: ty } },
+        func: Expr::Var { name, ty: Type::Func { params, ret_ty: ty } },
         args: call_args,
         ty,
     }
@@ -662,10 +790,13 @@ fn lower_expr(ctx: TypeCtx, value: core::Expr) -> Expr {
     match value {
         Var { name, ty } => Expr::Var { name, ty: collapse_type(ctx, ty) },
         Callable { callable, ty } => {
-            Expr::Callable { callable, ty: collapse_type(ctx, ty) }
+            Expr::Callable {
+                callable: collapse_callable(ctx, callable),
+                ty: collapse_type(ctx, ty),
+            }
         },
         Prim { value: primitive, ty } => {
-            Expr::Prim { value: primitive, ty: collapse_type(ctx, ty) }
+            Expr::Prim { value: collapse_primitive(primitive), ty: collapse_type(ctx, ty) }
         },
         Constr { constructor, args, ty } => {
             let ty = collapse_type(ctx, ty);
@@ -783,21 +914,21 @@ fn lower_expr(ctx: TypeCtx, value: core::Expr) -> Expr {
     }
 }
 
-fn collect_trait_ref_type_names(ctx: TypeCtx, value: tast::TraitRef) -> unit {
+fn collect_trait_ref_type_names(ctx: TypeCtx, value: core::TraitRef) -> unit {
     for arg in value.args {
         collect_type_names(ctx, arg)
     }
 }
 
-fn collect_optional_trait_ref_type_names(ctx: TypeCtx, value: Option[tast::TraitRef]) -> unit {
+fn collect_optional_trait_ref_type_names(ctx: TypeCtx, value: Option[core::TraitRef]) -> unit {
     match value {
         Some(reference) => collect_trait_ref_type_names(ctx, reference),
         None => (),
     }
 }
 
-fn collect_type_names(ctx: TypeCtx, value: tast::Type) -> unit {
-    match tast::resolve_type(value) {
+fn collect_type_names(ctx: TypeCtx, value: core::Type) -> unit {
+    match core::resolve_type(value) {
         Tuple { items } => for item in items {
             collect_type_names(ctx, item)
         },
@@ -845,7 +976,7 @@ fn constructor_owner(name: string) -> string {
     }
 }
 
-fn collect_callable_type_names(ctx: TypeCtx, value: tast::Callable) -> unit {
+fn collect_callable_type_names(ctx: TypeCtx, value: core::Callable) -> unit {
     match value {
         TraitMethod { trait_ref: reference, for_ty, .. } => {
             collect_trait_ref_type_names(ctx, reference);
@@ -1014,8 +1145,8 @@ fn lower_function(ctx: TypeCtx, function: core::Function) -> Function {
     let origin = lower_function_origin(ctx, function.origin);
     let name = match (original_trait_impl, trait_impl, origin) {
         (Some(original), Some(lowered), FunctionOrigin::TraitImplementation { method_name }) => if function.name
-            == trait_impl_name(original.trait_ref, original.for_ty, method_name) {
-            trait_impl_name(lowered.trait_ref, lowered.for_ty, method_name)
+            == core_trait_impl_name(original.trait_ref, original.for_ty, method_name) {
+            lowered_trait_impl_name(lowered.trait_ref, lowered.for_ty, method_name)
         } else {
             function.name
         },
@@ -1032,22 +1163,149 @@ fn lower_function(ctx: TypeCtx, function: core::Function) -> Function {
     }
 }
 
+fn collapse_const_expr(ctx: TypeCtx, value: core::ConstExpr) -> ConstExpr {
+    match value {
+        Prim { value, ty } => {
+            ConstExpr::Prim { value: collapse_primitive(value), ty: collapse_type(ctx, ty) }
+        },
+        Ref { name, ty } => ConstExpr::Ref { name, ty: collapse_type(ctx, ty) },
+        Unary { op, expr, ty } => ConstExpr::Unary {
+            op,
+            expr: collapse_const_expr(ctx, expr),
+            ty: collapse_type(ctx, ty),
+        },
+        Cast { expr, ty } => {
+            ConstExpr::Cast { expr: collapse_const_expr(ctx, expr), ty: collapse_type(ctx, ty) }
+        },
+        Binary { op, lhs, rhs, ty } => ConstExpr::Binary {
+            op,
+            lhs: collapse_const_expr(ctx, lhs),
+            rhs: collapse_const_expr(ctx, rhs),
+            ty: collapse_type(ctx, ty),
+        },
+        Error { ty: _ } => {
+            invalid_type(ctx, "error constant cannot enter Mono IR");
+            ConstExpr::Prim { value: Primitive::Unit, ty: Type::Unit }
+        },
+    }
+}
+
+fn collapse_constants(ctx: TypeCtx, values: Vec[core::Constant]) -> Vec[Constant] {
+    let result: Vec[Constant] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(
+            Constant {
+                name: value.name,
+                ty: collapse_type(ctx, value.ty),
+                value: collapse_const_expr(ctx, value.value),
+            },
+        )
+    }
+    result
+}
+
+fn materialize_enum_fields(ctx: TypeCtx, value: core::EnumVariantFields, bindings: Vec[TypeBinding]) -> EnumVariantFields {
+    match value {
+        Unit => EnumVariantFields::Unit,
+        Tuple(values) => {
+            let fields: Vec[Type] = Vec::with_capacity(values.len());
+            for value in values {
+                fields.push(collapse_type(ctx, substitute_type(value, bindings)))
+            }
+            EnumVariantFields::Tuple(fields)
+        },
+        Struct(values) => {
+            let fields: Vec[(string, Type)] = Vec::with_capacity(values.len());
+            for value in values {
+                fields.push((value.0, collapse_type(ctx, substitute_type(value.1, bindings))))
+            }
+            EnumVariantFields::Struct(fields)
+        },
+    }
+}
+
+fn materialize_enum(ctx: TypeCtx, value: core::EnumDef, name: string, bindings: Vec[TypeBinding]) -> EnumDef {
+    let variants: Vec[EnumVariantDef] = Vec::with_capacity(value.variants.len());
+    for variant in value.variants {
+        variants.push(
+            EnumVariantDef {
+                name: variant.name,
+                fields: materialize_enum_fields(ctx, variant.fields, bindings),
+            },
+        )
+    }
+    EnumDef { name, variants, option_variants: value.option_variants }
+}
+
+fn materialize_struct(
+    ctx: TypeCtx,
+    value: core::StructDef,
+    name: string,
+    bindings: Vec[TypeBinding],
+) -> StructDef {
+    let fields: Vec[(string, Type)] = Vec::with_capacity(value.fields.len());
+    for field in value.fields {
+        fields.push((field.0, collapse_type(ctx, substitute_type(field.1, bindings))))
+    }
+    StructDef {
+        name,
+        fields,
+        public_fields: value.public_fields,
+        has_hidden_fields: value.has_hidden_fields,
+    }
+}
+
+fn materialize_definitions(ctx: TypeCtx) -> (Vec[EnumDef], Vec[StructDef]) {
+    let enums: Vec[EnumDef] = Vec::[];
+    let structs: Vec[StructDef] = Vec::[];
+    for value in ctx.enums {
+        if value.generics.is_empty() {
+            enums.push(materialize_enum(ctx, value, value.name, Vec::[]))
+        } else {}
+    }
+    for value in ctx.structs {
+        if value.generics.is_empty() {
+            structs.push(materialize_struct(ctx, value, value.name, Vec::[]))
+        } else {}
+    }
+    let mut index = 0;
+    while index < ctx.instances.len() {
+        let instance = ctx.instances[index];
+        let bindings = type_instance_bindings(ctx, instance.base_name, instance.args);
+        match find_generic_enum(ctx, instance.base_name) {
+            Some(value) => {
+                if value.generics.is_empty() {} else {
+                    enums.push(materialize_enum(ctx, value, instance.name, bindings))
+                }
+            },
+            None => match find_generic_struct(ctx, instance.base_name) {
+                Some(value) => {
+                    if value.generics.is_empty() {} else {
+                        structs.push(materialize_struct(ctx, value, instance.name, bindings))
+                    }
+                },
+                None => (),
+            },
+        };
+        index = index + 1;
+    };
+    (enums, structs)
+}
+
 pub fn lower_checked(value: core::File) -> LowerResult {
     match core::validate(value) {
         Ok(_) => (),
         Err(message) => return LowerResult {
             file: File {
                 functions: Vec::[],
-                enums: value.enums,
-                structs: value.structs,
+                enums: Vec::[],
+                structs: Vec::[],
                 type_instances: Vec::[],
-                constants: value.constants,
+                constants: Vec::[],
             },
             error: Option::Some("invalid Core IR: " + message),
         },
     };
-    let enums = value.enums;
-    let structs = value.structs;
     let constants = value.constants;
     let error = Ref::new(Option::None);
     let value = specialize(value, error);
@@ -1056,10 +1314,18 @@ pub fn lower_checked(value: core::File) -> LowerResult {
     for function in value.functions {
         functions.push(lower_function(ctx, function))
     }
+    let definitions = materialize_definitions(ctx);
+    let enums = definitions.0;
+    let structs = definitions.1;
+    let constants = collapse_constants(ctx, constants);
     let type_instances: Vec[TypeInstance] = Vec::[];
     for instance in ctx.instances {
         type_instances.push(
-            TypeInstance { base_name: instance.base_name, args: instance.args, name: instance.name },
+            TypeInstance {
+                base_name: instance.base_name,
+                args: collapse_types(ctx, instance.args),
+                name: instance.name,
+            },
         )
     }
     let file = File { functions, enums, structs, type_instances, constants };

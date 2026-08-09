@@ -1,14 +1,15 @@
 package anf;
 
 use gomlc::ast;
-use gomlc::tast;
+use gomlc::repr;
 
 pub struct File {
     pub functions: Vec[Function],
-    pub enums: Vec[tast::EnumDef],
-    pub structs: Vec[tast::StructDef],
-    pub type_instances: Vec[TypeInstance],
-    pub constants: Vec[tast::Constant],
+    pub enums: Vec[repr::EnumDef],
+    pub structs: Vec[repr::StructDef],
+    pub type_instances: Vec[repr::TypeInstance],
+    pub constants: Vec[repr::Constant],
+    pub closure_defs: Vec[repr::ClosureDef],
 }
 
 pub struct Function {
@@ -16,21 +17,15 @@ pub struct Function {
     pub origin: FunctionOrigin,
     pub root: bool,
     pub trait_impl: Option[TraitImpl],
-    pub params: Vec[(string, tast::Type)],
-    pub ret_ty: tast::Type,
+    pub params: Vec[(string, repr::Type)],
+    pub ret_ty: repr::Type,
     pub body: Block,
-}
-
-pub struct TypeInstance {
-    pub base_name: string,
-    pub args: Vec[tast::Type],
-    pub name: string,
 }
 
 pub enum FunctionOrigin {
     Source,
     Inherent {
-        owner: tast::Type,
+        owner: repr::Type,
         method_name: string,
     },
     TraitImplementation {
@@ -39,9 +34,9 @@ pub enum FunctionOrigin {
 }
 
 pub struct TraitImpl {
-    pub trait_ref: tast::TraitRef,
-    pub for_ty: tast::Type,
-    pub associated_types: Vec[(string, tast::Type)],
+    pub trait_ref: repr::TraitRef,
+    pub for_ty: repr::Type,
+    pub associated_types: Vec[(string, repr::Type)],
 }
 
 pub struct Block {
@@ -52,33 +47,33 @@ pub struct Block {
 pub enum Imm {
     Var {
         name: string,
-        ty: tast::Type,
+        ty: repr::Type,
     },
     Callable {
-        callable: tast::Callable,
-        ty: tast::Type,
+        callable: repr::Callable,
+        ty: repr::Type,
     },
     Prim {
-        value: tast::Primitive,
-        ty: tast::Type,
+        value: repr::Primitive,
+        ty: repr::Type,
     },
     Tag {
         index: int,
-        ty: tast::Type,
+        ty: repr::Type,
     },
 }
 
 pub struct LetBind {
     pub name: string,
     pub value: Value,
-    pub ty: tast::Type,
+    pub ty: repr::Type,
 }
 
 pub struct JoinBind {
     pub name: string,
     pub role: JoinRole,
-    pub params: Vec[(string, tast::Type)],
-    pub ret_ty: tast::Type,
+    pub params: Vec[(string, repr::Type)],
+    pub ret_ty: repr::Type,
     pub body: Block,
 }
 
@@ -97,71 +92,76 @@ pub enum Bind {
 pub enum Value {
     Imm(Imm),
     Constr {
-        constructor: tast::Constructor,
+        constructor: repr::Constructor,
         args: Vec[Imm],
-        ty: tast::Type,
+        ty: repr::Type,
     },
     Tuple {
         items: Vec[Imm],
-        ty: tast::Type,
+        ty: repr::Type,
     },
     Array {
         items: Vec[Imm],
-        ty: tast::Type,
+        ty: repr::Type,
     },
     ConstrGet {
         expr: Imm,
-        constructor: tast::Constructor,
+        constructor: repr::Constructor,
         field_index: int,
-        ty: tast::Type,
+        ty: repr::Type,
     },
     Unary {
         op: ast::UnaryOp,
         expr: Imm,
-        ty: tast::Type,
+        ty: repr::Type,
     },
     Cast {
         expr: Imm,
-        ty: tast::Type,
+        ty: repr::Type,
     },
     Binary {
         op: ast::BinaryOp,
         lhs: Imm,
         rhs: Imm,
-        ty: tast::Type,
+        ty: repr::Type,
     },
     Assign {
         name: string,
         value: Imm,
-        target_ty: tast::Type,
-        ty: tast::Type,
+        target_ty: repr::Type,
+        ty: repr::Type,
     },
     Call {
         func: Imm,
         args: Vec[Imm],
-        ty: tast::Type,
+        ty: repr::Type,
     },
     ToDyn {
         trait_name: string,
-        for_ty: tast::Type,
+        for_ty: repr::Type,
         expr: Imm,
-        ty: tast::Type,
+        ty: repr::Type,
     },
     DynCall {
         trait_name: string,
         method_name: string,
         receiver: Imm,
         args: Vec[Imm],
-        ty: tast::Type,
+        ty: repr::Type,
     },
     Go {
         closure: Imm,
-        ty: tast::Type,
+        ty: repr::Type,
+    },
+    PackClosure {
+        environment: Imm,
+        apply: string,
+        ty: repr::Type,
     },
     Proj {
         tuple: Imm,
         index: int,
-        ty: tast::Type,
+        ty: repr::Type,
     },
 }
 
@@ -175,32 +175,32 @@ pub enum Term {
     Jump {
         target: string,
         args: Vec[Imm],
-        ret_ty: tast::Type,
+        ret_ty: repr::Type,
     },
     If {
         cond: Imm,
         then_: Block,
         else_: Block,
-        ret_ty: tast::Type,
+        ret_ty: repr::Type,
     },
     Match {
         scrutinee: Imm,
         arms: Vec[Arm],
         default: Option[Block],
-        ret_ty: tast::Type,
+        ret_ty: repr::Type,
     },
     Unreachable {
-        ty: tast::Type,
+        ty: repr::Type,
     },
 }
 
-pub fn imm_type(value: Imm) -> tast::Type {
+pub fn imm_type(value: Imm) -> repr::Type {
     match value {
         Var { ty, .. } | Callable { ty, .. } | Prim { ty, .. } | Tag { ty, .. } => ty,
     }
 }
 
-pub fn value_type(value: Value) -> tast::Type {
+pub fn value_type(value: Value) -> repr::Type {
     match value {
         Imm(value) => imm_type(value),
         Constr { ty, .. } | Tuple { ty, .. } | Array { ty, .. } | ConstrGet { ty, .. } | Unary {
@@ -209,11 +209,11 @@ pub fn value_type(value: Value) -> tast::Type {
         } | Cast { ty, .. } | Binary { ty, .. } | Assign { ty, .. } | Call { ty, .. } | ToDyn {
             ty,
             ..,
-        } | DynCall { ty, .. } | Go { ty, .. } | Proj { ty, .. } => ty,
+        } | DynCall { ty, .. } | Go { ty, .. } | PackClosure { ty, .. } | Proj { ty, .. } => ty,
     }
 }
 
-pub fn term_type(value: Term) -> tast::Type {
+pub fn term_type(value: Term) -> repr::Type {
     match value {
         Return(value) => imm_type(value),
         Jump { ret_ty, .. } | If { ret_ty, .. } | Match { ret_ty, .. } => ret_ty,
@@ -221,6 +221,6 @@ pub fn term_type(value: Term) -> tast::Type {
     }
 }
 
-pub fn block_type(value: Block) -> tast::Type {
+pub fn block_type(value: Block) -> repr::Type {
     term_type(value.term)
 }

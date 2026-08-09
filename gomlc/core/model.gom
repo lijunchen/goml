@@ -1,19 +1,18 @@
 package core;
 
 use gomlc::ast;
-use gomlc::tast;
 
 pub struct File {
     pub functions: Vec[Function],
-    pub enums: Vec[tast::EnumDef],
-    pub structs: Vec[tast::StructDef],
+    pub enums: Vec[EnumDef],
+    pub structs: Vec[StructDef],
     pub type_instances: Vec[TypeInstance],
-    pub constants: Vec[tast::Constant],
+    pub constants: Vec[Constant],
 }
 
 pub struct TypeInstance {
     pub base_name: string,
-    pub args: Vec[tast::Type],
+    pub args: Vec[Type],
     pub name: string,
 }
 
@@ -22,17 +21,17 @@ pub struct Function {
     pub origin: FunctionOrigin,
     pub root: bool,
     pub generics: Vec[string],
-    pub predicates: Vec[tast::TypePredicate],
+    pub predicates: Vec[TypePredicate],
     pub trait_impl: Option[TraitImpl],
-    pub params: Vec[(string, tast::Type)],
-    pub ret_ty: tast::Type,
+    pub params: Vec[(string, Type)],
+    pub ret_ty: Type,
     pub body: Block,
 }
 
 pub enum FunctionOrigin {
     Source,
     Inherent {
-        owner: tast::Type,
+        owner: Type,
         method_name: string,
     },
     TraitImplementation {
@@ -41,9 +40,9 @@ pub enum FunctionOrigin {
 }
 
 pub struct TraitImpl {
-    pub trait_ref: tast::TraitRef,
-    pub for_ty: tast::Type,
-    pub associated_types: Vec[(string, tast::Type)],
+    pub trait_ref: TraitRef,
+    pub for_ty: Type,
+    pub associated_types: Vec[(string, Type)],
     pub generic_count: int,
     pub predicate_count: int,
 }
@@ -51,7 +50,7 @@ pub struct TraitImpl {
 pub struct LetStmt {
     pub name: string,
     pub value: Expr,
-    pub ty: tast::Type,
+    pub ty: Type,
 }
 
 pub struct Block {
@@ -62,134 +61,134 @@ pub struct Block {
 pub enum Expr {
     Var {
         name: string,
-        ty: tast::Type,
+        ty: Type,
     },
     Callable {
-        callable: tast::Callable,
-        ty: tast::Type,
+        callable: Callable,
+        ty: Type,
     },
     Prim {
-        value: tast::Primitive,
-        ty: tast::Type,
+        value: Primitive,
+        ty: Type,
     },
     Constr {
-        constructor: tast::Constructor,
+        constructor: Constructor,
         args: Vec[Expr],
-        ty: tast::Type,
+        ty: Type,
     },
     Tuple {
         items: Vec[Expr],
-        ty: tast::Type,
+        ty: Type,
     },
     Array {
         items: Vec[Expr],
-        ty: tast::Type,
+        ty: Type,
     },
     Closure {
-        params: Vec[tast::ClosureParam],
+        params: Vec[ClosureParam],
         body: Expr,
-        ty: tast::Type,
+        ty: Type,
     },
     Block {
         block: Block,
-        ty: tast::Type,
+        ty: Type,
     },
     Match {
         expr: Expr,
         arms: Vec[Arm],
         default: Option[Expr],
-        ty: tast::Type,
+        ty: Type,
     },
     If {
         cond: Expr,
         then_branch: Expr,
         else_branch: Expr,
-        ty: tast::Type,
+        ty: Type,
     },
     While {
         cond: Expr,
         body: Expr,
-        ty: tast::Type,
+        ty: Type,
     },
     Loop {
         body: Expr,
-        ty: tast::Type,
+        ty: Type,
     },
     Break {
         target: int,
         value: Option[Expr],
-        ty: tast::Type,
+        ty: Type,
     },
     Continue {
         target: int,
-        ty: tast::Type,
+        ty: Type,
     },
     Return {
         expr: Option[Expr],
-        ty: tast::Type,
+        ty: Type,
     },
     Go {
         expr: Expr,
-        ty: tast::Type,
+        ty: Type,
     },
     ConstrGet {
         expr: Expr,
-        constructor: tast::Constructor,
+        constructor: Constructor,
         field_index: int,
-        ty: tast::Type,
+        ty: Type,
     },
     Unary {
         op: ast::UnaryOp,
         expr: Expr,
-        ty: tast::Type,
+        ty: Type,
     },
     Cast {
         expr: Expr,
-        ty: tast::Type,
+        ty: Type,
     },
     Binary {
         op: ast::BinaryOp,
         lhs: Expr,
         rhs: Expr,
-        ty: tast::Type,
+        ty: Type,
     },
     Assign {
         name: string,
         value: Expr,
-        target_ty: tast::Type,
-        ty: tast::Type,
+        target_ty: Type,
+        ty: Type,
     },
     Call {
         func: Expr,
         args: Vec[Expr],
-        ty: tast::Type,
+        ty: Type,
     },
     ToDyn {
         trait_name: string,
-        for_ty: tast::Type,
+        for_ty: Type,
         expr: Expr,
-        ty: tast::Type,
+        ty: Type,
     },
     DynCall {
         trait_name: string,
         method_name: string,
         receiver: Expr,
         args: Vec[Expr],
-        ty: tast::Type,
+        ty: Type,
     },
     TraitCall {
-        trait_ref: tast::TraitRef,
+        trait_ref: TraitRef,
         method_name: string,
         instance_name: Option[string],
-        for_ty: tast::Type,
+        for_ty: Type,
         receiver: Option[Expr],
         args: Vec[Expr],
-        ty: tast::Type,
+        ty: Type,
     },
     Proj {
         tuple: Expr,
         index: int,
-        ty: tast::Type,
+        ty: Type,
     },
 }
 
@@ -198,7 +197,7 @@ pub struct Arm {
     pub body: Expr,
 }
 
-pub fn expr_type(value: Expr) -> tast::Type {
+pub fn expr_type(value: Expr) -> Type {
     match value {
         Var { ty, .. } | Callable { ty, .. } | Prim { ty, .. } | Constr { ty, .. } | Tuple {
             ty,

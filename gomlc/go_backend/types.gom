@@ -1,13 +1,13 @@
 package go_backend;
 
-use gomlc::tast;
+use gomlc::repr;
+use gomlc::pretty;
 use std::text;
 
-pub fn compact_type(value: tast::Type) -> string {
-    let type_builder = text::StringBuilder::new();
-    tast::write_type(type_builder, value);
+pub fn compact_type(value: repr::Type) -> string {
+    let source = pretty::compact(repr::type_doc(value));
     let builder = text::StringBuilder::new();
-    for character in type_builder.finish().chars() {
+    for character in source.chars() {
         if character == ' ' || character == '\n' || character == '\r' || character == '\t' {} else {
             builder.write_char(character)
         }
@@ -15,7 +15,7 @@ pub fn compact_type(value: tast::Type) -> string {
     builder.finish()
 }
 
-fn join_type_parts(values: Vec[tast::Type]) -> string {
+fn join_type_parts(values: Vec[repr::Type]) -> string {
     let builder = text::StringBuilder::new();
     for index in 0..values.len() {
         if index > 0 {
@@ -28,8 +28,8 @@ fn join_type_parts(values: Vec[tast::Type]) -> string {
     builder.finish()
 }
 
-pub fn encode_type(value: tast::Type) -> string {
-    match tast::resolve_type(value) {
+pub fn encode_type(value: repr::Type) -> string {
+    match repr::resolve_type(value) {
         Unit => "unit",
         Never => "never",
         Bool => "bool",
@@ -49,20 +49,8 @@ pub fn encode_type(value: tast::Type) -> string {
         Char => "char",
         Tuple { items: values } => "Tuple" + values.len().to_string() + "_"
             + join_type_parts(values),
-        Con { name } => name,
+        Named { name } | ClosureEnvironment { name } => name,
         Dyn { trait_name: name, .. } => "Dyn_" + name,
-        Projection { for_ty: base, name, trait_ref: _ } => {
-            let encoded = encode_type(base);
-            "Projection_" + encoded.byte_len().to_string() + encoded + "_" + name
-        },
-        App { ty: base, args } => {
-            let base_name = encode_type(base);
-            if args.is_empty() {
-                base_name
-            } else {
-                "App_" + base_name.byte_len().to_string() + base_name + "__" + join_type_parts(args)
-            }
-        },
         Array { len: length, elem } => {
             let encoded = encode_type(elem);
             "Array_" + length.to_string() + "_" + encoded.byte_len().to_string() + encoded
@@ -90,25 +78,22 @@ pub fn encode_type(value: tast::Type) -> string {
             let encoded = encode_type(elem);
             "Channel_" + encoded.byte_len().to_string() + encoded
         },
-        Param { name } => "TParam_" + name,
         Func { params, ret_ty } => {
             let ret_name = encode_type(ret_ty);
             "Fn" + params.len().to_string() + "_" + join_type_parts(params) + "_to_"
                 + ret_name.byte_len().to_string()
                 + ret_name
         },
-        Var(_) => "Var",
-        Error => "Error",
     }
 }
 
-fn type_name_part(value: tast::Type) -> string {
+fn type_name_part(value: repr::Type) -> string {
     let name = type_name(value);
     name.byte_len().to_string() + name
 }
 
-pub fn type_name(value: tast::Type) -> string {
-    match tast::resolve_type(value) {
+pub fn type_name(value: repr::Type) -> string {
+    match repr::resolve_type(value) {
         Unit => "unit",
         Never => "never",
         Bool => "bool",
@@ -136,20 +121,8 @@ pub fn type_name(value: tast::Type) -> string {
             }
             go_generated_ident(builder.finish())
         },
-        Con { name } => go_user_type_name(name),
+        Named { name } | ClosureEnvironment { name } => go_user_type_name(name),
         Dyn { trait_name: name, .. } => go_dyn_struct_name(name),
-        Projection { for_ty: base, name, trait_ref: _ } => {
-            go_generated_ident("Projection_" + type_name_part(base) + "_" + name)
-        },
-        App { ty: base, args } => {
-            let builder = text::StringBuilder::new();
-            builder.write_string(type_name(base));
-            for value in args {
-                builder.write_char('_');
-                builder.write_string(type_name_part(value))
-            }
-            go_generated_ident(builder.finish())
-        },
         Array { len: length, elem } => {
             go_generated_ident("Array" + length.to_string() + "_" + type_name_part(elem))
         },
@@ -160,7 +133,6 @@ pub fn type_name(value: tast::Type) -> string {
             go_generated_ident("HashMap_" + type_name_part(key) + "_" + type_name_part(value))
         },
         Channel { elem } => go_generated_ident("Channel_" + type_name_part(elem)),
-        Param { name } => go_ident(name),
         Func { params, ret_ty } => {
             let builder = text::StringBuilder::new();
             builder.write_string("TFunc");
@@ -173,13 +145,11 @@ pub fn type_name(value: tast::Type) -> string {
             builder.write_string(type_name_part(ret_ty));
             go_generated_ident(builder.finish())
         },
-        Var(_) => "Var",
-        Error => "Error",
     }
 }
 
-pub fn lower_type(value: tast::Type) -> Type {
-    match tast::resolve_type(value) {
+pub fn lower_type(value: repr::Type) -> Type {
+    match repr::resolve_type(value) {
         Unit | Never => Type::Unit,
         Bool => Type::Bool,
         Int => Type::Int,
@@ -197,10 +167,10 @@ pub fn lower_type(value: tast::Type) -> Type {
         String => Type::String,
         Char => Type::Char,
         Tuple { items: _ } => Type::Named { name: type_name(value) },
-        Con { name } => Type::Named { name: go_user_type_name(name) },
+        Named { name } | ClosureEnvironment { name } => {
+            Type::Named { name: go_user_type_name(name) }
+        },
         Dyn { trait_name: name, .. } => Type::Named { name: go_dyn_struct_name(name) },
-        Projection { for_ty: _, name: _, trait_ref: _ } => Type::Named { name: type_name(value) },
-        App { ty: _, args: _ } => Type::Named { name: type_name(value) },
         Array { len: length, elem } => Type::Array { len: length, elem: lower_type(elem) },
         Slice { elem } => Type::Slice { elem: lower_type(elem) },
         VecType { elem } => {
@@ -227,7 +197,6 @@ pub fn lower_type(value: tast::Type) -> Type {
             }
         },
         Channel { elem } => Type::Chan { elem: lower_type(elem) },
-        Param { name } => Type::Named { name: go_ident(name) },
         Func { params, ret_ty } => {
             let lowered: Vec[Type] = Vec::[];
             for value in params {
@@ -235,6 +204,5 @@ pub fn lower_type(value: tast::Type) -> Type {
             }
             Type::Func { params: lowered, ret_ty: lower_type(ret_ty) }
         },
-        Var(_) | Error => Type::Named { name: type_name(value) },
     }
 }

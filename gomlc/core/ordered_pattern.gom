@@ -42,38 +42,41 @@ fn arms_require_ordered(arms: Vec[tast::Arm]) -> bool {
     false
 }
 
-fn ordered_int(value: int) -> Expr {
-    Expr::Prim { value: tast::Primitive::Int { value: value.to_string() }, ty: tast::Type::Int }
+fn ordered_int(value: int) -> LowerExpr {
+    LowerExpr::Prim {
+        value: tast::Primitive::Int { value: value.to_string() },
+        ty: tast::Type::Int,
+    }
 }
 
-fn ordered_binary(op: ast::BinaryOp, left: Expr, right: Expr, ty: tast::Type) -> Expr {
-    Expr::Binary { op, lhs: left, rhs: right, ty }
+fn ordered_binary(op: ast::BinaryOp, left: LowerExpr, right: LowerExpr, ty: tast::Type) -> LowerExpr {
+    LowerExpr::Binary { op, lhs: left, rhs: right, ty }
 }
 
-fn ordered_if(cond: Expr, then_branch: Expr, else_branch: Expr, ty: tast::Type) -> Expr {
-    Expr::If { cond, then_branch, else_branch, ty }
+fn ordered_if(cond: LowerExpr, then_branch: LowerExpr, else_branch: LowerExpr, ty: tast::Type) -> LowerExpr {
+    LowerExpr::If { cond, then_branch, else_branch, ty }
 }
 
-fn bind_ordered_value(name: string, value: Expr, body: Expr, ty: tast::Type) -> Expr {
-    let stmts: Vec[LetStmt] = Vec::[];
-    stmts.push(LetStmt { name, ty: expr_type(value), value });
-    Expr::Block { block: Block { stmts, tail: Option::Some(body) }, ty }
+fn bind_ordered_value(name: string, value: LowerExpr, body: LowerExpr, ty: tast::Type) -> LowerExpr {
+    let stmts: Vec[LowerLetStmt] = Vec::[];
+    stmts.push(LowerLetStmt { name, ty: lower_expr_type(value), value });
+    LowerExpr::Block { block: LowerBlock { stmts, tail: Option::Some(body) }, ty }
 }
 
-fn ordered_len(value: Expr, container_ty: tast::Type) -> Option[Expr] {
+fn ordered_len(value: LowerExpr, container_ty: tast::Type) -> Option[LowerExpr] {
     match tast::resolve_type(container_ty) {
         Array { len: length, elem: _ } => Option::Some(ordered_int(length)),
         VecType { elem: _ } => {
             let params: Vec[tast::Type] = Vec::[];
             params.push(container_ty);
-            let args: Vec[Expr] = Vec::[];
+            let args: Vec[LowerExpr] = Vec::[];
             args.push(value);
             Option::Some(place_intrinsic_call("vec.len", params, tast::Type::Int, args))
         },
         Slice { elem: _ } => {
             let params: Vec[tast::Type] = Vec::[];
             params.push(container_ty);
-            let args: Vec[Expr] = Vec::[];
+            let args: Vec[LowerExpr] = Vec::[];
             args.push(value);
             Option::Some(place_intrinsic_call("slice.len", params, tast::Type::Int, args))
         },
@@ -92,18 +95,18 @@ fn ordered_container_parts(container_ty: tast::Type) -> Option[(tast::Type, Opti
 }
 
 fn ordered_rest_value(
-    value: Expr,
+    value: LowerExpr,
     container_ty: tast::Type,
     elem_ty: tast::Type,
     fixed_len: Option[int],
     prefix_len: int,
     suffix_len: int,
-    len_expr: Expr,
+    len_expr: LowerExpr,
     rest_ty: tast::Type,
-) -> Expr {
+) -> LowerExpr {
     match tast::resolve_type(container_ty) {
         Array { len: _, elem: _ } => {
-            let items: Vec[Expr] = Vec::[];
+            let items: Vec[LowerExpr] = Vec::[];
             let end = match fixed_len {
                 Some(length) => length - suffix_len,
                 None => prefix_len,
@@ -111,7 +114,7 @@ fn ordered_rest_value(
             for index in prefix_len..end {
                 items.push(place_index_read(value, container_ty, ordered_int(index), elem_ty))
             }
-            Expr::Array { items, ty: rest_ty }
+            LowerExpr::Array { items, ty: rest_ty }
         },
         VecType { elem: _ } => {
             let end = if suffix_len == 0 {
@@ -128,7 +131,7 @@ fn ordered_rest_value(
             params.push(container_ty);
             params.push(tast::Type::Int);
             params.push(tast::Type::Int);
-            let args: Vec[Expr] = Vec::[];
+            let args: Vec[LowerExpr] = Vec::[];
             args.push(value);
             args.push(ordered_int(prefix_len));
             args.push(end);
@@ -149,7 +152,7 @@ fn ordered_rest_value(
             params.push(container_ty);
             params.push(tast::Type::Int);
             params.push(tast::Type::Int);
-            let args: Vec[Expr] = Vec::[];
+            let args: Vec[LowerExpr] = Vec::[];
             args.push(value);
             args.push(ordered_int(prefix_len));
             args.push(end);
@@ -159,7 +162,7 @@ fn ordered_rest_value(
     }
 }
 
-fn ordered_suffix_index(fixed_len: Option[int], len_expr: Expr, suffix_len: int, offset: int) -> Expr {
+fn ordered_suffix_index(fixed_len: Option[int], len_expr: LowerExpr, suffix_len: int, offset: int) -> LowerExpr {
     match fixed_len {
         Some(length) => ordered_int(length - suffix_len + offset),
         None => ordered_binary(
@@ -177,11 +180,11 @@ fn lower_ordered_array_pattern(
     rest: Option[tast::ArrayPatRest],
     suffix: Vec[tast::Pat],
     container_ty: tast::Type,
-    value: Expr,
-    success: Expr,
-    failure: Expr,
+    value: LowerExpr,
+    success: LowerExpr,
+    failure: LowerExpr,
     result_ty: tast::Type,
-) -> Expr {
+) -> LowerExpr {
     match ordered_container_parts(container_ty) {
         Some((elem_ty, fixed_len)) => match ordered_len(value, container_ty) {
             Some(len_expr) => {
@@ -254,11 +257,11 @@ fn lower_ordered_array_pattern(
 fn lower_ordered_pattern(
     ctx: Lowerer,
     pattern: tast::Pat,
-    value: Expr,
-    success: Expr,
-    failure: Expr,
+    value: LowerExpr,
+    success: LowerExpr,
+    failure: LowerExpr,
     result_ty: tast::Type,
-) -> Expr {
+) -> LowerExpr {
     match pattern {
         Wild { ty: _ } => success,
         Var { name, is_mut: _, ty: _ } => bind_ordered_value(name, value, success, result_ty),
@@ -266,7 +269,7 @@ fn lower_ordered_pattern(
             let matched = lower_ordered_pattern(
                 ctx,
                 inner,
-                Expr::Var { name, ty },
+                LowerExpr::Var { name, ty },
                 success,
                 failure,
                 result_ty,
@@ -282,7 +285,7 @@ fn lower_ordered_pattern(
             next
         },
         Constant { name, ty } => ordered_if(
-            ordered_binary(ast::BinaryOp::Eq, value, Expr::Var { name, ty }, tast::Type::Bool),
+            ordered_binary(ast::BinaryOp::Eq, value, LowerExpr::Var { name, ty }, tast::Type::Bool),
             success,
             failure,
             result_ty,
@@ -291,7 +294,7 @@ fn lower_ordered_pattern(
             ordered_binary(
                 ast::BinaryOp::Eq,
                 value,
-                Expr::Prim { value: expected, ty },
+                LowerExpr::Prim { value: expected, ty },
                 tast::Type::Bool,
             ),
             success,
@@ -305,7 +308,12 @@ fn lower_ordered_pattern(
                 ast::BinaryOp::Less
             };
             let upper = ordered_if(
-                ordered_binary(upper_op, value, Expr::Prim { value: end, ty }, tast::Type::Bool),
+                ordered_binary(
+                    upper_op,
+                    value,
+                    LowerExpr::Prim { value: end, ty },
+                    tast::Type::Bool,
+                ),
                 success,
                 failure,
                 result_ty,
@@ -314,7 +322,7 @@ fn lower_ordered_pattern(
                 ordered_binary(
                     ast::BinaryOp::GreaterEq,
                     value,
-                    Expr::Prim { value: start, ty },
+                    LowerExpr::Prim { value: start, ty },
                     tast::Type::Bool,
                 ),
                 upper,
@@ -330,7 +338,7 @@ fn lower_ordered_pattern(
                     next = lower_ordered_pattern(
                         ctx,
                         items[index],
-                        Expr::Proj { tuple: value, index, ty: types[index] },
+                        LowerExpr::Proj { tuple: value, index, ty: types[index] },
                         next,
                         failure,
                         result_ty,
@@ -348,7 +356,7 @@ fn lower_ordered_pattern(
                 next = lower_ordered_pattern(
                     ctx,
                     arg,
-                    Expr::ConstrGet {
+                    LowerExpr::ConstrGet {
                         expr: value,
                         constructor,
                         field_index: index,
@@ -362,18 +370,25 @@ fn lower_ordered_pattern(
             if constructor.is_struct {
                 next
             } else {
-                let lhs_args: Vec[Expr] = Vec::[];
+                let lhs_args: Vec[LowerExpr] = Vec::[];
                 for arg in args {
-                    lhs_args.push(Expr::Var { name: gensym(ctx, "p"), ty: tast::pat_type(arg) })
+                    lhs_args.push(
+                        LowerExpr::Var { name: gensym(ctx, "p"), ty: tast::pat_type(arg) },
+                    )
                 }
-                let arms: Vec[Arm] = Vec::[];
+                let arms: Vec[LowerArm] = Vec::[];
                 arms.push(
-                    Arm {
-                        lhs: Expr::Constr { constructor, args: lhs_args, ty: pattern_ty },
+                    LowerArm {
+                        lhs: LowerExpr::Constr { constructor, args: lhs_args, ty: pattern_ty },
                         body: next,
                     },
                 );
-                Expr::Match { expr: value, arms, default: Option::Some(failure), ty: result_ty }
+                LowerExpr::Match {
+                    expr: value,
+                    arms,
+                    default: Option::Some(failure),
+                    ty: result_ty,
+                }
             }
         },
         Array { prefix, rest, suffix, ty: container_ty } => {
@@ -392,11 +407,11 @@ fn lower_ordered_pattern(
     }
 }
 
-fn lower_ordered_match(ctx: Lowerer, source: tast::Expr, arms: Vec[tast::Arm], ty: tast::Type) -> Expr {
+fn lower_ordered_match(ctx: Lowerer, source: tast::Expr, arms: Vec[tast::Arm], ty: tast::Type) -> LowerExpr {
     let source_ty = tast::expr_type(source);
     let source_value = lower_expr(ctx, source);
     let source_name = gensym(ctx, "match");
-    let source_var = Expr::Var { name: source_name, ty: source_ty };
+    let source_var = LowerExpr::Var { name: source_name, ty: source_ty };
     let mut next = missing_expr(ty);
     for offset in 0..arms.len() {
         let index = arms.len() - 1 - offset;

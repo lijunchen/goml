@@ -1,0 +1,492 @@
+package core;
+
+use gomlc::tast;
+
+fn lower_types(values: Vec[tast::Type]) -> Vec[Type] {
+    let result: Vec[Type] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(lower_type(value))
+    }
+    result
+}
+
+fn lower_named_types(values: Vec[(string, tast::Type)]) -> Vec[(string, Type)] {
+    let result: Vec[(string, Type)] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push((value.0, lower_type(value.1)))
+    }
+    result
+}
+
+fn lower_dyn_bounds(values: Vec[tast::DynTraitBound]) -> Vec[DynTraitBound] {
+    let result: Vec[DynTraitBound] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(
+            DynTraitBound {
+                trait_name: value.trait_name,
+                args: lower_types(value.args),
+                associated_types: lower_named_types(value.associated_types),
+            },
+        )
+    }
+    result
+}
+
+pub fn lower_trait_ref(value: tast::TraitRef) -> TraitRef {
+    TraitRef { name: value.name, args: lower_types(value.args) }
+}
+
+fn lower_optional_trait_ref(value: Option[tast::TraitRef]) -> Option[TraitRef] {
+    match value {
+        Some(value) => Option::Some(lower_trait_ref(value)),
+        None => Option::None,
+    }
+}
+
+pub fn lower_type(value: tast::Type) -> Type {
+    match tast::resolve_type(value) {
+        Var(_) => Type::Error,
+        Unit => Type::Unit,
+        Never => Type::Never,
+        Bool => Type::Bool,
+        Int => Type::Int,
+        Int8 => Type::Int8,
+        Int16 => Type::Int16,
+        Int32 => Type::Int32,
+        Int64 => Type::Int64,
+        Uint => Type::Uint,
+        Uint8 => Type::Uint8,
+        Uint16 => Type::Uint16,
+        Uint32 => Type::Uint32,
+        Uint64 => Type::Uint64,
+        Float32 => Type::Float32,
+        Float64 => Type::Float64,
+        String => Type::String,
+        Char => Type::Char,
+        Tuple { items } => Type::Tuple { items: lower_types(items) },
+        Con { name } => Type::Con { name },
+        Dyn { trait_name, args, associated_types, additional_bounds } => Type::Dyn {
+            trait_name,
+            args: lower_types(args),
+            associated_types: lower_named_types(associated_types),
+            additional_bounds: lower_dyn_bounds(additional_bounds),
+        },
+        Projection { for_ty, name, trait_ref } => Type::Projection {
+            for_ty: lower_type(for_ty),
+            name,
+            trait_ref: lower_optional_trait_ref(trait_ref),
+        },
+        App { ty, args } => Type::App { ty: lower_type(ty), args: lower_types(args) },
+        Array { len, elem } => Type::Array { len, elem: lower_type(elem) },
+        Slice { elem } => Type::Slice { elem: lower_type(elem) },
+        VecType { elem } => Type::VecType { elem: lower_type(elem) },
+        RefType { elem } => Type::RefType { elem: lower_type(elem) },
+        HashMap { key, value } => {
+            Type::HashMap { key: lower_type(key), value: lower_type(value) }
+        },
+        Channel { elem } => Type::Channel { elem: lower_type(elem) },
+        Param { name } => Type::Param { name },
+        Func { params, ret_ty } => {
+            Type::Func { params: lower_types(params), ret_ty: lower_type(ret_ty) }
+        },
+        Error => Type::Error,
+    }
+}
+
+pub fn lower_primitive(value: tast::Primitive) -> Primitive {
+    match value {
+        Unit => Primitive::Unit,
+        Bool { value } => Primitive::Bool { value },
+        Int { value } => Primitive::Int { value },
+        Int8 { value } => Primitive::Int8 { value },
+        Int16 { value } => Primitive::Int16 { value },
+        Int32 { value } => Primitive::Int32 { value },
+        Int64 { value } => Primitive::Int64 { value },
+        Uint { value } => Primitive::Uint { value },
+        Uint8 { value } => Primitive::Uint8 { value },
+        Uint16 { value } => Primitive::Uint16 { value },
+        Uint32 { value } => Primitive::Uint32 { value },
+        Uint64 { value } => Primitive::Uint64 { value },
+        Float { value } => Primitive::Float { value },
+        Float32 { value } => Primitive::Float32 { value },
+        Float64 { value } => Primitive::Float64 { value },
+        String { value } => Primitive::String { value },
+        Char { value } => Primitive::Char { value },
+    }
+}
+
+pub fn primitive_to_tast(value: Primitive) -> tast::Primitive {
+    match value {
+        Unit => tast::Primitive::Unit,
+        Bool { value } => tast::Primitive::Bool { value },
+        Int { value } => tast::Primitive::Int { value },
+        Int8 { value } => tast::Primitive::Int8 { value },
+        Int16 { value } => tast::Primitive::Int16 { value },
+        Int32 { value } => tast::Primitive::Int32 { value },
+        Int64 { value } => tast::Primitive::Int64 { value },
+        Uint { value } => tast::Primitive::Uint { value },
+        Uint8 { value } => tast::Primitive::Uint8 { value },
+        Uint16 { value } => tast::Primitive::Uint16 { value },
+        Uint32 { value } => tast::Primitive::Uint32 { value },
+        Uint64 { value } => tast::Primitive::Uint64 { value },
+        Float { value } => tast::Primitive::Float { value },
+        Float32 { value } => tast::Primitive::Float32 { value },
+        Float64 { value } => tast::Primitive::Float64 { value },
+        String { value } => tast::Primitive::String { value },
+        Char { value } => tast::Primitive::Char { value },
+    }
+}
+
+pub fn lower_constructor(value: tast::Constructor) -> Constructor {
+    Constructor {
+        name: value.name,
+        fields: value.fields,
+        is_struct: value.is_struct,
+        tag: value.tag,
+    }
+}
+
+pub fn lower_callable(value: tast::Callable) -> Callable {
+    match value {
+        Function(name) => Callable::Function(name),
+        LangItem { item, function_name } => Callable::LangItem { item, function_name },
+        Runtime(name) => Callable::Runtime(name),
+        Intrinsic(name) => Callable::Intrinsic(name),
+        GoForeign { import_path, symbol } => Callable::GoForeign { import_path, symbol },
+        TraitMethod { trait_ref, method_name, for_ty, has_receiver } => Callable::TraitMethod {
+            trait_ref: lower_trait_ref(trait_ref),
+            method_name,
+            for_ty: lower_type(for_ty),
+            has_receiver,
+        },
+        DynTraitMethod { trait_name, dispatch_name, method_name } => {
+            Callable::DynTraitMethod { trait_name, dispatch_name, method_name }
+        },
+        InherentMethod { receiver_ty, method_name } => {
+            Callable::InherentMethod { receiver_ty: lower_type(receiver_ty), method_name }
+        },
+    }
+}
+
+pub fn callable_to_tast(value: Callable) -> tast::Callable {
+    match value {
+        Function(name) => tast::Callable::Function(name),
+        LangItem { item, function_name } => tast::Callable::LangItem { item, function_name },
+        Runtime(name) => tast::Callable::Runtime(name),
+        Intrinsic(name) => tast::Callable::Intrinsic(name),
+        GoForeign { import_path, symbol } => tast::Callable::GoForeign { import_path, symbol },
+        TraitMethod { trait_ref, method_name, for_ty, has_receiver } => tast::Callable::TraitMethod {
+            trait_ref: trait_ref_to_tast(trait_ref),
+            method_name,
+            for_ty: type_to_tast(for_ty),
+            has_receiver,
+        },
+        DynTraitMethod { trait_name, dispatch_name, method_name } => {
+            tast::Callable::DynTraitMethod { trait_name, dispatch_name, method_name }
+        },
+        InherentMethod { receiver_ty, method_name } => {
+            tast::Callable::InherentMethod { receiver_ty: type_to_tast(receiver_ty), method_name }
+        },
+    }
+}
+
+pub fn lower_closure_params(values: Vec[tast::ClosureParam]) -> Vec[ClosureParam] {
+    let result: Vec[ClosureParam] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(ClosureParam { name: value.name, ty: lower_type(value.ty) })
+    }
+    result
+}
+
+pub fn lower_predicate(value: tast::TypePredicate) -> TypePredicate {
+    match value {
+        Trait { for_ty, trait_ref } => TypePredicate::Trait {
+            for_ty: lower_type(for_ty),
+            trait_ref: lower_trait_ref(trait_ref),
+        },
+        Equality { lhs, rhs } => {
+            TypePredicate::Equality { lhs: lower_type(lhs), rhs: lower_type(rhs) }
+        },
+    }
+}
+
+pub fn lower_predicates(values: Vec[tast::TypePredicate]) -> Vec[TypePredicate] {
+    let result: Vec[TypePredicate] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(lower_predicate(value))
+    }
+    result
+}
+
+pub fn predicate_to_tast(value: TypePredicate) -> tast::TypePredicate {
+    match value {
+        Trait { for_ty, trait_ref } => tast::TypePredicate::Trait {
+            for_ty: type_to_tast(for_ty),
+            trait_ref: trait_ref_to_tast(trait_ref),
+        },
+        Equality { lhs, rhs } => tast::TypePredicate::Equality {
+            lhs: type_to_tast(lhs),
+            rhs: type_to_tast(rhs),
+        },
+    }
+}
+
+pub fn lower_const_expr(value: tast::ConstExpr) -> ConstExpr {
+    match value {
+        Prim { value, ty } => ConstExpr::Prim { value: lower_primitive(value), ty: lower_type(ty) },
+        Ref { name, ty } => ConstExpr::Ref { name, ty: lower_type(ty) },
+        Unary { op, expr, ty } => {
+            ConstExpr::Unary { op, expr: lower_const_expr(expr), ty: lower_type(ty) }
+        },
+        Cast { expr, ty } => ConstExpr::Cast { expr: lower_const_expr(expr), ty: lower_type(ty) },
+        Binary { op, lhs, rhs, ty } => ConstExpr::Binary {
+            op,
+            lhs: lower_const_expr(lhs),
+            rhs: lower_const_expr(rhs),
+            ty: lower_type(ty),
+        },
+        Error { ty } => ConstExpr::Error { ty: lower_type(ty) },
+    }
+}
+
+pub fn lower_constant(value: tast::Constant) -> Constant {
+    Constant { name: value.name, ty: lower_type(value.ty), value: lower_const_expr(value.value) }
+}
+
+pub fn const_expr_to_tast(value: ConstExpr) -> tast::ConstExpr {
+    match value {
+        Prim { value, ty } => {
+            tast::ConstExpr::Prim { value: primitive_to_tast(value), ty: type_to_tast(ty) }
+        },
+        Ref { name, ty } => tast::ConstExpr::Ref { name, ty: type_to_tast(ty) },
+        Unary { op, expr, ty } => tast::ConstExpr::Unary {
+            op,
+            expr: const_expr_to_tast(expr),
+            ty: type_to_tast(ty),
+        },
+        Cast { expr, ty } => {
+            tast::ConstExpr::Cast { expr: const_expr_to_tast(expr), ty: type_to_tast(ty) }
+        },
+        Binary { op, lhs, rhs, ty } => tast::ConstExpr::Binary {
+            op,
+            lhs: const_expr_to_tast(lhs),
+            rhs: const_expr_to_tast(rhs),
+            ty: type_to_tast(ty),
+        },
+        Error { ty } => tast::ConstExpr::Error { ty: type_to_tast(ty) },
+    }
+}
+
+pub fn constant_to_tast(value: Constant) -> tast::Constant {
+    tast::Constant {
+        name: value.name,
+        ty: type_to_tast(value.ty),
+        value: const_expr_to_tast(value.value),
+    }
+}
+
+pub fn lower_constants(values: Vec[tast::Constant]) -> Vec[Constant] {
+    let result: Vec[Constant] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(lower_constant(value))
+    }
+    result
+}
+
+fn lower_enum_fields(value: tast::EnumVariantFields) -> EnumVariantFields {
+    match value {
+        Unit => EnumVariantFields::Unit,
+        Tuple(values) => EnumVariantFields::Tuple(lower_types(values)),
+        Struct(values) => EnumVariantFields::Struct(lower_named_types(values)),
+    }
+}
+
+pub fn lower_enum_def(value: tast::EnumDef) -> EnumDef {
+    let variants: Vec[EnumVariantDef] = Vec::with_capacity(value.variants.len());
+    for variant in value.variants {
+        variants.push(
+            EnumVariantDef { name: variant.name, fields: lower_enum_fields(variant.fields) },
+        )
+    }
+    EnumDef {
+        name: value.name,
+        generics: value.generics,
+        variants,
+        option_variants: value.option_variants,
+    }
+}
+
+pub fn lower_enum_defs(values: Vec[tast::EnumDef]) -> Vec[EnumDef] {
+    let result: Vec[EnumDef] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(lower_enum_def(value))
+    }
+    result
+}
+
+pub fn lower_struct_def(value: tast::StructDef) -> StructDef {
+    StructDef {
+        name: value.name,
+        generics: value.generics,
+        fields: lower_named_types(value.fields),
+        public_fields: value.public_fields,
+        has_hidden_fields: value.has_hidden_fields,
+    }
+}
+
+pub fn lower_struct_defs(values: Vec[tast::StructDef]) -> Vec[StructDef] {
+    let result: Vec[StructDef] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(lower_struct_def(value))
+    }
+    result
+}
+
+fn tast_types(values: Vec[Type]) -> Vec[tast::Type] {
+    let result: Vec[tast::Type] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(type_to_tast(value))
+    }
+    result
+}
+
+fn tast_named_types(values: Vec[(string, Type)]) -> Vec[(string, tast::Type)] {
+    let result: Vec[(string, tast::Type)] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push((value.0, type_to_tast(value.1)))
+    }
+    result
+}
+
+fn enum_fields_to_tast(value: EnumVariantFields) -> tast::EnumVariantFields {
+    match value {
+        Unit => tast::EnumVariantFields::Unit,
+        Tuple(values) => tast::EnumVariantFields::Tuple(tast_types(values)),
+        Struct(values) => tast::EnumVariantFields::Struct(tast_named_types(values)),
+    }
+}
+
+pub fn enum_def_to_tast(value: EnumDef) -> tast::EnumDef {
+    let variants: Vec[tast::EnumVariantDef] = Vec::with_capacity(value.variants.len());
+    for variant in value.variants {
+        variants.push(
+            tast::EnumVariantDef { name: variant.name, fields: enum_fields_to_tast(variant.fields) },
+        )
+    }
+    tast::EnumDef {
+        name: value.name,
+        generics: value.generics,
+        variants,
+        option_variants: value.option_variants,
+    }
+}
+
+pub fn enum_defs_to_tast(values: Vec[EnumDef]) -> Vec[tast::EnumDef] {
+    let result: Vec[tast::EnumDef] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(enum_def_to_tast(value))
+    }
+    result
+}
+
+pub fn struct_def_to_tast(value: StructDef) -> tast::StructDef {
+    tast::StructDef {
+        name: value.name,
+        generics: value.generics,
+        fields: tast_named_types(value.fields),
+        public_fields: value.public_fields,
+        has_hidden_fields: value.has_hidden_fields,
+    }
+}
+
+pub fn struct_defs_to_tast(values: Vec[StructDef]) -> Vec[tast::StructDef] {
+    let result: Vec[tast::StructDef] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(struct_def_to_tast(value))
+    }
+    result
+}
+
+fn dyn_bound_to_tast(value: DynTraitBound) -> tast::DynTraitBound {
+    tast::DynTraitBound {
+        trait_name: value.trait_name,
+        args: tast_types(value.args),
+        associated_types: tast_named_types(value.associated_types),
+    }
+}
+
+pub fn trait_ref_to_tast(value: TraitRef) -> tast::TraitRef {
+    tast::TraitRef { name: value.name, args: tast_types(value.args) }
+}
+
+pub fn type_to_tast(value: Type) -> tast::Type {
+    match value {
+        Unit => tast::Type::Unit,
+        Never => tast::Type::Never,
+        Bool => tast::Type::Bool,
+        Int => tast::Type::Int,
+        Int8 => tast::Type::Int8,
+        Int16 => tast::Type::Int16,
+        Int32 => tast::Type::Int32,
+        Int64 => tast::Type::Int64,
+        Uint => tast::Type::Uint,
+        Uint8 => tast::Type::Uint8,
+        Uint16 => tast::Type::Uint16,
+        Uint32 => tast::Type::Uint32,
+        Uint64 => tast::Type::Uint64,
+        Float32 => tast::Type::Float32,
+        Float64 => tast::Type::Float64,
+        String => tast::Type::String,
+        Char => tast::Type::Char,
+        Tuple { items } => tast::Type::Tuple { items: tast_types(items) },
+        Con { name } => tast::Type::Con { name },
+        Dyn { trait_name, args, associated_types, additional_bounds } => {
+            let bounds: Vec[tast::DynTraitBound] = Vec::with_capacity(additional_bounds.len());
+            for bound in additional_bounds {
+                bounds.push(dyn_bound_to_tast(bound))
+            }
+            tast::Type::Dyn {
+                trait_name,
+                args: tast_types(args),
+                associated_types: tast_named_types(associated_types),
+                additional_bounds: bounds,
+            }
+        },
+        Projection { for_ty, name, trait_ref } => tast::Type::Projection {
+            for_ty: type_to_tast(for_ty),
+            name,
+            trait_ref: match trait_ref {
+                Some(value) => Option::Some(trait_ref_to_tast(value)),
+                None => Option::None,
+            },
+        },
+        App { ty, args } => tast::Type::App { ty: type_to_tast(ty), args: tast_types(args) },
+        Array { len, elem } => tast::Type::Array { len, elem: type_to_tast(elem) },
+        Slice { elem } => tast::Type::Slice { elem: type_to_tast(elem) },
+        VecType { elem } => tast::Type::VecType { elem: type_to_tast(elem) },
+        RefType { elem } => tast::Type::RefType { elem: type_to_tast(elem) },
+        HashMap { key, value } => {
+            tast::Type::HashMap { key: type_to_tast(key), value: type_to_tast(value) }
+        },
+        Channel { elem } => tast::Type::Channel { elem: type_to_tast(elem) },
+        Param { name } => tast::Type::Param { name },
+        Func { params, ret_ty } => {
+            tast::Type::Func { params: tast_types(params), ret_ty: type_to_tast(ret_ty) }
+        },
+        Error => tast::Type::Error,
+    }
+}
+
+pub fn builtin_projection(for_ty: Type, name: string, trait_ref: Option[TraitRef]) -> Option[Type] {
+    match tast::builtin_projection(
+        type_to_tast(for_ty),
+        name,
+        match trait_ref {
+            Some(value) => Option::Some(trait_ref_to_tast(value)),
+            None => Option::None,
+        },
+    ) {
+        Some(value) => Option::Some(lower_type(value)),
+        None => Option::None,
+    }
+}

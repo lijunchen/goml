@@ -133,31 +133,31 @@ fn trait_impl_method_name(reference: tast::TraitRef, for_ty: tast::Type, name: s
     "trait_impl#" + reference.name + "#" + dispatch + "#" + name
 }
 
-fn lower_exprs(ctx: Lowerer, values: Vec[tast::Expr]) -> Vec[Expr] {
-    let result: Vec[Expr] = Vec::[];
+fn lower_exprs(ctx: Lowerer, values: Vec[tast::Expr]) -> Vec[LowerExpr] {
+    let result: Vec[LowerExpr] = Vec::[];
     for value in values {
         result.push(lower_expr(ctx, value))
     }
     result
 }
 
-fn arguments_after_first(values: Vec[Expr]) -> Vec[Expr] {
-    let result: Vec[Expr] = Vec::[];
+fn arguments_after_first(values: Vec[LowerExpr]) -> Vec[LowerExpr] {
+    let result: Vec[LowerExpr] = Vec::[];
     for index in 1..values.len() {
         result.push(values[index])
     }
     result
 }
 
-fn bool_expr(value: bool) -> Expr {
-    Expr::Prim { value: tast::Primitive::Bool { value }, ty: tast::Type::Bool }
+fn bool_expr(value: bool) -> LowerExpr {
+    LowerExpr::Prim { value: tast::Primitive::Bool { value }, ty: tast::Type::Bool }
 }
 
-fn trait_bool_call(trait_name: string, method_name: string, left: Expr, right: Expr) -> Expr {
-    let args: Vec[Expr] = Vec::[];
+fn trait_bool_call(trait_name: string, method_name: string, left: LowerExpr, right: LowerExpr) -> LowerExpr {
+    let args: Vec[LowerExpr] = Vec::[];
     args.push(right);
-    let for_ty = expr_type(left);
-    Expr::TraitCall {
+    let for_ty = lower_expr_type(left);
+    LowerExpr::TraitCall {
         trait_ref: tast::TraitRef { name: trait_name, args: Vec::[] },
         method_name,
         instance_name: Option::None,
@@ -168,7 +168,7 @@ fn trait_bool_call(trait_name: string, method_name: string, left: Expr, right: E
     }
 }
 
-fn trait_eq_call(trait_name: string, left: Expr, right: Expr) -> Expr {
+fn trait_eq_call(trait_name: string, left: LowerExpr, right: LowerExpr) -> LowerExpr {
     trait_bool_call(trait_name, "eq", left, right)
 }
 
@@ -188,7 +188,7 @@ fn lower_order_expr(
     op: ast::BinaryOp,
     left: tast::Expr,
     right: tast::Expr,
-) -> Expr {
+) -> LowerExpr {
     trait_bool_call(
         trait_name,
         order_method_name(op),
@@ -197,14 +197,14 @@ fn lower_order_expr(
     )
 }
 
-fn eq_conjunction(values: Vec[Expr]) -> Expr {
+fn eq_conjunction(values: Vec[LowerExpr]) -> LowerExpr {
     if values.is_empty() {
         bool_expr(true)
     } else {
         let mut result = values[values.len() - 1];
         let mut index = values.len() - 2;
         while index >= 0 {
-            result = Expr::If {
+            result = LowerExpr::If {
                 cond: values[index],
                 then_branch: result,
                 else_branch: bool_expr(false),
@@ -216,17 +216,17 @@ fn eq_conjunction(values: Vec[Expr]) -> Expr {
     }
 }
 
-fn structural_eq(trait_name: string, left: Expr, right: Expr, ty: tast::Type) -> Expr {
+fn structural_eq(trait_name: string, left: LowerExpr, right: LowerExpr, ty: tast::Type) -> LowerExpr {
     match tast::resolve_type(ty) {
         Tuple { items: types } => {
-            let values: Vec[Expr] = Vec::[];
+            let values: Vec[LowerExpr] = Vec::[];
             for index in 0..types.len() {
                 let item_ty = types[index];
                 values.push(
                     structural_eq(
                         trait_name,
-                        Expr::Proj { tuple: left, index, ty: item_ty },
-                        Expr::Proj { tuple: right, index, ty: item_ty },
+                        LowerExpr::Proj { tuple: left, index, ty: item_ty },
+                        LowerExpr::Proj { tuple: right, index, ty: item_ty },
                         item_ty,
                     ),
                 )
@@ -234,9 +234,9 @@ fn structural_eq(trait_name: string, left: Expr, right: Expr, ty: tast::Type) ->
             eq_conjunction(values)
         },
         Array { len: length, elem: element } => {
-            let values: Vec[Expr] = Vec::[];
+            let values: Vec[LowerExpr] = Vec::[];
             for index in 0..length {
-                let index_expr = Expr::Prim {
+                let index_expr = LowerExpr::Prim {
                     value: tast::Primitive::Int { value: index.to_string() },
                     ty: tast::Type::Int,
                 };
@@ -244,25 +244,25 @@ fn structural_eq(trait_name: string, left: Expr, right: Expr, ty: tast::Type) ->
                 parameter_types.push(ty);
                 parameter_types.push(tast::Type::Int);
                 let function_ty = tast::Type::Func { params: parameter_types, ret_ty: element };
-                let left_args: Vec[Expr] = Vec::[];
+                let left_args: Vec[LowerExpr] = Vec::[];
                 left_args.push(left);
                 left_args.push(index_expr);
-                let right_args: Vec[Expr] = Vec::[];
+                let right_args: Vec[LowerExpr] = Vec::[];
                 right_args.push(right);
                 right_args.push(index_expr);
                 values.push(
                     structural_eq(
                         trait_name,
-                        Expr::Call {
-                            func: Expr::Callable {
+                        LowerExpr::Call {
+                            func: LowerExpr::Callable {
                                 callable: tast::Callable::Intrinsic("array.get"),
                                 ty: function_ty,
                             },
                             args: left_args,
                             ty: element,
                         },
-                        Expr::Call {
-                            func: Expr::Callable {
+                        LowerExpr::Call {
+                            func: LowerExpr::Callable {
                                 callable: tast::Callable::Intrinsic("array.get"),
                                 ty: function_ty,
                             },
@@ -285,7 +285,7 @@ fn lower_eq_expr(
     op: ast::BinaryOp,
     left: tast::Expr,
     right: tast::Expr,
-) -> Expr {
+) -> LowerExpr {
     let operand_ty = tast::expr_type(left);
     let left_value = lower_expr(ctx, left);
     let right_value = lower_expr(ctx, right);
@@ -293,17 +293,17 @@ fn lower_eq_expr(
         Tuple { items: _ } | Array { len: _, elem: _ } => {
             let left_name = gensym(ctx, "_eq_lhs");
             let right_name = gensym(ctx, "_eq_rhs");
-            let stmts: Vec[LetStmt] = Vec::[];
-            stmts.push(LetStmt { name: left_name, value: left_value, ty: operand_ty });
-            stmts.push(LetStmt { name: right_name, value: right_value, ty: operand_ty });
-            Expr::Block {
-                block: Block {
+            let stmts: Vec[LowerLetStmt] = Vec::[];
+            stmts.push(LowerLetStmt { name: left_name, value: left_value, ty: operand_ty });
+            stmts.push(LowerLetStmt { name: right_name, value: right_value, ty: operand_ty });
+            LowerExpr::Block {
+                block: LowerBlock {
                     stmts,
                     tail: Option::Some(
                         structural_eq(
                             trait_name,
-                            Expr::Var { name: left_name, ty: operand_ty },
-                            Expr::Var { name: right_name, ty: operand_ty },
+                            LowerExpr::Var { name: left_name, ty: operand_ty },
+                            LowerExpr::Var { name: right_name, ty: operand_ty },
                             operand_ty,
                         ),
                     ),
@@ -317,7 +317,7 @@ fn lower_eq_expr(
         NotEq => true,
         _ => false,
     } {
-        Expr::Unary { op: ast::UnaryOp::Not, expr: eq, ty: tast::Type::Bool }
+        LowerExpr::Unary { op: ast::UnaryOp::Not, expr: eq, ty: tast::Type::Bool }
     } else {
         eq
     }
@@ -330,14 +330,14 @@ fn negated_integer(value: tast::Primitive) -> Option[tast::Primitive] {
     }
 }
 
-fn lower_call(ctx: Lowerer, function: tast::Expr, arguments: Vec[tast::Expr], ty: tast::Type) -> Expr {
+fn lower_call(ctx: Lowerer, function: tast::Expr, arguments: Vec[tast::Expr], ty: tast::Type) -> LowerExpr {
     let args = lower_exprs(ctx, arguments);
     match function {
         Callable {
             callable: TraitMethod { trait_ref: reference, method_name: name, for_ty, has_receiver },
             ty: _,
         } => if !has_receiver || args.len() > 0 {
-            Expr::TraitCall {
+            LowerExpr::TraitCall {
                 trait_ref: reference,
                 method_name: name,
                 instance_name: Option::None,
@@ -355,8 +355,8 @@ fn lower_call(ctx: Lowerer, function: tast::Expr, arguments: Vec[tast::Expr], ty
                 ty,
             }
         } else {
-            Expr::Call {
-                func: Expr::Callable {
+            LowerExpr::Call {
+                func: LowerExpr::Callable {
                     callable: tast::Callable::TraitMethod {
                         trait_ref: reference,
                         method_name: name,
@@ -377,7 +377,7 @@ fn lower_call(ctx: Lowerer, function: tast::Expr, arguments: Vec[tast::Expr], ty
             },
             ty: _,
         } => if !args.is_empty() {
-            Expr::DynCall {
+            LowerExpr::DynCall {
                 trait_name: owner,
                 method_name: dispatch + "#" + name,
                 receiver: args[0],
@@ -385,8 +385,8 @@ fn lower_call(ctx: Lowerer, function: tast::Expr, arguments: Vec[tast::Expr], ty
                 ty,
             }
         } else {
-            Expr::Call {
-                func: Expr::Callable {
+            LowerExpr::Call {
+                func: LowerExpr::Callable {
                     callable: tast::Callable::DynTraitMethod {
                         trait_name: owner,
                         dispatch_name: dispatch,
@@ -404,10 +404,10 @@ fn lower_call(ctx: Lowerer, function: tast::Expr, arguments: Vec[tast::Expr], ty
         } => {
             match tast::builtin_numeric_conversion_target(owner, name) {
                 Some(target) => if args.len() == 1 {
-                    Expr::Cast { expr: args[0], ty: target }
+                    LowerExpr::Cast { expr: args[0], ty: target }
                 } else {
-                    Expr::Call {
-                        func: Expr::Callable {
+                    LowerExpr::Call {
+                        func: LowerExpr::Callable {
                             callable: tast::Callable::InherentMethod {
                                 receiver_ty: owner,
                                 method_name: name,
@@ -418,8 +418,8 @@ fn lower_call(ctx: Lowerer, function: tast::Expr, arguments: Vec[tast::Expr], ty
                         ty,
                     }
                 },
-                None => Expr::Call {
-                    func: Expr::Callable {
+                None => LowerExpr::Call {
+                    func: LowerExpr::Callable {
                         callable: tast::Callable::InherentMethod {
                             receiver_ty: owner,
                             method_name: name,
@@ -431,44 +431,46 @@ fn lower_call(ctx: Lowerer, function: tast::Expr, arguments: Vec[tast::Expr], ty
                 },
             }
         },
-        other => Expr::Call { func: lower_expr(ctx, other), args, ty },
+        other => LowerExpr::Call { func: lower_expr(ctx, other), args, ty },
     }
 }
 
-fn lower_pattern_expr(value: tast::Pat) -> Option[Expr] {
+fn lower_pattern_expr(value: tast::Pat) -> Option[LowerExpr] {
     match value {
-        Prim { value: primitive, ty } => Option::Some(Expr::Prim { value: primitive, ty }),
+        Prim { value: primitive, ty } => Option::Some(LowerExpr::Prim { value: primitive, ty }),
         Constr { constructor, args, ty } => {
-            let result: Vec[Expr] = Vec::[];
+            let result: Vec[LowerExpr] = Vec::[];
             for arg in args {
                 match lower_pattern_expr(arg) {
                     Some(expr) => result.push(expr),
                     None => return Option::None,
                 }
             }
-            Option::Some(Expr::Constr { constructor, args: result, ty })
+            Option::Some(LowerExpr::Constr { constructor, args: result, ty })
         },
         Tuple { items, ty } => {
-            let result: Vec[Expr] = Vec::[];
+            let result: Vec[LowerExpr] = Vec::[];
             for item in items {
                 match lower_pattern_expr(item) {
                     Some(expr) => result.push(expr),
                     None => return Option::None,
                 }
             }
-            Option::Some(Expr::Tuple { items: result, ty })
+            Option::Some(LowerExpr::Tuple { items: result, ty })
         },
         _ => Option::None,
     }
 }
 
-fn missing_expr(ty: tast::Type) -> Expr {
+fn missing_expr(ty: tast::Type) -> LowerExpr {
     let params: Vec[tast::Type] = Vec::[];
     params.push(tast::Type::String);
-    let args: Vec[Expr] = Vec::[];
-    args.push(Expr::Prim { value: tast::Primitive::String { value: "" }, ty: tast::Type::String });
-    Expr::Call {
-        func: Expr::Callable {
+    let args: Vec[LowerExpr] = Vec::[];
+    args.push(
+        LowerExpr::Prim { value: tast::Primitive::String { value: "" }, ty: tast::Type::String },
+    );
+    LowerExpr::Call {
+        func: LowerExpr::Callable {
             callable: tast::Callable::Intrinsic("compiler.missing"),
             ty: tast::Type::Func { params, ret_ty: ty },
         },
@@ -482,15 +484,19 @@ fn bind_match_pattern(
     source_ty: tast::Type,
     pattern: tast::Pat,
     ty: tast::Type,
-    body: Expr,
-) -> Expr {
+    body: LowerExpr,
+) -> LowerExpr {
     match pattern {
         Var { name, is_mut: _, ty: pat_ty } => {
-            let stmts: Vec[LetStmt] = Vec::[];
+            let stmts: Vec[LowerLetStmt] = Vec::[];
             stmts.push(
-                LetStmt { name, value: Expr::Var { name: source_name, ty: source_ty }, ty: pat_ty },
+                LowerLetStmt {
+                    name,
+                    value: LowerExpr::Var { name: source_name, ty: source_ty },
+                    ty: pat_ty,
+                },
             );
-            Expr::Block { block: Block { stmts, tail: Option::Some(body) }, ty }
+            LowerExpr::Block { block: LowerBlock { stmts, tail: Option::Some(body) }, ty }
         },
         _ => body,
     }
@@ -502,9 +508,9 @@ fn lower_generic_match(
     source_ty: tast::Type,
     arms: Vec[tast::Arm],
     ty: tast::Type,
-) -> Expr {
-    let result: Vec[Arm] = Vec::[];
-    let mut default: Option[Expr] = Option::None;
+) -> LowerExpr {
+    let result: Vec[LowerArm] = Vec::[];
+    let mut default: Option[LowerExpr] = Option::None;
     for arm in arms {
         match arm.pat {
             Wild { ty: _ } | Var { name: _, is_mut: _, ty: _ } => {
@@ -519,14 +525,19 @@ fn lower_generic_match(
                 );
             },
             pattern => match lower_pattern_expr(pattern) {
-                Some(lhs) => result.push(Arm { lhs, body: lower_expr(ctx, arm.body) }),
+                Some(lhs) => result.push(LowerArm { lhs, body: lower_expr(ctx, arm.body) }),
                 None => if default.is_none() {
                     default = Option::Some(lower_expr(ctx, arm.body));
                 } else {},
             },
         }
     }
-    Expr::Match { expr: Expr::Var { name: source_name, ty: source_ty }, arms: result, default, ty }
+    LowerExpr::Match {
+        expr: LowerExpr::Var { name: source_name, ty: source_ty },
+        arms: result,
+        default,
+        ty,
+    }
 }
 
 fn pattern_matches_bool(value: tast::Pat, expected: bool) -> bool {
@@ -546,8 +557,8 @@ fn bool_arm(arms: Vec[tast::Arm], expected: bool) -> Option[tast::Arm] {
     Option::None
 }
 
-fn lower_bool_match(ctx: Lowerer, source_name: string, arms: Vec[tast::Arm], ty: tast::Type) -> Expr {
-    let result: Vec[Arm] = Vec::[];
+fn lower_bool_match(ctx: Lowerer, source_name: string, arms: Vec[tast::Arm], ty: tast::Type) -> LowerExpr {
+    let result: Vec[LowerArm] = Vec::[];
     for expected in Vec::[true, false] {
         let body = match bool_arm(arms, expected) {
             Some(arm) => bind_match_pattern(
@@ -559,29 +570,32 @@ fn lower_bool_match(ctx: Lowerer, source_name: string, arms: Vec[tast::Arm], ty:
             ),
             None => missing_expr(ty),
         };
-        result.push(Arm { lhs: bool_expr(expected), body })
+        result.push(LowerArm { lhs: bool_expr(expected), body })
     }
-    Expr::Match {
-        expr: Expr::Var { name: source_name, ty: tast::Type::Bool },
+    LowerExpr::Match {
+        expr: LowerExpr::Var { name: source_name, ty: tast::Type::Bool },
         arms: result,
         default: Option::None,
         ty,
     }
 }
 
-fn lower_unit_match(ctx: Lowerer, source_name: string, arms: Vec[tast::Arm], ty: tast::Type) -> Expr {
+fn lower_unit_match(ctx: Lowerer, source_name: string, arms: Vec[tast::Arm], ty: tast::Type) -> LowerExpr {
     let body = if !arms.is_empty() {
         let arm = arms[0];
         bind_match_pattern(source_name, tast::Type::Unit, arm.pat, ty, lower_expr(ctx, arm.body))
     } else {
         missing_expr(ty)
     };
-    let result: Vec[Arm] = Vec::[];
+    let result: Vec[LowerArm] = Vec::[];
     result.push(
-        Arm { lhs: Expr::Prim { value: tast::Primitive::Unit, ty: tast::Type::Unit }, body },
+        LowerArm {
+            lhs: LowerExpr::Prim { value: tast::Primitive::Unit, ty: tast::Type::Unit },
+            body,
+        },
     );
-    Expr::Match {
-        expr: Expr::Var { name: source_name, ty: tast::Type::Unit },
+    LowerExpr::Match {
+        expr: LowerExpr::Var { name: source_name, ty: tast::Type::Unit },
         arms: result,
         default: Option::None,
         ty,
@@ -681,19 +695,19 @@ fn lower_enum_cases(
     source_ty: tast::Type,
     cases: Vec[EnumCase],
     ty: tast::Type,
-) -> Expr {
-    let result: Vec[Arm] = Vec::[];
+) -> LowerExpr {
+    let result: Vec[LowerArm] = Vec::[];
     for case in cases {
-        let args: Vec[Expr] = Vec::[];
-        let extractions: Vec[LetStmt] = Vec::[];
+        let args: Vec[LowerExpr] = Vec::[];
+        let extractions: Vec[LowerLetStmt] = Vec::[];
         for index in 0..case.variables.len() {
             let variable = case.variables[index];
-            args.push(Expr::Var { name: variable.0, ty: variable.1 });
+            args.push(LowerExpr::Var { name: variable.0, ty: variable.1 });
             extractions.push(
-                LetStmt {
+                LowerLetStmt {
                     name: variable.0,
-                    value: Expr::ConstrGet {
-                        expr: Expr::Var { name: source_name, ty: source_ty },
+                    value: LowerExpr::ConstrGet {
+                        expr: LowerExpr::Var { name: source_name, ty: source_ty },
                         constructor: case.constructor,
                         field_index: index,
                         ty: variable.1,
@@ -704,16 +718,22 @@ fn lower_enum_cases(
         }
         let body = lower_pattern_rows(ctx, case.rows, ty);
         let body = if !extractions.is_empty() {
-            Expr::Block { block: Block { stmts: extractions, tail: Option::Some(body) }, ty }
+            LowerExpr::Block {
+                block: LowerBlock { stmts: extractions, tail: Option::Some(body) },
+                ty,
+            }
         } else {
             body
         };
         result.push(
-            Arm { lhs: Expr::Constr { constructor: case.constructor, args, ty: source_ty }, body },
+            LowerArm {
+                lhs: LowerExpr::Constr { constructor: case.constructor, args, ty: source_ty },
+                body,
+            },
         )
     }
-    Expr::Match {
-        expr: Expr::Var { name: source_name, ty: source_ty },
+    LowerExpr::Match {
+        expr: LowerExpr::Var { name: source_name, ty: source_ty },
         arms: result,
         default: Option::None,
         ty,
@@ -726,7 +746,7 @@ fn lower_match_on_variable(
     source_ty: tast::Type,
     arms: Vec[tast::Arm],
     ty: tast::Type,
-) -> Expr {
+) -> LowerExpr {
     match nominal_parts(source_ty) {
         Some((name, type_args)) => match find_enum(ctx, name) {
             Some(_) => match pattern_rows_from_arms(source_name, source_ty, arms) {
@@ -764,16 +784,16 @@ fn lower_match_on_variable(
     }
 }
 
-fn lower_match(ctx: Lowerer, source: tast::Expr, arms: Vec[tast::Arm], ty: tast::Type) -> Expr {
+fn lower_match(ctx: Lowerer, source: tast::Expr, arms: Vec[tast::Arm], ty: tast::Type) -> LowerExpr {
     let source_ty = tast::expr_type(source);
     if arms_require_ordered(arms) {
         lower_ordered_match(ctx, source, arms, ty)
     } else if arms.is_empty() {
         let source_value = lower_expr(ctx, source);
         let source_name = gensym(ctx, "_wild");
-        let stmts: Vec[LetStmt] = Vec::[];
-        stmts.push(LetStmt { name: source_name, value: source_value, ty: source_ty });
-        Expr::Block { block: Block { stmts, tail: Option::Some(missing_expr(ty)) }, ty }
+        let stmts: Vec[LowerLetStmt] = Vec::[];
+        stmts.push(LowerLetStmt { name: source_name, value: source_value, ty: source_ty });
+        LowerExpr::Block { block: LowerBlock { stmts, tail: Option::Some(missing_expr(ty)) }, ty }
     } else {
         match source {
             Var { name: source_name, ty: _ } => {
@@ -783,15 +803,15 @@ fn lower_match(ctx: Lowerer, source: tast::Expr, arms: Vec[tast::Arm], ty: tast:
                 let source_name = gensym(ctx, "mtmp");
                 let source_value = lower_expr(ctx, other);
                 let body = lower_match_on_variable(ctx, source_name, source_ty, arms, ty);
-                let stmts: Vec[LetStmt] = Vec::[];
-                stmts.push(LetStmt { name: source_name, value: source_value, ty: source_ty });
-                Expr::Block { block: Block { stmts, tail: Option::Some(body) }, ty }
+                let stmts: Vec[LowerLetStmt] = Vec::[];
+                stmts.push(LowerLetStmt { name: source_name, value: source_value, ty: source_ty });
+                LowerExpr::Block { block: LowerBlock { stmts, tail: Option::Some(body) }, ty }
             },
         }
     }
 }
 
-fn lower_index(ctx: Lowerer, base: tast::Expr, index: tast::Expr, ty: tast::Type) -> Expr {
+fn lower_index(ctx: Lowerer, base: tast::Expr, index: tast::Expr, ty: tast::Type) -> LowerExpr {
     let base_ty = tast::expr_type(base);
     let index_ty = tast::expr_type(index);
     let callable = match tast::resolve_type(base_ty) {
@@ -810,17 +830,17 @@ fn lower_index(ctx: Lowerer, base: tast::Expr, index: tast::Expr, ty: tast::Type
     let params: Vec[tast::Type] = Vec::[];
     params.push(base_ty);
     params.push(index_ty);
-    let args: Vec[Expr] = Vec::[];
+    let args: Vec[LowerExpr] = Vec::[];
     args.push(lower_expr(ctx, base));
     args.push(lower_expr(ctx, index));
-    Expr::Call {
-        func: Expr::Callable { callable, ty: tast::Type::Func { params, ret_ty: ty } },
+    LowerExpr::Call {
+        func: LowerExpr::Callable { callable, ty: tast::Type::Func { params, ret_ty: ty } },
         args,
         ty,
     }
 }
 
-fn lower_field(ctx: Lowerer, value: tast::Expr, name: string, ty: tast::Type) -> Expr {
+fn lower_field(ctx: Lowerer, value: tast::Expr, name: string, ty: tast::Type) -> LowerExpr {
     let owner = inherent_base(tast::expr_type(value));
     match find_struct(ctx, owner) {
         Some(definition) => {
@@ -833,7 +853,7 @@ fn lower_field(ctx: Lowerer, value: tast::Expr, name: string, ty: tast::Type) ->
                     field_index = index;
                 } else {}
             }
-            Expr::ConstrGet {
+            LowerExpr::ConstrGet {
                 expr: lower_expr(ctx, value),
                 constructor: tast::Constructor {
                     name: owner,
@@ -848,7 +868,7 @@ fn lower_field(ctx: Lowerer, value: tast::Expr, name: string, ty: tast::Type) ->
         None => {
             let fields: Vec[string] = Vec::[];
             fields.push(name);
-            Expr::ConstrGet {
+            LowerExpr::ConstrGet {
                 expr: lower_expr(ctx, value),
                 constructor: tast::Constructor {
                     name: owner,
@@ -867,22 +887,22 @@ fn direct_for_body(
     ctx: Lowerer,
     pattern: tast::Pat,
     index_name: string,
-    item_value: Expr,
+    item_value: LowerExpr,
     body: tast::Expr,
-) -> Expr {
+) -> LowerExpr {
     let item_ty = tast::pat_type(pattern);
     let item_name = gensym(ctx, "for_item");
     let advance_name = gensym(ctx, "_wild");
-    let stmts: Vec[LetStmt] = Vec::[];
-    stmts.push(LetStmt { name: item_name, value: item_value, ty: item_ty });
+    let stmts: Vec[LowerLetStmt] = Vec::[];
+    stmts.push(LowerLetStmt { name: item_name, value: item_value, ty: item_ty });
     stmts.push(
-        LetStmt {
+        LowerLetStmt {
             name: advance_name,
-            value: Expr::Assign {
+            value: LowerExpr::Assign {
                 name: index_name,
-                value: Expr::Binary {
+                value: LowerExpr::Binary {
                     op: ast::BinaryOp::Add,
-                    lhs: Expr::Var { name: index_name, ty: tast::Type::Int },
+                    lhs: LowerExpr::Var { name: index_name, ty: tast::Type::Int },
                     rhs: ordered_int(1),
                     ty: tast::Type::Int,
                 },
@@ -892,8 +912,8 @@ fn direct_for_body(
             ty: tast::Type::Unit,
         },
     );
-    Expr::Block {
-        block: Block {
+    LowerExpr::Block {
+        block: LowerBlock {
             stmts,
             tail: Option::Some(
                 lower_pattern_continuation(
@@ -914,21 +934,21 @@ fn direct_for_body(
 fn direct_for_loop(
     ctx: Lowerer,
     pattern: tast::Pat,
-    source_stmts: Vec[LetStmt],
+    source_stmts: Vec[LowerLetStmt],
     index_name: string,
     limit_name: string,
-    item_value: Expr,
+    item_value: LowerExpr,
     body: tast::Expr,
-) -> Expr {
-    Expr::Block {
-        block: Block {
+) -> LowerExpr {
+    LowerExpr::Block {
+        block: LowerBlock {
             stmts: source_stmts,
             tail: Option::Some(
-                Expr::While {
-                    cond: Expr::Binary {
+                LowerExpr::While {
+                    cond: LowerExpr::Binary {
                         op: ast::BinaryOp::Less,
-                        lhs: Expr::Var { name: index_name, ty: tast::Type::Int },
-                        rhs: Expr::Var { name: limit_name, ty: tast::Type::Int },
+                        lhs: LowerExpr::Var { name: index_name, ty: tast::Type::Int },
+                        rhs: LowerExpr::Var { name: limit_name, ty: tast::Type::Int },
                         ty: tast::Type::Bool,
                     },
                     body: direct_for_body(ctx, pattern, index_name, item_value, body),
@@ -941,19 +961,19 @@ fn direct_for_loop(
 }
 
 fn direct_range_for(ctx: Lowerer, pattern: tast::Pat, args: Vec[tast::Expr], body: tast::Expr) -> Option[
-    Expr,
+    LowerExpr,
 ] {
     if args.len() != 2 {
         Option::None
     } else {
         let index_name = gensym(ctx, "for_index");
         let limit_name = gensym(ctx, "for_limit");
-        let stmts: Vec[LetStmt] = Vec::[];
+        let stmts: Vec[LowerLetStmt] = Vec::[];
         stmts.push(
-            LetStmt { name: index_name, value: lower_expr(ctx, args[0]), ty: tast::Type::Int },
+            LowerLetStmt { name: index_name, value: lower_expr(ctx, args[0]), ty: tast::Type::Int },
         );
         stmts.push(
-            LetStmt { name: limit_name, value: lower_expr(ctx, args[1]), ty: tast::Type::Int },
+            LowerLetStmt { name: limit_name, value: lower_expr(ctx, args[1]), ty: tast::Type::Int },
         );
         Option::Some(
             direct_for_loop(
@@ -962,7 +982,7 @@ fn direct_range_for(ctx: Lowerer, pattern: tast::Pat, args: Vec[tast::Expr], bod
                 stmts,
                 index_name,
                 limit_name,
-                Expr::Var { name: index_name, ty: tast::Type::Int },
+                LowerExpr::Var { name: index_name, ty: tast::Type::Int },
                 body,
             ),
         )
@@ -976,39 +996,39 @@ fn direct_inclusive_range_body(
     limit_name: string,
     done_name: string,
     body: tast::Expr,
-) -> Expr {
+) -> LowerExpr {
     let item_ty = tast::pat_type(pattern);
     let item_name = gensym(ctx, "for_item");
     let advance_name = gensym(ctx, "_wild");
-    let stmts: Vec[LetStmt] = Vec::[];
+    let stmts: Vec[LowerLetStmt] = Vec::[];
     stmts.push(
-        LetStmt {
+        LowerLetStmt {
             name: item_name,
-            value: Expr::Var { name: index_name, ty: tast::Type::Int },
+            value: LowerExpr::Var { name: index_name, ty: tast::Type::Int },
             ty: item_ty,
         },
     );
     stmts.push(
-        LetStmt {
+        LowerLetStmt {
             name: advance_name,
-            value: Expr::If {
-                cond: Expr::Binary {
+            value: LowerExpr::If {
+                cond: LowerExpr::Binary {
                     op: ast::BinaryOp::Eq,
-                    lhs: Expr::Var { name: index_name, ty: tast::Type::Int },
-                    rhs: Expr::Var { name: limit_name, ty: tast::Type::Int },
+                    lhs: LowerExpr::Var { name: index_name, ty: tast::Type::Int },
+                    rhs: LowerExpr::Var { name: limit_name, ty: tast::Type::Int },
                     ty: tast::Type::Bool,
                 },
-                then_branch: Expr::Assign {
+                then_branch: LowerExpr::Assign {
                     name: done_name,
                     value: bool_expr(true),
                     target_ty: tast::Type::Bool,
                     ty: tast::Type::Unit,
                 },
-                else_branch: Expr::Assign {
+                else_branch: LowerExpr::Assign {
                     name: index_name,
-                    value: Expr::Binary {
+                    value: LowerExpr::Binary {
                         op: ast::BinaryOp::Add,
-                        lhs: Expr::Var { name: index_name, ty: tast::Type::Int },
+                        lhs: LowerExpr::Var { name: index_name, ty: tast::Type::Int },
                         rhs: ordered_int(1),
                         ty: tast::Type::Int,
                     },
@@ -1020,8 +1040,8 @@ fn direct_inclusive_range_body(
             ty: tast::Type::Unit,
         },
     );
-    Expr::Block {
-        block: Block {
+    LowerExpr::Block {
+        block: LowerBlock {
             stmts,
             tail: Option::Some(
                 lower_pattern_continuation(
@@ -1044,41 +1064,41 @@ fn direct_inclusive_range_for(
     pattern: tast::Pat,
     args: Vec[tast::Expr],
     body: tast::Expr,
-) -> Option[Expr] {
+) -> Option[LowerExpr] {
     if args.len() != 2 {
         Option::None
     } else {
         let index_name = gensym(ctx, "for_index");
         let limit_name = gensym(ctx, "for_limit");
         let done_name = gensym(ctx, "for_done");
-        let stmts: Vec[LetStmt] = Vec::[];
+        let stmts: Vec[LowerLetStmt] = Vec::[];
         stmts.push(
-            LetStmt { name: index_name, value: lower_expr(ctx, args[0]), ty: tast::Type::Int },
+            LowerLetStmt { name: index_name, value: lower_expr(ctx, args[0]), ty: tast::Type::Int },
         );
         stmts.push(
-            LetStmt { name: limit_name, value: lower_expr(ctx, args[1]), ty: tast::Type::Int },
+            LowerLetStmt { name: limit_name, value: lower_expr(ctx, args[1]), ty: tast::Type::Int },
         );
         stmts.push(
-            LetStmt {
+            LowerLetStmt {
                 name: done_name,
-                value: Expr::Binary {
+                value: LowerExpr::Binary {
                     op: ast::BinaryOp::Greater,
-                    lhs: Expr::Var { name: index_name, ty: tast::Type::Int },
-                    rhs: Expr::Var { name: limit_name, ty: tast::Type::Int },
+                    lhs: LowerExpr::Var { name: index_name, ty: tast::Type::Int },
+                    rhs: LowerExpr::Var { name: limit_name, ty: tast::Type::Int },
                     ty: tast::Type::Bool,
                 },
                 ty: tast::Type::Bool,
             },
         );
         Option::Some(
-            Expr::Block {
-                block: Block {
+            LowerExpr::Block {
+                block: LowerBlock {
                     stmts,
                     tail: Option::Some(
-                        Expr::While {
-                            cond: Expr::Unary {
+                        LowerExpr::While {
+                            cond: LowerExpr::Unary {
                                 op: ast::UnaryOp::Not,
-                                expr: Expr::Var { name: done_name, ty: tast::Type::Bool },
+                                expr: LowerExpr::Var { name: done_name, ty: tast::Type::Bool },
                                 ty: tast::Type::Bool,
                             },
                             body: direct_inclusive_range_body(
@@ -1107,31 +1127,33 @@ fn direct_container_for(
     len_intrinsic: string,
     get_intrinsic: string,
     body: tast::Expr,
-) -> Expr {
+) -> LowerExpr {
     let item_ty = tast::pat_type(pattern);
     let source_name = gensym(ctx, "for_source");
     let limit_name = gensym(ctx, "for_limit");
     let index_name = gensym(ctx, "for_index");
     let len_params: Vec[tast::Type] = Vec::[];
     len_params.push(container_ty);
-    let len_args: Vec[Expr] = Vec::[];
-    len_args.push(Expr::Var { name: source_name, ty: container_ty });
-    let stmts: Vec[LetStmt] = Vec::[];
-    stmts.push(LetStmt { name: source_name, value: lower_expr(ctx, iterator), ty: container_ty });
+    let len_args: Vec[LowerExpr] = Vec::[];
+    len_args.push(LowerExpr::Var { name: source_name, ty: container_ty });
+    let stmts: Vec[LowerLetStmt] = Vec::[];
     stmts.push(
-        LetStmt {
+        LowerLetStmt { name: source_name, value: lower_expr(ctx, iterator), ty: container_ty },
+    );
+    stmts.push(
+        LowerLetStmt {
             name: limit_name,
             value: place_intrinsic_call(len_intrinsic, len_params, tast::Type::Int, len_args),
             ty: tast::Type::Int,
         },
     );
-    stmts.push(LetStmt { name: index_name, value: ordered_int(0), ty: tast::Type::Int });
+    stmts.push(LowerLetStmt { name: index_name, value: ordered_int(0), ty: tast::Type::Int });
     let get_params: Vec[tast::Type] = Vec::[];
     get_params.push(container_ty);
     get_params.push(tast::Type::Int);
-    let get_args: Vec[Expr] = Vec::[];
-    get_args.push(Expr::Var { name: source_name, ty: container_ty });
-    get_args.push(Expr::Var { name: index_name, ty: tast::Type::Int });
+    let get_args: Vec[LowerExpr] = Vec::[];
+    get_args.push(LowerExpr::Var { name: source_name, ty: container_ty });
+    get_args.push(LowerExpr::Var { name: index_name, ty: tast::Type::Int });
     direct_for_loop(
         ctx,
         pattern,
@@ -1150,21 +1172,23 @@ fn direct_array_for(
     container_ty: tast::Type,
     length: int,
     body: tast::Expr,
-) -> Expr {
+) -> LowerExpr {
     let item_ty = tast::pat_type(pattern);
     let source_name = gensym(ctx, "for_source");
     let limit_name = gensym(ctx, "for_limit");
     let index_name = gensym(ctx, "for_index");
-    let stmts: Vec[LetStmt] = Vec::[];
-    stmts.push(LetStmt { name: source_name, value: lower_expr(ctx, iterator), ty: container_ty });
-    stmts.push(LetStmt { name: limit_name, value: ordered_int(length), ty: tast::Type::Int });
-    stmts.push(LetStmt { name: index_name, value: ordered_int(0), ty: tast::Type::Int });
+    let stmts: Vec[LowerLetStmt] = Vec::[];
+    stmts.push(
+        LowerLetStmt { name: source_name, value: lower_expr(ctx, iterator), ty: container_ty },
+    );
+    stmts.push(LowerLetStmt { name: limit_name, value: ordered_int(length), ty: tast::Type::Int });
+    stmts.push(LowerLetStmt { name: index_name, value: ordered_int(0), ty: tast::Type::Int });
     let get_params: Vec[tast::Type] = Vec::[];
     get_params.push(container_ty);
     get_params.push(tast::Type::Int);
-    let get_args: Vec[Expr] = Vec::[];
-    get_args.push(Expr::Var { name: source_name, ty: container_ty });
-    get_args.push(Expr::Var { name: index_name, ty: tast::Type::Int });
+    let get_args: Vec[LowerExpr] = Vec::[];
+    get_args.push(LowerExpr::Var { name: source_name, ty: container_ty });
+    get_args.push(LowerExpr::Var { name: index_name, ty: tast::Type::Int });
     direct_for_loop(
         ctx,
         pattern,
@@ -1177,7 +1201,7 @@ fn direct_array_for(
 }
 
 fn lower_direct_for(ctx: Lowerer, pattern: tast::Pat, iterator: tast::Expr, body: tast::Expr) -> Option[
-    Expr,
+    LowerExpr,
 ] {
     match iterator {
         Call {
@@ -1237,17 +1261,17 @@ fn lower_iterator_for(
     iterator_trait: tast::TraitRef,
     iterator_ty: tast::Type,
     body: tast::Expr,
-) -> Expr {
+) -> LowerExpr {
     let item_ty = tast::pat_type(pattern);
     let option_args: Vec[tast::Type] = Vec::[];
     option_args.push(item_ty);
     let option_ty = tast::Type::App { ty: tast::Type::Con { name: "Option" }, args: option_args };
     let iterator_name = gensym(ctx, "for_iter");
     let next_name = gensym(ctx, "for_next");
-    let no_args: Vec[Expr] = Vec::[];
+    let no_args: Vec[LowerExpr] = Vec::[];
     let iterator_receiver = lower_expr(ctx, iterator);
-    let iterator_for_ty = expr_type(iterator_receiver);
-    let iterator_value = Expr::TraitCall {
+    let iterator_for_ty = lower_expr_type(iterator_receiver);
+    let iterator_value = LowerExpr::TraitCall {
         trait_ref: into_iterator,
         method_name: "into_iter",
         instance_name: Option::None,
@@ -1256,13 +1280,13 @@ fn lower_iterator_for(
         args: no_args,
         ty: iterator_ty,
     };
-    let next_args: Vec[Expr] = Vec::[];
-    let next_value = Expr::TraitCall {
+    let next_args: Vec[LowerExpr] = Vec::[];
+    let next_value = LowerExpr::TraitCall {
         trait_ref: iterator_trait,
         method_name: "next",
         instance_name: Option::None,
         for_ty: iterator_ty,
-        receiver: Option::Some(Expr::Var { name: iterator_name, ty: iterator_ty }),
+        receiver: Option::Some(LowerExpr::Var { name: iterator_name, ty: iterator_ty }),
         args: next_args,
         ty: option_ty,
     };
@@ -1301,10 +1325,10 @@ fn lower_iterator_for(
             body: tast::Expr::Break { target: 0, value: Option::None, ty: tast::Type::Unit },
         },
     );
-    let loop_stmts: Vec[LetStmt] = Vec::[];
-    loop_stmts.push(LetStmt { name: next_name, value: next_value, ty: option_ty });
-    let loop_body = Expr::Block {
-        block: Block {
+    let loop_stmts: Vec[LowerLetStmt] = Vec::[];
+    loop_stmts.push(LowerLetStmt { name: next_name, value: next_value, ty: option_ty });
+    let loop_body = LowerExpr::Block {
+        block: LowerBlock {
             stmts: loop_stmts,
             tail: Option::Some(
                 lower_match_on_variable(ctx, next_name, option_ty, arms, tast::Type::Unit),
@@ -1312,13 +1336,13 @@ fn lower_iterator_for(
         },
         ty: tast::Type::Unit,
     };
-    let stmts: Vec[LetStmt] = Vec::[];
-    stmts.push(LetStmt { name: iterator_name, value: iterator_value, ty: iterator_ty });
-    Expr::Block {
-        block: Block {
+    let stmts: Vec[LowerLetStmt] = Vec::[];
+    stmts.push(LowerLetStmt { name: iterator_name, value: iterator_value, ty: iterator_ty });
+    LowerExpr::Block {
+        block: LowerBlock {
             stmts,
             tail: Option::Some(
-                Expr::While { cond: bool_expr(true), body: loop_body, ty: tast::Type::Unit },
+                LowerExpr::While { cond: bool_expr(true), body: loop_body, ty: tast::Type::Unit },
             ),
         },
         ty: tast::Type::Unit,
@@ -1333,7 +1357,7 @@ fn lower_for(
     iterator_trait: tast::TraitRef,
     iterator_ty: tast::Type,
     body: tast::Expr,
-) -> Expr {
+) -> LowerExpr {
     if ctx.optimize_builtin_iterators {
         match lower_direct_for(ctx, pattern, iterator, body) {
             Some(value) => value,
@@ -1352,25 +1376,25 @@ fn lower_for(
     }
 }
 
-fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
+fn lower_expr(ctx: Lowerer, value: tast::Expr) -> LowerExpr {
     match value {
-        Var { name, ty } => Expr::Var { name, ty },
+        Var { name, ty } => LowerExpr::Var { name, ty },
         Callable { callable: Function(name), ty } | Callable {
             callable: LangItem { item: _, function_name: name },
             ty,
         } => {
-            Expr::Var { name, ty }
+            LowerExpr::Var { name, ty }
         },
         Callable { callable: Intrinsic("compile_error"), ty } => {
-            Expr::Callable { callable: tast::Callable::Intrinsic("compiler.missing"), ty }
+            LowerExpr::Callable { callable: tast::Callable::Intrinsic("compiler.missing"), ty }
         },
-        Callable { callable, ty } => Expr::Callable { callable, ty },
-        Prim { value, ty } => Expr::Prim { value, ty },
+        Callable { callable, ty } => LowerExpr::Callable { callable, ty },
+        Prim { value, ty } => LowerExpr::Prim { value, ty },
         Constr { constructor, args, ty } => {
-            Expr::Constr { constructor, args: lower_exprs(ctx, args), ty }
+            LowerExpr::Constr { constructor, args: lower_exprs(ctx, args), ty }
         },
-        Tuple { items, ty } => Expr::Tuple { items: lower_exprs(ctx, items), ty },
-        Array { items, ty } => Expr::Array { items: lower_exprs(ctx, items), ty },
+        Tuple { items, ty } => LowerExpr::Tuple { items: lower_exprs(ctx, items), ty },
+        Array { items, ty } => LowerExpr::Array { items: lower_exprs(ctx, items), ty },
         Closure { params, body, ty } => {
             let saved_cleanups: Vec[tast::Expr] = Vec::[];
             for value in ctx.cleanups {
@@ -1392,12 +1416,12 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
                 ctx.loop_cleanup_depths.push(value)
             }
             ctx.cleanup_lowering_depth.set(saved_cleanup_lowering_depth);
-            Expr::Closure { params, body, ty }
+            LowerExpr::Closure { params, body, ty }
         },
-        Block { block, ty } => Expr::Block { block: lower_block(ctx, block, ty), ty },
-        Comptime { .. } => Expr::Prim { value: tast::Primitive::Unit, ty: tast::Type::Error },
+        Block { block, ty } => LowerExpr::Block { block: lower_block(ctx, block, ty), ty },
+        Comptime { .. } => LowerExpr::Prim { value: tast::Primitive::Unit, ty: tast::Type::Error },
         Match { expr: source, arms, ty, .. } => lower_match(ctx, source, arms, ty),
-        If { cond, then_branch, else_branch, ty } => Expr::If {
+        If { cond, then_branch, else_branch, ty } => LowerExpr::If {
             cond: lower_expr(ctx, cond),
             then_branch: lower_expr(ctx, then_branch),
             else_branch: lower_expr(ctx, else_branch),
@@ -1408,13 +1432,13 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
             ctx.loop_cleanup_depths.push(ctx.cleanups.len());
             let body = lower_expr(ctx, body);
             ctx.loop_cleanup_depths.truncate(ctx.loop_cleanup_depths.len() - 1);
-            Expr::While { cond, body, ty }
+            LowerExpr::While { cond, body, ty }
         },
         Loop { body, ty } => {
             ctx.loop_cleanup_depths.push(ctx.cleanups.len());
             let body = lower_expr(ctx, body);
             ctx.loop_cleanup_depths.truncate(ctx.loop_cleanup_depths.len() - 1);
-            Expr::Loop { body, ty }
+            LowerExpr::Loop { body, ty }
         },
         For {
             pat: pattern,
@@ -1441,24 +1465,24 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
         Break { target, value, ty } => lower_break(ctx, target, value, ty),
         Continue { target, ty } => lower_continue(ctx, target, ty),
         Return { expr: value, ty } => lower_return(ctx, value, ty),
-        Go { expr: value, ty } => Expr::Go { expr: lower_expr(ctx, value), ty },
+        Go { expr: value, ty } => LowerExpr::Go { expr: lower_expr(ctx, value), ty },
         Call { func: function, args, ty } => lower_call(ctx, function, args, ty),
         Unary { op: Neg, expr: Prim { value, ty: _ }, ty } => {
             match negated_integer(value) {
-                Some(primitive) => Expr::Prim { value: primitive, ty },
-                None => Expr::Unary {
+                Some(primitive) => LowerExpr::Prim { value: primitive, ty },
+                None => LowerExpr::Unary {
                     op: ast::UnaryOp::Neg,
                     expr: lower_expr(ctx, tast::Expr::Prim { value, ty }),
                     ty,
                 },
             }
         },
-        Unary { op, expr: value, ty } => Expr::Unary { op, expr: lower_expr(ctx, value), ty },
-        Cast { expr: value, ty } => Expr::Cast { expr: lower_expr(ctx, value), ty },
+        Unary { op, expr: value, ty } => LowerExpr::Unary { op, expr: lower_expr(ctx, value), ty },
+        Cast { expr: value, ty } => LowerExpr::Cast { expr: lower_expr(ctx, value), ty },
         Proj { tuple: value, index, ty } => if tast_expr_exits(value) {
             exit_expr_as(ctx, lower_expr(ctx, value), ty)
         } else {
-            Expr::Proj { tuple: lower_expr(ctx, value), index, ty }
+            LowerExpr::Proj { tuple: lower_expr(ctx, value), index, ty }
         },
         Field { expr: value, field_name: name, ty } => if tast_expr_exits(value) {
             exit_expr_as(ctx, lower_expr(ctx, value), ty)
@@ -1471,22 +1495,22 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
             let base_ty = tast::expr_type(base);
             let base_value = lower_expr(ctx, base);
             let index_value = lower_expr(ctx, index);
-            let stmts: Vec[LetStmt] = Vec::[];
-            stmts.push(LetStmt { name: gensym(ctx, "_wild"), value: base_value, ty: base_ty });
-            Expr::Block {
-                block: Block { stmts, tail: Option::Some(exit_expr_as(ctx, index_value, ty)) },
+            let stmts: Vec[LowerLetStmt] = Vec::[];
+            stmts.push(LowerLetStmt { name: gensym(ctx, "_wild"), value: base_value, ty: base_ty });
+            LowerExpr::Block {
+                block: LowerBlock { stmts, tail: Option::Some(exit_expr_as(ctx, index_value, ty)) },
                 ty,
             }
         } else {
             lower_index(ctx, base, index, ty)
         },
-        Binary { op: And, lhs: left, rhs: right, ty, resolution: _ } => Expr::If {
+        Binary { op: And, lhs: left, rhs: right, ty, resolution: _ } => LowerExpr::If {
             cond: lower_expr(ctx, left),
             then_branch: lower_expr(ctx, right),
             else_branch: bool_expr(false),
             ty,
         },
-        Binary { op: Or, lhs: left, rhs: right, ty, resolution: _ } => Expr::If {
+        Binary { op: Or, lhs: left, rhs: right, ty, resolution: _ } => LowerExpr::If {
             cond: lower_expr(ctx, left),
             then_branch: bool_expr(true),
             else_branch: lower_expr(ctx, right),
@@ -1501,35 +1525,35 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
             lower_order_expr(ctx, trait_name, op, left, right)
         },
         Binary { op, lhs: left, rhs: right, ty, resolution: _ } => {
-            Expr::Binary { op, lhs: lower_expr(ctx, left), rhs: lower_expr(ctx, right), ty }
+            LowerExpr::Binary { op, lhs: lower_expr(ctx, left), rhs: lower_expr(ctx, right), ty }
         },
         ToDyn { trait_name: name, for_ty, expr: value, ty } => {
-            Expr::ToDyn { trait_name: name, for_ty, expr: lower_expr(ctx, value), ty }
+            LowerExpr::ToDyn { trait_name: name, for_ty, expr: lower_expr(ctx, value), ty }
         },
     }
 }
 
-fn lower_cleanup_stmts(ctx: Lowerer, start: int) -> Vec[LetStmt] {
-    let result: Vec[LetStmt] = Vec::[];
+fn lower_cleanup_stmts(ctx: Lowerer, start: int) -> Vec[LowerLetStmt] {
+    let result: Vec[LowerLetStmt] = Vec::[];
     let mut index = ctx.cleanups.len();
     while index > start {
         index = index - 1;
         ctx.cleanup_lowering_depth.set(ctx.cleanup_lowering_depth.get() + 1);
         let value = lower_expr(ctx, ctx.cleanups[index]);
         ctx.cleanup_lowering_depth.set(ctx.cleanup_lowering_depth.get() - 1);
-        result.push(LetStmt { name: gensym(ctx, "_defer"), value, ty: tast::Type::Unit })
+        result.push(LowerLetStmt { name: gensym(ctx, "_defer"), value, ty: tast::Type::Unit })
     }
     result
 }
 
-fn lower_break(ctx: Lowerer, target: int, value: Option[tast::Expr], ty: tast::Type) -> Expr {
+fn lower_break(ctx: Lowerer, target: int, value: Option[tast::Expr], ty: tast::Type) -> LowerExpr {
     let start = if ctx.loop_cleanup_depths.is_empty() {
         0
     } else {
         ctx.loop_cleanup_depths[ctx.loop_cleanup_depths.len() - 1 - target]
     };
     if ctx.cleanup_lowering_depth.get() > 0 || ctx.cleanups.len() == start {
-        Expr::Break {
+        LowerExpr::Break {
             target,
             value: match value {
                 Some(expr) => Option::Some(lower_expr(ctx, expr)),
@@ -1542,18 +1566,18 @@ fn lower_break(ctx: Lowerer, target: int, value: Option[tast::Expr], ty: tast::T
             Some(source) => {
                 let value_ty = tast::expr_type(source);
                 let name = gensym(ctx, "defer_break");
-                let stmts: Vec[LetStmt] = Vec::[];
-                stmts.push(LetStmt { name, value: lower_expr(ctx, source), ty: value_ty });
+                let stmts: Vec[LowerLetStmt] = Vec::[];
+                stmts.push(LowerLetStmt { name, value: lower_expr(ctx, source), ty: value_ty });
                 for stmt in lower_cleanup_stmts(ctx, start) {
                     stmts.push(stmt)
                 }
-                Expr::Block {
-                    block: Block {
+                LowerExpr::Block {
+                    block: LowerBlock {
                         stmts,
                         tail: Option::Some(
-                            Expr::Break {
+                            LowerExpr::Break {
                                 target,
-                                value: Option::Some(Expr::Var { name, ty: value_ty }),
+                                value: Option::Some(LowerExpr::Var { name, ty: value_ty }),
                                 ty,
                             },
                         ),
@@ -1561,10 +1585,10 @@ fn lower_break(ctx: Lowerer, target: int, value: Option[tast::Expr], ty: tast::T
                     ty,
                 }
             },
-            None => Expr::Block {
-                block: Block {
+            None => LowerExpr::Block {
+                block: LowerBlock {
                     stmts: lower_cleanup_stmts(ctx, start),
-                    tail: Option::Some(Expr::Break { target, value: Option::None, ty }),
+                    tail: Option::Some(LowerExpr::Break { target, value: Option::None, ty }),
                 },
                 ty,
             },
@@ -1572,28 +1596,28 @@ fn lower_break(ctx: Lowerer, target: int, value: Option[tast::Expr], ty: tast::T
     }
 }
 
-fn lower_continue(ctx: Lowerer, target: int, ty: tast::Type) -> Expr {
+fn lower_continue(ctx: Lowerer, target: int, ty: tast::Type) -> LowerExpr {
     let start = if ctx.loop_cleanup_depths.is_empty() {
         0
     } else {
         ctx.loop_cleanup_depths[ctx.loop_cleanup_depths.len() - 1 - target]
     };
     if ctx.cleanup_lowering_depth.get() > 0 || ctx.cleanups.len() == start {
-        Expr::Continue { target, ty }
+        LowerExpr::Continue { target, ty }
     } else {
-        Expr::Block {
-            block: Block {
+        LowerExpr::Block {
+            block: LowerBlock {
                 stmts: lower_cleanup_stmts(ctx, start),
-                tail: Option::Some(Expr::Continue { target, ty }),
+                tail: Option::Some(LowerExpr::Continue { target, ty }),
             },
             ty,
         }
     }
 }
 
-fn lower_return(ctx: Lowerer, value: Option[tast::Expr], ty: tast::Type) -> Expr {
+fn lower_return(ctx: Lowerer, value: Option[tast::Expr], ty: tast::Type) -> LowerExpr {
     if ctx.cleanup_lowering_depth.get() > 0 || ctx.cleanups.is_empty() {
-        Expr::Return {
+        LowerExpr::Return {
             expr: match value {
                 Some(expr) => Option::Some(lower_expr(ctx, expr)),
                 None => Option::None,
@@ -1605,17 +1629,17 @@ fn lower_return(ctx: Lowerer, value: Option[tast::Expr], ty: tast::Type) -> Expr
             Some(source) => {
                 let value_ty = tast::expr_type(source);
                 let name = gensym(ctx, "defer_return");
-                let stmts: Vec[LetStmt] = Vec::[];
-                stmts.push(LetStmt { name, value: lower_expr(ctx, source), ty: value_ty });
+                let stmts: Vec[LowerLetStmt] = Vec::[];
+                stmts.push(LowerLetStmt { name, value: lower_expr(ctx, source), ty: value_ty });
                 for stmt in lower_cleanup_stmts(ctx, 0) {
                     stmts.push(stmt)
                 }
-                Expr::Block {
-                    block: Block {
+                LowerExpr::Block {
+                    block: LowerBlock {
                         stmts,
                         tail: Option::Some(
-                            Expr::Return {
-                                expr: Option::Some(Expr::Var { name, ty: value_ty }),
+                            LowerExpr::Return {
+                                expr: Option::Some(LowerExpr::Var { name, ty: value_ty }),
                                 ty,
                             },
                         ),
@@ -1623,10 +1647,10 @@ fn lower_return(ctx: Lowerer, value: Option[tast::Expr], ty: tast::Type) -> Expr
                     ty,
                 }
             },
-            None => Expr::Block {
-                block: Block {
+            None => LowerExpr::Block {
+                block: LowerBlock {
                     stmts: lower_cleanup_stmts(ctx, 0),
-                    tail: Option::Some(Expr::Return { expr: Option::None, ty }),
+                    tail: Option::Some(LowerExpr::Return { expr: Option::None, ty }),
                 },
                 ty,
             },
@@ -1634,13 +1658,13 @@ fn lower_return(ctx: Lowerer, value: Option[tast::Expr], ty: tast::Type) -> Expr
     }
 }
 
-fn prepend_stmt(value: LetStmt, rest: Block) -> Block {
-    let stmts: Vec[LetStmt] = Vec::[];
+fn prepend_stmt(value: LowerLetStmt, rest: LowerBlock) -> LowerBlock {
+    let stmts: Vec[LowerLetStmt] = Vec::[];
     stmts.push(value);
     for stmt in rest.stmts {
         stmts.push(stmt)
     }
-    Block { stmts, tail: rest.tail }
+    LowerBlock { stmts, tail: rest.tail }
 }
 
 fn remaining_tast_block(
@@ -1705,12 +1729,12 @@ fn lower_pattern_continuation(
     body: tast::Expr,
     failure: Option[tast::Expr],
     ty: tast::Type,
-) -> Expr {
+) -> LowerExpr {
     if pattern_requires_ordered(pattern) {
         lower_ordered_pattern(
             ctx,
             pattern,
-            Expr::Var { name: source_name, ty: source_ty },
+            LowerExpr::Var { name: source_name, ty: source_ty },
             lower_expr(ctx, body),
             match failure {
                 Some(value) => lower_expr(ctx, value),
@@ -1748,10 +1772,10 @@ fn lower_block_from(
     tail: Option[tast::Expr],
     ty: tast::Type,
     cleanup_start: int,
-) -> Block {
+) -> LowerBlock {
     if index >= stmts.len() {
         if ctx.cleanups.len() == cleanup_start {
-            Block {
+            LowerBlock {
                 stmts: Vec::[],
                 tail: match tail {
                     Some(value) => Option::Some(lower_expr(ctx, value)),
@@ -1761,18 +1785,24 @@ fn lower_block_from(
         } else {
             match tail {
                 Some(value) => if tast_expr_exits(value) {
-                    Block { stmts: Vec::[], tail: Option::Some(lower_expr(ctx, value)) }
+                    LowerBlock { stmts: Vec::[], tail: Option::Some(lower_expr(ctx, value)) }
                 } else {
                     let value_ty = tast::expr_type(value);
                     let name = gensym(ctx, "defer_result");
-                    let result: Vec[LetStmt] = Vec::[];
-                    result.push(LetStmt { name, value: lower_expr(ctx, value), ty: value_ty });
+                    let result: Vec[LowerLetStmt] = Vec::[];
+                    result.push(LowerLetStmt { name, value: lower_expr(ctx, value), ty: value_ty });
                     for stmt in lower_cleanup_stmts(ctx, cleanup_start) {
                         result.push(stmt)
                     }
-                    Block { stmts: result, tail: Option::Some(Expr::Var { name, ty: value_ty }) }
+                    LowerBlock {
+                        stmts: result,
+                        tail: Option::Some(LowerExpr::Var { name, ty: value_ty }),
+                    }
                 },
-                None => Block { stmts: lower_cleanup_stmts(ctx, cleanup_start), tail: Option::None },
+                None => LowerBlock {
+                    stmts: lower_cleanup_stmts(ctx, cleanup_start),
+                    tail: Option::None,
+                },
             }
         }
     } else {
@@ -1784,7 +1814,7 @@ fn lower_block_from(
             Let { is_mut: _, pat: Var { name, is_mut: _, ty: pat_ty }, value } => {
                 let core_value = lower_expr(ctx, value);
                 let rest = lower_block_from(ctx, stmts, index + 1, tail, ty, cleanup_start);
-                prepend_stmt(LetStmt { name, value: core_value, ty: pat_ty }, rest)
+                prepend_stmt(LowerLetStmt { name, value: core_value, ty: pat_ty }, rest)
             },
             Let { is_mut: _, pat: pattern, value } => {
                 let value_ty = tast::expr_type(value);
@@ -1793,12 +1823,12 @@ fn lower_block_from(
                 match plan_flat_pattern(ctx, name, pattern) {
                     Some(plan) => {
                         let rest = lower_block_from(ctx, stmts, index + 1, tail, ty, cleanup_start);
-                        let result: Vec[LetStmt] = Vec::[];
-                        result.push(LetStmt { name, value: core_value, ty: value_ty });
-                        Block {
+                        let result: Vec[LowerLetStmt] = Vec::[];
+                        result.push(LowerLetStmt { name, value: core_value, ty: value_ty });
+                        LowerBlock {
                             stmts: result,
                             tail: Option::Some(
-                                apply_pattern_plan(plan, Expr::Block { block: rest, ty }, ty),
+                                apply_pattern_plan(plan, LowerExpr::Block { block: rest, ty }, ty),
                             ),
                         }
                     },
@@ -1820,9 +1850,9 @@ fn lower_block_from(
                             Option::None,
                             ty,
                         );
-                        let result: Vec[LetStmt] = Vec::[];
-                        result.push(LetStmt { name, value: core_value, ty: value_ty });
-                        Block { stmts: result, tail: Option::Some(matched) }
+                        let result: Vec[LowerLetStmt] = Vec::[];
+                        result.push(LowerLetStmt { name, value: core_value, ty: value_ty });
+                        LowerBlock { stmts: result, tail: Option::Some(matched) }
                     },
                 }
             },
@@ -1840,28 +1870,31 @@ fn lower_block_from(
                     Option::Some(else_branch),
                     ty,
                 );
-                let result: Vec[LetStmt] = Vec::[];
-                result.push(LetStmt { name, value: core_value, ty: value_ty });
-                Block { stmts: result, tail: Option::Some(matched) }
+                let result: Vec[LowerLetStmt] = Vec::[];
+                result.push(LowerLetStmt { name, value: core_value, ty: value_ty });
+                LowerBlock { stmts: result, tail: Option::Some(matched) }
             },
             Expr { expr: value } => {
                 let value_ty = tast::expr_type(value);
                 let core_value = lower_expr(ctx, value);
                 let name = gensym(ctx, "_wild");
                 let rest = lower_block_from(ctx, stmts, index + 1, tail, ty, cleanup_start);
-                prepend_stmt(LetStmt { name, value: core_value, ty: value_ty }, rest)
+                prepend_stmt(LowerLetStmt { name, value: core_value, ty: value_ty }, rest)
             },
             Assign { target, op, value } => {
                 let action = lower_assignment(ctx, target, op, value);
                 let binding = gensym(ctx, "_wild");
                 let rest = lower_block_from(ctx, stmts, index + 1, tail, ty, cleanup_start);
-                prepend_stmt(LetStmt { name: binding, value: action, ty: tast::Type::Unit }, rest)
+                prepend_stmt(
+                    LowerLetStmt { name: binding, value: action, ty: tast::Type::Unit },
+                    rest,
+                )
             },
         }
     }
 }
 
-fn lower_block(ctx: Lowerer, value: tast::Block, ty: tast::Type) -> Block {
+fn lower_block(ctx: Lowerer, value: tast::Block, ty: tast::Type) -> LowerBlock {
     let cleanup_start = ctx.cleanups.len();
     let result = lower_block_from(ctx, value.stmts, 0, value.tail, ty, cleanup_start);
     ctx.cleanups.truncate(cleanup_start);
@@ -1871,14 +1904,14 @@ fn lower_block(ctx: Lowerer, value: tast::Block, ty: tast::Type) -> Block {
 fn lower_function(
     ctx: Lowerer,
     name: string,
-    origin: FunctionOrigin,
-    trait_impl: Option[TraitImpl],
+    origin: LowerFunctionOrigin,
+    trait_impl: Option[LowerTraitImpl],
     value: tast::Function,
     retain_generics: bool,
-) -> Function {
+) -> LowerFunction {
     let hidden_cells = hidden_mutable_cells(value.body);
     let body = lower_block(ctx, value.body, value.ret_ty);
-    Function {
+    LowerFunction {
         name,
         origin,
         root: true,
@@ -1899,15 +1932,15 @@ fn lower_function(
     }
 }
 
-fn lower_marker_trait_witness(block: tast::ImplBlock, reference: tast::TraitRef) -> Function {
-    Function {
+fn lower_marker_trait_witness(block: tast::ImplBlock, reference: tast::TraitRef) -> LowerFunction {
+    LowerFunction {
         name: trait_impl_method_name(reference, block.for_type, "__marker"),
-        origin: FunctionOrigin::TraitImplementation { method_name: "__marker" },
+        origin: LowerFunctionOrigin::TraitImplementation { method_name: "__marker" },
         root: false,
         generics: block.generics,
         predicates: block.predicates,
         trait_impl: Option::Some(
-            TraitImpl {
+            LowerTraitImpl {
                 trait_ref: reference,
                 for_ty: block.for_type,
                 associated_types: block.associated_types,
@@ -1917,9 +1950,11 @@ fn lower_marker_trait_witness(block: tast::ImplBlock, reference: tast::TraitRef)
         ),
         params: Vec::[],
         ret_ty: tast::Type::Unit,
-        body: Block {
+        body: LowerBlock {
             stmts: Vec::[],
-            tail: Option::Some(Expr::Prim { value: tast::Primitive::Unit, ty: tast::Type::Unit }),
+            tail: Option::Some(
+                LowerExpr::Prim { value: tast::Primitive::Unit, ty: tast::Type::Unit },
+            ),
         },
     }
 }
@@ -1930,7 +1965,7 @@ fn lower_file_with_types(
     dependency_enums: Vec[tast::EnumDef],
     dependency_structs: Vec[tast::StructDef],
     optimize_builtin_iterators: bool,
-) -> File {
+) -> LowerFile {
     let enums = value.enums;
     let structs = value.structs;
     let all_enums: Vec[tast::EnumDef] = Vec::[];
@@ -1956,7 +1991,7 @@ fn lower_file_with_types(
         loop_cleanup_depths: Vec::[],
         cleanup_lowering_depth: Ref::new(0),
     };
-    let functions: Vec[Function] = Vec::[];
+    let functions: Vec[LowerFunction] = Vec::[];
     for item in value.items {
         match item {
             Function(function) => match function.comptime {
@@ -1965,7 +2000,7 @@ fn lower_file_with_types(
                     lower_function(
                         ctx,
                         function.name,
-                        FunctionOrigin::Source,
+                        LowerFunctionOrigin::Source,
                         Option::None,
                         function,
                         false,
@@ -1988,7 +2023,7 @@ fn lower_file_with_types(
                     } else {};
                     let trait_impl = match block.trait_ref {
                         Some(reference) => Option::Some(
-                            TraitImpl {
+                            LowerTraitImpl {
                                 trait_ref: reference,
                                 for_ty: block.for_type,
                                 associated_types: block.associated_types,
@@ -2007,8 +2042,10 @@ fn lower_file_with_types(
                         None => inherent_method_name(block.for_type, method.name),
                     };
                     let origin = match block.trait_ref {
-                        Some(_) => FunctionOrigin::TraitImplementation { method_name: method.name },
-                        None => FunctionOrigin::Inherent {
+                        Some(_) => LowerFunctionOrigin::TraitImplementation {
+                            method_name: method.name,
+                        },
+                        None => LowerFunctionOrigin::Inherent {
                             owner: block.for_type,
                             method_name: method.name,
                         },
@@ -2018,11 +2055,36 @@ fn lower_file_with_types(
             },
         }
     }
-    File { functions, enums, structs, type_instances: Vec::[], constants: value.constants }
+    LowerFile { functions, enums, structs, type_instances: Vec::[], constants: value.constants }
 }
 
-fn lower_file(value: tast::File, counter: Ref[int]) -> File {
+fn lower_file(value: tast::File, counter: Ref[int]) -> LowerFile {
     lower_file_with_types(value, counter, Vec::[], Vec::[], false)
+}
+
+fn lower_raw_with_counter_types_and_options(
+    value: tast::CheckResult,
+    counter: Ref[int],
+    dependency_enums: Vec[tast::EnumDef],
+    dependency_structs: Vec[tast::StructDef],
+    optimize_builtin_iterators: bool,
+) -> LowerFile {
+    match value.tast {
+        Some(file) => lower_file_with_types(
+            file,
+            counter,
+            dependency_enums,
+            dependency_structs,
+            optimize_builtin_iterators,
+        ),
+        None => LowerFile {
+            functions: Vec::[],
+            enums: Vec::[],
+            structs: Vec::[],
+            type_instances: Vec::[],
+            constants: Vec::[],
+        },
+    }
 }
 
 pub fn lower_with_counter_types_and_options(
@@ -2032,22 +2094,15 @@ pub fn lower_with_counter_types_and_options(
     dependency_structs: Vec[tast::StructDef],
     optimize_builtin_iterators: bool,
 ) -> File {
-    match value.tast {
-        Some(file) => lower_file_with_types(
-            file,
+    detach_file(
+        lower_raw_with_counter_types_and_options(
+            value,
             counter,
             dependency_enums,
             dependency_structs,
             optimize_builtin_iterators,
         ),
-        None => File {
-            functions: Vec::[],
-            enums: Vec::[],
-            structs: Vec::[],
-            type_instances: Vec::[],
-            constants: Vec::[],
-        },
-    }
+    )
 }
 
 pub fn lower_with_counter_and_types(
@@ -2066,16 +2121,18 @@ pub fn lower_with_counter_and_types(
 }
 
 pub fn lower_with_counter(value: tast::CheckResult, counter: Ref[int]) -> File {
-    match value.tast {
-        Some(file) => lower_file(file, counter),
-        None => File {
-            functions: Vec::[],
-            enums: Vec::[],
-            structs: Vec::[],
-            type_instances: Vec::[],
-            constants: Vec::[],
+    detach_file(
+        match value.tast {
+            Some(file) => lower_file(file, counter),
+            None => LowerFile {
+                functions: Vec::[],
+                enums: Vec::[],
+                structs: Vec::[],
+                type_instances: Vec::[],
+                constants: Vec::[],
+            },
         },
-    }
+    )
 }
 
 pub fn lower(value: tast::CheckResult) -> File {

@@ -1,0 +1,511 @@
+package core;
+
+pub enum Type {
+    Unit,
+    Never,
+    Bool,
+    Int,
+    Int8,
+    Int16,
+    Int32,
+    Int64,
+    Uint,
+    Uint8,
+    Uint16,
+    Uint32,
+    Uint64,
+    Float32,
+    Float64,
+    String,
+    Char,
+    Tuple {
+        items: Vec[Type],
+    },
+    Con {
+        name: string,
+    },
+    Dyn {
+        trait_name: string,
+        args: Vec[Type],
+        associated_types: Vec[(string, Type)],
+        additional_bounds: Vec[DynTraitBound],
+    },
+    Projection {
+        for_ty: Type,
+        name: string,
+        trait_ref: Option[TraitRef],
+    },
+    App {
+        ty: Type,
+        args: Vec[Type],
+    },
+    Array {
+        len: int,
+        elem: Type,
+    },
+    Slice {
+        elem: Type,
+    },
+    VecType {
+        elem: Type,
+    },
+    RefType {
+        elem: Type,
+    },
+    HashMap {
+        key: Type,
+        value: Type,
+    },
+    Channel {
+        elem: Type,
+    },
+    Param {
+        name: string,
+    },
+    Func {
+        params: Vec[Type],
+        ret_ty: Type,
+    },
+    Error,
+}
+
+pub struct DynTraitBound {
+    pub trait_name: string,
+    pub args: Vec[Type],
+    pub associated_types: Vec[(string, Type)],
+}
+
+pub struct TraitRef {
+    pub name: string,
+    pub args: Vec[Type],
+}
+
+fn type_lists_equal(left: Vec[Type], right: Vec[Type]) -> bool {
+    if left.len() != right.len() {
+        false
+    } else {
+        for index in 0..left.len() {
+            if !types_equal(left[index], right[index]) {
+                return false
+            } else {}
+        }
+        true
+    }
+}
+
+fn associated_types_equal(left: Vec[(string, Type)], right: Vec[(string, Type)]) -> bool {
+    if left.len() != right.len() {
+        false
+    } else {
+        for index in 0..left.len() {
+            if left[index].0 != right[index].0 || !types_equal(left[index].1, right[index].1) {
+                return false
+            } else {}
+        }
+        true
+    }
+}
+
+fn dyn_bounds_equal(left: Vec[DynTraitBound], right: Vec[DynTraitBound]) -> bool {
+    if left.len() != right.len() {
+        false
+    } else {
+        for index in 0..left.len() {
+            if left[index].trait_name != right[index].trait_name
+                || !type_lists_equal(left[index].args, right[index].args)
+                || !associated_types_equal(
+                    left[index].associated_types,
+                    right[index].associated_types,
+                ) {
+                return false
+            } else {}
+        }
+        true
+    }
+}
+
+fn optional_trait_refs_equal(left: Option[TraitRef], right: Option[TraitRef]) -> bool {
+    match (left, right) {
+        (Some(left), Some(right)) => trait_refs_equal(left, right),
+        _ => true,
+    }
+}
+
+pub fn trait_refs_equal(left: TraitRef, right: TraitRef) -> bool {
+    left.name == right.name && type_lists_equal(left.args, right.args)
+}
+
+pub fn types_equal(left: Type, right: Type) -> bool {
+    match (left, right) {
+        (Unit, Unit) | (Never, Never) | (Bool, Bool) | (Int, Int) | (Int8, Int8) | (Int16, Int16) | (
+            Int32,
+            Int32,
+        ) | (Int64, Int64) | (Uint, Uint) | (Uint8, Uint8) | (Uint16, Uint16) | (Uint32, Uint32) | (
+            Uint64,
+            Uint64,
+        ) | (Float32, Float32) | (Float64, Float64) | (String, String) | (Char, Char) | (
+            Error,
+            Error,
+        ) => true,
+        (Tuple { items: left }, Tuple { items: right }) => type_lists_equal(left, right),
+        (Con { name: left }, Con { name: right }) | (Param { name: left }, Param { name: right }) => left
+            == right,
+        (
+            Dyn {
+                trait_name: left_name,
+                args: left_args,
+                associated_types: left_associated,
+                additional_bounds: left_bounds,
+            },
+            Dyn {
+                trait_name: right_name,
+                args: right_args,
+                associated_types: right_associated,
+                additional_bounds: right_bounds,
+            },
+        ) => {
+            left_name == right_name && type_lists_equal(left_args, right_args)
+                && associated_types_equal(left_associated, right_associated)
+                && dyn_bounds_equal(left_bounds, right_bounds)
+        },
+        (
+            Projection { for_ty: left_ty, name: left_name, trait_ref: left_trait },
+            Projection { for_ty: right_ty, name: right_name, trait_ref: right_trait },
+        ) => {
+            left_name == right_name && types_equal(left_ty, right_ty)
+                && optional_trait_refs_equal(left_trait, right_trait)
+        },
+        (App { ty: left_ty, args: left_args }, App { ty: right_ty, args: right_args }) => {
+            types_equal(left_ty, right_ty) && type_lists_equal(left_args, right_args)
+        },
+        (Array { len: left_len, elem: left }, Array { len: right_len, elem: right }) => {
+            left_len == right_len && types_equal(left, right)
+        },
+        (Slice { elem: left }, Slice { elem: right }) | (
+            VecType { elem: left },
+            VecType { elem: right },
+        ) | (RefType { elem: left }, RefType { elem: right }) | (
+            Channel { elem: left },
+            Channel { elem: right },
+        ) => types_equal(left, right),
+        (
+            HashMap { key: left_key, value: left_value },
+            HashMap { key: right_key, value: right_value },
+        ) => types_equal(left_key, right_key) && types_equal(left_value, right_value),
+        (
+            Func { params: left_params, ret_ty: left_ret },
+            Func { params: right_params, ret_ty: right_ret },
+        ) => type_lists_equal(left_params, right_params) && types_equal(left_ret, right_ret),
+        _ => false,
+    }
+}
+
+pub fn resolve_type(value: Type) -> Type {
+    value
+}
+
+pub fn type_contains_error(value: Type) -> bool {
+    match value {
+        Error => true,
+        Tuple { items } => {
+            for item in items {
+                if type_contains_error(item) {
+                    return true
+                } else {}
+            }
+            false
+        },
+        Dyn { args, associated_types, additional_bounds, .. } => {
+            for arg in args {
+                if type_contains_error(arg) {
+                    return true
+                } else {}
+            }
+            for associated in associated_types {
+                if type_contains_error(associated.1) {
+                    return true
+                } else {}
+            }
+            for bound in additional_bounds {
+                for arg in bound.args {
+                    if type_contains_error(arg) {
+                        return true
+                    } else {}
+                }
+                for associated in bound.associated_types {
+                    if type_contains_error(associated.1) {
+                        return true
+                    } else {}
+                }
+            }
+            false
+        },
+        Projection { for_ty, trait_ref, .. } => {
+            if type_contains_error(for_ty) {
+                true
+            } else {
+                match trait_ref {
+                    Some(reference) => {
+                        for arg in reference.args {
+                            if type_contains_error(arg) {
+                                return true
+                            } else {}
+                        }
+                        false
+                    },
+                    None => false,
+                }
+            }
+        },
+        App { ty, args } => {
+            if type_contains_error(ty) {
+                true
+            } else {
+                for arg in args {
+                    if type_contains_error(arg) {
+                        return true
+                    } else {}
+                }
+                false
+            }
+        },
+        Array { elem, .. } | Slice { elem } | VecType { elem } | RefType { elem } | Channel { elem } => type_contains_error(
+            elem,
+        ),
+        HashMap { key, value } => type_contains_error(key) || type_contains_error(value),
+        Func { params, ret_ty } => {
+            for param in params {
+                if type_contains_error(param) {
+                    return true
+                } else {}
+            }
+            type_contains_error(ret_ty)
+        },
+        _ => false,
+    }
+}
+
+fn concrete_types(values: Vec[Type]) -> bool {
+    for value in values {
+        if type_is_concrete(value) {} else {
+            return false
+        }
+    }
+    true
+}
+
+pub fn type_is_concrete(value: Type) -> bool {
+    match value {
+        Param { .. } => false,
+        Unit | Never | Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | Float32 | Float64 | String | Char | Con {
+            ..,
+        } | Error => true,
+        Tuple { items } => concrete_types(items),
+        Dyn { args, associated_types, additional_bounds, .. } => {
+            if !concrete_types(args) {
+                return false
+            } else {}
+            for associated in associated_types {
+                if !type_is_concrete(associated.1) {
+                    return false
+                } else {}
+            }
+            for bound in additional_bounds {
+                if !concrete_types(bound.args) {
+                    return false
+                } else {}
+                for associated in bound.associated_types {
+                    if !type_is_concrete(associated.1) {
+                        return false
+                    } else {}
+                }
+            }
+            true
+        },
+        Projection { for_ty, trait_ref, .. } => {
+            if !type_is_concrete(for_ty) {
+                false
+            } else {
+                match trait_ref {
+                    Some(reference) => concrete_types(reference.args),
+                    None => true,
+                }
+            }
+        },
+        App { ty, args } => type_is_concrete(ty) && concrete_types(args),
+        Array { elem, .. } | Slice { elem } | VecType { elem } | RefType { elem } | Channel { elem } => type_is_concrete(
+            elem,
+        ),
+        HashMap { key, value } => type_is_concrete(key) && type_is_concrete(value),
+        Func { params, ret_ty } => concrete_types(params) && type_is_concrete(ret_ty),
+    }
+}
+
+fn find_type_binding(bindings: Vec[(string, Type)], name: string) -> Option[Type] {
+    for binding in bindings {
+        if binding.0 == name {
+            return Option::Some(binding.1)
+        } else {}
+    }
+    Option::None
+}
+
+fn substitute_types(values: Vec[Type], bindings: Vec[(string, Type)]) -> Vec[Type] {
+    let result: Vec[Type] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(substitute_type(value, bindings))
+    }
+    result
+}
+
+fn substitute_named_types(values: Vec[(string, Type)], bindings: Vec[(string, Type)]) -> Vec[
+    (string, Type),
+] {
+    let result: Vec[(string, Type)] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push((value.0, substitute_type(value.1, bindings)))
+    }
+    result
+}
+
+fn substitute_trait_ref(value: TraitRef, bindings: Vec[(string, Type)]) -> TraitRef {
+    TraitRef { name: value.name, args: substitute_types(value.args, bindings) }
+}
+
+fn substitute_optional_trait_ref(value: Option[TraitRef], bindings: Vec[(string, Type)]) -> Option[
+    TraitRef,
+] {
+    match value {
+        Some(value) => Option::Some(substitute_trait_ref(value, bindings)),
+        None => Option::None,
+    }
+}
+
+fn substitute_dyn_bounds(values: Vec[DynTraitBound], bindings: Vec[(string, Type)]) -> Vec[
+    DynTraitBound,
+] {
+    let result: Vec[DynTraitBound] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(
+            DynTraitBound {
+                trait_name: value.trait_name,
+                args: substitute_types(value.args, bindings),
+                associated_types: substitute_named_types(value.associated_types, bindings),
+            },
+        )
+    }
+    result
+}
+
+pub fn substitute_type(value: Type, bindings: Vec[(string, Type)]) -> Type {
+    match value {
+        Param { name } => match find_type_binding(bindings, name) {
+            Some(value) => value,
+            None => Type::Param { name },
+        },
+        Tuple { items } => Type::Tuple { items: substitute_types(items, bindings) },
+        Dyn { trait_name, args, associated_types, additional_bounds } => Type::Dyn {
+            trait_name,
+            args: substitute_types(args, bindings),
+            associated_types: substitute_named_types(associated_types, bindings),
+            additional_bounds: substitute_dyn_bounds(additional_bounds, bindings),
+        },
+        Projection { for_ty, name, trait_ref } => Type::Projection {
+            for_ty: substitute_type(for_ty, bindings),
+            name,
+            trait_ref: substitute_optional_trait_ref(trait_ref, bindings),
+        },
+        App { ty, args } => Type::App {
+            ty: substitute_type(ty, bindings),
+            args: substitute_types(args, bindings),
+        },
+        Array { len, elem } => Type::Array { len, elem: substitute_type(elem, bindings) },
+        Slice { elem } => Type::Slice { elem: substitute_type(elem, bindings) },
+        VecType { elem } => Type::VecType { elem: substitute_type(elem, bindings) },
+        RefType { elem } => Type::RefType { elem: substitute_type(elem, bindings) },
+        HashMap { key, value } => Type::HashMap {
+            key: substitute_type(key, bindings),
+            value: substitute_type(value, bindings),
+        },
+        Channel { elem } => Type::Channel { elem: substitute_type(elem, bindings) },
+        Func { params, ret_ty } => Type::Func {
+            params: substitute_types(params, bindings),
+            ret_ty: substitute_type(ret_ty, bindings),
+        },
+        other => other,
+    }
+}
+
+fn push_type_parameter(values: Vec[string], name: string) -> unit {
+    for value in values {
+        if value == name {
+            return ()
+        } else {}
+    }
+    values.push(name)
+}
+
+fn collect_type_parameters(values: Vec[string], value: Type) -> unit {
+    match value {
+        Param { name } => push_type_parameter(values, name),
+        Tuple { items } => {
+            for item in items {
+                collect_type_parameters(values, item)
+            }
+        },
+        Dyn { args, associated_types, additional_bounds, .. } => {
+            for arg in args {
+                collect_type_parameters(values, arg)
+            }
+            for associated in associated_types {
+                collect_type_parameters(values, associated.1)
+            }
+            for bound in additional_bounds {
+                for arg in bound.args {
+                    collect_type_parameters(values, arg)
+                }
+                for associated in bound.associated_types {
+                    collect_type_parameters(values, associated.1)
+                }
+            }
+        },
+        Projection { for_ty, trait_ref, .. } => {
+            collect_type_parameters(values, for_ty);
+            match trait_ref {
+                Some(reference) => {
+                    for arg in reference.args {
+                        collect_type_parameters(values, arg)
+                    }
+                },
+                None => (),
+            }
+        },
+        App { ty, args } => {
+            collect_type_parameters(values, ty);
+            for arg in args {
+                collect_type_parameters(values, arg)
+            }
+        },
+        Array { elem, .. } | Slice { elem } | VecType { elem } | RefType { elem } | Channel { elem } => collect_type_parameters(
+            values,
+            elem,
+        ),
+        HashMap { key, value } => {
+            collect_type_parameters(values, key);
+            collect_type_parameters(values, value)
+        },
+        Func { params, ret_ty } => {
+            for param in params {
+                collect_type_parameters(values, param)
+            }
+            collect_type_parameters(values, ret_ty)
+        },
+        _ => (),
+    }
+}
+
+pub fn type_parameters(value: Type) -> Vec[string] {
+    let result: Vec[string] = Vec::[];
+    collect_type_parameters(result, value);
+    result
+}

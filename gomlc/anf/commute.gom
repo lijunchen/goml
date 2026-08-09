@@ -1,13 +1,13 @@
 package anf;
 
-use gomlc::tast;
+use gomlc::repr;
 
 enum CommuteKnown {
     Unknown,
     Dispatch {
         selector: Imm,
         fields: Vec[Imm],
-        constructor: Option[tast::Constructor],
+        constructor: Option[repr::Constructor],
     },
 }
 
@@ -18,15 +18,15 @@ struct CommuteBinding {
 
 struct CommuteField {
     index: int,
-    ty: tast::Type,
-    constructor: tast::Constructor,
+    ty: repr::Type,
+    constructor: repr::Constructor,
     name: string,
 }
 
 struct CommuteArm {
     selector: Imm,
     target: string,
-    params: Vec[(string, tast::Type)],
+    params: Vec[(string, repr::Type)],
     fields: Vec[CommuteField],
     keep_scrutinee: bool,
     body: Block,
@@ -34,7 +34,7 @@ struct CommuteArm {
 
 struct CommuteDefault {
     target: string,
-    params: Vec[(string, tast::Type)],
+    params: Vec[(string, repr::Type)],
     fields: Vec[CommuteField],
     keep_scrutinee: bool,
     body: Block,
@@ -174,7 +174,7 @@ fn collect_commute_assigned_block(result: Vec[string], value: Block) -> unit {
     collect_commute_assigned_term(result, value.term)
 }
 
-fn shadow_commute_params(known: Vec[CommuteBinding], params: Vec[(string, tast::Type)]) -> Vec[
+fn shadow_commute_params(known: Vec[CommuteBinding], params: Vec[(string, repr::Type)]) -> Vec[
     CommuteBinding,
 ] {
     let result = copy_commute_bindings(known);
@@ -216,6 +216,7 @@ fn value_uses_name(value: Value, name: string) -> bool {
             imm_uses_name(receiver, name) || imms_use_name(args, name)
         },
         Go { closure, .. } => imm_uses_name(closure, name),
+        PackClosure { environment, .. } => imm_uses_name(environment, name),
         Proj { tuple, .. } => imm_uses_name(tuple, name),
     }
 }
@@ -267,13 +268,13 @@ fn block_uses_name(value: Block, name: string) -> bool {
 
 fn find_commute_field(
     values: Vec[CommuteField],
-    constructor: tast::Constructor,
+    constructor: repr::Constructor,
     index: int,
-    ty: tast::Type,
+    ty: repr::Type,
 ) -> Option[CommuteField] {
     for value in values {
         if value.index == index && constructors_equal(value.constructor, constructor)
-            && tast::types_equal(value.ty, ty) {
+            && repr::types_equal(value.ty, ty) {
             return Option::Some(value)
         } else {}
     }
@@ -448,12 +449,12 @@ fn replace_commute_block(value: Block, fields: Vec[CommuteField], scrutinee: str
 }
 
 fn commute_arm_params(
-    params: Vec[(string, tast::Type)],
+    params: Vec[(string, repr::Type)],
     scrutinee_index: int,
     keep_scrutinee: bool,
     fields: Vec[CommuteField],
-) -> Vec[(string, tast::Type)] {
-    let result: Vec[(string, tast::Type)] = Vec::[];
+) -> Vec[(string, repr::Type)] {
+    let result: Vec[(string, repr::Type)] = Vec::[];
     for index in 0..params.len() {
         if index != scrutinee_index || keep_scrutinee {
             result.push(params[index])
@@ -556,7 +557,7 @@ fn live_commute_fields(values: Vec[CommuteField], body: Block) -> Vec[CommuteFie
 
 fn build_commute_arm(
     value: Arm,
-    params: Vec[(string, tast::Type)],
+    params: Vec[(string, repr::Type)],
     scrutinee: string,
     scrutinee_index: int,
     counter: Ref[int],
@@ -580,7 +581,7 @@ fn build_commute_arm(
 
 fn build_commute_default(
     value: Block,
-    params: Vec[(string, tast::Type)],
+    params: Vec[(string, repr::Type)],
     scrutinee: string,
     scrutinee_index: int,
     counter: Ref[int],
@@ -616,7 +617,7 @@ fn commute_call_args(
     keep_scrutinee: bool,
     fields: Vec[CommuteField],
     dispatch_fields: Vec[Imm],
-    constructor: Option[tast::Constructor],
+    constructor: Option[repr::Constructor],
 ) -> Option[Vec[Imm]] {
     let result: Vec[Imm] = Vec::[];
     for index in 0..args.len() {
@@ -628,7 +629,7 @@ fn commute_call_args(
         let present = constructor?;
         if !constructors_equal(field.constructor, present) || field.index < 0
             || field.index >= dispatch_fields.len()
-            || !tast::types_equal(imm_type(dispatch_fields[field.index]), field.ty) {
+            || !repr::types_equal(imm_type(dispatch_fields[field.index]), field.ty) {
             return Option::None
         } else {
             result.push(dispatch_fields[field.index])
@@ -639,7 +640,7 @@ fn commute_call_args(
 
 fn rewrite_commute_call(
     args: Vec[Imm],
-    ret_ty: tast::Type,
+    ret_ty: repr::Type,
     scrutinee_index: int,
     arms: Vec[CommuteArm],
     default: Option[CommuteDefault],
@@ -850,7 +851,7 @@ fn rewrite_commute_block(
     )
 }
 
-fn commute_scrutinee_param(params: Vec[(string, tast::Type)], value: Imm) -> Option[(string, int)] {
+fn commute_scrutinee_param(params: Vec[(string, repr::Type)], value: Imm) -> Option[(string, int)] {
     match value {
         Var { name, ty: _ } => for index in 0..params.len() {
             if params[index].0 == name {
@@ -865,7 +866,7 @@ fn commute_scrutinee_param(params: Vec[(string, tast::Type)], value: Imm) -> Opt
 fn prepend_commute_joins(
     arms: Vec[CommuteArm],
     default: Option[CommuteDefault],
-    ret_ty: tast::Type,
+    ret_ty: repr::Type,
     rest: Block,
 ) -> Block {
     let binds: Vec[Bind] = Vec::[];
@@ -1102,5 +1103,6 @@ pub fn commute(value: File, counter: Ref[int]) -> File {
         structs: value.structs,
         type_instances: value.type_instances,
         constants: value.constants,
+        closure_defs: value.closure_defs,
     }
 }

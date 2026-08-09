@@ -344,8 +344,8 @@ fn artifact_dependency_core_types(units: Vec[artifact::ArtifactInterfaceUnit]) -
         result.push(
             core::File {
                 functions: Vec::[],
-                enums: interface.exports.enums,
-                structs: interface.exports.structs,
+                enums: core::lower_enum_defs(interface.exports.enums),
+                structs: core::lower_struct_defs(interface.exports.structs),
                 type_instances: Vec::[],
                 constants: Vec::[],
             },

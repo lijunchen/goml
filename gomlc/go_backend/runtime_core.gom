@@ -1,7 +1,7 @@
 package go_backend;
 
 use gomlc::resources;
-use gomlc::tast;
+use gomlc::repr;
 
 fn core_function_item(key: string, params: Vec[(string, Type)], ret_ty: Type, stmts: Vec[Stmt]) -> Item {
     Item::Function(
@@ -28,11 +28,11 @@ fn core_int(value: Expr) -> Expr {
     Expr::Convert { ty: Type::Int, expr: value }
 }
 
-fn core_tuple_type2(first: tast::Type, second: tast::Type) -> Type {
-    let values: Vec[tast::Type] = Vec::[];
+fn core_tuple_type2(first: repr::Type, second: repr::Type) -> Type {
+    let values: Vec[repr::Type] = Vec::[];
     values.push(first);
     values.push(second);
-    lower_type(tast::Type::Tuple { items: values })
+    lower_type(repr::Type::Tuple { items: values })
 }
 
 fn core_tuple_expr(ty: Type, values: Vec[Expr]) -> Expr {
@@ -110,8 +110,8 @@ fn string_byte_slice_hook_item(key: string) -> Item {
 fn string_to_bytes_hook_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("s", Type::String));
-    let elem = tast::Type::Uint8;
-    let vec_ty = tast::Type::VecType { elem };
+    let elem = repr::Type::Uint8;
+    let vec_ty = repr::Type::VecType { elem };
     let fields: Vec[(string, Expr)] = Vec::[];
     fields.push(
         (
@@ -146,7 +146,7 @@ fn char_to_string_hook_item(key: string) -> Item {
 fn char_from_uint32_hook_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("value", Type::Uint32));
-    let ret_ty = core_tuple_type2(tast::Type::Bool, tast::Type::Char);
+    let ret_ty = core_tuple_type2(repr::Type::Bool, repr::Type::Char);
     let stmts: Vec[Stmt] = Vec::[];
     let values: Vec[Expr] = Vec::[];
     values.push(Expr::Bool { value: true });

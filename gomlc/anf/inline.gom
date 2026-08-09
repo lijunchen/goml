@@ -1,6 +1,6 @@
 package anf;
 
-use gomlc::tast;
+use gomlc::repr;
 
 struct InlineName {
     name: string,
@@ -58,7 +58,7 @@ fn renamed_inline_join(values: Vec[InlineJoin], name: string) -> string {
     }
 }
 
-fn add_inline_local(values: Vec[InlineName], name: string, ty: tast::Type, counter: Ref[int]) -> unit {
+fn add_inline_local(values: Vec[InlineName], name: string, ty: repr::Type, counter: Ref[int]) -> unit {
     if name == "_" {} else {
         values.push(
             InlineName { name, value: Imm::Var { name: fresh_inline(counter, "inline"), ty } },
@@ -203,16 +203,21 @@ fn clone_inline_value(value: Value, names: Vec[InlineName]) -> Value {
             ty,
         },
         Go { closure, ty } => Value::Go { closure: clone_inline_imm(closure, names), ty },
+        PackClosure { environment, apply, ty } => Value::PackClosure {
+            environment: clone_inline_imm(environment, names),
+            apply,
+            ty,
+        },
         Proj { tuple, index, ty } => {
             Value::Proj { tuple: clone_inline_imm(tuple, names), index, ty }
         },
     }
 }
 
-fn clone_inline_params(values: Vec[(string, tast::Type)], names: Vec[InlineName]) -> Vec[
-    (string, tast::Type),
+fn clone_inline_params(values: Vec[(string, repr::Type)], names: Vec[InlineName]) -> Vec[
+    (string, repr::Type),
 ] {
-    let result: Vec[(string, tast::Type)] = Vec::with_capacity(values.len());
+    let result: Vec[(string, repr::Type)] = Vec::with_capacity(values.len());
     for value in values {
         result.push((renamed_inline_name(names, value.0), value.1))
     }
@@ -224,7 +229,7 @@ fn clone_inline_join(
     names: Vec[InlineName],
     joins: Vec[InlineJoin],
     continuation: string,
-    ret_ty: tast::Type,
+    ret_ty: repr::Type,
 ) -> JoinBind {
     JoinBind {
         name: renamed_inline_join(joins, value.name),
@@ -240,7 +245,7 @@ fn clone_inline_term(
     names: Vec[InlineName],
     joins: Vec[InlineJoin],
     continuation: string,
-    ret_ty: tast::Type,
+    ret_ty: repr::Type,
 ) -> Term {
     match value {
         Return(value) => {
@@ -290,7 +295,7 @@ fn clone_inline_block(
     names: Vec[InlineName],
     joins: Vec[InlineJoin],
     continuation: string,
-    ret_ty: tast::Type,
+    ret_ty: repr::Type,
 ) -> Block {
     let binds: Vec[Bind] = Vec::with_capacity(value.binds.len());
     for bind in value.binds {
@@ -433,7 +438,7 @@ fn inline_params_safe(value: Function, args: Vec[Imm]) -> bool {
         return false
     } else {};
     for index in 0..args.len() {
-        if !tast::types_equal(value.params[index].1, imm_type(args[index]))
+        if !repr::types_equal(value.params[index].1, imm_type(args[index]))
             || inline_block_assigns(value.body, value.params[index].0) {
             return false
         } else {}
@@ -464,7 +469,7 @@ fn inline_value_calls(value: Value, name: string) -> bool {
     match value {
         Call { func: Var { name: target, ty: _ }, args: _, ty: _ } => target == name,
         Call {
-            func: Callable { callable: tast::Callable::Function(target), ty: _ },
+            func: Callable { callable: repr::Callable::Function(target), ty: _ },
             args: _,
             ty: _,
         } => target == name,
@@ -568,8 +573,8 @@ fn indexed_inline_candidate(
     caller: string,
     name: string,
     args: Vec[Imm],
-    ty: tast::Type,
-    bind_ty: tast::Type,
+    ty: repr::Type,
+    bind_ty: repr::Type,
     recursive_consumer: bool,
     budget: Ref[int],
 ) -> Option[Function] {
@@ -586,8 +591,8 @@ fn indexed_inline_candidate(
     };
     if cost > cost_limit || cost > budget.get() || recursive && !recursive_consumer
         || inline_block_calls(value.body, value.name)
-        || !tast::types_equal(value.ret_ty, ty)
-        || !tast::types_equal(value.ret_ty, bind_ty)
+        || !repr::types_equal(value.ret_ty, ty)
+        || !repr::types_equal(value.ret_ty, bind_ty)
         || !inline_params_safe(value, args) {
         Option::None
     } else {
@@ -601,8 +606,8 @@ fn inline_candidate(
     caller: string,
     name: string,
     args: Vec[Imm],
-    ty: tast::Type,
-    bind_ty: tast::Type,
+    ty: repr::Type,
+    bind_ty: repr::Type,
     recursive_consumer: bool,
     budget: Ref[int],
 ) -> Option[Function] {
@@ -629,7 +634,7 @@ fn prepend_inline_bind(value: Bind, rest: Block) -> Block {
 
 fn inline_call(value: LetBind, callee: Function, args: Vec[Imm], rest: Block, counter: Ref[int]) -> Block {
     let continuation = fresh_inline(counter, "inline_cont");
-    let params: Vec[(string, tast::Type)] = Vec::[];
+    let params: Vec[(string, repr::Type)] = Vec::[];
     params.push((value.name, value.ty));
     let continuation_join = JoinBind {
         name: continuation,
@@ -747,7 +752,7 @@ fn inline_binds(
                     }
                 },
                 Call {
-                    func: Callable { callable: tast::Callable::Function(name), ty: _ },
+                    func: Callable { callable: repr::Callable::Function(name), ty: _ },
                     args,
                     ty,
                 } => match indexed_inline_candidate(
@@ -839,5 +844,6 @@ pub fn inline(value: File, counter: Ref[int]) -> File {
         structs: value.structs,
         type_instances: value.type_instances,
         constants: value.constants,
+        closure_defs: value.closure_defs,
     }
 }

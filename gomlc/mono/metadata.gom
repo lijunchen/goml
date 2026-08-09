@@ -1,0 +1,120 @@
+package mono;
+
+use gomlc::ast;
+
+pub enum Primitive {
+    Unit,
+    Bool { value: bool },
+    Int { value: string },
+    Int8 { value: string },
+    Int16 { value: string },
+    Int32 { value: string },
+    Int64 { value: string },
+    Uint { value: string },
+    Uint8 { value: string },
+    Uint16 { value: string },
+    Uint32 { value: string },
+    Uint64 { value: string },
+    Float { value: string },
+    Float32 { value: string },
+    Float64 { value: string },
+    String { value: string },
+    Char { value: char },
+}
+
+pub struct Constructor {
+    pub name: string,
+    pub fields: Vec[string],
+    pub is_struct: bool,
+    pub tag: Option[int],
+}
+
+pub enum Callable {
+    Function(string),
+    LangItem {
+        item: string,
+        function_name: string,
+    },
+    Runtime(string),
+    Intrinsic(string),
+    GoForeign {
+        import_path: string,
+        symbol: string,
+    },
+    TraitMethod {
+        trait_ref: TraitRef,
+        method_name: string,
+        for_ty: Type,
+        has_receiver: bool,
+    },
+    DynTraitMethod {
+        trait_name: string,
+        dispatch_name: string,
+        method_name: string,
+    },
+    InherentMethod {
+        receiver_ty: Type,
+        method_name: string,
+    },
+}
+
+pub struct ClosureParam {
+    pub name: string,
+    pub ty: Type,
+}
+
+pub enum ConstExpr {
+    Prim {
+        value: Primitive,
+        ty: Type,
+    },
+    Ref {
+        name: string,
+        ty: Type,
+    },
+    Unary {
+        op: ast::UnaryOp,
+        expr: ConstExpr,
+        ty: Type,
+    },
+    Cast {
+        expr: ConstExpr,
+        ty: Type,
+    },
+    Binary {
+        op: ast::BinaryOp,
+        lhs: ConstExpr,
+        rhs: ConstExpr,
+        ty: Type,
+    },
+}
+
+pub struct Constant {
+    pub name: string,
+    pub ty: Type,
+    pub value: ConstExpr,
+}
+
+pub enum EnumVariantFields {
+    Unit,
+    Tuple(Vec[Type]),
+    Struct(Vec[(string, Type)]),
+}
+
+pub struct EnumVariantDef {
+    pub name: string,
+    pub fields: EnumVariantFields,
+}
+
+pub struct EnumDef {
+    pub name: string,
+    pub variants: Vec[EnumVariantDef],
+    pub option_variants: Option[(string, string)],
+}
+
+pub struct StructDef {
+    pub name: string,
+    pub fields: Vec[(string, Type)],
+    pub public_fields: Vec[string],
+    pub has_hidden_fields: bool,
+}

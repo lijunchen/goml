@@ -2,10 +2,48 @@ package lift;
 
 use gomlc::mono;
 
+fn empty_file() -> File {
+    File {
+        functions: Vec::[],
+        enums: Vec::[],
+        structs: Vec::[],
+        type_instances: Vec::[],
+        constants: Vec::[],
+        closure_defs: Vec::[],
+    }
+}
+
+fn finish_lowering(value: LambdaLiftResult) -> Result[File, string] {
+    match value.error {
+        Some(message) => Result::Err(message),
+        None => {
+            let file = detach_file(value.file);
+            match validate(file) {
+                Ok(_) => Result::Ok(file),
+                Err(message) => Result::Err("invalid Lift IR: " + message),
+            }
+        },
+    }
+}
+
+pub fn lower_checked(value: mono::File) -> Result[File, string] {
+    finish_lowering(lambda_lift(value))
+}
+
+pub fn lower_checked_with_counter(value: mono::File, counter: Ref[int]) -> Result[File, string] {
+    finish_lowering(lambda_lift_with_counter(value, counter))
+}
+
 pub fn lower(value: mono::File) -> File {
-    lambda_lift(value)
+    match lower_checked(value) {
+        Ok(value) => value,
+        Err(_) => empty_file(),
+    }
 }
 
 pub fn lower_with_counter(value: mono::File, counter: Ref[int]) -> File {
-    lambda_lift_with_counter(value, counter)
+    match lower_checked_with_counter(value, counter) {
+        Ok(value) => value,
+        Err(_) => empty_file(),
+    }
 }

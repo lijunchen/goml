@@ -101,6 +101,7 @@ fn dce_collect_value(result: DceNames, value: Value) -> unit {
             dce_collect_imms(result, args)
         },
         Go { closure, ty: _ } => dce_collect_imm(result, closure),
+        PackClosure { environment, apply: _, ty: _ } => dce_collect_imm(result, environment),
         Proj { tuple, index: _, ty: _ } => dce_collect_imm(result, tuple),
     }
 }
@@ -116,7 +117,7 @@ fn dce_value_discardable(value: Value) -> bool {
     match value {
         Imm(_) | Constr { .. } | Tuple { .. } | Array { .. } | ConstrGet { .. } | Unary { .. } | Cast {
             ..,
-        } | ToDyn { .. } | Proj { .. } => true,
+        } | ToDyn { .. } | PackClosure { .. } | Proj { .. } => true,
         Binary { op, .. } => dce_binary_discardable(op),
         Assign { .. } | Call { .. } | DynCall { .. } | Go { .. } => false,
     }
@@ -306,5 +307,6 @@ pub fn dce(value: File) -> File {
         structs: value.structs,
         type_instances: value.type_instances,
         constants: value.constants,
+        closure_defs: value.closure_defs,
     }
 }

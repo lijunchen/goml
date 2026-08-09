@@ -2,7 +2,7 @@ package go_backend;
 
 use gomlc::anf;
 use gomlc::resources;
-use gomlc::tast;
+use gomlc::repr;
 use std::cmp;
 use std::collections;
 use std::text;
@@ -10,19 +10,19 @@ use std::text;
 struct DynMethod {
     name: string,
     dispatch_trait: string,
-    params: Vec[tast::Type],
-    ret_ty: tast::Type,
+    params: Vec[repr::Type],
+    ret_ty: repr::Type,
 }
 
-fn hashmap_name(key: tast::Type, value: tast::Type) -> string {
+fn hashmap_name(key: repr::Type, value: repr::Type) -> string {
     go_generated_ident("hashmap_" + go_ident(encode_type(key) + "_" + encode_type(value)) + "_x")
 }
 
-fn ref_struct_name(elem: tast::Type) -> string {
+fn ref_struct_name(elem: repr::Type) -> string {
     go_generated_ident("ref_" + go_ident(encode_type(elem)) + "_x")
 }
 
-pub fn runtime_helper_name(prefix: string, ty: tast::Type) -> string {
+pub fn runtime_helper_name(prefix: string, ty: repr::Type) -> string {
     go_generated_ident(prefix + "__" + go_ident(encode_type(ty)))
 }
 
@@ -70,7 +70,7 @@ fn missing_base_item() -> Item {
     )
 }
 
-fn missing_runtime_item(ty: tast::Type) -> Item {
+fn missing_runtime_item(ty: repr::Type) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("s", Type::String));
     let args: Vec[Expr] = Vec::[];
@@ -97,7 +97,7 @@ fn missing_runtime_item(ty: tast::Type) -> Item {
     )
 }
 
-pub fn emit_missing_base_item(items: Vec[Item], missing_types: Vec[tast::Type]) -> unit {
+pub fn emit_missing_base_item(items: Vec[Item], missing_types: Vec[repr::Type]) -> unit {
     if !missing_types.is_empty() {
         items.push(missing_base_item())
     } else {}
@@ -185,12 +185,12 @@ fn string_output_hook_item(key: string, go_name: string) -> Item {
 
 fn string_from_utf8_hook_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
-    let byte_vec = tast::Type::VecType { elem: tast::Type::Uint8 };
+    let byte_vec = repr::Type::VecType { elem: repr::Type::Uint8 };
     params.push(("bytes", lower_type(byte_vec)));
-    let tuple_items: Vec[tast::Type] = Vec::[];
-    tuple_items.push(tast::Type::Bool);
-    tuple_items.push(tast::Type::String);
-    let tuple_ty = lower_type(tast::Type::Tuple { items: tuple_items });
+    let tuple_items: Vec[repr::Type] = Vec::[];
+    tuple_items.push(repr::Type::Bool);
+    tuple_items.push(repr::Type::String);
+    let tuple_ty = lower_type(repr::Type::Tuple { items: tuple_items });
     let fields: Vec[(string, Expr)] = Vec::[];
     fields.push(("_0", Expr::Bool { value: true }));
     fields.push(
@@ -216,7 +216,7 @@ fn string_from_utf8_hook_item(key: string) -> Item {
 
 fn string_concat_hook_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
-    params.push(("values", lower_type(tast::Type::VecType { elem: tast::Type::String })));
+    params.push(("values", lower_type(repr::Type::VecType { elem: repr::Type::String })));
     let args: Vec[Expr] = Vec::[];
     args.push(Expr::Field { expr: Expr::Var { name: "values" }, field_name: "items" });
     args.push(Expr::String { value: "" });
@@ -239,10 +239,10 @@ fn string_concat_hook_item(key: string) -> Item {
 fn string_parse_float_hook_item(key: string, bit_size: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("value", Type::String));
-    let tuple_items: Vec[tast::Type] = Vec::[];
-    tuple_items.push(tast::Type::Bool);
-    tuple_items.push(tast::Type::Float64);
-    let tuple_ty = lower_type(tast::Type::Tuple { items: tuple_items });
+    let tuple_items: Vec[repr::Type] = Vec::[];
+    tuple_items.push(repr::Type::Bool);
+    tuple_items.push(repr::Type::Float64);
+    let tuple_ty = lower_type(repr::Type::Tuple { items: tuple_items });
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(Stmt::Var { name: "parsed", ty: Type::Float64, value: Option::None });
     stmts.push(Stmt::Var { name: "err", ty: Type::Named { name: "error" }, value: Option::None });
@@ -609,13 +609,13 @@ pub fn emit_runtime_hook_items(
     }
 }
 
-pub fn ref_helper_name(prefix: string, ref_ty: tast::Type) -> string {
+pub fn ref_helper_name(prefix: string, ref_ty: repr::Type) -> string {
     runtime_helper_name(prefix, ref_ty)
 }
 
-fn array_runtime_items(array_ty: tast::Type) -> Vec[Item] {
+fn array_runtime_items(array_ty: repr::Type) -> Vec[Item] {
     let result: Vec[Item] = Vec::[];
-    match tast::resolve_type(array_ty) {
+    match repr::resolve_type(array_ty) {
         Array { len: _, elem } => {
             let lowered_array = lower_type(array_ty);
             let lowered_elem = lower_type(elem);
@@ -672,9 +672,9 @@ fn array_runtime_items(array_ty: tast::Type) -> Vec[Item] {
     result
 }
 
-fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
+fn vec_runtime_items(vec_ty: repr::Type) -> Vec[Item] {
     let result: Vec[Item] = Vec::[];
-    match tast::resolve_type(vec_ty) {
+    match repr::resolve_type(vec_ty) {
         VecType { elem } => {
             let lowered_vec = lower_type(vec_ty);
             let lowered_elem = lower_type(elem);
@@ -1002,9 +1002,9 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
     result
 }
 
-fn ref_runtime_items(ref_ty: tast::Type) -> Vec[Item] {
+fn ref_runtime_items(ref_ty: repr::Type) -> Vec[Item] {
     let result: Vec[Item] = Vec::[];
-    match tast::resolve_type(ref_ty) {
+    match repr::resolve_type(ref_ty) {
         RefType { elem } => {
             let elem_ty = lower_type(elem);
             let lowered_ref_ty = lower_type(ref_ty);
@@ -1142,11 +1142,11 @@ fn ref_runtime_items(ref_ty: tast::Type) -> Vec[Item] {
     result
 }
 
-fn synthetic_option_base(value: tast::Type) -> string {
+fn synthetic_option_base(value: repr::Type) -> string {
     "_goml_option__" + compact_type(value)
 }
 
-fn synthetic_option_items(value: tast::Type) -> Vec[Item] {
+fn synthetic_option_items(value: repr::Type) -> Vec[Item] {
     let result: Vec[Item] = Vec::[];
     let option_name = go_generated_ident("_goml_synthetic_" + synthetic_option_base(value));
     let method_name = go_generated_ident("is" + option_name);
@@ -1185,17 +1185,17 @@ fn synthetic_option_items(value: tast::Type) -> Vec[Item] {
 }
 
 fn hashmap_option_info(
-    value: tast::Type,
-    instances: Vec[anf::TypeInstance],
-    enums: Vec[tast::EnumDef],
-    structs: Vec[tast::StructDef],
+    value: repr::Type,
+    instances: Vec[repr::TypeInstance],
+    enums: Vec[repr::EnumDef],
+    structs: Vec[repr::StructDef],
     function_names: FunctionNames,
 ) -> (Type, Type, Type, bool) {
-    let args: Vec[tast::Type] = Vec::[];
+    let args: Vec[repr::Type] = Vec::[];
     args.push(value);
     match find_instance(instances, "Option", args) {
         Some(instance) => {
-            let variants = match find_enum(enums, instance.base_name) {
+            let variants = match find_enum(enums, instance.name) {
                 Some(definition) => definition.option_variants,
                 None => Option::None,
             };
@@ -1240,12 +1240,12 @@ fn hashmap_option_info(
     }
 }
 
-fn hashmap_trait_impl_name(trait_name: string, key: tast::Type, method: string) -> string {
+fn hashmap_trait_impl_name(trait_name: string, key: repr::Type, method: string) -> string {
     go_ident("trait_impl#" + trait_name + "#" + compact_type(key) + "#" + method)
 }
 
-fn hashmap_hash_expr(key: tast::Type, value: Expr) -> Expr {
-    match tast::resolve_type(key) {
+fn hashmap_hash_expr(key: repr::Type, value: Expr) -> Expr {
+    match repr::resolve_type(key) {
         Dyn { trait_name: name, .. } => if name == "Hash" || name.ends_with("::Hash") {
             Expr::Call {
                 func: Expr::Field {
@@ -1267,8 +1267,8 @@ fn hashmap_hash_expr(key: tast::Type, value: Expr) -> Expr {
     }
 }
 
-fn hashmap_new_item(key: tast::Type, value: tast::Type) -> Item {
-    let map_ty = tast::Type::HashMap { key, value };
+fn hashmap_new_item(key: repr::Type, value: repr::Type) -> Item {
+    let map_ty = repr::Type::HashMap { key, value };
     let name = hashmap_name(key, value);
     let entry_ty = Type::Named { name: go_generated_ident(name + "_entry") };
     let buckets_ty = Type::Map { key: Type::Uint64, value: Type::Slice { elem: entry_ty } };
@@ -1297,8 +1297,8 @@ fn hashmap_new_item(key: tast::Type, value: tast::Type) -> Item {
     )
 }
 
-fn hashmap_len_item(key: tast::Type, value: tast::Type) -> Item {
-    let map_ty = tast::Type::HashMap { key, value };
+fn hashmap_len_item(key: repr::Type, value: repr::Type) -> Item {
+    let map_ty = repr::Type::HashMap { key, value };
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("m", lower_type(map_ty)));
     let stmts: Vec[Stmt] = Vec::[];
@@ -1326,8 +1326,8 @@ fn hashmap_len_item(key: tast::Type, value: tast::Type) -> Item {
     )
 }
 
-fn hashmap_lookup_item(key: tast::Type, value: tast::Type) -> Item {
-    let map_ty = tast::Type::HashMap { key, value };
+fn hashmap_lookup_item(key: repr::Type, value: repr::Type) -> Item {
+    let map_ty = repr::Type::HashMap { key, value };
     let lowered_map = lower_type(map_ty);
     let lowered_key = lower_type(key);
     let lowered_value = lower_type(value);
@@ -1452,13 +1452,13 @@ fn hashmap_lookup_item(key: tast::Type, value: tast::Type) -> Item {
 }
 
 fn hashmap_get_item(
-    key: tast::Type,
-    value: tast::Type,
+    key: repr::Type,
+    value: repr::Type,
     option_ty: Type,
     some_ty: Type,
     none_ty: Type,
 ) -> Item {
-    let map_ty = tast::Type::HashMap { key, value };
+    let map_ty = repr::Type::HashMap { key, value };
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("m", lower_type(map_ty)));
     params.push(("key", lower_type(key)));
@@ -1528,8 +1528,8 @@ fn hashmap_increment_len() -> Stmt {
     }
 }
 
-fn hashmap_set_item(key: tast::Type, value: tast::Type) -> Item {
-    let map_ty = tast::Type::HashMap { key, value };
+fn hashmap_set_item(key: repr::Type, value: repr::Type) -> Item {
+    let map_ty = repr::Type::HashMap { key, value };
     let lowered_map = lower_type(map_ty);
     let lowered_key = lower_type(key);
     let lowered_value = lower_type(value);
@@ -1739,8 +1739,8 @@ fn hashmap_set_item(key: tast::Type, value: tast::Type) -> Item {
     )
 }
 
-fn hashmap_remove_item(key: tast::Type, value: tast::Type) -> Item {
-    let map_ty = tast::Type::HashMap { key, value };
+fn hashmap_remove_item(key: repr::Type, value: repr::Type) -> Item {
+    let map_ty = repr::Type::HashMap { key, value };
     let lowered_map = lower_type(map_ty);
     let lowered_key = lower_type(key);
     let entry_ty = Type::Named { name: go_generated_ident(hashmap_name(key, value) + "_entry") };
@@ -1868,8 +1868,8 @@ fn hashmap_remove_item(key: tast::Type, value: tast::Type) -> Item {
     )
 }
 
-fn hashmap_contains_item(key: tast::Type, value: tast::Type) -> Item {
-    let map_ty = tast::Type::HashMap { key, value };
+fn hashmap_contains_item(key: repr::Type, value: repr::Type) -> Item {
+    let map_ty = repr::Type::HashMap { key, value };
     let lowered_map = lower_type(map_ty);
     let lowered_key = lower_type(key);
     let entry_ty = Type::Named { name: go_generated_ident(hashmap_name(key, value) + "_entry") };
@@ -1978,17 +1978,17 @@ fn hashmap_contains_item(key: tast::Type, value: tast::Type) -> Item {
     )
 }
 
-fn hashmap_entries_item(key: tast::Type, value: tast::Type) -> Item {
-    let map_ty = tast::Type::HashMap { key, value };
+fn hashmap_entries_item(key: repr::Type, value: repr::Type) -> Item {
+    let map_ty = repr::Type::HashMap { key, value };
     let entry_ty = Type::Named { name: go_generated_ident(hashmap_name(key, value) + "_entry") };
     let bucket_ty = Type::Slice { elem: entry_ty };
-    let pair_types: Vec[tast::Type] = Vec::[];
+    let pair_types: Vec[repr::Type] = Vec::[];
     pair_types.push(key);
     pair_types.push(value);
-    let pair_ty = tast::Type::Tuple { items: pair_types };
+    let pair_ty = repr::Type::Tuple { items: pair_types };
     let lowered_pair = lower_type(pair_ty);
     let result_slice_ty = Type::Slice { elem: lowered_pair };
-    let result_vec_ty = tast::Type::VecType { elem: pair_ty };
+    let result_vec_ty = repr::Type::VecType { elem: pair_ty };
     let result_vec_struct = Type::Named {
         name: go_generated_ident("_goml_vec_" + go_ident(encode_type(pair_ty))),
     };
@@ -2124,11 +2124,11 @@ fn hashmap_entries_item(key: tast::Type, value: tast::Type) -> Item {
 }
 
 fn hashmap_items(
-    key: tast::Type,
-    value: tast::Type,
-    instances: Vec[anf::TypeInstance],
-    enums: Vec[tast::EnumDef],
-    structs: Vec[tast::StructDef],
+    key: repr::Type,
+    value: repr::Type,
+    instances: Vec[repr::TypeInstance],
+    enums: Vec[repr::EnumDef],
+    structs: Vec[repr::StructDef],
     function_names: FunctionNames,
     include_option: bool,
 ) -> Vec[Item] {
@@ -2170,8 +2170,8 @@ fn hashmap_items(
     result
 }
 
-fn option_available(instances: Vec[anf::TypeInstance], value: tast::Type) -> bool {
-    let args: Vec[tast::Type] = Vec::[];
+fn option_available(instances: Vec[repr::TypeInstance], value: repr::Type) -> bool {
+    let args: Vec[repr::Type] = Vec::[];
     args.push(value);
     find_instance(instances, "Option", args).is_some()
 }
@@ -2184,11 +2184,11 @@ fn dyn_object_name(trait_name: string) -> string {
     go_dyn_struct_name(trait_name)
 }
 
-fn raw_dyn_wrapper_name(trait_name: string, for_ty: tast::Type, method: string) -> string {
+fn raw_dyn_wrapper_name(trait_name: string, for_ty: repr::Type, method: string) -> string {
     go_generated_ident("dyn__" + trait_name + "__wrap__" + encode_type(for_ty) + "__" + method)
 }
 
-fn dyn_wrapper_name(names: DynHelperNames, trait_name: string, for_ty: tast::Type, method: string) -> string {
+fn dyn_wrapper_name(names: DynHelperNames, trait_name: string, for_ty: repr::Type, method: string) -> string {
     let key = compact_type(for_ty);
     let mut result = raw_dyn_wrapper_name(trait_name, for_ty, method);
     for entry in names.wrappers {
@@ -2199,11 +2199,11 @@ fn dyn_wrapper_name(names: DynHelperNames, trait_name: string, for_ty: tast::Typ
     result
 }
 
-fn raw_dyn_factory_name(trait_name: string, for_ty: tast::Type) -> string {
+fn raw_dyn_factory_name(trait_name: string, for_ty: repr::Type) -> string {
     go_generated_ident("dyn__" + trait_name + "__vtable__" + encode_type(for_ty))
 }
 
-pub fn dyn_factory_name(names: DynHelperNames, trait_name: string, for_ty: tast::Type) -> string {
+pub fn dyn_factory_name(names: DynHelperNames, trait_name: string, for_ty: repr::Type) -> string {
     let key = compact_type(for_ty);
     let mut result = raw_dyn_factory_name(trait_name, for_ty);
     for entry in names.factories {
@@ -2250,7 +2250,7 @@ fn collect_dyn_call_method(result: Vec[DynMethod], trait_name: string, value: an
             == trait_name {
             let parts = dyn_method_parts(encoded, owner);
             if !contains_method(result, parts.1) {
-                let params: Vec[tast::Type] = Vec::[];
+                let params: Vec[repr::Type] = Vec::[];
                 for arg in args {
                     params.push(anf::imm_type(arg))
                 }
@@ -2299,7 +2299,7 @@ fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMeth
         match (function.trait_impl, trait_impl_method_name(function)) {
             (Some(metadata), Some(method_name)) => {
                 if metadata.trait_ref.name == trait_name && !contains_method(result, method_name) {
-                    let params: Vec[tast::Type] = Vec::[];
+                    let params: Vec[repr::Type] = Vec::[];
                     for index in 1..function.params.len() {
                         params.push(function.params[index].1)
                     }
@@ -2325,7 +2325,7 @@ fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMeth
                 name: "hash",
                 dispatch_trait: trait_name,
                 params: Vec::[],
-                ret_ty: tast::Type::Uint64,
+                ret_ty: repr::Type::Uint64,
             },
         )
     } else if trait_name == "ToString" && !contains_method(result, "to_string") {
@@ -2334,7 +2334,7 @@ fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMeth
                 name: "to_string",
                 dispatch_trait: trait_name,
                 params: Vec::[],
-                ret_ty: tast::Type::String,
+                ret_ty: repr::Type::String,
             },
         )
     } else if trait_name == "Debug" && !contains_method(result, "debug") {
@@ -2343,7 +2343,7 @@ fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMeth
                 name: "debug",
                 dispatch_trait: trait_name,
                 params: Vec::[],
-                ret_ty: tast::Type::String,
+                ret_ty: repr::Type::String,
             },
         )
     } else {};
@@ -2443,7 +2443,7 @@ fn dyn_type_items(trait_name: string, methods: Vec[DynMethod]) -> Vec[Item] {
 fn find_dyn_impl_name(
     functions: Vec[anf::Function],
     trait_name: string,
-    for_ty: tast::Type,
+    for_ty: repr::Type,
     method_name: string,
 ) -> string {
     let mut index = functions.len() - 1;
@@ -2481,27 +2481,20 @@ fn sorted_dyn_coercions(values: Vec[DynCoercion]) -> Vec[DynCoercion] {
 }
 
 fn is_enum_dyn_receiver(
-    enums: Vec[tast::EnumDef],
-    instances: Vec[anf::TypeInstance],
-    value: tast::Type,
+    enums: Vec[repr::EnumDef],
+    instances: Vec[repr::TypeInstance],
+    value: repr::Type,
 ) -> bool {
-    match tast::resolve_type(value) {
-        Con { name } => if find_enum(enums, name).is_some() {
-            true
-        } else {
-            match instance_by_name(instances, name) {
-                Some(instance) => find_enum(enums, instance.base_name).is_some(),
-                None => false,
-            }
-        },
+    match repr::resolve_type(value) {
+        Named { name } => find_enum(enums, name).is_some(),
         _ => false,
     }
 }
 
 fn dyn_coercion_items(
     functions: Vec[anf::Function],
-    enums: Vec[tast::EnumDef],
-    instances: Vec[anf::TypeInstance],
+    enums: Vec[repr::EnumDef],
+    instances: Vec[repr::TypeInstance],
     coercion: DynCoercion,
     methods: Vec[DynMethod],
     names: DynHelperNames,
@@ -2615,15 +2608,15 @@ fn dyn_coercion_items(
 
 pub fn emit_builtin_runtime_items(
     items: Vec[Item],
-    types: Vec[tast::Type],
-    missing_types: Vec[tast::Type],
-    instances: Vec[anf::TypeInstance],
-    enums: Vec[tast::EnumDef],
-    structs: Vec[tast::StructDef],
+    types: Vec[repr::Type],
+    missing_types: Vec[repr::Type],
+    instances: Vec[repr::TypeInstance],
+    enums: Vec[repr::EnumDef],
+    structs: Vec[repr::StructDef],
     function_names: FunctionNames,
 ) -> unit {
     for ty in types {
-        match tast::resolve_type(ty) {
+        match repr::resolve_type(ty) {
             Array { len: _, elem: _ } => {
                 for item in array_runtime_items(ty) {
                     items.push(item)
@@ -2633,7 +2626,7 @@ pub fn emit_builtin_runtime_items(
         }
     }
     for ty in types {
-        match tast::resolve_type(ty) {
+        match repr::resolve_type(ty) {
             VecType { elem: _ } => {
                 items.push(Item::Struct(runtime_struct(ty)));
                 for item in vec_runtime_items(ty) {
@@ -2644,7 +2637,7 @@ pub fn emit_builtin_runtime_items(
         }
     }
     for ty in types {
-        match tast::resolve_type(ty) {
+        match repr::resolve_type(ty) {
             RefType { elem: _ } => {
                 items.push(Item::Struct(runtime_struct(ty)));
                 for item in ref_runtime_items(ty) {
@@ -2656,7 +2649,7 @@ pub fn emit_builtin_runtime_items(
     }
     let options: Vec[string] = Vec::[];
     for ty in types {
-        match tast::resolve_type(ty) {
+        match repr::resolve_type(ty) {
             HashMap { key, value } => {
                 let option = synthetic_option_base(value);
                 let include_option = !collections::contains(options, option)
@@ -2683,7 +2676,7 @@ pub fn emit_builtin_runtime_items(
         items.push(missing_runtime_item(ty))
     }
     for ty in types {
-        match tast::resolve_type(ty) {
+        match repr::resolve_type(ty) {
             Tuple { items: _ } => items.push(Item::Struct(runtime_struct(ty))),
             _ => (),
         }
@@ -2692,16 +2685,16 @@ pub fn emit_builtin_runtime_items(
 
 pub fn emit_dyn_runtime_items(
     items: Vec[Item],
-    types: Vec[tast::Type],
+    types: Vec[repr::Type],
     coercions: Vec[DynCoercion],
-    enums: Vec[tast::EnumDef],
-    instances: Vec[anf::TypeInstance],
+    enums: Vec[repr::EnumDef],
+    instances: Vec[repr::TypeInstance],
     functions: Vec[anf::Function],
     names: DynHelperNames,
 ) -> unit {
     let dyn_traits: Vec[string] = Vec::[];
     for ty in types {
-        match tast::resolve_type(ty) {
+        match repr::resolve_type(ty) {
             Dyn { trait_name: name, .. } => {
                 if !collections::contains(dyn_traits, name) {
                     for item in dyn_type_items(name, dyn_methods(functions, name)) {

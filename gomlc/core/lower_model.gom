@@ -1,0 +1,220 @@
+package core;
+
+use gomlc::ast;
+use gomlc::tast;
+
+struct LowerFile {
+    functions: Vec[LowerFunction],
+    enums: Vec[tast::EnumDef],
+    structs: Vec[tast::StructDef],
+    type_instances: Vec[LowerTypeInstance],
+    constants: Vec[tast::Constant],
+}
+
+struct LowerTypeInstance {
+    base_name: string,
+    args: Vec[tast::Type],
+    name: string,
+}
+
+struct LowerFunction {
+    name: string,
+    origin: LowerFunctionOrigin,
+    root: bool,
+    generics: Vec[string],
+    predicates: Vec[tast::TypePredicate],
+    trait_impl: Option[LowerTraitImpl],
+    params: Vec[(string, tast::Type)],
+    ret_ty: tast::Type,
+    body: LowerBlock,
+}
+
+enum LowerFunctionOrigin {
+    Source,
+    Inherent {
+        owner: tast::Type,
+        method_name: string,
+    },
+    TraitImplementation {
+        method_name: string,
+    },
+}
+
+struct LowerTraitImpl {
+    trait_ref: tast::TraitRef,
+    for_ty: tast::Type,
+    associated_types: Vec[(string, tast::Type)],
+    generic_count: int,
+    predicate_count: int,
+}
+
+struct LowerLetStmt {
+    name: string,
+    value: LowerExpr,
+    ty: tast::Type,
+}
+
+struct LowerBlock {
+    stmts: Vec[LowerLetStmt],
+    tail: Option[LowerExpr],
+}
+
+enum LowerExpr {
+    Var {
+        name: string,
+        ty: tast::Type,
+    },
+    Callable {
+        callable: tast::Callable,
+        ty: tast::Type,
+    },
+    Prim {
+        value: tast::Primitive,
+        ty: tast::Type,
+    },
+    Constr {
+        constructor: tast::Constructor,
+        args: Vec[LowerExpr],
+        ty: tast::Type,
+    },
+    Tuple {
+        items: Vec[LowerExpr],
+        ty: tast::Type,
+    },
+    Array {
+        items: Vec[LowerExpr],
+        ty: tast::Type,
+    },
+    Closure {
+        params: Vec[tast::ClosureParam],
+        body: LowerExpr,
+        ty: tast::Type,
+    },
+    Block {
+        block: LowerBlock,
+        ty: tast::Type,
+    },
+    Match {
+        expr: LowerExpr,
+        arms: Vec[LowerArm],
+        default: Option[LowerExpr],
+        ty: tast::Type,
+    },
+    If {
+        cond: LowerExpr,
+        then_branch: LowerExpr,
+        else_branch: LowerExpr,
+        ty: tast::Type,
+    },
+    While {
+        cond: LowerExpr,
+        body: LowerExpr,
+        ty: tast::Type,
+    },
+    Loop {
+        body: LowerExpr,
+        ty: tast::Type,
+    },
+    Break {
+        target: int,
+        value: Option[LowerExpr],
+        ty: tast::Type,
+    },
+    Continue {
+        target: int,
+        ty: tast::Type,
+    },
+    Return {
+        expr: Option[LowerExpr],
+        ty: tast::Type,
+    },
+    Go {
+        expr: LowerExpr,
+        ty: tast::Type,
+    },
+    ConstrGet {
+        expr: LowerExpr,
+        constructor: tast::Constructor,
+        field_index: int,
+        ty: tast::Type,
+    },
+    Unary {
+        op: ast::UnaryOp,
+        expr: LowerExpr,
+        ty: tast::Type,
+    },
+    Cast {
+        expr: LowerExpr,
+        ty: tast::Type,
+    },
+    Binary {
+        op: ast::BinaryOp,
+        lhs: LowerExpr,
+        rhs: LowerExpr,
+        ty: tast::Type,
+    },
+    Assign {
+        name: string,
+        value: LowerExpr,
+        target_ty: tast::Type,
+        ty: tast::Type,
+    },
+    Call {
+        func: LowerExpr,
+        args: Vec[LowerExpr],
+        ty: tast::Type,
+    },
+    ToDyn {
+        trait_name: string,
+        for_ty: tast::Type,
+        expr: LowerExpr,
+        ty: tast::Type,
+    },
+    DynCall {
+        trait_name: string,
+        method_name: string,
+        receiver: LowerExpr,
+        args: Vec[LowerExpr],
+        ty: tast::Type,
+    },
+    TraitCall {
+        trait_ref: tast::TraitRef,
+        method_name: string,
+        instance_name: Option[string],
+        for_ty: tast::Type,
+        receiver: Option[LowerExpr],
+        args: Vec[LowerExpr],
+        ty: tast::Type,
+    },
+    Proj {
+        tuple: LowerExpr,
+        index: int,
+        ty: tast::Type,
+    },
+}
+
+struct LowerArm {
+    lhs: LowerExpr,
+    body: LowerExpr,
+}
+
+fn lower_expr_type(value: LowerExpr) -> tast::Type {
+    match value {
+        Var { ty, .. } | Callable { ty, .. } | Prim { ty, .. } | Constr { ty, .. } | Tuple {
+            ty,
+            ..,
+        } | Array { ty, .. } | Closure { ty, .. } | Block { ty, .. } | Match { ty, .. } | If {
+            ty,
+            ..,
+        } | While { ty, .. } | Loop { ty, .. } | Break { ty, .. } | Continue { ty, .. } | Return {
+            ty,
+            ..,
+        } | Go { ty, .. } | ConstrGet { ty, .. } | Unary { ty, .. } | Cast { ty, .. } | Binary {
+            ty,
+            ..,
+        } | Assign { ty, .. } | Call { ty, .. } | ToDyn { ty, .. } | DynCall { ty, .. } | TraitCall {
+            ty,
+            ..,
+        } | Proj { ty, .. } => ty,
+    }
+}

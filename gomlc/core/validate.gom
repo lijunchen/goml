@@ -1,21 +1,16 @@
 package core;
 
-use gomlc::tast;
-
-fn validate_compatible_types(actual: tast::Type, expected: tast::Type, context: string) -> Result[
-    unit,
-    string,
-] {
-    let compatible = match (tast::resolve_type(actual), tast::resolve_type(expected)) {
+fn validate_compatible_types(actual: Type, expected: Type, context: string) -> Result[unit, string] {
+    let compatible = match (actual, expected) {
         (Error, _) | (_, Error) => true,
-        _ => tast::types_equal(actual, expected),
+        _ => types_equal(actual, expected),
     };
     if compatible {
         Result::Ok(())
     } else {
         Result::Err(
-            context + ": expected " + tast::diagnostic_type_text(expected) + ", found "
-                + tast::diagnostic_type_text(actual),
+            context + ": expected " + diagnostic_type_text(expected) + ", found "
+                + diagnostic_type_text(actual),
         )
     }
 }

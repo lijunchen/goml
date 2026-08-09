@@ -1,0 +1,84 @@
+package repr;
+
+fn validate_types(values: Vec[Type], context: string) -> Result[unit, string] {
+    for value in values {
+        validate_type_in(value, context)?
+    }
+    Result::Ok(())
+}
+
+fn validate_named_types(values: Vec[(string, Type)], context: string) -> Result[unit, string] {
+    for value in values {
+        if value.0.byte_len() == 0 {
+            return Result::Err(context + " has an empty binding name")
+        } else {};
+        validate_type_in(value.1, context + " " + value.0)?
+    }
+    Result::Ok(())
+}
+
+fn validate_type_in(value: Type, context: string) -> Result[unit, string] {
+    match value {
+        Unit | Never | Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | Float32 | Float64 | String | Char => Result::Ok(
+            (),
+        ),
+        Tuple { items } => validate_types(items, context + " tuple item"),
+        Named { name } => if name.byte_len() == 0 {
+            Result::Err(context + " has an empty nominal type name")
+        } else {
+            Result::Ok(())
+        },
+        ClosureEnvironment { name } => if name.byte_len() == 0 {
+            Result::Err(context + " has an empty closure environment name")
+        } else {
+            Result::Ok(())
+        },
+        Dyn { trait_name, args, associated_types, additional_bounds } => {
+            if trait_name.byte_len() == 0 {
+                return Result::Err(context + " has an empty dynamic trait name")
+            } else {};
+            validate_types(args, context + " dynamic argument")?;
+            validate_named_types(associated_types, context + " dynamic associated type")?;
+            for bound in additional_bounds {
+                if bound.trait_name.byte_len() == 0 {
+                    return Result::Err(context + " has an empty dynamic bound name")
+                } else {};
+                validate_types(bound.args, context + " dynamic bound argument")?;
+                validate_named_types(
+                    bound.associated_types,
+                    context + " dynamic bound associated type",
+                )?
+            }
+            Result::Ok(())
+        },
+        Array { len, elem } => if len < 0 {
+            Result::Err(context + " has a negative array length")
+        } else {
+            validate_type_in(elem, context + " array element")
+        },
+        Slice { elem } => validate_type_in(elem, context + " slice element"),
+        VecType { elem } => validate_type_in(elem, context + " vector element"),
+        RefType { elem } => validate_type_in(elem, context + " reference element"),
+        HashMap { key, value } => {
+            validate_type_in(key, context + " map key")?;
+            validate_type_in(value, context + " map value")
+        },
+        Channel { elem } => validate_type_in(elem, context + " channel element"),
+        Func { params, ret_ty } => {
+            validate_types(params, context + " function parameter")?;
+            validate_type_in(ret_ty, context + " function return")
+        },
+    }
+}
+
+pub fn validate_type(value: Type) -> Result[unit, string] {
+    validate_type_in(value, "representation type")
+}
+
+pub fn validate_trait_ref(value: TraitRef) -> Result[unit, string] {
+    if value.name.byte_len() == 0 {
+        Result::Err("representation trait reference has an empty name")
+    } else {
+        validate_types(value.args, "representation trait argument")
+    }
+}

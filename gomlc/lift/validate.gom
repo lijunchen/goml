@@ -1,174 +1,295 @@
 package lift;
 
-use gomlc::tast;
-use std::collections;
+use gomlc::repr;
 
-fn validate_type(value: tast::Type, context: string) -> Result[unit, string] {
-    if tast::type_is_concrete(value) {
-        Result::Ok(())
-    } else {
-        Result::Err(context + " contains non-concrete type " + tast::diagnostic_type_text(value))
-    }
+struct ValidateContext {
+    closures_by_apply: HashMap[string, repr::ClosureDef],
+    environments: HashMap[string, unit],
 }
 
-fn validate_types(values: Vec[tast::Type], context: string) -> Result[unit, string] {
-    for value in values {
-        validate_type(value, context)?
-    }
-    Result::Ok(())
-}
-
-fn validate_named_types(values: Vec[(string, tast::Type)], context: string) -> Result[unit, string] {
-    for value in values {
-        validate_type(value.1, context + " " + value.0)?
-    }
-    Result::Ok(())
-}
-
-fn validate_exprs(values: Vec[Expr], context: string) -> Result[unit, string] {
-    for value in values {
-        validate_expr(value, context)?
-    }
-    Result::Ok(())
-}
-
-fn validate_optional_expr(value: Option[Expr], context: string) -> Result[unit, string] {
+fn validate_type(ctx: ValidateContext, value: repr::Type, context: string) -> Result[unit, string] {
     match value {
-        Some(value) => validate_expr(value, context),
+        Tuple { items } => validate_types(ctx, items, context),
+        ClosureEnvironment { name } => if ctx.environments.contains(name) {
+            Result::Ok(())
+        } else {
+            Result::Err(context + " references unknown closure environment " + name)
+        },
+        Dyn { trait_name: _, args, associated_types, additional_bounds } => {
+            validate_types(ctx, args, context)?;
+            validate_named_types(ctx, associated_types, context)?;
+            for bound in additional_bounds {
+                validate_types(ctx, bound.args, context)?;
+                validate_named_types(ctx, bound.associated_types, context)?
+            }
+            Result::Ok(())
+        },
+        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+            elem,
+        } => validate_type(ctx, elem, context),
+        HashMap { key, value } => {
+            validate_type(ctx, key, context)?;
+            validate_type(ctx, value, context)
+        },
+        Func { params, ret_ty } => {
+            validate_types(ctx, params, context)?;
+            validate_type(ctx, ret_ty, context)
+        },
+        Unit | Never | Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | Float32 | Float64 | String | Char | Named {
+            name: _,
+        } => Result::Ok(()),
+    }
+}
+
+fn validate_types(ctx: ValidateContext, values: Vec[repr::Type], context: string) -> Result[
+    unit,
+    string,
+] {
+    for value in values {
+        validate_type(ctx, value, context)?
+    }
+    Result::Ok(())
+}
+
+fn validate_named_types(ctx: ValidateContext, values: Vec[(string, repr::Type)], context: string) -> Result[
+    unit,
+    string,
+] {
+    for value in values {
+        validate_type(ctx, value.1, context + " " + value.0)?
+    }
+    Result::Ok(())
+}
+
+fn validate_exprs(ctx: ValidateContext, values: Vec[Expr], context: string) -> Result[unit, string] {
+    for value in values {
+        validate_expr(ctx, value, context)?
+    }
+    Result::Ok(())
+}
+
+fn validate_optional_expr(ctx: ValidateContext, value: Option[Expr], context: string) -> Result[
+    unit,
+    string,
+] {
+    match value {
+        Some(value) => validate_expr(ctx, value, context),
         None => Result::Ok(()),
     }
 }
 
-fn validate_arm(value: Arm, context: string) -> Result[unit, string] {
-    validate_expr(value.lhs, context + " pattern")?;
-    validate_expr(value.body, context + " body")
+fn validate_arm(ctx: ValidateContext, value: Arm, context: string) -> Result[unit, string] {
+    validate_expr(ctx, value.lhs, context + " pattern")?;
+    validate_expr(ctx, value.body, context + " body")
 }
 
-fn validate_block(value: Block, context: string) -> Result[unit, string] {
+fn validate_block(ctx: ValidateContext, value: Block, context: string) -> Result[unit, string] {
     for statement in value.stmts {
-        validate_type(statement.ty, context + " let " + statement.name)?;
-        validate_expr(statement.value, context + " let " + statement.name)?
+        validate_type(ctx, statement.ty, context + " let " + statement.name)?;
+        validate_expr(ctx, statement.value, context + " let " + statement.name)?
     }
-    validate_optional_expr(value.tail, context + " tail")
+    validate_optional_expr(ctx, value.tail, context + " tail")
 }
 
-fn validate_expr(value: Expr, context: string) -> Result[unit, string] {
-    validate_type(expr_type(value), context)?;
+fn validate_pack_closure(
+    ctx: ValidateContext,
+    environment: Expr,
+    apply: string,
+    ty: repr::Type,
+    context: string,
+) -> Result[unit, string] {
+    let definition = match ctx.closures_by_apply[apply] {
+        Some(value) => value,
+        None => return Result::Err(context + " references unknown closure apply function " + apply),
+    };
+    if repr::types_equal(ty, definition.signature) {} else {
+        return Result::Err(context + " closure signature does not match " + apply)
+    };
+    match expr_type(environment) {
+        ClosureEnvironment { name } if name == definition.environment => (),
+        _ => return Result::Err(context + " closure environment does not match " + apply),
+    };
+    validate_expr(ctx, environment, context + " closure environment")
+}
+
+fn validate_expr(ctx: ValidateContext, value: Expr, context: string) -> Result[unit, string] {
+    validate_type(ctx, expr_type(value), context)?;
     match value {
         Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue {
             target: _,
             ty: _,
         } => Result::Ok(()),
-        Invalid { ty: _ } => Result::Ok(()),
-        Constr { constructor: _, args, ty: _ } => validate_exprs(args, context),
-        Tuple { items, ty: _ } | Array { items, ty: _ } => validate_exprs(items, context),
-        Block { block, ty: _ } => validate_block(block, context),
+        Constr { constructor: _, args, ty: _ } => validate_exprs(ctx, args, context),
+        Tuple { items, ty: _ } | Array { items, ty: _ } => validate_exprs(ctx, items, context),
+        Block { block, ty: _ } => validate_block(ctx, block, context),
         Match { expr, arms, default, ty: _ } => {
-            validate_expr(expr, context + " match scrutinee")?;
+            validate_expr(ctx, expr, context + " match scrutinee")?;
             for arm in arms {
-                validate_arm(arm, context + " match arm")?
+                validate_arm(ctx, arm, context + " match arm")?
             }
-            validate_optional_expr(default, context + " match default")
+            validate_optional_expr(ctx, default, context + " match default")
         },
         If { cond, then_branch, else_branch, ty: _ } => {
-            validate_expr(cond, context + " if condition")?;
-            validate_expr(then_branch, context + " if branch")?;
-            validate_expr(else_branch, context + " else branch")
+            validate_expr(ctx, cond, context + " if condition")?;
+            validate_expr(ctx, then_branch, context + " if branch")?;
+            validate_expr(ctx, else_branch, context + " else branch")
         },
         While { cond, body, ty: _ } => {
-            validate_expr(cond, context + " while condition")?;
-            validate_expr(body, context + " while body")
+            validate_expr(ctx, cond, context + " while condition")?;
+            validate_expr(ctx, body, context + " while body")
         },
-        Loop { body, ty: _ } => validate_expr(body, context + " loop body"),
-        Break { target: _, value, ty: _ } => validate_optional_expr(value, context + " break"),
-        Return { expr, ty: _ } => validate_optional_expr(expr, context + " return"),
-        Go { expr, ty: _ } => validate_expr(expr, context + " go"),
+        Loop { body, ty: _ } => validate_expr(ctx, body, context + " loop body"),
+        Break { target: _, value, ty: _ } => validate_optional_expr(ctx, value, context + " break"),
+        Return { expr, ty: _ } => validate_optional_expr(ctx, expr, context + " return"),
+        Go { expr, ty: _ } => validate_expr(ctx, expr, context + " go"),
         ConstrGet { expr, constructor: _, field_index: _, ty: _ } | Unary { op: _, expr, ty: _ } | Cast {
             expr,
             ty: _,
-        } | Proj { tuple: expr, index: _, ty: _ } => validate_expr(expr, context),
+        } | Proj { tuple: expr, index: _, ty: _ } => validate_expr(ctx, expr, context),
         Binary { op: _, lhs, rhs, ty: _ } => {
-            validate_expr(lhs, context)?;
-            validate_expr(rhs, context)
+            validate_expr(ctx, lhs, context)?;
+            validate_expr(ctx, rhs, context)
         },
         Assign { name: _, value, target_ty, ty: _ } => {
-            validate_type(target_ty, context + " assignment target")?;
-            validate_expr(value, context + " assignment value")
+            validate_type(ctx, target_ty, context + " assignment target")?;
+            validate_expr(ctx, value, context + " assignment value")
         },
         Call { func, args, ty: _ } => {
-            validate_expr(func, context + " call target")?;
-            validate_exprs(args, context + " call argument")
+            validate_expr(ctx, func, context + " call target")?;
+            validate_exprs(ctx, args, context + " call argument")
         },
         ToDyn { trait_name: _, for_ty, expr, ty: _ } => {
-            validate_type(for_ty, context + " dynamic conversion")?;
-            validate_expr(expr, context + " dynamic conversion")
+            validate_type(ctx, for_ty, context + " dynamic conversion")?;
+            validate_expr(ctx, expr, context + " dynamic conversion")
         },
         DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } => {
-            validate_expr(receiver, context + " dynamic receiver")?;
-            validate_exprs(args, context + " dynamic argument")
+            validate_expr(ctx, receiver, context + " dynamic receiver")?;
+            validate_exprs(ctx, args, context + " dynamic argument")
+        },
+        PackClosure { environment, apply, ty } => {
+            validate_pack_closure(ctx, environment, apply, ty, context)
         },
     }
 }
 
-fn validate_origin(value: FunctionOrigin, context: string) -> Result[unit, string] {
+fn validate_origin(ctx: ValidateContext, value: FunctionOrigin, context: string) -> Result[
+    unit,
+    string,
+] {
     match value {
         Source | TraitImplementation { method_name: _ } => Result::Ok(()),
-        Inherent { owner, method_name: _ } => validate_type(owner, context + " owner"),
+        Inherent { owner, method_name: _ } => validate_type(ctx, owner, context + " owner"),
     }
 }
 
-fn validate_trait_impl(value: Option[TraitImpl], context: string) -> Result[unit, string] {
+fn validate_trait_impl(ctx: ValidateContext, value: Option[TraitImpl], context: string) -> Result[
+    unit,
+    string,
+] {
     match value {
         Some(value) => {
-            validate_types(value.trait_ref.args, context + " trait arguments")?;
-            validate_type(value.for_ty, context + " implementation type")?;
-            validate_named_types(value.associated_types, context + " associated type")
+            validate_types(ctx, value.trait_ref.args, context + " trait arguments")?;
+            validate_type(ctx, value.for_ty, context + " implementation type")?;
+            validate_named_types(ctx, value.associated_types, context + " associated type")
         },
         None => Result::Ok(()),
     }
 }
 
-fn validate_function(value: Function) -> Result[unit, string] {
+fn validate_function(ctx: ValidateContext, value: Function) -> Result[unit, string] {
     let context = "function " + value.name;
-    validate_origin(value.origin, context)?;
-    validate_trait_impl(value.trait_impl, context)?;
-    validate_named_types(value.params, context + " parameter")?;
-    validate_type(value.ret_ty, context + " return")?;
-    validate_block(value.body, context)
+    validate_origin(ctx, value.origin, context)?;
+    validate_trait_impl(ctx, value.trait_impl, context)?;
+    validate_named_types(ctx, value.params, context + " parameter")?;
+    validate_type(ctx, value.ret_ty, context + " return")?;
+    validate_block(ctx, value.body, context)
+}
+
+fn validate_closure_definition(
+    definition: repr::ClosureDef,
+    structs: HashMap[string, unit],
+    functions: HashMap[string, Function],
+) -> Result[unit, string] {
+    if structs.contains(definition.environment) {} else {
+        return Result::Err("closure apply function has no environment " + definition.environment)
+    };
+    let function = match functions[definition.apply] {
+        Some(value) => value,
+        None => return Result::Err(
+            "closure environment has no apply function " + definition.environment,
+        ),
+    };
+    match function.origin {
+        Inherent { owner: ClosureEnvironment { name }, method_name } if name
+            == definition.environment
+            && method_name == "apply" => (),
+        _ => return Result::Err("closure apply function has invalid origin " + definition.apply),
+    };
+    match definition.signature {
+        Func { params, ret_ty } => {
+            if function.params.len() != params.len() + 1 {
+                return Result::Err(
+                    "closure apply function has invalid parameters " + definition.apply,
+                )
+            } else {};
+            match function.params[0].1 {
+                ClosureEnvironment { name } if name == definition.environment => (),
+                _ => return Result::Err(
+                    "closure apply function has invalid environment " + definition.apply,
+                ),
+            };
+            for index in 0..params.len() {
+                if repr::types_equal(function.params[index + 1].1, params[index]) {} else {
+                    return Result::Err(
+                        "closure apply function has invalid parameters " + definition.apply,
+                    )
+                }
+            }
+            if repr::types_equal(function.ret_ty, ret_ty) {
+                Result::Ok(())
+            } else {
+                Result::Err("closure apply function has invalid return type " + definition.apply)
+            }
+        },
+        _ => Result::Err("closure definition has non-function signature " + definition.apply),
+    }
 }
 
 pub fn validate(value: File) -> Result[unit, string] {
-    let closure_structs: HashMap[string, unit] = HashMap::{};
-    let closure_apply_owners: HashMap[string, unit] = HashMap::{};
+    let structs: HashMap[string, unit] = HashMap::{};
     for definition in value.structs {
-        if collections::contains(value.closure_environments, definition.name) {
-            closure_structs[definition.name] = ();
-        } else {}
+        structs[definition.name] = ();
     }
+    let functions: HashMap[string, Function] = HashMap::{};
+    for function in value.functions {
+        if functions.contains(function.name) {
+            return Result::Err("duplicate Lift function " + function.name)
+        } else {
+            functions[function.name] = function;
+        }
+    }
+    let environments: HashMap[string, unit] = HashMap::{};
+    let closures_by_apply: HashMap[string, repr::ClosureDef] = HashMap::{};
+    for definition in value.closure_defs {
+        if environments.contains(definition.environment) {
+            return Result::Err("duplicate closure environment " + definition.environment)
+        } else if closures_by_apply.contains(definition.apply) {
+            return Result::Err("duplicate closure apply function " + definition.apply)
+        } else {
+            environments[definition.environment] = ();
+            closures_by_apply[definition.apply] = definition;
+        }
+    }
+    let ctx = ValidateContext { closures_by_apply, environments };
     for instance in value.type_instances {
-        validate_types(instance.args, "type instance " + instance.name)?
+        validate_types(ctx, instance.args, "type instance " + instance.name)?
     }
     for function in value.functions {
-        match function.origin {
-            Inherent { owner, method_name } => match tast::resolve_type(owner) {
-                Con { name } if collections::contains(value.closure_environments, name)
-                    && method_name == "apply" => {
-                    if closure_structs.contains(name) {
-                        closure_apply_owners[name] = ();
-                    } else {
-                        return Result::Err("closure apply function has no environment " + name)
-                    }
-                },
-                _ => (),
-            },
-            _ => (),
-        };
-        validate_function(function)?
+        validate_function(ctx, function)?
     }
-    for name in value.closure_environments {
-        if closure_apply_owners.contains(name) {} else {
-            return Result::Err("closure environment has no apply function " + name)
-        }
+    for definition in value.closure_defs {
+        validate_type(ctx, definition.signature, "closure " + definition.apply)?;
+        validate_closure_definition(definition, structs, functions)?
     }
     Result::Ok(())
 }

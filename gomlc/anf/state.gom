@@ -2,18 +2,18 @@ package anf;
 
 use gomlc::ast;
 use gomlc::lift;
-use gomlc::tast;
+use gomlc::repr;
 
 struct LoopCtx {
     loop_id: string,
     exit_id: string,
-    exit_ret_ty: tast::Type,
+    exit_ret_ty: repr::Type,
     exit_takes_arg: bool,
 }
 
 struct ReturnCtx {
     join_id: string,
-    ret_ty: tast::Type,
+    ret_ty: repr::Type,
     takes_arg: bool,
 }
 
@@ -30,26 +30,19 @@ fn fresh(state: State, prefix: string) -> string {
 }
 
 fn unit_imm() -> Imm {
-    Imm::Prim { value: tast::Primitive::Unit, ty: tast::Type::Unit }
+    Imm::Prim { value: repr::Primitive::Unit, ty: repr::Type::Unit }
 }
 
-fn type_is_unit(value: tast::Type) -> bool {
-    match tast::resolve_type(value) {
+fn type_is_unit(value: repr::Type) -> bool {
+    match repr::resolve_type(value) {
         Unit => true,
         _ => false,
     }
 }
 
-fn type_is_unit_or_never(value: tast::Type) -> bool {
-    match tast::resolve_type(value) {
+fn type_is_unit_or_never(value: repr::Type) -> bool {
+    match repr::resolve_type(value) {
         Unit | Never => true,
-        _ => false,
-    }
-}
-
-fn type_is_error(value: tast::Type) -> bool {
-    match tast::resolve_type(value) {
-        Error => true,
         _ => false,
     }
 }
@@ -83,7 +76,7 @@ fn prepend_bind(value: Bind, block: Block) -> Block {
     Block { binds, term: block.term }
 }
 
-fn jump_block(target: string, value: Imm, takes_arg: bool, ret_ty: tast::Type) -> Block {
+fn jump_block(target: string, value: Imm, takes_arg: bool, ret_ty: repr::Type) -> Block {
     Block {
         binds: no_binds(),
         term: Term::Jump {
@@ -156,19 +149,21 @@ fn expr_always_exits(value: lift::Expr) -> bool {
             true
         },
         While { cond, body: _, ty: _ } => expr_always_exits(cond),
-        Loop { body: _, ty } => match tast::resolve_type(ty) {
+        Loop { body: _, ty } => match repr::resolve_type(ty) {
             Never => true,
             _ => false,
         },
-        Go { expr, ty: _ } | ConstrGet { expr, constructor: _, field_index: _, ty: _ } | Unary {
-            op: _,
+        Go { expr, ty: _ } | PackClosure { environment: expr, apply: _, ty: _ } | ConstrGet {
+            expr,
+            constructor: _,
+            field_index: _,
+            ty: _,
+        } | Unary { op: _, expr, ty: _ } | Cast { expr, ty: _ } | ToDyn {
+            trait_name: _,
+            for_ty: _,
             expr,
             ty: _,
-        } | Cast { expr, ty: _ } | ToDyn { trait_name: _, for_ty: _, expr, ty: _ } | Proj {
-            tuple: expr,
-            index: _,
-            ty: _,
-        } => expr_always_exits(expr),
+        } | Proj { tuple: expr, index: _, ty: _ } => expr_always_exits(expr),
         Binary { op, lhs, rhs, ty: _ } => {
             expr_always_exits(lhs)
                 || match op {
@@ -183,7 +178,6 @@ fn expr_always_exits(value: lift::Expr) -> bool {
         DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } => {
             expr_always_exits(receiver) || exprs_always_exit(args)
         },
-        Invalid { ty: _ } => true,
         Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } => false,
     }
 }

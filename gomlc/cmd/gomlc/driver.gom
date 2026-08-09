@@ -268,11 +268,11 @@ fn has_standard_import(value: ast::LowerResult) -> bool {
 fn dependency_enums(builtins: core::File, dependencies: Vec[core::File]) -> Vec[tast::EnumDef] {
     let result: Vec[tast::EnumDef] = Vec::[];
     for value in builtins.enums {
-        result.push(value)
+        result.push(core::enum_def_to_tast(value))
     }
     for dependency in dependencies {
         for value in dependency.enums {
-            result.push(value)
+            result.push(core::enum_def_to_tast(value))
         }
     }
     result
@@ -281,11 +281,11 @@ fn dependency_enums(builtins: core::File, dependencies: Vec[core::File]) -> Vec[
 fn dependency_structs(builtins: core::File, dependencies: Vec[core::File]) -> Vec[tast::StructDef] {
     let result: Vec[tast::StructDef] = Vec::[];
     for value in builtins.structs {
-        result.push(value)
+        result.push(core::struct_def_to_tast(value))
     }
     for dependency in dependencies {
         for value in dependency.structs {
-            result.push(value)
+            result.push(core::struct_def_to_tast(value))
         }
     }
     result
@@ -1337,16 +1337,33 @@ fn run_test_diagnostics(args: Vec[string]) -> unit {
 fn lower_mono_or_fail(value: core::File) -> mono::File {
     let result = mono::lower_checked(core::dce(value));
     match result.error {
-        Some(error) => {
-            fail(COMPILE_ERROR_PREFIX + error);
-            mono::dce(result.file)
-        },
-        None => mono::dce(result.file),
-    }
+        Some(error) => fail(COMPILE_ERROR_PREFIX + error),
+        None => (),
+    };
+    let lowered = mono::dce(result.file);
+    match mono::validate(lowered) {
+        Ok(_) => (),
+        Err(message) => fail(COMPILE_ERROR_PREFIX + "invalid Mono IR: " + message),
+    };
+    lowered
 }
 
 fn lower_lift_stage(value: mono::File, counter: Ref[int]) -> lift::File {
-    let result = lift::dce(lift::lower_with_counter(value, counter));
+    let lowered = match lift::lower_checked_with_counter(value, counter) {
+        Ok(value) => value,
+        Err(message) => {
+            fail(COMPILE_ERROR_PREFIX + message);
+            lift::File {
+                functions: Vec::[],
+                enums: Vec::[],
+                structs: Vec::[],
+                type_instances: Vec::[],
+                constants: Vec::[],
+                closure_defs: Vec::[],
+            }
+        },
+    };
+    let result = lift::dce(lowered);
     match lift::validate(result) {
         Ok(_) => (),
         Err(message) => fail(COMPILE_ERROR_PREFIX + "invalid Lift IR: " + message),
@@ -1355,7 +1372,12 @@ fn lower_lift_stage(value: mono::File, counter: Ref[int]) -> lift::File {
 }
 
 fn lower_anf_stage(value: lift::File, counter: Ref[int]) -> anf::File {
-    anf::dce(anf::lower_with_counter(value, counter))
+    let result = anf::dce(anf::lower_with_counter(value, counter));
+    match anf::verify(result) {
+        Ok(_) => (),
+        Err(message) => fail(COMPILE_ERROR_PREFIX + "invalid ANF IR: " + message),
+    };
+    result
 }
 
 fn has_single_file_entrypoint(value: tast::CheckResult) -> bool {

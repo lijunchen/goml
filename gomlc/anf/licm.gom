@@ -58,7 +58,7 @@ fn licm_value_is_movable(
             && licm_imm_is_stable(rhs, local, invariant, params, assigned),
         Imm(_) | Constr { .. } | Tuple { .. } | Array { .. } | ConstrGet { .. } | Assign { .. } | Call {
             ..,
-        } | ToDyn { .. } | DynCall { .. } | Go { .. } | Proj { .. } => false,
+        } | ToDyn { .. } | DynCall { .. } | Go { .. } | PackClosure { .. } | Proj { .. } => false,
     }
 }
 
@@ -341,5 +341,6 @@ pub fn licm(value: File) -> File {
         structs: value.structs,
         type_instances: value.type_instances,
         constants: value.constants,
+        closure_defs: value.closure_defs,
     }
 }

@@ -1,7 +1,7 @@
 package go_backend;
 
 use gomlc::resources;
-use gomlc::tast;
+use gomlc::repr;
 
 fn std_function_item(key: string, params: Vec[(string, Type)], ret_ty: Type, stmts: Vec[Stmt]) -> Item {
     Item::Function(
@@ -22,8 +22,8 @@ fn std_method_call(value: Expr, name: string, args: Vec[Expr]) -> Expr {
     Expr::Call { func: Expr::Field { expr: value, field_name: name }, args }
 }
 
-fn std_tuple_type(values: Vec[tast::Type]) -> Type {
-    lower_type(tast::Type::Tuple { items: values })
+fn std_tuple_type(values: Vec[repr::Type]) -> Type {
+    lower_type(repr::Type::Tuple { items: values })
 }
 
 fn std_tuple_expr(ty: Type, values: Vec[Expr]) -> Expr {
@@ -34,11 +34,11 @@ fn std_tuple_expr(ty: Type, values: Vec[Expr]) -> Expr {
     Expr::StructLiteral { ty, fields }
 }
 
-fn std_vec_type(elem: tast::Type) -> tast::Type {
-    tast::Type::VecType { elem }
+fn std_vec_type(elem: repr::Type) -> repr::Type {
+    repr::Type::VecType { elem }
 }
 
-fn std_vec_expr(elem: tast::Type, items: Expr) -> Expr {
+fn std_vec_expr(elem: repr::Type, items: Expr) -> Expr {
     let fields: Vec[(string, Expr)] = Vec::[];
     fields.push(("items", items));
     Expr::Unary {
@@ -59,9 +59,9 @@ fn std_error_condition() -> Expr {
 }
 
 fn std_bool_string_type() -> Type {
-    let values: Vec[tast::Type] = Vec::[];
-    values.push(tast::Type::Bool);
-    values.push(tast::Type::String);
+    let values: Vec[repr::Type] = Vec::[];
+    values.push(repr::Type::Bool);
+    values.push(repr::Type::String);
     std_tuple_type(values)
 }
 
@@ -73,10 +73,10 @@ fn std_bool_string_expr(valid: bool, value: Expr) -> Expr {
 }
 
 fn std_bool_string_string_type() -> Type {
-    let values: Vec[tast::Type] = Vec::[];
-    values.push(tast::Type::Bool);
-    values.push(tast::Type::String);
-    values.push(tast::Type::String);
+    let values: Vec[repr::Type] = Vec::[];
+    values.push(repr::Type::Bool);
+    values.push(repr::Type::String);
+    values.push(repr::Type::String);
     std_tuple_type(values)
 }
 
@@ -89,10 +89,10 @@ fn std_bool_string_string_expr(valid: bool, value: Expr, error: Expr) -> Expr {
 }
 
 fn std_bool_bytes_string_type() -> Type {
-    let values: Vec[tast::Type] = Vec::[];
-    values.push(tast::Type::Bool);
-    values.push(std_vec_type(tast::Type::Uint8));
-    values.push(tast::Type::String);
+    let values: Vec[repr::Type] = Vec::[];
+    values.push(repr::Type::Bool);
+    values.push(std_vec_type(repr::Type::Uint8));
+    values.push(repr::Type::String);
     std_tuple_type(values)
 }
 
@@ -107,12 +107,12 @@ fn std_bool_bytes_string_expr(valid: bool, value: Expr, error: Expr) -> Expr {
 fn std_bool_bytes_error_type() -> Type {
     std_tuple_type(
         Vec::[
-            tast::Type::Bool,
-            std_vec_type(tast::Type::Uint8),
-            tast::Type::Int,
-            tast::Type::Bool,
-            tast::Type::Int,
-            tast::Type::String,
+            repr::Type::Bool,
+            std_vec_type(repr::Type::Uint8),
+            repr::Type::Int,
+            repr::Type::Bool,
+            repr::Type::Int,
+            repr::Type::String,
         ],
     )
 }
@@ -134,11 +134,11 @@ fn std_bool_bytes_error_expr(
 fn std_error_result_type() -> Type {
     std_tuple_type(
         Vec::[
-            tast::Type::Bool,
-            tast::Type::Int,
-            tast::Type::Bool,
-            tast::Type::Int,
-            tast::Type::String,
+            repr::Type::Bool,
+            repr::Type::Int,
+            repr::Type::Bool,
+            repr::Type::Int,
+            repr::Type::String,
         ],
     )
 }
@@ -333,10 +333,10 @@ fn std_runtime_error_raw_code_item() -> Item {
 }
 
 fn std_bool_strings_string_type() -> Type {
-    let values: Vec[tast::Type] = Vec::[];
-    values.push(tast::Type::Bool);
-    values.push(std_vec_type(tast::Type::String));
-    values.push(tast::Type::String);
+    let values: Vec[repr::Type] = Vec::[];
+    values.push(repr::Type::Bool);
+    values.push(std_vec_type(repr::Type::String));
+    values.push(repr::Type::String);
     std_tuple_type(values)
 }
 
@@ -351,12 +351,12 @@ fn std_bool_strings_string_expr(valid: bool, value: Expr, error: Expr) -> Expr {
 fn std_bool_strings_error_type() -> Type {
     std_tuple_type(
         Vec::[
-            tast::Type::Bool,
-            std_vec_type(tast::Type::String),
-            tast::Type::Int,
-            tast::Type::Bool,
-            tast::Type::Int,
-            tast::Type::String,
+            repr::Type::Bool,
+            std_vec_type(repr::Type::String),
+            repr::Type::Int,
+            repr::Type::Bool,
+            repr::Type::Int,
+            repr::Type::String,
         ],
     )
 }
@@ -375,11 +375,11 @@ fn std_bool_strings_error_expr(
     )
 }
 
-fn std_bool_value_string_type(value: tast::Type) -> Type {
-    std_tuple_type(Vec::[tast::Type::Bool, value, tast::Type::String])
+fn std_bool_value_string_type(value: repr::Type) -> Type {
+    std_tuple_type(Vec::[repr::Type::Bool, value, repr::Type::String])
 }
 
-fn std_bool_value_string_expr(value_ty: tast::Type, valid: bool, value: Expr, error: Expr) -> Expr {
+fn std_bool_value_string_expr(value_ty: repr::Type, valid: bool, value: Expr, error: Expr) -> Expr {
     std_tuple_expr(
         std_bool_value_string_type(value_ty),
         Vec::[Expr::Bool { value: valid }, value, error],
@@ -391,22 +391,22 @@ fn std_env_args_item(key: string) -> Item {
     stmts.push(
         Stmt::Return {
             expr: Option::Some(
-                std_vec_expr(tast::Type::String, Expr::Var { name: "_goml_os.Args" }),
+                std_vec_expr(repr::Type::String, Expr::Var { name: "_goml_os.Args" }),
             ),
         },
     );
-    std_function_item(key, Vec::[], lower_type(std_vec_type(tast::Type::String)), stmts)
+    std_function_item(key, Vec::[], lower_type(std_vec_type(repr::Type::String)), stmts)
 }
 
 fn std_env_vars_item(key: string) -> Item {
     let stmts = Vec::[
         Stmt::Return {
             expr: Option::Some(
-                std_vec_expr(tast::Type::String, std_call("_goml_os.Environ", Vec::[])),
+                std_vec_expr(repr::Type::String, std_call("_goml_os.Environ", Vec::[])),
             ),
         },
     ];
-    std_function_item(key, Vec::[], lower_type(std_vec_type(tast::Type::String)), stmts)
+    std_function_item(key, Vec::[], lower_type(std_vec_type(repr::Type::String)), stmts)
 }
 
 fn std_string_result_item(key: string, function: string) -> Item {
@@ -645,7 +645,7 @@ fn std_fs_read_bytes_item(key: string) -> Item {
             expr: Option::Some(
                 std_bool_bytes_string_expr(
                     false,
-                    std_vec_expr(tast::Type::Uint8, Expr::Nil),
+                    std_vec_expr(repr::Type::Uint8, Expr::Nil),
                     std_error_string(),
                 ),
             ),
@@ -663,7 +663,7 @@ fn std_fs_read_bytes_item(key: string) -> Item {
             expr: Option::Some(
                 std_bool_bytes_string_expr(
                     true,
-                    std_vec_expr(tast::Type::Uint8, Expr::Var { name: "data" }),
+                    std_vec_expr(repr::Type::Uint8, Expr::Var { name: "data" }),
                     Expr::String { value: "" },
                 ),
             ),
@@ -695,7 +695,7 @@ fn std_fs_read_bytes_v2_item(key: string) -> Item {
             expr: Option::Some(
                 std_bool_bytes_error_expr(
                     false,
-                    std_vec_expr(tast::Type::Uint8, Expr::Nil),
+                    std_vec_expr(repr::Type::Uint8, Expr::Nil),
                     std_call("_goml_runtime_error_kind", Vec::[Expr::Var { name: "err" }]),
                     Expr::Var { name: "has_raw_code" },
                     Expr::Var { name: "raw_code" },
@@ -716,7 +716,7 @@ fn std_fs_read_bytes_v2_item(key: string) -> Item {
             expr: Option::Some(
                 std_bool_bytes_error_expr(
                     true,
-                    std_vec_expr(tast::Type::Uint8, Expr::Var { name: "data" }),
+                    std_vec_expr(repr::Type::Uint8, Expr::Var { name: "data" }),
                     Expr::Int { value: "0" },
                     Expr::Bool { value: false },
                     Expr::Int { value: "0" },
@@ -731,7 +731,7 @@ fn std_fs_read_bytes_v2_item(key: string) -> Item {
 fn std_fs_write_bytes_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("path", Type::String));
-    params.push(("data", lower_type(std_vec_type(tast::Type::Uint8))));
+    params.push(("data", lower_type(std_vec_type(repr::Type::Uint8))));
     let args: Vec[Expr] = Vec::[];
     args.push(Expr::Var { name: "path" });
     args.push(Expr::Field { expr: Expr::Var { name: "data" }, field_name: "items" });
@@ -764,7 +764,7 @@ fn std_fs_write_bytes_item(key: string) -> Item {
 fn std_fs_write_bytes_v2_item(key: string) -> Item {
     let params = Vec::[
         ("path", Type::String),
-        ("data", lower_type(std_vec_type(tast::Type::Uint8))),
+        ("data", lower_type(std_vec_type(repr::Type::Uint8))),
     ];
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(Stmt::Var { name: "has_raw_code", ty: Type::Bool, value: Option::None });
@@ -964,15 +964,15 @@ fn std_fs_path_operation_v2_item(key: string) -> Item {
 fn std_fs_metadata_type() -> Type {
     std_tuple_type(
         Vec::[
-            tast::Type::Bool,
-            tast::Type::Int,
-            tast::Type::Int64,
-            tast::Type::Uint32,
-            tast::Type::Int64,
-            tast::Type::Int,
-            tast::Type::Bool,
-            tast::Type::Int,
-            tast::Type::String,
+            repr::Type::Bool,
+            repr::Type::Int,
+            repr::Type::Int64,
+            repr::Type::Uint32,
+            repr::Type::Int64,
+            repr::Type::Int,
+            repr::Type::Bool,
+            repr::Type::Int,
+            repr::Type::String,
         ],
     )
 }
@@ -1321,7 +1321,7 @@ fn std_fs_atomic_write_v2_item(key: string) -> Item {
     stmts.push(std_error_success_stmt());
     std_function_item(
         key,
-        Vec::[("path", Type::String), ("data", lower_type(std_vec_type(tast::Type::Uint8)))],
+        Vec::[("path", Type::String), ("data", lower_type(std_vec_type(repr::Type::Uint8)))],
         std_error_result_type(),
         stmts,
     )
@@ -1547,7 +1547,7 @@ fn std_fs_read_dir_item(key: string) -> Item {
             expr: Option::Some(
                 std_bool_strings_string_expr(
                     false,
-                    std_vec_expr(tast::Type::String, Expr::Nil),
+                    std_vec_expr(repr::Type::String, Expr::Nil),
                     std_error_string(),
                 ),
             ),
@@ -1609,7 +1609,7 @@ fn std_fs_read_dir_item(key: string) -> Item {
             expr: Option::Some(
                 std_bool_strings_string_expr(
                     true,
-                    std_vec_expr(tast::Type::String, Expr::Var { name: "names" }),
+                    std_vec_expr(repr::Type::String, Expr::Var { name: "names" }),
                     Expr::String { value: "" },
                 ),
             ),
@@ -1649,7 +1649,7 @@ fn std_fs_read_dir_v2_item(key: string) -> Item {
                         expr: Option::Some(
                             std_bool_strings_error_expr(
                                 false,
-                                std_vec_expr(tast::Type::String, Expr::Nil),
+                                std_vec_expr(repr::Type::String, Expr::Nil),
                                 std_call(
                                     "_goml_runtime_error_kind",
                                     Vec::[Expr::Var { name: "err" }],
@@ -1721,7 +1721,7 @@ fn std_fs_read_dir_v2_item(key: string) -> Item {
             expr: Option::Some(
                 std_bool_strings_error_expr(
                     true,
-                    std_vec_expr(tast::Type::String, Expr::Var { name: "names" }),
+                    std_vec_expr(repr::Type::String, Expr::Var { name: "names" }),
                     Expr::Int { value: "0" },
                     Expr::Bool { value: false },
                     Expr::Int { value: "0" },
@@ -1764,7 +1764,7 @@ fn std_io_read_stdin_item(key: string) -> Item {
             expr: Option::Some(
                 std_bool_bytes_string_expr(
                     false,
-                    std_vec_expr(tast::Type::Uint8, Expr::Nil),
+                    std_vec_expr(repr::Type::Uint8, Expr::Nil),
                     std_error_string(),
                 ),
             ),
@@ -1782,7 +1782,7 @@ fn std_io_read_stdin_item(key: string) -> Item {
             expr: Option::Some(
                 std_bool_bytes_string_expr(
                     true,
-                    std_vec_expr(tast::Type::Uint8, Expr::Var { name: "data" }),
+                    std_vec_expr(repr::Type::Uint8, Expr::Var { name: "data" }),
                     Expr::String { value: "" },
                 ),
             ),
@@ -1801,7 +1801,7 @@ fn std_bytes_error_failure_stmts() -> Vec[Stmt] {
             expr: Option::Some(
                 std_bool_bytes_error_expr(
                     false,
-                    std_vec_expr(tast::Type::Uint8, Expr::Nil),
+                    std_vec_expr(repr::Type::Uint8, Expr::Nil),
                     std_call("_goml_runtime_error_kind", Vec::[Expr::Var { name: "err" }]),
                     Expr::Var { name: "has_raw_code" },
                     Expr::Var { name: "raw_code" },
@@ -1817,7 +1817,7 @@ fn std_bytes_error_success(data: Expr) -> Stmt {
         expr: Option::Some(
             std_bool_bytes_error_expr(
                 true,
-                std_vec_expr(tast::Type::Uint8, data),
+                std_vec_expr(repr::Type::Uint8, data),
                 Expr::Int { value: "0" },
                 Expr::Bool { value: false },
                 Expr::Int { value: "0" },
@@ -1879,7 +1879,7 @@ fn std_io_read_stdin_exact_item(key: string) -> Item {
             expr: Option::Some(
                 std_bool_bytes_string_expr(
                     false,
-                    std_vec_expr(tast::Type::Uint8, Expr::Nil),
+                    std_vec_expr(repr::Type::Uint8, Expr::Nil),
                     std_error_string(),
                 ),
             ),
@@ -1897,7 +1897,7 @@ fn std_io_read_stdin_exact_item(key: string) -> Item {
             expr: Option::Some(
                 std_bool_bytes_string_expr(
                     true,
-                    std_vec_expr(tast::Type::Uint8, Expr::Var { name: "data" }),
+                    std_vec_expr(repr::Type::Uint8, Expr::Var { name: "data" }),
                     Expr::String { value: "" },
                 ),
             ),
@@ -1942,7 +1942,7 @@ fn std_io_read_stdin_exact_v2_item(key: string) -> Item {
 
 fn std_io_write_item(key: string, stream: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
-    params.push(("data", lower_type(std_vec_type(tast::Type::Uint8))));
+    params.push(("data", lower_type(std_vec_type(repr::Type::Uint8))));
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(Stmt::Var { name: "err", ty: Type::Named { name: "error" }, value: Option::None });
     let names: Vec[string] = Vec::[];
@@ -1974,7 +1974,7 @@ fn std_io_write_item(key: string, stream: string) -> Item {
 }
 
 fn std_io_write_v2_item(key: string, stream: string) -> Item {
-    let params = Vec::[("data", lower_type(std_vec_type(tast::Type::Uint8)))];
+    let params = Vec::[("data", lower_type(std_vec_type(repr::Type::Uint8)))];
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(Stmt::Var { name: "err", ty: Type::Named { name: "error" }, value: Option::None });
     stmts.push(Stmt::Var { name: "has_raw_code", ty: Type::Bool, value: Option::None });
@@ -2497,9 +2497,9 @@ fn std_testing_fail_item(key: string) -> Item {
 
 fn std_num_parse_integer_item(key: string, signed: bool) -> Item {
     let value_ty = if signed {
-        tast::Type::Int
+        repr::Type::Int
     } else {
-        tast::Type::Uint
+        repr::Type::Uint
     };
     let native_ty = if signed {
         Type::Int64
@@ -2565,9 +2565,9 @@ fn std_num_parse_integer_item(key: string, signed: bool) -> Item {
 
 fn std_num_parse_float_item(key: string, single: bool) -> Item {
     let value_ty = if single {
-        tast::Type::Float32
+        repr::Type::Float32
     } else {
-        tast::Type::Float64
+        repr::Type::Float64
     };
     let params = Vec::[("value", Type::String)];
     let stmts: Vec[Stmt] = Vec::[];
@@ -2728,7 +2728,7 @@ fn std_crypto_random_bytes_item(key: string) -> Item {
                         expr: Option::Some(
                             std_bool_bytes_string_expr(
                                 false,
-                                std_vec_expr(tast::Type::Uint8, Expr::Nil),
+                                std_vec_expr(repr::Type::Uint8, Expr::Nil),
                                 std_error_string(),
                             ),
                         ),
@@ -2743,7 +2743,7 @@ fn std_crypto_random_bytes_item(key: string) -> Item {
             expr: Option::Some(
                 std_bool_bytes_string_expr(
                     true,
-                    std_vec_expr(tast::Type::Uint8, Expr::Var { name: "data" }),
+                    std_vec_expr(repr::Type::Uint8, Expr::Var { name: "data" }),
                     Expr::String { value: "" },
                 ),
             ),
@@ -2800,16 +2800,16 @@ fn std_time_sleep_nanoseconds_item(key: string) -> Item {
     std_function_item(key, params, Type::Unit, stmts)
 }
 
-fn std_process_environment_type() -> tast::Type {
-    tast::Type::VecType {
-        elem: tast::Type::Tuple { items: Vec::[tast::Type::String, tast::Type::String] },
+fn std_process_environment_type() -> repr::Type {
+    repr::Type::VecType {
+        elem: repr::Type::Tuple { items: Vec::[repr::Type::String, repr::Type::String] },
     }
 }
 
 fn std_process_params() -> Vec[(string, Type)] {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("program", Type::String));
-    params.push(("arguments", lower_type(std_vec_type(tast::Type::String))));
+    params.push(("arguments", lower_type(std_vec_type(repr::Type::String))));
     params.push(("has_directory", Type::Bool));
     params.push(("directory", Type::String));
     params.push(("environment", lower_type(std_process_environment_type())));
@@ -2819,7 +2819,7 @@ fn std_process_params() -> Vec[(string, Type)] {
 fn std_process_output_params() -> Vec[(string, Type)] {
     let params = std_process_params();
     params.push(("has_input", Type::Bool));
-    params.push(("input", lower_type(std_vec_type(tast::Type::Uint8))));
+    params.push(("input", lower_type(std_vec_type(repr::Type::Uint8))));
     params
 }
 
@@ -2836,40 +2836,40 @@ fn std_process_output_cancel_params() -> Vec[(string, Type)] {
 }
 
 fn std_process_output_type() -> Type {
-    let values: Vec[tast::Type] = Vec::[];
-    values.push(tast::Type::Bool);
-    values.push(tast::Type::Int);
-    values.push(std_vec_type(tast::Type::Uint8));
-    values.push(std_vec_type(tast::Type::Uint8));
-    values.push(tast::Type::String);
+    let values: Vec[repr::Type] = Vec::[];
+    values.push(repr::Type::Bool);
+    values.push(repr::Type::Int);
+    values.push(std_vec_type(repr::Type::Uint8));
+    values.push(std_vec_type(repr::Type::Uint8));
+    values.push(repr::Type::String);
     std_tuple_type(values)
 }
 
 fn std_process_output_timeout_type() -> Type {
-    let values: Vec[tast::Type] = Vec::[];
-    values.push(tast::Type::Bool);
-    values.push(tast::Type::Int);
-    values.push(std_vec_type(tast::Type::Uint8));
-    values.push(std_vec_type(tast::Type::Uint8));
-    values.push(tast::Type::String);
-    values.push(tast::Type::Bool);
+    let values: Vec[repr::Type] = Vec::[];
+    values.push(repr::Type::Bool);
+    values.push(repr::Type::Int);
+    values.push(std_vec_type(repr::Type::Uint8));
+    values.push(std_vec_type(repr::Type::Uint8));
+    values.push(repr::Type::String);
+    values.push(repr::Type::Bool);
     std_tuple_type(values)
 }
 
 fn std_process_status_type() -> Type {
-    let values: Vec[tast::Type] = Vec::[];
-    values.push(tast::Type::Bool);
-    values.push(tast::Type::Int);
-    values.push(tast::Type::String);
+    let values: Vec[repr::Type] = Vec::[];
+    values.push(repr::Type::Bool);
+    values.push(repr::Type::Int);
+    values.push(repr::Type::String);
     std_tuple_type(values)
 }
 
 fn std_process_status_timeout_type() -> Type {
-    let values: Vec[tast::Type] = Vec::[];
-    values.push(tast::Type::Bool);
-    values.push(tast::Type::Int);
-    values.push(tast::Type::String);
-    values.push(tast::Type::Bool);
+    let values: Vec[repr::Type] = Vec::[];
+    values.push(repr::Type::Bool);
+    values.push(repr::Type::Int);
+    values.push(repr::Type::String);
+    values.push(repr::Type::Bool);
     std_tuple_type(values)
 }
 
@@ -3091,7 +3091,7 @@ fn std_process_cancel_group_setup() -> Vec[Stmt] {
 }
 
 fn std_process_buffer(name: string) -> Expr {
-    std_vec_expr(tast::Type::Uint8, std_method_call(Expr::Var { name }, "Bytes", Vec::[]))
+    std_vec_expr(repr::Type::Uint8, std_method_call(Expr::Var { name }, "Bytes", Vec::[]))
 }
 
 fn std_process_output_expr(valid: bool, code: Expr, error: Expr, timed: bool) -> Expr {

@@ -1,6 +1,6 @@
 package go_backend;
 
-use gomlc::tast;
+use gomlc::repr;
 
 pub enum Type {
     Void,
@@ -337,7 +337,7 @@ pub struct File {
 
 pub struct DynCoercion {
     pub trait_name: string,
-    pub for_ty: tast::Type,
+    pub for_ty: repr::Type,
 }
 
 pub struct DynHelperNames {
@@ -349,17 +349,10 @@ pub struct VariantInfo {
     pub owner_name: string,
     pub tag: int,
     pub variant_name: string,
-    pub field_types: Vec[tast::Type],
+    pub field_types: Vec[repr::Type],
     pub tag_only: bool,
 }
 
 pub struct VariantInfos {
     pub by_owner: HashMap[string, Vec[VariantInfo]],
-}
-
-pub struct ClosureInfo {
-    pub struct_name: string,
-    pub apply_name: string,
-    pub params: Vec[tast::Type],
-    pub ret_ty: tast::Type,
 }

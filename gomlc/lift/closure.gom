@@ -1,35 +1,49 @@
 package lift;
 
 use gomlc::mono;
-use gomlc::tast;
 use std::ascii;
 use std::collections;
 use std::text;
 
 struct ScopeEntry {
     name: string,
-    ty: tast::Type,
+    ty: mono::Type,
     closure_struct: Option[string],
 }
 
 struct ClosureInfo {
     struct_name: string,
     apply_name: string,
-    apply_ty: tast::Type,
+    apply_ty: mono::Type,
+    signature: mono::Type,
 }
 
 struct Capture {
     name: string,
-    ty: tast::Type,
+    ty: mono::Type,
 }
 
 struct State {
     next_env: Ref[int],
     next_name: Ref[int],
-    generated: Vec[Function],
-    generated_structs: Vec[tast::StructDef],
+    generated: Vec[LowerFunction],
+    generated_structs: Vec[mono::StructDef],
     closures: Vec[ClosureInfo],
     used_types: Vec[string],
+    error: Ref[Option[string]],
+}
+
+struct LambdaLiftResult {
+    file: LowerFile,
+    error: Option[string],
+}
+
+fn invalid_expr(state: State, ty: mono::Type, message: string) -> LowerExpr {
+    match state.error.get() {
+        Some(_) => (),
+        None => state.error.set(Option::Some(message)),
+    };
+    LowerExpr::Prim { value: mono::Primitive::Unit, ty }
 }
 
 fn copy_scope(values: Vec[ScopeEntry]) -> Vec[ScopeEntry] {
@@ -62,9 +76,18 @@ fn find_closure(state: State, name: string) -> Option[ClosureInfo] {
     Option::None
 }
 
-fn closure_for_type(state: State, ty: tast::Type) -> Option[ClosureInfo] {
-    match tast::resolve_type(ty) {
-        Con { name } => find_closure(state, name),
+fn find_closure_by_apply(state: State, name: string) -> Option[ClosureInfo] {
+    for value in state.closures {
+        if value.apply_name == name {
+            return Option::Some(value)
+        } else {}
+    }
+    Option::None
+}
+
+fn closure_for_type(state: State, ty: mono::Type) -> Option[ClosureInfo] {
+    match ty {
+        Named { name } => find_closure(state, name),
         _ => Option::None,
     }
 }
@@ -75,19 +98,12 @@ fn record_used_type(values: Vec[string], name: string) -> unit {
     }
 }
 
-fn collect_used_types(values: Vec[string], ty: tast::Type) -> unit {
-    match tast::resolve_type(ty) {
-        Con { name } => record_used_type(values, name),
+fn collect_used_types(values: Vec[string], ty: mono::Type) -> unit {
+    match ty {
+        Named { name } => record_used_type(values, name),
         Tuple { items } => {
             for item in items {
                 collect_used_types(values, item)
-            }
-        },
-        Projection { for_ty: base, name: _, trait_ref: _ } => collect_used_types(values, base),
-        App { ty: base, args } => {
-            collect_used_types(values, base);
-            for arg in args {
-                collect_used_types(values, arg)
             }
         },
         Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
@@ -436,8 +452,8 @@ fn transform_exprs(
     scope: Vec[ScopeEntry],
     values: Vec[mono::Expr],
     context: Option[string],
-) -> Vec[Expr] {
-    let result: Vec[Expr] = Vec::[];
+) -> Vec[LowerExpr] {
+    let result: Vec[LowerExpr] = Vec::[];
     for value in values {
         result.push(transform_expr(state, scope, value, context))
     }
@@ -449,7 +465,7 @@ fn transform_optional_expr(
     scope: Vec[ScopeEntry],
     value: Option[mono::Expr],
     context: Option[string],
-) -> Option[Expr] {
+) -> Option[LowerExpr] {
     match value {
         Some(value) => {
             Option::Some(transform_expr(state, scope, value, context))
@@ -458,10 +474,10 @@ fn transform_optional_expr(
     }
 }
 
-fn block_type(value: Block) -> tast::Type {
+fn block_type(value: LowerBlock) -> mono::Type {
     match value.tail {
-        Some(value) => expr_type(value),
-        None => tast::Type::Unit,
+        Some(value) => lower_expr_type(value),
+        None => mono::Type::Unit,
     }
 }
 
@@ -470,9 +486,9 @@ fn transform_block(
     outer_scope: Vec[ScopeEntry],
     value: mono::Block,
     context: Option[string],
-) -> Block {
+) -> LowerBlock {
     let scope = copy_scope(outer_scope);
-    let stmts: Vec[LetStmt] = Vec::[];
+    let stmts: Vec[LowerLetStmt] = Vec::[];
     for stmt in value.stmts {
         let transformed = match stmt.value {
             Closure { params, body, ty } => transform_closure(
@@ -486,19 +502,19 @@ fn transform_block(
             ),
             other => transform_expr(state, scope, other, context),
         };
-        let ty = expr_type(transformed);
+        let ty = lower_expr_type(transformed);
         let closure_struct = match closure_for_type(state, ty) {
             Some(info) => Option::Some(info.struct_name),
             None => Option::None,
         };
-        stmts.push(LetStmt { name: stmt.name, value: transformed, ty });
+        stmts.push(LowerLetStmt { name: stmt.name, value: transformed, ty });
         scope.push(ScopeEntry { name: stmt.name, ty, closure_struct })
     }
-    Block { stmts, tail: transform_optional_expr(state, scope, value.tail, context) }
+    LowerBlock { stmts, tail: transform_optional_expr(state, scope, value.tail, context) }
 }
 
-fn transform_arm(state: State, scope: Vec[ScopeEntry], value: mono::Arm, context: Option[string]) -> Arm {
-    Arm {
+fn transform_arm(state: State, scope: Vec[ScopeEntry], value: mono::Arm, context: Option[string]) -> LowerArm {
+    LowerArm {
         lhs: transform_expr(state, scope, value.lhs, context),
         body: transform_expr(state, scope, value.body, context),
     }
@@ -509,8 +525,8 @@ fn transform_arms(
     scope: Vec[ScopeEntry],
     values: Vec[mono::Arm],
     context: Option[string],
-) -> Vec[Arm] {
-    let result: Vec[Arm] = Vec::[];
+) -> Vec[LowerArm] {
+    let result: Vec[LowerArm] = Vec::[];
     for value in values {
         result.push(transform_arm(state, scope, value, context))
     }
@@ -522,56 +538,54 @@ fn transform_call(
     scope: Vec[ScopeEntry],
     func: mono::Expr,
     args: Vec[mono::Expr],
-    ty: tast::Type,
+    ty: mono::Type,
     context: Option[string],
-) -> Expr {
+) -> LowerExpr {
     let func = transform_expr(state, scope, func, context);
     let args = transform_exprs(state, scope, args, context);
-    let closure = match func {
-        Var { name, ty: _ } => match find_scope(scope, name) {
-            Some(entry) => match entry.closure_struct {
-                Some(name) => find_closure(state, name),
-                None => closure_for_type(state, entry.ty),
-            },
-            None => Option::None,
-        },
-        _ => closure_for_type(state, expr_type(func)),
-    };
-    match closure {
-        Some(info) => {
-            let call_args: Vec[Expr] = Vec::[];
-            call_args.push(func);
+    match func {
+        PackClosure { environment, apply, ty: _ } => {
+            let info = match find_closure_by_apply(state, apply) {
+                Some(info) => info,
+                None => return invalid_expr(
+                    state,
+                    ty,
+                    "closure apply metadata is missing for " + apply,
+                ),
+            };
+            let call_args: Vec[LowerExpr] = Vec::[];
+            call_args.push(environment);
             for arg in args {
                 call_args.push(arg)
             }
-            Expr::Call {
-                func: Expr::Var { name: info.apply_name, ty: info.apply_ty },
+            LowerExpr::Call {
+                func: LowerExpr::Var { name: info.apply_name, ty: info.apply_ty },
                 args: call_args,
                 ty,
             }
         },
-        None => Expr::Call { func, args, ty },
+        other => LowerExpr::Call { func: other, args, ty },
     }
 }
 
-fn transform_expr(state: State, scope: Vec[ScopeEntry], value: mono::Expr, context: Option[string]) -> Expr {
+fn transform_expr(state: State, scope: Vec[ScopeEntry], value: mono::Expr, context: Option[string]) -> LowerExpr {
     match value {
         Var { name, ty } => match find_scope(scope, name) {
-            Some(entry) => Expr::Var { name, ty: entry.ty },
-            None => Expr::Var { name, ty },
+            Some(entry) => LowerExpr::Var { name, ty: entry.ty },
+            None => LowerExpr::Var { name, ty },
         },
-        Callable { callable, ty } => Expr::Callable { callable, ty },
-        Prim { value, ty } => Expr::Prim { value, ty },
-        Constr { constructor, args, ty } => Expr::Constr {
+        Callable { callable, ty } => LowerExpr::Callable { callable, ty },
+        Prim { value, ty } => LowerExpr::Prim { value, ty },
+        Constr { constructor, args, ty } => LowerExpr::Constr {
             constructor,
             args: transform_exprs(state, scope, args, context),
             ty,
         },
-        Tuple { items, ty } => Expr::Tuple {
+        Tuple { items, ty } => LowerExpr::Tuple {
             items: transform_exprs(state, scope, items, context),
             ty,
         },
-        Array { items, ty } => Expr::Array {
+        Array { items, ty } => LowerExpr::Array {
             items: transform_exprs(state, scope, items, context),
             ty,
         },
@@ -586,58 +600,61 @@ fn transform_expr(state: State, scope: Vec[ScopeEntry], value: mono::Expr, conte
         ),
         Block { block, ty: _ } => {
             let block = transform_block(state, scope, block, context);
-            Expr::Block { block, ty: block_type(block) }
+            LowerExpr::Block { block, ty: block_type(block) }
         },
-        Match { expr, arms, default, ty } => Expr::Match {
+        Match { expr, arms, default, ty } => LowerExpr::Match {
             expr: transform_expr(state, scope, expr, context),
             arms: transform_arms(state, scope, arms, context),
             default: transform_optional_expr(state, scope, default, context),
             ty,
         },
-        If { cond, then_branch: then_, else_branch: else_, ty } => Expr::If {
+        If { cond, then_branch: then_, else_branch: else_, ty } => LowerExpr::If {
             cond: transform_expr(state, scope, cond, context),
             then_branch: transform_expr(state, scope, then_, context),
             else_branch: transform_expr(state, scope, else_, context),
             ty,
         },
-        While { cond, body, ty } => Expr::While {
+        While { cond, body, ty } => LowerExpr::While {
             cond: transform_expr(state, scope, cond, context),
             body: transform_expr(state, scope, body, context),
             ty,
         },
         Loop { body, ty } => {
-            Expr::Loop { body: transform_expr(state, scope, body, context), ty }
+            LowerExpr::Loop { body: transform_expr(state, scope, body, context), ty }
         },
-        Break { target, value, ty } => Expr::Break {
+        Break { target, value, ty } => LowerExpr::Break {
             target,
             value: transform_optional_expr(state, scope, value, context),
             ty,
         },
-        Continue { target, ty } => Expr::Continue { target, ty },
-        Return { expr, ty } => Expr::Return {
+        Continue { target, ty } => LowerExpr::Continue { target, ty },
+        Return { expr, ty } => LowerExpr::Return {
             expr: transform_optional_expr(state, scope, expr, context),
             ty,
         },
-        Go { expr, ty } => Expr::Go { expr: transform_expr(state, scope, expr, context), ty },
-        ConstrGet { expr, constructor, field_index: index, ty } => Expr::ConstrGet {
+        Go { expr, ty } => LowerExpr::Go { expr: transform_expr(state, scope, expr, context), ty },
+        ConstrGet { expr, constructor, field_index: index, ty } => LowerExpr::ConstrGet {
             expr: transform_expr(state, scope, expr, context),
             constructor,
             field_index: index,
             ty,
         },
-        Unary { op, expr, ty } => Expr::Unary {
+        Unary { op, expr, ty } => LowerExpr::Unary {
             op,
             expr: transform_expr(state, scope, expr, context),
             ty,
         },
-        Cast { expr, ty } => Expr::Cast { expr: transform_expr(state, scope, expr, context), ty },
-        Binary { op, lhs, rhs, ty } => Expr::Binary {
+        Cast { expr, ty } => LowerExpr::Cast {
+            expr: transform_expr(state, scope, expr, context),
+            ty,
+        },
+        Binary { op, lhs, rhs, ty } => LowerExpr::Binary {
             op,
             lhs: transform_expr(state, scope, lhs, context),
             rhs: transform_expr(state, scope, rhs, context),
             ty,
         },
-        Assign { name, value: expr, target_ty, ty } => Expr::Assign {
+        Assign { name, value: expr, target_ty, ty } => LowerExpr::Assign {
             name,
             value: transform_expr(state, scope, expr, context),
             target_ty,
@@ -646,14 +663,14 @@ fn transform_expr(state: State, scope: Vec[ScopeEntry], value: mono::Expr, conte
         Call { func, args, ty } => {
             transform_call(state, scope, func, args, ty, context)
         },
-        ToDyn { trait_name, for_ty, expr, ty } => Expr::ToDyn {
+        ToDyn { trait_name, for_ty, expr, ty } => LowerExpr::ToDyn {
             trait_name,
             for_ty,
             expr: transform_expr(state, scope, expr, context),
             ty,
         },
         DynCall { trait_name, method_name, receiver, args, ty } => {
-            Expr::DynCall {
+            LowerExpr::DynCall {
                 trait_name,
                 method_name,
                 receiver: transform_expr(state, scope, receiver, context),
@@ -661,7 +678,7 @@ fn transform_expr(state: State, scope: Vec[ScopeEntry], value: mono::Expr, conte
                 ty,
             }
         },
-        Proj { tuple: expr, index, ty } => Expr::Proj {
+        Proj { tuple: expr, index, ty } => LowerExpr::Proj {
             tuple: transform_expr(state, scope, expr, context),
             index,
             ty,
@@ -679,7 +696,7 @@ fn capture_exists(values: Vec[Capture], name: string) -> bool {
 }
 
 fn collect_captured_exprs(
-    values: Vec[Expr],
+    values: Vec[LowerExpr],
     bound: Vec[string],
     captured: Vec[Capture],
     scope: Vec[ScopeEntry],
@@ -690,7 +707,7 @@ fn collect_captured_exprs(
 }
 
 fn collect_captured_optional(
-    value: Option[Expr],
+    value: Option[LowerExpr],
     bound: Vec[string],
     captured: Vec[Capture],
     scope: Vec[ScopeEntry],
@@ -702,7 +719,7 @@ fn collect_captured_optional(
 }
 
 fn collect_captured_block(
-    value: Block,
+    value: LowerBlock,
     bound: Vec[string],
     captured: Vec[Capture],
     scope: Vec[ScopeEntry],
@@ -719,7 +736,12 @@ fn collect_captured_block(
     }
 }
 
-fn collect_captured(value: Expr, bound: Vec[string], captured: Vec[Capture], scope: Vec[ScopeEntry]) -> unit {
+fn collect_captured(
+    value: LowerExpr,
+    bound: Vec[string],
+    captured: Vec[Capture],
+    scope: Vec[ScopeEntry],
+) -> unit {
     match value {
         Var { name, ty: _ } => if collections::contains(bound, name) {} else {
             match find_scope(scope, name) {
@@ -781,13 +803,14 @@ fn collect_captured(value: Expr, bound: Vec[string], captured: Vec[Capture], sco
             collect_captured(receiver, bound, captured, scope);
             collect_captured_exprs(args, bound, captured, scope)
         },
+        PackClosure { environment, apply: _, ty: _ } => {
+            collect_captured(environment, bound, captured, scope)
+        },
         Break { value, ty: _, .. } => match value {
             Some(expr) => collect_captured(expr, bound, captured, scope),
             None => (),
         },
-        Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue { ty: _, .. } | Invalid {
-            ty: _,
-        } => (),
+        Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue { ty: _, .. } => (),
     }
 }
 
@@ -798,28 +821,28 @@ fn make_field_name(name: string, index: int) -> string {
     }
 }
 
-fn closure_body_block(value: Expr) -> Block {
+fn closure_body_block(value: LowerExpr) -> LowerBlock {
     match value {
         Block { block, ty: _ } => block,
-        other => Block { stmts: Vec::[], tail: Option::Some(other) },
+        other => LowerBlock { stmts: Vec::[], tail: Option::Some(other) },
     }
 }
 
 fn prepend_captures(
-    body: Block,
+    body: LowerBlock,
     captures: Vec[Capture],
     env_name: string,
-    env_ty: tast::Type,
-    constructor: tast::Constructor,
-) -> Block {
-    let stmts: Vec[LetStmt] = Vec::[];
+    env_ty: mono::Type,
+    constructor: mono::Constructor,
+) -> LowerBlock {
+    let stmts: Vec[LowerLetStmt] = Vec::[];
     for index in 0..captures.len() {
         let capture = captures[index];
         stmts.push(
-            LetStmt {
+            LowerLetStmt {
                 name: capture.name,
-                value: Expr::ConstrGet {
-                    expr: Expr::Var { name: env_name, ty: env_ty },
+                value: LowerExpr::ConstrGet {
+                    expr: LowerExpr::Var { name: env_name, ty: env_ty },
                     constructor,
                     field_index: index,
                     ty: capture.ty,
@@ -831,26 +854,26 @@ fn prepend_captures(
     for stmt in body.stmts {
         stmts.push(stmt)
     }
-    Block { stmts, tail: body.tail }
+    LowerBlock { stmts, tail: body.tail }
 }
 
 fn transform_closure(
     state: State,
     outer_scope: Vec[ScopeEntry],
-    params: Vec[tast::ClosureParam],
+    params: Vec[mono::ClosureParam],
     body: mono::Expr,
-    ty: tast::Type,
+    ty: mono::Type,
     name_hint: Option[string],
     context: Option[string],
-) -> Expr {
-    let signature = match tast::resolve_type(ty) {
+) -> LowerExpr {
+    let signature = match ty {
         Func { params: param_tys, ret_ty } => Option::Some((param_tys, ret_ty)),
         _ => Option::None,
     };
     match signature {
         Some(signature) => {
             let closure_scope = copy_scope(outer_scope);
-            let lowered_params: Vec[(string, tast::Type)] = Vec::[];
+            let lowered_params: Vec[(string, mono::Type)] = Vec::[];
             let bound: Vec[string] = Vec::[];
             for index in 0..params.len() {
                 let param = params[index];
@@ -879,18 +902,18 @@ fn transform_closure(
             let captures: Vec[Capture] = Vec::[];
             collect_captured(body, bound, captures, outer_scope);
             let struct_name = fresh_struct_name(state, hint);
-            let env_ty = tast::Type::Con { name: struct_name };
+            let env_ty = mono::Type::Named { name: struct_name };
             let fields: Vec[string] = Vec::[];
-            let struct_fields: Vec[(string, tast::Type)] = Vec::[];
-            let captured_args: Vec[Expr] = Vec::[];
+            let struct_fields: Vec[(string, mono::Type)] = Vec::[];
+            let captured_args: Vec[LowerExpr] = Vec::[];
             for index in 0..captures.len() {
                 let capture = captures[index];
                 let field_name = make_field_name(capture.name, index);
                 fields.push(field_name);
                 struct_fields.push((field_name, capture.ty));
-                captured_args.push(Expr::Var { name: capture.name, ty: capture.ty })
+                captured_args.push(LowerExpr::Var { name: capture.name, ty: capture.ty })
             }
-            let constructor = tast::Constructor {
+            let constructor = mono::Constructor {
                 name: struct_name,
                 fields,
                 is_struct: true,
@@ -898,20 +921,19 @@ fn transform_closure(
             };
             let apply_name = "inherent#" + struct_name + "#" + struct_name + "#apply";
             let env_name = fresh_name(state, "env");
-            let fn_params: Vec[(string, tast::Type)] = Vec::[];
+            let fn_params: Vec[(string, mono::Type)] = Vec::[];
             fn_params.push((env_name, env_ty));
-            let apply_param_types: Vec[tast::Type] = Vec::[];
+            let apply_param_types: Vec[mono::Type] = Vec::[];
             apply_param_types.push(env_ty);
             for param in lowered_params {
                 fn_params.push(param);
                 apply_param_types.push(param.1)
             }
-            let apply_ty = tast::Type::Func { params: apply_param_types, ret_ty: signature.1 };
-            state.closures.push(ClosureInfo { struct_name, apply_name, apply_ty });
+            let apply_ty = mono::Type::Func { params: apply_param_types, ret_ty: signature.1 };
+            state.closures.push(ClosureInfo { struct_name, apply_name, apply_ty, signature: ty });
             state.generated_structs.push(
-                tast::StructDef {
+                mono::StructDef {
                     name: struct_name,
-                    generics: Vec::[],
                     fields: struct_fields,
                     public_fields: Vec::[],
                     has_hidden_fields: false,
@@ -925,9 +947,9 @@ fn transform_closure(
                 constructor,
             );
             state.generated.push(
-                Function {
+                LowerFunction {
                     name: apply_name,
-                    origin: FunctionOrigin::Inherent { owner: env_ty, method_name: "apply" },
+                    origin: LowerFunctionOrigin::Inherent { owner: env_ty, method_name: "apply" },
                     root: true,
                     trait_impl: Option::None,
                     params: fn_params,
@@ -935,24 +957,30 @@ fn transform_closure(
                     body: fn_body,
                 },
             );
-            Expr::Constr { constructor, args: captured_args, ty: env_ty }
+            LowerExpr::PackClosure {
+                environment: LowerExpr::Constr { constructor, args: captured_args, ty: env_ty },
+                apply: apply_name,
+                ty,
+            }
         },
-        None => Expr::Invalid { ty },
+        None => invalid_expr(state, ty, "closure has a non-function type"),
     }
 }
 
-fn transform_function_origin(value: mono::FunctionOrigin) -> FunctionOrigin {
+fn transform_function_origin(value: mono::FunctionOrigin) -> LowerFunctionOrigin {
     match value {
-        Source => FunctionOrigin::Source,
-        Inherent { owner, method_name } => FunctionOrigin::Inherent { owner, method_name },
-        TraitImplementation { method_name } => FunctionOrigin::TraitImplementation { method_name },
+        Source => LowerFunctionOrigin::Source,
+        Inherent { owner, method_name } => LowerFunctionOrigin::Inherent { owner, method_name },
+        TraitImplementation { method_name } => LowerFunctionOrigin::TraitImplementation {
+            method_name,
+        },
     }
 }
 
-fn transform_trait_impl(value: Option[mono::TraitImpl]) -> Option[TraitImpl] {
+fn transform_trait_impl(value: Option[mono::TraitImpl]) -> Option[LowerTraitImpl] {
     match value {
         Some(value) => Option::Some(
-            TraitImpl {
+            LowerTraitImpl {
                 trait_ref: value.trait_ref,
                 for_ty: value.for_ty,
                 associated_types: value.associated_types,
@@ -962,7 +990,7 @@ fn transform_trait_impl(value: Option[mono::TraitImpl]) -> Option[TraitImpl] {
     }
 }
 
-fn transform_function(state: State, value: mono::Function) -> Function {
+fn transform_function(state: State, value: mono::Function) -> LowerFunction {
     let scope: Vec[ScopeEntry] = Vec::[];
     for param in value.params {
         scope.push(
@@ -977,7 +1005,7 @@ fn transform_function(state: State, value: mono::Function) -> Function {
         )
     }
     let context = sanitize_name(value.name);
-    Function {
+    LowerFunction {
         name: value.name,
         origin: transform_function_origin(value.origin),
         root: value.root,
@@ -988,18 +1016,10 @@ fn transform_function(state: State, value: mono::Function) -> Function {
     }
 }
 
-fn transform_type_instances(values: Vec[mono::TypeInstance]) -> Vec[TypeInstance] {
-    let result: Vec[TypeInstance] = Vec::with_capacity(values.len());
-    for value in values {
-        result.push(TypeInstance { base_name: value.base_name, args: value.args, name: value.name })
-    }
-    result
-}
-
-fn lambda_lift_with_counter(value: mono::File, counter: Ref[int]) -> File {
+fn lambda_lift_with_counter(value: mono::File, counter: Ref[int]) -> LambdaLiftResult {
     let enums = value.enums;
     let structs = value.structs;
-    let type_instances = transform_type_instances(value.type_instances);
+    let type_instances = value.type_instances;
     let constants = value.constants;
     let state = State {
         next_env: Ref::new(0),
@@ -1008,8 +1028,9 @@ fn lambda_lift_with_counter(value: mono::File, counter: Ref[int]) -> File {
         generated_structs: Vec::[],
         closures: Vec::[],
         used_types: initial_used_types(value),
+        error: Ref::new(Option::None),
     };
-    let functions: Vec[Function] = Vec::[];
+    let functions: Vec[LowerFunction] = Vec::[];
     for function in value.functions {
         functions.push(transform_function(state, function))
     }
@@ -1019,14 +1040,23 @@ fn lambda_lift_with_counter(value: mono::File, counter: Ref[int]) -> File {
     for generated_struct in state.generated_structs {
         structs.push(generated_struct)
     }
-    let closure_environments: Vec[string] = Vec::with_capacity(state.closures.len());
+    let closure_defs: Vec[LowerClosureDef] = Vec::with_capacity(state.closures.len());
     for info in state.closures {
-        closure_environments.push(info.struct_name)
+        closure_defs.push(
+            LowerClosureDef {
+                environment: info.struct_name,
+                apply: info.apply_name,
+                signature: info.signature,
+            },
+        )
     }
-    File { functions, enums, structs, type_instances, constants, closure_environments }
+    LambdaLiftResult {
+        file: LowerFile { functions, enums, structs, type_instances, constants, closure_defs },
+        error: state.error.get(),
+    }
 }
 
-fn lambda_lift(value: mono::File) -> File {
+fn lambda_lift(value: mono::File) -> LambdaLiftResult {
     let counter = Ref::new(initial_name_counter(value));
     lambda_lift_with_counter(value, counter)
 }

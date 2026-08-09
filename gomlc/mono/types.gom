@@ -1,0 +1,164 @@
+package mono;
+
+pub enum Type {
+    Unit,
+    Never,
+    Bool,
+    Int,
+    Int8,
+    Int16,
+    Int32,
+    Int64,
+    Uint,
+    Uint8,
+    Uint16,
+    Uint32,
+    Uint64,
+    Float32,
+    Float64,
+    String,
+    Char,
+    Tuple {
+        items: Vec[Type],
+    },
+    Named {
+        name: string,
+    },
+    Dyn {
+        trait_name: string,
+        args: Vec[Type],
+        associated_types: Vec[(string, Type)],
+        additional_bounds: Vec[DynTraitBound],
+    },
+    Array {
+        len: int,
+        elem: Type,
+    },
+    Slice {
+        elem: Type,
+    },
+    VecType {
+        elem: Type,
+    },
+    RefType {
+        elem: Type,
+    },
+    HashMap {
+        key: Type,
+        value: Type,
+    },
+    Channel {
+        elem: Type,
+    },
+    Func {
+        params: Vec[Type],
+        ret_ty: Type,
+    },
+}
+
+pub struct DynTraitBound {
+    pub trait_name: string,
+    pub args: Vec[Type],
+    pub associated_types: Vec[(string, Type)],
+}
+
+pub struct TraitRef {
+    pub name: string,
+    pub args: Vec[Type],
+}
+
+fn type_lists_equal(left: Vec[Type], right: Vec[Type]) -> bool {
+    if left.len() != right.len() {
+        false
+    } else {
+        for index in 0..left.len() {
+            if !types_equal(left[index], right[index]) {
+                return false
+            } else {}
+        }
+        true
+    }
+}
+
+fn named_types_equal(left: Vec[(string, Type)], right: Vec[(string, Type)]) -> bool {
+    if left.len() != right.len() {
+        false
+    } else {
+        for index in 0..left.len() {
+            if left[index].0 != right[index].0 || !types_equal(left[index].1, right[index].1) {
+                return false
+            } else {}
+        }
+        true
+    }
+}
+
+fn dyn_bounds_equal(left: Vec[DynTraitBound], right: Vec[DynTraitBound]) -> bool {
+    if left.len() != right.len() {
+        false
+    } else {
+        for index in 0..left.len() {
+            if left[index].trait_name != right[index].trait_name
+                || !type_lists_equal(left[index].args, right[index].args)
+                || !named_types_equal(left[index].associated_types, right[index].associated_types) {
+                return false
+            } else {}
+        }
+        true
+    }
+}
+
+pub fn trait_refs_equal(left: TraitRef, right: TraitRef) -> bool {
+    left.name == right.name && type_lists_equal(left.args, right.args)
+}
+
+pub fn types_equal(left: Type, right: Type) -> bool {
+    match (left, right) {
+        (Unit, Unit) | (Never, Never) | (Bool, Bool) | (Int, Int) | (Int8, Int8) | (Int16, Int16) | (
+            Int32,
+            Int32,
+        ) | (Int64, Int64) | (Uint, Uint) | (Uint8, Uint8) | (Uint16, Uint16) | (Uint32, Uint32) | (
+            Uint64,
+            Uint64,
+        ) | (Float32, Float32) | (Float64, Float64) | (String, String) | (Char, Char) => true,
+        (Tuple { items: left }, Tuple { items: right }) => type_lists_equal(left, right),
+        (Named { name: left }, Named { name: right }) => left == right,
+        (
+            Dyn {
+                trait_name: left_name,
+                args: left_args,
+                associated_types: left_associated,
+                additional_bounds: left_bounds,
+            },
+            Dyn {
+                trait_name: right_name,
+                args: right_args,
+                associated_types: right_associated,
+                additional_bounds: right_bounds,
+            },
+        ) => {
+            left_name == right_name && type_lists_equal(left_args, right_args)
+                && named_types_equal(left_associated, right_associated)
+                && dyn_bounds_equal(left_bounds, right_bounds)
+        },
+        (Array { len: left_len, elem: left }, Array { len: right_len, elem: right }) => {
+            left_len == right_len && types_equal(left, right)
+        },
+        (Slice { elem: left }, Slice { elem: right }) | (
+            VecType { elem: left },
+            VecType { elem: right },
+        ) | (RefType { elem: left }, RefType { elem: right }) | (
+            Channel { elem: left },
+            Channel { elem: right },
+        ) => types_equal(left, right),
+        (
+            HashMap { key: left_key, value: left_value },
+            HashMap { key: right_key, value: right_value },
+        ) => types_equal(left_key, right_key) && types_equal(left_value, right_value),
+        (
+            Func { params: left_params, ret_ty: left_ret },
+            Func { params: right_params, ret_ty: right_ret },
+        ) => type_lists_equal(left_params, right_params) && types_equal(left_ret, right_ret),
+        _ => false,
+    }
+}

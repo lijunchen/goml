@@ -53,7 +53,7 @@ pub fn link_with_dependencies(builtins: File, dependencies: Vec[File], user: Fil
     for function in user.functions {
         functions.push(function)
     }
-    let enums: Vec[tast::EnumDef] = Vec::[];
+    let enums: Vec[EnumDef] = Vec::[];
     for value in builtins.enums {
         enums.push(value)
     }
@@ -65,7 +65,7 @@ pub fn link_with_dependencies(builtins: File, dependencies: Vec[File], user: Fil
     for value in user.enums {
         enums.push(value)
     }
-    let structs: Vec[tast::StructDef] = Vec::[];
+    let structs: Vec[StructDef] = Vec::[];
     for value in builtins.structs {
         structs.push(value)
     }
@@ -89,7 +89,7 @@ pub fn link_with_dependencies(builtins: File, dependencies: Vec[File], user: Fil
     for value in user.type_instances {
         type_instances.push(value)
     }
-    let constants: Vec[tast::Constant] = Vec::[];
+    let constants: Vec[Constant] = Vec::[];
     for value in builtins.constants {
         constants.push(value)
     }

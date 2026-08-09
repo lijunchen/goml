@@ -2,7 +2,6 @@ package core;
 
 use gomlc::pretty;
 use std::text;
-use gomlc::tast;
 
 fn arguments(values: Vec[pretty::Doc]) -> pretty::Doc {
     pretty::delimited("(", ",", ")", values)
@@ -15,7 +14,7 @@ fn dyn_method_name(value: string) -> string {
     }
 }
 
-fn callable_doc(value: tast::Callable) -> pretty::Doc {
+fn callable_doc(value: Callable) -> pretty::Doc {
     match value {
         Function(name) => pretty::text(name),
         LangItem { item: _, function_name } => pretty::text(function_name),
@@ -25,13 +24,13 @@ fn callable_doc(value: tast::Callable) -> pretty::Doc {
             pretty::text("@go_ffi(" + import_path + ", " + symbol + ")")
         },
         TraitMethod { trait_ref: reference, method_name: name, .. } => pretty::concat(
-            Vec::[tast::trait_ref_doc(reference), pretty::text("::" + name)],
+            Vec::[trait_ref_doc(reference), pretty::text("::" + name)],
         ),
         DynTraitMethod { trait_name: owner, dispatch_name: _, method_name: name } => {
             pretty::text("dyn " + owner + "::" + name)
         },
         InherentMethod { receiver_ty: owner, method_name: name } => {
-            pretty::text(inherent_method_name(owner, name))
+            pretty::text(core_inherent_method_name(owner, name))
         },
     }
 }
@@ -67,7 +66,7 @@ fn record_doc(name: string, values: Vec[pretty::Doc]) -> pretty::Doc {
     }
 }
 
-fn constructor_doc(constructor: tast::Constructor, args: Vec[Expr]) -> pretty::Doc {
+fn constructor_doc(constructor: Constructor, args: Vec[Expr]) -> pretty::Doc {
     if constructor.is_struct {
         if constructor.fields.is_empty() && args.is_empty() {
             pretty::text(constructor.name + " {}")
@@ -154,7 +153,7 @@ fn expr_doc(value: Expr) -> pretty::Doc {
     match value {
         Var { name, ty: _ } => pretty::text(name),
         Callable { callable, ty: _ } => callable_doc(callable),
-        Prim { value, ty: _ } => tast::primitive_doc(value),
+        Prim { value, ty: _ } => primitive_doc(value),
         Constr { constructor, args, ty: _ } => constructor_doc(constructor, args),
         Tuple { items: values, ty: _ } => arguments(exprs_doc(values)),
         Array { items: values, ty: _ } => {
@@ -164,7 +163,7 @@ fn expr_doc(value: Expr) -> pretty::Doc {
             let values: Vec[pretty::Doc] = Vec::with_capacity(params.len());
             for param in params {
                 values.push(
-                    pretty::concat(Vec::[pretty::text(param.name + ": "), tast::type_doc(param.ty)]),
+                    pretty::concat(Vec::[pretty::text(param.name + ": "), type_doc(param.ty)]),
                 )
             }
             pretty::group(
@@ -274,14 +273,14 @@ fn expr_doc(value: Expr) -> pretty::Doc {
             )
         },
         Unary { op, expr: value, ty: _ } => pretty::concat(
-            Vec::[pretty::text("(" + tast::unary_symbol(op)), expr_doc(value), pretty::text(")")],
+            Vec::[pretty::text("(" + unary_symbol(op)), expr_doc(value), pretty::text(")")],
         ),
         Cast { expr: value, ty } => pretty::concat(
             Vec::[
                 pretty::text("("),
                 expr_doc(value),
                 pretty::text(" as "),
-                tast::type_doc(ty),
+                type_doc(ty),
                 pretty::text(")"),
             ],
         ),
@@ -290,7 +289,7 @@ fn expr_doc(value: Expr) -> pretty::Doc {
                 Vec::[
                     pretty::text("("),
                     expr_doc(lhs),
-                    pretty::text(" " + tast::binary_symbol(op)),
+                    pretty::text(" " + binary_symbol(op)),
                     pretty::nest(2, pretty::append(pretty::line(), expr_doc(rhs))),
                     pretty::text(")"),
                 ],
@@ -305,7 +304,7 @@ fn expr_doc(value: Expr) -> pretty::Doc {
         ToDyn { trait_name, for_ty, expr: value, ty: _ } => pretty::concat(
             Vec::[
                 pretty::text("to_dyn[" + trait_name + "]{"),
-                tast::type_doc(for_ty),
+                type_doc(for_ty),
                 pretty::text("}"),
                 arguments(Vec::[expr_doc(value)]),
             ],
@@ -337,7 +336,7 @@ fn expr_doc(value: Expr) -> pretty::Doc {
             pretty::concat(
                 Vec::[
                     pretty::text("trait_call["),
-                    tast::trait_ref_doc(reference),
+                    trait_ref_doc(reference),
                     pretty::text("::" + method_name + "]"),
                     arguments(values),
                 ],
@@ -349,10 +348,10 @@ fn expr_doc(value: Expr) -> pretty::Doc {
     }
 }
 
-fn params_doc(values: Vec[(string, tast::Type)]) -> pretty::Doc {
+fn params_doc(values: Vec[(string, Type)]) -> pretty::Doc {
     let result: Vec[pretty::Doc] = Vec::with_capacity(values.len());
     for value in values {
-        result.push(pretty::concat(Vec::[pretty::text(value.0 + ": "), tast::type_doc(value.1)]))
+        result.push(pretty::concat(Vec::[pretty::text(value.0 + ": "), type_doc(value.1)]))
     }
     arguments(result)
 }
@@ -374,7 +373,7 @@ fn function_doc(value: Function) -> pretty::Doc {
                 generics,
                 params_doc(value.params),
                 pretty::text(" -> "),
-                tast::type_doc(value.ret_ty),
+                type_doc(value.ret_ty),
             ],
         ),
         block_docs(value.body),
@@ -384,7 +383,7 @@ fn function_doc(value: Function) -> pretty::Doc {
 pub fn encode(value: File) -> string {
     let constants: Vec[pretty::Doc] = Vec::with_capacity(value.constants.len());
     for value in value.constants {
-        constants.push(tast::constant_doc(value))
+        constants.push(constant_doc(value))
     }
     let functions: Vec[pretty::Doc] = Vec::with_capacity(value.functions.len());
     for value in value.functions {

@@ -1,0 +1,481 @@
+package lift;
+
+use gomlc::mono;
+use gomlc::repr;
+use std::collections;
+
+fn detach_types(values: Vec[mono::Type], environments: Vec[string]) -> Vec[repr::Type] {
+    let result: Vec[repr::Type] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(detach_type(value, environments))
+    }
+    result
+}
+
+fn detach_named_types(values: Vec[(string, mono::Type)], environments: Vec[string]) -> Vec[
+    (string, repr::Type),
+] {
+    let result: Vec[(string, repr::Type)] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push((value.0, detach_type(value.1, environments)))
+    }
+    result
+}
+
+fn detach_type(value: mono::Type, environments: Vec[string]) -> repr::Type {
+    match value {
+        Unit => repr::Type::Unit,
+        Never => repr::Type::Never,
+        Bool => repr::Type::Bool,
+        Int => repr::Type::Int,
+        Int8 => repr::Type::Int8,
+        Int16 => repr::Type::Int16,
+        Int32 => repr::Type::Int32,
+        Int64 => repr::Type::Int64,
+        Uint => repr::Type::Uint,
+        Uint8 => repr::Type::Uint8,
+        Uint16 => repr::Type::Uint16,
+        Uint32 => repr::Type::Uint32,
+        Uint64 => repr::Type::Uint64,
+        Float32 => repr::Type::Float32,
+        Float64 => repr::Type::Float64,
+        String => repr::Type::String,
+        Char => repr::Type::Char,
+        Tuple { items } => repr::Type::Tuple { items: detach_types(items, environments) },
+        Named { name } => if collections::contains(environments, name) {
+            repr::Type::ClosureEnvironment { name }
+        } else {
+            repr::Type::Named { name }
+        },
+        Dyn { trait_name, args, associated_types, additional_bounds } => {
+            let bounds: Vec[repr::DynTraitBound] = Vec::with_capacity(additional_bounds.len());
+            for bound in additional_bounds {
+                bounds.push(
+                    repr::DynTraitBound {
+                        trait_name: bound.trait_name,
+                        args: detach_types(bound.args, environments),
+                        associated_types: detach_named_types(bound.associated_types, environments),
+                    },
+                )
+            }
+            repr::Type::Dyn {
+                trait_name,
+                args: detach_types(args, environments),
+                associated_types: detach_named_types(associated_types, environments),
+                additional_bounds: bounds,
+            }
+        },
+        Array { len, elem } => {
+            repr::Type::Array { len, elem: detach_type(elem, environments) }
+        },
+        Slice { elem } => repr::Type::Slice { elem: detach_type(elem, environments) },
+        VecType { elem } => repr::Type::VecType { elem: detach_type(elem, environments) },
+        RefType { elem } => repr::Type::RefType { elem: detach_type(elem, environments) },
+        HashMap { key, value } => repr::Type::HashMap {
+            key: detach_type(key, environments),
+            value: detach_type(value, environments),
+        },
+        Channel { elem } => repr::Type::Channel { elem: detach_type(elem, environments) },
+        Func { params, ret_ty } => repr::Type::Func {
+            params: detach_types(params, environments),
+            ret_ty: detach_type(ret_ty, environments),
+        },
+    }
+}
+
+fn detach_trait_ref(value: mono::TraitRef, environments: Vec[string]) -> repr::TraitRef {
+    repr::TraitRef { name: value.name, args: detach_types(value.args, environments) }
+}
+
+fn detach_primitive(value: mono::Primitive) -> repr::Primitive {
+    match value {
+        Unit => repr::Primitive::Unit,
+        Bool { value } => repr::Primitive::Bool { value },
+        Int { value } => repr::Primitive::Int { value },
+        Int8 { value } => repr::Primitive::Int8 { value },
+        Int16 { value } => repr::Primitive::Int16 { value },
+        Int32 { value } => repr::Primitive::Int32 { value },
+        Int64 { value } => repr::Primitive::Int64 { value },
+        Uint { value } => repr::Primitive::Uint { value },
+        Uint8 { value } => repr::Primitive::Uint8 { value },
+        Uint16 { value } => repr::Primitive::Uint16 { value },
+        Uint32 { value } => repr::Primitive::Uint32 { value },
+        Uint64 { value } => repr::Primitive::Uint64 { value },
+        Float { value } => repr::Primitive::Float { value },
+        Float32 { value } => repr::Primitive::Float32 { value },
+        Float64 { value } => repr::Primitive::Float64 { value },
+        String { value } => repr::Primitive::String { value },
+        Char { value } => repr::Primitive::Char { value },
+    }
+}
+
+fn detach_constructor(value: mono::Constructor) -> repr::Constructor {
+    repr::Constructor {
+        name: value.name,
+        fields: value.fields,
+        is_struct: value.is_struct,
+        tag: value.tag,
+    }
+}
+
+fn detach_callable(value: mono::Callable, environments: Vec[string]) -> repr::Callable {
+    match value {
+        Function(name) => repr::Callable::Function(name),
+        LangItem { item, function_name } => repr::Callable::LangItem { item, function_name },
+        Runtime(name) => repr::Callable::Runtime(name),
+        Intrinsic(name) => repr::Callable::Intrinsic(name),
+        GoForeign { import_path, symbol } => repr::Callable::GoForeign { import_path, symbol },
+        TraitMethod { trait_ref, method_name, for_ty, has_receiver } => repr::Callable::TraitMethod {
+            trait_ref: detach_trait_ref(trait_ref, environments),
+            method_name,
+            for_ty: detach_type(for_ty, environments),
+            has_receiver,
+        },
+        DynTraitMethod { trait_name, dispatch_name, method_name } => {
+            repr::Callable::DynTraitMethod { trait_name, dispatch_name, method_name }
+        },
+        InherentMethod { receiver_ty, method_name } => repr::Callable::InherentMethod {
+            receiver_ty: detach_type(receiver_ty, environments),
+            method_name,
+        },
+    }
+}
+
+fn detach_closure_params(values: Vec[mono::ClosureParam], environments: Vec[string]) -> Vec[
+    repr::ClosureParam,
+] {
+    let result: Vec[repr::ClosureParam] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(
+            repr::ClosureParam { name: value.name, ty: detach_type(value.ty, environments) },
+        )
+    }
+    result
+}
+
+fn detach_exprs(values: Vec[LowerExpr], environments: Vec[string]) -> Vec[Expr] {
+    let result: Vec[Expr] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(detach_expr(value, environments))
+    }
+    result
+}
+
+fn detach_optional_expr(value: Option[LowerExpr], environments: Vec[string]) -> Option[Expr] {
+    match value {
+        Some(value) => Option::Some(detach_expr(value, environments)),
+        None => Option::None,
+    }
+}
+
+fn detach_block(value: LowerBlock, environments: Vec[string]) -> Block {
+    let stmts: Vec[LetStmt] = Vec::with_capacity(value.stmts.len());
+    for statement in value.stmts {
+        stmts.push(
+            LetStmt {
+                name: statement.name,
+                value: detach_expr(statement.value, environments),
+                ty: detach_type(statement.ty, environments),
+            },
+        )
+    }
+    Block { stmts, tail: detach_optional_expr(value.tail, environments) }
+}
+
+fn detach_arms(values: Vec[LowerArm], environments: Vec[string]) -> Vec[Arm] {
+    let result: Vec[Arm] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(
+            Arm {
+                lhs: detach_expr(value.lhs, environments),
+                body: detach_expr(value.body, environments),
+            },
+        )
+    }
+    result
+}
+
+fn detach_expr(value: LowerExpr, environments: Vec[string]) -> Expr {
+    match value {
+        Var { name, ty } => Expr::Var { name, ty: detach_type(ty, environments) },
+        Callable { callable, ty } => Expr::Callable {
+            callable: detach_callable(callable, environments),
+            ty: detach_type(ty, environments),
+        },
+        Prim { value, ty } => {
+            Expr::Prim { value: detach_primitive(value), ty: detach_type(ty, environments) }
+        },
+        Constr { constructor, args, ty } => Expr::Constr {
+            constructor: detach_constructor(constructor),
+            args: detach_exprs(args, environments),
+            ty: detach_type(ty, environments),
+        },
+        Tuple { items, ty } => Expr::Tuple {
+            items: detach_exprs(items, environments),
+            ty: detach_type(ty, environments),
+        },
+        Array { items, ty } => Expr::Array {
+            items: detach_exprs(items, environments),
+            ty: detach_type(ty, environments),
+        },
+        Block { block, ty } => {
+            Expr::Block {
+                block: detach_block(block, environments),
+                ty: detach_type(ty, environments),
+            }
+        },
+        Match { expr, arms, default, ty } => Expr::Match {
+            expr: detach_expr(expr, environments),
+            arms: detach_arms(arms, environments),
+            default: detach_optional_expr(default, environments),
+            ty: detach_type(ty, environments),
+        },
+        If { cond, then_branch, else_branch, ty } => Expr::If {
+            cond: detach_expr(cond, environments),
+            then_branch: detach_expr(then_branch, environments),
+            else_branch: detach_expr(else_branch, environments),
+            ty: detach_type(ty, environments),
+        },
+        While { cond, body, ty } => Expr::While {
+            cond: detach_expr(cond, environments),
+            body: detach_expr(body, environments),
+            ty: detach_type(ty, environments),
+        },
+        Loop { body, ty } => {
+            Expr::Loop { body: detach_expr(body, environments), ty: detach_type(ty, environments) }
+        },
+        Break { target, value, ty } => Expr::Break {
+            target,
+            value: detach_optional_expr(value, environments),
+            ty: detach_type(ty, environments),
+        },
+        Continue { target, ty } => Expr::Continue { target, ty: detach_type(ty, environments) },
+        Return { expr, ty } => Expr::Return {
+            expr: detach_optional_expr(expr, environments),
+            ty: detach_type(ty, environments),
+        },
+        Go { expr, ty } => {
+            Expr::Go { expr: detach_expr(expr, environments), ty: detach_type(ty, environments) }
+        },
+        ConstrGet { expr, constructor, field_index, ty } => Expr::ConstrGet {
+            expr: detach_expr(expr, environments),
+            constructor: detach_constructor(constructor),
+            field_index,
+            ty: detach_type(ty, environments),
+        },
+        Unary { op, expr, ty } => Expr::Unary {
+            op,
+            expr: detach_expr(expr, environments),
+            ty: detach_type(ty, environments),
+        },
+        Cast { expr, ty } => {
+            Expr::Cast { expr: detach_expr(expr, environments), ty: detach_type(ty, environments) }
+        },
+        Binary { op, lhs, rhs, ty } => Expr::Binary {
+            op,
+            lhs: detach_expr(lhs, environments),
+            rhs: detach_expr(rhs, environments),
+            ty: detach_type(ty, environments),
+        },
+        Assign { name, value, target_ty, ty } => Expr::Assign {
+            name,
+            value: detach_expr(value, environments),
+            target_ty: detach_type(target_ty, environments),
+            ty: detach_type(ty, environments),
+        },
+        Call { func, args, ty } => Expr::Call {
+            func: detach_expr(func, environments),
+            args: detach_exprs(args, environments),
+            ty: detach_type(ty, environments),
+        },
+        ToDyn { trait_name, for_ty, expr, ty } => Expr::ToDyn {
+            trait_name,
+            for_ty: detach_type(for_ty, environments),
+            expr: detach_expr(expr, environments),
+            ty: detach_type(ty, environments),
+        },
+        DynCall { trait_name, method_name, receiver, args, ty } => Expr::DynCall {
+            trait_name,
+            method_name,
+            receiver: detach_expr(receiver, environments),
+            args: detach_exprs(args, environments),
+            ty: detach_type(ty, environments),
+        },
+        Proj { tuple, index, ty } => Expr::Proj {
+            tuple: detach_expr(tuple, environments),
+            index,
+            ty: detach_type(ty, environments),
+        },
+        PackClosure { environment, apply, ty } => Expr::PackClosure {
+            environment: detach_expr(environment, environments),
+            apply,
+            ty: detach_type(ty, environments),
+        },
+    }
+}
+
+fn detach_origin(value: LowerFunctionOrigin, environments: Vec[string]) -> FunctionOrigin {
+    match value {
+        Source => FunctionOrigin::Source,
+        Inherent { owner, method_name } => FunctionOrigin::Inherent {
+            owner: detach_type(owner, environments),
+            method_name,
+        },
+        TraitImplementation { method_name } => {
+            FunctionOrigin::TraitImplementation { method_name }
+        },
+    }
+}
+
+fn detach_trait_impl(value: LowerTraitImpl, environments: Vec[string]) -> TraitImpl {
+    TraitImpl {
+        trait_ref: detach_trait_ref(value.trait_ref, environments),
+        for_ty: detach_type(value.for_ty, environments),
+        associated_types: detach_named_types(value.associated_types, environments),
+    }
+}
+
+fn detach_function(value: LowerFunction, environments: Vec[string]) -> Function {
+    Function {
+        name: value.name,
+        origin: detach_origin(value.origin, environments),
+        root: value.root,
+        trait_impl: match value.trait_impl {
+            Some(value) => Option::Some(detach_trait_impl(value, environments)),
+            None => Option::None,
+        },
+        params: detach_named_types(value.params, environments),
+        ret_ty: detach_type(value.ret_ty, environments),
+        body: detach_block(value.body, environments),
+    }
+}
+
+fn detach_const_expr(value: mono::ConstExpr, environments: Vec[string]) -> repr::ConstExpr {
+    match value {
+        Prim { value, ty } => repr::ConstExpr::Prim {
+            value: detach_primitive(value),
+            ty: detach_type(ty, environments),
+        },
+        Ref { name, ty } => {
+            repr::ConstExpr::Ref { name, ty: detach_type(ty, environments) }
+        },
+        Unary { op, expr, ty } => repr::ConstExpr::Unary {
+            op,
+            expr: detach_const_expr(expr, environments),
+            ty: detach_type(ty, environments),
+        },
+        Cast { expr, ty } => repr::ConstExpr::Cast {
+            expr: detach_const_expr(expr, environments),
+            ty: detach_type(ty, environments),
+        },
+        Binary { op, lhs, rhs, ty } => repr::ConstExpr::Binary {
+            op,
+            lhs: detach_const_expr(lhs, environments),
+            rhs: detach_const_expr(rhs, environments),
+            ty: detach_type(ty, environments),
+        },
+    }
+}
+
+fn detach_constants(values: Vec[mono::Constant], environments: Vec[string]) -> Vec[repr::Constant] {
+    let result: Vec[repr::Constant] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(
+            repr::Constant {
+                name: value.name,
+                ty: detach_type(value.ty, environments),
+                value: detach_const_expr(value.value, environments),
+            },
+        )
+    }
+    result
+}
+
+fn detach_enum_fields(value: mono::EnumVariantFields, environments: Vec[string]) -> repr::EnumVariantFields {
+    match value {
+        Unit => repr::EnumVariantFields::Unit,
+        Tuple(values) => repr::EnumVariantFields::Tuple(detach_types(values, environments)),
+        Struct(values) => {
+            repr::EnumVariantFields::Struct(detach_named_types(values, environments))
+        },
+    }
+}
+
+fn detach_enum_defs(values: Vec[mono::EnumDef], environments: Vec[string]) -> Vec[repr::EnumDef] {
+    let result: Vec[repr::EnumDef] = Vec::with_capacity(values.len());
+    for value in values {
+        let variants: Vec[repr::EnumVariantDef] = Vec::with_capacity(value.variants.len());
+        for variant in value.variants {
+            variants.push(
+                repr::EnumVariantDef {
+                    name: variant.name,
+                    fields: detach_enum_fields(variant.fields, environments),
+                },
+            )
+        }
+        result.push(
+            repr::EnumDef { name: value.name, variants, option_variants: value.option_variants },
+        )
+    }
+    result
+}
+
+fn detach_struct_defs(values: Vec[mono::StructDef], environments: Vec[string]) -> Vec[
+    repr::StructDef,
+] {
+    let result: Vec[repr::StructDef] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(
+            repr::StructDef {
+                name: value.name,
+                fields: detach_named_types(value.fields, environments),
+                public_fields: value.public_fields,
+                has_hidden_fields: value.has_hidden_fields,
+            },
+        )
+    }
+    result
+}
+
+fn detach_type_instances(values: Vec[mono::TypeInstance], environments: Vec[string]) -> Vec[
+    repr::TypeInstance,
+] {
+    let result: Vec[repr::TypeInstance] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(
+            repr::TypeInstance {
+                base_name: value.base_name,
+                args: detach_types(value.args, environments),
+                name: value.name,
+            },
+        )
+    }
+    result
+}
+
+fn detach_file(value: LowerFile) -> File {
+    let environments: Vec[string] = Vec::with_capacity(value.closure_defs.len());
+    let closure_defs: Vec[repr::ClosureDef] = Vec::with_capacity(value.closure_defs.len());
+    for definition in value.closure_defs {
+        environments.push(definition.environment);
+        closure_defs.push(
+            repr::ClosureDef {
+                environment: definition.environment,
+                apply: definition.apply,
+                signature: detach_type(definition.signature, environments),
+            },
+        )
+    }
+    let functions: Vec[Function] = Vec::with_capacity(value.functions.len());
+    for function in value.functions {
+        functions.push(detach_function(function, environments))
+    }
+    File {
+        functions,
+        enums: detach_enum_defs(value.enums, environments),
+        structs: detach_struct_defs(value.structs, environments),
+        type_instances: detach_type_instances(value.type_instances, environments),
+        constants: detach_constants(value.constants, environments),
+        closure_defs,
+    }
+}

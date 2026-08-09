@@ -718,7 +718,7 @@ fn checked_hir_file(value: hir::LowerResult, package_name: string) -> hir::File 
     }
 }
 
-fn core_function_ret_type(functions: Vec[core::Function], name: string) -> Option[tast::Type] {
+fn core_function_ret_type(functions: Vec[core::Function], name: string) -> Option[core::Type] {
     for offset in 0..functions.len() {
         let function = functions[functions.len() - 1 - offset];
         if function.name == name {
@@ -756,7 +756,7 @@ fn add_entry_wrapper(value: core::File, package_name: string) -> core::File {
                             core::Expr::Call {
                                 func: core::Expr::Var {
                                     name: expected,
-                                    ty: tast::Type::Func { params: Vec::[], ret_ty },
+                                    ty: core::Type::Func { params: Vec::[], ret_ty },
                                 },
                                 args: Vec::[],
                                 ty: ret_ty,

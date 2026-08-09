@@ -1,7 +1,7 @@
 package anf;
 
 use gomlc::lift;
-use gomlc::tast;
+use gomlc::repr;
 
 fn lower_function_origin(value: lift::FunctionOrigin) -> FunctionOrigin {
     match value {
@@ -29,7 +29,7 @@ fn lower_function(state: State, value: lift::Function) -> Function {
     let takes_arg = !type_is_unit(value.ret_ty);
     let ret_join = if takes_arg {
         let ret_value = fresh(state, "retv");
-        let params: Vec[(string, tast::Type)] = Vec::[];
+        let params: Vec[(string, repr::Type)] = Vec::[];
         params.push((ret_value, value.ret_ty));
         JoinBind {
             name: ret_id,
@@ -78,25 +78,20 @@ fn lower_function(state: State, value: lift::Function) -> Function {
     }
 }
 
-fn lower_type_instances(values: Vec[lift::TypeInstance]) -> Vec[TypeInstance] {
-    let result: Vec[TypeInstance] = Vec::with_capacity(values.len());
-    for value in values {
-        result.push(TypeInstance { base_name: value.base_name, args: value.args, name: value.name })
-    }
-    result
-}
-
 pub fn lower_with_counter(value: lift::File, counter: Ref[int]) -> File {
     let enums = value.enums;
     let structs = value.structs;
-    let type_instances = lower_type_instances(value.type_instances);
+    let type_instances = value.type_instances;
     let constants = value.constants;
+    let closure_defs = value.closure_defs;
     let state = State { counter, loop_ctxs: Vec::[], return_ctx: Ref::new(Option::None) };
     let functions: Vec[Function] = Vec::[];
     for function in value.functions {
         functions.push(lower_function(state, function))
     }
-    let lowered = simplify(File { functions, enums, structs, type_instances, constants });
+    let lowered = simplify(
+        File { functions, enums, structs, type_instances, constants, closure_defs },
+    );
     let inlined = simplify(inline(lowered, counter));
     simplify(licm(simplify(commute(inlined, counter))))
 }

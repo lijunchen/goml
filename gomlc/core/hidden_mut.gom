@@ -560,74 +560,74 @@ fn hidden_cell_inner(cells: Vec[(string, tast::Type)], name: string) -> Option[t
     Option::None
 }
 
-fn intrinsic_expr(name: string, params: Vec[tast::Type], ret_ty: tast::Type) -> Expr {
-    Expr::Callable {
+fn intrinsic_expr(name: string, params: Vec[tast::Type], ret_ty: tast::Type) -> LowerExpr {
+    LowerExpr::Callable {
         callable: tast::Callable::Intrinsic(name),
         ty: tast::Type::Func { params, ret_ty },
     }
 }
 
-fn hidden_cell_var(name: string, inner_ty: tast::Type) -> Expr {
-    Expr::Var { name, ty: hidden_cell_type(inner_ty) }
+fn hidden_cell_var(name: string, inner_ty: tast::Type) -> LowerExpr {
+    LowerExpr::Var { name, ty: hidden_cell_type(inner_ty) }
 }
 
-fn hidden_ref_alloc(value: Expr, inner_ty: tast::Type) -> Expr {
+fn hidden_ref_alloc(value: LowerExpr, inner_ty: tast::Type) -> LowerExpr {
     let ref_ty = hidden_cell_type(inner_ty);
     let params: Vec[tast::Type] = Vec::[];
     params.push(inner_ty);
-    let args: Vec[Expr] = Vec::[];
+    let args: Vec[LowerExpr] = Vec::[];
     args.push(value);
-    Expr::Call { func: intrinsic_expr("ref.new", params, ref_ty), args, ty: ref_ty }
+    LowerExpr::Call { func: intrinsic_expr("ref.new", params, ref_ty), args, ty: ref_ty }
 }
 
-fn hidden_ref_get(name: string, inner_ty: tast::Type) -> Expr {
+fn hidden_ref_get(name: string, inner_ty: tast::Type) -> LowerExpr {
     let ref_ty = hidden_cell_type(inner_ty);
     let params: Vec[tast::Type] = Vec::[];
     params.push(ref_ty);
-    let args: Vec[Expr] = Vec::[];
+    let args: Vec[LowerExpr] = Vec::[];
     args.push(hidden_cell_var(name, inner_ty));
-    Expr::Call { func: intrinsic_expr("ref.get", params, inner_ty), args, ty: inner_ty }
+    LowerExpr::Call { func: intrinsic_expr("ref.get", params, inner_ty), args, ty: inner_ty }
 }
 
-fn hidden_ref_set(name: string, inner_ty: tast::Type, value: Expr) -> Expr {
+fn hidden_ref_set(name: string, inner_ty: tast::Type, value: LowerExpr) -> LowerExpr {
     let ref_ty = hidden_cell_type(inner_ty);
     let params: Vec[tast::Type] = Vec::[];
     params.push(ref_ty);
     params.push(inner_ty);
-    let args: Vec[Expr] = Vec::[];
+    let args: Vec[LowerExpr] = Vec::[];
     args.push(hidden_cell_var(name, inner_ty));
     args.push(value);
-    Expr::Call {
+    LowerExpr::Call {
         func: intrinsic_expr("ref.set", params, tast::Type::Unit),
         args,
         ty: tast::Type::Unit,
     }
 }
 
-fn lower_hidden_exprs(values: Vec[Expr], cells: Vec[(string, tast::Type)]) -> Vec[Expr] {
-    let result: Vec[Expr] = Vec::[];
+fn lower_hidden_exprs(values: Vec[LowerExpr], cells: Vec[(string, tast::Type)]) -> Vec[LowerExpr] {
+    let result: Vec[LowerExpr] = Vec::[];
     for value in values {
         result.push(lower_hidden_expr(value, cells))
     }
     result
 }
 
-fn lower_hidden_block(value: Block, cells: Vec[(string, tast::Type)]) -> Block {
-    let stmts: Vec[LetStmt] = Vec::[];
+fn lower_hidden_block(value: LowerBlock, cells: Vec[(string, tast::Type)]) -> LowerBlock {
+    let stmts: Vec[LowerLetStmt] = Vec::[];
     for stmt in value.stmts {
         let lowered = lower_hidden_expr(stmt.value, cells);
         match hidden_cell_inner(cells, stmt.name) {
             Some(inner_ty) => stmts.push(
-                LetStmt {
+                LowerLetStmt {
                     name: stmt.name,
                     value: hidden_ref_alloc(lowered, inner_ty),
                     ty: hidden_cell_type(inner_ty),
                 },
             ),
-            None => stmts.push(LetStmt { name: stmt.name, value: lowered, ty: stmt.ty }),
+            None => stmts.push(LowerLetStmt { name: stmt.name, value: lowered, ty: stmt.ty }),
         }
     }
-    Block {
+    LowerBlock {
         stmts,
         tail: match value.tail {
             Some(expr) => Option::Some(lower_hidden_expr(expr, cells)),
@@ -636,11 +636,11 @@ fn lower_hidden_block(value: Block, cells: Vec[(string, tast::Type)]) -> Block {
     }
 }
 
-fn lower_hidden_arms(values: Vec[Arm], cells: Vec[(string, tast::Type)]) -> Vec[Arm] {
-    let result: Vec[Arm] = Vec::[];
+fn lower_hidden_arms(values: Vec[LowerArm], cells: Vec[(string, tast::Type)]) -> Vec[LowerArm] {
+    let result: Vec[LowerArm] = Vec::[];
     for value in values {
         result.push(
-            Arm {
+            LowerArm {
                 lhs: lower_hidden_expr(value.lhs, cells),
                 body: lower_hidden_expr(value.body, cells),
             },
@@ -649,24 +649,24 @@ fn lower_hidden_arms(values: Vec[Arm], cells: Vec[(string, tast::Type)]) -> Vec[
     result
 }
 
-fn lower_hidden_expr(value: Expr, cells: Vec[(string, tast::Type)]) -> Expr {
+fn lower_hidden_expr(value: LowerExpr, cells: Vec[(string, tast::Type)]) -> LowerExpr {
     match value {
         Var { name, ty } => match hidden_cell_inner(cells, name) {
             Some(inner_ty) => hidden_ref_get(name, inner_ty),
-            None => Expr::Var { name, ty },
+            None => LowerExpr::Var { name, ty },
         },
-        Callable { callable, ty } => Expr::Callable { callable, ty },
-        Prim { value, ty } => Expr::Prim { value, ty },
+        Callable { callable, ty } => LowerExpr::Callable { callable, ty },
+        Prim { value, ty } => LowerExpr::Prim { value, ty },
         Constr { constructor, args, ty } => {
-            Expr::Constr { constructor, args: lower_hidden_exprs(args, cells), ty }
+            LowerExpr::Constr { constructor, args: lower_hidden_exprs(args, cells), ty }
         },
-        Tuple { items, ty } => Expr::Tuple { items: lower_hidden_exprs(items, cells), ty },
-        Array { items, ty } => Expr::Array { items: lower_hidden_exprs(items, cells), ty },
+        Tuple { items, ty } => LowerExpr::Tuple { items: lower_hidden_exprs(items, cells), ty },
+        Array { items, ty } => LowerExpr::Array { items: lower_hidden_exprs(items, cells), ty },
         Closure { params, body, ty } => {
-            Expr::Closure { params, body: lower_hidden_expr(body, cells), ty }
+            LowerExpr::Closure { params, body: lower_hidden_expr(body, cells), ty }
         },
-        Block { block, ty } => Expr::Block { block: lower_hidden_block(block, cells), ty },
-        Match { expr: source, arms, default, ty } => Expr::Match {
+        Block { block, ty } => LowerExpr::Block { block: lower_hidden_block(block, cells), ty },
+        Match { expr: source, arms, default, ty } => LowerExpr::Match {
             expr: lower_hidden_expr(source, cells),
             arms: lower_hidden_arms(arms, cells),
             default: match default {
@@ -675,21 +675,21 @@ fn lower_hidden_expr(value: Expr, cells: Vec[(string, tast::Type)]) -> Expr {
             },
             ty,
         },
-        If { cond, then_branch, else_branch, ty } => Expr::If {
+        If { cond, then_branch, else_branch, ty } => LowerExpr::If {
             cond: lower_hidden_expr(cond, cells),
             then_branch: lower_hidden_expr(then_branch, cells),
             else_branch: lower_hidden_expr(else_branch, cells),
             ty,
         },
         While { cond, body, ty } => {
-            Expr::While {
+            LowerExpr::While {
                 cond: lower_hidden_expr(cond, cells),
                 body: lower_hidden_expr(body, cells),
                 ty,
             }
         },
-        Loop { body, ty } => Expr::Loop { body: lower_hidden_expr(body, cells), ty },
-        Break { target, value, ty } => Expr::Break {
+        Loop { body, ty } => LowerExpr::Loop { body: lower_hidden_expr(body, cells), ty },
+        Break { target, value, ty } => LowerExpr::Break {
             target,
             value: match value {
                 Some(expr) => Option::Some(lower_hidden_expr(expr, cells)),
@@ -697,24 +697,24 @@ fn lower_hidden_expr(value: Expr, cells: Vec[(string, tast::Type)]) -> Expr {
             },
             ty,
         },
-        Continue { target, ty } => Expr::Continue { target, ty },
-        Return { expr, ty } => Expr::Return {
+        Continue { target, ty } => LowerExpr::Continue { target, ty },
+        Return { expr, ty } => LowerExpr::Return {
             expr: match expr {
                 Some(value) => Option::Some(lower_hidden_expr(value, cells)),
                 None => Option::None,
             },
             ty,
         },
-        Go { expr, ty } => Expr::Go { expr: lower_hidden_expr(expr, cells), ty },
-        ConstrGet { expr, constructor, field_index, ty } => Expr::ConstrGet {
+        Go { expr, ty } => LowerExpr::Go { expr: lower_hidden_expr(expr, cells), ty },
+        ConstrGet { expr, constructor, field_index, ty } => LowerExpr::ConstrGet {
             expr: lower_hidden_expr(expr, cells),
             constructor,
             field_index,
             ty,
         },
-        Unary { op, expr, ty } => Expr::Unary { op, expr: lower_hidden_expr(expr, cells), ty },
-        Cast { expr, ty } => Expr::Cast { expr: lower_hidden_expr(expr, cells), ty },
-        Binary { op, lhs: left, rhs: right, ty } => Expr::Binary {
+        Unary { op, expr, ty } => LowerExpr::Unary { op, expr: lower_hidden_expr(expr, cells), ty },
+        Cast { expr, ty } => LowerExpr::Cast { expr: lower_hidden_expr(expr, cells), ty },
+        Binary { op, lhs: left, rhs: right, ty } => LowerExpr::Binary {
             op,
             lhs: lower_hidden_expr(left, cells),
             rhs: lower_hidden_expr(right, cells),
@@ -724,18 +724,18 @@ fn lower_hidden_expr(value: Expr, cells: Vec[(string, tast::Type)]) -> Expr {
             let expr = lower_hidden_expr(expr, cells);
             match hidden_cell_inner(cells, name) {
                 Some(inner_ty) => hidden_ref_set(name, inner_ty, expr),
-                None => Expr::Assign { name, value: expr, target_ty, ty },
+                None => LowerExpr::Assign { name, value: expr, target_ty, ty },
             }
         },
-        Call { func: function, args, ty } => Expr::Call {
+        Call { func: function, args, ty } => LowerExpr::Call {
             func: lower_hidden_expr(function, cells),
             args: lower_hidden_exprs(args, cells),
             ty,
         },
         ToDyn { trait_name: name, for_ty, expr, ty } => {
-            Expr::ToDyn { trait_name: name, for_ty, expr: lower_hidden_expr(expr, cells), ty }
+            LowerExpr::ToDyn { trait_name: name, for_ty, expr: lower_hidden_expr(expr, cells), ty }
         },
-        DynCall { trait_name: owner, method_name: name, receiver, args, ty } => Expr::DynCall {
+        DynCall { trait_name: owner, method_name: name, receiver, args, ty } => LowerExpr::DynCall {
             trait_name: owner,
             method_name: name,
             receiver: lower_hidden_expr(receiver, cells),
@@ -750,7 +750,7 @@ fn lower_hidden_expr(value: Expr, cells: Vec[(string, tast::Type)]) -> Expr {
             receiver,
             args,
             ty,
-        } => Expr::TraitCall {
+        } => LowerExpr::TraitCall {
             trait_ref: reference,
             method_name: name,
             instance_name,
@@ -763,7 +763,7 @@ fn lower_hidden_expr(value: Expr, cells: Vec[(string, tast::Type)]) -> Expr {
             ty,
         },
         Proj { tuple: expr, index, ty } => {
-            Expr::Proj { tuple: lower_hidden_expr(expr, cells), index, ty }
+            LowerExpr::Proj { tuple: lower_hidden_expr(expr, cells), index, ty }
         },
     }
 }

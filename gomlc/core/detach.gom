@@ -1,0 +1,224 @@
+package core;
+
+use gomlc::tast;
+
+fn detach_exprs(values: Vec[LowerExpr]) -> Vec[Expr] {
+    let result: Vec[Expr] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(detach_expr(value))
+    }
+    result
+}
+
+fn detach_optional_expr(value: Option[LowerExpr]) -> Option[Expr] {
+    match value {
+        Some(value) => Option::Some(detach_expr(value)),
+        None => Option::None,
+    }
+}
+
+fn detach_control_type(value: tast::Type) -> Type {
+    match lower_type(value) {
+        Error => Type::Never,
+        other => other,
+    }
+}
+
+fn detach_block(value: LowerBlock) -> Block {
+    let stmts: Vec[LetStmt] = Vec::with_capacity(value.stmts.len());
+    for statement in value.stmts {
+        let detached = detach_expr(statement.value);
+        stmts.push(LetStmt { name: statement.name, value: detached, ty: expr_type(detached) })
+    }
+    Block { stmts, tail: detach_optional_expr(value.tail) }
+}
+
+fn detach_arms(values: Vec[LowerArm]) -> Vec[Arm] {
+    let result: Vec[Arm] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(Arm { lhs: detach_expr(value.lhs), body: detach_expr(value.body) })
+    }
+    result
+}
+
+fn detach_expr(value: LowerExpr) -> Expr {
+    match value {
+        Var { name, ty } => Expr::Var { name, ty: lower_type(ty) },
+        Callable { callable, ty } => {
+            Expr::Callable { callable: lower_callable(callable), ty: lower_type(ty) }
+        },
+        Prim { value, ty } => {
+            Expr::Prim { value: lower_primitive(value), ty: lower_type(ty) }
+        },
+        Constr { constructor, args, ty } => Expr::Constr {
+            constructor: lower_constructor(constructor),
+            args: detach_exprs(args),
+            ty: lower_type(ty),
+        },
+        Tuple { items, ty } => Expr::Tuple { items: detach_exprs(items), ty: lower_type(ty) },
+        Array { items, ty } => Expr::Array { items: detach_exprs(items), ty: lower_type(ty) },
+        Closure { params, body, ty } => Expr::Closure {
+            params: lower_closure_params(params),
+            body: detach_expr(body),
+            ty: lower_type(ty),
+        },
+        Block { block, ty } => Expr::Block { block: detach_block(block), ty: lower_type(ty) },
+        Match { expr, arms, default, ty } => Expr::Match {
+            expr: detach_expr(expr),
+            arms: detach_arms(arms),
+            default: detach_optional_expr(default),
+            ty: lower_type(ty),
+        },
+        If { cond, then_branch, else_branch, ty } => Expr::If {
+            cond: detach_expr(cond),
+            then_branch: detach_expr(then_branch),
+            else_branch: detach_expr(else_branch),
+            ty: detach_control_type(ty),
+        },
+        While { cond, body, ty } => Expr::While {
+            cond: detach_expr(cond),
+            body: detach_expr(body),
+            ty: lower_type(ty),
+        },
+        Loop { body, ty } => Expr::Loop { body: detach_expr(body), ty: lower_type(ty) },
+        Break { target, value, ty } => {
+            Expr::Break { target, value: detach_optional_expr(value), ty: detach_control_type(ty) }
+        },
+        Continue { target, ty } => Expr::Continue { target, ty: detach_control_type(ty) },
+        Return { expr, ty } => {
+            Expr::Return { expr: detach_optional_expr(expr), ty: detach_control_type(ty) }
+        },
+        Go { expr, ty } => Expr::Go { expr: detach_expr(expr), ty: lower_type(ty) },
+        ConstrGet { expr, constructor, field_index, ty } => Expr::ConstrGet {
+            expr: detach_expr(expr),
+            constructor: lower_constructor(constructor),
+            field_index,
+            ty: lower_type(ty),
+        },
+        Unary { op, expr, ty } => {
+            Expr::Unary { op, expr: detach_expr(expr), ty: lower_type(ty) }
+        },
+        Cast { expr, ty } => Expr::Cast { expr: detach_expr(expr), ty: lower_type(ty) },
+        Binary { op, lhs, rhs, ty } => Expr::Binary {
+            op,
+            lhs: detach_expr(lhs),
+            rhs: detach_expr(rhs),
+            ty: lower_type(ty),
+        },
+        Assign { name, value, target_ty, ty } => Expr::Assign {
+            name,
+            value: detach_expr(value),
+            target_ty: lower_type(target_ty),
+            ty: lower_type(ty),
+        },
+        Call { func, args, ty } => {
+            Expr::Call { func: detach_expr(func), args: detach_exprs(args), ty: lower_type(ty) }
+        },
+        ToDyn { trait_name, for_ty, expr, ty } => Expr::ToDyn {
+            trait_name,
+            for_ty: lower_type(for_ty),
+            expr: detach_expr(expr),
+            ty: lower_type(ty),
+        },
+        DynCall { trait_name, method_name, receiver, args, ty } => Expr::DynCall {
+            trait_name,
+            method_name,
+            receiver: detach_expr(receiver),
+            args: detach_exprs(args),
+            ty: lower_type(ty),
+        },
+        TraitCall { trait_ref, method_name, instance_name, for_ty, receiver, args, ty } => {
+            Expr::TraitCall {
+                trait_ref: lower_trait_ref(trait_ref),
+                method_name,
+                instance_name,
+                for_ty: lower_type(for_ty),
+                receiver: detach_optional_expr(receiver),
+                args: detach_exprs(args),
+                ty: lower_type(ty),
+            }
+        },
+        Proj { tuple, index, ty } => {
+            Expr::Proj { tuple: detach_expr(tuple), index, ty: lower_type(ty) }
+        },
+    }
+}
+
+fn detach_origin(value: LowerFunctionOrigin) -> FunctionOrigin {
+    match value {
+        Source => FunctionOrigin::Source,
+        Inherent { owner, method_name } => {
+            FunctionOrigin::Inherent { owner: lower_type(owner), method_name }
+        },
+        TraitImplementation { method_name } => {
+            FunctionOrigin::TraitImplementation { method_name }
+        },
+    }
+}
+
+fn detach_trait_impl(value: LowerTraitImpl) -> TraitImpl {
+    TraitImpl {
+        trait_ref: lower_trait_ref(value.trait_ref),
+        for_ty: lower_type(value.for_ty),
+        associated_types: {
+            let result: Vec[(string, Type)] = Vec::with_capacity(value.associated_types.len());
+            for associated in value.associated_types {
+                result.push((associated.0, lower_type(associated.1)))
+            }
+            result
+        },
+        generic_count: value.generic_count,
+        predicate_count: value.predicate_count,
+    }
+}
+
+fn detach_function(value: LowerFunction) -> Function {
+    let params: Vec[(string, Type)] = Vec::with_capacity(value.params.len());
+    for param in value.params {
+        params.push((param.0, lower_type(param.1)))
+    }
+    Function {
+        name: value.name,
+        origin: detach_origin(value.origin),
+        root: value.root,
+        generics: value.generics,
+        predicates: lower_predicates(value.predicates),
+        trait_impl: match value.trait_impl {
+            Some(value) => Option::Some(detach_trait_impl(value)),
+            None => Option::None,
+        },
+        params,
+        ret_ty: lower_type(value.ret_ty),
+        body: detach_block(value.body),
+    }
+}
+
+fn detach_file(value: LowerFile) -> File {
+    let functions: Vec[Function] = Vec::with_capacity(value.functions.len());
+    for function in value.functions {
+        functions.push(detach_function(function))
+    }
+    let type_instances: Vec[TypeInstance] = Vec::with_capacity(value.type_instances.len());
+    for instance in value.type_instances {
+        type_instances.push(
+            TypeInstance {
+                base_name: instance.base_name,
+                args: {
+                    let args: Vec[Type] = Vec::with_capacity(instance.args.len());
+                    for arg in instance.args {
+                        args.push(lower_type(arg))
+                    }
+                    args
+                },
+                name: instance.name,
+            },
+        )
+    }
+    File {
+        functions,
+        enums: lower_enum_defs(value.enums),
+        structs: lower_struct_defs(value.structs),
+        type_instances,
+        constants: lower_constants(value.constants),
+    }
+}

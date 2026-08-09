@@ -10,7 +10,7 @@ struct PatternBinding {
 }
 
 struct PatternPlan {
-    projections: Vec[LetStmt],
+    projections: Vec[LowerLetStmt],
     bindings: Vec[PatternBinding],
 }
 
@@ -88,16 +88,16 @@ fn plan_flat_pattern(ctx: Lowerer, source: string, pattern: tast::Pat) -> Option
                 for _ in types {
                     names.push(gensym(ctx, "x"))
                 }
-                let projections: Vec[LetStmt] = Vec::[];
+                let projections: Vec[LowerLetStmt] = Vec::[];
                 let bindings: Vec[PatternBinding] = Vec::[];
                 for index in 0..items.len() {
                     let item_ty = types[index];
                     let projection_name = names[index];
                     projections.push(
-                        LetStmt {
+                        LowerLetStmt {
                             name: projection_name,
-                            value: Expr::Proj {
-                                tuple: Expr::Var { name: source, ty: tuple_ty },
+                            value: LowerExpr::Proj {
+                                tuple: LowerExpr::Var { name: source, ty: tuple_ty },
                                 index,
                                 ty: item_ty,
                             },
@@ -124,17 +124,17 @@ fn plan_flat_pattern(ctx: Lowerer, source: string, pattern: tast::Pat) -> Option
             for _ in items {
                 names.push(gensym(ctx, "x"))
             }
-            let projections: Vec[LetStmt] = Vec::[];
+            let projections: Vec[LowerLetStmt] = Vec::[];
             let bindings: Vec[PatternBinding] = Vec::[];
             for index in 0..items.len() {
                 let item = items[index];
                 let item_ty = tast::pat_type(item);
                 let projection_name = names[index];
                 projections.push(
-                    LetStmt {
+                    LowerLetStmt {
                         name: projection_name,
-                        value: Expr::ConstrGet {
-                            expr: Expr::Var { name: source, ty: struct_ty },
+                        value: LowerExpr::ConstrGet {
+                            expr: LowerExpr::Var { name: source, ty: struct_ty },
                             constructor,
                             field_index: index,
                             ty: item_ty,
@@ -158,21 +158,24 @@ fn plan_flat_pattern(ctx: Lowerer, source: string, pattern: tast::Pat) -> Option
     }
 }
 
-fn apply_pattern_plan(plan: PatternPlan, body: Expr, body_ty: tast::Type) -> Expr {
+fn apply_pattern_plan(plan: PatternPlan, body: LowerExpr, body_ty: tast::Type) -> LowerExpr {
     let mut result = body;
     for binding in plan.bindings {
-        let stmts: Vec[LetStmt] = Vec::[];
+        let stmts: Vec[LowerLetStmt] = Vec::[];
         stmts.push(
-            LetStmt {
+            LowerLetStmt {
                 name: binding.name,
-                value: Expr::Var { name: binding.source, ty: binding.ty },
+                value: LowerExpr::Var { name: binding.source, ty: binding.ty },
                 ty: binding.ty,
             },
         );
-        result = Expr::Block { block: Block { stmts, tail: Option::Some(result) }, ty: body_ty };
+        result = LowerExpr::Block {
+            block: LowerBlock { stmts, tail: Option::Some(result) },
+            ty: body_ty,
+        };
     }
-    Expr::Block {
-        block: Block { stmts: plan.projections, tail: Option::Some(result) },
+    LowerExpr::Block {
+        block: LowerBlock { stmts: plan.projections, tail: Option::Some(result) },
         ty: body_ty,
     }
 }
@@ -283,19 +286,22 @@ fn branch_pattern_column(rows: Vec[PatternRow]) -> Option[PatternColumn] {
     }
 }
 
-fn lower_pattern_row_body(ctx: Lowerer, row: PatternRow) -> Expr {
+fn lower_pattern_row_body(ctx: Lowerer, row: PatternRow) -> LowerExpr {
     let body_ty = tast::expr_type(row.body);
     let mut result = lower_expr(ctx, row.body);
     for binding in row.bindings {
-        let stmts: Vec[LetStmt] = Vec::[];
+        let stmts: Vec[LowerLetStmt] = Vec::[];
         stmts.push(
-            LetStmt {
+            LowerLetStmt {
                 name: binding.name,
-                value: Expr::Var { name: binding.source, ty: binding.ty },
+                value: LowerExpr::Var { name: binding.source, ty: binding.ty },
                 ty: binding.ty,
             },
         );
-        result = Expr::Block { block: Block { stmts, tail: Option::Some(result) }, ty: body_ty };
+        result = LowerExpr::Block {
+            block: LowerBlock { stmts, tail: Option::Some(result) },
+            ty: body_ty,
+        };
     }
     result
 }
@@ -379,19 +385,19 @@ fn lower_tuple_pattern_rows(
     column: PatternColumn,
     types: Vec[tast::Type],
     ty: tast::Type,
-) -> Expr {
+) -> LowerExpr {
     let names: Vec[string] = Vec::[];
     for _ in types {
         names.push(gensym(ctx, "x"))
     }
     let inner = lower_pattern_rows(ctx, tuple_pattern_rows(rows, column.source, names, types), ty);
-    let stmts: Vec[LetStmt] = Vec::[];
+    let stmts: Vec[LowerLetStmt] = Vec::[];
     for index in 0..types.len() {
         stmts.push(
-            LetStmt {
+            LowerLetStmt {
                 name: names[index],
-                value: Expr::Proj {
-                    tuple: Expr::Var { name: column.source, ty: column.source_ty },
+                value: LowerExpr::Proj {
+                    tuple: LowerExpr::Var { name: column.source, ty: column.source_ty },
                     index,
                     ty: types[index],
                 },
@@ -399,7 +405,7 @@ fn lower_tuple_pattern_rows(
             },
         )
     }
-    Expr::Block { block: Block { stmts, tail: Option::Some(inner) }, ty }
+    LowerExpr::Block { block: LowerBlock { stmts, tail: Option::Some(inner) }, ty }
 }
 
 fn struct_pattern_row(
@@ -459,19 +465,19 @@ fn lower_struct_pattern_rows(
     constructor: tast::Constructor,
     fields: Vec[(string, tast::Type)],
     ty: tast::Type,
-) -> Expr {
+) -> LowerExpr {
     let names: Vec[string] = Vec::[];
     for _ in fields {
         names.push(gensym(ctx, "x"))
     }
     let inner = lower_pattern_rows(ctx, struct_pattern_rows(rows, column.source, names, fields), ty);
-    let stmts: Vec[LetStmt] = Vec::[];
+    let stmts: Vec[LowerLetStmt] = Vec::[];
     for index in 0..fields.len() {
         stmts.push(
-            LetStmt {
+            LowerLetStmt {
                 name: names[index],
-                value: Expr::ConstrGet {
-                    expr: Expr::Var { name: column.source, ty: column.source_ty },
+                value: LowerExpr::ConstrGet {
+                    expr: LowerExpr::Var { name: column.source, ty: column.source_ty },
                     constructor,
                     field_index: index,
                     ty: fields[index].1,
@@ -480,7 +486,7 @@ fn lower_struct_pattern_rows(
             },
         )
     }
-    Expr::Block { block: Block { stmts, tail: Option::Some(inner) }, ty }
+    LowerExpr::Block { block: LowerBlock { stmts, tail: Option::Some(inner) }, ty }
 }
 
 fn enum_pattern_row(
@@ -578,7 +584,7 @@ fn lower_enum_pattern_rows(
     definition: tast::EnumDef,
     type_args: Vec[tast::Type],
     ty: tast::Type,
-) -> Expr {
+) -> LowerExpr {
     let cases: Vec[PatternEnumCase] = Vec::[];
     for variant_index in 0..definition.variants.len() {
         let variant = definition.variants[variant_index];
@@ -605,18 +611,18 @@ fn lower_enum_pattern_rows(
         } else {}
     }
     let complete = cases.len() == definition.variants.len();
-    let arms: Vec[Arm] = Vec::[];
+    let arms: Vec[LowerArm] = Vec::[];
     for case in cases {
-        let args: Vec[Expr] = Vec::[];
-        let stmts: Vec[LetStmt] = Vec::[];
+        let args: Vec[LowerExpr] = Vec::[];
+        let stmts: Vec[LowerLetStmt] = Vec::[];
         for index in 0..case.variables.len() {
             let variable = case.variables[index];
-            args.push(Expr::Var { name: variable.0, ty: variable.1 });
+            args.push(LowerExpr::Var { name: variable.0, ty: variable.1 });
             stmts.push(
-                LetStmt {
+                LowerLetStmt {
                     name: variable.0,
-                    value: Expr::ConstrGet {
-                        expr: Expr::Var { name: column.source, ty: column.source_ty },
+                    value: LowerExpr::ConstrGet {
+                        expr: LowerExpr::Var { name: column.source, ty: column.source_ty },
                         constructor: case.constructor,
                         field_index: index,
                         ty: variable.1,
@@ -629,11 +635,11 @@ fn lower_enum_pattern_rows(
         let body = if stmts.is_empty() {
             inner
         } else {
-            Expr::Block { block: Block { stmts, tail: Option::Some(inner) }, ty }
+            LowerExpr::Block { block: LowerBlock { stmts, tail: Option::Some(inner) }, ty }
         };
         arms.push(
-            Arm {
-                lhs: Expr::Constr { constructor: case.constructor, args, ty: column.source_ty },
+            LowerArm {
+                lhs: LowerExpr::Constr { constructor: case.constructor, args, ty: column.source_ty },
                 body,
             },
         )
@@ -644,7 +650,12 @@ fn lower_enum_pattern_rows(
     } else {
         Option::Some(lower_pattern_rows(ctx, defaults, ty))
     };
-    Expr::Match { expr: Expr::Var { name: column.source, ty: column.source_ty }, arms, default, ty }
+    LowerExpr::Match {
+        expr: LowerExpr::Var { name: column.source, ty: column.source_ty },
+        arms,
+        default,
+        ty,
+    }
 }
 
 fn lower_bool_pattern_rows(
@@ -652,18 +663,18 @@ fn lower_bool_pattern_rows(
     rows: Vec[PatternRow],
     column: PatternColumn,
     ty: tast::Type,
-) -> Expr {
-    let arms: Vec[Arm] = Vec::[];
+) -> LowerExpr {
+    let arms: Vec[LowerArm] = Vec::[];
     for expected in Vec::[true, false] {
         arms.push(
-            Arm {
+            LowerArm {
                 lhs: bool_expr(expected),
                 body: lower_pattern_rows(ctx, bool_pattern_rows(rows, column.source, expected), ty),
             },
         )
     }
-    Expr::Match {
-        expr: Expr::Var { name: column.source, ty: column.source_ty },
+    LowerExpr::Match {
+        expr: LowerExpr::Var { name: column.source, ty: column.source_ty },
         arms,
         default: Option::None,
         ty,
@@ -701,16 +712,16 @@ fn lower_unit_pattern_rows(
     rows: Vec[PatternRow],
     column: PatternColumn,
     ty: tast::Type,
-) -> Expr {
-    let arms: Vec[Arm] = Vec::[];
+) -> LowerExpr {
+    let arms: Vec[LowerArm] = Vec::[];
     arms.push(
-        Arm {
-            lhs: Expr::Prim { value: tast::Primitive::Unit, ty: tast::Type::Unit },
+        LowerArm {
+            lhs: LowerExpr::Prim { value: tast::Primitive::Unit, ty: tast::Type::Unit },
             body: lower_pattern_rows(ctx, unit_pattern_rows(rows, column.source), ty),
         },
     );
-    Expr::Match {
-        expr: Expr::Var { name: column.source, ty: column.source_ty },
+    LowerExpr::Match {
+        expr: LowerExpr::Var { name: column.source, ty: column.source_ty },
         arms,
         default: Option::None,
         ty,
@@ -789,12 +800,12 @@ fn lower_primitive_pattern_rows(
     rows: Vec[PatternRow],
     column: PatternColumn,
     ty: tast::Type,
-) -> Expr {
-    let arms: Vec[Arm] = Vec::[];
+) -> LowerExpr {
+    let arms: Vec[LowerArm] = Vec::[];
     for case in primitive_pattern_cases(rows, column.source) {
         arms.push(
-            Arm {
-                lhs: Expr::Prim { value: case.value, ty: case.ty },
+            LowerArm {
+                lhs: LowerExpr::Prim { value: case.value, ty: case.ty },
                 body: lower_pattern_rows(
                     ctx,
                     primitive_pattern_rows(rows, column.source, case.key),
@@ -809,7 +820,12 @@ fn lower_primitive_pattern_rows(
     } else {
         Option::Some(lower_pattern_rows(ctx, defaults, ty))
     };
-    Expr::Match { expr: Expr::Var { name: column.source, ty: column.source_ty }, arms, default, ty }
+    LowerExpr::Match {
+        expr: LowerExpr::Var { name: column.source, ty: column.source_ty },
+        arms,
+        default,
+        ty,
+    }
 }
 
 fn primitive_pattern_type(value: tast::Type) -> bool {
@@ -819,7 +835,7 @@ fn primitive_pattern_type(value: tast::Type) -> bool {
     }
 }
 
-fn lower_pattern_rows(ctx: Lowerer, values: Vec[PatternRow], ty: tast::Type) -> Expr {
+fn lower_pattern_rows(ctx: Lowerer, values: Vec[PatternRow], ty: tast::Type) -> LowerExpr {
     let rows = normalize_pattern_rows(values);
     if rows.is_empty() {
         missing_expr(ty)

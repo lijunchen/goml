@@ -123,7 +123,11 @@ fn dce_expr(value: Expr) -> Expr {
             args: dce_exprs(args),
             ty,
         },
-        Invalid { ty } => Expr::Invalid { ty },
+        PackClosure { environment, apply, ty } => Expr::PackClosure {
+            environment: dce_expr(environment),
+            apply,
+            ty,
+        },
         Proj { tuple, index, ty } => Expr::Proj { tuple: dce_expr(tuple), index, ty },
     }
 }
@@ -143,7 +147,7 @@ fn dce_pattern_names(value: Expr, result: DceNames) -> unit {
             ..,
         } | Cast { .. } | Binary { .. } | Assign { .. } | Call { .. } | ToDyn { .. } | DynCall {
             ..,
-        } | Proj { .. } | Invalid { .. } => (),
+        } | PackClosure { .. } | Proj { .. } => (),
     }
 }
 
@@ -168,7 +172,7 @@ fn dce_collect_block(result: DceNames, value: Block) -> unit {
 fn dce_collect_expr(result: DceNames, value: Expr) -> unit {
     match value {
         Var { name, ty: _ } => dce_names_add(result, name),
-        Callable { .. } | Prim { .. } | Invalid { .. } => (),
+        Callable { .. } | Prim { .. } => (),
         Constr { constructor: _, args, ty: _ } => dce_collect_exprs(result, args),
         Tuple { items, ty: _ } | Array { items, ty: _ } => dce_collect_exprs(result, items),
         Block { block, ty: _ } => dce_collect_block(result, block),
@@ -219,6 +223,7 @@ fn dce_collect_expr(result: DceNames, value: Expr) -> unit {
             dce_collect_expr(result, receiver);
             dce_collect_exprs(result, args)
         },
+        PackClosure { environment, apply: _, ty: _ } => dce_collect_expr(result, environment),
         Proj { tuple, index: _, ty: _ } => dce_collect_expr(result, tuple),
     }
 }
@@ -294,9 +299,10 @@ fn dce_expr_discardable(value: Expr) -> bool {
         Binary { op, lhs, rhs, .. } => dce_binary_discardable(op) && dce_expr_discardable(lhs)
             && dce_expr_discardable(rhs),
         Proj { tuple, .. } => dce_expr_discardable(tuple),
+        PackClosure { environment, .. } => dce_expr_discardable(environment),
         While { .. } | Loop { .. } | Break { .. } | Continue { .. } | Return { .. } | Go { .. } | Assign {
             ..,
-        } | Call { .. } | DynCall { .. } | Invalid { .. } => false,
+        } | Call { .. } | DynCall { .. } => false,
     }
 }
 
@@ -353,7 +359,7 @@ pub fn eliminate_dead_locals(value: File) -> File {
         structs: value.structs,
         type_instances: value.type_instances,
         constants: value.constants,
-        closure_environments: value.closure_environments,
+        closure_defs: value.closure_defs,
     }
 }
 

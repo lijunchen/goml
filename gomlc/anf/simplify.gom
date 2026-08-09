@@ -1,18 +1,18 @@
 package anf;
 
-use gomlc::tast;
+use gomlc::repr;
 use std::task;
 
 enum KnownValue {
     Alias(Imm),
     Constr {
-        constructor: tast::Constructor,
+        constructor: repr::Constructor,
         args: Vec[Imm],
-        ty: tast::Type,
+        ty: repr::Type,
     },
     Tuple {
         items: Vec[Imm],
-        ty: tast::Type,
+        ty: repr::Type,
     },
 }
 
@@ -86,7 +86,7 @@ fn optional_int_equal(left: Option[int], right: Option[int]) -> bool {
     }
 }
 
-fn constructors_equal(left: tast::Constructor, right: tast::Constructor) -> bool {
+fn constructors_equal(left: repr::Constructor, right: repr::Constructor) -> bool {
     left.name == right.name && left.is_struct == right.is_struct
         && optional_int_equal(left.tag, right.tag)
 }
@@ -107,7 +107,7 @@ fn record_known_value(
     known: Vec[KnownBinding],
     name: string,
     value: Value,
-    ty: tast::Type,
+    ty: repr::Type,
     assigned: HashMap[string, unit],
 ) -> unit {
     if assigned.contains(name) {
@@ -116,7 +116,7 @@ fn record_known_value(
     match value {
         Imm(value) => match value {
             Var { name: source, ty: source_ty } => if assigned.contains(source)
-                || !tast::types_equal(source_ty, ty) {} else {
+                || !repr::types_equal(source_ty, ty) {} else {
                 known.push(KnownBinding { name, value: KnownValue::Alias(value) })
             },
             _ => (),
@@ -141,16 +141,16 @@ fn record_known_value(
 fn known_constructor_field(
     known: Vec[KnownBinding],
     expr: Imm,
-    constructor: tast::Constructor,
+    constructor: repr::Constructor,
     field_index: int,
-    ty: tast::Type,
+    ty: repr::Type,
 ) -> Option[Imm] {
     match resolve_known_imm(expr, known) {
         Var { name, ty: _ } => match find_known_binding(known, name) {
             Some(Constr { constructor: present, args, ty: _ }) => {
                 if constructors_equal(present, constructor) && field_index >= 0
                     && field_index < args.len()
-                    && tast::types_equal(imm_type(args[field_index]), ty) {
+                    && repr::types_equal(imm_type(args[field_index]), ty) {
                     Option::Some(args[field_index])
                 } else {
                     Option::None
@@ -162,12 +162,12 @@ fn known_constructor_field(
     }
 }
 
-fn known_tuple_field(known: Vec[KnownBinding], expr: Imm, index: int, ty: tast::Type) -> Option[Imm] {
+fn known_tuple_field(known: Vec[KnownBinding], expr: Imm, index: int, ty: repr::Type) -> Option[Imm] {
     match resolve_known_imm(expr, known) {
         Var { name, ty: _ } => match find_known_binding(known, name) {
             Some(Tuple { items, ty: _ }) => {
                 if index >= 0 && index < items.len()
-                    && tast::types_equal(imm_type(items[index]), ty) {
+                    && repr::types_equal(imm_type(items[index]), ty) {
                     Option::Some(items[index])
                 } else {
                     Option::None
@@ -231,6 +231,11 @@ fn simplify_known_value(value: Value, known: Vec[KnownBinding]) -> Value {
             ty,
         },
         Go { closure, ty } => Value::Go { closure: resolve_known_imm(closure, known), ty },
+        PackClosure { environment, apply, ty } => Value::PackClosure {
+            environment: resolve_known_imm(environment, known),
+            apply,
+            ty,
+        },
         Proj { tuple, index, ty } => match known_tuple_field(known, tuple, index, ty) {
             Some(value) => Value::Imm(resolve_known_imm(value, known)),
             None => Value::Proj { tuple: resolve_known_imm(tuple, known), index, ty },
@@ -285,7 +290,7 @@ fn assigned_names(value: Block) -> HashMap[string, unit] {
     result
 }
 
-fn primitive_equal(left: tast::Primitive, right: tast::Primitive) -> bool {
+fn primitive_equal(left: repr::Primitive, right: repr::Primitive) -> bool {
     match left {
         Unit => match right {
             Unit => true,
@@ -377,13 +382,13 @@ fn match_imms_equal(left: Imm, right: Imm) -> bool {
     match left {
         Tag { index: left, ty: left_ty } => match right {
             Tag { index: right, ty: right_ty } => {
-                left == right && tast::types_equal(left_ty, right_ty)
+                left == right && repr::types_equal(left_ty, right_ty)
             },
             _ => false,
         },
         Prim { value: left, ty: left_ty } => match right {
             Prim { value: right, ty: right_ty } => {
-                primitive_equal(left, right) && tast::types_equal(left_ty, right_ty)
+                primitive_equal(left, right) && repr::types_equal(left_ty, right_ty)
             },
             _ => false,
         },
@@ -424,7 +429,7 @@ fn simplify_known_term(value: Term, known: Vec[KnownBinding], assigned: HashMap[
         If { cond, then_, else_, ret_ty } => {
             let cond = resolve_known_imm(cond, known);
             match cond {
-                Prim { value: tast::Primitive::Bool { value }, ty: _ } => {
+                Prim { value: repr::Primitive::Bool { value }, ty: _ } => {
                     if value {
                         simplify_known_block_with(then_, copy_known_bindings(known), assigned)
                     } else {
@@ -598,7 +603,7 @@ fn count_join_uses_block(value: Block, target: string) -> int {
     result + count_join_uses_term(value.term, target)
 }
 
-fn substitute_join_imm(value: Imm, params: Vec[(string, tast::Type)], args: Vec[Imm]) -> Imm {
+fn substitute_join_imm(value: Imm, params: Vec[(string, repr::Type)], args: Vec[Imm]) -> Imm {
     match value {
         Var { name, ty: _ } => {
             for index in 0..params.len() {
@@ -612,7 +617,7 @@ fn substitute_join_imm(value: Imm, params: Vec[(string, tast::Type)], args: Vec[
     }
 }
 
-fn substitute_join_imms(values: Vec[Imm], params: Vec[(string, tast::Type)], args: Vec[Imm]) -> Vec[
+fn substitute_join_imms(values: Vec[Imm], params: Vec[(string, repr::Type)], args: Vec[Imm]) -> Vec[
     Imm,
 ] {
     let result: Vec[Imm] = Vec::with_capacity(values.len());
@@ -622,12 +627,12 @@ fn substitute_join_imms(values: Vec[Imm], params: Vec[(string, tast::Type)], arg
     result
 }
 
-fn join_args_match(params: Vec[(string, tast::Type)], args: Vec[Imm]) -> bool {
+fn join_args_match(params: Vec[(string, repr::Type)], args: Vec[Imm]) -> bool {
     if params.len() != args.len() {
         return false
     } else {};
     for index in 0..args.len() {
-        if !tast::types_equal(imm_type(args[index]), params[index].1) {
+        if !repr::types_equal(imm_type(args[index]), params[index].1) {
             return false
         } else {}
     }
@@ -902,5 +907,6 @@ pub fn simplify(value: File) -> File {
         structs: value.structs,
         type_instances: value.type_instances,
         constants: value.constants,
+        closure_defs: value.closure_defs,
     }
 }
