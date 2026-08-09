@@ -758,11 +758,11 @@ fn adds_canonical_entry_wrapper() -> unit {
             predicates: Vec::new(),
             trait_impl: Option::None,
             params: Vec::new(),
-            ret_ty: tast::Type::Unit,
+            ret_ty: core::Type::Unit,
             body: core::Block {
                 stmts: Vec::new(),
                 tail: Option::Some(
-                    core::Expr::Prim { value: tast::Primitive::Unit, ty: tast::Type::Unit },
+                    core::Expr::Prim { value: core::Primitive::Unit, ty: core::Type::Unit },
                 ),
             },
         },
@@ -1091,13 +1091,13 @@ fn writes_core_file_shape() -> unit {
                 predicates: Vec::new(),
                 trait_impl: Option::None,
                 params: Vec::new(),
-                ret_ty: tast::Type::Int32,
+                ret_ty: core::Type::Int32,
                 body: core::Block {
                     stmts: Vec::new(),
                     tail: Option::Some(
                         core::Expr::Prim {
-                            value: tast::Primitive::Int32 { value: "41" },
-                            ty: tast::Type::Int32,
+                            value: core::Primitive::Int32 { value: "41" },
+                            ty: core::Type::Int32,
                         },
                     ),
                 },
@@ -1575,8 +1575,8 @@ fn restores_core_metadata_from_artifact_exports() -> unit {
             generics: Vec::["T"],
             predicates: Vec::new(),
             trait_impl: Option::None,
-            params: Vec::[("value", tast::Type::Param { name: "T" })],
-            ret_ty: tast::Type::Param { name: "T" },
+            params: Vec::[("value", core::Type::Param { name: "T" })],
+            ret_ty: core::Type::Param { name: "T" },
             body: empty_body,
         },
         exports,
@@ -1630,15 +1630,15 @@ fn restores_core_metadata_from_artifact_exports() -> unit {
             predicates: Vec::new(),
             trait_impl: Option::Some(
                 core::TraitImpl {
-                    trait_ref,
-                    for_ty: tast::Type::Con { name: "audit::Numbers" },
+                    trait_ref: core::lower_trait_ref(trait_ref),
+                    for_ty: core::Type::Con { name: "audit::Numbers" },
                     associated_types: Vec::new(),
                     generic_count: 0,
                     predicate_count: 0,
                 },
             ),
-            params: Vec::[("self", tast::Type::Con { name: "audit::Numbers" })],
-            ret_ty: tast::Type::Int32,
+            params: Vec::[("self", core::Type::Con { name: "audit::Numbers" })],
+            ret_ty: core::Type::Int32,
             body: empty_body,
         },
         exports,
@@ -2008,7 +2008,7 @@ fn preserves_generic_trait_methods_in_artifacts() -> unit {
     for function in world.standard.toml.core_value.functions {
         if function.name == "trait_impl#std::serde::Deserialize#std::toml::Value#deserialize" {
             match function.predicates[0] {
-                tast::TypePredicate::Trait { for_ty: _, trait_ref } => {
+                core::TypePredicate::Trait { for_ty: _, trait_ref } => {
                     testing::assert_eq(trait_ref.name, "std::serde::Deserializer");
                     canonical.set(true)
                 },

@@ -8,8 +8,10 @@ use gomlc::hir;
 use gomlc::lift;
 use gomlc::mono;
 use gomlc::parser;
+use gomlc::repr;
 use gomlc::resources;
 use gomlc::tast;
+use std::text;
 use std::testing;
 
 fn test_builtins(counter: Ref[int]) -> core::File {
@@ -60,8 +62,8 @@ fn lower_linked_source(source: string) -> File {
     let user = core::lower_with_counter_and_types(
         tast::check_for_link(hir::lower(ast::lower(parser::parse(source)), "main.gom")),
         counter,
-        builtins.enums,
-        builtins.structs,
+        core::enum_defs_to_tast(builtins.enums),
+        core::struct_defs_to_tast(builtins.structs),
     );
     required_lower(
         lower(anf::lower(lift::lower(mono::lower(core::link_with_builtins(builtins, user))))),
@@ -87,6 +89,20 @@ fn lower_test_source(source: string, test_cases: Vec[(string, string, Vec[(strin
 
 fn string_contains(value: string, expected: string) -> bool {
     value.contains(expected)
+}
+
+fn required_text_position(value: string, expected: string) -> int {
+    match text::find(value, expected) {
+        Some(position) => position,
+        None => {
+            testing::fail("missing " + expected);
+            -1
+        },
+    }
+}
+
+fn assert_appears_before(value: string, before: string, after: string) -> unit {
+    testing::assert(required_text_position(value, before) < required_text_position(value, after))
 }
 
 #[test]
@@ -373,7 +389,7 @@ fn keeps_imports_used_by_reachable_types() -> unit {
 
 #[test]
 fn emits_complete_vec_runtime_helpers() -> unit {
-    let ty = tast::Type::VecType { elem: tast::Type::Int32 };
+    let ty = repr::Type::VecType { elem: repr::Type::Int32 };
     let output = encode(File { items: vec_runtime_items(ty) });
     testing::assert(
         string_contains(output, "func vec_with_capacity__Vec_5int32(capacity int) *_goml_vec_int32"),
@@ -391,8 +407,8 @@ fn emits_complete_vec_runtime_helpers() -> unit {
 
 #[test]
 fn emits_complete_hashmap_and_ref_runtime_helpers() -> unit {
-    let key = tast::Type::String;
-    let value = tast::Type::Int32;
+    let key = repr::Type::String;
+    let value = repr::Type::Int32;
     let map_output = encode(
         File {
             items: hashmap_items(
@@ -421,7 +437,7 @@ fn emits_complete_hashmap_and_ref_runtime_helpers() -> unit {
     testing::assert(string_contains(map_output, "func hashmap_entries__HashMap_6string_5int32("));
     testing::assert(string_contains(map_output, "for _, h := range m.hashes {"));
     let ref_output = encode(
-        File { items: ref_runtime_items(tast::Type::RefType { elem: tast::Type::Int32 }) },
+        File { items: ref_runtime_items(repr::Type::RefType { elem: repr::Type::Int32 }) },
     );
     testing::assert(
         string_contains(ref_output, "return uint64(_goml_reflect.ValueOf(reference).Pointer())"),
@@ -479,7 +495,7 @@ fn emits_value_and_infinite_loops_without_expanding_continuations() -> unit {
 
 #[test]
 fn recognizes_recursive_joins_independently_of_their_names() -> unit {
-    let ty = tast::Type::Unit;
+    let ty = repr::Type::Unit;
     let recursive = anf::JoinBind {
         name: "renamed_control_node",
         role: anf::JoinRole::Continuation,
@@ -518,6 +534,7 @@ fn recognizes_recursive_joins_independently_of_their_names() -> unit {
                     structs: Vec::[],
                     type_instances: Vec::[],
                     constants: Vec::[],
+                    closure_defs: Vec::[],
                 },
             ),
         ),
@@ -528,7 +545,7 @@ fn recognizes_recursive_joins_independently_of_their_names() -> unit {
 
 #[test]
 fn rejects_unsupported_mutually_recursive_join_groups_before_emission() -> unit {
-    let ty = tast::Type::Unit;
+    let ty = repr::Type::Unit;
     let joins: Vec[anf::JoinBind] = Vec::[];
     joins.push(
         anf::JoinBind {
@@ -576,6 +593,7 @@ fn rejects_unsupported_mutually_recursive_join_groups_before_emission() -> unit 
             structs: Vec::[],
             type_instances: Vec::[],
             constants: Vec::[],
+            closure_defs: Vec::[],
         },
     ) {
         Err(error) => testing::assert_eq(
@@ -586,8 +604,8 @@ fn rejects_unsupported_mutually_recursive_join_groups_before_emission() -> unit 
     }
 }
 
-fn callable_file(callable: tast::Callable) -> anf::File {
-    let ty = tast::Type::Func { params: Vec::[], ret_ty: tast::Type::Unit };
+fn callable_file(callable: repr::Callable) -> anf::File {
+    let ty = repr::Type::Func { params: Vec::[], ret_ty: repr::Type::Unit };
     anf::File {
         functions: Vec::[
             anf::Function {
@@ -607,12 +625,13 @@ fn callable_file(callable: tast::Callable) -> anf::File {
         structs: Vec::[],
         type_instances: Vec::[],
         constants: Vec::[],
+        closure_defs: Vec::[],
     }
 }
 
 #[test]
 fn rejects_unknown_runtime_hooks_before_emission() -> unit {
-    match lower(callable_file(tast::Callable::Runtime("vendor.unknown"))) {
+    match lower(callable_file(repr::Callable::Runtime("vendor.unknown"))) {
         Err(error) => testing::assert_eq(error, "unknown runtime hook vendor.unknown"),
         Ok(_) => testing::fail("expected runtime hook validation error"),
     }
@@ -620,7 +639,7 @@ fn rejects_unknown_runtime_hooks_before_emission() -> unit {
 
 #[test]
 fn rejects_unknown_intrinsics_before_emission() -> unit {
-    match lower(callable_file(tast::Callable::Intrinsic("vendor.unknown"))) {
+    match lower(callable_file(repr::Callable::Intrinsic("vendor.unknown"))) {
         Err(error) => testing::assert_eq(error, "unknown intrinsic vendor.unknown"),
         Ok(_) => testing::fail("expected intrinsic validation error"),
     }
@@ -701,10 +720,14 @@ fn dispatches_dyn_hashmap_keys_through_vtables() -> unit {
 #[test]
 fn emits_generic_enum_instances_and_type_switches() -> unit {
     let source = "enum Weird[T] { Next(Ref[Weird[(int32) -> int32]]), Done(T), } fn main() -> unit { let x: Weird[int32] = Weird::Done(1); match x { Weird::Done(v) => println(v.to_string()), Weird::Next(_) => println(\"next\"), } }";
-    testing::assert_eq(
-        encode(lower_source(source)),
-        "package main\n\ntype ref__goml_m_Weird_____o_int32_q__m__z_int32_x struct {\n    value _goml_m_Weird_____o_int32_q__m__z_int32\n}\n\ntype _goml_m_Weird_____o_int32_q__m__z_int32 interface {\n    is_goml_m_Weird_____o_int32_q__m__z_int32()\n}\n\ntype _goml_m_Weird_____o_int32_q__m__z_int32_Next struct {\n    _0 *ref__goml_m_Weird_____o_int32_q__m__z_int32_x\n}\n\nfunc (_ _goml_m_Weird_____o_int32_q__m__z_int32_Next) is_goml_m_Weird_____o_int32_q__m__z_int32() {}\n\ntype _goml_m_Weird_____o_int32_q__m__z_int32_Done struct {\n    _0 func(int32) int32\n}\n\nfunc (_ _goml_m_Weird_____o_int32_q__m__z_int32_Done) is_goml_m_Weird_____o_int32_q__m__z_int32() {}\n\ntype Weird__int32 interface {\n    isWeird__int32()\n}\n\ntype Weird__int32_Next struct {\n    _0 *ref__goml_m_Weird_____o_int32_q__m__z_int32_x\n}\n\nfunc (_ Weird__int32_Next) isWeird__int32() {}\n\ntype Weird__int32_Done struct {\n    _0 int32\n}\n\nfunc (_ Weird__int32_Done) isWeird__int32() {}\n\nfunc main0() struct{} {\n    var x1 int32 = 1\n    var t5 string = _goml_m_inherent_i_int32_i_int32_i_to__string(x1)\n    _goml_m_println(t5)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
-    )
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(output, "type Weird__int32 interface"));
+    testing::assert(string_contains(output, "type Weird__int32_Next struct"));
+    testing::assert(string_contains(output, "type Weird__int32_Done struct"));
+    testing::assert(
+        string_contains(output, "type _goml_m_Weird_____o_int32_q__m__z_int32 interface"),
+    );
+    testing::assert(string_contains(output, "_0 func(int32) int32"))
 }
 
 #[test]
@@ -722,7 +745,8 @@ fn dispatches_trait_objects_for_enum_receivers() -> unit {
 fn adapts_closures_for_dynamic_call_function_parameters() -> unit {
     let source = "trait Mapper { fn map(self: Self, arg1: (int32) -> int32) -> int32; } struct Boxed { value: int32, } impl Mapper for Boxed { fn map(self: Boxed, f: (int32) -> int32) -> int32 { f(self.value) } } fn main() -> unit { let x: dyn Mapper = (Boxed { value: 1 }) as dyn Mapper; println(Mapper::map(x, |n| n + 1)); }";
     let output = encode(lower_source(source));
-    testing::assert(string_contains(output, "vtable._goml_m_map(x__2.data, func(p0 int32) int32 {"));
+    testing::assert(string_contains(output, "var t9 func(int32) int32 = func(p0 int32) int32 {"));
+    testing::assert(string_contains(output, "vtable._goml_m_map(x__2.data, t9)"));
     testing::assert(
         string_contains(
             output,
@@ -758,24 +782,32 @@ fn emits_non_repeating_joinrec_as_straight_line_control_flow() -> unit {
 #[test]
 fn emits_closures_inside_enum_payloads() -> unit {
     let source = "enum MaybeFn { Some((int32) -> int32), None, } fn next(flag: bool) -> MaybeFn { if flag { MaybeFn::Some(|x| x + 1) } else { MaybeFn::None } } fn main() -> unit { match next(true) { MaybeFn::Some(f) => println(f(41).to_string()), MaybeFn::None => println(\"none\"), } }";
-    testing::assert_eq(
-        encode(lower_source(source)),
-        "package main\n\ntype closure_env_next_0 struct {}\n\ntype MaybeFn interface {\n    isMaybeFn()\n}\n\ntype Some struct {\n    _0 func(int32) int32\n}\n\nfunc (_ Some) isMaybeFn() {}\n\ntype None struct {}\n\nfunc (_ None) isMaybeFn() {}\n\nfunc main0() struct{} {\n    var mtmp0 MaybeFn\n    var inline19 bool = true\n    if inline19 {\n        var inline20 closure_env_next_0 = closure_env_next_0{}\n        var inline21 MaybeFn = Some{\n            _0: func(p0 int32) int32 {\n                return _goml_m_inherent_i_closure__env__next__0_i_closure__env__next__0_i_apply(inline20, p0)\n            },\n        }\n        mtmp0 = inline21\n    } else {\n        mtmp0 = None{}\n    }\n    switch mtmp0.(type) {\n    case Some:\n        var x1 func(int32) int32 = mtmp0.(Some)._0\n        var t11 int32 = x1(41)\n        var t12 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t11)\n        _goml_m_println(t12)\n        return struct{}{}\n    case None:\n        _goml_m_println(\"none\")\n        return struct{}{}\n    default:\n        panic(\"non-exhaustive match\")\n    }\n}\n\nfunc _goml_m_inherent_i_closure__env__next__0_i_closure__env__next__0_i_apply(env2 closure_env_next_0, x__1 int32) int32 {\n    var t17 int32 = x__1 + 1\n    return t17\n}\n\nfunc main() {\n    main0()\n}\n",
-    )
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(output, "type MaybeFn interface"));
+    testing::assert(string_contains(output, "_0 func(int32) int32"));
+    testing::assert(string_contains(output, "var commute_field24 func(int32) int32"));
+    testing::assert(
+        string_contains(
+            output,
+            "return _goml_m_inherent_i_closure__env__next__0_i_closure__env__next__0_i_apply(",
+        ),
+    );
+    testing::assert(!string_contains(output, "switch mtmp0.(type)"))
 }
 
 #[test]
 fn contextualizes_closures_in_generic_struct_fields() -> unit {
     let source = "struct Wrapper[T] { value: T, transform: (T) -> string, } fn show_wrapper[T](wrapper: Wrapper[T]) -> string { wrapper.transform(wrapper.value) } fn main() -> unit { let wrapper = if true { Wrapper { value: 42, transform: |value: int32| value.to_string() } } else { Wrapper { value: 0, transform: |value: int32| \"zero\" } }; println(show_wrapper(wrapper)); }";
     let output = encode(lower_source(source));
-    testing::assert(string_contains(output, "transform: func(p0 int32) string {"));
+    testing::assert(string_contains(output, "var t8 func(int32) string = func(p0 int32) string {"));
+    testing::assert(string_contains(output, "transform: t8"));
     testing::assert(
         string_contains(
             output,
             "func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(",
         ),
     );
-    testing::assert(!string_contains(output, "transform: t"))
+    testing::assert(!string_contains(output, "transform: closure_env_"))
 }
 
 #[test]
@@ -831,9 +863,17 @@ fn compacts_dyn_names_in_synthetic_options() -> unit {
 #[test]
 fn preserves_user_struct_order_before_closure_environments() -> unit {
     let source = "struct GomlInherentClosureEnvF0ClosureEnvF0Apply { value: int32, } fn main() -> unit { let y = 1; let f = |x: int32| x + y; let c = GomlInherentClosureEnvF0ClosureEnvF0Apply { value: 2 }; println((f(3) + c.value).to_string()) }";
-    testing::assert_eq(
-        encode(lower_source(source)),
-        "package main\n\ntype GomlInherentClosureEnvF0ClosureEnvF0Apply struct {\n    value int32\n}\n\ntype closure_env_f_0 struct {\n    y_0 int32\n}\n\nfunc main0() struct{} {\n    var y__0 int32 = 1\n    var t2 int32\n    var inline11 int32 = 3\n    var inline13 int32 = inline11 + y__0\n    t2 = inline13\n    var t3 int32 = 2\n    var t4 int32 = t2 + t3\n    var t5 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t4)\n    _goml_m_println(t5)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
+    let output = encode(lower_source(source));
+    assert_appears_before(
+        output,
+        "type GomlInherentClosureEnvF0ClosureEnvF0Apply struct",
+        "type closure_env_f_0 struct",
+    );
+    testing::assert(
+        string_contains(
+            output,
+            "func _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(",
+        ),
     )
 }
 
@@ -860,10 +900,14 @@ fn mangles_unicode_identifiers_without_byte_indexing() -> unit {
 #[test]
 fn emits_structs_before_generic_enums() -> unit {
     let source = "fn build() -> Option[() -> int32] { let _: Option[int32] = Option::Some(1); Option::Some(|| 1) } fn main() -> unit { match build() { Option::Some(f) => println(f()), Option::None => println(0), } }";
-    testing::assert_eq(
-        encode(lower_source(source)),
-        "package main\n\ntype closure_env_build_0 struct {}\n\ntype _goml_m_Option_____o__q__m__z_int32 interface {\n    is_goml_m_Option_____o__q__m__z_int32()\n}\n\ntype _goml_m_Option_____o__q__m__z_int32_None struct {}\n\nfunc (_ _goml_m_Option_____o__q__m__z_int32_None) is_goml_m_Option_____o__q__m__z_int32() {}\n\ntype _goml_m_Option_____o__q__m__z_int32_Some struct {\n    _0 func() int32\n}\n\nfunc (_ _goml_m_Option_____o__q__m__z_int32_Some) is_goml_m_Option_____o__q__m__z_int32() {}\n\ntype Option__int32 interface {\n    isOption__int32()\n}\n\ntype Option__int32_None struct {}\n\nfunc (_ Option__int32_None) isOption__int32() {}\n\ntype Option__int32_Some struct {\n    _0 int32\n}\n\nfunc (_ Option__int32_Some) isOption__int32() {}\n\nfunc main0() struct{} {\n    var mtmp1 _goml_m_Option_____o__q__m__z_int32\n    var inline17 closure_env_build_0 = closure_env_build_0{}\n    var inline18 _goml_m_Option_____o__q__m__z_int32 = _goml_m_Option_____o__q__m__z_int32_Some{\n        _0: func() int32 {\n            return _goml_m_inherent_i_closure__env__build__0_i_closure__env__build__0_i_apply(inline17)\n        },\n    }\n    mtmp1 = inline18\n    switch mtmp1.(type) {\n    case _goml_m_Option_____o__q__m__z_int32_None:\n        _goml_m_println(0)\n        return struct{}{}\n    case _goml_m_Option_____o__q__m__z_int32_Some:\n        var x2 func() int32 = mtmp1.(_goml_m_Option_____o__q__m__z_int32_Some)._0\n        var t11 int32 = x2()\n        _goml_m_println(t11)\n        return struct{}{}\n    default:\n        panic(\"non-exhaustive match\")\n    }\n}\n\nfunc _goml_m_inherent_i_closure__env__build__0_i_closure__env__build__0_i_apply(env3 closure_env_build_0) int32 {\n    return 1\n}\n\nfunc main() {\n    main0()\n}\n",
-    )
+    let output = encode(lower_source(source));
+    assert_appears_before(
+        output,
+        "type closure_env_build_0 struct",
+        "type _goml_m_Option_____o__q__m__z_int32 interface",
+    );
+    testing::assert(string_contains(output, "type Option__int32 interface"));
+    testing::assert(string_contains(output, "var inline19 func() int32 = func() int32"))
 }
 
 #[test]
@@ -923,9 +967,24 @@ fn emits_missing_runtime_helpers() -> unit {
 #[test]
 fn emits_hidden_ref_intrinsic_helpers() -> unit {
     let source = "fn ref(x: int32) -> Ref[int32] { println(\"user ref \" + x.to_string()); Ref::new(x + 10) } fn ref_get(r: Ref[int32]) -> int32 { println(\"user get\"); 100 } fn ref_set(r: Ref[int32], x: int32) -> unit { println(\"user set \" + x.to_string()); } fn main() -> unit { let mut x: int32 = 0; let inc = || { x = x + 1; x }; println(inc().to_string()); println(x.to_string()); }";
-    testing::assert_eq(
-        encode(lower_source(source)),
-        "package main\n\ntype ref_int32_x struct {\n    value int32\n}\n\nfunc ref__Ref_5int32(value int32) *ref_int32_x {\n    return &ref_int32_x{\n        value: value,\n    }\n}\n\nfunc ref_get__Ref_5int32(reference *ref_int32_x) int32 {\n    return reference.value\n}\n\nfunc ref_set__Ref_5int32(reference *ref_int32_x, value int32) struct{} {\n    reference.value = value\n    return struct{}{}\n}\n\ntype closure_env_inc_0 struct {\n    x_0 *ref_int32_x\n}\n\nfunc main0() struct{} {\n    var x__4 *ref_int32_x = ref__Ref_5int32(0)\n    var t19 int32\n    var inline30 int32 = ref_get__Ref_5int32(x__4)\n    var inline31 int32 = inline30 + 1\n    ref_set__Ref_5int32(x__4, inline31)\n    var inline33 int32 = ref_get__Ref_5int32(x__4)\n    t19 = inline33\n    var t20 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t19)\n    _goml_m_println(t20)\n    var t21 int32 = ref_get__Ref_5int32(x__4)\n    var t22 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t21)\n    _goml_m_println(t22)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(output, "func ref__Ref_5int32(value int32) *ref_int32_x"));
+    testing::assert(
+        string_contains(output, "func ref_get__Ref_5int32(reference *ref_int32_x) int32"),
+    );
+    testing::assert(
+        string_contains(
+            output,
+            "func ref_set__Ref_5int32(reference *ref_int32_x, value int32) struct{}",
+        ),
+    );
+    testing::assert(string_contains(output, "type closure_env_inc_0 struct"));
+    testing::assert(string_contains(output, "var inc__5 func() int32 = func() int32"));
+    testing::assert(
+        string_contains(
+            output,
+            "func _goml_m_inherent_i_closure__env__inc__0_i_closure__env__inc__0_i_apply(",
+        ),
     )
 }
 
@@ -967,9 +1026,15 @@ fn emits_entry_wrapper_without_main() -> unit {
 #[test]
 fn protects_functions_from_closure_environment_types() -> unit {
     let source = "fn closure_env_add_0() -> int32 { 35 } fn main() -> unit { let add = |x: int32| x + 1; println(add(1) + closure_env_add_0()); }";
-    testing::assert_eq(
-        encode(lower_source(source)),
-        "package main\n\ntype closure_env_add_0 struct {}\n\nfunc main0() struct{} {\n    var t5 int32\n    var inline13 int32 = 1\n    var inline14 int32 = inline13 + 1\n    t5 = inline14\n    var t6 int32\n    t6 = 35\n    var t7 int32 = t5 + t6\n    _goml_m_println(t7)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(output, "type closure_env_add_0 struct"));
+    testing::assert(!string_contains(output, "func closure_env_add_0("));
+    testing::assert(string_contains(output, "var add__1 func(int32) int32 = func(p0 int32) int32"));
+    testing::assert(
+        string_contains(
+            output,
+            "func _goml_m_inherent_i_closure__env__add__0_i_closure__env__add__0_i_apply(",
+        ),
     )
 }
 

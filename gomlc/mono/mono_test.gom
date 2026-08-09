@@ -34,8 +34,8 @@ fn lower_linked_source(source: string) -> File {
     let user = core::lower_with_counter_and_types(
         tast::check_for_link(hir::lower(ast::lower(parser::parse(source)), "main.gom")),
         counter,
-        builtins.enums,
-        builtins.structs,
+        core::enum_defs_to_tast(builtins.enums),
+        core::struct_defs_to_tast(builtins.structs),
     );
     lower(core::link_with_builtins(builtins, user))
 }
@@ -44,6 +44,39 @@ fn lower_checked_source(source: string) -> LowerResult {
     lower_checked(
         core::lower(tast::check(hir::lower(ast::lower(parser::parse(source)), "main.gom"))),
     )
+}
+
+fn core_file_with_residual_type(ty: core::Type) -> core::File {
+    let file = core::lower(
+        tast::check(hir::lower(ast::lower(parser::parse("fn main() -> unit { () }")), "main.gom")),
+    );
+    let function = file.functions[0];
+    let stmts: Vec[core::LetStmt] = Vec::[
+        core::LetStmt {
+            name: "residual",
+            value: core::Expr::Prim { value: core::Primitive::Unit, ty },
+            ty,
+        },
+    ];
+    core::File {
+        functions: Vec::[
+            core::Function {
+                name: function.name,
+                origin: function.origin,
+                root: function.root,
+                trait_impl: function.trait_impl,
+                generics: function.generics,
+                predicates: function.predicates,
+                params: function.params,
+                ret_ty: function.ret_ty,
+                body: core::Block { stmts, tail: function.body.tail },
+            },
+        ],
+        enums: file.enums,
+        structs: file.structs,
+        type_instances: file.type_instances,
+        constants: file.constants,
+    }
 }
 
 fn string_contains(value: string, expected: string) -> bool {
@@ -76,7 +109,7 @@ fn eliminates_dead_monomorphic_locals() -> unit {
 }
 
 #[test]
-fn rejects_non_concrete_mono_function_types() -> unit {
+fn rejects_invalid_mono_nominal_types() -> unit {
     let file = lower_source("fn main() -> unit { () }");
     match validate(file) {
         Ok(_) => (),
@@ -89,7 +122,7 @@ fn rejects_non_concrete_mono_function_types() -> unit {
             origin: function.origin,
             root: function.root,
             trait_impl: function.trait_impl,
-            params: Vec::[("value", tast::Type::Param { name: "T" })],
+            params: Vec::[("value", Type::Named { name: "" })],
             ret_ty: function.ret_ty,
             body: function.body,
         },
@@ -104,7 +137,43 @@ fn rejects_non_concrete_mono_function_types() -> unit {
         },
     ) {
         Ok(_) => testing::fail("expected invalid Mono IR"),
-        Err(message) => testing::assert(message.contains("non-concrete type T")),
+        Err(message) => testing::assert(message.contains("empty nominal type name")),
+    }
+}
+
+#[test]
+fn rejects_open_types_at_the_mono_boundary() -> unit {
+    let parameter = lower_checked(core_file_with_residual_type(core::Type::Param { name: "T" }));
+    match parameter.error {
+        Some(message) => testing::assert(message.contains("generic parameter T remained")),
+        None => testing::fail("expected residual generic parameter rejection"),
+    };
+    let projection = lower_checked(
+        core_file_with_residual_type(
+            core::Type::Projection {
+                for_ty: core::Type::Con { name: "Source" },
+                name: "Item",
+                trait_ref: Option::None,
+            },
+        ),
+    );
+    match projection.error {
+        Some(message) => testing::assert(message.contains("projection remained")),
+        None => testing::fail("expected residual projection rejection"),
+    };
+    let nested = lower_checked(
+        core_file_with_residual_type(
+            core::Type::Dyn {
+                trait_name: "Display",
+                args: Vec::[core::Type::Param { name: "T" }],
+                associated_types: Vec::[],
+                additional_bounds: Vec::[],
+            },
+        ),
+    );
+    match nested.error {
+        Some(message) => testing::assert(message.contains("generic parameter T remained")),
+        None => testing::fail("expected nested generic parameter rejection"),
     }
 }
 
@@ -202,7 +271,7 @@ fn normalizes_supertrait_associated_projections() -> unit {
         if function.name == "get_from_child__C_Count" {
             found.set(true);
             match function.body.tail {
-                Some(expr) => match tast::resolve_type(expr_type(expr)) {
+                Some(expr) => match expr_type(expr) {
                     Int32 => (),
                     _ => testing::fail("expected normalized associated type"),
                 },

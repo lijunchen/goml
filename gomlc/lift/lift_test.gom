@@ -5,15 +5,29 @@ use gomlc::core;
 use gomlc::hir;
 use gomlc::mono;
 use gomlc::parser;
+use gomlc::repr;
 use gomlc::tast;
 use std::testing;
 
 fn lower_source(source: string) -> File {
-    lower(
+    match lower_checked(
         mono::lower(
             core::lower(tast::check(hir::lower(ast::lower(parser::parse(source)), "main.gom"))),
         ),
-    )
+    ) {
+        Ok(value) => value,
+        Err(message) => {
+            testing::fail(message);
+            File {
+                functions: Vec::[],
+                enums: Vec::[],
+                structs: Vec::[],
+                type_instances: Vec::[],
+                constants: Vec::[],
+                closure_defs: Vec::[],
+            }
+        },
+    }
 }
 
 #[test]
@@ -60,7 +74,7 @@ fn lifts_closures_in_enum_payloads() -> unit {
     let source = "enum MaybeFn { Some((int32) -> int32), None } fn next(flag: bool) -> MaybeFn { if flag { MaybeFn::Some(|x| x + 1) } else { MaybeFn::None } } fn main() -> unit { match next(true) { MaybeFn::Some(f) => println(f(41).to_string()), MaybeFn::None => println(\"none\"), } }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn next(flag/0: bool) -> MaybeFn {\n  if flag/0 {\n      MaybeFn::Some(closure_env_next_0 {})\n  } else {\n      MaybeFn::None\n  }\n}\n\nfn main() -> unit {\n  let mtmp0 = next(true) in\n  match mtmp0 {\n    MaybeFn::Some(x1) => {\n      let x1 = MaybeFn::Some._0(mtmp0) in\n      let f/2 = x1 in\n      println(inherent#int32#int32#to_string(f/2(41)))\n    },\n    MaybeFn::None => {\n      println(\"none\")\n    },\n  }\n}\n\nfn inherent#closure_env_next_0#closure_env_next_0#apply(\n  env2: closure_env_next_0,\n  x/1: int32\n) -> int32 {\n  (x/1 + 1)\n}",
+        "fn next(flag/0: bool) -> MaybeFn {\n  if flag/0 {\n      MaybeFn::Some(\n        pack_closure[inherent#closure_env_next_0#closure_env_next_0#apply](closure_env_next_0 {})\n      )\n  } else {\n      MaybeFn::None\n  }\n}\n\nfn main() -> unit {\n  let mtmp0 = next(true) in\n  match mtmp0 {\n    MaybeFn::Some(x1) => {\n      let x1 = MaybeFn::Some._0(mtmp0) in\n      let f/2 = x1 in\n      println(inherent#int32#int32#to_string(f/2(41)))\n    },\n    MaybeFn::None => {\n      println(\"none\")\n    },\n  }\n}\n\nfn inherent#closure_env_next_0#closure_env_next_0#apply(\n  env2: closure_env_next_0,\n  x/1: int32\n) -> int32 {\n  (x/1 + 1)\n}",
     )
 }
 
@@ -69,7 +83,7 @@ fn ignores_digits_in_monomorphic_function_names() -> unit {
     let source = "fn grow[T](x: T, flag: bool) -> unit { if flag { grow(|n: int32| n + 1, false) } else { println(\"done\") } } fn main() -> unit { grow(1, true) }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn main() -> unit {\n  grow__T_int(1, true)\n}\n\nfn grow__T_int(x/0: int, flag/1: bool) -> unit {\n  if flag/1 {\n      grow__T_(int32)->int32(closure_env_grow_T_int_0 {}, false)\n  } else {\n      println(\"done\")\n  }\n}\n\nfn grow__T_(int32)->int32(x/0: (int32) -> int32, flag/1: bool) -> unit {\n  if flag/1 {\n      grow__T_(int32)->int32(closure_env_grow_T_int32_int32_1 {}, false)\n  } else {\n      println(\"done\")\n  }\n}\n\nfn inherent#closure_env_grow_T_int_0#closure_env_grow_T_int_0#apply(\n  env0: closure_env_grow_T_int_0,\n  n/2: int32\n) -> int32 {\n  (n/2 + 1)\n}\n\nfn inherent#closure_env_grow_T_int32_int32_1#closure_env_grow_T_int32_int32_1#apply(\n  env1: closure_env_grow_T_int32_int32_1,\n  n/2: int32\n) -> int32 {\n  (n/2 + 1)\n}",
+        "fn main() -> unit {\n  grow__T_int(1, true)\n}\n\nfn grow__T_int(x/0: int, flag/1: bool) -> unit {\n  if flag/1 {\n      grow__T_(int32)->int32(\n        pack_closure[inherent#closure_env_grow_T_int_0#closure_env_grow_T_int_0#apply](\n          closure_env_grow_T_int_0 {}\n        ),\n        false\n      )\n  } else {\n      println(\"done\")\n  }\n}\n\nfn grow__T_(int32)->int32(x/0: (int32) -> int32, flag/1: bool) -> unit {\n  if flag/1 {\n      grow__T_(int32)->int32(\n        pack_closure[inherent#closure_env_grow_T_int32_int32_1#closure_env_grow_T_int32_int32_1#apply](\n          closure_env_grow_T_int32_int32_1 {}\n        ),\n        false\n      )\n  } else {\n      println(\"done\")\n  }\n}\n\nfn inherent#closure_env_grow_T_int_0#closure_env_grow_T_int_0#apply(\n  env0: closure_env_grow_T_int_0,\n  n/2: int32\n) -> int32 {\n  (n/2 + 1)\n}\n\nfn inherent#closure_env_grow_T_int32_int32_1#closure_env_grow_T_int32_int32_1#apply(\n  env1: closure_env_grow_T_int32_int32_1,\n  n/2: int32\n) -> int32 {\n  (n/2 + 1)\n}",
     )
 }
 
@@ -87,7 +101,7 @@ fn avoids_existing_closure_environment_names() -> unit {
     let source = "struct ClosureEnvF0 { value: int32 } fn main() -> unit { let _ = ClosureEnvF0 { value: 1 }; let f = |x: int32| x + 1; println(f(2).to_string()); }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn main() -> unit {\n  let mtmp0 = ClosureEnvF0 { value: 1 } in\n  let f/1 = closure_env_f_0 {} in\n  let _wild1 =\n    println(\n      inherent#int32#int32#to_string(inherent#closure_env_f_0#closure_env_f_0#apply(f/1, 2))\n    ) in\n  ()\n}\n\nfn inherent#closure_env_f_0#closure_env_f_0#apply(env2: closure_env_f_0, x/0: int32) -> int32 {\n  (x/0 + 1)\n}",
+        "fn main() -> unit {\n  let mtmp0 = ClosureEnvF0 { value: 1 } in\n  let f/1 = pack_closure[inherent#closure_env_f_0#closure_env_f_0#apply](closure_env_f_0 {}) in\n  let _wild1 = println(inherent#int32#int32#to_string(f/1(2))) in\n  ()\n}\n\nfn inherent#closure_env_f_0#closure_env_f_0#apply(env2: closure_env_f_0, x/0: int32) -> int32 {\n  (x/0 + 1)\n}",
     )
 }
 
@@ -113,7 +127,47 @@ fn validates_generated_closure_environments() -> unit {
 }
 
 #[test]
-fn converts_invalid_closures_to_invalid_lift_expressions() -> unit {
+fn represents_stored_closures_with_explicit_packs() -> unit {
+    let file = lower_source(
+        "fn use_pair(value: ((int32) -> int32, (int32) -> int32)) -> int32 { value.0(1) + value.1(2) } fn main() -> unit { println(use_pair((|x: int32| x + 1, |x: int32| x + 2))) }",
+    );
+    let output = encode(file);
+    testing::assert_eq(file.closure_defs.len(), 2);
+    testing::assert(output.contains("pack_closure["));
+    match validate(file) {
+        Ok(_) => (),
+        Err(message) => testing::fail(message),
+    }
+}
+
+#[test]
+fn rejects_mismatched_closure_metadata() -> unit {
+    let file = lower_source(
+        "fn consume(value: (int32) -> int32) -> int32 { value(1) } fn main() -> unit { println(consume(|x: int32| x + 1)) }",
+    );
+    let definition = file.closure_defs[0];
+    let invalid = File {
+        functions: file.functions,
+        enums: file.enums,
+        structs: file.structs,
+        type_instances: file.type_instances,
+        constants: file.constants,
+        closure_defs: Vec::[
+            repr::ClosureDef {
+                environment: definition.environment,
+                apply: definition.apply,
+                signature: repr::Type::Unit,
+            },
+        ],
+    };
+    match validate(invalid) {
+        Ok(_) => testing::fail("expected closure metadata rejection"),
+        Err(message) => testing::assert(message.contains("closure signature does not match")),
+    }
+}
+
+#[test]
+fn rejects_closures_with_non_function_types() -> unit {
     let source = mono::lower(
         core::lower(
             tast::check(
@@ -136,16 +190,16 @@ fn converts_invalid_closures_to_invalid_lift_expressions() -> unit {
                     mono::Expr::Closure {
                         params: Vec::[],
                         body: mono::Expr::Prim {
-                            value: tast::Primitive::Unit,
-                            ty: tast::Type::Unit,
+                            value: mono::Primitive::Unit,
+                            ty: mono::Type::Unit,
                         },
-                        ty: tast::Type::Int,
+                        ty: mono::Type::Int,
                     },
                 ),
             },
         },
     ];
-    let lifted = lower(
+    match lower_checked(
         mono::File {
             functions,
             enums: source.enums,
@@ -153,9 +207,8 @@ fn converts_invalid_closures_to_invalid_lift_expressions() -> unit {
             type_instances: source.type_instances,
             constants: source.constants,
         },
-    );
-    match lifted.functions[0].body.tail {
-        Some(Invalid { ty: tast::Type::Int }) => (),
-        _ => testing::fail("expected invalid Lift expression"),
+    ) {
+        Ok(_) => testing::fail("expected invalid closure type"),
+        Err(message) => testing::assert(message.contains("non-function type")),
     }
 }

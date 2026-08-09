@@ -38,6 +38,58 @@ fn lower_optimized_source(source: string) -> File {
 }
 
 #[test]
+fn detaches_tast_type_variables_at_the_core_boundary() -> unit {
+    let variable = Ref::new(tast::TypeVar::Unbound { id: 7, kind: tast::VarKind::Any });
+    let unbound = lower_type(tast::Type::Var(variable));
+    match unbound {
+        Error => (),
+        _ => testing::fail("expected an unbound type variable to become Core Error"),
+    };
+    variable.set(tast::TypeVar::Link(tast::Type::String));
+    let linked = lower_type(tast::Type::Var(variable));
+    match linked {
+        String => (),
+        _ => testing::fail("expected a linked type variable to detach as string"),
+    };
+    variable.set(tast::TypeVar::Link(tast::Type::Bool));
+    match linked {
+        String => (),
+        _ => testing::fail("expected the detached Core type to remain immutable"),
+    }
+}
+
+#[test]
+fn preserves_open_core_types_without_tast_state() -> unit {
+    let value = lower_type(
+        tast::Type::Dyn {
+            trait_name: "Iterator",
+            args: Vec::[tast::Type::Param { name: "T" }],
+            associated_types: Vec::[
+                (
+                    "Item",
+                    tast::Type::Projection {
+                        for_ty: tast::Type::Param { name: "T" },
+                        name: "Item",
+                        trait_ref: Option::Some(
+                            tast::TraitRef {
+                                name: "Source",
+                                args: Vec::[tast::Type::Param { name: "U" }],
+                            },
+                        ),
+                    },
+                ),
+            ],
+            additional_bounds: Vec::[],
+        },
+    );
+    testing::assert_eq(type_parameters(value).len(), 2);
+    testing::assert_eq(type_parameters(value)[0], "T");
+    testing::assert_eq(type_parameters(value)[1], "U");
+    let substituted = substitute_type(value, Vec::[("T", Type::Int32), ("U", Type::String)]);
+    testing::assert_eq(type_key(substituted), "dynIterator[int32,Item=int32::Item]")
+}
+
+#[test]
 fn rejects_residual_comptime_nodes() -> unit {
     let typed = tast::File {
         items: Vec::[
@@ -89,7 +141,7 @@ fn rejects_residual_comptime_nodes() -> unit {
         },
     );
     match lowered.functions[0].body.tail {
-        Some(Expr::Prim { value: tast::Primitive::Unit, ty: tast::Type::Error }) => (),
+        Some(Expr::Prim { value: Primitive::Unit, ty: Type::Error }) => (),
         _ => testing::fail("expected residual comptime rejection"),
     }
 }
@@ -217,8 +269,8 @@ fn lowers_linked_builtin_option_payload_patterns() -> unit {
             ),
         ),
         counter,
-        builtins.enums,
-        builtins.structs,
+        enum_defs_to_tast(builtins.enums),
+        struct_defs_to_tast(builtins.structs),
     );
     match user.functions.get(0).body.tail {
         Some(Match { expr: _, arms, default: None, ty: _ }) => {
@@ -405,8 +457,8 @@ fn links_builtin_core_before_user_core() -> unit {
             hir::lower(ast::lower(parser::parse("fn main() -> unit { print(true) }")), "main.gom"),
         ),
         counter,
-        builtins.enums,
-        builtins.structs,
+        enum_defs_to_tast(builtins.enums),
+        struct_defs_to_tast(builtins.structs),
     );
     let linked = link_with_builtins(builtins, user);
     testing::assert(linked.functions.get(0).root == false);
@@ -482,7 +534,7 @@ fn validates_core_binding_types() -> unit {
     let function = file.functions[0];
     let statement = function.body.stmts[0];
     let invalid_statements = Vec::[
-        LetStmt { name: statement.name, value: statement.value, ty: tast::Type::String },
+        LetStmt { name: statement.name, value: statement.value, ty: Type::String },
     ];
     let invalid_functions = Vec::[
         Function {

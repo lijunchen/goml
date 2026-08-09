@@ -6,6 +6,7 @@ use gomlc::hir;
 use gomlc::lift;
 use gomlc::mono;
 use gomlc::parser;
+use gomlc::repr;
 use std::text;
 use gomlc::tast;
 use std::testing;
@@ -20,7 +21,7 @@ fn lower_source(source: string) -> File {
     )
 }
 
-fn verifier_file(body: Block, ret_ty: tast::Type) -> File {
+fn verifier_file(body: Block, ret_ty: repr::Type) -> File {
     let functions: Vec[Function] = Vec::[];
     functions.push(
         Function {
@@ -39,6 +40,7 @@ fn verifier_file(body: Block, ret_ty: tast::Type) -> File {
         structs: Vec::[],
         type_instances: Vec::[],
         constants: Vec::[],
+        closure_defs: Vec::[],
     }
 }
 
@@ -55,6 +57,44 @@ fn verifies_lowered_anf() -> unit {
         Ok(_) => (),
         Err(message) => testing::fail(message),
     }
+}
+
+#[test]
+fn preserves_explicit_closure_packs_and_metadata() -> unit {
+    let file = dce(
+        lower_source(
+            "fn consume(value: (int32) -> int32) -> int32 { value(1) } fn main() -> unit { println(consume(|x: int32| x + 1)) }",
+        ),
+    );
+    testing::assert_eq(file.closure_defs.len(), 1);
+    testing::assert(encode(file).contains("pack_closure["));
+    match verify(file) {
+        Ok(_) => (),
+        Err(message) => testing::fail(message),
+    }
+}
+
+#[test]
+fn rejects_invalid_closure_pack_signatures() -> unit {
+    let file = lower_source(
+        "fn consume(value: (int32) -> int32) -> int32 { value(1) } fn main() -> unit { println(consume(|x: int32| x + 1)) }",
+    );
+    let definition = file.closure_defs[0];
+    let invalid = File {
+        functions: file.functions,
+        enums: file.enums,
+        structs: file.structs,
+        type_instances: file.type_instances,
+        constants: file.constants,
+        closure_defs: Vec::[
+            repr::ClosureDef {
+                environment: definition.environment,
+                apply: definition.apply,
+                signature: repr::Type::Unit,
+            },
+        ],
+    };
+    verifier_error_contains(verify(invalid), "closure pack signature does not match")
 }
 
 #[test]
@@ -75,22 +115,22 @@ fn eliminates_dead_anf_locals_without_dropping_calls() -> unit {
 
 #[test]
 fn eliminates_unreachable_recursive_join_members() -> unit {
-    let unit_value = Imm::Prim { value: tast::Primitive::Unit, ty: tast::Type::Unit };
+    let unit_value = Imm::Prim { value: repr::Primitive::Unit, ty: repr::Type::Unit };
     let live = JoinBind {
         name: "live",
         role: JoinRole::Continuation,
         params: Vec::[],
-        ret_ty: tast::Type::Unit,
+        ret_ty: repr::Type::Unit,
         body: Block { binds: Vec::[], term: Term::Return(unit_value) },
     };
     let dead = JoinBind {
         name: "dead",
         role: JoinRole::Continuation,
         params: Vec::[],
-        ret_ty: tast::Type::Unit,
+        ret_ty: repr::Type::Unit,
         body: Block {
             binds: Vec::[],
-            term: Term::Jump { target: "dead", args: Vec::[], ret_ty: tast::Type::Unit },
+            term: Term::Jump { target: "dead", args: Vec::[], ret_ty: repr::Type::Unit },
         },
     };
     let binds: Vec[Bind] = Vec::[];
@@ -99,9 +139,9 @@ fn eliminates_unreachable_recursive_join_members() -> unit {
         verifier_file(
             Block {
                 binds,
-                term: Term::Jump { target: "live", args: Vec::[], ret_ty: tast::Type::Unit },
+                term: Term::Jump { target: "live", args: Vec::[], ret_ty: repr::Type::Unit },
             },
-            tast::Type::Unit,
+            repr::Type::Unit,
         ),
     );
     match verify(value) {
@@ -119,10 +159,10 @@ fn eliminates_unreferenced_nonrecursive_joins() -> unit {
         name: "dead",
         role: JoinRole::Continuation,
         params: Vec::[],
-        ret_ty: tast::Type::Unit,
+        ret_ty: repr::Type::Unit,
         body: Block {
             binds: Vec::[],
-            term: Term::Return(Imm::Prim { value: tast::Primitive::Unit, ty: tast::Type::Unit }),
+            term: Term::Return(Imm::Prim { value: repr::Primitive::Unit, ty: repr::Type::Unit }),
         },
     };
     let binds: Vec[Bind] = Vec::[];
@@ -131,9 +171,9 @@ fn eliminates_unreferenced_nonrecursive_joins() -> unit {
         verifier_file(
             Block {
                 binds,
-                term: Term::Return(Imm::Prim { value: tast::Primitive::Unit, ty: tast::Type::Unit }),
+                term: Term::Return(Imm::Prim { value: repr::Primitive::Unit, ty: repr::Type::Unit }),
             },
-            tast::Type::Unit,
+            repr::Type::Unit,
         ),
     );
     match verify(value) {
@@ -150,9 +190,9 @@ fn rejects_out_of_scope_join_jumps() -> unit {
             verifier_file(
                 Block {
                     binds: Vec::[],
-                    term: Term::Jump { target: "missing", args: Vec::[], ret_ty: tast::Type::Unit },
+                    term: Term::Jump { target: "missing", args: Vec::[], ret_ty: repr::Type::Unit },
                 },
-                tast::Type::Unit,
+                repr::Type::Unit,
             ),
         ),
         "jump to out-of-scope join missing",
@@ -165,10 +205,10 @@ fn rejects_nonrecursive_self_jumps() -> unit {
         name: "again",
         role: JoinRole::Continuation,
         params: Vec::[],
-        ret_ty: tast::Type::Unit,
+        ret_ty: repr::Type::Unit,
         body: Block {
             binds: Vec::[],
-            term: Term::Jump { target: "again", args: Vec::[], ret_ty: tast::Type::Unit },
+            term: Term::Jump { target: "again", args: Vec::[], ret_ty: repr::Type::Unit },
         },
     };
     let binds: Vec[Bind] = Vec::[];
@@ -178,9 +218,9 @@ fn rejects_nonrecursive_self_jumps() -> unit {
             verifier_file(
                 Block {
                     binds,
-                    term: Term::Jump { target: "again", args: Vec::[], ret_ty: tast::Type::Unit },
+                    term: Term::Jump { target: "again", args: Vec::[], ret_ty: repr::Type::Unit },
                 },
-                tast::Type::Unit,
+                repr::Type::Unit,
             ),
         ),
         "jump to out-of-scope join again",
@@ -189,16 +229,16 @@ fn rejects_nonrecursive_self_jumps() -> unit {
 
 #[test]
 fn rejects_join_argument_mismatches() -> unit {
-    let params: Vec[(string, tast::Type)] = Vec::[];
-    params.push(("value", tast::Type::Int32));
+    let params: Vec[(string, repr::Type)] = Vec::[];
+    params.push(("value", repr::Type::Int32));
     let join = JoinBind {
         name: "done",
         role: JoinRole::Continuation,
         params,
-        ret_ty: tast::Type::Int32,
+        ret_ty: repr::Type::Int32,
         body: Block {
             binds: Vec::[],
-            term: Term::Return(Imm::Var { name: "value", ty: tast::Type::Int32 }),
+            term: Term::Return(Imm::Var { name: "value", ty: repr::Type::Int32 }),
         },
     };
     let binds: Vec[Bind] = Vec::[];
@@ -208,9 +248,9 @@ fn rejects_join_argument_mismatches() -> unit {
             verifier_file(
                 Block {
                     binds,
-                    term: Term::Jump { target: "done", args: Vec::[], ret_ty: tast::Type::Int32 },
+                    term: Term::Jump { target: "done", args: Vec::[], ret_ty: repr::Type::Int32 },
                 },
-                tast::Type::Int32,
+                repr::Type::Int32,
             ),
         ),
         "jump argument count does not match join done",
@@ -225,10 +265,10 @@ fn accepts_recursive_self_jumps() -> unit {
             name: "loop",
             role: JoinRole::Continuation,
             params: Vec::[],
-            ret_ty: tast::Type::Unit,
+            ret_ty: repr::Type::Unit,
             body: Block {
                 binds: Vec::[],
-                term: Term::Jump { target: "loop", args: Vec::[], ret_ty: tast::Type::Unit },
+                term: Term::Jump { target: "loop", args: Vec::[], ret_ty: repr::Type::Unit },
             },
         },
     );
@@ -238,9 +278,9 @@ fn accepts_recursive_self_jumps() -> unit {
         verifier_file(
             Block {
                 binds,
-                term: Term::Jump { target: "loop", args: Vec::[], ret_ty: tast::Type::Unit },
+                term: Term::Jump { target: "loop", args: Vec::[], ret_ty: repr::Type::Unit },
             },
-            tast::Type::Unit,
+            repr::Type::Unit,
         ),
     ) {
         Ok(_) => (),
@@ -254,10 +294,10 @@ fn preserves_loop_exit_joins() -> unit {
         name: "exit",
         role: JoinRole::LoopExit,
         params: Vec::[],
-        ret_ty: tast::Type::Unit,
+        ret_ty: repr::Type::Unit,
         body: Block {
             binds: Vec::[],
-            term: Term::Return(Imm::Prim { value: tast::Primitive::Unit, ty: tast::Type::Unit }),
+            term: Term::Return(Imm::Prim { value: repr::Primitive::Unit, ty: repr::Type::Unit }),
         },
     };
     let binds: Vec[Bind] = Vec::[];
@@ -266,9 +306,9 @@ fn preserves_loop_exit_joins() -> unit {
         verifier_file(
             Block {
                 binds,
-                term: Term::Jump { target: "exit", args: Vec::[], ret_ty: tast::Type::Unit },
+                term: Term::Jump { target: "exit", args: Vec::[], ret_ty: repr::Type::Unit },
             },
-            tast::Type::Unit,
+            repr::Type::Unit,
         ),
     );
     match optimized.functions[0].body.binds.get(0) {
@@ -281,9 +321,9 @@ fn preserves_loop_exit_joins() -> unit {
 }
 
 #[test]
-fn preserves_closure_conversion_joins() -> unit {
-    let function_ty = tast::Type::Func { params: Vec::[], ret_ty: tast::Type::String };
-    let params: Vec[(string, tast::Type)] = Vec::[];
+fn rejects_bare_closure_environment_join_arguments() -> unit {
+    let function_ty = repr::Type::Func { params: Vec::[], ret_ty: repr::Type::String };
+    let params: Vec[(string, repr::Type)] = Vec::[];
     params.push(("result", function_ty));
     let join = JoinBind {
         name: "return",
@@ -298,21 +338,19 @@ fn preserves_closure_conversion_joins() -> unit {
     let binds: Vec[Bind] = Vec::[];
     binds.push(Bind::Join(join));
     let args: Vec[Imm] = Vec::[];
-    args.push(Imm::Var { name: "environment", ty: tast::Type::Con { name: "closure_env_test_0" } });
+    args.push(
+        Imm::Var {
+            name: "environment",
+            ty: repr::Type::ClosureEnvironment { name: "closure_env_test_0" },
+        },
+    );
     let optimized = simplify(
         verifier_file(
             Block { binds, term: Term::Jump { target: "return", args, ret_ty: function_ty } },
             function_ty,
         ),
     );
-    match verify(optimized) {
-        Ok(_) => (),
-        Err(message) => testing::fail(message),
-    };
-    match optimized.functions[0].body.binds.get(0) {
-        Join(value) => testing::assert_eq(value.name, "return"),
-        _ => testing::fail("expected closure conversion join"),
-    }
+    verifier_error_contains(verify(optimized), "jump argument type does not match join")
 }
 
 #[test]
@@ -324,11 +362,11 @@ fn does_not_propagate_assigned_bindings() -> unit {
                 name: "value",
                 value: Value::Imm(
                     Imm::Prim {
-                        value: tast::Primitive::Int32 { value: "1" },
-                        ty: tast::Type::Int32,
+                        value: repr::Primitive::Int32 { value: "1" },
+                        ty: repr::Type::Int32,
                     },
                 ),
-                ty: tast::Type::Int32,
+                ty: repr::Type::Int32,
             },
         ),
     );
@@ -339,20 +377,20 @@ fn does_not_propagate_assigned_bindings() -> unit {
                 value: Value::Assign {
                     name: "value",
                     value: Imm::Prim {
-                        value: tast::Primitive::Int32 { value: "2" },
-                        ty: tast::Type::Int32,
+                        value: repr::Primitive::Int32 { value: "2" },
+                        ty: repr::Type::Int32,
                     },
-                    target_ty: tast::Type::Int32,
-                    ty: tast::Type::Unit,
+                    target_ty: repr::Type::Int32,
+                    ty: repr::Type::Unit,
                 },
-                ty: tast::Type::Unit,
+                ty: repr::Type::Unit,
             },
         ),
     );
     let optimized = simplify(
         verifier_file(
-            Block { binds, term: Term::Return(Imm::Var { name: "value", ty: tast::Type::Int32 }) },
-            tast::Type::Int32,
+            Block { binds, term: Term::Return(Imm::Var { name: "value", ty: repr::Type::Int32 }) },
+            repr::Type::Int32,
         ),
     );
     match optimized.functions[0].body.term {
@@ -473,7 +511,7 @@ fn exhausts_static_inline_budget() -> unit {
         None => return testing::fail("missing inline candidate"),
     };
     let args: Vec[Imm] = Vec::[];
-    args.push(Imm::Prim { value: tast::Primitive::String { value: "x" }, ty: tast::Type::String });
+    args.push(Imm::Prim { value: repr::Primitive::String { value: "x" }, ty: repr::Type::String });
     let budget = Ref::new(2);
     for _ in 0..2 {
         match inline_candidate(
@@ -481,8 +519,8 @@ fn exhausts_static_inline_budget() -> unit {
             "caller",
             "id",
             args,
-            tast::Type::String,
-            tast::Type::String,
+            repr::Type::String,
+            repr::Type::String,
             false,
             budget,
         ) {
@@ -496,8 +534,8 @@ fn exhausts_static_inline_budget() -> unit {
         "caller",
         "id",
         args,
-        tast::Type::String,
-        tast::Type::String,
+        repr::Type::String,
+        repr::Type::String,
         false,
         budget,
     ) {
@@ -541,28 +579,28 @@ fn invalidates_commuting_constructors_after_assignment() -> unit {
         LetBind {
             name: "field",
             value: Value::Imm(
-                Imm::Prim { value: tast::Primitive::Int32 { value: "1" }, ty: tast::Type::Int32 },
+                Imm::Prim { value: repr::Primitive::Int32 { value: "1" }, ty: repr::Type::Int32 },
             ),
-            ty: tast::Type::Int32,
+            ty: repr::Type::Int32,
         },
     );
     let fields: Vec[Imm] = Vec::[];
-    fields.push(Imm::Var { name: "field", ty: tast::Type::Int32 });
+    fields.push(Imm::Var { name: "field", ty: repr::Type::Int32 });
     record_commute_binding(
         known,
         LetBind {
             name: "value",
             value: Value::Constr {
-                constructor: tast::Constructor {
+                constructor: repr::Constructor {
                     name: "Maybe::Some",
                     fields: Vec::[],
                     is_struct: false,
                     tag: Option::Some(0),
                 },
                 args: fields,
-                ty: tast::Type::Con { name: "Maybe" },
+                ty: repr::Type::Named { name: "Maybe" },
             },
-            ty: tast::Type::Con { name: "Maybe" },
+            ty: repr::Type::Named { name: "Maybe" },
         },
     );
     record_commute_binding(
@@ -572,16 +610,16 @@ fn invalidates_commuting_constructors_after_assignment() -> unit {
             value: Value::Assign {
                 name: "field",
                 value: Imm::Prim {
-                    value: tast::Primitive::Int32 { value: "2" },
-                    ty: tast::Type::Int32,
+                    value: repr::Primitive::Int32 { value: "2" },
+                    ty: repr::Type::Int32,
                 },
-                target_ty: tast::Type::Int32,
-                ty: tast::Type::Unit,
+                target_ty: repr::Type::Int32,
+                ty: repr::Type::Unit,
             },
-            ty: tast::Type::Unit,
+            ty: repr::Type::Unit,
         },
     );
-    match known_dispatch(Imm::Var { name: "value", ty: tast::Type::Con { name: "Maybe" } }, known) {
+    match known_dispatch(Imm::Var { name: "value", ty: repr::Type::Named { name: "Maybe" } }, known) {
         Unknown => (),
         Dispatch { .. } => testing::fail("expected invalidated constructor"),
     }
@@ -621,13 +659,13 @@ fn rejects_recursive_inlining_into_jumping_consumers() -> unit {
     let arms: Vec[Arm] = Vec::[];
     arms.push(
         Arm {
-            lhs: Imm::Tag { index: 0, ty: tast::Type::Con { name: "Option__int" } },
+            lhs: Imm::Tag { index: 0, ty: repr::Type::Named { name: "Option__int" } },
             body: Block {
                 binds: Vec::[],
                 term: Term::Return(
                     Imm::Prim {
-                        value: tast::Primitive::Bool { value: false },
-                        ty: tast::Type::Bool,
+                        value: repr::Primitive::Bool { value: false },
+                        ty: repr::Type::Bool,
                     },
                 ),
             },
@@ -635,10 +673,10 @@ fn rejects_recursive_inlining_into_jumping_consumers() -> unit {
     );
     arms.push(
         Arm {
-            lhs: Imm::Tag { index: 1, ty: tast::Type::Con { name: "Option__int" } },
+            lhs: Imm::Tag { index: 1, ty: repr::Type::Named { name: "Option__int" } },
             body: Block {
                 binds: Vec::[],
-                term: Term::Jump { target: "outer_loop", args: Vec::[], ret_ty: tast::Type::Bool },
+                term: Term::Jump { target: "outer_loop", args: Vec::[], ret_ty: repr::Type::Bool },
             },
         },
     );
@@ -649,11 +687,11 @@ fn rejects_recursive_inlining_into_jumping_consumers() -> unit {
                 term: Term::Match {
                     scrutinee: Imm::Var {
                         name: "result",
-                        ty: tast::Type::Con { name: "Option__int" },
+                        ty: repr::Type::Named { name: "Option__int" },
                     },
                     arms,
                     default: Option::None,
-                    ret_ty: tast::Type::Bool,
+                    ret_ty: repr::Type::Bool,
                 },
             },
             "result",
