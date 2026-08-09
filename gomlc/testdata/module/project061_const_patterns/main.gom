@@ -5,16 +5,20 @@ use test::const_patterns::values::{helper};
 
 fn classify(value: int) -> string {
     match value {
-        values::answer | values::alternate => "known",
+        values::ANSWER | values::ALTERNATE => "known",
         _ => "other",
     }
 }
 
 fn classify_bool(value: bool) -> string {
     match value {
-        values::enabled => "enabled",
+        values::ENABLED => "enabled",
         false => "disabled",
     }
+}
+
+fn exported_answer() -> int {
+    values::ANSWER
 }
 
 fn imported_name_binding(value: int) -> int {
@@ -29,6 +33,7 @@ fn main() -> unit {
     println(classify(0));
     println(classify_bool(true));
     println(classify_bool(false));
+    println(exported_answer());
     println(imported_name_binding(5));
     println(helper())
 }

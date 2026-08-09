@@ -115,12 +115,13 @@ fn parses_control_flow_patterns_and_types() -> unit {
 
 #[test]
 fn parses_type_aliases_constants_and_byte_patterns() -> unit {
-    let source = "pub type Pair[T] = (T, T); pub const marker: byte = b'\\x41'; fn classify(value: byte) -> bool { match value { b'A' => true, _ => false } }";
+    let source = "pub type Pair[T] = (T, T); pub const MARKER: byte = b'\\x41'; fn classify(value: byte) -> bool { match value { MARKER => true, b'B' => false, _ => false } }";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 0);
     testing::assert_eq(count_nodes(result.root, cst::NodeKind::TYPE_ALIAS), 1);
     testing::assert_eq(count_nodes(result.root, cst::NodeKind::CONST), 1);
     testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_BYTE), 1);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::PATTERN_CONSTR), 1);
     testing::assert_eq(count_nodes(result.root, cst::NodeKind::PATTERN_BYTE), 1)
 }
 
