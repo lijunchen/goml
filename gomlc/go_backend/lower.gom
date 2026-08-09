@@ -3239,6 +3239,7 @@ fn compile_functions(
 fn test_main_function(
     function_names: FunctionNames,
     test_cases: Vec[(string, string, Vec[(string, string)])],
+    test_fail_key: string,
 ) -> Function {
     let cases: Vec[SwitchCase] = Vec::[];
     for test_case in test_cases {
@@ -3275,7 +3276,7 @@ fn test_main_function(
     default_stmts.push(
         Stmt::Expr {
             expr: Expr::Call {
-                func: Expr::Var { name: runtime_hook_name("std.testing.fail") },
+                func: Expr::Var { name: runtime_hook_name(test_fail_key) },
                 args: fail_args,
             },
         },
@@ -3298,7 +3299,7 @@ fn lower_with_test_cases(
     value: anf::File,
     testing: bool,
     test_cases: Vec[(string, string, Vec[(string, string)])],
-) -> File {
+) -> Result[File, string] {
     let enums = value.enums;
     let structs = value.structs;
     let type_instances = value.type_instances;
@@ -3307,7 +3308,7 @@ fn lower_with_test_cases(
     let function_names = build_function_names(value.functions, structs, enums, type_instances);
     let items: Vec[Item] = Vec::[];
     let types = new_collected_types();
-    let runtime_hooks: Vec[string] = Vec::[];
+    let runtime_hook_keys: Vec[string] = Vec::[];
     let intrinsics: Vec[string] = Vec::[];
     let go_foreign: Vec[GoForeignSpec] = Vec::[];
     let missing_types = new_collected_types();
@@ -3319,11 +3320,20 @@ fn lower_with_test_cases(
         }
         collect_type(types, function.ret_ty);
         collect_block_types(types, function.body);
-        collect_runtime_block(runtime_hooks, missing_types, intrinsics, go_foreign, function.body);
+        collect_runtime_block(
+            runtime_hook_keys,
+            missing_types,
+            intrinsics,
+            go_foreign,
+            function.body,
+        );
         collect_dyn_block(coercions, function.body)
     }
+    let runtime_hooks = resolve_runtime_hooks(runtime_hook_keys)?;
     if testing {
-        runtime_hooks.push("std.testing.fail")
+        runtime_hooks.push(
+            resources::RuntimeHook::Standard(resources::StandardRuntimeHook::TestingFail),
+        )
     } else {};
     let dyn_helper_names = build_dyn_helper_names(coercions, value.functions);
     collect_type_definition_fields(types, enums, structs, type_instances);
@@ -3365,7 +3375,15 @@ fn lower_with_test_cases(
         items.push(Item::Function(function))
     }
     if testing {
-        items.push(Item::Function(test_main_function(function_names, test_cases)))
+        let test_fail = resources::runtime_abi_by_hook(
+            resources::RuntimeHook::Standard(resources::StandardRuntimeHook::TestingFail),
+        );
+        match test_fail {
+            Some(spec) => {
+                items.push(Item::Function(test_main_function(function_names, test_cases, spec.key)))
+            },
+            None => return Result::Err("missing testing runtime hook ABI"),
+        }
     } else {
         let stmts: Vec[Stmt] = Vec::[];
         let entry_name = match mapped_function_name(function_names, "main") {
@@ -3386,7 +3404,7 @@ fn lower_with_test_cases(
             ),
         )
     };
-    prune_functions(File { items })
+    Result::Ok(prune_functions(File { items }))
 }
 
 fn validate_anf_term(value: anf::Term) -> Result[unit, string] {
@@ -3428,6 +3446,17 @@ fn validate_anf_block(value: anf::Block) -> Result[unit, string] {
     validate_anf_term(value.term)
 }
 
+fn resolve_runtime_hooks(keys: Vec[string]) -> Result[Vec[resources::RuntimeHook], string] {
+    let hooks: Vec[resources::RuntimeHook] = Vec::[];
+    for key in keys {
+        match resources::runtime_abi_by_key(key) {
+            Some(spec) => hooks.push(spec.hook),
+            None => return Result::Err("unknown runtime hook " + key),
+        }
+    }
+    Result::Ok(hooks)
+}
+
 fn validate_anf(value: anf::File) -> Result[unit, string] {
     anf::verify(value)?;
     let runtime_hooks: Vec[string] = Vec::[];
@@ -3441,11 +3470,7 @@ fn validate_anf(value: anf::File) -> Result[unit, string] {
         };
         collect_runtime_block(runtime_hooks, missing_types, intrinsics, go_foreign, function.body)
     }
-    for key in runtime_hooks {
-        if resources::runtime_abi_by_key(key).is_none() {
-            return Result::Err("unknown runtime hook " + key)
-        } else {}
-    }
+    resolve_runtime_hooks(runtime_hooks)?;
     for key in intrinsics {
         if resources::intrinsic_abi_by_key(key).is_none() {
             return Result::Err("unknown intrinsic " + key)
@@ -3456,7 +3481,7 @@ fn validate_anf(value: anf::File) -> Result[unit, string] {
 
 pub fn lower(value: anf::File) -> Result[File, string] {
     validate_anf(value)?;
-    Result::Ok(lower_with_test_cases(value, false, Vec::[]))
+    lower_with_test_cases(value, false, Vec::[])
 }
 
 pub fn lower_tests(value: anf::File, test_cases: Vec[(string, string, Vec[(string, string)])]) -> Result[
@@ -3464,5 +3489,5 @@ pub fn lower_tests(value: anf::File, test_cases: Vec[(string, string, Vec[(strin
     string,
 ] {
     validate_anf(value)?;
-    Result::Ok(lower_with_test_cases(value, true, test_cases))
+    lower_with_test_cases(value, true, test_cases)
 }

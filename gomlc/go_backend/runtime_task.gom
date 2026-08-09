@@ -1,5 +1,7 @@
 package go_backend;
 
+use gomlc::resources;
+
 fn task_state_name() -> string {
     go_generated_ident("_goml_task_scope_state")
 }
@@ -285,7 +287,7 @@ fn task_runtime_support_items() -> Vec[Item] {
     items
 }
 
-fn task_scope_run_item() -> Item {
+fn task_scope_run_item(key: string) -> Item {
     let recover_body: Vec[Stmt] = Vec::[];
     recover_body.push(
         Stmt::Var {
@@ -346,7 +348,7 @@ fn task_scope_run_item() -> Item {
     );
     stmts.push(task_return(Expr::Unit));
     std_function_item(
-        STD_TASK_SCOPE_RUN_RUNTIME_KEY,
+        key,
         Vec::[
             ("scope_id", Type::Int64),
             ("body", Type::Func { params: Vec::[], ret_ty: Type::Unit }),
@@ -356,7 +358,7 @@ fn task_scope_run_item() -> Item {
     )
 }
 
-fn task_scope_new_item() -> Item {
+fn task_scope_new_item(key: string) -> Item {
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::Var {
@@ -488,12 +490,7 @@ fn task_scope_new_item() -> Item {
     );
     stmts.push(task_expr(task_method(task_registry_mutex_name(), "Unlock", Vec::[])));
     stmts.push(task_return(task_var("id")));
-    std_function_item(
-        STD_TASK_SCOPE_NEW_RUNTIME_KEY,
-        Vec::[("parent", Type::Int64)],
-        Type::Int64,
-        stmts,
-    )
+    std_function_item(key, Vec::[("parent", Type::Int64)], Type::Int64, stmts)
 }
 
 fn task_scope_spawn_item(key: string, panic_when_closed: bool) -> Item {
@@ -553,7 +550,7 @@ fn task_scope_spawn_item(key: string, panic_when_closed: bool) -> Item {
     )
 }
 
-fn task_scope_cancel_item() -> Item {
+fn task_scope_cancel_item(key: string) -> Item {
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::Var {
@@ -570,15 +567,10 @@ fn task_scope_cancel_item() -> Item {
         },
     );
     stmts.push(task_return(Expr::Unit));
-    std_function_item(
-        STD_TASK_SCOPE_CANCEL_RUNTIME_KEY,
-        Vec::[("scope_id", Type::Int64)],
-        Type::Unit,
-        stmts,
-    )
+    std_function_item(key, Vec::[("scope_id", Type::Int64)], Type::Unit, stmts)
 }
 
-fn task_scope_finish_item() -> Item {
+fn task_scope_finish_item(key: string) -> Item {
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::Var {
@@ -655,15 +647,10 @@ fn task_scope_finish_item() -> Item {
         },
     );
     stmts.push(task_return(Expr::Unit));
-    std_function_item(
-        STD_TASK_SCOPE_FINISH_RUNTIME_KEY,
-        Vec::[("scope_id", Type::Int64)],
-        Type::Unit,
-        stmts,
-    )
+    std_function_item(key, Vec::[("scope_id", Type::Int64)], Type::Unit, stmts)
 }
 
-fn task_active_scope_count_item() -> Item {
+fn task_active_scope_count_item(key: string) -> Item {
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(task_expr(task_method(task_registry_mutex_name(), "Lock", Vec::[])));
     stmts.push(
@@ -675,10 +662,10 @@ fn task_active_scope_count_item() -> Item {
     );
     stmts.push(task_expr(task_method(task_registry_mutex_name(), "Unlock", Vec::[])));
     stmts.push(task_return(task_var("count")));
-    std_function_item(STD_TASK_ACTIVE_SCOPE_COUNT_RUNTIME_KEY, Vec::[], Type::Int, stmts)
+    std_function_item(key, Vec::[], Type::Int, stmts)
 }
 
-fn task_scope_cancelled_item() -> Item {
+fn task_scope_cancelled_item(key: string) -> Item {
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::Var {
@@ -703,15 +690,10 @@ fn task_scope_cancelled_item() -> Item {
             },
         ),
     );
-    std_function_item(
-        STD_TASK_SCOPE_CANCELLED_RUNTIME_KEY,
-        Vec::[("scope_id", Type::Int64)],
-        Type::Bool,
-        stmts,
-    )
+    std_function_item(key, Vec::[("scope_id", Type::Int64)], Type::Bool, stmts)
 }
 
-fn task_scope_sleep_item() -> Item {
+fn task_scope_sleep_item(key: string) -> Item {
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::Var {
@@ -762,28 +744,23 @@ fn task_scope_sleep_item() -> Item {
     );
     stmts.push(task_return(task_var("completed")));
     std_function_item(
-        STD_TASK_SLEEP_RUNTIME_KEY,
+        key,
         Vec::[("scope_id", Type::Int64), ("nanoseconds", Type::Int64)],
         Type::Bool,
         stmts,
     )
 }
 
-fn task_runtime_hook_item(key: string) -> Option[Item] {
-    match key {
-        STD_TASK_SCOPE_NEW_RUNTIME_KEY => Option::Some(task_scope_new_item()),
-        STD_TASK_SCOPE_RUN_RUNTIME_KEY => Option::Some(task_scope_run_item()),
-        STD_TASK_SCOPE_SPAWN_RUNTIME_KEY => {
-            Option::Some(task_scope_spawn_item(STD_TASK_SCOPE_SPAWN_RUNTIME_KEY, true))
-        },
-        STD_TASK_SCOPE_TRY_SPAWN_RUNTIME_KEY => {
-            Option::Some(task_scope_spawn_item(STD_TASK_SCOPE_TRY_SPAWN_RUNTIME_KEY, false))
-        },
-        STD_TASK_SCOPE_CANCEL_RUNTIME_KEY => Option::Some(task_scope_cancel_item()),
-        STD_TASK_SCOPE_FINISH_RUNTIME_KEY => Option::Some(task_scope_finish_item()),
-        STD_TASK_SCOPE_CANCELLED_RUNTIME_KEY => Option::Some(task_scope_cancelled_item()),
-        STD_TASK_ACTIVE_SCOPE_COUNT_RUNTIME_KEY => Option::Some(task_active_scope_count_item()),
-        STD_TASK_SLEEP_RUNTIME_KEY => Option::Some(task_scope_sleep_item()),
-        _ => Option::None,
+fn task_runtime_hook_item(hook: resources::TaskRuntimeHook, key: string) -> Item {
+    match hook {
+        ScopeNew => task_scope_new_item(key),
+        ScopeRun => task_scope_run_item(key),
+        ScopeSpawn => task_scope_spawn_item(key, true),
+        ScopeTrySpawn => task_scope_spawn_item(key, false),
+        ScopeCancel => task_scope_cancel_item(key),
+        ScopeFinish => task_scope_finish_item(key),
+        ScopeCancelled => task_scope_cancelled_item(key),
+        Sleep => task_scope_sleep_item(key),
+        ActiveScopeCount => task_active_scope_count_item(key),
     }
 }

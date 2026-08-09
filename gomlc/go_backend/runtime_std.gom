@@ -1,5 +1,6 @@
 package go_backend;
 
+use gomlc::resources;
 use gomlc::tast;
 
 fn std_function_item(key: string, params: Vec[(string, Type)], ret_ty: Type, stmts: Vec[Stmt]) -> Item {
@@ -385,7 +386,7 @@ fn std_bool_value_string_expr(value_ty: tast::Type, valid: bool, value: Expr, er
     )
 }
 
-fn std_env_args_item() -> Item {
+fn std_env_args_item(key: string) -> Item {
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::Return {
@@ -394,15 +395,10 @@ fn std_env_args_item() -> Item {
             ),
         },
     );
-    std_function_item(
-        STD_ENV_ARGS_RUNTIME_KEY,
-        Vec::[],
-        lower_type(std_vec_type(tast::Type::String)),
-        stmts,
-    )
+    std_function_item(key, Vec::[], lower_type(std_vec_type(tast::Type::String)), stmts)
 }
 
-fn std_env_vars_item() -> Item {
+fn std_env_vars_item(key: string) -> Item {
     let stmts = Vec::[
         Stmt::Return {
             expr: Option::Some(
@@ -410,12 +406,7 @@ fn std_env_vars_item() -> Item {
             ),
         },
     ];
-    std_function_item(
-        STD_ENV_VARS_RUNTIME_KEY,
-        Vec::[],
-        lower_type(std_vec_type(tast::Type::String)),
-        stmts,
-    )
+    std_function_item(key, Vec::[], lower_type(std_vec_type(tast::Type::String)), stmts)
 }
 
 fn std_string_result_item(key: string, function: string) -> Item {
@@ -455,7 +446,7 @@ fn std_string_result_item(key: string, function: string) -> Item {
     std_function_item(key, Vec::[], std_bool_string_string_type(), stmts)
 }
 
-fn std_env_var_item() -> Item {
+fn std_env_var_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("name", Type::String));
     let stmts: Vec[Stmt] = Vec::[];
@@ -471,10 +462,10 @@ fn std_env_var_item() -> Item {
     values.push(Expr::Var { name: "found" });
     values.push(Expr::Var { name: "value" });
     stmts.push(Stmt::Return { expr: Option::Some(std_tuple_expr(std_bool_string_type(), values)) });
-    std_function_item(STD_ENV_VAR_RUNTIME_KEY, params, std_bool_string_type(), stmts)
+    std_function_item(key, params, std_bool_string_type(), stmts)
 }
 
-fn std_fs_read_file_item() -> Item {
+fn std_fs_read_file_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("path", Type::String));
     let bytes = Type::Slice { elem: Type::Uint8 };
@@ -513,10 +504,10 @@ fn std_fs_read_file_item() -> Item {
             ),
         },
     );
-    std_function_item(STD_FS_READ_FILE_RUNTIME_KEY, params, std_bool_string_string_type(), stmts)
+    std_function_item(key, params, std_bool_string_string_type(), stmts)
 }
 
-fn std_fs_sha256_file_item() -> Item {
+fn std_fs_sha256_file_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("path", Type::String));
     let stmts: Vec[Stmt] = Vec::[];
@@ -597,10 +588,10 @@ fn std_fs_sha256_file_item() -> Item {
             ),
         },
     );
-    std_function_item(STD_FS_SHA256_FILE_RUNTIME_KEY, params, std_bool_string_string_type(), stmts)
+    std_function_item(key, params, std_bool_string_string_type(), stmts)
 }
 
-fn std_fs_write_file_item() -> Item {
+fn std_fs_write_file_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("path", Type::String));
     params.push(("content", Type::String));
@@ -632,10 +623,10 @@ fn std_fs_write_file_item() -> Item {
     stmts.push(
         Stmt::Return { expr: Option::Some(std_bool_string_expr(true, Expr::String { value: "" })) },
     );
-    std_function_item(STD_FS_WRITE_FILE_RUNTIME_KEY, params, std_bool_string_type(), stmts)
+    std_function_item(key, params, std_bool_string_type(), stmts)
 }
 
-fn std_fs_read_bytes_item() -> Item {
+fn std_fs_read_bytes_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("path", Type::String));
     let bytes = Type::Slice { elem: Type::Uint8 };
@@ -678,10 +669,10 @@ fn std_fs_read_bytes_item() -> Item {
             ),
         },
     );
-    std_function_item(STD_FS_READ_BYTES_RUNTIME_KEY, params, std_bool_bytes_string_type(), stmts)
+    std_function_item(key, params, std_bool_bytes_string_type(), stmts)
 }
 
-fn std_fs_read_bytes_v2_item() -> Item {
+fn std_fs_read_bytes_v2_item(key: string) -> Item {
     let params = Vec::[("path", Type::String)];
     let bytes = Type::Slice { elem: Type::Uint8 };
     let stmts: Vec[Stmt] = Vec::[];
@@ -734,10 +725,10 @@ fn std_fs_read_bytes_v2_item() -> Item {
             ),
         },
     );
-    std_function_item(STD_FS_READ_BYTES_V2_RUNTIME_KEY, params, std_bool_bytes_error_type(), stmts)
+    std_function_item(key, params, std_bool_bytes_error_type(), stmts)
 }
 
-fn std_fs_write_bytes_item() -> Item {
+fn std_fs_write_bytes_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("path", Type::String));
     params.push(("data", lower_type(std_vec_type(tast::Type::Uint8))));
@@ -767,10 +758,10 @@ fn std_fs_write_bytes_item() -> Item {
     stmts.push(
         Stmt::Return { expr: Option::Some(std_bool_string_expr(true, Expr::String { value: "" })) },
     );
-    std_function_item(STD_FS_WRITE_BYTES_RUNTIME_KEY, params, std_bool_string_type(), stmts)
+    std_function_item(key, params, std_bool_string_type(), stmts)
 }
 
-fn std_fs_write_bytes_v2_item() -> Item {
+fn std_fs_write_bytes_v2_item(key: string) -> Item {
     let params = Vec::[
         ("path", Type::String),
         ("data", lower_type(std_vec_type(tast::Type::Uint8))),
@@ -838,7 +829,7 @@ fn std_fs_write_bytes_v2_item() -> Item {
             ),
         },
     );
-    std_function_item(STD_FS_WRITE_BYTES_V2_RUNTIME_KEY, params, std_error_result_type(), stmts)
+    std_function_item(key, params, std_error_result_type(), stmts)
 }
 
 fn std_error_call_block(call: Expr) -> Block {
@@ -903,7 +894,7 @@ fn std_fs_copy_case_block() -> Block {
     Block { stmts }
 }
 
-fn std_fs_path_operation_v2_item() -> Item {
+fn std_fs_path_operation_v2_item(key: string) -> Item {
     let params = Vec::[("operation", Type::Int), ("first", Type::String), ("second", Type::String)];
     let cases = Vec::[
         SwitchCase {
@@ -967,7 +958,7 @@ fn std_fs_path_operation_v2_item() -> Item {
             ),
         },
     ];
-    std_function_item(STD_FS_PATH_OPERATION_V2_RUNTIME_KEY, params, std_error_result_type(), stmts)
+    std_function_item(key, params, std_error_result_type(), stmts)
 }
 
 fn std_fs_metadata_type() -> Type {
@@ -1013,7 +1004,7 @@ fn std_fs_metadata_expr(
     )
 }
 
-fn std_fs_metadata_v2_item() -> Item {
+fn std_fs_metadata_v2_item(key: string) -> Item {
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::Var {
@@ -1175,7 +1166,7 @@ fn std_fs_metadata_v2_item() -> Item {
         },
     );
     std_function_item(
-        STD_FS_METADATA_V2_RUNTIME_KEY,
+        key,
         Vec::[("path", Type::String), ("follow", Type::Bool)],
         std_fs_metadata_type(),
         stmts,
@@ -1195,7 +1186,7 @@ fn std_fs_atomic_failure(close_file: bool) -> Block {
     Block { stmts }
 }
 
-fn std_fs_atomic_write_v2_item() -> Item {
+fn std_fs_atomic_write_v2_item(key: string) -> Item {
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::Var {
@@ -1329,14 +1320,14 @@ fn std_fs_atomic_write_v2_item() -> Item {
     );
     stmts.push(std_error_success_stmt());
     std_function_item(
-        STD_FS_ATOMIC_WRITE_V2_RUNTIME_KEY,
+        key,
         Vec::[("path", Type::String), ("data", lower_type(std_vec_type(tast::Type::Uint8)))],
         std_error_result_type(),
         stmts,
     )
 }
 
-fn std_fs_create_dir_all_item() -> Item {
+fn std_fs_create_dir_all_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("path", Type::String));
     let args: Vec[Expr] = Vec::[];
@@ -1364,7 +1355,7 @@ fn std_fs_create_dir_all_item() -> Item {
     stmts.push(
         Stmt::Return { expr: Option::Some(std_bool_string_expr(true, Expr::String { value: "" })) },
     );
-    std_function_item(STD_FS_CREATE_DIR_ALL_RUNTIME_KEY, params, std_bool_string_type(), stmts)
+    std_function_item(key, params, std_bool_string_type(), stmts)
 }
 
 fn std_fs_remove_item(key: string, function: string) -> Item {
@@ -1397,7 +1388,7 @@ fn std_fs_remove_item(key: string, function: string) -> Item {
     std_function_item(key, params, std_bool_string_type(), stmts)
 }
 
-fn std_fs_file_exists_item() -> Item {
+fn std_fs_file_exists_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("path", Type::String));
     let stmts: Vec[Stmt] = Vec::[];
@@ -1415,7 +1406,7 @@ fn std_fs_file_exists_item() -> Item {
             ),
         },
     );
-    std_function_item(STD_FS_FILE_EXISTS_RUNTIME_KEY, params, Type::Bool, stmts)
+    std_function_item(key, params, Type::Bool, stmts)
 }
 
 fn std_fs_stat_kind_item(key: string, directory: bool) -> Item {
@@ -1458,7 +1449,7 @@ fn std_fs_stat_kind_item(key: string, directory: bool) -> Item {
     std_function_item(key, params, Type::Bool, stmts)
 }
 
-fn std_fs_canonicalize_item() -> Item {
+fn std_fs_canonicalize_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("path", Type::String));
     let stmts: Vec[Stmt] = Vec::[];
@@ -1528,10 +1519,10 @@ fn std_fs_canonicalize_item() -> Item {
             ),
         },
     );
-    std_function_item(STD_FS_CANONICALIZE_RUNTIME_KEY, params, std_bool_string_string_type(), stmts)
+    std_function_item(key, params, std_bool_string_string_type(), stmts)
 }
 
-fn std_fs_read_dir_item() -> Item {
+fn std_fs_read_dir_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("path", Type::String));
     let entries_type = Type::Slice { elem: Type::Named { name: "_goml_os.DirEntry" } };
@@ -1624,10 +1615,10 @@ fn std_fs_read_dir_item() -> Item {
             ),
         },
     );
-    std_function_item(STD_FS_READ_DIR_RUNTIME_KEY, params, std_bool_strings_string_type(), stmts)
+    std_function_item(key, params, std_bool_strings_string_type(), stmts)
 }
 
-fn std_fs_read_dir_v2_item() -> Item {
+fn std_fs_read_dir_v2_item(key: string) -> Item {
     let params = Vec::[("path", Type::String)];
     let entries_type = Type::Slice { elem: Type::Named { name: "_goml_os.DirEntry" } };
     let names_type = Type::Slice { elem: Type::String };
@@ -1739,7 +1730,7 @@ fn std_fs_read_dir_v2_item() -> Item {
             ),
         },
     );
-    std_function_item(STD_FS_READ_DIR_V2_RUNTIME_KEY, params, std_bool_strings_error_type(), stmts)
+    std_function_item(key, params, std_bool_strings_error_type(), stmts)
 }
 
 fn std_io_output_item(key: string, function: string, stderr: bool) -> Item {
@@ -1756,7 +1747,7 @@ fn std_io_output_item(key: string, function: string, stderr: bool) -> Item {
     std_function_item(key, params, Type::Unit, stmts)
 }
 
-fn std_io_read_stdin_item() -> Item {
+fn std_io_read_stdin_item(key: string) -> Item {
     let bytes = Type::Slice { elem: Type::Uint8 };
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(Stmt::Var { name: "data", ty: bytes, value: Option::None });
@@ -1797,7 +1788,7 @@ fn std_io_read_stdin_item() -> Item {
             ),
         },
     );
-    std_function_item(STD_IO_READ_STDIN_RUNTIME_KEY, Vec::[], std_bool_bytes_string_type(), stmts)
+    std_function_item(key, Vec::[], std_bool_bytes_string_type(), stmts)
 }
 
 fn std_bytes_error_failure_stmts() -> Vec[Stmt] {
@@ -1836,7 +1827,7 @@ fn std_bytes_error_success(data: Expr) -> Stmt {
     }
 }
 
-fn std_io_read_stdin_v2_item() -> Item {
+fn std_io_read_stdin_v2_item(key: string) -> Item {
     let bytes = Type::Slice { elem: Type::Uint8 };
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(Stmt::Var { name: "data", ty: bytes, value: Option::None });
@@ -1857,10 +1848,10 @@ fn std_io_read_stdin_v2_item() -> Item {
         },
     );
     stmts.push(std_bytes_error_success(Expr::Var { name: "data" }));
-    std_function_item(STD_IO_READ_STDIN_V2_RUNTIME_KEY, Vec::[], std_bool_bytes_error_type(), stmts)
+    std_function_item(key, Vec::[], std_bool_bytes_error_type(), stmts)
 }
 
-fn std_io_read_stdin_exact_item() -> Item {
+fn std_io_read_stdin_exact_item(key: string) -> Item {
     let bytes = Type::Slice { elem: Type::Uint8 };
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("length", Type::Int));
@@ -1912,15 +1903,10 @@ fn std_io_read_stdin_exact_item() -> Item {
             ),
         },
     );
-    std_function_item(
-        STD_IO_READ_STDIN_EXACT_RUNTIME_KEY,
-        params,
-        std_bool_bytes_string_type(),
-        stmts,
-    )
+    std_function_item(key, params, std_bool_bytes_string_type(), stmts)
 }
 
-fn std_io_read_stdin_exact_v2_item() -> Item {
+fn std_io_read_stdin_exact_v2_item(key: string) -> Item {
     let bytes = Type::Slice { elem: Type::Uint8 };
     let params = Vec::[("length", Type::Int)];
     let stmts: Vec[Stmt] = Vec::[];
@@ -1951,12 +1937,7 @@ fn std_io_read_stdin_exact_v2_item() -> Item {
         },
     );
     stmts.push(std_bytes_error_success(Expr::Var { name: "data" }));
-    std_function_item(
-        STD_IO_READ_STDIN_EXACT_V2_RUNTIME_KEY,
-        params,
-        std_bool_bytes_error_type(),
-        stmts,
-    )
+    std_function_item(key, params, std_bool_bytes_error_type(), stmts)
 }
 
 fn std_io_write_item(key: string, stream: string) -> Item {
@@ -2055,7 +2036,7 @@ fn std_io_write_v2_item(key: string, stream: string) -> Item {
     std_function_item(key, params, std_error_result_type(), stmts)
 }
 
-fn std_path_join_item() -> Item {
+fn std_path_join_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("base", Type::String));
     params.push(("child", Type::String));
@@ -2064,7 +2045,7 @@ fn std_path_join_item() -> Item {
     args.push(Expr::Var { name: "child" });
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(Stmt::Return { expr: Option::Some(std_call("_goml_filepath.Join", args)) });
-    std_function_item(STD_PATH_JOIN_RUNTIME_KEY, params, Type::String, stmts)
+    std_function_item(key, params, Type::String, stmts)
 }
 
 fn std_path_unary_item(key: string, function: string, ret_ty: Type) -> Item {
@@ -2077,7 +2058,7 @@ fn std_path_unary_item(key: string, function: string, ret_ty: Type) -> Item {
     std_function_item(key, params, ret_ty, stmts)
 }
 
-fn std_path_parent_item() -> Item {
+fn std_path_parent_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("path", Type::String));
     let clean_args: Vec[Expr] = Vec::[];
@@ -2119,10 +2100,10 @@ fn std_path_parent_item() -> Item {
             expr: Option::Some(std_bool_string_expr(true, Expr::Var { name: "parent" })),
         },
     );
-    std_function_item(STD_PATH_PARENT_RUNTIME_KEY, params, std_bool_string_type(), stmts)
+    std_function_item(key, params, std_bool_string_type(), stmts)
 }
 
-fn std_path_file_name_item() -> Item {
+fn std_path_file_name_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("path", Type::String));
     let clean_args: Vec[Expr] = Vec::[];
@@ -2184,10 +2165,10 @@ fn std_path_file_name_item() -> Item {
     stmts.push(
         Stmt::Return { expr: Option::Some(std_bool_string_expr(true, Expr::Var { name: "base" })) },
     );
-    std_function_item(STD_PATH_FILE_NAME_RUNTIME_KEY, params, std_bool_string_type(), stmts)
+    std_function_item(key, params, std_bool_string_type(), stmts)
 }
 
-fn std_path_extension_item() -> Item {
+fn std_path_extension_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("path", Type::String));
     let base_args: Vec[Expr] = Vec::[];
@@ -2239,10 +2220,10 @@ fn std_path_extension_item() -> Item {
             ),
         },
     );
-    std_function_item(STD_PATH_EXTENSION_RUNTIME_KEY, params, std_bool_string_type(), stmts)
+    std_function_item(key, params, std_bool_string_type(), stmts)
 }
 
-fn std_path_file_stem_item() -> Item {
+fn std_path_file_stem_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("path", Type::String));
     let base_args: Vec[Expr] = Vec::[];
@@ -2307,10 +2288,10 @@ fn std_path_file_stem_item() -> Item {
             ),
         },
     );
-    std_function_item(STD_PATH_FILE_STEM_RUNTIME_KEY, params, std_bool_string_type(), stmts)
+    std_function_item(key, params, std_bool_string_type(), stmts)
 }
 
-fn std_path_with_extension_item() -> Item {
+fn std_path_with_extension_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("path", Type::String));
     params.push(("extension", Type::String));
@@ -2393,10 +2374,10 @@ fn std_path_with_extension_item() -> Item {
             ),
         },
     );
-    std_function_item(STD_PATH_WITH_EXTENSION_RUNTIME_KEY, params, Type::String, stmts)
+    std_function_item(key, params, Type::String, stmts)
 }
 
-fn std_path_absolute_item() -> Item {
+fn std_path_absolute_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("path", Type::String));
     let stmts: Vec[Stmt] = Vec::[];
@@ -2434,10 +2415,10 @@ fn std_path_absolute_item() -> Item {
             ),
         },
     );
-    std_function_item(STD_PATH_ABSOLUTE_RUNTIME_KEY, params, std_bool_string_string_type(), stmts)
+    std_function_item(key, params, std_bool_string_string_type(), stmts)
 }
 
-fn std_path_relative_item() -> Item {
+fn std_path_relative_item(key: string) -> Item {
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(Stmt::Var { name: "value", ty: Type::String, value: Option::None });
     stmts.push(Stmt::Var { name: "err", ty: Type::Named { name: "error" }, value: Option::None });
@@ -2481,14 +2462,14 @@ fn std_path_relative_item() -> Item {
         },
     );
     std_function_item(
-        STD_PATH_RELATIVE_RUNTIME_KEY,
+        key,
         Vec::[("base", Type::String), ("target", Type::String)],
         std_bool_string_string_type(),
         stmts,
     )
 }
 
-fn std_path_separator_item() -> Item {
+fn std_path_separator_item(key: string) -> Item {
     let stmts = Vec::[
         Stmt::Return {
             expr: Option::Some(
@@ -2496,10 +2477,10 @@ fn std_path_separator_item() -> Item {
             ),
         },
     ];
-    std_function_item(STD_PATH_SEPARATOR_RUNTIME_KEY, Vec::[], Type::String, stmts)
+    std_function_item(key, Vec::[], Type::String, stmts)
 }
 
-fn std_testing_fail_item() -> Item {
+fn std_testing_fail_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("message", Type::String));
     let print_args: Vec[Expr] = Vec::[];
@@ -2511,15 +2492,10 @@ fn std_testing_fail_item() -> Item {
     stmts.push(Stmt::Expr { expr: std_call("_goml_fmt.Fprintln", print_args) });
     stmts.push(Stmt::Expr { expr: std_call("_goml_os.Exit", exit_args) });
     stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
-    std_function_item(STD_TESTING_FAIL_RUNTIME_KEY, params, Type::Unit, stmts)
+    std_function_item(key, params, Type::Unit, stmts)
 }
 
-fn std_num_parse_integer_item(signed: bool) -> Item {
-    let key = if signed {
-        STD_NUM_PARSE_INT_RUNTIME_KEY
-    } else {
-        STD_NUM_PARSE_UINT_RUNTIME_KEY
-    };
+fn std_num_parse_integer_item(key: string, signed: bool) -> Item {
     let value_ty = if signed {
         tast::Type::Int
     } else {
@@ -2587,12 +2563,7 @@ fn std_num_parse_integer_item(signed: bool) -> Item {
     std_function_item(key, params, std_bool_value_string_type(value_ty), stmts)
 }
 
-fn std_num_parse_float_item(single: bool) -> Item {
-    let key = if single {
-        STD_NUM_PARSE_FLOAT32_RUNTIME_KEY
-    } else {
-        STD_NUM_PARSE_FLOAT64_RUNTIME_KEY
-    };
+fn std_num_parse_float_item(key: string, single: bool) -> Item {
     let value_ty = if single {
         tast::Type::Float32
     } else {
@@ -2667,7 +2638,7 @@ fn std_math_float32_call(function_name: string, args: Vec[Expr]) -> Expr {
     Expr::Convert { ty: Type::Float32, expr: std_call(function_name, converted) }
 }
 
-fn std_math_float32_unary_item() -> Item {
+fn std_math_float32_unary_item(key: string) -> Item {
     let params = Vec::[("operation", Type::Int), ("value", Type::Float32)];
     let functions = Vec::[
         "_goml_math.Sqrt",
@@ -2712,10 +2683,10 @@ fn std_math_float32_unary_item() -> Item {
             ),
         },
     ];
-    std_function_item(STD_MATH_FLOAT32_UNARY_RUNTIME_KEY, params, Type::Float32, stmts)
+    std_function_item(key, params, Type::Float32, stmts)
 }
 
-fn std_math_float32_pow_item() -> Item {
+fn std_math_float32_pow_item(key: string) -> Item {
     let params = Vec::[("value", Type::Float32), ("exponent", Type::Float32)];
     let stmts = Vec::[
         Stmt::Return {
@@ -2727,18 +2698,10 @@ fn std_math_float32_pow_item() -> Item {
             ),
         },
     ];
-    std_function_item(STD_MATH_FLOAT32_POW_RUNTIME_KEY, params, Type::Float32, stmts)
+    std_function_item(key, params, Type::Float32, stmts)
 }
 
-fn std_math_runtime_hook_item(key: string) -> Option[Item] {
-    match key {
-        STD_MATH_FLOAT32_UNARY_RUNTIME_KEY => Option::Some(std_math_float32_unary_item()),
-        STD_MATH_FLOAT32_POW_RUNTIME_KEY => Option::Some(std_math_float32_pow_item()),
-        _ => Option::None,
-    }
-}
-
-fn std_crypto_random_bytes_item() -> Item {
+fn std_crypto_random_bytes_item(key: string) -> Item {
     let bytes = Type::Slice { elem: Type::Uint8 };
     let params = Vec::[("length", Type::Int)];
     let stmts: Vec[Stmt] = Vec::[];
@@ -2786,19 +2749,7 @@ fn std_crypto_random_bytes_item() -> Item {
             ),
         },
     );
-    std_function_item(
-        STD_CRYPTO_RAND_BYTES_RUNTIME_KEY,
-        params,
-        std_bool_bytes_string_type(),
-        stmts,
-    )
-}
-
-fn std_crypto_runtime_hook_item(key: string) -> Option[Item] {
-    match key {
-        STD_CRYPTO_RAND_BYTES_RUNTIME_KEY => Option::Some(std_crypto_random_bytes_item()),
-        _ => Option::None,
-    }
+    std_function_item(key, params, std_bool_bytes_string_type(), stmts)
 }
 
 fn std_time_monotonic_origin_item() -> Item {
@@ -2811,7 +2762,7 @@ fn std_time_monotonic_origin_item() -> Item {
     )
 }
 
-fn std_time_monotonic_nanoseconds_item() -> Item {
+fn std_time_monotonic_nanoseconds_item(key: string) -> Item {
     let elapsed = std_call(
         "_goml_time.Since",
         Vec::[Expr::Var { name: std_time_monotonic_origin_name() }],
@@ -2819,18 +2770,18 @@ fn std_time_monotonic_nanoseconds_item() -> Item {
     let stmts = Vec::[
         Stmt::Return { expr: Option::Some(std_method_call(elapsed, "Nanoseconds", Vec::[])) },
     ];
-    std_function_item(STD_TIME_MONOTONIC_NANOSECONDS_RUNTIME_KEY, Vec::[], Type::Int64, stmts)
+    std_function_item(key, Vec::[], Type::Int64, stmts)
 }
 
-fn std_time_unix_nanoseconds_item() -> Item {
+fn std_time_unix_nanoseconds_item(key: string) -> Item {
     let now = std_call("_goml_time.Now", Vec::[]);
     let stmts = Vec::[
         Stmt::Return { expr: Option::Some(std_method_call(now, "UnixNano", Vec::[])) },
     ];
-    std_function_item(STD_TIME_UNIX_NANOSECONDS_RUNTIME_KEY, Vec::[], Type::Int64, stmts)
+    std_function_item(key, Vec::[], Type::Int64, stmts)
 }
 
-fn std_time_sleep_nanoseconds_item() -> Item {
+fn std_time_sleep_nanoseconds_item(key: string) -> Item {
     let params = Vec::[("value", Type::Int64)];
     let stmts = Vec::[
         Stmt::Expr {
@@ -2846,7 +2797,7 @@ fn std_time_sleep_nanoseconds_item() -> Item {
         },
         Stmt::Return { expr: Option::Some(Expr::Unit) },
     ];
-    std_function_item(STD_TIME_SLEEP_NANOSECONDS_RUNTIME_KEY, params, Type::Unit, stmts)
+    std_function_item(key, params, Type::Unit, stmts)
 }
 
 fn std_process_environment_type() -> tast::Type {
@@ -3171,7 +3122,7 @@ fn std_process_status_expr(valid: bool, code: Expr, error: Expr, timed: bool) ->
     }
 }
 
-fn std_process_exit_item() -> Item {
+fn std_process_exit_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("code", Type::Int));
     let convert_args: Vec[Expr] = Vec::[];
@@ -3181,10 +3132,10 @@ fn std_process_exit_item() -> Item {
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(Stmt::Expr { expr: std_call("_goml_os.Exit", exit_args) });
     stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
-    std_function_item(STD_PROCESS_EXIT_RUNTIME_KEY, params, Type::Unit, stmts)
+    std_function_item(key, params, Type::Unit, stmts)
 }
 
-fn std_process_look_path_item() -> Item {
+fn std_process_look_path_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("program", Type::String));
     let stmts: Vec[Stmt] = Vec::[];
@@ -3222,17 +3173,24 @@ fn std_process_look_path_item() -> Item {
             ),
         },
     );
-    std_function_item(
-        STD_PROCESS_LOOK_PATH_RUNTIME_KEY,
-        params,
-        std_bool_string_string_type(),
-        stmts,
-    )
+    std_function_item(key, params, std_bool_string_string_type(), stmts)
 }
 
-fn std_process_output_item_for(mode: string) -> Item {
-    let timed = mode == "timeout";
-    let cancelled = mode == "cancel";
+enum ProcessExecutionMode {
+    Plain,
+    Timeout,
+    Cancel,
+}
+
+fn std_process_output_item_for(key: string, mode: ProcessExecutionMode) -> Item {
+    let timed = match mode {
+        Timeout => true,
+        Plain | Cancel => false,
+    };
+    let cancelled = match mode {
+        Cancel => true,
+        Plain | Timeout => false,
+    };
     let contextual = timed || cancelled;
     let stmts = if timed {
         std_process_timeout_setup()
@@ -3398,13 +3356,7 @@ fn std_process_output_item_for(mode: string) -> Item {
         },
     );
     std_function_item(
-        if timed {
-            STD_PROCESS_OUTPUT_TIMEOUT_RUNTIME_KEY
-        } else if cancelled {
-            STD_PROCESS_OUTPUT_CANCEL_RUNTIME_KEY
-        } else {
-            STD_PROCESS_OUTPUT_RUNTIME_KEY
-        },
+        key,
         if timed {
             std_process_output_timeout_params()
         } else if cancelled {
@@ -3421,21 +3373,15 @@ fn std_process_output_item_for(mode: string) -> Item {
     )
 }
 
-fn std_process_output_item() -> Item {
-    std_process_output_item_for("plain")
-}
-
-fn std_process_output_timeout_item() -> Item {
-    std_process_output_item_for("timeout")
-}
-
-fn std_process_output_cancel_item() -> Item {
-    std_process_output_item_for("cancel")
-}
-
-fn std_process_status_item_for(mode: string) -> Item {
-    let timed = mode == "timeout";
-    let cancelled = mode == "cancel";
+fn std_process_status_item_for(key: string, mode: ProcessExecutionMode) -> Item {
+    let timed = match mode {
+        Timeout => true,
+        Plain | Cancel => false,
+    };
+    let cancelled = match mode {
+        Cancel => true,
+        Plain | Timeout => false,
+    };
     let contextual = timed || cancelled;
     let stmts = if timed {
         std_process_timeout_setup()
@@ -3577,13 +3523,7 @@ fn std_process_status_item_for(mode: string) -> Item {
         },
     );
     std_function_item(
-        if timed {
-            STD_PROCESS_STATUS_TIMEOUT_RUNTIME_KEY
-        } else if cancelled {
-            STD_PROCESS_STATUS_CANCEL_RUNTIME_KEY
-        } else {
-            STD_PROCESS_STATUS_RUNTIME_KEY
-        },
+        key,
         if timed {
             let params = std_process_params();
             params.push(("timeout_ms", Type::Int));
@@ -3604,171 +3544,127 @@ fn std_process_status_item_for(mode: string) -> Item {
     )
 }
 
-fn std_process_status_item() -> Item {
-    std_process_status_item_for("plain")
-}
-
-fn std_process_status_timeout_item() -> Item {
-    std_process_status_item_for("timeout")
-}
-
-fn std_process_status_cancel_item() -> Item {
-    std_process_status_item_for("cancel")
-}
-
-fn std_env_runtime_hook_item(key: string) -> Option[Item] {
-    match key {
-        STD_ENV_ARGS_RUNTIME_KEY => Option::Some(std_env_args_item()),
-        STD_ENV_CURRENT_DIR_RUNTIME_KEY => {
-            Option::Some(std_string_result_item(key, "_goml_os.Getwd"))
-        },
-        STD_ENV_CURRENT_EXE_RUNTIME_KEY => {
-            Option::Some(std_string_result_item(key, "_goml_os.Executable"))
-        },
-        STD_ENV_VAR_RUNTIME_KEY => Option::Some(std_env_var_item()),
-        STD_ENV_VARS_RUNTIME_KEY => Option::Some(std_env_vars_item()),
-        _ => Option::None,
+fn std_env_runtime_hook_item(hook: resources::EnvRuntimeHook, key: string) -> Item {
+    match hook {
+        Args => std_env_args_item(key),
+        CurrentDir => std_string_result_item(key, "_goml_os.Getwd"),
+        CurrentExe => std_string_result_item(key, "_goml_os.Executable"),
+        Var => std_env_var_item(key),
+        Vars => std_env_vars_item(key),
     }
 }
 
-fn std_fs_runtime_hook_item(key: string) -> Option[Item] {
-    match key {
-        STD_FS_READ_FILE_RUNTIME_KEY => Option::Some(std_fs_read_file_item()),
-        STD_FS_SHA256_FILE_RUNTIME_KEY => Option::Some(std_fs_sha256_file_item()),
-        STD_FS_WRITE_FILE_RUNTIME_KEY => Option::Some(std_fs_write_file_item()),
-        STD_FS_READ_BYTES_RUNTIME_KEY => Option::Some(std_fs_read_bytes_item()),
-        STD_FS_READ_BYTES_V2_RUNTIME_KEY => Option::Some(std_fs_read_bytes_v2_item()),
-        STD_FS_WRITE_BYTES_RUNTIME_KEY => Option::Some(std_fs_write_bytes_item()),
-        STD_FS_WRITE_BYTES_V2_RUNTIME_KEY => Option::Some(std_fs_write_bytes_v2_item()),
-        STD_FS_PATH_OPERATION_V2_RUNTIME_KEY => Option::Some(std_fs_path_operation_v2_item()),
-        STD_FS_METADATA_V2_RUNTIME_KEY => Option::Some(std_fs_metadata_v2_item()),
-        STD_FS_ATOMIC_WRITE_V2_RUNTIME_KEY => Option::Some(std_fs_atomic_write_v2_item()),
-        STD_FS_CREATE_DIR_ALL_RUNTIME_KEY => Option::Some(std_fs_create_dir_all_item()),
-        STD_FS_REMOVE_FILE_RUNTIME_KEY => {
-            Option::Some(std_fs_remove_item(key, "_goml_os.Remove"))
-        },
-        STD_FS_REMOVE_DIR_ALL_RUNTIME_KEY => {
-            Option::Some(std_fs_remove_item(key, "_goml_os.RemoveAll"))
-        },
-        STD_FS_FILE_EXISTS_RUNTIME_KEY => Option::Some(std_fs_file_exists_item()),
-        STD_FS_IS_FILE_RUNTIME_KEY => Option::Some(std_fs_stat_kind_item(key, false)),
-        STD_FS_IS_DIR_RUNTIME_KEY => Option::Some(std_fs_stat_kind_item(key, true)),
-        STD_FS_CANONICALIZE_RUNTIME_KEY => Option::Some(std_fs_canonicalize_item()),
-        STD_FS_READ_DIR_RUNTIME_KEY => Option::Some(std_fs_read_dir_item()),
-        STD_FS_READ_DIR_V2_RUNTIME_KEY => Option::Some(std_fs_read_dir_v2_item()),
-        _ => Option::None,
+fn std_fs_runtime_hook_item(hook: resources::FsRuntimeHook, key: string) -> Item {
+    match hook {
+        ReadFile => std_fs_read_file_item(key),
+        WriteFile => std_fs_write_file_item(key),
+        ReadBytes => std_fs_read_bytes_item(key),
+        ReadBytesV2 => std_fs_read_bytes_v2_item(key),
+        WriteBytes => std_fs_write_bytes_item(key),
+        WriteBytesV2 => std_fs_write_bytes_v2_item(key),
+        PathOperationV2 => std_fs_path_operation_v2_item(key),
+        MetadataV2 => std_fs_metadata_v2_item(key),
+        AtomicWriteV2 => std_fs_atomic_write_v2_item(key),
+        CreateDirAll => std_fs_create_dir_all_item(key),
+        RemoveFile => std_fs_remove_item(key, "_goml_os.Remove"),
+        RemoveDirAll => std_fs_remove_item(key, "_goml_os.RemoveAll"),
+        FileExists => std_fs_file_exists_item(key),
+        IsFile => std_fs_stat_kind_item(key, false),
+        IsDir => std_fs_stat_kind_item(key, true),
+        Canonicalize => std_fs_canonicalize_item(key),
+        ReadDir => std_fs_read_dir_item(key),
+        ReadDirV2 => std_fs_read_dir_v2_item(key),
+        Sha256File => std_fs_sha256_file_item(key),
     }
 }
 
-fn std_io_runtime_hook_item(key: string) -> Option[Item] {
-    match key {
-        STD_IO_PRINT_RUNTIME_KEY => {
-            Option::Some(std_io_output_item(key, "_goml_fmt.Print", false))
-        },
-        STD_IO_PRINTLN_RUNTIME_KEY => {
-            Option::Some(std_io_output_item(key, "_goml_fmt.Println", false))
-        },
-        STD_IO_EPRINT_RUNTIME_KEY => {
-            Option::Some(std_io_output_item(key, "_goml_fmt.Fprint", true))
-        },
-        STD_IO_READ_STDIN_RUNTIME_KEY => Option::Some(std_io_read_stdin_item()),
-        STD_IO_READ_STDIN_V2_RUNTIME_KEY => Option::Some(std_io_read_stdin_v2_item()),
-        STD_IO_READ_STDIN_EXACT_RUNTIME_KEY => Option::Some(std_io_read_stdin_exact_item()),
-        STD_IO_READ_STDIN_EXACT_V2_RUNTIME_KEY => Option::Some(std_io_read_stdin_exact_v2_item()),
-        STD_IO_WRITE_STDOUT_RUNTIME_KEY => {
-            Option::Some(std_io_write_item(key, "_goml_os.Stdout"))
-        },
-        STD_IO_WRITE_STDERR_RUNTIME_KEY => {
-            Option::Some(std_io_write_item(key, "_goml_os.Stderr"))
-        },
-        STD_IO_WRITE_STDOUT_V2_RUNTIME_KEY => {
-            Option::Some(std_io_write_v2_item(key, "_goml_os.Stdout"))
-        },
-        STD_IO_WRITE_STDERR_V2_RUNTIME_KEY => {
-            Option::Some(std_io_write_v2_item(key, "_goml_os.Stderr"))
-        },
-        _ => Option::None,
+fn std_io_runtime_hook_item(hook: resources::IoRuntimeHook, key: string) -> Item {
+    match hook {
+        Print => std_io_output_item(key, "_goml_fmt.Print", false),
+        Println => std_io_output_item(key, "_goml_fmt.Println", false),
+        Eprint => std_io_output_item(key, "_goml_fmt.Fprint", true),
+        ReadStdin => std_io_read_stdin_item(key),
+        ReadStdinV2 => std_io_read_stdin_v2_item(key),
+        ReadStdinExact => std_io_read_stdin_exact_item(key),
+        ReadStdinExactV2 => std_io_read_stdin_exact_v2_item(key),
+        WriteStdout => std_io_write_item(key, "_goml_os.Stdout"),
+        WriteStdoutV2 => std_io_write_v2_item(key, "_goml_os.Stdout"),
+        WriteStderr => std_io_write_item(key, "_goml_os.Stderr"),
+        WriteStderrV2 => std_io_write_v2_item(key, "_goml_os.Stderr"),
     }
 }
 
-fn std_path_runtime_hook_item(key: string) -> Option[Item] {
-    match key {
-        STD_PATH_JOIN_RUNTIME_KEY => Option::Some(std_path_join_item()),
-        STD_PATH_CLEAN_RUNTIME_KEY => {
-            Option::Some(std_path_unary_item(key, "_goml_filepath.Clean", Type::String))
-        },
-        STD_PATH_IS_ABSOLUTE_RUNTIME_KEY => {
-            Option::Some(std_path_unary_item(key, "_goml_filepath.IsAbs", Type::Bool))
-        },
-        STD_PATH_PARENT_RUNTIME_KEY => Option::Some(std_path_parent_item()),
-        STD_PATH_FILE_NAME_RUNTIME_KEY => Option::Some(std_path_file_name_item()),
-        STD_PATH_EXTENSION_RUNTIME_KEY => Option::Some(std_path_extension_item()),
-        STD_PATH_FILE_STEM_RUNTIME_KEY => Option::Some(std_path_file_stem_item()),
-        STD_PATH_WITH_EXTENSION_RUNTIME_KEY => Option::Some(std_path_with_extension_item()),
-        STD_PATH_ABSOLUTE_RUNTIME_KEY => Option::Some(std_path_absolute_item()),
-        STD_PATH_RELATIVE_RUNTIME_KEY => Option::Some(std_path_relative_item()),
-        STD_PATH_SEPARATOR_RUNTIME_KEY => Option::Some(std_path_separator_item()),
-        _ => Option::None,
+fn std_path_runtime_hook_item(hook: resources::PathRuntimeHook, key: string) -> Item {
+    match hook {
+        Join => std_path_join_item(key),
+        Clean => std_path_unary_item(key, "_goml_filepath.Clean", Type::String),
+        IsAbsolute => std_path_unary_item(key, "_goml_filepath.IsAbs", Type::Bool),
+        Parent => std_path_parent_item(key),
+        FileName => std_path_file_name_item(key),
+        Extension => std_path_extension_item(key),
+        FileStem => std_path_file_stem_item(key),
+        WithExtension => std_path_with_extension_item(key),
+        Absolute => std_path_absolute_item(key),
+        Relative => std_path_relative_item(key),
+        Separator => std_path_separator_item(key),
     }
 }
 
-fn std_process_runtime_hook_item(key: string) -> Option[Item] {
-    match key {
-        STD_PROCESS_EXIT_RUNTIME_KEY => Option::Some(std_process_exit_item()),
-        STD_PROCESS_OUTPUT_RUNTIME_KEY => Option::Some(std_process_output_item()),
-        STD_PROCESS_LOOK_PATH_RUNTIME_KEY => Option::Some(std_process_look_path_item()),
-        STD_PROCESS_OUTPUT_TIMEOUT_RUNTIME_KEY => Option::Some(std_process_output_timeout_item()),
-        STD_PROCESS_OUTPUT_CANCEL_RUNTIME_KEY => Option::Some(std_process_output_cancel_item()),
-        STD_PROCESS_STATUS_RUNTIME_KEY => Option::Some(std_process_status_item()),
-        STD_PROCESS_STATUS_TIMEOUT_RUNTIME_KEY => Option::Some(std_process_status_timeout_item()),
-        STD_PROCESS_STATUS_CANCEL_RUNTIME_KEY => Option::Some(std_process_status_cancel_item()),
-        _ => Option::None,
+fn std_process_runtime_hook_item(hook: resources::ProcessRuntimeHook, key: string) -> Item {
+    match hook {
+        Exit => std_process_exit_item(key),
+        LookPath => std_process_look_path_item(key),
+        Output => std_process_output_item_for(key, ProcessExecutionMode::Plain),
+        OutputTimeout => std_process_output_item_for(key, ProcessExecutionMode::Timeout),
+        OutputCancel => std_process_output_item_for(key, ProcessExecutionMode::Cancel),
+        Status => std_process_status_item_for(key, ProcessExecutionMode::Plain),
+        StatusTimeout => std_process_status_item_for(key, ProcessExecutionMode::Timeout),
+        StatusCancel => std_process_status_item_for(key, ProcessExecutionMode::Cancel),
     }
 }
 
-fn std_num_runtime_hook_item(key: string) -> Option[Item] {
-    match key {
-        STD_NUM_PARSE_INT_RUNTIME_KEY => Option::Some(std_num_parse_integer_item(true)),
-        STD_NUM_PARSE_UINT_RUNTIME_KEY => Option::Some(std_num_parse_integer_item(false)),
-        STD_NUM_PARSE_FLOAT32_RUNTIME_KEY => Option::Some(std_num_parse_float_item(true)),
-        STD_NUM_PARSE_FLOAT64_RUNTIME_KEY => Option::Some(std_num_parse_float_item(false)),
-        _ => Option::None,
+fn std_num_runtime_hook_item(hook: resources::NumRuntimeHook, key: string) -> Item {
+    match hook {
+        ParseInt => std_num_parse_integer_item(key, true),
+        ParseUint => std_num_parse_integer_item(key, false),
+        ParseFloat32 => std_num_parse_float_item(key, true),
+        ParseFloat64 => std_num_parse_float_item(key, false),
     }
 }
 
-fn std_time_runtime_hook_item(key: string) -> Option[Item] {
-    match key {
-        STD_TIME_MONOTONIC_NANOSECONDS_RUNTIME_KEY => {
-            Option::Some(std_time_monotonic_nanoseconds_item())
-        },
-        STD_TIME_UNIX_NANOSECONDS_RUNTIME_KEY => Option::Some(std_time_unix_nanoseconds_item()),
-        STD_TIME_SLEEP_NANOSECONDS_RUNTIME_KEY => Option::Some(std_time_sleep_nanoseconds_item()),
-        _ => Option::None,
+fn std_math_runtime_hook_item(hook: resources::MathRuntimeHook, key: string) -> Item {
+    match hook {
+        Float32Unary => std_math_float32_unary_item(key),
+        Float32Pow => std_math_float32_pow_item(key),
     }
 }
 
-fn standard_runtime_hook_item(key: string) -> Option[Item] {
-    if key.starts_with(STD_ENV_RUNTIME_PREFIX) {
-        std_env_runtime_hook_item(key)
-    } else if key.starts_with(STD_FS_RUNTIME_PREFIX) {
-        std_fs_runtime_hook_item(key)
-    } else if key.starts_with(STD_IO_RUNTIME_PREFIX) {
-        std_io_runtime_hook_item(key)
-    } else if key.starts_with(STD_PATH_RUNTIME_PREFIX) {
-        std_path_runtime_hook_item(key)
-    } else if key.starts_with(STD_PROCESS_RUNTIME_PREFIX) {
-        std_process_runtime_hook_item(key)
-    } else if key == STD_TESTING_FAIL_RUNTIME_KEY {
-        Option::Some(std_testing_fail_item())
-    } else if key.starts_with(STD_NUM_RUNTIME_PREFIX) {
-        std_num_runtime_hook_item(key)
-    } else if key.starts_with(STD_MATH_RUNTIME_PREFIX) {
-        std_math_runtime_hook_item(key)
-    } else if key.starts_with(STD_CRYPTO_RUNTIME_PREFIX) {
-        std_crypto_runtime_hook_item(key)
-    } else if key.starts_with(STD_TIME_RUNTIME_PREFIX) {
-        std_time_runtime_hook_item(key)
-    } else {
-        task_runtime_hook_item(key)
+fn std_crypto_runtime_hook_item(hook: resources::CryptoRuntimeHook, key: string) -> Item {
+    match hook {
+        RandomBytes => std_crypto_random_bytes_item(key),
+    }
+}
+
+fn std_time_runtime_hook_item(hook: resources::TimeRuntimeHook, key: string) -> Item {
+    match hook {
+        MonotonicNanoseconds => std_time_monotonic_nanoseconds_item(key),
+        UnixNanoseconds => std_time_unix_nanoseconds_item(key),
+        SleepNanoseconds => std_time_sleep_nanoseconds_item(key),
+    }
+}
+
+fn standard_runtime_hook_item(hook: resources::StandardRuntimeHook, key: string) -> Item {
+    match hook {
+        Env(hook) => std_env_runtime_hook_item(hook, key),
+        Fs(hook) => std_fs_runtime_hook_item(hook, key),
+        Io(hook) => std_io_runtime_hook_item(hook, key),
+        Path(hook) => std_path_runtime_hook_item(hook, key),
+        Process(hook) => std_process_runtime_hook_item(hook, key),
+        TestingFail => std_testing_fail_item(key),
+        Num(hook) => std_num_runtime_hook_item(hook, key),
+        Math(hook) => std_math_runtime_hook_item(hook, key),
+        Crypto(hook) => std_crypto_runtime_hook_item(hook, key),
+        Time(hook) => std_time_runtime_hook_item(hook, key),
+        Task(hook) => task_runtime_hook_item(hook, key),
     }
 }

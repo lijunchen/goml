@@ -104,14 +104,14 @@ pub fn emit_missing_base_item(items: Vec[Item], missing_types: Vec[tast::Type]) 
     } else {}
 }
 
-fn unit_to_string_hook_item() -> Item {
+fn unit_to_string_hook_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("x", Type::Unit));
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(Stmt::Return { expr: Option::Some(Expr::String { value: "()" }) });
     Item::Function(
         Function {
-            name: runtime_hook_name(CORE_UNIT_TO_STRING_RUNTIME_KEY),
+            name: runtime_hook_name(key),
             params,
             ret_ty: Option::Some(Type::String),
             body: Block { stmts },
@@ -119,7 +119,7 @@ fn unit_to_string_hook_item() -> Item {
     )
 }
 
-fn bool_to_string_hook_item() -> Item {
+fn bool_to_string_hook_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("x", Type::Bool));
     let then_stmts: Vec[Stmt] = Vec::[];
@@ -136,28 +136,12 @@ fn bool_to_string_hook_item() -> Item {
     );
     Item::Function(
         Function {
-            name: runtime_hook_name(CORE_BOOL_TO_STRING_RUNTIME_KEY),
+            name: runtime_hook_name(key),
             params,
             ret_ty: Option::Some(Type::String),
             body: Block { stmts },
         },
     )
-}
-
-fn integer_to_string_hook_type(key: string) -> Option[Type] {
-    match key {
-        CORE_INT_TO_STRING_RUNTIME_KEY => Option::Some(Type::Int),
-        CORE_INT8_TO_STRING_RUNTIME_KEY => Option::Some(Type::Int8),
-        CORE_INT16_TO_STRING_RUNTIME_KEY => Option::Some(Type::Int16),
-        CORE_INT32_TO_STRING_RUNTIME_KEY => Option::Some(Type::Int32),
-        CORE_INT64_TO_STRING_RUNTIME_KEY => Option::Some(Type::Int64),
-        CORE_UINT_TO_STRING_RUNTIME_KEY => Option::Some(Type::Uint),
-        CORE_UINT8_TO_STRING_RUNTIME_KEY => Option::Some(Type::Uint8),
-        CORE_UINT16_TO_STRING_RUNTIME_KEY => Option::Some(Type::Uint16),
-        CORE_UINT32_TO_STRING_RUNTIME_KEY => Option::Some(Type::Uint32),
-        CORE_UINT64_TO_STRING_RUNTIME_KEY => Option::Some(Type::Uint64),
-        _ => Option::None,
-    }
 }
 
 fn integer_to_string_hook_item(key: string, ty: Type) -> Item {
@@ -200,7 +184,7 @@ fn string_output_hook_item(key: string, go_name: string) -> Item {
     )
 }
 
-fn string_from_utf8_hook_item() -> Item {
+fn string_from_utf8_hook_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     let byte_vec = tast::Type::VecType { elem: tast::Type::Uint8 };
     params.push(("bytes", lower_type(byte_vec)));
@@ -223,7 +207,7 @@ fn string_from_utf8_hook_item() -> Item {
     stmts.push(Stmt::Return { expr: Option::Some(Expr::StructLiteral { ty: tuple_ty, fields }) });
     Item::Function(
         Function {
-            name: runtime_hook_name(CORE_STRING_FROM_UTF8_RUNTIME_KEY),
+            name: runtime_hook_name(key),
             params,
             ret_ty: Option::Some(tuple_ty),
             body: Block { stmts },
@@ -231,7 +215,7 @@ fn string_from_utf8_hook_item() -> Item {
     )
 }
 
-fn string_concat_hook_item() -> Item {
+fn string_concat_hook_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("values", lower_type(tast::Type::VecType { elem: tast::Type::String })));
     let args: Vec[Expr] = Vec::[];
@@ -245,7 +229,7 @@ fn string_concat_hook_item() -> Item {
     );
     Item::Function(
         Function {
-            name: runtime_hook_name(CORE_STRING_CONCAT_RUNTIME_KEY),
+            name: runtime_hook_name(key),
             params,
             ret_ty: Option::Some(Type::String),
             body: Block { stmts },
@@ -291,222 +275,306 @@ fn string_parse_float_hook_item(key: string, bit_size: string) -> Item {
     )
 }
 
-fn require_runtime_import(imports: Vec[string], name: string) -> unit {
-    if !collections::contains(imports, name) {
-        imports.push(name)
+#[derive(PartialEq, Eq)]
+enum RuntimeImport {
+    Bytes,
+    Context,
+    CryptoRand,
+    Fmt,
+    Errors,
+    Hash,
+    Io,
+    Math,
+    Os,
+    Exec,
+    Filepath,
+    Reflect,
+    Sha256,
+    Slices,
+    Strconv,
+    Strings,
+    Sync,
+    Syscall,
+    Time,
+}
+
+fn require_runtime_import(imports: Vec[RuntimeImport], value: RuntimeImport) -> unit {
+    if !collections::contains(imports, value) {
+        imports.push(value)
     } else {}
 }
 
-fn needs_structured_runtime_error(hooks: Vec[string]) -> bool {
-    collections::contains(hooks, STD_FS_READ_BYTES_V2_RUNTIME_KEY)
-        || collections::contains(hooks, STD_FS_WRITE_BYTES_V2_RUNTIME_KEY)
-        || collections::contains(hooks, STD_FS_PATH_OPERATION_V2_RUNTIME_KEY)
-        || collections::contains(hooks, STD_FS_METADATA_V2_RUNTIME_KEY)
-        || collections::contains(hooks, STD_FS_ATOMIC_WRITE_V2_RUNTIME_KEY)
-        || collections::contains(hooks, STD_IO_READ_STDIN_V2_RUNTIME_KEY)
-        || collections::contains(hooks, STD_IO_READ_STDIN_EXACT_V2_RUNTIME_KEY)
-        || collections::contains(hooks, STD_IO_WRITE_STDOUT_V2_RUNTIME_KEY)
-        || collections::contains(hooks, STD_IO_WRITE_STDERR_V2_RUNTIME_KEY)
+fn collect_core_runtime_imports(imports: Vec[RuntimeImport], hook: resources::CoreRuntimeHook) -> unit {
+    match hook {
+        IntToString | Int8ToString | Int16ToString | Int32ToString | Int64ToString | UintToString | Uint8ToString | Uint16ToString | Uint32ToString | Uint64ToString | StringPrint | StringPrintln => require_runtime_import(
+            imports,
+            RuntimeImport::Fmt,
+        ),
+        StringParseFloat32 | StringParseFloat64 | Float32ToString | Float64ToString => {
+            require_runtime_import(imports, RuntimeImport::Strconv)
+        },
+        Float32Hash | Float64Hash => require_runtime_import(imports, RuntimeImport::Math),
+        StringConcat => require_runtime_import(imports, RuntimeImport::Strings),
+        UnitToString | BoolToString | StringLen | StringGet | StringByteGet | StringByteSlice | StringToBytes | StringFromUtf8 | CharToString | CharFromUint32 | IntHash | Int8Hash | Int16Hash | Int32Hash | Int64Hash | CharHash | UintHash | Uint8Hash | Uint16Hash | Uint32Hash | StringHash => (),
+    }
 }
 
-pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics: Vec[string]) -> unit {
-    let required_imports: Vec[string] = Vec::[];
+fn collect_fs_runtime_imports(imports: Vec[RuntimeImport], hook: resources::FsRuntimeHook) -> unit {
+    match hook {
+        Canonicalize => require_runtime_import(imports, RuntimeImport::Filepath),
+        Sha256File => {
+            require_runtime_import(imports, RuntimeImport::Fmt);
+            require_runtime_import(imports, RuntimeImport::Hash);
+            require_runtime_import(imports, RuntimeImport::Io);
+            require_runtime_import(imports, RuntimeImport::Os);
+            require_runtime_import(imports, RuntimeImport::Sha256)
+        },
+        ReadBytesV2 | WriteBytesV2 | PathOperationV2 | MetadataV2 => {
+            require_runtime_import(imports, RuntimeImport::Os);
+            require_runtime_import(imports, RuntimeImport::Syscall)
+        },
+        AtomicWriteV2 => {
+            require_runtime_import(imports, RuntimeImport::Os);
+            require_runtime_import(imports, RuntimeImport::Syscall);
+            require_runtime_import(imports, RuntimeImport::Filepath)
+        },
+        ReadFile | WriteFile | ReadBytes | WriteBytes | CreateDirAll | RemoveFile | RemoveDirAll | FileExists | IsFile | IsDir | ReadDir | ReadDirV2 => {
+            require_runtime_import(imports, RuntimeImport::Os)
+        },
+    }
+}
+
+fn collect_io_runtime_imports(imports: Vec[RuntimeImport], hook: resources::IoRuntimeHook) -> unit {
+    match hook {
+        Print | Println => require_runtime_import(imports, RuntimeImport::Fmt),
+        Eprint => {
+            require_runtime_import(imports, RuntimeImport::Fmt);
+            require_runtime_import(imports, RuntimeImport::Os)
+        },
+        ReadStdin | ReadStdinExact => {
+            require_runtime_import(imports, RuntimeImport::Io);
+            require_runtime_import(imports, RuntimeImport::Os)
+        },
+        ReadStdinV2 | ReadStdinExactV2 => {
+            require_runtime_import(imports, RuntimeImport::Io);
+            require_runtime_import(imports, RuntimeImport::Os);
+            require_runtime_import(imports, RuntimeImport::Syscall)
+        },
+        WriteStdout | WriteStderr => require_runtime_import(imports, RuntimeImport::Os),
+        WriteStdoutV2 | WriteStderrV2 => {
+            require_runtime_import(imports, RuntimeImport::Os);
+            require_runtime_import(imports, RuntimeImport::Syscall)
+        },
+    }
+}
+
+fn collect_path_runtime_imports(imports: Vec[RuntimeImport], hook: resources::PathRuntimeHook) -> unit {
+    require_runtime_import(imports, RuntimeImport::Filepath);
+    match hook {
+        Extension | FileStem | WithExtension => {
+            require_runtime_import(imports, RuntimeImport::Strings)
+        },
+        Separator => require_runtime_import(imports, RuntimeImport::Os),
+        Join | Clean | IsAbsolute | Parent | FileName | Absolute | Relative => (),
+    }
+}
+
+fn collect_process_runtime_imports(imports: Vec[RuntimeImport], hook: resources::ProcessRuntimeHook) -> unit {
+    match hook {
+        Exit => require_runtime_import(imports, RuntimeImport::Os),
+        LookPath => require_runtime_import(imports, RuntimeImport::Exec),
+        Output | Status => {
+            require_runtime_import(imports, RuntimeImport::Bytes);
+            require_runtime_import(imports, RuntimeImport::Os);
+            require_runtime_import(imports, RuntimeImport::Exec)
+        },
+        OutputTimeout | StatusTimeout => {
+            require_runtime_import(imports, RuntimeImport::Bytes);
+            require_runtime_import(imports, RuntimeImport::Os);
+            require_runtime_import(imports, RuntimeImport::Exec);
+            require_runtime_import(imports, RuntimeImport::Context);
+            require_runtime_import(imports, RuntimeImport::Time)
+        },
+        OutputCancel | StatusCancel => {
+            require_runtime_import(imports, RuntimeImport::Bytes);
+            require_runtime_import(imports, RuntimeImport::Os);
+            require_runtime_import(imports, RuntimeImport::Exec);
+            require_runtime_import(imports, RuntimeImport::Context);
+            require_runtime_import(imports, RuntimeImport::Sync);
+            require_runtime_import(imports, RuntimeImport::Syscall)
+        },
+    }
+}
+
+fn collect_task_runtime_imports(imports: Vec[RuntimeImport], hook: resources::TaskRuntimeHook) -> unit {
+    require_runtime_import(imports, RuntimeImport::Context);
+    require_runtime_import(imports, RuntimeImport::Sync);
+    match hook {
+        Sleep => require_runtime_import(imports, RuntimeImport::Time),
+        ScopeNew | ScopeRun | ScopeSpawn | ScopeTrySpawn | ScopeCancel | ScopeFinish | ScopeCancelled | ActiveScopeCount => (),
+    }
+}
+
+fn collect_standard_runtime_imports(
+    imports: Vec[RuntimeImport],
+    hook: resources::StandardRuntimeHook,
+) -> unit {
+    match hook {
+        Env(Args | CurrentDir | CurrentExe | Var | Vars) => {
+            require_runtime_import(imports, RuntimeImport::Os)
+        },
+        Fs(hook) => collect_fs_runtime_imports(imports, hook),
+        Io(hook) => collect_io_runtime_imports(imports, hook),
+        Path(hook) => collect_path_runtime_imports(imports, hook),
+        Process(hook) => collect_process_runtime_imports(imports, hook),
+        TestingFail => {
+            require_runtime_import(imports, RuntimeImport::Fmt);
+            require_runtime_import(imports, RuntimeImport::Os)
+        },
+        Num(ParseInt | ParseUint | ParseFloat32 | ParseFloat64) => {
+            require_runtime_import(imports, RuntimeImport::Strconv)
+        },
+        Math(Float32Unary | Float32Pow) => {
+            require_runtime_import(imports, RuntimeImport::Math)
+        },
+        Crypto(RandomBytes) => require_runtime_import(imports, RuntimeImport::CryptoRand),
+        Time(MonotonicNanoseconds | UnixNanoseconds | SleepNanoseconds) => {
+            require_runtime_import(imports, RuntimeImport::Time)
+        },
+        Task(hook) => collect_task_runtime_imports(imports, hook),
+    }
+}
+
+fn collect_runtime_hook_imports(imports: Vec[RuntimeImport], hook: resources::RuntimeHook) -> unit {
+    match hook {
+        Core(hook) => collect_core_runtime_imports(imports, hook),
+        Standard(hook) => collect_standard_runtime_imports(imports, hook),
+    }
+}
+
+fn runtime_hook_uses_structured_error(hook: resources::RuntimeHook) -> bool {
+    match hook {
+        Standard(Fs(ReadBytesV2 | WriteBytesV2 | PathOperationV2 | MetadataV2 | AtomicWriteV2)) | Standard(Io(ReadStdinV2 | ReadStdinExactV2 | WriteStdoutV2 | WriteStderrV2)) => true,
+        Core(_) | Standard(_) => false,
+    }
+}
+
+fn needs_structured_runtime_error(hooks: Vec[resources::RuntimeHook]) -> bool {
     for hook in hooks {
-        match integer_to_string_hook_type(hook) {
-            Some(_) => require_runtime_import(required_imports, "fmt"),
-            None => {
-                if hook == CORE_STRING_PRINT_RUNTIME_KEY || hook == CORE_STRING_PRINTLN_RUNTIME_KEY {
-                    require_runtime_import(required_imports, "fmt")
-                } else if hook == CORE_STRING_PARSE_FLOAT32_RUNTIME_KEY
-                    || hook == CORE_STRING_PARSE_FLOAT64_RUNTIME_KEY
-                    || hook == CORE_FLOAT32_TO_STRING_RUNTIME_KEY
-                    || hook == CORE_FLOAT64_TO_STRING_RUNTIME_KEY {
-                    require_runtime_import(required_imports, "strconv")
-                } else if hook == CORE_FLOAT32_HASH_RUNTIME_KEY
-                    || hook == CORE_FLOAT64_HASH_RUNTIME_KEY {
-                    require_runtime_import(required_imports, "math")
-                } else if hook == CORE_STRING_CONCAT_RUNTIME_KEY {
-                    require_runtime_import(required_imports, "strings")
-                } else if hook == STD_IO_PRINT_RUNTIME_KEY || hook == STD_IO_PRINTLN_RUNTIME_KEY {
-                    require_runtime_import(required_imports, "fmt")
-                } else if hook == STD_IO_EPRINT_RUNTIME_KEY {
-                    require_runtime_import(required_imports, "fmt");
-                    require_runtime_import(required_imports, "os")
-                } else if hook == STD_IO_READ_STDIN_RUNTIME_KEY
-                    || hook == STD_IO_READ_STDIN_EXACT_RUNTIME_KEY
-                    || hook == STD_IO_READ_STDIN_V2_RUNTIME_KEY
-                    || hook == STD_IO_READ_STDIN_EXACT_V2_RUNTIME_KEY {
-                    require_runtime_import(required_imports, "io");
-                    require_runtime_import(required_imports, "os");
-                    if hook == STD_IO_READ_STDIN_V2_RUNTIME_KEY
-                        || hook == STD_IO_READ_STDIN_EXACT_V2_RUNTIME_KEY {
-                        require_runtime_import(required_imports, "syscall")
-                    } else {}
-                } else if hook == STD_IO_WRITE_STDOUT_RUNTIME_KEY
-                    || hook == STD_IO_WRITE_STDERR_RUNTIME_KEY
-                    || hook == STD_IO_WRITE_STDOUT_V2_RUNTIME_KEY
-                    || hook == STD_IO_WRITE_STDERR_V2_RUNTIME_KEY
-                    || hook.starts_with(STD_ENV_RUNTIME_PREFIX)
-                    || (hook.starts_with(STD_FS_RUNTIME_PREFIX)
-                        && hook != STD_FS_CANONICALIZE_RUNTIME_KEY
-                        && hook != STD_FS_SHA256_FILE_RUNTIME_KEY) {
-                    require_runtime_import(required_imports, "os");
-                    if hook == STD_FS_READ_BYTES_V2_RUNTIME_KEY
-                        || hook == STD_FS_WRITE_BYTES_V2_RUNTIME_KEY
-                        || hook == STD_FS_PATH_OPERATION_V2_RUNTIME_KEY
-                        || hook == STD_FS_METADATA_V2_RUNTIME_KEY
-                        || hook == STD_FS_ATOMIC_WRITE_V2_RUNTIME_KEY
-                        || hook == STD_IO_WRITE_STDOUT_V2_RUNTIME_KEY
-                        || hook == STD_IO_WRITE_STDERR_V2_RUNTIME_KEY {
-                        require_runtime_import(required_imports, "syscall")
-                    } else {}
-                    if hook == STD_FS_ATOMIC_WRITE_V2_RUNTIME_KEY {
-                        require_runtime_import(required_imports, "filepath")
-                    } else {}
-                } else if hook == STD_FS_CANONICALIZE_RUNTIME_KEY {
-                    require_runtime_import(required_imports, "filepath")
-                } else if hook == STD_FS_SHA256_FILE_RUNTIME_KEY {
-                    require_runtime_import(required_imports, "fmt");
-                    require_runtime_import(required_imports, "hash");
-                    require_runtime_import(required_imports, "io");
-                    require_runtime_import(required_imports, "os");
-                    require_runtime_import(required_imports, "sha256")
-                } else if hook.starts_with(STD_PATH_RUNTIME_PREFIX) {
-                    require_runtime_import(required_imports, "filepath");
-                    if hook == STD_PATH_SEPARATOR_RUNTIME_KEY {
-                        require_runtime_import(required_imports, "os")
-                    } else {};
-                    if hook == STD_PATH_EXTENSION_RUNTIME_KEY
-                        || hook == STD_PATH_FILE_STEM_RUNTIME_KEY
-                        || hook == STD_PATH_WITH_EXTENSION_RUNTIME_KEY {
-                        require_runtime_import(required_imports, "strings")
-                    } else {}
-                } else if hook == STD_TESTING_FAIL_RUNTIME_KEY {
-                    require_runtime_import(required_imports, "fmt");
-                    require_runtime_import(required_imports, "os")
-                } else if hook.starts_with(STD_NUM_RUNTIME_PREFIX) {
-                    require_runtime_import(required_imports, "strconv")
-                } else if hook.starts_with(STD_MATH_RUNTIME_PREFIX) {
-                    require_runtime_import(required_imports, "math")
-                } else if hook == STD_CRYPTO_RAND_BYTES_RUNTIME_KEY {
-                    require_runtime_import(required_imports, "cryptorand")
-                } else if hook.starts_with(STD_TASK_RUNTIME_PREFIX) {
-                    require_runtime_import(required_imports, "context");
-                    require_runtime_import(required_imports, "sync");
-                    if hook == STD_TASK_SLEEP_RUNTIME_KEY {
-                        require_runtime_import(required_imports, "time")
-                    } else {}
-                } else if hook.starts_with(STD_TIME_RUNTIME_PREFIX) {
-                    require_runtime_import(required_imports, "time")
-                } else if hook == STD_PROCESS_EXIT_RUNTIME_KEY {
-                    require_runtime_import(required_imports, "os")
-                } else if hook == STD_PROCESS_LOOK_PATH_RUNTIME_KEY {
-                    require_runtime_import(required_imports, "exec")
-                } else if hook == STD_PROCESS_OUTPUT_RUNTIME_KEY
-                    || hook == STD_PROCESS_STATUS_RUNTIME_KEY
-                    || hook == STD_PROCESS_OUTPUT_TIMEOUT_RUNTIME_KEY
-                    || hook == STD_PROCESS_STATUS_TIMEOUT_RUNTIME_KEY
-                    || hook == STD_PROCESS_OUTPUT_CANCEL_RUNTIME_KEY
-                    || hook == STD_PROCESS_STATUS_CANCEL_RUNTIME_KEY {
-                    require_runtime_import(required_imports, "bytes");
-                    require_runtime_import(required_imports, "os");
-                    require_runtime_import(required_imports, "exec");
-                    if hook == STD_PROCESS_OUTPUT_TIMEOUT_RUNTIME_KEY
-                        || hook == STD_PROCESS_STATUS_TIMEOUT_RUNTIME_KEY {
-                        require_runtime_import(required_imports, "context");
-                        require_runtime_import(required_imports, "time")
-                    } else if hook == STD_PROCESS_OUTPUT_CANCEL_RUNTIME_KEY
-                        || hook == STD_PROCESS_STATUS_CANCEL_RUNTIME_KEY {
-                        require_runtime_import(required_imports, "context");
-                        require_runtime_import(required_imports, "sync");
-                        require_runtime_import(required_imports, "syscall")
-                    } else {}
-                } else {}
-            },
-        }
+        if runtime_hook_uses_structured_error(hook) {
+            return true
+        } else {}
+    }
+    false
+}
+
+fn runtime_hook_needs_task_support(hook: resources::RuntimeHook) -> bool {
+    match hook {
+        Core(_) => false,
+        Standard(Task(_)) => true,
+        Standard(Process(process)) => match process {
+            OutputCancel | StatusCancel => true,
+            Exit | LookPath | Output | OutputTimeout | Status | StatusTimeout => false,
+        },
+        Standard(Env(_) | Fs(_) | Io(_) | Path(_) | TestingFail | Num(_) | Math(_) | Crypto(_) | Time(_)) => false,
+    }
+}
+
+fn emit_runtime_import_items(items: Vec[Item], required: Vec[RuntimeImport]) -> unit {
+    if required.is_empty() {
+        return
+    } else {};
+    let imports: Vec[(string, string)] = Vec::[];
+    if collections::contains(required, RuntimeImport::Bytes) {
+        imports.push(("_goml_bytes", "bytes"))
+    } else {};
+    if collections::contains(required, RuntimeImport::Context) {
+        imports.push(("_goml_context", "context"))
+    } else {};
+    if collections::contains(required, RuntimeImport::CryptoRand) {
+        imports.push(("_goml_cryptorand", "crypto/rand"))
+    } else {};
+    if collections::contains(required, RuntimeImport::Fmt) {
+        imports.push(("_goml_fmt", "fmt"))
+    } else {};
+    if collections::contains(required, RuntimeImport::Errors) {
+        imports.push(("_goml_errors", "errors"))
+    } else {};
+    if collections::contains(required, RuntimeImport::Hash) {
+        imports.push(("_goml_hash", "hash"))
+    } else {};
+    if collections::contains(required, RuntimeImport::Io) {
+        imports.push(("_goml_io", "io"))
+    } else {};
+    if collections::contains(required, RuntimeImport::Math) {
+        imports.push(("_goml_math", "math"))
+    } else {};
+    if collections::contains(required, RuntimeImport::Os) {
+        imports.push(("_goml_os", "os"))
+    } else {};
+    if collections::contains(required, RuntimeImport::Exec) {
+        imports.push(("_goml_exec", "os/exec"))
+    } else {};
+    if collections::contains(required, RuntimeImport::Filepath) {
+        imports.push(("_goml_filepath", "path/filepath"))
+    } else {};
+    if collections::contains(required, RuntimeImport::Reflect) {
+        imports.push(("_goml_reflect", "reflect"))
+    } else {};
+    if collections::contains(required, RuntimeImport::Sha256) {
+        imports.push(("_goml_sha256", "crypto/sha256"))
+    } else {};
+    if collections::contains(required, RuntimeImport::Slices) {
+        imports.push(("_goml_slices", "slices"))
+    } else {};
+    if collections::contains(required, RuntimeImport::Strconv) {
+        imports.push(("_goml_strconv", "strconv"))
+    } else {};
+    if collections::contains(required, RuntimeImport::Strings) {
+        imports.push(("_goml_strings", "strings"))
+    } else {};
+    if collections::contains(required, RuntimeImport::Sync) {
+        imports.push(("_goml_sync", "sync"))
+    } else {};
+    if collections::contains(required, RuntimeImport::Syscall) {
+        imports.push(("_goml_syscall", "syscall"))
+    } else {};
+    if collections::contains(required, RuntimeImport::Time) {
+        imports.push(("_goml_time", "time"))
+    } else {};
+    items.push(Item::ImportGroup(imports))
+}
+
+pub fn emit_runtime_hook_items(
+    items: Vec[Item],
+    hooks: Vec[resources::RuntimeHook],
+    intrinsics: Vec[string],
+) -> unit {
+    let required_imports: Vec[RuntimeImport] = Vec::[];
+    for hook in hooks {
+        collect_runtime_hook_imports(required_imports, hook)
     }
     for intrinsic in intrinsics {
         if intrinsic == "ref.ptr_hash" {
-            require_runtime_import(required_imports, "reflect")
+            require_runtime_import(required_imports, RuntimeImport::Reflect)
         } else if intrinsic == "vec.with_capacity" || intrinsic == "vec.reserve" {
-            require_runtime_import(required_imports, "slices")
+            require_runtime_import(required_imports, RuntimeImport::Slices)
         } else if intrinsic == "channel.send_cancel" || intrinsic == "channel.recv_cancel" {
-            require_runtime_import(required_imports, "context");
-            require_runtime_import(required_imports, "sync")
+            require_runtime_import(required_imports, RuntimeImport::Context);
+            require_runtime_import(required_imports, RuntimeImport::Sync)
         } else {}
     }
-    if needs_structured_runtime_error(hooks) {
-        require_runtime_import(required_imports, "errors");
-        require_runtime_import(required_imports, "io");
-        require_runtime_import(required_imports, "os");
-        require_runtime_import(required_imports, "syscall")
+    let uses_structured_error = needs_structured_runtime_error(hooks);
+    if uses_structured_error {
+        require_runtime_import(required_imports, RuntimeImport::Errors);
+        require_runtime_import(required_imports, RuntimeImport::Io);
+        require_runtime_import(required_imports, RuntimeImport::Os);
+        require_runtime_import(required_imports, RuntimeImport::Syscall)
     } else {};
-    if !required_imports.is_empty() {
-        let imports: Vec[(string, string)] = Vec::[];
-        if collections::contains(required_imports, "bytes") {
-            imports.push(("_goml_bytes", "bytes"))
-        } else {};
-        if collections::contains(required_imports, "context") {
-            imports.push(("_goml_context", "context"))
-        } else {};
-        if collections::contains(required_imports, "cryptorand") {
-            imports.push(("_goml_cryptorand", "crypto/rand"))
-        } else {};
-        if collections::contains(required_imports, "fmt") {
-            imports.push(("_goml_fmt", "fmt"))
-        } else {};
-        if collections::contains(required_imports, "errors") {
-            imports.push(("_goml_errors", "errors"))
-        } else {};
-        if collections::contains(required_imports, "hash") {
-            imports.push(("_goml_hash", "hash"))
-        } else {};
-        if collections::contains(required_imports, "io") {
-            imports.push(("_goml_io", "io"))
-        } else {};
-        if collections::contains(required_imports, "math") {
-            imports.push(("_goml_math", "math"))
-        } else {};
-        if collections::contains(required_imports, "os") {
-            imports.push(("_goml_os", "os"))
-        } else {};
-        if collections::contains(required_imports, "exec") {
-            imports.push(("_goml_exec", "os/exec"))
-        } else {};
-        if collections::contains(required_imports, "filepath") {
-            imports.push(("_goml_filepath", "path/filepath"))
-        } else {};
-        if collections::contains(required_imports, "reflect") {
-            imports.push(("_goml_reflect", "reflect"))
-        } else {};
-        if collections::contains(required_imports, "sha256") {
-            imports.push(("_goml_sha256", "crypto/sha256"))
-        } else {};
-        if collections::contains(required_imports, "slices") {
-            imports.push(("_goml_slices", "slices"))
-        } else {};
-        if collections::contains(required_imports, "strconv") {
-            imports.push(("_goml_strconv", "strconv"))
-        } else {};
-        if collections::contains(required_imports, "strings") {
-            imports.push(("_goml_strings", "strings"))
-        } else {};
-        if collections::contains(required_imports, "sync") {
-            imports.push(("_goml_sync", "sync"))
-        } else {};
-        if collections::contains(required_imports, "syscall") {
-            imports.push(("_goml_syscall", "syscall"))
-        } else {};
-        if collections::contains(required_imports, "time") {
-            imports.push(("_goml_time", "time"))
-        } else {};
-        items.push(Item::ImportGroup(imports))
-    } else {};
+    emit_runtime_import_items(items, required_imports);
     let mut needs_task_support = false;
     for hook in hooks {
-        if hook.starts_with(STD_TASK_RUNTIME_PREFIX)
-            || hook == STD_PROCESS_OUTPUT_CANCEL_RUNTIME_KEY
-            || hook == STD_PROCESS_STATUS_CANCEL_RUNTIME_KEY {
+        if runtime_hook_needs_task_support(hook) {
             needs_task_support = true;
         } else {}
     }
@@ -520,49 +588,22 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
             items.push(item)
         }
     } else {};
-    let ordered: Vec[string] = Vec::[];
-    for key in resources::core_runtime_keys() {
-        ordered.push(CORE_RUNTIME_PREFIX + key)
-    }
-    if needs_structured_runtime_error(hooks) {
+    if uses_structured_error {
         items.push(std_runtime_error_kind_item());
         items.push(std_runtime_error_raw_code_item())
     } else {};
-    for spec in resources::standard_runtime_abi_specs() {
-        ordered.push(spec.key)
-    }
-    for key in ordered {
-        let needed = collections::contains(hooks, key);
-        if needed {
-            if key == STD_TIME_MONOTONIC_NANOSECONDS_RUNTIME_KEY {
-                items.push(std_time_monotonic_origin_item())
-            } else {};
-            match integer_to_string_hook_type(key) {
-                Some(ty) => items.push(integer_to_string_hook_item(key, ty)),
-                None => match key {
-                    CORE_UNIT_TO_STRING_RUNTIME_KEY => items.push(unit_to_string_hook_item()),
-                    CORE_BOOL_TO_STRING_RUNTIME_KEY => items.push(bool_to_string_hook_item()),
-                    CORE_STRING_FROM_UTF8_RUNTIME_KEY => items.push(string_from_utf8_hook_item()),
-                    CORE_STRING_CONCAT_RUNTIME_KEY => items.push(string_concat_hook_item()),
-                    CORE_STRING_PARSE_FLOAT32_RUNTIME_KEY => {
-                        items.push(string_parse_float_hook_item(key, "32"))
-                    },
-                    CORE_STRING_PARSE_FLOAT64_RUNTIME_KEY => {
-                        items.push(string_parse_float_hook_item(key, "64"))
-                    },
-                    CORE_STRING_PRINT_RUNTIME_KEY => {
-                        items.push(string_output_hook_item(key, "_goml_fmt.Print"))
-                    },
-                    CORE_STRING_PRINTLN_RUNTIME_KEY => {
-                        items.push(string_output_hook_item(key, "_goml_fmt.Println"))
-                    },
-                    _ => match extra_core_runtime_hook_item(key) {
-                        Some(item) => items.push(item),
-                        None => match standard_runtime_hook_item(key) {
-                            Some(item) => items.push(item),
-                            None => (),
+    for spec in resources::runtime_abi_specs() {
+        if collections::contains(hooks, spec.hook) {
+            match spec.hook {
+                Core(hook) => items.push(core_runtime_hook_item(hook, spec.key)),
+                Standard(hook) => {
+                    match hook {
+                        Time(MonotonicNanoseconds) => {
+                            items.push(std_time_monotonic_origin_item())
                         },
-                    },
+                        Env(_) | Fs(_) | Io(_) | Path(_) | Process(_) | TestingFail | Num(_) | Math(_) | Crypto(_) | Time(UnixNanoseconds | SleepNanoseconds) | Task(_) => (),
+                    };
+                    items.push(standard_runtime_hook_item(hook, spec.key))
                 },
             }
         } else {}

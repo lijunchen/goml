@@ -170,10 +170,23 @@ fn emits_linked_bool_to_string_runtime() -> unit {
     )
 }
 
-fn all_core_runtime_hooks() -> Vec[string] {
-    let hooks: Vec[string] = Vec::new();
-    for key in resources::core_runtime_keys() {
-        hooks.push(CORE_RUNTIME_PREFIX + key)
+fn required_runtime_key(hook: resources::RuntimeHook) -> string {
+    match resources::runtime_abi_by_hook(hook) {
+        Some(spec) => spec.key,
+        None => {
+            testing::fail("expected runtime ABI entry");
+            ""
+        },
+    }
+}
+
+fn all_core_runtime_hooks() -> Vec[resources::RuntimeHook] {
+    let hooks: Vec[resources::RuntimeHook] = Vec::new();
+    for spec in resources::runtime_abi_specs() {
+        match spec.hook {
+            Core(_) => hooks.push(spec.hook),
+            Standard(_) => (),
+        }
     }
     hooks
 }
@@ -193,8 +206,10 @@ fn emits_every_core_runtime_hook() -> unit {
                 + ")",
         ),
     );
-    for key in hooks {
-        testing::assert(string_contains(output, "func " + runtime_hook_name(key) + "("))
+    for hook in hooks {
+        testing::assert(
+            string_contains(output, "func " + runtime_hook_name(required_runtime_key(hook)) + "("),
+        )
     }
     testing::assert(!string_contains(output, "unicode/utf8"));
     testing::assert(string_contains(output, "return rune(s[i])"));
@@ -210,10 +225,13 @@ fn emits_every_core_runtime_hook() -> unit {
     testing::assert(string_contains(output, "h = h * 1099511628211 + uint64(s[i])"))
 }
 
-fn all_standard_runtime_hooks() -> Vec[string] {
-    let hooks: Vec[string] = Vec::new();
-    for spec in resources::standard_runtime_abi_specs() {
-        hooks.push(spec.key)
+fn all_standard_runtime_hooks() -> Vec[resources::RuntimeHook] {
+    let hooks: Vec[resources::RuntimeHook] = Vec::new();
+    for spec in resources::runtime_abi_specs() {
+        match spec.hook {
+            Core(_) => (),
+            Standard(_) => hooks.push(spec.hook),
+        }
     }
     hooks
 }
@@ -246,8 +264,10 @@ fn emits_every_standard_runtime_hook() -> unit {
                 + ")",
         ),
     );
-    for key in hooks {
-        testing::assert(string_contains(output, "func " + runtime_hook_name(key) + "("))
+    for hook in hooks {
+        testing::assert(
+            string_contains(output, "func " + runtime_hook_name(required_runtime_key(hook)) + "("),
+        )
     }
     testing::assert(string_contains(output, "data, err = _goml_os.ReadFile(path)"));
     testing::assert(string_contains(output, "func _goml_runtime_error_kind(err error) int"));
@@ -285,9 +305,9 @@ fn emits_every_standard_runtime_hook() -> unit {
 
 #[test]
 fn closes_string_runtime_dependencies() -> unit {
-    let hooks: Vec[string] = Vec::new();
-    hooks.push(CORE_STRING_GET_RUNTIME_KEY);
-    hooks.push(CORE_STRING_BYTE_SLICE_RUNTIME_KEY);
+    let hooks: Vec[resources::RuntimeHook] = Vec::new();
+    hooks.push(resources::RuntimeHook::Core(resources::CoreRuntimeHook::StringGet));
+    hooks.push(resources::RuntimeHook::Core(resources::CoreRuntimeHook::StringByteSlice));
     let items: Vec[Item] = Vec::new();
     emit_runtime_hook_items(items, hooks, Vec::new());
     let output = encode(File { items });

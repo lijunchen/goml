@@ -19,6 +19,16 @@ fn required_abi(value: Option[CallableAbiSpec]) -> CallableAbiSpec {
     }
 }
 
+fn required_runtime_abi(value: Option[RuntimeAbiSpec]) -> RuntimeAbiSpec {
+    match value {
+        Some(spec) => spec,
+        None => {
+            testing::fail("expected runtime ABI entry");
+            runtime_abi(RuntimeHook::Core(CoreRuntimeHook::UnitToString), "", "", "")
+        },
+    }
+}
+
 #[test]
 fn loads_builtin_sources_from_toolchain_lib() -> unit {
     match builtin_sources() {
@@ -167,11 +177,21 @@ fn callable_abi_catalog_round_trips_keys_and_ids() -> unit {
         );
         testing::assert_eq(required_abi(intrinsic_abi_by_id(spec.artifact_id)).key, spec.key)
     }
-    for spec in standard_runtime_abi_specs() {
-        testing::assert_eq(required_abi(runtime_abi_by_key(spec.key)).artifact_id, spec.artifact_id);
-        testing::assert_eq(required_abi(runtime_abi_by_id(spec.artifact_id)).key, spec.key)
+    let runtime_specs = runtime_abi_specs();
+    testing::assert_eq(runtime_specs.len(), 114);
+    for left in 0..runtime_specs.len() {
+        for right in left + 1..runtime_specs.len() {
+            testing::assert(runtime_specs[left].hook != runtime_specs[right].hook);
+            testing::assert(runtime_specs[left].key != runtime_specs[right].key);
+            testing::assert(runtime_specs[left].artifact_id != runtime_specs[right].artifact_id)
+        }
     }
-    for id in core_runtime_keys() {
-        testing::assert_eq(required_abi(runtime_abi_by_id(id)).key, "core." + id)
+    for spec in runtime_specs {
+        testing::assert_eq(
+            required_runtime_abi(runtime_abi_by_key(spec.key)).artifact_id,
+            spec.artifact_id,
+        );
+        testing::assert_eq(required_runtime_abi(runtime_abi_by_id(spec.artifact_id)).key, spec.key);
+        testing::assert_eq(required_runtime_abi(runtime_abi_by_hook(spec.hook)).key, spec.key)
     }
 }

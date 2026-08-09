@@ -1,6 +1,7 @@
 package core;
 
 use gomlc::ast;
+use gomlc::resources;
 use gomlc::tast;
 use std::text;
 
@@ -798,7 +799,12 @@ fn lower_index(ctx: Lowerer, base: tast::Expr, index: tast::Expr, ty: tast::Type
         VecType { elem: _ } => tast::Callable::Intrinsic("vec.get"),
         Slice { elem: _ } => tast::Callable::Intrinsic("slice.get"),
         HashMap { key: _, value: _ } => tast::Callable::Intrinsic("hashmap.get"),
-        String => tast::Callable::Runtime("core.string_get"),
+        String => match resources::runtime_abi_by_hook(
+            resources::RuntimeHook::Core(resources::CoreRuntimeHook::StringGet),
+        ) {
+            Some(spec) => tast::Callable::Runtime(spec.key),
+            None => tast::Callable::Intrinsic("compiler.missing"),
+        },
         _ => tast::Callable::Intrinsic("compiler.missing"),
     };
     let params: Vec[tast::Type] = Vec::[];
