@@ -8,7 +8,7 @@ use gomlc::parser;
 use gomlc::tast;
 use std::testing;
 
-fn lower_source(source: string) -> core::File {
+fn lower_source(source: string) -> File {
     lower(
         mono::lower(
             core::lower(tast::check(hir::lower(ast::lower(parser::parse(source)), "main.gom"))),
@@ -78,7 +78,7 @@ fn preserves_immediate_closure_calls() -> unit {
     let source = "fn main() { let result = (|x| x + 1)(41); println(result.to_string()); }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn main() -> unit {\n  let result/1 = closure_env_main_0 {}(41) in\n  let _wild0 = println(inherent#int#int#to_string(result/1)) in\n  ()\n}\n\nfn inherent#closure_env_main_0#closure_env_main_0#apply(env1: closure_env_main_0, x/0: int) -> int {\n  (x/0 + 1)\n}",
+        "fn main() -> unit {\n  let result/1 = inherent#closure_env_main_0#closure_env_main_0#apply(closure_env_main_0 {}, 41) in\n  let _wild0 = println(inherent#int#int#to_string(result/1)) in\n  ()\n}\n\nfn inherent#closure_env_main_0#closure_env_main_0#apply(env1: closure_env_main_0, x/0: int) -> int {\n  (x/0 + 1)\n}",
     )
 }
 
@@ -99,4 +99,63 @@ fn eliminates_dead_lifted_locals() -> unit {
     let output = encode(dce(value));
     testing::assert(!output.contains("dead/"));
     testing::assert(output.contains("let kept/"))
+}
+
+#[test]
+fn validates_generated_closure_environments() -> unit {
+    let file = lower_source(
+        "fn main() -> unit { let add = |value: int32| value + 1; println(add(41)); }",
+    );
+    match validate(file) {
+        Ok(_) => (),
+        Err(message) => testing::fail(message),
+    }
+}
+
+#[test]
+fn converts_invalid_closures_to_invalid_lift_expressions() -> unit {
+    let source = mono::lower(
+        core::lower(
+            tast::check(
+                hir::lower(ast::lower(parser::parse("fn main() -> unit { () }")), "main.gom"),
+            ),
+        ),
+    );
+    let function = source.functions[0];
+    let functions = Vec::[
+        mono::Function {
+            name: function.name,
+            origin: function.origin,
+            root: function.root,
+            trait_impl: function.trait_impl,
+            params: function.params,
+            ret_ty: function.ret_ty,
+            body: mono::Block {
+                stmts: Vec::[],
+                tail: Option::Some(
+                    mono::Expr::Closure {
+                        params: Vec::[],
+                        body: mono::Expr::Prim {
+                            value: tast::Primitive::Unit,
+                            ty: tast::Type::Unit,
+                        },
+                        ty: tast::Type::Int,
+                    },
+                ),
+            },
+        },
+    ];
+    let lifted = lower(
+        mono::File {
+            functions,
+            enums: source.enums,
+            structs: source.structs,
+            type_instances: source.type_instances,
+            constants: source.constants,
+        },
+    );
+    match lifted.functions[0].body.tail {
+        Some(Invalid { ty: tast::Type::Int }) => (),
+        _ => testing::fail("expected invalid Lift expression"),
+    }
 }

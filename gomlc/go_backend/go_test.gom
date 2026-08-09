@@ -498,7 +498,7 @@ fn recognizes_recursive_joins_independently_of_their_names() -> unit {
     functions.push(
         anf::Function {
             name: "main",
-            origin: core::FunctionOrigin::Source,
+            origin: anf::FunctionOrigin::Source,
             root: true,
             trait_impl: Option::None,
             params: Vec::[],
@@ -558,7 +558,7 @@ fn rejects_unsupported_mutually_recursive_join_groups_before_emission() -> unit 
     functions.push(
         anf::Function {
             name: "cycle",
-            origin: core::FunctionOrigin::Source,
+            origin: anf::FunctionOrigin::Source,
             root: true,
             trait_impl: Option::None,
             params: Vec::[],
@@ -592,7 +592,7 @@ fn callable_file(callable: tast::Callable) -> anf::File {
         functions: Vec::[
             anf::Function {
                 name: "invalid_callable",
-                origin: core::FunctionOrigin::Source,
+                origin: anf::FunctionOrigin::Source,
                 root: true,
                 trait_impl: Option::None,
                 params: Vec::[],

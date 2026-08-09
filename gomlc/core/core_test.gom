@@ -471,3 +471,42 @@ fn eliminates_dead_locals_without_dropping_effects() -> unit {
     testing::assert(string_contains(output, "let divisor/"));
     testing::assert(string_contains(output, "let quotient/"))
 }
+
+#[test]
+fn validates_core_binding_types() -> unit {
+    let file = lower_source("fn main() -> unit { let value = 1; () }");
+    match validate(file) {
+        Ok(_) => (),
+        Err(message) => testing::fail(message),
+    };
+    let function = file.functions[0];
+    let statement = function.body.stmts[0];
+    let invalid_statements = Vec::[
+        LetStmt { name: statement.name, value: statement.value, ty: tast::Type::String },
+    ];
+    let invalid_functions = Vec::[
+        Function {
+            name: function.name,
+            origin: function.origin,
+            root: function.root,
+            generics: function.generics,
+            predicates: function.predicates,
+            trait_impl: function.trait_impl,
+            params: function.params,
+            ret_ty: function.ret_ty,
+            body: Block { stmts: invalid_statements, tail: function.body.tail },
+        },
+    ];
+    match validate(
+        File {
+            functions: invalid_functions,
+            enums: file.enums,
+            structs: file.structs,
+            type_instances: file.type_instances,
+            constants: file.constants,
+        },
+    ) {
+        Ok(_) => testing::fail("expected invalid Core IR"),
+        Err(message) => testing::assert(message.contains("let value/0")),
+    }
+}
