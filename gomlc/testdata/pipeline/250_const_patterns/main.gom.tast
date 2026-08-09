@@ -1,12 +1,12 @@
 const answer: int = (40 + 2);
-const alternate: int = 7;
-const enabled: bool = true;
-const greeting: string = "hello";
-const marker: uint8 = 65;
-const ratio: float64 = 1.5;
-const computed_answer: int = 42;
-const computed_enabled: bool = true;
-const classified_at_compile_time: int = 1;
+const ALTERNATE: int = 7;
+const ENABLED: bool = true;
+const GREETING: string = "hello";
+const MARKER: uint8 = 65;
+const RATIO: float64 = 1.5;
+const COMPUTED_ANSWER: int = 42;
+const COMPUTED_ENABLED: bool = true;
+const CLASSIFIED_AT_COMPILE_TIME: int = 1;
 
 fn make_answer() -> int {
     42
@@ -18,7 +18,7 @@ fn make_enabled() -> bool {
 
 fn comptime_classify(value/0: int) -> int {
     match (value/0 : int) {
-        computed_answer => 1,
+        COMPUTED_ANSWER => 1,
         _ : int => 0,
     }
 }
@@ -39,7 +39,7 @@ fn classify_bool(value/2: bool) -> string {
 
 fn classify_computed_bool(value/3: bool) -> string {
     match (value/3 : bool) {
-        computed_enabled => "enabled",
+        COMPUTED_ENABLED => "enabled",
         false => "disabled",
     }
 }
@@ -69,7 +69,7 @@ fn classify_string(value/7: string) -> bool {
 
 fn classify_float(value/8: float64) -> bool {
     match (value/8 : float64) {
-        ratio => true,
+        RATIO => true,
         _ : float64 => false,
     }
 }
@@ -140,5 +140,5 @@ fn main() -> unit {
     (println : (bool) -> unit)((matches_let_else : (int) -> bool)(42));
     (println : (bool) -> unit)((matches_let_else : (int) -> bool)(41));
     (println : (int) -> unit)((for_binding : () -> int)());
-    (println : (int) -> unit)((classified_at_compile_time : int))
+    (println : (int) -> unit)((CLASSIFIED_AT_COMPILE_TIME : int))
 }

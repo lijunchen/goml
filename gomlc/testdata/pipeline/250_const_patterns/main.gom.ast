@@ -1,21 +1,21 @@
 package main;
 const answer: int = 40 + 2;
 
-const alternate: int = 7;
+const ALTERNATE: int = 7;
 
-const enabled: bool = true;
+const ENABLED: bool = true;
 
-const greeting: string = "hello";
+const GREETING: string = "hello";
 
-const marker: byte = b'\x41';
+const MARKER: byte = b'\x41';
 
-const ratio: float64 = 1.5;
+const RATIO: float64 = 1.5;
 
-const classified_at_compile_time: int = comptime_classify(42);
+const CLASSIFIED_AT_COMPILE_TIME: int = comptime_classify(42);
 
-const computed_answer: int = make_answer();
+const COMPUTED_ANSWER: int = make_answer();
 
-const computed_enabled: bool = make_enabled();
+const COMPUTED_ENABLED: bool = make_enabled();
 
 #[comptime]
 fn make_answer() -> int {
@@ -30,28 +30,28 @@ fn make_enabled() -> bool {
 #[comptime]
 fn comptime_classify(value: int) -> int {
     match value {
-        computed_answer => 1,
+        COMPUTED_ANSWER => 1,
         _ => 0,
     }
 }
 
 fn classify(value: int) -> string {
     match value {
-        answer | alternate => "known",
+        answer | ALTERNATE => "known",
         _ => "other",
     }
 }
 
 fn classify_bool(value: bool) -> string {
     match value {
-        enabled => "enabled",
+        ENABLED => "enabled",
         false => "disabled",
     }
 }
 
 fn classify_computed_bool(value: bool) -> string {
     match value {
-        computed_enabled => "enabled",
+        COMPUTED_ENABLED => "enabled",
         false => "disabled",
     }
 }
@@ -70,21 +70,21 @@ fn classify_comptime_guard(value: bool) -> string {
 
 fn classify_pair(value: (int, byte)) -> bool {
     match value {
-        (answer, marker) => true,
+        (answer, MARKER) => true,
         _ => false,
     }
 }
 
 fn classify_string(value: string) -> bool {
     match value {
-        greeting => true,
+        GREETING => true,
         _ => false,
     }
 }
 
 fn classify_float(value: float64) -> bool {
     match value {
-        ratio => true,
+        RATIO => true,
         _ => false,
     }
 }
@@ -152,6 +152,6 @@ fn main() -> unit {
     println(matches_let_else(42));
     println(matches_let_else(41));
     println(for_binding());
-    println(classified_at_compile_time)
+    println(CLASSIFIED_AT_COMPILE_TIME)
 }
 

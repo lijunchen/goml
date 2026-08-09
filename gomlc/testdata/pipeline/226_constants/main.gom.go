@@ -26,28 +26,28 @@ func _goml_runtime_core_string_println(s string) struct{} {
 }
 
 const (
-    base int = 16
-    answer int = base * 2 + 10
-    mask uint8 = 240
-    greeting string = "constant" + " value"
-    enabled bool = true
+    BASE int = 16
+    ANSWER int = BASE * 2 + 10
+    MASK uint8 = 240
+    GREETING string = "constant" + " value"
+    ENABLED bool = true
 )
 
 func main0() struct{} {
     var t176 string
-    var inline211 string = _goml_runtime_core_int_to_string(answer)
+    var inline211 string = _goml_runtime_core_int_to_string(ANSWER)
     t176 = inline211
     var inline208 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t176)
     _goml_runtime_core_string_println(inline208)
     var t177 string
-    var inline206 string = _goml_runtime_core_uint8_to_string(mask)
+    var inline206 string = _goml_runtime_core_uint8_to_string(MASK)
     t177 = inline206
     var inline203 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t177)
     _goml_runtime_core_string_println(inline203)
-    var inline200 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(greeting)
+    var inline200 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(GREETING)
     _goml_runtime_core_string_println(inline200)
     var t178 string
-    var inline198 string = _goml_runtime_core_bool_to_string(enabled)
+    var inline198 string = _goml_runtime_core_bool_to_string(ENABLED)
     t178 = inline198
     var inline195 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t178)
     _goml_runtime_core_string_println(inline195)

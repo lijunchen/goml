@@ -1,20 +1,20 @@
 const answer: int = (40 + 2);
 
-const alternate: int = 7;
+const ALTERNATE: int = 7;
 
-const enabled: bool = true;
+const ENABLED: bool = true;
 
-const greeting: string = "hello";
+const GREETING: string = "hello";
 
-const marker: uint8 = 65;
+const MARKER: uint8 = 65;
 
-const ratio: float64 = 1.5;
+const RATIO: float64 = 1.5;
 
-const computed_answer: int = 42;
+const COMPUTED_ANSWER: int = 42;
 
-const computed_enabled: bool = true;
+const COMPUTED_ENABLED: bool = true;
 
-const classified_at_compile_time: int = 1;
+const CLASSIFIED_AT_COMPILE_TIME: int = 1;
 
 fn make_answer() -> int {
   42
@@ -26,7 +26,7 @@ fn make_enabled() -> bool {
 
 fn comptime_classify(value/0: int) -> int {
   let match172 = value/0 in
-  let t214 = (value/0 == computed_answer) in
+  let t214 = (value/0 == COMPUTED_ANSWER) in
   if t214 {
     1
   } else {
@@ -61,7 +61,7 @@ fn classify_bool(value/2: bool) -> string {
 
 fn classify_computed_bool(value/3: bool) -> string {
   let match173 = value/3 in
-  let t227 = (value/3 == computed_enabled) in
+  let t227 = (value/3 == COMPUTED_ENABLED) in
   if t227 {
     "enabled"
   } else {
@@ -128,7 +128,7 @@ fn classify_string(value/7: string) -> bool {
 
 fn classify_float(value/8: float64) -> bool {
   let match177 = value/8 in
-  let t261 = (value/8 == ratio) in
+  let t261 = (value/8 == RATIO) in
   if t261 {
     true
   } else {
@@ -251,7 +251,7 @@ fn main() -> unit {
                             let t306 = for_binding() in
                             join inline_cont351(_wild205: unit) -> unit {
                               let inline349 =
-                                trait_impl#ToString#int#to_string(classified_at_compile_time) in
+                                trait_impl#ToString#int#to_string(CLASSIFIED_AT_COMPILE_TIME) in
                               let inline350 = @runtime(core.string_println)(inline349) in
                               ()
                             } in

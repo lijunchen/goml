@@ -62,9 +62,9 @@ type Tuple2_3int_5uint8 struct {
 }
 
 const (
-    ratio float64 = 1.5
-    computed_enabled bool = true
-    classified_at_compile_time int = 1
+    RATIO float64 = 1.5
+    COMPUTED_ENABLED bool = true
+    CLASSIFIED_AT_COMPILE_TIME int = 1
 )
 
 func classify(value__1 int) string {
@@ -90,7 +90,7 @@ func classify_bool(value__2 bool) string {
 }
 
 func classify_computed_bool(value__3 bool) string {
-    var t227 bool = value__3 == computed_enabled
+    var t227 bool = value__3 == COMPUTED_ENABLED
     if t227 {
         return "enabled"
     } else {
@@ -147,7 +147,7 @@ func classify_string(value__7 string) bool {
 }
 
 func classify_float(value__8 float64) bool {
-    var t261 bool = value__8 == ratio
+    var t261 bool = value__8 == RATIO
     if t261 {
         return true
     } else {
@@ -273,7 +273,7 @@ func main0() struct{} {
     var t306 int = for_binding()
     var inline352 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t306)
     _goml_runtime_core_string_println(inline352)
-    var inline349 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(classified_at_compile_time)
+    var inline349 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(CLASSIFIED_AT_COMPILE_TIME)
     _goml_runtime_core_string_println(inline349)
     return struct{}{}
 }

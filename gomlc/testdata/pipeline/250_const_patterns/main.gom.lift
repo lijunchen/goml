@@ -1,12 +1,12 @@
 const answer: int = (40 + 2);
-const alternate: int = 7;
-const enabled: bool = true;
-const greeting: string = "hello";
-const marker: uint8 = 65;
-const ratio: float64 = 1.5;
-const computed_answer: int = 42;
-const computed_enabled: bool = true;
-const classified_at_compile_time: int = 1;
+const ALTERNATE: int = 7;
+const ENABLED: bool = true;
+const GREETING: string = "hello";
+const MARKER: uint8 = 65;
+const RATIO: float64 = 1.5;
+const COMPUTED_ANSWER: int = 42;
+const COMPUTED_ENABLED: bool = true;
+const CLASSIFIED_AT_COMPILE_TIME: int = 1;
 
 fn make_answer() -> int {
   42
@@ -18,7 +18,7 @@ fn make_enabled() -> bool {
 
 fn comptime_classify(value/0: int) -> int {
   let match172 = value/0 in
-  if (match172 == computed_answer) {
+  if (match172 == COMPUTED_ANSWER) {
       1
   } else {
       0
@@ -50,7 +50,7 @@ fn classify_bool(value/2: bool) -> string {
 
 fn classify_computed_bool(value/3: bool) -> string {
   let match173 = value/3 in
-  if (match173 == computed_enabled) {
+  if (match173 == COMPUTED_ENABLED) {
       "enabled"
   } else {
       if (match173 == false) {
@@ -111,7 +111,7 @@ fn classify_string(value/7: string) -> bool {
 
 fn classify_float(value/8: float64) -> bool {
   let match177 = value/8 in
-  if (match177 == ratio) {
+  if (match177 == RATIO) {
       true
   } else {
       false
@@ -187,7 +187,7 @@ fn main() -> unit {
   let _wild203 = println__T_bool(matches_let_else(42)) in
   let _wild204 = println__T_bool(matches_let_else(41)) in
   let _wild205 = println__T_int(for_binding()) in
-  println__T_int(classified_at_compile_time)
+  println__T_int(CLASSIFIED_AT_COMPILE_TIME)
 }
 
 fn inherent#Ref#Ref[T]#new__T_int(value/257: int) -> Ref[int] {
