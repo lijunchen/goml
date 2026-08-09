@@ -985,7 +985,7 @@ fn check_name_ref(ctx: Checker, value: hir::NameRef) -> Expr {
         Local(local) => if contains_local(ctx.unresolved_locals, local)
             && ctx.suppress_unresolved_ref_diagnostic.get() == 0
             && contains_unresolved_inference(ctx, expr_type(result)) {
-            push_global_diagnostic(ctx, "Could not infer type")
+            push_global_diagnostic(ctx, inference_failure_message)
         } else {},
         _ => (),
     };
@@ -1832,7 +1832,7 @@ fn callable_parts(ctx: Checker, value: Type, arity: int) -> (Vec[Type], Type) {
             let numeric = is_numeric_type(Type::Var(variable));
             expect_type(ctx, Type::Var(variable), Type::Func { params, ret_ty });
             if numeric {
-                push_global_diagnostic(ctx, "Could not infer type")
+                push_global_diagnostic(ctx, inference_failure_message)
             } else {};
             (params, ret_ty)
         },
@@ -2205,7 +2205,7 @@ fn apply_typed_call(
     if arity_mismatch {
         match function {
             Callable { callable: _, ty: _ } => (),
-            _ => push_global_diagnostic(ctx, "Could not infer type"),
+            _ => push_global_diagnostic(ctx, inference_failure_message),
         }
     } else {};
     Expr::Call { func: normalize_function_expr(ctx, function), args: values, ty: result_ty }
@@ -2328,7 +2328,7 @@ fn check_method_call(
                         match expected {
                             Some(_) => fresh_unresolved_inference(ctx),
                             None => if struct_has_hidden_fields(ctx, expr_type(receiver)) {
-                                push_global_diagnostic(ctx, "Could not infer type");
+                                push_global_diagnostic(ctx, inference_failure_message);
                                 Type::Error
                             } else {
                                 fresh_unresolved_inference(ctx)
@@ -2456,7 +2456,7 @@ fn check_call_expr(
                     push_diagnostic(ctx, "Unresolved callee " + name);
                     match expected {
                         Some(_) => (),
-                        None => push_global_diagnostic(ctx, "Could not infer type"),
+                        None => push_global_diagnostic(ctx, inference_failure_message),
                     };
                     let values: Vec[Expr] = Vec::[];
                     for value in args {
@@ -3713,7 +3713,7 @@ fn check_field_expr(ctx: Checker, source: hir::Expr, name: string) -> Expr {
                                 "Struct " + owner + " has no field " + name,
                                 Option::None,
                             );
-                            push_global_diagnostic(ctx, "Could not infer type");
+                            push_global_diagnostic(ctx, inference_failure_message);
                             Expr::Field {
                                 expr: value,
                                 field_name: name,
@@ -3722,7 +3722,7 @@ fn check_field_expr(ctx: Checker, source: hir::Expr, name: string) -> Expr {
                         },
                         None => {
                             push_diagnostic(ctx, "field not found: " + name);
-                            push_global_diagnostic(ctx, "Could not infer type");
+                            push_global_diagnostic(ctx, inference_failure_message);
                             Expr::Field {
                                 expr: value,
                                 field_name: name,
@@ -3739,7 +3739,7 @@ fn check_field_expr(ctx: Checker, source: hir::Expr, name: string) -> Expr {
                             ),
                             _ => push_diagnostic(ctx, "field not found: " + name),
                         };
-                        push_global_diagnostic(ctx, "Could not infer type");
+                        push_global_diagnostic(ctx, inference_failure_message);
                         Expr::Field {
                             expr: value,
                             field_name: name,
@@ -3767,7 +3767,7 @@ fn check_projection_expr(ctx: Checker, source: hir::Expr, index: int) -> Expr {
                     "Tuple index " + index.to_string() + " out of bounds for type "
                         + type_text(arity_diagnostic_type(expr_type(value))),
                 );
-                push_global_diagnostic(ctx, "Could not infer type");
+                push_global_diagnostic(ctx, inference_failure_message);
                 Expr::Proj { tuple: value, index, ty: fresh_unresolved_inference(ctx) }
             },
             _ => {
@@ -4456,7 +4456,7 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
                 && contains_unresolved_inference(ctx, expr_type(result)) {
                 match expected {
                     Some(_) => (),
-                    None => push_global_diagnostic(ctx, "Could not infer type"),
+                    None => push_global_diagnostic(ctx, inference_failure_message),
                 }
             } else {};
             coerce_expr(ctx, result, expected)

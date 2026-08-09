@@ -556,7 +556,7 @@ fn standard_internal_import_diagnostics(
                     diagnostics.push(
                         tast::Diagnostic {
                             severity: tast::DiagnosticSeverity::Error,
-                            stage: "typer",
+                            stage: typer_stage,
                             message: "package " + import_name + " is internal to std",
                             source_path: paths[index],
                             span: Option::None,
@@ -766,7 +766,7 @@ fn compile_artifact_package(
             checked.diagnostics.push(
                 tast::Diagnostic {
                     severity: tast::DiagnosticSeverity::Error,
-                    stage: "typer",
+                    stage: typer_stage,
                     message,
                     source_path: "",
                     span: Option::None,

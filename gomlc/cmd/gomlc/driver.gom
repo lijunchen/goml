@@ -25,6 +25,14 @@ use std::path;
 use std::process;
 use std::text;
 
+const compile_error_prefix: string = "error[compile]: ";
+
+const typer_stage: string = "typer";
+
+const inference_failure_message: string = "Could not infer type";
+
+const unknown_source_path: string = "<unknown>";
+
 pub struct Compilation {
     pub source_ast_value: ast::LowerResult,
     pub ast_value: ast::LowerResult,
@@ -132,7 +140,7 @@ fn lower_builtin_core(counter: Ref[int]) -> core::File {
     match core::lower_builtins(counter) {
         Ok(value) => value,
         Err(error) => {
-            fail("error[compile]: " + error);
+            fail(compile_error_prefix + error);
             core::File {
                 functions: Vec::[],
                 enums: Vec::[],
@@ -148,7 +156,7 @@ fn lower_go_or_fail(value: Result[go_backend::File, string]) -> go_backend::File
     match value {
         Ok(file) => file,
         Err(error) => {
-            fail("error[compile]: " + error);
+            fail(compile_error_prefix + error);
             go_backend::File { items: Vec::[] }
         },
     }
@@ -380,7 +388,7 @@ fn required_standard_sources(package_name: string) -> Vec[resources::Source] {
             Vec::[]
         },
         Err(error) => {
-            fail("error[compile]: " + error);
+            fail(compile_error_prefix + error);
             Vec::[]
         },
     }
@@ -390,7 +398,7 @@ fn builtin_hir_files() -> Vec[hir::File] {
     let sources = match resources::builtin_sources() {
         Ok(value) => value,
         Err(error) => {
-            fail("error[compile]: " + error);
+            fail(compile_error_prefix + error);
             Vec::[]
         },
     };
@@ -631,36 +639,36 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
         )
     }
     StandardLibrary {
-        root: required_standard_compilation(compiled, "std"),
-        host: required_standard_compilation(compiled, "std::internal::host"),
-        ascii: required_standard_compilation(compiled, "std::ascii"),
-        bincode: required_standard_compilation(compiled, "std::bincode"),
-        bytes: required_standard_compilation(compiled, "std::bytes"),
-        cmp: required_standard_compilation(compiled, "std::cmp"),
-        collections: required_standard_compilation(compiled, "std::collections"),
-        error: required_standard_compilation(compiled, "std::error"),
-        env: required_standard_compilation(compiled, "std::env"),
-        fs: required_standard_compilation(compiled, "std::fs"),
-        io: required_standard_compilation(compiled, "std::io"),
-        internal_task: required_standard_compilation(compiled, "std::internal::task"),
-        iter: required_standard_compilation(compiled, "std::iter"),
-        json: required_standard_compilation(compiled, "std::json"),
-        num: required_standard_compilation(compiled, "std::num"),
-        path: required_standard_compilation(compiled, "std::path"),
-        process: required_standard_compilation(compiled, "std::process"),
-        serde: required_standard_compilation(compiled, "std::serde"),
-        task: required_standard_compilation(compiled, "std::task"),
-        testing: required_standard_compilation(compiled, "std::testing"),
-        text: required_standard_compilation(compiled, "std::text"),
-        toml: required_standard_compilation(compiled, "std::toml"),
-        time: required_standard_compilation(compiled, "std::time"),
-        utf8: required_standard_compilation(compiled, "std::utf8"),
-        unicode: required_standard_compilation(compiled, "std::unicode"),
-        math: required_standard_compilation(compiled, "std::math"),
-        rand: required_standard_compilation(compiled, "std::rand"),
-        crypto: required_standard_compilation(compiled, "std::crypto"),
-        crypto_hash: required_standard_compilation(compiled, "std::crypto::hash"),
-        crypto_rand: required_standard_compilation(compiled, "std::crypto::rand"),
+        root: required_standard_compilation(compiled, resources::std_root_package),
+        host: required_standard_compilation(compiled, resources::std_internal_host_package),
+        ascii: required_standard_compilation(compiled, resources::std_ascii_package),
+        bincode: required_standard_compilation(compiled, resources::std_bincode_package),
+        bytes: required_standard_compilation(compiled, resources::std_bytes_package),
+        cmp: required_standard_compilation(compiled, resources::std_cmp_package),
+        collections: required_standard_compilation(compiled, resources::std_collections_package),
+        error: required_standard_compilation(compiled, resources::std_error_package),
+        env: required_standard_compilation(compiled, resources::std_env_package),
+        fs: required_standard_compilation(compiled, resources::std_fs_package),
+        io: required_standard_compilation(compiled, resources::std_io_package),
+        internal_task: required_standard_compilation(compiled, resources::std_internal_task_package),
+        iter: required_standard_compilation(compiled, resources::std_iter_package),
+        json: required_standard_compilation(compiled, resources::std_json_package),
+        num: required_standard_compilation(compiled, resources::std_num_package),
+        path: required_standard_compilation(compiled, resources::std_path_package),
+        process: required_standard_compilation(compiled, resources::std_process_package),
+        serde: required_standard_compilation(compiled, resources::std_serde_package),
+        task: required_standard_compilation(compiled, resources::std_task_package),
+        testing: required_standard_compilation(compiled, resources::std_testing_package),
+        text: required_standard_compilation(compiled, resources::std_text_package),
+        toml: required_standard_compilation(compiled, resources::std_toml_package),
+        time: required_standard_compilation(compiled, resources::std_time_package),
+        utf8: required_standard_compilation(compiled, resources::std_utf8_package),
+        unicode: required_standard_compilation(compiled, resources::std_unicode_package),
+        math: required_standard_compilation(compiled, resources::std_math_package),
+        rand: required_standard_compilation(compiled, resources::std_rand_package),
+        crypto: required_standard_compilation(compiled, resources::std_crypto_package),
+        crypto_hash: required_standard_compilation(compiled, resources::std_crypto_hash_package),
+        crypto_rand: required_standard_compilation(compiled, resources::std_crypto_rand_package),
     }
 }
 
@@ -739,7 +747,7 @@ fn hir_diagnostics(diagnostics: Vec[hir::Diagnostic], source_path: string) -> Ve
         result.push(
             tast::Diagnostic {
                 severity: tast::DiagnosticSeverity::Error,
-                stage: "typer",
+                stage: typer_stage,
                 message: diagnostic.message,
                 source_path,
                 span: diagnostic.span,
@@ -775,8 +783,8 @@ fn diagnostic_span_end(value: tast::Diagnostic) -> int {
 }
 
 fn diagnostic_precedes(left: tast::Diagnostic, right: tast::Diagnostic) -> bool {
-    let left_inference = left.message == "Could not infer type";
-    let right_inference = right.message == "Could not infer type";
+    let left_inference = left.message == inference_failure_message;
+    let right_inference = right.message == inference_failure_message;
     if left_inference != right_inference {
         left_inference
     } else if left_inference {
@@ -987,7 +995,7 @@ fn render_typer_diagnostic(value: tast::Diagnostic, fallback_path: string, fallb
     builder.write_string(value.stage);
     builder.write_string("]: ");
     builder.write_string(value.message);
-    let inference = value.message == "Could not infer type";
+    let inference = value.message == inference_failure_message;
     match if inference {
         Option::None
     } else {
@@ -1144,7 +1152,7 @@ fn diagnostic_message_starts_with(value: string, prefix: string) -> bool {
 }
 
 fn compact_diagnostic_phase(value: tast::Diagnostic) -> int {
-    if value.message == "Could not infer type" {
+    if value.message == inference_failure_message {
         4
     } else if diagnostic_message_starts_with(value.message, "Could not infer the ") {
         if diagnostic_message_starts_with(
@@ -1329,7 +1337,7 @@ fn lower_mono_or_fail(value: core::File) -> core::File {
     let result = mono::lower_checked(value);
     match result.error {
         Some(error) => {
-            fail("error[compile]: " + error);
+            fail(compile_error_prefix + error);
             result.file
         },
         None => result.file,

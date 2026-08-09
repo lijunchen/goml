@@ -5,6 +5,8 @@ use std::fs;
 use std::path;
 use std::text;
 
+const manifest_filename: string = "goml.toml";
+
 pub struct SourceOverride {
     pub path: string,
     pub source: string,
@@ -84,7 +86,7 @@ fn source_directory(source_path: string) -> string {
 fn find_module(source_path: string) -> Result[Option[ModuleInfo], string] {
     let mut current = source_directory(source_path);
     let result = loop {
-        let manifest = path::join(current, "goml.toml");
+        let manifest = path::join(current, manifest_filename);
         if fs::is_file(manifest) {
             match fs::read_file(manifest) {
                 Ok(source) => match manifest_module_path(source) {

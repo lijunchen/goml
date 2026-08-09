@@ -1803,7 +1803,7 @@ fn resolve_finalized_arms(
 fn unreachable_match_diagnostic(value: MatchCoverageInfo, index: int) -> Diagnostic {
     Diagnostic {
         severity: DiagnosticSeverity::Warning,
-        stage: "typer",
+        stage: typer_stage,
         message: "Unreachable match arm",
         source_path: value.source_path,
         span: Option::Some(value.pattern_spans[index]),
@@ -1867,7 +1867,9 @@ fn match_coverage_diagnostics(
                 },
         );
         builder.write_string(text::join(witnesses, ", "));
-        diagnostics.push(new_diagnostic("typer", builder.finish(), value.source_path, value.span))
+        diagnostics.push(
+            new_diagnostic(typer_stage, builder.finish(), value.source_path, value.span),
+        )
     };
     diagnostics
 }

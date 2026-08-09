@@ -104,35 +104,35 @@ fn no_standard_needs() -> StandardNeeds {
 fn standard_needs_from_package_names(package_names: Vec[string]) -> StandardNeeds {
     let closure = resources::standard_package_closure(package_names);
     StandardNeeds {
-        root: collections::contains(closure, "std"),
-        ascii: collections::contains(closure, "std::ascii"),
-        bincode: collections::contains(closure, "std::bincode"),
-        bytes: collections::contains(closure, "std::bytes"),
-        cmp: collections::contains(closure, "std::cmp"),
-        collections: collections::contains(closure, "std::collections"),
-        error: collections::contains(closure, "std::error"),
-        env: collections::contains(closure, "std::env"),
-        fs: collections::contains(closure, "std::fs"),
-        io: collections::contains(closure, "std::io"),
-        internal_task: collections::contains(closure, "std::internal::task"),
-        iter: collections::contains(closure, "std::iter"),
-        json: collections::contains(closure, "std::json"),
-        num: collections::contains(closure, "std::num"),
-        path: collections::contains(closure, "std::path"),
-        process: collections::contains(closure, "std::process"),
-        serde: collections::contains(closure, "std::serde"),
-        task: collections::contains(closure, "std::task"),
-        testing: collections::contains(closure, "std::testing"),
-        text: collections::contains(closure, "std::text"),
-        toml: collections::contains(closure, "std::toml"),
-        time: collections::contains(closure, "std::time"),
-        utf8: collections::contains(closure, "std::utf8"),
-        unicode: collections::contains(closure, "std::unicode"),
-        math: collections::contains(closure, "std::math"),
-        rand: collections::contains(closure, "std::rand"),
-        crypto: collections::contains(closure, "std::crypto"),
-        crypto_hash: collections::contains(closure, "std::crypto::hash"),
-        crypto_rand: collections::contains(closure, "std::crypto::rand"),
+        root: collections::contains(closure, resources::std_root_package),
+        ascii: collections::contains(closure, resources::std_ascii_package),
+        bincode: collections::contains(closure, resources::std_bincode_package),
+        bytes: collections::contains(closure, resources::std_bytes_package),
+        cmp: collections::contains(closure, resources::std_cmp_package),
+        collections: collections::contains(closure, resources::std_collections_package),
+        error: collections::contains(closure, resources::std_error_package),
+        env: collections::contains(closure, resources::std_env_package),
+        fs: collections::contains(closure, resources::std_fs_package),
+        io: collections::contains(closure, resources::std_io_package),
+        internal_task: collections::contains(closure, resources::std_internal_task_package),
+        iter: collections::contains(closure, resources::std_iter_package),
+        json: collections::contains(closure, resources::std_json_package),
+        num: collections::contains(closure, resources::std_num_package),
+        path: collections::contains(closure, resources::std_path_package),
+        process: collections::contains(closure, resources::std_process_package),
+        serde: collections::contains(closure, resources::std_serde_package),
+        task: collections::contains(closure, resources::std_task_package),
+        testing: collections::contains(closure, resources::std_testing_package),
+        text: collections::contains(closure, resources::std_text_package),
+        toml: collections::contains(closure, resources::std_toml_package),
+        time: collections::contains(closure, resources::std_time_package),
+        utf8: collections::contains(closure, resources::std_utf8_package),
+        unicode: collections::contains(closure, resources::std_unicode_package),
+        math: collections::contains(closure, resources::std_math_package),
+        rand: collections::contains(closure, resources::std_rand_package),
+        crypto: collections::contains(closure, resources::std_crypto_package),
+        crypto_hash: collections::contains(closure, resources::std_crypto_hash_package),
+        crypto_rand: collections::contains(closure, resources::std_crypto_rand_package),
     }
 }
 
@@ -200,12 +200,12 @@ fn merge_hir_files(values: Vec[hir::File], package_name: string) -> hir::File {
     let path = if !values.is_empty() {
         values[0].path
     } else {
-        "<unknown>"
+        unknown_source_path
     };
     let source_path = if !values.is_empty() {
         values[0].source_path
     } else {
-        "<unknown>"
+        unknown_source_path
     };
     let items: Vec[hir::Item] = Vec::[];
     let public_reexports: Vec[(string, string)] = Vec::[];
@@ -705,8 +705,8 @@ fn checked_hir_file(value: hir::LowerResult, package_name: string) -> hir::File 
             fail("error[typer]: failed to lower package " + package_name);
             hir::File {
                 package_name,
-                path: "<unknown>",
-                source_path: "<unknown>",
+                path: unknown_source_path,
+                source_path: unknown_source_path,
                 imports: Vec::[],
                 import_aliases: Vec::[],
                 use_traits: Vec::[],
@@ -903,7 +903,7 @@ fn run_package_command(args: Vec[string], build: bool, emit_tests: bool) -> unit
         Some(path) => match read_package_world(path) {
             Ok(value) => value,
             Err(error) => {
-                fail("error[compile]: " + error);
+                fail(compile_error_prefix + error);
                 package_world()
             },
         },
@@ -915,7 +915,7 @@ fn run_package_command(args: Vec[string], build: bool, emit_tests: bool) -> unit
             if error.starts_with("error[") {
                 fail(error)
             } else {
-                fail("error[compile]: " + error)
+                fail(compile_error_prefix + error)
             };
             let interface_unit = interface_codec::new_unit(
                 command.package_name,
@@ -984,7 +984,7 @@ fn run_link_command(args: Vec[string]) -> unit {
         Some(path) => match read_package_world(path) {
             Ok(value) => value,
             Err(error) => {
-                fail("error[compile]: " + error);
+                fail(compile_error_prefix + error);
                 package_world()
             },
         },
@@ -993,7 +993,7 @@ fn run_link_command(args: Vec[string]) -> unit {
     let core_units = match artifact_read_core_units(command.inputs) {
         Ok(value) => value,
         Err(error) => {
-            fail("error[compile]: " + error);
+            fail(compile_error_prefix + error);
             Vec::[]
         },
     };
@@ -1001,13 +1001,13 @@ fn run_link_command(args: Vec[string]) -> unit {
     let core_units = match artifact_reachable_core_units(roots, core_units) {
         Ok(value) => value,
         Err(error) => {
-            fail("error[compile]: " + error);
+            fail(compile_error_prefix + error);
             Vec::[]
         },
     };
     match artifact_validate_link_core_units(world, core_units) {
         Ok(()) => (),
-        Err(error) => fail("error[compile]: " + error),
+        Err(error) => fail(compile_error_prefix + error),
     };
     artifact_prepare_core_units(world, core_units);
     match artifact_find_core_unit(core_units, command.entry) {
@@ -1026,7 +1026,7 @@ fn run_link_command(args: Vec[string]) -> unit {
     let compilations = match artifact_core_compilations(core_units) {
         Ok(values) => values,
         Err(error) => {
-            fail("error[compile]: " + error);
+            fail(compile_error_prefix + error);
             Vec::[]
         },
     };
@@ -1089,7 +1089,7 @@ fn run_test_link_command(args: Vec[string]) -> unit {
         Some(path) => match read_package_world(path) {
             Ok(value) => value,
             Err(error) => {
-                fail("error[compile]: " + error);
+                fail(compile_error_prefix + error);
                 package_world()
             },
         },
@@ -1098,20 +1098,20 @@ fn run_test_link_command(args: Vec[string]) -> unit {
     let core_units = match artifact_read_core_units(command.inputs) {
         Ok(value) => value,
         Err(error) => {
-            fail("error[compile]: " + error);
+            fail(compile_error_prefix + error);
             Vec::[]
         },
     };
     let core_units = match artifact_reachable_core_units(command.packages, core_units) {
         Ok(value) => value,
         Err(error) => {
-            fail("error[compile]: " + error);
+            fail(compile_error_prefix + error);
             Vec::[]
         },
     };
     match artifact_validate_link_core_units(world, core_units) {
         Ok(()) => (),
-        Err(error) => fail("error[compile]: " + error),
+        Err(error) => fail(compile_error_prefix + error),
     };
     artifact_prepare_core_units(world, core_units);
     let package_cores: Vec[core::File] = Vec::[];
@@ -1119,7 +1119,7 @@ fn run_test_link_command(args: Vec[string]) -> unit {
     let compilations = match artifact_core_compilations(core_units) {
         Ok(values) => values,
         Err(error) => {
-            fail("error[compile]: " + error);
+            fail(compile_error_prefix + error);
             Vec::[]
         },
     };

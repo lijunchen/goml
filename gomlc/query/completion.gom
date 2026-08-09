@@ -472,7 +472,7 @@ fn complete_import_namespace(value: Analysis, context: UseCompletionContext) -> 
                 || context.namespace.starts_with(project.module_path + "::") {
                 complete_local_package_children(result, project, context.namespace, context.prefix)
             } else {};
-            match fs::read_file(path::join(project.module_root, "goml.toml")) {
+            match fs::read_file(path::join(project.module_root, manifest_filename)) {
                 Ok(manifest) => for dependency in manifest_dependencies(manifest) {
                     match namespace_next_segment(dependency.name, context.namespace) {
                         Some(segment) => push_package_completion(
