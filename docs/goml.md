@@ -885,7 +885,7 @@ let valid = !(predicate());
 - `== !=` uses `PartialEq`. Tuples, fixed arrays, `Vec`, `Slice`, `Option`, and `Result` compare recursively when their elements implement `PartialEq`.
 - Floating-point values implement `PartialEq + PartialOrd`, but not `Eq + Ord + Hash`. In particular, NaN is unequal to itself and its `partial_cmp` result is `None`.
 - Every integer type provides `to_int`, `to_int8`, `to_int16`, `to_int32`, `to_int64`, `to_uint`, `to_uint8`, `to_uint16`, `to_uint32`, and `to_uint64` for the other integer types. Identity methods are omitted. `byte` uses the `uint8` methods, `char` provides `to_uint32`, and `uint32` to `char` uses `char_from_uint32`, which returns `Option[char]`.
-- Numeric `as` remains accepted for one compatibility release, but integer conversion methods are the canonical form.
+- Expression `as` is reserved for creating `dyn Trait` values. Numeric conversions use the integer methods above; other non-`dyn` targets are rejected. The separate `as` form in `use package as alias;` still selects an import alias.
 
 There are no exponentiation, null coalescing or user-defined operators.
 
@@ -1600,7 +1600,7 @@ fn show_dynamic(value: dyn Display) -> string {
 }
 ```
 
-Implicit boxing when a `dyn Trait` value is expected remains accepted for one compatibility release. New code should use the explicit conversion.
+Concrete values are never boxed implicitly when a `dyn Trait` value is expected. Assignments, arguments, returns, branches, constructors, and collection operations must place `as dyn Trait` at the conversion site. Existing `dyn Trait` values can still flow through compatible typed contexts without another conversion.
 
 The `dyn` value supports method syntax, and UFCS can also be used; it can be seen that supertrait methods are also available:
 
@@ -1886,7 +1886,7 @@ derive_output_add_call_site_predicate(output, type, trait_name) -> unit
 derive_output_add_method(output, method) -> unit
 ```
 
-`meta_expr_unary` uses operator numbers `0..2` for `-`, `!`, and `~`. `meta_expr_binary` uses operator numbers `0..17` for `+`, `-`, `*`, `/`, `%`, `&`, `|`, `^`, `<<`, `>>`, `&&`, `||`, `<`, `>`, `<=`, `>=`, `==`, and `!=`, respectively. `meta_expr_integer` accepts a normalized integer literal string plus its exact integer type, so builders can represent values outside the host `int` range. `meta_expr_trait_call` resolves the trait in the handler's defining package and builds a static trait method call. `meta_type_equal` compares structural type identity. `meta_type_kind` returns `primitive`, `named`, `tuple`, `application`, `array`, `function`, or `dyn`; shape-specific accessors reject other kinds. List handles are mutable only through their matching `push` operation and remain local to one derive evaluation.
+`meta_expr_unary` uses operator numbers `0..2` for `-`, `!`, and `~`. `meta_expr_binary` uses operator numbers `0..17` for `+`, `-`, `*`, `/`, `%`, `&`, `|`, `^`, `<<`, `>>`, `&&`, `||`, `<`, `>`, `<=`, `>=`, `==`, and `!=`, respectively. `meta_expr_integer` accepts a normalized integer literal string plus its exact integer type, so builders can represent values outside the host `int` range. `meta_expr_cast` accepts only a `dyn` target type; generated numeric conversions should use `meta_expr_method_call`. `meta_expr_trait_call` resolves the trait in the handler's defining package and builds a static trait method call. `meta_type_equal` compares structural type identity. `meta_type_kind` returns `primitive`, `named`, `tuple`, `application`, `array`, `function`, or `dyn`; shape-specific accessors reject other kinds. List handles are mutable only through their matching `push` operation and remain local to one derive evaluation.
 
 Unqualified names passed to `derive_output_new`, `derive_output_add_predicate`, `meta_type_named`, `meta_expr_call`, and `meta_generic_list_add_bound` resolve in the handler's defining package. Their `_call_site` variants resolve in the target package. `derive_fresh_name` should be used for generated local bindings that must not collide with user names. The `*_target_*` builders construct or match the annotated item by compiler identity and should be preferred over spelling its name manually.
 
