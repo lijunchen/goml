@@ -5,24 +5,24 @@ use gomlc::tast;
 use std::collections;
 use std::text;
 
-struct TypeInstance {
+struct PendingTypeInstance {
     base_name: string,
     args: Vec[tast::Type],
     name: string,
 }
 
 struct TypeCtx {
-    instances: Vec[TypeInstance],
-    instance_index: HashMap[string, TypeInstance],
+    instances: Vec[PendingTypeInstance],
+    instance_index: HashMap[string, PendingTypeInstance],
     used_names: HashMap[string, unit],
     enums: Vec[tast::EnumDef],
     structs: Vec[tast::StructDef],
-    active_instances: Vec[TypeInstance],
+    active_instances: Vec[PendingTypeInstance],
     error: Ref[Option[string]],
 }
 
 pub struct LowerResult {
-    pub file: core::File,
+    pub file: File,
     pub error: Option[string],
 }
 
@@ -35,37 +35,8 @@ fn types_are_concrete(values: Vec[tast::Type]) -> bool {
     true
 }
 
-fn optional_trait_ref_is_concrete(value: Option[tast::TraitRef]) -> bool {
-    match value {
-        Some(reference) => types_are_concrete(reference.args),
-        None => true,
-    }
-}
-
 fn type_is_concrete(value: tast::Type) -> bool {
-    match tast::resolve_type(value) {
-        Var(_) => false,
-        Unit | Never | Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | Float32 | Float64 | String | Char | Con {
-            name: _,
-        } | Dyn { trait_name: _, .. } | Error => true,
-        Tuple { items } => types_are_concrete(items),
-        Projection { for_ty: base, name: _, trait_ref: reference } => {
-            type_is_concrete(base) && optional_trait_ref_is_concrete(reference)
-        },
-        App { ty: base, args } => {
-            type_is_concrete(base) && types_are_concrete(args)
-        },
-        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
-            elem,
-        } => type_is_concrete(elem),
-        HashMap { key, value } => {
-            type_is_concrete(key) && type_is_concrete(value)
-        },
-        Param { name: _ } => false,
-        Func { params, ret_ty } => {
-            types_are_concrete(params) && type_is_concrete(ret_ty)
-        },
-    }
+    tast::type_is_concrete(value)
 }
 
 fn compact_type(value: tast::Type) -> string {
@@ -95,12 +66,12 @@ fn type_instance_lookup_key(base_name: string, args: Vec[tast::Type]) -> string 
 }
 
 fn find_type_instance(ctx: TypeCtx, base_name: string, args: Vec[tast::Type]) -> Option[
-    TypeInstance,
+    PendingTypeInstance,
 ] {
     ctx.instance_index[type_instance_lookup_key(base_name, args)]
 }
 
-fn find_type_instance_by_name(ctx: TypeCtx, name: string) -> Option[TypeInstance] {
+fn find_type_instance_by_name(ctx: TypeCtx, name: string) -> Option[PendingTypeInstance] {
     let mut index = ctx.instances.len() - 1;
     while index >= 0 {
         let instance = ctx.instances[index];
@@ -165,7 +136,7 @@ fn ensure_type_instance(ctx: TypeCtx, base_name: string, args: Vec[tast::Type]) 
                 None => (),
             };
             let name = unique_type_name(ctx, type_instance_base_name(base_name, args));
-            let instance = TypeInstance { base_name, args, name };
+            let instance = PendingTypeInstance { base_name, args, name };
             ctx.instances.push(instance);
             ctx.instance_index.set(
                 type_instance_lookup_key(instance.base_name, instance.args),
@@ -313,7 +284,7 @@ fn type_instance_bindings(ctx: TypeCtx, name: string, args: Vec[tast::Type]) -> 
     result
 }
 
-fn discover_type_instance_dependencies(ctx: TypeCtx, instance: TypeInstance) -> unit {
+fn discover_type_instance_dependencies(ctx: TypeCtx, instance: PendingTypeInstance) -> unit {
     let bindings = type_instance_bindings(ctx, instance.base_name, instance.args);
     match find_generic_enum(ctx, instance.base_name) {
         Some(value) => for variant in value.variants {
@@ -563,43 +534,41 @@ fn trait_impl_name(reference: tast::TraitRef, for_type: tast::Type, method_name:
     "trait_impl#" + reference.name + "#" + dispatch + "#" + method_name
 }
 
-fn lower_exprs(ctx: TypeCtx, values: Vec[core::Expr]) -> Vec[core::Expr] {
-    let result: Vec[core::Expr] = Vec::[];
+fn lower_exprs(ctx: TypeCtx, values: Vec[core::Expr]) -> Vec[Expr] {
+    let result: Vec[Expr] = Vec::[];
     for value in values {
         result.push(lower_expr(ctx, value))
     }
     result
 }
 
-fn lower_optional_expr(ctx: TypeCtx, value: Option[core::Expr]) -> Option[core::Expr] {
+fn lower_optional_expr(ctx: TypeCtx, value: Option[core::Expr]) -> Option[Expr] {
     match value {
         Some(expr) => Option::Some(lower_expr(ctx, expr)),
         None => Option::None,
     }
 }
 
-fn lower_arms(ctx: TypeCtx, values: Vec[core::Arm]) -> Vec[core::Arm] {
-    let result: Vec[core::Arm] = Vec::[];
+fn lower_arms(ctx: TypeCtx, values: Vec[core::Arm]) -> Vec[Arm] {
+    let result: Vec[Arm] = Vec::[];
     for value in values {
-        result.push(
-            core::Arm { lhs: lower_expr(ctx, value.lhs), body: lower_expr(ctx, value.body) },
-        )
+        result.push(Arm { lhs: lower_expr(ctx, value.lhs), body: lower_expr(ctx, value.body) })
     }
     result
 }
 
-fn lower_block(ctx: TypeCtx, value: core::Block) -> core::Block {
-    let stmts: Vec[core::LetStmt] = Vec::[];
+fn lower_block(ctx: TypeCtx, value: core::Block) -> Block {
+    let stmts: Vec[LetStmt] = Vec::[];
     for stmt in value.stmts {
         stmts.push(
-            core::LetStmt {
+            LetStmt {
                 name: stmt.name,
                 value: lower_expr(ctx, stmt.value),
                 ty: collapse_type(ctx, stmt.ty),
             },
         )
     }
-    core::Block { stmts, tail: lower_optional_expr(ctx, value.tail) }
+    Block { stmts, tail: lower_optional_expr(ctx, value.tail) }
 }
 
 fn lower_trait_call(
@@ -611,17 +580,17 @@ fn lower_trait_call(
     receiver: Option[core::Expr],
     args: Vec[core::Expr],
     ty: tast::Type,
-) -> core::Expr {
+) -> Expr {
     let reference = collapse_trait_ref(ctx, reference);
     let for_ty = collapse_type(ctx, for_ty);
     let ty = collapse_type(ctx, ty);
     let receiver = lower_optional_expr(ctx, receiver);
     let args = lower_exprs(ctx, args);
     match receiver {
-        Some(value) => match tast::resolve_type(core::expr_type(value)) {
+        Some(value) => match tast::resolve_type(expr_type(value)) {
             Dyn { trait_name: name, .. } => {
                 if reference.args.is_empty() && reference.name == name {
-                    core::Expr::DynCall { trait_name: name, method_name, receiver: value, args, ty }
+                    Expr::DynCall { trait_name: name, method_name, receiver: value, args, ty }
                 } else {
                     lower_static_trait_call(
                         reference,
@@ -661,115 +630,112 @@ fn lower_static_trait_call(
     method_name: string,
     instance_name: Option[string],
     for_ty: tast::Type,
-    receiver: Option[core::Expr],
-    args: Vec[core::Expr],
+    receiver: Option[Expr],
+    args: Vec[Expr],
     ty: tast::Type,
-) -> core::Expr {
+) -> Expr {
     let params: Vec[tast::Type] = Vec::[];
-    let call_args: Vec[core::Expr] = Vec::[];
+    let call_args: Vec[Expr] = Vec::[];
     match receiver {
         Some(value) => {
-            params.push(core::expr_type(value));
+            params.push(expr_type(value));
             call_args.push(value)
         },
         None => (),
     };
     for arg in args {
-        params.push(core::expr_type(arg));
+        params.push(expr_type(arg));
         call_args.push(arg)
     }
     let name = match instance_name {
         Some(value) => value,
         None => trait_impl_name(reference, for_ty, method_name),
     };
-    core::Expr::Call {
-        func: core::Expr::Var { name, ty: tast::Type::Func { params, ret_ty: ty } },
+    Expr::Call {
+        func: Expr::Var { name, ty: tast::Type::Func { params, ret_ty: ty } },
         args: call_args,
         ty,
     }
 }
 
-fn lower_expr(ctx: TypeCtx, value: core::Expr) -> core::Expr {
+fn lower_expr(ctx: TypeCtx, value: core::Expr) -> Expr {
     match value {
-        Var { name, ty } => core::Expr::Var { name, ty: collapse_type(ctx, ty) },
+        Var { name, ty } => Expr::Var { name, ty: collapse_type(ctx, ty) },
         Callable { callable, ty } => {
-            core::Expr::Callable { callable, ty: collapse_type(ctx, ty) }
+            Expr::Callable { callable, ty: collapse_type(ctx, ty) }
         },
         Prim { value: primitive, ty } => {
-            core::Expr::Prim { value: primitive, ty: collapse_type(ctx, ty) }
+            Expr::Prim { value: primitive, ty: collapse_type(ctx, ty) }
         },
         Constr { constructor, args, ty } => {
             let ty = collapse_type(ctx, ty);
-            core::Expr::Constr {
+            Expr::Constr {
                 constructor: update_constructor(constructor, ty),
                 args: lower_exprs(ctx, args),
                 ty,
             }
         },
         Tuple { items, ty } => {
-            core::Expr::Tuple { items: lower_exprs(ctx, items), ty: collapse_type(ctx, ty) }
+            Expr::Tuple { items: lower_exprs(ctx, items), ty: collapse_type(ctx, ty) }
         },
         Array { items, ty } => {
-            core::Expr::Array { items: lower_exprs(ctx, items), ty: collapse_type(ctx, ty) }
+            Expr::Array { items: lower_exprs(ctx, items), ty: collapse_type(ctx, ty) }
         },
         Closure { params, body, ty } => {
-            core::Expr::Closure {
+            Expr::Closure {
                 params: collapse_closure_params(ctx, params),
                 body: lower_expr(ctx, body),
                 ty: collapse_type(ctx, ty),
             }
         },
         Block { block, ty } => {
-            core::Expr::Block { block: lower_block(ctx, block), ty: collapse_type(ctx, ty) }
+            Expr::Block { block: lower_block(ctx, block), ty: collapse_type(ctx, ty) }
         },
-        Match { expr, arms, default, ty } => core::Expr::Match {
+        Match { expr, arms, default, ty } => Expr::Match {
             expr: lower_expr(ctx, expr),
             arms: lower_arms(ctx, arms),
             default: lower_optional_expr(ctx, default),
             ty: collapse_type(ctx, ty),
         },
-        If { cond, then_branch, else_branch, ty } => core::Expr::If {
+        If { cond, then_branch, else_branch, ty } => Expr::If {
             cond: lower_expr(ctx, cond),
             then_branch: lower_expr(ctx, then_branch),
             else_branch: lower_expr(ctx, else_branch),
             ty: collapse_type(ctx, ty),
         },
         While { cond, body, ty } => {
-            core::Expr::While {
+            Expr::While {
                 cond: lower_expr(ctx, cond),
                 body: lower_expr(ctx, body),
                 ty: collapse_type(ctx, ty),
             }
         },
-        Loop { body, ty } => core::Expr::Loop {
-            body: lower_expr(ctx, body),
-            ty: collapse_type(ctx, ty),
-        },
-        Break { target, value, ty } => core::Expr::Break {
+        Loop { body, ty } => Expr::Loop { body: lower_expr(ctx, body), ty: collapse_type(ctx, ty) },
+        Break { target, value, ty } => Expr::Break {
             target,
             value: lower_optional_expr(ctx, value),
             ty: collapse_type(ctx, ty),
         },
-        Continue { target, ty } => core::Expr::Continue { target, ty: collapse_type(ctx, ty) },
+        Continue { target, ty } => Expr::Continue { target, ty: collapse_type(ctx, ty) },
         Return { expr, ty } => {
-            core::Expr::Return { expr: lower_optional_expr(ctx, expr), ty: collapse_type(ctx, ty) }
+            Expr::Return { expr: lower_optional_expr(ctx, expr), ty: collapse_type(ctx, ty) }
         },
         Go { expr, ty } => {
-            core::Expr::Go { expr: lower_expr(ctx, expr), ty: collapse_type(ctx, ty) }
+            Expr::Go { expr: lower_expr(ctx, expr), ty: collapse_type(ctx, ty) }
         },
         ConstrGet { expr, constructor, field_index, ty } => {
             let expr = lower_expr(ctx, expr);
-            let constructor = update_constructor(constructor, core::expr_type(expr));
-            core::Expr::ConstrGet { expr, constructor, field_index, ty: collapse_type(ctx, ty) }
+            let constructor = update_constructor(constructor, expr_type(expr));
+            Expr::ConstrGet { expr, constructor, field_index, ty: collapse_type(ctx, ty) }
         },
         Unary { op, expr, ty } => {
-            core::Expr::Unary { op, expr: lower_expr(ctx, expr), ty: collapse_type(ctx, ty) }
+            Expr::Unary { op, expr: lower_expr(ctx, expr), ty: collapse_type(ctx, ty) }
         },
         Cast { expr, ty } => {
-            core::Expr::Cast { expr: lower_expr(ctx, expr), ty: collapse_type(ctx, ty) }
+            Expr::Cast { expr: lower_expr(ctx, expr), ty: collapse_type(ctx, ty) }
         },
         Binary { op, lhs, rhs, ty } => {
-            core::Expr::Binary {
+            Expr::Binary {
                 op,
                 lhs: lower_expr(ctx, lhs),
                 rhs: lower_expr(ctx, rhs),
@@ -777,7 +743,7 @@ fn lower_expr(ctx: TypeCtx, value: core::Expr) -> core::Expr {
             }
         },
         Assign { name, value, target_ty, ty } => {
-            core::Expr::Assign {
+            Expr::Assign {
                 name,
                 value: lower_expr(ctx, value),
                 target_ty: collapse_type(ctx, target_ty),
@@ -785,14 +751,14 @@ fn lower_expr(ctx: TypeCtx, value: core::Expr) -> core::Expr {
             }
         },
         Call { func, args, ty } => {
-            core::Expr::Call {
+            Expr::Call {
                 func: lower_expr(ctx, func),
                 args: lower_exprs(ctx, args),
                 ty: collapse_type(ctx, ty),
             }
         },
         ToDyn { trait_name, for_ty, expr, ty } => {
-            core::Expr::ToDyn {
+            Expr::ToDyn {
                 trait_name,
                 for_ty: collapse_type(ctx, for_ty),
                 expr: lower_expr(ctx, expr),
@@ -800,7 +766,7 @@ fn lower_expr(ctx: TypeCtx, value: core::Expr) -> core::Expr {
             }
         },
         DynCall { trait_name, method_name, receiver, args, ty } => {
-            core::Expr::DynCall {
+            Expr::DynCall {
                 trait_name,
                 method_name,
                 receiver: lower_expr(ctx, receiver),
@@ -812,7 +778,7 @@ fn lower_expr(ctx: TypeCtx, value: core::Expr) -> core::Expr {
             lower_trait_call(ctx, reference, method_name, instance_name, for_ty, receiver, args, ty)
         },
         Proj { tuple, index, ty } => {
-            core::Expr::Proj { tuple: lower_expr(ctx, tuple), index, ty: collapse_type(ctx, ty) }
+            Expr::Proj { tuple: lower_expr(ctx, tuple), index, ty: collapse_type(ctx, ty) }
         },
     }
 }
@@ -1016,40 +982,38 @@ fn type_ctx(value: core::File, error: Ref[Option[string]]) -> TypeCtx {
     ctx
 }
 
-fn lower_trait_impl(ctx: TypeCtx, value: Option[core::TraitImpl]) -> Option[core::TraitImpl] {
+fn lower_trait_impl(ctx: TypeCtx, value: Option[core::TraitImpl]) -> Option[TraitImpl] {
     match value {
         Some(metadata) => Option::Some(
-            core::TraitImpl {
+            TraitImpl {
                 trait_ref: collapse_trait_ref(ctx, metadata.trait_ref),
                 for_ty: collapse_type(ctx, metadata.for_ty),
                 associated_types: collapse_named_types(ctx, metadata.associated_types),
-                generic_count: metadata.generic_count,
-                predicate_count: metadata.predicate_count,
             },
         ),
         None => Option::None,
     }
 }
 
-fn lower_function_origin(ctx: TypeCtx, value: core::FunctionOrigin) -> core::FunctionOrigin {
+fn lower_function_origin(ctx: TypeCtx, value: core::FunctionOrigin) -> FunctionOrigin {
     match value {
-        Source => core::FunctionOrigin::Source,
-        Inherent { owner, method_name } => core::FunctionOrigin::Inherent {
+        Source => FunctionOrigin::Source,
+        Inherent { owner, method_name } => FunctionOrigin::Inherent {
             owner: collapse_type(ctx, owner),
             method_name,
         },
         TraitImplementation { method_name } => {
-            core::FunctionOrigin::TraitImplementation { method_name }
+            FunctionOrigin::TraitImplementation { method_name }
         },
     }
 }
 
-fn lower_function(ctx: TypeCtx, function: core::Function) -> core::Function {
+fn lower_function(ctx: TypeCtx, function: core::Function) -> Function {
     let original_trait_impl = function.trait_impl;
     let trait_impl = lower_trait_impl(ctx, function.trait_impl);
     let origin = lower_function_origin(ctx, function.origin);
     let name = match (original_trait_impl, trait_impl, origin) {
-        (Some(original), Some(lowered), core::FunctionOrigin::TraitImplementation { method_name }) => if function.name
+        (Some(original), Some(lowered), FunctionOrigin::TraitImplementation { method_name }) => if function.name
             == trait_impl_name(original.trait_ref, original.for_ty, method_name) {
             trait_impl_name(lowered.trait_ref, lowered.for_ty, method_name)
         } else {
@@ -1057,12 +1021,10 @@ fn lower_function(ctx: TypeCtx, function: core::Function) -> core::Function {
         },
         _ => function.name,
     };
-    core::Function {
+    Function {
         name,
         origin,
         root: function.root,
-        generics: function.generics,
-        predicates: function.predicates,
         trait_impl,
         params: collapse_function_params(ctx, function.params),
         ret_ty: collapse_type(ctx, function.ret_ty),
@@ -1071,36 +1033,46 @@ fn lower_function(ctx: TypeCtx, function: core::Function) -> core::Function {
 }
 
 pub fn lower_checked(value: core::File) -> LowerResult {
+    match core::validate(value) {
+        Ok(_) => (),
+        Err(message) => return LowerResult {
+            file: File {
+                functions: Vec::[],
+                enums: value.enums,
+                structs: value.structs,
+                type_instances: Vec::[],
+                constants: value.constants,
+            },
+            error: Option::Some("invalid Core IR: " + message),
+        },
+    };
     let enums = value.enums;
     let structs = value.structs;
     let constants = value.constants;
     let error = Ref::new(Option::None);
     let value = specialize(value, error);
     let ctx = type_ctx(value, error);
-    let functions: Vec[core::Function] = Vec::[];
+    let functions: Vec[Function] = Vec::[];
     for function in value.functions {
         functions.push(lower_function(ctx, function))
     }
-    let type_instances: Vec[core::TypeInstance] = Vec::[];
+    let type_instances: Vec[TypeInstance] = Vec::[];
     for instance in ctx.instances {
         type_instances.push(
-            core::TypeInstance {
-                base_name: instance.base_name,
-                args: instance.args,
-                name: instance.name,
-            },
+            TypeInstance { base_name: instance.base_name, args: instance.args, name: instance.name },
         )
     }
-    LowerResult {
-        file: core::File { functions, enums, structs, type_instances, constants },
-        error: error.get(),
-    }
+    let file = File { functions, enums, structs, type_instances, constants };
+    let validation_error = match error.get() {
+        Some(message) => Option::Some(message),
+        None => match validate(file) {
+            Ok(_) => Option::None,
+            Err(message) => Option::Some("invalid Mono IR: " + message),
+        },
+    };
+    LowerResult { file, error: validation_error }
 }
 
-pub fn lower(value: core::File) -> core::File {
+pub fn lower(value: core::File) -> File {
     lower_checked(value).file
-}
-
-pub fn encode(value: core::File) -> string {
-    core::encode_mono(value)
 }

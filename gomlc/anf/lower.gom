@@ -1,9 +1,30 @@
 package anf;
 
-use gomlc::core;
+use gomlc::lift;
 use gomlc::tast;
 
-fn lower_function(state: State, value: core::Function) -> Function {
+fn lower_function_origin(value: lift::FunctionOrigin) -> FunctionOrigin {
+    match value {
+        Source => FunctionOrigin::Source,
+        Inherent { owner, method_name } => FunctionOrigin::Inherent { owner, method_name },
+        TraitImplementation { method_name } => FunctionOrigin::TraitImplementation { method_name },
+    }
+}
+
+fn lower_trait_impl(value: Option[lift::TraitImpl]) -> Option[TraitImpl] {
+    match value {
+        Some(value) => Option::Some(
+            TraitImpl {
+                trait_ref: value.trait_ref,
+                for_ty: value.for_ty,
+                associated_types: value.associated_types,
+            },
+        ),
+        None => Option::None,
+    }
+}
+
+fn lower_function(state: State, value: lift::Function) -> Function {
     let ret_id = fresh(state, "ret");
     let takes_arg = !type_is_unit(value.ret_ty);
     let ret_join = if takes_arg {
@@ -48,19 +69,27 @@ fn lower_function(state: State, value: core::Function) -> Function {
     }
     Function {
         name: value.name,
-        origin: value.origin,
+        origin: lower_function_origin(value.origin),
         root: value.root,
-        trait_impl: value.trait_impl,
+        trait_impl: lower_trait_impl(value.trait_impl),
         params: value.params,
         ret_ty: value.ret_ty,
         body: Block { binds, term: lowered.term },
     }
 }
 
-pub fn lower_with_counter(value: core::File, counter: Ref[int]) -> File {
+fn lower_type_instances(values: Vec[lift::TypeInstance]) -> Vec[TypeInstance] {
+    let result: Vec[TypeInstance] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(TypeInstance { base_name: value.base_name, args: value.args, name: value.name })
+    }
+    result
+}
+
+pub fn lower_with_counter(value: lift::File, counter: Ref[int]) -> File {
     let enums = value.enums;
     let structs = value.structs;
-    let type_instances = value.type_instances;
+    let type_instances = lower_type_instances(value.type_instances);
     let constants = value.constants;
     let state = State { counter, loop_ctxs: Vec::[], return_ctx: Ref::new(Option::None) };
     let functions: Vec[Function] = Vec::[];
@@ -72,7 +101,7 @@ pub fn lower_with_counter(value: core::File, counter: Ref[int]) -> File {
     simplify(licm(simplify(commute(inlined, counter))))
 }
 
-pub fn lower(value: core::File) -> File {
+pub fn lower(value: lift::File) -> File {
     let counter = Ref::new(initial_counter(value));
     lower_with_counter(value, counter)
 }

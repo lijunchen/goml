@@ -39,8 +39,8 @@ pub struct Compilation {
     pub hir_value: hir::LowerResult,
     pub tast_value: tast::CheckResult,
     pub core_value: core::File,
-    pub mono_value: core::File,
-    pub lift_value: core::File,
+    pub mono_value: mono::File,
+    pub lift_value: lift::File,
     pub anf_value: anf::File,
     pub go_value: go_backend::File,
 }
@@ -1334,7 +1334,7 @@ fn run_test_diagnostics(args: Vec[string]) -> unit {
     }
 }
 
-fn lower_mono_or_fail(value: core::File) -> core::File {
+fn lower_mono_or_fail(value: core::File) -> mono::File {
     let result = mono::lower_checked(core::dce(value));
     match result.error {
         Some(error) => {
@@ -1345,11 +1345,16 @@ fn lower_mono_or_fail(value: core::File) -> core::File {
     }
 }
 
-fn lower_lift_stage(value: core::File, counter: Ref[int]) -> core::File {
-    lift::dce(lift::lower_with_counter(value, counter))
+fn lower_lift_stage(value: mono::File, counter: Ref[int]) -> lift::File {
+    let result = lift::dce(lift::lower_with_counter(value, counter));
+    match lift::validate(result) {
+        Ok(_) => (),
+        Err(message) => fail(COMPILE_ERROR_PREFIX + "invalid Lift IR: " + message),
+    };
+    result
 }
 
-fn lower_anf_stage(value: core::File, counter: Ref[int]) -> anf::File {
+fn lower_anf_stage(value: lift::File, counter: Ref[int]) -> anf::File {
     anf::dce(anf::lower_with_counter(value, counter))
 }
 

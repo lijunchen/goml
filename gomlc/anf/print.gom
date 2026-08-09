@@ -1,6 +1,5 @@
 package anf;
 
-use gomlc::core;
 use gomlc::pretty;
 use std::text;
 use gomlc::tast;
@@ -55,7 +54,7 @@ fn callable_doc(value: tast::Callable) -> pretty::Doc {
             )
         },
         InherentMethod { receiver_ty: owner, method_name: name } => {
-            pretty::text(core::inherent_method_name(owner, name))
+            pretty::text(tast::inherent_method_name(owner, name))
         },
     }
 }

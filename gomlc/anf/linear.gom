@@ -1,9 +1,9 @@
 package anf;
 
 use gomlc::ast;
-use gomlc::core;
+use gomlc::lift;
 
-fn all_immediate(values: Vec[core::Expr]) -> bool {
+fn all_immediate(values: Vec[lift::Expr]) -> bool {
     for value in values {
         match try_imm(value) {
             Some(_) => (),
@@ -13,7 +13,7 @@ fn all_immediate(values: Vec[core::Expr]) -> bool {
     true
 }
 
-fn probe_linear_list(state: State, values: Vec[core::Expr]) -> bool {
+fn probe_linear_list(state: State, values: Vec[lift::Expr]) -> bool {
     for value in values {
         if probe_linear_expr(state, value) {} else {
             return false
@@ -27,7 +27,7 @@ fn probe_bound_value(state: State) -> bool {
     true
 }
 
-fn probe_linear_expr(state: State, value: core::Expr) -> bool {
+fn probe_linear_expr(state: State, value: lift::Expr) -> bool {
     if try_imm(value).is_some() {
         true
     } else {
@@ -61,14 +61,6 @@ fn probe_linear_expr(state: State, value: core::Expr) -> bool {
                 && probe_bound_value(state),
             DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } => {
                 probe_linear_expr(state, receiver) && probe_linear_list(state, args)
-                    && probe_bound_value(state)
-            },
-            TraitCall { receiver, args, .. } => {
-                match receiver {
-                    Some(value) => probe_linear_expr(state, value),
-                    None => true,
-                }
-                    && probe_linear_list(state, args)
                     && probe_bound_value(state)
             },
             _ => false,

@@ -1,8 +1,8 @@
 package go_backend;
 
+use gomlc::anf;
 use std::text;
 use std::collections;
-use gomlc::core;
 use gomlc::tast;
 
 fn find_enum(values: Vec[tast::EnumDef], name: string) -> Option[tast::EnumDef] {
@@ -31,7 +31,7 @@ fn find_struct(values: Vec[tast::StructDef], name: string) -> Option[tast::Struc
     Option::None
 }
 
-fn builtin_struct_instance(value: core::TypeInstance, instances: Vec[core::TypeInstance]) -> Option[
+fn builtin_struct_instance(value: anf::TypeInstance, instances: Vec[anf::TypeInstance]) -> Option[
     StructDef,
 ] {
     if value.base_name == "FnIterator" && value.args.len() == 1 {
@@ -63,8 +63,8 @@ fn type_lists_match(left: Vec[tast::Type], right: Vec[tast::Type]) -> bool {
     }
 }
 
-fn find_instance(values: Vec[core::TypeInstance], base_name: string, args: Vec[tast::Type]) -> Option[
-    core::TypeInstance,
+fn find_instance(values: Vec[anf::TypeInstance], base_name: string, args: Vec[tast::Type]) -> Option[
+    anf::TypeInstance,
 ] {
     let mut index = values.len() - 1;
     while index >= 0 {
@@ -94,7 +94,7 @@ fn instantiate_types(
     values: Vec[tast::Type],
     generics: Vec[string],
     args: Vec[tast::Type],
-    instances: Vec[core::TypeInstance],
+    instances: Vec[anf::TypeInstance],
 ) -> Vec[tast::Type] {
     let result: Vec[tast::Type] = Vec::[];
     for value in values {
@@ -107,7 +107,7 @@ fn instantiate_type(
     value: tast::Type,
     generics: Vec[string],
     args: Vec[tast::Type],
-    instances: Vec[core::TypeInstance],
+    instances: Vec[anf::TypeInstance],
 ) -> tast::Type {
     match tast::resolve_type(value) {
         Param { name } => match lookup_binding(generics, args, name) {
@@ -197,7 +197,7 @@ fn collect_con_names(result: Vec[string], value: tast::Type) -> unit {
     }
 }
 
-fn instance_by_name(values: Vec[core::TypeInstance], name: string) -> Option[core::TypeInstance] {
+fn instance_by_name(values: Vec[anf::TypeInstance], name: string) -> Option[anf::TypeInstance] {
     let mut index = values.len() - 1;
     while index >= 0 {
         let value = values[index];
@@ -229,7 +229,7 @@ fn enum_has_variant(value: tast::EnumDef, variant_name: string) -> bool {
 
 fn variant_instance_count(
     enums: Vec[tast::EnumDef],
-    instances: Vec[core::TypeInstance],
+    instances: Vec[anf::TypeInstance],
     variant_name: string,
 ) -> int {
     let owners: Vec[string] = Vec::[];
@@ -258,7 +258,7 @@ fn variant_go_name(
     variant_name: string,
     enums: Vec[tast::EnumDef],
     structs: Vec[tast::StructDef],
-    instances: Vec[core::TypeInstance],
+    instances: Vec[anf::TypeInstance],
     function_names: FunctionNames,
 ) -> string {
     let key = owner_name.byte_len().to_string() + ":" + owner_name + variant_name;
@@ -333,10 +333,10 @@ fn tag_only_const_specs(
     variants: VariantInfos,
     definition: tast::EnumDef,
     fields_by_variant: Vec[Vec[tast::Type]],
-    instance: core::TypeInstance,
+    instance: anf::TypeInstance,
     enums: Vec[tast::EnumDef],
     structs: Vec[tast::StructDef],
-    instances: Vec[core::TypeInstance],
+    instances: Vec[anf::TypeInstance],
     function_names: FunctionNames,
 ) -> Vec[ConstSpec] {
     let specs: Vec[ConstSpec] = Vec::[];
@@ -378,9 +378,9 @@ fn emit_enum_instance(
     variants: VariantInfos,
     enums: Vec[tast::EnumDef],
     structs: Vec[tast::StructDef],
-    instances: Vec[core::TypeInstance],
+    instances: Vec[anf::TypeInstance],
     function_names: FunctionNames,
-    instance: core::TypeInstance,
+    instance: anf::TypeInstance,
 ) -> unit {
     if collections::contains(emitted, instance.name) {} else {
         match find_enum(enums, instance.base_name) {
@@ -501,7 +501,7 @@ pub fn emit_user_type_items(
     variants: VariantInfos,
     enums: Vec[tast::EnumDef],
     structs: Vec[tast::StructDef],
-    instances: Vec[core::TypeInstance],
+    instances: Vec[anf::TypeInstance],
     function_names: FunctionNames,
 ) -> unit {
     let emitted: Vec[string] = Vec::[];
@@ -588,7 +588,7 @@ pub fn emit_user_type_items(
                 structs,
                 instances,
                 function_names,
-                core::TypeInstance {
+                anf::TypeInstance {
                     base_name: definition.name,
                     args: Vec::[],
                     name: definition.name,
@@ -610,7 +610,7 @@ pub fn emit_user_type_items(
                     structs,
                     instances,
                     function_names,
-                    core::TypeInstance {
+                    anf::TypeInstance {
                         base_name: "Option",
                         args: option_args,
                         name: "Option__" + compact_type(instance.args[0]),

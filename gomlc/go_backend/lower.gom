@@ -2,7 +2,6 @@ package go_backend;
 
 use gomlc::anf;
 use gomlc::ast;
-use gomlc::core;
 use gomlc::numeric;
 use gomlc::resources;
 use gomlc::tast;
@@ -22,7 +21,7 @@ struct LowerEnv {
     variants: VariantInfos,
     closures: Vec[ClosureInfo],
     structs: Vec[tast::StructDef],
-    instances: Vec[core::TypeInstance],
+    instances: Vec[anf::TypeInstance],
     functions: Vec[anf::Function],
     function_names: FunctionNames,
     dyn_helper_names: DynHelperNames,
@@ -90,7 +89,7 @@ fn function_type_names(
     function_names: FunctionNames,
     structs: Vec[tast::StructDef],
     enums: Vec[tast::EnumDef],
-    instances: Vec[core::TypeInstance],
+    instances: Vec[anf::TypeInstance],
 ) -> HashMap[string, unit] {
     let result: HashMap[string, unit] = HashMap::{};
     for definition in structs {
@@ -129,7 +128,7 @@ fn add_entry_variant_names(
     used: NameSet,
     enums: Vec[tast::EnumDef],
     structs: Vec[tast::StructDef],
-    instances: Vec[core::TypeInstance],
+    instances: Vec[anf::TypeInstance],
     function_names: FunctionNames,
 ) -> unit {
     for definition in enums {
@@ -169,7 +168,7 @@ fn entry_wrapper_name(
     functions: Vec[anf::Function],
     structs: Vec[tast::StructDef],
     enums: Vec[tast::EnumDef],
-    instances: Vec[core::TypeInstance],
+    instances: Vec[anf::TypeInstance],
     function_names: FunctionNames,
 ) -> string {
     let used = new_name_set();
@@ -205,7 +204,7 @@ fn build_function_names(
     functions: Vec[anf::Function],
     structs: Vec[tast::StructDef],
     enums: Vec[tast::EnumDef],
-    instances: Vec[core::TypeInstance],
+    instances: Vec[anf::TypeInstance],
 ) -> FunctionNames {
     let resolved = new_function_names();
     let type_names = function_type_names(resolved, structs, enums, instances);
@@ -344,7 +343,7 @@ fn callable_name(env: LowerEnv, value: tast::Callable, ty: tast::Type) -> string
             go_ident("dyn#" + owner + "#" + dispatch + "#" + name)
         },
         InherentMethod { receiver_ty: owner, method_name: name } => {
-            env_function_name(env, core::inherent_method_name(owner, name))
+            env_function_name(env, tast::inherent_method_name(owner, name))
         },
     }
 }
@@ -458,7 +457,7 @@ fn is_closure_struct_name(value: string) -> bool {
 
 fn closure_info_from_function(value: anf::Function) -> Option[ClosureInfo] {
     match value.origin {
-        core::FunctionOrigin::Inherent { owner, method_name: "apply" } if !value.params.is_empty() => {
+        anf::FunctionOrigin::Inherent { owner, method_name: "apply" } if !value.params.is_empty() => {
             match (tast::resolve_type(owner), tast::resolve_type(value.params[0].1)) {
                 (Con { name: owner_name }, Con { name: param_name }) => if owner_name == param_name
                     && is_closure_struct_name(owner_name) {
@@ -1013,7 +1012,7 @@ fn append_struct_field_types(
     result: Vec[tast::Type],
     definition: tast::StructDef,
     args: Vec[tast::Type],
-    instances: Vec[core::TypeInstance],
+    instances: Vec[anf::TypeInstance],
 ) -> unit {
     for field in definition.fields {
         result.push(instantiate_type(field.1, definition.generics, args, instances))
@@ -3009,7 +3008,7 @@ fn collect_type_definition_fields(
     result: CollectedTypes,
     enums: Vec[tast::EnumDef],
     structs: Vec[tast::StructDef],
-    instances: Vec[core::TypeInstance],
+    instances: Vec[anf::TypeInstance],
 ) -> unit {
     for definition in structs {
         if definition.generics.is_empty() {
@@ -3147,7 +3146,7 @@ fn compile_function(
     variants: VariantInfos,
     closures: Vec[ClosureInfo],
     structs: Vec[tast::StructDef],
-    instances: Vec[core::TypeInstance],
+    instances: Vec[anf::TypeInstance],
     functions: Vec[anf::Function],
     function_names: FunctionNames,
     dyn_helper_names: DynHelperNames,
@@ -3182,7 +3181,7 @@ fn compile_functions(
     variants: VariantInfos,
     closures: Vec[ClosureInfo],
     structs: Vec[tast::StructDef],
-    instances: Vec[core::TypeInstance],
+    instances: Vec[anf::TypeInstance],
     function_names: FunctionNames,
     dyn_helper_names: DynHelperNames,
 ) -> Vec[Function] {

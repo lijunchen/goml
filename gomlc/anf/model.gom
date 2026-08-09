@@ -1,25 +1,47 @@
 package anf;
 
 use gomlc::ast;
-use gomlc::core;
 use gomlc::tast;
 
 pub struct File {
     pub functions: Vec[Function],
     pub enums: Vec[tast::EnumDef],
     pub structs: Vec[tast::StructDef],
-    pub type_instances: Vec[core::TypeInstance],
+    pub type_instances: Vec[TypeInstance],
     pub constants: Vec[tast::Constant],
 }
 
 pub struct Function {
     pub name: string,
-    pub origin: core::FunctionOrigin,
+    pub origin: FunctionOrigin,
     pub root: bool,
-    pub trait_impl: Option[core::TraitImpl],
+    pub trait_impl: Option[TraitImpl],
     pub params: Vec[(string, tast::Type)],
     pub ret_ty: tast::Type,
     pub body: Block,
+}
+
+pub struct TypeInstance {
+    pub base_name: string,
+    pub args: Vec[tast::Type],
+    pub name: string,
+}
+
+pub enum FunctionOrigin {
+    Source,
+    Inherent {
+        owner: tast::Type,
+        method_name: string,
+    },
+    TraitImplementation {
+        method_name: string,
+    },
+}
+
+pub struct TraitImpl {
+    pub trait_ref: tast::TraitRef,
+    pub for_ty: tast::Type,
+    pub associated_types: Vec[(string, tast::Type)],
 }
 
 pub struct Block {

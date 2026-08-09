@@ -1,7 +1,7 @@
 package anf;
 
 use gomlc::ast;
-use gomlc::core;
+use gomlc::lift;
 use gomlc::tast;
 
 struct LoopCtx {
@@ -98,7 +98,7 @@ fn jump_block(target: string, value: Imm, takes_arg: bool, ret_ty: tast::Type) -
     }
 }
 
-fn expr_is_control(value: core::Expr) -> bool {
+fn expr_is_control(value: lift::Expr) -> bool {
     match value {
         Block { block: _, ty: _ } | If { cond: _, then_branch: _, else_branch: _, ty: _ } | Match {
             expr: _,
@@ -113,7 +113,7 @@ fn expr_is_control(value: core::Expr) -> bool {
     }
 }
 
-fn match_has_catch_all(arms: Vec[core::Arm], default: Option[core::Expr]) -> bool {
+fn match_has_catch_all(arms: Vec[lift::Arm], default: Option[lift::Expr]) -> bool {
     match default {
         Some(_) => return true,
         None => (),
@@ -127,14 +127,13 @@ fn match_has_catch_all(arms: Vec[core::Arm], default: Option[core::Expr]) -> boo
     false
 }
 
-fn expr_always_exits(value: core::Expr) -> bool {
+fn expr_always_exits(value: lift::Expr) -> bool {
     match value {
         Break { ty: _, .. } | Continue { ty: _, .. } | Return { expr: _, ty: _ } => true,
         Constr { constructor: _, args, ty: _ } => exprs_always_exit(args),
         Tuple { items, ty: _ } | Array { items, ty: _ } => {
             exprs_always_exit(items)
         },
-        Closure { params: _, body, ty: _ } => expr_always_exits(body),
         Block { block, ty: _ } => block_always_exits(block),
         If { cond: _, then_branch: then_, else_branch: else_, ty: _ } => {
             expr_always_exits(then_) && expr_always_exits(else_)
@@ -184,18 +183,12 @@ fn expr_always_exits(value: core::Expr) -> bool {
         DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } => {
             expr_always_exits(receiver) || exprs_always_exit(args)
         },
-        TraitCall { receiver, args, .. } => {
-            match receiver {
-                Some(value) => expr_always_exits(value),
-                None => false,
-            }
-                || exprs_always_exit(args)
-        },
+        Invalid { ty: _ } => true,
         Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } => false,
     }
 }
 
-fn exprs_always_exit(values: Vec[core::Expr]) -> bool {
+fn exprs_always_exit(values: Vec[lift::Expr]) -> bool {
     for value in values {
         if expr_always_exits(value) {
             return true
@@ -204,7 +197,7 @@ fn exprs_always_exit(values: Vec[core::Expr]) -> bool {
     false
 }
 
-fn block_always_exits(value: core::Block) -> bool {
+fn block_always_exits(value: lift::Block) -> bool {
     for stmt in value.stmts {
         if expr_always_exits(stmt.value) {
             return true

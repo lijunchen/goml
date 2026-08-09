@@ -1,0 +1,205 @@
+package lift;
+
+use gomlc::ast;
+use gomlc::tast;
+
+pub struct File {
+    pub functions: Vec[Function],
+    pub enums: Vec[tast::EnumDef],
+    pub structs: Vec[tast::StructDef],
+    pub type_instances: Vec[TypeInstance],
+    pub constants: Vec[tast::Constant],
+    pub closure_environments: Vec[string],
+}
+
+pub struct TypeInstance {
+    pub base_name: string,
+    pub args: Vec[tast::Type],
+    pub name: string,
+}
+
+pub struct Function {
+    pub name: string,
+    pub origin: FunctionOrigin,
+    pub root: bool,
+    pub trait_impl: Option[TraitImpl],
+    pub params: Vec[(string, tast::Type)],
+    pub ret_ty: tast::Type,
+    pub body: Block,
+}
+
+pub enum FunctionOrigin {
+    Source,
+    Inherent {
+        owner: tast::Type,
+        method_name: string,
+    },
+    TraitImplementation {
+        method_name: string,
+    },
+}
+
+pub struct TraitImpl {
+    pub trait_ref: tast::TraitRef,
+    pub for_ty: tast::Type,
+    pub associated_types: Vec[(string, tast::Type)],
+}
+
+pub struct LetStmt {
+    pub name: string,
+    pub value: Expr,
+    pub ty: tast::Type,
+}
+
+pub struct Block {
+    pub stmts: Vec[LetStmt],
+    pub tail: Option[Expr],
+}
+
+pub enum Expr {
+    Var {
+        name: string,
+        ty: tast::Type,
+    },
+    Callable {
+        callable: tast::Callable,
+        ty: tast::Type,
+    },
+    Prim {
+        value: tast::Primitive,
+        ty: tast::Type,
+    },
+    Constr {
+        constructor: tast::Constructor,
+        args: Vec[Expr],
+        ty: tast::Type,
+    },
+    Tuple {
+        items: Vec[Expr],
+        ty: tast::Type,
+    },
+    Array {
+        items: Vec[Expr],
+        ty: tast::Type,
+    },
+    Block {
+        block: Block,
+        ty: tast::Type,
+    },
+    Match {
+        expr: Expr,
+        arms: Vec[Arm],
+        default: Option[Expr],
+        ty: tast::Type,
+    },
+    If {
+        cond: Expr,
+        then_branch: Expr,
+        else_branch: Expr,
+        ty: tast::Type,
+    },
+    While {
+        cond: Expr,
+        body: Expr,
+        ty: tast::Type,
+    },
+    Loop {
+        body: Expr,
+        ty: tast::Type,
+    },
+    Break {
+        target: int,
+        value: Option[Expr],
+        ty: tast::Type,
+    },
+    Continue {
+        target: int,
+        ty: tast::Type,
+    },
+    Return {
+        expr: Option[Expr],
+        ty: tast::Type,
+    },
+    Go {
+        expr: Expr,
+        ty: tast::Type,
+    },
+    ConstrGet {
+        expr: Expr,
+        constructor: tast::Constructor,
+        field_index: int,
+        ty: tast::Type,
+    },
+    Unary {
+        op: ast::UnaryOp,
+        expr: Expr,
+        ty: tast::Type,
+    },
+    Cast {
+        expr: Expr,
+        ty: tast::Type,
+    },
+    Binary {
+        op: ast::BinaryOp,
+        lhs: Expr,
+        rhs: Expr,
+        ty: tast::Type,
+    },
+    Assign {
+        name: string,
+        value: Expr,
+        target_ty: tast::Type,
+        ty: tast::Type,
+    },
+    Call {
+        func: Expr,
+        args: Vec[Expr],
+        ty: tast::Type,
+    },
+    ToDyn {
+        trait_name: string,
+        for_ty: tast::Type,
+        expr: Expr,
+        ty: tast::Type,
+    },
+    DynCall {
+        trait_name: string,
+        method_name: string,
+        receiver: Expr,
+        args: Vec[Expr],
+        ty: tast::Type,
+    },
+    Proj {
+        tuple: Expr,
+        index: int,
+        ty: tast::Type,
+    },
+    Invalid {
+        ty: tast::Type,
+    },
+}
+
+pub struct Arm {
+    pub lhs: Expr,
+    pub body: Expr,
+}
+
+pub fn expr_type(value: Expr) -> tast::Type {
+    match value {
+        Var { ty, .. } | Callable { ty, .. } | Prim { ty, .. } | Constr { ty, .. } | Tuple {
+            ty,
+            ..,
+        } | Array { ty, .. } | Block { ty, .. } | Match { ty, .. } | If { ty, .. } | While {
+            ty,
+            ..,
+        } | Loop { ty, .. } | Break { ty, .. } | Continue { ty, .. } | Return { ty, .. } | Go {
+            ty,
+            ..,
+        } | ConstrGet { ty, .. } | Unary { ty, .. } | Cast { ty, .. } | Binary { ty, .. } | Assign {
+            ty,
+            ..,
+        } | Call { ty, .. } | ToDyn { ty, .. } | DynCall { ty, .. } | Proj { ty, .. } | Invalid {
+            ty,
+        } => ty,
+    }
+}

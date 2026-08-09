@@ -1,0 +1,110 @@
+package core;
+
+use gomlc::tast;
+
+fn validate_compatible_types(actual: tast::Type, expected: tast::Type, context: string) -> Result[
+    unit,
+    string,
+] {
+    let compatible = match (tast::resolve_type(actual), tast::resolve_type(expected)) {
+        (Error, _) | (_, Error) => true,
+        _ => tast::types_equal(actual, expected),
+    };
+    if compatible {
+        Result::Ok(())
+    } else {
+        Result::Err(
+            context + ": expected " + tast::diagnostic_type_text(expected) + ", found "
+                + tast::diagnostic_type_text(actual),
+        )
+    }
+}
+
+fn validate_exprs(values: Vec[Expr], context: string) -> Result[unit, string] {
+    for value in values {
+        validate_expr(value, context)?
+    }
+    Result::Ok(())
+}
+
+fn validate_optional_expr(value: Option[Expr], context: string) -> Result[unit, string] {
+    match value {
+        Some(value) => validate_expr(value, context),
+        None => Result::Ok(()),
+    }
+}
+
+fn validate_block(value: Block, context: string) -> Result[unit, string] {
+    for statement in value.stmts {
+        validate_expr(statement.value, context + " let " + statement.name)?;
+        validate_compatible_types(
+            expr_type(statement.value),
+            statement.ty,
+            context + " let " + statement.name,
+        )?
+    }
+    validate_optional_expr(value.tail, context + " tail")
+}
+
+fn validate_expr(value: Expr, context: string) -> Result[unit, string] {
+    match value {
+        Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue {
+            target: _,
+            ty: _,
+        } => Result::Ok(()),
+        Constr { constructor: _, args, ty: _ } => validate_exprs(args, context),
+        Tuple { items, ty: _ } | Array { items, ty: _ } => validate_exprs(items, context),
+        Closure { params: _, body, ty: _ } => validate_expr(body, context + " closure body"),
+        Block { block, ty: _ } => validate_block(block, context),
+        Match { expr, arms, default, ty: _ } => {
+            validate_expr(expr, context + " match scrutinee")?;
+            for arm in arms {
+                validate_expr(arm.lhs, context + " match pattern")?;
+                validate_expr(arm.body, context + " match body")?
+            }
+            validate_optional_expr(default, context + " match default")
+        },
+        If { cond, then_branch, else_branch, ty: _ } => {
+            validate_expr(cond, context + " if condition")?;
+            validate_expr(then_branch, context + " if branch")?;
+            validate_expr(else_branch, context + " else branch")
+        },
+        While { cond, body, ty: _ } => {
+            validate_expr(cond, context + " while condition")?;
+            validate_expr(body, context + " while body")
+        },
+        Loop { body, ty: _ } => validate_expr(body, context + " loop body"),
+        Break { target: _, value, ty: _ } => validate_optional_expr(value, context + " break"),
+        Return { expr, ty: _ } => validate_optional_expr(expr, context + " return"),
+        Go { expr, ty: _ } => validate_expr(expr, context + " go"),
+        ConstrGet { expr, constructor: _, field_index: _, ty: _ } | Unary { op: _, expr, ty: _ } | Cast {
+            expr,
+            ty: _,
+        } | Proj { tuple: expr, index: _, ty: _ } => validate_expr(expr, context),
+        Binary { op: _, lhs, rhs, ty: _ } => {
+            validate_expr(lhs, context)?;
+            validate_expr(rhs, context)
+        },
+        Assign { name: _, value, target_ty: _, ty: _ } => validate_expr(value, context),
+        Call { func, args, ty: _ } => {
+            validate_expr(func, context + " call target")?;
+            validate_exprs(args, context + " call argument")
+        },
+        ToDyn { trait_name: _, for_ty: _, expr, ty: _ } => validate_expr(expr, context),
+        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } => {
+            validate_expr(receiver, context + " dynamic receiver")?;
+            validate_exprs(args, context + " dynamic argument")
+        },
+        TraitCall { receiver, args, .. } => {
+            validate_optional_expr(receiver, context + " trait receiver")?;
+            validate_exprs(args, context + " trait argument")
+        },
+    }
+}
+
+pub fn validate(value: File) -> Result[unit, string] {
+    for function in value.functions {
+        validate_block(function.body, "function " + function.name)?
+    }
+    Result::Ok(())
+}

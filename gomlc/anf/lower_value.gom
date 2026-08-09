@@ -1,8 +1,8 @@
 package anf;
 
-use gomlc::core;
+use gomlc::lift;
 
-fn try_imm(value: core::Expr) -> Option[Imm] {
+fn try_imm(value: lift::Expr) -> Option[Imm] {
     match value {
         Var { name, ty } => Option::Some(Imm::Var { name, ty }),
         Callable { callable, ty } => {
@@ -21,7 +21,7 @@ fn try_imm(value: core::Expr) -> Option[Imm] {
     }
 }
 
-fn match_imm(value: core::Expr) -> Imm {
+fn match_imm(value: lift::Expr) -> Imm {
     match value {
         Constr { constructor, args: _, ty } => match constructor.tag {
             Some(tag) => Imm::Tag { index: tag, ty },
@@ -41,7 +41,7 @@ fn bind_value(state: State, value: Value, k: (Imm) -> Block) -> Block {
     prepend_bind(Bind::Let(LetBind { name, value, ty }), block)
 }
 
-fn lower_imm(state: State, value: core::Expr, k: (Imm) -> Block) -> Block {
+fn lower_imm(state: State, value: lift::Expr, k: (Imm) -> Block) -> Block {
     match try_imm(value) {
         Some(value) => k(value),
         None => lower_value(
@@ -56,7 +56,7 @@ fn lower_imm(state: State, value: core::Expr, k: (Imm) -> Block) -> Block {
 
 fn lower_list_from(
     state: State,
-    values: Vec[core::Expr],
+    values: Vec[lift::Expr],
     index: int,
     result: Vec[Imm],
     k: (Vec[Imm]) -> Block,
@@ -75,7 +75,7 @@ fn lower_list_from(
     }
 }
 
-fn lower_list(state: State, values: Vec[core::Expr], k: (Vec[Imm]) -> Block) -> Block {
+fn lower_list(state: State, values: Vec[lift::Expr], k: (Vec[Imm]) -> Block) -> Block {
     if all_immediate(values) {} else {
         let start = state.counter.get();
         if probe_linear_list(state, values) {
@@ -86,8 +86,8 @@ fn lower_list(state: State, values: Vec[core::Expr], k: (Vec[Imm]) -> Block) -> 
     lower_list_from(state, values, 0, result, k)
 }
 
-fn lower_value(state: State, value: core::Expr, k: (Value) -> Block) -> Block {
-    let ty = core::expr_type(value);
+fn lower_value(state: State, value: lift::Expr, k: (Value) -> Block) -> Block {
+    let ty = lift::expr_type(value);
     match try_imm(value) {
         Some(value) => k(Value::Imm(value)),
         None => match value {

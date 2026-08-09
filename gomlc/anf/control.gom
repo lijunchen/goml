@@ -1,6 +1,6 @@
 package anf;
 
-use gomlc::core;
+use gomlc::lift;
 use gomlc::tast;
 
 fn reify_k_with_name(
@@ -28,11 +28,11 @@ fn reify_k(state: State, value_ty: tast::Type, k: (Imm) -> Block) -> (JoinBind, 
     reify_k_with_name(state, fresh(state, "k"), JoinRole::Continuation, value_ty, k)
 }
 
-fn reify_k_for_expr(state: State, value: core::Expr, k: (Imm) -> Block) -> (JoinBind, tast::Type) {
-    let value_ty = if type_is_error(core::expr_type(value)) && expr_always_exits(value) {
+fn reify_k_for_expr(state: State, value: lift::Expr, k: (Imm) -> Block) -> (JoinBind, tast::Type) {
+    let value_ty = if type_is_error(lift::expr_type(value)) && expr_always_exits(value) {
         tast::Type::Unit
     } else {
-        core::expr_type(value)
+        lift::expr_type(value)
     };
     if type_is_unit_or_never(value_ty) && expr_always_exits(value) {
         let name = fresh(state, "k");
@@ -54,9 +54,9 @@ fn reify_k_for_expr(state: State, value: core::Expr, k: (Imm) -> Block) -> (Join
 
 fn lower_core_stmts(
     state: State,
-    stmts: Vec[core::LetStmt],
+    stmts: Vec[lift::LetStmt],
     index: int,
-    tail: Option[core::Expr],
+    tail: Option[lift::Expr],
     k: (Imm) -> Block,
 ) -> Block {
     if index >= stmts.len() {
@@ -66,7 +66,7 @@ fn lower_core_stmts(
         }
     } else {
         let stmt = stmts[index];
-        let value_ty = core::expr_type(stmt.value);
+        let value_ty = lift::expr_type(stmt.value);
         if expr_is_control(stmt.value) {
             lower_expr(
                 state,
@@ -95,13 +95,13 @@ fn lower_core_stmts(
     }
 }
 
-fn lower_core_block(state: State, value: core::Block, k: (Imm) -> Block) -> Block {
+fn lower_core_block(state: State, value: lift::Block, k: (Imm) -> Block) -> Block {
     lower_core_stmts(state, value.stmts, 0, value.tail, k)
 }
 
 fn lower_branch(
     state: State,
-    value: core::Expr,
+    value: lift::Expr,
     join_id: string,
     join_ret_ty: tast::Type,
     join_takes_arg: bool,
@@ -117,13 +117,13 @@ fn lower_branch(
 
 fn lower_if(
     state: State,
-    cond: core::Expr,
-    then_: core::Expr,
-    else_: core::Expr,
+    cond: lift::Expr,
+    then_: lift::Expr,
+    else_: lift::Expr,
     ty: tast::Type,
     k: (Imm) -> Block,
 ) -> Block {
-    let expr = core::Expr::If { cond, then_branch: then_, else_branch: else_, ty };
+    let expr = lift::Expr::If { cond, then_branch: then_, else_branch: else_, ty };
     let reified = reify_k_for_expr(state, expr, k);
     let join = reified.0;
     let ret_ty = reified.1;
@@ -145,7 +145,7 @@ fn lower_if(
 
 fn lower_arms(
     state: State,
-    values: Vec[core::Arm],
+    values: Vec[lift::Arm],
     join_id: string,
     join_ret_ty: tast::Type,
     join_takes_arg: bool,
@@ -164,13 +164,13 @@ fn lower_arms(
 
 fn lower_match(
     state: State,
-    scrutinee: core::Expr,
-    arms: Vec[core::Arm],
-    default: Option[core::Expr],
+    scrutinee: lift::Expr,
+    arms: Vec[lift::Arm],
+    default: Option[lift::Expr],
     ty: tast::Type,
     k: (Imm) -> Block,
 ) -> Block {
-    let expr = core::Expr::Match { expr: scrutinee, arms, default, ty };
+    let expr = lift::Expr::Match { expr: scrutinee, arms, default, ty };
     let reified = reify_k_for_expr(state, expr, k);
     let join = reified.0;
     let ret_ty = reified.1;
@@ -198,7 +198,7 @@ fn lower_match(
     )
 }
 
-fn lower_while(state: State, cond: core::Expr, body: core::Expr, k: (Imm) -> Block) -> Block {
+fn lower_while(state: State, cond: lift::Expr, body: lift::Expr, k: (Imm) -> Block) -> Block {
     let exit_id = fresh(state, "exit");
     let exit_body = k(unit_imm());
     let exit_ret_ty = block_type(exit_body);
@@ -252,7 +252,7 @@ fn lower_while(state: State, cond: core::Expr, body: core::Expr, k: (Imm) -> Blo
     Block { binds, term: Term::Jump { target: loop_id, args: no_imms(), ret_ty: exit_ret_ty } }
 }
 
-fn lower_loop(state: State, body: core::Expr, ty: tast::Type, k: (Imm) -> Block) -> Block {
+fn lower_loop(state: State, body: lift::Expr, ty: tast::Type, k: (Imm) -> Block) -> Block {
     let exit_result = reify_k_with_name(state, fresh(state, "exit"), JoinRole::LoopExit, ty, k);
     let exit = exit_result.0;
     let exit_ret_ty = exit_result.1;
@@ -287,7 +287,7 @@ fn lower_loop(state: State, body: core::Expr, ty: tast::Type, k: (Imm) -> Block)
     Block { binds, term: Term::Jump { target: loop_id, args: no_imms(), ret_ty: exit_ret_ty } }
 }
 
-fn lower_return(state: State, value: Option[core::Expr]) -> Block {
+fn lower_return(state: State, value: Option[lift::Expr]) -> Block {
     match state.return_ctx.get() {
         Some(ctx) => match value {
             Some(value) => lower_expr(
@@ -314,7 +314,7 @@ fn loop_context(state: State, target: int) -> Option[LoopCtx] {
     }
 }
 
-fn lower_expr(state: State, value: core::Expr, k: (Imm) -> Block) -> Block {
+fn lower_expr(state: State, value: lift::Expr, k: (Imm) -> Block) -> Block {
     match try_imm(value) {
         Some(value) => k(value),
         None => match value {
@@ -358,9 +358,7 @@ fn lower_expr(state: State, value: core::Expr, k: (Imm) -> Block) -> Block {
                 },
             },
             Return { expr: value, ty: _ } => lower_return(state, value),
-            Closure { params: _, body: _, ty: _ } | TraitCall { .. } => {
-                k(unit_imm())
-            },
+            Invalid { ty } => Block { binds: no_binds(), term: Term::Unreachable { ty } },
             other => lower_imm(state, other, k),
         },
     }

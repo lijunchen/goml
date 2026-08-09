@@ -1,6 +1,6 @@
 package anf;
 
-use gomlc::core;
+use gomlc::lift;
 
 fn parse_digits(value: string, start: int) -> int {
     let mut result = 0;
@@ -70,20 +70,20 @@ fn observe_name(maximum: Ref[int], name: string) -> unit {
     }
 }
 
-fn observe_exprs(maximum: Ref[int], values: Vec[core::Expr]) -> unit {
+fn observe_exprs(maximum: Ref[int], values: Vec[lift::Expr]) -> unit {
     for value in values {
         observe_expr(maximum, value)
     }
 }
 
-fn observe_optional_expr(maximum: Ref[int], value: Option[core::Expr]) -> unit {
+fn observe_optional_expr(maximum: Ref[int], value: Option[lift::Expr]) -> unit {
     match value {
         Some(value) => observe_expr(maximum, value),
         None => (),
     }
 }
 
-fn observe_block(maximum: Ref[int], value: core::Block) -> unit {
+fn observe_block(maximum: Ref[int], value: lift::Block) -> unit {
     for stmt in value.stmts {
         observe_name(maximum, stmt.name);
         observe_expr(maximum, stmt.value)
@@ -91,17 +91,11 @@ fn observe_block(maximum: Ref[int], value: core::Block) -> unit {
     observe_optional_expr(maximum, value.tail)
 }
 
-fn observe_expr(maximum: Ref[int], value: core::Expr) -> unit {
+fn observe_expr(maximum: Ref[int], value: lift::Expr) -> unit {
     match value {
         Constr { constructor: _, args, ty: _ } => observe_exprs(maximum, args),
         Tuple { items, ty: _ } | Array { items, ty: _ } => {
             observe_exprs(maximum, items)
-        },
-        Closure { params, body, ty: _ } => {
-            for param in params {
-                observe_name(maximum, param.name)
-            }
-            observe_expr(maximum, body)
         },
         Block { block, ty: _ } => observe_block(maximum, block),
         Match { expr, arms, default, ty: _ } => {
@@ -141,19 +135,15 @@ fn observe_expr(maximum: Ref[int], value: core::Expr) -> unit {
             observe_expr(maximum, receiver);
             observe_exprs(maximum, args)
         },
-        TraitCall { receiver, args, .. } => {
-            observe_optional_expr(maximum, receiver);
-            observe_exprs(maximum, args)
-        },
         Break { value, ty: _, .. } => observe_optional_expr(maximum, value),
         Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue {
             ty: _,
             ..,
-        } => (),
+        } | Invalid { ty: _ } => (),
     }
 }
 
-fn initial_counter(value: core::File) -> int {
+fn initial_counter(value: lift::File) -> int {
     let maximum = Ref::new(-1);
     for function in value.functions {
         for param in function.params {

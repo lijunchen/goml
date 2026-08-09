@@ -1,0 +1,48 @@
+package tast;
+
+use std::text;
+
+fn inherent_compact_type(value: Type) -> string {
+    let source = text::StringBuilder::new();
+    write_type(source, value);
+    let result = text::StringBuilder::new();
+    for character in source.finish().chars() {
+        if character == ' ' || character == '\n' || character == '\r' || character == '\t' {} else {
+            result.write_char(character)
+        }
+    }
+    result.finish()
+}
+
+fn inherent_type_base(value: Type) -> string {
+    match resolve_type(value) {
+        Unit => "unit",
+        Bool => "bool",
+        Int => "int",
+        Int8 => "int8",
+        Int16 => "int16",
+        Int32 => "int32",
+        Int64 => "int64",
+        Uint => "uint",
+        Uint8 => "uint8",
+        Uint16 => "uint16",
+        Uint32 => "uint32",
+        Uint64 => "uint64",
+        Float32 => "float32",
+        Float64 => "float64",
+        String => "string",
+        Char => "char",
+        Con { name } => name,
+        App { ty: base, args: _ } => inherent_type_base(base),
+        Slice { elem: _ } => "Slice",
+        VecType { elem: _ } => "Vec",
+        RefType { elem: _ } => "Ref",
+        HashMap { key: _, value: _ } => "HashMap",
+        Channel { elem: _ } => "Channel",
+        other => inherent_compact_type(other),
+    }
+}
+
+pub fn inherent_method_name(owner: Type, name: string) -> string {
+    "inherent#" + inherent_type_base(owner) + "#" + inherent_compact_type(owner) + "#" + name
+}

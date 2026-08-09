@@ -1,15 +1,11 @@
 package lift;
 
-use gomlc::core;
+use gomlc::mono;
 
-pub fn lower(value: core::File) -> core::File {
+pub fn lower(value: mono::File) -> File {
     lambda_lift(value)
 }
 
-pub fn lower_with_counter(value: core::File, counter: Ref[int]) -> core::File {
+pub fn lower_with_counter(value: mono::File, counter: Ref[int]) -> File {
     lambda_lift_with_counter(value, counter)
-}
-
-pub fn encode(value: core::File) -> string {
-    core::encode_lift(value)
 }

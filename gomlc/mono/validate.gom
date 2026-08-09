@@ -1,0 +1,152 @@
+package mono;
+
+use gomlc::tast;
+
+fn validate_type(value: tast::Type, context: string) -> Result[unit, string] {
+    if tast::type_is_concrete(value) {
+        Result::Ok(())
+    } else {
+        Result::Err(context + " contains non-concrete type " + tast::diagnostic_type_text(value))
+    }
+}
+
+fn validate_types(values: Vec[tast::Type], context: string) -> Result[unit, string] {
+    for value in values {
+        validate_type(value, context)?
+    }
+    Result::Ok(())
+}
+
+fn validate_named_types(values: Vec[(string, tast::Type)], context: string) -> Result[unit, string] {
+    for value in values {
+        validate_type(value.1, context + " " + value.0)?
+    }
+    Result::Ok(())
+}
+
+fn validate_exprs(values: Vec[Expr], context: string) -> Result[unit, string] {
+    for value in values {
+        validate_expr(value, context)?
+    }
+    Result::Ok(())
+}
+
+fn validate_optional_expr(value: Option[Expr], context: string) -> Result[unit, string] {
+    match value {
+        Some(value) => validate_expr(value, context),
+        None => Result::Ok(()),
+    }
+}
+
+fn validate_arm(value: Arm, context: string) -> Result[unit, string] {
+    validate_expr(value.lhs, context + " pattern")?;
+    validate_expr(value.body, context + " body")
+}
+
+fn validate_block(value: Block, context: string) -> Result[unit, string] {
+    for statement in value.stmts {
+        validate_type(statement.ty, context + " let " + statement.name)?;
+        validate_expr(statement.value, context + " let " + statement.name)?
+    }
+    validate_optional_expr(value.tail, context + " tail")
+}
+
+fn validate_expr(value: Expr, context: string) -> Result[unit, string] {
+    validate_type(expr_type(value), context)?;
+    match value {
+        Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue {
+            target: _,
+            ty: _,
+        } => Result::Ok(()),
+        Constr { constructor: _, args, ty: _ } => validate_exprs(args, context),
+        Tuple { items, ty: _ } | Array { items, ty: _ } => validate_exprs(items, context),
+        Closure { params, body, ty: _ } => {
+            for param in params {
+                validate_type(param.ty, context + " closure parameter " + param.name)?
+            }
+            validate_expr(body, context + " closure body")
+        },
+        Block { block, ty: _ } => validate_block(block, context),
+        Match { expr, arms, default, ty: _ } => {
+            validate_expr(expr, context + " match scrutinee")?;
+            for arm in arms {
+                validate_arm(arm, context + " match arm")?
+            }
+            validate_optional_expr(default, context + " match default")
+        },
+        If { cond, then_branch, else_branch, ty: _ } => {
+            validate_expr(cond, context + " if condition")?;
+            validate_expr(then_branch, context + " if branch")?;
+            validate_expr(else_branch, context + " else branch")
+        },
+        While { cond, body, ty: _ } => {
+            validate_expr(cond, context + " while condition")?;
+            validate_expr(body, context + " while body")
+        },
+        Loop { body, ty: _ } => validate_expr(body, context + " loop body"),
+        Break { target: _, value, ty: _ } => validate_optional_expr(value, context + " break"),
+        Return { expr, ty: _ } => validate_optional_expr(expr, context + " return"),
+        Go { expr, ty: _ } => validate_expr(expr, context + " go"),
+        ConstrGet { expr, constructor: _, field_index: _, ty: _ } | Unary { op: _, expr, ty: _ } | Cast {
+            expr,
+            ty: _,
+        } | Proj { tuple: expr, index: _, ty: _ } => validate_expr(expr, context),
+        Binary { op: _, lhs, rhs, ty: _ } => {
+            validate_expr(lhs, context)?;
+            validate_expr(rhs, context)
+        },
+        Assign { name: _, value, target_ty, ty: _ } => {
+            validate_type(target_ty, context + " assignment target")?;
+            validate_expr(value, context + " assignment value")
+        },
+        Call { func, args, ty: _ } => {
+            validate_expr(func, context + " call target")?;
+            validate_exprs(args, context + " call argument")
+        },
+        ToDyn { trait_name: _, for_ty, expr, ty: _ } => {
+            validate_type(for_ty, context + " dynamic conversion")?;
+            validate_expr(expr, context + " dynamic conversion")
+        },
+        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } => {
+            validate_expr(receiver, context + " dynamic receiver")?;
+            validate_exprs(args, context + " dynamic argument")
+        },
+    }
+}
+
+fn validate_origin(value: FunctionOrigin, context: string) -> Result[unit, string] {
+    match value {
+        Source | TraitImplementation { method_name: _ } => Result::Ok(()),
+        Inherent { owner, method_name: _ } => validate_type(owner, context + " owner"),
+    }
+}
+
+fn validate_trait_impl(value: Option[TraitImpl], context: string) -> Result[unit, string] {
+    match value {
+        Some(value) => {
+            validate_types(value.trait_ref.args, context + " trait arguments")?;
+            validate_type(value.for_ty, context + " implementation type")?;
+            validate_named_types(value.associated_types, context + " associated type")
+        },
+        None => Result::Ok(()),
+    }
+}
+
+fn validate_function(value: Function) -> Result[unit, string] {
+    let context = "function " + value.name;
+    validate_origin(value.origin, context)?;
+    validate_trait_impl(value.trait_impl, context)?;
+    validate_named_types(value.params, context + " parameter")?;
+    validate_type(value.ret_ty, context + " return")?;
+    validate_block(value.body, context)
+}
+
+pub fn validate(value: File) -> Result[unit, string] {
+    for instance in value.type_instances {
+        validate_types(instance.args, "type instance " + instance.name)?
+    }
+    for function in value.functions {
+        validate_function(function)?
+    }
+    Result::Ok(())
+}
