@@ -153,7 +153,7 @@ fn __goml_builtin_range_inclusive(start/305: int, end/306: int) -> FnIterator__i
           {
             let value/309 = @intrinsic(ref.get)(current/307) in
             let _wild162 =
-              if trait_impl#PartialEq#int#eq(value/309, end/306) {
+              if (value/309 == end/306) {
                   {
                     let _wild160 = @intrinsic(ref.set)(finished/308, true) in
                   }
@@ -185,10 +185,6 @@ fn trait_impl#ToString#int#to_string(self/69: int) -> string {
   @runtime(core.int_to_string)(self/69)
 }
 
-fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  @intrinsic(eq.primitive)(self/103, other/104)
-}
-
 fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(
   next_fn/172: () -> Option__int
 ) -> FnIterator__int {
@@ -203,12 +199,16 @@ fn trait_impl#ToString#int32#to_string(self/72: int32) -> string {
   @runtime(core.int32_to_string)(self/72)
 }
 
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
+  (self/103 == other/104)
+}
+
 fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
   @runtime(core.int_hash)(self/129)
 }
 
 fn trait_impl#PartialEq#bool#eq(self/97: bool, other/98: bool) -> bool {
-  @intrinsic(eq.primitive)(self/97, other/98)
+  (self/97 == other/98)
 }
 
 fn trait_impl#Hash#bool#hash(self/126: bool) -> uint64 {

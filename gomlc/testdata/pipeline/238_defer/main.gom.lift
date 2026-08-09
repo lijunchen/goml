@@ -37,14 +37,14 @@ fn loop_cleanup() -> unit {
       let current/3 = inherent#Ref#Ref[T]#get__T_int(index/2) in
       let _wild185 = inherent#Ref#Ref[T]#set__T_int(index/2, (current/3 + 1)) in
       let defer_result186 =
-        if trait_impl#PartialEq#int#eq(current/3, 0) {
+        if (current/3 == 0) {
             let _wild188 =
               let _defer187 =
                 println__T_string(("loop:" + inherent#int#int#to_string(current/3))) in
               continue in
             ()
         } else {
-            if trait_impl#PartialEq#int#eq(current/3, 1) {
+            if (current/3 == 1) {
                 let _wild190 =
                   let _defer189 =
                     println__T_string(("loop:" + inherent#int#int#to_string(current/3))) in
@@ -133,10 +133,6 @@ fn inherent#Ref#Ref[T]#set__T_int(self/259: Ref[int], value/260: int) -> unit {
   @intrinsic(ref.set)(self/259, value/260)
 }
 
-fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  @intrinsic(eq.primitive)(self/103, other/104)
-}
-
 fn inherent#int#int#to_string(self/34: int) -> string {
   @runtime(core.int_to_string)(self/34)
 }
@@ -157,12 +153,16 @@ fn trait_impl#ToString#string#to_string(self/67: string) -> string {
   self/67
 }
 
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
+  (self/103 == other/104)
+}
+
 fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
   @runtime(core.int_hash)(self/129)
 }
 
 fn trait_impl#PartialEq#string#eq(self/99: string, other/100: string) -> bool {
-  @intrinsic(eq.primitive)(self/99, other/100)
+  (self/99 == other/100)
 }
 
 fn trait_impl#Hash#string#hash(self/127: string) -> uint64 {

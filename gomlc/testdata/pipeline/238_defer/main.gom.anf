@@ -38,102 +38,94 @@ fn maybe(value/0: Option__int) -> Option__int {
 }
 
 fn loop_cleanup() -> unit {
-  join inline_cont340(index/2: Ref[int]) -> unit {
+  join inline_cont334(index/2: Ref[int]) -> unit {
     join exit229() -> unit {
       ()
     } in
     joinrec {
       join loop230() -> unit {
-        join inline_cont338(t231: int) -> unit {
+        join inline_cont332(t231: int) -> unit {
           let t232 = (t231 < 3) in
           if t232 {
-            join inline_cont336(current/3: int) -> unit {
+            join inline_cont330(current/3: int) -> unit {
               let t233 = (current/3 + 1) in
-              join inline_cont334(_wild185: unit) -> unit {
-                join inline_cont331(t237: bool) -> unit {
-                  join k234() -> unit {
-                    let defer_result186 = () in
-                    join inline_cont329(t235: string) -> unit {
-                      let t236 = ("loop:" + t235) in
-                      let inline327 = trait_impl#ToString#string#to_string(t236) in
-                      let inline328 = @runtime(core.string_println)(inline327) in
-                      jump loop230()
-                    } in
-                    let inline330 = @runtime(core.int_to_string)(current/3) in
-                    jump inline_cont329(inline330)
+              join inline_cont328(_wild185: unit) -> unit {
+                let t237 = (current/3 == 0) in
+                join k234() -> unit {
+                  let defer_result186 = () in
+                  join inline_cont326(t235: string) -> unit {
+                    let t236 = ("loop:" + t235) in
+                    let inline324 = trait_impl#ToString#string#to_string(t236) in
+                    let inline325 = @runtime(core.string_println)(inline324) in
+                    jump loop230()
                   } in
-                  if t237 {
-                    join inline_cont316(t238: string) -> unit {
-                      let t239 = ("loop:" + t238) in
-                      let inline314 = trait_impl#ToString#string#to_string(t239) in
-                      let inline315 = @runtime(core.string_println)(inline314) in
-                      jump loop230()
-                    } in
-                    let inline317 = @runtime(core.int_to_string)(current/3) in
-                    jump inline_cont316(inline317)
-                  } else {
-                    join inline_cont323(t241: bool) -> unit {
-                      if t241 {
-                        join inline_cont321(t242: string) -> unit {
-                          let t243 = ("loop:" + t242) in
-                          let inline319 = trait_impl#ToString#string#to_string(t243) in
-                          let inline320 = @runtime(core.string_println)(inline319) in
-                          jump exit229()
-                        } in
-                        let inline322 = @runtime(core.int_to_string)(current/3) in
-                        jump inline_cont321(inline322)
-                      } else {
-                        jump k234()
-                      }
-                    } in
-                    let inline324 = 1 in
-                    let inline325 = @intrinsic(eq.primitive)(current/3, inline324) in
-                    jump inline_cont323(inline325)
-                  }
+                  let inline327 = @runtime(core.int_to_string)(current/3) in
+                  jump inline_cont326(inline327)
                 } in
-                let inline332 = 0 in
-                let inline333 = @intrinsic(eq.primitive)(current/3, inline332) in
-                jump inline_cont331(inline333)
+                if t237 {
+                  join inline_cont316(t238: string) -> unit {
+                    let t239 = ("loop:" + t238) in
+                    let inline314 = trait_impl#ToString#string#to_string(t239) in
+                    let inline315 = @runtime(core.string_println)(inline314) in
+                    jump loop230()
+                  } in
+                  let inline317 = @runtime(core.int_to_string)(current/3) in
+                  jump inline_cont316(inline317)
+                } else {
+                  let t241 = (current/3 == 1) in
+                  if t241 {
+                    join inline_cont321(t242: string) -> unit {
+                      let t243 = ("loop:" + t242) in
+                      let inline319 = trait_impl#ToString#string#to_string(t243) in
+                      let inline320 = @runtime(core.string_println)(inline319) in
+                      jump exit229()
+                    } in
+                    let inline322 = @runtime(core.int_to_string)(current/3) in
+                    jump inline_cont321(inline322)
+                  } else {
+                    jump k234()
+                  }
+                }
               } in
-              let inline335 = @intrinsic(ref.set)(index/2, t233) in
-              jump inline_cont334(())
+              let inline329 = @intrinsic(ref.set)(index/2, t233) in
+              jump inline_cont328(())
             } in
-            let inline337 = @intrinsic(ref.get)(index/2) in
-            jump inline_cont336(inline337)
+            let inline331 = @intrinsic(ref.get)(index/2) in
+            jump inline_cont330(inline331)
           } else {
             jump exit229()
           }
         } in
-        let inline339 = @intrinsic(ref.get)(index/2) in
-        jump inline_cont338(inline339)
+        let inline333 = @intrinsic(ref.get)(index/2) in
+        jump inline_cont332(inline333)
       } in
     } in
     jump loop230()
   } in
-  let inline341 = 0 in
-  let inline342 = @intrinsic(ref.new)(inline341) in
-  jump inline_cont340(inline342)
+  let inline335 = 0 in
+  let inline336 = @intrinsic(ref.new)(inline335) in
+  jump inline_cont334(inline336)
 }
 
 fn observed_at_exit() -> unit {
-  join inline_cont351(value/4: Ref[string]) -> unit {
-    join inline_cont348(defer_result192: unit) -> unit {
-      join inline_cont346(t245: string) -> unit {
+  join inline_cont345(value/4: Ref[string]) -> unit {
+    join inline_cont342(defer_result192: unit) -> unit {
+      join inline_cont340(t245: string) -> unit {
         let t246 = ("observed:" + t245) in
-        let inline344 = trait_impl#ToString#string#to_string(t246) in
-        let inline345 = @runtime(core.string_println)(inline344) in
+        let inline338 = trait_impl#ToString#string#to_string(t246) in
+        let inline339 = @runtime(core.string_println)(inline338) in
         ()
       } in
-      let inline347 = @intrinsic(ref.get)(value/4) in
-      jump inline_cont346(inline347)
+      let inline341 = @intrinsic(ref.get)(value/4) in
+      jump inline_cont340(inline341)
     } in
-    let inline349 = "after" in
-    let inline350 = @intrinsic(ref.set)(value/4, inline349) in
-    jump inline_cont348(())
+    let inline343 = "after" in
+    let inline344 = @intrinsic(ref.set)(value/4, inline343) in
+    jump inline_cont342(())
   } in
-  let inline352 = "before" in
-  let inline353 = @intrinsic(ref.new)(inline352) in
-  jump inline_cont351(inline353)
+  let inline346 = "before" in
+  let inline347 = @intrinsic(ref.new)(inline346) in
+  jump inline_cont345(inline347)
 }
 
 fn pattern_cleanup(value/5: Option__int) -> int {
@@ -148,16 +140,16 @@ fn pattern_cleanup(value/5: Option__int) -> int {
       let right/8 = x199 in
       let left/7 = x196 in
       let defer_tast_result195 = (x196 + x199) in
-      let inline355 = "pattern:cleanup" in
-      let inline356 = trait_impl#ToString#string#to_string(inline355) in
-      let inline357 = @runtime(core.string_println)(inline356) in
+      let inline349 = "pattern:cleanup" in
+      let inline350 = trait_impl#ToString#string#to_string(inline349) in
+      let inline351 = @runtime(core.string_println)(inline350) in
       defer_tast_result195
     },
     _ => {
       let defer_return201 = 0 in
-      let inline359 = "pattern:cleanup" in
-      let inline360 = trait_impl#ToString#string#to_string(inline359) in
-      let inline361 = @runtime(core.string_println)(inline360) in
+      let inline353 = "pattern:cleanup" in
+      let inline354 = trait_impl#ToString#string#to_string(inline353) in
+      let inline355 = @runtime(core.string_println)(inline354) in
       defer_return201
     },
   }
@@ -165,21 +157,21 @@ fn pattern_cleanup(value/5: Option__int) -> int {
 
 fn closure_cleanup() -> unit {
   let run/9 = closure_env_run_0 {} in
-  join inline_cont370(_wild206: unit) -> unit {
-    join inline_cont366(defer_result207: unit) -> unit {
-      let inline363 = "closure:outer" in
-      let inline364 = trait_impl#ToString#string#to_string(inline363) in
-      let inline365 = @runtime(core.string_println)(inline364) in
+  join inline_cont364(_wild206: unit) -> unit {
+    join inline_cont360(defer_result207: unit) -> unit {
+      let inline357 = "closure:outer" in
+      let inline358 = trait_impl#ToString#string#to_string(inline357) in
+      let inline359 = @runtime(core.string_println)(inline358) in
       ()
     } in
-    let inline367 = "closure:after" in
-    let inline368 = trait_impl#ToString#string#to_string(inline367) in
-    let inline369 = @runtime(core.string_println)(inline368) in
-    jump inline_cont366(())
+    let inline361 = "closure:after" in
+    let inline362 = trait_impl#ToString#string#to_string(inline361) in
+    let inline363 = @runtime(core.string_println)(inline362) in
+    jump inline_cont360(())
   } in
-  let inline371 = println__T_string("closure:body") in
-  let inline372 = println__T_string("closure:inner") in
-  jump inline_cont370(())
+  let inline365 = println__T_string("closure:body") in
+  let inline366 = println__T_string("closure:inner") in
+  jump inline_cont364(())
 }
 
 fn main() -> unit {
@@ -187,76 +179,76 @@ fn main() -> unit {
   let _defer210 = println__T_string("block") in
   let _wild211 = defer_result209 in
   let t253 = early_return() in
-  join inline_cont418(t254: string) -> unit {
-    join inline_cont415(_wild212: unit) -> unit {
+  join inline_cont412(t254: string) -> unit {
+    join inline_cont409(_wild212: unit) -> unit {
       let mtmp213 = maybe(Tag_0) in
       let _wild215 = loop_cleanup() in
-      join inline_cont409(_wild216: unit) -> unit {
+      join inline_cont403(_wild216: unit) -> unit {
         let t255 = Option__int::Some(3) in
         let t256 = pattern_cleanup(t255) in
-        join inline_cont407(t257: string) -> unit {
-          join inline_cont404(_wild217: unit) -> unit {
-            join inline_cont391(t258: int) -> unit {
-              join inline_cont389(t259: string) -> unit {
-                join inline_cont386(_wild218: unit) -> unit {
-                  join inline_cont381(defer_tast_result214: unit) -> unit {
-                    join inline_cont377(_wild219: unit) -> unit {
-                      let inline374 = "main:first" in
-                      let inline375 = trait_impl#ToString#string#to_string(inline374) in
-                      let inline376 = @runtime(core.string_println)(inline375) in
+        join inline_cont401(t257: string) -> unit {
+          join inline_cont398(_wild217: unit) -> unit {
+            join inline_cont385(t258: int) -> unit {
+              join inline_cont383(t259: string) -> unit {
+                join inline_cont380(_wild218: unit) -> unit {
+                  join inline_cont375(defer_tast_result214: unit) -> unit {
+                    join inline_cont371(_wild219: unit) -> unit {
+                      let inline368 = "main:first" in
+                      let inline369 = trait_impl#ToString#string#to_string(inline368) in
+                      let inline370 = @runtime(core.string_println)(inline369) in
                       ()
                     } in
-                    let inline378 = "main:second" in
-                    let inline379 = trait_impl#ToString#string#to_string(inline378) in
-                    let inline380 = @runtime(core.string_println)(inline379) in
-                    jump inline_cont377(())
+                    let inline372 = "main:second" in
+                    let inline373 = trait_impl#ToString#string#to_string(inline372) in
+                    let inline374 = @runtime(core.string_println)(inline373) in
+                    jump inline_cont371(())
                   } in
-                  let inline382 = closure_env_run_0 {} in
-                  let inline383 = inherent#closure_env_run_0#closure_env_run_0#apply(inline382) in
-                  let inline384 = println__T_string("closure:after") in
-                  let inline385 = println__T_string("closure:outer") in
-                  jump inline_cont381(())
+                  let inline376 = closure_env_run_0 {} in
+                  let inline377 = inherent#closure_env_run_0#closure_env_run_0#apply(inline376) in
+                  let inline378 = println__T_string("closure:after") in
+                  let inline379 = println__T_string("closure:outer") in
+                  jump inline_cont375(())
                 } in
-                let inline387 = trait_impl#ToString#string#to_string(t259) in
-                let inline388 = @runtime(core.string_println)(inline387) in
-                jump inline_cont386(())
+                let inline381 = trait_impl#ToString#string#to_string(t259) in
+                let inline382 = @runtime(core.string_println)(inline381) in
+                jump inline_cont380(())
               } in
-              let inline390 = @runtime(core.int_to_string)(t258) in
-              jump inline_cont389(inline390)
+              let inline384 = @runtime(core.int_to_string)(t258) in
+              jump inline_cont383(inline384)
             } in
-            let inline392 = Tag_0 in
-            let inline402 = 0 in
-            let inline403 = println__T_string("pattern:cleanup") in
-            jump inline_cont391(inline402)
+            let inline386 = Tag_0 in
+            let inline396 = 0 in
+            let inline397 = println__T_string("pattern:cleanup") in
+            jump inline_cont385(inline396)
           } in
-          let inline405 = trait_impl#ToString#string#to_string(t257) in
-          let inline406 = @runtime(core.string_println)(inline405) in
-          jump inline_cont404(())
+          let inline399 = trait_impl#ToString#string#to_string(t257) in
+          let inline400 = @runtime(core.string_println)(inline399) in
+          jump inline_cont398(())
         } in
-        let inline408 = @runtime(core.int_to_string)(t256) in
-        jump inline_cont407(inline408)
+        let inline402 = @runtime(core.int_to_string)(t256) in
+        jump inline_cont401(inline402)
       } in
-      let inline410 = inherent#Ref#Ref[T]#new__T_string("before") in
-      let inline411 = inherent#Ref#Ref[T]#set__T_string(inline410, "after") in
-      let inline412 = inherent#Ref#Ref[T]#get__T_string(inline410) in
-      let inline413 = ("observed:" + inline412) in
-      let inline414 = println__T_string(inline413) in
-      jump inline_cont409(())
+      let inline404 = inherent#Ref#Ref[T]#new__T_string("before") in
+      let inline405 = inherent#Ref#Ref[T]#set__T_string(inline404, "after") in
+      let inline406 = inherent#Ref#Ref[T]#get__T_string(inline404) in
+      let inline407 = ("observed:" + inline406) in
+      let inline408 = println__T_string(inline407) in
+      jump inline_cont403(())
     } in
-    let inline416 = trait_impl#ToString#string#to_string(t254) in
-    let inline417 = @runtime(core.string_println)(inline416) in
-    jump inline_cont415(())
+    let inline410 = trait_impl#ToString#string#to_string(t254) in
+    let inline411 = @runtime(core.string_println)(inline410) in
+    jump inline_cont409(())
   } in
-  let inline419 = @runtime(core.int_to_string)(t253) in
-  jump inline_cont418(inline419)
+  let inline413 = @runtime(core.int_to_string)(t253) in
+  jump inline_cont412(inline413)
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont420(t261: string) -> unit {
+  join inline_cont414(t261: string) -> unit {
     let t262 = @runtime(core.string_println)(t261) in
     ()
   } in
-  jump inline_cont420(value/31)
+  jump inline_cont414(value/31)
 }
 
 fn inherent#Ref#Ref[T]#new__T_int(value/257: int) -> Ref[int] {
@@ -274,33 +266,33 @@ fn inherent#Ref#Ref[T]#set__T_int(self/259: Ref[int], value/260: int) -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  let t273 = @intrinsic(eq.primitive)(self/103, other/104) in
+fn inherent#int#int#to_string(self/34: int) -> string {
+  let t273 = @runtime(core.int_to_string)(self/34) in
   t273
 }
 
-fn inherent#int#int#to_string(self/34: int) -> string {
-  let t276 = @runtime(core.int_to_string)(self/34) in
+fn inherent#Ref#Ref[T]#new__T_string(value/257: string) -> Ref[string] {
+  let t276 = @intrinsic(ref.new)(value/257) in
   t276
 }
 
-fn inherent#Ref#Ref[T]#new__T_string(value/257: string) -> Ref[string] {
-  let t279 = @intrinsic(ref.new)(value/257) in
-  t279
-}
-
 fn inherent#Ref#Ref[T]#set__T_string(self/259: Ref[string], value/260: string) -> unit {
-  let t281 = @intrinsic(ref.set)(self/259, value/260) in
+  let t278 = @intrinsic(ref.set)(self/259, value/260) in
   ()
 }
 
 fn inherent#Ref#Ref[T]#get__T_string(self/258: Ref[string]) -> string {
-  let t284 = @intrinsic(ref.get)(self/258) in
-  t284
+  let t281 = @intrinsic(ref.get)(self/258) in
+  t281
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {
   self/67
+}
+
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
+  let t286 = (self/103 == other/104) in
+  t286
 }
 
 fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
@@ -309,7 +301,7 @@ fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
 }
 
 fn trait_impl#PartialEq#string#eq(self/99: string, other/100: string) -> bool {
-  let t292 = @intrinsic(eq.primitive)(self/99, other/100) in
+  let t292 = (self/99 == other/100) in
   t292
 }
 
@@ -319,14 +311,14 @@ fn trait_impl#Hash#string#hash(self/127: string) -> uint64 {
 }
 
 fn inherent#closure_env_run_0#closure_env_run_0#apply(env221: closure_env_run_0) -> unit {
-  join inline_cont425(defer_result204: unit) -> unit {
-    let inline422 = "closure:inner" in
-    let inline423 = trait_impl#ToString#string#to_string(inline422) in
-    let inline424 = @runtime(core.string_println)(inline423) in
+  join inline_cont419(defer_result204: unit) -> unit {
+    let inline416 = "closure:inner" in
+    let inline417 = trait_impl#ToString#string#to_string(inline416) in
+    let inline418 = @runtime(core.string_println)(inline417) in
     ()
   } in
-  let inline426 = "closure:body" in
-  let inline427 = trait_impl#ToString#string#to_string(inline426) in
-  let inline428 = @runtime(core.string_println)(inline427) in
-  jump inline_cont425(())
+  let inline420 = "closure:body" in
+  let inline421 = trait_impl#ToString#string#to_string(inline420) in
+  let inline422 = @runtime(core.string_println)(inline421) in
+  jump inline_cont419(())
 }

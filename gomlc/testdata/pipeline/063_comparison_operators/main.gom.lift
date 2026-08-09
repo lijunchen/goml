@@ -18,13 +18,13 @@ fn test_int_comparisons() -> unit {
   let greater_eq2/8 = (c/2 >= a/0) in
   let mtmp177 =
     println__T_string(("10 >= 10: " + trait_impl#ToString#bool#to_string(greater_eq2/8))) in
-  let eq1/9 = trait_impl#PartialEq#int32#eq(a/0, c/2) in
+  let eq1/9 = (a/0 == c/2) in
   let mtmp178 = println__T_string(("10 == 10: " + trait_impl#ToString#bool#to_string(eq1/9))) in
-  let eq2/10 = trait_impl#PartialEq#int32#eq(a/0, b/1) in
+  let eq2/10 = (a/0 == b/1) in
   let mtmp179 = println__T_string(("10 == 20: " + trait_impl#ToString#bool#to_string(eq2/10))) in
-  let neq1/11 = (!trait_impl#PartialEq#int32#eq(a/0, b/1)) in
+  let neq1/11 = (a/0 != b/1) in
   let mtmp180 = println__T_string(("10 != 20: " + trait_impl#ToString#bool#to_string(neq1/11))) in
-  let neq2/12 = (!trait_impl#PartialEq#int32#eq(a/0, c/2)) in
+  let neq2/12 = (a/0 != c/2) in
   let mtmp181 = println__T_string(("10 != 10: " + trait_impl#ToString#bool#to_string(neq2/12))) in
   ()
 }
@@ -51,16 +51,16 @@ fn test_float_comparisons() -> unit {
   let greater_eq2/21 = (z/15 >= x/13) in
   let mtmp187 =
     println__T_string(("3.14 >= 3.14: " + trait_impl#ToString#bool#to_string(greater_eq2/21))) in
-  let eq1/22 = trait_impl#PartialEq#float64#eq(x/13, z/15) in
+  let eq1/22 = (x/13 == z/15) in
   let mtmp188 =
     println__T_string(("3.14 == 3.14: " + trait_impl#ToString#bool#to_string(eq1/22))) in
-  let eq2/23 = trait_impl#PartialEq#float64#eq(x/13, y/14) in
+  let eq2/23 = (x/13 == y/14) in
   let mtmp189 =
     println__T_string(("3.14 == 2.71: " + trait_impl#ToString#bool#to_string(eq2/23))) in
-  let neq1/24 = (!trait_impl#PartialEq#float64#eq(x/13, y/14)) in
+  let neq1/24 = (x/13 != y/14) in
   let mtmp190 =
     println__T_string(("3.14 != 2.71: " + trait_impl#ToString#bool#to_string(neq1/24))) in
-  let neq2/25 = (!trait_impl#PartialEq#float64#eq(x/13, z/15)) in
+  let neq2/25 = (x/13 != z/15) in
   let mtmp191 =
     println__T_string(("3.14 != 3.14: " + trait_impl#ToString#bool#to_string(neq2/25))) in
   ()
@@ -81,14 +81,6 @@ fn println__T_string(value/31: string) -> unit {
 
 fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
   @runtime(core.bool_to_string)(self/66)
-}
-
-fn trait_impl#PartialEq#int32#eq(self/109: int32, other/110: int32) -> bool {
-  @intrinsic(eq.primitive)(self/109, other/110)
-}
-
-fn trait_impl#PartialEq#float64#eq(self/123: float64, other/124: float64) -> bool {
-  @intrinsic(eq.primitive)(self/123, other/124)
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {

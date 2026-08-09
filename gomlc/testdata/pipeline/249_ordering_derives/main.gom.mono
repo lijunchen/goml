@@ -256,7 +256,7 @@ fn trait_impl#std::cmp::PartialOrd#unit#ge(default_arg0: unit, default_arg1: uni
 }
 
 fn trait_impl#std::cmp::Ord#bool#cmp(self/35: bool, other/36: bool) -> std::cmp::Ordering {
-  if trait_impl#PartialEq#bool#eq(self/35, other/36) {
+  if (self/35 == other/36) {
       {
         std::cmp::Ordering::Equal
       }
@@ -278,7 +278,7 @@ fn trait_impl#std::cmp::PartialOrd#bool#partial_cmp(
   other/38: bool
 ) -> Option__std::cmp::Ordering {
   Option__std::cmp::Ordering::Some(
-    if trait_impl#PartialEq#bool#eq(self/37, other/38) {
+    if (self/37 == other/38) {
         {
           std::cmp::Ordering::Equal
         }
@@ -1010,7 +1010,7 @@ fn trait_impl#std::cmp::PartialOrd#float32#partial_cmp(
             Option__std::cmp::Ordering::Some(std::cmp::Ordering::Greater)
           }
       } else {
-          if trait_impl#PartialEq#float32#eq(self/87, other/88) {
+          if (self/87 == other/88) {
               {
                 Option__std::cmp::Ordering::Some(std::cmp::Ordering::Equal)
               }
@@ -1065,7 +1065,7 @@ fn trait_impl#std::cmp::PartialOrd#float64#partial_cmp(
             Option__std::cmp::Ordering::Some(std::cmp::Ordering::Greater)
           }
       } else {
-          if trait_impl#PartialEq#float64#eq(self/89, other/90) {
+          if (self/89 == other/90) {
               {
                 Option__std::cmp::Ordering::Some(std::cmp::Ordering::Equal)
               }
@@ -2505,10 +2505,6 @@ fn std::cmp::trait_default#PartialOrd#ge__Self_unit(self/24: unit, other/25: uni
   }
 }
 
-fn trait_impl#PartialEq#bool#eq(self/97: bool, other/98: bool) -> bool {
-  @intrinsic(eq.primitive)(self/97, other/98)
-}
-
 fn std::cmp::trait_default#PartialOrd#lt__Self_bool(self/15: bool, other/16: bool) -> bool {
   {
     let mtmp0 = trait_impl#std::cmp::PartialOrd#bool#partial_cmp(self/15, other/16) in
@@ -3549,10 +3545,6 @@ fn std::cmp::trait_default#PartialOrd#ge__Self_uint64(self/24: uint64, other/25:
   }
 }
 
-fn trait_impl#PartialEq#float32#eq(self/121: float32, other/122: float32) -> bool {
-  @intrinsic(eq.primitive)(self/121, other/122)
-}
-
 fn std::cmp::trait_default#PartialOrd#lt__Self_float32(
   self/15: float32,
   other/16: float32
@@ -3643,10 +3635,6 @@ fn std::cmp::trait_default#PartialOrd#ge__Self_float32(
       },
     }
   }
-}
-
-fn trait_impl#PartialEq#float64#eq(self/123: float64, other/124: float64) -> bool {
-  @intrinsic(eq.primitive)(self/123, other/124)
 }
 
 fn std::cmp::trait_default#PartialOrd#lt__Self_float64(
@@ -3742,7 +3730,7 @@ fn std::cmp::trait_default#PartialOrd#ge__Self_float64(
 }
 
 fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  @intrinsic(eq.primitive)(self/103, other/104)
+  (self/103 == other/104)
 }
 
 fn std::cmp::trait_default#PartialOrd#lt__Self_Version(
@@ -3919,6 +3907,10 @@ fn std::cmp::trait_default#PartialOrd#ge__Self_Level(self/24: Level, other/25: L
       },
     }
   }
+}
+
+fn trait_impl#PartialEq#float64#eq(self/123: float64, other/124: float64) -> bool {
+  (self/123 == other/124)
 }
 
 fn std::cmp::trait_default#PartialOrd#lt__Self_MaybeNumber(
@@ -4219,7 +4211,7 @@ fn trait_impl#Default#(int,string)#default() -> (int, string) {
 }
 
 fn trait_impl#PartialEq#string#eq(self/99: string, other/100: string) -> bool {
-  @intrinsic(eq.primitive)(self/99, other/100)
+  (self/99 == other/100)
 }
 
 fn trait_impl#Default#[int;3]#default() -> [int; 3] {
@@ -4923,10 +4915,7 @@ fn inherent#Slice#Slice[T]#len__T_int(self/236: Slice[int]) -> int {
 }
 
 fn trait_impl#PartialEq#Vec[int]#eq(self/141: Vec[int], other/142: Vec[int]) -> bool {
-  if (!trait_impl#PartialEq#int#eq(
-    inherent#Vec#Vec[T]#len__T_int(self/141),
-    inherent#Vec#Vec[T]#len__T_int(other/142)
-  )) {
+  if (inherent#Vec#Vec[T]#len__T_int(self/141) != inherent#Vec#Vec[T]#len__T_int(other/142)) {
       {
         false
       }

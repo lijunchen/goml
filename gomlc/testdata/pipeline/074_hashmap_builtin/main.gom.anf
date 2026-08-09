@@ -27,7 +27,7 @@ fn trait_impl#PartialEq#Point#eq(self/4: Point, other/5: Point) -> bool {
     if jp220 {
       let t221 = Point.y(self/4) in
       let t222 = Point.y(other/5) in
-      let inline372 = @intrinsic(eq.primitive)(t221, t222) in
+      let inline372 = (t221 == t222) in
       inline372
     } else {
       false
@@ -35,7 +35,7 @@ fn trait_impl#PartialEq#Point#eq(self/4: Point, other/5: Point) -> bool {
   } in
   let t224 = Point.x(self/4) in
   let t225 = Point.x(other/5) in
-  let inline370 = @intrinsic(eq.primitive)(t224, t225) in
+  let inline370 = (t224 == t225) in
   jump k219(inline370)
 }
 
@@ -117,7 +117,7 @@ fn trait_impl#PartialEq#Key#eq(self/14: Key, other/15: Key) -> bool {
           let x181 = Key::B._0(self/14) in
           let #derive0_left/16 = x181 in
           let #derive1_right/17 = x177 in
-          let inline391 = @intrinsic(eq.primitive)(x181, x177) in
+          let inline391 = (x181 == x177) in
           inline391
         },
         _ => {
@@ -302,7 +302,7 @@ fn trait_impl#Hash#int32#hash(self/132: int32) -> uint64 {
 }
 
 fn trait_impl#PartialEq#int32#eq(self/109: int32, other/110: int32) -> bool {
-  let t289 = @intrinsic(eq.primitive)(self/109, other/110) in
+  let t289 = (self/109 == other/110) in
   t289
 }
 

@@ -63,7 +63,7 @@ fn shadow(value/7: int) -> int {
 }
 
 fn widen_negative(value/11: int8) -> uint64 {
-    (value/11 : int8) as uint64
+    (int8::to_uint64 : (int8) -> uint64)((value/11 : int8))
 }
 
 fn main() -> unit {

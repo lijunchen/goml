@@ -7,7 +7,7 @@ fn find(wanted/0: int) -> Option__int {
           let _wild172 = return Option__int::None in
           ()
       } else {
-          if trait_impl#PartialEq#int#eq(value/2, wanted/0) {
+          if (value/2 == wanted/0) {
               let _wild173 = return Option__int::Some(value/2) in
               ()
           } else {
@@ -46,10 +46,6 @@ fn inherent#Ref#Ref[T]#get__T_int(self/258: Ref[int]) -> int {
   @intrinsic(ref.get)(self/258)
 }
 
-fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  @intrinsic(eq.primitive)(self/103, other/104)
-}
-
 fn inherent#Ref#Ref[T]#set__T_int(self/259: Ref[int], value/260: int) -> unit {
   @intrinsic(ref.set)(self/259, value/260)
 }
@@ -60,6 +56,10 @@ fn println__T_bool(value/31: bool) -> unit {
 
 fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
   @runtime(core.bool_to_string)(self/66)
+}
+
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
+  (self/103 == other/104)
 }
 
 fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {

@@ -47,331 +47,326 @@ fn digit_value(ch/1: char) -> int32 {
 }
 
 fn is_int_text(text/2: string) -> bool {
-  let len/3 = inherent#string#string#len(text/2) in
-  join inline_cont1270(t322: bool) -> bool {
+  join inline_cont1259(len/3: int) -> bool {
+    let t322 = (len/3 == 0) in
     if t322 {
       false
     } else {
-      join inline_cont1267(i/4: Ref[int]) -> bool {
-        join inline_cont1264(saw_digit/5: Ref[bool]) -> bool {
-          join inline_cont1261(ok/6: Ref[bool]) -> bool {
-            join inline_cont1258(started/7: Ref[bool]) -> bool {
+      join inline_cont1256(i/4: Ref[int]) -> bool {
+        join inline_cont1253(saw_digit/5: Ref[bool]) -> bool {
+          join inline_cont1250(ok/6: Ref[bool]) -> bool {
+            join inline_cont1247(started/7: Ref[bool]) -> bool {
               join exit323() -> bool {
                 let mtmp175 = () in
-                join inline_cont1256(t326: bool) -> bool {
+                join inline_cont1245(t326: bool) -> bool {
                   if t326 {
-                    let inline1255 = @intrinsic(ref.get)(saw_digit/5) in
-                    inline1255
+                    let inline1244 = @intrinsic(ref.get)(saw_digit/5) in
+                    inline1244
                   } else {
                     false
                   }
                 } in
-                let inline1257 = @intrinsic(ref.get)(ok/6) in
-                jump inline_cont1256(inline1257)
+                let inline1246 = @intrinsic(ref.get)(ok/6) in
+                jump inline_cont1245(inline1246)
               } in
               joinrec {
                 join loop328() -> bool {
-                  join inline_cont1252(t347: bool) -> bool {
+                  join inline_cont1241(t347: bool) -> bool {
                     join k329(jp330: bool) -> bool {
                       if jp330 {
-                        join inline_cont1250(t331: int) -> bool {
-                          join inline_cont1248(ch/8: char) -> bool {
-                            join inline_cont1246(t344: bool) -> bool {
+                        join inline_cont1239(t331: int) -> bool {
+                          join inline_cont1237(ch/8: char) -> bool {
+                            join inline_cont1235(t344: bool) -> bool {
                               let t345 = (!t344) in
                               join k333(jp334: bool) -> bool {
                                 if jp334 {
-                                  join inline_cont1227(mtmp172: unit) -> bool {
-                                    join inline_cont1225(t335: int) -> bool {
+                                  join inline_cont1216(mtmp172: unit) -> bool {
+                                    join inline_cont1214(t335: int) -> bool {
                                       let t336 = (t335 + 1) in
-                                      let inline1224 = @intrinsic(ref.set)(i/4, t336) in
+                                      let inline1213 = @intrinsic(ref.set)(i/4, t336) in
                                       jump loop328()
                                     } in
-                                    let inline1226 = @intrinsic(ref.get)(i/4) in
-                                    jump inline_cont1225(inline1226)
+                                    let inline1215 = @intrinsic(ref.get)(i/4) in
+                                    jump inline_cont1214(inline1215)
                                   } in
-                                  let inline1228 = true in
-                                  let inline1229 = @intrinsic(ref.set)(started/7, inline1228) in
-                                  jump inline_cont1227(())
+                                  let inline1217 = true in
+                                  let inline1218 = @intrinsic(ref.set)(started/7, inline1217) in
+                                  jump inline_cont1216(())
                                 } else {
-                                  join inline_cont1243(t339: bool) -> bool {
+                                  join inline_cont1232(t339: bool) -> bool {
                                     if t339 {
-                                      join inline_cont1237(mtmp173: unit) -> bool {
-                                        join inline_cont1234(mtmp174: unit) -> bool {
-                                          join inline_cont1232(t340: int) -> bool {
+                                      join inline_cont1226(mtmp173: unit) -> bool {
+                                        join inline_cont1223(mtmp174: unit) -> bool {
+                                          join inline_cont1221(t340: int) -> bool {
                                             let t341 = (t340 + 1) in
-                                            let inline1231 = @intrinsic(ref.set)(i/4, t341) in
+                                            let inline1220 = @intrinsic(ref.set)(i/4, t341) in
                                             jump loop328()
                                           } in
-                                          let inline1233 = @intrinsic(ref.get)(i/4) in
-                                          jump inline_cont1232(inline1233)
+                                          let inline1222 = @intrinsic(ref.get)(i/4) in
+                                          jump inline_cont1221(inline1222)
                                         } in
-                                        let inline1235 = true in
-                                        let inline1236 =
-                                          @intrinsic(ref.set)(saw_digit/5, inline1235) in
-                                        jump inline_cont1234(())
+                                        let inline1224 = true in
+                                        let inline1225 =
+                                          @intrinsic(ref.set)(saw_digit/5, inline1224) in
+                                        jump inline_cont1223(())
                                       } in
-                                      let inline1238 = true in
-                                      let inline1239 = @intrinsic(ref.set)(started/7, inline1238) in
-                                      jump inline_cont1237(())
+                                      let inline1227 = true in
+                                      let inline1228 = @intrinsic(ref.set)(started/7, inline1227) in
+                                      jump inline_cont1226(())
                                     } else {
-                                      let inline1241 = false in
-                                      let inline1242 = @intrinsic(ref.set)(ok/6, inline1241) in
+                                      let inline1230 = false in
+                                      let inline1231 = @intrinsic(ref.set)(ok/6, inline1230) in
                                       jump loop328()
                                     }
                                   } in
-                                  let inline1244 = (ch/8 >= '0') in
-                                  if inline1244 {
-                                    let inline1245 = (ch/8 <= '9') in
-                                    jump inline_cont1243(inline1245)
+                                  let inline1233 = (ch/8 >= '0') in
+                                  if inline1233 {
+                                    let inline1234 = (ch/8 <= '9') in
+                                    jump inline_cont1232(inline1234)
                                   } else {
-                                    jump inline_cont1243(false)
+                                    jump inline_cont1232(false)
                                   }
                                 }
                               } in
                               if t345 {
-                                let inline1221 = '-' in
-                                let inline1222 = @intrinsic(eq.primitive)(ch/8, inline1221) in
-                                jump k333(inline1222)
+                                let t346 = (ch/8 == '-') in
+                                jump k333(t346)
                               } else {
                                 jump k333(false)
                               }
                             } in
-                            let inline1247 = @intrinsic(ref.get)(started/7) in
-                            jump inline_cont1246(inline1247)
+                            let inline1236 = @intrinsic(ref.get)(started/7) in
+                            jump inline_cont1235(inline1236)
                           } in
-                          let inline1249 = string_get(text/2, t331) in
-                          jump inline_cont1248(inline1249)
+                          let inline1238 = string_get(text/2, t331) in
+                          jump inline_cont1237(inline1238)
                         } in
-                        let inline1251 = @intrinsic(ref.get)(i/4) in
-                        jump inline_cont1250(inline1251)
+                        let inline1240 = @intrinsic(ref.get)(i/4) in
+                        jump inline_cont1239(inline1240)
                       } else {
                         jump exit323()
                       }
                     } in
                     if t347 {
-                      join inline_cont1218(t348: int) -> bool {
+                      join inline_cont1210(t348: int) -> bool {
                         let t349 = (t348 < len/3) in
                         jump k329(t349)
                       } in
-                      let inline1219 = @intrinsic(ref.get)(i/4) in
-                      jump inline_cont1218(inline1219)
+                      let inline1211 = @intrinsic(ref.get)(i/4) in
+                      jump inline_cont1210(inline1211)
                     } else {
                       jump k329(false)
                     }
                   } in
-                  let inline1253 = @intrinsic(ref.get)(ok/6) in
-                  jump inline_cont1252(inline1253)
+                  let inline1242 = @intrinsic(ref.get)(ok/6) in
+                  jump inline_cont1241(inline1242)
                 } in
               } in
               jump loop328()
             } in
-            let inline1259 = false in
-            let inline1260 = @intrinsic(ref.new)(inline1259) in
-            jump inline_cont1258(inline1260)
+            let inline1248 = false in
+            let inline1249 = @intrinsic(ref.new)(inline1248) in
+            jump inline_cont1247(inline1249)
           } in
-          let inline1262 = true in
-          let inline1263 = @intrinsic(ref.new)(inline1262) in
-          jump inline_cont1261(inline1263)
+          let inline1251 = true in
+          let inline1252 = @intrinsic(ref.new)(inline1251) in
+          jump inline_cont1250(inline1252)
         } in
-        let inline1265 = false in
-        let inline1266 = @intrinsic(ref.new)(inline1265) in
-        jump inline_cont1264(inline1266)
+        let inline1254 = false in
+        let inline1255 = @intrinsic(ref.new)(inline1254) in
+        jump inline_cont1253(inline1255)
       } in
-      let inline1268 = 0 in
-      let inline1269 = @intrinsic(ref.new)(inline1268) in
-      jump inline_cont1267(inline1269)
+      let inline1257 = 0 in
+      let inline1258 = @intrinsic(ref.new)(inline1257) in
+      jump inline_cont1256(inline1258)
     }
   } in
-  let inline1271 = 0 in
-  let inline1272 = @intrinsic(eq.primitive)(len/3, inline1271) in
-  jump inline_cont1270(inline1272)
+  let inline1260 = @runtime(core.string_len)(text/2) in
+  jump inline_cont1259(inline1260)
 }
 
 fn parse_int32(text/9: string) -> int32 {
   let len/10 = inherent#string#string#len(text/9) in
   let i/11 = inherent#Ref#Ref[T]#new__T_int(0) in
   let negative/12 = inherent#Ref#Ref[T]#new__T_bool(false) in
-  let started/13 = inherent#Ref#Ref[T]#new__T_bool(false) in
-  join inline_cont1312(acc/14: Ref[int32]) -> int32 {
-    join exit352() -> int32 {
-      let mtmp180 = () in
-      join inline_cont1310(t355: bool) -> int32 {
-        if t355 {
-          join inline_cont1306(t356: int32) -> int32 {
-            let t357 = (0 - t356) in
-            t357
-          } in
-          let inline1307 = @intrinsic(ref.get)(acc/14) in
-          jump inline_cont1306(inline1307)
-        } else {
-          let inline1309 = @intrinsic(ref.get)(acc/14) in
-          inline1309
-        }
-      } in
-      let inline1311 = @intrinsic(ref.get)(negative/12) in
-      jump inline_cont1310(inline1311)
-    } in
-    joinrec {
-      join loop359() -> int32 {
-        join inline_cont1304(t360: int) -> int32 {
-          let t361 = (t360 < len/10) in
-          if t361 {
-            join inline_cont1302(t362: int) -> int32 {
-              join inline_cont1300(ch/15: char) -> int32 {
-                join inline_cont1298(t375: bool) -> int32 {
-                  let t376 = (!t375) in
-                  join k364(jp365: bool) -> int32 {
-                    if jp365 {
-                      join inline_cont1283(mtmp176: unit) -> int32 {
-                        join inline_cont1280(mtmp177: unit) -> int32 {
-                          join inline_cont1278(t366: int) -> int32 {
-                            let t367 = (t366 + 1) in
-                            let inline1277 = @intrinsic(ref.set)(i/11, t367) in
-                            jump loop359()
-                          } in
-                          let inline1279 = @intrinsic(ref.get)(i/11) in
-                          jump inline_cont1278(inline1279)
-                        } in
-                        let inline1281 = true in
-                        let inline1282 = @intrinsic(ref.set)(negative/12, inline1281) in
-                        jump inline_cont1280(())
-                      } in
-                      let inline1284 = true in
-                      let inline1285 = @intrinsic(ref.set)(started/13, inline1284) in
-                      jump inline_cont1283(())
-                    } else {
-                      join inline_cont1295(mtmp178: unit) -> int32 {
-                        join inline_cont1294(d/16: int32) -> int32 {
-                          join inline_cont1292(t369: int32) -> int32 {
-                            let t370 = (t369 * 10) in
-                            let t371 = (t370 + d/16) in
-                            join inline_cont1290(mtmp179: unit) -> int32 {
-                              join inline_cont1288(t372: int) -> int32 {
-                                let t373 = (t372 + 1) in
-                                let inline1287 = @intrinsic(ref.set)(i/11, t373) in
-                                jump loop359()
-                              } in
-                              let inline1289 = @intrinsic(ref.get)(i/11) in
-                              jump inline_cont1288(inline1289)
-                            } in
-                            let inline1291 = @intrinsic(ref.set)(acc/14, t371) in
-                            jump inline_cont1290(())
-                          } in
-                          let inline1293 = @intrinsic(ref.get)(acc/14) in
-                          jump inline_cont1292(inline1293)
-                        } in
-                        match ch/15 {
-                          '0' => {
-                            jump inline_cont1294(0)
-                          },
-                          '1' => {
-                            jump inline_cont1294(1)
-                          },
-                          '2' => {
-                            jump inline_cont1294(2)
-                          },
-                          '3' => {
-                            jump inline_cont1294(3)
-                          },
-                          '4' => {
-                            jump inline_cont1294(4)
-                          },
-                          '5' => {
-                            jump inline_cont1294(5)
-                          },
-                          '6' => {
-                            jump inline_cont1294(6)
-                          },
-                          '7' => {
-                            jump inline_cont1294(7)
-                          },
-                          '8' => {
-                            jump inline_cont1294(8)
-                          },
-                          '9' => {
-                            jump inline_cont1294(9)
-                          },
-                          _ => {
-                            jump inline_cont1294(0)
-                          },
-                        }
-                      } in
-                      let inline1296 = true in
-                      let inline1297 = @intrinsic(ref.set)(started/13, inline1296) in
-                      jump inline_cont1295(())
-                    }
-                  } in
-                  if t376 {
-                    let inline1274 = '-' in
-                    let inline1275 = @intrinsic(eq.primitive)(ch/15, inline1274) in
-                    jump k364(inline1275)
-                  } else {
-                    jump k364(false)
-                  }
-                } in
-                let inline1299 = @intrinsic(ref.get)(started/13) in
-                jump inline_cont1298(inline1299)
-              } in
-              let inline1301 = string_get(text/9, t362) in
-              jump inline_cont1300(inline1301)
+  join inline_cont1300(started/13: Ref[bool]) -> int32 {
+    join inline_cont1297(acc/14: Ref[int32]) -> int32 {
+      join exit352() -> int32 {
+        let mtmp180 = () in
+        join inline_cont1295(t355: bool) -> int32 {
+          if t355 {
+            join inline_cont1291(t356: int32) -> int32 {
+              let t357 = (0 - t356) in
+              t357
             } in
-            let inline1303 = @intrinsic(ref.get)(i/11) in
-            jump inline_cont1302(inline1303)
+            let inline1292 = @intrinsic(ref.get)(acc/14) in
+            jump inline_cont1291(inline1292)
           } else {
-            jump exit352()
+            let inline1294 = @intrinsic(ref.get)(acc/14) in
+            inline1294
           }
         } in
-        let inline1305 = @intrinsic(ref.get)(i/11) in
-        jump inline_cont1304(inline1305)
+        let inline1296 = @intrinsic(ref.get)(negative/12) in
+        jump inline_cont1295(inline1296)
       } in
+      joinrec {
+        join loop359() -> int32 {
+          join inline_cont1289(t360: int) -> int32 {
+            let t361 = (t360 < len/10) in
+            if t361 {
+              join inline_cont1287(t362: int) -> int32 {
+                join inline_cont1285(ch/15: char) -> int32 {
+                  join inline_cont1283(t375: bool) -> int32 {
+                    let t376 = (!t375) in
+                    join k364(jp365: bool) -> int32 {
+                      if jp365 {
+                        join inline_cont1268(mtmp176: unit) -> int32 {
+                          join inline_cont1265(mtmp177: unit) -> int32 {
+                            join inline_cont1263(t366: int) -> int32 {
+                              let t367 = (t366 + 1) in
+                              let inline1262 = @intrinsic(ref.set)(i/11, t367) in
+                              jump loop359()
+                            } in
+                            let inline1264 = @intrinsic(ref.get)(i/11) in
+                            jump inline_cont1263(inline1264)
+                          } in
+                          let inline1266 = true in
+                          let inline1267 = @intrinsic(ref.set)(negative/12, inline1266) in
+                          jump inline_cont1265(())
+                        } in
+                        let inline1269 = true in
+                        let inline1270 = @intrinsic(ref.set)(started/13, inline1269) in
+                        jump inline_cont1268(())
+                      } else {
+                        join inline_cont1280(mtmp178: unit) -> int32 {
+                          join inline_cont1279(d/16: int32) -> int32 {
+                            join inline_cont1277(t369: int32) -> int32 {
+                              let t370 = (t369 * 10) in
+                              let t371 = (t370 + d/16) in
+                              join inline_cont1275(mtmp179: unit) -> int32 {
+                                join inline_cont1273(t372: int) -> int32 {
+                                  let t373 = (t372 + 1) in
+                                  let inline1272 = @intrinsic(ref.set)(i/11, t373) in
+                                  jump loop359()
+                                } in
+                                let inline1274 = @intrinsic(ref.get)(i/11) in
+                                jump inline_cont1273(inline1274)
+                              } in
+                              let inline1276 = @intrinsic(ref.set)(acc/14, t371) in
+                              jump inline_cont1275(())
+                            } in
+                            let inline1278 = @intrinsic(ref.get)(acc/14) in
+                            jump inline_cont1277(inline1278)
+                          } in
+                          match ch/15 {
+                            '0' => {
+                              jump inline_cont1279(0)
+                            },
+                            '1' => {
+                              jump inline_cont1279(1)
+                            },
+                            '2' => {
+                              jump inline_cont1279(2)
+                            },
+                            '3' => {
+                              jump inline_cont1279(3)
+                            },
+                            '4' => {
+                              jump inline_cont1279(4)
+                            },
+                            '5' => {
+                              jump inline_cont1279(5)
+                            },
+                            '6' => {
+                              jump inline_cont1279(6)
+                            },
+                            '7' => {
+                              jump inline_cont1279(7)
+                            },
+                            '8' => {
+                              jump inline_cont1279(8)
+                            },
+                            '9' => {
+                              jump inline_cont1279(9)
+                            },
+                            _ => {
+                              jump inline_cont1279(0)
+                            },
+                          }
+                        } in
+                        let inline1281 = true in
+                        let inline1282 = @intrinsic(ref.set)(started/13, inline1281) in
+                        jump inline_cont1280(())
+                      }
+                    } in
+                    if t376 {
+                      let t377 = (ch/15 == '-') in
+                      jump k364(t377)
+                    } else {
+                      jump k364(false)
+                    }
+                  } in
+                  let inline1284 = @intrinsic(ref.get)(started/13) in
+                  jump inline_cont1283(inline1284)
+                } in
+                let inline1286 = string_get(text/9, t362) in
+                jump inline_cont1285(inline1286)
+              } in
+              let inline1288 = @intrinsic(ref.get)(i/11) in
+              jump inline_cont1287(inline1288)
+            } else {
+              jump exit352()
+            }
+          } in
+          let inline1290 = @intrinsic(ref.get)(i/11) in
+          jump inline_cont1289(inline1290)
+        } in
+      } in
+      jump loop359()
     } in
-    jump loop359()
+    let inline1298 = 0 in
+    let inline1299 = @intrinsic(ref.new)(inline1298) in
+    jump inline_cont1297(inline1299)
   } in
-  let inline1313 = 0 in
-  let inline1314 = @intrinsic(ref.new)(inline1313) in
-  jump inline_cont1312(inline1314)
+  let inline1301 = false in
+  let inline1302 = @intrinsic(ref.new)(inline1301) in
+  jump inline_cont1300(inline1302)
 }
 
 fn is_delim(ch/17: char) -> bool {
-  join inline_cont1321(t385: bool) -> bool {
-    join k382(jp383: bool) -> bool {
-      if jp383 {
-        true
-      } else {
-        let inline1319 = ' ' in
-        let inline1320 = @intrinsic(eq.primitive)(ch/17, inline1319) in
-        inline1320
-      }
-    } in
-    if t385 {
-      jump k382(true)
+  let t385 = (ch/17 == '(') in
+  join k382(jp383: bool) -> bool {
+    if jp383 {
+      true
     } else {
-      let inline1316 = ')' in
-      let inline1317 = @intrinsic(eq.primitive)(ch/17, inline1316) in
-      jump k382(inline1317)
+      let t384 = (ch/17 == ' ') in
+      t384
     }
   } in
-  let inline1322 = '(' in
-  let inline1323 = @intrinsic(eq.primitive)(ch/17, inline1322) in
-  jump inline_cont1321(inline1323)
+  if t385 {
+    jump k382(true)
+  } else {
+    let t386 = (ch/17 == ')') in
+    jump k382(t386)
+  }
 }
 
 fn lex_atom(source/18: string, start/19: int) -> (Token, int) {
-  join inline_cont1363(len/20: int) -> (Token, int) {
-    join inline_cont1360(text/21: Ref[string]) -> (Token, int) {
-      join inline_cont1358(i/22: Ref[int]) -> (Token, int) {
-        join inline_cont1355(done/23: Ref[bool]) -> (Token, int) {
+  join inline_cont1342(len/20: int) -> (Token, int) {
+    join inline_cont1339(text/21: Ref[string]) -> (Token, int) {
+      join inline_cont1337(i/22: Ref[int]) -> (Token, int) {
+        join inline_cont1334(done/23: Ref[bool]) -> (Token, int) {
           join exit389() -> (Token, int) {
             let mtmp182 = () in
-            join inline_cont1353(atom/25: string) -> (Token, int) {
+            join inline_cont1332(atom/25: string) -> (Token, int) {
               join k390(jp391: Token) -> (Token, int) {
                 let token/26 = jp391 in
-                join inline_cont1351(t392: int) -> (Token, int) {
+                join inline_cont1330(t392: int) -> (Token, int) {
                   let t393 = (jp391, t392) in
                   t393
                 } in
-                let inline1352 = @intrinsic(ref.get)(i/22) in
-                jump inline_cont1351(inline1352)
+                let inline1331 = @intrinsic(ref.get)(i/22) in
+                jump inline_cont1330(inline1331)
               } in
               match atom/25 {
                 "true" => {
@@ -395,307 +390,295 @@ fn lex_atom(source/18: string, start/19: int) -> (Token, int) {
                 },
               }
             } in
-            let inline1354 = @intrinsic(ref.get)(text/21) in
-            jump inline_cont1353(inline1354)
+            let inline1333 = @intrinsic(ref.get)(text/21) in
+            jump inline_cont1332(inline1333)
           } in
           joinrec {
             join loop402() -> (Token, int) {
-              join inline_cont1349(t415: bool) -> (Token, int) {
+              join inline_cont1328(t415: bool) -> (Token, int) {
                 let t416 = (!t415) in
                 join k403(jp404: bool) -> (Token, int) {
                   if jp404 {
-                    join inline_cont1347(t405: int) -> (Token, int) {
-                      join inline_cont1345(ch/24: char) -> (Token, int) {
-                        join inline_cont1339(t407: bool) -> (Token, int) {
+                    join inline_cont1326(t405: int) -> (Token, int) {
+                      join inline_cont1324(ch/24: char) -> (Token, int) {
+                        join inline_cont1318(t407: bool) -> (Token, int) {
                           if t407 {
-                            let inline1327 = true in
-                            let inline1328 = @intrinsic(ref.set)(done/23, inline1327) in
+                            let inline1306 = true in
+                            let inline1307 = @intrinsic(ref.set)(done/23, inline1306) in
                             jump loop402()
                           } else {
-                            join inline_cont1337(t409: string) -> (Token, int) {
-                              join inline_cont1335(t410: string) -> (Token, int) {
+                            join inline_cont1316(t409: string) -> (Token, int) {
+                              join inline_cont1314(t410: string) -> (Token, int) {
                                 let t411 = (t409 + t410) in
-                                join inline_cont1333(mtmp181: unit) -> (Token, int) {
-                                  join inline_cont1331(t412: int) -> (Token, int) {
+                                join inline_cont1312(mtmp181: unit) -> (Token, int) {
+                                  join inline_cont1310(t412: int) -> (Token, int) {
                                     let t413 = (t412 + 1) in
-                                    let inline1330 = @intrinsic(ref.set)(i/22, t413) in
+                                    let inline1309 = @intrinsic(ref.set)(i/22, t413) in
                                     jump loop402()
                                   } in
-                                  let inline1332 = @intrinsic(ref.get)(i/22) in
-                                  jump inline_cont1331(inline1332)
+                                  let inline1311 = @intrinsic(ref.get)(i/22) in
+                                  jump inline_cont1310(inline1311)
                                 } in
-                                let inline1334 = @intrinsic(ref.set)(text/21, t411) in
-                                jump inline_cont1333(())
+                                let inline1313 = @intrinsic(ref.set)(text/21, t411) in
+                                jump inline_cont1312(())
                               } in
-                              let inline1336 = char_to_string(ch/24) in
-                              jump inline_cont1335(inline1336)
+                              let inline1315 = char_to_string(ch/24) in
+                              jump inline_cont1314(inline1315)
                             } in
-                            let inline1338 = @intrinsic(ref.get)(text/21) in
-                            jump inline_cont1337(inline1338)
+                            let inline1317 = @intrinsic(ref.get)(text/21) in
+                            jump inline_cont1316(inline1317)
                           }
                         } in
-                        let inline1340 = trait_impl#PartialEq#char#eq(ch/24, '(') in
-                        join inline_join1341(inline1342: bool) -> (Token, int) {
-                          if inline1342 {
-                            jump inline_cont1339(true)
+                        let inline1319 = (ch/24 == '(') in
+                        join inline_join1320(inline1321: bool) -> (Token, int) {
+                          if inline1321 {
+                            jump inline_cont1318(true)
                           } else {
-                            let inline1343 = trait_impl#PartialEq#char#eq(ch/24, ' ') in
-                            jump inline_cont1339(inline1343)
+                            let inline1322 = (ch/24 == ' ') in
+                            jump inline_cont1318(inline1322)
                           }
                         } in
-                        if inline1340 {
-                          jump inline_join1341(true)
+                        if inline1319 {
+                          jump inline_join1320(true)
                         } else {
-                          let inline1344 = trait_impl#PartialEq#char#eq(ch/24, ')') in
-                          jump inline_join1341(inline1344)
+                          let inline1323 = (ch/24 == ')') in
+                          jump inline_join1320(inline1323)
                         }
                       } in
-                      let inline1346 = string_get(source/18, t405) in
-                      jump inline_cont1345(inline1346)
+                      let inline1325 = string_get(source/18, t405) in
+                      jump inline_cont1324(inline1325)
                     } in
-                    let inline1348 = @intrinsic(ref.get)(i/22) in
-                    jump inline_cont1347(inline1348)
+                    let inline1327 = @intrinsic(ref.get)(i/22) in
+                    jump inline_cont1326(inline1327)
                   } else {
                     jump exit389()
                   }
                 } in
                 if t416 {
-                  join inline_cont1324(t417: int) -> (Token, int) {
+                  join inline_cont1303(t417: int) -> (Token, int) {
                     let t418 = (t417 < len/20) in
                     jump k403(t418)
                   } in
-                  let inline1325 = @intrinsic(ref.get)(i/22) in
-                  jump inline_cont1324(inline1325)
+                  let inline1304 = @intrinsic(ref.get)(i/22) in
+                  jump inline_cont1303(inline1304)
                 } else {
                   jump k403(false)
                 }
               } in
-              let inline1350 = @intrinsic(ref.get)(done/23) in
-              jump inline_cont1349(inline1350)
+              let inline1329 = @intrinsic(ref.get)(done/23) in
+              jump inline_cont1328(inline1329)
             } in
           } in
           jump loop402()
         } in
-        let inline1356 = false in
-        let inline1357 = @intrinsic(ref.new)(inline1356) in
-        jump inline_cont1355(inline1357)
+        let inline1335 = false in
+        let inline1336 = @intrinsic(ref.new)(inline1335) in
+        jump inline_cont1334(inline1336)
       } in
-      let inline1359 = @intrinsic(ref.new)(start/19) in
-      jump inline_cont1358(inline1359)
+      let inline1338 = @intrinsic(ref.new)(start/19) in
+      jump inline_cont1337(inline1338)
     } in
-    let inline1361 = "" in
-    let inline1362 = @intrinsic(ref.new)(inline1361) in
-    jump inline_cont1360(inline1362)
+    let inline1340 = "" in
+    let inline1341 = @intrinsic(ref.new)(inline1340) in
+    jump inline_cont1339(inline1341)
   } in
-  let inline1364 = @runtime(core.string_len)(source/18) in
-  jump inline_cont1363(inline1364)
+  let inline1343 = @runtime(core.string_len)(source/18) in
+  jump inline_cont1342(inline1343)
 }
 
 fn lex(source/27: string) -> Vec[Token] {
-  let len/28 = inherent#string#string#len(source/27) in
-  join inline_cont1415(toks0/29: Vec[Token]) -> Vec[Token] {
-    join inline_cont1413(toks/30: Ref[Vec[Token]]) -> Vec[Token] {
-      join inline_cont1410(i/31: Ref[int]) -> Vec[Token] {
-        join exit421() -> Vec[Token] {
-          let mtmp189 = () in
-          let inline1409 = @intrinsic(ref.get)(toks/30) in
-          inline1409
-        } in
-        joinrec {
-          join loop423() -> Vec[Token] {
-            join inline_cont1406(t424: int) -> Vec[Token] {
-              let t425 = (t424 < len/28) in
-              if t425 {
-                join inline_cont1404(t426: int) -> Vec[Token] {
-                  join inline_cont1402(ch/32: char) -> Vec[Token] {
-                    join inline_cont1399(t428: bool) -> Vec[Token] {
+  join inline_cont1387(len/28: int) -> Vec[Token] {
+    join inline_cont1385(toks0/29: Vec[Token]) -> Vec[Token] {
+      join inline_cont1383(toks/30: Ref[Vec[Token]]) -> Vec[Token] {
+        join inline_cont1380(i/31: Ref[int]) -> Vec[Token] {
+          join exit421() -> Vec[Token] {
+            let mtmp189 = () in
+            let inline1379 = @intrinsic(ref.get)(toks/30) in
+            inline1379
+          } in
+          joinrec {
+            join loop423() -> Vec[Token] {
+              join inline_cont1376(t424: int) -> Vec[Token] {
+                let t425 = (t424 < len/28) in
+                if t425 {
+                  join inline_cont1374(t426: int) -> Vec[Token] {
+                    join inline_cont1372(ch/32: char) -> Vec[Token] {
+                      let t428 = (ch/32 == '(') in
                       if t428 {
-                        join inline_cont1371(t429: Vec[Token]) -> Vec[Token] {
+                        join inline_cont1350(t429: Vec[Token]) -> Vec[Token] {
                           let t430 = inherent#Vec#Vec[T]#pushed__T_Token(t429, Tag_0) in
-                          join inline_cont1369(mtmp183: unit) -> Vec[Token] {
-                            join inline_cont1367(t431: int) -> Vec[Token] {
+                          join inline_cont1348(mtmp183: unit) -> Vec[Token] {
+                            join inline_cont1346(t431: int) -> Vec[Token] {
                               let t432 = (t431 + 1) in
-                              let inline1366 = @intrinsic(ref.set)(i/31, t432) in
+                              let inline1345 = @intrinsic(ref.set)(i/31, t432) in
                               jump loop423()
                             } in
-                            let inline1368 = @intrinsic(ref.get)(i/31) in
-                            jump inline_cont1367(inline1368)
+                            let inline1347 = @intrinsic(ref.get)(i/31) in
+                            jump inline_cont1346(inline1347)
                           } in
-                          let inline1370 = @intrinsic(ref.set)(toks/30, t430) in
-                          jump inline_cont1369(())
+                          let inline1349 = @intrinsic(ref.set)(toks/30, t430) in
+                          jump inline_cont1348(())
                         } in
-                        let inline1372 = @intrinsic(ref.get)(toks/30) in
-                        jump inline_cont1371(inline1372)
+                        let inline1351 = @intrinsic(ref.get)(toks/30) in
+                        jump inline_cont1350(inline1351)
                       } else {
-                        join inline_cont1396(t435: bool) -> Vec[Token] {
-                          if t435 {
-                            join inline_cont1379(t436: Vec[Token]) -> Vec[Token] {
-                              let t437 = inherent#Vec#Vec[T]#pushed__T_Token(t436, Tag_1) in
-                              join inline_cont1377(mtmp184: unit) -> Vec[Token] {
-                                join inline_cont1375(t438: int) -> Vec[Token] {
-                                  let t439 = (t438 + 1) in
-                                  let inline1374 = @intrinsic(ref.set)(i/31, t439) in
-                                  jump loop423()
-                                } in
-                                let inline1376 = @intrinsic(ref.get)(i/31) in
-                                jump inline_cont1375(inline1376)
+                        let t435 = (ch/32 == ')') in
+                        if t435 {
+                          join inline_cont1358(t436: Vec[Token]) -> Vec[Token] {
+                            let t437 = inherent#Vec#Vec[T]#pushed__T_Token(t436, Tag_1) in
+                            join inline_cont1356(mtmp184: unit) -> Vec[Token] {
+                              join inline_cont1354(t438: int) -> Vec[Token] {
+                                let t439 = (t438 + 1) in
+                                let inline1353 = @intrinsic(ref.set)(i/31, t439) in
+                                jump loop423()
                               } in
-                              let inline1378 = @intrinsic(ref.set)(toks/30, t437) in
-                              jump inline_cont1377(())
+                              let inline1355 = @intrinsic(ref.get)(i/31) in
+                              jump inline_cont1354(inline1355)
                             } in
-                            let inline1380 = @intrinsic(ref.get)(toks/30) in
-                            jump inline_cont1379(inline1380)
+                            let inline1357 = @intrinsic(ref.set)(toks/30, t437) in
+                            jump inline_cont1356(())
+                          } in
+                          let inline1359 = @intrinsic(ref.get)(toks/30) in
+                          jump inline_cont1358(inline1359)
+                        } else {
+                          let t442 = (ch/32 == ' ') in
+                          if t442 {
+                            join inline_cont1362(t443: int) -> Vec[Token] {
+                              let t444 = (t443 + 1) in
+                              let inline1361 = @intrinsic(ref.set)(i/31, t444) in
+                              jump loop423()
+                            } in
+                            let inline1363 = @intrinsic(ref.get)(i/31) in
+                            jump inline_cont1362(inline1363)
                           } else {
-                            join inline_cont1393(t442: bool) -> Vec[Token] {
-                              if t442 {
-                                join inline_cont1383(t443: int) -> Vec[Token] {
-                                  let t444 = (t443 + 1) in
-                                  let inline1382 = @intrinsic(ref.set)(i/31, t444) in
+                            join inline_cont1370(t446: int) -> Vec[Token] {
+                              let mtmp185 = lex_atom(source/27, t446) in
+                              let x186 = mtmp185.0 in
+                              let x187 = mtmp185.1 in
+                              let next/34 = x187 in
+                              let tok/33 = x186 in
+                              join inline_cont1368(t447: Vec[Token]) -> Vec[Token] {
+                                let t448 = inherent#Vec#Vec[T]#pushed__T_Token(t447, x186) in
+                                join inline_cont1366(mtmp188: unit) -> Vec[Token] {
+                                  let inline1365 = @intrinsic(ref.set)(i/31, x187) in
                                   jump loop423()
                                 } in
-                                let inline1384 = @intrinsic(ref.get)(i/31) in
-                                jump inline_cont1383(inline1384)
-                              } else {
-                                join inline_cont1391(t446: int) -> Vec[Token] {
-                                  let mtmp185 = lex_atom(source/27, t446) in
-                                  let x186 = mtmp185.0 in
-                                  let x187 = mtmp185.1 in
-                                  let next/34 = x187 in
-                                  let tok/33 = x186 in
-                                  join inline_cont1389(t447: Vec[Token]) -> Vec[Token] {
-                                    let t448 = inherent#Vec#Vec[T]#pushed__T_Token(t447, x186) in
-                                    join inline_cont1387(mtmp188: unit) -> Vec[Token] {
-                                      let inline1386 = @intrinsic(ref.set)(i/31, x187) in
-                                      jump loop423()
-                                    } in
-                                    let inline1388 = @intrinsic(ref.set)(toks/30, t448) in
-                                    jump inline_cont1387(())
-                                  } in
-                                  let inline1390 = @intrinsic(ref.get)(toks/30) in
-                                  jump inline_cont1389(inline1390)
-                                } in
-                                let inline1392 = @intrinsic(ref.get)(i/31) in
-                                jump inline_cont1391(inline1392)
-                              }
+                                let inline1367 = @intrinsic(ref.set)(toks/30, t448) in
+                                jump inline_cont1366(())
+                              } in
+                              let inline1369 = @intrinsic(ref.get)(toks/30) in
+                              jump inline_cont1368(inline1369)
                             } in
-                            let inline1394 = ' ' in
-                            let inline1395 = @intrinsic(eq.primitive)(ch/32, inline1394) in
-                            jump inline_cont1393(inline1395)
+                            let inline1371 = @intrinsic(ref.get)(i/31) in
+                            jump inline_cont1370(inline1371)
                           }
-                        } in
-                        let inline1397 = ')' in
-                        let inline1398 = @intrinsic(eq.primitive)(ch/32, inline1397) in
-                        jump inline_cont1396(inline1398)
+                        }
                       }
                     } in
-                    let inline1400 = '(' in
-                    let inline1401 = @intrinsic(eq.primitive)(ch/32, inline1400) in
-                    jump inline_cont1399(inline1401)
+                    let inline1373 = string_get(source/27, t426) in
+                    jump inline_cont1372(inline1373)
                   } in
-                  let inline1403 = string_get(source/27, t426) in
-                  jump inline_cont1402(inline1403)
-                } in
-                let inline1405 = @intrinsic(ref.get)(i/31) in
-                jump inline_cont1404(inline1405)
-              } else {
-                jump exit421()
-              }
+                  let inline1375 = @intrinsic(ref.get)(i/31) in
+                  jump inline_cont1374(inline1375)
+                } else {
+                  jump exit421()
+                }
+              } in
+              let inline1377 = @intrinsic(ref.get)(i/31) in
+              jump inline_cont1376(inline1377)
             } in
-            let inline1407 = @intrinsic(ref.get)(i/31) in
-            jump inline_cont1406(inline1407)
           } in
+          jump loop423()
         } in
-        jump loop423()
+        let inline1381 = 0 in
+        let inline1382 = @intrinsic(ref.new)(inline1381) in
+        jump inline_cont1380(inline1382)
       } in
-      let inline1411 = 0 in
-      let inline1412 = @intrinsic(ref.new)(inline1411) in
-      jump inline_cont1410(inline1412)
+      let inline1384 = @intrinsic(ref.new)(toks0/29) in
+      jump inline_cont1383(inline1384)
     } in
-    let inline1414 = @intrinsic(ref.new)(toks0/29) in
-    jump inline_cont1413(inline1414)
+    let inline1386 = @intrinsic(vec.new)() in
+    jump inline_cont1385(inline1386)
   } in
-  let inline1416 = @intrinsic(vec.new)() in
-  jump inline_cont1415(inline1416)
+  let inline1388 = @runtime(core.string_len)(source/27) in
+  jump inline_cont1387(inline1388)
 }
 
 fn env_lookup(env/35: Vec[Binding], name/36: string) -> Value {
-  join inline_cont1443(t452: int) -> Value {
+  join inline_cont1413(t452: int) -> Value {
     let t453 = (t452 - 1) in
-    join inline_cont1441(i/37: Ref[int]) -> Value {
-      join inline_cont1439(result/38: Ref[Value]) -> Value {
-        join inline_cont1436(done/39: Ref[bool]) -> Value {
+    join inline_cont1411(i/37: Ref[int]) -> Value {
+      join inline_cont1409(result/38: Ref[Value]) -> Value {
+        join inline_cont1406(done/39: Ref[bool]) -> Value {
           join exit454() -> Value {
             let mtmp191 = () in
-            let inline1435 = @intrinsic(ref.get)(result/38) in
-            inline1435
+            let inline1405 = @intrinsic(ref.get)(result/38) in
+            inline1405
           } in
           joinrec {
             join loop456() -> Value {
-              join inline_cont1432(t468: bool) -> Value {
+              join inline_cont1402(t468: bool) -> Value {
                 let t469 = (!t468) in
                 join k457(jp458: bool) -> Value {
                   if jp458 {
-                    join inline_cont1430(t459: int) -> Value {
+                    join inline_cont1400(t459: int) -> Value {
                       let binding/40 = @intrinsic(vec.get)(env/35, t459) in
                       let t461 = Binding.name(binding/40) in
-                      join inline_cont1428(t462: bool) -> Value {
-                        if t462 {
-                          let t463 = Binding.value(binding/40) in
-                          join inline_cont1422(mtmp190: unit) -> Value {
-                            let inline1420 = true in
-                            let inline1421 = @intrinsic(ref.set)(done/39, inline1420) in
-                            jump loop456()
-                          } in
-                          let inline1423 = @intrinsic(ref.set)(result/38, t463) in
-                          jump inline_cont1422(())
-                        } else {
-                          join inline_cont1426(t465: int) -> Value {
-                            let t466 = (t465 - 1) in
-                            let inline1425 = @intrinsic(ref.set)(i/37, t466) in
-                            jump loop456()
-                          } in
-                          let inline1427 = @intrinsic(ref.get)(i/37) in
-                          jump inline_cont1426(inline1427)
-                        }
-                      } in
-                      let inline1429 = @intrinsic(eq.primitive)(t461, name/36) in
-                      jump inline_cont1428(inline1429)
+                      let t462 = (t461 == name/36) in
+                      if t462 {
+                        let t463 = Binding.value(binding/40) in
+                        join inline_cont1394(mtmp190: unit) -> Value {
+                          let inline1392 = true in
+                          let inline1393 = @intrinsic(ref.set)(done/39, inline1392) in
+                          jump loop456()
+                        } in
+                        let inline1395 = @intrinsic(ref.set)(result/38, t463) in
+                        jump inline_cont1394(())
+                      } else {
+                        join inline_cont1398(t465: int) -> Value {
+                          let t466 = (t465 - 1) in
+                          let inline1397 = @intrinsic(ref.set)(i/37, t466) in
+                          jump loop456()
+                        } in
+                        let inline1399 = @intrinsic(ref.get)(i/37) in
+                        jump inline_cont1398(inline1399)
+                      }
                     } in
-                    let inline1431 = @intrinsic(ref.get)(i/37) in
-                    jump inline_cont1430(inline1431)
+                    let inline1401 = @intrinsic(ref.get)(i/37) in
+                    jump inline_cont1400(inline1401)
                   } else {
                     jump exit454()
                   }
                 } in
                 if t469 {
-                  join inline_cont1417(t470: int) -> Value {
+                  join inline_cont1389(t470: int) -> Value {
                     let t471 = (t470 >= 0) in
                     jump k457(t471)
                   } in
-                  let inline1418 = @intrinsic(ref.get)(i/37) in
-                  jump inline_cont1417(inline1418)
+                  let inline1390 = @intrinsic(ref.get)(i/37) in
+                  jump inline_cont1389(inline1390)
                 } else {
                   jump k457(false)
                 }
               } in
-              let inline1433 = @intrinsic(ref.get)(done/39) in
-              jump inline_cont1432(inline1433)
+              let inline1403 = @intrinsic(ref.get)(done/39) in
+              jump inline_cont1402(inline1403)
             } in
           } in
           jump loop456()
         } in
-        let inline1437 = false in
-        let inline1438 = @intrinsic(ref.new)(inline1437) in
-        jump inline_cont1436(inline1438)
+        let inline1407 = false in
+        let inline1408 = @intrinsic(ref.new)(inline1407) in
+        jump inline_cont1406(inline1408)
       } in
-      let inline1440 = @intrinsic(ref.new)(Tag_3) in
-      jump inline_cont1439(inline1440)
+      let inline1410 = @intrinsic(ref.new)(Tag_3) in
+      jump inline_cont1409(inline1410)
     } in
-    let inline1442 = @intrinsic(ref.new)(t453) in
-    jump inline_cont1441(inline1442)
+    let inline1412 = @intrinsic(ref.new)(t453) in
+    jump inline_cont1411(inline1412)
   } in
-  let inline1444 = @intrinsic(vec.len)(env/35) in
-  jump inline_cont1443(inline1444)
+  let inline1414 = @intrinsic(vec.len)(env/35) in
+  jump inline_cont1413(inline1414)
 }
 
 fn lookup(local/41: Vec[Binding], global/42: Vec[Binding], name/43: string) -> Value {
@@ -713,109 +696,109 @@ fn lookup(local/41: Vec[Binding], global/42: Vec[Binding], name/43: string) -> V
 }
 
 fn parse_list(tokens/45: Vec[Token], start/46: int) -> (Vec[SExpr], int) {
-  join inline_cont1479(acc/47: Vec[SExpr]) -> (Vec[SExpr], int) {
-    join inline_cont1477(exprs/48: Ref[Vec[SExpr]]) -> (Vec[SExpr], int) {
-      join inline_cont1475(i/49: Ref[int]) -> (Vec[SExpr], int) {
-        join inline_cont1472(done/50: Ref[bool]) -> (Vec[SExpr], int) {
+  join inline_cont1449(acc/47: Vec[SExpr]) -> (Vec[SExpr], int) {
+    join inline_cont1447(exprs/48: Ref[Vec[SExpr]]) -> (Vec[SExpr], int) {
+      join inline_cont1445(i/49: Ref[int]) -> (Vec[SExpr], int) {
+        join inline_cont1442(done/50: Ref[bool]) -> (Vec[SExpr], int) {
           join exit479() -> (Vec[SExpr], int) {
             let mtmp205 = () in
-            join inline_cont1470(t480: Vec[SExpr]) -> (Vec[SExpr], int) {
-              join inline_cont1468(t481: int) -> (Vec[SExpr], int) {
+            join inline_cont1440(t480: Vec[SExpr]) -> (Vec[SExpr], int) {
+              join inline_cont1438(t481: int) -> (Vec[SExpr], int) {
                 let t482 = (t480, t481) in
                 t482
               } in
-              let inline1469 = @intrinsic(ref.get)(i/49) in
-              jump inline_cont1468(inline1469)
+              let inline1439 = @intrinsic(ref.get)(i/49) in
+              jump inline_cont1438(inline1439)
             } in
-            let inline1471 = @intrinsic(ref.get)(exprs/48) in
-            jump inline_cont1470(inline1471)
+            let inline1441 = @intrinsic(ref.get)(exprs/48) in
+            jump inline_cont1440(inline1441)
           } in
           joinrec {
             join loop483() -> (Vec[SExpr], int) {
-              join inline_cont1466(t495: bool) -> (Vec[SExpr], int) {
+              join inline_cont1436(t495: bool) -> (Vec[SExpr], int) {
                 let t496 = (!t495) in
                 join k484(jp485: bool) -> (Vec[SExpr], int) {
                   if jp485 {
-                    join inline_cont1464(t486: int) -> (Vec[SExpr], int) {
+                    join inline_cont1434(t486: int) -> (Vec[SExpr], int) {
                       let mtmp196 = @intrinsic(vec.get)(tokens/45, t486) in
                       match mtmp196 {
                         Tag_1 => {
-                          join inline_cont1453(mtmp200: unit) -> (Vec[SExpr], int) {
-                            join inline_cont1451(t488: int) -> (Vec[SExpr], int) {
+                          join inline_cont1423(mtmp200: unit) -> (Vec[SExpr], int) {
+                            join inline_cont1421(t488: int) -> (Vec[SExpr], int) {
                               let t489 = (t488 + 1) in
-                              let inline1450 = @intrinsic(ref.set)(i/49, t489) in
+                              let inline1420 = @intrinsic(ref.set)(i/49, t489) in
                               jump loop483()
                             } in
-                            let inline1452 = @intrinsic(ref.get)(i/49) in
-                            jump inline_cont1451(inline1452)
+                            let inline1422 = @intrinsic(ref.get)(i/49) in
+                            jump inline_cont1421(inline1422)
                           } in
-                          let inline1454 = true in
-                          let inline1455 = @intrinsic(ref.set)(done/50, inline1454) in
-                          jump inline_cont1453(())
+                          let inline1424 = true in
+                          let inline1425 = @intrinsic(ref.set)(done/50, inline1424) in
+                          jump inline_cont1423(())
                         },
                         _ => {
-                          join inline_cont1462(t491: int) -> (Vec[SExpr], int) {
+                          join inline_cont1432(t491: int) -> (Vec[SExpr], int) {
                             let mtmp201 = parse_expr(tokens/45, t491) in
                             let x202 = mtmp201.0 in
                             let x203 = mtmp201.1 in
                             let next/52 = x203 in
                             let expr/51 = x202 in
-                            join inline_cont1460(t492: Vec[SExpr]) -> (Vec[SExpr], int) {
+                            join inline_cont1430(t492: Vec[SExpr]) -> (Vec[SExpr], int) {
                               let t493 = inherent#Vec#Vec[T]#pushed__T_SExpr(t492, x202) in
-                              join inline_cont1458(mtmp204: unit) -> (Vec[SExpr], int) {
-                                let inline1457 = @intrinsic(ref.set)(i/49, x203) in
+                              join inline_cont1428(mtmp204: unit) -> (Vec[SExpr], int) {
+                                let inline1427 = @intrinsic(ref.set)(i/49, x203) in
                                 jump loop483()
                               } in
-                              let inline1459 = @intrinsic(ref.set)(exprs/48, t493) in
-                              jump inline_cont1458(())
+                              let inline1429 = @intrinsic(ref.set)(exprs/48, t493) in
+                              jump inline_cont1428(())
                             } in
-                            let inline1461 = @intrinsic(ref.get)(exprs/48) in
-                            jump inline_cont1460(inline1461)
+                            let inline1431 = @intrinsic(ref.get)(exprs/48) in
+                            jump inline_cont1430(inline1431)
                           } in
-                          let inline1463 = @intrinsic(ref.get)(i/49) in
-                          jump inline_cont1462(inline1463)
+                          let inline1433 = @intrinsic(ref.get)(i/49) in
+                          jump inline_cont1432(inline1433)
                         },
                       }
                     } in
-                    let inline1465 = @intrinsic(ref.get)(i/49) in
-                    jump inline_cont1464(inline1465)
+                    let inline1435 = @intrinsic(ref.get)(i/49) in
+                    jump inline_cont1434(inline1435)
                   } else {
                     jump exit479()
                   }
                 } in
                 if t496 {
-                  join inline_cont1447(t497: int) -> (Vec[SExpr], int) {
-                    join inline_cont1445(t498: int) -> (Vec[SExpr], int) {
+                  join inline_cont1417(t497: int) -> (Vec[SExpr], int) {
+                    join inline_cont1415(t498: int) -> (Vec[SExpr], int) {
                       let t499 = (t497 < t498) in
                       jump k484(t499)
                     } in
-                    let inline1446 = @intrinsic(vec.len)(tokens/45) in
-                    jump inline_cont1445(inline1446)
+                    let inline1416 = @intrinsic(vec.len)(tokens/45) in
+                    jump inline_cont1415(inline1416)
                   } in
-                  let inline1448 = @intrinsic(ref.get)(i/49) in
-                  jump inline_cont1447(inline1448)
+                  let inline1418 = @intrinsic(ref.get)(i/49) in
+                  jump inline_cont1417(inline1418)
                 } else {
                   jump k484(false)
                 }
               } in
-              let inline1467 = @intrinsic(ref.get)(done/50) in
-              jump inline_cont1466(inline1467)
+              let inline1437 = @intrinsic(ref.get)(done/50) in
+              jump inline_cont1436(inline1437)
             } in
           } in
           jump loop483()
         } in
-        let inline1473 = false in
-        let inline1474 = @intrinsic(ref.new)(inline1473) in
-        jump inline_cont1472(inline1474)
+        let inline1443 = false in
+        let inline1444 = @intrinsic(ref.new)(inline1443) in
+        jump inline_cont1442(inline1444)
       } in
-      let inline1476 = @intrinsic(ref.new)(start/46) in
-      jump inline_cont1475(inline1476)
+      let inline1446 = @intrinsic(ref.new)(start/46) in
+      jump inline_cont1445(inline1446)
     } in
-    let inline1478 = @intrinsic(ref.new)(acc/47) in
-    jump inline_cont1477(inline1478)
+    let inline1448 = @intrinsic(ref.new)(acc/47) in
+    jump inline_cont1447(inline1448)
   } in
-  let inline1480 = @intrinsic(vec.new)() in
-  jump inline_cont1479(inline1480)
+  let inline1450 = @intrinsic(vec.new)() in
+  jump inline_cont1449(inline1450)
 }
 
 fn parse_expr(tokens/53: Vec[Token], start/54: int) -> (SExpr, int) {
@@ -866,62 +849,62 @@ fn parse_expr(tokens/53: Vec[Token], start/54: int) -> (SExpr, int) {
 }
 
 fn parse_program(tokens/60: Vec[Token]) -> Vec[SExpr] {
-  join inline_cont1499(i/61: Ref[int]) -> Vec[SExpr] {
-    join inline_cont1497(acc/62: Vec[SExpr]) -> Vec[SExpr] {
-      join inline_cont1495(exprs/63: Ref[Vec[SExpr]]) -> Vec[SExpr] {
+  join inline_cont1469(i/61: Ref[int]) -> Vec[SExpr] {
+    join inline_cont1467(acc/62: Vec[SExpr]) -> Vec[SExpr] {
+      join inline_cont1465(exprs/63: Ref[Vec[SExpr]]) -> Vec[SExpr] {
         join exit521() -> Vec[SExpr] {
           let mtmp217 = () in
-          let inline1494 = @intrinsic(ref.get)(exprs/63) in
-          inline1494
+          let inline1464 = @intrinsic(ref.get)(exprs/63) in
+          inline1464
         } in
         joinrec {
           join loop523() -> Vec[SExpr] {
-            join inline_cont1491(t524: int) -> Vec[SExpr] {
-              join inline_cont1489(t525: int) -> Vec[SExpr] {
+            join inline_cont1461(t524: int) -> Vec[SExpr] {
+              join inline_cont1459(t525: int) -> Vec[SExpr] {
                 let t526 = (t524 < t525) in
                 if t526 {
-                  join inline_cont1487(t527: int) -> Vec[SExpr] {
+                  join inline_cont1457(t527: int) -> Vec[SExpr] {
                     let mtmp213 = parse_expr(tokens/60, t527) in
                     let x214 = mtmp213.0 in
                     let x215 = mtmp213.1 in
                     let next/65 = x215 in
                     let expr/64 = x214 in
-                    join inline_cont1485(t528: Vec[SExpr]) -> Vec[SExpr] {
+                    join inline_cont1455(t528: Vec[SExpr]) -> Vec[SExpr] {
                       let t529 = inherent#Vec#Vec[T]#pushed__T_SExpr(t528, x214) in
-                      join inline_cont1483(mtmp216: unit) -> Vec[SExpr] {
-                        let inline1482 = @intrinsic(ref.set)(i/61, x215) in
+                      join inline_cont1453(mtmp216: unit) -> Vec[SExpr] {
+                        let inline1452 = @intrinsic(ref.set)(i/61, x215) in
                         jump loop523()
                       } in
-                      let inline1484 = @intrinsic(ref.set)(exprs/63, t529) in
-                      jump inline_cont1483(())
+                      let inline1454 = @intrinsic(ref.set)(exprs/63, t529) in
+                      jump inline_cont1453(())
                     } in
-                    let inline1486 = @intrinsic(ref.get)(exprs/63) in
-                    jump inline_cont1485(inline1486)
+                    let inline1456 = @intrinsic(ref.get)(exprs/63) in
+                    jump inline_cont1455(inline1456)
                   } in
-                  let inline1488 = @intrinsic(ref.get)(i/61) in
-                  jump inline_cont1487(inline1488)
+                  let inline1458 = @intrinsic(ref.get)(i/61) in
+                  jump inline_cont1457(inline1458)
                 } else {
                   jump exit521()
                 }
               } in
-              let inline1490 = @intrinsic(vec.len)(tokens/60) in
-              jump inline_cont1489(inline1490)
+              let inline1460 = @intrinsic(vec.len)(tokens/60) in
+              jump inline_cont1459(inline1460)
             } in
-            let inline1492 = @intrinsic(ref.get)(i/61) in
-            jump inline_cont1491(inline1492)
+            let inline1462 = @intrinsic(ref.get)(i/61) in
+            jump inline_cont1461(inline1462)
           } in
         } in
         jump loop523()
       } in
-      let inline1496 = @intrinsic(ref.new)(acc/62) in
-      jump inline_cont1495(inline1496)
+      let inline1466 = @intrinsic(ref.new)(acc/62) in
+      jump inline_cont1465(inline1466)
     } in
-    let inline1498 = @intrinsic(vec.new)() in
-    jump inline_cont1497(inline1498)
+    let inline1468 = @intrinsic(vec.new)() in
+    jump inline_cont1467(inline1468)
   } in
-  let inline1500 = 0 in
-  let inline1501 = @intrinsic(ref.new)(inline1500) in
-  jump inline_cont1499(inline1501)
+  let inline1470 = 0 in
+  let inline1471 = @intrinsic(ref.new)(inline1470) in
+  jump inline_cont1469(inline1471)
 }
 
 fn value_to_string(value/66: Value) -> string {
@@ -929,14 +912,14 @@ fn value_to_string(value/66: Value) -> string {
     Tag_0 => {
       let x218 = Value::Int._0(value/66) in
       let n/67 = x218 in
-      let inline1503 = @runtime(core.int32_to_string)(x218) in
-      inline1503
+      let inline1473 = @runtime(core.int32_to_string)(x218) in
+      inline1473
     },
     Tag_1 => {
       let x219 = Value::Bool._0(value/66) in
       let b/68 = x219 in
-      let inline1505 = @runtime(core.bool_to_string)(x219) in
-      inline1505
+      let inline1475 = @runtime(core.bool_to_string)(x219) in
+      inline1475
     },
     Tag_2 => {
       let x220 = Value::Func._0(value/66) in
@@ -953,13 +936,8 @@ fn truthy(value/69: Value) -> bool {
     Tag_0 => {
       let x221 = Value::Int._0(value/69) in
       let n/71 = x221 in
-      join inline_cont1506(t541: bool) -> bool {
-        let t542 = (!t541) in
-        t542
-      } in
-      let inline1507 = 0 in
-      let inline1508 = @intrinsic(eq.primitive)(x221, inline1507) in
-      jump inline_cont1506(inline1508)
+      let t541 = (x221 != 0) in
+      t541
     },
     Tag_1 => {
       let x222 = Value::Bool._0(value/69) in
@@ -981,55 +959,55 @@ fn eval(expr/72: SExpr, local/73: Vec[Binding], global/74: Ref[Vec[Binding]]) ->
     Tag_0 => {
       let x224 = SExpr::Int._0(expr/72) in
       let n/75 = x224 in
-      let t547 = Value::Int(x224) in
-      t547
+      let t546 = Value::Int(x224) in
+      t546
     },
     Tag_1 => {
       let x225 = SExpr::Bool._0(expr/72) in
       let b/76 = x225 in
-      let t548 = Value::Bool(x225) in
-      t548
+      let t547 = Value::Bool(x225) in
+      t547
     },
     Tag_2 => {
       let x226 = SExpr::Sym._0(expr/72) in
       let name/77 = x226 in
-      join inline_cont1513(t549: Vec[Binding]) -> Value {
-        let inline1510 = env_lookup(local/73, x226) in
-        match inline1510 {
+      join inline_cont1480(t548: Vec[Binding]) -> Value {
+        let inline1477 = env_lookup(local/73, x226) in
+        match inline1477 {
           Tag_3 => {
-            let inline1511 = env_lookup(t549, x226) in
-            inline1511
+            let inline1478 = env_lookup(t548, x226) in
+            inline1478
           },
           _ => {
-            let inline1512 = inline1510 in
-            inline1510
+            let inline1479 = inline1477 in
+            inline1477
           },
         }
       } in
-      let inline1514 = @intrinsic(ref.get)(global/74) in
-      jump inline_cont1513(inline1514)
+      let inline1481 = @intrinsic(ref.get)(global/74) in
+      jump inline_cont1480(inline1481)
     },
     Tag_3 => {
       let x227 = SExpr::List._0(expr/72) in
       let items/78 = x227 in
-      let inline1516 = inherent#Vec#Vec[T]#len__T_SExpr(x227) in
-      let inline1517 = trait_impl#PartialEq#int#eq(inline1516, 0) in
-      if inline1517 {
+      let inline1483 = inherent#Vec#Vec[T]#len__T_SExpr(x227) in
+      let inline1484 = (inline1483 == 0) in
+      if inline1484 {
         Tag_3
       } else {
-        let inline1518 = @intrinsic(vec.get)(x227, 0) in
-        match inline1518 {
+        let inline1485 = @intrinsic(vec.get)(x227, 0) in
+        match inline1485 {
           Tag_2 => {
-            let inline1519 = SExpr::Sym._0(inline1518) in
-            let inline1520 = inline1519 in
-            let inline1521 = eval_list_sym(inline1519, x227, local/73, global/74) in
-            inline1521
+            let inline1486 = SExpr::Sym._0(inline1485) in
+            let inline1487 = inline1486 in
+            let inline1488 = eval_list_sym(inline1486, x227, local/73, global/74) in
+            inline1488
           },
           _ => {
-            let inline1522 = eval(inline1518, local/73, global/74) in
-            let inline1523 = eval_args(x227, 1, local/73, global/74) in
-            let inline1524 = apply(inline1522, inline1523, global/74) in
-            inline1524
+            let inline1489 = eval(inline1485, local/73, global/74) in
+            let inline1490 = eval_args(x227, 1, local/73, global/74) in
+            let inline1491 = apply(inline1489, inline1490, global/74) in
+            inline1491
           },
         }
       }
@@ -1038,43 +1016,39 @@ fn eval(expr/72: SExpr, local/73: Vec[Binding], global/74: Ref[Vec[Binding]]) ->
 }
 
 fn eval_list(items/79: Vec[SExpr], local/80: Vec[Binding], global/81: Ref[Vec[Binding]]) -> Value {
-  join inline_cont1532(t556: int) -> Value {
-    join inline_cont1529(t557: bool) -> Value {
-      if t557 {
-        Tag_3
-      } else {
-        let head/82 = @intrinsic(vec.get)(items/79, 0) in
-        match head/82 {
-          Tag_2 => {
-            let x230 = SExpr::Sym._0(head/82) in
-            let name/83 = x230 in
-            let t560 = eval_list_sym(x230, items/79, local/80, global/81) in
-            t560
-          },
-          _ => {
-            let f/84 = eval(head/82, local/80, global/81) in
-            let args/85 = eval_args(items/79, 1, local/80, global/81) in
-            match f/84 {
-              Tag_2 => {
-                let inline1526 = Value::Func._0(f/84) in
-                let inline1527 = inline1526 in
-                let inline1528 = apply_lambda(inline1526, args/85) in
-                inline1528
-              },
-              _ => {
-                Tag_3
-              },
-            }
-          },
-        }
+  join inline_cont1496(t555: int) -> Value {
+    let t556 = (t555 == 0) in
+    if t556 {
+      Tag_3
+    } else {
+      let head/82 = @intrinsic(vec.get)(items/79, 0) in
+      match head/82 {
+        Tag_2 => {
+          let x230 = SExpr::Sym._0(head/82) in
+          let name/83 = x230 in
+          let t559 = eval_list_sym(x230, items/79, local/80, global/81) in
+          t559
+        },
+        _ => {
+          let f/84 = eval(head/82, local/80, global/81) in
+          let args/85 = eval_args(items/79, 1, local/80, global/81) in
+          match f/84 {
+            Tag_2 => {
+              let inline1493 = Value::Func._0(f/84) in
+              let inline1494 = inline1493 in
+              let inline1495 = apply_lambda(inline1493, args/85) in
+              inline1495
+            },
+            _ => {
+              Tag_3
+            },
+          }
+        },
       }
-    } in
-    let inline1530 = 0 in
-    let inline1531 = @intrinsic(eq.primitive)(t556, inline1530) in
-    jump inline_cont1529(inline1531)
+    }
   } in
-  let inline1533 = @intrinsic(vec.len)(items/79) in
-  jump inline_cont1532(inline1533)
+  let inline1497 = @intrinsic(vec.len)(items/79) in
+  jump inline_cont1496(inline1497)
 }
 
 fn eval_list_sym(
@@ -1085,159 +1059,146 @@ fn eval_list_sym(
 ) -> Value {
   match name/86 {
     "begin" => {
-      let t566 = eval_begin(items/87, 1, local/88, global/89) in
-      t566
+      let t565 = eval_begin(items/87, 1, local/88, global/89) in
+      t565
     },
     "define" => {
-      join inline_cont1541(t569: int) -> Value {
-        join inline_cont1538(t570: bool) -> Value {
-          if t570 {
-            let mtmp232 = @intrinsic(vec.get)(items/87, 1) in
-            match mtmp232 {
-              Tag_2 => {
-                let x235 = SExpr::Sym._0(mtmp232) in
-                let var/90 = x235 in
-                let t573 = @intrinsic(vec.get)(items/87, 2) in
-                let value/91 = eval(t573, local/88, global/89) in
-                join inline_cont1536(env/92: Vec[Binding]) -> Value {
-                  let t574 = Binding { name: x235, value: value/91 } in
-                  let updated/93 = inherent#Vec#Vec[T]#pushed__T_Binding(env/92, t574) in
-                  let inline1535 = @intrinsic(ref.set)(global/89, updated/93) in
-                  value/91
-                } in
-                let inline1537 = @intrinsic(ref.get)(global/89) in
-                jump inline_cont1536(inline1537)
-              },
-              _ => {
-                Tag_3
-              },
-            }
-          } else {
-            Tag_3
+      join inline_cont1502(t568: int) -> Value {
+        let t569 = (t568 == 3) in
+        if t569 {
+          let mtmp232 = @intrinsic(vec.get)(items/87, 1) in
+          match mtmp232 {
+            Tag_2 => {
+              let x235 = SExpr::Sym._0(mtmp232) in
+              let var/90 = x235 in
+              let t572 = @intrinsic(vec.get)(items/87, 2) in
+              let value/91 = eval(t572, local/88, global/89) in
+              join inline_cont1500(env/92: Vec[Binding]) -> Value {
+                let t573 = Binding { name: x235, value: value/91 } in
+                let updated/93 = inherent#Vec#Vec[T]#pushed__T_Binding(env/92, t573) in
+                let inline1499 = @intrinsic(ref.set)(global/89, updated/93) in
+                value/91
+              } in
+              let inline1501 = @intrinsic(ref.get)(global/89) in
+              jump inline_cont1500(inline1501)
+            },
+            _ => {
+              Tag_3
+            },
           }
-        } in
-        let inline1539 = 3 in
-        let inline1540 = @intrinsic(eq.primitive)(t569, inline1539) in
-        jump inline_cont1538(inline1540)
+        } else {
+          Tag_3
+        }
       } in
-      let inline1542 = @intrinsic(vec.len)(items/87) in
-      jump inline_cont1541(inline1542)
+      let inline1503 = @intrinsic(vec.len)(items/87) in
+      jump inline_cont1502(inline1503)
     },
     "if" => {
-      join inline_cont1554(t577: int) -> Value {
-        join inline_cont1551(t578: bool) -> Value {
-          if t578 {
-            let t579 = @intrinsic(vec.get)(items/87, 1) in
-            let cond/94 = eval(t579, local/88, global/89) in
-            join inline_cont1543(t582: bool) -> Value {
-              if t582 {
-                let t583 = @intrinsic(vec.get)(items/87, 2) in
-                let t584 = eval(t583, local/88, global/89) in
-                t584
-              } else {
-                let t585 = @intrinsic(vec.get)(items/87, 3) in
-                let t586 = eval(t585, local/88, global/89) in
-                t586
-              }
-            } in
-            match cond/94 {
-              Tag_0 => {
-                let inline1544 = Value::Int._0(cond/94) in
-                let inline1545 = inline1544 in
-                let inline1546 = trait_impl#PartialEq#int32#eq(inline1544, 0) in
-                let inline1547 = (!inline1546) in
-                jump inline_cont1543(inline1547)
-              },
-              Tag_1 => {
-                let inline1548 = Value::Bool._0(cond/94) in
-                let inline1549 = inline1548 in
-                jump inline_cont1543(inline1548)
-              },
-              Tag_2 => {
-                let inline1550 = Value::Func._0(cond/94) in
-                jump inline_cont1543(true)
-              },
-              Tag_3 => {
-                jump inline_cont1543(false)
-              },
+      join inline_cont1511(t576: int) -> Value {
+        let t577 = (t576 == 4) in
+        if t577 {
+          let t578 = @intrinsic(vec.get)(items/87, 1) in
+          let cond/94 = eval(t578, local/88, global/89) in
+          join inline_cont1504(t581: bool) -> Value {
+            if t581 {
+              let t582 = @intrinsic(vec.get)(items/87, 2) in
+              let t583 = eval(t582, local/88, global/89) in
+              t583
+            } else {
+              let t584 = @intrinsic(vec.get)(items/87, 3) in
+              let t585 = eval(t584, local/88, global/89) in
+              t585
             }
-          } else {
-            Tag_3
+          } in
+          match cond/94 {
+            Tag_0 => {
+              let inline1505 = Value::Int._0(cond/94) in
+              let inline1506 = inline1505 in
+              let inline1507 = (inline1505 != 0) in
+              jump inline_cont1504(inline1507)
+            },
+            Tag_1 => {
+              let inline1508 = Value::Bool._0(cond/94) in
+              let inline1509 = inline1508 in
+              jump inline_cont1504(inline1508)
+            },
+            Tag_2 => {
+              let inline1510 = Value::Func._0(cond/94) in
+              jump inline_cont1504(true)
+            },
+            Tag_3 => {
+              jump inline_cont1504(false)
+            },
           }
-        } in
-        let inline1552 = 4 in
-        let inline1553 = @intrinsic(eq.primitive)(t577, inline1552) in
-        jump inline_cont1551(inline1553)
+        } else {
+          Tag_3
+        }
       } in
-      let inline1555 = @intrinsic(vec.len)(items/87) in
-      jump inline_cont1554(inline1555)
+      let inline1512 = @intrinsic(vec.len)(items/87) in
+      jump inline_cont1511(inline1512)
     },
     "lambda" => {
-      join inline_cont1559(t589: int) -> Value {
-        join inline_cont1556(t590: bool) -> Value {
-          if t590 {
-            let mtmp238 = @intrinsic(vec.get)(items/87, 1) in
-            match mtmp238 {
-              Tag_3 => {
-                let x242 = SExpr::List._0(mtmp238) in
-                let params_exprs/95 = x242 in
-                let params/96 = params_from_sexprs(x242) in
-                let body/97 = @intrinsic(vec.get)(items/87, 2) in
-                let t593 =
-                  Lambda { params: params/96, body: body/97, env: local/88, global: global/89 } in
-                let t594 = Value::Func(t593) in
-                t594
-              },
-              _ => {
-                Tag_3
-              },
-            }
-          } else {
-            Tag_3
+      join inline_cont1513(t588: int) -> Value {
+        let t589 = (t588 == 3) in
+        if t589 {
+          let mtmp238 = @intrinsic(vec.get)(items/87, 1) in
+          match mtmp238 {
+            Tag_3 => {
+              let x242 = SExpr::List._0(mtmp238) in
+              let params_exprs/95 = x242 in
+              let params/96 = params_from_sexprs(x242) in
+              let body/97 = @intrinsic(vec.get)(items/87, 2) in
+              let t592 =
+                Lambda { params: params/96, body: body/97, env: local/88, global: global/89 } in
+              let t593 = Value::Func(t592) in
+              t593
+            },
+            _ => {
+              Tag_3
+            },
           }
-        } in
-        let inline1557 = 3 in
-        let inline1558 = @intrinsic(eq.primitive)(t589, inline1557) in
-        jump inline_cont1556(inline1558)
+        } else {
+          Tag_3
+        }
       } in
-      let inline1560 = @intrinsic(vec.len)(items/87) in
-      jump inline_cont1559(inline1560)
+      let inline1514 = @intrinsic(vec.len)(items/87) in
+      jump inline_cont1513(inline1514)
     },
     "+" => {
-      let t595 = eval_args(items/87, 1, local/88, global/89) in
-      let t596 = apply_builtin("+", t595) in
-      t596
+      let t594 = eval_args(items/87, 1, local/88, global/89) in
+      let t595 = apply_builtin("+", t594) in
+      t595
     },
     "-" => {
-      let t597 = eval_args(items/87, 1, local/88, global/89) in
-      let t598 = apply_builtin("-", t597) in
-      t598
+      let t596 = eval_args(items/87, 1, local/88, global/89) in
+      let t597 = apply_builtin("-", t596) in
+      t597
     },
     "*" => {
-      let t599 = eval_args(items/87, 1, local/88, global/89) in
-      let t600 = apply_builtin("*", t599) in
-      t600
+      let t598 = eval_args(items/87, 1, local/88, global/89) in
+      let t599 = apply_builtin("*", t598) in
+      t599
     },
     "/" => {
-      let t601 = eval_args(items/87, 1, local/88, global/89) in
-      let t602 = apply_builtin("/", t601) in
-      t602
+      let t600 = eval_args(items/87, 1, local/88, global/89) in
+      let t601 = apply_builtin("/", t600) in
+      t601
     },
     "=" => {
-      let t603 = eval_args(items/87, 1, local/88, global/89) in
-      let t604 = apply_builtin("=", t603) in
-      t604
+      let t602 = eval_args(items/87, 1, local/88, global/89) in
+      let t603 = apply_builtin("=", t602) in
+      t603
     },
     _ => {
-      let t605 = SExpr::Sym(name/86) in
-      let f/98 = eval(t605, local/88, global/89) in
+      let t604 = SExpr::Sym(name/86) in
+      let f/98 = eval(t604, local/88, global/89) in
       let args/99 = eval_args(items/87, 1, local/88, global/89) in
       match f/98 {
         Tag_2 => {
-          let inline1562 = Value::Func._0(f/98) in
-          let inline1563 = inline1562 in
-          let inline1564 = apply_lambda(inline1562, args/99) in
-          inline1564
+          let inline1516 = Value::Func._0(f/98) in
+          let inline1517 = inline1516 in
+          let inline1518 = apply_lambda(inline1516, args/99) in
+          inline1518
         },
         _ => {
           Tag_3
@@ -1253,129 +1214,129 @@ fn eval_begin(
   local/102: Vec[Binding],
   global/103: Ref[Vec[Binding]]
 ) -> Value {
-  join inline_cont1581(i/104: Ref[int]) -> Value {
-    join inline_cont1579(last/105: Ref[Value]) -> Value {
-      join exit609() -> Value {
+  join inline_cont1535(i/104: Ref[int]) -> Value {
+    join inline_cont1533(last/105: Ref[Value]) -> Value {
+      join exit608() -> Value {
         let mtmp244 = () in
-        let inline1578 = @intrinsic(ref.get)(last/105) in
-        inline1578
+        let inline1532 = @intrinsic(ref.get)(last/105) in
+        inline1532
       } in
       joinrec {
-        join loop611() -> Value {
-          join inline_cont1575(t612: int) -> Value {
-            join inline_cont1573(t613: int) -> Value {
-              let t614 = (t612 < t613) in
-              if t614 {
-                join inline_cont1571(t615: int) -> Value {
-                  let t616 = @intrinsic(vec.get)(items/100, t615) in
-                  let v/106 = eval(t616, local/102, global/103) in
-                  join inline_cont1569(mtmp243: unit) -> Value {
-                    join inline_cont1567(t617: int) -> Value {
-                      let t618 = (t617 + 1) in
-                      let inline1566 = @intrinsic(ref.set)(i/104, t618) in
-                      jump loop611()
+        join loop610() -> Value {
+          join inline_cont1529(t611: int) -> Value {
+            join inline_cont1527(t612: int) -> Value {
+              let t613 = (t611 < t612) in
+              if t613 {
+                join inline_cont1525(t614: int) -> Value {
+                  let t615 = @intrinsic(vec.get)(items/100, t614) in
+                  let v/106 = eval(t615, local/102, global/103) in
+                  join inline_cont1523(mtmp243: unit) -> Value {
+                    join inline_cont1521(t616: int) -> Value {
+                      let t617 = (t616 + 1) in
+                      let inline1520 = @intrinsic(ref.set)(i/104, t617) in
+                      jump loop610()
                     } in
-                    let inline1568 = @intrinsic(ref.get)(i/104) in
-                    jump inline_cont1567(inline1568)
+                    let inline1522 = @intrinsic(ref.get)(i/104) in
+                    jump inline_cont1521(inline1522)
                   } in
-                  let inline1570 = @intrinsic(ref.set)(last/105, v/106) in
-                  jump inline_cont1569(())
+                  let inline1524 = @intrinsic(ref.set)(last/105, v/106) in
+                  jump inline_cont1523(())
                 } in
-                let inline1572 = @intrinsic(ref.get)(i/104) in
-                jump inline_cont1571(inline1572)
+                let inline1526 = @intrinsic(ref.get)(i/104) in
+                jump inline_cont1525(inline1526)
               } else {
-                jump exit609()
+                jump exit608()
               }
             } in
-            let inline1574 = @intrinsic(vec.len)(items/100) in
-            jump inline_cont1573(inline1574)
+            let inline1528 = @intrinsic(vec.len)(items/100) in
+            jump inline_cont1527(inline1528)
           } in
-          let inline1576 = @intrinsic(ref.get)(i/104) in
-          jump inline_cont1575(inline1576)
+          let inline1530 = @intrinsic(ref.get)(i/104) in
+          jump inline_cont1529(inline1530)
         } in
       } in
-      jump loop611()
+      jump loop610()
     } in
-    let inline1580 = @intrinsic(ref.new)(Tag_3) in
-    jump inline_cont1579(inline1580)
+    let inline1534 = @intrinsic(ref.new)(Tag_3) in
+    jump inline_cont1533(inline1534)
   } in
-  let inline1582 = @intrinsic(ref.new)(start/101) in
-  jump inline_cont1581(inline1582)
+  let inline1536 = @intrinsic(ref.new)(start/101) in
+  jump inline_cont1535(inline1536)
 }
 
 fn params_from_sexprs(items/107: Vec[SExpr]) -> Vec[string] {
-  join inline_cont1607(i/108: Ref[int]) -> Vec[string] {
-    join inline_cont1605(acc/109: Vec[string]) -> Vec[string] {
-      join inline_cont1603(params/110: Ref[Vec[string]]) -> Vec[string] {
-        join exit622() -> Vec[string] {
+  join inline_cont1561(i/108: Ref[int]) -> Vec[string] {
+    join inline_cont1559(acc/109: Vec[string]) -> Vec[string] {
+      join inline_cont1557(params/110: Ref[Vec[string]]) -> Vec[string] {
+        join exit621() -> Vec[string] {
           let mtmp251 = () in
-          let inline1602 = @intrinsic(ref.get)(params/110) in
-          inline1602
+          let inline1556 = @intrinsic(ref.get)(params/110) in
+          inline1556
         } in
         joinrec {
-          join loop624() -> Vec[string] {
-            join inline_cont1599(t625: int) -> Vec[string] {
-              join inline_cont1597(t626: int) -> Vec[string] {
-                let t627 = (t625 < t626) in
-                if t627 {
-                  join inline_cont1595(t628: int) -> Vec[string] {
-                    let mtmp245 = @intrinsic(vec.get)(items/107, t628) in
+          join loop623() -> Vec[string] {
+            join inline_cont1553(t624: int) -> Vec[string] {
+              join inline_cont1551(t625: int) -> Vec[string] {
+                let t626 = (t624 < t625) in
+                if t626 {
+                  join inline_cont1549(t627: int) -> Vec[string] {
+                    let mtmp245 = @intrinsic(vec.get)(items/107, t627) in
                     match mtmp245 {
                       Tag_2 => {
                         let x248 = SExpr::Sym._0(mtmp245) in
                         let name/111 = x248 in
-                        join inline_cont1589(t630: Vec[string]) -> Vec[string] {
-                          let t631 = inherent#Vec#Vec[T]#pushed__T_string(t630, x248) in
-                          join inline_cont1587(mtmp250: unit) -> Vec[string] {
-                            join inline_cont1585(t632: int) -> Vec[string] {
-                              let t633 = (t632 + 1) in
-                              let inline1584 = @intrinsic(ref.set)(i/108, t633) in
-                              jump loop624()
+                        join inline_cont1543(t629: Vec[string]) -> Vec[string] {
+                          let t630 = inherent#Vec#Vec[T]#pushed__T_string(t629, x248) in
+                          join inline_cont1541(mtmp250: unit) -> Vec[string] {
+                            join inline_cont1539(t631: int) -> Vec[string] {
+                              let t632 = (t631 + 1) in
+                              let inline1538 = @intrinsic(ref.set)(i/108, t632) in
+                              jump loop623()
                             } in
-                            let inline1586 = @intrinsic(ref.get)(i/108) in
-                            jump inline_cont1585(inline1586)
+                            let inline1540 = @intrinsic(ref.get)(i/108) in
+                            jump inline_cont1539(inline1540)
                           } in
-                          let inline1588 = @intrinsic(ref.set)(params/110, t631) in
-                          jump inline_cont1587(())
+                          let inline1542 = @intrinsic(ref.set)(params/110, t630) in
+                          jump inline_cont1541(())
                         } in
-                        let inline1590 = @intrinsic(ref.get)(params/110) in
-                        jump inline_cont1589(inline1590)
+                        let inline1544 = @intrinsic(ref.get)(params/110) in
+                        jump inline_cont1543(inline1544)
                       },
                       _ => {
-                        join inline_cont1593(t635: int) -> Vec[string] {
-                          let t636 = (t635 + 1) in
-                          let inline1592 = @intrinsic(ref.set)(i/108, t636) in
-                          jump loop624()
+                        join inline_cont1547(t634: int) -> Vec[string] {
+                          let t635 = (t634 + 1) in
+                          let inline1546 = @intrinsic(ref.set)(i/108, t635) in
+                          jump loop623()
                         } in
-                        let inline1594 = @intrinsic(ref.get)(i/108) in
-                        jump inline_cont1593(inline1594)
+                        let inline1548 = @intrinsic(ref.get)(i/108) in
+                        jump inline_cont1547(inline1548)
                       },
                     }
                   } in
-                  let inline1596 = @intrinsic(ref.get)(i/108) in
-                  jump inline_cont1595(inline1596)
+                  let inline1550 = @intrinsic(ref.get)(i/108) in
+                  jump inline_cont1549(inline1550)
                 } else {
-                  jump exit622()
+                  jump exit621()
                 }
               } in
-              let inline1598 = @intrinsic(vec.len)(items/107) in
-              jump inline_cont1597(inline1598)
+              let inline1552 = @intrinsic(vec.len)(items/107) in
+              jump inline_cont1551(inline1552)
             } in
-            let inline1600 = @intrinsic(ref.get)(i/108) in
-            jump inline_cont1599(inline1600)
+            let inline1554 = @intrinsic(ref.get)(i/108) in
+            jump inline_cont1553(inline1554)
           } in
         } in
-        jump loop624()
+        jump loop623()
       } in
-      let inline1604 = @intrinsic(ref.new)(acc/109) in
-      jump inline_cont1603(inline1604)
+      let inline1558 = @intrinsic(ref.new)(acc/109) in
+      jump inline_cont1557(inline1558)
     } in
-    let inline1606 = @intrinsic(vec.new)() in
-    jump inline_cont1605(inline1606)
+    let inline1560 = @intrinsic(vec.new)() in
+    jump inline_cont1559(inline1560)
   } in
-  let inline1608 = 0 in
-  let inline1609 = @intrinsic(ref.new)(inline1608) in
-  jump inline_cont1607(inline1609)
+  let inline1562 = 0 in
+  let inline1563 = @intrinsic(ref.new)(inline1562) in
+  jump inline_cont1561(inline1563)
 }
 
 fn eval_args(
@@ -1384,269 +1345,269 @@ fn eval_args(
   local/114: Vec[Binding],
   global/115: Ref[Vec[Binding]]
 ) -> Vec[Value] {
-  join inline_cont1630(i/116: Ref[int]) -> Vec[Value] {
-    join inline_cont1628(acc/117: Vec[Value]) -> Vec[Value] {
-      join inline_cont1626(args/118: Ref[Vec[Value]]) -> Vec[Value] {
-        join exit640() -> Vec[Value] {
+  join inline_cont1584(i/116: Ref[int]) -> Vec[Value] {
+    join inline_cont1582(acc/117: Vec[Value]) -> Vec[Value] {
+      join inline_cont1580(args/118: Ref[Vec[Value]]) -> Vec[Value] {
+        join exit639() -> Vec[Value] {
           let mtmp253 = () in
-          let inline1625 = @intrinsic(ref.get)(args/118) in
-          inline1625
+          let inline1579 = @intrinsic(ref.get)(args/118) in
+          inline1579
         } in
         joinrec {
-          join loop642() -> Vec[Value] {
-            join inline_cont1622(t643: int) -> Vec[Value] {
-              join inline_cont1620(t644: int) -> Vec[Value] {
-                let t645 = (t643 < t644) in
-                if t645 {
-                  join inline_cont1618(t646: int) -> Vec[Value] {
-                    let t647 = @intrinsic(vec.get)(items/112, t646) in
-                    let v/119 = eval(t647, local/114, global/115) in
-                    join inline_cont1616(t648: Vec[Value]) -> Vec[Value] {
-                      let t649 = inherent#Vec#Vec[T]#pushed__T_Value(t648, v/119) in
-                      join inline_cont1614(mtmp252: unit) -> Vec[Value] {
-                        join inline_cont1612(t650: int) -> Vec[Value] {
-                          let t651 = (t650 + 1) in
-                          let inline1611 = @intrinsic(ref.set)(i/116, t651) in
-                          jump loop642()
+          join loop641() -> Vec[Value] {
+            join inline_cont1576(t642: int) -> Vec[Value] {
+              join inline_cont1574(t643: int) -> Vec[Value] {
+                let t644 = (t642 < t643) in
+                if t644 {
+                  join inline_cont1572(t645: int) -> Vec[Value] {
+                    let t646 = @intrinsic(vec.get)(items/112, t645) in
+                    let v/119 = eval(t646, local/114, global/115) in
+                    join inline_cont1570(t647: Vec[Value]) -> Vec[Value] {
+                      let t648 = inherent#Vec#Vec[T]#pushed__T_Value(t647, v/119) in
+                      join inline_cont1568(mtmp252: unit) -> Vec[Value] {
+                        join inline_cont1566(t649: int) -> Vec[Value] {
+                          let t650 = (t649 + 1) in
+                          let inline1565 = @intrinsic(ref.set)(i/116, t650) in
+                          jump loop641()
                         } in
-                        let inline1613 = @intrinsic(ref.get)(i/116) in
-                        jump inline_cont1612(inline1613)
+                        let inline1567 = @intrinsic(ref.get)(i/116) in
+                        jump inline_cont1566(inline1567)
                       } in
-                      let inline1615 = @intrinsic(ref.set)(args/118, t649) in
-                      jump inline_cont1614(())
+                      let inline1569 = @intrinsic(ref.set)(args/118, t648) in
+                      jump inline_cont1568(())
                     } in
-                    let inline1617 = @intrinsic(ref.get)(args/118) in
-                    jump inline_cont1616(inline1617)
+                    let inline1571 = @intrinsic(ref.get)(args/118) in
+                    jump inline_cont1570(inline1571)
                   } in
-                  let inline1619 = @intrinsic(ref.get)(i/116) in
-                  jump inline_cont1618(inline1619)
+                  let inline1573 = @intrinsic(ref.get)(i/116) in
+                  jump inline_cont1572(inline1573)
                 } else {
-                  jump exit640()
+                  jump exit639()
                 }
               } in
-              let inline1621 = @intrinsic(vec.len)(items/112) in
-              jump inline_cont1620(inline1621)
+              let inline1575 = @intrinsic(vec.len)(items/112) in
+              jump inline_cont1574(inline1575)
             } in
-            let inline1623 = @intrinsic(ref.get)(i/116) in
-            jump inline_cont1622(inline1623)
+            let inline1577 = @intrinsic(ref.get)(i/116) in
+            jump inline_cont1576(inline1577)
           } in
         } in
-        jump loop642()
+        jump loop641()
       } in
-      let inline1627 = @intrinsic(ref.new)(acc/117) in
-      jump inline_cont1626(inline1627)
+      let inline1581 = @intrinsic(ref.new)(acc/117) in
+      jump inline_cont1580(inline1581)
     } in
-    let inline1629 = @intrinsic(vec.new)() in
-    jump inline_cont1628(inline1629)
+    let inline1583 = @intrinsic(vec.new)() in
+    jump inline_cont1582(inline1583)
   } in
-  let inline1631 = @intrinsic(ref.new)(start/113) in
-  jump inline_cont1630(inline1631)
+  let inline1585 = @intrinsic(ref.new)(start/113) in
+  jump inline_cont1584(inline1585)
 }
 
 fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
   match name/120 {
     "=" => {
-      join inline_cont1639(t659: int) -> Value {
-        join inline_cont1636(t660: bool) -> Value {
-          if t660 {
-            let t661 = @intrinsic(vec.get)(args/121, 0) in
-            let t662 = @intrinsic(vec.get)(args/121, 1) in
-            let mtmp254 = (t661, t662) in
-            let x255 = t661 in
-            let x256 = t662 in
-            match t662 {
-              Tag_0 => {
-                let x257 = Value::Int._0(t662) in
-                match t661 {
-                  Tag_0 => {
-                    let x260 = Value::Int._0(t661) in
-                    let a/122 = x260 in
-                    let b/123 = x257 in
-                    join inline_cont1632(t667: bool) -> Value {
-                      let t668 = Value::Bool(t667) in
-                      t668
-                    } in
-                    let inline1633 = @intrinsic(eq.primitive)(x260, x257) in
-                    jump inline_cont1632(inline1633)
-                  },
-                  _ => {
-                    let t669 = Value::Bool(false) in
-                    t669
-                  },
-                }
-              },
-              Tag_1 => {
-                let x258 = Value::Bool._0(t662) in
-                match t661 {
-                  Tag_1 => {
-                    let x264 = Value::Bool._0(t661) in
-                    let a/124 = x264 in
-                    let b/125 = x258 in
-                    join inline_cont1634(t672: bool) -> Value {
-                      let t673 = Value::Bool(t672) in
-                      t673
-                    } in
-                    let inline1635 = @intrinsic(eq.primitive)(x264, x258) in
-                    jump inline_cont1634(inline1635)
-                  },
-                  _ => {
-                    let t674 = Value::Bool(false) in
-                    t674
-                  },
-                }
-              },
-              _ => {
-                let t675 = Value::Bool(false) in
-                t675
-              },
-            }
-          } else {
-            let t676 = Value::Bool(false) in
-            t676
+      join inline_cont1586(t658: int) -> Value {
+        let t659 = (t658 == 2) in
+        if t659 {
+          let t660 = @intrinsic(vec.get)(args/121, 0) in
+          let t661 = @intrinsic(vec.get)(args/121, 1) in
+          let mtmp254 = (t660, t661) in
+          let x255 = t660 in
+          let x256 = t661 in
+          match t661 {
+            Tag_0 => {
+              let x257 = Value::Int._0(t661) in
+              match t660 {
+                Tag_0 => {
+                  let x260 = Value::Int._0(t660) in
+                  let a/122 = x260 in
+                  let b/123 = x257 in
+                  let t666 = (x260 == x257) in
+                  let t667 = Value::Bool(t666) in
+                  t667
+                },
+                _ => {
+                  let t668 = Value::Bool(false) in
+                  t668
+                },
+              }
+            },
+            Tag_1 => {
+              let x258 = Value::Bool._0(t661) in
+              match t660 {
+                Tag_1 => {
+                  let x264 = Value::Bool._0(t660) in
+                  let a/124 = x264 in
+                  let b/125 = x258 in
+                  let t671 = (x264 == x258) in
+                  let t672 = Value::Bool(t671) in
+                  t672
+                },
+                _ => {
+                  let t673 = Value::Bool(false) in
+                  t673
+                },
+              }
+            },
+            _ => {
+              let t674 = Value::Bool(false) in
+              t674
+            },
           }
-        } in
-        let inline1637 = 2 in
-        let inline1638 = @intrinsic(eq.primitive)(t659, inline1637) in
-        jump inline_cont1636(inline1638)
+        } else {
+          let t675 = Value::Bool(false) in
+          t675
+        }
       } in
-      let inline1640 = @intrinsic(vec.len)(args/121) in
-      jump inline_cont1639(inline1640)
+      let inline1587 = @intrinsic(vec.len)(args/121) in
+      jump inline_cont1586(inline1587)
     },
     "+" => {
-      join inline_cont1664(i/126: Ref[int]) -> Value {
-        join inline_cont1661(acc/127: Ref[int32]) -> Value {
-          join exit677() -> Value {
+      join inline_cont1611(i/126: Ref[int]) -> Value {
+        join inline_cont1608(acc/127: Ref[int32]) -> Value {
+          join exit676() -> Value {
             let mtmp271 = () in
-            join inline_cont1659(t678: int32) -> Value {
-              let t679 = Value::Int(t678) in
-              t679
+            join inline_cont1606(t677: int32) -> Value {
+              let t678 = Value::Int(t677) in
+              t678
             } in
-            let inline1660 = @intrinsic(ref.get)(acc/127) in
-            jump inline_cont1659(inline1660)
+            let inline1607 = @intrinsic(ref.get)(acc/127) in
+            jump inline_cont1606(inline1607)
           } in
           joinrec {
-            join loop680() -> Value {
-              join inline_cont1657(t681: int) -> Value {
-                join inline_cont1655(t682: int) -> Value {
-                  let t683 = (t681 < t682) in
-                  if t683 {
-                    join inline_cont1653(t684: int) -> Value {
-                      let mtmp266 = @intrinsic(vec.get)(args/121, t684) in
+            join loop679() -> Value {
+              join inline_cont1604(t680: int) -> Value {
+                join inline_cont1602(t681: int) -> Value {
+                  let t682 = (t680 < t681) in
+                  if t682 {
+                    join inline_cont1600(t683: int) -> Value {
+                      let mtmp266 = @intrinsic(vec.get)(args/121, t683) in
                       match mtmp266 {
                         Tag_0 => {
                           let x267 = Value::Int._0(mtmp266) in
                           let n/128 = x267 in
-                          join inline_cont1647(t686: int32) -> Value {
-                            let t687 = (t686 + x267) in
-                            join inline_cont1645(mtmp270: unit) -> Value {
-                              join inline_cont1643(t688: int) -> Value {
-                                let t689 = (t688 + 1) in
-                                let inline1642 = @intrinsic(ref.set)(i/126, t689) in
-                                jump loop680()
+                          join inline_cont1594(t685: int32) -> Value {
+                            let t686 = (t685 + x267) in
+                            join inline_cont1592(mtmp270: unit) -> Value {
+                              join inline_cont1590(t687: int) -> Value {
+                                let t688 = (t687 + 1) in
+                                let inline1589 = @intrinsic(ref.set)(i/126, t688) in
+                                jump loop679()
                               } in
-                              let inline1644 = @intrinsic(ref.get)(i/126) in
-                              jump inline_cont1643(inline1644)
+                              let inline1591 = @intrinsic(ref.get)(i/126) in
+                              jump inline_cont1590(inline1591)
                             } in
-                            let inline1646 = @intrinsic(ref.set)(acc/127, t687) in
-                            jump inline_cont1645(())
+                            let inline1593 = @intrinsic(ref.set)(acc/127, t686) in
+                            jump inline_cont1592(())
                           } in
-                          let inline1648 = @intrinsic(ref.get)(acc/127) in
-                          jump inline_cont1647(inline1648)
+                          let inline1595 = @intrinsic(ref.get)(acc/127) in
+                          jump inline_cont1594(inline1595)
                         },
                         _ => {
-                          join inline_cont1651(t691: int) -> Value {
-                            let t692 = (t691 + 1) in
-                            let inline1650 = @intrinsic(ref.set)(i/126, t692) in
-                            jump loop680()
+                          join inline_cont1598(t690: int) -> Value {
+                            let t691 = (t690 + 1) in
+                            let inline1597 = @intrinsic(ref.set)(i/126, t691) in
+                            jump loop679()
                           } in
-                          let inline1652 = @intrinsic(ref.get)(i/126) in
-                          jump inline_cont1651(inline1652)
+                          let inline1599 = @intrinsic(ref.get)(i/126) in
+                          jump inline_cont1598(inline1599)
                         },
                       }
                     } in
-                    let inline1654 = @intrinsic(ref.get)(i/126) in
-                    jump inline_cont1653(inline1654)
+                    let inline1601 = @intrinsic(ref.get)(i/126) in
+                    jump inline_cont1600(inline1601)
                   } else {
-                    jump exit677()
+                    jump exit676()
                   }
                 } in
-                let inline1656 = @intrinsic(vec.len)(args/121) in
-                jump inline_cont1655(inline1656)
+                let inline1603 = @intrinsic(vec.len)(args/121) in
+                jump inline_cont1602(inline1603)
               } in
-              let inline1658 = @intrinsic(ref.get)(i/126) in
-              jump inline_cont1657(inline1658)
+              let inline1605 = @intrinsic(ref.get)(i/126) in
+              jump inline_cont1604(inline1605)
             } in
           } in
-          jump loop680()
+          jump loop679()
         } in
-        let inline1662 = 0 in
-        let inline1663 = @intrinsic(ref.new)(inline1662) in
-        jump inline_cont1661(inline1663)
+        let inline1609 = 0 in
+        let inline1610 = @intrinsic(ref.new)(inline1609) in
+        jump inline_cont1608(inline1610)
       } in
-      let inline1665 = 0 in
-      let inline1666 = @intrinsic(ref.new)(inline1665) in
-      jump inline_cont1664(inline1666)
+      let inline1612 = 0 in
+      let inline1613 = @intrinsic(ref.new)(inline1612) in
+      jump inline_cont1611(inline1613)
     },
     "*" => {
       let i/129 = inherent#Ref#Ref[T]#new__T_int(0) in
-      let acc/130 = inherent#Ref#Ref[T]#new__T_int32(1) in
-      join exit694() -> Value {
-        let mtmp277 = () in
-        let t695 = inherent#Ref#Ref[T]#get__T_int32(acc/130) in
-        let t696 = Value::Int(t695) in
-        t696
-      } in
-      joinrec {
-        join loop697() -> Value {
-          let t698 = inherent#Ref#Ref[T]#get__T_int(i/129) in
-          join inline_cont1681(t699: int) -> Value {
-            let t700 = (t698 < t699) in
-            if t700 {
-              join inline_cont1679(t701: int) -> Value {
-                let mtmp272 = @intrinsic(vec.get)(args/121, t701) in
-                match mtmp272 {
-                  Tag_0 => {
-                    let x273 = Value::Int._0(mtmp272) in
-                    let n/131 = x273 in
-                    join inline_cont1673(t703: int32) -> Value {
-                      let t704 = (t703 * x273) in
-                      join inline_cont1671(mtmp276: unit) -> Value {
-                        join inline_cont1669(t705: int) -> Value {
-                          let t706 = (t705 + 1) in
-                          let inline1668 = @intrinsic(ref.set)(i/129, t706) in
-                          jump loop697()
+      join inline_cont1634(acc/130: Ref[int32]) -> Value {
+        join exit693() -> Value {
+          let mtmp277 = () in
+          join inline_cont1632(t694: int32) -> Value {
+            let t695 = Value::Int(t694) in
+            t695
+          } in
+          let inline1633 = @intrinsic(ref.get)(acc/130) in
+          jump inline_cont1632(inline1633)
+        } in
+        joinrec {
+          join loop696() -> Value {
+            join inline_cont1630(t697: int) -> Value {
+              join inline_cont1628(t698: int) -> Value {
+                let t699 = (t697 < t698) in
+                if t699 {
+                  join inline_cont1626(t700: int) -> Value {
+                    let mtmp272 = @intrinsic(vec.get)(args/121, t700) in
+                    match mtmp272 {
+                      Tag_0 => {
+                        let x273 = Value::Int._0(mtmp272) in
+                        let n/131 = x273 in
+                        join inline_cont1620(t702: int32) -> Value {
+                          let t703 = (t702 * x273) in
+                          join inline_cont1618(mtmp276: unit) -> Value {
+                            join inline_cont1616(t704: int) -> Value {
+                              let t705 = (t704 + 1) in
+                              let inline1615 = @intrinsic(ref.set)(i/129, t705) in
+                              jump loop696()
+                            } in
+                            let inline1617 = @intrinsic(ref.get)(i/129) in
+                            jump inline_cont1616(inline1617)
+                          } in
+                          let inline1619 = @intrinsic(ref.set)(acc/130, t703) in
+                          jump inline_cont1618(())
                         } in
-                        let inline1670 = @intrinsic(ref.get)(i/129) in
-                        jump inline_cont1669(inline1670)
-                      } in
-                      let inline1672 = @intrinsic(ref.set)(acc/130, t704) in
-                      jump inline_cont1671(())
-                    } in
-                    let inline1674 = @intrinsic(ref.get)(acc/130) in
-                    jump inline_cont1673(inline1674)
-                  },
-                  _ => {
-                    join inline_cont1677(t708: int) -> Value {
-                      let t709 = (t708 + 1) in
-                      let inline1676 = @intrinsic(ref.set)(i/129, t709) in
-                      jump loop697()
-                    } in
-                    let inline1678 = @intrinsic(ref.get)(i/129) in
-                    jump inline_cont1677(inline1678)
-                  },
+                        let inline1621 = @intrinsic(ref.get)(acc/130) in
+                        jump inline_cont1620(inline1621)
+                      },
+                      _ => {
+                        join inline_cont1624(t707: int) -> Value {
+                          let t708 = (t707 + 1) in
+                          let inline1623 = @intrinsic(ref.set)(i/129, t708) in
+                          jump loop696()
+                        } in
+                        let inline1625 = @intrinsic(ref.get)(i/129) in
+                        jump inline_cont1624(inline1625)
+                      },
+                    }
+                  } in
+                  let inline1627 = @intrinsic(ref.get)(i/129) in
+                  jump inline_cont1626(inline1627)
+                } else {
+                  jump exit693()
                 }
               } in
-              let inline1680 = @intrinsic(ref.get)(i/129) in
-              jump inline_cont1679(inline1680)
-            } else {
-              jump exit694()
-            }
+              let inline1629 = @intrinsic(vec.len)(args/121) in
+              jump inline_cont1628(inline1629)
+            } in
+            let inline1631 = @intrinsic(ref.get)(i/129) in
+            jump inline_cont1630(inline1631)
           } in
-          let inline1682 = @intrinsic(vec.len)(args/121) in
-          jump inline_cont1681(inline1682)
         } in
+        jump loop696()
       } in
-      jump loop697()
+      let inline1635 = 1 in
+      let inline1636 = @intrinsic(ref.new)(inline1635) in
+      jump inline_cont1634(inline1636)
     },
     "-" => {
       let mtmp278 = inherent#Vec#Vec[T]#len__T_Value(args/121) in
@@ -1657,9 +1618,9 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
             Tag_0 => {
               let x280 = Value::Int._0(mtmp279) in
               let n/132 = x280 in
-              let t715 = (0 - x280) in
-              let t716 = Value::Int(t715) in
-              t716
+              let t714 = (0 - x280) in
+              let t715 = Value::Int(t714) in
+              t715
             },
             _ => {
               Tag_3
@@ -1667,22 +1628,22 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
           }
         },
         2 => {
-          let t717 = @intrinsic(vec.get)(args/121, 0) in
-          let t718 = @intrinsic(vec.get)(args/121, 1) in
-          let mtmp283 = (t717, t718) in
-          let x284 = t717 in
-          let x285 = t718 in
-          match t718 {
+          let t716 = @intrinsic(vec.get)(args/121, 0) in
+          let t717 = @intrinsic(vec.get)(args/121, 1) in
+          let mtmp283 = (t716, t717) in
+          let x284 = t716 in
+          let x285 = t717 in
+          match t717 {
             Tag_0 => {
-              let x286 = Value::Int._0(t718) in
-              match t717 {
+              let x286 = Value::Int._0(t717) in
+              match t716 {
                 Tag_0 => {
-                  let x289 = Value::Int._0(t717) in
+                  let x289 = Value::Int._0(t716) in
                   let a/133 = x289 in
                   let b/134 = x286 in
-                  let t723 = (x289 - x286) in
-                  let t724 = Value::Int(t723) in
-                  t724
+                  let t722 = (x289 - x286) in
+                  let t723 = Value::Int(t722) in
+                  t723
                 },
                 _ => {
                   Tag_3
@@ -1700,25 +1661,25 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
       }
     },
     "/" => {
-      let t727 = inherent#Vec#Vec[T]#len__T_Value(args/121) in
-      let t728 = trait_impl#PartialEq#int#eq(t727, 2) in
-      if t728 {
-        let t729 = @intrinsic(vec.get)(args/121, 0) in
-        let t730 = @intrinsic(vec.get)(args/121, 1) in
-        let mtmp292 = (t729, t730) in
-        let x293 = t729 in
-        let x294 = t730 in
-        match t730 {
+      let t726 = inherent#Vec#Vec[T]#len__T_Value(args/121) in
+      let t727 = (t726 == 2) in
+      if t727 {
+        let t728 = @intrinsic(vec.get)(args/121, 0) in
+        let t729 = @intrinsic(vec.get)(args/121, 1) in
+        let mtmp292 = (t728, t729) in
+        let x293 = t728 in
+        let x294 = t729 in
+        match t729 {
           Tag_0 => {
-            let x295 = Value::Int._0(t730) in
-            match t729 {
+            let x295 = Value::Int._0(t729) in
+            match t728 {
               Tag_0 => {
-                let x298 = Value::Int._0(t729) in
+                let x298 = Value::Int._0(t728) in
                 let a/135 = x298 in
                 let b/136 = x295 in
-                let t735 = (x298 / x295) in
-                let t736 = Value::Int(t735) in
-                t736
+                let t734 = (x298 / x295) in
+                let t735 = Value::Int(t734) in
+                t735
               },
               _ => {
                 Tag_3
@@ -1744,8 +1705,8 @@ fn apply(func/137: Value, args/138: Vec[Value], global/139: Ref[Vec[Binding]]) -
     Tag_2 => {
       let x303 = Value::Func._0(func/137) in
       let fun/140 = x303 in
-      let t741 = apply_lambda(x303, args/138) in
-      t741
+      let t740 = apply_lambda(x303, args/138) in
+      t740
     },
     _ => {
       Tag_3
@@ -1754,671 +1715,646 @@ fn apply(func/137: Value, args/138: Vec[Value], global/139: Ref[Vec[Binding]]) -
 }
 
 fn apply_lambda(lambda/141: Lambda, args/142: Vec[Value]) -> Value {
-  let t744 = Lambda.env(lambda/141) in
-  join inline_cont1708(env/143: Ref[Vec[Binding]]) -> Value {
-    join inline_cont1705(i/144: Ref[int]) -> Value {
-      join exit745() -> Value {
+  let t743 = Lambda.env(lambda/141) in
+  join inline_cont1662(env/143: Ref[Vec[Binding]]) -> Value {
+    join inline_cont1659(i/144: Ref[int]) -> Value {
+      join exit744() -> Value {
         let mtmp305 = () in
-        let t746 = Lambda.body(lambda/141) in
-        join inline_cont1703(t747: Vec[Binding]) -> Value {
-          let t748 = Lambda.global(lambda/141) in
-          let t749 = eval(t746, t747, t748) in
-          t749
+        let t745 = Lambda.body(lambda/141) in
+        join inline_cont1657(t746: Vec[Binding]) -> Value {
+          let t747 = Lambda.global(lambda/141) in
+          let t748 = eval(t745, t746, t747) in
+          t748
         } in
-        let inline1704 = @intrinsic(ref.get)(env/143) in
-        jump inline_cont1703(inline1704)
+        let inline1658 = @intrinsic(ref.get)(env/143) in
+        jump inline_cont1657(inline1658)
       } in
       joinrec {
-        join loop750() -> Value {
-          join inline_cont1701(t761: int) -> Value {
-            let t762 = Lambda.params(lambda/141) in
-            join inline_cont1699(t763: int) -> Value {
-              let t764 = (t761 < t763) in
-              join k751(jp752: bool) -> Value {
-                if jp752 {
-                  let t753 = Lambda.params(lambda/141) in
-                  join inline_cont1697(t754: int) -> Value {
-                    let name/145 = @intrinsic(vec.get)(t753, t754) in
-                    join inline_cont1695(t755: int) -> Value {
-                      let value/146 = @intrinsic(vec.get)(args/142, t755) in
-                      join inline_cont1693(t756: Vec[Binding]) -> Value {
-                        let t757 = Binding { name: name/145, value: value/146 } in
-                        let updated/147 = inherent#Vec#Vec[T]#pushed__T_Binding(t756, t757) in
-                        join inline_cont1691(mtmp304: unit) -> Value {
-                          join inline_cont1689(t758: int) -> Value {
-                            let t759 = (t758 + 1) in
-                            let inline1688 = @intrinsic(ref.set)(i/144, t759) in
-                            jump loop750()
+        join loop749() -> Value {
+          join inline_cont1655(t760: int) -> Value {
+            let t761 = Lambda.params(lambda/141) in
+            join inline_cont1653(t762: int) -> Value {
+              let t763 = (t760 < t762) in
+              join k750(jp751: bool) -> Value {
+                if jp751 {
+                  let t752 = Lambda.params(lambda/141) in
+                  join inline_cont1651(t753: int) -> Value {
+                    let name/145 = @intrinsic(vec.get)(t752, t753) in
+                    join inline_cont1649(t754: int) -> Value {
+                      let value/146 = @intrinsic(vec.get)(args/142, t754) in
+                      join inline_cont1647(t755: Vec[Binding]) -> Value {
+                        let t756 = Binding { name: name/145, value: value/146 } in
+                        let updated/147 = inherent#Vec#Vec[T]#pushed__T_Binding(t755, t756) in
+                        join inline_cont1645(mtmp304: unit) -> Value {
+                          join inline_cont1643(t757: int) -> Value {
+                            let t758 = (t757 + 1) in
+                            let inline1642 = @intrinsic(ref.set)(i/144, t758) in
+                            jump loop749()
                           } in
-                          let inline1690 = @intrinsic(ref.get)(i/144) in
-                          jump inline_cont1689(inline1690)
+                          let inline1644 = @intrinsic(ref.get)(i/144) in
+                          jump inline_cont1643(inline1644)
                         } in
-                        let inline1692 = @intrinsic(ref.set)(env/143, updated/147) in
-                        jump inline_cont1691(())
+                        let inline1646 = @intrinsic(ref.set)(env/143, updated/147) in
+                        jump inline_cont1645(())
                       } in
-                      let inline1694 = @intrinsic(ref.get)(env/143) in
-                      jump inline_cont1693(inline1694)
+                      let inline1648 = @intrinsic(ref.get)(env/143) in
+                      jump inline_cont1647(inline1648)
                     } in
-                    let inline1696 = @intrinsic(ref.get)(i/144) in
-                    jump inline_cont1695(inline1696)
+                    let inline1650 = @intrinsic(ref.get)(i/144) in
+                    jump inline_cont1649(inline1650)
                   } in
-                  let inline1698 = @intrinsic(ref.get)(i/144) in
-                  jump inline_cont1697(inline1698)
+                  let inline1652 = @intrinsic(ref.get)(i/144) in
+                  jump inline_cont1651(inline1652)
                 } else {
-                  jump exit745()
+                  jump exit744()
                 }
               } in
-              if t764 {
-                join inline_cont1685(t765: int) -> Value {
-                  join inline_cont1683(t766: int) -> Value {
-                    let t767 = (t765 < t766) in
-                    jump k751(t767)
+              if t763 {
+                join inline_cont1639(t764: int) -> Value {
+                  join inline_cont1637(t765: int) -> Value {
+                    let t766 = (t764 < t765) in
+                    jump k750(t766)
                   } in
-                  let inline1684 = @intrinsic(vec.len)(args/142) in
-                  jump inline_cont1683(inline1684)
+                  let inline1638 = @intrinsic(vec.len)(args/142) in
+                  jump inline_cont1637(inline1638)
                 } in
-                let inline1686 = @intrinsic(ref.get)(i/144) in
-                jump inline_cont1685(inline1686)
+                let inline1640 = @intrinsic(ref.get)(i/144) in
+                jump inline_cont1639(inline1640)
               } else {
-                jump k751(false)
+                jump k750(false)
               }
             } in
-            let inline1700 = @intrinsic(vec.len)(t762) in
-            jump inline_cont1699(inline1700)
+            let inline1654 = @intrinsic(vec.len)(t761) in
+            jump inline_cont1653(inline1654)
           } in
-          let inline1702 = @intrinsic(ref.get)(i/144) in
-          jump inline_cont1701(inline1702)
+          let inline1656 = @intrinsic(ref.get)(i/144) in
+          jump inline_cont1655(inline1656)
         } in
       } in
-      jump loop750()
+      jump loop749()
     } in
-    let inline1706 = 0 in
-    let inline1707 = @intrinsic(ref.new)(inline1706) in
-    jump inline_cont1705(inline1707)
+    let inline1660 = 0 in
+    let inline1661 = @intrinsic(ref.new)(inline1660) in
+    jump inline_cont1659(inline1661)
   } in
-  let inline1709 = @intrinsic(ref.new)(t744) in
-  jump inline_cont1708(inline1709)
+  let inline1663 = @intrinsic(ref.new)(t743) in
+  jump inline_cont1662(inline1663)
 }
 
 fn main() -> unit {
-  join inline_cont1738(t769: Vec[Binding]) -> unit {
-    join inline_cont1736(global/148: Ref[Vec[Binding]]) -> unit {
+  join inline_cont1692(t768: Vec[Binding]) -> unit {
+    join inline_cont1690(global/148: Ref[Vec[Binding]]) -> unit {
       let program/149 =
         "(begin (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1)))))) (define add3 (lambda (a b c) (+ a (+ b c)))) (fact 6))" in
-      let t770 = lex(program/149) in
-      let exprs/150 = parse_program(t770) in
-      let t771 = @intrinsic(vec.get)(exprs/150, 0) in
-      join inline_cont1734(t772: Vec[Binding]) -> unit {
-        let result/151 = eval(t771, t772, global/148) in
-        join inline_cont1726(t773: string) -> unit {
-          join inline_cont1723(mtmp306: unit) -> unit {
-            let t774 = lex("(add3 10 20 30)") in
-            let exprs2/152 = parse_program(t774) in
-            let t775 = @intrinsic(vec.get)(exprs2/152, 0) in
-            join inline_cont1721(t776: Vec[Binding]) -> unit {
-              let result2/153 = eval(t775, t776, global/148) in
-              join inline_cont1713(t777: string) -> unit {
-                let inline1711 = trait_impl#ToString#string#to_string(t777) in
-                let inline1712 = @runtime(core.string_println)(inline1711) in
+      let t769 = lex(program/149) in
+      let exprs/150 = parse_program(t769) in
+      let t770 = @intrinsic(vec.get)(exprs/150, 0) in
+      join inline_cont1688(t771: Vec[Binding]) -> unit {
+        let result/151 = eval(t770, t771, global/148) in
+        join inline_cont1680(t772: string) -> unit {
+          join inline_cont1677(mtmp306: unit) -> unit {
+            let t773 = lex("(add3 10 20 30)") in
+            let exprs2/152 = parse_program(t773) in
+            let t774 = @intrinsic(vec.get)(exprs2/152, 0) in
+            join inline_cont1675(t775: Vec[Binding]) -> unit {
+              let result2/153 = eval(t774, t775, global/148) in
+              join inline_cont1667(t776: string) -> unit {
+                let inline1665 = trait_impl#ToString#string#to_string(t776) in
+                let inline1666 = @runtime(core.string_println)(inline1665) in
                 ()
               } in
               match result2/153 {
                 Tag_0 => {
-                  let inline1714 = Value::Int._0(result2/153) in
-                  let inline1715 = inline1714 in
-                  let inline1716 = inherent#int32#int32#to_string(inline1714) in
-                  jump inline_cont1713(inline1716)
+                  let inline1668 = Value::Int._0(result2/153) in
+                  let inline1669 = inline1668 in
+                  let inline1670 = inherent#int32#int32#to_string(inline1668) in
+                  jump inline_cont1667(inline1670)
                 },
                 Tag_1 => {
-                  let inline1717 = Value::Bool._0(result2/153) in
-                  let inline1718 = inline1717 in
-                  let inline1719 = trait_impl#ToString#bool#to_string(inline1717) in
-                  jump inline_cont1713(inline1719)
+                  let inline1671 = Value::Bool._0(result2/153) in
+                  let inline1672 = inline1671 in
+                  let inline1673 = trait_impl#ToString#bool#to_string(inline1671) in
+                  jump inline_cont1667(inline1673)
                 },
                 Tag_2 => {
-                  let inline1720 = Value::Func._0(result2/153) in
-                  jump inline_cont1713("<lambda>")
+                  let inline1674 = Value::Func._0(result2/153) in
+                  jump inline_cont1667("<lambda>")
                 },
                 Tag_3 => {
-                  jump inline_cont1713("nil")
+                  jump inline_cont1667("nil")
                 },
               }
             } in
-            let inline1722 = @intrinsic(vec.new)() in
-            jump inline_cont1721(inline1722)
+            let inline1676 = @intrinsic(vec.new)() in
+            jump inline_cont1675(inline1676)
           } in
-          let inline1724 = trait_impl#ToString#string#to_string(t773) in
-          let inline1725 = @runtime(core.string_println)(inline1724) in
-          jump inline_cont1723(())
+          let inline1678 = trait_impl#ToString#string#to_string(t772) in
+          let inline1679 = @runtime(core.string_println)(inline1678) in
+          jump inline_cont1677(())
         } in
         match result/151 {
           Tag_0 => {
-            let inline1727 = Value::Int._0(result/151) in
-            let inline1728 = inline1727 in
-            let inline1729 = inherent#int32#int32#to_string(inline1727) in
-            jump inline_cont1726(inline1729)
+            let inline1681 = Value::Int._0(result/151) in
+            let inline1682 = inline1681 in
+            let inline1683 = inherent#int32#int32#to_string(inline1681) in
+            jump inline_cont1680(inline1683)
           },
           Tag_1 => {
-            let inline1730 = Value::Bool._0(result/151) in
-            let inline1731 = inline1730 in
-            let inline1732 = trait_impl#ToString#bool#to_string(inline1730) in
-            jump inline_cont1726(inline1732)
+            let inline1684 = Value::Bool._0(result/151) in
+            let inline1685 = inline1684 in
+            let inline1686 = trait_impl#ToString#bool#to_string(inline1684) in
+            jump inline_cont1680(inline1686)
           },
           Tag_2 => {
-            let inline1733 = Value::Func._0(result/151) in
-            jump inline_cont1726("<lambda>")
+            let inline1687 = Value::Func._0(result/151) in
+            jump inline_cont1680("<lambda>")
           },
           Tag_3 => {
-            jump inline_cont1726("nil")
+            jump inline_cont1680("nil")
           },
         }
       } in
-      let inline1735 = @intrinsic(vec.new)() in
-      jump inline_cont1734(inline1735)
+      let inline1689 = @intrinsic(vec.new)() in
+      jump inline_cont1688(inline1689)
     } in
-    let inline1737 = @intrinsic(ref.new)(t769) in
-    jump inline_cont1736(inline1737)
+    let inline1691 = @intrinsic(ref.new)(t768) in
+    jump inline_cont1690(inline1691)
   } in
-  let inline1739 = @intrinsic(vec.new)() in
-  jump inline_cont1738(inline1739)
+  let inline1693 = @intrinsic(vec.new)() in
+  jump inline_cont1692(inline1693)
 }
 
 fn inherent#string#string#len(self/37: string) -> int {
-  let t780 = @runtime(core.string_len)(self/37) in
-  t780
-}
-
-fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  let t783 = @intrinsic(eq.primitive)(self/103, other/104) in
-  t783
+  let t779 = @runtime(core.string_len)(self/37) in
+  t779
 }
 
 fn inherent#Ref#Ref[T]#new__T_int(value/257: int) -> Ref[int] {
-  let t786 = @intrinsic(ref.new)(value/257) in
-  t786
+  let t782 = @intrinsic(ref.new)(value/257) in
+  t782
 }
 
 fn inherent#Ref#Ref[T]#new__T_bool(value/257: bool) -> Ref[bool] {
-  let t789 = @intrinsic(ref.new)(value/257) in
-  t789
+  let t785 = @intrinsic(ref.new)(value/257) in
+  t785
 }
 
 fn inherent#Ref#Ref[T]#get__T_bool(self/258: Ref[bool]) -> bool {
-  let t792 = @intrinsic(ref.get)(self/258) in
-  t792
+  let t788 = @intrinsic(ref.get)(self/258) in
+  t788
 }
 
 fn inherent#Ref#Ref[T]#get__T_int(self/258: Ref[int]) -> int {
-  let t795 = @intrinsic(ref.get)(self/258) in
-  t795
+  let t791 = @intrinsic(ref.get)(self/258) in
+  t791
 }
 
 fn inherent#string#string#get(self/39: string, index/40: int) -> char {
-  let inline1741 = string_decode_utf8_at(self/39, index/40) in
-  let inline1742 = inline1741.0 in
-  let inline1743 = inline1741.1 in
-  let inline1744 = inline1741.2 in
-  let inline1745 = inline1743 in
-  let inline1746 = inline1742 in
-  if inline1742 {
-    inline1743
+  let inline1695 = string_decode_utf8_at(self/39, index/40) in
+  let inline1696 = inline1695.0 in
+  let inline1697 = inline1695.1 in
+  let inline1698 = inline1695.2 in
+  let inline1699 = inline1697 in
+  let inline1700 = inline1696 in
+  if inline1696 {
+    inline1697
   } else {
-    let inline1747 = @runtime(core.string_get)("", -1) in
-    inline1747
+    let inline1701 = @runtime(core.string_get)("", -1) in
+    inline1701
   }
 }
 
-fn trait_impl#PartialEq#char#eq(self/101: char, other/102: char) -> bool {
-  let t801 = @intrinsic(eq.primitive)(self/101, other/102) in
-  t801
-}
-
 fn inherent#Ref#Ref[T]#set__T_bool(self/259: Ref[bool], value/260: bool) -> unit {
-  let t803 = @intrinsic(ref.set)(self/259, value/260) in
+  let t796 = @intrinsic(ref.set)(self/259, value/260) in
   ()
 }
 
 fn inherent#Ref#Ref[T]#set__T_int(self/259: Ref[int], value/260: int) -> unit {
-  let t805 = @intrinsic(ref.set)(self/259, value/260) in
+  let t798 = @intrinsic(ref.set)(self/259, value/260) in
   ()
 }
 
 fn inherent#Ref#Ref[T]#new__T_int32(value/257: int32) -> Ref[int32] {
-  let t808 = @intrinsic(ref.new)(value/257) in
-  t808
+  let t801 = @intrinsic(ref.new)(value/257) in
+  t801
 }
 
 fn inherent#Ref#Ref[T]#get__T_int32(self/258: Ref[int32]) -> int32 {
-  let t811 = @intrinsic(ref.get)(self/258) in
-  t811
+  let t804 = @intrinsic(ref.get)(self/258) in
+  t804
 }
 
 fn inherent#Ref#Ref[T]#set__T_int32(self/259: Ref[int32], value/260: int32) -> unit {
-  let t813 = @intrinsic(ref.set)(self/259, value/260) in
+  let t806 = @intrinsic(ref.set)(self/259, value/260) in
   ()
 }
 
 fn inherent#Ref#Ref[T]#new__T_string(value/257: string) -> Ref[string] {
-  let t816 = @intrinsic(ref.new)(value/257) in
-  t816
+  let t809 = @intrinsic(ref.new)(value/257) in
+  t809
 }
 
 fn inherent#Ref#Ref[T]#get__T_string(self/258: Ref[string]) -> string {
-  let t819 = @intrinsic(ref.get)(self/258) in
-  t819
+  let t812 = @intrinsic(ref.get)(self/258) in
+  t812
 }
 
 fn inherent#char#char#to_string(self/36: char) -> string {
-  let inline1749 = (self/36 as uint32) in
-  let inline1750 = utf8_valid_scalar(inline1749) in
-  if inline1750 {
-    let inline1751 = @runtime(core.char_to_string)(self/36) in
-    inline1751
+  let inline1703 = (self/36 as uint32) in
+  let inline1704 = utf8_valid_scalar(inline1703) in
+  if inline1704 {
+    let inline1705 = @runtime(core.char_to_string)(self/36) in
+    inline1705
   } else {
-    let inline1752 = @runtime(core.string_get)("", -1) in
+    let inline1706 = @runtime(core.string_get)("", -1) in
     ""
   }
 }
 
 fn inherent#Ref#Ref[T]#set__T_string(self/259: Ref[string], value/260: string) -> unit {
-  let t824 = @intrinsic(ref.set)(self/259, value/260) in
+  let t817 = @intrinsic(ref.set)(self/259, value/260) in
   ()
 }
 
 fn inherent#Vec#Vec[T]#new__T_Token() -> Vec[Token] {
-  let t827 = @intrinsic(vec.new)() in
-  t827
+  let t820 = @intrinsic(vec.new)() in
+  t820
 }
 
 fn inherent#Ref#Ref[T]#new__T_Vec[Token](value/257: Vec[Token]) -> Ref[Vec[Token]] {
-  let t830 = @intrinsic(ref.new)(value/257) in
-  t830
+  let t823 = @intrinsic(ref.new)(value/257) in
+  t823
 }
 
 fn inherent#Ref#Ref[T]#get__T_Vec[Token](self/258: Ref[Vec[Token]]) -> Vec[Token] {
-  let t833 = @intrinsic(ref.get)(self/258) in
-  t833
+  let t826 = @intrinsic(ref.get)(self/258) in
+  t826
 }
 
 fn inherent#Vec#Vec[T]#pushed__T_Token(self/178: Vec[Token], elem/179: Token) -> Vec[Token] {
-  join inline_cont1761(t836: int) -> Vec[Token] {
-    let t837 = (t836 + 1) in
-    join inline_cont1759(result/180: Vec[Token]) -> Vec[Token] {
+  join inline_cont1715(t829: int) -> Vec[Token] {
+    let t830 = (t829 + 1) in
+    join inline_cont1713(result/180: Vec[Token]) -> Vec[Token] {
       let index/181 = 0 in
-      join exit838() -> Vec[Token] {
+      join exit831() -> Vec[Token] {
         let _wild83 = () in
-        let inline1758 = @intrinsic(vec.push)(result/180, elem/179) in
+        let inline1712 = @intrinsic(vec.push)(result/180, elem/179) in
         result/180
       } in
       joinrec {
-        join loop839() -> Vec[Token] {
-          join inline_cont1755(t840: int) -> Vec[Token] {
-            let t841 = (index/181 < t840) in
-            if t841 {
-              let t842 = @intrinsic(vec.get)(self/178, index/181) in
-              join inline_cont1753(_wild79: unit) -> Vec[Token] {
+        join loop832() -> Vec[Token] {
+          join inline_cont1709(t833: int) -> Vec[Token] {
+            let t834 = (index/181 < t833) in
+            if t834 {
+              let t835 = @intrinsic(vec.get)(self/178, index/181) in
+              join inline_cont1707(_wild79: unit) -> Vec[Token] {
                 let compound_old80 = index/181 in
                 let compound_value81 = 1 in
-                let t843 = (compound_old80 + compound_value81) in
-                let t844 = index/181 = t843 in
-                let _wild82 = t844 in
-                jump loop839()
+                let t836 = (compound_old80 + compound_value81) in
+                let t837 = index/181 = t836 in
+                let _wild82 = t837 in
+                jump loop832()
               } in
-              let inline1754 = @intrinsic(vec.push)(result/180, t842) in
-              jump inline_cont1753(())
+              let inline1708 = @intrinsic(vec.push)(result/180, t835) in
+              jump inline_cont1707(())
             } else {
-              jump exit838()
+              jump exit831()
             }
           } in
-          let inline1756 = @intrinsic(vec.len)(self/178) in
-          jump inline_cont1755(inline1756)
+          let inline1710 = @intrinsic(vec.len)(self/178) in
+          jump inline_cont1709(inline1710)
         } in
       } in
-      jump loop839()
+      jump loop832()
     } in
-    let inline1760 = @intrinsic(vec.with_capacity)(t837) in
-    jump inline_cont1759(inline1760)
+    let inline1714 = @intrinsic(vec.with_capacity)(t830) in
+    jump inline_cont1713(inline1714)
   } in
-  let inline1762 = @intrinsic(vec.len)(self/178) in
-  jump inline_cont1761(inline1762)
+  let inline1716 = @intrinsic(vec.len)(self/178) in
+  jump inline_cont1715(inline1716)
 }
 
 fn inherent#Ref#Ref[T]#set__T_Vec[Token](self/259: Ref[Vec[Token]], value/260: Vec[Token]) -> unit {
-  let t846 = @intrinsic(ref.set)(self/259, value/260) in
+  let t839 = @intrinsic(ref.set)(self/259, value/260) in
   ()
 }
 
 fn inherent#Vec#Vec[T]#len__T_Binding(self/187: Vec[Binding]) -> int {
-  let t849 = @intrinsic(vec.len)(self/187) in
-  t849
+  let t842 = @intrinsic(vec.len)(self/187) in
+  t842
 }
 
 fn inherent#Ref#Ref[T]#new__T_Value(value/257: Value) -> Ref[Value] {
-  let t852 = @intrinsic(ref.new)(value/257) in
-  t852
-}
-
-fn trait_impl#PartialEq#string#eq(self/99: string, other/100: string) -> bool {
-  let t855 = @intrinsic(eq.primitive)(self/99, other/100) in
-  t855
+  let t845 = @intrinsic(ref.new)(value/257) in
+  t845
 }
 
 fn inherent#Ref#Ref[T]#set__T_Value(self/259: Ref[Value], value/260: Value) -> unit {
-  let t857 = @intrinsic(ref.set)(self/259, value/260) in
+  let t847 = @intrinsic(ref.set)(self/259, value/260) in
   ()
 }
 
 fn inherent#Ref#Ref[T]#get__T_Value(self/258: Ref[Value]) -> Value {
-  let t860 = @intrinsic(ref.get)(self/258) in
-  t860
+  let t850 = @intrinsic(ref.get)(self/258) in
+  t850
 }
 
 fn inherent#Vec#Vec[T]#new__T_SExpr() -> Vec[SExpr] {
-  let t863 = @intrinsic(vec.new)() in
-  t863
+  let t853 = @intrinsic(vec.new)() in
+  t853
 }
 
 fn inherent#Ref#Ref[T]#new__T_Vec[SExpr](value/257: Vec[SExpr]) -> Ref[Vec[SExpr]] {
-  let t866 = @intrinsic(ref.new)(value/257) in
-  t866
+  let t856 = @intrinsic(ref.new)(value/257) in
+  t856
 }
 
 fn inherent#Vec#Vec[T]#len__T_Token(self/187: Vec[Token]) -> int {
-  let t869 = @intrinsic(vec.len)(self/187) in
-  t869
+  let t859 = @intrinsic(vec.len)(self/187) in
+  t859
 }
 
 fn inherent#Ref#Ref[T]#get__T_Vec[SExpr](self/258: Ref[Vec[SExpr]]) -> Vec[SExpr] {
-  let t872 = @intrinsic(ref.get)(self/258) in
-  t872
+  let t862 = @intrinsic(ref.get)(self/258) in
+  t862
 }
 
 fn inherent#Vec#Vec[T]#pushed__T_SExpr(self/178: Vec[SExpr], elem/179: SExpr) -> Vec[SExpr] {
-  join inline_cont1771(t875: int) -> Vec[SExpr] {
-    let t876 = (t875 + 1) in
-    join inline_cont1769(result/180: Vec[SExpr]) -> Vec[SExpr] {
+  join inline_cont1725(t865: int) -> Vec[SExpr] {
+    let t866 = (t865 + 1) in
+    join inline_cont1723(result/180: Vec[SExpr]) -> Vec[SExpr] {
       let index/181 = 0 in
-      join exit877() -> Vec[SExpr] {
+      join exit867() -> Vec[SExpr] {
         let _wild83 = () in
-        let inline1768 = @intrinsic(vec.push)(result/180, elem/179) in
+        let inline1722 = @intrinsic(vec.push)(result/180, elem/179) in
         result/180
       } in
       joinrec {
-        join loop878() -> Vec[SExpr] {
-          join inline_cont1765(t879: int) -> Vec[SExpr] {
-            let t880 = (index/181 < t879) in
-            if t880 {
-              let t881 = @intrinsic(vec.get)(self/178, index/181) in
-              join inline_cont1763(_wild79: unit) -> Vec[SExpr] {
+        join loop868() -> Vec[SExpr] {
+          join inline_cont1719(t869: int) -> Vec[SExpr] {
+            let t870 = (index/181 < t869) in
+            if t870 {
+              let t871 = @intrinsic(vec.get)(self/178, index/181) in
+              join inline_cont1717(_wild79: unit) -> Vec[SExpr] {
                 let compound_old80 = index/181 in
                 let compound_value81 = 1 in
-                let t882 = (compound_old80 + compound_value81) in
-                let t883 = index/181 = t882 in
-                let _wild82 = t883 in
-                jump loop878()
+                let t872 = (compound_old80 + compound_value81) in
+                let t873 = index/181 = t872 in
+                let _wild82 = t873 in
+                jump loop868()
               } in
-              let inline1764 = @intrinsic(vec.push)(result/180, t881) in
-              jump inline_cont1763(())
+              let inline1718 = @intrinsic(vec.push)(result/180, t871) in
+              jump inline_cont1717(())
             } else {
-              jump exit877()
+              jump exit867()
             }
           } in
-          let inline1766 = @intrinsic(vec.len)(self/178) in
-          jump inline_cont1765(inline1766)
+          let inline1720 = @intrinsic(vec.len)(self/178) in
+          jump inline_cont1719(inline1720)
         } in
       } in
-      jump loop878()
+      jump loop868()
     } in
-    let inline1770 = @intrinsic(vec.with_capacity)(t876) in
-    jump inline_cont1769(inline1770)
+    let inline1724 = @intrinsic(vec.with_capacity)(t866) in
+    jump inline_cont1723(inline1724)
   } in
-  let inline1772 = @intrinsic(vec.len)(self/178) in
-  jump inline_cont1771(inline1772)
+  let inline1726 = @intrinsic(vec.len)(self/178) in
+  jump inline_cont1725(inline1726)
 }
 
 fn inherent#Ref#Ref[T]#set__T_Vec[SExpr](self/259: Ref[Vec[SExpr]], value/260: Vec[SExpr]) -> unit {
-  let t885 = @intrinsic(ref.set)(self/259, value/260) in
+  let t875 = @intrinsic(ref.set)(self/259, value/260) in
   ()
 }
 
 fn inherent#int32#int32#to_string(self/35: int32) -> string {
-  let t888 = @runtime(core.int32_to_string)(self/35) in
-  t888
+  let t878 = @runtime(core.int32_to_string)(self/35) in
+  t878
 }
 
 fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
-  let t891 = @runtime(core.bool_to_string)(self/66) in
-  t891
-}
-
-fn trait_impl#PartialEq#int32#eq(self/109: int32, other/110: int32) -> bool {
-  let t894 = @intrinsic(eq.primitive)(self/109, other/110) in
-  t894
+  let t881 = @runtime(core.bool_to_string)(self/66) in
+  t881
 }
 
 fn inherent#Ref#Ref[T]#get__T_Vec[Binding](self/258: Ref[Vec[Binding]]) -> Vec[Binding] {
-  let t897 = @intrinsic(ref.get)(self/258) in
-  t897
+  let t884 = @intrinsic(ref.get)(self/258) in
+  t884
 }
 
 fn inherent#Vec#Vec[T]#len__T_SExpr(self/187: Vec[SExpr]) -> int {
-  let t900 = @intrinsic(vec.len)(self/187) in
-  t900
+  let t887 = @intrinsic(vec.len)(self/187) in
+  t887
 }
 
 fn inherent#Vec#Vec[T]#pushed__T_Binding(self/178: Vec[Binding], elem/179: Binding) -> Vec[
   Binding
 ] {
-  join inline_cont1781(t903: int) -> Vec[Binding] {
-    let t904 = (t903 + 1) in
-    join inline_cont1779(result/180: Vec[Binding]) -> Vec[Binding] {
+  join inline_cont1735(t890: int) -> Vec[Binding] {
+    let t891 = (t890 + 1) in
+    join inline_cont1733(result/180: Vec[Binding]) -> Vec[Binding] {
       let index/181 = 0 in
-      join exit905() -> Vec[Binding] {
+      join exit892() -> Vec[Binding] {
         let _wild83 = () in
-        let inline1778 = @intrinsic(vec.push)(result/180, elem/179) in
+        let inline1732 = @intrinsic(vec.push)(result/180, elem/179) in
         result/180
       } in
       joinrec {
-        join loop906() -> Vec[Binding] {
-          join inline_cont1775(t907: int) -> Vec[Binding] {
-            let t908 = (index/181 < t907) in
-            if t908 {
-              let t909 = @intrinsic(vec.get)(self/178, index/181) in
-              join inline_cont1773(_wild79: unit) -> Vec[Binding] {
+        join loop893() -> Vec[Binding] {
+          join inline_cont1729(t894: int) -> Vec[Binding] {
+            let t895 = (index/181 < t894) in
+            if t895 {
+              let t896 = @intrinsic(vec.get)(self/178, index/181) in
+              join inline_cont1727(_wild79: unit) -> Vec[Binding] {
                 let compound_old80 = index/181 in
                 let compound_value81 = 1 in
-                let t910 = (compound_old80 + compound_value81) in
-                let t911 = index/181 = t910 in
-                let _wild82 = t911 in
-                jump loop906()
+                let t897 = (compound_old80 + compound_value81) in
+                let t898 = index/181 = t897 in
+                let _wild82 = t898 in
+                jump loop893()
               } in
-              let inline1774 = @intrinsic(vec.push)(result/180, t909) in
-              jump inline_cont1773(())
+              let inline1728 = @intrinsic(vec.push)(result/180, t896) in
+              jump inline_cont1727(())
             } else {
-              jump exit905()
+              jump exit892()
             }
           } in
-          let inline1776 = @intrinsic(vec.len)(self/178) in
-          jump inline_cont1775(inline1776)
+          let inline1730 = @intrinsic(vec.len)(self/178) in
+          jump inline_cont1729(inline1730)
         } in
       } in
-      jump loop906()
+      jump loop893()
     } in
-    let inline1780 = @intrinsic(vec.with_capacity)(t904) in
-    jump inline_cont1779(inline1780)
+    let inline1734 = @intrinsic(vec.with_capacity)(t891) in
+    jump inline_cont1733(inline1734)
   } in
-  let inline1782 = @intrinsic(vec.len)(self/178) in
-  jump inline_cont1781(inline1782)
+  let inline1736 = @intrinsic(vec.len)(self/178) in
+  jump inline_cont1735(inline1736)
 }
 
 fn inherent#Ref#Ref[T]#set__T_Vec[Binding](
   self/259: Ref[Vec[Binding]],
   value/260: Vec[Binding]
 ) -> unit {
-  let t913 = @intrinsic(ref.set)(self/259, value/260) in
+  let t900 = @intrinsic(ref.set)(self/259, value/260) in
   ()
 }
 
 fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
-  let t916 = @intrinsic(vec.new)() in
-  t916
+  let t903 = @intrinsic(vec.new)() in
+  t903
 }
 
 fn inherent#Ref#Ref[T]#new__T_Vec[string](value/257: Vec[string]) -> Ref[Vec[string]] {
-  let t919 = @intrinsic(ref.new)(value/257) in
-  t919
+  let t906 = @intrinsic(ref.new)(value/257) in
+  t906
 }
 
 fn inherent#Ref#Ref[T]#get__T_Vec[string](self/258: Ref[Vec[string]]) -> Vec[string] {
-  let t922 = @intrinsic(ref.get)(self/258) in
-  t922
+  let t909 = @intrinsic(ref.get)(self/258) in
+  t909
 }
 
 fn inherent#Vec#Vec[T]#pushed__T_string(self/178: Vec[string], elem/179: string) -> Vec[string] {
-  join inline_cont1791(t925: int) -> Vec[string] {
-    let t926 = (t925 + 1) in
-    join inline_cont1789(result/180: Vec[string]) -> Vec[string] {
+  join inline_cont1745(t912: int) -> Vec[string] {
+    let t913 = (t912 + 1) in
+    join inline_cont1743(result/180: Vec[string]) -> Vec[string] {
       let index/181 = 0 in
-      join exit927() -> Vec[string] {
+      join exit914() -> Vec[string] {
         let _wild83 = () in
-        let inline1788 = @intrinsic(vec.push)(result/180, elem/179) in
+        let inline1742 = @intrinsic(vec.push)(result/180, elem/179) in
         result/180
       } in
       joinrec {
-        join loop928() -> Vec[string] {
-          join inline_cont1785(t929: int) -> Vec[string] {
-            let t930 = (index/181 < t929) in
-            if t930 {
-              let t931 = @intrinsic(vec.get)(self/178, index/181) in
-              join inline_cont1783(_wild79: unit) -> Vec[string] {
+        join loop915() -> Vec[string] {
+          join inline_cont1739(t916: int) -> Vec[string] {
+            let t917 = (index/181 < t916) in
+            if t917 {
+              let t918 = @intrinsic(vec.get)(self/178, index/181) in
+              join inline_cont1737(_wild79: unit) -> Vec[string] {
                 let compound_old80 = index/181 in
                 let compound_value81 = 1 in
-                let t932 = (compound_old80 + compound_value81) in
-                let t933 = index/181 = t932 in
-                let _wild82 = t933 in
-                jump loop928()
+                let t919 = (compound_old80 + compound_value81) in
+                let t920 = index/181 = t919 in
+                let _wild82 = t920 in
+                jump loop915()
               } in
-              let inline1784 = @intrinsic(vec.push)(result/180, t931) in
-              jump inline_cont1783(())
+              let inline1738 = @intrinsic(vec.push)(result/180, t918) in
+              jump inline_cont1737(())
             } else {
-              jump exit927()
+              jump exit914()
             }
           } in
-          let inline1786 = @intrinsic(vec.len)(self/178) in
-          jump inline_cont1785(inline1786)
+          let inline1740 = @intrinsic(vec.len)(self/178) in
+          jump inline_cont1739(inline1740)
         } in
       } in
-      jump loop928()
+      jump loop915()
     } in
-    let inline1790 = @intrinsic(vec.with_capacity)(t926) in
-    jump inline_cont1789(inline1790)
+    let inline1744 = @intrinsic(vec.with_capacity)(t913) in
+    jump inline_cont1743(inline1744)
   } in
-  let inline1792 = @intrinsic(vec.len)(self/178) in
-  jump inline_cont1791(inline1792)
+  let inline1746 = @intrinsic(vec.len)(self/178) in
+  jump inline_cont1745(inline1746)
 }
 
 fn inherent#Ref#Ref[T]#set__T_Vec[string](
   self/259: Ref[Vec[string]],
   value/260: Vec[string]
 ) -> unit {
-  let t935 = @intrinsic(ref.set)(self/259, value/260) in
+  let t922 = @intrinsic(ref.set)(self/259, value/260) in
   ()
 }
 
 fn inherent#Vec#Vec[T]#new__T_Value() -> Vec[Value] {
-  let t938 = @intrinsic(vec.new)() in
-  t938
+  let t925 = @intrinsic(vec.new)() in
+  t925
 }
 
 fn inherent#Ref#Ref[T]#new__T_Vec[Value](value/257: Vec[Value]) -> Ref[Vec[Value]] {
-  let t941 = @intrinsic(ref.new)(value/257) in
-  t941
+  let t928 = @intrinsic(ref.new)(value/257) in
+  t928
 }
 
 fn inherent#Ref#Ref[T]#get__T_Vec[Value](self/258: Ref[Vec[Value]]) -> Vec[Value] {
-  let t944 = @intrinsic(ref.get)(self/258) in
-  t944
+  let t931 = @intrinsic(ref.get)(self/258) in
+  t931
 }
 
 fn inherent#Vec#Vec[T]#pushed__T_Value(self/178: Vec[Value], elem/179: Value) -> Vec[Value] {
-  join inline_cont1801(t947: int) -> Vec[Value] {
-    let t948 = (t947 + 1) in
-    join inline_cont1799(result/180: Vec[Value]) -> Vec[Value] {
+  join inline_cont1755(t934: int) -> Vec[Value] {
+    let t935 = (t934 + 1) in
+    join inline_cont1753(result/180: Vec[Value]) -> Vec[Value] {
       let index/181 = 0 in
-      join exit949() -> Vec[Value] {
+      join exit936() -> Vec[Value] {
         let _wild83 = () in
-        let inline1798 = @intrinsic(vec.push)(result/180, elem/179) in
+        let inline1752 = @intrinsic(vec.push)(result/180, elem/179) in
         result/180
       } in
       joinrec {
-        join loop950() -> Vec[Value] {
-          join inline_cont1795(t951: int) -> Vec[Value] {
-            let t952 = (index/181 < t951) in
-            if t952 {
-              let t953 = @intrinsic(vec.get)(self/178, index/181) in
-              join inline_cont1793(_wild79: unit) -> Vec[Value] {
+        join loop937() -> Vec[Value] {
+          join inline_cont1749(t938: int) -> Vec[Value] {
+            let t939 = (index/181 < t938) in
+            if t939 {
+              let t940 = @intrinsic(vec.get)(self/178, index/181) in
+              join inline_cont1747(_wild79: unit) -> Vec[Value] {
                 let compound_old80 = index/181 in
                 let compound_value81 = 1 in
-                let t954 = (compound_old80 + compound_value81) in
-                let t955 = index/181 = t954 in
-                let _wild82 = t955 in
-                jump loop950()
+                let t941 = (compound_old80 + compound_value81) in
+                let t942 = index/181 = t941 in
+                let _wild82 = t942 in
+                jump loop937()
               } in
-              let inline1794 = @intrinsic(vec.push)(result/180, t953) in
-              jump inline_cont1793(())
+              let inline1748 = @intrinsic(vec.push)(result/180, t940) in
+              jump inline_cont1747(())
             } else {
-              jump exit949()
+              jump exit936()
             }
           } in
-          let inline1796 = @intrinsic(vec.len)(self/178) in
-          jump inline_cont1795(inline1796)
+          let inline1750 = @intrinsic(vec.len)(self/178) in
+          jump inline_cont1749(inline1750)
         } in
       } in
-      jump loop950()
+      jump loop937()
     } in
-    let inline1800 = @intrinsic(vec.with_capacity)(t948) in
-    jump inline_cont1799(inline1800)
+    let inline1754 = @intrinsic(vec.with_capacity)(t935) in
+    jump inline_cont1753(inline1754)
   } in
-  let inline1802 = @intrinsic(vec.len)(self/178) in
-  jump inline_cont1801(inline1802)
+  let inline1756 = @intrinsic(vec.len)(self/178) in
+  jump inline_cont1755(inline1756)
 }
 
 fn inherent#Ref#Ref[T]#set__T_Vec[Value](self/259: Ref[Vec[Value]], value/260: Vec[Value]) -> unit {
-  let t957 = @intrinsic(ref.set)(self/259, value/260) in
+  let t944 = @intrinsic(ref.set)(self/259, value/260) in
   ()
 }
 
 fn inherent#Vec#Vec[T]#len__T_Value(self/187: Vec[Value]) -> int {
-  let t960 = @intrinsic(vec.len)(self/187) in
-  t960
-}
-
-fn trait_impl#PartialEq#bool#eq(self/97: bool, other/98: bool) -> bool {
-  let t963 = @intrinsic(eq.primitive)(self/97, other/98) in
-  t963
+  let t947 = @intrinsic(vec.len)(self/187) in
+  t947
 }
 
 fn inherent#Ref#Ref[T]#new__T_Vec[Binding](value/257: Vec[Binding]) -> Ref[Vec[Binding]] {
-  let t966 = @intrinsic(ref.new)(value/257) in
-  t966
+  let t950 = @intrinsic(ref.new)(value/257) in
+  t950
 }
 
 fn inherent#Vec#Vec[T]#len__T_string(self/187: Vec[string]) -> int {
-  let t969 = @intrinsic(vec.len)(self/187) in
-  t969
+  let t953 = @intrinsic(vec.len)(self/187) in
+  t953
 }
 
 fn inherent#Vec#Vec[T]#new__T_Binding() -> Vec[Binding] {
-  let t972 = @intrinsic(vec.new)() in
-  t972
+  let t956 = @intrinsic(vec.new)() in
+  t956
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont1803(t974: string) -> unit {
-    let t975 = @runtime(core.string_println)(t974) in
+  join inline_cont1757(t958: string) -> unit {
+    let t959 = @runtime(core.string_println)(t958) in
     ()
   } in
-  jump inline_cont1803(value/31)
+  jump inline_cont1757(value/31)
 }
 
 fn string_get(value/17: string, index/18: int) -> char {
@@ -2431,87 +2367,87 @@ fn string_get(value/17: string, index/18: int) -> char {
   if x7 {
     x8
   } else {
-    let t980 = @runtime(core.string_get)("", -1) in
-    t980
+    let t964 = @runtime(core.string_get)("", -1) in
+    t964
   }
 }
 
 fn char_to_string(value/29: char) -> string {
-  let t985 = (value/29 as uint32) in
-  join inline_cont1804(t986: bool) -> string {
-    if t986 {
-      let t987 = @runtime(core.char_to_string)(value/29) in
-      t987
+  let t969 = (value/29 as uint32) in
+  join inline_cont1758(t970: bool) -> string {
+    if t970 {
+      let t971 = @runtime(core.char_to_string)(value/29) in
+      t971
     } else {
       let mtmp21 = @runtime(core.string_get)("", -1) in
       ""
     }
   } in
-  let inline1805 = (t985 <= 1114111) in
-  if inline1805 {
-    let inline1806 = (t985 >= 55296) in
-    join inline_join1807(inline1808: bool) -> string {
-      let inline1809 = (!inline1808) in
-      jump inline_cont1804(inline1809)
+  let inline1759 = (t969 <= 1114111) in
+  if inline1759 {
+    let inline1760 = (t969 >= 55296) in
+    join inline_join1761(inline1762: bool) -> string {
+      let inline1763 = (!inline1762) in
+      jump inline_cont1758(inline1763)
     } in
-    if inline1806 {
-      let inline1810 = (t985 <= 57343) in
-      jump inline_join1807(inline1810)
+    if inline1760 {
+      let inline1764 = (t969 <= 57343) in
+      jump inline_join1761(inline1764)
     } else {
-      jump inline_join1807(false)
+      jump inline_join1761(false)
     }
   } else {
-    jump inline_cont1804(false)
+    jump inline_cont1758(false)
   }
 }
 
 fn inherent#Vec#Vec[T]#with_capacity__T_Token(capacity/175: int) -> Vec[Token] {
-  let t990 = @intrinsic(vec.with_capacity)(capacity/175) in
-  t990
+  let t974 = @intrinsic(vec.with_capacity)(capacity/175) in
+  t974
 }
 
 fn inherent#Vec#Vec[T]#push__T_Token(self/176: Vec[Token], elem/177: Token) -> unit {
-  let t992 = @intrinsic(vec.push)(self/176, elem/177) in
+  let t976 = @intrinsic(vec.push)(self/176, elem/177) in
   ()
 }
 
 fn inherent#Vec#Vec[T]#with_capacity__T_SExpr(capacity/175: int) -> Vec[SExpr] {
-  let t995 = @intrinsic(vec.with_capacity)(capacity/175) in
-  t995
+  let t979 = @intrinsic(vec.with_capacity)(capacity/175) in
+  t979
 }
 
 fn inherent#Vec#Vec[T]#push__T_SExpr(self/176: Vec[SExpr], elem/177: SExpr) -> unit {
-  let t997 = @intrinsic(vec.push)(self/176, elem/177) in
+  let t981 = @intrinsic(vec.push)(self/176, elem/177) in
   ()
 }
 
 fn inherent#Vec#Vec[T]#with_capacity__T_Binding(capacity/175: int) -> Vec[Binding] {
-  let t1000 = @intrinsic(vec.with_capacity)(capacity/175) in
-  t1000
+  let t984 = @intrinsic(vec.with_capacity)(capacity/175) in
+  t984
 }
 
 fn inherent#Vec#Vec[T]#push__T_Binding(self/176: Vec[Binding], elem/177: Binding) -> unit {
-  let t1002 = @intrinsic(vec.push)(self/176, elem/177) in
+  let t986 = @intrinsic(vec.push)(self/176, elem/177) in
   ()
 }
 
 fn inherent#Vec#Vec[T]#with_capacity__T_string(capacity/175: int) -> Vec[string] {
-  let t1005 = @intrinsic(vec.with_capacity)(capacity/175) in
-  t1005
+  let t989 = @intrinsic(vec.with_capacity)(capacity/175) in
+  t989
 }
 
 fn inherent#Vec#Vec[T]#push__T_string(self/176: Vec[string], elem/177: string) -> unit {
-  let t1007 = @intrinsic(vec.push)(self/176, elem/177) in
+  let t991 = @intrinsic(vec.push)(self/176, elem/177) in
   ()
 }
 
 fn inherent#Vec#Vec[T]#with_capacity__T_Value(capacity/175: int) -> Vec[Value] {
-  let t1010 = @intrinsic(vec.with_capacity)(capacity/175) in
-  t1010
+  let t994 = @intrinsic(vec.with_capacity)(capacity/175) in
+  t994
 }
 
 fn inherent#Vec#Vec[T]#push__T_Value(self/176: Vec[Value], elem/177: Value) -> unit {
-  let t1012 = @intrinsic(vec.push)(self/176, elem/177) in
+  let t996 = @intrinsic(vec.push)(self/176, elem/177) in
   ()
 }
 
@@ -2521,293 +2457,291 @@ fn trait_impl#ToString#string#to_string(self/67: string) -> string {
 
 fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
   let length/7 = inherent#string#string#byte_len(value/5) in
-  let t1133 = (index/6 < 0) in
-  join k1130(jp1131: bool) -> (bool, char, int) {
-    join k1017() -> (bool, char, int) {
+  let t1117 = (index/6 < 0) in
+  join k1114(jp1115: bool) -> (bool, char, int) {
+    join k1001() -> (bool, char, int) {
       let _wild2 = () in
-      let t1018 = inherent#string#string#byte_get(value/5, index/6) in
-      let first/8 = (t1018 as uint32) in
-      let t1021 = (first/8 < 128) in
-      if t1021 {
-        let inline1814 = 1 in
-        let inline1815 = char_from_uint32(first/8) in
-        match inline1815 {
+      let t1002 = inherent#string#string#byte_get(value/5, index/6) in
+      let first/8 = (t1002 as uint32) in
+      let t1005 = (first/8 < 128) in
+      if t1005 {
+        let inline1768 = 1 in
+        let inline1769 = char_from_uint32(first/8) in
+        match inline1769 {
           Tag_0 => {
-            let inline1816 = utf8_invalid_decode() in
-            inline1816
+            let inline1770 = utf8_invalid_decode() in
+            inline1770
           },
           Tag_1 => {
-            let inline1817 = Option__char::Some._0(inline1815) in
-            let inline1818 = inline1817 in
-            let inline1819 = (true, inline1817, inline1814) in
-            inline1819
+            let inline1771 = Option__char::Some._0(inline1769) in
+            let inline1772 = inline1771 in
+            let inline1773 = (true, inline1771, inline1768) in
+            inline1773
           },
         }
       } else {
-        let t1025 = (first/8 < 194) in
-        if t1025 {
-          let inline1821 = (false, '\0', 0) in
-          inline1821
+        let t1009 = (first/8 < 194) in
+        if t1009 {
+          let inline1775 = (false, '\0', 0) in
+          inline1775
         } else {
-          let t1029 = (first/8 < 224) in
-          if t1029 {
-            let t1042 = (length/7 - index/6) in
-            let t1043 = (t1042 < 2) in
-            join k1030() -> (bool, char, int) {
+          let t1013 = (first/8 < 224) in
+          if t1013 {
+            let t1026 = (length/7 - index/6) in
+            let t1027 = (t1026 < 2) in
+            join k1014() -> (bool, char, int) {
               let _wild3 = () in
-              let t1031 = (index/6 + 1) in
-              join inline_cont1836(t1032: uint8) -> (bool, char, int) {
-                let second/9 = (t1032 as uint32) in
-                join inline_cont1833(t1035: bool) -> (bool, char, int) {
-                  if t1035 {
-                    let inline1825 = (false, '\0', 0) in
-                    inline1825
+              let t1015 = (index/6 + 1) in
+              join inline_cont1790(t1016: uint8) -> (bool, char, int) {
+                let second/9 = (t1016 as uint32) in
+                join inline_cont1787(t1019: bool) -> (bool, char, int) {
+                  if t1019 {
+                    let inline1779 = (false, '\0', 0) in
+                    inline1779
                   } else {
-                    let t1037 = (first/8 & 31) in
-                    let t1038 = (t1037 << 6) in
-                    let t1039 = (second/9 & 63) in
-                    let t1040 = (t1038 | t1039) in
-                    let inline1827 = 2 in
-                    let inline1828 = char_from_uint32(t1040) in
-                    match inline1828 {
+                    let t1021 = (first/8 & 31) in
+                    let t1022 = (t1021 << 6) in
+                    let t1023 = (second/9 & 63) in
+                    let t1024 = (t1022 | t1023) in
+                    let inline1781 = 2 in
+                    let inline1782 = char_from_uint32(t1024) in
+                    match inline1782 {
                       Tag_0 => {
-                        let inline1829 = utf8_invalid_decode() in
-                        inline1829
+                        let inline1783 = utf8_invalid_decode() in
+                        inline1783
                       },
                       Tag_1 => {
-                        let inline1830 = Option__char::Some._0(inline1828) in
-                        let inline1831 = inline1830 in
-                        let inline1832 = (true, inline1830, inline1827) in
-                        inline1832
+                        let inline1784 = Option__char::Some._0(inline1782) in
+                        let inline1785 = inline1784 in
+                        let inline1786 = (true, inline1784, inline1781) in
+                        inline1786
                       },
                     }
                   }
                 } in
-                let inline1834 = (second/9 < 128) in
-                if inline1834 {
-                  jump inline_cont1833(true)
+                let inline1788 = (second/9 < 128) in
+                if inline1788 {
+                  jump inline_cont1787(true)
                 } else {
-                  let inline1835 = (second/9 > 191) in
-                  jump inline_cont1833(inline1835)
+                  let inline1789 = (second/9 > 191) in
+                  jump inline_cont1787(inline1789)
                 }
               } in
-              let inline1837 = @runtime(core.string_byte_get)(value/5, t1031) in
-              jump inline_cont1836(inline1837)
+              let inline1791 = @runtime(core.string_byte_get)(value/5, t1015) in
+              jump inline_cont1790(inline1791)
             } in
-            if t1043 {
-              let inline1823 = (false, '\0', 0) in
-              inline1823
+            if t1027 {
+              let inline1777 = (false, '\0', 0) in
+              inline1777
             } else {
-              jump k1030()
+              jump k1014()
             }
           } else {
-            let t1047 = (first/8 < 240) in
-            if t1047 {
-              let t1080 = (length/7 - index/6) in
-              let t1081 = (t1080 < 3) in
-              join k1048() -> (bool, char, int) {
+            let t1031 = (first/8 < 240) in
+            if t1031 {
+              let t1064 = (length/7 - index/6) in
+              let t1065 = (t1064 < 3) in
+              join k1032() -> (bool, char, int) {
                 let _wild4 = () in
-                let t1049 = (index/6 + 1) in
-                join inline_cont1853(t1050: uint8) -> (bool, char, int) {
-                  let second/10 = (t1050 as uint32) in
-                  let t1051 = (index/6 + 2) in
-                  join inline_cont1851(t1052: uint8) -> (bool, char, int) {
-                    let third/11 = (t1052 as uint32) in
-                    let t1078 = utf8_invalid_continuation(second/10) in
-                    join k1072(jp1073: bool) -> (bool, char, int) {
-                      join k1066(jp1067: bool) -> (bool, char, int) {
-                        join k1055(jp1056: bool) -> (bool, char, int) {
-                          if jp1056 {
-                            let inline1850 = (false, '\0', 0) in
-                            inline1850
-                          } else {
-                            let t1058 = (first/8 & 15) in
-                            let t1059 = (t1058 << 12) in
-                            let t1060 = (second/10 & 63) in
-                            let t1061 = (t1060 << 6) in
-                            let t1062 = (t1059 | t1061) in
-                            let t1063 = (third/11 & 63) in
-                            let t1064 = (t1062 | t1063) in
-                            let t1065 = utf8_valid_decode(t1064, 3) in
-                            t1065
-                          }
-                        } in
-                        if jp1067 {
-                          jump k1055(true)
-                        } else {
-                          join inline_cont1846(t1070: bool) -> (bool, char, int) {
-                            if t1070 {
-                              let t1071 = (second/10 >= 160) in
-                              jump k1055(t1071)
-                            } else {
-                              jump k1055(false)
-                            }
-                          } in
-                          let inline1847 = 237 in
-                          let inline1848 = @intrinsic(eq.primitive)(first/8, inline1847) in
-                          jump inline_cont1846(inline1848)
-                        }
-                      } in
-                      if jp1073 {
-                        jump k1066(true)
+                let t1033 = (index/6 + 1) in
+                let t1034 = inherent#string#string#byte_get(value/5, t1033) in
+                let second/10 = (t1034 as uint32) in
+                let t1035 = (index/6 + 2) in
+                let t1036 = inherent#string#string#byte_get(value/5, t1035) in
+                let third/11 = (t1036 as uint32) in
+                let t1062 = utf8_invalid_continuation(second/10) in
+                join k1056(jp1057: bool) -> (bool, char, int) {
+                  join k1050(jp1051: bool) -> (bool, char, int) {
+                    join k1039(jp1040: bool) -> (bool, char, int) {
+                      if jp1040 {
+                        let inline1798 = (false, '\0', 0) in
+                        inline1798
                       } else {
-                        join inline_cont1843(t1076: bool) -> (bool, char, int) {
-                          if t1076 {
-                            let t1077 = (second/10 < 160) in
-                            jump k1066(t1077)
-                          } else {
-                            jump k1066(false)
-                          }
-                        } in
-                        let inline1844 = 224 in
-                        let inline1845 = @intrinsic(eq.primitive)(first/8, inline1844) in
-                        jump inline_cont1843(inline1845)
-                      }
-                    } in
-                    if t1078 {
-                      jump k1072(true)
-                    } else {
-                      let inline1841 = (third/11 < 128) in
-                      if inline1841 {
-                        jump k1072(true)
-                      } else {
-                        let inline1842 = (third/11 > 191) in
-                        jump k1072(inline1842)
-                      }
-                    }
-                  } in
-                  let inline1852 = @runtime(core.string_byte_get)(value/5, t1051) in
-                  jump inline_cont1851(inline1852)
-                } in
-                let inline1854 = @runtime(core.string_byte_get)(value/5, t1049) in
-                jump inline_cont1853(inline1854)
-              } in
-              if t1081 {
-                let inline1839 = (false, '\0', 0) in
-                inline1839
-              } else {
-                jump k1048()
-              }
-            } else {
-              let t1085 = (first/8 < 245) in
-              if t1085 {
-                let t1126 = (length/7 - index/6) in
-                let t1127 = (t1126 < 4) in
-                join k1086() -> (bool, char, int) {
-                  let _wild5 = () in
-                  let t1087 = (index/6 + 1) in
-                  let t1088 = inherent#string#string#byte_get(value/5, t1087) in
-                  let second/12 = (t1088 as uint32) in
-                  let t1089 = (index/6 + 2) in
-                  let t1090 = inherent#string#string#byte_get(value/5, t1089) in
-                  let third/13 = (t1090 as uint32) in
-                  let t1091 = (index/6 + 3) in
-                  let t1092 = inherent#string#string#byte_get(value/5, t1091) in
-                  let fourth/14 = (t1092 as uint32) in
-                  let t1124 = utf8_invalid_continuation(second/12) in
-                  join k1121(jp1122: bool) -> (bool, char, int) {
-                    join k1115(jp1116: bool) -> (bool, char, int) {
-                      join k1109(jp1110: bool) -> (bool, char, int) {
-                        join k1095(jp1096: bool) -> (bool, char, int) {
-                          if jp1096 {
-                            let t1097 = utf8_invalid_decode() in
-                            t1097
-                          } else {
-                            let t1098 = (first/8 & 7) in
-                            let t1099 = (t1098 << 18) in
-                            let t1100 = (second/12 & 63) in
-                            let t1101 = (t1100 << 12) in
-                            let t1102 = (t1099 | t1101) in
-                            let t1103 = (third/13 & 63) in
-                            let t1104 = (t1103 << 6) in
-                            let t1105 = (t1102 | t1104) in
-                            let t1106 = (fourth/14 & 63) in
-                            let t1107 = (t1105 | t1106) in
-                            let t1108 = utf8_valid_decode(t1107, 4) in
-                            t1108
-                          }
-                        } in
-                        if jp1110 {
-                          jump k1095(true)
-                        } else {
-                          let t1113 = trait_impl#PartialEq#uint32#eq(first/8, 244) in
-                          if t1113 {
-                            let t1114 = (second/12 > 143) in
-                            jump k1095(t1114)
-                          } else {
-                            jump k1095(false)
-                          }
-                        }
-                      } in
-                      if jp1116 {
-                        jump k1109(true)
-                      } else {
-                        let t1119 = trait_impl#PartialEq#uint32#eq(first/8, 240) in
-                        if t1119 {
-                          let t1120 = (second/12 < 144) in
-                          jump k1109(t1120)
-                        } else {
-                          jump k1109(false)
+                        let t1042 = (first/8 & 15) in
+                        let t1043 = (t1042 << 12) in
+                        let t1044 = (second/10 & 63) in
+                        let t1045 = (t1044 << 6) in
+                        let t1046 = (t1043 | t1045) in
+                        let t1047 = (third/11 & 63) in
+                        let t1048 = (t1046 | t1047) in
+                        let inline1800 = 3 in
+                        let inline1801 = char_from_uint32(t1048) in
+                        match inline1801 {
+                          Tag_0 => {
+                            let inline1802 = utf8_invalid_decode() in
+                            inline1802
+                          },
+                          Tag_1 => {
+                            let inline1803 = Option__char::Some._0(inline1801) in
+                            let inline1804 = inline1803 in
+                            let inline1805 = (true, inline1803, inline1800) in
+                            inline1805
+                          },
                         }
                       }
                     } in
-                    if jp1122 {
-                      jump k1115(true)
+                    if jp1051 {
+                      jump k1039(true)
                     } else {
-                      let t1123 = utf8_invalid_continuation(fourth/14) in
-                      jump k1115(t1123)
+                      let t1054 = (first/8 == 237) in
+                      if t1054 {
+                        let t1055 = (second/10 >= 160) in
+                        jump k1039(t1055)
+                      } else {
+                        jump k1039(false)
+                      }
                     }
                   } in
-                  if t1124 {
-                    jump k1121(true)
+                  if jp1057 {
+                    jump k1050(true)
                   } else {
-                    let t1125 = utf8_invalid_continuation(third/13) in
-                    jump k1121(t1125)
+                    let t1060 = (first/8 == 224) in
+                    if t1060 {
+                      let t1061 = (second/10 < 160) in
+                      jump k1050(t1061)
+                    } else {
+                      jump k1050(false)
+                    }
                   }
                 } in
-                if t1127 {
-                  let t1128 = utf8_invalid_decode() in
-                  t1128
+                if t1062 {
+                  jump k1056(true)
                 } else {
-                  jump k1086()
+                  let inline1795 = (third/11 < 128) in
+                  if inline1795 {
+                    jump k1056(true)
+                  } else {
+                    let inline1796 = (third/11 > 191) in
+                    jump k1056(inline1796)
+                  }
+                }
+              } in
+              if t1065 {
+                let inline1793 = (false, '\0', 0) in
+                inline1793
+              } else {
+                jump k1032()
+              }
+            } else {
+              let t1069 = (first/8 < 245) in
+              if t1069 {
+                let t1110 = (length/7 - index/6) in
+                let t1111 = (t1110 < 4) in
+                join k1070() -> (bool, char, int) {
+                  let _wild5 = () in
+                  let t1071 = (index/6 + 1) in
+                  let t1072 = inherent#string#string#byte_get(value/5, t1071) in
+                  let second/12 = (t1072 as uint32) in
+                  let t1073 = (index/6 + 2) in
+                  let t1074 = inherent#string#string#byte_get(value/5, t1073) in
+                  let third/13 = (t1074 as uint32) in
+                  let t1075 = (index/6 + 3) in
+                  let t1076 = inherent#string#string#byte_get(value/5, t1075) in
+                  let fourth/14 = (t1076 as uint32) in
+                  let t1108 = utf8_invalid_continuation(second/12) in
+                  join k1105(jp1106: bool) -> (bool, char, int) {
+                    join k1099(jp1100: bool) -> (bool, char, int) {
+                      join k1093(jp1094: bool) -> (bool, char, int) {
+                        join k1079(jp1080: bool) -> (bool, char, int) {
+                          if jp1080 {
+                            let t1081 = utf8_invalid_decode() in
+                            t1081
+                          } else {
+                            let t1082 = (first/8 & 7) in
+                            let t1083 = (t1082 << 18) in
+                            let t1084 = (second/12 & 63) in
+                            let t1085 = (t1084 << 12) in
+                            let t1086 = (t1083 | t1085) in
+                            let t1087 = (third/13 & 63) in
+                            let t1088 = (t1087 << 6) in
+                            let t1089 = (t1086 | t1088) in
+                            let t1090 = (fourth/14 & 63) in
+                            let t1091 = (t1089 | t1090) in
+                            let t1092 = utf8_valid_decode(t1091, 4) in
+                            t1092
+                          }
+                        } in
+                        if jp1094 {
+                          jump k1079(true)
+                        } else {
+                          let t1097 = (first/8 == 244) in
+                          if t1097 {
+                            let t1098 = (second/12 > 143) in
+                            jump k1079(t1098)
+                          } else {
+                            jump k1079(false)
+                          }
+                        }
+                      } in
+                      if jp1100 {
+                        jump k1093(true)
+                      } else {
+                        let t1103 = (first/8 == 240) in
+                        if t1103 {
+                          let t1104 = (second/12 < 144) in
+                          jump k1093(t1104)
+                        } else {
+                          jump k1093(false)
+                        }
+                      }
+                    } in
+                    if jp1106 {
+                      jump k1099(true)
+                    } else {
+                      let t1107 = utf8_invalid_continuation(fourth/14) in
+                      jump k1099(t1107)
+                    }
+                  } in
+                  if t1108 {
+                    jump k1105(true)
+                  } else {
+                    let t1109 = utf8_invalid_continuation(third/13) in
+                    jump k1105(t1109)
+                  }
+                } in
+                if t1111 {
+                  let t1112 = utf8_invalid_decode() in
+                  t1112
+                } else {
+                  jump k1070()
                 }
               } else {
-                let t1129 = utf8_invalid_decode() in
-                t1129
+                let t1113 = utf8_invalid_decode() in
+                t1113
               }
             }
           }
         }
       }
     } in
-    if jp1131 {
-      let inline1812 = (false, '\0', 0) in
-      inline1812
+    if jp1115 {
+      let inline1766 = (false, '\0', 0) in
+      inline1766
     } else {
-      jump k1017()
+      jump k1001()
     }
   } in
-  if t1133 {
-    jump k1130(true)
+  if t1117 {
+    jump k1114(true)
   } else {
-    let t1134 = (index/6 >= length/7) in
-    jump k1130(t1134)
+    let t1118 = (index/6 >= length/7) in
+    jump k1114(t1118)
   }
 }
 
 fn utf8_valid_scalar(value/4: uint32) -> bool {
-  let t1139 = (value/4 <= 1114111) in
-  if t1139 {
-    let t1143 = (value/4 >= 55296) in
-    join k1140(jp1141: bool) -> bool {
-      let t1142 = (!jp1141) in
-      t1142
+  let t1123 = (value/4 <= 1114111) in
+  if t1123 {
+    let t1127 = (value/4 >= 55296) in
+    join k1124(jp1125: bool) -> bool {
+      let t1126 = (!jp1125) in
+      t1126
     } in
-    if t1143 {
-      let t1144 = (value/4 <= 57343) in
-      jump k1140(t1144)
+    if t1127 {
+      let t1128 = (value/4 <= 57343) in
+      jump k1124(t1128)
     } else {
-      jump k1140(false)
+      jump k1124(false)
     }
   } else {
     false
@@ -2815,92 +2749,97 @@ fn utf8_valid_scalar(value/4: uint32) -> bool {
 }
 
 fn inherent#string#string#byte_len(self/38: string) -> int {
-  let t1147 = @runtime(core.string_len)(self/38) in
-  t1147
+  let t1131 = @runtime(core.string_len)(self/38) in
+  t1131
 }
 
 fn utf8_invalid_decode() -> (bool, char, int) {
-  let t1150 = (false, '\0', 0) in
-  t1150
+  let t1134 = (false, '\0', 0) in
+  t1134
 }
 
 fn inherent#string#string#byte_get(self/41: string, index/42: int) -> uint8 {
-  let t1153 = @runtime(core.string_byte_get)(self/41, index/42) in
-  t1153
+  let t1137 = @runtime(core.string_byte_get)(self/41, index/42) in
+  t1137
 }
 
 fn utf8_valid_decode(value/0: uint32, width/1: int) -> (bool, char, int) {
-  join commute_arm1885() -> (bool, char, int) {
-    let inline1856 = (false, '\0', 0) in
-    inline1856
+  join commute_arm1834() -> (bool, char, int) {
+    let inline1807 = (false, '\0', 0) in
+    inline1807
   } in
-  join commute_arm1887(commute_field1886: char) -> (bool, char, int) {
-    let x1 = commute_field1886 in
-    let t1159 = (true, commute_field1886, width/1) in
-    t1159
+  join commute_arm1836(commute_field1835: char) -> (bool, char, int) {
+    let x1 = commute_field1835 in
+    let t1143 = (true, commute_field1835, width/1) in
+    t1143
   } in
-  let inline1858 = utf8_valid_scalar(value/0) in
-  if inline1858 {
-    let inline1859 = @runtime(core.char_from_uint32)(value/0) in
-    let inline1860 = inline1859.0 in
-    let inline1861 = inline1859.1 in
-    let inline1862 = inline1861 in
-    let inline1863 = Option__char::Some(inline1861) in
-    jump commute_arm1887(inline1861)
+  let inline1809 = utf8_valid_scalar(value/0) in
+  if inline1809 {
+    let inline1810 = @runtime(core.char_from_uint32)(value/0) in
+    let inline1811 = inline1810.0 in
+    let inline1812 = inline1810.1 in
+    let inline1813 = inline1812 in
+    let inline1814 = Option__char::Some(inline1812) in
+    jump commute_arm1836(inline1812)
   } else {
-    jump commute_arm1885()
+    jump commute_arm1834()
   }
 }
 
 fn utf8_invalid_continuation(value/3: uint32) -> bool {
-  let t1164 = (value/3 < 128) in
-  if t1164 {
+  let t1148 = (value/3 < 128) in
+  if t1148 {
     true
   } else {
-    let t1165 = (value/3 > 191) in
-    t1165
+    let t1149 = (value/3 > 191) in
+    t1149
   }
 }
 
-fn trait_impl#PartialEq#uint32#eq(self/117: uint32, other/118: uint32) -> bool {
-  let t1168 = @intrinsic(eq.primitive)(self/117, other/118) in
-  t1168
-}
-
 fn char_from_uint32(value/32: uint32) -> Option__char {
-  join inline_cont1864(t1173: bool) -> Option__char {
-    if t1173 {
+  join inline_cont1815(t1154: bool) -> Option__char {
+    if t1154 {
       let mtmp22 = @runtime(core.char_from_uint32)(value/32) in
       let x23 = mtmp22.0 in
       let x24 = mtmp22.1 in
       let character/33 = x24 in
-      let t1174 = Option__char::Some(x24) in
-      t1174
+      let t1155 = Option__char::Some(x24) in
+      t1155
     } else {
       Tag_0
     }
   } in
-  let inline1865 = (value/32 <= 1114111) in
-  if inline1865 {
-    let inline1866 = (value/32 >= 55296) in
-    join inline_join1867(inline1868: bool) -> Option__char {
-      let inline1869 = (!inline1868) in
-      jump inline_cont1864(inline1869)
+  let inline1816 = (value/32 <= 1114111) in
+  if inline1816 {
+    let inline1817 = (value/32 >= 55296) in
+    join inline_join1818(inline1819: bool) -> Option__char {
+      let inline1820 = (!inline1819) in
+      jump inline_cont1815(inline1820)
     } in
-    if inline1866 {
-      let inline1870 = (value/32 <= 57343) in
-      jump inline_join1867(inline1870)
+    if inline1817 {
+      let inline1821 = (value/32 <= 57343) in
+      jump inline_join1818(inline1821)
     } else {
-      jump inline_join1867(false)
+      jump inline_join1818(false)
     }
   } else {
-    jump inline_cont1864(false)
+    jump inline_cont1815(false)
   }
 }
 
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
+  let t1158 = (self/103 == other/104) in
+  t1158
+}
+
 fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
-  let t1177 = @runtime(core.int_hash)(self/129) in
-  t1177
+  let t1161 = @runtime(core.int_hash)(self/129) in
+  t1161
+}
+
+fn trait_impl#PartialEq#bool#eq(self/97: bool, other/98: bool) -> bool {
+  let t1164 = (self/97 == other/98) in
+  t1164
 }
 
 fn trait_impl#Hash#bool#hash(self/126: bool) -> uint64 {
@@ -2911,104 +2850,110 @@ fn trait_impl#Hash#bool#hash(self/126: bool) -> uint64 {
   }
 }
 
+fn trait_impl#PartialEq#int32#eq(self/109: int32, other/110: int32) -> bool {
+  let t1171 = (self/109 == other/110) in
+  t1171
+}
+
 fn trait_impl#Hash#int32#hash(self/132: int32) -> uint64 {
-  let t1184 = @runtime(core.int32_hash)(self/132) in
-  t1184
+  let t1174 = @runtime(core.int32_hash)(self/132) in
+  t1174
+}
+
+fn trait_impl#PartialEq#string#eq(self/99: string, other/100: string) -> bool {
+  let t1177 = (self/99 == other/100) in
+  t1177
 }
 
 fn trait_impl#Hash#string#hash(self/127: string) -> uint64 {
-  let t1187 = @runtime(core.string_hash)(self/127) in
-  t1187
+  let t1180 = @runtime(core.string_hash)(self/127) in
+  t1180
 }
 
 fn trait_impl#PartialEq#Vec[string]#eq(self/141: Vec[string], other/142: Vec[string]) -> bool {
-  join inline_cont1879(t1192: int) -> bool {
-    join inline_cont1877(t1193: int) -> bool {
-      join inline_cont1875(t1194: bool) -> bool {
-        let t1195 = (!t1194) in
-        if t1195 {
-          false
-        } else {
-          let index/143 = 0 in
-          join exit1196() -> bool {
-            let _wild46 = () in
-            true
-          } in
-          joinrec {
-            join loop1197() -> bool {
-              join inline_cont1873(t1198: int) -> bool {
-                let t1199 = (index/143 < t1198) in
-                if t1199 {
-                  let t1201 = @intrinsic(vec.get)(self/141, index/143) in
-                  let t1202 = @intrinsic(vec.get)(other/142, index/143) in
-                  join inline_cont1871(t1203: bool) -> bool {
-                    if t1203 {
-                      let compound_old43 = index/143 in
-                      let compound_value44 = 1 in
-                      let t1204 = (compound_old43 + compound_value44) in
-                      let t1205 = index/143 = t1204 in
-                      let _wild45 = t1205 in
-                      jump loop1197()
-                    } else {
-                      false
-                    }
-                  } in
-                  let inline1872 = @intrinsic(eq.primitive)(t1201, t1202) in
-                  jump inline_cont1871(inline1872)
-                } else {
-                  jump exit1196()
-                }
-              } in
-              let inline1874 = @intrinsic(vec.len)(self/141) in
-              jump inline_cont1873(inline1874)
+  join inline_cont1828(t1185: int) -> bool {
+    join inline_cont1826(t1186: int) -> bool {
+      let t1187 = (t1185 != t1186) in
+      if t1187 {
+        false
+      } else {
+        let index/143 = 0 in
+        join exit1188() -> bool {
+          let _wild46 = () in
+          true
+        } in
+        joinrec {
+          join loop1189() -> bool {
+            join inline_cont1824(t1190: int) -> bool {
+              let t1191 = (index/143 < t1190) in
+              if t1191 {
+                let t1193 = @intrinsic(vec.get)(self/141, index/143) in
+                let t1194 = @intrinsic(vec.get)(other/142, index/143) in
+                join inline_cont1822(t1195: bool) -> bool {
+                  if t1195 {
+                    let compound_old43 = index/143 in
+                    let compound_value44 = 1 in
+                    let t1196 = (compound_old43 + compound_value44) in
+                    let t1197 = index/143 = t1196 in
+                    let _wild45 = t1197 in
+                    jump loop1189()
+                  } else {
+                    false
+                  }
+                } in
+                let inline1823 = (t1193 == t1194) in
+                jump inline_cont1822(inline1823)
+              } else {
+                jump exit1188()
+              }
             } in
+            let inline1825 = @intrinsic(vec.len)(self/141) in
+            jump inline_cont1824(inline1825)
           } in
-          jump loop1197()
-        }
-      } in
-      let inline1876 = @intrinsic(eq.primitive)(t1192, t1193) in
-      jump inline_cont1875(inline1876)
+        } in
+        jump loop1189()
+      }
     } in
-    let inline1878 = @intrinsic(vec.len)(other/142) in
-    jump inline_cont1877(inline1878)
+    let inline1827 = @intrinsic(vec.len)(other/142) in
+    jump inline_cont1826(inline1827)
   } in
-  let inline1880 = @intrinsic(vec.len)(self/141) in
-  jump inline_cont1879(inline1880)
+  let inline1829 = @intrinsic(vec.len)(self/141) in
+  jump inline_cont1828(inline1829)
 }
 
 fn trait_impl#Hash#Vec[string]#hash(self/144: Vec[string]) -> uint64 {
   let value/145 = 14695981039346656037 in
   let index/146 = 0 in
-  join exit1208() -> uint64 {
+  join exit1200() -> uint64 {
     let _wild51 = () in
     value/145
   } in
   joinrec {
-    join loop1209() -> uint64 {
-      join inline_cont1883(t1210: int) -> uint64 {
-        let t1211 = (index/146 < t1210) in
-        if t1211 {
-          let t1212 = (value/145 * 1099511628211) in
-          let t1213 = @intrinsic(vec.get)(self/144, index/146) in
-          join inline_cont1881(t1214: uint64) -> uint64 {
-            let t1215 = (t1212 + t1214) in
-            let _wild47 = value/145 = t1215 in
+    join loop1201() -> uint64 {
+      join inline_cont1832(t1202: int) -> uint64 {
+        let t1203 = (index/146 < t1202) in
+        if t1203 {
+          let t1204 = (value/145 * 1099511628211) in
+          let t1205 = @intrinsic(vec.get)(self/144, index/146) in
+          join inline_cont1830(t1206: uint64) -> uint64 {
+            let t1207 = (t1204 + t1206) in
+            let _wild47 = value/145 = t1207 in
             let compound_old48 = index/146 in
             let compound_value49 = 1 in
-            let t1216 = (compound_old48 + compound_value49) in
-            let t1217 = index/146 = t1216 in
-            let _wild50 = t1217 in
-            jump loop1209()
+            let t1208 = (compound_old48 + compound_value49) in
+            let t1209 = index/146 = t1208 in
+            let _wild50 = t1209 in
+            jump loop1201()
           } in
-          let inline1882 = @runtime(core.string_hash)(t1213) in
-          jump inline_cont1881(inline1882)
+          let inline1831 = @runtime(core.string_hash)(t1205) in
+          jump inline_cont1830(inline1831)
         } else {
-          jump exit1208()
+          jump exit1200()
         }
       } in
-      let inline1884 = @intrinsic(vec.len)(self/144) in
-      jump inline_cont1883(inline1884)
+      let inline1833 = @intrinsic(vec.len)(self/144) in
+      jump inline_cont1832(inline1833)
     } in
   } in
-  jump loop1209()
+  jump loop1201()
 }

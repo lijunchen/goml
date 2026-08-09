@@ -41,7 +41,7 @@ fn first_even(values/4: FnIterator__int) -> int {
                     let value/5 = x176 in
                     {
                       let _wild177 =
-                        if trait_impl#PartialEq#int#eq(((value/5 / 2) * 2), value/5) {
+                        if (((value/5 / 2) * 2) == value/5) {
                             {
                               return value/5
                             }
@@ -80,7 +80,7 @@ fn main() -> unit {
               let value/8 = for_item185 in
               {
                 let _wild187 =
-                  if trait_impl#PartialEq#int32#eq(value/8, 20) {
+                  if (value/8 == 20) {
                       {
                         continue
                       }
@@ -204,7 +204,7 @@ fn main() -> unit {
                     let value/17 = x219 in
                     {
                       let _wild221 =
-                        if trait_impl#PartialEq#int32#eq(value/17, 2) {
+                        if (value/17 == 2) {
                             {
                               break
                             }
@@ -278,20 +278,12 @@ fn trait_impl#Iterator#FnIterator__int#next(self/173: FnIterator__int) -> Option
   FnIterator__int.next_fn(self/173)()
 }
 
-fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  @intrinsic(eq.primitive)(self/103, other/104)
-}
-
 fn inherent#Vec#Vec[T]#new__T_int32() -> Vec[int32] {
   @intrinsic(vec.new)()
 }
 
 fn inherent#Vec#Vec[T]#push__T_int32(self/176: Vec[int32], elem/177: int32) -> unit {
   @intrinsic(vec.push)(self/176, elem/177)
-}
-
-fn trait_impl#PartialEq#int32#eq(self/109: int32, other/110: int32) -> bool {
-  @intrinsic(eq.primitive)(self/109, other/110)
 }
 
 fn println__T_int32(value/31: int32) -> unit {
@@ -386,8 +378,16 @@ fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(
   FnIterator__int { next_fn: next_fn/172 }
 }
 
+fn trait_impl#PartialEq#int32#eq(self/109: int32, other/110: int32) -> bool {
+  (self/109 == other/110)
+}
+
 fn trait_impl#Hash#int32#hash(self/132: int32) -> uint64 {
   @runtime(core.int32_hash)(self/132)
+}
+
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
+  (self/103 == other/104)
 }
 
 fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {

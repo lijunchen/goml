@@ -275,16 +275,11 @@ fn trait_impl#ToString#int#to_string(self/69: int) -> string {
   t274
 }
 
-fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  let t277 = @intrinsic(eq.primitive)(self/103, other/104) in
-  t277
-}
-
 fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(
   next_fn/172: () -> Option__int
 ) -> FnIterator__int {
-  let t280 = FnIterator__int { next_fn: next_fn/172 } in
-  t280
+  let t277 = FnIterator__int { next_fn: next_fn/172 } in
+  t277
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {
@@ -292,7 +287,12 @@ fn trait_impl#ToString#string#to_string(self/67: string) -> string {
 }
 
 fn trait_impl#ToString#int32#to_string(self/72: int32) -> string {
-  let t285 = @runtime(core.int32_to_string)(self/72) in
+  let t282 = @runtime(core.int32_to_string)(self/72) in
+  t282
+}
+
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
+  let t285 = (self/103 == other/104) in
   t285
 }
 
@@ -302,7 +302,7 @@ fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
 }
 
 fn trait_impl#PartialEq#bool#eq(self/97: bool, other/98: bool) -> bool {
-  let t291 = @intrinsic(eq.primitive)(self/97, other/98) in
+  let t291 = (self/97 == other/98) in
   t291
 }
 
@@ -326,23 +326,20 @@ fn inherent#closure_env_goml_builtin_range_inclusive_0#closure_env_goml_builtin_
       Tag_0
     } else {
       let value/309 = @intrinsic(ref.get)(current/307) in
-      join inline_cont372(t304: bool) -> Option__int {
-        join k302() -> Option__int {
-          let _wild162 = () in
-          let t303 = Option__int::Some(value/309) in
-          t303
-        } in
-        if t304 {
-          let _wild160 = @intrinsic(ref.set)(finished/308, true) in
-          jump k302()
-        } else {
-          let t305 = (value/309 + 1) in
-          let _wild161 = @intrinsic(ref.set)(current/307, t305) in
-          jump k302()
-        }
+      let t304 = (value/309 == end/306) in
+      join k302() -> Option__int {
+        let _wild162 = () in
+        let t303 = Option__int::Some(value/309) in
+        t303
       } in
-      let inline373 = @intrinsic(eq.primitive)(value/309, end/306) in
-      jump inline_cont372(inline373)
+      if t304 {
+        let _wild160 = @intrinsic(ref.set)(finished/308, true) in
+        jump k302()
+      } else {
+        let t305 = (value/309 + 1) in
+        let _wild161 = @intrinsic(ref.set)(current/307, t305) in
+        jump k302()
+      }
     }
   } in
   if t306 {

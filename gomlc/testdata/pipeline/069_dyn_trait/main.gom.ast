@@ -35,10 +35,9 @@ impl Display for Flag {
 fn main() {
     let p = Point { x: 1, y: 2 };
     let t = Flag { value: true };
-    let dp: dyn Display = p;
-    let dt: dyn Display = t;
+    let dp: dyn Display = p as dyn Display;
+    let dt: dyn Display = t as dyn Display;
     let _ = println(Display::show(dp));
     let _ = println(Display::show(dt));
-    ()
 }
 

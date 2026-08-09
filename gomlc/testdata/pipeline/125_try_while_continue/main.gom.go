@@ -48,42 +48,39 @@ func (_ Some) isOption__int32() {}
 
 func accumulate(limit__1 int32) Option__int32 {
     var sum__2 *ref_int32_x
-    var inline262 int32 = 0
-    var inline263 *ref_int32_x = ref__Ref_5int32(inline262)
-    sum__2 = inline263
+    var inline256 int32 = 0
+    var inline257 *ref_int32_x = ref__Ref_5int32(inline256)
+    sum__2 = inline257
     var i__3 *ref_int32_x
-    var inline259 int32 = 0
-    var inline260 *ref_int32_x = ref__Ref_5int32(inline259)
-    i__3 = inline260
+    var inline253 int32 = 0
+    var inline254 *ref_int32_x = ref__Ref_5int32(inline253)
+    i__3 = inline254
     Loop_loop193:
     for {
         var t194 int32
-        var inline255 int32 = ref_get__Ref_5int32(i__3)
-        t194 = inline255
+        var inline249 int32 = ref_get__Ref_5int32(i__3)
+        t194 = inline249
         var t195 bool = t194 < limit__1
         if t195 {
             var cur__4 int32
-            var inline253 int32 = ref_get__Ref_5int32(i__3)
-            cur__4 = inline253
+            var inline247 int32 = ref_get__Ref_5int32(i__3)
+            cur__4 = inline247
             var t196 int32 = cur__4 + 1
             ref_set__Ref_5int32(i__3, t196)
-            var t202 bool
-            var inline248 int32 = 1
-            var inline249 bool = cur__4 == inline248
-            t202 = inline249
+            var t202 bool = cur__4 == 1
             if t202 {
                 continue
             } else {
                 var mtmp174 Option__int32
-                var inline244 bool = _goml_m_trait__impl_i_PartialEq_i_int32_i_eq(cur__4, 2)
-                if inline244 {
+                var inline241 bool = cur__4 == 2
+                if inline241 {
                     mtmp174 = None{}
                 } else {
-                    var inline245 int32 = cur__4 + 10
-                    var inline246 Option__int32 = Some{
-                        _0: inline245,
+                    var inline242 int32 = cur__4 + 10
+                    var inline243 Option__int32 = Some{
+                        _0: inline242,
                     }
-                    mtmp174 = inline246
+                    mtmp174 = inline243
                 }
                 var jp199 int32
                 switch mtmp174.(type) {
@@ -93,8 +90,8 @@ func accumulate(limit__1 int32) Option__int32 {
                     var x175 int32 = mtmp174.(Some)._0
                     jp199 = x175
                     var t200 int32
-                    var inline242 int32 = ref_get__Ref_5int32(sum__2)
-                    t200 = inline242
+                    var inline239 int32 = ref_get__Ref_5int32(sum__2)
+                    t200 = inline239
                     var t201 int32 = t200 + jp199
                     ref_set__Ref_5int32(sum__2, t201)
                     continue
@@ -107,8 +104,8 @@ func accumulate(limit__1 int32) Option__int32 {
         }
     }
     var t191 int32
-    var inline257 int32 = ref_get__Ref_5int32(sum__2)
-    t191 = inline257
+    var inline251 int32 = ref_get__Ref_5int32(sum__2)
+    t191 = inline251
     var t192 Option__int32 = Some{
         _0: t191,
     }
@@ -122,41 +119,36 @@ func main0() struct{} {
     case None:
         t211 = "none"
     case Some:
-        var inline278 int32 = t210.(Some)._0
-        var inline280 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline278)
-        var inline281 string = "some=" + inline280
-        t211 = inline281
+        var inline272 int32 = t210.(Some)._0
+        var inline274 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline272)
+        var inline275 string = "some=" + inline274
+        t211 = inline275
     default:
         panic("non-exhaustive match")
     }
-    var inline275 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t211)
-    _goml_runtime_core_string_println(inline275)
+    var inline269 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t211)
+    _goml_runtime_core_string_println(inline269)
     var t212 Option__int32 = accumulate(4)
     var t213 string
     switch t212.(type) {
     case None:
         t213 = "none"
     case Some:
-        var inline270 int32 = t212.(Some)._0
-        var inline272 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline270)
-        var inline273 string = "some=" + inline272
-        t213 = inline273
+        var inline264 int32 = t212.(Some)._0
+        var inline266 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline264)
+        var inline267 string = "some=" + inline266
+        t213 = inline267
     default:
         panic("non-exhaustive match")
     }
-    var inline267 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t213)
-    _goml_runtime_core_string_println(inline267)
+    var inline261 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t213)
+    _goml_runtime_core_string_println(inline261)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_PartialEq_i_int32_i_eq(self__109 int32, other__110 int32) bool {
-    var t216 bool = self__109 == other__110
-    return t216
-}
-
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__35 int32) string {
-    var t227 string = _goml_runtime_core_int32_to_string(self__35)
-    return t227
+    var t224 string = _goml_runtime_core_int32_to_string(self__35)
+    return t224
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {

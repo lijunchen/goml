@@ -226,7 +226,7 @@ fn trait_impl#std::cmp::PartialOrd#unit#ge(default_arg0: unit, default_arg1: uni
 }
 
 fn trait_impl#std::cmp::Ord#bool#cmp(self/35: bool, other/36: bool) -> std::cmp::Ordering {
-  if trait_impl#PartialEq#bool#eq(self/35, other/36) {
+  if (self/35 == other/36) {
       std::cmp::Ordering::Equal
   } else {
       if self/35 {
@@ -242,7 +242,7 @@ fn trait_impl#std::cmp::PartialOrd#bool#partial_cmp(
   other/38: bool
 ) -> Option__std::cmp::Ordering {
   Option__std::cmp::Ordering::Some(
-    if trait_impl#PartialEq#bool#eq(self/37, other/38) {
+    if (self/37 == other/38) {
         std::cmp::Ordering::Equal
     } else {
         if self/37 {
@@ -820,7 +820,7 @@ fn trait_impl#std::cmp::PartialOrd#float32#partial_cmp(
       if (self/87 > other/88) {
           Option__std::cmp::Ordering::Some(std::cmp::Ordering::Greater)
       } else {
-          if trait_impl#PartialEq#float32#eq(self/87, other/88) {
+          if (self/87 == other/88) {
               Option__std::cmp::Ordering::Some(std::cmp::Ordering::Equal)
           } else {
               Option__std::cmp::Ordering::None
@@ -867,7 +867,7 @@ fn trait_impl#std::cmp::PartialOrd#float64#partial_cmp(
       if (self/89 > other/90) {
           Option__std::cmp::Ordering::Some(std::cmp::Ordering::Greater)
       } else {
-          if trait_impl#PartialEq#float64#eq(self/89, other/90) {
+          if (self/89 == other/90) {
               Option__std::cmp::Ordering::Some(std::cmp::Ordering::Equal)
           } else {
               Option__std::cmp::Ordering::None
@@ -968,7 +968,7 @@ fn trait_impl#std::cmp::PartialOrd#FloatKey#ge(
 }
 
 fn trait_impl#PartialEq#CollisionKey#eq(self/5: CollisionKey, other/6: CollisionKey) -> bool {
-  trait_impl#PartialEq#int32#eq(CollisionKey.value(self/5), CollisionKey.value(other/6))
+  (CollisionKey.value(self/5) == CollisionKey.value(other/6))
 }
 
 fn trait_impl#Hash#CollisionKey#hash(self/7: CollisionKey) -> uint64 {
@@ -1005,19 +1005,11 @@ fn float_comparison_contracts() -> unit {
   let zero32/12 = 0 in
   let negative_zero32/13 = (-zero32/12) in
   let _wild176 =
-    println__T_string(
-      trait_impl#ToString#bool#to_string(
-        trait_impl#PartialEq#float32#eq(zero32/12, negative_zero32/13)
-      )
-    ) in
+    println__T_string(trait_impl#ToString#bool#to_string((zero32/12 == negative_zero32/13))) in
   let zero64/14 = 0 in
   let negative_zero64/15 = (-zero64/14) in
   let _wild177 =
-    println__T_string(
-      trait_impl#ToString#bool#to_string(
-        trait_impl#PartialEq#float64#eq(zero64/14, negative_zero64/15)
-      )
-    ) in
+    println__T_string(trait_impl#ToString#bool#to_string((zero64/14 == negative_zero64/15))) in
   let _wild178 =
     println__T_string(
       trait_impl#ToString#bool#to_string(
@@ -1028,10 +1020,7 @@ fn float_comparison_contracts() -> unit {
       )
     ) in
   let nan/16 = (zero64/14 / zero64/14) in
-  let _wild179 =
-    println__T_string(
-      trait_impl#ToString#bool#to_string(trait_impl#PartialEq#float64#eq(nan/16, nan/16))
-    ) in
+  let _wild179 = println__T_string(trait_impl#ToString#bool#to_string((nan/16 == nan/16))) in
   let _wild180 =
     println__T_string(
       trait_impl#ToString#bool#to_string(
@@ -1171,10 +1160,8 @@ fn reference_contracts() -> unit {
     println__T_bool(trait_impl#PartialEq#Ref[CollisionKey]#eq(key/21, equal_value/23)) in
   let _wild205 =
     println__T_bool(
-      trait_impl#PartialEq#uint64#eq(
-        trait_impl#Hash#Ref[CollisionKey]#hash(key/21),
-        trait_impl#Hash#Ref[CollisionKey]#hash(alias/22)
-      )
+      (trait_impl#Hash#Ref[CollisionKey]#hash(key/21) ==
+        trait_impl#Hash#Ref[CollisionKey]#hash(alias/22))
     ) in
   let _wild206 =
     print_opt_string(
@@ -1321,10 +1308,6 @@ fn std::cmp::trait_default#PartialOrd#ge__Self_unit(self/24: unit, other/25: uni
       (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/26, std::cmp::Ordering::Less))
     },
   }
-}
-
-fn trait_impl#PartialEq#bool#eq(self/97: bool, other/98: bool) -> bool {
-  @intrinsic(eq.primitive)(self/97, other/98)
 }
 
 fn std::cmp::trait_default#PartialOrd#lt__Self_bool(self/15: bool, other/16: bool) -> bool {
@@ -2055,10 +2038,6 @@ fn std::cmp::trait_default#PartialOrd#ge__Self_uint64(self/24: uint64, other/25:
   }
 }
 
-fn trait_impl#PartialEq#float32#eq(self/121: float32, other/122: float32) -> bool {
-  @intrinsic(eq.primitive)(self/121, other/122)
-}
-
 fn std::cmp::trait_default#PartialOrd#lt__Self_float32(
   self/15: float32,
   other/16: float32
@@ -2125,10 +2104,6 @@ fn std::cmp::trait_default#PartialOrd#ge__Self_float32(
       (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/26, std::cmp::Ordering::Less))
     },
   }
-}
-
-fn trait_impl#PartialEq#float64#eq(self/123: float64, other/124: float64) -> bool {
-  @intrinsic(eq.primitive)(self/123, other/124)
 }
 
 fn std::cmp::trait_default#PartialOrd#lt__Self_float64(
@@ -2199,6 +2174,10 @@ fn std::cmp::trait_default#PartialOrd#ge__Self_float64(
   }
 }
 
+fn trait_impl#PartialEq#float64#eq(self/123: float64, other/124: float64) -> bool {
+  (self/123 == other/124)
+}
+
 fn std::cmp::trait_default#PartialOrd#lt__Self_FloatKey(
   self/15: FloatKey,
   other/16: FloatKey
@@ -2265,10 +2244,6 @@ fn std::cmp::trait_default#PartialOrd#ge__Self_FloatKey(
       (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/26, std::cmp::Ordering::Less))
     },
   }
-}
-
-fn trait_impl#PartialEq#int32#eq(self/109: int32, other/110: int32) -> bool {
-  @intrinsic(eq.primitive)(self/109, other/110)
 }
 
 fn println__T_string(value/31: string) -> unit {
@@ -2371,10 +2346,6 @@ fn trait_impl#Hash#Ref[CollisionKey]#hash(self/140: Ref[CollisionKey]) -> uint64
   @intrinsic(ref.ptr_hash)(self/140)
 }
 
-fn trait_impl#PartialEq#uint64#eq(self/119: uint64, other/120: uint64) -> bool {
-  @intrinsic(eq.primitive)(self/119, other/120)
-}
-
 fn inherent#HashMap#HashMap[K,V]#get__K_Ref[CollisionKey]__V_string(
   self/246: HashMap[Ref[CollisionKey], string],
   key/247: Ref[CollisionKey]
@@ -2413,6 +2384,10 @@ fn inherent#Option#Option[T]#is_some__T_std::cmp::Ordering(
 
 fn trait_impl#ToString#int#to_string(self/69: int) -> string {
   @runtime(core.int_to_string)(self/69)
+}
+
+fn trait_impl#PartialEq#int32#eq(self/109: int32, other/110: int32) -> bool {
+  (self/109 == other/110)
 }
 
 fn trait_impl#Hash#int32#hash(self/132: int32) -> uint64 {

@@ -18,17 +18,17 @@ impl Hash for Key {
       match (self/3 : Key) {
           Key::Empty =>
             {
-                let h/4: uint64 = 0 as uint64 + 14695981039346656037 + 1;
+                let h/4: uint64 = (int::to_uint64 : (int) -> uint64)(0) + 14695981039346656037 + 1;
                 (h/4 : uint64)
             },
           Key::Point(#derive0_field/5: int32, #derive1_field/6: int32) =>
             {
-                let h/7: uint64 = 0 as uint64 + 14695981039346656037 + 2;
+                let h/7: uint64 = (int::to_uint64 : (int) -> uint64)(0) + 14695981039346656037 + 2;
                 let h/8: uint64 =
-                  (h/7 : uint64) * 0 as uint64 + 1099511628211 +
+                  (h/7 : uint64) * (int::to_uint64 : (int) -> uint64)(0) + 1099511628211 +
                     (Hash::hash : (int32) -> uint64)((#derive0_field/5 : int32));
                 let h/9: uint64 =
-                  (h/8 : uint64) * 0 as uint64 + 1099511628211 +
+                  (h/8 : uint64) * (int::to_uint64 : (int) -> uint64)(0) + 1099511628211 +
                     (Hash::hash : (int32) -> uint64)((#derive1_field/6 : int32));
                 (h/9 : uint64)
             },

@@ -131,10 +131,7 @@ fn describe(value/4: Maybe, numbers/5: Vec[int32], view/6: Slice[int32]) -> stri
                 let first/10 = @intrinsic(vec.get)(match180, 0) in
                 {
                   let tail/11 = @intrinsic(slice.new)(match180, 1, @intrinsic(vec.len)(match180)) in
-                  if trait_impl#PartialEq#int32#eq(
-                    first/10,
-                    (inherent#Slice#Slice[T]#len__T_int32(tail/11) as int32)
-                  ) {
+                  if (first/10 == (inherent#Slice#Slice[T]#len__T_int32(tail/11) as int32)) {
                       "balanced"
                   } else {
                       if (@intrinsic(vec.len)(match180) >= 1) {
@@ -163,7 +160,7 @@ fn describe(value/4: Maybe, numbers/5: Vec[int32], view/6: Slice[int32]) -> stri
             {
               let last/14 =
                 @intrinsic(slice.get)(match181, ((@intrinsic(slice.len)(match181) - 1) + 0)) in
-              if trait_impl#PartialEq#int32#eq(first/13, last/14) {
+              if (first/13 == last/14) {
                   "same ends"
               } else {
                   "different ends"
@@ -303,10 +300,6 @@ fn main() -> unit {
 
 fn inherent#Slice#Slice[T]#len__T_int32(self/236: Slice[int32]) -> int {
   @intrinsic(slice.len)(self/236)
-}
-
-fn trait_impl#PartialEq#int32#eq(self/109: int32, other/110: int32) -> bool {
-  @intrinsic(eq.primitive)(self/109, other/110)
 }
 
 fn println__T_int32(value/31: int32) -> unit {

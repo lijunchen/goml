@@ -3,14 +3,14 @@ impl Hash for Key {
       match (self/0 : Key) {
           Key::A =>
             {
-                let h/1: uint64 = 0 as uint64 + 14695981039346656037 + 1;
+                let h/1: uint64 = (int::to_uint64 : (int) -> uint64)(0) + 14695981039346656037 + 1;
                 (h/1 : uint64)
             },
           Key::B(#derive0_field/2: int32) =>
             {
-                let h/3: uint64 = 0 as uint64 + 14695981039346656037 + 2;
+                let h/3: uint64 = (int::to_uint64 : (int) -> uint64)(0) + 14695981039346656037 + 2;
                 let h/4: uint64 =
-                  (h/3 : uint64) * 0 as uint64 + 1099511628211 +
+                  (h/3 : uint64) * (int::to_uint64 : (int) -> uint64)(0) + 1099511628211 +
                     (Hash::hash : (int32) -> uint64)((#derive0_field/2 : int32));
                 (h/4 : uint64)
             },

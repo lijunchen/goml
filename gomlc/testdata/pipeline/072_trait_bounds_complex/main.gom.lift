@@ -7,7 +7,7 @@ fn trait_impl#Debug#int32#show(self/1: int32) -> string {
 }
 
 fn trait_impl#MyEq#int32#eq(self/2: int32, other/3: int32) -> bool {
-  trait_impl#PartialEq#int32#eq(self/2, other/3)
+  (self/2 == other/3)
 }
 
 fn trait_impl#MyHash#int32#hash(self/4: int32) -> int32 {
@@ -35,7 +35,7 @@ fn trait_impl#Debug#Boxed#show(self/11: Boxed) -> string {
 }
 
 fn trait_impl#MyEq#Boxed#eq(self/12: Boxed, other/13: Boxed) -> bool {
-  trait_impl#PartialEq#int32#eq(Boxed.value(self/12), Boxed.value(other/13))
+  (Boxed.value(self/12) == Boxed.value(other/13))
 }
 
 fn trait_impl#MyHash#Boxed#hash(self/14: Boxed) -> int32 {
@@ -91,10 +91,6 @@ fn main() -> unit {
 
 fn inherent#int32#int32#to_string(self/35: int32) -> string {
   @runtime(core.int32_to_string)(self/35)
-}
-
-fn trait_impl#PartialEq#int32#eq(self/109: int32, other/110: int32) -> bool {
-  @intrinsic(eq.primitive)(self/109, other/110)
 }
 
 fn println__T_string(value/31: string) -> unit {

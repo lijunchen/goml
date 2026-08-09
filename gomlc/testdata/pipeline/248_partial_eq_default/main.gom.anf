@@ -4,7 +4,7 @@ fn trait_impl#PartialEq#Settings#eq(self/0: Settings, other/1: Settings) -> bool
       if jp199 {
         let t200 = Settings.label(self/0) in
         let t201 = Settings.label(other/1) in
-        let inline366 = @intrinsic(eq.primitive)(t200, t201) in
+        let inline366 = (t200 == t201) in
         inline366
       } else {
         false
@@ -13,7 +13,7 @@ fn trait_impl#PartialEq#Settings#eq(self/0: Settings, other/1: Settings) -> bool
     if jp204 {
       let t205 = Settings.retries(self/0) in
       let t206 = Settings.retries(other/1) in
-      let inline364 = @intrinsic(eq.primitive)(t205, t206) in
+      let inline364 = (t205 == t206) in
       jump k198(inline364)
     } else {
       jump k198(false)
@@ -21,7 +21,7 @@ fn trait_impl#PartialEq#Settings#eq(self/0: Settings, other/1: Settings) -> bool
   } in
   let t208 = Settings.enabled(self/0) in
   let t209 = Settings.enabled(other/1) in
-  let inline362 = @intrinsic(eq.primitive)(t208, t209) in
+  let inline362 = (t208 == t209) in
   jump k203(inline362)
 }
 
@@ -307,17 +307,17 @@ fn main() -> unit {
 }
 
 fn trait_impl#PartialEq#bool#eq(self/97: bool, other/98: bool) -> bool {
-  let t302 = @intrinsic(eq.primitive)(self/97, other/98) in
+  let t302 = (self/97 == other/98) in
   t302
 }
 
 fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  let t305 = @intrinsic(eq.primitive)(self/103, other/104) in
+  let t305 = (self/103 == other/104) in
   t305
 }
 
 fn trait_impl#PartialEq#string#eq(self/99: string, other/100: string) -> bool {
-  let t308 = @intrinsic(eq.primitive)(self/99, other/100) in
+  let t308 = (self/99 == other/100) in
   t308
 }
 

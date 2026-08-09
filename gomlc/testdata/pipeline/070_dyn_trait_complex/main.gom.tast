@@ -11,9 +11,7 @@ impl Display for Point {
         ")" +
         (suffix/3 : string)
   }
-  fn tick(self/4: Point) -> unit {
-      ()
-  }
+  fn tick(self/4: Point) -> unit {}
   fn bump(self/5: Point, delta/6: int32) -> int32 {
       (self/5 : Point).x + (self/5 : Point).y + (delta/6 : int32)
   }
@@ -42,9 +40,7 @@ impl Display for Flag {
           }
       }
   }
-  fn tick(self/11: Flag) -> unit {
-      ()
-  }
+  fn tick(self/11: Flag) -> unit {}
   fn bump(self/12: Flag, delta/13: int32) -> int32 {
       if (self/12 : Flag).value {
           {
@@ -81,7 +77,6 @@ impl Display for Counter {
           (self/18 : Counter).cell,
           (next/19 : int32)
         );
-      ()
   }
   fn bump(self/20: Counter, delta/21: int32) -> int32 {
       let next/22: int32 =
@@ -206,5 +201,4 @@ fn main() -> unit {
       (println : (string) -> unit)(
         "delta:" + (int32::to_string : (int32) -> string)((delta/50 : int32))
       );
-    ()
 }

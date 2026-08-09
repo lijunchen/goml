@@ -250,10 +250,6 @@ fn inherent#Ref#Ref[T]#get__T_int(self/258: Ref[int]) -> int {
   @intrinsic(ref.get)(self/258)
 }
 
-fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  @intrinsic(eq.primitive)(self/103, other/104)
-}
-
 fn inherent#Ref#Ref[T]#set__T_int(self/259: Ref[int], value/260: int) -> unit {
   @intrinsic(ref.set)(self/259, value/260)
 }
@@ -298,11 +294,15 @@ fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(
 }
 
 fn trait_impl#PartialEq#int32#eq(self/109: int32, other/110: int32) -> bool {
-  @intrinsic(eq.primitive)(self/109, other/110)
+  (self/109 == other/110)
 }
 
 fn trait_impl#Hash#int32#hash(self/132: int32) -> uint64 {
   @runtime(core.int32_hash)(self/132)
+}
+
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
+  (self/103 == other/104)
 }
 
 fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
@@ -385,7 +385,7 @@ fn inherent#closure_env_std_iter_take_I_FnIterator_int32_6#closure_env_std_iter_
 ) -> Option__int32 {
   let remaining/16 = closure_env_std_iter_take_I_FnIterator_int32_6.remaining_0(env198) in
   let iterator/14 = closure_env_std_iter_take_I_FnIterator_int32_6.iterator_1(env198) in
-  if trait_impl#PartialEq#int#eq(inherent#Ref#Ref[T]#get__T_int(remaining/16), 0) {
+  if (inherent#Ref#Ref[T]#get__T_int(remaining/16) == 0) {
       Option__int32::None
   } else {
       let _wild11 =

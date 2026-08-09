@@ -117,16 +117,13 @@ fn string_is_char_boundary(value/15: string, index/16: int) -> bool {
         false
       }
   } else {
-      if trait_impl#PartialEq#int#eq(index/16, inherent#string#string#byte_len(value/15)) {
+      if (index/16 == inherent#string#string#byte_len(value/15)) {
           {
             true
           }
       } else {
           {
-            (!trait_impl#PartialEq#uint8#eq(
-              (inherent#string#string#byte_get(value/15, index/16) & 192),
-              128
-            ))
+            ((inherent#string#string#byte_get(value/15, index/16) & 192) != 128)
           }
       }
   }
@@ -163,16 +160,8 @@ fn inherent#string#string#byte_len(self/38: string) -> int {
   @runtime(core.string_len)(self/38)
 }
 
-fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  @intrinsic(eq.primitive)(self/103, other/104)
-}
-
 fn inherent#string#string#byte_get(self/41: string, index/42: int) -> uint8 {
   @runtime(core.string_byte_get)(self/41, index/42)
-}
-
-fn trait_impl#PartialEq#uint8#eq(self/113: uint8, other/114: uint8) -> bool {
-  @intrinsic(eq.primitive)(self/113, other/114)
 }
 
 fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(
@@ -182,11 +171,15 @@ fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(
 }
 
 fn trait_impl#PartialEq#int32#eq(self/109: int32, other/110: int32) -> bool {
-  @intrinsic(eq.primitive)(self/109, other/110)
+  (self/109 == other/110)
 }
 
 fn trait_impl#Hash#int32#hash(self/132: int32) -> uint64 {
   @runtime(core.int32_hash)(self/132)
+}
+
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
+  (self/103 == other/104)
 }
 
 fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {

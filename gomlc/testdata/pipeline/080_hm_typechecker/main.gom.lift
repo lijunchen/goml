@@ -222,7 +222,7 @@ fn env_lookup(env/28: Vec[EnvEntry], name/29: string) -> Option__Typ {
         false
     } {
         let entry/33 = @intrinsic(vec.get)(env/28, inherent#Ref#Ref[T]#get__T_int(i/30)) in
-        if trait_impl#PartialEq#string#eq(EnvEntry.name(entry/33), name/29) {
+        if (EnvEntry.name(entry/33) == name/29) {
             let mtmp194 =
               inherent#Ref#Ref[T]#set__T_Option[Typ](
                 found/31,
@@ -248,7 +248,7 @@ fn subst_lookup(subst/34: Vec[SubstEntry], name/35: string) -> Option__Typ {
         false
     } {
         let entry/39 = @intrinsic(vec.get)(subst/34, inherent#Ref#Ref[T]#get__T_int(i/36)) in
-        if trait_impl#PartialEq#string#eq(SubstEntry.name(entry/39), name/35) {
+        if (SubstEntry.name(entry/39) == name/35) {
             let mtmp196 =
               inherent#Ref#Ref[T]#set__T_Option[Typ](
                 found/37,
@@ -998,10 +998,6 @@ fn inherent#Ref#Ref[T]#get__T_int(self/258: Ref[int]) -> int {
   @intrinsic(ref.get)(self/258)
 }
 
-fn trait_impl#PartialEq#string#eq(self/99: string, other/100: string) -> bool {
-  @intrinsic(eq.primitive)(self/99, other/100)
-}
-
 fn inherent#Ref#Ref[T]#set__T_Option[Typ](
   self/259: Ref[Option__Typ],
   value/260: Option__Typ
@@ -1129,7 +1125,7 @@ fn utf8_valid_scalar(value/4: uint32) -> bool {
 }
 
 fn trait_impl#PartialEq#int32#eq(self/109: int32, other/110: int32) -> bool {
-  @intrinsic(eq.primitive)(self/109, other/110)
+  (self/109 == other/110)
 }
 
 fn trait_impl#Hash#int32#hash(self/132: int32) -> uint64 {
@@ -1137,7 +1133,7 @@ fn trait_impl#Hash#int32#hash(self/132: int32) -> uint64 {
 }
 
 fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  @intrinsic(eq.primitive)(self/103, other/104)
+  (self/103 == other/104)
 }
 
 fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
@@ -1145,7 +1141,7 @@ fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
 }
 
 fn trait_impl#PartialEq#bool#eq(self/97: bool, other/98: bool) -> bool {
-  @intrinsic(eq.primitive)(self/97, other/98)
+  (self/97 == other/98)
 }
 
 fn trait_impl#Hash#bool#hash(self/126: bool) -> uint64 {

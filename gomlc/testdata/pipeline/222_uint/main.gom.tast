@@ -12,13 +12,13 @@ fn classify(value/2: uint) -> string {
 
 fn main() -> unit {
     let left/3: uint = 19;
-    let right/4: uint = 2 as uint;
+    let right/4: uint = (int::to_uint : (int) -> uint)(2);
     let result/5: uint = (combine : (uint, uint) -> uint)((left/3 : uint), (right/4 : uint));
     (println : (uint) -> unit)((result/5 : uint));
     (println : (string) -> unit)((ToString::to_string : (uint) -> string)((result/5 : uint)));
     (println : (string) -> unit)((classify : (uint) -> string)((result/5 : uint)));
     (println : (bool) -> unit)((result/5 : uint) > (left/3 : uint));
-    (println : (uint64) -> unit)((result/5 : uint) & 15 as uint64);
+    (println : (uint64) -> unit)((uint::to_uint64 : (uint) -> uint64)((result/5 : uint) & 15));
     let values/6: HashMap[uint, string] =
       (HashMap[uint, string]::new : () -> HashMap[uint, string])();
     (HashMap[uint, string]::set : (HashMap[uint, string], uint, string) -> unit)(

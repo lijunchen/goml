@@ -163,7 +163,7 @@ fn trait_impl#PartialEq#std::io::ErrorKind#eq(
   self/2: std::io::ErrorKind,
   other/3: std::io::ErrorKind
 ) -> bool {
-  trait_impl#PartialEq#int#eq(std::io::kind_code(self/2), std::io::kind_code(other/3))
+  (std::io::kind_code(self/2) == std::io::kind_code(other/3))
 }
 
 fn std::io::kind_from_code(code/4: int) -> std::io::ErrorKind {
@@ -326,10 +326,8 @@ fn trait_impl#PartialEq#std::io::ErrorDetails#eq(
     std::io::ErrorDetails.kind_value(self/19),
     std::io::ErrorDetails.kind_value(other/20)
   ) {
-      trait_impl#PartialEq#string#eq(
-        std::io::ErrorDetails.operation_value(self/19),
-        std::io::ErrorDetails.operation_value(other/20)
-      )
+      (std::io::ErrorDetails.operation_value(self/19) ==
+        std::io::ErrorDetails.operation_value(other/20))
   } else {
       false
   } {
@@ -347,10 +345,8 @@ fn trait_impl#PartialEq#std::io::ErrorDetails#eq(
   } else {
       false
   } {
-      trait_impl#PartialEq#string#eq(
-        std::io::ErrorDetails.message_value(self/19),
-        std::io::ErrorDetails.message_value(other/20)
-      )
+      (std::io::ErrorDetails.message_value(self/19) ==
+        std::io::ErrorDetails.message_value(other/20))
   } else {
       false
   }
@@ -786,7 +782,7 @@ fn inherent#std::fs::Permissions#std::fs::Permissions#mode(
 fn inherent#std::fs::Permissions#std::fs::Permissions#readonly(
   self/21: std::fs::Permissions
 ) -> bool {
-  trait_impl#PartialEq#uint32#eq((std::fs::Permissions.mode_value(self/21) & 146), 0)
+  ((std::fs::Permissions.mode_value(self/21) & 146) == 0)
 }
 
 fn inherent#std::fs::Metadata#std::fs::Metadata#file_type(
@@ -982,7 +978,7 @@ fn std::fs::path_operation(
       Result__unit__std::fs::Error::Err(
         std::fs::structured_error(
           name/57,
-          if trait_impl#PartialEq#string#eq(second/59, "") {
+          if (second/59 == "") {
               first/58
           } else {
               ((first/58 + " -> ") + second/59)
@@ -1056,13 +1052,13 @@ fn std::fs::atomic_write(path/83: string, content/84: string) -> Result__unit__s
 }
 
 fn std::fs::file_type_from_code(code/85: int) -> std::fs::FileType {
-  if trait_impl#PartialEq#int#eq(code/85, 0) {
+  if (code/85 == 0) {
       std::fs::FileType::File
   } else {
-      if trait_impl#PartialEq#int#eq(code/85, 1) {
+      if (code/85 == 1) {
           std::fs::FileType::Directory
       } else {
-          if trait_impl#PartialEq#int#eq(code/85, 2) {
+          if (code/85 == 2) {
               std::fs::FileType::Symlink
           } else {
               std::fs::FileType::Other
@@ -1423,7 +1419,7 @@ fn inherent#Vec#Vec[T]#capacity__T_uint8(self/188: Vec[uint8]) -> int {
 }
 
 fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/189: Vec[uint8]) -> bool {
-  trait_impl#PartialEq#int#eq(@intrinsic(vec.len)(self/189), 0)
+  (@intrinsic(vec.len)(self/189) == 0)
 }
 
 fn inherent#Vec#Vec[T]#push__T_uint8(self/176: Vec[uint8], elem/177: uint8) -> unit {
@@ -1432,7 +1428,7 @@ fn inherent#Vec#Vec[T]#push__T_uint8(self/176: Vec[uint8], elem/177: uint8) -> u
 
 fn inherent#Vec#Vec[T]#pop__T_uint8(self/197: Vec[uint8]) -> Option__uint8 {
   let len/198 = inherent#Vec#Vec[T]#len__T_uint8(self/197) in
-  if trait_impl#PartialEq#int#eq(len/198, 0) {
+  if (len/198 == 0) {
       Option__uint8::None
   } else {
       let value/199 = @intrinsic(vec.get)(self/197, (len/198 - 1)) in
@@ -1484,14 +1480,6 @@ fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
         }
     } in
   (true, value/25)
-}
-
-fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  @intrinsic(eq.primitive)(self/103, other/104)
-}
-
-fn trait_impl#PartialEq#string#eq(self/99: string, other/100: string) -> bool {
-  @intrinsic(eq.primitive)(self/99, other/100)
 }
 
 fn trait_impl#PartialEq#Option__string#eq(
@@ -1551,10 +1539,6 @@ fn trait_impl#PartialEq#Option__int#eq(self/153: Option__int, other/154: Option_
       }
     },
   }
-}
-
-fn trait_impl#PartialEq#uint32#eq(self/117: uint32, other/118: uint32) -> bool {
-  @intrinsic(eq.primitive)(self/117, other/118)
 }
 
 fn inherent#Vec#Vec[T]#new__T_std::fs::DirEntry() -> Vec[std::fs::DirEntry] {
@@ -1647,7 +1631,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                   } {
                       true
                   } else {
-                      if trait_impl#PartialEq#uint32#eq(first/8, 224) {
+                      if (first/8 == 224) {
                           (second/10 < 160)
                       } else {
                           false
@@ -1655,7 +1639,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                   } {
                       true
                   } else {
-                      if trait_impl#PartialEq#uint32#eq(first/8, 237) {
+                      if (first/8 == 237) {
                           (second/10 >= 160)
                       } else {
                           false
@@ -1693,7 +1677,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                       } {
                           true
                       } else {
-                          if trait_impl#PartialEq#uint32#eq(first/8, 240) {
+                          if (first/8 == 240) {
                               (second/12 < 144)
                           } else {
                               false
@@ -1701,7 +1685,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                       } {
                           true
                       } else {
-                          if trait_impl#PartialEq#uint32#eq(first/8, 244) {
+                          if (first/8 == 244) {
                               (second/12 > 143)
                           } else {
                               false
@@ -1725,6 +1709,14 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
   }
 }
 
+fn trait_impl#PartialEq#string#eq(self/99: string, other/100: string) -> bool {
+  (self/99 == other/100)
+}
+
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
+  (self/103 == other/104)
+}
+
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {
   self/67
 }
@@ -1737,13 +1729,10 @@ fn string_is_char_boundary(value/15: string, index/16: int) -> bool {
   } {
       false
   } else {
-      if trait_impl#PartialEq#int#eq(index/16, inherent#string#string#byte_len(value/15)) {
+      if (index/16 == inherent#string#string#byte_len(value/15)) {
           true
       } else {
-          (!trait_impl#PartialEq#uint8#eq(
-            (inherent#string#string#byte_get(value/15, index/16) & 192),
-            128
-          ))
+          ((inherent#string#string#byte_get(value/15, index/16) & 192) != 128)
       }
   }
 }
@@ -1776,10 +1765,6 @@ fn utf8_invalid_continuation(value/3: uint32) -> bool {
   } else {
       (value/3 > 191)
   }
-}
-
-fn trait_impl#PartialEq#uint8#eq(self/113: uint8, other/114: uint8) -> bool {
-  @intrinsic(eq.primitive)(self/113, other/114)
 }
 
 fn char_from_uint32(value/32: uint32) -> Option__char {

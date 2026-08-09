@@ -55,12 +55,12 @@ impl[T, Marker] Eq for Generic[T, Marker] where Wrapper[T]: Eq, Wrapper[T]: Part
 impl[T, Marker] Hash for Generic[T, Marker] where Wrapper[T]: Hash {
   fn hash(self/9: Generic[T, Marker]) -> uint64 {
       {
-          let h/10: uint64 = 0 as uint64 + 14695981039346656037;
+          let h/10: uint64 = (int::to_uint64 : (int) -> uint64)(0) + 14695981039346656037;
           let h/11: uint64 =
-            (h/10 : uint64) * 0 as uint64 + 1099511628211 +
+            (h/10 : uint64) * (int::to_uint64 : (int) -> uint64)(0) + 1099511628211 +
               (Hash::hash : (Wrapper[T]) -> uint64)((self/9 : Generic[T, Marker]).first);
           let h/12: uint64 =
-            (h/11 : uint64) * 0 as uint64 + 1099511628211 +
+            (h/11 : uint64) * (int::to_uint64 : (int) -> uint64)(0) + 1099511628211 +
               (Hash::hash : (Wrapper[T]) -> uint64)((self/9 : Generic[T, Marker]).second);
           (h/12 : uint64)
       }
@@ -104,14 +104,14 @@ impl[T, Marker] Hash for GenericChoice[T, Marker] where Wrapper[T]: Hash {
       match (self/19 : GenericChoice[T, Marker]) {
           GenericChoice::Empty =>
             {
-                let h/20: uint64 = 0 as uint64 + 14695981039346656037 + 1;
+                let h/20: uint64 = (int::to_uint64 : (int) -> uint64)(0) + 14695981039346656037 + 1;
                 (h/20 : uint64)
             },
           GenericChoice::Value(#derive0_field/21: Wrapper[T]) =>
             {
-                let h/22: uint64 = 0 as uint64 + 14695981039346656037 + 2;
+                let h/22: uint64 = (int::to_uint64 : (int) -> uint64)(0) + 14695981039346656037 + 2;
                 let h/23: uint64 =
-                  (h/22 : uint64) * 0 as uint64 + 1099511628211 +
+                  (h/22 : uint64) * (int::to_uint64 : (int) -> uint64)(0) + 1099511628211 +
                     (Hash::hash : (Wrapper[T]) -> uint64)((#derive0_field/21 : Wrapper[T]));
                 (h/23 : uint64)
             },

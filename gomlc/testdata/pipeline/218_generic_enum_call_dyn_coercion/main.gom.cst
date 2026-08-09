@@ -1,4 +1,4 @@
-FILE@0..465
+FILE@0..477
   TRAIT@0..51
     TraitKeyword@0..5 "trait"
     Whitespace@5..6 " "
@@ -240,7 +240,7 @@ FILE@0..465
           Whitespace@373..374 "\n"
       RBrace@374..375 "}"
       Whitespace@375..377 "\n\n"
-  FN@377..465
+  FN@377..477
     FnKeyword@377..379 "fn"
     Whitespace@379..380 " "
     Ident@380..384 "main"
@@ -253,7 +253,7 @@ FILE@0..465
     TYPE_UNIT@390..395
       UnitKeyword@390..394 "unit"
       Whitespace@394..395 " "
-    BLOCK@395..465
+    BLOCK@395..477
       LBrace@395..396 "{"
       Whitespace@396..401 "\n    "
       STMT_LET@401..428
@@ -272,33 +272,43 @@ FILE@0..465
           Int@420..422 "42"
         Semi@422..423 ";"
         Whitespace@423..428 "\n    "
-      EXPR_CALL@428..463
+      EXPR_CALL@428..475
         EXPR_IDENT@428..435
           PATH@428..435
             Ident@428..435 "println"
-        ARG_LIST@435..463
+        ARG_LIST@435..475
           LParen@435..436 "("
-          ARG@436..461
-            EXPR_CALL@436..461
+          ARG@436..473
+            EXPR_CALL@436..473
               EXPR_IDENT@436..442
                 PATH@436..442
                   Ident@436..442 "render"
-              ARG_LIST@442..461
+              ARG_LIST@442..473
                 LParen@442..443 "("
-                ARG@443..460
-                  EXPR_CALL@443..460
-                    EXPR_IDENT@443..453
-                      PATH@443..453
-                        Ident@443..453 "make_boxed"
-                    ARG_LIST@453..460
-                      LParen@453..454 "("
-                      ARG@454..459
-                        EXPR_IDENT@454..459
-                          PATH@454..459
-                            Ident@454..459 "value"
-                      RParen@459..460 ")"
-                RParen@460..461 ")"
-          RParen@461..462 ")"
-          Whitespace@462..463 "\n"
-      RBrace@463..464 "}"
-      Whitespace@464..465 "\n"
+                ARG@443..472
+                  EXPR_CAST@443..472
+                    EXPR_CALL@443..461
+                      EXPR_IDENT@443..453
+                        PATH@443..453
+                          Ident@443..453 "make_boxed"
+                      ARG_LIST@453..461
+                        LParen@453..454 "("
+                        ARG@454..459
+                          EXPR_IDENT@454..459
+                            PATH@454..459
+                              Ident@454..459 "value"
+                        RParen@459..460 ")"
+                        Whitespace@460..461 " "
+                    AsKeyword@461..463 "as"
+                    Whitespace@463..464 " "
+                    TYPE_DYN@464..472
+                      DynKeyword@464..467 "dyn"
+                      Whitespace@467..468 " "
+                      DYN_BOUND@468..472
+                        PATH@468..472
+                          Ident@468..472 "Show"
+                RParen@472..473 ")"
+          RParen@473..474 ")"
+          Whitespace@474..475 "\n"
+      RBrace@475..476 "}"
+      Whitespace@476..477 "\n"

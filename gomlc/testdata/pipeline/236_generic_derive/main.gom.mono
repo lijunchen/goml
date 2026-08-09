@@ -8,10 +8,8 @@ fn main() -> unit {
     println__T_bool(trait_impl#PartialEq#Generic__NoTraits__NoTraits#eq(left/25, right/26)) in
   let _wild185 =
     println__T_bool(
-      trait_impl#PartialEq#uint64#eq(
-        trait_impl#Hash#Generic__NoTraits__NoTraits#hash(left/25),
-        trait_impl#Hash#Generic__NoTraits__NoTraits#hash(right/26)
-      )
+      (trait_impl#Hash#Generic__NoTraits__NoTraits#hash(left/25) ==
+        trait_impl#Hash#Generic__NoTraits__NoTraits#hash(right/26))
     ) in
   let empty/27 = GenericChoice__NoTraits__NoTraits::Empty in
   let value/28 = GenericChoice__NoTraits__NoTraits::Value(wrapped/24) in
@@ -24,10 +22,8 @@ fn main() -> unit {
       (!trait_impl#PartialEq#GenericChoice__NoTraits__NoTraits#eq(empty/27, value/28))
     ) in
   println__T_bool(
-    trait_impl#PartialEq#uint64#eq(
-      trait_impl#Hash#GenericChoice__NoTraits__NoTraits#hash(value/28),
-      trait_impl#Hash#GenericChoice__NoTraits__NoTraits#hash(value/28)
-    )
+    (trait_impl#Hash#GenericChoice__NoTraits__NoTraits#hash(value/28) ==
+      trait_impl#Hash#GenericChoice__NoTraits__NoTraits#hash(value/28))
   )
 }
 
@@ -97,10 +93,6 @@ fn trait_impl#Hash#Generic__NoTraits__NoTraits#hash(self/9: Generic__NoTraits__N
         trait_impl#Hash#Wrapper__NoTraits#hash(Generic__NoTraits__NoTraits.second(self/9))) in
     h/12
   }
-}
-
-fn trait_impl#PartialEq#uint64#eq(self/119: uint64, other/120: uint64) -> bool {
-  @intrinsic(eq.primitive)(self/119, other/120)
 }
 
 fn trait_impl#ToString#GenericChoice__NoTraits__NoTraits#to_string(

@@ -17,8 +17,8 @@ impl Eq for LegacyKey where int: Eq {}
 impl Hash for LegacyKey {
   fn hash(self: LegacyKey) -> uint64 {
       {
-          let h = 0 as uint64 + 14695981039346656037;
-          let h = h * 0 as uint64 + 1099511628211 + Hash::hash(self.value);
+          let h = 0.to_uint64() + 14695981039346656037;
+          let h = h * 0.to_uint64() + 1099511628211 + Hash::hash(self.value);
           h
       }
   }
@@ -38,7 +38,7 @@ impl Eq for ModernKey {}
 
 impl Hash for ModernKey {
   fn hash(self: ModernKey) -> uint64 {
-      self.value % 10 as uint64
+      self.value % 10.to_uint64()
   }
 }
 

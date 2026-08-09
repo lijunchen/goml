@@ -10,7 +10,7 @@ impl Display for int32 {
 }
 
 fn mk_renderer[T: Display](x: T) -> () -> string {
-    let d: dyn Display = x;
+    let d: dyn Display = x as dyn Display;
     || Display::show(d)
 }
 

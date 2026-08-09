@@ -16,8 +16,8 @@ file main.gom
   impl Hash for LegacyKey {
     fn hash(local/1/2: LegacyKey) -> uint64 {
         {
-            let local/1/3 = 0 as uint64 + 14695981039346656037;
-            let local/1/4 = h/3 * 0 as uint64 + 1099511628211 + Hash::hash(self/2.value);
+            let local/1/3 = 0.to_uint64() + 14695981039346656037;
+            let local/1/4 = h/3 * 0.to_uint64() + 1099511628211 + Hash::hash(self/2.value);
             h/4
         }
     }
@@ -37,7 +37,7 @@ file main.gom
 
   impl Hash for ModernKey {
     fn hash(local/1/7: ModernKey) -> uint64 {
-        self/7.value % 10 as uint64
+        self/7.value % 10.to_uint64()
     }
   }
 

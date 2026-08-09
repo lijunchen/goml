@@ -92,13 +92,13 @@ fn trait_impl#PartialEq#Key#eq(self/10: Key, other/11: Key) -> bool {
           let #derive1_right/14 = x179 in
           join k235(jp236: bool) -> bool {
             if jp236 {
-              let inline290 = @intrinsic(eq.primitive)(x184, x180) in
+              let inline290 = (x184 == x180) in
               inline290
             } else {
               false
             }
           } in
-          let inline288 = @intrinsic(eq.primitive)(x183, x179) in
+          let inline288 = (x183 == x179) in
           jump k235(inline288)
         },
         _ => {
@@ -221,7 +221,7 @@ fn trait_impl#Hash#int32#hash(self/132: int32) -> uint64 {
 }
 
 fn trait_impl#PartialEq#int32#eq(self/109: int32, other/110: int32) -> bool {
-  let t264 = @intrinsic(eq.primitive)(self/109, other/110) in
+  let t264 = (self/109 == other/110) in
   t264
 }
 

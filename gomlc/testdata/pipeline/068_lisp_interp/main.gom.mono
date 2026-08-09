@@ -44,7 +44,7 @@ fn digit_value(ch/1: char) -> int32 {
 
 fn is_int_text(text/2: string) -> bool {
   let len/3 = inherent#string#string#len(text/2) in
-  if trait_impl#PartialEq#int#eq(len/3, 0) {
+  if (len/3 == 0) {
       {
         false
       }
@@ -64,7 +64,7 @@ fn is_int_text(text/2: string) -> bool {
                 let ch/8 =
                   inherent#string#string#get(text/2, inherent#Ref#Ref[T]#get__T_int(i/4)) in
                 if if (!inherent#Ref#Ref[T]#get__T_bool(started/7)) {
-                    trait_impl#PartialEq#char#eq(ch/8, '-')
+                    (ch/8 == '-')
                 } else {
                     false
                 } {
@@ -121,7 +121,7 @@ fn parse_int32(text/9: string) -> int32 {
         {
           let ch/15 = inherent#string#string#get(text/9, inherent#Ref#Ref[T]#get__T_int(i/11)) in
           if if (!inherent#Ref#Ref[T]#get__T_bool(started/13)) {
-              trait_impl#PartialEq#char#eq(ch/15, '-')
+              (ch/15 == '-')
           } else {
               false
           } {
@@ -166,14 +166,14 @@ fn parse_int32(text/9: string) -> int32 {
 }
 
 fn is_delim(ch/17: char) -> bool {
-  if if trait_impl#PartialEq#char#eq(ch/17, '(') {
+  if if (ch/17 == '(') {
       true
   } else {
-      trait_impl#PartialEq#char#eq(ch/17, ')')
+      (ch/17 == ')')
   } {
       true
   } else {
-      trait_impl#PartialEq#char#eq(ch/17, ' ')
+      (ch/17 == ' ')
   }
 }
 
@@ -243,7 +243,7 @@ fn lex(source/27: string) -> Vec[Token] {
     while (inherent#Ref#Ref[T]#get__T_int(i/31) < len/28) {
         {
           let ch/32 = inherent#string#string#get(source/27, inherent#Ref#Ref[T]#get__T_int(i/31)) in
-          if trait_impl#PartialEq#char#eq(ch/32, '(') {
+          if (ch/32 == '(') {
               {
                 let mtmp183 =
                   inherent#Ref#Ref[T]#set__T_Vec[Token](
@@ -258,7 +258,7 @@ fn lex(source/27: string) -> Vec[Token] {
                 }
               }
           } else {
-              if trait_impl#PartialEq#char#eq(ch/32, ')') {
+              if (ch/32 == ')') {
                   {
                     let mtmp184 =
                       inherent#Ref#Ref[T]#set__T_Vec[Token](
@@ -276,7 +276,7 @@ fn lex(source/27: string) -> Vec[Token] {
                     }
                   }
               } else {
-                  if trait_impl#PartialEq#char#eq(ch/32, ' ') {
+                  if (ch/32 == ' ') {
                       {
                         inherent#Ref#Ref[T]#set__T_int(
                           i/31,
@@ -332,7 +332,7 @@ fn env_lookup(env/35: Vec[Binding], name/36: string) -> Value {
     } {
         {
           let binding/40 = @intrinsic(vec.get)(env/35, inherent#Ref#Ref[T]#get__T_int(i/37)) in
-          if trait_impl#PartialEq#string#eq(Binding.name(binding/40), name/36) {
+          if (Binding.name(binding/40) == name/36) {
               {
                 let mtmp190 =
                   inherent#Ref#Ref[T]#set__T_Value(result/38, Binding.value(binding/40)) in
@@ -560,7 +560,7 @@ fn truthy(value/69: Value) -> bool {
         let x221 = Value::Int._0(value/69) in
         {
           let n/71 = x221 in
-          (!trait_impl#PartialEq#int32#eq(n/71, 0))
+          (n/71 != 0)
         }
       }
     },
@@ -627,7 +627,7 @@ fn eval(expr/72: SExpr, local/73: Vec[Binding], global/74: Ref[Vec[Binding]]) ->
 }
 
 fn eval_list(items/79: Vec[SExpr], local/80: Vec[Binding], global/81: Ref[Vec[Binding]]) -> Value {
-  if trait_impl#PartialEq#int#eq(inherent#Vec#Vec[T]#len__T_SExpr(items/79), 0) {
+  if (inherent#Vec#Vec[T]#len__T_SExpr(items/79) == 0) {
       {
         Value::Nil
       }
@@ -667,7 +667,7 @@ fn eval_list_sym(
     },
     "define" => {
       {
-        if trait_impl#PartialEq#int#eq(inherent#Vec#Vec[T]#len__T_SExpr(items/87), 3) {
+        if (inherent#Vec#Vec[T]#len__T_SExpr(items/87) == 3) {
             {
               {
                 let mtmp232 = @intrinsic(vec.get)(items/87, 1) in
@@ -708,7 +708,7 @@ fn eval_list_sym(
     },
     "if" => {
       {
-        if trait_impl#PartialEq#int#eq(inherent#Vec#Vec[T]#len__T_SExpr(items/87), 4) {
+        if (inherent#Vec#Vec[T]#len__T_SExpr(items/87) == 4) {
             {
               let cond/94 = eval(@intrinsic(vec.get)(items/87, 1), local/88, global/89) in
               if truthy(cond/94) {
@@ -730,7 +730,7 @@ fn eval_list_sym(
     },
     "lambda" => {
       {
-        if trait_impl#PartialEq#int#eq(inherent#Vec#Vec[T]#len__T_SExpr(items/87), 3) {
+        if (inherent#Vec#Vec[T]#len__T_SExpr(items/87) == 3) {
             {
               {
                 let mtmp238 = @intrinsic(vec.get)(items/87, 1) in
@@ -902,7 +902,7 @@ fn eval_args(
 fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
   match name/120 {
     "=" => {
-      if trait_impl#PartialEq#int#eq(inherent#Vec#Vec[T]#len__T_Value(args/121), 2) {
+      if (inherent#Vec#Vec[T]#len__T_Value(args/121) == 2) {
           {
             {
               let mtmp254 = (@intrinsic(vec.get)(args/121, 0), @intrinsic(vec.get)(args/121, 1)) in
@@ -921,7 +921,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
                               let a/122 = x260 in
                               {
                                 let b/123 = x257 in
-                                Value::Bool(trait_impl#PartialEq#int32#eq(a/122, b/123))
+                                Value::Bool((a/122 == b/123))
                               }
                             }
                           }
@@ -941,7 +941,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
                               let a/124 = x264 in
                               {
                                 let b/125 = x258 in
-                                Value::Bool(trait_impl#PartialEq#bool#eq(a/124, b/125))
+                                Value::Bool((a/124 == b/125))
                               }
                             }
                           }
@@ -1113,7 +1113,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
       }
     },
     "/" => {
-      if trait_impl#PartialEq#int#eq(inherent#Vec#Vec[T]#len__T_Value(args/121), 2) {
+      if (inherent#Vec#Vec[T]#len__T_Value(args/121) == 2) {
           {
             {
               let mtmp292 = (@intrinsic(vec.get)(args/121, 0), @intrinsic(vec.get)(args/121, 1)) in
@@ -1228,10 +1228,6 @@ fn inherent#string#string#len(self/37: string) -> int {
   @runtime(core.string_len)(self/37)
 }
 
-fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  @intrinsic(eq.primitive)(self/103, other/104)
-}
-
 fn inherent#Ref#Ref[T]#new__T_int(value/257: int) -> Ref[int] {
   @intrinsic(ref.new)(value/257)
 }
@@ -1250,10 +1246,6 @@ fn inherent#Ref#Ref[T]#get__T_int(self/258: Ref[int]) -> int {
 
 fn inherent#string#string#get(self/39: string, index/40: int) -> char {
   string_get(self/39, index/40)
-}
-
-fn trait_impl#PartialEq#char#eq(self/101: char, other/102: char) -> bool {
-  @intrinsic(eq.primitive)(self/101, other/102)
 }
 
 fn inherent#Ref#Ref[T]#set__T_bool(self/259: Ref[bool], value/260: bool) -> unit {
@@ -1340,10 +1332,6 @@ fn inherent#Ref#Ref[T]#new__T_Value(value/257: Value) -> Ref[Value] {
   @intrinsic(ref.new)(value/257)
 }
 
-fn trait_impl#PartialEq#string#eq(self/99: string, other/100: string) -> bool {
-  @intrinsic(eq.primitive)(self/99, other/100)
-}
-
 fn inherent#Ref#Ref[T]#set__T_Value(self/259: Ref[Value], value/260: Value) -> unit {
   @intrinsic(ref.set)(self/259, value/260)
 }
@@ -1402,10 +1390,6 @@ fn inherent#int32#int32#to_string(self/35: int32) -> string {
 
 fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
   @runtime(core.bool_to_string)(self/66)
-}
-
-fn trait_impl#PartialEq#int32#eq(self/109: int32, other/110: int32) -> bool {
-  @intrinsic(eq.primitive)(self/109, other/110)
 }
 
 fn inherent#Ref#Ref[T]#get__T_Vec[Binding](self/258: Ref[Vec[Binding]]) -> Vec[Binding] {
@@ -1538,10 +1522,6 @@ fn inherent#Ref#Ref[T]#set__T_Vec[Value](self/259: Ref[Vec[Value]], value/260: V
 
 fn inherent#Vec#Vec[T]#len__T_Value(self/187: Vec[Value]) -> int {
   @intrinsic(vec.len)(self/187)
-}
-
-fn trait_impl#PartialEq#bool#eq(self/97: bool, other/98: bool) -> bool {
-  @intrinsic(eq.primitive)(self/97, other/98)
 }
 
 fn inherent#Ref#Ref[T]#new__T_Vec[Binding](value/257: Vec[Binding]) -> Ref[Vec[Binding]] {
@@ -1720,7 +1700,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                     } {
                         true
                     } else {
-                        if trait_impl#PartialEq#uint32#eq(first/8, 224) {
+                        if (first/8 == 224) {
                             (second/10 < 160)
                         } else {
                             false
@@ -1728,7 +1708,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                     } {
                         true
                     } else {
-                        if trait_impl#PartialEq#uint32#eq(first/8, 237) {
+                        if (first/8 == 237) {
                             (second/10 >= 160)
                         } else {
                             false
@@ -1776,7 +1756,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                         } {
                             true
                         } else {
-                            if trait_impl#PartialEq#uint32#eq(first/8, 240) {
+                            if (first/8 == 240) {
                                 (second/12 < 144)
                             } else {
                                 false
@@ -1784,7 +1764,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                         } {
                             true
                         } else {
-                            if trait_impl#PartialEq#uint32#eq(first/8, 244) {
+                            if (first/8 == 244) {
                                 (second/12 > 143)
                             } else {
                                 false
@@ -1867,10 +1847,6 @@ fn utf8_invalid_continuation(value/3: uint32) -> bool {
   }
 }
 
-fn trait_impl#PartialEq#uint32#eq(self/117: uint32, other/118: uint32) -> bool {
-  @intrinsic(eq.primitive)(self/117, other/118)
-}
-
 fn char_from_uint32(value/32: uint32) -> Option__char {
   if utf8_valid_scalar(value/32) {
       {
@@ -1893,8 +1869,16 @@ fn char_from_uint32(value/32: uint32) -> Option__char {
   }
 }
 
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
+  (self/103 == other/104)
+}
+
 fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
   @runtime(core.int_hash)(self/129)
+}
+
+fn trait_impl#PartialEq#bool#eq(self/97: bool, other/98: bool) -> bool {
+  (self/97 == other/98)
 }
 
 fn trait_impl#Hash#bool#hash(self/126: bool) -> uint64 {
@@ -1909,8 +1893,16 @@ fn trait_impl#Hash#bool#hash(self/126: bool) -> uint64 {
   }
 }
 
+fn trait_impl#PartialEq#int32#eq(self/109: int32, other/110: int32) -> bool {
+  (self/109 == other/110)
+}
+
 fn trait_impl#Hash#int32#hash(self/132: int32) -> uint64 {
   @runtime(core.int32_hash)(self/132)
+}
+
+fn trait_impl#PartialEq#string#eq(self/99: string, other/100: string) -> bool {
+  (self/99 == other/100)
 }
 
 fn trait_impl#Hash#string#hash(self/127: string) -> uint64 {
@@ -1918,10 +1910,7 @@ fn trait_impl#Hash#string#hash(self/127: string) -> uint64 {
 }
 
 fn trait_impl#PartialEq#Vec[string]#eq(self/141: Vec[string], other/142: Vec[string]) -> bool {
-  if (!trait_impl#PartialEq#int#eq(
-    inherent#Vec#Vec[T]#len__T_string(self/141),
-    inherent#Vec#Vec[T]#len__T_string(other/142)
-  )) {
+  if (inherent#Vec#Vec[T]#len__T_string(self/141) != inherent#Vec#Vec[T]#len__T_string(other/142)) {
       {
         false
       }

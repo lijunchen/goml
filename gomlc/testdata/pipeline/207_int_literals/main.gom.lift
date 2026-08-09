@@ -39,10 +39,7 @@ fn main() -> unit {
   let _wild178 = println__T_string(trait_impl#ToString#float32#to_string(one_float32())) in
   let _wild179 = println__T_string(trait_impl#ToString#int16#to_string(two_int16())) in
   let _wild180 = println__T_string(trait_impl#ToString#uint32#to_string(read_uint32(delayed/8))) in
-  let _wild181 =
-    println__T_string(
-      trait_impl#ToString#bool#to_string(trait_impl#PartialEq#uint8#eq(byte/9, 65))
-    ) in
+  let _wild181 = println__T_string(trait_impl#ToString#bool#to_string((byte/9 == 65))) in
   let _wild182 =
     println__T_string(
       match byte/9 {
@@ -99,10 +96,6 @@ fn trait_impl#ToString#uint32#to_string(self/76: uint32) -> string {
   @runtime(core.uint32_to_string)(self/76)
 }
 
-fn trait_impl#PartialEq#uint8#eq(self/113: uint8, other/114: uint8) -> bool {
-  @intrinsic(eq.primitive)(self/113, other/114)
-}
-
 fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
   @runtime(core.bool_to_string)(self/66)
 }
@@ -112,7 +105,7 @@ fn trait_impl#ToString#string#to_string(self/67: string) -> string {
 }
 
 fn trait_impl#PartialEq#uint32#eq(self/117: uint32, other/118: uint32) -> bool {
-  @intrinsic(eq.primitive)(self/117, other/118)
+  (self/117 == other/118)
 }
 
 fn trait_impl#Hash#uint32#hash(self/136: uint32) -> uint64 {

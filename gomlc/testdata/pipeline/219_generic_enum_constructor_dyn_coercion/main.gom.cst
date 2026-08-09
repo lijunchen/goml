@@ -1,4 +1,4 @@
-FILE@0..399
+FILE@0..411
   TRAIT@0..51
     TraitKeyword@0..5 "trait"
     Whitespace@5..6 " "
@@ -189,7 +189,7 @@ FILE@0..399
           Whitespace@307..308 "\n"
       RBrace@308..309 "}"
       Whitespace@309..311 "\n\n"
-  FN@311..399
+  FN@311..411
     FnKeyword@311..313 "fn"
     Whitespace@313..314 " "
     Ident@314..318 "main"
@@ -202,7 +202,7 @@ FILE@0..399
     TYPE_UNIT@324..329
       UnitKeyword@324..328 "unit"
       Whitespace@328..329 " "
-    BLOCK@329..399
+    BLOCK@329..411
       LBrace@329..330 "{"
       Whitespace@330..335 "\n    "
       STMT_LET@335..362
@@ -221,35 +221,45 @@ FILE@0..399
           Int@354..356 "42"
         Semi@356..357 ";"
         Whitespace@357..362 "\n    "
-      EXPR_CALL@362..397
+      EXPR_CALL@362..409
         EXPR_IDENT@362..369
           PATH@362..369
             Ident@362..369 "println"
-        ARG_LIST@369..397
+        ARG_LIST@369..409
           LParen@369..370 "("
-          ARG@370..395
-            EXPR_CALL@370..395
+          ARG@370..407
+            EXPR_CALL@370..407
               EXPR_IDENT@370..376
                 PATH@370..376
                   Ident@370..376 "render"
-              ARG_LIST@376..395
+              ARG_LIST@376..407
                 LParen@376..377 "("
-                ARG@377..394
-                  EXPR_CALL@377..394
-                    EXPR_IDENT@377..387
-                      PATH@377..387
-                        Ident@377..382 "Boxed"
-                        ColonColon@382..384 "::"
-                        Ident@384..387 "One"
-                    ARG_LIST@387..394
-                      LParen@387..388 "("
-                      ARG@388..393
-                        EXPR_IDENT@388..393
-                          PATH@388..393
-                            Ident@388..393 "value"
-                      RParen@393..394 ")"
-                RParen@394..395 ")"
-          RParen@395..396 ")"
-          Whitespace@396..397 "\n"
-      RBrace@397..398 "}"
-      Whitespace@398..399 "\n"
+                ARG@377..406
+                  EXPR_CAST@377..406
+                    EXPR_CALL@377..395
+                      EXPR_IDENT@377..387
+                        PATH@377..387
+                          Ident@377..382 "Boxed"
+                          ColonColon@382..384 "::"
+                          Ident@384..387 "One"
+                      ARG_LIST@387..395
+                        LParen@387..388 "("
+                        ARG@388..393
+                          EXPR_IDENT@388..393
+                            PATH@388..393
+                              Ident@388..393 "value"
+                        RParen@393..394 ")"
+                        Whitespace@394..395 " "
+                    AsKeyword@395..397 "as"
+                    Whitespace@397..398 " "
+                    TYPE_DYN@398..406
+                      DynKeyword@398..401 "dyn"
+                      Whitespace@401..402 " "
+                      DYN_BOUND@402..406
+                        PATH@402..406
+                          Ident@402..406 "Show"
+                RParen@406..407 ")"
+          RParen@407..408 ")"
+          Whitespace@408..409 "\n"
+      RBrace@409..410 "}"
+      Whitespace@410..411 "\n"

@@ -57,9 +57,9 @@ file main.gom
   impl[T, Marker] Hash for Generic[T, Marker] where Wrapper[T]: Hash {
     fn hash(local/1/9: Generic[T, Marker]) -> uint64 {
         {
-            let local/1/10 = 0 as uint64 + 14695981039346656037;
-            let local/1/11 = h/10 * 0 as uint64 + 1099511628211 + Hash::hash(self/9.first);
-            let local/1/12 = h/11 * 0 as uint64 + 1099511628211 + Hash::hash(self/9.second);
+            let local/1/10 = 0.to_uint64() + 14695981039346656037;
+            let local/1/11 = h/10 * 0.to_uint64() + 1099511628211 + Hash::hash(self/9.first);
+            let local/1/12 = h/11 * 0.to_uint64() + 1099511628211 + Hash::hash(self/9.second);
             h/12
         }
     }
@@ -99,14 +99,14 @@ file main.gom
         match self/19 {
             ctor(def/1/11::v0) =>
               {
-                  let local/1/20 = 0 as uint64 + 14695981039346656037 + 1;
+                  let local/1/20 = 0.to_uint64() + 14695981039346656037 + 1;
                   h/20
               },
             ctor(def/1/11::v1)(local/1/21) =>
               {
-                  let local/1/22 = 0 as uint64 + 14695981039346656037 + 2;
+                  let local/1/22 = 0.to_uint64() + 14695981039346656037 + 2;
                   let local/1/23 =
-                    h/22 * 0 as uint64 + 1099511628211 + Hash::hash(#derive0_field/21);
+                    h/22 * 0.to_uint64() + 1099511628211 + Hash::hash(#derive0_field/21);
                   h/23
               },
         }

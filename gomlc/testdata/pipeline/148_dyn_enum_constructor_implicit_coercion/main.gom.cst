@@ -1,4 +1,4 @@
-FILE@0..607
+FILE@0..652
   TRAIT@0..54
     TraitKeyword@0..5 "trait"
     Whitespace@5..6 " "
@@ -250,7 +250,7 @@ FILE@0..607
           Whitespace@420..421 "\n"
       RBrace@421..422 "}"
       Whitespace@422..424 "\n\n"
-  FN@424..607
+  FN@424..652
     FnKeyword@424..426 "fn"
     Whitespace@426..427 " "
     Ident@427..431 "main"
@@ -263,7 +263,7 @@ FILE@0..607
     TYPE_UNIT@437..442
       UnitKeyword@437..441 "unit"
       Whitespace@441..442 " "
-    BLOCK@442..607
+    BLOCK@442..652
       LBrace@442..443 "{"
       Whitespace@443..448 "\n    "
       STMT_LET@448..473
@@ -314,75 +314,105 @@ FILE@0..607
           Int@517..518 "9"
         Semi@518..519 ";"
         Whitespace@519..524 "\n    "
-      STMT_EXPR@524..562
-        EXPR_CALL@524..556
+      STMT_EXPR@524..577
+        EXPR_CALL@524..571
           EXPR_IDENT@524..531
             PATH@524..531
               Ident@524..531 "println"
-          ARG_LIST@531..556
+          ARG_LIST@531..571
             LParen@531..532 "("
-            ARG@532..555
-              EXPR_CALL@532..555
+            ARG@532..570
+              EXPR_CALL@532..570
                 EXPR_IDENT@532..538
                   PATH@532..538
                     Ident@532..538 "render"
-                ARG_LIST@538..555
+                ARG_LIST@538..570
                   LParen@538..539 "("
-                  ARG@539..554
-                    EXPR_CALL@539..554
+                  ARG@539..569
+                    EXPR_CALL@539..569
                       EXPR_IDENT@539..549
                         PATH@539..549
                           Ident@539..544 "Boxed"
                           ColonColon@544..546 "::"
                           Ident@546..549 "One"
-                      ARG_LIST@549..554
+                      ARG_LIST@549..569
                         LParen@549..550 "("
-                        ARG@550..553
-                          EXPR_IDENT@550..553
-                            PATH@550..553
-                              Ident@550..553 "one"
-                        RParen@553..554 ")"
-                  RParen@554..555 ")"
-            RParen@555..556 ")"
-        Semi@556..557 ";"
-        Whitespace@557..562 "\n    "
-      STMT_EXPR@562..605
-        EXPR_CALL@562..603
-          EXPR_IDENT@562..569
-            PATH@562..569
-              Ident@562..569 "println"
-          ARG_LIST@569..603
-            LParen@569..570 "("
-            ARG@570..602
-              EXPR_CALL@570..602
-                EXPR_IDENT@570..576
-                  PATH@570..576
-                    Ident@570..576 "render"
-                ARG_LIST@576..602
-                  LParen@576..577 "("
-                  ARG@577..601
-                    EXPR_CALL@577..601
-                      EXPR_IDENT@577..588
-                        PATH@577..588
-                          Ident@577..582 "Boxed"
-                          ColonColon@582..584 "::"
-                          Ident@584..588 "Pair"
-                      ARG_LIST@588..601
-                        LParen@588..589 "("
-                        ARG@589..595
-                          EXPR_IDENT@589..593
-                            PATH@589..593
-                              Ident@589..593 "left"
-                          Comma@593..594 ","
-                          Whitespace@594..595 " "
-                        ARG@595..600
-                          EXPR_IDENT@595..600
-                            PATH@595..600
-                              Ident@595..600 "right"
-                        RParen@600..601 ")"
-                  RParen@601..602 ")"
-            RParen@602..603 ")"
-        Semi@603..604 ";"
-        Whitespace@604..605 "\n"
-      RBrace@605..606 "}"
-      Whitespace@606..607 "\n"
+                        ARG@550..568
+                          EXPR_CAST@550..568
+                            EXPR_IDENT@550..554
+                              PATH@550..554
+                                Ident@550..553 "one"
+                                Whitespace@553..554 " "
+                            AsKeyword@554..556 "as"
+                            Whitespace@556..557 " "
+                            TYPE_DYN@557..568
+                              DynKeyword@557..560 "dyn"
+                              Whitespace@560..561 " "
+                              DYN_BOUND@561..568
+                                PATH@561..568
+                                  Ident@561..568 "Display"
+                        RParen@568..569 ")"
+                  RParen@569..570 ")"
+            RParen@570..571 ")"
+        Semi@571..572 ";"
+        Whitespace@572..577 "\n    "
+      STMT_EXPR@577..650
+        EXPR_CALL@577..648
+          EXPR_IDENT@577..584
+            PATH@577..584
+              Ident@577..584 "println"
+          ARG_LIST@584..648
+            LParen@584..585 "("
+            ARG@585..647
+              EXPR_CALL@585..647
+                EXPR_IDENT@585..591
+                  PATH@585..591
+                    Ident@585..591 "render"
+                ARG_LIST@591..647
+                  LParen@591..592 "("
+                  ARG@592..646
+                    EXPR_CALL@592..646
+                      EXPR_IDENT@592..603
+                        PATH@592..603
+                          Ident@592..597 "Boxed"
+                          ColonColon@597..599 "::"
+                          Ident@599..603 "Pair"
+                      ARG_LIST@603..646
+                        LParen@603..604 "("
+                        ARG@604..625
+                          EXPR_CAST@604..623
+                            EXPR_IDENT@604..609
+                              PATH@604..609
+                                Ident@604..608 "left"
+                                Whitespace@608..609 " "
+                            AsKeyword@609..611 "as"
+                            Whitespace@611..612 " "
+                            TYPE_DYN@612..623
+                              DynKeyword@612..615 "dyn"
+                              Whitespace@615..616 " "
+                              DYN_BOUND@616..623
+                                PATH@616..623
+                                  Ident@616..623 "Display"
+                          Comma@623..624 ","
+                          Whitespace@624..625 " "
+                        ARG@625..645
+                          EXPR_CAST@625..645
+                            EXPR_IDENT@625..631
+                              PATH@625..631
+                                Ident@625..630 "right"
+                                Whitespace@630..631 " "
+                            AsKeyword@631..633 "as"
+                            Whitespace@633..634 " "
+                            TYPE_DYN@634..645
+                              DynKeyword@634..637 "dyn"
+                              Whitespace@637..638 " "
+                              DYN_BOUND@638..645
+                                PATH@638..645
+                                  Ident@638..645 "Display"
+                        RParen@645..646 ")"
+                  RParen@646..647 ")"
+            RParen@647..648 ")"
+        Semi@648..649 ";"
+        Whitespace@649..650 "\n"
+      RBrace@650..651 "}"
+      Whitespace@651..652 "\n"

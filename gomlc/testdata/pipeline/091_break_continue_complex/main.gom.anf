@@ -51,7 +51,7 @@ fn main() -> unit {
                               jump k193()
                             }
                           } in
-                          let inline257 = @intrinsic(eq.primitive)(cur/4, t195) in
+                          let inline257 = (cur/4 == t195) in
                           jump inline_cont256(inline257)
                         } in
                         let inline259 = @intrinsic(ref.set)(j/3, t192) in
@@ -126,7 +126,7 @@ fn main() -> unit {
               }
             } in
             let inline246 = 50 in
-            let inline247 = @intrinsic(eq.primitive)(t208, inline246) in
+            let inline247 = (t208 == inline246) in
             jump inline_cont245(inline247)
           } in
           let inline249 = @intrinsic(ref.get)(i/1) in
@@ -153,7 +153,7 @@ fn inherent#Ref#Ref[T]#get__T_int(self/258: Ref[int]) -> int {
 }
 
 fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  let t218 = @intrinsic(eq.primitive)(self/103, other/104) in
+  let t218 = (self/103 == other/104) in
   t218
 }
 

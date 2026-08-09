@@ -431,33 +431,33 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__257 int) *ref_in
 
 func __goml_builtin_range(start__268 int, end__269 int) FnIterator__int {
     var current__270 *ref_int_x = ref__Ref_3int(start__268)
-    var t340 closure_env_goml_builtin_range_8 = closure_env_goml_builtin_range_8{
+    var t337 closure_env_goml_builtin_range_8 = closure_env_goml_builtin_range_8{
         current_0: current__270,
         end_1: end__269,
     }
-    var t341 FnIterator__int = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(func() Option__int {
-        return _goml_m_inherent_i_closure__en_he266c1d56cf5cac23de741e24d448aa5_ange__8_i_apply(t340)
+    var t338 FnIterator__int = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(func() Option__int {
+        return _goml_m_inherent_i_closure__en_he266c1d56cf5cac23de741e24d448aa5_ange__8_i_apply(t337)
     })
-    return t341
+    return t338
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
-    var t344 string = _goml_runtime_core_int_to_string(self__69)
-    return t344
+    var t341 string = _goml_runtime_core_int_to_string(self__69)
+    return t341
 }
 
 func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__string(next_fn__172 func() Option__string) FnIterator__string {
-    var t356 FnIterator__string = FnIterator__string{
+    var t353 FnIterator__string = FnIterator__string{
         next_fn: next_fn__172,
     }
-    return t356
+    return t353
 }
 
 func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(next_fn__172 func() Option__int) FnIterator__int {
-    var t359 FnIterator__int = FnIterator__int{
+    var t356 FnIterator__int = FnIterator__int{
         next_fn: next_fn__172,
     }
-    return t359
+    return t356
 }
 
 func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env192 closure_env_main_0, value__9 int32) int32 {
@@ -486,7 +486,7 @@ func _goml_m_inherent_i_closure__env__main__3_i_closure__env__main__3_i_apply(en
 func _goml_m_inherent_i_closure__en_h84ca90071873c33e0048783462740cfe_nter__4_i_apply(env196 closure_env_std_iter_map_A_int32_B_int32_I_Counter_4) Option__int32 {
     var iterator__4 Counter = env196.iterator_0
     var map_fn__5 func(int32) int32 = env196.map_fn_1
-    var commute_field539 int32
+    var commute_field536 int32
     var inline503 *ref_int32_x = iterator__4.current
     var inline504 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(inline503)
     var inline505 int32 = iterator__4.end
@@ -495,8 +495,8 @@ func _goml_m_inherent_i_closure__en_h84ca90071873c33e0048783462740cfe_nter__4_i_
         var inline507 *ref_int32_x = iterator__4.current
         var inline508 int32 = inline504 + 1
         _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(inline507, inline508)
-        commute_field539 = inline504
-        var t386 int32 = map_fn__5(commute_field539)
+        commute_field536 = inline504
+        var t386 int32 = map_fn__5(commute_field536)
         var t387 Option__int32 = Option__int32_Some{
             _0: t386,
         }
@@ -538,12 +538,9 @@ func _goml_m_inherent_i_closure__en_heb4c08715b30bde4448bd9026c64bd4f_nt32__6_i_
     var remaining__16 *ref_int_x = env198.remaining_0
     var iterator__14 FnIterator__int32 = env198.iterator_1
     var t401 int
-    var inline525 int = ref_get__Ref_3int(remaining__16)
-    t401 = inline525
-    var t402 bool
-    var inline522 int = 0
-    var inline523 bool = t401 == inline522
-    t402 = inline523
+    var inline522 int = ref_get__Ref_3int(remaining__16)
+    t401 = inline522
+    var t402 bool = t401 == 0
     if t402 {
         return Option__int32_None{}
     } else {
@@ -562,9 +559,9 @@ func _goml_m_inherent_i_closure__en_hee33584d6eb8d0339494367cef42ffc0__int__7_i_
     var iterator__4 FnIterator__int = env199.iterator_0
     var map_fn__5 func(int) string = env199.map_fn_1
     var mtmp1 Option__int
-    var inline527 func() Option__int = iterator__4.next_fn
-    var inline528 Option__int = inline527()
-    mtmp1 = inline528
+    var inline524 func() Option__int = iterator__4.next_fn
+    var inline525 Option__int = inline524()
+    mtmp1 = inline525
     switch mtmp1.(type) {
     case Option__int_None:
         return Option__string_None{}

@@ -6,7 +6,7 @@ fn early(x/0: int32) -> int32 {
         ()
     } in
   let _wild173 =
-    if trait_impl#PartialEq#int32#eq(x/0, 0) {
+    if (x/0 == 0) {
         return 1
     } else {
         ()
@@ -44,10 +44,6 @@ fn main() -> unit {
   let _wild187 = unit_ret(true) in
   let _wild188 = unit_ret(false) in
   ()
-}
-
-fn trait_impl#PartialEq#int32#eq(self/109: int32, other/110: int32) -> bool {
-  @intrinsic(eq.primitive)(self/109, other/110)
 }
 
 fn println__T_string(value/31: string) -> unit {

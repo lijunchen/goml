@@ -117,7 +117,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                     } {
                         true
                     } else {
-                        if trait_call[PartialEq::eq](first/8, 224) {
+                        if (first/8 == 224) {
                             (second/10 < 160)
                         } else {
                             false
@@ -125,7 +125,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                     } {
                         true
                     } else {
-                        if trait_call[PartialEq::eq](first/8, 237) {
+                        if (first/8 == 237) {
                             (second/10 >= 160)
                         } else {
                             false
@@ -173,7 +173,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                         } {
                             true
                         } else {
-                            if trait_call[PartialEq::eq](first/8, 240) {
+                            if (first/8 == 240) {
                                 (second/12 < 144)
                             } else {
                                 false
@@ -181,7 +181,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                         } {
                             true
                         } else {
-                            if trait_call[PartialEq::eq](first/8, 244) {
+                            if (first/8 == 244) {
                                 (second/12 > 143)
                             } else {
                                 false
@@ -222,16 +222,13 @@ fn string_is_char_boundary(value/15: string, index/16: int) -> bool {
         false
       }
   } else {
-      if trait_call[PartialEq::eq](index/16, inherent#string#string#byte_len(value/15)) {
+      if (index/16 == inherent#string#string#byte_len(value/15)) {
           {
             true
           }
       } else {
           {
-            (!trait_call[PartialEq::eq](
-              (inherent#string#string#byte_get(value/15, index/16) & 192),
-              128
-            ))
+            ((inherent#string#string#byte_get(value/15, index/16) & 192) != 128)
           }
       }
   }
@@ -658,7 +655,7 @@ fn trait_impl#Eq#unit#__marker() -> unit {
 }
 
 fn trait_impl#PartialEq#bool#eq(self/97: bool, other/98: bool) -> bool {
-  @intrinsic(eq.primitive)(self/97, other/98)
+  (self/97 == other/98)
 }
 
 fn trait_impl#Eq#bool#__marker() -> unit {
@@ -666,7 +663,7 @@ fn trait_impl#Eq#bool#__marker() -> unit {
 }
 
 fn trait_impl#PartialEq#string#eq(self/99: string, other/100: string) -> bool {
-  @intrinsic(eq.primitive)(self/99, other/100)
+  (self/99 == other/100)
 }
 
 fn trait_impl#Eq#string#__marker() -> unit {
@@ -674,7 +671,7 @@ fn trait_impl#Eq#string#__marker() -> unit {
 }
 
 fn trait_impl#PartialEq#char#eq(self/101: char, other/102: char) -> bool {
-  @intrinsic(eq.primitive)(self/101, other/102)
+  (self/101 == other/102)
 }
 
 fn trait_impl#Eq#char#__marker() -> unit {
@@ -682,7 +679,7 @@ fn trait_impl#Eq#char#__marker() -> unit {
 }
 
 fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  @intrinsic(eq.primitive)(self/103, other/104)
+  (self/103 == other/104)
 }
 
 fn trait_impl#Eq#int#__marker() -> unit {
@@ -690,7 +687,7 @@ fn trait_impl#Eq#int#__marker() -> unit {
 }
 
 fn trait_impl#PartialEq#int8#eq(self/105: int8, other/106: int8) -> bool {
-  @intrinsic(eq.primitive)(self/105, other/106)
+  (self/105 == other/106)
 }
 
 fn trait_impl#Eq#int8#__marker() -> unit {
@@ -698,7 +695,7 @@ fn trait_impl#Eq#int8#__marker() -> unit {
 }
 
 fn trait_impl#PartialEq#int16#eq(self/107: int16, other/108: int16) -> bool {
-  @intrinsic(eq.primitive)(self/107, other/108)
+  (self/107 == other/108)
 }
 
 fn trait_impl#Eq#int16#__marker() -> unit {
@@ -706,7 +703,7 @@ fn trait_impl#Eq#int16#__marker() -> unit {
 }
 
 fn trait_impl#PartialEq#int32#eq(self/109: int32, other/110: int32) -> bool {
-  @intrinsic(eq.primitive)(self/109, other/110)
+  (self/109 == other/110)
 }
 
 fn trait_impl#Eq#int32#__marker() -> unit {
@@ -714,7 +711,7 @@ fn trait_impl#Eq#int32#__marker() -> unit {
 }
 
 fn trait_impl#PartialEq#int64#eq(self/111: int64, other/112: int64) -> bool {
-  @intrinsic(eq.primitive)(self/111, other/112)
+  (self/111 == other/112)
 }
 
 fn trait_impl#Eq#int64#__marker() -> unit {
@@ -722,7 +719,7 @@ fn trait_impl#Eq#int64#__marker() -> unit {
 }
 
 fn trait_impl#PartialEq#uint8#eq(self/113: uint8, other/114: uint8) -> bool {
-  @intrinsic(eq.primitive)(self/113, other/114)
+  (self/113 == other/114)
 }
 
 fn trait_impl#Eq#uint8#__marker() -> unit {
@@ -730,7 +727,7 @@ fn trait_impl#Eq#uint8#__marker() -> unit {
 }
 
 fn trait_impl#PartialEq#uint16#eq(self/115: uint16, other/116: uint16) -> bool {
-  @intrinsic(eq.primitive)(self/115, other/116)
+  (self/115 == other/116)
 }
 
 fn trait_impl#Eq#uint16#__marker() -> unit {
@@ -738,7 +735,7 @@ fn trait_impl#Eq#uint16#__marker() -> unit {
 }
 
 fn trait_impl#PartialEq#uint32#eq(self/117: uint32, other/118: uint32) -> bool {
-  @intrinsic(eq.primitive)(self/117, other/118)
+  (self/117 == other/118)
 }
 
 fn trait_impl#Eq#uint32#__marker() -> unit {
@@ -746,7 +743,7 @@ fn trait_impl#Eq#uint32#__marker() -> unit {
 }
 
 fn trait_impl#PartialEq#uint64#eq(self/119: uint64, other/120: uint64) -> bool {
-  @intrinsic(eq.primitive)(self/119, other/120)
+  (self/119 == other/120)
 }
 
 fn trait_impl#Eq#uint64#__marker() -> unit {
@@ -754,11 +751,11 @@ fn trait_impl#Eq#uint64#__marker() -> unit {
 }
 
 fn trait_impl#PartialEq#float32#eq(self/121: float32, other/122: float32) -> bool {
-  @intrinsic(eq.primitive)(self/121, other/122)
+  (self/121 == other/122)
 }
 
 fn trait_impl#PartialEq#float64#eq(self/123: float64, other/124: float64) -> bool {
-  @intrinsic(eq.primitive)(self/123, other/124)
+  (self/123 == other/124)
 }
 
 fn trait_impl#Hash#unit#hash(self/125: unit) -> uint64 {
@@ -910,10 +907,7 @@ fn trait_impl#Default#Option[T]#default[T]() -> Option[T] {
 }
 
 fn trait_impl#PartialEq#Vec[T]#eq[T](self/141: Vec[T], other/142: Vec[T]) -> bool {
-  if (!trait_call[PartialEq::eq](
-    inherent#Vec#Vec[T]#len(self/141),
-    inherent#Vec#Vec[T]#len(other/142)
-  )) {
+  if (inherent#Vec#Vec[T]#len(self/141) != inherent#Vec#Vec[T]#len(other/142)) {
       {
         false
       }
@@ -972,10 +966,7 @@ fn trait_impl#Hash#Vec[T]#hash[T](self/144: Vec[T]) -> uint64 {
 }
 
 fn trait_impl#PartialEq#Slice[T]#eq[T](self/147: Slice[T], other/148: Slice[T]) -> bool {
-  if (!trait_call[PartialEq::eq](
-    inherent#Slice#Slice[T]#len(self/147),
-    inherent#Slice#Slice[T]#len(other/148)
-  )) {
+  if (inherent#Slice#Slice[T]#len(self/147) != inherent#Slice#Slice[T]#len(other/148)) {
       {
         false
       }
@@ -1247,7 +1238,7 @@ fn inherent#Vec#Vec[T]#capacity[T](self/188: Vec[T]) -> int {
 }
 
 fn inherent#Vec#Vec[T]#is_empty[T](self/189: Vec[T]) -> bool {
-  trait_call[PartialEq::eq](@intrinsic(vec.len)(self/189), 0)
+  (@intrinsic(vec.len)(self/189) == 0)
 }
 
 fn inherent#Vec#Vec[T]#reserve[T](self/190: Vec[T], additional/191: int) -> unit {
@@ -1264,7 +1255,7 @@ fn inherent#Vec#Vec[T]#clear[T](self/194: Vec[T]) -> unit {
 
 fn inherent#Vec#Vec[T]#last[T](self/195: Vec[T]) -> Option[T] {
   let len/196 = inherent#Vec#Vec[T]#len(self/195) in
-  if trait_call[PartialEq::eq](len/196, 0) {
+  if (len/196 == 0) {
       {
         Option::None
       }
@@ -1277,7 +1268,7 @@ fn inherent#Vec#Vec[T]#last[T](self/195: Vec[T]) -> Option[T] {
 
 fn inherent#Vec#Vec[T]#pop[T](self/197: Vec[T]) -> Option[T] {
   let len/198 = inherent#Vec#Vec[T]#len(self/197) in
-  if trait_call[PartialEq::eq](len/198, 0) {
+  if (len/198 == 0) {
       {
         Option::None
       }
@@ -1336,7 +1327,7 @@ fn inherent#Vec#Vec[T]#swap_remove[T](self/204: Vec[T], index/205: int) -> T {
 
 fn inherent#Vec#Vec[T]#insert[T](self/208: Vec[T], index/209: int, value/210: T) -> unit {
   let len/211 = inherent#Vec#Vec[T]#len(self/208) in
-  if trait_call[PartialEq::eq](index/209, len/211) {
+  if (index/209 == len/211) {
       {
         inherent#Vec#Vec[T]#push(self/208, value/210)
       }
@@ -1625,7 +1616,7 @@ fn trait_impl#Debug#uint#debug(self/275: uint) -> string {
 }
 
 fn trait_impl#PartialEq#uint#eq(self/276: uint, other/277: uint) -> bool {
-  @intrinsic(eq.primitive)(self/276, other/277)
+  (self/276 == other/277)
 }
 
 fn trait_impl#Eq#uint#__marker() -> unit {
@@ -1642,10 +1633,12 @@ fn inherent#string#string#starts_with(self/279: string, prefix/280: string) -> b
   } else {
       false
   } {
-      trait_call[PartialEq::eq](
-        inherent#string#string#byte_slice(self/279, 0, inherent#string#string#byte_len(prefix/280)),
-        prefix/280
-      )
+      (inherent#string#string#byte_slice(
+        self/279,
+        0,
+        inherent#string#string#byte_len(prefix/280)
+      ) ==
+        prefix/280)
   } else {
       false
   }
@@ -1662,14 +1655,12 @@ fn inherent#string#string#ends_with(self/281: string, suffix/282: string) -> boo
           (inherent#string#string#byte_len(self/281) -
             inherent#string#string#byte_len(suffix/282)) in
         if inherent#string#string#is_char_boundary(self/281, start/283) {
-            trait_call[PartialEq::eq](
-              inherent#string#string#byte_slice(
-                self/281,
-                start/283,
-                inherent#string#string#byte_len(self/281)
-              ),
-              suffix/282
-            )
+            (inherent#string#string#byte_slice(
+              self/281,
+              start/283,
+              inherent#string#string#byte_len(self/281)
+            ) ==
+              suffix/282)
         } else {
             false
         }
@@ -1678,7 +1669,7 @@ fn inherent#string#string#ends_with(self/281: string, suffix/282: string) -> boo
 }
 
 fn inherent#string#string#contains(self/284: string, expected/285: string) -> bool {
-  if trait_call[PartialEq::eq](inherent#string#string#byte_len(expected/285), 0) {
+  if (inherent#string#string#byte_len(expected/285) == 0) {
       {
         true
       }
@@ -1724,14 +1715,12 @@ fn inherent#string#string#contains(self/284: string, expected/285: string) -> bo
                                 } else {
                                     false
                                 } {
-                                    trait_call[PartialEq::eq](
-                                      inherent#string#string#byte_slice(
-                                        self/284,
-                                        start/286,
-                                        end/287
-                                      ),
-                                      expected/285
-                                    )
+                                    (inherent#string#string#byte_slice(
+                                      self/284,
+                                      start/286,
+                                      end/287
+                                    ) ==
+                                      expected/285)
                                 } else {
                                     false
                                 } {
@@ -1893,7 +1882,7 @@ fn __goml_builtin_range_inclusive(start/305: int, end/306: int) -> FnIterator[in
           {
             let value/309 = @intrinsic(ref.get)(current/307) in
             let _wild162 =
-              if trait_call[PartialEq::eq](value/309, end/306) {
+              if (value/309 == end/306) {
                   {
                     let _wild160 = @intrinsic(ref.set)(finished/308, true) in
                   }
@@ -2052,7 +2041,7 @@ fn find(wanted/0: int) -> Option[int] {
               let _wild172 = return Option::None in
             }
         } else {
-            if trait_call[PartialEq::eq](value/2, wanted/0) {
+            if (value/2 == wanted/0) {
                 {
                   let _wild173 = return Option::Some(value/2) in
                 }

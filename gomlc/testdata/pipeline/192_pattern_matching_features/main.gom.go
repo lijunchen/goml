@@ -209,12 +209,10 @@ func describe(value__4 Maybe, numbers__5 *_goml_vec_int32, view__6 []int32) stri
             var t254 int = vec_len__Vec_5int32(numbers__5)
             var tail__11 []int32 = numbers__5.items[1:t254]
             var t257 int
-            var inline351 int = len(tail__11)
-            t257 = inline351
+            var inline346 int = len(tail__11)
+            t257 = inline346
             var t258 int32 = int32(int(t257))
-            var t259 bool
-            var inline349 bool = first__10 == t258
-            t259 = inline349
+            var t259 bool = first__10 == t258
             if t259 {
                 jp233 = "balanced"
             } else {
@@ -247,9 +245,7 @@ func describe(value__4 Maybe, numbers__5 *_goml_vec_int32, view__6 []int32) stri
         var t243 int = t242 - 1
         var t244 int = t243 + 0
         var last__14 int32 = view__6[t244]
-        var t247 bool
-        var inline353 bool = first__13 == last__14
-        t247 = inline353
+        var t247 bool = first__13 == last__14
         if t247 {
             jp235 = "same ends"
         } else {
@@ -273,47 +269,47 @@ func main0() struct{} {
     var t289 int = array_get__Array_4_3int(values__18, 1)
     var t290 int = array_get__Array_4_3int(values__18, 2)
     var middle__20 [2]int = [2]int{t289, t290}
-    var inline392 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x183)
-    _goml_runtime_core_string_println(inline392)
+    var inline385 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x183)
+    _goml_runtime_core_string_println(inline385)
     var t291 int = array_get__Array_2_3int(middle__20, 0)
     var t292 int = first__19 + t291
     var t293 int = t292 + last__21
-    var inline389 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t293)
-    _goml_runtime_core_string_println(inline389)
+    var inline382 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t293)
+    _goml_runtime_core_string_println(inline382)
     var numbers__22 *_goml_vec_int32 = vec_new__Vec_5int32()
     vec_push__Vec_5int32(numbers__22, 1)
     vec_push__Vec_5int32(numbers__22, 8)
     var t294 int
-    var inline387 int = vec_len__Vec_5int32(numbers__22)
-    t294 = inline387
+    var inline380 int = vec_len__Vec_5int32(numbers__22)
+    t294 = inline380
     var view__23 []int32 = numbers__22.items[0:t294]
     var t295 Maybe = Some{
         _0: 3,
     }
     var t296 string = describe(t295, numbers__22, view__23)
-    var inline384 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t296)
-    _goml_runtime_core_string_println(inline384)
+    var inline377 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t296)
+    _goml_runtime_core_string_println(inline377)
     var empty__24 *_goml_vec_int32 = vec_new__Vec_5int32()
     var empty_view__25 []int32 = empty__24.items[0:0]
     var t297 string = describe(None{}, empty__24, empty_view__25)
-    var inline381 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t297)
-    _goml_runtime_core_string_println(inline381)
+    var inline374 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t297)
+    _goml_runtime_core_string_println(inline374)
     var t298 Maybe = Some{
         _0: 7,
     }
     var state__26 *ref_Maybe_x
-    var inline379 *ref_Maybe_x = ref__Ref_5Maybe(t298)
-    state__26 = inline379
+    var inline372 *ref_Maybe_x = ref__Ref_5Maybe(t298)
+    state__26 = inline372
     Loop_loop312:
     for {
         var mtmp192 Maybe
-        var inline360 Maybe = ref_get__Ref_5Maybe(state__26)
-        mtmp192 = inline360
+        var inline353 Maybe = ref_get__Ref_5Maybe(state__26)
+        mtmp192 = inline353
         switch mtmp192.(type) {
         case Some:
             var x193 int32 = mtmp192.(Some)._0
-            var inline357 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x193)
-            _goml_runtime_core_string_println(inline357)
+            var inline350 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x193)
+            _goml_runtime_core_string_println(inline350)
             ref_set__Ref_5Maybe(state__26, None{})
             continue
         default:
@@ -321,8 +317,8 @@ func main0() struct{} {
         }
     }
     var x198 int32 = 6
-    var inline362 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x198)
-    _goml_runtime_core_string_println(inline362)
+    var inline355 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x198)
+    _goml_runtime_core_string_println(inline355)
     var jp302 int32
     var value__30 int32 = 5
     var jp307 int32
@@ -330,20 +326,20 @@ func main0() struct{} {
     jp307 = x202
     var t308 int32 = value__30 + jp307
     jp302 = t308
-    var inline376 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(jp302)
-    _goml_runtime_core_string_println(inline376)
+    var inline369 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(jp302)
+    _goml_runtime_core_string_println(inline369)
     var t303 Either = Right{
         _0: 11,
     }
     var t304 int32 = unwrap_either(t303)
-    var inline373 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t304)
-    _goml_runtime_core_string_println(inline373)
+    var inline366 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t304)
+    _goml_runtime_core_string_println(inline366)
     var t305 string
-    var inline368 rune = 98
-    var inline370 bool = inline368 >= 97
-    if inline370 {
-        var inline371 bool = inline368 <= 99
-        if inline371 {
+    var inline361 rune = 98
+    var inline363 bool = inline361 >= 97
+    if inline363 {
+        var inline364 bool = inline361 <= 99
+        if inline364 {
             t305 = "abc"
         } else {
             t305 = "other"
@@ -351,19 +347,19 @@ func main0() struct{} {
     } else {
         t305 = "other"
     }
-    var inline365 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t305)
-    _goml_runtime_core_string_println(inline365)
+    var inline358 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t305)
+    _goml_runtime_core_string_println(inline358)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__72 int32) string {
-    var t342 string = _goml_runtime_core_int32_to_string(self__72)
-    return t342
+    var t339 string = _goml_runtime_core_int32_to_string(self__72)
+    return t339
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
-    var t345 string = _goml_runtime_core_int_to_string(self__69)
-    return t345
+    var t342 string = _goml_runtime_core_int_to_string(self__69)
+    return t342
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {

@@ -26,9 +26,7 @@ impl Display for Point {
   fn show_with(self: Point, prefix: string, suffix: string) -> string {
       prefix + "Point(" + self.x.to_string() + "," + self.y.to_string() + ")" + suffix
   }
-  fn tick(self: Point) -> unit {
-      ()
-  }
+  fn tick(self: Point) -> unit {}
   fn bump(self: Point, delta: int32) -> int32 {
       self.x + self.y + delta
   }
@@ -57,9 +55,7 @@ impl Display for Flag {
           }
       }
   }
-  fn tick(self: Flag) -> unit {
-      ()
-  }
+  fn tick(self: Flag) -> unit {}
   fn bump(self: Flag, delta: int32) -> int32 {
       if self.value {
           {
@@ -83,7 +79,6 @@ impl Display for Counter {
   fn tick(self: Counter) -> unit {
       let next = self.cell.get() + 1;
       let _ = self.cell.set(next);
-      ()
   }
   fn bump(self: Counter, delta: int32) -> int32 {
       let next = self.cell.get() + delta;
@@ -117,11 +112,11 @@ fn main() -> unit {
     let f1 = Flag { value: true };
     let f2 = Flag { value: false };
     let c = Counter { cell: Ref::new(10) };
-    let dp1: dyn Display = p1;
-    let dp2: dyn Display = p2;
-    let df1: dyn Display = f1;
-    let df2: dyn Display = f2;
-    let dc: dyn Display = c;
+    let dp1: dyn Display = p1 as dyn Display;
+    let dp2: dyn Display = p2 as dyn Display;
+    let df1: dyn Display = f1 as dyn Display;
+    let df2: dyn Display = f2 as dyn Display;
+    let dc: dyn Display = c as dyn Display;
     let render_star = make_renderer("*");
     let render_angle = make_renderer("<");
     let s0 = show_dyn(dp2);
@@ -151,6 +146,5 @@ fn main() -> unit {
       };
     let _ = println("len:" + vlen.to_string());
     let _ = println("delta:" + delta.to_string());
-    ()
 }
 

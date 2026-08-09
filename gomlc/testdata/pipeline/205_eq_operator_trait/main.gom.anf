@@ -57,7 +57,7 @@ fn main() -> unit {
             if t204 {
               let t205 = 2 in
               let t206 = 2 in
-              let inline218 = @intrinsic(eq.primitive)(t205, t206) in
+              let inline218 = (t205 == t206) in
               jump k188(inline218)
             } else {
               jump k188(false)
@@ -88,7 +88,7 @@ fn println__T_bool(value/31: bool) -> unit {
 }
 
 fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  let t213 = @intrinsic(eq.primitive)(self/103, other/104) in
+  let t213 = (self/103 == other/104) in
   t213
 }
 

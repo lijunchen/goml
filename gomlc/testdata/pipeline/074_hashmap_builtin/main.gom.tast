@@ -1,12 +1,12 @@
 impl Hash for Point {
   fn hash(self/0: Point) -> uint64 {
       {
-          let h/1: uint64 = 0 as uint64 + 14695981039346656037;
+          let h/1: uint64 = (int::to_uint64 : (int) -> uint64)(0) + 14695981039346656037;
           let h/2: uint64 =
-            (h/1 : uint64) * 0 as uint64 + 1099511628211 +
+            (h/1 : uint64) * (int::to_uint64 : (int) -> uint64)(0) + 1099511628211 +
               (Hash::hash : (int32) -> uint64)((self/0 : Point).x);
           let h/3: uint64 =
-            (h/2 : uint64) * 0 as uint64 + 1099511628211 +
+            (h/2 : uint64) * (int::to_uint64 : (int) -> uint64)(0) + 1099511628211 +
               (Hash::hash : (int32) -> uint64)((self/0 : Point).y);
           (h/3 : uint64)
       }
@@ -27,22 +27,22 @@ impl Hash for Key {
       match (self/6 : Key) {
           Key::A =>
             {
-                let h/7: uint64 = 0 as uint64 + 14695981039346656037 + 1;
+                let h/7: uint64 = (int::to_uint64 : (int) -> uint64)(0) + 14695981039346656037 + 1;
                 (h/7 : uint64)
             },
           Key::B(#derive0_field/8: int32) =>
             {
-                let h/9: uint64 = 0 as uint64 + 14695981039346656037 + 2;
+                let h/9: uint64 = (int::to_uint64 : (int) -> uint64)(0) + 14695981039346656037 + 2;
                 let h/10: uint64 =
-                  (h/9 : uint64) * 0 as uint64 + 1099511628211 +
+                  (h/9 : uint64) * (int::to_uint64 : (int) -> uint64)(0) + 1099511628211 +
                     (Hash::hash : (int32) -> uint64)((#derive0_field/8 : int32));
                 (h/10 : uint64)
             },
           Key::P(#derive1_field/11: Point) =>
             {
-                let h/12: uint64 = 0 as uint64 + 14695981039346656037 + 3;
+                let h/12: uint64 = (int::to_uint64 : (int) -> uint64)(0) + 14695981039346656037 + 3;
                 let h/13: uint64 =
-                  (h/12 : uint64) * 0 as uint64 + 1099511628211 +
+                  (h/12 : uint64) * (int::to_uint64 : (int) -> uint64)(0) + 1099511628211 +
                     (Hash::hash : (Point) -> uint64)((#derive1_field/11 : Point));
                 (h/13 : uint64)
             },

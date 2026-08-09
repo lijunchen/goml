@@ -19,7 +19,7 @@ fn render(x: dyn Display) -> string {
 
 fn main() -> unit {
     let value: int32 = 42;
-    let holder: Holder[dyn Display] = Holder { value: value };
+    let holder: Holder[dyn Display] = Holder { value: value as dyn Display };
     println(render(holder.value));
 }
 

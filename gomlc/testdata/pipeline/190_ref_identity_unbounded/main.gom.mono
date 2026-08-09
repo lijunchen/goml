@@ -26,10 +26,7 @@ fn main() -> unit {
   let _wild175 = println__T_bool(trait_impl#PartialEq#Ref[Node]#eq(first/3, distinct/5)) in
   let _wild176 =
     println__T_bool(
-      trait_impl#PartialEq#uint64#eq(
-        trait_impl#Hash#Ref[Node]#hash(first/3),
-        trait_impl#Hash#Ref[Node]#hash(alias/4)
-      )
+      (trait_impl#Hash#Ref[Node]#hash(first/3) == trait_impl#Hash#Ref[Node]#hash(alias/4))
     ) in
   let map/6 = inherent#HashMap#HashMap[K,V]#new__K_Ref[Node]__V_string() in
   let _wild177 =
@@ -70,10 +67,6 @@ fn trait_impl#PartialEq#Ref[Node]#eq(self/138: Ref[Node], other/139: Ref[Node]) 
 
 fn trait_impl#Hash#Ref[Node]#hash(self/140: Ref[Node]) -> uint64 {
   @intrinsic(ref.ptr_hash)(self/140)
-}
-
-fn trait_impl#PartialEq#uint64#eq(self/119: uint64, other/120: uint64) -> bool {
-  @intrinsic(eq.primitive)(self/119, other/120)
 }
 
 fn inherent#HashMap#HashMap[K,V]#new__K_Ref[Node]__V_string() -> HashMap[Ref[Node], string] {

@@ -301,7 +301,7 @@ fn precedence() -> unit {
         jump inline_cont555(inline556)
       } in
       let inline558 = 3 in
-      let inline559 = @intrinsic(eq.primitive)(t314, inline558) in
+      let inline559 = (t314 == inline558) in
       jump inline_cont557(inline559)
     } in
     let inline561 = println__T_uint8(t313) in
@@ -540,7 +540,7 @@ fn println__T_string(value/31: string) -> unit {
 }
 
 fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  let t383 = @intrinsic(eq.primitive)(self/103, other/104) in
+  let t383 = (self/103 == other/104) in
   t383
 }
 

@@ -37,7 +37,9 @@ fn describe(value/4: Maybe, numbers/5: Vec[int32], view/6: Slice[int32]) -> stri
       match (numbers/5 : Vec[int32]) {
           [] => "empty",
           [first/10: int32, tail/11 @ ..] if (first/10 : int32) ==
-            (Slice[int32]::len : (Slice[int32]) -> int)((tail/11 : Slice[int32])) as int32 =>
+            (int::to_int32 : (int) -> int32)(
+              (Slice[int32]::len : (Slice[int32]) -> int)((tail/11 : Slice[int32]))
+            ) =>
             "balanced",
           [_ : int32, ..] => "nonempty",
       };

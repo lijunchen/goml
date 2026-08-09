@@ -39,7 +39,7 @@ fn continue_branch() -> unit {
                     }
                   } in
                   let inline234 = 1 in
-                  let inline235 = @intrinsic(eq.primitive)(t193, inline234) in
+                  let inline235 = (t193 == inline234) in
                   jump inline_cont233(inline235)
                 } in
                 let inline237 = @intrinsic(ref.get)(count/2) in
@@ -146,7 +146,7 @@ fn inherent#Ref#Ref[T]#set__T_int(self/259: Ref[int], value/260: int) -> unit {
 }
 
 fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  let t214 = @intrinsic(eq.primitive)(self/103, other/104) in
+  let t214 = (self/103 == other/104) in
   t214
 }
 

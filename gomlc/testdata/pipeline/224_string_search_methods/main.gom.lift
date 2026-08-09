@@ -23,10 +23,12 @@ fn inherent#string#string#starts_with(self/279: string, prefix/280: string) -> b
   } else {
       false
   } {
-      trait_impl#PartialEq#string#eq(
-        inherent#string#string#byte_slice(self/279, 0, inherent#string#string#byte_len(prefix/280)),
-        prefix/280
-      )
+      (inherent#string#string#byte_slice(
+        self/279,
+        0,
+        inherent#string#string#byte_len(prefix/280)
+      ) ==
+        prefix/280)
   } else {
       false
   }
@@ -39,14 +41,12 @@ fn inherent#string#string#ends_with(self/281: string, suffix/282: string) -> boo
       let start/283 =
         (inherent#string#string#byte_len(self/281) - inherent#string#string#byte_len(suffix/282)) in
       if inherent#string#string#is_char_boundary(self/281, start/283) {
-          trait_impl#PartialEq#string#eq(
-            inherent#string#string#byte_slice(
-              self/281,
-              start/283,
-              inherent#string#string#byte_len(self/281)
-            ),
-            suffix/282
-          )
+          (inherent#string#string#byte_slice(
+            self/281,
+            start/283,
+            inherent#string#string#byte_len(self/281)
+          ) ==
+            suffix/282)
       } else {
           false
       }
@@ -54,7 +54,7 @@ fn inherent#string#string#ends_with(self/281: string, suffix/282: string) -> boo
 }
 
 fn inherent#string#string#contains(self/284: string, expected/285: string) -> bool {
-  if trait_impl#PartialEq#int#eq(inherent#string#string#byte_len(expected/285), 0) {
+  if (inherent#string#string#byte_len(expected/285) == 0) {
       true
   } else {
       if (inherent#string#string#byte_len(expected/285) >
@@ -86,10 +86,8 @@ fn inherent#string#string#contains(self/284: string, expected/285: string) -> bo
                     } else {
                         false
                     } {
-                        trait_impl#PartialEq#string#eq(
-                          inherent#string#string#byte_slice(self/284, start/286, end/287),
-                          expected/285
-                        )
+                        (inherent#string#string#byte_slice(self/284, start/286, end/287) ==
+                          expected/285)
                     } else {
                         false
                     } {
@@ -121,14 +119,6 @@ fn inherent#string#string#byte_slice(self/43: string, start/44: int, end/45: int
   string_byte_slice(self/43, start/44, end/45)
 }
 
-fn trait_impl#PartialEq#string#eq(self/99: string, other/100: string) -> bool {
-  @intrinsic(eq.primitive)(self/99, other/100)
-}
-
-fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  @intrinsic(eq.primitive)(self/103, other/104)
-}
-
 fn __goml_builtin_range(start/268: int, end/269: int) -> FnIterator__int {
   let current/270 = @intrinsic(ref.new)(start/268) in
   inherent#FnIterator#FnIterator[T]#from_fn__T_int(
@@ -152,13 +142,10 @@ fn string_is_char_boundary(value/15: string, index/16: int) -> bool {
   } {
       false
   } else {
-      if trait_impl#PartialEq#int#eq(index/16, inherent#string#string#byte_len(value/15)) {
+      if (index/16 == inherent#string#string#byte_len(value/15)) {
           true
       } else {
-          (!trait_impl#PartialEq#uint8#eq(
-            (inherent#string#string#byte_get(value/15, index/16) & 192),
-            128
-          ))
+          ((inherent#string#string#byte_get(value/15, index/16) & 192) != 128)
       }
   }
 }
@@ -185,8 +172,8 @@ fn inherent#string#string#byte_get(self/41: string, index/42: int) -> uint8 {
   @runtime(core.string_byte_get)(self/41, index/42)
 }
 
-fn trait_impl#PartialEq#uint8#eq(self/113: uint8, other/114: uint8) -> bool {
-  @intrinsic(eq.primitive)(self/113, other/114)
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
+  (self/103 == other/104)
 }
 
 fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {

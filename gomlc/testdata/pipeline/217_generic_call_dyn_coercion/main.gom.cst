@@ -1,4 +1,4 @@
-FILE@0..408
+FILE@0..420
   TRAIT@0..51
     TraitKeyword@0..5 "trait"
     Whitespace@5..6 " "
@@ -215,7 +215,7 @@ FILE@0..408
           Whitespace@317..318 "\n"
       RBrace@318..319 "}"
       Whitespace@319..321 "\n\n"
-  FN@321..408
+  FN@321..420
     FnKeyword@321..323 "fn"
     Whitespace@323..324 " "
     Ident@324..328 "main"
@@ -228,7 +228,7 @@ FILE@0..408
     TYPE_UNIT@334..339
       UnitKeyword@334..338 "unit"
       Whitespace@338..339 " "
-    BLOCK@339..408
+    BLOCK@339..420
       LBrace@339..340 "{"
       Whitespace@340..345 "\n    "
       STMT_LET@345..372
@@ -247,33 +247,43 @@ FILE@0..408
           Int@364..366 "42"
         Semi@366..367 ";"
         Whitespace@367..372 "\n    "
-      EXPR_CALL@372..406
+      EXPR_CALL@372..418
         EXPR_IDENT@372..379
           PATH@372..379
             Ident@372..379 "println"
-        ARG_LIST@379..406
+        ARG_LIST@379..418
           LParen@379..380 "("
-          ARG@380..404
-            EXPR_CALL@380..404
+          ARG@380..416
+            EXPR_CALL@380..416
               EXPR_IDENT@380..386
                 PATH@380..386
                   Ident@380..386 "render"
-              ARG_LIST@386..404
+              ARG_LIST@386..416
                 LParen@386..387 "("
-                ARG@387..403
-                  EXPR_CALL@387..403
-                    EXPR_IDENT@387..396
-                      PATH@387..396
-                        Ident@387..396 "make_wrap"
-                    ARG_LIST@396..403
-                      LParen@396..397 "("
-                      ARG@397..402
-                        EXPR_IDENT@397..402
-                          PATH@397..402
-                            Ident@397..402 "value"
-                      RParen@402..403 ")"
-                RParen@403..404 ")"
-          RParen@404..405 ")"
-          Whitespace@405..406 "\n"
-      RBrace@406..407 "}"
-      Whitespace@407..408 "\n"
+                ARG@387..415
+                  EXPR_CAST@387..415
+                    EXPR_CALL@387..404
+                      EXPR_IDENT@387..396
+                        PATH@387..396
+                          Ident@387..396 "make_wrap"
+                      ARG_LIST@396..404
+                        LParen@396..397 "("
+                        ARG@397..402
+                          EXPR_IDENT@397..402
+                            PATH@397..402
+                              Ident@397..402 "value"
+                        RParen@402..403 ")"
+                        Whitespace@403..404 " "
+                    AsKeyword@404..406 "as"
+                    Whitespace@406..407 " "
+                    TYPE_DYN@407..415
+                      DynKeyword@407..410 "dyn"
+                      Whitespace@410..411 " "
+                      DYN_BOUND@411..415
+                        PATH@411..415
+                          Ident@411..415 "Show"
+                RParen@415..416 ")"
+          RParen@416..417 ")"
+          Whitespace@417..418 "\n"
+      RBrace@418..419 "}"
+      Whitespace@419..420 "\n"

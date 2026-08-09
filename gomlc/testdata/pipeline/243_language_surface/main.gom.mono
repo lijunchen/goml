@@ -167,8 +167,8 @@ fn main() -> unit {
                                               seen/11,
                                               (inherent#Ref#Ref[T]#get__T_int(seen/11) + 1)
                                             ) in
-                                          if if trait_impl#PartialEq#int#eq(row/12, 1) {
-                                              trait_impl#PartialEq#int#eq(column/13, 1)
+                                          if if (row/12 == 1) {
+                                              (column/13 == 1)
                                           } else {
                                               false
                                           } {
@@ -236,16 +236,16 @@ fn inherent#Ref#Ref[T]#set__T_int(self/259: Ref[int], value/260: int) -> unit {
   @intrinsic(ref.set)(self/259, value/260)
 }
 
-fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  @intrinsic(eq.primitive)(self/103, other/104)
-}
-
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {
   self/67
 }
 
 fn trait_impl#ToString#int#to_string(self/69: int) -> string {
   @runtime(core.int_to_string)(self/69)
+}
+
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
+  (self/103 == other/104)
 }
 
 fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {

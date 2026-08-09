@@ -5,13 +5,11 @@ fn check_utf8(bytes/0: Vec[uint8], expected/1: bool) -> unit {
   let x174 = mtmp172.1 in
   let value/4 = x174 in
   let valid/3 = x173 in
-  let _wild175 = println__T_bool(trait_impl#PartialEq#bool#eq(valid/3, expected/1)) in
+  let _wild175 = println__T_bool((valid/3 == expected/1)) in
   if valid/3 {
-      println__T_bool(
-        trait_impl#PartialEq#int#eq(inherent#string#string#byte_len(value/4), expected_length/2)
-      )
+      println__T_bool((inherent#string#string#byte_len(value/4) == expected_length/2))
   } else {
-      println__T_bool(trait_impl#PartialEq#string#eq(value/4, ""))
+      println__T_bool((value/4 == ""))
   }
 }
 
@@ -36,9 +34,8 @@ fn check_scalar(bytes/5: Vec[uint8], expected/6: uint32, expected_width/7: int) 
       let x185 = mtmp183.1 in
       let width/12 = x185 in
       let character/11 = x184 in
-      let _wild186 =
-        println__T_bool(trait_impl#PartialEq#uint32#eq((character/11 as uint32), expected/6)) in
-      println__T_bool(trait_impl#PartialEq#int#eq(width/12, expected_width/7))
+      let _wild186 = println__T_bool(((character/11 as uint32) == expected/6)) in
+      println__T_bool((width/12 == expected_width/7))
     },
   }
 }
@@ -46,230 +43,230 @@ fn check_scalar(bytes/5: Vec[uint8], expected/6: uint32, expected_width/7: int) 
 fn main() -> unit {
   let _wild187 =
     check_utf8(
-      let vec_literal/793 = inherent#Vec#Vec[T]#new__T_uint8() in
-      vec_literal/793,
+      let vec_literal/795 = inherent#Vec#Vec[T]#new__T_uint8() in
+      vec_literal/795,
       true
     ) in
   let _wild189 =
     check_utf8(
-      let vec_literal/824 = inherent#Vec#Vec[T]#new__T_uint8() in
-      let _wild188 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/824, 0) in
-      vec_literal/824,
+      let vec_literal/826 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild188 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/826, 0) in
+      vec_literal/826,
       true
     ) in
   let _wild191 =
     check_utf8(
-      let vec_literal/856 = inherent#Vec#Vec[T]#new__T_uint8() in
-      let _wild190 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/856, 127) in
-      vec_literal/856,
+      let vec_literal/858 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild190 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/858, 127) in
+      vec_literal/858,
       true
     ) in
   let _wild194 =
     check_scalar(
-      let vec_literal/892 = inherent#Vec#Vec[T]#new__T_uint8() in
-      let _wild192 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/892, 194) in
-      let _wild193 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/892, 128) in
-      vec_literal/892,
+      let vec_literal/894 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild192 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/894, 194) in
+      let _wild193 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/894, 128) in
+      vec_literal/894,
       128,
       2
     ) in
   let _wild197 =
     check_scalar(
-      let vec_literal/935 = inherent#Vec#Vec[T]#new__T_uint8() in
-      let _wild195 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/935, 223) in
-      let _wild196 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/935, 191) in
-      vec_literal/935,
+      let vec_literal/937 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild195 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/937, 223) in
+      let _wild196 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/937, 191) in
+      vec_literal/937,
       2047,
       2
     ) in
   let _wild201 =
     check_scalar(
-      let vec_literal/979 = inherent#Vec#Vec[T]#new__T_uint8() in
-      let _wild198 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/979, 224) in
-      let _wild199 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/979, 160) in
-      let _wild200 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/979, 128) in
-      vec_literal/979,
+      let vec_literal/981 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild198 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/981, 224) in
+      let _wild199 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/981, 160) in
+      let _wild200 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/981, 128) in
+      vec_literal/981,
       2048,
       3
     ) in
   let _wild205 =
     check_scalar(
-      let vec_literal/1028 = inherent#Vec#Vec[T]#new__T_uint8() in
-      let _wild202 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1028, 237) in
-      let _wild203 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1028, 159) in
-      let _wild204 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1028, 191) in
-      vec_literal/1028,
+      let vec_literal/1030 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild202 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1030, 237) in
+      let _wild203 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1030, 159) in
+      let _wild204 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1030, 191) in
+      vec_literal/1030,
       55295,
       3
     ) in
   let _wild209 =
     check_scalar(
-      let vec_literal/1078 = inherent#Vec#Vec[T]#new__T_uint8() in
-      let _wild206 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1078, 238) in
-      let _wild207 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1078, 128) in
-      let _wild208 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1078, 128) in
-      vec_literal/1078,
+      let vec_literal/1080 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild206 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1080, 238) in
+      let _wild207 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1080, 128) in
+      let _wild208 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1080, 128) in
+      vec_literal/1080,
       57344,
       3
     ) in
   let _wild213 =
     check_scalar(
-      let vec_literal/1128 = inherent#Vec#Vec[T]#new__T_uint8() in
-      let _wild210 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1128, 239) in
-      let _wild211 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1128, 191) in
-      let _wild212 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1128, 189) in
-      vec_literal/1128,
+      let vec_literal/1130 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild210 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1130, 239) in
+      let _wild211 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1130, 191) in
+      let _wild212 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1130, 189) in
+      vec_literal/1130,
       65533,
       3
     ) in
   let _wild217 =
     check_scalar(
-      let vec_literal/1178 = inherent#Vec#Vec[T]#new__T_uint8() in
-      let _wild214 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1178, 239) in
-      let _wild215 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1178, 191) in
-      let _wild216 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1178, 191) in
-      vec_literal/1178,
+      let vec_literal/1180 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild214 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1180, 239) in
+      let _wild215 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1180, 191) in
+      let _wild216 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1180, 191) in
+      vec_literal/1180,
       65535,
       3
     ) in
   let _wild222 =
     check_scalar(
-      let vec_literal/1228 = inherent#Vec#Vec[T]#new__T_uint8() in
-      let _wild218 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1228, 240) in
-      let _wild219 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1228, 144) in
-      let _wild220 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1228, 128) in
-      let _wild221 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1228, 128) in
-      vec_literal/1228,
+      let vec_literal/1230 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild218 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1230, 240) in
+      let _wild219 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1230, 144) in
+      let _wild220 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1230, 128) in
+      let _wild221 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1230, 128) in
+      vec_literal/1230,
       65536,
       4
     ) in
   let _wild227 =
     check_scalar(
-      let vec_literal/1283 = inherent#Vec#Vec[T]#new__T_uint8() in
-      let _wild223 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1283, 244) in
-      let _wild224 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1283, 143) in
-      let _wild225 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1283, 191) in
-      let _wild226 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1283, 191) in
-      vec_literal/1283,
+      let vec_literal/1285 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild223 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1285, 244) in
+      let _wild224 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1285, 143) in
+      let _wild225 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1285, 191) in
+      let _wild226 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1285, 191) in
+      vec_literal/1285,
       1114111,
       4
     ) in
   let _wild229 =
     check_utf8(
-      let vec_literal/1338 = inherent#Vec#Vec[T]#new__T_uint8() in
-      let _wild228 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1338, 128) in
-      vec_literal/1338,
+      let vec_literal/1340 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild228 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1340, 128) in
+      vec_literal/1340,
       false
     ) in
   let _wild231 =
     check_utf8(
-      let vec_literal/1373 = inherent#Vec#Vec[T]#new__T_uint8() in
-      let _wild230 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1373, 191) in
-      vec_literal/1373,
+      let vec_literal/1375 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild230 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1375, 191) in
+      vec_literal/1375,
       false
     ) in
   let _wild234 =
     check_utf8(
-      let vec_literal/1408 = inherent#Vec#Vec[T]#new__T_uint8() in
-      let _wild232 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1408, 192) in
-      let _wild233 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1408, 128) in
-      vec_literal/1408,
+      let vec_literal/1410 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild232 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1410, 192) in
+      let _wild233 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1410, 128) in
+      vec_literal/1410,
       false
     ) in
   let _wild237 =
     check_utf8(
-      let vec_literal/1448 = inherent#Vec#Vec[T]#new__T_uint8() in
-      let _wild235 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1448, 193) in
-      let _wild236 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1448, 191) in
-      vec_literal/1448,
+      let vec_literal/1450 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild235 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1450, 193) in
+      let _wild236 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1450, 191) in
+      vec_literal/1450,
       false
     ) in
   let _wild239 =
     check_utf8(
-      let vec_literal/1488 = inherent#Vec#Vec[T]#new__T_uint8() in
-      let _wild238 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1488, 194) in
-      vec_literal/1488,
+      let vec_literal/1490 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild238 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1490, 194) in
+      vec_literal/1490,
       false
     ) in
   let _wild242 =
     check_utf8(
-      let vec_literal/1523 = inherent#Vec#Vec[T]#new__T_uint8() in
-      let _wild240 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1523, 194) in
-      let _wild241 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1523, 127) in
-      vec_literal/1523,
+      let vec_literal/1525 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild240 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1525, 194) in
+      let _wild241 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1525, 127) in
+      vec_literal/1525,
       false
     ) in
   let _wild246 =
     check_utf8(
-      let vec_literal/1563 = inherent#Vec#Vec[T]#new__T_uint8() in
-      let _wild243 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1563, 224) in
-      let _wild244 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1563, 159) in
-      let _wild245 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1563, 191) in
-      vec_literal/1563,
+      let vec_literal/1565 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild243 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1565, 224) in
+      let _wild244 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1565, 159) in
+      let _wild245 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1565, 191) in
+      vec_literal/1565,
       false
     ) in
   let _wild249 =
     check_utf8(
-      let vec_literal/1608 = inherent#Vec#Vec[T]#new__T_uint8() in
-      let _wild247 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1608, 225) in
-      let _wild248 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1608, 128) in
-      vec_literal/1608,
+      let vec_literal/1610 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild247 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1610, 225) in
+      let _wild248 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1610, 128) in
+      vec_literal/1610,
       false
     ) in
   let _wild253 =
     check_utf8(
-      let vec_literal/1648 = inherent#Vec#Vec[T]#new__T_uint8() in
-      let _wild250 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1648, 225) in
-      let _wild251 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1648, 128) in
-      let _wild252 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1648, 127) in
-      vec_literal/1648,
+      let vec_literal/1650 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild250 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1650, 225) in
+      let _wild251 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1650, 128) in
+      let _wild252 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1650, 127) in
+      vec_literal/1650,
       false
     ) in
   let _wild257 =
     check_utf8(
-      let vec_literal/1693 = inherent#Vec#Vec[T]#new__T_uint8() in
-      let _wild254 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1693, 237) in
-      let _wild255 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1693, 160) in
-      let _wild256 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1693, 128) in
-      vec_literal/1693,
+      let vec_literal/1695 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild254 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1695, 237) in
+      let _wild255 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1695, 160) in
+      let _wild256 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1695, 128) in
+      vec_literal/1695,
       false
     ) in
   let _wild262 =
     check_utf8(
-      let vec_literal/1738 = inherent#Vec#Vec[T]#new__T_uint8() in
-      let _wild258 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1738, 240) in
-      let _wild259 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1738, 143) in
-      let _wild260 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1738, 191) in
-      let _wild261 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1738, 191) in
-      vec_literal/1738,
+      let vec_literal/1740 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild258 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1740, 240) in
+      let _wild259 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1740, 143) in
+      let _wild260 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1740, 191) in
+      let _wild261 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1740, 191) in
+      vec_literal/1740,
       false
     ) in
   let _wild266 =
     check_utf8(
-      let vec_literal/1788 = inherent#Vec#Vec[T]#new__T_uint8() in
-      let _wild263 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1788, 240) in
-      let _wild264 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1788, 144) in
-      let _wild265 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1788, 128) in
-      vec_literal/1788,
+      let vec_literal/1790 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild263 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1790, 240) in
+      let _wild264 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1790, 144) in
+      let _wild265 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1790, 128) in
+      vec_literal/1790,
       false
     ) in
   let _wild271 =
     check_utf8(
-      let vec_literal/1833 = inherent#Vec#Vec[T]#new__T_uint8() in
-      let _wild267 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1833, 244) in
-      let _wild268 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1833, 144) in
-      let _wild269 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1833, 128) in
-      let _wild270 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1833, 128) in
-      vec_literal/1833,
+      let vec_literal/1835 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild267 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1835, 244) in
+      let _wild268 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1835, 144) in
+      let _wild269 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1835, 128) in
+      let _wild270 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1835, 128) in
+      vec_literal/1835,
       false
     ) in
   check_utf8(
-    let vec_literal/1883 = inherent#Vec#Vec[T]#new__T_uint8() in
-    let _wild272 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1883, 245) in
-    let _wild273 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1883, 128) in
-    let _wild274 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1883, 128) in
-    let _wild275 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1883, 128) in
-    vec_literal/1883,
+    let vec_literal/1885 = inherent#Vec#Vec[T]#new__T_uint8() in
+    let _wild272 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1885, 245) in
+    let _wild273 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1885, 128) in
+    let _wild274 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1885, 128) in
+    let _wild275 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1885, 128) in
+    vec_literal/1885,
     false
   )
 }
@@ -309,20 +306,8 @@ fn println__T_bool(value/31: bool) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/31))
 }
 
-fn trait_impl#PartialEq#bool#eq(self/97: bool, other/98: bool) -> bool {
-  @intrinsic(eq.primitive)(self/97, other/98)
-}
-
 fn inherent#string#string#byte_len(self/38: string) -> int {
   @runtime(core.string_len)(self/38)
-}
-
-fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  @intrinsic(eq.primitive)(self/103, other/104)
-}
-
-fn trait_impl#PartialEq#string#eq(self/99: string, other/100: string) -> bool {
-  @intrinsic(eq.primitive)(self/99, other/100)
 }
 
 fn inherent#string#string#decode_at(self/48: string, index/49: int) -> Option__(char,int) {
@@ -338,10 +323,6 @@ fn inherent#string#string#decode_at(self/48: string, index/49: int) -> Option__(
   } else {
       Option__(char,int)::None
   }
-}
-
-fn trait_impl#PartialEq#uint32#eq(self/117: uint32, other/118: uint32) -> bool {
-  @intrinsic(eq.primitive)(self/117, other/118)
 }
 
 fn inherent#Vec#Vec[T]#new__T_uint8() -> Vec[uint8] {
@@ -403,7 +384,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                   } {
                       true
                   } else {
-                      if trait_impl#PartialEq#uint32#eq(first/8, 224) {
+                      if (first/8 == 224) {
                           (second/10 < 160)
                       } else {
                           false
@@ -411,7 +392,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                   } {
                       true
                   } else {
-                      if trait_impl#PartialEq#uint32#eq(first/8, 237) {
+                      if (first/8 == 237) {
                           (second/10 >= 160)
                       } else {
                           false
@@ -449,7 +430,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                       } {
                           true
                       } else {
-                          if trait_impl#PartialEq#uint32#eq(first/8, 240) {
+                          if (first/8 == 240) {
                               (second/12 < 144)
                           } else {
                               false
@@ -457,7 +438,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                       } {
                           true
                       } else {
-                          if trait_impl#PartialEq#uint32#eq(first/8, 244) {
+                          if (first/8 == 244) {
                               (second/12 > 143)
                           } else {
                               false

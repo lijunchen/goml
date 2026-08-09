@@ -237,10 +237,10 @@ func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
 }
 
 func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(next_fn__172 func() Option__int) FnIterator__int {
-    var t280 FnIterator__int = FnIterator__int{
+    var t277 FnIterator__int = FnIterator__int{
         next_fn: next_fn__172,
     }
-    return t280
+    return t277
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
@@ -248,8 +248,8 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) strin
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__72 int32) string {
-    var t285 string = _goml_runtime_core_int32_to_string(self__72)
-    return t285
+    var t282 string = _goml_runtime_core_int32_to_string(self__72)
+    return t282
 }
 
 func _goml_m_inherent_i_closure__en_hb902f75cf29154a7d4df1174edbd9988_sive__0_i_apply(env205 closure_env_goml_builtin_range_inclusive_0) Option__int {
@@ -269,9 +269,7 @@ func _goml_m_inherent_i_closure__en_hb902f75cf29154a7d4df1174edbd9988_sive__0_i_
         return None{}
     } else {
         var value__309 int = ref_get__Ref_3int(current__307)
-        var t304 bool
-        var inline373 bool = value__309 == end__306
-        t304 = inline373
+        var t304 bool = value__309 == end__306
         if t304 {
             ref_set__Ref_4bool(finished__308, true)
         } else {
