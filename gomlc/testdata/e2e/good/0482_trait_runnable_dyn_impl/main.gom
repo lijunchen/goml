@@ -19,6 +19,6 @@ fn execute(r: dyn Runnable) {
 fn main() {
     let t1 = Task { name: "first" };
     let t2 = Task { name: "second" };
-    execute(t1);
-    execute(t2);
+    execute(t1 as dyn Runnable);
+    execute(t2 as dyn Runnable);
 }

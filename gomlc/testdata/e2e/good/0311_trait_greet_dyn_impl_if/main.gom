@@ -2,22 +2,31 @@ trait Greet {
     fn greet(self: Self) -> string;
 }
 
-struct English { name: string }
-struct French { name: string }
+struct English {
+    name: string,
+}
+
+struct French {
+    name: string,
+}
 
 impl Greet for English {
-    fn greet(self: English) -> string { "Hello, " + self.name }
+    fn greet(self: English) -> string {
+        "Hello, " + self.name
+    }
 }
 
 impl Greet for French {
-    fn greet(self: French) -> string { "Bonjour, " + self.name }
+    fn greet(self: French) -> string {
+        "Bonjour, " + self.name
+    }
 }
 
 fn make_greeter(lang: string, name: string) -> dyn Greet {
     if lang == "en" {
-        English { name: name }
+        English { name: name } as dyn Greet
     } else {
-        French { name: name }
+        French { name: name } as dyn Greet
     }
 }
 

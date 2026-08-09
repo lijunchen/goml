@@ -2,11 +2,25 @@ trait Op {
     fn run(self: Self, arg1: int32) -> int32;
 }
 
-struct Add { n: int32 }
-struct Mul { n: int32 }
+struct Add {
+    n: int32,
+}
 
-impl Op for Add { fn run(self: Add, x: int32) -> int32 { x + self.n } }
-impl Op for Mul { fn run(self: Mul, x: int32) -> int32 { x * self.n } }
+struct Mul {
+    n: int32,
+}
+
+impl Op for Add {
+    fn run(self: Add, x: int32) -> int32 {
+        x + self.n
+    }
+}
+
+impl Op for Mul {
+    fn run(self: Mul, x: int32) -> int32 {
+        x * self.n
+    }
+}
 
 fn pipeline(ops: [dyn Op; 3], x: int32) -> int32 {
     let result = Ref::new(x);
@@ -14,11 +28,11 @@ fn pipeline(ops: [dyn Op; 3], x: int32) -> int32 {
     while i.get() < 3 {
         result.set(Op::run(ops[i.get()], result.get()));
         i.set(i.get() + 1);
-    };
+    }
     result.get()
 }
 
 fn main() {
-    let ops: [dyn Op; 3] = [Add { n: 5 }, Mul { n: 2 }, Add { n: -3 }];
+    let ops: [dyn Op; 3] = [Add { n: 5 } as dyn Op, Mul { n: 2 } as dyn Op, Add { n: -3 } as dyn Op];
     println(pipeline(ops, 10).to_string());
 }

@@ -2,18 +2,32 @@ trait Named {
     fn name(self: Self) -> string;
 }
 
-struct Dog { breed: string }
-struct Cat { color: string }
+struct Dog {
+    breed: string,
+}
+
+struct Cat {
+    color: string,
+}
 
 impl Named for Dog {
-    fn name(self: Dog) -> string { "Dog:" + self.breed }
+    fn name(self: Dog) -> string {
+        "Dog:" + self.breed
+    }
 }
+
 impl Named for Cat {
-    fn name(self: Cat) -> string { "Cat:" + self.color }
+    fn name(self: Cat) -> string {
+        "Cat:" + self.color
+    }
 }
 
 fn main() {
-    let animals: [dyn Named; 3] = [Dog { breed: "Lab" }, Cat { color: "Black" }, Dog { breed: "Pug" }];
+    let animals: [dyn Named; 3] = [
+        Dog { breed: "Lab" } as dyn Named,
+        Cat { color: "Black" } as dyn Named,
+        Dog { breed: "Pug" } as dyn Named,
+    ];
     println(Named::name(animals[0]));
     println(Named::name(animals[1]));
     println(Named::name(animals[2]));

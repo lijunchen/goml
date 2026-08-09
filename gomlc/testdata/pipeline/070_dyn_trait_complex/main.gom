@@ -1,8 +1,15 @@
-struct Point { x: int32, y: int32 }
+struct Point {
+    x: int32,
+    y: int32,
+}
 
-struct Flag { value: bool }
+struct Flag {
+    value: bool,
+}
 
-struct Counter { cell: Ref[int32] }
+struct Counter {
+    cell: Ref[int32],
+}
 
 trait Display {
     fn show(self: Self) -> string;
@@ -20,9 +27,7 @@ impl Display for Point {
         prefix + "Point(" + self.x.to_string() + "," + self.y.to_string() + ")" + suffix
     }
 
-    fn tick(self: Point) -> unit {
-        ()
-    }
+    fn tick(self: Point) -> unit {}
 
     fn bump(self: Point, delta: int32) -> int32 {
         self.x + self.y + delta
@@ -31,19 +36,29 @@ impl Display for Point {
 
 impl Display for Flag {
     fn show(self: Flag) -> string {
-        if self.value { "Flag(true)" } else { "Flag(false)" }
+        if self.value {
+            "Flag(true)"
+        } else {
+            "Flag(false)"
+        }
     }
 
     fn show_with(self: Flag, prefix: string, suffix: string) -> string {
-        if self.value { prefix + "Flag(true)" + suffix } else { prefix + "Flag(false)" + suffix }
+        if self.value {
+            prefix + "Flag(true)" + suffix
+        } else {
+            prefix + "Flag(false)" + suffix
+        }
     }
 
-    fn tick(self: Flag) -> unit {
-        ()
-    }
+    fn tick(self: Flag) -> unit {}
 
     fn bump(self: Flag, delta: int32) -> int32 {
-        if self.value { delta } else { -delta }
+        if self.value {
+            delta
+        } else {
+            -delta
+        }
     }
 }
 
@@ -59,7 +74,6 @@ impl Display for Counter {
     fn tick(self: Counter) -> unit {
         let next = self.cell.get() + 1;
         let _ = self.cell.set(next);
-        ()
     }
 
     fn bump(self: Counter, delta: int32) -> int32 {
@@ -74,8 +88,7 @@ fn show_dyn(x: dyn Display) -> string {
 }
 
 fn call_via_closure(x: dyn Display, tag: string) -> string {
-    let f: (dyn Display, string) -> string =
-        |v: dyn Display, t: string| Display::show_with(v, t, t);
+    let f: (dyn Display, string) -> string = |v: dyn Display, t: string| Display::show_with(v, t, t);
     f(x, tag)
 }
 
@@ -94,20 +107,16 @@ fn main() -> unit {
     let f1 = Flag { value: true };
     let f2 = Flag { value: false };
     let c = Counter { cell: Ref::new(10) };
-
-    let dp1: dyn Display = p1;
-    let dp2: dyn Display = p2;
-    let df1: dyn Display = f1;
-    let df2: dyn Display = f2;
-    let dc: dyn Display = c;
-
+    let dp1: dyn Display = p1 as dyn Display;
+    let dp2: dyn Display = p2 as dyn Display;
+    let df1: dyn Display = f1 as dyn Display;
+    let df2: dyn Display = f2 as dyn Display;
+    let dc: dyn Display = c as dyn Display;
     let render_star = make_renderer("*");
     let render_angle = make_renderer("<");
-
     let s0 = show_dyn(dp2);
     let s1 = call_via_closure(df2, "*");
     let s2 = render_star(dp1) + "|" + render_angle(df1);
-
     let v: Vec[dyn Display] = Vec::new();
     v.push(dp1);
     v.push(df1);
@@ -117,19 +126,15 @@ fn main() -> unit {
         2 => 3,
         _ => 5,
     };
-
     let _ = println(s0);
     let _ = println(s1);
     let _ = println(s2);
-
     let i: Ref[int32] = Ref::new(0);
     let _ = while i.get() < 3 {
         let line = bump_and_show(dc, delta);
         println(line);
         let _ = i.set(i.get() + 1);
     };
-
     let _ = println("len:" + vlen.to_string());
     let _ = println("delta:" + delta.to_string());
-    ()
 }

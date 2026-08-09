@@ -3,14 +3,21 @@ trait Logger {
 }
 
 struct ConsoleLogger {}
-struct PrefixLogger { prefix: string }
+
+struct PrefixLogger {
+    prefix: string,
+}
 
 impl Logger for ConsoleLogger {
-    fn log(self: ConsoleLogger, msg: string) -> unit { println(msg); }
+    fn log(self: ConsoleLogger, msg: string) -> unit {
+        println(msg);
+    }
 }
 
 impl Logger for PrefixLogger {
-    fn log(self: PrefixLogger, msg: string) -> unit { println(self.prefix + msg); }
+    fn log(self: PrefixLogger, msg: string) -> unit {
+        println(self.prefix + msg);
+    }
 }
 
 struct App {
@@ -23,8 +30,8 @@ fn run(app: App) -> unit {
 }
 
 fn main() {
-    let app1 = App { logger: ConsoleLogger {}, name: "App1" };
+    let app1 = App { logger: ConsoleLogger {} as dyn Logger, name: "App1" };
     run(app1);
-    let app2 = App { logger: PrefixLogger { prefix: "[INFO] " }, name: "App2" };
+    let app2 = App { logger: PrefixLogger { prefix: "[INFO] " } as dyn Logger, name: "App2" };
     run(app2);
 }

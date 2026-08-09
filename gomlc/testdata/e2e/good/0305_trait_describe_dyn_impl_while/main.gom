@@ -19,8 +19,8 @@ fn print_desc(s: dyn Describe) {
 
 fn make_points() -> Vec[dyn Describe] {
     let v: Vec[dyn Describe] = Vec::new();
-    v.push(Point { x: 1, y: 2 });
-    v.push(Point { x: 3, y: 4 });
+    v.push(Point { x: 1, y: 2 } as dyn Describe);
+    v.push(Point { x: 3, y: 4 } as dyn Describe);
     v
 }
 
@@ -30,5 +30,5 @@ fn main() {
     while i.get() < points.len() {
         print_desc(points.get(i.get()));
         i.set(i.get() + 1);
-    };
+    }
 }

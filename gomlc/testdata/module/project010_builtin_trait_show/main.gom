@@ -3,9 +3,8 @@ package main;
 use project010::lib;
 
 fn main() {
-  let s = lib::S { value: 7 };
-  println(s);
-
-  let d: dyn ToString = s;
-  let _ = d;
+    let s = lib::S { value: 7 };
+    println(s);
+    let d: dyn ToString = s as dyn ToString;
+    let _ = d;
 }

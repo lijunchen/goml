@@ -3,17 +3,32 @@ trait Animal {
     fn sound(self: Self) -> string;
 }
 
-struct Dog { breed: string }
-struct Cat { color: string }
+struct Dog {
+    breed: string,
+}
+
+struct Cat {
+    color: string,
+}
 
 impl Animal for Dog {
-    fn name(self: Dog) -> string { "Dog" }
-    fn sound(self: Dog) -> string { "Woof" }
+    fn name(self: Dog) -> string {
+        "Dog"
+    }
+
+    fn sound(self: Dog) -> string {
+        "Woof"
+    }
 }
 
 impl Animal for Cat {
-    fn name(self: Cat) -> string { "Cat" }
-    fn sound(self: Cat) -> string { "Meow" }
+    fn name(self: Cat) -> string {
+        "Cat"
+    }
+
+    fn sound(self: Cat) -> string {
+        "Meow"
+    }
 }
 
 fn describe(a: dyn Animal) -> string {
@@ -22,13 +37,13 @@ fn describe(a: dyn Animal) -> string {
 
 fn main() {
     let animals: [dyn Animal; 3] = [
-        Dog { breed: "Lab" },
-        Cat { color: "black" },
-        Dog { breed: "Poodle" },
+        Dog { breed: "Lab" } as dyn Animal,
+        Cat { color: "black" } as dyn Animal,
+        Dog { breed: "Poodle" } as dyn Animal,
     ];
     let i = Ref::new(0);
     while i.get() < 3 {
         println(describe(animals[i.get()]));
         i.set(i.get() + 1);
-    };
+    }
 }

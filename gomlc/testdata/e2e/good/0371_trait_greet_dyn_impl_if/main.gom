@@ -3,14 +3,27 @@ trait Greet {
 }
 
 struct English {}
+
 struct French {}
 
-impl Greet for English { fn greet(self: English) -> string { "hello" } }
-impl Greet for French { fn greet(self: French) -> string { "bonjour" } }
+impl Greet for English {
+    fn greet(self: English) -> string {
+        "hello"
+    }
+}
+
+impl Greet for French {
+    fn greet(self: French) -> string {
+        "bonjour"
+    }
+}
 
 fn make_greeter(lang: string) -> dyn Greet {
-    if lang == "en" { English {} }
-    else { French {} }
+    if lang == "en" {
+        English {} as dyn Greet
+    } else {
+        French {} as dyn Greet
+    }
 }
 
 fn main() {

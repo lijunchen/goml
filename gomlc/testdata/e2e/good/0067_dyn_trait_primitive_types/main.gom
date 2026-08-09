@@ -3,16 +3,24 @@ trait Printable {
 }
 
 impl Printable for int32 {
-    fn to_str(self: int32) -> string { self.to_string() }
+    fn to_str(self: int32) -> string {
+        self.to_string()
+    }
 }
 
 impl Printable for string {
-    fn to_str(self: string) -> string { self }
+    fn to_str(self: string) -> string {
+        self
+    }
 }
 
 impl Printable for bool {
     fn to_str(self: bool) -> string {
-        if self { "true" } else { "false" }
+        if self {
+            "true"
+        } else {
+            "false"
+        }
     }
 }
 
@@ -22,17 +30,17 @@ fn join_all(items: Vec[dyn Printable], sep: string) -> string {
     while i.get() < items.len() {
         if i.get() > 0 {
             result.set(result.get() + sep);
-        } else { () };
+        } else {};
         result.set(result.get() + Printable::to_str(items[i.get()]));
         i.set(i.get() + 1);
-    };
+    }
     result.get()
 }
 
 fn main() {
     let v: Vec[dyn Printable] = Vec::new();
-    v.push(42);
-    v.push("hello");
-    v.push(true);
+    v.push(42 as dyn Printable);
+    v.push("hello" as dyn Printable);
+    v.push(true as dyn Printable);
     let _ = println(join_all(v, ", "));
 }

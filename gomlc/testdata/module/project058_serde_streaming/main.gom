@@ -28,7 +28,6 @@ struct StringIntMap {
 struct InvalidSequence {}
 
 impl Serialize for InvalidSequence {
-
     fn serialize[S: Serializer](self: InvalidSequence, serializer: S) -> Result[unit, string] {
         let _ = self;
         serializer.begin_sequence(1)?;
@@ -39,7 +38,6 @@ impl Serialize for InvalidSequence {
 struct IntKeyMap {}
 
 impl Serialize for IntKeyMap {
-
     fn serialize[S: Serializer](self: IntKeyMap, serializer: S) -> Result[unit, string] {
         let _ = self;
         serializer.begin_map(1)?;
@@ -54,8 +52,6 @@ impl Serialize for IntKeyMap {
 struct SkippedSequence {}
 
 impl Deserialize for SkippedSequence {
-
-
     fn deserialize[D: Deserializer](deserializer: D) -> Result[SkippedSequence, string] {
         let _ = deserializer.begin_sequence()?;
         let _ = deserializer.next_sequence_element()?;
@@ -95,15 +91,12 @@ struct ByteBuffer {
 }
 
 impl Serialize for ByteBuffer {
-
     fn serialize[S: Serializer](self: ByteBuffer, serializer: S) -> Result[unit, string] {
         serializer.serialize_bytes(self.values.slice(0, self.values.len()))
     }
 }
 
 impl Deserialize for ByteBuffer {
-
-
     fn deserialize[D: Deserializer](deserializer: D) -> Result[ByteBuffer, string] {
         Result::Ok(ByteBuffer { values: deserializer.deserialize_bytes()? })
     }
@@ -114,15 +107,12 @@ struct NumberText {
 }
 
 impl Serialize for NumberText {
-
     fn serialize[S: Serializer](self: NumberText, serializer: S) -> Result[unit, string] {
         serializer.serialize_number(self.value)
     }
 }
 
 impl Deserialize for NumberText {
-
-
     fn deserialize[D: Deserializer](deserializer: D) -> Result[NumberText, string] {
         Result::Ok(NumberText { value: deserializer.deserialize_number()? })
     }
@@ -150,7 +140,6 @@ fn primitives() -> Primitives {
 }
 
 impl Serialize for StringIntMap {
-
     fn serialize[S: Serializer](self: StringIntMap, serializer: S) -> Result[unit, string] {
         serializer.begin_map(self.entries.len())?;
         let mut index = 0;
@@ -166,8 +155,6 @@ impl Serialize for StringIntMap {
 }
 
 impl Deserialize for StringIntMap {
-
-
     fn deserialize[D: Deserializer](deserializer: D) -> Result[StringIntMap, string] {
         let _ = deserializer.begin_map()?;
         let entries: Vec[(string, int32)] = Vec::[];
@@ -325,7 +312,7 @@ fn main() -> unit {
         Ok((value, consumed)) => println(value.value.to_string() + ":" + consumed.to_string()),
         Err(error) => println(error),
     };
-    let string_map = StringIntMap { entries: Vec::[("one", 1 as int32), ("two", 2 as int32)] };
+    let string_map = StringIntMap { entries: Vec::[("one", 1.to_int32()), ("two", 2.to_int32())] };
     let string_map_json: string = json::to_string(string_map);
     println(string_map_json);
     let string_map_from_json: Result[StringIntMap, string] = json::from_string(string_map_json);
@@ -373,7 +360,7 @@ fn main() -> unit {
         Err(error) => println(error),
     };
     let sequence_bytes: Vec[byte] = match bincode::encode_to_vec(
-        Vec::[1 as int32, 2 as int32],
+        Vec::[1.to_int32(), 2.to_int32()],
         bincode::standard(),
     ) {
         Ok(value) => value,
@@ -418,7 +405,7 @@ fn main() -> unit {
         ),
         Err(error) => println(error),
     };
-    let bytes = ByteBuffer { values: Vec::[0 as byte, 1 as byte, 255 as byte] };
+    let bytes = ByteBuffer { values: Vec::[0.to_uint8(), 1.to_uint8(), 255.to_uint8()] };
     let bytes_json = json::to_string(bytes);
     println(bytes_json);
     let bytes_from_json: Result[ByteBuffer, string] = json::from_string(bytes_json);
@@ -456,8 +443,7 @@ fn main() -> unit {
     };
     let differential_json = json::to_string(differential);
     println(
-        differential_json
-            == json::encode(json::to_value(differential).unwrap_or(json::Value::Null)),
+        differential_json == json::encode(json::to_value(differential).unwrap_or(json::Value::Null)),
     );
     let standard = bincode::standard();
     let direct_standard: Vec[byte] = match bincode::encode_to_vec(differential, standard) {

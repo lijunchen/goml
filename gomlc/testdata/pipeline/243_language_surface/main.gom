@@ -30,7 +30,7 @@ fn labeled_cleanup() -> unit {
 }
 
 fn main() -> unit {
-    println(read(NumberSource { value: 11 }));
+    println(read((NumberSource { value: 11 }) as dyn Source[Item = int]));
     let (mut index, value) = (1, 2);
     index += value;
     println(index);

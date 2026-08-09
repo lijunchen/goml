@@ -25,6 +25,6 @@ fn print_it(x: dyn ToString) {
 fn main() {
     let a: Wrapper[int32] = Wrapper { inner: 42 };
     let b = Wrapper { inner: "hello" };
-    print_it(a);
-    print_it(b);
+    print_it(a as dyn ToString);
+    print_it(b as dyn ToString);
 }

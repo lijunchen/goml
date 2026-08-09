@@ -2,13 +2,17 @@ trait Identify {
     fn identify(self: Self) -> string;
 }
 
-struct Robot { id: int32 }
+struct Robot {
+    id: int32,
+}
 
 impl Identify for Robot {
-    fn identify(self: Robot) -> string { "Robot-" + self.id.to_string() }
+    fn identify(self: Robot) -> string {
+        "Robot-" + self.id.to_string()
+    }
 }
 
 fn main() {
-    let a: dyn Identify = Robot { id: 42 };
+    let a: dyn Identify = Robot { id: 42 } as dyn Identify;
     println(Identify::identify(a));
 }

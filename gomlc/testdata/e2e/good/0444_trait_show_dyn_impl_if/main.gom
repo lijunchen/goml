@@ -3,13 +3,28 @@ trait Show {
 }
 
 struct A {}
+
 struct B {}
-impl Show for A { fn show(self: A) -> string { "A" } }
-impl Show for B { fn show(self: B) -> string { "B" } }
+
+impl Show for A {
+    fn show(self: A) -> string {
+        "A"
+    }
+}
+
+impl Show for B {
+    fn show(self: B) -> string {
+        "B"
+    }
+}
 
 fn main() {
     let make: (bool) -> dyn Show = |flag| {
-        if flag { A {} } else { B {} }
+        if flag {
+            A {} as dyn Show
+        } else {
+            B {} as dyn Show
+        }
     };
     println(Show::show(make(true)));
     println(Show::show(make(false)));

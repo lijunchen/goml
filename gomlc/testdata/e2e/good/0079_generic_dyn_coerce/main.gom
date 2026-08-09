@@ -13,7 +13,7 @@ impl[T: ToString] Codec for Wrapper[T] {
 }
 
 fn wrap[T: ToString](value: T) -> dyn Codec {
-    Wrapper { value: value }
+    Wrapper { value: value } as dyn Codec
 }
 
 fn main() {

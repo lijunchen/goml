@@ -15,7 +15,7 @@ fn check_scalar(bytes: Vec[byte], expected: uint32, expected_width: int) -> unit
     match value.decode_at(0) {
         Some(decoded) => {
             let (character, width) = decoded;
-            println(character as uint32 == expected);
+            println(character.to_uint32() == expected);
             println(width == expected_width)
         },
         None => {

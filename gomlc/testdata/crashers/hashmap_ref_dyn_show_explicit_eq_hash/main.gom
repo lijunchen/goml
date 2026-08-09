@@ -24,7 +24,7 @@ impl Hash for Ref[dyn Show] {
 
 fn main() {
     let h: HashMap[Ref[dyn Show], string] = HashMap::new();
-    let inner: dyn Show = 1;
+    let inner: dyn Show = 1 as dyn Show;
     let r = Ref::new(inner);
     h.set(r, "one");
     println(h.contains(r).to_string());

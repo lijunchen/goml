@@ -20,8 +20,8 @@ impl Speak for Cat {
 
 fn main() {
     let v: Vec[dyn Speak] = Vec::new();
-    v.push(Dog {});
-    v.push(Cat {});
+    v.push(Dog {} as dyn Speak);
+    v.push(Cat {} as dyn Speak);
     let a = v[0];
     println(Speak::speak(a));
 }

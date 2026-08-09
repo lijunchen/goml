@@ -1,7 +1,7 @@
 fn main() {
-    let inner: dyn Hash = 1;
+    let inner: dyn Hash = 1 as dyn Hash;
     let r = Ref::new(inner);
     let alias = r;
-    let value: dyn Hash = r;
+    let value: dyn Hash = r as dyn Hash;
     println((Hash::hash(value) == Hash::hash(alias)).to_string());
 }

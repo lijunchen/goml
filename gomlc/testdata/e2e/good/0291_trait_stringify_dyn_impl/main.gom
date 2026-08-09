@@ -10,7 +10,11 @@ impl Stringify for int32 {
 
 impl Stringify for bool {
     fn to_str(self: bool) -> string {
-        if self { "true" } else { "false" }
+        if self {
+            "true"
+        } else {
+            "false"
+        }
     }
 }
 
@@ -19,7 +23,7 @@ fn print_it(x: dyn Stringify) {
 }
 
 fn main() {
-    print_it(42);
-    print_it(true);
-    print_it(false);
+    print_it(42 as dyn Stringify);
+    print_it(true as dyn Stringify);
+    print_it(false as dyn Stringify);
 }

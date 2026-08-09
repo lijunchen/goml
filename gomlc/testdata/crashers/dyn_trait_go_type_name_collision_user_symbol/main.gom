@@ -18,6 +18,6 @@ impl Display for Box {
 
 fn main() -> unit {
     let c = DynDisplay { value: 1 };
-    let d: dyn Display = Box { text: "ok" };
+    let d: dyn Display = Box { text: "ok" } as dyn Display;
     println(Display::display(d) + c.value.to_string());
 }

@@ -2,22 +2,32 @@ trait Valuable {
     fn value(self: Self) -> int32;
 }
 
-struct A { x: int32 }
-struct B { x: int32, y: int32 }
+struct A {
+    x: int32,
+}
+
+struct B {
+    x: int32,
+    y: int32,
+}
 
 impl Valuable for A {
-    fn value(self: A) -> int32 { self.x }
+    fn value(self: A) -> int32 {
+        self.x
+    }
 }
 
 impl Valuable for B {
-    fn value(self: B) -> int32 { self.x + self.y }
+    fn value(self: B) -> int32 {
+        self.x + self.y
+    }
 }
 
 fn make(flag: int32) -> dyn Valuable {
     match flag {
-        0 => A { x: 10 },
-        1 => B { x: 20, y: 30 },
-        _ => A { x: -1 },
+        0 => A { x: 10 } as dyn Valuable,
+        1 => B { x: 20, y: 30 } as dyn Valuable,
+        _ => A { x: -1 } as dyn Valuable,
     }
 }
 

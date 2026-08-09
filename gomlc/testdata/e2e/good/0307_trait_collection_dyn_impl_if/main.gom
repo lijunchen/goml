@@ -12,9 +12,11 @@ impl Collection for Bag {
     fn is_empty(self: Bag) -> bool {
         self.items == 0
     }
+
     fn count(self: Bag) -> int32 {
         self.items
     }
+
     fn describe(self: Bag) -> string {
         "bag(" + self.items.to_string() + ")"
     }
@@ -30,6 +32,6 @@ fn print_collection(c: dyn Collection) {
 }
 
 fn main() {
-    print_collection(Bag { items: 0 });
-    print_collection(Bag { items: 5 });
+    print_collection(Bag { items: 0 } as dyn Collection);
+    print_collection(Bag { items: 5 } as dyn Collection);
 }

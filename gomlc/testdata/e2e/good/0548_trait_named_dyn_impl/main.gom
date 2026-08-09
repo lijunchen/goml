@@ -13,6 +13,6 @@ impl Named for Cat {
 }
 
 fn main() {
-    let a: dyn Named = Cat { n: "Whiskers" };
+    let a: dyn Named = Cat { n: "Whiskers" } as dyn Named;
     println(Named::name(a));
 }

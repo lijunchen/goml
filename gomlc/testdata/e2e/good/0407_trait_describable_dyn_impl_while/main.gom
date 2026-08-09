@@ -27,18 +27,22 @@ fn describe_all(items: [dyn Describable; 3]) -> string {
     let i = Ref::new(0);
     while i.get() < 3 {
         let item = items[i.get()];
-        let sep = if i.get() > 0 { ", " } else { "" };
+        let sep = if i.get() > 0 {
+            ", "
+        } else {
+            ""
+        };
         result.set(result.get() + sep + Describable::describe(item));
         i.set(i.get() + 1);
-    };
+    }
     result.get()
 }
 
 fn main() {
     let items: [dyn Describable; 3] = [
-        Named { name: "Alice" },
-        Numbered { id: 42 },
-        Named { name: "Bob" },
+        Named { name: "Alice" } as dyn Describable,
+        Numbered { id: 42 } as dyn Describable,
+        Named { name: "Bob" } as dyn Describable,
     ];
     println(describe_all(items));
 }

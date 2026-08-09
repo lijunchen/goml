@@ -7,10 +7,12 @@ struct Cat {
 }
 
 impl Named for Cat {
-    fn name(self: Cat) -> string { self.cat_name }
+    fn name(self: Cat) -> string {
+        self.cat_name
+    }
 }
 
 fn main() {
-    let a: dyn Named = Cat { cat_name: "Whiskers" };
+    let a: dyn Named = Cat { cat_name: "Whiskers" } as dyn Named;
     println(Named::name(a));
 }

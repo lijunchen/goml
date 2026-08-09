@@ -2,10 +2,17 @@ trait Show {
     fn show(self: Self) -> string;
 }
 
-struct Num { n: int32 }
-impl Show for Num { fn show(self: Num) -> string { self.n.to_string() } }
+struct Num {
+    n: int32,
+}
+
+impl Show for Num {
+    fn show(self: Num) -> string {
+        self.n.to_string()
+    }
+}
 
 fn main() {
     let printer = |x: dyn Show| println(Show::show(x));
-    printer(Num { n: 42 });
+    printer(Num { n: 42 } as dyn Show);
 }

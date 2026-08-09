@@ -488,7 +488,7 @@ fn resolves_builtin_method_definitions() -> unit {
         },
         None => testing::fail("expected builtin static method"),
     };
-    let ref_source = "fn main() -> int32 { let value = Ref::new(1 as int32); value.get() }";
+    let ref_source = "fn main() -> int32 { let value = Ref::new(1.to_int32()); value.get() }";
     match last_substring(ref_source, "get") {
         Some(offset) => {
             let analysis = analyze("main.gom", ref_source);

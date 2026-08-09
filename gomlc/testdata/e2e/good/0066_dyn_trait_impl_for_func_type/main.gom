@@ -3,7 +3,9 @@ trait Callable {
 }
 
 impl Callable for (int32) -> int32 {
-    fn call(self: (int32) -> int32, x: int32) -> int32 { self(x) }
+    fn call(self: (int32) -> int32, x: int32) -> int32 {
+        self(x)
+    }
 }
 
 fn apply_callable(c: dyn Callable, n: int32) -> int32 {
@@ -12,7 +14,7 @@ fn apply_callable(c: dyn Callable, n: int32) -> int32 {
 
 fn main() {
     let f: (int32) -> int32 = |x| x + 1;
-    let _ = println(apply_callable(f, 10));
+    let _ = println(apply_callable(f as dyn Callable, 10));
     let g = |x: int32| x * 3;
-    let _ = println(apply_callable(g, 10));
+    let _ = println(apply_callable(g as dyn Callable, 10));
 }

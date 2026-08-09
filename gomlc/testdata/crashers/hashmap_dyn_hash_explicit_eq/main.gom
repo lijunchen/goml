@@ -8,7 +8,7 @@ impl Eq for dyn Hash {}
 
 fn main() {
     let h: HashMap[dyn Hash, string] = HashMap::new();
-    let inner: dyn Hash = 1;
+    let inner: dyn Hash = 1 as dyn Hash;
     h.set(inner, "one");
     println(h.contains(inner).to_string());
 }

@@ -3,9 +3,14 @@ trait Speak {
 }
 
 struct Robot {}
-impl Speak for Robot { fn speak(self: Robot) -> string { "beep boop" } }
+
+impl Speak for Robot {
+    fn speak(self: Robot) -> string {
+        "beep boop"
+    }
+}
 
 fn main() {
-    let r: dyn Speak = Robot {};
+    let r: dyn Speak = Robot {} as dyn Speak;
     println(Speak::speak(r));
 }

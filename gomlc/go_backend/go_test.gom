@@ -741,7 +741,7 @@ fn emits_vec_runtime_structs() -> unit {
 
 #[test]
 fn emits_hashmap_and_dyn_hash_runtime() -> unit {
-    let source = "impl PartialEq for dyn Hash { fn eq(self: dyn Hash, other: dyn Hash) -> bool { Hash::hash(self) == Hash::hash(other) } } impl Eq for dyn Hash {} fn main() -> unit { let h: HashMap[Ref[dyn Hash], string] = HashMap::new(); let inner: dyn Hash = 1; let r = Ref::new(inner); h.set(r, \"one\"); println(h.contains(r).to_string()); }";
+    let source = "impl PartialEq for dyn Hash { fn eq(self: dyn Hash, other: dyn Hash) -> bool { Hash::hash(self) == Hash::hash(other) } } impl Eq for dyn Hash {} fn main() -> unit { let h: HashMap[Ref[dyn Hash], string] = HashMap::new(); let inner: dyn Hash = 1 as dyn Hash; let r = Ref::new(inner); h.set(r, \"one\"); println(h.contains(r).to_string()); }";
     testing::assert_eq(
         encode(lower_source(source)),
         "package main\n\ntype ref_Dyn_Hash_x struct {\n    value dyn__Hash\n}\n\ntype hashmap_Ref_8Dyn_Hash_string_x_entry struct {\n    active bool\n    key *ref_Dyn_Hash_x\n    value string\n}\n\ntype hashmap_Ref_8Dyn_Hash_string_x struct {\n    buckets map[uint64][]hashmap_Ref_8Dyn_Hash_string_x_entry\n    hashes []uint64\n    len int\n}\n\ntype _goml_synthetic__goml_option__string interface {\n    is_goml_synthetic__goml_option__string()\n}\n\ntype _goml_synthetic__goml_option__string_Some struct {\n    _0 string\n}\n\nfunc (_ _goml_synthetic__goml_option__string_Some) is_goml_synthetic__goml_option__string() {}\n\ntype _goml_synthetic__goml_option__string_None struct {}\n\nfunc (_ _goml_synthetic__goml_option__string_None) is_goml_synthetic__goml_option__string() {}\n\ntype dyn__Hash_vtable struct {\n    hash func(any) uint64\n}\n\ntype dyn__Hash struct {\n    data any\n    vtable *dyn__Hash_vtable\n}\n\nfunc dyn__Hash__wrap__int__hash(self any) uint64 {\n    return _goml_m_trait__impl_i_Hash_i_int_i_hash(self.(int))\n}\n\nfunc dyn__Hash__vtable__int() *dyn__Hash_vtable {\n    return &dyn__Hash_vtable{\n        hash: dyn__Hash__wrap__int__hash,\n    }\n}\n\nfunc main0() struct{} {\n    var h__2 *hashmap_Ref_8Dyn_Hash_string_x = _goml_m_inherent_i_HashMap_i_HashMap_l_Ref_l_dynHash_r__c_string_r__i_new()\n    var inner__3 dyn__Hash = dyn__Hash{\n        data: int(1),\n        vtable: dyn__Hash__vtable__int(),\n    }\n    var r__4 *ref_Dyn_Hash_x = _goml_m_inherent_i_Ref_i_Ref_l_dynHash_r__i_new(inner__3)\n    _goml_m_inherent_i_HashMap_i_HashMap_l_Ref_l_dynHash_r__c_string_r__i_set(h__2, r__4, \"one\")\n    var t8 bool = _goml_m_inherent_i_HashMap_i_HashMap_l_Ref_l_dynHash_r__c_string_r__i_contains(h__2, r__4)\n    var t9 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t8)\n    _goml_m_println(t9)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
@@ -750,7 +750,7 @@ fn emits_hashmap_and_dyn_hash_runtime() -> unit {
 
 #[test]
 fn dispatches_dyn_hashmap_keys_through_vtables() -> unit {
-    let source = "impl PartialEq for dyn Hash { fn eq(self: dyn Hash, other: dyn Hash) -> bool { Hash::hash(self) == Hash::hash(other) } } impl Eq for dyn Hash {} fn main() -> unit { let values: HashMap[dyn Hash, string] = HashMap::new(); let key: dyn Hash = 1; values.set(key, \"one\"); println(values.contains(key).to_string()); }";
+    let source = "impl PartialEq for dyn Hash { fn eq(self: dyn Hash, other: dyn Hash) -> bool { Hash::hash(self) == Hash::hash(other) } } impl Eq for dyn Hash {} fn main() -> unit { let values: HashMap[dyn Hash, string] = HashMap::new(); let key: dyn Hash = 1 as dyn Hash; values.set(key, \"one\"); println(values.contains(key).to_string()); }";
     let output = encode(lower_linked_source(source));
     testing::assert_eq(string_contains(output, "key.vtable.hash(key.data)"), true);
     testing::assert_eq(
@@ -770,7 +770,7 @@ fn emits_generic_enum_instances_and_type_switches() -> unit {
 
 #[test]
 fn dispatches_trait_objects_for_enum_receivers() -> unit {
-    let source = "trait Area { fn area(self: Self) -> int32; } enum Shape { Circle(int32), } impl Area for Shape { fn area(self: Shape) -> int32 { match self { Shape::Circle(radius) => radius * radius, } } } fn main() -> unit { let shape: dyn Area = Shape::Circle(3); println(Area::area(shape)); }";
+    let source = "trait Area { fn area(self: Self) -> int32; } enum Shape { Circle(int32), } impl Area for Shape { fn area(self: Shape) -> int32 { match self { Shape::Circle(radius) => radius * radius, } } } fn main() -> unit { let shape: dyn Area = Shape::Circle(3) as dyn Area; println(Area::area(shape)); }";
     testing::assert(
         string_contains(
             encode(lower_source(source)),
@@ -781,7 +781,7 @@ fn dispatches_trait_objects_for_enum_receivers() -> unit {
 
 #[test]
 fn adapts_closures_for_dynamic_call_function_parameters() -> unit {
-    let source = "trait Mapper { fn map(self: Self, arg1: (int32) -> int32) -> int32; } struct Boxed { value: int32, } impl Mapper for Boxed { fn map(self: Boxed, f: (int32) -> int32) -> int32 { f(self.value) } } fn main() -> unit { let x: dyn Mapper = Boxed { value: 1 }; println(Mapper::map(x, |n| n + 1)); }";
+    let source = "trait Mapper { fn map(self: Self, arg1: (int32) -> int32) -> int32; } struct Boxed { value: int32, } impl Mapper for Boxed { fn map(self: Boxed, f: (int32) -> int32) -> int32 { f(self.value) } } fn main() -> unit { let x: dyn Mapper = (Boxed { value: 1 }) as dyn Mapper; println(Mapper::map(x, |n| n + 1)); }";
     let output = encode(lower_source(source));
     testing::assert(string_contains(output, "vtable._goml_m_map(x__2.data, func(p0 int32) int32 {"));
     testing::assert(
@@ -800,7 +800,7 @@ fn adapts_closures_for_dynamic_call_function_parameters() -> unit {
 
 #[test]
 fn emits_user_trait_objects_without_name_collisions() -> unit {
-    let source = "trait Display { fn display(self: Self) -> string; } fn dyn__Display() -> int32 { 1 } struct Box { text: string, } impl Display for Box { fn display(self: Self) -> string { self.text } } fn main() -> unit { let d: dyn Display = Box { text: \"ok\" }; println(Display::display(d) + dyn__Display().to_string()); }";
+    let source = "trait Display { fn display(self: Self) -> string; } fn dyn__Display() -> int32 { 1 } struct Box { text: string, } impl Display for Box { fn display(self: Self) -> string { self.text } } fn main() -> unit { let d: dyn Display = (Box { text: \"ok\" }) as dyn Display; println(Display::display(d) + dyn__Display().to_string()); }";
     testing::assert_eq(
         encode(lower_source(source)),
         "package main\n\ntype Box struct {\n    text string\n}\n\ntype dyn__Display_vtable struct {\n    display func(any) string\n}\n\ntype dyn__Display struct {\n    data any\n    vtable *dyn__Display_vtable\n}\n\nfunc dyn__Display__wrap__Box__display(self any) string {\n    return _goml_m_trait__impl_i_Display_i_Box_i_display(self.(Box))\n}\n\nfunc dyn__Display__vtable__Box() *dyn__Display_vtable {\n    return &dyn__Display_vtable{\n        display: dyn__Display__wrap__Box__display,\n    }\n}\n\nfunc _goml_m_trait__impl_i_Display_i_Box_i_display(self__0 Box) string {\n    var t5 string = self__0.text\n    return t5\n}\n\nfunc main0() struct{} {\n    var t7 Box = Box{\n        text: \"ok\",\n    }\n    var d__1 dyn__Display = dyn__Display{\n        data: t7,\n        vtable: dyn__Display__vtable__Box(),\n    }\n    var t8 string = d__1.vtable.display(d__1.data)\n    var t9 int32\n    t9 = 1\n    var t10 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t9)\n    var t11 string = t8 + t10\n    _goml_m_println(t11)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
@@ -812,7 +812,7 @@ fn emits_non_repeating_joinrec_as_straight_line_control_flow() -> unit {
     let source = "fn f(flag: int32) -> int32 { while true { if flag == 0 { return 1 } else { break }; }; 2 } fn main() -> unit { println(f(0).to_string()); println(f(1).to_string()); }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "package main\n\nfunc f(flag__0 int32) int32 {\n    var t9 bool = _goml_m_trait__impl_i_PartialEq_i_int32_i_eq(flag__0, 0)\n    if t9 {\n        return 1\n    } else {\n        return 2\n    }\n}\n\nfunc main0() struct{} {\n    var t11 int32 = f(0)\n    var t12 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t11)\n    _goml_m_println(t12)\n    var t13 int32 = f(1)\n    var t14 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t13)\n    _goml_m_println(t14)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
+        "package main\n\nfunc f(flag__0 int32) int32 {\n    var t9 bool = flag__0 == 0\n    if t9 {\n        return 1\n    } else {\n        return 2\n    }\n}\n\nfunc main0() struct{} {\n    var t11 int32 = f(0)\n    var t12 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t11)\n    _goml_m_println(t12)\n    var t13 int32 = f(1)\n    var t14 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t13)\n    _goml_m_println(t14)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
     )
 }
 
@@ -882,7 +882,7 @@ fn resolves_runtime_types_in_recursive_struct_fields() -> unit {
 
 #[test]
 fn compacts_dyn_names_in_synthetic_options() -> unit {
-    let source = "trait Display { fn show(self: Self) -> string; } impl Display for int { fn show(self: int) -> string { self.to_string() } } fn build() -> int32 { let m: HashMap[int32, dyn Display] = HashMap::new(); m.set(1, if true { return 7 } else { 1 }); 0 } fn main() -> unit { println(build().to_string()) }";
+    let source = "trait Display { fn show(self: Self) -> string; } impl Display for int { fn show(self: int) -> string { self.to_string() } } fn build() -> int32 { let m: HashMap[int32, dyn Display] = HashMap::new(); m.set(1, if true { return 7 } else { 1 as dyn Display }); 0 } fn main() -> unit { println(build().to_string()) }";
     testing::assert_eq(
         encode(lower_source(source)),
         "package main\n\ntype hashmap_int32_Dyn_Display_x_entry struct {\n    active bool\n    key int32\n    value dyn__Display\n}\n\ntype hashmap_int32_Dyn_Display_x struct {\n    buckets map[uint64][]hashmap_int32_Dyn_Display_x_entry\n    hashes []uint64\n    len int\n}\n\ntype _goml_synthetic__goml_option__dynDisplay interface {\n    is_goml_synthetic__goml_option__dynDisplay()\n}\n\ntype _goml_synthetic__goml_option__dynDisplay_Some struct {\n    _0 dyn__Display\n}\n\nfunc (_ _goml_synthetic__goml_option__dynDisplay_Some) is_goml_synthetic__goml_option__dynDisplay() {}\n\ntype _goml_synthetic__goml_option__dynDisplay_None struct {}\n\nfunc (_ _goml_synthetic__goml_option__dynDisplay_None) is_goml_synthetic__goml_option__dynDisplay() {}\n\ntype dyn__Display_vtable struct {\n    show func(any) string\n}\n\ntype dyn__Display struct {\n    data any\n    vtable *dyn__Display_vtable\n}\n\nfunc main0() struct{} {\n    var t10 int32\n    _goml_m_inherent_i_HashMap_i_HashMap_l_int32_c_dynDisplay_r__i_new()\n    t10 = 7\n    var t11 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t10)\n    _goml_m_println(t11)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
@@ -941,7 +941,7 @@ fn preserves_enums_before_field_instances() -> unit {
 
 #[test]
 fn protects_dyn_object_names_from_vtable_collisions() -> unit {
-    let source = "trait A { fn f(self: Self) -> int32; } trait A_vtable { fn g(self: Self) -> int32; } struct S {} impl A for S { fn f(self: S) -> int32 { 3 } } impl A_vtable for S { fn g(self: S) -> int32 { 4 } } fn main() -> unit { let left: dyn A = S {}; let right: dyn A_vtable = S {}; println(A::f(left) + A_vtable::g(right)); }";
+    let source = "trait A { fn f(self: Self) -> int32; } trait A_vtable { fn g(self: Self) -> int32; } struct S {} impl A for S { fn f(self: S) -> int32 { 3 } } impl A_vtable for S { fn g(self: S) -> int32 { 4 } } fn main() -> unit { let left: dyn A = (S {}) as dyn A; let right: dyn A_vtable = (S {}) as dyn A_vtable; println(A::f(left) + A_vtable::g(right)); }";
     testing::assert_eq(
         encode(lower_source(source)),
         "package main\n\ntype S struct {}\n\ntype dyn__A_vtable struct {\n    f func(any) int32\n}\n\ntype dyn__A struct {\n    data any\n    vtable *dyn__A_vtable\n}\n\ntype dyn__A_vtable_vtable struct {\n    g func(any) int32\n}\n\ntype _goml_dyn_object_A_vtable struct {\n    data any\n    vtable *dyn__A_vtable_vtable\n}\n\nfunc dyn__A__wrap__S__f(self any) int32 {\n    return _goml_m_trait__impl_i_A_i_S_i_f(self.(S))\n}\n\nfunc dyn__A__vtable__S() *dyn__A_vtable {\n    return &dyn__A_vtable{\n        f: dyn__A__wrap__S__f,\n    }\n}\n\nfunc dyn__A_vtable__wrap__S__g(self any) int32 {\n    return _goml_m_trait__impl_i_A__vtable_i_S_i_g(self.(S))\n}\n\nfunc dyn__A_vtable__vtable__S() *dyn__A_vtable_vtable {\n    return &dyn__A_vtable_vtable{\n        g: dyn__A_vtable__wrap__S__g,\n    }\n}\n\nfunc _goml_m_trait__impl_i_A_i_S_i_f(self__0 S) int32 {\n    return 3\n}\n\nfunc _goml_m_trait__impl_i_A__vtable_i_S_i_g(self__1 S) int32 {\n    return 4\n}\n\nfunc main0() struct{} {\n    var t6 S = S{}\n    var left__2 dyn__A = dyn__A{\n        data: t6,\n        vtable: dyn__A__vtable__S(),\n    }\n    var t7 S = S{}\n    var right__3 _goml_dyn_object_A_vtable = _goml_dyn_object_A_vtable{\n        data: t7,\n        vtable: dyn__A_vtable__vtable__S(),\n    }\n    var t8 int32 = left__2.vtable.f(left__2.data)\n    var t9 int32 = right__3.vtable.g(right__3.data)\n    var t10 int32 = t8 + t9\n    _goml_m_println(t10)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
@@ -1045,10 +1045,10 @@ fn protects_functions_from_tuple_type_names() -> unit {
 
 #[test]
 fn sorts_dyn_helpers_and_compacts_builtin_impl_names() -> unit {
-    let source = "fn main() { let inner: dyn Hash = 1; let r = Ref::new(inner); let alias = r; let value: dyn Hash = r; println((Hash::hash(value) == Hash::hash(alias)).to_string()); }";
+    let source = "fn main() { let inner: dyn Hash = 1 as dyn Hash; let r = Ref::new(inner); let alias = r; let value: dyn Hash = r as dyn Hash; println((Hash::hash(value) == Hash::hash(alias)).to_string()); }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "package main\n\ntype ref_Dyn_Hash_x struct {\n    value dyn__Hash\n}\n\ntype dyn__Hash_vtable struct {\n    hash func(any) uint64\n}\n\ntype dyn__Hash struct {\n    data any\n    vtable *dyn__Hash_vtable\n}\n\nfunc dyn__Hash__wrap__Ref_8Dyn_Hash__hash(self any) uint64 {\n    return _goml_m_trait__impl_i_Hash_i_Ref_l_dynHash_r__i_hash(self.(*ref_Dyn_Hash_x))\n}\n\nfunc dyn__Hash__vtable__Ref_8Dyn_Hash() *dyn__Hash_vtable {\n    return &dyn__Hash_vtable{\n        hash: dyn__Hash__wrap__Ref_8Dyn_Hash__hash,\n    }\n}\n\nfunc dyn__Hash__wrap__int__hash(self any) uint64 {\n    return _goml_m_trait__impl_i_Hash_i_int_i_hash(self.(int))\n}\n\nfunc dyn__Hash__vtable__int() *dyn__Hash_vtable {\n    return &dyn__Hash_vtable{\n        hash: dyn__Hash__wrap__int__hash,\n    }\n}\n\nfunc main0() struct{} {\n    var inner__0 dyn__Hash = dyn__Hash{\n        data: int(1),\n        vtable: dyn__Hash__vtable__int(),\n    }\n    var r__1 *ref_Dyn_Hash_x = _goml_m_inherent_i_Ref_i_Ref_l_dynHash_r__i_new(inner__0)\n    var value__3 dyn__Hash = dyn__Hash{\n        data: r__1,\n        vtable: dyn__Hash__vtable__Ref_8Dyn_Hash(),\n    }\n    var t2 uint64 = value__3.vtable.hash(value__3.data)\n    var t3 uint64 = _goml_m_trait__impl_i_Hash_i_Ref_l_dynHash_r__i_hash(r__1)\n    var t4 bool = _goml_m_trait__impl_i_PartialEq_i_uint64_i_eq(t2, t3)\n    var t5 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t4)\n    _goml_m_println(t5)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
+        "package main\n\ntype ref_Dyn_Hash_x struct {\n    value dyn__Hash\n}\n\ntype dyn__Hash_vtable struct {\n    hash func(any) uint64\n}\n\ntype dyn__Hash struct {\n    data any\n    vtable *dyn__Hash_vtable\n}\n\nfunc dyn__Hash__wrap__Ref_8Dyn_Hash__hash(self any) uint64 {\n    return _goml_m_trait__impl_i_Hash_i_Ref_l_dynHash_r__i_hash(self.(*ref_Dyn_Hash_x))\n}\n\nfunc dyn__Hash__vtable__Ref_8Dyn_Hash() *dyn__Hash_vtable {\n    return &dyn__Hash_vtable{\n        hash: dyn__Hash__wrap__Ref_8Dyn_Hash__hash,\n    }\n}\n\nfunc dyn__Hash__wrap__int__hash(self any) uint64 {\n    return _goml_m_trait__impl_i_Hash_i_int_i_hash(self.(int))\n}\n\nfunc dyn__Hash__vtable__int() *dyn__Hash_vtable {\n    return &dyn__Hash_vtable{\n        hash: dyn__Hash__wrap__int__hash,\n    }\n}\n\nfunc main0() struct{} {\n    var inner__0 dyn__Hash = dyn__Hash{\n        data: int(1),\n        vtable: dyn__Hash__vtable__int(),\n    }\n    var r__1 *ref_Dyn_Hash_x = _goml_m_inherent_i_Ref_i_Ref_l_dynHash_r__i_new(inner__0)\n    var value__3 dyn__Hash = dyn__Hash{\n        data: r__1,\n        vtable: dyn__Hash__vtable__Ref_8Dyn_Hash(),\n    }\n    var t2 uint64 = value__3.vtable.hash(value__3.data)\n    var t3 uint64 = _goml_m_trait__impl_i_Hash_i_Ref_l_dynHash_r__i_hash(r__1)\n    var t4 bool = t2 == t3\n    var t5 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t4)\n    _goml_m_println(t5)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
     )
 }
 
@@ -1085,7 +1085,7 @@ fn reuses_materialized_hashmap_option_types() -> unit {
 
 #[test]
 fn emits_builtin_tostring_vtables() -> unit {
-    let source = "fn main() { let inner: dyn ToString = 1; let r = Ref::new(inner); let value: dyn ToString = r; println(ToString::to_string(value)); }";
+    let source = "fn main() { let inner: dyn ToString = 1 as dyn ToString; let r = Ref::new(inner); let value: dyn ToString = r as dyn ToString; println(ToString::to_string(value)); }";
     testing::assert_eq(
         encode(lower_source(source)),
         "package main\n\ntype ref_Dyn_ToString_x struct {\n    value dyn__ToString\n}\n\ntype dyn__ToString_vtable struct {\n    to_string func(any) string\n}\n\ntype dyn__ToString struct {\n    data any\n    vtable *dyn__ToString_vtable\n}\n\nfunc dyn__ToString__wrap__Ref_12Dyn_ToString__to_string(self any) string {\n    return _goml_m_trait__impl_i_ToString_i_Ref_l_dynToString_r__i_to__string(self.(*ref_Dyn_ToString_x))\n}\n\nfunc dyn__ToString__vtable__Ref_12Dyn_ToString() *dyn__ToString_vtable {\n    return &dyn__ToString_vtable{\n        to_string: dyn__ToString__wrap__Ref_12Dyn_ToString__to_string,\n    }\n}\n\nfunc dyn__ToString__wrap__int__to_string(self any) string {\n    return _goml_m_trait__impl_i_ToString_i_int_i_to__string(self.(int))\n}\n\nfunc dyn__ToString__vtable__int() *dyn__ToString_vtable {\n    return &dyn__ToString_vtable{\n        to_string: dyn__ToString__wrap__int__to_string,\n    }\n}\n\nfunc main0() struct{} {\n    var inner__0 dyn__ToString = dyn__ToString{\n        data: int(1),\n        vtable: dyn__ToString__vtable__int(),\n    }\n    var r__1 *ref_Dyn_ToString_x = _goml_m_inherent_i_Ref_i_Ref_l_dynToString_r__i_new(inner__0)\n    var value__2 dyn__ToString = dyn__ToString{\n        data: r__1,\n        vtable: dyn__ToString__vtable__Ref_12Dyn_ToString(),\n    }\n    var t2 string = value__2.vtable.to_string(value__2.data)\n    _goml_m_println(t2)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
@@ -1130,7 +1130,7 @@ fn deduplicates_shadowed_enum_variant_owners() -> unit {
 
 #[test]
 fn materializes_numeric_runtime_operands() -> unit {
-    let source = "fn main() -> unit { let a: uint8 = 13 % 5; let b: uint8 = 1 << 7; let c: uint8 = ~0; let d: uint8 = 511 as uint8; println(a); println(b); println(c); println(d); }";
+    let source = "fn main() -> unit { let a: uint8 = 13 % 5; let b: uint8 = 1 << 7; let c: uint8 = ~0; let d: uint8 = 511.to_uint8(); println(a); println(b); println(c); println(d); }";
     testing::assert_eq(
         encode(lower_source(source)),
         "package main\n\nfunc main0() struct{} {\n    var a__0_lhs uint8 = 13\n    var a__0_rhs uint8 = 5\n    var a__0 uint8 = a__0_lhs % a__0_rhs\n    var b__1_lhs uint8 = 1\n    var b__1_rhs int = 7\n    var b__1 uint8 = b__1_lhs << b__1_rhs\n    var c__2_operand uint8 = 0\n    var c__2 uint8 = ^c__2_operand\n    var d__3_source int = 511\n    var d__3 uint8 = uint8(int(d__3_source))\n    _goml_m_println(a__0)\n    _goml_m_println(b__1)\n    _goml_m_println(c__2)\n    _goml_m_println(d__3)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
@@ -1164,7 +1164,7 @@ fn canonicalizes_float64_literals() -> unit {
 
 #[test]
 fn disambiguates_dyn_helper_names() -> unit {
-    let source = "trait A { fn foo(self: Self) -> int32; fn b__foo(self: Self) -> int32; } struct C {} struct C__B {} impl A for C { fn foo(self: C) -> int32 { 1 } fn b__foo(self: C) -> int32 { 2 } } impl A for C__B { fn foo(self: C__B) -> int32 { 10 } fn b__foo(self: C__B) -> int32 { 20 } } fn main() -> unit { let left: dyn A = C {}; let right: dyn A = C__B {}; println(A::b__foo(left)); println(A::foo(right)); }";
+    let source = "trait A { fn foo(self: Self) -> int32; fn b__foo(self: Self) -> int32; } struct C {} struct C__B {} impl A for C { fn foo(self: C) -> int32 { 1 } fn b__foo(self: C) -> int32 { 2 } } impl A for C__B { fn foo(self: C__B) -> int32 { 10 } fn b__foo(self: C__B) -> int32 { 20 } } fn main() -> unit { let left: dyn A = (C {}) as dyn A; let right: dyn A = (C__B {}) as dyn A; println(A::b__foo(left)); println(A::foo(right)); }";
     testing::assert_eq(
         encode(lower_source(source)),
         "package main\n\ntype C struct {}\n\ntype C__B struct {}\n\ntype dyn__A_vtable struct {\n    foo func(any) int32\n    b__foo func(any) int32\n}\n\ntype dyn__A struct {\n    data any\n    vtable *dyn__A_vtable\n}\n\nfunc dyn__A__wrap__C__foo(self any) int32 {\n    return _goml_m_trait__impl_i_A_i_C_i_foo(self.(C))\n}\n\nfunc dyn__A__wrap__C__b__foo(self any) int32 {\n    return _goml_m_trait__impl_i_A_i_C_i_b____foo(self.(C))\n}\n\nfunc dyn__A__vtable__C() *dyn__A_vtable {\n    return &dyn__A_vtable{\n        foo: dyn__A__wrap__C__foo,\n        b__foo: dyn__A__wrap__C__b__foo,\n    }\n}\n\nfunc dyn__A__wrap__C__B__foo(self any) int32 {\n    return _goml_m_trait__impl_i_A_i_C____B_i_foo(self.(C__B))\n}\n\nfunc dyn__A__wrap__C__B__b__foo(self any) int32 {\n    return _goml_m_trait__impl_i_A_i_C____B_i_b____foo(self.(C__B))\n}\n\nfunc dyn__A__vtable__C__B() *dyn__A_vtable {\n    return &dyn__A_vtable{\n        foo: dyn__A__wrap__C__B__foo,\n        b__foo: dyn__A__wrap__C__B__b__foo,\n    }\n}\n\nfunc _goml_m_trait__impl_i_A_i_C_i_foo(self__0 C) int32 {\n    return 1\n}\n\nfunc _goml_m_trait__impl_i_A_i_C_i_b____foo(self__1 C) int32 {\n    return 2\n}\n\nfunc _goml_m_trait__impl_i_A_i_C____B_i_foo(self__2 C__B) int32 {\n    return 10\n}\n\nfunc _goml_m_trait__impl_i_A_i_C____B_i_b____foo(self__3 C__B) int32 {\n    return 20\n}\n\nfunc main0() struct{} {\n    var t11 C = C{}\n    var left__4 dyn__A = dyn__A{\n        data: t11,\n        vtable: dyn__A__vtable__C(),\n    }\n    var t12 C__B = C__B{}\n    var right__5 dyn__A = dyn__A{\n        data: t12,\n        vtable: dyn__A__vtable__C__B(),\n    }\n    var t13 int32 = left__4.vtable.b__foo(left__4.data)\n    _goml_m_println(t13)\n    var t14 int32 = right__5.vtable.foo(right__5.data)\n    _goml_m_println(t14)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
@@ -1173,7 +1173,7 @@ fn disambiguates_dyn_helper_names() -> unit {
 
 #[test]
 fn emits_blank_assignment_for_discarded_non_call_side_effects() -> unit {
-    let source = "struct S {} impl ToString for S { fn to_string(self: S) -> string { \"S\" } } fn main() -> unit { let value = S {}; let dynamic: dyn ToString = value; let _ = dynamic; }";
+    let source = "struct S {} impl ToString for S { fn to_string(self: S) -> string { \"S\" } } fn main() -> unit { let value = S {}; let dynamic: dyn ToString = value as dyn ToString; let _ = dynamic; }";
     testing::assert(string_contains(encode(lower_source(source)), "_ = dyn__ToString{"))
 }
 

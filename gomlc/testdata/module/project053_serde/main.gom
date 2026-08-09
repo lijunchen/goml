@@ -26,7 +26,7 @@ fn decode_choice(value: serde::Value) -> Result[Choice, string] {
 }
 
 fn main() -> unit {
-    let item = Item { name: "one", value: 13 as int32 };
+    let item = Item { name: "one", value: 13.to_int32() };
     let decoded = match serde::to_value(item) {
         Ok(value) => match decode_item(value) {
             Ok(value) => value,
@@ -62,11 +62,11 @@ fn main() -> unit {
         serde::Schema::Struct(fields) => println(fields[0].0 + fields[1].0),
         _ => println("wrong schema"),
     };
-    match serde::to_value((1 as int16, true)) {
+    match serde::to_value((1.to_int16(), true)) {
         Ok(serde::Value::Tuple(values)) => println(values.len().to_string()),
         _ => println("wrong tuple"),
     };
-    match serde::to_value(Option::Some(3 as uint8)) {
+    match serde::to_value(Option::Some(3.to_uint8())) {
         Ok(serde::Value::Optional(values)) => println(values.len().to_string()),
         _ => println("wrong optional"),
     }

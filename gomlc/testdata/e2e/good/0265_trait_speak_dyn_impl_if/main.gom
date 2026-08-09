@@ -3,21 +3,26 @@ trait Speak {
 }
 
 struct Robot {}
+
 struct Cat {}
 
 impl Speak for Robot {
-    fn speak(self: Robot) -> string { "beep boop" }
+    fn speak(self: Robot) -> string {
+        "beep boop"
+    }
 }
 
 impl Speak for Cat {
-    fn speak(self: Cat) -> string { "meow" }
+    fn speak(self: Cat) -> string {
+        "meow"
+    }
 }
 
 fn make_speaker(kind: int32) -> dyn Speak {
     if kind == 0 {
-        Robot {}
+        Robot {} as dyn Speak
     } else {
-        Cat {}
+        Cat {} as dyn Speak
     }
 }
 

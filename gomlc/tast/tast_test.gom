@@ -888,7 +888,7 @@ fn rejects_missing_dyn_impls_and_noncomparable_equality() -> unit {
         hir::lower(
             ast::lower(
                 parser::parse(
-                    "trait Display { fn display(self: Self) -> string; } fn convert(value: int32) -> dyn Display { value }",
+                    "trait Display { fn display(self: Self) -> string; } fn convert(value: int32) -> dyn Display { value as dyn Display }",
                 ),
             ),
             "main.gom",
@@ -2088,20 +2088,47 @@ fn checks_char_from_uint32_builtin() -> unit {
 }
 
 #[test]
-fn validates_explicit_casts() -> unit {
-    let valid = checked_diagnostics(
-        "fn main() -> unit { let wide = 1 as uint64; let code = 'A' as uint32; }",
+fn restricts_expression_as_to_dyn_conversions() -> unit {
+    let diagnostics = checked_diagnostics(
+        "fn main() -> unit { let value: int16 = 257; let _ = value as uint8; let _ = 'A' as uint32; let _ = true as uint8; }",
     );
-    testing::assert_eq(valid.len(), 0);
-    let invalid = checked_diagnostics(
-        "fn main() -> unit { let a = true as uint8; let b = 1.5 as int32; let c = 'A' as uint16; let value16: uint16 = 65; let d = value16 as char; let value32: uint32 = 65; let e = value32 as char; }",
+    testing::assert_eq(diagnostics.len(), 3);
+    testing::assert(
+        has_diagnostic(
+            diagnostics,
+            "`as` only creates dyn trait values; use `value.to_uint8()` for numeric conversion",
+        ),
     );
-    testing::assert_eq(invalid.len(), 5);
-    testing::assert(has_diagnostic(invalid, "Invalid cast from bool to uint8"));
-    testing::assert(has_diagnostic(invalid, "Invalid cast from float64 to int32"));
-    testing::assert(has_diagnostic(invalid, "Invalid cast from char to uint16"));
-    testing::assert(has_diagnostic(invalid, "Invalid cast from uint16 to char"));
-    testing::assert(has_diagnostic(invalid, "Invalid cast from uint32 to char"))
+    testing::assert(
+        has_diagnostic(
+            diagnostics,
+            "`as` only creates dyn trait values; use `value.to_uint32()` for numeric conversion",
+        ),
+    );
+    testing::assert(
+        has_diagnostic(
+            diagnostics,
+            "`as` only creates dyn trait values; target must be a dyn trait type",
+        ),
+    )
+}
+
+#[test]
+fn requires_explicit_dyn_conversions_in_typed_contexts() -> unit {
+    for source in[
+        "trait Label { fn label(self: Self) -> string; } impl Label for int32 { fn label(self: int32) -> string { self.to_string() } } fn produce() -> dyn Label { 1 }",
+        "trait Label { fn label(self: Self) -> string; } impl Label for int32 { fn label(self: int32) -> string { self.to_string() } } fn main() -> unit { let direct: dyn Label = 1; }",
+        "trait Label { fn label(self: Self) -> string; } impl Label for int32 { fn label(self: int32) -> string { self.to_string() } } fn accept(value: dyn Label) -> unit {} fn main() -> unit { accept(1); }",
+        "trait Label { fn label(self: Self) -> string; } impl Label for int32 { fn label(self: int32) -> string { self.to_string() } } fn main() -> unit { let branch: dyn Label = if true { 1 as dyn Label } else { 2 }; }",
+        "trait Label { fn label(self: Self) -> string; } impl Label for int32 { fn label(self: int32) -> string { self.to_string() } } fn main() -> unit { let values: Vec[dyn Label] = Vec::new(); values.push(1); }",
+    ] {
+        testing::assert(
+            has_diagnostic(
+                checked_diagnostics(source),
+                "explicit dyn conversion required; use `value as dyn Label`",
+            ),
+        )
+    }
 }
 
 #[test]
@@ -2823,7 +2850,7 @@ fn rejects_trait_associated_functions_in_dyn_traits() -> unit {
 #[test]
 fn rejects_unsafe_dyn_body_annotations() -> unit {
     let diagnostics = checked_diagnostics(
-        "trait Cloneish { fn clone(self: Self) -> Self; } struct Value { value: int32 } impl Cloneish for Value { fn clone(self: Value) -> Value { self } } fn main() -> unit { let _value: dyn Cloneish = Value { value: 1 }; }",
+        "trait Cloneish { fn clone(self: Self) -> Self; } struct Value { value: int32 } impl Cloneish for Value { fn clone(self: Value) -> Value { self } } fn main() -> unit { let _value: dyn Cloneish = Value { value: 1 } as dyn Cloneish; }",
     );
     testing::assert(
         has_diagnostic(
@@ -2847,7 +2874,7 @@ fn resolves_dyn_dot_methods_and_reports_unavailable_methods() -> unit {
 #[test]
 fn rejects_dyn_patterns_and_marks_recovery_arms_unreachable() -> unit {
     let diagnostics = checked_diagnostics(
-        "trait Label { fn label(self: Self) -> string; } impl Label for int32 { fn label(self: int32) -> string { self.to_string() } } fn main() -> unit { let concrete: int32 = 1; let value: dyn Label = concrete; let _ = match value { 1 => 2, _ => 3 }; }",
+        "trait Label { fn label(self: Self) -> string; } impl Label for int32 { fn label(self: int32) -> string { self.to_string() } } fn main() -> unit { let concrete: int32 = 1; let value: dyn Label = concrete as dyn Label; let _ = match value { 1 => 2, _ => 3 }; }",
     );
     testing::assert_eq(diagnostics.len(), 2);
     testing::assert_eq(diagnostics.get(0).message, "Pattern matching on dyn Label is not supported");
@@ -2936,7 +2963,7 @@ fn qualified_struct_variants_win_over_same_named_structs() -> unit {
 
 #[test]
 fn accepts_transparent_aliases_bytes_and_forward_constants() -> unit {
-    let source = "type Pair[T] = (T, T); type Marker = byte; type Label = string; struct Entry { marker: Marker, label: Label } enum Event { Mark(Marker), Pair(Pair[int32]) } trait Read { fn read(self: Self) -> Marker; } impl Read for Entry { fn read(self: Entry) -> Marker { self.marker } } const next: int32 = base + 2; const base: int32 = 0x28; const marker: Marker = b'\\xFF'; fn sum(value: Pair[int32]) -> int32 { value.0 + value.1 } fn main() -> unit { let entry = Entry { marker, label: \"ok\" }; let raw: uint8 = entry.read(); let pair: Pair[int32] = (next, 0b10); let _ = Event::Mark(raw); let _ = Event::Pair(pair); let _ = sum(pair) + raw as int32; }";
+    let source = "type Pair[T] = (T, T); type Marker = byte; type Label = string; struct Entry { marker: Marker, label: Label } enum Event { Mark(Marker), Pair(Pair[int32]) } trait Read { fn read(self: Self) -> Marker; } impl Read for Entry { fn read(self: Entry) -> Marker { self.marker } } const next: int32 = base + 2; const base: int32 = 0x28; const marker: Marker = b'\\xFF'; fn sum(value: Pair[int32]) -> int32 { value.0 + value.1 } fn main() -> unit { let entry = Entry { marker, label: \"ok\" }; let raw: uint8 = entry.read(); let pair: Pair[int32] = (next, 0b10); let _ = Event::Mark(raw); let _ = Event::Pair(pair); let _ = sum(pair) + raw.to_int32(); }";
     let file = checked_file(source);
     testing::assert_eq(file.constants.len(), 3)
 }

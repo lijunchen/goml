@@ -2,7 +2,9 @@ trait Show {
     fn show(self: Self) -> string;
 }
 
-struct Num { val: int32 }
+struct Num {
+    val: int32,
+}
 
 impl Show for Num {
     fn show(self: Num) -> string {
@@ -11,6 +13,6 @@ impl Show for Num {
 }
 
 fn main() {
-    let r: Ref[dyn Show] = Ref::new(Num { val: 42 });
+    let r: Ref[dyn Show] = Ref::new(Num { val: 42 } as dyn Show);
     println(Show::show(r.get()));
 }

@@ -3,14 +3,19 @@ trait Greet {
 }
 
 struct English {}
+
 struct French {}
 
 impl Greet for English {
-    fn greet(self: English) -> string { "Hello" }
+    fn greet(self: English) -> string {
+        "Hello"
+    }
 }
 
 impl Greet for French {
-    fn greet(self: French) -> string { "Bonjour" }
+    fn greet(self: French) -> string {
+        "Bonjour"
+    }
 }
 
 fn greet_with[T: Greet](greeting: T, name: string) -> string {
@@ -20,11 +25,10 @@ fn greet_with[T: Greet](greeting: T, name: string) -> string {
 fn main() {
     println(greet_with(English {}, "World"));
     println(greet_with(French {}, "Monde"));
-    
-    let greeters: [dyn Greet; 2] = [English {}, French {}];
+    let greeters: [dyn Greet; 2] = [English {} as dyn Greet, French {} as dyn Greet];
     let i = Ref::new(0);
     while i.get() < 2 {
         println(Greet::greet(greeters[i.get()]));
         i.set(i.get() + 1);
-    };
+    }
 }

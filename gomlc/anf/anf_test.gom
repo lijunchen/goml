@@ -335,7 +335,7 @@ fn uses_unreachable_continuations_for_exiting_branches() -> unit {
     let source = "fn f(flag: int32) -> int32 { while true { if flag == 0 { return 1 } else { break }; }; 2 } fn main() -> unit { println(f(0).to_string()); println(f(1).to_string()); }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn f(flag/0: int32) -> int32 {\n  join exit6() -> int32 {\n    let _wild1 = () in\n    2\n  } in\n  joinrec {\n    join loop7() -> int32 {\n      let t9 = trait_impl#PartialEq#int32#eq(flag/0, 0) in\n      if t9 {\n        1\n      } else {\n        jump exit6()\n      }\n    } in\n  } in\n  jump loop7()\n}\n\nfn main() -> unit {\n  let t11 = f(0) in\n  let t12 = inherent#int32#int32#to_string(t11) in\n  let _wild2 = println(t12) in\n  let t13 = f(1) in\n  let t14 = inherent#int32#int32#to_string(t13) in\n  let _wild3 = println(t14) in\n  ()\n}",
+        "fn f(flag/0: int32) -> int32 {\n  join exit6() -> int32 {\n    let _wild1 = () in\n    2\n  } in\n  let t9 = (flag/0 == 0) in\n  joinrec {\n    join loop7() -> int32 {\n      if t9 {\n        1\n      } else {\n        jump exit6()\n      }\n    } in\n  } in\n  jump loop7()\n}\n\nfn main() -> unit {\n  let t11 = f(0) in\n  let t12 = inherent#int32#int32#to_string(t11) in\n  let _wild2 = println(t12) in\n  let t13 = f(1) in\n  let t14 = inherent#int32#int32#to_string(t13) in\n  let _wild3 = println(t14) in\n  ()\n}",
     )
 }
 

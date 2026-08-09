@@ -3,21 +3,26 @@ trait Animal {
 }
 
 struct Cat {}
+
 struct Dog {}
 
 impl Animal for Cat {
-    fn sound(self: Cat) -> string { "meow" }
+    fn sound(self: Cat) -> string {
+        "meow"
+    }
 }
 
 impl Animal for Dog {
-    fn sound(self: Dog) -> string { "woof" }
+    fn sound(self: Dog) -> string {
+        "woof"
+    }
 }
 
 fn make_animal(is_cat: bool) -> dyn Animal {
     if is_cat {
-        Cat {}
+        Cat {} as dyn Animal
     } else {
-        Dog {}
+        Dog {} as dyn Animal
     }
 }
 

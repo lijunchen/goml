@@ -7,10 +7,14 @@ struct Container[T] {
     label: string,
 }
 
-struct Text { value: string }
+struct Text {
+    value: string,
+}
 
 impl Renderable for Text {
-    fn render(self: Text) -> string { self.value }
+    fn render(self: Text) -> string {
+        self.value
+    }
 }
 
 fn render_container(c: Container[dyn Renderable]) -> string {
@@ -18,6 +22,9 @@ fn render_container(c: Container[dyn Renderable]) -> string {
 }
 
 fn main() {
-    let c: Container[dyn Renderable] = Container { content: Text { value: "hello" }, label: "greeting" };
+    let c: Container[dyn Renderable] = Container {
+        content: Text { value: "hello" } as dyn Renderable,
+        label: "greeting",
+    };
     println(render_container(c));
 }

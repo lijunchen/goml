@@ -3,19 +3,24 @@ trait Speak {
 }
 
 struct Dog {}
+
 struct Cat {}
 
 impl Speak for Dog {
-    fn speak(self: Dog) -> string { "woof" }
+    fn speak(self: Dog) -> string {
+        "woof"
+    }
 }
 
 impl Speak for Cat {
-    fn speak(self: Cat) -> string { "meow" }
+    fn speak(self: Cat) -> string {
+        "meow"
+    }
 }
 
 fn main() {
-    let d: dyn Speak = Dog {};
-    let c: dyn Speak = Cat {};
+    let d: dyn Speak = Dog {} as dyn Speak;
+    let c: dyn Speak = Cat {} as dyn Speak;
     println(Speak::speak(d));
     println(Speak::speak(c));
 }

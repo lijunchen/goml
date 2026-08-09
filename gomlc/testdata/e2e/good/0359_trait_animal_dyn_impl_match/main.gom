@@ -3,18 +3,34 @@ trait Animal {
 }
 
 struct Dog {}
+
 struct Cat {}
+
 struct Bird {}
 
-impl Animal for Dog { fn sound(self: Dog) -> string { "woof" } }
-impl Animal for Cat { fn sound(self: Cat) -> string { "meow" } }
-impl Animal for Bird { fn sound(self: Bird) -> string { "tweet" } }
+impl Animal for Dog {
+    fn sound(self: Dog) -> string {
+        "woof"
+    }
+}
+
+impl Animal for Cat {
+    fn sound(self: Cat) -> string {
+        "meow"
+    }
+}
+
+impl Animal for Bird {
+    fn sound(self: Bird) -> string {
+        "tweet"
+    }
+}
 
 fn get_animal(kind: int32) -> dyn Animal {
     match kind {
-        1 => Dog {},
-        2 => Cat {},
-        _ => Bird {},
+        1 => Dog {} as dyn Animal,
+        2 => Cat {} as dyn Animal,
+        _ => Bird {} as dyn Animal,
     }
 }
 

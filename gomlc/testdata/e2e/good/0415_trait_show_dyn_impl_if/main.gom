@@ -3,10 +3,20 @@ trait Show {
 }
 
 struct A {}
+
 struct B {}
 
-impl Show for A { fn show(self: A) -> string { "A" } }
-impl Show for B { fn show(self: B) -> string { "B" } }
+impl Show for A {
+    fn show(self: A) -> string {
+        "A"
+    }
+}
+
+impl Show for B {
+    fn show(self: B) -> string {
+        "B"
+    }
+}
 
 fn display(x: dyn Show) {
     println(Show::show(x));
@@ -14,5 +24,11 @@ fn display(x: dyn Show) {
 
 fn main() {
     let flag = true;
-    display(if flag { A {} } else { A {} });
+    display(
+        if flag {
+            A {} as dyn Show
+        } else {
+            A {} as dyn Show
+        },
+    );
 }

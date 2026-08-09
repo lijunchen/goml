@@ -83,7 +83,9 @@ fn retains_linked_monomorphic_trait_impls() -> unit {
 #[test]
 fn specializes_generic_functions_for_matching_dyn_bounds() -> unit {
     let output = encode(
-        lower_linked_source("fn main() -> unit { let value: dyn ToString = 1; println(value) }"),
+        lower_linked_source(
+            "fn main() -> unit { let value: dyn ToString = 1 as dyn ToString; println(value) }",
+        ),
     );
     testing::assert(string_contains(output, "fn println__T_dynToString"));
     testing::assert(string_contains(output, "dyn_call[ToString::to_string]"))
@@ -257,7 +259,7 @@ fn prints_monomorphic_closures_without_parameter_types() -> unit {
 
 #[test]
 fn retains_generic_trait_impls_for_dyn_coercions() -> unit {
-    let source = "struct Box[T] { value: T } trait Printable { fn print_me(self: Self) -> string; } impl Printable for int32 { fn print_me(self: int32) -> string { self.to_string() } } impl[T: Printable] Printable for Box[T] { fn print_me(self: Box[T]) -> string { \"Box(\" + Printable::print_me(self.value) + \")\" } } fn show(value: dyn Printable) -> string { Printable::print_me(value) } fn main() -> unit { let value: Box[int32] = Box { value: 42 }; println(show(value)) }";
+    let source = "struct Box[T] { value: T } trait Printable { fn print_me(self: Self) -> string; } impl Printable for int32 { fn print_me(self: int32) -> string { self.to_string() } } impl[T: Printable] Printable for Box[T] { fn print_me(self: Box[T]) -> string { \"Box(\" + Printable::print_me(self.value) + \")\" } } fn show(value: dyn Printable) -> string { Printable::print_me(value) } fn main() -> unit { let value: Box[int32] = Box { value: 42 }; println(show(value as dyn Printable)) }";
     let output = encode(lower_source(source));
     testing::assert(string_contains(output, "trait_impl#Printable#Box__int32#print_me"));
     testing::assert(string_contains(output, "trait_impl#Printable#int32#print_me"))

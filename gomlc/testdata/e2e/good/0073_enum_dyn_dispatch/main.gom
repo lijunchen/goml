@@ -21,6 +21,6 @@ fn print_area(a: dyn Area) {
 }
 
 fn main() {
-    print_area(Shape::Circle(5));
-    print_area(Shape::Rect(3, 4));
+    print_area(Shape::Circle(5) as dyn Area);
+    print_area(Shape::Rect(3, 4) as dyn Area);
 }

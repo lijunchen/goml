@@ -28,8 +28,8 @@ impl A for C__B {
 }
 
 fn main() -> unit {
-    let left: dyn A = C {};
-    let right: dyn A = C__B {};
+    let left: dyn A = C {} as dyn A;
+    let right: dyn A = C__B {} as dyn A;
     println(A::b__foo(left));
     println(A::foo(right));
 }

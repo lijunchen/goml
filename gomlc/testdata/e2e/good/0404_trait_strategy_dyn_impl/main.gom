@@ -3,14 +3,19 @@ trait Strategy {
 }
 
 struct Aggressive {}
+
 struct Defensive {}
 
 impl Strategy for Aggressive {
-    fn execute(self: Aggressive, x: int32) -> int32 { x * 2 }
+    fn execute(self: Aggressive, x: int32) -> int32 {
+        x * 2
+    }
 }
 
 impl Strategy for Defensive {
-    fn execute(self: Defensive, x: int32) -> int32 { x + 1 }
+    fn execute(self: Defensive, x: int32) -> int32 {
+        x + 1
+    }
 }
 
 struct Player {
@@ -25,8 +30,8 @@ fn player_turn(p: Player) -> string {
 }
 
 fn main() {
-    let p1 = Player { name: "Warrior", strategy: Aggressive {}, health: 10 };
-    let p2 = Player { name: "Healer", strategy: Defensive {}, health: 10 };
+    let p1 = Player { name: "Warrior", strategy: Aggressive {} as dyn Strategy, health: 10 };
+    let p2 = Player { name: "Healer", strategy: Defensive {} as dyn Strategy, health: 10 };
     println(player_turn(p1));
     println(player_turn(p2));
 }

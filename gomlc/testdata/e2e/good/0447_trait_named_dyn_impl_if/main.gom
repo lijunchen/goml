@@ -2,14 +2,32 @@ trait Named {
     fn name(self: Self) -> string;
 }
 
-struct Cat { n: string }
-struct Dog { n: string }
+struct Cat {
+    n: string,
+}
 
-impl Named for Cat { fn name(self: Cat) -> string { "cat:" + self.n } }
-impl Named for Dog { fn name(self: Dog) -> string { "dog:" + self.n } }
+struct Dog {
+    n: string,
+}
+
+impl Named for Cat {
+    fn name(self: Cat) -> string {
+        "cat:" + self.n
+    }
+}
+
+impl Named for Dog {
+    fn name(self: Dog) -> string {
+        "dog:" + self.n
+    }
+}
 
 fn get_animal(kind: int32) -> dyn Named {
-    if kind == 1 { Cat { n: "kitty" } } else { Dog { n: "buddy" } }
+    if kind == 1 {
+        Cat { n: "kitty" } as dyn Named
+    } else {
+        Dog { n: "buddy" } as dyn Named
+    }
 }
 
 fn main() {

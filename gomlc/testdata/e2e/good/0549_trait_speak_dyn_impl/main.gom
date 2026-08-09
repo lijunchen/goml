@@ -13,6 +13,6 @@ impl Speak for Robot {
 }
 
 fn main() {
-    let r: dyn Speak = Robot { name: "R2D2" };
+    let r: dyn Speak = Robot { name: "R2D2" } as dyn Speak;
     println(Speak::speak(r));
 }

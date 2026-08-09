@@ -9,7 +9,7 @@ impl C for () -> unit {
 }
 
 fn main() -> unit {
-    let c: dyn C = || ();
+    let c: dyn C = (|| ()) as dyn C;
     go c;
     ()
 }

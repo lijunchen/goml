@@ -2,10 +2,14 @@ trait Named {
     fn name(self: Self) -> string;
 }
 
-struct Person { n: string }
+struct Person {
+    n: string,
+}
 
 impl Named for Person {
-    fn name(self: Person) -> string { self.n }
+    fn name(self: Person) -> string {
+        self.n
+    }
 }
 
 fn greet(a: dyn Named) -> string {
@@ -14,9 +18,8 @@ fn greet(a: dyn Named) -> string {
 
 fn main() {
     let p = Person { n: "Alice" };
-    let a: dyn Named = p;
+    let a: dyn Named = p as dyn Named;
     println(greet(a));
-    
-    let b: dyn Named = Person { n: "Bob" };
+    let b: dyn Named = Person { n: "Bob" } as dyn Named;
     println(Named::name(b));
 }

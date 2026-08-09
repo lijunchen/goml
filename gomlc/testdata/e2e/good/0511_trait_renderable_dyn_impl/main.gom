@@ -2,15 +2,24 @@ trait Renderable {
     fn render(self: Self) -> string;
 }
 
-struct Text { content: string }
-struct Number { value: int32 }
+struct Text {
+    content: string,
+}
+
+struct Number {
+    value: int32,
+}
 
 impl Renderable for Text {
-    fn render(self: Text) -> string { self.content }
+    fn render(self: Text) -> string {
+        self.content
+    }
 }
 
 impl Renderable for Number {
-    fn render(self: Number) -> string { self.value.to_string() }
+    fn render(self: Number) -> string {
+        self.value.to_string()
+    }
 }
 
 struct Widget {
@@ -23,8 +32,8 @@ fn render_widget(w: Widget) -> string {
 }
 
 fn main() {
-    let w1 = Widget { child: Text { content: "hello" }, prefix: "> " };
-    let w2 = Widget { child: Number { value: 42 }, prefix: "# " };
+    let w1 = Widget { child: Text { content: "hello" } as dyn Renderable, prefix: "> " };
+    let w2 = Widget { child: Number { value: 42 } as dyn Renderable, prefix: "# " };
     println(render_widget(w1));
     println(render_widget(w2));
 }

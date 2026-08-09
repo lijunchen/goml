@@ -20,5 +20,5 @@ fn render(value: dyn api::Describe) -> string {
 fn main() -> unit {
     let value = Value { name: "value" };
     println(value.describe());
-    println(render(value))
+    println(render(value as dyn api::Describe))
 }

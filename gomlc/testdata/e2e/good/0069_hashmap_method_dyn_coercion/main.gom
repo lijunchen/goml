@@ -3,11 +3,16 @@ trait Handler {
 }
 
 struct EchoHandler {}
+
 struct UpperHandler {}
 
 impl Handler for EchoHandler {
-    fn handle(self: EchoHandler, msg: string) -> string { let _ = self; msg }
+    fn handle(self: EchoHandler, msg: string) -> string {
+        let _ = self;
+        msg
+    }
 }
+
 impl Handler for UpperHandler {
     fn handle(self: UpperHandler, msg: string) -> string {
         let _ = self;
@@ -17,9 +22,8 @@ impl Handler for UpperHandler {
 
 fn main() {
     let routes: HashMap[string, dyn Handler] = HashMap::new();
-    routes.set("/echo", EchoHandler {});
-    routes.set("/upper", UpperHandler {});
-
+    routes.set("/echo", EchoHandler {} as dyn Handler);
+    routes.set("/upper", UpperHandler {} as dyn Handler);
     match routes.get("/echo") {
         Option::Some(h) => println(Handler::handle(h, "hello")),
         Option::None => println("not found"),

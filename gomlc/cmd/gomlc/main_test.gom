@@ -1123,10 +1123,7 @@ fn writes_core_file_shape() -> unit {
 #[test]
 fn writes_callable_body_shapes() -> unit {
     let writer = wire::new_artifact_json_writer(false);
-    let primitive = tast_codec::artifact_callable(tast::Callable::Intrinsic("eq.primitive"));
     wire::artifact_json_begin_array(writer);
-    wire::artifact_json_string(writer, primitive.name);
-    tast_codec::artifact_json_callable_body(writer, primitive);
     let intrinsic = tast_codec::artifact_callable(tast::Callable::Intrinsic("ref.new"));
     wire::artifact_json_string(writer, intrinsic.name);
     tast_codec::artifact_json_callable_body(writer, intrinsic);
@@ -1144,16 +1141,8 @@ fn writes_callable_body_shapes() -> unit {
     wire::artifact_json_end_array(writer);
     testing::assert_eq(
         wire::artifact_json_finish(writer),
-        "[\"__goml_primitive_eq\",{\"kind\":\"intrinsic\",\"id\":\"primitive_eq\"},\"ref\",{\"kind\":\"intrinsic\",\"id\":\"ref_new\"},\"char_from_uint32_raw\",{\"kind\":\"runtime\",\"id\":\"char_from_uint32\"},\"std::internal::host::path_file_name\",{\"kind\":\"runtime\",\"id\":\"std_path_file_name\"},\"ToUpper\",{\"kind\":\"go\",\"import_path\":\"strings\",\"symbol\":\"ToUpper\"}]",
+        "[\"ref\",{\"kind\":\"intrinsic\",\"id\":\"ref_new\"},\"char_from_uint32_raw\",{\"kind\":\"runtime\",\"id\":\"char_from_uint32\"},\"std::internal::host::path_file_name\",{\"kind\":\"runtime\",\"id\":\"std_path_file_name\"},\"ToUpper\",{\"kind\":\"go\",\"import_path\":\"strings\",\"symbol\":\"ToUpper\"}]",
     )
-}
-
-#[test]
-fn decodes_primitive_equality_intrinsic_id() -> unit {
-    match tast_codec::artifact_intrinsic_key_from_id("primitive_eq") {
-        Some(value) => testing::assert_eq(value, "eq.primitive"),
-        None => testing::fail("expected primitive equality intrinsic"),
-    }
 }
 
 #[test]

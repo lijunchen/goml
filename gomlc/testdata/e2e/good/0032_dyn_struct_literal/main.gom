@@ -21,11 +21,10 @@ impl Speak for Cat {
 }
 
 fn main() {
-    let r: dyn Speak = Robot {};
+    let r: dyn Speak = Robot {} as dyn Speak;
     let msg = Speak::speak(r);
     println(msg);
-
-    let c: dyn Speak = Cat { name: "meow" };
+    let c: dyn Speak = Cat { name: "meow" } as dyn Speak;
     let msg2 = Speak::speak(c);
     println(msg2);
 }

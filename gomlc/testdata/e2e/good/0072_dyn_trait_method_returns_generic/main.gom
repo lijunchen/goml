@@ -2,12 +2,20 @@ trait TryConvert {
     fn try_to_int(self: Self) -> Option[int32];
 }
 
-struct IntValue { n: int32 }
-impl TryConvert for IntValue {
-    fn try_to_int(self: IntValue) -> Option[int32] { Option::Some(self.n) }
+struct IntValue {
+    n: int32,
 }
 
-struct StringValue { s: string }
+impl TryConvert for IntValue {
+    fn try_to_int(self: IntValue) -> Option[int32] {
+        Option::Some(self.n)
+    }
+}
+
+struct StringValue {
+    s: string,
+}
+
 impl TryConvert for StringValue {
     fn try_to_int(self: StringValue) -> Option[int32] {
         let _ = self;
@@ -24,15 +32,14 @@ fn sum_convertible(items: Vec[dyn TryConvert]) -> int32 {
             Option::None => (),
         };
         i.set(i.get() + 1);
-    };
+    }
     sum.get()
 }
 
 fn main() {
     let items: Vec[dyn TryConvert] = Vec::new();
-    items.push(IntValue { n: 10 });
-    items.push(StringValue { s: "hello" });
-    items.push(IntValue { n: 20 });
-
+    items.push(IntValue { n: 10 } as dyn TryConvert);
+    items.push(StringValue { s: "hello" } as dyn TryConvert);
+    items.push(IntValue { n: 20 } as dyn TryConvert);
     println(sum_convertible(items).to_string());
 }

@@ -3,13 +3,21 @@ trait Validator {
 }
 
 struct NonEmpty {}
+
 impl Validator for NonEmpty {
-    fn validate(self: NonEmpty, s: string) -> bool { s != "" }
+    fn validate(self: NonEmpty, s: string) -> bool {
+        s != ""
+    }
 }
 
-struct MaxLen { max: int32 }
+struct MaxLen {
+    max: int32,
+}
+
 impl Validator for MaxLen {
-    fn validate(self: MaxLen, s: string) -> bool { true }
+    fn validate(self: MaxLen, s: string) -> bool {
+        true
+    }
 }
 
 struct Form {
@@ -29,8 +37,16 @@ fn validate_field(form: Form, value: string) -> bool {
 fn main() {
     let form = Form {
         field_name: "name",
-        validators: (NonEmpty {}, MaxLen { max: 10 }),
+        validators: (NonEmpty {} as dyn Validator, MaxLen { max: 10 } as dyn Validator),
     };
     println(validate_field(form, "Alice").to_string());
-    println(validate_field(Form { field_name: "x", validators: (NonEmpty {}, MaxLen { max: 3 }) }, "").to_string());
+    println(
+        validate_field(
+            Form {
+                field_name: "x",
+                validators: (NonEmpty {} as dyn Validator, MaxLen { max: 3 } as dyn Validator),
+            },
+            "",
+        ).to_string(),
+    );
 }

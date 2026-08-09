@@ -2,15 +2,24 @@ trait Describable {
     fn describe(self: Self) -> string;
 }
 
-struct Dog { name: string }
-struct Car { brand: string }
+struct Dog {
+    name: string,
+}
+
+struct Car {
+    brand: string,
+}
 
 impl Describable for Dog {
-    fn describe(self: Dog) -> string { "Dog: " + self.name }
+    fn describe(self: Dog) -> string {
+        "Dog: " + self.name
+    }
 }
 
 impl Describable for Car {
-    fn describe(self: Car) -> string { "Car: " + self.brand }
+    fn describe(self: Car) -> string {
+        "Car: " + self.brand
+    }
 }
 
 fn print_desc(d: dyn Describable) {
@@ -19,8 +28,8 @@ fn print_desc(d: dyn Describable) {
 
 fn main() {
     let items: [dyn Describable; 2] = [
-        Dog { name: "Rex" },
-        Car { brand: "Toyota" },
+        Dog { name: "Rex" } as dyn Describable,
+        Car { brand: "Toyota" } as dyn Describable,
     ];
     print_desc(items[0]);
     print_desc(items[1]);

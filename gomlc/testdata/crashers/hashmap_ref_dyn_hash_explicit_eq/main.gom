@@ -8,7 +8,7 @@ impl Eq for Ref[dyn Hash] {}
 
 fn main() {
     let h: HashMap[Ref[dyn Hash], string] = HashMap::new();
-    let inner: dyn Hash = 1;
+    let inner: dyn Hash = 1 as dyn Hash;
     let r = Ref::new(inner);
     h.set(r, "one");
     println(h.contains(r).to_string());

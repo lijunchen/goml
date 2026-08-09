@@ -2,15 +2,24 @@ trait Stringify {
     fn stringify(self: Self) -> string;
 }
 
-struct Num { val: int32 }
-struct Txt { val: string }
+struct Num {
+    val: int32,
+}
+
+struct Txt {
+    val: string,
+}
 
 impl Stringify for Num {
-    fn stringify(self: Num) -> string { self.val.to_string() }
+    fn stringify(self: Num) -> string {
+        self.val.to_string()
+    }
 }
 
 impl Stringify for Txt {
-    fn stringify(self: Txt) -> string { self.val }
+    fn stringify(self: Txt) -> string {
+        self.val
+    }
 }
 
 enum Maybe[T] {
@@ -26,8 +35,8 @@ fn show_maybe(m: Maybe[dyn Stringify]) -> string {
 }
 
 fn main() {
-    let a: Maybe[dyn Stringify] = Maybe::Just(Num { val: 42 });
-    let b: Maybe[dyn Stringify] = Maybe::Just(Txt { val: "hello" });
+    let a: Maybe[dyn Stringify] = Maybe::Just(Num { val: 42 } as dyn Stringify);
+    let b: Maybe[dyn Stringify] = Maybe::Just(Txt { val: "hello" } as dyn Stringify);
     let c: Maybe[dyn Stringify] = Maybe::Nothing;
     println(show_maybe(a));
     println(show_maybe(b));

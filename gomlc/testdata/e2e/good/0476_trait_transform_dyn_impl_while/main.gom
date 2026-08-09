@@ -3,14 +3,21 @@ trait Transform {
 }
 
 struct Doubler {}
-struct Adder { amount: int32 }
+
+struct Adder {
+    amount: int32,
+}
 
 impl Transform for Doubler {
-    fn apply(self: Doubler, x: int32) -> int32 { x * 2 }
+    fn apply(self: Doubler, x: int32) -> int32 {
+        x * 2
+    }
 }
 
 impl Transform for Adder {
-    fn apply(self: Adder, x: int32) -> int32 { x + self.amount }
+    fn apply(self: Adder, x: int32) -> int32 {
+        x + self.amount
+    }
 }
 
 fn apply_chain(transforms: [dyn Transform; 3], input: int32) -> int32 {
@@ -20,15 +27,15 @@ fn apply_chain(transforms: [dyn Transform; 3], input: int32) -> int32 {
         let t = transforms[i.get()];
         result.set(Transform::apply(t, result.get()));
         i.set(i.get() + 1);
-    };
+    }
     result.get()
 }
 
 fn main() {
     let transforms: [dyn Transform; 3] = [
-        Doubler {},
-        Adder { amount: 5 },
-        Doubler {},
+        Doubler {} as dyn Transform,
+        Adder { amount: 5 } as dyn Transform,
+        Doubler {} as dyn Transform,
     ];
     let result = apply_chain(transforms, 3);
     println(result.to_string());

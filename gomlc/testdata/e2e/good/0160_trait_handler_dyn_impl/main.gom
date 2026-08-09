@@ -3,13 +3,19 @@ trait Handler {
 }
 
 struct Upper {}
+
 struct Lower {}
 
 impl Handler for Upper {
-    fn handle(self: Upper, s: string) -> string { "UPPER:" + s }
+    fn handle(self: Upper, s: string) -> string {
+        "UPPER:" + s
+    }
 }
+
 impl Handler for Lower {
-    fn handle(self: Lower, s: string) -> string { "lower:" + s }
+    fn handle(self: Lower, s: string) -> string {
+        "lower:" + s
+    }
 }
 
 struct Pipeline {
@@ -21,8 +27,8 @@ fn run(p: Pipeline, input: string) -> string {
 }
 
 fn main() {
-    let p1 = Pipeline { handler: Upper {} };
-    let p2 = Pipeline { handler: Lower {} };
+    let p1 = Pipeline { handler: Upper {} as dyn Handler };
+    let p2 = Pipeline { handler: Lower {} as dyn Handler };
     println(run(p1, "test"));
     println(run(p2, "test"));
 }

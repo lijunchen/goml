@@ -21,7 +21,7 @@ impl A_vtable for S {
 }
 
 fn main() -> unit {
-    let left: dyn A = S {};
-    let right: dyn A_vtable = S {};
+    let left: dyn A = S {} as dyn A;
+    let right: dyn A_vtable = S {} as dyn A_vtable;
     println(A::f(left) + A_vtable::g(right));
 }
