@@ -214,9 +214,11 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
 
 fn lower_core_stage(source_path: string, source: string) -> CoreStage {
     let counter = Ref::new(0);
-    let file = core::lower_with_counter(
-        tast::check(hir::lower(ast::lower(parser::parse(source)), source_path)),
-        counter,
+    let file = core::dce(
+        core::lower_with_counter(
+            tast::check(hir::lower(ast::lower(parser::parse(source)), source_path)),
+            counter,
+        ),
     );
     CoreStage { file, counter }
 }
@@ -241,19 +243,19 @@ fn canonical_stage_output(stage: string, source_path: string, source: string) ->
         LIFT_STAGE => {
             let value = lower_core_stage(source_path, source);
             let mono_value = lower_mono_or_fail(value.file);
-            lift::encode(lift::lower_with_counter(mono_value, value.counter))
+            lift::encode(lower_lift_stage(mono_value, value.counter))
         },
         ANF_STAGE => {
             let value = lower_core_stage(source_path, source);
             let mono_value = lower_mono_or_fail(value.file);
-            let lift_value = lift::lower_with_counter(mono_value, value.counter);
-            anf::encode(anf::lower_with_counter(lift_value, value.counter))
+            let lift_value = lower_lift_stage(mono_value, value.counter);
+            anf::encode(lower_anf_stage(lift_value, value.counter))
         },
         GO_STAGE => {
             let value = lower_core_stage(source_path, source);
             let mono_value = lower_mono_or_fail(value.file);
-            let lift_value = lift::lower_with_counter(mono_value, value.counter);
-            let anf_value = anf::lower_with_counter(lift_value, value.counter);
+            let lift_value = lower_lift_stage(mono_value, value.counter);
+            let anf_value = lower_anf_stage(lift_value, value.counter);
             go_backend::encode(lower_go_or_fail(go_backend::lower(anf_value)))
         },
         _ => {

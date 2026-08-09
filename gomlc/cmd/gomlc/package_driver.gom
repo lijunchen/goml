@@ -1049,8 +1049,8 @@ fn run_link_command(args: Vec[string]) -> unit {
         entry_core(entry.core_value, command.entry),
     );
     let mono_value = lower_mono_or_fail(linked);
-    let lift_value = lift::lower_with_counter(mono_value, world.counter);
-    let anf_value = anf::lower_with_counter(lift_value, world.counter);
+    let lift_value = lower_lift_stage(mono_value, world.counter);
+    let anf_value = lower_anf_stage(lift_value, world.counter);
     let go_source = go_backend::encode(lower_go_or_fail(go_backend::lower(anf_value)));
     match ensure_parent(command.output) {
         Ok(()) => match fs::write_file(command.output, go_source) {
@@ -1143,8 +1143,8 @@ fn run_test_link_command(args: Vec[string]) -> unit {
         empty_core_file(),
     );
     let mono_value = lower_mono_or_fail(linked);
-    let lift_value = lift::lower_with_counter(mono_value, world.counter);
-    let anf_value = anf::lower_with_counter(lift_value, world.counter);
+    let lift_value = lower_lift_stage(mono_value, world.counter);
+    let anf_value = lower_anf_stage(lift_value, world.counter);
     let go_source = go_backend::encode(
         lower_go_or_fail(go_backend::lower_tests(anf_value, test_link_cases(tests))),
     );

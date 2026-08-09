@@ -801,12 +801,14 @@ fn compile_artifact_package(
         None => generated_interface,
     };
     let core_ir = if build {
-        core::lower_with_counter_types_and_options(
-            checked,
-            Ref::new(0),
-            dependency_enums(world.builtins, dependency_core),
-            dependency_structs(world.builtins, dependency_core),
-            true,
+        core::dce(
+            core::lower_with_counter_types_and_options(
+                checked,
+                Ref::new(0),
+                dependency_enums(world.builtins, dependency_core),
+                dependency_structs(world.builtins, dependency_core),
+                true,
+            ),
         )
     } else {
         empty_core_file()

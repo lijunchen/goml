@@ -370,12 +370,14 @@ fn compile_standard_package(
         artifact_comptime_unit(comptime_module, public_exports),
         deps,
     );
-    let core_value = core::lower_with_counter_types_and_options(
-        tast_value,
-        Ref::new(0),
-        dependency_enums(builtins, core_dependencies),
-        dependency_structs(builtins, core_dependencies),
-        true,
+    let core_value = core::dce(
+        core::lower_with_counter_types_and_options(
+            tast_value,
+            Ref::new(0),
+            dependency_enums(builtins, core_dependencies),
+            dependency_structs(builtins, core_dependencies),
+            true,
+        ),
     );
     PackageCompilation { hir_file, core_value, interface_unit, exports }
 }
@@ -1316,7 +1318,7 @@ pub fn diagnostic_output(source_path: string, source: string) -> string {
             true,
         ),
     );
-    let mono_result = mono::lower_checked(core_value);
+    let mono_result = mono::lower_checked(core::dce(core_value));
     match mono_result.error {
         Some(error) => error + "\n",
         None => "",
@@ -1333,14 +1335,22 @@ fn run_test_diagnostics(args: Vec[string]) -> unit {
 }
 
 fn lower_mono_or_fail(value: core::File) -> core::File {
-    let result = mono::lower_checked(value);
+    let result = mono::lower_checked(core::dce(value));
     match result.error {
         Some(error) => {
             fail(COMPILE_ERROR_PREFIX + error);
-            result.file
+            mono::dce(result.file)
         },
-        None => result.file,
+        None => mono::dce(result.file),
     }
+}
+
+fn lower_lift_stage(value: core::File, counter: Ref[int]) -> core::File {
+    lift::dce(lift::lower_with_counter(value, counter))
+}
+
+fn lower_anf_stage(value: core::File, counter: Ref[int]) -> anf::File {
+    anf::dce(anf::lower_with_counter(value, counter))
 }
 
 fn has_single_file_entrypoint(value: tast::CheckResult) -> bool {
@@ -1398,20 +1408,22 @@ pub fn compile_source(source_path: string, source: string) -> Compilation {
     let tast_value = tast::check_for_link_with_dependencies(hir_value, hir_dependencies);
     fail_on_typer_diagnostics(tast_value.diagnostics, source_path, source);
     fail_on_missing_single_file_entrypoint(tast_value);
-    let core_value = core::link_with_dependencies(
-        builtins,
-        core_dependencies,
-        core::lower_with_counter_types_and_options(
-            tast_value,
-            counter,
-            dependency_enums(builtins, core_dependencies),
-            dependency_structs(builtins, core_dependencies),
-            true,
+    let core_value = core::dce(
+        core::link_with_dependencies(
+            builtins,
+            core_dependencies,
+            core::lower_with_counter_types_and_options(
+                tast_value,
+                counter,
+                dependency_enums(builtins, core_dependencies),
+                dependency_structs(builtins, core_dependencies),
+                true,
+            ),
         ),
     );
     let mono_value = lower_mono_or_fail(core_value);
-    let lift_value = lift::lower_with_counter(mono_value, counter);
-    let anf_value = anf::lower_with_counter(lift_value, counter);
+    let lift_value = lower_lift_stage(mono_value, counter);
+    let anf_value = lower_anf_stage(lift_value, counter);
     let go_value = lower_go_or_fail(go_backend::lower(anf_value));
     Compilation {
         source_ast_value,
@@ -1480,24 +1492,26 @@ pub fn compile_source_or_diagnostics(source_path: string, source: string) -> Sou
     } else if !has_single_file_entrypoint(tast_value) {
         return SourceCompilation::Diagnostics("main function is required\n")
     } else {};
-    let core_value = core::link_with_dependencies(
-        builtins,
-        core_dependencies,
-        core::lower_with_counter_types_and_options(
-            tast_value,
-            counter,
-            dependency_enums(builtins, core_dependencies),
-            dependency_structs(builtins, core_dependencies),
-            true,
+    let core_value = core::dce(
+        core::link_with_dependencies(
+            builtins,
+            core_dependencies,
+            core::lower_with_counter_types_and_options(
+                tast_value,
+                counter,
+                dependency_enums(builtins, core_dependencies),
+                dependency_structs(builtins, core_dependencies),
+                true,
+            ),
         ),
     );
     let mono_result = mono::lower_checked(core_value);
     match mono_result.error {
         Some(error) => SourceCompilation::Diagnostics(error + "\n"),
         None => {
-            let mono_value = mono_result.file;
-            let lift_value = lift::lower_with_counter(mono_value, counter);
-            let anf_value = anf::lower_with_counter(lift_value, counter);
+            let mono_value = mono::dce(mono_result.file);
+            let lift_value = lower_lift_stage(mono_value, counter);
+            let anf_value = lower_anf_stage(lift_value, counter);
             let go_value = lower_go_or_fail(go_backend::lower(anf_value));
             SourceCompilation::Compiled(
                 Compilation {

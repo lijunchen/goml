@@ -1,0 +1,386 @@
+package core;
+
+use gomlc::ast;
+
+struct DceNames {
+    values: Vec[string],
+    present: HashMap[string, unit],
+}
+
+fn new_dce_names() -> DceNames {
+    DceNames { values: Vec::[], present: HashMap::{} }
+}
+
+fn dce_names_contains(values: DceNames, name: string) -> bool {
+    values.present.contains(name)
+}
+
+fn dce_names_add(values: DceNames, name: string) -> unit {
+    if dce_names_contains(values, name) {} else {
+        values.present[name] = ();
+        values.values.push(name)
+    }
+}
+
+fn dce_names_add_all(target: DceNames, values: DceNames) -> unit {
+    for name in values.values {
+        if dce_names_contains(values, name) {
+            dce_names_add(target, name)
+        } else {}
+    }
+}
+
+fn dce_names_remove(values: DceNames, name: string) -> unit {
+    values.present.remove(name)
+}
+
+fn dce_exprs(values: Vec[Expr]) -> Vec[Expr] {
+    let result: Vec[Expr] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(dce_expr(value))
+    }
+    result
+}
+
+fn dce_optional_expr(value: Option[Expr]) -> Option[Expr] {
+    match value {
+        Some(value) => Option::Some(dce_expr(value)),
+        None => Option::None,
+    }
+}
+
+fn dce_arms(values: Vec[Arm]) -> Vec[Arm] {
+    let result: Vec[Arm] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(Arm { lhs: value.lhs, body: dce_expr(value.body) })
+    }
+    result
+}
+
+fn dce_expr(value: Expr) -> Expr {
+    match value {
+        Var { name, ty } => Expr::Var { name, ty },
+        Callable { callable, ty } => Expr::Callable { callable, ty },
+        Prim { value, ty } => Expr::Prim { value, ty },
+        Constr { constructor, args, ty } => {
+            Expr::Constr { constructor, args: dce_exprs(args), ty }
+        },
+        Tuple { items, ty } => Expr::Tuple { items: dce_exprs(items), ty },
+        Array { items, ty } => Expr::Array { items: dce_exprs(items), ty },
+        Closure { params, body, ty } => {
+            Expr::Closure { params, body: dce_expr(body), ty }
+        },
+        Block { block, ty } => Expr::Block { block: dce_block(block), ty },
+        Match { expr, arms, default, ty } => Expr::Match {
+            expr: dce_expr(expr),
+            arms: dce_arms(arms),
+            default: dce_optional_expr(default),
+            ty,
+        },
+        If { cond, then_branch, else_branch, ty } => Expr::If {
+            cond: dce_expr(cond),
+            then_branch: dce_expr(then_branch),
+            else_branch: dce_expr(else_branch),
+            ty,
+        },
+        While { cond, body, ty } => {
+            Expr::While { cond: dce_expr(cond), body: dce_expr(body), ty }
+        },
+        Loop { body, ty } => Expr::Loop { body: dce_expr(body), ty },
+        Break { target, value, ty } => {
+            Expr::Break { target, value: dce_optional_expr(value), ty }
+        },
+        Continue { target, ty } => Expr::Continue { target, ty },
+        Return { expr, ty } => Expr::Return { expr: dce_optional_expr(expr), ty },
+        Go { expr, ty } => Expr::Go { expr: dce_expr(expr), ty },
+        ConstrGet { expr, constructor, field_index, ty } => Expr::ConstrGet {
+            expr: dce_expr(expr),
+            constructor,
+            field_index,
+            ty,
+        },
+        Unary { op, expr, ty } => Expr::Unary { op, expr: dce_expr(expr), ty },
+        Cast { expr, ty } => Expr::Cast { expr: dce_expr(expr), ty },
+        Binary { op, lhs, rhs, ty } => {
+            Expr::Binary { op, lhs: dce_expr(lhs), rhs: dce_expr(rhs), ty }
+        },
+        Assign { name, value, target_ty, ty } => Expr::Assign {
+            name,
+            value: dce_expr(value),
+            target_ty,
+            ty,
+        },
+        Call { func, args, ty } => {
+            Expr::Call { func: dce_expr(func), args: dce_exprs(args), ty }
+        },
+        ToDyn { trait_name, for_ty, expr, ty } => Expr::ToDyn {
+            trait_name,
+            for_ty,
+            expr: dce_expr(expr),
+            ty,
+        },
+        DynCall { trait_name, method_name, receiver, args, ty } => Expr::DynCall {
+            trait_name,
+            method_name,
+            receiver: dce_expr(receiver),
+            args: dce_exprs(args),
+            ty,
+        },
+        TraitCall { trait_ref, method_name, instance_name, for_ty, receiver, args, ty } => Expr::TraitCall {
+            trait_ref,
+            method_name,
+            instance_name,
+            for_ty,
+            receiver: dce_optional_expr(receiver),
+            args: dce_exprs(args),
+            ty,
+        },
+        Proj { tuple, index, ty } => Expr::Proj { tuple: dce_expr(tuple), index, ty },
+    }
+}
+
+fn dce_pattern_names(value: Expr, result: DceNames) -> unit {
+    match value {
+        Var { name, ty: _ } => dce_names_add(result, name),
+        Constr { constructor: _, args, ty: _ } => for value in args {
+            dce_pattern_names(value, result)
+        },
+        Tuple { items, ty: _ } | Array { items, ty: _ } => for value in items {
+            dce_pattern_names(value, result)
+        },
+        Callable { .. } | Prim { .. } | Closure { .. } | Block { .. } | Match { .. } | If { .. } | While {
+            ..,
+        } | Loop { .. } | Break { .. } | Continue { .. } | Return { .. } | Go { .. } | ConstrGet {
+            ..,
+        } | Unary { .. } | Cast { .. } | Binary { .. } | Assign { .. } | Call { .. } | ToDyn { .. } | DynCall {
+            ..,
+        } | TraitCall { .. } | Proj { .. } => (),
+    }
+}
+
+fn dce_collect_exprs(result: DceNames, values: Vec[Expr]) -> unit {
+    for value in values {
+        dce_collect_expr(result, value)
+    }
+}
+
+fn dce_collect_optional_expr(result: DceNames, value: Option[Expr]) -> unit {
+    match value {
+        Some(value) => dce_collect_expr(result, value),
+        None => (),
+    }
+}
+
+fn dce_collect_block(result: DceNames, value: Block) -> unit {
+    let free = dce_free_block(value);
+    dce_names_add_all(result, free)
+}
+
+fn dce_collect_expr(result: DceNames, value: Expr) -> unit {
+    match value {
+        Var { name, ty: _ } => dce_names_add(result, name),
+        Callable { .. } | Prim { .. } => (),
+        Constr { constructor: _, args, ty: _ } => dce_collect_exprs(result, args),
+        Tuple { items, ty: _ } | Array { items, ty: _ } => dce_collect_exprs(result, items),
+        Closure { params, body, ty: _ } => {
+            let free = new_dce_names();
+            dce_collect_expr(free, body);
+            for param in params {
+                dce_names_remove(free, param.name)
+            }
+            dce_names_add_all(result, free)
+        },
+        Block { block, ty: _ } => dce_collect_block(result, block),
+        Match { expr, arms, default, ty: _ } => {
+            dce_collect_expr(result, expr);
+            for arm in arms {
+                let free = new_dce_names();
+                dce_collect_expr(free, arm.body);
+                let bound = new_dce_names();
+                dce_pattern_names(arm.lhs, bound);
+                for name in bound.values {
+                    dce_names_remove(free, name)
+                }
+                dce_names_add_all(result, free)
+            }
+            dce_collect_optional_expr(result, default)
+        },
+        If { cond, then_branch, else_branch, ty: _ } => {
+            dce_collect_expr(result, cond);
+            dce_collect_expr(result, then_branch);
+            dce_collect_expr(result, else_branch)
+        },
+        While { cond, body, ty: _ } => {
+            dce_collect_expr(result, cond);
+            dce_collect_expr(result, body)
+        },
+        Loop { body, ty: _ } => dce_collect_expr(result, body),
+        Break { target: _, value, ty: _ } => dce_collect_optional_expr(result, value),
+        Continue { .. } => (),
+        Return { expr, ty: _ } => dce_collect_optional_expr(result, expr),
+        Go { expr, ty: _ } => dce_collect_expr(result, expr),
+        ConstrGet { expr, .. } | Unary { expr, .. } | Cast { expr, .. } | ToDyn { expr, .. } => {
+            dce_collect_expr(result, expr)
+        },
+        Binary { op: _, lhs, rhs, ty: _ } => {
+            dce_collect_expr(result, lhs);
+            dce_collect_expr(result, rhs)
+        },
+        Assign { name, value, .. } => {
+            dce_names_add(result, name);
+            dce_collect_expr(result, value)
+        },
+        Call { func, args, ty: _ } => {
+            dce_collect_expr(result, func);
+            dce_collect_exprs(result, args)
+        },
+        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } => {
+            dce_collect_expr(result, receiver);
+            dce_collect_exprs(result, args)
+        },
+        TraitCall { receiver, args, .. } => {
+            dce_collect_optional_expr(result, receiver);
+            dce_collect_exprs(result, args)
+        },
+        Proj { tuple, index: _, ty: _ } => dce_collect_expr(result, tuple),
+    }
+}
+
+fn dce_free_block(value: Block) -> DceNames {
+    let result = new_dce_names();
+    dce_collect_optional_expr(result, value.tail);
+    let mut index = value.stmts.len();
+    while index > 0 {
+        index = index - 1;
+        let stmt = value.stmts[index];
+        dce_names_remove(result, stmt.name);
+        dce_collect_expr(result, stmt.value)
+    }
+    result
+}
+
+fn dce_exprs_discardable(values: Vec[Expr]) -> bool {
+    for value in values {
+        if dce_expr_discardable(value) {} else {
+            return false
+        }
+    }
+    true
+}
+
+fn dce_optional_expr_discardable(value: Option[Expr]) -> bool {
+    match value {
+        Some(value) => dce_expr_discardable(value),
+        None => true,
+    }
+}
+
+fn dce_binary_discardable(value: ast::BinaryOp) -> bool {
+    match value {
+        Div | Rem | Shl | Shr => false,
+        Add | Sub | Mul | BitAnd | BitOr | BitXor | And | Or | Less | Greater | LessEq | GreaterEq | Eq | NotEq => true,
+    }
+}
+
+fn dce_block_discardable(value: Block) -> bool {
+    for stmt in value.stmts {
+        if dce_expr_discardable(stmt.value) {} else {
+            return false
+        }
+    }
+    dce_optional_expr_discardable(value.tail)
+}
+
+fn dce_expr_discardable(value: Expr) -> bool {
+    match value {
+        Var { .. } | Callable { .. } | Prim { .. } | Closure { .. } => true,
+        Constr { args, .. } => dce_exprs_discardable(args),
+        Tuple { items, .. } | Array { items, .. } => dce_exprs_discardable(items),
+        Block { block, .. } => dce_block_discardable(block),
+        Match { expr, arms, default, .. } => {
+            if dce_expr_discardable(expr) && dce_optional_expr_discardable(default) {} else {
+                return false
+            }
+            for arm in arms {
+                if dce_expr_discardable(arm.body) {} else {
+                    return false
+                }
+            }
+            true
+        },
+        If { cond, then_branch, else_branch, .. } => dce_expr_discardable(cond)
+            && dce_expr_discardable(then_branch)
+            && dce_expr_discardable(else_branch),
+        ConstrGet { expr, .. } | Unary { expr, .. } | Cast { expr, .. } | ToDyn { expr, .. } => {
+            dce_expr_discardable(expr)
+        },
+        Binary { op, lhs, rhs, .. } => dce_binary_discardable(op) && dce_expr_discardable(lhs)
+            && dce_expr_discardable(rhs),
+        Proj { tuple, .. } => dce_expr_discardable(tuple),
+        While { .. } | Loop { .. } | Break { .. } | Continue { .. } | Return { .. } | Go { .. } | Assign {
+            ..,
+        } | Call { .. } | DynCall { .. } | TraitCall { .. } => false,
+    }
+}
+
+fn dce_reverse_stmts(values: Vec[LetStmt]) -> Vec[LetStmt] {
+    let result: Vec[LetStmt] = Vec::with_capacity(values.len());
+    for index in 0..values.len() {
+        result.push(values[values.len() - index - 1])
+    }
+    result
+}
+
+fn dce_block(value: Block) -> Block {
+    let tail = dce_optional_expr(value.tail);
+    let live = new_dce_names();
+    dce_collect_optional_expr(live, tail);
+    let result: Vec[LetStmt] = Vec::with_capacity(value.stmts.len());
+    let mut index = value.stmts.len();
+    while index > 0 {
+        index = index - 1;
+        let stmt = value.stmts[index];
+        let lowered = LetStmt { name: stmt.name, value: dce_expr(stmt.value), ty: stmt.ty };
+        if dce_names_contains(live, lowered.name) {
+            dce_names_remove(live, lowered.name);
+            dce_collect_expr(live, lowered.value);
+            result.push(lowered)
+        } else if dce_expr_discardable(lowered.value) {} else {
+            dce_collect_expr(live, lowered.value);
+            result.push(lowered)
+        }
+    }
+    Block { stmts: dce_reverse_stmts(result), tail }
+}
+
+fn dce_function(value: Function) -> Function {
+    Function {
+        name: value.name,
+        origin: value.origin,
+        root: value.root,
+        generics: value.generics,
+        predicates: value.predicates,
+        trait_impl: value.trait_impl,
+        params: value.params,
+        ret_ty: value.ret_ty,
+        body: dce_block(value.body),
+    }
+}
+
+pub fn eliminate_dead_locals(value: File) -> File {
+    let functions: Vec[Function] = Vec::with_capacity(value.functions.len());
+    for function in value.functions {
+        functions.push(dce_function(function))
+    }
+    File {
+        functions,
+        enums: value.enums,
+        structs: value.structs,
+        type_instances: value.type_instances,
+        constants: value.constants,
+    }
+}
+
+pub fn dce(value: File) -> File {
+    eliminate_dead_locals(value)
+}

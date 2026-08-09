@@ -1,0 +1,310 @@
+package anf;
+
+use gomlc::ast;
+
+struct DceNames {
+    values: Vec[string],
+    present: HashMap[string, unit],
+}
+
+struct DceLive {
+    values: DceNames,
+    joins: DceNames,
+}
+
+struct DceBlockResult {
+    value: Block,
+    live: DceLive,
+}
+
+struct DceTermResult {
+    value: Term,
+    live: DceLive,
+}
+
+struct DceJoinResult {
+    value: JoinBind,
+    live: DceLive,
+}
+
+fn new_dce_names() -> DceNames {
+    DceNames { values: Vec::[], present: HashMap::{} }
+}
+
+fn new_dce_live() -> DceLive {
+    DceLive { values: new_dce_names(), joins: new_dce_names() }
+}
+
+fn dce_names_contains(values: DceNames, name: string) -> bool {
+    values.present.contains(name)
+}
+
+fn dce_names_add(values: DceNames, name: string) -> unit {
+    if dce_names_contains(values, name) {} else {
+        values.present[name] = ();
+        values.values.push(name)
+    }
+}
+
+fn dce_names_add_all(target: DceNames, values: DceNames) -> unit {
+    for name in values.values {
+        if dce_names_contains(values, name) {
+            dce_names_add(target, name)
+        } else {}
+    }
+}
+
+fn dce_names_remove(values: DceNames, name: string) -> unit {
+    values.present.remove(name)
+}
+
+fn dce_live_add_all(target: DceLive, values: DceLive) -> unit {
+    dce_names_add_all(target.values, values.values);
+    dce_names_add_all(target.joins, values.joins)
+}
+
+fn dce_collect_imm(result: DceNames, value: Imm) -> unit {
+    match value {
+        Var { name, ty: _ } => dce_names_add(result, name),
+        Callable { .. } | Prim { .. } | Tag { .. } => (),
+    }
+}
+
+fn dce_collect_imms(result: DceNames, values: Vec[Imm]) -> unit {
+    for value in values {
+        dce_collect_imm(result, value)
+    }
+}
+
+fn dce_collect_value(result: DceNames, value: Value) -> unit {
+    match value {
+        Imm(value) => dce_collect_imm(result, value),
+        Constr { constructor: _, args, ty: _ } => dce_collect_imms(result, args),
+        Tuple { items, ty: _ } | Array { items, ty: _ } => dce_collect_imms(result, items),
+        ConstrGet { expr, .. } | Unary { expr, .. } | Cast { expr, .. } | ToDyn { expr, .. } => {
+            dce_collect_imm(result, expr)
+        },
+        Binary { op: _, lhs, rhs, ty: _ } => {
+            dce_collect_imm(result, lhs);
+            dce_collect_imm(result, rhs)
+        },
+        Assign { name, value, .. } => {
+            dce_names_add(result, name);
+            dce_collect_imm(result, value)
+        },
+        Call { func, args, ty: _ } => {
+            dce_collect_imm(result, func);
+            dce_collect_imms(result, args)
+        },
+        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } => {
+            dce_collect_imm(result, receiver);
+            dce_collect_imms(result, args)
+        },
+        Go { closure, ty: _ } => dce_collect_imm(result, closure),
+        Proj { tuple, index: _, ty: _ } => dce_collect_imm(result, tuple),
+    }
+}
+
+fn dce_binary_discardable(value: ast::BinaryOp) -> bool {
+    match value {
+        Div | Rem | Shl | Shr => false,
+        Add | Sub | Mul | BitAnd | BitOr | BitXor | And | Or | Less | Greater | LessEq | GreaterEq | Eq | NotEq => true,
+    }
+}
+
+fn dce_value_discardable(value: Value) -> bool {
+    match value {
+        Imm(_) | Constr { .. } | Tuple { .. } | Array { .. } | ConstrGet { .. } | Unary { .. } | Cast {
+            ..,
+        } | ToDyn { .. } | Proj { .. } => true,
+        Binary { op, .. } => dce_binary_discardable(op),
+        Assign { .. } | Call { .. } | DynCall { .. } | Go { .. } => false,
+    }
+}
+
+fn dce_reverse_binds(values: Vec[Bind]) -> Vec[Bind] {
+    let result: Vec[Bind] = Vec::with_capacity(values.len());
+    for index in 0..values.len() {
+        result.push(values[values.len() - index - 1])
+    }
+    result
+}
+
+fn dce_join(value: JoinBind) -> DceJoinResult {
+    let result = dce_block_with_live(value.body);
+    for param in value.params {
+        dce_names_remove(result.live.values, param.0)
+    }
+    DceJoinResult {
+        value: JoinBind {
+            name: value.name,
+            role: value.role,
+            params: value.params,
+            ret_ty: value.ret_ty,
+            body: result.value,
+        },
+        live: result.live,
+    }
+}
+
+fn dce_join_group_names(values: Vec[DceJoinResult]) -> DceNames {
+    let result = new_dce_names();
+    for value in values {
+        dce_names_add(result, value.value.name)
+    }
+    result
+}
+
+fn dce_join_group_reachable(values: Vec[DceJoinResult], live: DceLive, names: DceNames) -> DceNames {
+    let reachable = new_dce_names();
+    for value in values {
+        if dce_names_contains(live.joins, value.value.name) {
+            dce_names_add(reachable, value.value.name)
+        } else {}
+    }
+    loop {
+        let previous = reachable.present.len();
+        for value in values {
+            if dce_names_contains(reachable, value.value.name) {
+                for target in value.live.joins.values {
+                    if dce_names_contains(value.live.joins, target)
+                        && dce_names_contains(names, target) {
+                        dce_names_add(reachable, target)
+                    } else {}
+                }
+            } else {}
+        }
+        if reachable.present.len() == previous {
+            break
+        } else {}
+    }
+    reachable
+}
+
+fn dce_join_rec(values: Vec[JoinBind], live: DceLive) -> Vec[JoinBind] {
+    let lowered: Vec[DceJoinResult] = Vec::with_capacity(values.len());
+    for value in values {
+        lowered.push(dce_join(value))
+    }
+    let names = dce_join_group_names(lowered);
+    let reachable = dce_join_group_reachable(lowered, live, names);
+    for name in names.values {
+        dce_names_remove(live.joins, name)
+    }
+    let result: Vec[JoinBind] = Vec::with_capacity(lowered.len());
+    for value in lowered {
+        if dce_names_contains(reachable, value.value.name) {
+            dce_names_add_all(live.values, value.live.values);
+            for target in value.live.joins.values {
+                if dce_names_contains(value.live.joins, target)
+                    && !dce_names_contains(names, target) {
+                    dce_names_add(live.joins, target)
+                } else {}
+            }
+            result.push(value.value)
+        } else {}
+    }
+    result
+}
+
+fn dce_term(value: Term) -> DceTermResult {
+    let live = new_dce_live();
+    let lowered = match value {
+        Return(value) => {
+            dce_collect_imm(live.values, value);
+            Term::Return(value)
+        },
+        Jump { target, args, ret_ty } => {
+            dce_names_add(live.joins, target);
+            dce_collect_imms(live.values, args);
+            Term::Jump { target, args, ret_ty }
+        },
+        If { cond, then_, else_, ret_ty } => {
+            dce_collect_imm(live.values, cond);
+            let then_result = dce_block_with_live(then_);
+            let else_result = dce_block_with_live(else_);
+            dce_live_add_all(live, then_result.live);
+            dce_live_add_all(live, else_result.live);
+            Term::If { cond, then_: then_result.value, else_: else_result.value, ret_ty }
+        },
+        Match { scrutinee, arms, default, ret_ty } => {
+            dce_collect_imm(live.values, scrutinee);
+            let lowered_arms: Vec[Arm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                let result = dce_block_with_live(arm.body);
+                dce_live_add_all(live, result.live);
+                lowered_arms.push(Arm { lhs: arm.lhs, body: result.value })
+            }
+            let lowered_default = match default {
+                Some(body) => {
+                    let result = dce_block_with_live(body);
+                    dce_live_add_all(live, result.live);
+                    Option::Some(result.value)
+                },
+                None => Option::None,
+            };
+            Term::Match { scrutinee, arms: lowered_arms, default: lowered_default, ret_ty }
+        },
+        Unreachable { ty } => Term::Unreachable { ty },
+    };
+    DceTermResult { value: lowered, live }
+}
+
+fn dce_block_with_live(value: Block) -> DceBlockResult {
+    let term = dce_term(value.term);
+    let live = term.live;
+    let result: Vec[Bind] = Vec::with_capacity(value.binds.len());
+    let mut index = value.binds.len();
+    while index > 0 {
+        index = index - 1;
+        match value.binds[index] {
+            Let(value) => if dce_names_contains(live.values, value.name) {
+                dce_names_remove(live.values, value.name);
+                dce_collect_value(live.values, value.value);
+                result.push(Bind::Let(value))
+            } else if dce_value_discardable(value.value) {} else {
+                dce_collect_value(live.values, value.value);
+                result.push(Bind::Let(value))
+            },
+            Join(value) => if dce_names_contains(live.joins, value.name) {
+                dce_names_remove(live.joins, value.name);
+                let lowered = dce_join(value);
+                dce_live_add_all(live, lowered.live);
+                result.push(Bind::Join(lowered.value))
+            } else {},
+            JoinRec(values) => {
+                let lowered = dce_join_rec(values, live);
+                if lowered.is_empty() {} else {
+                    result.push(Bind::JoinRec(lowered))
+                }
+            },
+        }
+    }
+    DceBlockResult { value: Block { binds: dce_reverse_binds(result), term: term.value }, live }
+}
+
+fn dce_function(value: Function) -> Function {
+    Function {
+        name: value.name,
+        origin: value.origin,
+        root: value.root,
+        trait_impl: value.trait_impl,
+        params: value.params,
+        ret_ty: value.ret_ty,
+        body: dce_block_with_live(value.body).value,
+    }
+}
+
+pub fn dce(value: File) -> File {
+    let functions: Vec[Function] = Vec::with_capacity(value.functions.len());
+    for function in value.functions {
+        functions.push(dce_function(function))
+    }
+    File {
+        functions,
+        enums: value.enums,
+        structs: value.structs,
+        type_instances: value.type_instances,
+        constants: value.constants,
+    }
+}
