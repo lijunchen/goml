@@ -219,7 +219,7 @@ fn import_path_text(value: ast::Path) -> string {
 }
 
 fn std_import(value: string) -> bool {
-    value == "std" || value.starts_with("std::")
+    value == resources::std_root_package || value.starts_with(resources::std_package_prefix)
 }
 
 fn single_file_project_import(value: ast::LowerResult) -> Option[string] {
@@ -674,36 +674,36 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
 
 fn standard_library_package(value: StandardLibrary, package_name: string) -> PackageCompilation {
     match package_name {
-        "std" => value.root,
-        "std::internal::host" => value.host,
-        "std::ascii" => value.ascii,
-        "std::bincode" => value.bincode,
-        "std::bytes" => value.bytes,
-        "std::cmp" => value.cmp,
-        "std::collections" => value.collections,
-        "std::error" => value.error,
-        "std::env" => value.env,
-        "std::fs" => value.fs,
-        "std::io" => value.io,
-        "std::internal::task" => value.internal_task,
-        "std::iter" => value.iter,
-        "std::json" => value.json,
-        "std::num" => value.num,
-        "std::path" => value.path,
-        "std::process" => value.process,
-        "std::serde" => value.serde,
-        "std::task" => value.task,
-        "std::testing" => value.testing,
-        "std::text" => value.text,
-        "std::toml" => value.toml,
-        "std::time" => value.time,
-        "std::utf8" => value.utf8,
-        "std::unicode" => value.unicode,
-        "std::math" => value.math,
-        "std::rand" => value.rand,
-        "std::crypto" => value.crypto,
-        "std::crypto::hash" => value.crypto_hash,
-        "std::crypto::rand" => value.crypto_rand,
+        resources::std_root_package => value.root,
+        resources::std_internal_host_package => value.host,
+        resources::std_ascii_package => value.ascii,
+        resources::std_bincode_package => value.bincode,
+        resources::std_bytes_package => value.bytes,
+        resources::std_cmp_package => value.cmp,
+        resources::std_collections_package => value.collections,
+        resources::std_error_package => value.error,
+        resources::std_env_package => value.env,
+        resources::std_fs_package => value.fs,
+        resources::std_io_package => value.io,
+        resources::std_internal_task_package => value.internal_task,
+        resources::std_iter_package => value.iter,
+        resources::std_json_package => value.json,
+        resources::std_num_package => value.num,
+        resources::std_path_package => value.path,
+        resources::std_process_package => value.process,
+        resources::std_serde_package => value.serde,
+        resources::std_task_package => value.task,
+        resources::std_testing_package => value.testing,
+        resources::std_text_package => value.text,
+        resources::std_toml_package => value.toml,
+        resources::std_time_package => value.time,
+        resources::std_utf8_package => value.utf8,
+        resources::std_unicode_package => value.unicode,
+        resources::std_math_package => value.math,
+        resources::std_rand_package => value.rand,
+        resources::std_crypto_package => value.crypto,
+        resources::std_crypto_hash_package => value.crypto_hash,
+        resources::std_crypto_rand_package => value.crypto_rand,
         _ => {
             fail("error[compile]: unknown standard package " + package_name);
             value.root
@@ -1518,30 +1518,25 @@ pub fn compile_source_or_diagnostics(source_path: string, source: string) -> Sou
 }
 
 fn pipeline_stage_output(stage: string, source_path: string, source: string) -> string {
-    if stage == "cst" {
-        cst::debug_tree(parser::parse(source))
-    } else {
-        let compilation = compile_source(source_path, source);
-        if stage == "ast" {
-            ast::pretty(compilation.ast_value)
-        } else if stage == "hir" {
-            hir::encode(compilation.hir_value)
-        } else if stage == "tast" {
-            tast::encode(compilation.tast_value)
-        } else if stage == "core" {
-            core::encode(compilation.core_value)
-        } else if stage == "mono" {
-            mono::encode(compilation.mono_value)
-        } else if stage == "lift" {
-            lift::encode(compilation.lift_value)
-        } else if stage == "anf" {
-            anf::encode(compilation.anf_value)
-        } else if stage == "go" {
-            go_backend::encode(compilation.go_value)
-        } else {
-            fail("unknown pipeline stage: " + stage);
-            ""
-        }
+    match stage {
+        cst_stage => cst::debug_tree(parser::parse(source)),
+        _ => {
+            let compilation = compile_source(source_path, source);
+            match stage {
+                ast_stage => ast::pretty(compilation.ast_value),
+                hir_stage => hir::encode(compilation.hir_value),
+                tast_stage => tast::encode(compilation.tast_value),
+                core_stage => core::encode(compilation.core_value),
+                mono_stage => mono::encode(compilation.mono_value),
+                lift_stage => lift::encode(compilation.lift_value),
+                anf_stage => anf::encode(compilation.anf_value),
+                go_stage => go_backend::encode(compilation.go_value),
+                _ => {
+                    fail("unknown pipeline stage: " + stage);
+                    ""
+                },
+            }
+        },
     }
 }
 

@@ -10,6 +10,7 @@ use gomlc::ctir;
 use gomlc::cst;
 use gomlc::hir;
 use gomlc::parser;
+use gomlc::resources;
 use gomlc::tast;
 use std::collections;
 use std::fs;
@@ -89,36 +90,36 @@ fn artifact_standard_package(standard: ArtifactStandardLibrary, package_name: st
     ArtifactStandardPackage,
 ] {
     match package_name {
-        "std" => Option::Some(standard.root),
-        "std::internal::host" => Option::Some(standard.host),
-        "std::ascii" => Option::Some(standard.ascii),
-        "std::bincode" => Option::Some(standard.bincode),
-        "std::bytes" => Option::Some(standard.bytes),
-        "std::cmp" => Option::Some(standard.cmp),
-        "std::collections" => Option::Some(standard.collections),
-        "std::error" => Option::Some(standard.error),
-        "std::env" => Option::Some(standard.env),
-        "std::fs" => Option::Some(standard.fs),
-        "std::io" => Option::Some(standard.io),
-        "std::internal::task" => Option::Some(standard.internal_task),
-        "std::iter" => Option::Some(standard.iter),
-        "std::json" => Option::Some(standard.json),
-        "std::num" => Option::Some(standard.num),
-        "std::path" => Option::Some(standard.path),
-        "std::process" => Option::Some(standard.process),
-        "std::serde" => Option::Some(standard.serde),
-        "std::task" => Option::Some(standard.task),
-        "std::testing" => Option::Some(standard.testing),
-        "std::text" => Option::Some(standard.text),
-        "std::toml" => Option::Some(standard.toml),
-        "std::time" => Option::Some(standard.time),
-        "std::utf8" => Option::Some(standard.utf8),
-        "std::unicode" => Option::Some(standard.unicode),
-        "std::math" => Option::Some(standard.math),
-        "std::rand" => Option::Some(standard.rand),
-        "std::crypto" => Option::Some(standard.crypto),
-        "std::crypto::hash" => Option::Some(standard.crypto_hash),
-        "std::crypto::rand" => Option::Some(standard.crypto_rand),
+        resources::std_root_package => Option::Some(standard.root),
+        resources::std_internal_host_package => Option::Some(standard.host),
+        resources::std_ascii_package => Option::Some(standard.ascii),
+        resources::std_bincode_package => Option::Some(standard.bincode),
+        resources::std_bytes_package => Option::Some(standard.bytes),
+        resources::std_cmp_package => Option::Some(standard.cmp),
+        resources::std_collections_package => Option::Some(standard.collections),
+        resources::std_error_package => Option::Some(standard.error),
+        resources::std_env_package => Option::Some(standard.env),
+        resources::std_fs_package => Option::Some(standard.fs),
+        resources::std_io_package => Option::Some(standard.io),
+        resources::std_internal_task_package => Option::Some(standard.internal_task),
+        resources::std_iter_package => Option::Some(standard.iter),
+        resources::std_json_package => Option::Some(standard.json),
+        resources::std_num_package => Option::Some(standard.num),
+        resources::std_path_package => Option::Some(standard.path),
+        resources::std_process_package => Option::Some(standard.process),
+        resources::std_serde_package => Option::Some(standard.serde),
+        resources::std_task_package => Option::Some(standard.task),
+        resources::std_testing_package => Option::Some(standard.testing),
+        resources::std_text_package => Option::Some(standard.text),
+        resources::std_toml_package => Option::Some(standard.toml),
+        resources::std_time_package => Option::Some(standard.time),
+        resources::std_utf8_package => Option::Some(standard.utf8),
+        resources::std_unicode_package => Option::Some(standard.unicode),
+        resources::std_math_package => Option::Some(standard.math),
+        resources::std_rand_package => Option::Some(standard.rand),
+        resources::std_crypto_package => Option::Some(standard.crypto),
+        resources::std_crypto_hash_package => Option::Some(standard.crypto_hash),
+        resources::std_crypto_rand_package => Option::Some(standard.crypto_rand),
         _ => Option::None,
     }
 }
@@ -535,7 +536,8 @@ fn artifact_apply_declared_package_aliases(
 }
 
 fn standard_internal_import_allowed(package_name: string) -> bool {
-    package_name == "std" || package_name.starts_with("std::")
+    package_name == resources::std_root_package
+        || package_name.starts_with(resources::std_package_prefix)
 }
 
 fn disallowed_standard_internal_import(package_name: string, import_name: string) -> bool {
@@ -881,7 +883,8 @@ fn artifact_find_core_unit(values: Vec[artifact::ArtifactCoreUnit], package_name
 }
 
 fn artifact_link_dependency_name(package_name: string) -> bool {
-    package_name != "builtin" && package_name != "std" && !package_name.starts_with("std::")
+    package_name != "builtin" && package_name != resources::std_root_package
+        && !package_name.starts_with(resources::std_package_prefix)
 }
 
 fn artifact_reachable_core_units(roots: Vec[string], values: Vec[artifact::ArtifactCoreUnit]) -> Result[

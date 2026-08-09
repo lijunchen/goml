@@ -971,7 +971,7 @@ fn run_link_command(args: Vec[string]) -> unit {
     let command = match parse_link_command_args(args) {
         Ok(value) => value,
         Err(error) => {
-            handle_cli_parse_error("link", error);
+            handle_cli_parse_error(link_command, error);
             LinkCommandArgs {
                 inputs: Vec::[],
                 entry: "main",
@@ -1075,7 +1075,7 @@ fn run_test_link_command(args: Vec[string]) -> unit {
     let command = match parse_test_link_command_args(args) {
         Ok(value) => value,
         Err(error) => {
-            handle_cli_parse_error("test-link", error);
+            handle_cli_parse_error(test_link_command, error);
             TestLinkCommandArgs {
                 inputs: Vec::[],
                 packages: Vec::[],

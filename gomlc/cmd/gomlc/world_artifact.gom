@@ -306,7 +306,9 @@ fn parse_prepare_world_args(args: Vec[string]) -> Result[string, string] {
             return Result::Err(cli_help_signal())
         } else if argument == "--output" {
             if option_string_present(output) {
-                return Result::Err(repeated_argument_error("prepare-world", "--output <OUTPUT>"))
+                return Result::Err(
+                    repeated_argument_error(prepare_world_command, "--output <OUTPUT>"),
+                )
             } else if index + 1 >= args.len() || cli_option(args[index + 1]) {
                 return Result::Err(value_required_error("--output <OUTPUT>", Option::None))
             } else {
@@ -315,7 +317,9 @@ fn parse_prepare_world_args(args: Vec[string]) -> Result[string, string] {
             }
         } else if option_string_present(inline_cli_value(argument, "--output")) {
             if option_string_present(output) {
-                return Result::Err(repeated_argument_error("prepare-world", "--output <OUTPUT>"))
+                return Result::Err(
+                    repeated_argument_error(prepare_world_command, "--output <OUTPUT>"),
+                )
             } else if option_string_empty(inline_cli_value(argument, "--output")) {
                 return Result::Err(value_required_error("--output <OUTPUT>", Option::None))
             } else {
@@ -323,14 +327,14 @@ fn parse_prepare_world_args(args: Vec[string]) -> Result[string, string] {
                 index = index + 1;
             }
         } else {
-            return Result::Err(unexpected_argument_error("prepare-world", argument, false))
+            return Result::Err(unexpected_argument_error(prepare_world_command, argument, false))
         }
     }
     match output {
         Some(value) => Result::Ok(value),
         None => {
             let missing: Vec[string] = Vec::["--output <OUTPUT>"];
-            Result::Err(missing_required_arguments_error("prepare-world", missing))
+            Result::Err(missing_required_arguments_error(prepare_world_command, missing))
         },
     }
 }
@@ -341,6 +345,6 @@ fn run_prepare_world(args: Vec[string]) -> unit {
             Ok(()) => (),
             Err(error) => fail(compile_error_prefix + error),
         },
-        Err(error) => handle_cli_parse_error("prepare-world", error),
+        Err(error) => handle_cli_parse_error(prepare_world_command, error),
     }
 }

@@ -6,6 +6,55 @@ use std::io;
 use std::process;
 use std::text;
 
+const check_command: string = "check";
+
+const test_check_command: string = "test-check";
+
+const build_command: string = "build";
+
+const test_build_command: string = "test-build";
+
+const link_command: string = "link";
+
+const test_link_command: string = "test-link";
+
+const prepare_world_command: string = "prepare-world";
+
+const package_info_command: string = "package-info";
+
+const run_single_command: string = "run-single";
+
+const version_command: string = "version";
+
+const help_command: string = "help";
+
+const lex_stage: string = "lex";
+
+const cst_stage: string = "cst";
+
+const ast_stage: string = "ast";
+
+const hir_stage: string = "hir";
+
+const tast_stage: string = "tast";
+
+const core_stage: string = "core";
+
+const mono_stage: string = "mono";
+
+const lift_stage: string = "lift";
+
+const anf_stage: string = "anf";
+
+const go_stage: string = "go";
+
+fn package_command(command: string) -> bool {
+    match command {
+        check_command | test_check_command | build_command | test_build_command => true,
+        _ => false,
+    }
+}
+
 fn top_level_help() -> string {
     "Usage: gomlc <COMMAND>\n\nCommands:\n  check          \n  test-check     \n  build          \n  test-build     \n  link           \n  test-link      \n  prepare-world  \n  package-info   \n  run-single     \n  version        \n  help           Print this message or the help of the given subcommand(s)\n\nOptions:\n  -h, --help  Print help"
 }
@@ -16,77 +65,59 @@ fn package_command_help(command: string) -> string {
 }
 
 fn command_help(command: string) -> Option[string] {
-    if command == "check" || command == "test-check" || command == "build"
-        || command == "test-build" {
-        Option::Some(package_command_help(command))
-    } else if command == "link" {
-        Option::Some(
+    match command {
+        check_command | test_check_command | build_command | test_build_command => Option::Some(
+            package_command_help(command),
+        ),
+        link_command => Option::Some(
             "Usage: gomlc link --input <INPUT>... --entry <ENTRY> --output <OUTPUT>\n\nOptions:\n      --input <INPUT>...  \n      --entry <ENTRY>     \n      --output <OUTPUT>   \n  -h, --help              Print help",
-        )
-    } else if command == "test-link" {
-        Option::Some(
+        ),
+        test_link_command => Option::Some(
             "Usage: gomlc test-link --input <INPUT>... --package <PACKAGE> --output <OUTPUT> --manifest <MANIFEST>\n\nOptions:\n      --input <INPUT>...     \n      --package <PACKAGE>    \n      --output <OUTPUT>      \n      --manifest <MANIFEST>  \n  -h, --help                 Print help",
-        )
-    } else if command == "prepare-world" {
-        Option::Some(
+        ),
+        prepare_world_command => Option::Some(
             "Usage: gomlc prepare-world --output <OUTPUT>\n\nOptions:\n      --output <OUTPUT>  \n  -h, --help             Print help",
-        )
-    } else if command == "package-info" {
-        Option::Some(
+        ),
+        package_info_command => Option::Some(
             "Usage: gomlc package-info [OPTIONS] --input <INPUT>...\n\nOptions:\n      --input <INPUT>...  \n      --format <FORMAT>   [default: json] [possible values: json]\n  -h, --help              Print help",
-        )
-    } else if command == "run-single" {
-        Option::Some(
+        ),
+        run_single_command => Option::Some(
             "Usage: gomlc run-single [OPTIONS] <FILE>\n\nArguments:\n  <FILE>  \n\nOptions:\n      --dump-ast           \n      --dump-expanded-ast  \n      --dump-hir           \n      --dump-tast          \n      --dump-ctir          \n      --dump-core          \n      --dump-mono          \n      --dump-lift          \n      --dump-anf           \n      --dump-go            \n  -h, --help               Print help",
-        )
-    } else if command == "version" {
-        Option::Some(
+        ),
+        version_command => Option::Some(
             "Usage: gomlc version [OPTIONS]\n\nOptions:\n      --format <FORMAT>  [default: text] [possible values: text, json]\n  -h, --help             Print help",
-        )
-    } else if command == "help" {
-        Option::Some(
+        ),
+        help_command => Option::Some(
             "Print this message or the help of the given subcommand(s)\n\nUsage: gomlc help [COMMAND]...\n\nArguments:\n  [COMMAND]...  Print help for the subcommand(s)",
-        )
-    } else {
-        Option::None
+        ),
+        _ => Option::None,
     }
 }
 
 fn command_usage(command: string) -> string {
-    if command == "check" || command == "test-check" || command == "build"
-        || command == "test-build" {
-        "gomlc " + command + " [OPTIONS] --package <PACKAGE> --input <INPUT>... --output <OUTPUT>"
-    } else if command == "link" {
-        "gomlc link --input <INPUT>... --entry <ENTRY> --output <OUTPUT>"
-    } else if command == "test-link" {
-        "gomlc test-link --input <INPUT>... --package <PACKAGE> --output <OUTPUT> --manifest <MANIFEST>"
-    } else if command == "prepare-world" {
-        "gomlc prepare-world --output <OUTPUT>"
-    } else if command == "prepare-world" {
-        "gomlc prepare-world --output <OUTPUT>"
-    } else if command == "package-info" {
-        "gomlc package-info [OPTIONS] --input <INPUT>..."
-    } else if command == "run-single" {
-        "gomlc run-single [OPTIONS] <FILE>"
-    } else if command == "version" {
-        "gomlc version [OPTIONS]"
-    } else {
-        "gomlc <COMMAND>"
+    match command {
+        check_command | test_check_command | build_command | test_build_command => "gomlc "
+            + command
+            + " [OPTIONS] --package <PACKAGE> --input <INPUT>... --output <OUTPUT>",
+        link_command => "gomlc link --input <INPUT>... --entry <ENTRY> --output <OUTPUT>",
+        test_link_command => "gomlc test-link --input <INPUT>... --package <PACKAGE> --output <OUTPUT> --manifest <MANIFEST>",
+        prepare_world_command => "gomlc prepare-world --output <OUTPUT>",
+        package_info_command => "gomlc package-info [OPTIONS] --input <INPUT>...",
+        run_single_command => "gomlc run-single [OPTIONS] <FILE>",
+        version_command => "gomlc version [OPTIONS]",
+        _ => "gomlc <COMMAND>",
     }
 }
 
 fn required_command_usage(command: string) -> string {
-    if command == "check" || command == "test-check" || command == "build"
-        || command == "test-build" {
-        "gomlc " + command + " --package <PACKAGE> --input <INPUT>... --output <OUTPUT>"
-    } else if command == "run-single" {
-        "gomlc run-single <FILE>"
-    } else if command == "prepare-world" {
-        "gomlc prepare-world --output <OUTPUT>"
-    } else if command == "package-info" {
-        "gomlc package-info --input <INPUT>..."
-    } else {
-        command_usage(command)
+    match command {
+        check_command | test_check_command | build_command | test_build_command => "gomlc "
+            + command
+            + " --package <PACKAGE> --input <INPUT>... --output <OUTPUT>",
+        run_single_command => "gomlc run-single <FILE>",
+        prepare_world_command => "gomlc prepare-world --output <OUTPUT>",
+        package_info_command => "gomlc package-info --input <INPUT>...",
+        _ => command_usage(command),
     }
 }
 
@@ -174,48 +205,54 @@ fn cli_edit_distance(left: string, right: string) -> int {
 
 fn similar_cli_argument(command: string, argument: string) -> Option[string] {
     let candidates: Vec[string] = Vec::[];
-    if command == "check" || command == "test-check" || command == "build"
-        || command == "test-build" {
-        candidates.push("--package");
-        candidates.push("--input");
-        candidates.push("--interface-path");
-        candidates.push("--output");
-        candidates.push("--help")
-    } else if command == "link" {
-        candidates.push("--input");
-        candidates.push("--entry");
-        candidates.push("--output");
-        candidates.push("--help")
-    } else if command == "test-link" {
-        candidates.push("--input");
-        candidates.push("--package");
-        candidates.push("--output");
-        candidates.push("--manifest");
-        candidates.push("--help")
-    } else if command == "prepare-world" {
-        candidates.push("--output");
-        candidates.push("--help")
-    } else if command == "package-info" {
-        candidates.push("--input");
-        candidates.push("--format");
-        candidates.push("--help")
-    } else if command == "run-single" {
-        candidates.push("--dump-ast");
-        candidates.push("--dump-expanded-ast");
-        candidates.push("--dump-hir");
-        candidates.push("--dump-tast");
-        candidates.push("--dump-core");
-        candidates.push("--dump-mono");
-        candidates.push("--dump-lift");
-        candidates.push("--dump-anf");
-        candidates.push("--dump-go");
-        candidates.push("--dump-ctir");
-        candidates.push("--help")
-    } else if command == "version" {
-        candidates.push("--format");
-        candidates.push("--help")
-    } else {
-        candidates.push("--help")
+    match command {
+        check_command | test_check_command | build_command | test_build_command => {
+            candidates.push("--package");
+            candidates.push("--input");
+            candidates.push("--interface-path");
+            candidates.push("--output");
+            candidates.push("--help")
+        },
+        link_command => {
+            candidates.push("--input");
+            candidates.push("--entry");
+            candidates.push("--output");
+            candidates.push("--help")
+        },
+        test_link_command => {
+            candidates.push("--input");
+            candidates.push("--package");
+            candidates.push("--output");
+            candidates.push("--manifest");
+            candidates.push("--help")
+        },
+        prepare_world_command => {
+            candidates.push("--output");
+            candidates.push("--help")
+        },
+        package_info_command => {
+            candidates.push("--input");
+            candidates.push("--format");
+            candidates.push("--help")
+        },
+        run_single_command => {
+            candidates.push(dump_ast_option);
+            candidates.push(dump_expanded_ast_option);
+            candidates.push(dump_hir_option);
+            candidates.push(dump_tast_option);
+            candidates.push(dump_core_option);
+            candidates.push(dump_mono_option);
+            candidates.push(dump_lift_option);
+            candidates.push(dump_anf_option);
+            candidates.push(dump_go_option);
+            candidates.push(dump_ctir_option);
+            candidates.push("--help")
+        },
+        version_command => {
+            candidates.push("--format");
+            candidates.push("--help")
+        },
+        _ => candidates.push("--help"),
     };
     let name = cli_argument_name(argument);
     let mut best: Option[string] = Option::None;
@@ -237,16 +274,15 @@ fn similar_cli_argument(command: string, argument: string) -> Option[string] {
 fn similar_cli_argument_usage(command: string, argument: string) -> string {
     if command == "" && argument == "--help" {
         "gomlc --help <COMMAND>"
-    } else if command == "version" && argument == "--format" {
+    } else if command == version_command && argument == "--format" {
         "gomlc version --format <FORMAT>"
-    } else if command == "version" && argument == "--help" {
+    } else if command == version_command && argument == "--help" {
         "gomlc version --help"
-    } else if command == "package-info" && argument == "--format" {
+    } else if command == package_info_command && argument == "--format" {
         "gomlc package-info --format <FORMAT> --input <INPUT>..."
-    } else if command == "package-info" && argument == "--help" {
+    } else if command == package_info_command && argument == "--help" {
         "gomlc package-info --help --input <INPUT>..."
-    } else if command == "check" || command == "test-check" || command == "build"
-        || command == "test-build" {
+    } else if package_command(command) {
         if argument == "--interface-path" {
             required_command_usage(command) + " --interface-path <INTERFACE_FILE>"
         } else if argument == "--help" {
@@ -260,23 +296,20 @@ fn similar_cli_argument_usage(command: string, argument: string) -> string {
 }
 
 fn cli_value_option(command: string, argument: string) -> bool {
-    if command == "check" || command == "test-check" || command == "build"
-        || command == "test-build" {
-        argument == "--package" || argument == "--input" || argument == "--interface-path"
+    match command {
+        check_command | test_check_command | build_command | test_build_command => argument
+            == "--package"
+            || argument == "--input"
+            || argument == "--interface-path"
+            || argument == "--output",
+        link_command => argument == "--input" || argument == "--entry" || argument == "--output",
+        test_link_command => argument == "--input" || argument == "--package"
             || argument == "--output"
-    } else if command == "link" {
-        argument == "--input" || argument == "--entry" || argument == "--output"
-    } else if command == "test-link" {
-        argument == "--input" || argument == "--package" || argument == "--output"
-            || argument == "--manifest"
-    } else if command == "prepare-world" {
-        argument == "--output"
-    } else if command == "package-info" {
-        argument == "--input" || argument == "--format"
-    } else if command == "version" {
-        argument == "--format"
-    } else {
-        false
+            || argument == "--manifest",
+        prepare_world_command => argument == "--output",
+        package_info_command => argument == "--input" || argument == "--format",
+        version_command => argument == "--format",
+        _ => false,
     }
 }
 
@@ -285,30 +318,27 @@ fn known_cli_option(command: string, argument: string) -> bool {
         || option_string_present(inline_cli_value(argument, "--help"))
         || cli_value_option(command, argument) {
         true
-    } else if command == "check" || command == "test-check" || command == "build"
-        || command == "test-build" {
-        option_string_present(inline_cli_value(argument, "--package"))
-            || option_string_present(inline_cli_value(argument, "--input"))
-            || option_string_present(inline_cli_value(argument, "--interface-path"))
-            || option_string_present(inline_cli_value(argument, "--output"))
-    } else if command == "link" {
-        option_string_present(inline_cli_value(argument, "--input"))
-            || option_string_present(inline_cli_value(argument, "--entry"))
-            || option_string_present(inline_cli_value(argument, "--output"))
-    } else if command == "test-link" {
-        option_string_present(inline_cli_value(argument, "--input"))
-            || option_string_present(inline_cli_value(argument, "--package"))
-            || option_string_present(inline_cli_value(argument, "--output"))
-            || option_string_present(inline_cli_value(argument, "--manifest"))
-    } else if command == "prepare-world" {
-        option_string_present(inline_cli_value(argument, "--output"))
-    } else if command == "package-info" {
-        option_string_present(inline_cli_value(argument, "--input"))
-            || option_string_present(inline_cli_value(argument, "--format"))
-    } else if command == "version" {
-        option_string_present(inline_cli_value(argument, "--format"))
     } else {
-        false
+        match command {
+            check_command | test_check_command | build_command | test_build_command => option_string_present(
+                inline_cli_value(argument, "--package"),
+            )
+                || option_string_present(inline_cli_value(argument, "--input"))
+                || option_string_present(inline_cli_value(argument, "--interface-path"))
+                || option_string_present(inline_cli_value(argument, "--output")),
+            link_command => option_string_present(inline_cli_value(argument, "--input"))
+                || option_string_present(inline_cli_value(argument, "--entry"))
+                || option_string_present(inline_cli_value(argument, "--output")),
+            test_link_command => option_string_present(inline_cli_value(argument, "--input"))
+                || option_string_present(inline_cli_value(argument, "--package"))
+                || option_string_present(inline_cli_value(argument, "--output"))
+                || option_string_present(inline_cli_value(argument, "--manifest")),
+            prepare_world_command => option_string_present(inline_cli_value(argument, "--output")),
+            package_info_command => option_string_present(inline_cli_value(argument, "--input"))
+                || option_string_present(inline_cli_value(argument, "--format")),
+            version_command => option_string_present(inline_cli_value(argument, "--format")),
+            _ => false,
+        }
     }
 }
 
@@ -409,13 +439,10 @@ fn unexpected_value_error_with_usage(value: string, argument: string, usage: str
 }
 
 fn is_debug_stage(command: string) -> bool {
-    command == "lex" || command == "cst" || command == "ast" || command == "hir"
-        || command == "tast"
-        || command == "core"
-        || command == "mono"
-        || command == "lift"
-        || command == "anf"
-        || command == "go"
+    match command {
+        lex_stage | cst_stage | ast_stage | hir_stage | tast_stage | core_stage | mono_stage | lift_stage | anf_stage | go_stage => true,
+        _ => false,
+    }
 }
 
 fn print_cli_help(message: string) -> unit {
@@ -490,17 +517,17 @@ fn cli_jaro_similarity(left: string, right: string) -> Option[CliSimilarity] {
 
 fn similar_cli_subcommands(command: string) -> Vec[string] {
     let candidates: Vec[string] = Vec::[];
-    candidates.push("check");
-    candidates.push("test-check");
-    candidates.push("build");
-    candidates.push("test-build");
-    candidates.push("link");
-    candidates.push("test-link");
-    candidates.push("prepare-world");
-    candidates.push("package-info");
-    candidates.push("run-single");
-    candidates.push("version");
-    candidates.push("help");
+    candidates.push(check_command);
+    candidates.push(test_check_command);
+    candidates.push(build_command);
+    candidates.push(test_build_command);
+    candidates.push(link_command);
+    candidates.push(test_link_command);
+    candidates.push(prepare_world_command);
+    candidates.push(package_info_command);
+    candidates.push(run_single_command);
+    candidates.push(version_command);
+    candidates.push(help_command);
     let similar: Vec[CliSimilarity] = Vec::[];
     for candidate in candidates {
         match cli_jaro_similarity(command, candidate) {
@@ -581,12 +608,12 @@ fn run_help_command(args: Vec[string]) -> unit {
         let command = args[2];
         match command_help(command) {
             Some(_) => {
-                let usage = if command == "help" {
+                let usage = if command == help_command {
                     "gomlc help [COMMAND]..."
                 } else {
                     command_usage(command)
                 };
-                let footer = if command == "help" {
+                let footer = if command == help_command {
                     ""
                 } else {
                     "\n\n" + cli_error_footer()
