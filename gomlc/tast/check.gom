@@ -2733,6 +2733,13 @@ fn equality_comparable_type(ctx: Checker, value: Type) -> bool {
     }
 }
 
+fn builtin_equality_type(value: Type) -> bool {
+    match prune(value) {
+        Error | Unit | Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | Float32 | Float64 | String | Char => true,
+        _ => false,
+    }
+}
+
 fn order_comparable_type(value: Type) -> bool {
     is_numeric_type(value)
         || match prune(value) {
@@ -2909,7 +2916,11 @@ fn check_binary_expr(
                 expr_type(left)
             },
             resolution: if is_equality_op(op) {
-                BinaryResolution::Overloaded { trait_name: "PartialEq" }
+                if builtin_equality_type(expr_type(left)) {
+                    BinaryResolution::Builtin
+                } else {
+                    BinaryResolution::Overloaded { trait_name: "PartialEq" }
+                }
             } else if is_order_op(op) && !order_comparable_type(expr_type(left)) {
                 match partial_order_trait(ctx, expr_type(left)) {
                     Some(trait_name) => BinaryResolution::Overloaded { trait_name },

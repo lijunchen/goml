@@ -332,21 +332,6 @@ fn negated_integer(value: tast::Primitive) -> Option[tast::Primitive] {
 fn lower_call(ctx: Lowerer, function: tast::Expr, arguments: Vec[tast::Expr], ty: tast::Type) -> Expr {
     let args = lower_exprs(ctx, arguments);
     match function {
-        Callable { callable: Intrinsic("numeric.convert"), ty: method_ty } => {
-            if args.len() == 1
-                && tast::builtin_numeric_conversion_types_valid(tast::expr_type(arguments[0]), ty) {
-                Expr::Cast { expr: args[0], ty }
-            } else {
-                Expr::Call {
-                    func: Expr::Callable {
-                        callable: tast::Callable::Intrinsic("numeric.convert"),
-                        ty: method_ty,
-                    },
-                    args,
-                    ty,
-                }
-            }
-        },
         Callable {
             callable: TraitMethod { trait_ref: reference, method_name: name, for_ty, has_receiver },
             ty: _,

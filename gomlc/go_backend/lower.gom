@@ -947,9 +947,7 @@ fn compile_call(env: LowerEnv, func: anf::Imm, args: Vec[anf::Imm]) -> Expr {
             let compiled = compile_imms_expected(env, args, expected);
             match func {
                 Callable { callable: Intrinsic(key), ty: _ } => {
-                    if key == "eq.primitive" {
-                        Expr::Binary { op: BinaryOp::Eq, lhs: compiled[0], rhs: compiled[1] }
-                    } else if key == "slice.new" {
+                    if key == "slice.new" {
                         Expr::Slice {
                             base: Expr::Field { expr: compiled[0], field_name: "items" },
                             start: compiled[1],

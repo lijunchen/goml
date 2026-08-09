@@ -974,12 +974,6 @@ fn lower_ct_expr(ctx: CtLowerContext, value: Expr) -> Result[ctir::CtExpr, strin
                         target: ctir::CtCallTarget::Intrinsic(name),
                         args: lower_ct_exprs(ctx, args)?,
                     }
-                } else if name == "numeric.convert" && args.len() == 1
-                    && builtin_numeric_conversion_types_valid(expr_type(args[0]), ty) {
-                    ctir::CtExprKind::Cast {
-                        value: lower_ct_expr(ctx, args[0])?,
-                        target: lower_ct_type(ctx, ty)?,
-                    }
                 } else {
                     return Result::Err("comptime intrinsic `" + name + "` is not supported")
                 },
