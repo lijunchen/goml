@@ -1057,6 +1057,10 @@ fn checks_match_exhaustiveness_and_irrefutable_bindings() -> unit {
         tuple_gap.diagnostics.get(0).message,
         "non-exhaustive match: missing pattern (false, false)",
     );
+    let symbolic_constant = checked_diagnostics(
+        "const classified: int = classify(42); const answer: int = make_answer(); #[comptime] fn make_answer() -> int { 42 } #[comptime] fn classify(value: int) -> int { match value { answer => 1, _ => 0 } }",
+    );
+    testing::assert_eq(symbolic_constant.len(), 0);
     let refutable = check(
         hir::lower(
             ast::lower(
