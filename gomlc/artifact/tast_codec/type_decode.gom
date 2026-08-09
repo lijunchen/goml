@@ -141,23 +141,23 @@ pub fn artifact_decode_type(context: ArtifactDecodeContext, value: wire::Artifac
 ] {
     match value {
         String(name) => match name {
-            "TUnit" => Result::Ok(tast::Type::Unit),
-            "TNever" => Result::Ok(tast::Type::Never),
-            "TBool" => Result::Ok(tast::Type::Bool),
-            "TInt" => Result::Ok(tast::Type::Int),
-            "TInt8" => Result::Ok(tast::Type::Int8),
-            "TInt16" => Result::Ok(tast::Type::Int16),
-            "TInt32" => Result::Ok(tast::Type::Int32),
-            "TInt64" => Result::Ok(tast::Type::Int64),
-            "TUint" => Result::Ok(tast::Type::Uint),
-            "TUint8" => Result::Ok(tast::Type::Uint8),
-            "TUint16" => Result::Ok(tast::Type::Uint16),
-            "TUint32" => Result::Ok(tast::Type::Uint32),
-            "TUint64" => Result::Ok(tast::Type::Uint64),
-            "TFloat32" => Result::Ok(tast::Type::Float32),
-            "TFloat64" => Result::Ok(tast::Type::Float64),
-            "TString" => Result::Ok(tast::Type::String),
-            "TChar" => Result::Ok(tast::Type::Char),
+            TYPE_UNIT_TAG => Result::Ok(tast::Type::Unit),
+            TYPE_NEVER_TAG => Result::Ok(tast::Type::Never),
+            TYPE_BOOL_TAG => Result::Ok(tast::Type::Bool),
+            TYPE_INT_TAG => Result::Ok(tast::Type::Int),
+            TYPE_INT8_TAG => Result::Ok(tast::Type::Int8),
+            TYPE_INT16_TAG => Result::Ok(tast::Type::Int16),
+            TYPE_INT32_TAG => Result::Ok(tast::Type::Int32),
+            TYPE_INT64_TAG => Result::Ok(tast::Type::Int64),
+            TYPE_UINT_TAG => Result::Ok(tast::Type::Uint),
+            TYPE_UINT8_TAG => Result::Ok(tast::Type::Uint8),
+            TYPE_UINT16_TAG => Result::Ok(tast::Type::Uint16),
+            TYPE_UINT32_TAG => Result::Ok(tast::Type::Uint32),
+            TYPE_UINT64_TAG => Result::Ok(tast::Type::Uint64),
+            TYPE_FLOAT32_TAG => Result::Ok(tast::Type::Float32),
+            TYPE_FLOAT64_TAG => Result::Ok(tast::Type::Float64),
+            TYPE_STRING_TAG => Result::Ok(tast::Type::String),
+            TYPE_CHAR_TAG => Result::Ok(tast::Type::Char),
             _ => Result::Err(wire::artifact_decode_error("type")),
         },
         Object(fields) => {
@@ -166,114 +166,128 @@ pub fn artifact_decode_type(context: ArtifactDecodeContext, value: wire::Artifac
             } else {};
             let kind = fields[0].0;
             let payload = fields[0].1;
-            if kind == "TEnum" {
-                artifact_decode_named_type(context, payload, "name", true)
-            } else if kind == "TStruct" {
-                artifact_decode_named_type(context, payload, "name", false)
-            } else if kind == "TDyn" {
-                artifact_decode_dyn_type(context, payload)
-            } else if kind == "TParam" {
-                let object = wire::artifact_json_object(payload, "type parameter")?;
-                match wire::artifact_json_field_string(object, "name") {
-                    Ok(value) => Result::Ok(tast::Type::Param { name: value }),
-                    Err(error) => Result::Err(error),
-                }
-            } else if kind == "TTuple" {
-                let object = wire::artifact_json_object(payload, "tuple type")?;
-                match wire::artifact_json_required_field(object, "typs") {
-                    Ok(value) => match artifact_decode_type_array(context, value, "tuple elements") {
-                        Ok(value) => Result::Ok(tast::Type::Tuple { items: value }),
+            match kind {
+                TYPE_ENUM_TAG => artifact_decode_named_type(context, payload, "name", true),
+                TYPE_STRUCT_TAG => artifact_decode_named_type(context, payload, "name", false),
+                TYPE_DYN_TAG => artifact_decode_dyn_type(context, payload),
+                TYPE_PARAM_TAG => {
+                    let object = wire::artifact_json_object(payload, "type parameter")?;
+                    match wire::artifact_json_field_string(object, "name") {
+                        Ok(value) => Result::Ok(tast::Type::Param { name: value }),
                         Err(error) => Result::Err(error),
-                    },
-                    Err(error) => Result::Err(error),
-                }
-            } else if kind == "TProjection" {
-                let object = wire::artifact_json_object(payload, "projection type")?;
-                let trait_ref = artifact_decode_optional_trait_ref(
-                    context,
-                    wire::artifact_json_required_field(object, "trait_ref")?,
-                )?;
-                let for_ty = artifact_decode_type(
-                    context,
-                    wire::artifact_json_required_field(object, "for_ty")?,
-                )?;
-                match wire::artifact_json_field_string(object, "name") {
-                    Ok(name) => Result::Ok(tast::Type::Projection { for_ty, name, trait_ref }),
-                    Err(error) => Result::Err(error),
-                }
-            } else if kind == "TApp" {
-                let object = wire::artifact_json_object(payload, "type application")?;
-                let base = artifact_decode_type(
-                    context,
-                    wire::artifact_json_required_field(object, "ty")?,
-                )?;
-                let args = artifact_decode_type_array(
-                    context,
-                    wire::artifact_json_required_field(object, "args")?,
-                    "type arguments",
-                )?;
-                Result::Ok(tast::Type::App { ty: base, args })
-            } else if kind == "TArray" {
-                let object = wire::artifact_json_object(payload, "array type")?;
-                let length_value = wire::artifact_json_number_value(
-                    wire::artifact_json_required_field(object, "len")?,
-                    "array length",
-                )?;
-                let length = if length_value == "18446744073709551615" {
-                    -1
-                } else {
-                    wire::artifact_parse_nonnegative_int(length_value)?
-                };
-                let elem = artifact_decode_type(
-                    context,
-                    wire::artifact_json_required_field(object, "elem")?,
-                )?;
-                Result::Ok(tast::Type::Array { len: length, elem })
-            } else if kind == "TSlice" {
-                match artifact_decode_element_type(context, payload, "slice type") {
-                    Ok(value) => Result::Ok(tast::Type::Slice { elem: value }),
-                    Err(error) => Result::Err(error),
-                }
-            } else if kind == "TVec" {
-                match artifact_decode_element_type(context, payload, "vector type") {
-                    Ok(value) => Result::Ok(tast::Type::VecType { elem: value }),
-                    Err(error) => Result::Err(error),
-                }
-            } else if kind == "TRef" {
-                match artifact_decode_element_type(context, payload, "reference type") {
-                    Ok(value) => Result::Ok(tast::Type::RefType { elem: value }),
-                    Err(error) => Result::Err(error),
-                }
-            } else if kind == "TChannel" {
-                match artifact_decode_element_type(context, payload, "channel type") {
-                    Ok(value) => Result::Ok(tast::Type::Channel { elem: value }),
-                    Err(error) => Result::Err(error),
-                }
-            } else if kind == "THashMap" {
-                let object = wire::artifact_json_object(payload, "hash map type")?;
-                let key = artifact_decode_type(
-                    context,
-                    wire::artifact_json_required_field(object, "key")?,
-                )?;
-                let value = artifact_decode_type(
-                    context,
-                    wire::artifact_json_required_field(object, "value")?,
-                )?;
-                Result::Ok(tast::Type::HashMap { key, value })
-            } else if kind == "TFunc" {
-                let object = wire::artifact_json_object(payload, "function type")?;
-                let params = artifact_decode_type_array(
-                    context,
-                    wire::artifact_json_required_field(object, "params")?,
-                    "function parameters",
-                )?;
-                let ret_ty = artifact_decode_type(
-                    context,
-                    wire::artifact_json_required_field(object, "ret_ty")?,
-                )?;
-                Result::Ok(tast::Type::Func { params, ret_ty })
-            } else {
-                Result::Err(wire::artifact_decode_error("supported type variant"))
+                    }
+                },
+                TYPE_TUPLE_TAG => {
+                    let object = wire::artifact_json_object(payload, "tuple type")?;
+                    match wire::artifact_json_required_field(object, "typs") {
+                        Ok(value) => match artifact_decode_type_array(
+                            context,
+                            value,
+                            "tuple elements",
+                        ) {
+                            Ok(value) => Result::Ok(tast::Type::Tuple { items: value }),
+                            Err(error) => Result::Err(error),
+                        },
+                        Err(error) => Result::Err(error),
+                    }
+                },
+                TYPE_PROJECTION_TAG => {
+                    let object = wire::artifact_json_object(payload, "projection type")?;
+                    let trait_ref = artifact_decode_optional_trait_ref(
+                        context,
+                        wire::artifact_json_required_field(object, "trait_ref")?,
+                    )?;
+                    let for_ty = artifact_decode_type(
+                        context,
+                        wire::artifact_json_required_field(object, "for_ty")?,
+                    )?;
+                    match wire::artifact_json_field_string(object, "name") {
+                        Ok(name) => {
+                            Result::Ok(tast::Type::Projection { for_ty, name, trait_ref })
+                        },
+                        Err(error) => Result::Err(error),
+                    }
+                },
+                TYPE_APP_TAG => {
+                    let object = wire::artifact_json_object(payload, "type application")?;
+                    let base = artifact_decode_type(
+                        context,
+                        wire::artifact_json_required_field(object, "ty")?,
+                    )?;
+                    let args = artifact_decode_type_array(
+                        context,
+                        wire::artifact_json_required_field(object, "args")?,
+                        "type arguments",
+                    )?;
+                    Result::Ok(tast::Type::App { ty: base, args })
+                },
+                TYPE_ARRAY_TAG => {
+                    let object = wire::artifact_json_object(payload, "array type")?;
+                    let length_value = wire::artifact_json_number_value(
+                        wire::artifact_json_required_field(object, "len")?,
+                        "array length",
+                    )?;
+                    let length = if length_value == UNKNOWN_ARRAY_LENGTH {
+                        -1
+                    } else {
+                        wire::artifact_parse_nonnegative_int(length_value)?
+                    };
+                    let elem = artifact_decode_type(
+                        context,
+                        wire::artifact_json_required_field(object, "elem")?,
+                    )?;
+                    Result::Ok(tast::Type::Array { len: length, elem })
+                },
+                TYPE_SLICE_TAG => {
+                    match artifact_decode_element_type(context, payload, "slice type") {
+                        Ok(value) => Result::Ok(tast::Type::Slice { elem: value }),
+                        Err(error) => Result::Err(error),
+                    }
+                },
+                TYPE_VEC_TAG => {
+                    match artifact_decode_element_type(context, payload, "vector type") {
+                        Ok(value) => Result::Ok(tast::Type::VecType { elem: value }),
+                        Err(error) => Result::Err(error),
+                    }
+                },
+                TYPE_REF_TAG => {
+                    match artifact_decode_element_type(context, payload, "reference type") {
+                        Ok(value) => Result::Ok(tast::Type::RefType { elem: value }),
+                        Err(error) => Result::Err(error),
+                    }
+                },
+                TYPE_CHANNEL_TAG => {
+                    match artifact_decode_element_type(context, payload, "channel type") {
+                        Ok(value) => Result::Ok(tast::Type::Channel { elem: value }),
+                        Err(error) => Result::Err(error),
+                    }
+                },
+                TYPE_HASH_MAP_TAG => {
+                    let object = wire::artifact_json_object(payload, "hash map type")?;
+                    let key = artifact_decode_type(
+                        context,
+                        wire::artifact_json_required_field(object, "key")?,
+                    )?;
+                    let value = artifact_decode_type(
+                        context,
+                        wire::artifact_json_required_field(object, "value")?,
+                    )?;
+                    Result::Ok(tast::Type::HashMap { key, value })
+                },
+                TYPE_FUNCTION_TAG => {
+                    let object = wire::artifact_json_object(payload, "function type")?;
+                    let params = artifact_decode_type_array(
+                        context,
+                        wire::artifact_json_required_field(object, "params")?,
+                        "function parameters",
+                    )?;
+                    let ret_ty = artifact_decode_type(
+                        context,
+                        wire::artifact_json_required_field(object, "ret_ty")?,
+                    )?;
+                    Result::Ok(tast::Type::Func { params, ret_ty })
+                },
+                _ => Result::Err(wire::artifact_decode_error("supported type variant")),
             }
         },
         _ => Result::Err(wire::artifact_decode_error("type")),
@@ -287,29 +301,33 @@ pub fn artifact_decode_predicate(context: ArtifactDecodeContext, value: wire::Ar
     let fields = wire::artifact_json_object(value, "type predicate")?;
     if fields.len() != 1 {
         Result::Err(wire::artifact_decode_error("type predicate variant"))
-    } else if fields[0].0 == "Trait" {
-        let payload = wire::artifact_json_object(fields[0].1, "trait predicate")?;
-        let for_ty = artifact_decode_type(
-            context,
-            wire::artifact_json_required_field(payload, "for_ty")?,
-        )?;
-        let trait_ref = artifact_decode_trait_ref(
-            context,
-            wire::artifact_json_required_field(payload, "trait_ref")?,
-        )?;
-        Result::Ok(tast::TypePredicate::Trait { for_ty, trait_ref })
-    } else if fields[0].0 == "Equality" {
-        let payload = wire::artifact_json_object(fields[0].1, "equality predicate")?;
-        let left = artifact_decode_type(
-            context,
-            wire::artifact_json_required_field(payload, "lhs")?,
-        )?;
-        let right = artifact_decode_type(
-            context,
-            wire::artifact_json_required_field(payload, "rhs")?,
-        )?;
-        Result::Ok(tast::TypePredicate::Equality { lhs: left, rhs: right })
     } else {
-        Result::Err(wire::artifact_decode_error("supported type predicate"))
+        match fields[0].0 {
+            TRAIT_PREDICATE_TAG => {
+                let payload = wire::artifact_json_object(fields[0].1, "trait predicate")?;
+                let for_ty = artifact_decode_type(
+                    context,
+                    wire::artifact_json_required_field(payload, "for_ty")?,
+                )?;
+                let trait_ref = artifact_decode_trait_ref(
+                    context,
+                    wire::artifact_json_required_field(payload, "trait_ref")?,
+                )?;
+                Result::Ok(tast::TypePredicate::Trait { for_ty, trait_ref })
+            },
+            EQUALITY_PREDICATE_TAG => {
+                let payload = wire::artifact_json_object(fields[0].1, "equality predicate")?;
+                let left = artifact_decode_type(
+                    context,
+                    wire::artifact_json_required_field(payload, "lhs")?,
+                )?;
+                let right = artifact_decode_type(
+                    context,
+                    wire::artifact_json_required_field(payload, "rhs")?,
+                )?;
+                Result::Ok(tast::TypePredicate::Equality { lhs: left, rhs: right })
+            },
+            _ => Result::Err(wire::artifact_decode_error("supported type predicate")),
+        }
     }
 }

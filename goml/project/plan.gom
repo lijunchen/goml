@@ -228,7 +228,7 @@ fn compile_test_package_command(
         package_name,
         dependency_root,
         output_root,
-        "test-build",
+        TEST_BUILD_SUBCOMMAND,
         world,
     )?;
     match compiled {
@@ -273,8 +273,14 @@ fn core_outputs(context: Context, output_root: string, packages: Vec[string]) ->
 }
 
 pub fn check_plan(context: Context, include_tests: bool) -> Result[Plan, string] {
-    let output_root = path::join(context.artifact_root, "check");
-    let commands = compile_commands(context, output_root, "check", "check", context.graph.order)?;
+    let output_root = path::join(context.artifact_root, CHECK_SUBCOMMAND);
+    let commands = compile_commands(
+        context,
+        output_root,
+        CHECK_SUBCOMMAND,
+        CHECK_SUBCOMMAND,
+        context.graph.order,
+    )?;
     if include_tests {
         let internal = internal_test_graphs(context)?;
         for graph in internal {
@@ -287,8 +293,8 @@ pub fn check_plan(context: Context, include_tests: bool) -> Result[Plan, string]
             let values = compile_commands(
                 target,
                 output_root,
-                "test-check",
-                "check",
+                TEST_CHECK_SUBCOMMAND,
+                CHECK_SUBCOMMAND,
                 target.graph.order,
             )?;
             for value in values {
@@ -306,8 +312,8 @@ pub fn check_plan(context: Context, include_tests: bool) -> Result[Plan, string]
             let values = compile_commands(
                 target,
                 output_root,
-                "test-check",
-                "check",
+                TEST_CHECK_SUBCOMMAND,
+                CHECK_SUBCOMMAND,
                 target.graph.order,
             )?;
             for value in values {
@@ -325,7 +331,7 @@ pub fn check_plan(context: Context, include_tests: bool) -> Result[Plan, string]
 }
 
 pub fn build_plan(context: Context) -> Result[Plan, string] {
-    let output_root = path::join(context.artifact_root, "build");
+    let output_root = path::join(context.artifact_root, BUILD_SUBCOMMAND);
     let entries: Vec[string] = Vec::[];
     for package_name in context.graph.order {
         let Some(package_value) = package_by_name(context.graph, package_name) else {
@@ -340,7 +346,13 @@ pub fn build_plan(context: Context) -> Result[Plan, string] {
     } else {
         reachable_packages(context.graph, entries)?
     };
-    let commands = compile_commands(context, output_root, "build", "build", packages)?;
+    let commands = compile_commands(
+        context,
+        output_root,
+        BUILD_SUBCOMMAND,
+        BUILD_SUBCOMMAND,
+        packages,
+    )?;
     for entry_package in util::sorted(entries) {
         let main_go = linked_go_output(output_root, context.graph, entry_package);
         let packages = reachable_packages(context.graph, Vec::[entry_package])?;
@@ -370,9 +382,15 @@ pub fn build_plan(context: Context) -> Result[Plan, string] {
 }
 
 pub fn run_plan(context: Context) -> Result[Plan, string] {
-    let output_root = path::join(context.artifact_root, "build");
+    let output_root = path::join(context.artifact_root, BUILD_SUBCOMMAND);
     let packages = reachable_packages(context.graph, Vec::[context.graph.entry_package])?;
-    let commands = compile_commands(context, output_root, "build", "build", packages)?;
+    let commands = compile_commands(
+        context,
+        output_root,
+        BUILD_SUBCOMMAND,
+        BUILD_SUBCOMMAND,
+        packages,
+    )?;
     let main_go = linked_go_output(output_root, context.graph, context.graph.entry_package);
     let packages = reachable_packages(context.graph, Vec::[context.graph.entry_package])?;
     commands.push(
@@ -415,7 +433,7 @@ fn append_test_package(
                 package_name,
                 dependency_root,
                 dependency_root,
-                "build",
+                BUILD_SUBCOMMAND,
                 compiler_world_path(context),
             )?;
             commands.push(compiled);
@@ -506,18 +524,23 @@ fn append_test_group(
 
 pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
     let dependency_root = path::join(path::join(context.artifact_root, "test"), "base");
-    let commands = compile_commands(context, dependency_root, "build", "build", context.graph.order)?;
+    let commands = compile_commands(
+        context,
+        dependency_root,
+        BUILD_SUBCOMMAND,
+        BUILD_SUBCOMMAND,
+        context.graph.order,
+    )?;
     let compiled_dependencies: HashMap[string, bool] = HashMap::{};
     for package_name in context.graph.order {
         compiled_dependencies[package_name] = true;
     }
     let groups: Vec[TestGroup] = Vec::[];
-    let internal: Vec[Graph] = if kind == "internal" || kind == "all" {
-        internal_test_graphs(context)?
-    } else {
-        Vec::[]
+    let internal: Vec[Graph] = match kind {
+        INTERNAL_TEST_KIND | ALL_TEST_KIND => internal_test_graphs(context)?,
+        _ => Vec::[],
     };
-    let internal_root = path::join(path::join(context.artifact_root, "test"), "internal");
+    let internal_root = path::join(path::join(context.artifact_root, "test"), INTERNAL_TEST_KIND);
     let internal_graphs: Vec[Graph] = Vec::[];
     let internal_packages: Vec[string] = Vec::[];
     for graph in internal {
@@ -543,18 +566,17 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
             internal_graphs,
             dependency_root,
             internal_root,
-            "internal",
+            INTERNAL_TEST_KIND,
             internal_packages,
             commands,
             groups,
         )
     } else {};
-    let external: Vec[ExternalTest] = if kind == "external" || kind == "all" {
-        external_test_graphs(context)?
-    } else {
-        Vec::[]
+    let external: Vec[ExternalTest] = match kind {
+        EXTERNAL_TEST_KIND | ALL_TEST_KIND => external_test_graphs(context)?,
+        _ => Vec::[],
     };
-    let external_root = path::join(path::join(context.artifact_root, "test"), "external");
+    let external_root = path::join(path::join(context.artifact_root, "test"), EXTERNAL_TEST_KIND);
     let external_graphs: Vec[Graph] = Vec::[];
     let external_packages: Vec[string] = Vec::[];
     for test in external {
@@ -581,7 +603,7 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
             external_graphs,
             dependency_root,
             external_root,
-            "external",
+            EXTERNAL_TEST_KIND,
             external_packages,
             commands,
             groups,
@@ -608,7 +630,7 @@ fn display_args(program: string, args: Vec[string]) -> string {
 
 fn command_args(value: Command) -> (string, Vec[string]) {
     match value {
-        PrepareWorld { output } => ("gomlc", Vec::["prepare-world", "--output", output]),
+        PrepareWorld { output } => (GOMLC_PROGRAM, Vec::["prepare-world", "--output", output]),
         Compile { subcommand, package_name, input_files, interface_files, output, world } => {
             let args: Vec[string] = Vec::[];
             args.push(subcommand);
@@ -631,7 +653,7 @@ fn command_args(value: Command) -> (string, Vec[string]) {
                 },
                 None => (),
             };
-            ("gomlc", args)
+            (GOMLC_PROGRAM, args)
         },
         Link { input_cores, entry_package, output, world } => {
             let args: Vec[string] = Vec::[];
@@ -651,7 +673,7 @@ fn command_args(value: Command) -> (string, Vec[string]) {
                 },
                 None => (),
             };
-            ("gomlc", args)
+            (GOMLC_PROGRAM, args)
         },
         TestLink { input_cores, packages, output, manifest, world } => {
             let args: Vec[string] = Vec::[];
@@ -675,9 +697,9 @@ fn command_args(value: Command) -> (string, Vec[string]) {
                 },
                 None => (),
             };
-            ("gomlc", args)
+            (GOMLC_PROGRAM, args)
         },
-        GoBuild { input, output } => ("go", Vec::["build", "-o", output, input]),
+        GoBuild { input, output } => (GO_PROGRAM, Vec::[BUILD_SUBCOMMAND, "-o", output, input]),
     }
 }
 
@@ -689,16 +711,12 @@ pub fn display_command(value: Command) -> string {
 fn progress_label(value: Command) -> string {
     match value {
         PrepareWorld { .. } => "preparing compiler world",
-        Compile { subcommand, package_name, .. } => if subcommand == "check" {
-            f"checking {package_name}"
-        } else if subcommand == "build" {
-            f"compiling {package_name}"
-        } else if subcommand == "test-check" {
-            f"checking tests for {package_name}"
-        } else if subcommand == "test-build" {
-            f"compiling tests for {package_name}"
-        } else {
-            f"{subcommand} {package_name}"
+        Compile { subcommand, package_name, .. } => match subcommand {
+            CHECK_SUBCOMMAND => f"checking {package_name}",
+            BUILD_SUBCOMMAND => f"compiling {package_name}",
+            TEST_CHECK_SUBCOMMAND => f"checking tests for {package_name}",
+            TEST_BUILD_SUBCOMMAND => f"compiling tests for {package_name}",
+            _ => f"{subcommand} {package_name}",
         },
         Link { entry_package, .. } => f"linking {entry_package}",
         TestLink { .. } => "linking test runner",
@@ -730,15 +748,14 @@ fn execute_command(cancel: task::CancelToken, context: Context, value: Command) 
 ] {
     ensure_output_parent(value, context.graph.module_dir)?;
     let command = command_args(value);
-    let program = if command.0 == "gomlc" {
-        context.compiler
-    } else {
-        command.0
+    let program = match command.0 {
+        GOMLC_PROGRAM => context.compiler,
+        _ => command.0,
     };
     let process = process::Command::new(program).args(command.1).current_dir(
         context.graph.module_dir,
     );
-    if command.0 == "go" {
+    if command.0 == GO_PROGRAM {
         let _ = process.env("GOWORK", "off");
         if !fs::is_file(path::join(context.graph.module_dir, "go.mod")) {
             let _ = process.env("GO111MODULE", "off");

@@ -272,9 +272,12 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
                 None => (),
             };
             let outputs = Vec::[path::with_extension(output, "interface")];
-            if subcommand == "build" || subcommand == "test-build" {
-                outputs.push(path::with_extension(output, "core"))
-            } else {};
+            match subcommand {
+                BUILD_SUBCOMMAND | TEST_BUILD_SUBCOMMAND => {
+                    outputs.push(path::with_extension(output, "core"))
+                },
+                _ => (),
+            };
             Option::Some(
                 CacheSpec {
                     kind: subcommand,

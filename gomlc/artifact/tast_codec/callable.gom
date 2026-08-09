@@ -15,7 +15,7 @@ pub struct ArtifactCallable {
 fn invalid_artifact_callable(value: string) -> ArtifactCallable {
     ArtifactCallable {
         name: value,
-        kind: "invalid",
+        kind: CALLABLE_INVALID_KIND,
         id: Option::None,
         import_path: Option::None,
         symbol: Option::None,
@@ -26,7 +26,7 @@ pub fn artifact_callable(value: tast::Callable) -> ArtifactCallable {
     match value {
         Function(value) => ArtifactCallable {
             name: value,
-            kind: "goml",
+            kind: CALLABLE_GOML_KIND,
             id: Option::Some(value),
             import_path: Option::None,
             symbol: Option::None,
@@ -34,7 +34,7 @@ pub fn artifact_callable(value: tast::Callable) -> ArtifactCallable {
         LangItem { item: _, function_name } => {
             ArtifactCallable {
                 name: function_name,
-                kind: "goml",
+                kind: CALLABLE_GOML_KIND,
                 id: Option::Some(function_name),
                 import_path: Option::None,
                 symbol: Option::None,
@@ -47,7 +47,7 @@ pub fn artifact_callable(value: tast::Callable) -> ArtifactCallable {
                 } else {
                     spec.source_name
                 },
-                kind: "runtime",
+                kind: CALLABLE_RUNTIME_KIND,
                 id: Option::Some(spec.artifact_id),
                 import_path: Option::None,
                 symbol: Option::None,
@@ -57,7 +57,7 @@ pub fn artifact_callable(value: tast::Callable) -> ArtifactCallable {
         Intrinsic(value) => match resources::intrinsic_abi_by_key(value) {
             Some(spec) => ArtifactCallable {
                 name: spec.source_name,
-                kind: "intrinsic",
+                kind: CALLABLE_INTRINSIC_KIND,
                 id: Option::Some(spec.artifact_id),
                 import_path: Option::None,
                 symbol: Option::None,
@@ -66,7 +66,7 @@ pub fn artifact_callable(value: tast::Callable) -> ArtifactCallable {
         },
         GoForeign { import_path, symbol } => ArtifactCallable {
             name: symbol,
-            kind: "go",
+            kind: CALLABLE_GO_KIND,
             id: Option::None,
             import_path: Option::Some(import_path),
             symbol: Option::Some(symbol),
@@ -128,34 +128,33 @@ pub fn artifact_decode_callable_body(name: string, value: wire::ArtifactValue) -
 ] {
     let object = wire::artifact_json_object(value, "callable body")?;
     let kind = wire::artifact_json_field_string(object, "kind")?;
-    if kind == "goml" {
-        match wire::artifact_json_optional_field(object, "id")? {
+    match kind {
+        CALLABLE_GOML_KIND => match wire::artifact_json_optional_field(object, "id")? {
             Some(value) => Result::Ok(
                 tast::Callable::Function(wire::artifact_json_string_value(value, "callable id")?),
             ),
             None => Result::Ok(tast::Callable::Function(name)),
-        }
-    } else if kind == "go" {
-        Result::Ok(
+        },
+        CALLABLE_GO_KIND => Result::Ok(
             tast::Callable::GoForeign {
                 import_path: wire::artifact_json_field_string(object, "import_path")?,
                 symbol: wire::artifact_json_field_string(object, "symbol")?,
             },
-        )
-    } else {
-        let id = wire::artifact_json_field_string(object, "id")?;
-        if kind == "intrinsic" {
+        ),
+        CALLABLE_INTRINSIC_KIND => {
+            let id = wire::artifact_json_field_string(object, "id")?;
             match artifact_intrinsic_key_from_id(id) {
                 Some(value) => Result::Ok(tast::Callable::Intrinsic(value)),
                 None => Result::Err(wire::artifact_decode_error("intrinsic id")),
             }
-        } else if kind == "runtime" {
+        },
+        CALLABLE_RUNTIME_KIND => {
+            let id = wire::artifact_json_field_string(object, "id")?;
             match artifact_runtime_key_from_id(id) {
                 Some(value) => Result::Ok(tast::Callable::Runtime(value)),
                 None => Result::Err(wire::artifact_decode_error("runtime hook id")),
             }
-        } else {
-            Result::Err(wire::artifact_decode_error("callable kind"))
-        }
+        },
+        _ => Result::Err(wire::artifact_decode_error("callable kind")),
     }
 }

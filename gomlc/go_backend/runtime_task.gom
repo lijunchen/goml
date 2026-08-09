@@ -346,7 +346,7 @@ fn task_scope_run_item() -> Item {
     );
     stmts.push(task_return(Expr::Unit));
     std_function_item(
-        "std.task.scope_run",
+        STD_TASK_SCOPE_RUN_RUNTIME_KEY,
         Vec::[
             ("scope_id", Type::Int64),
             ("body", Type::Func { params: Vec::[], ret_ty: Type::Unit }),
@@ -488,7 +488,12 @@ fn task_scope_new_item() -> Item {
     );
     stmts.push(task_expr(task_method(task_registry_mutex_name(), "Unlock", Vec::[])));
     stmts.push(task_return(task_var("id")));
-    std_function_item("std.task.scope_new", Vec::[("parent", Type::Int64)], Type::Int64, stmts)
+    std_function_item(
+        STD_TASK_SCOPE_NEW_RUNTIME_KEY,
+        Vec::[("parent", Type::Int64)],
+        Type::Int64,
+        stmts,
+    )
 }
 
 fn task_scope_spawn_item(key: string, panic_when_closed: bool) -> Item {
@@ -565,7 +570,12 @@ fn task_scope_cancel_item() -> Item {
         },
     );
     stmts.push(task_return(Expr::Unit));
-    std_function_item("std.task.scope_cancel", Vec::[("scope_id", Type::Int64)], Type::Unit, stmts)
+    std_function_item(
+        STD_TASK_SCOPE_CANCEL_RUNTIME_KEY,
+        Vec::[("scope_id", Type::Int64)],
+        Type::Unit,
+        stmts,
+    )
 }
 
 fn task_scope_finish_item() -> Item {
@@ -645,7 +655,12 @@ fn task_scope_finish_item() -> Item {
         },
     );
     stmts.push(task_return(Expr::Unit));
-    std_function_item("std.task.scope_finish", Vec::[("scope_id", Type::Int64)], Type::Unit, stmts)
+    std_function_item(
+        STD_TASK_SCOPE_FINISH_RUNTIME_KEY,
+        Vec::[("scope_id", Type::Int64)],
+        Type::Unit,
+        stmts,
+    )
 }
 
 fn task_active_scope_count_item() -> Item {
@@ -660,7 +675,7 @@ fn task_active_scope_count_item() -> Item {
     );
     stmts.push(task_expr(task_method(task_registry_mutex_name(), "Unlock", Vec::[])));
     stmts.push(task_return(task_var("count")));
-    std_function_item("std.task.active_scope_count", Vec::[], Type::Int, stmts)
+    std_function_item(STD_TASK_ACTIVE_SCOPE_COUNT_RUNTIME_KEY, Vec::[], Type::Int, stmts)
 }
 
 fn task_scope_cancelled_item() -> Item {
@@ -689,7 +704,7 @@ fn task_scope_cancelled_item() -> Item {
         ),
     );
     std_function_item(
-        "std.task.scope_cancelled",
+        STD_TASK_SCOPE_CANCELLED_RUNTIME_KEY,
         Vec::[("scope_id", Type::Int64)],
         Type::Bool,
         stmts,
@@ -747,7 +762,7 @@ fn task_scope_sleep_item() -> Item {
     );
     stmts.push(task_return(task_var("completed")));
     std_function_item(
-        "std.task.sleep",
+        STD_TASK_SLEEP_RUNTIME_KEY,
         Vec::[("scope_id", Type::Int64), ("nanoseconds", Type::Int64)],
         Type::Bool,
         stmts,
@@ -755,25 +770,20 @@ fn task_scope_sleep_item() -> Item {
 }
 
 fn task_runtime_hook_item(key: string) -> Option[Item] {
-    if key == "std.task.scope_new" {
-        Option::Some(task_scope_new_item())
-    } else if key == "std.task.scope_run" {
-        Option::Some(task_scope_run_item())
-    } else if key == "std.task.scope_spawn" {
-        Option::Some(task_scope_spawn_item("std.task.scope_spawn", true))
-    } else if key == "std.task.scope_try_spawn" {
-        Option::Some(task_scope_spawn_item("std.task.scope_try_spawn", false))
-    } else if key == "std.task.scope_cancel" {
-        Option::Some(task_scope_cancel_item())
-    } else if key == "std.task.scope_finish" {
-        Option::Some(task_scope_finish_item())
-    } else if key == "std.task.scope_cancelled" {
-        Option::Some(task_scope_cancelled_item())
-    } else if key == "std.task.active_scope_count" {
-        Option::Some(task_active_scope_count_item())
-    } else if key == "std.task.sleep" {
-        Option::Some(task_scope_sleep_item())
-    } else {
-        Option::None
+    match key {
+        STD_TASK_SCOPE_NEW_RUNTIME_KEY => Option::Some(task_scope_new_item()),
+        STD_TASK_SCOPE_RUN_RUNTIME_KEY => Option::Some(task_scope_run_item()),
+        STD_TASK_SCOPE_SPAWN_RUNTIME_KEY => {
+            Option::Some(task_scope_spawn_item(STD_TASK_SCOPE_SPAWN_RUNTIME_KEY, true))
+        },
+        STD_TASK_SCOPE_TRY_SPAWN_RUNTIME_KEY => {
+            Option::Some(task_scope_spawn_item(STD_TASK_SCOPE_TRY_SPAWN_RUNTIME_KEY, false))
+        },
+        STD_TASK_SCOPE_CANCEL_RUNTIME_KEY => Option::Some(task_scope_cancel_item()),
+        STD_TASK_SCOPE_FINISH_RUNTIME_KEY => Option::Some(task_scope_finish_item()),
+        STD_TASK_SCOPE_CANCELLED_RUNTIME_KEY => Option::Some(task_scope_cancelled_item()),
+        STD_TASK_ACTIVE_SCOPE_COUNT_RUNTIME_KEY => Option::Some(task_active_scope_count_item()),
+        STD_TASK_SLEEP_RUNTIME_KEY => Option::Some(task_scope_sleep_item()),
+        _ => Option::None,
     }
 }

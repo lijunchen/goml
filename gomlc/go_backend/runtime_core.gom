@@ -47,7 +47,7 @@ fn string_len_hook_item() -> Item {
     params.push(("s", Type::String));
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(Stmt::Return { expr: Option::Some(core_int(core_len(Expr::Var { name: "s" }))) });
-    core_function_item("core.string_len", params, Type::Int, stmts)
+    core_function_item(CORE_STRING_LEN_RUNTIME_KEY, params, Type::Int, stmts)
 }
 
 fn string_get_hook_item() -> Item {
@@ -68,7 +68,7 @@ fn string_get_hook_item() -> Item {
             ),
         },
     );
-    core_function_item("core.string_get", params, Type::Char, stmts)
+    core_function_item(CORE_STRING_GET_RUNTIME_KEY, params, Type::Char, stmts)
 }
 
 fn string_byte_get_hook_item() -> Item {
@@ -83,7 +83,7 @@ fn string_byte_get_hook_item() -> Item {
             ),
         },
     );
-    core_function_item("core.string_byte_get", params, Type::Uint8, stmts)
+    core_function_item(CORE_STRING_BYTE_GET_RUNTIME_KEY, params, Type::Uint8, stmts)
 }
 
 fn string_byte_slice_hook_item() -> Item {
@@ -103,7 +103,7 @@ fn string_byte_slice_hook_item() -> Item {
             ),
         },
     );
-    core_function_item("core.string_byte_slice", params, Type::String, stmts)
+    core_function_item(CORE_STRING_BYTE_SLICE_RUNTIME_KEY, params, Type::String, stmts)
 }
 
 fn string_to_bytes_hook_item() -> Item {
@@ -127,7 +127,7 @@ fn string_to_bytes_hook_item() -> Item {
     };
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(Stmt::Return { expr: Option::Some(value) });
-    core_function_item("core.string_to_bytes", params, lower_type(vec_ty), stmts)
+    core_function_item(CORE_STRING_TO_BYTES_RUNTIME_KEY, params, lower_type(vec_ty), stmts)
 }
 
 fn char_to_string_hook_item() -> Item {
@@ -139,7 +139,7 @@ fn char_to_string_hook_item() -> Item {
             expr: Option::Some(Expr::Convert { ty: Type::String, expr: Expr::Var { name: "x" } }),
         },
     );
-    core_function_item("core.char_to_string", params, Type::String, stmts)
+    core_function_item(CORE_CHAR_TO_STRING_RUNTIME_KEY, params, Type::String, stmts)
 }
 
 fn char_from_uint32_hook_item() -> Item {
@@ -151,7 +151,7 @@ fn char_from_uint32_hook_item() -> Item {
     values.push(Expr::Bool { value: true });
     values.push(Expr::Convert { ty: Type::Char, expr: Expr::Var { name: "value" } });
     stmts.push(Stmt::Return { expr: Option::Some(core_tuple_expr(ret_ty, values)) });
-    core_function_item("core.char_from_uint32", params, ret_ty, stmts)
+    core_function_item(CORE_CHAR_FROM_UINT32_RUNTIME_KEY, params, ret_ty, stmts)
 }
 
 fn float_to_string_hook_item(key: string, ty: Type, bit_size: string) -> Item {
@@ -159,10 +159,11 @@ fn float_to_string_hook_item(key: string, ty: Type, bit_size: string) -> Item {
     params.push(("x", ty));
     let args: Vec[Expr] = Vec::[];
     args.push(
-        if key == "core.float32_to_string" {
-            Expr::Convert { ty: Type::Float64, expr: Expr::Var { name: "x" } }
-        } else {
-            Expr::Var { name: "x" }
+        match key {
+            CORE_FLOAT32_TO_STRING_RUNTIME_KEY => {
+                Expr::Convert { ty: Type::Float64, expr: Expr::Var { name: "x" } }
+            },
+            _ => Expr::Var { name: "x" },
         },
     );
     args.push(Expr::Int { value: "102" });
@@ -207,28 +208,18 @@ fn float_to_string_hook_item(key: string, ty: Type, bit_size: string) -> Item {
 }
 
 fn integer_hash_hook_type(key: string) -> Option[Type] {
-    if key == "core.int_hash" {
-        Option::Some(Type::Int)
-    } else if key == "core.int8_hash" {
-        Option::Some(Type::Int8)
-    } else if key == "core.int16_hash" {
-        Option::Some(Type::Int16)
-    } else if key == "core.int32_hash" {
-        Option::Some(Type::Int32)
-    } else if key == "core.int64_hash" {
-        Option::Some(Type::Int64)
-    } else if key == "core.uint_hash" {
-        Option::Some(Type::Uint)
-    } else if key == "core.uint8_hash" {
-        Option::Some(Type::Uint8)
-    } else if key == "core.uint16_hash" {
-        Option::Some(Type::Uint16)
-    } else if key == "core.uint32_hash" {
-        Option::Some(Type::Uint32)
-    } else if key == "core.char_hash" {
-        Option::Some(Type::Char)
-    } else {
-        Option::None
+    match key {
+        CORE_INT_HASH_RUNTIME_KEY => Option::Some(Type::Int),
+        CORE_INT8_HASH_RUNTIME_KEY => Option::Some(Type::Int8),
+        CORE_INT16_HASH_RUNTIME_KEY => Option::Some(Type::Int16),
+        CORE_INT32_HASH_RUNTIME_KEY => Option::Some(Type::Int32),
+        CORE_INT64_HASH_RUNTIME_KEY => Option::Some(Type::Int64),
+        CORE_UINT_HASH_RUNTIME_KEY => Option::Some(Type::Uint),
+        CORE_UINT8_HASH_RUNTIME_KEY => Option::Some(Type::Uint8),
+        CORE_UINT16_HASH_RUNTIME_KEY => Option::Some(Type::Uint16),
+        CORE_UINT32_HASH_RUNTIME_KEY => Option::Some(Type::Uint32),
+        CORE_CHAR_HASH_RUNTIME_KEY => Option::Some(Type::Char),
+        _ => Option::None,
     }
 }
 
@@ -267,10 +258,9 @@ fn float_hash_hook_item(key: string, ty: Type, go_name: string) -> Item {
     stmts.push(
         Stmt::Return {
             expr: Option::Some(
-                if key == "core.float32_hash" {
-                    Expr::Convert { ty: Type::Uint64, expr: bits }
-                } else {
-                    bits
+                match key {
+                    CORE_FLOAT32_HASH_RUNTIME_KEY => Expr::Convert { ty: Type::Uint64, expr: bits },
+                    _ => bits,
                 },
             ),
         },
@@ -338,38 +328,34 @@ fn string_hash_hook_item() -> Item {
     );
     stmts.push(Stmt::Loop { body: Block { stmts: loop_stmts } });
     stmts.push(Stmt::Return { expr: Option::Some(Expr::Var { name: "h" }) });
-    core_function_item("core.string_hash", params, Type::Uint64, stmts)
+    core_function_item(CORE_STRING_HASH_RUNTIME_KEY, params, Type::Uint64, stmts)
 }
 
 fn extra_core_runtime_hook_item(key: string) -> Option[Item] {
     match integer_hash_hook_type(key) {
         Some(ty) => Option::Some(integer_hash_hook_item(key, ty)),
-        None => if key == "core.string_len" {
-            Option::Some(string_len_hook_item())
-        } else if key == "core.string_get" {
-            Option::Some(string_get_hook_item())
-        } else if key == "core.string_byte_get" {
-            Option::Some(string_byte_get_hook_item())
-        } else if key == "core.string_byte_slice" {
-            Option::Some(string_byte_slice_hook_item())
-        } else if key == "core.string_to_bytes" {
-            Option::Some(string_to_bytes_hook_item())
-        } else if key == "core.char_to_string" {
-            Option::Some(char_to_string_hook_item())
-        } else if key == "core.char_from_uint32" {
-            Option::Some(char_from_uint32_hook_item())
-        } else if key == "core.float32_to_string" {
-            Option::Some(float_to_string_hook_item(key, Type::Float32, "32"))
-        } else if key == "core.float64_to_string" {
-            Option::Some(float_to_string_hook_item(key, Type::Float64, "64"))
-        } else if key == "core.float32_hash" {
-            Option::Some(float_hash_hook_item(key, Type::Float32, "_goml_math.Float32bits"))
-        } else if key == "core.float64_hash" {
-            Option::Some(float_hash_hook_item(key, Type::Float64, "_goml_math.Float64bits"))
-        } else if key == "core.string_hash" {
-            Option::Some(string_hash_hook_item())
-        } else {
-            Option::None
+        None => match key {
+            CORE_STRING_LEN_RUNTIME_KEY => Option::Some(string_len_hook_item()),
+            CORE_STRING_GET_RUNTIME_KEY => Option::Some(string_get_hook_item()),
+            CORE_STRING_BYTE_GET_RUNTIME_KEY => Option::Some(string_byte_get_hook_item()),
+            CORE_STRING_BYTE_SLICE_RUNTIME_KEY => Option::Some(string_byte_slice_hook_item()),
+            CORE_STRING_TO_BYTES_RUNTIME_KEY => Option::Some(string_to_bytes_hook_item()),
+            CORE_CHAR_TO_STRING_RUNTIME_KEY => Option::Some(char_to_string_hook_item()),
+            CORE_CHAR_FROM_UINT32_RUNTIME_KEY => Option::Some(char_from_uint32_hook_item()),
+            CORE_FLOAT32_TO_STRING_RUNTIME_KEY => {
+                Option::Some(float_to_string_hook_item(key, Type::Float32, "32"))
+            },
+            CORE_FLOAT64_TO_STRING_RUNTIME_KEY => {
+                Option::Some(float_to_string_hook_item(key, Type::Float64, "64"))
+            },
+            CORE_FLOAT32_HASH_RUNTIME_KEY => Option::Some(
+                float_hash_hook_item(key, Type::Float32, "_goml_math.Float32bits"),
+            ),
+            CORE_FLOAT64_HASH_RUNTIME_KEY => Option::Some(
+                float_hash_hook_item(key, Type::Float64, "_goml_math.Float64bits"),
+            ),
+            CORE_STRING_HASH_RUNTIME_KEY => Option::Some(string_hash_hook_item()),
+            _ => Option::None,
         },
     }
 }

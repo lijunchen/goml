@@ -394,7 +394,12 @@ fn std_env_args_item() -> Item {
             ),
         },
     );
-    std_function_item("std.env.args", Vec::[], lower_type(std_vec_type(tast::Type::String)), stmts)
+    std_function_item(
+        STD_ENV_ARGS_RUNTIME_KEY,
+        Vec::[],
+        lower_type(std_vec_type(tast::Type::String)),
+        stmts,
+    )
 }
 
 fn std_env_vars_item() -> Item {
@@ -405,7 +410,12 @@ fn std_env_vars_item() -> Item {
             ),
         },
     ];
-    std_function_item("std.env.vars", Vec::[], lower_type(std_vec_type(tast::Type::String)), stmts)
+    std_function_item(
+        STD_ENV_VARS_RUNTIME_KEY,
+        Vec::[],
+        lower_type(std_vec_type(tast::Type::String)),
+        stmts,
+    )
 }
 
 fn std_string_result_item(key: string, function: string) -> Item {
@@ -461,7 +471,7 @@ fn std_env_var_item() -> Item {
     values.push(Expr::Var { name: "found" });
     values.push(Expr::Var { name: "value" });
     stmts.push(Stmt::Return { expr: Option::Some(std_tuple_expr(std_bool_string_type(), values)) });
-    std_function_item("std.env.var", params, std_bool_string_type(), stmts)
+    std_function_item(STD_ENV_VAR_RUNTIME_KEY, params, std_bool_string_type(), stmts)
 }
 
 fn std_fs_read_file_item() -> Item {
@@ -503,7 +513,7 @@ fn std_fs_read_file_item() -> Item {
             ),
         },
     );
-    std_function_item("std.fs.read_file", params, std_bool_string_string_type(), stmts)
+    std_function_item(STD_FS_READ_FILE_RUNTIME_KEY, params, std_bool_string_string_type(), stmts)
 }
 
 fn std_fs_sha256_file_item() -> Item {
@@ -587,7 +597,7 @@ fn std_fs_sha256_file_item() -> Item {
             ),
         },
     );
-    std_function_item("std.fs.sha256_file", params, std_bool_string_string_type(), stmts)
+    std_function_item(STD_FS_SHA256_FILE_RUNTIME_KEY, params, std_bool_string_string_type(), stmts)
 }
 
 fn std_fs_write_file_item() -> Item {
@@ -622,7 +632,7 @@ fn std_fs_write_file_item() -> Item {
     stmts.push(
         Stmt::Return { expr: Option::Some(std_bool_string_expr(true, Expr::String { value: "" })) },
     );
-    std_function_item("std.fs.write_file", params, std_bool_string_type(), stmts)
+    std_function_item(STD_FS_WRITE_FILE_RUNTIME_KEY, params, std_bool_string_type(), stmts)
 }
 
 fn std_fs_read_bytes_item() -> Item {
@@ -668,7 +678,7 @@ fn std_fs_read_bytes_item() -> Item {
             ),
         },
     );
-    std_function_item("std.fs.read_bytes", params, std_bool_bytes_string_type(), stmts)
+    std_function_item(STD_FS_READ_BYTES_RUNTIME_KEY, params, std_bool_bytes_string_type(), stmts)
 }
 
 fn std_fs_read_bytes_v2_item() -> Item {
@@ -724,7 +734,7 @@ fn std_fs_read_bytes_v2_item() -> Item {
             ),
         },
     );
-    std_function_item("std.fs.read_bytes.v2", params, std_bool_bytes_error_type(), stmts)
+    std_function_item(STD_FS_READ_BYTES_V2_RUNTIME_KEY, params, std_bool_bytes_error_type(), stmts)
 }
 
 fn std_fs_write_bytes_item() -> Item {
@@ -757,7 +767,7 @@ fn std_fs_write_bytes_item() -> Item {
     stmts.push(
         Stmt::Return { expr: Option::Some(std_bool_string_expr(true, Expr::String { value: "" })) },
     );
-    std_function_item("std.fs.write_bytes", params, std_bool_string_type(), stmts)
+    std_function_item(STD_FS_WRITE_BYTES_RUNTIME_KEY, params, std_bool_string_type(), stmts)
 }
 
 fn std_fs_write_bytes_v2_item() -> Item {
@@ -828,7 +838,7 @@ fn std_fs_write_bytes_v2_item() -> Item {
             ),
         },
     );
-    std_function_item("std.fs.write_bytes.v2", params, std_error_result_type(), stmts)
+    std_function_item(STD_FS_WRITE_BYTES_V2_RUNTIME_KEY, params, std_error_result_type(), stmts)
 }
 
 fn std_error_call_block(call: Expr) -> Block {
@@ -957,7 +967,7 @@ fn std_fs_path_operation_v2_item() -> Item {
             ),
         },
     ];
-    std_function_item("std.fs.path_operation.v2", params, std_error_result_type(), stmts)
+    std_function_item(STD_FS_PATH_OPERATION_V2_RUNTIME_KEY, params, std_error_result_type(), stmts)
 }
 
 fn std_fs_metadata_type() -> Type {
@@ -1165,7 +1175,7 @@ fn std_fs_metadata_v2_item() -> Item {
         },
     );
     std_function_item(
-        "std.fs.metadata.v2",
+        STD_FS_METADATA_V2_RUNTIME_KEY,
         Vec::[("path", Type::String), ("follow", Type::Bool)],
         std_fs_metadata_type(),
         stmts,
@@ -1319,7 +1329,7 @@ fn std_fs_atomic_write_v2_item() -> Item {
     );
     stmts.push(std_error_success_stmt());
     std_function_item(
-        "std.fs.atomic_write.v2",
+        STD_FS_ATOMIC_WRITE_V2_RUNTIME_KEY,
         Vec::[("path", Type::String), ("data", lower_type(std_vec_type(tast::Type::Uint8)))],
         std_error_result_type(),
         stmts,
@@ -1354,7 +1364,7 @@ fn std_fs_create_dir_all_item() -> Item {
     stmts.push(
         Stmt::Return { expr: Option::Some(std_bool_string_expr(true, Expr::String { value: "" })) },
     );
-    std_function_item("std.fs.create_dir_all", params, std_bool_string_type(), stmts)
+    std_function_item(STD_FS_CREATE_DIR_ALL_RUNTIME_KEY, params, std_bool_string_type(), stmts)
 }
 
 fn std_fs_remove_item(key: string, function: string) -> Item {
@@ -1405,7 +1415,7 @@ fn std_fs_file_exists_item() -> Item {
             ),
         },
     );
-    std_function_item("std.fs.file_exists", params, Type::Bool, stmts)
+    std_function_item(STD_FS_FILE_EXISTS_RUNTIME_KEY, params, Type::Bool, stmts)
 }
 
 fn std_fs_stat_kind_item(key: string, directory: bool) -> Item {
@@ -1518,7 +1528,7 @@ fn std_fs_canonicalize_item() -> Item {
             ),
         },
     );
-    std_function_item("std.fs.canonicalize", params, std_bool_string_string_type(), stmts)
+    std_function_item(STD_FS_CANONICALIZE_RUNTIME_KEY, params, std_bool_string_string_type(), stmts)
 }
 
 fn std_fs_read_dir_item() -> Item {
@@ -1614,7 +1624,7 @@ fn std_fs_read_dir_item() -> Item {
             ),
         },
     );
-    std_function_item("std.fs.read_dir", params, std_bool_strings_string_type(), stmts)
+    std_function_item(STD_FS_READ_DIR_RUNTIME_KEY, params, std_bool_strings_string_type(), stmts)
 }
 
 fn std_fs_read_dir_v2_item() -> Item {
@@ -1729,7 +1739,7 @@ fn std_fs_read_dir_v2_item() -> Item {
             ),
         },
     );
-    std_function_item("std.fs.read_dir.v2", params, std_bool_strings_error_type(), stmts)
+    std_function_item(STD_FS_READ_DIR_V2_RUNTIME_KEY, params, std_bool_strings_error_type(), stmts)
 }
 
 fn std_io_output_item(key: string, function: string, stderr: bool) -> Item {
@@ -1787,7 +1797,7 @@ fn std_io_read_stdin_item() -> Item {
             ),
         },
     );
-    std_function_item("std.io.read_stdin", Vec::[], std_bool_bytes_string_type(), stmts)
+    std_function_item(STD_IO_READ_STDIN_RUNTIME_KEY, Vec::[], std_bool_bytes_string_type(), stmts)
 }
 
 fn std_bytes_error_failure_stmts() -> Vec[Stmt] {
@@ -1847,7 +1857,7 @@ fn std_io_read_stdin_v2_item() -> Item {
         },
     );
     stmts.push(std_bytes_error_success(Expr::Var { name: "data" }));
-    std_function_item("std.io.read_stdin.v2", Vec::[], std_bool_bytes_error_type(), stmts)
+    std_function_item(STD_IO_READ_STDIN_V2_RUNTIME_KEY, Vec::[], std_bool_bytes_error_type(), stmts)
 }
 
 fn std_io_read_stdin_exact_item() -> Item {
@@ -1902,7 +1912,12 @@ fn std_io_read_stdin_exact_item() -> Item {
             ),
         },
     );
-    std_function_item("std.io.read_stdin_exact", params, std_bool_bytes_string_type(), stmts)
+    std_function_item(
+        STD_IO_READ_STDIN_EXACT_RUNTIME_KEY,
+        params,
+        std_bool_bytes_string_type(),
+        stmts,
+    )
 }
 
 fn std_io_read_stdin_exact_v2_item() -> Item {
@@ -1936,7 +1951,12 @@ fn std_io_read_stdin_exact_v2_item() -> Item {
         },
     );
     stmts.push(std_bytes_error_success(Expr::Var { name: "data" }));
-    std_function_item("std.io.read_stdin_exact.v2", params, std_bool_bytes_error_type(), stmts)
+    std_function_item(
+        STD_IO_READ_STDIN_EXACT_V2_RUNTIME_KEY,
+        params,
+        std_bool_bytes_error_type(),
+        stmts,
+    )
 }
 
 fn std_io_write_item(key: string, stream: string) -> Item {
@@ -2044,7 +2064,7 @@ fn std_path_join_item() -> Item {
     args.push(Expr::Var { name: "child" });
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(Stmt::Return { expr: Option::Some(std_call("_goml_filepath.Join", args)) });
-    std_function_item("std.path.join", params, Type::String, stmts)
+    std_function_item(STD_PATH_JOIN_RUNTIME_KEY, params, Type::String, stmts)
 }
 
 fn std_path_unary_item(key: string, function: string, ret_ty: Type) -> Item {
@@ -2099,7 +2119,7 @@ fn std_path_parent_item() -> Item {
             expr: Option::Some(std_bool_string_expr(true, Expr::Var { name: "parent" })),
         },
     );
-    std_function_item("std.path.parent", params, std_bool_string_type(), stmts)
+    std_function_item(STD_PATH_PARENT_RUNTIME_KEY, params, std_bool_string_type(), stmts)
 }
 
 fn std_path_file_name_item() -> Item {
@@ -2164,7 +2184,7 @@ fn std_path_file_name_item() -> Item {
     stmts.push(
         Stmt::Return { expr: Option::Some(std_bool_string_expr(true, Expr::Var { name: "base" })) },
     );
-    std_function_item("std.path.file_name", params, std_bool_string_type(), stmts)
+    std_function_item(STD_PATH_FILE_NAME_RUNTIME_KEY, params, std_bool_string_type(), stmts)
 }
 
 fn std_path_extension_item() -> Item {
@@ -2219,7 +2239,7 @@ fn std_path_extension_item() -> Item {
             ),
         },
     );
-    std_function_item("std.path.extension", params, std_bool_string_type(), stmts)
+    std_function_item(STD_PATH_EXTENSION_RUNTIME_KEY, params, std_bool_string_type(), stmts)
 }
 
 fn std_path_file_stem_item() -> Item {
@@ -2287,7 +2307,7 @@ fn std_path_file_stem_item() -> Item {
             ),
         },
     );
-    std_function_item("std.path.file_stem", params, std_bool_string_type(), stmts)
+    std_function_item(STD_PATH_FILE_STEM_RUNTIME_KEY, params, std_bool_string_type(), stmts)
 }
 
 fn std_path_with_extension_item() -> Item {
@@ -2373,7 +2393,7 @@ fn std_path_with_extension_item() -> Item {
             ),
         },
     );
-    std_function_item("std.path.with_extension", params, Type::String, stmts)
+    std_function_item(STD_PATH_WITH_EXTENSION_RUNTIME_KEY, params, Type::String, stmts)
 }
 
 fn std_path_absolute_item() -> Item {
@@ -2414,7 +2434,7 @@ fn std_path_absolute_item() -> Item {
             ),
         },
     );
-    std_function_item("std.path.absolute", params, std_bool_string_string_type(), stmts)
+    std_function_item(STD_PATH_ABSOLUTE_RUNTIME_KEY, params, std_bool_string_string_type(), stmts)
 }
 
 fn std_path_relative_item() -> Item {
@@ -2461,7 +2481,7 @@ fn std_path_relative_item() -> Item {
         },
     );
     std_function_item(
-        "std.path.relative",
+        STD_PATH_RELATIVE_RUNTIME_KEY,
         Vec::[("base", Type::String), ("target", Type::String)],
         std_bool_string_string_type(),
         stmts,
@@ -2476,7 +2496,7 @@ fn std_path_separator_item() -> Item {
             ),
         },
     ];
-    std_function_item("std.path.separator", Vec::[], Type::String, stmts)
+    std_function_item(STD_PATH_SEPARATOR_RUNTIME_KEY, Vec::[], Type::String, stmts)
 }
 
 fn std_testing_fail_item() -> Item {
@@ -2491,14 +2511,14 @@ fn std_testing_fail_item() -> Item {
     stmts.push(Stmt::Expr { expr: std_call("_goml_fmt.Fprintln", print_args) });
     stmts.push(Stmt::Expr { expr: std_call("_goml_os.Exit", exit_args) });
     stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
-    std_function_item("std.testing.fail", params, Type::Unit, stmts)
+    std_function_item(STD_TESTING_FAIL_RUNTIME_KEY, params, Type::Unit, stmts)
 }
 
 fn std_num_parse_integer_item(signed: bool) -> Item {
     let key = if signed {
-        "std.num.parse_int"
+        STD_NUM_PARSE_INT_RUNTIME_KEY
     } else {
-        "std.num.parse_uint"
+        STD_NUM_PARSE_UINT_RUNTIME_KEY
     };
     let value_ty = if signed {
         tast::Type::Int
@@ -2569,9 +2589,9 @@ fn std_num_parse_integer_item(signed: bool) -> Item {
 
 fn std_num_parse_float_item(single: bool) -> Item {
     let key = if single {
-        "std.num.parse_float32"
+        STD_NUM_PARSE_FLOAT32_RUNTIME_KEY
     } else {
-        "std.num.parse_float64"
+        STD_NUM_PARSE_FLOAT64_RUNTIME_KEY
     };
     let value_ty = if single {
         tast::Type::Float32
@@ -2692,7 +2712,7 @@ fn std_math_float32_unary_item() -> Item {
             ),
         },
     ];
-    std_function_item("std.math.float32_unary", params, Type::Float32, stmts)
+    std_function_item(STD_MATH_FLOAT32_UNARY_RUNTIME_KEY, params, Type::Float32, stmts)
 }
 
 fn std_math_float32_pow_item() -> Item {
@@ -2707,16 +2727,14 @@ fn std_math_float32_pow_item() -> Item {
             ),
         },
     ];
-    std_function_item("std.math.float32_pow", params, Type::Float32, stmts)
+    std_function_item(STD_MATH_FLOAT32_POW_RUNTIME_KEY, params, Type::Float32, stmts)
 }
 
 fn std_math_runtime_hook_item(key: string) -> Option[Item] {
-    if key == "std.math.float32_unary" {
-        Option::Some(std_math_float32_unary_item())
-    } else if key == "std.math.float32_pow" {
-        Option::Some(std_math_float32_pow_item())
-    } else {
-        Option::None
+    match key {
+        STD_MATH_FLOAT32_UNARY_RUNTIME_KEY => Option::Some(std_math_float32_unary_item()),
+        STD_MATH_FLOAT32_POW_RUNTIME_KEY => Option::Some(std_math_float32_pow_item()),
+        _ => Option::None,
     }
 }
 
@@ -2768,14 +2786,18 @@ fn std_crypto_random_bytes_item() -> Item {
             ),
         },
     );
-    std_function_item("std.crypto.rand.bytes", params, std_bool_bytes_string_type(), stmts)
+    std_function_item(
+        STD_CRYPTO_RAND_BYTES_RUNTIME_KEY,
+        params,
+        std_bool_bytes_string_type(),
+        stmts,
+    )
 }
 
 fn std_crypto_runtime_hook_item(key: string) -> Option[Item] {
-    if key == "std.crypto.rand.bytes" {
-        Option::Some(std_crypto_random_bytes_item())
-    } else {
-        Option::None
+    match key {
+        STD_CRYPTO_RAND_BYTES_RUNTIME_KEY => Option::Some(std_crypto_random_bytes_item()),
+        _ => Option::None,
     }
 }
 
@@ -2797,7 +2819,7 @@ fn std_time_monotonic_nanoseconds_item() -> Item {
     let stmts = Vec::[
         Stmt::Return { expr: Option::Some(std_method_call(elapsed, "Nanoseconds", Vec::[])) },
     ];
-    std_function_item("std.time.monotonic_nanoseconds", Vec::[], Type::Int64, stmts)
+    std_function_item(STD_TIME_MONOTONIC_NANOSECONDS_RUNTIME_KEY, Vec::[], Type::Int64, stmts)
 }
 
 fn std_time_unix_nanoseconds_item() -> Item {
@@ -2805,7 +2827,7 @@ fn std_time_unix_nanoseconds_item() -> Item {
     let stmts = Vec::[
         Stmt::Return { expr: Option::Some(std_method_call(now, "UnixNano", Vec::[])) },
     ];
-    std_function_item("std.time.unix_nanoseconds", Vec::[], Type::Int64, stmts)
+    std_function_item(STD_TIME_UNIX_NANOSECONDS_RUNTIME_KEY, Vec::[], Type::Int64, stmts)
 }
 
 fn std_time_sleep_nanoseconds_item() -> Item {
@@ -2824,7 +2846,7 @@ fn std_time_sleep_nanoseconds_item() -> Item {
         },
         Stmt::Return { expr: Option::Some(Expr::Unit) },
     ];
-    std_function_item("std.time.sleep_nanoseconds", params, Type::Unit, stmts)
+    std_function_item(STD_TIME_SLEEP_NANOSECONDS_RUNTIME_KEY, params, Type::Unit, stmts)
 }
 
 fn std_process_environment_type() -> tast::Type {
@@ -3159,7 +3181,7 @@ fn std_process_exit_item() -> Item {
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(Stmt::Expr { expr: std_call("_goml_os.Exit", exit_args) });
     stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
-    std_function_item("std.process.exit", params, Type::Unit, stmts)
+    std_function_item(STD_PROCESS_EXIT_RUNTIME_KEY, params, Type::Unit, stmts)
 }
 
 fn std_process_look_path_item() -> Item {
@@ -3200,7 +3222,12 @@ fn std_process_look_path_item() -> Item {
             ),
         },
     );
-    std_function_item("std.process.look_path", params, std_bool_string_string_type(), stmts)
+    std_function_item(
+        STD_PROCESS_LOOK_PATH_RUNTIME_KEY,
+        params,
+        std_bool_string_string_type(),
+        stmts,
+    )
 }
 
 fn std_process_output_item_for(mode: string) -> Item {
@@ -3372,11 +3399,11 @@ fn std_process_output_item_for(mode: string) -> Item {
     );
     std_function_item(
         if timed {
-            "std.process.output_timeout"
+            STD_PROCESS_OUTPUT_TIMEOUT_RUNTIME_KEY
         } else if cancelled {
-            "std.process.output_cancel"
+            STD_PROCESS_OUTPUT_CANCEL_RUNTIME_KEY
         } else {
-            "std.process.output"
+            STD_PROCESS_OUTPUT_RUNTIME_KEY
         },
         if timed {
             std_process_output_timeout_params()
@@ -3551,11 +3578,11 @@ fn std_process_status_item_for(mode: string) -> Item {
     );
     std_function_item(
         if timed {
-            "std.process.status_timeout"
+            STD_PROCESS_STATUS_TIMEOUT_RUNTIME_KEY
         } else if cancelled {
-            "std.process.status_cancel"
+            STD_PROCESS_STATUS_CANCEL_RUNTIME_KEY
         } else {
-            "std.process.status"
+            STD_PROCESS_STATUS_RUNTIME_KEY
         },
         if timed {
             let params = std_process_params();
@@ -3590,189 +3617,156 @@ fn std_process_status_cancel_item() -> Item {
 }
 
 fn std_env_runtime_hook_item(key: string) -> Option[Item] {
-    if key == "std.env.args" {
-        Option::Some(std_env_args_item())
-    } else if key == "std.env.current_dir" {
-        Option::Some(std_string_result_item(key, "_goml_os.Getwd"))
-    } else if key == "std.env.current_exe" {
-        Option::Some(std_string_result_item(key, "_goml_os.Executable"))
-    } else if key == "std.env.var" {
-        Option::Some(std_env_var_item())
-    } else if key == "std.env.vars" {
-        Option::Some(std_env_vars_item())
-    } else {
-        Option::None
+    match key {
+        STD_ENV_ARGS_RUNTIME_KEY => Option::Some(std_env_args_item()),
+        STD_ENV_CURRENT_DIR_RUNTIME_KEY => {
+            Option::Some(std_string_result_item(key, "_goml_os.Getwd"))
+        },
+        STD_ENV_CURRENT_EXE_RUNTIME_KEY => {
+            Option::Some(std_string_result_item(key, "_goml_os.Executable"))
+        },
+        STD_ENV_VAR_RUNTIME_KEY => Option::Some(std_env_var_item()),
+        STD_ENV_VARS_RUNTIME_KEY => Option::Some(std_env_vars_item()),
+        _ => Option::None,
     }
 }
 
 fn std_fs_runtime_hook_item(key: string) -> Option[Item] {
-    if key == "std.fs.read_file" {
-        Option::Some(std_fs_read_file_item())
-    } else if key == "std.fs.sha256_file" {
-        Option::Some(std_fs_sha256_file_item())
-    } else if key == "std.fs.write_file" {
-        Option::Some(std_fs_write_file_item())
-    } else if key == "std.fs.read_bytes" {
-        Option::Some(std_fs_read_bytes_item())
-    } else if key == "std.fs.read_bytes.v2" {
-        Option::Some(std_fs_read_bytes_v2_item())
-    } else if key == "std.fs.write_bytes" {
-        Option::Some(std_fs_write_bytes_item())
-    } else if key == "std.fs.write_bytes.v2" {
-        Option::Some(std_fs_write_bytes_v2_item())
-    } else if key == "std.fs.path_operation.v2" {
-        Option::Some(std_fs_path_operation_v2_item())
-    } else if key == "std.fs.metadata.v2" {
-        Option::Some(std_fs_metadata_v2_item())
-    } else if key == "std.fs.atomic_write.v2" {
-        Option::Some(std_fs_atomic_write_v2_item())
-    } else if key == "std.fs.create_dir_all" {
-        Option::Some(std_fs_create_dir_all_item())
-    } else if key == "std.fs.remove_file" {
-        Option::Some(std_fs_remove_item(key, "_goml_os.Remove"))
-    } else if key == "std.fs.remove_dir_all" {
-        Option::Some(std_fs_remove_item(key, "_goml_os.RemoveAll"))
-    } else if key == "std.fs.file_exists" {
-        Option::Some(std_fs_file_exists_item())
-    } else if key == "std.fs.is_file" {
-        Option::Some(std_fs_stat_kind_item(key, false))
-    } else if key == "std.fs.is_dir" {
-        Option::Some(std_fs_stat_kind_item(key, true))
-    } else if key == "std.fs.canonicalize" {
-        Option::Some(std_fs_canonicalize_item())
-    } else if key == "std.fs.read_dir" {
-        Option::Some(std_fs_read_dir_item())
-    } else if key == "std.fs.read_dir.v2" {
-        Option::Some(std_fs_read_dir_v2_item())
-    } else {
-        Option::None
+    match key {
+        STD_FS_READ_FILE_RUNTIME_KEY => Option::Some(std_fs_read_file_item()),
+        STD_FS_SHA256_FILE_RUNTIME_KEY => Option::Some(std_fs_sha256_file_item()),
+        STD_FS_WRITE_FILE_RUNTIME_KEY => Option::Some(std_fs_write_file_item()),
+        STD_FS_READ_BYTES_RUNTIME_KEY => Option::Some(std_fs_read_bytes_item()),
+        STD_FS_READ_BYTES_V2_RUNTIME_KEY => Option::Some(std_fs_read_bytes_v2_item()),
+        STD_FS_WRITE_BYTES_RUNTIME_KEY => Option::Some(std_fs_write_bytes_item()),
+        STD_FS_WRITE_BYTES_V2_RUNTIME_KEY => Option::Some(std_fs_write_bytes_v2_item()),
+        STD_FS_PATH_OPERATION_V2_RUNTIME_KEY => Option::Some(std_fs_path_operation_v2_item()),
+        STD_FS_METADATA_V2_RUNTIME_KEY => Option::Some(std_fs_metadata_v2_item()),
+        STD_FS_ATOMIC_WRITE_V2_RUNTIME_KEY => Option::Some(std_fs_atomic_write_v2_item()),
+        STD_FS_CREATE_DIR_ALL_RUNTIME_KEY => Option::Some(std_fs_create_dir_all_item()),
+        STD_FS_REMOVE_FILE_RUNTIME_KEY => {
+            Option::Some(std_fs_remove_item(key, "_goml_os.Remove"))
+        },
+        STD_FS_REMOVE_DIR_ALL_RUNTIME_KEY => {
+            Option::Some(std_fs_remove_item(key, "_goml_os.RemoveAll"))
+        },
+        STD_FS_FILE_EXISTS_RUNTIME_KEY => Option::Some(std_fs_file_exists_item()),
+        STD_FS_IS_FILE_RUNTIME_KEY => Option::Some(std_fs_stat_kind_item(key, false)),
+        STD_FS_IS_DIR_RUNTIME_KEY => Option::Some(std_fs_stat_kind_item(key, true)),
+        STD_FS_CANONICALIZE_RUNTIME_KEY => Option::Some(std_fs_canonicalize_item()),
+        STD_FS_READ_DIR_RUNTIME_KEY => Option::Some(std_fs_read_dir_item()),
+        STD_FS_READ_DIR_V2_RUNTIME_KEY => Option::Some(std_fs_read_dir_v2_item()),
+        _ => Option::None,
     }
 }
 
 fn std_io_runtime_hook_item(key: string) -> Option[Item] {
-    if key == "std.io.print" {
-        Option::Some(std_io_output_item(key, "_goml_fmt.Print", false))
-    } else if key == "std.io.println" {
-        Option::Some(std_io_output_item(key, "_goml_fmt.Println", false))
-    } else if key == "std.io.eprint" {
-        Option::Some(std_io_output_item(key, "_goml_fmt.Fprint", true))
-    } else if key == "std.io.read_stdin" {
-        Option::Some(std_io_read_stdin_item())
-    } else if key == "std.io.read_stdin.v2" {
-        Option::Some(std_io_read_stdin_v2_item())
-    } else if key == "std.io.read_stdin_exact" {
-        Option::Some(std_io_read_stdin_exact_item())
-    } else if key == "std.io.read_stdin_exact.v2" {
-        Option::Some(std_io_read_stdin_exact_v2_item())
-    } else if key == "std.io.write_stdout" {
-        Option::Some(std_io_write_item(key, "_goml_os.Stdout"))
-    } else if key == "std.io.write_stderr" {
-        Option::Some(std_io_write_item(key, "_goml_os.Stderr"))
-    } else if key == "std.io.write_stdout.v2" {
-        Option::Some(std_io_write_v2_item(key, "_goml_os.Stdout"))
-    } else if key == "std.io.write_stderr.v2" {
-        Option::Some(std_io_write_v2_item(key, "_goml_os.Stderr"))
-    } else {
-        Option::None
+    match key {
+        STD_IO_PRINT_RUNTIME_KEY => {
+            Option::Some(std_io_output_item(key, "_goml_fmt.Print", false))
+        },
+        STD_IO_PRINTLN_RUNTIME_KEY => {
+            Option::Some(std_io_output_item(key, "_goml_fmt.Println", false))
+        },
+        STD_IO_EPRINT_RUNTIME_KEY => {
+            Option::Some(std_io_output_item(key, "_goml_fmt.Fprint", true))
+        },
+        STD_IO_READ_STDIN_RUNTIME_KEY => Option::Some(std_io_read_stdin_item()),
+        STD_IO_READ_STDIN_V2_RUNTIME_KEY => Option::Some(std_io_read_stdin_v2_item()),
+        STD_IO_READ_STDIN_EXACT_RUNTIME_KEY => Option::Some(std_io_read_stdin_exact_item()),
+        STD_IO_READ_STDIN_EXACT_V2_RUNTIME_KEY => Option::Some(std_io_read_stdin_exact_v2_item()),
+        STD_IO_WRITE_STDOUT_RUNTIME_KEY => {
+            Option::Some(std_io_write_item(key, "_goml_os.Stdout"))
+        },
+        STD_IO_WRITE_STDERR_RUNTIME_KEY => {
+            Option::Some(std_io_write_item(key, "_goml_os.Stderr"))
+        },
+        STD_IO_WRITE_STDOUT_V2_RUNTIME_KEY => {
+            Option::Some(std_io_write_v2_item(key, "_goml_os.Stdout"))
+        },
+        STD_IO_WRITE_STDERR_V2_RUNTIME_KEY => {
+            Option::Some(std_io_write_v2_item(key, "_goml_os.Stderr"))
+        },
+        _ => Option::None,
     }
 }
 
 fn std_path_runtime_hook_item(key: string) -> Option[Item] {
-    if key == "std.path.join" {
-        Option::Some(std_path_join_item())
-    } else if key == "std.path.clean" {
-        Option::Some(std_path_unary_item(key, "_goml_filepath.Clean", Type::String))
-    } else if key == "std.path.is_absolute" {
-        Option::Some(std_path_unary_item(key, "_goml_filepath.IsAbs", Type::Bool))
-    } else if key == "std.path.parent" {
-        Option::Some(std_path_parent_item())
-    } else if key == "std.path.file_name" {
-        Option::Some(std_path_file_name_item())
-    } else if key == "std.path.extension" {
-        Option::Some(std_path_extension_item())
-    } else if key == "std.path.file_stem" {
-        Option::Some(std_path_file_stem_item())
-    } else if key == "std.path.with_extension" {
-        Option::Some(std_path_with_extension_item())
-    } else if key == "std.path.absolute" {
-        Option::Some(std_path_absolute_item())
-    } else if key == "std.path.relative" {
-        Option::Some(std_path_relative_item())
-    } else if key == "std.path.separator" {
-        Option::Some(std_path_separator_item())
-    } else {
-        Option::None
+    match key {
+        STD_PATH_JOIN_RUNTIME_KEY => Option::Some(std_path_join_item()),
+        STD_PATH_CLEAN_RUNTIME_KEY => {
+            Option::Some(std_path_unary_item(key, "_goml_filepath.Clean", Type::String))
+        },
+        STD_PATH_IS_ABSOLUTE_RUNTIME_KEY => {
+            Option::Some(std_path_unary_item(key, "_goml_filepath.IsAbs", Type::Bool))
+        },
+        STD_PATH_PARENT_RUNTIME_KEY => Option::Some(std_path_parent_item()),
+        STD_PATH_FILE_NAME_RUNTIME_KEY => Option::Some(std_path_file_name_item()),
+        STD_PATH_EXTENSION_RUNTIME_KEY => Option::Some(std_path_extension_item()),
+        STD_PATH_FILE_STEM_RUNTIME_KEY => Option::Some(std_path_file_stem_item()),
+        STD_PATH_WITH_EXTENSION_RUNTIME_KEY => Option::Some(std_path_with_extension_item()),
+        STD_PATH_ABSOLUTE_RUNTIME_KEY => Option::Some(std_path_absolute_item()),
+        STD_PATH_RELATIVE_RUNTIME_KEY => Option::Some(std_path_relative_item()),
+        STD_PATH_SEPARATOR_RUNTIME_KEY => Option::Some(std_path_separator_item()),
+        _ => Option::None,
     }
 }
 
 fn std_process_runtime_hook_item(key: string) -> Option[Item] {
-    if key == "std.process.exit" {
-        Option::Some(std_process_exit_item())
-    } else if key == "std.process.output" {
-        Option::Some(std_process_output_item())
-    } else if key == "std.process.look_path" {
-        Option::Some(std_process_look_path_item())
-    } else if key == "std.process.output_timeout" {
-        Option::Some(std_process_output_timeout_item())
-    } else if key == "std.process.output_cancel" {
-        Option::Some(std_process_output_cancel_item())
-    } else if key == "std.process.status" {
-        Option::Some(std_process_status_item())
-    } else if key == "std.process.status_timeout" {
-        Option::Some(std_process_status_timeout_item())
-    } else if key == "std.process.status_cancel" {
-        Option::Some(std_process_status_cancel_item())
-    } else {
-        Option::None
+    match key {
+        STD_PROCESS_EXIT_RUNTIME_KEY => Option::Some(std_process_exit_item()),
+        STD_PROCESS_OUTPUT_RUNTIME_KEY => Option::Some(std_process_output_item()),
+        STD_PROCESS_LOOK_PATH_RUNTIME_KEY => Option::Some(std_process_look_path_item()),
+        STD_PROCESS_OUTPUT_TIMEOUT_RUNTIME_KEY => Option::Some(std_process_output_timeout_item()),
+        STD_PROCESS_OUTPUT_CANCEL_RUNTIME_KEY => Option::Some(std_process_output_cancel_item()),
+        STD_PROCESS_STATUS_RUNTIME_KEY => Option::Some(std_process_status_item()),
+        STD_PROCESS_STATUS_TIMEOUT_RUNTIME_KEY => Option::Some(std_process_status_timeout_item()),
+        STD_PROCESS_STATUS_CANCEL_RUNTIME_KEY => Option::Some(std_process_status_cancel_item()),
+        _ => Option::None,
     }
 }
 
 fn std_num_runtime_hook_item(key: string) -> Option[Item] {
-    if key == "std.num.parse_int" {
-        Option::Some(std_num_parse_integer_item(true))
-    } else if key == "std.num.parse_uint" {
-        Option::Some(std_num_parse_integer_item(false))
-    } else if key == "std.num.parse_float32" {
-        Option::Some(std_num_parse_float_item(true))
-    } else if key == "std.num.parse_float64" {
-        Option::Some(std_num_parse_float_item(false))
-    } else {
-        Option::None
+    match key {
+        STD_NUM_PARSE_INT_RUNTIME_KEY => Option::Some(std_num_parse_integer_item(true)),
+        STD_NUM_PARSE_UINT_RUNTIME_KEY => Option::Some(std_num_parse_integer_item(false)),
+        STD_NUM_PARSE_FLOAT32_RUNTIME_KEY => Option::Some(std_num_parse_float_item(true)),
+        STD_NUM_PARSE_FLOAT64_RUNTIME_KEY => Option::Some(std_num_parse_float_item(false)),
+        _ => Option::None,
     }
 }
 
 fn std_time_runtime_hook_item(key: string) -> Option[Item] {
-    if key == "std.time.monotonic_nanoseconds" {
-        Option::Some(std_time_monotonic_nanoseconds_item())
-    } else if key == "std.time.unix_nanoseconds" {
-        Option::Some(std_time_unix_nanoseconds_item())
-    } else if key == "std.time.sleep_nanoseconds" {
-        Option::Some(std_time_sleep_nanoseconds_item())
-    } else {
-        Option::None
+    match key {
+        STD_TIME_MONOTONIC_NANOSECONDS_RUNTIME_KEY => {
+            Option::Some(std_time_monotonic_nanoseconds_item())
+        },
+        STD_TIME_UNIX_NANOSECONDS_RUNTIME_KEY => Option::Some(std_time_unix_nanoseconds_item()),
+        STD_TIME_SLEEP_NANOSECONDS_RUNTIME_KEY => Option::Some(std_time_sleep_nanoseconds_item()),
+        _ => Option::None,
     }
 }
 
 fn standard_runtime_hook_item(key: string) -> Option[Item] {
-    if key.starts_with("std.env.") {
+    if key.starts_with(STD_ENV_RUNTIME_PREFIX) {
         std_env_runtime_hook_item(key)
-    } else if key.starts_with("std.fs.") {
+    } else if key.starts_with(STD_FS_RUNTIME_PREFIX) {
         std_fs_runtime_hook_item(key)
-    } else if key.starts_with("std.io.") {
+    } else if key.starts_with(STD_IO_RUNTIME_PREFIX) {
         std_io_runtime_hook_item(key)
-    } else if key.starts_with("std.path.") {
+    } else if key.starts_with(STD_PATH_RUNTIME_PREFIX) {
         std_path_runtime_hook_item(key)
-    } else if key.starts_with("std.process.") {
+    } else if key.starts_with(STD_PROCESS_RUNTIME_PREFIX) {
         std_process_runtime_hook_item(key)
-    } else if key == "std.testing.fail" {
+    } else if key == STD_TESTING_FAIL_RUNTIME_KEY {
         Option::Some(std_testing_fail_item())
-    } else if key.starts_with("std.num.") {
+    } else if key.starts_with(STD_NUM_RUNTIME_PREFIX) {
         std_num_runtime_hook_item(key)
-    } else if key.starts_with("std.math.") {
+    } else if key.starts_with(STD_MATH_RUNTIME_PREFIX) {
         std_math_runtime_hook_item(key)
-    } else if key.starts_with("std.crypto.") {
+    } else if key.starts_with(STD_CRYPTO_RUNTIME_PREFIX) {
         std_crypto_runtime_hook_item(key)
-    } else if key.starts_with("std.time.") {
+    } else if key.starts_with(STD_TIME_RUNTIME_PREFIX) {
         std_time_runtime_hook_item(key)
     } else {
         task_runtime_hook_item(key)

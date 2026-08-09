@@ -6,6 +6,18 @@ use std::text;
 
 pub const FILENAME: string = "goml.toml";
 
+const MODULE_SECTION: string = "module";
+
+const MODULE_PATH_KEY: string = "path";
+
+const BUILD_SECTION: string = "build";
+
+const TARGET_DIR_KEY: string = "target-dir";
+
+const DEPENDENCIES_SECTION: string = "dependencies";
+
+const DEFAULT_TARGET_DIR: string = "_artifact";
+
 pub struct Dependency {
     pub name: string,
     pub version: string,
@@ -116,7 +128,7 @@ pub fn load(path: string) -> Result[Manifest, string] {
     let source = fs::read_file(path)?;
     let mut section = "";
     let mut module_path: Option[string] = Option::None;
-    let mut target_dir = "_artifact";
+    let mut target_dir = DEFAULT_TARGET_DIR;
     let dependencies: Vec[Dependency] = Vec::[];
     for original in text::lines(source) {
         let line = text::trim(strip_comment(original));
@@ -135,14 +147,19 @@ pub fn load(path: string) -> Result[Manifest, string] {
             } else {};
             let key = text::trim(line.byte_slice(0, equals));
             let value = parse_string(line.byte_slice(equals + 1, line.byte_len()))?;
-            if section == "module" && key == "path" {
-                module_path = Option::Some(value);
-            } else if section == "build" && key == "target-dir" {
-                target_dir = value;
-            } else if section == "dependencies" {
-                let name = parse_string(key)?;
-                dependencies.push(Dependency { name, version: value })
-            } else {}
+            match (section, key) {
+                (MODULE_SECTION, MODULE_PATH_KEY) => {
+                    module_path = Option::Some(value);
+                },
+                (BUILD_SECTION, TARGET_DIR_KEY) => {
+                    target_dir = value;
+                },
+                (DEPENDENCIES_SECTION, _) => {
+                    let name = parse_string(key)?;
+                    dependencies.push(Dependency { name, version: value })
+                },
+                _ => (),
+            }
         }
     }
     let Some(module_path) = module_path else {

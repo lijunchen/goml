@@ -203,23 +203,23 @@ fn artifact_interface_binary_element_type(
 
 fn artifact_interface_binary_simple_type(name: string) -> Result[tast::Type, string] {
     match name {
-        "TUnit" => Result::Ok(tast::Type::Unit),
-        "TNever" => Result::Ok(tast::Type::Never),
-        "TBool" => Result::Ok(tast::Type::Bool),
-        "TInt" => Result::Ok(tast::Type::Int),
-        "TInt8" => Result::Ok(tast::Type::Int8),
-        "TInt16" => Result::Ok(tast::Type::Int16),
-        "TInt32" => Result::Ok(tast::Type::Int32),
-        "TInt64" => Result::Ok(tast::Type::Int64),
-        "TUint" => Result::Ok(tast::Type::Uint),
-        "TUint8" => Result::Ok(tast::Type::Uint8),
-        "TUint16" => Result::Ok(tast::Type::Uint16),
-        "TUint32" => Result::Ok(tast::Type::Uint32),
-        "TUint64" => Result::Ok(tast::Type::Uint64),
-        "TFloat32" => Result::Ok(tast::Type::Float32),
-        "TFloat64" => Result::Ok(tast::Type::Float64),
-        "TString" => Result::Ok(tast::Type::String),
-        "TChar" => Result::Ok(tast::Type::Char),
+        tast_codec::TYPE_UNIT_TAG => Result::Ok(tast::Type::Unit),
+        tast_codec::TYPE_NEVER_TAG => Result::Ok(tast::Type::Never),
+        tast_codec::TYPE_BOOL_TAG => Result::Ok(tast::Type::Bool),
+        tast_codec::TYPE_INT_TAG => Result::Ok(tast::Type::Int),
+        tast_codec::TYPE_INT8_TAG => Result::Ok(tast::Type::Int8),
+        tast_codec::TYPE_INT16_TAG => Result::Ok(tast::Type::Int16),
+        tast_codec::TYPE_INT32_TAG => Result::Ok(tast::Type::Int32),
+        tast_codec::TYPE_INT64_TAG => Result::Ok(tast::Type::Int64),
+        tast_codec::TYPE_UINT_TAG => Result::Ok(tast::Type::Uint),
+        tast_codec::TYPE_UINT8_TAG => Result::Ok(tast::Type::Uint8),
+        tast_codec::TYPE_UINT16_TAG => Result::Ok(tast::Type::Uint16),
+        tast_codec::TYPE_UINT32_TAG => Result::Ok(tast::Type::Uint32),
+        tast_codec::TYPE_UINT64_TAG => Result::Ok(tast::Type::Uint64),
+        tast_codec::TYPE_FLOAT32_TAG => Result::Ok(tast::Type::Float32),
+        tast_codec::TYPE_FLOAT64_TAG => Result::Ok(tast::Type::Float64),
+        tast_codec::TYPE_STRING_TAG => Result::Ok(tast::Type::String),
+        tast_codec::TYPE_CHAR_TAG => Result::Ok(tast::Type::Char),
         _ => Result::Err(artifact_interface_binary_error("type")),
     }
 }
@@ -240,97 +240,109 @@ fn artifact_interface_binary_type(
         return Result::Err(artifact_interface_binary_error("type variant"))
     } else {};
     let kind = wire::artifact_binary_decode_string_id(reader.reader, reader.table)?;
-    if kind == "TEnum" || kind == "TStruct" {
-        let name = artifact_interface_binary_named_string(reader, "name", "named type")?;
-        if kind == "TEnum" {
-            tast_codec::artifact_add_type_name(context.enum_names, name)
-        } else {
-            tast_codec::artifact_add_type_name(context.struct_names, name)
-        };
-        Result::Ok(tast::Type::Con { name })
-    } else if kind == "TDyn" {
-        let decoded = artifact_interface_binary_dyn_bound(reader, context)?;
-        Result::Ok(
-            tast::Type::Dyn {
-                trait_name: decoded.0.trait_name,
-                args: decoded.0.args,
-                associated_types: decoded.0.associated_types,
-                additional_bounds: decoded.1,
-            },
-        )
-    } else if kind == "TParam" {
-        match artifact_interface_binary_named_string(reader, "name", "type parameter") {
-            Ok(value) => Result::Ok(tast::Type::Param { name: value }),
-            Err(error) => Result::Err(error),
-        }
-    } else if kind == "TTuple" {
-        artifact_interface_binary_object(reader, 1, "tuple type")?;
-        artifact_interface_binary_field(reader, "typs")?;
-        match artifact_interface_binary_type_array(reader, context, "tuple elements") {
-            Ok(value) => Result::Ok(tast::Type::Tuple { items: value }),
-            Err(error) => Result::Err(error),
-        }
-    } else if kind == "TProjection" {
-        artifact_interface_binary_object(reader, 3, "projection type")?;
-        artifact_interface_binary_field(reader, "trait_ref")?;
-        let trait_ref = artifact_interface_binary_optional_trait_ref(reader, context)?;
-        artifact_interface_binary_field(reader, "for_ty")?;
-        let for_ty = artifact_interface_binary_type(reader, context)?;
-        artifact_interface_binary_field(reader, "name")?;
-        match artifact_interface_binary_string(reader, "projection name") {
-            Ok(name) => Result::Ok(tast::Type::Projection { for_ty, name, trait_ref }),
-            Err(error) => Result::Err(error),
-        }
-    } else if kind == "TApp" {
-        artifact_interface_binary_object(reader, 2, "type application")?;
-        artifact_interface_binary_field(reader, "ty")?;
-        let ty = artifact_interface_binary_type(reader, context)?;
-        artifact_interface_binary_field(reader, "args")?;
-        match artifact_interface_binary_type_array(reader, context, "type arguments") {
-            Ok(args) => Result::Ok(tast::Type::App { ty, args }),
-            Err(error) => Result::Err(error),
-        }
-    } else if kind == "TArray" {
-        artifact_interface_binary_object(reader, 2, "array type")?;
-        artifact_interface_binary_field(reader, "len")?;
-        let number = artifact_interface_binary_number(reader, "array length")?;
-        let len = if number == "18446744073709551615" {
-            -1
-        } else {
-            wire::artifact_parse_nonnegative_int(number)?
-        };
-        artifact_interface_binary_field(reader, "elem")?;
-        match artifact_interface_binary_type(reader, context) {
-            Ok(elem) => Result::Ok(tast::Type::Array { len, elem }),
-            Err(error) => Result::Err(error),
-        }
-    } else if kind == "TSlice" || kind == "TVec" || kind == "TRef" || kind == "TChannel" {
-        let elem = artifact_interface_binary_element_type(reader, context, "element type")?;
-        if kind == "TSlice" {
-            Result::Ok(tast::Type::Slice { elem })
-        } else if kind == "TVec" {
-            Result::Ok(tast::Type::VecType { elem })
-        } else if kind == "TRef" {
-            Result::Ok(tast::Type::RefType { elem })
-        } else {
-            Result::Ok(tast::Type::Channel { elem })
-        }
-    } else if kind == "THashMap" {
-        artifact_interface_binary_object(reader, 2, "hash map type")?;
-        artifact_interface_binary_field(reader, "key")?;
-        let key = artifact_interface_binary_type(reader, context)?;
-        artifact_interface_binary_field(reader, "value")?;
-        let value = artifact_interface_binary_type(reader, context)?;
-        Result::Ok(tast::Type::HashMap { key, value })
-    } else if kind == "TFunc" {
-        artifact_interface_binary_object(reader, 2, "function type")?;
-        artifact_interface_binary_field(reader, "params")?;
-        let params = artifact_interface_binary_type_array(reader, context, "function parameters")?;
-        artifact_interface_binary_field(reader, "ret_ty")?;
-        let ret_ty = artifact_interface_binary_type(reader, context)?;
-        Result::Ok(tast::Type::Func { params, ret_ty })
-    } else {
-        Result::Err(artifact_interface_binary_error("supported type variant"))
+    match kind {
+        tast_codec::TYPE_ENUM_TAG | tast_codec::TYPE_STRUCT_TAG => {
+            let name = artifact_interface_binary_named_string(reader, "name", "named type")?;
+            match kind {
+                tast_codec::TYPE_ENUM_TAG => {
+                    tast_codec::artifact_add_type_name(context.enum_names, name)
+                },
+                _ => tast_codec::artifact_add_type_name(context.struct_names, name),
+            };
+            Result::Ok(tast::Type::Con { name })
+        },
+        tast_codec::TYPE_DYN_TAG => {
+            let decoded = artifact_interface_binary_dyn_bound(reader, context)?;
+            Result::Ok(
+                tast::Type::Dyn {
+                    trait_name: decoded.0.trait_name,
+                    args: decoded.0.args,
+                    associated_types: decoded.0.associated_types,
+                    additional_bounds: decoded.1,
+                },
+            )
+        },
+        tast_codec::TYPE_PARAM_TAG => {
+            match artifact_interface_binary_named_string(reader, "name", "type parameter") {
+                Ok(value) => Result::Ok(tast::Type::Param { name: value }),
+                Err(error) => Result::Err(error),
+            }
+        },
+        tast_codec::TYPE_TUPLE_TAG => {
+            artifact_interface_binary_object(reader, 1, "tuple type")?;
+            artifact_interface_binary_field(reader, "typs")?;
+            match artifact_interface_binary_type_array(reader, context, "tuple elements") {
+                Ok(value) => Result::Ok(tast::Type::Tuple { items: value }),
+                Err(error) => Result::Err(error),
+            }
+        },
+        tast_codec::TYPE_PROJECTION_TAG => {
+            artifact_interface_binary_object(reader, 3, "projection type")?;
+            artifact_interface_binary_field(reader, "trait_ref")?;
+            let trait_ref = artifact_interface_binary_optional_trait_ref(reader, context)?;
+            artifact_interface_binary_field(reader, "for_ty")?;
+            let for_ty = artifact_interface_binary_type(reader, context)?;
+            artifact_interface_binary_field(reader, "name")?;
+            match artifact_interface_binary_string(reader, "projection name") {
+                Ok(name) => Result::Ok(tast::Type::Projection { for_ty, name, trait_ref }),
+                Err(error) => Result::Err(error),
+            }
+        },
+        tast_codec::TYPE_APP_TAG => {
+            artifact_interface_binary_object(reader, 2, "type application")?;
+            artifact_interface_binary_field(reader, "ty")?;
+            let ty = artifact_interface_binary_type(reader, context)?;
+            artifact_interface_binary_field(reader, "args")?;
+            match artifact_interface_binary_type_array(reader, context, "type arguments") {
+                Ok(args) => Result::Ok(tast::Type::App { ty, args }),
+                Err(error) => Result::Err(error),
+            }
+        },
+        tast_codec::TYPE_ARRAY_TAG => {
+            artifact_interface_binary_object(reader, 2, "array type")?;
+            artifact_interface_binary_field(reader, "len")?;
+            let number = artifact_interface_binary_number(reader, "array length")?;
+            let len = if number == tast_codec::UNKNOWN_ARRAY_LENGTH {
+                -1
+            } else {
+                wire::artifact_parse_nonnegative_int(number)?
+            };
+            artifact_interface_binary_field(reader, "elem")?;
+            match artifact_interface_binary_type(reader, context) {
+                Ok(elem) => Result::Ok(tast::Type::Array { len, elem }),
+                Err(error) => Result::Err(error),
+            }
+        },
+        tast_codec::TYPE_SLICE_TAG | tast_codec::TYPE_VEC_TAG | tast_codec::TYPE_REF_TAG | tast_codec::TYPE_CHANNEL_TAG => {
+            let elem = artifact_interface_binary_element_type(reader, context, "element type")?;
+            match kind {
+                tast_codec::TYPE_SLICE_TAG => Result::Ok(tast::Type::Slice { elem }),
+                tast_codec::TYPE_VEC_TAG => Result::Ok(tast::Type::VecType { elem }),
+                tast_codec::TYPE_REF_TAG => Result::Ok(tast::Type::RefType { elem }),
+                _ => Result::Ok(tast::Type::Channel { elem }),
+            }
+        },
+        tast_codec::TYPE_HASH_MAP_TAG => {
+            artifact_interface_binary_object(reader, 2, "hash map type")?;
+            artifact_interface_binary_field(reader, "key")?;
+            let key = artifact_interface_binary_type(reader, context)?;
+            artifact_interface_binary_field(reader, "value")?;
+            let value = artifact_interface_binary_type(reader, context)?;
+            Result::Ok(tast::Type::HashMap { key, value })
+        },
+        tast_codec::TYPE_FUNCTION_TAG => {
+            artifact_interface_binary_object(reader, 2, "function type")?;
+            artifact_interface_binary_field(reader, "params")?;
+            let params = artifact_interface_binary_type_array(
+                reader,
+                context,
+                "function parameters",
+            )?;
+            artifact_interface_binary_field(reader, "ret_ty")?;
+            let ret_ty = artifact_interface_binary_type(reader, context)?;
+            Result::Ok(tast::Type::Func { params, ret_ty })
+        },
+        _ => Result::Err(artifact_interface_binary_error("supported type variant")),
     }
 }
 
@@ -353,20 +365,22 @@ fn artifact_interface_binary_predicate(
     artifact_interface_binary_object(reader, 1, "type predicate")?;
     let kind = wire::artifact_binary_decode_string_id(reader.reader, reader.table)?;
     artifact_interface_binary_object(reader, 2, "type predicate payload")?;
-    if kind == "Trait" {
-        artifact_interface_binary_field(reader, "for_ty")?;
-        let for_ty = artifact_interface_binary_type(reader, context)?;
-        artifact_interface_binary_field(reader, "trait_ref")?;
-        let trait_ref = artifact_interface_binary_trait_ref(reader, context)?;
-        Result::Ok(tast::TypePredicate::Trait { for_ty, trait_ref })
-    } else if kind == "Equality" {
-        artifact_interface_binary_field(reader, "lhs")?;
-        let lhs = artifact_interface_binary_type(reader, context)?;
-        artifact_interface_binary_field(reader, "rhs")?;
-        let rhs = artifact_interface_binary_type(reader, context)?;
-        Result::Ok(tast::TypePredicate::Equality { lhs, rhs })
-    } else {
-        Result::Err(artifact_interface_binary_error("supported type predicate"))
+    match kind {
+        tast_codec::TRAIT_PREDICATE_TAG => {
+            artifact_interface_binary_field(reader, "for_ty")?;
+            let for_ty = artifact_interface_binary_type(reader, context)?;
+            artifact_interface_binary_field(reader, "trait_ref")?;
+            let trait_ref = artifact_interface_binary_trait_ref(reader, context)?;
+            Result::Ok(tast::TypePredicate::Trait { for_ty, trait_ref })
+        },
+        tast_codec::EQUALITY_PREDICATE_TAG => {
+            artifact_interface_binary_field(reader, "lhs")?;
+            let lhs = artifact_interface_binary_type(reader, context)?;
+            artifact_interface_binary_field(reader, "rhs")?;
+            let rhs = artifact_interface_binary_type(reader, context)?;
+            Result::Ok(tast::TypePredicate::Equality { lhs, rhs })
+        },
+        _ => Result::Err(artifact_interface_binary_error("supported type predicate")),
     }
 }
 
@@ -556,8 +570,8 @@ fn artifact_interface_binary_callable(reader: ArtifactInterfaceBinaryReader, nam
     let count = artifact_interface_binary_read_count(reader, 6, "callable body")?;
     artifact_interface_binary_field(reader, "kind")?;
     let kind = artifact_interface_binary_string(reader, "callable kind")?;
-    if kind == "goml" {
-        if count == 1 {
+    match kind {
+        tast_codec::CALLABLE_GOML_KIND => if count == 1 {
             Result::Ok(tast::Callable::Function(name))
         } else if count == 2 {
             artifact_interface_binary_field(reader, "id")?;
@@ -566,34 +580,44 @@ fn artifact_interface_binary_callable(reader: ArtifactInterfaceBinaryReader, nam
             )
         } else {
             Result::Err(artifact_interface_binary_error("callable body"))
-        }
-    } else if kind == "go" {
-        if count != 3 {
-            return Result::Err(artifact_interface_binary_error("callable body"))
-        } else {};
-        artifact_interface_binary_field(reader, "import_path")?;
-        let import_path = artifact_interface_binary_string(reader, "Go import path")?;
-        artifact_interface_binary_field(reader, "symbol")?;
-        let symbol = artifact_interface_binary_string(reader, "Go symbol")?;
-        Result::Ok(tast::Callable::GoForeign { import_path, symbol })
-    } else if count != 2 {
-        Result::Err(artifact_interface_binary_error("callable body"))
-    } else {
-        artifact_interface_binary_field(reader, "id")?;
-        let id = artifact_interface_binary_string(reader, "callable id")?;
-        if kind == "intrinsic" {
+        },
+        tast_codec::CALLABLE_GO_KIND => {
+            if count != 3 {
+                return Result::Err(artifact_interface_binary_error("callable body"))
+            } else {};
+            artifact_interface_binary_field(reader, "import_path")?;
+            let import_path = artifact_interface_binary_string(reader, "Go import path")?;
+            artifact_interface_binary_field(reader, "symbol")?;
+            let symbol = artifact_interface_binary_string(reader, "Go symbol")?;
+            Result::Ok(tast::Callable::GoForeign { import_path, symbol })
+        },
+        tast_codec::CALLABLE_INTRINSIC_KIND => {
+            if count != 2 {
+                return Result::Err(artifact_interface_binary_error("callable body"))
+            } else {};
+            artifact_interface_binary_field(reader, "id")?;
+            let id = artifact_interface_binary_string(reader, "callable id")?;
             match tast_codec::artifact_intrinsic_key_from_id(id) {
                 Some(value) => Result::Ok(tast::Callable::Intrinsic(value)),
                 None => Result::Err(artifact_interface_binary_error("intrinsic id")),
             }
-        } else if kind == "runtime" {
+        },
+        tast_codec::CALLABLE_RUNTIME_KIND => {
+            if count != 2 {
+                return Result::Err(artifact_interface_binary_error("callable body"))
+            } else {};
+            artifact_interface_binary_field(reader, "id")?;
+            let id = artifact_interface_binary_string(reader, "callable id")?;
             match tast_codec::artifact_runtime_key_from_id(id) {
                 Some(value) => Result::Ok(tast::Callable::Runtime(value)),
                 None => Result::Err(artifact_interface_binary_error("runtime hook id")),
             }
+        },
+        _ => if count != 2 {
+            Result::Err(artifact_interface_binary_error("callable body"))
         } else {
             Result::Err(artifact_interface_binary_error("callable kind"))
-        }
+        },
     }
 }
 

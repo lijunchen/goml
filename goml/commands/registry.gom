@@ -10,6 +10,12 @@ use std::path;
 use std::process;
 use std::text;
 
+const REGISTRY_SECTION: string = "registry";
+
+const DEFAULT_REGISTRY_KEY: string = "default";
+
+const LOCAL_REGISTRY_OPTION: string = "--local-registry";
+
 fn command_output(value: bytes::Bytes) -> string {
     match value.to_string() {
         Ok(value) => value,
@@ -54,7 +60,7 @@ fn config_registry_source() -> Result[string, string] {
         let line = text::trim(original);
         if line.starts_with("[") && line.ends_with("]") {
             section = line.byte_slice(1, line.byte_len() - 1);
-        } else if section == "registry" && line.starts_with("default") {
+        } else if section == REGISTRY_SECTION && line.starts_with(DEFAULT_REGISTRY_KEY) {
             let mut equals = -1;
             for index in 0..line.byte_len() {
                 if equals < 0 && line.byte_get(index) == b'=' {
@@ -80,17 +86,18 @@ fn config_registry_source() -> Result[string, string] {
 
 fn option_local_registry(args: Vec[string], index: int) -> Result[(Option[string], int), string] {
     let argument = args[index];
-    if argument == "--local-registry" {
+    let inline_prefix = LOCAL_REGISTRY_OPTION + "=";
+    if argument == LOCAL_REGISTRY_OPTION {
         if index + 1 >= args.len() {
-            Result::Err("--local-registry requires a value")
+            Result::Err(LOCAL_REGISTRY_OPTION + " requires a value")
         } else {
             let value = args[index + 1];
             Result::Ok((Option::Some(value), index + 2))
         }
-    } else if argument.starts_with("--local-registry=") {
-        let value = argument.byte_slice(17, argument.byte_len());
+    } else if argument.starts_with(inline_prefix) {
+        let value = argument.byte_slice(inline_prefix.byte_len(), argument.byte_len());
         if value == "" {
-            Result::Err("--local-registry requires a value")
+            Result::Err(LOCAL_REGISTRY_OPTION + " requires a value")
         } else {
             Result::Ok((Option::Some(value), index + 1))
         }
@@ -107,7 +114,7 @@ fn registry_argument(args: Vec[string]) -> Result[Option[string], string] {
         index = parsed.1;
         match parsed.0 {
             Some(registry) => match value {
-                Some(_) => return Result::Err("--local-registry cannot be repeated"),
+                Some(_) => return Result::Err(LOCAL_REGISTRY_OPTION + " cannot be repeated"),
                 None => {
                     value = Option::Some(registry);
                 },
@@ -319,7 +326,7 @@ fn dependency_command_args(args: Vec[string]) -> Result[(string, Option[string])
         index = parsed.1;
         match parsed.0 {
             Some(value) => match local {
-                Some(_) => return Result::Err("--local-registry cannot be repeated"),
+                Some(_) => return Result::Err(LOCAL_REGISTRY_OPTION + " cannot be repeated"),
                 None => {
                     local = Option::Some(value);
                 },
