@@ -2347,11 +2347,11 @@ Current public entrances include:
 - `io::print`, `println`, `eprint`, `eprintln`, and byte-oriented standard stream I/O
 - `iter::empty`, `once`, `from_fn`, iterator adapters, and single-pass consumers
 - `json::Value`, `parse`, `encode`, serde `Serialize` and `Deserialize` re-exports, `to_value`, `from_value`, `try_to_string`, `try_stringify`, `to_string`, `from_string`, `field`, and typed `as_*` accessors
-- `math` float32/float64 elementary functions, IEEE 754 classification, and common constants
+- `math` float32/float64 elementary functions, IEEE 754 classification, and the `E`, `PI`, `TAU`, `SQRT_2`, `LN_2`, and `LN_10` constants
 - `num` string and structured parsing plus checked and saturating `int64` arithmetic
 - `path::join`, `clean`, `is_absolute`, component inspection, and `absolute`
 - `process::Command`, structured whole-process execution, `ExitStatus`, `Output`, `exit`, and `look_path`
-- `rand::next_u64`, deterministic byte generation, integer ranges, and shuffle with an explicit seed
+- `rand::ALGORITHM`, `next_u64`, deterministic byte generation, integer ranges, and shuffle with an explicit seed
 - `serde::Value`, `Serializer`, `Deserializer`, `Serialize`, `Deserialize`, `value_serializer`, `value_deserializer`, `to_value`, and `from_value`
 - `task::Scope`, `Task[T]`, `CancelToken`, `WaitResult[T]`, `scope`, and `try_scope`
 - `testing::fail`, boolean/equality assertions, and `Option`/`Result` shape assertions
@@ -2359,7 +2359,7 @@ Current public entrances include:
 - `toml::Value`, `parse`, `encode`, serde `Serialize` and `Deserialize` re-exports, `to_value`, `from_value`, `to_string`, and `from_string`
 - `time::Duration`, `Instant`, `SystemTime`, `sleep`, and `sleep_with`
 - `utf8::validate`, `decode`, `encode`, `encoded_len`, and `Utf8Error`
-- `unicode` scalar properties and Unicode case conversion using Unicode 15.0.0 tables
+- `unicode::VERSION`, scalar properties, and Unicode case conversion using Unicode 15.0.0 tables
 
 ### Structured error foundation
 

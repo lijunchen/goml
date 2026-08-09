@@ -25,13 +25,13 @@ use std::path;
 use std::process;
 use std::text;
 
-const compile_error_prefix: string = "error[compile]: ";
+const COMPILE_ERROR_PREFIX: string = "error[compile]: ";
 
-const typer_stage: string = "typer";
+const TYPER_STAGE: string = "typer";
 
-const inference_failure_message: string = "Could not infer type";
+const INFERENCE_FAILURE_MESSAGE: string = "Could not infer type";
 
-const unknown_source_path: string = "<unknown>";
+const UNKNOWN_SOURCE_PATH: string = "<unknown>";
 
 pub struct Compilation {
     pub source_ast_value: ast::LowerResult,
@@ -140,7 +140,7 @@ fn lower_builtin_core(counter: Ref[int]) -> core::File {
     match core::lower_builtins(counter) {
         Ok(value) => value,
         Err(error) => {
-            fail(compile_error_prefix + error);
+            fail(COMPILE_ERROR_PREFIX + error);
             core::File {
                 functions: Vec::[],
                 enums: Vec::[],
@@ -156,7 +156,7 @@ fn lower_go_or_fail(value: Result[go_backend::File, string]) -> go_backend::File
     match value {
         Ok(file) => file,
         Err(error) => {
-            fail(compile_error_prefix + error);
+            fail(COMPILE_ERROR_PREFIX + error);
             go_backend::File { items: Vec::[] }
         },
     }
@@ -219,7 +219,7 @@ fn import_path_text(value: ast::Path) -> string {
 }
 
 fn std_import(value: string) -> bool {
-    value == resources::std_root_package || value.starts_with(resources::std_package_prefix)
+    value == resources::STD_ROOT_PACKAGE || value.starts_with(resources::STD_PACKAGE_PREFIX)
 }
 
 fn single_file_project_import(value: ast::LowerResult) -> Option[string] {
@@ -388,7 +388,7 @@ fn required_standard_sources(package_name: string) -> Vec[resources::Source] {
             Vec::[]
         },
         Err(error) => {
-            fail(compile_error_prefix + error);
+            fail(COMPILE_ERROR_PREFIX + error);
             Vec::[]
         },
     }
@@ -398,7 +398,7 @@ fn builtin_hir_files() -> Vec[hir::File] {
     let sources = match resources::builtin_sources() {
         Ok(value) => value,
         Err(error) => {
-            fail(compile_error_prefix + error);
+            fail(COMPILE_ERROR_PREFIX + error);
             Vec::[]
         },
     };
@@ -638,71 +638,71 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
         )
     }
     StandardLibrary {
-        root: required_standard_compilation(compiled, resources::std_root_package),
-        host: required_standard_compilation(compiled, resources::std_internal_host_package),
-        ascii: required_standard_compilation(compiled, resources::std_ascii_package),
-        bincode: required_standard_compilation(compiled, resources::std_bincode_package),
-        bytes: required_standard_compilation(compiled, resources::std_bytes_package),
-        cmp: required_standard_compilation(compiled, resources::std_cmp_package),
-        collections: required_standard_compilation(compiled, resources::std_collections_package),
-        error: required_standard_compilation(compiled, resources::std_error_package),
-        env: required_standard_compilation(compiled, resources::std_env_package),
-        fs: required_standard_compilation(compiled, resources::std_fs_package),
-        io: required_standard_compilation(compiled, resources::std_io_package),
-        internal_task: required_standard_compilation(compiled, resources::std_internal_task_package),
-        iter: required_standard_compilation(compiled, resources::std_iter_package),
-        json: required_standard_compilation(compiled, resources::std_json_package),
-        num: required_standard_compilation(compiled, resources::std_num_package),
-        path: required_standard_compilation(compiled, resources::std_path_package),
-        process: required_standard_compilation(compiled, resources::std_process_package),
-        serde: required_standard_compilation(compiled, resources::std_serde_package),
-        task: required_standard_compilation(compiled, resources::std_task_package),
-        testing: required_standard_compilation(compiled, resources::std_testing_package),
-        text: required_standard_compilation(compiled, resources::std_text_package),
-        toml: required_standard_compilation(compiled, resources::std_toml_package),
-        time: required_standard_compilation(compiled, resources::std_time_package),
-        utf8: required_standard_compilation(compiled, resources::std_utf8_package),
-        unicode: required_standard_compilation(compiled, resources::std_unicode_package),
-        math: required_standard_compilation(compiled, resources::std_math_package),
-        rand: required_standard_compilation(compiled, resources::std_rand_package),
-        crypto: required_standard_compilation(compiled, resources::std_crypto_package),
-        crypto_hash: required_standard_compilation(compiled, resources::std_crypto_hash_package),
-        crypto_rand: required_standard_compilation(compiled, resources::std_crypto_rand_package),
+        root: required_standard_compilation(compiled, resources::STD_ROOT_PACKAGE),
+        host: required_standard_compilation(compiled, resources::STD_INTERNAL_HOST_PACKAGE),
+        ascii: required_standard_compilation(compiled, resources::STD_ASCII_PACKAGE),
+        bincode: required_standard_compilation(compiled, resources::STD_BINCODE_PACKAGE),
+        bytes: required_standard_compilation(compiled, resources::STD_BYTES_PACKAGE),
+        cmp: required_standard_compilation(compiled, resources::STD_CMP_PACKAGE),
+        collections: required_standard_compilation(compiled, resources::STD_COLLECTIONS_PACKAGE),
+        error: required_standard_compilation(compiled, resources::STD_ERROR_PACKAGE),
+        env: required_standard_compilation(compiled, resources::STD_ENV_PACKAGE),
+        fs: required_standard_compilation(compiled, resources::STD_FS_PACKAGE),
+        io: required_standard_compilation(compiled, resources::STD_IO_PACKAGE),
+        internal_task: required_standard_compilation(compiled, resources::STD_INTERNAL_TASK_PACKAGE),
+        iter: required_standard_compilation(compiled, resources::STD_ITER_PACKAGE),
+        json: required_standard_compilation(compiled, resources::STD_JSON_PACKAGE),
+        num: required_standard_compilation(compiled, resources::STD_NUM_PACKAGE),
+        path: required_standard_compilation(compiled, resources::STD_PATH_PACKAGE),
+        process: required_standard_compilation(compiled, resources::STD_PROCESS_PACKAGE),
+        serde: required_standard_compilation(compiled, resources::STD_SERDE_PACKAGE),
+        task: required_standard_compilation(compiled, resources::STD_TASK_PACKAGE),
+        testing: required_standard_compilation(compiled, resources::STD_TESTING_PACKAGE),
+        text: required_standard_compilation(compiled, resources::STD_TEXT_PACKAGE),
+        toml: required_standard_compilation(compiled, resources::STD_TOML_PACKAGE),
+        time: required_standard_compilation(compiled, resources::STD_TIME_PACKAGE),
+        utf8: required_standard_compilation(compiled, resources::STD_UTF8_PACKAGE),
+        unicode: required_standard_compilation(compiled, resources::STD_UNICODE_PACKAGE),
+        math: required_standard_compilation(compiled, resources::STD_MATH_PACKAGE),
+        rand: required_standard_compilation(compiled, resources::STD_RAND_PACKAGE),
+        crypto: required_standard_compilation(compiled, resources::STD_CRYPTO_PACKAGE),
+        crypto_hash: required_standard_compilation(compiled, resources::STD_CRYPTO_HASH_PACKAGE),
+        crypto_rand: required_standard_compilation(compiled, resources::STD_CRYPTO_RAND_PACKAGE),
     }
 }
 
 fn standard_library_package(value: StandardLibrary, package_name: string) -> PackageCompilation {
     match package_name {
-        resources::std_root_package => value.root,
-        resources::std_internal_host_package => value.host,
-        resources::std_ascii_package => value.ascii,
-        resources::std_bincode_package => value.bincode,
-        resources::std_bytes_package => value.bytes,
-        resources::std_cmp_package => value.cmp,
-        resources::std_collections_package => value.collections,
-        resources::std_error_package => value.error,
-        resources::std_env_package => value.env,
-        resources::std_fs_package => value.fs,
-        resources::std_io_package => value.io,
-        resources::std_internal_task_package => value.internal_task,
-        resources::std_iter_package => value.iter,
-        resources::std_json_package => value.json,
-        resources::std_num_package => value.num,
-        resources::std_path_package => value.path,
-        resources::std_process_package => value.process,
-        resources::std_serde_package => value.serde,
-        resources::std_task_package => value.task,
-        resources::std_testing_package => value.testing,
-        resources::std_text_package => value.text,
-        resources::std_toml_package => value.toml,
-        resources::std_time_package => value.time,
-        resources::std_utf8_package => value.utf8,
-        resources::std_unicode_package => value.unicode,
-        resources::std_math_package => value.math,
-        resources::std_rand_package => value.rand,
-        resources::std_crypto_package => value.crypto,
-        resources::std_crypto_hash_package => value.crypto_hash,
-        resources::std_crypto_rand_package => value.crypto_rand,
+        resources::STD_ROOT_PACKAGE => value.root,
+        resources::STD_INTERNAL_HOST_PACKAGE => value.host,
+        resources::STD_ASCII_PACKAGE => value.ascii,
+        resources::STD_BINCODE_PACKAGE => value.bincode,
+        resources::STD_BYTES_PACKAGE => value.bytes,
+        resources::STD_CMP_PACKAGE => value.cmp,
+        resources::STD_COLLECTIONS_PACKAGE => value.collections,
+        resources::STD_ERROR_PACKAGE => value.error,
+        resources::STD_ENV_PACKAGE => value.env,
+        resources::STD_FS_PACKAGE => value.fs,
+        resources::STD_IO_PACKAGE => value.io,
+        resources::STD_INTERNAL_TASK_PACKAGE => value.internal_task,
+        resources::STD_ITER_PACKAGE => value.iter,
+        resources::STD_JSON_PACKAGE => value.json,
+        resources::STD_NUM_PACKAGE => value.num,
+        resources::STD_PATH_PACKAGE => value.path,
+        resources::STD_PROCESS_PACKAGE => value.process,
+        resources::STD_SERDE_PACKAGE => value.serde,
+        resources::STD_TASK_PACKAGE => value.task,
+        resources::STD_TESTING_PACKAGE => value.testing,
+        resources::STD_TEXT_PACKAGE => value.text,
+        resources::STD_TOML_PACKAGE => value.toml,
+        resources::STD_TIME_PACKAGE => value.time,
+        resources::STD_UTF8_PACKAGE => value.utf8,
+        resources::STD_UNICODE_PACKAGE => value.unicode,
+        resources::STD_MATH_PACKAGE => value.math,
+        resources::STD_RAND_PACKAGE => value.rand,
+        resources::STD_CRYPTO_PACKAGE => value.crypto,
+        resources::STD_CRYPTO_HASH_PACKAGE => value.crypto_hash,
+        resources::STD_CRYPTO_RAND_PACKAGE => value.crypto_rand,
         _ => {
             fail("error[compile]: unknown standard package " + package_name);
             value.root
@@ -746,7 +746,7 @@ fn hir_diagnostics(diagnostics: Vec[hir::Diagnostic], source_path: string) -> Ve
         result.push(
             tast::Diagnostic {
                 severity: tast::DiagnosticSeverity::Error,
-                stage: typer_stage,
+                stage: TYPER_STAGE,
                 message: diagnostic.message,
                 source_path,
                 span: diagnostic.span,
@@ -782,8 +782,8 @@ fn diagnostic_span_end(value: tast::Diagnostic) -> int {
 }
 
 fn diagnostic_precedes(left: tast::Diagnostic, right: tast::Diagnostic) -> bool {
-    let left_inference = left.message == inference_failure_message;
-    let right_inference = right.message == inference_failure_message;
+    let left_inference = left.message == INFERENCE_FAILURE_MESSAGE;
+    let right_inference = right.message == INFERENCE_FAILURE_MESSAGE;
     if left_inference != right_inference {
         left_inference
     } else if left_inference {
@@ -994,7 +994,7 @@ fn render_typer_diagnostic(value: tast::Diagnostic, fallback_path: string, fallb
     builder.write_string(value.stage);
     builder.write_string("]: ");
     builder.write_string(value.message);
-    let inference = value.message == inference_failure_message;
+    let inference = value.message == INFERENCE_FAILURE_MESSAGE;
     match if inference {
         Option::None
     } else {
@@ -1151,7 +1151,7 @@ fn diagnostic_message_starts_with(value: string, prefix: string) -> bool {
 }
 
 fn compact_diagnostic_phase(value: tast::Diagnostic) -> int {
-    if value.message == inference_failure_message {
+    if value.message == INFERENCE_FAILURE_MESSAGE {
         4
     } else if diagnostic_message_starts_with(value.message, "Could not infer the ") {
         if diagnostic_message_starts_with(
@@ -1336,7 +1336,7 @@ fn lower_mono_or_fail(value: core::File) -> core::File {
     let result = mono::lower_checked(value);
     match result.error {
         Some(error) => {
-            fail(compile_error_prefix + error);
+            fail(COMPILE_ERROR_PREFIX + error);
             result.file
         },
         None => result.file,
@@ -1518,18 +1518,18 @@ pub fn compile_source_or_diagnostics(source_path: string, source: string) -> Sou
 
 fn pipeline_stage_output(stage: string, source_path: string, source: string) -> string {
     match stage {
-        cst_stage => cst::debug_tree(parser::parse(source)),
+        CST_STAGE => cst::debug_tree(parser::parse(source)),
         _ => {
             let compilation = compile_source(source_path, source);
             match stage {
-                ast_stage => ast::pretty(compilation.ast_value),
-                hir_stage => hir::encode(compilation.hir_value),
-                tast_stage => tast::encode(compilation.tast_value),
-                core_stage => core::encode(compilation.core_value),
-                mono_stage => mono::encode(compilation.mono_value),
-                lift_stage => lift::encode(compilation.lift_value),
-                anf_stage => anf::encode(compilation.anf_value),
-                go_stage => go_backend::encode(compilation.go_value),
+                AST_STAGE => ast::pretty(compilation.ast_value),
+                HIR_STAGE => hir::encode(compilation.hir_value),
+                TAST_STAGE => tast::encode(compilation.tast_value),
+                CORE_STAGE => core::encode(compilation.core_value),
+                MONO_STAGE => mono::encode(compilation.mono_value),
+                LIFT_STAGE => lift::encode(compilation.lift_value),
+                ANF_STAGE => anf::encode(compilation.anf_value),
+                GO_STAGE => go_backend::encode(compilation.go_value),
                 _ => {
                     fail("unknown pipeline stage: " + stage);
                     ""

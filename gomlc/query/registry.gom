@@ -262,7 +262,7 @@ fn resolve_external_modules_at(module_root: string, registry: string) -> Result[
     Vec[ResolvedModule],
     string,
 ] {
-    let manifest = fs::read_file(path::join(module_root, manifest_filename))?;
+    let manifest = fs::read_file(path::join(module_root, MANIFEST_FILENAME))?;
     let queue = manifest_dependencies(manifest);
     let mut cursor = 0;
     let selected: Vec[ResolvedModule] = Vec::[];
@@ -282,7 +282,7 @@ fn resolve_external_modules_at(module_root: string, registry: string) -> Result[
         };
         if update {
             let root = module_directory(registry, requirement.name, version)?;
-            let module_manifest = fs::read_file(path::join(root, manifest_filename))?;
+            let module_manifest = fs::read_file(path::join(root, MANIFEST_FILENAME))?;
             match manifest_module_path(module_manifest) {
                 Some(name) => if name != requirement.name {
                     return Result::Err(

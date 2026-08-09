@@ -122,7 +122,7 @@ pub fn new_project(name: string, base: string) -> Result[unit, string] {
     ensure_project_directory(project)?;
     let lib = path::join(project, "lib");
     create_directory(lib)?;
-    write_file(path::join(project, manifest::filename), "[module]\npath = \"" + name + "\"\n")?;
+    write_file(path::join(project, manifest::FILENAME), "[module]\npath = \"" + name + "\"\n")?;
     write_file(path::join(project, ".gitignore"), "/_artifact/\n")?;
     match write_file(
         path::join(project, "main.gom"),

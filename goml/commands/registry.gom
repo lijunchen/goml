@@ -146,7 +146,7 @@ fn module_root() -> Result[string, string] {
     let current = env::current_dir()?;
     let mut directory = current;
     loop {
-        let manifest_path = path::join(directory, manifest::filename);
+        let manifest_path = path::join(directory, manifest::FILENAME);
         if fs::is_file(manifest_path) {
             match manifest::load(manifest_path) {
                 Ok(_) => return Result::Ok(directory),
@@ -363,7 +363,7 @@ pub fn add_dependency(args: Vec[string]) -> Result[unit, string] {
         registry::latest_version(root, name)?
     };
     let module = module_root()?;
-    upsert_dependency(path::join(module, manifest::filename), name, version)?;
+    upsert_dependency(path::join(module, manifest::FILENAME), name, version)?;
     io::println("added " + name + " = " + version);
     Result::Ok(())
 }
@@ -373,7 +373,7 @@ pub fn remove_dependency(args: Vec[string]) -> Result[unit, string] {
     let name = text::trim(parsed.0);
     registry::validate_coordinate(name)?;
     let module = module_root()?;
-    remove_dependency_line(path::join(module, manifest::filename), name)?;
+    remove_dependency_line(path::join(module, manifest::FILENAME), name)?;
     io::println("removed " + name);
     Result::Ok(())
 }

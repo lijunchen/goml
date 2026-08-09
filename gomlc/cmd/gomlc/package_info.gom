@@ -33,7 +33,7 @@ fn parse_package_info_args(args: Vec[string]) -> Result[PackageInfoArgs, string]
                 ),
             )
         } else if positional {
-            return Result::Err(unexpected_argument_error(package_info_command, argument, false))
+            return Result::Err(unexpected_argument_error(PACKAGE_INFO_COMMAND, argument, false))
         } else if argument == "--input" {
             index += 1;
             let previous_len = inputs.len();
@@ -64,7 +64,7 @@ fn parse_package_info_args(args: Vec[string]) -> Result[PackageInfoArgs, string]
                 return Result::Err(value_required_error("--format <FORMAT>", Option::None))
             } else if option_string_present(format) {
                 return Result::Err(
-                    repeated_argument_error(package_info_command, "--format <FORMAT>"),
+                    repeated_argument_error(PACKAGE_INFO_COMMAND, "--format <FORMAT>"),
                 )
             } else {
                 format = Option::Some(args[index + 1]);
@@ -75,7 +75,7 @@ fn parse_package_info_args(args: Vec[string]) -> Result[PackageInfoArgs, string]
                 return Result::Err(value_required_error("--format <FORMAT>", Option::None))
             } else if option_string_present(format) {
                 return Result::Err(
-                    repeated_argument_error(package_info_command, "--format <FORMAT>"),
+                    repeated_argument_error(PACKAGE_INFO_COMMAND, "--format <FORMAT>"),
                 )
             } else {
                 format = inline_cli_value(argument, "--format");
@@ -84,9 +84,9 @@ fn parse_package_info_args(args: Vec[string]) -> Result[PackageInfoArgs, string]
         } else {
             return Result::Err(
                 unexpected_cli_option_error_with_usage(
-                    package_info_command,
+                    PACKAGE_INFO_COMMAND,
                     argument,
-                    command_usage(package_info_command),
+                    command_usage(PACKAGE_INFO_COMMAND),
                 ),
             )
         }
@@ -105,7 +105,7 @@ fn parse_package_info_args(args: Vec[string]) -> Result[PackageInfoArgs, string]
         Result::Err(
             missing_required_arguments_error_with_usage(
                 Vec::["--input <INPUT>..."],
-                required_command_usage(package_info_command),
+                required_command_usage(PACKAGE_INFO_COMMAND),
             ),
         )
     } else {
@@ -453,6 +453,6 @@ fn package_info_json(args: PackageInfoArgs) -> string {
 fn run_package_info(args: Vec[string]) -> unit {
     match parse_package_info_args(args) {
         Ok(value) => io::println(package_info_json(value)),
-        Err(error) => handle_cli_parse_error(package_info_command, error),
+        Err(error) => handle_cli_parse_error(PACKAGE_INFO_COMMAND, error),
     }
 }

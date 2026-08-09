@@ -39,15 +39,15 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
             return Result::Err(
                 unexpected_value_error_with_usage(value, "--help", "gomlc version --help"),
             )
-        } else if !positional && cli_value_option(version_command, argument)
+        } else if !positional && cli_value_option(VERSION_COMMAND, argument)
             && index + 1 < args.len()
             && cli_option(args[index + 1])
-            && !known_cli_option(version_command, args[index + 1]) {
+            && !known_cli_option(VERSION_COMMAND, args[index + 1]) {
             return Result::Err(
                 unexpected_cli_option_error_with_usage(
-                    version_command,
+                    VERSION_COMMAND,
                     args[index + 1],
-                    command_usage(version_command),
+                    command_usage(VERSION_COMMAND),
                 ),
             )
         } else if !positional && argument == "--format" {
@@ -56,7 +56,7 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
                     value_required_error("--format <FORMAT>", Option::Some("text, json")),
                 )
             } else if option_string_present(format) {
-                return Result::Err(repeated_argument_error(version_command, "--format <FORMAT>"))
+                return Result::Err(repeated_argument_error(VERSION_COMMAND, "--format <FORMAT>"))
             } else {
                 let value = args[index + 1];
                 match parse_version_format(value) {
@@ -69,7 +69,7 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
             }
         } else if !positional && option_string_present(inline_cli_value(argument, "--format")) {
             if option_string_present(format) {
-                return Result::Err(repeated_argument_error(version_command, "--format <FORMAT>"))
+                return Result::Err(repeated_argument_error(VERSION_COMMAND, "--format <FORMAT>"))
             } else {
                 match inline_cli_value(argument, "--format") {
                     Some(value) => if value == "" {
@@ -90,18 +90,18 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
             }
         } else {
             if positional {
-                return Result::Err(unexpected_argument_error(version_command, argument, false))
+                return Result::Err(unexpected_argument_error(VERSION_COMMAND, argument, false))
             } else {};
-            match similar_cli_argument(version_command, argument) {
+            match similar_cli_argument(VERSION_COMMAND, argument) {
                 Some(similar) => return Result::Err(
                     unexpected_similar_argument_error(
                         argument,
                         similar,
-                        similar_cli_argument_usage(version_command, similar),
+                        similar_cli_argument_usage(VERSION_COMMAND, similar),
                     ),
                 ),
                 None => return Result::Err(
-                    unexpected_argument_error(version_command, argument, false),
+                    unexpected_argument_error(VERSION_COMMAND, argument, false),
                 ),
             }
         }
@@ -191,6 +191,6 @@ fn version_output(format: VersionFormat) -> string {
 fn run_version(args: Vec[string]) -> unit {
     match parse_version_args(args) {
         Ok(format) => io::println(version_output(format)),
-        Err(error) => handle_cli_parse_error(version_command, error),
+        Err(error) => handle_cli_parse_error(VERSION_COMMAND, error),
     }
 }

@@ -71,7 +71,7 @@ fn duplicate_test_id_diagnostic(id: string, candidate: TestCandidate, first: Tes
     );
     tast::Diagnostic {
         severity: tast::DiagnosticSeverity::Error,
-        stage: typer_stage,
+        stage: TYPER_STAGE,
         message: "duplicate test id `" + id + "`",
         source_path: candidate.source_path,
         span: Option::Some(ast::Span { start: candidate.start, end: candidate.label_end }),
@@ -316,7 +316,7 @@ fn collect_package_test_candidates(files: Vec[ast::LowerResult], source_paths: V
         let source_path = if file_index < source_paths.len() {
             source_paths[file_index]
         } else {
-            unknown_source_path
+            UNKNOWN_SOURCE_PATH
         };
         match files[file_index].ast {
             Some(file) => for item in file.items {
@@ -468,7 +468,7 @@ fn validate_package_tests(
             None => {
                 diagnostics.push(
                     package_test_diagnostic(
-                        typer_stage,
+                        TYPER_STAGE,
                         "test function `" + candidate.name + "` was not resolved",
                         candidate.source_path,
                         span,
@@ -481,7 +481,7 @@ fn validate_package_tests(
         if candidate.name == "main" {
             diagnostics.push(
                 package_test_diagnostic(
-                    typer_stage,
+                    TYPER_STAGE,
                     "the main function cannot be a test",
                     candidate.source_path,
                     span,
@@ -491,7 +491,7 @@ fn validate_package_tests(
         if !scheme.type_params.is_empty() {
             diagnostics.push(
                 package_test_diagnostic(
-                    typer_stage,
+                    TYPER_STAGE,
                     "test function `" + candidate.name + "` must not have type parameters",
                     candidate.source_path,
                     span,
@@ -503,7 +503,7 @@ fn validate_package_tests(
                 if params.len() != candidate.arguments.len() {
                     diagnostics.push(
                         package_test_diagnostic(
-                            typer_stage,
+                            TYPER_STAGE,
                             if candidate.arguments.is_empty() {
                                 "test function `" + candidate.name + "` must not have parameters"
                             } else {
@@ -527,7 +527,7 @@ fn validate_package_tests(
                         if !valid {
                             diagnostics.push(
                                 package_test_diagnostic(
-                                    typer_stage,
+                                    TYPER_STAGE,
                                     "test case argument " + index.to_string()
                                         + " does not match parameter type "
                                         + tast::diagnostic_type_text(params[index]),
@@ -543,7 +543,7 @@ fn validate_package_tests(
                     actual => {
                         diagnostics.push(
                             package_test_diagnostic(
-                                typer_stage,
+                                TYPER_STAGE,
                                 "test function `" + candidate.name + "` must return unit, found "
                                     + tast::diagnostic_type_text(actual),
                                 candidate.source_path,
@@ -556,7 +556,7 @@ fn validate_package_tests(
             other => {
                 diagnostics.push(
                     package_test_diagnostic(
-                        typer_stage,
+                        TYPER_STAGE,
                         "test item `" + candidate.name + "` must be a function, found "
                             + tast::diagnostic_type_text(other),
                         candidate.source_path,

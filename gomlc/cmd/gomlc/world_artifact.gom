@@ -207,36 +207,36 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
         || builtin_core.interface_hash != builtin_interface.interface_hash {
         return Result::Err("world artifact builtin identity does not match")
     } else {};
-    let root = world_decode_package(container, 10, resources::std_root_package)?;
-    let host = world_decode_package(container, 12, resources::std_internal_host_package)?;
-    let bytes = world_decode_package(container, 14, resources::std_bytes_package)?;
-    let collections = world_decode_package(container, 16, resources::std_collections_package)?;
-    let env = world_decode_package(container, 18, resources::std_env_package)?;
-    let fs_value = world_decode_package(container, 20, resources::std_fs_package)?;
-    let io_value = world_decode_package(container, 22, resources::std_io_package)?;
-    let json = world_decode_package(container, 24, resources::std_json_package)?;
-    let path_value = world_decode_package(container, 26, resources::std_path_package)?;
-    let process = world_decode_package(container, 28, resources::std_process_package)?;
-    let testing = world_decode_package(container, 30, resources::std_testing_package)?;
-    let text_value = world_decode_package(container, 32, resources::std_text_package)?;
-    let num = world_decode_package(container, 34, resources::std_num_package)?;
-    let time_value = world_decode_package(container, 36, resources::std_time_package)?;
-    let ascii = world_decode_package(container, 38, resources::std_ascii_package)?;
-    let iter = world_decode_package(container, 40, resources::std_iter_package)?;
-    let cmp = world_decode_package(container, 42, resources::std_cmp_package)?;
-    let internal_task = world_decode_package(container, 44, resources::std_internal_task_package)?;
-    let task = world_decode_package(container, 46, resources::std_task_package)?;
-    let serde = world_decode_package(container, 48, resources::std_serde_package)?;
-    let toml = world_decode_package(container, 50, resources::std_toml_package)?;
-    let bincode = world_decode_package(container, 52, resources::std_bincode_package)?;
-    let error = world_decode_package(container, 54, resources::std_error_package)?;
-    let utf8 = world_decode_package(container, 56, resources::std_utf8_package)?;
-    let unicode = world_decode_package(container, 58, resources::std_unicode_package)?;
-    let math = world_decode_package(container, 60, resources::std_math_package)?;
-    let rand = world_decode_package(container, 62, resources::std_rand_package)?;
-    let crypto = world_decode_package(container, 64, resources::std_crypto_package)?;
-    let crypto_hash = world_decode_package(container, 66, resources::std_crypto_hash_package)?;
-    let crypto_rand = world_decode_package(container, 68, resources::std_crypto_rand_package)?;
+    let root = world_decode_package(container, 10, resources::STD_ROOT_PACKAGE)?;
+    let host = world_decode_package(container, 12, resources::STD_INTERNAL_HOST_PACKAGE)?;
+    let bytes = world_decode_package(container, 14, resources::STD_BYTES_PACKAGE)?;
+    let collections = world_decode_package(container, 16, resources::STD_COLLECTIONS_PACKAGE)?;
+    let env = world_decode_package(container, 18, resources::STD_ENV_PACKAGE)?;
+    let fs_value = world_decode_package(container, 20, resources::STD_FS_PACKAGE)?;
+    let io_value = world_decode_package(container, 22, resources::STD_IO_PACKAGE)?;
+    let json = world_decode_package(container, 24, resources::STD_JSON_PACKAGE)?;
+    let path_value = world_decode_package(container, 26, resources::STD_PATH_PACKAGE)?;
+    let process = world_decode_package(container, 28, resources::STD_PROCESS_PACKAGE)?;
+    let testing = world_decode_package(container, 30, resources::STD_TESTING_PACKAGE)?;
+    let text_value = world_decode_package(container, 32, resources::STD_TEXT_PACKAGE)?;
+    let num = world_decode_package(container, 34, resources::STD_NUM_PACKAGE)?;
+    let time_value = world_decode_package(container, 36, resources::STD_TIME_PACKAGE)?;
+    let ascii = world_decode_package(container, 38, resources::STD_ASCII_PACKAGE)?;
+    let iter = world_decode_package(container, 40, resources::STD_ITER_PACKAGE)?;
+    let cmp = world_decode_package(container, 42, resources::STD_CMP_PACKAGE)?;
+    let internal_task = world_decode_package(container, 44, resources::STD_INTERNAL_TASK_PACKAGE)?;
+    let task = world_decode_package(container, 46, resources::STD_TASK_PACKAGE)?;
+    let serde = world_decode_package(container, 48, resources::STD_SERDE_PACKAGE)?;
+    let toml = world_decode_package(container, 50, resources::STD_TOML_PACKAGE)?;
+    let bincode = world_decode_package(container, 52, resources::STD_BINCODE_PACKAGE)?;
+    let error = world_decode_package(container, 54, resources::STD_ERROR_PACKAGE)?;
+    let utf8 = world_decode_package(container, 56, resources::STD_UTF8_PACKAGE)?;
+    let unicode = world_decode_package(container, 58, resources::STD_UNICODE_PACKAGE)?;
+    let math = world_decode_package(container, 60, resources::STD_MATH_PACKAGE)?;
+    let rand = world_decode_package(container, 62, resources::STD_RAND_PACKAGE)?;
+    let crypto = world_decode_package(container, 64, resources::STD_CRYPTO_PACKAGE)?;
+    let crypto_hash = world_decode_package(container, 66, resources::STD_CRYPTO_HASH_PACKAGE)?;
+    let crypto_rand = world_decode_package(container, 68, resources::STD_CRYPTO_RAND_PACKAGE)?;
     let world = PackageWorld {
         counter,
         builtins: builtin_core.core_ir,
@@ -307,7 +307,7 @@ fn parse_prepare_world_args(args: Vec[string]) -> Result[string, string] {
         } else if argument == "--output" {
             if option_string_present(output) {
                 return Result::Err(
-                    repeated_argument_error(prepare_world_command, "--output <OUTPUT>"),
+                    repeated_argument_error(PREPARE_WORLD_COMMAND, "--output <OUTPUT>"),
                 )
             } else if index + 1 >= args.len() || cli_option(args[index + 1]) {
                 return Result::Err(value_required_error("--output <OUTPUT>", Option::None))
@@ -318,7 +318,7 @@ fn parse_prepare_world_args(args: Vec[string]) -> Result[string, string] {
         } else if option_string_present(inline_cli_value(argument, "--output")) {
             if option_string_present(output) {
                 return Result::Err(
-                    repeated_argument_error(prepare_world_command, "--output <OUTPUT>"),
+                    repeated_argument_error(PREPARE_WORLD_COMMAND, "--output <OUTPUT>"),
                 )
             } else if option_string_empty(inline_cli_value(argument, "--output")) {
                 return Result::Err(value_required_error("--output <OUTPUT>", Option::None))
@@ -327,14 +327,14 @@ fn parse_prepare_world_args(args: Vec[string]) -> Result[string, string] {
                 index = index + 1;
             }
         } else {
-            return Result::Err(unexpected_argument_error(prepare_world_command, argument, false))
+            return Result::Err(unexpected_argument_error(PREPARE_WORLD_COMMAND, argument, false))
         }
     }
     match output {
         Some(value) => Result::Ok(value),
         None => {
             let missing: Vec[string] = Vec::["--output <OUTPUT>"];
-            Result::Err(missing_required_arguments_error(prepare_world_command, missing))
+            Result::Err(missing_required_arguments_error(PREPARE_WORLD_COMMAND, missing))
         },
     }
 }
@@ -343,8 +343,8 @@ fn run_prepare_world(args: Vec[string]) -> unit {
     match parse_prepare_world_args(args) {
         Ok(output) => match write_package_world(output, package_world()) {
             Ok(()) => (),
-            Err(error) => fail(compile_error_prefix + error),
+            Err(error) => fail(COMPILE_ERROR_PREFIX + error),
         },
-        Err(error) => handle_cli_parse_error(prepare_world_command, error),
+        Err(error) => handle_cli_parse_error(PREPARE_WORLD_COMMAND, error),
     }
 }

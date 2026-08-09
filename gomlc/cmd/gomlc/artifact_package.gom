@@ -90,36 +90,36 @@ fn artifact_standard_package(standard: ArtifactStandardLibrary, package_name: st
     ArtifactStandardPackage,
 ] {
     match package_name {
-        resources::std_root_package => Option::Some(standard.root),
-        resources::std_internal_host_package => Option::Some(standard.host),
-        resources::std_ascii_package => Option::Some(standard.ascii),
-        resources::std_bincode_package => Option::Some(standard.bincode),
-        resources::std_bytes_package => Option::Some(standard.bytes),
-        resources::std_cmp_package => Option::Some(standard.cmp),
-        resources::std_collections_package => Option::Some(standard.collections),
-        resources::std_error_package => Option::Some(standard.error),
-        resources::std_env_package => Option::Some(standard.env),
-        resources::std_fs_package => Option::Some(standard.fs),
-        resources::std_io_package => Option::Some(standard.io),
-        resources::std_internal_task_package => Option::Some(standard.internal_task),
-        resources::std_iter_package => Option::Some(standard.iter),
-        resources::std_json_package => Option::Some(standard.json),
-        resources::std_num_package => Option::Some(standard.num),
-        resources::std_path_package => Option::Some(standard.path),
-        resources::std_process_package => Option::Some(standard.process),
-        resources::std_serde_package => Option::Some(standard.serde),
-        resources::std_task_package => Option::Some(standard.task),
-        resources::std_testing_package => Option::Some(standard.testing),
-        resources::std_text_package => Option::Some(standard.text),
-        resources::std_toml_package => Option::Some(standard.toml),
-        resources::std_time_package => Option::Some(standard.time),
-        resources::std_utf8_package => Option::Some(standard.utf8),
-        resources::std_unicode_package => Option::Some(standard.unicode),
-        resources::std_math_package => Option::Some(standard.math),
-        resources::std_rand_package => Option::Some(standard.rand),
-        resources::std_crypto_package => Option::Some(standard.crypto),
-        resources::std_crypto_hash_package => Option::Some(standard.crypto_hash),
-        resources::std_crypto_rand_package => Option::Some(standard.crypto_rand),
+        resources::STD_ROOT_PACKAGE => Option::Some(standard.root),
+        resources::STD_INTERNAL_HOST_PACKAGE => Option::Some(standard.host),
+        resources::STD_ASCII_PACKAGE => Option::Some(standard.ascii),
+        resources::STD_BINCODE_PACKAGE => Option::Some(standard.bincode),
+        resources::STD_BYTES_PACKAGE => Option::Some(standard.bytes),
+        resources::STD_CMP_PACKAGE => Option::Some(standard.cmp),
+        resources::STD_COLLECTIONS_PACKAGE => Option::Some(standard.collections),
+        resources::STD_ERROR_PACKAGE => Option::Some(standard.error),
+        resources::STD_ENV_PACKAGE => Option::Some(standard.env),
+        resources::STD_FS_PACKAGE => Option::Some(standard.fs),
+        resources::STD_IO_PACKAGE => Option::Some(standard.io),
+        resources::STD_INTERNAL_TASK_PACKAGE => Option::Some(standard.internal_task),
+        resources::STD_ITER_PACKAGE => Option::Some(standard.iter),
+        resources::STD_JSON_PACKAGE => Option::Some(standard.json),
+        resources::STD_NUM_PACKAGE => Option::Some(standard.num),
+        resources::STD_PATH_PACKAGE => Option::Some(standard.path),
+        resources::STD_PROCESS_PACKAGE => Option::Some(standard.process),
+        resources::STD_SERDE_PACKAGE => Option::Some(standard.serde),
+        resources::STD_TASK_PACKAGE => Option::Some(standard.task),
+        resources::STD_TESTING_PACKAGE => Option::Some(standard.testing),
+        resources::STD_TEXT_PACKAGE => Option::Some(standard.text),
+        resources::STD_TOML_PACKAGE => Option::Some(standard.toml),
+        resources::STD_TIME_PACKAGE => Option::Some(standard.time),
+        resources::STD_UTF8_PACKAGE => Option::Some(standard.utf8),
+        resources::STD_UNICODE_PACKAGE => Option::Some(standard.unicode),
+        resources::STD_MATH_PACKAGE => Option::Some(standard.math),
+        resources::STD_RAND_PACKAGE => Option::Some(standard.rand),
+        resources::STD_CRYPTO_PACKAGE => Option::Some(standard.crypto),
+        resources::STD_CRYPTO_HASH_PACKAGE => Option::Some(standard.crypto_hash),
+        resources::STD_CRYPTO_RAND_PACKAGE => Option::Some(standard.crypto_rand),
         _ => Option::None,
     }
 }
@@ -536,8 +536,8 @@ fn artifact_apply_declared_package_aliases(
 }
 
 fn standard_internal_import_allowed(package_name: string) -> bool {
-    package_name == resources::std_root_package
-        || package_name.starts_with(resources::std_package_prefix)
+    package_name == resources::STD_ROOT_PACKAGE
+        || package_name.starts_with(resources::STD_PACKAGE_PREFIX)
 }
 
 fn disallowed_standard_internal_import(package_name: string, import_name: string) -> bool {
@@ -558,7 +558,7 @@ fn standard_internal_import_diagnostics(
                     diagnostics.push(
                         tast::Diagnostic {
                             severity: tast::DiagnosticSeverity::Error,
-                            stage: typer_stage,
+                            stage: TYPER_STAGE,
                             message: "package " + import_name + " is internal to std",
                             source_path: paths[index],
                             span: Option::None,
@@ -768,7 +768,7 @@ fn compile_artifact_package(
             checked.diagnostics.push(
                 tast::Diagnostic {
                     severity: tast::DiagnosticSeverity::Error,
-                    stage: typer_stage,
+                    stage: TYPER_STAGE,
                     message,
                     source_path: "",
                     span: Option::None,
@@ -883,8 +883,8 @@ fn artifact_find_core_unit(values: Vec[artifact::ArtifactCoreUnit], package_name
 }
 
 fn artifact_link_dependency_name(package_name: string) -> bool {
-    package_name != "builtin" && package_name != resources::std_root_package
-        && !package_name.starts_with(resources::std_package_prefix)
+    package_name != "builtin" && package_name != resources::STD_ROOT_PACKAGE
+        && !package_name.starts_with(resources::STD_PACKAGE_PREFIX)
 }
 
 fn artifact_reachable_core_units(roots: Vec[string], values: Vec[artifact::ArtifactCoreUnit]) -> Result[

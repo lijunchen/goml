@@ -9,41 +9,41 @@ use std::fs;
 use std::json;
 use std::text;
 
-const initialize_method: string = "initialize";
+const INITIALIZE_METHOD: string = "initialize";
 
-const shutdown_method: string = "shutdown";
+const SHUTDOWN_METHOD: string = "shutdown";
 
-const exit_method: string = "exit";
+const EXIT_METHOD: string = "exit";
 
-const initialized_method: string = "initialized";
+const INITIALIZED_METHOD: string = "initialized";
 
-const hover_method: string = "textDocument/hover";
+const HOVER_METHOD: string = "textDocument/hover";
 
-const expanded_derive_method: string = "goml/expandedDerive";
+const EXPANDED_DERIVE_METHOD: string = "goml/expandedDerive";
 
-const completion_method: string = "textDocument/completion";
+const COMPLETION_METHOD: string = "textDocument/completion";
 
-const signature_help_method: string = "textDocument/signatureHelp";
+const SIGNATURE_HELP_METHOD: string = "textDocument/signatureHelp";
 
-const inlay_hint_method: string = "textDocument/inlayHint";
+const INLAY_HINT_METHOD: string = "textDocument/inlayHint";
 
-const definition_method: string = "textDocument/definition";
+const DEFINITION_METHOD: string = "textDocument/definition";
 
-const code_lens_method: string = "textDocument/codeLens";
+const CODE_LENS_METHOD: string = "textDocument/codeLens";
 
-const code_action_method: string = "textDocument/codeAction";
+const CODE_ACTION_METHOD: string = "textDocument/codeAction";
 
-const formatting_method: string = "textDocument/formatting";
+const FORMATTING_METHOD: string = "textDocument/formatting";
 
-const did_open_method: string = "textDocument/didOpen";
+const DID_OPEN_METHOD: string = "textDocument/didOpen";
 
-const did_change_method: string = "textDocument/didChange";
+const DID_CHANGE_METHOD: string = "textDocument/didChange";
 
-const did_close_method: string = "textDocument/didClose";
+const DID_CLOSE_METHOD: string = "textDocument/didClose";
 
-const did_save_method: string = "textDocument/didSave";
+const DID_SAVE_METHOD: string = "textDocument/didSave";
 
-const publish_diagnostics_method: string = "textDocument/publishDiagnostics";
+const PUBLISH_DIAGNOSTICS_METHOD: string = "textDocument/publishDiagnostics";
 
 fn required_field(value: json::Value, name: string) -> Result[json::Value, string] {
     match json::field(value, name) {
@@ -523,7 +523,7 @@ fn publish_diagnostics(server: Server, document: Document) -> json::Value {
     push_json_field(params, "uri", json::Value::String(document.uri));
     push_json_field(params, "version", json::Value::Number(document.version.to_string()));
     push_json_field(params, "diagnostics", json::Value::Array(diagnostics));
-    rpc_notification(publish_diagnostics_method, json::Value::Object(params))
+    rpc_notification(PUBLISH_DIAGNOSTICS_METHOD, json::Value::Object(params))
 }
 
 fn publish_all_diagnostics(server: Server) -> Vec[json::Value] {
@@ -581,7 +581,7 @@ fn did_close(server: Server, params: json::Value) -> Result[json::Value, string]
     let diagnostic_params: Vec[(string, json::Value)] = Vec::[];
     push_json_field(diagnostic_params, "uri", json::Value::String(uri));
     push_json_field(diagnostic_params, "diagnostics", json::Value::Array(Vec::[]));
-    Result::Ok(rpc_notification(publish_diagnostics_method, json::Value::Object(diagnostic_params)))
+    Result::Ok(rpc_notification(PUBLISH_DIAGNOSTICS_METHOD, json::Value::Object(diagnostic_params)))
 }
 
 fn did_save(server: Server, params: json::Value) -> Result[unit, string] {
@@ -597,20 +597,20 @@ fn did_save(server: Server, params: json::Value) -> Result[unit, string] {
 
 fn request_result(server: Server, message: RpcMessage) -> Result[json::Value, string] {
     match message.method {
-        initialize_method => Result::Ok(initialize_result()),
-        shutdown_method => {
+        INITIALIZE_METHOD => Result::Ok(initialize_result()),
+        SHUTDOWN_METHOD => {
             server.shutdown.set(true);
             Result::Ok(json::Value::Null)
         },
-        hover_method => hover_response(server, message.params),
-        expanded_derive_method => expanded_derive_response(server, message.params),
-        completion_method => completion_response(server, message.params),
-        signature_help_method => signature_response(server, message.params),
-        inlay_hint_method => inlay_response(server, message.params),
-        definition_method => definition_response(server, message.params),
-        code_lens_method => code_lens_response(server, message.params),
-        code_action_method => code_action_response(message.params),
-        formatting_method => formatting_response(server, message.params),
+        HOVER_METHOD => hover_response(server, message.params),
+        EXPANDED_DERIVE_METHOD => expanded_derive_response(server, message.params),
+        COMPLETION_METHOD => completion_response(server, message.params),
+        SIGNATURE_HELP_METHOD => signature_response(server, message.params),
+        INLAY_HINT_METHOD => inlay_response(server, message.params),
+        DEFINITION_METHOD => definition_response(server, message.params),
+        CODE_LENS_METHOD => code_lens_response(server, message.params),
+        CODE_ACTION_METHOD => code_action_response(message.params),
+        FORMATTING_METHOD => formatting_response(server, message.params),
         _ => Result::Err("method not found: " + message.method),
     }
 }
@@ -618,28 +618,28 @@ fn request_result(server: Server, message: RpcMessage) -> Result[json::Value, st
 pub fn handle_json(server: Server, value: json::Value) -> Vec[json::Value] {
     let output: Vec[json::Value] = Vec::[];
     match parse_rpc_message(value) {
-        Ok(message) => if server.shutdown.get() && message.method != exit_method {
+        Ok(message) => if server.shutdown.get() && message.method != EXIT_METHOD {
             match message.id {
                 Some(id) => output.push(rpc_error(id, -32600, "server has shut down")),
                 None => (),
             }
         } else {
             match message.method {
-                exit_method => server.running.set(false),
-                initialized_method => (),
-                did_open_method => match did_open(server, message.params) {
+                EXIT_METHOD => server.running.set(false),
+                INITIALIZED_METHOD => (),
+                DID_OPEN_METHOD => match did_open(server, message.params) {
                     Ok(_) => for notification in publish_all_diagnostics(server) {
                         output.push(notification)
                     },
                     Err(_) => (),
                 },
-                did_change_method => match did_change(server, message.params) {
+                DID_CHANGE_METHOD => match did_change(server, message.params) {
                     Ok(_) => for notification in publish_all_diagnostics(server) {
                         output.push(notification)
                     },
                     Err(_) => (),
                 },
-                did_close_method => match did_close(server, message.params) {
+                DID_CLOSE_METHOD => match did_close(server, message.params) {
                     Ok(notification) => {
                         output.push(notification);
                         for current in publish_all_diagnostics(server) {
@@ -648,7 +648,7 @@ pub fn handle_json(server: Server, value: json::Value) -> Vec[json::Value] {
                     },
                     Err(_) => (),
                 },
-                did_save_method => match did_save(server, message.params) {
+                DID_SAVE_METHOD => match did_save(server, message.params) {
                     Ok(()) => for notification in publish_all_diagnostics(server) {
                         output.push(notification)
                     },

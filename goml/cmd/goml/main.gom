@@ -10,41 +10,41 @@ use std::io;
 use std::process;
 use std::time;
 
-const new_command: string = "new";
+const NEW_COMMAND: string = "new";
 
-const check_command: string = "check";
+const CHECK_COMMAND: string = "check";
 
-const build_command: string = "build";
+const BUILD_COMMAND: string = "build";
 
-const run_command_name: string = "run";
+const RUN_COMMAND_NAME: string = "run";
 
-const test_command: string = "test";
+const TEST_COMMAND: string = "test";
 
-const fmt_command: string = "fmt";
+const FMT_COMMAND: string = "fmt";
 
-const clean_command: string = "clean";
+const CLEAN_COMMAND: string = "clean";
 
-const update_command: string = "update";
+const UPDATE_COMMAND: string = "update";
 
-const add_command: string = "add";
+const ADD_COMMAND: string = "add";
 
-const remove_command: string = "remove";
+const REMOVE_COMMAND: string = "remove";
 
-const home_command: string = "home";
+const HOME_COMMAND: string = "home";
 
-const version_command: string = "version";
+const VERSION_COMMAND: string = "version";
 
-const help_command: string = "help";
+const HELP_COMMAND: string = "help";
 
-const internal_test_kind: string = "internal";
+const INTERNAL_TEST_KIND: string = "internal";
 
-const external_test_kind: string = "external";
+const EXTERNAL_TEST_KIND: string = "external";
 
-const all_test_kind: string = "all";
+const ALL_TEST_KIND: string = "all";
 
-const json_test_format: string = "json";
+const JSON_TEST_FORMAT: string = "json";
 
-const text_test_format: string = "text";
+const TEXT_TEST_FORMAT: string = "text";
 
 struct CliArgs {
     command: string,
@@ -83,16 +83,16 @@ fn top_help() -> string {
 
 fn command_help(command: string) -> string {
     match command {
-        new_command => "Usage: goml new [OPTIONS] <PROJECT_NAME>\n\nOptions:\n      --path <PATH>  [default: .]\n  -h, --help",
-        check_command => "Usage: goml check [OPTIONS]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --jobs <JOBS>        [default: 16]\n      --tests\n  -h, --help",
-        build_command => "Usage: goml build [OPTIONS]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --jobs <JOBS>        [default: 16]\n  -h, --help",
-        run_command_name => "Usage: goml run [OPTIONS] [TARGET] [-- <ARGS>...]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --jobs <JOBS>        [default: 16]\n  -h, --help",
-        test_command => "Usage: goml test [OPTIONS] [FILTER]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --list\n      --ignored\n      --include-ignored\n      --nocapture\n      --seed <SEED>\n      --format <FORMAT>    [default: text] [possible values: text, json]\n      --timeout <TIMEOUT>  [default: 30s]\n      --jobs <JOBS>        [default: 1]\n      --kind <KIND>        [default: all] [possible values: internal, external, all]\n  -h, --help",
-        fmt_command => "Usage: goml fmt [OPTIONS]\n\nOptions:\n      --check                  exit 1 if formatting differs\n      --formatter <FORMATTER>  formatter executable\n  -h, --help",
-        clean_command => "Usage: goml clean [OPTIONS]\n\nOptions:\n      --target-dir <TARGET_DIR>\n  -h, --help",
-        update_command => "Usage: goml update [OPTIONS]\n\nOptions:\n      --local-registry <PATH>\n  -h, --help",
-        add_command => "Usage: goml add [OPTIONS] <DEPENDENCY>\n\nOptions:\n      --local-registry <PATH>\n  -h, --help",
-        remove_command => "Usage: goml remove [OPTIONS] <DEPENDENCY>\n\nOptions:\n      --local-registry <PATH>\n  -h, --help",
+        NEW_COMMAND => "Usage: goml new [OPTIONS] <PROJECT_NAME>\n\nOptions:\n      --path <PATH>  [default: .]\n  -h, --help",
+        CHECK_COMMAND => "Usage: goml check [OPTIONS]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --jobs <JOBS>        [default: 16]\n      --tests\n  -h, --help",
+        BUILD_COMMAND => "Usage: goml build [OPTIONS]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --jobs <JOBS>        [default: 16]\n  -h, --help",
+        RUN_COMMAND_NAME => "Usage: goml run [OPTIONS] [TARGET] [-- <ARGS>...]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --jobs <JOBS>        [default: 16]\n  -h, --help",
+        TEST_COMMAND => "Usage: goml test [OPTIONS] [FILTER]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --list\n      --ignored\n      --include-ignored\n      --nocapture\n      --seed <SEED>\n      --format <FORMAT>    [default: text] [possible values: text, json]\n      --timeout <TIMEOUT>  [default: 30s]\n      --jobs <JOBS>        [default: 1]\n      --kind <KIND>        [default: all] [possible values: internal, external, all]\n  -h, --help",
+        FMT_COMMAND => "Usage: goml fmt [OPTIONS]\n\nOptions:\n      --check                  exit 1 if formatting differs\n      --formatter <FORMATTER>  formatter executable\n  -h, --help",
+        CLEAN_COMMAND => "Usage: goml clean [OPTIONS]\n\nOptions:\n      --target-dir <TARGET_DIR>\n  -h, --help",
+        UPDATE_COMMAND => "Usage: goml update [OPTIONS]\n\nOptions:\n      --local-registry <PATH>\n  -h, --help",
+        ADD_COMMAND => "Usage: goml add [OPTIONS] <DEPENDENCY>\n\nOptions:\n      --local-registry <PATH>\n  -h, --help",
+        REMOVE_COMMAND => "Usage: goml remove [OPTIONS] <DEPENDENCY>\n\nOptions:\n      --local-registry <PATH>\n  -h, --help",
         _ => top_help(),
     }
 }
@@ -164,7 +164,7 @@ fn parse_fmt(args: Vec[string]) -> Result[FmtArgs, string] {
     while index < args.len() {
         let argument = args[index];
         if argument == "-h" || argument == "--help" {
-            return Result::Err(help_command)
+            return Result::Err(HELP_COMMAND)
         } else if argument == "--check" {
             if check {
                 return Result::Err("--check cannot be repeated")
@@ -222,7 +222,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
     } else {};
     let command = args[1];
     match command {
-        check_command | build_command | run_command_name | test_command => (),
+        CHECK_COMMAND | BUILD_COMMAND | RUN_COMMAND_NAME | TEST_COMMAND => (),
         _ => return Result::Err(f"unknown command {command}"),
     };
     let targets: Vec[string] = Vec::[];
@@ -236,13 +236,13 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
     let test_formats: Vec[string] = Vec::[];
     let mut test_timeout_ms = 30000;
     let mut test_seed = time::SystemTime::now().unix_nanoseconds().to_int();
-    let mut test_kind = all_test_kind;
+    let mut test_kind = ALL_TEST_KIND;
     let mut trailing = false;
     let mut index = 2;
     while index < args.len() {
         let argument = args[index];
         if trailing {
-            if command == run_command_name {
+            if command == RUN_COMMAND_NAME {
                 program_args.push(argument);
                 index += 1;
             } else {
@@ -257,22 +257,22 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
         } else if argument == "--dry-run" {
             flags[argument] = ();
             index += 1;
-        } else if command == check_command && argument == "--tests" {
+        } else if command == CHECK_COMMAND && argument == "--tests" {
             flags[argument] = ();
             index += 1;
-        } else if command == test_command && argument == "--list" {
+        } else if command == TEST_COMMAND && argument == "--list" {
             flags[argument] = ();
             index += 1;
-        } else if command == test_command && argument == "--ignored" {
+        } else if command == TEST_COMMAND && argument == "--ignored" {
             flags[argument] = ();
             index += 1;
-        } else if command == test_command && argument == "--include-ignored" {
+        } else if command == TEST_COMMAND && argument == "--include-ignored" {
             flags[argument] = ();
             index += 1;
-        } else if command == test_command && argument == "--nocapture" {
+        } else if command == TEST_COMMAND && argument == "--nocapture" {
             flags[argument] = ();
             index += 1;
-        } else if command == test_command
+        } else if command == TEST_COMMAND
             && (argument == "--seed" || argument.starts_with("--seed=")) {
             let parsed_seed = option_value(args, index, argument, "--seed")?;
             index = parsed_seed.1;
@@ -304,7 +304,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                     } else {
                         compiler = parsed_compiler.0;
                     }
-                } else if command == test_command {
+                } else if command == TEST_COMMAND {
                     let parsed_timeout = option_value(args, index, argument, "--timeout")?;
                     index = parsed_timeout.1;
                     if parsed_timeout.0.is_some() {
@@ -339,10 +339,10 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                             if parsed_kind.0.is_some() {
                                 let value = match parsed_kind.0 {
                                     Some(value) => value,
-                                    None => all_test_kind,
+                                    None => ALL_TEST_KIND,
                                 };
                                 match value {
-                                    internal_test_kind | external_test_kind | all_test_kind => {
+                                    INTERNAL_TEST_KIND | EXTERNAL_TEST_KIND | ALL_TEST_KIND => {
                                         test_kind = value;
                                     },
                                     _ => return Result::Err(
@@ -354,7 +354,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                                 index = parsed_format.1;
                                 match parsed_format.0 {
                                     Some(value) => match value {
-                                        json_test_format | text_test_format => {
+                                        JSON_TEST_FORMAT | TEXT_TEST_FORMAT => {
                                             test_formats.push(value)
                                         },
                                         _ => return Result::Err("--format must be text or json"),
@@ -383,7 +383,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                         },
                         None => if argument.starts_with("-") {
                             return Result::Err(f"unknown option {argument}")
-                        } else if command == run_command_name && targets.is_empty() {
+                        } else if command == RUN_COMMAND_NAME && targets.is_empty() {
                             targets.push(argument);
                             index += 1;
                         } else {
@@ -395,7 +395,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
         }
     }
     let test_json = !test_formats.is_empty()
-        && test_formats[test_formats.len() - 1] == json_test_format;
+        && test_formats[test_formats.len() - 1] == JSON_TEST_FORMAT;
     if flags.contains("--ignored") && flags.contains("--include-ignored") {
         Result::Err("--ignored cannot be combined with --include-ignored")
     } else if test_json && flags.contains("--nocapture") {
@@ -431,21 +431,21 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
 }
 
 fn run_command(args: CliArgs) -> Result[unit, string] {
-    let context_result = if args.command == run_command_name {
+    let context_result = if args.command == RUN_COMMAND_NAME {
         project::load_target_context(args.target, args.target_dir, args.compiler)
     } else {
         project::load_context(args.target_dir, args.compiler)
     };
     let context = context_result?;
     let plan = match args.command {
-        check_command => project::check_plan(context, args.include_tests),
-        build_command => project::build_plan(context),
-        run_command_name => project::run_plan(context),
+        CHECK_COMMAND => project::check_plan(context, args.include_tests),
+        BUILD_COMMAND => project::build_plan(context),
+        RUN_COMMAND_NAME => project::run_plan(context),
         _ => project::test_plan(context, args.test_kind),
     };
     let plan = plan?;
     project::execute_plan(context, plan, args.dry_run, args.build_jobs)?;
-    if args.command == run_command_name {
+    if args.command == RUN_COMMAND_NAME {
         match plan.executable {
             Some(executable) => project::run_executable(
                 context,
@@ -455,7 +455,7 @@ fn run_command(args: CliArgs) -> Result[unit, string] {
             ),
             None => Result::Err("build plan omitted executable"),
         }
-    } else if args.command == test_command && !args.dry_run {
+    } else if args.command == TEST_COMMAND && !args.dry_run {
         let groups: Vec[runner::Group] = Vec::[];
         for group in plan.test_groups {
             groups.push(
@@ -495,13 +495,13 @@ fn main() -> unit {
         io::println(top_help())
     } else {
         match args[1] {
-            help_command => if args.len() == 2 {
+            HELP_COMMAND => if args.len() == 2 {
                 io::println(top_help())
             } else {
                 io::println(command_help(args[2]))
             },
-            version_command => io::println(f"goml {version::current()}"),
-            home_command => if args.len() == 3 && (args[2] == "-h" || args[2] == "--help") {
+            VERSION_COMMAND => io::println(f"goml {version::current()}"),
+            HOME_COMMAND => if args.len() == 3 && (args[2] == "-h" || args[2] == "--help") {
                 io::println("Usage: goml home\n\nOptions:\n  -h, --help")
             } else if args.len() != 2 {
                 fail(f"unexpected argument {args[2]}")
@@ -511,16 +511,16 @@ fn main() -> unit {
                     Err(message) => fail(message),
                 }
             },
-            new_command => if args.len() >= 3 && (args[2] == "-h" || args[2] == "--help") {
-                io::println(command_help(new_command))
+            NEW_COMMAND => if args.len() >= 3 && (args[2] == "-h" || args[2] == "--help") {
+                io::println(command_help(NEW_COMMAND))
             } else {
                 match commands::parse_new(args) {
                     Ok(()) => (),
                     Err(message) => fail(message),
                 }
             },
-            clean_command => if args.len() >= 3 && (args[2] == "-h" || args[2] == "--help") {
-                io::println(command_help(clean_command))
+            CLEAN_COMMAND => if args.len() >= 3 && (args[2] == "-h" || args[2] == "--help") {
+                io::println(command_help(CLEAN_COMMAND))
             } else {
                 match parse_clean(args) {
                     Ok(target_dir) => match project::clean(target_dir) {
@@ -530,26 +530,26 @@ fn main() -> unit {
                     Err(message) => fail(message),
                 }
             },
-            fmt_command => match parse_fmt(args) {
+            FMT_COMMAND => match parse_fmt(args) {
                 Ok(options) => match commands::format_module(options.check, options.formatter) {
                     Ok(code) => if code == 0 {} else {
                         process::exit(code)
                     },
                     Err(message) => fail(message),
                 },
-                Err(message) => if message == help_command {
-                    io::println(command_help(fmt_command))
+                Err(message) => if message == HELP_COMMAND {
+                    io::println(command_help(FMT_COMMAND))
                 } else {
                     fail(message)
                 },
             },
-            update_command | add_command | remove_command => if args.len() >= 3
+            UPDATE_COMMAND | ADD_COMMAND | REMOVE_COMMAND => if args.len() >= 3
                 && (args[2] == "-h" || args[2] == "--help") {
                 io::println(command_help(args[1]))
             } else {
                 let result = match args[1] {
-                    update_command => commands::update_registry(args),
-                    add_command => commands::add_dependency(args),
+                    UPDATE_COMMAND => commands::update_registry(args),
+                    ADD_COMMAND => commands::add_dependency(args),
                     _ => commands::remove_dependency(args),
                 };
                 match result {

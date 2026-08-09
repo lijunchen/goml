@@ -302,7 +302,7 @@ fn selected_index(values: Vec[ResolvedModule], name: string) -> Option[int] {
 }
 
 pub fn resolve_at(module_root: string, root: string) -> Result[Vec[ResolvedModule], string] {
-    let root_manifest = manifest::load(path::join(module_root, manifest::filename))?;
+    let root_manifest = manifest::load(path::join(module_root, manifest::FILENAME))?;
     let queue = root_manifest.dependencies;
     let selected: Vec[ResolvedModule] = Vec::[];
     let mut cursor = 0;
@@ -321,7 +321,7 @@ pub fn resolve_at(module_root: string, root: string) -> Result[Vec[ResolvedModul
         };
         if update {
             let directory = module_directory_unchecked(root, requirement.name, version);
-            let module_manifest = manifest::load(path::join(directory, manifest::filename))?;
+            let module_manifest = manifest::load(path::join(directory, manifest::FILENAME))?;
             if module_manifest.module_path != requirement.name {
                 return Result::Err(
                     "registry module " + requirement.name + " declares module path "

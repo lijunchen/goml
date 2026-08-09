@@ -17,25 +17,25 @@ use std::io;
 use std::process;
 use std::text;
 
-const dump_ast_option: string = "--dump-ast";
+const DUMP_AST_OPTION: string = "--dump-ast";
 
-const dump_expanded_ast_option: string = "--dump-expanded-ast";
+const DUMP_EXPANDED_AST_OPTION: string = "--dump-expanded-ast";
 
-const dump_hir_option: string = "--dump-hir";
+const DUMP_HIR_OPTION: string = "--dump-hir";
 
-const dump_tast_option: string = "--dump-tast";
+const DUMP_TAST_OPTION: string = "--dump-tast";
 
-const dump_ctir_option: string = "--dump-ctir";
+const DUMP_CTIR_OPTION: string = "--dump-ctir";
 
-const dump_core_option: string = "--dump-core";
+const DUMP_CORE_OPTION: string = "--dump-core";
 
-const dump_mono_option: string = "--dump-mono";
+const DUMP_MONO_OPTION: string = "--dump-mono";
 
-const dump_lift_option: string = "--dump-lift";
+const DUMP_LIFT_OPTION: string = "--dump-lift";
 
-const dump_anf_option: string = "--dump-anf";
+const DUMP_ANF_OPTION: string = "--dump-anf";
 
-const dump_go_option: string = "--dump-go";
+const DUMP_GO_OPTION: string = "--dump-go";
 
 struct RunArgs {
     file: string,
@@ -73,23 +73,23 @@ fn read_source(path: string) -> string {
 
 fn dump_argument(value: string) -> bool {
     match value {
-        dump_ast_option | dump_expanded_ast_option | dump_hir_option | dump_tast_option | dump_ctir_option | dump_core_option | dump_mono_option | dump_lift_option | dump_anf_option | dump_go_option => true,
+        DUMP_AST_OPTION | DUMP_EXPANDED_AST_OPTION | DUMP_HIR_OPTION | DUMP_TAST_OPTION | DUMP_CTIR_OPTION | DUMP_CORE_OPTION | DUMP_MONO_OPTION | DUMP_LIFT_OPTION | DUMP_ANF_OPTION | DUMP_GO_OPTION => true,
         _ => false,
     }
 }
 
 fn inline_dump_argument(value: string) -> Option[(string, string)] {
     let names: Vec[string] = Vec::[];
-    names.push(dump_ast_option);
-    names.push(dump_expanded_ast_option);
-    names.push(dump_hir_option);
-    names.push(dump_tast_option);
-    names.push(dump_ctir_option);
-    names.push(dump_core_option);
-    names.push(dump_mono_option);
-    names.push(dump_lift_option);
-    names.push(dump_anf_option);
-    names.push(dump_go_option);
+    names.push(DUMP_AST_OPTION);
+    names.push(DUMP_EXPANDED_AST_OPTION);
+    names.push(DUMP_HIR_OPTION);
+    names.push(DUMP_TAST_OPTION);
+    names.push(DUMP_CTIR_OPTION);
+    names.push(DUMP_CORE_OPTION);
+    names.push(DUMP_MONO_OPTION);
+    names.push(DUMP_LIFT_OPTION);
+    names.push(DUMP_ANF_OPTION);
+    names.push(DUMP_GO_OPTION);
     for name in names {
         match inline_cli_value(value, name) {
             Some(argument) => return Option::Some((name, argument)),
@@ -140,7 +140,7 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
             return Result::Err(unexpected_value_error_with_usage(value, "--help", usage))
         } else if !positional && dump_argument(argument) {
             if seen.contains(argument) {
-                return Result::Err(repeated_argument_error(run_single_command, argument))
+                return Result::Err(repeated_argument_error(RUN_SINGLE_COMMAND, argument))
             } else {
                 seen[argument] = ();
                 used_dumps.push(argument);
@@ -149,12 +149,12 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
         } else if !positional && inline_dump_argument_present(inline_dump_argument(argument)) {
             match inline_dump_argument(argument) {
                 Some((name, value)) => return Result::Err(
-                    unexpected_value_error(run_single_command, value, name, f"{name} <FILE>"),
+                    unexpected_value_error(RUN_SINGLE_COMMAND, value, name, f"{name} <FILE>"),
                 ),
                 None => (),
             }
         } else if !positional && cli_option(argument) {
-            match similar_cli_argument(run_single_command, argument) {
+            match similar_cli_argument(RUN_SINGLE_COMMAND, argument) {
                 Some(similar) => {
                     let usage = if similar == "--help" {
                         "gomlc run-single --help <FILE>"
@@ -171,13 +171,13 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
             let usage = if !used_dumps.is_empty() || file.is_some() {
                 selected_run_usage(used_dumps)
             } else {
-                command_usage(run_single_command)
+                command_usage(RUN_SINGLE_COMMAND)
             };
             return Result::Err(unexpected_argument_error_with_usage(argument, true, usage))
         } else {
             match file {
                 Some(_) => return Result::Err(
-                    unexpected_argument_error(run_single_command, argument, false),
+                    unexpected_argument_error(RUN_SINGLE_COMMAND, argument, false),
                 ),
                 None => {
                     file = Option::Some(argument);
@@ -190,16 +190,16 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
         Some(value) => Result::Ok(
             RunArgs {
                 file: value,
-                dump_ast: seen.contains(dump_ast_option),
-                dump_expanded_ast: seen.contains(dump_expanded_ast_option),
-                dump_hir: seen.contains(dump_hir_option),
-                dump_tast: seen.contains(dump_tast_option),
-                dump_ctir: seen.contains(dump_ctir_option),
-                dump_core: seen.contains(dump_core_option),
-                dump_mono: seen.contains(dump_mono_option),
-                dump_lift: seen.contains(dump_lift_option),
-                dump_anf: seen.contains(dump_anf_option),
-                dump_go: seen.contains(dump_go_option),
+                dump_ast: seen.contains(DUMP_AST_OPTION),
+                dump_expanded_ast: seen.contains(DUMP_EXPANDED_AST_OPTION),
+                dump_hir: seen.contains(DUMP_HIR_OPTION),
+                dump_tast: seen.contains(DUMP_TAST_OPTION),
+                dump_ctir: seen.contains(DUMP_CTIR_OPTION),
+                dump_core: seen.contains(DUMP_CORE_OPTION),
+                dump_mono: seen.contains(DUMP_MONO_OPTION),
+                dump_lift: seen.contains(DUMP_LIFT_OPTION),
+                dump_anf: seen.contains(DUMP_ANF_OPTION),
+                dump_go: seen.contains(DUMP_GO_OPTION),
             },
         ),
         None => {
@@ -223,33 +223,33 @@ fn lower_core_stage(source_path: string, source: string) -> CoreStage {
 
 fn canonical_stage_output(stage: string, source_path: string, source: string) -> string {
     match stage {
-        lex_stage => lexer::encode_tokens(lexer::lex(source)),
-        cst_stage => cst::encode(parser::parse(source)),
-        ast_stage => ast::encode(ast::lower(parser::parse(source))),
-        hir_stage => hir::encode(hir::lower(ast::lower(parser::parse(source)), source_path)),
-        tast_stage => tast::encode(
+        LEX_STAGE => lexer::encode_tokens(lexer::lex(source)),
+        CST_STAGE => cst::encode(parser::parse(source)),
+        AST_STAGE => ast::encode(ast::lower(parser::parse(source))),
+        HIR_STAGE => hir::encode(hir::lower(ast::lower(parser::parse(source)), source_path)),
+        TAST_STAGE => tast::encode(
             tast::check(hir::lower(ast::lower(parser::parse(source)), source_path)),
         ),
-        core_stage => {
+        CORE_STAGE => {
             let value = lower_core_stage(source_path, source);
             core::encode(value.file)
         },
-        mono_stage => {
+        MONO_STAGE => {
             let value = lower_core_stage(source_path, source);
             mono::encode(lower_mono_or_fail(value.file))
         },
-        lift_stage => {
+        LIFT_STAGE => {
             let value = lower_core_stage(source_path, source);
             let mono_value = lower_mono_or_fail(value.file);
             lift::encode(lift::lower_with_counter(mono_value, value.counter))
         },
-        anf_stage => {
+        ANF_STAGE => {
             let value = lower_core_stage(source_path, source);
             let mono_value = lower_mono_or_fail(value.file);
             let lift_value = lift::lower_with_counter(mono_value, value.counter);
             anf::encode(anf::lower_with_counter(lift_value, value.counter))
         },
-        go_stage => {
+        GO_STAGE => {
             let value = lower_core_stage(source_path, source);
             let mono_value = lower_mono_or_fail(value.file);
             let lift_value = lift::lower_with_counter(mono_value, value.counter);
@@ -277,7 +277,7 @@ fn run_stage(args: Vec[string]) -> unit {
         fail("usage: gomlc <lex|cst|ast|hir|tast|core|mono|lift|anf|go> <FILE>")
     } else {
         match args[1] {
-            lex_stage => io::print(lexer::encode_tokens(lexer::lex(read_source(args[2])))),
+            LEX_STAGE => io::print(lexer::encode_tokens(lexer::lex(read_source(args[2])))),
             _ => {
                 let source_path = args[2];
                 io::print(pipeline_stage_output(args[1], source_path, read_source(source_path)))
@@ -306,16 +306,16 @@ fn main() -> unit {
         }
     } else {
         match args[1] {
-            help_command => run_help_command(args),
-            version_command => run_version(args),
-            prepare_world_command => run_prepare_world(args),
-            check_command => run_package_command(args, false, false),
-            test_check_command => run_package_command(args, false, true),
-            build_command => run_package_command(args, true, false),
-            test_build_command => run_package_command(args, true, true),
-            link_command => run_link_command(args),
-            test_link_command => run_test_link_command(args),
-            package_info_command => run_package_info(args),
+            HELP_COMMAND => run_help_command(args),
+            VERSION_COMMAND => run_version(args),
+            PREPARE_WORLD_COMMAND => run_prepare_world(args),
+            CHECK_COMMAND => run_package_command(args, false, false),
+            TEST_CHECK_COMMAND => run_package_command(args, false, true),
+            BUILD_COMMAND => run_package_command(args, true, false),
+            TEST_BUILD_COMMAND => run_package_command(args, true, true),
+            LINK_COMMAND => run_link_command(args),
+            TEST_LINK_COMMAND => run_test_link_command(args),
+            PACKAGE_INFO_COMMAND => run_package_info(args),
             "__canonical-stage" => run_canonical_stage(args),
             "__builtin-interface" => if args.len() == 2 {
                 io::print(builtin_artifact_json())
@@ -323,9 +323,9 @@ fn main() -> unit {
                 fail("usage: gomlc __builtin-interface")
             },
             "__test-diagnostics" => run_test_diagnostics(args),
-            run_single_command => match parse_run_args(args) {
+            RUN_SINGLE_COMMAND => match parse_run_args(args) {
                 Ok(run_args) => run_single(run_args),
-                Err(error) => handle_cli_parse_error(run_single_command, error),
+                Err(error) => handle_cli_parse_error(RUN_SINGLE_COMMAND, error),
             },
             _ if is_debug_stage(args[1]) => run_stage(args),
             _ if cli_option(args[1]) => match similar_cli_argument("", args[1]) {

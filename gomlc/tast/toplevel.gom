@@ -2425,7 +2425,7 @@ fn validate_extern_declarations(ctx: Checker) -> unit {
         if value.local {
             ctx.diagnostics.push(
                 new_diagnostic(
-                    typer_stage,
+                    TYPER_STAGE,
                     "extern " + short_name(value.name) + " is not permitted in this source",
                     value.source_path,
                     Option::None,
@@ -2441,7 +2441,7 @@ fn validate_lang_item_attributes(ctx: Checker, attrs: Vec[ast::Attribute], allow
             match extern_attribute_payload(attribute, "lang") {
                 Some(name) => ctx.diagnostics.push(
                     new_diagnostic(
-                        typer_stage,
+                        TYPER_STAGE,
                         "lang item " + name + " is not permitted in this source",
                         ctx.source_path,
                         Option::None,
@@ -2484,7 +2484,7 @@ fn validate_lang_item_declarations(ctx: Checker, value: hir::File, allow_lang_it
 
 fn comptime_attribute_diagnostic(ctx: Checker, attribute: ast::Attribute, message: string) -> unit {
     ctx.diagnostics.push(
-        new_diagnostic(typer_stage, message, ctx.source_path, Option::Some(attribute.span)),
+        new_diagnostic(TYPER_STAGE, message, ctx.source_path, Option::Some(attribute.span)),
     )
 }
 
@@ -3052,7 +3052,7 @@ fn check_file_with_package(
                     } else {}
                 }
                 if imported {} else {
-                    push_global_diagnostic(ctx, inference_failure_message);
+                    push_global_diagnostic(ctx, INFERENCE_FAILURE_MESSAGE);
                     push_diagnostic_at(ctx, "Unknown trait " + canonical, Option::None)
                 }
             },
@@ -3539,7 +3539,7 @@ fn check_package_files_for_link_with_environments_options(
         let message = "Cyclic constant " + short_name(value.name);
         if constant_reaches(constants, value.name, value.name, Vec::[])
             && !diagnostics_have_message(diagnostics, message) {
-            diagnostics.push(new_diagnostic(typer_stage, message, diagnostic_source, Option::None))
+            diagnostics.push(new_diagnostic(TYPER_STAGE, message, diagnostic_source, Option::None))
         } else {}
     }
     let raw = CheckResult {

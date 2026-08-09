@@ -26,7 +26,7 @@ fn canonical(value: string) -> Result[string, string] {
 pub fn find_module_root(start: string) -> Result[string, string] {
     let mut current = start;
     loop {
-        if fs::is_file(path::join(current, manifest::filename)) {
+        if fs::is_file(path::join(current, manifest::FILENAME)) {
             return Result::Ok(current)
         } else {
             match path::parent(current) {
@@ -44,7 +44,7 @@ pub fn find_module_root(start: string) -> Result[string, string] {
 pub fn clean(target_dir_override: Option[string]) -> Result[unit, string] {
     let current = env::current_dir()?;
     let module_dir = find_module_root(current)?;
-    let module_manifest = manifest::load(path::join(module_dir, manifest::filename))?;
+    let module_manifest = manifest::load(path::join(module_dir, manifest::FILENAME))?;
     let artifact_root = match target_dir_override {
         Some(value) => if path::is_absolute(value) {
             path::clean(value)
@@ -141,7 +141,7 @@ fn directory_for_package(module_dir: string, module_path: string, package_name: 
             let suffix = package_name.byte_slice(prefix.byte_len(), package_name.byte_len());
             for segment in text::split(suffix, "::") {
                 result = path::join(result, segment);
-                if fs::is_file(path::join(result, manifest::filename)) {
+                if fs::is_file(path::join(result, manifest::FILENAME)) {
                     return Option::None
                 } else {}
             }
@@ -611,7 +611,7 @@ fn collect_package_directories(
     artifact_root: string,
     result: Vec[string],
 ) -> Result[unit, string] {
-    if directory != module_dir && fs::is_file(path::join(directory, manifest::filename)) {
+    if directory != module_dir && fs::is_file(path::join(directory, manifest::FILENAME)) {
         return Result::Ok(())
     } else {};
     let names = fs::read_dir(directory)?;
@@ -834,7 +834,7 @@ pub fn load_context(target_dir_override: Option[string], compiler_override: Opti
 ] {
     let current = env::current_dir()?;
     let module_dir = find_module_root(current)?;
-    let module_manifest = manifest::load(path::join(module_dir, manifest::filename))?;
+    let module_manifest = manifest::load(path::join(module_dir, manifest::FILENAME))?;
     let resolved_compiler = resolve_compiler(compiler_override)?;
     let compiler = resolved_compiler.path;
     let sources = module_sources(module_dir, module_manifest)?;
@@ -870,7 +870,7 @@ pub fn load_target_context(
 ) -> Result[Context, string] {
     let entry_dir = target_directory(target)?;
     let module_dir = find_module_root(entry_dir)?;
-    let module_manifest = manifest::load(path::join(module_dir, manifest::filename))?;
+    let module_manifest = manifest::load(path::join(module_dir, manifest::FILENAME))?;
     let resolved_compiler = resolve_compiler(compiler_override)?;
     let compiler = resolved_compiler.path;
     let sources = module_sources(module_dir, module_manifest)?;
