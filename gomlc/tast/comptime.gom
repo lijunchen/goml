@@ -512,6 +512,12 @@ fn lower_ct_pattern_at(ctx: CtLowerContext, value: Pat, pattern_base: int) -> Re
         Prim { value, ty } => {
             Result::Ok(ctir::CtPattern::Value(primitive_ct_value(ctx, value, ty)?))
         },
+        Constant { name, ty: _ } => {
+            let Some(package_name) = constant_package(ctx, name) else {
+                return Result::Err("comptime constant pattern cannot resolve `" + name + "`")
+            };
+            Result::Ok(ctir::CtPattern::Constant { package_name, name })
+        },
         Constr { constructor, args, ty } => {
             let fields: Vec[ctir::CtPattern] = Vec::[];
             for arg in args {
@@ -1320,6 +1326,39 @@ fn constant_expr_from_value(value: ctir::CtValue, ty: Type) -> Result[ConstExpr,
         Expr::Prim { value, ty } => Result::Ok(ConstExpr::Prim { value, ty }),
         _ => Result::Err("top-level comptime constants must produce scalar values"),
     }
+}
+
+fn pattern_constant_primitive(value: ctir::CtValue, ty: Type) -> Option[Primitive] {
+    match constant_expr_from_value(value, ty) {
+        Ok(ConstExpr::Prim { value, ty: _ }) => Option::Some(value),
+        Ok(_) | Err(_) => Option::None,
+    }
+}
+
+fn module_constant_primitive(module: ctir::CtModule, name: string, ty: Type) -> Option[Primitive] {
+    for value in module.constants {
+        if comptime_names_match(value.name, name) {
+            return pattern_constant_primitive(value.value, ty)
+        } else {}
+    }
+    Option::None
+}
+
+fn evaluate_pattern_constants(file: File, package_name: string, dependencies: Vec[ctir::CtModule]) -> Vec[
+    (string, Primitive),
+] {
+    let module = ctir::empty_module(package_name);
+    let names = comptime_constant_names(file, Vec::[]);
+    let diagnostics: Vec[Diagnostic] = Vec::[];
+    let _ = evaluate_constants(file, Vec::[], module, dependencies, names, diagnostics);
+    let result: Vec[(string, Primitive)] = Vec::[];
+    for constant in file.constants {
+        match module_constant_primitive(module, constant.name, constant.ty) {
+            Some(value) => result.push((constant.name, value)),
+            None => (),
+        }
+    }
+    result
 }
 
 fn constant_candidates(

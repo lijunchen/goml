@@ -386,6 +386,7 @@ fn verify_pattern(ctx: VerifyContext, value: ctir::CtPattern, ty: ctir::CtType) 
             Result::Err("invalid CTIR pattern local slot or type")
         },
         ctir::CtPattern::Value(value) => verify_typed_value(ctx, value, ty),
+        ctir::CtPattern::Constant { package_name: _, name: _ } => Result::Ok(()),
         ctir::CtPattern::Tuple(patterns) => match ty {
             ctir::CtType::Tuple(types) => verify_pattern_list(ctx, patterns, types),
             _ => Result::Err("CTIR tuple pattern has non-tuple type"),

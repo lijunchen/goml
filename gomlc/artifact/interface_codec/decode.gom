@@ -440,7 +440,9 @@ pub fn decode_exports(value: wire::ArtifactValue) -> Result[
             context,
             wire::artifact_json_required_field(definition, "ty")?,
         )?;
-        constants.push(tast::ConstantScheme { def_id: Option::None, name: item.0, ty })
+        constants.push(
+            tast::ConstantScheme { def_id: Option::None, name: item.0, ty, value: Option::None },
+        )
     }
     Result::Ok(
         artifact::ArtifactPackageExports {

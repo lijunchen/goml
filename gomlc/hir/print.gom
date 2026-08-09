@@ -857,6 +857,7 @@ fn pat_doc(value: Pat) -> pretty::Doc {
         } else {
             local_debug_doc(local)
         },
+        Constant { reference } => name_ref_doc(reference),
         Unit => pretty::text("()"),
         Bool { value } => pretty::text(
             if value {

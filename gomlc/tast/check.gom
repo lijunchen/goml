@@ -4861,6 +4861,62 @@ fn check_constructor_pattern(
     }
 }
 
+fn constant_scheme_for_pattern(ctx: Checker, reference: hir::NameRef) -> Option[ConstantScheme] {
+    match reference {
+        hir::NameRef::Def(definition) => find_constant_by_def(ctx, definition),
+        hir::NameRef::Other(name) => find_constant_by_name(ctx, name),
+        hir::NameRef::Local(_) => Option::None,
+    }
+}
+
+fn constant_pattern_name(reference: hir::NameRef) -> string {
+    match reference {
+        hir::NameRef::Def(_) => "<constant>",
+        hir::NameRef::Other(name) => name,
+        hir::NameRef::Local(local) => local_name(local),
+    }
+}
+
+fn check_constant_pattern(ctx: Checker, reference: hir::NameRef, expected: Type, span: ast::Span) -> Pat {
+    match constant_scheme_for_pattern(ctx, reference) {
+        Some(value) => {
+            expect_type(ctx, value.ty, expected);
+            let target = match value.def_id {
+                Some(definition) => ReferenceTarget::Definition(definition),
+                None => ReferenceTarget::Unresolved(value.name),
+            };
+            ctx.typeck_results.references.push(
+                ReferenceFact { source_path: ctx.source_path, span, target, ty: value.ty },
+            );
+            match value.value {
+                Some(primitive) => Pat::Prim {
+                    value: normalize_pattern_primitive(primitive, expected),
+                    ty: expected,
+                },
+                None => Pat::Constant { name: value.name, ty: expected },
+            }
+        },
+        None => {
+            push_diagnostic(ctx, "Constant " + constant_pattern_name(reference) + " not found");
+            Pat::Wild { ty: expected }
+        },
+    }
+}
+
+fn check_qualified_constant_pattern(ctx: Checker, head: hir::PatternHead, expected: Type) -> Option[
+    Pat,
+] {
+    match head {
+        hir::PatternHead::Qualified { name, span } => match find_constant_by_name(ctx, name) {
+            Some(_) => Option::Some(
+                check_constant_pattern(ctx, hir::NameRef::Other(name), expected, span),
+            ),
+            None => Option::None,
+        },
+        _ => Option::None,
+    }
+}
+
 fn mark_unresolved_pattern_locals(ctx: Checker, value: hir::Pat) -> unit {
     match value.kind {
         Var { name: local, is_mut: _ } => if contains_local(ctx.unresolved_locals, local) {} else {
@@ -5065,6 +5121,16 @@ fn primitive_from_pattern(value: Pat) -> Primitive {
     }
 }
 
+fn constant_pattern_endpoint(ctx: Checker, value: hir::Pat) -> bool {
+    match value.kind {
+        Constant { reference: _ } => true,
+        Constr { head: hir::PatternHead::Qualified { name, span: _ }, args } => {
+            args.is_empty() && find_constant_by_name(ctx, name).is_some()
+        },
+        _ => false,
+    }
+}
+
 fn normalize_pattern_primitive(value: Primitive, expected: Type) -> Primitive {
     match value {
         Float { value: raw } => match prune(expected) {
@@ -5102,8 +5168,18 @@ fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
                 insert_local(ctx, local, expected);
                 Pat::Var { name: local_name(local), is_mut, ty: expected }
             },
+            Constant { reference } => {
+                check_constant_pattern(ctx, reference, expected, value.span)
+            },
             Constr { head, args } => {
-                check_constructor_pattern(ctx, head, args, expected)
+                if args.is_empty() {
+                    match check_qualified_constant_pattern(ctx, head, expected) {
+                        Some(value) => value,
+                        None => check_constructor_pattern(ctx, head, args, expected),
+                    }
+                } else {
+                    check_constructor_pattern(ctx, head, args, expected)
+                }
             },
             Struct { head, fields, has_rest } => {
                 check_struct_pattern(ctx, head, fields, has_rest, expected)
@@ -5139,8 +5215,16 @@ fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
                 Pat::Or { pats: items, ty: expected }
             },
             Range { start, end, inclusive } => {
+                let constant_endpoint = constant_pattern_endpoint(ctx, start)
+                    || constant_pattern_endpoint(ctx, end);
                 let typed_start = check_pattern(ctx, start, expected);
                 let typed_end = check_pattern(ctx, end, expected);
+                if constant_endpoint {
+                    push_diagnostic(
+                        ctx,
+                        "Range pattern endpoints must be integer or character literals",
+                    )
+                } else {};
                 let start_value = primitive_from_pattern(typed_start);
                 let end_value = primitive_from_pattern(typed_end);
                 let equal = match (start_value, end_value) {

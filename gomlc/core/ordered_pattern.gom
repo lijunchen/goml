@@ -5,12 +5,11 @@ use gomlc::tast;
 
 fn pattern_requires_ordered(value: tast::Pat) -> bool {
     match value {
-        Array { prefix: _, rest: _, suffix: _, ty: _ } | Alias { name: _, pat: _, ty: _ } | Range {
-            start: _,
-            end: _,
-            inclusive: _,
+        Constant { name: _, ty: _ } | Array { prefix: _, rest: _, suffix: _, ty: _ } | Alias {
+            name: _,
+            pat: _,
             ty: _,
-        } => true,
+        } | Range { start: _, end: _, inclusive: _, ty: _ } => true,
         Or { pats: patterns, ty: _ } => {
             for pattern in patterns {
                 if pattern_requires_ordered(pattern) {
@@ -282,6 +281,12 @@ fn lower_ordered_pattern(
             }
             next
         },
+        Constant { name, ty } => ordered_if(
+            ordered_binary(ast::BinaryOp::Eq, value, Expr::Var { name, ty }, tast::Type::Bool),
+            success,
+            failure,
+            result_ty,
+        ),
         Prim { value: expected, ty } => ordered_if(
             ordered_binary(
                 ast::BinaryOp::Eq,

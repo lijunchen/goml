@@ -396,6 +396,10 @@ pub enum Pat {
         is_mut: bool,
         ty: Type,
     },
+    Constant {
+        name: string,
+        ty: Type,
+    },
     Prim {
         value: Primitive,
         ty: Type,
@@ -552,9 +556,9 @@ pub fn expr_type(value: Expr) -> Type {
 
 pub fn pat_type(value: Pat) -> Type {
     match value {
-        Var { ty, .. } | Prim { ty, .. } | Constr { ty, .. } | Tuple { ty, .. } | Array { ty, .. } | Alias {
+        Var { ty, .. } | Constant { ty, .. } | Prim { ty, .. } | Constr { ty, .. } | Tuple {
             ty,
             ..,
-        } | Or { ty, .. } | Range { ty, .. } | Wild { ty } => ty,
+        } | Array { ty, .. } | Alias { ty, .. } | Or { ty, .. } | Range { ty, .. } | Wild { ty } => ty,
     }
 }

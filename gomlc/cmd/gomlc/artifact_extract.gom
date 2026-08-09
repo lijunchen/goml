@@ -511,7 +511,12 @@ fn artifact_package_exports(
     for value in signatures.constants {
         if !public_only || collections::contains(public_names, value.name) {
             result.constants.push(
-                tast::ConstantScheme { def_id: Option::None, name: value.name, ty: value.ty },
+                tast::ConstantScheme {
+                    def_id: Option::None,
+                    name: value.name,
+                    ty: value.ty,
+                    value: Option::None,
+                },
             )
         } else {}
     }

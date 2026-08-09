@@ -3020,6 +3020,7 @@ fn check_file_with_package(
                 def_id: constant.def_id,
                 name: constant.name,
                 ty: resolve_signature_type(ctx, constant.ty, Vec::[], false),
+                value: constant.value,
             },
         )
     }
@@ -3081,6 +3082,36 @@ fn check_file_with_package(
         }
     }
     validate_constant_cycles(ctx, constants);
+    let pattern_dependencies: Vec[ctir::CtModule] = Vec::[];
+    for dependency in dependencies {
+        match dependency.comptime {
+            Some(module) => pattern_dependencies.push(module),
+            None => (),
+        }
+    }
+    let pattern_values = evaluate_pattern_constants(
+        File { items: Vec::[], enums: Vec::[], structs: Vec::[], constants },
+        ctx.package_name,
+        pattern_dependencies,
+    );
+    for index in 0..ctx.constants.len() {
+        let scheme = ctx.constants[index];
+        let mut resolved = scheme.value;
+        for value in pattern_values {
+            if value.0 == scheme.name {
+                resolved = Option::Some(value.1);
+            } else {}
+        }
+        ctx.constants.set(
+            index,
+            ConstantScheme {
+                def_id: scheme.def_id,
+                name: scheme.name,
+                ty: scheme.ty,
+                value: resolved,
+            },
+        )
+    }
     let items: Vec[Item] = Vec::[];
     for item in value.items {
         match item {

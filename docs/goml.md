@@ -428,6 +428,19 @@ const newline: byte = b'\n';
 
 Constant expressions support scalar literals, references to other constants, unary and binary operators, and casts. They may use forward references, but cycles are rejected. The allowed constant types are `bool`, numeric types, `string`, `char`, and `byte`. Public constants are available through package-qualified paths.
 
+Visible top-level constants can be used as value patterns in `match`, `if let`, `while let`, and `let else`. Both local names and package-qualified names are supported, and constant patterns can be nested or combined with or-patterns:
+
+```goml
+const answer: int = 42;
+
+match value {
+    answer | config::fallback => "known",
+    _ => "other",
+}
+```
+
+In these refutable pattern contexts, a visible constant takes precedence over introducing a binding with the same name. Use an explicit alias such as `answer @ _` to bind that name instead. Ordinary `let` bindings and `for` patterns continue to introduce bindings, even when a top-level constant has the same name. Range-pattern endpoints remain integer or character literals.
+
 ### Compile-time evaluation
 
 `comptime { expression }` requires the expression to be evaluated while the current package is compiled. Its static type is the type of the inner expression, and the compiler replaces it with an equivalent ordinary value before Core lowering:
@@ -1146,6 +1159,7 @@ Patterns can be used with `let`, `for`, `match`, `if let` and `while let`.
 | Wildcard | `_` |
 | unit | `()` |
 | bool/number/string/character | `true`、`42`、`"ok"`、`'x'` |
+| top-level constant | `answer` or `config::answer` |
 | Group | `(pattern)` |
 | tuple | `(left, right)` |
 | Single element tuple | `(value,)` |

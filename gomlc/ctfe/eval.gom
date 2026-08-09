@@ -328,32 +328,54 @@ fn set_local(frame: EvalFrame, slot: int, value: ctir::CtValue) -> bool {
     }
 }
 
-fn match_pattern(pattern: ctir::CtPattern, value: ctir::CtValue, frame: EvalFrame) -> bool {
+fn match_pattern(
+    state: EvalState,
+    module: ctir::CtModule,
+    origin: int,
+    pattern: ctir::CtPattern,
+    value: ctir::CtValue,
+    frame: EvalFrame,
+) -> Result[bool, CtError] {
     match pattern {
-        ctir::CtPattern::Wild => true,
-        ctir::CtPattern::Bind { slot } => set_local(frame, slot, value),
-        ctir::CtPattern::Value(expected) => values_equal(expected, value),
+        ctir::CtPattern::Wild => Result::Ok(true),
+        ctir::CtPattern::Bind { slot } => Result::Ok(set_local(frame, slot, value)),
+        ctir::CtPattern::Value(expected) => Result::Ok(values_equal(expected, value)),
+        ctir::CtPattern::Constant { package_name, name } => Result::Ok(
+            values_equal(eval_constant(state, module, origin, package_name, name)?, value),
+        ),
         ctir::CtPattern::Tuple(patterns) => match value {
-            ctir::CtValue::Tuple(values) => match_pattern_list(patterns, values, frame),
-            _ => false,
+            ctir::CtValue::Tuple(values) => {
+                match_pattern_list(state, module, origin, patterns, values, frame)
+            },
+            _ => Result::Ok(false),
         },
         ctir::CtPattern::Array { prefix, rest, suffix } => match value {
             ctir::CtValue::Array(values) => {
                 if values.len() < prefix.len() + suffix.len() {
-                    false
+                    Result::Ok(false)
                 } else {
                     for index in 0..prefix.len() {
-                        if !match_pattern(prefix[index], values[index], frame) {
-                            return false
+                        if !match_pattern(
+                            state,
+                            module,
+                            origin,
+                            prefix[index],
+                            values[index],
+                            frame,
+                        )? {
+                            return Result::Ok(false)
                         } else {}
                     }
                     for index in 0..suffix.len() {
                         if !match_pattern(
+                            state,
+                            module,
+                            origin,
                             suffix[index],
                             values[values.len() - suffix.len() + index],
                             frame,
-                        ) {
-                            return false
+                        )? {
+                            return Result::Ok(false)
                         } else {}
                     }
                     match rest {
@@ -364,82 +386,101 @@ fn match_pattern(pattern: ctir::CtPattern, value: ctir::CtValue, frame: EvalFram
                             for index in prefix.len()..values.len() - suffix.len() {
                                 middle.push(values[index])
                             }
-                            set_local(frame, slot, ctir::CtValue::Array(middle))
+                            Result::Ok(set_local(frame, slot, ctir::CtValue::Array(middle)))
                         },
-                        None => true,
+                        None => Result::Ok(true),
                     }
                 }
             },
-            _ => false,
+            _ => Result::Ok(false),
         },
         ctir::CtPattern::Struct { name, fields } => match value {
             ctir::CtValue::Struct { name: value_name, fields: values } => {
                 if name != value_name {
-                    false
+                    Result::Ok(false)
                 } else {
                     for field in fields {
                         if field.0 < 0 || field.0 >= values.len()
-                            || !match_pattern(field.1, values[field.0], frame) {
-                            return false
+                            || !match_pattern(
+                                state,
+                                module,
+                                origin,
+                                field.1,
+                                values[field.0],
+                                frame,
+                            )? {
+                            return Result::Ok(false)
                         } else {}
                     }
-                    true
+                    Result::Ok(true)
                 }
             },
-            _ => false,
+            _ => Result::Ok(false),
         },
         ctir::CtPattern::Enum { name, variant, fields } => match value {
-            ctir::CtValue::Enum { name: value_name, variant: value_variant, fields: values } => name
+            ctir::CtValue::Enum { name: value_name, variant: value_variant, fields: values } => if name
                 == value_name
-                && variant == value_variant
-                && match_pattern_list(fields, values, frame),
-            _ => false,
+                && variant == value_variant {
+                match_pattern_list(state, module, origin, fields, values, frame)
+            } else {
+                Result::Ok(false)
+            },
+            _ => Result::Ok(false),
         },
         ctir::CtPattern::Alias { slot, pattern } => {
-            if match_pattern(pattern, value, frame) {
-                set_local(frame, slot, value)
+            if match_pattern(state, module, origin, pattern, value, frame)? {
+                Result::Ok(set_local(frame, slot, value))
             } else {
-                false
+                Result::Ok(false)
             }
         },
         ctir::CtPattern::Or(patterns) => {
             for pattern in patterns {
                 let saved = copy_locals(frame.locals);
-                if match_pattern(pattern, value, frame) {
-                    return true
+                if match_pattern(state, module, origin, pattern, value, frame)? {
+                    return Result::Ok(true)
                 } else {
                     restore_locals(frame.locals, saved)
                 }
             }
-            false
+            Result::Ok(false)
         },
         ctir::CtPattern::Range { start, end, inclusive } => {
             match compare_values(value, start) {
                 Some(lower) => match compare_values(value, end) {
-                    Some(upper) => lower >= 0
-                        && if inclusive {
-                            upper <= 0
-                        } else {
-                            upper < 0
-                        },
-                    None => false,
+                    Some(upper) => Result::Ok(
+                        lower >= 0
+                            && if inclusive {
+                                upper <= 0
+                            } else {
+                                upper < 0
+                            },
+                    ),
+                    None => Result::Ok(false),
                 },
-                None => false,
+                None => Result::Ok(false),
             }
         },
     }
 }
 
-fn match_pattern_list(patterns: Vec[ctir::CtPattern], values: Vec[ctir::CtValue], frame: EvalFrame) -> bool {
+fn match_pattern_list(
+    state: EvalState,
+    module: ctir::CtModule,
+    origin: int,
+    patterns: Vec[ctir::CtPattern],
+    values: Vec[ctir::CtValue],
+    frame: EvalFrame,
+) -> Result[bool, CtError] {
     if patterns.len() != values.len() {
-        false
+        Result::Ok(false)
     } else {
         for index in 0..patterns.len() {
-            if !match_pattern(patterns[index], values[index], frame) {
-                return false
+            if !match_pattern(state, module, origin, patterns[index], values[index], frame)? {
+                return Result::Ok(false)
             } else {}
         }
-        true
+        Result::Ok(true)
     }
 }
 
@@ -1199,7 +1240,7 @@ fn eval_expr(state: EvalState, module: ctir::CtModule, frame: EvalFrame, value: 
             )?;
             for arm in arms {
                 let saved = copy_locals(frame.locals);
-                if match_pattern(arm.pattern, source, frame) {
+                if match_pattern(state, module, arm.origin, arm.pattern, source, frame)? {
                     let guard = match arm.guard {
                         Some(guard) => match expect_value(
                             state,
@@ -1310,7 +1351,7 @@ fn eval_expr(state: EvalState, module: ctir::CtModule, frame: EvalFrame, value: 
                         ct_error(state, module, value.origin, "comptime range is not integer"),
                     ),
                 };
-                if !match_pattern(pattern, current, frame) {
+                if !match_pattern(state, module, value.origin, pattern, current, frame)? {
                     return Result::Err(
                         ct_error(state, module, value.origin, "comptime for pattern did not match"),
                     )
@@ -1357,7 +1398,7 @@ fn eval_expr(state: EvalState, module: ctir::CtModule, frame: EvalFrame, value: 
             let mut index = 0;
             while index < values.len() {
                 consume_fuel(state, module, value.origin)?;
-                if !match_pattern(pattern, values[index], frame) {
+                if !match_pattern(state, module, value.origin, pattern, values[index], frame)? {
                     return Result::Err(
                         ct_error(state, module, value.origin, "comptime for pattern did not match"),
                     )
@@ -1589,7 +1630,7 @@ fn eval_block(state: EvalState, module: ctir::CtModule, frame: EvalFrame, value:
                     value.origin,
                     eval_expr(state, module, frame, value)?,
                 )?;
-                if !match_pattern(pattern, result, frame) {
+                if !match_pattern(state, module, value.origin, pattern, result, frame)? {
                     return Result::Err(
                         ct_error(state, module, value.origin, "comptime let pattern did not match"),
                     )

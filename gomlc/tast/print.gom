@@ -892,6 +892,7 @@ fn pat_doc(value: Pat) -> pretty::Doc {
                 type_doc(ty),
             ],
         ),
+        Constant { name, ty: _ } => pretty::text(name),
         Prim { value, ty: _ } => primitive_doc(value),
         Constr { constructor, args, ty: _ } => constructor_pat_doc(constructor, args),
         Tuple { items: values, ty: _ } => {

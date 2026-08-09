@@ -158,7 +158,12 @@ fn collect_mutable_pattern(value: tast::Pat, inherited: bool, result: Vec[(strin
             } else {};
             collect_mutable_pattern(pat, inherited, result)
         },
-        Prim { value: _, ty: _ } | Range { start: _, end: _, inclusive: _, ty: _ } | Wild { ty: _ } => (),
+        Constant { name: _, ty: _ } | Prim { value: _, ty: _ } | Range {
+            start: _,
+            end: _,
+            inclusive: _,
+            ty: _,
+        } | Wild { ty: _ } => (),
     }
 }
 
@@ -192,7 +197,12 @@ fn collect_pattern_names(value: tast::Pat, result: Vec[string]) -> unit {
             push_name(result, name);
             collect_pattern_names(pattern, result)
         },
-        Prim { value: _, ty: _ } | Range { start: _, end: _, inclusive: _, ty: _ } | Wild { ty: _ } => (),
+        Constant { name: _, ty: _ } | Prim { value: _, ty: _ } | Range {
+            start: _,
+            end: _,
+            inclusive: _,
+            ty: _,
+        } | Wild { ty: _ } => (),
     }
 }
 

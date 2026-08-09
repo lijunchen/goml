@@ -48,6 +48,38 @@ fn flat_pattern_items(items: Vec[tast::Pat]) -> bool {
     true
 }
 
+fn pattern_contains_constant(value: tast::Pat) -> bool {
+    match value {
+        Constant { name: _, ty: _ } => true,
+        Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } | Or {
+            pats: args,
+            ty: _,
+        } => {
+            for arg in args {
+                if pattern_contains_constant(arg) {
+                    return true
+                } else {}
+            }
+            false
+        },
+        Array { prefix, rest: _, suffix, ty: _ } => {
+            for arg in prefix {
+                if pattern_contains_constant(arg) {
+                    return true
+                } else {}
+            }
+            for arg in suffix {
+                if pattern_contains_constant(arg) {
+                    return true
+                } else {}
+            }
+            false
+        },
+        Alias { name: _, pat, ty: _ } => pattern_contains_constant(pat),
+        _ => false,
+    }
+}
+
 fn plan_flat_pattern(ctx: Lowerer, source: string, pattern: tast::Pat) -> Option[PatternPlan] {
     match pattern {
         Tuple { items, ty: tuple_ty } => match tast::resolve_type(tuple_ty) {
@@ -843,6 +875,9 @@ fn pattern_rows_from_arms(source: string, source_ty: tast::Type, arms: Vec[tast:
 ] {
     let rows: Vec[PatternRow] = Vec::[];
     for arm in arms {
+        if pattern_contains_constant(arm.pat) {
+            return Option::None
+        } else {};
         match arm.guard {
             Some(_) => return Option::None,
             None => {

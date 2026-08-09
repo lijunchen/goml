@@ -137,6 +137,11 @@ fn ctir_pattern(writer: wire::ArtifactJsonWriter, value: ctir::CtPattern) -> uni
             ctir_tag(writer, "value");
             ctir_value(writer, value)
         },
+        ctir::CtPattern::Constant { package_name, name } => {
+            ctir_tag(writer, "constant");
+            wire::artifact_json_string(writer, package_name);
+            wire::artifact_json_string(writer, name)
+        },
         ctir::CtPattern::Tuple(values) => {
             ctir_tag(writer, "tuple");
             ctir_patterns(writer, values)
@@ -850,6 +855,15 @@ fn decode_ctir_pattern(value: wire::ArtifactValue) -> Result[ctir::CtPattern, st
         "value" => {
             ctir_expect_length(values, 2, "value pattern")?;
             Result::Ok(ctir::CtPattern::Value(decode_ctir_value(values[1])?))
+        },
+        "constant" => {
+            ctir_expect_length(values, 3, "constant pattern")?;
+            Result::Ok(
+                ctir::CtPattern::Constant {
+                    package_name: ctir_string(values[1], "constant pattern package")?,
+                    name: ctir_string(values[2], "constant pattern name")?,
+                },
+            )
         },
         "tuple" => {
             ctir_expect_length(values, 2, "tuple pattern")?;

@@ -265,7 +265,12 @@ fn artifact_dependency_environment_from_exports(value: artifact::ArtifactPackage
     let constants: Vec[tast::ConstantScheme] = Vec::[];
     for value in value.constants {
         constants.push(
-            tast::ConstantScheme { def_id: Option::None, name: value.name, ty: value.ty },
+            tast::ConstantScheme {
+                def_id: Option::None,
+                name: value.name,
+                ty: value.ty,
+                value: Option::None,
+            },
         )
     }
     let methods: Vec[tast::MethodInfo] = Vec::[];

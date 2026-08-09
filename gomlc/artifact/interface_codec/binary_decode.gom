@@ -835,7 +835,7 @@ fn artifact_interface_binary_package_exports(reader: ArtifactInterfaceBinaryRead
         artifact_interface_binary_object(reader, 1, "constant scheme")?;
         artifact_interface_binary_field(reader, "ty")?;
         let ty = artifact_interface_binary_type(reader, context)?;
-        constants.push(tast::ConstantScheme { def_id: Option::None, name, ty })
+        constants.push(tast::ConstantScheme { def_id: Option::None, name, ty, value: Option::None })
     }
     Result::Ok(
         artifact::ArtifactPackageExports {
