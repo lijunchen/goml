@@ -23,10 +23,11 @@ fn required_abi(value: Option[CallableAbiSpec]) -> CallableAbiSpec {
 fn loads_builtin_sources_from_toolchain_lib() -> unit {
     match builtin_sources() {
         Ok(values) => {
-            testing::assert_eq(values.len(), 3);
+            testing::assert_eq(values.len(), 4);
             testing::assert(values[0].source.len() > 0);
             testing::assert(values[1].source.len() > 0);
-            testing::assert(values[2].source.len() > 0)
+            testing::assert(values[2].source.len() > 0);
+            testing::assert(values[3].source.len() > 0)
         },
         Err(error) => testing::fail(error),
     }

@@ -1,0 +1,150 @@
+const NEGATIVE_ONE: int16 = -1;
+
+const WRAPPED: uint8 = NEGATIVE_ONE.to_uint8();
+
+const LETTER: uint32 = 'A'.to_uint32();
+
+#[comptime]
+fn narrow_at_compile_time(value: int16) -> uint8 {
+    value.to_uint8()
+}
+
+fn exercise_int(value: int) -> unit {
+    let _: int8 = value.to_int8();
+    let _: int16 = value.to_int16();
+    let _: int32 = value.to_int32();
+    let _: int64 = value.to_int64();
+    let _: uint = value.to_uint();
+    let _: uint8 = value.to_uint8();
+    let _: uint16 = value.to_uint16();
+    let _: uint32 = value.to_uint32();
+    let _: uint64 = value.to_uint64();
+}
+
+fn exercise_int8(value: int8) -> unit {
+    let _: int = value.to_int();
+    let _: int16 = value.to_int16();
+    let _: int32 = value.to_int32();
+    let _: int64 = value.to_int64();
+    let _: uint = value.to_uint();
+    let _: uint8 = value.to_uint8();
+    let _: uint16 = value.to_uint16();
+    let _: uint32 = value.to_uint32();
+    let _: uint64 = value.to_uint64();
+}
+
+fn exercise_int16(value: int16) -> unit {
+    let _: int = value.to_int();
+    let _: int8 = value.to_int8();
+    let _: int32 = value.to_int32();
+    let _: int64 = value.to_int64();
+    let _: uint = value.to_uint();
+    let _: uint8 = value.to_uint8();
+    let _: uint16 = value.to_uint16();
+    let _: uint32 = value.to_uint32();
+    let _: uint64 = value.to_uint64();
+}
+
+fn exercise_int32(value: int32) -> unit {
+    let _: int = value.to_int();
+    let _: int8 = value.to_int8();
+    let _: int16 = value.to_int16();
+    let _: int64 = value.to_int64();
+    let _: uint = value.to_uint();
+    let _: uint8 = value.to_uint8();
+    let _: uint16 = value.to_uint16();
+    let _: uint32 = value.to_uint32();
+    let _: uint64 = value.to_uint64();
+}
+
+fn exercise_int64(value: int64) -> unit {
+    let _: int = value.to_int();
+    let _: int8 = value.to_int8();
+    let _: int16 = value.to_int16();
+    let _: int32 = value.to_int32();
+    let _: uint = value.to_uint();
+    let _: uint8 = value.to_uint8();
+    let _: uint16 = value.to_uint16();
+    let _: uint32 = value.to_uint32();
+    let _: uint64 = value.to_uint64();
+}
+
+fn exercise_uint(value: uint) -> unit {
+    let _: int = value.to_int();
+    let _: int8 = value.to_int8();
+    let _: int16 = value.to_int16();
+    let _: int32 = value.to_int32();
+    let _: int64 = value.to_int64();
+    let _: uint8 = value.to_uint8();
+    let _: uint16 = value.to_uint16();
+    let _: uint32 = value.to_uint32();
+    let _: uint64 = value.to_uint64();
+}
+
+fn exercise_uint8(value: uint8) -> unit {
+    let _: int = value.to_int();
+    let _: int8 = value.to_int8();
+    let _: int16 = value.to_int16();
+    let _: int32 = value.to_int32();
+    let _: int64 = value.to_int64();
+    let _: uint = value.to_uint();
+    let _: uint16 = value.to_uint16();
+    let _: uint32 = value.to_uint32();
+    let _: uint64 = value.to_uint64();
+}
+
+fn exercise_uint16(value: uint16) -> unit {
+    let _: int = value.to_int();
+    let _: int8 = value.to_int8();
+    let _: int16 = value.to_int16();
+    let _: int32 = value.to_int32();
+    let _: int64 = value.to_int64();
+    let _: uint = value.to_uint();
+    let _: uint8 = value.to_uint8();
+    let _: uint32 = value.to_uint32();
+    let _: uint64 = value.to_uint64();
+}
+
+fn exercise_uint32(value: uint32) -> unit {
+    let _: int = value.to_int();
+    let _: int8 = value.to_int8();
+    let _: int16 = value.to_int16();
+    let _: int32 = value.to_int32();
+    let _: int64 = value.to_int64();
+    let _: uint = value.to_uint();
+    let _: uint8 = value.to_uint8();
+    let _: uint16 = value.to_uint16();
+    let _: uint64 = value.to_uint64();
+}
+
+fn exercise_uint64(value: uint64) -> unit {
+    let _: int = value.to_int();
+    let _: int8 = value.to_int8();
+    let _: int16 = value.to_int16();
+    let _: int32 = value.to_int32();
+    let _: int64 = value.to_int64();
+    let _: uint = value.to_uint();
+    let _: uint8 = value.to_uint8();
+    let _: uint16 = value.to_uint16();
+    let _: uint32 = value.to_uint32();
+}
+
+fn main() -> unit {
+    exercise_int(1);
+    exercise_int8(1);
+    exercise_int16(1);
+    exercise_int32(1);
+    exercise_int64(1);
+    exercise_uint(1);
+    exercise_uint8(1);
+    exercise_uint16(1);
+    exercise_uint32(1);
+    exercise_uint64(1);
+    let value: int16 = 511;
+    println(value.to_uint8());
+    println(WRAPPED);
+    println(LETTER);
+    println(narrow_at_compile_time(-1));
+    let octet: byte = b'\xFF';
+    println(octet.to_int16())
+}

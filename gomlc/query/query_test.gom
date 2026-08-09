@@ -444,6 +444,28 @@ fn resolves_builtin_method_definitions() -> unit {
         },
         None => testing::fail("expected string method"),
     };
+    let numeric_source = "fn main() -> uint8 { let value: int16 = 257; value.to_uint8() }";
+    match last_substring(numeric_source, "to_uint8") {
+        Some(offset) => {
+            let analysis = analyze("main.gom", numeric_source);
+            match goto_definition(analysis, offset) {
+                Some(definition) => {
+                    if definition.source_path.ends_with("/builtin_numeric.gom") {} else {
+                        testing::fail("expected numeric builtin source")
+                    };
+                    match source_by_path(analysis.sources, definition.source_path) {
+                        Some(target) => testing::assert_eq(
+                            target.source.byte_slice(definition.span.start, definition.span.end),
+                            "to_uint8",
+                        ),
+                        None => testing::fail("expected numeric builtin source"),
+                    }
+                },
+                None => testing::fail("expected numeric builtin method definition"),
+            }
+        },
+        None => testing::fail("expected numeric builtin method"),
+    };
     let static_source = "fn main() -> Vec[int32] { Vec::new() }";
     match last_substring(static_source, "new") {
         Some(offset) => {
@@ -678,11 +700,17 @@ fn completes_builtin_and_dyn_trait_members() -> unit {
     };
     let int_source = "fn main() -> string { let value = 1; value.to_ }";
     match last_substring(int_source, "to_") {
-        Some(offset) => if has_completion(
-            completions(analyze("main.gom", int_source), offset + 3),
-            "to_string",
-        ) {} else {
-            testing::fail("expected int to_string completion")
+        Some(offset) => {
+            let values = completions(analyze("main.gom", int_source), offset + 3);
+            if has_completion(values, "to_string") {} else {
+                testing::fail("expected int to_string completion")
+            };
+            if has_completion(values, "to_uint8") {} else {
+                testing::fail("expected int to_uint8 completion")
+            };
+            if has_completion(values, "to_int") {
+                testing::fail("unexpected int identity conversion completion")
+            } else {}
         },
         None => testing::fail("expected int member"),
     };
