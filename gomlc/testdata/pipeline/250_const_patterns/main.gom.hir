@@ -57,40 +57,52 @@ file main.gom
       }
   }
 
-  fn classify_pair(local/1/4: (int, byte)) -> bool {
-      match value/4 {
+  fn classify_comptime_guard(local/1/4: bool) -> string {
+      let local/1/5 =
+        match value/4 {
+            true if comptime {
+                true
+            } =>
+              "enabled",
+            false => "disabled",
+        };
+      result/5
+  }
+
+  fn classify_pair(local/1/6: (int, byte)) -> bool {
+      match value/6 {
           (def/1/0, def/1/4) => true,
           _ => false,
       }
   }
 
-  fn classify_string(local/1/5: string) -> bool {
-      match value/5 {
+  fn classify_string(local/1/7: string) -> bool {
+      match value/7 {
           def/1/3 => true,
           _ => false,
       }
   }
 
-  fn classify_float(local/1/6: float64) -> bool {
-      match value/6 {
+  fn classify_float(local/1/8: float64) -> bool {
+      match value/8 {
           def/1/5 => true,
           _ => false,
       }
   }
 
   fn shadow_constant() -> int {
-      let local/1/7 = 9;
-      answer/7
+      let local/1/9 = 9;
+      answer/9
   }
 
-  fn explicit_binding(local/1/8: int) -> int {
-      match value/8 {
-          local/1/9 @ _ => answer/9,
+  fn explicit_binding(local/1/10: int) -> int {
+      match value/10 {
+          local/1/11 @ _ => answer/11,
       }
   }
 
-  fn matches_if_let(local/1/10: int) -> bool {
-      match value/10 {
+  fn matches_if_let(local/1/12: int) -> bool {
+      match value/12 {
           def/1/0 =>
             {
                 true
@@ -102,9 +114,9 @@ file main.gom
       }
   }
 
-  fn matches_let_else(local/1/11: int) -> bool {
+  fn matches_let_else(local/1/13: int) -> bool {
       let def/1/0 =
-        value/11 else
+        value/13 else
         {
             return false
         };
@@ -112,12 +124,12 @@ file main.gom
   }
 
   fn for_binding() -> int {
-      let local/1/12 = Ref::new(0);
-      for local/1/13 in
+      let local/1/14 = Ref::new(0);
+      for local/1/15 in
         [1, 2] {
-          total/12.set(total/12.get() + answer/13)
+          total/14.set(total/14.get() + answer/15)
       };
-      total/12.get()
+      total/14.get()
   }
 
   fn main() -> unit {
@@ -128,16 +140,18 @@ file main.gom
       println(def/1/13(false));
       println(def/1/14(true));
       println(def/1/14(false));
-      println(def/1/15((42, b'\x41')));
-      println(def/1/15((42, b'\x42')));
-      println(def/1/16("hello"));
-      println(def/1/17(1.5));
-      println(def/1/18());
-      println(def/1/19(11));
-      println(def/1/20(42));
-      println(def/1/20(41));
+      println(def/1/15(true));
+      println(def/1/15(false));
+      println(def/1/16((42, b'\x41')));
+      println(def/1/16((42, b'\x42')));
+      println(def/1/17("hello"));
+      println(def/1/18(1.5));
+      println(def/1/19());
+      println(def/1/20(11));
       println(def/1/21(42));
       println(def/1/21(41));
-      println(def/1/22());
+      println(def/1/22(42));
+      println(def/1/22(41));
+      println(def/1/23());
       println(def/1/6)
   }

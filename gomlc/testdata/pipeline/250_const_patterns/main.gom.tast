@@ -44,40 +44,49 @@ fn classify_computed_bool(value/3: bool) -> string {
     }
 }
 
-fn classify_pair(value/4: (int, uint8)) -> bool {
-    match (value/4 : (int, uint8)) {
+fn classify_comptime_guard(value/4: bool) -> string {
+    let result/5: string =
+      match (value/4 : bool) {
+          true if true => "enabled",
+          false => "disabled",
+      };
+    (result/5 : string)
+}
+
+fn classify_pair(value/6: (int, uint8)) -> bool {
+    match (value/6 : (int, uint8)) {
         (42, 65) => true,
         _ : (int, uint8) => false,
     }
 }
 
-fn classify_string(value/5: string) -> bool {
-    match (value/5 : string) {
+fn classify_string(value/7: string) -> bool {
+    match (value/7 : string) {
         "hello" => true,
         _ : string => false,
     }
 }
 
-fn classify_float(value/6: float64) -> bool {
-    match (value/6 : float64) {
+fn classify_float(value/8: float64) -> bool {
+    match (value/8 : float64) {
         ratio => true,
         _ : float64 => false,
     }
 }
 
 fn shadow_constant() -> int {
-    let answer/7: int = 9;
-    (answer/7 : int)
+    let answer/9: int = 9;
+    (answer/9 : int)
 }
 
-fn explicit_binding(value/8: int) -> int {
-    match (value/8 : int) {
-        answer/9 @ _ : int => (answer/9 : int),
+fn explicit_binding(value/10: int) -> int {
+    match (value/10 : int) {
+        answer/11 @ _ : int => (answer/11 : int),
     }
 }
 
-fn matches_if_let(value/10: int) -> bool {
-    match (value/10 : int) {
+fn matches_if_let(value/12: int) -> bool {
+    match (value/12 : int) {
         42 =>
           {
               true
@@ -89,9 +98,9 @@ fn matches_if_let(value/10: int) -> bool {
     }
 }
 
-fn matches_let_else(value/11: int) -> bool {
+fn matches_let_else(value/13: int) -> bool {
     let 42 =
-      (value/11 : int) else
+      (value/13 : int) else
       {
           return false
       };
@@ -99,15 +108,15 @@ fn matches_let_else(value/11: int) -> bool {
 }
 
 fn for_binding() -> int {
-    let total/12: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
-    for answer/13: int in
+    let total/14: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
+    for answer/15: int in
       [1, 2] {
         (Ref[int]::set : (Ref[int], int) -> unit)(
-          (total/12 : Ref[int]),
-          (Ref[int]::get : (Ref[int]) -> int)((total/12 : Ref[int])) + (answer/13 : int)
+          (total/14 : Ref[int]),
+          (Ref[int]::get : (Ref[int]) -> int)((total/14 : Ref[int])) + (answer/15 : int)
         )
     };
-    (Ref[int]::get : (Ref[int]) -> int)((total/12 : Ref[int]))
+    (Ref[int]::get : (Ref[int]) -> int)((total/14 : Ref[int]))
 }
 
 fn main() -> unit {
@@ -118,6 +127,8 @@ fn main() -> unit {
     (println : (string) -> unit)((classify_bool : (bool) -> string)(false));
     (println : (string) -> unit)((classify_computed_bool : (bool) -> string)(true));
     (println : (string) -> unit)((classify_computed_bool : (bool) -> string)(false));
+    (println : (string) -> unit)((classify_comptime_guard : (bool) -> string)(true));
+    (println : (string) -> unit)((classify_comptime_guard : (bool) -> string)(false));
     (println : (bool) -> unit)((classify_pair : ((int, uint8)) -> bool)((42, 65)));
     (println : (bool) -> unit)((classify_pair : ((int, uint8)) -> bool)((42, 66)));
     (println : (bool) -> unit)((classify_string : (string) -> bool)("hello"));

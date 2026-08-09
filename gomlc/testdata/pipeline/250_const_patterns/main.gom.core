@@ -2108,13 +2108,38 @@ fn classify_computed_bool(value/3: bool) -> string {
   }
 }
 
-fn classify_pair(value/4: (int, uint8)) -> bool {
+fn classify_comptime_guard(value/4: bool) -> string {
+  let result/5 =
+    {
+      let match174 = value/4 in
+      if (match174 == true) {
+          if true {
+              "enabled"
+          } else {
+              if (match174 == false) {
+                  "disabled"
+              } else {
+                  @intrinsic(compiler.missing)("")
+              }
+          }
+      } else {
+          if (match174 == false) {
+              "disabled"
+          } else {
+              @intrinsic(compiler.missing)("")
+          }
+      }
+    } in
+  result/5
+}
+
+fn classify_pair(value/6: (int, uint8)) -> bool {
   {
-    let x174 = value/4.0 in
-    let x175 = value/4.1 in
-    match x175 {
+    let x175 = value/6.0 in
+    let x176 = value/6.1 in
+    match x176 {
       65 => {
-        match x174 {
+        match x175 {
           42 => {
             true
           },
@@ -2126,8 +2151,8 @@ fn classify_pair(value/4: (int, uint8)) -> bool {
   }
 }
 
-fn classify_string(value/5: string) -> bool {
-  match value/5 {
+fn classify_string(value/7: string) -> bool {
+  match value/7 {
     "hello" => {
       true
     },
@@ -2135,10 +2160,10 @@ fn classify_string(value/5: string) -> bool {
   }
 }
 
-fn classify_float(value/6: float64) -> bool {
+fn classify_float(value/8: float64) -> bool {
   {
-    let match176 = value/6 in
-    if (match176 == ratio) {
+    let match177 = value/8 in
+    if (match177 == ratio) {
         true
     } else {
         false
@@ -2147,22 +2172,22 @@ fn classify_float(value/6: float64) -> bool {
 }
 
 fn shadow_constant() -> int {
-  let answer/7 = 9 in
-  answer/7
+  let answer/9 = 9 in
+  answer/9
 }
 
-fn explicit_binding(value/8: int) -> int {
+fn explicit_binding(value/10: int) -> int {
   {
-    let match177 = value/8 in
+    let match178 = value/10 in
     {
-      let answer/9 = match177 in
-      answer/9
+      let answer/11 = match178 in
+      answer/11
     }
   }
 }
 
-fn matches_if_let(value/10: int) -> bool {
-  match value/10 {
+fn matches_if_let(value/12: int) -> bool {
+  match value/12 {
     42 => {
       {
         true
@@ -2175,9 +2200,9 @@ fn matches_if_let(value/10: int) -> bool {
   }
 }
 
-fn matches_let_else(value/11: int) -> bool {
-  let mtmp178 = value/11 in
-  match mtmp178 {
+fn matches_let_else(value/13: int) -> bool {
+  let mtmp179 = value/13 in
+  match mtmp179 {
     42 => {
       {
         true
@@ -2191,49 +2216,51 @@ fn matches_let_else(value/11: int) -> bool {
 }
 
 fn for_binding() -> int {
-  let total/12 = inherent#Ref#Ref[int]#new(0) in
-  let _wild184 =
+  let total/14 = inherent#Ref#Ref[int]#new(0) in
+  let _wild185 =
     {
-      let for_source179 = [1, 2] in
-      let for_limit180 = 2 in
-      let for_index181 = 0 in
-      while (for_index181 < for_limit180) {
+      let for_source180 = [1, 2] in
+      let for_limit181 = 2 in
+      let for_index182 = 0 in
+      while (for_index182 < for_limit181) {
           {
-            let for_item182 = @intrinsic(array.get)(for_source179, for_index181) in
-            let _wild183 = for_index181 = (for_index181 + 1) in
+            let for_item183 = @intrinsic(array.get)(for_source180, for_index182) in
+            let _wild184 = for_index182 = (for_index182 + 1) in
             {
-              let answer/13 = for_item182 in
+              let answer/15 = for_item183 in
               {
                 inherent#Ref#Ref[int]#set(
-                  total/12,
-                  (inherent#Ref#Ref[int]#get(total/12) + answer/13)
+                  total/14,
+                  (inherent#Ref#Ref[int]#get(total/14) + answer/15)
                 )
               }
             }
           }
       }
     } in
-  inherent#Ref#Ref[int]#get(total/12)
+  inherent#Ref#Ref[int]#get(total/14)
 }
 
 fn main() -> unit {
-  let _wild185 = println(classify(42)) in
-  let _wild186 = println(classify(7)) in
-  let _wild187 = println(classify(0)) in
-  let _wild188 = println(classify_bool(true)) in
-  let _wild189 = println(classify_bool(false)) in
-  let _wild190 = println(classify_computed_bool(true)) in
-  let _wild191 = println(classify_computed_bool(false)) in
-  let _wild192 = println(classify_pair((42, 65))) in
-  let _wild193 = println(classify_pair((42, 66))) in
-  let _wild194 = println(classify_string("hello")) in
-  let _wild195 = println(classify_float(1.5)) in
-  let _wild196 = println(shadow_constant()) in
-  let _wild197 = println(explicit_binding(11)) in
-  let _wild198 = println(matches_if_let(42)) in
-  let _wild199 = println(matches_if_let(41)) in
-  let _wild200 = println(matches_let_else(42)) in
-  let _wild201 = println(matches_let_else(41)) in
-  let _wild202 = println(for_binding()) in
+  let _wild186 = println(classify(42)) in
+  let _wild187 = println(classify(7)) in
+  let _wild188 = println(classify(0)) in
+  let _wild189 = println(classify_bool(true)) in
+  let _wild190 = println(classify_bool(false)) in
+  let _wild191 = println(classify_computed_bool(true)) in
+  let _wild192 = println(classify_computed_bool(false)) in
+  let _wild193 = println(classify_comptime_guard(true)) in
+  let _wild194 = println(classify_comptime_guard(false)) in
+  let _wild195 = println(classify_pair((42, 65))) in
+  let _wild196 = println(classify_pair((42, 66))) in
+  let _wild197 = println(classify_string("hello")) in
+  let _wild198 = println(classify_float(1.5)) in
+  let _wild199 = println(shadow_constant()) in
+  let _wild200 = println(explicit_binding(11)) in
+  let _wild201 = println(matches_if_let(42)) in
+  let _wild202 = println(matches_if_let(41)) in
+  let _wild203 = println(matches_let_else(42)) in
+  let _wild204 = println(matches_let_else(41)) in
+  let _wild205 = println(for_binding()) in
   println(classified_at_compile_time)
 }

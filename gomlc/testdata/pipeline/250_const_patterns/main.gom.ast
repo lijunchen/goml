@@ -56,6 +56,18 @@ fn classify_computed_bool(value: bool) -> string {
     }
 }
 
+fn classify_comptime_guard(value: bool) -> string {
+    let result =
+      match value {
+          true if comptime {
+              true
+          } =>
+            "enabled",
+          false => "disabled",
+      };
+    result
+}
+
 fn classify_pair(value: (int, byte)) -> bool {
     match value {
         (answer, marker) => true,
@@ -127,6 +139,8 @@ fn main() -> unit {
     println(classify_bool(false));
     println(classify_computed_bool(true));
     println(classify_computed_bool(false));
+    println(classify_comptime_guard(true));
+    println(classify_comptime_guard(false));
     println(classify_pair((42, b'\x41')));
     println(classify_pair((42, b'\x42')));
     println(classify_string("hello"));
