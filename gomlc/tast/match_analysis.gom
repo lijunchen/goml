@@ -1,6 +1,7 @@
 package tast;
 
 use gomlc::ctir;
+use gomlc::hir;
 use std::cmp;
 use std::collections;
 use std::text;
@@ -41,6 +42,46 @@ fn coverage_context(ctx: Checker) -> CoverageContext {
         domains: ctx.coverage_domains,
         inhabited: ctx.coverage_inhabited,
     }
+}
+
+fn finalized_coverage_context(file: File, dependencies: Vec[DependencyEnvironment]) -> CoverageContext {
+    let enums: Vec[EnumInfo] = Vec::[];
+    let structs: Vec[StructInfo] = Vec::[];
+    for value in file.enums {
+        let variants: Vec[EnumVariantInfo] = Vec::[];
+        for variant in value.variants {
+            variants.push(EnumVariantInfo { name: variant.name, fields: variant.fields })
+        }
+        enums.push(
+            EnumInfo {
+                def_id: hir::DefId { pkg: -1, index: enums.len() },
+                name: value.name,
+                generics: value.generics,
+                variants,
+            },
+        )
+    }
+    for value in file.structs {
+        structs.push(
+            StructInfo {
+                def_id: hir::DefId { pkg: -1, index: structs.len() },
+                name: value.name,
+                generics: value.generics,
+                fields: value.fields,
+                public_fields: value.public_fields,
+                has_hidden_fields: value.has_hidden_fields,
+            },
+        )
+    }
+    for dependency in dependencies {
+        for value in dependency.enums {
+            enums.push(value)
+        }
+        for value in dependency.structs {
+            structs.push(value)
+        }
+    }
+    CoverageContext { enums, structs, domains: HashMap::{}, inhabited: HashMap::{} }
 }
 
 fn coverage_find_enum(ctx: CoverageContext, name: string) -> Option[EnumInfo] {
@@ -1672,7 +1713,7 @@ fn match_arms_have_constants(values: Vec[Arm]) -> bool {
     false
 }
 
-fn deferred_constant_value(
+fn finalized_constant_value(
     module: ctir::CtModule,
     dependencies: Vec[ctir::CtModule],
     name: string,
@@ -1692,46 +1733,46 @@ fn deferred_constant_value(
     }
 }
 
-fn resolve_deferred_patterns(
+fn resolve_finalized_patterns(
     values: Vec[Pat],
     module: ctir::CtModule,
     dependencies: Vec[ctir::CtModule],
 ) -> Vec[Pat] {
     let result: Vec[Pat] = Vec::[];
     for value in values {
-        result.push(resolve_deferred_pattern(value, module, dependencies))
+        result.push(resolve_finalized_pattern(value, module, dependencies))
     }
     result
 }
 
-fn resolve_deferred_pattern(value: Pat, module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) -> Pat {
+fn resolve_finalized_pattern(value: Pat, module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) -> Pat {
     match value {
-        Constant { name, ty } => match deferred_constant_value(module, dependencies, name, ty) {
+        Constant { name, ty } => match finalized_constant_value(module, dependencies, name, ty) {
             Some(value) => Pat::Prim { value: normalize_pattern_primitive(value, ty), ty },
             None => Pat::Constant { name, ty },
         },
         Constr { constructor, args, ty } => Pat::Constr {
             constructor,
-            args: resolve_deferred_patterns(args, module, dependencies),
+            args: resolve_finalized_patterns(args, module, dependencies),
             ty,
         },
         Tuple { items, ty } => Pat::Tuple {
-            items: resolve_deferred_patterns(items, module, dependencies),
+            items: resolve_finalized_patterns(items, module, dependencies),
             ty,
         },
         Array { prefix, rest, suffix, ty } => Pat::Array {
-            prefix: resolve_deferred_patterns(prefix, module, dependencies),
+            prefix: resolve_finalized_patterns(prefix, module, dependencies),
             rest,
-            suffix: resolve_deferred_patterns(suffix, module, dependencies),
+            suffix: resolve_finalized_patterns(suffix, module, dependencies),
             ty,
         },
         Alias { name, pat, ty } => Pat::Alias {
             name,
-            pat: resolve_deferred_pattern(pat, module, dependencies),
+            pat: resolve_finalized_pattern(pat, module, dependencies),
             ty,
         },
         Or { pats, ty } => Pat::Or {
-            pats: resolve_deferred_patterns(pats, module, dependencies),
+            pats: resolve_finalized_patterns(pats, module, dependencies),
             ty,
         },
         Var { name, is_mut, ty } => Pat::Var { name, is_mut, ty },
@@ -1741,7 +1782,7 @@ fn resolve_deferred_pattern(value: Pat, module: ctir::CtModule, dependencies: Ve
     }
 }
 
-fn resolve_deferred_arms(
+fn resolve_finalized_arms(
     values: Vec[Arm],
     module: ctir::CtModule,
     dependencies: Vec[ctir::CtModule],
@@ -1750,7 +1791,7 @@ fn resolve_deferred_arms(
     for value in values {
         result.push(
             Arm {
-                pat: resolve_deferred_pattern(value.pat, module, dependencies),
+                pat: resolve_finalized_pattern(value.pat, module, dependencies),
                 guard: value.guard,
                 body: value.body,
             },
@@ -1759,7 +1800,7 @@ fn resolve_deferred_arms(
     result
 }
 
-fn unreachable_match_diagnostic(value: DeferredMatchCheck, index: int) -> Diagnostic {
+fn unreachable_match_diagnostic(value: MatchCoverageInfo, index: int) -> Diagnostic {
     Diagnostic {
         severity: DiagnosticSeverity::Warning,
         stage: "typer",
@@ -1772,12 +1813,38 @@ fn unreachable_match_diagnostic(value: DeferredMatchCheck, index: int) -> Diagno
     }
 }
 
-fn match_coverage_diagnostics(value: DeferredMatchCheck) -> Vec[Diagnostic] {
+fn match_coverage_diagnostics(
+    context: CoverageContext,
+    value: MatchCoverageInfo,
+    ty: Type,
+    arms: Vec[Arm],
+    module: ctir::CtModule,
+    dependencies: Vec[ctir::CtModule],
+) -> Vec[Diagnostic] {
     let diagnostics: Vec[Diagnostic] = Vec::[];
-    let useful_arms = match_useful_arms(value.context, value.analysis_arms);
+    let arms = resolve_finalized_arms(arms, module, dependencies);
+    if match_arms_have_constants(arms) {
+        return diagnostics
+    } else {};
+    let analysis_arms: Vec[Arm] = Vec::[];
+    for index in 0..arms.len() {
+        let arm = arms[index];
+        analysis_arms.push(
+            Arm {
+                pat: if value.invalid_pattern_arms[index] {
+                    Pat::Wild { ty }
+                } else {
+                    arm.pat
+                },
+                guard: arm.guard,
+                body: arm.body,
+            },
+        )
+    }
+    let useful_arms = match_useful_arms(context, analysis_arms);
     let mut invalid_coverage_seen = false;
     for index in 0..useful_arms.len() {
-        if value.follows_invalid_coverage[index] || invalid_coverage_seen || !(useful_arms[index]) {
+        if invalid_coverage_seen || !(useful_arms[index]) {
             diagnostics.push(unreachable_match_diagnostic(value, index))
         } else {};
         if value.invalid_pattern_arms[index] {
@@ -1787,7 +1854,7 @@ fn match_coverage_diagnostics(value: DeferredMatchCheck) -> Vec[Diagnostic] {
     let witnesses = if value.invalid_patterns {
         Vec::[]
     } else {
-        match_witnesses(value.context, value.ty, value.arms)
+        match_witnesses(context, ty, arms)
     };
     if value.invalid_patterns || witnesses.is_empty() {} else {
         let builder = text::StringBuilder::new();
@@ -1805,32 +1872,319 @@ fn match_coverage_diagnostics(value: DeferredMatchCheck) -> Vec[Diagnostic] {
     diagnostics
 }
 
-fn finalize_deferred_match_diagnostics(
-    values: Vec[DeferredMatchCheck],
+fn append_finalized_match_exprs_diagnostics(
+    context: CoverageContext,
     module: ctir::CtModule,
     dependencies: Vec[ctir::CtModule],
+    values: Vec[Expr],
+    diagnostics: Vec[Diagnostic],
+) -> unit {
+    for value in values {
+        append_finalized_match_expr_diagnostics(context, module, dependencies, value, diagnostics)
+    }
+}
+
+fn append_finalized_match_block_diagnostics(
+    context: CoverageContext,
+    module: ctir::CtModule,
+    dependencies: Vec[ctir::CtModule],
+    value: Block,
+    diagnostics: Vec[Diagnostic],
+) -> unit {
+    for statement in value.stmts {
+        match statement {
+            Defer { expr } | Stmt::Expr { expr } => {
+                append_finalized_match_expr_diagnostics(
+                    context,
+                    module,
+                    dependencies,
+                    expr,
+                    diagnostics,
+                )
+            },
+            Let { is_mut: _, pat: _, value } => {
+                append_finalized_match_expr_diagnostics(
+                    context,
+                    module,
+                    dependencies,
+                    value,
+                    diagnostics,
+                )
+            },
+            LetElse { is_mut: _, pat: _, value, else_branch } => {
+                append_finalized_match_expr_diagnostics(
+                    context,
+                    module,
+                    dependencies,
+                    value,
+                    diagnostics,
+                );
+                append_finalized_match_expr_diagnostics(
+                    context,
+                    module,
+                    dependencies,
+                    else_branch,
+                    diagnostics,
+                )
+            },
+            Assign { target, op: _, value } => {
+                append_finalized_match_expr_diagnostics(
+                    context,
+                    module,
+                    dependencies,
+                    target,
+                    diagnostics,
+                );
+                append_finalized_match_expr_diagnostics(
+                    context,
+                    module,
+                    dependencies,
+                    value,
+                    diagnostics,
+                )
+            },
+        }
+    }
+    match value.tail {
+        Some(value) => {
+            append_finalized_match_expr_diagnostics(
+                context,
+                module,
+                dependencies,
+                value,
+                diagnostics,
+            )
+        },
+        None => (),
+    }
+}
+
+fn append_finalized_match_expr_diagnostics(
+    context: CoverageContext,
+    module: ctir::CtModule,
+    dependencies: Vec[ctir::CtModule],
+    value: Expr,
+    diagnostics: Vec[Diagnostic],
+) -> unit {
+    match value {
+        Var { .. } | Callable { .. } | Prim { .. } | Continue { .. } => (),
+        Constr { args, .. } | Tuple { items: args, .. } | Array { items: args, .. } => {
+            append_finalized_match_exprs_diagnostics(
+                context,
+                module,
+                dependencies,
+                args,
+                diagnostics,
+            )
+        },
+        Closure { body, .. } | Comptime { body, .. } | Loop { body, .. } | Go { expr: body, .. } | Unary {
+            expr: body,
+            ..,
+        } | Cast { expr: body, .. } | ToDyn { expr: body, .. } => {
+            append_finalized_match_expr_diagnostics(
+                context,
+                module,
+                dependencies,
+                body,
+                diagnostics,
+            )
+        },
+        Block { block, .. } => {
+            append_finalized_match_block_diagnostics(
+                context,
+                module,
+                dependencies,
+                block,
+                diagnostics,
+            )
+        },
+        Match { expr, arms, coverage, ty: _ } => {
+            append_finalized_match_expr_diagnostics(
+                context,
+                module,
+                dependencies,
+                expr,
+                diagnostics,
+            );
+            for arm in arms {
+                match arm.guard {
+                    Some(guard) => append_finalized_match_expr_diagnostics(
+                        context,
+                        module,
+                        dependencies,
+                        guard,
+                        diagnostics,
+                    ),
+                    None => (),
+                };
+                append_finalized_match_expr_diagnostics(
+                    context,
+                    module,
+                    dependencies,
+                    arm.body,
+                    diagnostics,
+                )
+            }
+            match coverage {
+                Some(value) => for diagnostic in match_coverage_diagnostics(
+                    context,
+                    value,
+                    expr_type(expr),
+                    arms,
+                    module,
+                    dependencies,
+                ) {
+                    diagnostics.push(diagnostic)
+                },
+                None => (),
+            }
+        },
+        If { cond, then_branch, else_branch, .. } => {
+            append_finalized_match_expr_diagnostics(
+                context,
+                module,
+                dependencies,
+                cond,
+                diagnostics,
+            );
+            append_finalized_match_expr_diagnostics(
+                context,
+                module,
+                dependencies,
+                then_branch,
+                diagnostics,
+            );
+            append_finalized_match_expr_diagnostics(
+                context,
+                module,
+                dependencies,
+                else_branch,
+                diagnostics,
+            )
+        },
+        While { cond, body, .. } => {
+            append_finalized_match_expr_diagnostics(
+                context,
+                module,
+                dependencies,
+                cond,
+                diagnostics,
+            );
+            append_finalized_match_expr_diagnostics(
+                context,
+                module,
+                dependencies,
+                body,
+                diagnostics,
+            )
+        },
+        For { iterator, body, .. } => {
+            append_finalized_match_expr_diagnostics(
+                context,
+                module,
+                dependencies,
+                iterator,
+                diagnostics,
+            );
+            append_finalized_match_expr_diagnostics(
+                context,
+                module,
+                dependencies,
+                body,
+                diagnostics,
+            )
+        },
+        Break { value, .. } | Return { expr: value, .. } => match value {
+            Some(value) => {
+                append_finalized_match_expr_diagnostics(
+                    context,
+                    module,
+                    dependencies,
+                    value,
+                    diagnostics,
+                )
+            },
+            None => (),
+        },
+        Call { func, args, .. } => {
+            append_finalized_match_expr_diagnostics(
+                context,
+                module,
+                dependencies,
+                func,
+                diagnostics,
+            );
+            append_finalized_match_exprs_diagnostics(
+                context,
+                module,
+                dependencies,
+                args,
+                diagnostics,
+            )
+        },
+        Proj { tuple, .. } => {
+            append_finalized_match_expr_diagnostics(
+                context,
+                module,
+                dependencies,
+                tuple,
+                diagnostics,
+            )
+        },
+        Field { expr, .. } => {
+            append_finalized_match_expr_diagnostics(
+                context,
+                module,
+                dependencies,
+                expr,
+                diagnostics,
+            )
+        },
+        Index { base, index, .. } | Binary { lhs: base, rhs: index, .. } => {
+            append_finalized_match_expr_diagnostics(
+                context,
+                module,
+                dependencies,
+                base,
+                diagnostics,
+            );
+            append_finalized_match_expr_diagnostics(
+                context,
+                module,
+                dependencies,
+                index,
+                diagnostics,
+            )
+        },
+    }
+}
+
+fn finalized_match_diagnostics(
+    file: File,
+    module: ctir::CtModule,
+    comptime_dependencies: Vec[ctir::CtModule],
+    dependencies: Vec[DependencyEnvironment],
 ) -> Vec[Diagnostic] {
     let diagnostics: Vec[Diagnostic] = Vec::[];
-    for value in values {
-        let arms = resolve_deferred_arms(value.arms, module, dependencies);
-        let analysis_arms = resolve_deferred_arms(value.analysis_arms, module, dependencies);
-        if match_arms_have_constants(arms) || match_arms_have_constants(analysis_arms) {} else {
-            for diagnostic in match_coverage_diagnostics(
-                DeferredMatchCheck {
-                    context: value.context,
-                    source_path: value.source_path,
-                    span: value.span,
-                    ty: value.ty,
-                    arms,
-                    analysis_arms,
-                    pattern_spans: value.pattern_spans,
-                    invalid_pattern_arms: value.invalid_pattern_arms,
-                    follows_invalid_coverage: value.follows_invalid_coverage,
-                    invalid_patterns: value.invalid_patterns,
-                },
-            ) {
-                diagnostics.push(diagnostic)
-            }
+    let context = finalized_coverage_context(file, dependencies);
+    for item in file.items {
+        match item {
+            Item::Function(value) => append_finalized_match_block_diagnostics(
+                context,
+                module,
+                comptime_dependencies,
+                value.body,
+                diagnostics,
+            ),
+            Item::ImplBlock(value) => for method in value.methods {
+                append_finalized_match_block_diagnostics(
+                    context,
+                    module,
+                    comptime_dependencies,
+                    method.body,
+                    diagnostics,
+                )
+            },
         }
     }
     diagnostics

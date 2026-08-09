@@ -89,7 +89,7 @@ fn tast_expr_exits(value: tast::Expr) -> bool {
             body: _,
             ty: _,
         } => tast_expr_exits(iterator),
-        Match { expr: _, arms, ty: _ } => tast_match_arms_exit(arms),
+        Match { expr: _, arms, ty: _, .. } => tast_match_arms_exit(arms),
         _ => false,
     }
 }

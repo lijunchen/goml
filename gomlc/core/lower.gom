@@ -1373,7 +1373,7 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
         },
         Block { block, ty } => Expr::Block { block: lower_block(ctx, block, ty), ty },
         Comptime { .. } => Expr::Prim { value: tast::Primitive::Unit, ty: tast::Type::Error },
-        Match { expr: source, arms, ty } => lower_match(ctx, source, arms, ty),
+        Match { expr: source, arms, ty, .. } => lower_match(ctx, source, arms, ty),
         If { cond, then_branch, else_branch, ty } => Expr::If {
             cond: lower_expr(ctx, cond),
             then_branch: lower_expr(ctx, then_branch),

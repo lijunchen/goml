@@ -3146,10 +3146,7 @@ fn check_match_expr(ctx: Checker, source: hir::Expr, arms: Vec[hir::Arm], expect
     let pattern_spans: Vec[ast::Span] = Vec::[];
     let invalid_pattern_arms: Vec[bool] = Vec::[];
     let pattern_errors: Vec[bool] = Vec::[];
-    let follows_invalid_coverage: Vec[bool] = Vec::[];
-    let mut complete_coverage_found = false;
     for arm in arms {
-        follows_invalid_coverage.push(complete_coverage_found);
         pattern_spans.push(arm.pat.span);
         let or_binding_mismatch = hir_or_pattern_binding_mismatch(arm.pat)
             || pattern_has_or_binding_diagnostic(ctx, arm.pat.span);
@@ -3161,16 +3158,10 @@ fn check_match_expr(ctx: Checker, source: hir::Expr, arms: Vec[hir::Arm], expect
             || or_binding_mismatch
             || tast_or_pattern_binding_mismatch(pat);
         invalid_pattern_arms.push(invalidates_coverage);
-        if invalidates_coverage {
-            complete_coverage_found = true;
-        } else {};
         let guard = match arm.guard {
             Some(value) => Option::Some(check_expr(ctx, value, Option::Some(Type::Bool))),
             None => Option::None,
         };
-        if coverage_guard(guard) && pattern_is_irrefutable(coverage_context(ctx), pat) {
-            complete_coverage_found = true;
-        } else {};
         let body = check_expr(ctx, arm.body, Option::Some(result_ty));
         typed_arms.push(Arm { pat, guard, body })
     }
@@ -3178,42 +3169,20 @@ fn check_match_expr(ctx: Checker, source: hir::Expr, arms: Vec[hir::Arm], expect
         && is_numeric_type(expr_type(scrutinee)) {
         let _ = resolve_type(expr_type(scrutinee));
     } else {};
-    let analysis_arms: Vec[Arm] = Vec::[];
-    for index in 0..typed_arms.len() {
-        let arm = typed_arms[index];
-        analysis_arms.push(
-            Arm {
-                pat: if invalid_pattern_arms[index] {
-                    Pat::Wild { ty: expr_type(scrutinee) }
-                } else {
-                    arm.pat
-                },
-                guard: arm.guard,
-                body: arm.body,
-            },
-        )
-    }
-    let invalid_patterns = bool_values_contain(pattern_errors, true);
-    let coverage_check = DeferredMatchCheck {
-        context: coverage_context(ctx),
-        source_path: ctx.source_path,
-        span: ctx.current_span.get(),
-        ty: expr_type(scrutinee),
+    Expr::Match {
+        expr: scrutinee,
         arms: typed_arms,
-        analysis_arms,
-        pattern_spans,
-        invalid_pattern_arms,
-        follows_invalid_coverage,
-        invalid_patterns,
-    };
-    if match_arms_have_constants(typed_arms) {
-        ctx.deferred_matches.push(coverage_check)
-    } else {
-        for diagnostic in match_coverage_diagnostics(coverage_check) {
-            ctx.diagnostics.push(diagnostic)
-        }
-    };
-    Expr::Match { expr: scrutinee, arms: typed_arms, ty: result_ty }
+        coverage: Option::Some(
+            MatchCoverageInfo {
+                source_path: ctx.source_path,
+                span: ctx.current_span.get(),
+                pattern_spans,
+                invalid_pattern_arms,
+                invalid_patterns: bool_values_contain(pattern_errors, true),
+            },
+        ),
+        ty: result_ty,
+    }
 }
 
 fn diagnostics_invalidate_coverage(ctx: Checker, start: int) -> bool {
@@ -3397,7 +3366,7 @@ fn check_option_try(ctx: Checker, index: int, inner: Expr, name: string, args: V
     let arms: Vec[Arm] = Vec::[];
     arms.push(success);
     arms.push(failure);
-    Expr::Match { expr: inner, arms, ty: ok_ty }
+    Expr::Match { expr: inner, arms, coverage: Option::None, ty: ok_ty }
 }
 
 fn check_result_try(ctx: Checker, index: int, inner: Expr, name: string, args: Vec[Type]) -> Expr {
@@ -3459,7 +3428,7 @@ fn check_result_try(ctx: Checker, index: int, inner: Expr, name: string, args: V
     let arms: Vec[Arm] = Vec::[];
     arms.push(success);
     arms.push(failure);
-    Expr::Match { expr: inner, arms, ty: ok_ty }
+    Expr::Match { expr: inner, arms, coverage: Option::None, ty: ok_ty }
 }
 
 fn check_try_expr(
@@ -3626,7 +3595,9 @@ fn with_expr_type(value: Expr, ty: Type) -> Expr {
         Comptime { site_id, source_path, start, end, origins, body, ty: _ } => {
             Expr::Comptime { site_id, source_path, start, end, origins, body, ty }
         },
-        Match { expr: source, arms, ty: _ } => Expr::Match { expr: source, arms, ty },
+        Match { expr: source, arms, coverage, ty: _ } => {
+            Expr::Match { expr: source, arms, coverage, ty }
+        },
         If { cond, then_branch, else_branch, ty: _ } => {
             Expr::If { cond, then_branch, else_branch, ty }
         },

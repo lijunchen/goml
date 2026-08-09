@@ -724,7 +724,7 @@ fn expr_doc(value: Expr) -> pretty::Doc {
         Comptime { site_id: _, source_path: _, start: _, end: _, origins: _, body, ty: _ } => {
             pretty::append(pretty::text("comptime "), expr_doc(body))
         },
-        Match { expr: source, arms, ty: _ } => {
+        Match { expr: source, arms, ty: _, .. } => {
             let values: Vec[pretty::Doc] = Vec::with_capacity(arms.len());
             for arm in arms {
                 values.push(arm_doc(arm))

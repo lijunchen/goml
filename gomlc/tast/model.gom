@@ -262,6 +262,7 @@ pub enum Expr {
     Match {
         expr: Expr,
         arms: Vec[Arm],
+        coverage: Option[MatchCoverageInfo],
         ty: Type,
     },
     If {
@@ -383,6 +384,14 @@ pub struct Arm {
     pub pat: Pat,
     pub guard: Option[Expr],
     pub body: Expr,
+}
+
+pub struct MatchCoverageInfo {
+    pub source_path: string,
+    pub span: Option[ast::Span],
+    pub pattern_spans: Vec[ast::Span],
+    pub invalid_pattern_arms: Vec[bool],
+    pub invalid_patterns: bool,
 }
 
 pub struct ArrayPatRest {
@@ -528,7 +537,6 @@ pub struct CheckResult {
     pub tast: Option[File],
     pub comptime: ctir::CtModule,
     pub pending_constants: Vec[PendingConstant],
-    pub deferred_matches: Vec[DeferredMatchCheck],
     pub diagnostics: Vec[Diagnostic],
     pub typeck_results: TypeckResults,
 }

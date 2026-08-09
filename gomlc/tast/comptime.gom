@@ -888,7 +888,7 @@ fn lower_ct_expr(ctx: CtLowerContext, value: Expr) -> Result[ctir::CtExpr, strin
         Closure { .. } => return Result::Err("closures are not available in comptime"),
         Block { block, ty: _ } => ctir::CtExprKind::Block(lower_ct_block(ctx, block)?),
         Comptime { .. } => return Result::Err("nested comptime expressions are not supported"),
-        Match { expr, arms, ty: _ } => {
+        Match { expr, arms, ty: _, .. } => {
             let source = lower_ct_expr(ctx, expr)?;
             let result: Vec[ctir::CtArm] = Vec::[];
             for arm in arms {
@@ -2020,7 +2020,7 @@ fn rewrite_comptime_expr(
             block: rewrite_comptime_block(file, module, dependencies, diagnostics, next_site, block),
             ty,
         },
-        Match { expr, arms, ty } => {
+        Match { expr, arms, coverage, ty } => {
             let result: Vec[Arm] = Vec::[];
             for arm in arms {
                 result.push(
@@ -2060,6 +2060,7 @@ fn rewrite_comptime_expr(
                     expr,
                 ),
                 arms: result,
+                coverage,
                 ty,
             }
         },
