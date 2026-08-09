@@ -459,3 +459,15 @@ fn lowers_struct_pattern_matrices_by_field_order() -> unit {
         "fn matches(value/0: Pair) -> bool {\n  {\n    let x0 = Pair.left(value/0) in\n    let x1 = Pair.right(value/0) in\n    match x1 {\n      9 => {\n        match x0 {\n          4 => {\n            true\n          },\n          _ => false,\n        }\n      },\n      6 => {\n        true\n      },\n      _ => false,\n    }\n  }\n}",
     )
 }
+
+#[test]
+fn eliminates_dead_locals_without_dropping_effects() -> unit {
+    let source = "fn effect() -> int32 { 1 } fn main() -> unit { let dead = 1; let dead_pair = (dead, 2); let unused = |value: int32| value + dead; let kept = effect(); let divisor = 2; let quotient = 8 / divisor; () }";
+    let output = encode(dce(lower_source(source)));
+    testing::assert(!string_contains(output, "dead/"));
+    testing::assert(!string_contains(output, "dead_pair/"));
+    testing::assert(!string_contains(output, "unused/"));
+    testing::assert(string_contains(output, "let kept/"));
+    testing::assert(string_contains(output, "let divisor/"));
+    testing::assert(string_contains(output, "let quotient/"))
+}

@@ -66,6 +66,16 @@ fn preserves_monomorphic_core_programs() -> unit {
 }
 
 #[test]
+fn eliminates_dead_monomorphic_locals() -> unit {
+    let value = lower_source(
+        "fn effect() -> int32 { 1 } fn main() -> unit { let dead = (1, 2); let kept = effect(); () }",
+    );
+    let output = encode(dce(value));
+    testing::assert(!string_contains(output, "dead/"));
+    testing::assert(string_contains(output, "let kept/"))
+}
+
+#[test]
 fn resolves_static_trait_calls() -> unit {
     testing::assert_eq(
         encode(lower_source("fn main() -> string { true.to_string() }")),

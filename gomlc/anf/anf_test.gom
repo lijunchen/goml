@@ -58,6 +58,92 @@ fn verifies_lowered_anf() -> unit {
 }
 
 #[test]
+fn eliminates_dead_anf_locals_without_dropping_calls() -> unit {
+    let value = dce(
+        lower_source(
+            "fn effect() -> int32 { println(\"kept\"); 1 } fn main() -> unit { let dead = (1, 2); let kept = effect(); () }",
+        ),
+    );
+    match verify(value) {
+        Ok(_) => (),
+        Err(message) => testing::fail(message),
+    };
+    let output = encode(value);
+    testing::assert(!output.contains("dead/"));
+    testing::assert(output.contains("println"))
+}
+
+#[test]
+fn eliminates_unreachable_recursive_join_members() -> unit {
+    let unit_value = Imm::Prim { value: tast::Primitive::Unit, ty: tast::Type::Unit };
+    let live = JoinBind {
+        name: "live",
+        role: JoinRole::Continuation,
+        params: Vec::[],
+        ret_ty: tast::Type::Unit,
+        body: Block { binds: Vec::[], term: Term::Return(unit_value) },
+    };
+    let dead = JoinBind {
+        name: "dead",
+        role: JoinRole::Continuation,
+        params: Vec::[],
+        ret_ty: tast::Type::Unit,
+        body: Block {
+            binds: Vec::[],
+            term: Term::Jump { target: "dead", args: Vec::[], ret_ty: tast::Type::Unit },
+        },
+    };
+    let binds: Vec[Bind] = Vec::[];
+    binds.push(Bind::JoinRec(Vec::[live, dead]));
+    let value = dce(
+        verifier_file(
+            Block {
+                binds,
+                term: Term::Jump { target: "live", args: Vec::[], ret_ty: tast::Type::Unit },
+            },
+            tast::Type::Unit,
+        ),
+    );
+    match verify(value) {
+        Ok(_) => (),
+        Err(message) => testing::fail(message),
+    };
+    let output = encode(value);
+    testing::assert(output.contains("join live"));
+    testing::assert(!output.contains("join dead"))
+}
+
+#[test]
+fn eliminates_unreferenced_nonrecursive_joins() -> unit {
+    let join = JoinBind {
+        name: "dead",
+        role: JoinRole::Continuation,
+        params: Vec::[],
+        ret_ty: tast::Type::Unit,
+        body: Block {
+            binds: Vec::[],
+            term: Term::Return(Imm::Prim { value: tast::Primitive::Unit, ty: tast::Type::Unit }),
+        },
+    };
+    let binds: Vec[Bind] = Vec::[];
+    binds.push(Bind::Join(join));
+    let value = dce(
+        verifier_file(
+            Block {
+                binds,
+                term: Term::Return(Imm::Prim { value: tast::Primitive::Unit, ty: tast::Type::Unit }),
+            },
+            tast::Type::Unit,
+        ),
+    );
+    match verify(value) {
+        Ok(_) => (),
+        Err(message) => testing::fail(message),
+    };
+    testing::assert(!encode(value).contains("join dead"))
+}
+
+#[test]
 fn rejects_out_of_scope_join_jumps() -> unit {
     verifier_error_contains(
         verify(

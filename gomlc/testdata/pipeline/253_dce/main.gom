@@ -1,0 +1,21 @@
+fn touch(counter: Ref[int]) -> int {
+    let next = counter.get() + 1;
+    counter.set(next);
+    next
+}
+
+fn main() -> unit {
+    let dead = 1;
+    let dead_pair = (dead, 2);
+    let dead_if = if true { 3 } else { 4 };
+    let dead_match = match false {
+        true => 5,
+        false => 6,
+    };
+    let dead_closure = |value: int| value + dead;
+    let counter = Ref::new(0);
+    let ignored = touch(counter);
+    let divisor = 2;
+    let quotient = 8 / divisor;
+    println(counter.get())
+}

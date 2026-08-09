@@ -90,3 +90,13 @@ fn avoids_existing_closure_environment_names() -> unit {
         "fn main() -> unit {\n  let mtmp0 = ClosureEnvF0 { value: 1 } in\n  let f/1 = closure_env_f_0 {} in\n  let _wild1 =\n    println(\n      inherent#int32#int32#to_string(inherent#closure_env_f_0#closure_env_f_0#apply(f/1, 2))\n    ) in\n  ()\n}\n\nfn inherent#closure_env_f_0#closure_env_f_0#apply(env2: closure_env_f_0, x/0: int32) -> int32 {\n  (x/0 + 1)\n}",
     )
 }
+
+#[test]
+fn eliminates_dead_lifted_locals() -> unit {
+    let value = lower_source(
+        "fn effect() -> int32 { 1 } fn main() -> unit { let dead = (1, 2); let kept = effect(); () }",
+    );
+    let output = encode(dce(value));
+    testing::assert(!output.contains("dead/"));
+    testing::assert(output.contains("let kept/"))
+}
