@@ -1594,16 +1594,37 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
         if !integer {
             Result::Err("meta_expr_integer expects an integer type")
         } else {
+            let method_name = match ty {
+                ast::TypeExpr::Int8 => Option::Some("to_int8"),
+                ast::TypeExpr::Int16 => Option::Some("to_int16"),
+                ast::TypeExpr::Int32 => Option::Some("to_int32"),
+                ast::TypeExpr::Int64 => Option::Some("to_int64"),
+                ast::TypeExpr::Uint => Option::Some("to_uint"),
+                ast::TypeExpr::Uint8 => Option::Some("to_uint8"),
+                ast::TypeExpr::Uint16 => Option::Some("to_uint16"),
+                ast::TypeExpr::Uint32 => Option::Some("to_uint32"),
+                ast::TypeExpr::Uint64 => Option::Some("to_uint64"),
+                _ => Option::None,
+            };
+            let lhs = match method_name {
+                Option::Some(field_name) => ast::Expr::Call {
+                    func: ast::Expr::Field {
+                        expr: ast::Expr::Int { value: "0", span: value_span },
+                        field_name,
+                        method_type_args: Vec::[],
+                        span: value_span,
+                    },
+                    args: Vec::[],
+                    span: value_span,
+                },
+                Option::None => ast::Expr::Int { value: "0", span: value_span },
+            };
             Result::Ok(
                 push_expr(
                     state,
                     ast::Expr::Binary {
                         op: ast::BinaryOp::Add,
-                        lhs: ast::Expr::Cast {
-                            expr: ast::Expr::Int { value: "0", span: value_span },
-                            ty,
-                            span: value_span,
-                        },
+                        lhs,
                         rhs: ast::Expr::Int { value, span: value_span },
                         span: value_span,
                     },
