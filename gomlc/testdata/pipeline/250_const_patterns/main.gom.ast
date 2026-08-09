@@ -1,5 +1,5 @@
 package main;
-const answer: int = 40 + 2;
+const ANSWER: int = 40 + 2;
 
 const ALTERNATE: int = 7;
 
@@ -37,7 +37,7 @@ fn comptime_classify(value: int) -> int {
 
 fn classify(value: int) -> string {
     match value {
-        answer | ALTERNATE => "known",
+        ANSWER | ALTERNATE => "known",
         _ => "other",
     }
 }
@@ -70,7 +70,7 @@ fn classify_comptime_guard(value: bool) -> string {
 
 fn classify_pair(value: (int, byte)) -> bool {
     match value {
-        (answer, MARKER) => true,
+        (ANSWER, MARKER) => true,
         _ => false,
     }
 }
@@ -102,7 +102,7 @@ fn explicit_binding(value: int) -> int {
 
 fn matches_if_let(value: int) -> bool {
     match value {
-        answer =>
+        ANSWER =>
           {
               true
           },
@@ -114,7 +114,7 @@ fn matches_if_let(value: int) -> bool {
 }
 
 fn matches_let_else(value: int) -> bool {
-    let answer =
+    let ANSWER =
       value else
       {
           return false

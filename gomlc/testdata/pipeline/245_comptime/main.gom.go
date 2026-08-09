@@ -45,7 +45,7 @@ type Empty struct {}
 func (_ Empty) isChoice() {}
 
 const (
-    answer int = 120
+    ANSWER int = 120
 )
 
 func factorial(value__0 int) int {
@@ -62,7 +62,7 @@ func factorial(value__0 int) int {
 
 func main0() struct{} {
     var values__12 [3]int = [3]int{6, 10, 4}
-    var inline295 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(answer)
+    var inline295 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(ANSWER)
     _goml_runtime_core_string_println(inline295)
     var t225 int = array_get__Array_3_3int(values__12, 0)
     var inline292 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t225)
@@ -82,7 +82,7 @@ func main0() struct{} {
     var inline255 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(x180)
     _goml_runtime_core_string_println(inline255)
     var t232 int = factorial(5)
-    var t233 bool = t232 == answer
+    var t233 bool = t232 == ANSWER
     var inline280 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t233)
     _goml_runtime_core_string_println(inline280)
     var shadowed__16 int = 12

@@ -82,7 +82,7 @@ fn widen_negative(value: int8) -> uint64 {
     value.to_uint64()
 }
 
-const answer: int = factorial(5);
+const ANSWER: int = factorial(5);
 
 fn main() -> unit {
     let values =
@@ -97,7 +97,7 @@ fn main() -> unit {
       comptime {
           choose(9)
       };
-    println(answer);
+    println(ANSWER);
     println(values[0]);
     println(values[1]);
     println(values[2]);
@@ -106,7 +106,7 @@ fn main() -> unit {
         Choice::Value(value) => println(value),
         Choice::Empty => println(0),
     };
-    println(factorial(5) == answer);
+    println(factorial(5) == ANSWER);
     let shadowed =
       comptime {
           shadow(3)
