@@ -1074,6 +1074,10 @@ fn checks_match_exhaustiveness_and_irrefutable_bindings() -> unit {
     );
     testing::assert_eq(symbolic_duplicate.len(), 1);
     testing::assert_eq(symbolic_duplicate.get(0).message, "Unreachable match arm");
+    let comptime_guard = checked_diagnostics(
+        "fn choose(value: bool) -> int { let selected = match value { true if comptime { true } => 1, false => 0 }; selected }",
+    );
+    testing::assert_eq(comptime_guard.len(), 0);
     let refutable = check(
         hir::lower(
             ast::lower(
