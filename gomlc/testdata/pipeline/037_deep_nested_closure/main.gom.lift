@@ -1,7 +1,8 @@
 fn main() -> unit {
   let a/0 = 10 in
-  let f1/11 = closure_env_f1_3 { a_0: a/0 } in
-  let result/12 = inherent#closure_env_f1_3#closure_env_f1_3#apply(f1/11, 1) in
+  let f1/11 =
+    pack_closure[inherent#closure_env_f1_3#closure_env_f1_3#apply](closure_env_f1_3 { a_0: a/0 }) in
+  let result/12 = f1/11(1) in
   println__T_int32(result/12)
 }
 
@@ -32,8 +33,10 @@ fn inherent#closure_env_f3_1#closure_env_f3_1#apply(env173: closure_env_f3_1, z/
   let y/3 = closure_env_f3_1.y_4(env173) in
   let d/6 = 40 in
   let f4/8 =
-    closure_env_f4_0 { a_0: a/0, b_1: b/2, c_2: c/4, d_3: d/6, x_4: x/1, y_5: y/3, z_6: z/5 } in
-  inherent#closure_env_f4_0#closure_env_f4_0#apply(f4/8, 4)
+    pack_closure[inherent#closure_env_f4_0#closure_env_f4_0#apply](
+      closure_env_f4_0 { a_0: a/0, b_1: b/2, c_2: c/4, d_3: d/6, x_4: x/1, y_5: y/3, z_6: z/5 }
+    ) in
+  f4/8(4)
 }
 
 fn inherent#closure_env_f2_2#closure_env_f2_2#apply(env174: closure_env_f2_2, y/3: int32) -> int32 {
@@ -41,13 +44,19 @@ fn inherent#closure_env_f2_2#closure_env_f2_2#apply(env174: closure_env_f2_2, y/
   let b/2 = closure_env_f2_2.b_1(env174) in
   let x/1 = closure_env_f2_2.x_2(env174) in
   let c/4 = 30 in
-  let f3/9 = closure_env_f3_1 { a_0: a/0, b_1: b/2, c_2: c/4, x_3: x/1, y_4: y/3 } in
-  inherent#closure_env_f3_1#closure_env_f3_1#apply(f3/9, 3)
+  let f3/9 =
+    pack_closure[inherent#closure_env_f3_1#closure_env_f3_1#apply](
+      closure_env_f3_1 { a_0: a/0, b_1: b/2, c_2: c/4, x_3: x/1, y_4: y/3 }
+    ) in
+  f3/9(3)
 }
 
 fn inherent#closure_env_f1_3#closure_env_f1_3#apply(env175: closure_env_f1_3, x/1: int32) -> int32 {
   let a/0 = closure_env_f1_3.a_0(env175) in
   let b/2 = 20 in
-  let f2/10 = closure_env_f2_2 { a_0: a/0, b_1: b/2, x_2: x/1 } in
-  inherent#closure_env_f2_2#closure_env_f2_2#apply(f2/10, 2)
+  let f2/10 =
+    pack_closure[inherent#closure_env_f2_2#closure_env_f2_2#apply](
+      closure_env_f2_2 { a_0: a/0, b_1: b/2, x_2: x/1 }
+    ) in
+  f2/10(2)
 }

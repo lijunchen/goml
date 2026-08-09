@@ -34,121 +34,145 @@ func add_after_match(flag__0 bool) int32 {
 }
 
 func main0() struct{} {
-    var t193 int32 = add_after_match(false)
-    var inline265 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t193)
-    _goml_runtime_core_string_println(inline265)
-    var t194 int32
-    var inline259 bool = true
-    var inline261 int32
-    switch inline259 {
+    var t194 int32 = add_after_match(false)
+    var inline263 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t194)
+    _goml_runtime_core_string_println(inline263)
+    var t195 int32
+    var inline257 bool = true
+    var inline259 int32
+    switch inline257 {
     case true:
-        t194 = 5
-        var inline256 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t194)
-        _goml_runtime_core_string_println(inline256)
-        var t195 string
-        var inline251 bool = false
-        var inline253 int
-        switch inline251 {
+        t195 = 5
+        var inline254 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t195)
+        _goml_runtime_core_string_println(inline254)
+        var t196 string
+        var inline249 bool = false
+        var inline251 int
+        switch inline249 {
         case true:
-            t195 = "early"
-            var inline248 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t195)
-            _goml_runtime_core_string_println(inline248)
-            var t196 string
-            var inline243 bool = true
-            var inline245 int
-            switch inline243 {
+            t196 = "early"
+            var inline246 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t196)
+            _goml_runtime_core_string_println(inline246)
+            var t197 string
+            var inline241 bool = true
+            var inline243 int
+            switch inline241 {
             case true:
-                t196 = "early"
-                var inline240 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t196)
-                _goml_runtime_core_string_println(inline240)
-                var t197 int32
-                var inline236 bool = false
-                var inline237 closure_env_f_0 = closure_env_f_0{}
-                var inline238 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline237, inline236)
-                t197 = inline238
-                var inline233 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t197)
-                _goml_runtime_core_string_println(inline233)
+                t197 = "early"
+                var inline238 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t197)
+                _goml_runtime_core_string_println(inline238)
                 var t198 int32
-                var inline229 bool = true
-                var inline230 closure_env_f_0 = closure_env_f_0{}
-                var inline231 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline230, inline229)
-                t198 = inline231
-                var inline226 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t198)
-                _goml_runtime_core_string_println(inline226)
+                var inline233 bool = false
+                var inline234 closure_env_f_0 = closure_env_f_0{}
+                var inline235 func(bool) int32 = func(p0 bool) int32 {
+                    return _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline234, p0)
+                }
+                var inline236 int32 = inline235(inline233)
+                t198 = inline236
+                var inline230 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t198)
+                _goml_runtime_core_string_println(inline230)
+                var t199 int32
+                var inline225 bool = true
+                var inline226 closure_env_f_0 = closure_env_f_0{}
+                var inline227 func(bool) int32 = func(p0 bool) int32 {
+                    return _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline226, p0)
+                }
+                var inline228 int32 = inline227(inline225)
+                t199 = inline228
+                var inline222 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t199)
+                _goml_runtime_core_string_println(inline222)
                 return struct{}{}
             case false:
-                inline245 = 7
-                var inline246 string = _goml_m_inherent_i_int_i_int_i_to__string(inline245)
-                t196 = inline246
-                var inline240 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t196)
-                _goml_runtime_core_string_println(inline240)
-                var t197 int32
-                var inline236 bool = false
-                var inline237 closure_env_f_0 = closure_env_f_0{}
-                var inline238 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline237, inline236)
-                t197 = inline238
-                var inline233 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t197)
-                _goml_runtime_core_string_println(inline233)
+                inline243 = 7
+                var inline244 string = _goml_m_inherent_i_int_i_int_i_to__string(inline243)
+                t197 = inline244
+                var inline238 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t197)
+                _goml_runtime_core_string_println(inline238)
                 var t198 int32
-                var inline229 bool = true
-                var inline230 closure_env_f_0 = closure_env_f_0{}
-                var inline231 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline230, inline229)
-                t198 = inline231
-                var inline226 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t198)
-                _goml_runtime_core_string_println(inline226)
+                var inline233 bool = false
+                var inline234 closure_env_f_0 = closure_env_f_0{}
+                var inline235 func(bool) int32 = func(p0 bool) int32 {
+                    return _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline234, p0)
+                }
+                var inline236 int32 = inline235(inline233)
+                t198 = inline236
+                var inline230 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t198)
+                _goml_runtime_core_string_println(inline230)
+                var t199 int32
+                var inline225 bool = true
+                var inline226 closure_env_f_0 = closure_env_f_0{}
+                var inline227 func(bool) int32 = func(p0 bool) int32 {
+                    return _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline226, p0)
+                }
+                var inline228 int32 = inline227(inline225)
+                t199 = inline228
+                var inline222 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t199)
+                _goml_runtime_core_string_println(inline222)
                 return struct{}{}
             default:
                 panic("non-exhaustive match")
             }
         case false:
-            inline253 = 7
-            var inline254 string = _goml_m_inherent_i_int_i_int_i_to__string(inline253)
-            t195 = inline254
-            var inline248 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t195)
-            _goml_runtime_core_string_println(inline248)
-            var t196 string
-            var inline243 bool = true
-            var inline245 int
-            switch inline243 {
+            inline251 = 7
+            var inline252 string = _goml_m_inherent_i_int_i_int_i_to__string(inline251)
+            t196 = inline252
+            var inline246 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t196)
+            _goml_runtime_core_string_println(inline246)
+            var t197 string
+            var inline241 bool = true
+            var inline243 int
+            switch inline241 {
             case true:
-                t196 = "early"
-                var inline240 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t196)
-                _goml_runtime_core_string_println(inline240)
-                var t197 int32
-                var inline236 bool = false
-                var inline237 closure_env_f_0 = closure_env_f_0{}
-                var inline238 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline237, inline236)
-                t197 = inline238
-                var inline233 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t197)
-                _goml_runtime_core_string_println(inline233)
+                t197 = "early"
+                var inline238 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t197)
+                _goml_runtime_core_string_println(inline238)
                 var t198 int32
-                var inline229 bool = true
-                var inline230 closure_env_f_0 = closure_env_f_0{}
-                var inline231 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline230, inline229)
-                t198 = inline231
-                var inline226 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t198)
-                _goml_runtime_core_string_println(inline226)
+                var inline233 bool = false
+                var inline234 closure_env_f_0 = closure_env_f_0{}
+                var inline235 func(bool) int32 = func(p0 bool) int32 {
+                    return _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline234, p0)
+                }
+                var inline236 int32 = inline235(inline233)
+                t198 = inline236
+                var inline230 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t198)
+                _goml_runtime_core_string_println(inline230)
+                var t199 int32
+                var inline225 bool = true
+                var inline226 closure_env_f_0 = closure_env_f_0{}
+                var inline227 func(bool) int32 = func(p0 bool) int32 {
+                    return _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline226, p0)
+                }
+                var inline228 int32 = inline227(inline225)
+                t199 = inline228
+                var inline222 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t199)
+                _goml_runtime_core_string_println(inline222)
                 return struct{}{}
             case false:
-                inline245 = 7
-                var inline246 string = _goml_m_inherent_i_int_i_int_i_to__string(inline245)
-                t196 = inline246
-                var inline240 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t196)
-                _goml_runtime_core_string_println(inline240)
-                var t197 int32
-                var inline236 bool = false
-                var inline237 closure_env_f_0 = closure_env_f_0{}
-                var inline238 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline237, inline236)
-                t197 = inline238
-                var inline233 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t197)
-                _goml_runtime_core_string_println(inline233)
+                inline243 = 7
+                var inline244 string = _goml_m_inherent_i_int_i_int_i_to__string(inline243)
+                t197 = inline244
+                var inline238 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t197)
+                _goml_runtime_core_string_println(inline238)
                 var t198 int32
-                var inline229 bool = true
-                var inline230 closure_env_f_0 = closure_env_f_0{}
-                var inline231 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline230, inline229)
-                t198 = inline231
-                var inline226 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t198)
-                _goml_runtime_core_string_println(inline226)
+                var inline233 bool = false
+                var inline234 closure_env_f_0 = closure_env_f_0{}
+                var inline235 func(bool) int32 = func(p0 bool) int32 {
+                    return _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline234, p0)
+                }
+                var inline236 int32 = inline235(inline233)
+                t198 = inline236
+                var inline230 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t198)
+                _goml_runtime_core_string_println(inline230)
+                var t199 int32
+                var inline225 bool = true
+                var inline226 closure_env_f_0 = closure_env_f_0{}
+                var inline227 func(bool) int32 = func(p0 bool) int32 {
+                    return _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline226, p0)
+                }
+                var inline228 int32 = inline227(inline225)
+                t199 = inline228
+                var inline222 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t199)
+                _goml_runtime_core_string_println(inline222)
                 return struct{}{}
             default:
                 panic("non-exhaustive match")
@@ -157,115 +181,139 @@ func main0() struct{} {
             panic("non-exhaustive match")
         }
     case false:
-        inline261 = 7
-        var inline263 int32 = inline261 + 1
-        t194 = inline263
-        var inline256 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t194)
-        _goml_runtime_core_string_println(inline256)
-        var t195 string
-        var inline251 bool = false
-        var inline253 int
-        switch inline251 {
+        inline259 = 7
+        var inline261 int32 = inline259 + 1
+        t195 = inline261
+        var inline254 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t195)
+        _goml_runtime_core_string_println(inline254)
+        var t196 string
+        var inline249 bool = false
+        var inline251 int
+        switch inline249 {
         case true:
-            t195 = "early"
-            var inline248 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t195)
-            _goml_runtime_core_string_println(inline248)
-            var t196 string
-            var inline243 bool = true
-            var inline245 int
-            switch inline243 {
+            t196 = "early"
+            var inline246 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t196)
+            _goml_runtime_core_string_println(inline246)
+            var t197 string
+            var inline241 bool = true
+            var inline243 int
+            switch inline241 {
             case true:
-                t196 = "early"
-                var inline240 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t196)
-                _goml_runtime_core_string_println(inline240)
-                var t197 int32
-                var inline236 bool = false
-                var inline237 closure_env_f_0 = closure_env_f_0{}
-                var inline238 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline237, inline236)
-                t197 = inline238
-                var inline233 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t197)
-                _goml_runtime_core_string_println(inline233)
+                t197 = "early"
+                var inline238 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t197)
+                _goml_runtime_core_string_println(inline238)
                 var t198 int32
-                var inline229 bool = true
-                var inline230 closure_env_f_0 = closure_env_f_0{}
-                var inline231 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline230, inline229)
-                t198 = inline231
-                var inline226 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t198)
-                _goml_runtime_core_string_println(inline226)
+                var inline233 bool = false
+                var inline234 closure_env_f_0 = closure_env_f_0{}
+                var inline235 func(bool) int32 = func(p0 bool) int32 {
+                    return _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline234, p0)
+                }
+                var inline236 int32 = inline235(inline233)
+                t198 = inline236
+                var inline230 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t198)
+                _goml_runtime_core_string_println(inline230)
+                var t199 int32
+                var inline225 bool = true
+                var inline226 closure_env_f_0 = closure_env_f_0{}
+                var inline227 func(bool) int32 = func(p0 bool) int32 {
+                    return _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline226, p0)
+                }
+                var inline228 int32 = inline227(inline225)
+                t199 = inline228
+                var inline222 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t199)
+                _goml_runtime_core_string_println(inline222)
                 return struct{}{}
             case false:
-                inline245 = 7
-                var inline246 string = _goml_m_inherent_i_int_i_int_i_to__string(inline245)
-                t196 = inline246
-                var inline240 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t196)
-                _goml_runtime_core_string_println(inline240)
-                var t197 int32
-                var inline236 bool = false
-                var inline237 closure_env_f_0 = closure_env_f_0{}
-                var inline238 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline237, inline236)
-                t197 = inline238
-                var inline233 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t197)
-                _goml_runtime_core_string_println(inline233)
+                inline243 = 7
+                var inline244 string = _goml_m_inherent_i_int_i_int_i_to__string(inline243)
+                t197 = inline244
+                var inline238 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t197)
+                _goml_runtime_core_string_println(inline238)
                 var t198 int32
-                var inline229 bool = true
-                var inline230 closure_env_f_0 = closure_env_f_0{}
-                var inline231 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline230, inline229)
-                t198 = inline231
-                var inline226 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t198)
-                _goml_runtime_core_string_println(inline226)
+                var inline233 bool = false
+                var inline234 closure_env_f_0 = closure_env_f_0{}
+                var inline235 func(bool) int32 = func(p0 bool) int32 {
+                    return _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline234, p0)
+                }
+                var inline236 int32 = inline235(inline233)
+                t198 = inline236
+                var inline230 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t198)
+                _goml_runtime_core_string_println(inline230)
+                var t199 int32
+                var inline225 bool = true
+                var inline226 closure_env_f_0 = closure_env_f_0{}
+                var inline227 func(bool) int32 = func(p0 bool) int32 {
+                    return _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline226, p0)
+                }
+                var inline228 int32 = inline227(inline225)
+                t199 = inline228
+                var inline222 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t199)
+                _goml_runtime_core_string_println(inline222)
                 return struct{}{}
             default:
                 panic("non-exhaustive match")
             }
         case false:
-            inline253 = 7
-            var inline254 string = _goml_m_inherent_i_int_i_int_i_to__string(inline253)
-            t195 = inline254
-            var inline248 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t195)
-            _goml_runtime_core_string_println(inline248)
-            var t196 string
-            var inline243 bool = true
-            var inline245 int
-            switch inline243 {
+            inline251 = 7
+            var inline252 string = _goml_m_inherent_i_int_i_int_i_to__string(inline251)
+            t196 = inline252
+            var inline246 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t196)
+            _goml_runtime_core_string_println(inline246)
+            var t197 string
+            var inline241 bool = true
+            var inline243 int
+            switch inline241 {
             case true:
-                t196 = "early"
-                var inline240 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t196)
-                _goml_runtime_core_string_println(inline240)
-                var t197 int32
-                var inline236 bool = false
-                var inline237 closure_env_f_0 = closure_env_f_0{}
-                var inline238 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline237, inline236)
-                t197 = inline238
-                var inline233 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t197)
-                _goml_runtime_core_string_println(inline233)
+                t197 = "early"
+                var inline238 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t197)
+                _goml_runtime_core_string_println(inline238)
                 var t198 int32
-                var inline229 bool = true
-                var inline230 closure_env_f_0 = closure_env_f_0{}
-                var inline231 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline230, inline229)
-                t198 = inline231
-                var inline226 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t198)
-                _goml_runtime_core_string_println(inline226)
+                var inline233 bool = false
+                var inline234 closure_env_f_0 = closure_env_f_0{}
+                var inline235 func(bool) int32 = func(p0 bool) int32 {
+                    return _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline234, p0)
+                }
+                var inline236 int32 = inline235(inline233)
+                t198 = inline236
+                var inline230 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t198)
+                _goml_runtime_core_string_println(inline230)
+                var t199 int32
+                var inline225 bool = true
+                var inline226 closure_env_f_0 = closure_env_f_0{}
+                var inline227 func(bool) int32 = func(p0 bool) int32 {
+                    return _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline226, p0)
+                }
+                var inline228 int32 = inline227(inline225)
+                t199 = inline228
+                var inline222 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t199)
+                _goml_runtime_core_string_println(inline222)
                 return struct{}{}
             case false:
-                inline245 = 7
-                var inline246 string = _goml_m_inherent_i_int_i_int_i_to__string(inline245)
-                t196 = inline246
-                var inline240 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t196)
-                _goml_runtime_core_string_println(inline240)
-                var t197 int32
-                var inline236 bool = false
-                var inline237 closure_env_f_0 = closure_env_f_0{}
-                var inline238 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline237, inline236)
-                t197 = inline238
-                var inline233 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t197)
-                _goml_runtime_core_string_println(inline233)
+                inline243 = 7
+                var inline244 string = _goml_m_inherent_i_int_i_int_i_to__string(inline243)
+                t197 = inline244
+                var inline238 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t197)
+                _goml_runtime_core_string_println(inline238)
                 var t198 int32
-                var inline229 bool = true
-                var inline230 closure_env_f_0 = closure_env_f_0{}
-                var inline231 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline230, inline229)
-                t198 = inline231
-                var inline226 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t198)
-                _goml_runtime_core_string_println(inline226)
+                var inline233 bool = false
+                var inline234 closure_env_f_0 = closure_env_f_0{}
+                var inline235 func(bool) int32 = func(p0 bool) int32 {
+                    return _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline234, p0)
+                }
+                var inline236 int32 = inline235(inline233)
+                t198 = inline236
+                var inline230 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t198)
+                _goml_runtime_core_string_println(inline230)
+                var t199 int32
+                var inline225 bool = true
+                var inline226 closure_env_f_0 = closure_env_f_0{}
+                var inline227 func(bool) int32 = func(p0 bool) int32 {
+                    return _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline226, p0)
+                }
+                var inline228 int32 = inline227(inline225)
+                t199 = inline228
+                var inline222 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t199)
+                _goml_runtime_core_string_println(inline222)
                 return struct{}{}
             default:
                 panic("non-exhaustive match")
@@ -279,13 +327,13 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_int_i_int_i_to__string(self__34 int) string {
-    var t201 string = _goml_runtime_core_int_to_string(self__34)
-    return t201
+    var t202 string = _goml_runtime_core_int_to_string(self__34)
+    return t202
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__72 int32) string {
-    var t210 string = _goml_runtime_core_int32_to_string(self__72)
-    return t210
+    var t211 string = _goml_runtime_core_int32_to_string(self__72)
+    return t211
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
@@ -293,14 +341,14 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) strin
 }
 
 func _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(env178 closure_env_f_0, inner__4 bool) int32 {
-    var jp216 int32
+    var jp217 int32
     switch inner__4 {
     case true:
         return 2
     case false:
-        jp216 = 4
-        var t217 int32 = jp216 + 3
-        return t217
+        jp217 = 4
+        var t218 int32 = jp217 + 3
+        return t218
     default:
         panic("non-exhaustive match")
     }

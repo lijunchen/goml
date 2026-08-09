@@ -18,25 +18,21 @@ fn main() -> unit {
   let local/7 = double in
   let first/8 = apply_once(local/7, 4) in
   let composed/9 = compose(double, increment, first/8) in
-  let closure_apply/11 = closure_env_closure_apply_0 {} in
-  let closure_result/12 =
-    inherent#closure_env_closure_apply_0#closure_env_closure_apply_0#apply(
-      closure_apply/11,
-      composed/9
+  let closure_apply/11 =
+    pack_closure[inherent#closure_env_closure_apply_0#closure_env_closure_apply_0#apply](
+      closure_env_closure_apply_0 {}
     ) in
-  let global_invoker/15 = closure_env_global_invoker_1 {} in
-  let invoked_with_global/16 =
-    inherent#closure_env_global_invoker_1#closure_env_global_invoker_1#apply(
-      global_invoker/15,
-      double,
-      3
+  let closure_result/12 = closure_apply/11(composed/9) in
+  let global_invoker/15 =
+    pack_closure[inherent#closure_env_global_invoker_1#closure_env_global_invoker_1#apply](
+      closure_env_global_invoker_1 {}
     ) in
-  let composer_closure/18 = closure_env_composer_closure_2 {} in
-  let composed_by_closure/19 =
-    inherent#closure_env_composer_closure_2#closure_env_composer_closure_2#apply(
-      composer_closure/18,
-      5
+  let invoked_with_global/16 = global_invoker/15(double, 3) in
+  let composer_closure/18 =
+    pack_closure[inherent#closure_env_composer_closure_2#closure_env_composer_closure_2#apply](
+      closure_env_composer_closure_2 {}
     ) in
+  let composed_by_closure/19 = composer_closure/18(5) in
   let printer/20 = println__T_string in
   let mtmp172 = printer/20(inherent#int32#int32#to_string(composed/9)) in
   let mtmp173 = printer/20(inherent#int32#int32#to_string(closure_result/12)) in

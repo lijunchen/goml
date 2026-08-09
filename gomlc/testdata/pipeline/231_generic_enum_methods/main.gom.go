@@ -44,43 +44,17 @@ type Maybe__string_Some struct {
 func (_ Maybe__string_Some) isMaybe__string() {}
 
 func main0() struct{} {
-    var value__3 Maybe__int = Maybe__int_Some{
-        _0: 3,
-    }
     var t177 closure_env_main_0 = closure_env_main_0{}
-    var mtmp173 Maybe__string = _goml_m_inherent_i_Maybe_i_Maybe_l_T_r__i_map____T__int____U__string(value__3, func(p0 int) string {
+    var t178 func(int) string = func(p0 int) string {
         return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t177, p0)
-    })
-    switch mtmp173.(type) {
-    case Maybe__string_None:
-        var inline199 string = "none"
-        var inline200 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline199)
-        _goml_runtime_core_string_println(inline200)
-        return struct{}{}
-    case Maybe__string_Some:
-        var x174 string = mtmp173.(Maybe__string_Some)._0
-        var inline203 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x174)
-        _goml_runtime_core_string_println(inline203)
-        return struct{}{}
-    default:
-        panic("non-exhaustive match")
     }
-}
-
-func _goml_m_inherent_i_Maybe_i_Maybe_l_T_r__i_map____T__int____U__string(self__0 Maybe__int, map_fn__1 func(int) string) Maybe__string {
-    switch self__0.(type) {
-    case Maybe__int_None:
-        return Maybe__string_None{}
-    case Maybe__int_Some:
-        var x172 int = self__0.(Maybe__int_Some)._0
-        var t188 string = map_fn__1(x172)
-        var t189 Maybe__string = Maybe__string_Some{
-            _0: t188,
-        }
-        return t189
-    default:
-        panic("non-exhaustive match")
-    }
+    var commute_field215 string
+    var inline207 int = 3
+    var inline209 string = t178(inline207)
+    commute_field215 = inline209
+    var inline204 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(commute_field215)
+    _goml_runtime_core_string_println(inline204)
+    return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
@@ -88,8 +62,8 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) strin
 }
 
 func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env175 closure_env_main_0, item__4 int) string {
-    var inline207 string = _goml_runtime_core_int_to_string(item__4)
-    return inline207
+    var inline213 string = _goml_runtime_core_int_to_string(item__4)
+    return inline213
 }
 
 func main() {

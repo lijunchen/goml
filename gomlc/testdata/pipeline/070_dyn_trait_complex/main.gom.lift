@@ -81,12 +81,14 @@ fn show_dyn(x/23: dyn Display) -> string {
 }
 
 fn call_via_closure(x/24: dyn Display, tag/25: string) -> string {
-  let f/28 = closure_env_f_0 {} in
-  inherent#closure_env_f_0#closure_env_f_0#apply(f/28, x/24, tag/25)
+  let f/28 = pack_closure[inherent#closure_env_f_0#closure_env_f_0#apply](closure_env_f_0 {}) in
+  f/28(x/24, tag/25)
 }
 
 fn make_renderer(tag/29: string) -> (dyn Display) -> string {
-  closure_env_make_renderer_1 { tag_0: tag/29 }
+  pack_closure[inherent#closure_env_make_renderer_1#closure_env_make_renderer_1#apply](
+    closure_env_make_renderer_1 { tag_0: tag/29 }
+  )
 }
 
 fn bump_and_show(x/31: dyn Display, delta/32: int32) -> string {

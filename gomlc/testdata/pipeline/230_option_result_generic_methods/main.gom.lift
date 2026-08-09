@@ -1,14 +1,24 @@
 fn main() -> unit {
   let some/0 = Option__int::Some(3) in
-  let mapped/2 = inherent#Option#Option[T]#map__T_int__U_string(some/0, closure_env_main_0 {}) in
+  let mapped/2 =
+    inherent#Option#Option[T]#map__T_int__U_string(
+      some/0,
+      pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](closure_env_main_0 {})
+    ) in
   let _wild172 =
     println__T_string(inherent#Option#Option[T]#unwrap_or__T_string(mapped/2, "missing")) in
   let static_mapped/4 =
-    inherent#Option#Option[T]#map__T_int__U_string(some/0, closure_env_main_1 {}) in
+    inherent#Option#Option[T]#map__T_int__U_string(
+      some/0,
+      pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](closure_env_main_1 {})
+    ) in
   let _wild173 =
     println__T_string(inherent#Option#Option[T]#unwrap_or__T_string(static_mapped/4, "missing")) in
   let chained/6 =
-    inherent#Option#Option[T]#and_then__T_int__U_string(some/0, closure_env_main_2 {}) in
+    inherent#Option#Option[T]#and_then__T_int__U_string(
+      some/0,
+      pack_closure[inherent#closure_env_main_2#closure_env_main_2#apply](closure_env_main_2 {})
+    ) in
   let _wild174 =
     println__T_string(inherent#Option#Option[T]#unwrap_or__T_string(chained/6, "missing")) in
   let none/7 = Option__int::None in
@@ -17,29 +27,38 @@ fn main() -> unit {
     println__T_int(
       inherent#Result#Result[T,E]#unwrap_or_else__E_string__T_int(
         converted/8,
-        closure_env_main_3 {}
+        pack_closure[inherent#closure_env_main_3#closure_env_main_3#apply](closure_env_main_3 {})
       )
     ) in
   let ok/10 = Result__int__string::Ok(5) in
   let _wild176 =
     println__T_int(
       inherent#Result#Result[T,E]#unwrap_or__E_string__T_int(
-        inherent#Result#Result[T,E]#map__E_string__T_int__U_int(ok/10, closure_env_main_4 {}),
+        inherent#Result#Result[T,E]#map__E_string__T_int__U_int(
+          ok/10,
+          pack_closure[inherent#closure_env_main_4#closure_env_main_4#apply](closure_env_main_4 {})
+        ),
         0
       )
     ) in
   let error/12 = Result__int__string::Err("bad") in
   let mapped_error/14 =
-    inherent#Result#Result[T,E]#map_err__E_string__F_int__T_int(error/12, closure_env_main_5 {}) in
+    inherent#Result#Result[T,E]#map_err__E_string__F_int__T_int(
+      error/12,
+      pack_closure[inherent#closure_env_main_5#closure_env_main_5#apply](closure_env_main_5 {})
+    ) in
   let _wild177 =
     println__T_int(
       inherent#Result#Result[T,E]#unwrap_or_else__E_int__T_int(
         mapped_error/14,
-        closure_env_main_6 {}
+        pack_closure[inherent#closure_env_main_6#closure_env_main_6#apply](closure_env_main_6 {})
       )
     ) in
   let next/17 =
-    inherent#Result#Result[T,E]#and_then__E_string__T_int__U_string(ok/10, closure_env_main_7 {}) in
+    inherent#Result#Result[T,E]#and_then__E_string__T_int__U_string(
+      ok/10,
+      pack_closure[inherent#closure_env_main_7#closure_env_main_7#apply](closure_env_main_7 {})
+    ) in
   let _wild178 =
     println__T_string(
       inherent#Result#Result[T,E]#unwrap_or__E_string__T_string(next/17, "missing")

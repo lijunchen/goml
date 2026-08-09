@@ -91,8 +91,9 @@ fn pattern_cleanup(value/5: Option__int) -> int {
 }
 
 fn closure_cleanup() -> unit {
-  let run/9 = closure_env_run_0 {} in
-  let _wild206 = inherent#closure_env_run_0#closure_env_run_0#apply(run/9) in
+  let run/9 =
+    pack_closure[inherent#closure_env_run_0#closure_env_run_0#apply](closure_env_run_0 {}) in
+  let _wild206 = run/9() in
   let defer_result207 = println__T_string("closure:after") in
   let _defer208 = println__T_string("closure:outer") in
   defer_result207

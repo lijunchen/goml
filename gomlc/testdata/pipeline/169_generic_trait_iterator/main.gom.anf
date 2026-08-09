@@ -7,221 +7,247 @@ fn trait_impl#Convert#[string]@Token#convert(self/1: Token) -> string {
 }
 
 fn inherent#Counter#Counter#new(start/4: int32, end/5: int32) -> Counter {
-  join inline_cont419(t207: Ref[int32]) -> Counter {
+  join inline_cont432(t207: Ref[int32]) -> Counter {
     let t208 = Counter { current: t207, end: end/5 } in
     t208
   } in
-  let inline420 = @intrinsic(ref.new)(start/4) in
-  jump inline_cont419(inline420)
+  let inline433 = @intrinsic(ref.new)(start/4) in
+  jump inline_cont432(inline433)
 }
 
 fn trait_impl#Iterator#Counter#next(self/6: Counter) -> Option__int32 {
   let t211 = Counter.current(self/6) in
-  join inline_cont423(current/7: int32) -> Option__int32 {
+  join inline_cont436(current/7: int32) -> Option__int32 {
     let t214 = Counter.end(self/6) in
     let t215 = (current/7 < t214) in
     if t215 {
       let t216 = Counter.current(self/6) in
       let t217 = (current/7 + 1) in
-      join inline_cont421(_wild172: unit) -> Option__int32 {
+      join inline_cont434(_wild172: unit) -> Option__int32 {
         let t218 = Option__int32::Some(current/7) in
         t218
       } in
-      let inline422 = @intrinsic(ref.set)(t216, t217) in
-      jump inline_cont421(())
+      let inline435 = @intrinsic(ref.set)(t216, t217) in
+      jump inline_cont434(())
     } else {
       Tag_0
     }
   } in
-  let inline424 = @intrinsic(ref.get)(t211) in
-  jump inline_cont423(inline424)
+  let inline437 = @intrinsic(ref.get)(t211) in
+  jump inline_cont436(inline437)
 }
 
 fn main() -> unit {
-  join inline_cont477(t221: int32) -> unit {
-    let _wild173 = println__T_int32(t221) in
-    join inline_cont476(t223: string) -> unit {
-      let _wild174 = println__T_string(t223) in
-      let t224 = Token {} in
-      join inline_cont474(converted/8: int32) -> unit {
-        join inline_cont471(_wild175: unit) -> unit {
-          join inline_cont470(t226: string) -> unit {
-            join inline_cont467(_wild176: unit) -> unit {
-              join inline_cont466(t228: string) -> unit {
-                join inline_cont463(_wild177: unit) -> unit {
-                  join inline_cont462(t230: string) -> unit {
-                    join inline_cont459(_wild178: unit) -> unit {
-                      join inline_cont454(t231: Counter) -> unit {
-                        let t232 = closure_env_main_0 {} in
-                        let mapped/10 = std::iter::map__A_int32__B_int32__I_Counter(t231, t232) in
-                        let t233 = closure_env_main_1 {} in
-                        let filtered/12 =
-                          std::iter::filter__I_FnIterator[int32]__T_int32(mapped/10, t233) in
-                        join inline_cont446(limited/13: FnIterator__int32) -> unit {
-                          join inline_cont445(for_iter179: FnIterator__int32) -> unit {
-                            join exit234() -> unit {
-                              join inline_cont441(t235: FnIterator__int) -> unit {
-                                let t236 = closure_env_main_2 {} in
-                                let sum/17 =
-                                  std::iter::fold__A_int__I_FnIterator[int]__T_int(t235, 0, t236) in
-                                join inline_cont438(_wild184: unit) -> unit {
-                                  join inline_cont434(t237: FnIterator__int) -> unit {
-                                    let t238 = closure_env_main_3 {} in
-                                    let t239 =
-                                      std::iter::map__A_int__B_string__I_FnIterator[int](
-                                        t237,
-                                        t238
-                                      ) in
-                                    let texts/19 =
-                                      std::iter::collect__I_FnIterator[string]__T_string(t239) in
-                                    let for_limit186 = @intrinsic(vec.len)(texts/19) in
-                                    let for_index187 = 0 in
-                                    join exit240() -> unit {
-                                      ()
-                                    } in
-                                    joinrec {
-                                      join loop241() -> unit {
-                                        let t242 = (for_index187 < for_limit186) in
-                                        if t242 {
-                                          let for_item188 =
-                                            @intrinsic(vec.get)(texts/19, for_index187) in
-                                          let t243 = (for_index187 + 1) in
-                                          let _wild189 = for_index187 = t243 in
-                                          let inline432 =
-                                            trait_impl#ToString#string#to_string(for_item188) in
-                                          let inline433 =
-                                            @runtime(core.string_println)(inline432) in
-                                          jump loop241()
-                                        } else {
-                                          jump exit240()
-                                        }
-                                      } in
-                                    } in
-                                    jump loop241()
-                                  } in
-                                  let inline435 = 1 in
-                                  let inline436 = 4 in
-                                  let inline437 = __goml_builtin_range(inline435, inline436) in
-                                  jump inline_cont434(inline437)
-                                } in
-                                let inline439 = trait_impl#ToString#int#to_string(sum/17) in
-                                let inline440 = @runtime(core.string_println)(inline439) in
-                                jump inline_cont438(())
+  let t220 = Token {} in
+  let t221 = trait_impl#Convert#[int32]@Token#convert(t220) in
+  let _wild173 = println__T_int32(t221) in
+  let t222 = Token {} in
+  let t223 = trait_impl#Convert#[string]@Token#convert(t222) in
+  let _wild174 = println__T_string(t223) in
+  let t224 = Token {} in
+  let converted/8 = convert_to__T_int32__V_Token(t224) in
+  let _wild175 = println__T_int32(converted/8) in
+  join inline_cont490(t226: string) -> unit {
+    let _wild176 = println__T_string(t226) in
+    join inline_cont489(t228: string) -> unit {
+      let _wild177 = println__T_string(t228) in
+      join inline_cont488(t230: string) -> unit {
+        join inline_cont485(_wild178: unit) -> unit {
+          join inline_cont480(t232: Counter) -> unit {
+            let t233 = closure_env_main_0 {} in
+            let t234 = pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](t233) in
+            join inline_cont476(mapped/10: FnIterator__int32) -> unit {
+              let t235 = closure_env_main_1 {} in
+              let t236 = pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](t235) in
+              join inline_cont472(filtered/12: FnIterator__int32) -> unit {
+                join inline_cont463(limited/13: FnIterator__int32) -> unit {
+                  join inline_cont462(for_iter179: FnIterator__int32) -> unit {
+                    join exit237() -> unit {
+                      join inline_cont458(t239: FnIterator__int) -> unit {
+                        let t240 = closure_env_main_2 {} in
+                        let t241 =
+                          pack_closure[inherent#closure_env_main_2#closure_env_main_2#apply](
+                            t240
+                          ) in
+                        let sum/17 =
+                          std::iter::fold__A_int__I_FnIterator[int]__T_int(t239, 0, t241) in
+                        join inline_cont455(_wild184: unit) -> unit {
+                          join inline_cont451(t244: FnIterator__int) -> unit {
+                            let t245 = closure_env_main_3 {} in
+                            let t246 =
+                              pack_closure[inherent#closure_env_main_3#closure_env_main_3#apply](
+                                t245
+                              ) in
+                            join inline_cont447(t247: FnIterator__string) -> unit {
+                              let texts/19 =
+                                std::iter::collect__I_FnIterator[string]__T_string(t247) in
+                              let for_limit186 = @intrinsic(vec.len)(texts/19) in
+                              let for_index187 = 0 in
+                              join exit248() -> unit {
+                                ()
                               } in
-                              let inline442 = 1 in
-                              let inline443 = 5 in
-                              let inline444 = __goml_builtin_range(inline442, inline443) in
-                              jump inline_cont441(inline444)
-                            } in
-                            joinrec {
-                              join loop244() -> unit {
-                                join inline_cont428(for_next180: Option__int32) -> unit {
-                                  match for_next180 {
-                                    Tag_0 => {
-                                      jump exit234()
-                                    },
-                                    Tag_1 => {
-                                      let x181 = Option__int32::Some._0(for_next180) in
-                                      let inline426 = trait_impl#ToString#int32#to_string(x181) in
-                                      let inline427 = @runtime(core.string_println)(inline426) in
-                                      jump loop244()
-                                    },
+                              joinrec {
+                                join loop249() -> unit {
+                                  let t250 = (for_index187 < for_limit186) in
+                                  if t250 {
+                                    let for_item188 = @intrinsic(vec.get)(texts/19, for_index187) in
+                                    let t251 = (for_index187 + 1) in
+                                    let _wild189 = for_index187 = t251 in
+                                    let inline445 =
+                                      trait_impl#ToString#string#to_string(for_item188) in
+                                    let inline446 = @runtime(core.string_println)(inline445) in
+                                    jump loop249()
+                                  } else {
+                                    jump exit248()
                                   }
                                 } in
-                                let inline429 = FnIterator__int32.next_fn(for_iter179) in
-                                let inline430 = inline429() in
-                                jump inline_cont428(inline430)
                               } in
+                              jump loop249()
                             } in
-                            jump loop244()
+                            let inline448 =
+                              closure_env_std_iter_map_A_int_B_string_I_FnIterator_int_7 {
+                                iterator_0: t244,
+                                map_fn_1: t246
+                              } in
+                            let inline449 =
+                              pack_closure[inherent#closure_env_std_iter_map_A_int_B_string_I_FnIterator_int_7#closure_env_std_iter_map_A_int_B_string_I_FnIterator_int_7#apply](
+                                inline448
+                              ) in
+                            let inline450 =
+                              inherent#FnIterator#FnIterator[T]#from_fn__T_string(inline449) in
+                            jump inline_cont447(inline450)
                           } in
-                          jump inline_cont445(limited/13)
+                          let inline452 = 1 in
+                          let inline453 = 4 in
+                          let inline454 = __goml_builtin_range(inline452, inline453) in
+                          jump inline_cont451(inline454)
                         } in
-                        let inline447 = 3 in
-                        let inline448 = (inline447 > 0) in
-                        join inline_join449(inline450: int) -> unit {
-                          let inline451 = inherent#Ref#Ref[T]#new__T_int(inline450) in
-                          let inline452 =
-                            closure_env_std_iter_take_I_FnIterator_int32_6 {
-                              remaining_0: inline451,
-                              iterator_1: filtered/12
-                            } in
-                          let inline453 =
-                            inherent#FnIterator#FnIterator[T]#from_fn__T_int32(inline452) in
-                          jump inline_cont446(inline453)
-                        } in
-                        if inline448 {
-                          jump inline_join449(inline447)
-                        } else {
-                          jump inline_join449(0)
-                        }
+                        let inline456 = trait_impl#ToString#int#to_string(sum/17) in
+                        let inline457 = @runtime(core.string_println)(inline456) in
+                        jump inline_cont455(())
                       } in
-                      let inline455 = 0 in
-                      let inline456 = 8 in
-                      let inline457 = inherent#Ref#Ref[T]#new__T_int32(inline455) in
-                      let inline458 = Counter { current: inline457, end: inline456 } in
-                      jump inline_cont454(inline458)
+                      let inline459 = 1 in
+                      let inline460 = 5 in
+                      let inline461 = __goml_builtin_range(inline459, inline460) in
+                      jump inline_cont458(inline461)
                     } in
-                    let inline460 = trait_impl#ToString#string#to_string(t230) in
-                    let inline461 = @runtime(core.string_println)(inline460) in
-                    jump inline_cont459(())
+                    joinrec {
+                      join loop252() -> unit {
+                        join inline_cont441(for_next180: Option__int32) -> unit {
+                          match for_next180 {
+                            Tag_0 => {
+                              jump exit237()
+                            },
+                            Tag_1 => {
+                              let x181 = Option__int32::Some._0(for_next180) in
+                              let inline439 = trait_impl#ToString#int32#to_string(x181) in
+                              let inline440 = @runtime(core.string_println)(inline439) in
+                              jump loop252()
+                            },
+                          }
+                        } in
+                        let inline442 = FnIterator__int32.next_fn(for_iter179) in
+                        let inline443 = inline442() in
+                        jump inline_cont441(inline443)
+                      } in
+                    } in
+                    jump loop252()
                   } in
-                  jump inline_cont462("marked")
+                  jump inline_cont462(limited/13)
                 } in
-                let inline464 = trait_impl#ToString#string#to_string(t228) in
-                let inline465 = @runtime(core.string_println)(inline464) in
-                jump inline_cont463(())
+                let inline464 = 3 in
+                let inline465 = (inline464 > 0) in
+                join inline_join466(inline467: int) -> unit {
+                  let inline468 = inherent#Ref#Ref[T]#new__T_int(inline467) in
+                  let inline469 =
+                    closure_env_std_iter_take_I_FnIterator_int32_6 {
+                      remaining_0: inline468,
+                      iterator_1: filtered/12
+                    } in
+                  let inline470 =
+                    pack_closure[inherent#closure_env_std_iter_take_I_FnIterator_int32_6#closure_env_std_iter_take_I_FnIterator_int32_6#apply](
+                      inline469
+                    ) in
+                  let inline471 = inherent#FnIterator#FnIterator[T]#from_fn__T_int32(inline470) in
+                  jump inline_cont463(inline471)
+                } in
+                if inline465 {
+                  jump inline_join466(inline464)
+                } else {
+                  jump inline_join466(0)
+                }
               } in
-              jump inline_cont466("marked")
+              let inline473 =
+                closure_env_std_iter_filter_I_FnIterator_int32_T_int32_5 {
+                  iterator_0: mapped/10,
+                  predicate_1: t236
+                } in
+              let inline474 =
+                pack_closure[inherent#closure_env_std_iter_filter_I_FnIterator_int32_T_int32_5#closure_env_std_iter_filter_I_FnIterator_int32_T_int32_5#apply](
+                  inline473
+                ) in
+              let inline475 = inherent#FnIterator#FnIterator[T]#from_fn__T_int32(inline474) in
+              jump inline_cont472(inline475)
             } in
-            let inline468 = trait_impl#ToString#string#to_string(t226) in
-            let inline469 = @runtime(core.string_println)(inline468) in
-            jump inline_cont467(())
+            let inline477 =
+              closure_env_std_iter_map_A_int32_B_int32_I_Counter_4 {
+                iterator_0: t232,
+                map_fn_1: t234
+              } in
+            let inline478 =
+              pack_closure[inherent#closure_env_std_iter_map_A_int32_B_int32_I_Counter_4#closure_env_std_iter_map_A_int32_B_int32_I_Counter_4#apply](
+                inline477
+              ) in
+            let inline479 = inherent#FnIterator#FnIterator[T]#from_fn__T_int32(inline478) in
+            jump inline_cont476(inline479)
           } in
-          jump inline_cont470("marked")
+          let inline481 = 0 in
+          let inline482 = 8 in
+          let inline483 = inherent#Ref#Ref[T]#new__T_int32(inline481) in
+          let inline484 = Counter { current: inline483, end: inline482 } in
+          jump inline_cont480(inline484)
         } in
-        let inline472 = trait_impl#ToString#int32#to_string(converted/8) in
-        let inline473 = @runtime(core.string_println)(inline472) in
-        jump inline_cont471(())
+        let inline486 = trait_impl#ToString#string#to_string(t230) in
+        let inline487 = @runtime(core.string_println)(inline486) in
+        jump inline_cont485(())
       } in
-      let inline475 = trait_impl#Convert#[int32]@Token#convert(t224) in
-      jump inline_cont474(inline475)
+      jump inline_cont488("marked")
     } in
-    jump inline_cont476("seven")
+    jump inline_cont489("marked")
   } in
-  jump inline_cont477(7)
+  jump inline_cont490("marked")
 }
 
 fn inherent#Ref#Ref[T]#new__T_int32(value/257: int32) -> Ref[int32] {
-  let t248 = @intrinsic(ref.new)(value/257) in
-  t248
+  let t256 = @intrinsic(ref.new)(value/257) in
+  t256
 }
 
 fn inherent#Ref#Ref[T]#get__T_int32(self/258: Ref[int32]) -> int32 {
-  let t251 = @intrinsic(ref.get)(self/258) in
-  t251
+  let t259 = @intrinsic(ref.get)(self/258) in
+  t259
 }
 
 fn inherent#Ref#Ref[T]#set__T_int32(self/259: Ref[int32], value/260: int32) -> unit {
-  let t253 = @intrinsic(ref.set)(self/259, value/260) in
+  let t261 = @intrinsic(ref.set)(self/259, value/260) in
   ()
 }
 
 fn println__T_int32(value/31: int32) -> unit {
-  join inline_cont478(t255: string) -> unit {
-    let t256 = @runtime(core.string_println)(t255) in
+  join inline_cont491(t263: string) -> unit {
+    let t264 = @runtime(core.string_println)(t263) in
     ()
   } in
-  let inline479 = @runtime(core.int32_to_string)(value/31) in
-  jump inline_cont478(inline479)
+  let inline492 = @runtime(core.int32_to_string)(value/31) in
+  jump inline_cont491(inline492)
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont480(t258: string) -> unit {
-    let t259 = @runtime(core.string_println)(t258) in
+  join inline_cont493(t266: string) -> unit {
+    let t267 = @runtime(core.string_println)(t266) in
     ()
   } in
-  jump inline_cont480(value/31)
+  jump inline_cont493(value/31)
 }
 
 fn convert_to__T_int32__V_Token(value/2: Token) -> int32 {
@@ -244,50 +270,62 @@ fn std::iter::map__A_int32__B_int32__I_Counter(
   iterator/4: Counter,
   map_fn/5: (int32) -> int32
 ) -> FnIterator__int32 {
-  let t271 =
+  let t279 =
     closure_env_std_iter_map_A_int32_B_int32_I_Counter_4 {
       iterator_0: iterator/4,
       map_fn_1: map_fn/5
     } in
-  let t272 = inherent#FnIterator#FnIterator[T]#from_fn__T_int32(t271) in
-  t272
+  let t280 =
+    pack_closure[inherent#closure_env_std_iter_map_A_int32_B_int32_I_Counter_4#closure_env_std_iter_map_A_int32_B_int32_I_Counter_4#apply](
+      t279
+    ) in
+  let inline496 = FnIterator__int32 { next_fn: t280 } in
+  inline496
 }
 
 fn std::iter::filter__I_FnIterator[int32]__T_int32(
   iterator/7: FnIterator__int32,
   predicate/8: (int32) -> bool
 ) -> FnIterator__int32 {
-  let t275 =
+  let t284 =
     closure_env_std_iter_filter_I_FnIterator_int32_T_int32_5 {
       iterator_0: iterator/7,
       predicate_1: predicate/8
     } in
-  let t276 = inherent#FnIterator#FnIterator[T]#from_fn__T_int32(t275) in
-  t276
+  let t285 =
+    pack_closure[inherent#closure_env_std_iter_filter_I_FnIterator_int32_T_int32_5#closure_env_std_iter_filter_I_FnIterator_int32_T_int32_5#apply](
+      t284
+    ) in
+  let inline498 = FnIterator__int32 { next_fn: t285 } in
+  inline498
 }
 
 fn std::iter::take__I_FnIterator[int32](
   iterator/14: FnIterator__int32,
   count/15: int
 ) -> FnIterator__int32 {
-  let t283 = (count/15 > 0) in
-  join k279(jp280: int) -> FnIterator__int32 {
-    join inline_cont482(remaining/16: Ref[int]) -> FnIterator__int32 {
-      let t281 =
+  let t294 = (count/15 > 0) in
+  join k289(jp290: int) -> FnIterator__int32 {
+    join inline_cont501(remaining/16: Ref[int]) -> FnIterator__int32 {
+      let t291 =
         closure_env_std_iter_take_I_FnIterator_int32_6 {
           remaining_0: remaining/16,
           iterator_1: iterator/14
         } in
-      let t282 = inherent#FnIterator#FnIterator[T]#from_fn__T_int32(t281) in
-      t282
+      let t292 =
+        pack_closure[inherent#closure_env_std_iter_take_I_FnIterator_int32_6#closure_env_std_iter_take_I_FnIterator_int32_6#apply](
+          t291
+        ) in
+      let inline500 = FnIterator__int32 { next_fn: t292 } in
+      inline500
     } in
-    let inline483 = @intrinsic(ref.new)(jp280) in
-    jump inline_cont482(inline483)
+    let inline502 = @intrinsic(ref.new)(jp290) in
+    jump inline_cont501(inline502)
   } in
-  if t283 {
-    jump k279(count/15)
+  if t294 {
+    jump k289(count/15)
   } else {
-    jump k279(0)
+    jump k289(0)
   }
 }
 
@@ -298,9 +336,9 @@ fn trait_impl#IntoIterator#FnIterator__int32#into_iter(
 }
 
 fn trait_impl#Iterator#FnIterator__int32#next(self/173: FnIterator__int32) -> Option__int32 {
-  let t288 = FnIterator__int32.next_fn(self/173) in
-  let t289 = t288() in
-  t289
+  let t299 = FnIterator__int32.next_fn(self/173) in
+  let t300 = t299() in
+  t300
 }
 
 fn std::iter::fold__A_int__I_FnIterator[int]__T_int(
@@ -309,101 +347,109 @@ fn std::iter::fold__A_int__I_FnIterator[int]__T_int(
   combine/50: (int, int) -> int
 ) -> int {
   let accumulator/51 = initial/49 in
-  join exit292() -> int {
+  join exit303() -> int {
     accumulator/51
   } in
   joinrec {
-    join loop_expr293() -> int {
-      join inline_cont484(mtmp43: Option__int) -> int {
+    join loop_expr304() -> int {
+      join inline_cont503(mtmp43: Option__int) -> int {
         match mtmp43 {
           Tag_0 => {
-            jump exit292()
+            jump exit303()
           },
           Tag_1 => {
             let x44 = Option__int::Some._0(mtmp43) in
-            let t295 = combine/50(accumulator/51, x44) in
-            let _wild45 = accumulator/51 = t295 in
-            jump loop_expr293()
+            let t306 = combine/50(accumulator/51, x44) in
+            let _wild45 = accumulator/51 = t306 in
+            jump loop_expr304()
           },
         }
       } in
-      let inline485 = FnIterator__int.next_fn(iterator/48) in
-      let inline486 = inline485() in
-      jump inline_cont484(inline486)
+      let inline504 = FnIterator__int.next_fn(iterator/48) in
+      let inline505 = inline504() in
+      jump inline_cont503(inline505)
     } in
   } in
-  jump loop_expr293()
+  jump loop_expr304()
 }
 
 fn range(start/272: int, end/273: int) -> FnIterator__int {
-  let inline488 = @intrinsic(ref.new)(start/272) in
-  let inline489 = closure_env_goml_builtin_range_8 { current_0: inline488, end_1: end/273 } in
-  let inline490 = inherent#FnIterator#FnIterator[T]#from_fn__T_int(inline489) in
-  inline490
+  let inline507 = @intrinsic(ref.new)(start/272) in
+  let inline508 = closure_env_goml_builtin_range_8 { current_0: inline507, end_1: end/273 } in
+  let inline509 =
+    pack_closure[inherent#closure_env_goml_builtin_range_8#closure_env_goml_builtin_range_8#apply](
+      inline508
+    ) in
+  let inline510 = inherent#FnIterator#FnIterator[T]#from_fn__T_int(inline509) in
+  inline510
 }
 
 fn println__T_int(value/31: int) -> unit {
-  join inline_cont491(t300: string) -> unit {
-    let t301 = @runtime(core.string_println)(t300) in
+  join inline_cont511(t311: string) -> unit {
+    let t312 = @runtime(core.string_println)(t311) in
     ()
   } in
-  let inline492 = @runtime(core.int_to_string)(value/31) in
-  jump inline_cont491(inline492)
+  let inline512 = @runtime(core.int_to_string)(value/31) in
+  jump inline_cont511(inline512)
 }
 
 fn std::iter::collect__I_FnIterator[string]__T_string(iterator/53: FnIterator__string) -> Vec[
   string
 ] {
-  join inline_cont498(values/54: Vec[string]) -> Vec[string] {
-    join exit304() -> Vec[string] {
+  join inline_cont518(values/54: Vec[string]) -> Vec[string] {
+    join exit315() -> Vec[string] {
       values/54
     } in
     joinrec {
-      join loop_expr305() -> Vec[string] {
-        join inline_cont495(mtmp47: Option__string) -> Vec[string] {
+      join loop_expr316() -> Vec[string] {
+        join inline_cont515(mtmp47: Option__string) -> Vec[string] {
           match mtmp47 {
             Tag_0 => {
-              jump exit304()
+              jump exit315()
             },
             Tag_1 => {
               let x48 = Option__string::Some._0(mtmp47) in
-              let inline494 = @intrinsic(vec.push)(values/54, x48) in
-              jump loop_expr305()
+              let inline514 = @intrinsic(vec.push)(values/54, x48) in
+              jump loop_expr316()
             },
           }
         } in
-        let inline496 = FnIterator__string.next_fn(iterator/53) in
-        let inline497 = inline496() in
-        jump inline_cont495(inline497)
+        let inline516 = FnIterator__string.next_fn(iterator/53) in
+        let inline517 = inline516() in
+        jump inline_cont515(inline517)
       } in
     } in
-    jump loop_expr305()
+    jump loop_expr316()
   } in
-  let inline499 = @intrinsic(vec.new)() in
-  jump inline_cont498(inline499)
+  let inline519 = @intrinsic(vec.new)() in
+  jump inline_cont518(inline519)
 }
 
 fn std::iter::map__A_int__B_string__I_FnIterator[int](
   iterator/4: FnIterator__int,
   map_fn/5: (int) -> string
 ) -> FnIterator__string {
-  let t310 =
+  let t321 =
     closure_env_std_iter_map_A_int_B_string_I_FnIterator_int_7 {
       iterator_0: iterator/4,
       map_fn_1: map_fn/5
     } in
-  let t311 = inherent#FnIterator#FnIterator[T]#from_fn__T_string(t310) in
-  t311
+  let t322 =
+    pack_closure[inherent#closure_env_std_iter_map_A_int_B_string_I_FnIterator_int_7#closure_env_std_iter_map_A_int_B_string_I_FnIterator_int_7#apply](
+      t321
+    ) in
+  let inline521 = FnIterator__string { next_fn: t322 } in
+  inline521
 }
 
 fn inherent#int#int#to_string(self/34: int) -> string {
-  let t314 = @runtime(core.int_to_string)(self/34) in
-  t314
+  let t326 = @runtime(core.int_to_string)(self/34) in
+  t326
 }
 
 fn trait_impl#ToString#int32#to_string(self/72: int32) -> string {
-  let t317 = @runtime(core.int32_to_string)(self/72) in
-  t317
+  let t329 = @runtime(core.int32_to_string)(self/72) in
+  t329
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {
@@ -413,107 +459,111 @@ fn trait_impl#ToString#string#to_string(self/67: string) -> string {
 fn inherent#FnIterator#FnIterator[T]#from_fn__T_int32(
   next_fn/172: () -> Option__int32
 ) -> FnIterator__int32 {
-  let t322 = FnIterator__int32 { next_fn: next_fn/172 } in
-  t322
+  let t334 = FnIterator__int32 { next_fn: next_fn/172 } in
+  t334
 }
 
 fn inherent#Ref#Ref[T]#new__T_int(value/257: int) -> Ref[int] {
-  let t325 = @intrinsic(ref.new)(value/257) in
-  t325
+  let t337 = @intrinsic(ref.new)(value/257) in
+  t337
 }
 
 fn inherent#Ref#Ref[T]#get__T_int(self/258: Ref[int]) -> int {
-  let t328 = @intrinsic(ref.get)(self/258) in
-  t328
+  let t340 = @intrinsic(ref.get)(self/258) in
+  t340
 }
 
 fn inherent#Ref#Ref[T]#set__T_int(self/259: Ref[int], value/260: int) -> unit {
-  let t330 = @intrinsic(ref.set)(self/259, value/260) in
+  let t342 = @intrinsic(ref.set)(self/259, value/260) in
   ()
 }
 
 fn trait_impl#Iterator#FnIterator__int#next(self/173: FnIterator__int) -> Option__int {
-  let t333 = FnIterator__int.next_fn(self/173) in
-  let t334 = t333() in
-  t334
+  let t345 = FnIterator__int.next_fn(self/173) in
+  let t346 = t345() in
+  t346
 }
 
 fn __goml_builtin_range(start/268: int, end/269: int) -> FnIterator__int {
   let current/270 = @intrinsic(ref.new)(start/268) in
-  let t337 = closure_env_goml_builtin_range_8 { current_0: current/270, end_1: end/269 } in
-  let t338 = inherent#FnIterator#FnIterator[T]#from_fn__T_int(t337) in
-  t338
+  let t349 = closure_env_goml_builtin_range_8 { current_0: current/270, end_1: end/269 } in
+  let t350 =
+    pack_closure[inherent#closure_env_goml_builtin_range_8#closure_env_goml_builtin_range_8#apply](
+      t349
+    ) in
+  let inline523 = FnIterator__int { next_fn: t350 } in
+  inline523
 }
 
 fn trait_impl#ToString#int#to_string(self/69: int) -> string {
-  let t341 = @runtime(core.int_to_string)(self/69) in
-  t341
+  let t354 = @runtime(core.int_to_string)(self/69) in
+  t354
 }
 
 fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
-  let t344 = @intrinsic(vec.new)() in
-  t344
+  let t357 = @intrinsic(vec.new)() in
+  t357
 }
 
 fn trait_impl#Iterator#FnIterator__string#next(self/173: FnIterator__string) -> Option__string {
-  let t347 = FnIterator__string.next_fn(self/173) in
-  let t348 = t347() in
-  t348
+  let t360 = FnIterator__string.next_fn(self/173) in
+  let t361 = t360() in
+  t361
 }
 
 fn inherent#Vec#Vec[T]#push__T_string(self/176: Vec[string], elem/177: string) -> unit {
-  let t350 = @intrinsic(vec.push)(self/176, elem/177) in
+  let t363 = @intrinsic(vec.push)(self/176, elem/177) in
   ()
 }
 
 fn inherent#FnIterator#FnIterator[T]#from_fn__T_string(
   next_fn/172: () -> Option__string
 ) -> FnIterator__string {
-  let t353 = FnIterator__string { next_fn: next_fn/172 } in
-  t353
+  let t366 = FnIterator__string { next_fn: next_fn/172 } in
+  t366
 }
 
 fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(
   next_fn/172: () -> Option__int
 ) -> FnIterator__int {
-  let t356 = FnIterator__int { next_fn: next_fn/172 } in
-  t356
+  let t369 = FnIterator__int { next_fn: next_fn/172 } in
+  t369
 }
 
 fn trait_impl#PartialEq#int32#eq(self/109: int32, other/110: int32) -> bool {
-  let t359 = (self/109 == other/110) in
-  t359
+  let t372 = (self/109 == other/110) in
+  t372
 }
 
 fn trait_impl#Hash#int32#hash(self/132: int32) -> uint64 {
-  let t362 = @runtime(core.int32_hash)(self/132) in
-  t362
+  let t375 = @runtime(core.int32_hash)(self/132) in
+  t375
 }
 
 fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  let t365 = (self/103 == other/104) in
-  t365
+  let t378 = (self/103 == other/104) in
+  t378
 }
 
 fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
-  let t368 = @runtime(core.int_hash)(self/129) in
-  t368
+  let t381 = @runtime(core.int_hash)(self/129) in
+  t381
 }
 
 fn inherent#closure_env_main_0#closure_env_main_0#apply(
   env192: closure_env_main_0,
   value/9: int32
 ) -> int32 {
-  let t371 = (value/9 * 2) in
-  t371
+  let t384 = (value/9 * 2) in
+  t384
 }
 
 fn inherent#closure_env_main_1#closure_env_main_1#apply(
   env193: closure_env_main_1,
   value/11: int32
 ) -> bool {
-  let t374 = (value/11 > 4) in
-  t374
+  let t387 = (value/11 > 4) in
+  t387
 }
 
 fn inherent#closure_env_main_2#closure_env_main_2#apply(
@@ -521,20 +571,20 @@ fn inherent#closure_env_main_2#closure_env_main_2#apply(
   total/15: int,
   value/16: int
 ) -> int {
-  let t377 = (total/15 + value/16) in
-  t377
+  let t390 = (total/15 + value/16) in
+  t390
 }
 
 fn inherent#closure_env_main_3#closure_env_main_3#apply(
   env195: closure_env_main_3,
   value/18: int
 ) -> string {
-  join inline_cont500(t380: string) -> string {
-    let t381 = ("v" + t380) in
-    t381
+  join inline_cont524(t393: string) -> string {
+    let t394 = ("v" + t393) in
+    t394
   } in
-  let inline501 = @runtime(core.int_to_string)(value/18) in
-  jump inline_cont500(inline501)
+  let inline525 = @runtime(core.int_to_string)(value/18) in
+  jump inline_cont524(inline525)
 }
 
 fn inherent#closure_env_std_iter_map_A_int32_B_int32_I_Counter_4#closure_env_std_iter_map_A_int32_B_int32_I_Counter_4#apply(
@@ -542,20 +592,20 @@ fn inherent#closure_env_std_iter_map_A_int32_B_int32_I_Counter_4#closure_env_std
 ) -> Option__int32 {
   let iterator/4 = closure_env_std_iter_map_A_int32_B_int32_I_Counter_4.iterator_0(env196) in
   let map_fn/5 = closure_env_std_iter_map_A_int32_B_int32_I_Counter_4.map_fn_1(env196) in
-  join commute_arm537(commute_field536: int32) -> Option__int32 {
-    let t386 = map_fn/5(commute_field536) in
-    let t387 = Option__int32::Some(t386) in
-    t387
+  join commute_arm561(commute_field560: int32) -> Option__int32 {
+    let t399 = map_fn/5(commute_field560) in
+    let t400 = Option__int32::Some(t399) in
+    t400
   } in
-  let inline503 = Counter.current(iterator/4) in
-  let inline504 = inherent#Ref#Ref[T]#get__T_int32(inline503) in
-  let inline505 = Counter.end(iterator/4) in
-  let inline506 = (inline504 < inline505) in
-  if inline506 {
-    let inline507 = Counter.current(iterator/4) in
-    let inline508 = (inline504 + 1) in
-    let inline509 = inherent#Ref#Ref[T]#set__T_int32(inline507, inline508) in
-    jump commute_arm537(inline504)
+  let inline527 = Counter.current(iterator/4) in
+  let inline528 = inherent#Ref#Ref[T]#get__T_int32(inline527) in
+  let inline529 = Counter.end(iterator/4) in
+  let inline530 = (inline528 < inline529) in
+  if inline530 {
+    let inline531 = Counter.current(iterator/4) in
+    let inline532 = (inline528 + 1) in
+    let inline533 = inherent#Ref#Ref[T]#set__T_int32(inline531, inline532) in
+    jump commute_arm561(inline528)
   } else {
     Tag_0
   }
@@ -567,30 +617,30 @@ fn inherent#closure_env_std_iter_filter_I_FnIterator_int32_T_int32_5#closure_env
   let iterator/7 = closure_env_std_iter_filter_I_FnIterator_int32_T_int32_5.iterator_0(env197) in
   let predicate/8 = closure_env_std_iter_filter_I_FnIterator_int32_T_int32_5.predicate_1(env197) in
   joinrec {
-    join loop_expr392() -> Option__int32 {
-      join inline_cont511(mtmp3: Option__int32) -> Option__int32 {
+    join loop_expr405() -> Option__int32 {
+      join inline_cont535(mtmp3: Option__int32) -> Option__int32 {
         match mtmp3 {
           Tag_0 => {
             Tag_0
           },
           Tag_1 => {
             let x4 = Option__int32::Some._0(mtmp3) in
-            let t395 = predicate/8(x4) in
-            if t395 {
-              let t396 = Option__int32::Some(x4) in
-              t396
+            let t408 = predicate/8(x4) in
+            if t408 {
+              let t409 = Option__int32::Some(x4) in
+              t409
             } else {
-              jump loop_expr392()
+              jump loop_expr405()
             }
           },
         }
       } in
-      let inline512 = FnIterator__int32.next_fn(iterator/7) in
-      let inline513 = inline512() in
-      jump inline_cont511(inline513)
+      let inline536 = FnIterator__int32.next_fn(iterator/7) in
+      let inline537 = inline536() in
+      jump inline_cont535(inline537)
     } in
   } in
-  jump loop_expr392()
+  jump loop_expr405()
 }
 
 fn inherent#closure_env_std_iter_take_I_FnIterator_int32_6#closure_env_std_iter_take_I_FnIterator_int32_6#apply(
@@ -598,27 +648,27 @@ fn inherent#closure_env_std_iter_take_I_FnIterator_int32_6#closure_env_std_iter_
 ) -> Option__int32 {
   let remaining/16 = closure_env_std_iter_take_I_FnIterator_int32_6.remaining_0(env198) in
   let iterator/14 = closure_env_std_iter_take_I_FnIterator_int32_6.iterator_1(env198) in
-  join inline_cont521(t401: int) -> Option__int32 {
-    let t402 = (t401 == 0) in
-    if t402 {
+  join inline_cont545(t414: int) -> Option__int32 {
+    let t415 = (t414 == 0) in
+    if t415 {
       Tag_0
     } else {
-      join inline_cont519(t403: int) -> Option__int32 {
-        let t404 = (t403 - 1) in
-        join inline_cont517(_wild11: unit) -> Option__int32 {
-          let inline515 = FnIterator__int32.next_fn(iterator/14) in
-          let inline516 = inline515() in
-          inline516
+      join inline_cont543(t416: int) -> Option__int32 {
+        let t417 = (t416 - 1) in
+        join inline_cont541(_wild11: unit) -> Option__int32 {
+          let inline539 = FnIterator__int32.next_fn(iterator/14) in
+          let inline540 = inline539() in
+          inline540
         } in
-        let inline518 = @intrinsic(ref.set)(remaining/16, t404) in
-        jump inline_cont517(())
+        let inline542 = @intrinsic(ref.set)(remaining/16, t417) in
+        jump inline_cont541(())
       } in
-      let inline520 = @intrinsic(ref.get)(remaining/16) in
-      jump inline_cont519(inline520)
+      let inline544 = @intrinsic(ref.get)(remaining/16) in
+      jump inline_cont543(inline544)
     }
   } in
-  let inline522 = @intrinsic(ref.get)(remaining/16) in
-  jump inline_cont521(inline522)
+  let inline546 = @intrinsic(ref.get)(remaining/16) in
+  jump inline_cont545(inline546)
 }
 
 fn inherent#closure_env_std_iter_map_A_int_B_string_I_FnIterator_int_7#closure_env_std_iter_map_A_int_B_string_I_FnIterator_int_7#apply(
@@ -626,22 +676,22 @@ fn inherent#closure_env_std_iter_map_A_int_B_string_I_FnIterator_int_7#closure_e
 ) -> Option__string {
   let iterator/4 = closure_env_std_iter_map_A_int_B_string_I_FnIterator_int_7.iterator_0(env199) in
   let map_fn/5 = closure_env_std_iter_map_A_int_B_string_I_FnIterator_int_7.map_fn_1(env199) in
-  join inline_cont523(mtmp1: Option__int) -> Option__string {
+  join inline_cont547(mtmp1: Option__int) -> Option__string {
     match mtmp1 {
       Tag_0 => {
         Tag_0
       },
       Tag_1 => {
         let x2 = Option__int::Some._0(mtmp1) in
-        let t410 = map_fn/5(x2) in
-        let t411 = Option__string::Some(t410) in
-        t411
+        let t423 = map_fn/5(x2) in
+        let t424 = Option__string::Some(t423) in
+        t424
       },
     }
   } in
-  let inline524 = FnIterator__int.next_fn(iterator/4) in
-  let inline525 = inline524() in
-  jump inline_cont523(inline525)
+  let inline548 = FnIterator__int.next_fn(iterator/4) in
+  let inline549 = inline548() in
+  jump inline_cont547(inline549)
 }
 
 fn inherent#closure_env_goml_builtin_range_8#closure_env_goml_builtin_range_8#apply(
@@ -650,12 +700,12 @@ fn inherent#closure_env_goml_builtin_range_8#closure_env_goml_builtin_range_8#ap
   let current/270 = closure_env_goml_builtin_range_8.current_0(env200) in
   let end/269 = closure_env_goml_builtin_range_8.end_1(env200) in
   let value/271 = @intrinsic(ref.get)(current/270) in
-  let t416 = (value/271 < end/269) in
-  if t416 {
-    let t417 = (value/271 + 1) in
-    let _wild146 = @intrinsic(ref.set)(current/270, t417) in
-    let t418 = Option__int::Some(value/271) in
-    t418
+  let t429 = (value/271 < end/269) in
+  if t429 {
+    let t430 = (value/271 + 1) in
+    let _wild146 = @intrinsic(ref.set)(current/270, t430) in
+    let t431 = Option__int::Some(value/271) in
+    t431
   } else {
     Tag_0
   }

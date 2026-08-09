@@ -25,8 +25,8 @@ fn receiver_after_match(flag/2: bool) -> string {
 }
 
 fn closure_after_match(flag/3: bool) -> int32 {
-  let f/6 = closure_env_f_0 {} in
-  inherent#closure_env_f_0#closure_env_f_0#apply(f/6, flag/3)
+  let f/6 = pack_closure[inherent#closure_env_f_0#closure_env_f_0#apply](closure_env_f_0 {}) in
+  f/6(flag/3)
 }
 
 fn main() -> unit {

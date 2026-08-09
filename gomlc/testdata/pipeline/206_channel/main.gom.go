@@ -62,7 +62,7 @@ func main0() struct{} {
     _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__int(buffered__2, 20)
     _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_close____T__int(buffered__2)
     var mtmp176 Option__int
-    var inline282 Tuple2_3int_4bool = func(p0 chan int) Tuple2_3int_4bool {
+    var inline284 Tuple2_3int_4bool = func(p0 chan int) Tuple2_3int_4bool {
         var value int
         var ok bool
         value, ok = <-p0
@@ -71,13 +71,13 @@ func main0() struct{} {
             _1: ok,
         }
     }(buffered__2)
-    var inline283 int = inline282._0
-    var inline284 bool = inline282._1
-    if inline284 {
-        var inline287 Option__int = Option__int_Some{
-            _0: inline283,
+    var inline285 int = inline284._0
+    var inline286 bool = inline284._1
+    if inline286 {
+        var inline289 Option__int = Option__int_Some{
+            _0: inline285,
         }
-        mtmp176 = inline287
+        mtmp176 = inline289
     } else {
         mtmp176 = Option__int_None{}
     }
@@ -91,10 +91,10 @@ func main0() struct{} {
     default:
         panic("non-exhaustive match")
     }
-    var inline279 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(jp195)
-    _goml_runtime_core_string_println(inline279)
+    var inline281 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(jp195)
+    _goml_runtime_core_string_println(inline281)
     var mtmp179 Option__int
-    var inline272 Tuple2_3int_4bool = func(p0 chan int) Tuple2_3int_4bool {
+    var inline274 Tuple2_3int_4bool = func(p0 chan int) Tuple2_3int_4bool {
         var value int
         var ok bool
         value, ok = <-p0
@@ -103,13 +103,13 @@ func main0() struct{} {
             _1: ok,
         }
     }(buffered__2)
-    var inline273 int = inline272._0
-    var inline274 bool = inline272._1
-    if inline274 {
-        var inline277 Option__int = Option__int_Some{
-            _0: inline273,
+    var inline275 int = inline274._0
+    var inline276 bool = inline274._1
+    if inline276 {
+        var inline279 Option__int = Option__int_Some{
+            _0: inline275,
         }
-        mtmp179 = inline277
+        mtmp179 = inline279
     } else {
         mtmp179 = Option__int_None{}
     }
@@ -123,10 +123,10 @@ func main0() struct{} {
     default:
         panic("non-exhaustive match")
     }
-    var inline269 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(jp197)
-    _goml_runtime_core_string_println(inline269)
+    var inline271 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(jp197)
+    _goml_runtime_core_string_println(inline271)
     var mtmp182 Option__int
-    var inline262 Tuple2_3int_4bool = func(p0 chan int) Tuple2_3int_4bool {
+    var inline264 Tuple2_3int_4bool = func(p0 chan int) Tuple2_3int_4bool {
         var value int
         var ok bool
         value, ok = <-p0
@@ -135,13 +135,13 @@ func main0() struct{} {
             _1: ok,
         }
     }(buffered__2)
-    var inline263 int = inline262._0
-    var inline264 bool = inline262._1
-    if inline264 {
-        var inline267 Option__int = Option__int_Some{
-            _0: inline263,
+    var inline265 int = inline264._0
+    var inline266 bool = inline264._1
+    if inline266 {
+        var inline269 Option__int = Option__int_Some{
+            _0: inline265,
         }
-        mtmp182 = inline267
+        mtmp182 = inline269
     } else {
         mtmp182 = Option__int_None{}
     }
@@ -154,20 +154,23 @@ func main0() struct{} {
     default:
         panic("non-exhaustive match")
     }
-    var inline259 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp199)
-    _goml_runtime_core_string_println(inline259)
+    var inline261 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp199)
+    _goml_runtime_core_string_println(inline261)
     var unbuffered__5 chan string
-    var inline257 chan string = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__string(0)
-    unbuffered__5 = inline257
+    var inline259 chan string = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__string(0)
+    unbuffered__5 = inline259
     var mtmp185 Option__string
-    var inline252 string = "ready"
-    var inline253 closure_env_roundtrip_T_string_0 = closure_env_roundtrip_T_string_0{
+    var inline253 string = "ready"
+    var inline254 closure_env_roundtrip_T_string_0 = closure_env_roundtrip_T_string_0{
         channel_0: unbuffered__5,
-        value_1: inline252,
+        value_1: inline253,
     }
-    go _goml_m_inherent_i_closure__en_h6de6ca36633f2d445fcbfaf4a81e6dce_ring__0_i_apply(inline253)
-    var inline255 Option__string = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__string(unbuffered__5)
-    mtmp185 = inline255
+    var inline255 func() struct{} = func() struct{} {
+        return _goml_m_inherent_i_closure__en_h6de6ca36633f2d445fcbfaf4a81e6dce_ring__0_i_apply(inline254)
+    }
+    go inline255()
+    var inline257 Option__string = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__string(unbuffered__5)
+    mtmp185 = inline257
     var jp201 string
     switch mtmp185.(type) {
     case Option__string_None:
@@ -178,8 +181,8 @@ func main0() struct{} {
     default:
         panic("non-exhaustive match")
     }
-    var inline249 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp201)
-    _goml_runtime_core_string_println(inline249)
+    var inline250 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp201)
+    _goml_runtime_core_string_println(inline250)
     func(p0 chan string) struct{} {
         close(p0)
         return struct{}{}
@@ -218,8 +221,8 @@ func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_close____T__int(self__267 cha
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
-    var t231 string = _goml_runtime_core_int_to_string(self__69)
-    return t231
+    var t232 string = _goml_runtime_core_int_to_string(self__69)
+    return t232
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
@@ -239,10 +242,10 @@ func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__string(self__264 c
     var x144 string = mtmp143._0
     var x145 bool = mtmp143._1
     if x145 {
-        var t240 Option__string = Option__string_Some{
+        var t241 Option__string = Option__string_Some{
             _0: x144,
         }
-        return t240
+        return t241
     } else {
         return Option__string_None{}
     }

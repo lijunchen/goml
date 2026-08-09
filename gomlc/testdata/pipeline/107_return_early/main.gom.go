@@ -37,45 +37,50 @@ func early(x__0 int32) int32 {
 
 func main0() struct{} {
     print__T_string("e-1: ")
-    var t203 int32 = early(-1)
-    var inline283 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t203)
-    _goml_runtime_core_string_println(inline283)
-    var inline279 string = "e0: "
-    var inline280 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline279)
-    _goml_runtime_core_string_print(inline280)
-    var t204 int32 = early(0)
-    var inline276 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t204)
-    _goml_runtime_core_string_println(inline276)
-    var inline272 string = "e3: "
-    var inline273 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline272)
-    _goml_runtime_core_string_print(inline273)
-    var t205 int32 = early(3)
-    var inline269 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t205)
-    _goml_runtime_core_string_println(inline269)
-    var inline265 string = "c7: "
-    var inline266 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline265)
-    _goml_runtime_core_string_print(inline266)
-    var t206 int32
-    var inline261 int32 = 7
-    var inline262 closure_env_f_0 = closure_env_f_0{}
-    var inline263 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline262, inline261)
-    t206 = inline263
-    var inline258 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t206)
-    _goml_runtime_core_string_println(inline258)
-    var inline254 string = "c2: "
-    var inline255 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline254)
-    _goml_runtime_core_string_print(inline255)
+    var t204 int32 = early(-1)
+    println__T_int32(t204)
+    var inline277 string = "e0: "
+    var inline278 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline277)
+    _goml_runtime_core_string_print(inline278)
+    var t205 int32 = early(0)
+    var inline274 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t205)
+    _goml_runtime_core_string_println(inline274)
+    var inline270 string = "e3: "
+    var inline271 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline270)
+    _goml_runtime_core_string_print(inline271)
+    var t206 int32 = early(3)
+    var inline267 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t206)
+    _goml_runtime_core_string_println(inline267)
+    var inline263 string = "c7: "
+    var inline264 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline263)
+    _goml_runtime_core_string_print(inline264)
     var t207 int32
-    var inline250 int32 = 2
-    var inline251 closure_env_f_0 = closure_env_f_0{}
-    var inline252 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline251, inline250)
-    t207 = inline252
-    var inline247 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t207)
-    _goml_runtime_core_string_println(inline247)
-    var inline242 bool = true
-    if inline242 {
-        var inline237 bool = false
-        if inline237 {
+    var inline258 int32 = 7
+    var inline259 closure_env_f_0 = closure_env_f_0{}
+    var inline260 func(int32) int32 = func(p0 int32) int32 {
+        return _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline259, p0)
+    }
+    var inline261 int32 = inline260(inline258)
+    t207 = inline261
+    var inline255 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t207)
+    _goml_runtime_core_string_println(inline255)
+    var inline251 string = "c2: "
+    var inline252 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline251)
+    _goml_runtime_core_string_print(inline252)
+    var t208 int32
+    var inline246 int32 = 2
+    var inline247 closure_env_f_0 = closure_env_f_0{}
+    var inline248 func(int32) int32 = func(p0 int32) int32 {
+        return _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline247, p0)
+    }
+    var inline249 int32 = inline248(inline246)
+    t208 = inline249
+    var inline243 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t208)
+    _goml_runtime_core_string_println(inline243)
+    var inline238 bool = true
+    if inline238 {
+        var inline233 bool = false
+        if inline233 {
             return struct{}{}
         } else {
             println__T_string("after")
@@ -83,8 +88,8 @@ func main0() struct{} {
         }
     } else {
         println__T_string("after")
-        var inline237 bool = false
-        if inline237 {
+        var inline233 bool = false
+        if inline233 {
             return struct{}{}
         } else {
             println__T_string("after")
@@ -94,16 +99,24 @@ func main0() struct{} {
 }
 
 func println__T_string(value__31 string) struct{} {
-    var t209 string
-    t209 = value__31
-    _goml_runtime_core_string_println(t209)
+    var t210 string
+    t210 = value__31
+    _goml_runtime_core_string_println(t210)
     return struct{}{}
 }
 
 func print__T_string(value__30 string) struct{} {
-    var t212 string
-    t212 = value__30
-    _goml_runtime_core_string_print(t212)
+    var t213 string
+    t213 = value__30
+    _goml_runtime_core_string_print(t213)
+    return struct{}{}
+}
+
+func println__T_int32(value__31 int32) struct{} {
+    var t216 string
+    var inline283 string = _goml_runtime_core_int32_to_string(value__31)
+    t216 = inline283
+    _goml_runtime_core_string_println(t216)
     return struct{}{}
 }
 
@@ -112,17 +125,17 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) strin
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__72 int32) string {
-    var t221 string = _goml_runtime_core_int32_to_string(self__72)
-    return t221
+    var t222 string = _goml_runtime_core_int32_to_string(self__72)
+    return t222
 }
 
 func _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(env189 closure_env_f_0, y__2 int32) int32 {
-    var t226 bool = y__2 > 5
-    if t226 {
+    var t227 bool = y__2 > 5
+    if t227 {
         return y__2
     } else {
-        var t225 int32 = y__2 + 10
-        return t225
+        var t226 int32 = y__2 + 10
+        return t226
     }
 }
 

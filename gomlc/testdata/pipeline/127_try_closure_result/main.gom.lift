@@ -7,8 +7,11 @@ fn parse_text(ok/0: bool) -> Result__string__string {
 }
 
 fn decorate(prefix/1: string, ok/2: bool) -> Result__string__string {
-  let run/4 = closure_env_run_0 { ok_0: ok/2, prefix_1: prefix/1 } in
-  inherent#closure_env_run_0#closure_env_run_0#apply(run/4)
+  let run/4 =
+    pack_closure[inherent#closure_env_run_0#closure_env_run_0#apply](
+      closure_env_run_0 { ok_0: ok/2, prefix_1: prefix/1 }
+    ) in
+  run/4()
 }
 
 fn show(res/5: Result__string__string) -> string {

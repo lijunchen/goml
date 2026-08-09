@@ -1,7 +1,13 @@
 fn make_counter() -> (() -> int32, () -> unit) {
   let cell/0 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let next/2 = closure_env_next_0 { cell_0: cell/0 } in
-  let reset/3 = closure_env_reset_1 { cell_0: cell/0 } in
+  let next/2 =
+    pack_closure[inherent#closure_env_next_0#closure_env_next_0#apply](
+      closure_env_next_0 { cell_0: cell/0 }
+    ) in
+  let reset/3 =
+    pack_closure[inherent#closure_env_reset_1#closure_env_reset_1#apply](
+      closure_env_reset_1 { cell_0: cell/0 }
+    ) in
   (next/2, reset/3)
 }
 

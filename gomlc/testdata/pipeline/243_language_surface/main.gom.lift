@@ -30,8 +30,11 @@ fn main() -> unit {
   let mtmp184 = (3, 0) in
   let x185 = mtmp184.0 in
   let captured/4 = @intrinsic(ref.new)(x185) in
-  let increment/5 = closure_env_increment_0 { captured_0: captured/4 } in
-  let _wild190 = inherent#closure_env_increment_0#closure_env_increment_0#apply(increment/5) in
+  let increment/5 =
+    pack_closure[inherent#closure_env_increment_0#closure_env_increment_0#apply](
+      closure_env_increment_0 { captured_0: captured/4 }
+    ) in
+  let _wild190 = increment/5() in
   let _wild191 = println__T_int(@intrinsic(ref.get)(captured/4)) in
   let _wild197 =
     let mtmp192 = Option__int::Some(4) in

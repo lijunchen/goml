@@ -1,29 +1,25 @@
 fn main() -> unit {
   let a/0 = 10 in
-  join inline_cont205(result/12: int32) -> unit {
-    let inline203 = trait_impl#ToString#int32#to_string(result/12) in
-    let inline204 = @runtime(core.string_println)(inline203) in
-    ()
-  } in
-  let inline206 = 1 in
-  let inline208 = 20 in
-  let inline209 = closure_env_f2_2 { a_0: a/0, b_1: inline208, x_2: inline206 } in
-  let inline210 = inherent#closure_env_f2_2#closure_env_f2_2#apply(inline209, 2) in
-  jump inline_cont205(inline210)
+  let t177 = closure_env_f1_3 { a_0: a/0 } in
+  let f1/11 = pack_closure[inherent#closure_env_f1_3#closure_env_f1_3#apply](t177) in
+  let result/12 = f1/11(1) in
+  let inline207 = trait_impl#ToString#int32#to_string(result/12) in
+  let inline208 = @runtime(core.string_println)(inline207) in
+  ()
 }
 
 fn println__T_int32(value/31: int32) -> unit {
-  join inline_cont211(t179: string) -> unit {
-    let t180 = @runtime(core.string_println)(t179) in
+  join inline_cont209(t180: string) -> unit {
+    let t181 = @runtime(core.string_println)(t180) in
     ()
   } in
-  let inline212 = @runtime(core.int32_to_string)(value/31) in
-  jump inline_cont211(inline212)
+  let inline210 = @runtime(core.int32_to_string)(value/31) in
+  jump inline_cont209(inline210)
 }
 
 fn trait_impl#ToString#int32#to_string(self/72: int32) -> string {
-  let t183 = @runtime(core.int32_to_string)(self/72) in
-  t183
+  let t184 = @runtime(core.int32_to_string)(self/72) in
+  t184
 }
 
 fn inherent#closure_env_f4_0#closure_env_f4_0#apply(env172: closure_env_f4_0, w/7: int32) -> int32 {
@@ -34,14 +30,14 @@ fn inherent#closure_env_f4_0#closure_env_f4_0#apply(env172: closure_env_f4_0, w/
   let x/1 = closure_env_f4_0.x_4(env172) in
   let y/3 = closure_env_f4_0.y_5(env172) in
   let z/5 = closure_env_f4_0.z_6(env172) in
-  let t186 = (a/0 + b/2) in
-  let t187 = (t186 + c/4) in
-  let t188 = (t187 + d/6) in
-  let t189 = (t188 + x/1) in
-  let t190 = (t189 + y/3) in
-  let t191 = (t190 + z/5) in
-  let t192 = (t191 + w/7) in
-  t192
+  let t187 = (a/0 + b/2) in
+  let t188 = (t187 + c/4) in
+  let t189 = (t188 + d/6) in
+  let t190 = (t189 + x/1) in
+  let t191 = (t190 + y/3) in
+  let t192 = (t191 + z/5) in
+  let t193 = (t192 + w/7) in
+  t193
 }
 
 fn inherent#closure_env_f3_1#closure_env_f3_1#apply(env173: closure_env_f3_1, z/5: int32) -> int32 {
@@ -51,15 +47,11 @@ fn inherent#closure_env_f3_1#closure_env_f3_1#apply(env173: closure_env_f3_1, z/
   let x/1 = closure_env_f3_1.x_3(env173) in
   let y/3 = closure_env_f3_1.y_4(env173) in
   let d/6 = 40 in
-  let inline214 = 4 in
-  let inline222 = (a/0 + b/2) in
-  let inline223 = (inline222 + c/4) in
-  let inline224 = (inline223 + d/6) in
-  let inline225 = (inline224 + x/1) in
-  let inline226 = (inline225 + y/3) in
-  let inline227 = (inline226 + z/5) in
-  let inline228 = (inline227 + inline214) in
-  inline228
+  let t196 =
+    closure_env_f4_0 { a_0: a/0, b_1: b/2, c_2: c/4, d_3: d/6, x_4: x/1, y_5: y/3, z_6: z/5 } in
+  let f4/8 = pack_closure[inherent#closure_env_f4_0#closure_env_f4_0#apply](t196) in
+  let t197 = f4/8(4) in
+  t197
 }
 
 fn inherent#closure_env_f2_2#closure_env_f2_2#apply(env174: closure_env_f2_2, y/3: int32) -> int32 {
@@ -67,29 +59,17 @@ fn inherent#closure_env_f2_2#closure_env_f2_2#apply(env174: closure_env_f2_2, y/
   let b/2 = closure_env_f2_2.b_1(env174) in
   let x/1 = closure_env_f2_2.x_2(env174) in
   let c/4 = 30 in
-  let inline230 = 3 in
-  let inline236 = 40 in
-  let inline237 =
-    closure_env_f4_0 {
-      a_0: a/0,
-      b_1: b/2,
-      c_2: c/4,
-      d_3: inline236,
-      x_4: x/1,
-      y_5: y/3,
-      z_6: inline230
-    } in
-  let inline238 = inherent#closure_env_f4_0#closure_env_f4_0#apply(inline237, 4) in
-  inline238
+  let t200 = closure_env_f3_1 { a_0: a/0, b_1: b/2, c_2: c/4, x_3: x/1, y_4: y/3 } in
+  let f3/9 = pack_closure[inherent#closure_env_f3_1#closure_env_f3_1#apply](t200) in
+  let t201 = f3/9(3) in
+  t201
 }
 
 fn inherent#closure_env_f1_3#closure_env_f1_3#apply(env175: closure_env_f1_3, x/1: int32) -> int32 {
   let a/0 = closure_env_f1_3.a_0(env175) in
   let b/2 = 20 in
-  let inline240 = 2 in
-  let inline244 = 30 in
-  let inline245 =
-    closure_env_f3_1 { a_0: a/0, b_1: b/2, c_2: inline244, x_3: x/1, y_4: inline240 } in
-  let inline246 = inherent#closure_env_f3_1#closure_env_f3_1#apply(inline245, 3) in
-  inline246
+  let t204 = closure_env_f2_2 { a_0: a/0, b_1: b/2, x_2: x/1 } in
+  let f2/10 = pack_closure[inherent#closure_env_f2_2#closure_env_f2_2#apply](t204) in
+  let t205 = f2/10(2) in
+  t205
 }

@@ -1,26 +1,19 @@
 fn main() -> unit {
-  let value/3 = Maybe__int::Some(3) in
   let t177 = closure_env_main_0 {} in
-  let mtmp173 = inherent#Maybe#Maybe[T]#map__T_int__U_string(value/3, t177) in
-  match mtmp173 {
-    Tag_0 => {
-      let inline199 = "none" in
-      let inline200 = trait_impl#ToString#string#to_string(inline199) in
-      let inline201 = @runtime(core.string_println)(inline200) in
-      ()
-    },
-    Tag_1 => {
-      let x174 = Maybe__string::Some._0(mtmp173) in
-      let inline203 = trait_impl#ToString#string#to_string(x174) in
-      let inline204 = @runtime(core.string_println)(inline203) in
-      ()
-    },
-  }
+  let t178 = pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](t177) in
+  join commute_arm216(commute_field215: string) -> unit {
+    let inline204 = trait_impl#ToString#string#to_string(commute_field215) in
+    let inline205 = @runtime(core.string_println)(inline204) in
+    ()
+  } in
+  let inline207 = 3 in
+  let inline209 = t178(inline207) in
+  jump commute_arm216(inline209)
 }
 
 fn inherent#int#int#to_string(self/34: int) -> string {
-  let t183 = @runtime(core.int_to_string)(self/34) in
-  t183
+  let t184 = @runtime(core.int_to_string)(self/34) in
+  t184
 }
 
 fn inherent#Maybe#Maybe[T]#map__T_int__U_string(
@@ -33,19 +26,19 @@ fn inherent#Maybe#Maybe[T]#map__T_int__U_string(
     },
     Tag_1 => {
       let x172 = Maybe__int::Some._0(self/0) in
-      let t188 = map_fn/1(x172) in
-      let t189 = Maybe__string::Some(t188) in
-      t189
+      let t189 = map_fn/1(x172) in
+      let t190 = Maybe__string::Some(t189) in
+      t190
     },
   }
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont205(t191: string) -> unit {
-    let t192 = @runtime(core.string_println)(t191) in
+  join inline_cont211(t192: string) -> unit {
+    let t193 = @runtime(core.string_println)(t192) in
     ()
   } in
-  jump inline_cont205(value/31)
+  jump inline_cont211(value/31)
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {
@@ -56,6 +49,6 @@ fn inherent#closure_env_main_0#closure_env_main_0#apply(
   env175: closure_env_main_0,
   item/4: int
 ) -> string {
-  let inline207 = @runtime(core.int_to_string)(item/4) in
-  inline207
+  let inline213 = @runtime(core.int_to_string)(item/4) in
+  inline213
 }

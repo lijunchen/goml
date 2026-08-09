@@ -7,8 +7,11 @@ fn maybe_value(flag/0: bool) -> Option__int32 {
 }
 
 fn with_base(base/1: int32, flag/2: bool) -> Option__int32 {
-  let run/4 = closure_env_run_0 { flag_0: flag/2, base_1: base/1 } in
-  inherent#closure_env_run_0#closure_env_run_0#apply(run/4)
+  let run/4 =
+    pack_closure[inherent#closure_env_run_0#closure_env_run_0#apply](
+      closure_env_run_0 { flag_0: flag/2, base_1: base/1 }
+    ) in
+  run/4()
 }
 
 fn show(opt/5: Option__int32) -> string {

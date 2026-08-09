@@ -127,14 +127,23 @@ fn std::task::sleep_nanoseconds_with(
 
 fn main() -> unit {
   let completed/0 = inherent#Ref#Ref[T]#new__T_bool(false) in
-  let total/7 = std::task::scope__T_int(closure_env_main_3 { completed_0: completed/0 }) in
+  let total/7 =
+    std::task::scope__T_int(
+      pack_closure[inherent#closure_env_main_3#closure_env_main_3#apply](
+        closure_env_main_3 { completed_0: completed/0 }
+      )
+    ) in
   let _wild173 = println__T_int(total/7) in
   let _wild174 = println__T_bool(inherent#Ref#Ref[T]#get__T_bool(completed/0)) in
-  let nested/12 = std::task::scope__T_int(closure_env_main_6 {}) in
+  let nested/12 =
+    std::task::scope__T_int(
+      pack_closure[inherent#closure_env_main_6#closure_env_main_6#apply](closure_env_main_6 {})
+    ) in
   let _wild175 = println__T_int(nested/12) in
   let scope/13 = 3 in
-  let spawn/15 = closure_env_spawn_7 {} in
-  println__T_int(inherent#closure_env_spawn_7#closure_env_spawn_7#apply(spawn/15, scope/13))
+  let spawn/15 =
+    pack_closure[inherent#closure_env_spawn_7#closure_env_spawn_7#apply](closure_env_spawn_7 {}) in
+  println__T_int(spawn/15(scope/13))
 }
 
 fn inherent#Channel#Channel[T]#new__T_unit(capacity/261: int) -> Channel[unit] {
@@ -155,11 +164,13 @@ fn std::task::scope__T_int(body/9: (std::task::Scope) -> int) -> int {
   let _wild11 =
     std::internal::task::run(
       handle/10,
-      closure_env_std_task_scope_T_int_8 {
-        result_0: result/11,
-        body_1: body/9,
-        handle_2: handle/10
-      }
+      pack_closure[inherent#closure_env_std_task_scope_T_int_8#closure_env_std_task_scope_T_int_8#apply](
+        closure_env_std_task_scope_T_int_8 {
+          result_0: result/11,
+          body_1: body/9,
+          handle_2: handle/10
+        }
+      )
     ) in
   std::task::completed_scope_value__T_int(result/11)
 }
@@ -177,12 +188,14 @@ fn inherent#std::task::Scope#std::task::Scope#spawn__T_int(
   let _wild18 =
     std::internal::task::spawn(
       std::task::Scope.handle(self/25),
-      closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9 {
-        result_0: result/27,
-        body_1: body/26,
-        token_2: token/29,
-        ready_3: ready/28
-      }
+      pack_closure[inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9#apply](
+        closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9 {
+          result_0: result/27,
+          body_1: body/26,
+          token_2: token/29,
+          ready_3: ready/28
+        }
+      )
     ) in
   std::task::Task__int { result: result/27, ready: ready/28 }
 }
@@ -204,12 +217,14 @@ fn inherent#std::task::Scope#std::task::Scope#spawn__T_unit(
   let _wild18 =
     std::internal::task::spawn(
       std::task::Scope.handle(self/25),
-      closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10 {
-        result_0: result/27,
-        body_1: body/26,
-        token_2: token/29,
-        ready_3: ready/28
-      }
+      pack_closure[inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10#apply](
+        closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10 {
+          result_0: result/27,
+          body_1: body/26,
+          token_2: token/29,
+          ready_3: ready/28
+        }
+      )
     ) in
   std::task::Task__unit { result: result/27, ready: ready/28 }
 }
@@ -251,11 +266,13 @@ fn std::task::scope_with__T_int(
   let _wild12 =
     std::internal::task::run(
       handle/14,
-      closure_env_std_task_scope_with_T_int_11 {
-        result_0: result/15,
-        body_1: body/13,
-        handle_2: handle/14
-      }
+      pack_closure[inherent#closure_env_std_task_scope_with_T_int_11#closure_env_std_task_scope_with_T_int_11#apply](
+        closure_env_std_task_scope_with_T_int_11 {
+          result_0: result/15,
+          body_1: body/13,
+          handle_2: handle/14
+        }
+      )
     ) in
   std::task::completed_scope_value__T_int(result/15)
 }
@@ -463,13 +480,21 @@ fn inherent#closure_env_main_3#closure_env_main_3#apply(
 ) -> int {
   let completed/0 = closure_env_main_3.completed_0(env179) in
   let left/3 =
-    inherent#std::task::Scope#std::task::Scope#spawn__T_int(scope/1, closure_env_main_0 {}) in
+    inherent#std::task::Scope#std::task::Scope#spawn__T_int(
+      scope/1,
+      pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](closure_env_main_0 {})
+    ) in
   let right/5 =
-    inherent#std::task::Scope#std::task::Scope#spawn__T_int(scope/1, closure_env_main_1 {}) in
+    inherent#std::task::Scope#std::task::Scope#spawn__T_int(
+      scope/1,
+      pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](closure_env_main_1 {})
+    ) in
   let mtmp172 =
     inherent#std::task::Scope#std::task::Scope#spawn__T_unit(
       scope/1,
-      closure_env_main_2 { completed_0: completed/0 }
+      pack_closure[inherent#closure_env_main_2#closure_env_main_2#apply](
+        closure_env_main_2 { completed_0: completed/0 }
+      )
     ) in
   (inherent#std::task::Task#std::task::Task[T]#join__T_int(left/3) +
     inherent#std::task::Task#std::task::Task[T]#join__T_int(right/5))
@@ -487,7 +512,10 @@ fn inherent#closure_env_main_5#closure_env_main_5#apply(
   scope/9: std::task::Scope
 ) -> int {
   let value/11 =
-    inherent#std::task::Scope#std::task::Scope#spawn__T_int(scope/9, closure_env_main_4 {}) in
+    inherent#std::task::Scope#std::task::Scope#spawn__T_int(
+      scope/9,
+      pack_closure[inherent#closure_env_main_4#closure_env_main_4#apply](closure_env_main_4 {})
+    ) in
   inherent#std::task::Task#std::task::Task[T]#join__T_int(value/11)
 }
 
@@ -497,7 +525,7 @@ fn inherent#closure_env_main_6#closure_env_main_6#apply(
 ) -> int {
   std::task::scope_with__T_int(
     inherent#std::task::Scope#std::task::Scope#token(scope/8),
-    closure_env_main_5 {}
+    pack_closure[inherent#closure_env_main_5#closure_env_main_5#apply](closure_env_main_5 {})
   )
 }
 

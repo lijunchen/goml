@@ -177,21 +177,21 @@ func _goml_m_trait__impl_i_Describe_i_Tracker_i_describe(self__0 Tracker) string
     var x174 *ref_int32_x = self__0.count
     var x175 *ref_bool_x = self__0.toggled
     var current__4 int32
-    var inline348 int32 = ref_get__Ref_5int32(x174)
-    current__4 = inline348
+    var inline351 int32 = ref_get__Ref_5int32(x174)
+    current__4 = inline351
     var flag__5 bool
-    var inline346 bool = ref_get__Ref_4bool(x175)
-    flag__5 = inline346
+    var inline349 bool = ref_get__Ref_4bool(x175)
+    flag__5 = inline349
     var with_label__6 string = "Tracker(" + x173
     var with_count_label__7 string = with_label__6 + ", count: "
     var t214 string
-    var inline344 string = _goml_runtime_core_int32_to_string(current__4)
-    t214 = inline344
+    var inline347 string = _goml_runtime_core_int32_to_string(current__4)
+    t214 = inline347
     var with_count__8 string = with_count_label__7 + t214
     var with_flag_label__9 string = with_count__8 + ", toggled: "
     var t215 string
-    var inline342 string = _goml_runtime_core_bool_to_string(flag__5)
-    t215 = inline342
+    var inline345 string = _goml_runtime_core_bool_to_string(flag__5)
+    t215 = inline345
     var t216 string = with_flag_label__9 + t215
     var t217 string = t216 + ")"
     return t217
@@ -202,8 +202,8 @@ func _goml_m_trait__impl_i_Describe_i_Record____int32_i_describe(self__10 Record
     case Record__int32_Value:
         var x176 int32 = self__10.(Record__int32_Value)._0
         var t222 string
-        var inline350 string = _goml_runtime_core_int32_to_string(x176)
-        t222 = inline350
+        var inline353 string = _goml_runtime_core_int32_to_string(x176)
+        t222 = inline353
         var t223 string = "Value(" + t222
         var t224 string = t223 + ")"
         return t224
@@ -211,13 +211,13 @@ func _goml_m_trait__impl_i_Describe_i_Record____int32_i_describe(self__10 Record
         var x177 int32 = self__10.(Record__int32_Pair)._0
         var x178 int32 = self__10.(Record__int32_Pair)._1
         var t225 string
-        var inline354 string = _goml_runtime_core_int32_to_string(x177)
-        t225 = inline354
+        var inline357 string = _goml_runtime_core_int32_to_string(x177)
+        t225 = inline357
         var prefix__14 string = "Pair(" + t225
         var t226 string = prefix__14 + ", "
         var t227 string
-        var inline352 string = _goml_runtime_core_int32_to_string(x178)
-        t227 = inline352
+        var inline355 string = _goml_runtime_core_int32_to_string(x178)
+        t227 = inline355
         var t228 string = t226 + t227
         var t229 string = t228 + ")"
         return t229
@@ -252,8 +252,8 @@ func _goml_m_trait__impl_i_Describe_i_Record____string_i_describe(self__15 Recor
 
 func format_total(total__26 int32) string {
     var t241 string
-    var inline356 string = _goml_runtime_core_int32_to_string(total__26)
-    t241 = inline356
+    var inline359 string = _goml_runtime_core_int32_to_string(total__26)
+    t241 = inline359
     var t242 string = "total: " + t241
     return t242
 }
@@ -291,39 +291,42 @@ func gather(record__39 Record__int32) Maybe__int32 {
 
 func build_counter(label__42 string, start__43 int32) Tuple4_7Tracker_26TFunc0_ret_1_h3f520d7da3936df91f1111a1cbf9816b_4Record__string {
     var count__44 *ref_int32_x
-    var inline361 *ref_int32_x = ref__Ref_5int32(start__43)
-    count__44 = inline361
+    var inline364 *ref_int32_x = ref__Ref_5int32(start__43)
+    count__44 = inline364
     var toggled__45 *ref_bool_x
-    var inline358 bool = false
-    var inline359 *ref_bool_x = ref__Ref_4bool(inline358)
-    toggled__45 = inline359
+    var inline361 bool = false
+    var inline362 *ref_bool_x = ref__Ref_4bool(inline361)
+    toggled__45 = inline362
     var tracker__46 Tracker = Tracker{
         label: label__42,
         count: count__44,
         toggled: toggled__45,
     }
-    var snapshot__47 closure_env_snapshot_0 = closure_env_snapshot_0{
+    var t265 closure_env_snapshot_0 = closure_env_snapshot_0{
         count_0: count__44,
     }
-    var bump__50 closure_env_bump_1 = closure_env_bump_1{
+    var snapshot__47 func() Record__int32 = func() Record__int32 {
+        return _goml_m_inherent_i_closure__env__snapshot__0_i_closure__env__snapshot__0_i_apply(t265)
+    }
+    var t266 closure_env_bump_1 = closure_env_bump_1{
         count_0: count__44,
     }
-    var flip__53 closure_env_flip_2 = closure_env_flip_2{
+    var bump__50 func(int32) Record__int32 = func(p0 int32) Record__int32 {
+        return _goml_m_inherent_i_closure__env__bump__1_i_closure__env__bump__1_i_apply(t266, p0)
+    }
+    var t267 closure_env_flip_2 = closure_env_flip_2{
         toggled_0: toggled__45,
     }
-    var t265 Tuple4_7Tracker_26TFunc0_ret_1_h3f520d7da3936df91f1111a1cbf9816b_4Record__string = Tuple4_7Tracker_26TFunc0_ret_1_h3f520d7da3936df91f1111a1cbf9816b_4Record__string{
-        _0: tracker__46,
-        _1: func() Record__int32 {
-            return _goml_m_inherent_i_closure__env__snapshot__0_i_closure__env__snapshot__0_i_apply(snapshot__47)
-        },
-        _2: func(p0 int32) Record__int32 {
-            return _goml_m_inherent_i_closure__env__bump__1_i_closure__env__bump__1_i_apply(bump__50, p0)
-        },
-        _3: func() Record__string {
-            return _goml_m_inherent_i_closure__env__flip__2_i_closure__env__flip__2_i_apply(flip__53)
-        },
+    var flip__53 func() Record__string = func() Record__string {
+        return _goml_m_inherent_i_closure__env__flip__2_i_closure__env__flip__2_i_apply(t267)
     }
-    return t265
+    var t268 Tuple4_7Tracker_26TFunc0_ret_1_h3f520d7da3936df91f1111a1cbf9816b_4Record__string = Tuple4_7Tracker_26TFunc0_ret_1_h3f520d7da3936df91f1111a1cbf9816b_4Record__string{
+        _0: tracker__46,
+        _1: snapshot__47,
+        _2: bump__50,
+        _3: flip__53,
+    }
+    return t268
 }
 
 func main0() struct{} {
@@ -342,68 +345,68 @@ func main0() struct{} {
     var stringified__65 Maybe__string = map_maybe__T_int32__U_string(chosen__64, format_total)
     var transforms__66 [2]func(int32) int32 = [2]func(int32) int32{increment, triple}
     var results__67 [2]int32
-    var inline398 int32 = 4
-    var inline399 func(int32) int32 = array_get__Array_2_20Fn1_5int32_to_5int32(transforms__66, 0)
-    var inline400 func(int32) int32 = array_get__Array_2_20Fn1_5int32_to_5int32(transforms__66, 1)
-    var inline401 int32 = inline399(inline398)
-    var inline402 int32 = inline400(inline401)
-    var inline403 [2]int32 = [2]int32{inline401, inline398}
-    var inline404 [2]int32 = inline403
-    var inline405 int = 1
-    array_get__Array_2_5int32(inline404, inline405)
-    var inline408 [2]int32 = array_set__Array_2_5int32(inline404, inline405, inline402)
-    inline403 = inline408
-    results__67 = inline403
+    var inline401 int32 = 4
+    var inline402 func(int32) int32 = array_get__Array_2_20Fn1_5int32_to_5int32(transforms__66, 0)
+    var inline403 func(int32) int32 = array_get__Array_2_20Fn1_5int32_to_5int32(transforms__66, 1)
+    var inline404 int32 = inline402(inline401)
+    var inline405 int32 = inline403(inline404)
+    var inline406 [2]int32 = [2]int32{inline404, inline401}
+    var inline407 [2]int32 = inline406
+    var inline408 int = 1
+    array_get__Array_2_5int32(inline407, inline408)
+    var inline411 [2]int32 = array_set__Array_2_5int32(inline407, inline408, inline405)
+    inline406 = inline411
+    results__67 = inline406
     var first_result__68 int32 = array_get__Array_2_5int32(results__67, 0)
     var second_result__69 int32 = array_get__Array_2_5int32(results__67, 1)
-    var t275 bool = first_result__68 < second_result__69
-    var jp268 bool
-    if t275 {
-        jp268 = true
+    var t278 bool = first_result__68 < second_result__69
+    var jp271 bool
+    if t278 {
+        jp271 = true
     } else {
-        jp268 = false
+        jp271 = false
     }
     var first_text__71 string = _goml_m_trait__impl_i_Describe_i_Record____int32_i_describe(first_record__59)
     var bumped_text__72 string = _goml_m_trait__impl_i_Describe_i_Record____int32_i_describe(bumped_record__60)
     var flipped_text__73 string = _goml_m_trait__impl_i_Describe_i_Record____string_i_describe(flipped_record__61)
-    var jp270 string
+    var jp273 string
     switch stringified__65.(type) {
     case Maybe__string_Some:
         var x201 string = stringified__65.(Maybe__string_Some)._0
-        var t274 string = "Snapshot: " + x201
-        jp270 = t274
+        var t277 string = "Snapshot: " + x201
+        jp273 = t277
     case Maybe__string_None:
-        jp270 = "Snapshot: none"
+        jp273 = "Snapshot: none"
     default:
         panic("non-exhaustive match")
     }
-    var t271 string
-    var inline396 string = _goml_runtime_core_int32_to_string(first_result__68)
-    t271 = inline396
-    var t272 string
-    var inline394 string = _goml_runtime_core_int32_to_string(second_result__69)
-    t272 = inline394
+    var t274 string
+    var inline399 string = _goml_runtime_core_int32_to_string(first_result__68)
+    t274 = inline399
+    var t275 string
+    var inline397 string = _goml_runtime_core_int32_to_string(second_result__69)
+    t275 = inline397
     var pair_text__76 string
-    var inline391 string = t271 + " -> "
-    var inline392 string = inline391 + t272
-    pair_text__76 = inline392
+    var inline394 string = t274 + " -> "
+    var inline395 string = inline394 + t275
+    pair_text__76 = inline395
     var bool_text__77 string
-    var inline384 string = _goml_runtime_core_bool_to_string(jp268)
-    bool_text__77 = inline384
-    var inline381 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(tracker_info__58)
+    var inline387 string = _goml_runtime_core_bool_to_string(jp271)
+    bool_text__77 = inline387
+    var inline384 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(tracker_info__58)
+    _goml_runtime_core_string_println(inline384)
+    var inline381 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(first_text__71)
     _goml_runtime_core_string_println(inline381)
-    var inline378 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(first_text__71)
+    var inline378 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(bumped_text__72)
     _goml_runtime_core_string_println(inline378)
-    var inline375 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(bumped_text__72)
+    var inline375 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(flipped_text__73)
     _goml_runtime_core_string_println(inline375)
-    var inline372 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(flipped_text__73)
+    var inline372 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp273)
     _goml_runtime_core_string_println(inline372)
-    var inline369 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp270)
+    var inline369 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(pair_text__76)
     _goml_runtime_core_string_println(inline369)
-    var inline366 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(pair_text__76)
+    var inline366 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(bool_text__77)
     _goml_runtime_core_string_println(inline366)
-    var inline363 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(bool_text__77)
-    _goml_runtime_core_string_println(inline363)
     return struct{}{}
 }
 
@@ -419,11 +422,11 @@ func map_maybe__T_int32__U_string(value__23 Maybe__int32, f__24 func(int32) stri
     switch value__23.(type) {
     case Maybe__int32_Some:
         var x182 int32 = value__23.(Maybe__int32_Some)._0
-        var t306 string = f__24(x182)
-        var t307 Maybe__string = Maybe__string_Some{
-            _0: t306,
+        var t309 string = f__24(x182)
+        var t310 Maybe__string = Maybe__string_Some{
+            _0: t309,
         }
-        return t307
+        return t310
     case Maybe__int32_None:
         return Maybe__string_None{}
     default:
@@ -437,53 +440,53 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) strin
 
 func _goml_m_inherent_i_closure__env__snapshot__0_i_closure__env__snapshot__0_i_apply(env209 closure_env_snapshot_0) Record__int32 {
     var count__44 *ref_int32_x = env209.count_0
-    var t328 int32
-    var inline413 int32 = ref_get__Ref_5int32(count__44)
-    t328 = inline413
-    var t329 Record__int32 = Record__int32_Value{
-        _0: t328,
+    var t331 int32
+    var inline416 int32 = ref_get__Ref_5int32(count__44)
+    t331 = inline416
+    var t332 Record__int32 = Record__int32_Value{
+        _0: t331,
     }
-    return t329
+    return t332
 }
 
 func _goml_m_inherent_i_closure__env__bump__1_i_closure__env__bump__1_i_apply(env210 closure_env_bump_1, delta__48 int32) Record__int32 {
     var count__44 *ref_int32_x = env210.count_0
     var before__49 int32
-    var inline419 int32 = ref_get__Ref_5int32(count__44)
-    before__49 = inline419
-    var t332 int32 = before__49 + delta__48
-    ref_set__Ref_5int32(count__44, t332)
-    var t333 int32
-    var inline415 int32 = ref_get__Ref_5int32(count__44)
-    t333 = inline415
-    var t334 Record__int32 = Record__int32_Pair{
+    var inline422 int32 = ref_get__Ref_5int32(count__44)
+    before__49 = inline422
+    var t335 int32 = before__49 + delta__48
+    ref_set__Ref_5int32(count__44, t335)
+    var t336 int32
+    var inline418 int32 = ref_get__Ref_5int32(count__44)
+    t336 = inline418
+    var t337 Record__int32 = Record__int32_Pair{
         _0: before__49,
-        _1: t333,
+        _1: t336,
     }
-    return t334
+    return t337
 }
 
 func _goml_m_inherent_i_closure__env__flip__2_i_closure__env__flip__2_i_apply(env211 closure_env_flip_2) Record__string {
     var toggled__45 *ref_bool_x = env211.toggled_0
     var before__51 bool
-    var inline429 bool = ref_get__Ref_4bool(toggled__45)
-    before__51 = inline429
-    var t337 bool = !before__51
-    ref_set__Ref_4bool(toggled__45, t337)
+    var inline432 bool = ref_get__Ref_4bool(toggled__45)
+    before__51 = inline432
+    var t340 bool = !before__51
+    ref_set__Ref_4bool(toggled__45, t340)
     var after__52 bool
-    var inline425 bool = ref_get__Ref_4bool(toggled__45)
-    after__52 = inline425
-    var t338 string
-    var inline423 string = _goml_runtime_core_bool_to_string(before__51)
-    t338 = inline423
-    var t339 string
-    var inline421 string = _goml_runtime_core_bool_to_string(after__52)
-    t339 = inline421
-    var t340 Record__string = Record__string_Pair{
-        _0: t338,
-        _1: t339,
+    var inline428 bool = ref_get__Ref_4bool(toggled__45)
+    after__52 = inline428
+    var t341 string
+    var inline426 string = _goml_runtime_core_bool_to_string(before__51)
+    t341 = inline426
+    var t342 string
+    var inline424 string = _goml_runtime_core_bool_to_string(after__52)
+    t342 = inline424
+    var t343 Record__string = Record__string_Pair{
+        _0: t341,
+        _1: t342,
     }
-    return t340
+    return t343
 }
 
 func main() {

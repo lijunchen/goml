@@ -1,105 +1,92 @@
 fn test() -> unit {
   let y/0 = 3 in
   let z/1 = 5 in
-  join inline_cont248(t189: int32) -> unit {
-    join inline_cont246(t190: string) -> unit {
-      join inline_cont243(mtmp172: unit) -> unit {
-        join inline_cont237(t191: int32) -> unit {
-          join inline_cont235(t192: string) -> unit {
-            let inline233 = trait_impl#ToString#string#to_string(t192) in
-            let inline234 = @runtime(core.string_println)(inline233) in
-            ()
-          } in
-          let inline236 = @runtime(core.int32_to_string)(t191) in
-          jump inline_cont235(inline236)
-        } in
-        let inline238 = 3 in
-        let inline241 = (inline238 * y/0) in
-        let inline242 = (inline241 * z/1) in
-        jump inline_cont237(inline242)
+  let t189 = closure_env_f_0 { y_0: y/0, z_1: z/1 } in
+  let f/3 = pack_closure[inherent#closure_env_f_0#closure_env_f_0#apply](t189) in
+  let t190 = f/3(2) in
+  join inline_cont245(t191: string) -> unit {
+    join inline_cont242(mtmp172: unit) -> unit {
+      let t192 = f/3(3) in
+      join inline_cont240(t193: string) -> unit {
+        let inline238 = trait_impl#ToString#string#to_string(t193) in
+        let inline239 = @runtime(core.string_println)(inline238) in
+        ()
       } in
-      let inline244 = trait_impl#ToString#string#to_string(t190) in
-      let inline245 = @runtime(core.string_println)(inline244) in
-      jump inline_cont243(())
+      let inline241 = @runtime(core.int32_to_string)(t192) in
+      jump inline_cont240(inline241)
     } in
-    let inline247 = @runtime(core.int32_to_string)(t189) in
-    jump inline_cont246(inline247)
+    let inline243 = trait_impl#ToString#string#to_string(t191) in
+    let inline244 = @runtime(core.string_println)(inline243) in
+    jump inline_cont242(())
   } in
-  let inline249 = 2 in
-  let inline252 = (inline249 * y/0) in
-  let inline253 = (inline252 * z/1) in
-  jump inline_cont248(inline253)
+  let inline246 = @runtime(core.int32_to_string)(t190) in
+  jump inline_cont245(inline246)
 }
 
 fn call_int_id(f/4: (int32) -> int32, v/5: int32) -> int32 {
-  let t196 = f/4(v/5) in
-  t196
+  let t197 = f/4(v/5) in
+  t197
 }
 
 fn main() -> unit {
   let base/6 = 5 in
-  join inline_cont277(result/9: int32) -> unit {
-    join inline_cont272(mtmp173: unit) -> unit {
-      join inline_cont269(doubled/18: int32) -> unit {
-        join inline_cont267(t198: string) -> unit {
-          join inline_cont264(mtmp174: unit) -> unit {
-            join inline_cont254(mtmp175: unit) -> unit {
-              let t199 = IntList::Cons(3, Tag_0) in
-              let t200 = IntList::Cons(2, t199) in
-              let list123/19 = IntList::Cons(1, t200) in
-              let point/20 = Point { x: 10, y: 20 } in
-              let play_list_and_point/25 =
-                closure_env_play_list_and_point_4 { list123_0: list123/19, point_1: point/20 } in
-              let mtmp182 =
-                inherent#closure_env_play_list_and_point_4#closure_env_play_list_and_point_4#apply(
-                  play_list_and_point/25
-                ) in
-              ()
-            } in
-            let inline255 = 3 in
-            let inline256 = 5 in
-            let inline257 = closure_env_f_0 { y_0: inline255, z_1: inline256 } in
-            let inline258 = inherent#closure_env_f_0#closure_env_f_0#apply(inline257, 2) in
-            let inline259 = inherent#int32#int32#to_string(inline258) in
-            let inline260 = println__T_string(inline259) in
-            let inline261 = inherent#closure_env_f_0#closure_env_f_0#apply(inline257, 3) in
-            let inline262 = inherent#int32#int32#to_string(inline261) in
-            let inline263 = println__T_string(inline262) in
-            jump inline_cont254(())
-          } in
-          let inline265 = trait_impl#ToString#string#to_string(t198) in
-          let inline266 = @runtime(core.string_println)(inline265) in
-          jump inline_cont264(())
-        } in
-        let inline268 = @runtime(core.int32_to_string)(doubled/18) in
-        jump inline_cont267(inline268)
+  let t199 = closure_env_add_base_1 { base_0: base/6 } in
+  let add_base/8 =
+    pack_closure[inherent#closure_env_add_base_1#closure_env_add_base_1#apply](t199) in
+  let result/9 = add_base/8(7) in
+  let t200 = closure_env_printer_2 {} in
+  let printer/13 = pack_closure[inherent#closure_env_printer_2#closure_env_printer_2#apply](t200) in
+  let mtmp173 = printer/13("result: ", result/9) in
+  let t201 = closure_env_no_capture_3 {} in
+  let no_capture/17 =
+    pack_closure[inherent#closure_env_no_capture_3#closure_env_no_capture_3#apply](t201) in
+  let doubled/18 = no_capture/17(3) in
+  join inline_cont261(t202: string) -> unit {
+    join inline_cont258(mtmp174: unit) -> unit {
+      join inline_cont247(mtmp175: unit) -> unit {
+        let t203 = IntList::Cons(3, Tag_0) in
+        let t204 = IntList::Cons(2, t203) in
+        let list123/19 = IntList::Cons(1, t204) in
+        let point/20 = Point { x: 10, y: 20 } in
+        let t205 = closure_env_play_list_and_point_4 { list123_0: list123/19, point_1: point/20 } in
+        let play_list_and_point/25 =
+          pack_closure[inherent#closure_env_play_list_and_point_4#closure_env_play_list_and_point_4#apply](
+            t205
+          ) in
+        let mtmp182 = play_list_and_point/25() in
+        ()
       } in
-      let inline270 = 3 in
-      let inline271 = (inline270 * 2) in
-      jump inline_cont269(inline271)
+      let inline248 = 3 in
+      let inline249 = 5 in
+      let inline250 = closure_env_f_0 { y_0: inline248, z_1: inline249 } in
+      let inline251 = pack_closure[inherent#closure_env_f_0#closure_env_f_0#apply](inline250) in
+      let inline252 = inline251(2) in
+      let inline253 = inherent#int32#int32#to_string(inline252) in
+      let inline254 = println__T_string(inline253) in
+      let inline255 = inline251(3) in
+      let inline256 = inherent#int32#int32#to_string(inline255) in
+      let inline257 = println__T_string(inline256) in
+      jump inline_cont247(())
     } in
-    let inline273 = "result: " in
-    let inline274 = inherent#int32#int32#to_string(result/9) in
-    let inline275 = (inline273 + inline274) in
-    let inline276 = println__T_string(inline275) in
-    jump inline_cont272(())
+    let inline259 = trait_impl#ToString#string#to_string(t202) in
+    let inline260 = @runtime(core.string_println)(inline259) in
+    jump inline_cont258(())
   } in
-  let inline278 = 7 in
-  let inline280 = (inline278 + base/6) in
-  jump inline_cont277(inline280)
+  let inline262 = @runtime(core.int32_to_string)(doubled/18) in
+  jump inline_cont261(inline262)
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont281(t202: string) -> unit {
-    let t203 = @runtime(core.string_println)(t202) in
+  join inline_cont263(t207: string) -> unit {
+    let t208 = @runtime(core.string_println)(t207) in
     ()
   } in
-  jump inline_cont281(value/31)
+  jump inline_cont263(value/31)
 }
 
 fn inherent#int32#int32#to_string(self/35: int32) -> string {
-  let t206 = @runtime(core.int32_to_string)(self/35) in
-  t206
+  let t211 = @runtime(core.int32_to_string)(self/35) in
+  t211
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {
@@ -109,9 +96,9 @@ fn trait_impl#ToString#string#to_string(self/67: string) -> string {
 fn inherent#closure_env_f_0#closure_env_f_0#apply(env183: closure_env_f_0, x/2: int32) -> int32 {
   let y/0 = closure_env_f_0.y_0(env183) in
   let z/1 = closure_env_f_0.z_1(env183) in
-  let t211 = (x/2 * y/0) in
-  let t212 = (t211 * z/1) in
-  t212
+  let t216 = (x/2 * y/0) in
+  let t217 = (t216 * z/1) in
+  t217
 }
 
 fn inherent#closure_env_add_base_1#closure_env_add_base_1#apply(
@@ -119,8 +106,8 @@ fn inherent#closure_env_add_base_1#closure_env_add_base_1#apply(
   x/7: int32
 ) -> int32 {
   let base/6 = closure_env_add_base_1.base_0(env184) in
-  let t215 = (x/7 + base/6) in
-  t215
+  let t220 = (x/7 + base/6) in
+  t220
 }
 
 fn inherent#closure_env_printer_2#closure_env_printer_2#apply(
@@ -128,22 +115,22 @@ fn inherent#closure_env_printer_2#closure_env_printer_2#apply(
   prefix/10: string,
   value/11: int32
 ) -> unit {
-  join inline_cont285(t217: string) -> unit {
-    let message/12 = (prefix/10 + t217) in
-    let inline283 = trait_impl#ToString#string#to_string(message/12) in
-    let inline284 = @runtime(core.string_println)(inline283) in
+  join inline_cont267(t222: string) -> unit {
+    let message/12 = (prefix/10 + t222) in
+    let inline265 = trait_impl#ToString#string#to_string(message/12) in
+    let inline266 = @runtime(core.string_println)(inline265) in
     ()
   } in
-  let inline286 = @runtime(core.int32_to_string)(value/11) in
-  jump inline_cont285(inline286)
+  let inline268 = @runtime(core.int32_to_string)(value/11) in
+  jump inline_cont267(inline268)
 }
 
 fn inherent#closure_env_no_capture_3#closure_env_no_capture_3#apply(
   env186: closure_env_no_capture_3,
   z/16: int32
 ) -> int32 {
-  let t221 = (z/16 * 2) in
-  t221
+  let t226 = (z/16 * 2) in
+  t226
 }
 
 fn inherent#closure_env_play_list_and_point_4#closure_env_play_list_and_point_4#apply(
@@ -153,39 +140,39 @@ fn inherent#closure_env_play_list_and_point_4#closure_env_play_list_and_point_4#
   let point/20 = closure_env_play_list_and_point_4.point_1(env187) in
   match list123/19 {
     Tag_0 => {
-      let inline288 = "Empty list" in
-      let inline289 = trait_impl#ToString#string#to_string(inline288) in
-      let inline290 = @runtime(core.string_println)(inline289) in
+      let inline270 = "Empty list" in
+      let inline271 = trait_impl#ToString#string#to_string(inline270) in
+      let inline272 = @runtime(core.string_println)(inline271) in
       ()
     },
     Tag_1 => {
       let x176 = IntList::Cons._0(list123/19) in
-      join inline_cont301(t225: string) -> unit {
-        join inline_cont298(mtmp178: unit) -> unit {
+      join inline_cont283(t230: string) -> unit {
+        join inline_cont280(mtmp178: unit) -> unit {
           let x179 = Point.x(point/20) in
           let x180 = Point.y(point/20) in
-          join inline_cont296(t226: string) -> unit {
-            let t227 = ("Point: (" + t226) in
-            let t228 = (t227 + ", ") in
-            join inline_cont294(t229: string) -> unit {
-              let t230 = (t228 + t229) in
-              let t231 = (t230 + ")") in
-              let inline292 = trait_impl#ToString#string#to_string(t231) in
-              let inline293 = @runtime(core.string_println)(inline292) in
+          join inline_cont278(t231: string) -> unit {
+            let t232 = ("Point: (" + t231) in
+            let t233 = (t232 + ", ") in
+            join inline_cont276(t234: string) -> unit {
+              let t235 = (t233 + t234) in
+              let t236 = (t235 + ")") in
+              let inline274 = trait_impl#ToString#string#to_string(t236) in
+              let inline275 = @runtime(core.string_println)(inline274) in
               ()
             } in
-            let inline295 = @runtime(core.int32_to_string)(x180) in
-            jump inline_cont294(inline295)
+            let inline277 = @runtime(core.int32_to_string)(x180) in
+            jump inline_cont276(inline277)
           } in
-          let inline297 = @runtime(core.int32_to_string)(x179) in
-          jump inline_cont296(inline297)
+          let inline279 = @runtime(core.int32_to_string)(x179) in
+          jump inline_cont278(inline279)
         } in
-        let inline299 = trait_impl#ToString#string#to_string(t225) in
-        let inline300 = @runtime(core.string_println)(inline299) in
-        jump inline_cont298(())
+        let inline281 = trait_impl#ToString#string#to_string(t230) in
+        let inline282 = @runtime(core.string_println)(inline281) in
+        jump inline_cont280(())
       } in
-      let inline302 = @runtime(core.int32_to_string)(x176) in
-      jump inline_cont301(inline302)
+      let inline284 = @runtime(core.int32_to_string)(x176) in
+      jump inline_cont283(inline284)
     },
   }
 }

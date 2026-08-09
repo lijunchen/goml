@@ -15,8 +15,8 @@ fn early(x/0: int32) -> int32 {
 }
 
 fn closure_early(x/1: int32) -> int32 {
-  let f/3 = closure_env_f_0 {} in
-  inherent#closure_env_f_0#closure_env_f_0#apply(f/3, x/1)
+  let f/3 = pack_closure[inherent#closure_env_f_0#closure_env_f_0#apply](closure_env_f_0 {}) in
+  f/3(x/1)
 }
 
 fn unit_ret(flag/4: bool) -> unit {

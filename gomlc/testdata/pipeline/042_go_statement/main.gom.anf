@@ -1,61 +1,62 @@
 fn child(signal/0: Ref[int32]) -> unit {
-  let inline206 = 1 in
-  let inline207 = @intrinsic(ref.set)(signal/0, inline206) in
+  let inline207 = 1 in
+  let inline208 = @intrinsic(ref.set)(signal/0, inline207) in
   ()
 }
 
 fn main() -> unit {
-  join inline_cont214(signal/1: Ref[int32]) -> unit {
+  join inline_cont215(signal/1: Ref[int32]) -> unit {
     let t179 = closure_env_main_0 { signal_0: signal/1 } in
-    let _wild172 = go t179 in
-    join exit180() -> unit {
-      let inline211 = "main" in
-      let inline212 = trait_impl#ToString#string#to_string(inline211) in
-      let inline213 = @runtime(core.string_println)(inline212) in
+    let t180 = pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](t179) in
+    let _wild172 = go t180 in
+    join exit181() -> unit {
+      let inline212 = "main" in
+      let inline213 = trait_impl#ToString#string#to_string(inline212) in
+      let inline214 = @runtime(core.string_println)(inline213) in
       ()
     } in
     joinrec {
-      join loop181() -> unit {
-        join inline_cont208(t182: int32) -> unit {
-          let t183 = (t182 < 1) in
-          if t183 {
-            jump loop181()
+      join loop182() -> unit {
+        join inline_cont209(t183: int32) -> unit {
+          let t184 = (t183 < 1) in
+          if t184 {
+            jump loop182()
           } else {
-            jump exit180()
+            jump exit181()
           }
         } in
-        let inline209 = @intrinsic(ref.get)(signal/1) in
-        jump inline_cont208(inline209)
+        let inline210 = @intrinsic(ref.get)(signal/1) in
+        jump inline_cont209(inline210)
       } in
     } in
-    jump loop181()
+    jump loop182()
   } in
-  let inline215 = 0 in
-  let inline216 = @intrinsic(ref.new)(inline215) in
-  jump inline_cont214(inline216)
+  let inline216 = 0 in
+  let inline217 = @intrinsic(ref.new)(inline216) in
+  jump inline_cont215(inline217)
 }
 
 fn inherent#Ref#Ref[T]#set__T_int32(self/259: Ref[int32], value/260: int32) -> unit {
-  let t185 = @intrinsic(ref.set)(self/259, value/260) in
+  let t186 = @intrinsic(ref.set)(self/259, value/260) in
   ()
 }
 
 fn inherent#Ref#Ref[T]#new__T_int32(value/257: int32) -> Ref[int32] {
-  let t188 = @intrinsic(ref.new)(value/257) in
-  t188
+  let t189 = @intrinsic(ref.new)(value/257) in
+  t189
 }
 
 fn inherent#Ref#Ref[T]#get__T_int32(self/258: Ref[int32]) -> int32 {
-  let t191 = @intrinsic(ref.get)(self/258) in
-  t191
+  let t192 = @intrinsic(ref.get)(self/258) in
+  t192
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont217(t193: string) -> unit {
-    let t194 = @runtime(core.string_println)(t193) in
+  join inline_cont218(t194: string) -> unit {
+    let t195 = @runtime(core.string_println)(t194) in
     ()
   } in
-  jump inline_cont217(value/31)
+  jump inline_cont218(value/31)
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {
@@ -63,17 +64,17 @@ fn trait_impl#ToString#string#to_string(self/67: string) -> string {
 }
 
 fn trait_impl#PartialEq#int32#eq(self/109: int32, other/110: int32) -> bool {
-  let t199 = (self/109 == other/110) in
-  t199
+  let t200 = (self/109 == other/110) in
+  t200
 }
 
 fn trait_impl#Hash#int32#hash(self/132: int32) -> uint64 {
-  let t202 = @runtime(core.int32_hash)(self/132) in
-  t202
+  let t203 = @runtime(core.int32_hash)(self/132) in
+  t203
 }
 
 fn inherent#closure_env_main_0#closure_env_main_0#apply(env175: closure_env_main_0) -> unit {
   let signal/1 = closure_env_main_0.signal_0(env175) in
-  let inline219 = inherent#Ref#Ref[T]#set__T_int32(signal/1, 1) in
+  let inline220 = inherent#Ref#Ref[T]#set__T_int32(signal/1, 1) in
   ()
 }

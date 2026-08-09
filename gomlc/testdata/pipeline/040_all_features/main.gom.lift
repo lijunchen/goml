@@ -120,9 +120,18 @@ fn build_counter(label/42: string, start/43: int32) -> (
   let count/44 = inherent#Ref#Ref[T]#new__T_int32(start/43) in
   let toggled/45 = inherent#Ref#Ref[T]#new__T_bool(false) in
   let tracker/46 = Tracker { label: label/42, count: count/44, toggled: toggled/45 } in
-  let snapshot/47 = closure_env_snapshot_0 { count_0: count/44 } in
-  let bump/50 = closure_env_bump_1 { count_0: count/44 } in
-  let flip/53 = closure_env_flip_2 { toggled_0: toggled/45 } in
+  let snapshot/47 =
+    pack_closure[inherent#closure_env_snapshot_0#closure_env_snapshot_0#apply](
+      closure_env_snapshot_0 { count_0: count/44 }
+    ) in
+  let bump/50 =
+    pack_closure[inherent#closure_env_bump_1#closure_env_bump_1#apply](
+      closure_env_bump_1 { count_0: count/44 }
+    ) in
+  let flip/53 =
+    pack_closure[inherent#closure_env_flip_2#closure_env_flip_2#apply](
+      closure_env_flip_2 { toggled_0: toggled/45 }
+    ) in
   (tracker/46, snapshot/47, bump/50, flip/53)
 }
 

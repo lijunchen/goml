@@ -22,7 +22,8 @@ fn sum(values/3: List__int32) -> int32 {
 }
 
 fn main() -> unit {
-  let cons/6 = closure_env_cons_0 {} in
+  let cons/6 =
+    pack_closure[inherent#closure_env_cons_0#closure_env_cons_0#apply](closure_env_cons_0 {}) in
   let values/7 = prepend_with(cons/6, 1, prepend_with(cons/6, 2, List__int32::Nil)) in
   println__T_string(inherent#int32#int32#to_string(sum(values/7)))
 }

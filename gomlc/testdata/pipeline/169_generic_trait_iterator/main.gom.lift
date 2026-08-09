@@ -31,10 +31,13 @@ fn main() -> unit {
   let mapped/10 =
     std::iter::map__A_int32__B_int32__I_Counter(
       inherent#Counter#Counter#new(0, 8),
-      closure_env_main_0 {}
+      pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](closure_env_main_0 {})
     ) in
   let filtered/12 =
-    std::iter::filter__I_FnIterator[int32]__T_int32(mapped/10, closure_env_main_1 {}) in
+    std::iter::filter__I_FnIterator[int32]__T_int32(
+      mapped/10,
+      pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](closure_env_main_1 {})
+    ) in
   let limited/13 = std::iter::take__I_FnIterator[int32](filtered/12, 3) in
   let _wild183 =
     let for_iter179 = trait_impl#IntoIterator#FnIterator__int32#into_iter(limited/13) in
@@ -53,11 +56,18 @@ fn main() -> unit {
         }
     } in
   let sum/17 =
-    std::iter::fold__A_int__I_FnIterator[int]__T_int(range(1, 5), 0, closure_env_main_2 {}) in
+    std::iter::fold__A_int__I_FnIterator[int]__T_int(
+      range(1, 5),
+      0,
+      pack_closure[inherent#closure_env_main_2#closure_env_main_2#apply](closure_env_main_2 {})
+    ) in
   let _wild184 = println__T_int(sum/17) in
   let texts/19 =
     std::iter::collect__I_FnIterator[string]__T_string(
-      std::iter::map__A_int__B_string__I_FnIterator[int](range(1, 4), closure_env_main_3 {})
+      std::iter::map__A_int__B_string__I_FnIterator[int](
+        range(1, 4),
+        pack_closure[inherent#closure_env_main_3#closure_env_main_3#apply](closure_env_main_3 {})
+      )
     ) in
   let _wild191 =
     let for_source185 = texts/19 in
@@ -114,10 +124,12 @@ fn std::iter::map__A_int32__B_int32__I_Counter(
   map_fn/5: (int32) -> int32
 ) -> FnIterator__int32 {
   inherent#FnIterator#FnIterator[T]#from_fn__T_int32(
-    closure_env_std_iter_map_A_int32_B_int32_I_Counter_4 {
-      iterator_0: iterator/4,
-      map_fn_1: map_fn/5
-    }
+    pack_closure[inherent#closure_env_std_iter_map_A_int32_B_int32_I_Counter_4#closure_env_std_iter_map_A_int32_B_int32_I_Counter_4#apply](
+      closure_env_std_iter_map_A_int32_B_int32_I_Counter_4 {
+        iterator_0: iterator/4,
+        map_fn_1: map_fn/5
+      }
+    )
   )
 }
 
@@ -126,10 +138,12 @@ fn std::iter::filter__I_FnIterator[int32]__T_int32(
   predicate/8: (int32) -> bool
 ) -> FnIterator__int32 {
   inherent#FnIterator#FnIterator[T]#from_fn__T_int32(
-    closure_env_std_iter_filter_I_FnIterator_int32_T_int32_5 {
-      iterator_0: iterator/7,
-      predicate_1: predicate/8
-    }
+    pack_closure[inherent#closure_env_std_iter_filter_I_FnIterator_int32_T_int32_5#closure_env_std_iter_filter_I_FnIterator_int32_T_int32_5#apply](
+      closure_env_std_iter_filter_I_FnIterator_int32_T_int32_5 {
+        iterator_0: iterator/7,
+        predicate_1: predicate/8
+      }
+    )
   )
 }
 
@@ -146,10 +160,12 @@ fn std::iter::take__I_FnIterator[int32](
       }
     ) in
   inherent#FnIterator#FnIterator[T]#from_fn__T_int32(
-    closure_env_std_iter_take_I_FnIterator_int32_6 {
-      remaining_0: remaining/16,
-      iterator_1: iterator/14
-    }
+    pack_closure[inherent#closure_env_std_iter_take_I_FnIterator_int32_6#closure_env_std_iter_take_I_FnIterator_int32_6#apply](
+      closure_env_std_iter_take_I_FnIterator_int32_6 {
+        remaining_0: remaining/16,
+        iterator_1: iterator/14
+      }
+    )
   )
 }
 
@@ -217,10 +233,12 @@ fn std::iter::map__A_int__B_string__I_FnIterator[int](
   map_fn/5: (int) -> string
 ) -> FnIterator__string {
   inherent#FnIterator#FnIterator[T]#from_fn__T_string(
-    closure_env_std_iter_map_A_int_B_string_I_FnIterator_int_7 {
-      iterator_0: iterator/4,
-      map_fn_1: map_fn/5
-    }
+    pack_closure[inherent#closure_env_std_iter_map_A_int_B_string_I_FnIterator_int_7#closure_env_std_iter_map_A_int_B_string_I_FnIterator_int_7#apply](
+      closure_env_std_iter_map_A_int_B_string_I_FnIterator_int_7 {
+        iterator_0: iterator/4,
+        map_fn_1: map_fn/5
+      }
+    )
   )
 }
 
@@ -261,7 +279,9 @@ fn trait_impl#Iterator#FnIterator__int#next(self/173: FnIterator__int) -> Option
 fn __goml_builtin_range(start/268: int, end/269: int) -> FnIterator__int {
   let current/270 = @intrinsic(ref.new)(start/268) in
   inherent#FnIterator#FnIterator[T]#from_fn__T_int(
-    closure_env_goml_builtin_range_8 { current_0: current/270, end_1: end/269 }
+    pack_closure[inherent#closure_env_goml_builtin_range_8#closure_env_goml_builtin_range_8#apply](
+      closure_env_goml_builtin_range_8 { current_0: current/270, end_1: end/269 }
+    )
   )
 }
 

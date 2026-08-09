@@ -38,20 +38,30 @@ type closure_env_get_0 struct {
 
 func main0() struct{} {
     var x__0 *ref_int_x = ref__Ref_3int(0)
+    var t176 closure_env_get_0 = closure_env_get_0{
+        x_0: x__0,
+    }
+    var get__1 func() int = func() int {
+        return _goml_m_inherent_i_closure__env__get__0_i_closure__env__get__0_i_apply(t176)
+    }
     ref_set__Ref_3int(x__0, 41)
-    var t176 int
-    var inline202 int = ref_get__Ref_3int(x__0)
-    t176 = inline202
-    var t177 string
-    var inline199 string = _goml_runtime_core_int_to_string(t176)
-    t177 = inline199
-    var inline196 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t177)
-    _goml_runtime_core_string_println(inline196)
+    var t177 int = get__1()
+    var t178 string
+    var inline200 string = _goml_runtime_core_int_to_string(t177)
+    t178 = inline200
+    var inline197 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t178)
+    _goml_runtime_core_string_println(inline197)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
     return self__67
+}
+
+func _goml_m_inherent_i_closure__env__get__0_i_closure__env__get__0_i_apply(env174 closure_env_get_0) int {
+    var x__0 *ref_int_x = env174.x_0
+    var t195 int = ref_get__Ref_3int(x__0)
+    return t195
 }
 
 func main() {

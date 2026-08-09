@@ -23,30 +23,39 @@ fn sum(values/3: List__int32) -> int32 {
 }
 
 fn main() -> unit {
-  let cons/6 = closure_env_cons_0 {} in
-  let t185 = prepend_with(cons/6, 2, Tag_0) in
-  let values/7 = prepend_with(cons/6, 1, t185) in
-  let t186 = sum(values/7) in
-  join inline_cont203(t187: string) -> unit {
-    let inline201 = trait_impl#ToString#string#to_string(t187) in
-    let inline202 = @runtime(core.string_println)(inline201) in
-    ()
+  let t185 = closure_env_cons_0 {} in
+  let cons/6 = pack_closure[inherent#closure_env_cons_0#closure_env_cons_0#apply](t185) in
+  join inline_cont209(t186: List__int32) -> unit {
+    join inline_cont206(values/7: List__int32) -> unit {
+      let t187 = sum(values/7) in
+      join inline_cont204(t188: string) -> unit {
+        let inline202 = trait_impl#ToString#string#to_string(t188) in
+        let inline203 = @runtime(core.string_println)(inline202) in
+        ()
+      } in
+      let inline205 = @runtime(core.int32_to_string)(t187) in
+      jump inline_cont204(inline205)
+    } in
+    let inline207 = 1 in
+    let inline208 = cons/6(inline207, t186) in
+    jump inline_cont206(inline208)
   } in
-  let inline204 = @runtime(core.int32_to_string)(t186) in
-  jump inline_cont203(inline204)
+  let inline210 = 2 in
+  let inline211 = cons/6(inline210, Tag_0) in
+  jump inline_cont209(inline211)
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont205(t190: string) -> unit {
-    let t191 = @runtime(core.string_println)(t190) in
+  join inline_cont212(t191: string) -> unit {
+    let t192 = @runtime(core.string_println)(t191) in
     ()
   } in
-  jump inline_cont205(value/31)
+  jump inline_cont212(value/31)
 }
 
 fn inherent#int32#int32#to_string(self/35: int32) -> string {
-  let t194 = @runtime(core.int32_to_string)(self/35) in
-  t194
+  let t195 = @runtime(core.int32_to_string)(self/35) in
+  t195
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {
@@ -58,6 +67,6 @@ fn inherent#closure_env_cons_0#closure_env_cons_0#apply(
   ctor_arg_0: int32,
   ctor_arg_1: List__int32
 ) -> List__int32 {
-  let t199 = List__int32::Cons(ctor_arg_0, ctor_arg_1) in
-  t199
+  let t200 = List__int32::Cons(ctor_arg_0, ctor_arg_1) in
+  t200
 }

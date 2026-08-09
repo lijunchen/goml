@@ -74,87 +74,87 @@ func (_ Some) isOption__int() {}
 func main0() struct{} {
     var value__0 string = "a你好z"
     var t184 bool = _goml_m_inherent_i_string_i_string_i_starts__with(value__0, "a你")
-    var inline367 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t184)
-    _goml_runtime_core_string_println(inline367)
+    var inline368 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t184)
+    _goml_runtime_core_string_println(inline368)
     var t185 bool = _goml_m_inherent_i_string_i_string_i_starts__with(value__0, "你")
-    var inline364 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t185)
-    _goml_runtime_core_string_println(inline364)
+    var inline365 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t185)
+    _goml_runtime_core_string_println(inline365)
     var t186 bool = _goml_m_inherent_i_string_i_string_i_starts__with(value__0, "")
-    var inline361 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t186)
-    _goml_runtime_core_string_println(inline361)
+    var inline362 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t186)
+    _goml_runtime_core_string_println(inline362)
     var t187 bool = _goml_m_inherent_i_string_i_string_i_ends__with(value__0, "好z")
-    var inline358 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t187)
-    _goml_runtime_core_string_println(inline358)
+    var inline359 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t187)
+    _goml_runtime_core_string_println(inline359)
     var t188 bool = _goml_m_inherent_i_string_i_string_i_ends__with(value__0, "你好")
-    var inline355 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t188)
-    _goml_runtime_core_string_println(inline355)
+    var inline356 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t188)
+    _goml_runtime_core_string_println(inline356)
     var t189 bool
-    var inline343 string = ""
-    var inline344 int = _goml_m_inherent_i_string_i_string_i_byte__len(inline343)
-    var inline345 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
-    var inline346 bool = inline344 > inline345
-    if inline346 {
+    var inline344 string = ""
+    var inline345 int = _goml_m_inherent_i_string_i_string_i_byte__len(inline344)
+    var inline346 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
+    var inline347 bool = inline345 > inline346
+    if inline347 {
         t189 = false
     } else {
-        var inline347 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
-        var inline348 int = _goml_m_inherent_i_string_i_string_i_byte__len(inline343)
-        var inline349 int = inline347 - inline348
-        var inline350 bool = _goml_m_inherent_i_string_i_string_i_is__char__boundary(value__0, inline349)
-        if inline350 {
-            var inline351 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
-            var inline352 string = _goml_m_inherent_i_string_i_string_i_byte__slice(value__0, inline349, inline351)
-            var inline353 bool = inline352 == inline343
-            t189 = inline353
+        var inline348 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
+        var inline349 int = _goml_m_inherent_i_string_i_string_i_byte__len(inline344)
+        var inline350 int = inline348 - inline349
+        var inline351 bool = _goml_m_inherent_i_string_i_string_i_is__char__boundary(value__0, inline350)
+        if inline351 {
+            var inline352 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
+            var inline353 string = _goml_m_inherent_i_string_i_string_i_byte__slice(value__0, inline350, inline352)
+            var inline354 bool = inline353 == inline344
+            t189 = inline354
         } else {
             t189 = false
         }
     }
-    var inline340 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t189)
-    _goml_runtime_core_string_println(inline340)
+    var inline341 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t189)
+    _goml_runtime_core_string_println(inline341)
     var t190 bool = _goml_m_inherent_i_string_i_string_i_contains(value__0, "你好")
-    var inline337 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t190)
-    _goml_runtime_core_string_println(inline337)
+    var inline338 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t190)
+    _goml_runtime_core_string_println(inline338)
     var t191 bool = _goml_m_inherent_i_string_i_string_i_contains(value__0, "好z")
-    var inline334 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t191)
-    _goml_runtime_core_string_println(inline334)
+    var inline335 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t191)
+    _goml_runtime_core_string_println(inline335)
     var t192 bool = _goml_m_inherent_i_string_i_string_i_contains(value__0, "你z")
-    var inline331 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t192)
-    _goml_runtime_core_string_println(inline331)
+    var inline332 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t192)
+    _goml_runtime_core_string_println(inline332)
     var t193 bool = _goml_m_inherent_i_string_i_string_i_contains(value__0, "")
-    var inline328 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t193)
-    _goml_runtime_core_string_println(inline328)
+    var inline329 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t193)
+    _goml_runtime_core_string_println(inline329)
     var t194 bool = _goml_m_inherent_i_string_i_string_i_contains(value__0, "a你好z!")
-    var inline325 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t194)
-    _goml_runtime_core_string_println(inline325)
+    var inline326 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t194)
+    _goml_runtime_core_string_println(inline326)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_string_i_string_i_starts__with(self__279 string, prefix__280 string) bool {
     var t208 int
-    var inline383 int = _goml_runtime_core_string_len(prefix__280)
-    t208 = inline383
+    var inline384 int = _goml_runtime_core_string_len(prefix__280)
+    t208 = inline384
     var t209 int
-    var inline381 int = _goml_runtime_core_string_len(self__279)
-    t209 = inline381
+    var inline382 int = _goml_runtime_core_string_len(self__279)
+    t209 = inline382
     var t210 bool = t208 <= t209
     var jp204 bool
     if t210 {
         var t211 int
-        var inline374 int = _goml_runtime_core_string_len(prefix__280)
-        t211 = inline374
-        var inline372 bool = string_is_char_boundary(self__279, t211)
-        jp204 = inline372
+        var inline375 int = _goml_runtime_core_string_len(prefix__280)
+        t211 = inline375
+        var inline373 bool = string_is_char_boundary(self__279, t211)
+        jp204 = inline373
     } else {
         jp204 = false
     }
     if jp204 {
         var t205 int
-        var inline379 int = _goml_runtime_core_string_len(prefix__280)
-        t205 = inline379
+        var inline380 int = _goml_runtime_core_string_len(prefix__280)
+        t205 = inline380
         var t206 string
-        var inline376 int = 0
-        var inline377 string = string_byte_slice(self__279, inline376, t205)
-        t206 = inline377
+        var inline377 int = 0
+        var inline378 string = string_byte_slice(self__279, inline377, t205)
+        t206 = inline378
         var t207 bool = t206 == prefix__280
         return t207
     } else {
@@ -164,32 +164,32 @@ func _goml_m_inherent_i_string_i_string_i_starts__with(self__279 string, prefix_
 
 func _goml_m_inherent_i_string_i_string_i_ends__with(self__281 string, suffix__282 string) bool {
     var t217 int
-    var inline397 int = _goml_runtime_core_string_len(suffix__282)
-    t217 = inline397
+    var inline398 int = _goml_runtime_core_string_len(suffix__282)
+    t217 = inline398
     var t218 int
-    var inline395 int = _goml_runtime_core_string_len(self__281)
-    t218 = inline395
+    var inline396 int = _goml_runtime_core_string_len(self__281)
+    t218 = inline396
     var t219 bool = t217 > t218
     if t219 {
         return false
     } else {
         var t220 int
-        var inline393 int = _goml_runtime_core_string_len(self__281)
-        t220 = inline393
+        var inline394 int = _goml_runtime_core_string_len(self__281)
+        t220 = inline394
         var t221 int
-        var inline391 int = _goml_runtime_core_string_len(suffix__282)
-        t221 = inline391
+        var inline392 int = _goml_runtime_core_string_len(suffix__282)
+        t221 = inline392
         var start__283 int = t220 - t221
         var t224 bool
-        var inline389 bool = string_is_char_boundary(self__281, start__283)
-        t224 = inline389
+        var inline390 bool = string_is_char_boundary(self__281, start__283)
+        t224 = inline390
         if t224 {
             var t225 int
-            var inline387 int = _goml_runtime_core_string_len(self__281)
-            t225 = inline387
+            var inline388 int = _goml_runtime_core_string_len(self__281)
+            t225 = inline388
             var t226 string
-            var inline385 string = string_byte_slice(self__281, start__283, t225)
-            t226 = inline385
+            var inline386 string = string_byte_slice(self__281, start__283, t225)
+            t226 = inline386
             var t227 bool = t226 == suffix__282
             return t227
         } else {
@@ -200,73 +200,74 @@ func _goml_m_inherent_i_string_i_string_i_ends__with(self__281 string, suffix__2
 
 func _goml_m_inherent_i_string_i_string_i_contains(self__284 string, expected__285 string) bool {
     var t232 int
-    var inline424 int = _goml_runtime_core_string_len(expected__285)
-    t232 = inline424
+    var inline426 int = _goml_runtime_core_string_len(expected__285)
+    t232 = inline426
     var t233 bool = t232 == 0
     if t233 {
         return true
     } else {
         var t236 int
-        var inline422 int = _goml_runtime_core_string_len(expected__285)
-        t236 = inline422
+        var inline424 int = _goml_runtime_core_string_len(expected__285)
+        t236 = inline424
         var t237 int
-        var inline420 int = _goml_runtime_core_string_len(self__284)
-        t237 = inline420
+        var inline422 int = _goml_runtime_core_string_len(self__284)
+        t237 = inline422
         var t238 bool = t236 > t237
         if t238 {
             return false
         } else {
             var t239 int
-            var inline418 int = _goml_runtime_core_string_len(self__284)
-            t239 = inline418
+            var inline420 int = _goml_runtime_core_string_len(self__284)
+            t239 = inline420
             var t240 int
-            var inline416 int = _goml_runtime_core_string_len(expected__285)
-            t240 = inline416
+            var inline418 int = _goml_runtime_core_string_len(expected__285)
+            t240 = inline418
             var t241 int = t239 - t240
             var t242 int = t241 + 1
             var t243 FnIterator__int
-            var inline411 int = 0
-            var inline412 *ref_int_x = ref__Ref_3int(inline411)
-            var inline413 closure_env_goml_builtin_range_0 = closure_env_goml_builtin_range_0{
-                current_0: inline412,
+            var inline412 int = 0
+            var inline413 *ref_int_x = ref__Ref_3int(inline412)
+            var inline414 closure_env_goml_builtin_range_0 = closure_env_goml_builtin_range_0{
+                current_0: inline413,
                 end_1: t242,
             }
-            var inline414 FnIterator__int = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(func() Option__int {
-                return _goml_m_inherent_i_closure__en_h5b1fcaf2e23588c4625108f446fe7c51_ange__0_i_apply(inline413)
-            })
-            t243 = inline414
+            var inline415 func() Option__int = func() Option__int {
+                return _goml_m_inherent_i_closure__en_h5b1fcaf2e23588c4625108f446fe7c51_ange__0_i_apply(inline414)
+            }
+            var inline416 FnIterator__int = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(inline415)
+            t243 = inline416
             var for_iter147 FnIterator__int
             for_iter147 = t243
             Loop_loop245:
             for {
                 var for_next148 Option__int
-                var inline407 func() Option__int = for_iter147.next_fn
-                var inline408 Option__int = inline407()
-                for_next148 = inline408
+                var inline408 func() Option__int = for_iter147.next_fn
+                var inline409 Option__int = inline408()
+                for_next148 = inline409
                 switch for_next148.(type) {
                 case None:
                     break Loop_loop245
                 case Some:
                     var x149 int = for_next148.(Some)._0
                     var t247 int
-                    var inline405 int = _goml_runtime_core_string_len(expected__285)
-                    t247 = inline405
+                    var inline406 int = _goml_runtime_core_string_len(expected__285)
+                    t247 = inline406
                     var end__287 int = x149 + t247
                     var t255 bool
-                    var inline403 bool = string_is_char_boundary(self__284, x149)
-                    t255 = inline403
+                    var inline404 bool = string_is_char_boundary(self__284, x149)
+                    t255 = inline404
                     var jp252 bool
                     if t255 {
-                        var inline399 bool = string_is_char_boundary(self__284, end__287)
-                        jp252 = inline399
+                        var inline400 bool = string_is_char_boundary(self__284, end__287)
+                        jp252 = inline400
                     } else {
                         jp252 = false
                     }
                     var jp250 bool
                     if jp252 {
                         var t253 string
-                        var inline401 string = string_byte_slice(self__284, x149, end__287)
-                        t253 = inline401
+                        var inline402 string = string_byte_slice(self__284, x149, end__287)
+                        t253 = inline402
                         var t254 bool = t253 == expected__285
                         jp250 = t254
                     } else {
@@ -302,93 +303,93 @@ func _goml_m_inherent_i_string_i_string_i_is__char__boundary(self__46 string, in
 }
 
 func _goml_m_inherent_i_string_i_string_i_byte__slice(self__43 string, start__44 int, end__45 int) string {
-    var inline426 bool = string_is_char_boundary(self__43, start__44)
-    var inline428 bool
-    if inline426 {
-        var inline431 bool = string_is_char_boundary(self__43, end__45)
-        inline428 = inline431
-    } else {
-        inline428 = false
-    }
+    var inline428 bool = string_is_char_boundary(self__43, start__44)
+    var inline430 bool
     if inline428 {
-        var inline429 string = _goml_runtime_core_string_byte_slice(self__43, start__44, end__45)
-        return inline429
+        var inline433 bool = string_is_char_boundary(self__43, end__45)
+        inline430 = inline433
     } else {
-        var inline430 string = _goml_runtime_core_string_byte_slice(self__43, -1, -1)
-        return inline430
+        inline430 = false
+    }
+    if inline430 {
+        var inline431 string = _goml_runtime_core_string_byte_slice(self__43, start__44, end__45)
+        return inline431
+    } else {
+        var inline432 string = _goml_runtime_core_string_byte_slice(self__43, -1, -1)
+        return inline432
     }
 }
 
 func string_is_char_boundary(value__15 string, index__16 int) bool {
-    var t292 bool = index__16 < 0
-    var jp284 bool
-    if t292 {
-        jp284 = true
+    var t293 bool = index__16 < 0
+    var jp285 bool
+    if t293 {
+        jp285 = true
     } else {
-        var t293 int
-        var inline433 int = _goml_runtime_core_string_len(value__15)
-        t293 = inline433
-        var t294 bool = index__16 > t293
-        jp284 = t294
+        var t294 int
+        var inline437 int = _goml_runtime_core_string_len(value__15)
+        t294 = inline437
+        var t295 bool = index__16 > t294
+        jp285 = t295
     }
-    if jp284 {
+    if jp285 {
         return false
     } else {
-        var t287 int
-        var inline437 int = _goml_runtime_core_string_len(value__15)
-        t287 = inline437
-        var t288 bool = index__16 == t287
-        if t288 {
+        var t288 int
+        var inline441 int = _goml_runtime_core_string_len(value__15)
+        t288 = inline441
+        var t289 bool = index__16 == t288
+        if t289 {
             return true
         } else {
-            var t289 uint8
-            var inline435 uint8 = _goml_runtime_core_string_byte_get(value__15, index__16)
-            t289 = inline435
-            var t290_rhs uint8 = 192
-            var t290 uint8 = t289 & t290_rhs
-            var t291 bool = t290 != 128
-            return t291
+            var t290 uint8
+            var inline439 uint8 = _goml_runtime_core_string_byte_get(value__15, index__16)
+            t290 = inline439
+            var t291_rhs uint8 = 192
+            var t291 uint8 = t290 & t291_rhs
+            var t292 bool = t291 != 128
+            return t292
         }
     }
 }
 
 func string_byte_slice(value__21 string, start__22 int, end__23 int) string {
-    var t303 bool = string_is_char_boundary(value__21, start__22)
-    var jp300 bool
-    if t303 {
-        var t304 bool = string_is_char_boundary(value__21, end__23)
-        jp300 = t304
+    var t304 bool = string_is_char_boundary(value__21, start__22)
+    var jp301 bool
+    if t304 {
+        var t305 bool = string_is_char_boundary(value__21, end__23)
+        jp301 = t305
     } else {
-        jp300 = false
+        jp301 = false
     }
-    if jp300 {
-        var t301 string = _goml_runtime_core_string_byte_slice(value__21, start__22, end__23)
-        return t301
-    } else {
-        var t302 string = _goml_runtime_core_string_byte_slice(value__21, -1, -1)
+    if jp301 {
+        var t302 string = _goml_runtime_core_string_byte_slice(value__21, start__22, end__23)
         return t302
+    } else {
+        var t303 string = _goml_runtime_core_string_byte_slice(value__21, -1, -1)
+        return t303
     }
 }
 
 func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(next_fn__172 func() Option__int) FnIterator__int {
-    var t307 FnIterator__int = FnIterator__int{
+    var t308 FnIterator__int = FnIterator__int{
         next_fn: next_fn__172,
     }
-    return t307
+    return t308
 }
 
 func _goml_m_inherent_i_closure__en_h5b1fcaf2e23588c4625108f446fe7c51_ange__0_i_apply(env182 closure_env_goml_builtin_range_0) Option__int {
     var current__270 *ref_int_x = env182.current_0
     var end__269 int = env182.end_1
     var value__271 int = ref_get__Ref_3int(current__270)
-    var t321 bool = value__271 < end__269
-    if t321 {
-        var t322 int = value__271 + 1
-        ref_set__Ref_3int(current__270, t322)
-        var t323 Option__int = Some{
+    var t322 bool = value__271 < end__269
+    if t322 {
+        var t323 int = value__271 + 1
+        ref_set__Ref_3int(current__270, t323)
+        var t324 Option__int = Some{
             _0: value__271,
         }
-        return t323
+        return t324
     } else {
         return None{}
     }

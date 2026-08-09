@@ -11,8 +11,11 @@ fn add(a/1: int32, b/2: int32) -> int32 {
 }
 
 fn plus_one(flag/3: bool) -> Result__int32__string {
-  let run/5 = closure_env_run_0 { flag_0: flag/3 } in
-  inherent#closure_env_run_0#closure_env_run_0#apply(run/5)
+  let run/5 =
+    pack_closure[inherent#closure_env_run_0#closure_env_run_0#apply](
+      closure_env_run_0 { flag_0: flag/3 }
+    ) in
+  run/5()
 }
 
 fn show(res/6: Result__int32__string) -> string {

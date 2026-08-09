@@ -4,7 +4,10 @@ fn child(signal/0: Ref[int32]) -> unit {
 
 fn main() -> unit {
   let signal/1 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let _wild172 = go closure_env_main_0 { signal_0: signal/1 } in
+  let _wild172 =
+    go pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](
+      closure_env_main_0 { signal_0: signal/1 }
+    ) in
   let _wild173 =
     while (inherent#Ref#Ref[T]#get__T_int32(signal/1) < 1) {
         ()

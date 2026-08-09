@@ -104,7 +104,10 @@ fn println__T_string(value/31: string) -> unit {
 }
 
 fn roundtrip__T_string(channel/0: Channel[string], value/1: string) -> Option__string {
-  let _wild172 = go closure_env_roundtrip_T_string_0 { channel_0: channel/0, value_1: value/1 } in
+  let _wild172 =
+    go pack_closure[inherent#closure_env_roundtrip_T_string_0#closure_env_roundtrip_T_string_0#apply](
+      closure_env_roundtrip_T_string_0 { channel_0: channel/0, value_1: value/1 }
+    ) in
   inherent#Channel#Channel[T]#recv__T_string(channel/0)
 }
 

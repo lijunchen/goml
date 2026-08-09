@@ -1,7 +1,9 @@
 fn countdown(start/0: int32) -> FnIterator__int32 {
   let current/1 = inherent#Ref#Ref[T]#new__T_int32(start/0) in
   inherent#FnIterator#FnIterator[T]#from_fn__T_int32(
-    closure_env_countdown_0 { current_0: current/1 }
+    pack_closure[inherent#closure_env_countdown_0#closure_env_countdown_0#apply](
+      closure_env_countdown_0 { current_0: current/1 }
+    )
   )
 }
 
@@ -259,7 +261,9 @@ fn trait_impl#Iterator#FnIterator__int32#next(self/173: FnIterator__int32) -> Op
 fn __goml_builtin_range(start/268: int, end/269: int) -> FnIterator__int {
   let current/270 = @intrinsic(ref.new)(start/268) in
   inherent#FnIterator#FnIterator[T]#from_fn__T_int(
-    closure_env_goml_builtin_range_1 { current_0: current/270, end_1: end/269 }
+    pack_closure[inherent#closure_env_goml_builtin_range_1#closure_env_goml_builtin_range_1#apply](
+      closure_env_goml_builtin_range_1 { current_0: current/270, end_1: end/269 }
+    )
   )
 }
 

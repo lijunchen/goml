@@ -1,12 +1,24 @@
 fn main() -> unit {
   let first/4 = Box__int { value: 42 } in
-  let text/6 = inherent#Box#Box[T]#map__T_int__U_string(first/4, closure_env_main_0 {}) in
+  let text/6 =
+    inherent#Box#Box[T]#map__T_int__U_string(
+      first/4,
+      pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](closure_env_main_0 {})
+    ) in
   let _wild173 = println__T_string(Box__string.value(text/6)) in
   let second/7 = Box__int { value: 7 } in
-  let explicit/9 = inherent#Box#Box[T]#map__T_int__U_string(second/7, closure_env_main_1 {}) in
+  let explicit/9 =
+    inherent#Box#Box[T]#map__T_int__U_string(
+      second/7,
+      pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](closure_env_main_1 {})
+    ) in
   let _wild174 = println__T_string(Box__string.value(explicit/9)) in
   let third/10 = Box__int { value: 9 } in
-  let static_call/12 = inherent#Box#Box[T]#map__T_int__U_string(third/10, closure_env_main_2 {}) in
+  let static_call/12 =
+    inherent#Box#Box[T]#map__T_int__U_string(
+      third/10,
+      pack_closure[inherent#closure_env_main_2#closure_env_main_2#apply](closure_env_main_2 {})
+    ) in
   let _wild175 = println__T_string(Box__string.value(static_call/12)) in
   let rendered/13 =
     inherent#Box#Box[T]#render__T_string__U_int(Box__string { value: "value" }, 5) in

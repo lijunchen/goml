@@ -1,135 +1,102 @@
 fn main() -> unit {
   let some/0 = Option__int::Some(3) in
   let t188 = closure_env_main_0 {} in
-  let mapped/2 = inherent#Option#Option[T]#map__T_int__U_string(some/0, t188) in
-  let t189 = inherent#Option#Option[T]#unwrap_or__T_string(mapped/2, "missing") in
-  join inline_cont348(_wild172: unit) -> unit {
-    let t190 = closure_env_main_1 {} in
-    let static_mapped/4 = inherent#Option#Option[T]#map__T_int__U_string(some/0, t190) in
-    join inline_cont344(t191: string) -> unit {
-      join inline_cont341(_wild173: unit) -> unit {
-        let t192 = closure_env_main_2 {} in
-        let chained/6 = inherent#Option#Option[T]#and_then__T_int__U_string(some/0, t192) in
-        join inline_cont337(t193: string) -> unit {
-          join inline_cont334(_wild174: unit) -> unit {
-            let none/7 = Tag_0 in
-            join inline_cont328(converted/8: Result__int__string) -> unit {
-              let t194 = closure_env_main_3 {} in
-              let t195 =
-                inherent#Result#Result[T,E]#unwrap_or_else__E_string__T_int(converted/8, t194) in
-              join inline_cont325(_wild175: unit) -> unit {
-                let ok/10 = Result__int__string::Ok(5) in
-                let t196 = closure_env_main_4 {} in
-                let t197 = inherent#Result#Result[T,E]#map__E_string__T_int__U_int(ok/10, t196) in
-                join inline_cont321(t198: int) -> unit {
-                  join inline_cont318(_wild176: unit) -> unit {
-                    let error/12 = Result__int__string::Err("bad") in
-                    let t199 = closure_env_main_5 {} in
-                    let mapped_error/14 =
-                      inherent#Result#Result[T,E]#map_err__E_string__F_int__T_int(error/12, t199) in
-                    let t200 = closure_env_main_6 {} in
-                    let t201 =
-                      inherent#Result#Result[T,E]#unwrap_or_else__E_int__T_int(
-                        mapped_error/14,
-                        t200
-                      ) in
-                    join inline_cont315(_wild177: unit) -> unit {
-                      let t202 = closure_env_main_7 {} in
-                      let next/17 =
-                        inherent#Result#Result[T,E]#and_then__E_string__T_int__U_string(
-                          ok/10,
-                          t202
-                        ) in
-                      join inline_cont311(t203: string) -> unit {
-                        let inline309 = trait_impl#ToString#string#to_string(t203) in
-                        let inline310 = @runtime(core.string_println)(inline309) in
-                        ()
-                      } in
-                      let inline312 = "missing" in
-                      match next/17 {
-                        Tag_0 => {
-                          let inline313 = Result__string__string::Ok._0(next/17) in
-                          jump inline_cont311(inline313)
-                        },
-                        Tag_1 => {
-                          jump inline_cont311(inline312)
-                        },
-                      }
-                    } in
-                    let inline316 = trait_impl#ToString#int#to_string(t201) in
-                    let inline317 = @runtime(core.string_println)(inline316) in
-                    jump inline_cont315(())
-                  } in
-                  let inline319 = trait_impl#ToString#int#to_string(t198) in
-                  let inline320 = @runtime(core.string_println)(inline319) in
-                  jump inline_cont318(())
-                } in
-                let inline322 = 0 in
-                match t197 {
-                  Tag_0 => {
-                    let inline323 = Result__int__string::Ok._0(t197) in
-                    jump inline_cont321(inline323)
-                  },
-                  Tag_1 => {
-                    jump inline_cont321(inline322)
-                  },
-                }
+  let t189 = pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](t188) in
+  let mapped/2 = inherent#Option#Option[T]#map__T_int__U_string(some/0, t189) in
+  let t190 = inherent#Option#Option[T]#unwrap_or__T_string(mapped/2, "missing") in
+  let _wild172 = println__T_string(t190) in
+  let t191 = closure_env_main_1 {} in
+  let t192 = pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](t191) in
+  let static_mapped/4 = inherent#Option#Option[T]#map__T_int__U_string(some/0, t192) in
+  let t193 = inherent#Option#Option[T]#unwrap_or__T_string(static_mapped/4, "missing") in
+  let _wild173 = println__T_string(t193) in
+  let t194 = closure_env_main_2 {} in
+  let t195 = pack_closure[inherent#closure_env_main_2#closure_env_main_2#apply](t194) in
+  let chained/6 = inherent#Option#Option[T]#and_then__T_int__U_string(some/0, t195) in
+  let t196 = inherent#Option#Option[T]#unwrap_or__T_string(chained/6, "missing") in
+  let _wild174 = println__T_string(t196) in
+  let none/7 = Tag_0 in
+  let converted/8 = inherent#Option#Option[T]#ok_or__E_string__T_int(none/7, "none") in
+  let t197 = closure_env_main_3 {} in
+  let t198 = pack_closure[inherent#closure_env_main_3#closure_env_main_3#apply](t197) in
+  let t199 = inherent#Result#Result[T,E]#unwrap_or_else__E_string__T_int(converted/8, t198) in
+  let _wild175 = println__T_int(t199) in
+  let ok/10 = Result__int__string::Ok(5) in
+  let t200 = closure_env_main_4 {} in
+  let t201 = pack_closure[inherent#closure_env_main_4#closure_env_main_4#apply](t200) in
+  let t202 = inherent#Result#Result[T,E]#map__E_string__T_int__U_int(ok/10, t201) in
+  join inline_cont350(t203: int) -> unit {
+    join inline_cont347(_wild176: unit) -> unit {
+      let t204 = closure_env_main_5 {} in
+      let t205 = pack_closure[inherent#closure_env_main_5#closure_env_main_5#apply](t204) in
+      join inline_cont339(mapped_error/14: Result__int__int) -> unit {
+        let t206 = closure_env_main_6 {} in
+        let t207 = pack_closure[inherent#closure_env_main_6#closure_env_main_6#apply](t206) in
+        join inline_cont333(t208: int) -> unit {
+          join inline_cont330(_wild177: unit) -> unit {
+            let t209 = closure_env_main_7 {} in
+            let t210 = pack_closure[inherent#closure_env_main_7#closure_env_main_7#apply](t209) in
+            join inline_cont323(next/17: Result__string__string) -> unit {
+              join inline_cont319(t211: string) -> unit {
+                let inline317 = trait_impl#ToString#string#to_string(t211) in
+                let inline318 = @runtime(core.string_println)(inline317) in
+                ()
               } in
-              let inline326 = trait_impl#ToString#int#to_string(t195) in
-              let inline327 = @runtime(core.string_println)(inline326) in
-              jump inline_cont325(())
+              let inline320 = "missing" in
+              match next/17 {
+                Tag_0 => {
+                  let inline321 = Result__string__string::Ok._0(next/17) in
+                  jump inline_cont319(inline321)
+                },
+                Tag_1 => {
+                  jump inline_cont319(inline320)
+                },
+              }
             } in
-            let inline329 = "none" in
-            match none/7 {
-              Tag_0 => {
-                let inline330 = Result__int__string::Err(inline329) in
-                jump inline_cont328(inline330)
-              },
-              Tag_1 => {
-                let inline331 = Option__int::Some._0(none/7) in
-                let inline333 = Result__int__string::Ok(inline331) in
-                jump inline_cont328(inline333)
-              },
-            }
+            let inline324 = 5 in
+            let inline326 = t210(inline324) in
+            jump inline_cont323(inline326)
           } in
-          let inline335 = trait_impl#ToString#string#to_string(t193) in
-          let inline336 = @runtime(core.string_println)(inline335) in
-          jump inline_cont334(())
+          let inline331 = trait_impl#ToString#int#to_string(t208) in
+          let inline332 = @runtime(core.string_println)(inline331) in
+          jump inline_cont330(())
         } in
-        let inline338 = "missing" in
-        match chained/6 {
+        match mapped_error/14 {
           Tag_0 => {
-            jump inline_cont337(inline338)
+            let inline334 = Result__int__int::Ok._0(mapped_error/14) in
+            jump inline_cont333(inline334)
           },
           Tag_1 => {
-            let inline339 = Option__string::Some._0(chained/6) in
-            jump inline_cont337(inline339)
+            let inline336 = Result__int__int::Err._0(mapped_error/14) in
+            let inline338 = t207(inline336) in
+            jump inline_cont333(inline338)
           },
         }
       } in
-      let inline342 = trait_impl#ToString#string#to_string(t191) in
-      let inline343 = @runtime(core.string_println)(inline342) in
-      jump inline_cont341(())
+      let inline343 = "bad" in
+      let inline345 = t205(inline343) in
+      let inline346 = Result__int__int::Err(inline345) in
+      jump inline_cont339(inline346)
     } in
-    let inline345 = "missing" in
-    match static_mapped/4 {
-      Tag_0 => {
-        jump inline_cont344(inline345)
-      },
-      Tag_1 => {
-        let inline346 = Option__string::Some._0(static_mapped/4) in
-        jump inline_cont344(inline346)
-      },
-    }
+    let inline348 = trait_impl#ToString#int#to_string(t203) in
+    let inline349 = @runtime(core.string_println)(inline348) in
+    jump inline_cont347(())
   } in
-  let inline349 = trait_impl#ToString#string#to_string(t189) in
-  let inline350 = @runtime(core.string_println)(inline349) in
-  jump inline_cont348(())
+  let inline351 = 0 in
+  match t202 {
+    Tag_0 => {
+      let inline352 = Result__int__string::Ok._0(t202) in
+      jump inline_cont350(inline352)
+    },
+    Tag_1 => {
+      jump inline_cont350(inline351)
+    },
+  }
 }
 
 fn inherent#int#int#to_string(self/34: int) -> string {
-  let t206 = @runtime(core.int_to_string)(self/34) in
-  t206
+  let t214 = @runtime(core.int_to_string)(self/34) in
+  t214
 }
 
 fn inherent#Option#Option[T]#map__T_int__U_string(
@@ -142,19 +109,19 @@ fn inherent#Option#Option[T]#map__T_int__U_string(
     },
     Tag_1 => {
       let x163 = Option__int::Some._0(self/310) in
-      let t211 = map_fn/311(x163) in
-      let t212 = Option__string::Some(t211) in
-      t212
+      let t219 = map_fn/311(x163) in
+      let t220 = Option__string::Some(t219) in
+      t220
     },
   }
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont351(t214: string) -> unit {
-    let t215 = @runtime(core.string_println)(t214) in
+  join inline_cont354(t222: string) -> unit {
+    let t223 = @runtime(core.string_println)(t222) in
     ()
   } in
-  jump inline_cont351(value/31)
+  jump inline_cont354(value/31)
 }
 
 fn inherent#Option#Option[T]#unwrap_or__T_string(
@@ -182,8 +149,8 @@ fn inherent#Option#Option[T]#and_then__T_int__U_string(
     },
     Tag_1 => {
       let x164 = Option__int::Some._0(self/313) in
-      let t224 = next/314(x164) in
-      t224
+      let t232 = next/314(x164) in
+      t232
     },
   }
 }
@@ -194,29 +161,29 @@ fn inherent#Option#Option[T]#ok_or__E_string__T_int(
 ) -> Result__int__string {
   match self/316 {
     Tag_0 => {
-      let t229 = Result__int__string::Err(error/317) in
-      t229
+      let t237 = Result__int__string::Err(error/317) in
+      t237
     },
     Tag_1 => {
       let x165 = Option__int::Some._0(self/316) in
-      let t230 = Result__int__string::Ok(x165) in
-      t230
+      let t238 = Result__int__string::Ok(x165) in
+      t238
     },
   }
 }
 
 fn println__T_int(value/31: int) -> unit {
-  join inline_cont352(t232: string) -> unit {
-    let t233 = @runtime(core.string_println)(t232) in
+  join inline_cont355(t240: string) -> unit {
+    let t241 = @runtime(core.string_println)(t240) in
     ()
   } in
-  let inline353 = @runtime(core.int_to_string)(value/31) in
-  jump inline_cont352(inline353)
+  let inline356 = @runtime(core.int_to_string)(value/31) in
+  jump inline_cont355(inline356)
 }
 
 fn inherent#string#string#len(self/37: string) -> int {
-  let t236 = @runtime(core.string_len)(self/37) in
-  t236
+  let t244 = @runtime(core.string_len)(self/37) in
+  t244
 }
 
 fn inherent#Result#Result[T,E]#unwrap_or_else__E_string__T_int(
@@ -230,8 +197,8 @@ fn inherent#Result#Result[T,E]#unwrap_or_else__E_string__T_int(
     },
     Tag_1 => {
       let x159 = Result__int__string::Err._0(self/301) in
-      let t241 = fallback/302(x159) in
-      t241
+      let t249 = fallback/302(x159) in
+      t249
     },
   }
 }
@@ -243,14 +210,14 @@ fn inherent#Result#Result[T,E]#map__E_string__T_int__U_int(
   match self/319 {
     Tag_0 => {
       let x166 = Result__int__string::Ok._0(self/319) in
-      let t246 = map_fn/320(x166) in
-      let t247 = Result__int__string::Ok(t246) in
-      t247
+      let t254 = map_fn/320(x166) in
+      let t255 = Result__int__string::Ok(t254) in
+      t255
     },
     Tag_1 => {
       let x167 = Result__int__string::Err._0(self/319) in
-      let t248 = Result__int__string::Err(x167) in
-      t248
+      let t256 = Result__int__string::Err(x167) in
+      t256
     },
   }
 }
@@ -277,14 +244,14 @@ fn inherent#Result#Result[T,E]#map_err__E_string__F_int__T_int(
   match self/323 {
     Tag_0 => {
       let x168 = Result__int__string::Ok._0(self/323) in
-      let t257 = Result__int__int::Ok(x168) in
-      t257
+      let t265 = Result__int__int::Ok(x168) in
+      t265
     },
     Tag_1 => {
       let x169 = Result__int__string::Err._0(self/323) in
-      let t258 = map_fn/324(x169) in
-      let t259 = Result__int__int::Err(t258) in
-      t259
+      let t266 = map_fn/324(x169) in
+      let t267 = Result__int__int::Err(t266) in
+      t267
     },
   }
 }
@@ -300,8 +267,8 @@ fn inherent#Result#Result[T,E]#unwrap_or_else__E_int__T_int(
     },
     Tag_1 => {
       let x159 = Result__int__int::Err._0(self/301) in
-      let t264 = fallback/302(x159) in
-      t264
+      let t272 = fallback/302(x159) in
+      t272
     },
   }
 }
@@ -313,13 +280,13 @@ fn inherent#Result#Result[T,E]#and_then__E_string__T_int__U_string(
   match self/327 {
     Tag_0 => {
       let x170 = Result__int__string::Ok._0(self/327) in
-      let t269 = next/328(x170) in
-      t269
+      let t277 = next/328(x170) in
+      t277
     },
     Tag_1 => {
       let x171 = Result__int__string::Err._0(self/327) in
-      let t270 = Result__string__string::Err(x171) in
-      t270
+      let t278 = Result__string__string::Err(x171) in
+      t278
     },
   }
 }
@@ -344,65 +311,65 @@ fn trait_impl#ToString#string#to_string(self/67: string) -> string {
 }
 
 fn trait_impl#ToString#int#to_string(self/69: int) -> string {
-  let t279 = @runtime(core.int_to_string)(self/69) in
-  t279
+  let t287 = @runtime(core.int_to_string)(self/69) in
+  t287
 }
 
 fn inherent#closure_env_main_0#closure_env_main_0#apply(
   env179: closure_env_main_0,
   value/1: int
 ) -> string {
-  let inline355 = @runtime(core.int_to_string)(value/1) in
-  inline355
+  let inline358 = @runtime(core.int_to_string)(value/1) in
+  inline358
 }
 
 fn inherent#closure_env_main_1#closure_env_main_1#apply(
   env180: closure_env_main_1,
   value/3: int
 ) -> string {
-  join inline_cont356(t285: string) -> string {
-    let t286 = ("static:" + t285) in
-    t286
+  join inline_cont359(t293: string) -> string {
+    let t294 = ("static:" + t293) in
+    t294
   } in
-  let inline357 = @runtime(core.int_to_string)(value/3) in
-  jump inline_cont356(inline357)
+  let inline360 = @runtime(core.int_to_string)(value/3) in
+  jump inline_cont359(inline360)
 }
 
 fn inherent#closure_env_main_2#closure_env_main_2#apply(
   env181: closure_env_main_2,
   value/5: int
 ) -> Option__string {
-  join inline_cont358(t289: string) -> Option__string {
-    let t290 = ("value:" + t289) in
-    let t291 = Option__string::Some(t290) in
-    t291
+  join inline_cont361(t297: string) -> Option__string {
+    let t298 = ("value:" + t297) in
+    let t299 = Option__string::Some(t298) in
+    t299
   } in
-  let inline359 = @runtime(core.int_to_string)(value/5) in
-  jump inline_cont358(inline359)
+  let inline362 = @runtime(core.int_to_string)(value/5) in
+  jump inline_cont361(inline362)
 }
 
 fn inherent#closure_env_main_3#closure_env_main_3#apply(
   env182: closure_env_main_3,
   error/9: string
 ) -> int {
-  let inline361 = @runtime(core.string_len)(error/9) in
-  inline361
+  let inline364 = @runtime(core.string_len)(error/9) in
+  inline364
 }
 
 fn inherent#closure_env_main_4#closure_env_main_4#apply(
   env183: closure_env_main_4,
   value/11: int
 ) -> int {
-  let t297 = (value/11 + 2) in
-  t297
+  let t305 = (value/11 + 2) in
+  t305
 }
 
 fn inherent#closure_env_main_5#closure_env_main_5#apply(
   env184: closure_env_main_5,
   value/13: string
 ) -> int {
-  let inline363 = @runtime(core.string_len)(value/13) in
-  inline363
+  let inline366 = @runtime(core.string_len)(value/13) in
+  inline366
 }
 
 fn inherent#closure_env_main_6#closure_env_main_6#apply(
@@ -416,11 +383,11 @@ fn inherent#closure_env_main_7#closure_env_main_7#apply(
   env186: closure_env_main_7,
   value/16: int
 ) -> Result__string__string {
-  join inline_cont364(t305: string) -> Result__string__string {
-    let t306 = ("next:" + t305) in
-    let t307 = Result__string__string::Ok(t306) in
-    t307
+  join inline_cont367(t313: string) -> Result__string__string {
+    let t314 = ("next:" + t313) in
+    let t315 = Result__string__string::Ok(t314) in
+    t315
   } in
-  let inline365 = @runtime(core.int_to_string)(value/16) in
-  jump inline_cont364(inline365)
+  let inline368 = @runtime(core.int_to_string)(value/16) in
+  jump inline_cont367(inline368)
 }
