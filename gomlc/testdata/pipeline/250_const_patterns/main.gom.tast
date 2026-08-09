@@ -1,0 +1,119 @@
+const answer: int = (40 + 2);
+const alternate: int = 7;
+const enabled: bool = true;
+const greeting: string = "hello";
+const marker: uint8 = 65;
+const ratio: float64 = 1.5;
+const computed_answer: int = 42;
+const classified_at_compile_time: int = 1;
+
+fn make_answer() -> int {
+    42
+}
+
+fn comptime_classify(value/0: int) -> int {
+    match (value/0 : int) {
+        computed_answer => 1,
+        _ : int => 0,
+    }
+}
+
+fn classify(value/1: int) -> string {
+    match (value/1 : int) {
+        42 | 7 => "known",
+        _ : int => "other",
+    }
+}
+
+fn classify_bool(value/2: bool) -> string {
+    match (value/2 : bool) {
+        true => "enabled",
+        false => "disabled",
+    }
+}
+
+fn classify_pair(value/3: (int, uint8)) -> bool {
+    match (value/3 : (int, uint8)) {
+        (42, 65) => true,
+        _ : (int, uint8) => false,
+    }
+}
+
+fn classify_string(value/4: string) -> bool {
+    match (value/4 : string) {
+        "hello" => true,
+        _ : string => false,
+    }
+}
+
+fn classify_float(value/5: float64) -> bool {
+    match (value/5 : float64) {
+        ratio => true,
+        _ : float64 => false,
+    }
+}
+
+fn shadow_constant() -> int {
+    let answer/6: int = 9;
+    (answer/6 : int)
+}
+
+fn explicit_binding(value/7: int) -> int {
+    match (value/7 : int) {
+        answer/8 @ _ : int => (answer/8 : int),
+    }
+}
+
+fn matches_if_let(value/9: int) -> bool {
+    match (value/9 : int) {
+        42 =>
+          {
+              true
+          },
+        _ : int =>
+          {
+              false
+          },
+    }
+}
+
+fn matches_let_else(value/10: int) -> bool {
+    let 42 =
+      (value/10 : int) else
+      {
+          return false
+      };
+    true
+}
+
+fn for_binding() -> int {
+    let total/11: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
+    for answer/12: int in
+      [1, 2] {
+        (Ref[int]::set : (Ref[int], int) -> unit)(
+          (total/11 : Ref[int]),
+          (Ref[int]::get : (Ref[int]) -> int)((total/11 : Ref[int])) + (answer/12 : int)
+        )
+    };
+    (Ref[int]::get : (Ref[int]) -> int)((total/11 : Ref[int]))
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((classify : (int) -> string)(42));
+    (println : (string) -> unit)((classify : (int) -> string)(7));
+    (println : (string) -> unit)((classify : (int) -> string)(0));
+    (println : (string) -> unit)((classify_bool : (bool) -> string)(true));
+    (println : (string) -> unit)((classify_bool : (bool) -> string)(false));
+    (println : (bool) -> unit)((classify_pair : ((int, uint8)) -> bool)((42, 65)));
+    (println : (bool) -> unit)((classify_pair : ((int, uint8)) -> bool)((42, 66)));
+    (println : (bool) -> unit)((classify_string : (string) -> bool)("hello"));
+    (println : (bool) -> unit)((classify_float : (float64) -> bool)(1.5));
+    (println : (int) -> unit)((shadow_constant : () -> int)());
+    (println : (int) -> unit)((explicit_binding : (int) -> int)(11));
+    (println : (bool) -> unit)((matches_if_let : (int) -> bool)(42));
+    (println : (bool) -> unit)((matches_if_let : (int) -> bool)(41));
+    (println : (bool) -> unit)((matches_let_else : (int) -> bool)(42));
+    (println : (bool) -> unit)((matches_let_else : (int) -> bool)(41));
+    (println : (int) -> unit)((for_binding : () -> int)());
+    (println : (int) -> unit)((classified_at_compile_time : int))
+}

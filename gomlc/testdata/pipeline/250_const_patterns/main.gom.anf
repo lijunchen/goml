@@ -1,0 +1,354 @@
+const answer: int = (40 + 2);
+
+const alternate: int = 7;
+
+const enabled: bool = true;
+
+const greeting: string = "hello";
+
+const marker: uint8 = 65;
+
+const ratio: float64 = 1.5;
+
+const computed_answer: int = 42;
+
+const classified_at_compile_time: int = 1;
+
+fn make_answer() -> int {
+  42
+}
+
+fn comptime_classify(value/0: int) -> int {
+  let match172 = value/0 in
+  let t206 = (value/0 == computed_answer) in
+  if t206 {
+    1
+  } else {
+    0
+  }
+}
+
+fn classify(value/1: int) -> string {
+  match value/1 {
+    42 => {
+      "known"
+    },
+    7 => {
+      "known"
+    },
+    _ => {
+      "other"
+    },
+  }
+}
+
+fn classify_bool(value/2: bool) -> string {
+  match value/2 {
+    true => {
+      "enabled"
+    },
+    false => {
+      "disabled"
+    },
+  }
+}
+
+fn classify_pair(value/3: (int, uint8)) -> bool {
+  let x173 = value/3.0 in
+  let x174 = value/3.1 in
+  match x174 {
+    65 => {
+      match x173 {
+        42 => {
+          true
+        },
+        _ => {
+          false
+        },
+      }
+    },
+    _ => {
+      false
+    },
+  }
+}
+
+fn classify_string(value/4: string) -> bool {
+  match value/4 {
+    "hello" => {
+      true
+    },
+    _ => {
+      false
+    },
+  }
+}
+
+fn classify_float(value/5: float64) -> bool {
+  let match175 = value/5 in
+  let t229 = (value/5 == ratio) in
+  if t229 {
+    true
+  } else {
+    false
+  }
+}
+
+fn shadow_constant() -> int {
+  let answer/6 = 9 in
+  answer/6
+}
+
+fn explicit_binding(value/7: int) -> int {
+  let match176 = value/7 in
+  let answer/8 = value/7 in
+  value/7
+}
+
+fn matches_if_let(value/9: int) -> bool {
+  match value/9 {
+    42 => {
+      true
+    },
+    _ => {
+      false
+    },
+  }
+}
+
+fn matches_let_else(value/10: int) -> bool {
+  let mtmp177 = value/10 in
+  match value/10 {
+    42 => {
+      true
+    },
+    _ => {
+      false
+    },
+  }
+}
+
+fn for_binding() -> int {
+  join inline_cont309(total/11: Ref[int]) -> int {
+    let for_source178 = [1, 2] in
+    let for_limit179 = 2 in
+    let for_index180 = 0 in
+    join exit244() -> int {
+      let _wild183 = () in
+      let inline308 = @intrinsic(ref.get)(total/11) in
+      inline308
+    } in
+    joinrec {
+      join loop246() -> int {
+        let t247 = (for_index180 < for_limit179) in
+        if t247 {
+          let for_item181 = @intrinsic(array.get)(for_source178, for_index180) in
+          let t248 = (for_index180 + 1) in
+          let _wild182 = for_index180 = t248 in
+          let answer/12 = for_item181 in
+          join inline_cont305(t249: int) -> int {
+            let t250 = (t249 + for_item181) in
+            let inline304 = @intrinsic(ref.set)(total/11, t250) in
+            jump loop246()
+          } in
+          let inline306 = @intrinsic(ref.get)(total/11) in
+          jump inline_cont305(inline306)
+        } else {
+          jump exit244()
+        }
+      } in
+    } in
+    jump loop246()
+  } in
+  let inline310 = 0 in
+  let inline311 = @intrinsic(ref.new)(inline310) in
+  jump inline_cont309(inline311)
+}
+
+fn main() -> unit {
+  let t253 = classify(42) in
+  let _wild184 = println__T_string(t253) in
+  let t254 = classify(7) in
+  let _wild185 = println__T_string(t254) in
+  let t255 = classify(0) in
+  let _wild186 = println__T_string(t255) in
+  let t256 = classify_bool(true) in
+  let _wild187 = println__T_string(t256) in
+  let t257 = classify_bool(false) in
+  let _wild188 = println__T_string(t257) in
+  let t258 = (42, 65) in
+  let t259 = classify_pair(t258) in
+  let _wild189 = println__T_bool(t259) in
+  let t260 = (42, 66) in
+  let t261 = classify_pair(t260) in
+  let _wild190 = println__T_bool(t261) in
+  let t262 = classify_string("hello") in
+  let _wild191 = println__T_bool(t262) in
+  let t263 = classify_float(1.5) in
+  join inline_cont352(_wild192: unit) -> unit {
+    join inline_cont350(t264: int) -> unit {
+      join inline_cont347(_wild193: unit) -> unit {
+        join inline_cont343(t265: int) -> unit {
+          join inline_cont340(_wild194: unit) -> unit {
+            join inline_cont338(t266: bool) -> unit {
+              join inline_cont335(_wild195: unit) -> unit {
+                join inline_cont333(t267: bool) -> unit {
+                  join inline_cont330(_wild196: unit) -> unit {
+                    join inline_cont327(t268: bool) -> unit {
+                      join inline_cont324(_wild197: unit) -> unit {
+                        join inline_cont321(t269: bool) -> unit {
+                          join inline_cont318(_wild198: unit) -> unit {
+                            let t270 = for_binding() in
+                            join inline_cont315(_wild199: unit) -> unit {
+                              let inline313 =
+                                trait_impl#ToString#int#to_string(classified_at_compile_time) in
+                              let inline314 = @runtime(core.string_println)(inline313) in
+                              ()
+                            } in
+                            let inline316 = trait_impl#ToString#int#to_string(t270) in
+                            let inline317 = @runtime(core.string_println)(inline316) in
+                            jump inline_cont315(())
+                          } in
+                          let inline319 = trait_impl#ToString#bool#to_string(t269) in
+                          let inline320 = @runtime(core.string_println)(inline319) in
+                          jump inline_cont318(())
+                        } in
+                        let inline322 = 41 in
+                        let inline323 = inline322 in
+                        match inline322 {
+                          42 => {
+                            jump inline_cont321(true)
+                          },
+                          _ => {
+                            jump inline_cont321(false)
+                          },
+                        }
+                      } in
+                      let inline325 = trait_impl#ToString#bool#to_string(t268) in
+                      let inline326 = @runtime(core.string_println)(inline325) in
+                      jump inline_cont324(())
+                    } in
+                    let inline328 = 42 in
+                    let inline329 = inline328 in
+                    match inline328 {
+                      42 => {
+                        jump inline_cont327(true)
+                      },
+                      _ => {
+                        jump inline_cont327(false)
+                      },
+                    }
+                  } in
+                  let inline331 = trait_impl#ToString#bool#to_string(t267) in
+                  let inline332 = @runtime(core.string_println)(inline331) in
+                  jump inline_cont330(())
+                } in
+                let inline334 = 41 in
+                match inline334 {
+                  42 => {
+                    jump inline_cont333(true)
+                  },
+                  _ => {
+                    jump inline_cont333(false)
+                  },
+                }
+              } in
+              let inline336 = trait_impl#ToString#bool#to_string(t266) in
+              let inline337 = @runtime(core.string_println)(inline336) in
+              jump inline_cont335(())
+            } in
+            let inline339 = 42 in
+            match inline339 {
+              42 => {
+                jump inline_cont338(true)
+              },
+              _ => {
+                jump inline_cont338(false)
+              },
+            }
+          } in
+          let inline341 = trait_impl#ToString#int#to_string(t265) in
+          let inline342 = @runtime(core.string_println)(inline341) in
+          jump inline_cont340(())
+        } in
+        let inline344 = 11 in
+        let inline345 = inline344 in
+        let inline346 = inline344 in
+        jump inline_cont343(inline344)
+      } in
+      let inline348 = trait_impl#ToString#int#to_string(t264) in
+      let inline349 = @runtime(core.string_println)(inline348) in
+      jump inline_cont347(())
+    } in
+    let inline351 = 9 in
+    jump inline_cont350(inline351)
+  } in
+  let inline353 = trait_impl#ToString#bool#to_string(t263) in
+  let inline354 = @runtime(core.string_println)(inline353) in
+  jump inline_cont352(())
+}
+
+fn inherent#Ref#Ref[T]#new__T_int(value/257: int) -> Ref[int] {
+  let t274 = @intrinsic(ref.new)(value/257) in
+  t274
+}
+
+fn inherent#Ref#Ref[T]#get__T_int(self/258: Ref[int]) -> int {
+  let t277 = @intrinsic(ref.get)(self/258) in
+  t277
+}
+
+fn inherent#Ref#Ref[T]#set__T_int(self/259: Ref[int], value/260: int) -> unit {
+  let t279 = @intrinsic(ref.set)(self/259, value/260) in
+  ()
+}
+
+fn println__T_string(value/31: string) -> unit {
+  join inline_cont355(t281: string) -> unit {
+    let t282 = @runtime(core.string_println)(t281) in
+    ()
+  } in
+  jump inline_cont355(value/31)
+}
+
+fn println__T_bool(value/31: bool) -> unit {
+  join inline_cont356(t284: string) -> unit {
+    let t285 = @runtime(core.string_println)(t284) in
+    ()
+  } in
+  let inline357 = @runtime(core.bool_to_string)(value/31) in
+  jump inline_cont356(inline357)
+}
+
+fn println__T_int(value/31: int) -> unit {
+  join inline_cont358(t287: string) -> unit {
+    let t288 = @runtime(core.string_println)(t287) in
+    ()
+  } in
+  let inline359 = @runtime(core.int_to_string)(value/31) in
+  jump inline_cont358(inline359)
+}
+
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
+}
+
+fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
+  let t293 = @runtime(core.bool_to_string)(self/66) in
+  t293
+}
+
+fn trait_impl#ToString#int#to_string(self/69: int) -> string {
+  let t296 = @runtime(core.int_to_string)(self/69) in
+  t296
+}
+
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
+  let t299 = @intrinsic(eq.primitive)(self/103, other/104) in
+  t299
+}
+
+fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
+  let t302 = @runtime(core.int_hash)(self/129) in
+  t302
+}

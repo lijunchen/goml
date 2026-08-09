@@ -1,0 +1,127 @@
+package main
+file main.gom
+  const answer: int = 40 + 2;
+
+  const alternate: int = 7;
+
+  const enabled: bool = true;
+
+  const greeting: string = "hello";
+
+  const marker: byte = b'\x41';
+
+  const ratio: float64 = 1.5;
+
+  const classified_at_compile_time: int = def/1/9(42);
+
+  const computed_answer: int = def/1/8();
+
+  #[comptime]
+  fn make_answer() -> int {
+      42
+  }
+
+  #[comptime]
+  fn comptime_classify(local/1/0: int) -> int {
+      match value/0 {
+          def/1/7 => 1,
+          _ => 0,
+      }
+  }
+
+  fn classify(local/1/1: int) -> string {
+      match value/1 {
+          def/1/0 | def/1/1 => "known",
+          _ => "other",
+      }
+  }
+
+  fn classify_bool(local/1/2: bool) -> string {
+      match value/2 {
+          def/1/2 => "enabled",
+          false => "disabled",
+      }
+  }
+
+  fn classify_pair(local/1/3: (int, byte)) -> bool {
+      match value/3 {
+          (def/1/0, def/1/4) => true,
+          _ => false,
+      }
+  }
+
+  fn classify_string(local/1/4: string) -> bool {
+      match value/4 {
+          def/1/3 => true,
+          _ => false,
+      }
+  }
+
+  fn classify_float(local/1/5: float64) -> bool {
+      match value/5 {
+          def/1/5 => true,
+          _ => false,
+      }
+  }
+
+  fn shadow_constant() -> int {
+      let local/1/6 = 9;
+      answer/6
+  }
+
+  fn explicit_binding(local/1/7: int) -> int {
+      match value/7 {
+          local/1/8 @ _ => answer/8,
+      }
+  }
+
+  fn matches_if_let(local/1/9: int) -> bool {
+      match value/9 {
+          def/1/0 =>
+            {
+                true
+            },
+          _ =>
+            {
+                false
+            },
+      }
+  }
+
+  fn matches_let_else(local/1/10: int) -> bool {
+      let def/1/0 =
+        value/10 else
+        {
+            return false
+        };
+      true
+  }
+
+  fn for_binding() -> int {
+      let local/1/11 = Ref::new(0);
+      for local/1/12 in
+        [1, 2] {
+          total/11.set(total/11.get() + answer/12)
+      };
+      total/11.get()
+  }
+
+  fn main() -> unit {
+      println(def/1/10(42));
+      println(def/1/10(7));
+      println(def/1/10(0));
+      println(def/1/11(true));
+      println(def/1/11(false));
+      println(def/1/12((42, b'\x41')));
+      println(def/1/12((42, b'\x42')));
+      println(def/1/13("hello"));
+      println(def/1/14(1.5));
+      println(def/1/15());
+      println(def/1/16(11));
+      println(def/1/17(42));
+      println(def/1/17(41));
+      println(def/1/18(42));
+      println(def/1/18(41));
+      println(def/1/19());
+      println(def/1/6)
+  }

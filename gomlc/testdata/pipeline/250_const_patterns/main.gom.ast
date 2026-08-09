@@ -1,0 +1,127 @@
+package main;
+const answer: int = 40 + 2;
+
+const alternate: int = 7;
+
+const enabled: bool = true;
+
+const greeting: string = "hello";
+
+const marker: byte = b'\x41';
+
+const ratio: float64 = 1.5;
+
+const classified_at_compile_time: int = comptime_classify(42);
+
+const computed_answer: int = make_answer();
+
+#[comptime]
+fn make_answer() -> int {
+    42
+}
+
+#[comptime]
+fn comptime_classify(value: int) -> int {
+    match value {
+        computed_answer => 1,
+        _ => 0,
+    }
+}
+
+fn classify(value: int) -> string {
+    match value {
+        answer | alternate => "known",
+        _ => "other",
+    }
+}
+
+fn classify_bool(value: bool) -> string {
+    match value {
+        enabled => "enabled",
+        false => "disabled",
+    }
+}
+
+fn classify_pair(value: (int, byte)) -> bool {
+    match value {
+        (answer, marker) => true,
+        _ => false,
+    }
+}
+
+fn classify_string(value: string) -> bool {
+    match value {
+        greeting => true,
+        _ => false,
+    }
+}
+
+fn classify_float(value: float64) -> bool {
+    match value {
+        ratio => true,
+        _ => false,
+    }
+}
+
+fn shadow_constant() -> int {
+    let answer = 9;
+    answer
+}
+
+fn explicit_binding(value: int) -> int {
+    match value {
+        answer @ _ => answer,
+    }
+}
+
+fn matches_if_let(value: int) -> bool {
+    match value {
+        answer =>
+          {
+              true
+          },
+        _ =>
+          {
+              false
+          },
+    }
+}
+
+fn matches_let_else(value: int) -> bool {
+    let answer =
+      value else
+      {
+          return false
+      };
+    true
+}
+
+fn for_binding() -> int {
+    let total = Ref::new(0);
+    for answer in
+      [1, 2] {
+        total.set(total.get() + answer)
+    };
+    total.get()
+}
+
+fn main() -> unit {
+    println(classify(42));
+    println(classify(7));
+    println(classify(0));
+    println(classify_bool(true));
+    println(classify_bool(false));
+    println(classify_pair((42, b'\x41')));
+    println(classify_pair((42, b'\x42')));
+    println(classify_string("hello"));
+    println(classify_float(1.5));
+    println(shadow_constant());
+    println(explicit_binding(11));
+    println(matches_if_let(42));
+    println(matches_if_let(41));
+    println(matches_let_else(42));
+    println(matches_let_else(41));
+    println(for_binding());
+    println(classified_at_compile_time)
+}
+
