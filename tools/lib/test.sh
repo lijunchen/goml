@@ -9,12 +9,17 @@ temporary="$(mktemp -d)"
 trap 'rm -rf "$temporary"' EXIT
 
 test -f "$prefix/lib/builtin/contract.gom"
+test -f "$prefix/lib/builtin/runtime.gom"
+test -f "$prefix/lib/builtin/impls.gom"
+test -f "$prefix/lib/builtin/language.gom"
+test -f "$prefix/lib/builtin/numeric.gom"
+test -f "$prefix/lib/builtin/derive.gom"
 test -f "$prefix/lib/prelude/prelude.gom"
 test -f "$prefix/lib/std/goml.toml"
-test -f "$prefix/lib/builtin_contract.gom"
-test -f "$prefix/lib/builtin_prelude.gom"
-test -f "$prefix/lib/builtin_numeric.gom"
-test -f "$prefix/lib/builtin_derive.gom"
+test ! -e "$prefix/lib/builtin_contract.gom"
+test ! -e "$prefix/lib/builtin_prelude.gom"
+test ! -e "$prefix/lib/builtin_numeric.gom"
+test ! -e "$prefix/lib/builtin_derive.gom"
 
 mkdir -p "$temporary/bin"
 cp "$prefix/bin/gomlc" "$temporary/bin/gomlc"
@@ -23,31 +28,16 @@ if "$temporary/bin/gomlc" __builtin-interface > "$temporary/stdout" 2> "$tempora
     exit 1
 fi
 
-grep -F "could not find builtin and prelude resources in $temporary/lib" "$temporary/stderr" >/dev/null
+grep -F "could not read builtin resource $temporary/lib/builtin/contract.gom" "$temporary/stderr" >/dev/null
 grep -F "builtin/contract.gom" "$temporary/stderr" >/dev/null
-grep -F "builtin_contract.gom" "$temporary/stderr" >/dev/null
 
 cd "$temporary"
-"$prefix/bin/gomlc" __builtin-interface >/dev/null
+cp -R "$prefix/lib" "$temporary/lib"
+"$temporary/bin/gomlc" __builtin-interface >/dev/null
+"$temporary/bin/gomlc" __prelude-interface >/dev/null
 
-mkdir -p "$temporary/legacy/bin" "$temporary/legacy/lib"
-cp "$prefix/bin/gomlc" "$temporary/legacy/bin/gomlc"
-cp "$prefix/lib/builtin_contract.gom" "$temporary/legacy/lib/builtin_contract.gom"
-cp "$prefix/lib/builtin_prelude.gom" "$temporary/legacy/lib/builtin_prelude.gom"
-cp "$prefix/lib/builtin_numeric.gom" "$temporary/legacy/lib/builtin_numeric.gom"
-cp "$prefix/lib/builtin_derive.gom" "$temporary/legacy/lib/builtin_derive.gom"
-"$temporary/legacy/bin/gomlc" __builtin-interface >/dev/null
-
-mkdir -p "$temporary/incomplete/bin" "$temporary/incomplete/lib/builtin"
-cp "$prefix/bin/gomlc" "$temporary/incomplete/bin/gomlc"
-cp "$prefix/lib/builtin_contract.gom" "$temporary/incomplete/lib/builtin_contract.gom"
-cp "$prefix/lib/builtin_prelude.gom" "$temporary/incomplete/lib/builtin_prelude.gom"
-cp "$prefix/lib/builtin_numeric.gom" "$temporary/incomplete/lib/builtin_numeric.gom"
-cp "$prefix/lib/builtin_derive.gom" "$temporary/incomplete/lib/builtin_derive.gom"
-cp "$prefix/lib/builtin/contract.gom" "$temporary/incomplete/lib/builtin/contract.gom"
-
-if "$temporary/incomplete/bin/gomlc" __builtin-interface > "$temporary/incomplete/stdout" 2> "$temporary/incomplete/stderr"; then
+mv "$temporary/lib/prelude/prelude.gom" "$temporary/lib/prelude/prelude.gom.missing"
+if "$temporary/bin/gomlc" __prelude-interface > "$temporary/prelude-stdout" 2> "$temporary/prelude-stderr"; then
     exit 1
 fi
-
-grep -F "incomplete current builtin and prelude resource layout" "$temporary/incomplete/stderr" >/dev/null
+grep -F "could not read prelude resource $temporary/lib/prelude/prelude.gom" "$temporary/prelude-stderr" >/dev/null

@@ -379,6 +379,7 @@ fn dependency_loader_rejects_invalid_comptime_local_types() -> unit {
     let world = package_world();
     match artifact_dependency_environments(
         world.builtin_interface.exports,
+        world.prelude.interface_unit.exports,
         world.standard,
         no_standard_needs(),
         Vec::[interface],

@@ -470,7 +470,16 @@ fn checks_cross_file_package_definitions() -> unit {
             None => testing::fail("expected cross-file HIR"),
         }
     }
-    let checked = check_package_files_for_link_with_dependencies(hir_files, Vec::new());
+    let checked = check_package_files_for_link_with_dependencies(
+        hir_files,
+        match implicit_prelude_hir_files() {
+            Ok(files) => files,
+            Err(error) => {
+                testing::fail(error);
+                Vec::[]
+            },
+        },
+    );
     testing::assert_eq(checked.diagnostics.len(), 0);
     match checked.tast {
         Some(file) => {
@@ -688,7 +697,7 @@ fn permits_runtime_externs_in_builtin_sources() -> unit {
                 "#[runtime(\"core.string_get\")] extern fn string_get_raw(value: string, index: int) -> char; fn load(value: string, index: int) -> char { string_get_raw(value, index) }",
             ),
         ),
-        "prelude/prelude.gom",
+        "builtin/runtime.gom",
     );
     let files: Vec[hir::File] = Vec::[];
     match lowered.hir {
@@ -697,6 +706,42 @@ fn permits_runtime_externs_in_builtin_sources() -> unit {
     };
     let checked = check_builtin_package_files(files);
     testing::assert_eq(checked.diagnostics.len(), 0)
+}
+
+#[test]
+fn rejects_runtime_externs_in_prelude_sources() -> unit {
+    let lowered = hir::lower_package(
+        ast::lower(
+            parser::parse(
+                "package prelude; #[runtime(\"std.io.println\")] extern fn output(value: string) -> unit;",
+            ),
+        ),
+        "prelude/prelude.gom",
+        "prelude",
+    );
+    let files: Vec[hir::File] = Vec::[];
+    match lowered.hir {
+        Some(file) => files.push(file),
+        None => testing::fail("expected prelude HIR"),
+    };
+    let checked = check_package_files_for_link_with_dependencies(files, Vec::[]);
+    testing::assert(
+        has_diagnostic(checked.diagnostics, "extern output is not permitted in this source"),
+    )
+}
+
+#[test]
+fn hides_raw_builtin_helpers_from_user_sources() -> unit {
+    testing::assert(
+        has_diagnostic(
+            checked_diagnostics("fn main() -> char { string_get_raw(\"value\", 0) }"),
+            "Unresolved callee string_get_raw",
+        ),
+    );
+    testing::assert_eq(
+        checked_diagnostics("fn main() -> char { string_get(\"value\", 0) }").len(),
+        0,
+    )
 }
 
 #[test]

@@ -1,5 +1,6 @@
 package resources;
 
+use std::collections;
 use std::testing;
 
 fn assert_strings(actual: Vec[string], expected: Vec[string]) -> unit {
@@ -30,31 +31,16 @@ fn required_runtime_abi(value: Option[RuntimeAbiSpec]) -> RuntimeAbiSpec {
 }
 
 #[test]
-fn loads_builtin_sources_from_toolchain_lib() -> unit {
-    match builtin_sources() {
-        Ok(values) => {
-            testing::assert_eq(values.len(), 4);
-            testing::assert(values[0].path.ends_with("/builtin/contract.gom"));
-            testing::assert(values[1].path.ends_with("/prelude/prelude.gom"));
-            testing::assert(values[2].path.ends_with("/builtin/numeric.gom"));
-            testing::assert(values[3].path.ends_with("/builtin/derive.gom"));
-            testing::assert(values[0].source.len() > 0);
-            testing::assert(values[1].source.len() > 0);
-            testing::assert(values[2].source.len() > 0);
-            testing::assert(values[3].source.len() > 0)
-        },
-        Err(error) => testing::fail(error),
-    }
-}
-
-#[test]
 fn loads_builtin_and_prelude_layers_independently() -> unit {
     match builtin_layer_sources() {
         Ok(values) => {
-            testing::assert_eq(values.len(), 3);
+            testing::assert_eq(values.len(), 6);
             testing::assert(values[0].path.ends_with("/builtin/contract.gom"));
-            testing::assert(values[1].path.ends_with("/builtin/numeric.gom"));
-            testing::assert(values[2].path.ends_with("/builtin/derive.gom"))
+            testing::assert(values[1].path.ends_with("/builtin/runtime.gom"));
+            testing::assert(values[2].path.ends_with("/builtin/impls.gom"));
+            testing::assert(values[3].path.ends_with("/builtin/language.gom"));
+            testing::assert(values[4].path.ends_with("/builtin/numeric.gom"));
+            testing::assert(values[5].path.ends_with("/builtin/derive.gom"))
         },
         Err(error) => testing::fail(error),
     };
@@ -64,6 +50,51 @@ fn loads_builtin_and_prelude_layers_independently() -> unit {
             testing::assert(values[0].path.ends_with("/prelude/prelude.gom"))
         },
         Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
+fn exposes_explicit_prelude_builtin_surface() -> unit {
+    let names = prelude_builtin_export_names();
+    testing::assert(collections::contains(names, "Option"));
+    testing::assert(collections::contains(names, "Iterator"));
+    testing::assert(collections::contains(names, "vec_new"));
+    testing::assert(!collections::contains(names, "string_get_raw"));
+    testing::assert(!collections::contains(names, "derive_output_new"))
+}
+
+#[test]
+fn keeps_runtime_bridges_in_the_builtin_layer() -> unit {
+    let found_standard_runtime = Ref::new(false);
+    for source in match builtin_layer_sources() {
+        Ok(values) => values,
+        Err(error) => {
+            testing::fail(error);
+            Vec::[]
+        },
+    } {
+        if source.source.contains("#[runtime(\"std.") {
+            found_standard_runtime.set(true)
+        } else {}
+    }
+    testing::assert(found_standard_runtime.get());
+    for source in match prelude_sources() {
+        Ok(values) => values,
+        Err(error) => {
+            testing::fail(error);
+            Vec::[]
+        },
+    } {
+        testing::assert(!source.source.contains("#[runtime("))
+    }
+    for spec in standard_package_specs() {
+        match standard_sources(spec.name) {
+            Ok(Some(values)) => for source in values {
+                testing::assert(!source.source.contains("#[runtime("))
+            },
+            Ok(None) => testing::fail("expected standard package source"),
+            Err(error) => testing::fail(error),
+        }
     }
 }
 
@@ -106,7 +137,7 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
     testing::assert_eq(fs.declared_name, "fs");
     assert_strings(fs.source_paths, Vec::["std/fs/error.gom", "std/fs/fs.gom"]);
     assert_strings(fs.dependencies, Vec::["std::bytes", "std::internal::host", "std::io"]);
-    assert_strings(fs.link_dependencies, Vec::["std::bytes", "std::io"]);
+    assert_strings(fs.link_dependencies, Vec::["std::bytes", "std::internal::host", "std::io"]);
     let host = match standard_package_spec("std::internal::host") {
         Some(value) => value,
         None => {
@@ -180,6 +211,7 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
     assert_strings(
         standard_package_link_closure(Vec::["std::json", "std::fs"]),
         Vec::[
+            "std::internal::host",
             "std::bytes",
             "std::io",
             "std::num",

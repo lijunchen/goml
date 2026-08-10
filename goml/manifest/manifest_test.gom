@@ -1,6 +1,32 @@
 package manifest;
 
+use gomlang::bootstrap_goml::test_support;
 use std::testing;
+
+fn manifest_error(source: string) -> string {
+    let root = test_support::workspace("manifest_reserved_toolchain_path");
+    let path = root + "/goml.toml";
+    test_support::write_file(path, source);
+    match load(path) {
+        Ok(_) => {
+            testing::fail("expected manifest error");
+            ""
+        },
+        Err(error) => error,
+    }
+}
+
+#[test]
+fn rejects_toolchain_module_paths_and_dependencies() -> unit {
+    testing::assert_eq(
+        manifest_error("[module]\npath = \"builtin::fake\"\n"),
+        "module path builtin::fake is reserved for the toolchain",
+    );
+    testing::assert_eq(
+        manifest_error("[module]\npath = \"demo\"\n\n[dependencies]\n\"prelude\" = \"0.1.0\"\n"),
+        "module path prelude is reserved for the toolchain",
+    )
+}
 
 #[test]
 fn parses_escaped_unicode_manifest_strings() -> unit {

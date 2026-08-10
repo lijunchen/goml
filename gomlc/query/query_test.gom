@@ -513,6 +513,33 @@ fn resolves_builtin_method_definitions() -> unit {
 }
 
 #[test]
+fn resolves_prelude_function_definitions() -> unit {
+    let source = "fn main() -> unit { println(\"hello\") }";
+    match last_substring(source, "println") {
+        Some(offset) => {
+            let analysis = analyze("main.gom", source);
+            match goto_definition(analysis, offset) {
+                Some(definition) => {
+                    testing::assert(definition.source_path.ends_with("/prelude/prelude.gom"));
+                    match source_by_path(analysis.sources, definition.source_path) {
+                        Some(target) => {
+                            testing::assert_eq(target.package_name, "prelude");
+                            testing::assert_eq(
+                                target.source.byte_slice(definition.span.start, definition.span.end),
+                                "println",
+                            )
+                        },
+                        None => testing::fail("expected prelude source"),
+                    }
+                },
+                None => testing::fail("expected prelude function definition"),
+            }
+        },
+        None => testing::fail("expected println call"),
+    }
+}
+
+#[test]
 fn resolves_qualified_standard_library_definitions() -> unit {
     let source = "use std::io; fn main() -> unit { io::println(\"x\") }";
     match last_substring(source, "println") {
@@ -755,6 +782,36 @@ fn completes_builtin_and_dyn_trait_members() -> unit {
             }
         },
         None => testing::fail("expected dyn member"),
+    }
+}
+
+#[test]
+fn completes_only_the_public_prelude_surface() -> unit {
+    let print_source = "fn main() -> unit { pri }";
+    match last_substring(print_source, "pri") {
+        Some(offset) => {
+            let items = completions(analyze("main.gom", print_source), offset + 3);
+            testing::assert(has_completion(items, "print"));
+            testing::assert(has_completion(items, "println"))
+        },
+        None => testing::fail("expected prelude completion prefix"),
+    };
+    let string_source = "fn main() -> unit { string_ }";
+    match last_substring(string_source, "string_") {
+        Some(offset) => {
+            let items = completions(analyze("main.gom", string_source), offset + 7);
+            testing::assert(has_completion(items, "string_get"));
+            testing::assert(!has_completion(items, "string_get_raw"))
+        },
+        None => testing::fail("expected builtin completion prefix"),
+    };
+    let derive_source = "fn main() -> unit { derive_ }";
+    match last_substring(derive_source, "derive_") {
+        Some(offset) => {
+            let items = completions(analyze("main.gom", derive_source), offset + 7);
+            testing::assert(!has_completion(items, "derive_output_new"))
+        },
+        None => testing::fail("expected derive completion prefix"),
     }
 }
 

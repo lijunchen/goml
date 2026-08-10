@@ -1790,11 +1790,266 @@ fn decodes_artifact_type_shapes() -> unit {
     testing::assert_eq(wire::artifact_json_finish(writer), predicate_json)
 }
 
+fn toolchain_dependency_test_interface(package_name: string, deps: Vec[(string, string)]) -> artifact::ArtifactInterfaceUnit {
+    let exports = interface_codec::empty_exports();
+    interface_codec::new_unit(
+        package_name,
+        exports,
+        artifact::ArtifactPackageInterface {
+            package_name,
+            name: package_name,
+            value_exports: Vec::[],
+            enum_variants: Vec::[],
+        },
+        deps,
+    )
+}
+
+#[test]
+fn diagnoses_builtin_and_prelude_interface_mismatches_separately() -> unit {
+    let world = package_world();
+    let builtin_mismatch = toolchain_dependency_test_interface(
+        "demo::dependency",
+        Vec::[("builtin", "wrong"), ("prelude", artifact_prelude_interface_hash(world))],
+    );
+    match artifact_resolve_interface_units(
+        world,
+        "demo::app",
+        Vec::["demo::dependency"],
+        Vec::[builtin_mismatch],
+    ) {
+        Ok(_) => testing::fail("expected builtin interface mismatch"),
+        Err(error) => testing::assert(
+            main_string_contains(error, "different builtin interface_hash"),
+        ),
+    };
+    let prelude_mismatch = toolchain_dependency_test_interface(
+        "demo::dependency",
+        Vec::[("builtin", artifact_builtin_interface_hash(world)), ("prelude", "wrong")],
+    );
+    match artifact_resolve_interface_units(
+        world,
+        "demo::app",
+        Vec::["demo::dependency"],
+        Vec::[prelude_mismatch],
+    ) {
+        Ok(_) => testing::fail("expected prelude interface mismatch"),
+        Err(error) => testing::assert(
+            main_string_contains(error, "different prelude interface_hash"),
+        ),
+    }
+}
+
+#[test]
+fn rejects_explicit_builtin_and_prelude_imports() -> unit {
+    let values = Vec::[
+        ast::lower(parser::parse("package main; use builtin; use prelude; fn main() -> unit {}")),
+    ];
+    let diagnostics = standard_internal_import_diagnostics(values, Vec::["main.gom"], "demo");
+    testing::assert_eq(diagnostics.len(), 2);
+    testing::assert_eq(diagnostics[0].message, "package builtin is internal to the toolchain");
+    testing::assert_eq(diagnostics[1].message, "package prelude is internal to the toolchain")
+}
+
+fn test_world_container(value: bytes::Bytes) -> wire::ArtifactBinaryContainer {
+    match wire::decode_artifact_binary_container(value) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error);
+            wire::ArtifactBinaryContainer { kind: 3, sections: Vec::[] }
+        },
+    }
+}
+
+fn test_world_section(value: wire::ArtifactBinaryContainer, id: uint16) -> wire::ArtifactBinarySection {
+    match wire::artifact_binary_find_section(value, id) {
+        Some(value) => value,
+        None => {
+            testing::fail("expected compiler world section");
+            wire::ArtifactBinarySection {
+                id,
+                version: 1,
+                flags: wire::required_section_flag(),
+                data: bytes::Bytes::new(),
+            }
+        },
+    }
+}
+
+fn test_world_encode_sections(kind: uint8, sections: Vec[wire::ArtifactBinarySection]) -> bytes::Bytes {
+    match wire::encode_artifact_binary_container(kind, sections) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error);
+            bytes::Bytes::new()
+        },
+    }
+}
+
+fn world_without_test_section(value: bytes::Bytes, id: uint16) -> bytes::Bytes {
+    let container = test_world_container(value);
+    let sections: Vec[wire::ArtifactBinarySection] = Vec::[];
+    for section in container.sections {
+        if section.id != id {
+            sections.push(section)
+        } else {}
+    }
+    test_world_encode_sections(container.kind, sections)
+}
+
+fn world_with_test_section_version(value: bytes::Bytes, id: uint16, version: uint16) -> bytes::Bytes {
+    let container = test_world_container(value);
+    let sections: Vec[wire::ArtifactBinarySection] = Vec::[];
+    for section in container.sections {
+        sections.push(
+            if section.id == id {
+                wire::ArtifactBinarySection {
+                    id: section.id,
+                    version,
+                    flags: section.flags,
+                    data: section.data,
+                }
+            } else {
+                section
+            },
+        )
+    }
+    test_world_encode_sections(container.kind, sections)
+}
+
+fn replaced_test_dependency(values: Vec[(string, string)], name: string, hash: string) -> Vec[
+    (string, string),
+] {
+    let result: Vec[(string, string)] = Vec::[];
+    for value in values {
+        result.push(
+            if value.0 == name {
+                (name, hash)
+            } else {
+                value
+            },
+        )
+    }
+    result
+}
+
+fn world_with_test_package_dependency(
+    value: bytes::Bytes,
+    section_id: uint16,
+    dependency_name: string,
+    dependency_hash: string,
+) -> bytes::Bytes {
+    let container = test_world_container(value);
+    let interface_section = test_world_section(container, section_id);
+    let core_section = test_world_section(container, section_id + 1);
+    let interface = match interface_codec::decode_binary(interface_section.data) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error);
+            toolchain_dependency_test_interface("invalid", Vec::[])
+        },
+    };
+    let core_unit = match core_codec::decode_binary(core_section.data) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error);
+            world_core_unit(
+                "invalid",
+                "invalid",
+                interface,
+                interface.exports,
+                core::File {
+                    functions: Vec::[],
+                    enums: Vec::[],
+                    structs: Vec::[],
+                    type_instances: Vec::[],
+                    constants: Vec::[],
+                },
+            )
+        },
+    };
+    let deps = replaced_test_dependency(interface.deps, dependency_name, dependency_hash);
+    let interface = interface_codec::new_unit_with_comptime(
+        interface.package_name,
+        interface.exports,
+        interface.package_interface,
+        interface.comptime,
+        deps,
+    );
+    let core_unit = artifact::ArtifactCoreUnit {
+        package_name: core_unit.package_name,
+        declared_name: core_unit.declared_name,
+        interface_hash: interface.interface_hash,
+        exports: core_unit.exports,
+        core_ir: core_unit.core_ir,
+        deps,
+        sources: core_unit.sources,
+        tests: core_unit.tests,
+    };
+    let interface_data = match interface_codec::encode_binary(interface) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error);
+            bytes::Bytes::new()
+        },
+    };
+    let core_data = match core_codec::encode_binary(core_unit) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error);
+            bytes::Bytes::new()
+        },
+    };
+    let sections: Vec[wire::ArtifactBinarySection] = Vec::[];
+    for section in container.sections {
+        sections.push(
+            if section.id == section_id {
+                wire::ArtifactBinarySection {
+                    id: section.id,
+                    version: section.version,
+                    flags: section.flags,
+                    data: interface_data,
+                }
+            } else if section.id == section_id + 1 {
+                wire::ArtifactBinarySection {
+                    id: section.id,
+                    version: section.version,
+                    flags: section.flags,
+                    data: core_data,
+                }
+            } else {
+                section
+            },
+        )
+    }
+    test_world_encode_sections(container.kind, sections)
+}
+
+fn assert_world_decode_error(value: bytes::Bytes, expected: string) -> unit {
+    match decode_package_world(value) {
+        Ok(_) => testing::fail("expected compiler world decode error"),
+        Err(error) => testing::assert(main_string_contains(error, expected)),
+    }
+}
+
 #[test]
 fn standard_interface_hashes_are_stable() -> unit {
-    let builtin = builtin_artifact_dependency().1;
+    let world = package_world();
+    let builtin = artifact_builtin_interface_hash(world);
+    let prelude = artifact_prelude_interface_hash(world);
     testing::assert_eq(builtin, builtin_artifact_dependency().1);
+    testing::assert_eq(prelude, prelude_artifact_dependency().1);
     testing::assert_eq(builtin.byte_len(), 64);
+    testing::assert_eq(prelude.byte_len(), 64);
+    testing::assert(
+        artifact_interface_has_dependency(world.prelude.interface_unit, "builtin", builtin),
+    );
+    testing::assert(
+        artifact_interface_has_dependency(world.standard.ascii.interface_unit, "builtin", builtin),
+    );
+    testing::assert(
+        artifact_interface_has_dependency(world.standard.ascii.interface_unit, "prelude", prelude),
+    );
     let first = package_world().standard;
     let second = package_world().standard;
     testing::assert_eq(
@@ -1875,6 +2130,22 @@ fn compiler_world_artifact_round_trips() -> unit {
                 decoded.builtin_interface.interface_hash,
                 world.builtin_interface.interface_hash,
             );
+            testing::assert_eq(decoded.prelude.interface_unit.package_name, "prelude");
+            testing::assert_eq(
+                decoded.prelude.interface_unit.interface_hash,
+                world.prelude.interface_unit.interface_hash,
+            );
+            testing::assert_eq(
+                decoded.prelude.core_value.functions.len(),
+                world.prelude.core_value.functions.len(),
+            );
+            testing::assert(
+                artifact_interface_has_dependency(
+                    decoded.prelude.interface_unit,
+                    "builtin",
+                    decoded.builtin_interface.interface_hash,
+                ),
+            );
             testing::assert_eq(
                 decoded.standard.ascii.interface_unit.interface_hash,
                 world.standard.ascii.interface_unit.interface_hash,
@@ -1936,6 +2207,38 @@ fn compiler_world_artifact_round_trips() -> unit {
         Ok(_) => testing::fail("expected truncated compiler world to fail"),
         Err(_) => (),
     }
+}
+
+#[test]
+fn compiler_world_artifact_validates_prelude_sections_and_hash_chain() -> unit {
+    let world = package_world();
+    let encoded = match encode_package_world(world) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error);
+            bytes::Bytes::new()
+        },
+    };
+    assert_world_decode_error(
+        world_without_test_section(encoded, 4.to_uint16()),
+        "missing a required section",
+    );
+    assert_world_decode_error(
+        world_without_test_section(encoded, 5.to_uint16()),
+        "missing a required section",
+    );
+    assert_world_decode_error(
+        world_with_test_section_version(encoded, 4.to_uint16(), 2.to_uint16()),
+        "invalid world artifact section",
+    );
+    assert_world_decode_error(
+        world_with_test_package_dependency(encoded, 4.to_uint16(), "builtin", "wrong"),
+        "prelude builtin dependency does not match",
+    );
+    assert_world_decode_error(
+        world_with_test_package_dependency(encoded, 38.to_uint16(), "prelude", "wrong"),
+        "standard package prelude dependency does not match",
+    )
 }
 
 #[test]

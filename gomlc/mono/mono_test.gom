@@ -24,6 +24,22 @@ fn test_builtins(counter: Ref[int]) -> core::File {
     }
 }
 
+fn test_prelude(builtins: core::File, counter: Ref[int]) -> core::File {
+    match core::lower_prelude(builtins, counter) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error);
+            core::File {
+                functions: Vec::new(),
+                enums: Vec::new(),
+                structs: Vec::new(),
+                type_instances: Vec::new(),
+                constants: Vec::new(),
+            }
+        },
+    }
+}
+
 fn lower_source(source: string) -> File {
     lower(core::lower(tast::check(hir::lower(ast::lower(parser::parse(source)), "main.gom"))))
 }
@@ -31,13 +47,14 @@ fn lower_source(source: string) -> File {
 fn lower_linked_source(source: string) -> File {
     let counter = Ref::new(0);
     let builtins = test_builtins(counter);
+    let prelude = test_prelude(builtins, counter);
     let user = core::lower_with_counter_and_types(
         tast::check_for_link(hir::lower(ast::lower(parser::parse(source)), "main.gom")),
         counter,
         core::enum_defs_to_tast(builtins.enums),
         core::struct_defs_to_tast(builtins.structs),
     );
-    lower(core::link_with_builtins(builtins, user))
+    lower(core::link_with_dependencies(builtins, Vec::[prelude], user))
 }
 
 fn lower_checked_source(source: string) -> LowerResult {
