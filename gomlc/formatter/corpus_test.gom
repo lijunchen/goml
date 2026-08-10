@@ -38,7 +38,7 @@ fn formats_repository_corpus_without_semantic_changes() -> unit {
     let files: Vec[string] = Vec::new();
     collect_corpus(path::join(root, "gomlc"), files);
     collect_corpus(path::join(root, "goml"), files);
-    collect_corpus(path::join(root, "stdlib"), files);
+    collect_corpus(path::join(root, "lib"), files);
     testing::assert(files.len() >= 100);
     let completed: Result[unit, Vec[task::IndexedError[string]]] = task::for_each_concurrent(
         8,
