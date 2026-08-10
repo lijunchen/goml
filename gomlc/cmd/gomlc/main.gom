@@ -324,6 +324,11 @@ fn main() -> unit {
             } else {
                 fail("usage: gomlc __builtin-interface")
             },
+            "__prelude-interface" => if args.len() == 2 {
+                io::print(prelude_artifact_json())
+            } else {
+                fail("usage: gomlc __prelude-interface")
+            },
             "__test-diagnostics" => run_test_diagnostics(args),
             RUN_SINGLE_COMMAND => match parse_run_args(args) {
                 Ok(run_args) => run_single(run_args),

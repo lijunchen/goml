@@ -255,6 +255,9 @@ fn artifact_link_struct_definitions(world: PackageWorld, values: Vec[artifact::A
     for definition in world.builtins.structs {
         result.push(definition)
     }
+    for definition in world.prelude.core_value.structs {
+        result.push(definition)
+    }
     for standard in selected_link_standard_core(
         world.standard,
         artifact_core_standard_needs(values),
@@ -289,6 +292,9 @@ fn artifact_world_struct_definitions(world: PackageWorld) -> Vec[core::StructDef
     let result: Vec[core::StructDef] = Vec::[];
     for definition in world.builtins.structs {
         result.push(definition)
+    }
+    for definition in world.prelude.environment_exports.structs {
+        result.push(core::lower_struct_def(definition))
     }
     let packages: Vec[ArtifactStandardPackage] = Vec::[
         world.standard.root,
@@ -345,6 +351,11 @@ fn artifact_prepare_world_core(
 fn artifact_prepare_world(world: PackageWorld) -> unit {
     let definitions = artifact_world_struct_definitions(world);
     artifact_prepare_world_core(world.builtins, world.builtin_interface.exports, definitions);
+    artifact_prepare_world_core(
+        world.prelude.core_value,
+        world.prelude.environment_exports,
+        definitions,
+    );
     let packages: Vec[ArtifactStandardPackage] = Vec::[
         world.standard.root,
         world.standard.host,

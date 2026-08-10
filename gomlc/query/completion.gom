@@ -4,6 +4,7 @@ use gomlc::ast;
 use gomlc::cst;
 use gomlc::lexer;
 use gomlc::parser;
+use gomlc::resources;
 use gomlc::tast;
 use std::fs;
 use std::path;
@@ -892,6 +893,67 @@ fn push_local_completion(values: Vec[CompletionItem], value: CompletionItem, pre
     }
 }
 
+fn prelude_builtin_completion_kind(name: string) -> CompletionKind {
+    if name == "Iterator" || name == "IntoIterator" || name == "PartialEq" || name == "Eq"
+        || name == "Hash"
+        || name == "ToString"
+        || name == "Debug"
+        || name == "Default" {
+        CompletionKind::Trait
+    } else if name.byte_len() > 0 && name.byte_get(0) >= b'A' && name.byte_get(0) <= b'Z' {
+        CompletionKind::Struct
+    } else {
+        CompletionKind::Function
+    }
+}
+
+fn prelude_builtin_symbol(value: Symbol) -> bool {
+    if value.package_name != "builtin" || !immediate_package_member(value.qualified_name, "builtin") {
+        false
+    } else {
+        match value.kind {
+            Method | Variant | Field => false,
+            _ => {
+                for name in resources::prelude_builtin_export_names() {
+                    if value.name == name {
+                        return true
+                    } else {}
+                }
+                false
+            },
+        }
+    }
+}
+
+fn append_prelude_scope_completions(result: Vec[CompletionItem], value: Analysis, prefix: string) -> unit {
+    for symbol in build_symbol_index(value).symbols {
+        if (symbol.package_name == "prelude" && symbol.public
+            && immediate_package_member(symbol.qualified_name, "prelude"))
+            || prelude_builtin_symbol(symbol) {
+            push_completion(
+                result,
+                CompletionItem {
+                    label: symbol.name,
+                    detail: symbol.qualified_name,
+                    kind: symbol_completion_kind(symbol.kind),
+                },
+                prefix,
+            )
+        } else {}
+    }
+    for name in resources::prelude_builtin_export_names() {
+        push_completion(
+            result,
+            CompletionItem {
+                label: name,
+                detail: "prelude",
+                kind: prelude_builtin_completion_kind(name),
+            },
+            prefix,
+        )
+    }
+}
+
 fn complete_scope(value: Analysis, offset: int, prefix: string) -> Vec[CompletionItem] {
     let result: Vec[CompletionItem] = Vec::[];
     for fact in value.checked.typeck_results.locals {
@@ -926,6 +988,7 @@ fn complete_scope(value: Analysis, offset: int, prefix: string) -> Vec[Completio
             )
         } else {}
     }
+    append_prelude_scope_completions(result, value, prefix);
     let lowered = ast::lower(parser::parse(value.source));
     match lowered.ast {
         Some(file) => for import in file.uses {

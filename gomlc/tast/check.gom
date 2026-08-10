@@ -913,7 +913,7 @@ fn function_scheme_for_name_ref(ctx: Checker, value: hir::NameRef) -> Option[Fun
         Def(definition) => find_function_by_def(ctx, definition),
         Other(name) => match find_function_by_name(ctx, name) {
             Some(value) => Option::Some(value),
-            None => builtin_function_scheme(name),
+            None => scoped_builtin_function_scheme(ctx.package_name, name),
         },
     }
 }
@@ -980,7 +980,7 @@ fn check_name_ref_inner(ctx: Checker, value: hir::NameRef) -> Expr {
                 None => {
                     let scheme = match find_function_by_name(ctx, name) {
                         Some(value) => Option::Some(value),
-                        None => builtin_function_scheme(name),
+                        None => scoped_builtin_function_scheme(ctx.package_name, name),
                     };
                     match scheme {
                         Some(value) => {

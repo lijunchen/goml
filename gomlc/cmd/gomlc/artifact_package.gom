@@ -26,6 +26,10 @@ fn artifact_builtin_interface_hash(world: PackageWorld) -> string {
     world.builtin_interface.interface_hash
 }
 
+fn artifact_prelude_interface_hash(world: PackageWorld) -> string {
+    world.prelude.interface_unit.interface_hash
+}
+
 fn artifact_find_interface_unit(values: Vec[artifact::ArtifactInterfaceUnit], package_name: string) -> Option[
     artifact::ArtifactInterfaceUnit,
 ] {
@@ -124,16 +128,44 @@ fn artifact_standard_package(standard: ArtifactStandardLibrary, package_name: st
     }
 }
 
-fn artifact_interface_builtin_valid(world: PackageWorld, value: artifact::ArtifactInterfaceUnit) -> bool {
+fn artifact_interface_has_dependency(
+    value: artifact::ArtifactInterfaceUnit,
+    package_name: string,
+    interface_hash: string,
+) -> bool {
+    for dependency in value.deps {
+        if dependency.0 == package_name && dependency.1 == interface_hash {
+            return true
+        } else {}
+    }
+    false
+}
+
+fn artifact_interface_toolchain_error(world: PackageWorld, value: artifact::ArtifactInterfaceUnit) -> Option[
+    string,
+] {
     if value.package_name == "builtin" {
-        true
+        Option::None
+    } else if !artifact_interface_has_dependency(
+        value,
+        "builtin",
+        artifact_builtin_interface_hash(world),
+    ) {
+        Option::Some(
+            "interface " + value.package_name + " expects a different builtin interface_hash",
+        )
+    } else if value.package_name == "prelude" {
+        Option::None
+    } else if !artifact_interface_has_dependency(
+        value,
+        "prelude",
+        artifact_prelude_interface_hash(world),
+    ) {
+        Option::Some(
+            "interface " + value.package_name + " expects a different prelude interface_hash",
+        )
     } else {
-        for dependency in value.deps {
-            if dependency.0 == "builtin" && dependency.1 == artifact_builtin_interface_hash(world) {
-                return true
-            } else {}
-        }
-        false
+        Option::None
     }
 }
 
@@ -173,6 +205,15 @@ fn artifact_resolve_interface_units(
                     "interface " + request.parent + " expects a different builtin interface_hash",
                 )
             }
+        } else if request.package_name == "prelude" {
+            if artifact_dependency_hash_matches(
+                request.expected_hash,
+                artifact_prelude_interface_hash(world),
+            ) {} else {
+                return Result::Err(
+                    "interface " + request.parent + " expects a different prelude interface_hash",
+                )
+            }
         } else if request.package_name == current_package {
             return Result::Err("package " + current_package + " cannot use itself")
         } else if collections::contains(resolved_names, request.package_name) {
@@ -199,15 +240,11 @@ fn artifact_resolve_interface_units(
                     ),
                 },
             };
-            if !artifact_interface_builtin_valid(world, interface) {
-                return Result::Err(
-                    "interface " + interface.package_name
-                        + " is missing the current builtin dependency",
-                )
-            } else if !artifact_dependency_hash_matches(
-                request.expected_hash,
-                interface.interface_hash,
-            ) {
+            match artifact_interface_toolchain_error(world, interface) {
+                Some(error) => return Result::Err(error),
+                None => (),
+            };
+            if !artifact_dependency_hash_matches(request.expected_hash, interface.interface_hash) {
                 return Result::Err(
                     "interface " + request.parent + " expects a different interface_hash for "
                         + request.package_name,
@@ -272,6 +309,7 @@ fn artifact_verify_comptime_modules(comptime_modules: Vec[ctir::CtModule]) -> Re
 
 fn artifact_dependency_environments(
     builtin: artifact::ArtifactPackageExports,
+    prelude: artifact::ArtifactPackageExports,
     standard: ArtifactStandardLibrary,
     needs: StandardNeeds,
     units: Vec[artifact::ArtifactInterfaceUnit],
@@ -299,6 +337,13 @@ fn artifact_dependency_environments(
             None => methods.push(method),
         }
     }
+    let functions: Vec[tast::FunctionScheme] = Vec::[];
+    let prelude_names = resources::prelude_builtin_export_names();
+    for function in value.functions {
+        if collections::contains(prelude_names, function.name) {
+            functions.push(function)
+        } else {}
+    }
     let impls: Vec[tast::ImplInfo] = Vec::[];
     result.push(
         tast::dependency_environment(
@@ -308,11 +353,12 @@ fn artifact_dependency_environments(
             value.type_aliases,
             value.constants,
             Vec::[],
-            value.functions,
+            functions,
             methods,
             impls,
         ),
     );
+    result.push(artifact_dependency_environment_from_exports(prelude)?);
     for package_value in selected_standard_packages_for_needs(standard, needs) {
         result.push(
             tast::dependency_environment_with_comptime(
@@ -361,9 +407,10 @@ fn artifact_direct_dependency_hashes(
 ) -> Result[Vec[(string, string)], string] {
     let result: Vec[(string, string)] = Vec::[];
     result.push(("builtin", artifact_builtin_interface_hash(world)));
+    result.push(("prelude", artifact_prelude_interface_hash(world)));
     let names = wire::sort_artifact_names(names);
     for name in names {
-        if name == "builtin" {} else {
+        if name == "builtin" || name == "prelude" {} else {
             match artifact_standard_package(world.standard, name) {
                 Some(value) => result.push((name, value.interface_unit.interface_hash)),
                 None => match artifact_find_interface_unit(units, name) {
@@ -544,6 +591,11 @@ fn disallowed_standard_internal_import(package_name: string, import_name: string
     import_name.starts_with("std::internal::") && !standard_internal_import_allowed(package_name)
 }
 
+fn disallowed_toolchain_import(import_name: string) -> bool {
+    import_name == "builtin" || import_name.starts_with("builtin::") || import_name == "prelude"
+        || import_name.starts_with("prelude::")
+}
+
 fn standard_internal_import_diagnostics(
     values: Vec[ast::LowerResult],
     paths: Vec[string],
@@ -560,6 +612,19 @@ fn standard_internal_import_diagnostics(
                             severity: tast::DiagnosticSeverity::Error,
                             stage: TYPER_STAGE,
                             message: "package " + import_name + " is internal to std",
+                            source_path: paths[index],
+                            span: Option::None,
+                            primary_label: Option::None,
+                            secondary_labels: Vec::[],
+                            sort_order: 0,
+                        },
+                    )
+                } else if disallowed_toolchain_import(import_name) {
+                    diagnostics.push(
+                        tast::Diagnostic {
+                            severity: tast::DiagnosticSeverity::Error,
+                            stage: TYPER_STAGE,
+                            message: "package " + import_name + " is internal to the toolchain",
                             source_path: paths[index],
                             span: Option::None,
                             primary_label: Option::None,
@@ -584,7 +649,8 @@ fn without_disallowed_standard_internal_imports(value: ast::LowerResult, package
                     if disallowed_standard_internal_import(
                         package_name,
                         import_path_text(use_decl.path),
-                    ) {} else {
+                    )
+                        || disallowed_toolchain_import(import_path_text(use_decl.path)) {} else {
                         uses.push(use_decl)
                     }
                 }
@@ -610,6 +676,9 @@ fn compile_artifact_package(
     build: bool,
     emit_tests: bool,
 ) -> Result[ArtifactCompiledPackage, string] {
+    if disallowed_toolchain_import(command.package_name) {
+        return Result::Err("package " + command.package_name + " is internal to the toolchain")
+    } else {};
     let parsed: Vec[cst::ParseResult] = Vec::[];
     let parser_diagnostics: Vec[tast::Diagnostic] = Vec::[];
     for source_path in command.inputs {
@@ -717,6 +786,7 @@ fn compile_artifact_package(
     );
     let environments = artifact_dependency_environments(
         world.builtin_interface.exports,
+        world.prelude.interface_unit.exports,
         world.standard,
         needs,
         dependency_units,
@@ -731,7 +801,8 @@ fn compile_artifact_package(
     let Some(tast_file) = checked.tast else {
         return Result::Err("failed to typecheck package " + command.package_name)
     };
-    let dependency_core = selected_link_standard_core(world.standard, needs);
+    let dependency_core = Vec::[world.prelude.core_value];
+    append_core_files(dependency_core, selected_link_standard_core(world.standard, needs));
     append_core_files(dependency_core, artifact_dependency_core_types(dependency_units));
     let enum_names = artifact_dependency_type_names(world.builtins, dependency_core, true);
     let struct_names = artifact_dependency_type_names(world.builtins, dependency_core, false);
@@ -885,7 +956,8 @@ fn artifact_find_core_unit(values: Vec[artifact::ArtifactCoreUnit], package_name
 }
 
 fn artifact_link_dependency_name(package_name: string) -> bool {
-    package_name != "builtin" && package_name != resources::STD_ROOT_PACKAGE
+    package_name != "builtin" && package_name != "prelude"
+        && package_name != resources::STD_ROOT_PACKAGE
         && !package_name.starts_with(resources::STD_PACKAGE_PREFIX)
 }
 
@@ -932,6 +1004,13 @@ fn artifact_validate_link_core_units(world: PackageWorld, values: Vec[artifact::
                     return Result::Err(
                         "package " + value.package_name
                             + " expects a different builtin interface_hash",
+                    )
+                } else {}
+            } else if dependency.0 == "prelude" {
+                if dependency.1 != artifact_prelude_interface_hash(world) {
+                    return Result::Err(
+                        "package " + value.package_name
+                            + " expects a different prelude interface_hash",
                     )
                 } else {}
             } else {

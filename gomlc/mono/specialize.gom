@@ -1849,6 +1849,44 @@ fn specialize_callable(ctx: SpecializeCtx, value: core::Callable, bindings: Vec[
     }
 }
 
+fn specialize_function_callable(
+    ctx: SpecializeCtx,
+    function: core::Function,
+    name: string,
+    ty: core::Type,
+    allow_projection_bindings: bool,
+) -> core::Expr {
+    if function_is_generic(function) {
+        if type_is_concrete(ty) {
+            let call_bindings: Vec[TypeBinding] = Vec::[];
+            if unify_type(function_type(function), ty, call_bindings)
+                && (allow_projection_bindings || !has_projection_binding(call_bindings))
+                && complete_bindings(ctx, function, call_bindings) {
+                core::Expr::Callable {
+                    callable: core::Callable::Function(
+                        ensure_instance(ctx, function.name, call_bindings),
+                    ),
+                    ty,
+                }
+            } else {
+                if allow_projection_bindings && unify_type(function_type(function), ty, Vec::[]) {
+                    ctx.error.set(
+                        Option::Some(incomplete_function_message(ctx, function, call_bindings)),
+                    )
+                } else {};
+                core::Expr::Callable { callable: core::Callable::Function(name), ty }
+            }
+        } else {
+            core::Expr::Callable { callable: core::Callable::Function(name), ty }
+        }
+    } else {
+        core::Expr::Callable {
+            callable: core::Callable::Function(ensure_instance(ctx, function.name, Vec::[])),
+            ty,
+        }
+    }
+}
+
 fn specialize_closure_params(
     ctx: SpecializeCtx,
     values: Vec[core::ClosureParam],
@@ -2033,7 +2071,7 @@ fn specialize_found_var_with_projection_bindings(
             core::Expr::Var { name, ty }
         }
     } else {
-        core::Expr::Var { name, ty }
+        core::Expr::Var { name: ensure_instance(ctx, function.name, Vec::[]), ty }
     }
 }
 
@@ -2086,6 +2124,17 @@ fn specialize_call(
                 ty: func_ty,
             },
         },
+        Callable { callable: core::Callable::Function(name), ty: func_ty } => {
+            match find_callee_function(ctx, name) {
+                Some(function) => {
+                    specialize_function_callable(ctx, function, name, func_ty, true)
+                },
+                None => core::Expr::Callable {
+                    callable: core::Callable::Function(name),
+                    ty: func_ty,
+                },
+            }
+        },
         other => other,
     };
     core::Expr::Call { func, args, ty }
@@ -2094,9 +2143,20 @@ fn specialize_call(
 fn specialize_expr(ctx: SpecializeCtx, bindings: Vec[TypeBinding], value: core::Expr) -> core::Expr {
     match value {
         Var { name, ty } => specialize_var(ctx, bindings, name, ty),
-        Callable { callable, ty } => core::Expr::Callable {
-            callable: specialize_callable(ctx, callable, bindings),
-            ty: specialize_type(ctx, ty, bindings),
+        Callable { callable, ty } => {
+            let ty = specialize_type(ctx, ty, bindings);
+            match callable {
+                core::Callable::Function(name) => match find_function(ctx, name) {
+                    Some(function) => {
+                        specialize_function_callable(ctx, function, name, ty, false)
+                    },
+                    None => core::Expr::Callable { callable: core::Callable::Function(name), ty },
+                },
+                other => core::Expr::Callable {
+                    callable: specialize_callable(ctx, other, bindings),
+                    ty,
+                },
+            }
         },
         Prim { value, ty } => {
             core::Expr::Prim { value, ty: specialize_type(ctx, ty, bindings) }

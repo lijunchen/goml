@@ -1,49 +1,60 @@
 package host;
 
-#[runtime("std.env.args")]
-pub extern fn args() -> Vec[string];
+pub fn args() -> Vec[string] {
+    __goml_std_host_args()
+}
 
-#[runtime("std.env.current_dir")]
-pub extern fn current_dir() -> (bool, string, string);
+pub fn current_dir() -> (bool, string, string) {
+    __goml_std_host_current_dir()
+}
 
-#[runtime("std.env.current_exe")]
-pub extern fn current_exe() -> (bool, string, string);
+pub fn current_exe() -> (bool, string, string) {
+    __goml_std_host_current_exe()
+}
 
-#[runtime("std.env.var")]
-pub extern fn env_var(name: string) -> (bool, string);
+pub fn env_var(name: string) -> (bool, string) {
+    __goml_std_host_env_var(name)
+}
 
-#[runtime("std.env.vars")]
-pub extern fn env_vars() -> Vec[string];
+pub fn env_vars() -> Vec[string] {
+    __goml_std_host_env_vars()
+}
 
-#[runtime("std.fs.read_file")]
-pub extern fn read_file(path: string) -> (bool, string, string);
+pub fn read_file(path: string) -> (bool, string, string) {
+    __goml_std_host_read_file(path)
+}
 
-#[runtime("std.fs.write_file")]
-pub extern fn write_file(path: string, content: string) -> (bool, string);
+pub fn write_file(path: string, content: string) -> (bool, string) {
+    __goml_std_host_write_file(path, content)
+}
 
-#[runtime("std.fs.read_bytes")]
-pub extern fn read_bytes(path: string) -> (bool, Vec[uint8], string);
+pub fn read_bytes(path: string) -> (bool, Vec[uint8], string) {
+    __goml_std_host_read_bytes(path)
+}
 
-#[runtime("std.fs.read_bytes.v2")]
-pub extern fn read_bytes_v2(path: string) -> (bool, Vec[uint8], int, bool, int, string);
+pub fn read_bytes_v2(path: string) -> (bool, Vec[uint8], int, bool, int, string) {
+    __goml_std_host_read_bytes_v2(path)
+}
 
-#[runtime("std.fs.write_bytes")]
-pub extern fn write_bytes(path: string, data: Vec[uint8]) -> (bool, string);
+pub fn write_bytes(path: string, data: Vec[uint8]) -> (bool, string) {
+    __goml_std_host_write_bytes(path, data)
+}
 
-#[runtime("std.fs.write_bytes.v2")]
-pub extern fn write_bytes_v2(path: string, data: Vec[uint8]) -> (bool, int, bool, int, string);
+pub fn write_bytes_v2(path: string, data: Vec[uint8]) -> (bool, int, bool, int, string) {
+    __goml_std_host_write_bytes_v2(path, data)
+}
 
-#[runtime("std.fs.path_operation.v2")]
-pub extern fn fs_path_operation_v2(operation: int, first: string, second: string) -> (
+pub fn fs_path_operation_v2(operation: int, first: string, second: string) -> (
     bool,
     int,
     bool,
     int,
     string,
-);
+) {
+    __goml_std_host_fs_path_operation_v2(operation, first, second)
+}
 
-#[runtime("std.fs.metadata.v2")]
-pub extern fn fs_metadata_v2(path: string, follow: bool) -> (
+pub fn fs_metadata_v2(path: string, follow: bool) -> (
     bool,
     int,
     int64,
@@ -53,115 +64,151 @@ pub extern fn fs_metadata_v2(path: string, follow: bool) -> (
     bool,
     int,
     string,
-);
+) {
+    __goml_std_host_fs_metadata_v2(path, follow)
+}
 
-#[runtime("std.fs.atomic_write.v2")]
-pub extern fn fs_atomic_write_v2(path: string, data: Vec[uint8]) -> (bool, int, bool, int, string);
+pub fn fs_atomic_write_v2(path: string, data: Vec[uint8]) -> (bool, int, bool, int, string) {
+    __goml_std_host_fs_atomic_write_v2(path, data)
+}
 
-#[runtime("std.fs.create_dir_all")]
-pub extern fn create_dir_all(path: string) -> (bool, string);
+pub fn create_dir_all(path: string) -> (bool, string) {
+    __goml_std_host_create_dir_all(path)
+}
 
-#[runtime("std.fs.remove_file")]
-pub extern fn remove_file(path: string) -> (bool, string);
+pub fn remove_file(path: string) -> (bool, string) {
+    __goml_std_host_remove_file(path)
+}
 
-#[runtime("std.fs.remove_dir_all")]
-pub extern fn remove_dir_all(path: string) -> (bool, string);
+pub fn remove_dir_all(path: string) -> (bool, string) {
+    __goml_std_host_remove_dir_all(path)
+}
 
-#[runtime("std.fs.file_exists")]
-pub extern fn file_exists(path: string) -> bool;
+pub fn file_exists(path: string) -> bool {
+    __goml_std_host_file_exists(path)
+}
 
-#[runtime("std.fs.is_file")]
-pub extern fn is_file(path: string) -> bool;
+pub fn is_file(path: string) -> bool {
+    __goml_std_host_is_file(path)
+}
 
-#[runtime("std.fs.is_dir")]
-pub extern fn is_dir(path: string) -> bool;
+pub fn is_dir(path: string) -> bool {
+    __goml_std_host_is_dir(path)
+}
 
-#[runtime("std.fs.canonicalize")]
-pub extern fn canonicalize(path: string) -> (bool, string, string);
+pub fn canonicalize(path: string) -> (bool, string, string) {
+    __goml_std_host_canonicalize(path)
+}
 
-#[runtime("std.fs.read_dir")]
-pub extern fn read_dir(path: string) -> (bool, Vec[string], string);
+pub fn read_dir(path: string) -> (bool, Vec[string], string) {
+    __goml_std_host_read_dir(path)
+}
 
-#[runtime("std.fs.read_dir.v2")]
-pub extern fn read_dir_v2(path: string) -> (bool, Vec[string], int, bool, int, string);
+pub fn read_dir_v2(path: string) -> (bool, Vec[string], int, bool, int, string) {
+    __goml_std_host_read_dir_v2(path)
+}
 
-#[runtime("std.fs.sha256_file")]
-pub extern fn sha256_file(path: string) -> (bool, string, string);
+pub fn sha256_file(path: string) -> (bool, string, string) {
+    __goml_std_host_sha256_file(path)
+}
 
-#[runtime("std.io.print")]
-pub extern fn print(value: string) -> unit;
+pub fn print(value: string) -> unit {
+    __goml_std_host_print(value)
+}
 
-#[runtime("std.io.println")]
-pub extern fn println(value: string) -> unit;
+pub fn println(value: string) -> unit {
+    __goml_std_host_println(value)
+}
 
-#[runtime("std.io.eprint")]
-pub extern fn eprint(value: string) -> unit;
+pub fn eprint(value: string) -> unit {
+    __goml_std_host_eprint(value)
+}
 
-#[runtime("std.io.read_stdin")]
-pub extern fn read_stdin() -> (bool, Vec[uint8], string);
+pub fn read_stdin() -> (bool, Vec[uint8], string) {
+    __goml_std_host_read_stdin()
+}
 
-#[runtime("std.io.read_stdin.v2")]
-pub extern fn read_stdin_v2() -> (bool, Vec[uint8], int, bool, int, string);
+pub fn read_stdin_v2() -> (bool, Vec[uint8], int, bool, int, string) {
+    __goml_std_host_read_stdin_v2()
+}
 
-#[runtime("std.io.read_stdin_exact")]
-pub extern fn read_stdin_exact(length: int) -> (bool, Vec[uint8], string);
+pub fn read_stdin_exact(length: int) -> (bool, Vec[uint8], string) {
+    __goml_std_host_read_stdin_exact(length)
+}
 
-#[runtime("std.io.read_stdin_exact.v2")]
-pub extern fn read_stdin_exact_v2(length: int) -> (bool, Vec[uint8], int, bool, int, string);
+pub fn read_stdin_exact_v2(length: int) -> (bool, Vec[uint8], int, bool, int, string) {
+    __goml_std_host_read_stdin_exact_v2(length)
+}
 
-#[runtime("std.io.write_stdout")]
-pub extern fn write_stdout(data: Vec[uint8]) -> (bool, string);
+pub fn write_stdout(data: Vec[uint8]) -> (bool, string) {
+    __goml_std_host_write_stdout(data)
+}
 
-#[runtime("std.io.write_stdout.v2")]
-pub extern fn write_stdout_v2(data: Vec[uint8]) -> (bool, int, bool, int, string);
+pub fn write_stdout_v2(data: Vec[uint8]) -> (bool, int, bool, int, string) {
+    __goml_std_host_write_stdout_v2(data)
+}
 
-#[runtime("std.io.write_stderr")]
-pub extern fn write_stderr(data: Vec[uint8]) -> (bool, string);
+pub fn write_stderr(data: Vec[uint8]) -> (bool, string) {
+    __goml_std_host_write_stderr(data)
+}
 
-#[runtime("std.io.write_stderr.v2")]
-pub extern fn write_stderr_v2(data: Vec[uint8]) -> (bool, int, bool, int, string);
+pub fn write_stderr_v2(data: Vec[uint8]) -> (bool, int, bool, int, string) {
+    __goml_std_host_write_stderr_v2(data)
+}
 
-#[runtime("std.path.join")]
-pub extern fn path_join(base: string, child: string) -> string;
+pub fn path_join(base: string, child: string) -> string {
+    __goml_std_host_path_join(base, child)
+}
 
-#[runtime("std.path.clean")]
-pub extern fn path_clean(path: string) -> string;
+pub fn path_clean(path: string) -> string {
+    __goml_std_host_path_clean(path)
+}
 
-#[runtime("std.path.is_absolute")]
-pub extern fn path_is_absolute(path: string) -> bool;
+pub fn path_is_absolute(path: string) -> bool {
+    __goml_std_host_path_is_absolute(path)
+}
 
-#[runtime("std.path.parent")]
-pub extern fn path_parent(path: string) -> (bool, string);
+pub fn path_parent(path: string) -> (bool, string) {
+    __goml_std_host_path_parent(path)
+}
 
-#[runtime("std.path.file_name")]
-pub extern fn path_file_name(path: string) -> (bool, string);
+pub fn path_file_name(path: string) -> (bool, string) {
+    __goml_std_host_path_file_name(path)
+}
 
-#[runtime("std.path.extension")]
-pub extern fn path_extension(path: string) -> (bool, string);
+pub fn path_extension(path: string) -> (bool, string) {
+    __goml_std_host_path_extension(path)
+}
 
-#[runtime("std.path.file_stem")]
-pub extern fn path_file_stem(path: string) -> (bool, string);
+pub fn path_file_stem(path: string) -> (bool, string) {
+    __goml_std_host_path_file_stem(path)
+}
 
-#[runtime("std.path.with_extension")]
-pub extern fn path_with_extension(path: string, extension: string) -> string;
+pub fn path_with_extension(path: string, extension: string) -> string {
+    __goml_std_host_path_with_extension(path, extension)
+}
 
-#[runtime("std.path.absolute")]
-pub extern fn path_absolute(path: string) -> (bool, string, string);
+pub fn path_absolute(path: string) -> (bool, string, string) {
+    __goml_std_host_path_absolute(path)
+}
 
-#[runtime("std.path.relative")]
-pub extern fn path_relative(base: string, target: string) -> (bool, string, string);
+pub fn path_relative(base: string, target: string) -> (bool, string, string) {
+    __goml_std_host_path_relative(base, target)
+}
 
-#[runtime("std.path.separator")]
-pub extern fn path_separator() -> string;
+pub fn path_separator() -> string {
+    __goml_std_host_path_separator()
+}
 
-#[runtime("std.process.exit")]
-pub extern fn exit(code: int) -> unit;
+pub fn exit(code: int) -> unit {
+    __goml_std_host_exit(code)
+}
 
-#[runtime("std.process.look_path")]
-pub extern fn process_look_path(program: string) -> (bool, string, string);
+pub fn process_look_path(program: string) -> (bool, string, string) {
+    __goml_std_host_process_look_path(program)
+}
 
-#[runtime("std.process.output")]
-pub extern fn process_output(
+pub fn process_output(
     program: string,
     arguments: Vec[string],
     has_directory: bool,
@@ -169,10 +216,19 @@ pub extern fn process_output(
     environment: Vec[(string, string)],
     has_input: bool,
     input: Vec[uint8],
-) -> (bool, int, Vec[uint8], Vec[uint8], string);
+) -> (bool, int, Vec[uint8], Vec[uint8], string) {
+    __goml_std_host_process_output(
+        program,
+        arguments,
+        has_directory,
+        directory,
+        environment,
+        has_input,
+        input,
+    )
+}
 
-#[runtime("std.process.output_timeout")]
-pub extern fn process_output_timeout(
+pub fn process_output_timeout(
     program: string,
     arguments: Vec[string],
     has_directory: bool,
@@ -181,10 +237,20 @@ pub extern fn process_output_timeout(
     has_input: bool,
     input: Vec[uint8],
     timeout_ms: int,
-) -> (bool, int, Vec[uint8], Vec[uint8], string, bool);
+) -> (bool, int, Vec[uint8], Vec[uint8], string, bool) {
+    __goml_std_host_process_output_timeout(
+        program,
+        arguments,
+        has_directory,
+        directory,
+        environment,
+        has_input,
+        input,
+        timeout_ms,
+    )
+}
 
-#[runtime("std.process.output_cancel")]
-pub extern fn process_output_cancel(
+pub fn process_output_cancel(
     program: string,
     arguments: Vec[string],
     has_directory: bool,
@@ -193,66 +259,105 @@ pub extern fn process_output_cancel(
     has_input: bool,
     input: Vec[uint8],
     scope_id: int64,
-) -> (bool, int, Vec[uint8], Vec[uint8], string, bool);
+) -> (bool, int, Vec[uint8], Vec[uint8], string, bool) {
+    __goml_std_host_process_output_cancel(
+        program,
+        arguments,
+        has_directory,
+        directory,
+        environment,
+        has_input,
+        input,
+        scope_id,
+    )
+}
 
-#[runtime("std.process.status")]
-pub extern fn process_status(
+pub fn process_status(
     program: string,
     arguments: Vec[string],
     has_directory: bool,
     directory: string,
     environment: Vec[(string, string)],
-) -> (bool, int, string);
+) -> (bool, int, string) {
+    __goml_std_host_process_status(program, arguments, has_directory, directory, environment)
+}
 
-#[runtime("std.process.status_timeout")]
-pub extern fn process_status_timeout(
+pub fn process_status_timeout(
     program: string,
     arguments: Vec[string],
     has_directory: bool,
     directory: string,
     environment: Vec[(string, string)],
     timeout_ms: int,
-) -> (bool, int, string, bool);
+) -> (bool, int, string, bool) {
+    __goml_std_host_process_status_timeout(
+        program,
+        arguments,
+        has_directory,
+        directory,
+        environment,
+        timeout_ms,
+    )
+}
 
-#[runtime("std.process.status_cancel")]
-pub extern fn process_status_cancel(
+pub fn process_status_cancel(
     program: string,
     arguments: Vec[string],
     has_directory: bool,
     directory: string,
     environment: Vec[(string, string)],
     scope_id: int64,
-) -> (bool, int, string, bool);
+) -> (bool, int, string, bool) {
+    __goml_std_host_process_status_cancel(
+        program,
+        arguments,
+        has_directory,
+        directory,
+        environment,
+        scope_id,
+    )
+}
 
-#[runtime("std.testing.fail")]
-pub extern fn test_fail(message: string) -> unit;
+pub fn test_fail(message: string) -> unit {
+    __goml_std_host_test_fail(message)
+}
 
-#[runtime("std.num.parse_int")]
-pub extern fn parse_int(value: string, radix: int) -> (bool, int, string);
+pub fn parse_int(value: string, radix: int) -> (bool, int, string) {
+    __goml_std_host_parse_int(value, radix)
+}
 
-#[runtime("std.num.parse_uint")]
-pub extern fn parse_uint(value: string, radix: int) -> (bool, uint, string);
+pub fn parse_uint(value: string, radix: int) -> (bool, uint, string) {
+    __goml_std_host_parse_uint(value, radix)
+}
 
-#[runtime("std.num.parse_float32")]
-pub extern fn parse_float32(value: string) -> (bool, float32, string);
+pub fn parse_float32(value: string) -> (bool, float32, string) {
+    __goml_std_host_parse_float32(value)
+}
 
-#[runtime("std.num.parse_float64")]
-pub extern fn parse_float64(value: string) -> (bool, float64, string);
+pub fn parse_float64(value: string) -> (bool, float64, string) {
+    __goml_std_host_parse_float64(value)
+}
 
-#[runtime("std.time.monotonic_nanoseconds")]
-pub extern fn monotonic_nanoseconds() -> int64;
+pub fn monotonic_nanoseconds() -> int64 {
+    __goml_std_host_monotonic_nanoseconds()
+}
 
-#[runtime("std.time.unix_nanoseconds")]
-pub extern fn unix_nanoseconds() -> int64;
+pub fn unix_nanoseconds() -> int64 {
+    __goml_std_host_unix_nanoseconds()
+}
 
-#[runtime("std.time.sleep_nanoseconds")]
-pub extern fn sleep_nanoseconds(value: int64) -> unit;
+pub fn sleep_nanoseconds(value: int64) -> unit {
+    __goml_std_host_sleep_nanoseconds(value)
+}
 
-#[runtime("std.math.float32_unary")]
-pub extern fn math_float32_unary(operation: int, value: float32) -> float32;
+pub fn math_float32_unary(operation: int, value: float32) -> float32 {
+    __goml_std_host_math_float32_unary(operation, value)
+}
 
-#[runtime("std.math.float32_pow")]
-pub extern fn math_float32_pow(value: float32, exponent: float32) -> float32;
+pub fn math_float32_pow(value: float32, exponent: float32) -> float32 {
+    __goml_std_host_math_float32_pow(value, exponent)
+}
 
-#[runtime("std.crypto.rand.bytes")]
-pub extern fn crypto_random_bytes(length: int) -> (bool, Vec[byte], string);
+pub fn crypto_random_bytes(length: int) -> (bool, Vec[byte], string) {
+    __goml_std_host_crypto_random_bytes(length)
+}

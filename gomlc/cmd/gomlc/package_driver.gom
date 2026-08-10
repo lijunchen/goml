@@ -28,6 +28,7 @@ struct StandardNeeds {
     env: bool,
     fs: bool,
     io: bool,
+    internal_host: bool,
     internal_task: bool,
     iter: bool,
     json: bool,
@@ -64,6 +65,7 @@ struct PackageWorld {
     counter: Ref[int],
     builtins: core::File,
     builtin_interface: artifact::ArtifactInterfaceUnit,
+    prelude: ArtifactStandardPackage,
     standard: ArtifactStandardLibrary,
 }
 
@@ -79,6 +81,7 @@ fn no_standard_needs() -> StandardNeeds {
         env: false,
         fs: false,
         io: false,
+        internal_host: false,
         internal_task: false,
         iter: false,
         json: false,
@@ -114,6 +117,7 @@ fn standard_needs_from_package_names(package_names: Vec[string]) -> StandardNeed
         env: collections::contains(closure, resources::STD_ENV_PACKAGE),
         fs: collections::contains(closure, resources::STD_FS_PACKAGE),
         io: collections::contains(closure, resources::STD_IO_PACKAGE),
+        internal_host: collections::contains(closure, resources::STD_INTERNAL_HOST_PACKAGE),
         internal_task: collections::contains(closure, resources::STD_INTERNAL_TASK_PACKAGE),
         iter: collections::contains(closure, resources::STD_ITER_PACKAGE),
         json: collections::contains(closure, resources::STD_JSON_PACKAGE),
@@ -158,6 +162,7 @@ fn merge_standard_needs(left: StandardNeeds, right: StandardNeeds) -> StandardNe
         env: left.env || right.env,
         fs: left.fs || right.fs,
         io: left.io || right.io,
+        internal_host: left.internal_host || right.internal_host,
         internal_task: left.internal_task || right.internal_task,
         iter: left.iter || right.iter,
         json: left.json || right.json,
@@ -184,10 +189,12 @@ fn package_world() -> PackageWorld {
     let counter = Ref::new(0);
     let builtins = lower_builtin_core(counter);
     let builtin_interface = builtin_artifact_interface_unit();
+    let prelude_compilation = compile_prelude_package(builtins, builtin_interface);
+    let prelude = artifact_standard_package_from_compilation(prelude_compilation);
     let standard = artifact_standard_library(
-        compile_standard_library(builtins, builtin_interface.interface_hash),
+        compile_standard_library(builtins, prelude_compilation, builtin_interface.interface_hash),
     );
-    PackageWorld { counter, builtins, builtin_interface, standard }
+    PackageWorld { counter, builtins, builtin_interface, prelude, standard }
 }
 
 fn append_core_files(target: Vec[core::File], values: Vec[core::File]) -> unit {
@@ -235,7 +242,7 @@ fn merge_hir_files(values: Vec[hir::File], package_name: string) -> hir::File {
 }
 
 fn package_item_name(package_name: string, name: string) -> string {
-    if package_name == "main" || package_name == "builtin" {
+    if package_name == "main" || package_name == "builtin" || package_name == "prelude" {
         name
     } else {
         package_name + "::" + name
@@ -626,6 +633,9 @@ fn selected_standard_packages_for_needs(standard: ArtifactStandardLibrary, needs
     if needs.io {
         result.push(standard.io)
     } else {};
+    if needs.internal_host {
+        result.push(standard.host)
+    } else {};
     if needs.internal_task {
         result.push(standard.internal_task)
     } else {};
@@ -822,6 +832,9 @@ fn selected_link_standard_core(standard: ArtifactStandardLibrary, needs: Standar
     if needs.io {
         result.push(standard.io.core_value)
     } else {};
+    if needs.internal_host {
+        result.push(standard.host.core_value)
+    } else {};
     if needs.internal_task {
         result.push(standard.internal_task.core_value)
     } else {};
@@ -926,7 +939,10 @@ fn run_package_command(args: Vec[string], build: bool, emit_tests: bool) -> unit
                     value_exports: Vec::[],
                     enum_variants: Vec::[],
                 },
-                Vec::[("builtin", artifact_builtin_interface_hash(world))],
+                Vec::[
+                    ("builtin", artifact_builtin_interface_hash(world)),
+                    ("prelude", artifact_prelude_interface_hash(world)),
+                ],
             );
             ArtifactCompiledPackage {
                 interface_unit,
@@ -936,7 +952,10 @@ fn run_package_command(args: Vec[string], build: bool, emit_tests: bool) -> unit
                     interface_hash: interface_unit.interface_hash,
                     exports: interface_codec::empty_exports(),
                     core_ir: empty_core_file(),
-                    deps: Vec::[("builtin", artifact_builtin_interface_hash(world))],
+                    deps: Vec::[
+                        ("builtin", artifact_builtin_interface_hash(world)),
+                        ("prelude", artifact_prelude_interface_hash(world)),
+                    ],
                     sources: Vec::[],
                     tests: Vec::[],
                 },
@@ -1041,7 +1060,8 @@ fn run_link_command(args: Vec[string]) -> unit {
         fail("error[compile]: missing entry package " + command.entry)
     } else {};
     let entry = entries[entries.len() - 1];
-    let linked_dependencies = selected_link_standard_core(world.standard, needs);
+    let linked_dependencies = Vec::[world.prelude.core_value];
+    append_core_files(linked_dependencies, selected_link_standard_core(world.standard, needs));
     append_core_files(linked_dependencies, dependencies);
     let linked = core::link_with_dependencies(
         world.builtins,
@@ -1135,7 +1155,8 @@ fn run_test_link_command(args: Vec[string]) -> unit {
             None => fail("error[compile]: missing test package " + package_name),
         }
     }
-    let linked_dependencies = selected_link_standard_core(world.standard, needs);
+    let linked_dependencies = Vec::[world.prelude.core_value];
+    append_core_files(linked_dependencies, selected_link_standard_core(world.standard, needs));
     append_core_files(linked_dependencies, package_cores);
     let linked = core::link_with_dependencies(
         world.builtins,

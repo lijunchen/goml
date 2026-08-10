@@ -103,7 +103,11 @@ fn validate_module_path(value: string) -> Result[unit, string] {
             return Result::Err("invalid module.path " + value)
         } else {}
     }
-    Result::Ok(())
+    if segments[0] == "builtin" || segments[0] == "prelude" {
+        Result::Err("module path " + value + " is reserved for the toolchain")
+    } else {
+        Result::Ok(())
+    }
 }
 
 fn validate_target_dir(value: string) -> Result[unit, string] {
@@ -156,6 +160,7 @@ pub fn load(path: string) -> Result[Manifest, string] {
                 },
                 (DEPENDENCIES_SECTION, _) => {
                     let name = parse_string(key)?;
+                    validate_module_path(name)?;
                     dependencies.push(Dependency { name, version: value })
                 },
                 _ => (),

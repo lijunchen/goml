@@ -102,7 +102,8 @@ fn append_derive_reexports(files: Vec[hir::File], result: Vec[(string, string)])
         for value in file.public_reexports {
             result.push(
                 (
-                    if file.package_name == "main" || file.package_name == "builtin" {
+                    if file.package_name == "main" || file.package_name == "builtin"
+                        || file.package_name == "prelude" {
                         value.0
                     } else {
                         file.package_name + "::" + value.0
@@ -279,6 +280,14 @@ fn check_project(value: Project, overrides: Vec[SourceOverride]) -> ProjectCheck
     }
     let dependencies: Vec[hir::File] = Vec::[];
     let diagnostics: Vec[tast::Diagnostic] = Vec::[];
+    match prelude_hir_files() {
+        Ok(files) => for file in files {
+            dependencies.push(file)
+        },
+        Err(error) => diagnostics.push(
+            query_diagnostic(value.files[0].path, "prelude", error, Option::None),
+        ),
+    };
     let builtin_derive = match builtin_comptime_module() {
         Ok(value) => value,
         Err(error) => {
@@ -337,6 +346,12 @@ fn check_project(value: Project, overrides: Vec[SourceOverride]) -> ProjectCheck
         checked.diagnostics.push(diagnostic)
     }
     match append_builtin_navigation_sources(all_sources) {
+        Ok(_) => (),
+        Err(error) => checked.diagnostics.push(
+            query_diagnostic("", "resources", error, Option::None),
+        ),
+    };
+    match append_prelude_navigation_sources(all_sources) {
         Ok(_) => (),
         Err(error) => checked.diagnostics.push(
             query_diagnostic("", "resources", error, Option::None),

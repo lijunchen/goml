@@ -20,24 +20,67 @@ fn non_root(value: Function) -> Function {
     }
 }
 
-pub fn lower_builtins(counter: Ref[int]) -> Result[File, string] {
-    let sources = resources::builtin_sources()?;
+fn lower_toolchain_hir_files(sources: Vec[resources::Source], package_name: string) -> Result[
+    Vec[hir::File],
+    string,
+] {
     let inputs: Vec[(ast::LowerResult, string)] = Vec::[];
     for source in sources {
         inputs.push((ast::lower(parser::parse(source.source)), source.path))
     }
-    let hir_files: Vec[hir::File] = Vec::[];
-    for lowered in hir::lower_package_files(inputs, "builtin") {
+    let files: Vec[hir::File] = Vec::[];
+    for lowered in hir::lower_package_files(inputs, package_name) {
         match lowered.hir {
-            Some(file) => hir_files.push(file),
-            None => return Result::Err("failed to lower builtin source " + lowered.source_path),
+            Some(file) => files.push(file),
+            None => return Result::Err(
+                "failed to lower " + package_name + " source " + lowered.source_path,
+            ),
         }
     }
+    Result::Ok(files)
+}
+
+pub fn without_roots(value: File) -> File {
+    let functions: Vec[Function] = Vec::[];
+    for function in value.functions {
+        functions.push(non_root(function))
+    }
+    File {
+        functions,
+        enums: value.enums,
+        structs: value.structs,
+        type_instances: value.type_instances,
+        constants: value.constants,
+    }
+}
+
+pub fn lower_builtins(counter: Ref[int]) -> Result[File, string] {
+    let hir_files = lower_toolchain_hir_files(resources::builtin_layer_sources()?, "builtin")?;
     let checked = tast::check_builtin_package_files(hir_files);
     if checked.tast.is_none() {
         return Result::Err("failed to typecheck builtin package")
     } else {};
     Result::Ok(lower_with_counter(checked, counter))
+}
+
+pub fn lower_prelude(builtins: File, counter: Ref[int]) -> Result[File, string] {
+    let builtin_files = lower_toolchain_hir_files(resources::builtin_layer_sources()?, "builtin")?;
+    let prelude_files = lower_toolchain_hir_files(resources::prelude_sources()?, "prelude")?;
+    let checked = tast::check_package_files_for_link_with_dependencies(prelude_files, builtin_files);
+    if checked.tast.is_none() || !checked.diagnostics.is_empty() {
+        return Result::Err("failed to typecheck prelude package")
+    } else {};
+    Result::Ok(
+        without_roots(
+            lower_with_counter_types_and_options(
+                checked,
+                counter,
+                enum_defs_to_tast(builtins.enums),
+                struct_defs_to_tast(builtins.structs),
+                true,
+            ),
+        ),
+    )
 }
 
 pub fn link_with_dependencies(builtins: File, dependencies: Vec[File], user: File) -> File {

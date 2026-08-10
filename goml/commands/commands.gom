@@ -94,7 +94,7 @@ fn validate_project_name(value: string) -> Result[unit, string] {
         Result::Err(
             "invalid project name `" + value + "`: expected identifier [A-Za-z_][A-Za-z0-9_]*",
         )
-    } else if value == "main" || value == "builtin" || value == "std" {
+    } else if value == "main" || value == "builtin" || value == "prelude" || value == "std" {
         Result::Err("module path `" + value + "` is reserved")
     } else {
         Result::Ok(())

@@ -29,6 +29,22 @@ fn artifact_fn_scheme(value: tast::FunctionScheme) -> artifact::ArtifactFnScheme
     }
 }
 
+fn artifact_package_fn_scheme(package_name: string, value: tast::FunctionScheme) -> artifact::ArtifactFnScheme {
+    let scheme = artifact_fn_scheme(value);
+    if package_name == "prelude" && scheme.name == "range" {
+        artifact::ArtifactFnScheme {
+            name: scheme.name,
+            comptime: scheme.comptime,
+            type_params: scheme.type_params,
+            constraints: scheme.constraints,
+            ty: scheme.ty,
+            body: tast::Callable::LangItem { item: "range", function_name: "range" },
+        }
+    } else {
+        scheme
+    }
+}
+
 fn artifact_local_trait_name(owner: string, name: string, trait_names: Vec[string]) -> string {
     if name.contains("::") {
         name
@@ -504,7 +520,7 @@ fn artifact_package_exports(
         match function.comptime {
             tast::ComptimeCapability::Derive => (),
             _ => if !public_only || collections::contains(public_names, function.name) {
-                result.functions.push(artifact_fn_scheme(function))
+                result.functions.push(artifact_package_fn_scheme(package_name, function))
             } else {},
         }
     }
@@ -577,7 +593,7 @@ fn artifact_comptime_unit(value: ctir::CtModule, exports: artifact::ArtifactPack
 }
 
 fn artifact_relative_export_name(package_name: string, name: string) -> string {
-    if package_name == "main" || package_name == "builtin" {
+    if package_name == "main" || package_name == "builtin" || package_name == "prelude" {
         name
     } else {
         let prefix = package_name + "::";

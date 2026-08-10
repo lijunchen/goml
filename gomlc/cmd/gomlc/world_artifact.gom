@@ -151,6 +151,7 @@ fn encode_package_world(value: PackageWorld) -> Result[bytes::Bytes, string] {
             data: builtin_core,
         },
     ];
+    world_add_package_sections(sections, 4.to_uint16(), value.prelude)?;
     world_add_standard_sections(sections, value.standard)?;
     wire::encode_artifact_binary_container(3, sections)
 }
@@ -169,6 +170,19 @@ fn world_required_section(value: wire::ArtifactBinaryContainer, id: uint16) -> R
     }
 }
 
+fn world_dependencies_equal(left: Vec[(string, string)], right: Vec[(string, string)]) -> bool {
+    if left.len() != right.len() {
+        false
+    } else {
+        for index in 0..left.len() {
+            if left[index] != right[index] {
+                return false
+            } else {}
+        }
+        true
+    }
+}
+
 fn world_decode_package(
     value: wire::ArtifactBinaryContainer,
     section_id: uint16,
@@ -179,7 +193,8 @@ fn world_decode_package(
     let interface = interface_codec::decode_binary(interface_section.data)?;
     let core = core_codec::decode_binary(core_section.data)?;
     if interface.package_name != expected_name || core.package_name != expected_name
-        || core.interface_hash != interface.interface_hash {
+        || core.interface_hash != interface.interface_hash
+        || !world_dependencies_equal(core.deps, interface.deps) {
         Result::Err("world artifact package identity does not match")
     } else {
         Result::Ok(
@@ -190,6 +205,60 @@ fn world_decode_package(
             },
         )
     }
+}
+
+fn world_standard_packages(value: ArtifactStandardLibrary) -> Vec[ArtifactStandardPackage] {
+    Vec::[
+        value.root,
+        value.host,
+        value.ascii,
+        value.bincode,
+        value.bytes,
+        value.cmp,
+        value.collections,
+        value.error,
+        value.env,
+        value.fs,
+        value.io,
+        value.internal_task,
+        value.iter,
+        value.json,
+        value.num,
+        value.path,
+        value.process,
+        value.serde,
+        value.task,
+        value.testing,
+        value.text,
+        value.toml,
+        value.time,
+        value.utf8,
+        value.unicode,
+        value.math,
+        value.rand,
+        value.crypto,
+        value.crypto_hash,
+        value.crypto_rand,
+    ]
+}
+
+fn world_validate_standard_dependencies(
+    value: ArtifactStandardLibrary,
+    builtin_hash: string,
+    prelude_hash: string,
+) -> Result[unit, string] {
+    for package_value in world_standard_packages(value) {
+        if !artifact_interface_has_dependency(package_value.interface_unit, "builtin", builtin_hash) {
+            return Result::Err("world artifact standard package builtin dependency does not match")
+        } else if !artifact_interface_has_dependency(
+            package_value.interface_unit,
+            "prelude",
+            prelude_hash,
+        ) {
+            return Result::Err("world artifact standard package prelude dependency does not match")
+        } else {}
+    }
+    Result::Ok(())
 }
 
 fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
@@ -204,8 +273,17 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
     let builtin_interface = interface_codec::decode_binary(builtin_interface_section.data)?;
     let builtin_core = core_codec::decode_binary(builtin_core_section.data)?;
     if builtin_interface.package_name != "builtin" || builtin_core.package_name != "builtin"
-        || builtin_core.interface_hash != builtin_interface.interface_hash {
+        || builtin_core.interface_hash != builtin_interface.interface_hash
+        || !world_dependencies_equal(builtin_core.deps, builtin_interface.deps) {
         return Result::Err("world artifact builtin identity does not match")
+    } else {};
+    let prelude = world_decode_package(container, 4, "prelude")?;
+    if !artifact_interface_has_dependency(
+        prelude.interface_unit,
+        "builtin",
+        builtin_interface.interface_hash,
+    ) {
+        return Result::Err("world artifact prelude builtin dependency does not match")
     } else {};
     let root = world_decode_package(container, 10, resources::STD_ROOT_PACKAGE)?;
     let host = world_decode_package(container, 12, resources::STD_INTERNAL_HOST_PACKAGE)?;
@@ -237,42 +315,49 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
     let crypto = world_decode_package(container, 64, resources::STD_CRYPTO_PACKAGE)?;
     let crypto_hash = world_decode_package(container, 66, resources::STD_CRYPTO_HASH_PACKAGE)?;
     let crypto_rand = world_decode_package(container, 68, resources::STD_CRYPTO_RAND_PACKAGE)?;
+    let standard = ArtifactStandardLibrary {
+        root,
+        host,
+        ascii,
+        bincode,
+        bytes,
+        cmp,
+        collections,
+        error,
+        env,
+        fs: fs_value,
+        io: io_value,
+        internal_task,
+        iter,
+        json,
+        num,
+        path: path_value,
+        process,
+        serde,
+        task,
+        testing,
+        text: text_value,
+        toml,
+        time: time_value,
+        utf8,
+        unicode,
+        math,
+        rand,
+        crypto,
+        crypto_hash,
+        crypto_rand,
+    };
+    world_validate_standard_dependencies(
+        standard,
+        builtin_interface.interface_hash,
+        prelude.interface_unit.interface_hash,
+    )?;
     let world = PackageWorld {
         counter,
         builtins: builtin_core.core_ir,
         builtin_interface,
-        standard: ArtifactStandardLibrary {
-            root,
-            host,
-            ascii,
-            bincode,
-            bytes,
-            cmp,
-            collections,
-            error,
-            env,
-            fs: fs_value,
-            io: io_value,
-            internal_task,
-            iter,
-            json,
-            num,
-            path: path_value,
-            process,
-            serde,
-            task,
-            testing,
-            text: text_value,
-            toml,
-            time: time_value,
-            utf8,
-            unicode,
-            math,
-            rand,
-            crypto,
-            crypto_hash,
-            crypto_rand,
-        },
+        prelude,
+        standard,
     };
     artifact_prepare_world(world);
     Result::Ok(world)

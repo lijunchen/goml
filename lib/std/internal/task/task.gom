@@ -8,32 +8,41 @@ pub struct CancelToken {
     id: int64,
 }
 
-#[runtime("std.task.scope_new")]
-extern fn scope_new(parent: int64) -> int64;
+fn scope_new(parent: int64) -> int64 {
+    __goml_std_task_scope_new(parent)
+}
 
-#[runtime("std.task.scope_spawn")]
-extern fn scope_spawn(scope: int64, body: () -> unit) -> bool;
+fn scope_spawn(scope: int64, body: () -> unit) -> bool {
+    __goml_std_task_scope_spawn(scope, body)
+}
 
-#[runtime("std.task.scope_run")]
-extern fn scope_run(scope: int64, body: () -> unit) -> unit;
+fn scope_run(scope: int64, body: () -> unit) -> unit {
+    __goml_std_task_scope_run(scope, body)
+}
 
-#[runtime("std.task.scope_try_spawn")]
-extern fn scope_try_spawn(scope: int64, body: () -> unit) -> bool;
+fn scope_try_spawn(scope: int64, body: () -> unit) -> bool {
+    __goml_std_task_scope_try_spawn(scope, body)
+}
 
-#[runtime("std.task.scope_cancel")]
-extern fn scope_cancel(scope: int64) -> unit;
+fn scope_cancel(scope: int64) -> unit {
+    __goml_std_task_scope_cancel(scope)
+}
 
-#[runtime("std.task.scope_finish")]
-extern fn scope_finish(scope: int64) -> unit;
+fn scope_finish(scope: int64) -> unit {
+    __goml_std_task_scope_finish(scope)
+}
 
-#[runtime("std.task.scope_cancelled")]
-extern fn scope_cancelled(scope: int64) -> bool;
+fn scope_cancelled(scope: int64) -> bool {
+    __goml_std_task_scope_cancelled(scope)
+}
 
-#[runtime("std.task.sleep")]
-extern fn scope_sleep(scope: int64, nanoseconds: int64) -> bool;
+fn scope_sleep(scope: int64, nanoseconds: int64) -> bool {
+    __goml_std_task_scope_sleep(scope, nanoseconds)
+}
 
-#[runtime("std.task.active_scope_count")]
-extern fn scope_count() -> int;
+fn scope_count() -> int {
+    __goml_std_task_scope_count()
+}
 
 pub fn root_scope() -> ScopeHandle {
     ScopeHandle { id: scope_new(0) }

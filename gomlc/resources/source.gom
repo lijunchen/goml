@@ -239,7 +239,7 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
             STD_CRYPTO_PACKAGE,
             Vec::["std/crypto/rand/rand.gom"],
             Vec::[STD_BYTES_PACKAGE, STD_INTERNAL_HOST_PACKAGE],
-            Vec::[STD_BYTES_PACKAGE],
+            Vec::[STD_BYTES_PACKAGE, STD_INTERNAL_HOST_PACKAGE],
         ),
         standard_package(
             STD_ENV_PACKAGE,
@@ -247,7 +247,7 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
             STD_ROOT_PACKAGE,
             Vec::["std/env/env.gom", "std/env/error.gom"],
             Vec::[STD_INTERNAL_HOST_PACKAGE, STD_IO_PACKAGE, STD_TEXT_PACKAGE],
-            Vec::[STD_IO_PACKAGE, STD_TEXT_PACKAGE],
+            Vec::[STD_INTERNAL_HOST_PACKAGE, STD_IO_PACKAGE, STD_TEXT_PACKAGE],
         ),
         standard_package(
             STD_FS_PACKAGE,
@@ -255,7 +255,7 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
             STD_ROOT_PACKAGE,
             Vec::["std/fs/error.gom", "std/fs/fs.gom"],
             Vec::[STD_BYTES_PACKAGE, STD_INTERNAL_HOST_PACKAGE, STD_IO_PACKAGE],
-            Vec::[STD_BYTES_PACKAGE, STD_IO_PACKAGE],
+            Vec::[STD_BYTES_PACKAGE, STD_INTERNAL_HOST_PACKAGE, STD_IO_PACKAGE],
         ),
         standard_package(
             STD_INTERNAL_HOST_PACKAGE,
@@ -279,7 +279,7 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
             STD_ROOT_PACKAGE,
             Vec::["std/io/error.gom", "std/io/io.gom"],
             Vec::[STD_BYTES_PACKAGE, STD_INTERNAL_HOST_PACKAGE],
-            Vec::[STD_BYTES_PACKAGE],
+            Vec::[STD_BYTES_PACKAGE, STD_INTERNAL_HOST_PACKAGE],
         ),
         standard_package(
             STD_ITER_PACKAGE,
@@ -303,7 +303,7 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
             STD_ROOT_PACKAGE,
             Vec::["std/num/error.gom", "std/num/num.gom"],
             Vec::[STD_INTERNAL_HOST_PACKAGE, STD_IO_PACKAGE],
-            Vec::[STD_IO_PACKAGE],
+            Vec::[STD_INTERNAL_HOST_PACKAGE, STD_IO_PACKAGE],
         ),
         standard_package(
             STD_MATH_PACKAGE,
@@ -311,7 +311,7 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
             STD_ROOT_PACKAGE,
             Vec::["std/math/math.gom"],
             Vec::[STD_INTERNAL_HOST_PACKAGE],
-            Vec::[],
+            Vec::[STD_INTERNAL_HOST_PACKAGE],
         ),
         standard_package(
             STD_PATH_PACKAGE,
@@ -319,7 +319,7 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
             STD_ROOT_PACKAGE,
             Vec::["std/path/error.gom", "std/path/path.gom"],
             Vec::[STD_INTERNAL_HOST_PACKAGE, STD_IO_PACKAGE],
-            Vec::[STD_IO_PACKAGE],
+            Vec::[STD_INTERNAL_HOST_PACKAGE, STD_IO_PACKAGE],
         ),
         standard_package(
             STD_PROCESS_PACKAGE,
@@ -333,7 +333,13 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                 STD_TASK_PACKAGE,
                 STD_TIME_PACKAGE,
             ],
-            Vec::[STD_BYTES_PACKAGE, STD_IO_PACKAGE, STD_TASK_PACKAGE, STD_TIME_PACKAGE],
+            Vec::[
+                STD_BYTES_PACKAGE,
+                STD_INTERNAL_HOST_PACKAGE,
+                STD_IO_PACKAGE,
+                STD_TASK_PACKAGE,
+                STD_TIME_PACKAGE,
+            ],
         ),
         standard_package(
             STD_RAND_PACKAGE,
@@ -372,7 +378,7 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
             STD_ROOT_PACKAGE,
             Vec::["std/testing/testing.gom"],
             Vec::[STD_ENV_PACKAGE, STD_INTERNAL_HOST_PACKAGE, STD_NUM_PACKAGE],
-            Vec::[STD_ENV_PACKAGE, STD_NUM_PACKAGE],
+            Vec::[STD_ENV_PACKAGE, STD_INTERNAL_HOST_PACKAGE, STD_NUM_PACKAGE],
         ),
         standard_package(
             STD_TEXT_PACKAGE,
@@ -396,7 +402,7 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
             STD_ROOT_PACKAGE,
             Vec::["std/time/error.gom", "std/time/time.gom"],
             Vec::[STD_INTERNAL_HOST_PACKAGE, STD_IO_PACKAGE, STD_TASK_PACKAGE],
-            Vec::[STD_IO_PACKAGE, STD_TASK_PACKAGE],
+            Vec::[STD_INTERNAL_HOST_PACKAGE, STD_IO_PACKAGE, STD_TASK_PACKAGE],
         ),
         standard_package(
             STD_UTF8_PACKAGE,
@@ -526,65 +532,17 @@ fn read_sources(category: string, relative_paths: Vec[string]) -> Result[Vec[Sou
     read_sources_from_dir(toolchain_lib_dir()?, category, relative_paths)
 }
 
-fn existing_resource_count(lib_dir: string, relative_paths: Vec[string]) -> int {
-    let mut result = 0;
-    for relative_path in relative_paths {
-        if fs::exists(path::join(lib_dir, relative_path)) {
-            result = result + 1;
-        } else {};
-    }
-    result
-}
-
-fn resource_paths_text(relative_paths: Vec[string]) -> string {
-    let mut result = "";
-    let mut index = 0;
-    for relative_path in relative_paths {
-        if index > 0 {
-            result = result + ", ";
-        } else {};
-        result = result + relative_path;
-        index = index + 1;
-    }
-    result
-}
-
-fn read_compatible_sources(category: string, current_paths: Vec[string], legacy_paths: Vec[string]) -> Result[
-    Vec[Source],
-    string,
-] {
-    let lib_dir = toolchain_lib_dir()?;
-    let current_count = existing_resource_count(lib_dir, current_paths);
-    if current_count == current_paths.len() {
-        return read_sources_from_dir(lib_dir, category, current_paths)
-    } else if current_count > 0 {
-        return Result::Err(
-            "incomplete current " + category + " resource layout in " + lib_dir + "; expected "
-                + resource_paths_text(current_paths),
-        )
-    } else {};
-    let legacy_count = existing_resource_count(lib_dir, legacy_paths);
-    if legacy_count == legacy_paths.len() {
-        read_sources_from_dir(lib_dir, category, legacy_paths)
-    } else if legacy_count > 0 {
-        Result::Err(
-            "incomplete legacy " + category + " resource layout in " + lib_dir + "; expected "
-                + resource_paths_text(legacy_paths),
-        )
-    } else {
-        Result::Err(
-            "could not find " + category + " resources in " + lib_dir + "; tried current layout "
-                + resource_paths_text(current_paths)
-                + " and legacy layout "
-                + resource_paths_text(legacy_paths),
-        )
-    }
-}
-
 pub fn builtin_layer_sources() -> Result[Vec[Source], string] {
     read_sources(
         "builtin",
-        Vec::["builtin/contract.gom", "builtin/numeric.gom", "builtin/derive.gom"],
+        Vec::[
+            "builtin/contract.gom",
+            "builtin/runtime.gom",
+            "builtin/impls.gom",
+            "builtin/language.gom",
+            "builtin/numeric.gom",
+            "builtin/derive.gom",
+        ],
     )
 }
 
@@ -592,22 +550,97 @@ pub fn prelude_sources() -> Result[Vec[Source], string] {
     read_sources("prelude", Vec::["prelude/prelude.gom"])
 }
 
-pub fn builtin_sources() -> Result[Vec[Source], string] {
-    read_compatible_sources(
-        "builtin and prelude",
-        Vec::[
-            "builtin/contract.gom",
-            "prelude/prelude.gom",
-            "builtin/numeric.gom",
-            "builtin/derive.gom",
-        ],
-        Vec::[
-            "builtin_contract.gom",
-            "builtin_prelude.gom",
-            "builtin_numeric.gom",
-            "builtin_derive.gom",
-        ],
-    )
+pub fn prelude_builtin_export_names() -> Vec[string] {
+    Vec::[
+        "Option",
+        "Result",
+        "Vec",
+        "Slice",
+        "Ref",
+        "HashMap",
+        "Channel",
+        "FnIterator",
+        "Iterator",
+        "IntoIterator",
+        "PartialEq",
+        "Eq",
+        "Hash",
+        "ToString",
+        "Debug",
+        "Default",
+        "array_get",
+        "array_set",
+        "unit_to_string",
+        "bool_to_string",
+        "string_len",
+        "string_byte_get",
+        "string_to_bytes",
+        "string_concat",
+        "string_get",
+        "string_byte_slice",
+        "string_is_char_boundary",
+        "string_decode_utf8_at",
+        "string_from_utf8",
+        "char_to_string",
+        "string_print",
+        "string_println",
+        "int_to_string",
+        "int8_to_string",
+        "int16_to_string",
+        "int32_to_string",
+        "int64_to_string",
+        "uint_to_string",
+        "uint8_to_string",
+        "uint16_to_string",
+        "uint32_to_string",
+        "uint64_to_string",
+        "float32_to_string",
+        "float64_to_string",
+        "string_parse_float32",
+        "string_parse_float64",
+        "int_hash",
+        "int8_hash",
+        "int16_hash",
+        "int32_hash",
+        "int64_hash",
+        "uint_hash",
+        "uint8_hash",
+        "uint16_hash",
+        "uint32_hash",
+        "float32_hash",
+        "float64_hash",
+        "string_hash",
+        "char_hash",
+        "vec_new",
+        "vec_with_capacity",
+        "vec_push",
+        "vec_get",
+        "vec_set",
+        "vec_len",
+        "vec_capacity",
+        "vec_reserve",
+        "vec_truncate",
+        "slice",
+        "slice_get",
+        "slice_len",
+        "slice_sub",
+        "hashmap_new",
+        "hashmap_get",
+        "hashmap_set",
+        "hashmap_remove",
+        "hashmap_len",
+        "hashmap_contains",
+        "hashmap_entries",
+        "channel_new",
+        "channel_send",
+        "channel_recv",
+        "channel_close",
+        "ref",
+        "ref_get",
+        "ref_set",
+        "ptr_eq",
+        "ptr_hash",
+    ]
 }
 
 pub fn standard_sources(package_name: string) -> Result[Option[Vec[Source]], string] {
