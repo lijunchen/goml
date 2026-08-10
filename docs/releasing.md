@@ -48,12 +48,16 @@ goml-X.Y.Z-linux-amd64/
 │   ├── gomlfmt
 │   └── gomllsp
 └── lib/
-    ├── builtin_contract.gom
-    ├── builtin_prelude.gom
+    ├── builtin/
+    │   ├── contract.gom
+    │   ├── derive.gom
+    │   └── numeric.gom
+    ├── prelude/
+    │   └── prelude.gom
     └── std/
 ```
 
-The compiler resolves `lib` relative to its executable. The archive must preserve this layout.
+The compiler resolves `lib` relative to its executable. The archive must preserve this layout. During the layout transition release, the archive also includes the four legacy flat files `builtin_contract.gom`, `builtin_prelude.gom`, `builtin_numeric.gom`, and `builtin_derive.gom` so the previous compiler can use the new archive.
 
 ## Advance stage0
 

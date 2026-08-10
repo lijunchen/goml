@@ -133,7 +133,7 @@ Key functions in the emitter:
 ## Project Structure & Module Organization
 - Self-hosted compiler module in `gomlc/`.
 - Self-hosted project driver module in `goml/`.
-- Standard-library and builtin sources in `stdlib/`; every toolchain loads them from its executable-relative `lib/` directory.
+- Toolchain sources in `lib/builtin/`, `lib/prelude/`, and `lib/std/`; every toolchain loads them from its executable-relative `lib/` directory.
 - Binary bootstrap scripts and stage0 metadata in `bootstrap/`.
 - Ignored toolchain outputs in `stage1`, `stage2`, and `stage3`, with executables below each stage's `bin` directory and compiler resources below `lib`.
 - VS Code extension in `editors/vscode/`.
@@ -279,7 +279,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 - Build and test: `just all`.
 - Clear local build caches and generated toolchains: `just clean`.
 - Cold bootstrap and fixed point: `just bootstrap`.
-- After editing `.gom` files, run `goml fmt` from every affected module before running tests or creating commits. This repository has separate modules under `gomlc/`, `goml/`, and `stdlib/std/`, so format each affected module independently.
+- After editing `.gom` files, run `goml fmt` from every affected module before running tests or creating commits. This repository has separate modules under `gomlc/`, `goml/`, and `lib/std/`, so format each affected module independently.
 - Use the repository toolchain when formatting compiler sources, for example `cd gomlc && ../stage2/bin/goml fmt`; use `goml fmt --check` to verify that a module is already formatted without writing files.
 - CLI: use `goml new <project_name>` to scaffold a module; run `goml check`, `goml build`, or `goml test` from anywhere inside a module; use `--dry-run` to print planned commands; use `gomlc run-single <file.gom>` for standalone execution; add `--dump-ast|--dump-hir|--dump-tast|--dump-core|--dump-mono|--dump-lift|--dump-anf|--dump-go` to inspect IR stages.
 - `goml check` and `goml build` locate `gomlc` through `--compiler`, `GOMLC`, the directory containing `goml`, `GOML_HOME/bin`, then `PATH`; the driver protocol is verified before compilation.
