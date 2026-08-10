@@ -37,7 +37,16 @@ rm -rf "$stage0_extracted"
 test -x "$stage0_output/bin/goml"
 test -x "$stage0_output/bin/gomlc"
 test -x "$stage0_output/bin/gomllsp"
-test -f "$stage0_output/lib/builtin_prelude.gom"
+if test -f "$stage0_output/lib/prelude/prelude.gom"; then
+    test -f "$stage0_output/lib/builtin/contract.gom"
+    test -f "$stage0_output/lib/builtin/numeric.gom"
+    test -f "$stage0_output/lib/builtin/derive.gom"
+else
+    test -f "$stage0_output/lib/builtin_contract.gom"
+    test -f "$stage0_output/lib/builtin_prelude.gom"
+    test -f "$stage0_output/lib/builtin_numeric.gom"
+    test -f "$stage0_output/lib/builtin_derive.gom"
+fi
 test -f "$stage0_output/lib/std/goml.toml"
 
 stage0_version="${GOML_STAGE0_RELEASE_TAG#v}"

@@ -84,7 +84,16 @@ jobs:
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o "dist/$package/bin/gomlc" gomlc/_bootstrap/stage2/build/pkg/gomlc/cmd/gomlc/goml_generated.go
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o "dist/$package/bin/gomlfmt" gomlc/_bootstrap/stage2/build/pkg/gomlc/cmd/gomlfmt/goml_generated.go
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o "dist/$package/bin/gomllsp" gomlc/_bootstrap/stage2/build/pkg/gomlc/cmd/gomllsp/goml_generated.go
-          bash tools/stdlib/install.sh "dist/$package"
+          bash tools/lib/install.sh "dist/$package"
+          test -f "dist/$package/lib/builtin/contract.gom"
+          test -f "dist/$package/lib/builtin/numeric.gom"
+          test -f "dist/$package/lib/builtin/derive.gom"
+          test -f "dist/$package/lib/prelude/prelude.gom"
+          test -f "dist/$package/lib/std/goml.toml"
+          test -f "dist/$package/lib/builtin_contract.gom"
+          test -f "dist/$package/lib/builtin_prelude.gom"
+          test -f "dist/$package/lib/builtin_numeric.gom"
+          test -f "dist/$package/lib/builtin_derive.gom"
           test "$(dist/$package/bin/goml version)" = "goml $RELEASE_VERSION"
           test "$(dist/$package/bin/gomlc version --format json | jq -r .version)" = "$RELEASE_VERSION"
           test "$(dist/$package/bin/gomlfmt --version)" = "gomlfmt $RELEASE_VERSION"
@@ -97,6 +106,11 @@ jobs:
           package="goml-${RELEASE_VERSION}-linux-amd64"
           smoke_root="$(mktemp -d)"
           tar -xzf "dist/$package.tar.gz" -C "$smoke_root"
+          test -f "$smoke_root/$package/lib/builtin/contract.gom"
+          test -f "$smoke_root/$package/lib/prelude/prelude.gom"
+          test -f "$smoke_root/$package/lib/std/goml.toml"
+          test -f "$smoke_root/$package/lib/builtin_contract.gom"
+          test -f "$smoke_root/$package/lib/builtin_prelude.gom"
           cp -R tools/release/testdata/smoke "$smoke_root/project"
           cd "$smoke_root/project"
           "$smoke_root/$package/bin/goml" check

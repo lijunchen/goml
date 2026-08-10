@@ -5,18 +5,18 @@ make:
     cp gomlc/_bootstrap/stage1/bin/cmd/gomlc/gomlc stage1/bin/gomlc
     cp gomlc/_bootstrap/stage1/bin/cmd/gomlfmt/gomlfmt stage1/bin/gomlfmt
     cp gomlc/_bootstrap/stage1/bin/cmd/gomllsp/gomllsp stage1/bin/gomllsp
-    bash tools/stdlib/install.sh stage1
+    bash tools/lib/install.sh stage1
     mkdir -p stage2/bin
     bash bootstrap/build-stage.sh stage2 stage0/bin/goml stage1/bin/gomlc
     cp goml/_bootstrap/stage2/bin/cmd/goml/goml stage1/bin/goml
     cp gomlc/_bootstrap/stage2/bin/cmd/gomlc/gomlc stage2/bin/gomlc
     cp gomlc/_bootstrap/stage2/bin/cmd/gomlfmt/gomlfmt stage2/bin/gomlfmt
     cp gomlc/_bootstrap/stage2/bin/cmd/gomllsp/gomllsp stage2/bin/gomllsp
-    bash tools/stdlib/install.sh stage2
+    bash tools/lib/install.sh stage2
     cp goml/_bootstrap/stage2/bin/cmd/goml/goml stage2/bin/goml
 
 test: make
-    bash tools/stdlib/install.sh _artifact/gomlc-test/test
+    bash tools/lib/install.sh _artifact/gomlc-test/test
     cd gomlc && GOML_TEST_GOML=../stage2/bin/goml GOML_TEST_GOMLC=../stage2/bin/gomlc ../stage2/bin/goml test --target-dir ../_artifact/gomlc-test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m
     cd goml && GOML_TEST_GOML=../stage2/bin/goml GOML_TEST_GOMLC=../stage2/bin/gomlc ../stage2/bin/goml test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m
 
@@ -25,7 +25,7 @@ all: test
 cloc:
     find ./goml -type f -name '*.gom' -exec cat {} + | wc -l | awk '{ print "goml:", $1 }'
     find ./gomlc -type f -name '*.gom' -exec cat {} + | wc -l | awk '{ print "gomlc:", $1 }'
-    find ./stdlib -type f -name '*.gom' -exec cat {} + | wc -l | awk '{ print "stdlib:", $1 }'
+    find ./lib -type f -name '*.gom' -exec cat {} + | wc -l | awk '{ print "lib:", $1 }'
 
 clean:
     rm -rf _artifact _bootstrap
@@ -41,7 +41,7 @@ _bootstrap-stage3:
     cp gomlc/_bootstrap/stage3/bin/cmd/gomlc/gomlc stage3/bin/gomlc
     cp gomlc/_bootstrap/stage3/bin/cmd/gomlfmt/gomlfmt stage3/bin/gomlfmt
     cp gomlc/_bootstrap/stage3/bin/cmd/gomllsp/gomllsp stage3/bin/gomllsp
-    bash tools/stdlib/install.sh stage3
+    bash tools/lib/install.sh stage3
     cp goml/_bootstrap/stage3/bin/cmd/goml/goml stage3/bin/goml
     diff -ru --exclude='*.goml-*-fingerprint' gomlc/_bootstrap/stage2/build/pkg gomlc/_bootstrap/stage3/build/pkg
     diff -ru --exclude='*.goml-*-fingerprint' goml/_bootstrap/stage2/build/pkg goml/_bootstrap/stage3/build/pkg
@@ -55,14 +55,14 @@ bootstrap:
 
 _ci-scripts:
     bash -n tools/release/release.sh tools/release/test.sh tools/release/lsp_smoke.sh
-    bash -n tools/stdlib/install.sh tools/stdlib/test.sh
+    bash -n tools/lib/install.sh tools/lib/test.sh
     bash tools/release/test.sh
-    bash tools/stdlib/test.sh stage2
+    bash tools/lib/test.sh stage2
     bash tools/release/release.sh check-version "$(cat VERSION)"
     bash -n bootstrap/bootstrap.sh
 
 _ci-gomlc-test:
-    bash tools/stdlib/install.sh _artifact/gomlc-test/test
+    bash tools/lib/install.sh _artifact/gomlc-test/test
     cd gomlc && GOML_TEST_GOML=../stage2/bin/goml GOML_TEST_GOMLC=../stage2/bin/gomlc ../stage2/bin/goml test --target-dir ../_artifact/gomlc-test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m
 
 _ci-goml-test:
@@ -73,7 +73,7 @@ _ci-vscode:
     find editors/vscode/bin -mindepth 1 -type f -delete
     find editors/vscode/bin -mindepth 1 -depth -type d -empty -delete
     cp stage2/bin/gomllsp editors/vscode/bin/gomllsp
-    bash tools/stdlib/install.sh editors/vscode
+    bash tools/lib/install.sh editors/vscode
     cd editors/vscode && npm install
     cd editors/vscode && npm run compile
 
@@ -98,7 +98,7 @@ vscode-ext: make
     find editors/vscode/bin -mindepth 1 -type f -delete
     find editors/vscode/bin -mindepth 1 -depth -type d -empty -delete
     cp stage2/bin/gomllsp editors/vscode/bin/gomllsp
-    bash tools/stdlib/install.sh editors/vscode
+    bash tools/lib/install.sh editors/vscode
     cd editors/vscode && npm install
     cd editors/vscode && npm run compile
 
@@ -111,16 +111,16 @@ install: make
     cp stage2/bin/goml "${GOML_HOME:-$HOME/.goml}/bin/goml"
     cp stage2/bin/gomlfmt "${GOML_HOME:-$HOME/.goml}/bin/gomlfmt"
     cp stage2/bin/gomllsp "${GOML_HOME:-$HOME/.goml}/bin/gomllsp"
-    bash tools/stdlib/install.sh "${GOML_HOME:-$HOME/.goml}"
+    bash tools/lib/install.sh "${GOML_HOME:-$HOME/.goml}"
 
 update-golden: make
-    bash tools/stdlib/install.sh _artifact/gomlc-test/test
+    bash tools/lib/install.sh _artifact/gomlc-test/test
     cd gomlc && UPDATE_EXPECT=1 ../stage2/bin/goml test formatter --target-dir ../_artifact/gomlc-test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m
     cd gomlc && UPDATE_EXPECT=1 ../stage2/bin/goml test pipeline_test --target-dir ../_artifact/gomlc-test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m
     cd gomlc && UPDATE_EXPECT=1 GOML_TEST_GOML=../stage2/bin/goml GOML_TEST_GOMLC=../stage2/bin/gomlc ../stage2/bin/goml test compiler_test --target-dir ../_artifact/gomlc-test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m
 
 verify-golden: make
-    bash tools/stdlib/install.sh _artifact/gomlc-test/test
+    bash tools/lib/install.sh _artifact/gomlc-test/test
     cd gomlc && ../stage2/bin/goml test formatter --target-dir ../_artifact/gomlc-test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m
     cd gomlc && ../stage2/bin/goml test pipeline_test --target-dir ../_artifact/gomlc-test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m
     cd gomlc && GOML_TEST_GOML=../stage2/bin/goml GOML_TEST_GOMLC=../stage2/bin/gomlc ../stage2/bin/goml test compiler_test --target-dir ../_artifact/gomlc-test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m

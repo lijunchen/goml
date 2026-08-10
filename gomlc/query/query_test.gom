@@ -450,7 +450,7 @@ fn resolves_builtin_method_definitions() -> unit {
             let analysis = analyze("main.gom", numeric_source);
             match goto_definition(analysis, offset) {
                 Some(definition) => {
-                    if definition.source_path.ends_with("/builtin_numeric.gom") {} else {
+                    if definition.source_path.ends_with("/builtin/numeric.gom") {} else {
                         testing::fail("expected numeric builtin source")
                     };
                     match source_by_path(analysis.sources, definition.source_path) {

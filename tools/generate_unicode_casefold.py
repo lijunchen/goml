@@ -45,5 +45,5 @@ lines.extend([
     "",
 ])
 
-target = pathlib.Path(__file__).resolve().parents[1] / "stdlib/std/unicode/casefold.gom"
+target = pathlib.Path(__file__).resolve().parents[1] / "lib/std/unicode/casefold.gom"
 target.write_text("\n".join(lines), encoding="utf-8")
