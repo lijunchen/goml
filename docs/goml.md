@@ -169,7 +169,7 @@ Dependency versions must use the strict `X.Y.Z` form. A dependency version is a 
 
 `[build]` can be omitted; `build.target-dir` defaults to `_artifact` under the module root. The manifest value must be a non-empty relative path and cannot contain a `..` segment. `goml check`, `goml build`, `goml run`, and `goml test` can temporarily override it with `--target-dir <path>`; command-line overrides may be relative or absolute. `goml clean` removes the configured target directory. Its optional `--target-dir <path>` override must stay inside the module.
 
-Each module path segment must be non-empty and may contain ASCII letters, digits, `_`, and `-`. The current manifest parser does not reserve `main`, `builtin`, or `std` as module paths. The `[module]` section currently has no `name`, `kind`, `root`, or similar fields.
+Each module path segment must be non-empty and may contain ASCII letters, digits, `_`, and `-`. Paths rooted at `builtin` or `prelude` are reserved for the toolchain and cannot be used as a module path or dependency. The `[module]` section currently has no `name`, `kind`, `root`, or similar fields.
 
 ### Build product catalog
 
@@ -2097,6 +2097,10 @@ The custom `goml/expandedDerive` request returns the formatted AST after built-i
 
 ## Built-in prelude
 
+The toolchain library has three separate layers. `builtin` is the hidden compiler and runtime contract: it owns primitive and built-in type identities, runtime hooks, language items, built-in implementations, and derive handlers. `prelude` is an independently compiled package that depends on `builtin` and defines the public names automatically placed in ordinary source scope. `std` contains normal standard-library packages and is available only through explicit imports.
+
+User and third-party packages cannot explicitly import `builtin` or `prelude`; attempts produce a diagnostic instead of resolving a registry package. This keeps raw runtime helpers and derive internals hidden while preserving the stable identities of re-exported types and traits. Names such as `Option`, `Result`, `Vec`, `ToString`, `print`, `println`, and `range` remain available without `use` through the prelude.
+
 The following names can be used without `use`.
 
 ### `Option` and `Result`
@@ -2303,7 +2307,7 @@ Iterators are single pass. Fixed arrays use native indexed `for` lowering. `Vec[
 
 ## Standard library package
 
-The standard library is not equal to prelude and needs to be imported by package:
+The standard library is distinct from both the hidden builtin contract and the automatically scoped prelude. Its packages must be imported explicitly:
 
 ```goml
 use std::ascii;

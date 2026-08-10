@@ -134,6 +134,7 @@ Key functions in the emitter:
 - Self-hosted compiler module in `gomlc/`.
 - Self-hosted project driver module in `goml/`.
 - Toolchain sources in `lib/builtin/`, `lib/prelude/`, and `lib/std/`; every toolchain loads them from its executable-relative `lib/` directory.
+- `lib/builtin/` is the hidden compiler/runtime contract and the only layer allowed to declare runtime externs or language items. `lib/prelude/` is an independent automatically scoped package with an explicit public surface. `lib/std/` contains ordinary explicitly imported standard packages.
 - Binary bootstrap scripts and stage0 metadata in `bootstrap/`.
 - Ignored toolchain outputs in `stage1`, `stage2`, and `stage3`, with executables below each stage's `bin` directory and compiler resources below `lib`.
 - VS Code extension in `editors/vscode/`.
@@ -528,7 +529,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 ### Testing / snapshots gotchas
 
-* Adding or changing builtins changes the `builtin` interface hash; regenerate affected artifacts and snapshots with `just update-golden`.
+* Adding or changing the builtin contract changes the `builtin` interface hash and invalidates prelude and downstream artifacts. Changing the prelude changes its own interface hash without changing builtin; regenerate affected artifacts and snapshots with `just update-golden`.
 * Pipeline tests under `gomlc/testdata/pipeline/` must only be updated via `just update-golden` (never hand-edit `.cst/.ast/.hir/.tast/.core/.mono/.anf/.go/.out`).
 * Visibility fixtures live under `gomlc/testdata/module_diagnostics/`; prefer focused projects there when checking `pub`/private module API behavior.
 

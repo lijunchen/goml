@@ -50,6 +50,9 @@ goml-X.Y.Z-linux-amd64/
 └── lib/
     ├── builtin/
     │   ├── contract.gom
+    │   ├── runtime.gom
+    │   ├── impls.gom
+    │   ├── language.gom
     │   ├── derive.gom
     │   └── numeric.gom
     ├── prelude/
@@ -57,7 +60,7 @@ goml-X.Y.Z-linux-amd64/
     └── std/
 ```
 
-The compiler resolves `lib` relative to its executable. The archive must preserve this layout. During the layout transition release, the archive also includes the four legacy flat files `builtin_contract.gom`, `builtin_prelude.gom`, `builtin_numeric.gom`, and `builtin_derive.gom` so the previous compiler can use the new archive.
+The compiler resolves `lib` relative to its executable. The archive must preserve this layout exactly. `builtin`, `prelude`, and `std` are separate compiler resources; legacy flat `builtin_*.gom` files must not be packaged.
 
 ## Advance stage0
 
