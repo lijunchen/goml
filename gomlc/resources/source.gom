@@ -505,23 +505,102 @@ pub fn toolchain_lib_dir() -> Result[string, string] {
     Result::Ok(path::join(prefix, "lib"))
 }
 
-fn read_sources(relative_paths: Vec[string]) -> Result[Vec[Source], string] {
-    let lib_dir = toolchain_lib_dir()?;
+fn read_sources_from_dir(lib_dir: string, category: string, relative_paths: Vec[string]) -> Result[
+    Vec[Source],
+    string,
+] {
     let result: Vec[Source] = Vec::[];
     for relative_path in relative_paths {
         let source_path = path::join(lib_dir, relative_path);
         match fs::read_file(source_path) {
             Ok(source) => result.push(Source { path: source_path, source }),
             Err(error) => return Result::Err(
-                "could not read compiler resource " + source_path + ": " + error,
+                "could not read " + category + " resource " + source_path + ": " + error,
             ),
         }
     }
     Result::Ok(result)
 }
 
-pub fn builtin_sources() -> Result[Vec[Source], string] {
+fn read_sources(category: string, relative_paths: Vec[string]) -> Result[Vec[Source], string] {
+    read_sources_from_dir(toolchain_lib_dir()?, category, relative_paths)
+}
+
+fn existing_resource_count(lib_dir: string, relative_paths: Vec[string]) -> int {
+    let mut result = 0;
+    for relative_path in relative_paths {
+        if fs::exists(path::join(lib_dir, relative_path)) {
+            result = result + 1;
+        } else {};
+    }
+    result
+}
+
+fn resource_paths_text(relative_paths: Vec[string]) -> string {
+    let mut result = "";
+    let mut index = 0;
+    for relative_path in relative_paths {
+        if index > 0 {
+            result = result + ", ";
+        } else {};
+        result = result + relative_path;
+        index = index + 1;
+    }
+    result
+}
+
+fn read_compatible_sources(category: string, current_paths: Vec[string], legacy_paths: Vec[string]) -> Result[
+    Vec[Source],
+    string,
+] {
+    let lib_dir = toolchain_lib_dir()?;
+    let current_count = existing_resource_count(lib_dir, current_paths);
+    if current_count == current_paths.len() {
+        return read_sources_from_dir(lib_dir, category, current_paths)
+    } else if current_count > 0 {
+        return Result::Err(
+            "incomplete current " + category + " resource layout in " + lib_dir + "; expected "
+                + resource_paths_text(current_paths),
+        )
+    } else {};
+    let legacy_count = existing_resource_count(lib_dir, legacy_paths);
+    if legacy_count == legacy_paths.len() {
+        read_sources_from_dir(lib_dir, category, legacy_paths)
+    } else if legacy_count > 0 {
+        Result::Err(
+            "incomplete legacy " + category + " resource layout in " + lib_dir + "; expected "
+                + resource_paths_text(legacy_paths),
+        )
+    } else {
+        Result::Err(
+            "could not find " + category + " resources in " + lib_dir + "; tried current layout "
+                + resource_paths_text(current_paths)
+                + " and legacy layout "
+                + resource_paths_text(legacy_paths),
+        )
+    }
+}
+
+pub fn builtin_layer_sources() -> Result[Vec[Source], string] {
     read_sources(
+        "builtin",
+        Vec::["builtin/contract.gom", "builtin/numeric.gom", "builtin/derive.gom"],
+    )
+}
+
+pub fn prelude_sources() -> Result[Vec[Source], string] {
+    read_sources("prelude", Vec::["prelude/prelude.gom"])
+}
+
+pub fn builtin_sources() -> Result[Vec[Source], string] {
+    read_compatible_sources(
+        "builtin and prelude",
+        Vec::[
+            "builtin/contract.gom",
+            "prelude/prelude.gom",
+            "builtin/numeric.gom",
+            "builtin/derive.gom",
+        ],
         Vec::[
             "builtin_contract.gom",
             "builtin_prelude.gom",
@@ -533,7 +612,7 @@ pub fn builtin_sources() -> Result[Vec[Source], string] {
 
 pub fn standard_sources(package_name: string) -> Result[Option[Vec[Source]], string] {
     match standard_package_spec(package_name) {
-        Some(value) => match read_sources(value.source_paths) {
+        Some(value) => match read_sources("standard library", value.source_paths) {
             Ok(sources) => Result::Ok(Option::Some(sources)),
             Err(error) => Result::Err(error),
         },
