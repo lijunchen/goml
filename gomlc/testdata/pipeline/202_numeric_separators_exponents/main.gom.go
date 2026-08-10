@@ -67,28 +67,28 @@ func main0() struct{} {
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__72 int32) string {
-    var t199 string = _goml_runtime_core_int32_to_string(self__72)
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__70 int32) string {
+    var t199 string = _goml_runtime_core_int32_to_string(self__70)
     return t199
 }
 
-func _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(self__77 uint64) string {
-    var t202 string = _goml_runtime_core_uint64_to_string(self__77)
+func _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(self__75 uint64) string {
+    var t202 string = _goml_runtime_core_uint64_to_string(self__75)
     return t202
 }
 
-func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__79 float64) string {
-    var t205 string = _goml_runtime_core_float64_to_string(self__79)
+func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__77 float64) string {
+    var t205 string = _goml_runtime_core_float64_to_string(self__77)
     return t205
 }
 
-func _goml_m_trait__impl_i_ToString_i_float32_i_to__string(self__78 float32) string {
-    var t208 string = _goml_runtime_core_float32_to_string(self__78)
+func _goml_m_trait__impl_i_ToString_i_float32_i_to__string(self__76 float32) string {
+    var t208 string = _goml_runtime_core_float32_to_string(self__76)
     return t208
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
 func main() {

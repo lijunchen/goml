@@ -22,68 +22,68 @@ fn main() -> unit {
   ()
 }
 
-fn println__T_string(value/31: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
 fn inherent#Vec#Vec[T]#new__T_int32() -> Vec[int32] {
   @intrinsic(vec.new)()
 }
 
-fn println__T_int32(value/31: int32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/31))
+fn println__T_int32(value/1: int32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
 }
 
-fn inherent#Vec#Vec[T]#push__T_int32(self/176: Vec[int32], elem/177: int32) -> unit {
-  @intrinsic(vec.push)(self/176, elem/177)
+fn inherent#Vec#Vec[T]#push__T_int32(self/174: Vec[int32], elem/175: int32) -> unit {
+  @intrinsic(vec.push)(self/174, elem/175)
 }
 
-fn println__T_int(value/31: int) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/31))
+fn println__T_int(value/1: int) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
 }
 
-fn inherent#Vec#Vec[T]#len__T_int32(self/187: Vec[int32]) -> int {
-  @intrinsic(vec.len)(self/187)
+fn inherent#Vec#Vec[T]#len__T_int32(self/185: Vec[int32]) -> int {
+  @intrinsic(vec.len)(self/185)
 }
 
-fn inherent#Vec#Vec[T]#set__T_int32(self/184: Vec[int32], index/185: int, elem/186: int32) -> unit {
-  @intrinsic(vec.set)(self/184, index/185, elem/186)
+fn inherent#Vec#Vec[T]#set__T_int32(self/182: Vec[int32], index/183: int, elem/184: int32) -> unit {
+  @intrinsic(vec.set)(self/182, index/183, elem/184)
 }
 
-fn inherent#Vec#Vec[T]#get__T_int32(self/182: Vec[int32], index/183: int) -> int32 {
-  @intrinsic(vec.get)(self/182, index/183)
+fn inherent#Vec#Vec[T]#get__T_int32(self/180: Vec[int32], index/181: int) -> int32 {
+  @intrinsic(vec.get)(self/180, index/181)
 }
 
-fn inherent#Vec#Vec[T]#pushed__T_int32(self/178: Vec[int32], elem/179: int32) -> Vec[int32] {
-  let result/180 =
-    inherent#Vec#Vec[T]#with_capacity__T_int32((inherent#Vec#Vec[T]#len__T_int32(self/178) + 1)) in
-  let index/181 = 0 in
+fn inherent#Vec#Vec[T]#pushed__T_int32(self/176: Vec[int32], elem/177: int32) -> Vec[int32] {
+  let result/178 =
+    inherent#Vec#Vec[T]#with_capacity__T_int32((inherent#Vec#Vec[T]#len__T_int32(self/176) + 1)) in
+  let index/179 = 0 in
   let _wild83 =
-    while (index/181 < inherent#Vec#Vec[T]#len__T_int32(self/178)) {
+    while (index/179 < inherent#Vec#Vec[T]#len__T_int32(self/176)) {
         let _wild79 =
-          inherent#Vec#Vec[T]#push__T_int32(result/180, @intrinsic(vec.get)(self/178, index/181)) in
+          inherent#Vec#Vec[T]#push__T_int32(result/178, @intrinsic(vec.get)(self/176, index/179)) in
         let _wild82 =
-          let compound_old80 = index/181 in
+          let compound_old80 = index/179 in
           let compound_value81 = 1 in
-          index/181 = (compound_old80 + compound_value81) in
+          index/179 = (compound_old80 + compound_value81) in
         ()
     } in
-  let _wild84 = inherent#Vec#Vec[T]#push__T_int32(result/180, elem/179) in
-  result/180
+  let _wild84 = inherent#Vec#Vec[T]#push__T_int32(result/178, elem/177) in
+  result/178
 }
 
-fn trait_impl#ToString#string#to_string(self/67: string) -> string {
-  self/67
+fn trait_impl#ToString#string#to_string(self/65: string) -> string {
+  self/65
 }
 
-fn trait_impl#ToString#int32#to_string(self/72: int32) -> string {
-  @runtime(core.int32_to_string)(self/72)
+fn trait_impl#ToString#int32#to_string(self/70: int32) -> string {
+  @runtime(core.int32_to_string)(self/70)
 }
 
-fn trait_impl#ToString#int#to_string(self/69: int) -> string {
-  @runtime(core.int_to_string)(self/69)
+fn trait_impl#ToString#int#to_string(self/67: int) -> string {
+  @runtime(core.int_to_string)(self/67)
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_int32(capacity/175: int) -> Vec[int32] {
-  @intrinsic(vec.with_capacity)(capacity/175)
+fn inherent#Vec#Vec[T]#with_capacity__T_int32(capacity/173: int) -> Vec[int32] {
+  @intrinsic(vec.with_capacity)(capacity/173)
 }

@@ -432,18 +432,18 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__35 int32) string {
-    var t300 string = _goml_runtime_core_int32_to_string(self__35)
+func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
+    var t300 string = _goml_runtime_core_int32_to_string(self__33)
     return t300
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__257 int32) *ref_int32_x {
-    var t308 *ref_int32_x = ref__Ref_5int32(value__257)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__255 int32) *ref_int32_x {
+    var t308 *ref_int32_x = ref__Ref_5int32(value__255)
     return t308
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
 func _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(env186 closure_env_f_0, v__26 dyn__Display, t__27 string) string {

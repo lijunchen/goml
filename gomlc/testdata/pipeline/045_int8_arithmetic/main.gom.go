@@ -73,20 +73,20 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func println__T_string(value__31 string) struct{} {
+func println__T_string(value__1 string) struct{} {
     var t197 string
-    t197 = value__31
+    t197 = value__1
     _goml_runtime_core_string_println(t197)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int8_i_to__string(self__70 int8) string {
-    var t201 string = _goml_runtime_core_int8_to_string(self__70)
+func _goml_m_trait__impl_i_ToString_i_int8_i_to__string(self__68 int8) string {
+    var t201 string = _goml_runtime_core_int8_to_string(self__68)
     return t201
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__66 bool) string {
-    var t204 string = _goml_runtime_core_bool_to_string(self__66)
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
+    var t204 string = _goml_runtime_core_bool_to_string(self__64)
     return t204
 }
 

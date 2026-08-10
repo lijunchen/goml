@@ -100,13 +100,13 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__int32() *_goml_vec_int32 {
     return t193
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
-    var t216 string = _goml_runtime_core_int_to_string(self__69)
+func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
+    var t216 string = _goml_runtime_core_int_to_string(self__67)
     return t216
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__72 int32) string {
-    var t219 string = _goml_runtime_core_int32_to_string(self__72)
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__70 int32) string {
+    var t219 string = _goml_runtime_core_int32_to_string(self__70)
     return t219
 }
 

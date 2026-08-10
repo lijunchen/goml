@@ -224,30 +224,30 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func println__T_string(value__31 string) struct{} {
+func println__T_string(value__1 string) struct{} {
     var t262 string
-    t262 = value__31
+    t262 = value__1
     _goml_runtime_core_string_println(t262)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string(value__257 string) *ref_string_x {
-    var t277 *ref_string_x = ref__Ref_6string(value__257)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string(value__255 string) *ref_string_x {
+    var t277 *ref_string_x = ref__Ref_6string(value__255)
     return t277
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(self__259 *ref_string_x, value__260 string) struct{} {
-    ref_set__Ref_6string(self__259, value__260)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(self__257 *ref_string_x, value__258 string) struct{} {
+    ref_set__Ref_6string(self__257, value__258)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(self__258 *ref_string_x) string {
-    var t282 string = ref_get__Ref_6string(self__258)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(self__256 *ref_string_x) string {
+    var t282 string = ref_get__Ref_6string(self__256)
     return t282
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
 func _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(env221 closure_env_run_0) struct{} {

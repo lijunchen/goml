@@ -126,6 +126,409 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(
   }
 }
 
+fn std::internal::host::args() -> Vec[string] {
+  @runtime(std.env.args)()
+}
+
+fn std::internal::host::current_dir() -> (bool, string, string) {
+  @runtime(std.env.current_dir)()
+}
+
+fn std::internal::host::current_exe() -> (bool, string, string) {
+  @runtime(std.env.current_exe)()
+}
+
+fn std::internal::host::env_var(name/0: string) -> (bool, string) {
+  @runtime(std.env.var)(name/0)
+}
+
+fn std::internal::host::env_vars() -> Vec[string] {
+  @runtime(std.env.vars)()
+}
+
+fn std::internal::host::read_file(path/1: string) -> (bool, string, string) {
+  @runtime(std.fs.read_file)(path/1)
+}
+
+fn std::internal::host::write_file(path/2: string, content/3: string) -> (bool, string) {
+  @runtime(std.fs.write_file)(path/2, content/3)
+}
+
+fn std::internal::host::read_bytes(path/4: string) -> (bool, Vec[uint8], string) {
+  @runtime(std.fs.read_bytes)(path/4)
+}
+
+fn std::internal::host::read_bytes_v2(path/5: string) -> (
+  bool,
+  Vec[uint8],
+  int,
+  bool,
+  int,
+  string
+) {
+  @runtime(std.fs.read_bytes.v2)(path/5)
+}
+
+fn std::internal::host::write_bytes(path/6: string, data/7: Vec[uint8]) -> (bool, string) {
+  @runtime(std.fs.write_bytes)(path/6, data/7)
+}
+
+fn std::internal::host::write_bytes_v2(path/8: string, data/9: Vec[uint8]) -> (
+  bool,
+  int,
+  bool,
+  int,
+  string
+) {
+  @runtime(std.fs.write_bytes.v2)(path/8, data/9)
+}
+
+fn std::internal::host::fs_path_operation_v2(
+  operation/10: int,
+  first/11: string,
+  second/12: string
+) -> (bool, int, bool, int, string) {
+  @runtime(std.fs.path_operation.v2)(operation/10, first/11, second/12)
+}
+
+fn std::internal::host::fs_metadata_v2(path/13: string, follow/14: bool) -> (
+  bool,
+  int,
+  int64,
+  uint32,
+  int64,
+  int,
+  bool,
+  int,
+  string
+) {
+  @runtime(std.fs.metadata.v2)(path/13, follow/14)
+}
+
+fn std::internal::host::fs_atomic_write_v2(path/15: string, data/16: Vec[uint8]) -> (
+  bool,
+  int,
+  bool,
+  int,
+  string
+) {
+  @runtime(std.fs.atomic_write.v2)(path/15, data/16)
+}
+
+fn std::internal::host::create_dir_all(path/17: string) -> (bool, string) {
+  @runtime(std.fs.create_dir_all)(path/17)
+}
+
+fn std::internal::host::remove_file(path/18: string) -> (bool, string) {
+  @runtime(std.fs.remove_file)(path/18)
+}
+
+fn std::internal::host::remove_dir_all(path/19: string) -> (bool, string) {
+  @runtime(std.fs.remove_dir_all)(path/19)
+}
+
+fn std::internal::host::file_exists(path/20: string) -> bool {
+  @runtime(std.fs.file_exists)(path/20)
+}
+
+fn std::internal::host::is_file(path/21: string) -> bool {
+  @runtime(std.fs.is_file)(path/21)
+}
+
+fn std::internal::host::is_dir(path/22: string) -> bool {
+  @runtime(std.fs.is_dir)(path/22)
+}
+
+fn std::internal::host::canonicalize(path/23: string) -> (bool, string, string) {
+  @runtime(std.fs.canonicalize)(path/23)
+}
+
+fn std::internal::host::read_dir(path/24: string) -> (bool, Vec[string], string) {
+  @runtime(std.fs.read_dir)(path/24)
+}
+
+fn std::internal::host::read_dir_v2(path/25: string) -> (
+  bool,
+  Vec[string],
+  int,
+  bool,
+  int,
+  string
+) {
+  @runtime(std.fs.read_dir.v2)(path/25)
+}
+
+fn std::internal::host::sha256_file(path/26: string) -> (bool, string, string) {
+  @runtime(std.fs.sha256_file)(path/26)
+}
+
+fn std::internal::host::print(value/27: string) -> unit {
+  @runtime(std.io.print)(value/27)
+}
+
+fn std::internal::host::println(value/28: string) -> unit {
+  @runtime(std.io.println)(value/28)
+}
+
+fn std::internal::host::eprint(value/29: string) -> unit {
+  @runtime(std.io.eprint)(value/29)
+}
+
+fn std::internal::host::read_stdin() -> (bool, Vec[uint8], string) {
+  @runtime(std.io.read_stdin)()
+}
+
+fn std::internal::host::read_stdin_v2() -> (bool, Vec[uint8], int, bool, int, string) {
+  @runtime(std.io.read_stdin.v2)()
+}
+
+fn std::internal::host::read_stdin_exact(length/30: int) -> (bool, Vec[uint8], string) {
+  @runtime(std.io.read_stdin_exact)(length/30)
+}
+
+fn std::internal::host::read_stdin_exact_v2(length/31: int) -> (
+  bool,
+  Vec[uint8],
+  int,
+  bool,
+  int,
+  string
+) {
+  @runtime(std.io.read_stdin_exact.v2)(length/31)
+}
+
+fn std::internal::host::write_stdout(data/32: Vec[uint8]) -> (bool, string) {
+  @runtime(std.io.write_stdout)(data/32)
+}
+
+fn std::internal::host::write_stdout_v2(data/33: Vec[uint8]) -> (bool, int, bool, int, string) {
+  @runtime(std.io.write_stdout.v2)(data/33)
+}
+
+fn std::internal::host::write_stderr(data/34: Vec[uint8]) -> (bool, string) {
+  @runtime(std.io.write_stderr)(data/34)
+}
+
+fn std::internal::host::write_stderr_v2(data/35: Vec[uint8]) -> (bool, int, bool, int, string) {
+  @runtime(std.io.write_stderr.v2)(data/35)
+}
+
+fn std::internal::host::path_join(base/36: string, child/37: string) -> string {
+  @runtime(std.path.join)(base/36, child/37)
+}
+
+fn std::internal::host::path_clean(path/38: string) -> string {
+  @runtime(std.path.clean)(path/38)
+}
+
+fn std::internal::host::path_is_absolute(path/39: string) -> bool {
+  @runtime(std.path.is_absolute)(path/39)
+}
+
+fn std::internal::host::path_parent(path/40: string) -> (bool, string) {
+  @runtime(std.path.parent)(path/40)
+}
+
+fn std::internal::host::path_file_name(path/41: string) -> (bool, string) {
+  @runtime(std.path.file_name)(path/41)
+}
+
+fn std::internal::host::path_extension(path/42: string) -> (bool, string) {
+  @runtime(std.path.extension)(path/42)
+}
+
+fn std::internal::host::path_file_stem(path/43: string) -> (bool, string) {
+  @runtime(std.path.file_stem)(path/43)
+}
+
+fn std::internal::host::path_with_extension(path/44: string, extension/45: string) -> string {
+  @runtime(std.path.with_extension)(path/44, extension/45)
+}
+
+fn std::internal::host::path_absolute(path/46: string) -> (bool, string, string) {
+  @runtime(std.path.absolute)(path/46)
+}
+
+fn std::internal::host::path_relative(base/47: string, target/48: string) -> (
+  bool,
+  string,
+  string
+) {
+  @runtime(std.path.relative)(base/47, target/48)
+}
+
+fn std::internal::host::path_separator() -> string {
+  @runtime(std.path.separator)()
+}
+
+fn std::internal::host::exit(code/49: int) -> unit {
+  @runtime(std.process.exit)(code/49)
+}
+
+fn std::internal::host::process_look_path(program/50: string) -> (bool, string, string) {
+  @runtime(std.process.look_path)(program/50)
+}
+
+fn std::internal::host::process_output(
+  program/51: string,
+  arguments/52: Vec[string],
+  has_directory/53: bool,
+  directory/54: string,
+  environment/55: Vec[(string, string)],
+  has_input/56: bool,
+  input/57: Vec[uint8]
+) -> (bool, int, Vec[uint8], Vec[uint8], string) {
+  @runtime(std.process.output)(
+    program/51,
+    arguments/52,
+    has_directory/53,
+    directory/54,
+    environment/55,
+    has_input/56,
+    input/57
+  )
+}
+
+fn std::internal::host::process_output_timeout(
+  program/58: string,
+  arguments/59: Vec[string],
+  has_directory/60: bool,
+  directory/61: string,
+  environment/62: Vec[(string, string)],
+  has_input/63: bool,
+  input/64: Vec[uint8],
+  timeout_ms/65: int
+) -> (bool, int, Vec[uint8], Vec[uint8], string, bool) {
+  @runtime(std.process.output_timeout)(
+    program/58,
+    arguments/59,
+    has_directory/60,
+    directory/61,
+    environment/62,
+    has_input/63,
+    input/64,
+    timeout_ms/65
+  )
+}
+
+fn std::internal::host::process_output_cancel(
+  program/66: string,
+  arguments/67: Vec[string],
+  has_directory/68: bool,
+  directory/69: string,
+  environment/70: Vec[(string, string)],
+  has_input/71: bool,
+  input/72: Vec[uint8],
+  scope_id/73: int64
+) -> (bool, int, Vec[uint8], Vec[uint8], string, bool) {
+  @runtime(std.process.output_cancel)(
+    program/66,
+    arguments/67,
+    has_directory/68,
+    directory/69,
+    environment/70,
+    has_input/71,
+    input/72,
+    scope_id/73
+  )
+}
+
+fn std::internal::host::process_status(
+  program/74: string,
+  arguments/75: Vec[string],
+  has_directory/76: bool,
+  directory/77: string,
+  environment/78: Vec[(string, string)]
+) -> (bool, int, string) {
+  @runtime(std.process.status)(
+    program/74,
+    arguments/75,
+    has_directory/76,
+    directory/77,
+    environment/78
+  )
+}
+
+fn std::internal::host::process_status_timeout(
+  program/79: string,
+  arguments/80: Vec[string],
+  has_directory/81: bool,
+  directory/82: string,
+  environment/83: Vec[(string, string)],
+  timeout_ms/84: int
+) -> (bool, int, string, bool) {
+  @runtime(std.process.status_timeout)(
+    program/79,
+    arguments/80,
+    has_directory/81,
+    directory/82,
+    environment/83,
+    timeout_ms/84
+  )
+}
+
+fn std::internal::host::process_status_cancel(
+  program/85: string,
+  arguments/86: Vec[string],
+  has_directory/87: bool,
+  directory/88: string,
+  environment/89: Vec[(string, string)],
+  scope_id/90: int64
+) -> (bool, int, string, bool) {
+  @runtime(std.process.status_cancel)(
+    program/85,
+    arguments/86,
+    has_directory/87,
+    directory/88,
+    environment/89,
+    scope_id/90
+  )
+}
+
+fn std::internal::host::test_fail(message/91: string) -> unit {
+  @runtime(std.testing.fail)(message/91)
+}
+
+fn std::internal::host::parse_int(value/92: string, radix/93: int) -> (bool, int, string) {
+  @runtime(std.num.parse_int)(value/92, radix/93)
+}
+
+fn std::internal::host::parse_uint(value/94: string, radix/95: int) -> (bool, uint, string) {
+  @runtime(std.num.parse_uint)(value/94, radix/95)
+}
+
+fn std::internal::host::parse_float32(value/96: string) -> (bool, float32, string) {
+  @runtime(std.num.parse_float32)(value/96)
+}
+
+fn std::internal::host::parse_float64(value/97: string) -> (bool, float64, string) {
+  @runtime(std.num.parse_float64)(value/97)
+}
+
+fn std::internal::host::monotonic_nanoseconds() -> int64 {
+  @runtime(std.time.monotonic_nanoseconds)()
+}
+
+fn std::internal::host::unix_nanoseconds() -> int64 {
+  @runtime(std.time.unix_nanoseconds)()
+}
+
+fn std::internal::host::sleep_nanoseconds(value/98: int64) -> unit {
+  @runtime(std.time.sleep_nanoseconds)(value/98)
+}
+
+fn std::internal::host::math_float32_unary(operation/99: int, value/100: float32) -> float32 {
+  @runtime(std.math.float32_unary)(operation/99, value/100)
+}
+
+fn std::internal::host::math_float32_pow(value/101: float32, exponent/102: float32) -> float32 {
+  @runtime(std.math.float32_pow)(value/101, exponent/102)
+}
+
+fn std::internal::host::crypto_random_bytes(length/103: int) -> (bool, Vec[uint8], string) {
+  @runtime(std.crypto.rand.bytes)(length/103)
+}
+
 fn trait_impl#ToString#std::io::ErrorKind#to_string(self/0: std::io::ErrorKind) -> string {
   match self/0 {
     std::io::ErrorKind::NotFound => {
@@ -454,7 +857,7 @@ fn std::io::structured_error(
 }
 
 fn std::io::read_stdin_structured() -> Result__std::bytes::Bytes__std::io::Error {
-  let mtmp2 = @runtime(std.io.read_stdin.v2)() in
+  let mtmp2 = std::internal::host::read_stdin_v2() in
   {
     let x3 = mtmp2.0 in
     let x4 = mtmp2.1 in
@@ -577,7 +980,7 @@ fn std::io::read_stdin_exact_structured(
       }
   } else {
       {
-        let mtmp15 = @runtime(std.io.read_stdin_exact.v2)(length/50) in
+        let mtmp15 = std::internal::host::read_stdin_exact_v2(length/50) in
         {
           let x16 = mtmp15.0 in
           let x17 = mtmp15.1 in
@@ -636,13 +1039,13 @@ fn std::io::write_structured(
   let result/59 =
     if stderr/57 {
         {
-          @runtime(std.io.write_stderr.v2)(
+          std::internal::host::write_stderr_v2(
             inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/58)
           )
         }
     } else {
         {
-          @runtime(std.io.write_stdout.v2)(
+          std::internal::host::write_stdout_v2(
             inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/58)
           )
         }
@@ -708,7 +1111,7 @@ fn std::io::write_stderr_structured(data/66: std::bytes::Bytes) -> Result__unit_
 }
 
 fn std::io::read_stdin() -> Result__std::bytes::Bytes__string {
-  let mtmp28 = @runtime(std.io.read_stdin)() in
+  let mtmp28 = std::internal::host::read_stdin() in
   {
     let x29 = mtmp28.0 in
     let x30 = mtmp28.1 in
@@ -740,7 +1143,9 @@ fn std::io::read_stdin() -> Result__std::bytes::Bytes__string {
 
 fn std::io::write_stdout(data/74: std::bytes::Bytes) -> Result__unit__string {
   let mtmp32 =
-    @runtime(std.io.write_stdout)(inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/74)) in
+    std::internal::host::write_stdout(
+      inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/74)
+    ) in
   {
     let x33 = mtmp32.0 in
     let x34 = mtmp32.1 in
@@ -766,7 +1171,9 @@ fn std::io::write_stdout(data/74: std::bytes::Bytes) -> Result__unit__string {
 
 fn std::io::write_stderr(data/77: std::bytes::Bytes) -> Result__unit__string {
   let mtmp35 =
-    @runtime(std.io.write_stderr)(inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/77)) in
+    std::internal::host::write_stderr(
+      inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/77)
+    ) in
   {
     let x36 = mtmp35.0 in
     let x37 = mtmp35.1 in
@@ -797,7 +1204,7 @@ fn std::io::read_stdin_exact(length/80: int) -> Result__std::bytes::Bytes__strin
       }
   } else {
       {
-        let mtmp38 = @runtime(std.io.read_stdin_exact)(length/80) in
+        let mtmp38 = std::internal::host::read_stdin_exact(length/80) in
         {
           let x39 = mtmp38.0 in
           let x40 = mtmp38.1 in
@@ -1022,7 +1429,7 @@ fn std::fs::structured_error(
 }
 
 fn std::fs::read_bytes_structured(path/35: string) -> Result__std::bytes::Bytes__std::fs::Error {
-  let mtmp3 = @runtime(std.fs.read_bytes.v2)(path/35) in
+  let mtmp3 = std::internal::host::read_bytes_v2(path/35) in
   {
     let x4 = mtmp3.0 in
     let x5 = mtmp3.1 in
@@ -1134,7 +1541,7 @@ fn std::fs::write_bytes_structured(
   data/48: std::bytes::Bytes
 ) -> Result__unit__std::fs::Error {
   let mtmp16 =
-    @runtime(std.fs.write_bytes.v2)(
+    std::internal::host::write_bytes_v2(
       path/47,
       inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/48)
     ) in
@@ -1198,7 +1605,7 @@ fn std::fs::path_operation(
   first/58: string,
   second/59: string
 ) -> Result__unit__std::fs::Error {
-  let mtmp22 = @runtime(std.fs.path_operation.v2)(operation/56, first/58, second/59) in
+  let mtmp22 = std::internal::host::fs_path_operation_v2(operation/56, first/58, second/59) in
   {
     let x23 = mtmp22.0 in
     let x24 = mtmp22.1 in
@@ -1280,7 +1687,7 @@ fn std::fs::atomic_write_bytes(
   data/77: std::bytes::Bytes
 ) -> Result__unit__std::fs::Error {
   let mtmp28 =
-    @runtime(std.fs.atomic_write.v2)(
+    std::internal::host::fs_atomic_write_v2(
       path/76,
       inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/77)
     ) in
@@ -1363,7 +1770,7 @@ fn std::fs::query_metadata(
   path/86: string,
   follow/87: bool
 ) -> Result__std::fs::Metadata__std::fs::Error {
-  let mtmp34 = @runtime(std.fs.metadata.v2)(path/86, follow/87) in
+  let mtmp34 = std::internal::host::fs_metadata_v2(path/86, follow/87) in
   {
     let x35 = mtmp34.0 in
     let x36 = mtmp34.1 in
@@ -1475,7 +1882,7 @@ fn std::fs::try_exists(path/99: string) -> Result__bool__std::fs::Error {
 fn std::fs::read_dir_structured(
   path/101: string
 ) -> Result__Vec[std::fs::DirEntry]__std::fs::Error {
-  let mtmp47 = @runtime(std.fs.read_dir.v2)(path/101) in
+  let mtmp47 = std::internal::host::read_dir_v2(path/101) in
   {
     let x48 = mtmp47.0 in
     let x49 = mtmp47.1 in
@@ -1529,7 +1936,7 @@ fn std::fs::read_dir_structured(
                                     let name/109 = for_item57 in
                                     {
                                       let entry_path/110 =
-                                        @runtime(std.path.join)(path/101, name/109) in
+                                        std::internal::host::path_join(path/101, name/109) in
                                       {
                                         let mtmp59 = std::fs::symlink_metadata(entry_path/110) in
                                         match mtmp59 {
@@ -1622,7 +2029,7 @@ fn std::fs::write_file(path/116: string, content/117: string) -> Result__unit__s
 }
 
 fn std::fs::read_bytes(path/118: string) -> Result__std::bytes::Bytes__string {
-  let mtmp66 = @runtime(std.fs.read_bytes)(path/118) in
+  let mtmp66 = std::internal::host::read_bytes(path/118) in
   {
     let x67 = mtmp66.0 in
     let x68 = mtmp66.1 in
@@ -1654,7 +2061,7 @@ fn std::fs::read_bytes(path/118: string) -> Result__std::bytes::Bytes__string {
 
 fn std::fs::write_bytes(path/122: string, data/123: std::bytes::Bytes) -> Result__unit__string {
   let mtmp70 =
-    @runtime(std.fs.write_bytes)(
+    std::internal::host::write_bytes(
       path/122,
       inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/123)
     ) in
@@ -1682,7 +2089,7 @@ fn std::fs::write_bytes(path/122: string, data/123: std::bytes::Bytes) -> Result
 }
 
 fn std::fs::create_dir_all(path/126: string) -> Result__unit__string {
-  let mtmp73 = @runtime(std.fs.create_dir_all)(path/126) in
+  let mtmp73 = std::internal::host::create_dir_all(path/126) in
   {
     let x74 = mtmp73.0 in
     let x75 = mtmp73.1 in
@@ -1707,7 +2114,7 @@ fn std::fs::create_dir_all(path/126: string) -> Result__unit__string {
 }
 
 fn std::fs::remove_file(path/129: string) -> Result__unit__string {
-  let mtmp76 = @runtime(std.fs.remove_file)(path/129) in
+  let mtmp76 = std::internal::host::remove_file(path/129) in
   {
     let x77 = mtmp76.0 in
     let x78 = mtmp76.1 in
@@ -1732,7 +2139,7 @@ fn std::fs::remove_file(path/129: string) -> Result__unit__string {
 }
 
 fn std::fs::remove_dir_all(path/132: string) -> Result__unit__string {
-  let mtmp79 = @runtime(std.fs.remove_dir_all)(path/132) in
+  let mtmp79 = std::internal::host::remove_dir_all(path/132) in
   {
     let x80 = mtmp79.0 in
     let x81 = mtmp79.1 in
@@ -1757,19 +2164,19 @@ fn std::fs::remove_dir_all(path/132: string) -> Result__unit__string {
 }
 
 fn std::fs::exists(path/135: string) -> bool {
-  @runtime(std.fs.file_exists)(path/135)
+  std::internal::host::file_exists(path/135)
 }
 
 fn std::fs::is_file(path/136: string) -> bool {
-  @runtime(std.fs.is_file)(path/136)
+  std::internal::host::is_file(path/136)
 }
 
 fn std::fs::is_dir(path/137: string) -> bool {
-  @runtime(std.fs.is_dir)(path/137)
+  std::internal::host::is_dir(path/137)
 }
 
 fn std::fs::canonicalize(path/138: string) -> Result__string__string {
-  let mtmp82 = @runtime(std.fs.canonicalize)(path/138) in
+  let mtmp82 = std::internal::host::canonicalize(path/138) in
   {
     let x83 = mtmp82.0 in
     let x84 = mtmp82.1 in
@@ -1798,7 +2205,7 @@ fn std::fs::canonicalize(path/138: string) -> Result__string__string {
 }
 
 fn std::fs::read_dir(path/142: string) -> Result__Vec[string]__string {
-  let mtmp86 = @runtime(std.fs.read_dir)(path/142) in
+  let mtmp86 = std::internal::host::read_dir(path/142) in
   {
     let x87 = mtmp86.0 in
     let x88 = mtmp86.1 in
@@ -1827,7 +2234,7 @@ fn std::fs::read_dir(path/142: string) -> Result__Vec[string]__string {
 }
 
 fn std::fs::sha256_file(path/146: string) -> Result__string__string {
-  let mtmp90 = @runtime(std.fs.sha256_file)(path/146) in
+  let mtmp90 = std::internal::host::sha256_file(path/146) in
   {
     let x91 = mtmp90.0 in
     let x92 = mtmp90.1 in
@@ -1914,61 +2321,61 @@ fn inherent#Vec#Vec[T]#new__T_uint8() -> Vec[uint8] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/175: int) -> Vec[uint8] {
-  @intrinsic(vec.with_capacity)(capacity/175)
+fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/173: int) -> Vec[uint8] {
+  @intrinsic(vec.with_capacity)(capacity/173)
 }
 
-fn inherent#string#string#to_bytes(self/53: string) -> Vec[uint8] {
-  @runtime(core.string_to_bytes)(self/53)
+fn inherent#string#string#to_bytes(self/51: string) -> Vec[uint8] {
+  @runtime(core.string_to_bytes)(self/51)
 }
 
-fn inherent#Vec#Vec[T]#len__T_uint8(self/187: Vec[uint8]) -> int {
-  @intrinsic(vec.len)(self/187)
+fn inherent#Vec#Vec[T]#len__T_uint8(self/185: Vec[uint8]) -> int {
+  @intrinsic(vec.len)(self/185)
 }
 
-fn inherent#Vec#Vec[T]#capacity__T_uint8(self/188: Vec[uint8]) -> int {
-  @intrinsic(vec.capacity)(self/188)
+fn inherent#Vec#Vec[T]#capacity__T_uint8(self/186: Vec[uint8]) -> int {
+  @intrinsic(vec.capacity)(self/186)
 }
 
-fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/189: Vec[uint8]) -> bool {
-  (@intrinsic(vec.len)(self/189) == 0)
+fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/187: Vec[uint8]) -> bool {
+  (@intrinsic(vec.len)(self/187) == 0)
 }
 
-fn inherent#Vec#Vec[T]#push__T_uint8(self/176: Vec[uint8], elem/177: uint8) -> unit {
-  @intrinsic(vec.push)(self/176, elem/177)
+fn inherent#Vec#Vec[T]#push__T_uint8(self/174: Vec[uint8], elem/175: uint8) -> unit {
+  @intrinsic(vec.push)(self/174, elem/175)
 }
 
-fn inherent#Vec#Vec[T]#pop__T_uint8(self/197: Vec[uint8]) -> Option__uint8 {
-  let len/198 = inherent#Vec#Vec[T]#len__T_uint8(self/197) in
-  if (len/198 == 0) {
+fn inherent#Vec#Vec[T]#pop__T_uint8(self/195: Vec[uint8]) -> Option__uint8 {
+  let len/196 = inherent#Vec#Vec[T]#len__T_uint8(self/195) in
+  if (len/196 == 0) {
       {
         Option__uint8::None
       }
   } else {
       {
-        let value/199 = @intrinsic(vec.get)(self/197, (len/198 - 1)) in
-        let _wild85 = inherent#Vec#Vec[T]#truncate__T_uint8(self/197, (len/198 - 1)) in
-        Option__uint8::Some(value/199)
+        let value/197 = @intrinsic(vec.get)(self/195, (len/196 - 1)) in
+        let _wild85 = inherent#Vec#Vec[T]#truncate__T_uint8(self/195, (len/196 - 1)) in
+        Option__uint8::Some(value/197)
       }
   }
 }
 
-fn inherent#Vec#Vec[T]#reserve__T_uint8(self/190: Vec[uint8], additional/191: int) -> unit {
-  @intrinsic(vec.reserve)(self/190, additional/191)
+fn inherent#Vec#Vec[T]#reserve__T_uint8(self/188: Vec[uint8], additional/189: int) -> unit {
+  @intrinsic(vec.reserve)(self/188, additional/189)
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_uint8(self/192: Vec[uint8], len/193: int) -> unit {
-  @intrinsic(vec.truncate)(self/192, len/193)
+fn inherent#Vec#Vec[T]#truncate__T_uint8(self/190: Vec[uint8], len/191: int) -> unit {
+  @intrinsic(vec.truncate)(self/190, len/191)
 }
 
-fn inherent#Vec#Vec[T]#clear__T_uint8(self/194: Vec[uint8]) -> unit {
-  inherent#Vec#Vec[T]#truncate__T_uint8(self/194, 0)
+fn inherent#Vec#Vec[T]#clear__T_uint8(self/192: Vec[uint8]) -> unit {
+  inherent#Vec#Vec[T]#truncate__T_uint8(self/192, 0)
 }
 
-fn inherent#Vec#Vec[T]#slice__T_uint8(self/225: Vec[uint8], start/226: int, end/227: int) -> Slice[
+fn inherent#Vec#Vec[T]#slice__T_uint8(self/223: Vec[uint8], start/224: int, end/225: int) -> Slice[
   uint8
 ] {
-  @intrinsic(slice.new)(self/225, start/226, end/227)
+  @intrinsic(slice.new)(self/223, start/224, end/225)
 }
 
 fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
@@ -2018,11 +2425,11 @@ fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
 }
 
 fn trait_impl#PartialEq#Option__string#eq(
-  self/153: Option__string,
-  other/154: Option__string
+  self/151: Option__string,
+  other/152: Option__string
 ) -> bool {
   {
-    let mtmp61 = (self/153, other/154) in
+    let mtmp61 = (self/151, other/152) in
     {
       let x62 = mtmp61.0 in
       let x63 = mtmp61.1 in
@@ -2043,10 +2450,10 @@ fn trait_impl#PartialEq#Option__string#eq(
                 {
                   let x66 = Option__string::Some._0(x62) in
                   {
-                    let left/155 = x66 in
+                    let left/153 = x66 in
                     {
-                      let right/156 = x64 in
-                      trait_impl#PartialEq#string#eq(left/155, right/156)
+                      let right/154 = x64 in
+                      trait_impl#PartialEq#string#eq(left/153, right/154)
                     }
                   }
                 }
@@ -2060,9 +2467,9 @@ fn trait_impl#PartialEq#Option__string#eq(
   }
 }
 
-fn trait_impl#PartialEq#Option__int#eq(self/153: Option__int, other/154: Option__int) -> bool {
+fn trait_impl#PartialEq#Option__int#eq(self/151: Option__int, other/152: Option__int) -> bool {
   {
-    let mtmp61 = (self/153, other/154) in
+    let mtmp61 = (self/151, other/152) in
     {
       let x62 = mtmp61.0 in
       let x63 = mtmp61.1 in
@@ -2083,10 +2490,10 @@ fn trait_impl#PartialEq#Option__int#eq(self/153: Option__int, other/154: Option_
                 {
                   let x66 = Option__int::Some._0(x62) in
                   {
-                    let left/155 = x66 in
+                    let left/153 = x66 in
                     {
-                      let right/156 = x64 in
-                      trait_impl#PartialEq#int#eq(left/155, right/156)
+                      let right/154 = x64 in
+                      trait_impl#PartialEq#int#eq(left/153, right/154)
                     }
                   }
                 }
@@ -2105,14 +2512,14 @@ fn inherent#Vec#Vec[T]#new__T_std::fs::DirEntry() -> Vec[std::fs::DirEntry] {
 }
 
 fn inherent#Vec#Vec[T]#push__T_std::fs::DirEntry(
-  self/176: Vec[std::fs::DirEntry],
-  elem/177: std::fs::DirEntry
+  self/174: Vec[std::fs::DirEntry],
+  elem/175: std::fs::DirEntry
 ) -> unit {
-  @intrinsic(vec.push)(self/176, elem/177)
+  @intrinsic(vec.push)(self/174, elem/175)
 }
 
 fn std::io::println__T_string(value/68: string) -> unit {
-  @runtime(std.io.println)(trait_impl#ToString#string#to_string(value/68))
+  std::internal::host::println(trait_impl#ToString#string#to_string(value/68))
 }
 
 fn string_byte_slice(value/21: string, start/22: int, end/23: int) -> string {
@@ -2132,15 +2539,15 @@ fn string_byte_slice(value/21: string, start/22: int, end/23: int) -> string {
 }
 
 fn std::io::eprint__T_string(value/69: string) -> unit {
-  @runtime(std.io.eprint)(trait_impl#ToString#string#to_string(value/69))
+  std::internal::host::eprint(trait_impl#ToString#string#to_string(value/69))
 }
 
 fn std::io::eprintln__T_string(value/70: string) -> unit {
-  @runtime(std.io.eprint)((trait_impl#ToString#string#to_string(value/70) + "\n"))
+  std::internal::host::eprint((trait_impl#ToString#string#to_string(value/70) + "\n"))
 }
 
-fn inherent#string#string#byte_len(self/38: string) -> int {
-  @runtime(core.string_len)(self/38)
+fn inherent#string#string#byte_len(self/36: string) -> int {
+  @runtime(core.string_len)(self/36)
 }
 
 fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
@@ -2313,16 +2720,16 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
   }
 }
 
-fn trait_impl#PartialEq#string#eq(self/99: string, other/100: string) -> bool {
-  (self/99 == other/100)
+fn trait_impl#PartialEq#string#eq(self/97: string, other/98: string) -> bool {
+  (self/97 == other/98)
 }
 
-fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  (self/103 == other/104)
+fn trait_impl#PartialEq#int#eq(self/101: int, other/102: int) -> bool {
+  (self/101 == other/102)
 }
 
-fn trait_impl#ToString#string#to_string(self/67: string) -> string {
-  self/67
+fn trait_impl#ToString#string#to_string(self/65: string) -> string {
+  self/65
 }
 
 fn string_is_char_boundary(value/15: string, index/16: int) -> bool {
@@ -2351,13 +2758,13 @@ fn utf8_invalid_decode() -> (bool, char, int) {
   (false, '\0', 0)
 }
 
-fn inherent#string#string#byte_get(self/41: string, index/42: int) -> uint8 {
-  @runtime(core.string_byte_get)(self/41, index/42)
+fn inherent#string#string#byte_get(self/39: string, index/40: int) -> uint8 {
+  @runtime(core.string_byte_get)(self/39, index/40)
 }
 
 fn utf8_valid_decode(value/0: uint32, width/1: int) -> (bool, char, int) {
   {
-    let mtmp0 = char_from_uint32(value/0) in
+    let mtmp0 = __goml_builtin_char_from_uint32(value/0) in
     match mtmp0 {
       Option__char::None => {
         utf8_invalid_decode()
@@ -2383,16 +2790,16 @@ fn utf8_invalid_continuation(value/3: uint32) -> bool {
   }
 }
 
-fn char_from_uint32(value/32: uint32) -> Option__char {
-  if utf8_valid_scalar(value/32) {
+fn __goml_builtin_char_from_uint32(value/30: uint32) -> Option__char {
+  if utf8_valid_scalar(value/30) {
       {
-        let mtmp22 = @runtime(core.char_from_uint32)(value/32) in
+        let mtmp22 = @runtime(core.char_from_uint32)(value/30) in
         {
           let x24 = mtmp22.1 in
           {
-            let character/33 = x24 in
+            let character/31 = x24 in
             {
-              Option__char::Some(character/33)
+              Option__char::Some(character/31)
             }
           }
         }

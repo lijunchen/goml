@@ -31,8 +31,8 @@ func _goml_m_trait__impl_i_Extra_i_int32_i_extra(self__1 int32) int32 {
     return 42
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__72 int32) string {
-    var t188 string = _goml_runtime_core_int32_to_string(self__72)
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__70 int32) string {
+    var t188 string = _goml_runtime_core_int32_to_string(self__70)
     return t188
 }
 

@@ -107,25 +107,25 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_float32_i_to__string(self__78 float32) string {
-    var t204 string = _goml_runtime_core_float32_to_string(self__78)
+func _goml_m_trait__impl_i_ToString_i_float32_i_to__string(self__76 float32) string {
+    var t204 string = _goml_runtime_core_float32_to_string(self__76)
     return t204
 }
 
-func println__T_string(value__31 string) struct{} {
+func println__T_string(value__1 string) struct{} {
     var t206 string
-    t206 = value__31
+    t206 = value__1
     _goml_runtime_core_string_println(t206)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__79 float64) string {
-    var t210 string = _goml_runtime_core_float64_to_string(self__79)
+func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__77 float64) string {
+    var t210 string = _goml_runtime_core_float64_to_string(self__77)
     return t210
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
 func main() {

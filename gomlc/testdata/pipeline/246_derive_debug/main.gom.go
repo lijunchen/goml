@@ -185,18 +185,18 @@ func _goml_m_trait__impl_i_Debug_i_State____int32_i_debug(self__3 State__int32) 
     }
 }
 
-func _goml_m_trait__impl_i_Debug_i_int_i_debug(self__84 int) string {
-    var inline341 string = _goml_runtime_core_int_to_string(self__84)
+func _goml_m_trait__impl_i_Debug_i_int_i_debug(self__82 int) string {
+    var inline341 string = _goml_runtime_core_int_to_string(self__82)
     return inline341
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__72 int32) string {
-    var t249 string = _goml_runtime_core_int32_to_string(self__72)
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__70 int32) string {
+    var t249 string = _goml_runtime_core_int32_to_string(self__70)
     return t249
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
 func main() {

@@ -222,63 +222,63 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__258 *ref_int_x) int {
-    var t249 int = ref_get__Ref_3int(self__258)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__256 *ref_int_x) int {
+    var t249 int = ref_get__Ref_3int(self__256)
     return t249
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__259 *ref_int_x, value__260 int) struct{} {
-    ref_set__Ref_3int(self__259, value__260)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__257 *ref_int_x, value__258 int) struct{} {
+    ref_set__Ref_3int(self__257, value__258)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
-    var t275 string = _goml_runtime_core_int_to_string(self__69)
+func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
+    var t275 string = _goml_runtime_core_int_to_string(self__67)
     return t275
 }
 
-func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(next_fn__172 func() Option__int) FnIterator__int {
+func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(next_fn__170 func() Option__int) FnIterator__int {
     var t278 FnIterator__int = FnIterator__int{
-        next_fn: next_fn__172,
+        next_fn: next_fn__170,
     }
     return t278
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__72 int32) string {
-    var t283 string = _goml_runtime_core_int32_to_string(self__72)
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__70 int32) string {
+    var t283 string = _goml_runtime_core_int32_to_string(self__70)
     return t283
 }
 
 func _goml_m_inherent_i_closure__en_hb902f75cf29154a7d4df1174edbd9988_sive__0_i_apply(env205 closure_env_goml_builtin_range_inclusive_0) Option__int {
-    var finished__308 *ref_bool_x = env205.finished_0
-    var current__307 *ref_int_x = env205.current_1
-    var end__306 int = env205.end_2
-    var t307 bool = ref_get__Ref_4bool(finished__308)
+    var finished__325 *ref_bool_x = env205.finished_0
+    var current__324 *ref_int_x = env205.current_1
+    var end__323 int = env205.end_2
+    var t307 bool = ref_get__Ref_4bool(finished__325)
     var jp302 bool
     if t307 {
         jp302 = true
     } else {
-        var t308 int = ref_get__Ref_3int(current__307)
-        var t309 bool = t308 > end__306
+        var t308 int = ref_get__Ref_3int(current__324)
+        var t309 bool = t308 > end__323
         jp302 = t309
     }
     if jp302 {
         return None{}
     } else {
-        var value__309 int = ref_get__Ref_3int(current__307)
-        var t305 bool = value__309 == end__306
+        var value__326 int = ref_get__Ref_3int(current__324)
+        var t305 bool = value__326 == end__323
         if t305 {
-            ref_set__Ref_4bool(finished__308, true)
+            ref_set__Ref_4bool(finished__325, true)
         } else {
-            var t306 int = value__309 + 1
-            ref_set__Ref_3int(current__307, t306)
+            var t306 int = value__326 + 1
+            ref_set__Ref_3int(current__324, t306)
         }
         var t304 Option__int = Some{
-            _0: value__309,
+            _0: value__326,
         }
         return t304
     }

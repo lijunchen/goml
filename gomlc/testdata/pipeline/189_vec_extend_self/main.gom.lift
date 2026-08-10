@@ -29,49 +29,49 @@ fn main() -> unit {
   print_values(empty/5)
 }
 
-fn println__T_int(value/31: int) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/31))
+fn println__T_int(value/1: int) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
 }
 
-fn inherent#Vec#Vec[T]#len__T_int32(self/187: Vec[int32]) -> int {
-  @intrinsic(vec.len)(self/187)
+fn inherent#Vec#Vec[T]#len__T_int32(self/185: Vec[int32]) -> int {
+  @intrinsic(vec.len)(self/185)
 }
 
-fn println__T_int32(value/31: int32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/31))
+fn println__T_int32(value/1: int32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
 }
 
 fn inherent#Vec#Vec[T]#new__T_int32() -> Vec[int32] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_int32(self/176: Vec[int32], elem/177: int32) -> unit {
-  @intrinsic(vec.push)(self/176, elem/177)
+fn inherent#Vec#Vec[T]#push__T_int32(self/174: Vec[int32], elem/175: int32) -> unit {
+  @intrinsic(vec.push)(self/174, elem/175)
 }
 
-fn inherent#Vec#Vec[T]#extend__T_int32(self/221: Vec[int32], other/222: Vec[int32]) -> unit {
-  let len/223 = inherent#Vec#Vec[T]#len__T_int32(other/222) in
-  let _wild136 = inherent#Vec#Vec[T]#reserve__T_int32(self/221, len/223) in
-  let index/224 = 0 in
-  while (index/224 < len/223) {
+fn inherent#Vec#Vec[T]#extend__T_int32(self/219: Vec[int32], other/220: Vec[int32]) -> unit {
+  let len/221 = inherent#Vec#Vec[T]#len__T_int32(other/220) in
+  let _wild136 = inherent#Vec#Vec[T]#reserve__T_int32(self/219, len/221) in
+  let index/222 = 0 in
+  while (index/222 < len/221) {
       let _wild137 =
-        inherent#Vec#Vec[T]#push__T_int32(self/221, @intrinsic(vec.get)(other/222, index/224)) in
+        inherent#Vec#Vec[T]#push__T_int32(self/219, @intrinsic(vec.get)(other/220, index/222)) in
       let _wild140 =
-        let compound_old138 = index/224 in
+        let compound_old138 = index/222 in
         let compound_value139 = 1 in
-        index/224 = (compound_old138 + compound_value139) in
+        index/222 = (compound_old138 + compound_value139) in
       ()
   }
 }
 
-fn trait_impl#ToString#int#to_string(self/69: int) -> string {
-  @runtime(core.int_to_string)(self/69)
+fn trait_impl#ToString#int#to_string(self/67: int) -> string {
+  @runtime(core.int_to_string)(self/67)
 }
 
-fn trait_impl#ToString#int32#to_string(self/72: int32) -> string {
-  @runtime(core.int32_to_string)(self/72)
+fn trait_impl#ToString#int32#to_string(self/70: int32) -> string {
+  @runtime(core.int32_to_string)(self/70)
 }
 
-fn inherent#Vec#Vec[T]#reserve__T_int32(self/190: Vec[int32], additional/191: int) -> unit {
-  @intrinsic(vec.reserve)(self/190, additional/191)
+fn inherent#Vec#Vec[T]#reserve__T_int32(self/188: Vec[int32], additional/189: int) -> unit {
+  @intrinsic(vec.reserve)(self/188, additional/189)
 }

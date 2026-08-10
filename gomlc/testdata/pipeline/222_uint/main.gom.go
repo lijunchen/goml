@@ -200,32 +200,32 @@ func main0() struct{} {
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_uint_i_to__string(self__274 uint) string {
-    var t205 string = _goml_runtime_core_uint_to_string(self__274)
+func _goml_m_trait__impl_i_ToString_i_uint_i_to__string(self__266 uint) string {
+    var t205 string = _goml_runtime_core_uint_to_string(self__266)
     return t205
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__66 bool) string {
-    var t224 string = _goml_runtime_core_bool_to_string(self__66)
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
+    var t224 string = _goml_runtime_core_bool_to_string(self__64)
     return t224
 }
 
-func _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(self__77 uint64) string {
-    var t227 string = _goml_runtime_core_uint64_to_string(self__77)
+func _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(self__75 uint64) string {
+    var t227 string = _goml_runtime_core_uint64_to_string(self__75)
     return t227
 }
 
-func _goml_m_trait__impl_i_PartialEq_i_uint_i_eq(self__276 uint, other__277 uint) bool {
-    var t230 bool = self__276 == other__277
+func _goml_m_trait__impl_i_PartialEq_i_uint_i_eq(self__268 uint, other__269 uint) bool {
+    var t230 bool = self__268 == other__269
     return t230
 }
 
-func _goml_m_trait__impl_i_Hash_i_uint_i_hash(self__278 uint) uint64 {
-    var t233 uint64 = _goml_runtime_core_uint_hash(self__278)
+func _goml_m_trait__impl_i_Hash_i_uint_i_hash(self__270 uint) uint64 {
+    var t233 uint64 = _goml_runtime_core_uint_hash(self__270)
     return t233
 }
 

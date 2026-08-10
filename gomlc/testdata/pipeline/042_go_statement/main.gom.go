@@ -62,13 +62,13 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__259 *ref_int32_x, value__260 int32) struct{} {
-    ref_set__Ref_5int32(self__259, value__260)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__257 *ref_int32_x, value__258 int32) struct{} {
+    ref_set__Ref_5int32(self__257, value__258)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
 func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env175 closure_env_main_0) struct{} {

@@ -87,39 +87,39 @@ fn main() -> unit {
   let _wild188 = inherent#Channel#Channel[T]#close__T_string(unbuffered/5) in
 }
 
-fn inherent#Channel#Channel[T]#new__T_string(capacity/261: int) -> Channel[string] {
-  @intrinsic(channel.new)(capacity/261)
+fn inherent#Channel#Channel[T]#new__T_string(capacity/259: int) -> Channel[string] {
+  @intrinsic(channel.new)(capacity/259)
 }
 
-fn inherent#Channel#Channel[T]#new__T_int(capacity/261: int) -> Channel[int] {
-  @intrinsic(channel.new)(capacity/261)
+fn inherent#Channel#Channel[T]#new__T_int(capacity/259: int) -> Channel[int] {
+  @intrinsic(channel.new)(capacity/259)
 }
 
-fn inherent#Channel#Channel[T]#send__T_int(self/262: Channel[int], value/263: int) -> unit {
-  @intrinsic(channel.send)(self/262, value/263)
+fn inherent#Channel#Channel[T]#send__T_int(self/260: Channel[int], value/261: int) -> unit {
+  @intrinsic(channel.send)(self/260, value/261)
 }
 
-fn inherent#Channel#Channel[T]#close__T_int(self/267: Channel[int]) -> unit {
-  @intrinsic(channel.close)(self/267)
+fn inherent#Channel#Channel[T]#close__T_int(self/265: Channel[int]) -> unit {
+  @intrinsic(channel.close)(self/265)
 }
 
-fn println__T_int(value/31: int) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/31))
+fn println__T_int(value/1: int) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
 }
 
-fn inherent#Channel#Channel[T]#recv__T_int(self/264: Channel[int]) -> Option__int {
-  let mtmp143 = @intrinsic(channel.recv)(self/264) in
+fn inherent#Channel#Channel[T]#recv__T_int(self/262: Channel[int]) -> Option__int {
+  let mtmp143 = @intrinsic(channel.recv)(self/262) in
   {
     let x144 = mtmp143.0 in
     let x145 = mtmp143.1 in
     {
-      let ok/266 = x145 in
+      let ok/264 = x145 in
       {
-        let value/265 = x144 in
+        let value/263 = x144 in
         {
-          if ok/266 {
+          if ok/264 {
               {
-                Option__int::Some(value/265)
+                Option__int::Some(value/263)
               }
           } else {
               {
@@ -132,8 +132,8 @@ fn inherent#Channel#Channel[T]#recv__T_int(self/264: Channel[int]) -> Option__in
   }
 }
 
-fn println__T_string(value/31: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
 fn roundtrip__T_string(channel/0: Channel[string], value/1: string) -> Option__string {
@@ -141,38 +141,38 @@ fn roundtrip__T_string(channel/0: Channel[string], value/1: string) -> Option__s
   inherent#Channel#Channel[T]#recv__T_string(channel/0)
 }
 
-fn inherent#Channel#Channel[T]#close__T_string(self/267: Channel[string]) -> unit {
-  @intrinsic(channel.close)(self/267)
+fn inherent#Channel#Channel[T]#close__T_string(self/265: Channel[string]) -> unit {
+  @intrinsic(channel.close)(self/265)
 }
 
-fn trait_impl#ToString#int#to_string(self/69: int) -> string {
-  @runtime(core.int_to_string)(self/69)
+fn trait_impl#ToString#int#to_string(self/67: int) -> string {
+  @runtime(core.int_to_string)(self/67)
 }
 
-fn trait_impl#ToString#string#to_string(self/67: string) -> string {
-  self/67
+fn trait_impl#ToString#string#to_string(self/65: string) -> string {
+  self/65
 }
 
 fn inherent#Channel#Channel[T]#send__T_string(
-  self/262: Channel[string],
-  value/263: string
+  self/260: Channel[string],
+  value/261: string
 ) -> unit {
-  @intrinsic(channel.send)(self/262, value/263)
+  @intrinsic(channel.send)(self/260, value/261)
 }
 
-fn inherent#Channel#Channel[T]#recv__T_string(self/264: Channel[string]) -> Option__string {
-  let mtmp143 = @intrinsic(channel.recv)(self/264) in
+fn inherent#Channel#Channel[T]#recv__T_string(self/262: Channel[string]) -> Option__string {
+  let mtmp143 = @intrinsic(channel.recv)(self/262) in
   {
     let x144 = mtmp143.0 in
     let x145 = mtmp143.1 in
     {
-      let ok/266 = x145 in
+      let ok/264 = x145 in
       {
-        let value/265 = x144 in
+        let value/263 = x144 in
         {
-          if ok/266 {
+          if ok/264 {
               {
-                Option__string::Some(value/265)
+                Option__string::Some(value/263)
               }
           } else {
               {

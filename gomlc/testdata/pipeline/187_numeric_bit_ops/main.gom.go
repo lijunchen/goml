@@ -84,8 +84,8 @@ type Some struct {
 func (_ Some) isOption__char() {}
 
 func show_u8(value__0 uint8) struct{} {
-    var inline440 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(value__0)
-    _goml_runtime_core_string_println(inline440)
+    var inline443 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(value__0)
+    _goml_runtime_core_string_println(inline443)
     return struct{}{}
 }
 
@@ -290,23 +290,23 @@ func precedence() struct{} {
     var t314_rhs int = 2
     var t314 int = t314_lhs | t314_rhs
     var t315 bool
-    var inline558 int = 3
-    var inline559 bool = t314 == inline558
-    t315 = inline559
+    var inline561 int = 3
+    var inline562 bool = t314 == inline561
+    t315 = inline562
     var t316 string
-    var inline556 string = _goml_runtime_core_bool_to_string(t315)
-    t316 = inline556
-    var inline553 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t316)
-    _goml_runtime_core_string_println(inline553)
+    var inline559 string = _goml_runtime_core_bool_to_string(t315)
+    t316 = inline559
+    var inline556 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t316)
+    _goml_runtime_core_string_println(inline556)
     var t317_lhs int = 8
     var t317_rhs int = 1
     var t317 int = t317_lhs >> t317_rhs
     var t318 bool = t317 < 5
     var t319 string
-    var inline551 string = _goml_runtime_core_bool_to_string(t318)
-    t319 = inline551
-    var inline548 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t319)
-    _goml_runtime_core_string_println(inline548)
+    var inline554 string = _goml_runtime_core_bool_to_string(t318)
+    t319 = inline554
+    var inline551 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t319)
+    _goml_runtime_core_string_println(inline551)
     var t320_operand uint8 = 1
     var t320 uint8 = ^t320_operand
     var t321_rhs uint8 = 15
@@ -357,30 +357,21 @@ func casts() struct{} {
     var t336 uint32 = uint32(rune(t336_source))
     println__T_uint32(t336)
     var mtmp233 Option__char
-    var inline576 uint32 = 128512
-    var inline577 bool = utf8_valid_scalar(inline576)
-    if inline577 {
-        var inline578 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(inline576)
-        var inline579 rune = inline578._1
-        var inline581 Option__char = Some{
-            _0: inline579,
-        }
-        mtmp233 = inline581
-    } else {
-        mtmp233 = None{}
-    }
+    var inline579 uint32 = 128512
+    var inline580 Option__char = __goml_builtin_char_from_uint32(inline579)
+    mtmp233 = inline580
     switch mtmp233.(type) {
     case None:
-        var inline565 string = "invalid"
-        var inline566 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline565)
-        _goml_runtime_core_string_println(inline566)
+        var inline568 string = "invalid"
+        var inline569 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline568)
+        _goml_runtime_core_string_println(inline569)
     case Some:
         var x234 rune = mtmp233.(Some)._0
         var t342 string
-        var inline572 string = char_to_string(x234)
-        t342 = inline572
-        var inline569 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t342)
-        _goml_runtime_core_string_println(inline569)
+        var inline575 string = char_to_string(x234)
+        t342 = inline575
+        var inline572 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t342)
+        _goml_runtime_core_string_println(inline572)
     default:
         panic("non-exhaustive match")
     }
@@ -396,133 +387,144 @@ func main0() struct{} {
     precedence()
     casts()
     var t352 uint8
-    var inline611 uint8 = 10
-    var inline612 uint8 = ^inline611
-    var inline613_rhs uint8 = 15
-    var inline613 uint8 = inline612 & inline613_rhs
-    var inline614_lhs uint8 = 1
-    var inline614_rhs int = 4
-    var inline614 uint8 = inline614_lhs << inline614_rhs
-    var inline615_rhs uint8 = 31
-    var inline615 uint8 = inline614 % inline615_rhs
-    var inline616 uint8 = inline613 | inline615
-    t352 = inline616
+    var inline610 uint8 = 10
+    var inline611 uint8 = ^inline610
+    var inline612_rhs uint8 = 15
+    var inline612 uint8 = inline611 & inline612_rhs
+    var inline613_lhs uint8 = 1
+    var inline613_rhs int = 4
+    var inline613 uint8 = inline613_lhs << inline613_rhs
+    var inline614_rhs uint8 = 31
+    var inline614 uint8 = inline613 % inline614_rhs
+    var inline615 uint8 = inline612 | inline614
+    t352 = inline615
     println__T_uint8(t352)
     return struct{}{}
 }
 
-func println__T_uint8(value__31 uint8) struct{} {
+func println__T_uint8(value__1 uint8) struct{} {
     var t355 string
-    var inline618 string = _goml_runtime_core_uint8_to_string(value__31)
-    t355 = inline618
+    var inline617 string = _goml_runtime_core_uint8_to_string(value__1)
+    t355 = inline617
     _goml_runtime_core_string_println(t355)
     return struct{}{}
 }
 
-func println__T_uint16(value__31 uint16) struct{} {
+func println__T_uint16(value__1 uint16) struct{} {
     var t358 string
-    var inline620 string = _goml_runtime_core_uint16_to_string(value__31)
-    t358 = inline620
+    var inline619 string = _goml_runtime_core_uint16_to_string(value__1)
+    t358 = inline619
     _goml_runtime_core_string_println(t358)
     return struct{}{}
 }
 
-func println__T_uint32(value__31 uint32) struct{} {
+func println__T_uint32(value__1 uint32) struct{} {
     var t361 string
-    var inline622 string = _goml_runtime_core_uint32_to_string(value__31)
-    t361 = inline622
+    var inline621 string = _goml_runtime_core_uint32_to_string(value__1)
+    t361 = inline621
     _goml_runtime_core_string_println(t361)
     return struct{}{}
 }
 
-func println__T_uint64(value__31 uint64) struct{} {
+func println__T_uint64(value__1 uint64) struct{} {
     var t364 string
-    var inline624 string = _goml_runtime_core_uint64_to_string(value__31)
-    t364 = inline624
+    var inline623 string = _goml_runtime_core_uint64_to_string(value__1)
+    t364 = inline623
     _goml_runtime_core_string_println(t364)
     return struct{}{}
 }
 
-func println__T_int8(value__31 int8) struct{} {
+func println__T_int8(value__1 int8) struct{} {
     var t367 string
-    var inline626 string = _goml_runtime_core_int8_to_string(value__31)
-    t367 = inline626
+    var inline625 string = _goml_runtime_core_int8_to_string(value__1)
+    t367 = inline625
     _goml_runtime_core_string_println(t367)
     return struct{}{}
 }
 
-func println__T_int16(value__31 int16) struct{} {
+func println__T_int16(value__1 int16) struct{} {
     var t370 string
-    var inline628 string = _goml_runtime_core_int16_to_string(value__31)
-    t370 = inline628
+    var inline627 string = _goml_runtime_core_int16_to_string(value__1)
+    t370 = inline627
     _goml_runtime_core_string_println(t370)
     return struct{}{}
 }
 
-func println__T_int32(value__31 int32) struct{} {
+func println__T_int32(value__1 int32) struct{} {
     var t373 string
-    var inline630 string = _goml_runtime_core_int32_to_string(value__31)
-    t373 = inline630
+    var inline629 string = _goml_runtime_core_int32_to_string(value__1)
+    t373 = inline629
     _goml_runtime_core_string_println(t373)
     return struct{}{}
 }
 
-func println__T_int64(value__31 int64) struct{} {
+func println__T_int64(value__1 int64) struct{} {
     var t376 string
-    var inline632 string = _goml_runtime_core_int64_to_string(value__31)
-    t376 = inline632
+    var inline631 string = _goml_runtime_core_int64_to_string(value__1)
+    t376 = inline631
     _goml_runtime_core_string_println(t376)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(self__74 uint8) string {
-    var t398 string = _goml_runtime_core_uint8_to_string(self__74)
-    return t398
+func _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(self__72 uint8) string {
+    var t395 string = _goml_runtime_core_uint8_to_string(self__72)
+    return t395
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
-func utf8_valid_scalar(value__4 uint32) bool {
-    var t426 bool = value__4 <= 1114111
-    if t426 {
-        var t430 bool = value__4 >= 55296
-        var jp428 bool
-        if t430 {
-            var t431 bool = value__4 <= 57343
-            jp428 = t431
+func __goml_builtin_char_from_uint32(value__30 uint32) Option__char {
+    var t423 bool
+    var inline645 bool = value__30 <= 1114111
+    if inline645 {
+        var inline646 bool = value__30 >= 55296
+        var inline648 bool
+        if inline646 {
+            var inline650 bool = value__30 <= 57343
+            inline648 = inline650
         } else {
-            jp428 = false
+            inline648 = false
         }
-        var t429 bool = !jp428
-        return t429
+        var inline649 bool = !inline648
+        t423 = inline649
     } else {
-        return false
+        t423 = false
+    }
+    if t423 {
+        var mtmp22 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__30)
+        var x24 rune = mtmp22._1
+        var t424 Option__char = Some{
+            _0: x24,
+        }
+        return t424
+    } else {
+        return None{}
     }
 }
 
 func char_to_string(value__29 rune) string {
-    var t436 uint32 = uint32(rune(value__29))
-    var t437 bool
-    var inline647 bool = t436 <= 1114111
-    if inline647 {
-        var inline648 bool = t436 >= 55296
-        var inline650 bool
-        if inline648 {
-            var inline652 bool = t436 <= 57343
-            inline650 = inline652
+    var t429 uint32 = uint32(rune(value__29))
+    var t430 bool
+    var inline652 bool = t429 <= 1114111
+    if inline652 {
+        var inline653 bool = t429 >= 55296
+        var inline655 bool
+        if inline653 {
+            var inline657 bool = t429 <= 57343
+            inline655 = inline657
         } else {
-            inline650 = false
+            inline655 = false
         }
-        var inline651 bool = !inline650
-        t437 = inline651
+        var inline656 bool = !inline655
+        t430 = inline656
     } else {
-        t437 = false
+        t430 = false
     }
-    if t437 {
-        var t438 string = _goml_runtime_core_char_to_string(value__29)
-        return t438
+    if t430 {
+        var t431 string = _goml_runtime_core_char_to_string(value__29)
+        return t431
     } else {
         _goml_runtime_core_string_get("", -1)
         return ""

@@ -148,8 +148,8 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
 func _goml_m_inherent_i_closure__env__add__0_i_closure__env__add__0_i_apply(env175 closure_env_add_0, value__13 int32) int32 {

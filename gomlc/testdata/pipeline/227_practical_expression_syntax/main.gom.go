@@ -409,30 +409,30 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(self__258 *ref_string_x) string {
-    var t300 string = ref_get__Ref_6string(self__258)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(self__256 *ref_string_x) string {
+    var t300 string = ref_get__Ref_6string(self__256)
     return t300
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(self__259 *ref_string_x, value__260 string) struct{} {
-    ref_set__Ref_6string(self__259, value__260)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(self__257 *ref_string_x, value__258 string) struct{} {
+    ref_set__Ref_6string(self__257, value__258)
     return struct{}{}
 }
 
-func println__T_string(value__31 string) struct{} {
+func println__T_string(value__1 string) struct{} {
     var t304 string
-    t304 = value__31
+    t304 = value__1
     _goml_runtime_core_string_println(t304)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int_i_int_i_to__string(self__34 int) string {
-    var t308 string = _goml_runtime_core_int_to_string(self__34)
+func _goml_m_inherent_i_int_i_int_i_to__string(self__32 int) string {
+    var t308 string = _goml_runtime_core_int_to_string(self__32)
     return t308
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string(value__257 string) *ref_string_x {
-    var t311 *ref_string_x = ref__Ref_6string(value__257)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string(value__255 string) *ref_string_x {
+    var t311 *ref_string_x = ref__Ref_6string(value__255)
     return t311
 }
 
@@ -441,27 +441,27 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__int() *_goml_vec_int {
     return t314
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int(self__176 *_goml_vec_int, elem__177 int) struct{} {
-    vec_push__Vec_3int(self__176, elem__177)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int(self__174 *_goml_vec_int, elem__175 int) struct{} {
+    vec_push__Vec_3int(self__174, elem__175)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__int(self__182 *_goml_vec_int, index__183 int) int {
-    var t319 int = vec_get__Vec_3int(self__182, index__183)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__int(self__180 *_goml_vec_int, index__181 int) int {
+    var t319 int = vec_get__Vec_3int(self__180, index__181)
     return t319
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
-func _goml_m_trait__impl_i_PartialEq_i_string_i_eq(self__99 string, other__100 string) bool {
-    var t338 bool = self__99 == other__100
+func _goml_m_trait__impl_i_PartialEq_i_string_i_eq(self__97 string, other__98 string) bool {
+    var t338 bool = self__97 == other__98
     return t338
 }
 
-func _goml_m_trait__impl_i_Hash_i_string_i_hash(self__127 string) uint64 {
-    var t341 uint64 = _goml_runtime_core_string_hash(self__127)
+func _goml_m_trait__impl_i_Hash_i_string_i_hash(self__125 string) uint64 {
+    var t341 uint64 = _goml_runtime_core_string_hash(self__125)
     return t341
 }
 

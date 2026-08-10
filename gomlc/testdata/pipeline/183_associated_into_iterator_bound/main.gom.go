@@ -156,20 +156,20 @@ func count__B_Numbers(batch__1 Numbers) int32 {
     return inline277
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__72 int32) string {
-    var t207 string = _goml_runtime_core_int32_to_string(self__72)
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__70 int32) string {
+    var t207 string = _goml_runtime_core_int32_to_string(self__70)
     return t207
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_iter____T__int32(self__228 *_goml_vec_int32) FnIterator__int32 {
-    var index__229 *ref_int_x = ref__Ref_3int(0)
-    var len__230 int
-    var inline294 int = vec_len__Vec_5int32(self__228)
-    len__230 = inline294
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_iter____T__int32(self__226 *_goml_vec_int32) FnIterator__int32 {
+    var index__227 *ref_int_x = ref__Ref_3int(0)
+    var len__228 int
+    var inline294 int = vec_len__Vec_5int32(self__226)
+    len__228 = inline294
     var t225 closure_env_inherent_Vec_Vec_T_iter_T_int32_0 = closure_env_inherent_Vec_Vec_T_iter_T_int32_0{
-        index_0: index__229,
-        len_1: len__230,
-        self_2: self__228,
+        index_0: index__227,
+        len_1: len__228,
+        self_2: self__226,
     }
     var t226 func() Option__int32 = func() Option__int32 {
         return _goml_m_inherent_i_closure__en_hc2f7b05843f81f2ab8cf844432967a9e_nt32__0_i_apply(t225)
@@ -181,17 +181,17 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_iter____T__int32(self__228 *_goml_vec
 }
 
 func _goml_m_inherent_i_closure__en_hc2f7b05843f81f2ab8cf844432967a9e_nt32__0_i_apply(env181 closure_env_inherent_Vec_Vec_T_iter_T_int32_0) Option__int32 {
-    var index__229 *ref_int_x = env181.index_0
-    var len__230 int = env181.len_1
-    var self__228 *_goml_vec_int32 = env181.self_2
-    var current__231 int = ref_get__Ref_3int(index__229)
-    var t250 bool = current__231 < len__230
+    var index__227 *ref_int_x = env181.index_0
+    var len__228 int = env181.len_1
+    var self__226 *_goml_vec_int32 = env181.self_2
+    var current__229 int = ref_get__Ref_3int(index__227)
+    var t250 bool = current__229 < len__228
     if t250 {
-        var value__232 int32 = vec_get__Vec_5int32(self__228, current__231)
-        var t251 int = current__231 + 1
-        ref_set__Ref_3int(index__229, t251)
+        var value__230 int32 = vec_get__Vec_5int32(self__226, current__229)
+        var t251 int = current__229 + 1
+        ref_set__Ref_3int(index__227, t251)
         var t252 Option__int32 = Some{
-            _0: value__232,
+            _0: value__230,
         }
         return t252
     } else {

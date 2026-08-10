@@ -169,40 +169,40 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__uint32(self__258 *ref_uint32_x) uint32 {
-    var t218 uint32 = ref_get__Ref_6uint32(self__258)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__uint32(self__256 *ref_uint32_x) uint32 {
+    var t218 uint32 = ref_get__Ref_6uint32(self__256)
     return t218
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__uint32(value__257 uint32) *ref_uint32_x {
-    var t221 *ref_uint32_x = ref__Ref_6uint32(value__257)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__uint32(value__255 uint32) *ref_uint32_x {
+    var t221 *ref_uint32_x = ref__Ref_6uint32(value__255)
     return t221
 }
 
-func _goml_m_inherent_i_string_i_string_i_byte__get(self__41 string, index__42 int) uint8 {
-    var t224 uint8 = _goml_runtime_core_string_byte_get(self__41, index__42)
+func _goml_m_inherent_i_string_i_string_i_byte__get(self__39 string, index__40 int) uint8 {
+    var t224 uint8 = _goml_runtime_core_string_byte_get(self__39, index__40)
     return t224
 }
 
-func println__T_string(value__31 string) struct{} {
+func println__T_string(value__1 string) struct{} {
     var t226 string
-    t226 = value__31
+    t226 = value__1
     _goml_runtime_core_string_println(t226)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int_i_int_i_to__string(self__34 int) string {
-    var t230 string = _goml_runtime_core_int_to_string(self__34)
+func _goml_m_inherent_i_int_i_int_i_to__string(self__32 int) string {
+    var t230 string = _goml_runtime_core_int_to_string(self__32)
     return t230
 }
 
-func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__79 float64) string {
-    var t233 string = _goml_runtime_core_float64_to_string(self__79)
+func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__77 float64) string {
+    var t233 string = _goml_runtime_core_float64_to_string(self__77)
     return t233
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
 func main() {

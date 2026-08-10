@@ -1,9 +1,21 @@
 package main
 
 import (
+    _goml_context "context"
     _goml_fmt "fmt"
     _goml_os "os"
+    _goml_sync "sync"
 )
+
+type _goml_task_scope_state struct {
+    mu _goml_sync.Mutex
+    wg _goml_sync.WaitGroup
+    state int
+    ctx _goml_context.Context
+    cancel _goml_context.CancelFunc
+    panicked bool
+    panic_value any
+}
 
 func _goml_runtime_core_bool_to_string(x bool) string {
     if x {
@@ -24,16 +36,16 @@ func _goml_runtime_std_io_println(value string) struct{} {
     return struct{}{}
 }
 
-type _goml_vec_uint8 struct {
-    items []uint8
-}
-
 type _goml_vec_string struct {
     items []string
 }
 
 func vec_len__Vec_6string(vec *_goml_vec_string) int {
     return int(len(vec.items))
+}
+
+type _goml_vec_uint8 struct {
+    items []uint8
 }
 
 type _goml_vec_Tuple2_6string_6string struct {
@@ -44,9 +56,21 @@ type ref_int_x struct {
     value int
 }
 
+type Tuple3_4bool_6string_6string struct {
+    _0 bool
+    _1 string
+    _2 string
+}
+
 type Tuple2_4bool_6string struct {
     _0 bool
     _1 string
+}
+
+type Tuple3_4bool_10Vec_5uint8_6string struct {
+    _0 bool
+    _1 *_goml_vec_uint8
+    _2 string
 }
 
 type Tuple6_4bool_10Vec_5uint8_3int_4bool_3int_6string struct {
@@ -66,9 +90,83 @@ type Tuple5_4bool_3int_4bool_3int_6string struct {
     _4 string
 }
 
-type Tuple3_4bool_10Vec_5uint8_6string struct {
+type Tuple9_4bool_3int_5int64_6uint32_5int64_3int_4bool_3int_6string struct {
     _0 bool
-    _1 *_goml_vec_uint8
+    _1 int
+    _2 int64
+    _3 uint32
+    _4 int64
+    _5 int
+    _6 bool
+    _7 int
+    _8 string
+}
+
+type Tuple3_4bool_11Vec_6string_6string struct {
+    _0 bool
+    _1 *_goml_vec_string
+    _2 string
+}
+
+type Tuple6_4bool_11Vec_6string_3int_4bool_3int_6string struct {
+    _0 bool
+    _1 *_goml_vec_string
+    _2 int
+    _3 bool
+    _4 int
+    _5 string
+}
+
+type Tuple2_6string_6string struct {
+    _0 string
+    _1 string
+}
+
+type Tuple5_4bool_3int_10Vec_5uint8_10Vec_5uint8_6string struct {
+    _0 bool
+    _1 int
+    _2 *_goml_vec_uint8
+    _3 *_goml_vec_uint8
+    _4 string
+}
+
+type Tuple6_4bool_3int_10Vec_5uint8_10Vec_5uint8_6string_4bool struct {
+    _0 bool
+    _1 int
+    _2 *_goml_vec_uint8
+    _3 *_goml_vec_uint8
+    _4 string
+    _5 bool
+}
+
+type Tuple3_4bool_3int_6string struct {
+    _0 bool
+    _1 int
+    _2 string
+}
+
+type Tuple4_4bool_3int_6string_4bool struct {
+    _0 bool
+    _1 int
+    _2 string
+    _3 bool
+}
+
+type Tuple3_4bool_4uint_6string struct {
+    _0 bool
+    _1 uint
+    _2 string
+}
+
+type Tuple3_4bool_7float32_6string struct {
+    _0 bool
+    _1 float32
+    _2 string
+}
+
+type Tuple3_4bool_7float64_6string struct {
+    _0 bool
+    _1 float64
     _2 string
 }
 
@@ -80,17 +178,6 @@ type Tuple2_11Option__int_11Option__int struct {
 type Tuple2_3int_4char struct {
     _0 int
     _1 rune
-}
-
-type Tuple2_6string_6string struct {
-    _0 string
-    _1 string
-}
-
-type Tuple3_4bool_6string_6string struct {
-    _0 bool
-    _1 string
-    _2 string
 }
 
 type Tuple3_4bool_4char_3int struct {
@@ -363,24 +450,34 @@ type _goml_m_Option_____o_char_c_int_q__Some struct {
 
 func (_ _goml_m_Option_____o_char_c_int_q__Some) is_goml_m_Option_____o_char_c_int_q_() {}
 
-func main0() struct{} {
-    var t1005 *_goml_vec_string
-    var inline1925 *_goml_vec_string = _goml_runtime_std_env_args()
-    t1005 = inline1925
-    var t1006 int
-    var inline1923 int = vec_len__Vec_6string(t1005)
-    t1006 = inline1923
-    var t1007 bool = t1006 > 0
-    var t1008 string
-    var inline1921 string = _goml_runtime_core_bool_to_string(t1007)
-    t1008 = inline1921
-    var inline1918 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1008)
-    _goml_runtime_std_io_println(inline1918)
+func _goml_m_std_p_internal_p_host_p_args() *_goml_vec_string {
+    var t176 *_goml_vec_string = _goml_runtime_std_env_args()
+    return t176
+}
+
+func _goml_m_std_p_internal_p_host_p_println(value__28 string) struct{} {
+    _goml_runtime_std_io_println(value__28)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func main0() struct{} {
+    var t1194 *_goml_vec_string
+    var inline2140 *_goml_vec_string = _goml_m_std_p_internal_p_host_p_args()
+    t1194 = inline2140
+    var t1195 int
+    var inline2138 int = vec_len__Vec_6string(t1194)
+    t1195 = inline2138
+    var t1196 bool = t1195 > 0
+    var t1197 string
+    var inline2136 string = _goml_runtime_core_bool_to_string(t1196)
+    t1197 = inline2136
+    var inline2133 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1197)
+    _goml_m_std_p_internal_p_host_p_println(inline2133)
+    return struct{}{}
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
 func main() {

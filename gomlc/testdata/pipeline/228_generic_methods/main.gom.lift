@@ -26,8 +26,8 @@ fn main() -> unit {
   ()
 }
 
-fn inherent#int#int#to_string(self/34: int) -> string {
-  @runtime(core.int_to_string)(self/34)
+fn inherent#int#int#to_string(self/32: int) -> string {
+  @runtime(core.int_to_string)(self/32)
 }
 
 fn inherent#Box#Box[T]#map__T_int__U_string(
@@ -37,20 +37,20 @@ fn inherent#Box#Box[T]#map__T_int__U_string(
   Box__string { value: map_fn/1(Box__int.value(self/0)) }
 }
 
-fn println__T_string(value/31: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
 fn inherent#Box#Box[T]#render__T_string__U_int(self/2: Box__string, value/3: int) -> string {
   ("value:" + trait_impl#ToString#int#to_string(value/3))
 }
 
-fn trait_impl#ToString#string#to_string(self/67: string) -> string {
-  self/67
+fn trait_impl#ToString#string#to_string(self/65: string) -> string {
+  self/65
 }
 
-fn trait_impl#ToString#int#to_string(self/69: int) -> string {
-  @runtime(core.int_to_string)(self/69)
+fn trait_impl#ToString#int#to_string(self/67: int) -> string {
+  @runtime(core.int_to_string)(self/67)
 }
 
 fn inherent#closure_env_main_0#closure_env_main_0#apply(

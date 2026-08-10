@@ -134,17 +134,17 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__257 int) *ref_int_x {
-    var t212 *ref_int_x = ref__Ref_3int(value__257)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__255 int) *ref_int_x {
+    var t212 *ref_int_x = ref__Ref_3int(value__255)
     return t212
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
-    var t231 string = _goml_runtime_core_int_to_string(self__69)
+func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
+    var t231 string = _goml_runtime_core_int_to_string(self__67)
     return t231
 }
 

@@ -657,28 +657,28 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_PartialEq_i_float64_i_eq(self__123 float64, other__124 float64) bool {
-    var t1227 bool = self__123 == other__124
+func _goml_m_trait__impl_i_PartialEq_i_float64_i_eq(self__121 float64, other__122 float64) bool {
+    var t1227 bool = self__121 == other__122
     return t1227
 }
 
-func println__T_string(value__31 string) struct{} {
+func println__T_string(value__1 string) struct{} {
     var t1251 string
-    t1251 = value__31
+    t1251 = value__1
     _goml_runtime_core_string_println(t1251)
     return struct{}{}
 }
 
-func println__T_int32(value__31 int32) struct{} {
+func println__T_int32(value__1 int32) struct{} {
     var t1254 string
-    var inline2390 string = _goml_runtime_core_int32_to_string(value__31)
+    var inline2390 string = _goml_runtime_core_int32_to_string(value__1)
     t1254 = inline2390
     _goml_runtime_core_string_println(t1254)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__66 bool) string {
-    var t1258 string = _goml_runtime_core_bool_to_string(self__66)
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
+    var t1258 string = _goml_runtime_core_bool_to_string(self__64)
     return t1258
 }
 
@@ -687,31 +687,31 @@ func _goml_m_inherent_i_HashMap_i_H_hda117ae4fc64297aa6806f068e6c08ed_Key____V__
     return t1265
 }
 
-func _goml_m_inherent_i_HashMap_i_H_h16eb43877a9769652cbdd61c4f534eec_Key____V__int32(self__248 *hashmap_CollisionKey_int32_x, key__249 CollisionKey, value__250 int32) struct{} {
-    hashmap_set__HashMap_12CollisionKey_5int32(self__248, key__249, value__250)
+func _goml_m_inherent_i_HashMap_i_H_h16eb43877a9769652cbdd61c4f534eec_Key____V__int32(self__246 *hashmap_CollisionKey_int32_x, key__247 CollisionKey, value__248 int32) struct{} {
+    hashmap_set__HashMap_12CollisionKey_5int32(self__246, key__247, value__248)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_HashMap_i_H_h28011e82243b31bd5417be204086ffb6_Key____V__int32(self__251 *hashmap_CollisionKey_int32_x, key__252 CollisionKey) struct{} {
-    hashmap_remove__HashMap_12CollisionKey_5int32(self__251, key__252)
+func _goml_m_inherent_i_HashMap_i_H_h28011e82243b31bd5417be204086ffb6_Key____V__int32(self__249 *hashmap_CollisionKey_int32_x, key__250 CollisionKey) struct{} {
+    hashmap_remove__HashMap_12CollisionKey_5int32(self__249, key__250)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_HashMap_i_H_hd089129fd747b5ac2054f800f07a211e_Key____V__int32(self__246 *hashmap_CollisionKey_int32_x, key__247 CollisionKey) Option__int32 {
-    var t1272 Option__int32 = hashmap_get__HashMap_12CollisionKey_5int32(self__246, key__247)
+func _goml_m_inherent_i_HashMap_i_H_hd089129fd747b5ac2054f800f07a211e_Key____V__int32(self__244 *hashmap_CollisionKey_int32_x, key__245 CollisionKey) Option__int32 {
+    var t1272 Option__int32 = hashmap_get__HashMap_12CollisionKey_5int32(self__244, key__245)
     return t1272
 }
 
-func println__T_int(value__31 int) struct{} {
+func println__T_int(value__1 int) struct{} {
     var t1274 string
-    var inline2393 string = _goml_runtime_core_int_to_string(value__31)
+    var inline2393 string = _goml_runtime_core_int_to_string(value__1)
     t1274 = inline2393
     _goml_runtime_core_string_println(t1274)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_HashMap_i_H_h4aea484345d58a42435067138901add4_Key____V__int32(self__253 *hashmap_CollisionKey_int32_x) int {
-    var t1278 int = hashmap_len__HashMap_12CollisionKey_5int32(self__253)
+func _goml_m_inherent_i_HashMap_i_H_h4aea484345d58a42435067138901add4_Key____V__int32(self__251 *hashmap_CollisionKey_int32_x) int {
+    var t1278 int = hashmap_len__HashMap_12CollisionKey_5int32(self__251)
     return t1278
 }
 
@@ -720,32 +720,32 @@ func _goml_m_inherent_i_HashMap_i_H_h88509d3b0dfc2392ba920998ecb79184_r_____V__s
     return t1289
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__CollisionKey(value__257 CollisionKey) *ref_CollisionKey_x {
-    var t1292 *ref_CollisionKey_x = ref__Ref_12CollisionKey(value__257)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__CollisionKey(value__255 CollisionKey) *ref_CollisionKey_x {
+    var t1292 *ref_CollisionKey_x = ref__Ref_12CollisionKey(value__255)
     return t1292
 }
 
-func _goml_m_trait__impl_i_PartialEq_i_Ref_l_CollisionKey_r__i_eq(self__138 *ref_CollisionKey_x, other__139 *ref_CollisionKey_x) bool {
-    var t1300 bool = ptr_eq__Ref_12CollisionKey(self__138, other__139)
+func _goml_m_trait__impl_i_PartialEq_i_Ref_l_CollisionKey_r__i_eq(self__136 *ref_CollisionKey_x, other__137 *ref_CollisionKey_x) bool {
+    var t1300 bool = ptr_eq__Ref_12CollisionKey(self__136, other__137)
     return t1300
 }
 
-func _goml_m_trait__impl_i_Hash_i_Ref_l_CollisionKey_r__i_hash(self__140 *ref_CollisionKey_x) uint64 {
-    var t1303 uint64 = ptr_hash__Ref_12CollisionKey(self__140)
+func _goml_m_trait__impl_i_Hash_i_Ref_l_CollisionKey_r__i_hash(self__138 *ref_CollisionKey_x) uint64 {
+    var t1303 uint64 = ptr_hash__Ref_12CollisionKey(self__138)
     return t1303
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__72 int32) string {
-    var t1313 string = _goml_runtime_core_int32_to_string(self__72)
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__70 int32) string {
+    var t1313 string = _goml_runtime_core_int32_to_string(self__70)
     return t1313
 }
 
-func _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__some____T__std_p_cmp_p_Ordering(self__288 _goml_m_Option____std_p_cmp_p_Ordering) bool {
-    switch self__288.(type) {
+func _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__some____T__std_p_cmp_p_Ordering(self__280 _goml_m_Option____std_p_cmp_p_Ordering) bool {
+    switch self__280.(type) {
     case _goml_m_Option____std_p_cmp_p_Ordering_None:
         return false
     case _goml_m_Option____std_p_cmp_p_Ordering_Some:
@@ -755,8 +755,8 @@ func _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__some____T__std_p_cmp_p_Orde
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
-    var t1320 string = _goml_runtime_core_int_to_string(self__69)
+func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
+    var t1320 string = _goml_runtime_core_int_to_string(self__67)
     return t1320
 }
 

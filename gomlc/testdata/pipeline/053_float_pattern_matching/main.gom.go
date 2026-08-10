@@ -140,18 +140,18 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__79 float64) string {
-    var t208 string = _goml_runtime_core_float64_to_string(self__79)
+func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__77 float64) string {
+    var t208 string = _goml_runtime_core_float64_to_string(self__77)
     return t208
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__66 bool) string {
-    var t211 string = _goml_runtime_core_bool_to_string(self__66)
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
+    var t211 string = _goml_runtime_core_bool_to_string(self__64)
     return t211
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
 func main() {

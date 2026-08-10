@@ -355,16 +355,16 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func println__T_string(value__31 string) struct{} {
+func println__T_string(value__1 string) struct{} {
     var t243 string
-    t243 = value__31
+    t243 = value__1
     _goml_runtime_core_string_println(t243)
     return struct{}{}
 }
 
-func println__T_int32(value__31 int32) struct{} {
+func println__T_int32(value__1 int32) struct{} {
     var t246 string
-    var inline353 string = _goml_runtime_core_int32_to_string(value__31)
+    var inline353 string = _goml_runtime_core_int32_to_string(value__1)
     t246 = inline353
     _goml_runtime_core_string_println(t246)
     return struct{}{}
@@ -375,31 +375,31 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__int() *_goml_vec_int {
     return t250
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int(self__176 *_goml_vec_int, elem__177 int) struct{} {
-    vec_push__Vec_3int(self__176, elem__177)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int(self__174 *_goml_vec_int, elem__175 int) struct{} {
+    vec_push__Vec_3int(self__174, elem__175)
     return struct{}{}
 }
 
-func println__T_int(value__31 int) struct{} {
+func println__T_int(value__1 int) struct{} {
     var t254 string
-    var inline355 string = _goml_runtime_core_int_to_string(value__31)
+    var inline355 string = _goml_runtime_core_int_to_string(value__1)
     t254 = inline355
     _goml_runtime_core_string_println(t254)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__int(self__182 *_goml_vec_int, index__183 int) int {
-    var t258 int = vec_get__Vec_3int(self__182, index__183)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__int(self__180 *_goml_vec_int, index__181 int) int {
+    var t258 int = vec_get__Vec_3int(self__180, index__181)
     return t258
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
-    var t288 string = _goml_runtime_core_int_to_string(self__69)
+func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
+    var t288 string = _goml_runtime_core_int_to_string(self__67)
     return t288
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__66 bool) string {
-    var t291 string = _goml_runtime_core_bool_to_string(self__66)
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
+    var t291 string = _goml_runtime_core_bool_to_string(self__64)
     return t291
 }
 

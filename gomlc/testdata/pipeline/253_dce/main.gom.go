@@ -48,18 +48,18 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__258 *ref_int_x) int {
-    var t182 int = ref_get__Ref_3int(self__258)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__256 *ref_int_x) int {
+    var t182 int = ref_get__Ref_3int(self__256)
     return t182
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__259 *ref_int_x, value__260 int) struct{} {
-    ref_set__Ref_3int(self__259, value__260)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__257 *ref_int_x, value__258 int) struct{} {
+    ref_set__Ref_3int(self__257, value__258)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
-    var t193 string = _goml_runtime_core_int_to_string(self__69)
+func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
+    var t193 string = _goml_runtime_core_int_to_string(self__67)
     return t193
 }
 

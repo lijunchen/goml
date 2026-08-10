@@ -54,12 +54,12 @@ func _goml_m_trait__impl_i_RenderValue_i_Prefix_i_render____mono2(self__0 Prefix
     return t194
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
-    var t199 string = _goml_runtime_core_int_to_string(self__69)
+func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
+    var t199 string = _goml_runtime_core_int_to_string(self__67)
     return t199
 }
 

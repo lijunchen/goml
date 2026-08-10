@@ -1,3 +1,406 @@
+fn std::internal::host::args() -> Vec[string] {
+  @runtime(std.env.args)()
+}
+
+fn std::internal::host::current_dir() -> (bool, string, string) {
+  @runtime(std.env.current_dir)()
+}
+
+fn std::internal::host::current_exe() -> (bool, string, string) {
+  @runtime(std.env.current_exe)()
+}
+
+fn std::internal::host::env_var(name/0: string) -> (bool, string) {
+  @runtime(std.env.var)(name/0)
+}
+
+fn std::internal::host::env_vars() -> Vec[string] {
+  @runtime(std.env.vars)()
+}
+
+fn std::internal::host::read_file(path/1: string) -> (bool, string, string) {
+  @runtime(std.fs.read_file)(path/1)
+}
+
+fn std::internal::host::write_file(path/2: string, content/3: string) -> (bool, string) {
+  @runtime(std.fs.write_file)(path/2, content/3)
+}
+
+fn std::internal::host::read_bytes(path/4: string) -> (bool, Vec[uint8], string) {
+  @runtime(std.fs.read_bytes)(path/4)
+}
+
+fn std::internal::host::read_bytes_v2(path/5: string) -> (
+  bool,
+  Vec[uint8],
+  int,
+  bool,
+  int,
+  string
+) {
+  @runtime(std.fs.read_bytes.v2)(path/5)
+}
+
+fn std::internal::host::write_bytes(path/6: string, data/7: Vec[uint8]) -> (bool, string) {
+  @runtime(std.fs.write_bytes)(path/6, data/7)
+}
+
+fn std::internal::host::write_bytes_v2(path/8: string, data/9: Vec[uint8]) -> (
+  bool,
+  int,
+  bool,
+  int,
+  string
+) {
+  @runtime(std.fs.write_bytes.v2)(path/8, data/9)
+}
+
+fn std::internal::host::fs_path_operation_v2(
+  operation/10: int,
+  first/11: string,
+  second/12: string
+) -> (bool, int, bool, int, string) {
+  @runtime(std.fs.path_operation.v2)(operation/10, first/11, second/12)
+}
+
+fn std::internal::host::fs_metadata_v2(path/13: string, follow/14: bool) -> (
+  bool,
+  int,
+  int64,
+  uint32,
+  int64,
+  int,
+  bool,
+  int,
+  string
+) {
+  @runtime(std.fs.metadata.v2)(path/13, follow/14)
+}
+
+fn std::internal::host::fs_atomic_write_v2(path/15: string, data/16: Vec[uint8]) -> (
+  bool,
+  int,
+  bool,
+  int,
+  string
+) {
+  @runtime(std.fs.atomic_write.v2)(path/15, data/16)
+}
+
+fn std::internal::host::create_dir_all(path/17: string) -> (bool, string) {
+  @runtime(std.fs.create_dir_all)(path/17)
+}
+
+fn std::internal::host::remove_file(path/18: string) -> (bool, string) {
+  @runtime(std.fs.remove_file)(path/18)
+}
+
+fn std::internal::host::remove_dir_all(path/19: string) -> (bool, string) {
+  @runtime(std.fs.remove_dir_all)(path/19)
+}
+
+fn std::internal::host::file_exists(path/20: string) -> bool {
+  @runtime(std.fs.file_exists)(path/20)
+}
+
+fn std::internal::host::is_file(path/21: string) -> bool {
+  @runtime(std.fs.is_file)(path/21)
+}
+
+fn std::internal::host::is_dir(path/22: string) -> bool {
+  @runtime(std.fs.is_dir)(path/22)
+}
+
+fn std::internal::host::canonicalize(path/23: string) -> (bool, string, string) {
+  @runtime(std.fs.canonicalize)(path/23)
+}
+
+fn std::internal::host::read_dir(path/24: string) -> (bool, Vec[string], string) {
+  @runtime(std.fs.read_dir)(path/24)
+}
+
+fn std::internal::host::read_dir_v2(path/25: string) -> (
+  bool,
+  Vec[string],
+  int,
+  bool,
+  int,
+  string
+) {
+  @runtime(std.fs.read_dir.v2)(path/25)
+}
+
+fn std::internal::host::sha256_file(path/26: string) -> (bool, string, string) {
+  @runtime(std.fs.sha256_file)(path/26)
+}
+
+fn std::internal::host::print(value/27: string) -> unit {
+  @runtime(std.io.print)(value/27)
+}
+
+fn std::internal::host::println(value/28: string) -> unit {
+  @runtime(std.io.println)(value/28)
+}
+
+fn std::internal::host::eprint(value/29: string) -> unit {
+  @runtime(std.io.eprint)(value/29)
+}
+
+fn std::internal::host::read_stdin() -> (bool, Vec[uint8], string) {
+  @runtime(std.io.read_stdin)()
+}
+
+fn std::internal::host::read_stdin_v2() -> (bool, Vec[uint8], int, bool, int, string) {
+  @runtime(std.io.read_stdin.v2)()
+}
+
+fn std::internal::host::read_stdin_exact(length/30: int) -> (bool, Vec[uint8], string) {
+  @runtime(std.io.read_stdin_exact)(length/30)
+}
+
+fn std::internal::host::read_stdin_exact_v2(length/31: int) -> (
+  bool,
+  Vec[uint8],
+  int,
+  bool,
+  int,
+  string
+) {
+  @runtime(std.io.read_stdin_exact.v2)(length/31)
+}
+
+fn std::internal::host::write_stdout(data/32: Vec[uint8]) -> (bool, string) {
+  @runtime(std.io.write_stdout)(data/32)
+}
+
+fn std::internal::host::write_stdout_v2(data/33: Vec[uint8]) -> (bool, int, bool, int, string) {
+  @runtime(std.io.write_stdout.v2)(data/33)
+}
+
+fn std::internal::host::write_stderr(data/34: Vec[uint8]) -> (bool, string) {
+  @runtime(std.io.write_stderr)(data/34)
+}
+
+fn std::internal::host::write_stderr_v2(data/35: Vec[uint8]) -> (bool, int, bool, int, string) {
+  @runtime(std.io.write_stderr.v2)(data/35)
+}
+
+fn std::internal::host::path_join(base/36: string, child/37: string) -> string {
+  @runtime(std.path.join)(base/36, child/37)
+}
+
+fn std::internal::host::path_clean(path/38: string) -> string {
+  @runtime(std.path.clean)(path/38)
+}
+
+fn std::internal::host::path_is_absolute(path/39: string) -> bool {
+  @runtime(std.path.is_absolute)(path/39)
+}
+
+fn std::internal::host::path_parent(path/40: string) -> (bool, string) {
+  @runtime(std.path.parent)(path/40)
+}
+
+fn std::internal::host::path_file_name(path/41: string) -> (bool, string) {
+  @runtime(std.path.file_name)(path/41)
+}
+
+fn std::internal::host::path_extension(path/42: string) -> (bool, string) {
+  @runtime(std.path.extension)(path/42)
+}
+
+fn std::internal::host::path_file_stem(path/43: string) -> (bool, string) {
+  @runtime(std.path.file_stem)(path/43)
+}
+
+fn std::internal::host::path_with_extension(path/44: string, extension/45: string) -> string {
+  @runtime(std.path.with_extension)(path/44, extension/45)
+}
+
+fn std::internal::host::path_absolute(path/46: string) -> (bool, string, string) {
+  @runtime(std.path.absolute)(path/46)
+}
+
+fn std::internal::host::path_relative(base/47: string, target/48: string) -> (
+  bool,
+  string,
+  string
+) {
+  @runtime(std.path.relative)(base/47, target/48)
+}
+
+fn std::internal::host::path_separator() -> string {
+  @runtime(std.path.separator)()
+}
+
+fn std::internal::host::exit(code/49: int) -> unit {
+  @runtime(std.process.exit)(code/49)
+}
+
+fn std::internal::host::process_look_path(program/50: string) -> (bool, string, string) {
+  @runtime(std.process.look_path)(program/50)
+}
+
+fn std::internal::host::process_output(
+  program/51: string,
+  arguments/52: Vec[string],
+  has_directory/53: bool,
+  directory/54: string,
+  environment/55: Vec[(string, string)],
+  has_input/56: bool,
+  input/57: Vec[uint8]
+) -> (bool, int, Vec[uint8], Vec[uint8], string) {
+  @runtime(std.process.output)(
+    program/51,
+    arguments/52,
+    has_directory/53,
+    directory/54,
+    environment/55,
+    has_input/56,
+    input/57
+  )
+}
+
+fn std::internal::host::process_output_timeout(
+  program/58: string,
+  arguments/59: Vec[string],
+  has_directory/60: bool,
+  directory/61: string,
+  environment/62: Vec[(string, string)],
+  has_input/63: bool,
+  input/64: Vec[uint8],
+  timeout_ms/65: int
+) -> (bool, int, Vec[uint8], Vec[uint8], string, bool) {
+  @runtime(std.process.output_timeout)(
+    program/58,
+    arguments/59,
+    has_directory/60,
+    directory/61,
+    environment/62,
+    has_input/63,
+    input/64,
+    timeout_ms/65
+  )
+}
+
+fn std::internal::host::process_output_cancel(
+  program/66: string,
+  arguments/67: Vec[string],
+  has_directory/68: bool,
+  directory/69: string,
+  environment/70: Vec[(string, string)],
+  has_input/71: bool,
+  input/72: Vec[uint8],
+  scope_id/73: int64
+) -> (bool, int, Vec[uint8], Vec[uint8], string, bool) {
+  @runtime(std.process.output_cancel)(
+    program/66,
+    arguments/67,
+    has_directory/68,
+    directory/69,
+    environment/70,
+    has_input/71,
+    input/72,
+    scope_id/73
+  )
+}
+
+fn std::internal::host::process_status(
+  program/74: string,
+  arguments/75: Vec[string],
+  has_directory/76: bool,
+  directory/77: string,
+  environment/78: Vec[(string, string)]
+) -> (bool, int, string) {
+  @runtime(std.process.status)(
+    program/74,
+    arguments/75,
+    has_directory/76,
+    directory/77,
+    environment/78
+  )
+}
+
+fn std::internal::host::process_status_timeout(
+  program/79: string,
+  arguments/80: Vec[string],
+  has_directory/81: bool,
+  directory/82: string,
+  environment/83: Vec[(string, string)],
+  timeout_ms/84: int
+) -> (bool, int, string, bool) {
+  @runtime(std.process.status_timeout)(
+    program/79,
+    arguments/80,
+    has_directory/81,
+    directory/82,
+    environment/83,
+    timeout_ms/84
+  )
+}
+
+fn std::internal::host::process_status_cancel(
+  program/85: string,
+  arguments/86: Vec[string],
+  has_directory/87: bool,
+  directory/88: string,
+  environment/89: Vec[(string, string)],
+  scope_id/90: int64
+) -> (bool, int, string, bool) {
+  @runtime(std.process.status_cancel)(
+    program/85,
+    arguments/86,
+    has_directory/87,
+    directory/88,
+    environment/89,
+    scope_id/90
+  )
+}
+
+fn std::internal::host::test_fail(message/91: string) -> unit {
+  @runtime(std.testing.fail)(message/91)
+}
+
+fn std::internal::host::parse_int(value/92: string, radix/93: int) -> (bool, int, string) {
+  @runtime(std.num.parse_int)(value/92, radix/93)
+}
+
+fn std::internal::host::parse_uint(value/94: string, radix/95: int) -> (bool, uint, string) {
+  @runtime(std.num.parse_uint)(value/94, radix/95)
+}
+
+fn std::internal::host::parse_float32(value/96: string) -> (bool, float32, string) {
+  @runtime(std.num.parse_float32)(value/96)
+}
+
+fn std::internal::host::parse_float64(value/97: string) -> (bool, float64, string) {
+  @runtime(std.num.parse_float64)(value/97)
+}
+
+fn std::internal::host::monotonic_nanoseconds() -> int64 {
+  @runtime(std.time.monotonic_nanoseconds)()
+}
+
+fn std::internal::host::unix_nanoseconds() -> int64 {
+  @runtime(std.time.unix_nanoseconds)()
+}
+
+fn std::internal::host::sleep_nanoseconds(value/98: int64) -> unit {
+  @runtime(std.time.sleep_nanoseconds)(value/98)
+}
+
+fn std::internal::host::math_float32_unary(operation/99: int, value/100: float32) -> float32 {
+  @runtime(std.math.float32_unary)(operation/99, value/100)
+}
+
+fn std::internal::host::math_float32_pow(value/101: float32, exponent/102: float32) -> float32 {
+  @runtime(std.math.float32_pow)(value/101, exponent/102)
+}
+
+fn std::internal::host::crypto_random_bytes(length/103: int) -> (bool, Vec[uint8], string) {
+  @runtime(std.crypto.rand.bytes)(length/103)
+}
+
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
   std::bytes::Bytes {
     values: let vec_literal/130 = inherent#Vec#Vec[T]#new__T_uint8() in
@@ -429,7 +832,7 @@ fn std::io::structured_error(
 }
 
 fn std::io::read_stdin_structured() -> Result__std::bytes::Bytes__std::io::Error {
-  let mtmp2 = @runtime(std.io.read_stdin.v2)() in
+  let mtmp2 = std::internal::host::read_stdin_v2() in
   let x3 = mtmp2.0 in
   let x4 = mtmp2.1 in
   let x5 = mtmp2.2 in
@@ -509,7 +912,7 @@ fn std::io::read_stdin_exact_structured(
         )
       )
   } else {
-      let mtmp15 = @runtime(std.io.read_stdin_exact.v2)(length/50) in
+      let mtmp15 = std::internal::host::read_stdin_exact_v2(length/50) in
       let x16 = mtmp15.0 in
       let x17 = mtmp15.1 in
       let x18 = mtmp15.2 in
@@ -546,11 +949,11 @@ fn std::io::write_structured(
 ) -> Result__unit__std::io::Error {
   let result/59 =
     if stderr/57 {
-        @runtime(std.io.write_stderr.v2)(
+        std::internal::host::write_stderr_v2(
           inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/58)
         )
     } else {
-        @runtime(std.io.write_stdout.v2)(
+        std::internal::host::write_stdout_v2(
           inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/58)
         )
     } in
@@ -593,7 +996,7 @@ fn std::io::write_stderr_structured(data/66: std::bytes::Bytes) -> Result__unit_
 }
 
 fn std::io::read_stdin() -> Result__std::bytes::Bytes__string {
-  let mtmp28 = @runtime(std.io.read_stdin)() in
+  let mtmp28 = std::internal::host::read_stdin() in
   let x29 = mtmp28.0 in
   let x30 = mtmp28.1 in
   let x31 = mtmp28.2 in
@@ -611,7 +1014,9 @@ fn std::io::read_stdin() -> Result__std::bytes::Bytes__string {
 
 fn std::io::write_stdout(data/74: std::bytes::Bytes) -> Result__unit__string {
   let mtmp32 =
-    @runtime(std.io.write_stdout)(inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/74)) in
+    std::internal::host::write_stdout(
+      inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/74)
+    ) in
   let x33 = mtmp32.0 in
   let x34 = mtmp32.1 in
   let err/76 = x34 in
@@ -625,7 +1030,9 @@ fn std::io::write_stdout(data/74: std::bytes::Bytes) -> Result__unit__string {
 
 fn std::io::write_stderr(data/77: std::bytes::Bytes) -> Result__unit__string {
   let mtmp35 =
-    @runtime(std.io.write_stderr)(inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/77)) in
+    std::internal::host::write_stderr(
+      inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/77)
+    ) in
   let x36 = mtmp35.0 in
   let x37 = mtmp35.1 in
   let err/79 = x37 in
@@ -641,7 +1048,7 @@ fn std::io::read_stdin_exact(length/80: int) -> Result__std::bytes::Bytes__strin
   if (length/80 < 0) {
       Result__std::bytes::Bytes__string::Err("read length must be non-negative")
   } else {
-      let mtmp38 = @runtime(std.io.read_stdin_exact)(length/80) in
+      let mtmp38 = std::internal::host::read_stdin_exact(length/80) in
       let x39 = mtmp38.0 in
       let x40 = mtmp38.1 in
       let x41 = mtmp38.2 in
@@ -908,7 +1315,7 @@ fn std::num::parse_int(value/42: string) -> Result__int__string {
 }
 
 fn std::num::parse_int_radix(value/43: string, radix/44: int) -> Result__int__string {
-  std::num::int_result(@runtime(std.num.parse_int)(value/43, radix/44))
+  std::num::int_result(std::internal::host::parse_int(value/43, radix/44))
 }
 
 fn std::num::parse_uint(value/45: string) -> Result__uint__string {
@@ -916,15 +1323,15 @@ fn std::num::parse_uint(value/45: string) -> Result__uint__string {
 }
 
 fn std::num::parse_uint_radix(value/46: string, radix/47: int) -> Result__uint__string {
-  std::num::uint_result(@runtime(std.num.parse_uint)(value/46, radix/47))
+  std::num::uint_result(std::internal::host::parse_uint(value/46, radix/47))
 }
 
 fn std::num::parse_float32(value/48: string) -> Result__float32__string {
-  std::num::float32_result(@runtime(std.num.parse_float32)(value/48))
+  std::num::float32_result(std::internal::host::parse_float32(value/48))
 }
 
 fn std::num::parse_float64(value/49: string) -> Result__float64__string {
-  std::num::float64_result(@runtime(std.num.parse_float64)(value/49))
+  std::num::float64_result(std::internal::host::parse_float64(value/49))
 }
 
 fn std::num::parse_int_structured(value/50: string) -> Result__int__std::num::ParseIntError {
@@ -935,7 +1342,7 @@ fn std::num::parse_int_radix_structured(
   value/51: string,
   radix/52: int
 ) -> Result__int__std::num::ParseIntError {
-  let mtmp16 = @runtime(std.num.parse_int)(value/51, radix/52) in
+  let mtmp16 = std::internal::host::parse_int(value/51, radix/52) in
   let x17 = mtmp16.0 in
   let x18 = mtmp16.1 in
   let x19 = mtmp16.2 in
@@ -959,7 +1366,7 @@ fn std::num::parse_uint_radix_structured(
   value/57: string,
   radix/58: int
 ) -> Result__uint__std::num::ParseIntError {
-  let mtmp20 = @runtime(std.num.parse_uint)(value/57, radix/58) in
+  let mtmp20 = std::internal::host::parse_uint(value/57, radix/58) in
   let x21 = mtmp20.0 in
   let x22 = mtmp20.1 in
   let x23 = mtmp20.2 in
@@ -978,7 +1385,7 @@ fn std::num::parse_uint_radix_structured(
 fn std::num::parse_float32_structured(
   value/62: string
 ) -> Result__float32__std::num::ParseFloatError {
-  let mtmp24 = @runtime(std.num.parse_float32)(value/62) in
+  let mtmp24 = std::internal::host::parse_float32(value/62) in
   let x25 = mtmp24.0 in
   let x26 = mtmp24.1 in
   let x27 = mtmp24.2 in
@@ -997,7 +1404,7 @@ fn std::num::parse_float32_structured(
 fn std::num::parse_float64_structured(
   value/66: string
 ) -> Result__float64__std::num::ParseFloatError {
-  let mtmp28 = @runtime(std.num.parse_float64)(value/66) in
+  let mtmp28 = std::internal::host::parse_float64(value/66) in
   let x29 = mtmp28.0 in
   let x30 = mtmp28.1 in
   let x31 = mtmp28.2 in
@@ -12116,57 +12523,57 @@ fn inherent#Vec#Vec[T]#new__T_uint8() -> Vec[uint8] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/175: int) -> Vec[uint8] {
-  @intrinsic(vec.with_capacity)(capacity/175)
+fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/173: int) -> Vec[uint8] {
+  @intrinsic(vec.with_capacity)(capacity/173)
 }
 
-fn inherent#string#string#to_bytes(self/53: string) -> Vec[uint8] {
-  @runtime(core.string_to_bytes)(self/53)
+fn inherent#string#string#to_bytes(self/51: string) -> Vec[uint8] {
+  @runtime(core.string_to_bytes)(self/51)
 }
 
-fn inherent#Vec#Vec[T]#len__T_uint8(self/187: Vec[uint8]) -> int {
-  @intrinsic(vec.len)(self/187)
+fn inherent#Vec#Vec[T]#len__T_uint8(self/185: Vec[uint8]) -> int {
+  @intrinsic(vec.len)(self/185)
 }
 
-fn inherent#Vec#Vec[T]#capacity__T_uint8(self/188: Vec[uint8]) -> int {
-  @intrinsic(vec.capacity)(self/188)
+fn inherent#Vec#Vec[T]#capacity__T_uint8(self/186: Vec[uint8]) -> int {
+  @intrinsic(vec.capacity)(self/186)
 }
 
-fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/189: Vec[uint8]) -> bool {
-  (@intrinsic(vec.len)(self/189) == 0)
+fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/187: Vec[uint8]) -> bool {
+  (@intrinsic(vec.len)(self/187) == 0)
 }
 
-fn inherent#Vec#Vec[T]#push__T_uint8(self/176: Vec[uint8], elem/177: uint8) -> unit {
-  @intrinsic(vec.push)(self/176, elem/177)
+fn inherent#Vec#Vec[T]#push__T_uint8(self/174: Vec[uint8], elem/175: uint8) -> unit {
+  @intrinsic(vec.push)(self/174, elem/175)
 }
 
-fn inherent#Vec#Vec[T]#pop__T_uint8(self/197: Vec[uint8]) -> Option__uint8 {
-  let len/198 = inherent#Vec#Vec[T]#len__T_uint8(self/197) in
-  if (len/198 == 0) {
+fn inherent#Vec#Vec[T]#pop__T_uint8(self/195: Vec[uint8]) -> Option__uint8 {
+  let len/196 = inherent#Vec#Vec[T]#len__T_uint8(self/195) in
+  if (len/196 == 0) {
       Option__uint8::None
   } else {
-      let value/199 = @intrinsic(vec.get)(self/197, (len/198 - 1)) in
-      let _wild85 = inherent#Vec#Vec[T]#truncate__T_uint8(self/197, (len/198 - 1)) in
-      Option__uint8::Some(value/199)
+      let value/197 = @intrinsic(vec.get)(self/195, (len/196 - 1)) in
+      let _wild85 = inherent#Vec#Vec[T]#truncate__T_uint8(self/195, (len/196 - 1)) in
+      Option__uint8::Some(value/197)
   }
 }
 
-fn inherent#Vec#Vec[T]#reserve__T_uint8(self/190: Vec[uint8], additional/191: int) -> unit {
-  @intrinsic(vec.reserve)(self/190, additional/191)
+fn inherent#Vec#Vec[T]#reserve__T_uint8(self/188: Vec[uint8], additional/189: int) -> unit {
+  @intrinsic(vec.reserve)(self/188, additional/189)
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_uint8(self/192: Vec[uint8], len/193: int) -> unit {
-  @intrinsic(vec.truncate)(self/192, len/193)
+fn inherent#Vec#Vec[T]#truncate__T_uint8(self/190: Vec[uint8], len/191: int) -> unit {
+  @intrinsic(vec.truncate)(self/190, len/191)
 }
 
-fn inherent#Vec#Vec[T]#clear__T_uint8(self/194: Vec[uint8]) -> unit {
-  inherent#Vec#Vec[T]#truncate__T_uint8(self/194, 0)
+fn inherent#Vec#Vec[T]#clear__T_uint8(self/192: Vec[uint8]) -> unit {
+  inherent#Vec#Vec[T]#truncate__T_uint8(self/192, 0)
 }
 
-fn inherent#Vec#Vec[T]#slice__T_uint8(self/225: Vec[uint8], start/226: int, end/227: int) -> Slice[
+fn inherent#Vec#Vec[T]#slice__T_uint8(self/223: Vec[uint8], start/224: int, end/225: int) -> Slice[
   uint8
 ] {
-  @intrinsic(slice.new)(self/225, start/226, end/227)
+  @intrinsic(slice.new)(self/223, start/224, end/225)
 }
 
 fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
@@ -12195,10 +12602,10 @@ fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
 }
 
 fn trait_impl#PartialEq#Option__string#eq(
-  self/153: Option__string,
-  other/154: Option__string
+  self/151: Option__string,
+  other/152: Option__string
 ) -> bool {
-  let mtmp61 = (self/153, other/154) in
+  let mtmp61 = (self/151, other/152) in
   let x62 = mtmp61.0 in
   let x63 = mtmp61.1 in
   match x63 {
@@ -12215,9 +12622,9 @@ fn trait_impl#PartialEq#Option__string#eq(
       match x62 {
         Option__string::Some(x66) => {
           let x66 = Option__string::Some._0(x62) in
-          let left/155 = x66 in
-          let right/156 = x64 in
-          trait_impl#PartialEq#string#eq(left/155, right/156)
+          let left/153 = x66 in
+          let right/154 = x64 in
+          trait_impl#PartialEq#string#eq(left/153, right/154)
         },
         _ => false,
       }
@@ -12225,8 +12632,8 @@ fn trait_impl#PartialEq#Option__string#eq(
   }
 }
 
-fn trait_impl#PartialEq#Option__int#eq(self/153: Option__int, other/154: Option__int) -> bool {
-  let mtmp61 = (self/153, other/154) in
+fn trait_impl#PartialEq#Option__int#eq(self/151: Option__int, other/152: Option__int) -> bool {
+  let mtmp61 = (self/151, other/152) in
   let x62 = mtmp61.0 in
   let x63 = mtmp61.1 in
   match x63 {
@@ -12243,9 +12650,9 @@ fn trait_impl#PartialEq#Option__int#eq(self/153: Option__int, other/154: Option_
       match x62 {
         Option__int::Some(x66) => {
           let x66 = Option__int::Some._0(x62) in
-          let left/155 = x66 in
-          let right/156 = x64 in
-          trait_impl#PartialEq#int#eq(left/155, right/156)
+          let left/153 = x66 in
+          let right/154 = x64 in
+          trait_impl#PartialEq#int#eq(left/153, right/154)
         },
         _ => false,
       }
@@ -12254,52 +12661,52 @@ fn trait_impl#PartialEq#Option__int#eq(self/153: Option__int, other/154: Option_
 }
 
 fn inherent#Vec#Vec[T]#len__T_(string,std::serde::Schema)(
-  self/187: Vec[(string, std::serde::Schema)]
+  self/185: Vec[(string, std::serde::Schema)]
 ) -> int {
-  @intrinsic(vec.len)(self/187)
+  @intrinsic(vec.len)(self/185)
 }
 
 fn inherent#Vec#Vec[T]#len__T_std::serde::VariantSchema(
-  self/187: Vec[std::serde::VariantSchema]
+  self/185: Vec[std::serde::VariantSchema]
 ) -> int {
-  @intrinsic(vec.len)(self/187)
+  @intrinsic(vec.len)(self/185)
 }
 
 fn inherent#Vec#Vec[T]#len__T_(string,std::serde::Value)(
-  self/187: Vec[(string, std::serde::Value)]
+  self/185: Vec[(string, std::serde::Value)]
 ) -> int {
-  @intrinsic(vec.len)(self/187)
+  @intrinsic(vec.len)(self/185)
 }
 
-fn inherent#int#int#to_string(self/34: int) -> string {
-  @runtime(core.int_to_string)(self/34)
+fn inherent#int#int#to_string(self/32: int) -> string {
+  @runtime(core.int_to_string)(self/32)
 }
 
 fn inherent#Vec#Vec[T]#new__T_(string,std::serde::Value)() -> Vec[(string, std::serde::Value)] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#len__T_std::serde::Value(self/187: Vec[std::serde::Value]) -> int {
-  @intrinsic(vec.len)(self/187)
+fn inherent#Vec#Vec[T]#len__T_std::serde::Value(self/185: Vec[std::serde::Value]) -> int {
+  @intrinsic(vec.len)(self/185)
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_(string,std::serde::Value)(capacity/175: int) -> Vec[
+fn inherent#Vec#Vec[T]#with_capacity__T_(string,std::serde::Value)(capacity/173: int) -> Vec[
   (string, std::serde::Value)
 ] {
-  @intrinsic(vec.with_capacity)(capacity/175)
+  @intrinsic(vec.with_capacity)(capacity/173)
 }
 
 fn inherent#Vec#Vec[T]#push__T_(string,std::serde::Value)(
-  self/176: Vec[(string, std::serde::Value)],
-  elem/177: (string, std::serde::Value)
+  self/174: Vec[(string, std::serde::Value)],
+  elem/175: (string, std::serde::Value)
 ) -> unit {
-  @intrinsic(vec.push)(self/176, elem/177)
+  @intrinsic(vec.push)(self/174, elem/175)
 }
 
 fn inherent#Ref#Ref[T]#new__T_Option[std::serde::Value](
-  value/257: Option__std::serde::Value
+  value/255: Option__std::serde::Value
 ) -> Ref[Option__std::serde::Value] {
-  @intrinsic(ref.new)(value/257)
+  @intrinsic(ref.new)(value/255)
 }
 
 fn inherent#Vec#Vec[T]#new__T_std::serde::ValueDeserializeFrame() -> Vec[
@@ -12309,141 +12716,141 @@ fn inherent#Vec#Vec[T]#new__T_std::serde::ValueDeserializeFrame() -> Vec[
 }
 
 fn inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueDeserializeFrame(
-  self/189: Vec[std::serde::ValueDeserializeFrame]
+  self/187: Vec[std::serde::ValueDeserializeFrame]
 ) -> bool {
-  (@intrinsic(vec.len)(self/189) == 0)
+  (@intrinsic(vec.len)(self/187) == 0)
 }
 
 fn inherent#Ref#Ref[T]#get__T_Option[std::serde::Value](
-  self/258: Ref[Option__std::serde::Value]
+  self/256: Ref[Option__std::serde::Value]
 ) -> Option__std::serde::Value {
-  @intrinsic(ref.get)(self/258)
+  @intrinsic(ref.get)(self/256)
 }
 
 fn inherent#Option#Option[T]#is_some__T_std::serde::Value(
-  self/288: Option__std::serde::Value
+  self/280: Option__std::serde::Value
 ) -> bool {
-  match self/288 {
+  match self/280 {
     Option__std::serde::Value::None => {
       false
     },
-    Option__std::serde::Value::Some(x151) => {
+    Option__std::serde::Value::Some(x150) => {
       true
     },
   }
 }
 
 fn inherent#Ref#Ref[T]#set__T_Option[std::serde::Value](
-  self/259: Ref[Option__std::serde::Value],
-  value/260: Option__std::serde::Value
+  self/257: Ref[Option__std::serde::Value],
+  value/258: Option__std::serde::Value
 ) -> unit {
-  @intrinsic(ref.set)(self/259, value/260)
+  @intrinsic(ref.set)(self/257, value/258)
 }
 
 fn inherent#Vec#Vec[T]#pop__T_std::serde::ValueDeserializeFrame(
-  self/197: Vec[std::serde::ValueDeserializeFrame]
+  self/195: Vec[std::serde::ValueDeserializeFrame]
 ) -> Option__std::serde::ValueDeserializeFrame {
-  let len/198 = inherent#Vec#Vec[T]#len__T_std::serde::ValueDeserializeFrame(self/197) in
-  if (len/198 == 0) {
+  let len/196 = inherent#Vec#Vec[T]#len__T_std::serde::ValueDeserializeFrame(self/195) in
+  if (len/196 == 0) {
       Option__std::serde::ValueDeserializeFrame::None
   } else {
-      let value/199 = @intrinsic(vec.get)(self/197, (len/198 - 1)) in
+      let value/197 = @intrinsic(vec.get)(self/195, (len/196 - 1)) in
       let _wild85 =
         inherent#Vec#Vec[T]#truncate__T_std::serde::ValueDeserializeFrame(
-          self/197,
-          (len/198 - 1)
+          self/195,
+          (len/196 - 1)
         ) in
-      Option__std::serde::ValueDeserializeFrame::Some(value/199)
+      Option__std::serde::ValueDeserializeFrame::Some(value/197)
   }
 }
 
-fn trait_impl#ToString#int8#to_string(self/70: int8) -> string {
-  @runtime(core.int8_to_string)(self/70)
+fn trait_impl#ToString#int8#to_string(self/68: int8) -> string {
+  @runtime(core.int8_to_string)(self/68)
 }
 
-fn trait_impl#ToString#int16#to_string(self/71: int16) -> string {
-  @runtime(core.int16_to_string)(self/71)
+fn trait_impl#ToString#int16#to_string(self/69: int16) -> string {
+  @runtime(core.int16_to_string)(self/69)
 }
 
-fn inherent#int32#int32#to_string(self/35: int32) -> string {
-  @runtime(core.int32_to_string)(self/35)
+fn inherent#int32#int32#to_string(self/33: int32) -> string {
+  @runtime(core.int32_to_string)(self/33)
 }
 
-fn trait_impl#ToString#int64#to_string(self/73: int64) -> string {
-  @runtime(core.int64_to_string)(self/73)
+fn trait_impl#ToString#int64#to_string(self/71: int64) -> string {
+  @runtime(core.int64_to_string)(self/71)
 }
 
-fn trait_impl#ToString#uint#to_string(self/274: uint) -> string {
-  @runtime(core.uint_to_string)(self/274)
+fn trait_impl#ToString#uint#to_string(self/266: uint) -> string {
+  @runtime(core.uint_to_string)(self/266)
 }
 
-fn trait_impl#ToString#uint8#to_string(self/74: uint8) -> string {
-  @runtime(core.uint8_to_string)(self/74)
+fn trait_impl#ToString#uint8#to_string(self/72: uint8) -> string {
+  @runtime(core.uint8_to_string)(self/72)
 }
 
-fn trait_impl#ToString#uint16#to_string(self/75: uint16) -> string {
-  @runtime(core.uint16_to_string)(self/75)
+fn trait_impl#ToString#uint16#to_string(self/73: uint16) -> string {
+  @runtime(core.uint16_to_string)(self/73)
 }
 
-fn trait_impl#ToString#uint32#to_string(self/76: uint32) -> string {
-  @runtime(core.uint32_to_string)(self/76)
+fn trait_impl#ToString#uint32#to_string(self/74: uint32) -> string {
+  @runtime(core.uint32_to_string)(self/74)
 }
 
-fn trait_impl#ToString#uint64#to_string(self/77: uint64) -> string {
-  @runtime(core.uint64_to_string)(self/77)
+fn trait_impl#ToString#uint64#to_string(self/75: uint64) -> string {
+  @runtime(core.uint64_to_string)(self/75)
 }
 
-fn trait_impl#ToString#float32#to_string(self/78: float32) -> string {
-  @runtime(core.float32_to_string)(self/78)
+fn trait_impl#ToString#float32#to_string(self/76: float32) -> string {
+  @runtime(core.float32_to_string)(self/76)
 }
 
-fn trait_impl#ToString#float64#to_string(self/79: float64) -> string {
-  @runtime(core.float64_to_string)(self/79)
+fn trait_impl#ToString#float64#to_string(self/77: float64) -> string {
+  @runtime(core.float64_to_string)(self/77)
 }
 
-fn inherent#string#string#len(self/37: string) -> int {
-  @runtime(core.string_len)(self/37)
+fn inherent#string#string#len(self/35: string) -> int {
+  @runtime(core.string_len)(self/35)
 }
 
-fn inherent#string#string#get(self/39: string, index/40: int) -> char {
-  string_get(self/39, index/40)
+fn inherent#string#string#get(self/37: string, index/38: int) -> char {
+  string_get(self/37, index/38)
 }
 
 fn inherent#Vec#Vec[T]#push__T_std::serde::ValueDeserializeFrame(
-  self/176: Vec[std::serde::ValueDeserializeFrame],
-  elem/177: std::serde::ValueDeserializeFrame
+  self/174: Vec[std::serde::ValueDeserializeFrame],
+  elem/175: std::serde::ValueDeserializeFrame
 ) -> unit {
-  @intrinsic(vec.push)(self/176, elem/177)
+  @intrinsic(vec.push)(self/174, elem/175)
 }
 
 fn inherent#Vec#Vec[T]#len__T_std::serde::ValueDeserializeFrame(
-  self/187: Vec[std::serde::ValueDeserializeFrame]
+  self/185: Vec[std::serde::ValueDeserializeFrame]
 ) -> int {
-  @intrinsic(vec.len)(self/187)
+  @intrinsic(vec.len)(self/185)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/257: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/257)
+fn inherent#Ref#Ref[T]#new__T_int(value/255: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/255)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/258: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/258)
+fn inherent#Ref#Ref[T]#get__T_int(self/256: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/256)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/259: Ref[int], value/260: int) -> unit {
-  @intrinsic(ref.set)(self/259, value/260)
+fn inherent#Ref#Ref[T]#set__T_int(self/257: Ref[int], value/258: int) -> unit {
+  @intrinsic(ref.set)(self/257, value/258)
 }
 
-fn inherent#Ref#Ref[T]#new__T_bool(value/257: bool) -> Ref[bool] {
-  @intrinsic(ref.new)(value/257)
+fn inherent#Ref#Ref[T]#new__T_bool(value/255: bool) -> Ref[bool] {
+  @intrinsic(ref.new)(value/255)
 }
 
-fn inherent#Ref#Ref[T]#get__T_bool(self/258: Ref[bool]) -> bool {
-  @intrinsic(ref.get)(self/258)
+fn inherent#Ref#Ref[T]#get__T_bool(self/256: Ref[bool]) -> bool {
+  @intrinsic(ref.get)(self/256)
 }
 
-fn inherent#Ref#Ref[T]#set__T_bool(self/259: Ref[bool], value/260: bool) -> unit {
-  @intrinsic(ref.set)(self/259, value/260)
+fn inherent#Ref#Ref[T]#set__T_bool(self/257: Ref[bool], value/258: bool) -> unit {
+  @intrinsic(ref.set)(self/257, value/258)
 }
 
 fn std::serde::trait_default#Deserializer#error__Self_std::serde::ValueDeserializer(
@@ -12460,43 +12867,43 @@ fn inherent#Vec#Vec[T]#new__T_std::serde::ValueSerializeFrame() -> Vec[
 }
 
 fn inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueSerializeFrame(
-  self/189: Vec[std::serde::ValueSerializeFrame]
+  self/187: Vec[std::serde::ValueSerializeFrame]
 ) -> bool {
-  (@intrinsic(vec.len)(self/189) == 0)
+  (@intrinsic(vec.len)(self/187) == 0)
 }
 
 fn inherent#Option#Option[T]#is_none__T_std::serde::Value(
-  self/289: Option__std::serde::Value
+  self/281: Option__std::serde::Value
 ) -> bool {
-  (!inherent#Option#Option[T]#is_some__T_std::serde::Value(self/289))
+  (!inherent#Option#Option[T]#is_some__T_std::serde::Value(self/281))
 }
 
 fn inherent#Vec#Vec[T]#len__T_std::serde::ValueSerializeFrame(
-  self/187: Vec[std::serde::ValueSerializeFrame]
+  self/185: Vec[std::serde::ValueSerializeFrame]
 ) -> int {
-  @intrinsic(vec.len)(self/187)
+  @intrinsic(vec.len)(self/185)
 }
 
-fn inherent#Ref#Ref[T]#get__T_Option[string](self/258: Ref[Option__string]) -> Option__string {
-  @intrinsic(ref.get)(self/258)
+fn inherent#Ref#Ref[T]#get__T_Option[string](self/256: Ref[Option__string]) -> Option__string {
+  @intrinsic(ref.get)(self/256)
 }
 
-fn inherent#Option#Option[T]#is_some__T_string(self/288: Option__string) -> bool {
-  match self/288 {
+fn inherent#Option#Option[T]#is_some__T_string(self/280: Option__string) -> bool {
+  match self/280 {
     Option__string::None => {
       false
     },
-    Option__string::Some(x151) => {
+    Option__string::Some(x150) => {
       true
     },
   }
 }
 
 fn inherent#Vec#Vec[T]#push__T_std::serde::Value(
-  self/176: Vec[std::serde::Value],
-  elem/177: std::serde::Value
+  self/174: Vec[std::serde::Value],
+  elem/175: std::serde::Value
 ) -> unit {
-  @intrinsic(vec.push)(self/176, elem/177)
+  @intrinsic(vec.push)(self/174, elem/175)
 }
 
 fn inherent#Vec#Vec[T]#new__T_std::serde::Value() -> Vec[std::serde::Value] {
@@ -12504,169 +12911,169 @@ fn inherent#Vec#Vec[T]#new__T_std::serde::Value() -> Vec[std::serde::Value] {
 }
 
 fn inherent#Ref#Ref[T]#set__T_Option[string](
-  self/259: Ref[Option__string],
-  value/260: Option__string
+  self/257: Ref[Option__string],
+  value/258: Option__string
 ) -> unit {
-  @intrinsic(ref.set)(self/259, value/260)
+  @intrinsic(ref.set)(self/257, value/258)
 }
 
 fn inherent#Vec#Vec[T]#push__T_std::serde::ValueSerializeFrame(
-  self/176: Vec[std::serde::ValueSerializeFrame],
-  elem/177: std::serde::ValueSerializeFrame
+  self/174: Vec[std::serde::ValueSerializeFrame],
+  elem/175: std::serde::ValueSerializeFrame
 ) -> unit {
-  @intrinsic(vec.push)(self/176, elem/177)
+  @intrinsic(vec.push)(self/174, elem/175)
 }
 
-fn inherent#Slice#Slice[T]#len__T_uint8(self/236: Slice[uint8]) -> int {
-  @intrinsic(slice.len)(self/236)
+fn inherent#Slice#Slice[T]#len__T_uint8(self/234: Slice[uint8]) -> int {
+  @intrinsic(slice.len)(self/234)
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_std::serde::Value(capacity/175: int) -> Vec[
+fn inherent#Vec#Vec[T]#with_capacity__T_std::serde::Value(capacity/173: int) -> Vec[
   std::serde::Value
 ] {
-  @intrinsic(vec.with_capacity)(capacity/175)
+  @intrinsic(vec.with_capacity)(capacity/173)
 }
 
 fn inherent#Vec#Vec[T]#pop__T_std::serde::ValueSerializeFrame(
-  self/197: Vec[std::serde::ValueSerializeFrame]
+  self/195: Vec[std::serde::ValueSerializeFrame]
 ) -> Option__std::serde::ValueSerializeFrame {
-  let len/198 = inherent#Vec#Vec[T]#len__T_std::serde::ValueSerializeFrame(self/197) in
-  if (len/198 == 0) {
+  let len/196 = inherent#Vec#Vec[T]#len__T_std::serde::ValueSerializeFrame(self/195) in
+  if (len/196 == 0) {
       Option__std::serde::ValueSerializeFrame::None
   } else {
-      let value/199 = @intrinsic(vec.get)(self/197, (len/198 - 1)) in
+      let value/197 = @intrinsic(vec.get)(self/195, (len/196 - 1)) in
       let _wild85 =
-        inherent#Vec#Vec[T]#truncate__T_std::serde::ValueSerializeFrame(self/197, (len/198 - 1)) in
-      Option__std::serde::ValueSerializeFrame::Some(value/199)
+        inherent#Vec#Vec[T]#truncate__T_std::serde::ValueSerializeFrame(self/195, (len/196 - 1)) in
+      Option__std::serde::ValueSerializeFrame::Some(value/197)
   }
 }
 
-fn inherent#Ref#Ref[T]#new__T_Option[string](value/257: Option__string) -> Ref[Option__string] {
-  @intrinsic(ref.new)(value/257)
+fn inherent#Ref#Ref[T]#new__T_Option[string](value/255: Option__string) -> Ref[Option__string] {
+  @intrinsic(ref.new)(value/255)
 }
 
-fn inherent#char#char#to_string(self/36: char) -> string {
-  char_to_string(self/36)
+fn inherent#char#char#to_string(self/34: char) -> string {
+  char_to_string(self/34)
 }
 
-fn inherent#string#string#byte_len(self/38: string) -> int {
-  @runtime(core.string_len)(self/38)
+fn inherent#string#string#byte_len(self/36: string) -> int {
+  @runtime(core.string_len)(self/36)
 }
 
-fn inherent#string#string#byte_get(self/41: string, index/42: int) -> uint8 {
-  @runtime(core.string_byte_get)(self/41, index/42)
+fn inherent#string#string#byte_get(self/39: string, index/40: int) -> uint8 {
+  @runtime(core.string_byte_get)(self/39, index/40)
 }
 
-fn inherent#string#string#is_char_boundary(self/46: string, index/47: int) -> bool {
-  string_is_char_boundary(self/46, index/47)
+fn inherent#string#string#is_char_boundary(self/44: string, index/45: int) -> bool {
+  string_is_char_boundary(self/44, index/45)
 }
 
-fn inherent#string#string#byte_slice(self/43: string, start/44: int, end/45: int) -> string {
-  string_byte_slice(self/43, start/44, end/45)
+fn inherent#string#string#byte_slice(self/41: string, start/42: int, end/43: int) -> string {
+  string_byte_slice(self/41, start/42, end/43)
 }
 
-fn inherent#string#string#char_indices(self/59: string) -> FnIterator__(int,char) {
-  let index/60 = @intrinsic(ref.new)(0) in
+fn inherent#string#string#char_indices(self/57: string) -> FnIterator__(int,char) {
+  let index/58 = @intrinsic(ref.new)(0) in
   inherent#FnIterator#FnIterator[T]#from_fn__T_(int,char)(
     pack_closure[inherent#closure_env_inherent_string_string_char_indices_0#closure_env_inherent_string_string_char_indices_0#apply](
-      closure_env_inherent_string_string_char_indices_0 { index_0: index/60, self_1: self/59 }
+      closure_env_inherent_string_string_char_indices_0 { index_0: index/58, self_1: self/57 }
     )
   )
 }
 
-fn inherent#string#string#chars(self/54: string) -> FnIterator__char {
-  let index/55 = @intrinsic(ref.new)(0) in
+fn inherent#string#string#chars(self/52: string) -> FnIterator__char {
+  let index/53 = @intrinsic(ref.new)(0) in
   inherent#FnIterator#FnIterator[T]#from_fn__T_char(
     pack_closure[inherent#closure_env_inherent_string_string_chars_1#closure_env_inherent_string_string_chars_1#apply](
-      closure_env_inherent_string_string_chars_1 { self_0: self/54, index_1: index/55 }
+      closure_env_inherent_string_string_chars_1 { self_0: self/52, index_1: index/53 }
     )
   )
 }
 
 fn trait_impl#IntoIterator#FnIterator__char#into_iter(
-  self/174: FnIterator__char
+  self/172: FnIterator__char
 ) -> FnIterator__char {
-  self/174
+  self/172
 }
 
-fn trait_impl#Iterator#FnIterator__char#next(self/173: FnIterator__char) -> Option__char {
-  FnIterator__char.next_fn(self/173)()
+fn trait_impl#Iterator#FnIterator__char#next(self/171: FnIterator__char) -> Option__char {
+  FnIterator__char.next_fn(self/171)()
 }
 
 fn trait_impl#IntoIterator#FnIterator__(int,char)#into_iter(
-  self/174: FnIterator__(int,char)
+  self/172: FnIterator__(int,char)
 ) -> FnIterator__(int,char) {
-  self/174
+  self/172
 }
 
 fn trait_impl#Iterator#FnIterator__(int,char)#next(
-  self/173: FnIterator__(int,char)
+  self/171: FnIterator__(int,char)
 ) -> Option__(int,char) {
-  FnIterator__(int,char).next_fn(self/173)()
+  FnIterator__(int,char).next_fn(self/171)()
 }
 
 fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_string(self/176: Vec[string], elem/177: string) -> unit {
-  @intrinsic(vec.push)(self/176, elem/177)
+fn inherent#Vec#Vec[T]#push__T_string(self/174: Vec[string], elem/175: string) -> unit {
+  @intrinsic(vec.push)(self/174, elem/175)
 }
 
-fn inherent#Vec#Vec[T]#is_empty__T_string(self/189: Vec[string]) -> bool {
-  (@intrinsic(vec.len)(self/189) == 0)
+fn inherent#Vec#Vec[T]#is_empty__T_string(self/187: Vec[string]) -> bool {
+  (@intrinsic(vec.len)(self/187) == 0)
 }
 
-fn inherent#Vec#Vec[T]#len__T_string(self/187: Vec[string]) -> int {
-  @intrinsic(vec.len)(self/187)
+fn inherent#Vec#Vec[T]#len__T_string(self/185: Vec[string]) -> int {
+  @intrinsic(vec.len)(self/185)
 }
 
-fn inherent#Vec#Vec[T]#pop__T_string(self/197: Vec[string]) -> Option__string {
-  let len/198 = inherent#Vec#Vec[T]#len__T_string(self/197) in
-  if (len/198 == 0) {
+fn inherent#Vec#Vec[T]#pop__T_string(self/195: Vec[string]) -> Option__string {
+  let len/196 = inherent#Vec#Vec[T]#len__T_string(self/195) in
+  if (len/196 == 0) {
       Option__string::None
   } else {
-      let value/199 = @intrinsic(vec.get)(self/197, (len/198 - 1)) in
-      let _wild85 = inherent#Vec#Vec[T]#truncate__T_string(self/197, (len/198 - 1)) in
-      Option__string::Some(value/199)
+      let value/197 = @intrinsic(vec.get)(self/195, (len/196 - 1)) in
+      let _wild85 = inherent#Vec#Vec[T]#truncate__T_string(self/195, (len/196 - 1)) in
+      Option__string::Some(value/197)
   }
 }
 
-fn inherent#string#string#contains(self/284: string, expected/285: string) -> bool {
-  if (inherent#string#string#byte_len(expected/285) == 0) {
+fn inherent#string#string#contains(self/276: string, expected/277: string) -> bool {
+  if (inherent#string#string#byte_len(expected/277) == 0) {
       true
   } else {
-      if (inherent#string#string#byte_len(expected/285) >
-        inherent#string#string#byte_len(self/284)) {
+      if (inherent#string#string#byte_len(expected/277) >
+        inherent#string#string#byte_len(self/276)) {
           false
       } else {
-          let _wild150 =
-            let for_iter147 =
+          let _wild149 =
+            let for_iter146 =
               trait_impl#IntoIterator#FnIterator__int#into_iter(
                 __goml_builtin_range(
                   0,
-                  ((inherent#string#string#byte_len(self/284) -
-                    inherent#string#string#byte_len(expected/285)) +
+                  ((inherent#string#string#byte_len(self/276) -
+                    inherent#string#string#byte_len(expected/277)) +
                     1)
                 )
               ) in
             while true {
-                let for_next148 = trait_impl#Iterator#FnIterator__int#next(for_iter147) in
-                match for_next148 {
+                let for_next147 = trait_impl#Iterator#FnIterator__int#next(for_iter146) in
+                match for_next147 {
                   Option__int::None => {
                     break
                   },
-                  Option__int::Some(x149) => {
-                    let x149 = Option__int::Some._0(for_next148) in
-                    let start/286 = x149 in
-                    let end/287 = (start/286 + inherent#string#string#byte_len(expected/285)) in
-                    if if if inherent#string#string#is_char_boundary(self/284, start/286) {
-                        inherent#string#string#is_char_boundary(self/284, end/287)
+                  Option__int::Some(x148) => {
+                    let x148 = Option__int::Some._0(for_next147) in
+                    let start/278 = x148 in
+                    let end/279 = (start/278 + inherent#string#string#byte_len(expected/277)) in
+                    if if if inherent#string#string#is_char_boundary(self/276, start/278) {
+                        inherent#string#string#is_char_boundary(self/276, end/279)
                     } else {
                         false
                     } {
-                        (inherent#string#string#byte_slice(self/284, start/286, end/287) ==
-                          expected/285)
+                        (inherent#string#string#byte_slice(self/276, start/278, end/279) ==
+                          expected/277)
                     } else {
                         false
                     } {
@@ -12689,62 +13096,55 @@ fn inherent#Vec#Vec[T]#new__T_std::json::JsonDeserializeFrame() -> Vec[
 }
 
 fn inherent#Vec#Vec[T]#is_empty__T_std::json::JsonDeserializeFrame(
-  self/189: Vec[std::json::JsonDeserializeFrame]
+  self/187: Vec[std::json::JsonDeserializeFrame]
 ) -> bool {
-  (@intrinsic(vec.len)(self/189) == 0)
+  (@intrinsic(vec.len)(self/187) == 0)
 }
 
 fn inherent#Vec#Vec[T]#len__T_std::json::JsonDeserializeFrame(
-  self/187: Vec[std::json::JsonDeserializeFrame]
+  self/185: Vec[std::json::JsonDeserializeFrame]
 ) -> int {
-  @intrinsic(vec.len)(self/187)
+  @intrinsic(vec.len)(self/185)
 }
 
 fn inherent#Vec#Vec[T]#pop__T_std::json::JsonDeserializeFrame(
-  self/197: Vec[std::json::JsonDeserializeFrame]
+  self/195: Vec[std::json::JsonDeserializeFrame]
 ) -> Option__std::json::JsonDeserializeFrame {
-  let len/198 = inherent#Vec#Vec[T]#len__T_std::json::JsonDeserializeFrame(self/197) in
-  if (len/198 == 0) {
+  let len/196 = inherent#Vec#Vec[T]#len__T_std::json::JsonDeserializeFrame(self/195) in
+  if (len/196 == 0) {
       Option__std::json::JsonDeserializeFrame::None
   } else {
-      let value/199 = @intrinsic(vec.get)(self/197, (len/198 - 1)) in
+      let value/197 = @intrinsic(vec.get)(self/195, (len/196 - 1)) in
       let _wild85 =
-        inherent#Vec#Vec[T]#truncate__T_std::json::JsonDeserializeFrame(self/197, (len/198 - 1)) in
-      Option__std::json::JsonDeserializeFrame::Some(value/199)
+        inherent#Vec#Vec[T]#truncate__T_std::json::JsonDeserializeFrame(self/195, (len/196 - 1)) in
+      Option__std::json::JsonDeserializeFrame::Some(value/197)
   }
 }
 
-fn inherent#string#string#decode_at(self/48: string, index/49: int) -> Option__(char,int) {
-  let mtmp25 = string_decode_utf8_at(self/48, index/49) in
+fn inherent#string#string#decode_at(self/46: string, index/47: int) -> Option__(char,int) {
+  let mtmp25 = string_decode_utf8_at(self/46, index/47) in
   let x26 = mtmp25.0 in
   let x27 = mtmp25.1 in
   let x28 = mtmp25.2 in
-  let width/52 = x28 in
-  let value/51 = x27 in
-  let valid/50 = x26 in
-  if valid/50 {
-      Option__(char,int)::Some((value/51, width/52))
+  let width/50 = x28 in
+  let value/49 = x27 in
+  let valid/48 = x26 in
+  if valid/48 {
+      Option__(char,int)::Some((value/49, width/50))
   } else {
       Option__(char,int)::None
   }
 }
 
 fn inherent#Vec#Vec[T]#push__T_std::json::JsonDeserializeFrame(
-  self/176: Vec[std::json::JsonDeserializeFrame],
-  elem/177: std::json::JsonDeserializeFrame
+  self/174: Vec[std::json::JsonDeserializeFrame],
+  elem/175: std::json::JsonDeserializeFrame
 ) -> unit {
-  @intrinsic(vec.push)(self/176, elem/177)
+  @intrinsic(vec.push)(self/174, elem/175)
 }
 
-fn char_from_uint32(value/32: uint32) -> Option__char {
-  if utf8_valid_scalar(value/32) {
-      let mtmp22 = @runtime(core.char_from_uint32)(value/32) in
-      let x24 = mtmp22.1 in
-      let character/33 = x24 in
-      Option__char::Some(character/33)
-  } else {
-      Option__char::None
-  }
+fn char_from_uint32(value/2: uint32) -> Option__char {
+  __goml_builtin_char_from_uint32(value/2)
 }
 
 fn inherent#Vec#Vec[T]#new__T_std::json::Value() -> Vec[std::json::Value] {
@@ -12752,10 +13152,10 @@ fn inherent#Vec#Vec[T]#new__T_std::json::Value() -> Vec[std::json::Value] {
 }
 
 fn inherent#Vec#Vec[T]#push__T_std::json::Value(
-  self/176: Vec[std::json::Value],
-  elem/177: std::json::Value
+  self/174: Vec[std::json::Value],
+  elem/175: std::json::Value
 ) -> unit {
-  @intrinsic(vec.push)(self/176, elem/177)
+  @intrinsic(vec.push)(self/174, elem/175)
 }
 
 fn inherent#Vec#Vec[T]#new__T_(string,std::json::Value)() -> Vec[(string, std::json::Value)] {
@@ -12763,10 +13163,10 @@ fn inherent#Vec#Vec[T]#new__T_(string,std::json::Value)() -> Vec[(string, std::j
 }
 
 fn inherent#Vec#Vec[T]#push__T_(string,std::json::Value)(
-  self/176: Vec[(string, std::json::Value)],
-  elem/177: (string, std::json::Value)
+  self/174: Vec[(string, std::json::Value)],
+  elem/175: (string, std::json::Value)
 ) -> unit {
-  @intrinsic(vec.push)(self/176, elem/177)
+  @intrinsic(vec.push)(self/174, elem/175)
 }
 
 fn inherent#Vec#Vec[T]#new__T_std::json::JsonSerializeFrame() -> Vec[
@@ -12776,70 +13176,70 @@ fn inherent#Vec#Vec[T]#new__T_std::json::JsonSerializeFrame() -> Vec[
 }
 
 fn inherent#Vec#Vec[T]#is_empty__T_std::json::JsonSerializeFrame(
-  self/189: Vec[std::json::JsonSerializeFrame]
+  self/187: Vec[std::json::JsonSerializeFrame]
 ) -> bool {
-  (@intrinsic(vec.len)(self/189) == 0)
+  (@intrinsic(vec.len)(self/187) == 0)
 }
 
 fn inherent#Vec#Vec[T]#len__T_std::json::JsonSerializeFrame(
-  self/187: Vec[std::json::JsonSerializeFrame]
+  self/185: Vec[std::json::JsonSerializeFrame]
 ) -> int {
-  @intrinsic(vec.len)(self/187)
+  @intrinsic(vec.len)(self/185)
 }
 
 fn inherent#Vec#Vec[T]#push__T_std::json::JsonSerializeFrame(
-  self/176: Vec[std::json::JsonSerializeFrame],
-  elem/177: std::json::JsonSerializeFrame
+  self/174: Vec[std::json::JsonSerializeFrame],
+  elem/175: std::json::JsonSerializeFrame
 ) -> unit {
-  @intrinsic(vec.push)(self/176, elem/177)
+  @intrinsic(vec.push)(self/174, elem/175)
 }
 
 fn inherent#Vec#Vec[T]#pop__T_std::json::JsonSerializeFrame(
-  self/197: Vec[std::json::JsonSerializeFrame]
+  self/195: Vec[std::json::JsonSerializeFrame]
 ) -> Option__std::json::JsonSerializeFrame {
-  let len/198 = inherent#Vec#Vec[T]#len__T_std::json::JsonSerializeFrame(self/197) in
-  if (len/198 == 0) {
+  let len/196 = inherent#Vec#Vec[T]#len__T_std::json::JsonSerializeFrame(self/195) in
+  if (len/196 == 0) {
       Option__std::json::JsonSerializeFrame::None
   } else {
-      let value/199 = @intrinsic(vec.get)(self/197, (len/198 - 1)) in
+      let value/197 = @intrinsic(vec.get)(self/195, (len/196 - 1)) in
       let _wild85 =
-        inherent#Vec#Vec[T]#truncate__T_std::json::JsonSerializeFrame(self/197, (len/198 - 1)) in
-      Option__std::json::JsonSerializeFrame::Some(value/199)
+        inherent#Vec#Vec[T]#truncate__T_std::json::JsonSerializeFrame(self/195, (len/196 - 1)) in
+      Option__std::json::JsonSerializeFrame::Some(value/197)
   }
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_(string,std::json::Value)(capacity/175: int) -> Vec[
+fn inherent#Vec#Vec[T]#with_capacity__T_(string,std::json::Value)(capacity/173: int) -> Vec[
   (string, std::json::Value)
 ] {
-  @intrinsic(vec.with_capacity)(capacity/175)
+  @intrinsic(vec.with_capacity)(capacity/173)
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_std::json::Value(capacity/175: int) -> Vec[
+fn inherent#Vec#Vec[T]#with_capacity__T_std::json::Value(capacity/173: int) -> Vec[
   std::json::Value
 ] {
-  @intrinsic(vec.with_capacity)(capacity/175)
+  @intrinsic(vec.with_capacity)(capacity/173)
 }
 
 fn inherent#Vec#Vec[T]#len__T_(string,std::json::Value)(
-  self/187: Vec[(string, std::json::Value)]
+  self/185: Vec[(string, std::json::Value)]
 ) -> int {
-  @intrinsic(vec.len)(self/187)
+  @intrinsic(vec.len)(self/185)
 }
 
-fn inherent#Vec#Vec[T]#len__T_std::json::Value(self/187: Vec[std::json::Value]) -> int {
-  @intrinsic(vec.len)(self/187)
+fn inherent#Vec#Vec[T]#len__T_std::json::Value(self/185: Vec[std::json::Value]) -> int {
+  @intrinsic(vec.len)(self/185)
 }
 
-fn println__T_string(value/31: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn println__T_int(value/31: int) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/31))
+fn println__T_int(value/1: int) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
 }
 
-fn println__T_bool(value/31: bool) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/31))
+fn println__T_bool(value/1: bool) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
 }
 
 fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
@@ -12971,19 +13371,19 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
   }
 }
 
-fn trait_impl#PartialEq#string#eq(self/99: string, other/100: string) -> bool {
-  (self/99 == other/100)
+fn trait_impl#PartialEq#string#eq(self/97: string, other/98: string) -> bool {
+  (self/97 == other/98)
 }
 
-fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  (self/103 == other/104)
+fn trait_impl#PartialEq#int#eq(self/101: int, other/102: int) -> bool {
+  (self/101 == other/102)
 }
 
 fn inherent#Vec#Vec[T]#truncate__T_std::serde::ValueDeserializeFrame(
-  self/192: Vec[std::serde::ValueDeserializeFrame],
-  len/193: int
+  self/190: Vec[std::serde::ValueDeserializeFrame],
+  len/191: int
 ) -> unit {
-  @intrinsic(vec.truncate)(self/192, len/193)
+  @intrinsic(vec.truncate)(self/190, len/191)
 }
 
 fn string_get(value/17: string, index/18: int) -> char {
@@ -13000,10 +13400,10 @@ fn string_get(value/17: string, index/18: int) -> char {
 }
 
 fn inherent#Vec#Vec[T]#truncate__T_std::serde::ValueSerializeFrame(
-  self/192: Vec[std::serde::ValueSerializeFrame],
-  len/193: int
+  self/190: Vec[std::serde::ValueSerializeFrame],
+  len/191: int
 ) -> unit {
-  @intrinsic(vec.truncate)(self/192, len/193)
+  @intrinsic(vec.truncate)(self/190, len/191)
 }
 
 fn char_to_string(value/29: char) -> string {
@@ -13044,74 +13444,73 @@ fn string_byte_slice(value/21: string, start/22: int, end/23: int) -> string {
 }
 
 fn inherent#FnIterator#FnIterator[T]#from_fn__T_(int,char)(
-  next_fn/172: () -> Option__(int,char)
+  next_fn/170: () -> Option__(int,char)
 ) -> FnIterator__(int,char) {
-  FnIterator__(int,char) { next_fn: next_fn/172 }
+  FnIterator__(int,char) { next_fn: next_fn/170 }
 }
 
 fn inherent#FnIterator#FnIterator[T]#from_fn__T_char(
-  next_fn/172: () -> Option__char
+  next_fn/170: () -> Option__char
 ) -> FnIterator__char {
-  FnIterator__char { next_fn: next_fn/172 }
+  FnIterator__char { next_fn: next_fn/170 }
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_string(self/192: Vec[string], len/193: int) -> unit {
-  @intrinsic(vec.truncate)(self/192, len/193)
+fn inherent#Vec#Vec[T]#truncate__T_string(self/190: Vec[string], len/191: int) -> unit {
+  @intrinsic(vec.truncate)(self/190, len/191)
 }
 
-fn __goml_builtin_range(start/268: int, end/269: int) -> FnIterator__int {
-  let current/270 = @intrinsic(ref.new)(start/268) in
+fn __goml_builtin_range(start/318: int, end/319: int) -> FnIterator__int {
+  let current/320 = @intrinsic(ref.new)(start/318) in
   inherent#FnIterator#FnIterator[T]#from_fn__T_int(
     pack_closure[inherent#closure_env_goml_builtin_range_2#closure_env_goml_builtin_range_2#apply](
-      closure_env_goml_builtin_range_2 { current_0: current/270, end_1: end/269 }
+      closure_env_goml_builtin_range_2 { current_0: current/320, end_1: end/319 }
     )
   )
 }
 
-fn trait_impl#IntoIterator#FnIterator__int#into_iter(self/174: FnIterator__int) -> FnIterator__int {
-  self/174
+fn trait_impl#IntoIterator#FnIterator__int#into_iter(self/172: FnIterator__int) -> FnIterator__int {
+  self/172
 }
 
-fn trait_impl#Iterator#FnIterator__int#next(self/173: FnIterator__int) -> Option__int {
-  FnIterator__int.next_fn(self/173)()
+fn trait_impl#Iterator#FnIterator__int#next(self/171: FnIterator__int) -> Option__int {
+  FnIterator__int.next_fn(self/171)()
 }
 
 fn inherent#Vec#Vec[T]#truncate__T_std::json::JsonDeserializeFrame(
-  self/192: Vec[std::json::JsonDeserializeFrame],
-  len/193: int
+  self/190: Vec[std::json::JsonDeserializeFrame],
+  len/191: int
 ) -> unit {
-  @intrinsic(vec.truncate)(self/192, len/193)
+  @intrinsic(vec.truncate)(self/190, len/191)
 }
 
-fn utf8_valid_scalar(value/4: uint32) -> bool {
-  if (value/4 <= 1114111) {
-      (!if (value/4 >= 55296) {
-          (value/4 <= 57343)
-      } else {
-          false
-      })
+fn __goml_builtin_char_from_uint32(value/30: uint32) -> Option__char {
+  if utf8_valid_scalar(value/30) {
+      let mtmp22 = @runtime(core.char_from_uint32)(value/30) in
+      let x24 = mtmp22.1 in
+      let character/31 = x24 in
+      Option__char::Some(character/31)
   } else {
-      false
+      Option__char::None
   }
 }
 
 fn inherent#Vec#Vec[T]#truncate__T_std::json::JsonSerializeFrame(
-  self/192: Vec[std::json::JsonSerializeFrame],
-  len/193: int
+  self/190: Vec[std::json::JsonSerializeFrame],
+  len/191: int
 ) -> unit {
-  @intrinsic(vec.truncate)(self/192, len/193)
+  @intrinsic(vec.truncate)(self/190, len/191)
 }
 
-fn trait_impl#ToString#string#to_string(self/67: string) -> string {
-  self/67
+fn trait_impl#ToString#string#to_string(self/65: string) -> string {
+  self/65
 }
 
-fn trait_impl#ToString#int#to_string(self/69: int) -> string {
-  @runtime(core.int_to_string)(self/69)
+fn trait_impl#ToString#int#to_string(self/67: int) -> string {
+  @runtime(core.int_to_string)(self/67)
 }
 
-fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
-  @runtime(core.bool_to_string)(self/66)
+fn trait_impl#ToString#bool#to_string(self/64: bool) -> string {
+  @runtime(core.bool_to_string)(self/64)
 }
 
 fn utf8_invalid_decode() -> (bool, char, int) {
@@ -13119,7 +13518,7 @@ fn utf8_invalid_decode() -> (bool, char, int) {
 }
 
 fn utf8_valid_decode(value/0: uint32, width/1: int) -> (bool, char, int) {
-  let mtmp0 = char_from_uint32(value/0) in
+  let mtmp0 = __goml_builtin_char_from_uint32(value/0) in
   match mtmp0 {
     Option__char::None => {
       utf8_invalid_decode()
@@ -13140,66 +13539,78 @@ fn utf8_invalid_continuation(value/3: uint32) -> bool {
   }
 }
 
+fn utf8_valid_scalar(value/4: uint32) -> bool {
+  if (value/4 <= 1114111) {
+      (!if (value/4 >= 55296) {
+          (value/4 <= 57343)
+      } else {
+          false
+      })
+  } else {
+      false
+  }
+}
+
 fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(
-  next_fn/172: () -> Option__int
+  next_fn/170: () -> Option__int
 ) -> FnIterator__int {
-  FnIterator__int { next_fn: next_fn/172 }
+  FnIterator__int { next_fn: next_fn/170 }
 }
 
-fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
-  @runtime(core.int_hash)(self/129)
+fn trait_impl#Hash#int#hash(self/127: int) -> uint64 {
+  @runtime(core.int_hash)(self/127)
 }
 
-fn trait_impl#PartialEq#bool#eq(self/97: bool, other/98: bool) -> bool {
-  (self/97 == other/98)
+fn trait_impl#PartialEq#bool#eq(self/95: bool, other/96: bool) -> bool {
+  (self/95 == other/96)
 }
 
-fn trait_impl#Hash#bool#hash(self/126: bool) -> uint64 {
-  if self/126 {
+fn trait_impl#Hash#bool#hash(self/124: bool) -> uint64 {
+  if self/124 {
       1
   } else {
       0
   }
 }
 
-fn trait_impl#Hash#Option__string#hash(self/157: Option__string) -> uint64 {
-  match self/157 {
+fn trait_impl#Hash#Option__string#hash(self/155: Option__string) -> uint64 {
+  match self/155 {
     Option__string::None => {
       14695981039346656038
     },
     Option__string::Some(x67) => {
-      let x67 = Option__string::Some._0(self/157) in
-      let value/158 = x67 in
-      (14695981039346656039 + trait_impl#Hash#string#hash(value/158))
+      let x67 = Option__string::Some._0(self/155) in
+      let value/156 = x67 in
+      (14695981039346656039 + trait_impl#Hash#string#hash(value/156))
     },
   }
 }
 
-fn trait_impl#Hash#string#hash(self/127: string) -> uint64 {
-  @runtime(core.string_hash)(self/127)
+fn trait_impl#Hash#string#hash(self/125: string) -> uint64 {
+  @runtime(core.string_hash)(self/125)
 }
 
 fn inherent#closure_env_inherent_string_string_char_indices_0#closure_env_inherent_string_string_char_indices_0#apply(
   env191: closure_env_inherent_string_string_char_indices_0
 ) -> Option__(int,char) {
-  let index/60 = closure_env_inherent_string_string_char_indices_0.index_0(env191) in
-  let self/59 = closure_env_inherent_string_string_char_indices_0.self_1(env191) in
-  let current/61 = @intrinsic(ref.get)(index/60) in
-  let mtmp37 = inherent#string#string#decode_at(self/59, current/61) in
+  let index/58 = closure_env_inherent_string_string_char_indices_0.index_0(env191) in
+  let self/57 = closure_env_inherent_string_string_char_indices_0.self_1(env191) in
+  let current/59 = @intrinsic(ref.get)(index/58) in
+  let mtmp37 = inherent#string#string#decode_at(self/57, current/59) in
   match mtmp37 {
     Option__(char,int)::None => {
       Option__(int,char)::None
     },
     Option__(char,int)::Some(x38) => {
       let x38 = Option__(char,int)::Some._0(mtmp37) in
-      let decoded/62 = x38 in
-      let mtmp39 = decoded/62 in
+      let decoded/60 = x38 in
+      let mtmp39 = decoded/60 in
       let x40 = mtmp39.0 in
       let x41 = mtmp39.1 in
-      let width/64 = x41 in
-      let value/63 = x40 in
-      let _wild42 = @intrinsic(ref.set)(index/60, (current/61 + width/64)) in
-      Option__(int,char)::Some((current/61, value/63))
+      let width/62 = x41 in
+      let value/61 = x40 in
+      let _wild42 = @intrinsic(ref.set)(index/58, (current/59 + width/62)) in
+      Option__(int,char)::Some((current/59, value/61))
     },
   }
 }
@@ -13207,26 +13618,26 @@ fn inherent#closure_env_inherent_string_string_char_indices_0#closure_env_inhere
 fn inherent#closure_env_inherent_string_string_chars_1#closure_env_inherent_string_string_chars_1#apply(
   env192: closure_env_inherent_string_string_chars_1
 ) -> Option__char {
-  let self/54 = closure_env_inherent_string_string_chars_1.self_0(env192) in
-  let index/55 = closure_env_inherent_string_string_chars_1.index_1(env192) in
-  let mtmp29 = inherent#string#string#decode_at(self/54, @intrinsic(ref.get)(index/55)) in
+  let self/52 = closure_env_inherent_string_string_chars_1.self_0(env192) in
+  let index/53 = closure_env_inherent_string_string_chars_1.index_1(env192) in
+  let mtmp29 = inherent#string#string#decode_at(self/52, @intrinsic(ref.get)(index/53)) in
   match mtmp29 {
     Option__(char,int)::None => {
       Option__char::None
     },
     Option__(char,int)::Some(x30) => {
       let x30 = Option__(char,int)::Some._0(mtmp29) in
-      let decoded/56 = x30 in
-      let mtmp31 = decoded/56 in
+      let decoded/54 = x30 in
+      let mtmp31 = decoded/54 in
       let x32 = mtmp31.0 in
       let x33 = mtmp31.1 in
-      let width/58 = x33 in
-      let value/57 = x32 in
+      let width/56 = x33 in
+      let value/55 = x32 in
       let _wild36 =
-        let compound_old34 = @intrinsic(ref.get)(index/55) in
-        let compound_value35 = width/58 in
-        @intrinsic(ref.set)(index/55, (compound_old34 + compound_value35)) in
-      Option__char::Some(value/57)
+        let compound_old34 = @intrinsic(ref.get)(index/53) in
+        let compound_value35 = width/56 in
+        @intrinsic(ref.set)(index/53, (compound_old34 + compound_value35)) in
+      Option__char::Some(value/55)
     },
   }
 }
@@ -13234,12 +13645,12 @@ fn inherent#closure_env_inherent_string_string_chars_1#closure_env_inherent_stri
 fn inherent#closure_env_goml_builtin_range_2#closure_env_goml_builtin_range_2#apply(
   env193: closure_env_goml_builtin_range_2
 ) -> Option__int {
-  let current/270 = closure_env_goml_builtin_range_2.current_0(env193) in
-  let end/269 = closure_env_goml_builtin_range_2.end_1(env193) in
-  let value/271 = @intrinsic(ref.get)(current/270) in
-  if (value/271 < end/269) {
-      let _wild146 = @intrinsic(ref.set)(current/270, (value/271 + 1)) in
-      Option__int::Some(value/271)
+  let current/320 = closure_env_goml_builtin_range_2.current_0(env193) in
+  let end/319 = closure_env_goml_builtin_range_2.end_1(env193) in
+  let value/321 = @intrinsic(ref.get)(current/320) in
+  if (value/321 < end/319) {
+      let _wild168 = @intrinsic(ref.set)(current/320, (value/321 + 1)) in
+      Option__int::Some(value/321)
   } else {
       Option__int::None
   }

@@ -46,16 +46,32 @@ fn main() -> unit {
   }
 }
 
-fn char_from_uint32(value/32: uint32) -> Option__char {
-  if utf8_valid_scalar(value/32) {
+fn char_from_uint32(value/2: uint32) -> Option__char {
+  __goml_builtin_char_from_uint32(value/2)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn println__T_uint32(value/1: uint32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#uint32#to_string(value/1))
+}
+
+fn inherent#char#char#to_string(self/34: char) -> string {
+  char_to_string(self/34)
+}
+
+fn __goml_builtin_char_from_uint32(value/30: uint32) -> Option__char {
+  if utf8_valid_scalar(value/30) {
       {
-        let mtmp22 = @runtime(core.char_from_uint32)(value/32) in
+        let mtmp22 = @runtime(core.char_from_uint32)(value/30) in
         {
           let x24 = mtmp22.1 in
           {
-            let character/33 = x24 in
+            let character/31 = x24 in
             {
-              Option__char::Some(character/33)
+              Option__char::Some(character/31)
             }
           }
         }
@@ -67,36 +83,12 @@ fn char_from_uint32(value/32: uint32) -> Option__char {
   }
 }
 
-fn println__T_string(value/31: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
+fn trait_impl#ToString#string#to_string(self/65: string) -> string {
+  self/65
 }
 
-fn println__T_uint32(value/31: uint32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#uint32#to_string(value/31))
-}
-
-fn inherent#char#char#to_string(self/36: char) -> string {
-  char_to_string(self/36)
-}
-
-fn utf8_valid_scalar(value/4: uint32) -> bool {
-  if (value/4 <= 1114111) {
-      (!if (value/4 >= 55296) {
-          (value/4 <= 57343)
-      } else {
-          false
-      })
-  } else {
-      false
-  }
-}
-
-fn trait_impl#ToString#string#to_string(self/67: string) -> string {
-  self/67
-}
-
-fn trait_impl#ToString#uint32#to_string(self/76: uint32) -> string {
-  @runtime(core.uint32_to_string)(self/76)
+fn trait_impl#ToString#uint32#to_string(self/74: uint32) -> string {
+  @runtime(core.uint32_to_string)(self/74)
 }
 
 fn char_to_string(value/29: char) -> string {
@@ -111,5 +103,17 @@ fn char_to_string(value/29: char) -> string {
           ""
         }
       }
+  }
+}
+
+fn utf8_valid_scalar(value/4: uint32) -> bool {
+  if (value/4 <= 1114111) {
+      (!if (value/4 >= 55296) {
+          (value/4 <= 57343)
+      } else {
+          false
+      })
+  } else {
+      false
   }
 }

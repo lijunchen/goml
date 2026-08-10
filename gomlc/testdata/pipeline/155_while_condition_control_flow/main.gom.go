@@ -169,26 +169,26 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__257 int) *ref_int_x {
-    var t229 *ref_int_x = ref__Ref_3int(value__257)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__255 int) *ref_int_x {
+    var t229 *ref_int_x = ref__Ref_3int(value__255)
     return t229
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__258 *ref_int_x) int {
-    var t232 int = ref_get__Ref_3int(self__258)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__256 *ref_int_x) int {
+    var t232 int = ref_get__Ref_3int(self__256)
     return t232
 }
 
-func println__T_int(value__31 int) struct{} {
+func println__T_int(value__1 int) struct{} {
     var t234 string
-    var inline298 string = _goml_runtime_core_int_to_string(value__31)
+    var inline298 string = _goml_runtime_core_int_to_string(value__1)
     t234 = inline298
     _goml_runtime_core_string_println(t234)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
-    var t243 string = _goml_runtime_core_int_to_string(self__69)
+func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
+    var t243 string = _goml_runtime_core_int_to_string(self__67)
     return t243
 }
 

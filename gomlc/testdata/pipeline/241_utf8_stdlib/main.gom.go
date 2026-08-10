@@ -330,8 +330,8 @@ func main0() struct{} {
     }
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__uint8(self__187 *_goml_vec_uint8) int {
-    var t295 int = vec_len__Vec_5uint8(self__187)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__uint8(self__185 *_goml_vec_uint8) int {
+    var t295 int = vec_len__Vec_5uint8(self__185)
     return t295
 }
 
@@ -372,16 +372,16 @@ func string_from_utf8(bytes__24 *_goml_vec_uint8) Tuple2_4bool_6string {
     return t299
 }
 
-func println__T_bool(value__31 bool) struct{} {
+func println__T_bool(value__1 bool) struct{} {
     var t308 string
-    var inline578 string = _goml_runtime_core_bool_to_string(value__31)
+    var inline578 string = _goml_runtime_core_bool_to_string(value__1)
     t308 = inline578
     _goml_runtime_core_string_println(t308)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_string_i_string_i_byte__len(self__38 string) int {
-    var t312 int = _goml_runtime_core_string_len(self__38)
+func _goml_m_inherent_i_string_i_string_i_byte__len(self__36 string) int {
+    var t312 int = _goml_runtime_core_string_len(self__36)
     return t312
 }
 
@@ -390,8 +390,8 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__uint8() *_goml_vec_uint8 {
     return t321
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__uint8(self__176 *_goml_vec_uint8, elem__177 uint8) struct{} {
-    vec_push__Vec_5uint8(self__176, elem__177)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__uint8(self__174 *_goml_vec_uint8, elem__175 uint8) struct{} {
+    vec_push__Vec_5uint8(self__174, elem__175)
     return struct{}{}
 }
 
@@ -418,7 +418,7 @@ func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3in
         var t330 bool = first__8 < 128
         if t330 {
             var inline582 int = 1
-            var inline583 Option__char = char_from_uint32(first__8)
+            var inline583 Option__char = __goml_builtin_char_from_uint32(first__8)
             switch inline583.(type) {
             case Option__char_None:
                 var inline584 Tuple3_4bool_4char_3int = utf8_invalid_decode()
@@ -485,7 +485,7 @@ func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3in
                             var t348 uint32 = second__9 & t348_rhs
                             var t349 uint32 = t347 | t348
                             var inline595 int = 2
-                            var inline596 Option__char = char_from_uint32(t349)
+                            var inline596 Option__char = __goml_builtin_char_from_uint32(t349)
                             switch inline596.(type) {
                             case Option__char_None:
                                 var inline597 Tuple3_4bool_4char_3int = utf8_invalid_decode()
@@ -580,7 +580,7 @@ func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3in
                                 var t372 uint32 = third__11 & t372_rhs
                                 var t373 uint32 = t371 | t372
                                 var inline614 int = 3
-                                var inline615 Option__char = char_from_uint32(t373)
+                                var inline615 Option__char = __goml_builtin_char_from_uint32(t373)
                                 switch inline615.(type) {
                                 case Option__char_None:
                                     var inline616 Tuple3_4bool_4char_3int = utf8_invalid_decode()
@@ -691,8 +691,8 @@ func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3in
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__66 bool) string {
-    var t446 string = _goml_runtime_core_bool_to_string(self__66)
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
+    var t446 string = _goml_runtime_core_bool_to_string(self__64)
     return t446
 }
 
@@ -705,8 +705,8 @@ func utf8_invalid_decode() Tuple3_4bool_4char_3int {
     return t449
 }
 
-func _goml_m_inherent_i_string_i_string_i_byte__get(self__41 string, index__42 int) uint8 {
-    var t452 uint8 = _goml_runtime_core_string_byte_get(self__41, index__42)
+func _goml_m_inherent_i_string_i_string_i_byte__get(self__39 string, index__40 int) uint8 {
+    var t452 uint8 = _goml_runtime_core_string_byte_get(self__39, index__40)
     return t452
 }
 
@@ -743,14 +743,14 @@ func utf8_invalid_continuation(value__3 uint32) bool {
     }
 }
 
-func char_from_uint32(value__32 uint32) Option__char {
+func __goml_builtin_char_from_uint32(value__30 uint32) Option__char {
     var t469 bool
-    var inline629 bool = value__32 <= 1114111
+    var inline629 bool = value__30 <= 1114111
     if inline629 {
-        var inline630 bool = value__32 >= 55296
+        var inline630 bool = value__30 >= 55296
         var inline632 bool
         if inline630 {
-            var inline634 bool = value__32 <= 57343
+            var inline634 bool = value__30 <= 57343
             inline632 = inline634
         } else {
             inline632 = false
@@ -761,7 +761,7 @@ func char_from_uint32(value__32 uint32) Option__char {
         t469 = false
     }
     if t469 {
-        var mtmp22 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__32)
+        var mtmp22 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__30)
         var x24 rune = mtmp22._1
         var t470 Option__char = Option__char_Some{
             _0: x24,

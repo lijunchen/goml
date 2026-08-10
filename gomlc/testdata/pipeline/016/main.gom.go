@@ -195,8 +195,8 @@ func list_length__T_bool(xs__0 List__bool) int32 {
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__72 int32) string {
-    var t217 string = _goml_runtime_core_int32_to_string(self__72)
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__70 int32) string {
+    var t217 string = _goml_runtime_core_int32_to_string(self__70)
     return t217
 }
 

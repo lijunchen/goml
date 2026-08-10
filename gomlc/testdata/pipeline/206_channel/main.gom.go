@@ -190,46 +190,46 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__string(capacity__261 int) chan string {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__string(capacity__259 int) chan string {
     var t204 chan string = func(p0 int) chan string {
         return make(chan string, p0)
-    }(capacity__261)
+    }(capacity__259)
     return t204
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__int(capacity__261 int) chan int {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__int(capacity__259 int) chan int {
     var t207 chan int = func(p0 int) chan int {
         return make(chan int, p0)
-    }(capacity__261)
+    }(capacity__259)
     return t207
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__int(self__262 chan int, value__263 int) struct{} {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__int(self__260 chan int, value__261 int) struct{} {
     func(p0 chan int, p1 int) struct{} {
         p0 <- p1
         return struct{}{}
-    }(self__262, value__263)
+    }(self__260, value__261)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_close____T__int(self__267 chan int) struct{} {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_close____T__int(self__265 chan int) struct{} {
     func(p0 chan int) struct{} {
         close(p0)
         return struct{}{}
-    }(self__267)
+    }(self__265)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
-    var t232 string = _goml_runtime_core_int_to_string(self__69)
+func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
+    var t232 string = _goml_runtime_core_int_to_string(self__67)
     return t232
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__string(self__264 chan string) Option__string {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__string(self__262 chan string) Option__string {
     var mtmp143 Tuple2_6string_4bool = func(p0 chan string) Tuple2_6string_4bool {
         var value string
         var ok bool
@@ -238,7 +238,7 @@ func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__string(self__264 c
             _0: value,
             _1: ok,
         }
-    }(self__264)
+    }(self__262)
     var x144 string = mtmp143._0
     var x145 bool = mtmp143._1
     if x145 {

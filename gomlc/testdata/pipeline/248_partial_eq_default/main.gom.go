@@ -365,24 +365,24 @@ func _goml_m_trait__impl_i_Default_i_string_i_default() string {
     return ""
 }
 
-func _goml_m_trait__impl_i_Debug_i_int_i_debug(self__84 int) string {
-    var inline439 string = _goml_runtime_core_int_to_string(self__84)
+func _goml_m_trait__impl_i_Debug_i_int_i_debug(self__82 int) string {
+    var inline439 string = _goml_runtime_core_int_to_string(self__82)
     return inline439
 }
 
-func _goml_m_trait__impl_i_Debug_i_string_i_debug(self__82 string) string {
-    return self__82
+func _goml_m_trait__impl_i_Debug_i_string_i_debug(self__80 string) string {
+    return self__80
 }
 
-func println__T_string(value__31 string) struct{} {
+func println__T_string(value__1 string) struct{} {
     var t325 string
-    t325 = value__31
+    t325 = value__1
     _goml_runtime_core_string_println(t325)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__66 bool) string {
-    var t329 string = _goml_runtime_core_bool_to_string(self__66)
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
+    var t329 string = _goml_runtime_core_bool_to_string(self__64)
     return t329
 }
 
@@ -401,14 +401,14 @@ func _goml_m_trait__impl_i_Default_i_PairDefaults____int_i_default() PairDefault
     return t335
 }
 
-func _goml_m_inherent_i_int_i_int_i_to__string(self__34 int) string {
-    var t338 string = _goml_runtime_core_int_to_string(self__34)
+func _goml_m_inherent_i_int_i_int_i_to__string(self__32 int) string {
+    var t338 string = _goml_runtime_core_int_to_string(self__32)
     return t338
 }
 
-func _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__none____T__int(self__289 Option__int) bool {
+func _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__none____T__int(self__281 Option__int) bool {
     var t341 bool
-    switch self__289.(type) {
+    switch self__281.(type) {
     case None:
         t341 = false
     case Some:
@@ -420,13 +420,13 @@ func _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__none____T__int(self__289 Op
     return t342
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
-    var t352 string = _goml_runtime_core_int_to_string(self__69)
+func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
+    var t352 string = _goml_runtime_core_int_to_string(self__67)
     return t352
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
 func main() {

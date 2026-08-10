@@ -434,8 +434,8 @@ func map_maybe__T_int32__U_string(value__23 Maybe__int32, f__24 func(int32) stri
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
 func _goml_m_inherent_i_closure__env__snapshot__0_i_closure__env__snapshot__0_i_apply(env209 closure_env_snapshot_0) Record__int32 {

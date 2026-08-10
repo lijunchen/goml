@@ -364,11 +364,11 @@ func string_is_char_boundary(value__15 string, index__16 int) bool {
     }
 }
 
-func __goml_builtin_range(start__268 int, end__269 int) FnIterator__int {
-    var current__270 *ref_int_x = ref__Ref_3int(start__268)
+func __goml_builtin_range(start__318 int, end__319 int) FnIterator__int {
+    var current__320 *ref_int_x = ref__Ref_3int(start__318)
     var t260 closure_env_goml_builtin_range_1 = closure_env_goml_builtin_range_1{
-        current_0: current__270,
-        end_1: end__269,
+        current_0: current__320,
+        end_1: end__319,
     }
     var t261 func() Option__int = func() Option__int {
         return _goml_m_inherent_i_closure__en_h07c29ff1f344b08e028033881af7c2d9_ange__1_i_apply(t260)
@@ -379,8 +379,8 @@ func __goml_builtin_range(start__268 int, end__269 int) FnIterator__int {
     return inline337
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
 func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env179 closure_env_main_0, sum__11 int, item__12 int) int {
@@ -389,15 +389,15 @@ func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(en
 }
 
 func _goml_m_inherent_i_closure__en_h07c29ff1f344b08e028033881af7c2d9_ange__1_i_apply(env180 closure_env_goml_builtin_range_1) Option__int {
-    var current__270 *ref_int_x = env180.current_0
-    var end__269 int = env180.end_1
-    var value__271 int = ref_get__Ref_3int(current__270)
-    var t293 bool = value__271 < end__269
+    var current__320 *ref_int_x = env180.current_0
+    var end__319 int = env180.end_1
+    var value__321 int = ref_get__Ref_3int(current__320)
+    var t293 bool = value__321 < end__319
     if t293 {
-        var t294 int = value__271 + 1
-        ref_set__Ref_3int(current__270, t294)
+        var t294 int = value__321 + 1
+        ref_set__Ref_3int(current__320, t294)
         var t295 Option__int = Some{
-            _0: value__271,
+            _0: value__321,
         }
         return t295
     } else {

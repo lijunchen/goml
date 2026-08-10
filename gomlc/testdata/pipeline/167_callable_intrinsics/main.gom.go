@@ -107,48 +107,48 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__int32(self__178 *_goml_vec_int32, elem__179 int32) *_goml_vec_int32 {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__int32(self__176 *_goml_vec_int32, elem__177 int32) *_goml_vec_int32 {
     var t215 int
-    var inline288 int = vec_len__Vec_5int32(self__178)
+    var inline288 int = vec_len__Vec_5int32(self__176)
     t215 = inline288
     var t216 int = t215 + 1
-    var result__180 *_goml_vec_int32
+    var result__178 *_goml_vec_int32
     var inline286 *_goml_vec_int32 = vec_with_capacity__Vec_5int32(t216)
-    result__180 = inline286
-    var index__181 int = 0
+    result__178 = inline286
+    var index__179 int = 0
     Loop_loop218:
     for {
         var t219 int
-        var inline282 int = vec_len__Vec_5int32(self__178)
+        var inline282 int = vec_len__Vec_5int32(self__176)
         t219 = inline282
-        var t220 bool = index__181 < t219
+        var t220 bool = index__179 < t219
         if t220 {
-            var t221 int32 = vec_get__Vec_5int32(self__178, index__181)
-            vec_push__Vec_5int32(result__180, t221)
-            var compound_old80 int = index__181
+            var t221 int32 = vec_get__Vec_5int32(self__176, index__179)
+            vec_push__Vec_5int32(result__178, t221)
+            var compound_old80 int = index__179
             var compound_value81 int = 1
             var t222 int = compound_old80 + compound_value81
-            index__181 = t222
+            index__179 = t222
             continue
         } else {
             break Loop_loop218
         }
     }
-    vec_push__Vec_5int32(result__180, elem__179)
-    return result__180
+    vec_push__Vec_5int32(result__178, elem__177)
+    return result__178
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__72 int32) string {
-    var t228 string = _goml_runtime_core_int32_to_string(self__72)
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__70 int32) string {
+    var t228 string = _goml_runtime_core_int32_to_string(self__70)
     return t228
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
-    var t231 string = _goml_runtime_core_int_to_string(self__69)
+func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
+    var t231 string = _goml_runtime_core_int_to_string(self__67)
     return t231
 }
 

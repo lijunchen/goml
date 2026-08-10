@@ -1902,193 +1902,193 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_string_i_string_i_len(self__37 string) int {
-    var t779 int = _goml_runtime_core_string_len(self__37)
+func _goml_m_inherent_i_string_i_string_i_len(self__35 string) int {
+    var t779 int = _goml_runtime_core_string_len(self__35)
     return t779
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__257 int) *ref_int_x {
-    var t782 *ref_int_x = ref__Ref_3int(value__257)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__255 int) *ref_int_x {
+    var t782 *ref_int_x = ref__Ref_3int(value__255)
     return t782
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(value__257 bool) *ref_bool_x {
-    var t785 *ref_bool_x = ref__Ref_4bool(value__257)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(value__255 bool) *ref_bool_x {
+    var t785 *ref_bool_x = ref__Ref_4bool(value__255)
     return t785
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Token(self__178 *_goml_vec_Token, elem__179 Token) *_goml_vec_Token {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Token(self__176 *_goml_vec_Token, elem__177 Token) *_goml_vec_Token {
     var t829 int
-    var inline1712 int = vec_len__Vec_5Token(self__178)
+    var inline1712 int = vec_len__Vec_5Token(self__176)
     t829 = inline1712
     var t830 int = t829 + 1
-    var result__180 *_goml_vec_Token
+    var result__178 *_goml_vec_Token
     var inline1710 *_goml_vec_Token = vec_with_capacity__Vec_5Token(t830)
-    result__180 = inline1710
-    var index__181 int = 0
+    result__178 = inline1710
+    var index__179 int = 0
     Loop_loop832:
     for {
         var t833 int
-        var inline1706 int = vec_len__Vec_5Token(self__178)
+        var inline1706 int = vec_len__Vec_5Token(self__176)
         t833 = inline1706
-        var t834 bool = index__181 < t833
+        var t834 bool = index__179 < t833
         if t834 {
-            var t835 Token = vec_get__Vec_5Token(self__178, index__181)
-            vec_push__Vec_5Token(result__180, t835)
-            var compound_old80 int = index__181
+            var t835 Token = vec_get__Vec_5Token(self__176, index__179)
+            vec_push__Vec_5Token(result__178, t835)
+            var compound_old80 int = index__179
             var compound_value81 int = 1
             var t836 int = compound_old80 + compound_value81
-            index__181 = t836
+            index__179 = t836
             continue
         } else {
             break Loop_loop832
         }
     }
-    vec_push__Vec_5Token(result__180, elem__179)
-    return result__180
+    vec_push__Vec_5Token(result__178, elem__177)
+    return result__178
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__SExpr(self__178 *_goml_vec_SExpr, elem__179 SExpr) *_goml_vec_SExpr {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__SExpr(self__176 *_goml_vec_SExpr, elem__177 SExpr) *_goml_vec_SExpr {
     var t865 int
-    var inline1722 int = vec_len__Vec_5SExpr(self__178)
+    var inline1722 int = vec_len__Vec_5SExpr(self__176)
     t865 = inline1722
     var t866 int = t865 + 1
-    var result__180 *_goml_vec_SExpr
+    var result__178 *_goml_vec_SExpr
     var inline1720 *_goml_vec_SExpr = vec_with_capacity__Vec_5SExpr(t866)
-    result__180 = inline1720
-    var index__181 int = 0
+    result__178 = inline1720
+    var index__179 int = 0
     Loop_loop868:
     for {
         var t869 int
-        var inline1716 int = vec_len__Vec_5SExpr(self__178)
+        var inline1716 int = vec_len__Vec_5SExpr(self__176)
         t869 = inline1716
-        var t870 bool = index__181 < t869
+        var t870 bool = index__179 < t869
         if t870 {
-            var t871 SExpr = vec_get__Vec_5SExpr(self__178, index__181)
-            vec_push__Vec_5SExpr(result__180, t871)
-            var compound_old80 int = index__181
+            var t871 SExpr = vec_get__Vec_5SExpr(self__176, index__179)
+            vec_push__Vec_5SExpr(result__178, t871)
+            var compound_old80 int = index__179
             var compound_value81 int = 1
             var t872 int = compound_old80 + compound_value81
-            index__181 = t872
+            index__179 = t872
             continue
         } else {
             break Loop_loop868
         }
     }
-    vec_push__Vec_5SExpr(result__180, elem__179)
-    return result__180
+    vec_push__Vec_5SExpr(result__178, elem__177)
+    return result__178
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__35 int32) string {
-    var t878 string = _goml_runtime_core_int32_to_string(self__35)
+func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
+    var t878 string = _goml_runtime_core_int32_to_string(self__33)
     return t878
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__66 bool) string {
-    var t881 string = _goml_runtime_core_bool_to_string(self__66)
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
+    var t881 string = _goml_runtime_core_bool_to_string(self__64)
     return t881
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__SExpr(self__187 *_goml_vec_SExpr) int {
-    var t887 int = vec_len__Vec_5SExpr(self__187)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__SExpr(self__185 *_goml_vec_SExpr) int {
+    var t887 int = vec_len__Vec_5SExpr(self__185)
     return t887
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Binding(self__178 *_goml_vec_Binding, elem__179 Binding) *_goml_vec_Binding {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Binding(self__176 *_goml_vec_Binding, elem__177 Binding) *_goml_vec_Binding {
     var t890 int
-    var inline1732 int = vec_len__Vec_7Binding(self__178)
+    var inline1732 int = vec_len__Vec_7Binding(self__176)
     t890 = inline1732
     var t891 int = t890 + 1
-    var result__180 *_goml_vec_Binding
+    var result__178 *_goml_vec_Binding
     var inline1730 *_goml_vec_Binding = vec_with_capacity__Vec_7Binding(t891)
-    result__180 = inline1730
-    var index__181 int = 0
+    result__178 = inline1730
+    var index__179 int = 0
     Loop_loop893:
     for {
         var t894 int
-        var inline1726 int = vec_len__Vec_7Binding(self__178)
+        var inline1726 int = vec_len__Vec_7Binding(self__176)
         t894 = inline1726
-        var t895 bool = index__181 < t894
+        var t895 bool = index__179 < t894
         if t895 {
-            var t896 Binding = vec_get__Vec_7Binding(self__178, index__181)
-            vec_push__Vec_7Binding(result__180, t896)
-            var compound_old80 int = index__181
+            var t896 Binding = vec_get__Vec_7Binding(self__176, index__179)
+            vec_push__Vec_7Binding(result__178, t896)
+            var compound_old80 int = index__179
             var compound_value81 int = 1
             var t897 int = compound_old80 + compound_value81
-            index__181 = t897
+            index__179 = t897
             continue
         } else {
             break Loop_loop893
         }
     }
-    vec_push__Vec_7Binding(result__180, elem__179)
-    return result__180
+    vec_push__Vec_7Binding(result__178, elem__177)
+    return result__178
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(self__178 *_goml_vec_string, elem__179 string) *_goml_vec_string {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(self__176 *_goml_vec_string, elem__177 string) *_goml_vec_string {
     var t912 int
-    var inline1742 int = vec_len__Vec_6string(self__178)
+    var inline1742 int = vec_len__Vec_6string(self__176)
     t912 = inline1742
     var t913 int = t912 + 1
-    var result__180 *_goml_vec_string
+    var result__178 *_goml_vec_string
     var inline1740 *_goml_vec_string = vec_with_capacity__Vec_6string(t913)
-    result__180 = inline1740
-    var index__181 int = 0
+    result__178 = inline1740
+    var index__179 int = 0
     Loop_loop915:
     for {
         var t916 int
-        var inline1736 int = vec_len__Vec_6string(self__178)
+        var inline1736 int = vec_len__Vec_6string(self__176)
         t916 = inline1736
-        var t917 bool = index__181 < t916
+        var t917 bool = index__179 < t916
         if t917 {
-            var t918 string = vec_get__Vec_6string(self__178, index__181)
-            vec_push__Vec_6string(result__180, t918)
-            var compound_old80 int = index__181
+            var t918 string = vec_get__Vec_6string(self__176, index__179)
+            vec_push__Vec_6string(result__178, t918)
+            var compound_old80 int = index__179
             var compound_value81 int = 1
             var t919 int = compound_old80 + compound_value81
-            index__181 = t919
+            index__179 = t919
             continue
         } else {
             break Loop_loop915
         }
     }
-    vec_push__Vec_6string(result__180, elem__179)
-    return result__180
+    vec_push__Vec_6string(result__178, elem__177)
+    return result__178
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Value(self__178 *_goml_vec_Value, elem__179 Value) *_goml_vec_Value {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Value(self__176 *_goml_vec_Value, elem__177 Value) *_goml_vec_Value {
     var t934 int
-    var inline1752 int = vec_len__Vec_5Value(self__178)
+    var inline1752 int = vec_len__Vec_5Value(self__176)
     t934 = inline1752
     var t935 int = t934 + 1
-    var result__180 *_goml_vec_Value
+    var result__178 *_goml_vec_Value
     var inline1750 *_goml_vec_Value = vec_with_capacity__Vec_5Value(t935)
-    result__180 = inline1750
-    var index__181 int = 0
+    result__178 = inline1750
+    var index__179 int = 0
     Loop_loop937:
     for {
         var t938 int
-        var inline1746 int = vec_len__Vec_5Value(self__178)
+        var inline1746 int = vec_len__Vec_5Value(self__176)
         t938 = inline1746
-        var t939 bool = index__181 < t938
+        var t939 bool = index__179 < t938
         if t939 {
-            var t940 Value = vec_get__Vec_5Value(self__178, index__181)
-            vec_push__Vec_5Value(result__180, t940)
-            var compound_old80 int = index__181
+            var t940 Value = vec_get__Vec_5Value(self__176, index__179)
+            vec_push__Vec_5Value(result__178, t940)
+            var compound_old80 int = index__179
             var compound_value81 int = 1
             var t941 int = compound_old80 + compound_value81
-            index__181 = t941
+            index__179 = t941
             continue
         } else {
             break Loop_loop937
         }
     }
-    vec_push__Vec_5Value(result__180, elem__179)
-    return result__180
+    vec_push__Vec_5Value(result__178, elem__177)
+    return result__178
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__Value(self__187 *_goml_vec_Value) int {
-    var t947 int = vec_len__Vec_5Value(self__187)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__Value(self__185 *_goml_vec_Value) int {
+    var t947 int = vec_len__Vec_5Value(self__185)
     return t947
 }
 
@@ -2131,8 +2131,8 @@ func char_to_string(value__29 rune) string {
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
 func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3int {
@@ -2158,7 +2158,7 @@ func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3in
         var t1005 bool = first__8 < 128
         if t1005 {
             var inline1764 int = 1
-            var inline1765 Option__char = char_from_uint32(first__8)
+            var inline1765 Option__char = __goml_builtin_char_from_uint32(first__8)
             switch inline1765.(type) {
             case None:
                 var inline1766 Tuple3_4bool_4char_3int = utf8_invalid_decode()
@@ -2225,7 +2225,7 @@ func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3in
                             var t1023 uint32 = second__9 & t1023_rhs
                             var t1024 uint32 = t1022 | t1023
                             var inline1777 int = 2
-                            var inline1778 Option__char = char_from_uint32(t1024)
+                            var inline1778 Option__char = __goml_builtin_char_from_uint32(t1024)
                             switch inline1778.(type) {
                             case None:
                                 var inline1779 Tuple3_4bool_4char_3int = utf8_invalid_decode()
@@ -2320,7 +2320,7 @@ func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3in
                                 var t1047 uint32 = third__11 & t1047_rhs
                                 var t1048 uint32 = t1046 | t1047
                                 var inline1796 int = 3
-                                var inline1797 Option__char = char_from_uint32(t1048)
+                                var inline1797 Option__char = __goml_builtin_char_from_uint32(t1048)
                                 switch inline1797.(type) {
                                 case None:
                                     var inline1798 Tuple3_4bool_4char_3int = utf8_invalid_decode()
@@ -2449,8 +2449,8 @@ func utf8_valid_scalar(value__4 uint32) bool {
     }
 }
 
-func _goml_m_inherent_i_string_i_string_i_byte__len(self__38 string) int {
-    var t1131 int = _goml_runtime_core_string_len(self__38)
+func _goml_m_inherent_i_string_i_string_i_byte__len(self__36 string) int {
+    var t1131 int = _goml_runtime_core_string_len(self__36)
     return t1131
 }
 
@@ -2463,8 +2463,8 @@ func utf8_invalid_decode() Tuple3_4bool_4char_3int {
     return t1134
 }
 
-func _goml_m_inherent_i_string_i_string_i_byte__get(self__41 string, index__42 int) uint8 {
-    var t1137 uint8 = _goml_runtime_core_string_byte_get(self__41, index__42)
+func _goml_m_inherent_i_string_i_string_i_byte__get(self__39 string, index__40 int) uint8 {
+    var t1137 uint8 = _goml_runtime_core_string_byte_get(self__39, index__40)
     return t1137
 }
 
@@ -2501,14 +2501,14 @@ func utf8_invalid_continuation(value__3 uint32) bool {
     }
 }
 
-func char_from_uint32(value__32 uint32) Option__char {
+func __goml_builtin_char_from_uint32(value__30 uint32) Option__char {
     var t1154 bool
-    var inline1811 bool = value__32 <= 1114111
+    var inline1811 bool = value__30 <= 1114111
     if inline1811 {
-        var inline1812 bool = value__32 >= 55296
+        var inline1812 bool = value__30 >= 55296
         var inline1814 bool
         if inline1812 {
-            var inline1816 bool = value__32 <= 57343
+            var inline1816 bool = value__30 <= 57343
             inline1814 = inline1816
         } else {
             inline1814 = false
@@ -2519,7 +2519,7 @@ func char_from_uint32(value__32 uint32) Option__char {
         t1154 = false
     }
     if t1154 {
-        var mtmp22 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__32)
+        var mtmp22 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__30)
         var x24 rune = mtmp22._1
         var t1155 Option__char = Some{
             _0: x24,

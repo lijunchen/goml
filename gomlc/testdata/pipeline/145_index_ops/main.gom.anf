@@ -203,29 +203,29 @@ fn main() -> unit {
   jump inline_cont471(inline472)
 }
 
-fn println__T_string(value/31: string) -> unit {
+fn println__T_string(value/1: string) -> unit {
   join inline_cont473(t295: string) -> unit {
     let t296 = @runtime(core.string_println)(t295) in
     ()
   } in
-  jump inline_cont473(value/31)
+  jump inline_cont473(value/1)
 }
 
-fn println__T_int32(value/31: int32) -> unit {
+fn println__T_int32(value/1: int32) -> unit {
   join inline_cont474(t298: string) -> unit {
     let t299 = @runtime(core.string_println)(t298) in
     ()
   } in
-  let inline475 = @runtime(core.int32_to_string)(value/31) in
+  let inline475 = @runtime(core.int32_to_string)(value/1) in
   jump inline_cont474(inline475)
 }
 
-fn println__T_int(value/31: int) -> unit {
+fn println__T_int(value/1: int) -> unit {
   join inline_cont476(t301: string) -> unit {
     let t302 = @runtime(core.string_println)(t301) in
     ()
   } in
-  let inline477 = @runtime(core.int_to_string)(value/31) in
+  let inline477 = @runtime(core.int_to_string)(value/1) in
   jump inline_cont476(inline477)
 }
 
@@ -234,35 +234,35 @@ fn inherent#Vec#Vec[T]#new__T_int() -> Vec[int] {
   t305
 }
 
-fn inherent#Vec#Vec[T]#pushed__T_int(self/178: Vec[int], elem/179: int) -> Vec[int] {
+fn inherent#Vec#Vec[T]#pushed__T_int(self/176: Vec[int], elem/177: int) -> Vec[int] {
   join inline_cont486(t308: int) -> Vec[int] {
     let t309 = (t308 + 1) in
-    join inline_cont484(result/180: Vec[int]) -> Vec[int] {
-      let index/181 = 0 in
+    join inline_cont484(result/178: Vec[int]) -> Vec[int] {
+      let index/179 = 0 in
       join exit310() -> Vec[int] {
-        let inline483 = @intrinsic(vec.push)(result/180, elem/179) in
-        result/180
+        let inline483 = @intrinsic(vec.push)(result/178, elem/177) in
+        result/178
       } in
       joinrec {
         join loop311() -> Vec[int] {
           join inline_cont480(t312: int) -> Vec[int] {
-            let t313 = (index/181 < t312) in
+            let t313 = (index/179 < t312) in
             if t313 {
-              let t314 = @intrinsic(vec.get)(self/178, index/181) in
+              let t314 = @intrinsic(vec.get)(self/176, index/179) in
               join inline_cont478(_wild79: unit) -> Vec[int] {
-                let compound_old80 = index/181 in
+                let compound_old80 = index/179 in
                 let compound_value81 = 1 in
                 let t315 = (compound_old80 + compound_value81) in
-                let t316 = index/181 = t315 in
+                let t316 = index/179 = t315 in
                 jump loop311()
               } in
-              let inline479 = @intrinsic(vec.push)(result/180, t314) in
+              let inline479 = @intrinsic(vec.push)(result/178, t314) in
               jump inline_cont478(())
             } else {
               jump exit310()
             }
           } in
-          let inline481 = @intrinsic(vec.len)(self/178) in
+          let inline481 = @intrinsic(vec.len)(self/176) in
           jump inline_cont480(inline481)
         } in
       } in
@@ -271,7 +271,7 @@ fn inherent#Vec#Vec[T]#pushed__T_int(self/178: Vec[int], elem/179: int) -> Vec[i
     let inline485 = @intrinsic(vec.with_capacity)(t309) in
     jump inline_cont484(inline485)
   } in
-  let inline487 = @intrinsic(vec.len)(self/178) in
+  let inline487 = @intrinsic(vec.len)(self/176) in
   jump inline_cont486(inline487)
 }
 
@@ -280,35 +280,35 @@ fn inherent#Vec#Vec[T]#new__T_int32() -> Vec[int32] {
   t319
 }
 
-fn inherent#Vec#Vec[T]#pushed__T_int32(self/178: Vec[int32], elem/179: int32) -> Vec[int32] {
+fn inherent#Vec#Vec[T]#pushed__T_int32(self/176: Vec[int32], elem/177: int32) -> Vec[int32] {
   join inline_cont496(t322: int) -> Vec[int32] {
     let t323 = (t322 + 1) in
-    join inline_cont494(result/180: Vec[int32]) -> Vec[int32] {
-      let index/181 = 0 in
+    join inline_cont494(result/178: Vec[int32]) -> Vec[int32] {
+      let index/179 = 0 in
       join exit324() -> Vec[int32] {
-        let inline493 = @intrinsic(vec.push)(result/180, elem/179) in
-        result/180
+        let inline493 = @intrinsic(vec.push)(result/178, elem/177) in
+        result/178
       } in
       joinrec {
         join loop325() -> Vec[int32] {
           join inline_cont490(t326: int) -> Vec[int32] {
-            let t327 = (index/181 < t326) in
+            let t327 = (index/179 < t326) in
             if t327 {
-              let t328 = @intrinsic(vec.get)(self/178, index/181) in
+              let t328 = @intrinsic(vec.get)(self/176, index/179) in
               join inline_cont488(_wild79: unit) -> Vec[int32] {
-                let compound_old80 = index/181 in
+                let compound_old80 = index/179 in
                 let compound_value81 = 1 in
                 let t329 = (compound_old80 + compound_value81) in
-                let t330 = index/181 = t329 in
+                let t330 = index/179 = t329 in
                 jump loop325()
               } in
-              let inline489 = @intrinsic(vec.push)(result/180, t328) in
+              let inline489 = @intrinsic(vec.push)(result/178, t328) in
               jump inline_cont488(())
             } else {
               jump exit324()
             }
           } in
-          let inline491 = @intrinsic(vec.len)(self/178) in
+          let inline491 = @intrinsic(vec.len)(self/176) in
           jump inline_cont490(inline491)
         } in
       } in
@@ -317,14 +317,14 @@ fn inherent#Vec#Vec[T]#pushed__T_int32(self/178: Vec[int32], elem/179: int32) ->
     let inline495 = @intrinsic(vec.with_capacity)(t323) in
     jump inline_cont494(inline495)
   } in
-  let inline497 = @intrinsic(vec.len)(self/178) in
+  let inline497 = @intrinsic(vec.len)(self/176) in
   jump inline_cont496(inline497)
 }
 
-fn inherent#Vec#Vec[T]#slice__T_int32(self/225: Vec[int32], start/226: int, end/227: int) -> Slice[
+fn inherent#Vec#Vec[T]#slice__T_int32(self/223: Vec[int32], start/224: int, end/225: int) -> Slice[
   int32
 ] {
-  let t333 = @intrinsic(slice.new)(self/225, start/226, end/227) in
+  let t333 = @intrinsic(slice.new)(self/223, start/224, end/225) in
   t333
 }
 
@@ -338,37 +338,37 @@ fn inherent#Vec#Vec[T]#new__T_[int32;2]() -> Vec[[int32; 2]] {
   t339
 }
 
-fn inherent#Vec#Vec[T]#pushed__T_[int32;2](self/178: Vec[[int32; 2]], elem/179: [int32; 2]) -> Vec[
+fn inherent#Vec#Vec[T]#pushed__T_[int32;2](self/176: Vec[[int32; 2]], elem/177: [int32; 2]) -> Vec[
   [int32; 2]
 ] {
   join inline_cont506(t342: int) -> Vec[[int32; 2]] {
     let t343 = (t342 + 1) in
-    join inline_cont504(result/180: Vec[[int32; 2]]) -> Vec[[int32; 2]] {
-      let index/181 = 0 in
+    join inline_cont504(result/178: Vec[[int32; 2]]) -> Vec[[int32; 2]] {
+      let index/179 = 0 in
       join exit344() -> Vec[[int32; 2]] {
-        let inline503 = @intrinsic(vec.push)(result/180, elem/179) in
-        result/180
+        let inline503 = @intrinsic(vec.push)(result/178, elem/177) in
+        result/178
       } in
       joinrec {
         join loop345() -> Vec[[int32; 2]] {
           join inline_cont500(t346: int) -> Vec[[int32; 2]] {
-            let t347 = (index/181 < t346) in
+            let t347 = (index/179 < t346) in
             if t347 {
-              let t348 = @intrinsic(vec.get)(self/178, index/181) in
+              let t348 = @intrinsic(vec.get)(self/176, index/179) in
               join inline_cont498(_wild79: unit) -> Vec[[int32; 2]] {
-                let compound_old80 = index/181 in
+                let compound_old80 = index/179 in
                 let compound_value81 = 1 in
                 let t349 = (compound_old80 + compound_value81) in
-                let t350 = index/181 = t349 in
+                let t350 = index/179 = t349 in
                 jump loop345()
               } in
-              let inline499 = @intrinsic(vec.push)(result/180, t348) in
+              let inline499 = @intrinsic(vec.push)(result/178, t348) in
               jump inline_cont498(())
             } else {
               jump exit344()
             }
           } in
-          let inline501 = @intrinsic(vec.len)(self/178) in
+          let inline501 = @intrinsic(vec.len)(self/176) in
           jump inline_cont500(inline501)
         } in
       } in
@@ -377,86 +377,86 @@ fn inherent#Vec#Vec[T]#pushed__T_[int32;2](self/178: Vec[[int32; 2]], elem/179: 
     let inline505 = @intrinsic(vec.with_capacity)(t343) in
     jump inline_cont504(inline505)
   } in
-  let inline507 = @intrinsic(vec.len)(self/178) in
+  let inline507 = @intrinsic(vec.len)(self/176) in
   jump inline_cont506(inline507)
 }
 
-fn inherent#Ref#Ref[T]#new__T_[int32;2](value/257: [int32; 2]) -> Ref[[int32; 2]] {
-  let t353 = @intrinsic(ref.new)(value/257) in
+fn inherent#Ref#Ref[T]#new__T_[int32;2](value/255: [int32; 2]) -> Ref[[int32; 2]] {
+  let t353 = @intrinsic(ref.new)(value/255) in
   t353
 }
 
-fn inherent#Ref#Ref[T]#get__T_[int32;2](self/258: Ref[[int32; 2]]) -> [int32; 2] {
-  let t356 = @intrinsic(ref.get)(self/258) in
+fn inherent#Ref#Ref[T]#get__T_[int32;2](self/256: Ref[[int32; 2]]) -> [int32; 2] {
+  let t356 = @intrinsic(ref.get)(self/256) in
   t356
 }
 
-fn trait_impl#ToString#string#to_string(self/67: string) -> string {
-  self/67
+fn trait_impl#ToString#string#to_string(self/65: string) -> string {
+  self/65
 }
 
-fn trait_impl#ToString#int32#to_string(self/72: int32) -> string {
-  let t361 = @runtime(core.int32_to_string)(self/72) in
+fn trait_impl#ToString#int32#to_string(self/70: int32) -> string {
+  let t361 = @runtime(core.int32_to_string)(self/70) in
   t361
 }
 
-fn trait_impl#ToString#int#to_string(self/69: int) -> string {
-  let t364 = @runtime(core.int_to_string)(self/69) in
+fn trait_impl#ToString#int#to_string(self/67: int) -> string {
+  let t364 = @runtime(core.int_to_string)(self/67) in
   t364
 }
 
-fn inherent#Vec#Vec[T]#len__T_int(self/187: Vec[int]) -> int {
-  let t367 = @intrinsic(vec.len)(self/187) in
+fn inherent#Vec#Vec[T]#len__T_int(self/185: Vec[int]) -> int {
+  let t367 = @intrinsic(vec.len)(self/185) in
   t367
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_int(capacity/175: int) -> Vec[int] {
-  let t370 = @intrinsic(vec.with_capacity)(capacity/175) in
+fn inherent#Vec#Vec[T]#with_capacity__T_int(capacity/173: int) -> Vec[int] {
+  let t370 = @intrinsic(vec.with_capacity)(capacity/173) in
   t370
 }
 
-fn inherent#Vec#Vec[T]#push__T_int(self/176: Vec[int], elem/177: int) -> unit {
-  let t372 = @intrinsic(vec.push)(self/176, elem/177) in
+fn inherent#Vec#Vec[T]#push__T_int(self/174: Vec[int], elem/175: int) -> unit {
+  let t372 = @intrinsic(vec.push)(self/174, elem/175) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#len__T_int32(self/187: Vec[int32]) -> int {
-  let t375 = @intrinsic(vec.len)(self/187) in
+fn inherent#Vec#Vec[T]#len__T_int32(self/185: Vec[int32]) -> int {
+  let t375 = @intrinsic(vec.len)(self/185) in
   t375
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_int32(capacity/175: int) -> Vec[int32] {
-  let t378 = @intrinsic(vec.with_capacity)(capacity/175) in
+fn inherent#Vec#Vec[T]#with_capacity__T_int32(capacity/173: int) -> Vec[int32] {
+  let t378 = @intrinsic(vec.with_capacity)(capacity/173) in
   t378
 }
 
-fn inherent#Vec#Vec[T]#push__T_int32(self/176: Vec[int32], elem/177: int32) -> unit {
-  let t380 = @intrinsic(vec.push)(self/176, elem/177) in
+fn inherent#Vec#Vec[T]#push__T_int32(self/174: Vec[int32], elem/175: int32) -> unit {
+  let t380 = @intrinsic(vec.push)(self/174, elem/175) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#len__T_[int32;2](self/187: Vec[[int32; 2]]) -> int {
-  let t383 = @intrinsic(vec.len)(self/187) in
+fn inherent#Vec#Vec[T]#len__T_[int32;2](self/185: Vec[[int32; 2]]) -> int {
+  let t383 = @intrinsic(vec.len)(self/185) in
   t383
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_[int32;2](capacity/175: int) -> Vec[[int32; 2]] {
-  let t386 = @intrinsic(vec.with_capacity)(capacity/175) in
+fn inherent#Vec#Vec[T]#with_capacity__T_[int32;2](capacity/173: int) -> Vec[[int32; 2]] {
+  let t386 = @intrinsic(vec.with_capacity)(capacity/173) in
   t386
 }
 
-fn inherent#Vec#Vec[T]#push__T_[int32;2](self/176: Vec[[int32; 2]], elem/177: [int32; 2]) -> unit {
-  let t388 = @intrinsic(vec.push)(self/176, elem/177) in
+fn inherent#Vec#Vec[T]#push__T_[int32;2](self/174: Vec[[int32; 2]], elem/175: [int32; 2]) -> unit {
+  let t388 = @intrinsic(vec.push)(self/174, elem/175) in
   ()
 }
 
-fn trait_impl#PartialEq#string#eq(self/99: string, other/100: string) -> bool {
-  let t391 = (self/99 == other/100) in
+fn trait_impl#PartialEq#string#eq(self/97: string, other/98: string) -> bool {
+  let t391 = (self/97 == other/98) in
   t391
 }
 
-fn trait_impl#Hash#string#hash(self/127: string) -> uint64 {
-  let t394 = @runtime(core.string_hash)(self/127) in
+fn trait_impl#Hash#string#hash(self/125: string) -> uint64 {
+  let t394 = @runtime(core.string_hash)(self/125) in
   t394
 }
 
@@ -503,12 +503,12 @@ fn trait_impl#Hash#[int32;2]#hash(self: [int32; 2]) -> uint64 {
   jump inline_cont514(inline515)
 }
 
-fn trait_impl#PartialEq#int32#eq(self/109: int32, other/110: int32) -> bool {
-  let t417 = (self/109 == other/110) in
+fn trait_impl#PartialEq#int32#eq(self/107: int32, other/108: int32) -> bool {
+  let t417 = (self/107 == other/108) in
   t417
 }
 
-fn trait_impl#Hash#int32#hash(self/132: int32) -> uint64 {
-  let t420 = @runtime(core.int32_hash)(self/132) in
+fn trait_impl#Hash#int32#hash(self/130: int32) -> uint64 {
+  let t420 = @runtime(core.int32_hash)(self/130) in
   t420
 }

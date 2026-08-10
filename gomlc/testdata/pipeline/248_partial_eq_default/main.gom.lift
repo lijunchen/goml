@@ -170,16 +170,16 @@ fn main() -> unit {
   )
 }
 
-fn trait_impl#PartialEq#bool#eq(self/97: bool, other/98: bool) -> bool {
+fn trait_impl#PartialEq#bool#eq(self/95: bool, other/96: bool) -> bool {
+  (self/95 == other/96)
+}
+
+fn trait_impl#PartialEq#int#eq(self/101: int, other/102: int) -> bool {
+  (self/101 == other/102)
+}
+
+fn trait_impl#PartialEq#string#eq(self/97: string, other/98: string) -> bool {
   (self/97 == other/98)
-}
-
-fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  (self/103 == other/104)
-}
-
-fn trait_impl#PartialEq#string#eq(self/99: string, other/100: string) -> bool {
-  (self/99 == other/100)
 }
 
 fn trait_impl#Default#bool#default() -> bool {
@@ -194,24 +194,24 @@ fn trait_impl#Default#string#default() -> string {
   ""
 }
 
-fn trait_impl#Debug#bool#debug(self/81: bool) -> string {
-  trait_impl#ToString#bool#to_string(self/81)
+fn trait_impl#Debug#bool#debug(self/79: bool) -> string {
+  trait_impl#ToString#bool#to_string(self/79)
 }
 
-fn trait_impl#Debug#int#debug(self/84: int) -> string {
-  trait_impl#ToString#int#to_string(self/84)
+fn trait_impl#Debug#int#debug(self/82: int) -> string {
+  trait_impl#ToString#int#to_string(self/82)
 }
 
-fn trait_impl#Debug#string#debug(self/82: string) -> string {
-  trait_impl#ToString#string#to_string(self/82)
+fn trait_impl#Debug#string#debug(self/80: string) -> string {
+  trait_impl#ToString#string#to_string(self/80)
 }
 
-fn println__T_string(value/31: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
-  @runtime(core.bool_to_string)(self/66)
+fn trait_impl#ToString#bool#to_string(self/64: bool) -> string {
+  @runtime(core.bool_to_string)(self/64)
 }
 
 fn trait_impl#Default#PairDefaults__int#default() -> PairDefaults__int {
@@ -222,12 +222,12 @@ fn trait_impl#Default#PairDefaults__int#default() -> PairDefaults__int {
   }
 }
 
-fn inherent#int#int#to_string(self/34: int) -> string {
-  @runtime(core.int_to_string)(self/34)
+fn inherent#int#int#to_string(self/32: int) -> string {
+  @runtime(core.int_to_string)(self/32)
 }
 
-fn inherent#Option#Option[T]#is_none__T_int(self/289: Option__int) -> bool {
-  (!inherent#Option#Option[T]#is_some__T_int(self/289))
+fn inherent#Option#Option[T]#is_none__T_int(self/281: Option__int) -> bool {
+  (!inherent#Option#Option[T]#is_some__T_int(self/281))
 }
 
 fn trait_impl#Default#Lazy__NoDefault#default() -> Lazy__NoDefault {
@@ -238,24 +238,24 @@ fn trait_impl#Default#Selected__int#default() -> Selected__int {
   Selected__int::Values(trait_impl#Default#int#default(), trait_impl#Default#int#default())
 }
 
-fn trait_impl#ToString#int#to_string(self/69: int) -> string {
-  @runtime(core.int_to_string)(self/69)
+fn trait_impl#ToString#int#to_string(self/67: int) -> string {
+  @runtime(core.int_to_string)(self/67)
 }
 
-fn trait_impl#ToString#string#to_string(self/67: string) -> string {
-  self/67
+fn trait_impl#ToString#string#to_string(self/65: string) -> string {
+  self/65
 }
 
 fn trait_impl#Default#Option__int#default() -> Option__int {
   Option__int::None
 }
 
-fn inherent#Option#Option[T]#is_some__T_int(self/288: Option__int) -> bool {
-  match self/288 {
+fn inherent#Option#Option[T]#is_some__T_int(self/280: Option__int) -> bool {
+  match self/280 {
     Option__int::None => {
       false
     },
-    Option__int::Some(x151) => {
+    Option__int::Some(x150) => {
       true
     },
   }

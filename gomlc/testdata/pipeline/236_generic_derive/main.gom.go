@@ -112,9 +112,9 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func println__T_string(value__31 string) struct{} {
+func println__T_string(value__1 string) struct{} {
     var t205 string
-    t205 = value__31
+    t205 = value__1
     _goml_runtime_core_string_println(t205)
     return struct{}{}
 }
@@ -133,9 +133,9 @@ func _goml_m_trait__impl_i_ToString_i_Generic____NoTraits____NoTraits_i_to__stri
     return t216
 }
 
-func println__T_bool(value__31 bool) struct{} {
+func println__T_bool(value__1 bool) struct{} {
     var t218 string
-    var inline333 string = _goml_runtime_core_bool_to_string(value__31)
+    var inline333 string = _goml_runtime_core_bool_to_string(value__1)
     t218 = inline333
     _goml_runtime_core_string_println(t218)
     return struct{}{}
@@ -208,12 +208,12 @@ func _goml_m_trait__impl_i_PartialEq_i_GenericChoice____NoTraits____NoTraits_i_e
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__66 bool) string {
-    var t281 string = _goml_runtime_core_bool_to_string(self__66)
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
+    var t281 string = _goml_runtime_core_bool_to_string(self__64)
     return t281
 }
 

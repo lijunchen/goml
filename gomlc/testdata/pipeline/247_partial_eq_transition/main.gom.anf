@@ -4385,13 +4385,13 @@ fn std::cmp::trait_default#PartialOrd#ge__Self_float64(
   }
 }
 
-fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  let t1177 = (self/103 == other/104) in
+fn trait_impl#PartialEq#int#eq(self/101: int, other/102: int) -> bool {
+  let t1177 = (self/101 == other/102) in
   t1177
 }
 
-fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
-  let t1180 = @runtime(core.int_hash)(self/129) in
+fn trait_impl#Hash#int#hash(self/127: int) -> uint64 {
+  let t1180 = @runtime(core.int_hash)(self/127) in
   t1180
 }
 
@@ -4539,12 +4539,12 @@ fn std::cmp::trait_default#PartialOrd#ge__Self_Rank(self/24: Rank, other/25: Ran
   }
 }
 
-fn println__T_bool(value/31: bool) -> unit {
+fn println__T_bool(value/1: bool) -> unit {
   join inline_cont2207(t1204: string) -> unit {
     let t1205 = @runtime(core.string_println)(t1204) in
     ()
   } in
-  let inline2208 = @runtime(core.bool_to_string)(value/31) in
+  let inline2208 = @runtime(core.bool_to_string)(value/1) in
   jump inline_cont2207(inline2208)
 }
 
@@ -4564,16 +4564,16 @@ fn equal__T_ModernKey(left/12: ModernKey, right/13: ModernKey) -> bool {
   inline2218
 }
 
-fn println__T_string(value/31: string) -> unit {
+fn println__T_string(value/1: string) -> unit {
   join inline_cont2219(t1213: string) -> unit {
     let t1214 = @runtime(core.string_println)(t1213) in
     ()
   } in
-  jump inline_cont2219(value/31)
+  jump inline_cont2219(value/1)
 }
 
-fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
-  let t1217 = @runtime(core.bool_to_string)(self/66) in
+fn trait_impl#ToString#bool#to_string(self/64: bool) -> string {
+  let t1217 = @runtime(core.bool_to_string)(self/64) in
   t1217
 }
 
@@ -4583,33 +4583,33 @@ fn inherent#HashMap#HashMap[K,V]#new__K_LegacyKey__V_string() -> HashMap[LegacyK
 }
 
 fn inherent#HashMap#HashMap[K,V]#set__K_LegacyKey__V_string(
-  self/248: HashMap[LegacyKey, string],
-  key/249: LegacyKey,
-  value/250: string
+  self/246: HashMap[LegacyKey, string],
+  key/247: LegacyKey,
+  value/248: string
 ) -> unit {
-  let t1222 = @intrinsic(hashmap.set)(self/248, key/249, value/250) in
+  let t1222 = @intrinsic(hashmap.set)(self/246, key/247, value/248) in
   ()
 }
 
 fn inherent#HashMap#HashMap[K,V]#get__K_LegacyKey__V_string(
-  self/246: HashMap[LegacyKey, string],
-  key/247: LegacyKey
+  self/244: HashMap[LegacyKey, string],
+  key/245: LegacyKey
 ) -> Option__string {
-  let t1225 = @intrinsic(hashmap.get)(self/246, key/247) in
+  let t1225 = @intrinsic(hashmap.get)(self/244, key/245) in
   t1225
 }
 
 fn inherent#Option#Option[T]#unwrap_or__T_string(
-  self/290: Option__string,
-  fallback/291: string
+  self/282: Option__string,
+  fallback/283: string
 ) -> string {
-  match self/290 {
+  match self/282 {
     Tag_0 => {
-      fallback/291
+      fallback/283
     },
     Tag_1 => {
-      let x152 = Option__string::Some._0(self/290) in
-      x152
+      let x151 = Option__string::Some._0(self/282) in
+      x151
     },
   }
 }
@@ -4620,22 +4620,22 @@ fn inherent#HashMap#HashMap[K,V]#new__K_ModernKey__V_string() -> HashMap[ModernK
 }
 
 fn inherent#HashMap#HashMap[K,V]#set__K_ModernKey__V_string(
-  self/248: HashMap[ModernKey, string],
-  key/249: ModernKey,
-  value/250: string
+  self/246: HashMap[ModernKey, string],
+  key/247: ModernKey,
+  value/248: string
 ) -> unit {
-  let t1234 = @intrinsic(hashmap.set)(self/248, key/249, value/250) in
+  let t1234 = @intrinsic(hashmap.set)(self/246, key/247, value/248) in
   ()
 }
 
 fn inherent#HashMap#HashMap[K,V]#get__K_ModernKey__V_string(
-  self/246: HashMap[ModernKey, string],
-  key/247: ModernKey
+  self/244: HashMap[ModernKey, string],
+  key/245: ModernKey
 ) -> Option__string {
-  let t1237 = @intrinsic(hashmap.get)(self/246, key/247) in
+  let t1237 = @intrinsic(hashmap.get)(self/244, key/245) in
   t1237
 }
 
-fn trait_impl#ToString#string#to_string(self/67: string) -> string {
-  self/67
+fn trait_impl#ToString#string#to_string(self/65: string) -> string {
+  self/65
 }

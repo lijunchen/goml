@@ -41,18 +41,18 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_unit_i_to__string(self__65 struct{}) string {
-    var t188 string = _goml_runtime_core_unit_to_string(self__65)
+func _goml_m_trait__impl_i_ToString_i_unit_i_to__string(self__63 struct{}) string {
+    var t188 string = _goml_runtime_core_unit_to_string(self__63)
     return t188
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__66 bool) string {
-    var t191 string = _goml_runtime_core_bool_to_string(self__66)
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
+    var t191 string = _goml_runtime_core_bool_to_string(self__64)
     return t191
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
-    var t194 string = _goml_runtime_core_int_to_string(self__69)
+func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
+    var t194 string = _goml_runtime_core_int_to_string(self__67)
     return t194
 }
 

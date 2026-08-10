@@ -278,28 +278,28 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func println__T_string(value__31 string) struct{} {
+func println__T_string(value__1 string) struct{} {
     var t317 string
-    t317 = value__31
+    t317 = value__1
     _goml_runtime_core_string_println(t317)
     return struct{}{}
 }
 
-func println__T_bool(value__31 bool) struct{} {
+func println__T_bool(value__1 bool) struct{} {
     var t320 string
-    var inline393 string = _goml_runtime_core_bool_to_string(value__31)
+    var inline393 string = _goml_runtime_core_bool_to_string(value__1)
     t320 = inline393
     _goml_runtime_core_string_println(t320)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__66 bool) string {
-    var t329 string = _goml_runtime_core_bool_to_string(self__66)
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
+    var t329 string = _goml_runtime_core_bool_to_string(self__64)
     return t329
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
-    var t332 string = _goml_runtime_core_int_to_string(self__69)
+func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
+    var t332 string = _goml_runtime_core_int_to_string(self__67)
     return t332
 }
 

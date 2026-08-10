@@ -72,9 +72,9 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func println__T_string(value__31 string) struct{} {
+func println__T_string(value__1 string) struct{} {
     var t193 string
-    t193 = value__31
+    t193 = value__1
     _goml_runtime_core_string_println(t193)
     return struct{}{}
 }

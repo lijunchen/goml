@@ -38,17 +38,17 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__72 int32) string {
-    var t190 string = _goml_runtime_core_int32_to_string(self__72)
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__70 int32) string {
+    var t190 string = _goml_runtime_core_int32_to_string(self__70)
     return t190
 }
 
-func _goml_m_trait__impl_i_ToString_i_int8_i_to__string(self__70 int8) string {
-    var t193 string = _goml_runtime_core_int8_to_string(self__70)
+func _goml_m_trait__impl_i_ToString_i_int8_i_to__string(self__68 int8) string {
+    var t193 string = _goml_runtime_core_int8_to_string(self__68)
     return t193
 }
 

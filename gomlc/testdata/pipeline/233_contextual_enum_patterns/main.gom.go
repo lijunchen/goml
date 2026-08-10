@@ -360,29 +360,29 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__Boxed_l_int_r_() *_goml_vec
     return t305
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__Boxed_l_int_r_(self__176 *_goml_vec_Boxed__int, elem__177 Boxed__int) struct{} {
-    vec_push__Vec_10Boxed__int(self__176, elem__177)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__Boxed_l_int_r_(self__174 *_goml_vec_Boxed__int, elem__175 Boxed__int) struct{} {
+    vec_push__Vec_10Boxed__int(self__174, elem__175)
     return struct{}{}
 }
 
-func println__T_string(value__31 string) struct{} {
+func println__T_string(value__1 string) struct{} {
     var t309 string
-    t309 = value__31
+    t309 = value__1
     _goml_runtime_core_string_println(t309)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
-    var t321 string = _goml_runtime_core_int_to_string(self__69)
+func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
+    var t321 string = _goml_runtime_core_int_to_string(self__67)
     return t321
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__66 bool) string {
-    var t324 string = _goml_runtime_core_bool_to_string(self__66)
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
+    var t324 string = _goml_runtime_core_bool_to_string(self__64)
     return t324
 }
 

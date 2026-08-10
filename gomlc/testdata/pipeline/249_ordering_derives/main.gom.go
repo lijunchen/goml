@@ -1488,26 +1488,26 @@ func _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_lt____Self__int(self__15 
     }
 }
 
-func _goml_m_trait__impl_i_PartialEq_i_int_i_eq(self__103 int, other__104 int) bool {
-    var t1616 bool = self__103 == other__104
+func _goml_m_trait__impl_i_PartialEq_i_int_i_eq(self__101 int, other__102 int) bool {
+    var t1616 bool = self__101 == other__102
     return t1616
 }
 
-func println__T_string(value__31 string) struct{} {
+func println__T_string(value__1 string) struct{} {
     var t1712 string
-    t1712 = value__31
+    t1712 = value__1
     _goml_runtime_core_string_println(t1712)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__66 bool) string {
-    var t1716 string = _goml_runtime_core_bool_to_string(self__66)
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
+    var t1716 string = _goml_runtime_core_bool_to_string(self__64)
     return t1716
 }
 
-func _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__none____T__std_p_cmp_p_Ordering(self__289 _goml_m_Option____std_p_cmp_p_Ordering) bool {
+func _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__none____T__std_p_cmp_p_Ordering(self__281 _goml_m_Option____std_p_cmp_p_Ordering) bool {
     var t1719 bool
-    switch self__289.(type) {
+    switch self__281.(type) {
     case _goml_m_Option____std_p_cmp_p_Ordering_None:
         t1719 = false
     case _goml_m_Option____std_p_cmp_p_Ordering_Some:
@@ -1524,8 +1524,8 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__int() *_goml_vec_int {
     return t1723
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int(self__176 *_goml_vec_int, elem__177 int) struct{} {
-    vec_push__Vec_3int(self__176, elem__177)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int(self__174 *_goml_vec_int, elem__175 int) struct{} {
+    vec_push__Vec_3int(self__174, elem__175)
     return struct{}{}
 }
 
@@ -1599,8 +1599,8 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Result____int____string_i_lt
     }
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_slice____T__int(self__225 *_goml_vec_int, start__226 int, end__227 int) []int {
-    var t1743 []int = self__225.items[start__226:end__227]
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_slice____T__int(self__223 *_goml_vec_int, start__224 int, end__225 int) []int {
+    var t1743 []int = self__223.items[start__224:end__225]
     return t1743
 }
 
@@ -1623,23 +1623,23 @@ func _goml_m_inherent_i_HashMap_i_H_hb3faab5fbb375c42497e028b370acdb2_r_____V__s
     return t1749
 }
 
-func _goml_m_inherent_i_HashMap_i_H_h3b61239acaedb5e8f14c03ddfc2f1db6_r_____V__string(self__248 *hashmap_Vec_3int_string_x, key__249 *_goml_vec_int, value__250 string) struct{} {
-    hashmap_set__HashMap_8Vec_3int_6string(self__248, key__249, value__250)
+func _goml_m_inherent_i_HashMap_i_H_h3b61239acaedb5e8f14c03ddfc2f1db6_r_____V__string(self__246 *hashmap_Vec_3int_string_x, key__247 *_goml_vec_int, value__248 string) struct{} {
+    hashmap_set__HashMap_8Vec_3int_6string(self__246, key__247, value__248)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_HashMap_i_H_hb4451e8158a298bbb7da359694bb16fc_r_____V__string(self__246 *hashmap_Vec_3int_string_x, key__247 *_goml_vec_int) Option__string {
-    var t1754 Option__string = hashmap_get__HashMap_8Vec_3int_6string(self__246, key__247)
+func _goml_m_inherent_i_HashMap_i_H_hb4451e8158a298bbb7da359694bb16fc_r_____V__string(self__244 *hashmap_Vec_3int_string_x, key__245 *_goml_vec_int) Option__string {
+    var t1754 Option__string = hashmap_get__HashMap_8Vec_3int_6string(self__244, key__245)
     return t1754
 }
 
-func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(self__290 Option__string, fallback__291 string) string {
-    switch self__290.(type) {
+func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(self__282 Option__string, fallback__283 string) string {
+    switch self__282.(type) {
     case Option__string_None:
-        return fallback__291
+        return fallback__283
     case Option__string_Some:
-        var x152 string = self__290.(Option__string_Some)._0
-        return x152
+        var x151 string = self__282.(Option__string_Some)._0
+        return x151
     default:
         panic("non-exhaustive match")
     }
@@ -2105,12 +2105,12 @@ func _goml_m_trait__impl_i_std_p_cm_haa34d8491754c3aa6b5371402ef010cd__i_partial
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
-func _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__some____T__std_p_cmp_p_Ordering(self__288 _goml_m_Option____std_p_cmp_p_Ordering) bool {
-    switch self__288.(type) {
+func _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__some____T__std_p_cmp_p_Ordering(self__280 _goml_m_Option____std_p_cmp_p_Ordering) bool {
+    switch self__280.(type) {
     case _goml_m_Option____std_p_cmp_p_Ordering_None:
         return false
     case _goml_m_Option____std_p_cmp_p_Ordering_Some:
@@ -2533,35 +2533,35 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Slice_l_int_r__i_partial__cm
     return inline3350
 }
 
-func _goml_m_trait__impl_i_PartialEq_i_Vec_l_int_r__i_eq(self__141 *_goml_vec_int, other__142 *_goml_vec_int) bool {
+func _goml_m_trait__impl_i_PartialEq_i_Vec_l_int_r__i_eq(self__139 *_goml_vec_int, other__140 *_goml_vec_int) bool {
     var t2005 int
-    var inline3367 int = vec_len__Vec_3int(self__141)
+    var inline3367 int = vec_len__Vec_3int(self__139)
     t2005 = inline3367
     var t2006 int
-    var inline3365 int = vec_len__Vec_3int(other__142)
+    var inline3365 int = vec_len__Vec_3int(other__140)
     t2006 = inline3365
     var t2007 bool = t2005 != t2006
     if t2007 {
         return false
     } else {
-        var index__143 int = 0
+        var index__141 int = 0
         Loop_loop2009:
         for {
             var t2010 int
-            var inline3363 int = vec_len__Vec_3int(self__141)
+            var inline3363 int = vec_len__Vec_3int(self__139)
             t2010 = inline3363
-            var t2011 bool = index__143 < t2010
+            var t2011 bool = index__141 < t2010
             if t2011 {
-                var t2013 int = vec_get__Vec_3int(self__141, index__143)
-                var t2014 int = vec_get__Vec_3int(other__142, index__143)
+                var t2013 int = vec_get__Vec_3int(self__139, index__141)
+                var t2014 int = vec_get__Vec_3int(other__140, index__141)
                 var t2015 bool
                 var inline3361 bool = t2013 == t2014
                 t2015 = inline3361
                 if t2015 {
-                    var compound_old43 int = index__143
+                    var compound_old43 int = index__141
                     var compound_value44 int = 1
                     var t2016 int = compound_old43 + compound_value44
-                    index__143 = t2016
+                    index__141 = t2016
                     continue
                 } else {
                     return false
@@ -2574,33 +2574,33 @@ func _goml_m_trait__impl_i_PartialEq_i_Vec_l_int_r__i_eq(self__141 *_goml_vec_in
     }
 }
 
-func _goml_m_trait__impl_i_Hash_i_Vec_l_int_r__i_hash(self__144 *_goml_vec_int) uint64 {
-    var value__145 uint64 = 14695981039346656037
-    var index__146 int = 0
+func _goml_m_trait__impl_i_Hash_i_Vec_l_int_r__i_hash(self__142 *_goml_vec_int) uint64 {
+    var value__143 uint64 = 14695981039346656037
+    var index__144 int = 0
     Loop_loop2021:
     for {
         var t2022 int
-        var inline3371 int = vec_len__Vec_3int(self__144)
+        var inline3371 int = vec_len__Vec_3int(self__142)
         t2022 = inline3371
-        var t2023 bool = index__146 < t2022
+        var t2023 bool = index__144 < t2022
         if t2023 {
-            var t2024 uint64 = value__145 * 1099511628211
-            var t2025 int = vec_get__Vec_3int(self__144, index__146)
+            var t2024 uint64 = value__143 * 1099511628211
+            var t2025 int = vec_get__Vec_3int(self__142, index__144)
             var t2026 uint64
             var inline3369 uint64 = _goml_runtime_core_int_hash(t2025)
             t2026 = inline3369
             var t2027 uint64 = t2024 + t2026
-            value__145 = t2027
-            var compound_old48 int = index__146
+            value__143 = t2027
+            var compound_old48 int = index__144
             var compound_value49 int = 1
             var t2028 int = compound_old48 + compound_value49
-            index__146 = t2028
+            index__144 = t2028
             continue
         } else {
             break Loop_loop2021
         }
     }
-    return value__145
+    return value__143
 }
 
 func _goml_m_trait__impl_i_PartialEq_i__o_int_c_string_q__i_eq(self Tuple2_3int_6string, other Tuple2_3int_6string) bool {

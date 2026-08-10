@@ -100,22 +100,22 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_extend____T__int32(self__221 *_goml_vec_int32, other__222 *_goml_vec_int32) struct{} {
-    var len__223 int
-    var inline264 int = vec_len__Vec_5int32(other__222)
-    len__223 = inline264
-    vec_reserve__Vec_5int32(self__221, len__223)
-    var index__224 int = 0
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_extend____T__int32(self__219 *_goml_vec_int32, other__220 *_goml_vec_int32) struct{} {
+    var len__221 int
+    var inline264 int = vec_len__Vec_5int32(other__220)
+    len__221 = inline264
+    vec_reserve__Vec_5int32(self__219, len__221)
+    var index__222 int = 0
     Loop_loop213:
     for {
-        var t214 bool = index__224 < len__223
+        var t214 bool = index__222 < len__221
         if t214 {
-            var t215 int32 = vec_get__Vec_5int32(other__222, index__224)
-            vec_push__Vec_5int32(self__221, t215)
-            var compound_old138 int = index__224
+            var t215 int32 = vec_get__Vec_5int32(other__220, index__222)
+            vec_push__Vec_5int32(self__219, t215)
+            var compound_old138 int = index__222
             var compound_value139 int = 1
             var t216 int = compound_old138 + compound_value139
-            index__224 = t216
+            index__222 = t216
             continue
         } else {
             break Loop_loop213
@@ -124,13 +124,13 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_extend____T__int32(self__221 *_goml_v
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
-    var t220 string = _goml_runtime_core_int_to_string(self__69)
+func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
+    var t220 string = _goml_runtime_core_int_to_string(self__67)
     return t220
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__72 int32) string {
-    var t223 string = _goml_runtime_core_int32_to_string(self__72)
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__70 int32) string {
+    var t223 string = _goml_runtime_core_int32_to_string(self__70)
     return t223
 }
 

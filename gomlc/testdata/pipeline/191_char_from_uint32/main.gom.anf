@@ -1,24 +1,23 @@
 fn show_scalar(value/0: uint32) -> unit {
-  join commute_arm306() -> unit {
-    let inline232 = "none" in
-    let inline233 = trait_impl#ToString#string#to_string(inline232) in
-    let inline234 = @runtime(core.string_println)(inline233) in
-    ()
+  join inline_cont241(mtmp172: Option__char) -> unit {
+    match mtmp172 {
+      Tag_0 => {
+        let inline235 = "none" in
+        let inline236 = trait_impl#ToString#string#to_string(inline235) in
+        let inline237 = @runtime(core.string_println)(inline236) in
+        ()
+      },
+      Tag_1 => {
+        let x173 = Option__char::Some._0(mtmp172) in
+        let t187 = (x173 as uint32) in
+        let inline239 = trait_impl#ToString#uint32#to_string(t187) in
+        let inline240 = @runtime(core.string_println)(inline239) in
+        ()
+      },
+    }
   } in
-  join commute_arm308(commute_field307: char) -> unit {
-    let t187 = (commute_field307 as uint32) in
-    let inline236 = trait_impl#ToString#uint32#to_string(t187) in
-    let inline237 = @runtime(core.string_println)(inline236) in
-    ()
-  } in
-  let inline239 = utf8_valid_scalar(value/0) in
-  if inline239 {
-    let inline240 = @runtime(core.char_from_uint32)(value/0) in
-    let inline241 = inline240.1 in
-    jump commute_arm308(inline241)
-  } else {
-    jump commute_arm306()
-  }
+  let inline242 = __goml_builtin_char_from_uint32(value/0) in
+  jump inline_cont241(inline242)
 }
 
 fn main() -> unit {
@@ -26,192 +25,218 @@ fn main() -> unit {
   let _wild175 = show_scalar(65) in
   let _wild176 = show_scalar(55295) in
   let _wild177 = show_scalar(55296) in
-  let _wild178 = show_scalar(57343) in
-  join inline_cont276(_wild179: unit) -> unit {
-    join inline_cont268(_wild180: unit) -> unit {
-      join inline_cont260(_wild181: unit) -> unit {
-        join commute_arm309() -> unit {
-          let inline245 = "none" in
-          let inline246 = trait_impl#ToString#string#to_string(inline245) in
-          let inline247 = @runtime(core.string_println)(inline246) in
-          ()
-        } in
-        join commute_arm311(commute_field310: char) -> unit {
-          join inline_cont251(t192: string) -> unit {
-            let inline249 = trait_impl#ToString#string#to_string(t192) in
-            let inline250 = @runtime(core.string_println)(inline249) in
-            ()
+  join inline_cont279(_wild178: unit) -> unit {
+    join inline_cont271(_wild179: unit) -> unit {
+      join inline_cont263(_wild180: unit) -> unit {
+        join inline_cont255(_wild181: unit) -> unit {
+          join inline_cont252(mtmp182: Option__char) -> unit {
+            match mtmp182 {
+              Tag_0 => {
+                let inline244 = "none" in
+                let inline245 = trait_impl#ToString#string#to_string(inline244) in
+                let inline246 = @runtime(core.string_println)(inline245) in
+                ()
+              },
+              Tag_1 => {
+                let x183 = Option__char::Some._0(mtmp182) in
+                join inline_cont250(t192: string) -> unit {
+                  let inline248 = trait_impl#ToString#string#to_string(t192) in
+                  let inline249 = @runtime(core.string_println)(inline248) in
+                  ()
+                } in
+                let inline251 = char_to_string(x183) in
+                jump inline_cont250(inline251)
+              },
+            }
           } in
-          let inline252 = char_to_string(commute_field310) in
-          jump inline_cont251(inline252)
+          let inline253 = 128512 in
+          let inline254 = __goml_builtin_char_from_uint32(inline253) in
+          jump inline_cont252(inline254)
         } in
-        let inline254 = 128512 in
-        let inline255 = utf8_valid_scalar(inline254) in
-        if inline255 {
-          let inline256 = @runtime(core.char_from_uint32)(inline254) in
-          let inline257 = inline256.1 in
-          jump commute_arm311(inline257)
-        } else {
-          jump commute_arm309()
+        let inline256 = 1114112 in
+        let inline257 = char_from_uint32(inline256) in
+        match inline257 {
+          Tag_0 => {
+            let inline258 = println__T_string("none") in
+            jump inline_cont255(())
+          },
+          Tag_1 => {
+            let inline259 = Option__char::Some._0(inline257) in
+            let inline261 = (inline259 as uint32) in
+            let inline262 = println__T_uint32(inline261) in
+            jump inline_cont255(())
+          },
         }
       } in
-      let inline261 = 1114112 in
-      let inline262 = char_from_uint32(inline261) in
-      match inline262 {
+      let inline264 = 1114111 in
+      let inline265 = char_from_uint32(inline264) in
+      match inline265 {
         Tag_0 => {
-          let inline263 = println__T_string("none") in
-          jump inline_cont260(())
+          let inline266 = println__T_string("none") in
+          jump inline_cont263(())
         },
         Tag_1 => {
-          let inline264 = Option__char::Some._0(inline262) in
-          let inline266 = (inline264 as uint32) in
-          let inline267 = println__T_uint32(inline266) in
-          jump inline_cont260(())
+          let inline267 = Option__char::Some._0(inline265) in
+          let inline269 = (inline267 as uint32) in
+          let inline270 = println__T_uint32(inline269) in
+          jump inline_cont263(())
         },
       }
     } in
-    let inline269 = 1114111 in
-    let inline270 = char_from_uint32(inline269) in
-    match inline270 {
+    let inline272 = 57344 in
+    let inline273 = char_from_uint32(inline272) in
+    match inline273 {
       Tag_0 => {
-        let inline271 = println__T_string("none") in
-        jump inline_cont268(())
+        let inline274 = println__T_string("none") in
+        jump inline_cont271(())
       },
       Tag_1 => {
-        let inline272 = Option__char::Some._0(inline270) in
-        let inline274 = (inline272 as uint32) in
-        let inline275 = println__T_uint32(inline274) in
-        jump inline_cont268(())
+        let inline275 = Option__char::Some._0(inline273) in
+        let inline277 = (inline275 as uint32) in
+        let inline278 = println__T_uint32(inline277) in
+        jump inline_cont271(())
       },
     }
   } in
-  let inline277 = 57344 in
-  let inline278 = char_from_uint32(inline277) in
-  match inline278 {
+  let inline280 = 57343 in
+  let inline281 = char_from_uint32(inline280) in
+  match inline281 {
     Tag_0 => {
-      let inline279 = println__T_string("none") in
-      jump inline_cont276(())
+      let inline282 = println__T_string("none") in
+      jump inline_cont279(())
     },
     Tag_1 => {
-      let inline280 = Option__char::Some._0(inline278) in
-      let inline282 = (inline280 as uint32) in
-      let inline283 = println__T_uint32(inline282) in
-      jump inline_cont276(())
+      let inline283 = Option__char::Some._0(inline281) in
+      let inline285 = (inline283 as uint32) in
+      let inline286 = println__T_uint32(inline285) in
+      jump inline_cont279(())
     },
   }
 }
 
-fn char_from_uint32(value/32: uint32) -> Option__char {
-  join inline_cont284(t198: bool) -> Option__char {
-    if t198 {
-      let mtmp22 = @runtime(core.char_from_uint32)(value/32) in
-      let x24 = mtmp22.1 in
-      let t199 = Option__char::Some(x24) in
-      t199
-    } else {
-      Tag_0
-    }
-  } in
-  let inline285 = (value/32 <= 1114111) in
-  if inline285 {
-    let inline286 = (value/32 >= 55296) in
-    join inline_join287(inline288: bool) -> Option__char {
-      let inline289 = (!inline288) in
-      jump inline_cont284(inline289)
-    } in
-    if inline286 {
-      let inline290 = (value/32 <= 57343) in
-      jump inline_join287(inline290)
-    } else {
-      jump inline_join287(false)
-    }
+fn char_from_uint32(value/2: uint32) -> Option__char {
+  let inline288 = utf8_valid_scalar(value/2) in
+  if inline288 {
+    let inline289 = @runtime(core.char_from_uint32)(value/2) in
+    let inline290 = inline289.1 in
+    let inline292 = Option__char::Some(inline290) in
+    inline292
   } else {
-    jump inline_cont284(false)
+    Tag_0
   }
 }
 
-fn println__T_string(value/31: string) -> unit {
-  join inline_cont291(t201: string) -> unit {
+fn println__T_string(value/1: string) -> unit {
+  join inline_cont293(t198: string) -> unit {
+    let t199 = @runtime(core.string_println)(t198) in
+    ()
+  } in
+  jump inline_cont293(value/1)
+}
+
+fn println__T_uint32(value/1: uint32) -> unit {
+  join inline_cont294(t201: string) -> unit {
     let t202 = @runtime(core.string_println)(t201) in
     ()
   } in
-  jump inline_cont291(value/31)
+  let inline295 = @runtime(core.uint32_to_string)(value/1) in
+  jump inline_cont294(inline295)
 }
 
-fn println__T_uint32(value/31: uint32) -> unit {
-  join inline_cont292(t204: string) -> unit {
-    let t205 = @runtime(core.string_println)(t204) in
-    ()
-  } in
-  let inline293 = @runtime(core.uint32_to_string)(value/31) in
-  jump inline_cont292(inline293)
-}
-
-fn inherent#char#char#to_string(self/36: char) -> string {
-  let inline295 = (self/36 as uint32) in
-  let inline296 = utf8_valid_scalar(inline295) in
-  if inline296 {
-    let inline297 = @runtime(core.char_to_string)(self/36) in
-    inline297
+fn inherent#char#char#to_string(self/34: char) -> string {
+  let inline297 = (self/34 as uint32) in
+  let inline298 = utf8_valid_scalar(inline297) in
+  if inline298 {
+    let inline299 = @runtime(core.char_to_string)(self/34) in
+    inline299
   } else {
-    let inline298 = @runtime(core.string_get)("", -1) in
+    let inline300 = @runtime(core.string_get)("", -1) in
     ""
   }
 }
 
-fn utf8_valid_scalar(value/4: uint32) -> bool {
-  let t213 = (value/4 <= 1114111) in
-  if t213 {
-    let t217 = (value/4 >= 55296) in
-    join k214(jp215: bool) -> bool {
-      let t216 = (!jp215) in
-      t216
-    } in
-    if t217 {
-      let t218 = (value/4 <= 57343) in
-      jump k214(t218)
+fn __goml_builtin_char_from_uint32(value/30: uint32) -> Option__char {
+  join inline_cont301(t210: bool) -> Option__char {
+    if t210 {
+      let mtmp22 = @runtime(core.char_from_uint32)(value/30) in
+      let x24 = mtmp22.1 in
+      let t211 = Option__char::Some(x24) in
+      t211
     } else {
-      jump k214(false)
+      Tag_0
+    }
+  } in
+  let inline302 = (value/30 <= 1114111) in
+  if inline302 {
+    let inline303 = (value/30 >= 55296) in
+    join inline_join304(inline305: bool) -> Option__char {
+      let inline306 = (!inline305) in
+      jump inline_cont301(inline306)
+    } in
+    if inline303 {
+      let inline307 = (value/30 <= 57343) in
+      jump inline_join304(inline307)
+    } else {
+      jump inline_join304(false)
     }
   } else {
-    false
+    jump inline_cont301(false)
   }
 }
 
-fn trait_impl#ToString#string#to_string(self/67: string) -> string {
-  self/67
+fn trait_impl#ToString#string#to_string(self/65: string) -> string {
+  self/65
 }
 
-fn trait_impl#ToString#uint32#to_string(self/76: uint32) -> string {
-  let t223 = @runtime(core.uint32_to_string)(self/76) in
-  t223
+fn trait_impl#ToString#uint32#to_string(self/74: uint32) -> string {
+  let t216 = @runtime(core.uint32_to_string)(self/74) in
+  t216
 }
 
 fn char_to_string(value/29: char) -> string {
-  let t228 = (value/29 as uint32) in
-  join inline_cont299(t229: bool) -> string {
-    if t229 {
-      let t230 = @runtime(core.char_to_string)(value/29) in
-      t230
+  let t221 = (value/29 as uint32) in
+  join inline_cont308(t222: bool) -> string {
+    if t222 {
+      let t223 = @runtime(core.char_to_string)(value/29) in
+      t223
     } else {
       let mtmp21 = @runtime(core.string_get)("", -1) in
       ""
     }
   } in
-  let inline300 = (t228 <= 1114111) in
-  if inline300 {
-    let inline301 = (t228 >= 55296) in
-    join inline_join302(inline303: bool) -> string {
-      let inline304 = (!inline303) in
-      jump inline_cont299(inline304)
+  let inline309 = (t221 <= 1114111) in
+  if inline309 {
+    let inline310 = (t221 >= 55296) in
+    join inline_join311(inline312: bool) -> string {
+      let inline313 = (!inline312) in
+      jump inline_cont308(inline313)
     } in
-    if inline301 {
-      let inline305 = (t228 <= 57343) in
-      jump inline_join302(inline305)
+    if inline310 {
+      let inline314 = (t221 <= 57343) in
+      jump inline_join311(inline314)
     } else {
-      jump inline_join302(false)
+      jump inline_join311(false)
     }
   } else {
-    jump inline_cont299(false)
+    jump inline_cont308(false)
+  }
+}
+
+fn utf8_valid_scalar(value/4: uint32) -> bool {
+  let t228 = (value/4 <= 1114111) in
+  if t228 {
+    let t232 = (value/4 >= 55296) in
+    join k229(jp230: bool) -> bool {
+      let t231 = (!jp230) in
+      t231
+    } in
+    if t232 {
+      let t233 = (value/4 <= 57343) in
+      jump k229(t233)
+    } else {
+      jump k229(false)
+    }
+  } else {
+    false
   }
 }

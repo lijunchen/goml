@@ -271,8 +271,8 @@ fn main() -> unit {
   )
 }
 
-fn inherent#Vec#Vec[T]#len__T_uint8(self/187: Vec[uint8]) -> int {
-  @intrinsic(vec.len)(self/187)
+fn inherent#Vec#Vec[T]#len__T_uint8(self/185: Vec[uint8]) -> int {
+  @intrinsic(vec.len)(self/185)
 }
 
 fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
@@ -300,24 +300,24 @@ fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
   (true, value/25)
 }
 
-fn println__T_bool(value/31: bool) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/31))
+fn println__T_bool(value/1: bool) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
 }
 
-fn inherent#string#string#byte_len(self/38: string) -> int {
-  @runtime(core.string_len)(self/38)
+fn inherent#string#string#byte_len(self/36: string) -> int {
+  @runtime(core.string_len)(self/36)
 }
 
-fn inherent#string#string#decode_at(self/48: string, index/49: int) -> Option__(char,int) {
-  let mtmp25 = string_decode_utf8_at(self/48, index/49) in
+fn inherent#string#string#decode_at(self/46: string, index/47: int) -> Option__(char,int) {
+  let mtmp25 = string_decode_utf8_at(self/46, index/47) in
   let x26 = mtmp25.0 in
   let x27 = mtmp25.1 in
   let x28 = mtmp25.2 in
-  let width/52 = x28 in
-  let value/51 = x27 in
-  let valid/50 = x26 in
-  if valid/50 {
-      Option__(char,int)::Some((value/51, width/52))
+  let width/50 = x28 in
+  let value/49 = x27 in
+  let valid/48 = x26 in
+  if valid/48 {
+      Option__(char,int)::Some((value/49, width/50))
   } else {
       Option__(char,int)::None
   }
@@ -327,8 +327,8 @@ fn inherent#Vec#Vec[T]#new__T_uint8() -> Vec[uint8] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_uint8(self/176: Vec[uint8], elem/177: uint8) -> unit {
-  @intrinsic(vec.push)(self/176, elem/177)
+fn inherent#Vec#Vec[T]#push__T_uint8(self/174: Vec[uint8], elem/175: uint8) -> unit {
+  @intrinsic(vec.push)(self/174, elem/175)
 }
 
 fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
@@ -460,20 +460,20 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
   }
 }
 
-fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
-  @runtime(core.bool_to_string)(self/66)
+fn trait_impl#ToString#bool#to_string(self/64: bool) -> string {
+  @runtime(core.bool_to_string)(self/64)
 }
 
 fn utf8_invalid_decode() -> (bool, char, int) {
   (false, '\0', 0)
 }
 
-fn inherent#string#string#byte_get(self/41: string, index/42: int) -> uint8 {
-  @runtime(core.string_byte_get)(self/41, index/42)
+fn inherent#string#string#byte_get(self/39: string, index/40: int) -> uint8 {
+  @runtime(core.string_byte_get)(self/39, index/40)
 }
 
 fn utf8_valid_decode(value/0: uint32, width/1: int) -> (bool, char, int) {
-  let mtmp0 = char_from_uint32(value/0) in
+  let mtmp0 = __goml_builtin_char_from_uint32(value/0) in
   match mtmp0 {
     Option__char::None => {
       utf8_invalid_decode()
@@ -494,12 +494,12 @@ fn utf8_invalid_continuation(value/3: uint32) -> bool {
   }
 }
 
-fn char_from_uint32(value/32: uint32) -> Option__char {
-  if utf8_valid_scalar(value/32) {
-      let mtmp22 = @runtime(core.char_from_uint32)(value/32) in
+fn __goml_builtin_char_from_uint32(value/30: uint32) -> Option__char {
+  if utf8_valid_scalar(value/30) {
+      let mtmp22 = @runtime(core.char_from_uint32)(value/30) in
       let x24 = mtmp22.1 in
-      let character/33 = x24 in
-      Option__char::Some(character/33)
+      let character/31 = x24 in
+      Option__char::Some(character/31)
   } else {
       Option__char::None
   }

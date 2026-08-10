@@ -128,37 +128,37 @@ fn main() -> unit {
   }
 }
 
-fn inherent#Channel#Channel[T]#new__T_string(capacity/261: int) -> Channel[string] {
-  let t204 = @intrinsic(channel.new)(capacity/261) in
+fn inherent#Channel#Channel[T]#new__T_string(capacity/259: int) -> Channel[string] {
+  let t204 = @intrinsic(channel.new)(capacity/259) in
   t204
 }
 
-fn inherent#Channel#Channel[T]#new__T_int(capacity/261: int) -> Channel[int] {
-  let t207 = @intrinsic(channel.new)(capacity/261) in
+fn inherent#Channel#Channel[T]#new__T_int(capacity/259: int) -> Channel[int] {
+  let t207 = @intrinsic(channel.new)(capacity/259) in
   t207
 }
 
-fn inherent#Channel#Channel[T]#send__T_int(self/262: Channel[int], value/263: int) -> unit {
-  let t209 = @intrinsic(channel.send)(self/262, value/263) in
+fn inherent#Channel#Channel[T]#send__T_int(self/260: Channel[int], value/261: int) -> unit {
+  let t209 = @intrinsic(channel.send)(self/260, value/261) in
   ()
 }
 
-fn inherent#Channel#Channel[T]#close__T_int(self/267: Channel[int]) -> unit {
-  let t211 = @intrinsic(channel.close)(self/267) in
+fn inherent#Channel#Channel[T]#close__T_int(self/265: Channel[int]) -> unit {
+  let t211 = @intrinsic(channel.close)(self/265) in
   ()
 }
 
-fn println__T_int(value/31: int) -> unit {
+fn println__T_int(value/1: int) -> unit {
   join inline_cont290(t213: string) -> unit {
     let t214 = @runtime(core.string_println)(t213) in
     ()
   } in
-  let inline291 = @runtime(core.int_to_string)(value/31) in
+  let inline291 = @runtime(core.int_to_string)(value/1) in
   jump inline_cont290(inline291)
 }
 
-fn inherent#Channel#Channel[T]#recv__T_int(self/264: Channel[int]) -> Option__int {
-  let mtmp143 = @intrinsic(channel.recv)(self/264) in
+fn inherent#Channel#Channel[T]#recv__T_int(self/262: Channel[int]) -> Option__int {
+  let mtmp143 = @intrinsic(channel.recv)(self/262) in
   let x144 = mtmp143.0 in
   let x145 = mtmp143.1 in
   if x145 {
@@ -169,12 +169,12 @@ fn inherent#Channel#Channel[T]#recv__T_int(self/264: Channel[int]) -> Option__in
   }
 }
 
-fn println__T_string(value/31: string) -> unit {
+fn println__T_string(value/1: string) -> unit {
   join inline_cont292(t221: string) -> unit {
     let t222 = @runtime(core.string_println)(t221) in
     ()
   } in
-  jump inline_cont292(value/31)
+  jump inline_cont292(value/1)
 }
 
 fn roundtrip__T_string(channel/0: Channel[string], value/1: string) -> Option__string {
@@ -195,30 +195,30 @@ fn roundtrip__T_string(channel/0: Channel[string], value/1: string) -> Option__s
   }
 }
 
-fn inherent#Channel#Channel[T]#close__T_string(self/267: Channel[string]) -> unit {
-  let t229 = @intrinsic(channel.close)(self/267) in
+fn inherent#Channel#Channel[T]#close__T_string(self/265: Channel[string]) -> unit {
+  let t229 = @intrinsic(channel.close)(self/265) in
   ()
 }
 
-fn trait_impl#ToString#int#to_string(self/69: int) -> string {
-  let t232 = @runtime(core.int_to_string)(self/69) in
+fn trait_impl#ToString#int#to_string(self/67: int) -> string {
+  let t232 = @runtime(core.int_to_string)(self/67) in
   t232
 }
 
-fn trait_impl#ToString#string#to_string(self/67: string) -> string {
-  self/67
+fn trait_impl#ToString#string#to_string(self/65: string) -> string {
+  self/65
 }
 
 fn inherent#Channel#Channel[T]#send__T_string(
-  self/262: Channel[string],
-  value/263: string
+  self/260: Channel[string],
+  value/261: string
 ) -> unit {
-  let t236 = @intrinsic(channel.send)(self/262, value/263) in
+  let t236 = @intrinsic(channel.send)(self/260, value/261) in
   ()
 }
 
-fn inherent#Channel#Channel[T]#recv__T_string(self/264: Channel[string]) -> Option__string {
-  let mtmp143 = @intrinsic(channel.recv)(self/264) in
+fn inherent#Channel#Channel[T]#recv__T_string(self/262: Channel[string]) -> Option__string {
+  let mtmp143 = @intrinsic(channel.recv)(self/262) in
   let x144 = mtmp143.0 in
   let x145 = mtmp143.1 in
   if x145 {

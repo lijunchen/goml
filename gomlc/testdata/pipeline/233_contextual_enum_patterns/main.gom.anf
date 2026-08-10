@@ -249,41 +249,41 @@ fn main() -> unit {
   jump inline_cont407(())
 }
 
-fn inherent#int#int#to_string(self/34: int) -> string {
-  let t286 = @runtime(core.int_to_string)(self/34) in
+fn inherent#int#int#to_string(self/32: int) -> string {
+  let t286 = @runtime(core.int_to_string)(self/32) in
   t286
 }
 
-fn inherent#Ref#Ref[T]#new__T_Option[int](value/257: Option__int) -> Ref[Option__int] {
-  let t289 = @intrinsic(ref.new)(value/257) in
+fn inherent#Ref#Ref[T]#new__T_Option[int](value/255: Option__int) -> Ref[Option__int] {
+  let t289 = @intrinsic(ref.new)(value/255) in
   t289
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/257: int) -> Ref[int] {
-  let t292 = @intrinsic(ref.new)(value/257) in
+fn inherent#Ref#Ref[T]#new__T_int(value/255: int) -> Ref[int] {
+  let t292 = @intrinsic(ref.new)(value/255) in
   t292
 }
 
-fn inherent#Ref#Ref[T]#get__T_Option[int](self/258: Ref[Option__int]) -> Option__int {
-  let t295 = @intrinsic(ref.get)(self/258) in
+fn inherent#Ref#Ref[T]#get__T_Option[int](self/256: Ref[Option__int]) -> Option__int {
+  let t295 = @intrinsic(ref.get)(self/256) in
   t295
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/259: Ref[int], value/260: int) -> unit {
-  let t297 = @intrinsic(ref.set)(self/259, value/260) in
+fn inherent#Ref#Ref[T]#set__T_int(self/257: Ref[int], value/258: int) -> unit {
+  let t297 = @intrinsic(ref.set)(self/257, value/258) in
   ()
 }
 
 fn inherent#Ref#Ref[T]#set__T_Option[int](
-  self/259: Ref[Option__int],
-  value/260: Option__int
+  self/257: Ref[Option__int],
+  value/258: Option__int
 ) -> unit {
-  let t299 = @intrinsic(ref.set)(self/259, value/260) in
+  let t299 = @intrinsic(ref.set)(self/257, value/258) in
   ()
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/258: Ref[int]) -> int {
-  let t302 = @intrinsic(ref.get)(self/258) in
+fn inherent#Ref#Ref[T]#get__T_int(self/256: Ref[int]) -> int {
+  let t302 = @intrinsic(ref.get)(self/256) in
   t302
 }
 
@@ -292,55 +292,55 @@ fn inherent#Vec#Vec[T]#new__T_Boxed[int]() -> Vec[Boxed__int] {
   t305
 }
 
-fn inherent#Vec#Vec[T]#push__T_Boxed[int](self/176: Vec[Boxed__int], elem/177: Boxed__int) -> unit {
-  let t307 = @intrinsic(vec.push)(self/176, elem/177) in
+fn inherent#Vec#Vec[T]#push__T_Boxed[int](self/174: Vec[Boxed__int], elem/175: Boxed__int) -> unit {
+  let t307 = @intrinsic(vec.push)(self/174, elem/175) in
   ()
 }
 
-fn println__T_string(value/31: string) -> unit {
+fn println__T_string(value/1: string) -> unit {
   join inline_cont410(t309: string) -> unit {
     let t310 = @runtime(core.string_println)(t309) in
     ()
   } in
-  jump inline_cont410(value/31)
+  jump inline_cont410(value/1)
 }
 
-fn println__T_int(value/31: int) -> unit {
+fn println__T_int(value/1: int) -> unit {
   join inline_cont411(t312: string) -> unit {
     let t313 = @runtime(core.string_println)(t312) in
     ()
   } in
-  let inline412 = @runtime(core.int_to_string)(value/31) in
+  let inline412 = @runtime(core.int_to_string)(value/1) in
   jump inline_cont411(inline412)
 }
 
-fn println__T_bool(value/31: bool) -> unit {
+fn println__T_bool(value/1: bool) -> unit {
   join inline_cont413(t315: string) -> unit {
     let t316 = @runtime(core.string_println)(t315) in
     ()
   } in
-  let inline414 = @runtime(core.bool_to_string)(value/31) in
+  let inline414 = @runtime(core.bool_to_string)(value/1) in
   jump inline_cont413(inline414)
 }
 
-fn trait_impl#ToString#string#to_string(self/67: string) -> string {
-  self/67
+fn trait_impl#ToString#string#to_string(self/65: string) -> string {
+  self/65
 }
 
-fn trait_impl#ToString#int#to_string(self/69: int) -> string {
-  let t321 = @runtime(core.int_to_string)(self/69) in
+fn trait_impl#ToString#int#to_string(self/67: int) -> string {
+  let t321 = @runtime(core.int_to_string)(self/67) in
   t321
 }
 
-fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
-  let t324 = @runtime(core.bool_to_string)(self/66) in
+fn trait_impl#ToString#bool#to_string(self/64: bool) -> string {
+  let t324 = @runtime(core.bool_to_string)(self/64) in
   t324
 }
 
-fn trait_impl#PartialEq#Option__int#eq(self/153: Option__int, other/154: Option__int) -> bool {
-  match other/154 {
+fn trait_impl#PartialEq#Option__int#eq(self/151: Option__int, other/152: Option__int) -> bool {
+  match other/152 {
     Tag_0 => {
-      match self/153 {
+      match self/151 {
         Tag_0 => {
           true
         },
@@ -350,10 +350,10 @@ fn trait_impl#PartialEq#Option__int#eq(self/153: Option__int, other/154: Option_
       }
     },
     Tag_1 => {
-      let x64 = Option__int::Some._0(other/154) in
-      match self/153 {
+      let x64 = Option__int::Some._0(other/152) in
+      match self/151 {
         Tag_1 => {
-          let x66 = Option__int::Some._0(self/153) in
+          let x66 = Option__int::Some._0(self/151) in
           let inline416 = (x66 == x64) in
           inline416
         },
@@ -365,13 +365,13 @@ fn trait_impl#PartialEq#Option__int#eq(self/153: Option__int, other/154: Option_
   }
 }
 
-fn trait_impl#Hash#Option__int#hash(self/157: Option__int) -> uint64 {
-  match self/157 {
+fn trait_impl#Hash#Option__int#hash(self/155: Option__int) -> uint64 {
+  match self/155 {
     Tag_0 => {
       14695981039346656038
     },
     Tag_1 => {
-      let x67 = Option__int::Some._0(self/157) in
+      let x67 = Option__int::Some._0(self/155) in
       join inline_cont417(t338: uint64) -> uint64 {
         let t339 = (14695981039346656039 + t338) in
         t339
@@ -382,12 +382,12 @@ fn trait_impl#Hash#Option__int#hash(self/157: Option__int) -> uint64 {
   }
 }
 
-fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  let t342 = (self/103 == other/104) in
+fn trait_impl#PartialEq#int#eq(self/101: int, other/102: int) -> bool {
+  let t342 = (self/101 == other/102) in
   t342
 }
 
-fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
-  let t345 = @runtime(core.int_hash)(self/129) in
+fn trait_impl#Hash#int#hash(self/127: int) -> uint64 {
+  let t345 = @runtime(core.int_hash)(self/127) in
   t345
 }

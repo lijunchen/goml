@@ -78,26 +78,26 @@ fn main() -> unit {
   jump inline_cont253(inline254)
 }
 
-fn println__T_int(value/31: int) -> unit {
+fn println__T_int(value/1: int) -> unit {
   join inline_cont255(t198: string) -> unit {
     let t199 = @runtime(core.string_println)(t198) in
     ()
   } in
-  let inline256 = @runtime(core.int_to_string)(value/31) in
+  let inline256 = @runtime(core.int_to_string)(value/1) in
   jump inline_cont255(inline256)
 }
 
-fn inherent#Vec#Vec[T]#len__T_int32(self/187: Vec[int32]) -> int {
-  let t202 = @intrinsic(vec.len)(self/187) in
+fn inherent#Vec#Vec[T]#len__T_int32(self/185: Vec[int32]) -> int {
+  let t202 = @intrinsic(vec.len)(self/185) in
   t202
 }
 
-fn println__T_int32(value/31: int32) -> unit {
+fn println__T_int32(value/1: int32) -> unit {
   join inline_cont257(t204: string) -> unit {
     let t205 = @runtime(core.string_println)(t204) in
     ()
   } in
-  let inline258 = @runtime(core.int32_to_string)(value/31) in
+  let inline258 = @runtime(core.int32_to_string)(value/1) in
   jump inline_cont257(inline258)
 }
 
@@ -106,31 +106,31 @@ fn inherent#Vec#Vec[T]#new__T_int32() -> Vec[int32] {
   t208
 }
 
-fn inherent#Vec#Vec[T]#push__T_int32(self/176: Vec[int32], elem/177: int32) -> unit {
-  let t210 = @intrinsic(vec.push)(self/176, elem/177) in
+fn inherent#Vec#Vec[T]#push__T_int32(self/174: Vec[int32], elem/175: int32) -> unit {
+  let t210 = @intrinsic(vec.push)(self/174, elem/175) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#extend__T_int32(self/221: Vec[int32], other/222: Vec[int32]) -> unit {
-  join inline_cont263(len/223: int) -> unit {
+fn inherent#Vec#Vec[T]#extend__T_int32(self/219: Vec[int32], other/220: Vec[int32]) -> unit {
+  join inline_cont263(len/221: int) -> unit {
     join inline_cont261(_wild136: unit) -> unit {
-      let index/224 = 0 in
+      let index/222 = 0 in
       join exit212() -> unit {
         ()
       } in
       joinrec {
         join loop213() -> unit {
-          let t214 = (index/224 < len/223) in
+          let t214 = (index/222 < len/221) in
           if t214 {
-            let t215 = @intrinsic(vec.get)(other/222, index/224) in
+            let t215 = @intrinsic(vec.get)(other/220, index/222) in
             join inline_cont259(_wild137: unit) -> unit {
-              let compound_old138 = index/224 in
+              let compound_old138 = index/222 in
               let compound_value139 = 1 in
               let t216 = (compound_old138 + compound_value139) in
-              let t217 = index/224 = t216 in
+              let t217 = index/222 = t216 in
               jump loop213()
             } in
-            let inline260 = @intrinsic(vec.push)(self/221, t215) in
+            let inline260 = @intrinsic(vec.push)(self/219, t215) in
             jump inline_cont259(())
           } else {
             jump exit212()
@@ -139,24 +139,24 @@ fn inherent#Vec#Vec[T]#extend__T_int32(self/221: Vec[int32], other/222: Vec[int3
       } in
       jump loop213()
     } in
-    let inline262 = @intrinsic(vec.reserve)(self/221, len/223) in
+    let inline262 = @intrinsic(vec.reserve)(self/219, len/221) in
     jump inline_cont261(())
   } in
-  let inline264 = @intrinsic(vec.len)(other/222) in
+  let inline264 = @intrinsic(vec.len)(other/220) in
   jump inline_cont263(inline264)
 }
 
-fn trait_impl#ToString#int#to_string(self/69: int) -> string {
-  let t220 = @runtime(core.int_to_string)(self/69) in
+fn trait_impl#ToString#int#to_string(self/67: int) -> string {
+  let t220 = @runtime(core.int_to_string)(self/67) in
   t220
 }
 
-fn trait_impl#ToString#int32#to_string(self/72: int32) -> string {
-  let t223 = @runtime(core.int32_to_string)(self/72) in
+fn trait_impl#ToString#int32#to_string(self/70: int32) -> string {
+  let t223 = @runtime(core.int32_to_string)(self/70) in
   t223
 }
 
-fn inherent#Vec#Vec[T]#reserve__T_int32(self/190: Vec[int32], additional/191: int) -> unit {
-  let t225 = @intrinsic(vec.reserve)(self/190, additional/191) in
+fn inherent#Vec#Vec[T]#reserve__T_int32(self/188: Vec[int32], additional/189: int) -> unit {
+  let t225 = @intrinsic(vec.reserve)(self/188, additional/189) in
   ()
 }

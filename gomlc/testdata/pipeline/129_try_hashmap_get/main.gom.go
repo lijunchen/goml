@@ -202,22 +202,22 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__35 int32) string {
-    var t207 string = _goml_runtime_core_int32_to_string(self__35)
+func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
+    var t207 string = _goml_runtime_core_int32_to_string(self__33)
     return t207
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
-func _goml_m_trait__impl_i_PartialEq_i_string_i_eq(self__99 string, other__100 string) bool {
-    var t215 bool = self__99 == other__100
+func _goml_m_trait__impl_i_PartialEq_i_string_i_eq(self__97 string, other__98 string) bool {
+    var t215 bool = self__97 == other__98
     return t215
 }
 
-func _goml_m_trait__impl_i_Hash_i_string_i_hash(self__127 string) uint64 {
-    var t218 uint64 = _goml_runtime_core_string_hash(self__127)
+func _goml_m_trait__impl_i_Hash_i_string_i_hash(self__125 string) uint64 {
+    var t218 uint64 = _goml_runtime_core_string_hash(self__125)
     return t218
 }
 

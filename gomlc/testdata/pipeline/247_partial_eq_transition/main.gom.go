@@ -412,8 +412,8 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_PartialEq_i_int_i_eq(self__103 int, other__104 int) bool {
-    var t1177 bool = self__103 == other__104
+func _goml_m_trait__impl_i_PartialEq_i_int_i_eq(self__101 int, other__102 int) bool {
+    var t1177 bool = self__101 == other__102
     return t1177
 }
 
@@ -547,9 +547,9 @@ func _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_ge____Self__Rank(self__24
     return t1202
 }
 
-func println__T_bool(value__31 bool) struct{} {
+func println__T_bool(value__1 bool) struct{} {
     var t1204 string
-    var inline2208 string = _goml_runtime_core_bool_to_string(value__31)
+    var inline2208 string = _goml_runtime_core_bool_to_string(value__1)
     t1204 = inline2208
     _goml_runtime_core_string_println(t1204)
     return struct{}{}
@@ -573,15 +573,15 @@ func equal__T_ModernKey(left__12 ModernKey, right__13 ModernKey) bool {
     return inline2218
 }
 
-func println__T_string(value__31 string) struct{} {
+func println__T_string(value__1 string) struct{} {
     var t1213 string
-    t1213 = value__31
+    t1213 = value__1
     _goml_runtime_core_string_println(t1213)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__66 bool) string {
-    var t1217 string = _goml_runtime_core_bool_to_string(self__66)
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
+    var t1217 string = _goml_runtime_core_bool_to_string(self__64)
     return t1217
 }
 
@@ -590,25 +590,25 @@ func _goml_m_inherent_i_HashMap_i_H_h4f35fad7fd3ed72455715cdf3969637d_ey____V__s
     return t1220
 }
 
-func _goml_m_inherent_i_HashMap_i_H_h4c415936d3e2c958d5274434037d6231_ey____V__string(self__248 *hashmap_LegacyKey_string_x, key__249 LegacyKey, value__250 string) struct{} {
-    hashmap_set__HashMap_9LegacyKey_6string(self__248, key__249, value__250)
+func _goml_m_inherent_i_HashMap_i_H_h4c415936d3e2c958d5274434037d6231_ey____V__string(self__246 *hashmap_LegacyKey_string_x, key__247 LegacyKey, value__248 string) struct{} {
+    hashmap_set__HashMap_9LegacyKey_6string(self__246, key__247, value__248)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(self__290 Option__string, fallback__291 string) string {
-    switch self__290.(type) {
+func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(self__282 Option__string, fallback__283 string) string {
+    switch self__282.(type) {
     case Option__string_None:
-        return fallback__291
+        return fallback__283
     case Option__string_Some:
-        var x152 string = self__290.(Option__string_Some)._0
-        return x152
+        var x151 string = self__282.(Option__string_Some)._0
+        return x151
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
 func main() {

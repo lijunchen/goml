@@ -114,20 +114,20 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func println__T_string(value__31 string) struct{} {
+func println__T_string(value__1 string) struct{} {
     var t200 string
-    t200 = value__31
+    t200 = value__1
     _goml_runtime_core_string_println(t200)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(self__74 uint8) string {
-    var t204 string = _goml_runtime_core_uint8_to_string(self__74)
+func _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(self__72 uint8) string {
+    var t204 string = _goml_runtime_core_uint8_to_string(self__72)
     return t204
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
-    return self__67
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
+    return self__65
 }
 
 func main() {
