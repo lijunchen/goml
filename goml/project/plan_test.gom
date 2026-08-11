@@ -7,6 +7,15 @@ use std::process;
 use std::task;
 use std::testing;
 
+fn strings_contain(values: Vec[string], expected: string) -> bool {
+    for value in values {
+        if value == expected {
+            return true
+        }
+    }
+    false
+}
+
 #[test]
 fn derives_unicode_package_names_from_directories() -> unit {
     match package_name_for_directory("/tmp/项目", "alice::app", "/tmp/项目/工具/解析") {
@@ -21,6 +30,59 @@ fn displays_commands_with_unicode_and_quoted_arguments() -> unit {
         display_command(Command::GoBuild { input: "源 code/main.go", output: "输出's app" }),
         "go build -o '输出'\\''s app' '源 code/main.go'",
     )
+}
+
+#[test]
+fn discovers_toolchain_projects_with_implicit_layers() -> unit {
+    let repository = test_support::repository_root();
+    let artifact_root = test_support::workspace("toolchain_graph");
+    let graph = match discover_toolchain_graph(
+        test_support::gomlc_binary(),
+        path::join(repository, "lib"),
+        artifact_root,
+    ) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error);
+            Graph {
+                module_dir: "",
+                module_path: "",
+                entry_package: "",
+                packages: Vec::[],
+                sources: Vec::[],
+                order: Vec::[],
+            }
+        },
+    };
+    testing::assert(find_package(graph.packages, "builtin").is_some());
+    testing::assert(find_package(graph.packages, "prelude").is_some());
+    testing::assert(find_package(graph.packages, "std").is_some());
+    let Some(random) = find_package(graph.packages, "std::crypto::rand") else {
+        testing::fail("missing std::crypto::rand");
+        return
+    };
+    testing::assert(strings_contain(random.imports, "builtin"));
+    testing::assert(strings_contain(random.imports, "prelude"));
+    testing::assert(strings_contain(random.imports, "std::bytes"));
+    testing::assert(strings_contain(random.imports, "std::internal::host"));
+    let context = Context {
+        graph,
+        compiler: test_support::gomlc_binary(),
+        compiler_world_artifact: false,
+        artifact_root,
+    };
+    match toolchain_world_plan(context, path::join(artifact_root, "world.gaf")) {
+        Ok(plan) => {
+            testing::assert_eq(plan.commands.len(), graph.packages.len() + 1);
+            match plan.commands[plan.commands.len() - 1] {
+                PackToolchainWorld { source_files, .. } => {
+                    testing::assert(source_files.len() > graph.packages.len())
+                },
+                _ => testing::fail("toolchain plan did not end with world packing"),
+            }
+        },
+        Err(error) => testing::fail(error),
+    }
 }
 
 fn compile_command(name: string, interface_files: Vec[string], output: string) -> Command {

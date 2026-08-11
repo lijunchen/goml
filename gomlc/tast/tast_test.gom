@@ -539,6 +539,23 @@ fn diagnoses_duplicate_declaration_names() -> unit {
 }
 
 #[test]
+fn distinguishes_same_named_associated_types_from_different_traits() -> unit {
+    let diagnostics = checked_diagnostics(
+        "trait Iterator { type Item; } trait IntoIterator { type Item; type IntoIter; } impl[I: Iterator] IntoIterator for I { type Item = I::Item; type IntoIter = I; }",
+    );
+    testing::assert_eq(diagnostics.len(), 0);
+    let cyclic = checked_diagnostics(
+        "trait Values { type Item; } struct Value {} impl Values for Value { type Item = Self::Item; }",
+    );
+    testing::assert(
+        has_diagnostic(
+            cyclic,
+            "Associated type Item has a cyclic definition in impl of trait Values",
+        ),
+    )
+}
+
+#[test]
 fn resolves_generic_functions_from_package_interfaces() -> unit {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(

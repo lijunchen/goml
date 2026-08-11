@@ -435,6 +435,49 @@ fn parses_package_command_arguments() -> unit {
 }
 
 #[test]
+fn parses_toolchain_package_capabilities() -> unit {
+    match parse_toolchain_build_args(
+        Vec::[
+            "gomlc",
+            "__toolchain-build",
+            "--builtin-contract",
+            "--counter-output",
+            "counter",
+            "--package",
+            "builtin",
+            "--input",
+            "contract.gom",
+            "--output",
+            "builtin",
+        ],
+    ) {
+        Ok(value) => {
+            testing::assert(value.builtin_contract);
+            testing::assert_eq(value.command.package_name, "builtin")
+        },
+        Err(error) => testing::fail(error),
+    };
+    match parse_toolchain_build_args(
+        Vec::[
+            "gomlc",
+            "__toolchain-build",
+            "--package",
+            "builtin",
+            "--input",
+            "contract.gom",
+            "--output",
+            "builtin",
+        ],
+    ) {
+        Ok(_) => testing::fail("builtin package compiled without capability"),
+        Err(error) => testing::assert_eq(
+            error,
+            "package builtin requires builtin contract capability",
+        ),
+    }
+}
+
+#[test]
 fn parses_link_command_arguments() -> unit {
     let values = Vec::new();
     values.push("--input");
@@ -1918,6 +1961,26 @@ fn world_with_test_section_version(value: bytes::Bytes, id: uint16, version: uin
     test_world_encode_sections(container.kind, sections)
 }
 
+fn world_with_test_metadata(value: bytes::Bytes, metadata: WorldMetadata) -> bytes::Bytes {
+    let container = test_world_container(value);
+    let sections: Vec[wire::ArtifactBinarySection] = Vec::[];
+    for section in container.sections {
+        sections.push(
+            if section.id == 1.to_uint16() {
+                wire::ArtifactBinarySection {
+                    id: section.id,
+                    version: section.version,
+                    flags: section.flags,
+                    data: world_encode_metadata_v2(metadata),
+                }
+            } else {
+                section
+            },
+        )
+    }
+    test_world_encode_sections(container.kind, sections)
+}
+
 fn replaced_test_dependency(values: Vec[(string, string)], name: string, hash: string) -> Vec[
     (string, string),
 ] {
@@ -2096,6 +2159,7 @@ fn standard_interface_hashes_are_stable() -> unit {
 #[test]
 fn compiler_world_artifact_round_trips() -> unit {
     let world = package_world();
+    world.source_digest = "source-digest";
     let first = match encode_package_world(world) {
         Ok(value) => value,
         Err(error) => {
@@ -2148,7 +2212,8 @@ fn compiler_world_artifact_round_trips() -> unit {
                     package_value.core_value.functions.len(),
                 )
             }
-            testing::assert_eq(decoded.counter.get(), world.counter.get())
+            testing::assert_eq(decoded.counter.get(), world.counter.get());
+            testing::assert_eq(decoded.source_digest, world.source_digest)
         },
         Err(error) => testing::fail(error),
     };
@@ -2157,6 +2222,64 @@ fn compiler_world_artifact_round_trips() -> unit {
         Ok(_) => testing::fail("expected truncated compiler world to fail"),
         Err(_) => (),
     }
+}
+
+#[test]
+fn compiler_world_artifact_validates_metadata_identity() -> unit {
+    let world = package_world();
+    let encoded = match encode_package_world(world) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error);
+            bytes::Bytes::new()
+        },
+    };
+    let metadata = match world_decode_metadata_v2(
+        test_world_section(test_world_container(encoded), 1.to_uint16()).data,
+    ) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error);
+            WorldMetadata {
+                counter: 0,
+                package_count: 0,
+                artifact_format: WORLD_ARTIFACT_FORMAT,
+                compiler_abi: WORLD_COMPILER_ABI,
+                compiler_identity: version::current(),
+                source_digest: "",
+                builtin_package: "builtin",
+                prelude_package: "prelude",
+            }
+        },
+    };
+    assert_world_decode_error(
+        world_with_test_metadata(
+            encoded,
+            WorldMetadata { artifact_format: WORLD_ARTIFACT_FORMAT + 1, ..metadata },
+        ),
+        "world artifact format does not match compiler",
+    );
+    assert_world_decode_error(
+        world_with_test_metadata(
+            encoded,
+            WorldMetadata { compiler_abi: WORLD_COMPILER_ABI + 1, ..metadata },
+        ),
+        "world compiler ABI does not match compiler",
+    );
+    assert_world_decode_error(
+        world_with_test_metadata(
+            encoded,
+            WorldMetadata { compiler_identity: "different", ..metadata },
+        ),
+        "world compiler identity does not match compiler",
+    );
+    assert_world_decode_error(
+        world_with_test_metadata(
+            encoded,
+            WorldMetadata { builtin_package: "different", ..metadata },
+        ),
+        "world builtin or prelude package identity does not match",
+    )
 }
 
 #[test]
@@ -2203,6 +2326,7 @@ fn compiler_world_artifact_rejects_duplicate_and_missing_packages() -> unit {
     }
     let incomplete = PackageWorld {
         counter: Ref::new(world.counter.get()),
+        source_digest: world.source_digest,
         builtins: world.builtins,
         builtin_interface: world.builtin_interface,
         prelude: world.prelude,

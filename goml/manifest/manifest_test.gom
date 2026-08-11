@@ -29,6 +29,17 @@ fn rejects_toolchain_module_paths_and_dependencies() -> unit {
 }
 
 #[test]
+fn internal_loader_accepts_toolchain_module_paths() -> unit {
+    let root = test_support::workspace("manifest_toolchain_path");
+    let path = root + "/goml.toml";
+    test_support::write_file(path, "[module]\npath = \"builtin\"\n");
+    match load_toolchain(path) {
+        Ok(value) => testing::assert_eq(value.module_path, "builtin"),
+        Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
 fn parses_escaped_unicode_manifest_strings() -> unit {
     match parse_string("\"工具\\\\\\\"路径\"") {
         Ok(value) => testing::assert_eq(value, "工具\\\"路径"),
