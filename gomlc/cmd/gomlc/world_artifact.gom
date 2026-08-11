@@ -9,19 +9,57 @@ use gomlc::resources;
 use std::bytes;
 use std::fs;
 
-fn world_metadata(counter: int) -> bytes::Bytes {
+struct WorldMetadata {
+    counter: int,
+    package_count: int,
+}
+
+fn world_metadata_v1(counter: int) -> bytes::Bytes {
     let writer = wire::new_artifact_binary_writer();
     wire::artifact_binary_write_u64(writer, counter.to_uint64());
     wire::artifact_binary_writer_finish(writer)
 }
 
-fn world_decode_counter(data: bytes::Bytes) -> Result[int, string] {
-    let reader = wire::new_artifact_binary_reader(data);
-    let value = wire::artifact_binary_read_u64(reader)?;
+fn world_metadata_v2(counter: int, package_count: int) -> bytes::Bytes {
+    let writer = wire::new_artifact_binary_writer();
+    wire::artifact_binary_write_u64(writer, counter.to_uint64());
+    wire::artifact_binary_write_u64(writer, package_count.to_uint64());
+    wire::artifact_binary_writer_finish(writer)
+}
+
+fn world_decode_supported_int(value: uint64, name: string) -> Result[int, string] {
     if value > 2147483647 {
-        Result::Err("world artifact counter exceeds supported size")
+        Result::Err("world artifact " + name + " exceeds supported size")
     } else {
         Result::Ok(value.to_int())
+    }
+}
+
+fn world_decode_metadata_v1(data: bytes::Bytes) -> Result[WorldMetadata, string] {
+    let reader = wire::new_artifact_binary_reader(data);
+    let counter = world_decode_supported_int(wire::artifact_binary_read_u64(reader)?, "counter")?;
+    if wire::artifact_binary_reader_remaining(reader) != 0 {
+        Result::Err("world artifact metadata has trailing data")
+    } else {
+        Result::Ok(WorldMetadata { counter, package_count: 0 })
+    }
+}
+
+fn world_decode_metadata_v2(data: bytes::Bytes) -> Result[WorldMetadata, string] {
+    let reader = wire::new_artifact_binary_reader(data);
+    let counter = world_decode_supported_int(wire::artifact_binary_read_u64(reader)?, "counter")?;
+    let package_count = world_decode_supported_int(
+        wire::artifact_binary_read_u64(reader)?,
+        "package count",
+    )?;
+    if package_count < 2 {
+        Result::Err("world artifact must contain builtin and prelude packages")
+    } else if package_count > 511 {
+        Result::Err("world artifact contains too many packages")
+    } else if wire::artifact_binary_reader_remaining(reader) != 0 {
+        Result::Err("world artifact metadata has trailing data")
+    } else {
+        Result::Ok(WorldMetadata { counter, package_count })
     }
 }
 
@@ -47,7 +85,7 @@ fn world_core_unit(
 fn world_add_package_sections(
     sections: Vec[wire::ArtifactBinarySection],
     section_id: uint16,
-    value: ArtifactStandardPackage,
+    value: ToolchainPackage,
 ) -> Result[unit, string] {
     let interface = interface_codec::encode_binary(value.interface_unit)?;
     let core = core_codec::encode_binary(
@@ -78,96 +116,161 @@ fn world_add_package_sections(
     Result::Ok(())
 }
 
-fn world_add_standard_sections(
-    sections: Vec[wire::ArtifactBinarySection],
-    value: ArtifactStandardLibrary,
-) -> Result[unit, string] {
-    let packages: Vec[(uint16, ArtifactStandardPackage)] = Vec::[
-        (10.to_uint16(), value.root),
-        (12.to_uint16(), value.host),
-        (14.to_uint16(), value.bytes),
-        (16.to_uint16(), value.collections),
-        (18.to_uint16(), value.env),
-        (20.to_uint16(), value.fs),
-        (22.to_uint16(), value.io),
-        (24.to_uint16(), value.json),
-        (26.to_uint16(), value.path),
-        (28.to_uint16(), value.process),
-        (30.to_uint16(), value.testing),
-        (32.to_uint16(), value.text),
-        (34.to_uint16(), value.num),
-        (36.to_uint16(), value.time),
-        (38.to_uint16(), value.ascii),
-        (40.to_uint16(), value.iter),
-        (42.to_uint16(), value.cmp),
-        (44.to_uint16(), value.internal_task),
-        (46.to_uint16(), value.task),
-        (48.to_uint16(), value.serde),
-        (50.to_uint16(), value.toml),
-        (52.to_uint16(), value.bincode),
-        (54.to_uint16(), value.error),
-        (56.to_uint16(), value.utf8),
-        (58.to_uint16(), value.unicode),
-        (60.to_uint16(), value.math),
-        (62.to_uint16(), value.rand),
-        (64.to_uint16(), value.crypto),
-        (66.to_uint16(), value.crypto_hash),
-        (68.to_uint16(), value.crypto_rand),
-    ];
-    for package_value in packages {
-        world_add_package_sections(sections, package_value.0, package_value.1)?
+fn world_builtin_package(value: PackageWorld) -> ToolchainPackage {
+    ToolchainPackage {
+        core_value: value.builtins,
+        interface_unit: value.builtin_interface,
+        environment_exports: value.builtin_interface.exports,
     }
-    Result::Ok(())
 }
 
-fn encode_package_world(value: PackageWorld) -> Result[bytes::Bytes, string] {
-    let builtin_interface = interface_codec::encode_binary(value.builtin_interface)?;
-    let builtin_core = core_codec::encode_binary(
-        world_core_unit(
-            "builtin",
-            "builtin",
-            value.builtin_interface,
-            value.builtin_interface.exports,
-            value.builtins,
-        ),
-    )?;
-    let sections = Vec::[
+fn world_all_packages(value: PackageWorld) -> Vec[ToolchainPackage] {
+    let result = Vec::[world_builtin_package(value), value.prelude];
+    for package_value in value.standard {
+        result.push(package_value)
+    }
+    result
+}
+
+fn world_find_package(values: Vec[ToolchainPackage], package_name: string) -> Option[
+    ToolchainPackage,
+] {
+    for value in values {
+        if value.interface_unit.package_name == package_name {
+            return Option::Some(value)
+        } else {}
+    }
+    Option::None
+}
+
+fn world_required_package(values: Vec[ToolchainPackage], package_name: string) -> Result[
+    ToolchainPackage,
+    string,
+] {
+    match world_find_package(values, package_name) {
+        Some(value) => Result::Ok(value),
+        None => Result::Err("world artifact is missing package " + package_name),
+    }
+}
+
+fn world_sorted_packages(values: Vec[ToolchainPackage]) -> Result[Vec[ToolchainPackage], string] {
+    let names: Vec[string] = Vec::[];
+    for value in values {
+        names.push(value.interface_unit.package_name)
+    }
+    let names = wire::sort_artifact_names(names);
+    let result: Vec[ToolchainPackage] = Vec::[];
+    let mut previous: Option[string] = Option::None;
+    for name in names {
+        match previous {
+            Some(value) => if value == name {
+                return Result::Err("world artifact contains duplicate package " + name)
+            } else {},
+            None => (),
+        };
+        result.push(world_required_package(values, name)?);
+        previous = Option::Some(name);
+    }
+    Result::Ok(result)
+}
+
+fn world_v1_package_section_id(package_name: string) -> Option[uint16] {
+    match package_name {
+        "builtin" => Option::Some(2.to_uint16()),
+        "prelude" => Option::Some(4.to_uint16()),
+        resources::STD_ROOT_PACKAGE => Option::Some(10.to_uint16()),
+        resources::STD_INTERNAL_HOST_PACKAGE => Option::Some(12.to_uint16()),
+        resources::STD_BYTES_PACKAGE => Option::Some(14.to_uint16()),
+        resources::STD_COLLECTIONS_PACKAGE => Option::Some(16.to_uint16()),
+        resources::STD_ENV_PACKAGE => Option::Some(18.to_uint16()),
+        resources::STD_FS_PACKAGE => Option::Some(20.to_uint16()),
+        resources::STD_IO_PACKAGE => Option::Some(22.to_uint16()),
+        resources::STD_JSON_PACKAGE => Option::Some(24.to_uint16()),
+        resources::STD_PATH_PACKAGE => Option::Some(26.to_uint16()),
+        resources::STD_PROCESS_PACKAGE => Option::Some(28.to_uint16()),
+        resources::STD_TESTING_PACKAGE => Option::Some(30.to_uint16()),
+        resources::STD_TEXT_PACKAGE => Option::Some(32.to_uint16()),
+        resources::STD_NUM_PACKAGE => Option::Some(34.to_uint16()),
+        resources::STD_TIME_PACKAGE => Option::Some(36.to_uint16()),
+        resources::STD_ASCII_PACKAGE => Option::Some(38.to_uint16()),
+        resources::STD_ITER_PACKAGE => Option::Some(40.to_uint16()),
+        resources::STD_CMP_PACKAGE => Option::Some(42.to_uint16()),
+        resources::STD_INTERNAL_TASK_PACKAGE => Option::Some(44.to_uint16()),
+        resources::STD_TASK_PACKAGE => Option::Some(46.to_uint16()),
+        resources::STD_SERDE_PACKAGE => Option::Some(48.to_uint16()),
+        resources::STD_TOML_PACKAGE => Option::Some(50.to_uint16()),
+        resources::STD_BINCODE_PACKAGE => Option::Some(52.to_uint16()),
+        resources::STD_ERROR_PACKAGE => Option::Some(54.to_uint16()),
+        resources::STD_UTF8_PACKAGE => Option::Some(56.to_uint16()),
+        resources::STD_UNICODE_PACKAGE => Option::Some(58.to_uint16()),
+        resources::STD_MATH_PACKAGE => Option::Some(60.to_uint16()),
+        resources::STD_RAND_PACKAGE => Option::Some(62.to_uint16()),
+        resources::STD_CRYPTO_PACKAGE => Option::Some(64.to_uint16()),
+        resources::STD_CRYPTO_HASH_PACKAGE => Option::Some(66.to_uint16()),
+        resources::STD_CRYPTO_RAND_PACKAGE => Option::Some(68.to_uint16()),
+        _ => Option::None,
+    }
+}
+
+fn encode_package_world_v1(value: PackageWorld) -> Result[bytes::Bytes, string] {
+    let sections: Vec[wire::ArtifactBinarySection] = Vec::[
         wire::ArtifactBinarySection {
             id: 1,
             version: 1,
             flags: wire::required_section_flag(),
-            data: world_metadata(value.counter.get()),
-        },
-        wire::ArtifactBinarySection {
-            id: 2,
-            version: 1,
-            flags: wire::required_section_flag(),
-            data: builtin_interface,
-        },
-        wire::ArtifactBinarySection {
-            id: 3,
-            version: 1,
-            flags: wire::required_section_flag(),
-            data: builtin_core,
+            data: world_metadata_v1(value.counter.get()),
         },
     ];
-    world_add_package_sections(sections, 4.to_uint16(), value.prelude)?;
-    world_add_standard_sections(sections, value.standard)?;
+    for package_value in world_all_packages(value) {
+        let section_id = match world_v1_package_section_id(
+            package_value.interface_unit.package_name,
+        ) {
+            Some(value) => value,
+            None => return Result::Err(
+                "world v1 cannot encode package " + package_value.interface_unit.package_name,
+            ),
+        };
+        world_add_package_sections(sections, section_id, package_value)?
+    }
     wire::encode_artifact_binary_container(3, sections)
 }
 
-fn world_required_section(value: wire::ArtifactBinaryContainer, id: uint16) -> Result[
+fn encode_package_world(value: PackageWorld) -> Result[bytes::Bytes, string] {
+    let packages = world_sorted_packages(world_all_packages(value))?;
+    let sections: Vec[wire::ArtifactBinarySection] = Vec::[
+        wire::ArtifactBinarySection {
+            id: 1,
+            version: 2,
+            flags: wire::required_section_flag(),
+            data: world_metadata_v2(value.counter.get(), packages.len()),
+        },
+    ];
+    for index in 0..packages.len() {
+        world_add_package_sections(sections, (2 + index * 2).to_uint16(), packages[index])?
+    }
+    wire::encode_artifact_binary_container(3, sections)
+}
+
+fn world_required_section_version(value: wire::ArtifactBinaryContainer, id: uint16, version: uint16) -> Result[
     wire::ArtifactBinarySection,
     string,
 ] {
     match wire::artifact_binary_find_section(value, id) {
-        Some(section) => if section.version != 1 || section.flags != wire::required_section_flag() {
+        Some(section) => if section.version != version
+            || section.flags != wire::required_section_flag() {
             Result::Err("invalid world artifact section")
         } else {
             Result::Ok(section)
         },
         None => Result::Err("world artifact is missing a required section"),
     }
+}
+
+fn world_required_section(value: wire::ArtifactBinaryContainer, id: uint16) -> Result[
+    wire::ArtifactBinarySection,
+    string,
+] {
+    world_required_section_version(value, id, 1.to_uint16())
 }
 
 fn world_dependencies_equal(left: Vec[(string, string)], right: Vec[(string, string)]) -> bool {
@@ -187,7 +290,7 @@ fn world_decode_package(
     value: wire::ArtifactBinaryContainer,
     section_id: uint16,
     expected_name: string,
-) -> Result[ArtifactStandardPackage, string] {
+) -> Result[ToolchainPackage, string] {
     let interface_section = world_required_section(value, section_id)?;
     let core_section = world_required_section(value, section_id + 1)?;
     let interface = interface_codec::decode_binary(interface_section.data)?;
@@ -198,7 +301,7 @@ fn world_decode_package(
         Result::Err("world artifact package identity does not match")
     } else {
         Result::Ok(
-            ArtifactStandardPackage {
+            ToolchainPackage {
                 core_value: core.core_ir,
                 interface_unit: interface,
                 environment_exports: core.exports,
@@ -207,47 +310,35 @@ fn world_decode_package(
     }
 }
 
-fn world_standard_packages(value: ArtifactStandardLibrary) -> Vec[ArtifactStandardPackage] {
-    Vec::[
-        value.root,
-        value.host,
-        value.ascii,
-        value.bincode,
-        value.bytes,
-        value.cmp,
-        value.collections,
-        value.error,
-        value.env,
-        value.fs,
-        value.io,
-        value.internal_task,
-        value.iter,
-        value.json,
-        value.num,
-        value.path,
-        value.process,
-        value.serde,
-        value.task,
-        value.testing,
-        value.text,
-        value.toml,
-        value.time,
-        value.utf8,
-        value.unicode,
-        value.math,
-        value.rand,
-        value.crypto,
-        value.crypto_hash,
-        value.crypto_rand,
-    ]
+fn world_decode_package_any(value: wire::ArtifactBinaryContainer, section_id: uint16) -> Result[
+    ToolchainPackage,
+    string,
+] {
+    let interface_section = world_required_section(value, section_id)?;
+    let core_section = world_required_section(value, section_id + 1)?;
+    let interface = interface_codec::decode_binary(interface_section.data)?;
+    let core = core_codec::decode_binary(core_section.data)?;
+    if core.package_name != interface.package_name
+        || core.interface_hash != interface.interface_hash
+        || !world_dependencies_equal(core.deps, interface.deps) {
+        Result::Err("world artifact package identity does not match")
+    } else {
+        Result::Ok(
+            ToolchainPackage {
+                core_value: core.core_ir,
+                interface_unit: interface,
+                environment_exports: core.exports,
+            },
+        )
+    }
 }
 
 fn world_validate_standard_dependencies(
-    value: ArtifactStandardLibrary,
+    value: Vec[ToolchainPackage],
     builtin_hash: string,
     prelude_hash: string,
 ) -> Result[unit, string] {
-    for package_value in world_standard_packages(value) {
+    for package_value in value {
         if !artifact_interface_has_dependency(package_value.interface_unit, "builtin", builtin_hash) {
             return Result::Err("world artifact standard package builtin dependency does not match")
         } else if !artifact_interface_has_dependency(
@@ -261,13 +352,59 @@ fn world_validate_standard_dependencies(
     Result::Ok(())
 }
 
-fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
-    let container = wire::decode_artifact_binary_container(data)?;
-    if container.kind != 3 {
-        return Result::Err("binary artifact is not a compiler world")
+fn world_validate_standard_packages(value: Vec[ToolchainPackage]) -> Result[unit, string] {
+    for spec in resources::standard_package_specs() {
+        world_required_package(value, spec.name)?;
+    }
+    if value.len() != resources::standard_package_specs().len() {
+        Result::Err("world artifact standard package set does not match")
+    } else {
+        Result::Ok(())
+    }
+}
+
+fn world_from_packages(metadata: WorldMetadata, packages: Vec[ToolchainPackage]) -> Result[
+    PackageWorld,
+    string,
+] {
+    let builtin = world_required_package(packages, "builtin")?;
+    let prelude = world_required_package(packages, "prelude")?;
+    if !artifact_interface_has_dependency(
+        prelude.interface_unit,
+        "builtin",
+        builtin.interface_unit.interface_hash,
+    ) {
+        return Result::Err("world artifact prelude builtin dependency does not match")
     } else {};
-    let counter_section = world_required_section(container, 1)?;
-    let counter = Ref::new(world_decode_counter(counter_section.data)?);
+    let standard: Vec[ToolchainPackage] = Vec::[];
+    for package_value in packages {
+        if package_value.interface_unit.package_name != "builtin"
+            && package_value.interface_unit.package_name != "prelude" {
+            standard.push(package_value)
+        } else {}
+    }
+    world_validate_standard_packages(standard)?;
+    world_validate_standard_dependencies(
+        standard,
+        builtin.interface_unit.interface_hash,
+        prelude.interface_unit.interface_hash,
+    )?;
+    let world = PackageWorld {
+        counter: Ref::new(metadata.counter),
+        builtins: builtin.core_value,
+        builtin_interface: builtin.interface_unit,
+        prelude,
+        standard,
+    };
+    artifact_prepare_world(world);
+    Result::Ok(world)
+}
+
+fn decode_package_world_v1(
+    container: wire::ArtifactBinaryContainer,
+    metadata_section: wire::ArtifactBinarySection,
+) -> Result[PackageWorld, string] {
+    let metadata = world_decode_metadata_v1(metadata_section.data)?;
     let builtin_interface_section = world_required_section(container, 2)?;
     let builtin_core_section = world_required_section(container, 3)?;
     let builtin_interface = interface_codec::decode_binary(builtin_interface_section.data)?;
@@ -315,52 +452,96 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
     let crypto = world_decode_package(container, 64, resources::STD_CRYPTO_PACKAGE)?;
     let crypto_hash = world_decode_package(container, 66, resources::STD_CRYPTO_HASH_PACKAGE)?;
     let crypto_rand = world_decode_package(container, 68, resources::STD_CRYPTO_RAND_PACKAGE)?;
-    let standard = ArtifactStandardLibrary {
-        root,
-        host,
-        ascii,
-        bincode,
-        bytes,
-        cmp,
-        collections,
-        error,
-        env,
-        fs: fs_value,
-        io: io_value,
-        internal_task,
-        iter,
-        json,
-        num,
-        path: path_value,
-        process,
-        serde,
-        task,
-        testing,
-        text: text_value,
-        toml,
-        time: time_value,
-        utf8,
-        unicode,
-        math,
-        rand,
-        crypto,
-        crypto_hash,
-        crypto_rand,
+    world_from_packages(
+        metadata,
+        Vec::[
+            ToolchainPackage {
+                core_value: builtin_core.core_ir,
+                interface_unit: builtin_interface,
+                environment_exports: builtin_core.exports,
+            },
+            prelude,
+            root,
+            host,
+            ascii,
+            bincode,
+            bytes,
+            cmp,
+            collections,
+            error,
+            env,
+            fs_value,
+            io_value,
+            internal_task,
+            iter,
+            json,
+            num,
+            path_value,
+            process,
+            serde,
+            task,
+            testing,
+            text_value,
+            toml,
+            time_value,
+            utf8,
+            unicode,
+            math,
+            rand,
+            crypto,
+            crypto_hash,
+            crypto_rand,
+        ],
+    )
+}
+
+fn decode_package_world_v2(
+    container: wire::ArtifactBinaryContainer,
+    metadata_section: wire::ArtifactBinarySection,
+) -> Result[PackageWorld, string] {
+    let metadata = world_decode_metadata_v2(metadata_section.data)?;
+    if container.sections.len() != 1 + metadata.package_count * 2 {
+        return Result::Err("world artifact package section count does not match")
+    } else {};
+    let packages: Vec[ToolchainPackage] = Vec::[];
+    let names: Vec[string] = Vec::[];
+    for index in 0..metadata.package_count {
+        let package_value = world_decode_package_any(container, (2 + index * 2).to_uint16())?;
+        names.push(package_value.interface_unit.package_name);
+        packages.push(package_value)
+    }
+    let sorted_names: Vec[string] = Vec::[];
+    for name in names {
+        sorted_names.push(name)
+    }
+    let sorted_names = wire::sort_artifact_names(sorted_names);
+    for index in 0..names.len() {
+        if names[index] != sorted_names[index] {
+            return Result::Err("world artifact packages are not sorted")
+        } else if index > 0 && names[index] == names[index - 1] {
+            return Result::Err("world artifact contains duplicate package " + names[index])
+        } else {}
+    }
+    world_from_packages(metadata, packages)
+}
+
+fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
+    let container = wire::decode_artifact_binary_container(data)?;
+    if container.kind != 3 {
+        return Result::Err("binary artifact is not a compiler world")
+    } else {};
+    let metadata_section = match wire::artifact_binary_find_section(container, 1) {
+        Some(value) => value,
+        None => return Result::Err("world artifact is missing a required section"),
     };
-    world_validate_standard_dependencies(
-        standard,
-        builtin_interface.interface_hash,
-        prelude.interface_unit.interface_hash,
-    )?;
-    let world = PackageWorld {
-        counter,
-        builtins: builtin_core.core_ir,
-        builtin_interface,
-        prelude,
-        standard,
-    };
-    artifact_prepare_world(world);
-    Result::Ok(world)
+    if metadata_section.flags != wire::required_section_flag() {
+        return Result::Err("invalid world artifact section")
+    } else {};
+    match metadata_section.version {
+        1 => decode_package_world_v1(container, metadata_section),
+        2 => decode_package_world_v2(container, metadata_section),
+        _ => Result::Err("unsupported world artifact version"),
+    }
 }
 
 fn read_package_world(path: string) -> Result[PackageWorld, string] {

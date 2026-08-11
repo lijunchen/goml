@@ -97,43 +97,10 @@ struct StandardLibrary {
     crypto_rand: PackageCompilation,
 }
 
-struct ArtifactStandardPackage {
+struct ToolchainPackage {
     core_value: core::File,
     interface_unit: artifact::ArtifactInterfaceUnit,
     environment_exports: artifact::ArtifactPackageExports,
-}
-
-struct ArtifactStandardLibrary {
-    root: ArtifactStandardPackage,
-    host: ArtifactStandardPackage,
-    ascii: ArtifactStandardPackage,
-    bincode: ArtifactStandardPackage,
-    bytes: ArtifactStandardPackage,
-    cmp: ArtifactStandardPackage,
-    collections: ArtifactStandardPackage,
-    error: ArtifactStandardPackage,
-    env: ArtifactStandardPackage,
-    fs: ArtifactStandardPackage,
-    io: ArtifactStandardPackage,
-    internal_task: ArtifactStandardPackage,
-    iter: ArtifactStandardPackage,
-    json: ArtifactStandardPackage,
-    num: ArtifactStandardPackage,
-    path: ArtifactStandardPackage,
-    process: ArtifactStandardPackage,
-    serde: ArtifactStandardPackage,
-    task: ArtifactStandardPackage,
-    testing: ArtifactStandardPackage,
-    text: ArtifactStandardPackage,
-    toml: ArtifactStandardPackage,
-    time: ArtifactStandardPackage,
-    utf8: ArtifactStandardPackage,
-    unicode: ArtifactStandardPackage,
-    math: ArtifactStandardPackage,
-    rand: ArtifactStandardPackage,
-    crypto: ArtifactStandardPackage,
-    crypto_hash: ArtifactStandardPackage,
-    crypto_rand: ArtifactStandardPackage,
 }
 
 fn lower_builtin_core(counter: Ref[int]) -> core::File {
@@ -162,47 +129,47 @@ fn lower_go_or_fail(value: Result[go_backend::File, string]) -> go_backend::File
     }
 }
 
-fn artifact_standard_package_from_compilation(value: PackageCompilation) -> ArtifactStandardPackage {
-    ArtifactStandardPackage {
+fn artifact_standard_package_from_compilation(value: PackageCompilation) -> ToolchainPackage {
+    ToolchainPackage {
         core_value: value.core_value,
         interface_unit: value.interface_unit,
         environment_exports: value.exports,
     }
 }
 
-fn artifact_standard_library(value: StandardLibrary) -> ArtifactStandardLibrary {
-    ArtifactStandardLibrary {
-        root: artifact_standard_package_from_compilation(value.root),
-        host: artifact_standard_package_from_compilation(value.host),
-        ascii: artifact_standard_package_from_compilation(value.ascii),
-        bincode: artifact_standard_package_from_compilation(value.bincode),
-        bytes: artifact_standard_package_from_compilation(value.bytes),
-        cmp: artifact_standard_package_from_compilation(value.cmp),
-        collections: artifact_standard_package_from_compilation(value.collections),
-        error: artifact_standard_package_from_compilation(value.error),
-        env: artifact_standard_package_from_compilation(value.env),
-        fs: artifact_standard_package_from_compilation(value.fs),
-        io: artifact_standard_package_from_compilation(value.io),
-        internal_task: artifact_standard_package_from_compilation(value.internal_task),
-        iter: artifact_standard_package_from_compilation(value.iter),
-        json: artifact_standard_package_from_compilation(value.json),
-        num: artifact_standard_package_from_compilation(value.num),
-        path: artifact_standard_package_from_compilation(value.path),
-        process: artifact_standard_package_from_compilation(value.process),
-        serde: artifact_standard_package_from_compilation(value.serde),
-        task: artifact_standard_package_from_compilation(value.task),
-        testing: artifact_standard_package_from_compilation(value.testing),
-        text: artifact_standard_package_from_compilation(value.text),
-        toml: artifact_standard_package_from_compilation(value.toml),
-        time: artifact_standard_package_from_compilation(value.time),
-        utf8: artifact_standard_package_from_compilation(value.utf8),
-        unicode: artifact_standard_package_from_compilation(value.unicode),
-        math: artifact_standard_package_from_compilation(value.math),
-        rand: artifact_standard_package_from_compilation(value.rand),
-        crypto: artifact_standard_package_from_compilation(value.crypto),
-        crypto_hash: artifact_standard_package_from_compilation(value.crypto_hash),
-        crypto_rand: artifact_standard_package_from_compilation(value.crypto_rand),
-    }
+fn artifact_standard_packages(value: StandardLibrary) -> Vec[ToolchainPackage] {
+    Vec::[
+        artifact_standard_package_from_compilation(value.root),
+        artifact_standard_package_from_compilation(value.host),
+        artifact_standard_package_from_compilation(value.ascii),
+        artifact_standard_package_from_compilation(value.bincode),
+        artifact_standard_package_from_compilation(value.bytes),
+        artifact_standard_package_from_compilation(value.cmp),
+        artifact_standard_package_from_compilation(value.collections),
+        artifact_standard_package_from_compilation(value.error),
+        artifact_standard_package_from_compilation(value.env),
+        artifact_standard_package_from_compilation(value.fs),
+        artifact_standard_package_from_compilation(value.io),
+        artifact_standard_package_from_compilation(value.internal_task),
+        artifact_standard_package_from_compilation(value.iter),
+        artifact_standard_package_from_compilation(value.json),
+        artifact_standard_package_from_compilation(value.num),
+        artifact_standard_package_from_compilation(value.path),
+        artifact_standard_package_from_compilation(value.process),
+        artifact_standard_package_from_compilation(value.serde),
+        artifact_standard_package_from_compilation(value.task),
+        artifact_standard_package_from_compilation(value.testing),
+        artifact_standard_package_from_compilation(value.text),
+        artifact_standard_package_from_compilation(value.toml),
+        artifact_standard_package_from_compilation(value.time),
+        artifact_standard_package_from_compilation(value.utf8),
+        artifact_standard_package_from_compilation(value.unicode),
+        artifact_standard_package_from_compilation(value.math),
+        artifact_standard_package_from_compilation(value.rand),
+        artifact_standard_package_from_compilation(value.crypto),
+        artifact_standard_package_from_compilation(value.crypto_hash),
+        artifact_standard_package_from_compilation(value.crypto_rand),
+    ]
 }
 
 fn import_path_text(value: ast::Path) -> string {

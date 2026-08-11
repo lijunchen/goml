@@ -65,8 +65,8 @@ struct PackageWorld {
     counter: Ref[int],
     builtins: core::File,
     builtin_interface: artifact::ArtifactInterfaceUnit,
-    prelude: ArtifactStandardPackage,
-    standard: ArtifactStandardLibrary,
+    prelude: ToolchainPackage,
+    standard: Vec[ToolchainPackage],
 }
 
 fn no_standard_needs() -> StandardNeeds {
@@ -191,7 +191,7 @@ fn package_world() -> PackageWorld {
     let builtin_interface = builtin_artifact_interface_unit();
     let prelude_compilation = compile_prelude_package(builtins, builtin_interface);
     let prelude = artifact_standard_package_from_compilation(prelude_compilation);
-    let standard = artifact_standard_library(
+    let standard = artifact_standard_packages(
         compile_standard_library(builtins, prelude_compilation, builtin_interface.interface_hash),
     );
     PackageWorld { counter, builtins, builtin_interface, prelude, standard }
@@ -602,100 +602,118 @@ fn validate_public_fields_and_inherent_methods(
     Result::Ok(())
 }
 
-fn selected_standard_packages_for_needs(standard: ArtifactStandardLibrary, needs: StandardNeeds) -> Vec[
-    ArtifactStandardPackage,
-] {
-    let result: Vec[ArtifactStandardPackage] = Vec::[];
+fn selected_standard_package_names(needs: StandardNeeds) -> Vec[string] {
+    let result: Vec[string] = Vec::[];
     if needs.ascii {
-        result.push(standard.ascii)
+        result.push(resources::STD_ASCII_PACKAGE)
     } else {};
     if needs.bincode {
-        result.push(standard.bincode)
+        result.push(resources::STD_BINCODE_PACKAGE)
     } else {};
     if needs.bytes {
-        result.push(standard.bytes)
+        result.push(resources::STD_BYTES_PACKAGE)
     } else {};
     if needs.cmp {
-        result.push(standard.cmp)
+        result.push(resources::STD_CMP_PACKAGE)
     } else {};
     if needs.collections {
-        result.push(standard.collections)
+        result.push(resources::STD_COLLECTIONS_PACKAGE)
     } else {};
     if needs.error {
-        result.push(standard.error)
+        result.push(resources::STD_ERROR_PACKAGE)
     } else {};
     if needs.env {
-        result.push(standard.env)
+        result.push(resources::STD_ENV_PACKAGE)
     } else {};
     if needs.fs {
-        result.push(standard.fs)
+        result.push(resources::STD_FS_PACKAGE)
     } else {};
     if needs.io {
-        result.push(standard.io)
+        result.push(resources::STD_IO_PACKAGE)
     } else {};
     if needs.internal_host {
-        result.push(standard.host)
+        result.push(resources::STD_INTERNAL_HOST_PACKAGE)
     } else {};
     if needs.internal_task {
-        result.push(standard.internal_task)
+        result.push(resources::STD_INTERNAL_TASK_PACKAGE)
     } else {};
     if needs.iter {
-        result.push(standard.iter)
+        result.push(resources::STD_ITER_PACKAGE)
     } else {};
     if needs.num {
-        result.push(standard.num)
+        result.push(resources::STD_NUM_PACKAGE)
     } else {};
     if needs.path {
-        result.push(standard.path)
+        result.push(resources::STD_PATH_PACKAGE)
     } else {};
     if needs.process {
-        result.push(standard.process)
+        result.push(resources::STD_PROCESS_PACKAGE)
     } else {};
     if needs.serde {
-        result.push(standard.serde)
+        result.push(resources::STD_SERDE_PACKAGE)
     } else {};
     if needs.task {
-        result.push(standard.task)
+        result.push(resources::STD_TASK_PACKAGE)
     } else {};
     if needs.testing {
-        result.push(standard.testing)
+        result.push(resources::STD_TESTING_PACKAGE)
     } else {};
     if needs.text {
-        result.push(standard.text)
+        result.push(resources::STD_TEXT_PACKAGE)
     } else {};
     if needs.toml {
-        result.push(standard.toml)
+        result.push(resources::STD_TOML_PACKAGE)
     } else {};
     if needs.json {
-        result.push(standard.json)
+        result.push(resources::STD_JSON_PACKAGE)
     } else {};
     if needs.time {
-        result.push(standard.time)
+        result.push(resources::STD_TIME_PACKAGE)
     } else {};
     if needs.utf8 {
-        result.push(standard.utf8)
+        result.push(resources::STD_UTF8_PACKAGE)
     } else {};
     if needs.unicode {
-        result.push(standard.unicode)
+        result.push(resources::STD_UNICODE_PACKAGE)
     } else {};
     if needs.math {
-        result.push(standard.math)
+        result.push(resources::STD_MATH_PACKAGE)
     } else {};
     if needs.rand {
-        result.push(standard.rand)
+        result.push(resources::STD_RAND_PACKAGE)
     } else {};
     if needs.crypto {
-        result.push(standard.crypto)
+        result.push(resources::STD_CRYPTO_PACKAGE)
     } else {};
     if needs.crypto_hash {
-        result.push(standard.crypto_hash)
+        result.push(resources::STD_CRYPTO_HASH_PACKAGE)
     } else {};
     if needs.crypto_rand {
-        result.push(standard.crypto_rand)
+        result.push(resources::STD_CRYPTO_RAND_PACKAGE)
     } else {};
     if needs.root {
-        result.push(standard.root)
+        result.push(resources::STD_ROOT_PACKAGE)
     } else {};
+    result
+}
+
+fn required_artifact_standard_package(standard: Vec[ToolchainPackage], package_name: string) -> ToolchainPackage {
+    match artifact_standard_package(standard, package_name) {
+        Some(value) => value,
+        None => {
+            fail("error[compile]: compiler world is missing standard package " + package_name);
+            standard[0]
+        },
+    }
+}
+
+fn selected_standard_packages_for_needs(standard: Vec[ToolchainPackage], needs: StandardNeeds) -> Vec[
+    ToolchainPackage,
+] {
+    let result: Vec[ToolchainPackage] = Vec::[];
+    for package_name in selected_standard_package_names(needs) {
+        result.push(required_artifact_standard_package(standard, package_name))
+    }
     result
 }
 
@@ -801,100 +819,13 @@ fn entry_core(value: core::File, package_name: string) -> core::File {
     }
 }
 
-fn selected_link_standard_core(standard: ArtifactStandardLibrary, needs: StandardNeeds) -> Vec[
+fn selected_link_standard_core(standard: Vec[ToolchainPackage], needs: StandardNeeds) -> Vec[
     core::File,
 ] {
     let result: Vec[core::File] = Vec::[];
-    if needs.ascii {
-        result.push(standard.ascii.core_value)
-    } else {};
-    if needs.bincode {
-        result.push(standard.bincode.core_value)
-    } else {};
-    if needs.bytes {
-        result.push(standard.bytes.core_value)
-    } else {};
-    if needs.cmp {
-        result.push(standard.cmp.core_value)
-    } else {};
-    if needs.collections {
-        result.push(standard.collections.core_value)
-    } else {};
-    if needs.error {
-        result.push(standard.error.core_value)
-    } else {};
-    if needs.env {
-        result.push(standard.env.core_value)
-    } else {};
-    if needs.fs {
-        result.push(standard.fs.core_value)
-    } else {};
-    if needs.io {
-        result.push(standard.io.core_value)
-    } else {};
-    if needs.internal_host {
-        result.push(standard.host.core_value)
-    } else {};
-    if needs.internal_task {
-        result.push(standard.internal_task.core_value)
-    } else {};
-    if needs.iter {
-        result.push(standard.iter.core_value)
-    } else {};
-    if needs.num {
-        result.push(standard.num.core_value)
-    } else {};
-    if needs.path {
-        result.push(standard.path.core_value)
-    } else {};
-    if needs.process {
-        result.push(standard.process.core_value)
-    } else {};
-    if needs.serde {
-        result.push(standard.serde.core_value)
-    } else {};
-    if needs.task {
-        result.push(standard.task.core_value)
-    } else {};
-    if needs.testing {
-        result.push(standard.testing.core_value)
-    } else {};
-    if needs.text {
-        result.push(standard.text.core_value)
-    } else {};
-    if needs.toml {
-        result.push(standard.toml.core_value)
-    } else {};
-    if needs.json {
-        result.push(standard.json.core_value)
-    } else {};
-    if needs.time {
-        result.push(standard.time.core_value)
-    } else {};
-    if needs.utf8 {
-        result.push(standard.utf8.core_value)
-    } else {};
-    if needs.unicode {
-        result.push(standard.unicode.core_value)
-    } else {};
-    if needs.math {
-        result.push(standard.math.core_value)
-    } else {};
-    if needs.rand {
-        result.push(standard.rand.core_value)
-    } else {};
-    if needs.crypto {
-        result.push(standard.crypto.core_value)
-    } else {};
-    if needs.crypto_hash {
-        result.push(standard.crypto_hash.core_value)
-    } else {};
-    if needs.crypto_rand {
-        result.push(standard.crypto_rand.core_value)
-    } else {};
-    if needs.root {
-        result.push(standard.root.core_value)
-    } else {};
+    for package_value in selected_standard_packages_for_needs(standard, needs) {
+        result.push(package_value.core_value)
+    }
     result
 }
 

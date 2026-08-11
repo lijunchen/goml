@@ -296,39 +296,7 @@ fn artifact_world_struct_definitions(world: PackageWorld) -> Vec[core::StructDef
     for definition in world.prelude.environment_exports.structs {
         result.push(core::lower_struct_def(definition))
     }
-    let packages: Vec[ArtifactStandardPackage] = Vec::[
-        world.standard.root,
-        world.standard.host,
-        world.standard.ascii,
-        world.standard.bincode,
-        world.standard.bytes,
-        world.standard.cmp,
-        world.standard.collections,
-        world.standard.error,
-        world.standard.env,
-        world.standard.fs,
-        world.standard.io,
-        world.standard.internal_task,
-        world.standard.iter,
-        world.standard.json,
-        world.standard.num,
-        world.standard.path,
-        world.standard.process,
-        world.standard.serde,
-        world.standard.task,
-        world.standard.testing,
-        world.standard.text,
-        world.standard.toml,
-        world.standard.time,
-        world.standard.utf8,
-        world.standard.unicode,
-        world.standard.math,
-        world.standard.rand,
-        world.standard.crypto,
-        world.standard.crypto_hash,
-        world.standard.crypto_rand,
-    ];
-    for package_value in packages {
+    for package_value in world.standard {
         for definition in package_value.environment_exports.structs {
             result.push(core::lower_struct_def(definition))
         }
@@ -356,39 +324,7 @@ fn artifact_prepare_world(world: PackageWorld) -> unit {
         world.prelude.environment_exports,
         definitions,
     );
-    let packages: Vec[ArtifactStandardPackage] = Vec::[
-        world.standard.root,
-        world.standard.host,
-        world.standard.ascii,
-        world.standard.bincode,
-        world.standard.bytes,
-        world.standard.cmp,
-        world.standard.collections,
-        world.standard.error,
-        world.standard.env,
-        world.standard.fs,
-        world.standard.io,
-        world.standard.internal_task,
-        world.standard.iter,
-        world.standard.json,
-        world.standard.num,
-        world.standard.path,
-        world.standard.process,
-        world.standard.serde,
-        world.standard.task,
-        world.standard.testing,
-        world.standard.text,
-        world.standard.toml,
-        world.standard.time,
-        world.standard.utf8,
-        world.standard.unicode,
-        world.standard.math,
-        world.standard.rand,
-        world.standard.crypto,
-        world.standard.crypto_hash,
-        world.standard.crypto_rand,
-    ];
-    for package_value in packages {
+    for package_value in world.standard {
         artifact_prepare_world_core(
             package_value.core_value,
             package_value.environment_exports,

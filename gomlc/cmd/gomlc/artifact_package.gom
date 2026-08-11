@@ -90,42 +90,15 @@ fn artifact_read_interface_units(paths: Vec[string]) -> Result[
     Result::Ok(result)
 }
 
-fn artifact_standard_package(standard: ArtifactStandardLibrary, package_name: string) -> Option[
-    ArtifactStandardPackage,
+fn artifact_standard_package(standard: Vec[ToolchainPackage], package_name: string) -> Option[
+    ToolchainPackage,
 ] {
-    match package_name {
-        resources::STD_ROOT_PACKAGE => Option::Some(standard.root),
-        resources::STD_INTERNAL_HOST_PACKAGE => Option::Some(standard.host),
-        resources::STD_ASCII_PACKAGE => Option::Some(standard.ascii),
-        resources::STD_BINCODE_PACKAGE => Option::Some(standard.bincode),
-        resources::STD_BYTES_PACKAGE => Option::Some(standard.bytes),
-        resources::STD_CMP_PACKAGE => Option::Some(standard.cmp),
-        resources::STD_COLLECTIONS_PACKAGE => Option::Some(standard.collections),
-        resources::STD_ERROR_PACKAGE => Option::Some(standard.error),
-        resources::STD_ENV_PACKAGE => Option::Some(standard.env),
-        resources::STD_FS_PACKAGE => Option::Some(standard.fs),
-        resources::STD_IO_PACKAGE => Option::Some(standard.io),
-        resources::STD_INTERNAL_TASK_PACKAGE => Option::Some(standard.internal_task),
-        resources::STD_ITER_PACKAGE => Option::Some(standard.iter),
-        resources::STD_JSON_PACKAGE => Option::Some(standard.json),
-        resources::STD_NUM_PACKAGE => Option::Some(standard.num),
-        resources::STD_PATH_PACKAGE => Option::Some(standard.path),
-        resources::STD_PROCESS_PACKAGE => Option::Some(standard.process),
-        resources::STD_SERDE_PACKAGE => Option::Some(standard.serde),
-        resources::STD_TASK_PACKAGE => Option::Some(standard.task),
-        resources::STD_TESTING_PACKAGE => Option::Some(standard.testing),
-        resources::STD_TEXT_PACKAGE => Option::Some(standard.text),
-        resources::STD_TOML_PACKAGE => Option::Some(standard.toml),
-        resources::STD_TIME_PACKAGE => Option::Some(standard.time),
-        resources::STD_UTF8_PACKAGE => Option::Some(standard.utf8),
-        resources::STD_UNICODE_PACKAGE => Option::Some(standard.unicode),
-        resources::STD_MATH_PACKAGE => Option::Some(standard.math),
-        resources::STD_RAND_PACKAGE => Option::Some(standard.rand),
-        resources::STD_CRYPTO_PACKAGE => Option::Some(standard.crypto),
-        resources::STD_CRYPTO_HASH_PACKAGE => Option::Some(standard.crypto_hash),
-        resources::STD_CRYPTO_RAND_PACKAGE => Option::Some(standard.crypto_rand),
-        _ => Option::None,
+    for value in standard {
+        if value.interface_unit.package_name == package_name {
+            return Option::Some(value)
+        } else {}
     }
+    Option::None
 }
 
 fn artifact_interface_has_dependency(
@@ -310,7 +283,7 @@ fn artifact_verify_comptime_modules(comptime_modules: Vec[ctir::CtModule]) -> Re
 fn artifact_dependency_environments(
     builtin: artifact::ArtifactPackageExports,
     prelude: artifact::ArtifactPackageExports,
-    standard: ArtifactStandardLibrary,
+    standard: Vec[ToolchainPackage],
     needs: StandardNeeds,
     units: Vec[artifact::ArtifactInterfaceUnit],
 ) -> Result[Vec[tast::DependencyEnvironment], string] {
