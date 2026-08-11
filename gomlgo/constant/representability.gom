@@ -67,7 +67,7 @@ fn round_quotient(quotient: Natural, remainder: Natural, denominator: Natural) -
     let doubled = natural_shift_left(remainder, 1);
     let compared = natural_compare(doubled, denominator);
     if compared > 0 || (compared == 0 && natural_bit(quotient, 0)) {
-        natural_add_small(quotient, 1 as uint32)
+        natural_add_small(quotient, 1.to_uint32())
     } else {
         quotient
     }
@@ -161,17 +161,17 @@ fn rounded_float_constant(
 
 fn integer_width(kind: go_types::BasicKind, sizes: go_types::TargetSizes) -> Option[(int, bool)] {
     match kind {
-        go_types::BasicKind::Int => Option::Some(((sizes.word_size * 8) as int, true)),
+        go_types::BasicKind::Int => Option::Some(((sizes.word_size * 8).to_int(), true)),
         go_types::BasicKind::Int8 => Option::Some((8, true)),
         go_types::BasicKind::Int16 => Option::Some((16, true)),
         go_types::BasicKind::Int32 => Option::Some((32, true)),
         go_types::BasicKind::Int64 => Option::Some((64, true)),
-        go_types::BasicKind::Uint => Option::Some(((sizes.word_size * 8) as int, false)),
+        go_types::BasicKind::Uint => Option::Some(((sizes.word_size * 8).to_int(), false)),
         go_types::BasicKind::Uint8 => Option::Some((8, false)),
         go_types::BasicKind::Uint16 => Option::Some((16, false)),
         go_types::BasicKind::Uint32 => Option::Some((32, false)),
         go_types::BasicKind::Uint64 => Option::Some((64, false)),
-        go_types::BasicKind::Uintptr => Option::Some(((sizes.word_size * 8) as int, false)),
+        go_types::BasicKind::Uintptr => Option::Some(((sizes.word_size * 8).to_int(), false)),
         _ => Option::None,
     }
 }
@@ -271,15 +271,16 @@ pub fn default_type(kind: go_types::BasicKind) -> Option[go_types::BasicKind] {
 
 fn integer_codepoint(value: BigInt) -> uint32 {
     if value.sign < 0 || value.magnitude.limbs.len() > 1 {
-        65533 as uint32
+        65533.to_uint32()
     } else {
         let result = if value.magnitude.limbs.is_empty() {
-            0 as uint32
+            0.to_uint32()
         } else {
             value.magnitude.limbs[0]
         };
-        if result > 1114111 as uint32 || (result >= 55296 as uint32 && result < 57344 as uint32) {
-            65533 as uint32
+        if result > 1114111.to_uint32()
+            || (result >= 55296.to_uint32() && result < 57344.to_uint32()) {
+            65533.to_uint32()
         } else {
             result
         }

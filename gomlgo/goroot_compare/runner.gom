@@ -9,9 +9,47 @@ use std::collections;
 use std::fs;
 use std::path;
 
+pub const ACCEPTANCE_MODE: string = "acceptance";
+
+pub const INFO_MODE: string = "info";
+
+pub const STD_SCOPE: string = "std";
+
+pub const CMD_SCOPE: string = "cmd";
+
+pub const ALL_SCOPE: string = "all";
+
+pub const NO_TEST_MODE: string = "none";
+
+pub const INTERNAL_TEST_MODE: string = "internal";
+
+pub const EXTERNAL_TEST_MODE: string = "external";
+
 pub enum CompareMode {
     Acceptance,
     Info,
+}
+
+pub fn mode_from_string(value: string) -> Option[CompareMode] {
+    match value {
+        ACCEPTANCE_MODE => Option::Some(CompareMode::Acceptance),
+        INFO_MODE => Option::Some(CompareMode::Info),
+        _ => Option::None,
+    }
+}
+
+pub fn valid_scope(value: string) -> bool {
+    match value {
+        STD_SCOPE | CMD_SCOPE | ALL_SCOPE => true,
+        _ => false,
+    }
+}
+
+pub fn valid_test_mode(value: string) -> bool {
+    match value {
+        NO_TEST_MODE | INTERNAL_TEST_MODE | EXTERNAL_TEST_MODE => true,
+        _ => false,
+    }
 }
 
 pub struct Summary {
@@ -207,18 +245,18 @@ pub fn compare(
     config.cgo = cgo;
     config.checker_config.fake_import_c = cgo;
     config.checker_config.sizes = go_types::gc_sizes(goarch).ok_or("unsupported GOARCH " + goarch)?;
-    config.include_tests = test_mode == "internal" || test_mode == "external";
-    config.external_tests = test_mode == "external";
+    config.include_tests = test_mode == INTERNAL_TEST_MODE || test_mode == EXTERNAL_TEST_MODE;
+    config.external_tests = test_mode == EXTERNAL_TEST_MODE;
     let packages: Vec[string] = Vec::[];
     collect_packages(
         config,
         root,
-        if scope == "cmd" {
-            path::join(root, "cmd")
+        if scope == CMD_SCOPE {
+            path::join(root, CMD_SCOPE)
         } else {
             root
         },
-        scope != "std",
+        scope != STD_SCOPE,
         packages,
     )?;
     collections::sort(packages);

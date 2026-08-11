@@ -599,13 +599,13 @@ fn check_sequence_literal(
         let mut in_bounds = true;
         if valid_index {
             match length {
-                Some(length) => if next_index as int64 >= length {
+                Some(length) => if next_index.to_int64() >= length {
                     match key_value_nodes(state, element) {
                         Some((key, _)) => report_index_out_of_bounds(
                             state,
                             key,
                             next_index,
-                            next_index as int64,
+                            next_index.to_int64(),
                         ),
                         None => diagnostic(
                             state,
@@ -802,7 +802,7 @@ fn check_composite_literal(
             let length = check_sequence_literal(state, scope, node, element, Option::None, elements);
             let result = go_types::add_type(
                 state.world,
-                go_types::TypeKind::Array { length: length as int64, element },
+                go_types::TypeKind::Array { length: length.to_int64(), element },
             );
             record_type_expression(state, type_node, result);
             result
@@ -1015,7 +1015,7 @@ fn omit_indirect_cycle_facts(state: CheckState, node: syntax::NodeId, expression
                 ellipsis: _,
                 rparen: _,
             },
-        }) => if identifier(state, function).unwrap_or("") == "new" {
+        }) => if identifier(state, function).unwrap_or("") == NEW_BUILTIN {
             for argument in arguments {
                 let omitted: Vec[syntax::NodeId] = Vec::[];
                 for fact in state.info.types {
@@ -1120,12 +1120,12 @@ fn check_index_expression(
             let length = match (length, base.value) {
                 (Some(length), _) => Option::Some(length),
                 (None, Some(constant::ConstValue::String(value))) => Option::Some(
-                    value.len() as int64,
+                    value.len().to_int64(),
                 ),
                 _ => Option::None,
             };
             match (index_value, length) {
-                (Some(index_value), Some(length)) => if index_value as int64 >= length {
+                (Some(index_value), Some(length)) => if index_value.to_int64() >= length {
                     report_index_out_of_bounds(state, index, index_value, length)
                 } else {},
                 _ => {},
@@ -1176,22 +1176,22 @@ fn check_slice_bounds(
     match length {
         Some(length) => {
             match (low_node, low) {
-                (Some(node), Some(value)) => if value as int64 > length {
-                    report_index_out_of_bounds(state, node, value, value as int64);
+                (Some(node), Some(value)) => if value.to_int64() > length {
+                    report_index_out_of_bounds(state, node, value, value.to_int64());
                     out_of_bounds = true;
                 } else {},
                 _ => {},
             };
             match (high_node, high) {
-                (Some(node), Some(value)) => if value as int64 > length {
-                    report_index_out_of_bounds(state, node, value, value as int64);
+                (Some(node), Some(value)) => if value.to_int64() > length {
+                    report_index_out_of_bounds(state, node, value, value.to_int64());
                     out_of_bounds = true;
                 } else {},
                 _ => {},
             };
             match (max_node, max) {
-                (Some(node), Some(value)) => if value as int64 > length {
-                    report_index_out_of_bounds(state, node, value, value as int64);
+                (Some(node), Some(value)) => if value.to_int64() > length {
+                    report_index_out_of_bounds(state, node, value, value.to_int64());
                     out_of_bounds = true;
                 } else {},
                 _ => {},
@@ -1420,7 +1420,7 @@ fn check_slice_expression(
             invalid_operand(state)
         } else {
             let length = match base.value {
-                Some(constant::ConstValue::String(value)) => Option::Some(value.len() as int64),
+                Some(constant::ConstValue::String(value)) => Option::Some(value.len().to_int64()),
                 _ => Option::None,
             };
             check_slice_bounds(state, low, low_value, high, high_value, max, max_value, length);

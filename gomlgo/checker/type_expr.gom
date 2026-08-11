@@ -1493,14 +1493,14 @@ fn interface_element_requires_generics(state: CheckState, node: syntax::NodeId) 
             span: _,
             path: _,
             kind: syntax::SyntaxKind::UnaryExpr { op_pos: _, op, expression: _ },
-        }) => op == "~",
+        }) => op == TILDE_OPERATOR,
         Some(syntax::SyntaxNode {
             id: _,
             file: _,
             span: _,
             path: _,
             kind: syntax::SyntaxKind::BinaryExpr { left: _, op_pos: _, op, right: _ },
-        }) => op == "|",
+        }) => op == BIT_OR_OPERATOR,
         _ => false,
     }
 }

@@ -3757,7 +3757,7 @@ fn expression_with_target(
                 span: _,
                 path: _,
                 kind: syntax::SyntaxKind::BinaryExpr { left: _, op_pos: _, op, right: _ },
-            }) => op == "<<" || op == ">>",
+            }) => shift_operator(op),
             _ => false,
         };
     if untyped_nonconstant_shift {

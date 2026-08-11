@@ -55,8 +55,8 @@ pub fn default_config() -> LoadConfig {
     LoadConfig {
         checker_config: checker::default_config(),
         source_roots: Vec::["/usr/lib/go-1.26/src"],
-        goos: "linux",
-        goarch: "amd64",
+        goos: GOOS_LINUX,
+        goarch: GOARCH_AMD64,
         cgo: false,
         tags: Vec::[
             "goexperiment.dwarf5",
@@ -74,34 +74,17 @@ pub fn default_config() -> LoadConfig {
 }
 
 fn known_goos(value: string) -> bool {
-    value == "aix" || value == "android" || value == "darwin" || value == "dragonfly"
-        || value == "freebsd"
-        || value == "hurd"
-        || value == "illumos"
-        || value == "ios"
-        || value == "js"
-        || value == "linux"
-        || value == "netbsd"
-        || value == "openbsd"
-        || value == "plan9"
-        || value == "solaris"
-        || value == "wasip1"
-        || value == "windows"
-        || value == "zos"
+    match value {
+        GOOS_AIX | GOOS_ANDROID | GOOS_DARWIN | GOOS_DRAGONFLY | GOOS_FREEBSD | GOOS_HURD | GOOS_ILLUMOS | GOOS_IOS | GOOS_JS | GOOS_LINUX | GOOS_NETBSD | GOOS_OPENBSD | GOOS_PLAN9 | GOOS_SOLARIS | GOOS_WASIP1 | GOOS_WINDOWS | GOOS_ZOS => true,
+        _ => false,
+    }
 }
 
 fn known_goarch(value: string) -> bool {
-    value == "386" || value == "amd64" || value == "arm" || value == "arm64" || value == "loong64"
-        || value == "mips"
-        || value == "mips64"
-        || value == "mips64le"
-        || value == "mipsle"
-        || value == "ppc64"
-        || value == "ppc64le"
-        || value == "riscv64"
-        || value == "s390x"
-        || value == "sparc64"
-        || value == "wasm"
+    match value {
+        GOARCH_386 | GOARCH_AMD64 | GOARCH_ARM | GOARCH_ARM64 | GOARCH_LOONG64 | GOARCH_MIPS | GOARCH_MIPS64 | GOARCH_MIPS64LE | GOARCH_MIPSLE | GOARCH_PPC64 | GOARCH_PPC64LE | GOARCH_RISCV64 | GOARCH_S390X | GOARCH_SPARC64 | GOARCH_WASM => true,
+        _ => false,
+    }
 }
 
 fn filename_selected(name: string, config: LoadConfig) -> bool {

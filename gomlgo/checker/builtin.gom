@@ -203,7 +203,7 @@ fn record_builtin_signature(
         Vec::[]
     };
     if result.type_id.value != state.world.invalid.value && expanded.len() > 1 {
-        if reference.name == "append" {
+        if reference.name == APPEND_BUILTIN {
             let slice_type = expanded[0].type_id;
             parameter_types.push(slice_type);
             parameter_types.push(
@@ -220,9 +220,9 @@ fn record_builtin_signature(
                 parameter_types.push(variable.type_id)
             }
         }
-    } else if reference.name == "panic" {
+    } else if reference.name == PANIC_BUILTIN {
         parameter_types.push(builtin_empty_interface(state))
-    } else if reference.name == "SliceData" && arguments.len() == 1 {
+    } else if reference.name == UNSAFE_SLICE_DATA_BUILTIN && arguments.len() == 1 {
         let argument_type = match recorded_type_fact(state, arguments[0]) {
             Some(fact) => fact.type_id,
             None => state.world.invalid,
@@ -236,7 +236,7 @@ fn record_builtin_signature(
                 None => argument_type,
             },
         )
-    } else if reference.name == "Slice" && !arguments.is_empty() {
+    } else if reference.name == UNSAFE_SLICE_BUILTIN && !arguments.is_empty() {
         let argument_type = match recorded_type_fact(state, arguments[0]) {
             Some(fact) => fact.type_id,
             None => state.world.invalid,
@@ -258,7 +258,7 @@ fn record_builtin_signature(
                 },
             )
         }
-    } else if reference.name == "String" && arguments.len() == 2 {
+    } else if reference.name == UNSAFE_STRING_BUILTIN && arguments.len() == 2 {
         parameter_types.push(
             go_types::add_type(
                 state.world,
@@ -271,7 +271,7 @@ fn record_builtin_signature(
                 None => state.world.invalid,
             },
         )
-    } else if reference.name == "copy" && arguments.len() == 2 {
+    } else if reference.name == COPY_BUILTIN && arguments.len() == 2 {
         for index in 0..arguments.len() {
             let argument_type = match recorded_type_fact(state, arguments[index]) {
                 Some(fact) => fact.type_id,
@@ -286,7 +286,7 @@ fn record_builtin_signature(
                 },
             )
         }
-    } else if reference.name == "delete" && arguments.len() == 2 {
+    } else if reference.name == DELETE_BUILTIN && arguments.len() == 2 {
         let map_type = match recorded_type_fact(state, arguments[0]) {
             Some(fact) => fact.type_id,
             None => state.world.invalid,
@@ -301,7 +301,7 @@ fn record_builtin_signature(
                 },
             },
         )
-    } else if reference.name == "append" && !arguments.is_empty() {
+    } else if reference.name == APPEND_BUILTIN && !arguments.is_empty() {
         let slice_type = match recorded_type_fact(state, arguments[0]) {
             Some(fact) => fact.type_id,
             None => state.world.invalid,
@@ -374,7 +374,7 @@ fn record_builtin_signature(
             type_params: Vec::[],
             params: builtin_signature_tuple(state, parameter_types),
             results: builtin_signature_tuple(state, result_types),
-            variadic: reference.name == "append",
+            variadic: reference.name == APPEND_BUILTIN,
         },
     );
     update_builtin_signature(state, reference.fact_node, signature)
@@ -474,25 +474,19 @@ fn check_builtin_raw_arity(
     name: string,
     arguments: Vec[syntax::NodeId],
 ) -> bool {
-    if name == "make" || name == "new" || name == "Offsetof" {
-        return true
-    } else {};
-    let minimum = if name == "append" || name == "make" || name == "min" || name == "max" {
-        1
-    } else if name == "print" || name == "println" || name == "recover" {
-        0
-    } else if name == "delete" || name == "copy" || name == "complex" || name == "Add"
-        || name == "Slice"
-        || name == "String" {
-        2
-    } else {
-        1
+    match name {
+        MAKE_BUILTIN | NEW_BUILTIN | UNSAFE_OFFSETOF_BUILTIN => return true,
+        _ => (),
     };
-    let maximum = if name == "append" || name == "min" || name == "max" || name == "print"
-        || name == "println" {
-        -1
-    } else {
-        minimum
+    let minimum = match name {
+        APPEND_BUILTIN | MAKE_BUILTIN | MIN_BUILTIN | MAX_BUILTIN => 1,
+        PRINT_BUILTIN | PRINTLN_BUILTIN | RECOVER_BUILTIN => 0,
+        DELETE_BUILTIN | COPY_BUILTIN | COMPLEX_BUILTIN | UNSAFE_ADD_BUILTIN | UNSAFE_SLICE_BUILTIN | UNSAFE_STRING_BUILTIN => 2,
+        _ => 1,
+    };
+    let maximum = match name {
+        APPEND_BUILTIN | MIN_BUILTIN | MAX_BUILTIN | PRINT_BUILTIN | PRINTLN_BUILTIN => -1,
+        _ => minimum,
     };
     if maximum < 0 || arguments.len() <= maximum {
         true
@@ -617,7 +611,7 @@ fn len_cap_classification(state: CheckState, name: string, value: go_types::Type
             direction: _,
             element: _,
         }) => -1,
-        Some(go_types::TypeKind::Map { key: _, value: _ }) => if name == "len" {
+        Some(go_types::TypeKind::Map { key: _, value: _ }) => if name == LEN_BUILTIN {
             -1
         } else {
             -2
@@ -626,7 +620,7 @@ fn len_cap_classification(state: CheckState, name: string, value: go_types::Type
             basic: go_types::BasicKind::String | go_types::BasicKind::UntypedString,
             name: _,
             untyped: _,
-        }) => if name == "len" {
+        }) => if name == LEN_BUILTIN {
             -1
         } else {
             -2
@@ -644,7 +638,8 @@ fn expression_has_nonconstant_call_or_receive(state: CheckState, node: syntax::N
         if candidate.file.value == outer.file.value && candidate.span.start >= outer.span.start
             && candidate.span.end <= outer.span.end {
             match candidate.kind {
-                syntax::SyntaxKind::UnaryExpr { op_pos: _, op, expression: _ } => if op == "<-" {
+                syntax::SyntaxKind::UnaryExpr { op_pos: _, op, expression: _ } => if op
+                    == RECEIVE_OPERATOR {
                     return true
                 } else {},
                 syntax::SyntaxKind::CallExpr {
@@ -715,18 +710,18 @@ fn check_len_cap(
         }) => {
             valid = true;
         },
-        Some(go_types::TypeKind::Map { key: _, value: _ }) => if name == "len" {
+        Some(go_types::TypeKind::Map { key: _, value: _ }) => if name == LEN_BUILTIN {
             valid = true;
         } else {},
         Some(go_types::TypeKind::Basic {
             basic: go_types::BasicKind::String | go_types::BasicKind::UntypedString,
             name: _,
             untyped: _,
-        }) => if name == "len" {
+        }) => if name == LEN_BUILTIN {
             valid = true;
             match argument.value {
                 Some(constant::ConstValue::String(value)) => {
-                    constant_length = Option::Some(value.byte_len() as int64);
+                    constant_length = Option::Some(value.byte_len().to_int64());
                 },
                 _ => {},
             }
@@ -1234,7 +1229,7 @@ fn expression_is_shift(state: CheckState, node: syntax::NodeId) -> bool {
             span: _,
             path: _,
             kind: syntax::SyntaxKind::BinaryExpr { left: _, op_pos: _, op, right: _ },
-        }) => op == "<<" || op == ">>",
+        }) => shift_operator(op),
         Some(syntax::SyntaxNode {
             id: _,
             file: _,
@@ -1487,7 +1482,7 @@ fn diagnostic_constant_string(state: CheckState, node: syntax::NodeId, value: co
             },
         }) => {
             let exact = constant::constant_exact_string(value);
-            if literal_token == "FLOAT" && exact.byte_len() > 128 {
+            if literal_token == FLOAT_LITERAL_TOKEN && exact.byte_len() > 128 {
                 for index in 0..literal.byte_len() {
                     let byte = literal.byte_get(index);
                     if byte == b'e' || byte == b'E' || byte == b'p' || byte == b'P' {
@@ -1501,7 +1496,7 @@ fn diagnostic_constant_string(state: CheckState, node: syntax::NodeId, value: co
                     } else {}
                 }
             } else {};
-            return if literal_token != "IMAG" && exact.contains("/") {
+            return if literal_token != IMAG_LITERAL_TOKEN && exact.contains("/") {
                 expression_source_text(state, node)
             } else {
                 exact
@@ -1519,7 +1514,8 @@ fn diagnostic_constant_string(state: CheckState, node: syntax::NodeId, value: co
                 ellipsis: _,
                 rparen: _,
             },
-        }) => if identifier(state, function).unwrap_or("") == "complex" && arguments.len() == 2 {
+        }) => if identifier(state, function).unwrap_or("") == COMPLEX_BUILTIN
+            && arguments.len() == 2 {
             let real = expression_source_text(state, arguments[0]);
             let imaginary = expression_source_text(state, arguments[1]);
             if imaginary.starts_with("-") {
@@ -1527,8 +1523,8 @@ fn diagnostic_constant_string(state: CheckState, node: syntax::NodeId, value: co
             } else {
                 return "(" + real + " + " + imaginary + "i)"
             }
-        } else if identifier(state, function).unwrap_or("") == "min"
-            || identifier(state, function).unwrap_or("") == "max" {
+        } else if identifier(state, function).unwrap_or("") == MIN_BUILTIN
+            || identifier(state, function).unwrap_or("") == MAX_BUILTIN {
             let exact = constant::constant_exact_string(value);
             for argument in arguments {
                 match recorded_type_fact(state, argument) {
@@ -1838,7 +1834,7 @@ fn check_append_builtin(
             let previous_target_inference_context = state.target_inference_context;
             let previous_target_inference_call = state.target_inference_call;
             state.target_inference_context = 1;
-            state.target_inference_call = "append";
+            state.target_inference_call = APPEND_BUILTIN;
             let value = expression_with_target(state, scope, arguments[index], element);
             state.target_inference_context = previous_target_inference_context;
             state.target_inference_call = previous_target_inference_call;
@@ -1969,7 +1965,7 @@ fn check_delete_builtin(
                                 op,
                                 right: _,
                             },
-                        }) => op == "<<" || op == ">>",
+                        }) => shift_operator(op),
                         _ => false,
                     } {
                     contextualize_untyped_expression(state, key_node, key, true);
@@ -2384,7 +2380,7 @@ fn check_complex_builtin(
                 addressable: real.addressable,
                 assignable: real.assignable,
             },
-            "complex",
+            COMPLEX_BUILTIN,
         );
         return builtin_operand(synthetic_builtin_type_parameter(state, common))
     } else {};
@@ -2475,9 +2471,9 @@ fn check_real_imag_builtin(
             arguments[0],
             argument,
             if imaginary_part {
-                "imag"
+                IMAG_BUILTIN
             } else {
-                "real"
+                REAL_BUILTIN
             },
         );
         return builtin_operand(synthetic_builtin_type_parameter(state, argument.type_id))
@@ -2858,9 +2854,9 @@ fn check_unsafe_size_align(
             arguments[0],
             "use of untyped nil in argument to unsafe."
                 + if alignment {
-                    "Alignof"
+                    UNSAFE_ALIGNOF_BUILTIN
                 } else {
-                    "Sizeof"
+                    UNSAFE_SIZEOF_BUILTIN
                 },
             false,
         );
@@ -2975,7 +2971,7 @@ fn record_offsetof_selection(state: CheckState, node: syntax::NodeId, receiver: 
 
 fn field_path_offset(state: CheckState, receiver: go_types::TypeId, path: Vec[int]) -> Option[int64] {
     let mut current = receiver;
-    let mut offset = 0 as int64;
+    let mut offset = 0.to_int64();
     let mut first = true;
     for index in path {
         match go_types::get_type(state.world, core_type_id(state, current)) {
@@ -2993,7 +2989,7 @@ fn field_path_offset(state: CheckState, receiver: go_types::TypeId, path: Vec[in
                 return Option::None
             } else {
                 let offsets = go_types::offsets_of(state.world, fields, state.config.sizes);
-                if offsets[index] < 0 || offset > 9223372036854775807 as int64 - offsets[index] {
+                if offsets[index] < 0 || offset > 9223372036854775807.to_int64() - offsets[index] {
                     return Option::None
                 } else {
                     offset += offsets[index];
@@ -3333,7 +3329,7 @@ fn check_unsafe_string_data(
 
 fn min_max_constant(name: string, current: constant::ConstValue, candidate: constant::ConstValue) -> constant::ConstValue {
     match constant::constant_compare(current, candidate) {
-        Some(order) => if (order > 0 && name == "min") || (order < 0 && name == "max") {
+        Some(order) => if (order > 0 && name == MIN_BUILTIN) || (order < 0 && name == MAX_BUILTIN) {
             constant::constant_copy(candidate)
         } else {
             constant::constant_copy(current)
@@ -3627,9 +3623,13 @@ fn check_builtin_call(
     ellipsis: int,
 ) -> Operand {
     record_builtin_reference(state, reference);
-    if ellipsis >= 0 && reference.name != "append" {
+    if ellipsis >= 0 && reference.name != APPEND_BUILTIN {
         for index in 0..arguments.len() {
-            if index == 0 && (reference.name == "make" || reference.name == "new") {
+            if index == 0
+                && match reference.name {
+                    MAKE_BUILTIN | NEW_BUILTIN => true,
+                    _ => false,
+                } {
                 let _ = resolve_type(state, scope, arguments[index]);
             } else {
                 let _ = check_expression(state, scope, arguments[index]);
@@ -3647,58 +3647,51 @@ fn check_builtin_call(
     if !check_builtin_raw_arity(state, scope, node, reference.name, arguments) {
         return invalid_operand(state)
     } else {};
-    let result = if reference.name == "len" || reference.name == "cap" {
-        check_len_cap(state, scope, node, reference.name, arguments)
-    } else if reference.name == "new" {
-        check_new_builtin(state, scope, node, arguments)
-    } else if reference.name == "make" {
-        check_make_builtin(state, scope, node, arguments)
-    } else if reference.name == "append" {
-        check_append_builtin(state, scope, node, arguments, ellipsis)
-    } else if reference.name == "delete" {
-        check_delete_builtin(state, scope, node, arguments)
-    } else if reference.name == "clear" {
-        check_clear_builtin(state, scope, node, arguments)
-    } else if reference.name == "close" {
-        check_close_builtin(state, scope, node, arguments)
-    } else if reference.name == "copy" {
-        check_copy_builtin(state, scope, node, arguments)
-    } else if reference.name == "complex" {
-        check_complex_builtin(state, scope, node, arguments)
-    } else if reference.name == "real" || reference.name == "imag" {
-        check_real_imag_builtin(state, scope, node, arguments, reference.name == "imag")
-    } else if reference.name == "Sizeof" || reference.name == "Alignof" {
-        check_unsafe_size_align(state, scope, node, arguments, reference.name == "Alignof")
-    } else if reference.name == "Offsetof" {
-        check_unsafe_offsetof(state, scope, node, arguments)
-    } else if reference.name == "Add" {
-        check_unsafe_add(state, scope, node, arguments)
-    } else if reference.name == "Slice" {
-        check_unsafe_slice(state, scope, node, arguments)
-    } else if reference.name == "SliceData" {
-        check_unsafe_slice_data(state, scope, node, arguments)
-    } else if reference.name == "String" {
-        check_unsafe_string(state, scope, node, arguments)
-    } else if reference.name == "StringData" {
-        check_unsafe_string_data(state, scope, node, arguments)
-    } else if reference.name == "min" || reference.name == "max" {
-        check_min_max_builtin(state, scope, node, reference.name, arguments)
-    } else if reference.name == "print" || reference.name == "println" {
-        check_print_builtin(state, scope, node, reference.name, arguments)
-    } else if reference.name == "panic" {
-        check_panic_builtin(state, scope, node, arguments)
-    } else if reference.name == "recover" {
-        check_recover_builtin(state, scope, node, arguments)
-    } else {
-        diagnostic(state, node, "builtin " + reference.name + " is not implemented yet", false);
-        invalid_operand(state)
+    let result = match reference.name {
+        LEN_BUILTIN | CAP_BUILTIN => {
+            check_len_cap(state, scope, node, reference.name, arguments)
+        },
+        NEW_BUILTIN => check_new_builtin(state, scope, node, arguments),
+        MAKE_BUILTIN => check_make_builtin(state, scope, node, arguments),
+        APPEND_BUILTIN => check_append_builtin(state, scope, node, arguments, ellipsis),
+        DELETE_BUILTIN => check_delete_builtin(state, scope, node, arguments),
+        CLEAR_BUILTIN => check_clear_builtin(state, scope, node, arguments),
+        CLOSE_BUILTIN => check_close_builtin(state, scope, node, arguments),
+        COPY_BUILTIN => check_copy_builtin(state, scope, node, arguments),
+        COMPLEX_BUILTIN => check_complex_builtin(state, scope, node, arguments),
+        REAL_BUILTIN => check_real_imag_builtin(state, scope, node, arguments, false),
+        IMAG_BUILTIN => check_real_imag_builtin(state, scope, node, arguments, true),
+        UNSAFE_SIZEOF_BUILTIN => check_unsafe_size_align(state, scope, node, arguments, false),
+        UNSAFE_ALIGNOF_BUILTIN => check_unsafe_size_align(state, scope, node, arguments, true),
+        UNSAFE_OFFSETOF_BUILTIN => check_unsafe_offsetof(state, scope, node, arguments),
+        UNSAFE_ADD_BUILTIN => check_unsafe_add(state, scope, node, arguments),
+        UNSAFE_SLICE_BUILTIN => check_unsafe_slice(state, scope, node, arguments),
+        UNSAFE_SLICE_DATA_BUILTIN => check_unsafe_slice_data(state, scope, node, arguments),
+        UNSAFE_STRING_BUILTIN => check_unsafe_string(state, scope, node, arguments),
+        UNSAFE_STRING_DATA_BUILTIN => check_unsafe_string_data(state, scope, node, arguments),
+        MIN_BUILTIN | MAX_BUILTIN => {
+            check_min_max_builtin(state, scope, node, reference.name, arguments)
+        },
+        PRINT_BUILTIN | PRINTLN_BUILTIN => {
+            check_print_builtin(state, scope, node, reference.name, arguments)
+        },
+        PANIC_BUILTIN => check_panic_builtin(state, scope, node, arguments),
+        RECOVER_BUILTIN => check_recover_builtin(state, scope, node, arguments),
+        _ => {
+            diagnostic(state, node, "builtin " + reference.name + " is not implemented yet", false);
+            invalid_operand(state)
+        },
     };
     let record_signature = if result.value.is_some() {
         false
-    } else if reference.name == "Sizeof" || reference.name == "Alignof" {
-        result.type_id.value != state.world.invalid.value && result.value.is_none()
     } else {
-        reference.name != "Offsetof"
+        match reference.name {
+            UNSAFE_SIZEOF_BUILTIN | UNSAFE_ALIGNOF_BUILTIN => {
+                result.type_id.value != state.world.invalid.value && result.value.is_none()
+            },
+            UNSAFE_OFFSETOF_BUILTIN => false,
+            _ => true,
+        }
     };
     if record_signature {
         record_builtin_signature(state, reference, arguments, result, ellipsis)

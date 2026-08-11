@@ -5,7 +5,7 @@ pub struct Natural {
 }
 
 fn normalized(limbs: Vec[uint32]) -> Natural {
-    while !limbs.is_empty() && limbs[limbs.len() - 1] == 0 as uint32 {
+    while !limbs.is_empty() && limbs[limbs.len() - 1] == 0.to_uint32() {
         let _ = limbs.pop();
     }
     Natural { limbs }
@@ -16,16 +16,16 @@ pub fn natural_zero() -> Natural {
 }
 
 pub fn natural_one() -> Natural {
-    Natural { limbs: Vec::[1 as uint32] }
+    Natural { limbs: Vec::[1.to_uint32()] }
 }
 
 pub fn natural_from_uint64(value: uint64) -> Natural {
-    if value == 0 as uint64 {
+    if value == 0.to_uint64() {
         natural_zero()
     } else {
-        let limbs: Vec[uint32] = Vec::[value as uint32];
-        let high = (value >> 32) as uint32;
-        if high != 0 as uint32 {
+        let limbs: Vec[uint32] = Vec::[value.to_uint32()];
+        let high = (value >> 32).to_uint32();
+        if high != 0.to_uint32() {
             limbs.push(high)
         } else {};
         Natural { limbs }
@@ -70,24 +70,24 @@ pub fn natural_add(left: Natural, right: Natural) -> Natural {
         right.limbs.len()
     };
     let result: Vec[uint32] = Vec::with_capacity(length + 1);
-    let mut carry = 0 as uint64;
+    let mut carry = 0.to_uint64();
     for index in 0..length {
         let left_value = if index < left.limbs.len() {
-            left.limbs[index] as uint64
+            left.limbs[index].to_uint64()
         } else {
-            0 as uint64
+            0.to_uint64()
         };
         let right_value = if index < right.limbs.len() {
-            right.limbs[index] as uint64
+            right.limbs[index].to_uint64()
         } else {
-            0 as uint64
+            0.to_uint64()
         };
         let sum = left_value + right_value + carry;
-        result.push(sum as uint32);
+        result.push(sum.to_uint32());
         carry = sum >> 32;
     }
-    if carry != 0 as uint64 {
-        result.push(carry as uint32)
+    if carry != 0.to_uint64() {
+        result.push(carry.to_uint32())
     } else {};
     normalized(result)
 }
@@ -97,22 +97,22 @@ pub fn natural_sub(left: Natural, right: Natural) -> Option[Natural] {
         return Option::None
     } else {};
     let result: Vec[uint32] = Vec::with_capacity(left.limbs.len());
-    let mut borrow = 0 as uint64;
-    let base = (1 as uint64) << 32;
+    let mut borrow = 0.to_uint64();
+    let base = (1.to_uint64()) << 32;
     for index in 0..left.limbs.len() {
-        let left_value = left.limbs[index] as uint64;
+        let left_value = left.limbs[index].to_uint64();
         let right_value = if index < right.limbs.len() {
-            right.limbs[index] as uint64
+            right.limbs[index].to_uint64()
         } else {
-            0 as uint64
+            0.to_uint64()
         }
             + borrow;
         if left_value >= right_value {
-            result.push((left_value - right_value) as uint32);
-            borrow = 0 as uint64;
+            result.push((left_value - right_value).to_uint32());
+            borrow = 0.to_uint64();
         } else {
-            result.push((base + left_value - right_value) as uint32);
-            borrow = 1 as uint64;
+            result.push((base + left_value - right_value).to_uint32());
+            borrow = 1.to_uint64();
         }
     }
     Option::Some(normalized(result))
@@ -124,42 +124,42 @@ pub fn natural_mul(left: Natural, right: Natural) -> Natural {
     } else {};
     let result: Vec[uint32] = Vec::with_capacity(left.limbs.len() + right.limbs.len());
     for _ in 0..left.limbs.len() + right.limbs.len() {
-        result.push(0 as uint32)
+        result.push(0.to_uint32())
     }
     for left_index in 0..left.limbs.len() {
-        let mut carry = 0 as uint64;
+        let mut carry = 0.to_uint64();
         for right_index in 0..right.limbs.len() {
             let index = left_index + right_index;
-            let product = left.limbs[left_index] as uint64 * right.limbs[right_index] as uint64
-                + result[index] as uint64
+            let product = left.limbs[left_index].to_uint64() * right.limbs[right_index].to_uint64()
+                + result[index].to_uint64()
                 + carry;
-            result[index] = product as uint32;
+            result[index] = product.to_uint32();
             carry = product >> 32;
         }
-        result[left_index + right.limbs.len()] = carry as uint32;
+        result[left_index + right.limbs.len()] = carry.to_uint32();
     }
     normalized(result)
 }
 
 pub fn natural_mul_small(value: Natural, multiplier: uint32) -> Natural {
-    if multiplier == 0 as uint32 || natural_is_zero(value) {
+    if multiplier == 0.to_uint32() || natural_is_zero(value) {
         return natural_zero()
     } else {};
     let result: Vec[uint32] = Vec::with_capacity(value.limbs.len() + 1);
-    let mut carry = 0 as uint64;
+    let mut carry = 0.to_uint64();
     for limb in value.limbs {
-        let product = limb as uint64 * multiplier as uint64 + carry;
-        result.push(product as uint32);
+        let product = limb.to_uint64() * multiplier.to_uint64() + carry;
+        result.push(product.to_uint32());
         carry = product >> 32;
     }
-    if carry != 0 as uint64 {
-        result.push(carry as uint32)
+    if carry != 0.to_uint64() {
+        result.push(carry.to_uint32())
     } else {};
     normalized(result)
 }
 
 pub fn natural_add_small(value: Natural, addend: uint32) -> Natural {
-    natural_add(value, natural_from_uint64(addend as uint64))
+    natural_add(value, natural_from_uint64(addend.to_uint64()))
 }
 
 pub fn natural_bit_len(value: Natural) -> int {
@@ -168,7 +168,7 @@ pub fn natural_bit_len(value: Natural) -> int {
     } else {};
     let mut bits = (value.limbs.len() - 1) * 32;
     let mut high = value.limbs[value.limbs.len() - 1];
-    while high != 0 as uint32 {
+    while high != 0.to_uint32() {
         high = high >> 1;
         bits = bits + 1;
     }
@@ -179,16 +179,16 @@ pub fn natural_bit(value: Natural, index: int) -> bool {
     if index < 0 || index / 32 >= value.limbs.len() {
         false
     } else {
-        ((value.limbs[index / 32] >> (index % 32)) & 1 as uint32) != 0 as uint32
+        ((value.limbs[index / 32] >> (index % 32)) & 1.to_uint32()) != 0.to_uint32()
     }
 }
 
 fn natural_set_bit(value: Natural, index: int) -> Natural {
     let limbs = value.limbs;
     while limbs.len() <= index / 32 {
-        limbs.push(0 as uint32)
+        limbs.push(0.to_uint32())
     }
-    limbs[index / 32] = limbs[index / 32] | ((1 as uint32) << (index % 32));
+    limbs[index / 32] = limbs[index / 32] | ((1.to_uint32()) << (index % 32));
     Natural { limbs }
 }
 
@@ -200,16 +200,16 @@ pub fn natural_shift_left(value: Natural, amount: int) -> Natural {
     let bit_shift = amount % 32;
     let result: Vec[uint32] = Vec::with_capacity(value.limbs.len() + word_shift + 1);
     for _ in 0..word_shift {
-        result.push(0 as uint32)
+        result.push(0.to_uint32())
     }
-    let mut carry = 0 as uint64;
+    let mut carry = 0.to_uint64();
     for limb in value.limbs {
-        let shifted = (limb as uint64) << bit_shift | carry;
-        result.push(shifted as uint32);
+        let shifted = (limb.to_uint64()) << bit_shift | carry;
+        result.push(shifted.to_uint32());
         carry = shifted >> 32;
     }
-    if carry != 0 as uint64 {
-        result.push(carry as uint32)
+    if carry != 0.to_uint64() {
+        result.push(carry.to_uint32())
     } else {};
     normalized(result)
 }
@@ -225,10 +225,10 @@ pub fn natural_shift_right(value: Natural, amount: int) -> Natural {
     } else {};
     let result: Vec[uint32] = Vec::with_capacity(value.limbs.len() - word_shift);
     for _ in 0..value.limbs.len() - word_shift {
-        result.push(0 as uint32)
+        result.push(0.to_uint32())
     }
     let mut source_index = value.limbs.len();
-    let mut carry = 0 as uint32;
+    let mut carry = 0.to_uint32();
     while source_index > word_shift {
         source_index = source_index - 1;
         let target = source_index - word_shift;
@@ -267,12 +267,12 @@ pub fn natural_or(left: Natural, right: Natural) -> Natural {
         let left_value = if index < left.limbs.len() {
             left.limbs[index]
         } else {
-            0 as uint32
+            0.to_uint32()
         };
         let right_value = if index < right.limbs.len() {
             right.limbs[index]
         } else {
-            0 as uint32
+            0.to_uint32()
         };
         result.push(left_value | right_value)
     }
@@ -290,12 +290,12 @@ pub fn natural_xor(left: Natural, right: Natural) -> Natural {
         let left_value = if index < left.limbs.len() {
             left.limbs[index]
         } else {
-            0 as uint32
+            0.to_uint32()
         };
         let right_value = if index < right.limbs.len() {
             right.limbs[index]
         } else {
-            0 as uint32
+            0.to_uint32()
         };
         result.push(left_value ^ right_value)
     }
@@ -308,7 +308,7 @@ pub fn natural_and_not(left: Natural, right: Natural) -> Natural {
         let right_value = if index < right.limbs.len() {
             right.limbs[index]
         } else {
-            0 as uint32
+            0.to_uint32()
         };
         result.push(left.limbs[index] & ~right_value)
     }
@@ -331,7 +331,7 @@ pub fn natural_div_rem(numerator: Natural, denominator: Natural) -> Result[
         index = index - 1;
         remainder = natural_shift_left(remainder, 1);
         if natural_bit(numerator, index) {
-            remainder = natural_add_small(remainder, 1 as uint32);
+            remainder = natural_add_small(remainder, 1.to_uint32());
         } else {};
         if natural_compare(remainder, denominator) >= 0 {
             remainder = natural_sub(remainder, denominator).unwrap_or(natural_zero());
@@ -345,22 +345,22 @@ pub fn natural_div_rem_small(value: Natural, denominator: uint32) -> Result[
     (Natural, uint32),
     string,
 ] {
-    if denominator == 0 as uint32 {
+    if denominator == 0.to_uint32() {
         return Result::Err("division by zero")
     } else {};
     let result: Vec[uint32] = Vec::with_capacity(value.limbs.len());
     for _ in 0..value.limbs.len() {
-        result.push(0 as uint32)
+        result.push(0.to_uint32())
     }
-    let mut remainder = 0 as uint64;
+    let mut remainder = 0.to_uint64();
     let mut index = value.limbs.len();
     while index > 0 {
         index = index - 1;
-        let current = (remainder << 32) | value.limbs[index] as uint64;
-        result[index] = (current / denominator as uint64) as uint32;
-        remainder = current % denominator as uint64;
+        let current = (remainder << 32) | value.limbs[index].to_uint64();
+        result[index] = (current / denominator.to_uint64()).to_uint32();
+        remainder = current % denominator.to_uint64();
     }
-    Result::Ok((normalized(result), remainder as uint32))
+    Result::Ok((normalized(result), remainder.to_uint32()))
 }
 
 pub fn natural_gcd(left: Natural, right: Natural) -> Natural {
@@ -380,18 +380,18 @@ pub fn natural_gcd(left: Natural, right: Natural) -> Natural {
 
 fn digit_value(value: byte) -> Option[uint32] {
     if value >= b'0' && value <= b'9' {
-        Option::Some((value - b'0') as uint32)
+        Option::Some((value - b'0').to_uint32())
     } else if value >= b'a' && value <= b'f' {
-        Option::Some((value - b'a' + 10) as uint32)
+        Option::Some((value - b'a' + 10).to_uint32())
     } else if value >= b'A' && value <= b'F' {
-        Option::Some((value - b'A' + 10) as uint32)
+        Option::Some((value - b'A' + 10).to_uint32())
     } else {
         Option::None
     }
 }
 
 pub fn natural_parse_digits(value: string, radix: uint32) -> Result[Natural, string] {
-    if radix < 2 as uint32 || radix > 16 as uint32 {
+    if radix < 2.to_uint32() || radix > 16.to_uint32() {
         return Result::Err("unsupported radix")
     } else {};
     let mut result = natural_zero();
@@ -420,7 +420,7 @@ pub fn natural_parse_digits(value: string, radix: uint32) -> Result[Natural, str
 
 pub fn natural_pow_small(base: uint32, exponent: int) -> Natural {
     let mut result = natural_one();
-    let mut factor = natural_from_uint64(base as uint64);
+    let mut factor = natural_from_uint64(base.to_uint64());
     let mut power = exponent;
     while power > 0 {
         if power % 2 == 1 {
@@ -449,7 +449,7 @@ pub fn natural_to_string(value: Natural) -> string {
     let parts: Vec[uint32] = Vec::[];
     let mut current = natural_copy(value);
     while !natural_is_zero(current) {
-        match natural_div_rem_small(current, 1000000000 as uint32) {
+        match natural_div_rem_small(current, 1000000000.to_uint32()) {
             Ok(divided) => {
                 current = divided.0;
                 parts.push(divided.1);

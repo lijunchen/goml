@@ -21,7 +21,7 @@ fn bracket_followed_by_type(parser: Parser) -> bool {
     } else {
         let mut depth = 0;
         let mut distance = 0;
-        while distance < cursor_fuel {
+        while distance < CURSOR_FUEL {
             let kind = nth(parser, distance).kind;
             if token::equal(kind, token::Kind::Lbrack) {
                 depth += 1;
@@ -47,7 +47,7 @@ fn type_parameter_list_start(parser: Parser) -> bool {
         let mut paren_depth = 0;
         let mut brace_depth = 0;
         let mut distance = 0;
-        while distance < cursor_fuel {
+        while distance < CURSOR_FUEL {
             let scanned = nth(parser, distance).kind;
             if token::equal(scanned, token::Kind::Lbrack) {
                 bracket_depth += 1;
@@ -210,7 +210,7 @@ fn named_parameter_group_start(parser: Parser, allow_ellipsis: bool) -> bool {
     } else {
         let mut distance = 0;
         let mut names = 0;
-        while distance < cursor_fuel && token::equal(nth(parser, distance).kind, token::Kind::Ident) {
+        while distance < CURSOR_FUEL && token::equal(nth(parser, distance).kind, token::Kind::Ident) {
             names += 1;
             if token::equal(nth(parser, distance + 1).kind, token::Kind::Comma)
                 && token::equal(nth(parser, distance + 2).kind, token::Kind::Ident) {
@@ -221,7 +221,7 @@ fn named_parameter_group_start(parser: Parser, allow_ellipsis: bool) -> bool {
                     let mut bracket_depth = 0;
                     let mut bracket_distance = distance + 1;
                     let found = Ref::new(false);
-                    while bracket_distance < cursor_fuel {
+                    while bracket_distance < CURSOR_FUEL {
                         let scanned = nth(parser, bracket_distance).kind;
                         if token::equal(scanned, token::Kind::Lbrack) {
                             bracket_depth += 1;
@@ -627,7 +627,7 @@ fn interface_method_type_parameters(parser: Parser) -> bool {
     } else {};
     let mut depth = 0;
     let mut distance = 1;
-    while distance < cursor_fuel {
+    while distance < CURSOR_FUEL {
         let kind = nth(parser, distance).kind;
         if token::equal(kind, token::Kind::Lbrack) {
             depth += 1;

@@ -1,35 +1,62 @@
 package types;
 
+const GOARCH_386: string = "386";
+
+const GOARCH_AMD64: string = "amd64";
+
+const GOARCH_AMD64P32: string = "amd64p32";
+
+const GOARCH_ARM: string = "arm";
+
+const GOARCH_ARM64: string = "arm64";
+
+const GOARCH_LOONG64: string = "loong64";
+
+const GOARCH_MIPS: string = "mips";
+
+const GOARCH_MIPS64: string = "mips64";
+
+const GOARCH_MIPS64LE: string = "mips64le";
+
+const GOARCH_MIPSLE: string = "mipsle";
+
+const GOARCH_PPC64: string = "ppc64";
+
+const GOARCH_PPC64LE: string = "ppc64le";
+
+const GOARCH_RISCV64: string = "riscv64";
+
+const GOARCH_S390X: string = "s390x";
+
+const GOARCH_SPARC64: string = "sparc64";
+
+const GOARCH_WASM: string = "wasm";
+
 pub struct TargetSizes {
     pub word_size: int64,
     pub max_align: int64,
 }
 
 pub fn gc_sizes(arch: string) -> Option[TargetSizes] {
-    if arch == "386" || arch == "arm" || arch == "mips" || arch == "mipsle" {
-        Option::Some(TargetSizes { word_size: 4, max_align: 4 })
-    } else if arch == "amd64" || arch == "amd64p32" || arch == "arm64" || arch == "loong64"
-        || arch == "mips64"
-        || arch == "mips64le"
-        || arch == "ppc64"
-        || arch == "ppc64le"
-        || arch == "riscv64"
-        || arch == "s390x"
-        || arch == "sparc64"
-        || arch == "wasm" {
-        let word_size = if arch == "amd64p32" {
-            4
-        } else {
-            8
-        };
-        Option::Some(TargetSizes { word_size, max_align: 8 })
-    } else {
-        Option::None
+    match arch {
+        GOARCH_386 | GOARCH_ARM | GOARCH_MIPS | GOARCH_MIPSLE => {
+            Option::Some(TargetSizes { word_size: 4, max_align: 4 })
+        },
+        GOARCH_AMD64 | GOARCH_AMD64P32 | GOARCH_ARM64 | GOARCH_LOONG64 | GOARCH_MIPS64 | GOARCH_MIPS64LE | GOARCH_PPC64 | GOARCH_PPC64LE | GOARCH_RISCV64 | GOARCH_S390X | GOARCH_SPARC64 | GOARCH_WASM => Option::Some(
+            TargetSizes {
+                word_size: match arch {
+                    GOARCH_AMD64P32 => 4,
+                    _ => 8,
+                },
+                max_align: 8,
+            },
+        ),
+        _ => Option::None,
     }
 }
 
 fn aligned_offset(value: int64, alignment: int64) -> int64 {
-    if value < 0 || alignment < 1 || value > 9223372036854775807 as int64 - alignment + 1 {
+    if value < 0 || alignment < 1 || value > 9223372036854775807.to_int64() - alignment + 1 {
         -1
     } else {
         let remainder = value % alignment;
@@ -115,7 +142,7 @@ fn alignof_inner(world: World, value: TypeId, sizes: TargetSizes, visited: Vec[T
             } else {
                 let next = copied_size_types(visited);
                 next.push(key);
-                let mut result = 1 as int64;
+                let mut result = 1.to_int64();
                 for field in fields {
                     let alignment = alignof_inner(world, field.variable.type_id, sizes, next);
                     if alignment > result {
@@ -169,7 +196,7 @@ fn offsets_of_inner(
     visited: Vec[TypeId],
 ) -> Vec[int64] {
     let result: Vec[int64] = Vec::[];
-    let mut offset = 0 as int64;
+    let mut offset = 0.to_int64();
     for field in fields {
         offset = aligned_offset(
             offset,
@@ -177,7 +204,7 @@ fn offsets_of_inner(
         );
         result.push(offset);
         let size = sizeof_inner(world, field.variable.type_id, sizes, visited);
-        if offset < 0 || size < 0 || offset > 9223372036854775807 as int64 - size {
+        if offset < 0 || size < 0 || offset > 9223372036854775807.to_int64() - size {
             offset = -1;
         } else {
             offset += size;
@@ -207,7 +234,7 @@ fn sizeof_inner(world: World, value: TypeId, sizes: TargetSizes, visited: Vec[Ty
                 next.push(key);
                 let element_size = sizeof_inner(world, element, sizes, next);
                 if element_size < 0
-                    || (element_size > 0 && length > 9223372036854775807 as int64 / element_size) {
+                    || (element_size > 0 && length > 9223372036854775807.to_int64() / element_size) {
                     -1
                 } else {
                     element_size * length

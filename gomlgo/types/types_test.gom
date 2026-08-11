@@ -215,10 +215,10 @@ fn exported_names_and_gc_sizes_match_target_rules() -> unit {
     testing::assert(!is_exported("private"));
     testing::assert(!is_exported(""));
     let amd64 = testing::expect_some(gc_sizes("amd64"), "missing amd64 sizes");
-    testing::assert_eq(amd64.word_size, 8 as int64);
-    testing::assert_eq(amd64.max_align, 8 as int64);
+    testing::assert_eq(amd64.word_size, 8.to_int64());
+    testing::assert_eq(amd64.max_align, 8.to_int64());
     let wasm = testing::expect_some(gc_sizes("wasm"), "missing wasm sizes");
-    testing::assert_eq(wasm.word_size, 8 as int64);
+    testing::assert_eq(wasm.word_size, 8.to_int64());
     testing::assert_none(gc_sizes("unknown"))
 }
 
@@ -252,13 +252,13 @@ fn gc_sizes_compute_composite_alignment_offsets_and_trailing_padding() -> unit {
     let structure = add_type(world, TypeKind::Struct { fields });
     let offsets = offsets_of(world, fields, sizes);
     testing::assert_eq(offsets.len(), 3);
-    testing::assert_eq(offsets[0], 0 as int64);
-    testing::assert_eq(offsets[1], 8 as int64);
-    testing::assert_eq(offsets[2], 16 as int64);
-    testing::assert_eq(alignof(world, structure, sizes), 8 as int64);
-    testing::assert_eq(sizeof(world, structure, sizes), 24 as int64);
+    testing::assert_eq(offsets[0], 0.to_int64());
+    testing::assert_eq(offsets[1], 8.to_int64());
+    testing::assert_eq(offsets[2], 16.to_int64());
+    testing::assert_eq(alignof(world, structure, sizes), 8.to_int64());
+    testing::assert_eq(sizeof(world, structure, sizes), 24.to_int64());
     let array = add_type(world, TypeKind::Array { length: 2, element: structure });
-    testing::assert_eq(sizeof(world, array, sizes), 48 as int64)
+    testing::assert_eq(sizeof(world, array, sizes), 48.to_int64())
 }
 
 fn named_test_type(world: World, pkg: PackageId, name: string, rhs: TypeId) -> TypeId {

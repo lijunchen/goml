@@ -22,7 +22,7 @@ gofront-oracle:
     cd gomlgo/oracle && "${GOFRONT_GO:-/usr/lib/go-1.26/bin/go}" build -o ../../_artifact/gomlgo/oracle .
 
 gofront-test: make gofront-oracle
-    bash tools/stdlib/install.sh _artifact/gomlgo-test/test
+    bash tools/lib/install.sh _artifact/gomlgo-test/test
     cd gomlgo && GOMLGO_ORACLE=../_artifact/gomlgo/oracle ../stage2/bin/goml test --target-dir ../_artifact/gomlgo-test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m
 
 gofront-type-test: gofront-test

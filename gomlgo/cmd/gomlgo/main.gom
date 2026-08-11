@@ -11,6 +11,18 @@ use std::env;
 use std::fs;
 use std::process;
 
+const CHECK_COMMAND: string = "check";
+
+const CHECK_PACKAGE_COMMAND: string = "check-package";
+
+const SCAN_COMMAND: string = "scan";
+
+const PARSE_COMMAND: string = "parse";
+
+const PARSE_EXPR_COMMAND: string = "parse-expr";
+
+const COMMAND_USAGE: string = "usage: gomlgo scan FILE | parse FILE | parse-expr EXPR | check FILE... | check-package DIRECTORY";
+
 fn fail(message: string) -> unit {
     println(message);
     process::exit(1)
@@ -97,23 +109,40 @@ fn check_package(directory: string) -> unit {
 
 fn main() -> unit {
     let arguments = env::args();
-    if arguments.len() >= 3 && arguments[1] == "check" {
-        let files: Vec[string] = Vec::[];
-        for index in 2..arguments.len() {
-            files.push(arguments[index])
-        }
-        check_files(files, "command-line-arguments")
-    } else if arguments.len() == 3 && arguments[1] == "check-package" {
-        check_package(arguments[2])
-    } else if arguments.len() == 3 && arguments[1] == "scan" {
-        scan_file(arguments[2])
-    } else if arguments.len() == 3 && arguments[1] == "parse" {
-        print_parse_result(parser::parse_file_bytes(read_source(arguments[2])))
-    } else if arguments.len() == 3 && arguments[1] == "parse-expr" {
-        print_parse_result(parser::parse_expr(arguments[2]))
+    if arguments.len() < 2 {
+        fail(COMMAND_USAGE)
     } else {
-        fail(
-            "usage: gomlgo scan FILE | parse FILE | parse-expr EXPR | check FILE... | check-package DIRECTORY",
-        )
+        match arguments[1] {
+            CHECK_COMMAND => if arguments.len() >= 3 {
+                let files: Vec[string] = Vec::[];
+                for index in 2..arguments.len() {
+                    files.push(arguments[index])
+                }
+                check_files(files, "command-line-arguments")
+            } else {
+                fail(COMMAND_USAGE)
+            },
+            CHECK_PACKAGE_COMMAND => if arguments.len() == 3 {
+                check_package(arguments[2])
+            } else {
+                fail(COMMAND_USAGE)
+            },
+            SCAN_COMMAND => if arguments.len() == 3 {
+                scan_file(arguments[2])
+            } else {
+                fail(COMMAND_USAGE)
+            },
+            PARSE_COMMAND => if arguments.len() == 3 {
+                print_parse_result(parser::parse_file_bytes(read_source(arguments[2])))
+            } else {
+                fail(COMMAND_USAGE)
+            },
+            PARSE_EXPR_COMMAND => if arguments.len() == 3 {
+                print_parse_result(parser::parse_expr(arguments[2]))
+            } else {
+                fail(COMMAND_USAGE)
+            },
+            _ => fail(COMMAND_USAGE),
+        }
     }
 }

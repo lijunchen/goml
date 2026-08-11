@@ -2,6 +2,16 @@ package parser_diff;
 
 use std::json;
 
+pub const PARSE_ACCEPTANCE_MODE: string = "parse-acceptance";
+
+pub const AST_SHAPE_MODE: string = "ast-shape";
+
+pub const AST_POSITION_MODE: string = "ast-position";
+
+pub const AST_COMMENTS_MODE: string = "ast-comments";
+
+pub const DIAGNOSTIC_STRICT_MODE: string = "diagnostic-strict";
+
 #[derive(PartialEq, Eq)]
 pub enum Mode {
     Acceptance,
@@ -20,22 +30,22 @@ pub struct Difference {
 
 pub fn mode_from_string(value: string) -> Option[Mode] {
     match value {
-        "parse-acceptance" => Option::Some(Mode::Acceptance),
-        "ast-shape" => Option::Some(Mode::Shape),
-        "ast-position" => Option::Some(Mode::Position),
-        "ast-comments" => Option::Some(Mode::Comments),
-        "diagnostic-strict" => Option::Some(Mode::Diagnostics),
+        PARSE_ACCEPTANCE_MODE => Option::Some(Mode::Acceptance),
+        AST_SHAPE_MODE => Option::Some(Mode::Shape),
+        AST_POSITION_MODE => Option::Some(Mode::Position),
+        AST_COMMENTS_MODE => Option::Some(Mode::Comments),
+        DIAGNOSTIC_STRICT_MODE => Option::Some(Mode::Diagnostics),
         _ => Option::None,
     }
 }
 
 pub fn mode_name(value: Mode) -> string {
     match value {
-        Acceptance => "parse-acceptance",
-        Shape => "ast-shape",
-        Position => "ast-position",
-        Comments => "ast-comments",
-        Diagnostics => "diagnostic-strict",
+        Acceptance => PARSE_ACCEPTANCE_MODE,
+        Shape => AST_SHAPE_MODE,
+        Position => AST_POSITION_MODE,
+        Comments => AST_COMMENTS_MODE,
+        Diagnostics => DIAGNOSTIC_STRICT_MODE,
     }
 }
 

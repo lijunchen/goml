@@ -10,6 +10,12 @@ use std::json;
 use std::path;
 use std::text;
 
+pub const ACCEPTANCE_MODE: string = "acceptance";
+
+pub const DIAGNOSTICS_MODE: string = "diagnostics";
+
+pub const INFO_MODE: string = "info";
+
 pub struct Summary {
     pub files: int,
     pub accepted: int,
@@ -21,6 +27,15 @@ pub enum CompareMode {
     Acceptance,
     Diagnostics,
     Info,
+}
+
+pub fn mode_from_string(value: string) -> Option[CompareMode] {
+    match value {
+        ACCEPTANCE_MODE => Option::Some(CompareMode::Acceptance),
+        DIAGNOSTICS_MODE => Option::Some(CompareMode::Diagnostics),
+        INFO_MODE => Option::Some(CompareMode::Info),
+        _ => Option::None,
+    }
 }
 
 fn collect_go_files(root: string, files: Vec[string]) -> Result[unit, string] {

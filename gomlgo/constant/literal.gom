@@ -2,9 +2,12 @@ package constant;
 
 use std::text;
 
-const literal_length_limit: int = 10000;
+#[go_ffi("gomlgo/rawstring", "FromBytes")]
+extern fn string_from_bytes(value: Slice[byte]) -> string;
 
-const literal_exponent_limit: int = 2147483647;
+const LITERAL_LENGTH_LIMIT: int = 10000;
+
+const LITERAL_EXPONENT_LIMIT: int = 2147483647;
 
 fn without_underscores(value: string) -> string {
     let builder = text::StringBuilder::with_capacity(value.byte_len());
@@ -18,11 +21,11 @@ fn without_underscores(value: string) -> string {
 
 fn literal_digit(value: byte, radix: int) -> Option[int] {
     let digit = if value >= b'0' && value <= b'9' {
-        (value - b'0') as int
+        (value - b'0').to_int()
     } else if value >= b'a' && value <= b'f' {
-        (value - b'a' + 10) as int
+        (value - b'a' + 10).to_int()
     } else if value >= b'A' && value <= b'F' {
-        (value - b'A' + 10) as int
+        (value - b'A' + 10).to_int()
     } else {
         -1
     };
@@ -54,7 +57,7 @@ fn parse_exponent(value: string) -> Result[int, string] {
             Some(value) => value,
             None => return Result::Err("invalid exponent"),
         };
-        if result > literal_exponent_limit / 10 || result * 10 + digit > literal_exponent_limit {
+        if result > LITERAL_EXPONENT_LIMIT / 10 || result * 10 + digit > LITERAL_EXPONENT_LIMIT {
             return Result::Err("exponent is too large")
         } else {};
         result = result * 10 + digit;
@@ -115,7 +118,7 @@ fn scaled_rational(magnitude: Natural, radix: uint32, exponent: int) -> Result[B
 }
 
 pub fn parse_integer_literal(value: string) -> Result[ConstValue, string] {
-    if value.byte_len() > literal_length_limit {
+    if value.byte_len() > LITERAL_LENGTH_LIMIT {
         Result::Err("excessively long constant")
     } else {
         Result::Ok(ConstValue::Int(integer_parse(value)?))
@@ -123,7 +126,7 @@ pub fn parse_integer_literal(value: string) -> Result[ConstValue, string] {
 }
 
 pub fn parse_float_literal(value: string) -> Result[ConstValue, string] {
-    if value.byte_len() > literal_length_limit {
+    if value.byte_len() > LITERAL_LENGTH_LIMIT {
         return Result::Err("excessively long constant")
     } else {};
     let normalized = without_underscores(value);
@@ -151,9 +154,9 @@ pub fn parse_float_literal(value: string) -> Result[ConstValue, string] {
     let magnitude = natural_parse_digits(
         parts.0,
         if hexadecimal {
-            16 as uint32
+            16.to_uint32()
         } else {
-            10 as uint32
+            10.to_uint32()
         },
     )?;
     if magnitude.limbs.is_empty() {
@@ -181,9 +184,11 @@ pub fn parse_float_literal(value: string) -> Result[ConstValue, string] {
     let binary_exponent = binary_float_mantissa_exponent(approximate);
     if binary_exponent > -4096 && binary_exponent < 4096 {
         if hexadecimal {
-            Result::Ok(ConstValue::Rat(scaled_rational(magnitude, 2 as uint32, scaled_exponent)?))
+            Result::Ok(ConstValue::Rat(scaled_rational(magnitude, 2.to_uint32(), scaled_exponent)?))
         } else {
-            Result::Ok(ConstValue::Rat(scaled_rational(magnitude, 10 as uint32, scaled_exponent)?))
+            Result::Ok(
+                ConstValue::Rat(scaled_rational(magnitude, 10.to_uint32(), scaled_exponent)?),
+            )
         }
     } else {
         Result::Ok(ConstValue::LargeFloat(approximate))
@@ -294,11 +299,11 @@ fn parse_escape(value: string, index: int, quote: byte, builder: text::StringBui
         if cursor + digits > value.byte_len() {
             return Result::Err("escape sequence not terminated")
         } else {};
-        let mut decoded = 0 as uint32;
+        let mut decoded = 0.to_uint32();
         for offset in 0..digits {
             match literal_digit(value.byte_get(cursor + offset), radix) {
                 Some(digit) => {
-                    decoded = decoded * radix as uint32 + digit as uint32;
+                    decoded = decoded * radix.to_uint32() + digit.to_uint32();
                 },
                 None => return Result::Err("illegal character in escape sequence"),
             }
@@ -307,7 +312,7 @@ fn parse_escape(value: string, index: int, quote: byte, builder: text::StringBui
             if decoded > 255 {
                 Result::Err("escape sequence is invalid Unicode code point")
             } else {
-                builder.values.push(decoded as byte);
+                builder.values.push(decoded.to_uint8());
                 Result::Ok(cursor + digits)
             }
         } else {
@@ -345,7 +350,7 @@ pub fn parse_string_literal(value: string) -> Result[ConstValue, string] {
             }
         }
     }
-    let (_, result) = string_from_utf8_raw(builder.values);
+    let result = string_from_bytes(builder.values.slice(0, builder.values.len()));
     Result::Ok(ConstValue::String(result))
 }
 
@@ -362,11 +367,11 @@ pub fn parse_rune_literal(value: string) -> Result[ConstValue, string] {
             return Result::Err("illegal rune literal")
         } else {};
         if builder.values.len() == 1 {
-            builder.values[0] as uint32
+            builder.values[0].to_uint32()
         } else {
             match builder.finish().decode_at(0) {
                 Some((character, width)) => if width == builder.values.len() {
-                    character as uint32
+                    character.to_uint32()
                 } else {
                     return Result::Err("illegal rune literal")
                 },
@@ -376,12 +381,12 @@ pub fn parse_rune_literal(value: string) -> Result[ConstValue, string] {
     } else {
         match content.decode_at(0) {
             Some((character, width)) => if width == content.byte_len() {
-                character as uint32
+                character.to_uint32()
             } else {
                 return Result::Err("illegal rune literal")
             },
             None => return Result::Err("illegal rune literal"),
         }
     };
-    Result::Ok(ConstValue::Int(integer_from_parts(1, natural_from_uint64(codepoint as uint64))))
+    Result::Ok(ConstValue::Int(integer_from_parts(1, natural_from_uint64(codepoint.to_uint64()))))
 }

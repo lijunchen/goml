@@ -6,15 +6,16 @@ use std::process;
 
 fn main() -> unit {
     let arguments = env::args();
-    let mode = if arguments.len() >= 2 && arguments[1] == "acceptance" {
-        typecheck_compare::CompareMode::Acceptance
-    } else if arguments.len() >= 2 && arguments[1] == "info" {
-        typecheck_compare::CompareMode::Info
+    let parsed_mode = if arguments.len() >= 2 {
+        typecheck_compare::mode_from_string(arguments[1])
     } else {
-        typecheck_compare::CompareMode::Diagnostics
+        Option::None
     };
-    let explicit_mode = arguments.len() >= 2
-        && (arguments[1] == "acceptance" || arguments[1] == "diagnostics" || arguments[1] == "info");
+    let mode = match parsed_mode {
+        Some(value) => value,
+        None => typecheck_compare::CompareMode::Diagnostics,
+    };
+    let explicit_mode = parsed_mode.is_some();
     let root = if explicit_mode && arguments.len() >= 3 {
         arguments[2]
     } else if !explicit_mode && arguments.len() >= 2 {

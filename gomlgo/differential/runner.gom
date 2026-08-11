@@ -4,14 +4,14 @@ use std::bytes;
 use std::env;
 use std::process;
 
-pub const default_oracle: string = "../_artifact/gomlgo/oracle";
+pub const DEFAULT_ORACLE: string = "../_artifact/gomlgo/oracle";
 
 fn bytes_to_string(value: bytes::Bytes) -> Result[string, string] {
     value.to_string()
 }
 
 pub fn oracle_path() -> string {
-    env::var("GOMLGO_ORACLE").unwrap_or(default_oracle)
+    env::var("GOMLGO_ORACLE").unwrap_or(DEFAULT_ORACLE)
 }
 
 pub fn run_oracle_at(executable: string, mode: string, source: bytes::Bytes) -> Result[

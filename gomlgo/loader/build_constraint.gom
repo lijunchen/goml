@@ -3,6 +3,76 @@ package loader;
 use std::num;
 use std::text;
 
+const GOOS_AIX: string = "aix";
+
+const GOOS_ANDROID: string = "android";
+
+const GOOS_DARWIN: string = "darwin";
+
+const GOOS_DRAGONFLY: string = "dragonfly";
+
+const GOOS_FREEBSD: string = "freebsd";
+
+const GOOS_HURD: string = "hurd";
+
+const GOOS_ILLUMOS: string = "illumos";
+
+const GOOS_IOS: string = "ios";
+
+const GOOS_JS: string = "js";
+
+const GOOS_LINUX: string = "linux";
+
+const GOOS_NETBSD: string = "netbsd";
+
+const GOOS_OPENBSD: string = "openbsd";
+
+const GOOS_PLAN9: string = "plan9";
+
+const GOOS_SOLARIS: string = "solaris";
+
+const GOOS_WASIP1: string = "wasip1";
+
+const GOOS_WINDOWS: string = "windows";
+
+const GOOS_ZOS: string = "zos";
+
+const GOARCH_386: string = "386";
+
+const GOARCH_AMD64: string = "amd64";
+
+const GOARCH_ARM: string = "arm";
+
+const GOARCH_ARM64: string = "arm64";
+
+const GOARCH_LOONG64: string = "loong64";
+
+const GOARCH_MIPS: string = "mips";
+
+const GOARCH_MIPS64: string = "mips64";
+
+const GOARCH_MIPS64LE: string = "mips64le";
+
+const GOARCH_MIPSLE: string = "mipsle";
+
+const GOARCH_PPC64: string = "ppc64";
+
+const GOARCH_PPC64LE: string = "ppc64le";
+
+const GOARCH_RISCV64: string = "riscv64";
+
+const GOARCH_S390X: string = "s390x";
+
+const GOARCH_SPARC64: string = "sparc64";
+
+const GOARCH_WASM: string = "wasm";
+
+const GC_BUILD_TAG: string = "gc";
+
+const CGO_BUILD_TAG: string = "cgo";
+
+const UNIX_BUILD_TAG: string = "unix";
+
 struct ConstraintParser {
     input: string,
     index: Ref[int],
@@ -48,15 +118,10 @@ fn version_minor(value: string) -> int {
 }
 
 fn unix_goos(value: string) -> bool {
-    value == "aix" || value == "android" || value == "darwin" || value == "dragonfly"
-        || value == "freebsd"
-        || value == "hurd"
-        || value == "illumos"
-        || value == "ios"
-        || value == "linux"
-        || value == "netbsd"
-        || value == "openbsd"
-        || value == "solaris"
+    match value {
+        GOOS_AIX | GOOS_ANDROID | GOOS_DARWIN | GOOS_DRAGONFLY | GOOS_FREEBSD | GOOS_HURD | GOOS_ILLUMOS | GOOS_IOS | GOOS_LINUX | GOOS_NETBSD | GOOS_OPENBSD | GOOS_SOLARIS => true,
+        _ => false,
+    }
 }
 
 fn string_tag(values: Vec[string], value: string) -> bool {
@@ -69,20 +134,16 @@ fn string_tag(values: Vec[string], value: string) -> bool {
 }
 
 fn platform_tag(goos: string, goarch: string, cgo: bool, tags: Vec[string], value: string) -> bool {
-    if value == goos || value == goarch || value == "gc" {
+    if value == goos || value == goarch {
         true
-    } else if value == "cgo" {
-        cgo
-    } else if goos == "android" && value == "linux" {
-        true
-    } else if goos == "illumos" && value == "solaris" {
-        true
-    } else if goos == "ios" && value == "darwin" {
-        true
-    } else if value == "unix" {
-        unix_goos(goos)
     } else {
-        string_tag(tags, value)
+        match (goos, value) {
+            (_, GC_BUILD_TAG) => true,
+            (_, CGO_BUILD_TAG) => cgo,
+            (GOOS_ANDROID, GOOS_LINUX) | (GOOS_ILLUMOS, GOOS_SOLARIS) | (GOOS_IOS, GOOS_DARWIN) => true,
+            (_, UNIX_BUILD_TAG) => unix_goos(goos),
+            _ => string_tag(tags, value),
+        }
     }
 }
 

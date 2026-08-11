@@ -1743,7 +1743,7 @@ fn checks_value_and_pointer_method_expressions() -> unit {
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
     testing::assert_eq(
-        go_types::format_type(result.world, package_object(result, "Add").type_id),
+        go_types::format_type(result.world, package_object(result, UNSAFE_ADD_BUILTIN).type_id),
         "func(value example/p.Counter, other int) int",
     );
     testing::assert_eq(

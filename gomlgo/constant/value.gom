@@ -4,6 +4,22 @@ use std::math;
 use std::num;
 use std::text;
 
+const UNKNOWN_EXACT_KIND: string = "Unknown";
+
+const BOOL_EXACT_KIND: string = "Bool";
+
+const STRING_EXACT_KIND: string = "String";
+
+const INT_EXACT_KIND: string = "Int";
+
+const FLOAT_EXACT_KIND: string = "Float";
+
+const COMPLEX_EXACT_KIND: string = "Complex";
+
+const TRUE_EXACT_VALUE: string = "true";
+
+const FALSE_EXACT_VALUE: string = "false";
+
 #[go_ffi("strconv", "Quote")]
 extern fn quote_string(value: string) -> string;
 
@@ -100,12 +116,12 @@ pub fn constant_kind(value: ConstValue) -> ConstantKind {
 
 pub fn constant_kind_name(value: ConstValue) -> string {
     match constant_kind(value) {
-        ConstantKind::Unknown => "Unknown",
-        ConstantKind::Bool => "Bool",
-        ConstantKind::String => "String",
-        ConstantKind::Int => "Int",
-        ConstantKind::Float => "Float",
-        ConstantKind::Complex => "Complex",
+        ConstantKind::Unknown => UNKNOWN_EXACT_KIND,
+        ConstantKind::Bool => BOOL_EXACT_KIND,
+        ConstantKind::String => STRING_EXACT_KIND,
+        ConstantKind::Int => INT_EXACT_KIND,
+        ConstantKind::Float => FLOAT_EXACT_KIND,
+        ConstantKind::Complex => COMPLEX_EXACT_KIND,
     }
 }
 
@@ -198,39 +214,32 @@ fn parse_exact_complex(value: string) -> Option[(NumericComponent, NumericCompon
 }
 
 pub fn constant_from_exact(kind: string, value: string) -> Option[ConstValue] {
-    if kind == "Bool" {
-        if value == "true" {
-            Option::Some(ConstValue::Bool(true))
-        } else if value == "false" {
-            Option::Some(ConstValue::Bool(false))
-        } else {
-            Option::None
-        }
-    } else if kind == "String" {
-        match parse_string_literal(value) {
+    match kind {
+        BOOL_EXACT_KIND => match value {
+            TRUE_EXACT_VALUE => Option::Some(ConstValue::Bool(true)),
+            FALSE_EXACT_VALUE => Option::Some(ConstValue::Bool(false)),
+            _ => Option::None,
+        },
+        STRING_EXACT_KIND => match parse_string_literal(value) {
             Ok(result) => Option::Some(result),
             Err(_) => Option::None,
-        }
-    } else if kind == "Int" {
-        match parse_exact_integer(value) {
+        },
+        INT_EXACT_KIND => match parse_exact_integer(value) {
             Some(result) => Option::Some(ConstValue::Int(result)),
             None => Option::None,
-        }
-    } else if kind == "Float" {
-        match parse_exact_rational(value) {
+        },
+        FLOAT_EXACT_KIND => match parse_exact_rational(value) {
             Some(result) => Option::Some(ConstValue::Rat(result)),
             None => match parse_float_literal(value) {
                 Ok(result) => Option::Some(result),
                 Err(_) => Option::None,
             },
-        }
-    } else if kind == "Complex" {
-        match parse_exact_complex(value) {
+        },
+        COMPLEX_EXACT_KIND => match parse_exact_complex(value) {
             Some((real, imaginary)) => Option::Some(ConstValue::Complex { real, imaginary }),
             None => Option::None,
-        }
-    } else {
-        Option::None
+        },
+        _ => Option::None,
     }
 }
 
@@ -385,7 +394,7 @@ fn manual_rational_short_string(value: BigRat) -> string {
     } else {};
     let mut digits = natural_to_string(rounded);
     if digits.byte_len() > 6 {
-        rounded = natural_div_rem_small(rounded, 10).unwrap_or((rounded, 0 as uint32)).0;
+        rounded = natural_div_rem_small(rounded, 10).unwrap_or((rounded, 0.to_uint32())).0;
         digits = natural_to_string(rounded);
         exponent += 1;
     } else {};

@@ -3,9 +3,9 @@ package scanner;
 fn scan_comment(scanner: Scanner) -> (string, int) {
     let start = scanner.offset.get() - 1;
     let mut newline_offset = -1;
-    if scanner.current.get() == b'/' as int32 {
+    if scanner.current.get() == b'/'.to_int32() {
         next(scanner);
-        while scanner.current.get() != b'\n' as int32 && scanner.current.get() >= 0 {
+        while scanner.current.get() != b'\n'.to_int32() && scanner.current.get() >= 0 {
             next(scanner)
         }
     } else {
@@ -13,11 +13,11 @@ fn scan_comment(scanner: Scanner) -> (string, int) {
         let mut closed = false;
         while scanner.current.get() >= 0 && !closed {
             let current = scanner.current.get();
-            if current == b'\n' as int32 && newline_offset < 0 {
+            if current == b'\n'.to_int32() && newline_offset < 0 {
                 newline_offset = scanner.offset.get();
             } else {};
             next(scanner);
-            if current == b'*' as int32 && scanner.current.get() == b'/' as int32 {
+            if current == b'*'.to_int32() && scanner.current.get() == b'/'.to_int32() {
                 next(scanner);
                 closed = true;
             } else {}

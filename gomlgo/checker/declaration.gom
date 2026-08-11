@@ -3028,7 +3028,7 @@ fn diagnostic_in_type_declaration(state: CheckState, value: CheckDiagnostic) -> 
                                 specs,
                                 rparen: _,
                             },
-                        }) => if token == "type" {
+                        }) => if token == TYPE_KEYWORD {
                             for spec in specs {
                                 match syntax::get_node(state.syntax.arena, spec) {
                                     Some(node) => if value.start >= node.span.start
@@ -3554,7 +3554,7 @@ fn resolve_array_length(state: CheckState, scope: go_types::ScopeId, length_node
                     state.config.sizes,
                 ) {
                     Some(_) => match num::parse_int(constant::integer_to_string(value)) {
-                        Ok(length) => Option::Some(length as int64),
+                        Ok(length) => Option::Some(length.to_int64()),
                         Err(_) => {
                             diagnostic(
                                 state,
@@ -3796,7 +3796,7 @@ fn resolve_type(state: CheckState, scope: go_types::ScopeId, node: syntax::NodeI
             span: _,
             path: _,
             kind: syntax::SyntaxKind::BinaryExpr { left, op_pos: _, op, right },
-        }) => if op == "|" {
+        }) => if op == BIT_OR_OPERATOR {
             resolve_union_type(state, scope, node, left, right)
         } else {
             diagnostic(state, node, "invalid binary type expression", false);
@@ -3808,7 +3808,7 @@ fn resolve_type(state: CheckState, scope: go_types::ScopeId, node: syntax::NodeI
             span: _,
             path: _,
             kind: syntax::SyntaxKind::UnaryExpr { op_pos: _, op, expression },
-        }) => if op == "~" {
+        }) => if op == TILDE_OPERATOR {
             resolve_tilde_type(state, scope, node, expression)
         } else {
             diagnostic(state, node, "invalid unary type expression", false);
@@ -4572,8 +4572,8 @@ fn predeclare_declaration(
             span: _,
             path: _,
             kind: syntax::SyntaxKind::GenDecl { token_pos: _, token, lparen: _, specs, rparen: _ },
-        }) => if token == "var" || token == "const" {
-            let kind = if token == "const" {
+        }) => if value_declaration_keyword(token) {
+            let kind = if token == CONST_KEYWORD {
                 go_types::ObjectKind::Const
             } else {
                 go_types::ObjectKind::Var
@@ -4608,7 +4608,7 @@ fn predeclare_declaration(
                     index,
                 )
             }
-        } else if token == "type" {
+        } else if token == TYPE_KEYWORD {
             for spec in specs {
                 predeclare_type_spec(state, file_scope, package_scope, spec)
             }
@@ -6027,15 +6027,15 @@ fn check_declaration(
             span: _,
             path: _,
             kind: syntax::SyntaxKind::GenDecl { token_pos: _, token, lparen: _, specs, rparen: _ },
-        }) => if token == "var" || token == "const" {
+        }) => if value_declaration_keyword(token) {
             for spec in specs {
-                check_value_spec(state, file_scope, package_scope, spec, token == "const")
+                check_value_spec(state, file_scope, package_scope, spec, token == CONST_KEYWORD)
             }
-        } else if token == "type" {
+        } else if token == TYPE_KEYWORD {
             for spec in specs {
                 check_type_spec(state, spec)
             }
-        } else if token == "import" {} else {
+        } else if token == IMPORT_KEYWORD {} else {
             diagnostic(state, node, token + " declarations are not implemented yet", false)
         },
         Some(syntax::SyntaxNode {
@@ -6262,7 +6262,7 @@ fn check_file_type_declarations(state: CheckState, file_index: int, aliases: boo
                         specs,
                         rparen: _,
                     },
-                }) => if token == "type" {
+                }) => if token == TYPE_KEYWORD {
                     for spec in specs {
                         match syntax::get_node(state.syntax.arena, spec) {
                             Some(syntax::SyntaxNode {

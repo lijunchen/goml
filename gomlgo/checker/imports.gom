@@ -8,10 +8,10 @@ use std::unicode;
 
 fn import_character_code(value: char) -> string {
     let digits = "0123456789ABCDEF";
-    let mut number = value as uint32;
+    let mut number = value.to_uint32();
     let mut result = "";
     while number > 0 {
-        let digit = (number % 16) as int;
+        let digit = (number % 16).to_int();
         result = digits.byte_slice(digit, digit + 1) + result;
         number = number / 16;
     }

@@ -598,13 +598,13 @@ fn check_local_declaration(state: CheckState, scope: go_types::ScopeId, node: sy
             span: _,
             path: _,
             kind: syntax::SyntaxKind::GenDecl { token_pos: _, token, lparen: _, specs, rparen: _ },
-        }) => if token == "var" || token == "const" {
+        }) => if value_declaration_keyword(token) {
             let previous_iota = state.current_iota;
             let mut inherited_type: Option[syntax::NodeId] = Option::None;
             let mut inherited_values: Vec[syntax::NodeId] = Vec::[];
             let mut inherited_spec: Option[syntax::NodeId] = Option::None;
             for index in 0..specs.len() {
-                state.current_iota = if token == "const" {
+                state.current_iota = if token == CONST_KEYWORD {
                     index
                 } else {
                     previous_iota
@@ -627,14 +627,14 @@ fn check_local_declaration(state: CheckState, scope: go_types::ScopeId, node: sy
                     state,
                     scope,
                     specs[index],
-                    token == "const",
+                    token == CONST_KEYWORD,
                     inherited_type,
                     inherited_values,
                     inherited_spec,
                 )
             }
             state.current_iota = previous_iota;
-        } else if token == "type" {
+        } else if token == TYPE_KEYWORD {
             let validation_start = state.deferred_local_type_validations.len();
             for spec in specs {
                 check_local_type_spec(state, scope, spec)
@@ -1175,7 +1175,7 @@ fn check_assignment(
     token: string,
     right_nodes: Vec[syntax::NodeId],
 ) -> unit {
-    if token != "=" && token != ":=" {
+    if !assignment_operator(token) {
         if left.len() != 1 || right_nodes.len() != 1 {
             diagnostic(state, node, "assignment count mismatch", false);
             return
@@ -1210,7 +1210,7 @@ fn check_assignment(
     } else {};
     let targets: Vec[go_types::TypeId] = Vec::[];
     let target_operands: Vec[Operand] = Vec::[];
-    if token != ":=" {
+    if token != DEFINE_OPERATOR {
         for target_node in left {
             if assignment_blank_identifier(state, target_node) {
                 targets.push(state.world.invalid);
@@ -1263,7 +1263,7 @@ fn check_assignment(
             Vec::[]
         },
     );
-    if token == ":=" {
+    if token == DEFINE_OPERATOR {
         if left.len() != right.len()
             && (right.is_empty() || right[0].type_id.value != state.world.invalid.value) {
             report_assignment_count(state, node, left.len(), right_nodes, right.len())
@@ -1727,7 +1727,7 @@ fn use_branch_label(state: CheckState, token: string, node: syntax::NodeId, name
             diagnostic(
                 state,
                 node,
-                if token == "goto" {
+                if token == GOTO_KEYWORD {
                     "label " + name + " not declared"
                 } else {
                     "invalid " + token + " label " + name
@@ -1737,7 +1737,7 @@ fn use_branch_label(state: CheckState, token: string, node: syntax::NodeId, name
             return
         },
     };
-    if token == "goto" {
+    if token == GOTO_KEYWORD {
         record_use(state, node, state.labels[binding].object);
         state.labels[binding].used = true;
         return
@@ -1746,7 +1746,7 @@ fn use_branch_label(state: CheckState, token: string, node: syntax::NodeId, name
     let start = active_label_start(state);
     for index in start..state.active_labels.len() {
         if state.active_labels[index].name == name {
-            allowed = if token == "continue" {
+            allowed = if token == CONTINUE_KEYWORD {
                 state.active_labels[index].continuable
             } else {
                 state.active_labels[index].breakable
@@ -1769,13 +1769,13 @@ fn check_branch_statement(
 ) -> bool {
     match label {
         Some(label) => use_branch_label(state, token, label, identifier(state, label).unwrap_or("")),
-        None => if token == "break" && state.breakable_depth == 0 {
+        None => if token == BREAK_KEYWORD && state.breakable_depth == 0 {
             diagnostic(state, node, "break not in for, switch, or select statement", false)
-        } else if token == "continue" && state.loop_depth == 0 {
+        } else if token == CONTINUE_KEYWORD && state.loop_depth == 0 {
             diagnostic(state, node, "continue not in for statement", false)
-        } else if token == "goto" {
+        } else if token == GOTO_KEYWORD {
             diagnostic(state, node, "goto requires a label", false)
-        } else if token == "fallthrough" && !state.fallthrough_allowed {
+        } else if token == FALLTHROUGH_KEYWORD && !state.fallthrough_allowed {
             diagnostic(
                 state,
                 node,
@@ -1790,7 +1790,7 @@ fn check_branch_statement(
             )
         } else {},
     };
-    token == "goto" || token == "fallthrough"
+    token == GOTO_KEYWORD || token == FALLTHROUGH_KEYWORD
 }
 
 fn check_block(
@@ -1918,7 +1918,12 @@ fn check_for_statement(
                 file: _,
                 span: _,
                 path: _,
-                kind: syntax::SyntaxKind::AssignStmt { left, token_pos: _, token: ":=", right: _ },
+                kind: syntax::SyntaxKind::AssignStmt {
+                    left,
+                    token_pos: _,
+                    token: DEFINE_OPERATOR,
+                    right: _,
+                },
             }) => {
                 diagnostic(
                     state,
@@ -1969,7 +1974,11 @@ fn node_breaks_loop(state: CheckState, node: syntax::NodeId, label: string, nest
             file: _,
             span: _,
             path: _,
-            kind: syntax::SyntaxKind::BranchStmt { token_pos: _, token: "break", label: target },
+            kind: syntax::SyntaxKind::BranchStmt {
+                token_pos: _,
+                token: BREAK_KEYWORD,
+                label: target,
+            },
         }) => match target {
             Some(target) => label != "" && identifier(state, target).unwrap_or("") == label,
             None => nested_breakable == 0,
@@ -2568,7 +2577,7 @@ fn check_range_statement(
         None => {},
     };
     if source.type_id.value == state.world.invalid.value {
-        if token == ":=" {
+        if token == DEFINE_OPERATOR {
             let locals_start = state.locals.len();
             let operands: Vec[Operand] = Vec::[];
             for _ in left {
@@ -2598,7 +2607,7 @@ fn check_range_statement(
                 },
             true,
         );
-        if token == ":=" {
+        if token == DEFINE_OPERATOR {
             let locals_start = state.locals.len();
             let operands: Vec[Operand] = Vec::[];
             for _ in left {
@@ -2637,7 +2646,7 @@ fn check_range_statement(
             },
             true,
         );
-        if token == ":=" {
+        if token == DEFINE_OPERATOR {
             let operands: Vec[Operand] = Vec::[];
             for index in 0..left.len() {
                 if index < available.len() {
@@ -2647,12 +2656,12 @@ fn check_range_statement(
                 }
             }
             check_range_declaration(state, range_scope, node, left, operands)
-        } else if token == "=" {
+        } else if token == ASSIGN_OPERATOR {
             for index in 0..available.len() {
                 assign_existing(state, range_scope, left[index], left[index], available[index])
             }
         } else {}
-    } else if token == ":=" {
+    } else if token == DEFINE_OPERATOR {
         let operands: Vec[Operand] = Vec::[];
         if integer_range && go_version_at_least(state, node, 22) && !left.is_empty() {
             let target = default_operand_type(state, source);
@@ -2671,7 +2680,7 @@ fn check_range_statement(
             }
         }
         check_range_declaration(state, range_scope, node, left, operands)
-    } else if token == "=" {
+    } else if token == ASSIGN_OPERATOR {
         if integer_range && !left.is_empty() {
             assign_integer_range_value(
                 state,
@@ -3508,11 +3517,12 @@ fn check_type_switch_statement(
             return false
         },
     };
-    if guard.2 != "" && guard.2 != ":=" {
+    if guard.2 != "" && guard.2 != DEFINE_OPERATOR {
         diagnostic(state, assignment, "invalid type switch assignment", false)
     } else {};
     match guard.1 {
-        Some(variable) => if guard.2 == ":=" && identifier(state, variable).unwrap_or("") != "_" {
+        Some(variable) => if guard.2 == DEFINE_OPERATOR
+            && identifier(state, variable).unwrap_or("") != "_" {
             state.info.defs.push(ObjectFact { node: variable, object: Option::None })
         } else {},
         None => {},
@@ -3604,7 +3614,7 @@ fn check_type_switch_statement(
         _ => diagnostic(state, body_node, "invalid type switch body", false),
     };
     match guard.1 {
-        Some(variable) => if guard.2 == ":=" {
+        Some(variable) => if guard.2 == DEFINE_OPERATOR {
             let name = identifier(state, variable).unwrap_or("");
             if name == "_" {
                 diagnostic(state, variable, "no new variable on left side of :=", true)
@@ -3640,8 +3650,7 @@ fn valid_select_communication(state: CheckState, node: syntax::NodeId) -> bool {
             span: _,
             path: _,
             kind: syntax::SyntaxKind::AssignStmt { left, token_pos: _, token, right },
-        }) => (token == "=" || token == ":=") && (left.len() == 1 || left.len() == 2)
-            && right.len() == 1
+        }) => assignment_operator(token) && (left.len() == 1 || left.len() == 2) && right.len() == 1
             && select_receive_expression(state, right[0]),
         Some(syntax::SyntaxNode {
             id: _,
@@ -3727,7 +3736,7 @@ fn check_select_statement(
                                         token,
                                         right,
                                     },
-                                }) => if (token == "=" || token == ":=")
+                                }) => if assignment_operator(token)
                                     && (left.len() == 1 || left.len() == 2)
                                     && right.len() == 1
                                     && select_receive_expression(state, right[0]) {
@@ -3813,7 +3822,7 @@ fn select_receive_expression(state: CheckState, node: syntax::NodeId) -> bool {
             span: _,
             path: _,
             kind: syntax::SyntaxKind::UnaryExpr { op_pos: _, op, expression: _ },
-        }) => op == "<-",
+        }) => op == RECEIVE_OPERATOR,
         _ => false,
     }
 }
@@ -3844,7 +3853,7 @@ fn expression_is_terminating_panic(
                 rparen: _,
             },
         }) => match builtin_reference(state, scope, function) {
-            Some(reference) => reference.name == "panic",
+            Some(reference) => reference.name == PANIC_BUILTIN,
             None => false,
         },
         _ => false,
@@ -3870,23 +3879,10 @@ fn expression_statement_uses_value(
                 rparen: _,
             },
         }) => match builtin_reference(state, scope, function) {
-            Some(reference) => reference.name == "append" || reference.name == "cap"
-                || reference.name == "len"
-                || reference.name == "complex"
-                || reference.name == "real"
-                || reference.name == "imag"
-                || reference.name == "make"
-                || reference.name == "new"
-                || reference.name == "min"
-                || reference.name == "max"
-                || reference.name == "Sizeof"
-                || reference.name == "Alignof"
-                || reference.name == "Offsetof"
-                || reference.name == "Add"
-                || reference.name == "Slice"
-                || reference.name == "SliceData"
-                || reference.name == "String"
-                || reference.name == "StringData",
+            Some(reference) => match reference.name {
+                APPEND_BUILTIN | CAP_BUILTIN | LEN_BUILTIN | COMPLEX_BUILTIN | REAL_BUILTIN | IMAG_BUILTIN | MAKE_BUILTIN | NEW_BUILTIN | MIN_BUILTIN | MAX_BUILTIN | UNSAFE_SIZEOF_BUILTIN | UNSAFE_ALIGNOF_BUILTIN | UNSAFE_OFFSETOF_BUILTIN | UNSAFE_ADD_BUILTIN | UNSAFE_SLICE_BUILTIN | UNSAFE_SLICE_DATA_BUILTIN | UNSAFE_STRING_BUILTIN | UNSAFE_STRING_DATA_BUILTIN => true,
+                _ => false,
+            },
             None => match recorded_type_fact(state, function) {
                 Some(fact) => fact.type_expr,
                 None => false,
@@ -3898,7 +3894,7 @@ fn expression_statement_uses_value(
             span: _,
             path: _,
             kind: syntax::SyntaxKind::UnaryExpr { op_pos: _, op, expression: _ },
-        }) => op != "<-",
+        }) => op != RECEIVE_OPERATOR,
         _ => true,
     }
 }
@@ -4371,7 +4367,7 @@ fn record_flow_declaration(
             span: _,
             path: _,
             kind: syntax::SyntaxKind::GenDecl { token_pos: _, token, lparen: _, specs, rparen: _ },
-        }) => if token == "var" {
+        }) => if token == VAR_KEYWORD {
             for spec in specs {
                 declarations.push(
                     FlowDeclaration {
@@ -4439,7 +4435,7 @@ fn collect_flow_points(
             span: _,
             path: _,
             kind: syntax::SyntaxKind::BranchStmt { token_pos: _, token, label },
-        }) => if token == "goto" {
+        }) => if token == GOTO_KEYWORD {
             match label {
                 Some(label) => gotos.push(
                     FlowGoto {
@@ -4465,7 +4461,7 @@ fn collect_flow_points(
             span: _,
             path: _,
             kind: syntax::SyntaxKind::AssignStmt { left: _, token_pos: _, token, right: _ },
-        }) => if token == ":=" {
+        }) => if token == DEFINE_OPERATOR {
             declarations.push(
                 FlowDeclaration {
                     node,

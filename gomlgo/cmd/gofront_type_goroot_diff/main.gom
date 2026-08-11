@@ -5,19 +5,25 @@ use std::env;
 use std::num;
 use std::process;
 
+const CGO_ENABLED: string = "1";
+
+const CGO_DISABLED: string = "0";
+
 fn main() -> unit {
     let arguments = env::args();
-    let mode = if arguments.len() >= 2 && arguments[1] == "info" {
-        goroot_compare::CompareMode::Info
+    let mode = if arguments.len() >= 2 {
+        goroot_compare::mode_from_string(arguments[1]).unwrap_or(
+            goroot_compare::CompareMode::Acceptance,
+        )
     } else {
         goroot_compare::CompareMode::Acceptance
     };
     let scope = if arguments.len() >= 3 {
         arguments[2]
     } else {
-        "std"
+        goroot_compare::STD_SCOPE
     };
-    if scope != "std" && scope != "cmd" && scope != "all" {
+    if !goroot_compare::valid_scope(scope) {
         println("scope must be std, cmd, or all");
         process::exit(1)
     } else {};
@@ -54,14 +60,14 @@ fn main() -> unit {
         "amd64"
     };
     let cgo = if arguments.len() >= 9 {
-        if arguments[8] == "1" {
-            true
-        } else if arguments[8] == "0" {
-            false
-        } else {
-            println("CGO_ENABLED must be 0 or 1");
-            process::exit(1);
-            false
+        match arguments[8] {
+            CGO_ENABLED => true,
+            CGO_DISABLED => false,
+            _ => {
+                println("CGO_ENABLED must be 0 or 1");
+                process::exit(1);
+                false
+            },
         }
     } else {
         false
@@ -69,9 +75,9 @@ fn main() -> unit {
     let test_mode = if arguments.len() >= 10 {
         arguments[9]
     } else {
-        "none"
+        goroot_compare::NO_TEST_MODE
     };
-    if test_mode != "none" && test_mode != "internal" && test_mode != "external" {
+    if !goroot_compare::valid_test_mode(test_mode) {
         println("test mode must be none, internal, or external");
         process::exit(1)
     } else {};

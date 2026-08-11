@@ -7,11 +7,11 @@ use gomlgo::token;
 use std::bytes;
 use std::collections;
 
-const max_nesting: int = 10000;
+const MAX_NESTING: int = 10000;
 
-const diagnostic_limit: int = 100;
+const DIAGNOSTIC_LIMIT: int = 100;
 
-const cursor_fuel: int = 256;
+const CURSOR_FUEL: int = 256;
 
 pub struct ParseResult {
     pub root: Option[ast::Node],
@@ -44,7 +44,7 @@ fn parser_new(source: bytes::Bytes) -> Parser {
         tokens: scanned.tokens,
         cursor: Ref::new(0),
         previous_end: Ref::new(0),
-        fuel: Ref::new(cursor_fuel),
+        fuel: Ref::new(CURSOR_FUEL),
         nesting: Ref::new(0),
         expr_level: Ref::new(0),
         depth_limit_hit: Ref::new(false),
@@ -136,7 +136,7 @@ fn advance(parser: Parser) -> token::Token {
         parser.cursor.set(index + 1);
         parser.previous_end.set(result.end)
     } else {};
-    parser.fuel.set(cursor_fuel);
+    parser.fuel.set(CURSOR_FUEL);
     result
 }
 
@@ -164,7 +164,7 @@ fn expect(parser: Parser, kind: token::Kind) -> token::Token {
 }
 
 fn report(parser: Parser, offset: int, message: string) -> unit {
-    if parser.diagnostics.len() < diagnostic_limit {
+    if parser.diagnostics.len() < DIAGNOSTIC_LIMIT {
         parser.diagnostics.push(diagnostic::make(message, offset))
     } else if !parser.diagnostic_limit_hit.get() {
         parser.diagnostics.push(diagnostic::make("too many parser diagnostics", offset));
@@ -177,7 +177,7 @@ fn enter_nesting(parser: Parser) -> bool {
         false
     } else {
         parser.nesting.set(parser.nesting.get() + 1);
-        if parser.nesting.get() > max_nesting {
+        if parser.nesting.get() > MAX_NESTING {
             report(parser, current(parser).start, "exceeded max nesting depth");
             parser.depth_limit_hit.set(true);
             false
@@ -206,11 +206,11 @@ fn ensure_progress(parser: Parser, before: int, context: string) -> bool {
 
 fn recover_until(parser: Parser, recovery: Vec[token::Kind]) -> unit {
     let mut attempts = 0;
-    while !eof(parser) && !at_any(parser, recovery) && attempts < cursor_fuel {
+    while !eof(parser) && !at_any(parser, recovery) && attempts < CURSOR_FUEL {
         let _ = advance(parser);
         attempts += 1;
     }
-    if attempts == cursor_fuel && !eof(parser) {
+    if attempts == CURSOR_FUEL && !eof(parser) {
         report(parser, current(parser).start, "parser recovery limit reached")
     } else {}
 }

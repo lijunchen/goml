@@ -670,7 +670,7 @@ fn expression_has_comma_ok(state: CheckState, node: syntax::NodeId) -> bool {
             span: _,
             path: _,
             kind: syntax::SyntaxKind::UnaryExpr { op_pos: _, op, expression: _ },
-        }) => op == "<-",
+        }) => op == RECEIVE_OPERATOR,
         Some(syntax::SyntaxNode {
             id: _,
             file: _,
@@ -962,7 +962,7 @@ fn contextualize_untyped_expression(
                         path: _,
                         kind: syntax::SyntaxKind::BinaryExpr { left, op_pos: _, op, right },
                     }) => {
-                        if (op == "<<" || op == ">>") && fact.constant.is_none()
+                        if shift_operator(op) && fact.constant.is_none()
                             && !go_types::is_integer(state.world, target) {
                             diagnostic(
                                 state,
@@ -977,7 +977,7 @@ fn contextualize_untyped_expression(
                             state.omitted_type_fact_nodes[left.value] = true;
                         } else {};
                         contextualize_untyped_expression(state, left, target, false);
-                        if op != "<<" && op != ">>" {
+                        if !shift_operator(op) {
                             contextualize_untyped_expression(state, right, target, false)
                         } else {}
                     },
@@ -1133,7 +1133,9 @@ fn find_constant(state: CheckState, object: go_types::ObjectId) -> Option[consta
     match go_types::get_object(state.world, object) {
         Some(value) => if value.name == "iota" {
             Option::Some(
-                constant::ConstValue::Int(constant::integer_from_int64(state.current_iota as int64)),
+                constant::ConstValue::Int(
+                    constant::integer_from_int64(state.current_iota.to_int64()),
+                ),
             )
         } else {
             match value.constant {
@@ -1155,15 +1157,14 @@ fn find_constant(state: CheckState, object: go_types::ObjectId) -> Option[consta
 }
 
 fn literal_operand(state: CheckState, node: syntax::NodeId, token: string, value: string) -> Operand {
-    if (token == "INT" || token == "FLOAT" || token == "IMAG")
-        && !go_version_at_least(state, node, 13) {
+    if numeric_literal_token(token) && !go_version_at_least(state, node, 13) {
         if value.contains("_") {
             diagnostic(state, node, "underscore in numeric literal requires go1.13 or later", false)
         } else if value.starts_with("0b") || value.starts_with("0B") {
             diagnostic(state, node, "binary literal requires go1.13 or later", false)
         } else if value.starts_with("0o") || value.starts_with("0O") {
             diagnostic(state, node, "0o/0O-style octal literal requires go1.13 or later", false)
-        } else if (token == "FLOAT" || token == "IMAG")
+        } else if floating_literal_token(token)
             && (value.starts_with("0x") || value.starts_with("0X")) {
             diagnostic(
                 state,
@@ -1173,34 +1174,25 @@ fn literal_operand(state: CheckState, node: syntax::NodeId, token: string, value
             )
         } else {}
     } else {};
-    let parsed = if token == "INT" {
-        constant::parse_integer_literal(value)
-    } else if token == "FLOAT" {
-        constant::parse_float_literal(value)
-    } else if token == "IMAG" {
-        constant::parse_imaginary_literal(value)
-    } else if token == "CHAR" {
-        constant::parse_rune_literal(value)
-    } else if token == "STRING" {
-        constant::parse_string_literal(value)
-    } else {
-        Result::Err("unsupported literal kind " + token)
+    let parsed = match token {
+        INT_LITERAL_TOKEN => constant::parse_integer_literal(value),
+        FLOAT_LITERAL_TOKEN => constant::parse_float_literal(value),
+        IMAG_LITERAL_TOKEN => constant::parse_imaginary_literal(value),
+        CHAR_LITERAL_TOKEN => constant::parse_rune_literal(value),
+        STRING_LITERAL_TOKEN => constant::parse_string_literal(value),
+        _ => Result::Err("unsupported literal kind " + token),
     };
-    let type_id = if token == "INT" {
-        basic_type_id(state, "untyped int")
-    } else if token == "FLOAT" {
-        basic_type_id(state, "untyped float")
-    } else if token == "IMAG" {
-        basic_type_id(state, "untyped complex")
-    } else if token == "CHAR" {
-        basic_type_id(state, "untyped rune")
-    } else if token == "STRING" {
-        basic_type_id(state, "untyped string")
-    } else {
-        state.world.invalid
+    let type_id = match token {
+        INT_LITERAL_TOKEN => basic_type_id(state, "untyped int"),
+        FLOAT_LITERAL_TOKEN => basic_type_id(state, "untyped float"),
+        IMAG_LITERAL_TOKEN => basic_type_id(state, "untyped complex"),
+        CHAR_LITERAL_TOKEN => basic_type_id(state, "untyped rune"),
+        STRING_LITERAL_TOKEN => basic_type_id(state, "untyped string"),
+        _ => state.world.invalid,
     };
     match parsed {
-        Ok(value) => if token == "INT" && constant::constant_exceeds_integer_precision(value, 512) {
+        Ok(value) => if token == INT_LITERAL_TOKEN
+            && constant::constant_exceeds_integer_precision(value, 512) {
             diagnostic(state, node, "constant overflow", false);
             Operand {
                 type_id,
@@ -1767,7 +1759,7 @@ fn check_conversion(
                 span: _,
                 path: _,
                 kind: syntax::SyntaxKind::BinaryExpr { left: _, op_pos: _, op, right: _ },
-            }) => op == "<<" || op == ">>",
+            }) => shift_operator(op),
             _ => false,
         };
     if untyped_nonconstant_shift {
@@ -3077,51 +3069,42 @@ fn common_numeric_type(state: CheckState, left: Operand, right: Operand) -> go_t
 }
 
 fn constant_binary_value(op: string, left: constant::ConstValue, right: constant::ConstValue) -> constant::ConstValue {
-    if op == "+" {
-        constant::constant_add(left, right)
-    } else if op == "-" {
-        constant::constant_sub(left, right)
-    } else if op == "*" {
-        constant::constant_mul(left, right)
-    } else if op == "/" {
-        constant::constant_div(left, right)
-    } else if op == "%" {
-        constant::constant_rem(left, right)
-    } else if op == "&" {
-        constant::constant_bit_and(left, right)
-    } else if op == "&^" {
-        constant::constant_bit_and_not(left, right)
-    } else if op == "|" {
-        constant::constant_bit_or(left, right)
-    } else if op == "^" {
-        constant::constant_bit_xor(left, right)
-    } else {
-        constant::ConstValue::Unknown
+    match op {
+        ADD_OPERATOR => constant::constant_add(left, right),
+        SUBTRACT_OPERATOR => constant::constant_sub(left, right),
+        MULTIPLY_OPERATOR => constant::constant_mul(left, right),
+        DIVIDE_OPERATOR => constant::constant_div(left, right),
+        REMAINDER_OPERATOR => constant::constant_rem(left, right),
+        BIT_AND_OPERATOR => constant::constant_bit_and(left, right),
+        BIT_AND_NOT_OPERATOR => constant::constant_bit_and_not(left, right),
+        BIT_OR_OPERATOR => constant::constant_bit_or(left, right),
+        BIT_XOR_OPERATOR => constant::constant_bit_xor(left, right),
+        _ => constant::ConstValue::Unknown,
     }
 }
 
 fn comparison_value(op: string, left: constant::ConstValue, right: constant::ConstValue) -> Option[
     constant::ConstValue,
 ] {
-    if op == "==" {
-        Option::Some(constant::ConstValue::Bool(constant::constant_equal(left, right)))
-    } else if op == "!=" {
-        Option::Some(constant::ConstValue::Bool(!constant::constant_equal(left, right)))
-    } else {
-        match constant::constant_compare(left, right) {
-            Some(compared) => if op == "<" {
-                Option::Some(constant::ConstValue::Bool(compared < 0))
-            } else if op == "<=" {
-                Option::Some(constant::ConstValue::Bool(compared <= 0))
-            } else if op == ">" {
-                Option::Some(constant::ConstValue::Bool(compared > 0))
-            } else if op == ">=" {
-                Option::Some(constant::ConstValue::Bool(compared >= 0))
-            } else {
-                Option::None
+    match op {
+        EQUAL_OPERATOR => {
+            Option::Some(constant::ConstValue::Bool(constant::constant_equal(left, right)))
+        },
+        NOT_EQUAL_OPERATOR => {
+            Option::Some(constant::ConstValue::Bool(!constant::constant_equal(left, right)))
+        },
+        _ => match constant::constant_compare(left, right) {
+            Some(compared) => match op {
+                LESS_OPERATOR => Option::Some(constant::ConstValue::Bool(compared < 0)),
+                LESS_EQUAL_OPERATOR => Option::Some(constant::ConstValue::Bool(compared <= 0)),
+                GREATER_OPERATOR => Option::Some(constant::ConstValue::Bool(compared > 0)),
+                GREATER_EQUAL_OPERATOR => {
+                    Option::Some(constant::ConstValue::Bool(compared >= 0))
+                },
+                _ => Option::None,
             },
             None => Option::None,
-        }
+        },
     }
 }
 
@@ -3226,7 +3209,8 @@ fn check_unary(
     expression: syntax::NodeId,
 ) -> Operand {
     let source = check_expression(state, scope, expression);
-    let recover_addressable_literal = op == "&" && addressable_composite_literal(state, expression);
+    let recover_addressable_literal = op == BIT_AND_OPERATOR
+        && addressable_composite_literal(state, expression);
     if source.type_id.value == state.world.invalid.value
         || (!go_types::is_named(state.world, source.type_id)
             && type_contains_invalid(state, source.type_id)
@@ -3243,7 +3227,7 @@ fn check_unary(
         );
         return invalid_operand(state)
     } else {};
-    if op == "~" {
+    if op == TILDE_OPERATOR {
         diagnostic(
             state,
             node,
@@ -3264,7 +3248,7 @@ fn check_unary(
                         go_types::BasicKind::Uint32 => 32,
                         go_types::BasicKind::Uint64 => 64,
                         go_types::BasicKind::Uint | go_types::BasicKind::Uintptr => {
-                            (state.config.sizes.word_size * 8) as int
+                            (state.config.sizes.word_size * 8).to_int()
                         },
                         _ => 0,
                     };
@@ -3281,7 +3265,7 @@ fn check_unary(
         } else {
             invalid_operand(state)
         }
-    } else if op == "&" {
+    } else if op == BIT_AND_OPERATOR {
         let composite_literal = addressable_composite_literal(state, expression);
         if !source.addressable && !composite_literal {
             diagnostic(
@@ -3305,7 +3289,7 @@ fn check_unary(
             addressable: false,
             assignable: false,
         }
-    } else if op == "<-" {
+    } else if op == RECEIVE_OPERATOR {
         let type_parameter_failure = channel_type_parameter_failure(state, source.type_id, true);
         if type_parameter_failure != "" {
             diagnostic(
@@ -3364,37 +3348,32 @@ fn check_unary(
         }
     } else {};
     let result = match source.value {
-        Some(value) => if op == "+" {
-            constant::constant_copy(value)
-        } else if op == "-" {
-            constant::constant_neg(value)
-        } else if op == "!" {
-            constant::constant_not(value)
-        } else if op == "^" {
-            let bits = match basic_kind(state, source.type_id) {
-                go_types::BasicKind::Uint8 => 8,
-                go_types::BasicKind::Uint16 => 16,
-                go_types::BasicKind::Uint32 => 32,
-                go_types::BasicKind::Uint64 => 64,
-                go_types::BasicKind::Uint | go_types::BasicKind::Uintptr => {
-                    (state.config.sizes.word_size * 8) as int
-                },
-                _ => 0,
-            };
-            constant::constant_bit_not_width(value, bits)
-        } else {
-            constant::ConstValue::Unknown
+        Some(value) => match op {
+            ADD_OPERATOR => constant::constant_copy(value),
+            SUBTRACT_OPERATOR => constant::constant_neg(value),
+            LOGICAL_NOT_OPERATOR => constant::constant_not(value),
+            BIT_XOR_OPERATOR => {
+                let bits = match basic_kind(state, source.type_id) {
+                    go_types::BasicKind::Uint8 => 8,
+                    go_types::BasicKind::Uint16 => 16,
+                    go_types::BasicKind::Uint32 => 32,
+                    go_types::BasicKind::Uint64 => 64,
+                    go_types::BasicKind::Uint | go_types::BasicKind::Uintptr => {
+                        (state.config.sizes.word_size * 8).to_int()
+                    },
+                    _ => 0,
+                };
+                constant::constant_bit_not_width(value, bits)
+            },
+            _ => constant::ConstValue::Unknown,
         },
         None => constant::ConstValue::Unknown,
     };
-    let valid = if op == "+" || op == "-" {
-        go_types::is_numeric(state.world, source.type_id)
-    } else if op == "^" {
-        go_types::is_integer(state.world, source.type_id)
-    } else if op == "!" {
-        is_boolean_type(state, source.type_id)
-    } else {
-        false
+    let valid = match op {
+        ADD_OPERATOR | SUBTRACT_OPERATOR => go_types::is_numeric(state.world, source.type_id),
+        BIT_XOR_OPERATOR => go_types::is_integer(state.world, source.type_id),
+        LOGICAL_NOT_OPERATOR => is_boolean_type(state, source.type_id),
+        _ => false,
     };
     if !valid {
         diagnostic(
@@ -3425,7 +3404,8 @@ fn check_unary(
         state.omitted_type_fact_nodes[node.value] = true;
         return invalid_operand(state)
     } else {};
-    if valid && op == "^" && basic_kind(state, source.type_id) == go_types::BasicKind::UntypedInt
+    if valid && op == BIT_XOR_OPERATOR
+        && basic_kind(state, source.type_id) == go_types::BasicKind::UntypedInt
         && constant::constant_exceeds_integer_precision(result, 512) {
         let position = match syntax::get_node(state.syntax.arena, node) {
             Some(syntax::SyntaxNode {
@@ -3607,14 +3587,16 @@ fn update_binary_operand_fact(
 }
 
 fn valid_binary_operator(state: CheckState, op: string, value: go_types::TypeId) -> bool {
-    if op == "+" {
-        go_types::supports_add(state.world, value)
-    } else if op == "-" || op == "*" || op == "/" {
-        go_types::is_numeric(state.world, value)
-    } else if op == "%" || op == "&" || op == "|" || op == "^" || op == "&^" {
-        go_types::is_integer(state.world, value)
-    } else {
-        false
+    match op {
+        ADD_OPERATOR => go_types::supports_add(state.world, value),
+        SUBTRACT_OPERATOR | MULTIPLY_OPERATOR | DIVIDE_OPERATOR => {
+            go_types::is_numeric(state.world, value)
+        },
+        REMAINDER_OPERATOR | BIT_AND_OPERATOR | BIT_OR_OPERATOR | BIT_XOR_OPERATOR | BIT_AND_NOT_OPERATOR => go_types::is_integer(
+            state.world,
+            value,
+        ),
+        _ => false,
     }
 }
 
@@ -4845,7 +4827,7 @@ fn check_binary(
     if !go_types::identical(state.world, left.type_id, right.type_id)
         && (type_parameter_constraint_contains_invalid(state, left.type_id)
             || type_parameter_constraint_contains_invalid(state, right.type_id)) {
-        return if op == "==" || op == "!=" || op == "<" || op == "<=" || op == ">" || op == ">=" {
+        return if comparison_operator(op) {
             if go_types::is_untyped(state.world, left.type_id)
                 && !go_types::is_untyped(state.world, right.type_id) {
                 update_operand_fact(state, left_node, right.type_id, left.value)
@@ -4863,10 +4845,10 @@ fn check_binary(
             invalid_operand(state)
         }
     } else {};
-    let empty_type_set = if (op == "==" || op == "!=")
+    let empty_type_set = if equality_operator(op)
         && anonymous_empty_type_parameter(state, left.type_id) {
         Option::Some(left_node)
-    } else if (op == "==" || op == "!=") && anonymous_empty_type_parameter(state, right.type_id) {
+    } else if equality_operator(op) && anonymous_empty_type_parameter(state, right.type_id) {
         Option::Some(right_node)
     } else {
         Option::None
@@ -4883,7 +4865,7 @@ fn check_binary(
         },
         None => {},
     };
-    if op == "<<" || op == ">>" {
+    if shift_operator(op) {
         let valid_untyped_left = go_types::is_untyped(state.world, left.type_id)
             && match left.value {
                 Some(value) => constant::constant_to_integer(value).is_some(),
@@ -4983,7 +4965,7 @@ fn check_binary(
                     return invalid_operand(state)
                 } else {
                     Option::Some(
-                        if op == "<<" {
+                        if op == SHIFT_LEFT_OPERATOR {
                             constant::constant_shift_left(left_value, amount)
                         } else {
                             constant::constant_shift_right(left_value, amount)
@@ -5058,7 +5040,7 @@ fn check_binary(
         } else {};
         return Operand { type_id: result_type, value, addressable: false, assignable: false }
     } else {};
-    if op == "&&" || op == "||" {
+    if logical_operator(op) {
         if !is_boolean_type(state, left.type_id) || !is_boolean_type(state, right.type_id) {
             diagnostic(state, node, "invalid boolean operation", false);
             return invalid_operand(state)
@@ -5085,7 +5067,7 @@ fn check_binary(
         let value = match (left.value, right.value) {
             (Some(constant::ConstValue::Bool(left)), Some(constant::ConstValue::Bool(right))) => Option::Some(
                 constant::ConstValue::Bool(
-                    if op == "&&" {
+                    if op == LOGICAL_AND_OPERATOR {
                         left && right
                     } else {
                         left || right
@@ -5109,8 +5091,8 @@ fn check_binary(
             },
         }
     } else {};
-    if op == "==" || op == "!=" || op == "<" || op == "<=" || op == ">" || op == ">=" {
-        let equality = op == "==" || op == "!=";
+    if comparison_operator(op) {
+        let equality = equality_operator(op);
         let mut operand_type = binary_operand_type(state, left, right);
         if operand_type.value == state.world.invalid.value
             && (equality || go_types::is_interface(state.world, left.type_id)
@@ -5300,7 +5282,7 @@ fn check_binary(
         );
         return invalid_operand(state)
     } else {};
-    if (op == "/" || op == "%")
+    if (op == DIVIDE_OPERATOR || op == REMAINDER_OPERATOR)
         && (go_types::is_integer(state.world, result_type) || left.value.is_some())
         && match right.value {
             Some(value) => constant::constant_sign(value).unwrap_or(1) == 0,
@@ -5383,16 +5365,12 @@ fn check_binary(
             }) => op_pos,
             _ => node_start(state, node),
         };
-        let operation = if op == "+" {
-            "addition"
-        } else if op == "-" {
-            "subtraction"
-        } else if op == "^" {
-            "bitwise XOR"
-        } else if op == "*" {
-            "multiplication"
-        } else {
-            op
+        let operation = match op {
+            ADD_OPERATOR => "addition",
+            SUBTRACT_OPERATOR => "subtraction",
+            BIT_XOR_OPERATOR => "bitwise XOR",
+            MULTIPLY_OPERATOR => "multiplication",
+            _ => op,
         };
         diagnostic_at_position(state, node, position, "constant " + operation + " overflow", false);
         Operand {
