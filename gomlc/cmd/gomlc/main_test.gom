@@ -11,6 +11,7 @@ use gomlc::go_backend;
 use gomlc::hash;
 use gomlc::hir;
 use gomlc::parser;
+use gomlc::resources;
 use gomlc::tast;
 use gomlc::version;
 use std::bytes;
@@ -2032,6 +2033,29 @@ fn assert_world_decode_error(value: bytes::Bytes, expected: string) -> unit {
     }
 }
 
+fn world_test_package_section_id(value: bytes::Bytes, package_name: string) -> uint16 {
+    let container = match wire::decode_artifact_binary_container(value) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error);
+            wire::ArtifactBinaryContainer { kind: 3, sections: Vec::[] }
+        },
+    };
+    let mut index = 1;
+    while index < container.sections.len() {
+        let section = container.sections[index];
+        match interface_codec::decode_binary(section.data) {
+            Ok(interface) => if interface.package_name == package_name {
+                return section.id
+            } else {},
+            Err(error) => testing::fail(error),
+        };
+        index = index + 2;
+    }
+    testing::fail("missing world test package " + package_name);
+    0.to_uint16()
+}
+
 #[test]
 fn standard_interface_hashes_are_stable() -> unit {
     let world = package_world();
@@ -2045,65 +2069,28 @@ fn standard_interface_hashes_are_stable() -> unit {
         artifact_interface_has_dependency(world.prelude.interface_unit, "builtin", builtin),
     );
     testing::assert(
-        artifact_interface_has_dependency(world.standard.ascii.interface_unit, "builtin", builtin),
+        artifact_interface_has_dependency(
+            required_artifact_standard_package(world.standard, resources::STD_ASCII_PACKAGE).interface_unit,
+            "builtin",
+            builtin,
+        ),
     );
     testing::assert(
-        artifact_interface_has_dependency(world.standard.ascii.interface_unit, "prelude", prelude),
+        artifact_interface_has_dependency(
+            required_artifact_standard_package(world.standard, resources::STD_ASCII_PACKAGE).interface_unit,
+            "prelude",
+            prelude,
+        ),
     );
     let first = package_world().standard;
     let second = package_world().standard;
-    testing::assert_eq(
-        first.root.interface_unit.interface_hash,
-        second.root.interface_unit.interface_hash,
-    );
-    testing::assert_eq(
-        first.ascii.interface_unit.interface_hash,
-        second.ascii.interface_unit.interface_hash,
-    );
-    testing::assert_eq(
-        first.bytes.interface_unit.interface_hash,
-        second.bytes.interface_unit.interface_hash,
-    );
-    testing::assert_eq(
-        first.cmp.interface_unit.interface_hash,
-        second.cmp.interface_unit.interface_hash,
-    );
-    testing::assert_eq(
-        first.collections.interface_unit.interface_hash,
-        second.collections.interface_unit.interface_hash,
-    );
-    testing::assert_eq(
-        first.env.interface_unit.interface_hash,
-        second.env.interface_unit.interface_hash,
-    );
-    testing::assert_eq(
-        first.fs.interface_unit.interface_hash,
-        second.fs.interface_unit.interface_hash,
-    );
-    testing::assert_eq(
-        first.io.interface_unit.interface_hash,
-        second.io.interface_unit.interface_hash,
-    );
-    testing::assert_eq(
-        first.iter.interface_unit.interface_hash,
-        second.iter.interface_unit.interface_hash,
-    );
-    testing::assert_eq(
-        first.path.interface_unit.interface_hash,
-        second.path.interface_unit.interface_hash,
-    );
-    testing::assert_eq(
-        first.process.interface_unit.interface_hash,
-        second.process.interface_unit.interface_hash,
-    );
-    testing::assert_eq(
-        first.testing.interface_unit.interface_hash,
-        second.testing.interface_unit.interface_hash,
-    );
-    testing::assert_eq(
-        first.text.interface_unit.interface_hash,
-        second.text.interface_unit.interface_hash,
-    )
+    testing::assert_eq(first.len(), second.len());
+    for package_value in first {
+        testing::assert_eq(
+            package_value.interface_unit.interface_hash,
+            required_artifact_standard_package(second, package_value.interface_unit.package_name).interface_unit.interface_hash,
+        )
+    }
 }
 
 #[test]
@@ -2146,58 +2133,21 @@ fn compiler_world_artifact_round_trips() -> unit {
                     decoded.builtin_interface.interface_hash,
                 ),
             );
-            testing::assert_eq(
-                decoded.standard.ascii.interface_unit.interface_hash,
-                world.standard.ascii.interface_unit.interface_hash,
-            );
-            testing::assert_eq(
-                decoded.standard.cmp.interface_unit.interface_hash,
-                world.standard.cmp.interface_unit.interface_hash,
-            );
-            testing::assert_eq(
-                decoded.standard.collections.interface_unit.interface_hash,
-                world.standard.collections.interface_unit.interface_hash,
-            );
-            testing::assert_eq(
-                decoded.standard.error.interface_unit.interface_hash,
-                world.standard.error.interface_unit.interface_hash,
-            );
-            testing::assert_eq(
-                decoded.standard.collections.core_value.functions.len(),
-                world.standard.collections.core_value.functions.len(),
-            );
-            testing::assert_eq(
-                decoded.standard.iter.interface_unit.interface_hash,
-                world.standard.iter.interface_unit.interface_hash,
-            );
-            testing::assert_eq(
-                decoded.standard.utf8.interface_unit.interface_hash,
-                world.standard.utf8.interface_unit.interface_hash,
-            );
-            testing::assert_eq(
-                decoded.standard.unicode.interface_unit.interface_hash,
-                world.standard.unicode.interface_unit.interface_hash,
-            );
-            testing::assert_eq(
-                decoded.standard.math.interface_unit.interface_hash,
-                world.standard.math.interface_unit.interface_hash,
-            );
-            testing::assert_eq(
-                decoded.standard.rand.interface_unit.interface_hash,
-                world.standard.rand.interface_unit.interface_hash,
-            );
-            testing::assert_eq(
-                decoded.standard.crypto.interface_unit.interface_hash,
-                world.standard.crypto.interface_unit.interface_hash,
-            );
-            testing::assert_eq(
-                decoded.standard.crypto_hash.interface_unit.interface_hash,
-                world.standard.crypto_hash.interface_unit.interface_hash,
-            );
-            testing::assert_eq(
-                decoded.standard.crypto_rand.interface_unit.interface_hash,
-                world.standard.crypto_rand.interface_unit.interface_hash,
-            );
+            testing::assert_eq(decoded.standard.len(), world.standard.len());
+            for package_value in world.standard {
+                let decoded_package = required_artifact_standard_package(
+                    decoded.standard,
+                    package_value.interface_unit.package_name,
+                );
+                testing::assert_eq(
+                    decoded_package.interface_unit.interface_hash,
+                    package_value.interface_unit.interface_hash,
+                );
+                testing::assert_eq(
+                    decoded_package.core_value.functions.len(),
+                    package_value.core_value.functions.len(),
+                )
+            }
             testing::assert_eq(decoded.counter.get(), world.counter.get())
         },
         Err(error) => testing::fail(error),
@@ -2210,6 +2160,65 @@ fn compiler_world_artifact_round_trips() -> unit {
 }
 
 #[test]
+fn compiler_world_artifact_reads_v1() -> unit {
+    let world = package_world();
+    let encoded = match encode_package_world_v1(world) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error);
+            bytes::Bytes::new()
+        },
+    };
+    match decode_package_world(encoded) {
+        Ok(decoded) => {
+            testing::assert_eq(decoded.counter.get(), world.counter.get());
+            testing::assert_eq(
+                decoded.builtin_interface.interface_hash,
+                world.builtin_interface.interface_hash,
+            );
+            testing::assert_eq(
+                decoded.prelude.interface_unit.interface_hash,
+                world.prelude.interface_unit.interface_hash,
+            );
+            testing::assert_eq(decoded.standard.len(), world.standard.len())
+        },
+        Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
+fn compiler_world_artifact_rejects_duplicate_and_missing_packages() -> unit {
+    let world = package_world();
+    let duplicate = world_all_packages(world);
+    duplicate.push(duplicate[0]);
+    match world_sorted_packages(duplicate) {
+        Ok(_) => testing::fail("expected duplicate world package rejection"),
+        Err(error) => testing::assert(main_string_contains(error, "duplicate package builtin")),
+    };
+    let standard: Vec[ToolchainPackage] = Vec::[];
+    for package_value in world.standard {
+        if package_value.interface_unit.package_name != resources::STD_ASCII_PACKAGE {
+            standard.push(package_value)
+        } else {}
+    }
+    let incomplete = PackageWorld {
+        counter: Ref::new(world.counter.get()),
+        builtins: world.builtins,
+        builtin_interface: world.builtin_interface,
+        prelude: world.prelude,
+        standard,
+    };
+    let encoded = match encode_package_world(incomplete) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error);
+            bytes::Bytes::new()
+        },
+    };
+    assert_world_decode_error(encoded, "missing package " + resources::STD_ASCII_PACKAGE)
+}
+
+#[test]
 fn compiler_world_artifact_validates_prelude_sections_and_hash_chain() -> unit {
     let world = package_world();
     let encoded = match encode_package_world(world) {
@@ -2219,24 +2228,26 @@ fn compiler_world_artifact_validates_prelude_sections_and_hash_chain() -> unit {
             bytes::Bytes::new()
         },
     };
+    let prelude_section = world_test_package_section_id(encoded, "prelude");
+    let ascii_section = world_test_package_section_id(encoded, resources::STD_ASCII_PACKAGE);
     assert_world_decode_error(
-        world_without_test_section(encoded, 4.to_uint16()),
-        "missing a required section",
+        world_without_test_section(encoded, prelude_section),
+        "package section count does not match",
     );
     assert_world_decode_error(
-        world_without_test_section(encoded, 5.to_uint16()),
-        "missing a required section",
+        world_without_test_section(encoded, prelude_section + 1),
+        "package section count does not match",
     );
     assert_world_decode_error(
-        world_with_test_section_version(encoded, 4.to_uint16(), 2.to_uint16()),
+        world_with_test_section_version(encoded, prelude_section, 2.to_uint16()),
         "invalid world artifact section",
     );
     assert_world_decode_error(
-        world_with_test_package_dependency(encoded, 4.to_uint16(), "builtin", "wrong"),
+        world_with_test_package_dependency(encoded, prelude_section, "builtin", "wrong"),
         "prelude builtin dependency does not match",
     );
     assert_world_decode_error(
-        world_with_test_package_dependency(encoded, 38.to_uint16(), "prelude", "wrong"),
+        world_with_test_package_dependency(encoded, ascii_section, "prelude", "wrong"),
         "standard package prelude dependency does not match",
     )
 }
@@ -2286,7 +2297,8 @@ fn renders_source_path_for_spanless_diagnostics() -> unit {
 fn preserves_generic_trait_methods_in_artifacts() -> unit {
     let expected = "deserialize";
     let world = package_world();
-    let exports = world.standard.toml.interface_unit.exports;
+    let toml = required_artifact_standard_package(world.standard, resources::STD_TOML_PACKAGE);
+    let exports = toml.interface_unit.exports;
     let exported = Ref::new(false);
     for implementation in exports.trait_impls {
         if implementation.trait_ref.name == "std::serde::Deserialize" {
@@ -2308,7 +2320,7 @@ fn preserves_generic_trait_methods_in_artifacts() -> unit {
     }
     testing::assert(exported.get());
     let canonical = Ref::new(false);
-    for function in world.standard.toml.core_value.functions {
+    for function in toml.core_value.functions {
         if function.name == "trait_impl#std::serde::Deserialize#std::toml::Value#deserialize" {
             match function.predicates[0] {
                 core::TypePredicate::Trait { for_ty: _, trait_ref } => {

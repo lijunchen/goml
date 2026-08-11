@@ -7,6 +7,7 @@ use gomlc::ast;
 use gomlc::ctir;
 use gomlc::hir;
 use gomlc::parser;
+use gomlc::resources;
 use gomlc::tast;
 use std::bytes;
 use std::testing;
@@ -391,7 +392,11 @@ fn dependency_loader_rejects_invalid_comptime_local_types() -> unit {
 
 #[test]
 fn binary_interface_artifact_streams_standard_type_data() -> unit {
-    let value = package_world().standard.collections.interface_unit;
+    let world = package_world();
+    let value = required_artifact_standard_package(
+        world.standard,
+        resources::STD_COLLECTIONS_PACKAGE,
+    ).interface_unit;
     let encoded = match interface_codec::encode_binary(value) {
         Ok(value) => value,
         Err(error) => {
