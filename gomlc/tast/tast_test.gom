@@ -758,6 +758,14 @@ fn hides_raw_builtin_helpers_from_user_sources() -> unit {
     testing::assert_eq(
         checked_diagnostics("fn main() -> char { string_get(\"value\", 0) }").len(),
         0,
+    );
+    testing::assert(
+        has_diagnostic(
+            checked_diagnostics(
+                "fn probe(channel: Channel[int]) -> bool { builtin::channel_send_cancel(channel, 1, 0) }",
+            ),
+            "Type or trait builtin not found for member access",
+        ),
     )
 }
 

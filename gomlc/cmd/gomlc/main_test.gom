@@ -372,7 +372,7 @@ fn reports_driver_protocol_version() -> unit {
     );
     testing::assert_eq(
         version_output_with(VersionFormat::Json, Option::None, Option::None),
-        "{\"artifact_format\":18,\"compiler_abi\":5,\"driver_protocol\":1,\"world_artifact\":1,\"git_date\":null,\"git_hash\":null,\"tool\":\"gomlc\",\"version\":\""
+        "{\"artifact_format\":18,\"compiler_abi\":5,\"driver_protocol\":1,\"installed_world\":1,\"world_artifact\":1,\"git_date\":null,\"git_hash\":null,\"tool\":\"gomlc\",\"version\":\""
             + version::current()
             + "\"}",
     );
@@ -2117,6 +2117,27 @@ fn world_test_package_section_id(value: bytes::Bytes, package_name: string) -> u
     }
     testing::fail("missing world test package " + package_name);
     0.to_uint16()
+}
+
+#[test]
+fn prelude_source_reexports_match_the_compatibility_surface() -> unit {
+    let prelude = compile_prelude_package(
+        lower_builtin_core(Ref::new(0)),
+        builtin_artifact_interface_unit(),
+    );
+    let names = resources::prelude_builtin_export_names();
+    testing::assert_eq(prelude.hir_file.public_reexports.len(), names.len());
+    for name in names {
+        let found = Ref::new(false);
+        for reexport in prelude.hir_file.public_reexports {
+            if reexport.0 == name && reexport.1 == "builtin::" + name {
+                found.set(true)
+            } else {}
+        }
+        if found.get() {} else {
+            testing::fail("prelude source does not re-export " + name)
+        }
+    }
 }
 
 #[test]

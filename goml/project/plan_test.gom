@@ -68,7 +68,7 @@ fn discovers_toolchain_projects_with_implicit_layers() -> unit {
     let context = Context {
         graph,
         compiler: test_support::gomlc_binary(),
-        compiler_world_artifact: false,
+        compiler_world: CompilerWorld::Source,
         artifact_root,
     };
     match toolchain_world_plan(context, path::join(artifact_root, "world.gaf")) {
@@ -93,6 +93,109 @@ fn compile_command(name: string, interface_files: Vec[string], output: string) -
         interface_files,
         output,
         world: Option::None,
+    }
+}
+
+fn compiler_world_test_context(world: CompilerWorld) -> Context {
+    Context {
+        graph: Graph {
+            module_dir: "/tmp/module",
+            module_path: "test",
+            entry_package: "test",
+            packages: Vec::[
+                Package {
+                    name: "test",
+                    declared_name: "test",
+                    module_name: "test",
+                    directory: "/tmp/module",
+                    artifact_prefix: "pkg",
+                    files: Vec::["/tmp/module/main.gom"],
+                    imports: Vec::[],
+                },
+            ],
+            sources: Vec::[],
+            order: Vec::["test"],
+        },
+        compiler: "/tmp/toolchain/bin/gomlc",
+        compiler_world: world,
+        artifact_root: "/tmp/module/out",
+    }
+}
+
+#[test]
+fn installed_compiler_world_is_a_read_only_plan_input() -> unit {
+    let world = "/tmp/toolchain/lib/compiler/compiler-world-v2.gaf";
+    let plan = match check_plan(
+        compiler_world_test_context(CompilerWorld::Installed { path: world }),
+        false,
+    ) {
+        Ok(value) => value,
+        Err(message) => {
+            testing::fail(message);
+            Plan { commands: Vec::[], executable: Option::None, test_groups: Vec::[] }
+        },
+    };
+    testing::assert_eq(plan.commands.len(), 1);
+    match plan.commands[0] {
+        Compile { world: Some(value), .. } => testing::assert_eq(value, world),
+        _ => testing::fail("installed compiler world was not passed to compilation"),
+    }
+}
+
+#[test]
+fn legacy_compiler_world_keeps_prepare_world_compatibility() -> unit {
+    let plan = match check_plan(compiler_world_test_context(CompilerWorld::LegacyArtifact), false) {
+        Ok(value) => value,
+        Err(message) => {
+            testing::fail(message);
+            Plan { commands: Vec::[], executable: Option::None, test_groups: Vec::[] }
+        },
+    };
+    testing::assert_eq(plan.commands.len(), 2);
+    match plan.commands[0] {
+        PrepareWorld { .. } => (),
+        _ => testing::fail("legacy compiler world did not retain preparation"),
+    }
+}
+
+fn installed_world_compiler(root: string) -> string {
+    let compiler = path::join(path::join(root, "bin"), "gomlc");
+    test_support::write_file(
+        compiler,
+        "#!/bin/sh\nprintf '%s\\n' '{\"driver_protocol\":1,\"installed_world\":1,\"world_artifact\":1}'\n",
+    );
+    match process::Command::new("chmod").args(Vec::["+x", compiler]).status() {
+        Ok(status) => testing::assert(process::ExitStatus::success(status)),
+        Err(message) => testing::fail(message),
+    };
+    compiler
+}
+
+#[test]
+fn resolves_executable_relative_installed_world() -> unit {
+    let root = test_support::workspace("installed_compiler_world");
+    let compiler = installed_world_compiler(root);
+    let world = path::join(path::join(path::join(root, "lib"), "compiler"), "compiler-world-v2.gaf");
+    test_support::write_file(world, "world");
+    match resolve_compiler(Option::Some(compiler)) {
+        Ok(resolved) => match resolved.world {
+            Installed { path } => testing::assert_eq(path, world),
+            _ => testing::fail("compiler did not select its installed world"),
+        },
+        Err(message) => testing::fail(message),
+    }
+}
+
+#[test]
+fn rejects_missing_installed_compiler_world() -> unit {
+    let root = test_support::workspace("missing_installed_compiler_world");
+    let compiler = installed_world_compiler(root);
+    match resolve_compiler(Option::Some(compiler)) {
+        Ok(_) => testing::fail("compiler without its installed world was accepted"),
+        Err(message) => {
+            testing::assert(message.contains("compiler world is missing"));
+            testing::assert(message.contains("__toolchain-finalize"))
+        },
     }
 }
 
@@ -215,7 +318,7 @@ fn cancellation_test_context(root: string, compiler: string) -> Context {
             order: Vec::[],
         },
         compiler,
-        compiler_world_artifact: false,
+        compiler_world: CompilerWorld::Source,
         artifact_root: path::join(root, "out"),
     }
 }

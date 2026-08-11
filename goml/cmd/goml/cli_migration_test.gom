@@ -622,32 +622,29 @@ fn project_commands_report_build_progress_on_stderr() -> unit {
     test_support::assert_success(checked);
     test_support::assert_contains(
         test_support::stderr(checked),
-        "\r\u001b[2K[--------------------] 0/2 preparing compiler world",
+        "\r\u001b[2K[--------------------] 0/1 checking demo",
     );
-    test_support::assert_not_contains(
-        test_support::stderr(checked),
-        "0/2 preparing compiler world\n",
-    );
+    test_support::assert_not_contains(test_support::stderr(checked), "preparing compiler world");
     test_support::assert_contains(
         test_support::stderr(checked),
-        "\r\u001b[2K[####################] 2/2 finished\n",
+        "\r\u001b[2K[####################] 1/1 finished\n",
     );
     let built = migration_build(root);
     test_support::assert_success(built);
     test_support::assert_contains(
         test_support::stderr(built),
-        "\r\u001b[2K[--------------------] 0/4 preparing compiler world",
+        "\r\u001b[2K[--------------------] 0/3 compiling demo",
     );
-    test_support::assert_not_contains(test_support::stderr(built), "0/4 preparing compiler world\n");
+    test_support::assert_not_contains(test_support::stderr(built), "preparing compiler world");
     test_support::assert_contains(
         test_support::stderr(built),
-        "\r\u001b[2K[####################] 4/4 finished\n",
+        "\r\u001b[2K[####################] 3/3 finished\n",
     );
     let cached = migration_build(root);
     test_support::assert_success(cached);
     test_support::assert_contains(
         test_support::stderr(cached),
-        "\r\u001b[2K[####################] 4/4 finished\n",
+        "\r\u001b[2K[####################] 3/3 finished\n",
     );
     let dry_run = test_support::project_command("build", "", Vec::["--dry-run"], root);
     test_support::assert_success(dry_run);
