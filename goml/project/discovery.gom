@@ -411,7 +411,7 @@ fn local_import(sources: Vec[ModuleSource], current_module: string, import_path:
     Option[string],
     string,
 ] {
-    if import_path == "std" || import_path.starts_with("std::") {
+    if current_module != "std" && (import_path == "std" || import_path.starts_with("std::")) {
         Result::Ok(Option::None)
     } else {
         let Some(current) = source_by_name(sources, current_module) else {
@@ -706,6 +706,79 @@ fn discover_module_graph(
         None => order[0],
     };
     Result::Ok(Graph { module_dir, module_path, entry_package, packages, sources, order })
+}
+
+fn toolchain_module_source(lib_dir: string, module_name: string) -> Result[ModuleSource, string] {
+    let directory = path::join(lib_dir, module_name);
+    let module_manifest = manifest::load_toolchain(path::join(directory, manifest::FILENAME))?;
+    if module_manifest.module_path != module_name {
+        return Result::Err(
+            "toolchain manifest " + directory + " must declare module " + module_name,
+        )
+    } else if !module_manifest.dependencies.is_empty() && module_name != "prelude" {
+        return Result::Err("toolchain manifest " + directory + " cannot declare dependencies")
+    } else {};
+    Result::Ok(
+        ModuleSource {
+            name: module_name,
+            directory,
+            artifact_prefix: "pkg",
+            dependencies: dependency_names(module_manifest.dependencies),
+        },
+    )
+}
+
+fn toolchain_implicit_imports(module_name: string) -> Vec[string] {
+    match module_name {
+        "builtin" => Vec::[],
+        "prelude" => Vec::["builtin"],
+        "std" => Vec::["builtin", "prelude"],
+        _ => Vec::[],
+    }
+}
+
+pub fn discover_toolchain_graph(compiler: string, lib_dir: string, artifact_root: string) -> Result[
+    Graph,
+    string,
+] {
+    let sources = Vec::[
+        toolchain_module_source(lib_dir, "builtin")?,
+        toolchain_module_source(lib_dir, "prelude")?,
+        toolchain_module_source(lib_dir, "std")?,
+    ];
+    let graph = discover_module_graph(compiler, lib_dir, "std", artifact_root, sources)?;
+    let packages: Vec[Package] = Vec::[];
+    for package_value in graph.packages {
+        let imports: Vec[string] = Vec::[];
+        for value in package_value.imports {
+            imports.push(value)
+        }
+        for value in toolchain_implicit_imports(package_value.module_name) {
+            imports.push(value)
+        }
+        packages.push(
+            Package {
+                name: package_value.name,
+                declared_name: package_value.declared_name,
+                module_name: package_value.module_name,
+                directory: package_value.directory,
+                artifact_prefix: package_value.artifact_prefix,
+                files: package_value.files,
+                imports: util::sorted_unique(imports),
+            },
+        )
+    }
+    let order = topological_order_all(packages)?;
+    Result::Ok(
+        Graph {
+            module_dir: graph.module_dir,
+            module_path: graph.module_path,
+            entry_package: graph.entry_package,
+            packages,
+            sources: graph.sources,
+            order,
+        },
+    )
 }
 
 fn discover_graph(

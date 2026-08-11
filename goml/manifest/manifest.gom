@@ -93,7 +93,7 @@ fn valid_segment(value: string) -> bool {
     true
 }
 
-fn validate_module_path(value: string) -> Result[unit, string] {
+fn validate_module_path(value: string, allow_toolchain: bool) -> Result[unit, string] {
     let segments = text::split(value, "::");
     if segments.is_empty() {
         return Result::Err("module.path is empty")
@@ -103,7 +103,7 @@ fn validate_module_path(value: string) -> Result[unit, string] {
             return Result::Err("invalid module.path " + value)
         } else {}
     }
-    if segments[0] == "builtin" || segments[0] == "prelude" {
+    if !allow_toolchain && (segments[0] == "builtin" || segments[0] == "prelude") {
         Result::Err("module path " + value + " is reserved for the toolchain")
     } else {
         Result::Ok(())
@@ -128,7 +128,7 @@ fn validate_target_dir(value: string) -> Result[unit, string] {
     }
 }
 
-pub fn load(path: string) -> Result[Manifest, string] {
+fn load_with_policy(path: string, allow_toolchain: bool) -> Result[Manifest, string] {
     let source = fs::read_file(path)?;
     let mut section = "";
     let mut module_path: Option[string] = Option::None;
@@ -160,7 +160,7 @@ pub fn load(path: string) -> Result[Manifest, string] {
                 },
                 (DEPENDENCIES_SECTION, _) => {
                     let name = parse_string(key)?;
-                    validate_module_path(name)?;
+                    validate_module_path(name, allow_toolchain)?;
                     dependencies.push(Dependency { name, version: value })
                 },
                 _ => (),
@@ -170,9 +170,17 @@ pub fn load(path: string) -> Result[Manifest, string] {
     let Some(module_path) = module_path else {
         return Result::Err("goml.toml is missing [module].path")
     };
-    validate_module_path(module_path)?;
+    validate_module_path(module_path, allow_toolchain)?;
     match validate_target_dir(target_dir) {
         Ok(()) => Result::Ok(Manifest { module_path, target_dir, dependencies }),
         Err(message) => Result::Err(message),
     }
+}
+
+pub fn load(path: string) -> Result[Manifest, string] {
+    load_with_policy(path, false)
+}
+
+pub fn load_toolchain(path: string) -> Result[Manifest, string] {
+    load_with_policy(path, true)
 }

@@ -62,6 +62,21 @@ pub enum Command {
         output: string,
         world: Option[string],
     },
+    ToolchainCompile {
+        package_name: string,
+        input_files: Vec[string],
+        interface_files: Vec[string],
+        output: string,
+        builtin_contract: bool,
+        without_roots: bool,
+        counter_output: Option[string],
+    },
+    PackToolchainWorld {
+        input_packages: Vec[string],
+        source_files: Vec[string],
+        counter_file: string,
+        output: string,
+    },
     Link {
         input_cores: Vec[string],
         entry_package: string,

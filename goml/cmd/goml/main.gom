@@ -6,7 +6,9 @@ use gomlang::bootstrap_goml::runner;
 use gomlang::bootstrap_goml::util;
 use gomlang::bootstrap_goml::version;
 use std::env;
+use std::fs;
 use std::io;
+use std::path;
 use std::process;
 use std::time;
 
@@ -486,6 +488,66 @@ fn run_command(args: CliArgs) -> Result[unit, string] {
     }
 }
 
+fn toolchain_finalize_value(args: Vec[string], name: string) -> Result[string, string] {
+    let mut result: Option[string] = Option::None;
+    let mut index = 2;
+    while index < args.len() {
+        if args[index] == name {
+            if result.is_some() {
+                return Result::Err(name + " cannot be repeated")
+            } else if index + 1 >= args.len() {
+                return Result::Err(name + " requires a value")
+            } else {
+                result = Option::Some(args[index + 1]);
+                index += 2;
+            }
+        } else if args[index] == "--prefix" || args[index] == "--compiler" {
+            index += 2;
+        } else {
+            return Result::Err("unexpected argument " + args[index])
+        }
+    }
+    match result {
+        Some(value) => Result::Ok(value),
+        None => Result::Err(name + " is required"),
+    }
+}
+
+fn run_toolchain_finalize(args: Vec[string]) -> Result[unit, string] {
+    let prefix = match fs::canonicalize(toolchain_finalize_value(args, "--prefix")?) {
+        Ok(value) => value,
+        Err(error) => return Result::Err(error.to_string()),
+    };
+    let compiler = match toolchain_finalize_value(args, "--compiler") {
+        Ok(value) => value,
+        Err(message) => if message == "--compiler is required" {
+            path::join(path::join(prefix, "bin"), "gomlc")
+        } else {
+            return Result::Err(message)
+        },
+    };
+    let compiler = match fs::canonicalize(compiler) {
+        Ok(value) => value,
+        Err(error) => return Result::Err(error.to_string()),
+    };
+    let context = project::load_toolchain_context(prefix, compiler)?;
+    let compiler_dir = path::join(path::join(prefix, "lib"), "compiler");
+    let output = path::join(compiler_dir, "compiler-world-v2.gaf");
+    let temporary = output + ".tmp";
+    if fs::is_file(temporary) {
+        match fs::remove_file(temporary) {
+            Ok(()) => (),
+            Err(error) => return Result::Err(error.to_string()),
+        }
+    } else {};
+    let plan = project::toolchain_world_plan(context, temporary)?;
+    project::execute_plan(context, plan, false, 16)?;
+    match fs::replace(temporary, output) {
+        Ok(()) => Result::Ok(()),
+        Err(error) => Result::Err(error.to_string()),
+    }
+}
+
 fn main() -> unit {
     let args = env::args();
     if args.len() == 1 {
@@ -501,6 +563,10 @@ fn main() -> unit {
                 io::println(command_help(args[2]))
             },
             VERSION_COMMAND => io::println(f"goml {version::current()}"),
+            "__toolchain-finalize" => match run_toolchain_finalize(args) {
+                Ok(()) => (),
+                Err(message) => fail(message),
+            },
             HOME_COMMAND => if args.len() == 3 && (args[2] == "-h" || args[2] == "--help") {
                 io::println("Usage: goml home\n\nOptions:\n  -h, --help")
             } else if args.len() != 2 {

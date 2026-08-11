@@ -63,6 +63,7 @@ struct ArtifactCompiledPackage {
 
 struct PackageWorld {
     counter: Ref[int],
+    source_digest: string,
     builtins: core::File,
     builtin_interface: artifact::ArtifactInterfaceUnit,
     prelude: ToolchainPackage,
@@ -194,7 +195,7 @@ fn package_world() -> PackageWorld {
     let standard = artifact_standard_packages(
         compile_standard_library(builtins, prelude_compilation, builtin_interface.interface_hash),
     );
-    PackageWorld { counter, builtins, builtin_interface, prelude, standard }
+    PackageWorld { counter, source_digest: "", builtins, builtin_interface, prelude, standard }
 }
 
 fn append_core_files(target: Vec[core::File], values: Vec[core::File]) -> unit {

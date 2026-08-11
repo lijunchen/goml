@@ -381,6 +381,62 @@ pub fn build_plan(context: Context) -> Result[Plan, string] {
     )
 }
 
+pub fn load_toolchain_context(prefix: string, compiler: string) -> Result[Context, string] {
+    let lib_dir = path::join(prefix, "lib");
+    let artifact_root = path::join(path::join(lib_dir, "compiler"), "build");
+    let graph = discover_toolchain_graph(compiler, lib_dir, artifact_root)?;
+    Result::Ok(Context { graph, compiler, compiler_world_artifact: false, artifact_root })
+}
+
+pub fn toolchain_world_plan(context: Context, output: string) -> Result[Plan, string] {
+    let commands: Vec[Command] = Vec::[];
+    let package_outputs: Vec[string] = Vec::[];
+    let source_files: Vec[string] = Vec::[];
+    let counter_output = path::join(context.artifact_root, "builtin-counter");
+    for package_name in context.graph.order {
+        let Some(package_value) = package_by_name(context.graph, package_name) else {
+            return Result::Err("missing toolchain package " + package_name)
+        };
+        let output = package_artifact_base(context.artifact_root, context.graph, package_name);
+        let inputs: Vec[string] = Vec::[];
+        for value in package_value.files {
+            let value = module_relative(context.graph.module_dir, value);
+            inputs.push(value);
+            source_files.push(value)
+        }
+        let interfaces = dependency_interfaces(context.graph, package_name, context.artifact_root)?;
+        let relative_interfaces: Vec[string] = Vec::[];
+        for value in interfaces {
+            relative_interfaces.push(module_relative(context.graph.module_dir, value))
+        }
+        commands.push(
+            Command::ToolchainCompile {
+                package_name,
+                input_files: util::sorted(inputs),
+                interface_files: relative_interfaces,
+                output: module_relative(context.graph.module_dir, output),
+                builtin_contract: package_value.module_name == "builtin",
+                without_roots: package_value.module_name == "prelude",
+                counter_output: if package_value.module_name == "builtin" {
+                    Option::Some(module_relative(context.graph.module_dir, counter_output))
+                } else {
+                    Option::None
+                },
+            },
+        );
+        package_outputs.push(module_relative(context.graph.module_dir, output))
+    }
+    commands.push(
+        Command::PackToolchainWorld {
+            input_packages: package_outputs,
+            source_files: util::sorted_unique(source_files),
+            counter_file: module_relative(context.graph.module_dir, counter_output),
+            output: module_relative(context.graph.module_dir, output),
+        },
+    );
+    Result::Ok(Plan { commands, executable: Option::None, test_groups: Vec::[] })
+}
+
 pub fn run_plan(context: Context) -> Result[Plan, string] {
     let output_root = path::join(context.artifact_root, BUILD_SUBCOMMAND);
     let packages = reachable_packages(context.graph, Vec::[context.graph.entry_package])?;
@@ -655,6 +711,59 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             };
             (GOMLC_PROGRAM, args)
         },
+        ToolchainCompile {
+            package_name,
+            input_files,
+            interface_files,
+            output,
+            builtin_contract,
+            without_roots,
+            counter_output,
+        } => {
+            let args = Vec::["__toolchain-build"];
+            if builtin_contract {
+                args.push("--builtin-contract")
+            } else {};
+            if without_roots {
+                args.push("--without-roots")
+            } else {};
+            match counter_output {
+                Some(value) => {
+                    args.push("--counter-output");
+                    args.push(value)
+                },
+                None => (),
+            };
+            args.push("--package");
+            args.push(package_name);
+            args.push("--input");
+            for value in input_files {
+                args.push(value)
+            }
+            for value in interface_files {
+                args.push("--interface-path");
+                args.push(value)
+            }
+            args.push("--output");
+            args.push(output);
+            (GOMLC_PROGRAM, args)
+        },
+        PackToolchainWorld { input_packages, source_files, counter_file, output } => {
+            let args = Vec::["__toolchain-pack"];
+            for value in input_packages {
+                args.push("--input");
+                args.push(value)
+            }
+            for value in source_files {
+                args.push("--source");
+                args.push(value)
+            }
+            args.push("--counter-file");
+            args.push(counter_file);
+            args.push("--output");
+            args.push(output);
+            (GOMLC_PROGRAM, args)
+        },
         Link { input_cores, entry_package, output, world } => {
             let args: Vec[string] = Vec::[];
             args.push("link");
@@ -718,6 +827,8 @@ fn progress_label(value: Command) -> string {
             TEST_BUILD_SUBCOMMAND => f"compiling tests for {package_name}",
             _ => f"{subcommand} {package_name}",
         },
+        ToolchainCompile { package_name, .. } => f"compiling toolchain package {package_name}",
+        PackToolchainWorld { .. } => "packing compiler world",
         Link { entry_package, .. } => f"linking {entry_package}",
         TestLink { .. } => "linking test runner",
         GoBuild { .. } => "building executable",
@@ -726,10 +837,10 @@ fn progress_label(value: Command) -> string {
 
 fn ensure_output_parent(value: Command, module_dir: string) -> Result[unit, string] {
     let output = match value {
-        PrepareWorld { output } | Compile { output, .. } | Link { output, .. } | TestLink {
+        PrepareWorld { output } | Compile { output, .. } | ToolchainCompile { output, .. } | PackToolchainWorld {
             output,
             ..,
-        } | GoBuild { output, .. } => output,
+        } | Link { output, .. } | TestLink { output, .. } | GoBuild { output, .. } => output,
     };
     let absolute = if path::is_absolute(output) {
         output

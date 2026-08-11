@@ -288,6 +288,51 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
                 },
             )
         },
+        ToolchainCompile { input_files, interface_files, output, counter_output, .. } => {
+            let inputs: Vec[string] = Vec::[];
+            for value in input_files {
+                inputs.push(value)
+            }
+            for value in interface_files {
+                inputs.push(value)
+            }
+            let outputs = Vec::[
+                path::with_extension(output, "interface"),
+                path::with_extension(output, "core"),
+            ];
+            match counter_output {
+                Some(value) => outputs.push(value),
+                None => (),
+            };
+            Option::Some(
+                CacheSpec {
+                    kind: "toolchain-build",
+                    args: command_args(value).1,
+                    inputs,
+                    outputs,
+                    anchor: output,
+                },
+            )
+        },
+        PackToolchainWorld { input_packages, source_files, counter_file, output } => {
+            let inputs = Vec::[counter_file];
+            for value in input_packages {
+                inputs.push(path::with_extension(value, "interface"));
+                inputs.push(path::with_extension(value, "core"))
+            }
+            for value in source_files {
+                inputs.push(value)
+            }
+            Option::Some(
+                CacheSpec {
+                    kind: "toolchain-pack",
+                    args: command_args(value).1,
+                    inputs,
+                    outputs: Vec::[output],
+                    anchor: output,
+                },
+            )
+        },
         Link { input_cores, output, world, .. } => {
             let inputs: Vec[string] = Vec::[];
             for input in input_cores {

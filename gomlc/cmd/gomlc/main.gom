@@ -318,6 +318,8 @@ fn main() -> unit {
             LINK_COMMAND => run_link_command(args),
             TEST_LINK_COMMAND => run_test_link_command(args),
             PACKAGE_INFO_COMMAND => run_package_info(args),
+            "__toolchain-build" => run_toolchain_build(args),
+            "__toolchain-pack" => run_pack_toolchain_world(args),
             "__canonical-stage" => run_canonical_stage(args),
             "__builtin-interface" => if args.len() == 2 {
                 io::print(builtin_artifact_json())

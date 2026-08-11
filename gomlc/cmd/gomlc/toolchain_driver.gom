@@ -1,0 +1,601 @@
+package main;
+
+use gomlc::artifact;
+use gomlc::artifact::interface_codec as interface_codec;
+use gomlc::artifact::wire as wire;
+use gomlc::ast;
+use gomlc::core;
+use gomlc::ctir;
+use gomlc::hir;
+use gomlc::hash;
+use gomlc::parser;
+use gomlc::resources;
+use gomlc::tast;
+use gomlc::version;
+use std::fs;
+use std::text;
+
+struct ToolchainBuildArgs {
+    command: PackageCommandArgs,
+    builtin_contract: bool,
+    without_roots: bool,
+    counter_output: Option[string],
+}
+
+struct ToolchainParsedPackage {
+    ast_values: Vec[ast::LowerResult],
+    hir_files: Vec[hir::File],
+    declared_name: string,
+    public_names: Vec[string],
+}
+
+struct ToolchainPackArgs {
+    inputs: Vec[string],
+    sources: Vec[string],
+    output: string,
+    counter_file: string,
+}
+
+fn parse_toolchain_build_args(args: Vec[string]) -> Result[ToolchainBuildArgs, string] {
+    let regular = Vec::[args[0], BUILD_COMMAND];
+    let mut builtin_contract = false;
+    let mut without_roots = false;
+    let mut counter_output: Option[string] = Option::None;
+    let mut index = 2;
+    while index < args.len() {
+        let argument = args[index];
+        if argument == "--builtin-contract" {
+            if builtin_contract {
+                return Result::Err("--builtin-contract cannot be repeated")
+            } else {
+                builtin_contract = true;
+                index += 1;
+            }
+        } else if argument == "--without-roots" {
+            if without_roots {
+                return Result::Err("--without-roots cannot be repeated")
+            } else {
+                without_roots = true;
+                index += 1;
+            }
+        } else if argument == "--counter-output" {
+            if counter_output.is_some() {
+                return Result::Err("--counter-output cannot be repeated")
+            } else if index + 1 >= args.len() {
+                return Result::Err("--counter-output requires a value")
+            } else {
+                counter_output = Option::Some(args[index + 1]);
+                index += 2;
+            }
+        } else {
+            regular.push(argument);
+            index += 1;
+        }
+    }
+    let command = parse_package_command_args(regular)?;
+    if command.world.is_some() {
+        Result::Err("toolchain package compilation does not accept --world")
+    } else if builtin_contract && command.package_name != "builtin" {
+        Result::Err("builtin contract capability requires package builtin")
+    } else if !builtin_contract && command.package_name == "builtin" {
+        Result::Err("package builtin requires builtin contract capability")
+    } else if builtin_contract && counter_output.is_none() {
+        Result::Err("builtin contract capability requires --counter-output")
+    } else if !builtin_contract && counter_output.is_some() {
+        Result::Err("--counter-output requires builtin contract capability")
+    } else {
+        Result::Ok(ToolchainBuildArgs { command, builtin_contract, without_roots, counter_output })
+    }
+}
+
+fn toolchain_parse_sources(command: PackageCommandArgs) -> Result[
+    (Vec[ast::LowerResult], Vec[(ast::LowerResult, string)]),
+    string,
+] {
+    let ast_values: Vec[ast::LowerResult] = Vec::[];
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::[];
+    for source_path in command.inputs {
+        let parsed = parser::parse(read_source(source_path));
+        if !parsed.diagnostics.is_empty() {
+            return Result::Err("failed to parse toolchain source " + source_path)
+        } else {};
+        let ast_value = ast::lower(parsed);
+        if !ast_value.diagnostics.is_empty() {
+            return Result::Err("failed to lower toolchain source " + source_path)
+        } else {};
+        ast_values.push(ast_value);
+        inputs.push((ast_value, source_path))
+    }
+    Result::Ok((ast_values, inputs))
+}
+
+fn toolchain_lower_hir(
+    command: PackageCommandArgs,
+    ast_values: Vec[ast::LowerResult],
+    inputs: Vec[(ast::LowerResult, string)],
+    expanded: bool,
+) -> Result[ToolchainParsedPackage, string] {
+    let hir_files: Vec[hir::File] = Vec::[];
+    let lowered_values = if expanded {
+        hir::lower_expanded_package_files(inputs, command.package_name)
+    } else {
+        hir::lower_package_files(inputs, command.package_name)
+    };
+    for lowered in lowered_values {
+        if !lowered.diagnostics.is_empty() {
+            return Result::Err("failed to lower toolchain source " + lowered.source_path)
+        } else {};
+        match lowered.hir {
+            Some(file) => hir_files.push(file),
+            None => return Result::Err("missing toolchain source " + lowered.source_path),
+        }
+    }
+    Result::Ok(
+        ToolchainParsedPackage {
+            ast_values,
+            hir_files,
+            declared_name: artifact_declared_package_name(ast_values, command.inputs)?,
+            public_names: public_item_names(ast_values, command.package_name),
+        },
+    )
+}
+
+fn toolchain_find_interface(values: Vec[artifact::ArtifactInterfaceUnit], package_name: string) -> Option[
+    artifact::ArtifactInterfaceUnit,
+] {
+    for value in values {
+        if value.package_name == package_name {
+            return Option::Some(value)
+        } else {}
+    }
+    Option::None
+}
+
+fn toolchain_sorted_interfaces(values: Vec[artifact::ArtifactInterfaceUnit]) -> Result[
+    Vec[artifact::ArtifactInterfaceUnit],
+    string,
+] {
+    let names: Vec[string] = Vec::[];
+    for value in values {
+        names.push(value.package_name)
+    }
+    let names = wire::sort_artifact_names(names);
+    let result: Vec[artifact::ArtifactInterfaceUnit] = Vec::[];
+    let mut previous: Option[string] = Option::None;
+    for name in names {
+        match previous {
+            Some(value) => if value == name {
+                return Result::Err("duplicate toolchain dependency " + name)
+            } else {},
+            None => (),
+        };
+        match toolchain_find_interface(values, name) {
+            Some(value) => result.push(value),
+            None => return Result::Err("missing toolchain dependency " + name),
+        };
+        previous = Option::Some(name);
+    }
+    Result::Ok(result)
+}
+
+fn toolchain_dependency_hashes(values: Vec[artifact::ArtifactInterfaceUnit]) -> Vec[
+    (string, string),
+] {
+    let result: Vec[(string, string)] = Vec::[];
+    for value in values {
+        result.push((value.package_name, value.interface_hash))
+    }
+    result
+}
+
+fn toolchain_dependency_environments_from_interfaces(values: Vec[artifact::ArtifactInterfaceUnit]) -> Result[
+    Vec[tast::DependencyEnvironment],
+    string,
+] {
+    let modules: Vec[ctir::CtModule] = Vec::[];
+    for value in values {
+        match value.comptime {
+            Some(value) => modules.push(value.module),
+            None => (),
+        };
+    }
+    artifact_verify_comptime_modules(modules)?;
+    let result: Vec[tast::DependencyEnvironment] = Vec::[];
+    for value in values {
+        result.push(
+            tast::dependency_environment_with_comptime(
+                artifact_dependency_environment_from_exports(value.exports)?,
+                match value.comptime {
+                    Some(value) => Option::Some(value.module),
+                    None => Option::None,
+                },
+            ),
+        )
+    }
+    Result::Ok(result)
+}
+
+fn toolchain_derive_environment(values: Vec[artifact::ArtifactInterfaceUnit]) -> hir::DeriveEnvironment {
+    let dependencies: Vec[ctir::CtModule] = Vec::[];
+    let reexports: Vec[(string, string)] = Vec::[];
+    let mut builtin: Option[ctir::CtModule] = Option::None;
+    for value in values {
+        match value.comptime {
+            Some(comptime) => if value.package_name == "builtin" {
+                builtin = Option::Some(comptime.module);
+            } else {
+                dependencies.push(comptime.module)
+            },
+            None => (),
+        };
+        for reexport in value.exports.reexports {
+            reexports.push(reexport)
+        }
+    }
+    hir::DeriveEnvironment { builtin, dependencies, reexports }
+}
+
+fn toolchain_expand_and_lower(
+    command: PackageCommandArgs,
+    ast_values: Vec[ast::LowerResult],
+    dependencies: Vec[artifact::ArtifactInterfaceUnit],
+) -> Result[ToolchainParsedPackage, string] {
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::[];
+    let environment = toolchain_derive_environment(dependencies);
+    for index in 0..ast_values.len() {
+        let expanded = hir::expand_derives_with_environment(ast_values[index], environment);
+        if !expanded.diagnostics.is_empty() {
+            return Result::Err("failed to expand toolchain source " + command.inputs[index])
+        } else {};
+        inputs.push((expanded, command.inputs[index]))
+    }
+    toolchain_lower_hir(command, ast_values, inputs, true)
+}
+
+fn compile_builtin_contract_request(command: PackageCommandArgs) -> Result[
+    (PackageCompilation, int),
+    string,
+] {
+    let parsed = toolchain_parse_sources(command)?;
+    let package_value = toolchain_lower_hir(command, parsed.0, parsed.1, false)?;
+    let checked = tast::check_builtin_package_files(package_value.hir_files);
+    if !checked.diagnostics.is_empty() || checked.tast.is_none() {
+        return Result::Err(render_typer_diagnostics(checked.diagnostics, "", ""))
+    } else {};
+    let counter = Ref::new(0);
+    let core_value = core::lower_with_counter(checked, counter);
+    let interface_unit = builtin_artifact_interface_unit_from_files(
+        package_value.hir_files,
+        Vec::["channel_recv_cancel", "channel_send_cancel"],
+    );
+    Result::Ok(
+        (
+            PackageCompilation {
+                hir_file: merge_hir_files(package_value.hir_files, command.package_name),
+                core_value,
+                interface_unit,
+                exports: interface_unit.exports,
+            },
+            counter.get(),
+        ),
+    )
+}
+
+fn compile_toolchain_project_request(command: PackageCommandArgs, without_roots: bool) -> Result[
+    PackageCompilation,
+    string,
+] {
+    let dependencies = toolchain_sorted_interfaces(
+        artifact_read_interface_units(command.interface_paths)?,
+    )?;
+    let parsed = toolchain_parse_sources(command)?;
+    let package_value = toolchain_expand_and_lower(command, parsed.0, dependencies)?;
+    artifact_apply_declared_package_aliases(
+        package_value.hir_files,
+        package_value.ast_values,
+        dependencies,
+    );
+    let checked = tast::check_package_files_for_link_with_environments(
+        package_value.hir_files,
+        toolchain_dependency_environments_from_interfaces(dependencies)?,
+    );
+    if !checked.diagnostics.is_empty() || checked.tast.is_none() {
+        return Result::Err(render_typer_diagnostics(checked.diagnostics, "", ""))
+    } else {};
+    let hir_file = merge_hir_files(package_value.hir_files, command.package_name);
+    let public_reexports = if command.package_name == "prelude" {
+        let values: Vec[(string, string)] = Vec::[];
+        for name in resources::prelude_builtin_export_names() {
+            values.push((name, name))
+        }
+        values
+    } else {
+        hir_file.public_reexports
+    };
+    let signatures = tast::package_signatures(hir_file);
+    let comptime_module = checked.comptime;
+    let Some(tast_file) = checked.tast else {
+        return Result::Err("missing typed toolchain package " + command.package_name)
+    };
+    let dependency_core = artifact_dependency_core_types(dependencies);
+    let empty = empty_core_file();
+    let enum_names = artifact_dependency_type_names(empty, dependency_core, true);
+    let struct_names = artifact_dependency_type_names(empty, dependency_core, false);
+    let public_exports = artifact_package_exports(
+        tast_file,
+        signatures,
+        command.package_name,
+        package_value.public_names,
+        public_reexports,
+        true,
+        enum_names,
+        struct_names,
+    );
+    let exports = artifact_package_exports(
+        tast_file,
+        signatures,
+        command.package_name,
+        package_value.public_names,
+        public_reexports,
+        false,
+        enum_names,
+        struct_names,
+    );
+    let interface_unit = interface_codec::new_unit_with_comptime(
+        command.package_name,
+        public_exports,
+        artifact_package_interface(
+            command.package_name,
+            package_value.declared_name,
+            public_exports,
+        ),
+        artifact_comptime_unit(comptime_module, public_exports),
+        toolchain_dependency_hashes(dependencies),
+    );
+    let core_value = core::dce(
+        core::lower_with_counter_types_and_options(
+            checked,
+            Ref::new(0),
+            dependency_enums(empty, dependency_core),
+            dependency_structs(empty, dependency_core),
+            true,
+        ),
+    );
+    Result::Ok(
+        PackageCompilation {
+            hir_file,
+            core_value: if without_roots {
+                core::without_roots(core_value)
+            } else {
+                core_value
+            },
+            interface_unit,
+            exports,
+        },
+    )
+}
+
+fn write_toolchain_package(command: PackageCommandArgs, compilation: PackageCompilation) -> Result[
+    unit,
+    string,
+] {
+    ensure_parent(interface_output_path(command.output))?;
+    write_artifact_interface(interface_output_path(command.output), compilation.interface_unit)?;
+    ensure_parent(core_output_path(command.output))?;
+    write_artifact_core(
+        core_output_path(command.output),
+        artifact::ArtifactCoreUnit {
+            package_name: command.package_name,
+            declared_name: compilation.interface_unit.package_interface.name,
+            interface_hash: compilation.interface_unit.interface_hash,
+            exports: compilation.exports,
+            core_ir: compilation.core_value,
+            deps: compilation.interface_unit.deps,
+            sources: command.inputs,
+            tests: Vec::[],
+        },
+    )
+}
+
+fn run_toolchain_build(args: Vec[string]) -> unit {
+    let request = match parse_toolchain_build_args(args) {
+        Ok(value) => value,
+        Err(error) => {
+            fail(COMPILE_ERROR_PREFIX + error);
+            return
+        },
+    };
+    let result = if request.builtin_contract {
+        match compile_builtin_contract_request(request.command) {
+            Ok((compilation, counter)) => {
+                match request.counter_output {
+                    Some(path) => match ensure_parent(path) {
+                        Ok(()) => match fs::write_file(path, counter.to_string()) {
+                            Ok(()) => write_toolchain_package(request.command, compilation),
+                            Err(error) => Result::Err(error),
+                        },
+                        Err(error) => Result::Err(error),
+                    },
+                    None => Result::Err("builtin contract counter output is missing"),
+                }
+            },
+            Err(error) => Result::Err(error),
+        }
+    } else {
+        match compile_toolchain_project_request(request.command, request.without_roots) {
+            Ok(compilation) => write_toolchain_package(request.command, compilation),
+            Err(error) => Result::Err(error),
+        }
+    };
+    match result {
+        Ok(()) => (),
+        Err(error) => fail(COMPILE_ERROR_PREFIX + error),
+    }
+}
+
+fn parse_toolchain_pack_args(args: Vec[string]) -> Result[ToolchainPackArgs, string] {
+    let inputs: Vec[string] = Vec::[];
+    let sources: Vec[string] = Vec::[];
+    let mut output: Option[string] = Option::None;
+    let mut counter_file: Option[string] = Option::None;
+    let mut index = 2;
+    while index < args.len() {
+        let argument = args[index];
+        if index + 1 >= args.len() {
+            return Result::Err(argument + " requires a value")
+        } else {};
+        if argument == "--input" {
+            inputs.push(args[index + 1])
+        } else if argument == "--source" {
+            sources.push(args[index + 1])
+        } else if argument == "--output" && output.is_none() {
+            output = Option::Some(args[index + 1]);
+        } else if argument == "--counter-file" && counter_file.is_none() {
+            counter_file = Option::Some(args[index + 1]);
+        } else {
+            return Result::Err("unexpected argument " + argument)
+        };
+        index += 2;
+    }
+    if inputs.is_empty() {
+        Result::Err("toolchain pack requires --input")
+    } else if sources.is_empty() {
+        Result::Err("toolchain pack requires --source")
+    } else if output.is_none() {
+        Result::Err("toolchain pack requires --output")
+    } else if counter_file.is_none() {
+        Result::Err("toolchain pack requires --counter-file")
+    } else {
+        Result::Ok(
+            ToolchainPackArgs {
+                inputs,
+                sources,
+                output: match output {
+                    Some(value) => value,
+                    None => "",
+                },
+                counter_file: match counter_file {
+                    Some(value) => value,
+                    None => "",
+                },
+            },
+        )
+    }
+}
+
+fn toolchain_source_digest(paths: Vec[string]) -> Result[string, string] {
+    let paths = wire::sort_artifact_names(paths);
+    let builder = text::StringBuilder::new();
+    for path in paths {
+        builder.write_string(path);
+        builder.write_char('\u0000');
+        builder.write_string(hash::sha256_hex(fs::read_file(path)?));
+        builder.write_char('\n')
+    }
+    Result::Ok(hash::sha256_hex(builder.finish()))
+}
+
+fn parse_toolchain_counter(value: string) -> Result[int, string] {
+    let value = text::trim(value);
+    if value == "" {
+        return Result::Err("toolchain counter is empty")
+    } else {};
+    let mut result = 0;
+    for index in 0..value.byte_len() {
+        let byte = value.byte_get(index);
+        if byte < b'0' || byte > b'9' {
+            return Result::Err("toolchain counter is invalid")
+        } else if result > 214748364 {
+            return Result::Err("toolchain counter exceeds supported size")
+        } else {
+            result = result * 10 + (byte - b'0').to_int();
+        };
+    }
+    Result::Ok(result)
+}
+
+fn read_toolchain_package(base: string) -> Result[ToolchainPackage, string] {
+    let interface = decode_artifact_interface_bytes(fs::read_bytes(interface_output_path(base))?)?;
+    let core = decode_artifact_core_bytes(fs::read_bytes(core_output_path(base))?)?;
+    if interface.package_name != core.package_name
+        || interface.interface_hash != core.interface_hash
+        || !world_dependencies_equal(interface.deps, core.deps) {
+        Result::Err("toolchain package identity does not match for " + base)
+    } else {
+        Result::Ok(
+            ToolchainPackage {
+                core_value: core.core_ir,
+                interface_unit: interface,
+                environment_exports: core.exports,
+            },
+        )
+    }
+}
+
+fn run_pack_toolchain_world(args: Vec[string]) -> unit {
+    let request = match parse_toolchain_pack_args(args) {
+        Ok(value) => value,
+        Err(error) => {
+            fail(COMPILE_ERROR_PREFIX + error);
+            return
+        },
+    };
+    let packages: Vec[ToolchainPackage] = Vec::[];
+    for input in request.inputs {
+        match read_toolchain_package(input) {
+            Ok(value) => packages.push(value),
+            Err(error) => {
+                fail(COMPILE_ERROR_PREFIX + error);
+                return
+            },
+        };
+    }
+    let counter = match fs::read_file(request.counter_file) {
+        Ok(value) => match parse_toolchain_counter(value) {
+            Ok(value) => value,
+            Err(error) => {
+                fail(COMPILE_ERROR_PREFIX + error);
+                return
+            },
+        },
+        Err(error) => {
+            fail(COMPILE_ERROR_PREFIX + error);
+            return
+        },
+    };
+    let source_digest = match toolchain_source_digest(request.sources) {
+        Ok(value) => value,
+        Err(error) => {
+            fail(COMPILE_ERROR_PREFIX + error);
+            return
+        },
+    };
+    let world = match world_from_packages(
+        WorldMetadata {
+            counter,
+            package_count: packages.len(),
+            artifact_format: WORLD_ARTIFACT_FORMAT,
+            compiler_abi: WORLD_COMPILER_ABI,
+            compiler_identity: version::current(),
+            source_digest,
+            builtin_package: "builtin",
+            prelude_package: "prelude",
+        },
+        packages,
+    ) {
+        Ok(value) => value,
+        Err(error) => {
+            fail(COMPILE_ERROR_PREFIX + error);
+            return
+        },
+    };
+    match write_package_world(request.output, world) {
+        Ok(()) => match read_package_world(request.output) {
+            Ok(value) => if value.source_digest == source_digest {} else {
+                fail(COMPILE_ERROR_PREFIX + "toolchain source digest does not match")
+            },
+            Err(error) => fail(COMPILE_ERROR_PREFIX + error),
+        },
+        Err(error) => fail(COMPILE_ERROR_PREFIX + error),
+    }
+}

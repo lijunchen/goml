@@ -1264,19 +1264,30 @@ fn impl_associated_type(values: Vec[(string, Type)], name: string) -> Option[Typ
 fn associated_type_reaches(
     values: Vec[(string, Type)],
     value: Type,
+    target_trait: string,
     target: string,
     active: Vec[string],
 ) -> bool {
     match prune(value) {
         Projection { for_ty, name, trait_ref } => {
-            if name == target {
+            if name == target
+                && match trait_ref {
+                    Some(reference) => reference.name == target_trait,
+                    None => true,
+                } {
                 return true
             } else {};
             if !collections::contains(active, name) {
                 match impl_associated_type(values, name) {
                     Some(next) => {
                         active.push(name);
-                        let reaches = associated_type_reaches(values, next, target, active);
+                        let reaches = associated_type_reaches(
+                            values,
+                            next,
+                            target_trait,
+                            target,
+                            active,
+                        );
                         active.truncate(active.len() - 1);
                         if reaches {
                             return true
@@ -1285,12 +1296,12 @@ fn associated_type_reaches(
                     None => (),
                 }
             } else {};
-            if associated_type_reaches(values, for_ty, target, active) {
+            if associated_type_reaches(values, for_ty, target_trait, target, active) {
                 return true
             } else {};
             match trait_ref {
                 Some(reference) => for arg in reference.args {
-                    if associated_type_reaches(values, arg, target, active) {
+                    if associated_type_reaches(values, arg, target_trait, target, active) {
                         return true
                     } else {}
                 },
@@ -1300,18 +1311,18 @@ fn associated_type_reaches(
         },
         Tuple { items } => {
             for item in items {
-                if associated_type_reaches(values, item, target, active) {
+                if associated_type_reaches(values, item, target_trait, target, active) {
                     return true
                 } else {}
             }
             false
         },
         App { ty, args } => {
-            if associated_type_reaches(values, ty, target, active) {
+            if associated_type_reaches(values, ty, target_trait, target, active) {
                 return true
             } else {};
             for arg in args {
-                if associated_type_reaches(values, arg, target, active) {
+                if associated_type_reaches(values, arg, target_trait, target, active) {
                     return true
                 } else {}
             }
@@ -1320,18 +1331,18 @@ fn associated_type_reaches(
         Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
             elem,
         } => {
-            associated_type_reaches(values, elem, target, active)
+            associated_type_reaches(values, elem, target_trait, target, active)
         },
         HashMap { key, value } => {
-            associated_type_reaches(values, key, target, active)
-                || associated_type_reaches(values, value, target, active)
+            associated_type_reaches(values, key, target_trait, target, active)
+                || associated_type_reaches(values, value, target_trait, target, active)
         },
         Func { params, ret_ty } => {
-            if associated_type_reaches(values, ret_ty, target, active) {
+            if associated_type_reaches(values, ret_ty, target_trait, target, active) {
                 return true
             } else {};
             for param in params {
-                if associated_type_reaches(values, param, target, active) {
+                if associated_type_reaches(values, param, target_trait, target, active) {
                     return true
                 } else {}
             }
@@ -1347,7 +1358,13 @@ fn validate_associated_type_cycles(
     associated_types: Vec[(string, Type)],
 ) -> unit {
     for associated in associated_types {
-        if associated_type_reaches(associated_types, associated.1, associated.0, Vec::[]) {
+        if associated_type_reaches(
+            associated_types,
+            associated.1,
+            reference.name,
+            associated.0,
+            Vec::[],
+        ) {
             push_diagnostic_at(
                 ctx,
                 "Associated type " + associated.0 + " has a cyclic definition in impl of trait "
