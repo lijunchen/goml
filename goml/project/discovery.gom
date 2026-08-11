@@ -822,7 +822,29 @@ fn discover_graph(
 
 struct ResolvedCompiler {
     path: string,
-    world_artifact: bool,
+    world: CompilerWorld,
+}
+
+fn installed_compiler_world(compiler: string) -> Result[string, string] {
+    let Some(bin_dir) = path::parent(compiler) else {
+        return Result::Err("gomlc path has no parent directory")
+    };
+    let Some(prefix) = path::parent(bin_dir) else {
+        return Result::Err("gomlc bin directory has no toolchain prefix")
+    };
+    let world = path::join(
+        path::join(path::join(prefix, "lib"), "compiler"),
+        "compiler-world-v2.gaf",
+    );
+    if fs::is_file(world) {
+        Result::Ok(world)
+    } else {
+        Result::Err(
+            "compiler world is missing at " + world
+                + "; reinstall the toolchain or run goml __toolchain-finalize --prefix "
+                + prefix,
+        )
+    }
 }
 
 fn resolve_compiler(explicit: Option[string]) -> Result[ResolvedCompiler, string] {
@@ -893,7 +915,18 @@ fn resolve_compiler(explicit: Option[string]) -> Result[ResolvedCompiler, string
                 Some(Number(value)) => value == "1",
                 _ => false,
             };
-            Result::Ok(ResolvedCompiler { path: compiler, world_artifact })
+            let installed_world = match json::field(version, "installed_world") {
+                Some(Number(value)) => value == "1",
+                _ => false,
+            };
+            let world = if installed_world {
+                CompilerWorld::Installed { path: installed_compiler_world(compiler)? }
+            } else if world_artifact {
+                CompilerWorld::LegacyArtifact
+            } else {
+                CompilerWorld::Source
+            };
+            Result::Ok(ResolvedCompiler { path: compiler, world })
         } else {
             Result::Err("incompatible gomlc driver protocol " + value)
         },
@@ -926,14 +959,7 @@ pub fn load_context(target_dir_override: Option[string], compiler_override: Opti
         artifact_root,
         sources,
     )?;
-    Result::Ok(
-        Context {
-            graph,
-            compiler,
-            compiler_world_artifact: resolved_compiler.world_artifact,
-            artifact_root,
-        },
-    )
+    Result::Ok(Context { graph, compiler, compiler_world: resolved_compiler.world, artifact_root })
 }
 
 pub fn load_target_context(
@@ -963,14 +989,7 @@ pub fn load_target_context(
         false,
         sources,
     )?;
-    Result::Ok(
-        Context {
-            graph,
-            compiler,
-            compiler_world_artifact: resolved_compiler.world_artifact,
-            artifact_root,
-        },
-    )
+    Result::Ok(Context { graph, compiler, compiler_world: resolved_compiler.world, artifact_root })
 }
 
 fn graph_with_entry(base: Graph, extra: Graph, entry: string) -> Result[Graph, string] {

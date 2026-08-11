@@ -38,10 +38,16 @@ pub struct Graph {
     pub order: Vec[string],
 }
 
+pub enum CompilerWorld {
+    Source,
+    LegacyArtifact,
+    Installed { path: string },
+}
+
 pub struct Context {
     pub graph: Graph,
     pub compiler: string,
-    pub compiler_world_artifact: bool,
+    pub compiler_world: CompilerWorld,
     pub artifact_root: string,
 }
 

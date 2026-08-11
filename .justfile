@@ -6,14 +6,17 @@ make:
     cp gomlc/_bootstrap/stage1/bin/cmd/gomlfmt/gomlfmt stage1/bin/gomlfmt
     cp gomlc/_bootstrap/stage1/bin/cmd/gomllsp/gomllsp stage1/bin/gomllsp
     bash tools/lib/install.sh stage1
+    bash tools/lib/finalize-toolchain.sh stage1 stage0/bin/goml stage1/bin/gomlc
+    cd goml && ../stage0/bin/goml build --target-dir _bootstrap/stage1 --compiler ../stage1/bin/gomlc
+    cp goml/_bootstrap/stage1/bin/cmd/goml/goml stage1/bin/goml
     mkdir -p stage2/bin
-    bash bootstrap/build-stage.sh stage2 stage0/bin/goml stage1/bin/gomlc
-    cp goml/_bootstrap/stage2/bin/cmd/goml/goml stage1/bin/goml
+    bash bootstrap/build-stage.sh stage2 stage1/bin/goml stage1/bin/gomlc
     cp gomlc/_bootstrap/stage2/bin/cmd/gomlc/gomlc stage2/bin/gomlc
     cp gomlc/_bootstrap/stage2/bin/cmd/gomlfmt/gomlfmt stage2/bin/gomlfmt
     cp gomlc/_bootstrap/stage2/bin/cmd/gomllsp/gomllsp stage2/bin/gomllsp
     bash tools/lib/install.sh stage2
     cp goml/_bootstrap/stage2/bin/cmd/goml/goml stage2/bin/goml
+    bash tools/lib/finalize-toolchain.sh stage2 stage2/bin/goml stage2/bin/gomlc
 
 test: make
     bash tools/lib/install.sh _artifact/gomlc-test/test
@@ -43,6 +46,7 @@ _bootstrap-stage3:
     cp gomlc/_bootstrap/stage3/bin/cmd/gomllsp/gomllsp stage3/bin/gomllsp
     bash tools/lib/install.sh stage3
     cp goml/_bootstrap/stage3/bin/cmd/goml/goml stage3/bin/goml
+    bash tools/lib/finalize-toolchain.sh stage3 stage3/bin/goml stage3/bin/gomlc
     diff -ru --exclude='*.goml-*-fingerprint' gomlc/_bootstrap/stage2/build/pkg gomlc/_bootstrap/stage3/build/pkg
     diff -ru --exclude='*.goml-*-fingerprint' goml/_bootstrap/stage2/build/pkg goml/_bootstrap/stage3/build/pkg
 
@@ -55,7 +59,7 @@ bootstrap:
 
 _ci-scripts:
     bash -n tools/release/release.sh tools/release/test.sh tools/release/lsp_smoke.sh
-    bash -n tools/lib/install.sh tools/lib/test.sh
+    bash -n tools/lib/install.sh tools/lib/test.sh tools/lib/finalize-toolchain.sh
     bash tools/release/test.sh
     bash tools/lib/test.sh stage2
     bash tools/release/release.sh check-version "$(cat VERSION)"
@@ -112,6 +116,7 @@ install: make
     cp stage2/bin/gomlfmt "${GOML_HOME:-$HOME/.goml}/bin/gomlfmt"
     cp stage2/bin/gomllsp "${GOML_HOME:-$HOME/.goml}/bin/gomllsp"
     bash tools/lib/install.sh "${GOML_HOME:-$HOME/.goml}"
+    bash tools/lib/finalize-toolchain.sh "${GOML_HOME:-$HOME/.goml}" "${GOML_HOME:-$HOME/.goml}/bin/goml" "${GOML_HOME:-$HOME/.goml}/bin/gomlc"
 
 update-golden: make
     bash tools/lib/install.sh _artifact/gomlc-test/test

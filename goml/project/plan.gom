@@ -152,28 +152,31 @@ fn compile_commands(
 }
 
 fn compiler_world_path(context: Context) -> Option[string] {
-    if context.compiler_world_artifact {
-        Option::Some(
+    match context.compiler_world {
+        Source => Option::None,
+        LegacyArtifact => Option::Some(
             module_relative(
                 context.graph.module_dir,
                 path::join(path::join(context.artifact_root, "compiler"), "world-v1.gaf"),
             ),
-        )
-    } else {
-        Option::None
+        ),
+        Installed { path } => Option::Some(path),
     }
 }
 
 fn commands_with_world(context: Context, commands: Vec[Command]) -> Vec[Command] {
-    match compiler_world_path(context) {
-        Some(output) => {
-            let result = Vec::[Command::PrepareWorld { output }];
-            for command in commands {
-                result.push(command)
-            }
-            result
+    match context.compiler_world {
+        LegacyArtifact => match compiler_world_path(context) {
+            Some(output) => {
+                let result = Vec::[Command::PrepareWorld { output }];
+                for command in commands {
+                    result.push(command)
+                }
+                result
+            },
+            None => commands,
         },
-        None => commands,
+        _ => commands,
     }
 }
 
@@ -287,7 +290,7 @@ pub fn check_plan(context: Context, include_tests: bool) -> Result[Plan, string]
             let target = Context {
                 graph,
                 compiler: context.compiler,
-                compiler_world_artifact: context.compiler_world_artifact,
+                compiler_world: context.compiler_world,
                 artifact_root: context.artifact_root,
             };
             let values = compile_commands(
@@ -306,7 +309,7 @@ pub fn check_plan(context: Context, include_tests: bool) -> Result[Plan, string]
             let target = Context {
                 graph: test.graph,
                 compiler: context.compiler,
-                compiler_world_artifact: context.compiler_world_artifact,
+                compiler_world: context.compiler_world,
                 artifact_root: context.artifact_root,
             };
             let values = compile_commands(
@@ -385,7 +388,7 @@ pub fn load_toolchain_context(prefix: string, compiler: string) -> Result[Contex
     let lib_dir = path::join(prefix, "lib");
     let artifact_root = path::join(path::join(lib_dir, "compiler"), "build");
     let graph = discover_toolchain_graph(compiler, lib_dir, artifact_root)?;
-    Result::Ok(Context { graph, compiler, compiler_world_artifact: false, artifact_root })
+    Result::Ok(Context { graph, compiler, compiler_world: CompilerWorld::Source, artifact_root })
 }
 
 pub fn toolchain_world_plan(context: Context, output: string) -> Result[Plan, string] {

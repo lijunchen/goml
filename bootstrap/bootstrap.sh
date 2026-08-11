@@ -46,3 +46,9 @@ test -f "$stage0_output/lib/std/goml.toml"
 stage0_version="${GOML_STAGE0_RELEASE_TAG#v}"
 test "$("$stage0_output/bin/goml" version)" = "goml $stage0_version"
 "$stage0_output/bin/gomlc" version --format json | grep -q '"driver_protocol":1'
+bash tools/lib/finalize-toolchain.sh \
+    "$stage0_output" \
+    "$stage0_output/bin/goml" \
+    "$stage0_output/bin/gomlc"
+test -f "$stage0_output/lib/compiler/compiler-world-v2.gaf"
+test ! -e "$stage0_output/lib/compiler/compiler-world-v2.gaf.tmp"

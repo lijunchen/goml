@@ -3024,7 +3024,9 @@ fn check_file_with_package(
                 || find_struct_by_name(ctx, canonical).is_some()
                 || find_type_alias(ctx, canonical).is_some()
                 || find_constant_by_name(ctx, canonical).is_some()
-                || find_function_by_name(ctx, canonical).is_some() {} else {
+                || find_function_by_name(ctx, canonical).is_some()
+                || builtin_nominal_arity(canonical).is_some()
+                || scoped_builtin_function_scheme(ctx, imported).is_some() {} else {
                 push_diagnostic_at(ctx, "Imported item " + imported + " not found", Option::None)
             },
         }

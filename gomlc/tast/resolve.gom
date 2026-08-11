@@ -2760,7 +2760,7 @@ fn resolve_projection_trait_ref(
     for arg in value.args {
         args.push(resolve_projection_type(ctx, arg, candidates, report))
     }
-    TraitRef { name: value.name, args }
+    TraitRef { name: canonical_imported_name(ctx, value.name), args }
 }
 
 fn resolve_projection_types(

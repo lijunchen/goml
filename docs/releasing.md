@@ -49,6 +49,7 @@ goml-X.Y.Z-linux-amd64/
 │   └── gomllsp
 └── lib/
     ├── builtin/
+    │   ├── goml.toml
     │   ├── contract.gom
     │   ├── runtime.gom
     │   ├── impls.gom
@@ -56,11 +57,23 @@ goml-X.Y.Z-linux-amd64/
     │   ├── derive.gom
     │   └── numeric.gom
     ├── prelude/
+    │   ├── goml.toml
     │   └── prelude.gom
     └── std/
+        ├── goml.toml
+        └── ...
 ```
 
-The compiler resolves `lib` relative to its executable. The archive must preserve this layout exactly. `builtin`, `prelude`, and `std` are separate compiler resources; legacy flat `builtin_*.gom` files must not be packaged.
+The compiler resolves `lib` relative to its executable. The archive must preserve this layout exactly. `builtin`, `prelude`, and `std` are separate GoML projects; legacy flat `builtin_*.gom` files must not be packaged.
+
+Release archives contain the toolchain project sources and manifests, but do not contain `lib/compiler/compiler-world-v2.gaf`. After extracting an archive, installation must finalize it once with the binaries from that same archive:
+
+```sh
+prefix=/path/to/goml-X.Y.Z-linux-amd64
+"$prefix/bin/goml" __toolchain-finalize --prefix "$prefix"
+```
+
+Finalization builds and validates the compiler world in a temporary path, then atomically installs it at `lib/compiler/compiler-world-v2.gaf`. Normal `goml check`, `goml build`, and `goml test` commands only read that executable-relative world. A missing world is an incomplete installation and must not trigger an implicit source build.
 
 ## Advance stage0
 
