@@ -319,6 +319,7 @@ fn emits_every_standard_runtime_hook() -> unit {
     );
     testing::assert(string_contains(output, "case _goml_syscall.Errno:"));
     testing::assert(string_contains(output, "if _goml_os.IsNotExist(err)"));
+    testing::assert(string_contains(output, "if _goml_os.IsPermission(err)"));
     testing::assert(string_contains(output, "func _goml_runtime_std_fs_read_bytes_v2("));
     testing::assert(
         string_contains(output, "var err error = _goml_os.WriteFile(path, data.items, 0644)"),
