@@ -17,13 +17,59 @@ import {
 import {
     LanguageClient,
     LanguageClientOptions,
+    NotificationType,
     ServerOptions,
+    State,
     TransportKind,
 } from 'vscode-languageclient/node';
+import { LanguageServerStatus, ServerStatusNotification } from './status';
 
 let client: LanguageClient | undefined;
+let diagnosticsTimer: NodeJS.Timeout | undefined;
+let diagnosticsUri: string | undefined;
+
+const serverStatusNotification = new NotificationType<ServerStatusNotification>('goml/status');
+const checkDiagnosticsDelay = 750;
+
+function clearDiagnosticsTimer(): void {
+    if (diagnosticsTimer) {
+        clearTimeout(diagnosticsTimer);
+        diagnosticsTimer = undefined;
+    }
+    diagnosticsUri = undefined;
+}
+
+function requestDiagnostics(uri: string): void {
+    clearDiagnosticsTimer();
+    if (client?.state === State.Running) {
+        void client.sendNotification('goml/checkDiagnostics', {
+            textDocument: { uri },
+        });
+    }
+}
+
+function scheduleDiagnostics(uri: string): void {
+    clearDiagnosticsTimer();
+    diagnosticsUri = uri;
+    diagnosticsTimer = setTimeout(() => {
+        const pendingUri = diagnosticsUri;
+        clearDiagnosticsTimer();
+        if (pendingUri) {
+            requestDiagnostics(pendingUri);
+        }
+    }, checkDiagnosticsDelay);
+}
 
 export function activate(context: ExtensionContext) {
+    const status = new LanguageServerStatus();
+    context.subscriptions.push(status);
+
+    context.subscriptions.push(
+        commands.registerCommand('goml.showLspOutput', () => {
+            status.showOutput();
+        })
+    );
+
     context.subscriptions.push(
         commands.registerCommand(
             'goml.runTest',
@@ -84,6 +130,9 @@ export function activate(context: ExtensionContext) {
     const serverPath = findServerPath(context);
 
     if (!serverPath) {
+        status.setUnavailable(
+            'GoML language server not found. Install gomllsp or set goml.serverPath in settings.'
+        );
         window.showErrorMessage(
             'GoML language server not found. Please install gomllsp or set goml.serverPath in settings.'
         );
@@ -107,6 +156,7 @@ export function activate(context: ExtensionContext) {
             fileEvents: workspace.createFileSystemWatcher('**/*.gom'),
         },
         outputChannelName: 'GoML Language Server',
+        middleware: status.middleware,
     };
 
     client = new LanguageClient(
@@ -116,10 +166,47 @@ export function activate(context: ExtensionContext) {
         clientOptions
     );
 
-    client.start();
+    status.attachOutputChannel(client.outputChannel);
+    status.setClientState(State.Starting);
+    context.subscriptions.push(
+        client.onDidChangeState(event => {
+            status.setClientState(event.newState);
+        })
+    );
+    context.subscriptions.push(
+        client.onNotification(serverStatusNotification, serverStatus => {
+            status.handleServerStatus(serverStatus);
+        })
+    );
+    context.subscriptions.push(
+        workspace.onDidChangeTextDocument(event => {
+            if (event.document.languageId === 'goml') {
+                scheduleDiagnostics(event.document.uri.toString());
+            }
+        })
+    );
+    context.subscriptions.push(
+        workspace.onDidSaveTextDocument(document => {
+            if (document.languageId === 'goml') {
+                requestDiagnostics(document.uri.toString());
+            }
+        })
+    );
+    context.subscriptions.push(
+        workspace.onDidCloseTextDocument(document => {
+            if (document.uri.toString() === diagnosticsUri) {
+                clearDiagnosticsTimer();
+            }
+        })
+    );
+    void client.start().catch(error => {
+        const message = error instanceof Error ? error.message : String(error);
+        status.setUnavailable(`GoML language server failed to start: ${message}`);
+    });
 }
 
 export function deactivate(): Thenable<void> | undefined {
+    clearDiagnosticsTimer();
     if (!client) {
         return undefined;
     }
