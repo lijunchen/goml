@@ -78,7 +78,19 @@ fn lexes_interpolated_string_segments() -> unit {
         "FStringStart:f\"|FStringText:hi {{x}} |FStringExprStart:{|Ident:value|Plus:+|IntLit:1|FStringExprEnd:}|FStringText:!|FStringEnd:\"",
     );
     testing::assert_eq(tokens.get(3).start, 12);
-    testing::assert_eq(tokens.get(3).end, 17)
+    testing::assert_eq(tokens.get(3).end, 17);
+    let recovered = lex("f\"bad \\q tail\" next");
+    testing::assert_eq(recovered.len(), 7);
+    testing::assert(token_kind_equal(recovered.get(2).kind, TokenKind::Error));
+    testing::assert(token_kind_equal(recovered.get(4).kind, TokenKind::FStringEnd));
+    testing::assert(token_kind_equal(recovered.get(6).kind, TokenKind::Ident));
+    match recovered.get(2).error {
+        Some(error) => {
+            testing::assert_eq(error.start, 6);
+            testing::assert_eq(error.end, 7)
+        },
+        None => testing::fail("expected interpolated string error metadata"),
+    }
 }
 
 #[test]
@@ -176,19 +188,51 @@ fn preserves_utf8_byte_ranges_and_error_partition() -> unit {
 
 #[test]
 fn rejects_invalid_string_and_char_literals_like_logos() -> unit {
-    let tokens = lex("\"unterminated");
+    let unterminated = "\"unterminated";
+    let tokens = lex(unterminated);
     testing::assert_eq(tokens.len(), 1);
     testing::assert(token_kind_equal(tokens.get(0).kind, TokenKind::Error));
     testing::assert_eq(tokens.get(0).text, "\"unterminated");
+    match tokens.get(0).error {
+        Some(error) => {
+            testing::assert_eq(error.message, "unterminated string literal");
+            testing::assert_eq(error.start, unterminated.byte_len());
+            testing::assert_eq(error.end, unterminated.byte_len())
+        },
+        None => testing::fail("expected unterminated string metadata"),
+    };
     let chars = lex("'ab'");
-    testing::assert(
-        token_kind_equal(chars.get(0).kind, TokenKind::Error)
-            && token_kind_equal(chars.get(2).kind, TokenKind::Error),
-    );
+    testing::assert_eq(chars.len(), 1);
+    testing::assert(token_kind_equal(chars.get(0).kind, TokenKind::Error));
+    testing::assert_eq(chars.get(0).text, "'ab'");
+    match chars.get(0).error {
+        Some(error) => {
+            testing::assert_eq(error.message, "invalid character literal");
+            testing::assert_eq(error.start, 0);
+            testing::assert_eq(error.end, 4)
+        },
+        None => testing::fail("expected invalid character metadata"),
+    };
+    let unterminated_char = lex("'1");
+    match unterminated_char.get(0).error {
+        Some(error) => {
+            testing::assert_eq(error.message, "unterminated character literal");
+            testing::assert_eq(error.start, 2);
+            testing::assert_eq(error.end, 2)
+        },
+        None => testing::fail("expected unterminated character metadata"),
+    };
     let multiline = lex("\"hello \\\nworld\";");
-    testing::assert_eq(multiline.get(0).text, "\"hello ");
-    testing::assert_eq(multiline.get(1).text, "\\");
-    testing::assert_eq(multiline.get(4).text, "\";")
+    testing::assert_eq(multiline.get(0).text, "\"hello \\");
+    match multiline.get(0).error {
+        Some(error) => {
+            testing::assert_eq(error.message, "unterminated string literal");
+            testing::assert_eq(error.start, 8);
+            testing::assert_eq(error.end, 8)
+        },
+        None => testing::fail("expected escaped newline string metadata"),
+    };
+    testing::assert_eq(multiline.get(3).text, "\";")
 }
 
 #[test]

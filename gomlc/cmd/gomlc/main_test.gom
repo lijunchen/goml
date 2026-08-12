@@ -2407,7 +2407,7 @@ fn renders_all_parser_diagnostics_with_spans() -> unit {
             "main.gom",
             source,
         ),
-        "error[parser]: expect \"=\", actual \"int_lit\"\nprimary: main.gom:2:11-2:13\n2 |     let x 42;\n  |           ^^\n\nerror[parser]: let statement expected an expression\nprimary: main.gom:2:13-2:14\n2 |     let x 42;\n  |             ^\n\nerror[parser]: expect \";\", actual \"}\"\nprimary: main.gom:3:1-3:2\n3 | }\n  | ^",
+        "error[parser]: expect \"=\", actual \"int_lit\"\nprimary: main.gom:2:10\n2 |     let x 42;\n  |          ^",
     )
 }
 
@@ -2415,6 +2415,19 @@ fn renders_all_parser_diagnostics_with_spans() -> unit {
 fn renders_unicode_diagnostic_text() -> unit {
     testing::assert_eq(diagnostic_visual_width("你\tx"), 5);
     testing::assert_eq(expand_diagnostic_tabs("你\tx"), "你   x")
+}
+
+#[test]
+fn computes_crlf_diagnostic_positions_without_column_drift() -> unit {
+    let source = "fn main() {\r\n\t中\r\n}";
+    let start = source_position(source, 14);
+    testing::assert_eq(start.line, 1);
+    testing::assert_eq(start.column, 1);
+    testing::assert_eq(start.line_start, 13);
+    testing::assert_eq(start.line_end, 17);
+    let end = source_position(source, 17);
+    testing::assert_eq(end.line, 1);
+    testing::assert_eq(end.column, 2)
 }
 
 #[test]

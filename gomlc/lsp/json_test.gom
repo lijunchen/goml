@@ -76,6 +76,25 @@ fn converts_utf16_positions_and_file_uris() -> unit {
 }
 
 #[test]
+fn converts_crlf_and_cr_line_endings_without_column_drift() -> unit {
+    let source = "α\r\n😀x\ry";
+    let emoji_end = offset_to_position(source, 8);
+    testing::assert_eq(emoji_end.line, 1);
+    testing::assert_eq(emoji_end.character, 2);
+    let second_line_end = offset_to_position(source, 9);
+    testing::assert_eq(second_line_end.line, 1);
+    testing::assert_eq(second_line_end.character, 3);
+    let third_line = offset_to_position(source, 10);
+    testing::assert_eq(third_line.line, 2);
+    testing::assert_eq(third_line.character, 0);
+    testing::assert_eq(position_to_offset(source, Position { line: 1, character: 2 }), 8);
+    testing::assert_eq(position_to_offset(source, Position { line: 2, character: 0 }), 10);
+    testing::assert(
+        position_to_offset_checked(source, Position { line: 1, character: 1 }).is_none(),
+    )
+}
+
+#[test]
 fn frames_and_parses_json_rpc_metadata() -> unit {
     let message = rpc_success(json::Value::Number("7"), json::Value::String("ok"));
     let framed = framed_json(message);

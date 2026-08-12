@@ -334,3 +334,23 @@ fn includes_diagnostics_in_hover() -> unit {
         Err(error) => testing::fail(error),
     }
 }
+
+#[test]
+fn publishes_recovered_parser_diagnostics_at_utf16_positions() -> unit {
+    let server = new_server();
+    let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/recovery.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"fn main() -> unit {\\r\\n    let text = \\\"中\\\"\\r\\n    println(text);\\r\\n}\\r\\n\"}}}";
+    match handle_payload(server, open) {
+        Ok(messages) => {
+            testing::assert_eq(messages.len(), 1);
+            let encoded = json::encode(messages.get(0));
+            testing::assert(encoded.contains("expect \\\";\\\""));
+            testing::assert(
+                encoded.contains(
+                    "\"start\":{\"line\":1,\"character\":18},\"end\":{\"line\":1,\"character\":18}",
+                ),
+            );
+            testing::assert(!encoded.contains("Unknown value text"))
+        },
+        Err(error) => testing::fail(error),
+    }
+}

@@ -48,6 +48,29 @@ fn has_prefix_with_direct_child(node: cst::CstNode, kind: cst::NodeKind) -> bool
     found.get()
 }
 
+fn source_offset(source: string, expected: string) -> int {
+    let mut index = 0;
+    while index + expected.byte_len() <= source.byte_len() {
+        if text::starts_with_at(source, index, expected) {
+            return index
+        } else {
+            index = index + 1;
+        }
+    };
+    -1
+}
+
+fn diagnostic_containing(diagnostics: Vec[cst::Diagnostic], expected: string) -> Option[
+    cst::Diagnostic,
+] {
+    for diagnostic in diagnostics {
+        if diagnostic.message.contains(expected) {
+            return Option::Some(diagnostic)
+        } else {}
+    }
+    Option::None
+}
+
 #[test]
 fn parses_lossless_precedence_tree() -> unit {
     let source = "fn main() -> int32 {\n    1 + 2 * 3 // keep\n}\n";
@@ -99,6 +122,93 @@ fn reports_recoverable_syntax_errors() -> unit {
     testing::assert(result.diagnostics.len() > 0);
     testing::assert(cst::node_kind_equal(cst::node_kind(result.root), cst::NodeKind::FILE));
     testing::assert_eq(cst::node_byte_len(result.root), source.byte_len())
+}
+
+#[test]
+fn recovers_missing_semicolons_without_consuming_following_expressions() -> unit {
+    let source = "fn main() -> unit {\n    let first = 1\n    println(first)\n    let second = 2;\n    ()\n}\nfn after() -> unit {}\n";
+    let result = parse(source);
+    testing::assert_eq(result.diagnostics.len(), 2);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::FN), 2);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::STMT_LET), 2);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_CALL), 1);
+    let first_end = source_offset(source, "1\n") + 1;
+    match diagnostic_containing(result.diagnostics, "expect \";\"") {
+        Some(diagnostic) => {
+            testing::assert_eq(diagnostic.start, first_end);
+            testing::assert_eq(diagnostic.end, first_end)
+        },
+        None => testing::fail("expected missing semicolon diagnostic"),
+    }
+}
+
+#[test]
+fn recovers_missing_closing_delimiters_at_outer_boundaries() -> unit {
+    let params = parse("fn first(value: int32 -> unit { () }\nfn after() -> unit { () }");
+    testing::assert_eq(params.diagnostics.len(), 1);
+    testing::assert_eq(count_nodes(params.root, cst::NodeKind::FN), 2);
+    testing::assert(diagnostic_containing(params.diagnostics, "expect \")\"").is_some());
+    let array = parse("fn main() -> unit { let values = [1, 2; println(\"ok\"); let _ = values; }");
+    testing::assert_eq(count_nodes(array.root, cst::NodeKind::STMT_LET), 2);
+    testing::assert_eq(count_nodes(array.root, cst::NodeKind::EXPR_CALL), 1);
+    testing::assert(diagnostic_containing(array.diagnostics, "expect \"]\"").is_some());
+    let call = parse("fn main() -> unit { println(1; let value = 2; let _ = value; }");
+    testing::assert_eq(call.diagnostics.len(), 1);
+    testing::assert_eq(count_nodes(call.root, cst::NodeKind::EXPR_CALL), 1);
+    testing::assert_eq(count_nodes(call.root, cst::NodeKind::STMT_LET), 2);
+    testing::assert(diagnostic_containing(call.diagnostics, "expect \")\"").is_some());
+    let block = parse("fn first() -> unit { ()\nfn after() -> unit { () }");
+    testing::assert_eq(count_nodes(block.root, cst::NodeKind::FN), 2);
+    testing::assert(diagnostic_containing(block.diagnostics, "expect \"}\"").is_some())
+}
+
+#[test]
+fn reports_unterminated_literals_and_continues_parsing() -> unit {
+    let source = "fn main() -> unit {\n    let text = \"unterminated\n    let letter = 'x;\n    println(\"ok\");\n}\n";
+    let result = parse(source);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::STMT_LET), 2);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_CALL), 1);
+    let string_end = source_offset(source, "\n    let letter");
+    match diagnostic_containing(result.diagnostics, "unterminated string literal") {
+        Some(diagnostic) => {
+            testing::assert_eq(diagnostic.start, string_end);
+            testing::assert_eq(diagnostic.end, string_end)
+        },
+        None => testing::fail("expected unterminated string diagnostic"),
+    };
+    let character_end = source_offset(source, "'x;") + 2;
+    match diagnostic_containing(result.diagnostics, "unterminated character literal") {
+        Some(diagnostic) => {
+            testing::assert_eq(diagnostic.start, character_end);
+            testing::assert_eq(diagnostic.end, character_end)
+        },
+        None => testing::fail("expected unterminated character diagnostic"),
+    }
+}
+
+#[test]
+fn recovers_missing_closure_pipe_and_array_type_separator() -> unit {
+    let closure = parse("fn main() -> int { let add = |value value + 1; add(1) }");
+    testing::assert_eq(count_nodes(closure.root, cst::NodeKind::EXPR_CLOSURE), 1);
+    testing::assert_eq(count_nodes(closure.root, cst::NodeKind::EXPR_BINARY), 1);
+    testing::assert_eq(count_nodes(closure.root, cst::NodeKind::EXPR_CALL), 1);
+    testing::assert(diagnostic_containing(closure.diagnostics, "expect \"|\"").is_some());
+    let array = parse("fn consume(value: [int 3]) -> unit { () }");
+    testing::assert_eq(count_nodes(array.root, cst::NodeKind::FN), 1);
+    testing::assert(diagnostic_containing(array.diagnostics, "expect \";\"").is_some())
+}
+
+#[test]
+fn places_missing_tokens_at_the_exact_end_of_input() -> unit {
+    let source = "fn main(";
+    let result = parse(source);
+    match diagnostic_containing(result.diagnostics, "expect \")\"") {
+        Some(diagnostic) => {
+            testing::assert_eq(diagnostic.start, source.byte_len());
+            testing::assert_eq(diagnostic.end, source.byte_len())
+        },
+        None => testing::fail("expected missing closing parenthesis diagnostic"),
+    }
 }
 
 #[test]
