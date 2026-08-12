@@ -1,5 +1,6 @@
 package lsp;
 
+use gomlc::line_index as text_index;
 use gomlc::query;
 
 pub struct Document {
@@ -7,6 +8,7 @@ pub struct Document {
     pub path: string,
     pub text: string,
     pub version: int,
+    pub line_index: text_index::LineIndex,
 }
 
 struct CachedAnalysis {
@@ -15,9 +17,16 @@ struct CachedAnalysis {
     analysis: query::Analysis,
 }
 
+struct CachedLineIndex {
+    path: string,
+    generation: int,
+    index: text_index::LineIndex,
+}
+
 pub struct Server {
     documents: Vec[Document],
     analyses: Vec[CachedAnalysis],
+    line_indexes: Vec[CachedLineIndex],
     analysis_context: query::AnalysisContext,
     generation: Ref[int],
     running: Ref[bool],
@@ -28,6 +37,7 @@ pub fn new_server() -> Server {
     Server {
         documents: Vec::[],
         analyses: Vec::[],
+        line_indexes: Vec::[],
         analysis_context: query::analysis_context(),
         generation: Ref::new(0),
         running: Ref::new(true),
@@ -41,7 +51,19 @@ pub fn server_running(value: Server) -> bool {
 
 pub fn invalidate_analyses(value: Server) -> unit {
     value.generation.set(value.generation.get() + 1);
-    value.analyses.clear()
+    value.line_indexes.clear()
+}
+
+fn analysis_index(value: Server, path: string) -> Option[int] {
+    let mut index = value.analyses.len() - 1;
+    while index >= 0 {
+        if value.analyses[index].path == path {
+            return Option::Some(index)
+        } else {
+            index = index - 1;
+        }
+    }
+    Option::None
 }
 
 fn document_index(value: Server, uri: string) -> Option[int] {
@@ -63,6 +85,32 @@ pub fn server_document(value: Server, uri: string) -> Option[Document] {
     }
 }
 
+fn source_line_index(value: Server, source_path: string, source: string) -> text_index::LineIndex {
+    let mut document_cursor = value.documents.len() - 1;
+    while document_cursor >= 0 {
+        let document = value.documents[document_cursor];
+        if document.path == source_path {
+            return document.line_index
+        } else {
+            document_cursor = document_cursor - 1;
+        }
+    }
+    let mut index_cursor = value.line_indexes.len() - 1;
+    while index_cursor >= 0 {
+        let cached = value.line_indexes[index_cursor];
+        if cached.path == source_path && cached.generation == value.generation.get() {
+            return cached.index
+        } else {
+            index_cursor = index_cursor - 1;
+        }
+    }
+    let index = line_index(source);
+    value.line_indexes.push(
+        CachedLineIndex { path: source_path, generation: value.generation.get(), index },
+    );
+    index
+}
+
 pub fn open_document(value: Server, document: Document) -> unit {
     match document_index(value, document.uri) {
         Some(index) => value.documents.set(index, document),
@@ -77,7 +125,13 @@ pub fn change_document(value: Server, uri: string, text: string, version: int) -
             let current = value.documents[index];
             value.documents.set(
                 index,
-                Document { uri: current.uri, path: current.path, text, version },
+                Document {
+                    uri: current.uri,
+                    path: current.path,
+                    text,
+                    version,
+                    line_index: line_index(text),
+                },
             );
             invalidate_analyses(value)
         },
@@ -88,10 +142,24 @@ pub fn change_document(value: Server, uri: string, text: string, version: int) -
 pub fn close_document(value: Server, uri: string) -> unit {
     match document_index(value, uri) {
         Some(index) => {
+            let document = value.documents[index];
             let _ = value.documents.remove(index);
+            match analysis_index(value, document.path) {
+                Some(analysis) => {
+                    let _ = value.analyses.remove(analysis);
+                },
+                None => (),
+            };
             invalidate_analyses(value)
         },
         None => (),
+    }
+}
+
+pub fn cached_document_analysis(value: Server, document: Document) -> Option[query::Analysis] {
+    match analysis_index(value, document.path) {
+        Some(index) => Option::Some(value.analyses[index].analysis),
+        None => Option::None,
     }
 }
 
@@ -104,23 +172,29 @@ fn source_overrides(value: Server) -> Vec[query::SourceOverride] {
 }
 
 pub fn document_analysis(value: Server, document: Document) -> query::Analysis {
-    let mut index = value.analyses.len() - 1;
-    while index >= 0 {
-        let cached = value.analyses[index];
-        if cached.path == document.path && cached.generation == value.generation.get() {
-            return cached.analysis
-        } else {
-            index = index - 1;
-        }
-    }
+    match analysis_index(value, document.path) {
+        Some(index) => {
+            let cached = value.analyses[index];
+            if cached.path == document.path && cached.generation == value.generation.get() {
+                return cached.analysis
+            } else {}
+        },
+        None => (),
+    };
     let analysis = query::analyze_with_context(
         value.analysis_context,
         document.path,
         document.text,
         source_overrides(value),
     );
-    value.analyses.push(
-        CachedAnalysis { path: document.path, generation: value.generation.get(), analysis },
-    );
+    let cached = CachedAnalysis {
+        path: document.path,
+        generation: value.generation.get(),
+        analysis,
+    };
+    match analysis_index(value, document.path) {
+        Some(index) => value.analyses.set(index, cached),
+        None => value.analyses.push(cached),
+    };
     analysis
 }

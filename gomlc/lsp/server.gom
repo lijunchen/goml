@@ -45,6 +45,10 @@ const DID_SAVE_METHOD: string = "textDocument/didSave";
 
 const PUBLISH_DIAGNOSTICS_METHOD: string = "textDocument/publishDiagnostics";
 
+const STATUS_METHOD: string = "goml/status";
+
+const CHECK_DIAGNOSTICS_METHOD: string = "goml/checkDiagnostics";
+
 fn required_field(value: json::Value, name: string) -> Result[json::Value, string] {
     match json::field(value, name) {
         Some(field) => Result::Ok(field),
@@ -99,7 +103,7 @@ fn request_position(params: json::Value) -> Result[Position, string] {
 }
 
 fn request_offset(document: Document, position: Position) -> Result[int, string] {
-    match position_to_offset_checked(document.text, position) {
+    match position_to_offset_checked_with_index(document.line_index, position) {
         Some(offset) => Result::Ok(offset),
         None => Result::Err("position is outside the document"),
     }
@@ -109,7 +113,6 @@ fn initialize_result() -> json::Value {
     let triggers: Vec[json::Value] = Vec::[];
     triggers.push(json::Value::String("."));
     triggers.push(json::Value::String(":"));
-    triggers.push(json::Value::String(" "));
     let completion: Vec[(string, json::Value)] = Vec::[];
     push_json_field(completion, "triggerCharacters", json::Value::Array(triggers));
     push_json_field(completion, "resolveProvider", json::Value::Bool(false));
@@ -247,10 +250,17 @@ fn completion_kind(value: query::CompletionKind) -> int {
 fn completion_response(server: Server, params: json::Value) -> Result[json::Value, string] {
     let document = request_document(server, params)?;
     let position = request_position(params)?;
-    let analysis = document_analysis(server, document);
     let offset = request_offset(document, position)?;
+    let items = match cached_document_analysis(server, document) {
+        Some(analysis) => if analysis.source == document.text {
+            query::completions(analysis, offset)
+        } else {
+            query::cached_completions(analysis, document.text, offset)
+        },
+        None => query::completions(document_analysis(server, document), offset),
+    };
     let result: Vec[json::Value] = Vec::[];
-    for item in query::completions(analysis, offset) {
+    for item in items {
         let fields: Vec[(string, json::Value)] = Vec::[];
         push_json_field(fields, "label", json::Value::String(item.label));
         push_json_field(fields, "detail", json::Value::String(item.detail));
@@ -299,25 +309,23 @@ fn inlay_response(server: Server, params: json::Value) -> Result[json::Value, st
     let range_end = request_offset(document, requested_range.end)?;
     let analysis = document_analysis(server, document);
     let result: Vec[json::Value] = Vec::[];
-    for hint in query::inlay_hints(analysis) {
-        if hint.position >= range_start && hint.position <= range_end {
-            let mut position = hint.position;
-            while position > 0
-                && (document.text.byte_get(position - 1) == b' '
-                    || document.text.byte_get(position - 1) == b'\t') {
-                position = position - 1;
-            }
-            let fields: Vec[(string, json::Value)] = Vec::[];
-            push_json_field(
-                fields,
-                "position",
-                position_json(offset_to_position(document.text, position)),
-            );
-            push_json_field(fields, "label", json::Value::String(hint.label));
-            push_json_field(fields, "kind", json::Value::Number("1"));
-            push_json_field(fields, "paddingRight", json::Value::Bool(true));
-            result.push(json::Value::Object(fields))
-        } else {}
+    for hint in query::inlay_hints_in_range(analysis, range_start, range_end) {
+        let mut position = hint.position;
+        while position > 0
+            && (document.text.byte_get(position - 1) == b' '
+                || document.text.byte_get(position - 1) == b'\t') {
+            position = position - 1;
+        }
+        let fields: Vec[(string, json::Value)] = Vec::[];
+        push_json_field(
+            fields,
+            "position",
+            position_json(offset_to_position_with_index(document.line_index, position)),
+        );
+        push_json_field(fields, "label", json::Value::String(hint.label));
+        push_json_field(fields, "kind", json::Value::Number("1"));
+        push_json_field(fields, "paddingRight", json::Value::Bool(true));
+        result.push(json::Value::Object(fields))
     }
     Result::Ok(json::Value::Array(result))
 }
@@ -331,6 +339,7 @@ fn definition_response(server: Server, params: json::Value) -> Result[json::Valu
     for definition in query::goto_definitions(analysis, offset) {
         match source_for_path(analysis, definition.source_path) {
             Some(source) => {
+                let source_index = source_line_index(server, definition.source_path, source);
                 let location: Vec[(string, json::Value)] = Vec::[];
                 push_json_field(
                     location,
@@ -340,7 +349,13 @@ fn definition_response(server: Server, params: json::Value) -> Result[json::Valu
                 push_json_field(
                     location,
                     "range",
-                    range_json(offsets_to_range(source, definition.span.start, definition.span.end)),
+                    range_json(
+                        offsets_to_range_with_index(
+                            source_index,
+                            definition.span.start,
+                            definition.span.end,
+                        ),
+                    ),
                 );
                 locations.push(json::Value::Object(location))
             },
@@ -379,7 +394,9 @@ fn code_lens_response(server: Server, params: json::Value) -> Result[json::Value
         push_json_field(
             lens,
             "range",
-            range_json(offsets_to_range(document.text, item.span.start, item.span.end)),
+            range_json(
+                offsets_to_range_with_index(document.line_index, item.span.start, item.span.end),
+            ),
         );
         push_json_field(lens, "command", json::Value::Object(command));
         result.push(json::Value::Object(lens))
@@ -464,7 +481,12 @@ fn diagnostic_severity(value: tast::DiagnosticSeverity) -> int {
     }
 }
 
-fn diagnostic_json(document: Document, analysis: query::Analysis, value: tast::Diagnostic) -> json::Value {
+fn diagnostic_json(
+    server: Server,
+    document: Document,
+    analysis: query::Analysis,
+    value: tast::Diagnostic,
+) -> json::Value {
     let span = match value.span {
         Some(span) => span,
         None => ast::span(0, 0),
@@ -473,7 +495,7 @@ fn diagnostic_json(document: Document, analysis: query::Analysis, value: tast::D
     push_json_field(
         fields,
         "range",
-        range_json(offsets_to_range(document.text, span.start, span.end)),
+        range_json(offsets_to_range_with_index(document.line_index, span.start, span.end)),
     );
     push_json_field(
         fields,
@@ -486,6 +508,7 @@ fn diagnostic_json(document: Document, analysis: query::Analysis, value: tast::D
     for label in value.secondary_labels {
         match source_for_path(analysis, label.source_path) {
             Some(source) => {
+                let source_index = source_line_index(server, label.source_path, source);
                 let location: Vec[(string, json::Value)] = Vec::[];
                 push_json_field(
                     location,
@@ -495,7 +518,9 @@ fn diagnostic_json(document: Document, analysis: query::Analysis, value: tast::D
                 push_json_field(
                     location,
                     "range",
-                    range_json(offsets_to_range(source, label.span.start, label.span.end)),
+                    range_json(
+                        offsets_to_range_with_index(source_index, label.span.start, label.span.end),
+                    ),
                 );
                 let information: Vec[(string, json::Value)] = Vec::[];
                 push_json_field(information, "location", json::Value::Object(location));
@@ -513,10 +538,11 @@ fn diagnostic_json(document: Document, analysis: query::Analysis, value: tast::D
 
 fn publish_diagnostics(server: Server, document: Document) -> json::Value {
     let analysis = document_analysis(server, document);
+    let _ = query::build_symbol_index(analysis);
     let diagnostics: Vec[json::Value] = Vec::[];
     for diagnostic in analysis.checked.diagnostics {
         if diagnostic.source_path == "" || diagnostic.source_path == document.path {
-            diagnostics.push(diagnostic_json(document, analysis, diagnostic))
+            diagnostics.push(diagnostic_json(server, document, analysis, diagnostic))
         } else {}
     }
     let params: Vec[(string, json::Value)] = Vec::[];
@@ -526,12 +552,36 @@ fn publish_diagnostics(server: Server, document: Document) -> json::Value {
     rpc_notification(PUBLISH_DIAGNOSTICS_METHOD, json::Value::Object(params))
 }
 
-fn publish_all_diagnostics(server: Server) -> Vec[json::Value] {
-    let result: Vec[json::Value] = Vec::[];
-    for document in server.documents {
-        result.push(publish_diagnostics(server, document))
+fn status_operation(payload: string) -> Option[string] {
+    let message = match json::parse(payload) {
+        Ok(value) => match parse_rpc_message(value) {
+            Ok(message) => message,
+            Err(_) => return Option::None,
+        },
+        Err(_) => return Option::None,
+    };
+    match message.method {
+        DID_OPEN_METHOD | DID_SAVE_METHOD | CHECK_DIAGNOSTICS_METHOD => {
+            Option::Some("Checking diagnostics")
+        },
+        HOVER_METHOD => Option::Some("Hover"),
+        EXPANDED_DERIVE_METHOD => Option::Some("Expanding derive"),
+        COMPLETION_METHOD => Option::Some("Completion"),
+        SIGNATURE_HELP_METHOD => Option::Some("Signature help"),
+        INLAY_HINT_METHOD => Option::Some("Inlay hints"),
+        DEFINITION_METHOD => Option::Some("Go to definition"),
+        CODE_LENS_METHOD => Option::Some("Code lenses"),
+        CODE_ACTION_METHOD => Option::Some("Code actions"),
+        FORMATTING_METHOD => Option::Some("Formatting"),
+        _ => Option::None,
     }
-    result
+}
+
+fn status_notification(state: string, operation: string) -> json::Value {
+    let params: Vec[(string, json::Value)] = Vec::[];
+    push_json_field(params, "state", json::Value::String(state));
+    push_json_field(params, "operation", json::Value::String(operation));
+    rpc_notification(STATUS_METHOD, json::Value::Object(params))
 }
 
 fn did_open(server: Server, params: json::Value) -> Result[json::Value, string] {
@@ -544,12 +594,13 @@ fn did_open(server: Server, params: json::Value) -> Result[json::Value, string] 
         path,
         text,
         version: optional_int_field(text_document, "version", 0),
+        line_index: line_index(text),
     };
     open_document(server, document);
     Result::Ok(publish_diagnostics(server, document))
 }
 
-fn did_change(server: Server, params: json::Value) -> Result[json::Value, string] {
+fn did_change(server: Server, params: json::Value) -> Result[unit, string] {
     let uri = text_document_uri(params)?;
     let text_document = text_document(params)?;
     let version = optional_int_field(text_document, "version", 0);
@@ -568,9 +619,15 @@ fn did_change(server: Server, params: json::Value) -> Result[json::Value, string
     let text = required_string_field(changes[changes.len() - 1], "text")?;
     change_document(server, uri, text, version);
     match server_document(server, uri) {
-        Some(document) => {
-            Result::Ok(publish_diagnostics(server, document))
-        },
+        Some(_) => Result::Ok(()),
+        None => Result::Err("document is not open: " + uri),
+    }
+}
+
+fn check_diagnostics(server: Server, params: json::Value) -> Result[json::Value, string] {
+    let uri = text_document_uri(params)?;
+    match server_document(server, uri) {
+        Some(document) => Result::Ok(publish_diagnostics(server, document)),
         None => Result::Err("document is not open: " + uri),
     }
 }
@@ -584,10 +641,10 @@ fn did_close(server: Server, params: json::Value) -> Result[json::Value, string]
     Result::Ok(rpc_notification(PUBLISH_DIAGNOSTICS_METHOD, json::Value::Object(diagnostic_params)))
 }
 
-fn did_save(server: Server, params: json::Value) -> Result[unit, string] {
+fn did_save(server: Server, params: json::Value) -> Result[json::Value, string] {
     let uri = text_document_uri(params)?;
     match server_document(server, uri) {
-        Some(_) => Result::Ok(()),
+        Some(document) => Result::Ok(publish_diagnostics(server, document)),
         None => Result::Err("document is not open: " + uri),
     }
 }
@@ -625,30 +682,23 @@ pub fn handle_json(server: Server, value: json::Value) -> Vec[json::Value] {
                 EXIT_METHOD => server.running.set(false),
                 INITIALIZED_METHOD => (),
                 DID_OPEN_METHOD => match did_open(server, message.params) {
-                    Ok(_) => for notification in publish_all_diagnostics(server) {
-                        output.push(notification)
-                    },
+                    Ok(notification) => output.push(notification),
                     Err(_) => (),
                 },
                 DID_CHANGE_METHOD => match did_change(server, message.params) {
-                    Ok(_) => for notification in publish_all_diagnostics(server) {
-                        output.push(notification)
-                    },
+                    Ok(()) => (),
+                    Err(_) => (),
+                },
+                CHECK_DIAGNOSTICS_METHOD => match check_diagnostics(server, message.params) {
+                    Ok(notification) => output.push(notification),
                     Err(_) => (),
                 },
                 DID_CLOSE_METHOD => match did_close(server, message.params) {
-                    Ok(notification) => {
-                        output.push(notification);
-                        for current in publish_all_diagnostics(server) {
-                            output.push(current)
-                        }
-                    },
+                    Ok(notification) => output.push(notification),
                     Err(_) => (),
                 },
                 DID_SAVE_METHOD => match did_save(server, message.params) {
-                    Ok(()) => for notification in publish_all_diagnostics(server) {
-                        output.push(notification)
-                    },
+                    Ok(notification) => output.push(notification),
                     Err(_) => (),
                 },
                 _ => match message.id {
@@ -686,11 +736,20 @@ pub fn run_server() -> Result[unit, string] {
     let server = new_server();
     while server_running(server) {
         let payload = read_rpc_payload()?;
+        let operation = status_operation(payload);
+        match operation {
+            Some(name) => write_rpc_message(status_notification("busy", name))?,
+            None => (),
+        };
         match handle_payload(server, payload) {
             Ok(messages) => for message in messages {
                 write_rpc_message(message)?
             },
             Err(error) => return Result::Err(error),
+        };
+        match operation {
+            Some(name) => write_rpc_message(status_notification("ready", name))?,
+            None => (),
         }
     }
     if server.shutdown.get() {

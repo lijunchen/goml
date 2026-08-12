@@ -65,11 +65,14 @@ fn path_node_at(value: Analysis, offset: int) -> Option[SyntaxNode] {
 
 fn node_identifiers(value: Analysis, node: SyntaxNode) -> Vec[SyntaxToken] {
     let result: Vec[SyntaxToken] = Vec::[];
-    for token in value.syntax.tokens {
+    let mut index = token_index_at_or_after(value.syntax, node.start);
+    while index < value.syntax.tokens.len() && value.syntax.tokens[index].start < node.end {
+        let token = value.syntax.tokens[index];
         if token.start >= node.start && token.end <= node.end
             && lexer::token_kind_equal(token.kind, lexer::TokenKind::Ident) {
             result.push(token)
-        } else {}
+        } else {};
+        index = index + 1;
     }
     result
 }
@@ -354,42 +357,83 @@ fn struct_field_definitions(value: Analysis, offset: int) -> Vec[DefinitionResul
     }
 }
 
+fn local_name_token(syntax: SyntaxIndex, start: int, end: int, name: string) -> Option[SyntaxToken] {
+    let mut index = token_index_at_or_after(syntax, start);
+    while index < syntax.tokens.len() && syntax.tokens[index].start < end {
+        let token = syntax.tokens[index];
+        if token.end <= end && token.text == name {
+            return Option::Some(token)
+        } else {
+            index = index + 1;
+        }
+    }
+    Option::None
+}
+
+fn local_definition_syntax(value: Analysis, fact: tast::LocalFact) -> Option[SyntaxIndex] {
+    if fact.source_path == value.source_path {
+        Option::Some(value.syntax)
+    } else {
+        match source_by_path(value.sources, fact.source_path) {
+            Some(source) => Option::Some(syntax_index(parser::parse(source.source).root)),
+            None => Option::None,
+        }
+    }
+}
+
+fn local_definition_span_from_fact(value: Analysis, fact: tast::LocalFact) -> Option[
+    DefinitionResult,
+] {
+    let Some(span) = fact.span else {
+        return Option::None
+    };
+    let Some(syntax) = local_definition_syntax(value, fact) else {
+        return Option::None
+    };
+    match local_name_token(syntax, span.start, span.end, fact.local.hint) {
+        Some(token) => Option::Some(
+            DefinitionResult {
+                source_path: fact.source_path,
+                span: ast::span(token.start, token.end),
+            },
+        ),
+        None => {
+            let mut current = match token_at(syntax, span.start) {
+                Some(token) => Option::Some(token.parent),
+                None => Option::None,
+            };
+            while current.is_some() {
+                match current {
+                    Some(id) => {
+                        let node = syntax.nodes[id];
+                        if node.start <= span.start && node.end >= span.end {
+                            match local_name_token(syntax, node.start, node.end, fact.local.hint) {
+                                Some(token) => return Option::Some(
+                                    DefinitionResult {
+                                        source_path: fact.source_path,
+                                        span: ast::span(token.start, token.end),
+                                    },
+                                ),
+                                None => (),
+                            }
+                        } else {};
+                        current = node.parent;
+                    },
+                    None => (),
+                }
+            }
+            Option::None
+        },
+    }
+}
+
 fn local_definition_span(value: Analysis, local: hir::LocalId) -> Option[DefinitionResult] {
     let facts = value.checked.typeck_results.locals;
     for distance in 0..facts.len() {
         let fact = facts[facts.len() - 1 - distance];
         if same_local(fact.local, local) {
-            match fact.span {
-                Some(span) => match source_by_path(value.sources, fact.source_path) {
-                    Some(source) => {
-                        let syntax = syntax_index(parser::parse(source.source).root);
-                        let mut best: Option[ast::Span] = Option::None;
-                        let mut width = 2147483647;
-                        for node in syntax.nodes {
-                            let node_width = node.end - node.start;
-                            if node.start <= span.start && node.end >= span.end
-                                && node_width < width {
-                                for token in syntax.tokens {
-                                    if token.start >= node.start && token.end <= node.end
-                                        && token.text == local.hint {
-                                        best = Option::Some(ast::span(token.start, token.end));
-                                        width = node_width;
-                                    } else {}
-                                }
-                            } else {}
-                        }
-                        match best {
-                            Some(definition_span) => return Option::Some(
-                                DefinitionResult {
-                                    source_path: fact.source_path,
-                                    span: definition_span,
-                                },
-                            ),
-                            None => (),
-                        }
-                    },
-                    None => (),
-                },
+            match local_definition_span_from_fact(value, fact) {
+                Some(definition) => return Option::Some(definition),
                 None => (),
             }
         } else {}

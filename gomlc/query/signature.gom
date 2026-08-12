@@ -140,26 +140,55 @@ fn signature_target_owner(value: tast::ReferenceTarget) -> Option[string] {
     }
 }
 
+fn file_parameter_names(file: ast::File, expected: string, expected_owner: Option[string]) -> Option[
+    Vec[string],
+] {
+    let mut item_index = file.items.len() - 1;
+    while item_index >= 0 {
+        match item_parameter_names(file.items[item_index], expected, expected_owner) {
+            Some(names) => return Option::Some(names),
+            None => {
+                item_index = item_index - 1;
+            },
+        }
+    }
+    Option::None
+}
+
+fn current_package_function(value: Analysis, target: tast::ReferenceTarget) -> bool {
+    match target {
+        Callable(Function(name)) => name.starts_with(value.package_name + "::"),
+        Definition(_) => true,
+        _ => false,
+    }
+}
+
 fn signature_parameter_names(value: Analysis, fact: tast::CallFact) -> Option[Vec[string]] {
     let expected = short_type_name(call_target_name(value, fact));
     let expected_owner = signature_target_owner(fact.target);
+    let checked_current = current_package_function(value, fact.target);
+    if checked_current {
+        let lowered = value.lowered;
+        match lowered.ast {
+            Some(file) => match file_parameter_names(file, expected, expected_owner) {
+                Some(names) => return Option::Some(names),
+                None => (),
+            },
+            None => (),
+        }
+    } else {};
     let mut source_index = value.sources.len() - 1;
     while source_index >= 0 {
         let source = value.sources[source_index];
-        let lowered = ast::lower(parser::parse(source.source));
-        match lowered.ast {
-            Some(file) => {
-                let mut item_index = file.items.len() - 1;
-                while item_index >= 0 {
-                    match item_parameter_names(file.items[item_index], expected, expected_owner) {
-                        Some(names) => return Option::Some(names),
-                        None => {
-                            item_index = item_index - 1;
-                        },
-                    }
-                }
-            },
-            None => (),
+        if checked_current && source.path == value.source_path {} else {
+            let lowered = ast::lower(parser::parse(source.source));
+            match lowered.ast {
+                Some(file) => match file_parameter_names(file, expected, expected_owner) {
+                    Some(names) => return Option::Some(names),
+                    None => (),
+                },
+                None => (),
+            }
         };
         source_index = source_index - 1;
     }

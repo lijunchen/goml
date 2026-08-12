@@ -55,11 +55,15 @@ fn token_is_inside_attribute(syntax: SyntaxIndex, token: SyntaxToken) -> bool {
 }
 
 fn first_identifier(syntax: SyntaxIndex, node: SyntaxNode) -> Option[SyntaxToken] {
-    for token in syntax.tokens {
+    let mut index = token_index_at_or_after(syntax, node.start);
+    while index < syntax.tokens.len() && syntax.tokens[index].start < node.end {
+        let token = syntax.tokens[index];
         if token_is_inside_node(token, node) && !token_is_inside_attribute(syntax, token)
             && lexer::token_kind_equal(token.kind, lexer::TokenKind::Ident) {
             return Option::Some(token)
-        } else {}
+        } else {
+            index = index + 1;
+        }
     }
     Option::None
 }
@@ -89,7 +93,9 @@ fn type_node_kind(value: cst::NodeKind) -> bool {
 }
 
 fn first_type_name_token(syntax: SyntaxIndex, node: SyntaxNode) -> Option[SyntaxToken] {
-    for token in syntax.tokens {
+    let mut index = token_index_at_or_after(syntax, node.start);
+    while index < syntax.tokens.len() && syntax.tokens[index].start < node.end {
+        let token = syntax.tokens[index];
         if token_is_inside_node(token, node) && !token_is_inside_attribute(syntax, token)
             && !lexer::token_is_trivia(token.kind)
             && token.text.byte_len() > 0
@@ -98,7 +104,9 @@ fn first_type_name_token(syntax: SyntaxIndex, node: SyntaxNode) -> Option[Syntax
                 || token.text.byte_get(0) == b'_')
             && token.text != "dyn" {
             return Option::Some(token)
-        } else {}
+        } else {
+            index = index + 1;
+        }
     }
     Option::None
 }
@@ -201,11 +209,15 @@ fn qualified_symbol_name(
 }
 
 fn node_has_token(syntax: SyntaxIndex, node: SyntaxNode, kind: lexer::TokenKind) -> bool {
-    for token in syntax.tokens {
+    let mut index = token_index_at_or_after(syntax, node.start);
+    while index < syntax.tokens.len() && syntax.tokens[index].start < node.end {
+        let token = syntax.tokens[index];
         if token_is_inside_node(token, node) && !token_is_inside_attribute(syntax, token)
             && lexer::token_kind_equal(token.kind, kind) {
             return true
-        } else {}
+        } else {
+            index = index + 1;
+        }
     }
     false
 }
@@ -229,9 +241,7 @@ fn symbol_public(syntax: SyntaxIndex, node: SyntaxNode, kind: SymbolKind) -> boo
     }
 }
 
-fn index_source(source: SourceFile, symbols: Vec[Symbol]) -> unit {
-    let parsed = parser::parse(source.source);
-    let syntax = syntax_index(parsed.root);
+fn index_source_syntax(source: SourceFile, syntax: SyntaxIndex, symbols: Vec[Symbol]) -> unit {
     for node in syntax.nodes {
         match symbol_kind(syntax, node) {
             Some(kind) => match first_identifier(syntax, node) {
@@ -260,11 +270,23 @@ fn index_source(source: SourceFile, symbols: Vec[Symbol]) -> unit {
     }
 }
 
+fn index_source(source: SourceFile, symbols: Vec[Symbol]) -> unit {
+    index_source_syntax(source, syntax_index(parser::parse(source.source).root), symbols)
+}
+
 pub fn build_symbol_index(value: Analysis) -> SymbolIndex {
     match value.symbol_index.get() {
         Some(index) => index,
         None => {
-            let index = build_symbol_index_from_sources(value.sources);
+            let symbols: Vec[Symbol] = Vec::[];
+            for source in value.sources {
+                if source.path == value.source_path {
+                    index_source_syntax(source, value.syntax, symbols)
+                } else {
+                    index_source(source, symbols)
+                }
+            }
+            let index = SymbolIndex { symbols };
             value.symbol_index.set(Option::Some(index));
             index
         },

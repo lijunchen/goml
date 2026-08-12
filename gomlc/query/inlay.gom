@@ -11,80 +11,85 @@ pub struct InlayHint {
     pub span: ast::Span,
 }
 
-fn smallest_node_containing_span(syntax: SyntaxIndex, span: ast::Span, kind: cst::NodeKind) -> Option[
+fn containing_node(syntax: SyntaxIndex, token: SyntaxToken, kind: cst::NodeKind) -> Option[
     SyntaxNode,
 ] {
-    let mut best = -1;
-    for candidate in 0..syntax.nodes.len() {
-        let node = syntax.nodes[candidate];
-        let node_width = node.end - node.start;
-        if cst::node_kind_equal(node.kind, kind) && node.start <= span.start && node.end >= span.end
-            && (best < 0 || node_width < syntax.nodes[best].end - syntax.nodes[best].start) {
-            best = candidate;
-        } else {}
+    let mut current = Option::Some(token.parent);
+    while current.is_some() {
+        match current {
+            Some(id) => {
+                let node = syntax.nodes[id];
+                if cst::node_kind_equal(node.kind, kind) {
+                    return Option::Some(node)
+                } else {
+                    current = node.parent;
+                }
+            },
+            None => (),
+        }
     }
-    if best >= 0 {
-        Option::Some(syntax.nodes[best])
-    } else {
-        Option::None
-    }
-}
-
-fn containing_let(syntax: SyntaxIndex, span: ast::Span) -> Option[SyntaxNode] {
-    smallest_node_containing_span(syntax, span, cst::NodeKind::STMT_LET)
-}
-
-fn containing_closure_parameter(syntax: SyntaxIndex, span: ast::Span) -> Option[SyntaxNode] {
-    smallest_node_containing_span(syntax, span, cst::NodeKind::CLOSURE_PARAM)
+    Option::None
 }
 
 fn let_has_annotation(syntax: SyntaxIndex, statement: SyntaxNode) -> bool {
-    for token in syntax.tokens {
+    let mut index = token_index_at_or_after(syntax, statement.start);
+    while index < syntax.tokens.len() && syntax.tokens[index].start < statement.end {
+        let token = syntax.tokens[index];
         if token.parent == statement.id
             && lexer::token_kind_equal(token.kind, lexer::TokenKind::Colon) {
             return true
-        } else {}
+        } else {
+            index = index + 1;
+        }
     }
     false
 }
 
-pub fn inlay_hints(value: Analysis) -> Vec[InlayHint] {
+fn span_overlaps_range(span: ast::Span, start: int, end: int) -> bool {
+    span.end >= start && span.start <= end
+}
+
+pub fn inlay_hints_in_range(value: Analysis, start: int, end: int) -> Vec[InlayHint] {
     let hints: Vec[InlayHint] = Vec::[];
     for fact in value.checked.typeck_results.locals {
-        if fact.source_path == value.source_path {
-            match local_definition_span(value, fact.local) {
-                Some(definition) => match containing_let(value.syntax, definition.span) {
-                    Some(statement) => if let_has_annotation(value.syntax, statement) {} else {
-                        match tast::resolve_type(fact.ty) {
-                            Error => (),
-                            ty => hints.push(
-                                InlayHint {
-                                    position: definition.span.end,
-                                    label: ": " + tast::diagnostic_type_text(ty),
-                                    span: definition.span,
-                                },
-                            ),
-                        }
-                    },
-                    None => match containing_closure_parameter(value.syntax, definition.span) {
-                        Some(parameter) => if let_has_annotation(value.syntax, parameter) {} else {
-                            match tast::resolve_type(fact.ty) {
-                                Error => (),
-                                ty => hints.push(
-                                    InlayHint {
-                                        position: definition.span.end,
-                                        label: ": " + tast::diagnostic_type_text(ty),
-                                        span: definition.span,
-                                    },
-                                ),
-                            }
-                        },
-                        None => (),
-                    },
+        let within_range = match fact.span {
+            Some(span) => span_overlaps_range(span, start, end),
+            None => false,
+        };
+        if fact.source_path == value.source_path && within_range {
+            let Some(definition) = local_definition_span_from_fact(value, fact) else {
+                continue
+            };
+            if definition.span.end < start || definition.span.end > end {
+                continue
+            } else {};
+            let Some(token) = token_at(value.syntax, definition.span.start) else {
+                continue
+            };
+            let owner = match containing_node(value.syntax, token, cst::NodeKind::STMT_LET) {
+                Some(statement) => Option::Some(statement),
+                None => containing_node(value.syntax, token, cst::NodeKind::CLOSURE_PARAM),
+            };
+            match owner {
+                Some(node) => if let_has_annotation(value.syntax, node) {} else {
+                    match tast::resolve_type(fact.ty) {
+                        Error => (),
+                        ty => hints.push(
+                            InlayHint {
+                                position: definition.span.end,
+                                label: ": " + tast::diagnostic_type_text(ty),
+                                span: definition.span,
+                            },
+                        ),
+                    }
                 },
                 None => (),
             }
         } else {}
     }
     hints
+}
+
+pub fn inlay_hints(value: Analysis) -> Vec[InlayHint] {
+    inlay_hints_in_range(value, 0, value.source.byte_len())
 }

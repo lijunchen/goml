@@ -1830,7 +1830,10 @@ fn check_closure_expr(
                 None => fresh_type(ctx.counter, VarKind::Any),
             },
         };
+        let previous_span = closure_ctx.current_span.get();
+        closure_ctx.current_span.set(Option::Some(param.span));
         insert_local(closure_ctx, param.name, ty);
+        closure_ctx.current_span.set(previous_span);
         typed_params.push(ClosureParam { name: local_name(param.name), ty });
         param_types.push(ty)
     }

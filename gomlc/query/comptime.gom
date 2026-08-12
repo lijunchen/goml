@@ -26,10 +26,16 @@ fn comptime_derive_name(value: ctir::CtDeriveEntry) -> string {
 
 fn derive_attribute_at(value: Analysis, offset: int) -> bool {
     match node_at_kind(value.syntax, offset, cst::NodeKind::ATTRIBUTE) {
-        Some(node) => for token in value.syntax.tokens {
-            if token.start >= node.start && token.end <= node.end && token.text == "derive" {
-                return true
-            } else {}
+        Some(node) => {
+            let mut index = token_index_at_or_after(value.syntax, node.start);
+            while index < value.syntax.tokens.len() && value.syntax.tokens[index].start < node.end {
+                let token = value.syntax.tokens[index];
+                if token.end <= node.end && token.text == "derive" {
+                    return true
+                } else {
+                    index = index + 1;
+                }
+            }
         },
         None => (),
     }
@@ -39,8 +45,10 @@ fn derive_attribute_at(value: Analysis, offset: int) -> bool {
 fn comptime_derive_identifiers(value: Analysis, node: SyntaxNode) -> Vec[SyntaxToken] {
     let result: Vec[SyntaxToken] = Vec::[];
     let mut found_derive = false;
-    for token in value.syntax.tokens {
-        if token.start >= node.start && token.end <= node.end {
+    let mut index = token_index_at_or_after(value.syntax, node.start);
+    while index < value.syntax.tokens.len() && value.syntax.tokens[index].start < node.end {
+        let token = value.syntax.tokens[index];
+        if token.end <= node.end {
             if token.text == "derive" && !found_derive {
                 found_derive = true;
             } else if found_derive && token.text != "" {
@@ -50,7 +58,8 @@ fn comptime_derive_identifiers(value: Analysis, node: SyntaxNode) -> Vec[SyntaxT
                     result.push(token)
                 } else {}
             } else {}
-        } else {}
+        } else {};
+        index = index + 1;
     }
     result
 }

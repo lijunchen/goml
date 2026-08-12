@@ -65,6 +65,34 @@ pub fn syntax_index(root: cst::CstNode) -> SyntaxIndex {
     SyntaxIndex { nodes, tokens }
 }
 
+pub fn token_index_at_or_after(index: SyntaxIndex, offset: int) -> int {
+    let mut low = 0;
+    let mut high = index.tokens.len();
+    while low < high {
+        let middle = low + (high - low) / 2;
+        if index.tokens[middle].start < offset {
+            low = middle + 1;
+        } else {
+            high = middle;
+        }
+    }
+    low
+}
+
+pub fn token_index_before(index: SyntaxIndex, offset: int) -> int {
+    let mut low = 0;
+    let mut high = index.tokens.len();
+    while low < high {
+        let middle = low + (high - low) / 2;
+        if index.tokens[middle].end <= offset {
+            low = middle + 1;
+        } else {
+            high = middle;
+        }
+    }
+    low - 1
+}
+
 fn contains_offset(start: int, end: int, offset: int) -> bool {
     start <= offset && (offset < end || (start == end && offset == start))
 }

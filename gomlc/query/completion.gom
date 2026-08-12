@@ -507,11 +507,14 @@ fn short_type_name(value: string) -> string {
 }
 
 fn significant_token_before(value: Analysis, offset: int) -> Option[SyntaxToken] {
-    for distance in 0..value.syntax.tokens.len() {
-        let token = value.syntax.tokens[value.syntax.tokens.len() - 1 - distance];
+    let mut index = token_index_before(value.syntax, offset);
+    while index >= 0 {
+        let token = value.syntax.tokens[index];
         if token.end <= offset && !lexer::token_is_trivia(token.kind) {
             return Option::Some(token)
-        } else {}
+        } else {
+            index = index - 1;
+        }
     }
     Option::None
 }
@@ -845,20 +848,24 @@ fn completion_scope_kind(value: cst::NodeKind) -> bool {
 }
 
 fn containing_completion_scope(syntax: SyntaxIndex, span: ast::Span) -> Option[SyntaxNode] {
-    let mut best = -1;
-    for candidate in 0..syntax.nodes.len() {
-        let node = syntax.nodes[candidate];
-        let node_width = node.end - node.start;
-        if completion_scope_kind(node.kind) && node.start <= span.start && node.end >= span.end
-            && (best < 0 || node_width < syntax.nodes[best].end - syntax.nodes[best].start) {
-            best = candidate;
-        } else {}
+    let mut current = match token_at(syntax, span.start) {
+        Some(token) => Option::Some(token.parent),
+        None => Option::None,
+    };
+    while current.is_some() {
+        match current {
+            Some(id) => {
+                let node = syntax.nodes[id];
+                if completion_scope_kind(node.kind) {
+                    return Option::Some(node)
+                } else {
+                    current = node.parent;
+                }
+            },
+            None => (),
+        }
     }
-    if best >= 0 {
-        Option::Some(syntax.nodes[best])
-    } else {
-        Option::None
-    }
+    Option::None
 }
 
 fn local_visible_at(syntax: SyntaxIndex, span: ast::Span, offset: int) -> bool {
@@ -1144,28 +1151,39 @@ fn completion_query(value: Analysis, source: string, offset: int, prefix: string
     }
 }
 
-pub fn completions(value: Analysis, offset: int) -> Vec[CompletionItem] {
-    let prefix = completion_prefix(value.source, offset);
-    match use_completion_context(value.source, offset) {
+fn completions_for_source(value: Analysis, source: string, offset: int, recover: bool) -> Vec[
+    CompletionItem,
+] {
+    let prefix = completion_prefix(source, offset);
+    match use_completion_context(source, offset) {
         Some(context) => complete_import_namespace(value, context),
-        None => if prefix == "" && call_argument_context(value.source, offset) {
+        None => if prefix == "" && member_dot(source, offset).is_none()
+            && namespace_path(source, offset).is_none()
+            && call_argument_context(source, offset) {
             Vec::[]
         } else {
-            let result = completion_query(value, value.source, offset, prefix);
-            if !result.is_empty()
-                || (member_dot(value.source, offset).is_none()
-                    && namespace_path(value.source, offset).is_none()) {
+            let result = completion_query(value, source, offset, prefix);
+            if !result.is_empty() || !recover
+                || (member_dot(source, offset).is_none() && namespace_path(source, offset).is_none()) {
                 result
             } else {
-                let repaired_source = insert_completion_placeholder(value.source, offset);
+                let repaired_source = insert_completion_placeholder(source, offset);
                 let repaired = analyze_with_context(
                     value.context,
                     value.source_path,
                     repaired_source,
                     value.overrides,
                 );
-                completion_query(repaired, value.source, offset, prefix)
+                completion_query(repaired, source, offset, prefix)
             }
         },
     }
+}
+
+pub fn cached_completions(value: Analysis, source: string, offset: int) -> Vec[CompletionItem] {
+    completions_for_source(value, source, offset, false)
+}
+
+pub fn completions(value: Analysis, offset: int) -> Vec[CompletionItem] {
+    completions_for_source(value, value.source, offset, true)
 }

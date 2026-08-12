@@ -1,0 +1,210 @@
+package line_index;
+
+const SWAR_LOW_BITS: uint64 = 0x0101010101010101;
+
+const SWAR_HIGH_BITS: uint64 = 0x8080808080808080;
+
+const SWAR_CR: uint64 = 0x0D0D0D0D0D0D0D0D;
+
+const SWAR_LF: uint64 = 0x0A0A0A0A0A0A0A0A;
+
+pub enum Encoding {
+    Utf8,
+    Utf16,
+    Utf32,
+}
+
+pub struct LineCol {
+    pub line: int,
+    pub column: int,
+}
+
+struct WideChar {
+    start: int,
+    end: int,
+}
+
+pub struct LineIndex {
+    line_starts: Vec[int],
+    line_ends: Vec[int],
+    wide_offsets: Vec[int],
+    wide_chars: Vec[WideChar],
+    source_len: int,
+}
+
+fn utf8_width(value: uint8) -> int {
+    if value < 128 {
+        1
+    } else if value < 224 {
+        2
+    } else if value < 240 {
+        3
+    } else {
+        4
+    }
+}
+
+fn encoded_width(width: int, encoding: Encoding) -> int {
+    match encoding {
+        Utf8 => width,
+        Utf16 => if width == 4 {
+            2
+        } else {
+            1
+        },
+        Utf32 => 1,
+    }
+}
+
+fn swar_word(source: string, start: int) -> uint64 {
+    source.byte_get(start).to_uint64() | (source.byte_get(start + 1).to_uint64() << 8)
+        | (source.byte_get(start + 2).to_uint64() << 16)
+        | (source.byte_get(start + 3).to_uint64() << 24)
+        | (source.byte_get(start + 4).to_uint64() << 32)
+        | (source.byte_get(start + 5).to_uint64() << 40)
+        | (source.byte_get(start + 6).to_uint64() << 48)
+        | (source.byte_get(start + 7).to_uint64() << 56)
+}
+
+fn swar_has_zero(value: uint64) -> bool {
+    ((value - SWAR_LOW_BITS) & (~value) & SWAR_HIGH_BITS) != 0
+}
+
+fn swar_has_byte(value: uint64, repeated: uint64) -> bool {
+    swar_has_zero(value ^ repeated)
+}
+
+fn swar_is_plain_ascii(value: uint64) -> bool {
+    value & SWAR_HIGH_BITS == 0 && !swar_has_byte(value, SWAR_CR) && !swar_has_byte(value, SWAR_LF)
+}
+
+pub fn new(source: string) -> LineIndex {
+    let line_starts: Vec[int] = Vec::[0];
+    let line_ends: Vec[int] = Vec::[];
+    let wide_offsets: Vec[int] = Vec::[0];
+    let wide_chars: Vec[WideChar] = Vec::[];
+    let mut line_start = 0;
+    let mut offset = 0;
+    while offset < source.byte_len() {
+        if offset + 8 <= source.byte_len() && swar_is_plain_ascii(swar_word(source, offset)) {
+            offset = offset + 8;
+            continue
+        } else {};
+        let byte = source.byte_get(offset);
+        if byte == b'\r' || byte == b'\n' {
+            line_ends.push(offset);
+            if byte == b'\r' && offset + 1 < source.byte_len()
+                && source.byte_get(offset + 1) == b'\n' {
+                offset = offset + 2;
+            } else {
+                offset = offset + 1;
+            };
+            line_start = offset;
+            line_starts.push(line_start);
+            wide_offsets.push(wide_chars.len())
+        } else {
+            let width = utf8_width(byte);
+            let end = if offset + width < source.byte_len() {
+                offset + width
+            } else {
+                source.byte_len()
+            };
+            if width > 1 {
+                wide_chars.push(WideChar { start: offset - line_start, end: end - line_start })
+            } else {};
+            offset = end;
+        }
+    }
+    line_ends.push(source.byte_len());
+    wide_offsets.push(wide_chars.len());
+    LineIndex { line_starts, line_ends, wide_offsets, wide_chars, source_len: source.byte_len() }
+}
+
+fn line_at_offset(index: LineIndex, offset: int) -> int {
+    let mut low = 0;
+    let mut high = index.line_starts.len();
+    while low < high {
+        let middle = low + (high - low) / 2;
+        if index.line_starts[middle] <= offset {
+            low = middle + 1;
+        } else {
+            high = middle;
+        }
+    }
+    low - 1
+}
+
+pub fn offset_to_line_col(index: LineIndex, offset: int, encoding: Encoding) -> LineCol {
+    let limit = if offset < 0 {
+        0
+    } else if offset > index.source_len {
+        index.source_len
+    } else {
+        offset
+    };
+    let line = line_at_offset(index, limit);
+    let start = index.line_starts[line];
+    let line_length = index.line_ends[line] - start;
+    let byte_column = if limit - start < line_length {
+        limit - start
+    } else {
+        line_length
+    };
+    let mut column = byte_column;
+    let mut wide_index = index.wide_offsets[line];
+    while wide_index < index.wide_offsets[line + 1] {
+        let wide = index.wide_chars[wide_index];
+        let width = wide.end - wide.start;
+        if wide.end <= byte_column {
+            column = column - (width - encoded_width(width, encoding));
+        } else if wide.start < byte_column {
+            column = column - (byte_column - wide.start);
+        } else {};
+        wide_index = wide_index + 1;
+    }
+    LineCol { line, column }
+}
+
+pub fn line_col_to_offset(index: LineIndex, position: LineCol, encoding: Encoding) -> int {
+    if position.line < 0 || position.line >= index.line_starts.len() {
+        index.source_len
+    } else {
+        let start = index.line_starts[position.line];
+        let line_length = index.line_ends[position.line] - start;
+        let mut column = if position.column < 0 {
+            0
+        } else {
+            position.column
+        };
+        let mut wide_index = index.wide_offsets[position.line];
+        while wide_index < index.wide_offsets[position.line + 1] {
+            let wide = index.wide_chars[wide_index];
+            if column > wide.start {
+                let width = wide.end - wide.start;
+                column = column + (width - encoded_width(width, encoding));
+            } else {};
+            wide_index = wide_index + 1;
+        }
+        if column > line_length {
+            index.line_ends[position.line]
+        } else {
+            start + column
+        }
+    }
+}
+
+pub fn line_col_to_offset_checked(index: LineIndex, position: LineCol, encoding: Encoding) -> Option[
+    int,
+] {
+    if position.line < 0 || position.column < 0 {
+        Option::None
+    } else {
+        let offset = line_col_to_offset(index, position, encoding);
+        let actual = offset_to_line_col(index, offset, encoding);
+        if actual.line == position.line && actual.column == position.column {
+            Option::Some(offset)
+        } else {
+            Option::None
+        }
+    }
+}

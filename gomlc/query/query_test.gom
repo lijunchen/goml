@@ -726,6 +726,22 @@ fn returns_inlay_hints_for_unannotated_let_bindings() -> unit {
 }
 
 #[test]
+fn filters_inlay_hints_to_source_ranges() -> unit {
+    let source = "fn main() -> unit {\n    let first = 1;\n    let second = 2;\n    ()\n}";
+    match last_substring(source, "second") {
+        Some(start) => {
+            let hints = inlay_hints_in_range(analyze("main.gom", source), start, source.byte_len());
+            testing::assert_eq(hints.len(), 1);
+            testing::assert_eq(
+                source.byte_slice(hints.get(0).span.start, hints.get(0).span.end),
+                "second",
+            )
+        },
+        None => testing::fail("expected second binding"),
+    }
+}
+
+#[test]
 fn returns_inlay_hints_for_closure_parameters() -> unit {
     let source = "fn main() -> unit { let f = |value| value + 1; () }";
     let hints = inlay_hints(analyze("main.gom", source));
@@ -772,6 +788,16 @@ fn completes_incomplete_member_and_enum_paths() -> unit {
             testing::assert(has_completion(items, "Green"))
         },
         None => testing::fail("expected enum path"),
+    };
+    let argument_source = "struct Point { x: int32 } fn consume(value: int32) -> unit { () } fn main() -> unit { let point = Point { x: 1 }; consume(point.); () }";
+    match last_substring(argument_source, "point.") {
+        Some(offset) => testing::assert(
+            has_completion(
+                completions(analyze("main.gom", argument_source), offset + "point.".byte_len()),
+                "x",
+            ),
+        ),
+        None => testing::fail("expected argument member expression"),
     }
 }
 

@@ -35,7 +35,16 @@ fn formatting_result(server: Server, uri: string) -> Vec[json::Value] {
 }
 
 fn formatting_document(server: Server, uri: string, text: string) -> unit {
-    open_document(server, Document { uri, path: "/tmp/formatting.gom", text, version: 1 })
+    open_document(
+        server,
+        Document {
+            uri,
+            path: "/tmp/formatting.gom",
+            text,
+            version: 1,
+            line_index: line_index(text),
+        },
+    )
 }
 
 #[test]

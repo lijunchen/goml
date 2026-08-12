@@ -8,6 +8,59 @@ fn response_result(value: json::Value) -> Option[json::Value] {
     json::field(value, "result")
 }
 
+fn response_has_label(value: json::Value, expected: string) -> bool {
+    match response_result(value) {
+        Some(result) => match json::as_array(result) {
+            Some(items) => for item in items {
+                match json::field(item, "label") {
+                    Some(label) => match json::as_string(label) {
+                        Some(label) => if label == expected {
+                            return true
+                        } else {},
+                        None => (),
+                    },
+                    None => (),
+                }
+            },
+            None => (),
+        },
+        None => (),
+    }
+    false
+}
+
+#[test]
+fn identifies_status_operations() -> unit {
+    let hover = "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"textDocument/hover\",\"params\":{}}";
+    match status_operation(hover) {
+        Some(operation) => testing::assert_eq(operation, "Hover"),
+        None => testing::fail("expected hover status"),
+    };
+    let check = "{\"jsonrpc\":\"2.0\",\"method\":\"goml/checkDiagnostics\",\"params\":{}}";
+    match status_operation(check) {
+        Some(operation) => testing::assert_eq(operation, "Checking diagnostics"),
+        None => testing::fail("expected diagnostics status"),
+    };
+    let change = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didChange\",\"params\":{}}";
+    match status_operation(change) {
+        Some(_) => testing::fail("unexpected change status"),
+        None => (),
+    };
+    let initialize = "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"initialize\",\"params\":{}}";
+    match status_operation(initialize) {
+        Some(_) => testing::fail("unexpected initialize status"),
+        None => (),
+    };
+    let notification = status_notification("busy", "Hover");
+    match json::field(notification, "method") {
+        Some(method) => match json::as_string(method) {
+            Some(method) => testing::assert_eq(method, "goml/status"),
+            None => testing::fail("expected status method"),
+        },
+        None => testing::fail("expected status method"),
+    }
+}
+
 #[test]
 fn initializes_and_answers_hover_requests() -> unit {
     let server = new_server();
@@ -119,6 +172,43 @@ fn applies_full_document_changes_and_stops_on_exit() -> unit {
     };
     let _ = handle_payload(server, "{\"jsonrpc\":\"2.0\",\"method\":\"exit\"}");
     testing::assert(!server_running(server))
+}
+
+#[test]
+fn completes_from_cached_analysis_after_document_changes() -> unit {
+    let server = new_server();
+    let source = "struct Point { x: int32 } fn consume(value: int32) -> unit { () } fn main() -> unit { let point = Point { x: 1 }; consume(point.x); () }";
+    let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/completion-change.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\""
+        + source
+        + "\"}}}";
+    match handle_payload(server, open) {
+        Ok(messages) => testing::assert_eq(messages.len(), 1),
+        Err(error) => testing::fail(error),
+    };
+    let changed = "struct Point { x: int32 } fn consume(value: int32) -> unit { () } fn main() -> unit { let point = Point { x: 1 }; consume(point.); () }";
+    let change = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didChange\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/completion-change.gom\",\"version\":2},\"contentChanges\":[{\"text\":\""
+        + changed
+        + "\"}]}}";
+    match handle_payload(server, change) {
+        Ok(messages) => testing::assert_eq(messages.len(), 0),
+        Err(error) => testing::fail(error),
+    };
+    let position = changed.byte_len() - "); () }".byte_len();
+    let completion = "{\"jsonrpc\":\"2.0\",\"id\":11,\"method\":\"textDocument/completion\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/completion-change.gom\"},\"position\":{\"line\":0,\"character\":"
+        + position.to_string()
+        + "}}}";
+    match handle_payload(server, completion) {
+        Ok(messages) => {
+            testing::assert_eq(messages.len(), 1);
+            testing::assert(response_has_label(messages.get(0), "x"))
+        },
+        Err(error) => testing::fail(error),
+    };
+    let check = "{\"jsonrpc\":\"2.0\",\"method\":\"goml/checkDiagnostics\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/completion-change.gom\"}}}";
+    match handle_payload(server, check) {
+        Ok(messages) => testing::assert_eq(messages.len(), 1),
+        Err(error) => testing::fail(error),
+    }
 }
 
 #[test]

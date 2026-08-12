@@ -15,7 +15,9 @@ fn formatting_response(server: Server, params: json::Value) -> Result[json::Valu
         push_json_field(
             edit,
             "range",
-            range_json(offsets_to_range(document.text, 0, document.text.byte_len())),
+            range_json(
+                offsets_to_range_with_index(document.line_index, 0, document.text.byte_len()),
+            ),
         );
         push_json_field(edit, "newText", json::Value::String(formatted));
         Result::Ok(json::Value::Array(Vec::[json::Value::Object(edit)]))
