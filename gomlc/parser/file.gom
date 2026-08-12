@@ -12,8 +12,8 @@ fn is_type_first(kind: lexer::TokenKind) -> bool {
 
 fn is_param_list_recovery(kind: lexer::TokenKind) -> bool {
     match kind {
-        Arrow | LBrace | FnKeyword => true,
-        _ => false,
+        Arrow | LBrace | RBrace | RBracket | Semi | WhereKeyword => true,
+        _ => is_block_recovery(kind),
     }
 }
 
@@ -22,6 +22,44 @@ fn is_block_recovery(kind: lexer::TokenKind) -> bool {
         Pound | PubKeyword | FnKeyword | ExternKeyword | StructKeyword | EnumKeyword | TraitKeyword | ImplKeyword | TypeKeyword | ConstKeyword | PackageKeyword | UseKeyword => true,
         _ => false,
     }
+}
+
+fn is_list_boundary(kind: lexer::TokenKind) -> bool {
+    match kind {
+        RParen | RBrace | RBracket | Semi => true,
+        _ => false,
+    }
+}
+
+fn is_generic_list_recovery(kind: lexer::TokenKind) -> bool {
+    match kind {
+        LParen | LBrace | Arrow | Eq | WhereKeyword => true,
+        _ => is_list_boundary(kind),
+    }
+}
+
+fn is_type_list_recovery(kind: lexer::TokenKind) -> bool {
+    match kind {
+        LBrace | Arrow | FatArrow => true,
+        _ => is_list_boundary(kind),
+    }
+}
+
+fn is_enum_body_recovery(kind: lexer::TokenKind) -> bool {
+    is_block_recovery(kind) && !token_is(kind, lexer::TokenKind::Pound)
+}
+
+fn is_struct_body_recovery(kind: lexer::TokenKind) -> bool {
+    is_enum_body_recovery(kind) && !token_is(kind, lexer::TokenKind::PubKeyword)
+}
+
+fn is_trait_body_recovery(kind: lexer::TokenKind) -> bool {
+    is_block_recovery(kind) && !token_is(kind, lexer::TokenKind::FnKeyword)
+        && !token_is(kind, lexer::TokenKind::TypeKeyword)
+}
+
+fn is_impl_body_recovery(kind: lexer::TokenKind) -> bool {
+    is_trait_body_recovery(kind) && !token_is(kind, lexer::TokenKind::PubKeyword)
 }
 
 fn parse_file(parser: Parser) -> unit {
@@ -121,14 +159,15 @@ fn use_item_list(parser: Parser) -> unit {
     if parser.at(lexer::TokenKind::RBrace) {
         parser.error("use item list cannot be empty")
     } else {};
-    while !parser.eof() && !parser.at(lexer::TokenKind::RBrace) {
+    while !parser.eof() && !parser.at(lexer::TokenKind::RBrace) && !is_list_boundary(parser.peek()) {
         let item = parser.open();
         parser.expect(lexer::TokenKind::Ident);
         if parser.eat(lexer::TokenKind::AsKeyword) {
             parser.expect(lexer::TokenKind::Ident)
         } else {};
         let _ = parser.close(item, cst::NodeKind::USE_ITEM);
-        if parser.eat(lexer::TokenKind::Comma) {} else if !parser.at(lexer::TokenKind::RBrace) {
+        if parser.eat(lexer::TokenKind::Comma) {} else if !parser.at(lexer::TokenKind::RBrace)
+            && !is_list_boundary(parser.peek()) {
             parser.advance_with_error("expected ',' or '}' in use item list")
         } else {}
     }
@@ -285,6 +324,9 @@ fn attribute_body(parser: Parser) -> unit {
         } else if parser.at(lexer::TokenKind::RBracket) {
             depth -= 1;
             parser.advance()
+        } else if depth == 1 && is_block_recovery(parser.peek()) {
+            parser.missing("unterminated attribute, expected `]`");
+            return
         } else {
             parser.advance()
         }
@@ -312,11 +354,7 @@ fn extern_decl_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
         if parser.at(lexer::TokenKind::LBracket) {
             generic_list(parser, true)
         } else {};
-        if parser.at(lexer::TokenKind::LParen) {
-            param_list(parser)
-        } else {
-            parser.advance_with_error("expected parameter list")
-        };
+        param_list(parser);
         if parser.eat(lexer::TokenKind::Arrow) {
             type_expr(parser)
         } else {};
@@ -339,11 +377,7 @@ fn func_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
     if parser.at(lexer::TokenKind::LBracket) {
         generic_list(parser, true)
     } else {};
-    if parser.at(lexer::TokenKind::LParen) {
-        param_list(parser)
-    } else {
-        parser.error("functions require an explicit parameter list")
-    };
+    param_list(parser);
     if parser.eat(lexer::TokenKind::Arrow) {
         type_expr(parser)
     } else {};
@@ -378,7 +412,8 @@ fn impl_block_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
     } else {};
     if parser.at(lexer::TokenKind::LBrace) {
         parser.advance();
-        while !parser.at(lexer::TokenKind::RBrace) && !parser.eof() {
+        while !parser.at(lexer::TokenKind::RBrace) && !parser.eof()
+            && !is_impl_body_recovery(parser.peek()) {
             if parser.at(lexer::TokenKind::FnKeyword) {
                 func(parser)
             } else if parser.at(lexer::TokenKind::PubKeyword) {
@@ -434,7 +469,8 @@ fn trait_def_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
 fn trait_method_list(parser: Parser) -> unit {
     parser.expect(lexer::TokenKind::LBrace);
     let marker = parser.open();
-    while !parser.at(lexer::TokenKind::RBrace) && !parser.eof() {
+    while !parser.at(lexer::TokenKind::RBrace) && !parser.eof()
+        && !is_trait_body_recovery(parser.peek()) {
         if parser.at(lexer::TokenKind::FnKeyword) {
             trait_method(parser);
         } else if parser.at(lexer::TokenKind::TypeKeyword) {
@@ -454,11 +490,7 @@ fn trait_method(parser: Parser) -> unit {
     if parser.at(lexer::TokenKind::LBracket) {
         generic_list(parser, true)
     } else {};
-    if parser.at(lexer::TokenKind::LParen) {
-        param_list(parser)
-    } else {
-        parser.advance_with_error("expected parameter list")
-    };
+    param_list(parser);
     if parser.eat(lexer::TokenKind::Arrow) {
         type_expr(parser)
     } else {};
@@ -535,7 +567,8 @@ fn struct_def_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
 fn variant_list(parser: Parser) -> unit {
     parser.expect(lexer::TokenKind::LBrace);
     let marker = parser.open();
-    while !parser.at(lexer::TokenKind::RBrace) && !parser.eof() {
+    while !parser.at(lexer::TokenKind::RBrace) && !parser.eof()
+        && !is_enum_body_recovery(parser.peek()) {
         if parser.at(lexer::TokenKind::Ident) || parser.at(lexer::TokenKind::Pound) {
             if parser.at(lexer::TokenKind::Pound) {
                 let attrs = attribute_list(parser);
@@ -543,7 +576,8 @@ fn variant_list(parser: Parser) -> unit {
             } else {
                 variant(parser)
             };
-            if parser.eat(lexer::TokenKind::Comma) {} else if parser.at(lexer::TokenKind::RBrace) {} else {
+            if parser.eat(lexer::TokenKind::Comma) {} else if parser.at(lexer::TokenKind::RBrace)
+                || is_enum_body_recovery(parser.peek()) {} else {
                 parser.error("expected `,` between enum variants")
             }
         } else {
@@ -557,7 +591,8 @@ fn variant_list(parser: Parser) -> unit {
 fn struct_field_list(parser: Parser) -> unit {
     parser.expect(lexer::TokenKind::LBrace);
     let marker = parser.open();
-    while !parser.at(lexer::TokenKind::RBrace) && !parser.eof() {
+    while !parser.at(lexer::TokenKind::RBrace) && !parser.eof()
+        && !is_struct_body_recovery(parser.peek()) {
         if parser.at(lexer::TokenKind::Ident) || parser.at(lexer::TokenKind::PubKeyword)
             || parser.at(lexer::TokenKind::Pound) {
             if parser.at(lexer::TokenKind::Pound) {
@@ -566,7 +601,8 @@ fn struct_field_list(parser: Parser) -> unit {
             } else {
                 struct_field(parser)
             };
-            if parser.eat(lexer::TokenKind::Comma) {} else if parser.at(lexer::TokenKind::RBrace) {} else {
+            if parser.eat(lexer::TokenKind::Comma) {} else if parser.at(lexer::TokenKind::RBrace)
+                || is_struct_body_recovery(parser.peek()) {} else {
                 parser.error("expected `,` between struct fields")
             }
         } else {
@@ -608,7 +644,8 @@ fn variant_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
 fn variant_type_list(parser: Parser) -> unit {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LParen);
-    while !parser.at(lexer::TokenKind::RParen) && !parser.eof() {
+    while !parser.at(lexer::TokenKind::RParen) && !parser.eof()
+        && !is_type_list_recovery(parser.peek()) {
         if parser.at(lexer::TokenKind::Pound) || is_type_first(parser.peek()) {
             let field_marker = if parser.at(lexer::TokenKind::Pound) {
                 attribute_list(parser).precede(parser)
@@ -621,7 +658,8 @@ fn variant_type_list(parser: Parser) -> unit {
                 parser.error("expected a type after enum field attributes")
             };
             let _ = parser.close(field_marker, cst::NodeKind::ENUM_TUPLE_FIELD);
-            if parser.eat(lexer::TokenKind::Comma) {} else if parser.at(lexer::TokenKind::RParen) {} else {
+            if parser.eat(lexer::TokenKind::Comma) {} else if parser.at(lexer::TokenKind::RParen)
+                || is_type_list_recovery(parser.peek()) {} else {
                 parser.error("expected `,` between types")
             }
         } else {
@@ -635,10 +673,12 @@ fn variant_type_list(parser: Parser) -> unit {
 fn type_list(parser: Parser) -> unit {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LParen);
-    while !parser.at(lexer::TokenKind::RParen) && !parser.eof() {
+    while !parser.at(lexer::TokenKind::RParen) && !parser.eof()
+        && !is_type_list_recovery(parser.peek()) {
         if is_type_first(parser.peek()) {
             type_expr(parser);
-            if parser.eat(lexer::TokenKind::Comma) {} else if parser.at(lexer::TokenKind::RParen) {} else {
+            if parser.eat(lexer::TokenKind::Comma) {} else if parser.at(lexer::TokenKind::RParen)
+                || is_type_list_recovery(parser.peek()) {} else {
                 parser.error("expected `,` between types")
             }
         } else {
@@ -729,10 +769,12 @@ fn where_predicate(parser: Parser) -> unit {
 fn generic_list(parser: Parser, allow_bounds: bool) -> unit {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LBracket);
-    while !parser.at(lexer::TokenKind::RBracket) && !parser.eof() {
+    while !parser.at(lexer::TokenKind::RBracket) && !parser.eof()
+        && !is_generic_list_recovery(parser.peek()) {
         if parser.at(lexer::TokenKind::Ident) {
             generic(parser, allow_bounds);
-            if parser.eat(lexer::TokenKind::Comma) {} else if parser.at(lexer::TokenKind::RBracket) {} else {
+            if parser.eat(lexer::TokenKind::Comma) {} else if parser.at(lexer::TokenKind::RBracket)
+                || is_generic_list_recovery(parser.peek()) {} else {
                 parser.error("expected `,` between generic parameters")
             }
         } else {
@@ -768,7 +810,7 @@ fn param(parser: Parser) -> unit {
     } else if !self_shorthand {
         parser.error("only the first trait or impl parameter may use the `self` shorthand")
     } else {};
-    if !parser.at(lexer::TokenKind::RParen) {
+    if !parser.at(lexer::TokenKind::RParen) && !is_param_list_recovery(parser.peek()) {
         parser.expect(lexer::TokenKind::Comma)
     } else {};
     let _ = parser.close(marker, cst::NodeKind::PARAM);
@@ -898,24 +940,20 @@ fn type_atom(parser: Parser) -> Option[MarkerClosed] {
                 if marker_is_none(type_expr_bp(parser, 0)) {
                     parser.error("expected array element type")
                 } else {}
+            } else if is_list_boundary(parser.peek()) {
+                parser.error("expected array element type")
             } else {
                 parser.advance_with_error("expected array element type")
             };
-            if parser.at(lexer::TokenKind::Semi) {
-                parser.expect(lexer::TokenKind::Semi)
-            } else {
-                parser.advance_with_error("expected ';' after array element type")
-            };
+            parser.expect(lexer::TokenKind::Semi);
             if parser.at(lexer::TokenKind::IntLit) {
                 parser.advance()
+            } else if is_list_boundary(parser.peek()) {
+                parser.error("expected array length")
             } else {
                 parser.advance_with_error("expected array length")
             };
-            if parser.at(lexer::TokenKind::RBracket) {
-                parser.expect(lexer::TokenKind::RBracket)
-            } else {
-                parser.advance_with_error("expected closing ']' for array type")
-            };
+            parser.expect(lexer::TokenKind::RBracket);
             parser.close(marker, cst::NodeKind::TYPE_ARRAY)
         },
         Ident => {
@@ -958,7 +996,8 @@ fn dyn_arg_list(parser: Parser) -> unit {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LBracket);
     let mut saw_associated_binding = false;
-    while !parser.at(lexer::TokenKind::RBracket) && !parser.eof() {
+    while !parser.at(lexer::TokenKind::RBracket) && !parser.eof()
+        && !is_list_boundary(parser.peek()) {
         if parser.at(lexer::TokenKind::Ident) && parser.nth(1) == lexer::TokenKind::Eq {
             saw_associated_binding = true;
             let binding = parser.open();
@@ -978,7 +1017,8 @@ fn dyn_arg_list(parser: Parser) -> unit {
         } else {
             parser.advance_with_error("expected a type argument or associated type binding")
         };
-        if parser.eat(lexer::TokenKind::Comma) {} else if !parser.at(lexer::TokenKind::RBracket) {
+        if parser.eat(lexer::TokenKind::Comma) {} else if !parser.at(lexer::TokenKind::RBracket)
+            && !is_list_boundary(parser.peek()) {
             parser.error("expected `,` between dyn arguments")
         } else {};
     }
@@ -989,10 +1029,12 @@ fn dyn_arg_list(parser: Parser) -> unit {
 fn type_param_list(parser: Parser) -> unit {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LBracket);
-    while !parser.at(lexer::TokenKind::RBracket) && !parser.eof() {
+    while !parser.at(lexer::TokenKind::RBracket) && !parser.eof()
+        && !is_list_boundary(parser.peek()) {
         if is_type_first(parser.peek()) {
             type_expr(parser);
-            if parser.eat(lexer::TokenKind::Comma) {} else if parser.at(lexer::TokenKind::RBracket) {} else {
+            if parser.eat(lexer::TokenKind::Comma) {} else if parser.at(lexer::TokenKind::RBracket)
+                || is_list_boundary(parser.peek()) {} else {
                 parser.error("expected `,` between type arguments")
             }
         } else {
@@ -1011,7 +1053,9 @@ fn block(parser: Parser) -> unit {
     let mut parsing = true;
     while parsing && !parser.eof() && !parser.at(lexer::TokenKind::RBrace) {
         if trailing_expr_seen {
-            parser.advance_with_error("expected `}` after block expression");
+            if !is_block_recovery(parser.peek()) {
+                parser.advance_with_error("expected `}` after block expression");
+            } else {};
             parsing = false;
         } else if parser.at(lexer::TokenKind::LetKeyword) {
             let _ = let_stmt(parser);
@@ -1037,6 +1081,11 @@ fn block(parser: Parser) -> unit {
                         None => if parser.eat(lexer::TokenKind::Semi) {
                             let _ = wrap_expr_stmt(parser, expr_marker);
                         } else if semicolon_optional && !parser.at(lexer::TokenKind::RBrace) {
+                            let _ = wrap_expr_stmt(parser, expr_marker);
+                        } else if parser.at(lexer::TokenKind::LetKeyword)
+                            || parser.at(lexer::TokenKind::DeferKeyword)
+                            || is_expr_first(parser.peek()) {
+                            parser.expect(lexer::TokenKind::Semi);
                             let _ = wrap_expr_stmt(parser, expr_marker);
                         } else {
                             trailing_expr_seen = true;

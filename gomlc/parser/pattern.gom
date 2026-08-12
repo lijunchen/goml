@@ -95,7 +95,7 @@ fn parse_pattern_list(parser: Parser) -> unit {
             } else if parser.at(lexer::TokenKind::RParen) || parser.eof() {
                 break
             } else if is_pattern_first(parser.peek()) {
-                parser.advance_with_error("expected `,` between patterns");
+                parser.missing("expected `,` between patterns");
                 let _ = pattern(parser);
             } else {
                 parser.advance_with_error("expected `,` or `)` in pattern")
@@ -205,7 +205,8 @@ fn array_pattern(parser: Parser) -> MarkerClosed {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LBracket);
     let mut has_rest = false;
-    while !parser.eof() && !parser.at(lexer::TokenKind::RBracket) {
+    while !parser.eof() && !parser.at(lexer::TokenKind::RBracket)
+        && !is_list_boundary(parser.peek()) {
         let bound_rest = parser.at(lexer::TokenKind::Ident)
             && token_is(parser.nth(1), lexer::TokenKind::At)
             && token_is(parser.nth(2), lexer::TokenKind::DotDot);
@@ -220,9 +221,10 @@ fn array_pattern(parser: Parser) -> MarkerClosed {
         } else {
             parser.advance_with_error("expected an array pattern element")
         };
-        if parser.eat(lexer::TokenKind::Comma) {} else if !parser.at(lexer::TokenKind::RBracket) {
+        if parser.eat(lexer::TokenKind::Comma) {} else if !parser.at(lexer::TokenKind::RBracket)
+            && !is_list_boundary(parser.peek()) {
             parser.error("expected `,` or `]` in array pattern");
-            if !parser.eof() {
+            if !parser.eof() && !is_pattern_first(parser.peek()) {
                 parser.advance()
             } else {}
         } else {}
@@ -245,7 +247,7 @@ fn struct_pattern_field_list(parser: Parser) -> unit {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LBrace);
     let mut has_rest = false;
-    while !parser.eof() && !parser.at(lexer::TokenKind::RBrace) {
+    while !parser.eof() && !parser.at(lexer::TokenKind::RBrace) && !is_list_boundary(parser.peek()) {
         if parser.at(lexer::TokenKind::DotDot) {
             if has_rest {
                 parser.error("struct pattern can contain at most one `..`")
@@ -253,12 +255,13 @@ fn struct_pattern_field_list(parser: Parser) -> unit {
             let _ = rest_pattern(parser);
             has_rest = true;
             parser.eat(lexer::TokenKind::Comma);
-            if !parser.at(lexer::TokenKind::RBrace) {
+            if !parser.at(lexer::TokenKind::RBrace) && !is_list_boundary(parser.peek()) {
                 parser.error("`..` must be the last item in a struct pattern")
             } else {}
         } else if parser.at(lexer::TokenKind::Ident) {
             struct_pattern_field(parser);
-            if parser.eat(lexer::TokenKind::Comma) {} else if parser.at(lexer::TokenKind::RBrace) {} else {
+            if parser.eat(lexer::TokenKind::Comma) {} else if parser.at(lexer::TokenKind::RBrace)
+                || is_list_boundary(parser.peek()) {} else {
                 parser.error("expected `,` between struct pattern fields")
             }
         } else {

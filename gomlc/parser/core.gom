@@ -10,7 +10,11 @@ enum Event {
     },
     Close,
     Advance,
-    Error(string),
+    Error {
+        message: string,
+        start: int,
+        end: int,
+    },
 }
 
 struct MarkerOpened {
@@ -23,6 +27,7 @@ struct MarkerClosed {
 
 struct Parser {
     tokens: Vec[lexer::Token],
+    source_len: int,
     cursor: Ref[int],
     fuel: Ref[int],
     events: Vec[Event],
@@ -118,22 +123,62 @@ fn input_current_text(parser: Parser) -> string {
     }
 }
 
-fn current_range(parser: Parser) -> (int, int) {
-    if parser.cursor.get() < parser.tokens.len() {
-        let token = parser.tokens[parser.cursor.get()];
-        (token.start, token.end)
-    } else if !parser.tokens.is_empty() {
-        let token = parser.tokens[parser.tokens.len() - 1];
-        (token.start, token.end)
+fn current_token_index(parser: Parser) -> Option[int] {
+    let mut index = parser.cursor.get();
+    while index < parser.tokens.len() && lexer::token_is_trivia(parser.tokens[index].kind) {
+        index = index + 1;
+    }
+    if index < parser.tokens.len() {
+        Option::Some(index)
     } else {
-        (0, 0)
+        Option::None
     }
 }
 
-fn new_parser(tokens: Vec[lexer::Token]) -> Parser {
+fn current_range(parser: Parser) -> (int, int) {
+    match current_token_index(parser) {
+        Some(index) => {
+            let token = parser.tokens[index];
+            (token.start, token.end)
+        },
+        None => (parser.source_len, parser.source_len),
+    }
+}
+
+fn current_lex_error(parser: Parser) -> Option[lexer::LexError] {
+    match current_token_index(parser) {
+        Some(index) => parser.tokens[index].error,
+        None => Option::None,
+    }
+}
+
+fn missing_range(parser: Parser) -> (int, int) {
+    let current = match current_token_index(parser) {
+        Some(index) => index,
+        None => parser.tokens.len(),
+    };
+    let mut index = current - 1;
+    while index >= 0 {
+        let token = parser.tokens[index];
+        if !lexer::token_is_trivia(token.kind) {
+            return (token.end, token.end)
+        } else {};
+        index = index - 1;
+    }
+    match current_token_index(parser) {
+        Some(index) => {
+            let start = parser.tokens[index].start;
+            (start, start)
+        },
+        None => (parser.source_len, parser.source_len),
+    }
+}
+
+fn new_parser(tokens: Vec[lexer::Token], source_len: int) -> Parser {
     let event_capacity = tokens.len() * 2;
     Parser {
         tokens,
+        source_len,
         cursor: Ref::new(0),
         fuel: Ref::new(256),
         events: Vec::with_capacity(event_capacity),
@@ -311,15 +356,21 @@ impl Parser {
             let message = "expect \"" + lexer::token_kind_display(kind) + "\", actual \""
                 + lexer::token_kind_display(actual)
                 + "\"";
-            if self.at(lexer::TokenKind::Eof) || !should_consume_on_expect_failure(actual) {
-                self.events.push(Event::Error(message))
-            } else {
+            if token_is(actual, lexer::TokenKind::Error) {
                 self.advance_with_error(message)
+            } else {
+                self.missing(message)
             }
         }
     }
 
     pub fn advance(self: Parser) -> unit {
+        match current_lex_error(self) {
+            Some(value) => self.events.push(
+                Event::Error { message: value.message, start: value.start, end: value.end },
+            ),
+            None => (),
+        };
         self.fuel.set(256);
         input_skip(self);
         self.stuck_reported.set(false);
@@ -327,13 +378,30 @@ impl Parser {
     }
 
     pub fn error(self: Parser, message: string) -> unit {
-        self.events.push(Event::Error(message))
+        let (start, end) = current_range(self);
+        self.events.push(Event::Error { message, start, end })
+    }
+
+    pub fn missing(self: Parser, message: string) -> unit {
+        let (start, end) = missing_range(self);
+        self.events.push(Event::Error { message, start, end })
+    }
+
+    pub fn error_after_current(self: Parser, message: string) -> unit {
+        let (_, end) = current_range(self);
+        self.events.push(Event::Error { message, start: end, end })
     }
 
     pub fn advance_with_error(self: Parser, message: string) -> unit {
         if self.depth_limit_hit.get() {} else {
             let marker = self.open();
-            self.events.push(Event::Error(message));
+            match current_lex_error(self) {
+                Some(_) => (),
+                None => {
+                    let (start, end) = current_range(self);
+                    self.events.push(Event::Error { message, start, end })
+                },
+            };
             self.advance();
             let _ = self.close(marker, cst::NodeKind::ErrorTree);
         }
@@ -421,25 +489,6 @@ impl MarkerOpened {
     }
 }
 
-fn should_consume_on_expect_failure(kind: lexer::TokenKind) -> bool {
-    !lexer::token_kind_equal(kind, lexer::TokenKind::FnKeyword)
-        && !lexer::token_kind_equal(kind, lexer::TokenKind::PubKeyword)
-        && !lexer::token_kind_equal(kind, lexer::TokenKind::StructKeyword)
-        && !lexer::token_kind_equal(kind, lexer::TokenKind::EnumKeyword)
-        && !lexer::token_kind_equal(kind, lexer::TokenKind::TraitKeyword)
-        && !lexer::token_kind_equal(kind, lexer::TokenKind::ImplKeyword)
-        && !lexer::token_kind_equal(kind, lexer::TokenKind::ExternKeyword)
-        && !lexer::token_kind_equal(kind, lexer::TokenKind::PackageKeyword)
-        && !lexer::token_kind_equal(kind, lexer::TokenKind::UseKeyword)
-        && !lexer::token_kind_equal(kind, lexer::TokenKind::LetKeyword)
-        && !lexer::token_kind_equal(kind, lexer::TokenKind::ReturnKeyword)
-        && !lexer::token_kind_equal(kind, lexer::TokenKind::RBrace)
-        && !lexer::token_kind_equal(kind, lexer::TokenKind::RParen)
-        && !lexer::token_kind_equal(kind, lexer::TokenKind::RBracket)
-        && !lexer::token_kind_equal(kind, lexer::TokenKind::Semi)
-        && !lexer::token_kind_equal(kind, lexer::TokenKind::Comma)
-}
-
 fn element_byte_len(element: cst::CstElement) -> int {
     match element {
         Node(value) => value.byte_len,
@@ -525,17 +574,7 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
                     cursor = cursor + 1;
                 } else {}
             },
-            Error(message) => {
-                let range = if cursor < parser.tokens.len() {
-                    let token = parser.tokens[cursor];
-                    (token.start, token.end)
-                } else if !parser.tokens.is_empty() {
-                    let token = parser.tokens[parser.tokens.len() - 1];
-                    (token.start, token.end)
-                } else {
-                    (0, 0)
-                };
-                let (start, end) = range;
+            Error { message, start, end } => {
                 parser.diagnostics.push(cst::diagnostic(message, start, end))
             },
         };
@@ -554,7 +593,7 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
 }
 
 pub fn parse(source: string) -> cst::ParseResult {
-    let parser = new_parser(lexer::lex(source));
+    let parser = new_parser(lexer::lex(source), source.byte_len());
     parse_file(parser);
     build_tree(parser)
 }

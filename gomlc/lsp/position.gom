@@ -43,7 +43,15 @@ pub fn offset_to_position(source: string, offset: int) -> Position {
     let mut index = 0;
     while index < limit {
         let byte = source.byte_get(index);
-        if byte == b'\n' {
+        if byte == b'\r' && index + 1 < source.byte_len() && source.byte_get(index + 1) == b'\n' {
+            if index + 1 < limit {
+                line = line + 1;
+                character = 0;
+                index = index + 2;
+            } else {
+                index = limit;
+            }
+        } else if byte == b'\n' || byte == b'\r' {
             line = line + 1;
             character = 0;
             index = index + 1;
@@ -69,13 +77,18 @@ pub fn position_to_offset(source: string, position: Position) -> int {
             return index
         } else {};
         let byte = source.byte_get(index);
-        if byte == b'\n' {
+        if byte == b'\n' || byte == b'\r' {
             if line == position.line {
                 return index
             } else {
                 line = line + 1;
                 character = 0;
-                index = index + 1;
+                if byte == b'\r' && index + 1 < source.byte_len()
+                    && source.byte_get(index + 1) == b'\n' {
+                    index = index + 2;
+                } else {
+                    index = index + 1;
+                }
             }
         } else {
             let width = utf8_width(byte);

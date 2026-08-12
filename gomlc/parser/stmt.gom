@@ -18,9 +18,7 @@ fn let_stmt(parser: Parser) -> Option[MarkerClosed] {
             type_expr(parser)
         } else {};
         parser.expect(lexer::TokenKind::Eq);
-        if marker_is_none(expr(parser)) {
-            parser.advance_with_error("let statement expected an expression")
-        } else {};
+        expect_expr_with_message(parser, "let statement expected an expression");
         if parser.eat(lexer::TokenKind::ElseKeyword) {
             if parser.at(lexer::TokenKind::LBrace) {
                 block(parser)
@@ -36,9 +34,7 @@ fn let_stmt(parser: Parser) -> Option[MarkerClosed] {
 fn finish_assign_stmt(parser: Parser, target: MarkerClosed, operator: lexer::TokenKind) -> MarkerClosed {
     let marker = target.precede(parser);
     parser.expect(operator);
-    if marker_is_none(expr(parser)) {
-        parser.advance_with_error("assignment statement expected an expression")
-    } else {};
+    expect_expr_with_message(parser, "assignment statement expected an expression");
     parser.expect(lexer::TokenKind::Semi);
     parser.close(marker, cst::NodeKind::STMT_ASSIGN)
 }
@@ -54,9 +50,7 @@ fn defer_stmt(parser: Parser) -> Option[MarkerClosed] {
     } else {
         let marker = parser.open();
         parser.expect(lexer::TokenKind::DeferKeyword);
-        if marker_is_none(expr(parser)) {
-            parser.advance_with_error("defer statement expected an expression")
-        } else {};
+        expect_expr_with_message(parser, "defer statement expected an expression");
         parser.expect(lexer::TokenKind::Semi);
         Option::Some(parser.close(marker, cst::NodeKind::STMT_DEFER))
     }

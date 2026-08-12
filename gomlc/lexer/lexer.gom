@@ -128,6 +128,13 @@ pub struct Token {
     pub text: string,
     pub start: int,
     pub end: int,
+    pub error: Option[LexError],
+}
+
+pub struct LexError {
+    pub message: string,
+    pub start: int,
+    pub end: int,
 }
 
 fn byte_at(source: string, index: int) -> uint8 {
@@ -384,6 +391,21 @@ fn scan_string(source: string, start: int) -> (bool, int) {
         }
     };
     (false, index)
+}
+
+fn scan_quoted_recovery_end(source: string, start: int, quote: uint8) -> int {
+    let mut index = start;
+    while index < source.byte_len() {
+        let value = byte_at(source, index);
+        if value == quote {
+            return index + 1
+        } else if value == b'\n' || value == b'\r' {
+            return index
+        } else {
+            index = index + utf8_width(value);
+        }
+    }
+    source.byte_len()
 }
 
 fn raw_string_hash_count(source: string, start: int) -> Option[int] {
@@ -827,17 +849,50 @@ fn scan_symbol(source: string, start: int) -> Option[(TokenKind, int)] {
 }
 
 fn push_token(tokens: Vec[Token], source: string, kind: TokenKind, start: int, end: int) -> unit {
-    tokens.push(Token { kind, text: source.byte_slice(start, end), start, end })
+    tokens.push(
+        Token { kind, text: source.byte_slice(start, end), start, end, error: Option::None },
+    )
+}
+
+fn push_error_token(
+    tokens: Vec[Token],
+    source: string,
+    start: int,
+    end: int,
+    message: string,
+    error_start: int,
+    error_end: int,
+) -> unit {
+    tokens.push(
+        Token {
+            kind: TokenKind::Error,
+            text: source.byte_slice(start, end),
+            start,
+            end,
+            error: Option::Some(LexError { message, start: error_start, end: error_end }),
+        },
+    )
 }
 
 fn append_fragment_tokens(tokens: Vec[Token], source: string, start: int, end: int) -> unit {
     for token in lex(source.byte_slice(start, end)) {
+        let error = match token.error {
+            Some(value) => Option::Some(
+                LexError {
+                    message: value.message,
+                    start: start + value.start,
+                    end: start + value.end,
+                },
+            ),
+            None => Option::None,
+        };
         tokens.push(
             Token {
                 kind: token.kind,
                 text: token.text,
                 start: start + token.start,
                 end: start + token.end,
+                error,
             },
         )
     }
@@ -860,7 +915,15 @@ fn lex_fstring(tokens: Vec[Token], source: string, start: int) -> int {
             if text_start < position {
                 push_token(tokens, source, TokenKind::FStringText, text_start, position)
             } else {};
-            push_token(tokens, source, TokenKind::Error, position, position + 1);
+            push_error_token(
+                tokens,
+                source,
+                position,
+                position + 1,
+                "unterminated interpolated string literal",
+                position,
+                position,
+            );
             return position + 1
         } else if value == b'\\' {
             match scan_escape_end(source, position, 34) {
@@ -871,8 +934,17 @@ fn lex_fstring(tokens: Vec[Token], source: string, start: int) -> int {
                     if text_start < position {
                         push_token(tokens, source, TokenKind::FStringText, text_start, position)
                     } else {};
-                    push_token(tokens, source, TokenKind::Error, position, position + 1);
-                    return position + 1
+                    push_error_token(
+                        tokens,
+                        source,
+                        position,
+                        position + 1,
+                        "invalid escape sequence in interpolated string literal",
+                        position,
+                        position + 1,
+                    );
+                    index = position + 1;
+                    text_start = position + 1;
                 },
             }
         } else if value == b'{' {
@@ -891,11 +963,13 @@ fn lex_fstring(tokens: Vec[Token], source: string, start: int) -> int {
                         text_start = end + 1;
                     },
                     None => {
-                        push_token(
+                        push_error_token(
                             tokens,
                             source,
-                            TokenKind::Error,
                             position + 1,
+                            source.byte_len(),
+                            "unterminated interpolated string expression, expected `}`",
+                            source.byte_len(),
                             source.byte_len(),
                         );
                         return source.byte_len()
@@ -909,7 +983,15 @@ fn lex_fstring(tokens: Vec[Token], source: string, start: int) -> int {
                 if text_start < position {
                     push_token(tokens, source, TokenKind::FStringText, text_start, position)
                 } else {};
-                push_token(tokens, source, TokenKind::Error, position, position + 1);
+                push_error_token(
+                    tokens,
+                    source,
+                    position,
+                    position + 1,
+                    "unescaped `}` in interpolated string literal",
+                    position,
+                    position + 1,
+                );
                 index = position + 1;
                 text_start = position + 1;
             }
@@ -918,9 +1000,25 @@ fn lex_fstring(tokens: Vec[Token], source: string, start: int) -> int {
         }
     }
     if text_start < source.byte_len() {
-        push_token(tokens, source, TokenKind::Error, text_start, source.byte_len())
+        push_error_token(
+            tokens,
+            source,
+            text_start,
+            source.byte_len(),
+            "unterminated interpolated string literal",
+            source.byte_len(),
+            source.byte_len(),
+        )
     } else {
-        push_token(tokens, source, TokenKind::Error, start, source.byte_len())
+        push_error_token(
+            tokens,
+            source,
+            start,
+            source.byte_len(),
+            "unterminated interpolated string literal",
+            source.byte_len(),
+            source.byte_len(),
+        )
     };
     source.byte_len()
 }
@@ -951,7 +1049,15 @@ pub fn lex(source: string) -> Vec[Token] {
                 },
                 None => {
                     index = start + 2;
-                    push_token(tokens, source, TokenKind::Error, start, start + 2)
+                    push_error_token(
+                        tokens,
+                        source,
+                        start,
+                        start + 2,
+                        "invalid multiline string literal",
+                        start,
+                        start + 2,
+                    )
                 },
             }
         } else if value == b'r' && starts_raw_string(source, start) {
@@ -963,7 +1069,15 @@ pub fn lex(source: string) -> Vec[Token] {
                     },
                     None => {
                         index = source.byte_len();
-                        push_token(tokens, source, TokenKind::Error, start, source.byte_len())
+                        push_error_token(
+                            tokens,
+                            source,
+                            start,
+                            source.byte_len(),
+                            "unterminated raw string literal",
+                            source.byte_len(),
+                            source.byte_len(),
+                        )
                     },
                 },
                 None => (),
@@ -975,21 +1089,31 @@ pub fn lex(source: string) -> Vec[Token] {
                 Some(hash_count) => match scan_raw_string_end(source, start + 1, hash_count) {
                     Some(end) => {
                         index = end;
-                        push_token(
-                            tokens,
-                            source,
-                            if raw_byte_string_is_ascii(source, start + 1, end, hash_count) {
-                                TokenKind::RawByteStr
-                            } else {
-                                TokenKind::Error
-                            },
-                            start,
-                            end,
-                        )
+                        if raw_byte_string_is_ascii(source, start + 1, end, hash_count) {
+                            push_token(tokens, source, TokenKind::RawByteStr, start, end)
+                        } else {
+                            push_error_token(
+                                tokens,
+                                source,
+                                start,
+                                end,
+                                "raw byte string literal must contain only ASCII bytes",
+                                start,
+                                end,
+                            )
+                        }
                     },
                     None => {
                         index = source.byte_len();
-                        push_token(tokens, source, TokenKind::Error, start, source.byte_len())
+                        push_error_token(
+                            tokens,
+                            source,
+                            start,
+                            source.byte_len(),
+                            "unterminated raw byte string literal",
+                            source.byte_len(),
+                            source.byte_len(),
+                        )
                     },
                 },
                 None => (),
@@ -1007,7 +1131,24 @@ pub fn lex(source: string) -> Vec[Token] {
                 None => {
                     let end = scan_invalid_prefixed_literal_end(source, start, 39);
                     index = end;
-                    push_token(tokens, source, TokenKind::Error, start, end)
+                    let closed = end > start + 2 && byte_at(source, end - 1) == b'\'';
+                    push_error_token(
+                        tokens,
+                        source,
+                        start,
+                        end,
+                        if closed {
+                            "invalid byte character literal"
+                        } else {
+                            "unterminated byte character literal"
+                        },
+                        if closed {
+                            start
+                        } else {
+                            end
+                        },
+                        end,
+                    )
                 },
             }
         } else if value == b'b' && start + 1 < source.byte_len()
@@ -1020,16 +1161,70 @@ pub fn lex(source: string) -> Vec[Token] {
                 None => {
                     let end = scan_invalid_prefixed_literal_end(source, start, 34);
                     index = end;
-                    push_token(tokens, source, TokenKind::Error, start, end)
+                    let closed = end > start + 2 && byte_at(source, end - 1) == b'"';
+                    push_error_token(
+                        tokens,
+                        source,
+                        start,
+                        end,
+                        if closed {
+                            "invalid byte string literal"
+                        } else {
+                            "unterminated byte string literal"
+                        },
+                        if closed {
+                            start
+                        } else {
+                            end
+                        },
+                        end,
+                    )
                 },
             }
         } else if value == b'"' {
             let (valid, end) = scan_string(source, start);
-            index = end;
             if valid {
+                index = end;
                 push_token(tokens, source, TokenKind::Str, start, end)
             } else {
-                push_token(tokens, source, TokenKind::Error, start, end)
+                let escape_reaches_line_end = end < source.byte_len()
+                    && byte_at(source, end) == b'\\'
+                    && (end + 1 >= source.byte_len() || byte_at(source, end + 1) == b'\n'
+                        || byte_at(source, end + 1) == b'\r');
+                let unterminated = end >= source.byte_len() || byte_at(source, end) == b'\n'
+                    || byte_at(source, end) == b'\r'
+                    || escape_reaches_line_end;
+                let token_end = if unterminated {
+                    if escape_reaches_line_end {
+                        end + 1
+                    } else {
+                        end
+                    }
+                } else {
+                    scan_quoted_recovery_end(source, end, b'"')
+                };
+                index = token_end;
+                push_error_token(
+                    tokens,
+                    source,
+                    start,
+                    token_end,
+                    if unterminated {
+                        "unterminated string literal"
+                    } else {
+                        "invalid escape sequence in string literal"
+                    },
+                    if unterminated {
+                        token_end
+                    } else {
+                        end
+                    },
+                    if unterminated {
+                        token_end
+                    } else {
+                        end + 1
+                    },
+                )
             }
         } else if value == b'\'' {
             match scan_char_end(source, start) {
@@ -1043,8 +1238,26 @@ pub fn lex(source: string) -> Vec[Token] {
                         push_token(tokens, source, TokenKind::Label, start, end)
                     },
                     None => {
-                        index = start + 1;
-                        push_token(tokens, source, TokenKind::Error, start, start + 1)
+                        let end = scan_quoted_recovery_end(source, start + 1, b'\'');
+                        let closed = end > start + 1 && byte_at(source, end - 1) == b'\'';
+                        index = end;
+                        push_error_token(
+                            tokens,
+                            source,
+                            start,
+                            end,
+                            if closed {
+                                "invalid character literal"
+                            } else {
+                                "unterminated character literal"
+                            },
+                            if closed {
+                                start
+                            } else {
+                                end
+                            },
+                            end,
+                        )
                     },
                 },
             }
@@ -1061,7 +1274,11 @@ pub fn lex(source: string) -> Vec[Token] {
         } else if ascii::is_digit(value) {
             let (kind, end) = scan_number(source, start);
             index = end;
-            push_token(tokens, source, kind, start, end)
+            if token_kind_equal(kind, TokenKind::Error) {
+                push_error_token(tokens, source, start, end, "invalid numeric literal", start, end)
+            } else {
+                push_token(tokens, source, kind, start, end)
+            }
         } else {
             match scan_symbol(source, start) {
                 Some((kind, end)) => {
@@ -1071,7 +1288,15 @@ pub fn lex(source: string) -> Vec[Token] {
                 None => {
                     let end = start + utf8_width(value);
                     index = end;
-                    push_token(tokens, source, TokenKind::Error, start, end)
+                    push_error_token(
+                        tokens,
+                        source,
+                        start,
+                        end,
+                        "unexpected character `" + source.byte_slice(start, end) + "`",
+                        start,
+                        end,
+                    )
                 },
             }
         }

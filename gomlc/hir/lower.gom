@@ -1945,8 +1945,9 @@ pub fn lower_expanded(value: ast::LowerResult, source_path: string) -> LowerResu
             diagnostics,
         },
         None => {
-            let diagnostics: Vec[Diagnostic] = Vec::[];
-            diagnostics.push(Diagnostic { message: "AST lowering failed", span: Option::None });
+            if diagnostics.is_empty() {
+                diagnostics.push(Diagnostic { message: "AST lowering failed", span: Option::None })
+            } else {};
             LowerResult { hir: Option::None, source_path, diagnostics }
         },
     }
@@ -1967,8 +1968,9 @@ pub fn lower_expanded_package(
             diagnostics,
         },
         None => {
-            let diagnostics: Vec[Diagnostic] = Vec::[];
-            diagnostics.push(Diagnostic { message: "AST lowering failed", span: Option::None });
+            if diagnostics.is_empty() {
+                diagnostics.push(Diagnostic { message: "AST lowering failed", span: Option::None })
+            } else {};
             LowerResult { hir: Option::None, source_path, diagnostics }
         },
     }
@@ -2020,8 +2022,12 @@ pub fn lower_expanded_package_files(
                 item_offset = item_offset + file.items.len();
             },
             None => {
-                let diagnostics: Vec[Diagnostic] = Vec::[];
-                diagnostics.push(Diagnostic { message: "AST lowering failed", span: Option::None });
+                let diagnostics = ast_diagnostics(value.0.diagnostics);
+                if diagnostics.is_empty() {
+                    diagnostics.push(
+                        Diagnostic { message: "AST lowering failed", span: Option::None },
+                    )
+                } else {};
                 lowered.push(LowerResult { hir: Option::None, source_path: value.1, diagnostics })
             },
         }
