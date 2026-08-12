@@ -285,7 +285,7 @@ fn checks_let_else_and_value_break_restrictions() -> unit {
 fn checks_value_break_types_across_loop_paths() -> unit {
     let source = "fn choose(flag: bool) -> int { loop { if flag { break 1; } else { break \"wrong\"; }; } }";
     testing::assert(
-        has_diagnostic(checked_diagnostics(source), "Type mismatch: expected string, found int"),
+        has_diagnostic(checked_diagnostics(source), "Type mismatch: expected int, found string"),
     )
 }
 
@@ -904,7 +904,7 @@ fn rejects_mismatched_let_annotations() -> unit {
     testing::assert_eq(result.diagnostics.len(), 1);
     testing::assert_eq(
         result.diagnostics.get(0).message,
-        "Type mismatch: expected string, found int32",
+        "Type mismatch: expected int32, found string",
     )
 }
 
@@ -913,7 +913,7 @@ fn reports_call_return_mismatches_once_per_constraint_phase() -> unit {
     let local = checked_diagnostics("fn value() -> int32 { 1 } fn main() -> string { value() }");
     testing::assert_eq(local.len(), 2);
     for diagnostic in local {
-        testing::assert_eq(diagnostic.message, "Type mismatch: expected int32, found string")
+        testing::assert_eq(diagnostic.message, "Type mismatch: expected string, found int32")
     }
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(dependency_hir("package api; pub fn value() -> int32 { 1 }", "vendor::api"));
@@ -926,7 +926,7 @@ fn reports_call_return_mismatches_once_per_constraint_phase() -> unit {
     );
     testing::assert_eq(external.diagnostics.len(), 2);
     for diagnostic in external.diagnostics {
-        testing::assert_eq(diagnostic.message, "Type mismatch: expected int32, found string")
+        testing::assert_eq(diagnostic.message, "Type mismatch: expected string, found int32")
     }
 }
 

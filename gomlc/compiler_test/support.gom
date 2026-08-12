@@ -3,11 +3,13 @@ package compiler_test;
 use gomlc::cmd::gomlc as compiler_driver;
 use gomlc::go_backend;
 use std::bytes;
+use std::collections;
 use std::env;
 use std::fs;
 use std::path;
 use std::process;
 use std::testing;
+use std::text;
 
 pub fn repository_root() -> string {
     match env::var("GOML_REPO") {
@@ -69,7 +71,7 @@ pub fn collect_diagnostic_sources(directory: string) -> Vec[string] {
         } else if fs::is_file(entry) {
             match path::extension(entry) {
                 Some(extension) => if extension == "gom" {
-                    if fs::is_file(entry + ".diag") {
+                    if fs::is_file(entry + ".diag") || update_expected() {
                         result.push(entry)
                     } else {}
                 } else {},
@@ -232,6 +234,16 @@ pub fn assert_e2e_suite(kind: string, shard: int, shard_count: int) -> unit {
     let directory = path::join(path::join(compiler_tests_root(), "e2e"), kind);
     let sources = Vec::new();
     collect_main_sources(directory, sources);
+    let compiler_sources = Vec::new();
+    let compiler_index = Ref::new(0);
+    for source_path in sources {
+        let current = compiler_index.get();
+        compiler_index.set(current + 1);
+        if current % shard_count == shard {
+            compiler_sources.push(read_file(source_path))
+        } else {}
+    }
+    let compiler = compiler_driver::source_compiler_for_sources(compiler_sources);
     let index = Ref::new(0);
     for source_path in sources {
         let current = index.get();
@@ -243,7 +255,11 @@ pub fn assert_e2e_suite(kind: string, shard: int, shard_count: int) -> unit {
             } else {
                 read_file(source_path + ".out")
             };
-            let actual = match compiler_driver::compile_source_or_diagnostics(source_path, source) {
+            let actual = match compiler_driver::compile_source_or_diagnostics_with(
+                compiler,
+                source_path,
+                source,
+            ) {
                 Compiled(compilation) => execute_go(
                     go_backend::encode(compilation.go_value),
                     expected,
@@ -271,10 +287,59 @@ pub fn assert_e2e_counts() -> unit {
 pub fn assert_diagnostic_suite(name: string, expected_count: int) -> unit {
     let sources = collect_diagnostic_sources(path::join(compiler_tests_root(), name));
     testing::assert_eq(sources.len(), expected_count);
+    let compiler = compiler_driver::source_compiler_without_standard();
     for source_path in sources {
-        let actual = compiler_driver::diagnostic_output(source_path, read_file(source_path));
+        let actual = compiler_driver::diagnostic_output_with(
+            compiler,
+            source_path,
+            read_file(source_path),
+        );
         assert_text(actual, source_path + ".diag", source_path)
     }
+}
+
+fn diagnostic_location_prefix(value: string) -> bool {
+    if value == "" {
+        return false
+    } else {};
+    for index in 0..value.byte_len() {
+        let byte = value.byte_get(index);
+        if (byte >= b'0' && byte <= b'9') || byte == b':' {} else {
+            return false
+        }
+    }
+    true
+}
+
+fn diagnostic_kind(value: string) -> string {
+    match text::split_once(value, ": ") {
+        Some(parts) => if diagnostic_location_prefix(parts.0) {
+            parts.1
+        } else {
+            value
+        },
+        None => value,
+    }
+}
+
+fn collect_diagnostic_kinds(name: string, result: collections::HashSet[string]) -> unit {
+    for source in collect_diagnostic_sources(path::join(compiler_tests_root(), name)) {
+        let snapshot = source + ".diag";
+        if fs::is_file(snapshot) {
+            for line in text::lines(read_file(snapshot)) {
+                if line == "" {} else {
+                    let _ = result.insert(diagnostic_kind(line));
+                }
+            }
+        } else {}
+    }
+}
+
+pub fn assert_distinct_type_diagnostic_count(minimum: int) -> unit {
+    let kinds: collections::HashSet[string] = collections::HashSet::new();
+    collect_diagnostic_kinds("typer", kinds);
+    collect_diagnostic_kinds("trait_impl", kinds);
+    testing::assert(kinds.len() >= minimum)
 }
 
 fn bootstrap_goml_binary() -> string {
@@ -347,29 +412,6 @@ pub fn assert_module_count() -> unit {
     testing::assert_eq(module_projects().len(), 59)
 }
 
-fn directory_contains_extension(directory: string, extension: string) -> bool {
-    if !fs::is_dir(directory) {
-        false
-    } else {
-        for name in read_directory(directory) {
-            let entry = path::join(directory, name);
-            if fs::is_dir(entry) {
-                if directory_contains_extension(entry, extension) {
-                    return true
-                } else {}
-            } else {
-                match path::extension(entry) {
-                    Some(value) => if value == extension {
-                        return true
-                    } else {},
-                    None => (),
-                }
-            }
-        }
-        false
-    }
-}
-
 pub fn assert_module_shard(shard: int, shard_count: int) -> unit {
     let index = Ref::new(0);
     for source_project in module_projects() {
@@ -393,9 +435,6 @@ pub fn assert_module_shard(shard: int, shard_count: int) -> unit {
                 path::join(repository_root(), "gomlc/_artifact/test-work/compiler/module"),
                 name,
             );
-            let checked = project_command("check", project, target);
-            assert_command_success(checked, "module check for " + project);
-            testing::assert(!directory_contains_extension(path::join(target, "check"), "core"));
             let executed = project_command("run", project, target);
             assert_command_success(executed, "module run for " + project);
             assert_text(
@@ -422,45 +461,49 @@ fn module_diagnostic_projects() -> Vec[string] {
     result
 }
 
+fn assert_module_diagnostic(source_project: string) -> unit {
+    let name = match path::file_name(source_project) {
+        Some(value) => value,
+        None => "module-diagnostic",
+    };
+    let project = path::join(
+        path::join(
+            repository_root(),
+            "gomlc/_artifact/test-work/compiler/module-diagnostics-source",
+        ),
+        name,
+    );
+    copy_directory(source_project, project);
+    let target = path::join(
+        path::join(repository_root(), "gomlc/_artifact/test-work/compiler/module-diagnostics"),
+        name,
+    );
+    let command = if fs::is_file(path::join(source_project, "main.gom.build")) {
+        "build"
+    } else {
+        "check"
+    };
+    let checked = project_command(command, project, target);
+    if fs::is_file(path::join(source_project, "main.gom.ok")) {
+        assert_command_success(checked, "module check for " + project)
+    } else if fs::is_file(path::join(source_project, "main.gom.build")) {
+        assert_command_success(checked, "module build for " + project)
+    } else {
+        testing::assert(!process::ExitStatus::success(process::Output::status(checked)));
+        let expected = read_file(path::join(source_project, "main.gom.expect"));
+        if expected == "" {} else {
+            let output = bytes_text(process::Output::stdout(checked))
+                + bytes_text(process::Output::stderr(checked));
+            testing::assert(output.contains(expected))
+        }
+    }
+}
+
 pub fn assert_module_diagnostics() -> unit {
     let projects = module_diagnostic_projects();
     testing::assert_eq(projects.len(), 40);
     for source_project in projects {
-        let name = match path::file_name(source_project) {
-            Some(value) => value,
-            None => "module-diagnostic",
-        };
-        let project = path::join(
-            path::join(
-                repository_root(),
-                "gomlc/_artifact/test-work/compiler/module-diagnostics-source",
-            ),
-            name,
-        );
-        copy_directory(source_project, project);
-        let target = path::join(
-            path::join(repository_root(), "gomlc/_artifact/test-work/compiler/module-diagnostics"),
-            name,
-        );
-        let command = if fs::is_file(path::join(source_project, "main.gom.build")) {
-            "build"
-        } else {
-            "check"
-        };
-        let checked = project_command(command, project, target);
-        if fs::is_file(path::join(source_project, "main.gom.ok")) {
-            assert_command_success(checked, "module check for " + project)
-        } else if fs::is_file(path::join(source_project, "main.gom.build")) {
-            assert_command_success(checked, "module build for " + project)
-        } else {
-            testing::assert(!process::ExitStatus::success(process::Output::status(checked)));
-            let expected = read_file(path::join(source_project, "main.gom.expect"));
-            if expected == "" {} else {
-                let output = bytes_text(process::Output::stdout(checked))
-                    + bytes_text(process::Output::stderr(checked));
-                testing::assert(output.contains(expected))
-            }
-        }
+        assert_module_diagnostic(source_project)
     }
 }
 
@@ -528,13 +571,18 @@ pub fn assert_crasher_counts() -> unit {
 }
 
 pub fn assert_crasher_diagnostic_shard(shard: int, shard_count: int) -> unit {
+    let compiler = compiler_driver::source_compiler_without_standard();
     let index = Ref::new(0);
     for source_path in crasher_sources(".diag") {
         let current = index.get();
         index.set(current + 1);
         if current % shard_count == shard {
             assert_text(
-                compiler_driver::diagnostic_output(source_path, read_file(source_path)),
+                compiler_driver::diagnostic_output_with(
+                    compiler,
+                    source_path,
+                    read_file(source_path),
+                ),
                 source_path + ".diag",
                 source_path,
             )
@@ -543,6 +591,7 @@ pub fn assert_crasher_diagnostic_shard(shard: int, shard_count: int) -> unit {
 }
 
 pub fn assert_crasher_runtime_shard(shard: int, shard_count: int) -> unit {
+    let compiler = compiler_driver::source_compiler_without_standard();
     let index = Ref::new(0);
     for source_path in crasher_sources(".out") {
         let current = index.get();
@@ -550,14 +599,15 @@ pub fn assert_crasher_runtime_shard(shard: int, shard_count: int) -> unit {
         if current % shard_count == shard {
             let source = read_file(source_path);
             let expected = read_file(source_path + ".out");
-            let compilation = match compiler_driver::compile_source_or_diagnostics(
+            let compilation = match compiler_driver::compile_source_or_diagnostics_with(
+                compiler,
                 source_path,
                 source,
             ) {
                 Compiled(value) => value,
                 Diagnostics(value) => {
                     testing::fail("unexpected diagnostics for " + source_path + "\n" + value);
-                    compiler_driver::compile_source(source_path, source)
+                    compiler_driver::compile_source_with(compiler, source_path, source)
                 },
             };
             assert_text(

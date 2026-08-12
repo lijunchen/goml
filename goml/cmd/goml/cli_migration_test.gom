@@ -270,6 +270,20 @@ fn project_build_dry_run_prints_compiler_build_and_link_commands() -> unit {
 }
 
 #[test]
+fn bootstrap_artifact_build_omits_the_redundant_native_build() -> unit {
+    let root = test_support::workspace("bootstrap_artifact_build");
+    test_support::write_basic_project(root, "demo");
+    let output = test_support::project_command("__build-artifacts", ".", Vec::["--dry-run"], root);
+    test_support::assert_success(output);
+    let stdout = test_support::stdout(output);
+    test_support::assert_contains(
+        stdout,
+        "gomlc link --input _artifact/build/pkg/demo/demo.core --output _artifact/build/pkg/demo/goml_generated.go --entry demo",
+    );
+    testing::assert(!stdout.contains("go build"))
+}
+
+#[test]
 fn project_run_dry_run_prints_the_complete_plan_without_tools() -> unit {
     let root = test_support::workspace("run_dry_run");
     test_support::write_basic_project(root, "demo");

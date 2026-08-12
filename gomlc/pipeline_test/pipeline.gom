@@ -208,7 +208,7 @@ pub fn all_pipeline_cases() -> Vec[string] {
     result
 }
 
-fn test_one_case_with_go(name: string, can_run_go: bool) -> unit {
+fn test_one_case_with_go(compiler: compiler_driver::SourceCompiler, name: string, can_run_go: bool) -> unit {
     let base = fixture_dir(name);
     let source_path = path::join(base, "main.gom");
     let new_fixture = !fs::is_file(path::join(base, "main.gom.cst"));
@@ -221,7 +221,7 @@ fn test_one_case_with_go(name: string, can_run_go: bool) -> unit {
     };
     let parsed = parser::parse(source);
     assert_snapshot(base, "cst", cst::debug_tree(parsed));
-    let compilation = compiler_driver::compile_source(source_path, source);
+    let compilation = compiler_driver::compile_source_with(compiler, source_path, source);
     assert_snapshot(base, "ast", ast::pretty(compilation.ast_value));
     assert_snapshot(base, "hir", hir::encode(compilation.hir_value));
     assert_snapshot(base, "tast", tast::encode(compilation.tast_value));
@@ -249,16 +249,37 @@ fn test_one_case_with_go(name: string, can_run_go: bool) -> unit {
 }
 
 pub fn test_one_case(name: string) -> unit {
-    test_one_case_with_go(name, true)
+    let source = match fs::read_file(path::join(fixture_dir(name), "main.gom")) {
+        Ok(value) => value,
+        Err(message) => {
+            testing::fail(message);
+            ""
+        },
+    };
+    test_one_case_with_go(compiler_driver::source_compiler_for_sources(Vec::[source]), name, true)
 }
 
 pub fn test_pipeline_shard(shard: int, shard_count: int) -> unit {
+    let names: Vec[string] = Vec::[];
+    let compiler_sources = Vec::new();
     let index = Ref::new(0);
     for name in all_pipeline_cases() {
         let current = index.get();
         if current % shard_count == shard {
-            test_one_case_with_go(name, true)
+            names.push(name);
+            let source = match fs::read_file(path::join(fixture_dir(name), "main.gom")) {
+                Ok(value) => value,
+                Err(message) => {
+                    testing::fail(message);
+                    ""
+                },
+            };
+            compiler_sources.push(source)
         } else {};
         index.set(current + 1)
+    }
+    let compiler = compiler_driver::source_compiler_for_sources(compiler_sources);
+    for name in names {
+        test_one_case_with_go(compiler, name, true)
     }
 }

@@ -7,5 +7,10 @@ fn parser_diagnostic_snapshots_match() -> unit {
 
 #[test]
 fn typer_diagnostic_snapshots_match() -> unit {
-    assert_diagnostic_suite("typer", 85)
+    assert_diagnostic_suite("typer", 105)
+}
+
+#[test]
+fn covers_at_least_one_hundred_distinct_type_errors() -> unit {
+    assert_distinct_type_diagnostic_count(100)
 }

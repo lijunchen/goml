@@ -39,6 +39,24 @@ fn has_completion(values: Vec[CompletionItem], expected: string) -> bool {
     found.get()
 }
 
+fn assert_local_navigation(value: Analysis, source: string, name: string) -> unit {
+    match last_substring(source, name) {
+        Some(offset) => {
+            let definitions = goto_definitions(value, offset);
+            testing::assert_eq(definitions.len(), 1);
+            testing::assert_eq(
+                source.byte_slice(definitions[0].span.start, definitions[0].span.end),
+                name,
+            );
+            match hover(value, offset) {
+                Some(result) => testing::assert_eq(result.contents, "int"),
+                None => testing::fail("expected local hover for " + name),
+            }
+        },
+        None => testing::fail("expected local use for " + name),
+    }
+}
+
 fn completion_labels(values: Vec[CompletionItem]) -> string {
     let builder = text::StringBuilder::new();
     let count = Ref::new(0);
@@ -208,6 +226,75 @@ fn returns_cross_package_expanded_derive_source() -> unit {
             testing::assert(expanded.contains("impl std::serde::Serialize for Record"));
             testing::assert(expanded.contains("fn serialize[S"));
             testing::assert(expanded.contains("self: Record, serializer: S"))
+        },
+        Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
+fn navigates_hovers_and_completes_comptime_derives() -> unit {
+    let root = "../gomlc/testdata/module/project050_comptime_derive";
+    let main_path = root + "/main.gom";
+    match fs::read_file(main_path) {
+        Ok(source) => {
+            let analysis = analyze(main_path, source);
+            assert_no_diagnostics(analysis);
+            match last_substring(source, "macros::Label") {
+                Some(start) => {
+                    let offset = start + "macros::".byte_len();
+                    let definitions = goto_definitions(analysis, offset);
+                    if definitions.len() != 1 {
+                        testing::fail(
+                            "expected one qualified comptime derive definition, found "
+                                + definitions.len().to_string(),
+                        )
+                    } else {};
+                    testing::assert(definitions[0].source_path.ends_with("/macros/macros.gom"));
+                    match fs::read_file(definitions[0].source_path) {
+                        Ok(definition_source) => testing::assert_eq(
+                            definition_source.byte_slice(
+                                definitions[0].span.start,
+                                definitions[0].span.end,
+                            ),
+                            "derive_label",
+                        ),
+                        Err(error) => testing::fail(error),
+                    };
+                    match hover(analysis, offset) {
+                        Some(result) => testing::assert_eq(result.contents, "comptime derive Label"),
+                        None => testing::fail("expected comptime derive hover"),
+                    };
+                    testing::assert(
+                        has_completion(
+                            completions(analysis, start + "macros::Lab".byte_len()),
+                            "Label",
+                        ),
+                    )
+                },
+                None => testing::fail("expected qualified comptime derive"),
+            };
+            match last_substring(source, "FacadeLabel") {
+                Some(offset) => {
+                    let definitions = goto_definitions(analysis, offset);
+                    if definitions.len() != 1 {
+                        testing::fail(
+                            "expected one reexported comptime derive definition, found "
+                                + definitions.len().to_string(),
+                        )
+                    } else {};
+                    testing::assert(definitions[0].source_path.ends_with("/macros/macros.gom"))
+                },
+                None => testing::fail("expected reexported comptime derive"),
+            };
+            match last_substring(source, "Serialize") {
+                Some(offset) => match hover(analysis, offset) {
+                    Some(result) => {
+                        testing::assert_eq(result.contents, "comptime derive Serialize")
+                    },
+                    None => testing::fail("expected standard library comptime derive hover"),
+                },
+                None => testing::fail("expected standard library comptime derive"),
+            }
         },
         Err(error) => testing::fail(error),
     }
@@ -891,6 +978,43 @@ fn indexes_syntax_with_absolute_ranges_and_parents() -> unit {
 }
 
 #[test]
+fn indexes_attributed_declarations_by_declared_names() -> unit {
+    let source = "#[test] fn works() -> unit { () } #[derive(Eq)] struct Key { value: int }";
+    let index = build_symbol_index(analyze("main.gom", source));
+    let works = Ref::new(false);
+    let key = Ref::new(false);
+    for symbol in index.symbols {
+        if symbol.name == "works" {
+            works.set(true)
+        } else if symbol.name == "Key" {
+            key.set(true)
+        } else {
+            testing::assert(symbol.name != "test" && symbol.name != "derive")
+        }
+    }
+    testing::assert(works.get());
+    testing::assert(key.get())
+}
+
+#[test]
+fn navigates_bindings_across_pattern_and_closure_syntax() -> unit {
+    let source = "struct Pair { left: int, right: int } enum Maybe { Some(Pair), None } fn main() -> int { let Pair { left: left_value, right: right_value } = Pair { left: 1, right: 2 }; let if_result = if let Some(Pair { left: if_value, right: _ }) = Some(Pair { left: 3, right: 4 }) { if_value } else { 0 }; let match_result = match Some(Pair { left: 5, right: 6 }) { Some(Pair { left: match_value, right: _ }) => match_value, None => 0 }; let total = Ref::new(0); for (for_left, for_right) in Vec::[(7, 8)] { total.set(total.get() + for_left + for_right) }; let closure = |closure_value: int| closure_value + left_value; closure(right_value) + if_result + match_result + total.get() }";
+    let analysis = analyze("main.gom", source);
+    assert_no_diagnostics(analysis);
+    for name in Vec::[
+        "left_value",
+        "right_value",
+        "if_value",
+        "match_value",
+        "for_left",
+        "for_right",
+        "closure_value",
+    ] {
+        assert_local_navigation(analysis, source, name)
+    }
+}
+
+#[test]
 fn returns_hover_from_typecheck_facts() -> unit {
     let source = "fn main() -> int32 { let value = 42; value }";
     let analysis = analyze("main.gom", source);
@@ -948,6 +1072,28 @@ fn reports_comptime_evaluation_failures_during_analysis() -> unit {
         } else {}
     }
     testing::assert(found.get())
+}
+
+#[test]
+fn navigates_calls_inside_comptime_blocks() -> unit {
+    let source = "#[comptime] fn answer() -> int { 42 } fn main() -> int { comptime { answer() } }";
+    let analysis = analyze("main.gom", source);
+    assert_no_diagnostics(analysis);
+    match last_substring(source, "answer") {
+        Some(offset) => {
+            let definitions = goto_definitions(analysis, offset);
+            testing::assert_eq(definitions.len(), 1);
+            testing::assert_eq(
+                source.byte_slice(definitions[0].span.start, definitions[0].span.end),
+                "answer",
+            );
+            match hover(analysis, offset) {
+                Some(result) => testing::assert_eq(result.contents, "comptime () -> int"),
+                None => testing::fail("expected comptime call hover"),
+            }
+        },
+        None => testing::fail("expected comptime call"),
+    }
 }
 
 #[test]
