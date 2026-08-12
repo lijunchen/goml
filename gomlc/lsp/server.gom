@@ -587,10 +587,7 @@ fn did_close(server: Server, params: json::Value) -> Result[json::Value, string]
 fn did_save(server: Server, params: json::Value) -> Result[unit, string] {
     let uri = text_document_uri(params)?;
     match server_document(server, uri) {
-        Some(_) => {
-            invalidate_analyses(server);
-            Result::Ok(())
-        },
+        Some(_) => Result::Ok(()),
         None => Result::Err("document is not open: " + uri),
     }
 }

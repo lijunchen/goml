@@ -36,7 +36,7 @@ git tag -a v0.1.1 -m "goml v0.1.1"
 git push origin v0.1.1
 ```
 
-The main branch CI verifies the stage2/stage3 fixed point and complete test suite. The Release workflow requires a successful main branch CI for the tagged commit, verifies the version, previous release, and stage0, rebuilds stage2, and tests the extracted release archive before publishing.
+The main branch CI builds stage2 directly from the pinned stage0, then verifies the stage3 self-hosted compiler with a reproducible stage3 rebuild and runs the complete test suite. The Release workflow requires a successful main branch CI for the tagged commit, verifies the version, previous release, and stage0, rebuilds stage2, and tests the extracted release archive before publishing.
 
 Release archives use a complete toolchain prefix:
 

@@ -65,36 +65,15 @@ struct DiagnosticPosition {
 }
 
 struct StandardLibrary {
-    root: PackageCompilation,
-    host: PackageCompilation,
-    ascii: PackageCompilation,
-    bincode: PackageCompilation,
-    bytes: PackageCompilation,
-    cmp: PackageCompilation,
-    collections: PackageCompilation,
-    error: PackageCompilation,
-    env: PackageCompilation,
-    fs: PackageCompilation,
-    io: PackageCompilation,
-    internal_task: PackageCompilation,
-    iter: PackageCompilation,
-    json: PackageCompilation,
-    num: PackageCompilation,
-    path: PackageCompilation,
-    process: PackageCompilation,
-    serde: PackageCompilation,
-    task: PackageCompilation,
-    testing: PackageCompilation,
-    text: PackageCompilation,
-    toml: PackageCompilation,
-    time: PackageCompilation,
-    utf8: PackageCompilation,
-    unicode: PackageCompilation,
-    math: PackageCompilation,
-    rand: PackageCompilation,
-    crypto: PackageCompilation,
-    crypto_hash: PackageCompilation,
-    crypto_rand: PackageCompilation,
+    packages: Vec[PackageCompilation],
+}
+
+pub struct SourceCompiler {
+    counter_start: int,
+    builtins: core::File,
+    builtin_interface: artifact::ArtifactInterfaceUnit,
+    prelude: PackageCompilation,
+    standard: Option[StandardLibrary],
 }
 
 struct ToolchainPackage {
@@ -104,18 +83,22 @@ struct ToolchainPackage {
 }
 
 fn lower_builtin_core(counter: Ref[int]) -> core::File {
-    match core::lower_builtins(counter) {
-        Ok(value) => value,
-        Err(error) => {
-            fail(COMPILE_ERROR_PREFIX + error);
-            core::File {
-                functions: Vec::[],
-                enums: Vec::[],
-                structs: Vec::[],
-                type_instances: Vec::[],
-                constants: Vec::[],
-            }
-        },
+    let checked = tast::check_builtin_package_files(builtin_hir_files());
+    lower_checked_builtin_core(checked, counter)
+}
+
+fn lower_checked_builtin_core(checked: tast::CheckResult, counter: Ref[int]) -> core::File {
+    if checked.tast.is_some() {
+        core::lower_with_counter(checked, counter)
+    } else {
+        fail(COMPILE_ERROR_PREFIX + "failed to typecheck builtin package");
+        core::File {
+            functions: Vec::[],
+            enums: Vec::[],
+            structs: Vec::[],
+            type_instances: Vec::[],
+            constants: Vec::[],
+        }
     }
 }
 
@@ -138,38 +121,11 @@ fn artifact_standard_package_from_compilation(value: PackageCompilation) -> Tool
 }
 
 fn artifact_standard_packages(value: StandardLibrary) -> Vec[ToolchainPackage] {
-    Vec::[
-        artifact_standard_package_from_compilation(value.root),
-        artifact_standard_package_from_compilation(value.host),
-        artifact_standard_package_from_compilation(value.ascii),
-        artifact_standard_package_from_compilation(value.bincode),
-        artifact_standard_package_from_compilation(value.bytes),
-        artifact_standard_package_from_compilation(value.cmp),
-        artifact_standard_package_from_compilation(value.collections),
-        artifact_standard_package_from_compilation(value.error),
-        artifact_standard_package_from_compilation(value.env),
-        artifact_standard_package_from_compilation(value.fs),
-        artifact_standard_package_from_compilation(value.io),
-        artifact_standard_package_from_compilation(value.internal_task),
-        artifact_standard_package_from_compilation(value.iter),
-        artifact_standard_package_from_compilation(value.json),
-        artifact_standard_package_from_compilation(value.num),
-        artifact_standard_package_from_compilation(value.path),
-        artifact_standard_package_from_compilation(value.process),
-        artifact_standard_package_from_compilation(value.serde),
-        artifact_standard_package_from_compilation(value.task),
-        artifact_standard_package_from_compilation(value.testing),
-        artifact_standard_package_from_compilation(value.text),
-        artifact_standard_package_from_compilation(value.toml),
-        artifact_standard_package_from_compilation(value.time),
-        artifact_standard_package_from_compilation(value.utf8),
-        artifact_standard_package_from_compilation(value.unicode),
-        artifact_standard_package_from_compilation(value.math),
-        artifact_standard_package_from_compilation(value.rand),
-        artifact_standard_package_from_compilation(value.crypto),
-        artifact_standard_package_from_compilation(value.crypto_hash),
-        artifact_standard_package_from_compilation(value.crypto_rand),
-    ]
+    let result = Vec::new();
+    for compilation in value.packages {
+        result.push(artifact_standard_package_from_compilation(compilation))
+    }
+    result
 }
 
 fn import_path_text(value: ast::Path) -> string {
@@ -209,20 +165,6 @@ fn imports_package(value: ast::LowerResult, expected: string) -> bool {
         Some(file) => {
             for use_decl in file.uses {
                 if import_path_text(use_decl.path) == expected {
-                    return true
-                } else {}
-            }
-            false
-        },
-        None => false,
-    }
-}
-
-fn has_standard_import(value: ast::LowerResult) -> bool {
-    match value.ast {
-        Some(file) => {
-            for use_decl in file.uses {
-                if std_import(import_path_text(use_decl.path)) {
                     return true
                 } else {}
             }
@@ -546,8 +488,9 @@ fn builtin_contract_function_names() -> Vec[string] {
     ]
 }
 
-fn builtin_artifact_interface_unit_from_files(
+fn builtin_artifact_interface_unit_from_checked(
     builtin_files: Vec[hir::File],
+    checked: tast::CheckResult,
     extra_function_names: Vec[string],
 ) -> artifact::ArtifactInterfaceUnit {
     let signatures = tast::package_signatures(merge_hir_files(builtin_files, "builtin"));
@@ -598,7 +541,6 @@ fn builtin_artifact_interface_unit_from_files(
         type_aliases: signatures.type_aliases,
         constants: signatures.constants,
     };
-    let checked = tast::check_builtin_package_files(builtin_files);
     let file = match checked.tast {
         Some(file) => file,
         None => {
@@ -625,6 +567,14 @@ fn builtin_artifact_interface_unit_from_files(
     )
 }
 
+fn builtin_artifact_interface_unit_from_files(
+    builtin_files: Vec[hir::File],
+    extra_function_names: Vec[string],
+) -> artifact::ArtifactInterfaceUnit {
+    let checked = tast::check_builtin_package_files(builtin_files);
+    builtin_artifact_interface_unit_from_checked(builtin_files, checked, extra_function_names)
+}
+
 fn builtin_artifact_interface_unit() -> artifact::ArtifactInterfaceUnit {
     builtin_artifact_interface_unit_from_files(builtin_hir_files(), Vec::[])
 }
@@ -633,7 +583,11 @@ fn builtin_artifact_dependency() -> (string, string) {
     ("builtin", builtin_artifact_interface_unit().interface_hash)
 }
 
-fn compile_prelude_package(builtins: core::File, builtin_interface: artifact::ArtifactInterfaceUnit) -> PackageCompilation {
+fn compile_prelude_package_with_builtin_files(
+    builtins: core::File,
+    builtin_interface: artifact::ArtifactInterfaceUnit,
+    builtin_files: Vec[hir::File],
+) -> PackageCompilation {
     let sources = match resources::prelude_sources() {
         Ok(value) => value,
         Err(error) => {
@@ -645,7 +599,7 @@ fn compile_prelude_package(builtins: core::File, builtin_interface: artifact::Ar
         sources,
         "prelude",
         "prelude",
-        builtin_hir_files(),
+        builtin_files,
         Vec::[],
         builtins,
         Vec::[("builtin", builtin_interface.interface_hash)],
@@ -659,15 +613,18 @@ fn compile_prelude_package(builtins: core::File, builtin_interface: artifact::Ar
     }
 }
 
+fn compile_prelude_package(builtins: core::File, builtin_interface: artifact::ArtifactInterfaceUnit) -> PackageCompilation {
+    compile_prelude_package_with_builtin_files(builtins, builtin_interface, builtin_hir_files())
+}
+
 fn prelude_artifact_dependency() -> (string, string) {
     let builtins = lower_builtin_core(Ref::new(0));
     let builtin_interface = builtin_artifact_interface_unit();
     ("prelude", compile_prelude_package(builtins, builtin_interface).interface_unit.interface_hash)
 }
 
-fn expand_builtin_derives(value: ast::LowerResult) -> ast::LowerResult {
-    let interface_value = builtin_artifact_interface_unit();
-    let builtin_module = match interface_value.comptime {
+fn expand_builtin_derives_with_compiler(compiler: SourceCompiler, value: ast::LowerResult) -> ast::LowerResult {
+    let builtin_module = match compiler.builtin_interface.comptime {
         Some(value) => Option::Some(value.module),
         None => Option::None,
     };
@@ -679,6 +636,85 @@ fn expand_builtin_derives(value: ast::LowerResult) -> ast::LowerResult {
             reexports: Vec::[],
         },
     )
+}
+
+fn all_standard_package_names() -> Vec[string] {
+    let result = Vec::new();
+    for spec in resources::standard_package_specs() {
+        result.push(spec.name)
+    }
+    result
+}
+
+fn create_source_compiler(standard_package_names: Vec[string]) -> SourceCompiler {
+    let counter = Ref::new(0);
+    let builtin_files = builtin_hir_files();
+    let checked = tast::check_builtin_package_files(builtin_files);
+    let builtins = lower_checked_builtin_core(checked, counter);
+    let counter_start = counter.get();
+    let builtin_interface = builtin_artifact_interface_unit_from_checked(
+        builtin_files,
+        checked,
+        Vec::[],
+    );
+    let prelude = compile_prelude_package_with_builtin_files(
+        builtins,
+        builtin_interface,
+        builtin_files,
+    );
+    let standard = if !standard_package_names.is_empty() {
+        Option::Some(
+            compile_standard_library_with_builtin_files(
+                builtins,
+                prelude,
+                builtin_interface.interface_hash,
+                builtin_files,
+                standard_package_names,
+            ),
+        )
+    } else {
+        Option::None
+    };
+    SourceCompiler { counter_start, builtins, builtin_interface, prelude, standard }
+}
+
+pub fn source_compiler() -> SourceCompiler {
+    create_source_compiler(all_standard_package_names())
+}
+
+pub fn source_compiler_without_standard() -> SourceCompiler {
+    create_source_compiler(Vec::new())
+}
+
+pub fn source_compiler_for_sources(sources: Vec[string]) -> SourceCompiler {
+    let package_names: Vec[string] = Vec::[];
+    for source in sources {
+        for package_name in direct_imported_standard_package_names(
+            ast::lower(parser::parse(source)),
+        ) {
+            let mut known = false;
+            for known_name in package_names {
+                if known_name == package_name {
+                    known = true;
+                } else {}
+            }
+            if known {} else {
+                package_names.push(package_name)
+            }
+        }
+    }
+    create_source_compiler(package_names)
+}
+
+fn source_compiler_for_ast(value: ast::LowerResult) -> SourceCompiler {
+    create_source_compiler(direct_imported_standard_package_names(value))
+}
+
+fn select_source_compiler(compiler: Option[SourceCompiler], value: ast::LowerResult) -> SourceCompiler {
+    match compiler {
+        Some(value) => value,
+        None => source_compiler_for_ast(value),
+    }
 }
 
 fn builtin_artifact_json() -> string {
@@ -722,12 +758,13 @@ fn required_standard_compilation(values: Vec[PackageCompilation], package_name: 
     values[0]
 }
 
-fn compile_standard_library(builtins: core::File, prelude: PackageCompilation, builtin_hash: string) -> StandardLibrary {
-    let package_names: Vec[string] = Vec::[];
-    for spec in resources::standard_package_specs() {
-        package_names.push(spec.name)
-    }
-    let builtin_files = builtin_hir_files();
+fn compile_standard_library_with_builtin_files(
+    builtins: core::File,
+    prelude: PackageCompilation,
+    builtin_hash: string,
+    builtin_files: Vec[hir::File],
+    package_names: Vec[string],
+) -> StandardLibrary {
     let compiled: Vec[PackageCompilation] = Vec::[];
     for package_name in resources::standard_package_closure(package_names) {
         let spec = match resources::standard_package_spec(package_name) {
@@ -770,77 +807,17 @@ fn compile_standard_library(builtins: core::File, prelude: PackageCompilation, b
             ),
         )
     }
-    StandardLibrary {
-        root: required_standard_compilation(compiled, resources::STD_ROOT_PACKAGE),
-        host: required_standard_compilation(compiled, resources::STD_INTERNAL_HOST_PACKAGE),
-        ascii: required_standard_compilation(compiled, resources::STD_ASCII_PACKAGE),
-        bincode: required_standard_compilation(compiled, resources::STD_BINCODE_PACKAGE),
-        bytes: required_standard_compilation(compiled, resources::STD_BYTES_PACKAGE),
-        cmp: required_standard_compilation(compiled, resources::STD_CMP_PACKAGE),
-        collections: required_standard_compilation(compiled, resources::STD_COLLECTIONS_PACKAGE),
-        error: required_standard_compilation(compiled, resources::STD_ERROR_PACKAGE),
-        env: required_standard_compilation(compiled, resources::STD_ENV_PACKAGE),
-        fs: required_standard_compilation(compiled, resources::STD_FS_PACKAGE),
-        io: required_standard_compilation(compiled, resources::STD_IO_PACKAGE),
-        internal_task: required_standard_compilation(compiled, resources::STD_INTERNAL_TASK_PACKAGE),
-        iter: required_standard_compilation(compiled, resources::STD_ITER_PACKAGE),
-        json: required_standard_compilation(compiled, resources::STD_JSON_PACKAGE),
-        num: required_standard_compilation(compiled, resources::STD_NUM_PACKAGE),
-        path: required_standard_compilation(compiled, resources::STD_PATH_PACKAGE),
-        process: required_standard_compilation(compiled, resources::STD_PROCESS_PACKAGE),
-        serde: required_standard_compilation(compiled, resources::STD_SERDE_PACKAGE),
-        task: required_standard_compilation(compiled, resources::STD_TASK_PACKAGE),
-        testing: required_standard_compilation(compiled, resources::STD_TESTING_PACKAGE),
-        text: required_standard_compilation(compiled, resources::STD_TEXT_PACKAGE),
-        toml: required_standard_compilation(compiled, resources::STD_TOML_PACKAGE),
-        time: required_standard_compilation(compiled, resources::STD_TIME_PACKAGE),
-        utf8: required_standard_compilation(compiled, resources::STD_UTF8_PACKAGE),
-        unicode: required_standard_compilation(compiled, resources::STD_UNICODE_PACKAGE),
-        math: required_standard_compilation(compiled, resources::STD_MATH_PACKAGE),
-        rand: required_standard_compilation(compiled, resources::STD_RAND_PACKAGE),
-        crypto: required_standard_compilation(compiled, resources::STD_CRYPTO_PACKAGE),
-        crypto_hash: required_standard_compilation(compiled, resources::STD_CRYPTO_HASH_PACKAGE),
-        crypto_rand: required_standard_compilation(compiled, resources::STD_CRYPTO_RAND_PACKAGE),
-    }
+    StandardLibrary { packages: compiled }
 }
 
 fn standard_library_package(value: StandardLibrary, package_name: string) -> PackageCompilation {
-    match package_name {
-        resources::STD_ROOT_PACKAGE => value.root,
-        resources::STD_INTERNAL_HOST_PACKAGE => value.host,
-        resources::STD_ASCII_PACKAGE => value.ascii,
-        resources::STD_BINCODE_PACKAGE => value.bincode,
-        resources::STD_BYTES_PACKAGE => value.bytes,
-        resources::STD_CMP_PACKAGE => value.cmp,
-        resources::STD_COLLECTIONS_PACKAGE => value.collections,
-        resources::STD_ERROR_PACKAGE => value.error,
-        resources::STD_ENV_PACKAGE => value.env,
-        resources::STD_FS_PACKAGE => value.fs,
-        resources::STD_IO_PACKAGE => value.io,
-        resources::STD_INTERNAL_TASK_PACKAGE => value.internal_task,
-        resources::STD_ITER_PACKAGE => value.iter,
-        resources::STD_JSON_PACKAGE => value.json,
-        resources::STD_NUM_PACKAGE => value.num,
-        resources::STD_PATH_PACKAGE => value.path,
-        resources::STD_PROCESS_PACKAGE => value.process,
-        resources::STD_SERDE_PACKAGE => value.serde,
-        resources::STD_TASK_PACKAGE => value.task,
-        resources::STD_TESTING_PACKAGE => value.testing,
-        resources::STD_TEXT_PACKAGE => value.text,
-        resources::STD_TOML_PACKAGE => value.toml,
-        resources::STD_TIME_PACKAGE => value.time,
-        resources::STD_UTF8_PACKAGE => value.utf8,
-        resources::STD_UNICODE_PACKAGE => value.unicode,
-        resources::STD_MATH_PACKAGE => value.math,
-        resources::STD_RAND_PACKAGE => value.rand,
-        resources::STD_CRYPTO_PACKAGE => value.crypto,
-        resources::STD_CRYPTO_HASH_PACKAGE => value.crypto_hash,
-        resources::STD_CRYPTO_RAND_PACKAGE => value.crypto_rand,
-        _ => {
-            fail("error[compile]: unknown standard package " + package_name);
-            value.root
-        },
+    for compilation in value.packages {
+        if compilation.interface_unit.package_name == package_name {
+            return compilation
+        } else {}
     }
+    fail("error[compile]: unavailable standard package " + package_name);
+    value.packages[0]
 }
 
 fn direct_imported_standard_package_names(ast_value: ast::LowerResult) -> Vec[string] {
@@ -870,6 +847,30 @@ fn selected_standard_core(ast_value: ast::LowerResult, standard: StandardLibrary
     ) {
         result.push(standard_library_package(standard, package_name).core_value)
     }
+    result
+}
+
+fn source_hir_dependencies(compiler: SourceCompiler, ast_value: ast::LowerResult) -> Vec[hir::File] {
+    let result = Vec::[compiler.prelude.hir_file];
+    match compiler.standard {
+        Some(value) => for dependency in selected_standard_hir(ast_value, value) {
+            result.push(dependency)
+        },
+        None => (),
+    };
+    result
+}
+
+fn source_core_dependencies(compiler: SourceCompiler, ast_value: ast::LowerResult) -> Vec[
+    core::File,
+] {
+    let result = Vec::[compiler.prelude.core_value];
+    match compiler.standard {
+        Some(value) => for dependency in selected_standard_core(ast_value, value) {
+            result.push(dependency)
+        },
+        None => (),
+    };
     result
 }
 
@@ -1393,7 +1394,11 @@ fn compact_typer_diagnostics(
     builder.finish()
 }
 
-pub fn diagnostic_output(source_path: string, source: string) -> string {
+fn diagnostic_output_optional(
+    compiler_value: Option[SourceCompiler],
+    source_path: string,
+    source: string,
+) -> string {
     let parsed = parser::parse(source);
     if !parsed.diagnostics.is_empty() {
         return compact_ast_diagnostics(parsed.diagnostics, source, true)
@@ -1408,7 +1413,8 @@ pub fn diagnostic_output(source_path: string, source: string) -> string {
             + "\n",
         None => (),
     };
-    let ast_value = expand_builtin_derives(ast_value);
+    let compiler = select_source_compiler(compiler_value, ast_value);
+    let ast_value = expand_builtin_derives_with_compiler(compiler, ast_value);
     if !ast_value.diagnostics.is_empty() {
         return compact_ast_diagnostics(ast_value.diagnostics, source, false)
     } else {};
@@ -1416,29 +1422,9 @@ pub fn diagnostic_output(source_path: string, source: string) -> string {
     if !hir_value.diagnostics.is_empty() {
         return compact_hir_diagnostics(hir_value.diagnostics, source)
     } else {};
-    let counter = Ref::new(0);
-    let builtins = lower_builtin_core(counter);
-    let builtin_interface = builtin_artifact_interface_unit();
-    let prelude = compile_prelude_package(builtins, builtin_interface);
-    let standard = if has_standard_import(ast_value) {
-        Option::Some(compile_standard_library(builtins, prelude, builtin_interface.interface_hash))
-    } else {
-        Option::None
-    };
-    let hir_dependencies = Vec::[prelude.hir_file];
-    match standard {
-        Some(value) => for dependency in selected_standard_hir(ast_value, value) {
-            hir_dependencies.push(dependency)
-        },
-        None => (),
-    };
-    let core_dependencies = Vec::[prelude.core_value];
-    match standard {
-        Some(value) => for dependency in selected_standard_core(ast_value, value) {
-            core_dependencies.push(dependency)
-        },
-        None => (),
-    };
+    let counter = Ref::new(compiler.counter_start);
+    let hir_dependencies = source_hir_dependencies(compiler, ast_value);
+    let core_dependencies = source_core_dependencies(compiler, ast_value);
     let tast_value = tast::check_for_link_with_dependencies(hir_value, hir_dependencies);
     if typer_diagnostics_have_errors(tast_value.diagnostics) {
         return compact_typer_diagnostics(tast_value.diagnostics, source_path, source)
@@ -1447,13 +1433,13 @@ pub fn diagnostic_output(source_path: string, source: string) -> string {
         return "main function is required\n"
     } else {};
     let core_value = core::link_with_dependencies(
-        builtins,
+        compiler.builtins,
         core_dependencies,
         core::lower_with_counter_types_and_options(
             tast_value,
             counter,
-            dependency_enums(builtins, core_dependencies),
-            dependency_structs(builtins, core_dependencies),
+            dependency_enums(compiler.builtins, core_dependencies),
+            dependency_structs(compiler.builtins, core_dependencies),
             true,
         ),
     );
@@ -1462,6 +1448,14 @@ pub fn diagnostic_output(source_path: string, source: string) -> string {
         Some(error) => error + "\n",
         None => "",
     }
+}
+
+pub fn diagnostic_output_with(compiler: SourceCompiler, source_path: string, source: string) -> string {
+    diagnostic_output_optional(Option::Some(compiler), source_path, source)
+}
+
+pub fn diagnostic_output(source_path: string, source: string) -> string {
+    diagnostic_output_optional(Option::None, source_path, source)
 }
 
 fn run_test_diagnostics(args: Vec[string]) -> unit {
@@ -1542,7 +1536,11 @@ fn fail_on_missing_single_file_entrypoint(value: tast::CheckResult) -> unit {
     }
 }
 
-pub fn compile_source(source_path: string, source: string) -> Compilation {
+fn compile_source_optional(
+    compiler_value: Option[SourceCompiler],
+    source_path: string,
+    source: string,
+) -> Compilation {
     let parsed = parser::parse(source);
     fail_on_ast_diagnostics(parsed.diagnostics, "parser", source_path, source);
     let source_ast_value = ast::lower(parsed);
@@ -1553,44 +1551,25 @@ pub fn compile_source(source_path: string, source: string) -> Compilation {
         ),
         None => (),
     };
-    let ast_value = expand_builtin_derives(source_ast_value);
+    let compiler = select_source_compiler(compiler_value, source_ast_value);
+    let ast_value = expand_builtin_derives_with_compiler(compiler, source_ast_value);
     fail_on_ast_diagnostics(ast_value.diagnostics, "derive", source_path, source);
     let hir_value = hir::lower_expanded(ast_value, source_path);
-    let counter = Ref::new(0);
-    let builtins = lower_builtin_core(counter);
-    let builtin_interface = builtin_artifact_interface_unit();
-    let prelude = compile_prelude_package(builtins, builtin_interface);
-    let standard = if has_standard_import(ast_value) {
-        Option::Some(compile_standard_library(builtins, prelude, builtin_interface.interface_hash))
-    } else {
-        Option::None
-    };
-    let hir_dependencies = Vec::[prelude.hir_file];
-    match standard {
-        Some(value) => for dependency in selected_standard_hir(ast_value, value) {
-            hir_dependencies.push(dependency)
-        },
-        None => (),
-    };
-    let core_dependencies = Vec::[prelude.core_value];
-    match standard {
-        Some(value) => for dependency in selected_standard_core(ast_value, value) {
-            core_dependencies.push(dependency)
-        },
-        None => (),
-    };
+    let counter = Ref::new(compiler.counter_start);
+    let hir_dependencies = source_hir_dependencies(compiler, ast_value);
+    let core_dependencies = source_core_dependencies(compiler, ast_value);
     let tast_value = tast::check_for_link_with_dependencies(hir_value, hir_dependencies);
     fail_on_typer_diagnostics(tast_value.diagnostics, source_path, source);
     fail_on_missing_single_file_entrypoint(tast_value);
     let core_value = core::dce(
         core::link_with_dependencies(
-            builtins,
+            compiler.builtins,
             core_dependencies,
             core::lower_with_counter_types_and_options(
                 tast_value,
                 counter,
-                dependency_enums(builtins, core_dependencies),
-                dependency_structs(builtins, core_dependencies),
+                dependency_enums(compiler.builtins, core_dependencies),
+                dependency_structs(compiler.builtins, core_dependencies),
                 true,
             ),
         ),
@@ -1612,7 +1591,19 @@ pub fn compile_source(source_path: string, source: string) -> Compilation {
     }
 }
 
-pub fn compile_source_or_diagnostics(source_path: string, source: string) -> SourceCompilation {
+pub fn compile_source_with(compiler: SourceCompiler, source_path: string, source: string) -> Compilation {
+    compile_source_optional(Option::Some(compiler), source_path, source)
+}
+
+pub fn compile_source(source_path: string, source: string) -> Compilation {
+    compile_source_optional(Option::None, source_path, source)
+}
+
+fn compile_source_or_diagnostics_optional(
+    compiler_value: Option[SourceCompiler],
+    source_path: string,
+    source: string,
+) -> SourceCompilation {
     let parsed = parser::parse(source);
     if !parsed.diagnostics.is_empty() {
         return SourceCompilation::Diagnostics(
@@ -1631,7 +1622,8 @@ pub fn compile_source_or_diagnostics(source_path: string, source: string) -> Sou
         ),
         None => (),
     };
-    let ast_value = expand_builtin_derives(source_ast_value);
+    let compiler = select_source_compiler(compiler_value, source_ast_value);
+    let ast_value = expand_builtin_derives_with_compiler(compiler, source_ast_value);
     if !ast_value.diagnostics.is_empty() {
         return SourceCompilation::Diagnostics(
             compact_ast_diagnostics(ast_value.diagnostics, source, false),
@@ -1643,29 +1635,9 @@ pub fn compile_source_or_diagnostics(source_path: string, source: string) -> Sou
             compact_hir_diagnostics(hir_value.diagnostics, source),
         )
     } else {};
-    let counter = Ref::new(0);
-    let builtins = lower_builtin_core(counter);
-    let builtin_interface = builtin_artifact_interface_unit();
-    let prelude = compile_prelude_package(builtins, builtin_interface);
-    let standard = if has_standard_import(ast_value) {
-        Option::Some(compile_standard_library(builtins, prelude, builtin_interface.interface_hash))
-    } else {
-        Option::None
-    };
-    let hir_dependencies = Vec::[prelude.hir_file];
-    match standard {
-        Some(value) => for dependency in selected_standard_hir(ast_value, value) {
-            hir_dependencies.push(dependency)
-        },
-        None => (),
-    };
-    let core_dependencies = Vec::[prelude.core_value];
-    match standard {
-        Some(value) => for dependency in selected_standard_core(ast_value, value) {
-            core_dependencies.push(dependency)
-        },
-        None => (),
-    };
+    let counter = Ref::new(compiler.counter_start);
+    let hir_dependencies = source_hir_dependencies(compiler, ast_value);
+    let core_dependencies = source_core_dependencies(compiler, ast_value);
     let tast_value = tast::check_for_link_with_dependencies(hir_value, hir_dependencies);
     if typer_diagnostics_have_errors(tast_value.diagnostics) {
         return SourceCompilation::Diagnostics(
@@ -1676,13 +1648,13 @@ pub fn compile_source_or_diagnostics(source_path: string, source: string) -> Sou
     } else {};
     let core_value = core::dce(
         core::link_with_dependencies(
-            builtins,
+            compiler.builtins,
             core_dependencies,
             core::lower_with_counter_types_and_options(
                 tast_value,
                 counter,
-                dependency_enums(builtins, core_dependencies),
-                dependency_structs(builtins, core_dependencies),
+                dependency_enums(compiler.builtins, core_dependencies),
+                dependency_structs(compiler.builtins, core_dependencies),
                 true,
             ),
         ),
@@ -1710,6 +1682,18 @@ pub fn compile_source_or_diagnostics(source_path: string, source: string) -> Sou
             )
         },
     }
+}
+
+pub fn compile_source_or_diagnostics_with(
+    compiler: SourceCompiler,
+    source_path: string,
+    source: string,
+) -> SourceCompilation {
+    compile_source_or_diagnostics_optional(Option::Some(compiler), source_path, source)
+}
+
+pub fn compile_source_or_diagnostics(source_path: string, source: string) -> SourceCompilation {
+    compile_source_or_diagnostics_optional(Option::None, source_path, source)
 }
 
 fn pipeline_stage_output(stage: string, source_path: string, source: string) -> string {

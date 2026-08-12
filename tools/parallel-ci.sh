@@ -4,8 +4,17 @@ repository_root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$repository_root"
 
 ci_pids=()
-for recipe in _bootstrap-stage3 _ci-scripts _ci-gomlc-test _ci-goml-test _ci-vscode; do
-    just "$recipe" &
+just _ci-gomlc-test &
+ci_pids+=("$!")
+
+GOML_BUILD_JOBS=2 nice -n 10 just _ci-scripts &
+ci_pids+=("$!")
+
+GOML_BUILD_JOBS=2 just _bootstrap-stage3 &
+ci_pids+=("$!")
+
+for recipe in _ci-goml-test _ci-vscode; do
+    nice -n 10 just "$recipe" &
     ci_pids+=("$!")
 done
 

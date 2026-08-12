@@ -35,9 +35,28 @@ fn token_is_inside_node(token: SyntaxToken, node: SyntaxNode) -> bool {
     token.start >= node.start && token.end <= node.end
 }
 
+fn token_is_inside_attribute(syntax: SyntaxIndex, token: SyntaxToken) -> bool {
+    let mut current = Option::Some(token.parent);
+    while current.is_some() {
+        match current {
+            Some(id) => {
+                let node = syntax.nodes[id];
+                if cst::node_kind_equal(node.kind, cst::NodeKind::ATTRIBUTE)
+                    || cst::node_kind_equal(node.kind, cst::NodeKind::ATTRIBUTE_LIST) {
+                    return true
+                } else {
+                    current = node.parent;
+                }
+            },
+            None => (),
+        }
+    }
+    false
+}
+
 fn first_identifier(syntax: SyntaxIndex, node: SyntaxNode) -> Option[SyntaxToken] {
     for token in syntax.tokens {
-        if token_is_inside_node(token, node)
+        if token_is_inside_node(token, node) && !token_is_inside_attribute(syntax, token)
             && lexer::token_kind_equal(token.kind, lexer::TokenKind::Ident) {
             return Option::Some(token)
         } else {}
@@ -71,7 +90,8 @@ fn type_node_kind(value: cst::NodeKind) -> bool {
 
 fn first_type_name_token(syntax: SyntaxIndex, node: SyntaxNode) -> Option[SyntaxToken] {
     for token in syntax.tokens {
-        if token_is_inside_node(token, node) && !lexer::token_is_trivia(token.kind)
+        if token_is_inside_node(token, node) && !token_is_inside_attribute(syntax, token)
+            && !lexer::token_is_trivia(token.kind)
             && token.text.byte_len() > 0
             && ((token.text.byte_get(0) >= b'A' && token.text.byte_get(0) <= b'Z')
                 || (token.text.byte_get(0) >= b'a' && token.text.byte_get(0) <= b'z')
@@ -182,7 +202,8 @@ fn qualified_symbol_name(
 
 fn node_has_token(syntax: SyntaxIndex, node: SyntaxNode, kind: lexer::TokenKind) -> bool {
     for token in syntax.tokens {
-        if token_is_inside_node(token, node) && lexer::token_kind_equal(token.kind, kind) {
+        if token_is_inside_node(token, node) && !token_is_inside_attribute(syntax, token)
+            && lexer::token_kind_equal(token.kind, kind) {
             return true
         } else {}
     }
@@ -240,7 +261,14 @@ fn index_source(source: SourceFile, symbols: Vec[Symbol]) -> unit {
 }
 
 pub fn build_symbol_index(value: Analysis) -> SymbolIndex {
-    build_symbol_index_from_sources(value.sources)
+    match value.symbol_index.get() {
+        Some(index) => index,
+        None => {
+            let index = build_symbol_index_from_sources(value.sources);
+            value.symbol_index.set(Option::Some(index));
+            index
+        },
+    }
 }
 
 pub fn build_symbol_index_from_sources(sources: Vec[SourceFile]) -> SymbolIndex {

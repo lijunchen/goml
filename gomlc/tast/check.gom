@@ -2326,7 +2326,7 @@ fn check_method_call(
                         if types_equal(expr_type(result), expected_ty) {
                             result
                         } else {
-                            expect_type(ctx, expected_ty, expr_type(result));
+                            expect_type(ctx, expr_type(result), expected_ty);
                             with_expr_type(result, expected_ty)
                         }
                     },
@@ -3927,7 +3927,7 @@ fn check_compound_assignment_value(
             push_operator_not_defined(ctx, op, expr_type(value), source.span)
         } else {}
     } else {
-        expect_type_at(ctx, target_ty, expr_type(value), Option::Some(source.span));
+        expect_type_at(ctx, expr_type(value), target_ty, Option::Some(source.span));
         if (is_bitwise_op(op) || is_remainder_op(op)) && !is_integer_type(target_ty) {
             push_operator_not_defined(ctx, op, target_ty, source.span)
         } else if is_arithmetic_op(op) && !is_numeric_type(target_ty)
@@ -4083,7 +4083,7 @@ fn check_for_expr(
     ctx.loop_depth.set(ctx.loop_depth.get() + 1);
     push_loop_result(ctx, LoopResult { label, result_ty: Option::None, has_break: Ref::new(false) });
     let body = check_expr(ctx, body_source, Option::None);
-    expect_type_at(ctx, Type::Unit, expr_type(body), Option::Some(body_span));
+    expect_type_at(ctx, expr_type(body), Type::Unit, Option::Some(body_span));
     ctx.loop_depth.set(ctx.loop_depth.get() - 1);
     let _ = ctx.loop_results.pop();
     let projected_iterator_ty = trait_projection(source_ty, "IntoIter", "IntoIterator");
@@ -4356,7 +4356,7 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
                 let typed = match value {
                     Some(inner) => Option::Some(check_expr(ctx, inner, Option::Some(ctx.return_ty))),
                     None => {
-                        expect_type(ctx, ctx.return_ty, Type::Unit);
+                        expect_type(ctx, Type::Unit, ctx.return_ty);
                         Option::None
                     },
                 };
@@ -4832,7 +4832,7 @@ fn check_constructor_pattern(
                 );
                 return Pat::Wild { ty: expected }
             } else {};
-            expect_type(ctx, info.ty, expected);
+            expect_type(ctx, expected, info.ty);
             let values: Vec[Pat] = Vec::[];
             if args.len() != info.fields.len() {
                 for value in args {
@@ -4893,7 +4893,7 @@ fn constant_pattern_name(reference: hir::NameRef) -> string {
 fn check_constant_pattern(ctx: Checker, reference: hir::NameRef, expected: Type, span: ast::Span) -> Pat {
     match constant_scheme_for_pattern(ctx, reference) {
         Some(value) => {
-            expect_type(ctx, value.ty, expected);
+            expect_type(ctx, expected, value.ty);
             let target = match value.def_id {
                 Some(definition) => ReferenceTarget::Definition(definition),
                 None => ReferenceTarget::Unresolved(value.name),
@@ -4991,7 +4991,7 @@ fn check_struct_pattern(
                     ty: info.ty,
                 },
             );
-            expect_type(ctx, info.ty, expected);
+            expect_type(ctx, expected, info.ty);
             if info.has_hidden_fields && !has_rest {
                 push_diagnostic(
                     ctx,
@@ -5170,7 +5170,7 @@ fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
     };
     match primitive_pattern(ctx, value) {
         Some(result) => {
-            expect_type(ctx, result.1, expected);
+            expect_type(ctx, expected, result.1);
             Pat::Prim { value: normalize_pattern_primitive(result.0, expected), ty: expected }
         },
         None => match value.kind {

@@ -3,7 +3,6 @@ package query;
 use gomlc::ast;
 use gomlc::cst;
 use gomlc::lexer;
-use gomlc::parser;
 use gomlc::resources;
 use gomlc::tast;
 use std::fs;
@@ -153,7 +152,7 @@ fn last_path_segment(value: ast::Path) -> string {
 }
 
 fn namespace_target(value: Analysis, alias: string) -> Option[string] {
-    let lowered = ast::lower(parser::parse(value.source));
+    let lowered = value.lowered;
     match lowered.ast {
         Some(file) => {
             let mut index = file.uses.len() - 1;
@@ -355,6 +354,7 @@ fn complete_namespace(value: Analysis, package_name: string, prefix: string) -> 
             )
         } else {}
     }
+    append_comptime_derive_completions(result, value, package_name, prefix);
     result
 }
 
@@ -691,7 +691,7 @@ fn file_parameter_explicit_type(file: ast::File, name: string) -> Option[string]
 fn explicit_receiver_type(value: Analysis, dot: int) -> Option[string] {
     match significant_token_before(value, dot) {
         Some(token) => {
-            let lowered = ast::lower(parser::parse(value.source));
+            let lowered = value.lowered;
             let explicit = match lowered.ast {
                 Some(file) => file_parameter_explicit_type(file, token.text),
                 None => Option::None,
@@ -989,7 +989,7 @@ fn complete_scope(value: Analysis, offset: int, prefix: string) -> Vec[Completio
         } else {}
     }
     append_prelude_scope_completions(result, value, prefix);
-    let lowered = ast::lower(parser::parse(value.source));
+    let lowered = value.lowered;
     match lowered.ast {
         Some(file) => for import in file.uses {
             let package_name = path_text(import.path);
@@ -1158,7 +1158,8 @@ pub fn completions(value: Analysis, offset: int) -> Vec[CompletionItem] {
                 result
             } else {
                 let repaired_source = insert_completion_placeholder(value.source, offset);
-                let repaired = analyze_with_overrides(
+                let repaired = analyze_with_context(
+                    value.context,
                     value.source_path,
                     repaired_source,
                     value.overrides,

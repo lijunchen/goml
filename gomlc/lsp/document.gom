@@ -18,6 +18,7 @@ struct CachedAnalysis {
 pub struct Server {
     documents: Vec[Document],
     analyses: Vec[CachedAnalysis],
+    analysis_context: query::AnalysisContext,
     generation: Ref[int],
     running: Ref[bool],
     shutdown: Ref[bool],
@@ -27,6 +28,7 @@ pub fn new_server() -> Server {
     Server {
         documents: Vec::[],
         analyses: Vec::[],
+        analysis_context: query::analysis_context(),
         generation: Ref::new(0),
         running: Ref::new(true),
         shutdown: Ref::new(false),
@@ -111,7 +113,8 @@ pub fn document_analysis(value: Server, document: Document) -> query::Analysis {
             index = index - 1;
         }
     }
-    let analysis = query::analyze_with_overrides(
+    let analysis = query::analyze_with_context(
+        value.analysis_context,
         document.path,
         document.text,
         source_overrides(value),

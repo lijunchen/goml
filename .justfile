@@ -1,16 +1,7 @@
 make:
     bash bootstrap/bootstrap.sh bootstrap/stage0.env stage0
-    mkdir -p stage1/bin
-    cd gomlc && ../stage0/bin/goml build --target-dir _bootstrap/stage1 --compiler ../stage0/bin/gomlc
-    cp gomlc/_bootstrap/stage1/bin/cmd/gomlc/gomlc stage1/bin/gomlc
-    cp gomlc/_bootstrap/stage1/bin/cmd/gomlfmt/gomlfmt stage1/bin/gomlfmt
-    cp gomlc/_bootstrap/stage1/bin/cmd/gomllsp/gomllsp stage1/bin/gomllsp
-    bash tools/lib/install.sh stage1
-    bash tools/lib/finalize-toolchain.sh stage1 stage0/bin/goml stage1/bin/gomlc
-    cd goml && ../stage0/bin/goml build --target-dir _bootstrap/stage1 --compiler ../stage1/bin/gomlc
-    cp goml/_bootstrap/stage1/bin/cmd/goml/goml stage1/bin/goml
     mkdir -p stage2/bin
-    bash bootstrap/build-stage.sh stage2 stage1/bin/goml stage1/bin/gomlc
+    bash bootstrap/build-stage.sh stage2 stage0/bin/goml stage0/bin/gomlc
     cp gomlc/_bootstrap/stage2/bin/cmd/gomlc/gomlc stage2/bin/gomlc
     cp gomlc/_bootstrap/stage2/bin/cmd/gomlfmt/gomlfmt stage2/bin/gomlfmt
     cp gomlc/_bootstrap/stage2/bin/cmd/gomllsp/gomllsp stage2/bin/gomllsp
@@ -18,7 +9,9 @@ make:
     cp goml/_bootstrap/stage2/bin/cmd/goml/goml stage2/bin/goml
     bash tools/lib/finalize-toolchain.sh stage2 stage2/bin/goml stage2/bin/gomlc
 
-test: make
+make-tools: make
+
+test: make-tools
     bash tools/lib/install.sh _artifact/gomlc-test/test
     cd gomlc && GOML_TEST_GOML=../stage2/bin/goml GOML_TEST_GOMLC=../stage2/bin/gomlc ../stage2/bin/goml test --target-dir ../_artifact/gomlc-test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m
     cd goml && GOML_TEST_GOML=../stage2/bin/goml GOML_TEST_GOMLC=../stage2/bin/gomlc ../stage2/bin/goml test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m
@@ -34,25 +27,25 @@ clean:
     rm -rf _artifact _bootstrap
     rm -rf gomlc/_artifact gomlc/_bootstrap
     rm -rf goml/_artifact goml/_bootstrap
-    rm -rf stage0 stage1 stage2 stage3
+    rm -rf stage1 stage2 stage3
     rm -rf editors/vscode/bin editors/vscode/lib
 
 _bootstrap-stage3:
-    rm -rf gomlc/_bootstrap/stage3 goml/_bootstrap/stage3 stage3
+    rm -rf gomlc/_bootstrap/stage3 gomlc/_bootstrap/stage3-fixed
+    rm -rf goml/_bootstrap/stage3 goml/_bootstrap/stage3-fixed stage3
     mkdir -p stage3/bin
-    bash bootstrap/build-stage.sh stage3 stage2/bin/goml stage2/bin/gomlc
+    bash bootstrap/build-stage.sh stage3 stage2/bin/goml stage2/bin/gomlc compiler
     cp gomlc/_bootstrap/stage3/bin/cmd/gomlc/gomlc stage3/bin/gomlc
-    cp gomlc/_bootstrap/stage3/bin/cmd/gomlfmt/gomlfmt stage3/bin/gomlfmt
-    cp gomlc/_bootstrap/stage3/bin/cmd/gomllsp/gomllsp stage3/bin/gomllsp
     bash tools/lib/install.sh stage3
     cp goml/_bootstrap/stage3/bin/cmd/goml/goml stage3/bin/goml
     bash tools/lib/finalize-toolchain.sh stage3 stage3/bin/goml stage3/bin/gomlc
-    diff -ru --exclude='*.goml-*-fingerprint' gomlc/_bootstrap/stage2/build/pkg gomlc/_bootstrap/stage3/build/pkg
-    diff -ru --exclude='*.goml-*-fingerprint' goml/_bootstrap/stage2/build/pkg goml/_bootstrap/stage3/build/pkg
+    bash bootstrap/build-stage.sh stage3-fixed stage3/bin/goml stage3/bin/gomlc artifacts
+    diff -ru --exclude='*.goml-*-fingerprint' gomlc/_bootstrap/stage3/build/pkg gomlc/_bootstrap/stage3-fixed/build/pkg
+    diff -ru --exclude='*.goml-*-fingerprint' goml/_bootstrap/stage3/build/pkg goml/_bootstrap/stage3-fixed/build/pkg
 
 bootstrap:
-    rm -rf gomlc/_bootstrap/stage1 gomlc/_bootstrap/stage2 gomlc/_bootstrap/stage3
-    rm -rf goml/_bootstrap/stage1 goml/_bootstrap/stage2 goml/_bootstrap/stage3
+    rm -rf gomlc/_bootstrap/stage1 gomlc/_bootstrap/stage2 gomlc/_bootstrap/stage3 gomlc/_bootstrap/stage3-fixed
+    rm -rf goml/_bootstrap/stage1 goml/_bootstrap/stage2 goml/_bootstrap/stage3 goml/_bootstrap/stage3-fixed
     rm -rf stage0 stage1 stage2 stage3
     just make
     just _bootstrap-stage3
@@ -67,10 +60,10 @@ _ci-scripts:
 
 _ci-gomlc-test:
     bash tools/lib/install.sh _artifact/gomlc-test/test
-    cd gomlc && GOML_TEST_GOML=../stage2/bin/goml GOML_TEST_GOMLC=../stage2/bin/gomlc ../stage2/bin/goml test --target-dir ../_artifact/gomlc-test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m
+    cd gomlc && GOML_TEST_GOML=../stage2/bin/goml GOML_TEST_GOMLC=../stage2/bin/gomlc ../stage2/bin/goml test --target-dir ../_artifact/gomlc-test --compiler ../stage2/bin/gomlc --jobs 22 --timeout 10m
 
 _ci-goml-test:
-    cd goml && GOML_TEST_GOML=../stage2/bin/goml GOML_TEST_GOMLC=../stage2/bin/gomlc ../stage2/bin/goml test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m
+    cd goml && GOML_TEST_GOML=../stage2/bin/goml GOML_TEST_GOMLC=../stage2/bin/gomlc ../stage2/bin/goml test --compiler ../stage2/bin/gomlc --jobs 4 --timeout 10m
 
 _ci-vscode:
     mkdir -p editors/vscode/bin
@@ -82,9 +75,9 @@ _ci-vscode:
     cd editors/vscode && npm run compile
 
 ci:
-    rm -rf gomlc/_bootstrap/stage1 gomlc/_bootstrap/stage2 gomlc/_bootstrap/stage3
-    rm -rf goml/_bootstrap/stage1 goml/_bootstrap/stage2 goml/_bootstrap/stage3
-    rm -rf stage0 stage1 stage2 stage3
+    rm -rf gomlc/_bootstrap/stage1 gomlc/_bootstrap/stage2 gomlc/_bootstrap/stage3 gomlc/_bootstrap/stage3-fixed
+    rm -rf goml/_bootstrap/stage1 goml/_bootstrap/stage2 goml/_bootstrap/stage3 goml/_bootstrap/stage3-fixed
+    rm -rf stage1 stage2 stage3
     just make
     bash tools/parallel-ci.sh
 
@@ -97,7 +90,7 @@ set-bootstrap-stage0 version sha256:
     bash tools/release/release.sh set-stage0 "{{version}}" "{{sha256}}"
     bash bootstrap/bootstrap.sh bootstrap/stage0.env stage0
 
-vscode-ext: make
+vscode-ext: make-tools
     mkdir -p editors/vscode/bin
     find editors/vscode/bin -mindepth 1 -type f -delete
     find editors/vscode/bin -mindepth 1 -depth -type d -empty -delete
@@ -109,7 +102,7 @@ vscode-ext: make
 package-vscode-ext: vscode-ext
     cd editors/vscode && npx @vscode/vsce package --allow-missing-repository --skip-license
 
-install: make
+install: make-tools
     mkdir -p "${GOML_HOME:-$HOME/.goml}/bin"
     cp stage2/bin/gomlc "${GOML_HOME:-$HOME/.goml}/bin/gomlc"
     cp stage2/bin/goml "${GOML_HOME:-$HOME/.goml}/bin/goml"

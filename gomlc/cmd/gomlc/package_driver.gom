@@ -188,12 +188,28 @@ fn merge_standard_needs(left: StandardNeeds, right: StandardNeeds) -> StandardNe
 
 fn package_world() -> PackageWorld {
     let counter = Ref::new(0);
-    let builtins = lower_builtin_core(counter);
-    let builtin_interface = builtin_artifact_interface_unit();
-    let prelude_compilation = compile_prelude_package(builtins, builtin_interface);
+    let builtin_files = builtin_hir_files();
+    let checked = tast::check_builtin_package_files(builtin_files);
+    let builtins = lower_checked_builtin_core(checked, counter);
+    let builtin_interface = builtin_artifact_interface_unit_from_checked(
+        builtin_files,
+        checked,
+        Vec::[],
+    );
+    let prelude_compilation = compile_prelude_package_with_builtin_files(
+        builtins,
+        builtin_interface,
+        builtin_files,
+    );
     let prelude = artifact_standard_package_from_compilation(prelude_compilation);
     let standard = artifact_standard_packages(
-        compile_standard_library(builtins, prelude_compilation, builtin_interface.interface_hash),
+        compile_standard_library_with_builtin_files(
+            builtins,
+            prelude_compilation,
+            builtin_interface.interface_hash,
+            builtin_files,
+            all_standard_package_names(),
+        ),
     );
     PackageWorld { counter, source_digest: "", builtins, builtin_interface, prelude, standard }
 }

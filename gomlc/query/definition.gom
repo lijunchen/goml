@@ -482,6 +482,12 @@ fn semantic_definition(value: Analysis, offset: int) -> Option[DefinitionResult]
 
 pub fn goto_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
     let result: Vec[DefinitionResult] = Vec::[];
+    for definition in comptime_derive_definitions(value, offset) {
+        push_definition(result, definition)
+    }
+    if !result.is_empty() {
+        return result
+    } else {};
     let mut reference: Option[tast::ReferenceFact] = Option::None;
     let mut width = 2147483647;
     for fact in value.checked.typeck_results.references {

@@ -1,0 +1,193 @@
+package query;
+
+use gomlc::ast;
+use gomlc::cst;
+use gomlc::ctir;
+use std::text;
+
+struct ComptimeDeriveTarget {
+    module: ctir::CtModule,
+    entry: ctir::CtDeriveEntry,
+}
+
+fn comptime_short_name(value: string) -> string {
+    match text::rfind(value, "::") {
+        Some(index) => value.byte_slice(index + 2, value.byte_len()),
+        None => value,
+    }
+}
+
+fn comptime_derive_name(value: ctir::CtDeriveEntry) -> string {
+    match value.export_name {
+        Some(name) => name,
+        None => comptime_short_name(value.name),
+    }
+}
+
+fn derive_attribute_at(value: Analysis, offset: int) -> bool {
+    match node_at_kind(value.syntax, offset, cst::NodeKind::ATTRIBUTE) {
+        Some(node) => for token in value.syntax.tokens {
+            if token.start >= node.start && token.end <= node.end && token.text == "derive" {
+                return true
+            } else {}
+        },
+        None => (),
+    }
+    false
+}
+
+fn comptime_derive_identifiers(value: Analysis, node: SyntaxNode) -> Vec[SyntaxToken] {
+    let result: Vec[SyntaxToken] = Vec::[];
+    let mut found_derive = false;
+    for token in value.syntax.tokens {
+        if token.start >= node.start && token.end <= node.end {
+            if token.text == "derive" && !found_derive {
+                found_derive = true;
+            } else if found_derive && token.text != "" {
+                let first = token.text.byte_get(0);
+                if (first >= b'A' && first <= b'Z') || (first >= b'a' && first <= b'z')
+                    || first == b'_' {
+                    result.push(token)
+                } else {}
+            } else {}
+        } else {}
+    }
+    result
+}
+
+fn comptime_derive_paths(value: Analysis, canonical: string) -> Vec[string] {
+    let result = Vec::[canonical];
+    let mut cursor = 0;
+    while cursor < result.len() {
+        let current = result[cursor];
+        cursor = cursor + 1;
+        for environment in value.environments {
+            for reexport in environment.reexports {
+                if reexport.0 == current || reexport.0.ends_with("::" + current) {
+                    let mut present = false;
+                    for existing in result {
+                        if existing == reexport.1 {
+                            present = true;
+                        } else {}
+                    }
+                    if !present {
+                        result.push(reexport.1)
+                    } else {}
+                } else {}
+            }
+        }
+    }
+    result
+}
+
+fn comptime_derive_targets(value: Analysis, canonical: string) -> Vec[ComptimeDeriveTarget] {
+    let result: Vec[ComptimeDeriveTarget] = Vec::[];
+    for path in comptime_derive_paths(value, canonical) {
+        for module in value.comptime_modules {
+            for entry in module.derive_entries {
+                let name = comptime_derive_name(entry);
+                let qualified = module.package_name + "::" + name;
+                if (path == qualified || qualified.ends_with("::" + path)
+                    || (!path.contains("::") && path == name))
+                    && (entry.public || module.package_name == value.package_name
+                        || module.package_name == "builtin") {
+                    result.push(ComptimeDeriveTarget { module, entry })
+                } else {}
+            }
+        }
+    }
+    result
+}
+
+fn comptime_derive_targets_at(value: Analysis, offset: int) -> Vec[ComptimeDeriveTarget] {
+    if !derive_attribute_at(value, offset) {
+        return Vec::[]
+    } else {};
+    match node_at_kind(value.syntax, offset, cst::NodeKind::ATTRIBUTE) {
+        Some(node) => {
+            let identifiers = comptime_derive_identifiers(value, node);
+            match identifier_index_at(identifiers, offset) {
+                Some(index) => comptime_derive_targets(
+                    value,
+                    canonical_path_at(value, node, identifiers, index),
+                ),
+                None => Vec::[],
+            }
+        },
+        None => Vec::[],
+    }
+}
+
+fn comptime_derive_definition(value: Analysis, target: ComptimeDeriveTarget) -> Option[
+    DefinitionResult,
+] {
+    match find_symbol(build_symbol_index(value), target.entry.name) {
+        Some(symbol) => Option::Some(
+            DefinitionResult { source_path: symbol.source_path, span: symbol.span },
+        ),
+        None => if target.entry.function_id >= 0
+            && target.entry.function_id < target.module.functions.len() {
+            let function = target.module.functions[target.entry.function_id];
+            if function.origin >= 0 && function.origin < target.module.origins.len() {
+                let origin = target.module.origins[function.origin];
+                Option::Some(
+                    DefinitionResult {
+                        source_path: origin.source_path,
+                        span: ast::span(origin.start, origin.end),
+                    },
+                )
+            } else {
+                Option::None
+            }
+        } else {
+            Option::None
+        },
+    }
+}
+
+fn comptime_derive_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
+    let result: Vec[DefinitionResult] = Vec::[];
+    for target in comptime_derive_targets_at(value, offset) {
+        match comptime_derive_definition(value, target) {
+            Some(definition) => push_definition(result, definition),
+            None => (),
+        }
+    }
+    result
+}
+
+fn comptime_derive_hover(value: Analysis, offset: int) -> Option[string] {
+    let targets = comptime_derive_targets_at(value, offset);
+    if targets.len() == 1 {
+        Option::Some("comptime derive " + comptime_derive_name(targets[0].entry))
+    } else {
+        Option::None
+    }
+}
+
+fn append_comptime_derive_completions(
+    result: Vec[CompletionItem],
+    value: Analysis,
+    package_name: string,
+    prefix: string,
+) -> unit {
+    for module in value.comptime_modules {
+        if module.package_name == package_name {
+            for entry in module.derive_entries {
+                if entry.public || module.package_name == value.package_name
+                    || module.package_name == "builtin" {
+                    let name = comptime_derive_name(entry);
+                    push_completion(
+                        result,
+                        CompletionItem {
+                            label: name,
+                            detail: "comptime derive " + module.package_name + "::" + name,
+                            kind: CompletionKind::Function,
+                        },
+                        prefix,
+                    )
+                } else {}
+            }
+        } else {}
+    }
+}

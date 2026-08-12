@@ -7,11 +7,12 @@ use gomlc::parser;
 use gomlc::resources;
 use gomlc::tast;
 
-fn append_builtin_navigation_sources(values: Vec[SourceFile]) -> Result[unit, string] {
+fn builtin_navigation_sources() -> Result[Vec[SourceFile], string] {
+    let result: Vec[SourceFile] = Vec::[];
     for value in resources::builtin_layer_sources()? {
-        values.push(SourceFile { path: value.path, source: value.source, package_name: "builtin" })
+        result.push(SourceFile { path: value.path, source: value.source, package_name: "builtin" })
     }
-    Result::Ok(())
+    Result::Ok(result)
 }
 
 fn builtin_comptime_module() -> Result[Option[ctir::CtModule], string] {

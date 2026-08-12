@@ -270,6 +270,15 @@ fn symbol_at_offset(value: Analysis, offset: int) -> Option[Symbol] {
 }
 
 pub fn hover(value: Analysis, offset: int) -> Option[HoverResult] {
+    match comptime_derive_hover(value, offset) {
+        Some(contents) => match token_at(value.syntax, offset) {
+            Some(token) => return Option::Some(
+                HoverResult { contents, span: ast::span(token.start, token.end) },
+            ),
+            None => (),
+        },
+        None => (),
+    };
     match symbol_at_offset(value, offset) {
         Some(symbol) => match symbol.kind {
             Function => match symbol_hover_type(value, symbol) {

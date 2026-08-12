@@ -19,6 +19,17 @@ pub struct Analysis {
     pub syntax: SyntaxIndex,
     pub expanded_source: string,
     pub checked: tast::CheckResult,
+    context: AnalysisContext,
+    comptime_modules: Vec[ctir::CtModule],
+    lowered: ast::LowerResult,
+    symbol_index: Ref[Option[SymbolIndex]],
+}
+
+pub struct AnalysisContext {
+    prelude_files: Result[Vec[hir::File], string],
+    builtin_derive: Result[Option[ctir::CtModule], string],
+    builtin_sources: Result[Vec[SourceFile], string],
+    prelude_sources: Result[Vec[SourceFile], string],
 }
 
 struct LoweredPackage {
@@ -33,6 +44,16 @@ struct ProjectCheck {
     sources: Vec[SourceFile],
     environments: Vec[tast::DependencyEnvironment],
     expanded_sources: Vec[(string, string)],
+    comptime_modules: Vec[ctir::CtModule],
+}
+
+pub fn analysis_context() -> AnalysisContext {
+    AnalysisContext {
+        prelude_files: prelude_hir_files(),
+        builtin_derive: builtin_comptime_module(),
+        builtin_sources: builtin_navigation_sources(),
+        prelude_sources: prelude_navigation_sources(),
+    }
 }
 
 fn query_diagnostic(source_path: string, stage: string, message: string, span: Option[ast::Span]) -> tast::Diagnostic {
@@ -273,14 +294,29 @@ fn collect_dependency(
     }
 }
 
-fn check_project(value: Project, overrides: Vec[SourceOverride]) -> ProjectCheck {
+fn append_navigation_sources(
+    values: Vec[SourceFile],
+    sources: Result[Vec[SourceFile], string],
+    checked: tast::CheckResult,
+) -> unit {
+    match sources {
+        Ok(sources) => for source in sources {
+            values.push(source)
+        },
+        Err(error) => checked.diagnostics.push(
+            query_diagnostic("", "resources", error, Option::None),
+        ),
+    }
+}
+
+fn check_project(value: Project, overrides: Vec[SourceOverride], context: AnalysisContext) -> ProjectCheck {
     let all_sources: Vec[SourceFile] = Vec::[];
     for file in value.files {
         all_sources.push(file)
     }
     let dependencies: Vec[hir::File] = Vec::[];
     let diagnostics: Vec[tast::Diagnostic] = Vec::[];
-    match prelude_hir_files() {
+    match context.prelude_files {
         Ok(files) => for file in files {
             dependencies.push(file)
         },
@@ -288,7 +324,7 @@ fn check_project(value: Project, overrides: Vec[SourceOverride]) -> ProjectCheck
             query_diagnostic(value.files[0].path, "prelude", error, Option::None),
         ),
     };
-    let builtin_derive = match builtin_comptime_module() {
+    let builtin_derive = match context.builtin_derive {
         Ok(value) => value,
         Err(error) => {
             diagnostics.push(query_diagnostic(value.files[0].path, "builtin", error, Option::None));
@@ -345,23 +381,22 @@ fn check_project(value: Project, overrides: Vec[SourceOverride]) -> ProjectCheck
     for diagnostic in diagnostics {
         checked.diagnostics.push(diagnostic)
     }
-    match append_builtin_navigation_sources(all_sources) {
-        Ok(_) => (),
-        Err(error) => checked.diagnostics.push(
-            query_diagnostic("", "resources", error, Option::None),
-        ),
+    append_navigation_sources(all_sources, context.builtin_sources, checked);
+    append_navigation_sources(all_sources, context.prelude_sources, checked);
+    let comptime_modules: Vec[ctir::CtModule] = Vec::[];
+    match builtin_derive {
+        Some(module) => comptime_modules.push(module),
+        None => (),
     };
-    match append_prelude_navigation_sources(all_sources) {
-        Ok(_) => (),
-        Err(error) => checked.diagnostics.push(
-            query_diagnostic("", "resources", error, Option::None),
-        ),
-    };
+    for module in derive_modules {
+        comptime_modules.push(module)
+    }
     ProjectCheck {
         checked,
         sources: all_sources,
         environments,
         expanded_sources: entry.expanded_sources,
+        comptime_modules,
     }
 }
 
@@ -369,11 +404,13 @@ fn single_file_analysis(
     source_path: string,
     source: string,
     parsed: cst::ParseResult,
+    lowered: ast::LowerResult,
     syntax: SyntaxIndex,
     overrides: Vec[SourceOverride],
+    context: AnalysisContext,
 ) -> Analysis {
-    let lowered = hir::lower(ast::lower(parsed), source_path);
-    let package_name = match lowered.hir {
+    let hir_value = hir::lower(lowered, source_path);
+    let package_name = match hir_value.hir {
         Some(file) => if file.package_name == "" {
             "main"
         } else {
@@ -393,6 +430,7 @@ fn single_file_analysis(
             files,
         },
         overrides,
+        context,
     );
     Analysis {
         source_path,
@@ -405,16 +443,26 @@ fn single_file_analysis(
         syntax,
         expanded_source: expanded_source_for_path(result.expanded_sources, source_path),
         checked: result.checked,
+        context,
+        comptime_modules: result.comptime_modules,
+        lowered,
+        symbol_index: Ref::new(Option::None),
     }
 }
 
-pub fn analyze_with_overrides(source_path: string, source: string, overrides: Vec[SourceOverride]) -> Analysis {
+pub fn analyze_with_context(
+    context: AnalysisContext,
+    source_path: string,
+    source: string,
+    overrides: Vec[SourceOverride],
+) -> Analysis {
     let parsed = parser::parse(source);
+    let lowered = ast::lower(parsed);
     let syntax = syntax_index(parsed.root);
     match discover_project(source_path, source, overrides) {
         Ok(Some(project)) => {
             let package_name = project.package_name;
-            let result = check_project(project, overrides);
+            let result = check_project(project, overrides, context);
             Analysis {
                 source_path,
                 source,
@@ -426,10 +474,14 @@ pub fn analyze_with_overrides(source_path: string, source: string, overrides: Ve
                 syntax,
                 expanded_source: expanded_source_for_path(result.expanded_sources, source_path),
                 checked: result.checked,
+                context,
+                comptime_modules: result.comptime_modules,
+                lowered,
+                symbol_index: Ref::new(Option::None),
             }
         },
         Ok(None) => {
-            single_file_analysis(source_path, source, parsed, syntax, overrides)
+            single_file_analysis(source_path, source, parsed, lowered, syntax, overrides, context)
         },
         Err(error) => Analysis {
             source_path,
@@ -442,8 +494,16 @@ pub fn analyze_with_overrides(source_path: string, source: string, overrides: Ve
             syntax,
             expanded_source: source,
             checked: failed_check(source_path, "project", error),
+            context,
+            comptime_modules: Vec::[],
+            lowered,
+            symbol_index: Ref::new(Option::None),
         },
     }
+}
+
+pub fn analyze_with_overrides(source_path: string, source: string, overrides: Vec[SourceOverride]) -> Analysis {
+    analyze_with_context(analysis_context(), source_path, source, overrides)
 }
 
 pub fn analyze(source_path: string, source: string) -> Analysis {

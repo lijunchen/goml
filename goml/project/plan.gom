@@ -440,7 +440,7 @@ pub fn toolchain_world_plan(context: Context, output: string) -> Result[Plan, st
     Result::Ok(Plan { commands, executable: Option::None, test_groups: Vec::[] })
 }
 
-pub fn run_plan(context: Context) -> Result[Plan, string] {
+fn target_build_plan(context: Context, build_executable: bool) -> Result[Plan, string] {
     let output_root = path::join(context.artifact_root, BUILD_SUBCOMMAND);
     let packages = reachable_packages(context.graph, Vec::[context.graph.entry_package])?;
     let commands = compile_commands(
@@ -461,19 +461,33 @@ pub fn run_plan(context: Context) -> Result[Plan, string] {
         },
     );
     let executable = executable_path_for(context, context.graph.entry_package);
-    commands.push(
-        Command::GoBuild {
-            input: module_relative(context.graph.module_dir, main_go),
-            output: module_relative(context.graph.module_dir, executable),
-        },
-    );
+    if build_executable {
+        commands.push(
+            Command::GoBuild {
+                input: module_relative(context.graph.module_dir, main_go),
+                output: module_relative(context.graph.module_dir, executable),
+            },
+        )
+    } else {};
     Result::Ok(
         Plan {
             commands: commands_with_world(context, commands),
-            executable: Option::Some(executable),
+            executable: if build_executable {
+                Option::Some(executable)
+            } else {
+                Option::None
+            },
             test_groups: Vec::[],
         },
     )
+}
+
+pub fn build_target_artifacts_plan(context: Context) -> Result[Plan, string] {
+    target_build_plan(context, false)
+}
+
+pub fn run_plan(context: Context) -> Result[Plan, string] {
+    target_build_plan(context, true)
 }
 
 fn append_test_package(

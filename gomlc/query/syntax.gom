@@ -70,11 +70,23 @@ fn contains_offset(start: int, end: int, offset: int) -> bool {
 }
 
 pub fn token_at(index: SyntaxIndex, offset: int) -> Option[SyntaxToken] {
-    let mut cursor = index.tokens.len() - 1;
+    let mut low = 0;
+    let mut high = index.tokens.len();
+    while low < high {
+        let middle = low + (high - low) / 2;
+        if index.tokens[middle].start <= offset {
+            low = middle + 1;
+        } else {
+            high = middle;
+        }
+    }
+    let mut cursor = low - 1;
     while cursor >= 0 {
         let token = index.tokens[cursor];
         if contains_offset(token.start, token.end, offset) && !lexer::token_is_trivia(token.kind) {
             return Option::Some(token)
+        } else if token.end < offset || (token.end == offset && token.start < offset) {
+            return Option::None
         } else {
             cursor = cursor - 1;
         }
@@ -100,20 +112,18 @@ pub fn node_at(index: SyntaxIndex, offset: int) -> Option[SyntaxNode] {
 }
 
 pub fn node_at_kind(index: SyntaxIndex, offset: int, kind: cst::NodeKind) -> Option[SyntaxNode] {
-    let mut best = -1;
-    for candidate in 0..index.nodes.len() {
-        let node = index.nodes[candidate];
-        let node_width = node.end - node.start;
-        if cst::node_kind_equal(node.kind, kind) && node.start <= offset && offset < node.end
-            && (best < 0 || node_width < index.nodes[best].end - index.nodes[best].start) {
-            best = candidate;
-        } else {}
+    let mut current = node_at(index, offset);
+    while current.is_some() {
+        match current {
+            Some(node) => if cst::node_kind_equal(node.kind, kind) {
+                return Option::Some(node)
+            } else {
+                current = parent_node(index, node);
+            },
+            None => (),
+        }
     }
-    if best >= 0 {
-        Option::Some(index.nodes[best])
-    } else {
-        Option::None
-    }
+    Option::None
 }
 
 pub fn parent_node(index: SyntaxIndex, node: SyntaxNode) -> Option[SyntaxNode] {

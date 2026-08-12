@@ -18,6 +18,8 @@ const CHECK_COMMAND: string = "check";
 
 const BUILD_COMMAND: string = "build";
 
+const BUILD_ARTIFACTS_COMMAND: string = "__build-artifacts";
+
 const RUN_COMMAND_NAME: string = "run";
 
 const TEST_COMMAND: string = "test";
@@ -224,7 +226,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
     } else {};
     let command = args[1];
     match command {
-        CHECK_COMMAND | BUILD_COMMAND | RUN_COMMAND_NAME | TEST_COMMAND => (),
+        CHECK_COMMAND | BUILD_COMMAND | BUILD_ARTIFACTS_COMMAND | RUN_COMMAND_NAME | TEST_COMMAND => (),
         _ => return Result::Err(f"unknown command {command}"),
     };
     let targets: Vec[string] = Vec::[];
@@ -385,7 +387,8 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                         },
                         None => if argument.starts_with("-") {
                             return Result::Err(f"unknown option {argument}")
-                        } else if command == RUN_COMMAND_NAME && targets.is_empty() {
+                        } else if (command == RUN_COMMAND_NAME || command == BUILD_ARTIFACTS_COMMAND)
+                            && targets.is_empty() {
                             targets.push(argument);
                             index += 1;
                         } else {
@@ -433,7 +436,8 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
 }
 
 fn run_command(args: CliArgs) -> Result[unit, string] {
-    let context_result = if args.command == RUN_COMMAND_NAME {
+    let context_result = if args.command == RUN_COMMAND_NAME
+        || args.command == BUILD_ARTIFACTS_COMMAND {
         project::load_target_context(args.target, args.target_dir, args.compiler)
     } else {
         project::load_context(args.target_dir, args.compiler)
@@ -442,6 +446,7 @@ fn run_command(args: CliArgs) -> Result[unit, string] {
     let plan = match args.command {
         CHECK_COMMAND => project::check_plan(context, args.include_tests),
         BUILD_COMMAND => project::build_plan(context),
+        BUILD_ARTIFACTS_COMMAND => project::build_target_artifacts_plan(context),
         RUN_COMMAND_NAME => project::run_plan(context),
         _ => project::test_plan(context, args.test_kind),
     };
@@ -541,7 +546,11 @@ fn run_toolchain_finalize(args: Vec[string]) -> Result[unit, string] {
         }
     } else {};
     let plan = project::toolchain_world_plan(context, temporary)?;
-    project::execute_plan(context, plan, false, 16)?;
+    let jobs = match env::var("GOML_BUILD_JOBS") {
+        Some(value) => util::parse_positive_int(value)?,
+        None => 16,
+    };
+    project::execute_plan(context, plan, false, jobs)?;
     match fs::replace(temporary, output) {
         Ok(()) => Result::Ok(()),
         Err(error) => Result::Err(error.to_string()),

@@ -10,6 +10,23 @@ source "$stage0_file"
 
 stage0_cache="_bootstrap/cache"
 stage0_archive="${GOML_STAGE0_ARCHIVE:-$stage0_cache/$GOML_STAGE0_ASSET_NAME}"
+stage0_stamp="$stage0_output/.stage0.sha256"
+stage0_tree_fingerprint() {
+    find "$stage0_output/bin" "$stage0_output/lib" -type f -print0 \
+        | sort -z \
+        | xargs -0 -r sha256sum \
+        | sha256sum \
+        | cut -d ' ' -f 1
+}
+if test -f "$stage0_stamp" \
+    && test "$(sed -n '1p' "$stage0_stamp")" = "$GOML_STAGE0_SHA256" \
+    && test -x "$stage0_output/bin/goml" \
+    && test -x "$stage0_output/bin/gomlc" \
+    && test -x "$stage0_output/bin/gomllsp" \
+    && test -f "$stage0_output/lib/compiler/compiler-world-v2.gaf" \
+    && test "$(sed -n '2p' "$stage0_stamp")" = "$(stage0_tree_fingerprint)"; then
+    exit 0
+fi
 mkdir -p "$stage0_cache" "$stage0_output/bin" "$stage0_output/lib"
 
 if test -z "${GOML_STAGE0_ARCHIVE:-}"; then
@@ -52,3 +69,4 @@ bash tools/lib/finalize-toolchain.sh \
     "$stage0_output/bin/gomlc"
 test -f "$stage0_output/lib/compiler/compiler-world-v2.gaf"
 test ! -e "$stage0_output/lib/compiler/compiler-world-v2.gaf.tmp"
+printf '%s\n%s\n' "$GOML_STAGE0_SHA256" "$(stage0_tree_fingerprint)" > "$stage0_stamp"

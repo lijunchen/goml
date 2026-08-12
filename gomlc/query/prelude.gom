@@ -5,11 +5,12 @@ use gomlc::hir;
 use gomlc::parser;
 use gomlc::resources;
 
-fn append_prelude_navigation_sources(values: Vec[SourceFile]) -> Result[unit, string] {
+fn prelude_navigation_sources() -> Result[Vec[SourceFile], string] {
+    let result: Vec[SourceFile] = Vec::[];
     for value in resources::prelude_sources()? {
-        values.push(SourceFile { path: value.path, source: value.source, package_name: "prelude" })
+        result.push(SourceFile { path: value.path, source: value.source, package_name: "prelude" })
     }
-    Result::Ok(())
+    Result::Ok(result)
 }
 
 fn prelude_hir_files() -> Result[Vec[hir::File], string] {
