@@ -110,14 +110,14 @@ fn child_list(context: LowerContext, value: ast::Node, name: string, path: strin
             }
             result
         },
-        Some(ast::Value::Null) => Vec::[],
+        Some(ast::Value::Null) => Vec::from_array([]),
         Some(_) => {
             report(context, value, "expected node list field " + name);
-            Vec::[]
+            Vec::from_array([])
         },
         None => {
             report(context, value, "missing node list field " + name);
-            Vec::[]
+            Vec::from_array([])
         },
     }
 }
@@ -447,10 +447,10 @@ fn contains_name(values: Vec[string], name: string) -> bool {
 }
 
 pub fn lower_package(sources: Vec[SourceFile]) -> PackageSyntax {
-    let nodes: Vec[SyntaxNode] = Vec::[];
-    let diagnostics: Vec[LowerDiagnostic] = Vec::[];
+    let nodes: Vec[SyntaxNode] = Vec::from_array([]);
+    let diagnostics: Vec[LowerDiagnostic] = Vec::from_array([]);
     let files: Vec[SyntaxFile] = Vec::with_capacity(sources.len());
-    let names: Vec[string] = Vec::[];
+    let names: Vec[string] = Vec::from_array([]);
     for index in 0..sources.len() {
         let source = sources[index];
         if contains_name(names, source.name) {
@@ -469,7 +469,7 @@ pub fn lower_package(sources: Vec[SourceFile]) -> PackageSyntax {
             file_id: file_id(index),
             file_name: source.name,
             nodes,
-            imports: Vec::[],
+            imports: Vec::from_array([]),
             diagnostics,
         };
         let root = lower_node(context, source.root, "$");
@@ -479,5 +479,5 @@ pub fn lower_package(sources: Vec[SourceFile]) -> PackageSyntax {
 }
 
 pub fn lower_file(name: string, root: ast::Node) -> PackageSyntax {
-    lower_package(Vec::[SourceFile { name, root }])
+    lower_package(Vec::from_array([SourceFile { name, root }]))
 }

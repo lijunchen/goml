@@ -96,7 +96,7 @@ fn receiver_instantiated_target_inner(
 fn receiver_instantiated_target(state: CheckState, type_id: go_types::TypeId) -> Option[
     go_types::TypeId,
 ] {
-    receiver_instantiated_target_inner(state, type_id, Vec::[])
+    receiver_instantiated_target_inner(state, type_id, Vec::from_array([]))
 }
 
 fn existing_method(state: CheckState, type_id: go_types::TypeId, name: string) -> Option[
@@ -248,7 +248,7 @@ fn discard_method_type_parameters(state: CheckState, signature: go_types::TypeId
                 go_types::TypeKind::Signature {
                     receiver,
                     receiver_type_params,
-                    type_params: Vec::[],
+                    type_params: Vec::from_array([]),
                     params,
                     results,
                     variadic,
@@ -296,7 +296,7 @@ fn receiver_type_parts(state: CheckState, node: syntax::NodeId) -> (
             span: _,
             path: _,
             kind: syntax::SyntaxKind::IndexExpr { expression, lbrack: _, index, rbrack: _ },
-        }) => (expression, Vec::[index], false),
+        }) => (expression, Vec::from_array([index]), false),
         Some(syntax::SyntaxNode {
             id: _,
             file: _,
@@ -304,7 +304,7 @@ fn receiver_type_parts(state: CheckState, node: syntax::NodeId) -> (
             path: _,
             kind: syntax::SyntaxKind::IndexListExpr { expression, lbrack: _, indices, rbrack: _ },
         }) => (expression, indices, false),
-        _ => (node, Vec::[], false),
+        _ => (node, Vec::from_array([]), false),
     }
 }
 
@@ -383,7 +383,7 @@ fn recover_invalid_receiver_parameters(
         node_start(state, receiver_node),
         node_end(state, receiver_node),
     );
-    let parameters: Vec[go_types::TypeParameter] = Vec::[];
+    let parameters: Vec[go_types::TypeParameter] = Vec::from_array([]);
     for index in 0..nodes.len() {
         let node = nodes[index];
         let name = identifier(state, node).unwrap_or("");
@@ -523,7 +523,7 @@ fn resolve_receiver(
         let recovered_parameters = if invalid_alias_origin && !parts.1.is_empty() {
             recover_invalid_receiver_parameters(state, file_scope, receiver_node, parts.1)
         } else {
-            (file_scope, Vec::[])
+            (file_scope, Vec::from_array([]))
         };
         if invalid_alias_origin && !parts.1.is_empty() {
             omit_incomplete_method_receiver_facts(state, receiver_type_node)
@@ -561,7 +561,7 @@ fn resolve_receiver(
                 receiver_type: state.world.invalid,
                 base: state.world.invalid,
                 scope: file_scope,
-                type_params: Vec::[],
+                type_params: Vec::from_array([]),
             },
         )
     } else {};
@@ -580,7 +580,7 @@ fn resolve_receiver(
                     receiver_type: state.world.invalid,
                     base: origin,
                     scope: file_scope,
-                    type_params: Vec::[],
+                    type_params: Vec::from_array([]),
                 },
             )
         } else {};
@@ -592,14 +592,19 @@ fn resolve_receiver(
         record_receiver_type_syntax(state, receiver_type_node, receiver_type);
         return match receiver_base(state, receiver_type) {
             Some(base) => Option::Some(
-                ReceiverResolution { receiver_type, base, scope: file_scope, type_params: Vec::[] },
+                ReceiverResolution {
+                    receiver_type,
+                    base,
+                    scope: file_scope,
+                    type_params: Vec::from_array([]),
+                },
             ),
             None => Option::Some(
                 ReceiverResolution {
                     receiver_type,
                     base: state.world.invalid,
                     scope: file_scope,
-                    type_params: Vec::[],
+                    type_params: Vec::from_array([]),
                 },
             ),
         }
@@ -646,7 +651,7 @@ fn resolve_receiver(
             node_start(state, receiver_node),
             node_end(state, receiver_node),
         );
-        let receiver_parameters: Vec[go_types::TypeParameter] = Vec::[];
+        let receiver_parameters: Vec[go_types::TypeParameter] = Vec::from_array([]);
         for index in 0..parts.1.len() {
             let name_node = parts.1[index];
             let name = identifier(state, name_node).unwrap_or("");
@@ -714,8 +719,8 @@ fn resolve_receiver(
         node_start(state, receiver_node),
         node_end(state, receiver_node),
     );
-    let receiver_parameters: Vec[go_types::TypeParameter] = Vec::[];
-    let receiver_arguments: Vec[go_types::TypeId] = Vec::[];
+    let receiver_parameters: Vec[go_types::TypeParameter] = Vec::from_array([]);
+    let receiver_arguments: Vec[go_types::TypeId] = Vec::from_array([]);
     for index in 0..parts.1.len() {
         let name_node = parts.1[index];
         let mut name = identifier(state, name_node).unwrap_or("");
@@ -1085,14 +1090,14 @@ fn check_field_method_collisions(state: CheckState) -> unit {
                     methods,
                 },
             }) => methods,
-            _ => Vec::[],
+            _ => Vec::from_array([]),
         };
         let fields = match go_types::get_type(
             state.world,
             go_types::underlying(state.world, type_id),
         ) {
             Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } }) => fields,
-            _ => Vec::[],
+            _ => Vec::from_array([]),
         };
         for method in methods {
             match go_types::get_object(state.world, method) {
@@ -1141,7 +1146,10 @@ fn check_missing_method_receiver(state: CheckState, node: syntax::NodeId) -> uni
 }
 
 fn empty_method_signature(state: CheckState, receiver_name: string, resolution: ReceiverResolution) -> go_types::TypeId {
-    let empty = go_types::add_type(state.world, go_types::TypeKind::Tuple { variables: Vec::[] });
+    let empty = go_types::add_type(
+        state.world,
+        go_types::TypeKind::Tuple { variables: Vec::from_array([]) },
+    );
     go_types::add_type(
         state.world,
         go_types::TypeKind::Signature {
@@ -1153,7 +1161,7 @@ fn empty_method_signature(state: CheckState, receiver_name: string, resolution: 
                 },
             ),
             receiver_type_params: resolution.type_params,
-            type_params: Vec::[],
+            type_params: Vec::from_array([]),
             params: empty,
             results: empty,
             variadic: false,
@@ -1236,7 +1244,7 @@ fn predeclare_method_declaration(
                         receiver_type: state.world.invalid,
                         base: state.world.invalid,
                         scope: file_scope,
-                        type_params: Vec::[],
+                        type_params: Vec::from_array([]),
                     }
                 } else {
                     resolution

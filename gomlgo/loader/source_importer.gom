@@ -54,22 +54,24 @@ pub struct LoadSession {
 pub fn default_config() -> LoadConfig {
     LoadConfig {
         checker_config: checker::default_config(),
-        source_roots: Vec::["/usr/lib/go-1.26/src"],
+        source_roots: Vec::from_array(["/usr/lib/go-1.26/src"]),
         goos: GOOS_LINUX,
         goarch: GOARCH_AMD64,
         cgo: false,
-        tags: Vec::[
-            "goexperiment.dwarf5",
-            "goexperiment.greenteagc",
-            "goexperiment.randomizedheapbase64",
-            "goexperiment.regabiargs",
-            "goexperiment.regabiwrappers",
-        ],
+        tags: Vec::from_array(
+            [
+                "goexperiment.dwarf5",
+                "goexperiment.greenteagc",
+                "goexperiment.randomizedheapbase64",
+                "goexperiment.regabiargs",
+                "goexperiment.regabiwrappers",
+            ],
+        ),
         include_tests: false,
         external_tests: false,
         root_path: "",
         root_directory: "",
-        root_sources: Vec::[],
+        root_sources: Vec::from_array([]),
     }
 }
 
@@ -119,7 +121,7 @@ fn filename_selected(name: string, config: LoadConfig) -> bool {
 fn source_constraint_selected(source: bytes::Bytes, config: LoadConfig) -> bool {
     let scanned = scanner::scan_bytes(source);
     let mut go_build: Option[string] = Option::None;
-    let legacy: Vec[string] = Vec::[];
+    let legacy: Vec[string] = Vec::from_array([]);
     for value in scanned.tokens {
         if token::equal(value.kind, token::Kind::Comment) {
             if value.literal.starts_with("//go:build") {
@@ -243,7 +245,7 @@ pub fn selected_sources(config: LoadConfig, import_path: string) -> Result[
     )?;
     let names = fs::read_dir(directory)?;
     collections::sort(names);
-    let selected: Vec[checker::SourceFile] = Vec::[];
+    let selected: Vec[checker::SourceFile] = Vec::from_array([]);
     for name in names {
         if filename_selected(name, config) {
             let file = path::join(directory, name);
@@ -256,7 +258,7 @@ pub fn selected_sources(config: LoadConfig, import_path: string) -> Result[
             }
         } else {}
     }
-    let result: Vec[checker::SourceFile] = Vec::[];
+    let result: Vec[checker::SourceFile] = Vec::from_array([]);
     if config.include_tests {
         let mut package_name = "";
         for source in selected {
@@ -285,7 +287,7 @@ pub fn selected_sources(config: LoadConfig, import_path: string) -> Result[
 }
 
 fn source_imports(source: checker::SourceFile) -> Vec[string] {
-    let result: Vec[string] = Vec::[];
+    let result: Vec[string] = Vec::from_array([]);
     let parsed = parser::parse_file_bytes(source.source);
     match parsed.root {
         Some(root) => for import in ast::get_nodes(root, "imports") {
@@ -361,7 +363,7 @@ fn load_package(state: LoadState, import_path: string, allow_diagnostics: bool) 
     } else {};
     state.loading.push(import_path);
     let sources = selected_sources(state.config, import_path)?;
-    let imports: Vec[string] = Vec::[];
+    let imports: Vec[string] = Vec::from_array([]);
     for source in sources {
         for dependency in source_imports(source) {
             if dependency != "unsafe"
@@ -444,11 +446,11 @@ pub fn new_load_session(config: LoadConfig) -> LoadSession {
         state: LoadState {
             config,
             world: go_types::new_world(),
-            loading: Vec::[],
-            loaded: Vec::[],
-            failures: Vec::[],
+            loading: Vec::from_array([]),
+            loaded: Vec::from_array([]),
+            failures: Vec::from_array([]),
             retain_info: false,
-            infos: Vec::[],
+            infos: Vec::from_array([]),
         },
     }
 }
@@ -458,11 +460,11 @@ pub fn new_info_load_session(config: LoadConfig) -> LoadSession {
         state: LoadState {
             config,
             world: go_types::new_world(),
-            loading: Vec::[],
-            loaded: Vec::[],
-            failures: Vec::[],
+            loading: Vec::from_array([]),
+            loaded: Vec::from_array([]),
+            failures: Vec::from_array([]),
             retain_info: true,
-            infos: Vec::[],
+            infos: Vec::from_array([]),
         },
     }
 }
@@ -520,11 +522,11 @@ pub fn check_import_path(config: LoadConfig, import_path: string) -> Result[
     let state = LoadState {
         config,
         world: go_types::new_world(),
-        loading: Vec::[],
-        loaded: Vec::[],
-        failures: Vec::[],
+        loading: Vec::from_array([]),
+        loaded: Vec::from_array([]),
+        failures: Vec::from_array([]),
         retain_info: false,
-        infos: Vec::[],
+        infos: Vec::from_array([]),
     };
     load_package(state, import_path, false)
 }
@@ -562,11 +564,11 @@ pub fn check_sources_with_diagnostics(
     let state = LoadState {
         config,
         world: go_types::new_world(),
-        loading: Vec::[],
-        loaded: Vec::[],
-        failures: Vec::[],
+        loading: Vec::from_array([]),
+        loaded: Vec::from_array([]),
+        failures: Vec::from_array([]),
         retain_info: false,
-        infos: Vec::[],
+        infos: Vec::from_array([]),
     };
     load_package(state, import_path, true)
 }

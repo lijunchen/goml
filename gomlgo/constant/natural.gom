@@ -12,18 +12,18 @@ fn normalized(limbs: Vec[uint32]) -> Natural {
 }
 
 pub fn natural_zero() -> Natural {
-    Natural { limbs: Vec::[] }
+    Natural { limbs: Vec::from_array([]) }
 }
 
 pub fn natural_one() -> Natural {
-    Natural { limbs: Vec::[1.to_uint32()] }
+    Natural { limbs: Vec::from_array([1.to_uint32()]) }
 }
 
 pub fn natural_from_uint64(value: uint64) -> Natural {
     if value == 0.to_uint64() {
         natural_zero()
     } else {
-        let limbs: Vec[uint32] = Vec::[value.to_uint32()];
+        let limbs: Vec[uint32] = Vec::from_array([value.to_uint32()]);
         let high = (value >> 32).to_uint32();
         if high != 0.to_uint32() {
             limbs.push(high)
@@ -446,7 +446,7 @@ pub fn natural_to_string(value: Natural) -> string {
     if natural_is_zero(value) {
         return "0"
     } else {};
-    let parts: Vec[uint32] = Vec::[];
+    let parts: Vec[uint32] = Vec::from_array([]);
     let mut current = natural_copy(value);
     while !natural_is_zero(current) {
         match natural_div_rem_small(current, 1000000000.to_uint32()) {

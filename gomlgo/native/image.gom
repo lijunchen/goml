@@ -1,0 +1,103 @@
+package native;
+
+use std::fs;
+use std::path;
+use std::process;
+
+fn build_directory_valid(plan: BuildPlan) -> bool {
+    valid_hash(plan.cache_key)
+        && path::file_name(plan.final_directory) == Option::Some(plan.cache_key)
+        && path::file_name(plan.staging_root) == Option::Some(plan.cache_key)
+        && plan.final_directory != plan.staging_root
+}
+
+fn image_path(plan: BuildPlan) -> string {
+    path::join(plan.final_directory, plan.executable_relative_path)
+}
+
+fn completion_path(plan: BuildPlan) -> string {
+    path::join(plan.final_directory, plan.completion_relative_path)
+}
+
+fn valid_cached_image(plan: BuildPlan) -> bool {
+    let executable = image_path(plan);
+    let metadata_file = completion_path(plan);
+    if !fs::is_file(executable) || !fs::is_file(metadata_file) {
+        return false
+    } else {};
+    let executable_hash = match fs::sha256_file(executable) {
+        Ok(value) => value,
+        Err(_) => return false,
+    };
+    let metadata = match fs::read_file(metadata_file) {
+        Ok(value) => value,
+        Err(_) => return false,
+    };
+    completion_matches(plan, metadata, executable_hash)
+}
+
+fn write_plan_files(plan: BuildPlan) -> Result[unit, string] {
+    for value in plan.files {
+        let target = path::join(plan.staging_root, value.relative_path);
+        let parent = path::parent(target).ok_or("native image target has no parent")?;
+        fs::create_dir_all(parent)?;
+        fs::write_file(target, value.content)?
+    }
+    Result::Ok(())
+}
+
+fn build_command(plan: BuildPlan) -> process::Command {
+    process::Command::new(plan.go_binary).args(plan.arguments).current_dir(plan.staging_root).env_clear().envs(
+        plan.environment,
+    )
+}
+
+fn build_failure(output: process::Output) -> string {
+    let stderr = output.stderr().to_string().unwrap_or("");
+    let stdout = output.stdout().to_string().unwrap_or("");
+    if stderr != "" {
+        stderr
+    } else if stdout != "" {
+        stdout
+    } else {
+        "go build failed with exit code " + output.status().code_value.to_string()
+    }
+}
+
+pub fn build_execution_image(plan: BuildPlan) -> Result[string, string] {
+    if !build_directory_valid(plan) {
+        return Result::Err("native image build directories are invalid")
+    } else if valid_cached_image(plan) {
+        return Result::Ok(image_path(plan))
+    } else {};
+    if fs::exists(plan.final_directory) {
+        fs::remove_dir_all(plan.final_directory)?
+    } else {};
+    if fs::exists(plan.staging_root) {
+        fs::remove_dir_all(plan.staging_root)?
+    } else {};
+    fs::create_dir_all(plan.staging_root)?;
+    write_plan_files(plan)?;
+    let output = build_command(plan).output()?;
+    if !output.status().success() {
+        return Result::Err(build_failure(output))
+    } else {};
+    let staging_executable = path::join(plan.staging_root, plan.executable_relative_path);
+    if !fs::is_file(staging_executable) {
+        return Result::Err("go build did not produce the native execution image")
+    } else {};
+    let executable_hash = fs::sha256_file(staging_executable)?;
+    fs::write_file(
+        path::join(plan.staging_root, plan.completion_relative_path),
+        completion_metadata(plan, executable_hash)?,
+    )?;
+    let final_parent = path::parent(plan.final_directory).ok_or(
+        "native image cache directory has no parent",
+    )?;
+    fs::create_dir_all(final_parent)?;
+    match fs::rename(plan.staging_root, plan.final_directory) {
+        Ok(()) => {},
+        Err(error) => return Result::Err(error.to_string()),
+    };
+    Result::Ok(image_path(plan))
+}

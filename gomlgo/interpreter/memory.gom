@@ -1,0 +1,188 @@
+package interpreter;
+
+use gomlgo::types as go_types;
+
+pub struct Cell {
+    pub id: CellId,
+    pub type_id: go_types::TypeId,
+    pub value: Ref[Value],
+}
+
+pub struct Memory {
+    pub cells: Vec[Cell],
+}
+
+pub fn new_memory() -> Memory {
+    Memory { cells: Vec::from_array([]) }
+}
+
+pub fn allocate_cell(memory: Memory, type_id: go_types::TypeId, value: Value) -> CellId {
+    let id = cell_id(memory.cells.len());
+    memory.cells.push(Cell { id, type_id, value: Ref::new(copy_value(value)) });
+    id
+}
+
+pub fn root_place(cell: CellId) -> Place {
+    Place { root: cell, projections: Vec::from_array([]) }
+}
+
+pub fn field_place(base: Place, indices: Vec[int]) -> Place {
+    let projections: Vec[Projection] = Vec::with_capacity(base.projections.len() + indices.len());
+    for projection in base.projections {
+        projections.push(projection)
+    }
+    for index in indices {
+        projections.push(Projection::Field(index))
+    }
+    Place { root: base.root, projections }
+}
+
+pub fn index_place(base: Place, index: int) -> Place {
+    let projections: Vec[Projection] = Vec::with_capacity(base.projections.len() + 1);
+    for projection in base.projections {
+        projections.push(projection)
+    }
+    projections.push(Projection::Index(index));
+    Place { root: base.root, projections }
+}
+
+fn checked_cell(memory: Memory, id: CellId) -> Result[Cell, string] {
+    if id.value < 0 || id.value >= memory.cells.len() {
+        Result::Err("invalid cell " + id.value.to_string())
+    } else {
+        Result::Ok(memory.cells[id.value])
+    }
+}
+
+fn slice_element_place(value: SliceValue, index: int) -> Result[Place, string] {
+    if index < 0 || index >= value.length {
+        return Result::Err(
+            "index out of range [" + index.to_string() + "] with length " + value.length.to_string(),
+        )
+    } else {};
+    let base = value.backing.ok_or("index of nil slice")?;
+    Result::Ok(index_place(base, value.offset + index))
+}
+
+pub fn indexed_place(memory: Memory, base: Place, index: int) -> Result[Place, string] {
+    match load_place(memory, base) {
+        Ok(Value::Local(LocalValue::Slice(value))) => slice_element_place(value, index),
+        Ok(_) => Result::Ok(index_place(base, index)),
+        Err(message) => Result::Err(message),
+    }
+}
+
+fn load_projection(memory: Memory, value: Value, projections: Vec[Projection], offset: int) -> Result[
+    Value,
+    string,
+] {
+    if offset >= projections.len() {
+        return Result::Ok(copy_value(value))
+    } else {};
+    match (value, projections[offset]) {
+        (Value::Local(LocalValue::Aggregate { type_id: _, elements }), Projection::Field(index)) | (
+            Value::Local(LocalValue::Aggregate { type_id: _, elements }),
+            Projection::Index(index),
+        ) => {
+            if index < 0 || index >= elements.len() {
+                Result::Err("aggregate index out of range")
+            } else {
+                load_projection(memory, elements[index], projections, offset + 1)
+            }
+        },
+        (Value::Local(LocalValue::Slice(slice)), Projection::Index(index)) => {
+            let place = slice_element_place(slice, index)?;
+            let nested = load_place(memory, place)?;
+            load_projection(memory, nested, projections, offset + 1)
+        },
+        _ => Result::Err("place projection does not match stored value"),
+    }
+}
+
+pub fn load_place(memory: Memory, place: Place) -> Result[Value, string] {
+    let cell = checked_cell(memory, place.root)?;
+    load_projection(memory, cell.value.get(), place.projections, 0)
+}
+
+fn borrow_projection(memory: Memory, value: Value, projections: Vec[Projection], offset: int) -> Result[
+    Value,
+    string,
+] {
+    if offset >= projections.len() {
+        return Result::Ok(value)
+    } else {};
+    match (value, projections[offset]) {
+        (Value::Local(LocalValue::Aggregate { type_id: _, elements }), Projection::Field(index)) | (
+            Value::Local(LocalValue::Aggregate { type_id: _, elements }),
+            Projection::Index(index),
+        ) => if index < 0 || index >= elements.len() {
+            Result::Err("aggregate index out of range")
+        } else {
+            borrow_projection(memory, elements[index], projections, offset + 1)
+        },
+        (Value::Local(LocalValue::Slice(slice)), Projection::Index(index)) => {
+            let place = slice_element_place(slice, index)?;
+            let nested = borrow_place(memory, place)?;
+            borrow_projection(memory, nested, projections, offset + 1)
+        },
+        _ => Result::Err("place projection does not match stored value"),
+    }
+}
+
+pub fn borrow_place(memory: Memory, place: Place) -> Result[Value, string] {
+    let cell = checked_cell(memory, place.root)?;
+    borrow_projection(memory, cell.value.get(), place.projections, 0)
+}
+
+fn store_projection(
+    memory: Memory,
+    current: Value,
+    projections: Vec[Projection],
+    offset: int,
+    value: Value,
+) -> Result[unit, string] {
+    if offset >= projections.len() {
+        return Result::Err("store projection ended without a cell")
+    } else {};
+    match (current, projections[offset]) {
+        (Value::Local(LocalValue::Aggregate { type_id: _, elements }), Projection::Field(index)) | (
+            Value::Local(LocalValue::Aggregate { type_id: _, elements }),
+            Projection::Index(index),
+        ) => {
+            if index < 0 || index >= elements.len() {
+                return Result::Err("aggregate index out of range")
+            } else {};
+            if offset + 1 == projections.len() {
+                elements[index] = copy_value(value);
+                Result::Ok(())
+            } else {
+                store_projection(memory, elements[index], projections, offset + 1, value)
+            }
+        },
+        (Value::Local(LocalValue::Slice(slice)), Projection::Index(index)) => {
+            let mut projected = slice_element_place(slice, index)?;
+            if offset + 1 == projections.len() {
+                store_place(memory, projected, value)
+            } else {
+                for projection_index in offset + 1..projections.len() {
+                    projected = match projections[projection_index] {
+                        Projection::Field(field) => field_place(projected, Vec::from_array([field])),
+                        Projection::Index(index) => index_place(projected, index),
+                    };
+                }
+                store_place(memory, projected, value)
+            }
+        },
+        _ => Result::Err("place projection does not match stored value"),
+    }
+}
+
+pub fn store_place(memory: Memory, place: Place, value: Value) -> Result[unit, string] {
+    let cell = checked_cell(memory, place.root)?;
+    if place.projections.is_empty() {
+        cell.value.set(copy_value(value));
+        Result::Ok(())
+    } else {
+        store_projection(memory, cell.value.get(), place.projections, 0, value)
+    }
+}

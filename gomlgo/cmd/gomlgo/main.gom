@@ -1,15 +1,23 @@
 package main;
 
 use gomlgo::ast;
+use gomlgo::bytecode;
 use gomlgo::checker;
+use gomlgo::execution;
+use gomlgo::interpreter;
 use gomlgo::loader;
+use gomlgo::native;
 use gomlgo::parser;
 use gomlgo::scanner;
 use gomlgo::token;
 use std::bytes;
 use std::env;
 use std::fs;
+use std::io;
+use std::num;
+use std::path;
 use std::process;
+use std::crypto::hash;
 
 const CHECK_COMMAND: string = "check";
 
@@ -21,7 +29,17 @@ const PARSE_COMMAND: string = "parse";
 
 const PARSE_EXPR_COMMAND: string = "parse-expr";
 
-const COMMAND_USAGE: string = "usage: gomlgo scan FILE | parse FILE | parse-expr EXPR | check FILE... | check-package DIRECTORY";
+const RUN_COMMAND: string = "run";
+
+const EXECUTION_IMAGE_ENV: string = "GOMLGO_EXECUTION_IMAGE";
+
+const IMAGE_SOURCE_ENV: string = "GOMLGO_IMAGE_SOURCE";
+
+const BRIDGE_SOURCE_ENV: string = "GOMLGO_BRIDGE_SOURCE";
+
+const CACHE_ROOT_ENV: string = "GOMLGO_NATIVE_CACHE";
+
+const COMMAND_USAGE: string = "usage: gomlgo scan FILE | parse FILE | parse-expr EXPR | check FILE... | check-package DIRECTORY | run [--seed N] [--max-goroutines N] FILE [-- PROGRAM_ARGS...]";
 
 fn fail(message: string) -> unit {
     println(message);
@@ -74,7 +92,7 @@ fn print_parse_result(result: parser::ParseResult) -> unit {
 }
 
 fn check_files(files: Vec[string], package_path: string) -> unit {
-    let sources: Vec[checker::SourceFile] = Vec::[];
+    let sources: Vec[checker::SourceFile] = Vec::from_array([]);
     for file in files {
         sources.push(checker::SourceFile { name: file, source: read_source(file) })
     }
@@ -107,6 +125,303 @@ fn check_package(directory: string) -> unit {
     }
 }
 
+fn write_stderr(message: string) -> unit {
+    match io::write_stderr(bytes::Bytes::from_string(message + "\n")) {
+        Ok(()) => {},
+        Err(error) => fail(error),
+    }
+}
+
+fn source_hash(files: Vec[string]) -> Result[string, string] {
+    let builder = bytes::Bytes::new();
+    for file in files {
+        for value in fs::read_bytes(file)?.to_vec() {
+            builder.push(value)
+        }
+    }
+    Result::Ok(hash::sha256(builder))
+}
+
+fn imported_paths_hash(program: bytecode::BytecodeProgram) -> string {
+    let builder = bytes::Bytes::new();
+    for package_value in program.packages {
+        for value in bytes::Bytes::from_string(package_value.path + "\n").to_vec() {
+            builder.push(value)
+        }
+    }
+    hash::sha256(builder)
+}
+
+fn artifact_module_root(generated: string) -> Result[string, string] {
+    let mut current = path::parent(generated).ok_or("generated source has no parent")?;
+    while current != "" {
+        if fs::is_file(path::join(current, "goml.toml"))
+            && fs::is_file(path::join(current, "nativebridge/bridge.go")) {
+            return Result::Ok(current)
+        } else {};
+        let nested = path::join(current, "gomlgo");
+        if fs::is_file(path::join(nested, "goml.toml"))
+            && fs::is_file(path::join(nested, "nativebridge/bridge.go")) {
+            return Result::Ok(nested)
+        } else {};
+        let Some(parent) = path::parent(current) else {
+            break
+        };
+        if parent == current {
+            break
+        } else {};
+        current = parent;
+    }
+    Result::Err("generated source is not below a gomlgo module root")
+}
+
+fn artifact_source() -> Result[string, string] {
+    match env::var(IMAGE_SOURCE_ENV) {
+        Some(value) => if fs::is_file(value) {
+            Result::Ok(value)
+        } else {
+            Result::Err(IMAGE_SOURCE_ENV + " is not a file: " + value)
+        },
+        None => {
+            let executable = env::current_exe()?;
+            let directory = path::parent(executable).ok_or("gomlgo executable has no parent")?;
+            let artifact_root = path::parent(
+                path::parent(path::parent(directory).ok_or("gomlgo executable has no artifact")?).ok_or(
+                    "gomlgo executable has no artifact",
+                )?,
+            ).ok_or("gomlgo executable has no artifact")?;
+            let candidate = path::join(
+                path::join(
+                    path::join(artifact_root, "build/pkg/gomlgo/cmd/gomlgo"),
+                    "goml_generated.go",
+                ),
+                "",
+            );
+            let candidate = path::clean(candidate);
+            if fs::is_file(candidate) {
+                Result::Ok(candidate)
+            } else {
+                Result::Err(
+                    "native execution requires " + IMAGE_SOURCE_ENV + " or a gomlgo build artifact",
+                )
+            }
+        },
+    }
+}
+
+fn bridge_sources() -> Result[Vec[native::GeneratedFile], string] {
+    match env::var(BRIDGE_SOURCE_ENV) {
+        Some(value) => {
+            let directory = path::parent(value).ok_or("native bridge source has no parent")?;
+            Result::Ok(
+                Vec::from_array(
+                    [
+                        native::GeneratedFile {
+                            relative_path: "nativebridge/bridge.go",
+                            content: fs::read_file(value)?,
+                        },
+                        native::GeneratedFile {
+                            relative_path: "nativebridge/advanced.go",
+                            content: fs::read_file(path::join(directory, "advanced.go"))?,
+                        },
+                    ],
+                ),
+            )
+        },
+        None => {
+            let generated = artifact_source()?;
+            let package_root = artifact_module_root(generated)?;
+            Result::Ok(
+                Vec::from_array(
+                    [
+                        native::GeneratedFile {
+                            relative_path: "nativebridge/bridge.go",
+                            content: fs::read_file(
+                                path::join(package_root, "nativebridge/bridge.go"),
+                            )?,
+                        },
+                        native::GeneratedFile {
+                            relative_path: "nativebridge/advanced.go",
+                            content: fs::read_file(
+                                path::join(package_root, "nativebridge/advanced.go"),
+                            )?,
+                        },
+                    ],
+                ),
+            )
+        },
+    }
+}
+
+fn cache_root() -> Result[string, string] {
+    match env::var(CACHE_ROOT_ENV) {
+        Some(value) => Result::Ok(value),
+        None => {
+            let module_root = artifact_module_root(artifact_source()?)?;
+            Result::Ok(path::join(path::join(module_root, "_artifact"), "native-cache"))
+        },
+    }
+}
+
+fn native_image(
+    program: bytecode::BytecodeProgram,
+    files: Vec[string],
+    toolchain: execution::GoToolchain,
+) -> Result[string, string] {
+    let generated = artifact_source()?;
+    let module_root = artifact_module_root(generated)?;
+    let image_sources = Vec::from_array(
+        [
+            native::GeneratedFile { relative_path: "main.go", content: fs::read_file(generated)? },
+            native::GeneratedFile {
+                relative_path: "rawstring/rawstring.go",
+                content: fs::read_file(path::join(module_root, "rawstring/rawstring.go"))?,
+            },
+        ],
+    );
+    let plan = native::build_plan(
+        native::BuildRequest {
+            go_binary: toolchain.binary,
+            cache_root: cache_root()?,
+            cache: native::CacheKeyInput {
+                go_version: toolchain.version,
+                goos: toolchain.host_goos,
+                goarch: toolchain.host_goarch,
+                goamd64: env::var("GOAMD64").unwrap_or("v1"),
+                goexperiment: env::var("GOEXPERIMENT").unwrap_or(""),
+                cgo: false,
+                tags: Vec::from_array([]),
+                source_hash: source_hash(files)?,
+                import_manifest_hash: imported_paths_hash(program),
+            },
+            bridge_sources: bridge_sources()?,
+            image_sources,
+        },
+        bytecode::native_manifest(program)?,
+    )?;
+    native::build_execution_image(plan)
+}
+
+fn execute_loaded(
+    result: execution::ExecutionLoadResult,
+    files: Vec[string],
+    vm_config: interpreter::VmConfig,
+) -> unit {
+    for value in result.diagnostics {
+        write_stderr(
+            value.file + ":" + value.start.to_string() + ":" + value.end.to_string() + ": "
+                + value.message,
+        )
+    }
+    let Some(program) = result.program else {
+        process::exit(1);
+        return
+    };
+    let toolchain = program.toolchain;
+    let lowered = bytecode::lower(program);
+    for value in lowered.diagnostics {
+        write_stderr(value.start.to_string() + ":" + value.end.to_string() + ": " + value.message)
+    }
+    let Some(program) = lowered.program else {
+        process::exit(1);
+        return
+    };
+    if !program.native_calls.is_empty() && env::var(EXECUTION_IMAGE_ENV).is_none() {
+        let image = match native_image(program, files, toolchain) {
+            Ok(value) => value,
+            Err(message) => {
+                fail("native link failed: " + message);
+                return
+            },
+        };
+        let command = process::Command::new(image);
+        let arguments = env::args();
+        for index in 1..arguments.len() {
+            let _ = command.arg(arguments[index]);
+        }
+        let output = match command.env(EXECUTION_IMAGE_ENV, "1").output() {
+            Ok(value) => value,
+            Err(message) => {
+                fail(message);
+                return
+            },
+        };
+        match io::write_stdout(output.stdout()) {
+            Ok(()) => {},
+            Err(message) => fail(message),
+        };
+        match io::write_stderr(output.stderr()) {
+            Ok(()) => {},
+            Err(message) => fail(message),
+        };
+        let code = output.status().code().unwrap_or(1);
+        if code != 0 {
+            process::exit(code)
+        } else {};
+        return
+    } else {};
+    let result = interpreter::run(program, vm_config);
+    match io::write_stdout(result.stdout) {
+        Ok(()) => {},
+        Err(message) => fail(message),
+    };
+    match io::write_stderr(result.stderr) {
+        Ok(()) => {},
+        Err(message) => fail(message),
+    };
+    if result.exit_code != 0 {
+        process::exit(result.exit_code)
+    } else {}
+}
+
+fn run_files(arguments: Vec[string]) -> unit {
+    let files: Vec[string] = Vec::from_array([]);
+    let vm_config = interpreter::default_config();
+    let mut index = 2;
+    while index < arguments.len() && arguments[index] != "--" {
+        if arguments[index] == "--seed" {
+            if index + 1 >= arguments.len() {
+                fail(COMMAND_USAGE)
+            } else {};
+            vm_config.select_seed = match num::parse_uint(arguments[index + 1]) {
+                Ok(value) => value.to_uint64(),
+                Err(message) => {
+                    fail("invalid select seed: " + message);
+                    0.to_uint64()
+                },
+            };
+            index += 2;
+        } else if arguments[index] == "--max-goroutines" {
+            if index + 1 >= arguments.len() {
+                fail(COMMAND_USAGE)
+            } else {};
+            vm_config.max_goroutines = match num::parse_int(arguments[index + 1]) {
+                Ok(value) => if value > 0 {
+                    value
+                } else {
+                    fail("maximum goroutine count must be positive");
+                    1
+                },
+                Err(message) => {
+                    fail("invalid maximum goroutine count: " + message);
+                    1
+                },
+            };
+            index += 2;
+        } else {
+            files.push(arguments[index]);
+            index += 1;
+        }
+    }
+    if files.len() != 1 {
+        fail(COMMAND_USAGE)
+    } else {};
+    match execution::load_files(execution::default_config(), files) {
+        Ok(value) => execute_loaded(value, files, vm_config),
+        Err(message) => fail(message),
+    }
+}
+
 fn main() -> unit {
     let arguments = env::args();
     if arguments.len() < 2 {
@@ -114,7 +429,7 @@ fn main() -> unit {
     } else {
         match arguments[1] {
             CHECK_COMMAND => if arguments.len() >= 3 {
-                let files: Vec[string] = Vec::[];
+                let files: Vec[string] = Vec::from_array([]);
                 for index in 2..arguments.len() {
                     files.push(arguments[index])
                 }
@@ -142,6 +457,7 @@ fn main() -> unit {
             } else {
                 fail(COMMAND_USAGE)
             },
+            RUN_COMMAND => run_files(arguments),
             _ => fail(COMMAND_USAGE),
         }
     }

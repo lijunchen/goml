@@ -45,21 +45,16 @@ fn numeric_literals_match_the_go_constant_oracle() -> unit {
 
 #[test]
 fn integer_based_imaginary_literals_match_the_go_constant_oracle() -> unit {
-    for value in Vec::["0b111i", "0o567i", "0xabci"] {
+    for value in Vec::from_array(["0b111i", "0o567i", "0xabci"]) {
         testing::assert_eq(exact(parse_imaginary_literal(value)), oracle_exact(value))
     }
 }
 
 #[test]
 fn parses_large_floats_with_go_constant_precision() -> unit {
-    for value in Vec::[
-        "1e5000",
-        "1e-5000",
-        "1.23456789e5000",
-        "0x1p5000",
-        "1e646456992",
-        "1e-646456992",
-    ] {
+    for value in Vec::from_array(
+        ["1e5000", "1e-5000", "1.23456789e5000", "0x1p5000", "1e646456992", "1e-646456992"],
+    ) {
         let parsed = match parse_float_literal(value) {
             Ok(value) => value,
             Err(error) => {

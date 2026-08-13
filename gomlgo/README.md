@@ -45,12 +45,27 @@ just gofront-mutate-diff 25
 The built CLI supports:
 
 ```bash
-_artifact/gomlgo-build/bin/cmd/gomlgo/gomlgo scan FILE
-_artifact/gomlgo-build/bin/cmd/gomlgo/gomlgo parse FILE
-_artifact/gomlgo-build/bin/cmd/gomlgo/gomlgo parse-expr 'a + b*c'
-_artifact/gomlgo-build/bin/cmd/gomlgo/gomlgo check FILE...
-_artifact/gomlgo-build/bin/cmd/gomlgo/gomlgo check-package DIRECTORY
+_artifact/bin/cmd/gomlgo/gomlgo scan FILE
+_artifact/bin/cmd/gomlgo/gomlgo parse FILE
+_artifact/bin/cmd/gomlgo/gomlgo parse-expr 'a + b*c'
+_artifact/bin/cmd/gomlgo/gomlgo check FILE...
+_artifact/bin/cmd/gomlgo/gomlgo check-package DIRECTORY
+_artifact/bin/cmd/gomlgo/gomlgo run FILE [-- PROGRAM_ARGS...]
 ```
+
+## Single-file interpreter
+
+`gomlgo run` accepts exactly one explicit `.go` file. The file must declare `package main` and define `main.main`. Only that file is interpreted: other files in the directory, local packages, third-party modules, cgo, and assembly are outside the current execution scope. Imports are limited to Go 1.26 standard-library packages.
+
+The execution loader uses the selected Go 1.26 toolchain for environment and standard-library dependency metadata. User functions are lowered to typed bytecode and executed by the GoML VM; `gomlgo run` is not a wrapper around `go run`. The VM supports package initialization, functions and closures, control flow, arrays, structs, pointers, slices, maps, methods, interfaces, type assertions and switches, method values and expressions, variadic calls, generic function and method instantiation, string, byte-slice, rune-slice, and rune conversions, and `defer`, `panic`, and `recover`. Runtime faults use the same panic unwinding path and therefore execute deferred calls and can be recovered. A cooperative scheduler implements goroutines, buffered and unbuffered channels, close, channel range, seeded select, and deadlock detection. `--seed` selects deterministic select choices and `--max-goroutines` limits scheduler growth.
+
+Standard-library bodies are never interpreted. Used package functions, including concrete generic instances, are linked to stable native call IDs and a generated Go registry. Generic standard-library calls inside interpreted generic functions are specialized with the outer function's concrete type arguments. The execution image places the VM and registry in one process and passes opaque values that directly contain `reflect.Value`; there is no RPC, pipe protocol, serialization, session, or remote object-handle table.
+
+Exported standard-library named structs are registered with their real Go types, so their zero values and addressable pointer receivers retain Go semantics. Used standard-library methods are bound as static method expressions, and function values returned by native calls are invoked directly through the same asynchronous `reflect.Value` bridge. Native slice results preserve both length and capacity. This covers compiler-generated task-scope code using `sync.Mutex`, `sync.WaitGroup`, `context.Context`, and `context.CancelFunc`. Checked-in `gomlc` products for lexical task scope, file I/O, JSON parsing and encoding, and bytes, UTF-8, vector, and collection operations execute with output identical to Go 1.26.
+
+Native calls run on host goroutines and wake the VM through a completion queue. User closures cross the boundary as direct callback tokens and execute on the VM scheduler, preserving captures, panic, and exit behavior. The image generator emits concrete proxies for exported standard-library interfaces and type shells for exported, non-generic user structs with supported fields, including struct tags. Native channels such as values returned by `time.After` participate in blocking receive and receive-only select. `os.Args` contains the image path followed only by arguments after `--`.
+
+The native value boundary currently supports scalar values, recursively supported slices, concrete function callbacks, selected exported interfaces, non-generic user structs whose fields use supported value types, and receive-capable native channels. Unsupported package variables other than `os.Args`, interface methods with generic or variadic signatures, native channel send/mixed native-and-interpreted select, user aggregate pointers requiring persistent writeback identity, `unsafe`, cgo, and third-party packages are diagnosed rather than approximated. Native code has the same operating-system authority as an ordinary Go program, so the interpreter is not a security sandbox.
 
 The parser differential binary accepts `parse-acceptance`, `ast-shape`, `ast-position`, `ast-comments`, or `diagnostic-strict`. A mismatch reports the file, normalized AST path, surrounding node offset, expected value, and actual value.
 

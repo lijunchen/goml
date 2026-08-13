@@ -21,7 +21,7 @@ struct CommentData {
 }
 
 fn source_lines(source: bytes::Bytes) -> Vec[int] {
-    let result: Vec[int] = Vec::[0];
+    let result: Vec[int] = Vec::from_array([0]);
     for index in 0..source.len() {
         if source.get(index) == b'\n' {
             result.push(index + 1)
@@ -59,15 +59,17 @@ fn comment_node(value: token::Token) -> ast::Node {
         ast::Kind::Comment,
         value.start,
         value.start + value.literal.byte_len(),
-        Vec::[
-            ast::field("slash", ast::int_value(value.start)),
-            ast::field("text", ast::text_value(value.literal)),
-        ],
+        Vec::from_array(
+            [
+                ast::field("slash", ast::int_value(value.start)),
+                ast::field("text", ast::text_value(value.literal)),
+            ],
+        ),
     )
 }
 
 fn comment_group(tokens: Vec[token::Token], start: int, end: int) -> ast::Node {
-    let values: Vec[ast::Node] = Vec::[];
+    let values: Vec[ast::Node] = Vec::from_array([]);
     for index in start..end {
         values.push(comment_node(tokens[index]))
     }
@@ -75,7 +77,7 @@ fn comment_group(tokens: Vec[token::Token], start: int, end: int) -> ast::Node {
         ast::Kind::CommentGroup,
         values[0].span.start,
         values[values.len() - 1].span.end,
-        Vec::[ast::field("list", ast::nodes(values))],
+        Vec::from_array([ast::field("list", ast::nodes(values))]),
     )
 }
 
@@ -114,7 +116,11 @@ fn append_comment_info(
 }
 
 fn analyze_comments(source: bytes::Bytes, tokens: Vec[token::Token]) -> CommentData {
-    let data = CommentData { infos: Vec::[], nodes: Vec::[], lines: source_lines(source) };
+    let data = CommentData {
+        infos: Vec::from_array([]),
+        nodes: Vec::from_array([]),
+        lines: source_lines(source),
+    };
     let mut index = 0;
     let mut previous: Option[token::Token] = Option::None;
     while index < tokens.len() {

@@ -105,7 +105,7 @@ fn sync_atomic_align64(world: World, value: TypeId) -> bool {
 }
 
 fn copied_size_types(values: Vec[TypeId]) -> Vec[TypeId] {
-    let result: Vec[TypeId] = Vec::[];
+    let result: Vec[TypeId] = Vec::from_array([]);
     for value in values {
         result.push(value)
     }
@@ -186,7 +186,7 @@ fn alignof_inner(world: World, value: TypeId, sizes: TargetSizes, visited: Vec[T
 }
 
 pub fn alignof(world: World, value: TypeId, sizes: TargetSizes) -> int64 {
-    alignof_inner(world, value, sizes, Vec::[])
+    alignof_inner(world, value, sizes, Vec::from_array([]))
 }
 
 fn offsets_of_inner(
@@ -195,7 +195,7 @@ fn offsets_of_inner(
     sizes: TargetSizes,
     visited: Vec[TypeId],
 ) -> Vec[int64] {
-    let result: Vec[int64] = Vec::[];
+    let result: Vec[int64] = Vec::from_array([]);
     let mut offset = 0.to_int64();
     for field in fields {
         offset = aligned_offset(
@@ -214,7 +214,7 @@ fn offsets_of_inner(
 }
 
 pub fn offsets_of(world: World, fields: Vec[StructField], sizes: TargetSizes) -> Vec[int64] {
-    offsets_of_inner(world, fields, sizes, Vec::[])
+    offsets_of_inner(world, fields, sizes, Vec::from_array([]))
 }
 
 fn sizeof_inner(world: World, value: TypeId, sizes: TargetSizes, visited: Vec[TypeId]) -> int64 {
@@ -280,5 +280,5 @@ fn sizeof_inner(world: World, value: TypeId, sizes: TargetSizes, visited: Vec[Ty
 }
 
 pub fn sizeof(world: World, value: TypeId, sizes: TargetSizes) -> int64 {
-    sizeof_inner(world, value, sizes, Vec::[])
+    sizeof_inner(world, value, sizes, Vec::from_array([]))
 }

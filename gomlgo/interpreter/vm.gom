@@ -1,0 +1,3489 @@
+package interpreter;
+
+use gomlgo::bytecode;
+use gomlgo::types as go_types;
+use std::bytes;
+
+pub struct VmConfig {
+    pub max_steps: int64,
+    pub max_call_depth: int,
+    pub max_goroutines: int,
+    pub instruction_quantum: int,
+    pub select_seed: uint64,
+    pub trace_bytecode: bool,
+}
+
+pub struct RuntimeStackFrame {
+    pub function: bytecode::FunctionId,
+    pub name: string,
+    pub location: bytecode::SourceLocation,
+}
+
+pub struct RuntimeError {
+    pub kind: string,
+    pub message: string,
+    pub location: Option[bytecode::SourceLocation],
+    pub stack: Vec[RuntimeStackFrame],
+}
+
+pub struct VmResult {
+    pub stdout: bytes::Bytes,
+    pub stderr: bytes::Bytes,
+    pub exit_code: int,
+    pub error: Option[RuntimeError],
+    pub steps: int64,
+}
+
+struct PanicPayload {
+    value: Value,
+    type_id: go_types::TypeId,
+    nil_interface: bool,
+}
+
+struct PanicState {
+    payload: Ref[PanicPayload],
+    active: Ref[bool],
+}
+
+enum PreparedTarget {
+    Static(bytecode::FunctionId),
+    Method {
+        function: bytecode::FunctionId,
+        receiver: Value,
+    },
+    InterfaceMethod {
+        method: go_types::ObjectId,
+        receiver: Value,
+    },
+    Dynamic(Value),
+    Native(bytecode::NativeCallId),
+    Builtin(bytecode::BuiltinKind),
+}
+
+struct PreparedCall {
+    target: PreparedTarget,
+    arguments: Vec[Value],
+    argument_types: Vec[go_types::TypeId],
+    variadic: bool,
+    location: bytecode::SourceLocation,
+}
+
+struct NativePrepared {
+    id: Option[bytecode::NativeCallId],
+    function: Option[dyn HostValueMarker],
+    parameter_types: Vec[go_types::TypeId],
+    parameter_keys: Vec[string],
+    result_types: Vec[go_types::TypeId],
+    result_keys: Vec[string],
+    variadic: bool,
+}
+
+struct Frame {
+    function: bytecode::FunctionId,
+    registers: Vec[Option[Value]],
+    places: Vec[Option[Place]],
+    locals: Vec[CellId],
+    block: Ref[bytecode::BlockId],
+    deferred: Vec[PreparedCall],
+    recover_state: Option[PanicState],
+}
+
+struct MapEntry {
+    hash: uint64,
+    key: Value,
+    value: Ref[Value],
+    active: Ref[bool],
+    next: int,
+}
+
+struct MapValue {
+    key_type: go_types::TypeId,
+    value_type: go_types::TypeId,
+    entries: Vec[MapEntry],
+    buckets: HashMap[uint64, int],
+}
+
+struct MapIterator {
+    map: int,
+    key_type: go_types::TypeId,
+    value_type: go_types::TypeId,
+    entries: Vec[int],
+    cursor: Ref[int],
+}
+
+enum NativeCallbackTarget {
+    Function {
+        function: FunctionValue,
+        signature: go_types::TypeId,
+    },
+    Interface {
+        receiver: Value,
+        interface_type: go_types::TypeId,
+    },
+}
+
+struct NativeCallbackBinding {
+    queue: NativeCallbackQueue,
+    target: NativeCallbackTarget,
+}
+
+struct VmState {
+    program: bytecode::BytecodeProgram,
+    config: VmConfig,
+    memory: Memory,
+    globals: Vec[CellId],
+    maps: Vec[MapValue],
+    map_iterators: Vec[MapIterator],
+    channels: Vec[ChannelValue],
+    stdout: bytes::Bytes,
+    stderr: bytes::Bytes,
+    steps: Ref[int64],
+    depth: Ref[int],
+    location: Ref[Option[bytecode::SourceLocation]],
+    native_completions: NativeCompletionQueue,
+    native_callbacks: Vec[NativeCallbackBinding],
+}
+
+enum FunctionControl {
+    Jump {
+        target: bytecode::BlockId,
+        arguments: Vec[Value],
+    },
+    Return(Vec[Value]),
+}
+
+enum InstructionControl {
+    Continue,
+    Panic(PanicPayload),
+    Exit(int),
+}
+
+enum InvocationOutcome {
+    Returned(Vec[Value]),
+    Panicked(PanicPayload),
+    Exited(int),
+}
+
+pub fn default_config() -> VmConfig {
+    VmConfig {
+        max_steps: 10000000.to_int64(),
+        max_call_depth: 1024,
+        max_goroutines: 100000,
+        instruction_quantum: 64,
+        select_seed: 1.to_uint64(),
+        trace_bytecode: false,
+    }
+}
+
+fn empty_slots[T](count: int) -> Vec[Option[T]] {
+    let result: Vec[Option[T]] = Vec::with_capacity(count);
+    for _ in 0..count {
+        result.push(Option::None)
+    }
+    result
+}
+
+fn runtime_error(kind: string, message: string, location: Option[bytecode::SourceLocation]) -> RuntimeError {
+    RuntimeError { kind, message, location, stack: Vec::from_array([]) }
+}
+
+fn checked_function(
+    state: VmState,
+    id: bytecode::FunctionId,
+    location: Option[bytecode::SourceLocation],
+) -> Result[bytecode::BytecodeFunction, string] {
+    if id.value < 0 || id.value >= state.program.functions.len() {
+        let _ = location;
+        Result::Err("invalid function " + id.value.to_string())
+    } else {
+        Result::Ok(state.program.functions[id.value])
+    }
+}
+
+fn register(frame: Frame, id: bytecode::RegisterId) -> Result[Value, string] {
+    if id.value < 0 || id.value >= frame.registers.len() {
+        Result::Err("invalid register " + id.value.to_string())
+    } else {
+        frame.registers[id.value].ok_or("register " + id.value.to_string() + " is undefined")
+    }
+}
+
+fn set_register(frame: Frame, id: bytecode::RegisterId, value: Value) -> Result[unit, string] {
+    if id.value < 0 || id.value >= frame.registers.len() {
+        Result::Err("invalid register " + id.value.to_string())
+    } else {
+        frame.registers[id.value] = Option::Some(copy_value(value));
+        Result::Ok(())
+    }
+}
+
+fn place(frame: Frame, id: bytecode::PlaceId) -> Result[Place, string] {
+    if id.value < 0 || id.value >= frame.places.len() {
+        Result::Err("invalid place " + id.value.to_string())
+    } else {
+        frame.places[id.value].ok_or("place " + id.value.to_string() + " is undefined")
+    }
+}
+
+fn set_place(frame: Frame, id: bytecode::PlaceId, value: Place) -> Result[unit, string] {
+    if id.value < 0 || id.value >= frame.places.len() {
+        Result::Err("invalid place " + id.value.to_string())
+    } else {
+        frame.places[id.value] = Option::Some(copy_place(value));
+        Result::Ok(())
+    }
+}
+
+fn register_values(frame: Frame, ids: Vec[bytecode::RegisterId]) -> Result[Vec[Value], string] {
+    let result: Vec[Value] = Vec::with_capacity(ids.len());
+    for id in ids {
+        result.push(register(frame, id)?)
+    }
+    Result::Ok(result)
+}
+
+fn use_step(state: VmState, location: bytecode::SourceLocation) -> Result[unit, string] {
+    state.location.set(Option::Some(location));
+    state.steps.set(state.steps.get() + 1.to_int64());
+    if state.config.max_steps >= 0.to_int64() && state.steps.get() > state.config.max_steps {
+        let _ = location;
+        Result::Err("instruction limit exceeded")
+    } else {
+        Result::Ok(())
+    }
+}
+
+fn append_bytes(target: bytes::Bytes, value: bytes::Bytes) -> unit {
+    for byte in value.to_vec() {
+        target.push(byte)
+    }
+}
+
+fn append_output(state: VmState, values: Vec[Value], newline: bool) -> Result[unit, string] {
+    for index in 0..values.len() {
+        if newline && index > 0 {
+            state.stderr.push(b' ')
+        } else {};
+        append_bytes(state.stderr, output_bytes(values[index])?)
+    }
+    if newline {
+        state.stderr.push(b'\n')
+    } else {};
+    Result::Ok(())
+}
+
+fn result_type(state: VmState, frame: Frame, registers: Vec[bytecode::RegisterId], index: int) -> Result[
+    go_types::TypeId,
+    string,
+] {
+    if index < 0 || index >= registers.len() {
+        return Result::Err("builtin result index is invalid")
+    } else {};
+    let register = registers[index];
+    let function = state.program.functions[frame.function.value];
+    if register.value < 0 || register.value >= function.register_types.len() {
+        Result::Err("builtin result register is invalid")
+    } else {
+        Result::Ok(function.register_types[register.value])
+    }
+}
+
+fn value_length(state: VmState, value: Value) -> Result[int, string] {
+    match value {
+        Value::Local(LocalValue::Slice(value)) => Result::Ok(value.length),
+        Value::Local(LocalValue::String(value)) => Result::Ok(value.len()),
+        Value::Local(LocalValue::Aggregate { type_id: _, elements }) => Result::Ok(elements.len()),
+        Value::Local(LocalValue::Map(id)) => if id < 0 {
+            Result::Ok(0)
+        } else if id >= state.maps.len() {
+            Result::Err("invalid map")
+        } else {
+            let mut count = 0;
+            for entry in state.maps[id].entries {
+                if entry.active.get() {
+                    count = count + 1;
+                } else {};
+            }
+            Result::Ok(count)
+        },
+        Value::Local(LocalValue::Channel(id)) => if id < 0 {
+            Result::Ok(0)
+        } else if id >= state.channels.len() {
+            Result::Err("invalid channel")
+        } else {
+            Result::Ok(channel_length(state.channels[id]))
+        },
+        _ => Result::Err("len is not defined for value"),
+    }
+}
+
+fn value_capacity(state: VmState, value: Value) -> Result[int, string] {
+    match value {
+        Value::Local(LocalValue::Slice(value)) => Result::Ok(value.capacity),
+        Value::Local(LocalValue::Aggregate { type_id: _, elements }) => Result::Ok(elements.len()),
+        Value::Local(LocalValue::Channel(id)) => if id < 0 {
+            Result::Ok(0)
+        } else if id >= state.channels.len() {
+            Result::Err("invalid channel")
+        } else {
+            Result::Ok(state.channels[id].capacity)
+        },
+        _ => Result::Err("cap is not defined for value"),
+    }
+}
+
+fn integer_for_type(state: VmState, type_id: go_types::TypeId, value: int) -> Result[Value, string] {
+    let zero = runtime_zero_value(state, type_id)?;
+    match zero {
+        Value::Local(LocalValue::Integer { bits: _, width, signed }) => Result::Ok(
+            Value::Local(LocalValue::Integer { bits: value.to_uint64(), width, signed }),
+        ),
+        _ => Result::Err("builtin result is not integer typed"),
+    }
+}
+
+fn loaded_slice_values(state: VmState, value: SliceValue) -> Result[Vec[Value], string] {
+    let result: Vec[Value] = Vec::with_capacity(value.length);
+    if value.length == 0 {
+        return Result::Ok(result)
+    } else {};
+    let backing = value.backing.ok_or("slice backing is missing")?;
+    for index in 0..value.length {
+        result.push(load_place(state.memory, index_place(backing, value.offset + index))?)
+    }
+    Result::Ok(result)
+}
+
+fn string_to_slice(state: VmState, value: bytes::Bytes, type_id: go_types::TypeId) -> Result[
+    Value,
+    string,
+] {
+    let element = match go_types::get_type(
+        state.program.world,
+        go_types::underlying(state.program.world, type_id),
+    ) {
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element } }) => element,
+        _ => return Result::Err("string conversion target is not a slice"),
+    };
+    let element_kind = basic_kind(state.program.world, element);
+    let elements: Vec[Value] = Vec::from_array([]);
+    if element_kind == Option::Some(go_types::BasicKind::Uint8) {
+        for byte in value.to_vec() {
+            elements.push(integer_for_type(state, element, byte.to_int())?)
+        }
+    } else if element_kind == Option::Some(go_types::BasicKind::Int32) {
+        let mut offset = 0;
+        while offset < value.len() {
+            let (codepoint, width) = decoded_rune(value, offset)?;
+            elements.push(integer_for_type(state, element, codepoint)?);
+            offset += width;
+        }
+    } else {
+        return Result::Err("string conversion target is not a byte or rune slice")
+    };
+    let result = make_slice(state, type_id, elements.len(), elements.len())?;
+    let Value::Local(LocalValue::Slice(slice)) = result else {
+        return Result::Err("string conversion result is not a slice")
+    };
+    if !elements.is_empty() {
+        let backing = slice.backing.ok_or("string conversion backing is missing")?;
+        for index in 0..elements.len() {
+            store_place(state.memory, index_place(backing, index), elements[index])?
+        }
+    } else {};
+    Result::Ok(Value::Local(LocalValue::Slice(slice)))
+}
+
+fn integer_to_string(bits: uint64, width: int, signed: bool) -> string {
+    let scalar = if signed {
+        let value = signed_integer(bits, width);
+        if value < 0.to_int64() || value > 1114111.to_int64() {
+            65533
+        } else {
+            value.to_int()
+        }
+    } else if bits > 1114111.to_uint64() {
+        65533
+    } else {
+        bits.to_int()
+    };
+    let scalar = if scalar >= 55296 && scalar < 57344 {
+        65533
+    } else {
+        scalar
+    };
+    char_from_uint32(scalar.to_uint32()).unwrap_or('\uFFFD').to_string()
+}
+
+fn slice_to_string(state: VmState, value: SliceValue) -> Result[Value, string] {
+    let element_kind = basic_kind(state.program.world, value.element_type);
+    if element_kind != Option::Some(go_types::BasicKind::Uint8)
+        && element_kind != Option::Some(go_types::BasicKind::Int32) {
+        return Result::Err("string conversion source is not a byte or rune slice")
+    } else {};
+    let result = bytes::Bytes::with_capacity(value.length);
+    for element in loaded_slice_values(state, value)? {
+        match element {
+            Value::Local(LocalValue::Integer { bits, width, signed }) => if element_kind
+                == Option::Some(go_types::BasicKind::Uint8) {
+                result.push(bits.to_uint8())
+            } else {
+                for byte in bytes::Bytes::from_string(integer_to_string(bits, width, signed)).to_vec() {
+                    result.push(byte)
+                }
+            },
+            _ => return Result::Err("string conversion slice contains a non-integer value"),
+        }
+    }
+    Result::Ok(Value::Local(LocalValue::String(result)))
+}
+
+fn convert_runtime_value(
+    state: VmState,
+    value: Value,
+    source: go_types::TypeId,
+    target: go_types::TypeId,
+) -> Result[Value, string] {
+    match value {
+        Value::Local(LocalValue::String(value)) => match go_types::get_type(
+            state.program.world,
+            go_types::underlying(state.program.world, target),
+        ) {
+            Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element: _ } }) => {
+                string_to_slice(state, value, target)
+            },
+            _ => convert_value(
+                state.program.world,
+                Value::Local(LocalValue::String(value)),
+                source,
+                target,
+            ),
+        },
+        Value::Local(LocalValue::Slice(value)) if basic_kind(state.program.world, target)
+            == Option::Some(go_types::BasicKind::String) => slice_to_string(state, value),
+        Value::Local(LocalValue::Integer { bits, width, signed }) if basic_kind(
+            state.program.world,
+            target,
+        )
+            == Option::Some(go_types::BasicKind::String) => Result::Ok(
+            Value::Local(
+                LocalValue::String(
+                    bytes::Bytes::from_string(integer_to_string(bits, width, signed)),
+                ),
+            ),
+        ),
+        _ => convert_value(state.program.world, value, source, target),
+    }
+}
+
+fn append_elements(state: VmState, slice: SliceValue, arguments: Vec[Value], variadic: bool) -> Result[
+    Vec[Value],
+    string,
+] {
+    if !variadic {
+        let result: Vec[Value] = Vec::with_capacity(arguments.len() - 1);
+        for index in 1..arguments.len() {
+            result.push(arguments[index])
+        }
+        return Result::Ok(result)
+    } else if arguments.len() != 2 {
+        return Result::Err("variadic append has an invalid call shape")
+    } else {};
+    match arguments[1] {
+        Value::Local(LocalValue::Slice(value)) => loaded_slice_values(state, value),
+        Value::Local(LocalValue::String(value)) => {
+            let result: Vec[Value] = Vec::with_capacity(value.len());
+            for byte in value.to_vec() {
+                result.push(integer_for_type(state, slice.element_type, byte.to_int())?)
+            }
+            Result::Ok(result)
+        },
+        _ => Result::Err("variadic append source is not a slice or string"),
+    }
+}
+
+fn appended_slice(state: VmState, type_id: go_types::TypeId, source: SliceValue, values: Vec[Value]) -> Result[
+    Value,
+    string,
+] {
+    let length = source.length + values.len();
+    if length <= source.capacity {
+        if !values.is_empty() {
+            let backing = source.backing.ok_or("slice backing is missing")?;
+            for index in 0..values.len() {
+                store_place(
+                    state.memory,
+                    index_place(backing, source.offset + source.length + index),
+                    values[index],
+                )?
+            }
+        } else {};
+        return Result::Ok(
+            Value::Local(
+                LocalValue::Slice(
+                    SliceValue {
+                        element_type: source.element_type,
+                        backing: source.backing,
+                        offset: source.offset,
+                        length,
+                        capacity: source.capacity,
+                    },
+                ),
+            ),
+        )
+    } else {};
+    let mut capacity = if source.capacity == 0 {
+        1
+    } else {
+        source.capacity
+    };
+    while capacity < length {
+        capacity *= 2;
+    }
+    let existing = loaded_slice_values(state, source)?;
+    let result = make_slice(state, type_id, length, capacity)?;
+    let Value::Local(LocalValue::Slice(slice)) = result else {
+        return Result::Err("new append backing is not a slice")
+    };
+    let backing = slice.backing.ok_or("new append backing is missing")?;
+    for index in 0..existing.len() {
+        store_place(state.memory, index_place(backing, index), existing[index])?
+    }
+    for index in 0..values.len() {
+        store_place(state.memory, index_place(backing, existing.len() + index), values[index])?
+    }
+    Result::Ok(Value::Local(LocalValue::Slice(slice)))
+}
+
+fn copied_values(state: VmState, value: Value) -> Result[Vec[Value], string] {
+    match value {
+        Value::Local(LocalValue::Slice(value)) => loaded_slice_values(state, value),
+        Value::Local(LocalValue::String(value)) => {
+            let byte_type = go_types::basic_type(state.program.world, "byte").ok_or(
+                "world has no byte type",
+            )?;
+            let result: Vec[Value] = Vec::with_capacity(value.len());
+            for byte in value.to_vec() {
+                result.push(integer_for_type(state, byte_type, byte.to_int())?)
+            }
+            Result::Ok(result)
+        },
+        _ => Result::Err("copy source is not a slice or string"),
+    }
+}
+
+fn copy_builtin(state: VmState, destination: SliceValue, source: Value) -> Result[int, string] {
+    let values = copied_values(state, source)?;
+    let count = if destination.length < values.len() {
+        destination.length
+    } else {
+        values.len()
+    };
+    if count == 0 {
+        return Result::Ok(0)
+    } else {};
+    let backing = destination.backing.ok_or("copy destination backing is missing")?;
+    for index in 0..count {
+        store_place(state.memory, index_place(backing, destination.offset + index), values[index])?
+    }
+    Result::Ok(count)
+}
+
+fn map_types(world: go_types::World, type_id: go_types::TypeId) -> Result[
+    (go_types::TypeId, go_types::TypeId),
+    string,
+] {
+    match go_types::get_type(world, go_types::underlying(world, type_id)) {
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Map { key, value } }) => {
+            Result::Ok((key, value))
+        },
+        _ => Result::Err("map value has a non-map type"),
+    }
+}
+
+fn new_map(state: VmState, type_id: go_types::TypeId, capacity: int) -> Result[Value, string] {
+    if capacity < 0 {
+        return Result::Err("makemap: size out of range")
+    } else {};
+    let types = map_types(state.program.world, type_id)?;
+    let id = state.maps.len();
+    state.maps.push(
+        MapValue {
+            key_type: types.0,
+            value_type: types.1,
+            entries: Vec::from_array([]),
+            buckets: HashMap::from_array([]),
+        },
+    );
+    Result::Ok(Value::Local(LocalValue::Map(id)))
+}
+
+fn checked_map(state: VmState, id: int) -> Result[MapValue, string] {
+    if id < 0 || id >= state.maps.len() {
+        Result::Err("invalid map")
+    } else {
+        Result::Ok(state.maps[id])
+    }
+}
+
+fn hash_mix(seed: uint64, value: uint64) -> uint64 {
+    (seed ^ value) * 1099511628211.to_uint64()
+}
+
+fn hash_place(value: Place) -> uint64 {
+    let mut result = hash_mix(1469598103934665603.to_uint64(), value.root.value.to_uint64());
+    for projection in value.projections {
+        result = match projection {
+            Projection::Field(index) => hash_mix(hash_mix(result, 1.to_uint64()), index.to_uint64()),
+            Projection::Index(index) => hash_mix(hash_mix(result, 2.to_uint64()), index.to_uint64()),
+        };
+    }
+    result
+}
+
+fn normalized_float_hash(bits: uint64, width: int) -> uint64 {
+    if width == 32 {
+        if bits & 2147483647.to_uint64() == 0.to_uint64() {
+            0.to_uint64()
+        } else {
+            bits & 4294967295.to_uint64()
+        }
+    } else if bits & 9223372036854775807.to_uint64() == 0.to_uint64() {
+        0.to_uint64()
+    } else {
+        bits
+    }
+}
+
+fn hash_value(state: VmState, value: Value) -> Result[uint64, string] {
+    match value {
+        Value::Local(LocalValue::Unit) => Result::Ok(3.to_uint64()),
+        Value::Local(LocalValue::Bool(value)) => Result::Ok(
+            if value {
+                5.to_uint64()
+            } else {
+                7.to_uint64()
+            },
+        ),
+        Value::Local(LocalValue::Integer { bits, width: _, signed: _ }) => {
+            Result::Ok(hash_mix(11.to_uint64(), bits))
+        },
+        Value::Local(LocalValue::Float { bits, width }) => Result::Ok(
+            hash_mix(width.to_uint64(), normalized_float_hash(bits, width)),
+        ),
+        Value::Local(LocalValue::Complex { real, imaginary, width }) => Result::Ok(
+            hash_mix(
+                hash_mix(width.to_uint64(), normalized_float_hash(real, width / 2)),
+                normalized_float_hash(imaginary, width / 2),
+            ),
+        ),
+        Value::Local(LocalValue::String(value)) => {
+            let mut result = 1469598103934665603.to_uint64();
+            for byte in value.to_vec() {
+                result = hash_mix(result, byte.to_uint64());
+            }
+            Result::Ok(result)
+        },
+        Value::Local(LocalValue::Pointer(value)) => Result::Ok(
+            match value {
+                Some(place) => hash_place(place),
+                None => 13.to_uint64(),
+            },
+        ),
+        Value::Local(LocalValue::Aggregate { type_id: _, elements }) => {
+            let mut result = hash_mix(17.to_uint64(), elements.len().to_uint64());
+            for element in elements {
+                result = hash_mix(result, hash_value(state, element)?);
+            }
+            Result::Ok(result)
+        },
+        Value::Local(LocalValue::Channel(value)) => {
+            Result::Ok(hash_mix(19.to_uint64(), value.to_uint64()))
+        },
+        Value::Interface { static_type: _, dynamic_type: None, value: _ } => {
+            Result::Ok(23.to_uint64())
+        },
+        Value::Interface { static_type: _, dynamic_type: Some(dynamic_type), value: Some(value) } => if go_types::comparable(
+            state.program.world,
+            dynamic_type,
+        ) {
+            Result::Ok(hash_mix(dynamic_type.value.to_uint64(), hash_value(state, value.get())?))
+        } else {
+            Result::Err("hash of unhashable type")
+        },
+        Value::Interface { static_type: _, dynamic_type: Some(_), value: None } => {
+            Result::Err("interface value is missing")
+        },
+        Value::Local(LocalValue::Slice(_)) | Value::Local(LocalValue::Map(_)) | Value::Local(LocalValue::Function(_),) => Result::Err(
+            "hash of unhashable type",
+        ),
+        Value::Host { type_id: _, value: _ } => Result::Err("hash of native value is not supported"),
+    }
+}
+
+fn map_entry_index(state: VmState, value: MapValue, key: Value, hash: uint64) -> Result[int, string] {
+    let mut index = value.buckets.get(hash).unwrap_or(-1);
+    let mut visited = 0;
+    while index >= 0 {
+        if index >= value.entries.len() || visited > value.entries.len() {
+            return Result::Err("invalid map bucket chain")
+        } else {};
+        let entry = value.entries[index];
+        if entry.hash == hash && entry.active.get()
+            && values_equal(state.program.world, entry.key, key)? {
+            return Result::Ok(index)
+        } else {};
+        index = entry.next;
+        visited = visited + 1;
+    }
+    Result::Ok(-1)
+}
+
+fn ensure_map_key_comparable(state: VmState, key: Value) -> Result[unit, string] {
+    let _ = hash_value(state, key)?;
+    Result::Ok(())
+}
+
+fn map_lookup(state: VmState, id: int, key: Value, value_type: go_types::TypeId) -> Result[
+    (Value, bool),
+    string,
+] {
+    let hash = hash_value(state, key)?;
+    if id < 0 {
+        return Result::Ok((runtime_zero_value(state, value_type)?, false))
+    } else {};
+    let value = checked_map(state, id)?;
+    let index = map_entry_index(state, value, key, hash)?;
+    if index < 0 {
+        Result::Ok((runtime_zero_value(state, value_type)?, false))
+    } else {
+        Result::Ok((copy_value(value.entries[index].value.get()), true))
+    }
+}
+
+fn map_set(state: VmState, id: int, key: Value, value: Value) -> Result[unit, string] {
+    if id < 0 {
+        return Result::Err("assignment to entry in nil map")
+    } else {};
+    let hash = hash_value(state, key)?;
+    let map = checked_map(state, id)?;
+    let index = map_entry_index(state, map, key, hash)?;
+    if index < 0 {
+        let next = map.buckets.get(hash).unwrap_or(-1);
+        let entry = map.entries.len();
+        map.entries.push(
+            MapEntry {
+                hash,
+                key: copy_value(key),
+                value: Ref::new(copy_value(value)),
+                active: Ref::new(true),
+                next,
+            },
+        );
+        map.buckets.set(hash, entry)
+    } else {
+        map.entries[index].value.set(copy_value(value));
+        map.entries[index].active.set(true);
+    };
+    Result::Ok(())
+}
+
+fn map_delete(state: VmState, id: int, key: Value) -> Result[unit, string] {
+    let hash = hash_value(state, key)?;
+    if id < 0 {
+        return Result::Ok(())
+    } else {};
+    let map = checked_map(state, id)?;
+    let index = map_entry_index(state, map, key, hash)?;
+    if index >= 0 {
+        map.entries[index].active.set(false)
+    } else {};
+    Result::Ok(())
+}
+
+fn clear_map(state: VmState, id: int) -> Result[unit, string] {
+    if id < 0 {
+        return Result::Ok(())
+    } else {};
+    let map = checked_map(state, id)?;
+    for entry in map.entries {
+        entry.active.set(false)
+    }
+    Result::Ok(())
+}
+
+fn clear_slice(state: VmState, value: SliceValue) -> Result[unit, string] {
+    if value.length == 0 {
+        return Result::Ok(())
+    } else {};
+    let backing = value.backing.ok_or("slice backing is missing")?;
+    let zero = runtime_zero_value(state, value.element_type)?;
+    for index in 0..value.length {
+        store_place(state.memory, index_place(backing, value.offset + index), zero)?
+    }
+    Result::Ok(())
+}
+
+fn new_map_iterator(
+    state: VmState,
+    id: int,
+    key_type: go_types::TypeId,
+    value_type: go_types::TypeId,
+) -> Result[int, string] {
+    let entries: Vec[int] = Vec::from_array([]);
+    if id >= 0 {
+        let map = checked_map(state, id)?;
+        for index in 0..map.entries.len() {
+            if map.entries[index].active.get() {
+                entries.push(index)
+            } else {}
+        }
+    } else {};
+    let iterator = state.map_iterators.len();
+    state.map_iterators.push(
+        MapIterator { map: id, key_type, value_type, entries, cursor: Ref::new(0) },
+    );
+    Result::Ok(iterator)
+}
+
+fn map_iterator_next(state: VmState, id: int) -> Result[(Value, Value, bool), string] {
+    if id < 0 || id >= state.map_iterators.len() {
+        return Result::Err("invalid map iterator")
+    } else {};
+    let iterator = state.map_iterators[id];
+    while iterator.cursor.get() < iterator.entries.len() {
+        let index = iterator.cursor.get();
+        iterator.cursor.set(index + 1);
+        let entry_index = iterator.entries[index];
+        let map = checked_map(state, iterator.map)?;
+        if entry_index >= 0 && entry_index < map.entries.len()
+            && map.entries[entry_index].active.get() {
+            return Result::Ok(
+                (
+                    copy_value(map.entries[entry_index].key),
+                    copy_value(map.entries[entry_index].value.get()),
+                    true,
+                ),
+            )
+        } else {}
+    }
+    Result::Ok(
+        (
+            runtime_zero_value(state, iterator.key_type)?,
+            runtime_zero_value(state, iterator.value_type)?,
+            false,
+        ),
+    )
+}
+
+fn execute_builtin(
+    state: VmState,
+    frame: Frame,
+    kind: bytecode::BuiltinKind,
+    arguments: Vec[Value],
+    results: Vec[bytecode::RegisterId],
+    variadic: bool,
+) -> Result[Vec[Value], string] {
+    match kind {
+        bytecode::BuiltinKind::Print => {
+            append_output(state, arguments, false)?;
+            Result::Ok(Vec::from_array([]))
+        },
+        bytecode::BuiltinKind::Println => {
+            append_output(state, arguments, true)?;
+            Result::Ok(Vec::from_array([]))
+        },
+        bytecode::BuiltinKind::Len => if arguments.len() == 1 && results.len() == 1 {
+            Result::Ok(
+                Vec::from_array(
+                    [
+                        integer_for_type(
+                            state,
+                            result_type(state, frame, results, 0)?,
+                            value_length(state, arguments[0])?,
+                        )?,
+                    ],
+                ),
+            )
+        } else {
+            Result::Err("len has an invalid call shape")
+        },
+        bytecode::BuiltinKind::Cap => if arguments.len() == 1 && results.len() == 1 {
+            Result::Ok(
+                Vec::from_array(
+                    [
+                        integer_for_type(
+                            state,
+                            result_type(state, frame, results, 0)?,
+                            value_capacity(state, arguments[0])?,
+                        )?,
+                    ],
+                ),
+            )
+        } else {
+            Result::Err("cap has an invalid call shape")
+        },
+        bytecode::BuiltinKind::Append => if !arguments.is_empty() && results.len() == 1 {
+            match arguments[0] {
+                Value::Local(LocalValue::Slice(slice)) => Result::Ok(
+                    Vec::from_array(
+                        [
+                            appended_slice(
+                                state,
+                                result_type(state, frame, results, 0)?,
+                                slice,
+                                append_elements(state, slice, arguments, variadic)?,
+                            )?,
+                        ],
+                    ),
+                ),
+                _ => Result::Err("append destination is not a slice"),
+            }
+        } else {
+            Result::Err("append has an invalid call shape")
+        },
+        bytecode::BuiltinKind::Copy => if arguments.len() == 2 && results.len() == 1 {
+            match arguments[0] {
+                Value::Local(LocalValue::Slice(destination)) => Result::Ok(
+                    Vec::from_array(
+                        [
+                            integer_for_type(
+                                state,
+                                result_type(state, frame, results, 0)?,
+                                copy_builtin(state, destination, arguments[1])?,
+                            )?,
+                        ],
+                    ),
+                ),
+                _ => Result::Err("copy destination is not a slice"),
+            }
+        } else {
+            Result::Err("copy has an invalid call shape")
+        },
+        bytecode::BuiltinKind::Complex => if arguments.len() == 2 && results.len() == 1 {
+            let (real, _) = float_number(arguments[0])?;
+            let (imaginary, _) = float_number(arguments[1])?;
+            let kind = basic_kind(state.program.world, result_type(state, frame, results, 0)?).ok_or(
+                "complex result is not basic",
+            )?;
+            Result::Ok(
+                Vec::from_array(
+                    [
+                        complex_result(
+                            real,
+                            imaginary,
+                            if kind == go_types::BasicKind::Complex64 {
+                                64
+                            } else {
+                                128
+                            },
+                        ),
+                    ],
+                ),
+            )
+        } else {
+            Result::Err("complex has an invalid call shape")
+        },
+        bytecode::BuiltinKind::Real | bytecode::BuiltinKind::Imag => if arguments.len() == 1
+            && results.len() == 1 {
+            let (value, _) = complex_number(arguments[0])?;
+            let result_kind = basic_kind(
+                state.program.world,
+                result_type(state, frame, results, 0)?,
+            ).ok_or("complex component result is not basic")?;
+            Result::Ok(
+                Vec::from_array(
+                    [
+                        float_result(
+                            if kind == bytecode::BuiltinKind::Real {
+                                value.0
+                            } else {
+                                value.1
+                            },
+                            if result_kind == go_types::BasicKind::Float32 {
+                                32
+                            } else {
+                                64
+                            },
+                        ),
+                    ],
+                ),
+            )
+        } else {
+            Result::Err("real or imag has an invalid call shape")
+        },
+        bytecode::BuiltinKind::Min | bytecode::BuiltinKind::Max => {
+            if arguments.is_empty() || results.len() != 1 {
+                return Result::Err("min or max has an invalid call shape")
+            } else {};
+            let mut selected = arguments[0];
+            for index in 1..arguments.len() {
+                let operator = if kind == bytecode::BuiltinKind::Min {
+                    bytecode::BinaryOp::Less
+                } else {
+                    bytecode::BinaryOp::Greater
+                };
+                if boolean_value(
+                    binary_value(
+                        operator,
+                        arguments[index],
+                        selected,
+                        result_type(state, frame, results, 0)?,
+                        state.program.world,
+                    )?,
+                )? {
+                    selected = arguments[index];
+                } else {}
+            }
+            Result::Ok(Vec::from_array([selected]))
+        },
+        bytecode::BuiltinKind::Delete => if arguments.len() == 2 && results.is_empty() {
+            match arguments[0] {
+                Value::Local(LocalValue::Map(id)) => {
+                    map_delete(state, id, arguments[1])?;
+                    Result::Ok(Vec::from_array([]))
+                },
+                _ => Result::Err("delete target is not a map"),
+            }
+        } else {
+            Result::Err("delete has an invalid call shape")
+        },
+        bytecode::BuiltinKind::Clear => if arguments.len() == 1 && results.is_empty() {
+            match arguments[0] {
+                Value::Local(LocalValue::Map(id)) => {
+                    clear_map(state, id)?;
+                    Result::Ok(Vec::from_array([]))
+                },
+                Value::Local(LocalValue::Slice(value)) => {
+                    clear_slice(state, value)?;
+                    Result::Ok(Vec::from_array([]))
+                },
+                _ => Result::Err("clear target is not a map or slice"),
+            }
+        } else {
+            Result::Err("clear has an invalid call shape")
+        },
+        _ => Result::Err("builtin " + kind.to_string() + " is not implemented"),
+    }
+}
+
+fn aggregate_element(state: VmState, value: Value, indices: Vec[int], offset: int) -> Result[
+    Value,
+    string,
+] {
+    if offset >= indices.len() {
+        return Result::Ok(copy_value(value))
+    } else {};
+    match value {
+        Value::Local(LocalValue::Aggregate { type_id: _, elements }) => {
+            let index = indices[offset];
+            if index < 0 || index >= elements.len() {
+                Result::Err("field index out of range")
+            } else {
+                aggregate_element(state, elements[index], indices, offset + 1)
+            }
+        },
+        Value::Local(LocalValue::Pointer(Some(place))) => {
+            let loaded = load_place(state.memory, place)?;
+            aggregate_element(state, loaded, indices, offset)
+        },
+        _ => Result::Err("field selection on non-aggregate value"),
+    }
+}
+
+fn indexed_value(state: VmState, value: Value, index: Value, result_type: go_types::TypeId) -> Result[
+    (Value, bool),
+    string,
+] {
+    match value {
+        Value::Local(LocalValue::Aggregate { type_id: _, elements }) => {
+            let index = integer_index(index)?;
+            if index < 0 || index >= elements.len() {
+                Result::Err(
+                    "index out of range [" + index.to_string() + "] with length "
+                        + elements.len().to_string(),
+                )
+            } else {
+                Result::Ok((copy_value(elements[index]), true))
+            }
+        },
+        Value::Local(LocalValue::Slice(slice)) => {
+            let index = integer_index(index)?;
+            if index < 0 || index >= slice.length {
+                return Result::Err(
+                    "index out of range [" + index.to_string() + "] with length "
+                        + slice.length.to_string(),
+                )
+            } else {};
+            let backing = slice.backing.ok_or("index of nil slice")?;
+            Result::Ok(
+                (load_place(state.memory, index_place(backing, slice.offset + index))?, true),
+            )
+        },
+        Value::Local(LocalValue::String(value)) => {
+            let index = integer_index(index)?;
+            if index < 0 || index >= value.len() {
+                Result::Err(
+                    "index out of range [" + index.to_string() + "] with length "
+                        + value.len().to_string(),
+                )
+            } else {
+                Result::Ok(
+                    (
+                        Value::Local(
+                            LocalValue::Integer {
+                                bits: value.get(index).to_uint64(),
+                                width: 8,
+                                signed: false,
+                            },
+                        ),
+                        true,
+                    ),
+                )
+            }
+        },
+        Value::Local(LocalValue::Map(id)) => map_lookup(state, id, index, result_type),
+        _ => Result::Err("index on unsupported value"),
+    }
+}
+
+fn continuation_byte(value: byte) -> bool {
+    value >= 128.to_uint8() && value <= 191.to_uint8()
+}
+
+fn decoded_rune(value: bytes::Bytes, offset: int) -> Result[(int, int), string] {
+    if offset < 0 || offset >= value.len() {
+        return Result::Err("string range offset is out of bounds")
+    } else {};
+    let first = value.get(offset);
+    if first < 128.to_uint8() {
+        return Result::Ok((first.to_int(), 1))
+    } else if first < 194.to_uint8() {
+        return Result::Ok((65533, 1))
+    } else if first <= 223.to_uint8() {
+        if offset + 1 < value.len() && continuation_byte(value.get(offset + 1)) {
+            return Result::Ok(
+                (((first.to_int() & 31) << 6) | (value.get(offset + 1).to_int() & 63), 2),
+            )
+        } else {
+            return Result::Ok((65533, 1))
+        }
+    } else if first <= 239.to_uint8() {
+        if offset + 2 >= value.len() || !continuation_byte(value.get(offset + 1))
+            || !continuation_byte(value.get(offset + 2)) {
+            return Result::Ok((65533, 1))
+        } else {};
+        let second = value.get(offset + 1);
+        if first == 224.to_uint8() && second < 160.to_uint8()
+            || first == 237.to_uint8() && second >= 160.to_uint8() {
+            return Result::Ok((65533, 1))
+        } else {};
+        Result::Ok(
+            (
+                ((first.to_int() & 15) << 12) | ((second.to_int() & 63) << 6)
+                    | (value.get(offset + 2).to_int() & 63),
+                3,
+            ),
+        )
+    } else if first <= 244.to_uint8() {
+        if offset + 3 >= value.len() || !continuation_byte(value.get(offset + 1))
+            || !continuation_byte(value.get(offset + 2))
+            || !continuation_byte(value.get(offset + 3)) {
+            return Result::Ok((65533, 1))
+        } else {};
+        let second = value.get(offset + 1);
+        if first == 240.to_uint8() && second < 144.to_uint8()
+            || first == 244.to_uint8() && second >= 144.to_uint8() {
+            return Result::Ok((65533, 1))
+        } else {};
+        Result::Ok(
+            (
+                ((first.to_int() & 7) << 18) | ((second.to_int() & 63) << 12)
+                    | ((value.get(offset + 2).to_int() & 63) << 6)
+                    | (value.get(offset + 3).to_int() & 63),
+                4,
+            ),
+        )
+    } else {
+        Result::Ok((65533, 1))
+    }
+}
+
+fn bounded_index(value: Option[Value], default: int) -> Result[int, string] {
+    match value {
+        Some(value) => integer_index(value),
+        None => Result::Ok(default),
+    }
+}
+
+fn sliced_place(
+    state: VmState,
+    place: Place,
+    element_type: go_types::TypeId,
+    low: Option[Value],
+    high: Option[Value],
+    maximum: Option[Value],
+) -> Result[Value, string] {
+    match load_place(state.memory, place)? {
+        Value::Local(LocalValue::Aggregate { type_id: _, elements }) => {
+            let low = bounded_index(low, 0)?;
+            let high = bounded_index(high, elements.len())?;
+            let maximum = bounded_index(maximum, elements.len())?;
+            if low < 0 || high < low || maximum < high || maximum > elements.len() {
+                return Result::Err("slice bounds out of range")
+            } else {};
+            Result::Ok(
+                Value::Local(
+                    LocalValue::Slice(
+                        SliceValue {
+                            element_type,
+                            backing: Option::Some(copy_place(place)),
+                            offset: low,
+                            length: high - low,
+                            capacity: maximum - low,
+                        },
+                    ),
+                ),
+            )
+        },
+        _ => Result::Err("array slice place does not contain an array"),
+    }
+}
+
+fn sliced_value(
+    state: VmState,
+    value: Value,
+    low: Option[Value],
+    high: Option[Value],
+    maximum: Option[Value],
+) -> Result[Value, string] {
+    match value {
+        Value::Local(LocalValue::Slice(slice)) => {
+            let low = bounded_index(low, 0)?;
+            let high = bounded_index(high, slice.length)?;
+            let maximum = bounded_index(maximum, slice.capacity)?;
+            if low < 0 || high < low || maximum < high || maximum > slice.capacity {
+                return Result::Err("slice bounds out of range")
+            } else {};
+            Result::Ok(
+                Value::Local(
+                    LocalValue::Slice(
+                        SliceValue {
+                            element_type: slice.element_type,
+                            backing: slice.backing,
+                            offset: slice.offset + low,
+                            length: high - low,
+                            capacity: maximum - low,
+                        },
+                    ),
+                ),
+            )
+        },
+        Value::Local(LocalValue::Aggregate { type_id, elements }) => {
+            let low = bounded_index(low, 0)?;
+            let high = bounded_index(high, elements.len())?;
+            let maximum = bounded_index(maximum, elements.len())?;
+            if low < 0 || high < low || maximum < high || maximum > elements.len() {
+                return Result::Err("slice bounds out of range")
+            } else {};
+            let cell = allocate_cell(
+                state.memory,
+                type_id,
+                Value::Local(LocalValue::Aggregate { type_id, elements }),
+            );
+            Result::Ok(
+                Value::Local(
+                    LocalValue::Slice(
+                        SliceValue {
+                            element_type: state.program.world.invalid,
+                            backing: Option::Some(root_place(cell)),
+                            offset: low,
+                            length: high - low,
+                            capacity: maximum - low,
+                        },
+                    ),
+                ),
+            )
+        },
+        Value::Local(LocalValue::String(value)) => {
+            if maximum.is_some() {
+                return Result::Err("three-index slice of string")
+            } else {};
+            let low = bounded_index(low, 0)?;
+            let high = bounded_index(high, value.len())?;
+            if low < 0 || high < low || high > value.len() {
+                return Result::Err("slice bounds out of range")
+            } else {};
+            let result = bytes::Bytes::with_capacity(high - low);
+            for index in low..high {
+                result.push(value.get(index))
+            }
+            Result::Ok(Value::Local(LocalValue::String(result)))
+        },
+        _ => Result::Err("slice on unsupported value"),
+    }
+}
+
+fn aggregate_value(
+    state: VmState,
+    type_id: go_types::TypeId,
+    values: Vec[bytecode::AggregateElement],
+    frame: Frame,
+    length: int,
+) -> Result[Value, string] {
+    let underlying = go_types::underlying(state.program.world, type_id);
+    match go_types::get_type(state.program.world, underlying) {
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element } }) => {
+            let elements: Vec[Value] = Vec::with_capacity(length);
+            for _ in 0..length {
+                elements.push(runtime_zero_value(state, element)?)
+            }
+            for value in values {
+                if value.index < 0 || value.index >= elements.len() {
+                    return Result::Err("slice literal index out of range")
+                } else {};
+                elements[value.index] = copy_value(register(frame, value.value)?);
+            }
+            let backing = allocate_cell(
+                state.memory,
+                type_id,
+                Value::Local(LocalValue::Aggregate { type_id, elements }),
+            );
+            Result::Ok(
+                Value::Local(
+                    LocalValue::Slice(
+                        SliceValue {
+                            element_type: element,
+                            backing: Option::Some(root_place(backing)),
+                            offset: 0,
+                            length,
+                            capacity: length,
+                        },
+                    ),
+                ),
+            )
+        },
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Array { length: _, element: _ } }) | Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Struct { fields: _ },
+        }) | Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables: _ } }) => {
+            let result = runtime_zero_value(state, type_id)?;
+            match result {
+                Value::Local(LocalValue::Aggregate { type_id, elements }) => {
+                    for value in values {
+                        if value.index < 0 || value.index >= elements.len() {
+                            return Result::Err("aggregate literal index out of range")
+                        } else {};
+                        elements[value.index] = copy_value(register(frame, value.value)?);
+                    }
+                    Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
+                },
+                Value::Host { type_id, value } => if values.is_empty() {
+                    Result::Ok(Value::Host { type_id, value })
+                } else {
+                    Result::Err("native composite literals with elements are not supported")
+                },
+                _ => Result::Err("aggregate zero value is invalid"),
+            }
+        },
+        _ => Result::Err("composite literal type is not supported"),
+    }
+}
+
+fn make_slice(state: VmState, type_id: go_types::TypeId, length: int, capacity: int) -> Result[
+    Value,
+    string,
+] {
+    if length < 0 || capacity < length {
+        return Result::Err("makeslice: len out of range")
+    } else {};
+    let underlying = go_types::underlying(state.program.world, type_id);
+    let element = match go_types::get_type(state.program.world, underlying) {
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element } }) => element,
+        _ => return Result::Err("make slice target is not a slice"),
+    };
+    let elements: Vec[Value] = Vec::with_capacity(capacity);
+    for _ in 0..capacity {
+        elements.push(runtime_zero_value(state, element)?)
+    }
+    let backing = allocate_cell(
+        state.memory,
+        type_id,
+        Value::Local(LocalValue::Aggregate { type_id, elements }),
+    );
+    Result::Ok(
+        Value::Local(
+            LocalValue::Slice(
+                SliceValue {
+                    element_type: element,
+                    backing: Option::Some(root_place(backing)),
+                    offset: 0,
+                    length,
+                    capacity,
+                },
+            ),
+        ),
+    )
+}
+
+fn new_panic_payload(state: VmState, value: Value, type_id: go_types::TypeId) -> PanicPayload {
+    let nil_interface = match value {
+        Value::Interface { static_type: _, dynamic_type: None, value: _ } => true,
+        _ => basic_kind(state.program.world, type_id)
+            == Option::Some(go_types::BasicKind::UntypedNil),
+    };
+    PanicPayload { value: copy_value(value), type_id, nil_interface }
+}
+
+fn recovered_value(state: VmState, payload: PanicPayload, target_type: go_types::TypeId) -> Result[
+    Value,
+    string,
+] {
+    if payload.nil_interface {
+        Result::Ok(
+            Value::Interface {
+                static_type: target_type,
+                dynamic_type: Option::Some(target_type),
+                value: Option::Some(Ref::new(Value::Local(LocalValue::Unit))),
+            },
+        )
+    } else {
+        convert_value(state.program.world, payload.value, payload.type_id, target_type)
+    }
+}
+
+fn recover_from_frame(state: VmState, frame: Frame, target_type: go_types::TypeId) -> Result[
+    Value,
+    string,
+] {
+    match frame.recover_state {
+        Some(panic_state) => if panic_state.active.get() {
+            panic_state.active.set(false);
+            recovered_value(state, panic_state.payload.get(), target_type)
+        } else {
+            runtime_zero_value(state, target_type)
+        },
+        None => runtime_zero_value(state, target_type),
+    }
+}
+
+fn native_call_value(state: VmState, id: bytecode::NativeCallId) -> Result[
+    bytecode::NativeCall,
+    string,
+] {
+    if id.value < 0 || id.value >= state.program.native_calls.len() {
+        Result::Err("invalid native call " + id.value.to_string())
+    } else {
+        Result::Ok(state.program.native_calls[id.value])
+    }
+}
+
+fn native_type_value(state: VmState, type_id: go_types::TypeId) -> Option[bytecode::NativeType] {
+    for value in state.program.native_types {
+        if go_types::identical(state.program.world, value.type_id, type_id) {
+            return Option::Some(value)
+        } else {}
+    }
+    Option::None
+}
+
+fn runtime_zero_value(state: VmState, type_id: go_types::TypeId) -> Result[Value, string] {
+    match native_type_value(state, type_id) {
+        Some(native_type) => {
+            let value = new_native_value(native_type.key);
+            if !native_host_value_valid(value) {
+                Result::Err("native type is not registered: " + native_type.key)
+            } else {
+                Result::Ok(Value::Host { type_id, value })
+            }
+        },
+        None => match go_types::get_type(
+            state.program.world,
+            go_types::underlying(state.program.world, type_id),
+        ) {
+            Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Array { length, element } }) => {
+                if length < 0.to_int64() || length > 9223372036854775807.to_int64() {
+                    return Result::Err("array length is outside the host integer range")
+                } else {};
+                let elements: Vec[Value] = Vec::with_capacity(length.to_int());
+                for _ in 0..length.to_int() {
+                    elements.push(runtime_zero_value(state, element)?)
+                }
+                Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
+            },
+            Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } }) => {
+                let elements: Vec[Value] = Vec::with_capacity(fields.len());
+                for field in fields {
+                    elements.push(runtime_zero_value(state, field.variable.type_id)?)
+                }
+                Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
+            },
+            Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => {
+                let elements: Vec[Value] = Vec::with_capacity(variables.len());
+                for variable in variables {
+                    elements.push(runtime_zero_value(state, variable.type_id)?)
+                }
+                Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
+            },
+            _ => zero_value(state.program.world, type_id),
+        },
+    }
+}
+
+fn native_slice_element_key(type_key: string) -> Result[string, string] {
+    if type_key.starts_with("[]") {
+        Result::Ok(type_key.byte_slice(2, type_key.byte_len()))
+    } else if type_key.starts_with("...") {
+        Result::Ok(type_key.byte_slice(3, type_key.byte_len()))
+    } else {
+        Result::Err("native slice type key is invalid: " + type_key)
+    }
+}
+
+fn native_slice_type_key(type_key: string) -> Result[string, string] {
+    if type_key.starts_with("[]") {
+        Result::Ok(type_key)
+    } else if type_key.starts_with("...") {
+        Result::Ok("[]" + type_key.byte_slice(3, type_key.byte_len()))
+    } else {
+        Result::Err("native slice type key is invalid: " + type_key)
+    }
+}
+
+fn native_runtime_type_key(world: go_types::World, type_id: go_types::TypeId) -> Result[
+    string,
+    string,
+] {
+    let resolved = go_types::unalias(world, type_id);
+    match go_types::get_type(world, resolved) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Basic { basic, name: _, untyped },
+        }) => if untyped {
+            Result::Err("untyped callback value cannot cross the native bridge")
+        } else {
+            match basic {
+                go_types::BasicKind::Bool => Result::Ok("bool"),
+                go_types::BasicKind::Int => Result::Ok("int"),
+                go_types::BasicKind::Int8 => Result::Ok("int8"),
+                go_types::BasicKind::Int16 => Result::Ok("int16"),
+                go_types::BasicKind::Int32 => Result::Ok("int32"),
+                go_types::BasicKind::Int64 => Result::Ok("int64"),
+                go_types::BasicKind::Uint => Result::Ok("uint"),
+                go_types::BasicKind::Uint8 => Result::Ok("uint8"),
+                go_types::BasicKind::Uint16 => Result::Ok("uint16"),
+                go_types::BasicKind::Uint32 => Result::Ok("uint32"),
+                go_types::BasicKind::Uint64 => Result::Ok("uint64"),
+                go_types::BasicKind::Uintptr => Result::Ok("uintptr"),
+                go_types::BasicKind::Float32 => Result::Ok("float32"),
+                go_types::BasicKind::Float64 => Result::Ok("float64"),
+                go_types::BasicKind::Complex64 => Result::Ok("complex64"),
+                go_types::BasicKind::Complex128 => Result::Ok("complex128"),
+                go_types::BasicKind::String => Result::Ok("string"),
+                _ => Result::Err("callback basic type cannot cross the native bridge"),
+            }
+        },
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element } }) => {
+            Result::Ok("[]" + native_runtime_type_key(world, element)?)
+        },
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Named { object, underlying, .. },
+        }) => if go_types::is_interface(world, underlying) {
+            if world.objects[object.value].name == "error" {
+                Result::Ok("error")
+            } else {
+                Result::Ok("interface")
+            }
+        } else {
+            match go_types::get_type(world, go_types::underlying(world, underlying)) {
+                Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields: _ } }) => Result::Ok(
+                    "gomlgo-type-" + resolved.value.to_string(),
+                ),
+                _ => native_runtime_type_key(world, underlying),
+            }
+        },
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Interface { .. } }) => {
+            Result::Ok("interface")
+        },
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Chan { direction: _, element: _ },
+        }) => Result::Ok("channel"),
+        _ => Result::Err(
+            "callback type " + go_types::format_type(world, type_id)
+                + " cannot cross the native bridge",
+        ),
+    }
+}
+
+fn callback_signature_shape(world: go_types::World, signature: go_types::TypeId) -> Result[
+    (Vec[go_types::TypeId], Vec[string], Vec[go_types::TypeId], Vec[string]),
+    string,
+] {
+    let (params, results) = match go_types::get_type(world, go_types::underlying(world, signature)) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Signature {
+                receiver: _,
+                receiver_type_params,
+                type_params,
+                params,
+                results,
+                variadic: _,
+            },
+        }) => {
+            if !receiver_type_params.is_empty() || !type_params.is_empty() {
+                return Result::Err("generic callback cannot cross the native bridge")
+            } else {};
+            (params, results)
+        },
+        _ => return Result::Err("native callback value has no function signature"),
+    };
+    let parameter_types: Vec[go_types::TypeId] = Vec::from_array([]);
+    let parameter_keys: Vec[string] = Vec::from_array([]);
+    let result_types: Vec[go_types::TypeId] = Vec::from_array([]);
+    let result_keys: Vec[string] = Vec::from_array([]);
+    match go_types::get_type(world, go_types::unalias(world, params)) {
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => {
+            for variable in variables {
+                parameter_types.push(variable.type_id);
+                parameter_keys.push(native_runtime_type_key(world, variable.type_id)?)
+            }
+        },
+        _ => return Result::Err("native callback parameter list is not a tuple"),
+    };
+    match go_types::get_type(world, go_types::unalias(world, results)) {
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => {
+            for variable in variables {
+                result_types.push(variable.type_id);
+                result_keys.push(native_runtime_type_key(world, variable.type_id)?)
+            }
+        },
+        _ => return Result::Err("native callback result list is not a tuple"),
+    };
+    Result::Ok((parameter_types, parameter_keys, result_types, result_keys))
+}
+
+fn native_argument(state: VmState, value: Value, type_id: go_types::TypeId, type_key: string) -> Result[
+    dyn HostValueMarker,
+    string,
+] {
+    match value {
+        Value::Host { type_id: _, value } => Result::Ok(value),
+        Value::Interface { static_type, dynamic_type: None, value: _ } => {
+            Result::Ok(new_native_nil())
+        },
+        Value::Interface { static_type, dynamic_type: Some(dynamic_type), value: Some(value) } => {
+            if type_key == "interface" && native_proxy_interface(state.program.world, type_id) {
+                let queue = new_native_callback_queue(
+                    state.native_completions,
+                    state.config.max_goroutines,
+                );
+                state.native_callbacks.push(
+                    NativeCallbackBinding {
+                        queue,
+                        target: NativeCallbackTarget::Interface {
+                            receiver: Value::Interface {
+                                static_type,
+                                dynamic_type: Option::Some(dynamic_type),
+                                value: Option::Some(value),
+                            },
+                            interface_type: type_id,
+                        },
+                    },
+                );
+                Result::Ok(native_callback_token(queue).value)
+            } else {
+                native_argument(
+                    state,
+                    value.get(),
+                    dynamic_type,
+                    native_runtime_type_key(state.program.world, dynamic_type)?,
+                )
+            }
+        },
+        Value::Local(LocalValue::Pointer(Some(place))) => match borrow_place(state.memory, place)? {
+            Value::Host { type_id: _, value } => {
+                let address = address_native_value(value);
+                if native_host_value_valid(address) {
+                    Result::Ok(address)
+                } else {
+                    Result::Err("native pointer receiver is not addressable")
+                }
+            },
+            _ => Result::Err("interpreted pointer cannot cross the native bridge"),
+        },
+        Value::Local(LocalValue::Bool(value)) => Result::Ok(new_native_bool(value)),
+        Value::Local(LocalValue::Integer { bits, width: _, signed: _ }) => {
+            Result::Ok(new_native_integer(type_key, bits))
+        },
+        Value::Local(LocalValue::Float { bits, width: _ }) => {
+            Result::Ok(new_native_float(type_key, bits))
+        },
+        Value::Local(LocalValue::Complex { real, imaginary, width: _ }) => {
+            Result::Ok(new_native_complex(type_key, real, imaginary))
+        },
+        Value::Local(LocalValue::String(value)) => {
+            Result::Ok(new_native_string(value.to_string()?))
+        },
+        Value::Local(LocalValue::Slice(slice)) => {
+            let host = new_native_slice(
+                native_slice_type_key(type_key)?,
+                slice.length,
+                slice.backing.is_none(),
+            );
+            if slice.backing.is_some() {
+                let element_key = native_slice_element_key(type_key)?;
+                let values = loaded_slice_values(state, slice)?;
+                for index in 0..values.len() {
+                    let element = native_argument(
+                        state,
+                        values[index],
+                        slice.element_type,
+                        element_key,
+                    )?;
+                    if !set_native_slice_value(host, index, element) {
+                        return Result::Err(
+                            "native slice element " + index.to_string() + " could not be converted",
+                        )
+                    } else {}
+                }
+            } else {};
+            Result::Ok(host)
+        },
+        Value::Local(LocalValue::Aggregate { type_id: aggregate_type, elements }) => {
+            let host = new_native_aggregate(type_key);
+            if !native_host_value_valid(host) {
+                return Result::Err("native aggregate type is not registered: " + type_key)
+            } else {};
+            let element_types = native_aggregate_element_types(state.program.world, aggregate_type)?;
+            if element_types.len() != elements.len() {
+                return Result::Err("native aggregate element count does not match its type")
+            } else {};
+            for index in 0..elements.len() {
+                let element_type = element_types[index];
+                if !set_native_aggregate_value(
+                    host,
+                    index,
+                    native_argument(
+                        state,
+                        elements[index],
+                        element_type,
+                        native_runtime_type_key(state.program.world, element_type)?,
+                    )?,
+                ) {
+                    return Result::Err("native aggregate element conversion failed")
+                } else {}
+            }
+            Result::Ok(host)
+        },
+        Value::Local(LocalValue::Function(Some(function))) => {
+            let queue = new_native_callback_queue(
+                state.native_completions,
+                state.config.max_goroutines,
+            );
+            state.native_callbacks.push(
+                NativeCallbackBinding {
+                    queue,
+                    target: NativeCallbackTarget::Function { function, signature: type_id },
+                },
+            );
+            Result::Ok(native_callback_token(queue).value)
+        },
+        _ => Result::Err(
+            "value of type " + go_types::format_type(state.program.world, type_id)
+                + " cannot cross the native bridge",
+        ),
+    }
+}
+
+fn native_aggregate_element_types(world: go_types::World, type_id: go_types::TypeId) -> Result[
+    Vec[go_types::TypeId],
+    string,
+] {
+    match go_types::get_type(world, go_types::underlying(world, type_id)) {
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } }) => {
+            let result: Vec[go_types::TypeId] = Vec::with_capacity(fields.len());
+            for field in fields {
+                result.push(field.variable.type_id)
+            }
+            Result::Ok(result)
+        },
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Array { length, element } }) => {
+            let result: Vec[go_types::TypeId] = Vec::with_capacity(length.to_int());
+            for _ in 0..length.to_int() {
+                result.push(element)
+            }
+            Result::Ok(result)
+        },
+        _ => Result::Err("native aggregate value is not struct or array"),
+    }
+}
+
+fn native_proxy_interface(world: go_types::World, type_id: go_types::TypeId) -> bool {
+    match go_types::get_type(world, go_types::unalias(world, type_id)) {
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Named { underlying, .. } }) => {
+            go_types::is_interface(world, underlying)
+        },
+        _ => false,
+    }
+}
+
+fn native_slice_result(
+    state: VmState,
+    value: dyn HostValueMarker,
+    type_id: go_types::TypeId,
+    type_key: string,
+) -> Result[Value, string] {
+    if native_value_nil(value) {
+        return runtime_zero_value(state, type_id)
+    } else {};
+    let element_type = match go_types::get_type(
+        state.program.world,
+        go_types::underlying(state.program.world, type_id),
+    ) {
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element } }) => element,
+        _ => return Result::Err("native result type is not a slice"),
+    };
+    let element_key = native_slice_element_key(type_key)?;
+    let length = native_value_length(value);
+    let capacity = native_value_capacity(value);
+    let result = make_slice(
+        state,
+        type_id,
+        length,
+        if capacity < length {
+            length
+        } else {
+            capacity
+        },
+    )?;
+    let Value::Local(LocalValue::Slice(slice)) = result else {
+        return Result::Err("native slice result has no interpreted backing")
+    };
+    if length > 0 {
+        let backing = slice.backing.ok_or("native slice result backing is missing")?;
+        for index in 0..length {
+            store_place(
+                state.memory,
+                index_place(backing, index),
+                native_result(state, native_value_index(value, index), element_type, element_key)?,
+            )?
+        }
+    } else {};
+    Result::Ok(Value::Local(LocalValue::Slice(slice)))
+}
+
+fn native_aggregate_result(state: VmState, value: dyn HostValueMarker, type_id: go_types::TypeId) -> Result[
+    Value,
+    string,
+] {
+    let element_types = native_aggregate_element_types(state.program.world, type_id)?;
+    let elements: Vec[Value] = Vec::with_capacity(element_types.len());
+    for index in 0..element_types.len() {
+        let element_type = element_types[index];
+        elements.push(
+            native_result(
+                state,
+                native_value_aggregate_field(value, index),
+                element_type,
+                native_runtime_type_key(state.program.world, element_type)?,
+            )?,
+        )
+    }
+    Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
+}
+
+fn native_result(
+    state: VmState,
+    value: dyn HostValueMarker,
+    type_id: go_types::TypeId,
+    type_key: string,
+) -> Result[Value, string] {
+    if type_key.starts_with("[]") {
+        return native_slice_result(state, value, type_id, type_key)
+    } else if type_key.starts_with("gomlgo-type-") {
+        return native_aggregate_result(state, value, type_id)
+    } else if type_key.starts_with("func(") {
+        return Result::Ok(Value::Host { type_id, value })
+    } else if type_key == "interface" || type_key == "error" {
+        if native_value_nil(value) {
+            return Result::Ok(
+                Value::Interface {
+                    static_type: type_id,
+                    dynamic_type: Option::None,
+                    value: Option::None,
+                },
+            )
+        } else {
+            return Result::Ok(Value::Host { type_id, value })
+        }
+    } else if type_key == "channel" {
+        return Result::Ok(Value::Host { type_id, value })
+    } else {};
+    match basic_kind(state.program.world, type_id) {
+        Some(go_types::BasicKind::Bool) => {
+            Result::Ok(Value::Local(LocalValue::Bool(native_value_bool(value))))
+        },
+        Some(kind) => match integer_layout(kind) {
+            Some((width, signed)) => Result::Ok(
+                Value::Local(
+                    LocalValue::Integer { bits: native_value_integer_bits(value), width, signed },
+                ),
+            ),
+            None => match kind {
+                go_types::BasicKind::Float32 => Result::Ok(
+                    Value::Local(
+                        LocalValue::Float { bits: native_value_float_bits(value), width: 32 },
+                    ),
+                ),
+                go_types::BasicKind::Float64 => Result::Ok(
+                    Value::Local(
+                        LocalValue::Float { bits: native_value_float_bits(value), width: 64 },
+                    ),
+                ),
+                go_types::BasicKind::Complex64 => Result::Ok(
+                    Value::Local(
+                        LocalValue::Complex {
+                            real: native_value_complex_real_bits(value),
+                            imaginary: native_value_complex_imaginary_bits(value),
+                            width: 64,
+                        },
+                    ),
+                ),
+                go_types::BasicKind::Complex128 => Result::Ok(
+                    Value::Local(
+                        LocalValue::Complex {
+                            real: native_value_complex_real_bits(value),
+                            imaginary: native_value_complex_imaginary_bits(value),
+                            width: 128,
+                        },
+                    ),
+                ),
+                go_types::BasicKind::String => Result::Ok(
+                    Value::Local(
+                        LocalValue::String(bytes::Bytes::from_string(native_value_string(value))),
+                    ),
+                ),
+                _ => Result::Err("unsupported native result type " + type_key),
+            },
+        },
+        None => Result::Err("unsupported native result type " + type_key),
+    }
+}
+
+fn native_panic_type(world: go_types::World) -> Result[go_types::TypeId, string] {
+    let object = go_types::lookup(world, world.universe, "any").ok_or("world has no any type")?;
+    let type_id = go_types::get_object(world, object).ok_or("world any object is invalid")?.type_id;
+    Result::Ok(go_types::unalias(world, type_id))
+}
+
+fn static_native_prepared(state: VmState, id: bytecode::NativeCallId) -> Result[
+    NativePrepared,
+    string,
+] {
+    let call = native_call_value(state, id)?;
+    Result::Ok(
+        NativePrepared {
+            id: Option::Some(id),
+            function: Option::None,
+            parameter_types: call.parameter_types,
+            parameter_keys: call.parameter_type_keys,
+            result_types: call.result_types,
+            result_keys: call.result_type_keys,
+            variadic: call.variadic,
+        },
+    )
+}
+
+fn dynamic_native_prepared(
+    state: VmState,
+    function: dyn HostValueMarker,
+    signature: go_types::TypeId,
+    variadic: bool,
+) -> Result[NativePrepared, string] {
+    let shape = callback_signature_shape(state.program.world, signature)?;
+    Result::Ok(
+        NativePrepared {
+            id: Option::None,
+            function: Option::Some(function as dyn HostValueMarker),
+            parameter_types: shape.0,
+            parameter_keys: shape.1,
+            result_types: shape.2,
+            result_keys: shape.3,
+            variadic,
+        },
+    )
+}
+
+fn prepare_native_value_invocation(state: VmState, native: NativePrepared, arguments: Vec[Value]) -> Result[
+    NativeInvocation,
+    string,
+] {
+    if arguments.len() != native.parameter_types.len()
+        || arguments.len() != native.parameter_keys.len() {
+        return Result::Err("native call argument count does not match its manifest")
+    } else {};
+    let invocation = match native.function {
+        Some(function) => new_native_value_invocation(
+            function as dyn HostValueMarker,
+            native.variadic,
+        ),
+        None => new_native_invocation(
+            native.id.ok_or("native call has no target")?.value,
+            native.variadic,
+        ),
+    };
+    for index in 0..arguments.len() {
+        append_native_argument(
+            invocation.value as dyn HostValueMarker,
+            native_argument(
+                state,
+                arguments[index],
+                native.parameter_types[index],
+                native.parameter_keys[index],
+            )?,
+        )
+    }
+    Result::Ok(invocation)
+}
+
+fn finish_native_value_invocation(
+    state: VmState,
+    native: NativePrepared,
+    invocation: NativeInvocation,
+) -> Result[InvocationOutcome, string] {
+    let error = native_invocation_error(invocation.value as dyn HostValueMarker);
+    if error != "" {
+        return Result::Err(error)
+    } else if native_invocation_exited(invocation.value as dyn HostValueMarker) {
+        return Result::Ok(
+            InvocationOutcome::Exited(
+                native_invocation_exit_code(invocation.value as dyn HostValueMarker),
+            ),
+        )
+    } else if native_invocation_panicked(invocation.value as dyn HostValueMarker) {
+        let type_id = native_panic_type(state.program.world)?;
+        return Result::Ok(
+            InvocationOutcome::Panicked(
+                PanicPayload {
+                    value: Value::Host {
+                        type_id,
+                        value: native_invocation_panic(invocation.value as dyn HostValueMarker),
+                    },
+                    type_id,
+                    nil_interface: false,
+                },
+            ),
+        )
+    } else {};
+    if native_invocation_result_count(invocation.value as dyn HostValueMarker)
+        != native.result_types.len()
+        || native.result_types.len() != native.result_keys.len() {
+        return Result::Err("native call result count does not match its manifest")
+    } else {};
+    let values: Vec[Value] = Vec::with_capacity(native.result_types.len());
+    for index in 0..native.result_types.len() {
+        values.push(
+            native_result(
+                state,
+                native_invocation_result(invocation.value as dyn HostValueMarker, index),
+                native.result_types[index],
+                native.result_keys[index],
+            )?,
+        )
+    }
+    Result::Ok(InvocationOutcome::Returned(values))
+}
+
+fn prepare_native_invocation(state: VmState, id: bytecode::NativeCallId, arguments: Vec[Value]) -> Result[
+    NativeInvocation,
+    string,
+] {
+    prepare_native_value_invocation(state, static_native_prepared(state, id)?, arguments)
+}
+
+fn finish_native_invocation(
+    state: VmState,
+    id: bytecode::NativeCallId,
+    invocation: NativeInvocation,
+) -> Result[InvocationOutcome, string] {
+    finish_native_value_invocation(state, static_native_prepared(state, id)?, invocation)
+}
+
+fn invoke_native(state: VmState, id: bytecode::NativeCallId, arguments: Vec[Value]) -> Result[
+    InvocationOutcome,
+    string,
+] {
+    let invocation = prepare_native_invocation(state, id, arguments)?;
+    run_native_invocation(invocation.value as dyn HostValueMarker);
+    finish_native_invocation(state, id, invocation)
+}
+
+fn prepare_call(
+    state: VmState,
+    frame: Frame,
+    target: bytecode::CallTarget,
+    arguments: Vec[bytecode::RegisterId],
+    variadic: bool,
+    location: bytecode::SourceLocation,
+) -> Result[PreparedCall, string] {
+    let values = register_values(frame, arguments)?;
+    let types: Vec[go_types::TypeId] = Vec::with_capacity(arguments.len());
+    let function = state.program.functions[frame.function.value];
+    for argument in arguments {
+        types.push(function.register_types[argument.value])
+    }
+    let prepared = match target {
+        bytecode::CallTarget::Static(function) => PreparedTarget::Static(function),
+        bytecode::CallTarget::Method { function, receiver } => {
+            PreparedTarget::Method { function, receiver: register(frame, receiver)? }
+        },
+        bytecode::CallTarget::InterfaceMethod { method, receiver } => {
+            let receiver = register(frame, receiver)?;
+            match receiver {
+                Value::Interface { static_type: _, dynamic_type: Some(_), value: Some(_) } => {},
+                _ => return Result::Err("interface method call has a nil receiver"),
+            };
+            PreparedTarget::InterfaceMethod { method, receiver }
+        },
+        bytecode::CallTarget::Dynamic(target) => PreparedTarget::Dynamic(register(frame, target)?),
+        bytecode::CallTarget::Native(value) => PreparedTarget::Native(value),
+        bytecode::CallTarget::NativeMethod { call, receiver } => {
+            let native_values = Vec::from_array([register(frame, receiver)?]);
+            let native_types = Vec::from_array([function.register_types[receiver.value]]);
+            for value in values {
+                native_values.push(value)
+            }
+            for type_id in types {
+                native_types.push(type_id)
+            }
+            return Result::Ok(
+                PreparedCall {
+                    target: PreparedTarget::Native(call),
+                    arguments: native_values,
+                    argument_types: native_types,
+                    variadic,
+                    location,
+                },
+            )
+        },
+        bytecode::CallTarget::Builtin(value) => PreparedTarget::Builtin(value),
+    };
+    Result::Ok(
+        PreparedCall {
+            target: prepared,
+            arguments: values,
+            argument_types: types,
+            variadic,
+            location,
+        },
+    )
+}
+
+fn invoke_prepared(
+    state: VmState,
+    caller: Frame,
+    call: PreparedCall,
+    recover_state: Option[PanicState],
+) -> Result[InvocationOutcome, string] {
+    match call.target {
+        PreparedTarget::Static(function) => execute_function(
+            state,
+            function,
+            call.arguments,
+            Vec::from_array([]),
+            Option::Some(call.location),
+            recover_state,
+        ),
+        PreparedTarget::Method { function, receiver } => {
+            let arguments = Vec::from_array([receiver]);
+            for argument in call.arguments {
+                arguments.push(argument)
+            }
+            execute_function(
+                state,
+                function,
+                arguments,
+                Vec::from_array([]),
+                Option::Some(call.location),
+                recover_state,
+            )
+        },
+        PreparedTarget::InterfaceMethod { method, receiver } => {
+            let (dynamic_type, dynamic_value) = match receiver {
+                Value::Interface {
+                    static_type: _,
+                    dynamic_type: Some(dynamic_type),
+                    value: Some(value),
+                } => (dynamic_type, value.get()),
+                _ => return Result::Err("interface method call has a nil receiver"),
+            };
+            let method_object = state.program.world.objects[method.value];
+            let selection = go_types::lookup_field_or_method(
+                state.program.world,
+                dynamic_type,
+                true,
+                method_object.name,
+            ).ok_or("dynamic interface method was not found")?;
+            let function = state.program.object_functions[selection.object.value].ok_or(
+                "dynamic interface method has no interpreted body",
+            )?;
+            let arguments = Vec::from_array(
+                [
+                    method_expression_receiver(
+                        state,
+                        state.program.functions[function.value],
+                        dynamic_value,
+                        dynamic_type,
+                        selection.index,
+                    )?,
+                ],
+            );
+            for argument in call.arguments {
+                arguments.push(argument)
+            }
+            execute_function(
+                state,
+                function,
+                arguments,
+                Vec::from_array([]),
+                Option::Some(call.location),
+                recover_state,
+            )
+        },
+        PreparedTarget::Dynamic(target) => match target {
+            Value::Host { type_id, value } => {
+                let native = dynamic_native_prepared(state, value, type_id, call.variadic)?;
+                let invocation = prepare_native_value_invocation(state, native, call.arguments)?;
+                run_native_invocation(invocation.value as dyn HostValueMarker);
+                finish_native_value_invocation(state, native, invocation)
+            },
+            Value::Local(LocalValue::Function(Some(value))) => match value.target {
+                FunctionTarget::Bytecode(function) => {
+                    let arguments = match value.receiver {
+                        Some(receiver) => {
+                            let result = Vec::from_array([receiver.get()]);
+                            for argument in call.arguments {
+                                result.push(argument)
+                            }
+                            result
+                        },
+                        None => call.arguments,
+                    };
+                    execute_function(
+                        state,
+                        function,
+                        arguments,
+                        value.captures,
+                        Option::Some(call.location),
+                        recover_state,
+                    )
+                },
+                FunctionTarget::MethodExpression { function, receiver_type, index } => {
+                    if call.arguments.is_empty() {
+                        return Result::Err("method expression call has no receiver")
+                    } else {};
+                    let function_value = state.program.functions[function.value];
+                    let arguments = Vec::from_array(
+                        [
+                            method_expression_receiver(
+                                state,
+                                function_value,
+                                call.arguments[0],
+                                receiver_type,
+                                index,
+                            )?,
+                        ],
+                    );
+                    for index in 1..call.arguments.len() {
+                        arguments.push(call.arguments[index])
+                    }
+                    execute_function(
+                        state,
+                        function,
+                        arguments,
+                        value.captures,
+                        Option::Some(call.location),
+                        recover_state,
+                    )
+                },
+                FunctionTarget::InterfaceMethod(method) => {
+                    let receiver = match value.receiver {
+                        Some(receiver) => receiver.get(),
+                        None => if call.arguments.is_empty() {
+                            return Result::Err("interface method expression call has no receiver")
+                        } else {
+                            call.arguments[0]
+                        },
+                    };
+                    let first_argument = if value.receiver.is_some() {
+                        0
+                    } else {
+                        1
+                    };
+                    let (dynamic_type, dynamic_value) = match receiver {
+                        Value::Interface {
+                            static_type: _,
+                            dynamic_type: Some(dynamic_type),
+                            value: Some(value),
+                        } => (dynamic_type, value.get()),
+                        _ => return Result::Err("interface method call has a nil receiver"),
+                    };
+                    let method_object = state.program.world.objects[method.value];
+                    let selection = go_types::lookup_field_or_method(
+                        state.program.world,
+                        dynamic_type,
+                        true,
+                        method_object.name,
+                    ).ok_or("dynamic interface method was not found")?;
+                    let function = state.program.object_functions[selection.object.value].ok_or(
+                        "dynamic interface method has no interpreted body",
+                    )?;
+                    let arguments = Vec::from_array(
+                        [
+                            method_expression_receiver(
+                                state,
+                                state.program.functions[function.value],
+                                dynamic_value,
+                                dynamic_type,
+                                selection.index,
+                            )?,
+                        ],
+                    );
+                    for index in first_argument..call.arguments.len() {
+                        arguments.push(call.arguments[index])
+                    }
+                    execute_function(
+                        state,
+                        function,
+                        arguments,
+                        Vec::from_array([]),
+                        Option::Some(call.location),
+                        recover_state,
+                    )
+                },
+            },
+            Value::Local(LocalValue::Function(None)) => Result::Err("call of nil function"),
+            _ => Result::Err("dynamic call target is not a function"),
+        },
+        PreparedTarget::Builtin(bytecode::BuiltinKind::Panic) => if call.arguments.len() == 1 {
+            Result::Ok(
+                InvocationOutcome::Panicked(
+                    new_panic_payload(state, call.arguments[0], call.argument_types[0]),
+                ),
+            )
+        } else {
+            Result::Err("panic has an invalid call shape")
+        },
+        PreparedTarget::Builtin(bytecode::BuiltinKind::Recover) => {
+            let _ = recover_state;
+            Result::Ok(InvocationOutcome::Returned(Vec::from_array([])))
+        },
+        PreparedTarget::Builtin(kind) => {
+            let _ = execute_builtin(
+                state,
+                caller,
+                kind,
+                call.arguments,
+                Vec::from_array([]),
+                call.variadic,
+            )?;
+            Result::Ok(InvocationOutcome::Returned(Vec::from_array([])))
+        },
+        PreparedTarget::Native(id) => invoke_native(state, id, call.arguments),
+    }
+}
+
+fn runtime_fault(message: string) -> bool {
+    message == "assignment to entry in nil map" || message == "call of nil function"
+        || message == "comparing uncomparable type"
+        || message == "hash of unhashable type"
+        || message == "integer divide by zero"
+        || message == "negative shift count"
+        || message == "send on closed channel"
+        || message == "close of nil channel"
+        || message == "close of closed channel"
+        || message.contains("index out of range")
+        || message.contains("slice bounds out of range")
+        || message.contains("nil pointer")
+        || message.starts_with("interface conversion:")
+        || message.starts_with("makechan:")
+        || message.starts_with("makemap:")
+        || message.starts_with("makeslice:")
+}
+
+fn runtime_fault_payload(state: VmState, message: string) -> Result[PanicPayload, string] {
+    let type_id = go_types::basic_type(state.program.world, "string").ok_or(
+        "runtime fault string type is missing",
+    )?;
+    Result::Ok(
+        new_panic_payload(
+            state,
+            Value::Local(LocalValue::String(bytes::Bytes::from_string(message))),
+            type_id,
+        ),
+    )
+}
+
+fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecode::Instruction) -> Result[
+    InstructionControl,
+    string,
+] {
+    let result: Result[unit, string] = match instruction.kind {
+        bytecode::InstructionKind::Constant { target, type_id, constant_kind, exact } => set_register(
+            frame,
+            target,
+            constant_value(state.program.world, type_id, constant_kind, exact)?,
+        ),
+        bytecode::InstructionKind::Zero { target, type_id } => set_register(
+            frame,
+            target,
+            runtime_zero_value(state, type_id)?,
+        ),
+        bytecode::InstructionKind::Move { target, source } | bytecode::InstructionKind::Copy {
+            target,
+            source,
+        } => {
+            set_register(frame, target, register(frame, source)?)
+        },
+        bytecode::InstructionKind::LocalPlace { target, local } => if local.value < 0
+            || local.value >= frame.locals.len() {
+            Result::Err("invalid local " + local.value.to_string())
+        } else {
+            set_place(frame, target, root_place(frame.locals[local.value]))
+        },
+        bytecode::InstructionKind::GlobalPlace { target, global } => if global.value < 0
+            || global.value >= state.globals.len() {
+            Result::Err("invalid global " + global.value.to_string())
+        } else {
+            set_place(frame, target, root_place(state.globals[global.value]))
+        },
+        bytecode::InstructionKind::NativeGlobalLoad { target, object } => {
+            let value = state.program.world.objects[object.value];
+            let owner = value.owner.ok_or("native global has no package owner")?;
+            if state.program.world.packages[owner.value].path != "os" || value.name != "Args" {
+                Result::Err("unsupported native global")
+            } else {
+                set_register(
+                    frame,
+                    target,
+                    native_result(state, native_program_args(), value.type_id, "[]string")?,
+                )
+            }
+        },
+        bytecode::InstructionKind::FieldPlace { target, base, index } => {
+            set_place(frame, target, field_place(place(frame, base)?, index))
+        },
+        bytecode::InstructionKind::IndexPlace { target, base, index } => set_place(
+            frame,
+            target,
+            indexed_place(
+                state.memory,
+                place(frame, base)?,
+                integer_index(register(frame, index)?)?,
+            )?,
+        ),
+        bytecode::InstructionKind::DereferencePlace { target, pointer } => match register(
+            frame,
+            pointer,
+        )? {
+            Value::Local(LocalValue::Pointer(Some(place))) => set_place(frame, target, place),
+            Value::Local(LocalValue::Pointer(None)) => Result::Err(
+                "invalid memory address or nil pointer dereference",
+            ),
+            _ => Result::Err("dereference of non-pointer value"),
+        },
+        bytecode::InstructionKind::Load { target, source } => {
+            set_register(frame, target, load_place(state.memory, place(frame, source)?)?)
+        },
+        bytecode::InstructionKind::Store { target, value } => {
+            store_place(state.memory, place(frame, target)?, register(frame, value)?)
+        },
+        bytecode::InstructionKind::AddressOf { target, source } => set_register(
+            frame,
+            target,
+            Value::Local(LocalValue::Pointer(Option::Some(place(frame, source)?))),
+        ),
+        bytecode::InstructionKind::Unary { target, op, operand } => set_register(
+            frame,
+            target,
+            unary_value(
+                op,
+                register(frame, operand)?,
+                state.program.functions[frame.function.value].register_types[target.value],
+                state.program.world,
+            )?,
+        ),
+        bytecode::InstructionKind::Binary { target, op, left, right } => set_register(
+            frame,
+            target,
+            binary_value(
+                op,
+                register(frame, left)?,
+                register(frame, right)?,
+                state.program.functions[frame.function.value].register_types[target.value],
+                state.program.world,
+            )?,
+        ),
+        bytecode::InstructionKind::Convert { target, source, type_id } => set_register(
+            frame,
+            target,
+            convert_runtime_value(
+                state,
+                register(frame, source)?,
+                state.program.functions[frame.function.value].register_types[source.value],
+                type_id,
+            )?,
+        ),
+        bytecode::InstructionKind::TypeAssert { target, ok, source, type_id } => {
+            let source = register(frame, source)?;
+            let asserted = match source {
+                Value::Interface {
+                    static_type: _,
+                    dynamic_type: Some(dynamic_type),
+                    value: Some(value),
+                } => if go_types::identical(state.program.world, dynamic_type, type_id)
+                    || (go_types::is_interface(state.program.world, type_id)
+                        && go_types::implements(state.program.world, dynamic_type, type_id)) {
+                    Option::Some(
+                        if go_types::is_interface(state.program.world, type_id) {
+                            Value::Interface {
+                                static_type: type_id,
+                                dynamic_type: Option::Some(dynamic_type),
+                                value: Option::Some(Ref::new(copy_value(value.get()))),
+                            }
+                        } else {
+                            copy_value(value.get())
+                        },
+                    )
+                } else {
+                    Option::None
+                },
+                Value::Interface { static_type: _, dynamic_type: _, value: _ } => Option::None,
+                _ => return Result::Err("type assertion source is not an interface"),
+            };
+            match asserted {
+                Some(value) => {
+                    set_register(frame, target, value)?;
+                    match ok {
+                        Some(register) => set_register(
+                            frame,
+                            register,
+                            Value::Local(LocalValue::Bool(true)),
+                        ),
+                        None => Result::Ok(()),
+                    }
+                },
+                None => match ok {
+                    Some(register) => {
+                        set_register(frame, target, runtime_zero_value(state, type_id)?)?;
+                        set_register(frame, register, Value::Local(LocalValue::Bool(false)))
+                    },
+                    None => Result::Err("interface conversion: type assertion failed"),
+                },
+            }
+        },
+        bytecode::InstructionKind::MakeAggregate { target, type_id, elements, length } => set_register(
+            frame,
+            target,
+            aggregate_value(state, type_id, elements, frame, length)?,
+        ),
+        bytecode::InstructionKind::FieldValue { target, base, index } => set_register(
+            frame,
+            target,
+            aggregate_element(state, register(frame, base)?, index, 0)?,
+        ),
+        bytecode::InstructionKind::IndexValue { target, base, index, ok } => {
+            let value = indexed_value(
+                state,
+                register(frame, base)?,
+                register(frame, index)?,
+                state.program.functions[frame.function.value].register_types[target.value],
+            )?;
+            set_register(frame, target, value.0)?;
+            match ok {
+                Some(register) => set_register(
+                    frame,
+                    register,
+                    Value::Local(LocalValue::Bool(value.1)),
+                ),
+                None => Result::Ok(()),
+            }
+        },
+        bytecode::InstructionKind::DecodeRune { rune, width, source, offset } => {
+            let source = match register(frame, source)? {
+                Value::Local(LocalValue::String(value)) => value,
+                _ => return Result::Err("string range source is not a string"),
+            };
+            let decoded = decoded_rune(source, integer_index(register(frame, offset)?)?)?;
+            set_register(
+                frame,
+                rune,
+                integer_for_type(
+                    state,
+                    state.program.functions[frame.function.value].register_types[rune.value],
+                    decoded.0,
+                )?,
+            )?;
+            set_register(
+                frame,
+                width,
+                integer_for_type(
+                    state,
+                    state.program.functions[frame.function.value].register_types[width.value],
+                    decoded.1,
+                )?,
+            )
+        },
+        bytecode::InstructionKind::SliceValue { target, base, low, high, maximum } => {
+            let low = match low {
+                Some(value) => Option::Some(register(frame, value)?),
+                None => Option::None,
+            };
+            let high = match high {
+                Some(value) => Option::Some(register(frame, value)?),
+                None => Option::None,
+            };
+            let maximum = match maximum {
+                Some(value) => Option::Some(register(frame, value)?),
+                None => Option::None,
+            };
+            set_register(
+                frame,
+                target,
+                sliced_value(state, register(frame, base)?, low, high, maximum)?,
+            )
+        },
+        bytecode::InstructionKind::SlicePlace { target, base, element_type, low, high, maximum } => {
+            let low = match low {
+                Some(value) => Option::Some(register(frame, value)?),
+                None => Option::None,
+            };
+            let high = match high {
+                Some(value) => Option::Some(register(frame, value)?),
+                None => Option::None,
+            };
+            let maximum = match maximum {
+                Some(value) => Option::Some(register(frame, value)?),
+                None => Option::None,
+            };
+            set_register(
+                frame,
+                target,
+                sliced_place(state, place(frame, base)?, element_type, low, high, maximum)?,
+            )
+        },
+        bytecode::InstructionKind::Allocate { target, type_id, value } => {
+            let value = match value {
+                Some(value) => register(frame, value)?,
+                None => runtime_zero_value(state, type_id)?,
+            };
+            let cell = allocate_cell(state.memory, type_id, value);
+            set_register(
+                frame,
+                target,
+                Value::Local(LocalValue::Pointer(Option::Some(root_place(cell)))),
+            )
+        },
+        bytecode::InstructionKind::MakeSlice { target, type_id, length, capacity } => set_register(
+            frame,
+            target,
+            make_slice(
+                state,
+                type_id,
+                integer_host(register(frame, length)?)?,
+                integer_host(register(frame, capacity)?)?,
+            )?,
+        ),
+        bytecode::InstructionKind::MakeMap { target, type_id, capacity } => {
+            let capacity = match capacity {
+                Some(value) => integer_host(register(frame, value)?)?,
+                None => 0,
+            };
+            set_register(frame, target, new_map(state, type_id, capacity)?)
+        },
+        bytecode::InstructionKind::MakeClosure { target, function, captures } => {
+            let cells: Vec[CellId] = Vec::with_capacity(captures.len());
+            for capture in captures {
+                if capture.value < 0 || capture.value >= frame.locals.len() {
+                    return Result::Err("invalid closure capture local")
+                } else {};
+                cells.push(frame.locals[capture.value])
+            }
+            set_register(
+                frame,
+                target,
+                Value::Local(
+                    LocalValue::Function(
+                        Option::Some(
+                            FunctionValue {
+                                target: FunctionTarget::Bytecode(function),
+                                captures: cells,
+                                receiver: Option::None,
+                            },
+                        ),
+                    ),
+                ),
+            )
+        },
+        bytecode::InstructionKind::MakeMethodValue { target, function, receiver } => {
+            let receiver = register(frame, receiver)?;
+            set_register(
+                frame,
+                target,
+                Value::Local(
+                    LocalValue::Function(
+                        Option::Some(
+                            FunctionValue {
+                                target: FunctionTarget::Bytecode(function),
+                                captures: Vec::from_array([]),
+                                receiver: Option::Some(Ref::new(copy_value(receiver))),
+                            },
+                        ),
+                    ),
+                ),
+            )
+        },
+        bytecode::InstructionKind::MakeMethodExpression { target, function, receiver_type, index } => set_register(
+            frame,
+            target,
+            Value::Local(
+                LocalValue::Function(
+                    Option::Some(
+                        FunctionValue {
+                            target: FunctionTarget::MethodExpression {
+                                function,
+                                receiver_type,
+                                index,
+                            },
+                            captures: Vec::from_array([]),
+                            receiver: Option::None,
+                        },
+                    ),
+                ),
+            ),
+        ),
+        bytecode::InstructionKind::MakeInterfaceMethodValue { target, method, receiver } => {
+            let receiver = match receiver {
+                Some(value) => {
+                    let receiver = register(frame, value)?;
+                    match receiver {
+                        Value::Interface { static_type: _, dynamic_type: Some(_), value: Some(_) } => {},
+                        _ => return Result::Err("interface method value has a nil receiver"),
+                    };
+                    Option::Some(Ref::new(copy_value(receiver)))
+                },
+                None => Option::None,
+            };
+            set_register(
+                frame,
+                target,
+                Value::Local(
+                    LocalValue::Function(
+                        Option::Some(
+                            FunctionValue {
+                                target: FunctionTarget::InterfaceMethod(method),
+                                captures: Vec::from_array([]),
+                                receiver,
+                            },
+                        ),
+                    ),
+                ),
+            )
+        },
+        bytecode::InstructionKind::RenewLocal { local } => if local.value < 0
+            || local.value >= frame.locals.len() {
+            Result::Err("invalid renewed local")
+        } else {
+            let function = state.program.functions[frame.function.value];
+            let type_id = function.locals[local.value].type_id;
+            frame.locals[local.value] = allocate_cell(
+                state.memory,
+                type_id,
+                runtime_zero_value(state, type_id)?,
+            );
+            Result::Ok(())
+        },
+        bytecode::InstructionKind::CloneLocal { local } => if local.value < 0
+            || local.value >= frame.locals.len() {
+            Result::Err("invalid cloned local")
+        } else {
+            let function = state.program.functions[frame.function.value];
+            let type_id = function.locals[local.value].type_id;
+            let value = load_place(state.memory, root_place(frame.locals[local.value]))?;
+            frame.locals[local.value] = allocate_cell(state.memory, type_id, value);
+            Result::Ok(())
+        },
+        bytecode::InstructionKind::MapSet { map, key, value } => match register(frame, map)? {
+            Value::Local(LocalValue::Map(id)) => {
+                map_set(state, id, register(frame, key)?, register(frame, value)?)
+            },
+            _ => Result::Err("map assignment target is not a map"),
+        },
+        bytecode::InstructionKind::MapDelete { map, key } => match register(frame, map)? {
+            Value::Local(LocalValue::Map(id)) => map_delete(state, id, register(frame, key)?),
+            _ => Result::Err("map delete target is not a map"),
+        },
+        bytecode::InstructionKind::MapIterInit { target, map } => match register(frame, map)? {
+            Value::Local(LocalValue::Map(id)) => {
+                let map_type = state.program.functions[frame.function.value].register_types[map.value];
+                let types = map_types(state.program.world, map_type)?;
+                let iterator = new_map_iterator(state, id, types.0, types.1)?;
+                set_register(
+                    frame,
+                    target,
+                    integer_for_type(
+                        state,
+                        state.program.functions[frame.function.value].register_types[target.value],
+                        iterator,
+                    )?,
+                )
+            },
+            _ => Result::Err("map iterator target is not a map"),
+        },
+        bytecode::InstructionKind::MapIterNext { key, value, ok, iterator } => {
+            let next = map_iterator_next(state, integer_host(register(frame, iterator)?)?)?;
+            set_register(frame, key, next.0)?;
+            match value {
+                Some(target) => set_register(frame, target, next.1)?,
+                None => {},
+            };
+            set_register(frame, ok, Value::Local(LocalValue::Bool(next.2)))
+        },
+        bytecode::InstructionKind::Call { results, target, arguments, variadic } => {
+            let values = match target {
+                bytecode::CallTarget::Builtin(kind) => execute_builtin(
+                    state,
+                    frame,
+                    kind,
+                    register_values(frame, arguments)?,
+                    results,
+                    variadic,
+                )?,
+                _ => match invoke_prepared(
+                    state,
+                    frame,
+                    prepare_call(state, frame, target, arguments, variadic, instruction.location)?,
+                    Option::None,
+                )? {
+                    InvocationOutcome::Returned(values) => values,
+                    InvocationOutcome::Panicked(payload) => {
+                        return Result::Ok(InstructionControl::Panic(payload))
+                    },
+                    InvocationOutcome::Exited(code) => {
+                        return Result::Ok(InstructionControl::Exit(code))
+                    },
+                },
+            };
+            if values.len() != results.len() {
+                Result::Err("call result count does not match destination count")
+            } else {
+                for index in 0..values.len() {
+                    set_register(frame, results[index], values[index])?
+                }
+                Result::Ok(())
+            }
+        },
+        bytecode::InstructionKind::Defer { target, arguments, variadic } => {
+            frame.deferred.push(
+                prepare_call(state, frame, target, arguments, variadic, instruction.location)?,
+            );
+            Result::Ok(())
+        },
+        bytecode::InstructionKind::Panic { value } => return Result::Ok(
+            InstructionControl::Panic(
+                new_panic_payload(
+                    state,
+                    register(frame, value)?,
+                    state.program.functions[frame.function.value].register_types[value.value],
+                ),
+            ),
+        ),
+        bytecode::InstructionKind::Recover { target } => set_register(
+            frame,
+            target,
+            recover_from_frame(
+                state,
+                frame,
+                state.program.functions[frame.function.value].register_types[target.value],
+            )?,
+        ),
+        _ => Result::Err("instruction is not implemented by the sequential VM"),
+    };
+    match result {
+        Ok(()) => Result::Ok(InstructionControl::Continue),
+        Err(message) => Result::Err(message),
+    }
+}
+
+fn execute_instruction(state: VmState, frame: Frame, instruction: bytecode::Instruction) -> Result[
+    InstructionControl,
+    string,
+] {
+    use_step(state, instruction.location)?;
+    match execute_instruction_effect(state, frame, instruction) {
+        Ok(value) => Result::Ok(value),
+        Err(message) => if runtime_fault(message) {
+            Result::Ok(InstructionControl::Panic(runtime_fault_payload(state, message)?))
+        } else {
+            Result::Err(message)
+        },
+    }
+}
+
+fn method_field_path_type(world: go_types::World, source: go_types::TypeId, fields: Vec[int]) -> Result[
+    go_types::TypeId,
+    string,
+] {
+    let mut current = source;
+    for field in fields {
+        current = match pointer_type(world, current) {
+            Some(element) => element,
+            None => current,
+        };
+        match go_types::get_type(world, go_types::underlying(world, current)) {
+            Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } }) => if field
+                < 0
+                || field >= fields.len() {
+                return Result::Err("method receiver field index is out of range")
+            } else {
+                current = fields[field].variable.type_id;
+            },
+            _ => return Result::Err("method receiver path crosses a non-struct value"),
+        }
+    }
+    Result::Ok(current)
+}
+
+fn method_receiver_place(
+    state: VmState,
+    receiver: Value,
+    receiver_type: go_types::TypeId,
+    fields: Vec[int],
+) -> Result[Place, string] {
+    let mut current_type = receiver_type;
+    let mut current = match (pointer_type(state.program.world, current_type), receiver) {
+        (Some(element), Value::Local(LocalValue::Pointer(Some(place)))) => {
+            current_type = element;
+            Option::Some(place)
+        },
+        (Some(_), Value::Local(LocalValue::Pointer(None))) => {
+            return Result::Err("invalid memory address or nil pointer dereference")
+        },
+        _ => Option::None,
+    };
+    for field in fields {
+        match pointer_type(state.program.world, current_type) {
+            Some(element) => {
+                let pointer = load_place(
+                    state.memory,
+                    current.ok_or("method receiver is not addressable")?,
+                )?;
+                current = match pointer {
+                    Value::Local(LocalValue::Pointer(Some(place))) => Option::Some(place),
+                    Value::Local(LocalValue::Pointer(None)) => return Result::Err(
+                        "invalid memory address or nil pointer dereference",
+                    ),
+                    _ => return Result::Err("method receiver path contains a non-pointer value"),
+                };
+                current_type = element;
+            },
+            None => {},
+        };
+        let struct_fields = match go_types::get_type(
+            state.program.world,
+            go_types::underlying(state.program.world, current_type),
+        ) {
+            Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } }) => fields,
+            _ => return Result::Err("method receiver path crosses a non-struct value"),
+        };
+        if field < 0 || field >= struct_fields.len() {
+            return Result::Err("method receiver field index is out of range")
+        } else {};
+        current = Option::Some(
+            field_place(
+                current.ok_or("method receiver is not addressable")?,
+                Vec::from_array([field]),
+            ),
+        );
+        current_type = struct_fields[field].variable.type_id;
+    }
+    current.ok_or("method receiver is not addressable")
+}
+
+fn method_expression_receiver(
+    state: VmState,
+    function: bytecode::BytecodeFunction,
+    receiver: Value,
+    receiver_type: go_types::TypeId,
+    index: Vec[int],
+) -> Result[Value, string] {
+    if index.is_empty() || function.parameters.is_empty() {
+        return Result::Err("method expression has an invalid call shape")
+    } else {};
+    let fields: Vec[int] = Vec::with_capacity(index.len() - 1);
+    for offset in 0..index.len() - 1 {
+        fields.push(index[offset])
+    }
+    let actual = method_field_path_type(state.program.world, receiver_type, fields)?;
+    let expected = function.locals[function.parameters[0].value].type_id;
+    if go_types::identical(state.program.world, actual, expected) {
+        return aggregate_element(state, receiver, fields, 0)
+    } else {};
+    match (pointer_type(state.program.world, expected), pointer_type(state.program.world, actual)) {
+        (Some(element), None) if go_types::identical(state.program.world, element, actual) => {
+            Result::Ok(
+                Value::Local(
+                    LocalValue::Pointer(
+                        Option::Some(method_receiver_place(state, receiver, receiver_type, fields)?),
+                    ),
+                ),
+            )
+        },
+        _ => adjusted_method_receiver(
+            state,
+            function,
+            aggregate_element(state, receiver, fields, 0)?,
+        ),
+    }
+}
+
+fn adjusted_method_receiver(state: VmState, function: bytecode::BytecodeFunction, receiver: Value) -> Result[
+    Value,
+    string,
+] {
+    if function.parameters.is_empty() {
+        return Result::Err("method function has no receiver parameter")
+    } else {};
+    let expected = function.locals[function.parameters[0].value].type_id;
+    match (pointer_type(state.program.world, expected), receiver) {
+        (Some(_), Value::Local(LocalValue::Pointer(_))) => Result::Ok(receiver),
+        (None, Value::Local(LocalValue::Pointer(Some(place)))) => {
+            load_place(state.memory, place)
+        },
+        _ => Result::Ok(receiver),
+    }
+}
+
+fn pointer_type(world: go_types::World, type_id: go_types::TypeId) -> Option[go_types::TypeId] {
+    match go_types::get_type(world, go_types::underlying(world, type_id)) {
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } }) => {
+            Option::Some(element)
+        },
+        _ => Option::None,
+    }
+}
+
+fn jump_control(frame: Frame, target: bytecode::BlockId, arguments: Vec[bytecode::RegisterId]) -> Result[
+    FunctionControl,
+    string,
+] {
+    Result::Ok(FunctionControl::Jump { target, arguments: register_values(frame, arguments)? })
+}
+
+fn execute_terminator(state: VmState, frame: Frame, terminator: bytecode::Terminator) -> Result[
+    FunctionControl,
+    string,
+] {
+    use_step(state, terminator.location)?;
+    let result: Result[FunctionControl, string] = match terminator.kind {
+        bytecode::TerminatorKind::Jump { target, arguments } => {
+            jump_control(frame, target, arguments)
+        },
+        bytecode::TerminatorKind::Branch {
+            condition,
+            then_target,
+            then_arguments,
+            else_target,
+            else_arguments,
+        } => if boolean_value(register(frame, condition)?)? {
+            jump_control(frame, then_target, then_arguments)
+        } else {
+            jump_control(frame, else_target, else_arguments)
+        },
+        bytecode::TerminatorKind::Switch { value, arms, default_target, default_arguments } => {
+            let value = register(frame, value)?;
+            let mut selected = Option::None;
+            for arm in arms {
+                for comparison in arm.comparisons {
+                    if values_equal(state.program.world, value, register(frame, comparison)?)? {
+                        selected = Option::Some((arm.target, arm.arguments));
+                    } else {}
+                    if selected.is_some() {
+                        break
+                    } else {}
+                }
+                if selected.is_some() {
+                    break
+                } else {}
+            }
+            match selected {
+                Some((target, arguments)) => jump_control(frame, target, arguments),
+                None => jump_control(frame, default_target, default_arguments),
+            }
+        },
+        bytecode::TerminatorKind::Return { values } => {
+            Result::Ok(FunctionControl::Return(register_values(frame, values)?))
+        },
+        bytecode::TerminatorKind::Unreachable => Result::Err("reached unreachable code"),
+    };
+    result
+}
+
+fn enter_block(
+    function: bytecode::BytecodeFunction,
+    frame: Frame,
+    target: bytecode::BlockId,
+    arguments: Vec[Value],
+) -> Result[unit, string] {
+    if target.value < 0 || target.value >= function.blocks.len() {
+        return Result::Err("invalid jump target " + target.value.to_string())
+    } else {};
+    let parameters = function.blocks[target.value].parameters;
+    if parameters.len() != arguments.len() {
+        return Result::Err("jump argument count does not match block parameters")
+    } else {};
+    for index in 0..parameters.len() {
+        set_register(frame, parameters[index], arguments[index])?
+    }
+    frame.block.set(target);
+    Result::Ok(())
+}
+
+fn frame_for_call(
+    state: VmState,
+    function: bytecode::BytecodeFunction,
+    arguments: Vec[Value],
+    captures: Vec[CellId],
+    recover_state: Option[PanicState],
+) -> Result[Frame, string] {
+    if arguments.len() != function.parameters.len() {
+        return Result::Err(
+            "function " + function.name + " received " + arguments.len().to_string()
+                + " arguments, expected "
+                + function.parameters.len().to_string(),
+        )
+    } else {};
+    if captures.len() != function.captures.len() {
+        return Result::Err("closure capture count does not match function")
+    } else {};
+    let locals: Vec[CellId] = Vec::with_capacity(function.locals.len());
+    for local_index in 0..function.locals.len() {
+        let mut captured = -1;
+        for capture_index in 0..function.captures.len() {
+            if function.captures[capture_index].value == local_index {
+                captured = capture_index;
+            } else {}
+        }
+        if captured >= 0 {
+            locals.push(captures[captured])
+        } else {
+            let local = function.locals[local_index];
+            match runtime_zero_value(state, local.type_id) {
+                Ok(value) => locals.push(allocate_cell(state.memory, local.type_id, value)),
+                Err(message) => return Result::Err(message),
+            }
+        }
+    }
+    for index in 0..arguments.len() {
+        let local = function.parameters[index];
+        match store_place(state.memory, root_place(locals[local.value]), arguments[index]) {
+            Ok(()) => {},
+            Err(message) => return Result::Err(message),
+        }
+    }
+    Result::Ok(
+        Frame {
+            function: function.id,
+            registers: empty_slots(function.register_types.len()),
+            places: empty_slots(function.place_count),
+            locals,
+            block: Ref::new(function.entry),
+            deferred: Vec::from_array([]),
+            recover_state,
+        },
+    )
+}
+
+fn commit_function_results(
+    state: VmState,
+    frame: Frame,
+    function: bytecode::BytecodeFunction,
+    values: Vec[Value],
+) -> Result[unit, string] {
+    if values.len() != function.results.len() {
+        return Result::Err("return value count does not match function results")
+    } else {};
+    for index in 0..values.len() {
+        store_place(
+            state.memory,
+            root_place(frame.locals[function.results[index].value]),
+            values[index],
+        )?
+    }
+    Result::Ok(())
+}
+
+fn function_result_values(state: VmState, frame: Frame, function: bytecode::BytecodeFunction) -> Result[
+    Vec[Value],
+    string,
+] {
+    let values: Vec[Value] = Vec::with_capacity(function.results.len());
+    for result in function.results {
+        values.push(load_place(state.memory, root_place(frame.locals[result.value]))?)
+    }
+    Result::Ok(values)
+}
+
+fn panic_state(payload: PanicPayload) -> PanicState {
+    PanicState { payload: Ref::new(payload), active: Ref::new(true) }
+}
+
+fn finish_invocation(
+    state: VmState,
+    frame: Frame,
+    function: bytecode::BytecodeFunction,
+    panic: Option[PanicPayload],
+) -> Result[InvocationOutcome, string] {
+    let mut active = match panic {
+        Some(payload) => Option::Some(panic_state(payload)),
+        None => Option::None,
+    };
+    while !frame.deferred.is_empty() {
+        let call = frame.deferred.pop().ok_or("deferred call stack is empty")?;
+        let outcome = invoke_prepared(state, frame, call, active)?;
+        match outcome {
+            InvocationOutcome::Returned(_) => match active {
+                Some(value) => if !value.active.get() {
+                    active = Option::None;
+                } else {},
+                None => {},
+            },
+            InvocationOutcome::Panicked(payload) => {
+                active = Option::Some(panic_state(payload));
+            },
+            InvocationOutcome::Exited(code) => {
+                return Result::Ok(InvocationOutcome::Exited(code))
+            },
+        }
+    }
+    match active {
+        Some(value) => Result::Ok(InvocationOutcome::Panicked(value.payload.get())),
+        None => Result::Ok(
+            InvocationOutcome::Returned(function_result_values(state, frame, function)?),
+        ),
+    }
+}
+
+fn execute_function(
+    state: VmState,
+    function_id: bytecode::FunctionId,
+    arguments: Vec[Value],
+    captures: Vec[CellId],
+    call_location: Option[bytecode::SourceLocation],
+    recover_state: Option[PanicState],
+) -> Result[InvocationOutcome, string] {
+    if state.depth.get() >= state.config.max_call_depth {
+        return Result::Err("maximum call depth exceeded")
+    } else {};
+    let function = checked_function(state, function_id, call_location)?;
+    state.depth.set(state.depth.get() + 1);
+    let frame = match frame_for_call(state, function, arguments, captures, recover_state) {
+        Ok(value) => value,
+        Err(error) => {
+            state.depth.set(state.depth.get() - 1);
+            return Result::Err(error)
+        },
+    };
+    loop {
+        let block_id = frame.block.get();
+        if block_id.value < 0 || block_id.value >= function.blocks.len() {
+            state.depth.set(state.depth.get() - 1);
+            return Result::Err("invalid current block " + block_id.value.to_string())
+        } else {};
+        let block = function.blocks[block_id.value];
+        for instruction in block.instructions {
+            match execute_instruction(state, frame, instruction) {
+                Ok(InstructionControl::Continue) => {},
+                Ok(InstructionControl::Panic(payload)) => {
+                    let outcome = finish_invocation(state, frame, function, Option::Some(payload));
+                    state.depth.set(state.depth.get() - 1);
+                    return outcome
+                },
+                Ok(InstructionControl::Exit(code)) => {
+                    state.depth.set(state.depth.get() - 1);
+                    return Result::Ok(InvocationOutcome::Exited(code))
+                },
+                Err(error) => {
+                    state.depth.set(state.depth.get() - 1);
+                    return Result::Err(error)
+                },
+            }
+        }
+        match execute_terminator(state, frame, block.terminator) {
+            Ok(FunctionControl::Jump { target, arguments }) => match enter_block(
+                function,
+                frame,
+                target,
+                arguments,
+            ) {
+                Ok(()) => {},
+                Err(message) => {
+                    state.depth.set(state.depth.get() - 1);
+                    return Result::Err(message)
+                },
+            },
+            Ok(FunctionControl::Return(values)) => {
+                match commit_function_results(state, frame, function, values) {
+                    Ok(()) => {},
+                    Err(message) => {
+                        state.depth.set(state.depth.get() - 1);
+                        return Result::Err(message)
+                    },
+                };
+                let outcome = finish_invocation(state, frame, function, Option::None);
+                state.depth.set(state.depth.get() - 1);
+                return outcome
+            },
+            Err(error) => {
+                state.depth.set(state.depth.get() - 1);
+                return Result::Err(error)
+            },
+        }
+    }
+}
+
+fn initialize_state(program: bytecode::BytecodeProgram, config: VmConfig) -> Result[VmState, string] {
+    let memory = new_memory();
+    let native_completions = new_native_completion_queue(config.max_goroutines);
+    let state = VmState {
+        program,
+        config,
+        memory,
+        globals: Vec::from_array([]),
+        maps: Vec::from_array([]),
+        map_iterators: Vec::from_array([]),
+        channels: Vec::from_array([]),
+        stdout: bytes::Bytes::new(),
+        stderr: bytes::Bytes::new(),
+        steps: Ref::new(0.to_int64()),
+        depth: Ref::new(0),
+        location: Ref::new(Option::None),
+        native_completions,
+        native_callbacks: Vec::from_array([]),
+    };
+    for global in state.program.globals {
+        match runtime_zero_value(state, global.type_id) {
+            Ok(value) => state.globals.push(allocate_cell(memory, global.type_id, value)),
+            Err(message) => return Result::Err(message),
+        }
+    }
+    Result::Ok(state)
+}
+
+fn execute_program(state: VmState) -> Result[InvocationOutcome, string] {
+    for package_id in state.program.initialization_order {
+        for package_value in state.program.packages {
+            if package_value.package_id.value == package_id.value {
+                match package_value.initializer {
+                    Some(function) => {
+                        match execute_function(
+                            state,
+                            function,
+                            Vec::from_array([]),
+                            Vec::from_array([]),
+                            Option::None,
+                            Option::None,
+                        )? {
+                            InvocationOutcome::Returned(_) => {},
+                            InvocationOutcome::Panicked(payload) => {
+                                return Result::Ok(InvocationOutcome::Panicked(payload))
+                            },
+                            InvocationOutcome::Exited(code) => {
+                                return Result::Ok(InvocationOutcome::Exited(code))
+                            },
+                        }
+                    },
+                    None => {},
+                }
+            } else {}
+        }
+    }
+    execute_function(
+        state,
+        state.program.main,
+        Vec::from_array([]),
+        Vec::from_array([]),
+        Option::None,
+        Option::None,
+    )
+}
+
+fn unhandled_panic_message(payload: PanicPayload) -> Result[string, string] {
+    if payload.nil_interface {
+        Result::Ok("panic: nil argument")
+    } else {
+        let value = match payload.value {
+            Value::Interface { static_type: _, dynamic_type: Some(_), value: Some(value) } => value.get(),
+            value => value,
+        };
+        Result::Ok("panic: " + output_bytes(value)?.to_string().unwrap_or("<value>"))
+    }
+}
+
+pub fn run(program: bytecode::BytecodeProgram, config: VmConfig) -> VmResult {
+    let state = match initialize_state(program, config) {
+        Ok(value) => value,
+        Err(message) => return VmResult {
+            stdout: bytes::Bytes::new(),
+            stderr: bytes::Bytes::from_string(message),
+            exit_code: 1,
+            error: Option::Some(runtime_error("runtime", message, Option::None)),
+            steps: 0.to_int64(),
+        },
+    };
+    let execution = if program_needs_scheduler(state.program) {
+        execute_scheduled_program(state)
+    } else {
+        execute_program(state)
+    };
+    match execution {
+        Ok(InvocationOutcome::Returned(_)) => VmResult {
+            stdout: state.stdout,
+            stderr: state.stderr,
+            exit_code: 0,
+            error: Option::None,
+            steps: state.steps.get(),
+        },
+        Ok(InvocationOutcome::Exited(code)) => VmResult {
+            stdout: state.stdout,
+            stderr: state.stderr,
+            exit_code: code,
+            error: Option::None,
+            steps: state.steps.get(),
+        },
+        Ok(InvocationOutcome::Panicked(payload)) => {
+            let message = unhandled_panic_message(payload).unwrap_or("panic: <value>");
+            append_bytes(state.stderr, bytes::Bytes::from_string(message));
+            VmResult {
+                stdout: state.stdout,
+                stderr: state.stderr,
+                exit_code: 1,
+                error: Option::Some(runtime_error("panic", message, state.location.get())),
+                steps: state.steps.get(),
+            }
+        },
+        Err(message) => {
+            append_bytes(state.stderr, bytes::Bytes::from_string(message));
+            VmResult {
+                stdout: state.stdout,
+                stderr: state.stderr,
+                exit_code: 1,
+                error: Option::Some(runtime_error("runtime", message, state.location.get())),
+                steps: state.steps.get(),
+            }
+        },
+    }
+}

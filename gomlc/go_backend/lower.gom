@@ -235,6 +235,32 @@ fn go_foreign_call(spec: GoForeignSpec, args: Vec[Expr]) -> Expr {
     }
 }
 
+fn go_foreign_opaque_dyn(value: repr::Type) -> bool {
+    match repr::resolve_type(value) {
+        Dyn { trait_name: _, args, associated_types, additional_bounds } => args.is_empty()
+            && associated_types.is_empty()
+            && additional_bounds.is_empty(),
+        _ => false,
+    }
+}
+
+fn go_foreign_argument(name: string, ty: repr::Type) -> Expr {
+    let value = Expr::Var { name };
+    if go_foreign_opaque_dyn(ty) {
+        Expr::Field { expr: value, field_name: "data" }
+    } else {
+        value
+    }
+}
+
+fn go_foreign_result(value: Expr, ty: repr::Type) -> Expr {
+    if go_foreign_opaque_dyn(ty) {
+        Expr::StructLiteral { ty: lower_type(ty), fields: Vec::from_array([("data", value)]) }
+    } else {
+        value
+    }
+}
+
 fn go_foreign_wrapper(spec: GoForeignSpec) -> Function {
     match repr::resolve_type(spec.ty) {
         Func { params: param_types, ret_ty } => {
@@ -243,7 +269,7 @@ fn go_foreign_wrapper(spec: GoForeignSpec) -> Function {
             for index in 0..param_types.len() {
                 let name = "arg" + index.to_string();
                 params.push((name, lower_type(param_types[index])));
-                args.push(Expr::Var { name })
+                args.push(go_foreign_argument(name, param_types[index]))
             }
             let call = go_foreign_call(spec, args);
             let stmts: Vec[Stmt] = Vec::from_array([]);
@@ -272,7 +298,9 @@ fn go_foreign_wrapper(spec: GoForeignSpec) -> Function {
                         },
                     )
                 },
-                _ => stmts.push(Stmt::Return { expr: Option::Some(call) }),
+                _ => stmts.push(
+                    Stmt::Return { expr: Option::Some(go_foreign_result(call, ret_ty)) },
+                ),
             };
             Function {
                 name: go_foreign_wrapper_name(spec.import_path, spec.symbol, spec.ty),

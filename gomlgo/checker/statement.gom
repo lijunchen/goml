@@ -227,7 +227,7 @@ fn check_local_value_spec(
             } else {};
             let operand_values = if effective_values.len() > names.len()
                 && effective_values.len() != 1 {
-                let result: Vec[syntax::NodeId] = Vec::[];
+                let result: Vec[syntax::NodeId] = Vec::from_array([]);
                 for index in 0..names.len() {
                     result.push(effective_values[index])
                 }
@@ -236,7 +236,7 @@ fn check_local_value_spec(
                 effective_values
             };
             let operands = if operand_values.is_empty() {
-                Vec::[]
+                Vec::from_array([])
             } else {
                 assignment_operands(
                     state,
@@ -246,16 +246,16 @@ fn check_local_value_spec(
                     !constant_declaration,
                     match explicit_type {
                         Some(type_id) => {
-                            let result: Vec[go_types::TypeId] = Vec::[];
+                            let result: Vec[go_types::TypeId] = Vec::from_array([]);
                             for _ in names {
                                 result.push(type_id)
                             }
                             result
                         },
-                        None => Vec::[],
+                        None => Vec::from_array([]),
                     },
                     {
-                        let result: Vec[string] = Vec::[];
+                        let result: Vec[string] = Vec::from_array([]);
                         for name in names {
                             result.push(expression_source_text(state, name))
                         }
@@ -426,15 +426,15 @@ fn check_local_type_spec(state: CheckState, scope: go_types::ScopeId, node: synt
                         object,
                         rhs: state.world.invalid,
                         type_params: provisional_type_params,
-                        type_args: Vec::[],
+                        type_args: Vec::from_array([]),
                     }
                 } else {
                     go_types::TypeKind::Named {
                         object,
                         underlying: state.world.invalid,
                         type_params: provisional_type_params,
-                        type_args: Vec::[],
-                        methods: Vec::[],
+                        type_args: Vec::from_array([]),
+                        methods: Vec::from_array([]),
                     }
                 },
             );
@@ -452,15 +452,15 @@ fn check_local_type_spec(state: CheckState, scope: go_types::ScopeId, node: synt
                         object,
                         rhs: state.world.invalid,
                         type_params: declared_type_params,
-                        type_args: Vec::[],
+                        type_args: Vec::from_array([]),
                     }
                 } else {
                     go_types::TypeKind::Named {
                         object,
                         underlying: state.world.invalid,
                         type_params: declared_type_params,
-                        type_args: Vec::[],
-                        methods: Vec::[],
+                        type_args: Vec::from_array([]),
+                        methods: Vec::from_array([]),
                     }
                 },
             );
@@ -485,15 +485,15 @@ fn check_local_type_spec(state: CheckState, scope: go_types::ScopeId, node: synt
                             object,
                             rhs,
                             type_params: declared_type_params,
-                            type_args: Vec::[],
+                            type_args: Vec::from_array([]),
                         }
                     } else {
                         go_types::TypeKind::Named {
                             object,
                             underlying: rhs,
                             type_params: declared_type_params,
-                            type_args: Vec::[],
-                            methods: Vec::[],
+                            type_args: Vec::from_array([]),
+                            methods: Vec::from_array([]),
                         }
                     },
                 );
@@ -529,9 +529,9 @@ fn check_local_type_spec(state: CheckState, scope: go_types::ScopeId, node: synt
                         state.constraint_type_depth -= 1;
                     } else {};
                     if assign > 0
-                        && (type_contains_alias_cycle(state, rhs, object, Vec::[])
+                        && (type_contains_alias_cycle(state, rhs, object, Vec::from_array([]))
                             || local_alias_cycle_seen(state, object)) {
-                        report_named_type_cycle(state, Vec::[object], false);
+                        report_named_type_cycle(state, Vec::from_array([object]), false);
                         let _ = go_types::set_type(
                             state.world,
                             placeholder,
@@ -566,15 +566,15 @@ fn check_local_type_spec(state: CheckState, scope: go_types::ScopeId, node: synt
                                     object,
                                     rhs,
                                     type_params: declared_type_params,
-                                    type_args: Vec::[],
+                                    type_args: Vec::from_array([]),
                                 }
                             } else {
                                 go_types::TypeKind::Named {
                                     object,
                                     underlying: rhs,
                                     type_params: declared_type_params,
-                                    type_args: Vec::[],
-                                    methods: Vec::[],
+                                    type_args: Vec::from_array([]),
+                                    methods: Vec::from_array([]),
                                 }
                             },
                         );
@@ -601,7 +601,7 @@ fn check_local_declaration(state: CheckState, scope: go_types::ScopeId, node: sy
         }) => if value_declaration_keyword(token) {
             let previous_iota = state.current_iota;
             let mut inherited_type: Option[syntax::NodeId] = Option::None;
-            let mut inherited_values: Vec[syntax::NodeId] = Vec::[];
+            let mut inherited_values: Vec[syntax::NodeId] = Vec::from_array([]);
             let mut inherited_spec: Option[syntax::NodeId] = Option::None;
             for index in 0..specs.len() {
                 state.current_iota = if token == CONST_KEYWORD {
@@ -647,8 +647,8 @@ fn check_local_declaration(state: CheckState, scope: go_types::ScopeId, node: sy
                 let _ = validate_named_type_inner(
                     state,
                     state.deferred_local_type_validations[index],
-                    Vec::[],
-                    Vec::[],
+                    Vec::from_array([]),
+                    Vec::from_array([]),
                 );
             }
         } else {
@@ -686,7 +686,7 @@ fn assignment_operands(
     targets: Vec[go_types::TypeId],
     target_descriptions: Vec[string],
 ) -> Vec[Operand] {
-    let result: Vec[Operand] = Vec::[];
+    let result: Vec[Operand] = Vec::from_array([]);
     for node_index in 0..nodes.len() {
         let node = nodes[node_index];
         let previous_target_inference_description = state.target_inference_description;
@@ -768,18 +768,20 @@ fn assignment_operands(
                     let tuple = go_types::add_type(
                         state.world,
                         go_types::TypeKind::Tuple {
-                            variables: Vec::[
-                                go_types::Variable {
-                                    name: "",
-                                    owner: Option::Some(state.package_id),
-                                    type_id: operand.type_id,
-                                },
-                                go_types::Variable {
-                                    name: "",
-                                    owner: Option::Some(state.package_id),
-                                    type_id: bool_type,
-                                },
-                            ],
+                            variables: Vec::from_array(
+                                [
+                                    go_types::Variable {
+                                        name: "",
+                                        owner: Option::Some(state.package_id),
+                                        type_id: operand.type_id,
+                                    },
+                                    go_types::Variable {
+                                        name: "",
+                                        owner: Option::Some(state.package_id),
+                                        type_id: bool_type,
+                                    },
+                                ],
+                            ),
                         },
                     );
                     update_comma_ok_operand_fact(state, node, tuple)
@@ -1065,7 +1067,7 @@ fn check_short_declaration(
     right: Vec[Operand],
 ) -> unit {
     if left.len() != right.len() {
-        let invalid_values: Vec[Operand] = Vec::[];
+        let invalid_values: Vec[Operand] = Vec::from_array([]);
         for _ in left {
             invalid_values.push(invalid_operand(state))
         }
@@ -1077,7 +1079,7 @@ fn check_short_declaration(
     }
     let mut new_variables = 0;
     let mut invalid_left = false;
-    let seen_names: Vec[string] = Vec::[];
+    let seen_names: Vec[string] = Vec::from_array([]);
     for index in 0..left.len() {
         let name = identifier(state, left[index]).unwrap_or("");
         if name == "" {
@@ -1208,8 +1210,8 @@ fn check_assignment(
         } else {};
         return
     } else {};
-    let targets: Vec[go_types::TypeId] = Vec::[];
-    let target_operands: Vec[Operand] = Vec::[];
+    let targets: Vec[go_types::TypeId] = Vec::from_array([]);
+    let target_operands: Vec[Operand] = Vec::from_array([]);
     if token != DEFINE_OPERATOR {
         for target_node in left {
             if assignment_blank_identifier(state, target_node) {
@@ -1242,7 +1244,7 @@ fn check_assignment(
             }
         }
     } else {};
-    let target_descriptions: Vec[string] = Vec::[];
+    let target_descriptions: Vec[string] = Vec::from_array([]);
     for target_node in left {
         target_descriptions.push(expression_source_text(state, target_node))
     }
@@ -1255,12 +1257,12 @@ fn check_assignment(
         if right_nodes.len() == left.len() || right_nodes.len() == 1 {
             targets
         } else {
-            Vec::[]
+            Vec::from_array([])
         },
         if right_nodes.len() == left.len() || right_nodes.len() == 1 {
             target_descriptions
         } else {
-            Vec::[]
+            Vec::from_array([])
         },
     );
     if token == DEFINE_OPERATOR {
@@ -1331,7 +1333,7 @@ fn signature_results(state: CheckState, signature: go_types::TypeId) -> Vec[go_t
                 variadic: _,
             },
         }) => tuple_variables(state, results),
-        _ => Vec::[],
+        _ => Vec::from_array([]),
     }
 }
 
@@ -1385,7 +1387,7 @@ fn check_return(
                 } else {}
             }
             if !named {
-                report_return_count(state, node, result_nodes, Vec::[], expected)
+                report_return_count(state, node, result_nodes, Vec::from_array([]), expected)
             } else {
                 let mut function_scope = scope;
                 while state.world.scopes[function_scope.value].kind != go_types::ScopeKind::Function {
@@ -1441,11 +1443,11 @@ fn check_return(
         } else {};
         return
     } else {};
-    let targets: Vec[go_types::TypeId] = Vec::[];
+    let targets: Vec[go_types::TypeId] = Vec::from_array([]);
     for variable in expected {
         targets.push(variable.type_id)
     }
-    let target_descriptions: Vec[string] = Vec::[];
+    let target_descriptions: Vec[string] = Vec::from_array([]);
     for variable in expected {
         target_descriptions.push(
             if variable.name == "" {
@@ -1464,12 +1466,12 @@ fn check_return(
         if result_nodes.len() == expected.len() {
             targets
         } else {
-            Vec::[]
+            Vec::from_array([])
         },
         if result_nodes.len() == expected.len() {
             target_descriptions
         } else {
-            Vec::[]
+            Vec::from_array([])
         },
     );
     if actual.len() != expected.len() {
@@ -2074,7 +2076,7 @@ fn loop_body_breaks(state: CheckState, loop_node: syntax::NodeId, body: syntax::
 }
 
 fn range_operands(state: CheckState, source: Operand) -> Vec[Operand] {
-    let result: Vec[Operand] = Vec::[];
+    let result: Vec[Operand] = Vec::from_array([]);
     let mut resolved = core_type_id(state, source.type_id);
     match go_types::get_type(state.world, resolved) {
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } }) => {
@@ -2567,7 +2569,7 @@ fn check_range_statement(
             true,
         )
     } else {};
-    let left: Vec[syntax::NodeId] = Vec::[];
+    let left: Vec[syntax::NodeId] = Vec::from_array([]);
     match key {
         Some(key) => left.push(key),
         None => {},
@@ -2579,7 +2581,7 @@ fn check_range_statement(
     if source.type_id.value == state.world.invalid.value {
         if token == DEFINE_OPERATOR {
             let locals_start = state.locals.len();
-            let operands: Vec[Operand] = Vec::[];
+            let operands: Vec[Operand] = Vec::from_array([]);
             for _ in left {
                 operands.push(invalid_operand(state))
             }
@@ -2609,7 +2611,7 @@ fn check_range_statement(
         );
         if token == DEFINE_OPERATOR {
             let locals_start = state.locals.len();
-            let operands: Vec[Operand] = Vec::[];
+            let operands: Vec[Operand] = Vec::from_array([]);
             for _ in left {
                 operands.push(invalid_operand(state))
             }
@@ -2647,7 +2649,7 @@ fn check_range_statement(
             true,
         );
         if token == DEFINE_OPERATOR {
-            let operands: Vec[Operand] = Vec::[];
+            let operands: Vec[Operand] = Vec::from_array([]);
             for index in 0..left.len() {
                 if index < available.len() {
                     operands.push(available[index])
@@ -2662,7 +2664,7 @@ fn check_range_statement(
             }
         } else {}
     } else if token == DEFINE_OPERATOR {
-        let operands: Vec[Operand] = Vec::[];
+        let operands: Vec[Operand] = Vec::from_array([]);
         if integer_range && go_version_at_least(state, node, 22) && !left.is_empty() {
             let target = default_operand_type(state, source);
             let _ = check_integer_range_value(state, expression, source, target);
@@ -3176,7 +3178,7 @@ fn check_switch_statement(
     };
     let mut first_default: Option[syntax::NodeId] = Option::None;
     let mut all_terminate = true;
-    let seen_cases: Vec[SwitchCaseValue] = Vec::[];
+    let seen_cases: Vec[SwitchCaseValue] = Vec::from_array([]);
     match syntax::get_node(state.syntax.arena, body_node) {
         Some(syntax::SyntaxNode {
             id: _,
@@ -3343,7 +3345,7 @@ fn check_type_switch_case(
     guard_objects: Vec[go_types::ObjectId],
 ) -> (bool, bool) {
     let case_scope = new_node_scope(state, parent, clause, go_types::ScopeKind::Block);
-    let case_types: Vec[go_types::TypeId] = Vec::[];
+    let case_types: Vec[go_types::TypeId] = Vec::from_array([]);
     for type_node in list {
         let nil_identifier = type_switch_nil_identifier(state, parent, type_node);
         if nil_identifier.is_some() {
@@ -3554,8 +3556,8 @@ fn check_type_switch_statement(
     };
     let mut first_default: Option[syntax::NodeId] = Option::None;
     let mut all_terminate = true;
-    let seen_types: Vec[TypeSwitchCaseValue] = Vec::[];
-    let guard_objects: Vec[go_types::ObjectId] = Vec::[];
+    let seen_types: Vec[TypeSwitchCaseValue] = Vec::from_array([]);
+    let guard_objects: Vec[go_types::ObjectId] = Vec::from_array([]);
     match syntax::get_node(state.syntax.arena, body_node) {
         Some(syntax::SyntaxNode {
             id: _,
@@ -3970,7 +3972,7 @@ fn recover_void_call_fact(state: CheckState, node: syntax::NodeId) -> unit {
         Some(index) => {
             state.info.types[index].type_id = go_types::add_type(
                 state.world,
-                go_types::TypeKind::Tuple { variables: Vec::[] },
+                go_types::TypeKind::Tuple { variables: Vec::from_array([]) },
             );
             state.info.types[index].constant_kind = "";
             state.info.types[index].constant = Option::None;
@@ -4300,7 +4302,7 @@ fn report_unused_locals(state: CheckState, function_id: int, start: int) -> unit
             root_depth = depth;
         } else {}
     }
-    for root in Vec::[true, false] {
+    for root in Vec::from_array([true, false]) {
         for index in start..state.locals.len() {
             let local = state.locals[index];
             let root_local = local_scope_depth(state, local.scope) == root_depth;
@@ -4341,7 +4343,7 @@ struct FlowDeclaration {
 }
 
 fn copied_node_ids(values: Vec[syntax::NodeId]) -> Vec[syntax::NodeId] {
-    let result: Vec[syntax::NodeId] = Vec::[];
+    let result: Vec[syntax::NodeId] = Vec::from_array([]);
     for value in values {
         result.push(value)
     }
@@ -4647,10 +4649,10 @@ fn source_line(state: CheckState, node: syntax::NodeId) -> int {
 }
 
 fn check_goto_restrictions(state: CheckState, body: syntax::NodeId) -> unit {
-    let labels: Vec[FlowLabel] = Vec::[];
-    let gotos: Vec[FlowGoto] = Vec::[];
-    let declarations: Vec[FlowDeclaration] = Vec::[];
-    collect_flow_points(state, body, Vec::[], labels, gotos, declarations);
+    let labels: Vec[FlowLabel] = Vec::from_array([]);
+    let gotos: Vec[FlowGoto] = Vec::from_array([]);
+    let declarations: Vec[FlowDeclaration] = Vec::from_array([]);
+    collect_flow_points(state, body, Vec::from_array([]), labels, gotos, declarations);
     for value in gotos {
         for label in labels {
             if value.name == label.name {

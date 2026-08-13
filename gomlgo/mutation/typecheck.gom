@@ -22,7 +22,7 @@ fn replace_range(value: bytes::Bytes, start: int, end: int, replacement: string)
 }
 
 fn semantic_mutations(source: bytes::Bytes) -> Vec[bytes::Bytes] {
-    let result: Vec[bytes::Bytes] = Vec::[];
+    let result: Vec[bytes::Bytes] = Vec::from_array([]);
     let tokens = scanner::scan_bytes(source).tokens;
     let mut changed_operator = false;
     let mut changed_definition = false;
@@ -88,53 +88,61 @@ fn semantic_mutations(source: bytes::Bytes) -> Vec[bytes::Bytes] {
 }
 
 fn checker_response_json(value: checker::CheckResult) -> string {
-    let diagnostics: Vec[json::Value] = Vec::[];
+    let diagnostics: Vec[json::Value] = Vec::from_array([]);
     for item in value.diagnostics {
         diagnostics.push(
             json::Value::Object(
-                Vec::[
-                    ("file", json::Value::String(item.file)),
-                    ("start", json::Value::Number(item.start.to_string())),
-                    ("end", json::Value::Number(item.end.to_string())),
-                    ("message", json::Value::String(item.message)),
-                    ("soft", json::Value::Bool(item.soft)),
-                    ("secondary", json::Value::Bool(item.secondary)),
-                ],
+                Vec::from_array(
+                    [
+                        ("file", json::Value::String(item.file)),
+                        ("start", json::Value::Number(item.start.to_string())),
+                        ("end", json::Value::Number(item.end.to_string())),
+                        ("message", json::Value::String(item.message)),
+                        ("soft", json::Value::Bool(item.soft)),
+                        ("secondary", json::Value::Bool(item.secondary)),
+                    ],
+                ),
             ),
         )
     }
     json::encode(
         json::Value::Object(
-            Vec::[
-                ("ok", json::Value::Bool(value.diagnostics.is_empty())),
-                ("diagnostics", json::Value::Array(diagnostics)),
-            ],
+            Vec::from_array(
+                [
+                    ("ok", json::Value::Bool(value.diagnostics.is_empty())),
+                    ("diagnostics", json::Value::Array(diagnostics)),
+                ],
+            ),
         ),
     )
 }
 
 fn oracle_response_json(value: typecheck_diff::CheckResponse) -> string {
-    let diagnostics: Vec[json::Value] = Vec::[];
+    let diagnostics: Vec[json::Value] = Vec::from_array([]);
     for item in value.diagnostics {
         diagnostics.push(
             json::Value::Object(
-                Vec::[
-                    ("file", json::Value::String(item.file)),
-                    ("start", json::Value::Number(item.start.to_string())),
-                    ("end", json::Value::Number(item.end.to_string())),
-                    ("message", json::Value::String(item.message)),
-                    ("soft", json::Value::Bool(item.soft)),
-                    ("secondary", json::Value::Bool(item.secondary)),
-                ],
+                Vec::from_array(
+                    [
+                        ("file", json::Value::String(item.file)),
+                        ("start", json::Value::Number(item.start.to_string())),
+                        ("end", json::Value::Number(item.end.to_string())),
+                        ("message", json::Value::String(item.message)),
+                        ("soft", json::Value::Bool(item.soft)),
+                        ("secondary", json::Value::Bool(item.secondary)),
+                    ],
+                ),
             ),
         )
     }
     json::encode(
         json::Value::Object(
-            Vec::[
-                ("ok", json::Value::Bool(value.ok)),
-                ("diagnostics", json::Value::Array(diagnostics)),
-            ],
+            Vec::from_array(
+                [
+                    ("ok", json::Value::Bool(value.ok)),
+                    ("diagnostics", json::Value::Array(diagnostics)),
+                ],
+            ),
         ),
     )
 }
@@ -164,7 +172,7 @@ pub fn run_typecheck(root: string, output: string, seed_limit: int) -> Result[
     TypecheckSummary,
     string,
 ] {
-    let files: Vec[string] = Vec::[];
+    let files: Vec[string] = Vec::from_array([]);
     if fs::is_file(root) {
         files.push(root)
     } else {
@@ -180,7 +188,7 @@ pub fn run_typecheck(root: string, output: string, seed_limit: int) -> Result[
             let source_text = source.to_string()?;
             let seed_request = typecheck_diff::request(
                 "mutation/fixture",
-                Vec::[typecheck_diff::SourceFile { name: file, source: source_text }],
+                Vec::from_array([typecheck_diff::SourceFile { name: file, source: source_text }]),
             );
             let seed = typecheck_diff::run_check(seed_request)?;
             if seed.ok {
@@ -190,13 +198,15 @@ pub fn run_typecheck(root: string, output: string, seed_limit: int) -> Result[
                     let input_text = input.to_string()?;
                     let request = typecheck_diff::request(
                         "mutation/fixture",
-                        Vec::[typecheck_diff::SourceFile { name: file, source: input_text }],
+                        Vec::from_array(
+                            [typecheck_diff::SourceFile { name: file, source: input_text }],
+                        ),
                     );
                     let expected = typecheck_diff::run_check(request)?;
                     let actual = loader::check_sources_with_diagnostics(
                         loader::default_config(),
                         "mutation/fixture",
-                        Vec::[checker::SourceFile { name: file, source: input }],
+                        Vec::from_array([checker::SourceFile { name: file, source: input }]),
                     )?;
                     let actual_ok = actual.diagnostics.is_empty();
                     if actual_ok != expected.ok {

@@ -706,6 +706,20 @@ fn lowers_go_ffi_calls_through_abi_wrappers() -> unit {
 }
 
 #[test]
+fn lowers_empty_marker_dyn_go_ffi_values_through_data() -> unit {
+    let output = encode(
+        lower_source(
+            "trait NativeValue {} struct Box {} impl NativeValue for Box {} #[go_ffi(\"example.com/ffi\", \"Echo\")] extern fn echo(value: dyn NativeValue) -> dyn NativeValue; fn main() -> unit { let value: dyn NativeValue = Box {} as dyn NativeValue; let _ = echo(value); }",
+        ),
+    );
+    if !string_contains(output, ".Echo(arg0.data)")
+        || !string_contains(output, "return dyn__NativeValue{")
+        || !string_contains(output, "data: _goml_ffi_import_") {
+        testing::fail(output)
+    } else {}
+}
+
+#[test]
 fn preserves_loop_carried_assignments() -> unit {
     let source = "fn main() -> unit { let mut i = 0; while i < 3 { println(i); i = i + 1; } }";
     testing::assert(string_contains(encode(lower_source(source)), "\n            i__0 = "))

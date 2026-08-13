@@ -78,7 +78,7 @@ fn compare_file(file: string) -> Result[int, string] {
 }
 
 pub fn compare_tree(root: string) -> Result[Summary, string] {
-    let files: Vec[string] = Vec::[];
+    let files: Vec[string] = Vec::from_array([]);
     if fs::is_file(root) {
         files.push(root)
     } else {

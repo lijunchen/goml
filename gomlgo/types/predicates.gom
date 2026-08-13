@@ -24,7 +24,7 @@ fn same_package(left: Option[PackageId], right: Option[PackageId]) -> bool {
 
 pub fn unalias(world: World, value: TypeId) -> TypeId {
     let mut current = value;
-    let visited: Vec[int] = Vec::[];
+    let visited: Vec[int] = Vec::from_array([]);
     loop {
         if contains_id(visited, current.value) {
             return world.invalid
@@ -44,7 +44,7 @@ pub fn unalias(world: World, value: TypeId) -> TypeId {
 
 pub fn underlying(world: World, value: TypeId) -> TypeId {
     let mut current = unalias(world, value);
-    let visited: Vec[int] = Vec::[];
+    let visited: Vec[int] = Vec::from_array([]);
     loop {
         if contains_id(visited, current.value) {
             return world.invalid
@@ -493,7 +493,7 @@ fn identical_terms(
 }
 
 pub fn identical(world: World, left: TypeId, right: TypeId) -> bool {
-    identical_inner_mode(world, left, right, Vec::[], true)
+    identical_inner_mode(world, left, right, Vec::from_array([]), true)
 }
 
 pub fn is_integer(world: World, value: TypeId) -> bool {
@@ -702,11 +702,17 @@ fn string_slice_element(world: World, value: TypeId) -> bool {
 }
 
 fn identical_structs_ignoring_tags(world: World, left: TypeId, right: TypeId) -> bool {
-    identical_inner_mode(world, underlying(world, left), underlying(world, right), Vec::[], false)
+    identical_inner_mode(
+        world,
+        underlying(world, left),
+        underlying(world, right),
+        Vec::from_array([]),
+        false,
+    )
 }
 
 fn copied_type_pairs(values: Vec[TypePair]) -> Vec[TypePair] {
-    let result: Vec[TypePair] = Vec::[];
+    let result: Vec[TypePair] = Vec::from_array([]);
     for value in values {
         result.push(TypePair { left: value.left, right: value.right })
     }
@@ -832,7 +838,7 @@ fn convertible_concrete(world: World, source: TypeId, target: TypeId, visited: V
                     world,
                     underlying(world, source_element),
                     underlying(world, target_element),
-                    Vec::[],
+                    Vec::from_array([]),
                     false,
                 ),
             _ => false,
@@ -883,19 +889,19 @@ fn convertible_inner(world: World, source: TypeId, target: TypeId, visited: Vec[
 }
 
 pub fn convertible_types(world: World, source: TypeId, target: TypeId) -> bool {
-    convertible_inner(world, source, target, Vec::[])
+    convertible_inner(world, source, target, Vec::from_array([]))
 }
 
 pub fn conversion_minimum_minor(world: World, source: TypeId, target: TypeId) -> int {
     let source_types = if is_type_parameter(world, source) {
         type_set_specific_types(world, source)
     } else {
-        Vec::[source]
+        Vec::from_array([source])
     };
     let target_types = if is_type_parameter(world, target) {
         type_set_specific_types(world, target)
     } else {
-        Vec::[target]
+        Vec::from_array([target])
     };
     let mut result = 0;
     for source_type in source_types {

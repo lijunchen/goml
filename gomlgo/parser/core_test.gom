@@ -32,6 +32,6 @@ fn expect_reports_without_consuming_unrelated_token() -> unit {
 #[test]
 fn recovery_consumes_until_synchronization_token() -> unit {
     let parser = parser_new(bytes::Bytes::from_string("a + b }"));
-    recover_until(parser, Vec::[token::Kind::Rbrace]);
+    recover_until(parser, Vec::from_array([token::Kind::Rbrace]));
     testing::assert(at(parser, token::Kind::Rbrace))
 }

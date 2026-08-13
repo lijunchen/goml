@@ -1952,14 +1952,17 @@ The initial ABI supports values whose generated Go representations are already d
 | `[T; N]` | `[N]T` |
 | `Slice[T]` | `[]T` |
 | `Channel[T]` | `chan T` |
+| Direct `dyn Marker` parameter or single return | Go `any` through the trait object's `data` field |
 | `unit` return | Go function with no result |
 | `(A, B, ...)` return | Multiple Go results in the same order |
 
 Tuple types are supported only as the complete return type. Tuple elements and array, slice, or channel elements must themselves be FFI-safe. Parameters cannot be `unit`.
 
+`dyn Marker` is supported only as a direct parameter or as the complete single return type. `Marker` must be strictly empty: it cannot declare generic parameters, predicates, supertraits, associated types, or methods, and the `dyn` type cannot have arguments, associated-type bindings, or additional bounds. The wrapper passes the object's `data` field to Go as `any` and wraps a returned Go value back into the empty marker object. Empty marker objects are not yet supported inside tuples, arrays, slices, or channels.
+
 The declaration must be monomorphic and must describe the Go function exactly. GoML does not inspect Go package type information during type checking; the Go compiler is the final authority for symbol existence and assignability. In particular, a Go named type such as `time.Duration` is not interchangeable with a GoML `int64` parameter even when its underlying representation is the same.
 
-`Vec`, `Ref`, `HashMap`, `Option`, `Result`, user structs and enums, trait objects, function values, nested tuples, generic declarations, methods, callbacks, Go object handles, and automatic `error` conversion are not supported by this ABI. Write a small Go shim with an exported function and FFI-safe parameters when adapting such an API:
+`Vec`, `Ref`, `HashMap`, `Option`, `Result`, user structs and enums, nonempty trait objects, function values, nested tuples, generic declarations, methods, callbacks, automatic Go object lifetime management, and automatic `error` conversion are not supported by this ABI. Write a small Go shim with an exported function and FFI-safe parameters when adapting such an API:
 
 ```go
 package goshim

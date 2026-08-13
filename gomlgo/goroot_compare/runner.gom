@@ -107,7 +107,7 @@ fn oracle_sources(values: Vec[checker::SourceFile]) -> Result[
     Vec[typecheck_diff::SourceFile],
     string,
 ] {
-    let result: Vec[typecheck_diff::SourceFile] = Vec::[];
+    let result: Vec[typecheck_diff::SourceFile] = Vec::from_array([]);
     for value in values {
         result.push(
             typecheck_diff::SourceFile { name: value.name, source: value.source.to_string()? },
@@ -239,7 +239,7 @@ pub fn compare(
     test_mode: string,
 ) -> Result[Summary, string] {
     let config = loader::default_config();
-    config.source_roots = Vec::[root];
+    config.source_roots = Vec::from_array([root]);
     config.goos = goos;
     config.goarch = goarch;
     config.cgo = cgo;
@@ -247,7 +247,7 @@ pub fn compare(
     config.checker_config.sizes = go_types::gc_sizes(goarch).ok_or("unsupported GOARCH " + goarch)?;
     config.include_tests = test_mode == INTERNAL_TEST_MODE || test_mode == EXTERNAL_TEST_MODE;
     config.external_tests = test_mode == EXTERNAL_TEST_MODE;
-    let packages: Vec[string] = Vec::[];
+    let packages: Vec[string] = Vec::from_array([]);
     collect_packages(
         config,
         root,

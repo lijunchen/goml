@@ -26,7 +26,10 @@ fn expect_constant(value: Result[ConstantResponse, string]) -> ConstantResponse 
 #[test]
 fn request_encoding_is_stable() -> unit {
     let encoded = encode_check_request(
-        request("example/p", Vec::[SourceFile { name: "a.go", source: "package p\nvar X int\n" }]),
+        request(
+            "example/p",
+            Vec::from_array([SourceFile { name: "a.go", source: "package p\nvar X int\n" }]),
+        ),
     );
     let parsed = json::parse(encoded).unwrap_or(json::Value::Null);
     testing::assert_eq(
@@ -46,7 +49,7 @@ fn request_encoding_is_stable() -> unit {
 
 #[test]
 fn acceptance_request_skips_info() -> unit {
-    let encoded = encode_check_request(acceptance_request("example/p", Vec::[]));
+    let encoded = encode_check_request(acceptance_request("example/p", Vec::from_array([])));
     let parsed = json::parse(encoded).unwrap_or(json::Value::Null);
     testing::assert(
         !json::as_bool(
@@ -63,12 +66,14 @@ fn invokes_type_check_oracle() -> unit {
         run_check(
             request(
                 "example/p",
-                Vec::[
-                    SourceFile {
-                        name: "a.go",
-                        source: "package p\nvar X int\nfunc F() int { return X }\n",
-                    },
-                ],
+                Vec::from_array(
+                    [
+                        SourceFile {
+                            name: "a.go",
+                            source: "package p\nvar X int\nfunc F() int { return X }\n",
+                        },
+                    ],
+                ),
             ),
         ),
     );

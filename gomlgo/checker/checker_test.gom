@@ -14,7 +14,7 @@ fn source_file(name: string, source: string) -> SourceFile {
 fn check_source(source: string) -> CheckResult {
     check(
         default_config(),
-        PackageInput { path: "example/p", files: Vec::[source_file("a.go", source)] },
+        PackageInput { path: "example/p", files: Vec::from_array([source_file("a.go", source)]) },
     )
 }
 
@@ -26,7 +26,7 @@ fn fake_import_c_is_implicitly_used() -> unit {
         config,
         PackageInput {
             path: "example/p",
-            files: Vec::[source_file("a.go", "package p\nimport \"C\"\n")],
+            files: Vec::from_array([source_file("a.go", "package p\nimport \"C\"\n")]),
         },
     );
     testing::assert_eq(result.diagnostics.len(), 0)
@@ -70,7 +70,7 @@ fn checks_explicit_package_variable_and_matches_oracle_facts() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -150,10 +150,12 @@ fn checks_multiple_files_in_one_package() -> unit {
         default_config(),
         PackageInput {
             path: "example/p",
-            files: Vec::[
-                source_file("a.go", "package p\nvar X int\n"),
-                source_file("b.go", "package p\nvar Y string\n"),
-            ],
+            files: Vec::from_array(
+                [
+                    source_file("a.go", "package p\nvar X int\n"),
+                    source_file("b.go", "package p\nvar Y string\n"),
+                ],
+            ),
         },
     );
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -174,7 +176,7 @@ fn accepts_multiple_init_functions_outside_package_scope() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -186,7 +188,7 @@ fn rejects_type_parameters_and_arguments_on_main() -> unit {
     let source = "package main\nfunc main[T any](value T) int { return 0 }\n";
     let result = check(
         default_config(),
-        PackageInput { path: "example/main", files: Vec::[source_file("a.go", source)] },
+        PackageInput { path: "example/main", files: Vec::from_array([source_file("a.go", source)]) },
     );
     testing::assert(result.diagnostics.len() >= 2);
     testing::assert(result.diagnostics[0].message.contains("no type parameters"));
@@ -194,7 +196,7 @@ fn rejects_type_parameters_and_arguments_on_main() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/main",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -222,7 +224,7 @@ fn formats_grouped_and_separate_type_parameter_constraints() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -251,7 +253,7 @@ fn checks_constant_expressions_and_initialized_variables() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -276,7 +278,7 @@ fn masks_bitwise_complement_for_typed_unsigned_constants() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -296,7 +298,7 @@ fn preserves_nonconstant_shift_operands_through_conversions() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -318,7 +320,7 @@ fn replaces_provisional_typed_constant_values() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -334,7 +336,7 @@ fn checks_elided_nested_composite_literal_types() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -359,10 +361,12 @@ fn resolves_forward_declaration_dependencies_across_files() -> unit {
         default_config(),
         PackageInput {
             path: "example/p",
-            files: Vec::[
-                source_file("a.go", "package p\nconst A = B + 1\nvar X = Y\n"),
-                source_file("b.go", "package p\nconst B = 41\nvar Y = 2\n"),
-            ],
+            files: Vec::from_array(
+                [
+                    source_file("a.go", "package p\nconst A = B + 1\nvar X = Y\n"),
+                    source_file("b.go", "package p\nconst B = 41\nvar Y = 2\n"),
+                ],
+            ),
         },
     );
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -415,7 +419,7 @@ fn reports_initialization_cycles_through_static_function_and_method_bodies() -> 
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -472,7 +476,7 @@ fn checks_named_alias_and_recursive_slice_types() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -500,7 +504,7 @@ fn rejects_recursive_types_exposed_by_unsafe_sizeof() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -514,7 +518,7 @@ fn checks_struct_interface_and_function_declarations_when_bodies_are_ignored() -
     config.ignore_func_bodies = true;
     let result = check(
         config,
-        PackageInput { path: "example/p", files: Vec::[source_file("a.go", source)] },
+        PackageInput { path: "example/p", files: Vec::from_array([source_file("a.go", source)]) },
     );
     testing::assert_eq(result.diagnostics.len(), 0);
     let node = package_object(result, "Node");
@@ -546,7 +550,7 @@ fn checks_struct_interface_and_function_declarations_when_bodies_are_ignored() -
     };
     let oracle_request = typecheck_diff::request(
         "example/p",
-        Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+        Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
     );
     oracle_request.config.ignore_func_bodies = true;
     let oracle = expect_oracle(typecheck_diff::run_check(oracle_request));
@@ -579,7 +583,7 @@ fn resolves_unsafe_import_alias_and_qualified_type() -> unit {
     testing::assert_eq(result.info.uses.len(), 2);
     let oracle_request = typecheck_diff::request(
         "example/p",
-        Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+        Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
     );
     oracle_request.config.ignore_func_bodies = true;
     let oracle = expect_oracle(typecheck_diff::run_check(oracle_request));
@@ -607,7 +611,9 @@ fn imports_configured_package_identities() -> unit {
         config,
         PackageInput {
             path: "example/p",
-            files: Vec::[source_file("a.go", "package p\nimport renamed \"example/q\"\n")],
+            files: Vec::from_array(
+                [source_file("a.go", "package p\nimport renamed \"example/q\"\n")],
+            ),
         },
     );
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -630,12 +636,14 @@ fn checks_imported_packages_in_a_shared_type_world() -> unit {
         default_config(),
         PackageInput {
             path: "example/q",
-            files: Vec::[
-                source_file(
-                    "q.go",
-                    "package q\ntype Number int\nconst Value Number = 1\nvar Mutable Number\nfunc Identity(value Number) Number { return value }\n",
-                ),
-            ],
+            files: Vec::from_array(
+                [
+                    source_file(
+                        "q.go",
+                        "package q\ntype Number int\nconst Value Number = 1\nvar Mutable Number\nfunc Identity(value Number) Number { return value }\n",
+                    ),
+                ],
+            ),
         },
         world,
     );
@@ -643,7 +651,7 @@ fn checks_imported_packages_in_a_shared_type_world() -> unit {
     let source = "package p\nimport \"example/q\"\nvar Value = q.Identity(q.Value)\nconst Sum = q.Value + 1\nfunc Set() { q.Mutable = q.Value }\n";
     let result = check_package_in_world(
         default_config(),
-        PackageInput { path: "example/p", files: Vec::[source_file("p.go", source)] },
+        PackageInput { path: "example/p", files: Vec::from_array([source_file("p.go", source)]) },
         dependency.world,
     );
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -686,12 +694,12 @@ fn evaluates_iota_and_inherited_const_expressions() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
     testing::assert(oracle.ok);
-    for name in Vec::["A", "B", "C", "D", "E", "F"] {
+    for name in Vec::from_array(["A", "B", "C", "D", "E", "F"]) {
         testing::assert_eq(
             oracle_object_exact(oracle, name),
             package_object(result, name).constant.unwrap_or(""),
@@ -708,7 +716,7 @@ fn preserves_iota_facts_during_initializer_dependency_analysis() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -722,7 +730,7 @@ fn attaches_value_and_pointer_receiver_methods_to_named_types() -> unit {
     config.ignore_func_bodies = true;
     let result = check(
         config,
-        PackageInput { path: "example/p", files: Vec::[source_file("a.go", source)] },
+        PackageInput { path: "example/p", files: Vec::from_array([source_file("a.go", source)]) },
     );
     testing::assert_eq(result.diagnostics.len(), 0);
     let box_type = package_object(result, "Box").type_id;
@@ -756,7 +764,7 @@ fn attaches_value_and_pointer_receiver_methods_to_named_types() -> unit {
     };
     let oracle_request = typecheck_diff::request(
         "example/p",
-        Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+        Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
     );
     oracle_request.config.ignore_func_bodies = true;
     let oracle = expect_oracle(typecheck_diff::run_check(oracle_request));
@@ -771,7 +779,7 @@ fn checks_constant_conversions_and_function_calls() -> unit {
     config.ignore_func_bodies = true;
     let result = check(
         config,
-        PackageInput { path: "example/p", files: Vec::[source_file("a.go", source)] },
+        PackageInput { path: "example/p", files: Vec::from_array([source_file("a.go", source)]) },
     );
     testing::assert_eq(result.diagnostics.len(), 0);
     testing::assert_eq(package_object(result, "A").constant.unwrap_or(""), "127");
@@ -786,7 +794,7 @@ fn checks_constant_conversions_and_function_calls() -> unit {
     );
     let oracle_request = typecheck_diff::request(
         "example/p",
-        Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+        Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
     );
     oracle_request.config.ignore_func_bodies = true;
     let oracle = expect_oracle(typecheck_diff::run_check(oracle_request));
@@ -808,7 +816,7 @@ fn rejects_wrong_argument_count_without_panicking() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -823,10 +831,12 @@ fn resolves_function_signatures_before_declaration_order() -> unit {
         config,
         PackageInput {
             path: "example/p",
-            files: Vec::[
-                source_file("a.go", "package p\nvar X = Later(3)\n"),
-                source_file("b.go", "package p\nfunc Later(value int) string { return \"\" }\n"),
-            ],
+            files: Vec::from_array(
+                [
+                    source_file("a.go", "package p\nvar X = Later(3)\n"),
+                    source_file("b.go", "package p\nfunc Later(value int) string { return \"\" }\n"),
+                ],
+            ),
         },
     );
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -836,13 +846,15 @@ fn resolves_function_signatures_before_declaration_order() -> unit {
     );
     let oracle_request = typecheck_diff::request(
         "example/p",
-        Vec::[
-            typecheck_diff::SourceFile { name: "a.go", source: "package p\nvar X = Later(3)\n" },
-            typecheck_diff::SourceFile {
-                name: "b.go",
-                source: "package p\nfunc Later(value int) string { return \"\" }\n",
-            },
-        ],
+        Vec::from_array(
+            [
+                typecheck_diff::SourceFile { name: "a.go", source: "package p\nvar X = Later(3)\n" },
+                typecheck_diff::SourceFile {
+                    name: "b.go",
+                    source: "package p\nfunc Later(value int) string { return \"\" }\n",
+                },
+            ],
+        ),
     );
     oracle_request.config.ignore_func_bodies = true;
     let oracle = expect_oracle(typecheck_diff::run_check(oracle_request));
@@ -856,7 +868,7 @@ fn checks_interface_assignment_with_embedded_and_pointer_method_sets() -> unit {
     config.ignore_func_bodies = true;
     let result = check(
         config,
-        PackageInput { path: "example/p", files: Vec::[source_file("a.go", source)] },
+        PackageInput { path: "example/p", files: Vec::from_array([source_file("a.go", source)]) },
     );
     testing::assert_eq(result.diagnostics.len(), 0);
     testing::assert_eq(
@@ -869,7 +881,7 @@ fn checks_interface_assignment_with_embedded_and_pointer_method_sets() -> unit {
     );
     let oracle_request = typecheck_diff::request(
         "example/p",
-        Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+        Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
     );
     oracle_request.config.ignore_func_bodies = true;
     let oracle = expect_oracle(typecheck_diff::run_check(oracle_request));
@@ -886,7 +898,7 @@ fn checks_function_body_locals_assignments_returns_and_branches() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -902,7 +914,7 @@ fn checks_short_redeclarations_in_function_and_rechecked_literal_scopes() -> uni
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -918,7 +930,7 @@ fn checks_local_alias_named_and_recursive_pointer_types() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -930,8 +942,8 @@ fn evaluates_local_const_iota_and_inherited_expressions() -> unit {
     let source = "package p\nfunc Use() int {\n    const (\n        A = iota\n        B\n        C int = iota * 2\n        D\n    )\n    return A + B + C + D\n}\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
-    let expected_names = Vec::["A", "B", "C", "D"];
-    let expected_values = Vec::["0", "1", "4", "6"];
+    let expected_names = Vec::from_array(["A", "B", "C", "D"]);
+    let expected_values = Vec::from_array(["0", "1", "4", "6"]);
     let mut found = 0;
     for object in result.world.objects {
         if object.kind == go_types::ObjectKind::Const {
@@ -948,7 +960,7 @@ fn evaluates_local_const_iota_and_inherited_expressions() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -971,7 +983,7 @@ fn checks_labels_branches_and_switch_fallthrough() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -987,7 +999,7 @@ fn rejects_invalid_branch_contexts_and_unused_labels() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1016,7 +1028,7 @@ fn reports_unused_locals_independently_in_nested_functions() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1032,7 +1044,7 @@ fn rejects_invalid_local_type_cycles() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1058,7 +1070,7 @@ fn accepts_terminating_panic_calls_without_returns() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1074,7 +1086,7 @@ fn checks_composite_index_slice_assertion_and_function_literal_expressions() -> 
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1114,7 +1126,7 @@ fn checks_container_memory_and_side_effect_builtins() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1139,7 +1151,7 @@ fn permits_slicing_pointer_to_array_values() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source: valid_source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source: valid_source }]),
             ),
         ),
     );
@@ -1169,7 +1181,7 @@ fn checks_complex_real_and_imag_builtins() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1192,7 +1204,7 @@ fn folds_constant_min_and_max_builtins() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1220,7 +1232,7 @@ fn checks_nil_comparisons_and_type_info_operand_modes() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1232,7 +1244,7 @@ fn defaults_untyped_print_arguments() -> unit {
     let source = "package p\nfunc Print() { println(\"text\", 1, 'r') }\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
-    let actual: Vec[string] = Vec::[];
+    let actual: Vec[string] = Vec::from_array([]);
     for fact in result.info.types {
         let key = syntax::node_key(result.syntax, fact.node).unwrap_or("");
         if key.contains(".fields.args[") && !fact.builtin {
@@ -1254,7 +1266,7 @@ fn checks_interface_and_concrete_comparisons() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1336,7 +1348,7 @@ fn promotes_untyped_binary_operands_to_the_common_numeric_type() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1445,7 +1457,7 @@ fn checks_unsafe_builtins_and_gc_layout_constants() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1472,7 +1484,7 @@ fn checks_nonconstant_slice_unsafe_and_type_set_conversions() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1487,7 +1499,9 @@ fn checks_nonconstant_slice_unsafe_and_type_set_conversions() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source: invalid_source }],
+                Vec::from_array(
+                    [typecheck_diff::SourceFile { name: "a.go", source: invalid_source }],
+                ),
             ),
         ),
     );
@@ -1501,7 +1515,10 @@ fn gates_slice_array_conversions_by_go_version() -> unit {
     array_config.go_version = "go1.19";
     let array_result = check(
         array_config,
-        PackageInput { path: "example/p", files: Vec::[source_file("a.go", array_source)] },
+        PackageInput {
+            path: "example/p",
+            files: Vec::from_array([source_file("a.go", array_source)]),
+        },
     );
     testing::assert(!array_result.diagnostics.is_empty());
     testing::assert(array_result.diagnostics[0].message.contains("go1.20"));
@@ -1510,7 +1527,10 @@ fn gates_slice_array_conversions_by_go_version() -> unit {
     pointer_config.go_version = "go1.16";
     let pointer_result = check(
         pointer_config,
-        PackageInput { path: "example/p", files: Vec::[source_file("a.go", pointer_source)] },
+        PackageInput {
+            path: "example/p",
+            files: Vec::from_array([source_file("a.go", pointer_source)]),
+        },
     );
     testing::assert(!pointer_result.diagnostics.is_empty());
     testing::assert(pointer_result.diagnostics[0].message.contains("go1.17"));
@@ -1522,7 +1542,9 @@ fn gates_slice_array_conversions_by_go_version() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source: tagged_source }],
+                Vec::from_array(
+                    [typecheck_diff::SourceFile { name: "a.go", source: tagged_source }],
+                ),
             ),
         ),
     );
@@ -1542,7 +1564,7 @@ fn gates_go126_new_expression_by_effective_file_version() -> unit {
     old_config.go_version = "go1.25";
     let old = check(
         old_config,
-        PackageInput { path: "example/p", files: Vec::[source_file("a.go", source)] },
+        PackageInput { path: "example/p", files: Vec::from_array([source_file("a.go", source)]) },
     );
     testing::assert_eq(old.diagnostics.len(), 1);
     testing::assert(old.diagnostics[0].message.contains("requires go1.26"))
@@ -1557,7 +1579,7 @@ fn checks_range_channel_send_receive_go_and_defer_statements() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1574,7 +1596,7 @@ fn gates_integer_range_by_effective_file_version() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1590,7 +1612,7 @@ fn accepts_terminating_select_without_default() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1606,7 +1628,7 @@ fn checks_range_over_function_yield_signatures() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1638,7 +1660,7 @@ fn checks_expression_type_switch_and_select_scopes() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1663,7 +1685,7 @@ fn checks_generic_named_type_instantiation_substitution_and_union_constraints() 
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1696,7 +1718,7 @@ fn checks_generic_function_explicit_arguments_and_basic_inference() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1730,7 +1752,7 @@ fn checks_generic_receiver_methods_and_instantiated_method_selection() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1758,7 +1780,7 @@ fn checks_value_and_pointer_method_expressions() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1775,7 +1797,7 @@ fn rejects_methods_on_generic_alias_receivers() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1795,7 +1817,7 @@ fn accepts_go126_generic_self_references_in_constraints() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1819,7 +1841,7 @@ fn checks_type_set_operations_intersections_and_comparability() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1843,7 +1865,7 @@ fn checks_core_types_for_generic_containers_and_channels() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1864,7 +1886,7 @@ fn infers_generic_functions_from_assignment_return_and_argument_contexts() -> un
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1873,7 +1895,7 @@ fn infers_generic_functions_from_assignment_return_and_argument_contexts() -> un
     old_config.go_version = "go1.20";
     let old = check(
         old_config,
-        PackageInput { path: "example/p", files: Vec::[source_file("a.go", source)] },
+        PackageInput { path: "example/p", files: Vec::from_array([source_file("a.go", source)]) },
     );
     testing::assert(!old.diagnostics.is_empty())
 }
@@ -1887,7 +1909,7 @@ fn rejects_invalid_and_overlapping_union_terms() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1920,7 +1942,7 @@ fn checks_multi_value_calls_and_comma_ok_assignments() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1955,7 +1977,7 @@ fn checks_package_multi_value_initializers() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -1969,7 +1991,7 @@ fn orders_initializers_by_dependencies_and_source_position() -> unit {
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
     testing::assert_eq(result.info.init_order.len(), 3);
-    let expected = Vec::["B", "C", "A"];
+    let expected = Vec::from_array(["B", "C", "A"]);
     for index in 0..expected.len() {
         let object = go_types::get_object(result.world, result.info.init_order[index].left[0]);
         testing::assert_eq(
@@ -1984,7 +2006,7 @@ fn orders_initializers_by_dependencies_and_source_position() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -2001,7 +2023,7 @@ fn checks_pointer_slice_map_and_channel_type_expressions() -> unit {
     let pkg = result.world.packages[result.package_id.value];
     let scope = result.world.scopes[pkg.scope.value];
     testing::assert_eq(scope.entries.len(), 4);
-    let expected = Vec::["*int", "[]string", "map[string]int", "chan int"];
+    let expected = Vec::from_array(["*int", "[]string", "map[string]int", "chan int"]);
     for index in 0..scope.entries.len() {
         let object = result.world.objects[scope.entries[index].object.value];
         testing::assert_eq(go_types::format_type(result.world, object.type_id), expected[index])
@@ -2017,7 +2039,7 @@ fn checks_goto_block_and_variable_declaration_restrictions() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source: valid_source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source: valid_source }]),
             ),
         ),
     );
@@ -2039,7 +2061,9 @@ fn checks_goto_block_and_variable_declaration_restrictions() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source: invalid_source }],
+                Vec::from_array(
+                    [typecheck_diff::SourceFile { name: "a.go", source: invalid_source }],
+                ),
             ),
         ),
     );
@@ -2052,10 +2076,12 @@ fn reports_package_name_mismatch_and_duplicate_declaration() -> unit {
         default_config(),
         PackageInput {
             path: "example/p",
-            files: Vec::[
-                source_file("a.go", "package p\nvar X int\n"),
-                source_file("b.go", "package q\nvar X int\n"),
-            ],
+            files: Vec::from_array(
+                [
+                    source_file("a.go", "package p\nvar X int\n"),
+                    source_file("b.go", "package q\nvar X int\n"),
+                ],
+            ),
         },
     );
     testing::assert_eq(result.diagnostics.len(), 3);
@@ -2076,7 +2102,7 @@ fn rejects_blank_package_names() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -2104,7 +2130,7 @@ fn permits_repeated_blank_declarations_without_scope_bindings() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );
@@ -2120,7 +2146,7 @@ fn permits_repeated_blank_struct_fields() -> unit {
         typecheck_diff::run_check(
             typecheck_diff::request(
                 "example/p",
-                Vec::[typecheck_diff::SourceFile { name: "a.go", source }],
+                Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
             ),
         ),
     );

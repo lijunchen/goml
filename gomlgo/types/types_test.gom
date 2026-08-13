@@ -15,29 +15,31 @@ fn required_type(world: World, name: string) -> TypeId {
 fn universe_matches_go_126_predeclared_objects() -> unit {
     let world = new_world();
     testing::assert_eq(world.scopes[world.universe.value].entries.len(), 44);
-    for name in Vec::[
-        "any",
-        "append",
-        "bool",
-        "byte",
-        "clear",
-        "comparable",
-        "complex128",
-        "error",
-        "false",
-        "int",
-        "iota",
-        "max",
-        "min",
-        "new",
-        "nil",
-        "recover",
-        "rune",
-        "string",
-        "true",
-        "uint64",
-        "uintptr",
-    ] {
+    for name in Vec::from_array(
+        [
+            "any",
+            "append",
+            "bool",
+            "byte",
+            "clear",
+            "comparable",
+            "complex128",
+            "error",
+            "false",
+            "int",
+            "iota",
+            "max",
+            "min",
+            "new",
+            "nil",
+            "recover",
+            "rune",
+            "string",
+            "true",
+            "uint64",
+            "uintptr",
+        ],
+    ) {
         let _ = required_object(world, world.universe, name);
     }
     let unsafe_package = testing::expect_some(
@@ -47,17 +49,19 @@ fn universe_matches_go_126_predeclared_objects() -> unit {
     testing::assert(unsafe_package.complete);
     testing::assert_eq(unsafe_package.path, "unsafe");
     testing::assert_eq(world.scopes[unsafe_package.scope.value].entries.len(), 9);
-    for name in Vec::[
-        "Add",
-        "Alignof",
-        "Offsetof",
-        "Pointer",
-        "Sizeof",
-        "Slice",
-        "SliceData",
-        "String",
-        "StringData",
-    ] {
+    for name in Vec::from_array(
+        [
+            "Add",
+            "Alignof",
+            "Offsetof",
+            "Pointer",
+            "Sizeof",
+            "Slice",
+            "SliceData",
+            "String",
+            "StringData",
+        ],
+    ) {
         let _ = required_object(world, unsafe_package.scope, name);
     }
 }
@@ -171,9 +175,9 @@ fn recursive_named_types_use_ids_and_format_stably() -> unit {
         TypeKind::Named {
             object,
             underlying: world.invalid,
-            type_params: Vec::[],
-            type_args: Vec::[],
-            methods: Vec::[],
+            type_params: Vec::from_array([]),
+            type_args: Vec::from_array([]),
+            methods: Vec::from_array([]),
         },
     );
     let _ = set_object_type(world, object, named);
@@ -181,14 +185,20 @@ fn recursive_named_types_use_ids_and_format_stably() -> unit {
     let underlying = add_type(
         world,
         TypeKind::Struct {
-            fields: Vec::[
-                StructField {
-                    object: Option::None,
-                    variable: Variable { name: "Next", owner: Option::Some(pkg), type_id: pointer },
-                    embedded: false,
-                    tag: "",
-                },
-            ],
+            fields: Vec::from_array(
+                [
+                    StructField {
+                        object: Option::None,
+                        variable: Variable {
+                            name: "Next",
+                            owner: Option::Some(pkg),
+                            type_id: pointer,
+                        },
+                        embedded: false,
+                        tag: "",
+                    },
+                ],
+            ),
         },
     );
     testing::assert(
@@ -198,9 +208,9 @@ fn recursive_named_types_use_ids_and_format_stably() -> unit {
             TypeKind::Named {
                 object,
                 underlying,
-                type_params: Vec::[],
-                type_args: Vec::[],
-                methods: Vec::[],
+                type_params: Vec::from_array([]),
+                type_args: Vec::from_array([]),
+                methods: Vec::from_array([]),
             },
         ),
     );
@@ -228,27 +238,29 @@ fn gc_sizes_compute_composite_alignment_offsets_and_trailing_padding() -> unit {
     let sizes = testing::expect_some(gc_sizes("amd64"), "missing amd64 sizes");
     let int8_type = testing::expect_some(basic_type(world, "int8"), "missing int8");
     let int64_type = testing::expect_some(basic_type(world, "int64"), "missing int64");
-    let empty = add_type(world, TypeKind::Struct { fields: Vec::[] });
-    let fields = Vec::[
-        StructField {
-            object: Option::None,
-            variable: Variable { name: "a", owner: Option::None, type_id: int8_type },
-            embedded: false,
-            tag: "",
-        },
-        StructField {
-            object: Option::None,
-            variable: Variable { name: "b", owner: Option::None, type_id: int64_type },
-            embedded: false,
-            tag: "",
-        },
-        StructField {
-            object: Option::None,
-            variable: Variable { name: "c", owner: Option::None, type_id: empty },
-            embedded: false,
-            tag: "",
-        },
-    ];
+    let empty = add_type(world, TypeKind::Struct { fields: Vec::from_array([]) });
+    let fields = Vec::from_array(
+        [
+            StructField {
+                object: Option::None,
+                variable: Variable { name: "a", owner: Option::None, type_id: int8_type },
+                embedded: false,
+                tag: "",
+            },
+            StructField {
+                object: Option::None,
+                variable: Variable { name: "b", owner: Option::None, type_id: int64_type },
+                embedded: false,
+                tag: "",
+            },
+            StructField {
+                object: Option::None,
+                variable: Variable { name: "c", owner: Option::None, type_id: empty },
+                embedded: false,
+                tag: "",
+            },
+        ],
+    );
     let structure = add_type(world, TypeKind::Struct { fields });
     let offsets = offsets_of(world, fields, sizes);
     testing::assert_eq(offsets.len(), 3);
@@ -277,9 +289,9 @@ fn named_test_type(world: World, pkg: PackageId, name: string, rhs: TypeId) -> T
         TypeKind::Named {
             object,
             underlying: rhs,
-            type_params: Vec::[],
-            type_args: Vec::[],
-            methods: Vec::[],
+            type_params: Vec::from_array([]),
+            type_args: Vec::from_array([]),
+            methods: Vec::from_array([]),
         },
     );
     let _ = set_object_type(world, object, result);
@@ -311,8 +323,8 @@ fn type_identity_distinguishes_named_types_and_unaliases() -> unit {
         TypeKind::Alias {
             object: alias_object,
             rhs: first,
-            type_params: Vec::[],
-            type_args: Vec::[],
+            type_params: Vec::from_array([]),
+            type_args: Vec::from_array([]),
         },
     );
     testing::assert(identical(world, alias, first));
@@ -343,33 +355,37 @@ fn comparability_follows_go_composite_rules() -> unit {
     let comparable_struct = add_type(
         world,
         TypeKind::Struct {
-            fields: Vec::[
-                StructField {
-                    object: Option::None,
-                    variable: Variable { name: "A", owner: Option::None, type_id: int_type },
-                    embedded: false,
-                    tag: "",
-                },
-                StructField {
-                    object: Option::None,
-                    variable: Variable { name: "B", owner: Option::None, type_id: string_type },
-                    embedded: false,
-                    tag: "",
-                },
-            ],
+            fields: Vec::from_array(
+                [
+                    StructField {
+                        object: Option::None,
+                        variable: Variable { name: "A", owner: Option::None, type_id: int_type },
+                        embedded: false,
+                        tag: "",
+                    },
+                    StructField {
+                        object: Option::None,
+                        variable: Variable { name: "B", owner: Option::None, type_id: string_type },
+                        embedded: false,
+                        tag: "",
+                    },
+                ],
+            ),
         },
     );
     let non_comparable_struct = add_type(
         world,
         TypeKind::Struct {
-            fields: Vec::[
-                StructField {
-                    object: Option::None,
-                    variable: Variable { name: "A", owner: Option::None, type_id: slice },
-                    embedded: false,
-                    tag: "",
-                },
-            ],
+            fields: Vec::from_array(
+                [
+                    StructField {
+                        object: Option::None,
+                        variable: Variable { name: "A", owner: Option::None, type_id: slice },
+                        embedded: false,
+                        tag: "",
+                    },
+                ],
+            ),
         },
     );
     testing::assert(comparable(world, int_type));
@@ -414,9 +430,9 @@ fn test_named_type(world: World, package_id: PackageId, name: string, underlying
         TypeKind::Named {
             object,
             underlying,
-            type_params: Vec::[],
-            type_args: Vec::[],
-            methods: Vec::[],
+            type_params: Vec::from_array([]),
+            type_args: Vec::from_array([]),
+            methods: Vec::from_array([]),
         },
     );
     let _ = set_object_type(world, object, result);
@@ -430,11 +446,13 @@ fn test_method(
     receiver_type: TypeId,
     result_type: TypeId,
 ) -> ObjectId {
-    let params = add_type(world, TypeKind::Tuple { variables: Vec::[] });
+    let params = add_type(world, TypeKind::Tuple { variables: Vec::from_array([]) });
     let results = add_type(
         world,
         TypeKind::Tuple {
-            variables: Vec::[Variable { name: "", owner: Option::None, type_id: result_type }],
+            variables: Vec::from_array(
+                [Variable { name: "", owner: Option::None, type_id: result_type }],
+            ),
         },
     );
     let signature = add_type(
@@ -443,8 +461,8 @@ fn test_method(
             receiver: Option::Some(
                 Variable { name: "", owner: Option::Some(package_id), type_id: receiver_type },
             ),
-            receiver_type_params: Vec::[],
-            type_params: Vec::[],
+            receiver_type_params: Vec::from_array([]),
+            type_params: Vec::from_array([]),
             params,
             results,
             variadic: false,
@@ -476,19 +494,21 @@ fn set_named_methods(world: World, value: TypeId, methods: Vec[ObjectId]) -> uni
 }
 
 fn test_interface_method(world: World, package_id: PackageId, name: string, result_type: TypeId) -> ObjectId {
-    let params = add_type(world, TypeKind::Tuple { variables: Vec::[] });
+    let params = add_type(world, TypeKind::Tuple { variables: Vec::from_array([]) });
     let results = add_type(
         world,
         TypeKind::Tuple {
-            variables: Vec::[Variable { name: "", owner: Option::None, type_id: result_type }],
+            variables: Vec::from_array(
+                [Variable { name: "", owner: Option::None, type_id: result_type }],
+            ),
         },
     );
     let signature = add_type(
         world,
         TypeKind::Signature {
             receiver: Option::None,
-            receiver_type_params: Vec::[],
-            type_params: Vec::[],
+            receiver_type_params: Vec::from_array([]),
+            type_params: Vec::from_array([]),
             params,
             results,
             variadic: false,
@@ -511,12 +531,12 @@ fn method_sets_distinguish_value_pointer_and_promoted_methods() -> unit {
     let world = new_world();
     let package_id = add_package(world, "example/p", "p", world.universe, false);
     let int_type = required_type(world, "int");
-    let empty_struct = add_type(world, TypeKind::Struct { fields: Vec::[] });
+    let empty_struct = add_type(world, TypeKind::Struct { fields: Vec::from_array([]) });
     let inner = test_named_type(world, package_id, "Inner", empty_struct);
     let inner_pointer = add_type(world, TypeKind::Pointer { element: inner });
     let value_method = test_method(world, package_id, "Value", inner, int_type);
     let pointer_method = test_method(world, package_id, "Pointer", inner_pointer, int_type);
-    set_named_methods(world, inner, Vec::[value_method, pointer_method]);
+    set_named_methods(world, inner, Vec::from_array([value_method, pointer_method]));
     testing::assert_eq(method_set(world, inner).len(), 1);
     testing::assert_eq(method_set(world, inner_pointer).len(), 2);
     let field_object = add_object(
@@ -532,18 +552,20 @@ fn method_sets_distinguish_value_pointer_and_promoted_methods() -> unit {
     let outer_struct = add_type(
         world,
         TypeKind::Struct {
-            fields: Vec::[
-                StructField {
-                    object: Option::Some(field_object),
-                    variable: Variable {
-                        name: "Inner",
-                        owner: Option::Some(package_id),
-                        type_id: inner,
+            fields: Vec::from_array(
+                [
+                    StructField {
+                        object: Option::Some(field_object),
+                        variable: Variable {
+                            name: "Inner",
+                            owner: Option::Some(package_id),
+                            type_id: inner,
+                        },
+                        embedded: true,
+                        tag: "",
                     },
-                    embedded: true,
-                    tag: "",
-                },
-            ],
+                ],
+            ),
         },
     );
     let outer = test_named_type(world, package_id, "Outer", outer_struct);
@@ -562,19 +584,19 @@ fn interface_implementation_uses_completed_embedded_method_sets() -> unit {
     let world = new_world();
     let package_id = add_package(world, "example/p", "p", world.universe, false);
     let int_type = required_type(world, "int");
-    let empty_struct = add_type(world, TypeKind::Struct { fields: Vec::[] });
+    let empty_struct = add_type(world, TypeKind::Struct { fields: Vec::from_array([]) });
     let concrete = test_named_type(world, package_id, "Concrete", empty_struct);
     let concrete_pointer = add_type(world, TypeKind::Pointer { element: concrete });
     let read = test_method(world, package_id, "Read", concrete, int_type);
     let write = test_method(world, package_id, "Write", concrete_pointer, int_type);
-    set_named_methods(world, concrete, Vec::[read, write]);
+    set_named_methods(world, concrete, Vec::from_array([read, write]));
     let read_requirement = test_interface_method(world, package_id, "Read", int_type);
     let write_requirement = test_interface_method(world, package_id, "Write", int_type);
     let reader = add_type(
         world,
         TypeKind::Interface {
-            methods: Vec::[read_requirement],
-            embeddeds: Vec::[],
+            methods: Vec::from_array([read_requirement]),
+            embeddeds: Vec::from_array([]),
             comparable: false,
             implicit: false,
         },
@@ -582,8 +604,8 @@ fn interface_implementation_uses_completed_embedded_method_sets() -> unit {
     let read_writer = add_type(
         world,
         TypeKind::Interface {
-            methods: Vec::[write_requirement],
-            embeddeds: Vec::[reader],
+            methods: Vec::from_array([write_requirement]),
+            embeddeds: Vec::from_array([reader]),
             comparable: false,
             implicit: false,
         },

@@ -12,7 +12,7 @@ fn assert_valid_file(source: string) -> ast::Node {
         Ok(value) => value,
         Err(message) => {
             testing::fail(message);
-            return ast::node(ast::Kind::File, 0, 0, Vec::[])
+            return ast::node(ast::Kind::File, 0, 0, Vec::from_array([]))
         },
     };
     testing::assert(expected.ok);
@@ -26,7 +26,7 @@ fn assert_valid_file(source: string) -> ast::Node {
         Some(value) => value,
         None => {
             testing::fail("missing AST");
-            ast::node(ast::Kind::File, 0, 0, Vec::[])
+            ast::node(ast::Kind::File, 0, 0, Vec::from_array([]))
         },
     }
 }

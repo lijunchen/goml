@@ -152,7 +152,7 @@ pub fn get_node(value: Node, name: string) -> Option[Node] {
 pub fn get_nodes(value: Node, name: string) -> Vec[Node] {
     match get_field(value, name) {
         Some(Value::Nodes(nodes)) => nodes,
-        _ => Vec::[],
+        _ => Vec::from_array([]),
     }
 }
 
@@ -186,12 +186,14 @@ pub fn to_json(value: Node) -> json::Value {
         fields.push((entry.0, value_to_json(entry.1)))
     }
     json::Value::Object(
-        Vec::[
-            ("kind", json::Value::String(kind_name(value.kind))),
-            ("start", json::Value::Number(value.span.start.to_string())),
-            ("end", json::Value::Number(value.span.end.to_string())),
-            ("fields", json::Value::Object(fields)),
-        ],
+        Vec::from_array(
+            [
+                ("kind", json::Value::String(kind_name(value.kind))),
+                ("start", json::Value::Number(value.span.start.to_string())),
+                ("end", json::Value::Number(value.span.end.to_string())),
+                ("fields", json::Value::Object(fields)),
+            ],
+        ),
     )
 }
 

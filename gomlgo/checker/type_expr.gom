@@ -34,7 +34,7 @@ fn field_list_nodes(state: CheckState, node: syntax::NodeId) -> Vec[syntax::Node
         }) => list,
         _ => {
             diagnostic(state, node, "invalid field list", false);
-            Vec::[]
+            Vec::from_array([])
         },
     }
 }
@@ -450,8 +450,8 @@ fn resolve_struct_type(
     node: syntax::NodeId,
     fields_node: syntax::NodeId,
 ) -> go_types::TypeId {
-    let fields: Vec[go_types::StructField] = Vec::[];
-    let embedded_fields: Vec[(syntax::NodeId, go_types::TypeId)] = Vec::[];
+    let fields: Vec[go_types::StructField] = Vec::from_array([]);
+    let embedded_fields: Vec[(syntax::NodeId, go_types::TypeId)] = Vec::from_array([]);
     state.type_cycle_depth += 1;
     state.type_fact_recovery_depth += 1;
     for field_node in field_list_nodes(state, fields_node) {
@@ -634,7 +634,7 @@ fn resolve_parameter_list(
     allow_variadic: bool,
     bindings: Vec[ParameterBinding],
 ) -> (go_types::TypeId, bool) {
-    let variables: Vec[go_types::Variable] = Vec::[];
+    let variables: Vec[go_types::Variable] = Vec::from_array([]);
     let fields = field_list_nodes(state, list_node);
     let mut variadic = false;
     for field_index in 0..fields.len() {
@@ -718,7 +718,7 @@ fn declare_type_parameters(
     scope: go_types::ScopeId,
     list_node: Option[syntax::NodeId],
 ) -> Vec[TypeParameterBinding] {
-    let bindings: Vec[TypeParameterBinding] = Vec::[];
+    let bindings: Vec[TypeParameterBinding] = Vec::from_array([]);
     match list_node {
         Some(list_node) => for field_node in field_list_nodes(state, list_node) {
             match field_data(state, field_node) {
@@ -819,7 +819,7 @@ fn declare_type_parameters(
 fn provisional_type_parameters(bindings: Vec[TypeParameterBinding], invalid: go_types::TypeId) -> Vec[
     go_types::TypeParameter,
 ] {
-    let result: Vec[go_types::TypeParameter] = Vec::[];
+    let result: Vec[go_types::TypeParameter] = Vec::from_array([]);
     for binding in bindings {
         result.push(
             go_types::TypeParameter {
@@ -855,8 +855,8 @@ fn implicit_constraint_interface(state: CheckState, embedded: go_types::TypeId) 
     go_types::add_type(
         state.world,
         go_types::TypeKind::Interface {
-            methods: Vec::[],
-            embeddeds: Vec::[embedded],
+            methods: Vec::from_array([]),
+            embeddeds: Vec::from_array([embedded]),
             comparable: false,
             implicit: true,
         },
@@ -913,8 +913,8 @@ fn resolve_type_parameter_constraint(
                     go_types::add_type(
                         state.world,
                         go_types::TypeKind::Interface {
-                            methods: Vec::[],
-                            embeddeds: Vec::[embedded],
+                            methods: Vec::from_array([]),
+                            embeddeds: Vec::from_array([embedded]),
                             comparable: false,
                             implicit: true,
                         },
@@ -929,8 +929,8 @@ fn resolve_type_parameter_constraint(
                     go_types::add_type(
                         state.world,
                         go_types::TypeKind::Interface {
-                            methods: Vec::[],
-                            embeddeds: Vec::[resolved_constraint],
+                            methods: Vec::from_array([]),
+                            embeddeds: Vec::from_array([resolved_constraint]),
                             comparable: false,
                             implicit: true,
                         },
@@ -947,7 +947,7 @@ fn complete_type_parameters(
     scope: go_types::ScopeId,
     bindings: Vec[TypeParameterBinding],
 ) -> Vec[go_types::TypeParameter] {
-    let result: Vec[go_types::TypeParameter] = Vec::[];
+    let result: Vec[go_types::TypeParameter] = Vec::from_array([]);
     let mut previous_node = -1;
     let mut previous_constraint = state.world.invalid;
     for binding in bindings {
@@ -1036,7 +1036,7 @@ fn normalize_named_type_parameter_constraints(state: CheckState, named: go_types
         }) => (object, type_params),
         _ => return,
     };
-    let parameters: Vec[go_types::TypeParameter] = Vec::[];
+    let parameters: Vec[go_types::TypeParameter] = Vec::from_array([]);
     let mut changed = false;
     for index in 0..data.1.len() {
         let constraint = resolved_interface_constraint(state, data.1[index].constraint);
@@ -1140,11 +1140,11 @@ fn resolve_function_type(
         state.info.scopes.push(ScopeFact { node, scope: function_scope })
     } else {};
     let resolved_type_params = if state.ignore_function_type_params {
-        Vec::[]
+        Vec::from_array([])
     } else {
         resolve_type_parameters(state, function_scope, type_params)
     };
-    let parameter_bindings: Vec[ParameterBinding] = Vec::[];
+    let parameter_bindings: Vec[ParameterBinding] = Vec::from_array([]);
     let resolved_params = resolve_parameter_list(
         state,
         function_scope,
@@ -1170,18 +1170,23 @@ fn resolve_function_type(
                 go_types::add_type(
                     state.world,
                     go_types::TypeKind::Tuple {
-                        variables: Vec::[
-                            go_types::Variable {
-                                name: "",
-                                owner: Option::Some(state.package_id),
-                                type_id: result_type,
-                            },
-                        ],
+                        variables: Vec::from_array(
+                            [
+                                go_types::Variable {
+                                    name: "",
+                                    owner: Option::Some(state.package_id),
+                                    type_id: result_type,
+                                },
+                            ],
+                        ),
                     },
                 )
             },
         },
-        None => go_types::add_type(state.world, go_types::TypeKind::Tuple { variables: Vec::[] }),
+        None => go_types::add_type(
+            state.world,
+            go_types::TypeKind::Tuple { variables: Vec::from_array([]) },
+        ),
     };
     for binding in parameter_bindings {
         add_parameter(state, function_scope, binding.node, binding.name, binding.type_id)
@@ -1190,7 +1195,7 @@ fn resolve_function_type(
         state.world,
         go_types::TypeKind::Signature {
             receiver: Option::None,
-            receiver_type_params: Vec::[],
+            receiver_type_params: Vec::from_array([]),
             type_params: resolved_type_params,
             params: resolved_params.0,
             results: resolved_results,
@@ -1401,7 +1406,7 @@ fn clone_interface_with_method_receivers(
             id: _,
             kind: go_types::TypeKind::Interface { methods, embeddeds, comparable, implicit },
         }) => {
-            let cloned_methods: Vec[go_types::ObjectId] = Vec::[];
+            let cloned_methods: Vec[go_types::ObjectId] = Vec::from_array([]);
             for method in methods {
                 match go_types::get_object(state.world, method) {
                     Some(object) => match go_types::get_type(state.world, object.type_id) {
@@ -1511,9 +1516,9 @@ fn resolve_interface_type(
     node: syntax::NodeId,
     methods_node: syntax::NodeId,
 ) -> go_types::TypeId {
-    let methods: Vec[go_types::ObjectId] = Vec::[];
-    let method_occurrences: Vec[InterfaceMethodOccurrence] = Vec::[];
-    let embeddeds: Vec[go_types::TypeId] = Vec::[];
+    let methods: Vec[go_types::ObjectId] = Vec::from_array([]);
+    let method_occurrences: Vec[InterfaceMethodOccurrence] = Vec::from_array([]);
+    let embeddeds: Vec[go_types::TypeId] = Vec::from_array([]);
     let mut comparable = false;
     let mut invalid_type_set = false;
     for field_node in field_list_nodes(state, methods_node) {

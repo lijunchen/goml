@@ -170,7 +170,7 @@ fn scanner_new(source: Vec[byte]) -> Scanner {
         read_offset: Ref::new(0),
         insert_semi: Ref::new(false),
         pending_newline: Ref::new(-1),
-        diagnostics: Vec::[],
+        diagnostics: Vec::from_array([]),
     };
     next(scanner);
     if scanner.current.get() == BOM {
@@ -290,7 +290,7 @@ fn switch_four(
 
 pub fn scan_bytes(source: bytes::Bytes) -> ScanResult {
     let scanner = scanner_new(source.to_vec());
-    let tokens: Vec[gomlgo::token::Token] = Vec::[];
+    let tokens: Vec[gomlgo::token::Token] = Vec::from_array([]);
     let mut finished = false;
     while !finished {
         let next_token = scan_one(scanner);

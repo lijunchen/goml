@@ -50,7 +50,7 @@ fn parser_new(source: bytes::Bytes) -> Parser {
         depth_limit_hit: Ref::new(false),
         diagnostic_limit_hit: Ref::new(false),
         diagnostics: scanned.diagnostics,
-        imports: Vec::[],
+        imports: Vec::from_array([]),
         comment_infos: comments.infos,
         comment_nodes: comments.nodes,
         go_version,
@@ -223,12 +223,14 @@ fn consume_semicolon(parser: Parser) -> unit {
             report(parser, found.start, "expected ';', found '['");
             recover_until(
                 parser,
-                Vec::[
-                    token::Kind::Semicolon,
-                    token::Kind::Rparen,
-                    token::Kind::Rbrace,
-                    token::Kind::Eof,
-                ],
+                Vec::from_array(
+                    [
+                        token::Kind::Semicolon,
+                        token::Kind::Rparen,
+                        token::Kind::Rbrace,
+                        token::Kind::Eof,
+                    ],
+                ),
             )
         } else {
             report(parser, found.start, "expected semicolon or newline");

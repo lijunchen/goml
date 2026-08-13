@@ -93,7 +93,7 @@ fn type_parameter_list_start(parser: Parser) -> bool {
 
 fn parse_type_instance(parser: Parser, expression: ast::Node) -> ast::Node {
     let left = expect(parser, token::Kind::Lbrack);
-    let arguments: Vec[ast::Node] = Vec::[];
+    let arguments: Vec[ast::Node] = Vec::from_array([]);
     while !at(parser, token::Kind::Rbrack) && !eof(parser) {
         arguments.push(parse_type(parser));
         if eat(parser, token::Kind::Comma).is_none() {
@@ -113,24 +113,28 @@ fn parse_type_instance(parser: Parser, expression: ast::Node) -> ast::Node {
             ast::Kind::IndexExpr,
             expression.span.start,
             right.end,
-            Vec::[
-                ast::field("x", ast::node_value(expression)),
-                ast::field("lbrack", ast::int_value(left.start)),
-                ast::field("index", ast::node_value(arguments[0])),
-                ast::field("rbrack", ast::int_value(right.start)),
-            ],
+            Vec::from_array(
+                [
+                    ast::field("x", ast::node_value(expression)),
+                    ast::field("lbrack", ast::int_value(left.start)),
+                    ast::field("index", ast::node_value(arguments[0])),
+                    ast::field("rbrack", ast::int_value(right.start)),
+                ],
+            ),
         )
     } else {
         ast::node(
             ast::Kind::IndexListExpr,
             expression.span.start,
             right.end,
-            Vec::[
-                ast::field("x", ast::node_value(expression)),
-                ast::field("lbrack", ast::int_value(left.start)),
-                ast::field("indices", ast::nodes(arguments)),
-                ast::field("rbrack", ast::int_value(right.start)),
-            ],
+            Vec::from_array(
+                [
+                    ast::field("x", ast::node_value(expression)),
+                    ast::field("lbrack", ast::int_value(left.start)),
+                    ast::field("indices", ast::nodes(arguments)),
+                    ast::field("rbrack", ast::int_value(right.start)),
+                ],
+            ),
         )
     }
 }
@@ -144,10 +148,12 @@ fn parse_named_type(parser: Parser) -> ast::Node {
             ast::Kind::SelectorExpr,
             result.span.start,
             selector.span.end,
-            Vec::[
-                ast::field("x", ast::node_value(result)),
-                ast::field("sel", ast::node_value(selector)),
-            ],
+            Vec::from_array(
+                [
+                    ast::field("x", ast::node_value(result)),
+                    ast::field("sel", ast::node_value(selector)),
+                ],
+            ),
         );
     } else {};
     if at(parser, token::Kind::Lbrack) && !token::equal(nth(parser, 1).kind, token::Kind::Ellipsis)
@@ -167,10 +173,12 @@ fn parse_array_type(parser: Parser) -> ast::Node {
                 ast::Kind::Ellipsis,
                 ellipsis.start,
                 ellipsis.end,
-                Vec::[
-                    ast::field("ellipsis", ast::int_value(ellipsis.start)),
-                    ast::field("elt", ast::null()),
-                ],
+                Vec::from_array(
+                    [
+                        ast::field("ellipsis", ast::int_value(ellipsis.start)),
+                        ast::field("elt", ast::null()),
+                    ],
+                ),
             ),
         )
     } else {
@@ -182,11 +190,13 @@ fn parse_array_type(parser: Parser) -> ast::Node {
         ast::Kind::ArrayType,
         left.start,
         element.span.end,
-        Vec::[
-            ast::field("lbrack", ast::int_value(left.start)),
-            ast::field("len", ast::optional_node(length)),
-            ast::field("elt", ast::node_value(element)),
-        ],
+        Vec::from_array(
+            [
+                ast::field("lbrack", ast::int_value(left.start)),
+                ast::field("len", ast::optional_node(length)),
+                ast::field("elt", ast::node_value(element)),
+            ],
+        ),
     )
 }
 
@@ -197,10 +207,12 @@ fn parse_pointer_type(parser: Parser) -> ast::Node {
         ast::Kind::StarExpr,
         star.start,
         element.span.end,
-        Vec::[
-            ast::field("star", ast::int_value(star.start)),
-            ast::field("x", ast::node_value(element)),
-        ],
+        Vec::from_array(
+            [
+                ast::field("star", ast::int_value(star.start)),
+                ast::field("x", ast::node_value(element)),
+            ],
+        ),
     )
 }
 
@@ -257,15 +269,17 @@ fn parse_parameter_field(parser: Parser, allow_ellipsis: bool) -> ast::Node {
             ast::Kind::Ellipsis,
             ellipsis.start,
             element.span.end,
-            Vec::[
-                ast::field("ellipsis", ast::int_value(ellipsis.start)),
-                ast::field("elt", ast::node_value(element)),
-            ],
+            Vec::from_array(
+                [
+                    ast::field("ellipsis", ast::int_value(ellipsis.start)),
+                    ast::field("elt", ast::node_value(element)),
+                ],
+            ),
         );
-        return field_node(Vec::[], Option::Some(type_value), Option::None)
+        return field_node(Vec::from_array([]), Option::Some(type_value), Option::None)
     } else {};
     if named_parameter_group_start(parser, allow_ellipsis) {
-        let names: Vec[ast::Node] = Vec::[parse_ident(parser)];
+        let names: Vec[ast::Node] = Vec::from_array([parse_ident(parser)]);
         while eat(parser, token::Kind::Comma).is_some() {
             names.push(parse_ident(parser))
         }
@@ -276,10 +290,12 @@ fn parse_parameter_field(parser: Parser, allow_ellipsis: bool) -> ast::Node {
                 ast::Kind::Ellipsis,
                 ellipsis.start,
                 element.span.end,
-                Vec::[
-                    ast::field("ellipsis", ast::int_value(ellipsis.start)),
-                    ast::field("elt", ast::node_value(element)),
-                ],
+                Vec::from_array(
+                    [
+                        ast::field("ellipsis", ast::int_value(ellipsis.start)),
+                        ast::field("elt", ast::node_value(element)),
+                    ],
+                ),
             )
         } else {
             parse_type(parser)
@@ -299,17 +315,19 @@ fn parse_parameter_field(parser: Parser, allow_ellipsis: bool) -> ast::Node {
                 ast::Kind::Ellipsis,
                 ellipsis.start,
                 element.span.end,
-                Vec::[
-                    ast::field("ellipsis", ast::int_value(ellipsis.start)),
-                    ast::field("elt", ast::node_value(element)),
-                ],
+                Vec::from_array(
+                    [
+                        ast::field("ellipsis", ast::int_value(ellipsis.start)),
+                        ast::field("elt", ast::node_value(element)),
+                    ],
+                ),
             )
         } else {
             parse_type(parser)
         };
-        field_node(Vec::[first], Option::Some(type_value), Option::None)
+        field_node(Vec::from_array([first]), Option::Some(type_value), Option::None)
     } else {
-        field_node(Vec::[], Option::Some(first), Option::None)
+        field_node(Vec::from_array([]), Option::Some(first), Option::None)
     }
 }
 
@@ -320,7 +338,7 @@ fn parse_field_list(
     ellipsis_allowed: bool,
 ) -> ast::Node {
     let opening = expect(parser, opening_kind);
-    let fields: Vec[ast::Node] = Vec::[];
+    let fields: Vec[ast::Node] = Vec::from_array([]);
     while !at(parser, closing_kind) && !eof(parser) {
         let before = significant_index(parser, 0);
         fields.push(parse_parameter_field(parser, true));
@@ -332,7 +350,7 @@ fn parse_field_list(
         } else {};
         let _ = ensure_progress(parser, before, "field list");
     }
-    let recovered_fields: Vec[ast::Node] = Vec::[];
+    let recovered_fields: Vec[ast::Node] = Vec::from_array([]);
     let mut ellipsis_reported = false;
     for index in 0..fields.len() {
         let field = fields[index];
@@ -362,7 +380,7 @@ fn parse_field_list(
                             };
                             recovered_fields.push(
                                 field_node(
-                                    Vec::[names[name_index]],
+                                    Vec::from_array([names[name_index]]),
                                     Option::Some(recovered_type),
                                     ast::get_node(field, "tag"),
                                 ),
@@ -428,10 +446,10 @@ fn parse_field_list(
 fn parse_type_parameters(parser: Parser) -> Option[ast::Node] {
     if at(parser, token::Kind::Lbrack) {
         let opening = expect(parser, token::Kind::Lbrack);
-        let fields: Vec[ast::Node] = Vec::[];
+        let fields: Vec[ast::Node] = Vec::from_array([]);
         while !at(parser, token::Kind::Rbrack) && !eof(parser) {
             let before = significant_index(parser, 0);
-            let names: Vec[ast::Node] = Vec::[parse_ident(parser)];
+            let names: Vec[ast::Node] = Vec::from_array([parse_ident(parser)]);
             while at(parser, token::Kind::Comma)
                 && token::equal(nth(parser, 1).kind, token::Kind::Ident) {
                 let _ = advance(parser);
@@ -478,7 +496,9 @@ fn parse_func_type_after_keyword(parser: Parser, function_position: int) -> ast:
         Option::Some(
             field_list_node(
                 -1,
-                Vec::[field_node(Vec::[], Option::Some(result_type), Option::None)],
+                Vec::from_array(
+                    [field_node(Vec::from_array([]), Option::Some(result_type), Option::None)],
+                ),
                 -1,
             ),
         )
@@ -497,12 +517,14 @@ fn parse_func_type_after_keyword(parser: Parser, function_position: int) -> ast:
             parameters.span.start
         },
         end,
-        Vec::[
-            ast::field("func", ast::int_value(function_position)),
-            ast::field("type_params", ast::optional_node(type_parameters)),
-            ast::field("params", ast::node_value(parameters)),
-            ast::field("results", ast::optional_node(results)),
-        ],
+        Vec::from_array(
+            [
+                ast::field("func", ast::int_value(function_position)),
+                ast::field("type_params", ast::optional_node(type_parameters)),
+                ast::field("params", ast::node_value(parameters)),
+                ast::field("results", ast::optional_node(results)),
+            ],
+        ),
     )
 }
 
@@ -512,7 +534,7 @@ fn parse_func_type(parser: Parser) -> ast::Node {
 }
 
 fn parse_struct_field(parser: Parser) -> ast::Node {
-    let names: Vec[ast::Node] = Vec::[];
+    let names: Vec[ast::Node] = Vec::from_array([]);
     let mut type_value: Option[ast::Node] = Option::None;
     if at(parser, token::Kind::Mul) {
         type_value = Option::Some(parse_pointer_type(parser));
@@ -544,7 +566,7 @@ fn parse_struct_field(parser: Parser) -> ast::Node {
 fn parse_struct_type(parser: Parser) -> ast::Node {
     let keyword = expect(parser, token::Kind::Struct);
     let left = expect(parser, token::Kind::Lbrace);
-    let fields: Vec[ast::Node] = Vec::[];
+    let fields: Vec[ast::Node] = Vec::from_array([]);
     let mut incomplete = false;
     while !at(parser, token::Kind::Rbrace) && !eof(parser) {
         let before = significant_index(parser, 0);
@@ -555,7 +577,7 @@ fn parse_struct_type(parser: Parser) -> ast::Node {
         } else {
             report(parser, current(parser).start, "expected field declaration");
             incomplete = true;
-            recover_until(parser, Vec::[token::Kind::Semicolon, token::Kind::Rbrace]);
+            recover_until(parser, Vec::from_array([token::Kind::Semicolon, token::Kind::Rbrace]));
             let _ = eat(parser, token::Kind::Semicolon);
         };
         let _ = ensure_progress(parser, before, "struct fields");
@@ -566,11 +588,13 @@ fn parse_struct_type(parser: Parser) -> ast::Node {
         ast::Kind::StructType,
         keyword.start,
         right.end,
-        Vec::[
-            ast::field("struct", ast::int_value(keyword.start)),
-            ast::field("fields", ast::node_value(field_list)),
-            ast::field("incomplete", ast::bool_value(incomplete)),
-        ],
+        Vec::from_array(
+            [
+                ast::field("struct", ast::int_value(keyword.start)),
+                ast::field("fields", ast::node_value(field_list)),
+                ast::field("incomplete", ast::bool_value(incomplete)),
+            ],
+        ),
     )
 }
 
@@ -581,11 +605,13 @@ fn parse_interface_term(parser: Parser) -> ast::Node {
             ast::Kind::UnaryExpr,
             tilde.start,
             operand.span.end,
-            Vec::[
-                ast::field("op_pos", ast::int_value(tilde.start)),
-                ast::field("op", ast::text_value("~")),
-                ast::field("x", ast::node_value(operand)),
-            ],
+            Vec::from_array(
+                [
+                    ast::field("op_pos", ast::int_value(tilde.start)),
+                    ast::field("op", ast::text_value("~")),
+                    ast::field("x", ast::node_value(operand)),
+                ],
+            ),
         )
     } else {
         parse_type(parser)
@@ -597,11 +623,13 @@ fn parse_interface_term(parser: Parser) -> ast::Node {
                 ast::Kind::UnaryExpr,
                 tilde.start,
                 operand.span.end,
-                Vec::[
-                    ast::field("op_pos", ast::int_value(tilde.start)),
-                    ast::field("op", ast::text_value("~")),
-                    ast::field("x", ast::node_value(operand)),
-                ],
+                Vec::from_array(
+                    [
+                        ast::field("op_pos", ast::int_value(tilde.start)),
+                        ast::field("op", ast::text_value("~")),
+                        ast::field("x", ast::node_value(operand)),
+                    ],
+                ),
             )
         } else {
             parse_type(parser)
@@ -610,12 +638,14 @@ fn parse_interface_term(parser: Parser) -> ast::Node {
             ast::Kind::BinaryExpr,
             left.span.start,
             right.span.end,
-            Vec::[
-                ast::field("x", ast::node_value(left)),
-                ast::field("op_pos", ast::int_value(operator.start)),
-                ast::field("op", ast::text_value("|")),
-                ast::field("y", ast::node_value(right)),
-            ],
+            Vec::from_array(
+                [
+                    ast::field("x", ast::node_value(left)),
+                    ast::field("op_pos", ast::int_value(operator.start)),
+                    ast::field("op", ast::text_value("|")),
+                    ast::field("y", ast::node_value(right)),
+                ],
+            ),
         );
     }
     left
@@ -647,7 +677,7 @@ fn interface_method_type_parameters(parser: Parser) -> bool {
 fn parse_interface_type(parser: Parser) -> ast::Node {
     let keyword = expect(parser, token::Kind::Interface);
     let left = expect(parser, token::Kind::Lbrace);
-    let methods: Vec[ast::Node] = Vec::[];
+    let methods: Vec[ast::Node] = Vec::from_array([]);
     let mut incomplete = false;
     while !at(parser, token::Kind::Rbrace) && !eof(parser) {
         let before = significant_index(parser, 0);
@@ -663,10 +693,14 @@ fn parse_interface_type(parser: Parser) -> ast::Node {
                 )
             } else {};
             let signature = parse_func_type_after_keyword(parser, -1);
-            methods.push(field_node(Vec::[name], Option::Some(signature), Option::None))
+            methods.push(field_node(Vec::from_array([name]), Option::Some(signature), Option::None))
         } else if at(parser, token::Kind::Tilde) || type_first(peek(parser)) {
             methods.push(
-                field_node(Vec::[], Option::Some(parse_interface_term(parser)), Option::None),
+                field_node(
+                    Vec::from_array([]),
+                    Option::Some(parse_interface_term(parser)),
+                    Option::None,
+                ),
             )
         } else {
             report(parser, current(parser).start, "expected interface method or type term");
@@ -682,11 +716,13 @@ fn parse_interface_type(parser: Parser) -> ast::Node {
         ast::Kind::InterfaceType,
         keyword.start,
         right.end,
-        Vec::[
-            ast::field("interface", ast::int_value(keyword.start)),
-            ast::field("methods", ast::node_value(field_list)),
-            ast::field("incomplete", ast::bool_value(incomplete)),
-        ],
+        Vec::from_array(
+            [
+                ast::field("interface", ast::int_value(keyword.start)),
+                ast::field("methods", ast::node_value(field_list)),
+                ast::field("incomplete", ast::bool_value(incomplete)),
+            ],
+        ),
     )
 }
 
@@ -700,11 +736,13 @@ fn parse_map_type(parser: Parser) -> ast::Node {
         ast::Kind::MapType,
         keyword.start,
         value.span.end,
-        Vec::[
-            ast::field("map", ast::int_value(keyword.start)),
-            ast::field("key", ast::node_value(key)),
-            ast::field("value", ast::node_value(value)),
-        ],
+        Vec::from_array(
+            [
+                ast::field("map", ast::int_value(keyword.start)),
+                ast::field("key", ast::node_value(key)),
+                ast::field("value", ast::node_value(value)),
+            ],
+        ),
     )
 }
 
@@ -728,12 +766,14 @@ fn parse_chan_type(parser: Parser) -> ast::Node {
         ast::Kind::ChanType,
         start,
         value.span.end,
-        Vec::[
-            ast::field("begin", ast::int_value(start)),
-            ast::field("arrow", ast::int_value(arrow)),
-            ast::field("dir", ast::int_value(direction)),
-            ast::field("value", ast::node_value(value)),
-        ],
+        Vec::from_array(
+            [
+                ast::field("begin", ast::int_value(start)),
+                ast::field("arrow", ast::int_value(arrow)),
+                ast::field("dir", ast::int_value(direction)),
+                ast::field("value", ast::node_value(value)),
+            ],
+        ),
     )
 }
 
@@ -745,11 +785,13 @@ fn parse_parenthesized_type(parser: Parser) -> ast::Node {
         ast::Kind::ParenExpr,
         left.start,
         right.end,
-        Vec::[
-            ast::field("lparen", ast::int_value(left.start)),
-            ast::field("x", ast::node_value(type_value)),
-            ast::field("rparen", ast::int_value(right.start)),
-        ],
+        Vec::from_array(
+            [
+                ast::field("lparen", ast::int_value(left.start)),
+                ast::field("x", ast::node_value(type_value)),
+                ast::field("rparen", ast::int_value(right.start)),
+            ],
+        ),
     )
 }
 
@@ -791,7 +833,7 @@ fn parse_type(parser: Parser) -> ast::Node {
             if token::equal(found.kind, token::Kind::Lbrace) {
                 recover_until(
                     parser,
-                    Vec::[token::Kind::Semicolon, token::Kind::Rbrace, token::Kind::Eof],
+                    Vec::from_array([token::Kind::Semicolon, token::Kind::Rbrace, token::Kind::Eof]),
                 );
                 end = current(parser).start;
             } else {};

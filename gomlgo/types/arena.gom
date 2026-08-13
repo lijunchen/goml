@@ -6,15 +6,15 @@ use std::unicode;
 pub fn empty_world() -> World {
     let invalid = type_id(0);
     World {
-        types: Vec::[TypeData { id: invalid, kind: TypeKind::Invalid }],
-        objects: Vec::[],
-        scopes: Vec::[],
-        packages: Vec::[],
-        basics: Vec::[],
+        types: Vec::from_array([TypeData { id: invalid, kind: TypeKind::Invalid }]),
+        objects: Vec::from_array([]),
+        scopes: Vec::from_array([]),
+        packages: Vec::from_array([]),
+        basics: Vec::from_array([]),
         universe: scope_id(-1),
         unsafe_package: package_id(-1),
         invalid,
-        invalid_type_sets: Vec::[],
+        invalid_type_sets: Vec::from_array([]),
     }
 }
 
@@ -51,7 +51,16 @@ pub fn add_scope(
 ) -> ScopeId {
     let id = scope_id(world.scopes.len());
     world.scopes.push(
-        Scope { id, kind, parent, file, start, end, entries: Vec::[], children: Vec::[] },
+        Scope {
+            id,
+            kind,
+            parent,
+            file,
+            start,
+            end,
+            entries: Vec::from_array([]),
+            children: Vec::from_array([]),
+        },
     );
     match parent {
         Some(parent_id) => if parent_id.value >= 0 && parent_id.value < world.scopes.len() {

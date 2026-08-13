@@ -705,6 +705,44 @@ fn permits_typed_go_ffi_externs_in_user_sources() -> unit {
 }
 
 #[test]
+fn permits_empty_marker_dyn_go_ffi_values() -> unit {
+    let diagnostics = checked_diagnostics(
+        "trait NativeValue {} #[go_ffi(\"example.com/ffi\", \"Echo\")] extern fn echo(value: dyn NativeValue) -> dyn NativeValue;",
+    );
+    if !diagnostics.is_empty() {
+        testing::fail(diagnostics[0].message)
+    } else {}
+}
+
+#[test]
+fn rejects_nonempty_and_nested_marker_dyn_go_ffi_values() -> unit {
+    testing::assert(
+        has_diagnostic(
+            checked_diagnostics(
+                "trait NativeValue { fn inspect(self: Self) -> unit; } #[go_ffi(\"example.com/ffi\", \"Echo\")] extern fn echo(value: dyn NativeValue) -> dyn NativeValue;",
+            ),
+            "Go FFI parameter value has unsupported type dyn NativeValue",
+        ),
+    );
+    testing::assert(
+        has_diagnostic(
+            checked_diagnostics(
+                "trait NativeValue {} #[go_ffi(\"example.com/ffi\", \"Use\")] extern fn use_value(values: Slice[dyn NativeValue]) -> unit;",
+            ),
+            "Go FFI parameter values has unsupported type Slice[dyn NativeValue]",
+        ),
+    );
+    testing::assert(
+        has_diagnostic(
+            checked_diagnostics(
+                "trait NativeValue {} #[go_ffi(\"example.com/ffi\", \"Pair\")] extern fn pair() -> (dyn NativeValue, bool);",
+            ),
+            "Go FFI return type (dyn NativeValue, bool) is unsupported",
+        ),
+    )
+}
+
+#[test]
 fn diagnoses_invalid_go_ffi_declarations() -> unit {
     testing::assert(
         has_diagnostic(

@@ -90,36 +90,38 @@ fn object_key(value: checker::CheckResult, object: go_types::Object) -> string {
 fn normalize_constant(kind: string, exact: Option[string]) -> json::Value {
     match exact {
         Some(value) => object_value(
-            Vec::[("kind", string_value(kind)), ("exact", string_value(value))],
+            Vec::from_array([("kind", string_value(kind)), ("exact", string_value(value))]),
         ),
         None => json::Value::Null,
     }
 }
 
 fn empty_type(kind: string, text: string) -> Vec[(string, json::Value)] {
-    Vec::[
-        ("kind", string_value(kind)),
-        ("name", string_value("")),
-        ("declaration", string_value("")),
-        ("text", string_value(text)),
-        ("length", number_value(0)),
-        ("direction", string_value("")),
-        ("variadic", bool_value(false)),
-        ("comparable", bool_value(false)),
-        ("implicit", bool_value(false)),
-        ("elem", json::Value::Null),
-        ("key", json::Value::Null),
-        ("receiver", json::Value::Null),
-        ("fields", array_value(Vec::[])),
-        ("parameters", array_value(Vec::[])),
-        ("results", array_value(Vec::[])),
-        ("methods", array_value(Vec::[])),
-        ("embeddeds", array_value(Vec::[])),
-        ("terms", array_value(Vec::[])),
-        ("type_parameters", array_value(Vec::[])),
-        ("receiver_parameters", array_value(Vec::[])),
-        ("type_arguments", array_value(Vec::[])),
-    ]
+    Vec::from_array(
+        [
+            ("kind", string_value(kind)),
+            ("name", string_value("")),
+            ("declaration", string_value("")),
+            ("text", string_value(text)),
+            ("length", number_value(0)),
+            ("direction", string_value("")),
+            ("variadic", bool_value(false)),
+            ("comparable", bool_value(false)),
+            ("implicit", bool_value(false)),
+            ("elem", json::Value::Null),
+            ("key", json::Value::Null),
+            ("receiver", json::Value::Null),
+            ("fields", array_value(Vec::from_array([]))),
+            ("parameters", array_value(Vec::from_array([]))),
+            ("results", array_value(Vec::from_array([]))),
+            ("methods", array_value(Vec::from_array([]))),
+            ("embeddeds", array_value(Vec::from_array([]))),
+            ("terms", array_value(Vec::from_array([]))),
+            ("type_parameters", array_value(Vec::from_array([]))),
+            ("receiver_parameters", array_value(Vec::from_array([]))),
+            ("type_arguments", array_value(Vec::from_array([]))),
+        ],
+    )
 }
 
 fn set_field(fields: Vec[(string, json::Value)], name: string, value: json::Value) -> unit {
@@ -186,11 +188,13 @@ fn contains_named_origin(world: go_types::World, values: Vec[int], value: go_typ
 
 fn normalize_variable(value: checker::CheckResult, variable: go_types::Variable, active: Vec[int]) -> json::Value {
     object_value(
-        Vec::[
-            ("name", string_value(variable.name)),
-            ("package", string_value(package_path(value.world, variable.owner))),
-            ("type", normalize_type_inner(value, variable.type_id, active)),
-        ],
+        Vec::from_array(
+            [
+                ("name", string_value(variable.name)),
+                ("package", string_value(package_path(value.world, variable.owner))),
+                ("type", normalize_type_inner(value, variable.type_id, active)),
+            ],
+        ),
     )
 }
 
@@ -199,16 +203,21 @@ fn normalize_type_parameters(
     parameters: Vec[go_types::TypeParameter],
     active: Vec[int],
 ) -> Vec[json::Value] {
-    let result: Vec[json::Value] = Vec::[];
+    let result: Vec[json::Value] = Vec::from_array([]);
     for parameter in parameters {
         match go_types::get_object(value.world, parameter.object) {
             Some(object) => result.push(
                 object_value(
-                    Vec::[
-                        ("name", string_value(object.name)),
-                        ("declaration", string_value(object_key(value, object))),
-                        ("constraint", normalize_type_inner(value, parameter.constraint, active)),
-                    ],
+                    Vec::from_array(
+                        [
+                            ("name", string_value(object.name)),
+                            ("declaration", string_value(object_key(value, object))),
+                            (
+                                "constraint",
+                                normalize_type_inner(value, parameter.constraint, active),
+                            ),
+                        ],
+                    ),
                 ),
             ),
             None => {},
@@ -367,20 +376,27 @@ fn normalize_type_inner(value: checker::CheckResult, id: go_types::TypeId, activ
             },
             go_types::TypeKind::Struct { fields: struct_fields } => {
                 set_field(fields, "kind", string_value("Struct"));
-                let normalized: Vec[json::Value] = Vec::[];
+                let normalized: Vec[json::Value] = Vec::from_array([]);
                 for field in struct_fields {
                     normalized.push(
                         object_value(
-                            Vec::[
-                                ("name", string_value(field.variable.name)),
-                                (
-                                    "package",
-                                    string_value(package_path(value.world, field.variable.owner)),
-                                ),
-                                ("embedded", bool_value(field.embedded)),
-                                ("tag", string_value(field.tag)),
-                                ("type", normalize_type_inner(value, field.variable.type_id, next)),
-                            ],
+                            Vec::from_array(
+                                [
+                                    ("name", string_value(field.variable.name)),
+                                    (
+                                        "package",
+                                        string_value(
+                                            package_path(value.world, field.variable.owner),
+                                        ),
+                                    ),
+                                    ("embedded", bool_value(field.embedded)),
+                                    ("tag", string_value(field.tag)),
+                                    (
+                                        "type",
+                                        normalize_type_inner(value, field.variable.type_id, next),
+                                    ),
+                                ],
+                            ),
                         ),
                     )
                 }
@@ -392,7 +408,7 @@ fn normalize_type_inner(value: checker::CheckResult, id: go_types::TypeId, activ
             },
             go_types::TypeKind::Tuple { variables } => {
                 set_field(fields, "kind", string_value("Tuple"));
-                let normalized: Vec[json::Value] = Vec::[];
+                let normalized: Vec[json::Value] = Vec::from_array([]);
                 for variable in variables {
                     normalized.push(normalize_variable(value, variable, next))
                 }
@@ -415,14 +431,14 @@ fn normalize_type_inner(value: checker::CheckResult, id: go_types::TypeId, activ
                     ),
                     None => {},
                 };
-                let parameters: Vec[json::Value] = Vec::[];
+                let parameters: Vec[json::Value] = Vec::from_array([]);
                 match go_types::get_type(value.world, params) {
                     Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => for variable in variables {
                         parameters.push(normalize_variable(value, variable, next))
                     },
                     _ => {},
                 };
-                let result_values: Vec[json::Value] = Vec::[];
+                let result_values: Vec[json::Value] = Vec::from_array([]);
                 match go_types::get_type(value.world, results) {
                     Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => for variable in variables {
                         result_values.push(normalize_variable(value, variable, next))
@@ -452,26 +468,28 @@ fn normalize_type_inner(value: checker::CheckResult, id: go_types::TypeId, activ
                     bool_value(go_types::type_set_comparable(value.world, id)),
                 );
                 set_field(fields, "implicit", bool_value(implicit));
-                let method_values: Vec[json::Value] = Vec::[];
+                let method_values: Vec[json::Value] = Vec::from_array([]);
                 for method in methods {
                     match go_types::get_object(value.world, method) {
                         Some(object) => method_values.push(
                             object_value(
-                                Vec::[
-                                    ("name", string_value(object.name)),
-                                    (
-                                        "package",
-                                        string_value(package_path(value.world, object.owner)),
-                                    ),
-                                    ("object", string_value(object_key(value, object))),
-                                    ("type", normalize_type_inner(value, object.type_id, next)),
-                                ],
+                                Vec::from_array(
+                                    [
+                                        ("name", string_value(object.name)),
+                                        (
+                                            "package",
+                                            string_value(package_path(value.world, object.owner)),
+                                        ),
+                                        ("object", string_value(object_key(value, object))),
+                                        ("type", normalize_type_inner(value, object.type_id, next)),
+                                    ],
+                                ),
                             ),
                         ),
                         None => {},
                     }
                 }
-                let embedded_values: Vec[json::Value] = Vec::[];
+                let embedded_values: Vec[json::Value] = Vec::from_array([]);
                 for embedded in embeddeds {
                     embedded_values.push(normalize_type_inner(value, embedded, next))
                 }
@@ -514,7 +532,7 @@ fn normalize_type_inner(value: checker::CheckResult, id: go_types::TypeId, activ
                     "type_parameters",
                     array_value(normalize_type_parameters(value, type_params, next)),
                 );
-                let arguments: Vec[json::Value] = Vec::[];
+                let arguments: Vec[json::Value] = Vec::from_array([]);
                 for argument in type_args {
                     arguments.push(normalize_type_inner(value, argument, next))
                 }
@@ -546,7 +564,7 @@ fn normalize_type_inner(value: checker::CheckResult, id: go_types::TypeId, activ
                     "type_parameters",
                     array_value(normalize_type_parameters(value, type_params, next)),
                 );
-                let arguments: Vec[json::Value] = Vec::[];
+                let arguments: Vec[json::Value] = Vec::from_array([]);
                 for argument in type_args {
                     arguments.push(normalize_type_inner(value, argument, next))
                 }
@@ -564,14 +582,16 @@ fn normalize_type_inner(value: checker::CheckResult, id: go_types::TypeId, activ
             },
             go_types::TypeKind::Union { terms } => {
                 set_field(fields, "kind", string_value("Union"));
-                let normalized: Vec[json::Value] = Vec::[];
+                let normalized: Vec[json::Value] = Vec::from_array([]);
                 for term in terms {
                     normalized.push(
                         object_value(
-                            Vec::[
-                                ("tilde", bool_value(term.tilde)),
-                                ("type", normalize_type_inner(value, term.type_id, next)),
-                            ],
+                            Vec::from_array(
+                                [
+                                    ("tilde", bool_value(term.tilde)),
+                                    ("type", normalize_type_inner(value, term.type_id, next)),
+                                ],
+                            ),
                         ),
                     )
                 }
@@ -584,7 +604,7 @@ fn normalize_type_inner(value: checker::CheckResult, id: go_types::TypeId, activ
 }
 
 fn normalize_type(value: checker::CheckResult, id: go_types::TypeId) -> json::Value {
-    normalize_type_inner(value, id, Vec::[])
+    normalize_type_inner(value, id, Vec::from_array([]))
 }
 
 fn normalize_object(value: checker::CheckResult, id: go_types::ObjectId) -> json::Value {
@@ -596,18 +616,20 @@ fn normalize_object(value: checker::CheckResult, id: go_types::ObjectId) -> json
                 None => "",
             };
             object_value(
-                Vec::[
-                    ("key", string_value(object_key(value, object))),
-                    ("kind", string_value(go_types::object_kind_name(object.kind))),
-                    ("name", string_value(object.name)),
-                    ("package", string_value(package_path(value.world, object.owner))),
-                    ("file", string_value(position.0)),
-                    ("offset", number_value(position.1)),
-                    ("exported", bool_value(object.exported)),
-                    ("type", normalize_type(value, object.type_id)),
-                    ("value", normalize_constant(object.constant_kind, object.constant)),
-                    ("imported_path", string_value(imported_path)),
-                ],
+                Vec::from_array(
+                    [
+                        ("key", string_value(object_key(value, object))),
+                        ("kind", string_value(go_types::object_kind_name(object.kind))),
+                        ("name", string_value(object.name)),
+                        ("package", string_value(package_path(value.world, object.owner))),
+                        ("file", string_value(position.0)),
+                        ("offset", number_value(position.1)),
+                        ("exported", bool_value(object.exported)),
+                        ("type", normalize_type(value, object.type_id)),
+                        ("value", normalize_constant(object.constant_kind, object.constant)),
+                        ("imported_path", string_value(imported_path)),
+                    ],
+                ),
             )
         },
         None => json::Value::Null,
@@ -645,7 +667,7 @@ fn compare_json_node(left: json::Value, right: json::Value) -> int {
 fn normalize_scope_objects(value: checker::CheckResult, scope_id: go_types::ScopeId) -> Vec[
     json::Value,
 ] {
-    let result: Vec[json::Value] = Vec::[];
+    let result: Vec[json::Value] = Vec::from_array([]);
     if scope_id.value >= 0 && scope_id.value < value.world.scopes.len() {
         for entry in value.world.scopes[scope_id.value].entries {
             result.push(normalize_object(value, entry.object))
@@ -662,20 +684,22 @@ fn node_key(value: checker::CheckResult, node: syntax::NodeId) -> string {
 fn normalize_object_facts(value: checker::CheckResult, facts: Vec[checker::ObjectFact]) -> Vec[
     json::Value,
 ] {
-    let result: Vec[json::Value] = Vec::[];
+    let result: Vec[json::Value] = Vec::from_array([]);
     for fact in facts {
         result.push(
             object_value(
-                Vec::[
-                    ("node", string_value(node_key(value, fact.node))),
-                    (
-                        "object",
-                        match fact.object {
-                            Some(object) => normalize_object(value, object),
-                            None => json::Value::Null,
-                        },
-                    ),
-                ],
+                Vec::from_array(
+                    [
+                        ("node", string_value(node_key(value, fact.node))),
+                        (
+                            "object",
+                            match fact.object {
+                                Some(object) => normalize_object(value, object),
+                                None => json::Value::Null,
+                            },
+                        ),
+                    ],
+                ),
             ),
         )
     }
@@ -720,24 +744,26 @@ fn selection_kind(value: checker::CheckResult, fact: checker::SelectionFact) -> 
 }
 
 fn normalize_type_facts(value: checker::CheckResult) -> Vec[json::Value] {
-    let result: Vec[json::Value] = Vec::[];
+    let result: Vec[json::Value] = Vec::from_array([]);
     for fact in value.info.types {
         let fact_node = fact.key.unwrap_or(node_key(value, fact.node));
         result.push(
             object_value(
-                Vec::[
-                    ("node", string_value(fact_node)),
-                    ("type", normalize_type(value, fact.type_id)),
-                    ("value", normalize_constant(fact.constant_kind, fact.constant)),
-                    ("void", bool_value(fact.void)),
-                    ("type_expr", bool_value(fact.type_expr)),
-                    ("builtin", bool_value(fact.builtin)),
-                    ("value_expr", bool_value(fact.value_expr)),
-                    ("nil", bool_value(fact.nil)),
-                    ("addressable", bool_value(fact.addressable)),
-                    ("assignable", bool_value(fact.assignable)),
-                    ("comma_ok", bool_value(fact.comma_ok)),
-                ],
+                Vec::from_array(
+                    [
+                        ("node", string_value(fact_node)),
+                        ("type", normalize_type(value, fact.type_id)),
+                        ("value", normalize_constant(fact.constant_kind, fact.constant)),
+                        ("void", bool_value(fact.void)),
+                        ("type_expr", bool_value(fact.type_expr)),
+                        ("builtin", bool_value(fact.builtin)),
+                        ("value_expr", bool_value(fact.value_expr)),
+                        ("nil", bool_value(fact.nil)),
+                        ("addressable", bool_value(fact.addressable)),
+                        ("assignable", bool_value(fact.assignable)),
+                        ("comma_ok", bool_value(fact.comma_ok)),
+                    ],
+                ),
             ),
         )
     }
@@ -746,23 +772,25 @@ fn normalize_type_facts(value: checker::CheckResult) -> Vec[json::Value] {
 }
 
 fn normalize_selections(value: checker::CheckResult) -> Vec[json::Value] {
-    let result: Vec[json::Value] = Vec::[];
+    let result: Vec[json::Value] = Vec::from_array([]);
     for fact in value.info.selections {
-        let indices: Vec[json::Value] = Vec::[];
+        let indices: Vec[json::Value] = Vec::from_array([]);
         for index in fact.index {
             indices.push(number_value(index))
         }
         result.push(
             object_value(
-                Vec::[
-                    ("node", string_value(node_key(value, fact.node))),
-                    ("kind", string_value(selection_kind(value, fact))),
-                    ("receiver", normalize_type(value, fact.receiver_type)),
-                    ("object", normalize_object(value, fact.object)),
-                    ("type", normalize_type(value, fact.type_id)),
-                    ("index", array_value(indices)),
-                    ("indirect", bool_value(fact.indirect)),
-                ],
+                Vec::from_array(
+                    [
+                        ("node", string_value(node_key(value, fact.node))),
+                        ("kind", string_value(selection_kind(value, fact))),
+                        ("receiver", normalize_type(value, fact.receiver_type)),
+                        ("object", normalize_object(value, fact.object)),
+                        ("type", normalize_type(value, fact.type_id)),
+                        ("index", array_value(indices)),
+                        ("indirect", bool_value(fact.indirect)),
+                    ],
+                ),
             ),
         )
     }
@@ -771,7 +799,7 @@ fn normalize_selections(value: checker::CheckResult) -> Vec[json::Value] {
 }
 
 fn normalize_scopes(value: checker::CheckResult) -> Vec[json::Value] {
-    let result: Vec[json::Value] = Vec::[];
+    let result: Vec[json::Value] = Vec::from_array([]);
     for fact in value.info.scopes {
         if fact.scope.value >= 0 && fact.scope.value < value.world.scopes.len() {
             let scope = value.world.scopes[fact.scope.value];
@@ -785,40 +813,42 @@ fn normalize_scopes(value: checker::CheckResult) -> Vec[json::Value] {
             };
             result.push(
                 object_value(
-                    Vec::[
-                        ("node", string_value(node_key(value, fact.node))),
-                        ("file", string_value(file_name(value, scope.file))),
-                        ("start", number_value(scope.start)),
-                        ("end", number_value(scope.end)),
-                        (
-                            "parent_file",
-                            string_value(
-                                match parent {
-                                    Some(parent) => file_name(value, parent.file),
-                                    None => "",
-                                },
+                    Vec::from_array(
+                        [
+                            ("node", string_value(node_key(value, fact.node))),
+                            ("file", string_value(file_name(value, scope.file))),
+                            ("start", number_value(scope.start)),
+                            ("end", number_value(scope.end)),
+                            (
+                                "parent_file",
+                                string_value(
+                                    match parent {
+                                        Some(parent) => file_name(value, parent.file),
+                                        None => "",
+                                    },
+                                ),
                             ),
-                        ),
-                        (
-                            "parent_start",
-                            number_value(
-                                match parent {
-                                    Some(parent) => parent.start,
-                                    None => -1,
-                                },
+                            (
+                                "parent_start",
+                                number_value(
+                                    match parent {
+                                        Some(parent) => parent.start,
+                                        None => -1,
+                                    },
+                                ),
                             ),
-                        ),
-                        (
-                            "parent_end",
-                            number_value(
-                                match parent {
-                                    Some(parent) => parent.end,
-                                    None => -1,
-                                },
+                            (
+                                "parent_end",
+                                number_value(
+                                    match parent {
+                                        Some(parent) => parent.end,
+                                        None => -1,
+                                    },
+                                ),
                             ),
-                        ),
-                        ("objects", array_value(normalize_scope_objects(value, fact.scope))),
-                    ],
+                            ("objects", array_value(normalize_scope_objects(value, fact.scope))),
+                        ],
+                    ),
                 ),
             )
         } else {}
@@ -828,19 +858,21 @@ fn normalize_scopes(value: checker::CheckResult) -> Vec[json::Value] {
 }
 
 fn normalize_instances(value: checker::CheckResult) -> Vec[json::Value] {
-    let result: Vec[json::Value] = Vec::[];
+    let result: Vec[json::Value] = Vec::from_array([]);
     for fact in value.info.instances {
-        let arguments: Vec[json::Value] = Vec::[];
+        let arguments: Vec[json::Value] = Vec::from_array([]);
         for argument in fact.type_args {
             arguments.push(normalize_type(value, argument))
         }
         result.push(
             object_value(
-                Vec::[
-                    ("node", string_value(node_key(value, fact.node))),
-                    ("type_arguments", array_value(arguments)),
-                    ("type", normalize_type(value, fact.type_id)),
-                ],
+                Vec::from_array(
+                    [
+                        ("node", string_value(node_key(value, fact.node))),
+                        ("type_arguments", array_value(arguments)),
+                        ("type", normalize_type(value, fact.type_id)),
+                    ],
+                ),
             ),
         )
     }
@@ -849,18 +881,17 @@ fn normalize_instances(value: checker::CheckResult) -> Vec[json::Value] {
 }
 
 fn normalize_init_order(value: checker::CheckResult) -> Vec[json::Value] {
-    let result: Vec[json::Value] = Vec::[];
+    let result: Vec[json::Value] = Vec::from_array([]);
     for fact in value.info.init_order {
-        let left: Vec[json::Value] = Vec::[];
+        let left: Vec[json::Value] = Vec::from_array([]);
         for object in fact.left {
             left.push(normalize_object(value, object))
         }
         result.push(
             object_value(
-                Vec::[
-                    ("lhs", array_value(left)),
-                    ("rhs", string_value(node_key(value, fact.right))),
-                ],
+                Vec::from_array(
+                    [("lhs", array_value(left)), ("rhs", string_value(node_key(value, fact.right)))],
+                ),
             ),
         )
     }
@@ -868,14 +899,16 @@ fn normalize_init_order(value: checker::CheckResult) -> Vec[json::Value] {
 }
 
 fn normalize_file_versions(value: checker::CheckResult) -> Vec[json::Value] {
-    let result: Vec[json::Value] = Vec::[];
+    let result: Vec[json::Value] = Vec::from_array([]);
     for fact in value.info.file_versions {
         result.push(
             object_value(
-                Vec::[
-                    ("file", string_value(file_name(value, Option::Some(fact.file)))),
-                    ("version", string_value(fact.version)),
-                ],
+                Vec::from_array(
+                    [
+                        ("file", string_value(file_name(value, Option::Some(fact.file)))),
+                        ("version", string_value(fact.version)),
+                    ],
+                ),
             ),
         )
     }

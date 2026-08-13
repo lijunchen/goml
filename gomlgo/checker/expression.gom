@@ -325,7 +325,7 @@ fn check_struct_literal(
     let mut keyed = false;
     let mut unkeyed = false;
     let mut mixed = false;
-    let names: Vec[string] = Vec::[];
+    let names: Vec[string] = Vec::from_array([]);
     for index in 0..elements.len() {
         match key_value_nodes(state, elements[index]) {
             Some((key, value)) => {
@@ -577,7 +577,7 @@ fn check_sequence_literal(
 ) -> int {
     let mut next_index = 0;
     let mut maximum = -1;
-    let used: Vec[int] = Vec::[];
+    let used: Vec[int] = Vec::from_array([]);
     for element in elements {
         let mut valid_index = true;
         let mut explicit = false;
@@ -683,8 +683,8 @@ fn check_map_literal(
     value_type: go_types::TypeId,
     elements: Vec[syntax::NodeId],
 ) -> unit {
-    let constant_keys: Vec[constant::ConstValue] = Vec::[];
-    let constant_key_types: Vec[go_types::TypeId] = Vec::[];
+    let constant_keys: Vec[constant::ConstValue] = Vec::from_array([]);
+    let constant_key_types: Vec[go_types::TypeId] = Vec::from_array([]);
     for element in elements {
         match key_value_nodes(state, element) {
             Some((key, value)) => {
@@ -1017,7 +1017,7 @@ fn omit_indirect_cycle_facts(state: CheckState, node: syntax::NodeId, expression
             },
         }) => if identifier(state, function).unwrap_or("") == NEW_BUILTIN {
             for argument in arguments {
-                let omitted: Vec[syntax::NodeId] = Vec::[];
+                let omitted: Vec[syntax::NodeId] = Vec::from_array([]);
                 for fact in state.info.types {
                     if node_start(state, fact.node) >= node_start(state, argument)
                         && node_end(state, fact.node) <= node_end(state, argument) {
@@ -1632,7 +1632,7 @@ fn check_function_literal(
         let object = state.active_local_type_objects[state.active_local_type_objects.len() - 1];
         state.deferred_local_alias_body_objects.push(object);
         state.deferred_local_alias_bodies.push(body);
-        if type_contains_alias_cycle(state, signature, object, Vec::[])
+        if type_contains_alias_cycle(state, signature, object, Vec::from_array([]))
             && !local_alias_cycle_seen(state, object) {
             state.deferred_local_alias_cycles.push(object)
         } else {}

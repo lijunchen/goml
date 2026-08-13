@@ -26,11 +26,13 @@ fn parse_simple_statement(parser: Parser) -> ast::Node {
             ast::Kind::SendStmt,
             left[0].span.start,
             value.span.end,
-            Vec::[
-                ast::field("chan", ast::node_value(left[0])),
-                ast::field("arrow", ast::int_value(arrow.start)),
-                ast::field("value", ast::node_value(value)),
-            ],
+            Vec::from_array(
+                [
+                    ast::field("chan", ast::node_value(left[0])),
+                    ast::field("arrow", ast::int_value(arrow.start)),
+                    ast::field("value", ast::node_value(value)),
+                ],
+            ),
         )
     } else if at(parser, token::Kind::Inc) || at(parser, token::Kind::Dec) {
         let operator = advance(parser);
@@ -38,11 +40,13 @@ fn parse_simple_statement(parser: Parser) -> ast::Node {
             ast::Kind::IncDecStmt,
             left[0].span.start,
             operator.end,
-            Vec::[
-                ast::field("x", ast::node_value(left[0])),
-                ast::field("token_pos", ast::int_value(operator.start)),
-                ast::field("token", token_operator(operator)),
-            ],
+            Vec::from_array(
+                [
+                    ast::field("x", ast::node_value(left[0])),
+                    ast::field("token_pos", ast::int_value(operator.start)),
+                    ast::field("token", token_operator(operator)),
+                ],
+            ),
         )
     } else if assignment_kind(peek(parser)) {
         let operator = advance(parser);
@@ -56,23 +60,25 @@ fn parse_simple_statement(parser: Parser) -> ast::Node {
                 ast::Kind::RangeStmt,
                 left[0].span.start,
                 source.span.end,
-                Vec::[
-                    ast::field("for", ast::int_value(-1)),
-                    ast::field("key", ast::node_value(left[0])),
-                    ast::field(
-                        "value",
-                        if left.len() > 1 {
-                            ast::node_value(left[1])
-                        } else {
-                            ast::null()
-                        },
-                    ),
-                    ast::field("token_pos", ast::int_value(operator.start)),
-                    ast::field("token", token_operator(operator)),
-                    ast::field("range", ast::int_value(range.start)),
-                    ast::field("x", ast::node_value(source)),
-                    ast::field("body", ast::null()),
-                ],
+                Vec::from_array(
+                    [
+                        ast::field("for", ast::int_value(-1)),
+                        ast::field("key", ast::node_value(left[0])),
+                        ast::field(
+                            "value",
+                            if left.len() > 1 {
+                                ast::node_value(left[1])
+                            } else {
+                                ast::null()
+                            },
+                        ),
+                        ast::field("token_pos", ast::int_value(operator.start)),
+                        ast::field("token", token_operator(operator)),
+                        ast::field("range", ast::int_value(range.start)),
+                        ast::field("x", ast::node_value(source)),
+                        ast::field("body", ast::null()),
+                    ],
+                ),
             )
         } else {
             let right = parse_expression_list(parser);
@@ -81,12 +87,14 @@ fn parse_simple_statement(parser: Parser) -> ast::Node {
                 ast::Kind::AssignStmt,
                 left[0].span.start,
                 end,
-                Vec::[
-                    ast::field("lhs", ast::nodes(left)),
-                    ast::field("token_pos", ast::int_value(operator.start)),
-                    ast::field("token", token_operator(operator)),
-                    ast::field("rhs", ast::nodes(right)),
-                ],
+                Vec::from_array(
+                    [
+                        ast::field("lhs", ast::nodes(left)),
+                        ast::field("token_pos", ast::int_value(operator.start)),
+                        ast::field("token", token_operator(operator)),
+                        ast::field("rhs", ast::nodes(right)),
+                    ],
+                ),
             )
         }
     } else if left.len() == 1 {
@@ -98,7 +106,7 @@ fn parse_simple_statement(parser: Parser) -> ast::Node {
 }
 
 fn parse_statement_list(parser: Parser, stop_at_case: bool) -> Vec[ast::Node] {
-    let statements: Vec[ast::Node] = Vec::[];
+    let statements: Vec[ast::Node] = Vec::from_array([]);
     while !at(parser, token::Kind::Rbrace) && !eof(parser)
         && !(stop_at_case && (at(parser, token::Kind::Case) || at(parser, token::Kind::Default))) {
         let before = significant_index(parser, 0);
@@ -110,10 +118,12 @@ fn parse_statement_list(parser: Parser, stop_at_case: bool) -> Vec[ast::Node] {
                         ast::Kind::EmptyStmt,
                         semicolon.start,
                         semicolon.end,
-                        Vec::[
-                            ast::field("semicolon", ast::int_value(semicolon.start)),
-                            ast::field("implicit", ast::bool_value(false)),
-                        ],
+                        Vec::from_array(
+                            [
+                                ast::field("semicolon", ast::int_value(semicolon.start)),
+                                ast::field("implicit", ast::bool_value(false)),
+                            ],
+                        ),
                     ),
                 )
             } else {}
@@ -187,17 +197,19 @@ fn parse_go_or_defer(parser: Parser, deferred: bool) -> ast::Node {
         },
         keyword.start,
         call.span.end,
-        Vec::[
-            ast::field(
-                if deferred {
-                    "defer"
-                } else {
-                    "go"
-                },
-                ast::int_value(keyword.start),
-            ),
-            ast::field("call", ast::node_value(call)),
-        ],
+        Vec::from_array(
+            [
+                ast::field(
+                    if deferred {
+                        "defer"
+                    } else {
+                        "go"
+                    },
+                    ast::int_value(keyword.start),
+                ),
+                ast::field("call", ast::node_value(call)),
+            ],
+        ),
     )
 }
 
@@ -205,7 +217,7 @@ fn parse_return_statement(parser: Parser) -> ast::Node {
     let keyword = expect(parser, token::Kind::Return);
     let results = if at(parser, token::Kind::Semicolon) || at(parser, token::Kind::Rbrace)
         || eof(parser) {
-        Vec::[]
+        Vec::from_array([])
     } else {
         parse_expression_list(parser)
     };
@@ -218,17 +230,19 @@ fn parse_return_statement(parser: Parser) -> ast::Node {
         ast::Kind::ReturnStmt,
         keyword.start,
         end,
-        Vec::[
-            ast::field("return", ast::int_value(keyword.start)),
-            ast::field(
-                "results",
-                if results.is_empty() {
-                    ast::null()
-                } else {
-                    ast::nodes(results)
-                },
-            ),
-        ],
+        Vec::from_array(
+            [
+                ast::field("return", ast::int_value(keyword.start)),
+                ast::field(
+                    "results",
+                    if results.is_empty() {
+                        ast::null()
+                    } else {
+                        ast::nodes(results)
+                    },
+                ),
+            ],
+        ),
     )
 }
 
@@ -250,11 +264,13 @@ fn parse_branch_statement(parser: Parser) -> ast::Node {
         ast::Kind::BranchStmt,
         keyword.start,
         end,
-        Vec::[
-            ast::field("token_pos", ast::int_value(keyword.start)),
-            ast::field("token", token_operator(keyword)),
-            ast::field("label", ast::optional_node(label)),
-        ],
+        Vec::from_array(
+            [
+                ast::field("token_pos", ast::int_value(keyword.start)),
+                ast::field("token", token_operator(keyword)),
+                ast::field("label", ast::optional_node(label)),
+            ],
+        ),
     )
 }
 
@@ -319,13 +335,15 @@ fn parse_if_statement(parser: Parser) -> ast::Node {
         ast::Kind::IfStmt,
         keyword.start,
         end,
-        Vec::[
-            ast::field("if", ast::int_value(keyword.start)),
-            ast::field("init", ast::optional_node(initialization)),
-            ast::field("cond", ast::node_value(condition)),
-            ast::field("body", ast::node_value(body)),
-            ast::field("else", ast::optional_node(alternative)),
-        ],
+        Vec::from_array(
+            [
+                ast::field("if", ast::int_value(keyword.start)),
+                ast::field("init", ast::optional_node(initialization)),
+                ast::field("cond", ast::node_value(condition)),
+                ast::field("body", ast::node_value(body)),
+                ast::field("else", ast::optional_node(alternative)),
+            ],
+        ),
     )
 }
 
@@ -334,7 +352,7 @@ fn parse_case_clause(parser: Parser) -> ast::Node {
     let expressions = if token::equal(keyword.kind, token::Kind::Case) {
         parse_expression_list(parser)
     } else {
-        Vec::[]
+        Vec::from_array([])
     };
     let colon = expect(parser, token::Kind::Colon);
     let body = parse_statement_list(parser, true);
@@ -347,26 +365,28 @@ fn parse_case_clause(parser: Parser) -> ast::Node {
         ast::Kind::CaseClause,
         keyword.start,
         end,
-        Vec::[
-            ast::field("case", ast::int_value(keyword.start)),
-            ast::field(
-                "list",
-                if expressions.is_empty() {
-                    ast::null()
-                } else {
-                    ast::nodes(expressions)
-                },
-            ),
-            ast::field("colon", ast::int_value(colon.start)),
-            ast::field(
-                "body",
-                if body.is_empty() {
-                    ast::null()
-                } else {
-                    ast::nodes(body)
-                },
-            ),
-        ],
+        Vec::from_array(
+            [
+                ast::field("case", ast::int_value(keyword.start)),
+                ast::field(
+                    "list",
+                    if expressions.is_empty() {
+                        ast::null()
+                    } else {
+                        ast::nodes(expressions)
+                    },
+                ),
+                ast::field("colon", ast::int_value(colon.start)),
+                ast::field(
+                    "body",
+                    if body.is_empty() {
+                        ast::null()
+                    } else {
+                        ast::nodes(body)
+                    },
+                ),
+            ],
+        ),
     )
 }
 
@@ -408,7 +428,7 @@ fn parse_switch_statement(parser: Parser) -> ast::Node {
     } else {};
     parser.expr_level.set(saved_level);
     let left = expect(parser, token::Kind::Lbrace);
-    let clauses: Vec[ast::Node] = Vec::[];
+    let clauses: Vec[ast::Node] = Vec::from_array([]);
     while !at(parser, token::Kind::Rbrace) && !eof(parser) {
         if at(parser, token::Kind::Case) || at(parser, token::Kind::Default) {
             clauses.push(parse_case_clause(parser))
@@ -432,23 +452,27 @@ fn parse_switch_statement(parser: Parser) -> ast::Node {
         keyword.start,
         body.span.end,
         if type_switch {
-            Vec::[
-                ast::field("switch", ast::int_value(keyword.start)),
-                ast::field("init", ast::optional_node(initialization)),
-                ast::field("assign", ast::optional_node(tag_or_guard)),
-                ast::field("body", ast::node_value(body)),
-            ]
+            Vec::from_array(
+                [
+                    ast::field("switch", ast::int_value(keyword.start)),
+                    ast::field("init", ast::optional_node(initialization)),
+                    ast::field("assign", ast::optional_node(tag_or_guard)),
+                    ast::field("body", ast::node_value(body)),
+                ],
+            )
         } else {
             let tag = match tag_or_guard {
                 Some(value) => expression_from_statement(value),
                 None => Option::None,
             };
-            Vec::[
-                ast::field("switch", ast::int_value(keyword.start)),
-                ast::field("init", ast::optional_node(initialization)),
-                ast::field("tag", ast::optional_node(tag)),
-                ast::field("body", ast::node_value(body)),
-            ]
+            Vec::from_array(
+                [
+                    ast::field("switch", ast::int_value(keyword.start)),
+                    ast::field("init", ast::optional_node(initialization)),
+                    ast::field("tag", ast::optional_node(tag)),
+                    ast::field("body", ast::node_value(body)),
+                ],
+            )
         },
     )
 }
@@ -471,26 +495,28 @@ fn parse_comm_clause(parser: Parser) -> ast::Node {
         ast::Kind::CommClause,
         keyword.start,
         end,
-        Vec::[
-            ast::field("case", ast::int_value(keyword.start)),
-            ast::field("comm", ast::optional_node(communication)),
-            ast::field("colon", ast::int_value(colon.start)),
-            ast::field(
-                "body",
-                if body.is_empty() {
-                    ast::null()
-                } else {
-                    ast::nodes(body)
-                },
-            ),
-        ],
+        Vec::from_array(
+            [
+                ast::field("case", ast::int_value(keyword.start)),
+                ast::field("comm", ast::optional_node(communication)),
+                ast::field("colon", ast::int_value(colon.start)),
+                ast::field(
+                    "body",
+                    if body.is_empty() {
+                        ast::null()
+                    } else {
+                        ast::nodes(body)
+                    },
+                ),
+            ],
+        ),
     )
 }
 
 fn parse_select_statement(parser: Parser) -> ast::Node {
     let keyword = expect(parser, token::Kind::Select);
     let left = expect(parser, token::Kind::Lbrace);
-    let clauses: Vec[ast::Node] = Vec::[];
+    let clauses: Vec[ast::Node] = Vec::from_array([]);
     while !at(parser, token::Kind::Rbrace) && !eof(parser) {
         if at(parser, token::Kind::Case) || at(parser, token::Kind::Default) {
             clauses.push(parse_comm_clause(parser))
@@ -505,10 +531,12 @@ fn parse_select_statement(parser: Parser) -> ast::Node {
         ast::Kind::SelectStmt,
         keyword.start,
         body.span.end,
-        Vec::[
-            ast::field("select", ast::int_value(keyword.start)),
-            ast::field("body", ast::node_value(body)),
-        ],
+        Vec::from_array(
+            [
+                ast::field("select", ast::int_value(keyword.start)),
+                ast::field("body", ast::node_value(body)),
+            ],
+        ),
     )
 }
 
@@ -532,16 +560,18 @@ fn complete_range_statement(range_header: ast::Node, keyword: token::Token, body
         ast::Kind::RangeStmt,
         keyword.start,
         body.span.end,
-        Vec::[
-            ast::field("for", ast::int_value(keyword.start)),
-            ast::field("key", ast::optional_node(key)),
-            ast::field("value", ast::optional_node(value)),
-            ast::field("token_pos", ast::int_value(token_position)),
-            ast::field("token", ast::text_value(assignment)),
-            ast::field("range", ast::int_value(range_position)),
-            ast::field("x", ast::optional_node(source)),
-            ast::field("body", ast::node_value(body)),
-        ],
+        Vec::from_array(
+            [
+                ast::field("for", ast::int_value(keyword.start)),
+                ast::field("key", ast::optional_node(key)),
+                ast::field("value", ast::optional_node(value)),
+                ast::field("token_pos", ast::int_value(token_position)),
+                ast::field("token", ast::text_value(assignment)),
+                ast::field("range", ast::int_value(range_position)),
+                ast::field("x", ast::optional_node(source)),
+                ast::field("body", ast::node_value(body)),
+            ],
+        ),
     )
 }
 
@@ -561,16 +591,18 @@ fn parse_for_statement(parser: Parser) -> ast::Node {
                 ast::Kind::RangeStmt,
                 keyword.start,
                 source.span.end,
-                Vec::[
-                    ast::field("for", ast::int_value(keyword.start)),
-                    ast::field("key", ast::null()),
-                    ast::field("value", ast::null()),
-                    ast::field("token_pos", ast::int_value(-1)),
-                    ast::field("token", ast::text_value("ILLEGAL")),
-                    ast::field("range", ast::int_value(range.start)),
-                    ast::field("x", ast::node_value(source)),
-                    ast::field("body", ast::null()),
-                ],
+                Vec::from_array(
+                    [
+                        ast::field("for", ast::int_value(keyword.start)),
+                        ast::field("key", ast::null()),
+                        ast::field("value", ast::null()),
+                        ast::field("token_pos", ast::int_value(-1)),
+                        ast::field("token", ast::text_value("ILLEGAL")),
+                        ast::field("range", ast::int_value(range.start)),
+                        ast::field("x", ast::node_value(source)),
+                        ast::field("body", ast::null()),
+                    ],
+                ),
             ),
         );
     } else if eat(parser, token::Kind::Semicolon).is_some() {
@@ -606,13 +638,15 @@ fn parse_for_statement(parser: Parser) -> ast::Node {
             ast::Kind::ForStmt,
             keyword.start,
             body.span.end,
-            Vec::[
-                ast::field("for", ast::int_value(keyword.start)),
-                ast::field("init", ast::optional_node(initialization)),
-                ast::field("cond", ast::optional_node(condition)),
-                ast::field("post", ast::optional_node(post)),
-                ast::field("body", ast::node_value(body)),
-            ],
+            Vec::from_array(
+                [
+                    ast::field("for", ast::int_value(keyword.start)),
+                    ast::field("init", ast::optional_node(initialization)),
+                    ast::field("cond", ast::optional_node(condition)),
+                    ast::field("post", ast::optional_node(post)),
+                    ast::field("body", ast::node_value(body)),
+                ],
+            ),
         ),
     }
 }
@@ -631,10 +665,12 @@ fn parse_labeled_or_simple(parser: Parser) -> ast::Node {
                 } else {
                     semicolon.end
                 },
-                Vec::[
-                    ast::field("semicolon", ast::int_value(semicolon.start)),
-                    ast::field("implicit", ast::bool_value(semicolon.synthetic)),
-                ],
+                Vec::from_array(
+                    [
+                        ast::field("semicolon", ast::int_value(semicolon.start)),
+                        ast::field("implicit", ast::bool_value(semicolon.synthetic)),
+                    ],
+                ),
             )
         } else if at(parser, token::Kind::Rbrace) {
             let offset = current(parser).start;
@@ -642,10 +678,12 @@ fn parse_labeled_or_simple(parser: Parser) -> ast::Node {
                 ast::Kind::EmptyStmt,
                 offset,
                 offset,
-                Vec::[
-                    ast::field("semicolon", ast::int_value(offset)),
-                    ast::field("implicit", ast::bool_value(true)),
-                ],
+                Vec::from_array(
+                    [
+                        ast::field("semicolon", ast::int_value(offset)),
+                        ast::field("implicit", ast::bool_value(true)),
+                    ],
+                ),
             )
         } else {
             parse_statement(parser)
@@ -654,11 +692,13 @@ fn parse_labeled_or_simple(parser: Parser) -> ast::Node {
             ast::Kind::LabeledStmt,
             label.span.start,
             statement.span.end,
-            Vec::[
-                ast::field("label", ast::node_value(label)),
-                ast::field("colon", ast::int_value(colon.start)),
-                ast::field("stmt", ast::node_value(statement)),
-            ],
+            Vec::from_array(
+                [
+                    ast::field("label", ast::node_value(label)),
+                    ast::field("colon", ast::int_value(colon.start)),
+                    ast::field("stmt", ast::node_value(statement)),
+                ],
+            ),
         )
     } else {
         parse_simple_statement(parser)
@@ -673,7 +713,7 @@ fn parse_statement(parser: Parser) -> ast::Node {
             ast::Kind::DeclStmt,
             declaration.span.start,
             declaration.span.end,
-            Vec::[ast::field("decl", ast::node_value(declaration))],
+            Vec::from_array([ast::field("decl", ast::node_value(declaration))]),
         )
     } else if at(parser, token::Kind::Lbrace) {
         parse_block_statement(parser)

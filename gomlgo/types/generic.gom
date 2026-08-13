@@ -32,7 +32,7 @@ fn substitute_variables(
     arguments: Vec[TypeId],
     entries: Vec[SubstitutionEntry],
 ) -> Vec[Variable] {
-    let result: Vec[Variable] = Vec::[];
+    let result: Vec[Variable] = Vec::from_array([]);
     for value in values {
         result.push(
             Variable {
@@ -91,11 +91,11 @@ fn instantiate_method_object(
                 variadic,
             },
         }) => {
-            let signature_parameters: Vec[TypeParameter] = Vec::[];
+            let signature_parameters: Vec[TypeParameter] = Vec::from_array([]);
             for parameter in parameters {
                 signature_parameters.push(parameter)
             }
-            let signature_arguments: Vec[TypeId] = Vec::[];
+            let signature_arguments: Vec[TypeId] = Vec::from_array([]);
             for argument in arguments {
                 signature_arguments.push(argument)
             }
@@ -105,7 +105,7 @@ fn instantiate_method_object(
                     signature_arguments.push(receiver_arguments[index]);
                 } else {}
             }
-            let entries: Vec[SubstitutionEntry] = Vec::[];
+            let entries: Vec[SubstitutionEntry] = Vec::from_array([]);
             let signature = add_type(
                 world,
                 TypeKind::Signature {
@@ -149,7 +149,7 @@ fn instantiate_method_object(
         _ => clone_object_with_type(
             world,
             source,
-            substitute_inner(world, object.type_id, parameters, arguments, Vec::[]),
+            substitute_inner(world, object.type_id, parameters, arguments, Vec::from_array([])),
         ),
     }
 }
@@ -162,7 +162,7 @@ fn instantiate_method_objects(
     receiver_arguments: Vec[TypeId],
     receiver_type: TypeId,
 ) -> Vec[ObjectId] {
-    let result: Vec[ObjectId] = Vec::[];
+    let result: Vec[ObjectId] = Vec::from_array([]);
     for method in methods {
         result.push(
             instantiate_method_object(
@@ -185,7 +185,7 @@ fn substitute_objects(
     arguments: Vec[TypeId],
     entries: Vec[SubstitutionEntry],
 ) -> Vec[ObjectId] {
-    let result: Vec[ObjectId] = Vec::[];
+    let result: Vec[ObjectId] = Vec::from_array([]);
     for value in values {
         match get_object(world, value) {
             Some(object) => result.push(
@@ -208,7 +208,7 @@ fn substitute_type_parameters(
     arguments: Vec[TypeId],
     entries: Vec[SubstitutionEntry],
 ) -> Vec[TypeParameter] {
-    let result: Vec[TypeParameter] = Vec::[];
+    let result: Vec[TypeParameter] = Vec::from_array([]);
     for value in values {
         result.push(
             TypeParameter {
@@ -284,7 +284,7 @@ fn substitute_inner(
             },
         ),
         Some(TypeData { id: _, kind: TypeKind::Struct { fields } }) => {
-            let result: Vec[StructField] = Vec::[];
+            let result: Vec[StructField] = Vec::from_array([]);
             for field in fields {
                 let field_type = substitute_inner(
                     world,
@@ -324,11 +324,11 @@ fn substitute_inner(
                 variadic,
             },
         }) => {
-            let signature_parameters: Vec[TypeParameter] = Vec::[];
+            let signature_parameters: Vec[TypeParameter] = Vec::from_array([]);
             for parameter in parameters {
                 signature_parameters.push(parameter)
             }
-            let signature_arguments: Vec[TypeId] = Vec::[];
+            let signature_arguments: Vec[TypeId] = Vec::from_array([]);
             for argument in arguments {
                 signature_arguments.push(argument)
             }
@@ -358,7 +358,7 @@ fn substitute_inner(
                                         },
                                     }) => if receiver_arguments.is_empty()
                                         && !receiver_parameters.is_empty() {
-                                        let arguments: Vec[TypeId] = Vec::[];
+                                        let arguments: Vec[TypeId] = Vec::from_array([]);
                                         let mut complete = true;
                                         for parameter in receiver_parameters {
                                             match substitution_argument(
@@ -380,7 +380,7 @@ fn substitute_inner(
                                                     underlying: world.invalid,
                                                     type_params: receiver_parameters,
                                                     type_args: arguments,
-                                                    methods: Vec::[],
+                                                    methods: Vec::from_array([]),
                                                 },
                                             )
                                         } else {
@@ -433,7 +433,7 @@ fn substitute_inner(
         }) => {
             let result = add_type(world, TypeKind::Invalid);
             entries.push(SubstitutionEntry { source: value, target: result });
-            let result_embeddeds: Vec[TypeId] = Vec::[];
+            let result_embeddeds: Vec[TypeId] = Vec::from_array([]);
             for embedded in embeddeds {
                 result_embeddeds.push(
                     substitute_inner(world, embedded, parameters, arguments, entries),
@@ -459,7 +459,7 @@ fn substitute_inner(
         } else {
             let result = add_type(world, TypeKind::Invalid);
             entries.push(SubstitutionEntry { source: value, target: result });
-            let next_arguments: Vec[TypeId] = Vec::[];
+            let next_arguments: Vec[TypeId] = Vec::from_array([]);
             for argument in type_args {
                 next_arguments.push(
                     substitute_inner(world, argument, parameters, arguments, entries),
@@ -495,13 +495,13 @@ fn substitute_inner(
                     underlying: next_underlying,
                     type_params,
                     type_args: next_arguments,
-                    methods: Vec::[],
+                    methods: Vec::from_array([]),
                 },
             );
             result
         },
         Some(TypeData { id: _, kind: TypeKind::Alias { object, rhs, type_params, type_args } }) => {
-            let next_arguments: Vec[TypeId] = Vec::[];
+            let next_arguments: Vec[TypeId] = Vec::from_array([]);
             for argument in type_args {
                 next_arguments.push(
                     substitute_inner(world, argument, parameters, arguments, entries),
@@ -518,7 +518,7 @@ fn substitute_inner(
             )
         },
         Some(TypeData { id: _, kind: TypeKind::Union { terms } }) => {
-            let result: Vec[UnionTerm] = Vec::[];
+            let result: Vec[UnionTerm] = Vec::from_array([]);
             for term in terms {
                 result.push(
                     UnionTerm {
@@ -545,7 +545,7 @@ pub fn substitute(
     parameters: Vec[TypeParameter],
     arguments: Vec[TypeId],
 ) -> TypeId {
-    substitute_inner(world, value, parameters, arguments, Vec::[])
+    substitute_inner(world, value, parameters, arguments, Vec::from_array([]))
 }
 
 fn instantiate_inner(
@@ -581,7 +581,7 @@ fn instantiate_inner(
                             result,
                         )
                     } else {
-                        Vec::[]
+                        Vec::from_array([])
                     },
                 },
             );
@@ -622,7 +622,7 @@ fn instantiate_inner(
                     TypeKind::Signature {
                         receiver,
                         receiver_type_params,
-                        type_params: Vec::[],
+                        type_params: Vec::from_array([]),
                         params: substitute(world, params, type_params, arguments),
                         results: substitute(world, results, type_params, arguments),
                         variadic,
@@ -773,7 +773,7 @@ pub fn refresh_named_instances(world: World, origin: TypeId) -> unit {
                             origin_data.3,
                             origin_data.2,
                             type_args,
-                            Vec::[],
+                            Vec::from_array([]),
                         ),
                     },
                 );

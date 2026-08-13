@@ -123,8 +123,8 @@ fn compare_diagnostics(
     actual: checker::CheckResult,
     expected: typecheck_diff::CheckResponse,
 ) -> Result[unit, string] {
-    let actual_diagnostics: Vec[checker::CheckDiagnostic] = Vec::[];
-    let actual_labels: Vec[checker::CheckDiagnostic] = Vec::[];
+    let actual_diagnostics: Vec[checker::CheckDiagnostic] = Vec::from_array([]);
+    let actual_labels: Vec[checker::CheckDiagnostic] = Vec::from_array([]);
     for value in actual.diagnostics {
         if unordered_label_diagnostic(value.message) {
             actual_labels.push(value)
@@ -132,8 +132,8 @@ fn compare_diagnostics(
             actual_diagnostics.push(value)
         }
     }
-    let expected_diagnostics: Vec[typecheck_diff::Diagnostic] = Vec::[];
-    let expected_labels: Vec[typecheck_diff::Diagnostic] = Vec::[];
+    let expected_diagnostics: Vec[typecheck_diff::Diagnostic] = Vec::from_array([]);
+    let expected_labels: Vec[typecheck_diff::Diagnostic] = Vec::from_array([]);
     for value in expected.diagnostics {
         if unordered_label_diagnostic(value.message) {
             expected_labels.push(value)
@@ -202,7 +202,7 @@ fn compare_section(file: string, name: string, actual: Vec[json::Value], expecte
     unit,
     string,
 ] {
-    let actual_keys: Vec[string] = Vec::[];
+    let actual_keys: Vec[string] = Vec::from_array([]);
     for value in actual {
         let node = json::as_string(json::field(value, "node").unwrap_or(json::Value::Null)).unwrap_or(
             "",
@@ -211,7 +211,7 @@ fn compare_section(file: string, name: string, actual: Vec[json::Value], expecte
             actual_keys.push(node)
         } else {}
     }
-    let expected_keys: Vec[string] = Vec::[];
+    let expected_keys: Vec[string] = Vec::from_array([]);
     for value in expected {
         let node = json::as_string(json::field(value, "node").unwrap_or(json::Value::Null)).unwrap_or(
             "",
@@ -350,11 +350,11 @@ fn compare_file(file: string, mode: CompareMode) -> Result[(bool, bool), string]
     let actual = loader::check_sources_with_diagnostics(
         load_config,
         package_path,
-        Vec::[checker::SourceFile { name: file, source: source_bytes }],
+        Vec::from_array([checker::SourceFile { name: file, source: source_bytes }]),
     );
     let request = typecheck_diff::request(
         package_path,
-        Vec::[typecheck_diff::SourceFile { name: file, source }],
+        Vec::from_array([typecheck_diff::SourceFile { name: file, source }]),
     );
     request.go_version = go_version;
     request.config.fake_import_c = fake_import_c;
@@ -414,7 +414,7 @@ fn compare_file(file: string, mode: CompareMode) -> Result[(bool, bool), string]
 }
 
 pub fn compare_tree_mode(root: string, mode: CompareMode) -> Result[Summary, string] {
-    let files: Vec[string] = Vec::[];
+    let files: Vec[string] = Vec::from_array([]);
     collect_go_files(root, files)?;
     let mut accepted = 0;
     let mut info_compared = 0;

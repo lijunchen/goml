@@ -18,7 +18,9 @@ fn source_named(values: Vec[checker::SourceFile], name: string) -> bool {
 #[test]
 fn loads_source_dependencies_with_platform_selection() -> unit {
     let config = default_config();
-    config.source_roots = Vec::[path::join(env::current_dir().unwrap_or("."), "testdata/loader")];
+    config.source_roots = Vec::from_array(
+        [path::join(env::current_dir().unwrap_or("."), "testdata/loader")],
+    );
     let result = testing::expect_ok(check_import_path(config, "example/p"), "source import failed");
     testing::assert_eq(result.diagnostics.len(), 0);
     let mut dependency: Option[go_types::PackageId] = Option::None;
@@ -60,7 +62,7 @@ fn evaluates_legacy_and_custom_build_constraints() -> unit {
             "amd64",
             false,
             "go1.26",
-            Vec::[],
+            Vec::from_array([]),
         ),
     );
     testing::assert(
@@ -70,7 +72,7 @@ fn evaluates_legacy_and_custom_build_constraints() -> unit {
             "amd64",
             false,
             "go1.26",
-            Vec::[],
+            Vec::from_array([]),
         ),
     );
     testing::assert(
@@ -80,7 +82,7 @@ fn evaluates_legacy_and_custom_build_constraints() -> unit {
             "arm64",
             false,
             "go1.26",
-            Vec::["custom"],
+            Vec::from_array(["custom"]),
         ),
     );
     let config = default_config();
@@ -100,7 +102,9 @@ fn evaluates_legacy_and_custom_build_constraints() -> unit {
 #[test]
 fn selects_target_cgo_and_test_package_variants() -> unit {
     let config = default_config();
-    config.source_roots = Vec::[path::join(env::current_dir().unwrap_or("."), "testdata/loader")];
+    config.source_roots = Vec::from_array(
+        [path::join(env::current_dir().unwrap_or("."), "testdata/loader")],
+    );
     let linux_amd64 = testing::expect_ok(
         selected_sources(config, "example/q"),
         "linux amd64 selection failed",
@@ -145,7 +149,9 @@ fn selects_target_cgo_and_test_package_variants() -> unit {
 #[test]
 fn checks_internal_and_external_test_packages_separately() -> unit {
     let selection = default_config();
-    selection.source_roots = Vec::[path::join(env::current_dir().unwrap_or("."), "testdata/loader")];
+    selection.source_roots = Vec::from_array(
+        [path::join(env::current_dir().unwrap_or("."), "testdata/loader")],
+    );
     selection.include_tests = true;
     let internal_sources = testing::expect_ok(
         selected_sources(selection, "example/q"),

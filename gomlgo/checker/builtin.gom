@@ -158,7 +158,7 @@ fn update_builtin_signature(state: CheckState, node: syntax::NodeId, signature: 
 }
 
 fn builtin_signature_tuple(state: CheckState, values: Vec[go_types::TypeId]) -> go_types::TypeId {
-    let variables: Vec[go_types::Variable] = Vec::[];
+    let variables: Vec[go_types::Variable] = Vec::from_array([]);
     for value in values {
         variables.push(go_types::Variable { name: "", owner: Option::None, type_id: value })
     }
@@ -170,8 +170,8 @@ fn builtin_empty_interface(state: CheckState) -> go_types::TypeId {
         return go_types::add_type(
             state.world,
             go_types::TypeKind::Interface {
-                methods: Vec::[],
-                embeddeds: Vec::[],
+                methods: Vec::from_array([]),
+                embeddeds: Vec::from_array([]),
                 comparable: false,
                 implicit: false,
             },
@@ -193,14 +193,14 @@ fn record_builtin_signature(
     result: Operand,
     ellipsis: int,
 ) -> unit {
-    let parameter_types: Vec[go_types::TypeId] = Vec::[];
+    let parameter_types: Vec[go_types::TypeId] = Vec::from_array([]);
     let expanded = if arguments.len() == 1 {
         match recorded_type_fact(state, arguments[0]) {
             Some(fact) => tuple_variables(state, fact.type_id),
-            None => Vec::[],
+            None => Vec::from_array([]),
         }
     } else {
-        Vec::[]
+        Vec::from_array([])
     };
     if result.type_id.value != state.world.invalid.value && expanded.len() > 1 {
         if reference.name == APPEND_BUILTIN {
@@ -362,7 +362,7 @@ fn record_builtin_signature(
             }
         }
     };
-    let result_types: Vec[go_types::TypeId] = Vec::[];
+    let result_types: Vec[go_types::TypeId] = Vec::from_array([]);
     if result.type_id.value != state.world.invalid.value {
         result_types.push(result.type_id)
     } else {};
@@ -370,8 +370,8 @@ fn record_builtin_signature(
         state.world,
         go_types::TypeKind::Signature {
             receiver: Option::None,
-            receiver_type_params: Vec::[],
-            type_params: Vec::[],
+            receiver_type_params: Vec::from_array([]),
+            type_params: Vec::from_array([]),
             params: builtin_signature_tuple(state, parameter_types),
             results: builtin_signature_tuple(state, result_types),
             variadic: reference.name == APPEND_BUILTIN,
@@ -1092,7 +1092,7 @@ fn check_make_builtin(
         );
         return invalid_operand(state)
     } else {};
-    let indices: Vec[Operand] = Vec::[];
+    let indices: Vec[Operand] = Vec::from_array([]);
     let mut valid = true;
     for index in 1..arguments.len() {
         let operand = check_expression(state, scope, arguments[index]);
@@ -1279,7 +1279,7 @@ fn copy_element_type(state: CheckState, value: go_types::TypeId, allow_string: b
     let terms = if go_types::is_type_parameter(state.world, value) {
         go_types::type_set_specific_types(state.world, value)
     } else {
-        Vec::[value]
+        Vec::from_array([value])
     };
     if terms.is_empty() {
         return Option::None
@@ -1671,7 +1671,7 @@ fn check_append_builtin(
         }
         return invalid_operand(state)
     } else {};
-    let expanded_values: Vec[Operand] = Vec::[];
+    let expanded_values: Vec[Operand] = Vec::from_array([]);
     let mut valid_result = true;
     if arguments.len() == 1 && ellipsis < 0 {
         let values = tuple_variables(state, slice.type_id);
@@ -1909,7 +1909,7 @@ fn check_delete_builtin(
     let terms = if go_types::is_type_parameter(state.world, map.type_id) {
         go_types::type_set_specific_types(state.world, map.type_id)
     } else {
-        Vec::[map.type_id]
+        Vec::from_array([map.type_id])
     };
     let mut all_maps = !terms.is_empty();
     let mut identical_keys = true;
@@ -2080,7 +2080,7 @@ fn check_close_builtin(
     let terms = if go_types::is_type_parameter(state.world, value.type_id) {
         go_types::type_set_specific_types(state.world, value.type_id)
     } else {
-        Vec::[value.type_id]
+        Vec::from_array([value.type_id])
     };
     if terms.is_empty() {
         non_channel = true;
@@ -2637,7 +2637,8 @@ fn invalid_recursive_generic_instance_in_type(
                     concrete = false;
                 } else {}
             }
-            if concrete && invalid_named_type_cycle(state, underlying, resolved, Vec::[]) {
+            if concrete
+                && invalid_named_type_cycle(state, underlying, resolved, Vec::from_array([])) {
                 Option::Some(object)
             } else {
                 invalid_recursive_generic_instance_in_type(state, underlying, visited)
@@ -2668,7 +2669,7 @@ fn invalid_recursive_generic_instance_in_type(
 fn invalid_recursive_generic_instance(state: CheckState, value: go_types::TypeId) -> Option[
     go_types::ObjectId,
 ] {
-    invalid_recursive_generic_instance_in_type(state, value, Vec::[])
+    invalid_recursive_generic_instance_in_type(state, value, Vec::from_array([]))
 }
 
 fn check_size_align_initializer_function_body(
@@ -2896,7 +2897,7 @@ fn check_unsafe_size_align(
         },
         None => {},
     };
-    let variable_size = type_has_variable_size(state, argument.type_id, Vec::[]);
+    let variable_size = type_has_variable_size(state, argument.type_id, Vec::from_array([]));
     let value = if alignment {
         go_types::alignof(state.world, argument.type_id, state.config.sizes)
     } else {
@@ -3097,7 +3098,11 @@ fn check_unsafe_offsetof(
                                 unsafe_constant_operand(state, value)
                             },
                             None => {
-                                if !type_has_variable_size(state, receiver.type_id, Vec::[])
+                                if !type_has_variable_size(
+                                    state,
+                                    receiver.type_id,
+                                    Vec::from_array([]),
+                                )
                                     && go_types::sizeof(
                                         state.world,
                                         receiver.type_id,
@@ -3349,7 +3354,7 @@ fn check_min_max_builtin(
         return invalid_operand(state)
     } else {};
     let first = check_expression(state, scope, arguments[0]);
-    let argument_operands: Vec[Operand] = Vec::[first];
+    let argument_operands: Vec[Operand] = Vec::from_array([first]);
     if !go_types::is_ordered(state.world, first.type_id) {
         diagnostic(
             state,

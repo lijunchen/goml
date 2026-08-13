@@ -8,10 +8,12 @@ fn ident_node(value: token::Token) -> ast::Node {
         ast::Kind::Ident,
         value.start,
         value.end,
-        Vec::[
-            ast::field("name_pos", ast::int_value(value.start)),
-            ast::field("name", ast::text_value(value.literal)),
-        ],
+        Vec::from_array(
+            [
+                ast::field("name_pos", ast::int_value(value.start)),
+                ast::field("name", ast::text_value(value.literal)),
+            ],
+        ),
     )
 }
 
@@ -20,10 +22,12 @@ fn missing_ident(offset: int) -> ast::Node {
         ast::Kind::Ident,
         offset,
         offset,
-        Vec::[
-            ast::field("name_pos", ast::int_value(offset)),
-            ast::field("name", ast::text_value("_")),
-        ],
+        Vec::from_array(
+            [
+                ast::field("name_pos", ast::int_value(offset)),
+                ast::field("name", ast::text_value("_")),
+            ],
+        ),
     )
 }
 
@@ -42,12 +46,14 @@ fn basic_lit_node(value: token::Token) -> ast::Node {
         ast::Kind::BasicLit,
         value.start,
         value.end,
-        Vec::[
-            ast::field("value_pos", ast::int_value(value.start)),
-            ast::field("value_end", ast::int_value(value.end)),
-            ast::field("token", ast::text_value(token::name(value.kind))),
-            ast::field("value", ast::text_value(value.literal)),
-        ],
+        Vec::from_array(
+            [
+                ast::field("value_pos", ast::int_value(value.start)),
+                ast::field("value_end", ast::int_value(value.end)),
+                ast::field("token", ast::text_value(token::name(value.kind))),
+                ast::field("value", ast::text_value(value.literal)),
+            ],
+        ),
     )
 }
 
@@ -56,7 +62,9 @@ fn bad_expr(start: int, end: int) -> ast::Node {
         ast::Kind::BadExpr,
         start,
         end,
-        Vec::[ast::field("from", ast::int_value(start)), ast::field("to", ast::int_value(end))],
+        Vec::from_array(
+            [ast::field("from", ast::int_value(start)), ast::field("to", ast::int_value(end))],
+        ),
     )
 }
 
@@ -65,7 +73,9 @@ fn bad_stmt(start: int, end: int) -> ast::Node {
         ast::Kind::BadStmt,
         start,
         end,
-        Vec::[ast::field("from", ast::int_value(start)), ast::field("to", ast::int_value(end))],
+        Vec::from_array(
+            [ast::field("from", ast::int_value(start)), ast::field("to", ast::int_value(end))],
+        ),
     )
 }
 
@@ -74,7 +84,9 @@ fn bad_decl(start: int, end: int) -> ast::Node {
         ast::Kind::BadDecl,
         start,
         end,
-        Vec::[ast::field("from", ast::int_value(start)), ast::field("to", ast::int_value(end))],
+        Vec::from_array(
+            [ast::field("from", ast::int_value(start)), ast::field("to", ast::int_value(end))],
+        ),
     )
 }
 
@@ -102,20 +114,22 @@ fn field_node(names: Vec[ast::Node], type_value: Option[ast::Node], tag: Option[
         ast::Kind::Field,
         start,
         end,
-        Vec::[
-            ast::field("doc", ast::null()),
-            ast::field(
-                "names",
-                if names.is_empty() {
-                    ast::null()
-                } else {
-                    ast::nodes(names)
-                },
-            ),
-            ast::field("type", ast::optional_node(type_value)),
-            ast::field("tag", ast::optional_node(tag)),
-            ast::field("comment", ast::null()),
-        ],
+        Vec::from_array(
+            [
+                ast::field("doc", ast::null()),
+                ast::field(
+                    "names",
+                    if names.is_empty() {
+                        ast::null()
+                    } else {
+                        ast::nodes(names)
+                    },
+                ),
+                ast::field("type", ast::optional_node(type_value)),
+                ast::field("tag", ast::optional_node(tag)),
+                ast::field("comment", ast::null()),
+            ],
+        ),
     )
 }
 
@@ -138,18 +152,20 @@ fn field_list_node(opening: int, fields: Vec[ast::Node], closing: int) -> ast::N
         ast::Kind::FieldList,
         start,
         end,
-        Vec::[
-            ast::field("opening", ast::int_value(opening)),
-            ast::field(
-                "list",
-                if fields.is_empty() {
-                    ast::null()
-                } else {
-                    ast::nodes(fields)
-                },
-            ),
-            ast::field("closing", ast::int_value(closing)),
-        ],
+        Vec::from_array(
+            [
+                ast::field("opening", ast::int_value(opening)),
+                ast::field(
+                    "list",
+                    if fields.is_empty() {
+                        ast::null()
+                    } else {
+                        ast::nodes(fields)
+                    },
+                ),
+                ast::field("closing", ast::int_value(closing)),
+            ],
+        ),
     )
 }
 
@@ -158,7 +174,7 @@ fn expr_stmt_node(expression: ast::Node) -> ast::Node {
         ast::Kind::ExprStmt,
         expression.span.start,
         expression.span.end,
-        Vec::[ast::field("x", ast::node_value(expression))],
+        Vec::from_array([ast::field("x", ast::node_value(expression))]),
     )
 }
 
@@ -174,18 +190,20 @@ fn block_node(left: int, statements: Vec[ast::Node], right: int) -> ast::Node {
         ast::Kind::BlockStmt,
         left,
         end,
-        Vec::[
-            ast::field("lbrace", ast::int_value(left)),
-            ast::field(
-                "list",
-                if statements.is_empty() {
-                    ast::null()
-                } else {
-                    ast::nodes(statements)
-                },
-            ),
-            ast::field("rbrace", ast::int_value(right)),
-        ],
+        Vec::from_array(
+            [
+                ast::field("lbrace", ast::int_value(left)),
+                ast::field(
+                    "list",
+                    if statements.is_empty() {
+                        ast::null()
+                    } else {
+                        ast::nodes(statements)
+                    },
+                ),
+                ast::field("rbrace", ast::int_value(right)),
+            ],
+        ),
     )
 }
 

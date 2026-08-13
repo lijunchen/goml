@@ -136,7 +136,7 @@ fn similar_field_in_type_inner(
 fn similar_field_in_type(state: CheckState, type_id: go_types::TypeId, name: string) -> Option[
     go_types::ObjectId,
 ] {
-    match similar_field_in_type_inner(state, type_id, name, Vec::[]) {
+    match similar_field_in_type_inner(state, type_id, name, Vec::from_array([])) {
         Some(object_id) => match go_types::get_object(state.world, object_id) {
             Some(object) => match go_types::lookup_field_or_method_detailed(
                 state.world,
@@ -238,7 +238,7 @@ fn diagnostic_method_string(state: CheckState, object_id: go_types::ObjectId) ->
                     variadic,
                 },
             }) => {
-                let parameter_types: Vec[string] = Vec::[];
+                let parameter_types: Vec[string] = Vec::from_array([]);
                 for variable in tuple_variables(state, params) {
                     let mut type_string = diagnostic_type_string(state, variable.type_id);
                     if variadic && parameter_types.len() + 1 == tuple_variables(state, params).len() {
@@ -257,7 +257,7 @@ fn diagnostic_method_string(state: CheckState, object_id: go_types::ObjectId) ->
                     } else {};
                     parameter_types.push(type_string)
                 }
-                let result_types: Vec[string] = Vec::[];
+                let result_types: Vec[string] = Vec::from_array([]);
                 for variable in tuple_variables(state, results) {
                     result_types.push(diagnostic_type_string(state, variable.type_id))
                 }
@@ -512,7 +512,7 @@ fn type_contains_invalid_inner(state: CheckState, type_id: go_types::TypeId, vis
 }
 
 fn type_contains_invalid(state: CheckState, type_id: go_types::TypeId) -> bool {
-    type_contains_invalid_inner(state, type_id, Vec::[])
+    type_contains_invalid_inner(state, type_id, Vec::from_array([]))
 }
 
 fn type_contains_active_type_inner(state: CheckState, type_id: go_types::TypeId, visited: Vec[int]) -> bool {
@@ -564,7 +564,7 @@ fn type_contains_active_type_inner(state: CheckState, type_id: go_types::TypeId,
 }
 
 fn type_contains_active_type(state: CheckState, type_id: go_types::TypeId) -> bool {
-    type_contains_active_type_inner(state, type_id, Vec::[])
+    type_contains_active_type_inner(state, type_id, Vec::from_array([]))
 }
 
 fn invalid_source_assignment_recoverable(state: CheckState, type_id: go_types::TypeId) -> bool {
@@ -767,7 +767,10 @@ fn record_operand(state: CheckState, node: syntax::NodeId, operand: Operand) -> 
     };
     let void = node_is_void(state, node);
     let fact_type = if void {
-        go_types::add_type(state.world, go_types::TypeKind::Tuple { variables: Vec::[] })
+        go_types::add_type(
+            state.world,
+            go_types::TypeKind::Tuple { variables: Vec::from_array([]) },
+        )
     } else {
         operand.type_id
     };
@@ -2022,7 +2025,7 @@ fn check_conversion(
 fn tuple_variables(state: CheckState, node: go_types::TypeId) -> Vec[go_types::Variable] {
     match go_types::get_type(state.world, node) {
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => variables,
-        _ => Vec::[],
+        _ => Vec::from_array([]),
     }
 }
 
@@ -2066,12 +2069,12 @@ fn type_parameter_assignment_failure(
     let source_types = if source_parameter {
         go_types::type_set_specific_types(state.world, source)
     } else {
-        Vec::[source]
+        Vec::from_array([source])
     };
     let target_types = if target_parameter {
         go_types::type_set_specific_types(state.world, target)
     } else {
-        Vec::[target]
+        Vec::from_array([target])
     };
     if source_types.is_empty() || target_types.is_empty() {
         return ""
@@ -2111,12 +2114,12 @@ fn type_parameter_conversion_failure(
     let source_types = if source_parameter {
         go_types::type_set_specific_types(state.world, source)
     } else {
-        Vec::[source]
+        Vec::from_array([source])
     };
     let target_types = if target_parameter {
         go_types::type_set_specific_types(state.world, target)
     } else {
-        Vec::[target]
+        Vec::from_array([target])
     };
     if source_types.is_empty() || target_types.is_empty() {
         return ""
@@ -2305,7 +2308,7 @@ fn call_have_types(
     checked: Vec[Operand],
     ellipsis: int,
 ) -> string {
-    let values: Vec[string] = Vec::[];
+    let values: Vec[string] = Vec::from_array([]);
     for index in 0..checked.len() {
         let mut value = if checked[index].type_id.value == state.world.invalid.value
             && arguments.len() == checked.len()
@@ -2326,7 +2329,7 @@ fn call_have_types(
 }
 
 fn call_want_types(state: CheckState, parameters: Vec[go_types::Variable], variadic: bool) -> string {
-    let values: Vec[string] = Vec::[];
+    let values: Vec[string] = Vec::from_array([]);
     for index in 0..parameters.len() {
         if variadic && index + 1 == parameters.len() {
             values.push(
@@ -2463,7 +2466,7 @@ fn recovered_generic_call_result(
 ) -> Operand {
     let recovered = recovered_signature_call_result(state, node, signature);
     for parameter in generic_parameters(state, signature) {
-        if type_contains_parameter(state, recovered.type_id, parameter.object, Vec::[]) {
+        if type_contains_parameter(state, recovered.type_id, parameter.object, Vec::from_array([])) {
             state.omitted_type_fact_nodes[node.value] = true;
         } else {}
     }
@@ -2653,8 +2656,8 @@ fn check_call(
                     arguments,
                     minimum,
                     false,
-                    Vec::[],
-                    Vec::[],
+                    Vec::from_array([]),
+                    Vec::from_array([]),
                 );
                 if checked.len() < minimum || too_many {
                     report_call_arity(
@@ -2723,8 +2726,8 @@ fn check_call(
                     arguments,
                     parameters.len(),
                     false,
-                    Vec::[],
-                    Vec::[],
+                    Vec::from_array([]),
+                    Vec::from_array([]),
                 );
                 report_call_arity(
                     state,
@@ -2765,7 +2768,7 @@ fn check_call(
                 parameters.len(),
                 false,
                 {
-                    let result: Vec[go_types::TypeId] = Vec::[];
+                    let result: Vec[go_types::TypeId] = Vec::from_array([]);
                     for index in 0..arguments.len() {
                         if parameters.is_empty() {
                             result.push(state.world.invalid)
@@ -2787,7 +2790,7 @@ fn check_call(
                     }
                     result
                 },
-                Vec::[],
+                Vec::from_array([]),
             );
             state.target_inference_context = previous_target_inference_context;
             state.target_inference_call = previous_target_inference_call;
@@ -3831,24 +3834,27 @@ fn method_expression_type(
         }) => {
             let parameter_variables = tuple_variables(state, params);
             let variables: Vec[go_types::Variable] = match receiver {
-                Some(value) => Vec::[
-                    go_types::Variable {
-                        name: if value.name == "" {
-                            if !parameter_variables.is_empty() && parameter_variables[0].name != "" {
-                                "_"
+                Some(value) => Vec::from_array(
+                    [
+                        go_types::Variable {
+                            name: if value.name == "" {
+                                if !parameter_variables.is_empty()
+                                    && parameter_variables[0].name != "" {
+                                    "_"
+                                } else {
+                                    ""
+                                }
                             } else {
-                                ""
-                            }
-                        } else {
-                            value.name
+                                value.name
+                            },
+                            owner: value.owner,
+                            type_id: receiver_type,
                         },
-                        owner: value.owner,
-                        type_id: receiver_type,
-                    },
-                ],
-                None => Vec::[
-                    go_types::Variable { name: "", owner: Option::None, type_id: receiver_type },
-                ],
+                    ],
+                ),
+                None => Vec::from_array(
+                    [go_types::Variable { name: "", owner: Option::None, type_id: receiver_type }],
+                ),
             };
             for variable in parameter_variables {
                 variables.push(variable)
@@ -3911,7 +3917,7 @@ fn method_expression_selection_type(
             },
         }) => {
             let source_variables = tuple_variables(state, params);
-            let variables: Vec[go_types::Variable] = Vec::[];
+            let variables: Vec[go_types::Variable] = Vec::from_array([]);
             for index in 0..source_variables.len() {
                 variables.push(
                     go_types::Variable {
@@ -3956,7 +3962,7 @@ fn without_receiver_type_parameters(state: CheckState, type_id: go_types::TypeId
             },
         }) => {
             let source_variables = tuple_variables(state, params);
-            let variables: Vec[go_types::Variable] = Vec::[];
+            let variables: Vec[go_types::Variable] = Vec::from_array([]);
             for index in 0..source_variables.len() {
                 variables.push(
                     go_types::Variable {
@@ -3975,7 +3981,7 @@ fn without_receiver_type_parameters(state: CheckState, type_id: go_types::TypeId
                 state.world,
                 go_types::TypeKind::Signature {
                     receiver,
-                    receiver_type_params: Vec::[],
+                    receiver_type_params: Vec::from_array([]),
                     type_params,
                     params: go_types::add_type(state.world, go_types::TypeKind::Tuple { variables }),
                     results,
@@ -4059,8 +4065,8 @@ fn recovered_field_selection_type(state: CheckState, type_id: go_types::TypeId) 
                 variadic,
             },
         }) => {
-            let parameter_variables: Vec[go_types::Variable] = Vec::[];
-            let result_variables: Vec[go_types::Variable] = Vec::[];
+            let parameter_variables: Vec[go_types::Variable] = Vec::from_array([]);
+            let result_variables: Vec[go_types::Variable] = Vec::from_array([]);
             let mut changed = false;
             for variable in tuple_variables(state, params) {
                 let recovered = if incomplete_named_instance(state, variable.type_id) {
@@ -5462,7 +5468,13 @@ fn check_expression(state: CheckState, scope: go_types::ScopeId, node: syntax::N
                 diagnostic(state, expression, "cannot index " + builtin + " (built-in)", false);
                 invalid_operand(state)
             },
-            None => match check_explicit_instance(state, scope, node, expression, Vec::[index]) {
+            None => match check_explicit_instance(
+                state,
+                scope,
+                node,
+                expression,
+                Vec::from_array([index]),
+            ) {
                 Some(value) => value,
                 None => check_index_expression(state, scope, node, expression, index),
             },

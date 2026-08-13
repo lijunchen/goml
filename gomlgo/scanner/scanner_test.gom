@@ -16,9 +16,9 @@ fn oracle_scan(source: bytes::Bytes) -> differential::OracleResponse {
                 ok: false,
                 go_version: "",
                 goroot: "",
-                tokens: Vec::[],
+                tokens: Vec::from_array([]),
                 ast: json::Value::Null,
-                diagnostics: Vec::[],
+                diagnostics: Vec::from_array([]),
             }
         },
     }
@@ -94,7 +94,7 @@ fn matches_semicolon_insertion() -> unit {
 
 #[test]
 fn matches_bom_nul_and_invalid_utf8() -> unit {
-    let source: Vec[byte] = Vec::[239, 187, 191, b'x', 0, 255, b'\n'];
+    let source: Vec[byte] = Vec::from_array([239, 187, 191, b'x', 0, 255, b'\n']);
     assert_scan_matches_bytes(bytes::Bytes::from_vec(source))
 }
 

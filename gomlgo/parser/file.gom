@@ -5,7 +5,7 @@ use gomlgo::token;
 use std::bytes;
 
 fn parse_identifier_list(parser: Parser) -> Vec[ast::Node] {
-    let values: Vec[ast::Node] = Vec::[parse_ident(parser)];
+    let values: Vec[ast::Node] = Vec::from_array([parse_ident(parser)]);
     while eat(parser, token::Kind::Comma).is_some() {
         values.push(parse_ident(parser))
     }
@@ -33,7 +33,7 @@ fn parse_import_spec(parser: Parser) -> ast::Node {
                 || at(parser, token::Kind::Func) {
                 recover_until(
                     parser,
-                    Vec::[token::Kind::Semicolon, token::Kind::Rparen, token::Kind::Eof],
+                    Vec::from_array([token::Kind::Semicolon, token::Kind::Rparen, token::Kind::Eof]),
                 )
             } else {}
         };
@@ -47,13 +47,15 @@ fn parse_import_spec(parser: Parser) -> ast::Node {
         ast::Kind::ImportSpec,
         start,
         path.span.end,
-        Vec::[
-            ast::field("doc", ast::null()),
-            ast::field("name", ast::optional_node(name)),
-            ast::field("path", ast::node_value(path)),
-            ast::field("comment", ast::null()),
-            ast::field("end_pos", ast::int_value(-1)),
-        ],
+        Vec::from_array(
+            [
+                ast::field("doc", ast::null()),
+                ast::field("name", ast::optional_node(name)),
+                ast::field("path", ast::node_value(path)),
+                ast::field("comment", ast::null()),
+                ast::field("end_pos", ast::int_value(-1)),
+            ],
+        ),
     );
     parser.imports.push(spec);
     spec
@@ -69,7 +71,7 @@ fn parse_value_spec(parser: Parser, declaration_kind: token::Kind) -> ast::Node 
     let values = if eat(parser, token::Kind::Assign).is_some() {
         parse_expression_list(parser)
     } else {
-        Vec::[]
+        Vec::from_array([])
     };
     let missing_type = token::equal(declaration_kind, token::Kind::Var) && type_value.is_none()
         && values.is_empty();
@@ -97,20 +99,22 @@ fn parse_value_spec(parser: Parser, declaration_kind: token::Kind) -> ast::Node 
         ast::Kind::ValueSpec,
         names[0].span.start,
         end,
-        Vec::[
-            ast::field("doc", ast::null()),
-            ast::field("names", ast::nodes(names)),
-            ast::field("type", ast::optional_node(effective_type)),
-            ast::field(
-                "values",
-                if values.is_empty() {
-                    ast::null()
-                } else {
-                    ast::nodes(values)
-                },
-            ),
-            ast::field("comment", ast::null()),
-        ],
+        Vec::from_array(
+            [
+                ast::field("doc", ast::null()),
+                ast::field("names", ast::nodes(names)),
+                ast::field("type", ast::optional_node(effective_type)),
+                ast::field(
+                    "values",
+                    if values.is_empty() {
+                        ast::null()
+                    } else {
+                        ast::nodes(values)
+                    },
+                ),
+                ast::field("comment", ast::null()),
+            ],
+        ),
     )
 }
 
@@ -130,14 +134,16 @@ fn parse_type_spec(parser: Parser) -> ast::Node {
         ast::Kind::TypeSpec,
         name.span.start,
         type_value.span.end,
-        Vec::[
-            ast::field("doc", ast::null()),
-            ast::field("name", ast::node_value(name)),
-            ast::field("type_params", ast::optional_node(type_parameters)),
-            ast::field("assign", ast::int_value(assignment)),
-            ast::field("type", ast::node_value(type_value)),
-            ast::field("comment", ast::null()),
-        ],
+        Vec::from_array(
+            [
+                ast::field("doc", ast::null()),
+                ast::field("name", ast::node_value(name)),
+                ast::field("type_params", ast::optional_node(type_parameters)),
+                ast::field("assign", ast::int_value(assignment)),
+                ast::field("type", ast::node_value(type_value)),
+                ast::field("comment", ast::null()),
+            ],
+        ),
     )
 }
 
@@ -153,7 +159,7 @@ fn parse_spec(parser: Parser, kind: token::Kind) -> ast::Node {
 
 fn parse_general_declaration(parser: Parser) -> ast::Node {
     let keyword = advance(parser);
-    let specs: Vec[ast::Node] = Vec::[];
+    let specs: Vec[ast::Node] = Vec::from_array([]);
     let mut left = -1;
     let mut right = -1;
     if let Some(opening) = eat(parser, token::Kind::Lparen) {
@@ -183,21 +189,23 @@ fn parse_general_declaration(parser: Parser) -> ast::Node {
         ast::Kind::GenDecl,
         keyword.start,
         end,
-        Vec::[
-            ast::field("doc", ast::null()),
-            ast::field("token_pos", ast::int_value(keyword.start)),
-            ast::field("token", token_operator(keyword)),
-            ast::field("lparen", ast::int_value(left)),
-            ast::field(
-                "specs",
-                if specs.is_empty() {
-                    ast::null()
-                } else {
-                    ast::nodes(specs)
-                },
-            ),
-            ast::field("rparen", ast::int_value(right)),
-        ],
+        Vec::from_array(
+            [
+                ast::field("doc", ast::null()),
+                ast::field("token_pos", ast::int_value(keyword.start)),
+                ast::field("token", token_operator(keyword)),
+                ast::field("lparen", ast::int_value(left)),
+                ast::field(
+                    "specs",
+                    if specs.is_empty() {
+                        ast::null()
+                    } else {
+                        ast::nodes(specs)
+                    },
+                ),
+                ast::field("rparen", ast::int_value(right)),
+            ],
+        ),
     )
 }
 
@@ -230,13 +238,15 @@ fn parse_function_declaration(parser: Parser) -> ast::Node {
         ast::Kind::FuncDecl,
         keyword.start,
         end,
-        Vec::[
-            ast::field("doc", ast::null()),
-            ast::field("recv", ast::optional_node(receiver)),
-            ast::field("name", ast::node_value(name)),
-            ast::field("type", ast::node_value(function_type)),
-            ast::field("body", ast::optional_node(body)),
-        ],
+        Vec::from_array(
+            [
+                ast::field("doc", ast::null()),
+                ast::field("recv", ast::optional_node(receiver)),
+                ast::field("name", ast::node_value(name)),
+                ast::field("type", ast::node_value(function_type)),
+                ast::field("body", ast::optional_node(body)),
+            ],
+        ),
     )
 }
 
@@ -259,14 +269,16 @@ fn parse_declaration(parser: Parser) -> ast::Node {
         report(parser, start, "expected declaration");
         recover_until(
             parser,
-            Vec::[
-                token::Kind::Import,
-                token::Kind::Const,
-                token::Kind::Type,
-                token::Kind::Var,
-                token::Kind::Func,
-                token::Kind::Eof,
-            ],
+            Vec::from_array(
+                [
+                    token::Kind::Import,
+                    token::Kind::Const,
+                    token::Kind::Type,
+                    token::Kind::Var,
+                    token::Kind::Func,
+                    token::Kind::Eof,
+                ],
+            ),
         );
         bad_decl(start, current(parser).start)
     }
@@ -276,7 +288,7 @@ fn parse_file_node(parser: Parser) -> ast::Node {
     let package_keyword = expect(parser, token::Kind::Package);
     let name = parse_ident(parser);
     consume_semicolon(parser);
-    let declarations: Vec[ast::Node] = Vec::[];
+    let declarations: Vec[ast::Node] = Vec::from_array([]);
     let mut non_import_seen = false;
     let mut late_import_reported = false;
     while !eof(parser) {
@@ -317,22 +329,26 @@ fn parse_file_node(parser: Parser) -> ast::Node {
             recover_until(
                 parser,
                 if stray_rbrace {
-                    Vec::[
-                        token::Kind::Import,
-                        token::Kind::Const,
-                        token::Kind::Type,
-                        token::Kind::Var,
-                        token::Kind::Eof,
-                    ]
+                    Vec::from_array(
+                        [
+                            token::Kind::Import,
+                            token::Kind::Const,
+                            token::Kind::Type,
+                            token::Kind::Var,
+                            token::Kind::Eof,
+                        ],
+                    )
                 } else {
-                    Vec::[
-                        token::Kind::Import,
-                        token::Kind::Const,
-                        token::Kind::Type,
-                        token::Kind::Var,
-                        token::Kind::Func,
-                        token::Kind::Eof,
-                    ]
+                    Vec::from_array(
+                        [
+                            token::Kind::Import,
+                            token::Kind::Const,
+                            token::Kind::Type,
+                            token::Kind::Var,
+                            token::Kind::Func,
+                            token::Kind::Eof,
+                        ],
+                    )
                 },
             );
             declarations.push(bad_decl(start, current(parser).start));
@@ -348,38 +364,40 @@ fn parse_file_node(parser: Parser) -> ast::Node {
         ast::Kind::File,
         package_keyword.start,
         end,
-        Vec::[
-            ast::field("doc", ast::null()),
-            ast::field("package", ast::int_value(package_keyword.start)),
-            ast::field("name", ast::node_value(name)),
-            ast::field(
-                "decls",
-                if declarations.is_empty() {
-                    ast::null()
-                } else {
-                    ast::nodes(declarations)
-                },
-            ),
-            ast::field("file_start", ast::int_value(0)),
-            ast::field("file_end", ast::int_value(parser.source_len)),
-            ast::field(
-                "imports",
-                if parser.imports.is_empty() {
-                    ast::null()
-                } else {
-                    ast::nodes(parser.imports)
-                },
-            ),
-            ast::field(
-                "comments",
-                if parser.comment_nodes.is_empty() {
-                    ast::null()
-                } else {
-                    ast::nodes(parser.comment_nodes)
-                },
-            ),
-            ast::field("go_version", ast::text_value(parser.go_version)),
-        ],
+        Vec::from_array(
+            [
+                ast::field("doc", ast::null()),
+                ast::field("package", ast::int_value(package_keyword.start)),
+                ast::field("name", ast::node_value(name)),
+                ast::field(
+                    "decls",
+                    if declarations.is_empty() {
+                        ast::null()
+                    } else {
+                        ast::nodes(declarations)
+                    },
+                ),
+                ast::field("file_start", ast::int_value(0)),
+                ast::field("file_end", ast::int_value(parser.source_len)),
+                ast::field(
+                    "imports",
+                    if parser.imports.is_empty() {
+                        ast::null()
+                    } else {
+                        ast::nodes(parser.imports)
+                    },
+                ),
+                ast::field(
+                    "comments",
+                    if parser.comment_nodes.is_empty() {
+                        ast::null()
+                    } else {
+                        ast::nodes(parser.comment_nodes)
+                    },
+                ),
+                ast::field("go_version", ast::text_value(parser.go_version)),
+            ],
+        ),
     )
 }
 
