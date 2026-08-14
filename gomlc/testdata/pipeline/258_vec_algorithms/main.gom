@@ -1,0 +1,31 @@
+use std::cmp;
+
+fn main() -> unit {
+    let values = Vec::[3, 1, 4, 1, 5, 9, 2, 6];
+    println(values.position(|value: int| value == 5).unwrap_or(-1).to_string());
+    println(values.position(|value: int| value == 99).unwrap_or(-1).to_string());
+    values.sort_by(|left: int, right: int| left - right);
+    println(values.join(","));
+    values.dedup();
+    println(values.join(","));
+    let ordered = Vec::[1, 2, 4, 4, 5];
+    println(ordered.binary_search_by(|value: int| value - 4).unwrap_or(-1).to_string());
+    println(ordered.binary_search_by(|value: int| value - 3).unwrap_or(-1).to_string());
+    println(ordered.min_by(|left: int, right: int| left - right).unwrap_or(0).to_string());
+    println(ordered.max_by(|left: int, right: int| left - right).unwrap_or(0).to_string());
+    let names = Vec::["beta", "alpha", "gamma"];
+    names.sort_by_ordering(|left: string, right: string| cmp::compare(left, right));
+    println(names.join("|"));
+    let pairs = Vec::[(1, 2), (1, 1), (0, 9)];
+    pairs.sort_by_ordering(|left: (int, int), right: (int, int)| cmp::compare(left.0, right.0));
+    println(pairs.len().to_string());
+    let view = Vec::[7, 8, 9].slice(0, 2);
+    println(view.contains(8).to_string());
+    println(view.contains(9).to_string());
+    let frozen = Vec::[1, 2].freeze();
+    println(frozen.contains(1).to_string());
+    println(frozen.contains(3).to_string());
+    let empty: Vec[int] = Vec::[];
+    println(empty.join(","));
+    println(empty.min_by(|left: int, right: int| left - right).is_none().to_string())
+}
