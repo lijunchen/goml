@@ -693,6 +693,70 @@ fn contains_unbound_type_variable(value: Type) -> bool {
     }
 }
 
+fn contains_unbound_any_type_variable(value: Type) -> bool {
+    match prune(value) {
+        Var(variable) => match variable.get() {
+            Unbound { id: _, kind: Any } => true,
+            Unbound { id: _, kind: _ } => false,
+            Link(inner) => contains_unbound_any_type_variable(inner),
+        },
+        Tuple { items: values } => {
+            for value in values {
+                if contains_unbound_any_type_variable(value) {
+                    return true
+                } else {}
+            }
+            false
+        },
+        Projection { for_ty: base, name: _, trait_ref: reference } => {
+            if contains_unbound_any_type_variable(base) {
+                true
+            } else {
+                match reference {
+                    Some(reference) => for arg in reference.args {
+                        if contains_unbound_any_type_variable(arg) {
+                            return true
+                        } else {}
+                    },
+                    None => (),
+                };
+                false
+            }
+        },
+        App { ty: base, args } => {
+            if contains_unbound_any_type_variable(base) {
+                true
+            } else {
+                for arg in args {
+                    if contains_unbound_any_type_variable(arg) {
+                        return true
+                    } else {}
+                }
+                false
+            }
+        },
+        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+            elem,
+        } => contains_unbound_any_type_variable(elem),
+        HashMap { key, value } => {
+            contains_unbound_any_type_variable(key) || contains_unbound_any_type_variable(value)
+        },
+        Func { params, ret_ty } => {
+            if contains_unbound_any_type_variable(ret_ty) {
+                true
+            } else {
+                for param in params {
+                    if contains_unbound_any_type_variable(param) {
+                        return true
+                    } else {}
+                }
+                false
+            }
+        },
+        _ => false,
+    }
+}
+
 fn unresolved_inference_var(ctx: Checker, variable: Ref[TypeVar]) -> bool {
     for candidate in ctx.unresolved_inference_vars {
         if ptr_eq(candidate, variable) || occurs(variable, Type::Var(candidate)) {
@@ -1622,9 +1686,7 @@ fn check_vec_literal_expr(
     let vec_ty = Type::VecType { elem };
     match propagated_expected(expected) {
         Some(ty) => expect_type(ctx, vec_ty, ty),
-        None => if values.is_empty() {
-            push_inference_diagnostic_at(ctx, value_span, 0)
-        } else {},
+        None => (),
     };
     let local_name = "vec_literal/" + value_span.start.to_string();
     let stmts: Vec[Stmt] = Vec::[];
@@ -1671,9 +1733,15 @@ fn check_byte_string_expr(
     for value in values {
         items.push(hir::Expr { kind: hir::ExprKind::Byte { value }, span: value_span })
     }
+    match expected {
+        Some(ty) => match prune(ty) {
+            Array { len: _, elem: _ } => return check_array_expr(ctx, items, expected),
+            _ => (),
+        },
+        None => (),
+    };
     let byte_vec = Type::VecType { elem: Type::Uint8 };
-    let result = check_vec_literal_expr(ctx, items, Option::Some(byte_vec), value_span);
-    coerce_expr(ctx, result, expected)
+    coerce_expr(ctx, Expr::Prim { value: Primitive::Bytes { values }, ty: byte_vec }, expected)
 }
 
 fn check_hashmap_literal_expr(
@@ -1687,11 +1755,8 @@ fn check_hashmap_literal_expr(
     let map_ty = Type::HashMap { key, value };
     match propagated_expected(expected) {
         Some(ty) => expect_type(ctx, map_ty, ty),
-        None => if entries.is_empty() {
-            push_inference_diagnostic_at(ctx, value_span, 0)
-        } else {},
+        None => (),
     };
-    require_hashmap_type(ctx, map_ty);
     let local_name = "hashmap_literal/" + value_span.start.to_string();
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
@@ -1718,6 +1783,9 @@ fn check_hashmap_literal_expr(
             },
         )
     }
+    if contains_unbound_type_variable(key) {} else {
+        require_hashmap_type(ctx, map_ty)
+    };
     coerce_expr(
         ctx,
         Expr::Block {
@@ -2288,31 +2356,49 @@ fn check_method_call(
         return Expr::Var { name: "<error>", ty: Type::Error }
     } else {};
     require_hashmap_type(ctx, expr_type(receiver));
-    let arg_types: Vec[Type] = Vec::[];
-    for source in args {
-        let value = check_expr(ctx, source, Option::None);
-        arg_types.push(expr_type(value))
-    }
     let receiver_ty = if is_numeric_type(expr_type(receiver)) {
         resolve_type(expr_type(receiver))
     } else {
         expr_type(receiver)
     };
     let method_explicit = explicit_types(ctx, method_type_args);
-    let resolved = if contains_unbound_type_variable(receiver_ty) {
-        match deferred_method_candidate(
-            ctx,
-            receiver_ty,
-            name,
-            arg_types,
-            expected,
-            method_explicit,
-        ) {
-            Some(value) => Option::Some(value),
-            None => resolve_method(ctx, receiver_ty, name, arg_types, expected, method_explicit),
-        }
-    } else {
-        resolve_method(ctx, receiver_ty, name, arg_types, expected, method_explicit)
+    let builtin_container = resolve_builtin_container_method(
+        ctx,
+        receiver_ty,
+        name,
+        method_explicit,
+    );
+    let resolved = match builtin_container {
+        Some(value) => Option::Some(value),
+        None => {
+            let arg_types: Vec[Type] = Vec::[];
+            for source in args {
+                let value = check_expr(ctx, source, Option::None);
+                arg_types.push(expr_type(value))
+            }
+            if contains_unbound_type_variable(receiver_ty) {
+                match deferred_method_candidate(
+                    ctx,
+                    receiver_ty,
+                    name,
+                    arg_types,
+                    expected,
+                    method_explicit,
+                ) {
+                    Some(value) => Option::Some(value),
+                    None => resolve_method(
+                        ctx,
+                        receiver_ty,
+                        name,
+                        arg_types,
+                        expected,
+                        method_explicit,
+                    ),
+                }
+            } else {
+                resolve_method(ctx, receiver_ty, name, arg_types, expected, method_explicit)
+            }
+        },
     };
     match resolved {
         Some(value) => {
@@ -3860,6 +3946,32 @@ fn check_index_expr(ctx: Checker, base_source: hir::Expr, index_source: hir::Exp
 fn check_assign_target(ctx: Checker, target: hir::Expr, compound: bool) -> (Expr, Type) {
     let target_span = target.span;
     match target.kind {
+        NameRef { name_ref: reference } => {
+            let static_value = match reference {
+                hir::NameRef::Def(definition) => find_constant_by_def(ctx, definition),
+                hir::NameRef::Other(name) => find_constant_by_name(ctx, name),
+                hir::NameRef::Local(_) => Option::None,
+            };
+            match static_value {
+                Some(value) => {
+                    push_diagnostic_at(
+                        ctx,
+                        "cannot assign to "
+                            + if once_cell_type(value.ty) {
+                                "static binding `"
+                            } else {
+                                "constant `"
+                            }
+                            + value.name
+                            + "`",
+                        Option::Some(target_span),
+                    )
+                },
+                None => (),
+            };
+            let typed = check_name_ref(ctx, reference);
+            (typed, expr_type(typed))
+        },
         Index { base: base_source, index: index_source } => {
             let local_root = array_assignment_local_root(base_source);
             let base = check_expr(ctx, base_source, Option::None);
@@ -4904,6 +5016,14 @@ fn check_constant_pattern(ctx: Checker, reference: hir::NameRef, expected: Type,
             ctx.typeck_results.references.push(
                 ReferenceFact { source_path: ctx.source_path, span, target, ty: value.ty },
             );
+            if constant_pattern_type(value.ty) {} else {
+                push_diagnostic_at(
+                    ctx,
+                    "non-scalar constants cannot be used as patterns",
+                    Option::Some(span),
+                );
+                return Pat::Wild { ty: expected }
+            };
             match value.value {
                 Some(primitive) => Pat::Prim {
                     value: normalize_pattern_primitive(primitive, expected),
@@ -4916,6 +5036,13 @@ fn check_constant_pattern(ctx: Checker, reference: hir::NameRef, expected: Type,
             push_diagnostic(ctx, "Constant " + constant_pattern_name(reference) + " not found");
             Pat::Wild { ty: expected }
         },
+    }
+}
+
+fn constant_pattern_type(value: Type) -> bool {
+    match resolve_type(value) {
+        Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | Float32 | Float64 | String | Char => true,
+        _ => false,
     }
 }
 

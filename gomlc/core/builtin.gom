@@ -51,6 +51,7 @@ pub fn without_roots(value: File) -> File {
         structs: value.structs,
         type_instances: value.type_instances,
         constants: value.constants,
+        statics: value.statics,
     }
 }
 
@@ -133,6 +134,7 @@ pub fn link_with_dependencies(builtins: File, dependencies: Vec[File], user: Fil
         type_instances.push(value)
     }
     let constants: Vec[Constant] = Vec::[];
+    let statics: Vec[Static] = Vec::[];
     for value in builtins.constants {
         constants.push(value)
     }
@@ -144,7 +146,18 @@ pub fn link_with_dependencies(builtins: File, dependencies: Vec[File], user: Fil
     for value in user.constants {
         constants.push(value)
     }
-    File { functions, enums, structs, type_instances, constants }
+    for value in builtins.statics {
+        statics.push(value)
+    }
+    for dependency in dependencies {
+        for value in dependency.statics {
+            statics.push(value)
+        }
+    }
+    for value in user.statics {
+        statics.push(value)
+    }
+    File { functions, enums, structs, type_instances, constants, statics }
 }
 
 pub fn link_with_builtins(builtins: File, user: File) -> File {

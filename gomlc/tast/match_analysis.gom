@@ -243,6 +243,7 @@ fn coverage_primitive_value(value: Primitive) -> string {
         Float64 { value } => "float64:" + value,
         String { value } => "string:" + value,
         Char { value } => "char:" + (value.to_uint32()).to_string(),
+        Bytes { values: _ } => "bytes",
     }
 }
 

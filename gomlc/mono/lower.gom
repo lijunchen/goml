@@ -519,6 +519,7 @@ fn collapse_primitive(value: core::Primitive) -> Primitive {
         Float64 { value } => Primitive::Float64 { value },
         String { value } => Primitive::String { value },
         Char { value } => Primitive::Char { value },
+        Bytes { values } => Primitive::Bytes { values },
     }
 }
 
@@ -1183,11 +1184,37 @@ fn collapse_const_expr(ctx: TypeCtx, value: core::ConstExpr) -> ConstExpr {
             rhs: collapse_const_expr(ctx, rhs),
             ty: collapse_type(ctx, ty),
         },
+        Tuple { items, ty } => ConstExpr::Tuple {
+            items: collapse_const_exprs(ctx, items),
+            ty: collapse_type(ctx, ty),
+        },
+        Array { items, ty } => ConstExpr::Array {
+            items: collapse_const_exprs(ctx, items),
+            ty: collapse_type(ctx, ty),
+        },
+        Constr { constructor, args, ty } => ConstExpr::Constr {
+            constructor: Constructor {
+                name: constructor.name,
+                fields: constructor.fields,
+                is_struct: constructor.is_struct,
+                tag: constructor.tag,
+            },
+            args: collapse_const_exprs(ctx, args),
+            ty: collapse_type(ctx, ty),
+        },
         Error { ty: _ } => {
             invalid_type(ctx, "error constant cannot enter Mono IR");
             ConstExpr::Prim { value: Primitive::Unit, ty: Type::Unit }
         },
     }
+}
+
+fn collapse_const_exprs(ctx: TypeCtx, values: Vec[core::ConstExpr]) -> Vec[ConstExpr] {
+    let result: Vec[ConstExpr] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(collapse_const_expr(ctx, value))
+    }
+    result
 }
 
 fn collapse_constants(ctx: TypeCtx, values: Vec[core::Constant]) -> Vec[Constant] {
@@ -1200,6 +1227,14 @@ fn collapse_constants(ctx: TypeCtx, values: Vec[core::Constant]) -> Vec[Constant
                 value: collapse_const_expr(ctx, value.value),
             },
         )
+    }
+    result
+}
+
+fn collapse_statics(ctx: TypeCtx, values: Vec[core::Static]) -> Vec[Static] {
+    let result: Vec[Static] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(Static { name: value.name, ty: collapse_type(ctx, value.ty) })
     }
     result
 }
@@ -1302,11 +1337,13 @@ pub fn lower_checked(value: core::File) -> LowerResult {
                 structs: Vec::[],
                 type_instances: Vec::[],
                 constants: Vec::[],
+                statics: Vec::[],
             },
             error: Option::Some("invalid Core IR: " + message),
         },
     };
     let constants = value.constants;
+    let statics = value.statics;
     let error = Ref::new(Option::None);
     let value = specialize(value, error);
     let ctx = type_ctx(value, error);
@@ -1318,6 +1355,7 @@ pub fn lower_checked(value: core::File) -> LowerResult {
     let enums = definitions.0;
     let structs = definitions.1;
     let constants = collapse_constants(ctx, constants);
+    let statics = collapse_statics(ctx, statics);
     let type_instances: Vec[TypeInstance] = Vec::[];
     for instance in ctx.instances {
         type_instances.push(
@@ -1328,7 +1366,7 @@ pub fn lower_checked(value: core::File) -> LowerResult {
             },
         )
     }
-    let file = File { functions, enums, structs, type_instances, constants };
+    let file = File { functions, enums, structs, type_instances, constants, statics };
     let validation_error = match error.get() {
         Some(message) => Option::Some(message),
         None => match validate(file) {

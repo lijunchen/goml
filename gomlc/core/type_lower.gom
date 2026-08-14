@@ -112,6 +112,7 @@ pub fn lower_primitive(value: tast::Primitive) -> Primitive {
         Float64 { value } => Primitive::Float64 { value },
         String { value } => Primitive::String { value },
         Char { value } => Primitive::Char { value },
+        Bytes { values } => Primitive::Bytes { values },
     }
 }
 
@@ -134,11 +135,21 @@ pub fn primitive_to_tast(value: Primitive) -> tast::Primitive {
         Float64 { value } => tast::Primitive::Float64 { value },
         String { value } => tast::Primitive::String { value },
         Char { value } => tast::Primitive::Char { value },
+        Bytes { values } => tast::Primitive::Bytes { values },
     }
 }
 
 pub fn lower_constructor(value: tast::Constructor) -> Constructor {
     Constructor {
+        name: value.name,
+        fields: value.fields,
+        is_struct: value.is_struct,
+        tag: value.tag,
+    }
+}
+
+pub fn constructor_to_tast(value: Constructor) -> tast::Constructor {
+    tast::Constructor {
         name: value.name,
         fields: value.fields,
         is_struct: value.is_struct,
@@ -245,8 +256,29 @@ pub fn lower_const_expr(value: tast::ConstExpr) -> ConstExpr {
             rhs: lower_const_expr(rhs),
             ty: lower_type(ty),
         },
+        Tuple { items, ty } => ConstExpr::Tuple {
+            items: lower_const_exprs(items),
+            ty: lower_type(ty),
+        },
+        Array { items, ty } => ConstExpr::Array {
+            items: lower_const_exprs(items),
+            ty: lower_type(ty),
+        },
+        Constr { constructor, args, ty } => ConstExpr::Constr {
+            constructor: lower_constructor(constructor),
+            args: lower_const_exprs(args),
+            ty: lower_type(ty),
+        },
         Error { ty } => ConstExpr::Error { ty: lower_type(ty) },
     }
+}
+
+fn lower_const_exprs(values: Vec[tast::ConstExpr]) -> Vec[ConstExpr] {
+    let result: Vec[ConstExpr] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(lower_const_expr(value))
+    }
+    result
 }
 
 pub fn lower_constant(value: tast::Constant) -> Constant {
@@ -273,8 +305,29 @@ pub fn const_expr_to_tast(value: ConstExpr) -> tast::ConstExpr {
             rhs: const_expr_to_tast(rhs),
             ty: type_to_tast(ty),
         },
+        Tuple { items, ty } => tast::ConstExpr::Tuple {
+            items: const_exprs_to_tast(items),
+            ty: type_to_tast(ty),
+        },
+        Array { items, ty } => tast::ConstExpr::Array {
+            items: const_exprs_to_tast(items),
+            ty: type_to_tast(ty),
+        },
+        Constr { constructor, args, ty } => tast::ConstExpr::Constr {
+            constructor: constructor_to_tast(constructor),
+            args: const_exprs_to_tast(args),
+            ty: type_to_tast(ty),
+        },
         Error { ty } => tast::ConstExpr::Error { ty: type_to_tast(ty) },
     }
+}
+
+fn const_exprs_to_tast(values: Vec[ConstExpr]) -> Vec[tast::ConstExpr] {
+    let result: Vec[tast::ConstExpr] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(const_expr_to_tast(value))
+    }
+    result
 }
 
 pub fn constant_to_tast(value: Constant) -> tast::Constant {
@@ -289,6 +342,14 @@ pub fn lower_constants(values: Vec[tast::Constant]) -> Vec[Constant] {
     let result: Vec[Constant] = Vec::with_capacity(values.len());
     for value in values {
         result.push(lower_constant(value))
+    }
+    result
+}
+
+pub fn lower_statics(values: Vec[tast::Static]) -> Vec[Static] {
+    let result: Vec[Static] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(Static { name: value.name, ty: lower_type(value.ty) })
     }
     result
 }

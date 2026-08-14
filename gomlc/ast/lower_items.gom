@@ -78,7 +78,47 @@ fn lower_item(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
             record_disallowed_self_types(ctx, node);
             lower_constant(ctx, node)
         },
+        STATIC => {
+            record_disallowed_self_types(ctx, node);
+            lower_static(ctx, node)
+        },
         _ => Option::None,
+    }
+}
+
+fn lower_static(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
+    let types = type_children(node);
+    let values = expr_children(node);
+    match (first_token(node, lexer::TokenKind::Ident), types.len(), values.len()) {
+        (Some(name), type_count, value_count) => {
+            if type_count > 0 && value_count > 0 {
+                match lower_ty(ctx, types[0]) {
+                    Some(ty) => match lower_expr(ctx, values[0]) {
+                        Some(value) => Option::Some(
+                            Item::Static(
+                                Static {
+                                    attrs: lower_attributes(node),
+                                    visibility: lower_visibility(node),
+                                    name: name.token.text,
+                                    ty,
+                                    ty_span: type_head_span(types[0]),
+                                    value,
+                                },
+                            ),
+                        ),
+                        None => Option::None,
+                    },
+                    None => Option::None,
+                }
+            } else {
+                push_error(ctx, node_span(node), "Static is missing a type or initializer");
+                Option::None
+            }
+        },
+        (None, _, _) => {
+            push_error(ctx, node_span(node), "Static is missing a name");
+            Option::None
+        },
     }
 }
 

@@ -379,6 +379,12 @@ fn collect_package_test_candidates(files: Vec[ast::LowerResult], source_paths: V
                         source_path,
                         diagnostics,
                     ),
+                    Static(definition) => reject_item_test_attributes(
+                        definition.attrs,
+                        "static",
+                        source_path,
+                        diagnostics,
+                    ),
                 }
             },
             None => (),

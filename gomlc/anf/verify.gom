@@ -496,6 +496,13 @@ fn verify_const_expr(value: repr::ConstExpr) -> Result[repr::Type, string] {
             repr::validate_type(ty)?;
             Result::Ok(ty)
         },
+        Tuple { items, ty } | Array { items, ty } | Constr { constructor: _, args: items, ty } => {
+            for item in items {
+                verify_const_expr(item)?;
+            }
+            repr::validate_type(ty)?;
+            Result::Ok(ty)
+        },
     }
 }
 

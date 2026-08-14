@@ -84,6 +84,19 @@ fn builtin_struct_instance(value: repr::TypeInstance, instances: Vec[repr::TypeI
         let fields: Vec[(string, Type)] = Vec::[];
         fields.push(("next_fn", Type::Func { params: Vec::[], ret_ty: result_ty }));
         Option::Some(StructDef { name: go_user_type_name(value.name), fields })
+    } else if value.base_name == "OnceCell" && value.args.len() == 1 {
+        let fields: Vec[(string, Type)] = Vec::[];
+        fields.push(("mutex", Type::Named { name: "_goml_sync.Mutex" }));
+        fields.push(("cond", Type::Pointer { elem: Type::Named { name: "_goml_sync.Cond" } }));
+        fields.push(("state", Type::Int));
+        fields.push(("owner", Type::Uint64));
+        fields.push(("value", lower_type(value.args[0])));
+        fields.push(("name", Type::String));
+        Option::Some(StructDef { name: go_user_type_name(value.name), fields })
+    } else if value.base_name == "FrozenVec" && value.args.len() == 1 {
+        let fields: Vec[(string, Type)] = Vec::[];
+        fields.push(("values", lower_type(repr::Type::VecType { elem: value.args[0] })));
+        Option::Some(StructDef { name: go_user_type_name(value.name), fields })
     } else {
         Option::None
     }
@@ -336,7 +349,12 @@ pub fn emit_user_type_items(
 ) -> unit {
     let emitted: Vec[string] = Vec::[];
     for definition in structs {
-        if collections::contains(emitted, definition.name) {} else {
+        let instance = instance_by_name(instances, definition.name);
+        let custom = match instance {
+            Some(value) => value.base_name == "OnceCell" || value.base_name == "FrozenVec",
+            None => false,
+        };
+        if collections::contains(emitted, definition.name) || custom {} else {
             let fields: Vec[(string, Type)] = Vec::with_capacity(definition.fields.len());
             for field in definition.fields {
                 fields.push((go_ident(field.0), lower_type(field.1)))

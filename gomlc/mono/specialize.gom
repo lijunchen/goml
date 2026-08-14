@@ -2543,6 +2543,7 @@ fn specialize(value: core::File, error: Ref[Option[string]]) -> core::File {
     let structs = value.structs;
     let type_instances = value.type_instances;
     let constants = value.constants;
+    let input_statics = value.statics;
     let function_index: HashMap[string, core::Function] = HashMap::{};
     let inherent_method_index: FunctionIndex = HashMap::{};
     let trait_function_index: FunctionIndex = HashMap::{};
@@ -2588,6 +2589,10 @@ fn specialize(value: core::File, error: Ref[Option[string]]) -> core::File {
         active: Ref::new(Option::None),
         error,
     };
+    let statics: Vec[core::Static] = Vec::with_capacity(input_statics.len());
+    for value in input_statics {
+        statics.push(core::Static { name: value.name, ty: specialize_type(ctx, value.ty, Vec::[]) })
+    }
     for function in ctx.functions {
         if function.root && !function_is_generic(function) {
             ensure_instance(ctx, function.name, Vec::[]);
@@ -2616,5 +2621,5 @@ fn specialize(value: core::File, error: Ref[Option[string]]) -> core::File {
             break
         } else {}
     }
-    core::File { functions: output, enums, structs, type_instances, constants }
+    core::File { functions: output, enums, structs, type_instances, constants, statics }
 }

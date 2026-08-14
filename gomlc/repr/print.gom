@@ -215,6 +215,16 @@ pub fn primitive_doc(value: Primitive) -> pretty::Doc {
         } | Float32 { value } | Float64 { value } => builder.write_string(value),
         String { value } => write_quoted_string(builder, value),
         Char { value } => write_quoted_char(builder, value),
+        Bytes { values } => {
+            builder.write_string("bytes[");
+            for index in 0..values.len() {
+                if index > 0 {
+                    builder.write_string(", ")
+                } else {};
+                builder.write_string(values[index])
+            }
+            builder.write_string("]")
+        },
     };
     pretty::text(builder.finish())
 }
@@ -250,6 +260,14 @@ pub fn binary_symbol(value: ast::BinaryOp) -> string {
     }
 }
 
+fn const_expr_docs(values: Vec[ConstExpr]) -> Vec[pretty::Doc] {
+    let result: Vec[pretty::Doc] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(const_expr_doc(value))
+    }
+    result
+}
+
 fn const_expr_doc(value: ConstExpr) -> pretty::Doc {
     match value {
         Prim { value, ty: _ } => primitive_doc(value),
@@ -277,6 +295,12 @@ fn const_expr_doc(value: ConstExpr) -> pretty::Doc {
                 ],
             ),
         ),
+        Tuple { items, ty: _ } => pretty::delimited("(", ",", ")", const_expr_docs(items)),
+        Array { items, ty: _ } => pretty::delimited("[", ",", "]", const_expr_docs(items)),
+        Constr { constructor, args, ty: _ } => pretty::append(
+            pretty::text(constructor.name),
+            pretty::delimited("(", ",", ")", const_expr_docs(args)),
+        ),
     }
 }
 
@@ -291,6 +315,16 @@ pub fn constant_doc(value: Constant) -> pretty::Doc {
                 pretty::text(";"),
             ],
         ),
+    )
+}
+
+pub fn static_doc(value: Static) -> pretty::Doc {
+    pretty::concat(
+        Vec::[
+            pretty::text("static " + value.name + ": "),
+            type_doc(value.ty),
+            pretty::text(" = OnceCell::new();"),
+        ],
     )
 }
 

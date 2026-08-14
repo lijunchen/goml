@@ -20,6 +20,7 @@ pub enum Primitive {
     Float64 { value: string },
     String { value: string },
     Char { value: char },
+    Bytes { values: Vec[string] },
 }
 
 pub struct Constructor {
@@ -98,6 +99,19 @@ pub enum ConstExpr {
         rhs: ConstExpr,
         ty: Type,
     },
+    Tuple {
+        items: Vec[ConstExpr],
+        ty: Type,
+    },
+    Array {
+        items: Vec[ConstExpr],
+        ty: Type,
+    },
+    Constr {
+        constructor: Constructor,
+        args: Vec[ConstExpr],
+        ty: Type,
+    },
     Error {
         ty: Type,
     },
@@ -107,6 +121,11 @@ pub struct Constant {
     pub name: string,
     pub ty: Type,
     pub value: ConstExpr,
+}
+
+pub struct Static {
+    pub name: string,
+    pub ty: Type,
 }
 
 pub struct EnumVariantDef {

@@ -436,6 +436,7 @@ fn primitive_ct_value(ctx: CtLowerContext, value: Primitive, ty: Type) -> Result
         Float { value: _ } | Float32 { value: _ } | Float64 { value: _ } => {
             Result::Err("comptime floating-point evaluation is not supported")
         },
+        Bytes { values: _ } => Result::Err("byte vectors are not available in comptime"),
     }
 }
 
@@ -1293,6 +1294,17 @@ struct CtConstantCandidate {
     pending: bool,
 }
 
+fn lower_const_exprs(ctx: CtLowerContext, values: Vec[ConstExpr]) -> Result[
+    Vec[ctir::CtExpr],
+    string,
+] {
+    let result: Vec[ctir::CtExpr] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(lower_const_expr(ctx, value)?)
+    }
+    Result::Ok(result)
+}
+
 fn lower_const_expr(ctx: CtLowerContext, value: ConstExpr) -> Result[ctir::CtExpr, string] {
     let ty = lower_ct_type(
         ctx,
@@ -1300,7 +1312,10 @@ fn lower_const_expr(ctx: CtLowerContext, value: ConstExpr) -> Result[ctir::CtExp
             ConstExpr::Prim { ty, .. } | ConstExpr::Ref { ty, .. } | ConstExpr::Unary { ty, .. } | ConstExpr::Cast {
                 ty,
                 ..,
-            } | ConstExpr::Binary { ty, .. } | ConstExpr::Error { ty } => ty,
+            } | ConstExpr::Binary { ty, .. } | ConstExpr::Tuple { ty, .. } | ConstExpr::Array {
+                ty,
+                ..,
+            } | ConstExpr::Constr { ty, .. } | ConstExpr::Error { ty } => ty,
         },
     )?;
     let kind = match value {
@@ -1326,24 +1341,78 @@ fn lower_const_expr(ctx: CtLowerContext, value: ConstExpr) -> Result[ctir::CtExp
             left: lower_const_expr(ctx, lhs)?,
             right: lower_const_expr(ctx, rhs)?,
         },
+        ConstExpr::Tuple { items, ty: _ } => {
+            ctir::CtExprKind::Tuple(lower_const_exprs(ctx, items)?)
+        },
+        ConstExpr::Array { items, ty: _ } => {
+            ctir::CtExprKind::Array(lower_const_exprs(ctx, items)?)
+        },
+        ConstExpr::Constr { constructor, args, ty: source_ty } => {
+            let fields = lower_const_exprs(ctx, args)?;
+            match constructor.tag {
+                Some(variant) => match lower_ct_type(ctx, source_ty)? {
+                    ctir::CtType::Enum { name, variants: _ } => {
+                        ctir::CtExprKind::Enum { name, variant, fields }
+                    },
+                    _ => return Result::Err("comptime enum constructor has a non-enum type"),
+                },
+                None => match lower_ct_type(ctx, source_ty)? {
+                    ctir::CtType::Struct { name, fields: _ } => {
+                        ctir::CtExprKind::Struct { name, fields }
+                    },
+                    _ => return Result::Err("comptime constructor is unsupported"),
+                },
+            }
+        },
         ConstExpr::Error { ty: _ } => return Result::Err("invalid constant expression"),
     };
     Result::Ok(ctir::CtExpr { kind, ty, origin: ctx.origin })
 }
 
-fn constant_expr_from_value(value: ctir::CtValue, ty: Type) -> Result[ConstExpr, string] {
-    match reify_ct_value(
-        File { items: Vec::[], enums: Vec::[], structs: Vec::[], constants: Vec::[] },
-        value,
-        ty,
-    )? {
+fn constant_expr_from_expr(value: Expr) -> Result[ConstExpr, string] {
+    match value {
         Expr::Prim { value, ty } => Result::Ok(ConstExpr::Prim { value, ty }),
-        _ => Result::Err("top-level comptime constants must produce scalar values"),
+        Expr::Tuple { items, ty } => {
+            let values: Vec[ConstExpr] = Vec::with_capacity(items.len());
+            for item in items {
+                values.push(constant_expr_from_expr(item)?)
+            }
+            Result::Ok(ConstExpr::Tuple { items: values, ty })
+        },
+        Expr::Array { items, ty } => {
+            let values: Vec[ConstExpr] = Vec::with_capacity(items.len());
+            for item in items {
+                values.push(constant_expr_from_expr(item)?)
+            }
+            Result::Ok(ConstExpr::Array { items: values, ty })
+        },
+        Expr::Constr { constructor, args, ty } => {
+            let values: Vec[ConstExpr] = Vec::with_capacity(args.len());
+            for arg in args {
+                values.push(constant_expr_from_expr(arg)?)
+            }
+            Result::Ok(ConstExpr::Constr { constructor, args: values, ty })
+        },
+        _ => Result::Err("top-level comptime constant produced a mutable or runtime value"),
     }
 }
 
+fn constant_expr_from_value(file: File, value: ctir::CtValue, ty: Type) -> Result[ConstExpr, string] {
+    constant_expr_from_expr(reify_ct_value(file, value, ty)?)
+}
+
 fn pattern_constant_primitive(value: ctir::CtValue, ty: Type) -> Option[Primitive] {
-    match constant_expr_from_value(value, ty) {
+    match constant_expr_from_value(
+        File {
+            items: Vec::[],
+            enums: Vec::[],
+            structs: Vec::[],
+            constants: Vec::[],
+            statics: Vec::[],
+        },
+        value,
+        ty,
+    ) {
         Ok(ConstExpr::Prim { value, ty: _ }) => Option::Some(value),
         Ok(_) | Err(_) => Option::None,
     }
@@ -1500,7 +1569,7 @@ fn evaluate_constants(
                     Ok(value) => {
                         module.constants.push(ctir::CtConstant { name: candidate.name, value });
                         if candidate.pending {
-                            match constant_expr_from_value(value, candidate.ty) {
+                            match constant_expr_from_value(file, value, candidate.ty) {
                                 Ok(value) => finalized.push(
                                     Constant { name: candidate.name, ty: candidate.ty, value },
                                 ),
@@ -2229,6 +2298,7 @@ pub fn finalize_comptime(
         enums: metadata_enums,
         structs: metadata_structs,
         constants: file.constants,
+        statics: file.statics,
     };
     let constant_names = comptime_constant_names(metadata_file, pending_constants);
     let module = build_comptime_module(
@@ -2326,7 +2396,13 @@ pub fn finalize_comptime(
         }
     } else {};
     module.sites.truncate(0);
-    let finalized_file = File { items, enums: file.enums, structs: file.structs, constants };
+    let finalized_file = File {
+        items,
+        enums: file.enums,
+        structs: file.structs,
+        constants,
+        statics: file.statics,
+    };
     if contains_comptime(finalized_file) {
         diagnostics.push(
             comptime_diagnostic(

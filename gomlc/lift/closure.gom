@@ -1051,7 +1051,15 @@ fn lambda_lift_with_counter(value: mono::File, counter: Ref[int]) -> LambdaLiftR
         )
     }
     LambdaLiftResult {
-        file: LowerFile { functions, enums, structs, type_instances, constants, closure_defs },
+        file: LowerFile {
+            functions,
+            enums,
+            structs,
+            type_instances,
+            constants,
+            statics: value.statics,
+            closure_defs,
+        },
         error: state.error.get(),
     }
 }

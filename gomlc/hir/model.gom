@@ -214,6 +214,16 @@ pub struct Constant {
     pub value: Expr,
 }
 
+pub struct Static {
+    pub def_id: DefId,
+    pub attrs: Vec[ast::Attribute],
+    pub visibility: ast::Visibility,
+    pub name: string,
+    pub ty: TypeExpr,
+    pub ty_span: ast::Span,
+    pub value: Expr,
+}
+
 pub struct TraitDef {
     pub def_id: DefId,
     pub attrs: Vec[ast::Attribute],
@@ -248,6 +258,7 @@ pub enum Item {
     ExternFunction(ExternFunction),
     TypeAlias(TypeAlias),
     Constant(Constant),
+    Static(Static),
 }
 
 pub struct File {

@@ -1900,7 +1900,24 @@ fn resolve_builtin_container_method(
         },
         String => resolve_string_method(receiver, name),
         App { ty: Con { name: owner }, args } => {
-            resolve_option_result_method(ctx, receiver, owner, args, name, method_explicit)
+            if short_name(owner) == "FrozenVec" && args.len() == 1 {
+                resolve_frozen_vec_method(receiver, args[0], name)
+            } else if short_name(owner) == "OnceCell" && args.len() == 1 {
+                if name == "get_or_init" {
+                    Option::Some(
+                        inherent_callable(
+                            receiver,
+                            name,
+                            two_types(receiver, Type::Func { params: Vec::[], ret_ty: args[0] }),
+                            args[0],
+                        ),
+                    )
+                } else {
+                    Option::None
+                }
+            } else {
+                resolve_option_result_method(ctx, receiver, owner, args, name, method_explicit)
+            }
         },
         _ => Option::None,
     };
@@ -2094,6 +2111,17 @@ fn resolve_vec_method(receiver: Type, elem: Type, name: string) -> Option[Resolv
         Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int), Type::Unit))
     } else if name == "clear" || name == "reverse" {
         Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Unit))
+    } else if name == "copy" {
+        Option::Some(inherent_callable(receiver, name, one_type(receiver), receiver))
+    } else if name == "freeze" {
+        Option::Some(
+            inherent_callable(
+                receiver,
+                name,
+                one_type(receiver),
+                nominal_type("FrozenVec", one_type(elem)),
+            ),
+        )
     } else if name == "last" || name == "pop" {
         Option::Some(
             inherent_callable(
@@ -2145,6 +2173,29 @@ fn resolve_vec_method(receiver: Type, elem: Type, name: string) -> Option[Resolv
     }
 }
 
+fn resolve_frozen_vec_method(receiver: Type, elem: Type, name: string) -> Option[ResolvedCallable] {
+    if name == "len" {
+        Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Int))
+    } else if name == "is_empty" {
+        Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Bool))
+    } else if name == "get" {
+        Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int), elem))
+    } else if name == "to_vec" {
+        Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::VecType { elem }))
+    } else if name == "iter" {
+        Option::Some(
+            inherent_callable(
+                receiver,
+                name,
+                one_type(receiver),
+                nominal_type("FnIterator", one_type(elem)),
+            ),
+        )
+    } else {
+        Option::None
+    }
+}
+
 fn resolve_slice_method(receiver: Type, elem: Type, name: string) -> Option[ResolvedCallable] {
     if name == "get" {
         Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int), elem))
@@ -2154,6 +2205,8 @@ fn resolve_slice_method(receiver: Type, elem: Type, name: string) -> Option[Reso
         Option::Some(
             inherent_callable(receiver, name, three_types(receiver, Type::Int, Type::Int), receiver),
         )
+    } else if name == "to_vec" {
+        Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::VecType { elem }))
     } else if name == "iter" {
         Option::Some(
             inherent_callable(
@@ -2913,7 +2966,9 @@ fn builtin_nominal_arity(name: string) -> Option[int] {
         Option::Some(0)
     } else if name == "Option" || name == "Vec" || name == "Slice" || name == "Ref"
         || name == "Channel"
-        || name == "FnIterator" {
+        || name == "FnIterator"
+        || name == "OnceCell"
+        || name == "FrozenVec" {
         Option::Some(1)
     } else if name == "Result" || name == "HashMap" {
         Option::Some(2)
@@ -3872,20 +3927,22 @@ fn resolve_builtin_static(ctx: Checker, owner: Type, name: string, method_explic
     ResolvedCallable,
 ] {
     let owner = match prune(owner) {
-        Con { name: owner_name } => if owner_name == "Vec" {
+        Con { name: owner_name } => if short_name(owner_name) == "Vec" {
             Type::VecType { elem: fresh_type(ctx.counter, VarKind::Any) }
-        } else if owner_name == "Ref" {
+        } else if short_name(owner_name) == "Ref" {
             Type::RefType { elem: fresh_type(ctx.counter, VarKind::Any) }
-        } else if owner_name == "Slice" {
+        } else if short_name(owner_name) == "Slice" {
             Type::Slice { elem: fresh_type(ctx.counter, VarKind::Any) }
-        } else if owner_name == "HashMap" {
+        } else if short_name(owner_name) == "HashMap" {
             Type::HashMap {
                 key: fresh_type(ctx.counter, VarKind::Any),
                 value: fresh_type(ctx.counter, VarKind::Any),
             }
-        } else if owner_name == "Channel" {
+        } else if short_name(owner_name) == "Channel" {
             Type::Channel { elem: fresh_type(ctx.counter, VarKind::Any) }
-        } else if owner_name == "FnIterator" {
+        } else if short_name(owner_name) == "FnIterator" {
+            nominal_type(owner_name, one_type(fresh_type(ctx.counter, VarKind::Any)))
+        } else if short_name(owner_name) == "OnceCell" {
             nominal_type(owner_name, one_type(fresh_type(ctx.counter, VarKind::Any)))
         } else {
             Type::Con { name: owner_name }
@@ -3919,7 +3976,7 @@ fn resolve_builtin_static(ctx: Checker, owner: Type, name: string, method_explic
             Some(owner_name) => if short_name(owner_name) == "Option"
                 || short_name(owner_name) == "Result" {
                 resolve_option_result_method(ctx, owner, owner_name, args, name, method_explicit)
-            } else if owner_name == "FnIterator" && args.len() == 1 && name == "from_fn" {
+            } else if short_name(owner_name) == "FnIterator" && args.len() == 1 && name == "from_fn" {
                 let item = args[0];
                 Option::Some(
                     ResolvedCallable {
@@ -3936,6 +3993,8 @@ fn resolve_builtin_static(ctx: Checker, owner: Type, name: string, method_explic
                         predicates: Vec::[],
                     },
                 )
+            } else if short_name(owner_name) == "OnceCell" && args.len() == 1 && name == "new" {
+                Option::Some(inherent_callable(owner, name, Vec::[], owner))
             } else {
                 Option::None
             },

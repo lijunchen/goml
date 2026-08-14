@@ -63,7 +63,7 @@ Enumeration construction should use `Enum::Variant`.Patterns may omit `Enum::` b
 Common keywords include:
 
 ```text
-package use as pub fn struct enum trait impl for type const where defer
+package use as pub fn struct enum trait impl for type const static where defer
 let mut if else match while loop for in break continue return go dyn
 true false unit bool int int8 int16 int32 int64 uint uint8 uint16 uint32 uint64
 float32 float64 string char extern
@@ -120,7 +120,7 @@ let message = f"{name} has {count} items {{ready}}";
 
 Byte literals contain exactly one ASCII byte and support `\'`, `\\`, `\0`, `\b`, `\f`, `\n`, `\r`, `\t`, and two-digit `\xNN` escapes. Non-ASCII contents are rejected.
 
-Byte strings use `b"..."` and have type `Vec[byte]`. Ordinary byte strings accept ASCII contents together with `\"`, `\\`, `\0`, `\b`, `\f`, `\n`, `\r`, `\t`, `\/`, and two-digit `\xNN` escapes. Unicode escapes and non-ASCII source characters are rejected:
+Byte strings use `b"..."` and have type `Vec[byte]` without an expected type. In a `[byte; N]` context they produce a fixed array and the length must match. Vector byte strings compile to one backing-slice allocation with batch literal initialization rather than per-byte `push` calls. Ordinary byte strings accept ASCII contents together with `\"`, `\\`, `\0`, `\b`, `\f`, `\n`, `\r`, `\t`, `\/`, and two-digit `\xNN` escapes. Unicode escapes and non-ASCII source characters are rejected:
 
 ```goml
 let request = b"GET / HTTP/1.0\r\n\r\n";
@@ -413,6 +413,7 @@ The top level of an ordinary source code file should only contain:
 - `impl`
 - `type`
 - `const`
+- `static`
 
 `package` and `use` can only appear at the beginning of a file.The top level cannot write local variables or arbitrary execution statements.
 
@@ -426,7 +427,23 @@ pub const ANSWER: int32 = BASE + 10;
 const NEWLINE: byte = b'\n';
 ```
 
-Constant names may start with an uppercase letter, a lowercase letter, or `_`; `UPPER_SNAKE_CASE` is the preferred convention. Constant expressions support scalar literals, references to other constants, unary and binary operators, and integer conversion methods. They may use forward references, but cycles are rejected. The allowed constant types are `bool`, numeric types, `string`, `char`, and `byte`. Public constants are available through package-qualified paths.
+Constant names may start with an uppercase letter, a lowercase letter, or `_`; `UPPER_SNAKE_CASE` is the preferred convention. Constant expressions support literals, constructors, references to other constants, unary and binary operators, integer conversion methods, and comptime-capable calls. They may use forward references, but cycles are rejected. Allowed constant types are recursively immutable values: `bool`, numeric types, `string`, `char`, `byte`, tuples, fixed arrays, and structs or enums whose fields satisfy the same rule. `Vec`, `HashMap`, `Ref`, `Channel`, closures, and dynamic values are rejected. Composite constants cannot be used as patterns. Public constants are available through package-qualified paths.
+
+### Statics and one-time initialization
+
+A top-level `static` has one program-wide storage location. Its binding cannot be reassigned. In the first supported form, its explicit type must be `OnceCell[T]` and its initializer must be exactly `OnceCell::new()`:
+
+```goml
+static EMOJI: OnceCell[FrozenVec[FrozenVec[uint16]]] = OnceCell::new();
+
+fn emoji() -> FrozenVec[FrozenVec[uint16]] {
+    EMOJI.get_or_init(|| build_emoji().freeze())
+}
+```
+
+`OnceCell.get_or_init(init)` runs one initializer and caches its result. Concurrent first callers wait for that initializer and receive the same value. Recursive initialization of the same cell terminates with an error that names the static. A cached `Result` is an ordinary cached value. Statics do not run user-observable destruction at process exit.
+
+Unlike a `const`, a `static` has observable identity. `OnceCell[T]` controls initialization but does not make `T` immutable. Shared caches should therefore expose `FrozenVec` or another immutable value instead of a mutable `Vec`.
 
 Visible top-level constants can be used as value patterns in `match`, `if let`, `while let`, and `let else`. Both local names and package-qualified names are supported, and constant patterns can be nested or combined with or-patterns:
 
@@ -466,7 +483,7 @@ fn table() -> [int; 4] {
 
 `#[comptime]` marks a non-generic free function as compile-time-capable. The function remains callable at runtime. A compile-time call may call only other `#[comptime]` free functions or the `compile_error(string) -> never` intrinsic. The compiler validates the complete body of every marked function, including branches not taken by a particular invocation. Attributes with arguments, duplicate attributes, generic functions, methods, extern functions, and other declarations are rejected.
 
-A top-level constant initializer is an implicit compile-time context, so `const SIX: int = factorial(3);` and an initializer wrapped in `comptime { ... }` are equivalent. Top-level constants retain their scalar-only restriction. A `comptime` expression in ordinary code may produce a reifiable tuple, fixed array, struct, or enum in addition to `unit`, `bool`, integer, `string`, and `char` values.
+A top-level constant initializer is an implicit compile-time context, so `const SIX: int = factorial(3);` and an initializer wrapped in `comptime { ... }` are equivalent. A top-level constant may produce a recursively immutable tuple, fixed array, struct, or enum in addition to scalar values. A `comptime` expression in ordinary code supports the same reifiable value shapes.
 
 Compile-time code may use local bindings and assignment, blocks, `if`, `match`, `while`, `loop`, restricted `for`, `break`, `continue`, `return`, recursion, direct calls, integer conversion methods, and supported operators. A compile-time `for` accepts only a fixed array or the builtin `int` ranges `start..end` and `start..=end`; its source and range endpoints are evaluated once, and its pattern must be irrefutable. The deterministic string methods `len`, `byte_len`, `get`, `byte_get`, `byte_slice`, `is_char_boundary`, `starts_with`, `ends_with`, and `contains` are also available. String indexes and slices use byte offsets and reject invalid UTF-8 character boundaries.
 
@@ -2196,6 +2213,8 @@ Commonly used methods:
 - `Vec::with_capacity(capacity) -> Vec[T]`
 - `push(value) -> unit`
 - `pushed(value) -> Vec[T]`
+- `copy() -> Vec[T]`
+- `freeze() -> FrozenVec[T]`
 - `get(index) -> T`
 - `set(index, value) -> unit`
 - `len() -> int`
@@ -2217,6 +2236,12 @@ Commonly used methods:
 
 `vec[index]` is equivalent to reading the element, `vec[index] = value;` modifies the element.
 
+`copy()` shallow-copies the outer backing storage. `freeze()` also copies the backing storage and returns a `FrozenVec[T]`, so later structural or element changes through aliases to the original `Vec` cannot affect the frozen value.
+
+### `FrozenVec[T]`
+
+`FrozenVec[T]` is a dynamically sized read-only vector. It exposes `get`, `len`, `is_empty`, `iter`, and `to_vec`, but no mutation methods. `to_vec()` returns a new shallow-copied mutable backing store. For nested containers, freezing is shallow: use `FrozenVec[FrozenVec[T]]` when both levels must be read-only.
+
 ### `Slice[T]`
 
 `Slice[T]` is a bounded read-only view on the `Vec[T]` storage:
@@ -2226,7 +2251,7 @@ let view: Slice[int32] = values.slice(1, 3);
 let item = view.get(0);
 ```
 
-Commonly used methods: `get`, `len`, `sub`, `iter`.`view[index]` can be written, but `view[index] = value;` cannot be written.
+Commonly used methods: `get`, `len`, `sub`, `to_vec`, `iter`.`to_vec()` creates a shallow copy in a new `Vec[T]`; `view[index]` can be written, but `view[index] = value;` cannot be written.
 
 ### `HashMap[K, V]`
 
@@ -2342,7 +2367,7 @@ Current public entrances include:
 - `bincode::standard`, `legacy`, configuration builders, serde `Serialize` and `Deserialize` re-exports, `encode_to_vec`, and `decode_from_slice`
 - `bytes::Bytes`, a mutable byte buffer with conversion to and from strings and `Vec[uint8]`
 - `cmp::Ordering`, `Ord`, `Reverse`, comparison helpers, and two-value minimum, maximum, and clamping operations
-- `collections::Arena`, `BitSet`, `Deque`, `HashSet`, `IndexMap`, `IndexVec`, `Interner`, and `Stack`
+- `collections::Arena`, `BitSet`, `Deque`, `HashSet`, `IndexMap`, `IndexVec`, `Interner`, and `Stack`; `HashSet::to_vec` returns a snapshot of its keys
 - `collections::sort`, `stable_sort`, `binary_search`, `min`, `max`, comparator-based variants, `position_by`, `contains`, `dedup_by`, and `dedup`
 - `crypto::hash` one-shot SHA-256 and `crypto::rand` operating-system random bytes
 - `error::Error`, `ErrorKind`, `Details`, and stable error-kind code conversion
@@ -2627,6 +2652,7 @@ path          = ident ("::" ident)*
 
 item          = attribute* visibility? function
               | attribute* visibility? constant
+              | attribute* visibility? static
               | attribute* visibility? struct_def
               | attribute* visibility? enum_def
               | attribute* visibility? trait_def
@@ -2643,6 +2669,7 @@ go_ffi_extern = go_ffi_attribute visibility? "extern" "fn" lower_ident
 
 function      = "fn" lower_ident generic_params? param_list return_type? where_clause? block
 constant      = "const" ident ":" type "=" expression ";"
+static        = "static" ident ":" type "=" expression ";"
 method        = visibility? "fn" lower_ident generic_params? param_list return_type? where_clause? block
 generic_params = "[" generic_param ("," generic_param)* "]"
 generic_param = upper_ident (":" trait_set)?

@@ -327,6 +327,9 @@ fn file_doc(value: File) -> pretty::Doc {
     for value in value.constants {
         values.push(repr::constant_doc(value))
     }
+    for value in value.statics {
+        values.push(repr::static_doc(value))
+    }
     for value in value.functions {
         values.push(function_doc(value))
     }

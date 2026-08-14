@@ -443,6 +443,16 @@ fn encode_constant(builder: text::StringBuilder, value: Constant) -> unit {
     encode_close(builder)
 }
 
+fn encode_static(builder: text::StringBuilder, value: Static) -> unit {
+    encode_open(builder, "Static");
+    encode_attributes(builder, value.attrs);
+    encode_visibility(builder, value.visibility);
+    encode_string_value(builder, value.name);
+    encode_type(builder, value.ty);
+    encode_expr(builder, value.value);
+    encode_close(builder)
+}
+
 fn encode_item(builder: text::StringBuilder, value: Item) -> unit {
     match value {
         EnumDef(item) => encode_enum(builder, item),
@@ -453,6 +463,7 @@ fn encode_item(builder: text::StringBuilder, value: Item) -> unit {
         ExternFunction(item) => encode_extern_function(builder, item),
         TypeAlias(item) => encode_type_alias(builder, item),
         Constant(item) => encode_constant(builder, item),
+        Static(item) => encode_static(builder, item),
     }
 }
 

@@ -97,6 +97,188 @@ fn missing_runtime_item(ty: repr::Type) -> Item {
     )
 }
 
+fn once_cell_field(name: string) -> Expr {
+    Expr::Field { expr: Expr::Var { name: "cell" }, field_name: name }
+}
+
+fn once_cell_method(name: string, args: Vec[Expr]) -> Expr {
+    Expr::Call { func: Expr::Field { expr: Expr::Var { name: "cell" }, field_name: name }, args }
+}
+
+fn once_cell_lock_stmt(method: string) -> Stmt {
+    Stmt::Expr { expr: once_cell_method("mutex." + method, Vec::[]) }
+}
+
+fn once_cell_new_item(instance: repr::TypeInstance) -> Item {
+    let owner = repr::Type::Named { name: instance.name };
+    let fields: Vec[(string, Expr)] = Vec::[];
+    let stmts: Vec[Stmt] = Vec::[];
+    stmts.push(
+        Stmt::Var {
+            name: "cell",
+            ty: lower_type(owner),
+            value: Option::Some(
+                Expr::Unary {
+                    op: UnaryOp::Address,
+                    expr: Expr::StructLiteral {
+                        ty: Type::Named { name: go_user_type_name(instance.name) },
+                        fields,
+                    },
+                },
+            ),
+        },
+    );
+    let cond_args: Vec[Expr] = Vec::[];
+    cond_args.push(Expr::Unary { op: UnaryOp::Address, expr: once_cell_field("mutex") });
+    stmts.push(
+        Stmt::FieldAssign {
+            target: Expr::Var { name: "cell" },
+            field_name: "cond",
+            value: Expr::Call { func: Expr::Var { name: "_goml_sync.NewCond" }, args: cond_args },
+        },
+    );
+    stmts.push(Stmt::Return { expr: Option::Some(Expr::Var { name: "cell" }) });
+    Item::Function(
+        Function {
+            name: runtime_helper_name("once_cell_new", owner),
+            params: Vec::[],
+            ret_ty: Option::Some(lower_type(owner)),
+            body: Block { stmts },
+        },
+    )
+}
+
+fn once_cell_get_or_init_item(instance: repr::TypeInstance) -> Item {
+    let owner = repr::Type::Named { name: instance.name };
+    let value_ty = instance.args[0];
+    let params: Vec[(string, Type)] = Vec::[];
+    params.push(("cell", lower_type(owner)));
+    params.push(("init", Type::Func { params: Vec::[], ret_ty: lower_type(value_ty) }));
+    let stmts: Vec[Stmt] = Vec::[];
+    stmts.push(
+        Stmt::Var {
+            name: "goroutine",
+            ty: Type::Uint64,
+            value: Option::Some(
+                Expr::Call {
+                    func: Expr::Var { name: go_generated_ident("_goml_once_cell_goroutine_id") },
+                    args: Vec::[],
+                },
+            ),
+        },
+    );
+    stmts.push(once_cell_lock_stmt("Lock"));
+    let loop_stmts: Vec[Stmt] = Vec::[];
+    let ready_stmts: Vec[Stmt] = Vec::[];
+    ready_stmts.push(once_cell_lock_stmt("Unlock"));
+    ready_stmts.push(Stmt::Return { expr: Option::Some(once_cell_field("value")) });
+    loop_stmts.push(
+        Stmt::If {
+            cond: Expr::Binary {
+                op: BinaryOp::Eq,
+                lhs: once_cell_field("state"),
+                rhs: Expr::Int { value: "2" },
+            },
+            then_: Block { stmts: ready_stmts },
+            else_: Option::None,
+        },
+    );
+    let initializing_stmts: Vec[Stmt] = Vec::[];
+    let recursive_stmts: Vec[Stmt] = Vec::[];
+    recursive_stmts.push(once_cell_lock_stmt("Unlock"));
+    let panic_args: Vec[Expr] = Vec::[];
+    panic_args.push(
+        Expr::Binary {
+            op: BinaryOp::Add,
+            lhs: Expr::String { value: "recursive OnceCell initialization: " },
+            rhs: once_cell_field("name"),
+        },
+    );
+    recursive_stmts.push(
+        Stmt::Expr { expr: Expr::Call { func: Expr::Var { name: "panic" }, args: panic_args } },
+    );
+    initializing_stmts.push(
+        Stmt::If {
+            cond: Expr::Binary {
+                op: BinaryOp::Eq,
+                lhs: once_cell_field("owner"),
+                rhs: Expr::Var { name: "goroutine" },
+            },
+            then_: Block { stmts: recursive_stmts },
+            else_: Option::None,
+        },
+    );
+    initializing_stmts.push(Stmt::Expr { expr: once_cell_method("cond.Wait", Vec::[]) });
+    initializing_stmts.push(Stmt::Continue);
+    loop_stmts.push(
+        Stmt::If {
+            cond: Expr::Binary {
+                op: BinaryOp::Eq,
+                lhs: once_cell_field("state"),
+                rhs: Expr::Int { value: "1" },
+            },
+            then_: Block { stmts: initializing_stmts },
+            else_: Option::None,
+        },
+    );
+    loop_stmts.push(
+        Stmt::FieldAssign {
+            target: Expr::Var { name: "cell" },
+            field_name: "state",
+            value: Expr::Int { value: "1" },
+        },
+    );
+    loop_stmts.push(
+        Stmt::FieldAssign {
+            target: Expr::Var { name: "cell" },
+            field_name: "owner",
+            value: Expr::Var { name: "goroutine" },
+        },
+    );
+    loop_stmts.push(once_cell_lock_stmt("Unlock"));
+    loop_stmts.push(
+        Stmt::Var {
+            name: "initialized",
+            ty: lower_type(value_ty),
+            value: Option::Some(Expr::Call { func: Expr::Var { name: "init" }, args: Vec::[] }),
+        },
+    );
+    loop_stmts.push(once_cell_lock_stmt("Lock"));
+    loop_stmts.push(
+        Stmt::FieldAssign {
+            target: Expr::Var { name: "cell" },
+            field_name: "value",
+            value: Expr::Var { name: "initialized" },
+        },
+    );
+    loop_stmts.push(
+        Stmt::FieldAssign {
+            target: Expr::Var { name: "cell" },
+            field_name: "state",
+            value: Expr::Int { value: "2" },
+        },
+    );
+    loop_stmts.push(
+        Stmt::FieldAssign {
+            target: Expr::Var { name: "cell" },
+            field_name: "owner",
+            value: Expr::Int { value: "0" },
+        },
+    );
+    loop_stmts.push(Stmt::Expr { expr: once_cell_method("cond.Broadcast", Vec::[]) });
+    loop_stmts.push(once_cell_lock_stmt("Unlock"));
+    loop_stmts.push(Stmt::Return { expr: Option::Some(Expr::Var { name: "initialized" }) });
+    stmts.push(Stmt::Loop { body: Block { stmts: loop_stmts } });
+    Item::Function(
+        Function {
+            name: runtime_helper_name("once_cell_get_or_init", owner),
+            params,
+            ret_ty: Option::Some(lower_type(value_ty)),
+            body: Block { stmts },
+        },
+    )
+}
+
 pub fn emit_missing_base_item(items: Vec[Item], missing_types: Vec[repr::Type]) -> unit {
     if !missing_types.is_empty() {
         items.push(missing_base_item())
@@ -293,6 +475,7 @@ enum RuntimeImport {
     Strconv,
     Strings,
     Sync,
+    Runtime,
     Syscall,
     Time,
 }
@@ -535,6 +718,9 @@ fn emit_runtime_import_items(items: Vec[Item], required: Vec[RuntimeImport]) -> 
     if collections::contains(required, RuntimeImport::Sync) {
         imports.push(("_goml_sync", "sync"))
     } else {};
+    if collections::contains(required, RuntimeImport::Runtime) {
+        imports.push(("_goml_runtime_pkg", "runtime"))
+    } else {};
     if collections::contains(required, RuntimeImport::Syscall) {
         imports.push(("_goml_syscall", "syscall"))
     } else {};
@@ -542,6 +728,118 @@ fn emit_runtime_import_items(items: Vec[Item], required: Vec[RuntimeImport]) -> 
         imports.push(("_goml_time", "time"))
     } else {};
     items.push(Item::ImportGroup(imports))
+}
+
+fn once_cell_goroutine_id_item() -> Item {
+    let bytes_ty = Type::Slice { elem: Type::Uint8 };
+    let make_args: Vec[Expr] = Vec::[];
+    make_args.push(Expr::Int { value: "64" });
+    let stmts: Vec[Stmt] = Vec::[];
+    stmts.push(
+        Stmt::Var {
+            name: "buffer",
+            ty: bytes_ty,
+            value: Option::Some(Expr::Make { ty: bytes_ty, args: make_args }),
+        },
+    );
+    let stack_args: Vec[Expr] = Vec::[];
+    stack_args.push(Expr::Var { name: "buffer" });
+    stack_args.push(Expr::Bool { value: false });
+    stmts.push(
+        Stmt::Var {
+            name: "length",
+            ty: Type::Int,
+            value: Option::Some(
+                Expr::Call { func: Expr::Var { name: "_goml_runtime_pkg.Stack" }, args: stack_args },
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::Var { name: "index", ty: Type::Int, value: Option::Some(Expr::Int { value: "10" }) },
+    );
+    stmts.push(
+        Stmt::Var {
+            name: "result",
+            ty: Type::Uint64,
+            value: Option::Some(Expr::Int { value: "0" }),
+        },
+    );
+    let digit = Expr::Index {
+        base: Expr::Var { name: "buffer" },
+        index: Expr::Var { name: "index" },
+    };
+    let break_stmts: Vec[Stmt] = Vec::[];
+    break_stmts.push(Stmt::Break);
+    let loop_stmts: Vec[Stmt] = Vec::[];
+    loop_stmts.push(
+        Stmt::If {
+            cond: Expr::Binary {
+                op: BinaryOp::GreaterEq,
+                lhs: Expr::Var { name: "index" },
+                rhs: Expr::Var { name: "length" },
+            },
+            then_: Block { stmts: break_stmts },
+            else_: Option::None,
+        },
+    );
+    let invalid_stmts: Vec[Stmt] = Vec::[];
+    invalid_stmts.push(Stmt::Break);
+    loop_stmts.push(
+        Stmt::If {
+            cond: Expr::Binary {
+                op: BinaryOp::Or,
+                lhs: Expr::Binary { op: BinaryOp::Less, lhs: digit, rhs: Expr::Int { value: "48" } },
+                rhs: Expr::Binary {
+                    op: BinaryOp::Greater,
+                    lhs: digit,
+                    rhs: Expr::Int { value: "57" },
+                },
+            },
+            then_: Block { stmts: invalid_stmts },
+            else_: Option::None,
+        },
+    );
+    loop_stmts.push(
+        Stmt::Assign {
+            name: "result",
+            value: Expr::Binary {
+                op: BinaryOp::Add,
+                lhs: Expr::Binary {
+                    op: BinaryOp::Mul,
+                    lhs: Expr::Var { name: "result" },
+                    rhs: Expr::Int { value: "10" },
+                },
+                rhs: Expr::Convert {
+                    ty: Type::Uint64,
+                    expr: Expr::Binary {
+                        op: BinaryOp::Sub,
+                        lhs: digit,
+                        rhs: Expr::Int { value: "48" },
+                    },
+                },
+            },
+        },
+    );
+    loop_stmts.push(
+        Stmt::Assign {
+            name: "index",
+            value: Expr::Binary {
+                op: BinaryOp::Add,
+                lhs: Expr::Var { name: "index" },
+                rhs: Expr::Int { value: "1" },
+            },
+        },
+    );
+    stmts.push(Stmt::Loop { body: Block { stmts: loop_stmts } });
+    stmts.push(Stmt::Return { expr: Option::Some(Expr::Var { name: "result" }) });
+    Item::Function(
+        Function {
+            name: go_generated_ident("_goml_once_cell_goroutine_id"),
+            params: Vec::[],
+            ret_ty: Option::Some(Type::Uint64),
+            body: Block { stmts },
+        },
+    )
 }
 
 pub fn emit_runtime_hook_items(
@@ -561,6 +859,9 @@ pub fn emit_runtime_hook_items(
         } else if intrinsic == "channel.send_cancel" || intrinsic == "channel.recv_cancel" {
             require_runtime_import(required_imports, RuntimeImport::Context);
             require_runtime_import(required_imports, RuntimeImport::Sync)
+        } else if intrinsic == "once_cell.new" || intrinsic == "once_cell.get_or_init" {
+            require_runtime_import(required_imports, RuntimeImport::Sync);
+            require_runtime_import(required_imports, RuntimeImport::Runtime)
         } else {}
     }
     let uses_structured_error = needs_structured_runtime_error(hooks);
@@ -571,6 +872,10 @@ pub fn emit_runtime_hook_items(
         require_runtime_import(required_imports, RuntimeImport::Syscall)
     } else {};
     emit_runtime_import_items(items, required_imports);
+    if collections::contains(intrinsics, "once_cell.new")
+        || collections::contains(intrinsics, "once_cell.get_or_init") {
+        items.push(once_cell_goroutine_id_item())
+    } else {};
     let mut needs_task_support = false;
     for hook in hooks {
         if runtime_hook_needs_task_support(hook) {
@@ -2615,6 +2920,12 @@ pub fn emit_builtin_runtime_items(
     structs: Vec[repr::StructDef],
     function_names: FunctionNames,
 ) -> unit {
+    for instance in instances {
+        if instance.base_name == "OnceCell" && instance.args.len() == 1 {
+            items.push(once_cell_new_item(instance));
+            items.push(once_cell_get_or_init_item(instance))
+        } else {}
+    }
     for ty in types {
         match repr::resolve_type(ty) {
             Array { len: _, elem: _ } => {

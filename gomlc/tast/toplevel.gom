@@ -307,132 +307,235 @@ fn pattern_has_unresolved_inference(ctx: Checker, value: hir::Pat) -> bool {
     }
 }
 
-fn report_unresolved_exprs(ctx: Checker, values: Vec[hir::Expr]) -> unit {
+fn report_unresolved_exprs(ctx: Checker, values: Vec[hir::Expr], report_all: bool) -> unit {
     for value in values {
-        report_unresolved_expr(ctx, value)
+        report_unresolved_expr(ctx, value, report_all)
     }
 }
 
-fn report_unresolved_block(ctx: Checker, value: hir::Block) -> unit {
+fn pattern_has_unbound_any_inference(ctx: Checker, value: hir::Pat) -> bool {
+    match value.kind {
+        Var { name, is_mut: _ } => match find_local(ctx, name) {
+            Some(ty) => contains_unbound_any_type_variable(ty),
+            None => false,
+        },
+        Constr { head: _, args } | Tuple { items: args } | Or { pats: args } => {
+            for arg in args {
+                if pattern_has_unbound_any_inference(ctx, arg) {
+                    return true
+                } else {}
+            }
+            false
+        },
+        Struct { head: _, fields, has_rest: _ } => {
+            for field in fields {
+                if pattern_has_unbound_any_inference(ctx, field.1) {
+                    return true
+                } else {}
+            }
+            false
+        },
+        Array { prefix, rest: _, suffix } => {
+            for arg in prefix {
+                if pattern_has_unbound_any_inference(ctx, arg) {
+                    return true
+                } else {}
+            }
+            for arg in suffix {
+                if pattern_has_unbound_any_inference(ctx, arg) {
+                    return true
+                } else {}
+            }
+            false
+        },
+        Alias { name, pat } => {
+            let alias_unbound = match find_local(ctx, name) {
+                Some(ty) => contains_unbound_any_type_variable(ty),
+                None => false,
+            };
+            alias_unbound || pattern_has_unbound_any_inference(ctx, pat)
+        },
+        Range { start, end, inclusive: _ } => {
+            pattern_has_unbound_any_inference(ctx, start)
+                || pattern_has_unbound_any_inference(ctx, end)
+        },
+        _ => false,
+    }
+}
+
+fn unresolved_expr_fact(ctx: Checker, value: hir::Expr) -> bool {
+    for fact in ctx.typeck_results.exprs {
+        if fact.source_path == ctx.source_path && fact.span.start == value.span.start
+            && fact.span.end == value.span.end
+            && contains_unbound_any_type_variable(fact.ty) {
+            return true
+        } else {}
+    }
+    false
+}
+
+fn empty_collection_literal(value: hir::Expr) -> bool {
+    match value.kind {
+        VecLiteral { items } => items.is_empty(),
+        HashMapLiteral { entries } => entries.is_empty(),
+        _ => false,
+    }
+}
+
+fn report_unresolved_block(ctx: Checker, value: hir::Block, report_all: bool) -> unit {
     for stmt in value.stmts {
         match stmt {
-            Defer { expr } => report_unresolved_expr(ctx, expr),
+            Defer { expr } => report_unresolved_expr(ctx, expr, report_all),
             Let { is_mut: _, pat, annotation, value, else_branch } => {
-                if annotation.is_none() && pattern_has_unresolved_inference(ctx, pat) {
-                    push_inference_diagnostic_at(ctx, pat.span, 1);
-                    mark_unresolved_pattern_locals(ctx, pat)
-                } else {};
-                report_unresolved_expr(ctx, value);
+                if empty_collection_literal(value) {
+                    if annotation.is_none() && pattern_has_unbound_any_inference(ctx, pat) {
+                        report_unresolved_expr(ctx, value, report_all)
+                    } else {}
+                } else {
+                    if report_all && annotation.is_none()
+                        && pattern_has_unresolved_inference(ctx, pat) {
+                        push_inference_diagnostic_at(ctx, pat.span, 1);
+                        mark_unresolved_pattern_locals(ctx, pat)
+                    } else {};
+                    report_unresolved_expr(ctx, value, report_all)
+                };
                 match else_branch {
-                    Some(value) => report_unresolved_expr(ctx, value),
+                    Some(value) => report_unresolved_expr(ctx, value, report_all),
                     None => (),
                 }
             },
             Assign { target, op: _, value } => {
-                report_unresolved_expr(ctx, target);
-                report_unresolved_expr(ctx, value)
+                report_unresolved_expr(ctx, target, report_all);
+                report_unresolved_expr(ctx, value, report_all)
             },
-            Expr { expr } => report_unresolved_expr(ctx, expr),
+            Expr { expr } => report_unresolved_expr(ctx, expr, report_all),
         }
     }
     match value.tail {
-        Some(expr) => report_unresolved_expr(ctx, expr),
+        Some(expr) => report_unresolved_expr(ctx, expr, report_all),
         None => (),
     }
 }
 
-fn report_unresolved_expr(ctx: Checker, value: hir::Expr) -> unit {
+fn report_unresolved_expr(ctx: Checker, value: hir::Expr, report_all: bool) -> unit {
     match value.kind {
-        NameRef { name_ref: Local(local) } => match find_local(ctx, local) {
-            Some(ty) => if contains_unresolved_inference(ctx, ty) {
-                push_inference_diagnostic_at(ctx, value.span, 2)
-            } else {},
-            None => (),
-        },
+        NameRef { name_ref: Local(local) } => if report_all {
+            match find_local(ctx, local) {
+                Some(ty) => if contains_unresolved_inference(ctx, ty) {
+                    push_inference_diagnostic_at(ctx, value.span, 2)
+                } else {},
+                None => (),
+            }
+        } else {},
         ConstructorValue { constructor: _ } => (),
-        Constr { constructor: _, args } | Tuple { items: args } | Array { items: args } | VecLiteral {
-            items: args,
-        } => {
-            report_unresolved_exprs(ctx, args)
+        VecLiteral { items: args } => if args.is_empty() {
+            if unresolved_expr_fact(ctx, value) {
+                push_inference_diagnostic_with_label_at(
+                    ctx,
+                    "Cannot infer element type of empty vector literal",
+                    "element type is unconstrained; add a type annotation",
+                    value.span,
+                    0,
+                )
+            } else {}
+        } else {
+            report_unresolved_exprs(ctx, args, report_all)
         },
-        HashMapLiteral { entries } => for entry in entries {
-            report_unresolved_expr(ctx, entry.0);
-            report_unresolved_expr(ctx, entry.1)
+        HashMapLiteral { entries } => if entries.is_empty() {
+            if unresolved_expr_fact(ctx, value) {
+                push_inference_diagnostic_with_label_at(
+                    ctx,
+                    "Cannot infer key or value type of empty hash map literal",
+                    "key or value type is unconstrained; add a type annotation",
+                    value.span,
+                    0,
+                )
+            } else {}
+        } else {
+            for entry in entries {
+                report_unresolved_expr(ctx, entry.0, report_all);
+                report_unresolved_expr(ctx, entry.1, report_all)
+            }
+        },
+        Constr { constructor: _, args } | Tuple { items: args } | Array { items: args } => {
+            report_unresolved_exprs(ctx, args, report_all)
         },
         InterpolatedString { parts } => for part in parts {
             match part {
-                Expr(value) => report_unresolved_expr(ctx, value),
+                Expr(value) => report_unresolved_expr(ctx, value, report_all),
                 Text(_) => (),
             }
         },
         StructLiteral { name: _, fields, base } => {
             for field in fields {
-                report_unresolved_expr(ctx, field.1)
+                report_unresolved_expr(ctx, field.1, report_all)
             }
             match base {
-                Some(value) => report_unresolved_expr(ctx, value),
+                Some(value) => report_unresolved_expr(ctx, value, report_all),
                 None => (),
             }
         },
         Closure { params, body } => {
-            report_unresolved_expr(ctx, body);
-            for param in params {
-                match find_local(ctx, param.name) {
-                    Some(ty) => if contains_unresolved_inference(ctx, ty) {
-                        push_inference_diagnostic_at(ctx, param.span, 3)
-                    } else {},
-                    None => (),
+            report_unresolved_expr(ctx, body, report_all);
+            if report_all {
+                for param in params {
+                    match find_local(ctx, param.name) {
+                        Some(ty) => if contains_unresolved_inference(ctx, ty) {
+                            push_inference_diagnostic_at(ctx, param.span, 3)
+                        } else {},
+                        None => (),
+                    }
                 }
-            }
+            } else {}
         },
         Match { expr, arms } => {
-            report_unresolved_expr(ctx, expr);
+            report_unresolved_expr(ctx, expr, report_all);
             for arm in arms {
                 match arm.guard {
-                    Some(guard) => report_unresolved_expr(ctx, guard),
+                    Some(guard) => report_unresolved_expr(ctx, guard, report_all),
                     None => (),
                 };
-                report_unresolved_expr(ctx, arm.body)
+                report_unresolved_expr(ctx, arm.body, report_all)
             }
         },
         If { cond, then_branch, else_branch } => {
-            report_unresolved_expr(ctx, cond);
-            report_unresolved_expr(ctx, then_branch);
-            report_unresolved_expr(ctx, else_branch)
+            report_unresolved_expr(ctx, cond, report_all);
+            report_unresolved_expr(ctx, then_branch, report_all);
+            report_unresolved_expr(ctx, else_branch, report_all)
         },
         While { cond, body, .. } => {
-            report_unresolved_expr(ctx, cond);
-            report_unresolved_expr(ctx, body)
+            report_unresolved_expr(ctx, cond, report_all);
+            report_unresolved_expr(ctx, body, report_all)
         },
-        Loop { body, .. } => report_unresolved_expr(ctx, body),
+        Loop { body, .. } => report_unresolved_expr(ctx, body, report_all),
         For { pat: _, iterator, body, .. } => {
-            report_unresolved_expr(ctx, iterator);
-            report_unresolved_expr(ctx, body)
+            report_unresolved_expr(ctx, iterator, report_all);
+            report_unresolved_expr(ctx, body, report_all)
         },
         Return { expr } => match expr {
-            Some(expr) => report_unresolved_expr(ctx, expr),
+            Some(expr) => report_unresolved_expr(ctx, expr, report_all),
             None => (),
         },
         Break { value, .. } => match value {
-            Some(expr) => report_unresolved_expr(ctx, expr),
+            Some(expr) => report_unresolved_expr(ctx, expr, report_all),
             None => (),
         },
         Call { func, args } => {
-            report_unresolved_expr(ctx, func);
-            report_unresolved_exprs(ctx, args)
+            report_unresolved_expr(ctx, func, report_all);
+            report_unresolved_exprs(ctx, args, report_all)
         },
         Unary { op: _, expr } | Cast { expr, ty: _ } | Try { depth: _, expr } | Proj {
             tuple: expr,
             index: _,
-        } | Field { expr, .. } | Go { expr } => report_unresolved_expr(ctx, expr),
+        } | Field { expr, .. } | Go { expr } => report_unresolved_expr(ctx, expr, report_all),
         Range { start, end, inclusive: _ } | Binary { op: _, lhs: start, rhs: end } | Index {
             base: start,
             index: end,
         } => {
-            report_unresolved_expr(ctx, start);
-            report_unresolved_expr(ctx, end)
+            report_unresolved_expr(ctx, start, report_all);
+            report_unresolved_expr(ctx, end, report_all)
         },
-        Block { block } => report_unresolved_block(ctx, block),
+        Block { block } => report_unresolved_block(ctx, block, report_all),
         _ => (),
     }
 }
@@ -547,9 +650,8 @@ fn check_function(
     resolve_field_constraints(ctx);
     resolve_coercion_constraints(ctx);
     resolve_numeric_literal_constraints(ctx);
-    if resolve_required_predicates(ctx) {
-        report_unresolved_block(ctx, value.body)
-    } else {};
+    let report_all_unresolved = resolve_required_predicates(ctx);
+    report_unresolved_block(ctx, value.body, report_all_unresolved);
     let body = resolve_deferred_block(ctx, checked_body.0);
     match comptime {
         ComptimeCapability::Derive => if match value.visibility {
@@ -633,10 +735,58 @@ fn lower_constant_expr(ctx: Checker, value: Expr) -> ConstExpr {
     }
 }
 
-fn constant_type_supported(value: Type) -> bool {
-    match prune(value) {
+fn constant_type_supported(ctx: Checker, value: Type, active: Vec[string]) -> bool {
+    match prune(normalize_type(ctx, value)) {
         Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | Float32 | Float64 | String | Char => true,
-        _ => false,
+        Tuple { items } => {
+            for item in items {
+                if !constant_type_supported(ctx, item, active) {
+                    return false
+                } else {}
+            }
+            true
+        },
+        Array { len: _, elem } => constant_type_supported(ctx, elem, active),
+        value => match struct_application_parts(value) {
+            Some(parts) => if collections::contains(active, parts.0) {
+                false
+            } else {
+                let next = copied_names(active);
+                next.push(parts.0);
+                match find_struct_by_name(ctx, parts.0) {
+                    Some(info) => {
+                        for field in info.fields {
+                            if !constant_type_supported(
+                                ctx,
+                                substitute_params(field.1, info.generics, parts.1),
+                                next,
+                            ) {
+                                return false
+                            } else {}
+                        }
+                        true
+                    },
+                    None => match find_enum_by_name(ctx, parts.0) {
+                        Some(info) => {
+                            for variant in info.variants {
+                                for field in enum_variant_field_types(variant.fields) {
+                                    if !constant_type_supported(
+                                        ctx,
+                                        substitute_params(field, info.generics, parts.1),
+                                        next,
+                                    ) {
+                                        return false
+                                    } else {}
+                                }
+                            }
+                            true
+                        },
+                        None => false,
+                    },
+                }
+            },
+            None => false,
+        },
     }
 }
 
@@ -661,8 +811,12 @@ fn check_constant(base: Checker, value: hir::Constant) -> (
         Vec::[],
         true,
     );
-    if !constant_type_supported(ty) {
-        push_diagnostic(base, "constant type must be bool, numeric, string, char, or byte")
+    let supported_type = constant_type_supported(base, ty, Vec::[]);
+    if !supported_type {
+        push_diagnostic(
+            base,
+            "constant type must be recursively immutable and cannot contain Vec, HashMap, Ref, Channel, closures, or dynamic values",
+        )
     } else {};
     base.current_span.set(Option::Some(value.value.span));
     let ctx = function_context(
@@ -685,7 +839,9 @@ fn check_constant(base: Checker, value: hir::Constant) -> (
         comptime_origins.push(base.typeck_results.exprs[index].span)
     }
     let resolved_ty = resolve_type(ty);
-    let result = if legacy_constant_expr(checked) {
+    let result = if !supported_type {
+        (Option::None, Option::None)
+    } else if legacy_constant_expr(checked) {
         (
             Option::Some(
                 Constant {
@@ -716,6 +872,65 @@ fn check_constant(base: Checker, value: hir::Constant) -> (
     result
 }
 
+fn once_cell_type(value: Type) -> bool {
+    match resolve_type(value) {
+        App { ty: Con { name }, args } => short_name(name) == "OnceCell" && args.len() == 1,
+        _ => false,
+    }
+}
+
+fn hir_once_cell_initializer(value: hir::Expr) -> bool {
+    match value.kind {
+        Call {
+            func: hir::Expr {
+                kind: StaticMember {
+                    owner,
+                    member,
+                    owner_type_args: _,
+                    owner_type_arg_spans: _,
+                    member_type_args: _,
+                    member_type_arg_spans: _,
+                },
+                span: _,
+            },
+            args,
+        } => short_name(owner) == "OnceCell" && member == "new" && args.is_empty(),
+        _ => false,
+    }
+}
+
+fn check_static(base: Checker, value: hir::Static) -> Static {
+    let valid_initializer = hir_once_cell_initializer(value.value);
+    let previous_span = base.current_span.get();
+    base.current_span.set(Option::Some(value.ty_span));
+    let ty = resolve_signature_type(
+        base,
+        type_from_hir(value.ty, Vec::[], Option::None),
+        Vec::[],
+        true,
+    );
+    base.current_span.set(Option::Some(value.value.span));
+    let ctx = function_context(
+        base,
+        ty,
+        Option::None,
+        Vec::[],
+        Vec::[],
+        false,
+        ComptimeCapability::RuntimeOnly,
+    );
+    let checked = check_expr(ctx, value.value, Option::Some(ty));
+    resolve_field_constraints(ctx);
+    resolve_coercion_constraints(ctx);
+    resolve_numeric_literal_constraints(ctx);
+    let _ = resolve_deferred_expr(ctx, checked);
+    if !once_cell_type(ty) || !valid_initializer {
+        push_diagnostic(base, "static initializer must be `OnceCell::new()`")
+    } else {};
+    base.current_span.set(previous_span);
+    Static { name: value.name, ty: resolve_type(ty) }
+}
+
 fn constant_expr_references(value: ConstExpr, result: Vec[string]) -> unit {
     match value {
         Ref { name, ty: _ } => {
@@ -730,6 +945,13 @@ fn constant_expr_references(value: ConstExpr, result: Vec[string]) -> unit {
         Binary { op: _, lhs, rhs, ty: _ } => {
             constant_expr_references(lhs, result);
             constant_expr_references(rhs, result)
+        },
+        Tuple { items, ty: _ } | Array { items, ty: _ } | Constr {
+            constructor: _,
+            args: items,
+            ty: _,
+        } => for item in items {
+            constant_expr_references(item, result)
         },
         _ => (),
     }
@@ -2279,6 +2501,7 @@ fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> unit {
             Function(function) => Option::Some((function.name, 1)),
             ExternFunction(function) => Option::Some((function.name, 1)),
             Constant(value) => Option::Some((value.name, 2)),
+            Static(value) => Option::Some((value.name, 2)),
             _ => Option::None,
         };
         match function_name {
@@ -2340,6 +2563,7 @@ fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> unit {
                 validate_type_parameter_names(ctx, alias.generics)
             },
             Constant(_) => (),
+            Static(_) => (),
         }
     }
 }
@@ -2494,6 +2718,9 @@ fn validate_lang_item_declarations(ctx: Checker, value: hir::File, allow_lang_it
             Constant(value) => {
                 validate_lang_item_attributes(ctx, value.attrs, allow_lang_items)
             },
+            Static(value) => {
+                validate_lang_item_attributes(ctx, value.attrs, allow_lang_items)
+            },
             ImplBlock(_) => (),
         }
     }
@@ -2609,6 +2836,7 @@ fn validate_comptime_declarations(ctx: Checker, value: hir::File) -> unit {
             ExternFunction(value) => validate_comptime_attributes(ctx, value.attrs, false, false),
             TypeAlias(value) => validate_comptime_attributes(ctx, value.attrs, false, false),
             Constant(value) => validate_comptime_attributes(ctx, value.attrs, false, false),
+            Static(value) => validate_comptime_attributes(ctx, value.attrs, false, false),
         }
     }
 }
@@ -3083,6 +3311,7 @@ fn check_file_with_package(
     validate_impl_overlaps(ctx);
     validate_builtin_impl_overlaps(ctx, value);
     let constants: Vec[Constant] = Vec::[];
+    let statics: Vec[Static] = Vec::[];
     let pending_constants: Vec[PendingConstant] = Vec::[];
     for item in value.items {
         match item {
@@ -3097,6 +3326,7 @@ fn check_file_with_package(
                     None => (),
                 }
             },
+            Static(value) => statics.push(check_static(ctx, value)),
             _ => (),
         }
     }
@@ -3109,7 +3339,7 @@ fn check_file_with_package(
         }
     }
     let pattern_values = evaluate_pattern_constants(
-        File { items: Vec::[], enums: Vec::[], structs: Vec::[], constants },
+        File { items: Vec::[], enums: Vec::[], structs: Vec::[], constants, statics: Vec::[] },
         ctx.package_name,
         pattern_dependencies,
     );
@@ -3172,7 +3402,7 @@ fn check_file_with_package(
         )
     }
     CheckResult {
-        tast: Option::Some(File { items, enums, structs, constants }),
+        tast: Option::Some(File { items, enums, structs, constants, statics }),
         comptime: ctir::empty_module(ctx.package_name),
         pending_constants,
         diagnostics: order_extern_diagnostics(ctx),
@@ -3506,6 +3736,7 @@ fn check_package_files_for_link_with_environments_options(
     let enums: Vec[EnumDef] = Vec::[];
     let structs: Vec[StructDef] = Vec::[];
     let constants: Vec[Constant] = Vec::[];
+    let statics: Vec[Static] = Vec::[];
     let pending_constants: Vec[PendingConstant] = Vec::[];
     let diagnostics: Vec[Diagnostic] = Vec::[];
     let typeck_results = empty_typeck_results();
@@ -3554,6 +3785,9 @@ fn check_package_files_for_link_with_environments_options(
                 for value in file.constants {
                     constants.push(value)
                 }
+                for value in file.statics {
+                    statics.push(value)
+                }
             },
             None => {
                 valid = false;
@@ -3574,7 +3808,7 @@ fn check_package_files_for_link_with_environments_options(
     }
     let raw = CheckResult {
         tast: if valid {
-            Option::Some(File { items, enums, structs, constants })
+            Option::Some(File { items, enums, structs, constants, statics })
         } else {
             Option::None
         },

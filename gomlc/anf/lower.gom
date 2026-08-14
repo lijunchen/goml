@@ -83,6 +83,7 @@ pub fn lower_with_counter(value: lift::File, counter: Ref[int]) -> File {
     let structs = value.structs;
     let type_instances = value.type_instances;
     let constants = value.constants;
+    let statics = value.statics;
     let closure_defs = value.closure_defs;
     let state = State { counter, loop_ctxs: Vec::[], return_ctx: Ref::new(Option::None) };
     let functions: Vec[Function] = Vec::[];
@@ -90,7 +91,7 @@ pub fn lower_with_counter(value: lift::File, counter: Ref[int]) -> File {
         functions.push(lower_function(state, function))
     }
     let lowered = simplify(
-        File { functions, enums, structs, type_instances, constants, closure_defs },
+        File { functions, enums, structs, type_instances, constants, statics, closure_defs },
     );
     let inlined = simplify(inline(lowered, counter));
     simplify(licm(simplify(commute(inlined, counter))))

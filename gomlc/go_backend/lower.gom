@@ -357,38 +357,169 @@ fn compile_primitive(value: repr::Primitive, ty: repr::Type) -> Expr {
         },
         String { value } => Expr::String { value },
         Char { value } => Expr::Int { value: (value.to_uint32()).to_string() },
+        Bytes { values } => {
+            let items: Vec[Expr] = Vec::with_capacity(values.len());
+            for value in values {
+                items.push(Expr::Int { value })
+            }
+            let fields: Vec[(string, Expr)] = Vec::[];
+            fields.push(
+                ("items", Expr::ArrayLiteral { ty: Type::Slice { elem: Type::Uint8 }, items }),
+            );
+            Expr::Unary {
+                op: UnaryOp::Address,
+                expr: Expr::StructLiteral {
+                    ty: Type::Named {
+                        name: go_generated_ident(
+                            "_goml_vec_" + go_ident(encode_type(repr::Type::Uint8)),
+                        ),
+                    },
+                    fields,
+                },
+            }
+        },
     }
 }
 
-fn compile_constant_expr(value: repr::ConstExpr) -> Expr {
+fn compile_constant_expr(variants: VariantInfos, value: repr::ConstExpr) -> Expr {
     match value {
         Prim { value, ty } => compile_primitive(value, ty),
         Ref { name, ty: _ } => Expr::Var { name: go_local_ident(name) },
         Unary { op, expr, ty: _ } => Expr::Unary {
             op: compile_unary(op),
-            expr: compile_constant_expr(expr),
+            expr: compile_constant_expr(variants, expr),
         },
-        Cast { expr, ty } => Expr::Convert { ty: lower_type(ty), expr: compile_constant_expr(expr) },
+        Cast { expr, ty } => Expr::Convert {
+            ty: lower_type(ty),
+            expr: compile_constant_expr(variants, expr),
+        },
         Binary { op, lhs, rhs, ty: _ } => Expr::Binary {
             op: compile_binary(op),
-            lhs: compile_constant_expr(lhs),
-            rhs: compile_constant_expr(rhs),
+            lhs: compile_constant_expr(variants, lhs),
+            rhs: compile_constant_expr(variants, rhs),
+        },
+        Tuple { items, ty } => {
+            let fields: Vec[(string, Expr)] = Vec::with_capacity(items.len());
+            for index in 0..items.len() {
+                fields.push(
+                    ("_" + index.to_string(), compile_constant_expr(variants, items[index])),
+                )
+            }
+            Expr::StructLiteral { ty: lower_type(ty), fields }
+        },
+        Array { items, ty } => {
+            let values: Vec[Expr] = Vec::with_capacity(items.len());
+            for item in items {
+                values.push(compile_constant_expr(variants, item))
+            }
+            Expr::ArrayLiteral { ty: lower_type(ty), items: values }
+        },
+        Constr { constructor, args, ty } => {
+            let fields: Vec[(string, Expr)] = Vec::with_capacity(args.len());
+            for index in 0..args.len() {
+                fields.push(
+                    (
+                        if constructor.is_struct && index < constructor.fields.len() {
+                            go_ident(constructor.fields[index])
+                        } else {
+                            "_" + index.to_string()
+                        },
+                        compile_constant_expr(variants, args[index]),
+                    ),
+                )
+            }
+            let go_ty = if constructor.is_struct {
+                lower_type(ty)
+            } else {
+                match constructor.tag {
+                    Some(tag) => match variant_type(variants, ty, tag) {
+                        Some(ty) => ty,
+                        None => constructor_type(constructor),
+                    },
+                    None => constructor_type(constructor),
+                }
+            };
+            Expr::StructLiteral { ty: go_ty, fields }
         },
     }
 }
 
-fn compile_constants(values: Vec[repr::Constant]) -> ConstGroup {
+fn scalar_constant_type(value: repr::Type) -> bool {
+    match repr::resolve_type(value) {
+        Unit | Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | Float32 | Float64 | String | Char => true,
+        _ => false,
+    }
+}
+
+fn emit_constants(items: Vec[Item], values: Vec[repr::Constant], variants: VariantInfos) -> unit {
     let specs: Vec[ConstSpec] = Vec::[];
     for value in values {
-        specs.push(
-            ConstSpec {
-                name: go_local_ident(value.name),
-                ty: lower_type(value.ty),
-                value: compile_constant_expr(value.value),
+        if scalar_constant_type(value.ty) {
+            specs.push(
+                ConstSpec {
+                    name: go_local_ident(value.name),
+                    ty: lower_type(value.ty),
+                    value: compile_constant_expr(variants, value.value),
+                },
+            )
+        } else {
+            items.push(
+                Item::Global(
+                    Global {
+                        name: go_local_ident(value.name),
+                        ty: Option::Some(lower_type(value.ty)),
+                        value: compile_constant_expr(variants, value.value),
+                    },
+                ),
+            )
+        }
+    }
+    if specs.is_empty() {} else {
+        items.push(Item::ConstGroup(ConstGroup { specs }))
+    }
+}
+
+fn emit_statics(items: Vec[Item], values: Vec[repr::Static]) -> unit {
+    for value in values {
+        let cell_ty = lower_type(value.ty);
+        let body_stmts: Vec[Stmt] = Vec::[];
+        body_stmts.push(
+            Stmt::Var {
+                name: "cell",
+                ty: cell_ty,
+                value: Option::Some(
+                    Expr::Call {
+                        func: Expr::Var { name: runtime_helper_name("once_cell_new", value.ty) },
+                        args: Vec::[],
+                    },
+                ),
             },
+        );
+        body_stmts.push(
+            Stmt::FieldAssign {
+                target: Expr::Var { name: "cell" },
+                field_name: "name",
+                value: Expr::String { value: value.name },
+            },
+        );
+        body_stmts.push(Stmt::Return { expr: Option::Some(Expr::Var { name: "cell" }) });
+        items.push(
+            Item::Global(
+                Global {
+                    name: go_local_ident(value.name),
+                    ty: Option::Some(cell_ty),
+                    value: Expr::Call {
+                        func: Expr::FuncLit {
+                            params: Vec::[],
+                            ret_ty: cell_ty,
+                            body: Block { stmts: body_stmts },
+                        },
+                        args: Vec::[],
+                    },
+                },
+            ),
         )
     }
-    ConstGroup { specs }
 }
 
 fn compile_imm(env: LowerEnv, value: anf::Imm) -> Expr {
@@ -534,6 +665,10 @@ fn intrinsic_source_name(key: string) -> string {
         "vec_reserve"
     } else if key == "vec.truncate" {
         "vec_truncate"
+    } else if key == "once_cell.new" {
+        "once_cell_new"
+    } else if key == "once_cell.get_or_init" {
+        "once_cell_get_or_init"
     } else if key == "hashmap.new" {
         "hashmap_new"
     } else if key == "hashmap.get" {
@@ -571,6 +706,7 @@ fn intrinsic_owner_type(key: string, function_ty: repr::Type, args: Vec[anf::Imm
     repr::Type,
 ] {
     if key == "ref.new" || key == "vec.new" || key == "vec.with_capacity" || key == "hashmap.new"
+        || key == "once_cell.new"
         || key == "compiler.missing" {
         match repr::resolve_type(function_ty) {
             Func { params: _, ret_ty } => Option::Some(ret_ty),
@@ -608,6 +744,8 @@ fn intrinsic_helper_call_name(key: string, function_ty: repr::Type, args: Vec[an
         || key == "vec.capacity"
         || key == "vec.reserve"
         || key == "vec.truncate"
+        || key == "once_cell.new"
+        || key == "once_cell.get_or_init"
         || key == "hashmap.new"
         || key == "hashmap.get"
         || key == "hashmap.set"
@@ -3118,6 +3256,7 @@ fn lower_with_test_cases(
     let structs = value.structs;
     let type_instances = value.type_instances;
     let constants = value.constants;
+    let statics = value.statics;
     let function_names = build_function_names(value.functions, structs, enums, type_instances);
     let items: Vec[Item] = Vec::[];
     let types = new_collected_types();
@@ -3142,7 +3281,20 @@ fn lower_with_test_cases(
         );
         collect_dyn_block(coercions, function.body)
     }
+    for value in statics {
+        collect_type(types, value.ty)
+    }
     let runtime_hooks = resolve_runtime_hooks(runtime_hook_keys)?;
+    for instance in type_instances {
+        if instance.base_name == "OnceCell" && instance.args.len() == 1 {
+            if !collections::contains(intrinsics, "once_cell.new") {
+                intrinsics.push("once_cell.new")
+            } else {};
+            if !collections::contains(intrinsics, "once_cell.get_or_init") {
+                intrinsics.push("once_cell.get_or_init")
+            } else {}
+        } else {}
+    }
     if testing {
         runtime_hooks.push(
             resources::RuntimeHook::Standard(resources::StandardRuntimeHook::TestingFail),
@@ -3164,9 +3316,8 @@ fn lower_with_test_cases(
         function_names,
     );
     emit_user_type_items(items, variants, enums, structs, type_instances, function_names);
-    if !constants.is_empty() {
-        items.push(Item::ConstGroup(compile_constants(constants)))
-    } else {};
+    emit_constants(items, constants, variants);
+    emit_statics(items, statics);
     emit_dyn_runtime_items(
         items,
         types.values,

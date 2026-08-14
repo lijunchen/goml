@@ -106,6 +106,7 @@ fn detach_primitive(value: mono::Primitive) -> repr::Primitive {
         Float64 { value } => repr::Primitive::Float64 { value },
         String { value } => repr::Primitive::String { value },
         Char { value } => repr::Primitive::Char { value },
+        Bytes { values } => repr::Primitive::Bytes { values },
     }
 }
 
@@ -374,7 +375,30 @@ fn detach_const_expr(value: mono::ConstExpr, environments: Vec[string]) -> repr:
             rhs: detach_const_expr(rhs, environments),
             ty: detach_type(ty, environments),
         },
+        Tuple { items, ty } => repr::ConstExpr::Tuple {
+            items: detach_const_exprs(items, environments),
+            ty: detach_type(ty, environments),
+        },
+        Array { items, ty } => repr::ConstExpr::Array {
+            items: detach_const_exprs(items, environments),
+            ty: detach_type(ty, environments),
+        },
+        Constr { constructor, args, ty } => repr::ConstExpr::Constr {
+            constructor: detach_constructor(constructor),
+            args: detach_const_exprs(args, environments),
+            ty: detach_type(ty, environments),
+        },
     }
+}
+
+fn detach_const_exprs(values: Vec[mono::ConstExpr], environments: Vec[string]) -> Vec[
+    repr::ConstExpr,
+] {
+    let result: Vec[repr::ConstExpr] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(detach_const_expr(value, environments))
+    }
+    result
 }
 
 fn detach_constants(values: Vec[mono::Constant], environments: Vec[string]) -> Vec[repr::Constant] {
@@ -476,6 +500,15 @@ fn detach_file(value: LowerFile) -> File {
         structs: detach_struct_defs(value.structs, environments),
         type_instances: detach_type_instances(value.type_instances, environments),
         constants: detach_constants(value.constants, environments),
+        statics: {
+            let statics: Vec[repr::Static] = Vec::with_capacity(value.statics.len());
+            for item in value.statics {
+                statics.push(
+                    repr::Static { name: item.name, ty: detach_type(item.ty, environments) },
+                )
+            }
+            statics
+        },
         closure_defs,
     }
 }

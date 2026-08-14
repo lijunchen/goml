@@ -117,6 +117,16 @@ fn artifact_decode_primitive(value: wire::ArtifactValue) -> Result[tast::Primiti
             },
             None => Result::Err(wire::artifact_decode_error("single character primitive")),
         }
+    } else if kind == "Bytes" {
+        let values = wire::artifact_json_array(
+            artifact_decode_primitive_payload(payload)?,
+            "byte string primitive",
+        )?;
+        let result: Vec[string] = Vec::with_capacity(values.len());
+        for value in values {
+            result.push(wire::artifact_json_string_value(value, "byte string value")?)
+        }
+        Result::Ok(tast::Primitive::Bytes { values: result })
     } else {
         artifact_decode_numeric_primitive(kind, payload)
     }

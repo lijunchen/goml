@@ -1209,6 +1209,21 @@ fn constant_doc(value: Constant) -> pretty::Doc {
     )
 }
 
+fn static_doc(value: Static) -> pretty::Doc {
+    pretty::group(
+        pretty::concat(
+            Vec::[
+                attributes_doc(value.attrs),
+                pretty::text("static " + value.name + ": "),
+                type_doc(value.ty),
+                pretty::text(" ="),
+                pretty::nest(2, pretty::append(pretty::line(), expr_doc(value.value))),
+                pretty::text(";"),
+            ],
+        ),
+    )
+}
+
 fn item_doc(value: Item) -> pretty::Doc {
     match value {
         EnumDef(value) => enum_doc(value),
@@ -1219,6 +1234,7 @@ fn item_doc(value: Item) -> pretty::Doc {
         ExternFunction(value) => extern_doc(value),
         TypeAlias(value) => type_alias_doc(value),
         Constant(value) => constant_doc(value),
+        Static(value) => static_doc(value),
     }
 }
 

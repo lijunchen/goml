@@ -19,7 +19,7 @@ fn is_param_list_recovery(kind: lexer::TokenKind) -> bool {
 
 fn is_block_recovery(kind: lexer::TokenKind) -> bool {
     match kind {
-        Pound | PubKeyword | FnKeyword | ExternKeyword | StructKeyword | EnumKeyword | TraitKeyword | ImplKeyword | TypeKeyword | ConstKeyword | PackageKeyword | UseKeyword => true,
+        Pound | PubKeyword | FnKeyword | ExternKeyword | StructKeyword | EnumKeyword | TraitKeyword | ImplKeyword | TypeKeyword | ConstKeyword | StaticKeyword | PackageKeyword | UseKeyword => true,
         _ => false,
     }
 }
@@ -97,6 +97,8 @@ fn parse_file(parser: Parser) -> unit {
             type_alias(parser)
         } else if parser.at(lexer::TokenKind::ConstKeyword) {
             constant(parser)
+        } else if parser.at(lexer::TokenKind::StaticKeyword) {
+            static_item(parser)
         } else if is_expr_first(parser.peek()) {
             if marker_is_none(expr(parser)) {
                 parser.advance_with_error("expected an expression")
@@ -195,6 +197,8 @@ fn item_with_attrs(parser: Parser, attrs: MarkerClosed) -> unit {
         type_alias_with_marker(parser, marker)
     } else if parser.at(lexer::TokenKind::ConstKeyword) {
         constant_with_marker(parser, marker)
+    } else if parser.at(lexer::TokenKind::StaticKeyword) {
+        static_with_marker(parser, marker)
     } else {
         parser.error("expected a top-level item after attributes");
         if !parser.eof() {
@@ -227,6 +231,8 @@ fn public_item_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
         type_alias_with_marker(parser, marker)
     } else if parser.at(lexer::TokenKind::ConstKeyword) {
         constant_with_marker(parser, marker)
+    } else if parser.at(lexer::TokenKind::StaticKeyword) {
+        static_with_marker(parser, marker)
     } else {
         parser.error("expected a public top-level item");
         if !parser.eof() {
@@ -293,6 +299,28 @@ fn constant_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
     } else {};
     parser.expect(lexer::TokenKind::Semi);
     let _ = parser.close(marker, cst::NodeKind::CONST);
+}
+
+fn static_item(parser: Parser) -> unit {
+    let marker = parser.open();
+    static_with_marker(parser, marker)
+}
+
+fn static_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
+    parser.expect(lexer::TokenKind::StaticKeyword);
+    parser.expect(lexer::TokenKind::Ident);
+    parser.expect(lexer::TokenKind::Colon);
+    if is_type_first(parser.peek()) {
+        type_expr(parser)
+    } else {
+        parser.error("expected a static type after `:`")
+    };
+    parser.expect(lexer::TokenKind::Eq);
+    if marker_is_none(expr(parser)) {
+        parser.error("expected a static initializer after `=`")
+    } else {};
+    parser.expect(lexer::TokenKind::Semi);
+    let _ = parser.close(marker, cst::NodeKind::STATIC);
 }
 
 fn attribute_list(parser: Parser) -> MarkerClosed {

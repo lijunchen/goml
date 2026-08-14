@@ -98,6 +98,7 @@ fn lower_checked_builtin_core(checked: tast::CheckResult, counter: Ref[int]) -> 
             structs: Vec::[],
             type_instances: Vec::[],
             constants: Vec::[],
+            statics: Vec::[],
         }
     }
 }
@@ -287,7 +288,13 @@ fn compile_toolchain_package(
         Some(value) => value,
         None => {
             fail("error[compile]: missing typed package " + package_name);
-            tast::File { items: Vec::[], enums: Vec::[], structs: Vec::[], constants: Vec::[] }
+            tast::File {
+                items: Vec::[],
+                enums: Vec::[],
+                structs: Vec::[],
+                constants: Vec::[],
+                statics: Vec::[],
+            }
         },
     };
     let enum_names: Vec[string] = Vec::[];
@@ -545,7 +552,13 @@ fn builtin_artifact_interface_unit_from_checked(
         Some(file) => file,
         None => {
             fail("error[compile]: failed to typecheck builtin package");
-            tast::File { items: Vec::[], enums: Vec::[], structs: Vec::[], constants: Vec::[] }
+            tast::File {
+                items: Vec::[],
+                enums: Vec::[],
+                structs: Vec::[],
+                constants: Vec::[],
+                statics: Vec::[],
+            }
         },
     };
     let exports = artifact_package_exports(
@@ -1142,12 +1155,7 @@ fn render_typer_diagnostic(value: tast::Diagnostic, fallback_path: string, fallb
     builder.write_string(value.stage);
     builder.write_string("]: ");
     builder.write_string(value.message);
-    let inference = value.message == INFERENCE_FAILURE_MESSAGE;
-    match if inference {
-        Option::None
-    } else {
-        value.span
-    } {
+    match value.span {
         Some(span) => render_diagnostic_label(
             builder,
             "primary",
@@ -1157,7 +1165,7 @@ fn render_typer_diagnostic(value: tast::Diagnostic, fallback_path: string, fallb
             fallback_path,
             fallback_source,
         ),
-        None => if value.source_path != "" && !inference {
+        None => if value.source_path != "" {
             builder.write_string("\nat: ");
             builder.write_string(value.source_path)
         } else {},
@@ -1506,6 +1514,7 @@ fn lower_lift_stage(value: mono::File, counter: Ref[int]) -> lift::File {
                 structs: Vec::[],
                 type_instances: Vec::[],
                 constants: Vec::[],
+                statics: Vec::[],
                 closure_defs: Vec::[],
             }
         },

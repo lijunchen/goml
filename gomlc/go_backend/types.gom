@@ -167,9 +167,12 @@ pub fn lower_type(value: repr::Type) -> Type {
         String => Type::String,
         Char => Type::Char,
         Tuple { items: _ } => Type::Named { name: type_name(value) },
-        Named { name } | ClosureEnvironment { name } => {
+        Named { name } => if name == "OnceCell" || name.starts_with("OnceCell__") {
+            Type::Pointer { elem: Type::Named { name: go_user_type_name(name) } }
+        } else {
             Type::Named { name: go_user_type_name(name) }
         },
+        ClosureEnvironment { name } => Type::Named { name: go_user_type_name(name) },
         Dyn { trait_name: name, .. } => Type::Named { name: go_dyn_struct_name(name) },
         Array { len: length, elem } => Type::Array { len: length, elem: lower_type(elem) },
         Slice { elem } => Type::Slice { elem: lower_type(elem) },

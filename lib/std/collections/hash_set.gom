@@ -44,4 +44,12 @@ impl[K: Eq + Hash] HashSet[K] {
             false
         }
     }
+
+    pub fn to_vec(self: HashSet[K]) -> Vec[K] {
+        let result: Vec[K] = Vec::with_capacity(self.len());
+        for entry in self.entries.entries() {
+            result.push(entry.0)
+        }
+        result
+    }
 }

@@ -122,6 +122,7 @@ pub enum Item {
     ExternFunction(ExternFunction),
     TypeAlias(TypeAlias),
     Constant(Constant),
+    Static(Static),
 }
 
 pub struct TypeAlias {
@@ -134,6 +135,15 @@ pub struct TypeAlias {
 }
 
 pub struct Constant {
+    pub attrs: Vec[Attribute],
+    pub visibility: Visibility,
+    pub name: string,
+    pub ty: TypeExpr,
+    pub ty_span: Span,
+    pub value: Expr,
+}
+
+pub struct Static {
     pub attrs: Vec[Attribute],
     pub visibility: Visibility,
     pub name: string,

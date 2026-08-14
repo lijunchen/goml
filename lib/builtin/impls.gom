@@ -762,6 +762,20 @@ impl[T] Vec[T] {
         result
     }
 
+    fn copy(self: Self) -> Self {
+        let result: Vec[T] = Vec::with_capacity(self.len());
+        let mut index = 0;
+        while index < self.len() {
+            result.push(self[index]);
+            index += 1;
+        }
+        result
+    }
+
+    fn freeze(self: Self) -> FrozenVec[T] {
+        FrozenVec { values: self.copy() }
+    }
+
     fn get(self: Self, index: int) -> T {
         vec_get(self, index)
     }
@@ -900,6 +914,38 @@ impl[T] Vec[T] {
     }
 }
 
+impl[T] FrozenVec[T] {
+    fn len(self: Self) -> int {
+        self.values.len()
+    }
+
+    fn is_empty(self: Self) -> bool {
+        self.values.is_empty()
+    }
+
+    fn get(self: Self, index: int) -> T {
+        self.values[index]
+    }
+
+    fn to_vec(self: Self) -> Vec[T] {
+        self.values.copy()
+    }
+
+    fn iter(self: Self) -> FnIterator[T] {
+        self.values.iter()
+    }
+}
+
+impl[T] OnceCell[T] {
+    fn new() -> Self {
+        once_cell_new()
+    }
+
+    fn get_or_init(self: Self, init: () -> T) -> T {
+        once_cell_get_or_init(self, init)
+    }
+}
+
 impl[T] IntoIterator for Vec[T] {
     type Item = T;
 
@@ -921,6 +967,16 @@ impl[T] Slice[T] {
 
     fn sub(self: Self, start: int, end: int) -> Self {
         slice_sub(self, start, end)
+    }
+
+    fn to_vec(self: Self) -> Vec[T] {
+        let result: Vec[T] = Vec::with_capacity(self.len());
+        let mut index = 0;
+        while index < self.len() {
+            result.push(self[index]);
+            index += 1;
+        }
+        result
     }
 
     fn iter(self: Self) -> FnIterator[T] {

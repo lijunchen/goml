@@ -366,6 +366,9 @@ fn encode_with_style(value: File, style: PrintStyle) -> string {
     for value in value.constants {
         constants.push(repr::constant_doc(value))
     }
+    for value in value.statics {
+        constants.push(repr::static_doc(value))
+    }
     let functions: Vec[pretty::Doc] = Vec::with_capacity(value.functions.len());
     for value in value.functions {
         functions.push(function_doc(value, style))
@@ -375,7 +378,7 @@ fn encode_with_style(value: File, style: PrintStyle) -> string {
         pretty::concat(Vec::[pretty::hardline(), pretty::hardline()]),
         functions,
     );
-    let result = if !value.constants.is_empty() && !value.functions.is_empty() {
+    let result = if !constants.is_empty() && !value.functions.is_empty() {
         pretty::concat(Vec::[constants_doc, pretty::hardline(), pretty::hardline(), functions_doc])
     } else {
         pretty::append(constants_doc, functions_doc)

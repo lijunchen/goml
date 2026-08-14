@@ -489,6 +489,27 @@ fn artifact_decode_const_expr_field(
     artifact_decode_const_expr(context, value)
 }
 
+fn artifact_decode_const_exprs(
+    context: ArtifactCoreDecodeContext,
+    value: wire::ArtifactValue,
+    expected: string,
+) -> Result[Vec[core::ConstExpr], string] {
+    let values = wire::artifact_json_array(value, expected)?;
+    let result: Vec[core::ConstExpr] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(artifact_decode_const_expr(context, value)?)
+    }
+    Result::Ok(result)
+}
+
+fn artifact_decode_const_expr_array_field(
+    context: ArtifactCoreDecodeContext,
+    object: Vec[(string, wire::ArtifactValue)],
+    name: string,
+) -> Result[Vec[core::ConstExpr], string] {
+    artifact_decode_const_exprs(context, wire::artifact_json_required_field(object, name)?, name)
+}
+
 fn artifact_decode_const_expr(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     core::ConstExpr,
     string,
@@ -521,6 +542,29 @@ fn artifact_decode_const_expr(context: ArtifactCoreDecodeContext, value: wire::A
         let lhs = artifact_decode_const_expr_field(context, object, "lhs")?;
         let rhs = artifact_decode_const_expr_field(context, object, "rhs")?;
         Result::Ok(core::ConstExpr::Binary { op, lhs, rhs, ty })
+    } else if kind == "CTuple" {
+        Result::Ok(
+            core::ConstExpr::Tuple {
+                items: artifact_decode_const_expr_array_field(context, object, "items")?,
+                ty,
+            },
+        )
+    } else if kind == "CArray" {
+        Result::Ok(
+            core::ConstExpr::Array {
+                items: artifact_decode_const_expr_array_field(context, object, "items")?,
+                ty,
+            },
+        )
+    } else if kind == "CConstr" {
+        let constructor = core::lower_constructor(
+            artifact_decode_constructor(
+                context,
+                wire::artifact_json_required_field(object, "constructor")?,
+            )?,
+        );
+        let args = artifact_decode_const_expr_array_field(context, object, "args")?;
+        Result::Ok(core::ConstExpr::Constr { constructor, args, ty })
     } else if kind == "CError" {
         Result::Ok(core::ConstExpr::Error { ty })
     } else {
@@ -539,6 +583,16 @@ fn artifact_decode_constant(context: ArtifactCoreDecodeContext, value: wire::Art
     Result::Ok(core::Constant { name, ty, value })
 }
 
+fn artifact_decode_static(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+    core::Static,
+    string,
+] {
+    let object = wire::artifact_json_object(value, "static")?;
+    let name = wire::artifact_json_field_string(object, "name")?;
+    let ty = artifact_decode_core_type_field(context, object, "ty")?;
+    Result::Ok(core::Static { name, ty })
+}
+
 fn artifact_decode_core_file(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     core::File,
     string,
@@ -554,6 +608,13 @@ fn artifact_decode_core_file(context: ArtifactCoreDecodeContext, value: wire::Ar
     for value in constant_values {
         constants.push(artifact_decode_constant(context, value)?)
     }
+    let statics: Vec[core::Static] = Vec::[];
+    match wire::artifact_json_optional_field(object, "statics")? {
+        Some(value) => for value in wire::artifact_json_array(value, "statics")? {
+            statics.push(artifact_decode_static(context, value)?)
+        },
+        None => (),
+    };
     Result::Ok(
         core::File {
             functions,
@@ -561,6 +622,7 @@ fn artifact_decode_core_file(context: ArtifactCoreDecodeContext, value: wire::Ar
             structs: core::lower_struct_defs(context.structs),
             type_instances: Vec::[],
             constants,
+            statics,
         },
     )
 }

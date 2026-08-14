@@ -2055,7 +2055,14 @@ fn lower_file_with_types(
             },
         }
     }
-    LowerFile { functions, enums, structs, type_instances: Vec::[], constants: value.constants }
+    LowerFile {
+        functions,
+        enums,
+        structs,
+        type_instances: Vec::[],
+        constants: value.constants,
+        statics: value.statics,
+    }
 }
 
 fn lower_file(value: tast::File, counter: Ref[int]) -> LowerFile {
@@ -2083,6 +2090,7 @@ fn lower_raw_with_counter_types_and_options(
             structs: Vec::[],
             type_instances: Vec::[],
             constants: Vec::[],
+            statics: Vec::[],
         },
     }
 }
@@ -2130,6 +2138,7 @@ pub fn lower_with_counter(value: tast::CheckResult, counter: Ref[int]) -> File {
                 structs: Vec::[],
                 type_instances: Vec::[],
                 constants: Vec::[],
+                statics: Vec::[],
             },
         },
     )

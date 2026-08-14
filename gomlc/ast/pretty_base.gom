@@ -608,6 +608,26 @@ fn pretty_constant_doc(value: Constant) -> doc::Doc {
     )
 }
 
+fn pretty_static_doc(value: Static) -> doc::Doc {
+    doc::concat(
+        Vec::[
+            pretty_attributes_doc(value.attrs),
+            doc::group(
+                doc::concat(
+                    Vec::[
+                        pretty_visibility_doc(value.visibility),
+                        doc::text("static " + value.name + ": "),
+                        pretty_type_doc(value.ty),
+                        doc::text(" ="),
+                        doc::nest(2, doc::append(doc::line(), pretty_expr_doc(value.value))),
+                        doc::text(";"),
+                    ],
+                ),
+            ),
+        ],
+    )
+}
+
 fn pretty_item_doc(value: Item) -> doc::Doc {
     match value {
         EnumDef(value) => pretty_enum_doc(value),
@@ -618,6 +638,7 @@ fn pretty_item_doc(value: Item) -> doc::Doc {
         ExternFunction(value) => pretty_extern_doc(value),
         TypeAlias(value) => pretty_type_alias_doc(value),
         Constant(value) => pretty_constant_doc(value),
+        Static(value) => pretty_static_doc(value),
     }
 }
 
