@@ -33,14 +33,15 @@ fn required_runtime_abi(value: Option[RuntimeAbiSpec]) -> RuntimeAbiSpec {
 fn loads_builtin_and_prelude_layers_independently() -> unit {
     match builtin_layer_sources() {
         Ok(values) => {
-            testing::assert_eq(values.len(), 7);
+            testing::assert_eq(values.len(), 8);
             testing::assert(values[0].path.ends_with("/builtin/contract.gom"));
-            testing::assert(values[1].path.ends_with("/builtin/runtime.gom"));
-            testing::assert(values[2].path.ends_with("/builtin/impls.gom"));
-            testing::assert(values[3].path.ends_with("/builtin/language.gom"));
-            testing::assert(values[4].path.ends_with("/builtin/numeric.gom"));
-            testing::assert(values[5].path.ends_with("/builtin/derive.gom"));
-            testing::assert(values[6].path.ends_with("/builtin/ordering.gom"))
+            testing::assert(values[1].path.ends_with("/builtin/intrinsics.gom"));
+            testing::assert(values[2].path.ends_with("/builtin/runtime.gom"));
+            testing::assert(values[3].path.ends_with("/builtin/impls.gom"));
+            testing::assert(values[4].path.ends_with("/builtin/language.gom"));
+            testing::assert(values[5].path.ends_with("/builtin/numeric.gom"));
+            testing::assert(values[6].path.ends_with("/builtin/derive.gom"));
+            testing::assert(values[7].path.ends_with("/builtin/ordering.gom"))
         },
         Err(error) => testing::fail(error),
     };
