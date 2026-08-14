@@ -402,10 +402,7 @@ fn std::internal::host::crypto_random_bytes(length/103: int) -> (bool, Vec[uint8
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
-  std::bytes::Bytes {
-    values: let vec_literal/130 = inherent#Vec#Vec[T]#new__T_uint8() in
-    vec_literal/130
-  }
+  std::bytes::Bytes { values: @intrinsic(vec.from_array)([]) }
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(
@@ -1227,14 +1224,9 @@ fn std::ascii::escape_default(value/16: uint8) -> string {
       } else {
           false
       } {
-          let mtmp1 =
-            string_from_utf8(
-              let vec_literal/1811 = inherent#Vec#Vec[T]#new__T_uint8() in
-              let _wild0 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1811, value/16) in
-              vec_literal/1811
-            ) in
-          let x3 = mtmp1.1 in
-          let result/17 = x3 in
+          let mtmp0 = string_from_utf8(@intrinsic(vec.from_array)([value/16])) in
+          let x2 = mtmp0.1 in
+          let result/17 = x2 in
           result/17
       } else {
           (("\\x" + inherent#char#char#to_string(std::ascii::hex_digit((value/16 >> 4)))) +
@@ -1244,10 +1236,7 @@ fn std::ascii::escape_default(value/16: uint8) -> string {
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#new() -> std::text::StringBuilder {
-  std::text::StringBuilder {
-    values: let vec_literal/178 = inherent#Vec#Vec[T]#new__T_uint8() in
-    vec_literal/178
-  }
+  std::text::StringBuilder { values: @intrinsic(vec.from_array)([]) }
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(
@@ -1541,9 +1530,7 @@ fn std::env::var_structured(name/15: string) -> Result__string__std::env::VarErr
 }
 
 fn std::env::vars() -> Vec[(string, string)] {
-  let result/17 =
-    let vec_literal/1577 = inherent#Vec#Vec[T]#new__T_(string,string)() in
-    vec_literal/1577 in
+  let result/17 = @intrinsic(vec.from_array)([]) in
   let _wild26 =
     let for_source19 = std::internal::host::env_vars() in
     let for_limit20 = @intrinsic(vec.len)(for_source19) in
@@ -1641,10 +1628,6 @@ fn main() -> unit {
   std::io::println__T_string(
     trait_impl#ToString#bool#to_string((inherent#Vec#Vec[T]#len__T_string(std::env::args()) > 0))
   )
-}
-
-fn inherent#Vec#Vec[T]#new__T_uint8() -> Vec[uint8] {
-  @intrinsic(vec.new)()
 }
 
 fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/257: int) -> Vec[uint8] {
@@ -2034,9 +2017,7 @@ fn inherent#string#string#trim(self/94: string) -> string {
 }
 
 fn inherent#string#string#split(self/95: string, separator/96: string) -> Vec[string] {
-  let result/97 =
-    let vec_literal/5514 = inherent#Vec#Vec[T]#new__T_string() in
-    vec_literal/5514 in
+  let result/97 = @intrinsic(vec.from_array)([]) in
   let separator_len/98 = inherent#string#string#byte_len(separator/96) in
   let value_len/99 = inherent#string#string#byte_len(self/95) in
   let _wild86 =
@@ -2171,9 +2152,7 @@ fn inherent#string#string#replace(
   if (inherent#string#string#byte_len(expected/112) == 0) {
       self/111
   } else {
-      let parts/114 =
-        let vec_literal/7376 = inherent#Vec#Vec[T]#new__T_string() in
-        vec_literal/7376 in
+      let parts/114 = @intrinsic(vec.from_array)([]) in
       let start/115 = 0 in
       let _wild112 =
         loop let mtmp106 = string_find_from(self/111, expected/112, start/115) in
@@ -2414,10 +2393,6 @@ fn inherent#string#string#to_ascii_uppercase(self/129: string) -> string {
   let x148 = mtmp146.1 in
   let result/132 = x148 in
   result/132
-}
-
-fn inherent#Vec#Vec[T]#new__T_(string,string)() -> Vec[(string, string)] {
-  @intrinsic(vec.new)()
 }
 
 fn inherent#Vec#Vec[T]#push__T_(string,string)(
@@ -2716,10 +2691,6 @@ fn ascii_is_whitespace(value/140: uint8) -> bool {
   } else {
       (value/140 == 32)
   }
-}
-
-fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
-  @intrinsic(vec.new)()
 }
 
 fn inherent#Vec#Vec[T]#push__T_string(self/258: Vec[string], elem/259: string) -> unit {

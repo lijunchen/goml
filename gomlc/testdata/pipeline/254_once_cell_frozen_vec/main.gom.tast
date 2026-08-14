@@ -7,20 +7,8 @@ fn values() -> FrozenVec[int] {
     ) -> FrozenVec[int])(
       (VALUES : OnceCell[FrozenVec[int]]),
       || =>
-        (Vec[
-          int
-        ]::freeze : (
-          Vec[int]
-        ) -> FrozenVec[
-          int
-        ])(
-          {
-              let vec_literal/118: Vec[int] = (Vec[int]::new : () -> Vec[int])();
-              (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/118 : Vec[int]), 1);
-              (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/118 : Vec[int]), 2);
-              (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/118 : Vec[int]), 3);
-              (vec_literal/118 : Vec[int])
-          }
+        (Vec[int]::freeze : (Vec[int]) -> FrozenVec[int])(
+          (@intrinsic(vec.from_array) : ([int; 3]) -> Vec[int])([1, 2, 3])
         )
     )
 }

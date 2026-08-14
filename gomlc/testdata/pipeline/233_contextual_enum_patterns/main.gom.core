@@ -820,11 +820,7 @@ fn inherent#string#string#trim(self/94: string) -> string {
 }
 
 fn inherent#string#string#split(self/95: string, separator/96: string) -> Vec[string] {
-  let result/97 =
-    {
-      let vec_literal/5514 = inherent#Vec#Vec[string]#new() in
-      vec_literal/5514
-    } in
+  let result/97 = @intrinsic(vec.from_array)([]) in
   let separator_len/98 = inherent#string#string#byte_len(separator/96) in
   let value_len/99 = inherent#string#string#byte_len(self/95) in
   let _wild86 =
@@ -1007,11 +1003,7 @@ fn inherent#string#string#replace(
       }
   } else {
       {
-        let parts/114 =
-          {
-            let vec_literal/7376 = inherent#Vec#Vec[string]#new() in
-            vec_literal/7376
-          } in
+        let parts/114 = @intrinsic(vec.from_array)([]) in
         let start/115 = 0 in
         let _wild112 =
           loop {
@@ -3985,24 +3977,18 @@ fn sum_boxed(values/16: Vec[Boxed[int]]) -> int {
 }
 
 fn main() -> unit {
-  let boxed/19 =
-    {
-      let vec_literal/1450 = inherent#Vec#Vec[Boxed[int]]#new() in
-      let _wild433 = inherent#Vec#Vec[Boxed[int]]#push(vec_literal/1450, Boxed::Value(19)) in
-      let _wild434 = inherent#Vec#Vec[Boxed[int]]#push(vec_literal/1450, Boxed::Value(23)) in
-      vec_literal/1450
-    } in
-  let _wild435 = println(classify(First::Shared(7))) in
-  let _wild436 = println(classify(First::Idle)) in
-  let _wild437 = println(classify(First::Data(9, "data"))) in
-  let _wild438 = println(nested(Option::Some(Result::Ok(11)))) in
-  let _wild439 = println(nested(Option::Some(Result::Err("bad")))) in
-  let _wild440 = println(nested(Option::None)) in
-  let _wild441 = println(optional_number(Option::Some(13))) in
-  let _wild442 = println(optional_number(Option::None)) in
-  let _wild443 = println(is_non_shared(First::Idle)) in
-  let _wild444 = println(is_non_shared(First::Shared(1))) in
-  let _wild445 = println(take_once(Option::Some(15))) in
-  let _wild446 = println(unbox(Boxed::Value(17))) in
+  let boxed/19 = @intrinsic(vec.from_array)([Boxed::Value(19), Boxed::Value(23)]) in
+  let _wild433 = println(classify(First::Shared(7))) in
+  let _wild434 = println(classify(First::Idle)) in
+  let _wild435 = println(classify(First::Data(9, "data"))) in
+  let _wild436 = println(nested(Option::Some(Result::Ok(11)))) in
+  let _wild437 = println(nested(Option::Some(Result::Err("bad")))) in
+  let _wild438 = println(nested(Option::None)) in
+  let _wild439 = println(optional_number(Option::Some(13))) in
+  let _wild440 = println(optional_number(Option::None)) in
+  let _wild441 = println(is_non_shared(First::Idle)) in
+  let _wild442 = println(is_non_shared(First::Shared(1))) in
+  let _wild443 = println(take_once(Option::Some(15))) in
+  let _wild444 = println(unbox(Boxed::Value(17))) in
   println(sum_boxed(boxed/19))
 }

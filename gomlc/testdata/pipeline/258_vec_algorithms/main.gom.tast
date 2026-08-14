@@ -1,17 +1,6 @@
 fn main() -> unit {
     let values/0: Vec[int] =
-      {
-          let vec_literal/52: Vec[int] = (Vec[int]::new : () -> Vec[int])();
-          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/52 : Vec[int]), 3);
-          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/52 : Vec[int]), 1);
-          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/52 : Vec[int]), 4);
-          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/52 : Vec[int]), 1);
-          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/52 : Vec[int]), 5);
-          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/52 : Vec[int]), 9);
-          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/52 : Vec[int]), 2);
-          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/52 : Vec[int]), 6);
-          (vec_literal/52 : Vec[int])
-      };
+      (@intrinsic(vec.from_array) : ([int; 8]) -> Vec[int])([3, 1, 4, 1, 5, 9, 2, 6]);
     (println : (string) -> unit)(
       (int::to_string : (int) -> string)(
         (Option[int]::unwrap_or : (Option[int], int) -> int)(
@@ -46,15 +35,7 @@ fn main() -> unit {
       (Vec[int]::join : (Vec[int], string) -> string)((values/0 : Vec[int]), ",")
     );
     let ordered/5: Vec[int] =
-      {
-          let vec_literal/404: Vec[int] = (Vec[int]::new : () -> Vec[int])();
-          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/404 : Vec[int]), 1);
-          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/404 : Vec[int]), 2);
-          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/404 : Vec[int]), 4);
-          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/404 : Vec[int]), 4);
-          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/404 : Vec[int]), 5);
-          (vec_literal/404 : Vec[int])
-      };
+      (@intrinsic(vec.from_array) : ([int; 5]) -> Vec[int])([1, 2, 4, 4, 5]);
     (println : (string) -> unit)(
       (int::to_string : (int) -> string)(
         (Option[int]::unwrap_or : (Option[int], int) -> int)(
@@ -100,22 +81,7 @@ fn main() -> unit {
       )
     );
     let names/12: Vec[string] =
-      {
-          let vec_literal/804: Vec[string] = (Vec[string]::new : () -> Vec[string])();
-          (Vec[string]::push : (Vec[string], string) -> unit)(
-            (vec_literal/804 : Vec[string]),
-            "beta"
-          );
-          (Vec[string]::push : (Vec[string], string) -> unit)(
-            (vec_literal/804 : Vec[string]),
-            "alpha"
-          );
-          (Vec[string]::push : (Vec[string], string) -> unit)(
-            (vec_literal/804 : Vec[string]),
-            "gamma"
-          );
-          (vec_literal/804 : Vec[string])
-      };
+      (@intrinsic(vec.from_array) : ([string; 3]) -> Vec[string])(["beta", "alpha", "gamma"]);
     (Vec[string]::sort_by_ordering : (Vec[string], (string, string) -> Ordering) -> unit)(
       (names/12 : Vec[string]),
       |left/13: string, right/14: string| =>
@@ -125,22 +91,7 @@ fn main() -> unit {
       (Vec[string]::join : (Vec[string], string) -> string)((names/12 : Vec[string]), "|")
     );
     let pairs/15: Vec[(int, int)] =
-      {
-          let vec_literal/968: Vec[(int, int)] = (Vec[(int, int)]::new : () -> Vec[(int, int)])();
-          (Vec[(int, int)]::push : (Vec[(int, int)], (int, int)) -> unit)(
-            (vec_literal/968 : Vec[(int, int)]),
-            (1, 2)
-          );
-          (Vec[(int, int)]::push : (Vec[(int, int)], (int, int)) -> unit)(
-            (vec_literal/968 : Vec[(int, int)]),
-            (1, 1)
-          );
-          (Vec[(int, int)]::push : (Vec[(int, int)], (int, int)) -> unit)(
-            (vec_literal/968 : Vec[(int, int)]),
-            (0, 9)
-          );
-          (vec_literal/968 : Vec[(int, int)])
-      };
+      (@intrinsic(vec.from_array) : ([(int, int); 3]) -> Vec[(int, int)])([(1, 2), (1, 1), (0, 9)]);
     (Vec[(int, int)]::sort_by_ordering : (
       Vec[(int, int)],
       ((int, int), (int, int)) -> Ordering
@@ -158,22 +109,8 @@ fn main() -> unit {
       )
     );
     let view/18: Slice[int] =
-      (Vec[
-        int
-      ]::slice : (
-        Vec[int],
-        int,
-        int
-      ) -> Slice[
-        int
-      ])(
-        {
-            let vec_literal/1149: Vec[int] = (Vec[int]::new : () -> Vec[int])();
-            (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/1149 : Vec[int]), 7);
-            (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/1149 : Vec[int]), 8);
-            (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/1149 : Vec[int]), 9);
-            (vec_literal/1149 : Vec[int])
-        },
+      (Vec[int]::slice : (Vec[int], int, int) -> Slice[int])(
+        (@intrinsic(vec.from_array) : ([int; 3]) -> Vec[int])([7, 8, 9]),
         0,
         2
       );
@@ -188,19 +125,8 @@ fn main() -> unit {
       )
     );
     let frozen/19: FrozenVec[int] =
-      (Vec[
-        int
-      ]::freeze : (
-        Vec[int]
-      ) -> FrozenVec[
-        int
-      ])(
-        {
-            let vec_literal/1280: Vec[int] = (Vec[int]::new : () -> Vec[int])();
-            (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/1280 : Vec[int]), 1);
-            (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/1280 : Vec[int]), 2);
-            (vec_literal/1280 : Vec[int])
-        }
+      (Vec[int]::freeze : (Vec[int]) -> FrozenVec[int])(
+        (@intrinsic(vec.from_array) : ([int; 2]) -> Vec[int])([1, 2])
       );
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)(
@@ -212,11 +138,7 @@ fn main() -> unit {
         (FrozenVec[int]::contains : (FrozenVec[int], int) -> bool)((frozen/19 : FrozenVec[int]), 3)
       )
     );
-    let empty/20: Vec[int] =
-      {
-          let vec_literal/1418: Vec[int] = (Vec[int]::new : () -> Vec[int])();
-          (vec_literal/1418 : Vec[int])
-      };
+    let empty/20: Vec[int] = (@intrinsic(vec.from_array) : ([int; 0]) -> Vec[int])([]);
     (println : (string) -> unit)(
       (Vec[int]::join : (Vec[int], string) -> string)((empty/20 : Vec[int]), ",")
     );

@@ -820,11 +820,7 @@ fn inherent#string#string#trim(self/94: string) -> string {
 }
 
 fn inherent#string#string#split(self/95: string, separator/96: string) -> Vec[string] {
-  let result/97 =
-    {
-      let vec_literal/5514 = inherent#Vec#Vec[string]#new() in
-      vec_literal/5514
-    } in
+  let result/97 = @intrinsic(vec.from_array)([]) in
   let separator_len/98 = inherent#string#string#byte_len(separator/96) in
   let value_len/99 = inherent#string#string#byte_len(self/95) in
   let _wild86 =
@@ -1007,11 +1003,7 @@ fn inherent#string#string#replace(
       }
   } else {
       {
-        let parts/114 =
-          {
-            let vec_literal/7376 = inherent#Vec#Vec[string]#new() in
-            vec_literal/7376
-          } in
+        let parts/114 = @intrinsic(vec.from_array)([]) in
         let start/115 = 0 in
         let _wild112 =
           loop {
@@ -3884,65 +3876,47 @@ fn main() -> unit {
         inherent#int#int#to_string(Point.y(updated/14)))
     ) in
   let _wild433 = inherent#Ref#Ref[string]#set(log/12, "") in
-  let values/15 =
+  let values/15 = @intrinsic(vec.from_array)([record(log/12, "A", 10), record(log/12, "B", 20)]) in
+  let _wild438 =
     {
-      let vec_literal/967 = inherent#Vec#Vec[int]#new() in
-      let _wild434 = inherent#Vec#Vec[int]#push(vec_literal/967, record(log/12, "A", 10)) in
-      let _wild435 = inherent#Vec#Vec[int]#push(vec_literal/967, record(log/12, "B", 20)) in
-      vec_literal/967
+      let place_root434 = record_vec(log/12, "R", values/15) in
+      let index435 = record(log/12, "I", 1) in
+      let place436 = @intrinsic(vec.get)(place_root434, index435) in
+      let value437 = record(log/12, "V", 5) in
+      @intrinsic(vec.set)(place_root434, index435, (place436 + value437))
     } in
+  let _wild439 = println(inherent#Ref#Ref[string]#get(log/12)) in
   let _wild440 =
-    {
-      let place_root436 = record_vec(log/12, "R", values/15) in
-      let index437 = record(log/12, "I", 1) in
-      let place438 = @intrinsic(vec.get)(place_root436, index437) in
-      let value439 = record(log/12, "V", 5) in
-      @intrinsic(vec.set)(place_root436, index437, (place438 + value439))
-    } in
-  let _wild441 = println(inherent#Ref#Ref[string]#get(log/12)) in
-  let _wild442 =
     println(
       ((("" + inherent#int#int#to_string(inherent#Vec#Vec[int]#get(values/15, 0))) + ",") +
         inherent#int#int#to_string(inherent#Vec#Vec[int]#get(values/15, 1)))
     ) in
-  let _wild443 = inherent#Ref#Ref[string]#set(log/12, "") in
+  let _wild441 = inherent#Ref#Ref[string]#set(log/12, "") in
   let table/16 =
-    {
-      let hashmap_literal/1226 = inherent#HashMap#HashMap[string,int]#new() in
-      let _wild444 =
-        inherent#HashMap#HashMap[string,int]#set(
-          hashmap_literal/1226,
+    @intrinsic(hashmap.from_array)(
+      [
+        (
           (("" + "k") + inherent#int#int#to_string(record(log/12, "K", 1))),
           record(log/12, "V", 11)
-        ) in
-      let _wild445 =
-        inherent#HashMap#HashMap[string,int]#set(
-          hashmap_literal/1226,
-          "same",
-          record(log/12, "A", 1)
-        ) in
-      let _wild446 =
-        inherent#HashMap#HashMap[string,int]#set(
-          hashmap_literal/1226,
-          "same",
-          record(log/12, "B", 2)
-        ) in
-      hashmap_literal/1226
-    } in
-  let _wild447 = println(inherent#Ref#Ref[string]#get(log/12)) in
-  let _wild450 =
+        ),
+        ("same", record(log/12, "A", 1)),
+        ("same", record(log/12, "B", 2))
+      ]
+    ) in
+  let _wild442 = println(inherent#Ref#Ref[string]#get(log/12)) in
+  let _wild445 =
     println(
       {
-        let mtmp448 = inherent#HashMap#HashMap[string,int]#get(table/16, "same") in
-        match mtmp448 {
+        let mtmp443 = inherent#HashMap#HashMap[string,int]#get(table/16, "same") in
+        match mtmp443 {
           Option::None => {
             "missing"
           },
-          Option::Some(x449) => {
+          Option::Some(x444) => {
             {
-              let x449 = Option::Some._0(mtmp448) in
+              let x444 = Option::Some._0(mtmp443) in
               {
-                let value/17 = x449 in
+                let value/17 = x444 in
                 inherent#int#int#to_string(value/17)
               }
             }
@@ -3950,17 +3924,9 @@ fn main() -> unit {
         }
       }
     ) in
-  let empty_values/18 =
-    {
-      let vec_literal/1570 = inherent#Vec#Vec[int]#new() in
-      vec_literal/1570
-    } in
-  let empty_table/19 =
-    {
-      let hashmap_literal/1623 = inherent#HashMap#HashMap[string,int]#new() in
-      hashmap_literal/1623
-    } in
-  let _wild451 =
+  let empty_values/18 = @intrinsic(vec.from_array)([]) in
+  let empty_table/19 = @intrinsic(hashmap.from_array)([]) in
+  let _wild446 =
     println(
       ((("" + "empty=") +
         inherent#int#int#to_string(

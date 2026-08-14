@@ -1,0 +1,78 @@
+package main
+file main.gom
+  struct LoggedKey {
+      id: int,
+      log: Ref[string],
+  }
+
+  impl PartialEq for LoggedKey {
+    fn eq(local/1/0: LoggedKey, local/1/1: LoggedKey) -> bool {
+        self/0.log.set(self/0.log.get() + "E");
+        self/0.id == other/1.id
+    }
+  }
+
+  impl Eq for LoggedKey {}
+
+  impl Hash for LoggedKey {
+    fn hash(local/1/2: LoggedKey) -> uint64 {
+        self/2.log.set(self/2.log.get() + "H");
+        self/2.id.to_uint64()
+    }
+  }
+
+  fn logged_key(local/1/3: Ref[string], local/1/4: string, local/1/5: int) -> LoggedKey {
+      log/3.set(log/3.get() + label/4);
+      LoggedKey { id: id/5, log: log/3 }
+  }
+
+  fn logged_value(local/1/6: Ref[string], local/1/7: string, local/1/8: int) -> int {
+      log/6.set(log/6.get() + label/7);
+      value/8
+  }
+
+  fn main() -> unit {
+      let local/1/9: ([int; 3]) -> Vec[int] = Vec::from_array;
+      let local/1/10 = make_vec/9([1, 2, 3]);
+      println(f"{values/10.len()}:{values/10[0]}:{values/10[2]}");
+      let local/1/11: Vec[int] = Vec[int]::from_array([]);
+      println(empty/11.len());
+      let local/1/12: Vec[int] = Vec::from_array([]);
+      println(inferred_empty/12.len());
+      let mut local/1/13 = [Ref::new(1), Ref::new(2)];
+      let local/1/14 = Vec::from_array(source/13);
+      source/13[0].set(5);
+      source/13[0] = Ref::new(9);
+      println(f"{copied/14[0].get()}:{source/13[0].get()}");
+      let local/1/15 = Ref::new("");
+      let local/1/16 =
+        HashMap::from_array(
+          [
+            (def/1/4(log/15, "A", 1), def/1/5(log/15, "a", 10)),
+            (def/1/4(log/15, "B", 1), def/1/5(log/15, "b", 20))
+          ]
+        );
+      println(log/15.get());
+      println(
+        match table/16.get(LoggedKey { id: 1, log: log/15 }) {
+            Some(local/1/17) => value/17,
+            None => 0,
+        }
+      );
+      let local/1/18: ([(string, int); 2]) -> HashMap[string, int] = HashMap::from_array;
+      let local/1/19 = make_map/18([("a", 1), ("b", 2)]);
+      println(words/19.len());
+      let local/1/20 = HashMap[string, int]::from_array([]);
+      println(no_words/20.len());
+      let local/1/21: HashMap[string, int] = HashMap::from_array([]);
+      println(inferred_no_words/21.len());
+      let local/1/22 = Vec::from_array([(1, "a"), (2, "b")]);
+      let local/1/23 = Vec::from_array([Vec::from_array([1, 2]), Vec::from_array([3, 4])]);
+      let local/1/24 = HashMap::from_array([("values", Vec::from_array([5, 6]))]);
+      let local/1/26 =
+        match nested_map/24.get("values") {
+            Some(local/1/25) => values/25[0],
+            None => 0,
+        };
+      println(f"{pairs/22[1].1}:{nested/23[1][0]}:{nested_value/26}")
+  }

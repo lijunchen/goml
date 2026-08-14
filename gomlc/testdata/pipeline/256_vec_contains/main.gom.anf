@@ -1,310 +1,242 @@
 fn trait_impl#PartialEq#Pair#eq(self/0: Pair, other/1: Pair) -> bool {
-  join k423(jp424: bool) -> bool {
-    if jp424 {
-      let t425 = Pair.right(self/0) in
-      let t426 = Pair.right(other/1) in
-      let inline524 = (t425 == t426) in
-      inline524
+  join k417(jp418: bool) -> bool {
+    if jp418 {
+      let t419 = Pair.right(self/0) in
+      let t420 = Pair.right(other/1) in
+      let inline507 = (t419 == t420) in
+      inline507
     } else {
       false
     }
   } in
-  let t428 = Pair.left(self/0) in
-  let t429 = Pair.left(other/1) in
-  let inline522 = (t428 == t429) in
-  jump k423(inline522)
+  let t422 = Pair.left(self/0) in
+  let t423 = Pair.left(other/1) in
+  let inline505 = (t422 == t423) in
+  jump k417(inline505)
 }
 
 fn main() -> unit {
-  let vec_literal/208 = inherent#Vec#Vec[T]#new__T_int() in
-  let _wild408 = inherent#Vec#Vec[T]#push__T_int(vec_literal/208, 1) in
-  join inline_cont575(_wild409: unit) -> unit {
-    join inline_cont572(_wild410: unit) -> unit {
-      let t432 = inherent#Vec#Vec[T]#contains__T_int(vec_literal/208, 2) in
-      join inline_cont570(t433: string) -> unit {
-        join inline_cont567(_wild411: unit) -> unit {
-          let t434 = inherent#Vec#Vec[T]#contains__T_int(vec_literal/208, 9) in
-          join inline_cont565(t435: string) -> unit {
-            join inline_cont562(_wild412: unit) -> unit {
-              join inline_cont560(vec_literal/330: Vec[string]) -> unit {
-                join inline_cont557(_wild413: unit) -> unit {
-                  join inline_cont554(_wild414: unit) -> unit {
-                    let t436 = inherent#Vec#Vec[T]#contains__T_string(vec_literal/330, "beta") in
-                    join inline_cont552(t437: string) -> unit {
-                      join inline_cont549(_wild415: unit) -> unit {
-                        join inline_cont547(vec_literal/419: Vec[Pair]) -> unit {
-                          let t438 = Pair { left: 1, right: 2 } in
-                          join inline_cont545(_wild416: unit) -> unit {
-                            let t439 = Pair { left: 1, right: 2 } in
-                            let t440 =
-                              inherent#Vec#Vec[T]#contains__T_Pair(vec_literal/419, t439) in
-                            join inline_cont543(t441: string) -> unit {
-                              join inline_cont540(_wild417: unit) -> unit {
-                                join inline_cont537(t442: bool) -> unit {
-                                  join inline_cont535(t443: string) -> unit {
-                                    join inline_cont532(_wild418: unit) -> unit {
-                                      join inline_cont530(vec_literal/602: Vec[string]) -> unit {
-                                        let t444 =
-                                          inherent#Vec#Vec[T]#contains__T_string(
-                                            vec_literal/602,
-                                            "x"
-                                          ) in
-                                        join inline_cont528(t445: string) -> unit {
-                                          let inline526 =
-                                            trait_impl#ToString#string#to_string(t445) in
-                                          let inline527 =
-                                            @runtime(core.string_println)(inline526) in
-                                          ()
-                                        } in
-                                        let inline529 = @runtime(core.bool_to_string)(t444) in
-                                        jump inline_cont528(inline529)
-                                      } in
-                                      let inline531 = @intrinsic(vec.new)() in
-                                      jump inline_cont530(inline531)
-                                    } in
-                                    let inline533 = trait_impl#ToString#string#to_string(t443) in
-                                    let inline534 = @runtime(core.string_println)(inline533) in
-                                    jump inline_cont532(())
-                                  } in
-                                  let inline536 = @runtime(core.bool_to_string)(t442) in
-                                  jump inline_cont535(inline536)
-                                } in
-                                let inline538 = 3 in
-                                let inline539 =
-                                  inherent#Vec#Vec[T]#contains__T_int(vec_literal/208, inline538) in
-                                jump inline_cont537(inline539)
-                              } in
-                              let inline541 = trait_impl#ToString#string#to_string(t441) in
-                              let inline542 = @runtime(core.string_println)(inline541) in
-                              jump inline_cont540(())
-                            } in
-                            let inline544 = @runtime(core.bool_to_string)(t440) in
-                            jump inline_cont543(inline544)
-                          } in
-                          let inline546 = @intrinsic(vec.push)(vec_literal/419, t438) in
-                          jump inline_cont545(())
+  let t426 = [1, 2, 3] in
+  let values/4 = @intrinsic(vec.from_array)(t426) in
+  let t427 = inherent#Vec#Vec[T]#contains__T_int(values/4, 2) in
+  join inline_cont539(t428: string) -> unit {
+    join inline_cont536(_wild408: unit) -> unit {
+      let t429 = inherent#Vec#Vec[T]#contains__T_int(values/4, 9) in
+      join inline_cont534(t430: string) -> unit {
+        join inline_cont531(_wild409: unit) -> unit {
+          let t431 = ["alpha", "beta"] in
+          let names/5 = @intrinsic(vec.from_array)(t431) in
+          let t432 = inherent#Vec#Vec[T]#contains__T_string(names/5, "beta") in
+          join inline_cont529(t433: string) -> unit {
+            join inline_cont526(_wild410: unit) -> unit {
+              let t434 = Pair { left: 1, right: 2 } in
+              let t435 = [t434] in
+              let pairs/6 = @intrinsic(vec.from_array)(t435) in
+              let t436 = Pair { left: 1, right: 2 } in
+              let t437 = inherent#Vec#Vec[T]#contains__T_Pair(pairs/6, t436) in
+              join inline_cont524(t438: string) -> unit {
+                join inline_cont521(_wild411: unit) -> unit {
+                  join inline_cont518(t439: bool) -> unit {
+                    join inline_cont516(t440: string) -> unit {
+                      join inline_cont513(_wild412: unit) -> unit {
+                        let t441 = [] in
+                        let empty/7 = @intrinsic(vec.from_array)(t441) in
+                        let t442 = inherent#Vec#Vec[T]#contains__T_string(empty/7, "x") in
+                        join inline_cont511(t443: string) -> unit {
+                          let inline509 = trait_impl#ToString#string#to_string(t443) in
+                          let inline510 = @runtime(core.string_println)(inline509) in
+                          ()
                         } in
-                        let inline548 = @intrinsic(vec.new)() in
-                        jump inline_cont547(inline548)
+                        let inline512 = @runtime(core.bool_to_string)(t442) in
+                        jump inline_cont511(inline512)
                       } in
-                      let inline550 = trait_impl#ToString#string#to_string(t437) in
-                      let inline551 = @runtime(core.string_println)(inline550) in
-                      jump inline_cont549(())
+                      let inline514 = trait_impl#ToString#string#to_string(t440) in
+                      let inline515 = @runtime(core.string_println)(inline514) in
+                      jump inline_cont513(())
                     } in
-                    let inline553 = @runtime(core.bool_to_string)(t436) in
-                    jump inline_cont552(inline553)
+                    let inline517 = @runtime(core.bool_to_string)(t439) in
+                    jump inline_cont516(inline517)
                   } in
-                  let inline555 = "beta" in
-                  let inline556 = @intrinsic(vec.push)(vec_literal/330, inline555) in
-                  jump inline_cont554(())
+                  let inline519 = 3 in
+                  let inline520 = inherent#Vec#Vec[T]#contains__T_int(values/4, inline519) in
+                  jump inline_cont518(inline520)
                 } in
-                let inline558 = "alpha" in
-                let inline559 = @intrinsic(vec.push)(vec_literal/330, inline558) in
-                jump inline_cont557(())
+                let inline522 = trait_impl#ToString#string#to_string(t438) in
+                let inline523 = @runtime(core.string_println)(inline522) in
+                jump inline_cont521(())
               } in
-              let inline561 = @intrinsic(vec.new)() in
-              jump inline_cont560(inline561)
+              let inline525 = @runtime(core.bool_to_string)(t437) in
+              jump inline_cont524(inline525)
             } in
-            let inline563 = trait_impl#ToString#string#to_string(t435) in
-            let inline564 = @runtime(core.string_println)(inline563) in
-            jump inline_cont562(())
+            let inline527 = trait_impl#ToString#string#to_string(t433) in
+            let inline528 = @runtime(core.string_println)(inline527) in
+            jump inline_cont526(())
           } in
-          let inline566 = @runtime(core.bool_to_string)(t434) in
-          jump inline_cont565(inline566)
+          let inline530 = @runtime(core.bool_to_string)(t432) in
+          jump inline_cont529(inline530)
         } in
-        let inline568 = trait_impl#ToString#string#to_string(t433) in
-        let inline569 = @runtime(core.string_println)(inline568) in
-        jump inline_cont567(())
+        let inline532 = trait_impl#ToString#string#to_string(t430) in
+        let inline533 = @runtime(core.string_println)(inline532) in
+        jump inline_cont531(())
       } in
-      let inline571 = @runtime(core.bool_to_string)(t432) in
-      jump inline_cont570(inline571)
+      let inline535 = @runtime(core.bool_to_string)(t429) in
+      jump inline_cont534(inline535)
     } in
-    let inline573 = 3 in
-    let inline574 = @intrinsic(vec.push)(vec_literal/208, inline573) in
-    jump inline_cont572(())
+    let inline537 = trait_impl#ToString#string#to_string(t428) in
+    let inline538 = @runtime(core.string_println)(inline537) in
+    jump inline_cont536(())
   } in
-  let inline576 = 2 in
-  let inline577 = @intrinsic(vec.push)(vec_literal/208, inline576) in
-  jump inline_cont575(())
+  let inline540 = @runtime(core.bool_to_string)(t427) in
+  jump inline_cont539(inline540)
 }
 
 fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
-  let t449 = (self/185 == other/186) in
-  t449
-}
-
-fn inherent#Vec#Vec[T]#new__T_int() -> Vec[int] {
-  let t452 = @intrinsic(vec.new)() in
-  t452
-}
-
-fn inherent#Vec#Vec[T]#push__T_int(self/258: Vec[int], elem/259: int) -> unit {
-  let t454 = @intrinsic(vec.push)(self/258, elem/259) in
-  ()
+  let t447 = (self/185 == other/186) in
+  t447
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont578(t456: string) -> unit {
-    let t457 = @runtime(core.string_println)(t456) in
+  join inline_cont541(t449: string) -> unit {
+    let t450 = @runtime(core.string_println)(t449) in
     ()
   } in
-  jump inline_cont578(value/1)
+  jump inline_cont541(value/1)
 }
 
 fn inherent#Vec#Vec[T]#contains__T_int(self/384: Vec[int], expected/385: int) -> bool {
   let index/386 = 0 in
-  join exit460() -> bool {
+  join exit453() -> bool {
     false
   } in
   joinrec {
-    join loop461() -> bool {
-      join inline_cont581(t462: int) -> bool {
-        let t463 = (index/386 < t462) in
-        if t463 {
-          let t467 = @intrinsic(vec.get)(self/384, index/386) in
-          join inline_cont579(t468: bool) -> bool {
-            join k464() -> bool {
+    join loop454() -> bool {
+      join inline_cont544(t455: int) -> bool {
+        let t456 = (index/386 < t455) in
+        if t456 {
+          let t460 = @intrinsic(vec.get)(self/384, index/386) in
+          join inline_cont542(t461: bool) -> bool {
+            join k457() -> bool {
               let compound_old359 = index/386 in
               let compound_value360 = 1 in
-              let t465 = (compound_old359 + compound_value360) in
-              let t466 = index/386 = t465 in
-              jump loop461()
+              let t458 = (compound_old359 + compound_value360) in
+              let t459 = index/386 = t458 in
+              jump loop454()
             } in
-            if t468 {
+            if t461 {
               true
             } else {
-              jump k464()
+              jump k457()
             }
           } in
-          let inline580 = (t467 == expected/385) in
-          jump inline_cont579(inline580)
+          let inline543 = (t460 == expected/385) in
+          jump inline_cont542(inline543)
         } else {
-          jump exit460()
+          jump exit453()
         }
       } in
-      let inline582 = @intrinsic(vec.len)(self/384) in
-      jump inline_cont581(inline582)
+      let inline545 = @intrinsic(vec.len)(self/384) in
+      jump inline_cont544(inline545)
     } in
   } in
-  jump loop461()
+  jump loop454()
 }
 
 fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
-  let t471 = @runtime(core.bool_to_string)(self/148) in
-  t471
-}
-
-fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
-  let t474 = @intrinsic(vec.new)() in
-  t474
-}
-
-fn inherent#Vec#Vec[T]#push__T_string(self/258: Vec[string], elem/259: string) -> unit {
-  let t476 = @intrinsic(vec.push)(self/258, elem/259) in
-  ()
+  let t464 = @runtime(core.bool_to_string)(self/148) in
+  t464
 }
 
 fn inherent#Vec#Vec[T]#contains__T_string(self/384: Vec[string], expected/385: string) -> bool {
   let index/386 = 0 in
-  join exit479() -> bool {
+  join exit467() -> bool {
     false
   } in
   joinrec {
-    join loop480() -> bool {
-      join inline_cont585(t481: int) -> bool {
-        let t482 = (index/386 < t481) in
-        if t482 {
-          let t486 = @intrinsic(vec.get)(self/384, index/386) in
-          join inline_cont583(t487: bool) -> bool {
-            join k483() -> bool {
+    join loop468() -> bool {
+      join inline_cont548(t469: int) -> bool {
+        let t470 = (index/386 < t469) in
+        if t470 {
+          let t474 = @intrinsic(vec.get)(self/384, index/386) in
+          join inline_cont546(t475: bool) -> bool {
+            join k471() -> bool {
               let compound_old359 = index/386 in
               let compound_value360 = 1 in
-              let t484 = (compound_old359 + compound_value360) in
-              let t485 = index/386 = t484 in
-              jump loop480()
+              let t472 = (compound_old359 + compound_value360) in
+              let t473 = index/386 = t472 in
+              jump loop468()
             } in
-            if t487 {
+            if t475 {
               true
             } else {
-              jump k483()
+              jump k471()
             }
           } in
-          let inline584 = (t486 == expected/385) in
-          jump inline_cont583(inline584)
+          let inline547 = (t474 == expected/385) in
+          jump inline_cont546(inline547)
         } else {
-          jump exit479()
+          jump exit467()
         }
       } in
-      let inline586 = @intrinsic(vec.len)(self/384) in
-      jump inline_cont585(inline586)
+      let inline549 = @intrinsic(vec.len)(self/384) in
+      jump inline_cont548(inline549)
     } in
   } in
-  jump loop480()
-}
-
-fn inherent#Vec#Vec[T]#new__T_Pair() -> Vec[Pair] {
-  let t490 = @intrinsic(vec.new)() in
-  t490
-}
-
-fn inherent#Vec#Vec[T]#push__T_Pair(self/258: Vec[Pair], elem/259: Pair) -> unit {
-  let t492 = @intrinsic(vec.push)(self/258, elem/259) in
-  ()
+  jump loop468()
 }
 
 fn inherent#Vec#Vec[T]#contains__T_Pair(self/384: Vec[Pair], expected/385: Pair) -> bool {
   let index/386 = 0 in
-  join exit495() -> bool {
+  join exit478() -> bool {
     false
   } in
   joinrec {
-    join loop496() -> bool {
-      join inline_cont596(t497: int) -> bool {
-        let t498 = (index/386 < t497) in
-        if t498 {
-          let t502 = @intrinsic(vec.get)(self/384, index/386) in
-          join inline_cont587(t503: bool) -> bool {
-            join k499() -> bool {
+    join loop479() -> bool {
+      join inline_cont559(t480: int) -> bool {
+        let t481 = (index/386 < t480) in
+        if t481 {
+          let t485 = @intrinsic(vec.get)(self/384, index/386) in
+          join inline_cont550(t486: bool) -> bool {
+            join k482() -> bool {
               let compound_old359 = index/386 in
               let compound_value360 = 1 in
-              let t500 = (compound_old359 + compound_value360) in
-              let t501 = index/386 = t500 in
-              jump loop496()
+              let t483 = (compound_old359 + compound_value360) in
+              let t484 = index/386 = t483 in
+              jump loop479()
             } in
-            if t503 {
+            if t486 {
               true
             } else {
-              jump k499()
+              jump k482()
             }
           } in
-          join inline_join588(inline589: bool) -> bool {
-            if inline589 {
-              let inline590 = Pair.right(t502) in
-              let inline591 = Pair.right(expected/385) in
-              let inline592 = trait_impl#PartialEq#int#eq(inline590, inline591) in
-              jump inline_cont587(inline592)
+          join inline_join551(inline552: bool) -> bool {
+            if inline552 {
+              let inline553 = Pair.right(t485) in
+              let inline554 = Pair.right(expected/385) in
+              let inline555 = trait_impl#PartialEq#int#eq(inline553, inline554) in
+              jump inline_cont550(inline555)
             } else {
-              jump inline_cont587(false)
+              jump inline_cont550(false)
             }
           } in
-          let inline593 = Pair.left(t502) in
-          let inline594 = Pair.left(expected/385) in
-          let inline595 = trait_impl#PartialEq#int#eq(inline593, inline594) in
-          jump inline_join588(inline595)
+          let inline556 = Pair.left(t485) in
+          let inline557 = Pair.left(expected/385) in
+          let inline558 = trait_impl#PartialEq#int#eq(inline556, inline557) in
+          jump inline_join551(inline558)
         } else {
-          jump exit495()
+          jump exit478()
         }
       } in
-      let inline597 = @intrinsic(vec.len)(self/384) in
-      jump inline_cont596(inline597)
+      let inline560 = @intrinsic(vec.len)(self/384) in
+      jump inline_cont559(inline560)
     } in
   } in
-  jump loop496()
+  jump loop479()
 }
 
 fn contains_any__T_int(values/2: Vec[int], expected/3: int) -> bool {
-  let t506 = inherent#Vec#Vec[T]#contains__T_int(values/2, expected/3) in
-  t506
+  let t489 = inherent#Vec#Vec[T]#contains__T_int(values/2, expected/3) in
+  t489
 }
 
 fn trait_impl#ToString#string#to_string(self/149: string) -> string {
@@ -312,21 +244,21 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
 }
 
 fn inherent#Vec#Vec[T]#len__T_int(self/273: Vec[int]) -> int {
-  let t511 = @intrinsic(vec.len)(self/273) in
-  t511
+  let t494 = @intrinsic(vec.len)(self/273) in
+  t494
 }
 
 fn inherent#Vec#Vec[T]#len__T_string(self/273: Vec[string]) -> int {
-  let t514 = @intrinsic(vec.len)(self/273) in
-  t514
+  let t497 = @intrinsic(vec.len)(self/273) in
+  t497
 }
 
 fn trait_impl#PartialEq#string#eq(self/181: string, other/182: string) -> bool {
-  let t517 = (self/181 == other/182) in
-  t517
+  let t500 = (self/181 == other/182) in
+  t500
 }
 
 fn inherent#Vec#Vec[T]#len__T_Pair(self/273: Vec[Pair]) -> int {
-  let t520 = @intrinsic(vec.len)(self/273) in
-  t520
+  let t503 = @intrinsic(vec.len)(self/273) in
+  t503
 }

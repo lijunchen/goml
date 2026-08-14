@@ -820,11 +820,7 @@ fn inherent#string#string#trim(self/94: string) -> string {
 }
 
 fn inherent#string#string#split(self/95: string, separator/96: string) -> Vec[string] {
-  let result/97 =
-    {
-      let vec_literal/5514 = inherent#Vec#Vec[string]#new() in
-      vec_literal/5514
-    } in
+  let result/97 = @intrinsic(vec.from_array)([]) in
   let separator_len/98 = inherent#string#string#byte_len(separator/96) in
   let value_len/99 = inherent#string#string#byte_len(self/95) in
   let _wild86 =
@@ -1007,11 +1003,7 @@ fn inherent#string#string#replace(
       }
   } else {
       {
-        let parts/114 =
-          {
-            let vec_literal/7376 = inherent#Vec#Vec[string]#new() in
-            vec_literal/7376
-          } in
+        let parts/114 = @intrinsic(vec.from_array)([]) in
         let start/115 = 0 in
         let _wild112 =
           loop {
@@ -6916,26 +6908,10 @@ fn main() -> unit {
       )
     ) in
   let generic_first/107 =
-    GenericPair {
-      first: 1,
-      second: 2,
-      nested: {
-        let vec_literal/1621 = inherent#Vec#Vec[int]#new() in
-        let _wild544 = inherent#Vec#Vec[int]#push(vec_literal/1621, 3) in
-        vec_literal/1621
-      }
-    } in
+    GenericPair { first: 1, second: 2, nested: @intrinsic(vec.from_array)([3]) } in
   let generic_second/108 =
-    GenericPair {
-      first: 1,
-      second: 3,
-      nested: {
-        let vec_literal/1701 = inherent#Vec#Vec[int]#new() in
-        let _wild545 = inherent#Vec#Vec[int]#push(vec_literal/1701, 0) in
-        vec_literal/1701
-      }
-    } in
-  let _wild546 =
+    GenericPair { first: 1, second: 3, nested: @intrinsic(vec.from_array)([0]) } in
+  let _wild544 =
     println(
       trait_call[ToString::to_string](
         trait_call[std::cmp::PartialOrd::lt](generic_first/107, generic_second/108)
@@ -6943,14 +6919,14 @@ fn main() -> unit {
     ) in
   let phantom_first/109 = Phantom::First in
   let phantom_second/110 = Phantom::Second in
-  let _wild547 =
+  let _wild545 =
     println(
       trait_call[ToString::to_string](
         trait_call[std::cmp::PartialOrd::lt](phantom_first/109, phantom_second/110)
       )
     ) in
   let partial_nan/111 = PartialLevel::Value((zero/105 / zero/105)) in
-  let _wild548 =
+  let _wild546 =
     println(
       trait_call[ToString::to_string](
         inherent#Option#Option[Ordering]#is_none(
@@ -6958,27 +6934,15 @@ fn main() -> unit {
         )
       )
     ) in
-  let first_values/112 =
-    {
-      let vec_literal/2131 = inherent#Vec#Vec[int]#new() in
-      let _wild549 = inherent#Vec#Vec[int]#push(vec_literal/2131, 1) in
-      let _wild550 = inherent#Vec#Vec[int]#push(vec_literal/2131, 2) in
-      vec_literal/2131
-    } in
-  let second_values/113 =
-    {
-      let vec_literal/2178 = inherent#Vec#Vec[int]#new() in
-      let _wild551 = inherent#Vec#Vec[int]#push(vec_literal/2178, 1) in
-      let _wild552 = inherent#Vec#Vec[int]#push(vec_literal/2178, 3) in
-      vec_literal/2178
-    } in
-  let _wild553 =
+  let first_values/112 = @intrinsic(vec.from_array)([1, 2]) in
+  let second_values/113 = @intrinsic(vec.from_array)([1, 3]) in
+  let _wild547 =
     println(
       trait_call[ToString::to_string](
         trait_call[std::cmp::PartialOrd::lt](first_values/112, second_values/113)
       )
     ) in
-  let _wild554 =
+  let _wild548 =
     println(
       trait_call[ToString::to_string](
         trait_call[std::cmp::PartialOrd::lt](Option::Some(2), Option::Some(3))
@@ -6986,11 +6950,11 @@ fn main() -> unit {
     ) in
   let ok/114 = Result::Ok(1) in
   let error/115 = Result::Err("error") in
-  let _wild555 =
+  let _wild549 =
     println(
       trait_call[ToString::to_string](trait_call[std::cmp::PartialOrd::lt](ok/114, error/115))
     ) in
-  let _wild556 =
+  let _wild550 =
     println(
       trait_call[ToString::to_string](
         trait_call[std::cmp::PartialOrd::lt](
@@ -7000,32 +6964,27 @@ fn main() -> unit {
       )
     ) in
   let values/116 = inherent#HashMap#HashMap[Vec[int],string]#new() in
-  let _wild557 =
+  let _wild551 =
     inherent#HashMap#HashMap[Vec[int],string]#set(values/116, first_values/112, "vector") in
-  let _wild560 =
+  let _wild552 =
     println(
       inherent#Option#Option[string]#unwrap_or(
         inherent#HashMap#HashMap[Vec[int],string]#get(
           values/116,
-          {
-            let vec_literal/2661 = inherent#Vec#Vec[int]#new() in
-            let _wild558 = inherent#Vec#Vec[int]#push(vec_literal/2661, 1) in
-            let _wild559 = inherent#Vec#Vec[int]#push(vec_literal/2661, 2) in
-            vec_literal/2661
-          }
+          @intrinsic(vec.from_array)([1, 2])
         ),
         "missing"
       )
     ) in
   let default_tuple/117 = trait_call[Default::default]() in
-  let _wild563 =
+  let _wild555 =
     println(
       trait_call[ToString::to_string](
         {
-          let _eq_lhs561 = default_tuple/117 in
-          let _eq_rhs562 = (0, "") in
-          if trait_call[PartialEq::eq](_eq_lhs561.0, _eq_rhs562.0) {
-              trait_call[PartialEq::eq](_eq_lhs561.1, _eq_rhs562.1)
+          let _eq_lhs553 = default_tuple/117 in
+          let _eq_rhs554 = (0, "") in
+          if trait_call[PartialEq::eq](_eq_lhs553.0, _eq_rhs554.0) {
+              trait_call[PartialEq::eq](_eq_lhs553.1, _eq_rhs554.1)
           } else {
               false
           }
@@ -7033,23 +6992,23 @@ fn main() -> unit {
       )
     ) in
   let default_array/118 = trait_call[Default::default]() in
-  let _wild566 =
+  let _wild558 =
     println(
       trait_call[ToString::to_string](
         {
-          let _eq_lhs564 = default_array/118 in
-          let _eq_rhs565 = [0, 0, 0] in
+          let _eq_lhs556 = default_array/118 in
+          let _eq_rhs557 = [0, 0, 0] in
           if trait_call[PartialEq::eq](
-            @intrinsic(array.get)(_eq_lhs564, 0),
-            @intrinsic(array.get)(_eq_rhs565, 0)
+            @intrinsic(array.get)(_eq_lhs556, 0),
+            @intrinsic(array.get)(_eq_rhs557, 0)
           ) {
               if trait_call[PartialEq::eq](
-                @intrinsic(array.get)(_eq_lhs564, 1),
-                @intrinsic(array.get)(_eq_rhs565, 1)
+                @intrinsic(array.get)(_eq_lhs556, 1),
+                @intrinsic(array.get)(_eq_rhs557, 1)
               ) {
                   trait_call[PartialEq::eq](
-                    @intrinsic(array.get)(_eq_lhs564, 2),
-                    @intrinsic(array.get)(_eq_rhs565, 2)
+                    @intrinsic(array.get)(_eq_lhs556, 2),
+                    @intrinsic(array.get)(_eq_rhs557, 2)
                   )
               } else {
                   false
@@ -7060,13 +7019,13 @@ fn main() -> unit {
         }
       )
     ) in
-  let _wild567 =
+  let _wild559 =
     println(
       trait_call[ToString::to_string](trait_call[std::cmp::PartialOrd::lt]((1, 2), (1, 3)))
     ) in
-  let _wild568 = println(ordering_name(trait_call[std::cmp::Ord::cmp]([1, 2], [1, 3]))) in
+  let _wild560 = println(ordering_name(trait_call[std::cmp::Ord::cmp]([1, 2], [1, 3]))) in
   let tuple_nan/119 = (0, (zero/105 / zero/105)) in
-  let _wild569 =
+  let _wild561 =
     println(
       trait_call[ToString::to_string](
         inherent#Option#Option[Ordering]#is_none(
@@ -7075,9 +7034,9 @@ fn main() -> unit {
       )
     ) in
   let tuple_values/120 = inherent#HashMap#HashMap[(int,string),string]#new() in
-  let _wild570 =
+  let _wild562 =
     inherent#HashMap#HashMap[(int,string),string]#set(tuple_values/120, (1, "one"), "tuple") in
-  let _wild571 =
+  let _wild563 =
     println(
       inherent#Option#Option[string]#unwrap_or(
         inherent#HashMap#HashMap[(int,string),string]#get(tuple_values/120, (1, "one")),
@@ -7085,7 +7044,7 @@ fn main() -> unit {
       )
     ) in
   let array_values/121 = inherent#HashMap#HashMap[[int;2],string]#new() in
-  let _wild572 = inherent#HashMap#HashMap[[int;2],string]#set(array_values/121, [1, 2], "array") in
+  let _wild564 = inherent#HashMap#HashMap[[int;2],string]#set(array_values/121, [1, 2], "array") in
   println(
     inherent#Option#Option[string]#unwrap_or(
       inherent#HashMap#HashMap[[int;2],string]#get(array_values/121, [1, 2]),

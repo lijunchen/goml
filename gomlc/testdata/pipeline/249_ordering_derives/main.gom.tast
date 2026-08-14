@@ -762,21 +762,13 @@ fn main() -> unit {
       GenericPair {
         first: 1,
         second: 2,
-        nested: {
-            let vec_literal/1621: Vec[int] = (Vec[int]::new : () -> Vec[int])();
-            (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/1621 : Vec[int]), 3);
-            (vec_literal/1621 : Vec[int])
-        }
+        nested: (@intrinsic(vec.from_array) : ([int; 1]) -> Vec[int])([3])
       };
     let generic_second/108: GenericPair[int] =
       GenericPair {
         first: 1,
         second: 3,
-        nested: {
-            let vec_literal/1701: Vec[int] = (Vec[int]::new : () -> Vec[int])();
-            (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/1701 : Vec[int]), 0);
-            (vec_literal/1701 : Vec[int])
-        }
+        nested: (@intrinsic(vec.from_array) : ([int; 1]) -> Vec[int])([0])
       };
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)(
@@ -802,20 +794,8 @@ fn main() -> unit {
         )
       )
     );
-    let first_values/112: Vec[int] =
-      {
-          let vec_literal/2131: Vec[int] = (Vec[int]::new : () -> Vec[int])();
-          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/2131 : Vec[int]), 1);
-          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/2131 : Vec[int]), 2);
-          (vec_literal/2131 : Vec[int])
-      };
-    let second_values/113: Vec[int] =
-      {
-          let vec_literal/2178: Vec[int] = (Vec[int]::new : () -> Vec[int])();
-          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/2178 : Vec[int]), 1);
-          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/2178 : Vec[int]), 3);
-          (vec_literal/2178 : Vec[int])
-      };
+    let first_values/112: Vec[int] = (@intrinsic(vec.from_array) : ([int; 2]) -> Vec[int])([1, 2]);
+    let second_values/113: Vec[int] = (@intrinsic(vec.from_array) : ([int; 2]) -> Vec[int])([1, 3]);
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)(
         (first_values/112 : Vec[int]) < (second_values/113 : Vec[int])
@@ -856,12 +836,7 @@ fn main() -> unit {
       (Option[string]::unwrap_or : (Option[string], string) -> string)(
         (HashMap[Vec[int], string]::get : (HashMap[Vec[int], string], Vec[int]) -> Option[string])(
           (values/116 : HashMap[Vec[int], string]),
-          {
-              let vec_literal/2661: Vec[int] = (Vec[int]::new : () -> Vec[int])();
-              (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/2661 : Vec[int]), 1);
-              (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/2661 : Vec[int]), 2);
-              (vec_literal/2661 : Vec[int])
-          }
+          (@intrinsic(vec.from_array) : ([int; 2]) -> Vec[int])([1, 2])
         ),
         "missing"
       )

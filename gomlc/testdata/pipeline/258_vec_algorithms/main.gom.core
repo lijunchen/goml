@@ -820,11 +820,7 @@ fn inherent#string#string#trim(self/94: string) -> string {
 }
 
 fn inherent#string#string#split(self/95: string, separator/96: string) -> Vec[string] {
-  let result/97 =
-    {
-      let vec_literal/5514 = inherent#Vec#Vec[string]#new() in
-      vec_literal/5514
-    } in
+  let result/97 = @intrinsic(vec.from_array)([]) in
   let separator_len/98 = inherent#string#string#byte_len(separator/96) in
   let value_len/99 = inherent#string#string#byte_len(self/95) in
   let _wild86 =
@@ -1007,11 +1003,7 @@ fn inherent#string#string#replace(
       }
   } else {
       {
-        let parts/114 =
-          {
-            let vec_literal/7376 = inherent#Vec#Vec[string]#new() in
-            vec_literal/7376
-          } in
+        let parts/114 = @intrinsic(vec.from_array)([]) in
         let start/115 = 0 in
         let _wild112 =
           loop {
@@ -5550,20 +5542,8 @@ fn std::cmp::clamp(value/154: T, minimum/155: T, maximum/156: T) -> Result[T, st
 }
 
 fn main() -> unit {
-  let values/0 =
-    {
-      let vec_literal/52 = inherent#Vec#Vec[int]#new() in
-      let _wild408 = inherent#Vec#Vec[int]#push(vec_literal/52, 3) in
-      let _wild409 = inherent#Vec#Vec[int]#push(vec_literal/52, 1) in
-      let _wild410 = inherent#Vec#Vec[int]#push(vec_literal/52, 4) in
-      let _wild411 = inherent#Vec#Vec[int]#push(vec_literal/52, 1) in
-      let _wild412 = inherent#Vec#Vec[int]#push(vec_literal/52, 5) in
-      let _wild413 = inherent#Vec#Vec[int]#push(vec_literal/52, 9) in
-      let _wild414 = inherent#Vec#Vec[int]#push(vec_literal/52, 2) in
-      let _wild415 = inherent#Vec#Vec[int]#push(vec_literal/52, 6) in
-      vec_literal/52
-    } in
-  let _wild416 =
+  let values/0 = @intrinsic(vec.from_array)([3, 1, 4, 1, 5, 9, 2, 6]) in
+  let _wild408 =
     println(
       inherent#int#int#to_string(
         inherent#Option#Option[int]#unwrap_or(
@@ -5572,7 +5552,7 @@ fn main() -> unit {
         )
       )
     ) in
-  let _wild417 =
+  let _wild409 =
     println(
       inherent#int#int#to_string(
         inherent#Option#Option[int]#unwrap_or(
@@ -5581,22 +5561,13 @@ fn main() -> unit {
         )
       )
     ) in
-  let _wild418 =
+  let _wild410 =
     inherent#Vec#Vec[int]#sort_by(values/0, |left/3: int, right/4: int| => (left/3 - right/4)) in
-  let _wild419 = println(inherent#Vec#Vec[int]#join(values/0, ",")) in
-  let _wild420 = inherent#Vec#Vec[int]#dedup(values/0) in
-  let _wild421 = println(inherent#Vec#Vec[int]#join(values/0, ",")) in
-  let ordered/5 =
-    {
-      let vec_literal/404 = inherent#Vec#Vec[int]#new() in
-      let _wild422 = inherent#Vec#Vec[int]#push(vec_literal/404, 1) in
-      let _wild423 = inherent#Vec#Vec[int]#push(vec_literal/404, 2) in
-      let _wild424 = inherent#Vec#Vec[int]#push(vec_literal/404, 4) in
-      let _wild425 = inherent#Vec#Vec[int]#push(vec_literal/404, 4) in
-      let _wild426 = inherent#Vec#Vec[int]#push(vec_literal/404, 5) in
-      vec_literal/404
-    } in
-  let _wild427 =
+  let _wild411 = println(inherent#Vec#Vec[int]#join(values/0, ",")) in
+  let _wild412 = inherent#Vec#Vec[int]#dedup(values/0) in
+  let _wild413 = println(inherent#Vec#Vec[int]#join(values/0, ",")) in
+  let ordered/5 = @intrinsic(vec.from_array)([1, 2, 4, 4, 5]) in
+  let _wild414 =
     println(
       inherent#int#int#to_string(
         inherent#Option#Option[int]#unwrap_or(
@@ -5605,7 +5576,7 @@ fn main() -> unit {
         )
       )
     ) in
-  let _wild428 =
+  let _wild415 =
     println(
       inherent#int#int#to_string(
         inherent#Option#Option[int]#unwrap_or(
@@ -5614,7 +5585,7 @@ fn main() -> unit {
         )
       )
     ) in
-  let _wild429 =
+  let _wild416 =
     println(
       inherent#int#int#to_string(
         inherent#Option#Option[int]#unwrap_or(
@@ -5626,7 +5597,7 @@ fn main() -> unit {
         )
       )
     ) in
-  let _wild430 =
+  let _wild417 =
     println(
       inherent#int#int#to_string(
         inherent#Option#Option[int]#unwrap_or(
@@ -5638,73 +5609,36 @@ fn main() -> unit {
         )
       )
     ) in
-  let names/12 =
-    {
-      let vec_literal/804 = inherent#Vec#Vec[string]#new() in
-      let _wild431 = inherent#Vec#Vec[string]#push(vec_literal/804, "beta") in
-      let _wild432 = inherent#Vec#Vec[string]#push(vec_literal/804, "alpha") in
-      let _wild433 = inherent#Vec#Vec[string]#push(vec_literal/804, "gamma") in
-      vec_literal/804
-    } in
-  let _wild434 =
+  let names/12 = @intrinsic(vec.from_array)(["beta", "alpha", "gamma"]) in
+  let _wild418 =
     inherent#Vec#Vec[string]#sort_by_ordering(
       names/12,
       |left/13: string, right/14: string| => std::cmp::compare(left/13, right/14)
     ) in
-  let _wild435 = println(inherent#Vec#Vec[string]#join(names/12, "|")) in
-  let pairs/15 =
-    {
-      let vec_literal/968 = inherent#Vec#Vec[(int,int)]#new() in
-      let _wild436 = inherent#Vec#Vec[(int,int)]#push(vec_literal/968, (1, 2)) in
-      let _wild437 = inherent#Vec#Vec[(int,int)]#push(vec_literal/968, (1, 1)) in
-      let _wild438 = inherent#Vec#Vec[(int,int)]#push(vec_literal/968, (0, 9)) in
-      vec_literal/968
-    } in
-  let _wild439 =
+  let _wild419 = println(inherent#Vec#Vec[string]#join(names/12, "|")) in
+  let pairs/15 = @intrinsic(vec.from_array)([(1, 2), (1, 1), (0, 9)]) in
+  let _wild420 =
     inherent#Vec#Vec[(int,int)]#sort_by_ordering(
       pairs/15,
       |left/16: (int, int), right/17: (int, int)| => std::cmp::compare(left/16.0, right/17.0)
     ) in
-  let _wild440 = println(inherent#int#int#to_string(inherent#Vec#Vec[(int,int)]#len(pairs/15))) in
-  let view/18 =
-    inherent#Vec#Vec[int]#slice(
-      {
-        let vec_literal/1149 = inherent#Vec#Vec[int]#new() in
-        let _wild441 = inherent#Vec#Vec[int]#push(vec_literal/1149, 7) in
-        let _wild442 = inherent#Vec#Vec[int]#push(vec_literal/1149, 8) in
-        let _wild443 = inherent#Vec#Vec[int]#push(vec_literal/1149, 9) in
-        vec_literal/1149
-      },
-      0,
-      2
-    ) in
-  let _wild444 =
+  let _wild421 = println(inherent#int#int#to_string(inherent#Vec#Vec[(int,int)]#len(pairs/15))) in
+  let view/18 = inherent#Vec#Vec[int]#slice(@intrinsic(vec.from_array)([7, 8, 9]), 0, 2) in
+  let _wild422 =
     println(trait_call[ToString::to_string](inherent#Slice#Slice[int]#contains(view/18, 8))) in
-  let _wild445 =
+  let _wild423 =
     println(trait_call[ToString::to_string](inherent#Slice#Slice[int]#contains(view/18, 9))) in
-  let frozen/19 =
-    inherent#Vec#Vec[int]#freeze(
-      {
-        let vec_literal/1280 = inherent#Vec#Vec[int]#new() in
-        let _wild446 = inherent#Vec#Vec[int]#push(vec_literal/1280, 1) in
-        let _wild447 = inherent#Vec#Vec[int]#push(vec_literal/1280, 2) in
-        vec_literal/1280
-      }
-    ) in
-  let _wild448 =
+  let frozen/19 = inherent#Vec#Vec[int]#freeze(@intrinsic(vec.from_array)([1, 2])) in
+  let _wild424 =
     println(
       trait_call[ToString::to_string](inherent#FrozenVec#FrozenVec[int]#contains(frozen/19, 1))
     ) in
-  let _wild449 =
+  let _wild425 =
     println(
       trait_call[ToString::to_string](inherent#FrozenVec#FrozenVec[int]#contains(frozen/19, 3))
     ) in
-  let empty/20 =
-    {
-      let vec_literal/1418 = inherent#Vec#Vec[int]#new() in
-      vec_literal/1418
-    } in
-  let _wild450 = println(inherent#Vec#Vec[int]#join(empty/20, ",")) in
+  let empty/20 = @intrinsic(vec.from_array)([]) in
+  let _wild426 = println(inherent#Vec#Vec[int]#join(empty/20, ",")) in
   println(
     trait_call[ToString::to_string](
       inherent#Option#Option[int]#is_none(

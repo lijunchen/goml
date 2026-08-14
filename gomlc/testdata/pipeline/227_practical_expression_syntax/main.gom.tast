@@ -63,18 +63,12 @@ fn main() -> unit {
     );
     (Ref[string]::set : (Ref[string], string) -> unit)((log/12 : Ref[string]), "");
     let values/15: Vec[int] =
-      {
-          let vec_literal/967: Vec[int] = (Vec[int]::new : () -> Vec[int])();
-          (Vec[int]::push : (Vec[int], int) -> unit)(
-            (vec_literal/967 : Vec[int]),
-            (record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "A", 10)
-          );
-          (Vec[int]::push : (Vec[int], int) -> unit)(
-            (vec_literal/967 : Vec[int]),
-            (record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "B", 20)
-          );
-          (vec_literal/967 : Vec[int])
-      };
+      (@intrinsic(vec.from_array) : ([int; 2]) -> Vec[int])(
+        [
+          (record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "A", 10),
+          (record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "B", 20)
+        ]
+      );
     (record_vec : (Ref[string], string, Vec[int]) -> Vec[int])(
       (log/12 : Ref[string]),
       "R",
@@ -96,29 +90,19 @@ fn main() -> unit {
     );
     (Ref[string]::set : (Ref[string], string) -> unit)((log/12 : Ref[string]), "");
     let table/16: HashMap[string, int] =
-      {
-          let hashmap_literal/1226: HashMap[string, int] =
-            (HashMap[string, int]::new : () -> HashMap[string, int])();
-          (HashMap[string, int]::set : (HashMap[string, int], string, int) -> unit)(
-            (hashmap_literal/1226 : HashMap[string, int]),
+      (@intrinsic(hashmap.from_array) : ([(string, int); 3]) -> HashMap[string, int])(
+        [
+          (
             "" + "k" +
               (int::to_string : (int) -> string)(
                 (record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "K", 1)
               ),
             (record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "V", 11)
-          );
-          (HashMap[string, int]::set : (HashMap[string, int], string, int) -> unit)(
-            (hashmap_literal/1226 : HashMap[string, int]),
-            "same",
-            (record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "A", 1)
-          );
-          (HashMap[string, int]::set : (HashMap[string, int], string, int) -> unit)(
-            (hashmap_literal/1226 : HashMap[string, int]),
-            "same",
-            (record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "B", 2)
-          );
-          (hashmap_literal/1226 : HashMap[string, int])
-      };
+          ),
+          ("same", (record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "A", 1)),
+          ("same", (record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "B", 2))
+        ]
+      );
     (println : (string) -> unit)(
       (Ref[string]::get : (Ref[string]) -> string)((log/12 : Ref[string]))
     );
@@ -131,17 +115,9 @@ fn main() -> unit {
           Option::None => "missing",
       }
     );
-    let empty_values/18: Vec[int] =
-      {
-          let vec_literal/1570: Vec[int] = (Vec[int]::new : () -> Vec[int])();
-          (vec_literal/1570 : Vec[int])
-      };
+    let empty_values/18: Vec[int] = (@intrinsic(vec.from_array) : ([int; 0]) -> Vec[int])([]);
     let empty_table/19: HashMap[string, int] =
-      {
-          let hashmap_literal/1623: HashMap[string, int] =
-            (HashMap[string, int]::new : () -> HashMap[string, int])();
-          (hashmap_literal/1623 : HashMap[string, int])
-      };
+      (@intrinsic(hashmap.from_array) : ([(string, int); 0]) -> HashMap[string, int])([]);
     (println : (string) -> unit)(
       "" + "empty=" +
         (int::to_string : (int) -> string)(

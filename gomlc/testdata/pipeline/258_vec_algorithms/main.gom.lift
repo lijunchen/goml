@@ -782,18 +782,8 @@ fn trait_impl#std::cmp::PartialOrd#float64#ge(
 }
 
 fn main() -> unit {
-  let values/0 =
-    let vec_literal/52 = inherent#Vec#Vec[T]#new__T_int() in
-    let _wild408 = inherent#Vec#Vec[T]#push__T_int(vec_literal/52, 3) in
-    let _wild409 = inherent#Vec#Vec[T]#push__T_int(vec_literal/52, 1) in
-    let _wild410 = inherent#Vec#Vec[T]#push__T_int(vec_literal/52, 4) in
-    let _wild411 = inherent#Vec#Vec[T]#push__T_int(vec_literal/52, 1) in
-    let _wild412 = inherent#Vec#Vec[T]#push__T_int(vec_literal/52, 5) in
-    let _wild413 = inherent#Vec#Vec[T]#push__T_int(vec_literal/52, 9) in
-    let _wild414 = inherent#Vec#Vec[T]#push__T_int(vec_literal/52, 2) in
-    let _wild415 = inherent#Vec#Vec[T]#push__T_int(vec_literal/52, 6) in
-    vec_literal/52 in
-  let _wild416 =
+  let values/0 = @intrinsic(vec.from_array)([3, 1, 4, 1, 5, 9, 2, 6]) in
+  let _wild408 =
     println__T_string(
       inherent#int#int#to_string(
         inherent#Option#Option[T]#unwrap_or__T_int(
@@ -807,7 +797,7 @@ fn main() -> unit {
         )
       )
     ) in
-  let _wild417 =
+  let _wild409 =
     println__T_string(
       inherent#int#int#to_string(
         inherent#Option#Option[T]#unwrap_or__T_int(
@@ -821,23 +811,16 @@ fn main() -> unit {
         )
       )
     ) in
-  let _wild418 =
+  let _wild410 =
     inherent#Vec#Vec[T]#sort_by__T_int(
       values/0,
       pack_closure[inherent#closure_env_main_2#closure_env_main_2#apply](closure_env_main_2 {})
     ) in
-  let _wild419 = println__T_string(inherent#Vec#Vec[T]#join__T_int(values/0, ",")) in
-  let _wild420 = inherent#Vec#Vec[T]#dedup__T_int(values/0) in
-  let _wild421 = println__T_string(inherent#Vec#Vec[T]#join__T_int(values/0, ",")) in
-  let ordered/5 =
-    let vec_literal/404 = inherent#Vec#Vec[T]#new__T_int() in
-    let _wild422 = inherent#Vec#Vec[T]#push__T_int(vec_literal/404, 1) in
-    let _wild423 = inherent#Vec#Vec[T]#push__T_int(vec_literal/404, 2) in
-    let _wild424 = inherent#Vec#Vec[T]#push__T_int(vec_literal/404, 4) in
-    let _wild425 = inherent#Vec#Vec[T]#push__T_int(vec_literal/404, 4) in
-    let _wild426 = inherent#Vec#Vec[T]#push__T_int(vec_literal/404, 5) in
-    vec_literal/404 in
-  let _wild427 =
+  let _wild411 = println__T_string(inherent#Vec#Vec[T]#join__T_int(values/0, ",")) in
+  let _wild412 = inherent#Vec#Vec[T]#dedup__T_int(values/0) in
+  let _wild413 = println__T_string(inherent#Vec#Vec[T]#join__T_int(values/0, ",")) in
+  let ordered/5 = @intrinsic(vec.from_array)([1, 2, 4, 4, 5]) in
+  let _wild414 =
     println__T_string(
       inherent#int#int#to_string(
         inherent#Option#Option[T]#unwrap_or__T_int(
@@ -851,7 +834,7 @@ fn main() -> unit {
         )
       )
     ) in
-  let _wild428 =
+  let _wild415 =
     println__T_string(
       inherent#int#int#to_string(
         inherent#Option#Option[T]#unwrap_or__T_int(
@@ -865,7 +848,7 @@ fn main() -> unit {
         )
       )
     ) in
-  let _wild429 =
+  let _wild416 =
     println__T_string(
       inherent#int#int#to_string(
         inherent#Option#Option[T]#unwrap_or__T_int(
@@ -879,7 +862,7 @@ fn main() -> unit {
         )
       )
     ) in
-  let _wild430 =
+  let _wild417 =
     println__T_string(
       inherent#int#int#to_string(
         inherent#Option#Option[T]#unwrap_or__T_int(
@@ -893,72 +876,45 @@ fn main() -> unit {
         )
       )
     ) in
-  let names/12 =
-    let vec_literal/804 = inherent#Vec#Vec[T]#new__T_string() in
-    let _wild431 = inherent#Vec#Vec[T]#push__T_string(vec_literal/804, "beta") in
-    let _wild432 = inherent#Vec#Vec[T]#push__T_string(vec_literal/804, "alpha") in
-    let _wild433 = inherent#Vec#Vec[T]#push__T_string(vec_literal/804, "gamma") in
-    vec_literal/804 in
-  let _wild434 =
+  let names/12 = @intrinsic(vec.from_array)(["beta", "alpha", "gamma"]) in
+  let _wild418 =
     inherent#Vec#Vec[T]#sort_by_ordering__T_string(
       names/12,
       pack_closure[inherent#closure_env_main_7#closure_env_main_7#apply](closure_env_main_7 {})
     ) in
-  let _wild435 = println__T_string(inherent#Vec#Vec[T]#join__T_string(names/12, "|")) in
-  let pairs/15 =
-    let vec_literal/968 = inherent#Vec#Vec[T]#new__T_(int,int)() in
-    let _wild436 = inherent#Vec#Vec[T]#push__T_(int,int)(vec_literal/968, (1, 2)) in
-    let _wild437 = inherent#Vec#Vec[T]#push__T_(int,int)(vec_literal/968, (1, 1)) in
-    let _wild438 = inherent#Vec#Vec[T]#push__T_(int,int)(vec_literal/968, (0, 9)) in
-    vec_literal/968 in
-  let _wild439 =
+  let _wild419 = println__T_string(inherent#Vec#Vec[T]#join__T_string(names/12, "|")) in
+  let pairs/15 = @intrinsic(vec.from_array)([(1, 2), (1, 1), (0, 9)]) in
+  let _wild420 =
     inherent#Vec#Vec[T]#sort_by_ordering__T_(int,int)(
       pairs/15,
       pack_closure[inherent#closure_env_main_8#closure_env_main_8#apply](closure_env_main_8 {})
     ) in
-  let _wild440 =
+  let _wild421 =
     println__T_string(inherent#int#int#to_string(inherent#Vec#Vec[T]#len__T_(int,int)(pairs/15))) in
-  let view/18 =
-    inherent#Vec#Vec[T]#slice__T_int(
-      let vec_literal/1149 = inherent#Vec#Vec[T]#new__T_int() in
-      let _wild441 = inherent#Vec#Vec[T]#push__T_int(vec_literal/1149, 7) in
-      let _wild442 = inherent#Vec#Vec[T]#push__T_int(vec_literal/1149, 8) in
-      let _wild443 = inherent#Vec#Vec[T]#push__T_int(vec_literal/1149, 9) in
-      vec_literal/1149,
-      0,
-      2
-    ) in
-  let _wild444 =
+  let view/18 = inherent#Vec#Vec[T]#slice__T_int(@intrinsic(vec.from_array)([7, 8, 9]), 0, 2) in
+  let _wild422 =
     println__T_string(
       trait_impl#ToString#bool#to_string(inherent#Slice#Slice[T]#contains__T_int(view/18, 8))
     ) in
-  let _wild445 =
+  let _wild423 =
     println__T_string(
       trait_impl#ToString#bool#to_string(inherent#Slice#Slice[T]#contains__T_int(view/18, 9))
     ) in
-  let frozen/19 =
-    inherent#Vec#Vec[T]#freeze__T_int(
-      let vec_literal/1280 = inherent#Vec#Vec[T]#new__T_int() in
-      let _wild446 = inherent#Vec#Vec[T]#push__T_int(vec_literal/1280, 1) in
-      let _wild447 = inherent#Vec#Vec[T]#push__T_int(vec_literal/1280, 2) in
-      vec_literal/1280
-    ) in
-  let _wild448 =
+  let frozen/19 = inherent#Vec#Vec[T]#freeze__T_int(@intrinsic(vec.from_array)([1, 2])) in
+  let _wild424 =
     println__T_string(
       trait_impl#ToString#bool#to_string(
         inherent#FrozenVec#FrozenVec[T]#contains__T_int(frozen/19, 1)
       )
     ) in
-  let _wild449 =
+  let _wild425 =
     println__T_string(
       trait_impl#ToString#bool#to_string(
         inherent#FrozenVec#FrozenVec[T]#contains__T_int(frozen/19, 3)
       )
     ) in
-  let empty/20 =
-    let vec_literal/1418 = inherent#Vec#Vec[T]#new__T_int() in
-    vec_literal/1418 in
-  let _wild450 = println__T_string(inherent#Vec#Vec[T]#join__T_int(empty/20, ",")) in
+  let empty/20 = @intrinsic(vec.from_array)([]) in
+  let _wild426 = println__T_string(inherent#Vec#Vec[T]#join__T_int(empty/20, ",")) in
   println__T_string(
     trait_impl#ToString#bool#to_string(
       inherent#Option#Option[T]#is_none__T_int(
@@ -1964,14 +1920,6 @@ fn std::cmp::trait_default#PartialOrd#ge__Self_float64(self/9: float64, other/10
   }
 }
 
-fn inherent#Vec#Vec[T]#new__T_int() -> Vec[int] {
-  @intrinsic(vec.new)()
-}
-
-fn inherent#Vec#Vec[T]#push__T_int(self/258: Vec[int], elem/259: int) -> unit {
-  @intrinsic(vec.push)(self/258, elem/259)
-}
-
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
@@ -2193,14 +2141,6 @@ fn inherent#Vec#Vec[T]#max_by__T_int(
   }
 }
 
-fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
-  @intrinsic(vec.new)()
-}
-
-fn inherent#Vec#Vec[T]#push__T_string(self/258: Vec[string], elem/259: string) -> unit {
-  @intrinsic(vec.push)(self/258, elem/259)
-}
-
 fn std::cmp::compare__T_string(left/124: string, right/125: string) -> Ordering {
   trait_impl#std::cmp::Ord#string#cmp(left/124, right/125)
 }
@@ -2273,14 +2213,6 @@ fn inherent#Vec#Vec[T]#join__T_string(self/378: Vec[string], separator/379: stri
         }
     } in
   @runtime(core.string_concat)(result/382)
-}
-
-fn inherent#Vec#Vec[T]#new__T_(int,int)() -> Vec[(int, int)] {
-  @intrinsic(vec.new)()
-}
-
-fn inherent#Vec#Vec[T]#push__T_(int,int)(self/258: Vec[(int, int)], elem/259: (int, int)) -> unit {
-  @intrinsic(vec.push)(self/258, elem/259)
 }
 
 fn std::cmp::compare__T_int(left/124: int, right/125: int) -> Ordering {
@@ -2549,6 +2481,10 @@ fn trait_impl#ToString#int#to_string(self/151: int) -> string {
   @runtime(core.int_to_string)(self/151)
 }
 
+fn inherent#Vec#Vec[T]#push__T_string(self/258: Vec[string], elem/259: string) -> unit {
+  @intrinsic(vec.push)(self/258, elem/259)
+}
+
 fn inherent#Vec#Vec[T]#len__T_string(self/273: Vec[string]) -> int {
   @intrinsic(vec.len)(self/273)
 }
@@ -2681,6 +2617,10 @@ fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(
 
 fn inherent#Vec#Vec[T]#with_capacity__T_int(capacity/257: int) -> Vec[int] {
   @intrinsic(vec.with_capacity)(capacity/257)
+}
+
+fn inherent#Vec#Vec[T]#push__T_int(self/258: Vec[int], elem/259: int) -> unit {
+  @intrinsic(vec.push)(self/258, elem/259)
 }
 
 fn smaller(left/376: int, right/377: int) -> int {
@@ -3004,26 +2944,30 @@ fn inherent#Vec#Vec[T]#with_capacity__T_(int,int)(capacity/257: int) -> Vec[(int
   @intrinsic(vec.with_capacity)(capacity/257)
 }
 
+fn inherent#Vec#Vec[T]#push__T_(int,int)(self/258: Vec[(int, int)], elem/259: (int, int)) -> unit {
+  @intrinsic(vec.push)(self/258, elem/259)
+}
+
 fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
   @runtime(core.int_hash)(self/211)
 }
 
 fn inherent#closure_env_main_0#closure_env_main_0#apply(
-  env451: closure_env_main_0,
+  env427: closure_env_main_0,
   value/1: int
 ) -> bool {
   (value/1 == 5)
 }
 
 fn inherent#closure_env_main_1#closure_env_main_1#apply(
-  env452: closure_env_main_1,
+  env428: closure_env_main_1,
   value/2: int
 ) -> bool {
   (value/2 == 99)
 }
 
 fn inherent#closure_env_main_2#closure_env_main_2#apply(
-  env453: closure_env_main_2,
+  env429: closure_env_main_2,
   left/3: int,
   right/4: int
 ) -> int {
@@ -3031,21 +2975,21 @@ fn inherent#closure_env_main_2#closure_env_main_2#apply(
 }
 
 fn inherent#closure_env_main_3#closure_env_main_3#apply(
-  env454: closure_env_main_3,
+  env430: closure_env_main_3,
   value/6: int
 ) -> int {
   (value/6 - 4)
 }
 
 fn inherent#closure_env_main_4#closure_env_main_4#apply(
-  env455: closure_env_main_4,
+  env431: closure_env_main_4,
   value/7: int
 ) -> int {
   (value/7 - 3)
 }
 
 fn inherent#closure_env_main_5#closure_env_main_5#apply(
-  env456: closure_env_main_5,
+  env432: closure_env_main_5,
   left/8: int,
   right/9: int
 ) -> int {
@@ -3053,7 +2997,7 @@ fn inherent#closure_env_main_5#closure_env_main_5#apply(
 }
 
 fn inherent#closure_env_main_6#closure_env_main_6#apply(
-  env457: closure_env_main_6,
+  env433: closure_env_main_6,
   left/10: int,
   right/11: int
 ) -> int {
@@ -3061,7 +3005,7 @@ fn inherent#closure_env_main_6#closure_env_main_6#apply(
 }
 
 fn inherent#closure_env_main_7#closure_env_main_7#apply(
-  env458: closure_env_main_7,
+  env434: closure_env_main_7,
   left/13: string,
   right/14: string
 ) -> Ordering {
@@ -3069,7 +3013,7 @@ fn inherent#closure_env_main_7#closure_env_main_7#apply(
 }
 
 fn inherent#closure_env_main_8#closure_env_main_8#apply(
-  env459: closure_env_main_8,
+  env435: closure_env_main_8,
   left/16: (int, int),
   right/17: (int, int)
 ) -> Ordering {
@@ -3077,7 +3021,7 @@ fn inherent#closure_env_main_8#closure_env_main_8#apply(
 }
 
 fn inherent#closure_env_main_9#closure_env_main_9#apply(
-  env460: closure_env_main_9,
+  env436: closure_env_main_9,
   left/21: int,
   right/22: int
 ) -> int {
@@ -3085,7 +3029,7 @@ fn inherent#closure_env_main_9#closure_env_main_9#apply(
 }
 
 fn inherent#closure_env_inherent_Vec_Vec_T_dedup_T_int_10#closure_env_inherent_Vec_Vec_T_dedup_T_int_10#apply(
-  env461: closure_env_inherent_Vec_Vec_T_dedup_T_int_10,
+  env437: closure_env_inherent_Vec_Vec_T_dedup_T_int_10,
   left/388: int,
   right/389: int
 ) -> bool {
@@ -3093,29 +3037,29 @@ fn inherent#closure_env_inherent_Vec_Vec_T_dedup_T_int_10#closure_env_inherent_V
 }
 
 fn inherent#closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_string_11#closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_string_11#apply(
-  env462: closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_string_11,
+  env438: closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_string_11,
   left/339: string,
   right/340: string
 ) -> int {
-  let compare/338 = closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_string_11.compare_0(env462) in
+  let compare/338 = closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_string_11.compare_0(env438) in
   inherent#Ordering#Ordering#to_int(compare/338(left/339, right/340))
 }
 
 fn inherent#closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_int_int_12#closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_int_int_12#apply(
-  env463: closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_int_int_12,
+  env439: closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_int_int_12,
   left/339: (int, int),
   right/340: (int, int)
 ) -> int {
   let compare/338 =
-    closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_int_int_12.compare_0(env463) in
+    closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_int_int_12.compare_0(env439) in
   inherent#Ordering#Ordering#to_int(compare/338(left/339, right/340))
 }
 
 fn inherent#closure_env_goml_builtin_range_13#closure_env_goml_builtin_range_13#apply(
-  env464: closure_env_goml_builtin_range_13
+  env440: closure_env_goml_builtin_range_13
 ) -> Option__int {
-  let current/496 = closure_env_goml_builtin_range_13.current_0(env464) in
-  let end/495 = closure_env_goml_builtin_range_13.end_1(env464) in
+  let current/496 = closure_env_goml_builtin_range_13.current_0(env440) in
+  let end/495 = closure_env_goml_builtin_range_13.end_1(env440) in
   let value/497 = @intrinsic(ref.get)(current/496) in
   if (value/497 < end/495) {
       let _wild404 = @intrinsic(ref.set)(current/496, (value/497 + 1)) in

@@ -10,14 +10,7 @@ fn contains_any[T](values/2: Vec[T], expected/3: T) -> bool where T: PartialEq {
 }
 
 fn main() -> unit {
-    let values/4: Vec[int] =
-      {
-          let vec_literal/208: Vec[int] = (Vec[int]::new : () -> Vec[int])();
-          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/208 : Vec[int]), 1);
-          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/208 : Vec[int]), 2);
-          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/208 : Vec[int]), 3);
-          (vec_literal/208 : Vec[int])
-      };
+    let values/4: Vec[int] = (@intrinsic(vec.from_array) : ([int; 3]) -> Vec[int])([1, 2, 3]);
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)(
         (Vec[int]::contains : (Vec[int], int) -> bool)((values/4 : Vec[int]), 2)
@@ -29,32 +22,14 @@ fn main() -> unit {
       )
     );
     let names/5: Vec[string] =
-      {
-          let vec_literal/330: Vec[string] = (Vec[string]::new : () -> Vec[string])();
-          (Vec[string]::push : (Vec[string], string) -> unit)(
-            (vec_literal/330 : Vec[string]),
-            "alpha"
-          );
-          (Vec[string]::push : (Vec[string], string) -> unit)(
-            (vec_literal/330 : Vec[string]),
-            "beta"
-          );
-          (vec_literal/330 : Vec[string])
-      };
+      (@intrinsic(vec.from_array) : ([string; 2]) -> Vec[string])(["alpha", "beta"]);
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)(
         (Vec[string]::contains : (Vec[string], string) -> bool)((names/5 : Vec[string]), "beta")
       )
     );
     let pairs/6: Vec[Pair] =
-      {
-          let vec_literal/419: Vec[Pair] = (Vec[Pair]::new : () -> Vec[Pair])();
-          (Vec[Pair]::push : (Vec[Pair], Pair) -> unit)(
-            (vec_literal/419 : Vec[Pair]),
-            Pair { left: 1, right: 2 }
-          );
-          (vec_literal/419 : Vec[Pair])
-      };
+      (@intrinsic(vec.from_array) : ([Pair; 1]) -> Vec[Pair])([Pair { left: 1, right: 2 }]);
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)(
         (Vec[Pair]::contains : (Vec[Pair], Pair) -> bool)(
@@ -68,11 +43,7 @@ fn main() -> unit {
         (contains_any : (Vec[int], int) -> bool)((values/4 : Vec[int]), 3)
       )
     );
-    let empty/7: Vec[string] =
-      {
-          let vec_literal/602: Vec[string] = (Vec[string]::new : () -> Vec[string])();
-          (vec_literal/602 : Vec[string])
-      };
+    let empty/7: Vec[string] = (@intrinsic(vec.from_array) : ([string; 0]) -> Vec[string])([]);
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)(
         (Vec[string]::contains : (Vec[string], string) -> bool)((empty/7 : Vec[string]), "x")

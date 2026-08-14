@@ -38,346 +38,117 @@ fn check_scalar(bytes/5: Vec[uint8], expected/6: uint32, expected_width/7: int) 
 }
 
 fn main() -> unit {
-    (check_utf8 : (
-      Vec[uint8],
-      bool
-    ) -> unit)(
-      {
-          let vec_literal/795: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (vec_literal/795 : Vec[uint8])
-      },
+    (check_utf8 : (Vec[uint8], bool) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 0]) -> Vec[uint8])([]),
       true
     );
-    (check_utf8 : (
-      Vec[uint8],
-      bool
-    ) -> unit)(
-      {
-          let vec_literal/826: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/826 : Vec[uint8]), 0);
-          (vec_literal/826 : Vec[uint8])
-      },
+    (check_utf8 : (Vec[uint8], bool) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 1]) -> Vec[uint8])([0]),
       true
     );
-    (check_utf8 : (
-      Vec[uint8],
-      bool
-    ) -> unit)(
-      {
-          let vec_literal/858: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/858 : Vec[uint8]), 127);
-          (vec_literal/858 : Vec[uint8])
-      },
+    (check_utf8 : (Vec[uint8], bool) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 1]) -> Vec[uint8])([127]),
       true
     );
-    (check_scalar : (
-      Vec[uint8],
-      uint32,
-      int
-    ) -> unit)(
-      {
-          let vec_literal/894: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/894 : Vec[uint8]), 194);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/894 : Vec[uint8]), 128);
-          (vec_literal/894 : Vec[uint8])
-      },
+    (check_scalar : (Vec[uint8], uint32, int) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 2]) -> Vec[uint8])([194, 128]),
       128,
       2
     );
-    (check_scalar : (
-      Vec[uint8],
-      uint32,
-      int
-    ) -> unit)(
-      {
-          let vec_literal/937: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/937 : Vec[uint8]), 223);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/937 : Vec[uint8]), 191);
-          (vec_literal/937 : Vec[uint8])
-      },
+    (check_scalar : (Vec[uint8], uint32, int) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 2]) -> Vec[uint8])([223, 191]),
       2047,
       2
     );
-    (check_scalar : (
-      Vec[uint8],
-      uint32,
-      int
-    ) -> unit)(
-      {
-          let vec_literal/981: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/981 : Vec[uint8]), 224);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/981 : Vec[uint8]), 160);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/981 : Vec[uint8]), 128);
-          (vec_literal/981 : Vec[uint8])
-      },
+    (check_scalar : (Vec[uint8], uint32, int) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 3]) -> Vec[uint8])([224, 160, 128]),
       2048,
       3
     );
-    (check_scalar : (
-      Vec[uint8],
-      uint32,
-      int
-    ) -> unit)(
-      {
-          let vec_literal/1030: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1030 : Vec[uint8]), 237);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1030 : Vec[uint8]), 159);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1030 : Vec[uint8]), 191);
-          (vec_literal/1030 : Vec[uint8])
-      },
+    (check_scalar : (Vec[uint8], uint32, int) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 3]) -> Vec[uint8])([237, 159, 191]),
       55295,
       3
     );
-    (check_scalar : (
-      Vec[uint8],
-      uint32,
-      int
-    ) -> unit)(
-      {
-          let vec_literal/1080: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1080 : Vec[uint8]), 238);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1080 : Vec[uint8]), 128);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1080 : Vec[uint8]), 128);
-          (vec_literal/1080 : Vec[uint8])
-      },
+    (check_scalar : (Vec[uint8], uint32, int) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 3]) -> Vec[uint8])([238, 128, 128]),
       57344,
       3
     );
-    (check_scalar : (
-      Vec[uint8],
-      uint32,
-      int
-    ) -> unit)(
-      {
-          let vec_literal/1130: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1130 : Vec[uint8]), 239);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1130 : Vec[uint8]), 191);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1130 : Vec[uint8]), 189);
-          (vec_literal/1130 : Vec[uint8])
-      },
+    (check_scalar : (Vec[uint8], uint32, int) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 3]) -> Vec[uint8])([239, 191, 189]),
       65533,
       3
     );
-    (check_scalar : (
-      Vec[uint8],
-      uint32,
-      int
-    ) -> unit)(
-      {
-          let vec_literal/1180: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1180 : Vec[uint8]), 239);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1180 : Vec[uint8]), 191);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1180 : Vec[uint8]), 191);
-          (vec_literal/1180 : Vec[uint8])
-      },
+    (check_scalar : (Vec[uint8], uint32, int) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 3]) -> Vec[uint8])([239, 191, 191]),
       65535,
       3
     );
-    (check_scalar : (
-      Vec[uint8],
-      uint32,
-      int
-    ) -> unit)(
-      {
-          let vec_literal/1230: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1230 : Vec[uint8]), 240);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1230 : Vec[uint8]), 144);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1230 : Vec[uint8]), 128);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1230 : Vec[uint8]), 128);
-          (vec_literal/1230 : Vec[uint8])
-      },
+    (check_scalar : (Vec[uint8], uint32, int) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 4]) -> Vec[uint8])([240, 144, 128, 128]),
       65536,
       4
     );
-    (check_scalar : (
-      Vec[uint8],
-      uint32,
-      int
-    ) -> unit)(
-      {
-          let vec_literal/1285: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1285 : Vec[uint8]), 244);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1285 : Vec[uint8]), 143);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1285 : Vec[uint8]), 191);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1285 : Vec[uint8]), 191);
-          (vec_literal/1285 : Vec[uint8])
-      },
+    (check_scalar : (Vec[uint8], uint32, int) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 4]) -> Vec[uint8])([244, 143, 191, 191]),
       1114111,
       4
     );
-    (check_utf8 : (
-      Vec[uint8],
-      bool
-    ) -> unit)(
-      {
-          let vec_literal/1340: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1340 : Vec[uint8]), 128);
-          (vec_literal/1340 : Vec[uint8])
-      },
+    (check_utf8 : (Vec[uint8], bool) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 1]) -> Vec[uint8])([128]),
       false
     );
-    (check_utf8 : (
-      Vec[uint8],
-      bool
-    ) -> unit)(
-      {
-          let vec_literal/1375: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1375 : Vec[uint8]), 191);
-          (vec_literal/1375 : Vec[uint8])
-      },
+    (check_utf8 : (Vec[uint8], bool) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 1]) -> Vec[uint8])([191]),
       false
     );
-    (check_utf8 : (
-      Vec[uint8],
-      bool
-    ) -> unit)(
-      {
-          let vec_literal/1410: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1410 : Vec[uint8]), 192);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1410 : Vec[uint8]), 128);
-          (vec_literal/1410 : Vec[uint8])
-      },
+    (check_utf8 : (Vec[uint8], bool) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 2]) -> Vec[uint8])([192, 128]),
       false
     );
-    (check_utf8 : (
-      Vec[uint8],
-      bool
-    ) -> unit)(
-      {
-          let vec_literal/1450: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1450 : Vec[uint8]), 193);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1450 : Vec[uint8]), 191);
-          (vec_literal/1450 : Vec[uint8])
-      },
+    (check_utf8 : (Vec[uint8], bool) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 2]) -> Vec[uint8])([193, 191]),
       false
     );
-    (check_utf8 : (
-      Vec[uint8],
-      bool
-    ) -> unit)(
-      {
-          let vec_literal/1490: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1490 : Vec[uint8]), 194);
-          (vec_literal/1490 : Vec[uint8])
-      },
+    (check_utf8 : (Vec[uint8], bool) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 1]) -> Vec[uint8])([194]),
       false
     );
-    (check_utf8 : (
-      Vec[uint8],
-      bool
-    ) -> unit)(
-      {
-          let vec_literal/1525: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1525 : Vec[uint8]), 194);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1525 : Vec[uint8]), 127);
-          (vec_literal/1525 : Vec[uint8])
-      },
+    (check_utf8 : (Vec[uint8], bool) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 2]) -> Vec[uint8])([194, 127]),
       false
     );
-    (check_utf8 : (
-      Vec[uint8],
-      bool
-    ) -> unit)(
-      {
-          let vec_literal/1565: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1565 : Vec[uint8]), 224);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1565 : Vec[uint8]), 159);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1565 : Vec[uint8]), 191);
-          (vec_literal/1565 : Vec[uint8])
-      },
+    (check_utf8 : (Vec[uint8], bool) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 3]) -> Vec[uint8])([224, 159, 191]),
       false
     );
-    (check_utf8 : (
-      Vec[uint8],
-      bool
-    ) -> unit)(
-      {
-          let vec_literal/1610: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1610 : Vec[uint8]), 225);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1610 : Vec[uint8]), 128);
-          (vec_literal/1610 : Vec[uint8])
-      },
+    (check_utf8 : (Vec[uint8], bool) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 2]) -> Vec[uint8])([225, 128]),
       false
     );
-    (check_utf8 : (
-      Vec[uint8],
-      bool
-    ) -> unit)(
-      {
-          let vec_literal/1650: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1650 : Vec[uint8]), 225);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1650 : Vec[uint8]), 128);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1650 : Vec[uint8]), 127);
-          (vec_literal/1650 : Vec[uint8])
-      },
+    (check_utf8 : (Vec[uint8], bool) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 3]) -> Vec[uint8])([225, 128, 127]),
       false
     );
-    (check_utf8 : (
-      Vec[uint8],
-      bool
-    ) -> unit)(
-      {
-          let vec_literal/1695: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1695 : Vec[uint8]), 237);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1695 : Vec[uint8]), 160);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1695 : Vec[uint8]), 128);
-          (vec_literal/1695 : Vec[uint8])
-      },
+    (check_utf8 : (Vec[uint8], bool) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 3]) -> Vec[uint8])([237, 160, 128]),
       false
     );
-    (check_utf8 : (
-      Vec[uint8],
-      bool
-    ) -> unit)(
-      {
-          let vec_literal/1740: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1740 : Vec[uint8]), 240);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1740 : Vec[uint8]), 143);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1740 : Vec[uint8]), 191);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1740 : Vec[uint8]), 191);
-          (vec_literal/1740 : Vec[uint8])
-      },
+    (check_utf8 : (Vec[uint8], bool) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 4]) -> Vec[uint8])([240, 143, 191, 191]),
       false
     );
-    (check_utf8 : (
-      Vec[uint8],
-      bool
-    ) -> unit)(
-      {
-          let vec_literal/1790: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1790 : Vec[uint8]), 240);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1790 : Vec[uint8]), 144);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1790 : Vec[uint8]), 128);
-          (vec_literal/1790 : Vec[uint8])
-      },
+    (check_utf8 : (Vec[uint8], bool) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 3]) -> Vec[uint8])([240, 144, 128]),
       false
     );
-    (check_utf8 : (
-      Vec[uint8],
-      bool
-    ) -> unit)(
-      {
-          let vec_literal/1835: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1835 : Vec[uint8]), 244);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1835 : Vec[uint8]), 144);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1835 : Vec[uint8]), 128);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1835 : Vec[uint8]), 128);
-          (vec_literal/1835 : Vec[uint8])
-      },
+    (check_utf8 : (Vec[uint8], bool) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 4]) -> Vec[uint8])([244, 144, 128, 128]),
       false
     );
-    (check_utf8 : (
-      Vec[uint8],
-      bool
-    ) -> unit)(
-      {
-          let vec_literal/1885: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1885 : Vec[uint8]), 245);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1885 : Vec[uint8]), 128);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1885 : Vec[uint8]), 128);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/1885 : Vec[uint8]), 128);
-          (vec_literal/1885 : Vec[uint8])
-      },
+    (check_utf8 : (Vec[uint8], bool) -> unit)(
+      (@intrinsic(vec.from_array) : ([uint8; 4]) -> Vec[uint8])([245, 128, 128, 128]),
       false
     )
 }
