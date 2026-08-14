@@ -260,7 +260,8 @@ fn resolve_user_constructor(ctx: Checker, value: EnumInfo, variant_index: int) -
 fn resolve_named_constructor(ctx: Checker, enum_name: string, variant_name: string) -> Option[
     ResolvedConstructor,
 ] {
-    match find_enum_by_name(ctx, enum_name) {
+    let canonical_enum_name = canonical_imported_name(ctx, enum_name);
+    match find_enum_by_name(ctx, canonical_enum_name) {
         Some(value) => {
             for index in 0..value.variants.len() {
                 if value.variants[index].name == variant_name {
@@ -269,7 +270,11 @@ fn resolve_named_constructor(ctx: Checker, enum_name: string, variant_name: stri
             }
             Option::None
         },
-        None => Option::None,
+        None => if canonical_enum_name == "Ordering" {
+            resolve_builtin_constructor(ctx, "Ordering::" + variant_name)
+        } else {
+            Option::None
+        },
     }
 }
 
@@ -301,19 +306,29 @@ fn resolve_builtin_constructor(ctx: Checker, name: string) -> Option[ResolvedCon
     } else if name == "Result::Err" {
         fields.push(e);
         nominal_type("Result", two_types(t, e))
+    } else if name == "Ordering::Less" || name == "Ordering::Equal" || name == "Ordering::Greater" {
+        Type::Con { name: "Ordering" }
     } else {
         Type::Error
     };
     if name == "Option::None" || name == "Option::Some" || name == "Result::Ok"
-        || name == "Result::Err" {
+        || name == "Result::Err"
+        || name == "Ordering::Less"
+        || name == "Ordering::Equal"
+        || name == "Ordering::Greater" {
         Option::Some(
             ResolvedConstructor {
                 constructor: Constructor {
                     name,
                     fields: Vec::[],
                     is_struct: false,
-                    tag: if name == "Option::None" || name == "Result::Ok" {
+                    tag: if name == "Option::None" || name == "Result::Ok"
+                        || name == "Ordering::Less" {
                         Option::Some(0)
+                    } else if name == "Ordering::Equal" {
+                        Option::Some(1)
+                    } else if name == "Ordering::Greater" {
+                        Option::Some(2)
                     } else {
                         Option::Some(1)
                     },
@@ -1273,6 +1288,13 @@ fn builtin_total_value_trait_type(value: Type) -> bool {
     }
 }
 
+fn builtin_ordering_type(value: Type) -> bool {
+    match prune(value) {
+        Con { name } => short_name(name) == "Ordering",
+        _ => false,
+    }
+}
+
 fn iterator_trait_ref() -> TraitRef {
     TraitRef { name: "Iterator", args: Vec::[] }
 }
@@ -1341,11 +1363,12 @@ fn builtin_trait_bound_satisfied(
                 }
             } else if trait_name == "PartialEq" || trait_name == "Eq" || trait_name == "Hash" {
                 if trait_name == "PartialEq" || trait_name == "Eq" {
-                    if if trait_name == "PartialEq" {
-                        builtin_value_trait_type(bound_ty)
-                    } else {
-                        builtin_total_value_trait_type(bound_ty)
-                    } {
+                    if builtin_ordering_type(bound_ty)
+                        || if trait_name == "PartialEq" {
+                            builtin_value_trait_type(bound_ty)
+                        } else {
+                            builtin_total_value_trait_type(bound_ty)
+                        } {
                         true
                     } else {
                         match bound_ty {
@@ -1898,6 +1921,11 @@ fn resolve_builtin_container_method(
             resolve_hashmap_method(ctx, receiver, key, value, name)
         },
         String => resolve_string_method(receiver, name),
+        Con { name: owner } => if short_name(owner) == "Ordering" {
+            resolve_ordering_method(receiver, name)
+        } else {
+            Option::None
+        },
         App { ty: Con { name: owner }, args } => {
             if short_name(owner) == "FrozenVec" && args.len() == 1 {
                 resolve_frozen_vec_method(receiver, args[0], name)
@@ -2108,6 +2136,102 @@ fn resolve_vec_method(receiver: Type, elem: Type, name: string) -> Option[Resolv
         Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Bool))
     } else if name == "contains" {
         Option::Some(inherent_callable(receiver, name, two_types(receiver, elem), Type::Bool))
+    } else if name == "position" {
+        Option::Some(
+            inherent_callable(
+                receiver,
+                name,
+                two_types(receiver, Type::Func { params: one_type(elem), ret_ty: Type::Bool }),
+                nominal_type("Option", one_type(Type::Int)),
+            ),
+        )
+    } else if name == "sort_by" || name == "stable_sort_by" {
+        Option::Some(
+            inherent_callable(
+                receiver,
+                name,
+                two_types(receiver, Type::Func { params: two_types(elem, elem), ret_ty: Type::Int }),
+                Type::Unit,
+            ),
+        )
+    } else if name == "sort_by_ordering" || name == "stable_sort_by_ordering" {
+        Option::Some(
+            inherent_callable(
+                receiver,
+                name,
+                two_types(
+                    receiver,
+                    Type::Func {
+                        params: two_types(elem, elem),
+                        ret_ty: Type::Con { name: "Ordering" },
+                    },
+                ),
+                Type::Unit,
+            ),
+        )
+    } else if name == "binary_search_by" {
+        Option::Some(
+            inherent_callable(
+                receiver,
+                name,
+                two_types(receiver, Type::Func { params: one_type(elem), ret_ty: Type::Int }),
+                nominal_type("Option", one_type(Type::Int)),
+            ),
+        )
+    } else if name == "binary_search_by_ordering" {
+        Option::Some(
+            inherent_callable(
+                receiver,
+                name,
+                two_types(
+                    receiver,
+                    Type::Func { params: one_type(elem), ret_ty: Type::Con { name: "Ordering" } },
+                ),
+                nominal_type("Option", one_type(Type::Int)),
+            ),
+        )
+    } else if name == "min_by" || name == "max_by" {
+        Option::Some(
+            inherent_callable(
+                receiver,
+                name,
+                two_types(receiver, Type::Func { params: two_types(elem, elem), ret_ty: Type::Int }),
+                nominal_type("Option", one_type(elem)),
+            ),
+        )
+    } else if name == "min_by_ordering" || name == "max_by_ordering" {
+        Option::Some(
+            inherent_callable(
+                receiver,
+                name,
+                two_types(
+                    receiver,
+                    Type::Func {
+                        params: two_types(elem, elem),
+                        ret_ty: Type::Con { name: "Ordering" },
+                    },
+                ),
+                nominal_type("Option", one_type(elem)),
+            ),
+        )
+    } else if name == "dedup_by" {
+        Option::Some(
+            inherent_callable(
+                receiver,
+                name,
+                two_types(
+                    receiver,
+                    Type::Func { params: two_types(elem, elem), ret_ty: Type::Bool },
+                ),
+                Type::Unit,
+            ),
+        )
+    } else if name == "dedup" {
+        Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Unit))
+    } else if name == "join" {
+        Option::Some(
+            inherent_callable(receiver, name, two_types(receiver, Type::String), Type::String),
+        )
     } else if name == "reserve" || name == "truncate" {
         Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int), Type::Unit))
     } else if name == "clear" || name == "reverse" {
@@ -2179,6 +2303,8 @@ fn resolve_frozen_vec_method(receiver: Type, elem: Type, name: string) -> Option
         Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Int))
     } else if name == "is_empty" {
         Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Bool))
+    } else if name == "contains" {
+        Option::Some(inherent_callable(receiver, name, two_types(receiver, elem), Type::Bool))
     } else if name == "get" {
         Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int), elem))
     } else if name == "to_vec" {
@@ -2197,11 +2323,38 @@ fn resolve_frozen_vec_method(receiver: Type, elem: Type, name: string) -> Option
     }
 }
 
+fn resolve_ordering_method(receiver: Type, name: string) -> Option[ResolvedCallable] {
+    if name == "to_int" {
+        Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Int))
+    } else if name == "is_lt" || name == "is_eq" || name == "is_gt" || name == "is_le"
+        || name == "is_ge"
+        || name == "is_ne" {
+        Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Bool))
+    } else if name == "reverse" {
+        Option::Some(inherent_callable(receiver, name, one_type(receiver), receiver))
+    } else if name == "then" {
+        Option::Some(inherent_callable(receiver, name, two_types(receiver, receiver), receiver))
+    } else if name == "then_with" {
+        Option::Some(
+            inherent_callable(
+                receiver,
+                name,
+                two_types(receiver, Type::Func { params: Vec::[], ret_ty: receiver }),
+                receiver,
+            ),
+        )
+    } else {
+        Option::None
+    }
+}
+
 fn resolve_slice_method(receiver: Type, elem: Type, name: string) -> Option[ResolvedCallable] {
     if name == "get" {
         Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int), elem))
     } else if name == "len" {
         Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Int))
+    } else if name == "contains" {
+        Option::Some(inherent_callable(receiver, name, two_types(receiver, elem), Type::Bool))
     } else if name == "sub" {
         Option::Some(
             inherent_callable(receiver, name, three_types(receiver, Type::Int, Type::Int), receiver),
@@ -2354,6 +2507,88 @@ fn resolve_string_method(receiver: Type, name: string) -> Option[ResolvedCallabl
             ),
         )
     } else if name == "starts_with" || name == "ends_with" || name == "contains" {
+        Option::Some(
+            inherent_callable(receiver, name, two_types(receiver, Type::String), Type::Bool),
+        )
+    } else if name == "starts_with_at" {
+        Option::Some(
+            inherent_callable(
+                receiver,
+                name,
+                three_types(receiver, Type::Int, Type::String),
+                Type::Bool,
+            ),
+        )
+    } else if name == "find" || name == "find_bytes" || name == "rfind" {
+        Option::Some(
+            inherent_callable(
+                receiver,
+                name,
+                two_types(receiver, Type::String),
+                nominal_type("Option", one_type(Type::Int)),
+            ),
+        )
+    } else if name == "char_count" {
+        Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Int))
+    } else if name == "slice_chars" {
+        Option::Some(
+            inherent_callable(
+                receiver,
+                name,
+                three_types(receiver, Type::Int, Type::Int),
+                nominal_type("Option", one_type(Type::String)),
+            ),
+        )
+    } else if name == "trim" || name == "trim_start" || name == "trim_end"
+        || name == "to_ascii_lowercase"
+        || name == "to_ascii_uppercase" {
+        Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::String))
+    } else if name == "split" {
+        Option::Some(
+            inherent_callable(
+                receiver,
+                name,
+                two_types(receiver, Type::String),
+                Type::VecType { elem: Type::String },
+            ),
+        )
+    } else if name == "lines" {
+        Option::Some(
+            inherent_callable(
+                receiver,
+                name,
+                one_type(receiver),
+                Type::VecType { elem: Type::String },
+            ),
+        )
+    } else if name == "split_once" {
+        Option::Some(
+            inherent_callable(
+                receiver,
+                name,
+                two_types(receiver, Type::String),
+                nominal_type(
+                    "Option",
+                    one_type(Type::Tuple { items: two_types(Type::String, Type::String) }),
+                ),
+            ),
+        )
+    } else if name == "replace" {
+        Option::Some(
+            inherent_callable(
+                receiver,
+                name,
+                three_types(receiver, Type::String, Type::String),
+                Type::String,
+            ),
+        )
+    } else if name == "repeat" {
+        Option::Some(
+            inherent_callable(receiver, name, two_types(receiver, Type::Int), Type::String),
+        )
+    } else if name == "is_ascii" {
+        Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Bool))
+    } else if name == "eq_ignore_ascii_case" {
         Option::Some(
             inherent_callable(receiver, name, two_types(receiver, Type::String), Type::Bool),
         )
@@ -2963,7 +3198,7 @@ fn resolve_signature_predicates(ctx: Checker, predicates: Vec[TypePredicate], re
 }
 
 fn builtin_nominal_arity(name: string) -> Option[int] {
-    if derive::is_meta_type(name) {
+    if derive::is_meta_type(name) || name == "Ordering" {
         Option::Some(0)
     } else if name == "Option" || name == "Vec" || name == "Slice" || name == "Ref"
         || name == "Channel"
@@ -3871,6 +4106,7 @@ fn resolve_static_member(
     owner_type_args: Vec[hir::TypeExpr],
     member_type_args: Vec[hir::TypeExpr],
 ) -> Option[ResolvedCallable] {
+    let owner = canonical_imported_name(ctx, owner);
     let owner_explicit = explicit_types(ctx, owner_type_args);
     let method_explicit = explicit_types(ctx, member_type_args);
     let bare_owner = owner_explicit.is_empty();
@@ -3970,6 +4206,11 @@ fn resolve_builtin_static(ctx: Checker, owner: Type, name: string, method_explic
         },
         HashMap { key: _, value: _ } => if name == "new" {
             Option::Some(inherent_callable(owner, name, Vec::[], owner))
+        } else {
+            Option::None
+        },
+        Con { name: owner_name } => if short_name(owner_name) == "Ordering" && name == "from_int" {
+            Option::Some(inherent_callable(owner, name, one_type(Type::Int), owner))
         } else {
             Option::None
         },

@@ -1,0 +1,96 @@
+package builtin;
+
+pub enum Ordering {
+    Less,
+    Equal,
+    Greater,
+}
+
+impl Ordering {
+    pub fn from_int(value: int) -> Ordering {
+        if value < 0 {
+            Ordering::Less
+        } else if value > 0 {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    }
+
+    pub fn to_int(self: Ordering) -> int {
+        match self {
+            Ordering::Less => -1,
+            Ordering::Equal => 0,
+            Ordering::Greater => 1,
+        }
+    }
+
+    pub fn is_lt(self: Ordering) -> bool {
+        self == Ordering::Less
+    }
+
+    pub fn is_eq(self: Ordering) -> bool {
+        self == Ordering::Equal
+    }
+
+    pub fn is_gt(self: Ordering) -> bool {
+        self == Ordering::Greater
+    }
+
+    pub fn is_le(self: Ordering) -> bool {
+        self != Ordering::Greater
+    }
+
+    pub fn is_ge(self: Ordering) -> bool {
+        self != Ordering::Less
+    }
+
+    pub fn is_ne(self: Ordering) -> bool {
+        self != Ordering::Equal
+    }
+
+    pub fn reverse(self: Ordering) -> Ordering {
+        match self {
+            Ordering::Less => Ordering::Greater,
+            Ordering::Equal => Ordering::Equal,
+            Ordering::Greater => Ordering::Less,
+        }
+    }
+
+    pub fn then(self: Ordering, other: Ordering) -> Ordering {
+        if self == Ordering::Equal {
+            other
+        } else {
+            self
+        }
+    }
+
+    pub fn then_with(self: Ordering, compare: () -> Ordering) -> Ordering {
+        if self == Ordering::Equal {
+            compare()
+        } else {
+            self
+        }
+    }
+}
+
+impl PartialEq for Ordering {
+    fn eq(self: Ordering, other: Ordering) -> bool {
+        match self {
+            Ordering::Less => match other {
+                Ordering::Less => true,
+                _ => false,
+            },
+            Ordering::Equal => match other {
+                Ordering::Equal => true,
+                _ => false,
+            },
+            Ordering::Greater => match other {
+                Ordering::Greater => true,
+                _ => false,
+            },
+        }
+    }
+}
+
+impl Eq for Ordering {}

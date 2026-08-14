@@ -335,6 +335,8 @@ fn check_project(value: Project, overrides: Vec[SourceOverride], context: Analys
     let visited: Vec[string] = Vec::[];
     let derive_modules: Vec[ctir::CtModule] = Vec::[];
     visited.push(discovery.name);
+    visited.push("builtin");
+    visited.push("prelude");
     for file in discovery.files {
         for import in file.import_aliases {
             collect_dependency(

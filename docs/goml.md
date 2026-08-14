@@ -2166,6 +2166,17 @@ Construction uses `Option::Some`, `Option::None`, `Result::Ok` and `Result::Err`
 - `string.starts_with(prefix: string) -> bool`
 - `string.ends_with(suffix: string) -> bool`
 - `string.contains(expected: string) -> bool`
+- `string.starts_with_at(start: int, prefix: string) -> bool`, checking at a byte offset
+- `string.find(expected: string) -> Option[int]`, `string.rfind(expected: string) -> Option[int]`, and `string.find_bytes(expected: string) -> Option[int]`, returning byte offsets
+- `string.char_count() -> int`, counting Unicode scalar values
+- `string.slice_chars(start: int, end: int) -> Option[string]`, using scalar-value indexes
+- `string.trim() -> string`, `string.trim_start() -> string`, and `string.trim_end() -> string`, trimming ASCII whitespace
+- `string.split(separator: string) -> Vec[string]`, `string.split_once(separator: string) -> Option[(string, string)]`, and `string.lines() -> Vec[string]`
+- `string.replace(expected: string, replacement: string) -> string`
+- `string.repeat(count: int) -> string`
+- `string.is_ascii() -> bool`
+- `string.eq_ignore_ascii_case(other: string) -> bool`
+- `string.to_ascii_lowercase() -> string` and `string.to_ascii_uppercase() -> string`
 
 The basic scalar types all implement `ToString` and `Debug`. String concatenation uses `+`.
 
@@ -2221,6 +2232,20 @@ Commonly used methods:
 - `capacity() -> int`
 - `is_empty() -> bool`
 - `contains(value) -> bool`
+- `position(predicate) -> Option[int]`
+- `sort_by(compare) -> unit`
+- `stable_sort_by(compare) -> unit`
+- `sort_by_ordering(compare) -> unit`
+- `stable_sort_by_ordering(compare) -> unit`
+- `binary_search_by(compare) -> Option[int]`
+- `binary_search_by_ordering(compare) -> Option[int]`
+- `min_by(compare) -> Option[T]`
+- `max_by(compare) -> Option[T]`
+- `min_by_ordering(compare) -> Option[T]`
+- `max_by_ordering(compare) -> Option[T]`
+- `dedup_by(equal) -> unit`
+- `dedup() -> unit`
+- `join(separator) -> string`
 - `reserve(additional) -> unit`
 - `truncate(len) -> unit`
 - `clear() -> unit`
@@ -2241,9 +2266,11 @@ Commonly used methods:
 
 `contains(value)` requires the element type to implement `PartialEq` and returns whether any element equals `value`.
 
+Sorting and selection methods take an integer comparator returning negative/zero/positive, or an `Ordering` comparator for the `_ordering` variants. `dedup()` requires `PartialEq`; `position` takes a predicate; `binary_search_*` methods expect the vector to already be ordered and return the first matching index. `join(separator)` requires `ToString` and concatenates the element string forms.
+
 ### `FrozenVec[T]`
 
-`FrozenVec[T]` is a dynamically sized read-only vector. It exposes `get`, `len`, `is_empty`, `iter`, and `to_vec`, but no mutation methods. `to_vec()` returns a new shallow-copied mutable backing store. For nested containers, freezing is shallow: use `FrozenVec[FrozenVec[T]]` when both levels must be read-only.
+`FrozenVec[T]` is a dynamically sized read-only vector. It exposes `get`, `len`, `is_empty`, `contains`, `iter`, and `to_vec`, but no mutation methods. `to_vec()` returns a new shallow-copied mutable backing store. For nested containers, freezing is shallow: use `FrozenVec[FrozenVec[T]]` when both levels must be read-only.
 
 ### `Slice[T]`
 
@@ -2254,7 +2281,7 @@ let view: Slice[int32] = values.slice(1, 3);
 let item = view.get(0);
 ```
 
-Commonly used methods: `get`, `len`, `sub`, `to_vec`, `iter`.`to_vec()` creates a shallow copy in a new `Vec[T]`; `view[index]` can be written, but `view[index] = value;` cannot be written.
+Commonly used methods: `get`, `len`, `contains`, `sub`, `to_vec`, `iter`.`contains(value)` requires the element type to implement `PartialEq`. `to_vec()` creates a shallow copy in a new `Vec[T]`; `view[index]` can be written, but `view[index] = value;` cannot be written.
 
 ### `HashMap[K, V]`
 
@@ -2369,9 +2396,9 @@ Current public entrances include:
 - `ascii::is_ascii`, character-class predicates, ASCII case conversion and comparison, and `escape_default`
 - `bincode::standard`, `legacy`, configuration builders, serde `Serialize` and `Deserialize` re-exports, `encode_to_vec`, and `decode_from_slice`
 - `bytes::Bytes`, a mutable byte buffer with conversion to and from strings and `Vec[uint8]`
-- `cmp::Ordering`, `Ord`, `Reverse`, comparison helpers, and two-value minimum, maximum, and clamping operations
+- `cmp::Ordering`, `Ord`, `Reverse`, comparison helpers, and two-value minimum, maximum, and clamping operations. `Ordering` is a builtin type re-exported by `cmp`.
 - `collections::Arena`, `BitSet`, `Deque`, `HashSet`, `IndexMap`, `IndexVec`, `Interner`, and `Stack`; `HashSet::to_vec` returns a snapshot of its keys
-- `collections::sort`, `stable_sort`, `binary_search`, `min`, `max`, comparator-based variants, `position_by`, `dedup_by`, and `dedup`
+- `collections::sort`, `stable_sort`, `binary_search`, `min`, `max`, and their comparator variants. The sorting, search, selection, and deduplication methods on `Vec[T]` are the canonical forms.
 - `crypto::hash` one-shot SHA-256 and `crypto::rand` operating-system random bytes
 - `error::Error`, `ErrorKind`, `Details`, and stable error-kind code conversion
 - `env::args`, current-directory and executable queries, and environment-variable reads
@@ -2387,7 +2414,7 @@ Current public entrances include:
 - `serde::Value`, `Serializer`, `Deserializer`, `Serialize`, `Deserialize`, `value_serializer`, `value_deserializer`, `to_value`, and `from_value`
 - `task::Scope`, `Task[T]`, `CancelToken`, `WaitResult[T]`, `scope`, and `try_scope`
 - `testing::fail`, boolean/equality assertions, and `Option`/`Result` shape assertions
-- `text::StringBuilder`, byte-offset search, character iteration and slicing, trimming, splitting, replacement, joining, repetition, and explicit ASCII operations
+- `text::StringBuilder`; the byte-offset search, character iteration and slicing, trimming, splitting, replacement, joining, repetition, and explicit ASCII operations are string methods
 - `toml::Value`, `parse`, `encode`, serde `Serialize` and `Deserialize` re-exports, `to_value`, `from_value`, `to_string`, and `from_string`
 - `time::Duration`, `Instant`, `SystemTime`, `sleep`, and `sleep_with`
 - `utf8::validate`, `decode`, `encode`, `encoded_len`, and `Utf8Error`
@@ -2428,7 +2455,7 @@ The existing `io`, `fs`, `path`, `env`, `process`, and `num` string-error APIs r
 
 Importing `utf8::BytesUtf8` adds `Bytes::to_string_utf8`, which returns `Utf8Error`. The original `Bytes::to_string` string-error method remains available for bootstrap and source compatibility.
 
-`text::find`, `text::rfind`, and `text::find_bytes` return byte offsets. `text::char_indices` yields byte offsets paired with Unicode scalar values, `text::char_count` counts scalar values, and `text::slice_chars` uses scalar-value indexes and returns `None` for an invalid range.
+`text::find`, `text::rfind`, and `text::find_bytes` return byte offsets; the string methods `find`, `rfind`, and `find_bytes` are the canonical forms. `text::char_indices` yields byte offsets paired with Unicode scalar values, `text::char_count` counts scalar values, and `text::slice_chars` uses scalar-value indexes and returns `None` for an invalid range.
 
 `std::unicode` fixes its public data version to Unicode 15.0.0. Character predicates operate on one Unicode scalar value. `lowercase` and `uppercase` apply Unicode case mapping to a complete string. `case_fold` uses the checked-in table generated by `tools/generate_unicode_casefold.py`, supports multi-scalar folds, and is locale independent.
 

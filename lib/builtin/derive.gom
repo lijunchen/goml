@@ -596,7 +596,7 @@ fn derive_call_site_trait(trait_name: string, method_name: string, values: MetaE
 
 #[comptime_derive]
 fn derive_ordering(name: string) -> MetaExpr {
-    meta_expr_constructor("std::cmp::Ordering::" + name, meta_expr_list_new())
+    meta_expr_constructor("Ordering::" + name, meta_expr_list_new())
 }
 
 #[comptime_derive]
@@ -638,7 +638,7 @@ fn derive_partial_ord_step(input: DeriveInput, left: MetaExpr, right: MetaExpr, 
     let equal = meta_pattern_list_new();
     meta_pattern_list_push(
         equal,
-        meta_pattern_constructor("std::cmp::Ordering::Equal", meta_pattern_list_new()),
+        meta_pattern_constructor("Ordering::Equal", meta_pattern_list_new()),
     );
     meta_arm_list_push(arms, meta_arm(meta_pattern_constructor("Option::Some", equal), rest));
     let ordering = derive_fresh_name(input, "ordering");
@@ -856,7 +856,7 @@ fn derive_add_call_site_predicates(input: DeriveInput, output: DeriveOutput, tra
 pub fn derive_partial_ord(input: DeriveInput) -> DeriveOutput {
     let output = derive_output_new_call_site(input, "std::cmp::PartialOrd");
     derive_add_call_site_predicates(input, output, "std::cmp::PartialOrd");
-    let ordering = meta_type_call_site("std::cmp::Ordering");
+    let ordering = meta_type_call_site("Ordering");
     let values = meta_type_list_new();
     meta_type_list_push(values, ordering);
     let ret_ty = meta_type_apply(meta_type_call_site("Option"), values);
@@ -885,7 +885,7 @@ pub fn derive_ord(input: DeriveInput) -> DeriveOutput {
         meta_method(
             "cmp",
             derive_eq_params(input),
-            meta_type_call_site("std::cmp::Ordering"),
+            meta_type_call_site("Ordering"),
             if derive_item_kind(input) == 0 {
                 derive_struct_ord_body(input, false)
             } else {

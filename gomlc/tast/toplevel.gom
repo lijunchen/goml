@@ -3270,6 +3270,24 @@ fn check_file_with_package(
             },
         )
     }
+    for index in 0..ctx.enums.len() {
+        ctx.enums.set(index, resolve_enum_info_signature(ctx, ctx.enums[index]))
+    }
+    for index in 0..ctx.structs.len() {
+        ctx.structs.set(index, resolve_struct_info_signature(ctx, ctx.structs[index]))
+    }
+    for index in 0..ctx.traits.len() {
+        ctx.traits.set(index, resolve_trait_info_signature(ctx, ctx.traits[index]))
+    }
+    for index in 0..ctx.functions.len() {
+        ctx.functions.set(index, resolve_function_scheme_signature(ctx, ctx.functions[index]))
+    }
+    for index in 0..ctx.methods.len() {
+        ctx.methods.set(index, resolve_method_info_signature(ctx, ctx.methods[index]))
+    }
+    for index in 0..ctx.impls.len() {
+        ctx.impls.set(index, resolve_impl_info_signature(ctx, ctx.impls[index]))
+    }
     for item in value.items {
         match item {
             TypeAlias(alias) => {

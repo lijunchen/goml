@@ -88,6 +88,294 @@ impl string {
             },
         )
     }
+
+    fn starts_with_at(self: string, start: int, prefix: string) -> bool {
+        let value_len = self.byte_len();
+        let prefix_len = prefix.byte_len();
+        if start < 0 || start > value_len || prefix_len > value_len - start {
+            false
+        } else {
+            let end = start + prefix_len;
+            self.is_char_boundary(start) && self.is_char_boundary(end)
+                && self.byte_slice(start, end) == prefix
+        }
+    }
+
+    fn find(self: string, expected: string) -> Option[int] {
+        string_find_from(self, expected, 0)
+    }
+
+    fn find_bytes(self: string, expected: string) -> Option[int] {
+        self.find(expected)
+    }
+
+    fn char_count(self: string) -> int {
+        let mut count = 0;
+        for _ in self.chars() {
+            count += 1;
+        }
+        count
+    }
+
+    fn slice_chars(self: string, start: int, end: int) -> Option[string] {
+        if start < 0 || end < start {
+            Option::None
+        } else {
+            let mut char_index = 0;
+            let mut start_byte = if start == 0 {
+                Option::Some(0)
+            } else {
+                Option::None
+            };
+            let mut end_byte = if end == 0 {
+                Option::Some(0)
+            } else {
+                Option::None
+            };
+            for item in self.char_indices() {
+                let (byte_index, _) = item;
+                if char_index == start {
+                    start_byte = Option::Some(byte_index);
+                } else {};
+                if char_index == end {
+                    end_byte = Option::Some(byte_index);
+                } else {};
+                char_index += 1;
+            }
+            if char_index == start {
+                start_byte = Option::Some(self.byte_len());
+            } else {};
+            if char_index == end {
+                end_byte = Option::Some(self.byte_len());
+            } else {};
+            match (start_byte, end_byte) {
+                (Some(first), Some(last)) => Option::Some(self.byte_slice(first, last)),
+                _ => Option::None,
+            }
+        }
+    }
+
+    fn rfind(self: string, expected: string) -> Option[int] {
+        let value_len = self.byte_len();
+        let expected_len = expected.byte_len();
+        if expected_len > value_len {
+            Option::None
+        } else {
+            let mut start = value_len - expected_len;
+            while start >= 0 {
+                if self.starts_with_at(start, expected) {
+                    return Option::Some(start)
+                } else {
+                    start -= 1;
+                }
+            }
+            Option::None
+        }
+    }
+
+    fn trim_start(self: string) -> string {
+        let mut start = 0;
+        while start < self.byte_len() && ascii_is_whitespace(self.byte_get(start)) {
+            start += 1;
+        }
+        self.byte_slice(start, self.byte_len())
+    }
+
+    fn trim_end(self: string) -> string {
+        let mut end = self.byte_len();
+        while end > 0 && ascii_is_whitespace(self.byte_get(end - 1)) {
+            end -= 1;
+        }
+        self.byte_slice(0, end)
+    }
+
+    fn trim(self: string) -> string {
+        self.trim_start().trim_end()
+    }
+
+    fn split(self: string, separator: string) -> Vec[string] {
+        let result: Vec[string] = Vec::[];
+        let separator_len = separator.byte_len();
+        let value_len = self.byte_len();
+        if separator_len == 0 {
+            result.push(self);
+            return result
+        } else {};
+        let mut start = 0;
+        loop {
+            match string_find_from(self, separator, start) {
+                Some(index) => {
+                    result.push(self.byte_slice(start, index));
+                    start = index + separator_len;
+                },
+                None => {
+                    result.push(self.byte_slice(start, value_len));
+                    break
+                },
+            }
+        }
+        result
+    }
+
+    fn split_once(self: string, separator: string) -> Option[(string, string)] {
+        let separator_len = separator.byte_len();
+        let value_len = self.byte_len();
+        if separator_len == 0 {
+            Option::None
+        } else {
+            match self.find(separator) {
+                Some(index) => Option::Some(
+                    (self.byte_slice(0, index), self.byte_slice(index + separator_len, value_len)),
+                ),
+                None => Option::None,
+            }
+        }
+    }
+
+    fn lines(self: string) -> Vec[string] {
+        let result = self.split("\n");
+        if !result.is_empty() && result[result.len() - 1] == "" {
+            let _ = result.pop();
+        } else {};
+        for index in 0..result.len() {
+            let line = result[index];
+            if line.byte_len() > 0 && line.byte_get(line.byte_len() - 1) == b'\r' {
+                result[index] = line.byte_slice(0, line.byte_len() - 1);
+            } else {}
+        }
+        result
+    }
+
+    fn replace(self: string, expected: string, replacement: string) -> string {
+        if expected.byte_len() == 0 {
+            self
+        } else {
+            let parts: Vec[string] = Vec::[];
+            let mut start = 0;
+            loop {
+                match string_find_from(self, expected, start) {
+                    Some(index) => {
+                        parts.push(self.byte_slice(start, index));
+                        parts.push(replacement);
+                        start = index + expected.byte_len();
+                    },
+                    None => {
+                        parts.push(self.byte_slice(start, self.byte_len()));
+                        break
+                    },
+                }
+            }
+            string_concat(parts)
+        }
+    }
+
+    fn repeat(self: string, count: int) -> string {
+        if count <= 0 || self.byte_len() == 0 {
+            ""
+        } else {
+            let parts: Vec[string] = Vec::with_capacity(count);
+            for _ in 0..count {
+                parts.push(self)
+            }
+            string_concat(parts)
+        }
+    }
+
+    fn is_ascii(self: string) -> bool {
+        for index in 0..self.byte_len() {
+            if self.byte_get(index) > 127 {
+                return false
+            } else {}
+        }
+        true
+    }
+
+    fn eq_ignore_ascii_case(self: string, other: string) -> bool {
+        if self.byte_len() != other.byte_len() {
+            false
+        } else {
+            for index in 0..self.byte_len() {
+                if !ascii_eq_ignore_case(self.byte_get(index), other.byte_get(index)) {
+                    return false
+                } else {}
+            }
+            true
+        }
+    }
+
+    fn to_ascii_lowercase(self: string) -> string {
+        let values = self.to_bytes();
+        for index in 0..values.len() {
+            values[index] = ascii_to_lowercase(values[index]);
+        }
+        let (_, result) = string_from_utf8(values);
+        result
+    }
+
+    fn to_ascii_uppercase(self: string) -> string {
+        let values = self.to_bytes();
+        for index in 0..values.len() {
+            values[index] = ascii_to_uppercase(values[index]);
+        }
+        let (_, result) = string_from_utf8(values);
+        result
+    }
+}
+
+fn string_find_from(value: string, expected: string, start: int) -> Option[int] {
+    let value_len = value.byte_len();
+    let expected_len = expected.byte_len();
+    if start < 0 || start > value_len {
+        Option::None
+    } else if expected_len == 0 {
+        Option::Some(start)
+    } else if expected_len > value_len - start {
+        Option::None
+    } else {
+        let limit = value_len - expected_len;
+        let mut index = start;
+        while index <= limit {
+            if value.starts_with_at(index, expected) {
+                return Option::Some(index)
+            } else {
+                index += 1;
+            }
+        }
+        Option::None
+    }
+}
+
+fn ascii_is_whitespace(value: byte) -> bool {
+    value == b'\t' || value == b'\n' || value == b'\x0B' || value == b'\f' || value == b'\r'
+        || value == b' '
+}
+
+fn ascii_is_uppercase(value: byte) -> bool {
+    value >= b'A' && value <= b'Z'
+}
+
+fn ascii_is_lowercase(value: byte) -> bool {
+    value >= b'a' && value <= b'z'
+}
+
+fn ascii_to_lowercase(value: byte) -> byte {
+    if ascii_is_uppercase(value) {
+        value + (b'a' - b'A')
+    } else {
+        value
+    }
+}
+
+fn ascii_to_uppercase(value: byte) -> byte {
+    if ascii_is_lowercase(value) {
+        value - (b'a' - b'A')
+    } else {
+        value
+    }
+}
+
+fn ascii_eq_ignore_case(left: byte, right: byte) -> bool {
+    ascii_to_lowercase(left) == ascii_to_lowercase(right)
 }
 
 impl ToString for unit {
@@ -912,6 +1200,178 @@ impl[T] Vec[T] {
             },
         )
     }
+
+    fn position(self: Self, predicate: (T) -> bool) -> Option[int] {
+        for index in 0..self.len() {
+            if predicate(self[index]) {
+                return Option::Some(index)
+            } else {}
+        }
+        Option::None
+    }
+
+    fn stable_sort_by(self: Self, compare: (T, T) -> int) -> unit {
+        let length = self.len();
+        if length < 2 {
+            return
+        } else {};
+        let buffer: Vec[T] = Vec::with_capacity(length);
+        for index in 0..length {
+            buffer.push(self[index])
+        }
+        let mut width = 1;
+        while width < length {
+            let mut left = 0;
+            while left < length {
+                let middle = smaller(left + width, length);
+                let right = smaller(middle + width, length);
+                let mut first = left;
+                let mut second = middle;
+                let mut output = left;
+                while first < middle && second < right {
+                    if compare(self[first], self[second]) <= 0 {
+                        buffer[output] = self[first];
+                        first += 1;
+                    } else {
+                        buffer[output] = self[second];
+                        second += 1;
+                    };
+                    output += 1;
+                }
+                while first < middle {
+                    buffer[output] = self[first];
+                    first += 1;
+                    output += 1;
+                }
+                while second < right {
+                    buffer[output] = self[second];
+                    second += 1;
+                    output += 1;
+                }
+                left = right;
+            }
+            for index in 0..length {
+                self[index] = buffer[index];
+            }
+            width = if width > length / 2 {
+                length
+            } else {
+                width * 2
+            };
+        }
+    }
+
+    fn sort_by(self: Self, compare: (T, T) -> int) -> unit {
+        self.stable_sort_by(compare)
+    }
+
+    fn sort_by_ordering(self: Self, compare: (T, T) -> Ordering) -> unit {
+        self.sort_by(|left: T, right: T| compare(left, right).to_int())
+    }
+
+    fn stable_sort_by_ordering(self: Self, compare: (T, T) -> Ordering) -> unit {
+        self.stable_sort_by(|left: T, right: T| compare(left, right).to_int())
+    }
+
+    fn binary_search_by(self: Self, compare: (T) -> int) -> Option[int] {
+        let mut low = 0;
+        let mut high = self.len();
+        while low < high {
+            let middle = low + (high - low) / 2;
+            if compare(self[middle]) < 0 {
+                low = middle + 1;
+            } else {
+                high = middle;
+            }
+        }
+        if low < self.len() && compare(self[low]) == 0 {
+            Option::Some(low)
+        } else {
+            Option::None
+        }
+    }
+
+    fn binary_search_by_ordering(self: Self, compare: (T) -> Ordering) -> Option[int] {
+        self.binary_search_by(|value: T| compare(value).to_int())
+    }
+
+    fn min_by(self: Self, compare: (T, T) -> int) -> Option[T] {
+        if self.is_empty() {
+            Option::None
+        } else {
+            let mut best = self[0];
+            for index in 1..self.len() {
+                let value = self[index];
+                if compare(value, best) < 0 {
+                    best = value;
+                } else {}
+            }
+            Option::Some(best)
+        }
+    }
+
+    fn max_by(self: Self, compare: (T, T) -> int) -> Option[T] {
+        if self.is_empty() {
+            Option::None
+        } else {
+            let mut best = self[0];
+            for index in 1..self.len() {
+                let value = self[index];
+                if compare(value, best) > 0 {
+                    best = value;
+                } else {}
+            }
+            Option::Some(best)
+        }
+    }
+
+    fn min_by_ordering(self: Self, compare: (T, T) -> Ordering) -> Option[T] {
+        self.min_by(|left: T, right: T| compare(left, right).to_int())
+    }
+
+    fn max_by_ordering(self: Self, compare: (T, T) -> Ordering) -> Option[T] {
+        self.max_by(|left: T, right: T| compare(left, right).to_int())
+    }
+
+    fn dedup_by(self: Self, equal: (T, T) -> bool) -> unit {
+        if self.len() < 2 {
+            return
+        } else {};
+        let mut output = 1;
+        for index in 1..self.len() {
+            let value = self[index];
+            if !equal(self[output - 1], value) {
+                self[output] = value;
+                output += 1;
+            } else {}
+        }
+        self.truncate(output)
+    }
+}
+
+fn smaller(left: int, right: int) -> int {
+    if left < right {
+        left
+    } else {
+        right
+    }
+}
+
+impl[T: ToString] Vec[T] {
+    fn join(self: Self, separator: string) -> string {
+        let parts: Vec[string] = Vec::with_capacity(self.len());
+        for index in 0..self.len() {
+            parts.push(self[index].to_string())
+        }
+        let result: Vec[string] = Vec::with_capacity(parts.len() * 2);
+        for index in 0..parts.len() {
+            if index > 0 {
+                result.push(separator)
+            } else {};
+            result.push(parts[index])
+        }
+        string_concat(result)
+    }
 }
 
 impl[T: PartialEq] Vec[T] {
@@ -919,6 +1379,36 @@ impl[T: PartialEq] Vec[T] {
         let mut index = 0;
         while index < self.len() {
             if PartialEq::eq(self[index], expected) {
+                return true
+            } else {}
+            index += 1;
+        }
+        false
+    }
+
+    fn dedup(self: Self) -> unit {
+        self.dedup_by(|left: T, right: T| PartialEq::eq(left, right))
+    }
+}
+
+impl[T: PartialEq] Slice[T] {
+    fn contains(self: Self, expected: T) -> bool {
+        let mut index = 0;
+        while index < self.len() {
+            if PartialEq::eq(self[index], expected) {
+                return true
+            } else {}
+            index += 1;
+        }
+        false
+    }
+}
+
+impl[T: PartialEq] FrozenVec[T] {
+    fn contains(self: Self, expected: T) -> bool {
+        let mut index = 0;
+        while index < self.len() {
+            if PartialEq::eq(self.get(index), expected) {
                 return true
             } else {}
             index += 1;

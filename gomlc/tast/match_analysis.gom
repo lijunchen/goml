@@ -733,6 +733,11 @@ fn coverage_builtin_domain(name: string, ty: Type) -> Option[Vec[CoverageConstru
         result.push(CoverageConstructor { key: coverage_enum_key(name, 0), fields: Vec::[args[0]] });
         result.push(CoverageConstructor { key: coverage_enum_key(name, 1), fields: Vec::[args[1]] });
         Option::Some(result)
+    } else if short_name(name) == "Ordering" && args.is_empty() {
+        result.push(CoverageConstructor { key: coverage_enum_key(name, 0), fields: Vec::[] });
+        result.push(CoverageConstructor { key: coverage_enum_key(name, 1), fields: Vec::[] });
+        result.push(CoverageConstructor { key: coverage_enum_key(name, 2), fields: Vec::[] });
+        Option::Some(result)
     } else {
         Option::None
     }
@@ -1548,6 +1553,14 @@ fn coverage_enum_witness_text(
                 variant = "Ok";
             } else {
                 variant = "Err";
+            }
+        } else if short_name(name) == "Ordering" {
+            if constructor.key == coverage_enum_key(name, 0) {
+                variant = "Less";
+            } else if constructor.key == coverage_enum_key(name, 1) {
+                variant = "Equal";
+            } else {
+                variant = "Greater";
             }
         } else {},
     };

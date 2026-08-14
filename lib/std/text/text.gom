@@ -1,48 +1,15 @@
 package text;
 
-use std::ascii;
-
 pub fn starts_with_at(value: string, start: int, prefix: string) -> bool {
-    let value_len = value.byte_len();
-    let prefix_len = prefix.byte_len();
-    if start < 0 || start > value_len || prefix_len > value_len - start {
-        false
-    } else {
-        let end = start + prefix_len;
-        value.is_char_boundary(start) && value.is_char_boundary(end)
-            && value.byte_slice(start, end) == prefix
-    }
-}
-
-fn find_from(value: string, expected: string, start: int) -> Option[int] {
-    let value_len = value.byte_len();
-    let expected_len = expected.byte_len();
-    if start < 0 || start > value_len {
-        Option::None
-    } else if expected_len == 0 {
-        Option::Some(start)
-    } else if expected_len > value_len - start {
-        Option::None
-    } else {
-        let limit = value_len - expected_len;
-        let mut index = start;
-        while index <= limit {
-            if starts_with_at(value, index, expected) {
-                return Option::Some(index)
-            } else {
-                index += 1;
-            }
-        }
-        Option::None
-    }
+    value.starts_with_at(start, prefix)
 }
 
 pub fn find(value: string, expected: string) -> Option[int] {
-    find_from(value, expected, 0)
+    value.find(expected)
 }
 
 pub fn find_bytes(value: string, expected: string) -> Option[int] {
-    find(value, expected)
+    value.find_bytes(expected)
 }
 
 pub fn char_indices(value: string) -> FnIterator[(int, char)] {
@@ -50,231 +17,65 @@ pub fn char_indices(value: string) -> FnIterator[(int, char)] {
 }
 
 pub fn char_count(value: string) -> int {
-    let mut count = 0;
-    for _ in value.chars() {
-        count += 1;
-    }
-    count
+    value.char_count()
 }
 
 pub fn slice_chars(value: string, start: int, end: int) -> Option[string] {
-    if start < 0 || end < start {
-        Option::None
-    } else {
-        let mut char_index = 0;
-        let mut start_byte = if start == 0 {
-            Option::Some(0)
-        } else {
-            Option::None
-        };
-        let mut end_byte = if end == 0 {
-            Option::Some(0)
-        } else {
-            Option::None
-        };
-        for item in value.char_indices() {
-            let (byte_index, _) = item;
-            if char_index == start {
-                start_byte = Option::Some(byte_index);
-            } else {};
-            if char_index == end {
-                end_byte = Option::Some(byte_index);
-            } else {};
-            char_index += 1;
-        }
-        if char_index == start {
-            start_byte = Option::Some(value.byte_len());
-        } else {};
-        if char_index == end {
-            end_byte = Option::Some(value.byte_len());
-        } else {};
-        match (start_byte, end_byte) {
-            (Some(first), Some(last)) => Option::Some(value.byte_slice(first, last)),
-            _ => Option::None,
-        }
-    }
+    value.slice_chars(start, end)
 }
 
 pub fn rfind(value: string, expected: string) -> Option[int] {
-    let value_len = value.byte_len();
-    let expected_len = expected.byte_len();
-    if expected_len > value_len {
-        Option::None
-    } else {
-        let mut start = value_len - expected_len;
-        while start >= 0 {
-            if starts_with_at(value, start, expected) {
-                return Option::Some(start)
-            } else {
-                start -= 1;
-            }
-        }
-        Option::None
-    }
+    value.rfind(expected)
 }
 
 pub fn trim_start(value: string) -> string {
-    let mut start = 0;
-    while start < value.byte_len() && ascii::is_whitespace(value.byte_get(start)) {
-        start += 1;
-    }
-    value.byte_slice(start, value.byte_len())
+    value.trim_start()
 }
 
 pub fn trim_end(value: string) -> string {
-    let mut end = value.byte_len();
-    while end > 0 && ascii::is_whitespace(value.byte_get(end - 1)) {
-        end -= 1;
-    }
-    value.byte_slice(0, end)
+    value.trim_end()
 }
 
 pub fn trim(value: string) -> string {
-    trim_end(trim_start(value))
+    value.trim()
 }
 
 pub fn split(value: string, separator: string) -> Vec[string] {
-    let result: Vec[string] = Vec::[];
-    let separator_len = separator.byte_len();
-    let value_len = value.byte_len();
-    if separator_len == 0 {
-        result.push(value);
-        return result
-    } else {};
-    let mut start = 0;
-    loop {
-        match find_from(value, separator, start) {
-            Some(index) => {
-                result.push(value.byte_slice(start, index));
-                start = index + separator_len;
-            },
-            None => {
-                result.push(value.byte_slice(start, value_len));
-                break
-            },
-        }
-    }
-    result
+    value.split(separator)
 }
 
 pub fn split_once(value: string, separator: string) -> Option[(string, string)] {
-    let separator_len = separator.byte_len();
-    let value_len = value.byte_len();
-    if separator_len == 0 {
-        Option::None
-    } else {
-        match find(value, separator) {
-            Some(index) => Option::Some(
-                (value.byte_slice(0, index), value.byte_slice(index + separator_len, value_len)),
-            ),
-            None => Option::None,
-        }
-    }
+    value.split_once(separator)
 }
 
 pub fn lines(value: string) -> Vec[string] {
-    let result = split(value, "\n");
-    if !result.is_empty() && result[result.len() - 1] == "" {
-        let _ = result.pop();
-    } else {};
-    for index in 0..result.len() {
-        let line = result[index];
-        if line.byte_len() > 0 && line.byte_get(line.byte_len() - 1) == b'\r' {
-            result[index] = line.byte_slice(0, line.byte_len() - 1);
-        } else {}
-    }
-    result
+    value.lines()
 }
 
 pub fn replace(value: string, expected: string, replacement: string) -> string {
-    if expected.byte_len() == 0 {
-        value
-    } else {
-        let builder = StringBuilder::with_capacity(value.byte_len());
-        let mut start = 0;
-        loop {
-            match find_from(value, expected, start) {
-                Some(index) => {
-                    builder.write_string(value.byte_slice(start, index));
-                    builder.write_string(replacement);
-                    start = index + expected.byte_len();
-                },
-                None => {
-                    builder.write_string(value.byte_slice(start, value.byte_len()));
-                    break
-                },
-            }
-        }
-        builder.finish()
-    }
+    value.replace(expected, replacement)
 }
 
 pub fn join(values: Vec[string], separator: string) -> string {
-    let mut capacity = separator.byte_len() * values.len();
-    for value in values {
-        capacity += value.byte_len();
-    }
-    if !values.is_empty() {
-        capacity -= separator.byte_len();
-    } else {};
-    let builder = StringBuilder::with_capacity(capacity);
-    for index in 0..values.len() {
-        if index > 0 {
-            builder.write_string(separator)
-        } else {};
-        builder.write_string(values[index])
-    }
-    builder.finish()
+    values.join(separator)
 }
 
 pub fn repeat(value: string, count: int) -> string {
-    if count <= 0 || value.byte_len() == 0 {
-        ""
-    } else {
-        let builder = StringBuilder::with_capacity(value.byte_len() * count);
-        for _ in 0..count {
-            builder.write_string(value)
-        }
-        builder.finish()
-    }
+    value.repeat(count)
 }
 
 pub fn is_ascii(value: string) -> bool {
-    for index in 0..value.byte_len() {
-        if value.byte_get(index) > 127 {
-            return false
-        } else {}
-    }
-    true
+    value.is_ascii()
 }
 
 pub fn eq_ignore_ascii_case(left: string, right: string) -> bool {
-    if left.byte_len() != right.byte_len() {
-        false
-    } else {
-        for index in 0..left.byte_len() {
-            if !ascii::eq_ignore_case(left.byte_get(index), right.byte_get(index)) {
-                return false
-            } else {}
-        }
-        true
-    }
+    left.eq_ignore_ascii_case(right)
 }
 
 pub fn to_ascii_lowercase(value: string) -> string {
-    let values = value.to_bytes();
-    for index in 0..values.len() {
-        values[index] = ascii::to_lowercase(values[index]);
-    }
-    let (_, result) = string_from_utf8(values);
-    result
+    value.to_ascii_lowercase()
 }
 
 pub fn to_ascii_uppercase(value: string) -> string {
-    let values = value.to_bytes();
-    for index in 0..values.len() {
-        values[index] = ascii::to_uppercase(values[index]);
-    }
-    let (_, result) = string_from_utf8(values);
-    result
+    value.to_ascii_uppercase()
 }
