@@ -18,6 +18,7 @@ fn test_builtins(counter: Ref[int]) -> File {
                 structs: Vec::new(),
                 type_instances: Vec::new(),
                 constants: Vec::new(),
+                statics: Vec::new(),
             }
         },
     }
@@ -130,6 +131,7 @@ fn rejects_residual_comptime_nodes() -> unit {
         enums: Vec::[],
         structs: Vec::[],
         constants: Vec::[],
+        statics: Vec::[],
     };
     let lowered = lower(
         tast::CheckResult {
@@ -556,6 +558,7 @@ fn validates_core_binding_types() -> unit {
             structs: file.structs,
             type_instances: file.type_instances,
             constants: file.constants,
+            statics: file.statics,
         },
     ) {
         Ok(_) => testing::fail("expected invalid Core IR"),

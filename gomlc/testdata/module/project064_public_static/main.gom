@@ -1,0 +1,8 @@
+package main;
+
+use test::public_static::cache;
+
+fn main() -> unit {
+    println(cache::value().get(0).to_string());
+    println(cache::VALUE.get_or_init(|| Vec::[9].freeze()).get(1).to_string())
+}

@@ -1,0 +1,14 @@
+static VALUES: OnceCell[FrozenVec[int]] = OnceCell::new();
+
+fn values() -> FrozenVec[int] {
+    VALUES.get_or_init(|| Vec::[1, 2, 3].freeze())
+}
+
+fn main() -> unit {
+    let frozen = values();
+    let copy = frozen.to_vec();
+    copy.set(0, 9);
+    println(frozen.get(0).to_string());
+    println(copy.get(0).to_string());
+    println(values().get(1).to_string())
+}

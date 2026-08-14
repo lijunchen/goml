@@ -19,6 +19,7 @@ fn test_builtins(counter: Ref[int]) -> core::File {
                 structs: Vec::new(),
                 type_instances: Vec::new(),
                 constants: Vec::new(),
+                statics: Vec::new(),
             }
         },
     }
@@ -35,6 +36,7 @@ fn test_prelude(builtins: core::File, counter: Ref[int]) -> core::File {
                 structs: Vec::new(),
                 type_instances: Vec::new(),
                 constants: Vec::new(),
+                statics: Vec::new(),
             }
         },
     }
@@ -93,6 +95,7 @@ fn core_file_with_residual_type(ty: core::Type) -> core::File {
         structs: file.structs,
         type_instances: file.type_instances,
         constants: file.constants,
+        statics: file.statics,
     }
 }
 
@@ -151,6 +154,7 @@ fn rejects_invalid_mono_nominal_types() -> unit {
             structs: file.structs,
             type_instances: file.type_instances,
             constants: file.constants,
+            statics: file.statics,
         },
     ) {
         Ok(_) => testing::fail("expected invalid Mono IR"),

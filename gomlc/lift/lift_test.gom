@@ -24,6 +24,7 @@ fn lower_source(source: string) -> File {
                 structs: Vec::[],
                 type_instances: Vec::[],
                 constants: Vec::[],
+                statics: Vec::[],
                 closure_defs: Vec::[],
             }
         },
@@ -152,6 +153,7 @@ fn rejects_mismatched_closure_metadata() -> unit {
         structs: file.structs,
         type_instances: file.type_instances,
         constants: file.constants,
+        statics: file.statics,
         closure_defs: Vec::[
             repr::ClosureDef {
                 environment: definition.environment,
@@ -206,6 +208,7 @@ fn rejects_closures_with_non_function_types() -> unit {
             structs: source.structs,
             type_instances: source.type_instances,
             constants: source.constants,
+            statics: source.statics,
         },
     ) {
         Ok(_) => testing::fail("expected invalid closure type"),

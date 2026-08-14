@@ -121,7 +121,13 @@ fn source_interface(source: string) -> artifact::ArtifactInterfaceUnit {
         Some(value) => value,
         None => {
             testing::fail("expected source interface TAST");
-            tast::File { items: Vec::[], enums: Vec::[], structs: Vec::[], constants: Vec::[] }
+            tast::File {
+                items: Vec::[],
+                enums: Vec::[],
+                structs: Vec::[],
+                constants: Vec::[],
+                statics: Vec::[],
+            }
         },
     };
     let exports = artifact_package_exports(

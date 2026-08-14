@@ -19,6 +19,7 @@ fn checked_file(source: string) -> File {
                 enums: Vec::new(),
                 structs: Vec::new(),
                 constants: Vec::new(),
+                statics: Vec::new(),
             }
         },
     }
@@ -292,7 +293,7 @@ fn checks_value_break_types_across_loop_paths() -> unit {
 #[test]
 fn checks_block_and_byte_string_types() -> unit {
     let valid = checked_diagnostics(
-        "fn answer() -> int { { let base = 40; base + 2 } } fn main() -> unit { let empty = b\"\"; let bytes: Vec[byte] = br#\"raw\"#; let _ = empty.len() + bytes.len(); }",
+        "fn answer() -> int { { let base = 40; base + 2 } } fn main() -> unit { let empty = b\"\"; let bytes: Vec[byte] = br#\"raw\"#; let fixed: [byte; 3] = b\"raw\"; let _ = empty.len() + bytes.len() + fixed[0].to_int(); }",
     );
     testing::assert_eq(valid.len(), 0);
     let invalid = checked_diagnostics("fn wrong() -> Vec[int] { b\"value\" }");
@@ -336,6 +337,7 @@ fn checked_file_with_dependencies(source: string, dependencies: Vec[hir::File]) 
                 enums: Vec::new(),
                 structs: Vec::new(),
                 constants: Vec::new(),
+                statics: Vec::new(),
             }
         },
     }
@@ -356,6 +358,7 @@ fn checked_package_file_with_dependencies(source: string, dependencies: Vec[hir:
                 enums: Vec::new(),
                 structs: Vec::new(),
                 constants: Vec::new(),
+                statics: Vec::new(),
             }
         },
     }
@@ -1376,8 +1379,41 @@ fn checks_practical_expression_syntax() -> unit {
 
 #[test]
 fn rejects_uninferred_collection_literals() -> unit {
-    let empty = checked_diagnostics("fn main() -> unit { let values = Vec::[]; let _ = values; }");
-    testing::assert(has_diagnostic(empty, "Could not infer type"))
+    let empty = checked_diagnostics(
+        "fn main() -> unit { let values = Vec::[]; let entries = HashMap::{}; }",
+    );
+    testing::assert(has_diagnostic(empty, "Cannot infer element type of empty vector literal"));
+    testing::assert(
+        has_diagnostic(empty, "Cannot infer key or value type of empty hash map literal"),
+    );
+    testing::assert(
+        match empty.get(0).span {
+            Some(_) => true,
+            None => false,
+        },
+    );
+    testing::assert(
+        match empty.get(0).primary_label {
+            Some(_) => true,
+            None => false,
+        },
+    )
+}
+
+#[test]
+fn infers_empty_vectors_from_later_builtin_method_arguments() -> unit {
+    let diagnostics = checked_diagnostics(
+        "fn main() -> unit { let values = Vec::[]; values.push(Vec::[1, 2]); }",
+    );
+    testing::assert_eq(diagnostics.len(), 0)
+}
+
+#[test]
+fn infers_empty_vectors_from_return_and_call_context() -> unit {
+    let diagnostics = checked_diagnostics(
+        "fn values() -> Option[Vec[Vec[uint16]]] { Option::Some(Vec::[]) } fn main() -> unit { let values = values().unwrap_or(Vec::[]); let _ = values.len(); }",
+    );
+    testing::assert_eq(diagnostics.len(), 0)
 }
 
 #[test]
@@ -3036,6 +3072,54 @@ fn accepts_transparent_aliases_bytes_and_forward_constants() -> unit {
     let source = "type Pair[T] = (T, T); type Marker = byte; type Label = string; struct Entry { marker: Marker, label: Label } enum Event { Mark(Marker), Pair(Pair[int32]) } trait Read { fn read(self: Self) -> Marker; } impl Read for Entry { fn read(self: Entry) -> Marker { self.marker } } const next: int32 = base + 2; const base: int32 = 0x28; const marker: Marker = b'\\xFF'; fn sum(value: Pair[int32]) -> int32 { value.0 + value.1 } fn main() -> unit { let entry = Entry { marker, label: \"ok\" }; let raw: uint8 = entry.read(); let pair: Pair[int32] = (next, 0b10); let _ = Event::Mark(raw); let _ = Event::Pair(pair); let _ = sum(pair) + raw.to_int32(); }";
     let file = checked_file(source);
     testing::assert_eq(file.constants.len(), 3)
+}
+
+#[test]
+fn accepts_recursively_immutable_composite_constants() -> unit {
+    let source = "struct Pair { left: int, bytes: [byte; 2] } enum Choice { None, Some(Pair) } const BYTES: [byte; 3] = b\"ABC\"; const PAIR: Pair = Pair { left: 7, bytes: [8, 9] }; const CHOICE: Choice = Choice::Some(PAIR); fn main() -> unit { let _ = BYTES[0]; let _ = PAIR.left; match CHOICE { Choice::None => (), Choice::Some(_) => () } }";
+    let file = checked_file(source);
+    testing::assert_eq(file.constants.len(), 3)
+}
+
+#[test]
+fn rejects_mutable_constant_types_and_composite_patterns() -> unit {
+    let mutable = checked_diagnostics("const BAD: Vec[int] = Vec::[1]; fn main() -> unit {}");
+    testing::assert(
+        has_diagnostic(
+            mutable,
+            "constant type must be recursively immutable and cannot contain Vec, HashMap, Ref, Channel, closures, or dynamic values",
+        ),
+    );
+    let pattern = checked_diagnostics(
+        "const VALUES: [int; 2] = [1, 2]; fn check(value: [int; 2]) -> bool { match value { VALUES => true, _ => false } }",
+    );
+    testing::assert(has_diagnostic(pattern, "non-scalar constants cannot be used as patterns"));
+    let reassignment = checked_diagnostics(
+        "const VALUES: [int; 2] = [1, 2]; fn main() -> unit { VALUES = [3, 4]; }",
+    );
+    testing::assert(has_diagnostic(reassignment, "cannot assign to constant `VALUES`"))
+}
+
+#[test]
+fn checks_once_cell_statics() -> unit {
+    let file = checked_file(
+        "static VALUE: OnceCell[FrozenVec[int]] = OnceCell::new(); fn value() -> FrozenVec[int] { VALUE.get_or_init(|| Vec::[1, 2].freeze()) } fn main() -> unit { let _ = value(); }",
+    );
+    testing::assert_eq(file.statics.len(), 1);
+    let invalid_type = checked_diagnostics(
+        "static VALUE: int = OnceCell::new(); fn main() -> unit {}",
+    );
+    testing::assert(has_diagnostic(invalid_type, "static initializer must be `OnceCell::new()`"));
+    let invalid_initializer = checked_diagnostics(
+        "static VALUE: OnceCell[int] = Option::None; fn main() -> unit {}",
+    );
+    testing::assert(
+        has_diagnostic(invalid_initializer, "static initializer must be `OnceCell::new()`"),
+    );
+    let reassignment = checked_diagnostics(
+        "static VALUE: OnceCell[int] = OnceCell::new(); fn main() -> unit { VALUE = OnceCell::new(); }",
+    );
+    testing::assert(has_diagnostic(reassignment, "cannot assign to static binding `VALUE`"))
 }
 
 #[test]

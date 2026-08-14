@@ -40,6 +40,7 @@ fn verifier_file(body: Block, ret_ty: repr::Type) -> File {
         structs: Vec::[],
         type_instances: Vec::[],
         constants: Vec::[],
+        statics: Vec::[],
         closure_defs: Vec::[],
     }
 }
@@ -86,6 +87,7 @@ fn rejects_invalid_closure_pack_signatures() -> unit {
         structs: file.structs,
         type_instances: file.type_instances,
         constants: file.constants,
+        statics: file.statics,
         closure_defs: Vec::[
             repr::ClosureDef {
                 environment: definition.environment,

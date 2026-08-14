@@ -25,6 +25,7 @@ fn test_builtins(counter: Ref[int]) -> core::File {
                 structs: Vec::new(),
                 type_instances: Vec::new(),
                 constants: Vec::new(),
+                statics: Vec::new(),
             }
         },
     }
@@ -41,6 +42,7 @@ fn test_prelude(builtins: core::File, counter: Ref[int]) -> core::File {
                 structs: Vec::new(),
                 type_instances: Vec::new(),
                 constants: Vec::new(),
+                statics: Vec::new(),
             }
         },
     }
@@ -557,6 +559,7 @@ fn recognizes_recursive_joins_independently_of_their_names() -> unit {
                     structs: Vec::[],
                     type_instances: Vec::[],
                     constants: Vec::[],
+                    statics: Vec::[],
                     closure_defs: Vec::[],
                 },
             ),
@@ -616,6 +619,7 @@ fn rejects_unsupported_mutually_recursive_join_groups_before_emission() -> unit 
             structs: Vec::[],
             type_instances: Vec::[],
             constants: Vec::[],
+            statics: Vec::[],
             closure_defs: Vec::[],
         },
     ) {
@@ -648,6 +652,7 @@ fn callable_file(callable: repr::Callable) -> anf::File {
         structs: Vec::[],
         type_instances: Vec::[],
         constants: Vec::[],
+        statics: Vec::[],
         closure_defs: Vec::[],
     }
 }

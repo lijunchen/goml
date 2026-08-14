@@ -19,6 +19,7 @@ fn main() -> unit {
     let empty = b"";
     let raw = br#"raw \n bytes"#;
     let quoted = br##"quoted "text" and #"##;
+    let fixed: [byte; 3] = b"ABC";
     let nested = {
         let value = answer();
         value + loop_answer()
@@ -30,6 +31,7 @@ fn main() -> unit {
     println((plain.get(2).to_int()).to_string());
     println(raw.len().to_string());
     println(quoted.len().to_string());
+    println((fixed[2].to_int()).to_string());
     println(nested.to_string());
     if ({
         true
