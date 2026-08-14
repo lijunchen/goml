@@ -914,6 +914,19 @@ impl[T] Vec[T] {
     }
 }
 
+impl[T: PartialEq] Vec[T] {
+    fn contains(self: Self, expected: T) -> bool {
+        let mut index = 0;
+        while index < self.len() {
+            if PartialEq::eq(self[index], expected) {
+                return true
+            } else {}
+            index += 1;
+        }
+        false
+    }
+}
+
 impl[T] FrozenVec[T] {
     fn len(self: Self) -> int {
         self.values.len()

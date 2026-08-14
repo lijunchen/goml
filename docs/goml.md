@@ -2220,6 +2220,7 @@ Commonly used methods:
 - `len() -> int`
 - `capacity() -> int`
 - `is_empty() -> bool`
+- `contains(value) -> bool`
 - `reserve(additional) -> unit`
 - `truncate(len) -> unit`
 - `clear() -> unit`
@@ -2237,6 +2238,8 @@ Commonly used methods:
 `vec[index]` is equivalent to reading the element, `vec[index] = value;` modifies the element.
 
 `copy()` shallow-copies the outer backing storage. `freeze()` also copies the backing storage and returns a `FrozenVec[T]`, so later structural or element changes through aliases to the original `Vec` cannot affect the frozen value.
+
+`contains(value)` requires the element type to implement `PartialEq` and returns whether any element equals `value`.
 
 ### `FrozenVec[T]`
 

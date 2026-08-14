@@ -117,7 +117,7 @@ pub fn position_by[T](values: Vec[T], predicate: (T) -> bool) -> Option[int] {
 }
 
 pub fn contains[T: PartialEq](values: Vec[T], expected: T) -> bool {
-    position_by(values, |value: T| PartialEq::eq(value, expected)).is_some()
+    values.contains(expected)
 }
 
 pub fn min_by[T](values: Vec[T], compare: (T, T) -> int) -> Option[T] {

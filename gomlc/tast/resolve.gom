@@ -2107,6 +2107,8 @@ fn resolve_vec_method(receiver: Type, elem: Type, name: string) -> Option[Resolv
         Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Int))
     } else if name == "is_empty" {
         Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Bool))
+    } else if name == "contains" {
+        Option::Some(inherent_callable(receiver, name, two_types(receiver, elem), Type::Bool))
     } else if name == "reserve" || name == "truncate" {
         Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int), Type::Unit))
     } else if name == "clear" || name == "reverse" {
