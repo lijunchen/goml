@@ -115,7 +115,16 @@ fn builtin_source_derive_expansion(source: string) -> string {
             None => testing::fail("expected expanded derive HIR"),
         }
     }
-    let checked = tast::check_package_files_for_link_with_dependencies(files, Vec::[]);
+    let checked = match builtin_hir_files() {
+        Ok(builtin_files) => tast::check_package_files_for_link_with_environments(
+            files,
+            Vec::[tast::builtin_dependency_environment(builtin_files)],
+        ),
+        Err(error) => {
+            testing::fail(error);
+            tast::check_package_files_for_link_with_dependencies(files, Vec::[])
+        },
+    };
     if checked.diagnostics.is_empty() {} else {
         testing::fail(checked.diagnostics[0].message)
     };

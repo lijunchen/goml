@@ -473,16 +473,20 @@ fn checks_cross_file_package_definitions() -> unit {
             None => testing::fail("expected cross-file HIR"),
         }
     }
-    let checked = check_package_files_for_link_with_dependencies(
-        hir_files,
-        match implicit_prelude_hir_files() {
-            Ok(files) => files,
-            Err(error) => {
-                testing::fail(error);
-                Vec::[]
-            },
+    let dependencies: Vec[DependencyEnvironment] = Vec::[];
+    match implicit_builtin_dependency_environment() {
+        Ok(environment) => dependencies.push(environment),
+        Err(error) => testing::fail(error),
+    };
+    match implicit_prelude_hir_files() {
+        Ok(files) => {
+            for environment in dependency_environments(files) {
+                dependencies.push(environment)
+            }
         },
-    );
+        Err(error) => testing::fail(error),
+    };
+    let checked = check_package_files_for_link_with_environments(hir_files, dependencies);
     testing::assert_eq(checked.diagnostics.len(), 0);
     match checked.tast {
         Some(file) => {
@@ -2095,6 +2099,19 @@ fn checks_extended_builtin_method_catalog() -> unit {
 }
 
 #[test]
+fn checks_builtin_source_method_constraints() -> unit {
+    let diagnostics = checked_diagnostics(
+        "struct Opaque {} fn exercise(values: Vec[Opaque]) -> unit { let _ = values.contains(Opaque {}); values.dedup(); let _ = values.join(\",\"); }",
+    );
+    testing::assert(
+        has_diagnostic_containing(diagnostics, "No instance found for trait PartialEq<Opaque>"),
+    );
+    testing::assert(
+        has_diagnostic_containing(diagnostics, "No instance found for trait ToString<Opaque>"),
+    )
+}
+
+#[test]
 fn prefers_builtin_inherent_methods() -> unit {
     let source = "trait Container { fn is_empty(self: Self) -> bool; } impl Container for Vec[int32] { fn is_empty(self: Vec[int32]) -> bool { false } } fn main() -> bool { let values: Vec[int32] = Vec::new(); values.is_empty() }";
     let file = checked_file(source);
@@ -2292,7 +2309,7 @@ fn suppresses_unreachable_while_condition_type_errors() -> unit {
 }
 
 #[test]
-fn preserves_fn_iterator_static_owner() -> unit {
+fn preserves_bare_fn_iterator_static_owner() -> unit {
     let file = checked_file(
         "fn iterator() -> FnIterator[int32] { FnIterator::from_fn(|| Option::None) }",
     );
@@ -2300,21 +2317,13 @@ fn preserves_fn_iterator_static_owner() -> unit {
         Function(value) => match value.body.tail {
             Some(Call {
                 func: Callable {
-                    callable: InherentMethod {
-                        receiver_ty: App { ty: Con { name: owner }, args },
-                        method_name: name,
-                    },
+                    callable: InherentMethod { receiver_ty: Con { name: owner }, method_name: name },
                     ty: _,
                 },
                 args: _,
                 ty: _,
             }) => {
                 testing::assert_eq(owner, "FnIterator");
-                testing::assert_eq(args.len(), 1);
-                match resolve_type(args[0]) {
-                    Int32 => (),
-                    _ => testing::fail("expected int32 iterator item"),
-                };
                 testing::assert_eq(name, "from_fn")
             },
             _ => testing::fail("expected FnIterator static call"),
