@@ -10,12 +10,12 @@ fn main() -> unit {
   let v/2 = inherent#Vec#Vec[T]#new__T_dynDisplay() in
   let first/3 = 10 in
   let second/4 = 20 in
-  let _wild172 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/2, to_dyn[Display]{int32}(first/3)) in
-  let _wild173 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/2, to_dyn[Display]{int32}(second/4)) in
+  let _wild182 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/2, to_dyn[Display]{int32}(first/3)) in
+  let _wild183 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/2, to_dyn[Display]{int32}(second/4)) in
   let s/5 = inherent#Vec#Vec[T]#slice__T_dynDisplay(v/2, 0, 2) in
-  let _wild174 = println__T_string(render(@intrinsic(slice.get)(s/5, 0))) in
+  let _wild184 = println__T_string(render(@intrinsic(slice.get)(s/5, 0))) in
   let t/6 = inherent#Slice#Slice[T]#sub__T_dynDisplay(s/5, 1, 2) in
-  let _wild175 = println__T_string(render(@intrinsic(slice.get)(t/6, 0))) in
+  let _wild185 = println__T_string(render(@intrinsic(slice.get)(t/6, 0))) in
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {
@@ -34,11 +34,11 @@ fn inherent#Vec#Vec[T]#push__T_dynDisplay(
 }
 
 fn inherent#Vec#Vec[T]#slice__T_dynDisplay(
-  self/223: Vec[dyn Display],
-  start/224: int,
-  end/225: int
+  self/227: Vec[dyn Display],
+  start/228: int,
+  end/229: int
 ) -> Slice[dyn Display] {
-  @intrinsic(slice.new)(self/223, start/224, end/225)
+  @intrinsic(slice.new)(self/227, start/228, end/229)
 }
 
 fn println__T_string(value/1: string) -> unit {
@@ -46,11 +46,11 @@ fn println__T_string(value/1: string) -> unit {
 }
 
 fn inherent#Slice#Slice[T]#sub__T_dynDisplay(
-  self/235: Slice[dyn Display],
-  start/236: int,
-  end/237: int
+  self/247: Slice[dyn Display],
+  start/248: int,
+  end/249: int
 ) -> Slice[dyn Display] {
-  @intrinsic(slice.sub)(self/235, start/236, end/237)
+  @intrinsic(slice.sub)(self/247, start/248, end/249)
 }
 
 fn trait_impl#ToString#string#to_string(self/65: string) -> string {

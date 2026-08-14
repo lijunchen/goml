@@ -26,62 +26,62 @@ type AlwaysDifferent struct {
 }
 
 func main0() struct{} {
-    var t183 bool
-    t183 = false
-    var inline233 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t183)
-    _goml_runtime_core_string_println(inline233)
-    var t184 bool
-    t184 = false
-    var t185 bool = !t184
-    var inline229 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t185)
-    _goml_runtime_core_string_println(inline229)
-    var t204 bool
-    t204 = false
-    var jp189 bool
-    if t204 {
-        var t205 int = 2
-        var t206 int = 2
-        var inline218 bool = t205 == t206
-        jp189 = inline218
+    var t193 bool
+    t193 = false
+    var inline243 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t193)
+    _goml_runtime_core_string_println(inline243)
+    var t194 bool
+    t194 = false
+    var t195 bool = !t194
+    var inline239 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t195)
+    _goml_runtime_core_string_println(inline239)
+    var t214 bool
+    t214 = false
+    var jp199 bool
+    if t214 {
+        var t215 int = 2
+        var t216 int = 2
+        var inline228 bool = t215 == t216
+        jp199 = inline228
     } else {
-        jp189 = false
+        jp199 = false
     }
-    var inline225 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(jp189)
-    _goml_runtime_core_string_println(inline225)
-    var t190 AlwaysDifferent = AlwaysDifferent{
+    var inline235 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(jp199)
+    _goml_runtime_core_string_println(inline235)
+    var t200 AlwaysDifferent = AlwaysDifferent{
         value: 1,
     }
-    var t191 AlwaysDifferent = AlwaysDifferent{
+    var t201 AlwaysDifferent = AlwaysDifferent{
         value: 2,
     }
-    var left_array__6 [2]AlwaysDifferent = [2]AlwaysDifferent{t190, t191}
-    var t192 AlwaysDifferent = AlwaysDifferent{
+    var left_array__6 [2]AlwaysDifferent = [2]AlwaysDifferent{t200, t201}
+    var t202 AlwaysDifferent = AlwaysDifferent{
         value: 1,
     }
-    var t193 AlwaysDifferent = AlwaysDifferent{
+    var t203 AlwaysDifferent = AlwaysDifferent{
         value: 2,
     }
-    var right_array__7 [2]AlwaysDifferent = [2]AlwaysDifferent{t192, t193}
+    var right_array__7 [2]AlwaysDifferent = [2]AlwaysDifferent{t202, t203}
     array_get__Array_2_15AlwaysDifferent(left_array__6, 0)
     array_get__Array_2_15AlwaysDifferent(right_array__7, 0)
-    var t198 bool
-    t198 = false
-    var jp195 bool
-    if t198 {
+    var t208 bool
+    t208 = false
+    var jp205 bool
+    if t208 {
         array_get__Array_2_15AlwaysDifferent(left_array__6, 1)
         array_get__Array_2_15AlwaysDifferent(right_array__7, 1)
-        jp195 = false
+        jp205 = false
     } else {
-        jp195 = false
+        jp205 = false
     }
-    var inline221 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(jp195)
-    _goml_runtime_core_string_println(inline221)
+    var inline231 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(jp205)
+    _goml_runtime_core_string_println(inline231)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
-    var t216 string = _goml_runtime_core_bool_to_string(self__64)
-    return t216
+    var t226 string = _goml_runtime_core_bool_to_string(self__64)
+    return t226
 }
 
 func main() {

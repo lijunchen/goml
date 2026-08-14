@@ -1,0 +1,107 @@
+static VALUE: OnceCell__int = OnceCell::new();
+
+fn main() -> unit {
+  let results/0 = inherent#Channel#Channel[T]#new__T_int(2) in
+  let _wild182 =
+    go pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](
+      closure_env_main_1 { results_0: results/0 }
+    ) in
+  let _wild183 =
+    go pack_closure[inherent#closure_env_main_3#closure_env_main_3#apply](
+      closure_env_main_3 { results_0: results/0 }
+    ) in
+  let first/1 =
+    inherent#Option#Option[T]#unwrap_or__T_int(
+      inherent#Channel#Channel[T]#recv__T_int(results/0),
+      0
+    ) in
+  let second/2 =
+    inherent#Option#Option[T]#unwrap_or__T_int(
+      inherent#Channel#Channel[T]#recv__T_int(results/0),
+      0
+    ) in
+  println__T_string(trait_impl#ToString#bool#to_string((first/1 == second/2)))
+}
+
+fn inherent#Channel#Channel[T]#new__T_int(capacity/274: int) -> Channel[int] {
+  @intrinsic(channel.new)(capacity/274)
+}
+
+fn inherent#OnceCell#OnceCell[T]#get_or_init__T_int(
+  self/241: OnceCell__int,
+  init/242: () -> int
+) -> int {
+  @intrinsic(once_cell.get_or_init)(self/241, init/242)
+}
+
+fn inherent#Channel#Channel[T]#send__T_int(self/275: Channel[int], value/276: int) -> unit {
+  @intrinsic(channel.send)(self/275, value/276)
+}
+
+fn inherent#Channel#Channel[T]#recv__T_int(self/277: Channel[int]) -> Option__int {
+  let mtmp153 = @intrinsic(channel.recv)(self/277) in
+  let x154 = mtmp153.0 in
+  let x155 = mtmp153.1 in
+  let ok/279 = x155 in
+  let value/278 = x154 in
+  if ok/279 {
+      Option__int::Some(value/278)
+  } else {
+      Option__int::None
+  }
+}
+
+fn inherent#Option#Option[T]#unwrap_or__T_int(self/297: Option__int, fallback/298: int) -> int {
+  match self/297 {
+    Option__int::None => {
+      fallback/298
+    },
+    Option__int::Some(x161) => {
+      let x161 = Option__int::Some._0(self/297) in
+      let value/299 = x161 in
+      value/299
+    },
+  }
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#bool#to_string(self/64: bool) -> string {
+  @runtime(core.bool_to_string)(self/64)
+}
+
+fn trait_impl#ToString#string#to_string(self/65: string) -> string {
+  self/65
+}
+
+fn inherent#closure_env_main_0#closure_env_main_0#apply(env184: closure_env_main_0) -> int {
+  41
+}
+
+fn inherent#closure_env_main_1#closure_env_main_1#apply(env185: closure_env_main_1) -> unit {
+  let results/0 = closure_env_main_1.results_0(env185) in
+  inherent#Channel#Channel[T]#send__T_int(
+    results/0,
+    inherent#OnceCell#OnceCell[T]#get_or_init__T_int(
+      VALUE,
+      pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](closure_env_main_0 {})
+    )
+  )
+}
+
+fn inherent#closure_env_main_2#closure_env_main_2#apply(env186: closure_env_main_2) -> int {
+  42
+}
+
+fn inherent#closure_env_main_3#closure_env_main_3#apply(env187: closure_env_main_3) -> unit {
+  let results/0 = closure_env_main_3.results_0(env187) in
+  inherent#Channel#Channel[T]#send__T_int(
+    results/0,
+    inherent#OnceCell#OnceCell[T]#get_or_init__T_int(
+      VALUE,
+      pack_closure[inherent#closure_env_main_2#closure_env_main_2#apply](closure_env_main_2 {})
+    )
+  )
+}

@@ -1,75 +1,75 @@
 fn trait_impl#PartialEq#Settings#eq(self/0: Settings, other/1: Settings) -> bool {
-  join k203(jp204: bool) -> bool {
-    join k198(jp199: bool) -> bool {
-      if jp199 {
-        let t200 = Settings.label(self/0) in
-        let t201 = Settings.label(other/1) in
-        let inline366 = (t200 == t201) in
-        inline366
+  join k213(jp214: bool) -> bool {
+    join k208(jp209: bool) -> bool {
+      if jp209 {
+        let t210 = Settings.label(self/0) in
+        let t211 = Settings.label(other/1) in
+        let inline376 = (t210 == t211) in
+        inline376
       } else {
         false
       }
     } in
-    if jp204 {
-      let t205 = Settings.retries(self/0) in
-      let t206 = Settings.retries(other/1) in
-      let inline364 = (t205 == t206) in
-      jump k198(inline364)
+    if jp214 {
+      let t215 = Settings.retries(self/0) in
+      let t216 = Settings.retries(other/1) in
+      let inline374 = (t215 == t216) in
+      jump k208(inline374)
     } else {
-      jump k198(false)
+      jump k208(false)
     }
   } in
-  let t208 = Settings.enabled(self/0) in
-  let t209 = Settings.enabled(other/1) in
-  let inline362 = (t208 == t209) in
-  jump k203(inline362)
+  let t218 = Settings.enabled(self/0) in
+  let t219 = Settings.enabled(other/1) in
+  let inline372 = (t218 == t219) in
+  jump k213(inline372)
 }
 
 fn trait_impl#Default#Settings#default() -> Settings {
-  join inline_cont369(t213: bool) -> Settings {
-    join inline_cont368(t214: int) -> Settings {
-      join inline_cont367(t215: string) -> Settings {
-        let t216 = Settings { enabled: t213, retries: t214, label: t215 } in
-        t216
+  join inline_cont379(t223: bool) -> Settings {
+    join inline_cont378(t224: int) -> Settings {
+      join inline_cont377(t225: string) -> Settings {
+        let t226 = Settings { enabled: t223, retries: t224, label: t225 } in
+        t226
       } in
-      jump inline_cont367("")
+      jump inline_cont377("")
     } in
-    jump inline_cont368(0)
+    jump inline_cont378(0)
   } in
-  jump inline_cont369(false)
+  jump inline_cont379(false)
 }
 
 fn trait_impl#Debug#Settings#debug(self/2: Settings) -> string {
-  let x173 = Settings.enabled(self/2) in
-  let x174 = Settings.retries(self/2) in
-  let x175 = Settings.label(self/2) in
-  let t219 = ("Settings { " + "enabled: ") in
-  join inline_cont374(t220: string) -> string {
-    let t221 = (t219 + t220) in
-    let t222 = (t221 + ", ") in
-    let t223 = (t222 + "retries: ") in
-    join inline_cont372(t224: string) -> string {
-      let t225 = (t223 + t224) in
-      let t226 = (t225 + ", ") in
-      let t227 = (t226 + "label: ") in
-      join inline_cont370(t228: string) -> string {
-        let t229 = (t227 + t228) in
-        let t230 = (t229 + " }") in
-        t230
+  let x183 = Settings.enabled(self/2) in
+  let x184 = Settings.retries(self/2) in
+  let x185 = Settings.label(self/2) in
+  let t229 = ("Settings { " + "enabled: ") in
+  join inline_cont384(t230: string) -> string {
+    let t231 = (t229 + t230) in
+    let t232 = (t231 + ", ") in
+    let t233 = (t232 + "retries: ") in
+    join inline_cont382(t234: string) -> string {
+      let t235 = (t233 + t234) in
+      let t236 = (t235 + ", ") in
+      let t237 = (t236 + "label: ") in
+      join inline_cont380(t238: string) -> string {
+        let t239 = (t237 + t238) in
+        let t240 = (t239 + " }") in
+        t240
       } in
-      let inline371 = trait_impl#ToString#string#to_string(x175) in
-      jump inline_cont370(inline371)
+      let inline381 = trait_impl#ToString#string#to_string(x185) in
+      jump inline_cont380(inline381)
     } in
-    let inline373 = trait_impl#ToString#int#to_string(x174) in
-    jump inline_cont372(inline373)
+    let inline383 = trait_impl#ToString#int#to_string(x184) in
+    jump inline_cont382(inline383)
   } in
-  let inline375 = trait_impl#ToString#bool#to_string(x173) in
-  jump inline_cont374(inline375)
+  let inline385 = trait_impl#ToString#bool#to_string(x183) in
+  jump inline_cont384(inline385)
 }
 
 fn trait_impl#Default#Empty#default() -> Empty {
-  let t233 = Empty {} in
-  t233
+  let t243 = Empty {} in
+  t243
 }
 
 fn trait_impl#Debug#Empty#debug(self/6: Empty) -> string {
@@ -86,47 +86,47 @@ fn trait_impl#Debug#State#debug(self/7: State) -> string {
       "State::Idle"
     },
     Tag_1 => {
-      let x176 = State::Running._0(self/7) in
-      join inline_cont376(t242: string) -> string {
-        let t243 = ("State::Running(" + t242) in
-        let t244 = (t243 + ")") in
-        t244
+      let x186 = State::Running._0(self/7) in
+      join inline_cont386(t252: string) -> string {
+        let t253 = ("State::Running(" + t252) in
+        let t254 = (t253 + ")") in
+        t254
       } in
-      let inline377 = trait_impl#ToString#int#to_string(x176) in
-      jump inline_cont376(inline377)
+      let inline387 = trait_impl#ToString#int#to_string(x186) in
+      jump inline_cont386(inline387)
     },
   }
 }
 
 fn trait_impl#Default#Message#default() -> Message {
-  join inline_cont379(t247: string) -> Message {
-    join inline_cont378(t248: int) -> Message {
-      let t249 = Message::Data(t247, t248) in
-      t249
+  join inline_cont389(t257: string) -> Message {
+    join inline_cont388(t258: int) -> Message {
+      let t259 = Message::Data(t257, t258) in
+      t259
     } in
-    jump inline_cont378(0)
+    jump inline_cont388(0)
   } in
-  jump inline_cont379("")
+  jump inline_cont389("")
 }
 
 fn trait_impl#Debug#Message#debug(self/9: Message) -> string {
   match self/9 {
     Tag_0 => {
-      let x177 = Message::Data._0(self/9) in
-      let x178 = Message::Data._1(self/9) in
-      join inline_cont382(t254: string) -> string {
-        let t255 = ("Message::Data(" + t254) in
-        let t256 = (t255 + ", ") in
-        join inline_cont380(t257: string) -> string {
-          let t258 = (t256 + t257) in
-          let t259 = (t258 + ")") in
-          t259
+      let x187 = Message::Data._0(self/9) in
+      let x188 = Message::Data._1(self/9) in
+      join inline_cont392(t264: string) -> string {
+        let t265 = ("Message::Data(" + t264) in
+        let t266 = (t265 + ", ") in
+        join inline_cont390(t267: string) -> string {
+          let t268 = (t266 + t267) in
+          let t269 = (t268 + ")") in
+          t269
         } in
-        let inline381 = trait_impl#ToString#int#to_string(x178) in
-        jump inline_cont380(inline381)
+        let inline391 = trait_impl#ToString#int#to_string(x188) in
+        jump inline_cont390(inline391)
       } in
-      let inline383 = trait_impl#ToString#string#to_string(x177) in
-      jump inline_cont382(inline383)
+      let inline393 = trait_impl#ToString#string#to_string(x187) in
+      jump inline_cont392(inline393)
     },
     Tag_1 => {
       "Message::Empty"
@@ -135,36 +135,36 @@ fn trait_impl#Debug#Message#debug(self/9: Message) -> string {
 }
 
 fn trait_impl#Default#Event#default() -> Event {
-  join inline_cont385(t262: string) -> Event {
-    join inline_cont384(t263: int) -> Event {
-      let t264 = Event::Data(t262, t263) in
-      t264
+  join inline_cont395(t272: string) -> Event {
+    join inline_cont394(t273: int) -> Event {
+      let t274 = Event::Data(t272, t273) in
+      t274
     } in
-    jump inline_cont384(0)
+    jump inline_cont394(0)
   } in
-  jump inline_cont385("")
+  jump inline_cont395("")
 }
 
 fn trait_impl#Debug#Event#debug(self/12: Event) -> string {
   match self/12 {
     Tag_0 => {
-      let x179 = Event::Data._0(self/12) in
-      let x180 = Event::Data._1(self/12) in
-      let t269 = ("Event::Data { " + "name: ") in
-      join inline_cont388(t270: string) -> string {
-        let t271 = (t269 + t270) in
-        let t272 = (t271 + ", ") in
-        let t273 = (t272 + "count: ") in
-        join inline_cont386(t274: string) -> string {
-          let t275 = (t273 + t274) in
-          let t276 = (t275 + " }") in
-          t276
+      let x189 = Event::Data._0(self/12) in
+      let x190 = Event::Data._1(self/12) in
+      let t279 = ("Event::Data { " + "name: ") in
+      join inline_cont398(t280: string) -> string {
+        let t281 = (t279 + t280) in
+        let t282 = (t281 + ", ") in
+        let t283 = (t282 + "count: ") in
+        join inline_cont396(t284: string) -> string {
+          let t285 = (t283 + t284) in
+          let t286 = (t285 + " }") in
+          t286
         } in
-        let inline387 = trait_impl#ToString#int#to_string(x180) in
-        jump inline_cont386(inline387)
+        let inline397 = trait_impl#ToString#int#to_string(x190) in
+        jump inline_cont396(inline397)
       } in
-      let inline389 = trait_impl#ToString#string#to_string(x179) in
-      jump inline_cont388(inline389)
+      let inline399 = trait_impl#ToString#string#to_string(x189) in
+      jump inline_cont398(inline399)
     },
     Tag_1 => {
       "Event::Empty"
@@ -174,136 +174,136 @@ fn trait_impl#Debug#Event#debug(self/12: Event) -> string {
 
 fn main() -> unit {
   let settings/15 = trait_impl#Default#Settings#default() in
-  let t278 = trait_impl#Debug#Settings#debug(settings/15) in
-  let _wild181 = println__T_string(t278) in
-  let t279 = Settings { enabled: false, retries: 0, label: "" } in
-  let t280 = trait_impl#PartialEq#Settings#eq(settings/15, t279) in
-  let t281 = trait_impl#ToString#bool#to_string(t280) in
-  let _wild182 = println__T_string(t281) in
+  let t288 = trait_impl#Debug#Settings#debug(settings/15) in
+  let _wild191 = println__T_string(t288) in
+  let t289 = Settings { enabled: false, retries: 0, label: "" } in
+  let t290 = trait_impl#PartialEq#Settings#eq(settings/15, t289) in
+  let t291 = trait_impl#ToString#bool#to_string(t290) in
+  let _wild192 = println__T_string(t291) in
   let empty/16 = trait_impl#Default#Empty#default() in
-  let t282 = trait_impl#Debug#Empty#debug(empty/16) in
-  let _wild183 = println__T_string(t282) in
+  let t292 = trait_impl#Debug#Empty#debug(empty/16) in
+  let _wild193 = println__T_string(t292) in
   let pair/17 = trait_impl#Default#PairDefaults__int#default() in
-  let t283 = PairDefaults__int.first(pair/17) in
-  let t284 = PairDefaults__int.second(pair/17) in
-  let t285 = (t283 + t284) in
-  let t286 = inherent#int#int#to_string(t285) in
-  let _wild184 = println__T_string(t286) in
-  let t287 = PairDefaults__int.nested(pair/17) in
-  let t288 = inherent#Option#Option[T]#is_none__T_int(t287) in
-  join inline_cont434(t289: string) -> unit {
-    let _wild185 = println__T_string(t289) in
-    join inline_cont433(state/18: State) -> unit {
-      let t290 = trait_impl#Debug#State#debug(state/18) in
-      join inline_cont430(_wild186: unit) -> unit {
-        join inline_cont426(message/19: Message) -> unit {
-          let t291 = trait_impl#Debug#Message#debug(message/19) in
-          join inline_cont423(_wild187: unit) -> unit {
-            join inline_cont419(event/20: Event) -> unit {
-              join inline_cont406(t292: string) -> unit {
-                join inline_cont403(_wild188: unit) -> unit {
-                  join inline_cont402(lazy/21: Lazy__NoDefault) -> unit {
-                    join k293(jp294: string) -> unit {
-                      join inline_cont399(_wild190: unit) -> unit {
-                        join inline_cont395(selected/22: Selected__int) -> unit {
-                          join k295(jp296: string) -> unit {
-                            let inline393 = trait_impl#ToString#string#to_string(jp296) in
-                            let inline394 = @runtime(core.string_println)(inline393) in
+  let t293 = PairDefaults__int.first(pair/17) in
+  let t294 = PairDefaults__int.second(pair/17) in
+  let t295 = (t293 + t294) in
+  let t296 = inherent#int#int#to_string(t295) in
+  let _wild194 = println__T_string(t296) in
+  let t297 = PairDefaults__int.nested(pair/17) in
+  let t298 = inherent#Option#Option[T]#is_none__T_int(t297) in
+  join inline_cont444(t299: string) -> unit {
+    let _wild195 = println__T_string(t299) in
+    join inline_cont443(state/18: State) -> unit {
+      let t300 = trait_impl#Debug#State#debug(state/18) in
+      join inline_cont440(_wild196: unit) -> unit {
+        join inline_cont436(message/19: Message) -> unit {
+          let t301 = trait_impl#Debug#Message#debug(message/19) in
+          join inline_cont433(_wild197: unit) -> unit {
+            join inline_cont429(event/20: Event) -> unit {
+              join inline_cont416(t302: string) -> unit {
+                join inline_cont413(_wild198: unit) -> unit {
+                  join inline_cont412(lazy/21: Lazy__NoDefault) -> unit {
+                    join k303(jp304: string) -> unit {
+                      join inline_cont409(_wild200: unit) -> unit {
+                        join inline_cont405(selected/22: Selected__int) -> unit {
+                          join k305(jp306: string) -> unit {
+                            let inline403 = trait_impl#ToString#string#to_string(jp306) in
+                            let inline404 = @runtime(core.string_println)(inline403) in
                             ()
                           } in
                           match selected/22 {
                             Tag_0 => {
-                              let x191 = Selected__int::Values._0(selected/22) in
-                              let x192 = Selected__int::Values._1(selected/22) in
-                              let t298 = (x191 + x192) in
-                              let inline391 = @runtime(core.int_to_string)(t298) in
-                              jump k295(inline391)
+                              let x201 = Selected__int::Values._0(selected/22) in
+                              let x202 = Selected__int::Values._1(selected/22) in
+                              let t308 = (x201 + x202) in
+                              let inline401 = @runtime(core.int_to_string)(t308) in
+                              jump k305(inline401)
                             },
                             Tag_1 => {
-                              jump k295("ignored")
+                              jump k305("ignored")
                             },
                           }
                         } in
-                        let inline396 = trait_impl#Default#int#default() in
-                        let inline397 = trait_impl#Default#int#default() in
-                        let inline398 = Selected__int::Values(inline396, inline397) in
-                        jump inline_cont395(inline398)
+                        let inline406 = trait_impl#Default#int#default() in
+                        let inline407 = trait_impl#Default#int#default() in
+                        let inline408 = Selected__int::Values(inline406, inline407) in
+                        jump inline_cont405(inline408)
                       } in
-                      let inline400 = trait_impl#ToString#string#to_string(jp294) in
-                      let inline401 = @runtime(core.string_println)(inline400) in
-                      jump inline_cont399(())
+                      let inline410 = trait_impl#ToString#string#to_string(jp304) in
+                      let inline411 = @runtime(core.string_println)(inline410) in
+                      jump inline_cont409(())
                     } in
                     match lazy/21 {
                       Tag_0 => {
-                        jump k293("empty")
+                        jump k303("empty")
                       },
                       Tag_1 => {
-                        jump k293("value")
+                        jump k303("value")
                       },
                     }
                   } in
-                  jump inline_cont402(Tag_0)
+                  jump inline_cont412(Tag_0)
                 } in
-                let inline404 = trait_impl#ToString#string#to_string(t292) in
-                let inline405 = @runtime(core.string_println)(inline404) in
-                jump inline_cont403(())
+                let inline414 = trait_impl#ToString#string#to_string(t302) in
+                let inline415 = @runtime(core.string_println)(inline414) in
+                jump inline_cont413(())
               } in
               match event/20 {
                 Tag_0 => {
-                  let inline407 = Event::Data._0(event/20) in
-                  let inline408 = Event::Data._1(event/20) in
-                  let inline411 = ("Event::Data { " + "name: ") in
-                  let inline412 = trait_impl#Debug#string#debug(inline407) in
-                  let inline413 = (inline411 + inline412) in
-                  let inline414 = (inline413 + ", ") in
-                  let inline415 = (inline414 + "count: ") in
-                  let inline416 = trait_impl#Debug#int#debug(inline408) in
-                  let inline417 = (inline415 + inline416) in
-                  let inline418 = (inline417 + " }") in
-                  jump inline_cont406(inline418)
+                  let inline417 = Event::Data._0(event/20) in
+                  let inline418 = Event::Data._1(event/20) in
+                  let inline421 = ("Event::Data { " + "name: ") in
+                  let inline422 = trait_impl#Debug#string#debug(inline417) in
+                  let inline423 = (inline421 + inline422) in
+                  let inline424 = (inline423 + ", ") in
+                  let inline425 = (inline424 + "count: ") in
+                  let inline426 = trait_impl#Debug#int#debug(inline418) in
+                  let inline427 = (inline425 + inline426) in
+                  let inline428 = (inline427 + " }") in
+                  jump inline_cont416(inline428)
                 },
                 Tag_1 => {
-                  jump inline_cont406("Event::Empty")
+                  jump inline_cont416("Event::Empty")
                 },
               }
             } in
-            let inline420 = trait_impl#Default#string#default() in
-            let inline421 = trait_impl#Default#int#default() in
-            let inline422 = Event::Data(inline420, inline421) in
-            jump inline_cont419(inline422)
+            let inline430 = trait_impl#Default#string#default() in
+            let inline431 = trait_impl#Default#int#default() in
+            let inline432 = Event::Data(inline430, inline431) in
+            jump inline_cont429(inline432)
           } in
-          let inline424 = trait_impl#ToString#string#to_string(t291) in
-          let inline425 = @runtime(core.string_println)(inline424) in
-          jump inline_cont423(())
+          let inline434 = trait_impl#ToString#string#to_string(t301) in
+          let inline435 = @runtime(core.string_println)(inline434) in
+          jump inline_cont433(())
         } in
-        let inline427 = trait_impl#Default#string#default() in
-        let inline428 = trait_impl#Default#int#default() in
-        let inline429 = Message::Data(inline427, inline428) in
-        jump inline_cont426(inline429)
+        let inline437 = trait_impl#Default#string#default() in
+        let inline438 = trait_impl#Default#int#default() in
+        let inline439 = Message::Data(inline437, inline438) in
+        jump inline_cont436(inline439)
       } in
-      let inline431 = trait_impl#ToString#string#to_string(t290) in
-      let inline432 = @runtime(core.string_println)(inline431) in
-      jump inline_cont430(())
+      let inline441 = trait_impl#ToString#string#to_string(t300) in
+      let inline442 = @runtime(core.string_println)(inline441) in
+      jump inline_cont440(())
     } in
-    jump inline_cont433(Tag_0)
+    jump inline_cont443(Tag_0)
   } in
-  let inline435 = @runtime(core.bool_to_string)(t288) in
-  jump inline_cont434(inline435)
+  let inline445 = @runtime(core.bool_to_string)(t298) in
+  jump inline_cont444(inline445)
 }
 
 fn trait_impl#PartialEq#bool#eq(self/95: bool, other/96: bool) -> bool {
-  let t302 = (self/95 == other/96) in
-  t302
+  let t312 = (self/95 == other/96) in
+  t312
 }
 
 fn trait_impl#PartialEq#int#eq(self/101: int, other/102: int) -> bool {
-  let t305 = (self/101 == other/102) in
-  t305
+  let t315 = (self/101 == other/102) in
+  t315
 }
 
 fn trait_impl#PartialEq#string#eq(self/97: string, other/98: string) -> bool {
-  let t308 = (self/97 == other/98) in
-  t308
+  let t318 = (self/97 == other/98) in
+  t318
 }
 
 fn trait_impl#Default#bool#default() -> bool {
@@ -319,13 +319,13 @@ fn trait_impl#Default#string#default() -> string {
 }
 
 fn trait_impl#Debug#bool#debug(self/79: bool) -> string {
-  let inline437 = @runtime(core.bool_to_string)(self/79) in
-  inline437
+  let inline447 = @runtime(core.bool_to_string)(self/79) in
+  inline447
 }
 
 fn trait_impl#Debug#int#debug(self/82: int) -> string {
-  let inline439 = @runtime(core.int_to_string)(self/82) in
-  inline439
+  let inline449 = @runtime(core.int_to_string)(self/82) in
+  inline449
 }
 
 fn trait_impl#Debug#string#debug(self/80: string) -> string {
@@ -333,48 +333,48 @@ fn trait_impl#Debug#string#debug(self/80: string) -> string {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont441(t325: string) -> unit {
-    let t326 = @runtime(core.string_println)(t325) in
+  join inline_cont451(t335: string) -> unit {
+    let t336 = @runtime(core.string_println)(t335) in
     ()
   } in
-  jump inline_cont441(value/1)
+  jump inline_cont451(value/1)
 }
 
 fn trait_impl#ToString#bool#to_string(self/64: bool) -> string {
-  let t329 = @runtime(core.bool_to_string)(self/64) in
-  t329
+  let t339 = @runtime(core.bool_to_string)(self/64) in
+  t339
 }
 
 fn trait_impl#Default#PairDefaults__int#default() -> PairDefaults__int {
-  join inline_cont444(t332: int) -> PairDefaults__int {
-    join inline_cont443(t333: int) -> PairDefaults__int {
-      join inline_cont442(t334: Option__int) -> PairDefaults__int {
-        let t335 = PairDefaults__int { first: t332, second: t333, nested: t334 } in
-        t335
+  join inline_cont454(t342: int) -> PairDefaults__int {
+    join inline_cont453(t343: int) -> PairDefaults__int {
+      join inline_cont452(t344: Option__int) -> PairDefaults__int {
+        let t345 = PairDefaults__int { first: t342, second: t343, nested: t344 } in
+        t345
       } in
-      jump inline_cont442(Tag_0)
+      jump inline_cont452(Tag_0)
     } in
-    jump inline_cont443(0)
+    jump inline_cont453(0)
   } in
-  jump inline_cont444(0)
+  jump inline_cont454(0)
 }
 
 fn inherent#int#int#to_string(self/32: int) -> string {
-  let t338 = @runtime(core.int_to_string)(self/32) in
-  t338
+  let t348 = @runtime(core.int_to_string)(self/32) in
+  t348
 }
 
-fn inherent#Option#Option[T]#is_none__T_int(self/281: Option__int) -> bool {
-  join inline_cont445(t341: bool) -> bool {
-    let t342 = (!t341) in
-    t342
+fn inherent#Option#Option[T]#is_none__T_int(self/296: Option__int) -> bool {
+  join inline_cont455(t351: bool) -> bool {
+    let t352 = (!t351) in
+    t352
   } in
-  match self/281 {
+  match self/296 {
     Tag_0 => {
-      jump inline_cont445(false)
+      jump inline_cont455(false)
     },
     Tag_1 => {
-      jump inline_cont445(true)
+      jump inline_cont455(true)
     },
   }
 }
@@ -384,19 +384,19 @@ fn trait_impl#Default#Lazy__NoDefault#default() -> Lazy__NoDefault {
 }
 
 fn trait_impl#Default#Selected__int#default() -> Selected__int {
-  join inline_cont447(t347: int) -> Selected__int {
-    join inline_cont446(t348: int) -> Selected__int {
-      let t349 = Selected__int::Values(t347, t348) in
-      t349
+  join inline_cont457(t357: int) -> Selected__int {
+    join inline_cont456(t358: int) -> Selected__int {
+      let t359 = Selected__int::Values(t357, t358) in
+      t359
     } in
-    jump inline_cont446(0)
+    jump inline_cont456(0)
   } in
-  jump inline_cont447(0)
+  jump inline_cont457(0)
 }
 
 fn trait_impl#ToString#int#to_string(self/67: int) -> string {
-  let t352 = @runtime(core.int_to_string)(self/67) in
-  t352
+  let t362 = @runtime(core.int_to_string)(self/67) in
+  t362
 }
 
 fn trait_impl#ToString#string#to_string(self/65: string) -> string {
@@ -407,8 +407,8 @@ fn trait_impl#Default#Option__int#default() -> Option__int {
   Tag_0
 }
 
-fn inherent#Option#Option[T]#is_some__T_int(self/280: Option__int) -> bool {
-  match self/280 {
+fn inherent#Option#Option[T]#is_some__T_int(self/295: Option__int) -> bool {
+  match self/295 {
     Tag_0 => {
       false
     },

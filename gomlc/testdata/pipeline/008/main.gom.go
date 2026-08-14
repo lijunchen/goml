@@ -29,23 +29,23 @@ type B struct {
 func (_ B) isT() {}
 
 func main0() struct{} {
-    var x172 bool = true
-    switch x172 {
+    var x182 bool = true
+    switch x182 {
     case true:
-        var t180 string
-        var inline196 int = 2
-        var inline197 string = _goml_runtime_core_int_to_string(inline196)
-        t180 = inline197
-        var inline193 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t180)
-        _goml_runtime_core_string_println(inline193)
+        var t190 string
+        var inline206 int = 2
+        var inline207 string = _goml_runtime_core_int_to_string(inline206)
+        t190 = inline207
+        var inline203 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t190)
+        _goml_runtime_core_string_println(inline203)
         return struct{}{}
     case false:
-        var t182 string
-        var inline202 int = 3
-        var inline203 string = _goml_runtime_core_int_to_string(inline202)
-        t182 = inline203
-        var inline199 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t182)
-        _goml_runtime_core_string_println(inline199)
+        var t192 string
+        var inline212 int = 3
+        var inline213 string = _goml_runtime_core_int_to_string(inline212)
+        t192 = inline213
+        var inline209 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t192)
+        _goml_runtime_core_string_println(inline209)
         return struct{}{}
     default:
         panic("non-exhaustive match")

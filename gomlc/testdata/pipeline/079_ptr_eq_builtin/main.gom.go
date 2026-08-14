@@ -33,25 +33,25 @@ func ptr_eq__Ref_3int(a *ref_int_x, b *ref_int_x) bool {
 
 func main0() struct{} {
     var a__0 *ref_int_x
-    var inline202 int = 1
-    var inline203 *ref_int_x = ref__Ref_3int(inline202)
-    a__0 = inline203
+    var inline212 int = 1
+    var inline213 *ref_int_x = ref__Ref_3int(inline212)
+    a__0 = inline213
     var c__2 *ref_int_x
-    var inline199 int = 1
-    var inline200 *ref_int_x = ref__Ref_3int(inline199)
-    c__2 = inline200
-    var t175 bool = ptr_eq__Ref_3int(a__0, a__0)
-    var inline196 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t175)
-    _goml_runtime_core_string_println(inline196)
-    var t176 bool = ptr_eq__Ref_3int(a__0, c__2)
-    var inline193 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t176)
-    _goml_runtime_core_string_println(inline193)
+    var inline209 int = 1
+    var inline210 *ref_int_x = ref__Ref_3int(inline209)
+    c__2 = inline210
+    var t185 bool = ptr_eq__Ref_3int(a__0, a__0)
+    var inline206 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t185)
+    _goml_runtime_core_string_println(inline206)
+    var t186 bool = ptr_eq__Ref_3int(a__0, c__2)
+    var inline203 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t186)
+    _goml_runtime_core_string_println(inline203)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
-    var t185 string = _goml_runtime_core_bool_to_string(self__64)
-    return t185
+    var t195 string = _goml_runtime_core_bool_to_string(self__64)
+    return t195
 }
 
 func main() {

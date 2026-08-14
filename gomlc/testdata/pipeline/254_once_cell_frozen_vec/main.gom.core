@@ -1,0 +1,2124 @@
+static VALUES: OnceCell[FrozenVec[int]] = OnceCell::new();
+
+fn utf8_invalid_decode() -> (bool, char, int) {
+  (false, '\0', 0)
+}
+
+fn utf8_valid_decode(value/0: uint32, width/1: int) -> (bool, char, int) {
+  {
+    let mtmp0 = __goml_builtin_char_from_uint32(value/0) in
+    match mtmp0 {
+      Option::None => {
+        utf8_invalid_decode()
+      },
+      Option::Some(x1) => {
+        {
+          let x1 = Option::Some._0(mtmp0) in
+          {
+            let character/2 = x1 in
+            (true, character/2, width/1)
+          }
+        }
+      },
+    }
+  }
+}
+
+fn utf8_invalid_continuation(value/3: uint32) -> bool {
+  if (value/3 < 128) {
+      true
+  } else {
+      (value/3 > 191)
+  }
+}
+
+fn utf8_valid_scalar(value/4: uint32) -> bool {
+  if (value/4 <= 1114111) {
+      (!if (value/4 >= 55296) {
+          (value/4 <= 57343)
+      } else {
+          false
+      })
+  } else {
+      false
+  }
+}
+
+fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
+  let length/7 = inherent#string#string#byte_len(value/5) in
+  let _wild2 =
+    if if (index/6 < 0) {
+        true
+    } else {
+        (index/6 >= length/7)
+    } {
+        {
+          return utf8_invalid_decode()
+        }
+    } else {
+        {
+          ()
+        }
+    } in
+  let first/8 = (inherent#string#string#byte_get(value/5, index/6) as uint32) in
+  if (first/8 < 128) {
+      {
+        utf8_valid_decode(first/8, 1)
+      }
+  } else {
+      if (first/8 < 194) {
+          {
+            utf8_invalid_decode()
+          }
+      } else {
+          if (first/8 < 224) {
+              {
+                let _wild3 =
+                  if ((length/7 - index/6) < 2) {
+                      {
+                        return utf8_invalid_decode()
+                      }
+                  } else {
+                      {
+                        ()
+                      }
+                  } in
+                let second/9 =
+                  (inherent#string#string#byte_get(value/5, (index/6 + 1)) as uint32) in
+                if utf8_invalid_continuation(second/9) {
+                    {
+                      utf8_invalid_decode()
+                    }
+                } else {
+                    {
+                      utf8_valid_decode((((first/8 & 31) << 6) | (second/9 & 63)), 2)
+                    }
+                }
+              }
+          } else {
+              if (first/8 < 240) {
+                  {
+                    let _wild4 =
+                      if ((length/7 - index/6) < 3) {
+                          {
+                            return utf8_invalid_decode()
+                          }
+                      } else {
+                          {
+                            ()
+                          }
+                      } in
+                    let second/10 =
+                      (inherent#string#string#byte_get(value/5, (index/6 + 1)) as uint32) in
+                    let third/11 =
+                      (inherent#string#string#byte_get(value/5, (index/6 + 2)) as uint32) in
+                    if if if if utf8_invalid_continuation(second/10) {
+                        true
+                    } else {
+                        utf8_invalid_continuation(third/11)
+                    } {
+                        true
+                    } else {
+                        if (first/8 == 224) {
+                            (second/10 < 160)
+                        } else {
+                            false
+                        }
+                    } {
+                        true
+                    } else {
+                        if (first/8 == 237) {
+                            (second/10 >= 160)
+                        } else {
+                            false
+                        }
+                    } {
+                        {
+                          utf8_invalid_decode()
+                        }
+                    } else {
+                        {
+                          utf8_valid_decode(
+                            ((((first/8 & 15) << 12) | ((second/10 & 63) << 6)) | (third/11 & 63)),
+                            3
+                          )
+                        }
+                    }
+                  }
+              } else {
+                  if (first/8 < 245) {
+                      {
+                        let _wild5 =
+                          if ((length/7 - index/6) < 4) {
+                              {
+                                return utf8_invalid_decode()
+                              }
+                          } else {
+                              {
+                                ()
+                              }
+                          } in
+                        let second/12 =
+                          (inherent#string#string#byte_get(value/5, (index/6 + 1)) as uint32) in
+                        let third/13 =
+                          (inherent#string#string#byte_get(value/5, (index/6 + 2)) as uint32) in
+                        let fourth/14 =
+                          (inherent#string#string#byte_get(value/5, (index/6 + 3)) as uint32) in
+                        if if if if if utf8_invalid_continuation(second/12) {
+                            true
+                        } else {
+                            utf8_invalid_continuation(third/13)
+                        } {
+                            true
+                        } else {
+                            utf8_invalid_continuation(fourth/14)
+                        } {
+                            true
+                        } else {
+                            if (first/8 == 240) {
+                                (second/12 < 144)
+                            } else {
+                                false
+                            }
+                        } {
+                            true
+                        } else {
+                            if (first/8 == 244) {
+                                (second/12 > 143)
+                            } else {
+                                false
+                            }
+                        } {
+                            {
+                              utf8_invalid_decode()
+                            }
+                        } else {
+                            {
+                              utf8_valid_decode(
+                                (((((first/8 & 7) << 18) | ((second/12 & 63) << 12)) |
+                                  ((third/13 & 63) << 6)) |
+                                  (fourth/14 & 63)),
+                                4
+                              )
+                            }
+                        }
+                      }
+                  } else {
+                      {
+                        utf8_invalid_decode()
+                      }
+                  }
+              }
+          }
+      }
+  }
+}
+
+fn string_is_char_boundary(value/15: string, index/16: int) -> bool {
+  if if (index/16 < 0) {
+      true
+  } else {
+      (index/16 > inherent#string#string#byte_len(value/15))
+  } {
+      {
+        false
+      }
+  } else {
+      if (index/16 == inherent#string#string#byte_len(value/15)) {
+          {
+            true
+          }
+      } else {
+          {
+            ((inherent#string#string#byte_get(value/15, index/16) & 192) != 128)
+          }
+      }
+  }
+}
+
+fn string_get(value/17: string, index/18: int) -> char {
+  let mtmp6 = string_decode_utf8_at(value/17, index/18) in
+  {
+    let x7 = mtmp6.0 in
+    let x8 = mtmp6.1 in
+    {
+      let character/20 = x8 in
+      {
+        let valid/19 = x7 in
+        {
+          if valid/19 {
+              {
+                character/20
+              }
+          } else {
+              {
+                @runtime(core.string_get)("", -1)
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn string_byte_slice(value/21: string, start/22: int, end/23: int) -> string {
+  if if string_is_char_boundary(value/21, start/22) {
+      string_is_char_boundary(value/21, end/23)
+  } else {
+      false
+  } {
+      {
+        @runtime(core.string_byte_slice)(value/21, start/22, end/23)
+      }
+  } else {
+      {
+        @runtime(core.string_byte_slice)(value/21, -1, -1)
+      }
+  }
+}
+
+fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
+  let mtmp10 = @runtime(core.string_from_utf8)(bytes/24) in
+  {
+    let x12 = mtmp10.1 in
+    {
+      let value/25 = x12 in
+      {
+        let index/26 = 0 in
+        let _wild20 =
+          while (index/26 < inherent#string#string#byte_len(value/25)) {
+              {
+                let mtmp13 = string_decode_utf8_at(value/25, index/26) in
+                {
+                  let x14 = mtmp13.0 in
+                  let x16 = mtmp13.2 in
+                  {
+                    let width/28 = x16 in
+                    {
+                      let valid/27 = x14 in
+                      {
+                        if valid/27 {
+                            {
+                              let _wild19 =
+                                {
+                                  let compound_old17 = index/26 in
+                                  let compound_value18 = width/28 in
+                                  index/26 = (compound_old17 + compound_value18)
+                                } in
+                            }
+                        } else {
+                            {
+                              return (false, "")
+                            }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+          } in
+        (true, value/25)
+      }
+    }
+  }
+}
+
+fn char_to_string(value/29: char) -> string {
+  if utf8_valid_scalar((value/29 as uint32)) {
+      {
+        @runtime(core.char_to_string)(value/29)
+      }
+  } else {
+      {
+        let mtmp21 = @runtime(core.string_get)("", -1) in
+        {
+          ""
+        }
+      }
+  }
+}
+
+fn __goml_builtin_char_from_uint32(value/30: uint32) -> Option[char] {
+  if utf8_valid_scalar(value/30) {
+      {
+        let mtmp22 = @runtime(core.char_from_uint32)(value/30) in
+        {
+          let x24 = mtmp22.1 in
+          {
+            let character/31 = x24 in
+            {
+              Option::Some(character/31)
+            }
+          }
+        }
+      }
+  } else {
+      {
+        Option::None
+      }
+  }
+}
+
+fn inherent#int#int#to_string(self/32: int) -> string {
+  @runtime(core.int_to_string)(self/32)
+}
+
+fn inherent#int32#int32#to_string(self/33: int32) -> string {
+  @runtime(core.int32_to_string)(self/33)
+}
+
+fn inherent#char#char#to_string(self/34: char) -> string {
+  char_to_string(self/34)
+}
+
+fn inherent#string#string#len(self/35: string) -> int {
+  @runtime(core.string_len)(self/35)
+}
+
+fn inherent#string#string#byte_len(self/36: string) -> int {
+  @runtime(core.string_len)(self/36)
+}
+
+fn inherent#string#string#get(self/37: string, index/38: int) -> char {
+  string_get(self/37, index/38)
+}
+
+fn inherent#string#string#byte_get(self/39: string, index/40: int) -> uint8 {
+  @runtime(core.string_byte_get)(self/39, index/40)
+}
+
+fn inherent#string#string#byte_slice(self/41: string, start/42: int, end/43: int) -> string {
+  string_byte_slice(self/41, start/42, end/43)
+}
+
+fn inherent#string#string#is_char_boundary(self/44: string, index/45: int) -> bool {
+  string_is_char_boundary(self/44, index/45)
+}
+
+fn inherent#string#string#decode_at(self/46: string, index/47: int) -> Option[(char, int)] {
+  let mtmp25 = string_decode_utf8_at(self/46, index/47) in
+  {
+    let x26 = mtmp25.0 in
+    let x27 = mtmp25.1 in
+    let x28 = mtmp25.2 in
+    {
+      let width/50 = x28 in
+      {
+        let value/49 = x27 in
+        {
+          let valid/48 = x26 in
+          {
+            if valid/48 {
+                {
+                  Option::Some((value/49, width/50))
+                }
+            } else {
+                {
+                  Option::None
+                }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn inherent#string#string#to_bytes(self/51: string) -> Vec[uint8] {
+  @runtime(core.string_to_bytes)(self/51)
+}
+
+fn inherent#string#string#chars(self/52: string) -> FnIterator[char] {
+  let index/53 = @intrinsic(ref.new)(0) in
+  inherent#FnIterator#FnIterator#from_fn(
+    || => {
+      {
+        let mtmp29 = inherent#string#string#decode_at(self/52, @intrinsic(ref.get)(index/53)) in
+        match mtmp29 {
+          Option::None => {
+            Option::None
+          },
+          Option::Some(x30) => {
+            {
+              let x30 = Option::Some._0(mtmp29) in
+              {
+                let decoded/54 = x30 in
+                {
+                  let mtmp31 = decoded/54 in
+                  {
+                    let x32 = mtmp31.0 in
+                    let x33 = mtmp31.1 in
+                    {
+                      let width/56 = x33 in
+                      {
+                        let value/55 = x32 in
+                        {
+                          let _wild36 =
+                            {
+                              let compound_old34 = @intrinsic(ref.get)(index/53) in
+                              let compound_value35 = width/56 in
+                              @intrinsic(ref.set)(index/53, (compound_old34 + compound_value35))
+                            } in
+                          Option::Some(value/55)
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+        }
+      }
+    }
+  )
+}
+
+fn inherent#string#string#char_indices(self/57: string) -> FnIterator[(int, char)] {
+  let index/58 = @intrinsic(ref.new)(0) in
+  inherent#FnIterator#FnIterator#from_fn(
+    || => {
+      let current/59 = @intrinsic(ref.get)(index/58) in
+      {
+        let mtmp37 = inherent#string#string#decode_at(self/57, current/59) in
+        match mtmp37 {
+          Option::None => {
+            Option::None
+          },
+          Option::Some(x38) => {
+            {
+              let x38 = Option::Some._0(mtmp37) in
+              {
+                let decoded/60 = x38 in
+                {
+                  let mtmp39 = decoded/60 in
+                  {
+                    let x40 = mtmp39.0 in
+                    let x41 = mtmp39.1 in
+                    {
+                      let width/62 = x41 in
+                      {
+                        let value/61 = x40 in
+                        {
+                          let _wild42 = @intrinsic(ref.set)(index/58, (current/59 + width/62)) in
+                          Option::Some((current/59, value/61))
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+        }
+      }
+    }
+  )
+}
+
+fn trait_impl#ToString#unit#to_string(self/63: unit) -> string {
+  @runtime(core.unit_to_string)(self/63)
+}
+
+fn trait_impl#ToString#bool#to_string(self/64: bool) -> string {
+  @runtime(core.bool_to_string)(self/64)
+}
+
+fn trait_impl#ToString#string#to_string(self/65: string) -> string {
+  self/65
+}
+
+fn trait_impl#ToString#char#to_string(self/66: char) -> string {
+  char_to_string(self/66)
+}
+
+fn trait_impl#ToString#int#to_string(self/67: int) -> string {
+  @runtime(core.int_to_string)(self/67)
+}
+
+fn trait_impl#ToString#int8#to_string(self/68: int8) -> string {
+  @runtime(core.int8_to_string)(self/68)
+}
+
+fn trait_impl#ToString#int16#to_string(self/69: int16) -> string {
+  @runtime(core.int16_to_string)(self/69)
+}
+
+fn trait_impl#ToString#int32#to_string(self/70: int32) -> string {
+  @runtime(core.int32_to_string)(self/70)
+}
+
+fn trait_impl#ToString#int64#to_string(self/71: int64) -> string {
+  @runtime(core.int64_to_string)(self/71)
+}
+
+fn trait_impl#ToString#uint8#to_string(self/72: uint8) -> string {
+  @runtime(core.uint8_to_string)(self/72)
+}
+
+fn trait_impl#ToString#uint16#to_string(self/73: uint16) -> string {
+  @runtime(core.uint16_to_string)(self/73)
+}
+
+fn trait_impl#ToString#uint32#to_string(self/74: uint32) -> string {
+  @runtime(core.uint32_to_string)(self/74)
+}
+
+fn trait_impl#ToString#uint64#to_string(self/75: uint64) -> string {
+  @runtime(core.uint64_to_string)(self/75)
+}
+
+fn trait_impl#ToString#float32#to_string(self/76: float32) -> string {
+  @runtime(core.float32_to_string)(self/76)
+}
+
+fn trait_impl#ToString#float64#to_string(self/77: float64) -> string {
+  @runtime(core.float64_to_string)(self/77)
+}
+
+fn trait_impl#Debug#unit#debug(self/78: unit) -> string {
+  trait_call[ToString::to_string](self/78)
+}
+
+fn trait_impl#Debug#bool#debug(self/79: bool) -> string {
+  trait_call[ToString::to_string](self/79)
+}
+
+fn trait_impl#Debug#string#debug(self/80: string) -> string {
+  trait_call[ToString::to_string](self/80)
+}
+
+fn trait_impl#Debug#char#debug(self/81: char) -> string {
+  trait_call[ToString::to_string](self/81)
+}
+
+fn trait_impl#Debug#int#debug(self/82: int) -> string {
+  trait_call[ToString::to_string](self/82)
+}
+
+fn trait_impl#Debug#int8#debug(self/83: int8) -> string {
+  trait_call[ToString::to_string](self/83)
+}
+
+fn trait_impl#Debug#int16#debug(self/84: int16) -> string {
+  trait_call[ToString::to_string](self/84)
+}
+
+fn trait_impl#Debug#int32#debug(self/85: int32) -> string {
+  trait_call[ToString::to_string](self/85)
+}
+
+fn trait_impl#Debug#int64#debug(self/86: int64) -> string {
+  trait_call[ToString::to_string](self/86)
+}
+
+fn trait_impl#Debug#uint8#debug(self/87: uint8) -> string {
+  trait_call[ToString::to_string](self/87)
+}
+
+fn trait_impl#Debug#uint16#debug(self/88: uint16) -> string {
+  trait_call[ToString::to_string](self/88)
+}
+
+fn trait_impl#Debug#uint32#debug(self/89: uint32) -> string {
+  trait_call[ToString::to_string](self/89)
+}
+
+fn trait_impl#Debug#uint64#debug(self/90: uint64) -> string {
+  trait_call[ToString::to_string](self/90)
+}
+
+fn trait_impl#Debug#float32#debug(self/91: float32) -> string {
+  trait_call[ToString::to_string](self/91)
+}
+
+fn trait_impl#Debug#float64#debug(self/92: float64) -> string {
+  trait_call[ToString::to_string](self/92)
+}
+
+fn trait_impl#PartialEq#unit#eq(self/93: unit, other/94: unit) -> bool {
+  true
+}
+
+fn trait_impl#Eq#unit#__marker() -> unit {
+  ()
+}
+
+fn trait_impl#PartialEq#bool#eq(self/95: bool, other/96: bool) -> bool {
+  (self/95 == other/96)
+}
+
+fn trait_impl#Eq#bool#__marker() -> unit {
+  ()
+}
+
+fn trait_impl#PartialEq#string#eq(self/97: string, other/98: string) -> bool {
+  (self/97 == other/98)
+}
+
+fn trait_impl#Eq#string#__marker() -> unit {
+  ()
+}
+
+fn trait_impl#PartialEq#char#eq(self/99: char, other/100: char) -> bool {
+  (self/99 == other/100)
+}
+
+fn trait_impl#Eq#char#__marker() -> unit {
+  ()
+}
+
+fn trait_impl#PartialEq#int#eq(self/101: int, other/102: int) -> bool {
+  (self/101 == other/102)
+}
+
+fn trait_impl#Eq#int#__marker() -> unit {
+  ()
+}
+
+fn trait_impl#PartialEq#int8#eq(self/103: int8, other/104: int8) -> bool {
+  (self/103 == other/104)
+}
+
+fn trait_impl#Eq#int8#__marker() -> unit {
+  ()
+}
+
+fn trait_impl#PartialEq#int16#eq(self/105: int16, other/106: int16) -> bool {
+  (self/105 == other/106)
+}
+
+fn trait_impl#Eq#int16#__marker() -> unit {
+  ()
+}
+
+fn trait_impl#PartialEq#int32#eq(self/107: int32, other/108: int32) -> bool {
+  (self/107 == other/108)
+}
+
+fn trait_impl#Eq#int32#__marker() -> unit {
+  ()
+}
+
+fn trait_impl#PartialEq#int64#eq(self/109: int64, other/110: int64) -> bool {
+  (self/109 == other/110)
+}
+
+fn trait_impl#Eq#int64#__marker() -> unit {
+  ()
+}
+
+fn trait_impl#PartialEq#uint8#eq(self/111: uint8, other/112: uint8) -> bool {
+  (self/111 == other/112)
+}
+
+fn trait_impl#Eq#uint8#__marker() -> unit {
+  ()
+}
+
+fn trait_impl#PartialEq#uint16#eq(self/113: uint16, other/114: uint16) -> bool {
+  (self/113 == other/114)
+}
+
+fn trait_impl#Eq#uint16#__marker() -> unit {
+  ()
+}
+
+fn trait_impl#PartialEq#uint32#eq(self/115: uint32, other/116: uint32) -> bool {
+  (self/115 == other/116)
+}
+
+fn trait_impl#Eq#uint32#__marker() -> unit {
+  ()
+}
+
+fn trait_impl#PartialEq#uint64#eq(self/117: uint64, other/118: uint64) -> bool {
+  (self/117 == other/118)
+}
+
+fn trait_impl#Eq#uint64#__marker() -> unit {
+  ()
+}
+
+fn trait_impl#PartialEq#float32#eq(self/119: float32, other/120: float32) -> bool {
+  (self/119 == other/120)
+}
+
+fn trait_impl#PartialEq#float64#eq(self/121: float64, other/122: float64) -> bool {
+  (self/121 == other/122)
+}
+
+fn trait_impl#Hash#unit#hash(self/123: unit) -> uint64 {
+  0
+}
+
+fn trait_impl#Hash#bool#hash(self/124: bool) -> uint64 {
+  if self/124 {
+      {
+        1
+      }
+  } else {
+      {
+        0
+      }
+  }
+}
+
+fn trait_impl#Hash#string#hash(self/125: string) -> uint64 {
+  @runtime(core.string_hash)(self/125)
+}
+
+fn trait_impl#Hash#char#hash(self/126: char) -> uint64 {
+  @runtime(core.char_hash)(self/126)
+}
+
+fn trait_impl#Hash#int#hash(self/127: int) -> uint64 {
+  @runtime(core.int_hash)(self/127)
+}
+
+fn trait_impl#Hash#int8#hash(self/128: int8) -> uint64 {
+  @runtime(core.int8_hash)(self/128)
+}
+
+fn trait_impl#Hash#int16#hash(self/129: int16) -> uint64 {
+  @runtime(core.int16_hash)(self/129)
+}
+
+fn trait_impl#Hash#int32#hash(self/130: int32) -> uint64 {
+  @runtime(core.int32_hash)(self/130)
+}
+
+fn trait_impl#Hash#int64#hash(self/131: int64) -> uint64 {
+  @runtime(core.int64_hash)(self/131)
+}
+
+fn trait_impl#Hash#uint8#hash(self/132: uint8) -> uint64 {
+  @runtime(core.uint8_hash)(self/132)
+}
+
+fn trait_impl#Hash#uint16#hash(self/133: uint16) -> uint64 {
+  @runtime(core.uint16_hash)(self/133)
+}
+
+fn trait_impl#Hash#uint32#hash(self/134: uint32) -> uint64 {
+  @runtime(core.uint32_hash)(self/134)
+}
+
+fn trait_impl#Hash#uint64#hash(self/135: uint64) -> uint64 {
+  self/135
+}
+
+fn trait_impl#PartialEq#Ref[T]#eq[T](self/136: Ref[T], other/137: Ref[T]) -> bool {
+  @intrinsic(ref.ptr_eq)(self/136, other/137)
+}
+
+fn trait_impl#Eq#Ref[T]#__marker[T]() -> unit {
+  ()
+}
+
+fn trait_impl#Hash#Ref[T]#hash[T](self/138: Ref[T]) -> uint64 {
+  @intrinsic(ref.ptr_hash)(self/138)
+}
+
+fn trait_impl#Default#unit#default() -> unit {
+  ()
+}
+
+fn trait_impl#Default#bool#default() -> bool {
+  false
+}
+
+fn trait_impl#Default#string#default() -> string {
+  ""
+}
+
+fn trait_impl#Default#char#default() -> char {
+  '\0'
+}
+
+fn trait_impl#Default#int#default() -> int {
+  0
+}
+
+fn trait_impl#Default#int8#default() -> int8 {
+  0
+}
+
+fn trait_impl#Default#int16#default() -> int16 {
+  0
+}
+
+fn trait_impl#Default#int32#default() -> int32 {
+  0
+}
+
+fn trait_impl#Default#int64#default() -> int64 {
+  0
+}
+
+fn trait_impl#Default#uint#default() -> uint {
+  0
+}
+
+fn trait_impl#Default#uint8#default() -> uint8 {
+  0
+}
+
+fn trait_impl#Default#uint16#default() -> uint16 {
+  0
+}
+
+fn trait_impl#Default#uint32#default() -> uint32 {
+  0
+}
+
+fn trait_impl#Default#uint64#default() -> uint64 {
+  0
+}
+
+fn trait_impl#Default#float32#default() -> float32 {
+  0
+}
+
+fn trait_impl#Default#float64#default() -> float64 {
+  0
+}
+
+fn trait_impl#Default#Vec[T]#default[T]() -> Vec[T] {
+  inherent#Vec#Vec[T]#new()
+}
+
+fn trait_impl#Default#HashMap[K,V]#default[K, V]() -> HashMap[K, V] {
+  inherent#HashMap#HashMap[K,V]#new()
+}
+
+fn trait_impl#Default#Option[T]#default[T]() -> Option[T] {
+  Option::None
+}
+
+fn trait_impl#PartialEq#Vec[T]#eq[T](self/139: Vec[T], other/140: Vec[T]) -> bool {
+  if (inherent#Vec#Vec[T]#len(self/139) != inherent#Vec#Vec[T]#len(other/140)) {
+      {
+        false
+      }
+  } else {
+      {
+        let index/141 = 0 in
+        let _wild46 =
+          while (index/141 < inherent#Vec#Vec[T]#len(self/139)) {
+              {
+                if trait_call[PartialEq::eq](
+                  @intrinsic(vec.get)(self/139, index/141),
+                  @intrinsic(vec.get)(other/140, index/141)
+                ) {
+                    {
+                      let _wild45 =
+                        {
+                          let compound_old43 = index/141 in
+                          let compound_value44 = 1 in
+                          index/141 = (compound_old43 + compound_value44)
+                        } in
+                    }
+                } else {
+                    {
+                      return false
+                    }
+                }
+              }
+          } in
+        true
+      }
+  }
+}
+
+fn trait_impl#Eq#Vec[T]#__marker[T]() -> unit {
+  ()
+}
+
+fn trait_impl#Hash#Vec[T]#hash[T](self/142: Vec[T]) -> uint64 {
+  let value/143 = 14695981039346656037 in
+  let index/144 = 0 in
+  let _wild51 =
+    while (index/144 < inherent#Vec#Vec[T]#len(self/142)) {
+        {
+          let _wild47 =
+            value/143 = ((value/143 * 1099511628211) +
+              trait_call[Hash::hash](@intrinsic(vec.get)(self/142, index/144))) in
+          let _wild50 =
+            {
+              let compound_old48 = index/144 in
+              let compound_value49 = 1 in
+              index/144 = (compound_old48 + compound_value49)
+            } in
+        }
+    } in
+  value/143
+}
+
+fn trait_impl#PartialEq#Slice[T]#eq[T](self/145: Slice[T], other/146: Slice[T]) -> bool {
+  if (inherent#Slice#Slice[T]#len(self/145) != inherent#Slice#Slice[T]#len(other/146)) {
+      {
+        false
+      }
+  } else {
+      {
+        let index/147 = 0 in
+        let _wild55 =
+          while (index/147 < inherent#Slice#Slice[T]#len(self/145)) {
+              {
+                if trait_call[PartialEq::eq](
+                  @intrinsic(slice.get)(self/145, index/147),
+                  @intrinsic(slice.get)(other/146, index/147)
+                ) {
+                    {
+                      let _wild54 =
+                        {
+                          let compound_old52 = index/147 in
+                          let compound_value53 = 1 in
+                          index/147 = (compound_old52 + compound_value53)
+                        } in
+                    }
+                } else {
+                    {
+                      return false
+                    }
+                }
+              }
+          } in
+        true
+      }
+  }
+}
+
+fn trait_impl#Eq#Slice[T]#__marker[T]() -> unit {
+  ()
+}
+
+fn trait_impl#Hash#Slice[T]#hash[T](self/148: Slice[T]) -> uint64 {
+  let value/149 = 14695981039346656037 in
+  let index/150 = 0 in
+  let _wild60 =
+    while (index/150 < inherent#Slice#Slice[T]#len(self/148)) {
+        {
+          let _wild56 =
+            value/149 = ((value/149 * 1099511628211) +
+              trait_call[Hash::hash](@intrinsic(slice.get)(self/148, index/150))) in
+          let _wild59 =
+            {
+              let compound_old57 = index/150 in
+              let compound_value58 = 1 in
+              index/150 = (compound_old57 + compound_value58)
+            } in
+        }
+    } in
+  value/149
+}
+
+fn trait_impl#PartialEq#Option[T]#eq[T](self/151: Option[T], other/152: Option[T]) -> bool {
+  {
+    let mtmp61 = (self/151, other/152) in
+    {
+      let x62 = mtmp61.0 in
+      let x63 = mtmp61.1 in
+      match x63 {
+        Option::None => {
+          match x62 {
+            Option::None => {
+              true
+            },
+            _ => false,
+          }
+        },
+        Option::Some(x64) => {
+          {
+            let x64 = Option::Some._0(x63) in
+            match x62 {
+              Option::Some(x66) => {
+                {
+                  let x66 = Option::Some._0(x62) in
+                  {
+                    let left/153 = x66 in
+                    {
+                      let right/154 = x64 in
+                      trait_call[PartialEq::eq](left/153, right/154)
+                    }
+                  }
+                }
+              },
+              _ => false,
+            }
+          }
+        },
+      }
+    }
+  }
+}
+
+fn trait_impl#Eq#Option[T]#__marker[T]() -> unit {
+  ()
+}
+
+fn trait_impl#Hash#Option[T]#hash[T](self/155: Option[T]) -> uint64 {
+  match self/155 {
+    Option::None => {
+      14695981039346656038
+    },
+    Option::Some(x67) => {
+      {
+        let x67 = Option::Some._0(self/155) in
+        {
+          let value/156 = x67 in
+          (14695981039346656039 + trait_call[Hash::hash](value/156))
+        }
+      }
+    },
+  }
+}
+
+fn trait_impl#PartialEq#Result[T,E]#eq[T, E](
+  self/157: Result[T, E],
+  other/158: Result[T, E]
+) -> bool {
+  {
+    let mtmp68 = (self/157, other/158) in
+    {
+      let x69 = mtmp68.0 in
+      let x70 = mtmp68.1 in
+      match x70 {
+        Result::Ok(x71) => {
+          {
+            let x71 = Result::Ok._0(x70) in
+            match x69 {
+              Result::Ok(x73) => {
+                {
+                  let x73 = Result::Ok._0(x69) in
+                  {
+                    let left/159 = x73 in
+                    {
+                      let right/160 = x71 in
+                      trait_call[PartialEq::eq](left/159, right/160)
+                    }
+                  }
+                }
+              },
+              _ => false,
+            }
+          }
+        },
+        Result::Err(x72) => {
+          {
+            let x72 = Result::Err._0(x70) in
+            match x69 {
+              Result::Err(x76) => {
+                {
+                  let x76 = Result::Err._0(x69) in
+                  {
+                    let left/161 = x76 in
+                    {
+                      let right/162 = x72 in
+                      trait_call[PartialEq::eq](left/161, right/162)
+                    }
+                  }
+                }
+              },
+              _ => false,
+            }
+          }
+        },
+      }
+    }
+  }
+}
+
+fn trait_impl#Eq#Result[T,E]#__marker[T, E]() -> unit {
+  ()
+}
+
+fn trait_impl#Hash#Result[T,E]#hash[T, E](self/163: Result[T, E]) -> uint64 {
+  match self/163 {
+    Result::Ok(x77) => {
+      {
+        let x77 = Result::Ok._0(self/163) in
+        {
+          let value/164 = x77 in
+          (14695981039346656038 + trait_call[Hash::hash](value/164))
+        }
+      }
+    },
+    Result::Err(x78) => {
+      {
+        let x78 = Result::Err._0(self/163) in
+        {
+          let value/165 = x78 in
+          (14695981039346656039 + trait_call[Hash::hash](value/165))
+        }
+      }
+    },
+  }
+}
+
+fn trait_impl#ToString#Ref[T]#to_string[T](self/166: Ref[T]) -> string {
+  let v/167 = inherent#Ref#Ref[T]#get(self/166) in
+  (("ref(" + trait_call[ToString::to_string](v/167)) + ")")
+}
+
+fn trait_impl#Debug#Ref[T]#debug[T](self/168: Ref[T]) -> string {
+  let value/169 = inherent#Ref#Ref[T]#get(self/168) in
+  (("ref(" + trait_call[Debug::debug](value/169)) + ")")
+}
+
+fn inherent#FnIterator#FnIterator[T]#from_fn[T](next_fn/170: () -> Option[T]) -> FnIterator[T] {
+  FnIterator { next_fn: next_fn/170 }
+}
+
+fn trait_impl#Iterator#FnIterator[T]#next[T](self/171: FnIterator[T]) -> Option[T] {
+  FnIterator.next_fn(self/171)()
+}
+
+fn trait_impl#IntoIterator#I#into_iter[I](self/172: I) -> I {
+  self/172
+}
+
+fn inherent#Vec#Vec[T]#new[T]() -> Vec[T] {
+  @intrinsic(vec.new)()
+}
+
+fn inherent#Vec#Vec[T]#with_capacity[T](capacity/173: int) -> Vec[T] {
+  @intrinsic(vec.with_capacity)(capacity/173)
+}
+
+fn inherent#Vec#Vec[T]#push[T](self/174: Vec[T], elem/175: T) -> unit {
+  @intrinsic(vec.push)(self/174, elem/175)
+}
+
+fn inherent#Vec#Vec[T]#pushed[T](self/176: Vec[T], elem/177: T) -> Vec[T] {
+  let result/178 = inherent#Vec#Vec[T]#with_capacity((inherent#Vec#Vec[T]#len(self/176) + 1)) in
+  let index/179 = 0 in
+  let _wild83 =
+    while (index/179 < inherent#Vec#Vec[T]#len(self/176)) {
+        {
+          let _wild79 =
+            inherent#Vec#Vec[T]#push(result/178, @intrinsic(vec.get)(self/176, index/179)) in
+          let _wild82 =
+            {
+              let compound_old80 = index/179 in
+              let compound_value81 = 1 in
+              index/179 = (compound_old80 + compound_value81)
+            } in
+        }
+    } in
+  let _wild84 = inherent#Vec#Vec[T]#push(result/178, elem/177) in
+  result/178
+}
+
+fn inherent#Vec#Vec[T]#copy[T](self/180: Vec[T]) -> Vec[T] {
+  let result/181 = inherent#Vec#Vec[T]#with_capacity(inherent#Vec#Vec[T]#len(self/180)) in
+  let index/182 = 0 in
+  let _wild89 =
+    while (index/182 < inherent#Vec#Vec[T]#len(self/180)) {
+        {
+          let _wild85 =
+            inherent#Vec#Vec[T]#push(result/181, @intrinsic(vec.get)(self/180, index/182)) in
+          let _wild88 =
+            {
+              let compound_old86 = index/182 in
+              let compound_value87 = 1 in
+              index/182 = (compound_old86 + compound_value87)
+            } in
+        }
+    } in
+  result/181
+}
+
+fn inherent#Vec#Vec[T]#freeze[T](self/183: Vec[T]) -> FrozenVec[T] {
+  FrozenVec { values: inherent#Vec#Vec[T]#copy(self/183) }
+}
+
+fn inherent#Vec#Vec[T]#get[T](self/184: Vec[T], index/185: int) -> T {
+  @intrinsic(vec.get)(self/184, index/185)
+}
+
+fn inherent#Vec#Vec[T]#set[T](self/186: Vec[T], index/187: int, elem/188: T) -> unit {
+  @intrinsic(vec.set)(self/186, index/187, elem/188)
+}
+
+fn inherent#Vec#Vec[T]#len[T](self/189: Vec[T]) -> int {
+  @intrinsic(vec.len)(self/189)
+}
+
+fn inherent#Vec#Vec[T]#capacity[T](self/190: Vec[T]) -> int {
+  @intrinsic(vec.capacity)(self/190)
+}
+
+fn inherent#Vec#Vec[T]#is_empty[T](self/191: Vec[T]) -> bool {
+  (@intrinsic(vec.len)(self/191) == 0)
+}
+
+fn inherent#Vec#Vec[T]#reserve[T](self/192: Vec[T], additional/193: int) -> unit {
+  @intrinsic(vec.reserve)(self/192, additional/193)
+}
+
+fn inherent#Vec#Vec[T]#truncate[T](self/194: Vec[T], len/195: int) -> unit {
+  @intrinsic(vec.truncate)(self/194, len/195)
+}
+
+fn inherent#Vec#Vec[T]#clear[T](self/196: Vec[T]) -> unit {
+  inherent#Vec#Vec[T]#truncate(self/196, 0)
+}
+
+fn inherent#Vec#Vec[T]#last[T](self/197: Vec[T]) -> Option[T] {
+  let len/198 = inherent#Vec#Vec[T]#len(self/197) in
+  if (len/198 == 0) {
+      {
+        Option::None
+      }
+  } else {
+      {
+        Option::Some(@intrinsic(vec.get)(self/197, (len/198 - 1)))
+      }
+  }
+}
+
+fn inherent#Vec#Vec[T]#pop[T](self/199: Vec[T]) -> Option[T] {
+  let len/200 = inherent#Vec#Vec[T]#len(self/199) in
+  if (len/200 == 0) {
+      {
+        Option::None
+      }
+  } else {
+      {
+        let value/201 = @intrinsic(vec.get)(self/199, (len/200 - 1)) in
+        let _wild90 = inherent#Vec#Vec[T]#truncate(self/199, (len/200 - 1)) in
+        Option::Some(value/201)
+      }
+  }
+}
+
+fn inherent#Vec#Vec[T]#swap[T](self/202: Vec[T], left/203: int, right/204: int) -> unit {
+  let value/205 = @intrinsic(vec.get)(self/202, left/203) in
+  let _wild95 =
+    {
+      let place_root91 = self/202 in
+      let index92 = left/203 in
+      let place93 = @intrinsic(vec.get)(place_root91, index92) in
+      let value94 = @intrinsic(vec.get)(self/202, right/204) in
+      @intrinsic(vec.set)(place_root91, index92, value94)
+    } in
+  let _wild100 =
+    {
+      let place_root96 = self/202 in
+      let index97 = right/204 in
+      let place98 = @intrinsic(vec.get)(place_root96, index97) in
+      let value99 = value/205 in
+      @intrinsic(vec.set)(place_root96, index97, value99)
+    } in
+}
+
+fn inherent#Vec#Vec[T]#swap_remove[T](self/206: Vec[T], index/207: int) -> T {
+  let len/208 = inherent#Vec#Vec[T]#len(self/206) in
+  let value/209 = @intrinsic(vec.get)(self/206, index/207) in
+  let _wild106 =
+    if ((index/207 + 1) < len/208) {
+        {
+          let _wild105 =
+            {
+              let place_root101 = self/206 in
+              let index102 = index/207 in
+              let place103 = @intrinsic(vec.get)(place_root101, index102) in
+              let value104 = @intrinsic(vec.get)(self/206, (len/208 - 1)) in
+              @intrinsic(vec.set)(place_root101, index102, value104)
+            } in
+        }
+    } else {
+        {
+          ()
+        }
+    } in
+  let _wild107 = inherent#Vec#Vec[T]#truncate(self/206, (len/208 - 1)) in
+  value/209
+}
+
+fn inherent#Vec#Vec[T]#insert[T](self/210: Vec[T], index/211: int, value/212: T) -> unit {
+  let len/213 = inherent#Vec#Vec[T]#len(self/210) in
+  if (index/211 == len/213) {
+      {
+        inherent#Vec#Vec[T]#push(self/210, value/212)
+      }
+  } else {
+      {
+        let mtmp108 = @intrinsic(vec.get)(self/210, index/211) in
+        {
+          let _wild109 =
+            inherent#Vec#Vec[T]#push(self/210, @intrinsic(vec.get)(self/210, (len/213 - 1))) in
+          let current/214 = (len/213 - 1) in
+          let _wild118 =
+            while (current/214 > index/211) {
+                {
+                  let _wild114 =
+                    {
+                      let place_root110 = self/210 in
+                      let index111 = current/214 in
+                      let place112 = @intrinsic(vec.get)(place_root110, index111) in
+                      let value113 = @intrinsic(vec.get)(self/210, (current/214 - 1)) in
+                      @intrinsic(vec.set)(place_root110, index111, value113)
+                    } in
+                  let _wild117 =
+                    {
+                      let compound_old115 = current/214 in
+                      let compound_value116 = 1 in
+                      current/214 = (compound_old115 - compound_value116)
+                    } in
+                }
+            } in
+          let _wild123 =
+            {
+              let place_root119 = self/210 in
+              let index120 = index/211 in
+              let place121 = @intrinsic(vec.get)(place_root119, index120) in
+              let value122 = value/212 in
+              @intrinsic(vec.set)(place_root119, index120, value122)
+            } in
+        }
+      }
+  }
+}
+
+fn inherent#Vec#Vec[T]#remove[T](self/215: Vec[T], index/216: int) -> T {
+  let len/217 = inherent#Vec#Vec[T]#len(self/215) in
+  let value/218 = @intrinsic(vec.get)(self/215, index/216) in
+  let current/219 = index/216 in
+  let _wild132 =
+    while ((current/219 + 1) < len/217) {
+        {
+          let _wild128 =
+            {
+              let place_root124 = self/215 in
+              let index125 = current/219 in
+              let place126 = @intrinsic(vec.get)(place_root124, index125) in
+              let value127 = @intrinsic(vec.get)(self/215, (current/219 + 1)) in
+              @intrinsic(vec.set)(place_root124, index125, value127)
+            } in
+          let _wild131 =
+            {
+              let compound_old129 = current/219 in
+              let compound_value130 = 1 in
+              current/219 = (compound_old129 + compound_value130)
+            } in
+        }
+    } in
+  let _wild133 = inherent#Vec#Vec[T]#truncate(self/215, (len/217 - 1)) in
+  value/218
+}
+
+fn inherent#Vec#Vec[T]#reverse[T](self/220: Vec[T]) -> unit {
+  let left/221 = 0 in
+  let right/222 = (inherent#Vec#Vec[T]#len(self/220) - 1) in
+  while (left/221 < right/222) {
+      {
+        let _wild134 = inherent#Vec#Vec[T]#swap(self/220, left/221, right/222) in
+        let _wild137 =
+          {
+            let compound_old135 = left/221 in
+            let compound_value136 = 1 in
+            left/221 = (compound_old135 + compound_value136)
+          } in
+        let _wild140 =
+          {
+            let compound_old138 = right/222 in
+            let compound_value139 = 1 in
+            right/222 = (compound_old138 - compound_value139)
+          } in
+      }
+  }
+}
+
+fn inherent#Vec#Vec[T]#extend[T](self/223: Vec[T], other/224: Vec[T]) -> unit {
+  let len/225 = inherent#Vec#Vec[T]#len(other/224) in
+  let _wild141 = inherent#Vec#Vec[T]#reserve(self/223, len/225) in
+  let index/226 = 0 in
+  while (index/226 < len/225) {
+      {
+        let _wild142 =
+          inherent#Vec#Vec[T]#push(self/223, @intrinsic(vec.get)(other/224, index/226)) in
+        let _wild145 =
+          {
+            let compound_old143 = index/226 in
+            let compound_value144 = 1 in
+            index/226 = (compound_old143 + compound_value144)
+          } in
+      }
+  }
+}
+
+fn inherent#Vec#Vec[T]#slice[T](self/227: Vec[T], start/228: int, end/229: int) -> Slice[T] {
+  @intrinsic(slice.new)(self/227, start/228, end/229)
+}
+
+fn inherent#Vec#Vec[T]#iter[T](self/230: Vec[T]) -> FnIterator[T] {
+  let index/231 = @intrinsic(ref.new)(0) in
+  let len/232 = inherent#Vec#Vec[T]#len(self/230) in
+  inherent#FnIterator#FnIterator#from_fn(
+    || => {
+      let current/233 = @intrinsic(ref.get)(index/231) in
+      if (current/233 < len/232) {
+          {
+            let value/234 = @intrinsic(vec.get)(self/230, current/233) in
+            let _wild146 = @intrinsic(ref.set)(index/231, (current/233 + 1)) in
+            Option::Some(value/234)
+          }
+      } else {
+          {
+            Option::None
+          }
+      }
+    }
+  )
+}
+
+fn inherent#FrozenVec#FrozenVec[T]#len[T](self/235: FrozenVec[T]) -> int {
+  inherent#Vec#Vec[T]#len(FrozenVec.values(self/235))
+}
+
+fn inherent#FrozenVec#FrozenVec[T]#is_empty[T](self/236: FrozenVec[T]) -> bool {
+  inherent#Vec#Vec[T]#is_empty(FrozenVec.values(self/236))
+}
+
+fn inherent#FrozenVec#FrozenVec[T]#get[T](self/237: FrozenVec[T], index/238: int) -> T {
+  @intrinsic(vec.get)(FrozenVec.values(self/237), index/238)
+}
+
+fn inherent#FrozenVec#FrozenVec[T]#to_vec[T](self/239: FrozenVec[T]) -> Vec[T] {
+  inherent#Vec#Vec[T]#copy(FrozenVec.values(self/239))
+}
+
+fn inherent#FrozenVec#FrozenVec[T]#iter[T](self/240: FrozenVec[T]) -> FnIterator[T] {
+  inherent#Vec#Vec[T]#iter(FrozenVec.values(self/240))
+}
+
+fn inherent#OnceCell#OnceCell[T]#new[T]() -> OnceCell[T] {
+  @intrinsic(once_cell.new)()
+}
+
+fn inherent#OnceCell#OnceCell[T]#get_or_init[T](self/241: OnceCell[T], init/242: () -> T) -> T {
+  @intrinsic(once_cell.get_or_init)(self/241, init/242)
+}
+
+fn trait_impl#IntoIterator#Vec[T]#into_iter[T](self/243: Vec[T]) -> FnIterator[T] {
+  inherent#Vec#Vec[T]#iter(self/243)
+}
+
+fn inherent#Slice#Slice[T]#get[T](self/244: Slice[T], index/245: int) -> T {
+  @intrinsic(slice.get)(self/244, index/245)
+}
+
+fn inherent#Slice#Slice[T]#len[T](self/246: Slice[T]) -> int {
+  @intrinsic(slice.len)(self/246)
+}
+
+fn inherent#Slice#Slice[T]#sub[T](self/247: Slice[T], start/248: int, end/249: int) -> Slice[T] {
+  @intrinsic(slice.sub)(self/247, start/248, end/249)
+}
+
+fn inherent#Slice#Slice[T]#to_vec[T](self/250: Slice[T]) -> Vec[T] {
+  let result/251 = inherent#Vec#Vec[T]#with_capacity(inherent#Slice#Slice[T]#len(self/250)) in
+  let index/252 = 0 in
+  let _wild151 =
+    while (index/252 < inherent#Slice#Slice[T]#len(self/250)) {
+        {
+          let _wild147 =
+            inherent#Vec#Vec[T]#push(result/251, @intrinsic(slice.get)(self/250, index/252)) in
+          let _wild150 =
+            {
+              let compound_old148 = index/252 in
+              let compound_value149 = 1 in
+              index/252 = (compound_old148 + compound_value149)
+            } in
+        }
+    } in
+  result/251
+}
+
+fn inherent#Slice#Slice[T]#iter[T](self/253: Slice[T]) -> FnIterator[T] {
+  let index/254 = @intrinsic(ref.new)(0) in
+  let len/255 = inherent#Slice#Slice[T]#len(self/253) in
+  inherent#FnIterator#FnIterator#from_fn(
+    || => {
+      let current/256 = @intrinsic(ref.get)(index/254) in
+      if (current/256 < len/255) {
+          {
+            let value/257 = inherent#Slice#Slice[T]#get(self/253, current/256) in
+            let _wild152 = @intrinsic(ref.set)(index/254, (current/256 + 1)) in
+            Option::Some(value/257)
+          }
+      } else {
+          {
+            Option::None
+          }
+      }
+    }
+  )
+}
+
+fn trait_impl#IntoIterator#Slice[T]#into_iter[T](self/258: Slice[T]) -> FnIterator[T] {
+  inherent#Slice#Slice[T]#iter(self/258)
+}
+
+fn inherent#HashMap#HashMap[K,V]#new[K, V]() -> HashMap[K, V] {
+  @intrinsic(hashmap.new)()
+}
+
+fn inherent#HashMap#HashMap[K,V]#get[K, V](self/259: HashMap[K, V], key/260: K) -> Option[V] {
+  @intrinsic(hashmap.get)(self/259, key/260)
+}
+
+fn inherent#HashMap#HashMap[K,V]#set[K, V](
+  self/261: HashMap[K, V],
+  key/262: K,
+  value/263: V
+) -> unit {
+  @intrinsic(hashmap.set)(self/261, key/262, value/263)
+}
+
+fn inherent#HashMap#HashMap[K,V]#remove[K, V](self/264: HashMap[K, V], key/265: K) -> unit {
+  @intrinsic(hashmap.remove)(self/264, key/265)
+}
+
+fn inherent#HashMap#HashMap[K,V]#len[K, V](self/266: HashMap[K, V]) -> int {
+  @intrinsic(hashmap.len)(self/266)
+}
+
+fn inherent#HashMap#HashMap[K,V]#contains[K, V](self/267: HashMap[K, V], key/268: K) -> bool {
+  @intrinsic(hashmap.contains)(self/267, key/268)
+}
+
+fn inherent#HashMap#HashMap[K,V]#entries[K, V](self/269: HashMap[K, V]) -> Vec[(K, V)] {
+  @intrinsic(hashmap.entries)(self/269)
+}
+
+fn inherent#Ref#Ref[T]#new[T](value/270: T) -> Ref[T] {
+  @intrinsic(ref.new)(value/270)
+}
+
+fn inherent#Ref#Ref[T]#get[T](self/271: Ref[T]) -> T {
+  @intrinsic(ref.get)(self/271)
+}
+
+fn inherent#Ref#Ref[T]#set[T](self/272: Ref[T], value/273: T) -> unit {
+  @intrinsic(ref.set)(self/272, value/273)
+}
+
+fn inherent#Channel#Channel[T]#new[T](capacity/274: int) -> Channel[T] {
+  @intrinsic(channel.new)(capacity/274)
+}
+
+fn inherent#Channel#Channel[T]#send[T](self/275: Channel[T], value/276: T) -> unit {
+  @intrinsic(channel.send)(self/275, value/276)
+}
+
+fn inherent#Channel#Channel[T]#recv[T](self/277: Channel[T]) -> Option[T] {
+  let mtmp153 = @intrinsic(channel.recv)(self/277) in
+  {
+    let x154 = mtmp153.0 in
+    let x155 = mtmp153.1 in
+    {
+      let ok/279 = x155 in
+      {
+        let value/278 = x154 in
+        {
+          if ok/279 {
+              {
+                Option::Some(value/278)
+              }
+          } else {
+              {
+                Option::None
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn inherent#Channel#Channel[T]#close[T](self/280: Channel[T]) -> unit {
+  @intrinsic(channel.close)(self/280)
+}
+
+fn trait_impl#ToString#uint#to_string(self/281: uint) -> string {
+  @runtime(core.uint_to_string)(self/281)
+}
+
+fn trait_impl#Debug#uint#debug(self/282: uint) -> string {
+  trait_call[ToString::to_string](self/282)
+}
+
+fn trait_impl#PartialEq#uint#eq(self/283: uint, other/284: uint) -> bool {
+  (self/283 == other/284)
+}
+
+fn trait_impl#Eq#uint#__marker() -> unit {
+  ()
+}
+
+fn trait_impl#Hash#uint#hash(self/285: uint) -> uint64 {
+  @runtime(core.uint_hash)(self/285)
+}
+
+fn inherent#string#string#starts_with(self/286: string, prefix/287: string) -> bool {
+  if if (inherent#string#string#byte_len(prefix/287) <= inherent#string#string#byte_len(self/286)) {
+      inherent#string#string#is_char_boundary(self/286, inherent#string#string#byte_len(prefix/287))
+  } else {
+      false
+  } {
+      (inherent#string#string#byte_slice(
+        self/286,
+        0,
+        inherent#string#string#byte_len(prefix/287)
+      ) ==
+        prefix/287)
+  } else {
+      false
+  }
+}
+
+fn inherent#string#string#ends_with(self/288: string, suffix/289: string) -> bool {
+  if (inherent#string#string#byte_len(suffix/289) > inherent#string#string#byte_len(self/288)) {
+      {
+        false
+      }
+  } else {
+      {
+        let start/290 =
+          (inherent#string#string#byte_len(self/288) -
+            inherent#string#string#byte_len(suffix/289)) in
+        if inherent#string#string#is_char_boundary(self/288, start/290) {
+            (inherent#string#string#byte_slice(
+              self/288,
+              start/290,
+              inherent#string#string#byte_len(self/288)
+            ) ==
+              suffix/289)
+        } else {
+            false
+        }
+      }
+  }
+}
+
+fn inherent#string#string#contains(self/291: string, expected/292: string) -> bool {
+  if (inherent#string#string#byte_len(expected/292) == 0) {
+      {
+        true
+      }
+  } else {
+      if (inherent#string#string#byte_len(expected/292) >
+        inherent#string#string#byte_len(self/291)) {
+          {
+            false
+          }
+      } else {
+          {
+            let _wild159 =
+              {
+                let for_iter156 =
+                  trait_call[IntoIterator::into_iter](
+                    __goml_builtin_range(
+                      0,
+                      ((inherent#string#string#byte_len(self/291) -
+                        inherent#string#string#byte_len(expected/292)) +
+                        1)
+                    )
+                  ) in
+                while true {
+                    {
+                      let for_next157 = trait_call[Iterator::next](for_iter156) in
+                      match for_next157 {
+                        Option::None => {
+                          break
+                        },
+                        Option::Some(x158) => {
+                          {
+                            let x158 = Option::Some._0(for_next157) in
+                            {
+                              let start/293 = x158 in
+                              {
+                                let end/294 =
+                                  (start/293 + inherent#string#string#byte_len(expected/292)) in
+                                if if if inherent#string#string#is_char_boundary(
+                                  self/291,
+                                  start/293
+                                ) {
+                                    inherent#string#string#is_char_boundary(self/291, end/294)
+                                } else {
+                                    false
+                                } {
+                                    (inherent#string#string#byte_slice(
+                                      self/291,
+                                      start/293,
+                                      end/294
+                                    ) ==
+                                      expected/292)
+                                } else {
+                                    false
+                                } {
+                                    {
+                                      return true
+                                    }
+                                } else {
+                                    {
+                                      ()
+                                    }
+                                }
+                              }
+                            }
+                          }
+                        },
+                      }
+                    }
+                }
+              } in
+            false
+          }
+      }
+  }
+}
+
+fn inherent#Option#Option[T]#is_some[T](self/295: Option[T]) -> bool {
+  match self/295 {
+    Option::None => {
+      false
+    },
+    Option::Some(x160) => {
+      {
+        true
+      }
+    },
+  }
+}
+
+fn inherent#Option#Option[T]#is_none[T](self/296: Option[T]) -> bool {
+  (!inherent#Option#Option[T]#is_some(self/296))
+}
+
+fn inherent#Option#Option[T]#unwrap_or[T](self/297: Option[T], fallback/298: T) -> T {
+  match self/297 {
+    Option::None => {
+      fallback/298
+    },
+    Option::Some(x161) => {
+      {
+        let x161 = Option::Some._0(self/297) in
+        {
+          let value/299 = x161 in
+          value/299
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Option#Option[T]#unwrap_or_else[T](self/300: Option[T], fallback/301: () -> T) -> T {
+  match self/300 {
+    Option::None => {
+      fallback/301()
+    },
+    Option::Some(x162) => {
+      {
+        let x162 = Option::Some._0(self/300) in
+        {
+          let value/302 = x162 in
+          value/302
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#is_ok[T, E](self/303: Result[T, E]) -> bool {
+  match self/303 {
+    Result::Ok(x163) => {
+      {
+        true
+      }
+    },
+    Result::Err(x164) => {
+      {
+        false
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#is_err[T, E](self/304: Result[T, E]) -> bool {
+  (!inherent#Result#Result[T,E]#is_ok(self/304))
+}
+
+fn inherent#Result#Result[T,E]#unwrap_or[T, E](self/305: Result[T, E], fallback/306: T) -> T {
+  match self/305 {
+    Result::Ok(x165) => {
+      {
+        let x165 = Result::Ok._0(self/305) in
+        {
+          let value/307 = x165 in
+          value/307
+        }
+      }
+    },
+    Result::Err(x166) => {
+      {
+        fallback/306
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#unwrap_or_else[T, E](
+  self/308: Result[T, E],
+  fallback/309: (E) -> T
+) -> T {
+  match self/308 {
+    Result::Ok(x167) => {
+      {
+        let x167 = Result::Ok._0(self/308) in
+        {
+          let value/310 = x167 in
+          value/310
+        }
+      }
+    },
+    Result::Err(x168) => {
+      {
+        let x168 = Result::Err._0(self/308) in
+        {
+          let error/311 = x168 in
+          fallback/309(error/311)
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Option#Option[T]#map[T, U](self/312: Option[T], map_fn/313: (T) -> U) -> Option[U] {
+  match self/312 {
+    Option::None => {
+      Option::None
+    },
+    Option::Some(x169) => {
+      {
+        let x169 = Option::Some._0(self/312) in
+        {
+          let value/314 = x169 in
+          Option::Some(map_fn/313(value/314))
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Option#Option[T]#and_then[T, U](
+  self/315: Option[T],
+  next/316: (T) -> Option[U]
+) -> Option[U] {
+  match self/315 {
+    Option::None => {
+      Option::None
+    },
+    Option::Some(x170) => {
+      {
+        let x170 = Option::Some._0(self/315) in
+        {
+          let value/317 = x170 in
+          next/316(value/317)
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Option#Option[T]#ok_or[T, E](self/318: Option[T], error/319: E) -> Result[T, E] {
+  match self/318 {
+    Option::None => {
+      Result::Err(error/319)
+    },
+    Option::Some(x171) => {
+      {
+        let x171 = Option::Some._0(self/318) in
+        {
+          let value/320 = x171 in
+          Result::Ok(value/320)
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#map[T, E, U](self/321: Result[T, E], map_fn/322: (T) -> U) -> Result[
+  U,
+  E
+] {
+  match self/321 {
+    Result::Ok(x172) => {
+      {
+        let x172 = Result::Ok._0(self/321) in
+        {
+          let value/323 = x172 in
+          Result::Ok(map_fn/322(value/323))
+        }
+      }
+    },
+    Result::Err(x173) => {
+      {
+        let x173 = Result::Err._0(self/321) in
+        {
+          let error/324 = x173 in
+          Result::Err(error/324)
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#map_err[T, E, F](
+  self/325: Result[T, E],
+  map_fn/326: (E) -> F
+) -> Result[T, F] {
+  match self/325 {
+    Result::Ok(x174) => {
+      {
+        let x174 = Result::Ok._0(self/325) in
+        {
+          let value/327 = x174 in
+          Result::Ok(value/327)
+        }
+      }
+    },
+    Result::Err(x175) => {
+      {
+        let x175 = Result::Err._0(self/325) in
+        {
+          let error/328 = x175 in
+          Result::Err(map_fn/326(error/328))
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#and_then[T, E, U](
+  self/329: Result[T, E],
+  next/330: (T) -> Result[U, E]
+) -> Result[U, E] {
+  match self/329 {
+    Result::Ok(x176) => {
+      {
+        let x176 = Result::Ok._0(self/329) in
+        {
+          let value/331 = x176 in
+          next/330(value/331)
+        }
+      }
+    },
+    Result::Err(x177) => {
+      {
+        let x177 = Result::Err._0(self/329) in
+        {
+          let error/332 = x177 in
+          Result::Err(error/332)
+        }
+      }
+    },
+  }
+}
+
+fn __goml_builtin_range(start/333: int, end/334: int) -> FnIterator[int] {
+  let current/335 = @intrinsic(ref.new)(start/333) in
+  inherent#FnIterator#FnIterator#from_fn(
+    || => {
+      let value/336 = @intrinsic(ref.get)(current/335) in
+      if (value/336 < end/334) {
+          {
+            let _wild178 = @intrinsic(ref.set)(current/335, (value/336 + 1)) in
+            Option::Some(value/336)
+          }
+      } else {
+          {
+            Option::None
+          }
+      }
+    }
+  )
+}
+
+fn __goml_builtin_range_inclusive(start/337: int, end/338: int) -> FnIterator[int] {
+  let current/339 = @intrinsic(ref.new)(start/337) in
+  let finished/340 = @intrinsic(ref.new)(false) in
+  inherent#FnIterator#FnIterator#from_fn(
+    || => {
+      if if @intrinsic(ref.get)(finished/340) {
+          true
+      } else {
+          (@intrinsic(ref.get)(current/339) > end/338)
+      } {
+          {
+            Option::None
+          }
+      } else {
+          {
+            let value/341 = @intrinsic(ref.get)(current/339) in
+            let _wild181 =
+              if (value/341 == end/338) {
+                  {
+                    let _wild179 = @intrinsic(ref.set)(finished/340, true) in
+                  }
+              } else {
+                  {
+                    let _wild180 = @intrinsic(ref.set)(current/339, (value/341 + 1)) in
+                  }
+              } in
+            Option::Some(value/341)
+          }
+      }
+    }
+  )
+}
+
+fn print(value/0: T) -> unit {
+  @runtime(core.string_print)(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  @runtime(core.string_println)(trait_call[ToString::to_string](value/1))
+}
+
+fn char_from_uint32(value/2: uint32) -> Option[char] {
+  __goml_builtin_char_from_uint32(value/2)
+}
+
+fn range(start/3: int, end/4: int) -> FnIterator[int] {
+  __goml_builtin_range(start/3, end/4)
+}
+
+fn values() -> FrozenVec[int] {
+  inherent#OnceCell#OnceCell[FrozenVec[int]]#get_or_init(
+    VALUES,
+    || => inherent#Vec#Vec[int]#freeze(
+      {
+        let vec_literal/118 = inherent#Vec#Vec[int]#new() in
+        let _wild182 = inherent#Vec#Vec[int]#push(vec_literal/118, 1) in
+        let _wild183 = inherent#Vec#Vec[int]#push(vec_literal/118, 2) in
+        let _wild184 = inherent#Vec#Vec[int]#push(vec_literal/118, 3) in
+        vec_literal/118
+      }
+    )
+  )
+}
+
+fn main() -> unit {
+  let frozen/0 = values() in
+  let copy/1 = inherent#FrozenVec#FrozenVec[int]#to_vec(frozen/0) in
+  let _wild185 = inherent#Vec#Vec[int]#set(copy/1, 0, 9) in
+  let _wild186 =
+    println(inherent#int#int#to_string(inherent#FrozenVec#FrozenVec[int]#get(frozen/0, 0))) in
+  let _wild187 = println(inherent#int#int#to_string(inherent#Vec#Vec[int]#get(copy/1, 0))) in
+  println(inherent#int#int#to_string(inherent#FrozenVec#FrozenVec[int]#get(values(), 1)))
+}

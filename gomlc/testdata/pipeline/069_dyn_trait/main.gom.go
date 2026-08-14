@@ -52,24 +52,24 @@ func dyn__Display__vtable__Point() *dyn__Display_vtable {
 }
 
 func _goml_m_trait__impl_i_Display_i_Point_i_show(self__0 Point) string {
-    var t176 int32 = self__0.x
-    var t177 string
-    var inline203 string = _goml_runtime_core_int32_to_string(t176)
-    t177 = inline203
-    var t178 string = "Point(" + t177
-    var t179 string = t178 + ","
-    var t180 int32 = self__0.y
-    var t181 string
-    var inline201 string = _goml_runtime_core_int32_to_string(t180)
-    t181 = inline201
-    var t182 string = t179 + t181
-    var t183 string = t182 + ")"
-    return t183
+    var t186 int32 = self__0.x
+    var t187 string
+    var inline213 string = _goml_runtime_core_int32_to_string(t186)
+    t187 = inline213
+    var t188 string = "Point(" + t187
+    var t189 string = t188 + ","
+    var t190 int32 = self__0.y
+    var t191 string
+    var inline211 string = _goml_runtime_core_int32_to_string(t190)
+    t191 = inline211
+    var t192 string = t189 + t191
+    var t193 string = t192 + ")"
+    return t193
 }
 
 func _goml_m_trait__impl_i_Display_i_Flag_i_show(self__1 Flag) string {
-    var t188 bool = self__1.value
-    if t188 {
+    var t198 bool = self__1.value
+    if t198 {
         return "Flag(true)"
     } else {
         return "Flag(false)"
@@ -92,12 +92,12 @@ func main0() struct{} {
         data: t__3,
         vtable: dyn__Display__vtable__Flag(),
     }
-    var t190 string = dp__4.vtable.show(dp__4.data)
-    var inline208 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t190)
-    _goml_runtime_core_string_println(inline208)
-    var t191 string = dt__5.vtable.show(dt__5.data)
-    var inline205 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t191)
-    _goml_runtime_core_string_println(inline205)
+    var t200 string = dp__4.vtable.show(dp__4.data)
+    var inline218 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t200)
+    _goml_runtime_core_string_println(inline218)
+    var t201 string = dt__5.vtable.show(dt__5.data)
+    var inline215 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t201)
+    _goml_runtime_core_string_println(inline215)
     return struct{}{}
 }
 

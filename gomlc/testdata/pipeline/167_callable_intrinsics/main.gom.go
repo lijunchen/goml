@@ -54,19 +54,19 @@ func vec_len__Vec_5int32(vec *_goml_vec_int32) int {
 
 func main0() struct{} {
     var to_text__0 func(int32) string = _goml_runtime_core_int32_to_string
-    var t184 string = to_text__0(7)
-    var inline272 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t184)
-    _goml_runtime_core_string_println(inline272)
+    var t194 string = to_text__0(7)
+    var inline282 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t194)
+    _goml_runtime_core_string_println(inline282)
     var get__1 func(*_goml_vec_int32, int) int32 = vec_get__Vec_5int32
     var push__2 func(*_goml_vec_int32, int32) struct{} = vec_push__Vec_5int32
     var values__3 *_goml_vec_int32
-    var inline270 *_goml_vec_int32 = vec_new__Vec_5int32()
-    values__3 = inline270
+    var inline280 *_goml_vec_int32 = vec_new__Vec_5int32()
+    values__3 = inline280
     push__2(values__3, 11)
     push__2(values__3, 22)
-    var t185 int32 = get__1(values__3, 1)
-    var inline267 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t185)
-    _goml_runtime_core_string_println(inline267)
+    var t195 int32 = get__1(values__3, 1)
+    var inline277 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t195)
+    _goml_runtime_core_string_println(inline277)
     var make_slice__4 func(*_goml_vec_int32, int, int) []int32 = func(p0 *_goml_vec_int32, p1 int, p2 int) []int32 {
         return p0.items[p1:p2]
     }
@@ -74,64 +74,64 @@ func main0() struct{} {
         return p0[p1]
     }
     var view__6 []int32 = make_slice__4(values__3, 0, 2)
-    var t186 int32 = slice_get_value__5(view__6, 0)
-    var inline264 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t186)
-    _goml_runtime_core_string_println(inline264)
-    var inline261 int32 = 33
-    vec_push__Vec_5int32(values__3, inline261)
-    var t187 int
-    var inline259 int = vec_len__Vec_5int32(values__3)
-    t187 = inline259
-    var inline256 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t187)
+    var t196 int32 = slice_get_value__5(view__6, 0)
+    var inline274 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t196)
+    _goml_runtime_core_string_println(inline274)
+    var inline271 int32 = 33
+    vec_push__Vec_5int32(values__3, inline271)
+    var t197 int
+    var inline269 int = vec_len__Vec_5int32(values__3)
+    t197 = inline269
+    var inline266 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t197)
+    _goml_runtime_core_string_println(inline266)
+    var inline262 int = 0
+    var inline263 int32 = 44
+    vec_set__Vec_5int32(values__3, inline262, inline263)
+    var t198 int32
+    var inline259 int = 0
+    var inline260 int32 = vec_get__Vec_5int32(values__3, inline259)
+    t198 = inline260
+    var inline256 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t198)
     _goml_runtime_core_string_println(inline256)
-    var inline252 int = 0
-    var inline253 int32 = 44
-    vec_set__Vec_5int32(values__3, inline252, inline253)
-    var t188 int32
-    var inline249 int = 0
-    var inline250 int32 = vec_get__Vec_5int32(values__3, inline249)
-    t188 = inline250
-    var inline246 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t188)
-    _goml_runtime_core_string_println(inline246)
     var copied__8 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__int32(values__3, 55)
-    var t189 int
-    var inline244 int = vec_len__Vec_5int32(values__3)
-    t189 = inline244
-    var inline241 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t189)
-    _goml_runtime_core_string_println(inline241)
-    var t190 int
-    var inline239 int = vec_len__Vec_5int32(copied__8)
-    t190 = inline239
-    var inline236 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t190)
-    _goml_runtime_core_string_println(inline236)
+    var t199 int
+    var inline254 int = vec_len__Vec_5int32(values__3)
+    t199 = inline254
+    var inline251 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t199)
+    _goml_runtime_core_string_println(inline251)
+    var t200 int
+    var inline249 int = vec_len__Vec_5int32(copied__8)
+    t200 = inline249
+    var inline246 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t200)
+    _goml_runtime_core_string_println(inline246)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__int32(self__176 *_goml_vec_int32, elem__177 int32) *_goml_vec_int32 {
-    var t215 int
-    var inline288 int = vec_len__Vec_5int32(self__176)
-    t215 = inline288
-    var t216 int = t215 + 1
+    var t225 int
+    var inline298 int = vec_len__Vec_5int32(self__176)
+    t225 = inline298
+    var t226 int = t225 + 1
     var result__178 *_goml_vec_int32
-    var inline286 *_goml_vec_int32 = vec_with_capacity__Vec_5int32(t216)
-    result__178 = inline286
+    var inline296 *_goml_vec_int32 = vec_with_capacity__Vec_5int32(t226)
+    result__178 = inline296
     var index__179 int = 0
-    Loop_loop218:
+    Loop_loop228:
     for {
-        var t219 int
-        var inline282 int = vec_len__Vec_5int32(self__176)
-        t219 = inline282
-        var t220 bool = index__179 < t219
-        if t220 {
-            var t221 int32 = vec_get__Vec_5int32(self__176, index__179)
-            vec_push__Vec_5int32(result__178, t221)
+        var t229 int
+        var inline292 int = vec_len__Vec_5int32(self__176)
+        t229 = inline292
+        var t230 bool = index__179 < t229
+        if t230 {
+            var t231 int32 = vec_get__Vec_5int32(self__176, index__179)
+            vec_push__Vec_5int32(result__178, t231)
             var compound_old80 int = index__179
             var compound_value81 int = 1
-            var t222 int = compound_old80 + compound_value81
-            index__179 = t222
+            var t232 int = compound_old80 + compound_value81
+            index__179 = t232
             continue
         } else {
-            break Loop_loop218
+            break Loop_loop228
         }
     }
     vec_push__Vec_5int32(result__178, elem__177)
@@ -143,13 +143,13 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) strin
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__70 int32) string {
-    var t228 string = _goml_runtime_core_int32_to_string(self__70)
-    return t228
+    var t238 string = _goml_runtime_core_int32_to_string(self__70)
+    return t238
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
-    var t231 string = _goml_runtime_core_int_to_string(self__67)
-    return t231
+    var t241 string = _goml_runtime_core_int_to_string(self__67)
+    return t241
 }
 
 func main() {

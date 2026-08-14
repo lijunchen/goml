@@ -1,0 +1,34 @@
+static VALUE: OnceCell[int] = OnceCell::new();
+
+fn main() -> unit {
+    let results/0: Channel[int] = (Channel[int]::new : (int) -> Channel[int])(2);
+    go || =>
+      (Channel[int]::send : (Channel[int], int) -> unit)(
+        (results/0 : Channel[int]),
+        (OnceCell[int]::get_or_init : (OnceCell[int], () -> int) -> int)(
+          (VALUE : OnceCell[int]),
+          || => 41
+        )
+      );
+    go || =>
+      (Channel[int]::send : (Channel[int], int) -> unit)(
+        (results/0 : Channel[int]),
+        (OnceCell[int]::get_or_init : (OnceCell[int], () -> int) -> int)(
+          (VALUE : OnceCell[int]),
+          || => 42
+        )
+      );
+    let first/1: int =
+      (Option[int]::unwrap_or : (Option[int], int) -> int)(
+        (Channel[int]::recv : (Channel[int]) -> Option[int])((results/0 : Channel[int])),
+        0
+      );
+    let second/2: int =
+      (Option[int]::unwrap_or : (Option[int], int) -> int)(
+        (Channel[int]::recv : (Channel[int]) -> Option[int])((results/0 : Channel[int])),
+        0
+      );
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)((first/1 : int) == (second/2 : int))
+    )
+}

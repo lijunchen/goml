@@ -18,20 +18,20 @@ type S struct {
 }
 
 func main0() struct{} {
-    var t180 string
-    var inline195 int32 = 7
-    var inline196 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline195)
-    var inline197 string = "S(" + inline196
-    var inline198 string = inline197 + ")"
-    t180 = inline198
-    var inline192 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t180)
-    _goml_runtime_core_string_println(inline192)
+    var t190 string
+    var inline205 int32 = 7
+    var inline206 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline205)
+    var inline207 string = "S(" + inline206
+    var inline208 string = inline207 + ")"
+    t190 = inline208
+    var inline202 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t190)
+    _goml_runtime_core_string_println(inline202)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
-    var t183 string = _goml_runtime_core_int32_to_string(self__33)
-    return t183
+    var t193 string = _goml_runtime_core_int32_to_string(self__33)
+    return t193
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {

@@ -102,21 +102,21 @@ func dyn__Debug__vtable__int() *dyn__Debug_vtable {
 }
 
 func _goml_m_trait__impl_i_Debug_i_Point_i_debug(self__0 Point) string {
-    var x173 int32 = self__0.x
-    var x174 string = self__0.label
-    var t183 string = "Point { " + "x: "
-    var t184 string
-    var inline258 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x173)
-    t184 = inline258
-    var t185 string = t183 + t184
-    var t186 string = t185 + ", "
-    var t187 string = t186 + "label: "
-    var t188 string
-    var inline256 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x174)
-    t188 = inline256
-    var t189 string = t187 + t188
-    var t190 string = t189 + " }"
-    return t190
+    var x183 int32 = self__0.x
+    var x184 string = self__0.label
+    var t193 string = "Point { " + "x: "
+    var t194 string
+    var inline268 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x183)
+    t194 = inline268
+    var t195 string = t193 + t194
+    var t196 string = t195 + ", "
+    var t197 string = t196 + "label: "
+    var t198 string
+    var inline266 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x184)
+    t198 = inline266
+    var t199 string = t197 + t198
+    var t200 string = t199 + " }"
+    return t200
 }
 
 func main0() struct{} {
@@ -125,37 +125,37 @@ func main0() struct{} {
         label: "east",
     }
     var idle__8 State__int32 = State__int32_Idle{}
-    var t195 string = _goml_m_trait__impl_i_Debug_i_Point_i_debug(point__7)
-    var inline298 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t195)
-    _goml_runtime_core_string_println(inline298)
-    var t196 string = _goml_m_trait__impl_i_Debug_i_State____int32_i_debug(idle__8)
-    var inline295 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t196)
-    _goml_runtime_core_string_println(inline295)
-    var t197 string
-    var inline285 string = _goml_m_trait__impl_i_Debug_i_Point_i_debug(point__7)
-    var inline286 string = "State::Value(" + inline285
-    var inline287 string = inline286 + ")"
-    t197 = inline287
-    var inline280 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t197)
-    _goml_runtime_core_string_println(inline280)
-    var t198 string
-    var inline273 int = 7
-    var inline275 string = "State::Named { " + "value: "
-    var inline276 string = _goml_m_trait__impl_i_Debug_i_int_i_debug(inline273)
-    var inline277 string = inline275 + inline276
-    var inline278 string = inline277 + " }"
-    t198 = inline278
-    var inline265 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t198)
-    _goml_runtime_core_string_println(inline265)
-    var t199 dyn__Debug = dyn__Debug{
+    var t205 string = _goml_m_trait__impl_i_Debug_i_Point_i_debug(point__7)
+    var inline308 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t205)
+    _goml_runtime_core_string_println(inline308)
+    var t206 string = _goml_m_trait__impl_i_Debug_i_State____int32_i_debug(idle__8)
+    var inline305 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t206)
+    _goml_runtime_core_string_println(inline305)
+    var t207 string
+    var inline295 string = _goml_m_trait__impl_i_Debug_i_Point_i_debug(point__7)
+    var inline296 string = "State::Value(" + inline295
+    var inline297 string = inline296 + ")"
+    t207 = inline297
+    var inline290 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t207)
+    _goml_runtime_core_string_println(inline290)
+    var t208 string
+    var inline283 int = 7
+    var inline285 string = "State::Named { " + "value: "
+    var inline286 string = _goml_m_trait__impl_i_Debug_i_int_i_debug(inline283)
+    var inline287 string = inline285 + inline286
+    var inline288 string = inline287 + " }"
+    t208 = inline288
+    var inline275 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t208)
+    _goml_runtime_core_string_println(inline275)
+    var t209 dyn__Debug = dyn__Debug{
         data: int(9),
         vtable: dyn__Debug__vtable__int(),
     }
-    var t200 string
-    var inline263 string = t199.vtable.debug(t199.data)
-    t200 = inline263
-    var inline260 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t200)
-    _goml_runtime_core_string_println(inline260)
+    var t210 string
+    var inline273 string = t209.vtable.debug(t209.data)
+    t210 = inline273
+    var inline270 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t210)
+    _goml_runtime_core_string_println(inline270)
     return struct{}{}
 }
 
@@ -164,35 +164,35 @@ func _goml_m_trait__impl_i_Debug_i_State____int32_i_debug(self__3 State__int32) 
     case State__int32_Idle:
         return "State::Idle"
     case State__int32_Value:
-        var x175 int32 = self__3.(State__int32_Value)._0
-        var t215 string
-        var inline305 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x175)
-        t215 = inline305
-        var t216 string = "State::Value(" + t215
-        var t217 string = t216 + ")"
-        return t217
+        var x185 int32 = self__3.(State__int32_Value)._0
+        var t225 string
+        var inline315 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x185)
+        t225 = inline315
+        var t226 string = "State::Value(" + t225
+        var t227 string = t226 + ")"
+        return t227
     case State__int32_Named:
-        var x176 int32 = self__3.(State__int32_Named)._0
-        var t218 string = "State::Named { " + "value: "
-        var t219 string
-        var inline307 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x176)
-        t219 = inline307
-        var t220 string = t218 + t219
-        var t221 string = t220 + " }"
-        return t221
+        var x186 int32 = self__3.(State__int32_Named)._0
+        var t228 string = "State::Named { " + "value: "
+        var t229 string
+        var inline317 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x186)
+        t229 = inline317
+        var t230 string = t228 + t229
+        var t231 string = t230 + " }"
+        return t231
     default:
         panic("non-exhaustive match")
     }
 }
 
 func _goml_m_trait__impl_i_Debug_i_int_i_debug(self__82 int) string {
-    var inline341 string = _goml_runtime_core_int_to_string(self__82)
-    return inline341
+    var inline351 string = _goml_runtime_core_int_to_string(self__82)
+    return inline351
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__70 int32) string {
-    var t249 string = _goml_runtime_core_int32_to_string(self__70)
-    return t249
+    var t259 string = _goml_runtime_core_int32_to_string(self__70)
+    return t259
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {

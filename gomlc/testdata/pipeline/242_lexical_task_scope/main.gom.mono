@@ -190,7 +190,7 @@ fn main() -> unit {
           inherent#std::task::Scope#std::task::Scope#spawn__T_int(scope/1, |_cancel/2| 20) in
         let right/5 =
           inherent#std::task::Scope#std::task::Scope#spawn__T_int(scope/1, |_cancel/4| 22) in
-        let mtmp172 =
+        let mtmp182 =
           inherent#std::task::Scope#std::task::Scope#spawn__T_unit(
             scope/1,
             |_cancel/6| inherent#Ref#Ref[T]#set__T_bool(completed/0, true)
@@ -201,8 +201,8 @@ fn main() -> unit {
         }
       }
     ) in
-  let _wild173 = println__T_int(total/7) in
-  let _wild174 = println__T_bool(inherent#Ref#Ref[T]#get__T_bool(completed/0)) in
+  let _wild183 = println__T_int(total/7) in
+  let _wild184 = println__T_bool(inherent#Ref#Ref[T]#get__T_bool(completed/0)) in
   let nested/12 =
     std::task::scope__T_int(
       |scope/8| {
@@ -216,22 +216,22 @@ fn main() -> unit {
         )
       }
     ) in
-  let _wild175 = println__T_int(nested/12) in
+  let _wild185 = println__T_int(nested/12) in
   let scope/13 = 3 in
   let spawn/15 = |value/14| (value/14 + 1) in
   println__T_int(spawn/15(scope/13))
 }
 
-fn inherent#Channel#Channel[T]#new__T_unit(capacity/259: int) -> Channel[unit] {
-  @intrinsic(channel.new)(capacity/259)
+fn inherent#Channel#Channel[T]#new__T_unit(capacity/274: int) -> Channel[unit] {
+  @intrinsic(channel.new)(capacity/274)
 }
 
-fn inherent#Channel#Channel[T]#send__T_unit(self/260: Channel[unit], value/261: unit) -> unit {
-  @intrinsic(channel.send)(self/260, value/261)
+fn inherent#Channel#Channel[T]#send__T_unit(self/275: Channel[unit], value/276: unit) -> unit {
+  @intrinsic(channel.send)(self/275, value/276)
 }
 
-fn inherent#Ref#Ref[T]#new__T_bool(value/255: bool) -> Ref[bool] {
-  @intrinsic(ref.new)(value/255)
+fn inherent#Ref#Ref[T]#new__T_bool(value/270: bool) -> Ref[bool] {
+  @intrinsic(ref.new)(value/270)
 }
 
 fn std::task::scope__T_int(body/9: (std::task::Scope) -> int) -> int {
@@ -270,8 +270,8 @@ fn inherent#std::task::Scope#std::task::Scope#spawn__T_int(
   std::task::Task__int { result: result/27, ready: ready/28 }
 }
 
-fn inherent#Ref#Ref[T]#set__T_bool(self/257: Ref[bool], value/258: bool) -> unit {
-  @intrinsic(ref.set)(self/257, value/258)
+fn inherent#Ref#Ref[T]#set__T_bool(self/272: Ref[bool], value/273: bool) -> unit {
+  @intrinsic(ref.set)(self/272, value/273)
 }
 
 fn inherent#std::task::Scope#std::task::Scope#spawn__T_unit(
@@ -334,8 +334,8 @@ fn println__T_bool(value/1: bool) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
 }
 
-fn inherent#Ref#Ref[T]#get__T_bool(self/256: Ref[bool]) -> bool {
-  @intrinsic(ref.get)(self/256)
+fn inherent#Ref#Ref[T]#get__T_bool(self/271: Ref[bool]) -> bool {
+  @intrinsic(ref.get)(self/271)
 }
 
 fn std::task::scope_with__T_int(
@@ -355,15 +355,15 @@ fn std::task::scope_with__T_int(
   std::task::completed_scope_value__T_int(result/15)
 }
 
-fn inherent#Ref#Ref[T]#new__T_Option[int](value/255: Option__int) -> Ref[Option__int] {
-  @intrinsic(ref.new)(value/255)
+fn inherent#Ref#Ref[T]#new__T_Option[int](value/270: Option__int) -> Ref[Option__int] {
+  @intrinsic(ref.new)(value/270)
 }
 
 fn inherent#Ref#Ref[T]#set__T_Option[int](
-  self/257: Ref[Option__int],
-  value/258: Option__int
+  self/272: Ref[Option__int],
+  value/273: Option__int
 ) -> unit {
-  @intrinsic(ref.set)(self/257, value/258)
+  @intrinsic(ref.set)(self/272, value/273)
 }
 
 fn std::task::completed_scope_value__T_int(result/0: Ref[Option__int]) -> int {
@@ -388,34 +388,34 @@ fn std::task::completed_scope_value__T_int(result/0: Ref[Option__int]) -> int {
   }
 }
 
-fn inherent#Channel#Channel[T]#close__T_unit(self/265: Channel[unit]) -> unit {
-  @intrinsic(channel.close)(self/265)
+fn inherent#Channel#Channel[T]#close__T_unit(self/280: Channel[unit]) -> unit {
+  @intrinsic(channel.close)(self/280)
 }
 
-fn inherent#Ref#Ref[T]#new__T_Option[unit](value/255: Option__unit) -> Ref[Option__unit] {
-  @intrinsic(ref.new)(value/255)
+fn inherent#Ref#Ref[T]#new__T_Option[unit](value/270: Option__unit) -> Ref[Option__unit] {
+  @intrinsic(ref.new)(value/270)
 }
 
 fn inherent#Ref#Ref[T]#set__T_Option[unit](
-  self/257: Ref[Option__unit],
-  value/258: Option__unit
+  self/272: Ref[Option__unit],
+  value/273: Option__unit
 ) -> unit {
-  @intrinsic(ref.set)(self/257, value/258)
+  @intrinsic(ref.set)(self/272, value/273)
 }
 
-fn inherent#Channel#Channel[T]#recv__T_unit(self/262: Channel[unit]) -> Option__unit {
-  let mtmp143 = @intrinsic(channel.recv)(self/262) in
+fn inherent#Channel#Channel[T]#recv__T_unit(self/277: Channel[unit]) -> Option__unit {
+  let mtmp153 = @intrinsic(channel.recv)(self/277) in
   {
-    let x144 = mtmp143.0 in
-    let x145 = mtmp143.1 in
+    let x154 = mtmp153.0 in
+    let x155 = mtmp153.1 in
     {
-      let ok/264 = x145 in
+      let ok/279 = x155 in
       {
-        let value/263 = x144 in
+        let value/278 = x154 in
         {
-          if ok/264 {
+          if ok/279 {
               {
-                Option__unit::Some(value/263)
+                Option__unit::Some(value/278)
               }
           } else {
               {
@@ -428,8 +428,8 @@ fn inherent#Channel#Channel[T]#recv__T_unit(self/262: Channel[unit]) -> Option__
   }
 }
 
-fn inherent#Ref#Ref[T]#get__T_Option[int](self/256: Ref[Option__int]) -> Option__int {
-  @intrinsic(ref.get)(self/256)
+fn inherent#Ref#Ref[T]#get__T_Option[int](self/271: Ref[Option__int]) -> Option__int {
+  @intrinsic(ref.get)(self/271)
 }
 
 fn trait_impl#ToString#int#to_string(self/67: int) -> string {

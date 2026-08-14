@@ -23,131 +23,131 @@ type Wrapper__int32 struct {
 }
 
 func make_point() Point {
-    var t202 Point = Point{
+    var t212 Point = Point{
         x: 0,
         y: 0,
-    }
-    return t202
-}
-
-func flip(point__0 Point) Point {
-    var x173 int32 = point__0.x
-    var x174 int32 = point__0.y
-    var t205 Point = Point{
-        x: x174,
-        y: x173,
-    }
-    return t205
-}
-
-func x_add_1(p__4 Point) Point {
-    var x176 int32 = p__4.x
-    var x177 int32 = p__4.y
-    var t211 int32 = x176 + 1
-    var t212 Point = Point{
-        x: t211,
-        y: x177,
     }
     return t212
 }
 
+func flip(point__0 Point) Point {
+    var x183 int32 = point__0.x
+    var x184 int32 = point__0.y
+    var t215 Point = Point{
+        x: x184,
+        y: x183,
+    }
+    return t215
+}
+
+func x_add_1(p__4 Point) Point {
+    var x186 int32 = p__4.x
+    var x187 int32 = p__4.y
+    var t221 int32 = x186 + 1
+    var t222 Point = Point{
+        x: t221,
+        y: x187,
+    }
+    return t222
+}
+
 func point32_to_string(p__13 Point) string {
-    var x185 int32 = p__13.x
-    var x186 int32 = p__13.y
-    var t219 string
-    var inline267 string = _goml_runtime_core_int32_to_string(x185)
-    t219 = inline267
-    var t220 string = "Point { x: " + t219
-    var t221 string = t220 + ", y: "
-    var t222 string
-    var inline265 string = _goml_runtime_core_int32_to_string(x186)
-    t222 = inline265
-    var t223 string = t221 + t222
-    var t224 string = t223 + "}"
-    return t224
+    var x195 int32 = p__13.x
+    var x196 int32 = p__13.y
+    var t229 string
+    var inline277 string = _goml_runtime_core_int32_to_string(x195)
+    t229 = inline277
+    var t230 string = "Point { x: " + t229
+    var t231 string = t230 + ", y: "
+    var t232 string
+    var inline275 string = _goml_runtime_core_int32_to_string(x196)
+    t232 = inline275
+    var t233 string = t231 + t232
+    var t234 string = t233 + "}"
+    return t234
 }
 
 func point32_to_string2(p__16 Point) string {
-    var x188 int32 = p__16.x
-    var x189 int32 = p__16.y
-    var t227 string
-    var inline271 string = _goml_runtime_core_int32_to_string(x188)
-    t227 = inline271
-    var t228 string = "Point { x: " + t227
-    var t229 string = t228 + ", y: "
-    var t230 string
-    var inline269 string = _goml_runtime_core_int32_to_string(x189)
-    t230 = inline269
-    var t231 string = t229 + t230
-    var t232 string = t231 + "}"
-    return t232
+    var x198 int32 = p__16.x
+    var x199 int32 = p__16.y
+    var t237 string
+    var inline281 string = _goml_runtime_core_int32_to_string(x198)
+    t237 = inline281
+    var t238 string = "Point { x: " + t237
+    var t239 string = t238 + ", y: "
+    var t240 string
+    var inline279 string = _goml_runtime_core_int32_to_string(x199)
+    t240 = inline279
+    var t241 string = t239 + t240
+    var t242 string = t241 + "}"
+    return t242
 }
 
 func main0() struct{} {
     var start__25 Point = make_point()
-    var t250 string = point32_to_string(start__25)
-    println__T_string(t250)
-    var t251 Point = Point{
+    var t260 string = point32_to_string(start__25)
+    println__T_string(t260)
+    var t261 Point = Point{
         x: 1,
         y: 2,
     }
-    var swapped__26 Point = flip(t251)
-    var t252 string = point32_to_string2(swapped__26)
-    println__T_string(t252)
+    var swapped__26 Point = flip(t261)
+    var t262 string = point32_to_string2(swapped__26)
+    println__T_string(t262)
     var a__29 Point = x_add_1(start__25)
-    var t253 string
-    var inline315 int32 = a__29.x
-    var inline316 int32 = a__29.y
-    var inline319 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline315)
-    var inline320 string = "Point { x: " + inline319
-    var inline321 string = inline320 + ", y: "
-    var inline322 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline316)
-    var inline323 string = inline321 + inline322
-    var inline324 string = inline323 + "}"
-    t253 = inline324
-    var inline311 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t253)
-    _goml_runtime_core_string_println(inline311)
-    var t254 Point
-    var inline304 int32 = start__25.x
-    var inline305 int32 = start__25.y
-    var inline308 int32 = inline304 + 1
-    var inline309 Point = Point{
-        x: inline308,
-        y: inline305,
+    var t263 string
+    var inline325 int32 = a__29.x
+    var inline326 int32 = a__29.y
+    var inline329 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline325)
+    var inline330 string = "Point { x: " + inline329
+    var inline331 string = inline330 + ", y: "
+    var inline332 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline326)
+    var inline333 string = inline331 + inline332
+    var inline334 string = inline333 + "}"
+    t263 = inline334
+    var inline321 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t263)
+    _goml_runtime_core_string_println(inline321)
+    var t264 Point
+    var inline314 int32 = start__25.x
+    var inline315 int32 = start__25.y
+    var inline318 int32 = inline314 + 1
+    var inline319 Point = Point{
+        x: inline318,
+        y: inline315,
     }
-    t254 = inline309
+    t264 = inline319
     var a__30 Point
-    var inline297 int32 = t254.x
-    var inline298 int32 = t254.y
-    var inline301 Point = Point{
-        x: inline298,
-        y: inline297,
+    var inline307 int32 = t264.x
+    var inline308 int32 = t264.y
+    var inline311 Point = Point{
+        x: inline308,
+        y: inline307,
     }
-    a__30 = inline301
-    var t255 string
-    var inline285 int32 = a__30.x
-    var inline286 int32 = a__30.y
-    var inline289 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline285)
-    var inline290 string = "Point { x: " + inline289
-    var inline291 string = inline290 + ", y: "
-    var inline292 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline286)
-    var inline293 string = inline291 + inline292
-    var inline294 string = inline293 + "}"
-    t255 = inline294
-    var inline281 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t255)
-    _goml_runtime_core_string_println(inline281)
+    a__30 = inline311
+    var t265 string
+    var inline295 int32 = a__30.x
+    var inline296 int32 = a__30.y
+    var inline299 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline295)
+    var inline300 string = "Point { x: " + inline299
+    var inline301 string = inline300 + ", y: "
+    var inline302 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline296)
+    var inline303 string = inline301 + inline302
+    var inline304 string = inline303 + "}"
+    t265 = inline304
+    var inline291 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t265)
+    _goml_runtime_core_string_println(inline291)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
-    var t258 string = _goml_runtime_core_int32_to_string(self__33)
-    return t258
+    var t268 string = _goml_runtime_core_int32_to_string(self__33)
+    return t268
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t260 string
-    t260 = value__1
-    _goml_runtime_core_string_println(t260)
+    var t270 string
+    t270 = value__1
+    _goml_runtime_core_string_println(t270)
     return struct{}{}
 }
 

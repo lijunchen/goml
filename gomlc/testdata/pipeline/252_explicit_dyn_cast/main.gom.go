@@ -56,59 +56,59 @@ func dyn__Source__vtable__Number() *dyn__Source_vtable {
 }
 
 func _goml_m_trait__impl_i_Display_i_Number_i_display(self__0 Number) string {
-    var t177 int = self__0.value
-    var inline210 string = _goml_runtime_core_int_to_string(t177)
-    return inline210
+    var t187 int = self__0.value
+    var inline220 string = _goml_runtime_core_int_to_string(t187)
+    return inline220
 }
 
 func _goml_m_trait__impl_i_Source_i_Number_i_get(self__1 Number) int {
-    var t181 int = self__1.value
-    return t181
+    var t191 int = self__1.value
+    return t191
 }
 
 func main0() struct{} {
-    var t183 Number = Number{
+    var t193 Number = Number{
         value: 42,
     }
     var display__3 dyn__Display = dyn__Display{
-        data: t183,
+        data: t193,
         vtable: dyn__Display__vtable__Number(),
     }
-    var t184 string = display__3.vtable.display(display__3.data)
-    var inline223 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t184)
-    _goml_runtime_core_string_println(inline223)
-    var t185 Number = Number{
+    var t194 string = display__3.vtable.display(display__3.data)
+    var inline233 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t194)
+    _goml_runtime_core_string_println(inline233)
+    var t195 Number = Number{
         value: 7,
     }
     var erased__4 dyn__Display
-    var inline221 dyn__Display = dyn__Display{
-        data: t185,
+    var inline231 dyn__Display = dyn__Display{
+        data: t195,
         vtable: dyn__Display__vtable__Number(),
     }
-    erased__4 = inline221
-    var t186 string = erased__4.vtable.display(erased__4.data)
-    var inline218 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t186)
-    _goml_runtime_core_string_println(inline218)
-    var t187 Number = Number{
+    erased__4 = inline231
+    var t196 string = erased__4.vtable.display(erased__4.data)
+    var inline228 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t196)
+    _goml_runtime_core_string_println(inline228)
+    var t197 Number = Number{
         value: 11,
     }
     var source__5 dyn__Source = dyn__Source{
-        data: t187,
+        data: t197,
         vtable: dyn__Source__vtable__Number(),
     }
-    var t188 int = source__5.vtable.get(source__5.data)
-    var inline215 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t188)
-    _goml_runtime_core_string_println(inline215)
-    var t189 Number = Number{
+    var t198 int = source__5.vtable.get(source__5.data)
+    var inline225 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t198)
+    _goml_runtime_core_string_println(inline225)
+    var t199 Number = Number{
         value: 13,
     }
     var same__6 dyn__Display = dyn__Display{
-        data: t189,
+        data: t199,
         vtable: dyn__Display__vtable__Number(),
     }
-    var t190 string = same__6.vtable.display(same__6.data)
-    var inline212 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t190)
-    _goml_runtime_core_string_println(inline212)
+    var t200 string = same__6.vtable.display(same__6.data)
+    var inline222 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t200)
+    _goml_runtime_core_string_println(inline222)
     return struct{}{}
 }
 
@@ -117,8 +117,8 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) strin
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
-    var t208 string = _goml_runtime_core_int_to_string(self__67)
-    return t208
+    var t218 string = _goml_runtime_core_int_to_string(self__67)
+    return t218
 }
 
 func main() {

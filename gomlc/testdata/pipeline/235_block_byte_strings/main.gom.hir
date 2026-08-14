@@ -22,10 +22,11 @@ file main.gom
       let local/1/4 = b"\x72\x61\x77\x20\x5c\x6e\x20\x62\x79\x74\x65\x73";
       let local/1/5 =
         b"\x71\x75\x6f\x74\x65\x64\x20\x22\x74\x65\x78\x74\x22\x20\x61\x6e\x64\x20\x23";
-      let local/1/7 =
+      let local/1/6: [byte; 3] = b"\x41\x42\x43";
+      let local/1/8 =
         {
-            let local/1/6 = def/1/0();
-            value/6 + def/1/1()
+            let local/1/7 = def/1/0();
+            value/7 + def/1/1()
         };
       println(plain/2.len().to_string());
       println(empty/3.len().to_string());
@@ -34,7 +35,8 @@ file main.gom
       println(plain/2.get(2).to_int().to_string());
       println(raw/4.len().to_string());
       println(quoted/5.len().to_string());
-      println(nested/7.to_string());
+      println(fixed/6[2].to_int().to_string());
+      println(nested/8.to_string());
       if {
           true
       } {

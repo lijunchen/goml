@@ -1,0 +1,16 @@
+package main
+file main.gom
+  static VALUES: OnceCell[FrozenVec[int]] = OnceCell::new();
+
+  fn values() -> FrozenVec[int] {
+      def/1/0.get_or_init(|| Vec::[1, 2, 3].freeze())
+  }
+
+  fn main() -> unit {
+      let local/1/0 = def/1/1();
+      let local/1/1 = frozen/0.to_vec();
+      copy/1.set(0, 9);
+      println(frozen/0.get(0).to_string());
+      println(copy/1.get(0).to_string());
+      println(def/1/1().get(1).to_string())
+  }

@@ -34,51 +34,51 @@ func ref_set__Ref_3int(reference *ref_int_x, value int) struct{} {
 
 func main0() struct{} {
     var i__0 *ref_int_x
-    var inline234 int = 0
-    var inline235 *ref_int_x = ref__Ref_3int(inline234)
-    i__0 = inline235
-    Loop_loop179:
+    var inline244 int = 0
+    var inline245 *ref_int_x = ref__Ref_3int(inline244)
+    i__0 = inline245
+    Loop_loop189:
     for {
-        var t180 int
-        var inline228 int = ref_get__Ref_3int(i__0)
-        t180 = inline228
-        var t181 bool = t180 < 10
-        if t181 {
-            var t186 int
-            var inline226 int = ref_get__Ref_3int(i__0)
-            t186 = inline226
-            var t187 bool
-            var inline223 int = 5
-            var inline224 bool = t186 == inline223
-            t187 = inline224
-            if t187 {
-                break Loop_loop179
+        var t190 int
+        var inline238 int = ref_get__Ref_3int(i__0)
+        t190 = inline238
+        var t191 bool = t190 < 10
+        if t191 {
+            var t196 int
+            var inline236 int = ref_get__Ref_3int(i__0)
+            t196 = inline236
+            var t197 bool
+            var inline233 int = 5
+            var inline234 bool = t196 == inline233
+            t197 = inline234
+            if t197 {
+                break Loop_loop189
             } else {
-                var t183 int
-                var inline221 int = ref_get__Ref_3int(i__0)
-                t183 = inline221
-                var inline218 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t183)
-                _goml_runtime_core_string_println(inline218)
-                var t184 int
-                var inline216 int = ref_get__Ref_3int(i__0)
-                t184 = inline216
-                var t185 int = t184 + 1
-                ref_set__Ref_3int(i__0, t185)
+                var t193 int
+                var inline231 int = ref_get__Ref_3int(i__0)
+                t193 = inline231
+                var inline228 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t193)
+                _goml_runtime_core_string_println(inline228)
+                var t194 int
+                var inline226 int = ref_get__Ref_3int(i__0)
+                t194 = inline226
+                var t195 int = t194 + 1
+                ref_set__Ref_3int(i__0, t195)
                 continue
             }
         } else {
-            break Loop_loop179
+            break Loop_loop189
         }
     }
-    var inline230 string = "done"
-    var inline231 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline230)
-    _goml_runtime_core_string_println(inline231)
+    var inline240 string = "done"
+    var inline241 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline240)
+    _goml_runtime_core_string_println(inline241)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
-    var t207 string = _goml_runtime_core_int_to_string(self__67)
-    return t207
+    var t217 string = _goml_runtime_core_int_to_string(self__67)
+    return t217
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {

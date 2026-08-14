@@ -1,281 +1,281 @@
 fn bump(cell/0: Ref[int32]) -> int32 {
-  join inline_cont287(t185: int32) -> int32 {
-    let t186 = (t185 + 1) in
-    join inline_cont285(mtmp172: unit) -> int32 {
-      let inline284 = @intrinsic(ref.get)(cell/0) in
-      inline284
+  join inline_cont297(t195: int32) -> int32 {
+    let t196 = (t195 + 1) in
+    join inline_cont295(mtmp182: unit) -> int32 {
+      let inline294 = @intrinsic(ref.get)(cell/0) in
+      inline294
     } in
-    let inline286 = @intrinsic(ref.set)(cell/0, t186) in
-    jump inline_cont285(())
+    let inline296 = @intrinsic(ref.set)(cell/0, t196) in
+    jump inline_cont295(())
   } in
-  let inline288 = @intrinsic(ref.get)(cell/0) in
-  jump inline_cont287(inline288)
+  let inline298 = @intrinsic(ref.get)(cell/0) in
+  jump inline_cont297(inline298)
 }
 
 fn flip(flag/1: Ref[bool]) -> bool {
-  join inline_cont293(current/2: bool) -> bool {
-    let t190 = (!current/2) in
-    join inline_cont291(mtmp173: unit) -> bool {
-      let inline290 = @intrinsic(ref.get)(flag/1) in
-      inline290
+  join inline_cont303(current/2: bool) -> bool {
+    let t200 = (!current/2) in
+    join inline_cont301(mtmp183: unit) -> bool {
+      let inline300 = @intrinsic(ref.get)(flag/1) in
+      inline300
     } in
-    let inline292 = @intrinsic(ref.set)(flag/1, t190) in
-    jump inline_cont291(())
+    let inline302 = @intrinsic(ref.set)(flag/1, t200) in
+    jump inline_cont301(())
   } in
-  let inline294 = @intrinsic(ref.get)(flag/1) in
-  jump inline_cont293(inline294)
+  let inline304 = @intrinsic(ref.get)(flag/1) in
+  jump inline_cont303(inline304)
 }
 
 fn nested_total(cell/3: Ref[Ref[int32]]) -> int32 {
-  join inline_cont301(inner/4: Ref[int32]) -> int32 {
-    join inline_cont299(before/5: int32) -> int32 {
-      let t194 = (before/5 + 2) in
-      join inline_cont297(mtmp174: unit) -> int32 {
-        join inline_cont295(t195: int32) -> int32 {
-          let t196 = (before/5 + t195) in
-          t196
+  join inline_cont311(inner/4: Ref[int32]) -> int32 {
+    join inline_cont309(before/5: int32) -> int32 {
+      let t204 = (before/5 + 2) in
+      join inline_cont307(mtmp184: unit) -> int32 {
+        join inline_cont305(t205: int32) -> int32 {
+          let t206 = (before/5 + t205) in
+          t206
         } in
-        let inline296 = @intrinsic(ref.get)(inner/4) in
-        jump inline_cont295(inline296)
+        let inline306 = @intrinsic(ref.get)(inner/4) in
+        jump inline_cont305(inline306)
       } in
-      let inline298 = @intrinsic(ref.set)(inner/4, t194) in
-      jump inline_cont297(())
+      let inline308 = @intrinsic(ref.set)(inner/4, t204) in
+      jump inline_cont307(())
     } in
-    let inline300 = @intrinsic(ref.get)(inner/4) in
-    jump inline_cont299(inline300)
+    let inline310 = @intrinsic(ref.get)(inner/4) in
+    jump inline_cont309(inline310)
   } in
-  let inline302 = @intrinsic(ref.get)(cell/3) in
-  jump inline_cont301(inline302)
+  let inline312 = @intrinsic(ref.get)(cell/3) in
+  jump inline_cont311(inline312)
 }
 
 fn alias_bump(cell/6: Ref[int32]) -> int32 {
-  join inline_cont307(t199: int32) -> int32 {
-    let t200 = (t199 + 5) in
-    join inline_cont305(mtmp175: unit) -> int32 {
-      let inline304 = @intrinsic(ref.get)(cell/6) in
-      inline304
+  join inline_cont317(t209: int32) -> int32 {
+    let t210 = (t209 + 5) in
+    join inline_cont315(mtmp185: unit) -> int32 {
+      let inline314 = @intrinsic(ref.get)(cell/6) in
+      inline314
     } in
-    let inline306 = @intrinsic(ref.set)(cell/6, t200) in
-    jump inline_cont305(())
+    let inline316 = @intrinsic(ref.set)(cell/6, t210) in
+    jump inline_cont315(())
   } in
-  let inline308 = @intrinsic(ref.get)(cell/6) in
-  jump inline_cont307(inline308)
+  let inline318 = @intrinsic(ref.get)(cell/6) in
+  jump inline_cont317(inline318)
 }
 
 fn pair_sum() -> int32 {
-  join inline_cont322(first/8: Ref[int32]) -> int32 {
-    join inline_cont319(second/9: Ref[int32]) -> int32 {
-      join inline_cont317(t204: int32) -> int32 {
-        join inline_cont315(t205: int32) -> int32 {
-          let t206 = (t204 + t205) in
-          join inline_cont313(mtmp176: unit) -> int32 {
-            join inline_cont311(t207: int32) -> int32 {
-              join inline_cont309(t208: int32) -> int32 {
-                let t209 = (t207 + t208) in
-                t209
+  join inline_cont332(first/8: Ref[int32]) -> int32 {
+    join inline_cont329(second/9: Ref[int32]) -> int32 {
+      join inline_cont327(t214: int32) -> int32 {
+        join inline_cont325(t215: int32) -> int32 {
+          let t216 = (t214 + t215) in
+          join inline_cont323(mtmp186: unit) -> int32 {
+            join inline_cont321(t217: int32) -> int32 {
+              join inline_cont319(t218: int32) -> int32 {
+                let t219 = (t217 + t218) in
+                t219
               } in
-              let inline310 = @intrinsic(ref.get)(second/9) in
-              jump inline_cont309(inline310)
+              let inline320 = @intrinsic(ref.get)(second/9) in
+              jump inline_cont319(inline320)
             } in
-            let inline312 = @intrinsic(ref.get)(first/8) in
-            jump inline_cont311(inline312)
+            let inline322 = @intrinsic(ref.get)(first/8) in
+            jump inline_cont321(inline322)
           } in
-          let inline314 = @intrinsic(ref.set)(first/8, t206) in
-          jump inline_cont313(())
+          let inline324 = @intrinsic(ref.set)(first/8, t216) in
+          jump inline_cont323(())
         } in
-        let inline316 = @intrinsic(ref.get)(second/9) in
-        jump inline_cont315(inline316)
+        let inline326 = @intrinsic(ref.get)(second/9) in
+        jump inline_cont325(inline326)
       } in
-      let inline318 = @intrinsic(ref.get)(first/8) in
-      jump inline_cont317(inline318)
+      let inline328 = @intrinsic(ref.get)(first/8) in
+      jump inline_cont327(inline328)
     } in
-    let inline320 = 6 in
-    let inline321 = @intrinsic(ref.new)(inline320) in
-    jump inline_cont319(inline321)
+    let inline330 = 6 in
+    let inline331 = @intrinsic(ref.new)(inline330) in
+    jump inline_cont329(inline331)
   } in
-  let inline323 = 4 in
-  let inline324 = @intrinsic(ref.new)(inline323) in
-  jump inline_cont322(inline324)
+  let inline333 = 4 in
+  let inline334 = @intrinsic(ref.new)(inline333) in
+  jump inline_cont332(inline334)
 }
 
 fn reassign_nested(nested/10: Ref[Ref[int32]]) -> int32 {
-  join inline_cont331(inner/11: Ref[int32]) -> int32 {
-    join inline_cont329(t212: int32) -> int32 {
-      let t213 = (t212 + 7) in
-      join inline_cont327(mtmp177: unit) -> int32 {
-        let inline326 = @intrinsic(ref.get)(inner/11) in
-        inline326
+  join inline_cont341(inner/11: Ref[int32]) -> int32 {
+    join inline_cont339(t222: int32) -> int32 {
+      let t223 = (t222 + 7) in
+      join inline_cont337(mtmp187: unit) -> int32 {
+        let inline336 = @intrinsic(ref.get)(inner/11) in
+        inline336
       } in
-      let inline328 = @intrinsic(ref.set)(inner/11, t213) in
-      jump inline_cont327(())
+      let inline338 = @intrinsic(ref.set)(inner/11, t223) in
+      jump inline_cont337(())
     } in
-    let inline330 = @intrinsic(ref.get)(inner/11) in
-    jump inline_cont329(inline330)
+    let inline340 = @intrinsic(ref.get)(inner/11) in
+    jump inline_cont339(inline340)
   } in
-  let inline332 = @intrinsic(ref.get)(nested/10) in
-  jump inline_cont331(inline332)
+  let inline342 = @intrinsic(ref.get)(nested/10) in
+  jump inline_cont341(inline342)
 }
 
 fn main() -> unit {
   let counter/12 = inherent#Ref#Ref[T]#new__T_int32(39) in
   let toggler/13 = inherent#Ref#Ref[T]#new__T_bool(false) in
-  let t216 = inherent#Ref#Ref[T]#new__T_int32(3) in
-  let nested/14 = inherent#Ref#Ref[T]#new__T_Ref[int32](t216) in
+  let t226 = inherent#Ref#Ref[T]#new__T_int32(3) in
+  let nested/14 = inherent#Ref#Ref[T]#new__T_Ref[int32](t226) in
   let bumped/15 = bump(counter/12) in
   let flipped/16 = flip(toggler/13) in
   let flipped_again/17 = flip(toggler/13) in
   let inner/18 = inherent#Ref#Ref[T]#get__T_Ref[int32](nested/14) in
-  join inline_cont379(t217: int32) -> unit {
-    let t218 = (t217 + bumped/15) in
-    join inline_cont377(mtmp178: unit) -> unit {
+  join inline_cont389(t227: int32) -> unit {
+    let t228 = (t227 + bumped/15) in
+    join inline_cont387(mtmp188: unit) -> unit {
       let nested_total_val/19 = nested_total(nested/14) in
-      join inline_cont371(alias_total/20: int32) -> unit {
-        join inline_cont361(pair_total/21: int32) -> unit {
-          join inline_cont355(reassigned/22: int32) -> unit {
+      join inline_cont381(alias_total/20: int32) -> unit {
+        join inline_cont371(pair_total/21: int32) -> unit {
+          join inline_cont365(reassigned/22: int32) -> unit {
             let bool_check/23 = (!false) in
-            join inline_cont353(t219: int32) -> unit {
-              let t220 = (bumped/15 + t219) in
-              join inline_cont351(t221: string) -> unit {
-                join inline_cont348(mtmp179: unit) -> unit {
-                  let t222 = (nested_total_val/19 + alias_total/20) in
-                  let t223 = (t222 + reassigned/22) in
-                  join inline_cont346(t224: string) -> unit {
-                    join inline_cont343(mtmp180: unit) -> unit {
-                      join inline_cont341(t225: string) -> unit {
-                        join inline_cont338(mtmp181: unit) -> unit {
-                          join k229(jp230: bool) -> unit {
-                            join k226(jp227: bool) -> unit {
-                              join inline_cont336(t228: string) -> unit {
-                                let inline334 = trait_impl#ToString#string#to_string(t228) in
-                                let inline335 = @runtime(core.string_println)(inline334) in
+            join inline_cont363(t229: int32) -> unit {
+              let t230 = (bumped/15 + t229) in
+              join inline_cont361(t231: string) -> unit {
+                join inline_cont358(mtmp189: unit) -> unit {
+                  let t232 = (nested_total_val/19 + alias_total/20) in
+                  let t233 = (t232 + reassigned/22) in
+                  join inline_cont356(t234: string) -> unit {
+                    join inline_cont353(mtmp190: unit) -> unit {
+                      join inline_cont351(t235: string) -> unit {
+                        join inline_cont348(mtmp191: unit) -> unit {
+                          join k239(jp240: bool) -> unit {
+                            join k236(jp237: bool) -> unit {
+                              join inline_cont346(t238: string) -> unit {
+                                let inline344 = trait_impl#ToString#string#to_string(t238) in
+                                let inline345 = @runtime(core.string_println)(inline344) in
                                 ()
                               } in
-                              let inline337 = @runtime(core.bool_to_string)(jp227) in
-                              jump inline_cont336(inline337)
+                              let inline347 = @runtime(core.bool_to_string)(jp237) in
+                              jump inline_cont346(inline347)
                             } in
-                            if jp230 {
-                              jump k226(bool_check/23)
+                            if jp240 {
+                              jump k236(bool_check/23)
                             } else {
-                              jump k226(false)
+                              jump k236(false)
                             }
                           } in
                           if flipped/16 {
-                            jump k229(flipped_again/17)
+                            jump k239(flipped_again/17)
                           } else {
-                            jump k229(false)
+                            jump k239(false)
                           }
                         } in
-                        let inline339 = trait_impl#ToString#string#to_string(t225) in
-                        let inline340 = @runtime(core.string_println)(inline339) in
-                        jump inline_cont338(())
+                        let inline349 = trait_impl#ToString#string#to_string(t235) in
+                        let inline350 = @runtime(core.string_println)(inline349) in
+                        jump inline_cont348(())
                       } in
-                      let inline342 = @runtime(core.int32_to_string)(pair_total/21) in
-                      jump inline_cont341(inline342)
+                      let inline352 = @runtime(core.int32_to_string)(pair_total/21) in
+                      jump inline_cont351(inline352)
                     } in
-                    let inline344 = trait_impl#ToString#string#to_string(t224) in
-                    let inline345 = @runtime(core.string_println)(inline344) in
-                    jump inline_cont343(())
+                    let inline354 = trait_impl#ToString#string#to_string(t234) in
+                    let inline355 = @runtime(core.string_println)(inline354) in
+                    jump inline_cont353(())
                   } in
-                  let inline347 = @runtime(core.int32_to_string)(t223) in
-                  jump inline_cont346(inline347)
+                  let inline357 = @runtime(core.int32_to_string)(t233) in
+                  jump inline_cont356(inline357)
                 } in
-                let inline349 = trait_impl#ToString#string#to_string(t221) in
-                let inline350 = @runtime(core.string_println)(inline349) in
-                jump inline_cont348(())
+                let inline359 = trait_impl#ToString#string#to_string(t231) in
+                let inline360 = @runtime(core.string_println)(inline359) in
+                jump inline_cont358(())
               } in
-              let inline352 = @runtime(core.int32_to_string)(t220) in
-              jump inline_cont351(inline352)
+              let inline362 = @runtime(core.int32_to_string)(t230) in
+              jump inline_cont361(inline362)
             } in
-            let inline354 = @intrinsic(ref.get)(counter/12) in
-            jump inline_cont353(inline354)
+            let inline364 = @intrinsic(ref.get)(counter/12) in
+            jump inline_cont363(inline364)
           } in
-          let inline356 = inherent#Ref#Ref[T]#get__T_Ref[int32](nested/14) in
-          let inline357 = inherent#Ref#Ref[T]#get__T_int32(inline356) in
-          let inline358 = (inline357 + 7) in
-          let inline359 = inherent#Ref#Ref[T]#set__T_int32(inline356, inline358) in
-          let inline360 = inherent#Ref#Ref[T]#get__T_int32(inline356) in
-          jump inline_cont355(inline360)
+          let inline366 = inherent#Ref#Ref[T]#get__T_Ref[int32](nested/14) in
+          let inline367 = inherent#Ref#Ref[T]#get__T_int32(inline366) in
+          let inline368 = (inline367 + 7) in
+          let inline369 = inherent#Ref#Ref[T]#set__T_int32(inline366, inline368) in
+          let inline370 = inherent#Ref#Ref[T]#get__T_int32(inline366) in
+          jump inline_cont365(inline370)
         } in
-        let inline362 = inherent#Ref#Ref[T]#new__T_int32(4) in
-        let inline363 = inherent#Ref#Ref[T]#new__T_int32(6) in
-        let inline364 = inherent#Ref#Ref[T]#get__T_int32(inline362) in
-        let inline365 = inherent#Ref#Ref[T]#get__T_int32(inline363) in
-        let inline366 = (inline364 + inline365) in
-        let inline367 = inherent#Ref#Ref[T]#set__T_int32(inline362, inline366) in
-        let inline368 = inherent#Ref#Ref[T]#get__T_int32(inline362) in
-        let inline369 = inherent#Ref#Ref[T]#get__T_int32(inline363) in
-        let inline370 = (inline368 + inline369) in
-        jump inline_cont361(inline370)
+        let inline372 = inherent#Ref#Ref[T]#new__T_int32(4) in
+        let inline373 = inherent#Ref#Ref[T]#new__T_int32(6) in
+        let inline374 = inherent#Ref#Ref[T]#get__T_int32(inline372) in
+        let inline375 = inherent#Ref#Ref[T]#get__T_int32(inline373) in
+        let inline376 = (inline374 + inline375) in
+        let inline377 = inherent#Ref#Ref[T]#set__T_int32(inline372, inline376) in
+        let inline378 = inherent#Ref#Ref[T]#get__T_int32(inline372) in
+        let inline379 = inherent#Ref#Ref[T]#get__T_int32(inline373) in
+        let inline380 = (inline378 + inline379) in
+        jump inline_cont371(inline380)
       } in
-      let inline373 = inherent#Ref#Ref[T]#get__T_int32(counter/12) in
-      let inline374 = (inline373 + 5) in
-      let inline375 = inherent#Ref#Ref[T]#set__T_int32(counter/12, inline374) in
-      let inline376 = inherent#Ref#Ref[T]#get__T_int32(counter/12) in
-      jump inline_cont371(inline376)
+      let inline383 = inherent#Ref#Ref[T]#get__T_int32(counter/12) in
+      let inline384 = (inline383 + 5) in
+      let inline385 = inherent#Ref#Ref[T]#set__T_int32(counter/12, inline384) in
+      let inline386 = inherent#Ref#Ref[T]#get__T_int32(counter/12) in
+      jump inline_cont381(inline386)
     } in
-    let inline378 = @intrinsic(ref.set)(inner/18, t218) in
-    jump inline_cont377(())
+    let inline388 = @intrinsic(ref.set)(inner/18, t228) in
+    jump inline_cont387(())
   } in
-  let inline380 = @intrinsic(ref.get)(inner/18) in
-  jump inline_cont379(inline380)
+  let inline390 = @intrinsic(ref.get)(inner/18) in
+  jump inline_cont389(inline390)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/256: Ref[int32]) -> int32 {
-  let t233 = @intrinsic(ref.get)(self/256) in
-  t233
-}
-
-fn inherent#Ref#Ref[T]#set__T_int32(self/257: Ref[int32], value/258: int32) -> unit {
-  let t235 = @intrinsic(ref.set)(self/257, value/258) in
-  ()
-}
-
-fn inherent#Ref#Ref[T]#get__T_bool(self/256: Ref[bool]) -> bool {
-  let t238 = @intrinsic(ref.get)(self/256) in
-  t238
-}
-
-fn inherent#Ref#Ref[T]#set__T_bool(self/257: Ref[bool], value/258: bool) -> unit {
-  let t240 = @intrinsic(ref.set)(self/257, value/258) in
-  ()
-}
-
-fn inherent#Ref#Ref[T]#get__T_Ref[int32](self/256: Ref[Ref[int32]]) -> Ref[int32] {
-  let t243 = @intrinsic(ref.get)(self/256) in
+fn inherent#Ref#Ref[T]#get__T_int32(self/271: Ref[int32]) -> int32 {
+  let t243 = @intrinsic(ref.get)(self/271) in
   t243
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/255: int32) -> Ref[int32] {
-  let t246 = @intrinsic(ref.new)(value/255) in
-  t246
+fn inherent#Ref#Ref[T]#set__T_int32(self/272: Ref[int32], value/273: int32) -> unit {
+  let t245 = @intrinsic(ref.set)(self/272, value/273) in
+  ()
 }
 
-fn inherent#Ref#Ref[T]#new__T_bool(value/255: bool) -> Ref[bool] {
-  let t249 = @intrinsic(ref.new)(value/255) in
-  t249
+fn inherent#Ref#Ref[T]#get__T_bool(self/271: Ref[bool]) -> bool {
+  let t248 = @intrinsic(ref.get)(self/271) in
+  t248
 }
 
-fn inherent#Ref#Ref[T]#new__T_Ref[int32](value/255: Ref[int32]) -> Ref[Ref[int32]] {
-  let t252 = @intrinsic(ref.new)(value/255) in
-  t252
+fn inherent#Ref#Ref[T]#set__T_bool(self/272: Ref[bool], value/273: bool) -> unit {
+  let t250 = @intrinsic(ref.set)(self/272, value/273) in
+  ()
+}
+
+fn inherent#Ref#Ref[T]#get__T_Ref[int32](self/271: Ref[Ref[int32]]) -> Ref[int32] {
+  let t253 = @intrinsic(ref.get)(self/271) in
+  t253
+}
+
+fn inherent#Ref#Ref[T]#new__T_int32(value/270: int32) -> Ref[int32] {
+  let t256 = @intrinsic(ref.new)(value/270) in
+  t256
+}
+
+fn inherent#Ref#Ref[T]#new__T_bool(value/270: bool) -> Ref[bool] {
+  let t259 = @intrinsic(ref.new)(value/270) in
+  t259
+}
+
+fn inherent#Ref#Ref[T]#new__T_Ref[int32](value/270: Ref[int32]) -> Ref[Ref[int32]] {
+  let t262 = @intrinsic(ref.new)(value/270) in
+  t262
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont381(t254: string) -> unit {
-    let t255 = @runtime(core.string_println)(t254) in
+  join inline_cont391(t264: string) -> unit {
+    let t265 = @runtime(core.string_println)(t264) in
     ()
   } in
-  jump inline_cont381(value/1)
+  jump inline_cont391(value/1)
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {
-  let t258 = @runtime(core.int32_to_string)(self/33) in
-  t258
+  let t268 = @runtime(core.int32_to_string)(self/33) in
+  t268
 }
 
 fn trait_impl#ToString#bool#to_string(self/64: bool) -> string {
-  let t261 = @runtime(core.bool_to_string)(self/64) in
-  t261
+  let t271 = @runtime(core.bool_to_string)(self/64) in
+  t271
 }
 
 fn trait_impl#ToString#string#to_string(self/65: string) -> string {
@@ -283,18 +283,18 @@ fn trait_impl#ToString#string#to_string(self/65: string) -> string {
 }
 
 fn trait_impl#PartialEq#int32#eq(self/107: int32, other/108: int32) -> bool {
-  let t266 = (self/107 == other/108) in
-  t266
+  let t276 = (self/107 == other/108) in
+  t276
 }
 
 fn trait_impl#Hash#int32#hash(self/130: int32) -> uint64 {
-  let t269 = @runtime(core.int32_hash)(self/130) in
-  t269
+  let t279 = @runtime(core.int32_hash)(self/130) in
+  t279
 }
 
 fn trait_impl#PartialEq#bool#eq(self/95: bool, other/96: bool) -> bool {
-  let t272 = (self/95 == other/96) in
-  t272
+  let t282 = (self/95 == other/96) in
+  t282
 }
 
 fn trait_impl#Hash#bool#hash(self/124: bool) -> uint64 {
@@ -306,11 +306,11 @@ fn trait_impl#Hash#bool#hash(self/124: bool) -> uint64 {
 }
 
 fn trait_impl#PartialEq#Ref[int32]#eq(self/136: Ref[int32], other/137: Ref[int32]) -> bool {
-  let t279 = @intrinsic(ref.ptr_eq)(self/136, other/137) in
-  t279
+  let t289 = @intrinsic(ref.ptr_eq)(self/136, other/137) in
+  t289
 }
 
 fn trait_impl#Hash#Ref[int32]#hash(self/138: Ref[int32]) -> uint64 {
-  let t282 = @intrinsic(ref.ptr_hash)(self/138) in
-  t282
+  let t292 = @intrinsic(ref.ptr_hash)(self/138) in
+  t292
 }

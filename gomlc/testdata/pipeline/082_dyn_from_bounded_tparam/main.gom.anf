@@ -3,28 +3,28 @@ fn trait_impl#Display#S#show(self/0: S) -> string {
 }
 
 fn main() -> unit {
-  let t177 = S {} in
-  join inline_cont190(mtmp172: dyn Display) -> unit {
-    let inline187 = "ok" in
-    let inline188 = trait_impl#ToString#string#to_string(inline187) in
-    let inline189 = @runtime(core.string_println)(inline188) in
+  let t187 = S {} in
+  join inline_cont200(mtmp182: dyn Display) -> unit {
+    let inline197 = "ok" in
+    let inline198 = trait_impl#ToString#string#to_string(inline197) in
+    let inline199 = @runtime(core.string_println)(inline198) in
     ()
   } in
-  let inline191 = to_dyn[Display]{S}(t177) in
-  jump inline_cont190(inline191)
+  let inline201 = to_dyn[Display]{S}(t187) in
+  jump inline_cont200(inline201)
 }
 
 fn to_dyn__T_S(x/1: S) -> dyn Display {
-  let t180 = to_dyn[Display]{S}(x/1) in
-  t180
+  let t190 = to_dyn[Display]{S}(x/1) in
+  t190
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont192(t182: string) -> unit {
-    let t183 = @runtime(core.string_println)(t182) in
+  join inline_cont202(t192: string) -> unit {
+    let t193 = @runtime(core.string_println)(t192) in
     ()
   } in
-  jump inline_cont192(value/1)
+  jump inline_cont202(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/65: string) -> string {

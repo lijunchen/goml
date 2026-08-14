@@ -15,64 +15,16 @@ fn loop_answer() -> int {
 }
 
 fn main() -> unit {
-    let plain/2: Vec[uint8] =
-      {
-          let vec_literal/251: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/251 : Vec[uint8]), 65);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/251 : Vec[uint8]), 10);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/251 : Vec[uint8]), 66);
-          (vec_literal/251 : Vec[uint8])
-      };
-    let empty/3: Vec[uint8] =
-      {
-          let vec_literal/279: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (vec_literal/279 : Vec[uint8])
-      };
-    let raw/4: Vec[uint8] =
-      {
-          let vec_literal/298: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/298 : Vec[uint8]), 114);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/298 : Vec[uint8]), 97);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/298 : Vec[uint8]), 119);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/298 : Vec[uint8]), 32);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/298 : Vec[uint8]), 92);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/298 : Vec[uint8]), 110);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/298 : Vec[uint8]), 32);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/298 : Vec[uint8]), 98);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/298 : Vec[uint8]), 121);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/298 : Vec[uint8]), 116);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/298 : Vec[uint8]), 101);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/298 : Vec[uint8]), 115);
-          (vec_literal/298 : Vec[uint8])
-      };
+    let plain/2: Vec[uint8] = bytes[65, 10, 66];
+    let empty/3: Vec[uint8] = bytes[];
+    let raw/4: Vec[uint8] = bytes[114, 97, 119, 32, 92, 110, 32, 98, 121, 116, 101, 115];
     let quoted/5: Vec[uint8] =
+      bytes[113, 117, 111, 116, 101, 100, 32, 34, 116, 101, 120, 116, 34, 32, 97, 110, 100, 32, 35];
+    let fixed/6: [uint8; 3] = [65, 66, 67];
+    let nested/8: int =
       {
-          let vec_literal/335: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/335 : Vec[uint8]), 113);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/335 : Vec[uint8]), 117);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/335 : Vec[uint8]), 111);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/335 : Vec[uint8]), 116);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/335 : Vec[uint8]), 101);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/335 : Vec[uint8]), 100);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/335 : Vec[uint8]), 32);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/335 : Vec[uint8]), 34);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/335 : Vec[uint8]), 116);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/335 : Vec[uint8]), 101);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/335 : Vec[uint8]), 120);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/335 : Vec[uint8]), 116);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/335 : Vec[uint8]), 34);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/335 : Vec[uint8]), 32);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/335 : Vec[uint8]), 97);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/335 : Vec[uint8]), 110);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/335 : Vec[uint8]), 100);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/335 : Vec[uint8]), 32);
-          (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((vec_literal/335 : Vec[uint8]), 35);
-          (vec_literal/335 : Vec[uint8])
-      };
-    let nested/7: int =
-      {
-          let value/6: int = (answer : () -> int)();
-          (value/6 : int) + (loop_answer : () -> int)()
+          let value/7: int = (answer : () -> int)();
+          (value/7 : int) + (loop_answer : () -> int)()
       };
     (println : (string) -> unit)(
       (int::to_string : (int) -> string)(
@@ -115,7 +67,12 @@ fn main() -> unit {
         (Vec[uint8]::len : (Vec[uint8]) -> int)((quoted/5 : Vec[uint8]))
       )
     );
-    (println : (string) -> unit)((int::to_string : (int) -> string)((nested/7 : int)));
+    (println : (string) -> unit)(
+      (int::to_string : (int) -> string)(
+        (uint8::to_int : (uint8) -> int)((fixed/6 : [uint8; 3])[2])
+      )
+    );
+    (println : (string) -> unit)((int::to_string : (int) -> string)((nested/8 : int)));
     if {
         true
     } {

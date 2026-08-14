@@ -1,11 +1,11 @@
 fn absurd(value/0: Never) -> int32 {
-  let t186 = @intrinsic(compiler.missing)("") in
-  t186
+  let t196 = @intrinsic(compiler.missing)("") in
+  t196
 }
 
 fn absurd_loop(value/1: Loop) -> int32 {
-  let t189 = @intrinsic(compiler.missing)("") in
-  t189
+  let t199 = @intrinsic(compiler.missing)("") in
+  t199
 }
 
 fn maybe_never(value/2: MaybeNever) -> int32 {
@@ -17,66 +17,66 @@ fn maybe_never(value/2: MaybeNever) -> int32 {
 }
 
 fn empty_never_vec(value/3: Vec[Never]) -> int32 {
-  let t198 = @intrinsic(vec.len)(value/3) in
-  let t199 = (t198 == 0) in
-  if t199 {
+  let t208 = @intrinsic(vec.len)(value/3) in
+  let t209 = (t208 == 0) in
+  if t209 {
     0
   } else {
-    let t200 = @intrinsic(compiler.missing)("") in
-    t200
+    let t210 = @intrinsic(compiler.missing)("") in
+    t210
   }
 }
 
 fn sequence_coverage(value/4: Vec[bool]) -> int32 {
-  let t205 = @intrinsic(vec.len)(value/4) in
-  let t206 = (t205 == 0) in
-  if t206 {
+  let t215 = @intrinsic(vec.len)(value/4) in
+  let t216 = (t215 == 0) in
+  if t216 {
     0
   } else {
-    let t209 = @intrinsic(vec.len)(value/4) in
-    let t210 = (t209 == 1) in
-    if t210 {
+    let t219 = @intrinsic(vec.len)(value/4) in
+    let t220 = (t219 == 1) in
+    if t220 {
       1
     } else {
-      let t213 = @intrinsic(vec.len)(value/4) in
-      let t214 = (t213 >= 2) in
-      if t214 {
-        let t217 = @intrinsic(vec.get)(value/4, 0) in
-        let t218 = (t217 == true) in
-        if t218 {
+      let t223 = @intrinsic(vec.len)(value/4) in
+      let t224 = (t223 >= 2) in
+      if t224 {
+        let t227 = @intrinsic(vec.get)(value/4, 0) in
+        let t228 = (t227 == true) in
+        if t228 {
           2
         } else {
-          let t221 = @intrinsic(vec.len)(value/4) in
-          let t222 = (t221 >= 2) in
-          if t222 {
-            let t225 = @intrinsic(vec.get)(value/4, 0) in
-            let t226 = (t225 == false) in
-            if t226 {
+          let t231 = @intrinsic(vec.len)(value/4) in
+          let t232 = (t231 >= 2) in
+          if t232 {
+            let t235 = @intrinsic(vec.get)(value/4, 0) in
+            let t236 = (t235 == false) in
+            if t236 {
               3
             } else {
-              let t227 = @intrinsic(compiler.missing)("") in
-              t227
+              let t237 = @intrinsic(compiler.missing)("") in
+              t237
             }
           } else {
-            let t228 = @intrinsic(compiler.missing)("") in
-            t228
+            let t238 = @intrinsic(compiler.missing)("") in
+            t238
           }
         }
       } else {
-        let t231 = @intrinsic(vec.len)(value/4) in
-        let t232 = (t231 >= 2) in
-        if t232 {
-          let t235 = @intrinsic(vec.get)(value/4, 0) in
-          let t236 = (t235 == false) in
-          if t236 {
+        let t241 = @intrinsic(vec.len)(value/4) in
+        let t242 = (t241 >= 2) in
+        if t242 {
+          let t245 = @intrinsic(vec.get)(value/4, 0) in
+          let t246 = (t245 == false) in
+          if t246 {
             3
           } else {
-            let t237 = @intrinsic(compiler.missing)("") in
-            t237
+            let t247 = @intrinsic(compiler.missing)("") in
+            t247
           }
         } else {
-          let t238 = @intrinsic(compiler.missing)("") in
-          t238
+          let t248 = @intrinsic(compiler.missing)("") in
+          t248
         }
       }
     }
@@ -86,8 +86,8 @@ fn sequence_coverage(value/4: Vec[bool]) -> int32 {
 fn unwrap(value/5: Single) -> int32 {
   match value/5 {
     Tag_0 => {
-      let x178 = Single::Only._0(value/5) in
-      x178
+      let x188 = Single::Only._0(value/5) in
+      x188
     },
   }
 }
@@ -115,67 +115,67 @@ fn signed_zero(value/8: float64) -> string {
 }
 
 fn main() -> unit {
-  join inline_cont280(t253: int32) -> unit {
-    join inline_cont277(_wild181: unit) -> unit {
-      join inline_cont275(t254: int32) -> unit {
-        join inline_cont272(_wild182: unit) -> unit {
-          join inline_cont270(t255: string) -> unit {
-            let inline268 = trait_impl#ToString#string#to_string(t255) in
-            let inline269 = @runtime(core.string_println)(inline268) in
+  join inline_cont290(t263: int32) -> unit {
+    join inline_cont287(_wild191: unit) -> unit {
+      join inline_cont285(t264: int32) -> unit {
+        join inline_cont282(_wild192: unit) -> unit {
+          join inline_cont280(t265: string) -> unit {
+            let inline278 = trait_impl#ToString#string#to_string(t265) in
+            let inline279 = @runtime(core.string_println)(inline278) in
             ()
           } in
-          let inline271 = 0 in
-          match inline271 {
+          let inline281 = 0 in
+          match inline281 {
             -0 => {
-              jump inline_cont270("zero")
+              jump inline_cont280("zero")
             },
             _ => {
-              jump inline_cont270("other")
+              jump inline_cont280("other")
             },
           }
         } in
-        let inline273 = trait_impl#ToString#int32#to_string(t254) in
-        let inline274 = @runtime(core.string_println)(inline273) in
-        jump inline_cont272(())
+        let inline283 = trait_impl#ToString#int32#to_string(t264) in
+        let inline284 = @runtime(core.string_println)(inline283) in
+        jump inline_cont282(())
       } in
-      let inline276 = true in
-      match inline276 {
+      let inline286 = true in
+      match inline286 {
         true => {
-          jump inline_cont275(1)
+          jump inline_cont285(1)
         },
         false => {
-          jump inline_cont275(2)
+          jump inline_cont285(2)
         },
       }
     } in
-    let inline278 = trait_impl#ToString#int32#to_string(t253) in
-    let inline279 = @runtime(core.string_println)(inline278) in
-    jump inline_cont277(())
+    let inline288 = trait_impl#ToString#int32#to_string(t263) in
+    let inline289 = @runtime(core.string_println)(inline288) in
+    jump inline_cont287(())
   } in
-  let inline282 = 12 in
-  jump inline_cont280(inline282)
+  let inline292 = 12 in
+  jump inline_cont290(inline292)
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join inline_cont284(t257: string) -> unit {
-    let t258 = @runtime(core.string_println)(t257) in
+  join inline_cont294(t267: string) -> unit {
+    let t268 = @runtime(core.string_println)(t267) in
     ()
   } in
-  let inline285 = @runtime(core.int32_to_string)(value/1) in
-  jump inline_cont284(inline285)
+  let inline295 = @runtime(core.int32_to_string)(value/1) in
+  jump inline_cont294(inline295)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont286(t260: string) -> unit {
-    let t261 = @runtime(core.string_println)(t260) in
+  join inline_cont296(t270: string) -> unit {
+    let t271 = @runtime(core.string_println)(t270) in
     ()
   } in
-  jump inline_cont286(value/1)
+  jump inline_cont296(value/1)
 }
 
 fn trait_impl#ToString#int32#to_string(self/70: int32) -> string {
-  let t264 = @runtime(core.int32_to_string)(self/70) in
-  t264
+  let t274 = @runtime(core.int32_to_string)(self/70) in
+  t274
 }
 
 fn trait_impl#ToString#string#to_string(self/65: string) -> string {

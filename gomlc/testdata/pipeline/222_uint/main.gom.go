@@ -146,63 +146,63 @@ func main0() struct{} {
     var right__4_source int = 2
     var right__4 uint = uint(int(right__4_source))
     var result__5 uint
-    var inline268 uint = left__3 + right__4
-    var inline269 uint = inline268 * 2
-    result__5 = inline269
-    var inline265 string = _goml_m_trait__impl_i_ToString_i_uint_i_to__string(result__5)
-    _goml_runtime_core_string_println(inline265)
-    var t189 string
-    var inline263 string = _goml_runtime_core_uint_to_string(result__5)
-    t189 = inline263
-    var inline260 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t189)
-    _goml_runtime_core_string_println(inline260)
-    var t190 string
+    var inline278 uint = left__3 + right__4
+    var inline279 uint = inline278 * 2
+    result__5 = inline279
+    var inline275 string = _goml_m_trait__impl_i_ToString_i_uint_i_to__string(result__5)
+    _goml_runtime_core_string_println(inline275)
+    var t199 string
+    var inline273 string = _goml_runtime_core_uint_to_string(result__5)
+    t199 = inline273
+    var inline270 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t199)
+    _goml_runtime_core_string_println(inline270)
+    var t200 string
     switch result__5 {
     case 0:
-        t190 = "zero"
+        t200 = "zero"
     case 42:
-        t190 = "answer"
+        t200 = "answer"
     default:
-        t190 = "other"
+        t200 = "other"
     }
-    var inline256 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t190)
-    _goml_runtime_core_string_println(inline256)
-    var t191 bool = result__5 > left__3
-    var inline253 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t191)
-    _goml_runtime_core_string_println(inline253)
-    var t192_rhs uint = 15
-    var t192 uint = result__5 & t192_rhs
-    var t193 uint64 = uint64(uint(t192))
-    var inline250 string = _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(t193)
-    _goml_runtime_core_string_println(inline250)
+    var inline266 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t200)
+    _goml_runtime_core_string_println(inline266)
+    var t201 bool = result__5 > left__3
+    var inline263 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t201)
+    _goml_runtime_core_string_println(inline263)
+    var t202_rhs uint = 15
+    var t202 uint = result__5 & t202_rhs
+    var t203 uint64 = uint64(uint(t202))
+    var inline260 string = _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(t203)
+    _goml_runtime_core_string_println(inline260)
     var values__6 *hashmap_uint_string_x
-    var inline248 *hashmap_uint_string_x = hashmap_new__HashMap_4uint_6string()
-    values__6 = inline248
-    var inline245 string = "stored"
-    hashmap_set__HashMap_4uint_6string(values__6, result__5, inline245)
-    var mtmp178 Option__string
-    var inline242 uint = 42
-    var inline243 Option__string = hashmap_get__HashMap_4uint_6string(values__6, inline242)
-    mtmp178 = inline243
-    switch mtmp178.(type) {
+    var inline258 *hashmap_uint_string_x = hashmap_new__HashMap_4uint_6string()
+    values__6 = inline258
+    var inline255 string = "stored"
+    hashmap_set__HashMap_4uint_6string(values__6, result__5, inline255)
+    var mtmp188 Option__string
+    var inline252 uint = 42
+    var inline253 Option__string = hashmap_get__HashMap_4uint_6string(values__6, inline252)
+    mtmp188 = inline253
+    switch mtmp188.(type) {
     case None:
-        var inline235 string = "missing"
-        var inline236 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline235)
-        _goml_runtime_core_string_println(inline236)
+        var inline245 string = "missing"
+        var inline246 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline245)
+        _goml_runtime_core_string_println(inline246)
         return struct{}{}
     case Some:
-        var x179 string = mtmp178.(Some)._0
-        var inline239 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x179)
-        _goml_runtime_core_string_println(inline239)
+        var x189 string = mtmp188.(Some)._0
+        var inline249 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x189)
+        _goml_runtime_core_string_println(inline249)
         return struct{}{}
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_uint_i_to__string(self__266 uint) string {
-    var t205 string = _goml_runtime_core_uint_to_string(self__266)
-    return t205
+func _goml_m_trait__impl_i_ToString_i_uint_i_to__string(self__281 uint) string {
+    var t215 string = _goml_runtime_core_uint_to_string(self__281)
+    return t215
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
@@ -210,23 +210,23 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) strin
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
-    var t224 string = _goml_runtime_core_bool_to_string(self__64)
-    return t224
+    var t234 string = _goml_runtime_core_bool_to_string(self__64)
+    return t234
 }
 
 func _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(self__75 uint64) string {
-    var t227 string = _goml_runtime_core_uint64_to_string(self__75)
-    return t227
+    var t237 string = _goml_runtime_core_uint64_to_string(self__75)
+    return t237
 }
 
-func _goml_m_trait__impl_i_PartialEq_i_uint_i_eq(self__268 uint, other__269 uint) bool {
-    var t230 bool = self__268 == other__269
-    return t230
+func _goml_m_trait__impl_i_PartialEq_i_uint_i_eq(self__283 uint, other__284 uint) bool {
+    var t240 bool = self__283 == other__284
+    return t240
 }
 
-func _goml_m_trait__impl_i_Hash_i_uint_i_hash(self__270 uint) uint64 {
-    var t233 uint64 = _goml_runtime_core_uint_hash(self__270)
-    return t233
+func _goml_m_trait__impl_i_Hash_i_uint_i_hash(self__285 uint) uint64 {
+    var t243 uint64 = _goml_runtime_core_uint_hash(self__285)
+    return t243
 }
 
 func main() {

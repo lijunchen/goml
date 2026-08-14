@@ -47,35 +47,35 @@ func _goml_m_trait__impl_i_Named_i_Point_i_name(self__0 Point) string {
 }
 
 func _goml_m_trait__impl_i_Display_i_Point_i_show(self__1 Point, prefix__2 string) string {
-    var t180 int32 = self__1.value
-    var t181 string
-    var inline198 string = _goml_runtime_core_int32_to_string(t180)
-    t181 = inline198
-    var t182 string = prefix__2 + t181
-    return t182
+    var t190 int32 = self__1.value
+    var t191 string
+    var inline208 string = _goml_runtime_core_int32_to_string(t190)
+    t191 = inline208
+    var t192 string = prefix__2 + t191
+    return t192
 }
 
 func main0() struct{} {
-    var t188 Point = Point{
+    var t198 Point = Point{
         value: 7,
     }
     var value__4 dyn__Display = dyn__Display{
-        data: t188,
+        data: t198,
         vtable: dyn__Display__vtable__Point(),
     }
-    var inline209 string = value__4.vtable.show(value__4.data, "value=")
-    println__T_string(inline209)
-    var inline211 string = value__4.vtable.name(value__4.data)
-    println__T_string(inline211)
-    var inline213 string = value__4.vtable.show(value__4.data, "again=")
-    println__T_string(inline213)
+    var inline219 string = value__4.vtable.show(value__4.data, "value=")
+    println__T_string(inline219)
+    var inline221 string = value__4.vtable.name(value__4.data)
+    println__T_string(inline221)
+    var inline223 string = value__4.vtable.show(value__4.data, "again=")
+    println__T_string(inline223)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t193 string
-    t193 = value__1
-    _goml_runtime_core_string_println(t193)
+    var t203 string
+    t203 = value__1
+    _goml_runtime_core_string_println(t203)
     return struct{}{}
 }
 

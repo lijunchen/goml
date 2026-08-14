@@ -1,74 +1,74 @@
 fn trait_impl#Mark#int32#marked(self/0: int32) -> string {
-  join inline_cont203(t175: string) -> string {
-    let t176 = ("m" + t175) in
-    t176
+  join inline_cont213(t185: string) -> string {
+    let t186 = ("m" + t185) in
+    t186
   } in
-  let inline204 = @runtime(core.int32_to_string)(self/0) in
-  jump inline_cont203(inline204)
+  let inline214 = @runtime(core.int32_to_string)(self/0) in
+  jump inline_cont213(inline214)
 }
 
 fn trait_impl#Source#LeftSource#get(self/1: LeftSource) -> int32 {
-  let t179 = LeftSource.value(self/1) in
-  t179
-}
-
-fn trait_impl#Source#RightSource#get(self/2: RightSource) -> int32 {
-  let t182 = RightSource.value(self/2) in
-  t182
-}
-
-fn main() -> unit {
-  let t184 = LeftSource { value: 3 } in
-  let t185 = RightSource { value: 4 } in
-  join inline_cont208(t186: string) -> unit {
-    let inline206 = trait_impl#ToString#string#to_string(t186) in
-    let inline207 = @runtime(core.string_println)(inline206) in
-    ()
-  } in
-  let inline209 = trait_impl#Source#LeftSource#get(t184) in
-  let inline210 = trait_impl#Mark#int32#marked(inline209) in
-  let inline211 = (inline210 + ":") in
-  let inline212 = trait_impl#Source#RightSource#get(t185) in
-  let inline213 = trait_impl#Mark#int32#marked(inline212) in
-  let inline214 = (inline211 + inline213) in
-  jump inline_cont208(inline214)
-}
-
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
-  let t189 = @runtime(core.int32_to_string)(self/33) in
+  let t189 = LeftSource.value(self/1) in
   t189
 }
 
-fn println__T_string(value/1: string) -> unit {
-  join inline_cont215(t191: string) -> unit {
-    let t192 = @runtime(core.string_println)(t191) in
+fn trait_impl#Source#RightSource#get(self/2: RightSource) -> int32 {
+  let t192 = RightSource.value(self/2) in
+  t192
+}
+
+fn main() -> unit {
+  let t194 = LeftSource { value: 3 } in
+  let t195 = RightSource { value: 4 } in
+  join inline_cont218(t196: string) -> unit {
+    let inline216 = trait_impl#ToString#string#to_string(t196) in
+    let inline217 = @runtime(core.string_println)(inline216) in
     ()
   } in
-  jump inline_cont215(value/1)
+  let inline219 = trait_impl#Source#LeftSource#get(t194) in
+  let inline220 = trait_impl#Mark#int32#marked(inline219) in
+  let inline221 = (inline220 + ":") in
+  let inline222 = trait_impl#Source#RightSource#get(t195) in
+  let inline223 = trait_impl#Mark#int32#marked(inline222) in
+  let inline224 = (inline221 + inline223) in
+  jump inline_cont218(inline224)
+}
+
+fn inherent#int32#int32#to_string(self/33: int32) -> string {
+  let t199 = @runtime(core.int32_to_string)(self/33) in
+  t199
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join inline_cont225(t201: string) -> unit {
+    let t202 = @runtime(core.string_println)(t201) in
+    ()
+  } in
+  jump inline_cont225(value/1)
 }
 
 fn combine__A_LeftSource__B_RightSource(left/3: LeftSource, right/4: RightSource) -> string {
-  join inline_cont224(t195: int32) -> string {
-    join inline_cont221(t196: string) -> string {
-      let t197 = (t196 + ":") in
-      join inline_cont219(t198: int32) -> string {
-        join inline_cont216(t199: string) -> string {
-          let t200 = (t197 + t199) in
-          t200
+  join inline_cont234(t205: int32) -> string {
+    join inline_cont231(t206: string) -> string {
+      let t207 = (t206 + ":") in
+      join inline_cont229(t208: int32) -> string {
+        join inline_cont226(t209: string) -> string {
+          let t210 = (t207 + t209) in
+          t210
         } in
-        let inline217 = inherent#int32#int32#to_string(t198) in
-        let inline218 = ("m" + inline217) in
-        jump inline_cont216(inline218)
+        let inline227 = inherent#int32#int32#to_string(t208) in
+        let inline228 = ("m" + inline227) in
+        jump inline_cont226(inline228)
       } in
-      let inline220 = RightSource.value(right/4) in
-      jump inline_cont219(inline220)
+      let inline230 = RightSource.value(right/4) in
+      jump inline_cont229(inline230)
     } in
-    let inline222 = inherent#int32#int32#to_string(t195) in
-    let inline223 = ("m" + inline222) in
-    jump inline_cont221(inline223)
+    let inline232 = inherent#int32#int32#to_string(t205) in
+    let inline233 = ("m" + inline232) in
+    jump inline_cont231(inline233)
   } in
-  let inline225 = LeftSource.value(left/3) in
-  jump inline_cont224(inline225)
+  let inline235 = LeftSource.value(left/3) in
+  jump inline_cont234(inline235)
 }
 
 fn trait_impl#ToString#string#to_string(self/65: string) -> string {

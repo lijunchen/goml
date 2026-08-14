@@ -14,25 +14,25 @@ type TextSource struct {
 }
 
 func _goml_m_trait__impl_i_Label_i_string_i_label(self__0 string) string {
-    var t175 string = "label:" + self__0
-    return t175
+    var t185 string = "label:" + self__0
+    return t185
 }
 
 func _goml_m_trait__impl_i_Source_i_TextSource_i_get(self__1 TextSource) string {
-    var t178 string = self__1.value
-    return t178
+    var t188 string = self__1.value
+    return t188
 }
 
 func main0() struct{} {
-    var t180 TextSource = TextSource{
+    var t190 TextSource = TextSource{
         value: "goml",
     }
-    var t181 string
-    var inline195 string = _goml_m_trait__impl_i_Source_i_TextSource_i_get(t180)
-    var inline196 string = _goml_m_trait__impl_i_Label_i_string_i_label(inline195)
-    t181 = inline196
-    var inline192 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t181)
-    _goml_runtime_core_string_println(inline192)
+    var t191 string
+    var inline205 string = _goml_m_trait__impl_i_Source_i_TextSource_i_get(t190)
+    var inline206 string = _goml_m_trait__impl_i_Label_i_string_i_label(inline205)
+    t191 = inline206
+    var inline202 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t191)
+    _goml_runtime_core_string_println(inline202)
     return struct{}{}
 }
 

@@ -15,35 +15,35 @@ func _goml_runtime_core_string_println(s string) struct{} {
 
 func main0() struct{} {
     var yes__3 int32
-    var inline206 bool = true
-    var inline207 int32 = 10
-    var inline208 int32 = 99
-    if inline206 {
-        yes__3 = inline207
+    var inline216 bool = true
+    var inline217 int32 = 10
+    var inline218 int32 = 99
+    if inline216 {
+        yes__3 = inline217
     } else {
-        yes__3 = inline208
+        yes__3 = inline218
     }
     var no__4 int32
-    var inline202 bool = false
-    var inline203 int32 = 10
-    var inline204 int32 = 99
-    if inline202 {
-        no__4 = inline203
+    var inline212 bool = false
+    var inline213 int32 = 10
+    var inline214 int32 = 99
+    if inline212 {
+        no__4 = inline213
     } else {
-        no__4 = inline204
+        no__4 = inline214
     }
-    var t179 string
-    var inline200 string = _goml_runtime_core_int32_to_string(yes__3)
-    t179 = inline200
-    var t180 string = "yes=" + t179
-    var inline197 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t180)
-    _goml_runtime_core_string_println(inline197)
-    var t181 string
-    var inline195 string = _goml_runtime_core_int32_to_string(no__4)
-    t181 = inline195
-    var t182 string = "no=" + t181
-    var inline192 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t182)
-    _goml_runtime_core_string_println(inline192)
+    var t189 string
+    var inline210 string = _goml_runtime_core_int32_to_string(yes__3)
+    t189 = inline210
+    var t190 string = "yes=" + t189
+    var inline207 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t190)
+    _goml_runtime_core_string_println(inline207)
+    var t191 string
+    var inline205 string = _goml_runtime_core_int32_to_string(no__4)
+    t191 = inline205
+    var t192 string = "no=" + t191
+    var inline202 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t192)
+    _goml_runtime_core_string_println(inline202)
     return struct{}{}
 }
 

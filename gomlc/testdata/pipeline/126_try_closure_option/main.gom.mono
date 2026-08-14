@@ -15,16 +15,16 @@ fn with_base(base/1: int32, flag/2: bool) -> Option__int32 {
     || {
       let value/3 =
         {
-          let mtmp172 = maybe_value(flag/2) in
-          match mtmp172 {
+          let mtmp182 = maybe_value(flag/2) in
+          match mtmp182 {
             Option__int32::None => {
               return Option__int32::None
             },
-            Option__int32::Some(x173) => {
+            Option__int32::Some(x183) => {
               {
-                let x173 = Option__int32::Some._0(mtmp172) in
+                let x183 = Option__int32::Some._0(mtmp182) in
                 {
-                  let try_value/11 = x173 in
+                  let try_value/11 = x183 in
                   try_value/11
                 }
               }
@@ -41,11 +41,11 @@ fn show(opt/5: Option__int32) -> string {
     Option__int32::None => {
       "none"
     },
-    Option__int32::Some(x174) => {
+    Option__int32::Some(x184) => {
       {
-        let x174 = Option__int32::Some._0(opt/5) in
+        let x184 = Option__int32::Some._0(opt/5) in
         {
-          let value/6 = x174 in
+          let value/6 = x184 in
           ("some=" + inherent#int32#int32#to_string(value/6))
         }
       }
@@ -54,8 +54,8 @@ fn show(opt/5: Option__int32) -> string {
 }
 
 fn main() -> unit {
-  let _wild175 = println__T_string(show(with_base(3, true))) in
-  let _wild176 = println__T_string(show(with_base(3, false))) in
+  let _wild185 = println__T_string(show(with_base(3, true))) in
+  let _wild186 = println__T_string(show(with_base(3, false))) in
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {

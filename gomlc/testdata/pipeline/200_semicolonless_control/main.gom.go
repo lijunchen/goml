@@ -56,70 +56,70 @@ func ref_set__Ref_3int(reference *ref_int_x, value int) struct{} {
 }
 
 func main0() struct{} {
-    var inline233 string = "if"
-    var inline234 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline233)
-    _goml_runtime_core_string_println(inline234)
-    var mtmp173 int = 1
-    switch mtmp173 {
+    var inline243 string = "if"
+    var inline244 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline243)
+    _goml_runtime_core_string_println(inline244)
+    var mtmp183 int = 1
+    switch mtmp183 {
     case 1:
-        var inline237 string = "match"
-        var inline238 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline237)
-        _goml_runtime_core_string_println(inline238)
+        var inline247 string = "match"
+        var inline248 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline247)
+        _goml_runtime_core_string_println(inline248)
     default:
     }
     var index__0 *ref_int_x
-    var inline266 int = 0
-    var inline267 *ref_int_x = ref__Ref_3int(inline266)
-    index__0 = inline267
-    Loop_loop194:
+    var inline276 int = 0
+    var inline277 *ref_int_x = ref__Ref_3int(inline276)
+    index__0 = inline277
+    Loop_loop204:
     for {
-        var t195 int
-        var inline252 int = ref_get__Ref_3int(index__0)
-        t195 = inline252
-        var t196 bool = t195 < 2
-        if t196 {
-            var t197 int
-            var inline250 int = ref_get__Ref_3int(index__0)
-            t197 = inline250
-            var t198 string
-            var inline248 string = _goml_runtime_core_int_to_string(t197)
-            t198 = inline248
-            var inline245 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t198)
-            _goml_runtime_core_string_println(inline245)
-            var t199 int
-            var inline243 int = ref_get__Ref_3int(index__0)
-            t199 = inline243
-            var t200 int = t199 + 1
-            ref_set__Ref_3int(index__0, t200)
+        var t205 int
+        var inline262 int = ref_get__Ref_3int(index__0)
+        t205 = inline262
+        var t206 bool = t205 < 2
+        if t206 {
+            var t207 int
+            var inline260 int = ref_get__Ref_3int(index__0)
+            t207 = inline260
+            var t208 string
+            var inline258 string = _goml_runtime_core_int_to_string(t207)
+            t208 = inline258
+            var inline255 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t208)
+            _goml_runtime_core_string_println(inline255)
+            var t209 int
+            var inline253 int = ref_get__Ref_3int(index__0)
+            t209 = inline253
+            var t210 int = t209 + 1
+            ref_set__Ref_3int(index__0, t210)
             continue
         } else {
-            break Loop_loop194
+            break Loop_loop204
         }
     }
     var values__1 *_goml_vec_string
-    var inline264 *_goml_vec_string = vec_new__Vec_6string()
-    values__1 = inline264
-    var inline261 string = "for"
-    vec_push__Vec_6string(values__1, inline261)
-    var for_limit179 int = vec_len__Vec_6string(values__1)
-    var for_index180 int = 0
-    Loop_loop190:
+    var inline274 *_goml_vec_string = vec_new__Vec_6string()
+    values__1 = inline274
+    var inline271 string = "for"
+    vec_push__Vec_6string(values__1, inline271)
+    var for_limit189 int = vec_len__Vec_6string(values__1)
+    var for_index190 int = 0
+    Loop_loop200:
     for {
-        var t191 bool = for_index180 < for_limit179
-        if t191 {
-            var for_item181 string = vec_get__Vec_6string(values__1, for_index180)
-            var t192 int = for_index180 + 1
-            for_index180 = t192
-            var inline254 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(for_item181)
-            _goml_runtime_core_string_println(inline254)
+        var t201 bool = for_index190 < for_limit189
+        if t201 {
+            var for_item191 string = vec_get__Vec_6string(values__1, for_index190)
+            var t202 int = for_index190 + 1
+            for_index190 = t202
+            var inline264 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(for_item191)
+            _goml_runtime_core_string_println(inline264)
             continue
         } else {
-            break Loop_loop190
+            break Loop_loop200
         }
     }
-    var inline257 string = "done"
-    var inline258 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline257)
-    _goml_runtime_core_string_println(inline258)
+    var inline267 string = "done"
+    var inline268 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline267)
+    _goml_runtime_core_string_println(inline268)
     return struct{}{}
 }
 

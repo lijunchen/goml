@@ -1,18 +1,18 @@
 fn early_return() -> int {
-  let _wild177 =
+  let _wild187 =
     {
-      let _wild175 =
+      let _wild185 =
         {
-          let defer_return172 = 7 in
-          let _defer173 = println__T_string("return:inner") in
-          let _defer174 = println__T_string("return:outer") in
-          return defer_return172
+          let defer_return182 = 7 in
+          let _defer183 = println__T_string("return:inner") in
+          let _defer184 = println__T_string("return:outer") in
+          return defer_return182
         } in
-      let _defer176 = println__T_string("return:inner") in
+      let _defer186 = println__T_string("return:inner") in
     } in
-  let defer_result178 = 0 in
-  let _defer179 = println__T_string("return:outer") in
-  defer_result178
+  let defer_result188 = 0 in
+  let _defer189 = println__T_string("return:outer") in
+  defer_result188
 }
 
 fn maybe(value/0: Option__int) -> Option__int {
@@ -20,24 +20,24 @@ fn maybe(value/0: Option__int) -> Option__int {
     match value/0 {
       Option__int::None => {
         {
-          let defer_return181 = Option__int::None in
-          let _defer182 = println__T_string("try:cleanup") in
-          return defer_return181
+          let defer_return191 = Option__int::None in
+          let _defer192 = println__T_string("try:cleanup") in
+          return defer_return191
         }
       },
-      Option__int::Some(x180) => {
+      Option__int::Some(x190) => {
         {
-          let x180 = Option__int::Some._0(value/0) in
+          let x190 = Option__int::Some._0(value/0) in
           {
-            let try_value/15 = x180 in
+            let try_value/15 = x190 in
             try_value/15
           }
         }
       },
     } in
-  let defer_result183 = Option__int::Some(number/1) in
-  let _defer184 = println__T_string("try:cleanup") in
-  defer_result183
+  let defer_result193 = Option__int::Some(number/1) in
+  let _defer194 = println__T_string("try:cleanup") in
+  defer_result193
 }
 
 fn loop_cleanup() -> unit {
@@ -45,13 +45,13 @@ fn loop_cleanup() -> unit {
   while (inherent#Ref#Ref[T]#get__T_int(index/2) < 3) {
       {
         let current/3 = inherent#Ref#Ref[T]#get__T_int(index/2) in
-        let _wild185 = inherent#Ref#Ref[T]#set__T_int(index/2, (current/3 + 1)) in
-        let defer_result186 =
+        let _wild195 = inherent#Ref#Ref[T]#set__T_int(index/2, (current/3 + 1)) in
+        let defer_result196 =
           if (current/3 == 0) {
               {
-                let _wild188 =
+                let _wild198 =
                   {
-                    let _defer187 =
+                    let _defer197 =
                       println__T_string(("loop:" + inherent#int#int#to_string(current/3))) in
                     continue
                   } in
@@ -59,9 +59,9 @@ fn loop_cleanup() -> unit {
           } else {
               if (current/3 == 1) {
                   {
-                    let _wild190 =
+                    let _wild200 =
                       {
-                        let _defer189 =
+                        let _defer199 =
                           println__T_string(("loop:" + inherent#int#int#to_string(current/3))) in
                         break
                       } in
@@ -72,41 +72,41 @@ fn loop_cleanup() -> unit {
                   }
               }
           } in
-        let _defer191 = println__T_string(("loop:" + inherent#int#int#to_string(current/3))) in
-        defer_result186
+        let _defer201 = println__T_string(("loop:" + inherent#int#int#to_string(current/3))) in
+        defer_result196
       }
   }
 }
 
 fn observed_at_exit() -> unit {
   let value/4 = inherent#Ref#Ref[T]#new__T_string("before") in
-  let defer_result192 = inherent#Ref#Ref[T]#set__T_string(value/4, "after") in
-  let _defer193 = println__T_string(("observed:" + inherent#Ref#Ref[T]#get__T_string(value/4))) in
-  defer_result192
+  let defer_result202 = inherent#Ref#Ref[T]#set__T_string(value/4, "after") in
+  let _defer203 = println__T_string(("observed:" + inherent#Ref#Ref[T]#get__T_string(value/4))) in
+  defer_result202
 }
 
 fn pattern_cleanup(value/5: Option__int) -> int {
-  let mtmp194 = value/5 in
-  match mtmp194 {
-    Option__int::Some(x196) => {
+  let mtmp204 = value/5 in
+  match mtmp204 {
+    Option__int::Some(x206) => {
       {
-        let x196 = Option__int::Some._0(mtmp194) in
+        let x206 = Option__int::Some._0(mtmp204) in
         {
-          let number/6 = x196 in
+          let number/6 = x206 in
           {
-            let mtmp197 = (number/6, 2) in
+            let mtmp207 = (number/6, 2) in
             {
-              let x198 = mtmp197.0 in
-              let x199 = mtmp197.1 in
+              let x208 = mtmp207.0 in
+              let x209 = mtmp207.1 in
               {
-                let right/8 = x199 in
+                let right/8 = x209 in
                 {
-                  let left/7 = x198 in
+                  let left/7 = x208 in
                   {
                     {
-                      let defer_tast_result195 = (left/7 + right/8) in
-                      let _wild200 = println__T_string("pattern:cleanup") in
-                      defer_tast_result195
+                      let defer_tast_result205 = (left/7 + right/8) in
+                      let _wild210 = println__T_string("pattern:cleanup") in
+                      defer_tast_result205
                     }
                   }
                 }
@@ -118,11 +118,11 @@ fn pattern_cleanup(value/5: Option__int) -> int {
     },
     _ =>
       {
-        let _wild203 =
+        let _wild213 =
           {
-            let defer_return201 = 0 in
-            let _defer202 = println__T_string("pattern:cleanup") in
-            return defer_return201
+            let defer_return211 = 0 in
+            let _defer212 = println__T_string("pattern:cleanup") in
+            return defer_return211
           } in
       },
   }
@@ -131,37 +131,37 @@ fn pattern_cleanup(value/5: Option__int) -> int {
 fn closure_cleanup() -> unit {
   let run/9 =
     || {
-      let defer_result204 = println__T_string("closure:body") in
-      let _defer205 = println__T_string("closure:inner") in
-      defer_result204
+      let defer_result214 = println__T_string("closure:body") in
+      let _defer215 = println__T_string("closure:inner") in
+      defer_result214
     } in
-  let _wild206 = run/9() in
-  let defer_result207 = println__T_string("closure:after") in
-  let _defer208 = println__T_string("closure:outer") in
-  defer_result207
+  let _wild216 = run/9() in
+  let defer_result217 = println__T_string("closure:after") in
+  let _defer218 = println__T_string("closure:outer") in
+  defer_result217
 }
 
 fn main() -> unit {
-  let _wild211 =
+  let _wild221 =
     {
-      let defer_result209 = println__T_string("body") in
-      let _defer210 = println__T_string("block") in
-      defer_result209
+      let defer_result219 = println__T_string("body") in
+      let _defer220 = println__T_string("block") in
+      defer_result219
     } in
-  let _wild212 = println__T_string(inherent#int#int#to_string(early_return())) in
-  let mtmp213 = maybe(Option__int::None) in
+  let _wild222 = println__T_string(inherent#int#int#to_string(early_return())) in
+  let mtmp223 = maybe(Option__int::None) in
   {
-    let _wild215 = loop_cleanup() in
-    let _wild216 = observed_at_exit() in
-    let _wild217 =
+    let _wild225 = loop_cleanup() in
+    let _wild226 = observed_at_exit() in
+    let _wild227 =
       println__T_string(inherent#int#int#to_string(pattern_cleanup(Option__int::Some(3)))) in
-    let _wild218 =
+    let _wild228 =
       println__T_string(inherent#int#int#to_string(pattern_cleanup(Option__int::None))) in
     {
-      let defer_tast_result214 = closure_cleanup() in
-      let _wild219 = println__T_string("main:second") in
-      let _wild220 = println__T_string("main:first") in
-      defer_tast_result214
+      let defer_tast_result224 = closure_cleanup() in
+      let _wild229 = println__T_string("main:second") in
+      let _wild230 = println__T_string("main:first") in
+      defer_tast_result224
     }
   }
 }
@@ -170,32 +170,32 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/255: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/255)
+fn inherent#Ref#Ref[T]#new__T_int(value/270: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/270)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/256: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/256)
+fn inherent#Ref#Ref[T]#get__T_int(self/271: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/271)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/257: Ref[int], value/258: int) -> unit {
-  @intrinsic(ref.set)(self/257, value/258)
+fn inherent#Ref#Ref[T]#set__T_int(self/272: Ref[int], value/273: int) -> unit {
+  @intrinsic(ref.set)(self/272, value/273)
 }
 
 fn inherent#int#int#to_string(self/32: int) -> string {
   @runtime(core.int_to_string)(self/32)
 }
 
-fn inherent#Ref#Ref[T]#new__T_string(value/255: string) -> Ref[string] {
-  @intrinsic(ref.new)(value/255)
+fn inherent#Ref#Ref[T]#new__T_string(value/270: string) -> Ref[string] {
+  @intrinsic(ref.new)(value/270)
 }
 
-fn inherent#Ref#Ref[T]#set__T_string(self/257: Ref[string], value/258: string) -> unit {
-  @intrinsic(ref.set)(self/257, value/258)
+fn inherent#Ref#Ref[T]#set__T_string(self/272: Ref[string], value/273: string) -> unit {
+  @intrinsic(ref.set)(self/272, value/273)
 }
 
-fn inherent#Ref#Ref[T]#get__T_string(self/256: Ref[string]) -> string {
-  @intrinsic(ref.get)(self/256)
+fn inherent#Ref#Ref[T]#get__T_string(self/271: Ref[string]) -> string {
+  @intrinsic(ref.get)(self/271)
 }
 
 fn trait_impl#ToString#string#to_string(self/65: string) -> string {

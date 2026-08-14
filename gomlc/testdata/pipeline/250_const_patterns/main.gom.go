@@ -90,43 +90,43 @@ func classify_bool(value__2 bool) string {
 }
 
 func classify_computed_bool(value__3 bool) string {
-    var t227 bool = value__3 == COMPUTED_ENABLED
-    if t227 {
+    var t237 bool = value__3 == COMPUTED_ENABLED
+    if t237 {
         return "enabled"
     } else {
-        var t230 bool = value__3 == false
-        if t230 {
+        var t240 bool = value__3 == false
+        if t240 {
             return "disabled"
         } else {
-            var t231 string = missing__string("")
-            return t231
+            var t241 string = missing__string("")
+            return t241
         }
     }
 }
 
 func classify_comptime_guard(value__4 bool) string {
-    var t236 bool = value__4 == true
-    var jp235 string
-    if t236 {
-        jp235 = "enabled"
+    var t246 bool = value__4 == true
+    var jp245 string
+    if t246 {
+        jp245 = "enabled"
     } else {
-        var t245 bool = value__4 == false
-        if t245 {
-            jp235 = "disabled"
+        var t255 bool = value__4 == false
+        if t255 {
+            jp245 = "disabled"
         } else {
-            var t246 string = missing__string("")
-            jp235 = t246
+            var t256 string = missing__string("")
+            jp245 = t256
         }
     }
-    return jp235
+    return jp245
 }
 
 func classify_pair(value__6 Tuple2_3int_5uint8) bool {
-    var x175 int = value__6._0
-    var x176 uint8 = value__6._1
-    switch x176 {
+    var x185 int = value__6._0
+    var x186 uint8 = value__6._1
+    switch x186 {
     case 65:
-        switch x175 {
+        switch x185 {
         case 42:
             return true
         default:
@@ -147,8 +147,8 @@ func classify_string(value__7 string) bool {
 }
 
 func classify_float(value__8 float64) bool {
-    var t261 bool = value__8 == RATIO
-    if t261 {
+    var t271 bool = value__8 == RATIO
+    if t271 {
         return true
     } else {
         return false
@@ -157,150 +157,150 @@ func classify_float(value__8 float64) bool {
 
 func for_binding() int {
     var total__14 *ref_int_x
-    var inline346 int = 0
-    var inline347 *ref_int_x = ref__Ref_3int(inline346)
-    total__14 = inline347
-    var for_source180 [2]int = [2]int{1, 2}
-    var for_limit181 int = 2
-    var for_index182 int = 0
-    Loop_loop278:
+    var inline356 int = 0
+    var inline357 *ref_int_x = ref__Ref_3int(inline356)
+    total__14 = inline357
+    var for_source190 [2]int = [2]int{1, 2}
+    var for_limit191 int = 2
+    var for_index192 int = 0
+    Loop_loop288:
     for {
-        var t279 bool = for_index182 < for_limit181
-        if t279 {
-            var for_item183 int = array_get__Array_2_3int(for_source180, for_index182)
-            var t280 int = for_index182 + 1
-            for_index182 = t280
-            var t281 int
-            var inline342 int = ref_get__Ref_3int(total__14)
-            t281 = inline342
-            var t282 int = t281 + for_item183
-            ref_set__Ref_3int(total__14, t282)
+        var t289 bool = for_index192 < for_limit191
+        if t289 {
+            var for_item193 int = array_get__Array_2_3int(for_source190, for_index192)
+            var t290 int = for_index192 + 1
+            for_index192 = t290
+            var t291 int
+            var inline352 int = ref_get__Ref_3int(total__14)
+            t291 = inline352
+            var t292 int = t291 + for_item193
+            ref_set__Ref_3int(total__14, t292)
             continue
         } else {
-            break Loop_loop278
+            break Loop_loop288
         }
     }
-    var inline344 int = ref_get__Ref_3int(total__14)
-    return inline344
+    var inline354 int = ref_get__Ref_3int(total__14)
+    return inline354
 }
 
 func main0() struct{} {
-    var t285 string = classify(42)
-    println__T_string(t285)
-    var t286 string = classify(7)
-    println__T_string(t286)
-    var t287 string = classify(0)
-    println__T_string(t287)
-    var t288 string = classify_bool(true)
-    println__T_string(t288)
-    var t289 string = classify_bool(false)
-    println__T_string(t289)
-    var t290 string = classify_computed_bool(true)
-    println__T_string(t290)
-    var t291 string = classify_computed_bool(false)
-    println__T_string(t291)
-    var t292 string = classify_comptime_guard(true)
-    println__T_string(t292)
-    var t293 string = classify_comptime_guard(false)
-    println__T_string(t293)
-    var t294 Tuple2_3int_5uint8 = Tuple2_3int_5uint8{
+    var t295 string = classify(42)
+    println__T_string(t295)
+    var t296 string = classify(7)
+    println__T_string(t296)
+    var t297 string = classify(0)
+    println__T_string(t297)
+    var t298 string = classify_bool(true)
+    println__T_string(t298)
+    var t299 string = classify_bool(false)
+    println__T_string(t299)
+    var t300 string = classify_computed_bool(true)
+    println__T_string(t300)
+    var t301 string = classify_computed_bool(false)
+    println__T_string(t301)
+    var t302 string = classify_comptime_guard(true)
+    println__T_string(t302)
+    var t303 string = classify_comptime_guard(false)
+    println__T_string(t303)
+    var t304 Tuple2_3int_5uint8 = Tuple2_3int_5uint8{
         _0: 42,
         _1: 65,
     }
-    var t295 bool = classify_pair(t294)
-    println__T_bool(t295)
-    var t296 Tuple2_3int_5uint8 = Tuple2_3int_5uint8{
+    var t305 bool = classify_pair(t304)
+    println__T_bool(t305)
+    var t306 Tuple2_3int_5uint8 = Tuple2_3int_5uint8{
         _0: 42,
         _1: 66,
     }
-    var t297 bool = classify_pair(t296)
-    println__T_bool(t297)
-    var t298 bool = classify_string("hello")
-    println__T_bool(t298)
-    var t299 bool = classify_float(1.5)
-    var inline389 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t299)
-    _goml_runtime_core_string_println(inline389)
-    var t300 int
-    var inline387 int = 9
-    t300 = inline387
-    var inline384 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t300)
-    _goml_runtime_core_string_println(inline384)
-    var t301 int
-    var inline380 int = 11
-    t301 = inline380
-    var inline377 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t301)
+    var t307 bool = classify_pair(t306)
+    println__T_bool(t307)
+    var t308 bool = classify_string("hello")
+    println__T_bool(t308)
+    var t309 bool = classify_float(1.5)
+    var inline399 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t309)
+    _goml_runtime_core_string_println(inline399)
+    var t310 int
+    var inline397 int = 9
+    t310 = inline397
+    var inline394 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t310)
+    _goml_runtime_core_string_println(inline394)
+    var t311 int
+    var inline390 int = 11
+    t311 = inline390
+    var inline387 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t311)
+    _goml_runtime_core_string_println(inline387)
+    var t312 bool
+    var inline385 int = 42
+    switch inline385 {
+    case 42:
+        t312 = true
+    default:
+        t312 = false
+    }
+    var inline382 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t312)
+    _goml_runtime_core_string_println(inline382)
+    var t313 bool
+    var inline380 int = 41
+    switch inline380 {
+    case 42:
+        t313 = true
+    default:
+        t313 = false
+    }
+    var inline377 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t313)
     _goml_runtime_core_string_println(inline377)
-    var t302 bool
-    var inline375 int = 42
-    switch inline375 {
+    var t314 bool
+    var inline374 int = 42
+    switch inline374 {
     case 42:
-        t302 = true
+        t314 = true
     default:
-        t302 = false
+        t314 = false
     }
-    var inline372 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t302)
-    _goml_runtime_core_string_println(inline372)
-    var t303 bool
-    var inline370 int = 41
-    switch inline370 {
+    var inline371 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t314)
+    _goml_runtime_core_string_println(inline371)
+    var t315 bool
+    var inline368 int = 41
+    switch inline368 {
     case 42:
-        t303 = true
+        t315 = true
     default:
-        t303 = false
+        t315 = false
     }
-    var inline367 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t303)
-    _goml_runtime_core_string_println(inline367)
-    var t304 bool
-    var inline364 int = 42
-    switch inline364 {
-    case 42:
-        t304 = true
-    default:
-        t304 = false
-    }
-    var inline361 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t304)
-    _goml_runtime_core_string_println(inline361)
-    var t305 bool
-    var inline358 int = 41
-    switch inline358 {
-    case 42:
-        t305 = true
-    default:
-        t305 = false
-    }
-    var inline355 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t305)
-    _goml_runtime_core_string_println(inline355)
-    var t306 int = for_binding()
-    var inline352 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t306)
-    _goml_runtime_core_string_println(inline352)
-    var inline349 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(CLASSIFIED_AT_COMPILE_TIME)
-    _goml_runtime_core_string_println(inline349)
+    var inline365 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t315)
+    _goml_runtime_core_string_println(inline365)
+    var t316 int = for_binding()
+    var inline362 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t316)
+    _goml_runtime_core_string_println(inline362)
+    var inline359 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(CLASSIFIED_AT_COMPILE_TIME)
+    _goml_runtime_core_string_println(inline359)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t317 string
-    t317 = value__1
-    _goml_runtime_core_string_println(t317)
+    var t327 string
+    t327 = value__1
+    _goml_runtime_core_string_println(t327)
     return struct{}{}
 }
 
 func println__T_bool(value__1 bool) struct{} {
-    var t320 string
-    var inline393 string = _goml_runtime_core_bool_to_string(value__1)
-    t320 = inline393
-    _goml_runtime_core_string_println(t320)
+    var t330 string
+    var inline403 string = _goml_runtime_core_bool_to_string(value__1)
+    t330 = inline403
+    _goml_runtime_core_string_println(t330)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
-    var t329 string = _goml_runtime_core_bool_to_string(self__64)
-    return t329
+    var t339 string = _goml_runtime_core_bool_to_string(self__64)
+    return t339
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
-    var t332 string = _goml_runtime_core_int_to_string(self__67)
-    return t332
+    var t342 string = _goml_runtime_core_int_to_string(self__67)
+    return t342
 }
 
 func main() {

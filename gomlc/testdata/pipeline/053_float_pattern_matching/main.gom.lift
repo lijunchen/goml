@@ -1,27 +1,27 @@
 fn summarize(event/0: FloatEvent) -> string {
   match event/0 {
-    FloatEvent::Sample32(x172, x173) => {
-      let x172 = FloatEvent::Sample32._0(event/0) in
-      let x173 = FloatEvent::Sample32._1(event/0) in
-      let value/2 = x173 in
-      let label/1 = x172 in
+    FloatEvent::Sample32(x182, x183) => {
+      let x182 = FloatEvent::Sample32._0(event/0) in
+      let x183 = FloatEvent::Sample32._1(event/0) in
+      let value/2 = x183 in
+      let label/1 = x182 in
       (label/1 + trait_impl#ToString#float32#to_string(value/2))
     },
-    FloatEvent::Sample64(x174, x175) => {
-      let x174 = FloatEvent::Sample64._0(event/0) in
-      let x175 = FloatEvent::Sample64._1(event/0) in
-      let value/4 = x175 in
-      let label/3 = x174 in
+    FloatEvent::Sample64(x184, x185) => {
+      let x184 = FloatEvent::Sample64._0(event/0) in
+      let x185 = FloatEvent::Sample64._1(event/0) in
+      let value/4 = x185 in
+      let label/3 = x184 in
       (label/3 + trait_impl#ToString#float64#to_string(value/4))
     },
   }
 }
 
 fn compare(values/5: (float32, float64)) -> string {
-  let x176 = values/5.0 in
-  let x177 = values/5.1 in
-  let right/7 = x177 in
-  let left/6 = x176 in
+  let x186 = values/5.0 in
+  let x187 = values/5.1 in
+  let right/7 = x187 in
+  let left/6 = x186 in
   let limit32/8 = 1 in
   let limit64/9 = 5 in
   let less_left/10 = (left/6 < limit32/8) in
@@ -42,7 +42,7 @@ fn main() -> unit {
   let message/20 =
     ((((summarize(first/15) + summarize(second/16)) + summarize(third/17)) + compare(tuple/18)) +
       compare(tuple_other/19)) in
-  let mtmp178 = println__T_string(message/20) in
+  let mtmp188 = println__T_string(message/20) in
   ()
 }
 

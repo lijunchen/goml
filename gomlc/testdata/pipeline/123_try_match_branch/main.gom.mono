@@ -25,28 +25,28 @@ fn read_right(ok/1: bool) -> Result__int32__string {
 fn choose(choice/2: Choice) -> Result__int32__string {
   let value/6 =
     match choice/2 {
-      Choice::Left(x172) => {
+      Choice::Left(x182) => {
         {
-          let x172 = Choice::Left._0(choice/2) in
+          let x182 = Choice::Left._0(choice/2) in
           {
-            let ok/3 = x172 in
+            let ok/3 = x182 in
             {
-              let mtmp175 = read_left(ok/3) in
-              match mtmp175 {
-                Result__int32__string::Ok(x176) => {
+              let mtmp185 = read_left(ok/3) in
+              match mtmp185 {
+                Result__int32__string::Ok(x186) => {
                   {
-                    let x176 = Result__int32__string::Ok._0(mtmp175) in
+                    let x186 = Result__int32__string::Ok._0(mtmp185) in
                     {
-                      let try_value/21 = x176 in
+                      let try_value/21 = x186 in
                       try_value/21
                     }
                   }
                 },
-                Result__int32__string::Err(x177) => {
+                Result__int32__string::Err(x187) => {
                   {
-                    let x177 = Result__int32__string::Err._0(mtmp175) in
+                    let x187 = Result__int32__string::Err._0(mtmp185) in
                     {
-                      let try_residual/21 = x177 in
+                      let try_residual/21 = x187 in
                       return Result__int32__string::Err(try_residual/21)
                     }
                   }
@@ -56,28 +56,28 @@ fn choose(choice/2: Choice) -> Result__int32__string {
           }
         }
       },
-      Choice::Right(x173) => {
+      Choice::Right(x183) => {
         {
-          let x173 = Choice::Right._0(choice/2) in
+          let x183 = Choice::Right._0(choice/2) in
           {
-            let ok/4 = x173 in
+            let ok/4 = x183 in
             ({
-              let mtmp178 = read_right(ok/4) in
-              match mtmp178 {
-                Result__int32__string::Ok(x179) => {
+              let mtmp188 = read_right(ok/4) in
+              match mtmp188 {
+                Result__int32__string::Ok(x189) => {
                   {
-                    let x179 = Result__int32__string::Ok._0(mtmp178) in
+                    let x189 = Result__int32__string::Ok._0(mtmp188) in
                     {
-                      let try_value/25 = x179 in
+                      let try_value/25 = x189 in
                       try_value/25
                     }
                   }
                 },
-                Result__int32__string::Err(x180) => {
+                Result__int32__string::Err(x190) => {
                   {
-                    let x180 = Result__int32__string::Err._0(mtmp178) in
+                    let x190 = Result__int32__string::Err._0(mtmp188) in
                     {
-                      let try_residual/25 = x180 in
+                      let try_residual/25 = x190 in
                       return Result__int32__string::Err(try_residual/25)
                     }
                   }
@@ -88,11 +88,11 @@ fn choose(choice/2: Choice) -> Result__int32__string {
           }
         }
       },
-      Choice::Keep(x174) => {
+      Choice::Keep(x184) => {
         {
-          let x174 = Choice::Keep._0(choice/2) in
+          let x184 = Choice::Keep._0(choice/2) in
           {
-            let value/5 = x174 in
+            let value/5 = x184 in
             value/5
           }
         }
@@ -103,20 +103,20 @@ fn choose(choice/2: Choice) -> Result__int32__string {
 
 fn show(res/7: Result__int32__string) -> string {
   match res/7 {
-    Result__int32__string::Ok(x181) => {
+    Result__int32__string::Ok(x191) => {
       {
-        let x181 = Result__int32__string::Ok._0(res/7) in
+        let x191 = Result__int32__string::Ok._0(res/7) in
         {
-          let value/8 = x181 in
+          let value/8 = x191 in
           ("ok " + inherent#int32#int32#to_string(value/8))
         }
       }
     },
-    Result__int32__string::Err(x182) => {
+    Result__int32__string::Err(x192) => {
       {
-        let x182 = Result__int32__string::Err._0(res/7) in
+        let x192 = Result__int32__string::Err._0(res/7) in
         {
-          let err/9 = x182 in
+          let err/9 = x192 in
           ("err " + err/9)
         }
       }
@@ -125,11 +125,11 @@ fn show(res/7: Result__int32__string) -> string {
 }
 
 fn main() -> unit {
-  let _wild183 = println__T_string(show(choose(Choice::Left(true)))) in
-  let _wild184 = println__T_string(show(choose(Choice::Right(true)))) in
-  let _wild185 = println__T_string(show(choose(Choice::Keep(5)))) in
-  let _wild186 = println__T_string(show(choose(Choice::Left(false)))) in
-  let _wild187 = println__T_string(show(choose(Choice::Right(false)))) in
+  let _wild193 = println__T_string(show(choose(Choice::Left(true)))) in
+  let _wild194 = println__T_string(show(choose(Choice::Right(true)))) in
+  let _wild195 = println__T_string(show(choose(Choice::Keep(5)))) in
+  let _wild196 = println__T_string(show(choose(Choice::Left(false)))) in
+  let _wild197 = println__T_string(show(choose(Choice::Right(false)))) in
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {

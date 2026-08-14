@@ -1,20 +1,20 @@
 fn unwrap_either(value/0: Either) -> int32 {
   {
-    let match172 = value/0 in
+    let match182 = value/0 in
     {
-      let whole/1 = match172 in
+      let whole/1 = match182 in
       match whole/1 {
-        Either::Left(p176) => {
+        Either::Left(p186) => {
           {
             let shared/2 = Either::Left._0(whole/1) in
             (shared/2 +
               match whole/1 {
-                Either::Left(x173) => {
+                Either::Left(x183) => {
                   {
                     0
                   }
                 },
-                Either::Right(x174) => {
+                Either::Right(x184) => {
                   {
                     1
                   }
@@ -24,17 +24,17 @@ fn unwrap_either(value/0: Either) -> int32 {
         },
         _ =>
           match whole/1 {
-            Either::Right(p175) => {
+            Either::Right(p185) => {
               {
                 let shared/2 = Either::Right._0(whole/1) in
                 (shared/2 +
                   match whole/1 {
-                    Either::Left(x173) => {
+                    Either::Left(x183) => {
                       {
                         0
                       }
                     },
-                    Either::Right(x174) => {
+                    Either::Right(x184) => {
                       {
                         1
                       }
@@ -51,9 +51,9 @@ fn unwrap_either(value/0: Either) -> int32 {
 
 fn char_group(value/3: char) -> string {
   {
-    let match177 = value/3 in
-    if (match177 >= 'a') {
-        if (match177 <= 'c') {
+    let match187 = value/3 in
+    if (match187 >= 'a') {
+        if (match187 <= 'c') {
             "abc"
         } else {
             "other"
@@ -67,26 +67,26 @@ fn char_group(value/3: char) -> string {
 fn describe(value/4: Maybe, numbers/5: Vec[int32], view/6: Slice[int32]) -> string {
   let from_if/9 =
     match value/4 {
-      Maybe::Some(x178) => {
+      Maybe::Some(x188) => {
         {
-          let x178 = Maybe::Some._0(value/4) in
+          let x188 = Maybe::Some._0(value/4) in
           {
-            let n/7 = x178 in
+            let n/7 = x188 in
             {
               {
-                let match179 = n/7 in
-                if (match179 == 0) {
+                let match189 = n/7 in
+                if (match189 == 0) {
                     "small"
                 } else {
-                    if (match179 == 1) {
+                    if (match189 == 1) {
                         "small"
                     } else {
-                        if (match179 >= 2) {
-                            if (match179 <= 4) {
+                        if (match189 >= 2) {
+                            if (match189 <= 4) {
                                 "middle"
                             } else {
                                 {
-                                  let x/8 = match179 in
+                                  let x/8 = match189 in
                                   if (x/8 > 10) {
                                       "large"
                                   } else {
@@ -96,7 +96,7 @@ fn describe(value/4: Maybe, numbers/5: Vec[int32], view/6: Slice[int32]) -> stri
                             }
                         } else {
                             {
-                              let x/8 = match179 in
+                              let x/8 = match189 in
                               if (x/8 > 10) {
                                   "large"
                               } else {
@@ -118,19 +118,19 @@ fn describe(value/4: Maybe, numbers/5: Vec[int32], view/6: Slice[int32]) -> stri
     } in
   let from_vec/12 =
     {
-      let match180 = numbers/5 in
-      if (@intrinsic(vec.len)(match180) == 0) {
+      let match190 = numbers/5 in
+      if (@intrinsic(vec.len)(match190) == 0) {
           "empty"
       } else {
-          if (@intrinsic(vec.len)(match180) >= 1) {
+          if (@intrinsic(vec.len)(match190) >= 1) {
               {
-                let first/10 = @intrinsic(vec.get)(match180, 0) in
+                let first/10 = @intrinsic(vec.get)(match190, 0) in
                 {
-                  let tail/11 = @intrinsic(slice.new)(match180, 1, @intrinsic(vec.len)(match180)) in
+                  let tail/11 = @intrinsic(slice.new)(match190, 1, @intrinsic(vec.len)(match190)) in
                   if (first/10 == (inherent#Slice#Slice[T]#len__T_int32(tail/11) as int32)) {
                       "balanced"
                   } else {
-                      if (@intrinsic(vec.len)(match180) >= 1) {
+                      if (@intrinsic(vec.len)(match190) >= 1) {
                           "nonempty"
                       } else {
                           @intrinsic(compiler.missing)("")
@@ -139,7 +139,7 @@ fn describe(value/4: Maybe, numbers/5: Vec[int32], view/6: Slice[int32]) -> stri
                 }
               }
           } else {
-              if (@intrinsic(vec.len)(match180) >= 1) {
+              if (@intrinsic(vec.len)(match190) >= 1) {
                   "nonempty"
               } else {
                   @intrinsic(compiler.missing)("")
@@ -149,13 +149,13 @@ fn describe(value/4: Maybe, numbers/5: Vec[int32], view/6: Slice[int32]) -> stri
     } in
   let from_slice/15 =
     {
-      let match181 = view/6 in
-      if (@intrinsic(slice.len)(match181) >= 2) {
+      let match191 = view/6 in
+      if (@intrinsic(slice.len)(match191) >= 2) {
           {
-            let first/13 = @intrinsic(slice.get)(match181, 0) in
+            let first/13 = @intrinsic(slice.get)(match191, 0) in
             {
               let last/14 =
-                @intrinsic(slice.get)(match181, ((@intrinsic(slice.len)(match181) - 1) + 0)) in
+                @intrinsic(slice.get)(match191, ((@intrinsic(slice.len)(match191) - 1) + 0)) in
               if (first/13 == last/14) {
                   "same ends"
               } else {
@@ -172,52 +172,52 @@ fn describe(value/4: Maybe, numbers/5: Vec[int32], view/6: Slice[int32]) -> stri
 
 fn main() -> unit {
   let pair/16 = Pair { left: 3, right: 9 } in
-  let mtmp182 = pair/16 in
+  let mtmp192 = pair/16 in
   {
-    let x183 = Pair.left(mtmp182) in
+    let x193 = Pair.left(mtmp192) in
     {
-      let left/17 = x183 in
+      let left/17 = x193 in
       {
         let values/18 = [1, 2, 3, 1] in
-        let mtmp185 = values/18 in
+        let mtmp195 = values/18 in
         {
-          let first/19 = @intrinsic(array.get)(mtmp185, 0) in
+          let first/19 = @intrinsic(array.get)(mtmp195, 0) in
           {
-            let last/21 = @intrinsic(array.get)(mtmp185, 3) in
+            let last/21 = @intrinsic(array.get)(mtmp195, 3) in
             {
               let middle/20 =
-                [@intrinsic(array.get)(mtmp185, 1), @intrinsic(array.get)(mtmp185, 2)] in
+                [@intrinsic(array.get)(mtmp195, 1), @intrinsic(array.get)(mtmp195, 2)] in
               {
-                let _wild186 = println__T_int32(left/17) in
-                let _wild187 =
+                let _wild196 = println__T_int32(left/17) in
+                let _wild197 =
                   println__T_int(((first/19 + @intrinsic(array.get)(middle/20, 0)) + last/21)) in
                 let numbers/22 = @intrinsic(vec.new)() in
-                let _wild188 = @intrinsic(vec.push)(numbers/22, 1) in
-                let _wild189 = @intrinsic(vec.push)(numbers/22, 8) in
+                let _wild198 = @intrinsic(vec.push)(numbers/22, 1) in
+                let _wild199 = @intrinsic(vec.push)(numbers/22, 8) in
                 let view/23 =
                   @intrinsic(slice.new)(
                     numbers/22,
                     0,
                     inherent#Vec#Vec[T]#len__T_int32(numbers/22)
                   ) in
-                let _wild190 = println__T_string(describe(Maybe::Some(3), numbers/22, view/23)) in
+                let _wild200 = println__T_string(describe(Maybe::Some(3), numbers/22, view/23)) in
                 let empty/24 = @intrinsic(vec.new)() in
                 let empty_view/25 = @intrinsic(slice.new)(empty/24, 0, 0) in
-                let _wild191 = println__T_string(describe(Maybe::None, empty/24, empty_view/25)) in
+                let _wild201 = println__T_string(describe(Maybe::None, empty/24, empty_view/25)) in
                 let state/26 = inherent#Ref#Ref[T]#new__T_Maybe(Maybe::Some(7)) in
-                let _wild196 =
+                let _wild206 =
                   while true {
                       {
-                        let mtmp192 = inherent#Ref#Ref[T]#get__T_Maybe(state/26) in
-                        match mtmp192 {
-                          Maybe::Some(x193) => {
+                        let mtmp202 = inherent#Ref#Ref[T]#get__T_Maybe(state/26) in
+                        match mtmp202 {
+                          Maybe::Some(x203) => {
                             {
-                              let x193 = Maybe::Some._0(mtmp192) in
+                              let x203 = Maybe::Some._0(mtmp202) in
                               {
-                                let n/27 = x193 in
+                                let n/27 = x203 in
                                 {
-                                  let _wild194 = println__T_int32(n/27) in
-                                  let _wild195 =
+                                  let _wild204 = println__T_int32(n/27) in
+                                  let _wild205 =
                                     inherent#Ref#Ref[T]#set__T_Maybe(state/26, Maybe::None) in
                                 }
                               }
@@ -227,17 +227,17 @@ fn main() -> unit {
                         }
                       }
                   } in
-                let _wild200 =
+                let _wild210 =
                   {
-                    let mtmp197 = Maybe::Some(6) in
-                    match mtmp197 {
-                      Maybe::Some(x198) => {
+                    let mtmp207 = Maybe::Some(6) in
+                    match mtmp207 {
+                      Maybe::Some(x208) => {
                         {
-                          let x198 = Maybe::Some._0(mtmp197) in
+                          let x208 = Maybe::Some._0(mtmp207) in
                           {
-                            let n/28 = x198 in
+                            let n/28 = x208 in
                             {
-                              let _wild199 = println__T_int32(n/28) in
+                              let _wild209 = println__T_int32(n/28) in
                             }
                           }
                         }
@@ -247,11 +247,11 @@ fn main() -> unit {
                   } in
                 let aliased/32 =
                   {
-                    let match201 = Maybe::Some(5) in
+                    let match211 = Maybe::Some(5) in
                     {
-                      let whole/29 = match201 in
+                      let whole/29 = match211 in
                       match whole/29 {
-                        Maybe::Some(p203) => {
+                        Maybe::Some(p213) => {
                           {
                             let value/30 = Maybe::Some._0(whole/29) in
                             (value/30 +
@@ -259,11 +259,11 @@ fn main() -> unit {
                                 Maybe::None => {
                                   0
                                 },
-                                Maybe::Some(x202) => {
+                                Maybe::Some(x212) => {
                                   {
-                                    let x202 = Maybe::Some._0(whole/29) in
+                                    let x212 = Maybe::Some._0(whole/29) in
                                     {
-                                      let inner/31 = x202 in
+                                      let inner/31 = x212 in
                                       inner/31
                                     }
                                   }
@@ -272,7 +272,7 @@ fn main() -> unit {
                           }
                         },
                         _ =>
-                          match match201 {
+                          match match211 {
                             Maybe::None => {
                               0
                             },
@@ -281,9 +281,9 @@ fn main() -> unit {
                       }
                     }
                   } in
-                let _wild204 = println__T_int32(aliased/32) in
-                let _wild205 = println__T_int32(unwrap_either(Either::Right(11))) in
-                let _wild206 = println__T_string(char_group('b')) in
+                let _wild214 = println__T_int32(aliased/32) in
+                let _wild215 = println__T_int32(unwrap_either(Either::Right(11))) in
+                let _wild216 = println__T_string(char_group('b')) in
               }
             }
           }
@@ -293,8 +293,8 @@ fn main() -> unit {
   }
 }
 
-fn inherent#Slice#Slice[T]#len__T_int32(self/234: Slice[int32]) -> int {
-  @intrinsic(slice.len)(self/234)
+fn inherent#Slice#Slice[T]#len__T_int32(self/246: Slice[int32]) -> int {
+  @intrinsic(slice.len)(self/246)
 }
 
 fn println__T_int32(value/1: int32) -> unit {
@@ -305,24 +305,24 @@ fn println__T_int(value/1: int) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
 }
 
-fn inherent#Vec#Vec[T]#len__T_int32(self/185: Vec[int32]) -> int {
-  @intrinsic(vec.len)(self/185)
+fn inherent#Vec#Vec[T]#len__T_int32(self/189: Vec[int32]) -> int {
+  @intrinsic(vec.len)(self/189)
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#Ref#Ref[T]#new__T_Maybe(value/255: Maybe) -> Ref[Maybe] {
-  @intrinsic(ref.new)(value/255)
+fn inherent#Ref#Ref[T]#new__T_Maybe(value/270: Maybe) -> Ref[Maybe] {
+  @intrinsic(ref.new)(value/270)
 }
 
-fn inherent#Ref#Ref[T]#get__T_Maybe(self/256: Ref[Maybe]) -> Maybe {
-  @intrinsic(ref.get)(self/256)
+fn inherent#Ref#Ref[T]#get__T_Maybe(self/271: Ref[Maybe]) -> Maybe {
+  @intrinsic(ref.get)(self/271)
 }
 
-fn inherent#Ref#Ref[T]#set__T_Maybe(self/257: Ref[Maybe], value/258: Maybe) -> unit {
-  @intrinsic(ref.set)(self/257, value/258)
+fn inherent#Ref#Ref[T]#set__T_Maybe(self/272: Ref[Maybe], value/273: Maybe) -> unit {
+  @intrinsic(ref.set)(self/272, value/273)
 }
 
 fn trait_impl#ToString#int32#to_string(self/70: int32) -> string {

@@ -20,6 +20,7 @@ fn main() -> unit {
     let empty = b"";
     let raw = b"\x72\x61\x77\x20\x5c\x6e\x20\x62\x79\x74\x65\x73";
     let quoted = b"\x71\x75\x6f\x74\x65\x64\x20\x22\x74\x65\x78\x74\x22\x20\x61\x6e\x64\x20\x23";
+    let fixed: [byte; 3] = b"\x41\x42\x43";
     let nested =
       {
           let value = answer();
@@ -32,6 +33,7 @@ fn main() -> unit {
     println(plain.get(2).to_int().to_string());
     println(raw.len().to_string());
     println(quoted.len().to_string());
+    println(fixed[2].to_int().to_string());
     println(nested.to_string());
     if {
         true

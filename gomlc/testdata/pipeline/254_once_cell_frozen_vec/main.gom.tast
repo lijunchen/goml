@@ -1,0 +1,48 @@
+static VALUES: OnceCell[FrozenVec[int]] = OnceCell::new();
+
+fn values() -> FrozenVec[int] {
+    (OnceCell[FrozenVec[int]]::get_or_init : (
+      OnceCell[FrozenVec[int]],
+      () -> FrozenVec[int]
+    ) -> FrozenVec[int])(
+      (VALUES : OnceCell[FrozenVec[int]]),
+      || =>
+        (Vec[
+          int
+        ]::freeze : (
+          Vec[int]
+        ) -> FrozenVec[
+          int
+        ])(
+          {
+              let vec_literal/118: Vec[int] = (Vec[int]::new : () -> Vec[int])();
+              (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/118 : Vec[int]), 1);
+              (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/118 : Vec[int]), 2);
+              (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/118 : Vec[int]), 3);
+              (vec_literal/118 : Vec[int])
+          }
+        )
+    )
+}
+
+fn main() -> unit {
+    let frozen/0: FrozenVec[int] = (values : () -> FrozenVec[int])();
+    let copy/1: Vec[int] =
+      (FrozenVec[int]::to_vec : (FrozenVec[int]) -> Vec[int])((frozen/0 : FrozenVec[int]));
+    (Vec[int]::set : (Vec[int], int, int) -> unit)((copy/1 : Vec[int]), 0, 9);
+    (println : (string) -> unit)(
+      (int::to_string : (int) -> string)(
+        (FrozenVec[int]::get : (FrozenVec[int], int) -> int)((frozen/0 : FrozenVec[int]), 0)
+      )
+    );
+    (println : (string) -> unit)(
+      (int::to_string : (int) -> string)(
+        (Vec[int]::get : (Vec[int], int) -> int)((copy/1 : Vec[int]), 0)
+      )
+    );
+    (println : (string) -> unit)(
+      (int::to_string : (int) -> string)(
+        (FrozenVec[int]::get : (FrozenVec[int], int) -> int)((values : () -> FrozenVec[int])(), 1)
+      )
+    )
+}

@@ -1,6 +1,6 @@
 fn loop_return_unit(flag/0: bool) -> unit {
   joinrec {
-    join loop181() -> unit {
+    join loop191() -> unit {
       if flag/0 {
         ()
       } else {
@@ -8,41 +8,41 @@ fn loop_return_unit(flag/0: bool) -> unit {
       }
     } in
   } in
-  jump loop181()
+  jump loop191()
 }
 
 fn loop_return() -> int32 {
   joinrec {
-    join loop187() -> int32 {
+    join loop197() -> int32 {
       5
     } in
   } in
-  jump loop187()
+  jump loop197()
 }
 
 fn main() -> unit {
-  let _wild177 = loop_return_unit(true) in
-  let t189 = loop_return() in
-  let inline202 = trait_impl#ToString#int32#to_string(t189) in
-  let inline203 = @runtime(core.string_println)(inline202) in
+  let _wild187 = loop_return_unit(true) in
+  let t199 = loop_return() in
+  let inline212 = trait_impl#ToString#int32#to_string(t199) in
+  let inline213 = @runtime(core.string_println)(inline212) in
   ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont204(t191: string) -> unit {
-    let t192 = @runtime(core.string_println)(t191) in
+  join inline_cont214(t201: string) -> unit {
+    let t202 = @runtime(core.string_println)(t201) in
     ()
   } in
-  jump inline_cont204(value/1)
+  jump inline_cont214(value/1)
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join inline_cont205(t194: string) -> unit {
-    let t195 = @runtime(core.string_println)(t194) in
+  join inline_cont215(t204: string) -> unit {
+    let t205 = @runtime(core.string_println)(t204) in
     ()
   } in
-  let inline206 = @runtime(core.int32_to_string)(value/1) in
-  jump inline_cont205(inline206)
+  let inline216 = @runtime(core.int32_to_string)(value/1) in
+  jump inline_cont215(inline216)
 }
 
 fn trait_impl#ToString#string#to_string(self/65: string) -> string {
@@ -50,6 +50,6 @@ fn trait_impl#ToString#string#to_string(self/65: string) -> string {
 }
 
 fn trait_impl#ToString#int32#to_string(self/70: int32) -> string {
-  let t200 = @runtime(core.int32_to_string)(self/70) in
-  t200
+  let t210 = @runtime(core.int32_to_string)(self/70) in
+  t210
 }

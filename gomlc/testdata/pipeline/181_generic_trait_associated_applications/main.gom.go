@@ -20,10 +20,10 @@ func main0() struct{} {
     text__2 = "int"
     var number__3 int32
     number__3 = 7
-    var inline196 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(text__2)
-    _goml_runtime_core_string_println(inline196)
-    var inline193 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(number__3)
-    _goml_runtime_core_string_println(inline193)
+    var inline206 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(text__2)
+    _goml_runtime_core_string_println(inline206)
+    var inline203 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(number__3)
+    _goml_runtime_core_string_println(inline203)
     return struct{}{}
 }
 
@@ -32,8 +32,8 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) strin
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__70 int32) string {
-    var t191 string = _goml_runtime_core_int32_to_string(self__70)
-    return t191
+    var t201 string = _goml_runtime_core_int32_to_string(self__70)
+    return t201
 }
 
 func main() {

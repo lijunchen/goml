@@ -35,144 +35,144 @@ func ref_set__Ref_3int(reference *ref_int_x, value int) struct{} {
 func main0() struct{} {
     var i__0 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var total__1 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
-    Loop_loop201:
+    Loop_loop211:
     for {
-        var t212 int
-        var inline265 int = ref_get__Ref_3int(i__0)
-        t212 = inline265
-        var t213 bool
-        var inline262 int = 0
-        var inline263 bool = t212 == inline262
-        t213 = inline263
-        var jp203 bool
-        if t213 {
-            var inline239 int = 1
-            ref_set__Ref_3int(i__0, inline239)
-            jp203 = true
+        var t222 int
+        var inline275 int = ref_get__Ref_3int(i__0)
+        t222 = inline275
+        var t223 bool
+        var inline272 int = 0
+        var inline273 bool = t222 == inline272
+        t223 = inline273
+        var jp213 bool
+        if t223 {
+            var inline249 int = 1
+            ref_set__Ref_3int(i__0, inline249)
+            jp213 = true
         } else {
-            var t216 int
-            var inline242 int = ref_get__Ref_3int(i__0)
-            t216 = inline242
-            var t217 bool = t216 < 4
-            if t217 {
-                jp203 = true
+            var t226 int
+            var inline252 int = ref_get__Ref_3int(i__0)
+            t226 = inline252
+            var t227 bool = t226 < 4
+            if t227 {
+                jp213 = true
             } else {
-                jp203 = false
+                jp213 = false
             }
         }
-        if jp203 {
-            var t204 int
-            var inline260 int = ref_get__Ref_3int(total__1)
-            t204 = inline260
-            var t205 int
-            var inline258 int = ref_get__Ref_3int(i__0)
-            t205 = inline258
-            var t206 int = t204 + t205
-            ref_set__Ref_3int(total__1, t206)
-            var t210 int
-            var inline254 int = ref_get__Ref_3int(i__0)
-            t210 = inline254
-            var t211 bool
-            var inline251 int = 1
-            var inline252 bool = t210 == inline251
-            t211 = inline252
-            if t211 {
-                var inline244 int = 2
-                ref_set__Ref_3int(i__0, inline244)
+        if jp213 {
+            var t214 int
+            var inline270 int = ref_get__Ref_3int(total__1)
+            t214 = inline270
+            var t215 int
+            var inline268 int = ref_get__Ref_3int(i__0)
+            t215 = inline268
+            var t216 int = t214 + t215
+            ref_set__Ref_3int(total__1, t216)
+            var t220 int
+            var inline264 int = ref_get__Ref_3int(i__0)
+            t220 = inline264
+            var t221 bool
+            var inline261 int = 1
+            var inline262 bool = t220 == inline261
+            t221 = inline262
+            if t221 {
+                var inline254 int = 2
+                ref_set__Ref_3int(i__0, inline254)
                 continue
             } else {
-                var t208 int
-                var inline249 int = ref_get__Ref_3int(i__0)
-                t208 = inline249
-                var t209 int = t208 + 1
-                ref_set__Ref_3int(i__0, t209)
+                var t218 int
+                var inline259 int = ref_get__Ref_3int(i__0)
+                t218 = inline259
+                var t219 int = t218 + 1
+                ref_set__Ref_3int(i__0, t219)
                 continue
             }
         } else {
-            break Loop_loop201
+            break Loop_loop211
         }
     }
-    var t189 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(total__1)
-    println__T_int(t189)
+    var t199 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(total__1)
+    println__T_int(t199)
     var j__2 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var total2__3 *ref_int_x
-    var inline291 int = 0
-    var inline292 *ref_int_x = ref__Ref_3int(inline291)
-    total2__3 = inline292
-    Loop_loop192:
+    var inline301 int = 0
+    var inline302 *ref_int_x = ref__Ref_3int(inline301)
+    total2__3 = inline302
+    Loop_loop202:
     for {
-        var mtmp179 int
-        var inline284 int = ref_get__Ref_3int(j__2)
-        mtmp179 = inline284
-        var jp194 bool
-        switch mtmp179 {
+        var mtmp189 int
+        var inline294 int = ref_get__Ref_3int(j__2)
+        mtmp189 = inline294
+        var jp204 bool
+        switch mtmp189 {
         case 0:
-            var inline267 int = 1
-            ref_set__Ref_3int(j__2, inline267)
-            jp194 = true
+            var inline277 int = 1
+            ref_set__Ref_3int(j__2, inline277)
+            jp204 = true
         case 1:
-            var inline270 int = 2
-            ref_set__Ref_3int(j__2, inline270)
-            jp194 = true
+            var inline280 int = 2
+            ref_set__Ref_3int(j__2, inline280)
+            jp204 = true
         case 2:
-            jp194 = true
+            jp204 = true
         default:
-            jp194 = false
+            jp204 = false
         }
-        if jp194 {
-            var t195 int
-            var inline282 int = ref_get__Ref_3int(total2__3)
-            t195 = inline282
-            var t196 int
-            var inline280 int = ref_get__Ref_3int(j__2)
-            t196 = inline280
-            var t197 int = t195 + t196
-            ref_set__Ref_3int(total2__3, t197)
-            var t199 int
-            var inline276 int = ref_get__Ref_3int(j__2)
-            t199 = inline276
-            var t200 bool
-            var inline273 int = 2
-            var inline274 bool = t199 == inline273
-            t200 = inline274
-            if t200 {
-                break Loop_loop192
+        if jp204 {
+            var t205 int
+            var inline292 int = ref_get__Ref_3int(total2__3)
+            t205 = inline292
+            var t206 int
+            var inline290 int = ref_get__Ref_3int(j__2)
+            t206 = inline290
+            var t207 int = t205 + t206
+            ref_set__Ref_3int(total2__3, t207)
+            var t209 int
+            var inline286 int = ref_get__Ref_3int(j__2)
+            t209 = inline286
+            var t210 bool
+            var inline283 int = 2
+            var inline284 bool = t209 == inline283
+            t210 = inline284
+            if t210 {
+                break Loop_loop202
             } else {
                 continue
             }
         } else {
-            break Loop_loop192
+            break Loop_loop202
         }
     }
-    var t191 int
-    var inline289 int = ref_get__Ref_3int(total2__3)
-    t191 = inline289
-    var inline286 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t191)
-    _goml_runtime_core_string_println(inline286)
+    var t201 int
+    var inline299 int = ref_get__Ref_3int(total2__3)
+    t201 = inline299
+    var inline296 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t201)
+    _goml_runtime_core_string_println(inline296)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__255 int) *ref_int_x {
-    var t220 *ref_int_x = ref__Ref_3int(value__255)
-    return t220
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__270 int) *ref_int_x {
+    var t230 *ref_int_x = ref__Ref_3int(value__270)
+    return t230
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__256 *ref_int_x) int {
-    var t223 int = ref_get__Ref_3int(self__256)
-    return t223
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__271 *ref_int_x) int {
+    var t233 int = ref_get__Ref_3int(self__271)
+    return t233
 }
 
 func println__T_int(value__1 int) struct{} {
-    var t230 string
-    var inline294 string = _goml_runtime_core_int_to_string(value__1)
-    t230 = inline294
-    _goml_runtime_core_string_println(t230)
+    var t240 string
+    var inline304 string = _goml_runtime_core_int_to_string(value__1)
+    t240 = inline304
+    _goml_runtime_core_string_println(t240)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
-    var t234 string = _goml_runtime_core_int_to_string(self__67)
-    return t234
+    var t244 string = _goml_runtime_core_int_to_string(self__67)
+    return t244
 }
 
 func main() {

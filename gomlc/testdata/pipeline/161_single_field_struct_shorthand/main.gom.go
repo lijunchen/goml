@@ -15,8 +15,8 @@ type Person struct {
 
 func main0() struct{} {
     var name__0 string = "Alice"
-    var inline181 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(name__0)
-    _goml_runtime_core_string_println(inline181)
+    var inline191 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(name__0)
+    _goml_runtime_core_string_println(inline191)
     return struct{}{}
 }
 

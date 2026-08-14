@@ -1,88 +1,50 @@
 fn answer() -> int {
-  let _wild172 =
+  let _wild182 =
     return let base/0 = 40 in
     (base/0 + 2) in
   ()
 }
 
 fn loop_answer() -> int {
-  loop let _wild173 =
+  loop let _wild183 =
     break let base/1 = 6 in
     (base/1 * 7) in
   ()
 }
 
 fn main() -> unit {
-  let plain/2 =
-    let vec_literal/251 = inherent#Vec#Vec[T]#new__T_uint8() in
-    let _wild174 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/251, 65) in
-    let _wild175 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/251, 10) in
-    let _wild176 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/251, 66) in
-    vec_literal/251 in
-  let empty/3 =
-    let vec_literal/279 = inherent#Vec#Vec[T]#new__T_uint8() in
-    vec_literal/279 in
-  let raw/4 =
-    let vec_literal/298 = inherent#Vec#Vec[T]#new__T_uint8() in
-    let _wild177 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/298, 114) in
-    let _wild178 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/298, 97) in
-    let _wild179 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/298, 119) in
-    let _wild180 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/298, 32) in
-    let _wild181 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/298, 92) in
-    let _wild182 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/298, 110) in
-    let _wild183 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/298, 32) in
-    let _wild184 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/298, 98) in
-    let _wild185 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/298, 121) in
-    let _wild186 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/298, 116) in
-    let _wild187 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/298, 101) in
-    let _wild188 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/298, 115) in
-    vec_literal/298 in
+  let plain/2 = bytes[65, 10, 66] in
+  let empty/3 = bytes[] in
+  let raw/4 = bytes[114, 97, 119, 32, 92, 110, 32, 98, 121, 116, 101, 115] in
   let quoted/5 =
-    let vec_literal/335 = inherent#Vec#Vec[T]#new__T_uint8() in
-    let _wild189 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/335, 113) in
-    let _wild190 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/335, 117) in
-    let _wild191 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/335, 111) in
-    let _wild192 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/335, 116) in
-    let _wild193 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/335, 101) in
-    let _wild194 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/335, 100) in
-    let _wild195 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/335, 32) in
-    let _wild196 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/335, 34) in
-    let _wild197 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/335, 116) in
-    let _wild198 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/335, 101) in
-    let _wild199 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/335, 120) in
-    let _wild200 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/335, 116) in
-    let _wild201 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/335, 34) in
-    let _wild202 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/335, 32) in
-    let _wild203 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/335, 97) in
-    let _wild204 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/335, 110) in
-    let _wild205 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/335, 100) in
-    let _wild206 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/335, 32) in
-    let _wild207 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/335, 35) in
-    vec_literal/335 in
-  let nested/7 =
-    let value/6 = answer() in
-    (value/6 + loop_answer()) in
-  let _wild208 =
+    bytes[113, 117, 111, 116, 101, 100, 32, 34, 116, 101, 120, 116, 34, 32, 97, 110, 100, 32, 35] in
+  let fixed/6 = [65, 66, 67] in
+  let nested/8 =
+    let value/7 = answer() in
+    (value/7 + loop_answer()) in
+  let _wild184 =
     println__T_string(inherent#int#int#to_string(inherent#Vec#Vec[T]#len__T_uint8(plain/2))) in
-  let _wild209 =
+  let _wild185 =
     println__T_string(inherent#int#int#to_string(inherent#Vec#Vec[T]#len__T_uint8(empty/3))) in
-  let _wild210 =
+  let _wild186 =
     println__T_string(
       inherent#int#int#to_string((inherent#Vec#Vec[T]#get__T_uint8(plain/2, 0) as int))
     ) in
-  let _wild211 =
+  let _wild187 =
     println__T_string(
       inherent#int#int#to_string((inherent#Vec#Vec[T]#get__T_uint8(plain/2, 1) as int))
     ) in
-  let _wild212 =
+  let _wild188 =
     println__T_string(
       inherent#int#int#to_string((inherent#Vec#Vec[T]#get__T_uint8(plain/2, 2) as int))
     ) in
-  let _wild213 =
+  let _wild189 =
     println__T_string(inherent#int#int#to_string(inherent#Vec#Vec[T]#len__T_uint8(raw/4))) in
-  let _wild214 =
+  let _wild190 =
     println__T_string(inherent#int#int#to_string(inherent#Vec#Vec[T]#len__T_uint8(quoted/5))) in
-  let _wild215 = println__T_string(inherent#int#int#to_string(nested/7)) in
+  let _wild191 =
+    println__T_string(inherent#int#int#to_string((@intrinsic(array.get)(fixed/6, 2) as int))) in
+  let _wild192 = println__T_string(inherent#int#int#to_string(nested/8)) in
   if true {
       println__T_string("block condition")
   } else {
@@ -90,28 +52,20 @@ fn main() -> unit {
   }
 }
 
-fn inherent#Vec#Vec[T]#new__T_uint8() -> Vec[uint8] {
-  @intrinsic(vec.new)()
-}
-
-fn inherent#Vec#Vec[T]#push__T_uint8(self/174: Vec[uint8], elem/175: uint8) -> unit {
-  @intrinsic(vec.push)(self/174, elem/175)
-}
-
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#Vec#Vec[T]#len__T_uint8(self/185: Vec[uint8]) -> int {
-  @intrinsic(vec.len)(self/185)
+fn inherent#Vec#Vec[T]#len__T_uint8(self/189: Vec[uint8]) -> int {
+  @intrinsic(vec.len)(self/189)
 }
 
 fn inherent#int#int#to_string(self/32: int) -> string {
   @runtime(core.int_to_string)(self/32)
 }
 
-fn inherent#Vec#Vec[T]#get__T_uint8(self/180: Vec[uint8], index/181: int) -> uint8 {
-  @intrinsic(vec.get)(self/180, index/181)
+fn inherent#Vec#Vec[T]#get__T_uint8(self/184: Vec[uint8], index/185: int) -> uint8 {
+  @intrinsic(vec.get)(self/184, index/185)
 }
 
 fn trait_impl#ToString#string#to_string(self/65: string) -> string {

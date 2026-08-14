@@ -9,70 +9,70 @@ fn read(source/1: dyn Source[Item = int]) -> int {
 fn labeled_cleanup() -> unit {
   loop {
     loop {
-      let _wild174 =
+      let _wild184 =
         {
-          let _defer172 = println__T_string("inner cleanup") in
-          let _defer173 = println__T_string("outer cleanup") in
+          let _defer182 = println__T_string("inner cleanup") in
+          let _defer183 = println__T_string("outer cleanup") in
           break@1
         } in
-      let _defer175 = println__T_string("inner cleanup") in
+      let _defer185 = println__T_string("inner cleanup") in
     }
   }
 }
 
 fn main() -> unit {
-  let _wild176 = println__T_int(read(to_dyn[Source]{NumberSource}(NumberSource { value: 11 }))) in
-  let mtmp177 = (1, 2) in
+  let _wild186 = println__T_int(read(to_dyn[Source]{NumberSource}(NumberSource { value: 11 }))) in
+  let mtmp187 = (1, 2) in
   {
-    let x178 = mtmp177.0 in
-    let x179 = mtmp177.1 in
+    let x188 = mtmp187.0 in
+    let x189 = mtmp187.1 in
     {
-      let value/3 = x179 in
+      let value/3 = x189 in
       {
-        let index/2 = x178 in
+        let index/2 = x188 in
         {
-          let _wild182 =
+          let _wild192 =
             {
-              let compound_old180 = index/2 in
-              let compound_value181 = value/3 in
-              index/2 = (compound_old180 + compound_value181)
+              let compound_old190 = index/2 in
+              let compound_value191 = value/3 in
+              index/2 = (compound_old190 + compound_value191)
             } in
-          let _wild183 = println__T_int(index/2) in
-          let mtmp184 = (3, 0) in
+          let _wild193 = println__T_int(index/2) in
+          let mtmp194 = (3, 0) in
           {
-            let x185 = mtmp184.0 in
+            let x195 = mtmp194.0 in
             {
-              let captured/4 = @intrinsic(ref.new)(x185) in
+              let captured/4 = @intrinsic(ref.new)(x195) in
               {
                 let increment/5 =
                   || {
-                    let _wild189 =
+                    let _wild199 =
                       {
-                        let compound_old187 = @intrinsic(ref.get)(captured/4) in
-                        let compound_value188 = 1 in
-                        @intrinsic(ref.set)(captured/4, (compound_old187 + compound_value188))
+                        let compound_old197 = @intrinsic(ref.get)(captured/4) in
+                        let compound_value198 = 1 in
+                        @intrinsic(ref.set)(captured/4, (compound_old197 + compound_value198))
                       } in
                   } in
-                let _wild190 = increment/5() in
-                let _wild191 = println__T_int(@intrinsic(ref.get)(captured/4)) in
-                let _wild197 =
+                let _wild200 = increment/5() in
+                let _wild201 = println__T_int(@intrinsic(ref.get)(captured/4)) in
+                let _wild207 =
                   {
-                    let mtmp192 = Option__int::Some(4) in
-                    match mtmp192 {
+                    let mtmp202 = Option__int::Some(4) in
+                    match mtmp202 {
                       Option__int::None => {
                         ()
                       },
-                      Option__int::Some(x193) => {
+                      Option__int::Some(x203) => {
                         {
-                          let x193 = Option__int::Some._0(mtmp192) in
+                          let x203 = Option__int::Some._0(mtmp202) in
                           {
-                            let count/6 = x193 in
+                            let count/6 = x203 in
                             {
-                              let _wild196 =
+                              let _wild206 =
                                 {
-                                  let compound_old194 = count/6 in
-                                  let compound_value195 = 1 in
-                                  count/6 = (compound_old194 + compound_value195)
+                                  let compound_old204 = count/6 in
+                                  let compound_value205 = 1 in
+                                  count/6 = (compound_old204 + compound_value205)
                                 } in
                               println__T_int(count/6)
                             }
@@ -82,24 +82,24 @@ fn main() -> unit {
                     }
                   } in
                 let values/7 = inherent#Vec#Vec[T]#new__T_int() in
-                let _wild198 = inherent#Vec#Vec[T]#push__T_int(values/7, 6) in
-                let _wild207 =
+                let _wild208 = inherent#Vec#Vec[T]#push__T_int(values/7, 6) in
+                let _wild217 =
                   {
-                    let for_source199 = values/7 in
-                    let for_limit200 = @intrinsic(vec.len)(for_source199) in
-                    let for_index201 = 0 in
-                    while (for_index201 < for_limit200) {
+                    let for_source209 = values/7 in
+                    let for_limit210 = @intrinsic(vec.len)(for_source209) in
+                    let for_index211 = 0 in
+                    while (for_index211 < for_limit210) {
                         {
-                          let for_item202 = @intrinsic(vec.get)(for_source199, for_index201) in
-                          let _wild203 = for_index201 = (for_index201 + 1) in
+                          let for_item212 = @intrinsic(vec.get)(for_source209, for_index211) in
+                          let _wild213 = for_index211 = (for_index211 + 1) in
                           {
-                            let item/8 = for_item202 in
+                            let item/8 = for_item212 in
                             {
-                              let _wild206 =
+                              let _wild216 =
                                 {
-                                  let compound_old204 = item/8 in
-                                  let compound_value205 = 1 in
-                                  item/8 = (compound_old204 + compound_value205)
+                                  let compound_old214 = item/8 in
+                                  let compound_value215 = 1 in
+                                  item/8 = (compound_old214 + compound_value215)
                                 } in
                               println__T_int(item/8)
                             }
@@ -108,60 +108,60 @@ fn main() -> unit {
                     }
                   } in
                 let legacy/9 = (8, 9) in
-                let _wild211 =
-                  {
-                    let place_root208 = legacy/9 in
-                    let place209 = place_root208.0 in
-                    let value210 = 1 in
-                    legacy/9 = ((place209 + value210), place_root208.1)
-                  } in
-                let _wild215 =
-                  {
-                    let place_root212 = legacy/9 in
-                    let place213 = place_root212.1 in
-                    let value214 = 1 in
-                    legacy/9 = (place_root212.0, (place213 + value214))
-                  } in
-                let _wild216 = println__T_int((legacy/9.0 + legacy/9.1)) in
-                let steps/10 = 0 in
                 let _wild221 =
+                  {
+                    let place_root218 = legacy/9 in
+                    let place219 = place_root218.0 in
+                    let value220 = 1 in
+                    legacy/9 = ((place219 + value220), place_root218.1)
+                  } in
+                let _wild225 =
+                  {
+                    let place_root222 = legacy/9 in
+                    let place223 = place_root222.1 in
+                    let value224 = 1 in
+                    legacy/9 = (place_root222.0, (place223 + value224))
+                  } in
+                let _wild226 = println__T_int((legacy/9.0 + legacy/9.1)) in
+                let steps/10 = 0 in
+                let _wild231 =
                   while (steps/10 < 3) {
                       {
-                        let _wild219 =
+                        let _wild229 =
                           {
-                            let compound_old217 = steps/10 in
-                            let compound_value218 = 1 in
-                            steps/10 = (compound_old217 + compound_value218)
+                            let compound_old227 = steps/10 in
+                            let compound_value228 = 1 in
+                            steps/10 = (compound_old227 + compound_value228)
                           } in
                         loop {
-                          let _wild220 = continue@1 in
+                          let _wild230 = continue@1 in
                         }
                       }
                   } in
-                let _wild222 = println__T_int(steps/10) in
+                let _wild232 = println__T_int(steps/10) in
                 let seen/11 = inherent#Ref#Ref[T]#new__T_int(0) in
-                let _wild233 =
+                let _wild243 =
                   {
-                    let for_index223 = 0 in
-                    let for_limit224 = 3 in
-                    while (for_index223 < for_limit224) {
+                    let for_index233 = 0 in
+                    let for_limit234 = 3 in
+                    while (for_index233 < for_limit234) {
                         {
-                          let for_item225 = for_index223 in
-                          let _wild226 = for_index223 = (for_index223 + 1) in
+                          let for_item235 = for_index233 in
+                          let _wild236 = for_index233 = (for_index233 + 1) in
                           {
-                            let row/12 = for_item225 in
+                            let row/12 = for_item235 in
                             {
                               {
-                                let for_index227 = 0 in
-                                let for_limit228 = 3 in
-                                while (for_index227 < for_limit228) {
+                                let for_index237 = 0 in
+                                let for_limit238 = 3 in
+                                while (for_index237 < for_limit238) {
                                     {
-                                      let for_item229 = for_index227 in
-                                      let _wild230 = for_index227 = (for_index227 + 1) in
+                                      let for_item239 = for_index237 in
+                                      let _wild240 = for_index237 = (for_index237 + 1) in
                                       {
-                                        let column/13 = for_item229 in
+                                        let column/13 = for_item239 in
                                         {
-                                          let _wild231 =
+                                          let _wild241 =
                                             inherent#Ref#Ref[T]#set__T_int(
                                               seen/11,
                                               (inherent#Ref#Ref[T]#get__T_int(seen/11) + 1)
@@ -172,7 +172,7 @@ fn main() -> unit {
                                               false
                                           } {
                                               {
-                                                let _wild232 = break@1 in
+                                                let _wild242 = break@1 in
                                               }
                                           } else {
                                               {
@@ -189,14 +189,14 @@ fn main() -> unit {
                         }
                     }
                   } in
-                let _wild234 = println__T_int(inherent#Ref#Ref[T]#get__T_int(seen/11)) in
+                let _wild244 = println__T_int(inherent#Ref#Ref[T]#get__T_int(seen/11)) in
                 let answer/14 =
                   loop {
                     loop {
-                      let _wild235 = break@1 42 in
+                      let _wild245 = break@1 42 in
                     }
                   } in
-                let _wild236 = println__T_int(answer/14) in
+                let _wild246 = println__T_int(answer/14) in
                 labeled_cleanup()
               }
             }
@@ -223,16 +223,16 @@ fn inherent#Vec#Vec[T]#push__T_int(self/174: Vec[int], elem/175: int) -> unit {
   @intrinsic(vec.push)(self/174, elem/175)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/255: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/255)
+fn inherent#Ref#Ref[T]#new__T_int(value/270: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/270)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/256: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/256)
+fn inherent#Ref#Ref[T]#get__T_int(self/271: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/271)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/257: Ref[int], value/258: int) -> unit {
-  @intrinsic(ref.set)(self/257, value/258)
+fn inherent#Ref#Ref[T]#set__T_int(self/272: Ref[int], value/273: int) -> unit {
+  @intrinsic(ref.set)(self/272, value/273)
 }
 
 fn trait_impl#ToString#string#to_string(self/65: string) -> string {

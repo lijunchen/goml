@@ -1,0 +1,13 @@
+package main;
+static VALUE: OnceCell[int] = OnceCell::new();
+
+#[allow(unstructured_go)]
+fn main() -> unit {
+    let results = Channel::new(2);
+    go || results.send(VALUE.get_or_init(|| 41));
+    go || results.send(VALUE.get_or_init(|| 42));
+    let first = results.recv().unwrap_or(0);
+    let second = results.recv().unwrap_or(0);
+    println(first == second.to_string())
+}
+

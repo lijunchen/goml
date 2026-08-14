@@ -18,29 +18,29 @@ type Station struct {
 }
 
 func _goml_m_trait__impl_i_Ready_i_Worker_i_state(self__0 Worker) string {
-    var t175 string = self__0.name
-    var t176 string = t175 + ":ready"
-    return t176
+    var t185 string = self__0.name
+    var t186 string = t185 + ":ready"
+    return t186
 }
 
 func _goml_m_trait__impl_i_Service_i__l_Worker_r__x40_Station_i_get(self__1 Station) Worker {
-    var t179 Worker = self__1.worker
-    return t179
+    var t189 Worker = self__1.worker
+    return t189
 }
 
 func main0() struct{} {
-    var t181 Worker = Worker{
+    var t191 Worker = Worker{
         name: "build",
     }
-    var t182 Station = Station{
-        worker: t181,
+    var t192 Station = Station{
+        worker: t191,
     }
-    var t183 string
-    var inline197 Worker = _goml_m_trait__impl_i_Service_i__l_Worker_r__x40_Station_i_get(t182)
-    var inline198 string = _goml_m_trait__impl_i_Ready_i_Worker_i_state(inline197)
-    t183 = inline198
-    var inline194 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t183)
-    _goml_runtime_core_string_println(inline194)
+    var t193 string
+    var inline207 Worker = _goml_m_trait__impl_i_Service_i__l_Worker_r__x40_Station_i_get(t192)
+    var inline208 string = _goml_m_trait__impl_i_Ready_i_Worker_i_state(inline207)
+    t193 = inline208
+    var inline204 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t193)
+    _goml_runtime_core_string_println(inline204)
     return struct{}{}
 }
 

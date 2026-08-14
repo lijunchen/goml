@@ -2264,20 +2264,20 @@ fn std::fs::sha256_file(path/146: string) -> Result__string__string {
 
 fn show_read(res/0: Result__string__string) -> string {
   match res/0 {
-    Result__string__string::Ok(x172) => {
+    Result__string__string::Ok(x182) => {
       {
-        let x172 = Result__string__string::Ok._0(res/0) in
+        let x182 = Result__string__string::Ok._0(res/0) in
         {
-          let value/1 = x172 in
+          let value/1 = x182 in
           value/1
         }
       }
     },
-    Result__string__string::Err(x173) => {
+    Result__string__string::Err(x183) => {
       {
-        let x173 = Result__string__string::Err._0(res/0) in
+        let x183 = Result__string__string::Err._0(res/0) in
         {
-          let err/2 = x173 in
+          let err/2 = x183 in
           ("err " + err/2)
         }
       }
@@ -2287,20 +2287,20 @@ fn show_read(res/0: Result__string__string) -> string {
 
 fn show_dir(res/3: Result__Vec[string]__string) -> string {
   match res/3 {
-    Result__Vec[string]__string::Ok(x174) => {
+    Result__Vec[string]__string::Ok(x184) => {
       {
-        let x174 = Result__Vec[string]__string::Ok._0(res/3) in
+        let x184 = Result__Vec[string]__string::Ok._0(res/3) in
         {
-          let names/4 = x174 in
+          let names/4 = x184 in
           trait_impl#ToString#bool#to_string((inherent#Vec#Vec[T]#len__T_string(names/4) > 0))
         }
       }
     },
-    Result__Vec[string]__string::Err(x175) => {
+    Result__Vec[string]__string::Err(x185) => {
       {
-        let x175 = Result__Vec[string]__string::Err._0(res/3) in
+        let x185 = Result__Vec[string]__string::Err._0(res/3) in
         {
-          let err/5 = x175 in
+          let err/5 = x185 in
           ("err " + err/5)
         }
       }
@@ -2309,14 +2309,14 @@ fn show_dir(res/3: Result__Vec[string]__string) -> string {
 }
 
 fn main() -> unit {
-  let mtmp176 = std::fs::write_file("goml-std-test.txt", "std-ok") in
+  let mtmp186 = std::fs::write_file("goml-std-test.txt", "std-ok") in
   {
-    let _wild177 = std::io::println__T_string(show_read(std::fs::read_file("goml-std-test.txt"))) in
-    let _wild178 =
+    let _wild187 = std::io::println__T_string(show_read(std::fs::read_file("goml-std-test.txt"))) in
+    let _wild188 =
       std::io::println__T_string(
         trait_impl#ToString#bool#to_string(std::fs::exists("goml-std-test.txt"))
       ) in
-    let _wild179 = std::io::println__T_string(show_dir(std::fs::read_dir("."))) in
+    let _wild189 = std::io::println__T_string(show_dir(std::fs::read_dir("."))) in
   }
 }
 
@@ -2332,53 +2332,53 @@ fn inherent#string#string#to_bytes(self/51: string) -> Vec[uint8] {
   @runtime(core.string_to_bytes)(self/51)
 }
 
-fn inherent#Vec#Vec[T]#len__T_uint8(self/185: Vec[uint8]) -> int {
-  @intrinsic(vec.len)(self/185)
+fn inherent#Vec#Vec[T]#len__T_uint8(self/189: Vec[uint8]) -> int {
+  @intrinsic(vec.len)(self/189)
 }
 
-fn inherent#Vec#Vec[T]#capacity__T_uint8(self/186: Vec[uint8]) -> int {
-  @intrinsic(vec.capacity)(self/186)
+fn inherent#Vec#Vec[T]#capacity__T_uint8(self/190: Vec[uint8]) -> int {
+  @intrinsic(vec.capacity)(self/190)
 }
 
-fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/187: Vec[uint8]) -> bool {
-  (@intrinsic(vec.len)(self/187) == 0)
+fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/191: Vec[uint8]) -> bool {
+  (@intrinsic(vec.len)(self/191) == 0)
 }
 
 fn inherent#Vec#Vec[T]#push__T_uint8(self/174: Vec[uint8], elem/175: uint8) -> unit {
   @intrinsic(vec.push)(self/174, elem/175)
 }
 
-fn inherent#Vec#Vec[T]#pop__T_uint8(self/195: Vec[uint8]) -> Option__uint8 {
-  let len/196 = inherent#Vec#Vec[T]#len__T_uint8(self/195) in
-  if (len/196 == 0) {
+fn inherent#Vec#Vec[T]#pop__T_uint8(self/199: Vec[uint8]) -> Option__uint8 {
+  let len/200 = inherent#Vec#Vec[T]#len__T_uint8(self/199) in
+  if (len/200 == 0) {
       {
         Option__uint8::None
       }
   } else {
       {
-        let value/197 = @intrinsic(vec.get)(self/195, (len/196 - 1)) in
-        let _wild85 = inherent#Vec#Vec[T]#truncate__T_uint8(self/195, (len/196 - 1)) in
-        Option__uint8::Some(value/197)
+        let value/201 = @intrinsic(vec.get)(self/199, (len/200 - 1)) in
+        let _wild90 = inherent#Vec#Vec[T]#truncate__T_uint8(self/199, (len/200 - 1)) in
+        Option__uint8::Some(value/201)
       }
   }
 }
 
-fn inherent#Vec#Vec[T]#reserve__T_uint8(self/188: Vec[uint8], additional/189: int) -> unit {
-  @intrinsic(vec.reserve)(self/188, additional/189)
+fn inherent#Vec#Vec[T]#reserve__T_uint8(self/192: Vec[uint8], additional/193: int) -> unit {
+  @intrinsic(vec.reserve)(self/192, additional/193)
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_uint8(self/190: Vec[uint8], len/191: int) -> unit {
-  @intrinsic(vec.truncate)(self/190, len/191)
+fn inherent#Vec#Vec[T]#truncate__T_uint8(self/194: Vec[uint8], len/195: int) -> unit {
+  @intrinsic(vec.truncate)(self/194, len/195)
 }
 
-fn inherent#Vec#Vec[T]#clear__T_uint8(self/192: Vec[uint8]) -> unit {
-  inherent#Vec#Vec[T]#truncate__T_uint8(self/192, 0)
+fn inherent#Vec#Vec[T]#clear__T_uint8(self/196: Vec[uint8]) -> unit {
+  inherent#Vec#Vec[T]#truncate__T_uint8(self/196, 0)
 }
 
-fn inherent#Vec#Vec[T]#slice__T_uint8(self/223: Vec[uint8], start/224: int, end/225: int) -> Slice[
+fn inherent#Vec#Vec[T]#slice__T_uint8(self/227: Vec[uint8], start/228: int, end/229: int) -> Slice[
   uint8
 ] {
-  @intrinsic(slice.new)(self/223, start/224, end/225)
+  @intrinsic(slice.new)(self/227, start/228, end/229)
 }
 
 fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
@@ -2521,8 +2521,8 @@ fn inherent#Vec#Vec[T]#push__T_std::fs::DirEntry(
   @intrinsic(vec.push)(self/174, elem/175)
 }
 
-fn inherent#Vec#Vec[T]#len__T_string(self/185: Vec[string]) -> int {
-  @intrinsic(vec.len)(self/185)
+fn inherent#Vec#Vec[T]#len__T_string(self/189: Vec[string]) -> int {
+  @intrinsic(vec.len)(self/189)
 }
 
 fn trait_impl#ToString#bool#to_string(self/64: bool) -> string {

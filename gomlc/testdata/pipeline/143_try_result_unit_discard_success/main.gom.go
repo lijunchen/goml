@@ -27,148 +27,148 @@ func (_ Err) isResult__unit__string() {}
 
 func step(ok__0 bool) Result__unit__string {
     if ok__0 {
-        var t184 Result__unit__string = Ok{
+        var t194 Result__unit__string = Ok{
             _0: struct{}{},
         }
-        return t184
+        return t194
     } else {
-        var t185 Result__unit__string = Err{
+        var t195 Result__unit__string = Err{
             _0: "step failed",
         }
-        return t185
+        return t195
     }
 }
 
 func main0() struct{} {
-    var t199 Result__unit__string
-    var inline239 bool = true
-    var inline240 Result__unit__string = step(inline239)
-    switch inline240.(type) {
+    var t209 Result__unit__string
+    var inline249 bool = true
+    var inline250 Result__unit__string = step(inline249)
+    switch inline250.(type) {
     case Ok:
-        var inline243 Result__unit__string = Ok{
+        var inline253 Result__unit__string = Ok{
             _0: struct{}{},
         }
-        t199 = inline243
-        var t200 string
-        switch t199.(type) {
+        t209 = inline253
+        var t210 string
+        switch t209.(type) {
         case Ok:
-            t200 = "ok unit"
+            t210 = "ok unit"
         case Err:
-            var inline235 string = t199.(Err)._0
-            var inline237 string = "err " + inline235
-            t200 = inline237
+            var inline245 string = t209.(Err)._0
+            var inline247 string = "err " + inline245
+            t210 = inline247
         default:
             panic("non-exhaustive match")
         }
-        var inline231 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t200)
-        _goml_runtime_core_string_println(inline231)
-        var t201 Result__unit__string
-        var inline220 bool = false
-        var inline221 Result__unit__string = step(inline220)
-        switch inline221.(type) {
+        var inline241 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t210)
+        _goml_runtime_core_string_println(inline241)
+        var t211 Result__unit__string
+        var inline230 bool = false
+        var inline231 Result__unit__string = step(inline230)
+        switch inline231.(type) {
         case Ok:
-            var inline224 Result__unit__string = Ok{
+            var inline234 Result__unit__string = Ok{
                 _0: struct{}{},
             }
-            t201 = inline224
-            var t202 string
-            switch t201.(type) {
+            t211 = inline234
+            var t212 string
+            switch t211.(type) {
             case Ok:
-                t202 = "ok unit"
+                t212 = "ok unit"
             case Err:
-                var inline216 string = t201.(Err)._0
-                var inline218 string = "err " + inline216
-                t202 = inline218
+                var inline226 string = t211.(Err)._0
+                var inline228 string = "err " + inline226
+                t212 = inline228
             default:
                 panic("non-exhaustive match")
             }
-            var inline212 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t202)
-            _goml_runtime_core_string_println(inline212)
+            var inline222 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t212)
+            _goml_runtime_core_string_println(inline222)
             return struct{}{}
         case Err:
-            var inline227 string = inline221.(Err)._0
-            var inline229 Result__unit__string = Err{
-                _0: inline227,
+            var inline237 string = inline231.(Err)._0
+            var inline239 Result__unit__string = Err{
+                _0: inline237,
             }
-            t201 = inline229
-            var t202 string
-            switch t201.(type) {
+            t211 = inline239
+            var t212 string
+            switch t211.(type) {
             case Ok:
-                t202 = "ok unit"
+                t212 = "ok unit"
             case Err:
-                var inline216 string = t201.(Err)._0
-                var inline218 string = "err " + inline216
-                t202 = inline218
+                var inline226 string = t211.(Err)._0
+                var inline228 string = "err " + inline226
+                t212 = inline228
             default:
                 panic("non-exhaustive match")
             }
-            var inline212 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t202)
-            _goml_runtime_core_string_println(inline212)
+            var inline222 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t212)
+            _goml_runtime_core_string_println(inline222)
             return struct{}{}
         default:
             panic("non-exhaustive match")
         }
     case Err:
-        var inline246 string = inline240.(Err)._0
-        var inline248 Result__unit__string = Err{
-            _0: inline246,
+        var inline256 string = inline250.(Err)._0
+        var inline258 Result__unit__string = Err{
+            _0: inline256,
         }
-        t199 = inline248
-        var t200 string
-        switch t199.(type) {
+        t209 = inline258
+        var t210 string
+        switch t209.(type) {
         case Ok:
-            t200 = "ok unit"
+            t210 = "ok unit"
         case Err:
-            var inline235 string = t199.(Err)._0
-            var inline237 string = "err " + inline235
-            t200 = inline237
+            var inline245 string = t209.(Err)._0
+            var inline247 string = "err " + inline245
+            t210 = inline247
         default:
             panic("non-exhaustive match")
         }
-        var inline231 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t200)
-        _goml_runtime_core_string_println(inline231)
-        var t201 Result__unit__string
-        var inline220 bool = false
-        var inline221 Result__unit__string = step(inline220)
-        switch inline221.(type) {
+        var inline241 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t210)
+        _goml_runtime_core_string_println(inline241)
+        var t211 Result__unit__string
+        var inline230 bool = false
+        var inline231 Result__unit__string = step(inline230)
+        switch inline231.(type) {
         case Ok:
-            var inline224 Result__unit__string = Ok{
+            var inline234 Result__unit__string = Ok{
                 _0: struct{}{},
             }
-            t201 = inline224
-            var t202 string
-            switch t201.(type) {
+            t211 = inline234
+            var t212 string
+            switch t211.(type) {
             case Ok:
-                t202 = "ok unit"
+                t212 = "ok unit"
             case Err:
-                var inline216 string = t201.(Err)._0
-                var inline218 string = "err " + inline216
-                t202 = inline218
+                var inline226 string = t211.(Err)._0
+                var inline228 string = "err " + inline226
+                t212 = inline228
             default:
                 panic("non-exhaustive match")
             }
-            var inline212 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t202)
-            _goml_runtime_core_string_println(inline212)
+            var inline222 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t212)
+            _goml_runtime_core_string_println(inline222)
             return struct{}{}
         case Err:
-            var inline227 string = inline221.(Err)._0
-            var inline229 Result__unit__string = Err{
-                _0: inline227,
+            var inline237 string = inline231.(Err)._0
+            var inline239 Result__unit__string = Err{
+                _0: inline237,
             }
-            t201 = inline229
-            var t202 string
-            switch t201.(type) {
+            t211 = inline239
+            var t212 string
+            switch t211.(type) {
             case Ok:
-                t202 = "ok unit"
+                t212 = "ok unit"
             case Err:
-                var inline216 string = t201.(Err)._0
-                var inline218 string = "err " + inline216
-                t202 = inline218
+                var inline226 string = t211.(Err)._0
+                var inline228 string = "err " + inline226
+                t212 = inline228
             default:
                 panic("non-exhaustive match")
             }
-            var inline212 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t202)
-            _goml_runtime_core_string_println(inline212)
+            var inline222 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t212)
+            _goml_runtime_core_string_println(inline222)
             return struct{}{}
         default:
             panic("non-exhaustive match")

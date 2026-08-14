@@ -13,37 +13,37 @@ fn make_counter() -> (() -> int32, () -> unit) {
 
 fn main() -> unit {
   let counter/4 = make_counter() in
-  let mtmp174 = counter/4 in
-  let x175 = mtmp174.0 in
-  let x176 = mtmp174.1 in
-  let reset/6 = x176 in
-  let next/5 = x175 in
+  let mtmp184 = counter/4 in
+  let x185 = mtmp184.0 in
+  let x186 = mtmp184.1 in
+  let reset/6 = x186 in
+  let next/5 = x185 in
   let first/7 = next/5() in
   let second/8 = next/5() in
-  let mtmp177 = reset/6() in
+  let mtmp187 = reset/6() in
   let third/9 = next/5() in
   let new_counter/10 = make_counter() in
-  let mtmp178 = new_counter/10 in
-  let x179 = mtmp178.0 in
-  let new_next/11 = x179 in
+  let mtmp188 = new_counter/10 in
+  let x189 = mtmp188.0 in
+  let new_next/11 = x189 in
   let fourth/12 = new_next/11() in
-  let mtmp181 = println__T_string(inherent#int32#int32#to_string(first/7)) in
-  let mtmp182 = println__T_string(inherent#int32#int32#to_string(second/8)) in
-  let mtmp183 = println__T_string(inherent#int32#int32#to_string(third/9)) in
-  let mtmp184 = println__T_string(inherent#int32#int32#to_string(fourth/12)) in
+  let mtmp191 = println__T_string(inherent#int32#int32#to_string(first/7)) in
+  let mtmp192 = println__T_string(inherent#int32#int32#to_string(second/8)) in
+  let mtmp193 = println__T_string(inherent#int32#int32#to_string(third/9)) in
+  let mtmp194 = println__T_string(inherent#int32#int32#to_string(fourth/12)) in
   ()
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/255: int32) -> Ref[int32] {
-  @intrinsic(ref.new)(value/255)
+fn inherent#Ref#Ref[T]#new__T_int32(value/270: int32) -> Ref[int32] {
+  @intrinsic(ref.new)(value/270)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/256: Ref[int32]) -> int32 {
-  @intrinsic(ref.get)(self/256)
+fn inherent#Ref#Ref[T]#get__T_int32(self/271: Ref[int32]) -> int32 {
+  @intrinsic(ref.get)(self/271)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/257: Ref[int32], value/258: int32) -> unit {
-  @intrinsic(ref.set)(self/257, value/258)
+fn inherent#Ref#Ref[T]#set__T_int32(self/272: Ref[int32], value/273: int32) -> unit {
+  @intrinsic(ref.set)(self/272, value/273)
 }
 
 fn println__T_string(value/1: string) -> unit {
@@ -66,15 +66,15 @@ fn trait_impl#Hash#int32#hash(self/130: int32) -> uint64 {
   @runtime(core.int32_hash)(self/130)
 }
 
-fn inherent#closure_env_next_0#closure_env_next_0#apply(env185: closure_env_next_0) -> int32 {
-  let cell/0 = closure_env_next_0.cell_0(env185) in
+fn inherent#closure_env_next_0#closure_env_next_0#apply(env195: closure_env_next_0) -> int32 {
+  let cell/0 = closure_env_next_0.cell_0(env195) in
   let next/1 = (inherent#Ref#Ref[T]#get__T_int32(cell/0) + 1) in
-  let mtmp172 = inherent#Ref#Ref[T]#set__T_int32(cell/0, next/1) in
+  let mtmp182 = inherent#Ref#Ref[T]#set__T_int32(cell/0, next/1) in
   next/1
 }
 
-fn inherent#closure_env_reset_1#closure_env_reset_1#apply(env186: closure_env_reset_1) -> unit {
-  let cell/0 = closure_env_reset_1.cell_0(env186) in
-  let mtmp173 = inherent#Ref#Ref[T]#set__T_int32(cell/0, 0) in
+fn inherent#closure_env_reset_1#closure_env_reset_1#apply(env196: closure_env_reset_1) -> unit {
+  let cell/0 = closure_env_reset_1.cell_0(env196) in
+  let mtmp183 = inherent#Ref#Ref[T]#set__T_int32(cell/0, 0) in
   ()
 }

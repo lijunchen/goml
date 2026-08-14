@@ -16,26 +16,26 @@ fn maybe_double(value/1: int32) -> Option__int32 {
 
 fn maybe_total(flag/2: bool) -> Option__int32 {
   let a/3 =
-    let mtmp172 = maybe_seed(flag/2) in
-    match mtmp172 {
+    let mtmp182 = maybe_seed(flag/2) in
+    match mtmp182 {
       Option__int32::None => {
         return Option__int32::None
       },
-      Option__int32::Some(x173) => {
-        let x173 = Option__int32::Some._0(mtmp172) in
-        let try_value/22 = x173 in
+      Option__int32::Some(x183) => {
+        let x183 = Option__int32::Some._0(mtmp182) in
+        let try_value/22 = x183 in
         try_value/22
       },
     } in
   let b/4 =
-    let mtmp174 = maybe_double(a/3) in
-    match mtmp174 {
+    let mtmp184 = maybe_double(a/3) in
+    match mtmp184 {
       Option__int32::None => {
         return Option__int32::None
       },
-      Option__int32::Some(x175) => {
-        let x175 = Option__int32::Some._0(mtmp174) in
-        let try_value/26 = x175 in
+      Option__int32::Some(x185) => {
+        let x185 = Option__int32::Some._0(mtmp184) in
+        let try_value/26 = x185 in
         try_value/26
       },
     } in
@@ -47,17 +47,17 @@ fn show(opt/5: Option__int32) -> string {
     Option__int32::None => {
       "none"
     },
-    Option__int32::Some(x176) => {
-      let x176 = Option__int32::Some._0(opt/5) in
-      let value/6 = x176 in
+    Option__int32::Some(x186) => {
+      let x186 = Option__int32::Some._0(opt/5) in
+      let value/6 = x186 in
       ("some=" + inherent#int32#int32#to_string(value/6))
     },
   }
 }
 
 fn main() -> unit {
-  let _wild177 = println__T_string(show(maybe_total(true))) in
-  let _wild178 = println__T_string(show(maybe_total(false))) in
+  let _wild187 = println__T_string(show(maybe_total(true))) in
+  let _wild188 = println__T_string(show(maybe_total(false))) in
   ()
 }
 

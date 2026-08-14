@@ -27,108 +27,108 @@ func (_ Err) isResult__string__string() {}
 
 func parse_text(ok__0 bool) Result__string__string {
     if ok__0 {
-        var t186 Result__string__string = Ok{
+        var t196 Result__string__string = Ok{
             _0: "goml",
         }
-        return t186
+        return t196
     } else {
-        var t187 Result__string__string = Err{
+        var t197 Result__string__string = Err{
             _0: "parse failed",
         }
-        return t187
+        return t197
     }
 }
 
 func normalize_text(ok__1 bool) Result__string__string {
-    var mtmp172 Result__string__string
+    var mtmp182 Result__string__string
     if ok__1 {
-        var inline220 Result__string__string = Ok{
+        var inline230 Result__string__string = Ok{
             _0: "goml",
         }
-        mtmp172 = inline220
+        mtmp182 = inline230
     } else {
-        var inline221 Result__string__string = Err{
+        var inline231 Result__string__string = Err{
             _0: "parse failed",
         }
-        mtmp172 = inline221
+        mtmp182 = inline231
     }
-    var jp191 string
-    switch mtmp172.(type) {
+    var jp201 string
+    switch mtmp182.(type) {
     case Ok:
-        var x173 string = mtmp172.(Ok)._0
-        jp191 = x173
-        var t192 string = jp191 + "!"
-        var t193 Result__string__string = Ok{
-            _0: t192,
+        var x183 string = mtmp182.(Ok)._0
+        jp201 = x183
+        var t202 string = jp201 + "!"
+        var t203 Result__string__string = Ok{
+            _0: t202,
         }
-        return t193
+        return t203
     case Err:
-        var x174 string = mtmp172.(Err)._0
-        var t194 Result__string__string = Err{
-            _0: x174,
+        var x184 string = mtmp182.(Err)._0
+        var t204 Result__string__string = Err{
+            _0: x184,
         }
-        return t194
+        return t204
     default:
         panic("non-exhaustive match")
     }
 }
 
 func decorate_text(ok__3 bool) Result__string__string {
-    var mtmp175 Result__string__string
-    var inline223 Result__string__string = parse_text(ok__3)
-    var inline225 string
-    switch inline223.(type) {
+    var mtmp185 Result__string__string
+    var inline233 Result__string__string = parse_text(ok__3)
+    var inline235 string
+    switch inline233.(type) {
     case Ok:
-        var inline229 string = inline223.(Ok)._0
-        inline225 = inline229
-        var inline227 string = inline225 + "!"
-        var inline228 Result__string__string = Ok{
-            _0: inline227,
+        var inline239 string = inline233.(Ok)._0
+        inline235 = inline239
+        var inline237 string = inline235 + "!"
+        var inline238 Result__string__string = Ok{
+            _0: inline237,
         }
-        mtmp175 = inline228
-        var jp198 string
-        switch mtmp175.(type) {
+        mtmp185 = inline238
+        var jp208 string
+        switch mtmp185.(type) {
         case Ok:
-            var x176 string = mtmp175.(Ok)._0
-            jp198 = x176
-            var t199 string = "[" + jp198
-            var t200 string = t199 + "]"
-            var t201 Result__string__string = Ok{
-                _0: t200,
+            var x186 string = mtmp185.(Ok)._0
+            jp208 = x186
+            var t209 string = "[" + jp208
+            var t210 string = t209 + "]"
+            var t211 Result__string__string = Ok{
+                _0: t210,
             }
-            return t201
+            return t211
         case Err:
-            var x177 string = mtmp175.(Err)._0
-            var t202 Result__string__string = Err{
-                _0: x177,
+            var x187 string = mtmp185.(Err)._0
+            var t212 Result__string__string = Err{
+                _0: x187,
             }
-            return t202
+            return t212
         default:
             panic("non-exhaustive match")
         }
     case Err:
-        var inline231 string = inline223.(Err)._0
-        var inline233 Result__string__string = Err{
-            _0: inline231,
+        var inline241 string = inline233.(Err)._0
+        var inline243 Result__string__string = Err{
+            _0: inline241,
         }
-        mtmp175 = inline233
-        var jp198 string
-        switch mtmp175.(type) {
+        mtmp185 = inline243
+        var jp208 string
+        switch mtmp185.(type) {
         case Ok:
-            var x176 string = mtmp175.(Ok)._0
-            jp198 = x176
-            var t199 string = "[" + jp198
-            var t200 string = t199 + "]"
-            var t201 Result__string__string = Ok{
-                _0: t200,
+            var x186 string = mtmp185.(Ok)._0
+            jp208 = x186
+            var t209 string = "[" + jp208
+            var t210 string = t209 + "]"
+            var t211 Result__string__string = Ok{
+                _0: t210,
             }
-            return t201
+            return t211
         case Err:
-            var x177 string = mtmp175.(Err)._0
-            var t202 Result__string__string = Err{
-                _0: x177,
+            var x187 string = mtmp185.(Err)._0
+            var t212 Result__string__string = Err{
+                _0: x187,
             }
-            return t202
+            return t212
         default:
             panic("non-exhaustive match")
         }
@@ -138,73 +138,73 @@ func decorate_text(ok__3 bool) Result__string__string {
 }
 
 func main0() struct{} {
-    var t210 Result__string__string = decorate_text(true)
-    var t211 string
-    switch t210.(type) {
+    var t220 Result__string__string = decorate_text(true)
+    var t221 string
+    switch t220.(type) {
     case Ok:
-        var inline262 string = t210.(Ok)._0
-        var inline264 string = "ok " + inline262
-        t211 = inline264
+        var inline272 string = t220.(Ok)._0
+        var inline274 string = "ok " + inline272
+        t221 = inline274
     case Err:
-        var inline265 string = t210.(Err)._0
-        var inline267 string = "err " + inline265
-        t211 = inline267
+        var inline275 string = t220.(Err)._0
+        var inline277 string = "err " + inline275
+        t221 = inline277
     default:
         panic("non-exhaustive match")
     }
-    var inline259 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t211)
-    _goml_runtime_core_string_println(inline259)
-    var t212 Result__string__string
-    var inline245 bool = false
-    var inline246 Result__string__string = normalize_text(inline245)
-    var inline248 string
-    switch inline246.(type) {
+    var inline269 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t221)
+    _goml_runtime_core_string_println(inline269)
+    var t222 Result__string__string
+    var inline255 bool = false
+    var inline256 Result__string__string = normalize_text(inline255)
+    var inline258 string
+    switch inline256.(type) {
     case Ok:
-        var inline253 string = inline246.(Ok)._0
-        inline248 = inline253
-        var inline250 string = "[" + inline248
-        var inline251 string = inline250 + "]"
-        var inline252 Result__string__string = Ok{
-            _0: inline251,
+        var inline263 string = inline256.(Ok)._0
+        inline258 = inline263
+        var inline260 string = "[" + inline258
+        var inline261 string = inline260 + "]"
+        var inline262 Result__string__string = Ok{
+            _0: inline261,
         }
-        t212 = inline252
-        var t213 string
-        switch t212.(type) {
+        t222 = inline262
+        var t223 string
+        switch t222.(type) {
         case Ok:
-            var inline238 string = t212.(Ok)._0
-            var inline240 string = "ok " + inline238
-            t213 = inline240
+            var inline248 string = t222.(Ok)._0
+            var inline250 string = "ok " + inline248
+            t223 = inline250
         case Err:
-            var inline241 string = t212.(Err)._0
-            var inline243 string = "err " + inline241
-            t213 = inline243
+            var inline251 string = t222.(Err)._0
+            var inline253 string = "err " + inline251
+            t223 = inline253
         default:
             panic("non-exhaustive match")
         }
-        var inline235 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t213)
-        _goml_runtime_core_string_println(inline235)
+        var inline245 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t223)
+        _goml_runtime_core_string_println(inline245)
         return struct{}{}
     case Err:
-        var inline255 string = inline246.(Err)._0
-        var inline257 Result__string__string = Err{
-            _0: inline255,
+        var inline265 string = inline256.(Err)._0
+        var inline267 Result__string__string = Err{
+            _0: inline265,
         }
-        t212 = inline257
-        var t213 string
-        switch t212.(type) {
+        t222 = inline267
+        var t223 string
+        switch t222.(type) {
         case Ok:
-            var inline238 string = t212.(Ok)._0
-            var inline240 string = "ok " + inline238
-            t213 = inline240
+            var inline248 string = t222.(Ok)._0
+            var inline250 string = "ok " + inline248
+            t223 = inline250
         case Err:
-            var inline241 string = t212.(Err)._0
-            var inline243 string = "err " + inline241
-            t213 = inline243
+            var inline251 string = t222.(Err)._0
+            var inline253 string = "err " + inline251
+            t223 = inline253
         default:
             panic("non-exhaustive match")
         }
-        var inline235 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t213)
-        _goml_runtime_core_string_println(inline235)
+        var inline245 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t223)
+        _goml_runtime_core_string_println(inline245)
         return struct{}{}
     default:
         panic("non-exhaustive match")

@@ -18,25 +18,25 @@ type Count struct {
 }
 
 func _goml_m_trait__impl_i_Parent_i_Count_i_get(self__0 Count) int32 {
-    var t175 int32 = self__0.value
-    return t175
+    var t185 int32 = self__0.value
+    return t185
 }
 
 func main0() struct{} {
-    var t178 Count = Count{
+    var t188 Count = Count{
         value: 42,
     }
-    var t179 int32
-    var inline193 int32 = _goml_m_trait__impl_i_Parent_i_Count_i_get(t178)
-    t179 = inline193
-    var inline190 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t179)
-    _goml_runtime_core_string_println(inline190)
+    var t189 int32
+    var inline203 int32 = _goml_m_trait__impl_i_Parent_i_Count_i_get(t188)
+    t189 = inline203
+    var inline200 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t189)
+    _goml_runtime_core_string_println(inline200)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__70 int32) string {
-    var t188 string = _goml_runtime_core_int32_to_string(self__70)
-    return t188
+    var t198 string = _goml_runtime_core_int32_to_string(self__70)
+    return t198
 }
 
 func main() {

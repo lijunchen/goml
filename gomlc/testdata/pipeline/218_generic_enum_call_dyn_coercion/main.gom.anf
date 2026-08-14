@@ -1,50 +1,50 @@
 fn trait_impl#Show#Boxed__int32#show(self/0: Boxed__int32) -> string {
   match self/0 {
     Tag_0 => {
-      let x172 = Boxed__int32::One._0(self/0) in
-      let inline198 = @runtime(core.int32_to_string)(x172) in
-      inline198
+      let x182 = Boxed__int32::One._0(self/0) in
+      let inline208 = @runtime(core.int32_to_string)(x182) in
+      inline208
     },
   }
 }
 
 fn render(value/3: dyn Show) -> string {
-  let t180 = dyn_call[Show::show](value/3) in
-  t180
+  let t190 = dyn_call[Show::show](value/3) in
+  t190
 }
 
 fn main() -> unit {
   let value/4 = 42 in
-  join inline_cont204(t182: Boxed__int32) -> unit {
-    let t183 = to_dyn[Show]{Boxed__int32}(t182) in
-    join inline_cont202(t184: string) -> unit {
-      let inline200 = trait_impl#ToString#string#to_string(t184) in
-      let inline201 = @runtime(core.string_println)(inline200) in
+  join inline_cont214(t192: Boxed__int32) -> unit {
+    let t193 = to_dyn[Show]{Boxed__int32}(t192) in
+    join inline_cont212(t194: string) -> unit {
+      let inline210 = trait_impl#ToString#string#to_string(t194) in
+      let inline211 = @runtime(core.string_println)(inline210) in
       ()
     } in
-    let inline203 = dyn_call[Show::show](t183) in
-    jump inline_cont202(inline203)
+    let inline213 = dyn_call[Show::show](t193) in
+    jump inline_cont212(inline213)
   } in
-  let inline205 = Boxed__int32::One(value/4) in
-  jump inline_cont204(inline205)
+  let inline215 = Boxed__int32::One(value/4) in
+  jump inline_cont214(inline215)
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {
-  let t188 = @runtime(core.int32_to_string)(self/33) in
-  t188
+  let t198 = @runtime(core.int32_to_string)(self/33) in
+  t198
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont206(t190: string) -> unit {
-    let t191 = @runtime(core.string_println)(t190) in
+  join inline_cont216(t200: string) -> unit {
+    let t201 = @runtime(core.string_println)(t200) in
     ()
   } in
-  jump inline_cont206(value/1)
+  jump inline_cont216(value/1)
 }
 
 fn make_boxed__T_int32(value/2: int32) -> Boxed__int32 {
-  let t194 = Boxed__int32::One(value/2) in
-  t194
+  let t204 = Boxed__int32::One(value/2) in
+  t204
 }
 
 fn trait_impl#ToString#string#to_string(self/65: string) -> string {

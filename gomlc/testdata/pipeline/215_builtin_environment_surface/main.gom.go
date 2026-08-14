@@ -150,48 +150,48 @@ func main0() struct{} {
     var native__0 int = 7
     var small__1 int8 = 8
     var unsigned__2 uint8 = 9
-    var t182 string = _goml_runtime_core_int_to_string(native__0)
-    var t183 string = _goml_runtime_core_int8_to_string(small__1)
-    var t184 string = t182 + t183
-    var t185 string = _goml_runtime_core_uint8_to_string(unsigned__2)
-    var t186 string = t184 + t185
-    var t187 string
-    var inline312 string = "abcd"
-    var inline313 int = 1
-    var inline314 int = 3
-    var inline315 bool = string_is_char_boundary(inline312, inline313)
-    var inline317 bool
-    if inline315 {
-        var inline320 bool = string_is_char_boundary(inline312, inline314)
-        inline317 = inline320
+    var t192 string = _goml_runtime_core_int_to_string(native__0)
+    var t193 string = _goml_runtime_core_int8_to_string(small__1)
+    var t194 string = t192 + t193
+    var t195 string = _goml_runtime_core_uint8_to_string(unsigned__2)
+    var t196 string = t194 + t195
+    var t197 string
+    var inline322 string = "abcd"
+    var inline323 int = 1
+    var inline324 int = 3
+    var inline325 bool = string_is_char_boundary(inline322, inline323)
+    var inline327 bool
+    if inline325 {
+        var inline330 bool = string_is_char_boundary(inline322, inline324)
+        inline327 = inline330
     } else {
-        inline317 = false
+        inline327 = false
     }
-    if inline317 {
-        var inline318 string = _goml_runtime_core_string_byte_slice(inline312, inline313, inline314)
-        t187 = inline318
-        var text__3 string = t186 + t187
+    if inline327 {
+        var inline328 string = _goml_runtime_core_string_byte_slice(inline322, inline323, inline324)
+        t197 = inline328
+        var text__3 string = t196 + t197
         var value__4 *ref_int32_x = ref__Ref_5int32(1)
         ref_set__Ref_5int32(value__4, 2)
         var same__5 bool = ptr_eq__Ref_5int32(value__4, value__4)
         ptr_hash__Ref_5int32(value__4)
         var values__6 *_goml_vec_int32 = vec_new__Vec_5int32()
-        var t188 int32 = ref_get__Ref_5int32(value__4)
-        vec_push__Vec_5int32(values__6, t188)
+        var t198 int32 = ref_get__Ref_5int32(value__4)
+        vec_push__Vec_5int32(values__6, t198)
         vec_push__Vec_5int32(values__6, 3)
         vec_set__Vec_5int32(values__6, 1, 4)
-        var t189 int = vec_len__Vec_5int32(values__6)
-        var values_slice__7 []int32 = values__6.items[0:t189]
-        var t190 int = len(values_slice__7)
-        var nested__8 []int32 = values_slice__7[0:t190]
+        var t199 int = vec_len__Vec_5int32(values__6)
+        var values_slice__7 []int32 = values__6.items[0:t199]
+        var t200 int = len(values_slice__7)
+        var nested__8 []int32 = values_slice__7[0:t200]
         var channel__9 chan int32 = func(p0 int) chan int32 {
             return make(chan int32, p0)
         }(1)
-        var t191 int32 = nested__8[1]
+        var t201 int32 = nested__8[1]
         func(p0 chan int32, p1 int32) struct{} {
             p0 <- p1
             return struct{}{}
-        }(channel__9, t191)
+        }(channel__9, t201)
         var received__10 Tuple2_5int32_4bool = func(p0 chan int32) Tuple2_5int32_4bool {
             var value int32
             var ok bool
@@ -205,62 +205,62 @@ func main0() struct{} {
             close(p0)
             return struct{}{}
         }(channel__9)
-        var t193 FnIterator__int
-        var inline308 int = 0
-        var inline309 int = 3
-        var inline310 FnIterator__int = __goml_builtin_range(inline308, inline309)
-        t193 = inline310
-        var t194 closure_env_main_0 = closure_env_main_0{}
-        var t195 func(int, int) int = func(p0 int, p1 int) int {
-            return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t194, p0, p1)
+        var t203 FnIterator__int
+        var inline318 int = 0
+        var inline319 int = 3
+        var inline320 FnIterator__int = __goml_builtin_range(inline318, inline319)
+        t203 = inline320
+        var t204 closure_env_main_0 = closure_env_main_0{}
+        var t205 func(int, int) int = func(p0 int, p1 int) int {
+            return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t204, p0, p1)
         }
-        var total__13 int = _goml_m_std_p_iter_p_fold____A__int____I__FnIterator_l_int_r_____T__int(t193, 0, t195)
-        var t196 string
-        var inline306 string = _goml_runtime_core_bool_to_string(same__5)
-        t196 = inline306
-        var t197 string = text__3 + t196
-        var t198 int32 = received__10._0
-        var t199 string
-        var inline304 string = _goml_runtime_core_int32_to_string(t198)
-        t199 = inline304
-        var t200 string = t197 + t199
-        var t201 bool = received__10._1
-        var t202 string
-        var inline302 string = _goml_runtime_core_bool_to_string(t201)
-        t202 = inline302
-        var t203 string = t200 + t202
-        var t204 string
-        var inline300 string = _goml_runtime_core_int_to_string(total__13)
-        t204 = inline300
-        var t205 string = t203 + t204
-        var inline297 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t205)
-        _goml_runtime_core_string_println(inline297)
+        var total__13 int = _goml_m_std_p_iter_p_fold____A__int____I__FnIterator_l_int_r_____T__int(t203, 0, t205)
+        var t206 string
+        var inline316 string = _goml_runtime_core_bool_to_string(same__5)
+        t206 = inline316
+        var t207 string = text__3 + t206
+        var t208 int32 = received__10._0
+        var t209 string
+        var inline314 string = _goml_runtime_core_int32_to_string(t208)
+        t209 = inline314
+        var t210 string = t207 + t209
+        var t211 bool = received__10._1
+        var t212 string
+        var inline312 string = _goml_runtime_core_bool_to_string(t211)
+        t212 = inline312
+        var t213 string = t210 + t212
+        var t214 string
+        var inline310 string = _goml_runtime_core_int_to_string(total__13)
+        t214 = inline310
+        var t215 string = t213 + t214
+        var inline307 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t215)
+        _goml_runtime_core_string_println(inline307)
         return struct{}{}
     } else {
-        var inline319 string = _goml_runtime_core_string_byte_slice(inline312, -1, -1)
-        t187 = inline319
-        var text__3 string = t186 + t187
+        var inline329 string = _goml_runtime_core_string_byte_slice(inline322, -1, -1)
+        t197 = inline329
+        var text__3 string = t196 + t197
         var value__4 *ref_int32_x = ref__Ref_5int32(1)
         ref_set__Ref_5int32(value__4, 2)
         var same__5 bool = ptr_eq__Ref_5int32(value__4, value__4)
         ptr_hash__Ref_5int32(value__4)
         var values__6 *_goml_vec_int32 = vec_new__Vec_5int32()
-        var t188 int32 = ref_get__Ref_5int32(value__4)
-        vec_push__Vec_5int32(values__6, t188)
+        var t198 int32 = ref_get__Ref_5int32(value__4)
+        vec_push__Vec_5int32(values__6, t198)
         vec_push__Vec_5int32(values__6, 3)
         vec_set__Vec_5int32(values__6, 1, 4)
-        var t189 int = vec_len__Vec_5int32(values__6)
-        var values_slice__7 []int32 = values__6.items[0:t189]
-        var t190 int = len(values_slice__7)
-        var nested__8 []int32 = values_slice__7[0:t190]
+        var t199 int = vec_len__Vec_5int32(values__6)
+        var values_slice__7 []int32 = values__6.items[0:t199]
+        var t200 int = len(values_slice__7)
+        var nested__8 []int32 = values_slice__7[0:t200]
         var channel__9 chan int32 = func(p0 int) chan int32 {
             return make(chan int32, p0)
         }(1)
-        var t191 int32 = nested__8[1]
+        var t201 int32 = nested__8[1]
         func(p0 chan int32, p1 int32) struct{} {
             p0 <- p1
             return struct{}{}
-        }(channel__9, t191)
+        }(channel__9, t201)
         var received__10 Tuple2_5int32_4bool = func(p0 chan int32) Tuple2_5int32_4bool {
             var value int32
             var ok bool
@@ -274,55 +274,55 @@ func main0() struct{} {
             close(p0)
             return struct{}{}
         }(channel__9)
-        var t193 FnIterator__int
-        var inline308 int = 0
-        var inline309 int = 3
-        var inline310 FnIterator__int = __goml_builtin_range(inline308, inline309)
-        t193 = inline310
-        var t194 closure_env_main_0 = closure_env_main_0{}
-        var t195 func(int, int) int = func(p0 int, p1 int) int {
-            return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t194, p0, p1)
+        var t203 FnIterator__int
+        var inline318 int = 0
+        var inline319 int = 3
+        var inline320 FnIterator__int = __goml_builtin_range(inline318, inline319)
+        t203 = inline320
+        var t204 closure_env_main_0 = closure_env_main_0{}
+        var t205 func(int, int) int = func(p0 int, p1 int) int {
+            return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t204, p0, p1)
         }
-        var total__13 int = _goml_m_std_p_iter_p_fold____A__int____I__FnIterator_l_int_r_____T__int(t193, 0, t195)
-        var t196 string
-        var inline306 string = _goml_runtime_core_bool_to_string(same__5)
-        t196 = inline306
-        var t197 string = text__3 + t196
-        var t198 int32 = received__10._0
-        var t199 string
-        var inline304 string = _goml_runtime_core_int32_to_string(t198)
-        t199 = inline304
-        var t200 string = t197 + t199
-        var t201 bool = received__10._1
-        var t202 string
-        var inline302 string = _goml_runtime_core_bool_to_string(t201)
-        t202 = inline302
-        var t203 string = t200 + t202
-        var t204 string
-        var inline300 string = _goml_runtime_core_int_to_string(total__13)
-        t204 = inline300
-        var t205 string = t203 + t204
-        var inline297 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t205)
-        _goml_runtime_core_string_println(inline297)
+        var total__13 int = _goml_m_std_p_iter_p_fold____A__int____I__FnIterator_l_int_r_____T__int(t203, 0, t205)
+        var t206 string
+        var inline316 string = _goml_runtime_core_bool_to_string(same__5)
+        t206 = inline316
+        var t207 string = text__3 + t206
+        var t208 int32 = received__10._0
+        var t209 string
+        var inline314 string = _goml_runtime_core_int32_to_string(t208)
+        t209 = inline314
+        var t210 string = t207 + t209
+        var t211 bool = received__10._1
+        var t212 string
+        var inline312 string = _goml_runtime_core_bool_to_string(t211)
+        t212 = inline312
+        var t213 string = t210 + t212
+        var t214 string
+        var inline310 string = _goml_runtime_core_int_to_string(total__13)
+        t214 = inline310
+        var t215 string = t213 + t214
+        var inline307 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t215)
+        _goml_runtime_core_string_println(inline307)
         return struct{}{}
     }
 }
 
 func _goml_m_std_p_iter_p_fold____A__int____I__FnIterator_l_int_r_____T__int(iterator__48 FnIterator__int, initial__49 int, combine__50 func(int, int) int) int {
     var accumulator__51 int = initial__49
-    Loop_loop_expr220:
+    Loop_loop_expr230:
     for {
         var mtmp43 Option__int
-        var inline322 func() Option__int = iterator__48.next_fn
-        var inline323 Option__int = inline322()
-        mtmp43 = inline323
+        var inline332 func() Option__int = iterator__48.next_fn
+        var inline333 Option__int = inline332()
+        mtmp43 = inline333
         switch mtmp43.(type) {
         case None:
-            break Loop_loop_expr220
+            break Loop_loop_expr230
         case Some:
             var x44 int = mtmp43.(Some)._0
-            var t222 int = combine__50(accumulator__51, x44)
-            accumulator__51 = t222
+            var t232 int = combine__50(accumulator__51, x44)
+            accumulator__51 = t232
             continue
         default:
             panic("non-exhaustive match")
@@ -332,74 +332,74 @@ func _goml_m_std_p_iter_p_fold____A__int____I__FnIterator_l_int_r_____T__int(ite
 }
 
 func string_is_char_boundary(value__15 string, index__16 int) bool {
-    var t251 bool = index__16 < 0
-    var jp243 bool
-    if t251 {
-        jp243 = true
+    var t261 bool = index__16 < 0
+    var jp253 bool
+    if t261 {
+        jp253 = true
     } else {
-        var t252 int
-        var inline331 int = _goml_runtime_core_string_len(value__15)
-        t252 = inline331
-        var t253 bool = index__16 > t252
-        jp243 = t253
+        var t262 int
+        var inline341 int = _goml_runtime_core_string_len(value__15)
+        t262 = inline341
+        var t263 bool = index__16 > t262
+        jp253 = t263
     }
-    if jp243 {
+    if jp253 {
         return false
     } else {
-        var t246 int
-        var inline335 int = _goml_runtime_core_string_len(value__15)
-        t246 = inline335
-        var t247 bool = index__16 == t246
-        if t247 {
+        var t256 int
+        var inline345 int = _goml_runtime_core_string_len(value__15)
+        t256 = inline345
+        var t257 bool = index__16 == t256
+        if t257 {
             return true
         } else {
-            var t248 uint8
-            var inline333 uint8 = _goml_runtime_core_string_byte_get(value__15, index__16)
-            t248 = inline333
-            var t249_rhs uint8 = 192
-            var t249 uint8 = t248 & t249_rhs
-            var t250 bool = t249 != 128
-            return t250
+            var t258 uint8
+            var inline343 uint8 = _goml_runtime_core_string_byte_get(value__15, index__16)
+            t258 = inline343
+            var t259_rhs uint8 = 192
+            var t259 uint8 = t258 & t259_rhs
+            var t260 bool = t259 != 128
+            return t260
         }
     }
 }
 
-func __goml_builtin_range(start__318 int, end__319 int) FnIterator__int {
-    var current__320 *ref_int_x = ref__Ref_3int(start__318)
-    var t260 closure_env_goml_builtin_range_1 = closure_env_goml_builtin_range_1{
-        current_0: current__320,
-        end_1: end__319,
+func __goml_builtin_range(start__333 int, end__334 int) FnIterator__int {
+    var current__335 *ref_int_x = ref__Ref_3int(start__333)
+    var t270 closure_env_goml_builtin_range_1 = closure_env_goml_builtin_range_1{
+        current_0: current__335,
+        end_1: end__334,
     }
-    var t261 func() Option__int = func() Option__int {
-        return _goml_m_inherent_i_closure__en_h07c29ff1f344b08e028033881af7c2d9_ange__1_i_apply(t260)
+    var t271 func() Option__int = func() Option__int {
+        return _goml_m_inherent_i_closure__en_h07c29ff1f344b08e028033881af7c2d9_ange__1_i_apply(t270)
     }
-    var inline337 FnIterator__int = FnIterator__int{
-        next_fn: t261,
+    var inline347 FnIterator__int = FnIterator__int{
+        next_fn: t271,
     }
-    return inline337
+    return inline347
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
     return self__65
 }
 
-func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env179 closure_env_main_0, sum__11 int, item__12 int) int {
-    var t288 int = sum__11 + item__12
-    return t288
+func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env189 closure_env_main_0, sum__11 int, item__12 int) int {
+    var t298 int = sum__11 + item__12
+    return t298
 }
 
-func _goml_m_inherent_i_closure__en_h07c29ff1f344b08e028033881af7c2d9_ange__1_i_apply(env180 closure_env_goml_builtin_range_1) Option__int {
-    var current__320 *ref_int_x = env180.current_0
-    var end__319 int = env180.end_1
-    var value__321 int = ref_get__Ref_3int(current__320)
-    var t293 bool = value__321 < end__319
-    if t293 {
-        var t294 int = value__321 + 1
-        ref_set__Ref_3int(current__320, t294)
-        var t295 Option__int = Some{
-            _0: value__321,
+func _goml_m_inherent_i_closure__en_h07c29ff1f344b08e028033881af7c2d9_ange__1_i_apply(env190 closure_env_goml_builtin_range_1) Option__int {
+    var current__335 *ref_int_x = env190.current_0
+    var end__334 int = env190.end_1
+    var value__336 int = ref_get__Ref_3int(current__335)
+    var t303 bool = value__336 < end__334
+    if t303 {
+        var t304 int = value__336 + 1
+        ref_set__Ref_3int(current__335, t304)
+        var t305 Option__int = Some{
+            _0: value__336,
         }
-        return t295
+        return t305
     } else {
         return None{}
     }
