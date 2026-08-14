@@ -1,0 +1,15 @@
+impl IteratorLike for NumberIterator {}
+
+impl IntoLike for Numbers {}
+
+fn preserve[T](owner/0: T, value/1: T::Item) -> T::IntoIter::Item where
+  T: IntoLike,
+  T::Item = T::IntoIter::Item,
+  T::IntoIter: IteratorLike {
+    let _ : T = (owner/0 : T);
+    (value/1 : T::Item)
+}
+
+fn main() -> unit {
+    (println : (int32) -> unit)((preserve : (Numbers, int32) -> int32)(Numbers {}, 42))
+}

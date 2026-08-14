@@ -5,7 +5,7 @@ fn main() -> unit {
     while (inherent#Ref#Ref[T]#get__T_int(i/1) <= 100) {
         {
           let _wild408 =
-            if trait_impl#PartialEq#int#eq(inherent#Ref#Ref[T]#get__T_int(i/1), 50) {
+            if (inherent#Ref#Ref[T]#get__T_int(i/1) == 50) {
                 {
                   break
                 }
@@ -35,7 +35,7 @@ fn main() -> unit {
               let cur/4 = inherent#Ref#Ref[T]#get__T_int(j/3) in
               let _wild414 = inherent#Ref#Ref[T]#set__T_int(j/3, (cur/4 + 1)) in
               let _wild416 =
-                if trait_impl#PartialEq#int#eq(cur/4, ((cur/4 / 2) * 2)) {
+                if (cur/4 == ((cur/4 / 2) * 2)) {
                     {
                       let _wild415 =
                         inherent#Ref#Ref[T]#set__T_int(
@@ -70,10 +70,6 @@ fn inherent#Ref#Ref[T]#get__T_int(self/432: Ref[int]) -> int {
   @intrinsic(ref.get)(self/432)
 }
 
-fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
-  (self/185 == other/186)
-}
-
 fn inherent#Ref#Ref[T]#set__T_int(self/433: Ref[int], value/434: int) -> unit {
   @intrinsic(ref.set)(self/433, value/434)
 }
@@ -92,6 +88,10 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
 
 fn trait_impl#ToString#int#to_string(self/151: int) -> string {
   @runtime(core.int_to_string)(self/151)
+}
+
+fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+  (self/185 == other/186)
 }
 
 fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {

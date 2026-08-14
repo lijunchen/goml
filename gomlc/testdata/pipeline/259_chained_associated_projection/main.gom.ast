@@ -1,0 +1,32 @@
+package main;
+trait IteratorLike {
+  type Item;
+}
+
+trait IntoLike where Self::Item = Self::IntoIter::Item {
+  type Item;
+  type IntoIter: IteratorLike;
+}
+
+struct NumberIterator {}
+
+impl IteratorLike for NumberIterator {
+  type Item = int32;
+}
+
+struct Numbers {}
+
+impl IntoLike for Numbers {
+  type Item = int32;
+  type IntoIter = NumberIterator;
+}
+
+fn preserve[T: IntoLike](owner: T, value: T::Item) -> T::IntoIter::Item {
+    let _ = owner;
+    value
+}
+
+fn main() -> unit {
+    println(preserve(Numbers {}, 42))
+}
+

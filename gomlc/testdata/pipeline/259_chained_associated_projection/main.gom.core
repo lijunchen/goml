@@ -3805,64 +3805,20 @@ fn range(start/3: int, end/4: int) -> FnIterator[int] {
   __goml_builtin_range(start/3, end/4)
 }
 
-fn choose(flag/0: bool) -> int32 {
-  let value/1 =
-    if flag/0 {
-        {
-          return 10
-        }
-    } else {
-        {
-          20
-        }
-    } in
-  (value/1 + 1)
+fn trait_impl#IteratorLike#NumberIterator#__marker() -> unit {
+  ()
 }
 
-fn continue_branch() -> unit {
-  let count/2 = inherent#Ref#Ref[int]#new(0) in
-  while (inherent#Ref#Ref[int]#get(count/2) < 2) {
-      {
-        let _wild408 =
-          inherent#Ref#Ref[int]#set(count/2, (inherent#Ref#Ref[int]#get(count/2) + 1)) in
-        let value/3 =
-          if (inherent#Ref#Ref[int]#get(count/2) == 1) {
-              {
-                continue
-              }
-          } else {
-              {
-                7
-              }
-          } in
-        println(value/3)
-      }
-  }
+fn trait_impl#IntoLike#Numbers#__marker() -> unit {
+  ()
 }
 
-fn break_branch(stop/4: bool) -> unit {
-  while true {
-      {
-        let value/5 =
-          if stop/4 {
-              {
-                break
-              }
-          } else {
-              {
-                9
-              }
-          } in
-        let _wild409 = println(value/5) in
-        break
-      }
+fn preserve(owner/0: T, value/1: T::Item) -> T::IntoIter::Item {
+  {
+    value/1
   }
 }
 
 fn main() -> unit {
-  let _wild410 = println(choose(false)) in
-  let _wild411 = println(choose(true)) in
-  let _wild412 = continue_branch() in
-  let _wild413 = break_branch(false) in
-  break_branch(true)
+  println(preserve(Numbers {}, 42))
 }

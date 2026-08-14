@@ -14,7 +14,7 @@ fn continue_branch() -> unit {
       let _wild408 =
         inherent#Ref#Ref[T]#set__T_int(count/2, (inherent#Ref#Ref[T]#get__T_int(count/2) + 1)) in
       let value/3 =
-        if trait_impl#PartialEq#int#eq(inherent#Ref#Ref[T]#get__T_int(count/2), 1) {
+        if (inherent#Ref#Ref[T]#get__T_int(count/2) == 1) {
             continue
         } else {
             7
@@ -56,10 +56,6 @@ fn inherent#Ref#Ref[T]#set__T_int(self/433: Ref[int], value/434: int) -> unit {
   @intrinsic(ref.set)(self/433, value/434)
 }
 
-fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
-  (self/185 == other/186)
-}
-
 fn println__T_int(value/1: int) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
 }
@@ -74,6 +70,10 @@ fn trait_impl#ToString#int#to_string(self/151: int) -> string {
 
 fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
   @runtime(core.int32_to_string)(self/154)
+}
+
+fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+  (self/185 == other/186)
 }
 
 fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {

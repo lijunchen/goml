@@ -880,13 +880,13 @@ fn main() -> unit {
         (std::cmp::Ord::cmp : ([int; 2], [int; 2]) -> Ordering)([1, 2], [1, 3])
       )
     );
-    let tuple_nan/119: (float64, float64) = (0, (zero/105 : float64) / (zero/105 : float64));
+    let tuple_nan/119: (int, float64) = (0, (zero/105 : float64) / (zero/105 : float64));
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)(
         (Option[Ordering]::is_none : (Option[Ordering]) -> bool)(
-          (std::cmp::PartialOrd::partial_cmp : ((float64, float64), (float64, float64)) -> Option[
+          (std::cmp::PartialOrd::partial_cmp : ((int, float64), (int, float64)) -> Option[
             Ordering
-          ])((tuple_nan/119 : (float64, float64)), (tuple_nan/119 : (float64, float64)))
+          ])((tuple_nan/119 : (int, float64)), (tuple_nan/119 : (int, float64)))
         )
       )
     );

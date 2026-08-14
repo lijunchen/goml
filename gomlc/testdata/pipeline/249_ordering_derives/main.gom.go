@@ -369,8 +369,8 @@ type Tuple2_3int_3int struct {
     _1 int
 }
 
-type Tuple2_7float64_7float64 struct {
-    _0 float64
+type Tuple2_3int_7float64 struct {
+    _0 int
     _1 float64
 }
 
@@ -517,7 +517,7 @@ func _goml_m_trait__impl_i_std_p_cmp_p_Ord_i_int_i_cmp(self__32 int, other__33 i
 func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Version_i_partial__cmp(self__2 Version, other__3 Version) Option__Ordering {
     var t1064 int = self__2.major
     var t1065 int = other__3.major
-    var commute_field3572 Ordering
+    var commute_field3571 Ordering
     var inline2653 bool = t1064 < t1065
     var inline2655 Ordering
     if inline2653 {
@@ -530,12 +530,12 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Version_i_partial__cmp(self_
             inline2655 = Equal
         }
     }
-    commute_field3572 = inline2655
-    switch commute_field3572 {
+    commute_field3571 = inline2655
+    switch commute_field3571 {
     case Equal:
         var t1070 int = self__2.minor
         var t1071 int = other__3.minor
-        var commute_field3569 Ordering
+        var commute_field3568 Ordering
         var inline2647 bool = t1070 < t1071
         var inline2649 Ordering
         if inline2647 {
@@ -548,8 +548,8 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Version_i_partial__cmp(self_
                 inline2649 = Equal
             }
         }
-        commute_field3569 = inline2649
-        switch commute_field3569 {
+        commute_field3568 = inline2649
+        switch commute_field3568 {
         case Equal:
             var t1076 Option__Ordering = Option__Ordering_Some{
                 _0: Equal,
@@ -557,13 +557,13 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Version_i_partial__cmp(self_
             return t1076
         default:
             var t1077 Option__Ordering = Option__Ordering_Some{
-                _0: commute_field3569,
+                _0: commute_field3568,
             }
             return t1077
         }
     default:
         var t1078 Option__Ordering = Option__Ordering_Some{
-            _0: commute_field3572,
+            _0: commute_field3571,
         }
         return t1078
     }
@@ -703,7 +703,7 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Level_i_partial__cmp(self__2
                 case Medium:
                     var x453 int = self__23.(Medium)._0
                     var x454 int = self__23.(Medium)._1
-                    var commute_field3578 Ordering
+                    var commute_field3577 Ordering
                     var inline2707 bool = x453 < x445
                     var inline2709 Ordering
                     if inline2707 {
@@ -716,10 +716,10 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Level_i_partial__cmp(self__2
                             inline2709 = Equal
                         }
                     }
-                    commute_field3578 = inline2709
-                    switch commute_field3578 {
+                    commute_field3577 = inline2709
+                    switch commute_field3577 {
                     case Equal:
-                        var commute_field3575 Ordering
+                        var commute_field3574 Ordering
                         var inline2701 bool = x454 < x446
                         var inline2703 Ordering
                         if inline2701 {
@@ -732,8 +732,8 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Level_i_partial__cmp(self__2
                                 inline2703 = Equal
                             }
                         }
-                        commute_field3575 = inline2703
-                        switch commute_field3575 {
+                        commute_field3574 = inline2703
+                        switch commute_field3574 {
                         case Equal:
                             var t1165 Option__Ordering = Option__Ordering_Some{
                                 _0: Equal,
@@ -741,13 +741,13 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Level_i_partial__cmp(self__2
                             return t1165
                         default:
                             var t1166 Option__Ordering = Option__Ordering_Some{
-                                _0: commute_field3575,
+                                _0: commute_field3574,
                             }
                             return t1166
                         }
                     default:
                         var t1167 Option__Ordering = Option__Ordering_Some{
-                            _0: commute_field3578,
+                            _0: commute_field3577,
                         }
                         return t1167
                     }
@@ -764,7 +764,7 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Level_i_partial__cmp(self__2
                 case High:
                     var x463 int = self__23.(High)._0
                     var x464 int = self__23.(High)._1
-                    var commute_field3584 Ordering
+                    var commute_field3583 Ordering
                     var inline2719 bool = x463 < x447
                     var inline2721 Ordering
                     if inline2719 {
@@ -777,10 +777,10 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Level_i_partial__cmp(self__2
                             inline2721 = Equal
                         }
                     }
-                    commute_field3584 = inline2721
-                    switch commute_field3584 {
+                    commute_field3583 = inline2721
+                    switch commute_field3583 {
                     case Equal:
-                        var commute_field3581 Ordering
+                        var commute_field3580 Ordering
                         var inline2713 bool = x464 < x448
                         var inline2715 Ordering
                         if inline2713 {
@@ -793,8 +793,8 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Level_i_partial__cmp(self__2
                                 inline2715 = Equal
                             }
                         }
-                        commute_field3581 = inline2715
-                        switch commute_field3581 {
+                        commute_field3580 = inline2715
+                        switch commute_field3580 {
                         case Equal:
                             var t1179 Option__Ordering = Option__Ordering_Some{
                                 _0: Equal,
@@ -802,13 +802,13 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Level_i_partial__cmp(self__2
                             return t1179
                         default:
                             var t1180 Option__Ordering = Option__Ordering_Some{
-                                _0: commute_field3581,
+                                _0: commute_field3580,
                             }
                             return t1180
                         }
                     default:
                         var t1181 Option__Ordering = Option__Ordering_Some{
-                            _0: commute_field3584,
+                            _0: commute_field3583,
                         }
                         return t1181
                     }
@@ -993,11 +993,11 @@ func _goml_m_trait__impl_i_PartialEq_i_MaybeNumber_i_eq(self__60 MaybeNumber, ot
 func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_MaybeNumber_i_partial__cmp(self__62 MaybeNumber, other__63 MaybeNumber) Option__Ordering {
     var t1254 float64 = self__62.value
     var t1255 float64 = other__63.value
-    var commute_field3587 Ordering
+    var commute_field3586 Ordering
     var inline2766 bool = t1254 < t1255
     if inline2766 {
-        commute_field3587 = Less
-        switch commute_field3587 {
+        commute_field3586 = Less
+        switch commute_field3586 {
         case Equal:
             var t1260 Option__Ordering = Option__Ordering_Some{
                 _0: Equal,
@@ -1005,15 +1005,15 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_MaybeNumber_i_partial__cmp(s
             return t1260
         default:
             var t1261 Option__Ordering = Option__Ordering_Some{
-                _0: commute_field3587,
+                _0: commute_field3586,
             }
             return t1261
         }
     } else {
         var inline2768 bool = t1254 > t1255
         if inline2768 {
-            commute_field3587 = Greater
-            switch commute_field3587 {
+            commute_field3586 = Greater
+            switch commute_field3586 {
             case Equal:
                 var t1260 Option__Ordering = Option__Ordering_Some{
                     _0: Equal,
@@ -1021,15 +1021,15 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_MaybeNumber_i_partial__cmp(s
                 return t1260
             default:
                 var t1261 Option__Ordering = Option__Ordering_Some{
-                    _0: commute_field3587,
+                    _0: commute_field3586,
                 }
                 return t1261
             }
         } else {
             var inline2770 bool = t1254 == t1255
             if inline2770 {
-                commute_field3587 = Equal
-                switch commute_field3587 {
+                commute_field3586 = Equal
+                switch commute_field3586 {
                 case Equal:
                     var t1260 Option__Ordering = Option__Ordering_Some{
                         _0: Equal,
@@ -1037,7 +1037,7 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_MaybeNumber_i_partial__cmp(s
                     return t1260
                 default:
                     var t1261 Option__Ordering = Option__Ordering_Some{
-                        _0: commute_field3587,
+                        _0: commute_field3586,
                     }
                     return t1261
                 }
@@ -1087,11 +1087,11 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_PartialLevel_i_partial__cmp(
                 switch self__95.(type) {
                 case Value:
                     var x533 float64 = self__95.(Value)._0
-                    var commute_field3590 Ordering
+                    var commute_field3589 Ordering
                     var inline2797 bool = x533 < x532
                     if inline2797 {
-                        commute_field3590 = Less
-                        switch commute_field3590 {
+                        commute_field3589 = Less
+                        switch commute_field3589 {
                         case Equal:
                             var t1307 Option__Ordering = Option__Ordering_Some{
                                 _0: Equal,
@@ -1099,15 +1099,15 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_PartialLevel_i_partial__cmp(
                             return t1307
                         default:
                             var t1308 Option__Ordering = Option__Ordering_Some{
-                                _0: commute_field3590,
+                                _0: commute_field3589,
                             }
                             return t1308
                         }
                     } else {
                         var inline2799 bool = x533 > x532
                         if inline2799 {
-                            commute_field3590 = Greater
-                            switch commute_field3590 {
+                            commute_field3589 = Greater
+                            switch commute_field3589 {
                             case Equal:
                                 var t1307 Option__Ordering = Option__Ordering_Some{
                                     _0: Equal,
@@ -1115,15 +1115,15 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_PartialLevel_i_partial__cmp(
                                 return t1307
                             default:
                                 var t1308 Option__Ordering = Option__Ordering_Some{
-                                    _0: commute_field3590,
+                                    _0: commute_field3589,
                                 }
                                 return t1308
                             }
                         } else {
                             var inline2801 bool = x533 == x532
                             if inline2801 {
-                                commute_field3590 = Equal
-                                switch commute_field3590 {
+                                commute_field3589 = Equal
+                                switch commute_field3589 {
                                 case Equal:
                                     var t1307 Option__Ordering = Option__Ordering_Some{
                                         _0: Equal,
@@ -1131,7 +1131,7 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_PartialLevel_i_partial__cmp(
                                     return t1307
                                 default:
                                     var t1308 Option__Ordering = Option__Ordering_Some{
-                                        _0: commute_field3590,
+                                        _0: commute_field3589,
                                     }
                                     return t1308
                                 }
@@ -1364,11 +1364,11 @@ func main0() struct{} {
     var inline2868 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1387)
     _goml_runtime_core_string_println(inline2868)
     var t1388 float64 = zero__105 / zero__105
-    var tuple_nan__119 Tuple2_7float64_7float64 = Tuple2_7float64_7float64{
+    var tuple_nan__119 Tuple2_3int_7float64 = Tuple2_3int_7float64{
         _0: 0,
         _1: t1388,
     }
-    var t1389 Option__Ordering = _goml_m_trait__impl_i_std_p_cm_haa34d8491754c3aa6b5371402ef010cd__i_partial__cmp(tuple_nan__119, tuple_nan__119)
+    var t1389 Option__Ordering = _goml_m_trait__impl_i_std_p_cm_h13f72987621c6328b14d0237c229fa31__i_partial__cmp(tuple_nan__119, tuple_nan__119)
     var t1390 bool
     var inline2865 bool = _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__some____T__Ordering(t1389)
     var inline2866 bool = !inline2865
@@ -1462,7 +1462,7 @@ func _goml_m_trait__impl_i_PartialEq_i_Ordering_i_eq(self__845 Ordering, other__
 }
 
 func _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_lt____Self__int(self__0 int, other__1 int) bool {
-    var commute_field3653 Ordering
+    var commute_field3652 Ordering
     var inline2995 bool = self__0 < other__1
     var inline2997 Ordering
     if inline2995 {
@@ -1475,8 +1475,8 @@ func _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_lt____Self__int(self__0 i
             inline2997 = Equal
         }
     }
-    commute_field3653 = inline2997
-    switch commute_field3653 {
+    commute_field3652 = inline2997
+    switch commute_field3652 {
     case Less:
         return true
     case Equal:
@@ -1758,43 +1758,80 @@ func _goml_m_trait__impl_i_std_p_cmp_p_Ord_i__l_int_x3b_2_r__i_cmp(self [2]int, 
     }
 }
 
-func _goml_m_trait__impl_i_std_p_cm_haa34d8491754c3aa6b5371402ef010cd__i_partial__cmp(self Tuple2_7float64_7float64, other Tuple2_7float64_7float64) Option__Ordering {
-    var t1993 float64 = self._0
-    var t1994 float64 = other._0
+func _goml_m_trait__impl_i_std_p_cm_h13f72987621c6328b14d0237c229fa31__i_partial__cmp(self Tuple2_3int_7float64, other Tuple2_3int_7float64) Option__Ordering {
+    var t1993 int = self._0
+    var t1994 int = other._0
     var _structural_partial_ordering_0 Option__Ordering
-    var commute_field3812 Ordering
+    var commute_field3811 Ordering
     var inline3450 bool = t1993 < t1994
+    var inline3452 Ordering
     if inline3450 {
-        var inline3451 Option__Ordering = Option__Ordering_Some{
-            _0: Less,
+        inline3452 = Less
+    } else {
+        var inline3454 bool = t1993 > t1994
+        if inline3454 {
+            inline3452 = Greater
+        } else {
+            inline3452 = Equal
         }
-        _structural_partial_ordering_0 = inline3451
-        commute_field3812 = Less
-        var t1999 bool
-        switch commute_field3812 {
-        case Less:
-            t1999 = false
-        case Equal:
-            t1999 = true
-        case Greater:
-            t1999 = false
-        default:
-            panic("non-exhaustive match")
-        }
-        if t1999 {
-            var t2000 float64 = self._1
-            var t2001 float64 = other._1
-            var _structural_partial_ordering_1 Option__Ordering
-            var commute_field3809 Ordering
-            var inline3442 bool = t2000 < t2001
-            if inline3442 {
-                var inline3443 Option__Ordering = Option__Ordering_Some{
-                    _0: Less,
+    }
+    var inline3453 Option__Ordering = Option__Ordering_Some{
+        _0: inline3452,
+    }
+    _structural_partial_ordering_0 = inline3453
+    commute_field3811 = inline3452
+    var t1999 bool
+    switch commute_field3811 {
+    case Less:
+        t1999 = false
+    case Equal:
+        t1999 = true
+    case Greater:
+        t1999 = false
+    default:
+        panic("non-exhaustive match")
+    }
+    if t1999 {
+        var t2000 float64 = self._1
+        var t2001 float64 = other._1
+        var _structural_partial_ordering_1 Option__Ordering
+        var commute_field3808 Ordering
+        var inline3442 bool = t2000 < t2001
+        if inline3442 {
+            var inline3443 Option__Ordering = Option__Ordering_Some{
+                _0: Less,
+            }
+            _structural_partial_ordering_1 = inline3443
+            commute_field3808 = Less
+            var t2006 bool
+            switch commute_field3808 {
+            case Less:
+                t2006 = false
+            case Equal:
+                t2006 = true
+            case Greater:
+                t2006 = false
+            default:
+                panic("non-exhaustive match")
+            }
+            if t2006 {
+                var t2007 Option__Ordering = Option__Ordering_Some{
+                    _0: Equal,
                 }
-                _structural_partial_ordering_1 = inline3443
-                commute_field3809 = Less
+                return t2007
+            } else {
+                return _structural_partial_ordering_1
+            }
+        } else {
+            var inline3444 bool = t2000 > t2001
+            if inline3444 {
+                var inline3445 Option__Ordering = Option__Ordering_Some{
+                    _0: Greater,
+                }
+                _structural_partial_ordering_1 = inline3445
+                commute_field3808 = Greater
                 var t2006 bool
-                switch commute_field3809 {
+                switch commute_field3808 {
                 case Less:
                     t2006 = false
                 case Equal:
@@ -1813,15 +1850,15 @@ func _goml_m_trait__impl_i_std_p_cm_haa34d8491754c3aa6b5371402ef010cd__i_partial
                     return _structural_partial_ordering_1
                 }
             } else {
-                var inline3444 bool = t2000 > t2001
-                if inline3444 {
-                    var inline3445 Option__Ordering = Option__Ordering_Some{
-                        _0: Greater,
+                var inline3446 bool = t2000 == t2001
+                if inline3446 {
+                    var inline3447 Option__Ordering = Option__Ordering_Some{
+                        _0: Equal,
                     }
-                    _structural_partial_ordering_1 = inline3445
-                    commute_field3809 = Greater
+                    _structural_partial_ordering_1 = inline3447
+                    commute_field3808 = Equal
                     var t2006 bool
-                    switch commute_field3809 {
+                    switch commute_field3808 {
                     case Less:
                         t2006 = false
                     case Equal:
@@ -1840,268 +1877,12 @@ func _goml_m_trait__impl_i_std_p_cm_haa34d8491754c3aa6b5371402ef010cd__i_partial
                         return _structural_partial_ordering_1
                     }
                 } else {
-                    var inline3446 bool = t2000 == t2001
-                    if inline3446 {
-                        var inline3447 Option__Ordering = Option__Ordering_Some{
-                            _0: Equal,
-                        }
-                        _structural_partial_ordering_1 = inline3447
-                        commute_field3809 = Equal
-                        var t2006 bool
-                        switch commute_field3809 {
-                        case Less:
-                            t2006 = false
-                        case Equal:
-                            t2006 = true
-                        case Greater:
-                            t2006 = false
-                        default:
-                            panic("non-exhaustive match")
-                        }
-                        if t2006 {
-                            var t2007 Option__Ordering = Option__Ordering_Some{
-                                _0: Equal,
-                            }
-                            return t2007
-                        } else {
-                            return _structural_partial_ordering_1
-                        }
-                    } else {
-                        return Option__Ordering_None{}
-                    }
+                    return Option__Ordering_None{}
                 }
             }
-        } else {
-            return _structural_partial_ordering_0
         }
     } else {
-        var inline3452 bool = t1993 > t1994
-        if inline3452 {
-            var inline3453 Option__Ordering = Option__Ordering_Some{
-                _0: Greater,
-            }
-            _structural_partial_ordering_0 = inline3453
-            commute_field3812 = Greater
-            var t1999 bool
-            switch commute_field3812 {
-            case Less:
-                t1999 = false
-            case Equal:
-                t1999 = true
-            case Greater:
-                t1999 = false
-            default:
-                panic("non-exhaustive match")
-            }
-            if t1999 {
-                var t2000 float64 = self._1
-                var t2001 float64 = other._1
-                var _structural_partial_ordering_1 Option__Ordering
-                var commute_field3809 Ordering
-                var inline3442 bool = t2000 < t2001
-                if inline3442 {
-                    var inline3443 Option__Ordering = Option__Ordering_Some{
-                        _0: Less,
-                    }
-                    _structural_partial_ordering_1 = inline3443
-                    commute_field3809 = Less
-                    var t2006 bool
-                    switch commute_field3809 {
-                    case Less:
-                        t2006 = false
-                    case Equal:
-                        t2006 = true
-                    case Greater:
-                        t2006 = false
-                    default:
-                        panic("non-exhaustive match")
-                    }
-                    if t2006 {
-                        var t2007 Option__Ordering = Option__Ordering_Some{
-                            _0: Equal,
-                        }
-                        return t2007
-                    } else {
-                        return _structural_partial_ordering_1
-                    }
-                } else {
-                    var inline3444 bool = t2000 > t2001
-                    if inline3444 {
-                        var inline3445 Option__Ordering = Option__Ordering_Some{
-                            _0: Greater,
-                        }
-                        _structural_partial_ordering_1 = inline3445
-                        commute_field3809 = Greater
-                        var t2006 bool
-                        switch commute_field3809 {
-                        case Less:
-                            t2006 = false
-                        case Equal:
-                            t2006 = true
-                        case Greater:
-                            t2006 = false
-                        default:
-                            panic("non-exhaustive match")
-                        }
-                        if t2006 {
-                            var t2007 Option__Ordering = Option__Ordering_Some{
-                                _0: Equal,
-                            }
-                            return t2007
-                        } else {
-                            return _structural_partial_ordering_1
-                        }
-                    } else {
-                        var inline3446 bool = t2000 == t2001
-                        if inline3446 {
-                            var inline3447 Option__Ordering = Option__Ordering_Some{
-                                _0: Equal,
-                            }
-                            _structural_partial_ordering_1 = inline3447
-                            commute_field3809 = Equal
-                            var t2006 bool
-                            switch commute_field3809 {
-                            case Less:
-                                t2006 = false
-                            case Equal:
-                                t2006 = true
-                            case Greater:
-                                t2006 = false
-                            default:
-                                panic("non-exhaustive match")
-                            }
-                            if t2006 {
-                                var t2007 Option__Ordering = Option__Ordering_Some{
-                                    _0: Equal,
-                                }
-                                return t2007
-                            } else {
-                                return _structural_partial_ordering_1
-                            }
-                        } else {
-                            return Option__Ordering_None{}
-                        }
-                    }
-                }
-            } else {
-                return _structural_partial_ordering_0
-            }
-        } else {
-            var inline3454 bool = t1993 == t1994
-            if inline3454 {
-                var inline3455 Option__Ordering = Option__Ordering_Some{
-                    _0: Equal,
-                }
-                _structural_partial_ordering_0 = inline3455
-                commute_field3812 = Equal
-                var t1999 bool
-                switch commute_field3812 {
-                case Less:
-                    t1999 = false
-                case Equal:
-                    t1999 = true
-                case Greater:
-                    t1999 = false
-                default:
-                    panic("non-exhaustive match")
-                }
-                if t1999 {
-                    var t2000 float64 = self._1
-                    var t2001 float64 = other._1
-                    var _structural_partial_ordering_1 Option__Ordering
-                    var commute_field3809 Ordering
-                    var inline3442 bool = t2000 < t2001
-                    if inline3442 {
-                        var inline3443 Option__Ordering = Option__Ordering_Some{
-                            _0: Less,
-                        }
-                        _structural_partial_ordering_1 = inline3443
-                        commute_field3809 = Less
-                        var t2006 bool
-                        switch commute_field3809 {
-                        case Less:
-                            t2006 = false
-                        case Equal:
-                            t2006 = true
-                        case Greater:
-                            t2006 = false
-                        default:
-                            panic("non-exhaustive match")
-                        }
-                        if t2006 {
-                            var t2007 Option__Ordering = Option__Ordering_Some{
-                                _0: Equal,
-                            }
-                            return t2007
-                        } else {
-                            return _structural_partial_ordering_1
-                        }
-                    } else {
-                        var inline3444 bool = t2000 > t2001
-                        if inline3444 {
-                            var inline3445 Option__Ordering = Option__Ordering_Some{
-                                _0: Greater,
-                            }
-                            _structural_partial_ordering_1 = inline3445
-                            commute_field3809 = Greater
-                            var t2006 bool
-                            switch commute_field3809 {
-                            case Less:
-                                t2006 = false
-                            case Equal:
-                                t2006 = true
-                            case Greater:
-                                t2006 = false
-                            default:
-                                panic("non-exhaustive match")
-                            }
-                            if t2006 {
-                                var t2007 Option__Ordering = Option__Ordering_Some{
-                                    _0: Equal,
-                                }
-                                return t2007
-                            } else {
-                                return _structural_partial_ordering_1
-                            }
-                        } else {
-                            var inline3446 bool = t2000 == t2001
-                            if inline3446 {
-                                var inline3447 Option__Ordering = Option__Ordering_Some{
-                                    _0: Equal,
-                                }
-                                _structural_partial_ordering_1 = inline3447
-                                commute_field3809 = Equal
-                                var t2006 bool
-                                switch commute_field3809 {
-                                case Less:
-                                    t2006 = false
-                                case Equal:
-                                    t2006 = true
-                                case Greater:
-                                    t2006 = false
-                                default:
-                                    panic("non-exhaustive match")
-                                }
-                                if t2006 {
-                                    var t2007 Option__Ordering = Option__Ordering_Some{
-                                        _0: Equal,
-                                    }
-                                    return t2007
-                                } else {
-                                    return _structural_partial_ordering_1
-                                }
-                            } else {
-                                return Option__Ordering_None{}
-                            }
-                        }
-                    }
-                } else {
-                    return _structural_partial_ordering_0
-                }
-            } else {
-                return Option__Ordering_None{}
-            }
-        }
+        return _structural_partial_ordering_0
     }
 }
 
@@ -2123,39 +1904,39 @@ func _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__some____T__Ordering(self__4
 func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_GenericPair____int_i_partial__cmp(self__67 GenericPair__int, other__68 GenericPair__int) Option__Ordering {
     var t2069 int = self__67.first
     var t2070 int = other__68.first
-    var commute_field3818 Ordering
-    var inline3469 bool = t2069 < t2070
-    var inline3471 Ordering
-    if inline3469 {
-        inline3471 = Less
+    var commute_field3817 Ordering
+    var inline3468 bool = t2069 < t2070
+    var inline3470 Ordering
+    if inline3468 {
+        inline3470 = Less
     } else {
-        var inline3473 bool = t2069 > t2070
-        if inline3473 {
-            inline3471 = Greater
+        var inline3472 bool = t2069 > t2070
+        if inline3472 {
+            inline3470 = Greater
         } else {
-            inline3471 = Equal
+            inline3470 = Equal
         }
     }
-    commute_field3818 = inline3471
-    switch commute_field3818 {
+    commute_field3817 = inline3470
+    switch commute_field3817 {
     case Equal:
         var t2075 int = self__67.second
         var t2076 int = other__68.second
-        var commute_field3815 Ordering
-        var inline3463 bool = t2075 < t2076
-        var inline3465 Ordering
-        if inline3463 {
-            inline3465 = Less
+        var commute_field3814 Ordering
+        var inline3462 bool = t2075 < t2076
+        var inline3464 Ordering
+        if inline3462 {
+            inline3464 = Less
         } else {
-            var inline3467 bool = t2075 > t2076
-            if inline3467 {
-                inline3465 = Greater
+            var inline3466 bool = t2075 > t2076
+            if inline3466 {
+                inline3464 = Greater
             } else {
-                inline3465 = Equal
+                inline3464 = Equal
             }
         }
-        commute_field3815 = inline3465
-        switch commute_field3815 {
+        commute_field3814 = inline3464
+        switch commute_field3814 {
         case Equal:
             var t2081 *_goml_vec_int = self__67.nested
             var t2082 *_goml_vec_int = other__68.nested
@@ -2182,13 +1963,13 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_GenericPair____int_i_partial
             }
         default:
             var t2089 Option__Ordering = Option__Ordering_Some{
-                _0: commute_field3815,
+                _0: commute_field3814,
             }
             return t2089
         }
     default:
         var t2090 Option__Ordering = Option__Ordering_Some{
-            _0: commute_field3818,
+            _0: commute_field3817,
         }
         return t2090
     }
@@ -2263,19 +2044,19 @@ func _goml_m_trait__impl_i_std_p_cm_h70a1f5151189c8228387cc52486880c2__i_partial
 
 func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Vec_l_int_r__i_partial__cmp(self__76 *_goml_vec_int, other__77 *_goml_vec_int) Option__Ordering {
     var t2132 int
-    var inline3497 int = vec_len__Vec_3int(self__76)
-    t2132 = inline3497
+    var inline3496 int = vec_len__Vec_3int(self__76)
+    t2132 = inline3496
     var t2133 int
-    var inline3495 int = vec_len__Vec_3int(other__77)
-    t2133 = inline3495
+    var inline3494 int = vec_len__Vec_3int(other__77)
+    t2133 = inline3494
     var t2134 bool = t2132 < t2133
     var jp2118 int
     if t2134 {
-        var inline3475 int = vec_len__Vec_3int(self__76)
-        jp2118 = inline3475
+        var inline3474 int = vec_len__Vec_3int(self__76)
+        jp2118 = inline3474
     } else {
-        var inline3477 int = vec_len__Vec_3int(other__77)
-        jp2118 = inline3477
+        var inline3476 int = vec_len__Vec_3int(other__77)
+        jp2118 = inline3476
     }
     var index__79 int = 0
     Loop_loop2123:
@@ -2284,21 +2065,21 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Vec_l_int_r__i_partial__cmp(
         if t2124 {
             var t2125 int = vec_get__Vec_3int(self__76, index__79)
             var t2126 int = vec_get__Vec_3int(other__77, index__79)
-            var commute_field3821 Ordering
-            var inline3479 bool = t2125 < t2126
-            var inline3481 Ordering
-            if inline3479 {
-                inline3481 = Less
+            var commute_field3820 Ordering
+            var inline3478 bool = t2125 < t2126
+            var inline3480 Ordering
+            if inline3478 {
+                inline3480 = Less
             } else {
-                var inline3483 bool = t2125 > t2126
-                if inline3483 {
-                    inline3481 = Greater
+                var inline3482 bool = t2125 > t2126
+                if inline3482 {
+                    inline3480 = Greater
                 } else {
-                    inline3481 = Equal
+                    inline3480 = Equal
                 }
             }
-            commute_field3821 = inline3481
-            switch commute_field3821 {
+            commute_field3820 = inline3480
+            switch commute_field3820 {
             case Equal:
                 var compound_old10 int = index__79
                 var compound_value11 int = 1
@@ -2307,7 +2088,7 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Vec_l_int_r__i_partial__cmp(
                 continue
             default:
                 var t2131 Option__Ordering = Option__Ordering_Some{
-                    _0: commute_field3821,
+                    _0: commute_field3820,
                 }
                 return t2131
             }
@@ -2316,27 +2097,27 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Vec_l_int_r__i_partial__cmp(
         }
     }
     var t2120 int
-    var inline3493 int = vec_len__Vec_3int(self__76)
-    t2120 = inline3493
+    var inline3492 int = vec_len__Vec_3int(self__76)
+    t2120 = inline3492
     var t2121 int
-    var inline3491 int = vec_len__Vec_3int(other__77)
-    t2121 = inline3491
-    var inline3485 bool = t2120 < t2121
-    var inline3487 Ordering
-    if inline3485 {
-        inline3487 = Less
+    var inline3490 int = vec_len__Vec_3int(other__77)
+    t2121 = inline3490
+    var inline3484 bool = t2120 < t2121
+    var inline3486 Ordering
+    if inline3484 {
+        inline3486 = Less
     } else {
-        var inline3489 bool = t2120 > t2121
-        if inline3489 {
-            inline3487 = Greater
+        var inline3488 bool = t2120 > t2121
+        if inline3488 {
+            inline3486 = Greater
         } else {
-            inline3487 = Equal
+            inline3486 = Equal
         }
     }
-    var inline3488 Option__Ordering = Option__Ordering_Some{
-        _0: inline3487,
+    var inline3487 Option__Ordering = Option__Ordering_Some{
+        _0: inline3486,
     }
-    return inline3488
+    return inline3487
 }
 
 func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Option____int_i_partial__cmp(self__96 Option__int, other__97 Option__int) Option__Ordering {
@@ -2366,22 +2147,22 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Option____int_i_partial__cmp
             return t2147
         case Option__int_Some:
             var x35 int = self__96.(Option__int_Some)._0
-            var inline3499 bool = x35 < x33
-            var inline3501 Ordering
-            if inline3499 {
-                inline3501 = Less
+            var inline3498 bool = x35 < x33
+            var inline3500 Ordering
+            if inline3498 {
+                inline3500 = Less
             } else {
-                var inline3503 bool = x35 > x33
-                if inline3503 {
-                    inline3501 = Greater
+                var inline3502 bool = x35 > x33
+                if inline3502 {
+                    inline3500 = Greater
                 } else {
-                    inline3501 = Equal
+                    inline3500 = Equal
                 }
             }
-            var inline3502 Option__Ordering = Option__Ordering_Some{
-                _0: inline3501,
+            var inline3501 Option__Ordering = Option__Ordering_Some{
+                _0: inline3500,
             }
-            return inline3502
+            return inline3501
         default:
             panic("non-exhaustive match")
         }
@@ -2397,22 +2178,22 @@ func _goml_m_trait__impl_i_std_p_cm_hfc86bc8120f8982d8d0ed6b909b6f353__i_partial
         switch self__104.(type) {
         case Ok:
             var x47 int = self__104.(Ok)._0
-            var inline3505 bool = x47 < x45
-            var inline3507 Ordering
-            if inline3505 {
-                inline3507 = Less
+            var inline3504 bool = x47 < x45
+            var inline3506 Ordering
+            if inline3504 {
+                inline3506 = Less
             } else {
-                var inline3509 bool = x47 > x45
-                if inline3509 {
-                    inline3507 = Greater
+                var inline3508 bool = x47 > x45
+                if inline3508 {
+                    inline3506 = Greater
                 } else {
-                    inline3507 = Equal
+                    inline3506 = Equal
                 }
             }
-            var inline3508 Option__Ordering = Option__Ordering_Some{
-                _0: inline3507,
+            var inline3507 Option__Ordering = Option__Ordering_Some{
+                _0: inline3506,
             }
-            return inline3508
+            return inline3507
         case Err:
             var t2156 Option__Ordering = Option__Ordering_Some{
                 _0: Greater,
@@ -2431,22 +2212,22 @@ func _goml_m_trait__impl_i_std_p_cm_hfc86bc8120f8982d8d0ed6b909b6f353__i_partial
             return t2159
         case Err:
             var x50 string = self__104.(Err)._0
-            var inline3511 bool = x50 < x46
-            var inline3513 Ordering
-            if inline3511 {
-                inline3513 = Less
+            var inline3510 bool = x50 < x46
+            var inline3512 Ordering
+            if inline3510 {
+                inline3512 = Less
             } else {
-                var inline3515 bool = x50 > x46
-                if inline3515 {
-                    inline3513 = Greater
+                var inline3514 bool = x50 > x46
+                if inline3514 {
+                    inline3512 = Greater
                 } else {
-                    inline3513 = Equal
+                    inline3512 = Equal
                 }
             }
-            var inline3514 Option__Ordering = Option__Ordering_Some{
-                _0: inline3513,
+            var inline3513 Option__Ordering = Option__Ordering_Some{
+                _0: inline3512,
             }
-            return inline3514
+            return inline3513
         default:
             panic("non-exhaustive match")
         }
@@ -2457,19 +2238,19 @@ func _goml_m_trait__impl_i_std_p_cm_hfc86bc8120f8982d8d0ed6b909b6f353__i_partial
 
 func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Slice_l_int_r__i_partial__cmp(self__86 []int, other__87 []int) Option__Ordering {
     var t2178 int
-    var inline3539 int = len(self__86)
-    t2178 = inline3539
+    var inline3538 int = len(self__86)
+    t2178 = inline3538
     var t2179 int
-    var inline3537 int = len(other__87)
-    t2179 = inline3537
+    var inline3536 int = len(other__87)
+    t2179 = inline3536
     var t2180 bool = t2178 < t2179
     var jp2164 int
     if t2180 {
-        var inline3517 int = len(self__86)
-        jp2164 = inline3517
+        var inline3516 int = len(self__86)
+        jp2164 = inline3516
     } else {
-        var inline3519 int = len(other__87)
-        jp2164 = inline3519
+        var inline3518 int = len(other__87)
+        jp2164 = inline3518
     }
     var index__89 int = 0
     Loop_loop2169:
@@ -2478,21 +2259,21 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Slice_l_int_r__i_partial__cm
         if t2170 {
             var t2171 int = self__86[index__89]
             var t2172 int = other__87[index__89]
-            var commute_field3824 Ordering
-            var inline3521 bool = t2171 < t2172
-            var inline3523 Ordering
-            if inline3521 {
-                inline3523 = Less
+            var commute_field3823 Ordering
+            var inline3520 bool = t2171 < t2172
+            var inline3522 Ordering
+            if inline3520 {
+                inline3522 = Less
             } else {
-                var inline3525 bool = t2171 > t2172
-                if inline3525 {
-                    inline3523 = Greater
+                var inline3524 bool = t2171 > t2172
+                if inline3524 {
+                    inline3522 = Greater
                 } else {
-                    inline3523 = Equal
+                    inline3522 = Equal
                 }
             }
-            commute_field3824 = inline3523
-            switch commute_field3824 {
+            commute_field3823 = inline3522
+            switch commute_field3823 {
             case Equal:
                 var compound_old21 int = index__89
                 var compound_value22 int = 1
@@ -2501,7 +2282,7 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Slice_l_int_r__i_partial__cm
                 continue
             default:
                 var t2177 Option__Ordering = Option__Ordering_Some{
-                    _0: commute_field3824,
+                    _0: commute_field3823,
                 }
                 return t2177
             }
@@ -2510,36 +2291,36 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Slice_l_int_r__i_partial__cm
         }
     }
     var t2166 int
-    var inline3535 int = len(self__86)
-    t2166 = inline3535
+    var inline3534 int = len(self__86)
+    t2166 = inline3534
     var t2167 int
-    var inline3533 int = len(other__87)
-    t2167 = inline3533
-    var inline3527 bool = t2166 < t2167
-    var inline3529 Ordering
-    if inline3527 {
-        inline3529 = Less
+    var inline3532 int = len(other__87)
+    t2167 = inline3532
+    var inline3526 bool = t2166 < t2167
+    var inline3528 Ordering
+    if inline3526 {
+        inline3528 = Less
     } else {
-        var inline3531 bool = t2166 > t2167
-        if inline3531 {
-            inline3529 = Greater
+        var inline3530 bool = t2166 > t2167
+        if inline3530 {
+            inline3528 = Greater
         } else {
-            inline3529 = Equal
+            inline3528 = Equal
         }
     }
-    var inline3530 Option__Ordering = Option__Ordering_Some{
-        _0: inline3529,
+    var inline3529 Option__Ordering = Option__Ordering_Some{
+        _0: inline3528,
     }
-    return inline3530
+    return inline3529
 }
 
 func _goml_m_trait__impl_i_PartialEq_i_Vec_l_int_r__i_eq(self__223 *_goml_vec_int, other__224 *_goml_vec_int) bool {
     var t2193 int
-    var inline3547 int = vec_len__Vec_3int(self__223)
-    t2193 = inline3547
+    var inline3546 int = vec_len__Vec_3int(self__223)
+    t2193 = inline3546
     var t2194 int
-    var inline3545 int = vec_len__Vec_3int(other__224)
-    t2194 = inline3545
+    var inline3544 int = vec_len__Vec_3int(other__224)
+    t2194 = inline3544
     var t2195 bool = t2193 != t2194
     if t2195 {
         return false
@@ -2548,15 +2329,15 @@ func _goml_m_trait__impl_i_PartialEq_i_Vec_l_int_r__i_eq(self__223 *_goml_vec_in
         Loop_loop2197:
         for {
             var t2198 int
-            var inline3543 int = vec_len__Vec_3int(self__223)
-            t2198 = inline3543
+            var inline3542 int = vec_len__Vec_3int(self__223)
+            t2198 = inline3542
             var t2199 bool = index__225 < t2198
             if t2199 {
                 var t2201 int = vec_get__Vec_3int(self__223, index__225)
                 var t2202 int = vec_get__Vec_3int(other__224, index__225)
                 var t2203 bool
-                var inline3541 bool = t2201 == t2202
-                t2203 = inline3541
+                var inline3540 bool = t2201 == t2202
+                t2203 = inline3540
                 if t2203 {
                     var compound_old153 int = index__225
                     var compound_value154 int = 1
@@ -2580,15 +2361,15 @@ func _goml_m_trait__impl_i_Hash_i_Vec_l_int_r__i_hash(self__226 *_goml_vec_int) 
     Loop_loop2209:
     for {
         var t2210 int
-        var inline3551 int = vec_len__Vec_3int(self__226)
-        t2210 = inline3551
+        var inline3550 int = vec_len__Vec_3int(self__226)
+        t2210 = inline3550
         var t2211 bool = index__228 < t2210
         if t2211 {
             var t2212 uint64 = value__227 * 1099511628211
             var t2213 int = vec_get__Vec_3int(self__226, index__228)
             var t2214 uint64
-            var inline3549 uint64 = _goml_runtime_core_int_hash(t2213)
-            t2214 = inline3549
+            var inline3548 uint64 = _goml_runtime_core_int_hash(t2213)
+            t2214 = inline3548
             var t2215 uint64 = t2212 + t2214
             value__227 = t2215
             var compound_old158 int = index__228
@@ -2607,14 +2388,14 @@ func _goml_m_trait__impl_i_PartialEq_i__o_int_c_string_q__i_eq(self Tuple2_3int_
     var t2222 int = self._0
     var t2223 int = other._0
     var t2224 bool
-    var inline3555 bool = t2222 == t2223
-    t2224 = inline3555
+    var inline3554 bool = t2222 == t2223
+    t2224 = inline3554
     if t2224 {
         var t2227 string = self._1
         var t2228 string = other._1
         var t2229 bool
-        var inline3553 bool = t2227 == t2228
-        t2229 = inline3553
+        var inline3552 bool = t2227 == t2228
+        t2229 = inline3552
         if t2229 {
             return true
         } else {
@@ -2630,14 +2411,14 @@ func _goml_m_trait__impl_i_Hash_i__o_int_c_string_q__i_hash(self Tuple2_3int_6st
     var t2232 uint64 = _structural_hash_0 * 1099511628211
     var t2233 int = self._0
     var t2234 uint64
-    var inline3559 uint64 = _goml_runtime_core_int_hash(t2233)
-    t2234 = inline3559
+    var inline3558 uint64 = _goml_runtime_core_int_hash(t2233)
+    t2234 = inline3558
     var _structural_hash_1 uint64 = t2232 + t2234
     var t2235 uint64 = _structural_hash_1 * 1099511628211
     var t2236 string = self._1
     var t2237 uint64
-    var inline3557 uint64 = _goml_runtime_core_string_hash(t2236)
-    t2237 = inline3557
+    var inline3556 uint64 = _goml_runtime_core_string_hash(t2236)
+    t2237 = inline3556
     var _structural_hash_2 uint64 = t2235 + t2237
     return _structural_hash_2
 }
@@ -2646,14 +2427,14 @@ func _goml_m_trait__impl_i_PartialEq_i__l_int_x3b_2_r__i_eq(self [2]int, other [
     var t2242 int = array_get__Array_2_3int(self, 0)
     var t2243 int = array_get__Array_2_3int(other, 0)
     var t2244 bool
-    var inline3563 bool = t2242 == t2243
-    t2244 = inline3563
+    var inline3562 bool = t2242 == t2243
+    t2244 = inline3562
     if t2244 {
         var t2247 int = array_get__Array_2_3int(self, 1)
         var t2248 int = array_get__Array_2_3int(other, 1)
         var t2249 bool
-        var inline3561 bool = t2247 == t2248
-        t2249 = inline3561
+        var inline3560 bool = t2247 == t2248
+        t2249 = inline3560
         if t2249 {
             return true
         } else {
@@ -2669,14 +2450,14 @@ func _goml_m_trait__impl_i_Hash_i__l_int_x3b_2_r__i_hash(self [2]int) uint64 {
     var t2252 uint64 = _structural_hash_0 * 1099511628211
     var t2253 int = array_get__Array_2_3int(self, 0)
     var t2254 uint64
-    var inline3567 uint64 = _goml_runtime_core_int_hash(t2253)
-    t2254 = inline3567
+    var inline3566 uint64 = _goml_runtime_core_int_hash(t2253)
+    t2254 = inline3566
     var _structural_hash_1 uint64 = t2252 + t2254
     var t2255 uint64 = _structural_hash_1 * 1099511628211
     var t2256 int = array_get__Array_2_3int(self, 1)
     var t2257 uint64
-    var inline3565 uint64 = _goml_runtime_core_int_hash(t2256)
-    t2257 = inline3565
+    var inline3564 uint64 = _goml_runtime_core_int_hash(t2256)
+    t2257 = inline3564
     var _structural_hash_2 uint64 = t2255 + t2257
     return _structural_hash_2
 }
