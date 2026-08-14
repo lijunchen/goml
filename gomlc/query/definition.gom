@@ -64,7 +64,7 @@ fn path_node_at(value: Analysis, offset: int) -> Option[SyntaxNode] {
 }
 
 fn node_identifiers(value: Analysis, node: SyntaxNode) -> Vec[SyntaxToken] {
-    let result: Vec[SyntaxToken] = Vec::[];
+    let result: Vec[SyntaxToken] = Vec::from_array([]);
     let mut index = token_index_at_or_after(value.syntax, node.start);
     while index < value.syntax.tokens.len() && value.syntax.tokens[index].start < node.end {
         let token = value.syntax.tokens[index];
@@ -147,12 +147,12 @@ fn symbol_definitions(
     short_name: string,
     allow_short_name: bool,
 ) -> Vec[DefinitionResult] {
-    let exact_current: Vec[DefinitionResult] = Vec::[];
-    let exact_external: Vec[DefinitionResult] = Vec::[];
-    let relative_current: Vec[DefinitionResult] = Vec::[];
-    let relative_external: Vec[DefinitionResult] = Vec::[];
-    let short_current: Vec[DefinitionResult] = Vec::[];
-    let short_external: Vec[DefinitionResult] = Vec::[];
+    let exact_current: Vec[DefinitionResult] = Vec::from_array([]);
+    let exact_external: Vec[DefinitionResult] = Vec::from_array([]);
+    let relative_current: Vec[DefinitionResult] = Vec::from_array([]);
+    let relative_external: Vec[DefinitionResult] = Vec::from_array([]);
+    let short_current: Vec[DefinitionResult] = Vec::from_array([]);
+    let short_external: Vec[DefinitionResult] = Vec::from_array([]);
     for symbol in build_symbol_index(value).symbols {
         let definition = DefinitionResult { source_path: symbol.source_path, span: symbol.span };
         let current = symbol.package_name == value.package_name;
@@ -204,7 +204,7 @@ fn identifier_index_at(identifiers: Vec[SyntaxToken], offset: int) -> Option[int
 }
 
 fn path_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
-    let result: Vec[DefinitionResult] = Vec::[];
+    let result: Vec[DefinitionResult] = Vec::from_array([]);
     match path_node_at(value, offset) {
         Some(node) => {
             let identifiers = node_identifiers(value, node);
@@ -254,8 +254,8 @@ fn symbol_owner_matches(symbol: Symbol, owner: string) -> bool {
 }
 
 fn member_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
-    let exact: Vec[DefinitionResult] = Vec::[];
-    let fallback: Vec[DefinitionResult] = Vec::[];
+    let exact: Vec[DefinitionResult] = Vec::from_array([]);
+    let fallback: Vec[DefinitionResult] = Vec::from_array([]);
     match token_at(value.syntax, offset) {
         Some(token) => if token.start > 0 && value.source.byte_get(token.start - 1) == b'.' {
             match receiver_type(value, token.start - 1) {
@@ -320,8 +320,8 @@ fn struct_literal_owner(value: Analysis, literal: SyntaxNode) -> Option[string] 
 }
 
 fn struct_field_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
-    let exact: Vec[DefinitionResult] = Vec::[];
-    let fallback: Vec[DefinitionResult] = Vec::[];
+    let exact: Vec[DefinitionResult] = Vec::from_array([]);
+    let fallback: Vec[DefinitionResult] = Vec::from_array([]);
     match token_at(value.syntax, offset) {
         Some(token) => match containing_struct_literal(value, offset) {
             Some(literal) => match struct_literal_owner(value, literal) {
@@ -532,7 +532,7 @@ fn semantic_definition(value: Analysis, offset: int) -> Option[DefinitionResult]
 }
 
 pub fn goto_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
-    let result: Vec[DefinitionResult] = Vec::[];
+    let result: Vec[DefinitionResult] = Vec::from_array([]);
     for definition in comptime_derive_definitions(value, offset) {
         push_definition(result, definition)
     }

@@ -2,10 +2,7 @@ trait IteratorLike {
     type Item;
 }
 
-trait IntoLike
-where
-    Self::Item = Self::IntoIter::Item,
-{
+trait IntoLike where Self::Item = Self::IntoIter::Item {
     type Item;
     type IntoIter: IteratorLike;
 }
@@ -20,6 +17,7 @@ struct Numbers {}
 
 impl IntoLike for Numbers {
     type Item = int32;
+
     type IntoIter = NumberIterator;
 }
 

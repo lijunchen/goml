@@ -72,11 +72,13 @@ fn rejects_ambiguous_imported_derive_names() -> unit {
         ),
         DeriveEnvironment {
             builtin: Option::None,
-            dependencies: Vec::[
-                derive_export_module("alice::first", "Label"),
-                derive_export_module("bob::second", "Label"),
-            ],
-            reexports: Vec::[],
+            dependencies: Vec::from_array(
+                [
+                    derive_export_module("alice::first", "Label"),
+                    derive_export_module("bob::second", "Label"),
+                ],
+            ),
+            reexports: Vec::from_array([]),
         },
     );
     testing::assert_eq(expanded.diagnostics.len(), 1);

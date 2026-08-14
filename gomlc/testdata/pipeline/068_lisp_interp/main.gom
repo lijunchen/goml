@@ -266,7 +266,7 @@ fn eval_list(items: Vec[SExpr], local: Vec[Binding], global: Ref[Vec[Binding]]) 
                 let f = eval(head, local, global);
                 let args = eval_args(items, 1, local, global);
                 apply(f, args, global)
-            }
+            },
         }
     }
 }
@@ -308,7 +308,9 @@ fn eval_list_sym(name: string, items: Vec[SExpr], local: Vec[Binding], global: R
                     SExpr::List(params_exprs) => {
                         let params = params_from_sexprs(params_exprs);
                         let body = items[2];
-                        Value::Func(Lambda { params: params, body: body, env: local, global: global })
+                        Value::Func(
+                            Lambda { params: params, body: body, env: local, global: global },
+                        )
                     },
                     _ => Value::Nil,
                 }
@@ -325,7 +327,7 @@ fn eval_list_sym(name: string, items: Vec[SExpr], local: Vec[Binding], global: R
             let f = eval(SExpr::Sym(name), local, global);
             let args = eval_args(items, 1, local, global);
             apply(f, args, global)
-        }
+        },
     }
 }
 
@@ -356,7 +358,9 @@ fn params_from_sexprs(items: Vec[SExpr]) -> Vec[string] {
     params.get()
 }
 
-fn eval_args(items: Vec[SExpr], start: int, local: Vec[Binding], global: Ref[Vec[Binding]]) -> Vec[Value] {
+fn eval_args(items: Vec[SExpr], start: int, local: Vec[Binding], global: Ref[Vec[Binding]]) -> Vec[
+    Value,
+] {
     let i = Ref::new(start);
     let acc: Vec[Value] = Vec::new();
     let args = Ref::new(acc);
@@ -452,14 +456,11 @@ fn apply_lambda(lambda: Lambda, args: Vec[Value]) -> Value {
 
 fn main() -> unit {
     let global: Ref[Vec[Binding]] = Ref::new(Vec::new());
-
     let program = "(begin (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1)))))) (define add3 (lambda (a b c) (+ a (+ b c)))) (fact 6))";
     let exprs: Vec[SExpr] = parse_program(lex(program));
     let result = eval(exprs[0], Vec::new(), global);
     let _ = println(value_to_string(result));
-
     let exprs2: Vec[SExpr] = parse_program(lex("(add3 10 20 30)"));
     let result2 = eval(exprs2[0], Vec::new(), global);
     let _ = println(value_to_string(result2));
-    ()
 }

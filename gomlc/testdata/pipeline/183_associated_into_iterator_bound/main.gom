@@ -1,6 +1,5 @@
 trait Batch {
     type Items: IntoIterator;
-
     fn items(self: Self) -> Self::Items;
 }
 
@@ -20,7 +19,7 @@ fn count[B: Batch](batch: B) -> int32 {
     let total = Ref::new(0);
     for _ in Batch::items(batch) {
         total.set(total.get() + 1);
-    };
+    }
     total.get()
 }
 

@@ -1673,8 +1673,8 @@ fn new_state(
         value_nodes: Ref::new(0),
         temporary_bytes: Ref::new(0),
         limits,
-        stack: Vec::[],
-        memo: Vec::[],
+        stack: Vec::from_array([]),
+        memo: Vec::from_array([]),
         derive_state,
     }
 }
@@ -1702,7 +1702,7 @@ fn invalid_ctir_error(module: ctir::CtModule, message: string) -> CtError {
         message: "invalid CTIR: " + message,
         package_name: module.package_name,
         origin: 0,
-        stack: Vec::[],
+        stack: Vec::from_array([]),
     }
 }
 
@@ -1790,7 +1790,7 @@ pub fn evaluate_derive_entry(
         state,
         module,
         function,
-        Vec::[ctir::CtValue::Meta { kind: "DeriveInput", id: 0 }],
+        Vec::from_array([ctir::CtValue::Meta { kind: "DeriveInput", id: 0 }]),
         function.origin,
     )?;
     match derive::output(derive_state, value) {

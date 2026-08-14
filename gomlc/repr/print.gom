@@ -108,7 +108,9 @@ fn type_docs(values: Vec[Type]) -> Vec[pretty::Doc] {
 fn dyn_bound_doc(trait_name: string, args: Vec[Type], associated_types: Vec[(string, Type)]) -> pretty::Doc {
     let arguments = type_docs(args);
     for binding in associated_types {
-        arguments.push(pretty::concat(Vec::[pretty::text(binding.0 + " = "), type_doc(binding.1)]))
+        arguments.push(
+            pretty::concat(Vec::from_array([pretty::text(binding.0 + " = "), type_doc(binding.1)])),
+        )
     }
     pretty::append(
         pretty::text(trait_name),
@@ -142,7 +144,7 @@ pub fn type_doc(value: Type) -> pretty::Doc {
         Tuple { items } => pretty::delimited("(", ",", ")", type_docs(items)),
         Named { name } | ClosureEnvironment { name } => pretty::text(name),
         Dyn { trait_name, args, associated_types, additional_bounds } => {
-            let values: Vec[pretty::Doc] = Vec::[];
+            let values: Vec[pretty::Doc] = Vec::from_array([]);
             values.push(dyn_bound_doc(trait_name, args, associated_types));
             for bound in additional_bounds {
                 values.push(dyn_bound_doc(bound.trait_name, bound.args, bound.associated_types))
@@ -150,34 +152,38 @@ pub fn type_doc(value: Type) -> pretty::Doc {
             pretty::append(pretty::text("dyn "), pretty::join(pretty::text(" + "), values))
         },
         Array { len, elem } => pretty::concat(
-            Vec::[pretty::text("["), type_doc(elem), pretty::text("; " + len.to_string() + "]")],
+            Vec::from_array(
+                [pretty::text("["), type_doc(elem), pretty::text("; " + len.to_string() + "]")],
+            ),
         ),
         Slice { elem } => pretty::append(
             pretty::text("Slice"),
-            pretty::delimited("[", ",", "]", Vec::[type_doc(elem)]),
+            pretty::delimited("[", ",", "]", Vec::from_array([type_doc(elem)])),
         ),
         VecType { elem } => pretty::append(
             pretty::text("Vec"),
-            pretty::delimited("[", ",", "]", Vec::[type_doc(elem)]),
+            pretty::delimited("[", ",", "]", Vec::from_array([type_doc(elem)])),
         ),
         RefType { elem } => pretty::append(
             pretty::text("Ref"),
-            pretty::delimited("[", ",", "]", Vec::[type_doc(elem)]),
+            pretty::delimited("[", ",", "]", Vec::from_array([type_doc(elem)])),
         ),
         HashMap { key, value } => pretty::append(
             pretty::text("HashMap"),
-            pretty::delimited("[", ",", "]", Vec::[type_doc(key), type_doc(value)]),
+            pretty::delimited("[", ",", "]", Vec::from_array([type_doc(key), type_doc(value)])),
         ),
         Channel { elem } => pretty::append(
             pretty::text("Channel"),
-            pretty::delimited("[", ",", "]", Vec::[type_doc(elem)]),
+            pretty::delimited("[", ",", "]", Vec::from_array([type_doc(elem)])),
         ),
         Func { params, ret_ty } => pretty::concat(
-            Vec::[
-                pretty::delimited("(", ",", ")", type_docs(params)),
-                pretty::text(" -> "),
-                type_doc(ret_ty),
-            ],
+            Vec::from_array(
+                [
+                    pretty::delimited("(", ",", ")", type_docs(params)),
+                    pretty::text(" -> "),
+                    type_doc(ret_ty),
+                ],
+            ),
         ),
     }
 }
@@ -273,26 +279,32 @@ fn const_expr_doc(value: ConstExpr) -> pretty::Doc {
         Prim { value, ty: _ } => primitive_doc(value),
         Ref { name, ty: _ } => pretty::text(name),
         Unary { op, expr, ty: _ } => pretty::concat(
-            Vec::[pretty::text(unary_symbol(op) + "("), const_expr_doc(expr), pretty::text(")")],
+            Vec::from_array(
+                [pretty::text(unary_symbol(op) + "("), const_expr_doc(expr), pretty::text(")")],
+            ),
         ),
         Cast { expr, ty } => pretty::concat(
-            Vec::[
-                pretty::text("("),
-                const_expr_doc(expr),
-                pretty::text(" as "),
-                type_doc(ty),
-                pretty::text(")"),
-            ],
+            Vec::from_array(
+                [
+                    pretty::text("("),
+                    const_expr_doc(expr),
+                    pretty::text(" as "),
+                    type_doc(ty),
+                    pretty::text(")"),
+                ],
+            ),
         ),
         Binary { op, lhs, rhs, ty: _ } => pretty::group(
             pretty::concat(
-                Vec::[
-                    pretty::text("("),
-                    const_expr_doc(lhs),
-                    pretty::text(" " + binary_symbol(op)),
-                    pretty::nest(2, pretty::append(pretty::line(), const_expr_doc(rhs))),
-                    pretty::text(")"),
-                ],
+                Vec::from_array(
+                    [
+                        pretty::text("("),
+                        const_expr_doc(lhs),
+                        pretty::text(" " + binary_symbol(op)),
+                        pretty::nest(2, pretty::append(pretty::line(), const_expr_doc(rhs))),
+                        pretty::text(")"),
+                    ],
+                ),
             ),
         ),
         Tuple { items, ty: _ } => pretty::delimited("(", ",", ")", const_expr_docs(items)),
@@ -307,24 +319,28 @@ fn const_expr_doc(value: ConstExpr) -> pretty::Doc {
 pub fn constant_doc(value: Constant) -> pretty::Doc {
     pretty::group(
         pretty::concat(
-            Vec::[
-                pretty::text("const " + value.name + ": "),
-                type_doc(value.ty),
-                pretty::text(" ="),
-                pretty::nest(2, pretty::append(pretty::line(), const_expr_doc(value.value))),
-                pretty::text(";"),
-            ],
+            Vec::from_array(
+                [
+                    pretty::text("const " + value.name + ": "),
+                    type_doc(value.ty),
+                    pretty::text(" ="),
+                    pretty::nest(2, pretty::append(pretty::line(), const_expr_doc(value.value))),
+                    pretty::text(";"),
+                ],
+            ),
         ),
     )
 }
 
 pub fn static_doc(value: Static) -> pretty::Doc {
     pretty::concat(
-        Vec::[
-            pretty::text("static " + value.name + ": "),
-            type_doc(value.ty),
-            pretty::text(" = OnceCell::new();"),
-        ],
+        Vec::from_array(
+            [
+                pretty::text("static " + value.name + ": "),
+                type_doc(value.ty),
+                pretty::text(" = OnceCell::new();"),
+            ],
+        ),
     )
 }
 

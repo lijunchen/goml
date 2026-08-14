@@ -4,12 +4,16 @@ use channel_project::worker;
 
 fn main() -> unit {
     let channel = worker::ready(42);
-    println(match channel.recv() {
-        Option::Some(value) => value.to_string(),
-        Option::None => "closed",
-    });
-    println(match channel.recv() {
-        Option::Some(value) => value.to_string(),
-        Option::None => "closed",
-    })
+    println(
+        match channel.recv() {
+            Option::Some(value) => value.to_string(),
+            Option::None => "closed",
+        },
+    );
+    println(
+        match channel.recv() {
+            Option::Some(value) => value.to_string(),
+            Option::None => "closed",
+        },
+    )
 }

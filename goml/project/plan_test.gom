@@ -48,9 +48,9 @@ fn discovers_toolchain_projects_with_implicit_layers() -> unit {
                 module_dir: "",
                 module_path: "",
                 entry_package: "",
-                packages: Vec::[],
-                sources: Vec::[],
-                order: Vec::[],
+                packages: Vec::from_array([]),
+                sources: Vec::from_array([]),
+                order: Vec::from_array([]),
             }
         },
     };
@@ -89,7 +89,7 @@ fn compile_command(name: string, interface_files: Vec[string], output: string) -
     Command::Compile {
         subcommand: "build",
         package_name: name,
-        input_files: Vec::[name + ".gom"],
+        input_files: Vec::from_array([name + ".gom"]),
         interface_files,
         output,
         world: Option::None,
@@ -102,19 +102,21 @@ fn compiler_world_test_context(world: CompilerWorld) -> Context {
             module_dir: "/tmp/module",
             module_path: "test",
             entry_package: "test",
-            packages: Vec::[
-                Package {
-                    name: "test",
-                    declared_name: "test",
-                    module_name: "test",
-                    directory: "/tmp/module",
-                    artifact_prefix: "pkg",
-                    files: Vec::["/tmp/module/main.gom"],
-                    imports: Vec::[],
-                },
-            ],
-            sources: Vec::[],
-            order: Vec::["test"],
+            packages: Vec::from_array(
+                [
+                    Package {
+                        name: "test",
+                        declared_name: "test",
+                        module_name: "test",
+                        directory: "/tmp/module",
+                        artifact_prefix: "pkg",
+                        files: Vec::from_array(["/tmp/module/main.gom"]),
+                        imports: Vec::from_array([]),
+                    },
+                ],
+            ),
+            sources: Vec::from_array([]),
+            order: Vec::from_array(["test"]),
         },
         compiler: "/tmp/toolchain/bin/gomlc",
         compiler_world: world,
@@ -132,7 +134,11 @@ fn installed_compiler_world_is_a_read_only_plan_input() -> unit {
         Ok(value) => value,
         Err(message) => {
             testing::fail(message);
-            Plan { commands: Vec::[], executable: Option::None, test_groups: Vec::[] }
+            Plan {
+                commands: Vec::from_array([]),
+                executable: Option::None,
+                test_groups: Vec::from_array([]),
+            }
         },
     };
     testing::assert_eq(plan.commands.len(), 1);
@@ -148,7 +154,11 @@ fn legacy_compiler_world_keeps_prepare_world_compatibility() -> unit {
         Ok(value) => value,
         Err(message) => {
             testing::fail(message);
-            Plan { commands: Vec::[], executable: Option::None, test_groups: Vec::[] }
+            Plan {
+                commands: Vec::from_array([]),
+                executable: Option::None,
+                test_groups: Vec::from_array([]),
+            }
         },
     };
     testing::assert_eq(plan.commands.len(), 2);
@@ -164,7 +174,7 @@ fn installed_world_compiler(root: string) -> string {
         compiler,
         "#!/bin/sh\nprintf '%s\\n' '{\"driver_protocol\":1,\"installed_world\":1,\"world_artifact\":1}'\n",
     );
-    match process::Command::new("chmod").args(Vec::["+x", compiler]).status() {
+    match process::Command::new("chmod").args(Vec::from_array(["+x", compiler])).status() {
         Ok(status) => testing::assert(process::ExitStatus::success(status)),
         Err(message) => testing::fail(message),
     };
@@ -201,17 +211,19 @@ fn rejects_missing_installed_compiler_world() -> unit {
 
 #[test]
 fn build_graph_tracks_compile_link_and_go_dependencies() -> unit {
-    let commands = Vec::[
-        compile_command("a", Vec::new(), "out/a"),
-        compile_command("b", Vec::["out/a.interface"], "out/b"),
-        Command::Link {
-            input_cores: Vec::["out/a.core", "out/b.core"],
-            output: "out/main.go",
-            entry_package: "b",
-            world: Option::None,
-        },
-        Command::GoBuild { input: "out/main.go", output: "out/main" },
-    ];
+    let commands = Vec::from_array(
+        [
+            compile_command("a", Vec::new(), "out/a"),
+            compile_command("b", Vec::from_array(["out/a.interface"]), "out/b"),
+            Command::Link {
+                input_cores: Vec::from_array(["out/a.core", "out/b.core"]),
+                output: "out/main.go",
+                entry_package: "b",
+                world: Option::None,
+            },
+            Command::GoBuild { input: "out/main.go", output: "out/main" },
+        ],
+    );
     let graph = match build_graph(commands) {
         Ok(value) => value,
         Err(message) => {
@@ -236,12 +248,14 @@ fn build_graph_tracks_compiler_world_dependencies() -> unit {
     let command = Command::Compile {
         subcommand: "check",
         package_name: "a",
-        input_files: Vec::["a.gom"],
+        input_files: Vec::from_array(["a.gom"]),
         interface_files: Vec::new(),
         output: "out/a",
         world: Option::Some(world),
     };
-    let graph = match build_graph(Vec::[Command::PrepareWorld { output: world }, command]) {
+    let graph = match build_graph(
+        Vec::from_array([Command::PrepareWorld { output: world }, command]),
+    ) {
         Ok(value) => value,
         Err(message) => {
             testing::fail(message);
@@ -256,10 +270,12 @@ fn build_graph_tracks_compiler_world_dependencies() -> unit {
 #[test]
 fn build_graph_serializes_duplicate_outputs() -> unit {
     let graph = match build_graph(
-        Vec::[
-            compile_command("a", Vec::new(), "out/shared"),
-            compile_command("b", Vec::new(), "out/shared"),
-        ],
+        Vec::from_array(
+            [
+                compile_command("a", Vec::new(), "out/shared"),
+                compile_command("b", Vec::new(), "out/shared"),
+            ],
+        ),
     ) {
         Ok(value) => value,
         Err(message) => {
@@ -275,10 +291,12 @@ fn build_graph_serializes_duplicate_outputs() -> unit {
 #[test]
 fn build_graph_exposes_dependency_cycles() -> unit {
     let graph = match build_graph(
-        Vec::[
-            compile_command("a", Vec::["out/b.interface"], "out/a"),
-            compile_command("b", Vec::["out/a.interface"], "out/b"),
-        ],
+        Vec::from_array(
+            [
+                compile_command("a", Vec::from_array(["out/b.interface"]), "out/a"),
+                compile_command("b", Vec::from_array(["out/a.interface"]), "out/b"),
+            ],
+        ),
     ) {
         Ok(value) => value,
         Err(message) => {
@@ -313,9 +331,9 @@ fn cancellation_test_context(root: string, compiler: string) -> Context {
             module_dir: root,
             module_path: "cancellation_test",
             entry_package: "",
-            packages: Vec::[],
-            sources: Vec::[],
-            order: Vec::[],
+            packages: Vec::from_array([]),
+            sources: Vec::from_array([]),
+            order: Vec::from_array([]),
         },
         compiler,
         compiler_world: CompilerWorld::Source,
@@ -327,8 +345,8 @@ fn cancellation_test_command(name: string) -> Command {
     Command::Compile {
         subcommand: "check",
         package_name: name,
-        input_files: Vec::[name + ".input"],
-        interface_files: Vec::[],
+        input_files: Vec::from_array([name + ".input"]),
+        interface_files: Vec::from_array([]),
         output: path::join("out", name),
         world: Option::None,
     }
@@ -344,16 +362,18 @@ fn execute_plan_cancels_siblings_and_cleans_cache_outputs() -> unit {
     );
     test_support::write_file(path::join(root, "slow.input"), "slow");
     test_support::write_file(path::join(root, "fail.input"), "fail");
-    match process::Command::new("chmod").args(Vec::["+x", compiler]).status() {
+    match process::Command::new("chmod").args(Vec::from_array(["+x", compiler])).status() {
         Ok(status) => testing::assert(process::ExitStatus::success(status)),
         Err(message) => testing::fail(message),
     };
     let result = execute_plan(
         cancellation_test_context(root, compiler),
         Plan {
-            commands: Vec::[cancellation_test_command("slow"), cancellation_test_command("fail")],
+            commands: Vec::from_array(
+                [cancellation_test_command("slow"), cancellation_test_command("fail")],
+            ),
             executable: Option::None,
-            test_groups: Vec::[],
+            test_groups: Vec::from_array([]),
         },
         false,
         2,
@@ -367,10 +387,12 @@ fn execute_plan_cancels_siblings_and_cleans_cache_outputs() -> unit {
     testing::assert(!fs::exists(path::join(root, "out/slow.goml-check-fingerprint")));
     testing::assert(!fs::exists(path::join(root, "out/fail.goml-check-fingerprint")));
     let check = match process::Command::new("sh").args(
-        Vec::[
-            "-c",
-            "for attempt in 1 2 3 4 5 6 7 8 9 10; do if ! kill -0 \"$(cat slow.pid)\" 2>/dev/null; then exit 0; fi; sleep 0.1; done; exit 1",
-        ],
+        Vec::from_array(
+            [
+                "-c",
+                "for attempt in 1 2 3 4 5 6 7 8 9 10; do if ! kill -0 \"$(cat slow.pid)\" 2>/dev/null; then exit 0; fi; sleep 0.1; done; exit 1",
+            ],
+        ),
     ).current_dir(root).status() {
         Ok(status) => status,
         Err(message) => {
@@ -386,7 +408,7 @@ fn worker_cleans_uncommitted_cache_after_scope_cancellation() -> unit {
     let root = test_support::workspace("uncommitted_plan_cache");
     let compiler = path::join(root, "compiler");
     test_support::write_file(compiler, "#!/bin/sh\ntouch out/owned.interface\n");
-    match process::Command::new("chmod").args(Vec::["+x", compiler]).status() {
+    match process::Command::new("chmod").args(Vec::from_array(["+x", compiler])).status() {
         Ok(status) => testing::assert(process::ExitStatus::success(status)),
         Err(message) => testing::fail(message),
     };

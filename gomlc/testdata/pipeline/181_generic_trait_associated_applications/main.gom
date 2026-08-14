@@ -1,12 +1,11 @@
 trait Convert[T] {
     type Output;
-
     fn convert(self: Self) -> Self::Output;
 }
 
 struct Value {}
 
-impl Convert[int32] for Value {
+impl Convert[int32]for Value {
     type Output = string;
 
     fn convert(self: Value) -> string {
@@ -14,7 +13,7 @@ impl Convert[int32] for Value {
     }
 }
 
-impl Convert[string] for Value {
+impl Convert[string]for Value {
     type Output = int32;
 
     fn convert(self: Value) -> int32 {

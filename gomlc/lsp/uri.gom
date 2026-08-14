@@ -53,7 +53,7 @@ pub fn uri_to_path(value: string) -> Result[string, string] {
     if !value.starts_with(prefix) {
         Result::Err("unsupported URI: " + value)
     } else {
-        let decoded_bytes: Vec[uint8] = Vec::[];
+        let decoded_bytes: Vec[uint8] = Vec::from_array([]);
         let mut index = prefix.byte_len();
         while index < value.byte_len() {
             let byte = value.byte_get(index);

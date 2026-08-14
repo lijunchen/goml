@@ -35,9 +35,9 @@ pub struct Server {
 
 pub fn new_server() -> Server {
     Server {
-        documents: Vec::[],
-        analyses: Vec::[],
-        line_indexes: Vec::[],
+        documents: Vec::from_array([]),
+        analyses: Vec::from_array([]),
+        line_indexes: Vec::from_array([]),
         analysis_context: query::analysis_context(),
         generation: Ref::new(0),
         running: Ref::new(true),
@@ -164,7 +164,7 @@ pub fn cached_document_analysis(value: Server, document: Document) -> Option[que
 }
 
 fn source_overrides(value: Server) -> Vec[query::SourceOverride] {
-    let result: Vec[query::SourceOverride] = Vec::[];
+    let result: Vec[query::SourceOverride] = Vec::from_array([]);
     for document in value.documents {
         result.push(query::SourceOverride { path: document.path, source: document.text })
     }

@@ -180,13 +180,13 @@ fn cli_maximum(left: int, right: int) -> int {
 }
 
 fn cli_edit_distance(left: string, right: string) -> int {
-    let initial: Vec[int] = Vec::[];
+    let initial: Vec[int] = Vec::from_array([]);
     for index in 0..right.byte_len() + 1 {
         initial.push(index)
     }
     let mut previous = initial;
     for left_index in 0..left.byte_len() {
-        let current: Vec[int] = Vec::[];
+        let current: Vec[int] = Vec::from_array([]);
         current.push(left_index + 1);
         for right_index in 0..right.byte_len() {
             let substitution = if left.byte_get(left_index) == right.byte_get(right_index) {
@@ -204,7 +204,7 @@ fn cli_edit_distance(left: string, right: string) -> int {
 }
 
 fn similar_cli_argument(command: string, argument: string) -> Option[string] {
-    let candidates: Vec[string] = Vec::[];
+    let candidates: Vec[string] = Vec::from_array([]);
     match command {
         CHECK_COMMAND | TEST_CHECK_COMMAND | BUILD_COMMAND | TEST_BUILD_COMMAND => {
             candidates.push("--package");
@@ -466,8 +466,8 @@ fn cli_jaro_similarity(left: string, right: string) -> Option[CliSimilarity] {
         return Option::None
     } else {};
     let window = cli_maximum(cli_maximum(left.byte_len(), right.byte_len()) / 2 - 1, 0);
-    let left_matches: Vec[bool] = Vec::[];
-    let right_matches: Vec[bool] = Vec::[];
+    let left_matches: Vec[bool] = Vec::from_array([]);
+    let right_matches: Vec[bool] = Vec::from_array([]);
     for _ in 0..left.byte_len() {
         left_matches.push(false)
     }
@@ -516,7 +516,7 @@ fn cli_jaro_similarity(left: string, right: string) -> Option[CliSimilarity] {
 }
 
 fn similar_cli_subcommands(command: string) -> Vec[string] {
-    let candidates: Vec[string] = Vec::[];
+    let candidates: Vec[string] = Vec::from_array([]);
     candidates.push(CHECK_COMMAND);
     candidates.push(TEST_CHECK_COMMAND);
     candidates.push(BUILD_COMMAND);
@@ -528,7 +528,7 @@ fn similar_cli_subcommands(command: string) -> Vec[string] {
     candidates.push(RUN_SINGLE_COMMAND);
     candidates.push(VERSION_COMMAND);
     candidates.push(HELP_COMMAND);
-    let similar: Vec[CliSimilarity] = Vec::[];
+    let similar: Vec[CliSimilarity] = Vec::from_array([]);
     for candidate in candidates {
         match cli_jaro_similarity(command, candidate) {
             Some(value) => if value.numerator * 10 >= value.denominator * 7 {
@@ -538,7 +538,7 @@ fn similar_cli_subcommands(command: string) -> Vec[string] {
         }
     }
     collections::sort_by_ordering(similar, cli_similarity_compare);
-    let result: Vec[string] = Vec::[];
+    let result: Vec[string] = Vec::from_array([]);
     for value in similar {
         result.push(value.value)
     }

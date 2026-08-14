@@ -49,7 +49,7 @@ fn raw_string_pattern_value(node: LocatedNode) -> Option[string] {
 }
 
 fn path_from_single_ident(value: string) -> Path {
-    let segments: Vec[PathSegment] = Vec::[];
+    let segments: Vec[PathSegment] = Vec::from_array([]);
     segments.push(PathSegment { ident: value, span: span(0, 0) });
     Path { segments }
 }
@@ -159,7 +159,7 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
             },
             PATTERN_CONSTR => lower_constr_pat(ctx, node),
             PATTERN_TUPLE => {
-                let pats: Vec[Pat] = Vec::[];
+                let pats: Vec[Pat] = Vec::from_array([]);
                 for child in pattern_children(node) {
                     match lower_pat_inner(ctx, child) {
                         Some(value) => pats.push(value),
@@ -188,7 +188,7 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                 }
             },
             PATTERN_OR => {
-                let pats: Vec[Pat] = Vec::[];
+                let pats: Vec[Pat] = Vec::from_array([]);
                 let mut valid = true;
                 for child in pattern_children(node) {
                     match lower_pat_inner(ctx, child) {
@@ -242,7 +242,7 @@ fn lower_constr_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
         Some(path_node) => match lower_path(ctx, path_node) {
             Some(path) => match first_child(node, cst::NodeKind::STRUCT_PATTERN_FIELD_LIST) {
                 Some(list) => {
-                    let fields: Vec[(string, Pat)] = Vec::[];
+                    let fields: Vec[(string, Pat)] = Vec::from_array([]);
                     let mut valid = true;
                     for field in children_of_kind(list, cst::NodeKind::STRUCT_PATTERN_FIELD) {
                         match first_token(field, lexer::TokenKind::Ident) {
@@ -299,7 +299,7 @@ fn lower_constr_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                     }
                 },
                 None => {
-                    let pats: Vec[Pat] = Vec::[];
+                    let pats: Vec[Pat] = Vec::from_array([]);
                     for child in pattern_children(node) {
                         match lower_pat_inner(ctx, child) {
                             Some(value) => pats.push(value),
@@ -321,8 +321,8 @@ fn lower_constr_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
 }
 
 fn lower_array_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
-    let prefix: Vec[Pat] = Vec::[];
-    let suffix: Vec[Pat] = Vec::[];
+    let prefix: Vec[Pat] = Vec::from_array([]);
+    let suffix: Vec[Pat] = Vec::from_array([]);
     let mut rest: Option[ArrayPatRest] = Option::None;
     let mut valid = true;
     for child in pattern_children(node) {

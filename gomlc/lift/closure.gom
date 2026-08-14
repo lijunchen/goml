@@ -46,7 +46,7 @@ fn invalid_expr(state: State, ty: mono::Type, message: string) -> LowerExpr {
 }
 
 fn copy_scope(values: Vec[ScopeEntry]) -> Vec[ScopeEntry] {
-    let result: Vec[ScopeEntry] = Vec::[];
+    let result: Vec[ScopeEntry] = Vec::from_array([]);
     for value in values {
         result.push(value)
     }
@@ -212,7 +212,7 @@ fn collect_used_expr(values: Vec[string], expr: mono::Expr) -> unit {
 }
 
 fn initial_used_types(value: mono::File) -> Vec[string] {
-    let result: Vec[string] = Vec::[];
+    let result: Vec[string] = Vec::from_array([]);
     for function in value.functions {
         for param in function.params {
             collect_used_types(result, param.1)
@@ -452,7 +452,7 @@ fn transform_exprs(
     values: Vec[mono::Expr],
     context: Option[string],
 ) -> Vec[LowerExpr] {
-    let result: Vec[LowerExpr] = Vec::[];
+    let result: Vec[LowerExpr] = Vec::from_array([]);
     for value in values {
         result.push(transform_expr(state, scope, value, context))
     }
@@ -487,7 +487,7 @@ fn transform_block(
     context: Option[string],
 ) -> LowerBlock {
     let scope = copy_scope(outer_scope);
-    let stmts: Vec[LowerLetStmt] = Vec::[];
+    let stmts: Vec[LowerLetStmt] = Vec::from_array([]);
     for stmt in value.stmts {
         let transformed = match stmt.value {
             Closure { params, body, ty } => transform_closure(
@@ -525,7 +525,7 @@ fn transform_arms(
     values: Vec[mono::Arm],
     context: Option[string],
 ) -> Vec[LowerArm] {
-    let result: Vec[LowerArm] = Vec::[];
+    let result: Vec[LowerArm] = Vec::from_array([]);
     for value in values {
         result.push(transform_arm(state, scope, value, context))
     }
@@ -552,7 +552,7 @@ fn transform_call(
                     "closure apply metadata is missing for " + apply,
                 ),
             };
-            let call_args: Vec[LowerExpr] = Vec::[];
+            let call_args: Vec[LowerExpr] = Vec::from_array([]);
             call_args.push(environment);
             for arg in args {
                 call_args.push(arg)
@@ -823,7 +823,7 @@ fn make_field_name(name: string, index: int) -> string {
 fn closure_body_block(value: LowerExpr) -> LowerBlock {
     match value {
         Block { block, ty: _ } => block,
-        other => LowerBlock { stmts: Vec::[], tail: Option::Some(other) },
+        other => LowerBlock { stmts: Vec::from_array([]), tail: Option::Some(other) },
     }
 }
 
@@ -834,7 +834,7 @@ fn prepend_captures(
     env_ty: mono::Type,
     constructor: mono::Constructor,
 ) -> LowerBlock {
-    let stmts: Vec[LowerLetStmt] = Vec::[];
+    let stmts: Vec[LowerLetStmt] = Vec::from_array([]);
     for index in 0..captures.len() {
         let capture = captures[index];
         stmts.push(
@@ -872,8 +872,8 @@ fn transform_closure(
     match signature {
         Some(signature) => {
             let closure_scope = copy_scope(outer_scope);
-            let lowered_params: Vec[(string, mono::Type)] = Vec::[];
-            let bound: Vec[string] = Vec::[];
+            let lowered_params: Vec[(string, mono::Type)] = Vec::from_array([]);
+            let bound: Vec[string] = Vec::from_array([]);
             for index in 0..params.len() {
                 let param = params[index];
                 let param_ty = signature.0[index];
@@ -898,13 +898,13 @@ fn transform_closure(
                 None => context,
             };
             let body = transform_expr(state, closure_scope, body, hint);
-            let captures: Vec[Capture] = Vec::[];
+            let captures: Vec[Capture] = Vec::from_array([]);
             collect_captured(body, bound, captures, outer_scope);
             let struct_name = fresh_struct_name(state, hint);
             let env_ty = mono::Type::Named { name: struct_name };
-            let fields: Vec[string] = Vec::[];
-            let struct_fields: Vec[(string, mono::Type)] = Vec::[];
-            let captured_args: Vec[LowerExpr] = Vec::[];
+            let fields: Vec[string] = Vec::from_array([]);
+            let struct_fields: Vec[(string, mono::Type)] = Vec::from_array([]);
+            let captured_args: Vec[LowerExpr] = Vec::from_array([]);
             for index in 0..captures.len() {
                 let capture = captures[index];
                 let field_name = make_field_name(capture.name, index);
@@ -920,9 +920,9 @@ fn transform_closure(
             };
             let apply_name = "inherent#" + struct_name + "#" + struct_name + "#apply";
             let env_name = fresh_name(state, "env");
-            let fn_params: Vec[(string, mono::Type)] = Vec::[];
+            let fn_params: Vec[(string, mono::Type)] = Vec::from_array([]);
             fn_params.push((env_name, env_ty));
-            let apply_param_types: Vec[mono::Type] = Vec::[];
+            let apply_param_types: Vec[mono::Type] = Vec::from_array([]);
             apply_param_types.push(env_ty);
             for param in lowered_params {
                 fn_params.push(param);
@@ -934,7 +934,7 @@ fn transform_closure(
                 mono::StructDef {
                     name: struct_name,
                     fields: struct_fields,
-                    public_fields: Vec::[],
+                    public_fields: Vec::from_array([]),
                     has_hidden_fields: false,
                 },
             );
@@ -990,7 +990,7 @@ fn transform_trait_impl(value: Option[mono::TraitImpl]) -> Option[LowerTraitImpl
 }
 
 fn transform_function(state: State, value: mono::Function) -> LowerFunction {
-    let scope: Vec[ScopeEntry] = Vec::[];
+    let scope: Vec[ScopeEntry] = Vec::from_array([]);
     for param in value.params {
         scope.push(
             ScopeEntry {
@@ -1023,13 +1023,13 @@ fn lambda_lift_with_counter(value: mono::File, counter: Ref[int]) -> LambdaLiftR
     let state = State {
         next_env: Ref::new(0),
         next_name: counter,
-        generated: Vec::[],
-        generated_structs: Vec::[],
-        closures: Vec::[],
+        generated: Vec::from_array([]),
+        generated_structs: Vec::from_array([]),
+        closures: Vec::from_array([]),
         used_types: initial_used_types(value),
         error: Ref::new(Option::None),
     };
-    let functions: Vec[LowerFunction] = Vec::[];
+    let functions: Vec[LowerFunction] = Vec::from_array([]);
     for function in value.functions {
         functions.push(transform_function(state, function))
     }

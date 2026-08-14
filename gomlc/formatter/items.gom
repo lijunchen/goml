@@ -115,7 +115,7 @@ fn omittable_block_node(value: LocatedNode) -> bool {
 }
 
 fn meaningful_block_nodes(value: LocatedNode) -> Vec[LocatedNode] {
-    let result: Vec[LocatedNode] = Vec::[];
+    let result: Vec[LocatedNode] = Vec::from_array([]);
     for child in direct_nodes(value) {
         if !omittable_block_node(child) {
             result.push(child)
@@ -227,7 +227,7 @@ fn format_block(value: Builder, node: LocatedNode) -> BuiltDoc {
             concat2(Doc::HardLine, text("}"))
         };
         built(
-            concat(Vec::[text("{"), Doc::HardLine, indent(body.doc), closing]),
+            concat(Vec::from_array([text("{"), Doc::HardLine, indent(body.doc), closing])),
             Option::Some(lexer::TokenKind::LBrace),
             Option::Some(lexer::TokenKind::RBrace),
         )
@@ -291,7 +291,11 @@ fn format_impl(value: Builder, node: LocatedNode) -> BuiltDoc {
             concat2(Doc::HardLine, text("}"))
         };
         built(
-            concat(Vec::[header_doc.doc, text(" {"), Doc::HardLine, indent(body_doc.doc), closing]),
+            concat(
+                Vec::from_array(
+                    [header_doc.doc, text(" {"), Doc::HardLine, indent(body_doc.doc), closing],
+                ),
+            ),
             header_doc.first,
             Option::Some(lexer::TokenKind::RBrace),
         )
@@ -310,7 +314,7 @@ fn format_inline_variant_field_list(value: Builder, node: LocatedNode) -> BuiltD
     if fields.is_empty() || node_has_comment(node) {
         return format_generic(value, node)
     } else {};
-    let docs: Vec[Doc] = Vec::[];
+    let docs: Vec[Doc] = Vec::from_array([]);
     for field in fields {
         docs.push(format_node(value, field).doc)
     }
@@ -320,12 +324,14 @@ fn format_inline_variant_field_list(value: Builder, node: LocatedNode) -> BuiltD
     let group_id = value.docs.new_group_id();
     let body = join(concat2(text(","), Doc::SoftLine), docs);
     let content = concat(
-        Vec::[
-            Doc::SoftLine,
-            indent(concat2(body, if_break(group_id, text(","), nil()))),
-            Doc::SoftLine,
-            token_doc(close),
-        ],
+        Vec::from_array(
+            [
+                Doc::SoftLine,
+                indent(concat2(body, if_break(group_id, text(","), nil()))),
+                Doc::SoftLine,
+                token_doc(close),
+            ],
+        ),
     );
     let first = match first_significant_token(node) {
         Some(token) => Option::Some(token.token.kind),
@@ -368,7 +374,7 @@ fn variant_requires_vertical_fields(value: Builder, node: LocatedNode) -> bool {
     } else if field_count != 1 || node_has_comment(fields) {
         true
     } else {
-        flat_width(format_variant(value, node, false).doc, HashMap::{}, 95) > 95
+        flat_width(format_variant(value, node, false).doc, HashMap::from_array([]), 95) > 95
     }
 }
 
@@ -450,9 +456,9 @@ fn format_vertical_body(value: Builder, node: LocatedNode) -> BuiltDoc {
         };
         BuiltDoc {
             doc: if owns_open {
-                concat(Vec::[text("{"), Doc::HardLine, indent(body.doc), closing])
+                concat(Vec::from_array([text("{"), Doc::HardLine, indent(body.doc), closing]))
             } else {
-                concat(Vec::[Doc::HardLine, indent(body.doc), closing])
+                concat(Vec::from_array([Doc::HardLine, indent(body.doc), closing]))
             },
             first: if owns_open {
                 Option::Some(lexer::TokenKind::LBrace)

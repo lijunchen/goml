@@ -690,7 +690,7 @@ fn decode_ctir_type(value: wire::ArtifactValue) -> Result[ctir::CtType, string] 
         },
         "enum" => {
             ctir_expect_length(values, 3, "enum type")?;
-            let variants: Vec[Vec[ctir::CtType]] = Vec::[];
+            let variants: Vec[Vec[ctir::CtType]] = Vec::from_array([]);
             for fields in ctir_array(values[2], "enum variants")? {
                 variants.push(decode_ctir_types(fields)?)
             }
@@ -705,7 +705,7 @@ fn decode_ctir_type(value: wire::ArtifactValue) -> Result[ctir::CtType, string] 
 }
 
 fn decode_ctir_types(value: wire::ArtifactValue) -> Result[Vec[ctir::CtType], string] {
-    let result: Vec[ctir::CtType] = Vec::[];
+    let result: Vec[ctir::CtType] = Vec::from_array([]);
     for value in ctir_array(value, "types")? {
         result.push(decode_ctir_type(value)?)
     }
@@ -816,7 +816,7 @@ fn decode_ctir_value(value: wire::ArtifactValue) -> Result[ctir::CtValue, string
 }
 
 fn decode_ctir_values(value: wire::ArtifactValue) -> Result[Vec[ctir::CtValue], string] {
-    let result: Vec[ctir::CtValue] = Vec::[];
+    let result: Vec[ctir::CtValue] = Vec::from_array([]);
     for value in ctir_array(value, "values")? {
         result.push(decode_ctir_value(value)?)
     }
@@ -881,7 +881,7 @@ fn decode_ctir_pattern(value: wire::ArtifactValue) -> Result[ctir::CtPattern, st
         },
         "struct" => {
             ctir_expect_length(values, 3, "struct pattern")?;
-            let fields: Vec[(int, ctir::CtPattern)] = Vec::[];
+            let fields: Vec[(int, ctir::CtPattern)] = Vec::from_array([]);
             for value in ctir_array(values[2], "struct pattern fields")? {
                 let pair = ctir_array(value, "struct pattern field")?;
                 ctir_expect_length(pair, 2, "struct pattern field")?;
@@ -934,7 +934,7 @@ fn decode_ctir_pattern(value: wire::ArtifactValue) -> Result[ctir::CtPattern, st
 }
 
 fn decode_ctir_patterns(value: wire::ArtifactValue) -> Result[Vec[ctir::CtPattern], string] {
-    let result: Vec[ctir::CtPattern] = Vec::[];
+    let result: Vec[ctir::CtPattern] = Vec::from_array([]);
     for value in ctir_array(value, "patterns")? {
         result.push(decode_ctir_pattern(value)?)
     }
@@ -1047,7 +1047,7 @@ fn decode_ctir_expr(value: wire::ArtifactValue) -> Result[ctir::CtExpr, string] 
         },
         "match" => {
             ctir_expect_length(values, 5, "match expression")?;
-            let arms: Vec[ctir::CtArm] = Vec::[];
+            let arms: Vec[ctir::CtArm] = Vec::from_array([]);
             for value in ctir_array(values[4], "match arms")? {
                 let arm = ctir_array(value, "match arm")?;
                 ctir_expect_length(arm, 4, "match arm")?;
@@ -1173,7 +1173,7 @@ fn decode_ctir_expr(value: wire::ArtifactValue) -> Result[ctir::CtExpr, string] 
 }
 
 fn decode_ctir_exprs(value: wire::ArtifactValue) -> Result[Vec[ctir::CtExpr], string] {
-    let result: Vec[ctir::CtExpr] = Vec::[];
+    let result: Vec[ctir::CtExpr] = Vec::from_array([]);
     for value in ctir_array(value, "expressions")? {
         result.push(decode_ctir_expr(value)?)
     }
@@ -1215,7 +1215,7 @@ fn decode_ctir_stmt(value: wire::ArtifactValue) -> Result[ctir::CtStmt, string] 
 fn decode_ctir_block(value: wire::ArtifactValue) -> Result[ctir::CtBlock, string] {
     let values = ctir_array(value, "block")?;
     ctir_expect_length(values, 3, "block")?;
-    let statements: Vec[ctir::CtStmt] = Vec::[];
+    let statements: Vec[ctir::CtStmt] = Vec::from_array([]);
     for value in ctir_array(values[1], "block statements")? {
         statements.push(decode_ctir_stmt(value)?)
     }
@@ -1229,7 +1229,7 @@ fn decode_ctir_block(value: wire::ArtifactValue) -> Result[ctir::CtBlock, string
 }
 
 fn decode_int_array(value: wire::ArtifactValue, expected: string) -> Result[Vec[int], string] {
-    let result: Vec[int] = Vec::[];
+    let result: Vec[int] = Vec::from_array([]);
     for value in ctir_array(value, expected)? {
         result.push(ctir_int(value, expected)?)
     }
@@ -1245,7 +1245,7 @@ fn decode_ctir_module(value: wire::ArtifactValue) -> Result[ctir::CtModule, stri
             "target integer width",
         )?,
     };
-    let functions: Vec[ctir::CtFunction] = Vec::[];
+    let functions: Vec[ctir::CtFunction] = Vec::from_array([]);
     for value in wire::artifact_json_field_array(object, "functions")? {
         let fields = ctir_array(value, "function")?;
         ctir_expect_length(fields, 9, "function")?;
@@ -1263,7 +1263,7 @@ fn decode_ctir_module(value: wire::ArtifactValue) -> Result[ctir::CtModule, stri
             },
         )
     }
-    let entries: Vec[ctir::CtEntry] = Vec::[];
+    let entries: Vec[ctir::CtEntry] = Vec::from_array([]);
     for value in wire::artifact_json_field_array(object, "entries")? {
         let fields = ctir_array(value, "entry")?;
         ctir_expect_length(fields, 3, "entry")?;
@@ -1275,7 +1275,7 @@ fn decode_ctir_module(value: wire::ArtifactValue) -> Result[ctir::CtModule, stri
             },
         )
     }
-    let derive_entries: Vec[ctir::CtDeriveEntry] = Vec::[];
+    let derive_entries: Vec[ctir::CtDeriveEntry] = Vec::from_array([]);
     for value in wire::artifact_json_field_array(object, "derive_entries")? {
         let fields = ctir_array(value, "derive entry")?;
         ctir_expect_length(fields, 4, "derive entry")?;
@@ -1288,7 +1288,7 @@ fn decode_ctir_module(value: wire::ArtifactValue) -> Result[ctir::CtModule, stri
             },
         )
     }
-    let constants: Vec[ctir::CtConstant] = Vec::[];
+    let constants: Vec[ctir::CtConstant] = Vec::from_array([]);
     for value in wire::artifact_json_field_array(object, "constants")? {
         let fields = ctir_array(value, "constant")?;
         ctir_expect_length(fields, 2, "constant")?;
@@ -1299,7 +1299,7 @@ fn decode_ctir_module(value: wire::ArtifactValue) -> Result[ctir::CtModule, stri
             },
         )
     }
-    let origins: Vec[ctir::CtOrigin] = Vec::[];
+    let origins: Vec[ctir::CtOrigin] = Vec::from_array([]);
     for value in wire::artifact_json_field_array(object, "origins")? {
         let fields = ctir_array(value, "origin")?;
         ctir_expect_length(fields, 3, "origin")?;
@@ -1318,7 +1318,7 @@ fn decode_ctir_module(value: wire::ArtifactValue) -> Result[ctir::CtModule, stri
             functions,
             entries,
             derive_entries,
-            sites: Vec::[],
+            sites: Vec::from_array([]),
             constants,
             origins,
         },

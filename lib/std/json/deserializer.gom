@@ -129,7 +129,7 @@ fn expected_json_value(deserializer: JsonDeserializer, expected: string) -> stri
 }
 
 fn json_deserializer(input: string) -> JsonDeserializer {
-    JsonDeserializer { parser: json_parser(input), frames: Vec::[] }
+    JsonDeserializer { parser: json_parser(input), frames: Vec::from_array([]) }
 }
 
 fn finish_json_deserializer(deserializer: JsonDeserializer) -> Result[unit, string] {
@@ -577,7 +577,7 @@ impl serde::Deserializer for JsonDeserializer {
 
     fn deserialize_bytes(self: JsonDeserializer) -> Result[Vec[byte], string] {
         consume_json_byte(self.parser, b'[', "expected byte array")?;
-        let values: Vec[byte] = Vec::[];
+        let values: Vec[byte] = Vec::from_array([]);
         let mut first = true;
         while true {
             skip_json_whitespace(self.parser);

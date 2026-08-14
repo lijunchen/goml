@@ -54,7 +54,7 @@ fn take_once(value: Option[int]) -> int {
     while let Some(number) = current.get() {
         result.set(number);
         current.set(Option::None);
-    };
+    }
     result.get()
 }
 
@@ -67,15 +67,12 @@ fn sum_boxed(values: Vec[Boxed[int]]) -> int {
     let result = Ref::new(0);
     for Value(number) in values {
         result.set(result.get() + number);
-    };
+    }
     result.get()
 }
 
 fn main() -> unit {
-    let boxed: Vec[Boxed[int]] = Vec::[
-        Boxed::Value(19),
-        Boxed::Value(23),
-    ];
+    let boxed: Vec[Boxed[int]] = Vec::from_array([Boxed::Value(19), Boxed::Value(23)]);
     println(classify(First::Shared(7)));
     println(classify(First::Idle));
     println(classify(First::Data { value: 9, label: "data" }));

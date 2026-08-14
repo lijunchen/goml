@@ -9,7 +9,7 @@ pub struct ArtifactBinaryStringTable {
 }
 
 fn empty_artifact_binary_string_table() -> ArtifactBinaryStringTable {
-    ArtifactBinaryStringTable { values: Vec::[], indexes: HashMap::{} }
+    ArtifactBinaryStringTable { values: Vec::from_array([]), indexes: HashMap::from_array([]) }
 }
 
 fn artifact_binary_collect_string(seen: HashMap[string, unit], values: Vec[string], value: string) -> unit {
@@ -40,15 +40,15 @@ fn artifact_binary_collect_value_strings(
 }
 
 pub fn artifact_binary_string_table(value: ArtifactValue) -> ArtifactBinaryStringTable {
-    let seen: HashMap[string, unit] = HashMap::{};
-    let values: Vec[string] = Vec::[];
+    let seen: HashMap[string, unit] = HashMap::from_array([]);
+    let values: Vec[string] = Vec::from_array([]);
     artifact_binary_collect_value_strings(seen, values, value);
     artifact_binary_string_table_from_values(values)
 }
 
 fn artifact_binary_string_table_from_values(values: Vec[string]) -> ArtifactBinaryStringTable {
     let values = sort_artifact_names(values);
-    let indexes: HashMap[string, int] = HashMap::{};
+    let indexes: HashMap[string, int] = HashMap::from_array([]);
     for index in 0..values.len() {
         indexes[values[index]] = index;
     }
@@ -81,7 +81,7 @@ pub fn decode_artifact_binary_string_table(data: bytes::Bytes) -> Result[
         return Result::Err("binary artifact string table exceeds limit")
     } else {};
     let values = Vec::with_capacity(count);
-    let indexes: HashMap[string, int] = HashMap::{};
+    let indexes: HashMap[string, int] = HashMap::from_array([]);
     for index in 0..count {
         let value = artifact_binary_read_string(reader)?;
         if indexes.contains(value) {
@@ -236,7 +236,7 @@ fn artifact_binary_decode_value_at(
             } else {};
             let fields = Vec::with_capacity(count);
             let names: Option[HashMap[string, unit]] = if count > 32 {
-                Option::Some(HashMap::{})
+                Option::Some(HashMap::from_array([]))
             } else {
                 Option::None
             };

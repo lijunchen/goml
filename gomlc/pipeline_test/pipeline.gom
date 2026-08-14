@@ -256,11 +256,15 @@ pub fn test_one_case(name: string) -> unit {
             ""
         },
     };
-    test_one_case_with_go(compiler_driver::source_compiler_for_sources(Vec::[source]), name, true)
+    test_one_case_with_go(
+        compiler_driver::source_compiler_for_sources(Vec::from_array([source])),
+        name,
+        true,
+    )
 }
 
 pub fn test_pipeline_shard(shard: int, shard_count: int) -> unit {
-    let names: Vec[string] = Vec::[];
+    let names: Vec[string] = Vec::from_array([]);
     let compiler_sources = Vec::new();
     let index = Ref::new(0);
     for name in all_pipeline_cases() {

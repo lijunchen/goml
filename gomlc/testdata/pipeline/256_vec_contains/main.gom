@@ -9,14 +9,14 @@ fn contains_any[T: PartialEq](values: Vec[T], expected: T) -> bool {
 }
 
 fn main() -> unit {
-    let values = Vec::[1, 2, 3];
+    let values = Vec::from_array([1, 2, 3]);
     println(values.contains(2).to_string());
     println(values.contains(9).to_string());
-    let names = Vec::["alpha", "beta"];
+    let names = Vec::from_array(["alpha", "beta"]);
     println(names.contains("beta").to_string());
-    let pairs = Vec::[Pair { left: 1, right: 2 }];
+    let pairs = Vec::from_array([Pair { left: 1, right: 2 }]);
     println(pairs.contains(Pair { left: 1, right: 2 }).to_string());
     println(contains_any(values, 3).to_string());
-    let empty: Vec[string] = Vec::[];
+    let empty: Vec[string] = Vec::from_array([]);
     println(empty.contains("x").to_string())
 }

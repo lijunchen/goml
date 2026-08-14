@@ -3,5 +3,5 @@ package cache;
 pub static VALUE: OnceCell[FrozenVec[int]] = OnceCell::new();
 
 pub fn value() -> FrozenVec[int] {
-    VALUE.get_or_init(|| Vec::[4, 5].freeze())
+    VALUE.get_or_init(|| Vec::from_array([4, 5]).freeze())
 }

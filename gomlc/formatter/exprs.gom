@@ -29,13 +29,21 @@ fn format_binary(value: Builder, node: LocatedNode) -> BuiltDoc {
     let left = format_node(value, children[0]);
     let right = format_node(value, children[1]);
     let content = if token_is(operator, lexer::TokenKind::Dot) {
-        concat(Vec::[left.doc, token_doc(operator), right.doc])
+        concat(Vec::from_array([left.doc, token_doc(operator), right.doc]))
     } else {
         concat(
-            Vec::[
-                left.doc,
-                indent(concat(Vec::[Doc::SoftLine, token_doc(operator), text(" "), right.doc])),
-            ],
+            Vec::from_array(
+                [
+                    left.doc,
+                    indent(
+                        concat(
+                            Vec::from_array(
+                                [Doc::SoftLine, token_doc(operator), text(" "), right.doc],
+                            ),
+                        ),
+                    ),
+                ],
+            ),
         )
     };
     built(value.docs.group(content).doc, left.first, right.last)

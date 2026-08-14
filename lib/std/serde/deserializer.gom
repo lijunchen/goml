@@ -164,7 +164,7 @@ fn deserialize_sequence_schema[D: Deserializer](deserializer: D, schemas: Vec[Sc
         return Result::Err("sequence schema must contain one item")
     } else {};
     let _ = deserializer.begin_sequence()?;
-    let values: Vec[Value] = Vec::[];
+    let values: Vec[Value] = Vec::from_array([]);
     while deserializer.next_sequence_element()? {
         values.push(deserialize_schema_from(deserializer, schemas[0])?)
     }
@@ -195,7 +195,7 @@ fn deserialize_optional_schema[D: Deserializer](deserializer: D, schemas: Vec[Sc
     if schemas.len() != 1 {
         return Result::Err("optional schema must contain one item")
     } else {};
-    let values: Vec[Value] = Vec::[];
+    let values: Vec[Value] = Vec::from_array([]);
     if deserializer.begin_optional()? {
         values.push(deserialize_schema_from(deserializer, schemas[0])?)
     } else {};
@@ -208,7 +208,7 @@ fn deserialize_struct_schema_value[D: Deserializer](deserializer: D, fields: Vec
     string,
 ] {
     deserializer.begin_struct("", fields.len())?;
-    let values: Vec[(string, Value)] = Vec::[];
+    let values: Vec[(string, Value)] = Vec::from_array([]);
     let mut next = deserializer.next_struct_field()?;
     while next.is_some() {
         let key = next.unwrap_or(FieldKey::Position(-1));
@@ -235,7 +235,7 @@ fn deserialize_variant_schema_value[D: Deserializer](deserializer: D, variants: 
     } else {};
     let variant = variants[variant_index];
     deserializer.begin_variant_fields(variant.kind, variant.fields.len())?;
-    let fields: Vec[(string, Value)] = Vec::[];
+    let fields: Vec[(string, Value)] = Vec::from_array([]);
     let mut next = deserializer.next_variant_field()?;
     while next.is_some() {
         let key = next.unwrap_or(FieldKey::Position(-1));

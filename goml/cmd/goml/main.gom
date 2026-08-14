@@ -229,15 +229,15 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
         CHECK_COMMAND | BUILD_COMMAND | BUILD_ARTIFACTS_COMMAND | RUN_COMMAND_NAME | TEST_COMMAND => (),
         _ => return Result::Err(f"unknown command {command}"),
     };
-    let targets: Vec[string] = Vec::[];
+    let targets: Vec[string] = Vec::from_array([]);
     let mut target_dir: Option[string] = Option::None;
     let mut compiler: Option[string] = Option::None;
-    let flags: HashMap[string, unit] = HashMap::{};
-    let program_args: Vec[string] = Vec::[];
+    let flags: HashMap[string, unit] = HashMap::from_array([]);
+    let program_args: Vec[string] = Vec::from_array([]);
     let mut test_filter: Option[string] = Option::None;
     let mut build_jobs = 16;
     let mut test_jobs = 1;
-    let test_formats: Vec[string] = Vec::[];
+    let test_formats: Vec[string] = Vec::from_array([]);
     let mut test_timeout_ms = 30000;
     let mut test_seed = time::SystemTime::now().unix_nanoseconds().to_int();
     let mut test_kind = ALL_TEST_KIND;
@@ -463,7 +463,7 @@ fn run_command(args: CliArgs) -> Result[unit, string] {
             None => Result::Err("build plan omitted executable"),
         }
     } else if args.command == TEST_COMMAND && !args.dry_run {
-        let groups: Vec[runner::Group] = Vec::[];
+        let groups: Vec[runner::Group] = Vec::from_array([]);
         for group in plan.test_groups {
             groups.push(
                 runner::Group {

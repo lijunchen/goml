@@ -41,9 +41,11 @@ fn serde_variant_to_toml(name: string, kind: int, fields: Vec[(string, serde::Va
         for field in fields {
             values.push(from_serde_value(field.1)?)
         }
-        Result::Ok(Value::Table(Vec::[(name, Value::Array(values))]))
+        Result::Ok(Value::Table(Vec::from_array([(name, Value::Array(values))])))
     } else {
-        Result::Ok(Value::Table(Vec::[(name, Value::Table(serde_fields_to_toml(fields)?))]))
+        Result::Ok(
+            Value::Table(Vec::from_array([(name, Value::Table(serde_fields_to_toml(fields)?))])),
+        )
     }
 }
 

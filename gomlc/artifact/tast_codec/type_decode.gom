@@ -9,7 +9,7 @@ pub struct ArtifactDecodeContext {
 }
 
 pub fn new_artifact_decode_context() -> ArtifactDecodeContext {
-    ArtifactDecodeContext { enum_names: Vec::[], struct_names: Vec::[] }
+    ArtifactDecodeContext { enum_names: Vec::from_array([]), struct_names: Vec::from_array([]) }
 }
 
 pub fn artifact_decode_type_array(
@@ -18,7 +18,7 @@ pub fn artifact_decode_type_array(
     expected: string,
 ) -> Result[Vec[tast::Type], string] {
     let values = wire::artifact_json_array(value, expected)?;
-    let result: Vec[tast::Type] = Vec::[];
+    let result: Vec[tast::Type] = Vec::from_array([]);
     for value in values {
         result.push(artifact_decode_type(context, value)?)
     }
@@ -40,7 +40,7 @@ fn artifact_decode_dyn_bound(context: ArtifactDecodeContext, value: wire::Artifa
         wire::artifact_json_required_field(object, "associated_types")?,
         "dyn associated type bindings",
     )?;
-    let associated_types: Vec[(string, tast::Type)] = Vec::[];
+    let associated_types: Vec[(string, tast::Type)] = Vec::from_array([]);
     for value in values {
         let pair = wire::artifact_json_array(value, "dyn associated type binding")?;
         if pair.len() != 2 {
@@ -66,7 +66,7 @@ fn artifact_decode_dyn_type(context: ArtifactDecodeContext, value: wire::Artifac
         wire::artifact_json_required_field(object, "additional_bounds")?,
         "additional dyn bounds",
     )?;
-    let additional_bounds: Vec[tast::DynTraitBound] = Vec::[];
+    let additional_bounds: Vec[tast::DynTraitBound] = Vec::from_array([]);
     for value in values {
         additional_bounds.push(artifact_decode_dyn_bound(context, value)?)
     }

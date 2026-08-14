@@ -75,7 +75,7 @@ fn version_equal(left: SemVersion, right: SemVersion) -> bool {
 }
 
 fn quoted_values(value: string) -> Vec[string] {
-    let result: Vec[string] = Vec::[];
+    let result: Vec[string] = Vec::from_array([]);
     let mut start: Option[int] = Option::None;
     for index in 0..value.byte_len() {
         if value.byte_get(index) == b'"' {
@@ -95,7 +95,7 @@ fn quoted_values(value: string) -> Vec[string] {
 
 fn load_index(root: string) -> Result[Vec[RegistryEntry], string] {
     let source = fs::read_file(path::join(root, "index.toml"))?;
-    let entries: Vec[RegistryEntry] = Vec::[];
+    let entries: Vec[RegistryEntry] = Vec::from_array([]);
     let mut current: Option[string] = Option::None;
     for original in text::lines(source) {
         let line = text::trim(original);
@@ -105,7 +105,9 @@ fn load_index(root: string) -> Result[Vec[RegistryEntry], string] {
                 return Result::Err("invalid registry module table " + line)
             } else {
                 current = Option::Some(values[0]);
-                entries.push(RegistryEntry { name: values[0], latest: "", versions: Vec::[] })
+                entries.push(
+                    RegistryEntry { name: values[0], latest: "", versions: Vec::from_array([]) },
+                )
             }
         } else {
             match current {
@@ -304,7 +306,7 @@ fn selected_index(values: Vec[ResolvedModule], name: string) -> Option[int] {
 pub fn resolve_at(module_root: string, root: string) -> Result[Vec[ResolvedModule], string] {
     let root_manifest = manifest::load(path::join(module_root, manifest::FILENAME))?;
     let queue = root_manifest.dependencies;
-    let selected: Vec[ResolvedModule] = Vec::[];
+    let selected: Vec[ResolvedModule] = Vec::from_array([]);
     let mut cursor = 0;
     while cursor < queue.len() {
         let requirement = queue[cursor];

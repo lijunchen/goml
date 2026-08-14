@@ -26,30 +26,30 @@ fn check_scalar(bytes: Vec[byte], expected: uint32, expected_width: int) -> unit
 }
 
 fn main() -> unit {
-    check_utf8(Vec::[], true);
-    check_utf8(Vec::[0], true);
-    check_utf8(Vec::[127], true);
-    check_scalar(Vec::[194, 128], 128, 2);
-    check_scalar(Vec::[223, 191], 2047, 2);
-    check_scalar(Vec::[224, 160, 128], 2048, 3);
-    check_scalar(Vec::[237, 159, 191], 55295, 3);
-    check_scalar(Vec::[238, 128, 128], 57344, 3);
-    check_scalar(Vec::[239, 191, 189], 65533, 3);
-    check_scalar(Vec::[239, 191, 191], 65535, 3);
-    check_scalar(Vec::[240, 144, 128, 128], 65536, 4);
-    check_scalar(Vec::[244, 143, 191, 191], 1114111, 4);
-    check_utf8(Vec::[128], false);
-    check_utf8(Vec::[191], false);
-    check_utf8(Vec::[192, 128], false);
-    check_utf8(Vec::[193, 191], false);
-    check_utf8(Vec::[194], false);
-    check_utf8(Vec::[194, 127], false);
-    check_utf8(Vec::[224, 159, 191], false);
-    check_utf8(Vec::[225, 128], false);
-    check_utf8(Vec::[225, 128, 127], false);
-    check_utf8(Vec::[237, 160, 128], false);
-    check_utf8(Vec::[240, 143, 191, 191], false);
-    check_utf8(Vec::[240, 144, 128], false);
-    check_utf8(Vec::[244, 144, 128, 128], false);
-    check_utf8(Vec::[245, 128, 128, 128], false)
+    check_utf8(Vec::from_array([]), true);
+    check_utf8(Vec::from_array([0]), true);
+    check_utf8(Vec::from_array([127]), true);
+    check_scalar(Vec::from_array([194, 128]), 128, 2);
+    check_scalar(Vec::from_array([223, 191]), 2047, 2);
+    check_scalar(Vec::from_array([224, 160, 128]), 2048, 3);
+    check_scalar(Vec::from_array([237, 159, 191]), 55295, 3);
+    check_scalar(Vec::from_array([238, 128, 128]), 57344, 3);
+    check_scalar(Vec::from_array([239, 191, 189]), 65533, 3);
+    check_scalar(Vec::from_array([239, 191, 191]), 65535, 3);
+    check_scalar(Vec::from_array([240, 144, 128, 128]), 65536, 4);
+    check_scalar(Vec::from_array([244, 143, 191, 191]), 1114111, 4);
+    check_utf8(Vec::from_array([128]), false);
+    check_utf8(Vec::from_array([191]), false);
+    check_utf8(Vec::from_array([192, 128]), false);
+    check_utf8(Vec::from_array([193, 191]), false);
+    check_utf8(Vec::from_array([194]), false);
+    check_utf8(Vec::from_array([194, 127]), false);
+    check_utf8(Vec::from_array([224, 159, 191]), false);
+    check_utf8(Vec::from_array([225, 128]), false);
+    check_utf8(Vec::from_array([225, 128, 127]), false);
+    check_utf8(Vec::from_array([237, 160, 128]), false);
+    check_utf8(Vec::from_array([240, 143, 191, 191]), false);
+    check_utf8(Vec::from_array([240, 144, 128]), false);
+    check_utf8(Vec::from_array([244, 144, 128, 128]), false);
+    check_utf8(Vec::from_array([245, 128, 128, 128]), false)
 }

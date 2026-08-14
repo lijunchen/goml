@@ -86,7 +86,7 @@ fn assert_text() -> unit {
     testing::assert_eq(text::rfind("语言", "").unwrap_or(-1), 6);
     testing::assert(text::rfind("语言", "rust").is_none());
     testing::assert_eq(text::replace("a-b-a", "a", "xy"), "xy-b-xy");
-    testing::assert_eq(text::join(Vec::["a", "b", "c"], ","), "a,b,c");
+    testing::assert_eq(text::join(Vec::from_array(["a", "b", "c"]), ","), "a,b,c");
     testing::assert_eq(text::repeat("ab", 3), "ababab");
     testing::assert(text::is_ascii("ascii"));
     testing::assert(text::is_ascii("é") == false);
@@ -173,7 +173,7 @@ fn assert_option_result() -> unit {
 }
 
 fn assert_iterators() -> unit {
-    let values = Vec::[10, 20, 30, 40];
+    let values = Vec::from_array([10, 20, 30, 40]);
     let empty_values: FnIterator[int] = iter::empty();
     testing::assert(Iterator::next(empty_values).is_none());
     let once_value = iter::once(7);
@@ -221,7 +221,7 @@ fn assert_iterators() -> unit {
         },
         Option::None => testing::fail("enumerate failed"),
     };
-    let zipped = iter::zip(Vec::[1, 2].iter(), Vec::[3, 4].iter());
+    let zipped = iter::zip(Vec::from_array([1, 2]).iter(), Vec::from_array([3, 4]).iter());
     match Iterator::next(zipped) {
         Option::Some((left, right)) => {
             testing::assert_eq(left, 1);
@@ -229,7 +229,9 @@ fn assert_iterators() -> unit {
         },
         Option::None => testing::fail("zip failed"),
     };
-    let chained: Vec[int] = iter::collect(iter::chain(Vec::[1, 2].iter(), Vec::[3, 4].iter()));
+    let chained: Vec[int] = iter::collect(
+        iter::chain(Vec::from_array([1, 2]).iter(), Vec::from_array([3, 4]).iter()),
+    );
     testing::assert_eq(chained.len(), 4);
     testing::assert_eq(chained.get(3), 4);
     testing::assert_eq(iter::find(values.iter(), |value: int| value > 20).unwrap_or(0), 30);
@@ -281,7 +283,7 @@ fn assert_iterators() -> unit {
 }
 
 fn assert_collections() -> unit {
-    let values = Vec::[4, 1, 3, 2, 2];
+    let values = Vec::from_array([4, 1, 3, 2, 2]);
     collections::stable_sort_by(values, compare_int);
     testing::assert_eq(values.get(0), 1);
     testing::assert_eq(values.get(4), 4);
@@ -306,9 +308,7 @@ fn assert_comparison() -> unit {
     testing::assert_eq(cmp::Ordering::from_int(-9).to_int(), -1);
     testing::assert(cmp::Ordering::Less.reverse().is_gt());
     testing::assert(cmp::Ordering::Equal.then(cmp::Ordering::Greater).is_gt());
-    testing::assert(
-        cmp::Ordering::Equal.then_with(|| cmp::Ordering::Less).is_lt(),
-    );
+    testing::assert(cmp::Ordering::Equal.then_with(|| cmp::Ordering::Less).is_lt());
     testing::assert_eq(cmp::min(4, 2), 2);
     testing::assert_eq(cmp::max(4, 2), 4);
     testing::assert_eq(cmp::min_by_key("long", "x", |value: string| value.byte_len()), "x");
@@ -318,17 +318,14 @@ fn assert_comparison() -> unit {
     let reversed = cmp::Reverse::new(3);
     testing::assert(cmp::compare(reversed, cmp::Reverse::new(2)).is_lt());
     testing::assert_eq(reversed.into_inner(), 3);
-    let values = Vec::[4, 1, 3, 2, 2];
+    let values = Vec::from_array([4, 1, 3, 2, 2]);
     collections::stable_sort(values);
     testing::assert_eq(values[0], 1);
     testing::assert_eq(values[4], 4);
     testing::assert_eq(collections::binary_search(values, 3).unwrap_or(-1), 3);
     testing::assert_eq(collections::min(values).unwrap_or(0), 1);
     testing::assert_eq(collections::max(values).unwrap_or(0), 4);
-    collections::sort_by_ordering(
-        values,
-        |left: int, right: int| cmp::compare(right, left),
-    );
+    collections::sort_by_ordering(values, |left: int, right: int| cmp::compare(right, left));
     testing::assert_eq(values[0], 4);
     testing::assert_eq(values[4], 1)
 }

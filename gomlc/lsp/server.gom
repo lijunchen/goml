@@ -109,21 +109,21 @@ fn request_offset(document: Document, position: Position) -> Result[int, string]
 }
 
 fn initialize_result() -> json::Value {
-    let triggers: Vec[json::Value] = Vec::[];
+    let triggers: Vec[json::Value] = Vec::from_array([]);
     triggers.push(json::Value::String("."));
     triggers.push(json::Value::String(":"));
-    let completion: Vec[(string, json::Value)] = Vec::[];
+    let completion: Vec[(string, json::Value)] = Vec::from_array([]);
     push_json_field(completion, "triggerCharacters", json::Value::Array(triggers));
     push_json_field(completion, "resolveProvider", json::Value::Bool(false));
-    let signature_triggers: Vec[json::Value] = Vec::[];
+    let signature_triggers: Vec[json::Value] = Vec::from_array([]);
     signature_triggers.push(json::Value::String("("));
     signature_triggers.push(json::Value::String(","));
-    let retriggers: Vec[json::Value] = Vec::[];
+    let retriggers: Vec[json::Value] = Vec::from_array([]);
     retriggers.push(json::Value::String(","));
-    let signature: Vec[(string, json::Value)] = Vec::[];
+    let signature: Vec[(string, json::Value)] = Vec::from_array([]);
     push_json_field(signature, "triggerCharacters", json::Value::Array(signature_triggers));
     push_json_field(signature, "retriggerCharacters", json::Value::Array(retriggers));
-    let capabilities: Vec[(string, json::Value)] = Vec::[];
+    let capabilities: Vec[(string, json::Value)] = Vec::from_array([]);
     push_json_field(capabilities, "positionEncoding", json::Value::String("utf-16"));
     push_json_field(capabilities, "textDocumentSync", json::Value::Number("1"));
     push_json_field(capabilities, "hoverProvider", json::Value::Bool(true));
@@ -131,18 +131,18 @@ fn initialize_result() -> json::Value {
     push_json_field(capabilities, "signatureHelpProvider", json::Value::Object(signature));
     push_json_field(capabilities, "inlayHintProvider", json::Value::Bool(true));
     push_json_field(capabilities, "definitionProvider", json::Value::Bool(true));
-    let code_lens: Vec[(string, json::Value)] = Vec::[];
+    let code_lens: Vec[(string, json::Value)] = Vec::from_array([]);
     push_json_field(code_lens, "resolveProvider", json::Value::Bool(false));
     push_json_field(capabilities, "codeLensProvider", json::Value::Object(code_lens));
     push_json_field(capabilities, "codeActionProvider", json::Value::Bool(true));
     push_json_field(capabilities, "documentFormattingProvider", json::Value::Bool(true));
-    let experimental: Vec[(string, json::Value)] = Vec::[];
+    let experimental: Vec[(string, json::Value)] = Vec::from_array([]);
     push_json_field(experimental, "expandedDerive", json::Value::Bool(true));
     push_json_field(capabilities, "experimental", json::Value::Object(experimental));
-    let server_info: Vec[(string, json::Value)] = Vec::[];
+    let server_info: Vec[(string, json::Value)] = Vec::from_array([]);
     push_json_field(server_info, "name", json::Value::String("gomllsp"));
     push_json_field(server_info, "version", json::Value::String(version::current()));
-    let result: Vec[(string, json::Value)] = Vec::[];
+    let result: Vec[(string, json::Value)] = Vec::from_array([]);
     push_json_field(result, "capabilities", json::Value::Object(capabilities));
     push_json_field(result, "serverInfo", json::Value::Object(server_info));
     json::Value::Object(result)
@@ -192,12 +192,12 @@ fn hover_response(server: Server, params: json::Value) -> Result[json::Value, st
     let position = request_position(params)?;
     let analysis = document_analysis(server, document);
     let offset = request_offset(document, position)?;
-    let sections: Vec[string] = Vec::[];
+    let sections: Vec[string] = Vec::from_array([]);
     match query::hover(analysis, offset) {
         Some(hover) => sections.push("```goml\n" + hover.contents + "\n```"),
         None => (),
     };
-    let diagnostic_lines: Vec[string] = Vec::[];
+    let diagnostic_lines: Vec[string] = Vec::from_array([]);
     for diagnostic in analysis.checked.diagnostics {
         if diagnostic_contains_offset(diagnostic, document.path, offset) {
             let line = match diagnostic.severity {
@@ -216,10 +216,10 @@ fn hover_response(server: Server, params: json::Value) -> Result[json::Value, st
     if sections.is_empty() {
         Result::Ok(json::Value::Null)
     } else {
-        let contents: Vec[(string, json::Value)] = Vec::[];
+        let contents: Vec[(string, json::Value)] = Vec::from_array([]);
         push_json_field(contents, "kind", json::Value::String("markdown"));
         push_json_field(contents, "value", json::Value::String(join_strings(sections, "\n\n")));
-        let result: Vec[(string, json::Value)] = Vec::[];
+        let result: Vec[(string, json::Value)] = Vec::from_array([]);
         push_json_field(result, "contents", json::Value::Object(contents));
         Result::Ok(json::Value::Object(result))
     }
@@ -258,9 +258,9 @@ fn completion_response(server: Server, params: json::Value) -> Result[json::Valu
         },
         None => query::completions(document_analysis(server, document), offset),
     };
-    let result: Vec[json::Value] = Vec::[];
+    let result: Vec[json::Value] = Vec::from_array([]);
     for item in items {
-        let fields: Vec[(string, json::Value)] = Vec::[];
+        let fields: Vec[(string, json::Value)] = Vec::from_array([]);
         push_json_field(fields, "label", json::Value::String(item.label));
         push_json_field(fields, "detail", json::Value::String(item.detail));
         push_json_field(fields, "kind", json::Value::Number(completion_kind(item.kind).to_string()));
@@ -276,18 +276,18 @@ fn signature_response(server: Server, params: json::Value) -> Result[json::Value
     let offset = request_offset(document, position)?;
     match query::signature_help(analysis, offset) {
         Some(signature) => {
-            let parameters: Vec[json::Value] = Vec::[];
+            let parameters: Vec[json::Value] = Vec::from_array([]);
             for parameter in signature.parameters {
-                let fields: Vec[(string, json::Value)] = Vec::[];
+                let fields: Vec[(string, json::Value)] = Vec::from_array([]);
                 push_json_field(fields, "label", json::Value::String(parameter));
                 parameters.push(json::Value::Object(fields))
             }
-            let item: Vec[(string, json::Value)] = Vec::[];
+            let item: Vec[(string, json::Value)] = Vec::from_array([]);
             push_json_field(item, "label", json::Value::String(signature.label));
             push_json_field(item, "parameters", json::Value::Array(parameters));
-            let signatures: Vec[json::Value] = Vec::[];
+            let signatures: Vec[json::Value] = Vec::from_array([]);
             signatures.push(json::Value::Object(item));
-            let result: Vec[(string, json::Value)] = Vec::[];
+            let result: Vec[(string, json::Value)] = Vec::from_array([]);
             push_json_field(result, "signatures", json::Value::Array(signatures));
             push_json_field(result, "activeSignature", json::Value::Number("0"));
             push_json_field(
@@ -307,7 +307,7 @@ fn inlay_response(server: Server, params: json::Value) -> Result[json::Value, st
     let range_start = request_offset(document, requested_range.start)?;
     let range_end = request_offset(document, requested_range.end)?;
     let analysis = document_analysis(server, document);
-    let result: Vec[json::Value] = Vec::[];
+    let result: Vec[json::Value] = Vec::from_array([]);
     for hint in query::inlay_hints_in_range(analysis, range_start, range_end) {
         let mut position = hint.position;
         while position > 0
@@ -315,7 +315,7 @@ fn inlay_response(server: Server, params: json::Value) -> Result[json::Value, st
                 || document.text.byte_get(position - 1) == b'\t') {
             position = position - 1;
         }
-        let fields: Vec[(string, json::Value)] = Vec::[];
+        let fields: Vec[(string, json::Value)] = Vec::from_array([]);
         push_json_field(
             fields,
             "position",
@@ -334,12 +334,12 @@ fn definition_response(server: Server, params: json::Value) -> Result[json::Valu
     let position = request_position(params)?;
     let analysis = document_analysis(server, document);
     let offset = request_offset(document, position)?;
-    let locations: Vec[json::Value] = Vec::[];
+    let locations: Vec[json::Value] = Vec::from_array([]);
     for definition in query::goto_definitions(analysis, offset) {
         match source_for_path(analysis, definition.source_path) {
             Some(source) => {
                 let source_index = source_line_index(server, definition.source_path, source);
-                let location: Vec[(string, json::Value)] = Vec::[];
+                let location: Vec[(string, json::Value)] = Vec::from_array([]);
                 push_json_field(
                     location,
                     "uri",
@@ -379,17 +379,17 @@ fn test_kind_name(value: query::TestItemKind) -> string {
 
 fn code_lens_response(server: Server, params: json::Value) -> Result[json::Value, string] {
     let document = request_document(server, params)?;
-    let result: Vec[json::Value] = Vec::[];
+    let result: Vec[json::Value] = Vec::from_array([]);
     for item in query::test_items(document.path, document.text) {
-        let arguments: Vec[json::Value] = Vec::[];
+        let arguments: Vec[json::Value] = Vec::from_array([]);
         arguments.push(json::Value::String(document.uri));
         arguments.push(json::Value::String(item.name));
         arguments.push(json::Value::String(test_kind_name(item.kind)));
-        let command: Vec[(string, json::Value)] = Vec::[];
+        let command: Vec[(string, json::Value)] = Vec::from_array([]);
         push_json_field(command, "title", json::Value::String("Run Test"));
         push_json_field(command, "command", json::Value::String("goml.runTest"));
         push_json_field(command, "arguments", json::Value::Array(arguments));
-        let lens: Vec[(string, json::Value)] = Vec::[];
+        let lens: Vec[(string, json::Value)] = Vec::from_array([]);
         push_json_field(
             lens,
             "range",
@@ -424,18 +424,18 @@ fn fix_action(diagnostic: json::Value, fix: json::Value) -> Option[json::Value] 
         Some(Bool(value)) => value,
         _ => false,
     };
-    let edit: Vec[(string, json::Value)] = Vec::[];
+    let edit: Vec[(string, json::Value)] = Vec::from_array([]);
     push_json_field(edit, "range", range);
     push_json_field(edit, "newText", json::Value::String(replacement));
-    let edits: Vec[json::Value] = Vec::[];
+    let edits: Vec[json::Value] = Vec::from_array([]);
     edits.push(json::Value::Object(edit));
-    let changes: Vec[(string, json::Value)] = Vec::[];
+    let changes: Vec[(string, json::Value)] = Vec::from_array([]);
     changes.push((uri, json::Value::Array(edits)));
-    let workspace_edit: Vec[(string, json::Value)] = Vec::[];
+    let workspace_edit: Vec[(string, json::Value)] = Vec::from_array([]);
     push_json_field(workspace_edit, "changes", json::Value::Object(changes));
-    let diagnostics: Vec[json::Value] = Vec::[];
+    let diagnostics: Vec[json::Value] = Vec::from_array([]);
     diagnostics.push(diagnostic);
-    let action: Vec[(string, json::Value)] = Vec::[];
+    let action: Vec[(string, json::Value)] = Vec::from_array([]);
     push_json_field(action, "title", json::Value::String(title));
     push_json_field(action, "kind", json::Value::String("quickfix"));
     push_json_field(action, "diagnostics", json::Value::Array(diagnostics));
@@ -451,7 +451,7 @@ fn code_action_response(params: json::Value) -> Result[json::Value, string] {
         Ok(_) => return Result::Err("field diagnostics must be an array"),
         Err(error) => return Result::Err(error),
     };
-    let actions: Vec[json::Value] = Vec::[];
+    let actions: Vec[json::Value] = Vec::from_array([]);
     for diagnostic in diagnostics {
         match json::field(diagnostic, "data") {
             Some(data) => match json::field(data, "fixes") {
@@ -490,7 +490,7 @@ fn diagnostic_json(
         Some(span) => span,
         None => ast::span(0, 0),
     };
-    let fields: Vec[(string, json::Value)] = Vec::[];
+    let fields: Vec[(string, json::Value)] = Vec::from_array([]);
     push_json_field(
         fields,
         "range",
@@ -503,12 +503,12 @@ fn diagnostic_json(
     );
     push_json_field(fields, "source", json::Value::String("goml"));
     push_json_field(fields, "message", json::Value::String(diagnostic_text(value)));
-    let related: Vec[json::Value] = Vec::[];
+    let related: Vec[json::Value] = Vec::from_array([]);
     for label in value.secondary_labels {
         match source_for_path(analysis, label.source_path) {
             Some(source) => {
                 let source_index = source_line_index(server, label.source_path, source);
-                let location: Vec[(string, json::Value)] = Vec::[];
+                let location: Vec[(string, json::Value)] = Vec::from_array([]);
                 push_json_field(
                     location,
                     "uri",
@@ -521,7 +521,7 @@ fn diagnostic_json(
                         offsets_to_range_with_index(source_index, label.span.start, label.span.end),
                     ),
                 );
-                let information: Vec[(string, json::Value)] = Vec::[];
+                let information: Vec[(string, json::Value)] = Vec::from_array([]);
                 push_json_field(information, "location", json::Value::Object(location));
                 push_json_field(information, "message", json::Value::String(label.message));
                 related.push(json::Value::Object(information))
@@ -538,13 +538,13 @@ fn diagnostic_json(
 fn publish_diagnostics(server: Server, document: Document) -> json::Value {
     let analysis = document_analysis(server, document);
     let _ = query::build_symbol_index(analysis);
-    let diagnostics: Vec[json::Value] = Vec::[];
+    let diagnostics: Vec[json::Value] = Vec::from_array([]);
     for diagnostic in analysis.checked.diagnostics {
         if diagnostic.source_path == "" || diagnostic.source_path == document.path {
             diagnostics.push(diagnostic_json(server, document, analysis, diagnostic))
         } else {}
     }
-    let params: Vec[(string, json::Value)] = Vec::[];
+    let params: Vec[(string, json::Value)] = Vec::from_array([]);
     push_json_field(params, "uri", json::Value::String(document.uri));
     push_json_field(params, "version", json::Value::Number(document.version.to_string()));
     push_json_field(params, "diagnostics", json::Value::Array(diagnostics));
@@ -577,7 +577,7 @@ fn status_operation(payload: string) -> Option[string] {
 }
 
 fn status_notification(state: string, operation: string) -> json::Value {
-    let params: Vec[(string, json::Value)] = Vec::[];
+    let params: Vec[(string, json::Value)] = Vec::from_array([]);
     push_json_field(params, "state", json::Value::String(state));
     push_json_field(params, "operation", json::Value::String(operation));
     rpc_notification(STATUS_METHOD, json::Value::Object(params))
@@ -634,9 +634,9 @@ fn check_diagnostics(server: Server, params: json::Value) -> Result[json::Value,
 fn did_close(server: Server, params: json::Value) -> Result[json::Value, string] {
     let uri = text_document_uri(params)?;
     close_document(server, uri);
-    let diagnostic_params: Vec[(string, json::Value)] = Vec::[];
+    let diagnostic_params: Vec[(string, json::Value)] = Vec::from_array([]);
     push_json_field(diagnostic_params, "uri", json::Value::String(uri));
-    push_json_field(diagnostic_params, "diagnostics", json::Value::Array(Vec::[]));
+    push_json_field(diagnostic_params, "diagnostics", json::Value::Array(Vec::from_array([])));
     Result::Ok(rpc_notification(PUBLISH_DIAGNOSTICS_METHOD, json::Value::Object(diagnostic_params)))
 }
 
@@ -669,7 +669,7 @@ fn request_result(server: Server, message: RpcMessage) -> Result[json::Value, st
 }
 
 pub fn handle_json(server: Server, value: json::Value) -> Vec[json::Value] {
-    let output: Vec[json::Value] = Vec::[];
+    let output: Vec[json::Value] = Vec::from_array([]);
     match parse_rpc_message(value) {
         Ok(message) => if server.shutdown.get() && message.method != EXIT_METHOD {
             match message.id {
@@ -727,7 +727,7 @@ pub fn handle_json(server: Server, value: json::Value) -> Vec[json::Value] {
 pub fn handle_payload(server: Server, payload: string) -> Result[Vec[json::Value], string] {
     match json::parse(payload) {
         Ok(value) => Result::Ok(handle_json(server, value)),
-        Err(error) => Result::Ok(Vec::[rpc_error(json::Value::Null, -32700, error)]),
+        Err(error) => Result::Ok(Vec::from_array([rpc_error(json::Value::Null, -32700, error)])),
     }
 }
 

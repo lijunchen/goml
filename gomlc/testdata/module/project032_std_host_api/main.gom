@@ -64,11 +64,9 @@ fn bytes_equal(left: bytes::Bytes, right: bytes::Bytes) -> bool {
         while equal.get() && index.get() < left.len() {
             if left.get(index.get()) != right.get(index.get()) {
                 equal.set(false)
-            } else {
-                ()
-            };
+            } else {};
             index.set(index.get() + 1)
-        };
+        }
         equal.get()
     }
 }
@@ -124,7 +122,6 @@ fn main() -> unit {
         Option::None => (),
     };
     testing::assert_eq(path::clean(path::join("a", "../b")), "b");
-
     let file_path = path::join(cwd, "host-api.bin");
     assert_parent(file_path, cwd);
     assert_file_name(file_path, "host-api.bin");
@@ -133,7 +130,6 @@ fn main() -> unit {
     assert_file_stem(".gitignore", ".gitignore");
     testing::assert_eq(path::with_extension("archive.tar.gz", "go"), "archive.tar.go");
     testing::assert_eq(unwrap_string(path::absolute(".")), cwd);
-
     let expected = binary_data();
     unwrap_unit(fs::write_bytes(file_path, expected));
     testing::assert(fs::exists(file_path));
@@ -145,14 +141,10 @@ fn main() -> unit {
         Result::Ok(value) => testing::fail("invalid UTF-8 accepted: " + value),
         Result::Err(error) => testing::assert_eq(error, "invalid UTF-8"),
     };
-
     let output = unwrap_output(
-        process::Command::new("sh")
-            .arg("-c")
-            .arg("printf '%s' \"$GOML_HOST_TEST:$PWD\"; printf err >&2; exit 7")
-            .env("GOML_HOST_TEST", "present")
-            .current_dir(cwd)
-            .output(),
+        process::Command::new("sh").arg("-c").arg(
+            "printf '%s' \"$GOML_HOST_TEST:$PWD\"; printf err >&2; exit 7",
+        ).env("GOML_HOST_TEST", "present").current_dir(cwd).output(),
     );
     let output_status = process::Output::status(output);
     testing::assert(!process::ExitStatus::success(output_status));
@@ -164,7 +156,6 @@ fn main() -> unit {
     let output_stderr = process::Output::stderr(output);
     testing::assert_eq(unwrap_string(output_stdout.to_string()), "present:" + cwd);
     testing::assert_eq(unwrap_string(output_stderr.to_string()), "err");
-
     let status = unwrap_status(process::Command::new("sh").arg("-c").arg("exit 3").status());
     match process::ExitStatus::code(status) {
         Option::Some(code) => testing::assert_eq(code, 3),
@@ -174,7 +165,6 @@ fn main() -> unit {
         Result::Ok(value) => testing::fail("missing command succeeded"),
         Result::Err(error) => testing::assert(error != ""),
     };
-
     unwrap_unit(io::write_stdout(bytes::Bytes::from_string("raw stdout\n")));
     unwrap_unit(io::write_stderr(bytes::Bytes::from_string("raw stderr\n")));
     io::println("host api ok")

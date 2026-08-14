@@ -144,7 +144,7 @@ fn git_version_value(args: Vec[string]) -> Option[string] {
 fn version_git_hash() -> Option[string] {
     match env::var("GOML_GIT_HASH") {
         Some(value) => Option::Some(value),
-        None => git_version_value(Vec::["rev-parse", "--short=9", "HEAD"]),
+        None => git_version_value(Vec::from_array(["rev-parse", "--short=9", "HEAD"])),
     }
 }
 
@@ -152,7 +152,7 @@ fn version_git_date() -> Option[string] {
     match env::var("GOML_GIT_DATE") {
         Some(value) => Option::Some(value),
         None => git_version_value(
-            Vec::["show", "-s", "--date=format:%Y-%m-%d", "--format=%cd", "HEAD"],
+            Vec::from_array(["show", "-s", "--date=format:%Y-%m-%d", "--format=%cd", "HEAD"]),
         ),
     }
 }

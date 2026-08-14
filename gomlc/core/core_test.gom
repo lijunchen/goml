@@ -64,81 +64,88 @@ fn preserves_open_core_types_without_tast_state() -> unit {
     let value = lower_type(
         tast::Type::Dyn {
             trait_name: "Iterator",
-            args: Vec::[tast::Type::Param { name: "T" }],
-            associated_types: Vec::[
-                (
-                    "Item",
-                    tast::Type::Projection {
-                        for_ty: tast::Type::Param { name: "T" },
-                        name: "Item",
-                        trait_ref: Option::Some(
-                            tast::TraitRef {
-                                name: "Source",
-                                args: Vec::[tast::Type::Param { name: "U" }],
-                            },
-                        ),
-                    },
-                ),
-            ],
-            additional_bounds: Vec::[],
+            args: Vec::from_array([tast::Type::Param { name: "T" }]),
+            associated_types: Vec::from_array(
+                [
+                    (
+                        "Item",
+                        tast::Type::Projection {
+                            for_ty: tast::Type::Param { name: "T" },
+                            name: "Item",
+                            trait_ref: Option::Some(
+                                tast::TraitRef {
+                                    name: "Source",
+                                    args: Vec::from_array([tast::Type::Param { name: "U" }]),
+                                },
+                            ),
+                        },
+                    ),
+                ],
+            ),
+            additional_bounds: Vec::from_array([]),
         },
     );
     testing::assert_eq(type_parameters(value).len(), 2);
     testing::assert_eq(type_parameters(value)[0], "T");
     testing::assert_eq(type_parameters(value)[1], "U");
-    let substituted = substitute_type(value, Vec::[("T", Type::Int32), ("U", Type::String)]);
+    let substituted = substitute_type(
+        value,
+        Vec::from_array([("T", Type::Int32), ("U", Type::String)]),
+    );
     testing::assert_eq(type_key(substituted), "dynIterator[int32,Item=int32::Item]")
 }
 
 #[test]
 fn rejects_residual_comptime_nodes() -> unit {
     let typed = tast::File {
-        items: Vec::[
-            tast::Item::Function(
-                tast::Function {
-                    visibility: ast::Visibility::Private,
-                    name: "main",
-                    comptime: tast::ComptimeCapability::RuntimeOnly,
-                    derive_export_name: Option::None,
-                    source_path: "main.gom",
-                    start: 0,
-                    end: 0,
-                    comptime_origins: Vec::[],
-                    generics: Vec::[],
-                    predicates: Vec::[],
-                    params: Vec::[],
-                    ret_ty: tast::Type::Unit,
-                    body: tast::Block {
-                        stmts: Vec::[],
-                        tail: Option::Some(
-                            tast::Expr::Comptime {
-                                site_id: 0,
-                                source_path: "main.gom",
-                                start: 0,
-                                end: 8,
-                                origins: Vec::[],
-                                body: tast::Expr::Prim {
-                                    value: tast::Primitive::Unit,
+        items: Vec::from_array(
+            [
+                tast::Item::Function(
+                    tast::Function {
+                        visibility: ast::Visibility::Private,
+                        name: "main",
+                        comptime: tast::ComptimeCapability::RuntimeOnly,
+                        derive_export_name: Option::None,
+                        source_path: "main.gom",
+                        start: 0,
+                        end: 0,
+                        comptime_origins: Vec::from_array([]),
+                        generics: Vec::from_array([]),
+                        predicates: Vec::from_array([]),
+                        params: Vec::from_array([]),
+                        ret_ty: tast::Type::Unit,
+                        body: tast::Block {
+                            stmts: Vec::from_array([]),
+                            tail: Option::Some(
+                                tast::Expr::Comptime {
+                                    site_id: 0,
+                                    source_path: "main.gom",
+                                    start: 0,
+                                    end: 8,
+                                    origins: Vec::from_array([]),
+                                    body: tast::Expr::Prim {
+                                        value: tast::Primitive::Unit,
+                                        ty: tast::Type::Unit,
+                                    },
                                     ty: tast::Type::Unit,
                                 },
-                                ty: tast::Type::Unit,
-                            },
-                        ),
+                            ),
+                        },
                     },
-                },
-            ),
-        ],
-        enums: Vec::[],
-        structs: Vec::[],
-        constants: Vec::[],
-        statics: Vec::[],
+                ),
+            ],
+        ),
+        enums: Vec::from_array([]),
+        structs: Vec::from_array([]),
+        constants: Vec::from_array([]),
+        statics: Vec::from_array([]),
     };
     let lowered = lower(
         tast::CheckResult {
             tast: Option::Some(typed),
             comptime: ctir::empty_module("main"),
-            pending_constants: Vec::[],
-            diagnostics: Vec::[],
+            pending_constants: Vec::from_array([]),
+            diagnostics: Vec::from_array([]),
             typeck_results: tast::empty_typeck_results(),
         },
     );
@@ -535,22 +542,24 @@ fn validates_core_binding_types() -> unit {
     };
     let function = file.functions[0];
     let statement = function.body.stmts[0];
-    let invalid_statements = Vec::[
-        LetStmt { name: statement.name, value: statement.value, ty: Type::String },
-    ];
-    let invalid_functions = Vec::[
-        Function {
-            name: function.name,
-            origin: function.origin,
-            root: function.root,
-            generics: function.generics,
-            predicates: function.predicates,
-            trait_impl: function.trait_impl,
-            params: function.params,
-            ret_ty: function.ret_ty,
-            body: Block { stmts: invalid_statements, tail: function.body.tail },
-        },
-    ];
+    let invalid_statements = Vec::from_array(
+        [LetStmt { name: statement.name, value: statement.value, ty: Type::String }],
+    );
+    let invalid_functions = Vec::from_array(
+        [
+            Function {
+                name: function.name,
+                origin: function.origin,
+                root: function.root,
+                generics: function.generics,
+                predicates: function.predicates,
+                trait_impl: function.trait_impl,
+                params: function.params,
+                ret_ty: function.ret_ty,
+                body: Block { stmts: invalid_statements, tail: function.body.tail },
+            },
+        ],
+    );
     match validate(
         File {
             functions: invalid_functions,

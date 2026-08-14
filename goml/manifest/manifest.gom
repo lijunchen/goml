@@ -133,7 +133,7 @@ fn load_with_policy(path: string, allow_toolchain: bool) -> Result[Manifest, str
     let mut section = "";
     let mut module_path: Option[string] = Option::None;
     let mut target_dir = DEFAULT_TARGET_DIR;
-    let dependencies: Vec[Dependency] = Vec::[];
+    let dependencies: Vec[Dependency] = Vec::from_array([]);
     for original in text::lines(source) {
         let line = text::trim(strip_comment(original));
         if line == "" {} else if line.byte_len() >= 2 && line.byte_get(0) == b'['

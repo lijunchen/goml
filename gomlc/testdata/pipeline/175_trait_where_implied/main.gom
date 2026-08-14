@@ -2,10 +2,7 @@ trait Ready {
     fn state(self: Self) -> string;
 }
 
-trait Service[T]
-where
-    T: Ready,
-{
+trait Service[T] where T: Ready {
     fn get(self: Self) -> T;
 }
 
@@ -23,7 +20,7 @@ impl Ready for Worker {
     }
 }
 
-impl Service[Worker] for Station {
+impl Service[Worker]for Station {
     fn get(self: Station) -> Worker {
         self.worker
     }
@@ -34,7 +31,5 @@ fn describe[T, S: Service[T]](service: S) -> string {
 }
 
 fn main() -> unit {
-    println(describe(Station {
-        worker: Worker { name: "build" },
-    }));
+    println(describe(Station { worker: Worker { name: "build" } }));
 }

@@ -99,7 +99,9 @@ fn binary_artifact_patches_offsets() -> unit {
 
 #[test]
 fn binary_artifact_rejects_invalid_input() -> unit {
-    let truncated = new_artifact_binary_reader(artifact_binary_test_bytes(Vec::[1, 2, 3]));
+    let truncated = new_artifact_binary_reader(
+        artifact_binary_test_bytes(Vec::from_array([1, 2, 3])),
+    );
     artifact_binary_expect_err(artifact_binary_read_u32(truncated));
     let overflow_values = Vec::new();
     for _ in range(0, 10) {
@@ -107,10 +109,14 @@ fn binary_artifact_rejects_invalid_input() -> unit {
     }
     let overflow = new_artifact_binary_reader(artifact_binary_test_bytes(overflow_values));
     artifact_binary_expect_err(artifact_binary_read_uleb128(overflow));
-    let invalid_bool = new_artifact_binary_reader(artifact_binary_test_bytes(Vec::[2]));
+    let invalid_bool = new_artifact_binary_reader(artifact_binary_test_bytes(Vec::from_array([2])));
     artifact_binary_expect_err(artifact_binary_read_bool(invalid_bool));
-    let invalid_utf8 = new_artifact_binary_reader(artifact_binary_test_bytes(Vec::[1, 255]));
+    let invalid_utf8 = new_artifact_binary_reader(
+        artifact_binary_test_bytes(Vec::from_array([1, 255])),
+    );
     artifact_binary_expect_err(artifact_binary_read_string(invalid_utf8));
-    let invalid_length = new_artifact_binary_reader(artifact_binary_test_bytes(Vec::[4, 1]));
+    let invalid_length = new_artifact_binary_reader(
+        artifact_binary_test_bytes(Vec::from_array([4, 1])),
+    );
     artifact_binary_expect_err(artifact_binary_read_bytes(invalid_length))
 }

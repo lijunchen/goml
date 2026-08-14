@@ -40,7 +40,7 @@ struct JsonSerializer {
 fn json_serializer() -> JsonSerializer {
     JsonSerializer {
         builder: text::StringBuilder::new(),
-        frames: Vec::[],
+        frames: Vec::from_array([]),
         root_written: Ref::new(false),
     }
 }
@@ -602,9 +602,9 @@ fn serde_variant_to_json(name: string, kind: int, fields: Vec[(string, serde::Va
         for field in fields {
             values.push(from_serde_value(field.1))
         }
-        Value::Object(Vec::[(name, Value::Array(values))])
+        Value::Object(Vec::from_array([(name, Value::Array(values))]))
     } else {
-        Value::Object(Vec::[(name, Value::Object(serde_fields_to_json(fields)))])
+        Value::Object(Vec::from_array([(name, Value::Object(serde_fields_to_json(fields)))]))
     }
 }
 

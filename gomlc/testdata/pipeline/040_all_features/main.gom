@@ -59,7 +59,11 @@ impl Describe for Record[string] {
 }
 
 fn choose[T](flag: bool, when_true: T, when_false: T) -> T {
-    if flag { when_true } else { when_false }
+    if flag {
+        when_true
+    } else {
+        when_false
+    }
 }
 
 fn map_maybe[T, U](value: Maybe[T], f: (T) -> U) -> Maybe[U] {
@@ -104,7 +108,12 @@ fn gather(record: Record[int32]) -> Maybe[int32] {
     }
 }
 
-fn build_counter(label: string, start: int32) -> (Tracker, () -> Record[int32], (int32) -> Record[int32], () -> Record[string]) {
+fn build_counter(label: string, start: int32) -> (
+    Tracker,
+    () -> Record[int32],
+    (int32) -> Record[int32],
+    () -> Record[string],
+) {
     let count = Ref::new(start);
     let toggled = Ref::new(false);
     let tracker = Tracker { label: label, count: count, toggled: toggled };
@@ -131,30 +140,24 @@ fn main() {
     let first_record = snapshot();
     let bumped_record = bump(5);
     let flipped_record = flip();
-
     let maybe_first = gather(first_record);
     let maybe_second = gather(bumped_record);
     let chosen = choose(true, maybe_second, maybe_first);
     let stringified = map_maybe(chosen, format_total);
-
     let transforms = [increment, triple];
     let results: [int32; 2] = run_transforms(4, transforms);
     let first_result = results[0];
     let second_result = results[1];
     let order_check = first_result < second_result && true;
-
     let first_text = Describe::describe(first_record);
     let bumped_text = Describe::describe(bumped_record);
     let flipped_text = Describe::describe(flipped_record);
-
     let summary = match stringified {
         Some(text) => "Snapshot: " + text,
         None => "Snapshot: none",
     };
-
     let pair_text = pair_join((first_result.to_string(), second_result.to_string()));
     let bool_text = order_check.to_string();
-
     let _ = println(tracker_info);
     let _ = println(first_text);
     let _ = println(bumped_text);
@@ -162,5 +165,4 @@ fn main() {
     let _ = println(summary);
     let _ = println(pair_text);
     let _ = println(bool_text);
-    ()
 }

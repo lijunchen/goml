@@ -36,8 +36,11 @@ fn task_context_name() -> string {
 
 fn task_context_done_expr(id: Expr) -> Expr {
     Expr::Call {
-        func: Expr::Field { expr: task_call(task_context_name(), Vec::[id]), field_name: "Done" },
-        args: Vec::[],
+        func: Expr::Field {
+            expr: task_call(task_context_name(), Vec::from_array([id])),
+            field_name: "Done",
+        },
+        args: Vec::from_array([]),
     }
 }
 
@@ -78,20 +81,22 @@ fn task_return(expr: Expr) -> Stmt {
 }
 
 fn task_runtime_support_items() -> Vec[Item] {
-    let items: Vec[Item] = Vec::[];
+    let items: Vec[Item] = Vec::from_array([]);
     items.push(
         Item::Struct(
             StructDef {
                 name: task_state_name(),
-                fields: Vec::[
-                    ("mu", Type::Named { name: "_goml_sync.Mutex" }),
-                    ("wg", Type::Named { name: "_goml_sync.WaitGroup" }),
-                    ("state", Type::Int),
-                    ("ctx", Type::Named { name: "_goml_context.Context" }),
-                    ("cancel", Type::Named { name: "_goml_context.CancelFunc" }),
-                    ("panicked", Type::Bool),
-                    ("panic_value", Type::Any),
-                ],
+                fields: Vec::from_array(
+                    [
+                        ("mu", Type::Named { name: "_goml_sync.Mutex" }),
+                        ("wg", Type::Named { name: "_goml_sync.WaitGroup" }),
+                        ("state", Type::Int),
+                        ("ctx", Type::Named { name: "_goml_context.Context" }),
+                        ("cancel", Type::Named { name: "_goml_context.CancelFunc" }),
+                        ("panicked", Type::Bool),
+                        ("panic_value", Type::Any),
+                    ],
+                ),
             },
         ),
     );
@@ -102,7 +107,7 @@ fn task_runtime_support_items() -> Vec[Item] {
                 ty: Option::Some(Type::Named { name: "_goml_sync.Mutex" }),
                 value: Expr::StructLiteral {
                     ty: Type::Named { name: "_goml_sync.Mutex" },
-                    fields: Vec::[],
+                    fields: Vec::from_array([]),
                 },
             },
         ),
@@ -112,7 +117,7 @@ fn task_runtime_support_items() -> Vec[Item] {
             Global {
                 name: task_registry_name(),
                 ty: Option::Some(task_registry_type()),
-                value: Expr::Make { ty: task_registry_type(), args: Vec::[] },
+                value: Expr::Make { ty: task_registry_type(), args: Vec::from_array([]) },
             },
         ),
     );
@@ -125,8 +130,8 @@ fn task_runtime_support_items() -> Vec[Item] {
             },
         ),
     );
-    let lookup: Vec[Stmt] = Vec::[];
-    lookup.push(task_expr(task_method(task_registry_mutex_name(), "Lock", Vec::[])));
+    let lookup: Vec[Stmt] = Vec::from_array([]);
+    lookup.push(task_expr(task_method(task_registry_mutex_name(), "Lock", Vec::from_array([]))));
     lookup.push(
         Stmt::Var {
             name: "scope",
@@ -136,30 +141,30 @@ fn task_runtime_support_items() -> Vec[Item] {
             ),
         },
     );
-    lookup.push(task_expr(task_method(task_registry_mutex_name(), "Unlock", Vec::[])));
+    lookup.push(task_expr(task_method(task_registry_mutex_name(), "Unlock", Vec::from_array([]))));
     lookup.push(task_return(task_var("scope")));
     items.push(
         Item::Function(
             Function {
                 name: task_lookup_name(),
-                params: Vec::[("id", Type::Int64)],
+                params: Vec::from_array([("id", Type::Int64)]),
                 ret_ty: Option::Some(task_state_pointer_type()),
                 body: Block { stmts: lookup },
             },
         ),
     );
-    let context: Vec[Stmt] = Vec::[];
+    let context: Vec[Stmt] = Vec::from_array([]);
     context.push(
         Stmt::Var {
             name: "scope",
             ty: task_state_pointer_type(),
-            value: Option::Some(task_call(task_lookup_name(), Vec::[task_var("id")])),
+            value: Option::Some(task_call(task_lookup_name(), Vec::from_array([task_var("id")]))),
         },
     );
     context.push(
         Stmt::If {
             cond: Expr::Binary { op: BinaryOp::NotEq, lhs: task_var("scope"), rhs: Expr::Nil },
-            then_: Block { stmts: Vec::[task_return(task_field("scope", "ctx"))] },
+            then_: Block { stmts: Vec::from_array([task_return(task_field("scope", "ctx"))]) },
             else_: Option::None,
         },
     );
@@ -179,106 +184,114 @@ fn task_runtime_support_items() -> Vec[Item] {
     );
     context.push(
         Stmt::MultiAssign {
-            names: Vec::["ctx", "cancel"],
+            names: Vec::from_array(["ctx", "cancel"]),
             value: task_call(
                 "_goml_context.WithCancel",
-                Vec::[task_call("_goml_context.Background", Vec::[])],
+                Vec::from_array([task_call("_goml_context.Background", Vec::from_array([]))]),
             ),
         },
     );
-    context.push(task_expr(task_call("cancel", Vec::[])));
+    context.push(task_expr(task_call("cancel", Vec::from_array([]))));
     context.push(task_return(task_var("ctx")));
     items.push(
         Item::Function(
             Function {
                 name: task_context_name(),
-                params: Vec::[("id", Type::Int64)],
+                params: Vec::from_array([("id", Type::Int64)]),
                 ret_ty: Option::Some(Type::Named { name: "_goml_context.Context" }),
                 body: Block { stmts: context },
             },
         ),
     );
-    let record: Vec[Stmt] = Vec::[];
-    record.push(task_expr(task_method("scope", "mu.Lock", Vec::[])));
+    let record: Vec[Stmt] = Vec::from_array([]);
+    record.push(task_expr(task_method("scope", "mu.Lock", Vec::from_array([]))));
     record.push(
         Stmt::If {
             cond: Expr::Unary { op: UnaryOp::Not, expr: task_field("scope", "panicked") },
             then_: Block {
-                stmts: Vec::[
-                    Stmt::FieldAssign {
-                        target: task_var("scope"),
-                        field_name: "panicked",
-                        value: Expr::Bool { value: true },
-                    },
-                    Stmt::FieldAssign {
-                        target: task_var("scope"),
-                        field_name: "panic_value",
-                        value: task_var("value"),
-                    },
-                ],
+                stmts: Vec::from_array(
+                    [
+                        Stmt::FieldAssign {
+                            target: task_var("scope"),
+                            field_name: "panicked",
+                            value: Expr::Bool { value: true },
+                        },
+                        Stmt::FieldAssign {
+                            target: task_var("scope"),
+                            field_name: "panic_value",
+                            value: task_var("value"),
+                        },
+                    ],
+                ),
             },
             else_: Option::None,
         },
     );
-    record.push(task_expr(task_method("scope", "mu.Unlock", Vec::[])));
-    record.push(task_expr(task_call("scope.cancel", Vec::[])));
+    record.push(task_expr(task_method("scope", "mu.Unlock", Vec::from_array([]))));
+    record.push(task_expr(task_call("scope.cancel", Vec::from_array([]))));
     items.push(
         Item::Function(
             Function {
                 name: task_record_panic_name(),
-                params: Vec::[("scope", task_state_pointer_type()), ("value", Type::Any)],
+                params: Vec::from_array(
+                    [("scope", task_state_pointer_type()), ("value", Type::Any)],
+                ),
                 ret_ty: Option::None,
                 body: Block { stmts: record },
             },
         ),
     );
-    let cleanup: Vec[Stmt] = Vec::[];
+    let cleanup: Vec[Stmt] = Vec::from_array([]);
     cleanup.push(
         Stmt::Var {
             name: "recovered",
             ty: Type::Any,
-            value: Option::Some(task_call("recover", Vec::[])),
+            value: Option::Some(task_call("recover", Vec::from_array([]))),
         },
     );
     cleanup.push(
         Stmt::If {
             cond: Expr::Binary { op: BinaryOp::NotEq, lhs: task_var("recovered"), rhs: Expr::Nil },
             then_: Block {
-                stmts: Vec::[
-                    task_expr(
-                        task_call(
-                            task_record_panic_name(),
-                            Vec::[task_var("scope"), task_var("recovered")],
+                stmts: Vec::from_array(
+                    [
+                        task_expr(
+                            task_call(
+                                task_record_panic_name(),
+                                Vec::from_array([task_var("scope"), task_var("recovered")]),
+                            ),
                         ),
-                    ),
-                ],
+                    ],
+                ),
             },
             else_: Option::None,
         },
     );
-    cleanup.push(task_expr(task_method("scope", "wg.Done", Vec::[])));
-    let run: Vec[Stmt] = Vec::[];
+    cleanup.push(task_expr(task_method("scope", "wg.Done", Vec::from_array([]))));
+    let run: Vec[Stmt] = Vec::from_array([]);
     run.push(
         Stmt::Defer {
             call: Expr::Call {
                 func: Expr::FuncLit {
-                    params: Vec::[],
+                    params: Vec::from_array([]),
                     ret_ty: Type::Void,
                     body: Block { stmts: cleanup },
                 },
-                args: Vec::[],
+                args: Vec::from_array([]),
             },
         },
     );
-    run.push(task_expr(task_call("body", Vec::[])));
+    run.push(task_expr(task_call("body", Vec::from_array([]))));
     items.push(
         Item::Function(
             Function {
                 name: task_run_name(),
-                params: Vec::[
-                    ("scope", task_state_pointer_type()),
-                    ("body", Type::Func { params: Vec::[], ret_ty: Type::Unit }),
-                ],
+                params: Vec::from_array(
+                    [
+                        ("scope", task_state_pointer_type()),
+                        ("body", Type::Func { params: Vec::from_array([]), ret_ty: Type::Unit }),
+                    ],
+                ),
                 ret_ty: Option::None,
                 body: Block { stmts: run },
             },
@@ -288,83 +301,89 @@ fn task_runtime_support_items() -> Vec[Item] {
 }
 
 fn task_scope_run_item(key: string) -> Item {
-    let recover_body: Vec[Stmt] = Vec::[];
+    let recover_body: Vec[Stmt] = Vec::from_array([]);
     recover_body.push(
         Stmt::Var {
             name: "recovered",
             ty: Type::Any,
-            value: Option::Some(task_call("recover", Vec::[])),
+            value: Option::Some(task_call("recover", Vec::from_array([]))),
         },
     );
     recover_body.push(
         Stmt::If {
             cond: Expr::Binary { op: BinaryOp::NotEq, lhs: task_var("recovered"), rhs: Expr::Nil },
             then_: Block {
-                stmts: Vec::[
-                    task_expr(
-                        task_call(
-                            task_record_panic_name(),
-                            Vec::[task_var("scope"), task_var("recovered")],
+                stmts: Vec::from_array(
+                    [
+                        task_expr(
+                            task_call(
+                                task_record_panic_name(),
+                                Vec::from_array([task_var("scope"), task_var("recovered")]),
+                            ),
                         ),
-                    ),
-                ],
+                    ],
+                ),
             },
             else_: Option::None,
         },
     );
-    let invoke: Vec[Stmt] = Vec::[];
+    let invoke: Vec[Stmt] = Vec::from_array([]);
     invoke.push(
         Stmt::Defer {
             call: Expr::Call {
                 func: Expr::FuncLit {
-                    params: Vec::[],
+                    params: Vec::from_array([]),
                     ret_ty: Type::Void,
                     body: Block { stmts: recover_body },
                 },
-                args: Vec::[],
+                args: Vec::from_array([]),
             },
         },
     );
-    invoke.push(task_expr(task_call("body", Vec::[])));
-    let stmts: Vec[Stmt] = Vec::[];
+    invoke.push(task_expr(task_call("body", Vec::from_array([]))));
+    let stmts: Vec[Stmt] = Vec::from_array([]);
     stmts.push(
         Stmt::Var {
             name: "scope",
             ty: task_state_pointer_type(),
-            value: Option::Some(task_call(task_lookup_name(), Vec::[task_var("scope_id")])),
+            value: Option::Some(
+                task_call(task_lookup_name(), Vec::from_array([task_var("scope_id")])),
+            ),
         },
     );
     stmts.push(
         task_expr(
             Expr::Call {
                 func: Expr::FuncLit {
-                    params: Vec::[],
+                    params: Vec::from_array([]),
                     ret_ty: Type::Void,
                     body: Block { stmts: invoke },
                 },
-                args: Vec::[],
+                args: Vec::from_array([]),
             },
         ),
     );
     stmts.push(task_return(Expr::Unit));
     std_function_item(
         key,
-        Vec::[
-            ("scope_id", Type::Int64),
-            ("body", Type::Func { params: Vec::[], ret_ty: Type::Unit }),
-        ],
+        Vec::from_array(
+            [
+                ("scope_id", Type::Int64),
+                ("body", Type::Func { params: Vec::from_array([]), ret_ty: Type::Unit }),
+            ],
+        ),
         Type::Unit,
         stmts,
     )
 }
 
 fn task_scope_new_item(key: string) -> Item {
-    let stmts: Vec[Stmt] = Vec::[];
+    let stmts: Vec[Stmt] = Vec::from_array([]);
     stmts.push(
         Stmt::Var {
             name: "parent_context",
             ty: Type::Named { name: "_goml_context.Context" },
-            value: Option::Some(task_call("_goml_context.Background", Vec::[])),
+            value: Option::Some(task_call("_goml_context.Background", Vec::from_array([]))),
         },
     );
     stmts.push(
@@ -374,12 +393,14 @@ fn task_scope_new_item(key: string) -> Item {
             value: Option::Some(Expr::Bool { value: false }),
         },
     );
-    let parent: Vec[Stmt] = Vec::[];
+    let parent: Vec[Stmt] = Vec::from_array([]);
     parent.push(
         Stmt::Var {
             name: "parent_scope",
             ty: task_state_pointer_type(),
-            value: Option::Some(task_call(task_lookup_name(), Vec::[task_var("parent")])),
+            value: Option::Some(
+                task_call(task_lookup_name(), Vec::from_array([task_var("parent")])),
+            ),
         },
     );
     parent.push(
@@ -390,18 +411,20 @@ fn task_scope_new_item(key: string) -> Item {
                 rhs: Expr::Nil,
             },
             then_: Block {
-                stmts: Vec::[
-                    Stmt::Assign {
-                        name: "parent_context",
-                        value: task_field("parent_scope", "ctx"),
-                    },
-                ],
+                stmts: Vec::from_array(
+                    [
+                        Stmt::Assign {
+                            name: "parent_context",
+                            value: task_field("parent_scope", "ctx"),
+                        },
+                    ],
+                ),
             },
             else_: Option::Some(
                 Block {
-                    stmts: Vec::[
-                        Stmt::Assign { name: "parent_missing", value: Expr::Bool { value: true } },
-                    ],
+                    stmts: Vec::from_array(
+                        [Stmt::Assign { name: "parent_missing", value: Expr::Bool { value: true } }],
+                    ),
                 },
             ),
         },
@@ -433,18 +456,23 @@ fn task_scope_new_item(key: string) -> Item {
     );
     stmts.push(
         Stmt::MultiAssign {
-            names: Vec::["ctx", "cancel"],
-            value: task_call("_goml_context.WithCancel", Vec::[task_var("parent_context")]),
+            names: Vec::from_array(["ctx", "cancel"]),
+            value: task_call(
+                "_goml_context.WithCancel",
+                Vec::from_array([task_var("parent_context")]),
+            ),
         },
     );
     stmts.push(
         Stmt::If {
             cond: task_var("parent_missing"),
-            then_: Block { stmts: Vec::[task_expr(task_call("cancel", Vec::[]))] },
+            then_: Block {
+                stmts: Vec::from_array([task_expr(task_call("cancel", Vec::from_array([])))]),
+            },
             else_: Option::None,
         },
     );
-    stmts.push(task_expr(task_method(task_registry_mutex_name(), "Lock", Vec::[])));
+    stmts.push(task_expr(task_method(task_registry_mutex_name(), "Lock", Vec::from_array([]))));
     stmts.push(
         Stmt::Var {
             name: "id",
@@ -471,11 +499,13 @@ fn task_scope_new_item(key: string) -> Item {
                     op: UnaryOp::Address,
                     expr: Expr::StructLiteral {
                         ty: task_state_type(),
-                        fields: Vec::[
-                            ("state", Expr::Int { value: "0" }),
-                            ("ctx", task_var("ctx")),
-                            ("cancel", task_var("cancel")),
-                        ],
+                        fields: Vec::from_array(
+                            [
+                                ("state", Expr::Int { value: "0" }),
+                                ("ctx", task_var("ctx")),
+                                ("cancel", task_var("cancel")),
+                            ],
+                        ),
                     },
                 },
             ),
@@ -488,24 +518,26 @@ fn task_scope_new_item(key: string) -> Item {
             value: task_var("scope"),
         },
     );
-    stmts.push(task_expr(task_method(task_registry_mutex_name(), "Unlock", Vec::[])));
+    stmts.push(task_expr(task_method(task_registry_mutex_name(), "Unlock", Vec::from_array([]))));
     stmts.push(task_return(task_var("id")));
-    std_function_item(key, Vec::[("parent", Type::Int64)], Type::Int64, stmts)
+    std_function_item(key, Vec::from_array([("parent", Type::Int64)]), Type::Int64, stmts)
 }
 
 fn task_scope_spawn_item(key: string, panic_when_closed: bool) -> Item {
-    let stmts: Vec[Stmt] = Vec::[];
+    let stmts: Vec[Stmt] = Vec::from_array([]);
     stmts.push(
         Stmt::Var {
             name: "scope",
             ty: task_state_pointer_type(),
-            value: Option::Some(task_call(task_lookup_name(), Vec::[task_var("scope_id")])),
+            value: Option::Some(
+                task_call(task_lookup_name(), Vec::from_array([task_var("scope_id")])),
+            ),
         },
     );
     let missing = if panic_when_closed {
-        Vec::[Stmt::Panic { message: "task scope is closed" }]
+        Vec::from_array([Stmt::Panic { message: "task scope is closed" }])
     } else {
-        Vec::[task_return(Expr::Bool { value: false })]
+        Vec::from_array([task_return(Expr::Bool { value: false })])
     };
     stmts.push(
         Stmt::If {
@@ -514,9 +546,9 @@ fn task_scope_spawn_item(key: string, panic_when_closed: bool) -> Item {
             else_: Option::None,
         },
     );
-    stmts.push(task_expr(task_method("scope", "mu.Lock", Vec::[])));
-    let closed: Vec[Stmt] = Vec::[];
-    closed.push(task_expr(task_method("scope", "mu.Unlock", Vec::[])));
+    stmts.push(task_expr(task_method("scope", "mu.Lock", Vec::from_array([]))));
+    let closed: Vec[Stmt] = Vec::from_array([]);
+    closed.push(task_expr(task_method("scope", "mu.Unlock", Vec::from_array([]))));
     if panic_when_closed {
         closed.push(Stmt::Panic { message: "task scope is closed" })
     } else {
@@ -533,60 +565,72 @@ fn task_scope_spawn_item(key: string, panic_when_closed: bool) -> Item {
             else_: Option::None,
         },
     );
-    stmts.push(task_expr(task_method("scope", "wg.Add", Vec::[Expr::Int { value: "1" }])));
-    stmts.push(task_expr(task_method("scope", "mu.Unlock", Vec::[])));
     stmts.push(
-        Stmt::Go { call: task_call(task_run_name(), Vec::[task_var("scope"), task_var("body")]) },
+        task_expr(task_method("scope", "wg.Add", Vec::from_array([Expr::Int { value: "1" }]))),
+    );
+    stmts.push(task_expr(task_method("scope", "mu.Unlock", Vec::from_array([]))));
+    stmts.push(
+        Stmt::Go {
+            call: task_call(task_run_name(), Vec::from_array([task_var("scope"), task_var("body")])),
+        },
     );
     stmts.push(task_return(Expr::Bool { value: true }));
     std_function_item(
         key,
-        Vec::[
-            ("scope_id", Type::Int64),
-            ("body", Type::Func { params: Vec::[], ret_ty: Type::Unit }),
-        ],
+        Vec::from_array(
+            [
+                ("scope_id", Type::Int64),
+                ("body", Type::Func { params: Vec::from_array([]), ret_ty: Type::Unit }),
+            ],
+        ),
         Type::Bool,
         stmts,
     )
 }
 
 fn task_scope_cancel_item(key: string) -> Item {
-    let stmts: Vec[Stmt] = Vec::[];
+    let stmts: Vec[Stmt] = Vec::from_array([]);
     stmts.push(
         Stmt::Var {
             name: "scope",
             ty: task_state_pointer_type(),
-            value: Option::Some(task_call(task_lookup_name(), Vec::[task_var("scope_id")])),
+            value: Option::Some(
+                task_call(task_lookup_name(), Vec::from_array([task_var("scope_id")])),
+            ),
         },
     );
     stmts.push(
         Stmt::If {
             cond: Expr::Binary { op: BinaryOp::NotEq, lhs: task_var("scope"), rhs: Expr::Nil },
-            then_: Block { stmts: Vec::[task_expr(task_call("scope.cancel", Vec::[]))] },
+            then_: Block {
+                stmts: Vec::from_array([task_expr(task_call("scope.cancel", Vec::from_array([])))]),
+            },
             else_: Option::None,
         },
     );
     stmts.push(task_return(Expr::Unit));
-    std_function_item(key, Vec::[("scope_id", Type::Int64)], Type::Unit, stmts)
+    std_function_item(key, Vec::from_array([("scope_id", Type::Int64)]), Type::Unit, stmts)
 }
 
 fn task_scope_finish_item(key: string) -> Item {
-    let stmts: Vec[Stmt] = Vec::[];
+    let stmts: Vec[Stmt] = Vec::from_array([]);
     stmts.push(
         Stmt::Var {
             name: "scope",
             ty: task_state_pointer_type(),
-            value: Option::Some(task_call(task_lookup_name(), Vec::[task_var("scope_id")])),
+            value: Option::Some(
+                task_call(task_lookup_name(), Vec::from_array([task_var("scope_id")])),
+            ),
         },
     );
     stmts.push(
         Stmt::If {
             cond: Expr::Binary { op: BinaryOp::Eq, lhs: task_var("scope"), rhs: Expr::Nil },
-            then_: Block { stmts: Vec::[task_return(Expr::Unit)] },
+            then_: Block { stmts: Vec::from_array([task_return(Expr::Unit)]) },
             else_: Option::None,
         },
     );
-    stmts.push(task_expr(task_method("scope", "mu.Lock", Vec::[])));
+    stmts.push(task_expr(task_method("scope", "mu.Lock", Vec::from_array([]))));
     stmts.push(
         Stmt::If {
             cond: Expr::Binary {
@@ -595,21 +639,23 @@ fn task_scope_finish_item(key: string) -> Item {
                 rhs: Expr::Int { value: "0" },
             },
             then_: Block {
-                stmts: Vec::[
-                    Stmt::FieldAssign {
-                        target: task_var("scope"),
-                        field_name: "state",
-                        value: Expr::Int { value: "1" },
-                    },
-                ],
+                stmts: Vec::from_array(
+                    [
+                        Stmt::FieldAssign {
+                            target: task_var("scope"),
+                            field_name: "state",
+                            value: Expr::Int { value: "1" },
+                        },
+                    ],
+                ),
             },
             else_: Option::None,
         },
     );
-    stmts.push(task_expr(task_method("scope", "mu.Unlock", Vec::[])));
-    stmts.push(task_expr(task_method("scope", "wg.Wait", Vec::[])));
-    stmts.push(task_expr(task_call("scope.cancel", Vec::[])));
-    stmts.push(task_expr(task_method("scope", "mu.Lock", Vec::[])));
+    stmts.push(task_expr(task_method("scope", "mu.Unlock", Vec::from_array([]))));
+    stmts.push(task_expr(task_method("scope", "wg.Wait", Vec::from_array([]))));
+    stmts.push(task_expr(task_call("scope.cancel", Vec::from_array([]))));
+    stmts.push(task_expr(task_method("scope", "mu.Lock", Vec::from_array([]))));
     stmts.push(
         Stmt::Var {
             name: "panicked",
@@ -631,53 +677,62 @@ fn task_scope_finish_item(key: string) -> Item {
             value: Expr::Int { value: "2" },
         },
     );
-    stmts.push(task_expr(task_method("scope", "mu.Unlock", Vec::[])));
-    stmts.push(task_expr(task_method(task_registry_mutex_name(), "Lock", Vec::[])));
+    stmts.push(task_expr(task_method("scope", "mu.Unlock", Vec::from_array([]))));
+    stmts.push(task_expr(task_method(task_registry_mutex_name(), "Lock", Vec::from_array([]))));
     stmts.push(
-        task_expr(task_call("delete", Vec::[task_var(task_registry_name()), task_var("scope_id")])),
+        task_expr(
+            task_call(
+                "delete",
+                Vec::from_array([task_var(task_registry_name()), task_var("scope_id")]),
+            ),
+        ),
     );
-    stmts.push(task_expr(task_method(task_registry_mutex_name(), "Unlock", Vec::[])));
+    stmts.push(task_expr(task_method(task_registry_mutex_name(), "Unlock", Vec::from_array([]))));
     stmts.push(
         Stmt::If {
             cond: task_var("panicked"),
             then_: Block {
-                stmts: Vec::[task_expr(task_call("panic", Vec::[task_var("panic_value")]))],
+                stmts: Vec::from_array(
+                    [task_expr(task_call("panic", Vec::from_array([task_var("panic_value")])))],
+                ),
             },
             else_: Option::None,
         },
     );
     stmts.push(task_return(Expr::Unit));
-    std_function_item(key, Vec::[("scope_id", Type::Int64)], Type::Unit, stmts)
+    std_function_item(key, Vec::from_array([("scope_id", Type::Int64)]), Type::Unit, stmts)
 }
 
 fn task_active_scope_count_item(key: string) -> Item {
-    let stmts: Vec[Stmt] = Vec::[];
-    stmts.push(task_expr(task_method(task_registry_mutex_name(), "Lock", Vec::[])));
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    stmts.push(task_expr(task_method(task_registry_mutex_name(), "Lock", Vec::from_array([]))));
     stmts.push(
         Stmt::Var {
             name: "count",
             ty: Type::Int,
-            value: Option::Some(task_call("len", Vec::[task_var(task_registry_name())])),
+            value: Option::Some(task_call("len", Vec::from_array([task_var(task_registry_name())]))),
         },
     );
-    stmts.push(task_expr(task_method(task_registry_mutex_name(), "Unlock", Vec::[])));
+    stmts.push(task_expr(task_method(task_registry_mutex_name(), "Unlock", Vec::from_array([]))));
     stmts.push(task_return(task_var("count")));
-    std_function_item(key, Vec::[], Type::Int, stmts)
+    std_function_item(key, Vec::from_array([]), Type::Int, stmts)
 }
 
 fn task_scope_cancelled_item(key: string) -> Item {
-    let stmts: Vec[Stmt] = Vec::[];
+    let stmts: Vec[Stmt] = Vec::from_array([]);
     stmts.push(
         Stmt::Var {
             name: "scope",
             ty: task_state_pointer_type(),
-            value: Option::Some(task_call(task_lookup_name(), Vec::[task_var("scope_id")])),
+            value: Option::Some(
+                task_call(task_lookup_name(), Vec::from_array([task_var("scope_id")])),
+            ),
         },
     );
     stmts.push(
         Stmt::If {
             cond: Expr::Binary { op: BinaryOp::Eq, lhs: task_var("scope"), rhs: Expr::Nil },
-            then_: Block { stmts: Vec::[task_return(Expr::Bool { value: true })] },
+            then_: Block { stmts: Vec::from_array([task_return(Expr::Bool { value: true })]) },
             else_: Option::None,
         },
     );
@@ -685,16 +740,16 @@ fn task_scope_cancelled_item(key: string) -> Item {
         task_return(
             Expr::Binary {
                 op: BinaryOp::NotEq,
-                lhs: task_method("scope", "ctx.Err", Vec::[]),
+                lhs: task_method("scope", "ctx.Err", Vec::from_array([])),
                 rhs: Expr::Nil,
             },
         ),
     );
-    std_function_item(key, Vec::[("scope_id", Type::Int64)], Type::Bool, stmts)
+    std_function_item(key, Vec::from_array([("scope_id", Type::Int64)]), Type::Bool, stmts)
 }
 
 fn task_scope_sleep_item(key: string) -> Item {
-    let stmts: Vec[Stmt] = Vec::[];
+    let stmts: Vec[Stmt] = Vec::from_array([]);
     stmts.push(
         Stmt::Var {
             name: "timer",
@@ -702,12 +757,14 @@ fn task_scope_sleep_item(key: string) -> Item {
             value: Option::Some(
                 task_call(
                     "_goml_time.NewTimer",
-                    Vec::[
-                        Expr::Convert {
-                            ty: Type::Named { name: "_goml_time.Duration" },
-                            expr: task_var("nanoseconds"),
-                        },
-                    ],
+                    Vec::from_array(
+                        [
+                            Expr::Convert {
+                                ty: Type::Named { name: "_goml_time.Duration" },
+                                expr: task_var("nanoseconds"),
+                            },
+                        ],
+                    ),
                 ),
             ),
         },
@@ -715,37 +772,49 @@ fn task_scope_sleep_item(key: string) -> Item {
     stmts.push(Stmt::Var { name: "completed", ty: Type::Bool, value: Option::None });
     stmts.push(
         Stmt::Select {
-            cases: Vec::[
-                SelectCase {
-                    operation: SelectOperation::Receive {
-                        names: Vec::[],
-                        channel: task_field("timer", "C"),
+            cases: Vec::from_array(
+                [
+                    SelectCase {
+                        operation: SelectOperation::Receive {
+                            names: Vec::from_array([]),
+                            channel: task_field("timer", "C"),
+                        },
+                        body: Block {
+                            stmts: Vec::from_array(
+                                [
+                                    Stmt::Assign {
+                                        name: "completed",
+                                        value: Expr::Bool { value: true },
+                                    },
+                                ],
+                            ),
+                        },
                     },
-                    body: Block {
-                        stmts: Vec::[
-                            Stmt::Assign { name: "completed", value: Expr::Bool { value: true } },
-                        ],
+                    SelectCase {
+                        operation: SelectOperation::Receive {
+                            names: Vec::from_array([]),
+                            channel: task_context_done_expr(task_var("scope_id")),
+                        },
+                        body: Block {
+                            stmts: Vec::from_array(
+                                [
+                                    task_expr(task_method("timer", "Stop", Vec::from_array([]))),
+                                    Stmt::Assign {
+                                        name: "completed",
+                                        value: Expr::Bool { value: false },
+                                    },
+                                ],
+                            ),
+                        },
                     },
-                },
-                SelectCase {
-                    operation: SelectOperation::Receive {
-                        names: Vec::[],
-                        channel: task_context_done_expr(task_var("scope_id")),
-                    },
-                    body: Block {
-                        stmts: Vec::[
-                            task_expr(task_method("timer", "Stop", Vec::[])),
-                            Stmt::Assign { name: "completed", value: Expr::Bool { value: false } },
-                        ],
-                    },
-                },
-            ],
+                ],
+            ),
         },
     );
     stmts.push(task_return(task_var("completed")));
     std_function_item(
         key,
-        Vec::[("scope_id", Type::Int64), ("nanoseconds", Type::Int64)],
+        Vec::from_array([("scope_id", Type::Int64), ("nanoseconds", Type::Int64)]),
         Type::Bool,
         stmts,
     )

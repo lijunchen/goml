@@ -15,20 +15,22 @@ pub fn artifact_binary_interface_sections(value: artifact::ArtifactInterfaceUnit
     artifact_json_interface_unit(writer, value);
     let payload = wire::artifact_binary_stream_finish(writer)?;
     Result::Ok(
-        Vec::[
-            wire::ArtifactBinarySection {
-                id: wire::string_table_section_id(),
-                version: 1,
-                flags: wire::required_section_flag(),
-                data: wire::encode_artifact_binary_string_table(table),
-            },
-            wire::ArtifactBinarySection {
-                id: wire::value_section_id(),
-                version: 6,
-                flags: wire::required_section_flag(),
-                data: payload,
-            },
-        ],
+        Vec::from_array(
+            [
+                wire::ArtifactBinarySection {
+                    id: wire::string_table_section_id(),
+                    version: 1,
+                    flags: wire::required_section_flag(),
+                    data: wire::encode_artifact_binary_string_table(table),
+                },
+                wire::ArtifactBinarySection {
+                    id: wire::value_section_id(),
+                    version: 6,
+                    flags: wire::required_section_flag(),
+                    data: payload,
+                },
+            ],
+        ),
     )
 }
 

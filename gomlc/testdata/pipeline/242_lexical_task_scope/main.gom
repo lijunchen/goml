@@ -10,7 +10,6 @@ fn main() -> unit {
     };
     println(total);
     println(completed.get());
-
     let nested = scope {
         scope {
             let value = spawn |_cancel| 7;
@@ -18,7 +17,6 @@ fn main() -> unit {
         }
     };
     println(nested);
-
     let scope = 3;
     let spawn = |value: int| value + 1;
     println(spawn(scope))

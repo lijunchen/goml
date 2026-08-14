@@ -4,13 +4,13 @@ trait Put[T] {
 
 struct Target {}
 
-impl Put[int32] for Target {
+impl Put[int32]for Target {
     fn put(self: Target, value: int32) -> string {
         "number:" + value.to_string()
     }
 }
 
-impl Put[string] for Target {
+impl Put[string]for Target {
     fn put(self: Target, value: string) -> string {
         "text:" + value
     }
@@ -18,13 +18,12 @@ impl Put[string] for Target {
 
 trait Convert[T] {
     type Output;
-
     fn convert(self: Self) -> Self::Output;
 }
 
 struct Convertible {}
 
-impl Convert[int32] for Convertible {
+impl Convert[int32]for Convertible {
     type Output = string;
 
     fn convert(self: Convertible) -> string {
@@ -32,7 +31,7 @@ impl Convert[int32] for Convertible {
     }
 }
 
-impl Convert[string] for Convertible {
+impl Convert[string]for Convertible {
     type Output = int32;
 
     fn convert(self: Convertible) -> int32 {
@@ -40,12 +39,8 @@ impl Convert[string] for Convertible {
     }
 }
 
-trait Source[T]
-where
-    Self::Item = T,
-{
+trait Source[T] where Self::Item = T {
     type Item;
-
     fn get(self: Self) -> Self::Item;
 }
 
@@ -53,7 +48,7 @@ struct Number {
     value: int32,
 }
 
-impl Source[int32] for Number {
+impl Source[int32]for Number {
     type Item = int32;
 
     fn get(self: Number) -> int32 {
@@ -67,7 +62,6 @@ fn read[T, S: Source[T]](source: S) -> T {
 
 trait ItemSource {
     type Item;
-
     fn item(self: Self) -> Self::Item;
 }
 
@@ -75,10 +69,7 @@ trait Select[T] {
     fn select(self: Self) -> T;
 }
 
-impl[S: ItemSource, T] Select[T] for S
-where
-    S::Item = T,
-{
+impl[S: ItemSource, T] Select[T]for S where S::Item = T  {
     fn select(self: S) -> T {
         ItemSource::item(self)
     }

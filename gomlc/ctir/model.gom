@@ -310,16 +310,16 @@ pub struct CtModule {
 }
 
 pub fn empty_module(package_name: string) -> CtModule {
-    let origins: Vec[CtOrigin] = Vec::[];
+    let origins: Vec[CtOrigin] = Vec::from_array([]);
     origins.push(CtOrigin { source_path: "<unknown>", start: 0, end: 0 });
     CtModule {
         package_name,
         target: CtTarget { int_width: 64 },
-        functions: Vec::[],
-        entries: Vec::[],
-        derive_entries: Vec::[],
-        sites: Vec::[],
-        constants: Vec::[],
+        functions: Vec::from_array([]),
+        entries: Vec::from_array([]),
+        derive_entries: Vec::from_array([]),
+        sites: Vec::from_array([]),
+        constants: Vec::from_array([]),
         origins,
     }
 }
@@ -435,12 +435,12 @@ fn collect_reachable_block(
 }
 
 pub fn public_module(value: CtModule, public_entries: Vec[string], public_constants: Vec[string]) -> CtModule {
-    let ids: Vec[int] = Vec::[];
-    let constants: Vec[string] = Vec::[];
+    let ids: Vec[int] = Vec::from_array([]);
+    let constants: Vec[string] = Vec::from_array([]);
     for name in public_constants {
         push_reachable_name(constants, name)
     }
-    let entries: Vec[CtEntry] = Vec::[];
+    let entries: Vec[CtEntry] = Vec::from_array([]);
     for entry in value.entries {
         let mut public = false;
         for name in public_entries {
@@ -453,7 +453,7 @@ pub fn public_module(value: CtModule, public_entries: Vec[string], public_consta
             let _ = push_reachable_id(ids, entry.function_id);
         } else {}
     }
-    let derive_entries: Vec[CtDeriveEntry] = Vec::[];
+    let derive_entries: Vec[CtDeriveEntry] = Vec::from_array([]);
     for entry in value.derive_entries {
         if entry.public {
             derive_entries.push(entry);
@@ -469,7 +469,7 @@ pub fn public_module(value: CtModule, public_entries: Vec[string], public_consta
         }
         index = index + 1;
     }
-    let functions: Vec[CtFunction] = Vec::[];
+    let functions: Vec[CtFunction] = Vec::from_array([]);
     for function in value.functions {
         let mut found = false;
         for id in ids {
@@ -487,9 +487,9 @@ pub fn public_module(value: CtModule, public_entries: Vec[string], public_consta
         functions,
         entries,
         derive_entries,
-        sites: Vec::[],
+        sites: Vec::from_array([]),
         constants: {
-            let result: Vec[CtConstant] = Vec::[];
+            let result: Vec[CtConstant] = Vec::from_array([]);
             for constant in value.constants {
                 for name in constants {
                     if constant.name == name {

@@ -19,13 +19,13 @@ fn lower_source(source: string) -> File {
         Err(message) => {
             testing::fail(message);
             File {
-                functions: Vec::[],
-                enums: Vec::[],
-                structs: Vec::[],
-                type_instances: Vec::[],
-                constants: Vec::[],
-                statics: Vec::[],
-                closure_defs: Vec::[],
+                functions: Vec::from_array([]),
+                enums: Vec::from_array([]),
+                structs: Vec::from_array([]),
+                type_instances: Vec::from_array([]),
+                constants: Vec::from_array([]),
+                statics: Vec::from_array([]),
+                closure_defs: Vec::from_array([]),
             }
         },
     }
@@ -154,13 +154,15 @@ fn rejects_mismatched_closure_metadata() -> unit {
         type_instances: file.type_instances,
         constants: file.constants,
         statics: file.statics,
-        closure_defs: Vec::[
-            repr::ClosureDef {
-                environment: definition.environment,
-                apply: definition.apply,
-                signature: repr::Type::Unit,
-            },
-        ],
+        closure_defs: Vec::from_array(
+            [
+                repr::ClosureDef {
+                    environment: definition.environment,
+                    apply: definition.apply,
+                    signature: repr::Type::Unit,
+                },
+            ],
+        ),
     };
     match validate(invalid) {
         Ok(_) => testing::fail("expected closure metadata rejection"),
@@ -178,29 +180,31 @@ fn rejects_closures_with_non_function_types() -> unit {
         ),
     );
     let function = source.functions[0];
-    let functions = Vec::[
-        mono::Function {
-            name: function.name,
-            origin: function.origin,
-            root: function.root,
-            trait_impl: function.trait_impl,
-            params: function.params,
-            ret_ty: function.ret_ty,
-            body: mono::Block {
-                stmts: Vec::[],
-                tail: Option::Some(
-                    mono::Expr::Closure {
-                        params: Vec::[],
-                        body: mono::Expr::Prim {
-                            value: mono::Primitive::Unit,
-                            ty: mono::Type::Unit,
+    let functions = Vec::from_array(
+        [
+            mono::Function {
+                name: function.name,
+                origin: function.origin,
+                root: function.root,
+                trait_impl: function.trait_impl,
+                params: function.params,
+                ret_ty: function.ret_ty,
+                body: mono::Block {
+                    stmts: Vec::from_array([]),
+                    tail: Option::Some(
+                        mono::Expr::Closure {
+                            params: Vec::from_array([]),
+                            body: mono::Expr::Prim {
+                                value: mono::Primitive::Unit,
+                                ty: mono::Type::Unit,
+                            },
+                            ty: mono::Type::Int,
                         },
-                        ty: mono::Type::Int,
-                    },
-                ),
+                    ),
+                },
             },
-        },
-    ];
+        ],
+    );
     match lower_checked(
         mono::File {
             functions,

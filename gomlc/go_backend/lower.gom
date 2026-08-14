@@ -66,7 +66,11 @@ fn function_name(value: string) -> string {
 }
 
 fn new_function_names() -> FunctionNames {
-    FunctionNames { by_source: HashMap::{}, reserved: HashMap::{}, variant_names: HashMap::{} }
+    FunctionNames {
+        by_source: HashMap::from_array([]),
+        reserved: HashMap::from_array([]),
+        variant_names: HashMap::from_array([]),
+    }
 }
 
 fn add_function_name(values: FunctionNames, source: string, generated: string) -> unit {
@@ -91,7 +95,7 @@ fn function_type_names(
     enums: Vec[repr::EnumDef],
     instances: Vec[repr::TypeInstance],
 ) -> HashMap[string, unit] {
-    let result: HashMap[string, unit] = HashMap::{};
+    let result: HashMap[string, unit] = HashMap::from_array([]);
     for definition in structs {
         let name = go_user_type_name(definition.name);
         result[name] = ();
@@ -195,7 +199,7 @@ fn build_function_names(
     }
     let entry_name = entry_wrapper_name(functions, structs, enums, instances, resolved);
     let result = FunctionNames {
-        by_source: HashMap::{},
+        by_source: HashMap::from_array([]),
         reserved: resolved.reserved,
         variant_names: resolved.variant_names,
     };
@@ -234,23 +238,23 @@ fn go_foreign_call(spec: GoForeignSpec, args: Vec[Expr]) -> Expr {
 fn go_foreign_wrapper(spec: GoForeignSpec) -> Function {
     match repr::resolve_type(spec.ty) {
         Func { params: param_types, ret_ty } => {
-            let params: Vec[(string, Type)] = Vec::[];
-            let args: Vec[Expr] = Vec::[];
+            let params: Vec[(string, Type)] = Vec::from_array([]);
+            let args: Vec[Expr] = Vec::from_array([]);
             for index in 0..param_types.len() {
                 let name = "arg" + index.to_string();
                 params.push((name, lower_type(param_types[index])));
                 args.push(Expr::Var { name })
             }
             let call = go_foreign_call(spec, args);
-            let stmts: Vec[Stmt] = Vec::[];
+            let stmts: Vec[Stmt] = Vec::from_array([]);
             match repr::resolve_type(ret_ty) {
                 Unit => {
                     stmts.push(Stmt::Expr { expr: call });
                     stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) })
                 },
                 Tuple { items: values } => {
-                    let names: Vec[string] = Vec::[];
-                    let fields: Vec[(string, Expr)] = Vec::[];
+                    let names: Vec[string] = Vec::from_array([]);
+                    let fields: Vec[(string, Expr)] = Vec::from_array([]);
                     for index in 0..values.len() {
                         let name = "result" + index.to_string();
                         stmts.push(
@@ -279,15 +283,17 @@ fn go_foreign_wrapper(spec: GoForeignSpec) -> Function {
         },
         _ => Function {
             name: go_foreign_wrapper_name(spec.import_path, spec.symbol, spec.ty),
-            params: Vec::[],
+            params: Vec::from_array([]),
             ret_ty: Option::Some(Type::Unit),
-            body: Block { stmts: Vec::[Stmt::Return { expr: Option::Some(Expr::Unit) }] },
+            body: Block {
+                stmts: Vec::from_array([Stmt::Return { expr: Option::Some(Expr::Unit) }]),
+            },
         },
     }
 }
 
 fn emit_go_foreign_import_items(items: Vec[Item], values: Vec[GoForeignSpec]) -> unit {
-    let imports: Vec[(string, string)] = Vec::[];
+    let imports: Vec[(string, string)] = Vec::from_array([]);
     for value in values {
         let mut found = false;
         for present in imports {
@@ -363,7 +369,7 @@ fn compile_primitive(value: repr::Primitive, ty: repr::Type) -> Expr {
             for value in values {
                 items.push(Expr::Int { value })
             }
-            let fields: Vec[(string, Expr)] = Vec::[];
+            let fields: Vec[(string, Expr)] = Vec::from_array([]);
             fields.push(
                 ("items", Expr::ArrayLiteral { ty: Type::Slice { elem: Type::Uint8 }, items }),
             );
@@ -453,7 +459,7 @@ fn scalar_constant_type(value: repr::Type) -> bool {
 }
 
 fn emit_constants(items: Vec[Item], values: Vec[repr::Constant], variants: VariantInfos) -> unit {
-    let specs: Vec[ConstSpec] = Vec::[];
+    let specs: Vec[ConstSpec] = Vec::from_array([]);
     for value in values {
         if scalar_constant_type(value.ty) {
             specs.push(
@@ -483,7 +489,7 @@ fn emit_constants(items: Vec[Item], values: Vec[repr::Constant], variants: Varia
 fn emit_statics(items: Vec[Item], values: Vec[repr::Static]) -> unit {
     for value in values {
         let cell_ty = lower_type(value.ty);
-        let body_stmts: Vec[Stmt] = Vec::[];
+        let body_stmts: Vec[Stmt] = Vec::from_array([]);
         body_stmts.push(
             Stmt::Var {
                 name: "cell",
@@ -491,7 +497,7 @@ fn emit_statics(items: Vec[Item], values: Vec[repr::Static]) -> unit {
                 value: Option::Some(
                     Expr::Call {
                         func: Expr::Var { name: runtime_helper_name("once_cell_new", value.ty) },
-                        args: Vec::[],
+                        args: Vec::from_array([]),
                     },
                 ),
             },
@@ -511,11 +517,11 @@ fn emit_statics(items: Vec[Item], values: Vec[repr::Static]) -> unit {
                     ty: Option::Some(cell_ty),
                     value: Expr::Call {
                         func: Expr::FuncLit {
-                            params: Vec::[],
+                            params: Vec::from_array([]),
                             ret_ty: cell_ty,
                             body: Block { stmts: body_stmts },
                         },
-                        args: Vec::[],
+                        args: Vec::from_array([]),
                     },
                 },
             ),
@@ -555,11 +561,11 @@ fn compile_runtime_imm(env: LowerEnv, value: anf::Imm, name: string) -> Compiled
     let expr = compile_imm(env, value);
     match value {
         Prim { value: _, ty } => {
-            let stmts: Vec[Stmt] = Vec::[];
+            let stmts: Vec[Stmt] = Vec::from_array([]);
             stmts.push(Stmt::Var { name, ty: lower_type(ty), value: Option::Some(expr) });
             CompiledValue { stmts, expr: Expr::Var { name } }
         },
-        _ => CompiledValue { stmts: Vec::[], expr },
+        _ => CompiledValue { stmts: Vec::from_array([]), expr },
     }
 }
 
@@ -571,15 +577,15 @@ fn compile_closure_function(
 ) -> Expr {
     match repr::resolve_type(target_ty) {
         Func { params: param_types, ret_ty } => {
-            let params: Vec[(string, Type)] = Vec::[];
-            let args: Vec[Expr] = Vec::[];
+            let params: Vec[(string, Type)] = Vec::from_array([]);
+            let args: Vec[Expr] = Vec::from_array([]);
             args.push(compile_imm(env, environment));
             for index in 0..param_types.len() {
                 let name = "p" + index.to_string();
                 params.push((name, lower_type(param_types[index])));
                 args.push(Expr::Var { name })
             }
-            let stmts: Vec[Stmt] = Vec::[];
+            let stmts: Vec[Stmt] = Vec::from_array([]);
             stmts.push(
                 Stmt::Return {
                     expr: Option::Some(
@@ -596,7 +602,7 @@ fn compile_closure_function(
 fn compile_imm_expected(env: LowerEnv, value: anf::Imm, expected_ty: repr::Type) -> Expr {
     match value {
         Tag { index: tag, ty: owner_ty } => match variant_type(env.variants, owner_ty, tag) {
-            Some(ty) => Expr::StructLiteral { ty, fields: Vec::[] },
+            Some(ty) => Expr::StructLiteral { ty, fields: Vec::from_array([]) },
             None => compile_imm(env, value),
         },
         _ => compile_imm(env, value),
@@ -606,7 +612,7 @@ fn compile_imm_expected(env: LowerEnv, value: anf::Imm, expected_ty: repr::Type)
 fn compile_imms_expected(env: LowerEnv, values: Vec[anf::Imm], expected: Vec[repr::Type]) -> Vec[
     Expr,
 ] {
-    let result: Vec[Expr] = Vec::[];
+    let result: Vec[Expr] = Vec::from_array([]);
     for index in 0..values.len() {
         if index < expected.len() {
             result.push(compile_imm_expected(env, values[index], expected[index]))
@@ -771,8 +777,8 @@ fn intrinsic_helper_call_name(key: string, function_ty: repr::Type, args: Vec[an
 fn compile_slice_callable(key: string, function_ty: repr::Type) -> Expr {
     match repr::resolve_type(function_ty) {
         Func { params: param_types, ret_ty } => {
-            let params: Vec[(string, Type)] = Vec::[];
-            let vars: Vec[Expr] = Vec::[];
+            let params: Vec[(string, Type)] = Vec::from_array([]);
+            let vars: Vec[Expr] = Vec::from_array([]);
             for index in 0..param_types.len() {
                 let name = "p" + index.to_string();
                 params.push((name, lower_type(param_types[index])));
@@ -787,13 +793,13 @@ fn compile_slice_callable(key: string, function_ty: repr::Type) -> Expr {
             } else if key == "slice.get" {
                 Expr::Index { base: vars[0], index: vars[1] }
             } else if key == "slice.len" {
-                let args: Vec[Expr] = Vec::[];
+                let args: Vec[Expr] = Vec::from_array([]);
                 args.push(vars[0]);
                 Expr::Call { func: Expr::Var { name: "len" }, args }
             } else {
                 Expr::Slice { base: vars[0], start: vars[1], end: vars[2] }
             };
-            let stmts: Vec[Stmt] = Vec::[];
+            let stmts: Vec[Stmt] = Vec::from_array([]);
             stmts.push(Stmt::Return { expr: Option::Some(value) });
             Expr::FuncLit { params, ret_ty: lower_type(ret_ty), body: Block { stmts } }
         },
@@ -804,16 +810,16 @@ fn compile_slice_callable(key: string, function_ty: repr::Type) -> Expr {
 fn compile_channel_callable(key: string, function_ty: repr::Type) -> Expr {
     match repr::resolve_type(function_ty) {
         Func { params: param_types, ret_ty } => {
-            let params: Vec[(string, Type)] = Vec::[];
-            let vars: Vec[Expr] = Vec::[];
+            let params: Vec[(string, Type)] = Vec::from_array([]);
+            let vars: Vec[Expr] = Vec::from_array([]);
             for index in 0..param_types.len() {
                 let name = "p" + index.to_string();
                 params.push((name, lower_type(param_types[index])));
                 vars.push(Expr::Var { name })
             }
-            let stmts: Vec[Stmt] = Vec::[];
+            let stmts: Vec[Stmt] = Vec::from_array([]);
             if key == "channel.new" {
-                let args: Vec[Expr] = Vec::[];
+                let args: Vec[Expr] = Vec::from_array([]);
                 args.push(vars[0]);
                 stmts.push(
                     Stmt::Return { expr: Option::Some(Expr::Make { ty: lower_type(ret_ty), args }) },
@@ -830,11 +836,11 @@ fn compile_channel_callable(key: string, function_ty: repr::Type) -> Expr {
                 stmts.push(Stmt::Var { name: "ok", ty: Type::Bool, value: Option::None });
                 stmts.push(
                     Stmt::MultiAssign {
-                        names: Vec::["value", "ok"],
+                        names: Vec::from_array(["value", "ok"]),
                         value: Expr::Receive { channel: vars[0] },
                     },
                 );
-                let fields: Vec[(string, Expr)] = Vec::[];
+                let fields: Vec[(string, Expr)] = Vec::from_array([]);
                 fields.push(("_0", Expr::Var { name: "value" }));
                 fields.push(("_1", Expr::Var { name: "ok" }));
                 stmts.push(
@@ -846,36 +852,42 @@ fn compile_channel_callable(key: string, function_ty: repr::Type) -> Expr {
                 stmts.push(Stmt::Var { name: "completed", ty: Type::Bool, value: Option::None });
                 stmts.push(
                     Stmt::Select {
-                        cases: Vec::[
-                            SelectCase {
-                                operation: SelectOperation::Send {
-                                    channel: vars[0],
-                                    value: vars[1],
+                        cases: Vec::from_array(
+                            [
+                                SelectCase {
+                                    operation: SelectOperation::Send {
+                                        channel: vars[0],
+                                        value: vars[1],
+                                    },
+                                    body: Block {
+                                        stmts: Vec::from_array(
+                                            [
+                                                Stmt::Assign {
+                                                    name: "completed",
+                                                    value: Expr::Bool { value: true },
+                                                },
+                                            ],
+                                        ),
+                                    },
                                 },
-                                body: Block {
-                                    stmts: Vec::[
-                                        Stmt::Assign {
-                                            name: "completed",
-                                            value: Expr::Bool { value: true },
-                                        },
-                                    ],
+                                SelectCase {
+                                    operation: SelectOperation::Receive {
+                                        names: Vec::from_array([]),
+                                        channel: task_context_done_expr(vars[2]),
+                                    },
+                                    body: Block {
+                                        stmts: Vec::from_array(
+                                            [
+                                                Stmt::Assign {
+                                                    name: "completed",
+                                                    value: Expr::Bool { value: false },
+                                                },
+                                            ],
+                                        ),
+                                    },
                                 },
-                            },
-                            SelectCase {
-                                operation: SelectOperation::Receive {
-                                    names: Vec::[],
-                                    channel: task_context_done_expr(vars[2]),
-                                },
-                                body: Block {
-                                    stmts: Vec::[
-                                        Stmt::Assign {
-                                            name: "completed",
-                                            value: Expr::Bool { value: false },
-                                        },
-                                    ],
-                                },
-                            },
-                        ],
+                            ],
+                        ),
                     },
                 );
                 stmts.push(Stmt::Return { expr: Option::Some(Expr::Var { name: "completed" }) })
@@ -889,39 +901,45 @@ fn compile_channel_callable(key: string, function_ty: repr::Type) -> Expr {
                 stmts.push(Stmt::Var { name: "completed", ty: Type::Bool, value: Option::None });
                 stmts.push(
                     Stmt::Select {
-                        cases: Vec::[
-                            SelectCase {
-                                operation: SelectOperation::Receive {
-                                    names: Vec::["value", "ok"],
-                                    channel: vars[0],
+                        cases: Vec::from_array(
+                            [
+                                SelectCase {
+                                    operation: SelectOperation::Receive {
+                                        names: Vec::from_array(["value", "ok"]),
+                                        channel: vars[0],
+                                    },
+                                    body: Block {
+                                        stmts: Vec::from_array(
+                                            [
+                                                Stmt::Assign {
+                                                    name: "completed",
+                                                    value: Expr::Bool { value: true },
+                                                },
+                                            ],
+                                        ),
+                                    },
                                 },
-                                body: Block {
-                                    stmts: Vec::[
-                                        Stmt::Assign {
-                                            name: "completed",
-                                            value: Expr::Bool { value: true },
-                                        },
-                                    ],
+                                SelectCase {
+                                    operation: SelectOperation::Receive {
+                                        names: Vec::from_array([]),
+                                        channel: task_context_done_expr(vars[1]),
+                                    },
+                                    body: Block {
+                                        stmts: Vec::from_array(
+                                            [
+                                                Stmt::Assign {
+                                                    name: "completed",
+                                                    value: Expr::Bool { value: false },
+                                                },
+                                            ],
+                                        ),
+                                    },
                                 },
-                            },
-                            SelectCase {
-                                operation: SelectOperation::Receive {
-                                    names: Vec::[],
-                                    channel: task_context_done_expr(vars[1]),
-                                },
-                                body: Block {
-                                    stmts: Vec::[
-                                        Stmt::Assign {
-                                            name: "completed",
-                                            value: Expr::Bool { value: false },
-                                        },
-                                    ],
-                                },
-                            },
-                        ],
+                            ],
+                        ),
                     },
                 );
-                let fields: Vec[(string, Expr)] = Vec::[];
+                let fields: Vec[(string, Expr)] = Vec::from_array([]);
                 fields.push(("_0", Expr::Var { name: "value" }));
                 fields.push(("_1", Expr::Var { name: "ok" }));
                 fields.push(("_2", Expr::Var { name: "completed" }));
@@ -931,7 +949,7 @@ fn compile_channel_callable(key: string, function_ty: repr::Type) -> Expr {
                     },
                 )
             } else {
-                let args: Vec[Expr] = Vec::[];
+                let args: Vec[Expr] = Vec::from_array([]);
                 args.push(vars[0]);
                 stmts.push(
                     Stmt::Expr { expr: Expr::Call { func: Expr::Var { name: "close" }, args } },
@@ -947,11 +965,11 @@ fn compile_channel_callable(key: string, function_ty: repr::Type) -> Expr {
 fn compile_collection_from_array_callable(key: string, function_ty: repr::Type) -> Expr {
     match repr::resolve_type(function_ty) {
         Func { params: param_types, ret_ty } if param_types.len() == 1 => {
-            let params = Vec::[("values", lower_type(param_types[0]))];
+            let params = Vec::from_array([("values", lower_type(param_types[0]))]);
             let values = Expr::Var { name: "values" };
-            let stmts: Vec[Stmt] = Vec::[];
+            let stmts: Vec[Stmt] = Vec::from_array([]);
             if key == "vec.from_array" {
-                let len_args = Vec::[values];
+                let len_args = Vec::from_array([values]);
                 let items = Expr::Slice {
                     base: values,
                     start: Expr::Int { value: "0" },
@@ -968,7 +986,7 @@ fn compile_collection_from_array_callable(key: string, function_ty: repr::Type) 
                                 op: UnaryOp::Address,
                                 expr: Expr::StructLiteral {
                                     ty: result_ty,
-                                    fields: Vec::[("items", items)],
+                                    fields: Vec::from_array([("items", items)]),
                                 },
                             },
                         ),
@@ -983,32 +1001,36 @@ fn compile_collection_from_array_callable(key: string, function_ty: repr::Type) 
                         value: Option::Some(
                             Expr::Call {
                                 func: Expr::Var { name: runtime_helper_name("hashmap_new", ret_ty) },
-                                args: Vec::[],
+                                args: Vec::from_array([]),
                             },
                         ),
                     },
                 );
                 let entry = Expr::Var { name: "entry" };
-                let set_args = Vec::[
-                    result,
-                    Expr::Field { expr: entry, field_name: "_0" },
-                    Expr::Field { expr: entry, field_name: "_1" },
-                ];
+                let set_args = Vec::from_array(
+                    [
+                        result,
+                        Expr::Field { expr: entry, field_name: "_0" },
+                        Expr::Field { expr: entry, field_name: "_1" },
+                    ],
+                );
                 stmts.push(
                     Stmt::Range {
-                        names: Vec::["_", "entry"],
+                        names: Vec::from_array(["_", "entry"]),
                         expr: values,
                         body: Block {
-                            stmts: Vec::[
-                                Stmt::Expr {
-                                    expr: Expr::Call {
-                                        func: Expr::Var {
-                                            name: runtime_helper_name("hashmap_set", ret_ty),
+                            stmts: Vec::from_array(
+                                [
+                                    Stmt::Expr {
+                                        expr: Expr::Call {
+                                            func: Expr::Var {
+                                                name: runtime_helper_name("hashmap_set", ret_ty),
+                                            },
+                                            args: set_args,
                                         },
-                                        args: set_args,
                                     },
-                                },
-                            ],
+                                ],
+                            ),
                         },
                     },
                 );
@@ -1031,7 +1053,7 @@ fn compile_intrinsic_callable(key: string, function_ty: repr::Type) -> Expr {
         || key == "channel.close" {
         compile_channel_callable(key, function_ty)
     } else {
-        match intrinsic_helper_call_name(key, function_ty, Vec::[]) {
+        match intrinsic_helper_call_name(key, function_ty, Vec::from_array([])) {
             Some(name) => Expr::Var { name },
             None => Expr::Var { name: go_ident(key) },
         }
@@ -1053,7 +1075,7 @@ fn compile_callable(env: LowerEnv, func: anf::Imm, args: Vec[anf::Imm]) -> Expr 
 fn compile_call(env: LowerEnv, func: anf::Imm, args: Vec[anf::Imm]) -> Expr {
     let expected = match repr::resolve_type(anf::imm_type(func)) {
         Func { params, ret_ty: _ } => params,
-        _ => Vec::[],
+        _ => Vec::from_array([]),
     };
     let compiled = compile_imms_expected(env, args, expected);
     match func {
@@ -1067,7 +1089,7 @@ fn compile_call(env: LowerEnv, func: anf::Imm, args: Vec[anf::Imm]) -> Expr {
             } else if key == "slice.get" {
                 Expr::Index { base: compiled[0], index: compiled[1] }
             } else if key == "slice.len" {
-                let len_args: Vec[Expr] = Vec::[];
+                let len_args: Vec[Expr] = Vec::from_array([]);
                 len_args.push(compiled[0]);
                 Expr::Call { func: Expr::Var { name: "len" }, args: len_args }
             } else if key == "slice.sub" {
@@ -1125,7 +1147,7 @@ fn append_struct_field_types(result: Vec[repr::Type], definition: repr::StructDe
 }
 
 fn struct_field_types(env: LowerEnv, value: repr::Type) -> Vec[repr::Type] {
-    let result: Vec[repr::Type] = Vec::[];
+    let result: Vec[repr::Type] = Vec::from_array([]);
     match repr::resolve_type(value) {
         Named { name } | ClosureEnvironment { name } => match find_struct(env.structs, name) {
             Some(definition) => append_struct_field_types(result, definition),
@@ -1142,7 +1164,7 @@ fn compile_constructor(
     args: Vec[anf::Imm],
     ty: repr::Type,
 ) -> Expr {
-    let expected: Vec[repr::Type] = Vec::[];
+    let expected: Vec[repr::Type] = Vec::from_array([]);
     if constructor.is_struct {
         for field_ty in struct_field_types(env, ty) {
             expected.push(field_ty)
@@ -1160,7 +1182,7 @@ fn compile_constructor(
             None => (),
         }
     };
-    let fields: Vec[(string, Expr)] = Vec::[];
+    let fields: Vec[(string, Expr)] = Vec::from_array([]);
     for index in 0..args.len() {
         let name = if constructor.is_struct && index < constructor.fields.len() {
             go_ident(constructor.fields[index])
@@ -1189,12 +1211,12 @@ fn compile_constructor(
 }
 
 fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_ty: repr::Type) -> CompiledValue {
-    let stmts: Vec[Stmt] = Vec::[];
+    let stmts: Vec[Stmt] = Vec::from_array([]);
     let expr = match value {
         Imm(value) => compile_imm_expected(env, value, expected_ty),
         Constr { constructor, args, ty } => compile_constructor(env, constructor, args, ty),
         Tuple { items, ty } => {
-            let fields: Vec[(string, Expr)] = Vec::[];
+            let fields: Vec[(string, Expr)] = Vec::from_array([]);
             match repr::resolve_type(ty) {
                 Tuple { items: item_types } => {
                     for index in 0..items.len() {
@@ -1217,13 +1239,13 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
         Array { items, ty } => {
             let expected = match repr::resolve_type(ty) {
                 Array { len: _, elem } => {
-                    let values: Vec[repr::Type] = Vec::[];
+                    let values: Vec[repr::Type] = Vec::from_array([]);
                     for _ in items {
                         values.push(elem)
                     }
                     values
                 },
-                _ => Vec::[],
+                _ => Vec::from_array([]),
             };
             Expr::ArrayLiteral {
                 ty: lower_type(ty),
@@ -1254,7 +1276,7 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
         Unary { op, expr: operand, ty: _ } => {
             let compiled = match op {
                 BitNot => compile_runtime_imm(env, operand, go_local_ident(bind_name) + "_operand"),
-                _ => CompiledValue { stmts: Vec::[], expr: compile_imm(env, operand) },
+                _ => CompiledValue { stmts: Vec::from_array([]), expr: compile_imm(env, operand) },
             };
             append_stmts(stmts, compiled.stmts);
             Expr::Unary { op: compile_unary(op), expr: compiled.expr }
@@ -1272,12 +1294,12 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
             let compiled_lhs = if materializes_binary_operands(op) {
                 compile_runtime_imm(env, lhs, go_local_ident(bind_name) + "_lhs")
             } else {
-                CompiledValue { stmts: Vec::[], expr: compile_imm(env, lhs) }
+                CompiledValue { stmts: Vec::from_array([]), expr: compile_imm(env, lhs) }
             };
             let compiled_rhs = if materializes_binary_operands(op) {
                 compile_runtime_imm(env, rhs, go_local_ident(bind_name) + "_rhs")
             } else {
-                CompiledValue { stmts: Vec::[], expr: compile_imm(env, rhs) }
+                CompiledValue { stmts: Vec::from_array([]), expr: compile_imm(env, rhs) }
             };
             append_stmts(stmts, compiled_lhs.stmts);
             append_stmts(stmts, compiled_rhs.stmts);
@@ -1294,7 +1316,7 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
         },
         Call { func, args, ty: _ } => compile_call(env, func, args),
         ToDyn { trait_name, for_ty, expr, ty } => {
-            let fields: Vec[(string, Expr)] = Vec::[];
+            let fields: Vec[(string, Expr)] = Vec::from_array([]);
             let compiled = compile_imm_expected(env, expr, for_ty);
             let data = match repr::resolve_type(for_ty) {
                 Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | Float32 | Float64 | Char => Expr::Convert {
@@ -1311,7 +1333,7 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
                         func: Expr::Var {
                             name: dyn_factory_name(env.dyn_helper_names, trait_name, for_ty),
                         },
-                        args: Vec::[],
+                        args: Vec::from_array([]),
                     },
                 ),
             );
@@ -1320,7 +1342,7 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
         DynCall { trait_name, method_name: method, receiver, args, ty: _ } => {
             let method_name = dyn_method_parts(method, trait_name).1;
             let receiver = compile_imm(env, receiver);
-            let values: Vec[Expr] = Vec::[];
+            let values: Vec[Expr] = Vec::from_array([]);
             values.push(Expr::Field { expr: receiver, field_name: "data" });
             let expected = match find_dyn_method(
                 env.builtin,
@@ -1329,7 +1351,7 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
                 method_name,
             ) {
                 Some(info) => info.params,
-                None => Vec::[],
+                None => Vec::from_array([]),
             };
             for arg in compile_imms_expected(env, args, expected) {
                 values.push(arg)
@@ -1343,7 +1365,7 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
             }
         },
         Go { closure: value, ty: _ } => {
-            let call = compile_call(env, value, Vec::[]);
+            let call = compile_call(env, value, Vec::from_array([]));
             stmts.push(Stmt::Go { call });
             Expr::Unit
         },
@@ -1358,7 +1380,7 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
 }
 
 fn compile_let(env: LowerEnv, value: anf::LetBind) -> Vec[Stmt] {
-    let result: Vec[Stmt] = Vec::[];
+    let result: Vec[Stmt] = Vec::from_array([]);
     let compiled = compile_value(env, value.name, value.value, value.ty);
     append_stmts(result, compiled.stmts);
     result.push(
@@ -1516,7 +1538,7 @@ fn block_target_with_visited(value: anf::Block, visited: Vec[string]) -> Option[
 }
 
 fn block_target(value: anf::Block) -> Option[string] {
-    block_target_with_visited(value, Vec::[])
+    block_target_with_visited(value, Vec::from_array([]))
 }
 
 fn blocks_reach_target(
@@ -1534,7 +1556,7 @@ fn blocks_reach_target(
 }
 
 fn compile_jump_args(env: LowerEnv, value: anf::JoinBind, args: Vec[anf::Imm]) -> Vec[Stmt] {
-    let result: Vec[Stmt] = Vec::[];
+    let result: Vec[Stmt] = Vec::from_array([]);
     for index in 0..args.len() {
         if index < value.params.len() && value.params[index].0 != "_" {
             result.push(
@@ -1549,9 +1571,9 @@ fn compile_jump_args(env: LowerEnv, value: anf::JoinBind, args: Vec[anf::Imm]) -
 }
 
 fn compile_branch_to_join(env: LowerEnv, value: anf::Block, target: string, join: anf::JoinBind) -> Block {
-    let stmts: Vec[Stmt] = Vec::[];
-    let pending: Vec[anf::JoinBind] = Vec::[];
-    let loop_names: Vec[string] = Vec::[];
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    let pending: Vec[anf::JoinBind] = Vec::from_array([]);
+    let loop_names: Vec[string] = Vec::from_array([]);
     for bind in value.binds {
         match bind {
             Let(value) => append_stmts(stmts, compile_let(env, value)),
@@ -1635,14 +1657,14 @@ fn compile_match_leaf(
     arms: Vec[anf::Arm],
     default: Option[anf::Block],
 ) -> Vec[Stmt] {
-    let result: Vec[Stmt] = Vec::[];
+    let result: Vec[Stmt] = Vec::from_array([]);
     if match_scrutinee_is_unit(scrut) {
         match first_match_body(arms, default) {
             Some(body) => append_stmts(result, compile_block(env, body).stmts),
             None => append_stmts(result, non_exhaustive_block().stmts),
         }
     } else if match_uses_types(env, arms) {
-        let cases: Vec[TypeSwitchCase] = Vec::[];
+        let cases: Vec[TypeSwitchCase] = Vec::from_array([]);
         for arm in arms {
             match arm_type(env, arm.lhs) {
                 Some(ty) => cases.push(TypeSwitchCase { ty, body: compile_block(env, arm.body) }),
@@ -1662,7 +1684,7 @@ fn compile_match_leaf(
             },
         )
     } else {
-        let cases: Vec[SwitchCase] = Vec::[];
+        let cases: Vec[SwitchCase] = Vec::from_array([]);
         for arm in arms {
             cases.push(
                 SwitchCase { value: compile_imm(env, arm.lhs), body: compile_block(env, arm.body) },
@@ -1695,13 +1717,13 @@ fn match_uses_types(env: LowerEnv, values: Vec[anf::Arm]) -> bool {
 }
 
 fn non_exhaustive_block() -> Block {
-    let stmts: Vec[Stmt] = Vec::[];
+    let stmts: Vec[Stmt] = Vec::from_array([]);
     stmts.push(Stmt::Panic { message: "non-exhaustive match" });
     Block { stmts }
 }
 
 fn compile_term_leaf(env: LowerEnv, value: anf::Term) -> Vec[Stmt] {
-    let result: Vec[Stmt] = Vec::[];
+    let result: Vec[Stmt] = Vec::from_array([]);
     match value {
         Return(value) => result.push(
             Stmt::Return {
@@ -1733,7 +1755,7 @@ fn compile_term_leaf(env: LowerEnv, value: anf::Term) -> Vec[Stmt] {
 fn compile_term_to_join(env: LowerEnv, value: anf::Term, target: string, join: anf::JoinBind) -> Vec[
     Stmt,
 ] {
-    let result: Vec[Stmt] = Vec::[];
+    let result: Vec[Stmt] = Vec::from_array([]);
     match value {
         Jump { target: _, args, ret_ty: _ } => {
             append_stmts(result, compile_jump_args(env, join, args))
@@ -1755,7 +1777,7 @@ fn compile_term_to_join(env: LowerEnv, value: anf::Term, target: string, join: a
                     None => append_stmts(result, non_exhaustive_block().stmts),
                 }
             } else if match_uses_types(env, arms) {
-                let cases: Vec[TypeSwitchCase] = Vec::[];
+                let cases: Vec[TypeSwitchCase] = Vec::from_array([]);
                 for arm in arms {
                     match arm_type(env, arm.lhs) {
                         Some(ty) => cases.push(
@@ -1780,7 +1802,7 @@ fn compile_term_to_join(env: LowerEnv, value: anf::Term, target: string, join: a
                     },
                 )
             } else {
-                let cases: Vec[SwitchCase] = Vec::[];
+                let cases: Vec[SwitchCase] = Vec::from_array([]);
                 for arm in arms {
                     cases.push(
                         SwitchCase {
@@ -1809,7 +1831,7 @@ fn compile_term_with_pending(env: LowerEnv, value: anf::Term, pending: Vec[anf::
     match term_target(value) {
         Some(target) => match find_join(pending, target) {
             Some(join) => {
-                let result: Vec[Stmt] = Vec::[];
+                let result: Vec[Stmt] = Vec::from_array([]);
                 append_stmts(result, compile_term_to_join(env, value, target, join));
                 append_stmts(result, compile_block(env, join.body).stmts);
                 result
@@ -1843,7 +1865,7 @@ fn fresh_loop_label(env: LowerEnv, value: string) -> string {
 }
 
 fn scoped_joins(parent: Vec[anf::JoinBind], value: anf::Block) -> Vec[anf::JoinBind] {
-    let result: Vec[anf::JoinBind] = Vec::[];
+    let result: Vec[anf::JoinBind] = Vec::from_array([]);
     for join in parent {
         result.push(join)
     }
@@ -2047,7 +2069,7 @@ fn term_all_paths_reach_or_terminate(
 }
 
 fn all_paths_reach_or_terminate(value: anf::Block, target: string) -> bool {
-    block_all_paths_reach_or_terminate(value, target, Vec::[], Vec::[])
+    block_all_paths_reach_or_terminate(value, target, Vec::from_array([]), Vec::from_array([]))
 }
 
 enum LoopBranchTarget {
@@ -2057,10 +2079,10 @@ enum LoopBranchTarget {
 }
 
 fn loop_branch_target(body: anf::Block, loop_name: string, joins: Vec[anf::JoinBind]) -> LoopBranchTarget {
-    if block_reaches_target(body, loop_name, joins, Vec::[]) {
+    if block_reaches_target(body, loop_name, joins, Vec::from_array([])) {
         LoopBranchTarget::Continue
     } else {
-        match block_tail_target_through_joins(body, joins, Vec::[]) {
+        match block_tail_target_through_joins(body, joins, Vec::from_array([])) {
             Some(target) => LoopBranchTarget::Exit(target),
             None => LoopBranchTarget::Invalid,
         }
@@ -2073,18 +2095,18 @@ fn loop_exit_target(value: anf::Block, loop_name: string, parent: Vec[anf::JoinB
     let joins = scoped_joins(parent, value);
     match value.term {
         If { cond: _, then_, else_, ret_ty: _ } => {
-            let then_reaches = block_reaches_target(then_, loop_name, joins, Vec::[]);
-            let else_reaches = block_reaches_target(else_, loop_name, joins, Vec::[]);
+            let then_reaches = block_reaches_target(then_, loop_name, joins, Vec::from_array([]));
+            let else_reaches = block_reaches_target(else_, loop_name, joins, Vec::from_array([]));
             if then_reaches && !else_reaches {
-                block_tail_target_through_joins(else_, joins, Vec::[])
+                block_tail_target_through_joins(else_, joins, Vec::from_array([]))
             } else if else_reaches && !then_reaches {
-                block_tail_target_through_joins(then_, joins, Vec::[])
+                block_tail_target_through_joins(then_, joins, Vec::from_array([]))
             } else {
                 Option::None
             }
         },
         Match { scrutinee: _, arms, default, ret_ty: _ } => {
-            let targets: Vec[LoopBranchTarget] = Vec::[];
+            let targets: Vec[LoopBranchTarget] = Vec::from_array([]);
             for arm in arms {
                 targets.push(loop_branch_target(arm.body, loop_name, joins))
             }
@@ -2092,8 +2114,8 @@ fn loop_exit_target(value: anf::Block, loop_name: string, parent: Vec[anf::JoinB
                 Some(body) => targets.push(loop_branch_target(body, loop_name, joins)),
                 None => (),
             };
-            let exits: Vec[string] = Vec::[];
-            let continues: Vec[unit] = Vec::[];
+            let exits: Vec[string] = Vec::from_array([]);
+            let continues: Vec[unit] = Vec::from_array([]);
             for target in targets {
                 match target {
                     Continue => continues.push(()),
@@ -2148,9 +2170,9 @@ fn compile_loop_branch_to_join(
     exit_name: string,
     label: string,
 ) -> Block {
-    let stmts: Vec[Stmt] = Vec::[];
-    let pending: Vec[anf::JoinBind] = Vec::[];
-    let loop_names: Vec[string] = Vec::[];
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    let pending: Vec[anf::JoinBind] = Vec::from_array([]);
+    let loop_names: Vec[string] = Vec::from_array([]);
     for bind in value.binds {
         match bind {
             Let(value) => append_stmts(stmts, compile_let(env, value)),
@@ -2264,7 +2286,7 @@ fn compile_loop_term_leaf(
     exit_name: string,
     label: string,
 ) -> Vec[Stmt] {
-    let result: Vec[Stmt] = Vec::[];
+    let result: Vec[Stmt] = Vec::from_array([]);
     match value {
         Jump { target, args, ret_ty: _ } => {
             if target == loop_name {
@@ -2310,7 +2332,7 @@ fn compile_loop_term_leaf(
                     None => append_stmts(result, non_exhaustive_block().stmts),
                 }
             } else if match_uses_types(env, arms) {
-                let cases: Vec[TypeSwitchCase] = Vec::[];
+                let cases: Vec[TypeSwitchCase] = Vec::from_array([]);
                 for arm in arms {
                     match arm_type(env, arm.lhs) {
                         Some(ty) => cases.push(
@@ -2337,7 +2359,7 @@ fn compile_loop_term_leaf(
                     },
                 )
             } else {
-                let cases: Vec[SwitchCase] = Vec::[];
+                let cases: Vec[SwitchCase] = Vec::from_array([]);
                 for arm in arms {
                     cases.push(
                         SwitchCase {
@@ -2371,7 +2393,7 @@ fn compile_loop_term_to_join(
     exit_name: string,
     label: string,
 ) -> Vec[Stmt] {
-    let result: Vec[Stmt] = Vec::[];
+    let result: Vec[Stmt] = Vec::from_array([]);
     match value {
         Jump { target: _, args, ret_ty: _ } => {
             append_stmts(result, compile_jump_args(env, join, args))
@@ -2419,7 +2441,7 @@ fn compile_loop_term_to_join(
                     None => append_stmts(result, non_exhaustive_block().stmts),
                 }
             } else if match_uses_types(env, arms) {
-                let cases: Vec[TypeSwitchCase] = Vec::[];
+                let cases: Vec[TypeSwitchCase] = Vec::from_array([]);
                 for arm in arms {
                     match arm_type(env, arm.lhs) {
                         Some(ty) => cases.push(
@@ -2462,7 +2484,7 @@ fn compile_loop_term_to_join(
                     },
                 )
             } else {
-                let cases: Vec[SwitchCase] = Vec::[];
+                let cases: Vec[SwitchCase] = Vec::from_array([]);
                 for arm in arms {
                     cases.push(
                         SwitchCase {
@@ -2514,7 +2536,7 @@ fn compile_loop_term_with_pending(
     match term_target(value) {
         Some(target) => match find_join(pending, target) {
             Some(join) => {
-                let result: Vec[Stmt] = Vec::[];
+                let result: Vec[Stmt] = Vec::from_array([]);
                 append_stmts(
                     result,
                     compile_loop_term_to_join(env, value, target, join, loop_name, exit_name, label),
@@ -2538,9 +2560,9 @@ fn compile_loop_block(
     exit_name: string,
     label: string,
 ) -> Block {
-    let stmts: Vec[Stmt] = Vec::[];
-    let pending: Vec[anf::JoinBind] = Vec::[];
-    let loop_names: Vec[string] = Vec::[];
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    let pending: Vec[anf::JoinBind] = Vec::from_array([]);
+    let loop_names: Vec[string] = Vec::from_array([]);
     for bind in value.binds {
         match bind {
             Let(value) => append_stmts(stmts, compile_let(env, value)),
@@ -2589,8 +2611,8 @@ fn compile_joinrec_in_loop(
     outer_exit_name: string,
     outer_label: string,
 ) -> JoinRecResult {
-    let stmts: Vec[Stmt] = Vec::[];
-    let loop_names: Vec[string] = Vec::[];
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    let loop_names: Vec[string] = Vec::from_array([]);
     let single = values.len() == 1;
     for value in values {
         match find_loop_exit(value.body, value.name, env.joins) {
@@ -2615,12 +2637,24 @@ fn compile_joinrec_in_loop(
                 };
                 loop_names.push(value.name)
             },
-            None => if single && block_reaches_target(value.body, value.name, Vec::[], Vec::[]) {
+            None => if single
+                && block_reaches_target(
+                    value.body,
+                    value.name,
+                    Vec::from_array([]),
+                    Vec::from_array([]),
+                ) {
                 let label = fresh_loop_label(env, value.name);
                 let body = compile_loop_block(env, value.body, value.name, "", label);
                 stmts.push(loop_stmt(label, body));
                 loop_names.push(value.name)
-            } else if single && !block_reaches_target(value.body, value.name, Vec::[], Vec::[]) {
+            } else if single
+                && !block_reaches_target(
+                    value.body,
+                    value.name,
+                    Vec::from_array([]),
+                    Vec::from_array([]),
+                ) {
                 append_stmts(
                     stmts,
                     compile_loop_block(
@@ -2695,8 +2729,8 @@ fn loop_stmt(label: string, body: Block) -> Stmt {
 }
 
 fn compile_joinrec(env: LowerEnv, values: Vec[anf::JoinBind]) -> JoinRecResult {
-    let stmts: Vec[Stmt] = Vec::[];
-    let loop_names: Vec[string] = Vec::[];
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    let loop_names: Vec[string] = Vec::from_array([]);
     let single = values.len() == 1;
     for value in values {
         match find_loop_exit(value.body, value.name, env.joins) {
@@ -2712,12 +2746,24 @@ fn compile_joinrec(env: LowerEnv, values: Vec[anf::JoinBind]) -> JoinRecResult {
                 };
                 loop_names.push(value.name)
             },
-            None => if single && block_reaches_target(value.body, value.name, Vec::[], Vec::[]) {
+            None => if single
+                && block_reaches_target(
+                    value.body,
+                    value.name,
+                    Vec::from_array([]),
+                    Vec::from_array([]),
+                ) {
                 let label = fresh_loop_label(env, value.name);
                 let body = compile_loop_block(env, value.body, value.name, "", label);
                 stmts.push(loop_stmt(label, body));
                 loop_names.push(value.name)
-            } else if single && !block_reaches_target(value.body, value.name, Vec::[], Vec::[]) {
+            } else if single
+                && !block_reaches_target(
+                    value.body,
+                    value.name,
+                    Vec::from_array([]),
+                    Vec::from_array([]),
+                ) {
                 append_stmts(stmts, compile_block(env, value.body).stmts);
                 loop_names.push(value.name)
             } else {},
@@ -2727,9 +2773,9 @@ fn compile_joinrec(env: LowerEnv, values: Vec[anf::JoinBind]) -> JoinRecResult {
 }
 
 fn compile_block(env: LowerEnv, value: anf::Block) -> Block {
-    let stmts: Vec[Stmt] = Vec::[];
-    let pending: Vec[anf::JoinBind] = Vec::[];
-    let loop_names: Vec[string] = Vec::[];
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    let pending: Vec[anf::JoinBind] = Vec::from_array([]);
+    let loop_names: Vec[string] = Vec::from_array([]);
     for bind in value.binds {
         match bind {
             Let(value) => append_stmts(stmts, compile_let(env, value)),
@@ -2774,7 +2820,7 @@ struct CollectedTypes {
 }
 
 fn new_collected_types() -> CollectedTypes {
-    CollectedTypes { values: Vec::[], buckets: HashMap::{} }
+    CollectedTypes { values: Vec::from_array([]), buckets: HashMap::from_array([]) }
 }
 
 fn add_collected_type(result: CollectedTypes, value: repr::Type) -> unit {
@@ -2789,7 +2835,7 @@ fn add_collected_type(result: CollectedTypes, value: repr::Type) -> unit {
             values.push(value)
         },
         None => {
-            result.buckets[key] = Vec::[value];
+            result.buckets[key] = Vec::from_array([value]);
         },
     };
     result.values.push(value)
@@ -3112,14 +3158,14 @@ fn collect_type_definition_fields(
 fn runtime_struct(value: repr::Type) -> StructDef {
     match repr::resolve_type(value) {
         Tuple { items: values } => {
-            let fields: Vec[(string, Type)] = Vec::[];
+            let fields: Vec[(string, Type)] = Vec::from_array([]);
             for index in 0..values.len() {
                 fields.push(("_" + index.to_string(), lower_type(values[index])))
             }
             StructDef { name: type_name(value), fields }
         },
         RefType { elem } => {
-            let fields: Vec[(string, Type)] = Vec::[];
+            let fields: Vec[(string, Type)] = Vec::from_array([]);
             fields.push(("value", lower_type(elem)));
             StructDef {
                 name: go_generated_ident("ref_" + go_ident(encode_type(elem)) + "_x"),
@@ -3127,14 +3173,14 @@ fn runtime_struct(value: repr::Type) -> StructDef {
             }
         },
         VecType { elem } => {
-            let fields: Vec[(string, Type)] = Vec::[];
+            let fields: Vec[(string, Type)] = Vec::from_array([]);
             fields.push(("items", Type::Slice { elem: lower_type(elem) }));
             StructDef {
                 name: go_generated_ident("_goml_vec_" + go_ident(encode_type(elem))),
                 fields,
             }
         },
-        _ => StructDef { name: "Error", fields: Vec::[] },
+        _ => StructDef { name: "Error", fields: Vec::from_array([]) },
     }
 }
 
@@ -3196,16 +3242,16 @@ fn compile_function(
     function_names: FunctionNames,
     dyn_helper_names: DynHelperNames,
 ) -> Function {
-    let joins: Vec[anf::JoinBind] = Vec::[];
+    let joins: Vec[anf::JoinBind] = Vec::from_array([]);
     collect_joins_block(joins, value.body);
-    let params: Vec[(string, Type)] = Vec::[];
+    let params: Vec[(string, Type)] = Vec::from_array([]);
     for param in value.params {
         params.push((go_local_ident(param.0), lower_type(param.1)))
     }
     let env = LowerEnv {
         builtin,
         joins,
-        emitted_loop_labels: Vec::[],
+        emitted_loop_labels: Vec::from_array([]),
         variants,
         structs,
         instances,
@@ -3285,14 +3331,14 @@ fn test_main_function(
     test_cases: Vec[(string, string, Vec[(string, string)])],
     test_fail_key: string,
 ) -> Function {
-    let cases: Vec[SwitchCase] = Vec::[];
+    let cases: Vec[SwitchCase] = Vec::from_array([]);
     for test_case in test_cases {
         let function_name = match mapped_function_name(function_names, test_case.1) {
             Some(name) => name,
             None => function_name(test_case.1),
         };
-        let body_stmts: Vec[Stmt] = Vec::[];
-        let arguments: Vec[Expr] = Vec::[];
+        let body_stmts: Vec[Stmt] = Vec::from_array([]);
+        let arguments: Vec[Expr] = Vec::from_array([]);
         for argument in test_case.2 {
             arguments.push(
                 if argument.0 == "string" {
@@ -3314,8 +3360,8 @@ fn test_main_function(
             },
         )
     }
-    let default_stmts: Vec[Stmt] = Vec::[];
-    let fail_args: Vec[Expr] = Vec::[];
+    let default_stmts: Vec[Stmt] = Vec::from_array([]);
+    let fail_args: Vec[Expr] = Vec::from_array([]);
     fail_args.push(Expr::String { value: "unknown test id" });
     default_stmts.push(
         Stmt::Expr {
@@ -3325,7 +3371,7 @@ fn test_main_function(
             },
         },
     );
-    let stmts: Vec[Stmt] = Vec::[];
+    let stmts: Vec[Stmt] = Vec::from_array([]);
     stmts.push(
         Stmt::Switch {
             expr: Expr::Index {
@@ -3336,7 +3382,12 @@ fn test_main_function(
             default: Option::Some(Block { stmts: default_stmts }),
         },
     );
-    Function { name: "main", params: Vec::[], ret_ty: Option::None, body: Block { stmts } }
+    Function {
+        name: "main",
+        params: Vec::from_array([]),
+        ret_ty: Option::None,
+        body: Block { stmts },
+    }
 }
 
 fn lower_with_test_cases(
@@ -3351,13 +3402,13 @@ fn lower_with_test_cases(
     let constants = value.constants;
     let statics = value.statics;
     let function_names = build_function_names(value.functions, structs, enums, type_instances);
-    let items: Vec[Item] = Vec::[];
+    let items: Vec[Item] = Vec::from_array([]);
     let types = new_collected_types();
-    let runtime_hook_keys: Vec[string] = Vec::[];
-    let intrinsics: Vec[string] = Vec::[];
-    let go_foreign: Vec[GoForeignSpec] = Vec::[];
+    let runtime_hook_keys: Vec[string] = Vec::from_array([]);
+    let intrinsics: Vec[string] = Vec::from_array([]);
+    let go_foreign: Vec[GoForeignSpec] = Vec::from_array([]);
     let missing_types = new_collected_types();
-    let coercions: Vec[DynCoercion] = Vec::[];
+    let coercions: Vec[DynCoercion] = Vec::from_array([]);
     let variants = new_variant_infos();
     for function in value.functions {
         for param in function.params {
@@ -3445,19 +3496,21 @@ fn lower_with_test_cases(
             None => return Result::Err("missing testing runtime hook ABI"),
         }
     } else {
-        let stmts: Vec[Stmt] = Vec::[];
+        let stmts: Vec[Stmt] = Vec::from_array([]);
         let entry_name = match mapped_function_name(function_names, "main") {
             Some(name) => name,
             None => "main0",
         };
         stmts.push(
-            Stmt::Expr { expr: Expr::Call { func: Expr::Var { name: entry_name }, args: Vec::[] } },
+            Stmt::Expr {
+                expr: Expr::Call { func: Expr::Var { name: entry_name }, args: Vec::from_array([]) },
+            },
         );
         items.push(
             Item::Function(
                 Function {
                     name: "main",
-                    params: Vec::[],
+                    params: Vec::from_array([]),
                     ret_ty: Option::None,
                     body: Block { stmts },
                 },
@@ -3507,7 +3560,7 @@ fn validate_anf_block(value: anf::Block) -> Result[unit, string] {
 }
 
 fn resolve_runtime_hooks(keys: Vec[string]) -> Result[Vec[resources::RuntimeHook], string] {
-    let hooks: Vec[resources::RuntimeHook] = Vec::[];
+    let hooks: Vec[resources::RuntimeHook] = Vec::from_array([]);
     for key in keys {
         match resources::runtime_abi_by_key(key) {
             Some(spec) => hooks.push(spec.hook),
@@ -3519,9 +3572,9 @@ fn resolve_runtime_hooks(keys: Vec[string]) -> Result[Vec[resources::RuntimeHook
 
 fn validate_anf(value: anf::File) -> Result[unit, string] {
     anf::verify(value)?;
-    let runtime_hooks: Vec[string] = Vec::[];
-    let intrinsics: Vec[string] = Vec::[];
-    let go_foreign: Vec[GoForeignSpec] = Vec::[];
+    let runtime_hooks: Vec[string] = Vec::from_array([]);
+    let intrinsics: Vec[string] = Vec::from_array([]);
+    let go_foreign: Vec[GoForeignSpec] = Vec::from_array([]);
     let missing_types = new_collected_types();
     for function in value.functions {
         match validate_anf_block(function.body) {
@@ -3541,7 +3594,7 @@ fn validate_anf(value: anf::File) -> Result[unit, string] {
 
 pub fn lower(value: anf::File) -> Result[File, string] {
     validate_anf(value)?;
-    lower_with_test_cases(value, false, Vec::[])
+    lower_with_test_cases(value, false, Vec::from_array([]))
 }
 
 pub fn lower_tests(value: anf::File, test_cases: Vec[(string, string, Vec[(string, string)])]) -> Result[

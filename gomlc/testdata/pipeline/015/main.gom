@@ -13,8 +13,7 @@ fn print_int_list(xs: IntList) {
             let _ = println(", ");
             let _ = print_int_list(xs);
             let _ = println(")");
-            ()
-        }
+        },
     }
 }
 
@@ -29,7 +28,6 @@ fn int_list_rev(xs: IntList) -> IntList {
     int_list_rev_aux(xs, Nil)
 }
 
-
 fn int_list_length(xs: IntList) -> int32 {
     match xs {
         Nil => 0,
@@ -40,7 +38,6 @@ fn int_list_length(xs: IntList) -> int32 {
 fn print_int_list_length(xs: IntList) {
     let _ = println("Length: ");
     let _ = println(int_list_length(xs).to_string());
-    ()
 }
 
 fn main() {
@@ -48,20 +45,15 @@ fn main() {
     let _ = print_int_list(x);
     let _ = println("");
     let _ = print_int_list_length(x);
-
     let x = Cons(1, Nil);
     let _ = print_int_list(x);
     let _ = println("");
     let _ = print_int_list_length(x);
-
     let x = Cons(1, Cons(2, Cons(3, Nil)));
     let _ = print_int_list(x);
     let _ = println("");
     let _ = print_int_list_length(x);
-
     let y = int_list_rev(x);
     let _ = print_int_list(y);
     let _ = println("");
-
-    ()
 }

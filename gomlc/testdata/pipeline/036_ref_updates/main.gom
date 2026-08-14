@@ -39,7 +39,6 @@ fn main() {
     let counter = Ref::new(39);
     let toggler = Ref::new(false);
     let nested = Ref::new(Ref::new(3));
-
     let bumped = bump(counter);
     let flipped = flip(toggler);
     let flipped_again = flip(toggler);
@@ -49,11 +48,9 @@ fn main() {
     let alias_total = alias_bump(counter);
     let pair_total = pair_sum();
     let reassigned = reassign_nested(nested);
-
     let bool_check = !false;
     let _ = println((bumped + counter.get()).to_string());
     let _ = println((nested_total_val + alias_total + reassigned).to_string());
     let _ = println(pair_total.to_string());
     let _ = println((flipped && flipped_again && bool_check).to_string());
-    ()
 }

@@ -40,18 +40,11 @@ enum GenericChoice[T, Marker] {
 
 fn main() -> unit {
     let wrapped = Wrapper { value: NoTraits { value: 1 } };
-    let left: Generic[NoTraits, NoTraits] = Generic {
-        first: wrapped,
-        second: wrapped,
-    };
-    let right: Generic[NoTraits, NoTraits] = Generic {
-        first: wrapped,
-        second: wrapped,
-    };
+    let left: Generic[NoTraits, NoTraits] = Generic { first: wrapped, second: wrapped };
+    let right: Generic[NoTraits, NoTraits] = Generic { first: wrapped, second: wrapped };
     println(left.to_string());
     println(left == right);
     println(left.hash() == right.hash());
-
     let empty: GenericChoice[NoTraits, NoTraits] = GenericChoice::Empty;
     let value: GenericChoice[NoTraits, NoTraits] = GenericChoice::Value(wrapped);
     println(empty.to_string());

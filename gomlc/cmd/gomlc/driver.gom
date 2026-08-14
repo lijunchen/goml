@@ -94,12 +94,12 @@ fn lower_checked_builtin_core(checked: tast::CheckResult, counter: Ref[int]) -> 
     } else {
         fail(COMPILE_ERROR_PREFIX + "failed to typecheck builtin package");
         core::File {
-            functions: Vec::[],
-            enums: Vec::[],
-            structs: Vec::[],
-            type_instances: Vec::[],
-            constants: Vec::[],
-            statics: Vec::[],
+            functions: Vec::from_array([]),
+            enums: Vec::from_array([]),
+            structs: Vec::from_array([]),
+            type_instances: Vec::from_array([]),
+            constants: Vec::from_array([]),
+            statics: Vec::from_array([]),
         }
     }
 }
@@ -109,7 +109,7 @@ fn lower_go_or_fail(value: Result[go_backend::File, string]) -> go_backend::File
         Ok(file) => file,
         Err(error) => {
             fail(COMPILE_ERROR_PREFIX + error);
-            go_backend::File { items: Vec::[] }
+            go_backend::File { items: Vec::from_array([]) }
         },
     }
 }
@@ -177,7 +177,7 @@ fn imports_package(value: ast::LowerResult, expected: string) -> bool {
 }
 
 fn dependency_enums(builtins: core::File, dependencies: Vec[core::File]) -> Vec[tast::EnumDef] {
-    let result: Vec[tast::EnumDef] = Vec::[];
+    let result: Vec[tast::EnumDef] = Vec::from_array([]);
     for value in builtins.enums {
         result.push(core::enum_def_to_tast(value))
     }
@@ -190,7 +190,7 @@ fn dependency_enums(builtins: core::File, dependencies: Vec[core::File]) -> Vec[
 }
 
 fn dependency_structs(builtins: core::File, dependencies: Vec[core::File]) -> Vec[tast::StructDef] {
-    let result: Vec[tast::StructDef] = Vec::[];
+    let result: Vec[tast::StructDef] = Vec::from_array([]);
     for value in builtins.structs {
         result.push(core::struct_def_to_tast(value))
     }
@@ -205,13 +205,13 @@ fn dependency_structs(builtins: core::File, dependencies: Vec[core::File]) -> Ve
 fn toolchain_dependency_environments(hir_dependencies: Vec[hir::File]) -> Vec[
     tast::DependencyEnvironment,
 ] {
-    let result: Vec[tast::DependencyEnvironment] = Vec::[];
-    let builtin_files: Vec[hir::File] = Vec::[];
+    let result: Vec[tast::DependencyEnvironment] = Vec::from_array([]);
+    let builtin_files: Vec[hir::File] = Vec::from_array([]);
     for dependency in hir_dependencies {
         if dependency.package_name == "builtin" {
             builtin_files.push(dependency)
         } else {
-            match tast::dependency_environments(Vec::[dependency]) {
+            match tast::dependency_environments(Vec::from_array([dependency])) {
                 Ok(environments) => for environment in environments {
                     result.push(environment)
                 },
@@ -237,15 +237,15 @@ fn compile_toolchain_package(
     builtins: core::File,
     deps: Vec[(string, string)],
 ) -> PackageCompilation {
-    let ast_values: Vec[ast::LowerResult] = Vec::[];
-    let inputs: Vec[(ast::LowerResult, string)] = Vec::[];
+    let ast_values: Vec[ast::LowerResult] = Vec::from_array([]);
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::from_array([]);
     for source in sources {
         let ast_value = ast::lower(parser::parse(source.source));
         ast_values.push(ast_value);
         inputs.push((ast_value, source.path))
     }
     let public_names = public_item_names(ast_values, package_name);
-    let hir_files: Vec[hir::File] = Vec::[];
+    let hir_files: Vec[hir::File] = Vec::from_array([]);
     for lowered in hir::lower_package_files(inputs, package_name) {
         if !lowered.diagnostics.is_empty() {
             fail(
@@ -261,7 +261,7 @@ fn compile_toolchain_package(
     }
     let hir_file = merge_hir_files(hir_files, package_name);
     let public_reexports = if package_name == "prelude" {
-        let values: Vec[(string, string)] = Vec::[];
+        let values: Vec[(string, string)] = Vec::from_array([]);
         for name in resources::prelude_builtin_export_names() {
             values.push((name, name))
         }
@@ -281,10 +281,10 @@ fn compile_toolchain_package(
         Err(error) => {
             fail("error[compile]: " + error);
             tast::PackageSignatures {
-                traits: Vec::[],
-                functions: Vec::[],
-                type_aliases: Vec::[],
-                constants: Vec::[],
+                traits: Vec::from_array([]),
+                functions: Vec::from_array([]),
+                type_aliases: Vec::from_array([]),
+                constants: Vec::from_array([]),
             }
         },
     };
@@ -294,19 +294,19 @@ fn compile_toolchain_package(
         None => {
             fail("error[compile]: missing typed package " + package_name);
             tast::File {
-                items: Vec::[],
-                enums: Vec::[],
-                structs: Vec::[],
-                constants: Vec::[],
-                statics: Vec::[],
+                items: Vec::from_array([]),
+                enums: Vec::from_array([]),
+                structs: Vec::from_array([]),
+                constants: Vec::from_array([]),
+                statics: Vec::from_array([]),
             }
         },
     };
-    let enum_names: Vec[string] = Vec::[];
+    let enum_names: Vec[string] = Vec::from_array([]);
     for definition in dependency_enums(builtins, core_dependencies) {
         enum_names.push(definition.name)
     }
-    let struct_names: Vec[string] = Vec::[];
+    let struct_names: Vec[string] = Vec::from_array([]);
     for definition in dependency_structs(builtins, core_dependencies) {
         struct_names.push(definition.name)
     }
@@ -374,11 +374,11 @@ fn required_standard_sources(package_name: string) -> Vec[resources::Source] {
         Ok(Some(value)) => value,
         Ok(None) => {
             fail("error[compile]: unknown standard package " + package_name);
-            Vec::[]
+            Vec::from_array([])
         },
         Err(error) => {
             fail(COMPILE_ERROR_PREFIX + error);
-            Vec::[]
+            Vec::from_array([])
         },
     }
 }
@@ -388,14 +388,14 @@ fn builtin_hir_files() -> Vec[hir::File] {
         Ok(value) => value,
         Err(error) => {
             fail(COMPILE_ERROR_PREFIX + error);
-            Vec::[]
+            Vec::from_array([])
         },
     };
-    let inputs: Vec[(ast::LowerResult, string)] = Vec::[];
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::from_array([]);
     for source in sources {
         inputs.push((ast::lower(parser::parse(source.source)), source.path))
     }
-    let files: Vec[hir::File] = Vec::[];
+    let files: Vec[hir::File] = Vec::from_array([]);
     for lowered in hir::lower_package_files(inputs, "builtin") {
         match lowered.hir {
             Some(file) => files.push(file),
@@ -410,14 +410,14 @@ fn prelude_hir_files() -> Vec[hir::File] {
         Ok(value) => value,
         Err(error) => {
             fail(COMPILE_ERROR_PREFIX + error);
-            Vec::[]
+            Vec::from_array([])
         },
     };
-    let inputs: Vec[(ast::LowerResult, string)] = Vec::[];
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::from_array([]);
     for source in sources {
         inputs.push((ast::lower(parser::parse(source.source)), source.path))
     }
-    let files: Vec[hir::File] = Vec::[];
+    let files: Vec[hir::File] = Vec::from_array([]);
     for lowered in hir::lower_package_files(inputs, "prelude") {
         match lowered.hir {
             Some(file) => files.push(file),
@@ -428,7 +428,7 @@ fn prelude_hir_files() -> Vec[hir::File] {
 }
 
 fn builtin_contract_function_names() -> Vec[string] {
-    Vec::["array_get", "array_set"]
+    Vec::from_array(["array_get", "array_set"])
 }
 
 fn builtin_artifact_interface_unit_from_checked(
@@ -440,15 +440,15 @@ fn builtin_artifact_interface_unit_from_checked(
         Err(error) => {
             fail("error[compile]: " + error);
             tast::PackageSignatures {
-                traits: Vec::[],
-                functions: Vec::[],
-                type_aliases: Vec::[],
-                constants: Vec::[],
+                traits: Vec::from_array([]),
+                functions: Vec::from_array([]),
+                type_aliases: Vec::from_array([]),
+                constants: Vec::from_array([]),
             }
         },
     };
     let contract_functions = builtin_contract_function_names();
-    let functions: Vec[tast::FunctionScheme] = Vec::[];
+    let functions: Vec[tast::FunctionScheme] = Vec::from_array([]);
     for name in contract_functions {
         match tast::builtin_function_scheme(name) {
             Some(value) => functions.push(value),
@@ -478,11 +478,11 @@ fn builtin_artifact_interface_unit_from_checked(
         None => {
             fail("error[compile]: failed to typecheck builtin package");
             tast::File {
-                items: Vec::[],
-                enums: Vec::[],
-                structs: Vec::[],
-                constants: Vec::[],
-                statics: Vec::[],
+                items: Vec::from_array([]),
+                enums: Vec::from_array([]),
+                structs: Vec::from_array([]),
+                constants: Vec::from_array([]),
+                statics: Vec::from_array([]),
             }
         },
     };
@@ -490,18 +490,18 @@ fn builtin_artifact_interface_unit_from_checked(
         file,
         signatures,
         "builtin",
-        Vec::[],
-        Vec::[],
+        Vec::from_array([]),
+        Vec::from_array([]),
         false,
-        Vec::[],
-        Vec::[],
+        Vec::from_array([]),
+        Vec::from_array([]),
     );
     interface_codec::new_unit_with_comptime(
         "builtin",
         exports,
         artifact_package_interface("builtin", "builtin", exports),
         artifact_comptime_unit(checked.comptime, exports),
-        Vec::[],
+        Vec::from_array([]),
     )
 }
 
@@ -527,7 +527,7 @@ fn compile_prelude_package_with_builtin_files(
         Ok(value) => value,
         Err(error) => {
             fail(COMPILE_ERROR_PREFIX + error);
-            Vec::[]
+            Vec::from_array([])
         },
     };
     let compilation = compile_toolchain_package(
@@ -535,9 +535,9 @@ fn compile_prelude_package_with_builtin_files(
         "prelude",
         "prelude",
         builtin_files,
-        Vec::[],
+        Vec::from_array([]),
         builtins,
-        Vec::[("builtin", builtin_interface.interface_hash)],
+        Vec::from_array([("builtin", builtin_interface.interface_hash)]),
     );
     PackageCompilation {
         hir_file: compilation.hir_file,
@@ -566,8 +566,8 @@ fn expand_builtin_derives_with_compiler(compiler: SourceCompiler, value: ast::Lo
         value,
         hir::DeriveEnvironment {
             builtin: builtin_module,
-            dependencies: Vec::[],
-            reexports: Vec::[],
+            dependencies: Vec::from_array([]),
+            reexports: Vec::from_array([]),
         },
     )
 }
@@ -617,7 +617,7 @@ pub fn source_compiler_without_standard() -> SourceCompiler {
 }
 
 pub fn source_compiler_for_sources(sources: Vec[string]) -> SourceCompiler {
-    let package_names: Vec[string] = Vec::[];
+    let package_names: Vec[string] = Vec::from_array([]);
     for source in sources {
         for package_name in direct_imported_standard_package_names(
             ast::lower(parser::parse(source)),
@@ -667,7 +667,7 @@ fn standard_artifact_deps(
     prelude_hash: string,
     dependencies: Vec[PackageCompilation],
 ) -> Vec[(string, string)] {
-    let result: Vec[(string, string)] = Vec::[];
+    let result: Vec[(string, string)] = Vec::from_array([]);
     result.push(("builtin", builtin_hash));
     result.push(("prelude", prelude_hash));
     for dependency in dependencies {
@@ -695,7 +695,7 @@ fn compile_standard_library_with_builtin_files(
     builtin_files: Vec[hir::File],
     package_names: Vec[string],
 ) -> StandardLibrary {
-    let compiled: Vec[PackageCompilation] = Vec::[];
+    let compiled: Vec[PackageCompilation] = Vec::from_array([]);
     for package_name in resources::standard_package_closure(package_names) {
         let spec = match resources::standard_package_spec(package_name) {
             Some(value) => value,
@@ -704,13 +704,13 @@ fn compile_standard_library_with_builtin_files(
                 resources::standard_package_specs()[0]
             },
         };
-        let dependencies: Vec[PackageCompilation] = Vec::[];
-        let hir_dependencies: Vec[hir::File] = Vec::[];
+        let dependencies: Vec[PackageCompilation] = Vec::from_array([]);
+        let hir_dependencies: Vec[hir::File] = Vec::from_array([]);
         for builtin_file in builtin_files {
             hir_dependencies.push(builtin_file)
         }
         hir_dependencies.push(prelude.hir_file);
-        let core_dependencies: Vec[core::File] = Vec::[];
+        let core_dependencies: Vec[core::File] = Vec::from_array([]);
         for dependency_name in spec.dependencies {
             let dependency = required_standard_compilation(compiled, dependency_name);
             dependencies.push(dependency);
@@ -751,7 +751,7 @@ fn standard_library_package(value: StandardLibrary, package_name: string) -> Pac
 }
 
 fn direct_imported_standard_package_names(ast_value: ast::LowerResult) -> Vec[string] {
-    let result: Vec[string] = Vec::[];
+    let result: Vec[string] = Vec::from_array([]);
     for spec in resources::standard_package_specs() {
         if imports_package(ast_value, spec.name) {
             result.push(spec.name)
@@ -761,7 +761,7 @@ fn direct_imported_standard_package_names(ast_value: ast::LowerResult) -> Vec[st
 }
 
 fn selected_standard_hir(ast_value: ast::LowerResult, standard: StandardLibrary) -> Vec[hir::File] {
-    let result: Vec[hir::File] = Vec::[];
+    let result: Vec[hir::File] = Vec::from_array([]);
     for package_name in resources::standard_package_closure(
         direct_imported_standard_package_names(ast_value),
     ) {
@@ -771,7 +771,7 @@ fn selected_standard_hir(ast_value: ast::LowerResult, standard: StandardLibrary)
 }
 
 fn selected_standard_core(ast_value: ast::LowerResult, standard: StandardLibrary) -> Vec[core::File] {
-    let result: Vec[core::File] = Vec::[];
+    let result: Vec[core::File] = Vec::from_array([]);
     for package_name in resources::standard_package_link_closure(
         direct_imported_standard_package_names(ast_value),
     ) {
@@ -781,7 +781,7 @@ fn selected_standard_core(ast_value: ast::LowerResult, standard: StandardLibrary
 }
 
 fn source_hir_dependencies(compiler: SourceCompiler, ast_value: ast::LowerResult) -> Vec[hir::File] {
-    let result = Vec::[compiler.prelude.hir_file];
+    let result = Vec::from_array([compiler.prelude.hir_file]);
     match compiler.standard {
         Some(value) => for dependency in selected_standard_hir(ast_value, value) {
             result.push(dependency)
@@ -795,7 +795,7 @@ fn source_dependency_environments(compiler: SourceCompiler, ast_value: ast::Lowe
     Vec[tast::DependencyEnvironment],
     string,
 ] {
-    let result: Vec[tast::DependencyEnvironment] = Vec::[];
+    let result: Vec[tast::DependencyEnvironment] = Vec::from_array([]);
     result.push(tast::builtin_dependency_environment(compiler.builtin_files)?);
     for environment in tast::dependency_environments(source_hir_dependencies(compiler, ast_value))? {
         result.push(environment)
@@ -806,7 +806,7 @@ fn source_dependency_environments(compiler: SourceCompiler, ast_value: ast::Lowe
 fn source_core_dependencies(compiler: SourceCompiler, ast_value: ast::LowerResult) -> Vec[
     core::File,
 ] {
-    let result = Vec::[compiler.prelude.core_value];
+    let result = Vec::from_array([compiler.prelude.core_value]);
     match compiler.standard {
         Some(value) => for dependency in selected_standard_core(ast_value, value) {
             result.push(dependency)
@@ -817,7 +817,7 @@ fn source_core_dependencies(compiler: SourceCompiler, ast_value: ast::LowerResul
 }
 
 fn hir_diagnostics(diagnostics: Vec[hir::Diagnostic], source_path: string) -> Vec[tast::Diagnostic] {
-    let result: Vec[tast::Diagnostic] = Vec::[];
+    let result: Vec[tast::Diagnostic] = Vec::from_array([]);
     for diagnostic in diagnostics {
         result.push(
             tast::Diagnostic {
@@ -827,7 +827,7 @@ fn hir_diagnostics(diagnostics: Vec[hir::Diagnostic], source_path: string) -> Ve
                 source_path,
                 span: diagnostic.span,
                 primary_label: Option::None,
-                secondary_labels: Vec::[],
+                secondary_labels: Vec::from_array([]),
                 sort_order: 0,
             },
         )
@@ -888,7 +888,7 @@ fn diagnostic_compare(left: tast::Diagnostic, right: tast::Diagnostic) -> cmp::O
 }
 
 fn sorted_typer_diagnostics(values: Vec[tast::Diagnostic]) -> Vec[tast::Diagnostic] {
-    let result: Vec[tast::Diagnostic] = Vec::[];
+    let result: Vec[tast::Diagnostic] = Vec::from_array([]);
     for value in values {
         result.push(value)
     }
@@ -1143,7 +1143,7 @@ fn fail_on_typer_diagnostics(
 fn ast_diagnostics(diagnostics: Vec[cst::Diagnostic], stage: string, source_path: string) -> Vec[
     tast::Diagnostic,
 ] {
-    let result: Vec[tast::Diagnostic] = Vec::[];
+    let result: Vec[tast::Diagnostic] = Vec::from_array([]);
     for diagnostic in diagnostics {
         result.push(
             tast::Diagnostic {
@@ -1153,7 +1153,7 @@ fn ast_diagnostics(diagnostics: Vec[cst::Diagnostic], stage: string, source_path
                 source_path,
                 span: Option::Some(ast::Span { start: diagnostic.start, end: diagnostic.end }),
                 primary_label: Option::None,
-                secondary_labels: Vec::[],
+                secondary_labels: Vec::from_array([]),
                 sort_order: 0,
             },
         )
@@ -1307,7 +1307,7 @@ fn compact_diagnostic_compare(left: tast::Diagnostic, right: tast::Diagnostic) -
 }
 
 fn compact_sorted_diagnostics(values: Vec[tast::Diagnostic]) -> Vec[tast::Diagnostic] {
-    let result: Vec[tast::Diagnostic] = Vec::[];
+    let result: Vec[tast::Diagnostic] = Vec::from_array([]);
     for value in values {
         match value.severity {
             Error => result.push(value),
@@ -1441,13 +1441,13 @@ fn lower_lift_stage(value: mono::File, counter: Ref[int]) -> lift::File {
         Err(message) => {
             fail(COMPILE_ERROR_PREFIX + message);
             lift::File {
-                functions: Vec::[],
-                enums: Vec::[],
-                structs: Vec::[],
-                type_instances: Vec::[],
-                constants: Vec::[],
-                statics: Vec::[],
-                closure_defs: Vec::[],
+                functions: Vec::from_array([]),
+                enums: Vec::from_array([]),
+                structs: Vec::from_array([]),
+                type_instances: Vec::from_array([]),
+                constants: Vec::from_array([]),
+                statics: Vec::from_array([]),
+                closure_defs: Vec::from_array([]),
             }
         },
     };
@@ -1515,7 +1515,7 @@ fn compile_source_optional(
         Ok(value) => value,
         Err(error) => {
             fail("error[builtin]: " + error);
-            Vec::[]
+            Vec::from_array([])
         },
     };
     let core_dependencies = source_core_dependencies(compiler, ast_value);

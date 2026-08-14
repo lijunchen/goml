@@ -80,7 +80,7 @@ fn packet() -> Packet {
         flag: true,
         letter: 'λ',
         ratio: 1.5,
-        values: Vec::[1, 251, 65535],
+        values: Vec::from_array([1, 251, 65535]),
         optional: Option::Some(-7),
         event: Event::Pair(-3, 4294967296),
     }
@@ -91,22 +91,26 @@ fn main() -> unit {
         Ok(value) => value,
         Err(error) => {
             println(error);
-            Vec::[]
+            Vec::from_array([])
         },
     };
-    println(bytes_equal(standard, Vec::[7, 3, 1, 65, 0, 1, 251, 44, 1, 2, 251, 244, 1]).to_string());
+    println(
+        bytes_equal(standard, Vec::from_array([7, 3, 1, 65, 0, 1, 251, 44, 1, 2, 251, 244, 1])).to_string(),
+    );
     print_wire_result(standard, bincode::standard());
     let legacy = match bincode::encode_to_vec(wire(), bincode::legacy()) {
         Ok(value) => value,
         Err(error) => {
             println(error);
-            Vec::[]
+            Vec::from_array([])
         },
     };
     println(
         bytes_equal(
             legacy,
-            Vec::[7, 254, 255, 1, 0, 0, 0, 0, 0, 0, 0, 65, 0, 1, 44, 1, 2, 0, 0, 0, 244, 1],
+            Vec::from_array(
+                [7, 254, 255, 1, 0, 0, 0, 0, 0, 0, 0, 65, 0, 1, 44, 1, 2, 0, 0, 0, 244, 1],
+            ),
         ).to_string(),
     );
     print_wire_result(legacy, bincode::legacy());
@@ -115,20 +119,22 @@ fn main() -> unit {
         Ok(value) => value,
         Err(error) => {
             println(error);
-            Vec::[]
+            Vec::from_array([])
         },
     };
     println(
         bytes_equal(
             big_encoded,
-            Vec::[7, 255, 254, 0, 0, 0, 0, 0, 0, 0, 1, 65, 0, 1, 1, 44, 0, 0, 0, 2, 1, 244],
+            Vec::from_array(
+                [7, 255, 254, 0, 0, 0, 0, 0, 0, 0, 1, 65, 0, 1, 1, 44, 0, 0, 0, 2, 1, 244],
+            ),
         ).to_string(),
     );
     let packet_encoded = match bincode::encode_to_vec(packet(), bincode::standard()) {
         Ok(value) => value,
         Err(error) => {
             println(error);
-            Vec::[]
+            Vec::from_array([])
         },
     };
     let packet_decoded: Result[(Packet, int), string] = bincode::decode_from_slice(
@@ -149,7 +155,7 @@ fn main() -> unit {
         },
         Err(error) => println(error),
     };
-    let invalid: Vec[byte] = Vec::[2];
+    let invalid: Vec[byte] = Vec::from_array([2]);
     let invalid_bool: Result[(bool, int), string] = bincode::decode_from_slice(
         invalid.slice(0, invalid.len()),
         bincode::standard(),

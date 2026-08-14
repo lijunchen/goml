@@ -141,7 +141,7 @@ pub enum EnumVariantFields {
 
 pub fn enum_variant_field_types(value: EnumVariantFields) -> Vec[Type] {
     match value {
-        Unit => Vec::[],
+        Unit => Vec::from_array([]),
         Tuple(values) => values,
         Struct(fields) => {
             let result: Vec[Type] = Vec::with_capacity(fields.len());

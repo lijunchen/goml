@@ -56,7 +56,7 @@ fn lower_linked_source(source: string) -> File {
         core::enum_defs_to_tast(builtins.enums),
         core::struct_defs_to_tast(builtins.structs),
     );
-    lower(core::link_with_dependencies(builtins, Vec::[prelude], user))
+    lower(core::link_with_dependencies(builtins, Vec::from_array([prelude]), user))
 }
 
 fn lower_checked_source(source: string) -> LowerResult {
@@ -70,27 +70,31 @@ fn core_file_with_residual_type(ty: core::Type) -> core::File {
         tast::check(hir::lower(ast::lower(parser::parse("fn main() -> unit { () }")), "main.gom")),
     );
     let function = file.functions[0];
-    let stmts: Vec[core::LetStmt] = Vec::[
-        core::LetStmt {
-            name: "residual",
-            value: core::Expr::Prim { value: core::Primitive::Unit, ty },
-            ty,
-        },
-    ];
-    core::File {
-        functions: Vec::[
-            core::Function {
-                name: function.name,
-                origin: function.origin,
-                root: function.root,
-                trait_impl: function.trait_impl,
-                generics: function.generics,
-                predicates: function.predicates,
-                params: function.params,
-                ret_ty: function.ret_ty,
-                body: core::Block { stmts, tail: function.body.tail },
+    let stmts: Vec[core::LetStmt] = Vec::from_array(
+        [
+            core::LetStmt {
+                name: "residual",
+                value: core::Expr::Prim { value: core::Primitive::Unit, ty },
+                ty,
             },
         ],
+    );
+    core::File {
+        functions: Vec::from_array(
+            [
+                core::Function {
+                    name: function.name,
+                    origin: function.origin,
+                    root: function.root,
+                    trait_impl: function.trait_impl,
+                    generics: function.generics,
+                    predicates: function.predicates,
+                    params: function.params,
+                    ret_ty: function.ret_ty,
+                    body: core::Block { stmts, tail: function.body.tail },
+                },
+            ],
+        ),
         enums: file.enums,
         structs: file.structs,
         type_instances: file.type_instances,
@@ -136,17 +140,19 @@ fn rejects_invalid_mono_nominal_types() -> unit {
         Err(message) => testing::fail(message),
     };
     let function = file.functions[0];
-    let functions = Vec::[
-        Function {
-            name: function.name,
-            origin: function.origin,
-            root: function.root,
-            trait_impl: function.trait_impl,
-            params: Vec::[("value", Type::Named { name: "" })],
-            ret_ty: function.ret_ty,
-            body: function.body,
-        },
-    ];
+    let functions = Vec::from_array(
+        [
+            Function {
+                name: function.name,
+                origin: function.origin,
+                root: function.root,
+                trait_impl: function.trait_impl,
+                params: Vec::from_array([("value", Type::Named { name: "" })]),
+                ret_ty: function.ret_ty,
+                body: function.body,
+            },
+        ],
+    );
     match validate(
         File {
             functions,
@@ -186,9 +192,9 @@ fn rejects_open_types_at_the_mono_boundary() -> unit {
         core_file_with_residual_type(
             core::Type::Dyn {
                 trait_name: "Display",
-                args: Vec::[core::Type::Param { name: "T" }],
-                associated_types: Vec::[],
-                additional_bounds: Vec::[],
+                args: Vec::from_array([core::Type::Param { name: "T" }]),
+                associated_types: Vec::from_array([]),
+                additional_bounds: Vec::from_array([]),
             },
         ),
     );

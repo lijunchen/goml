@@ -253,7 +253,7 @@ pub fn decode_artifact_binary_container(data: bytes::Bytes) -> Result[
     if !artifact_binary_bytes_equal(payload_hash, artifact_binary_sha256(payload)) {
         return Result::Err("binary artifact payload checksum mismatch")
     } else {};
-    let result: Vec[ArtifactBinarySection] = Vec::[];
+    let result: Vec[ArtifactBinarySection] = Vec::from_array([]);
     let mut previous_end = payload_offset;
     for index in 0..section_count {
         let offset = section_offsets[index];

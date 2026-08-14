@@ -98,18 +98,45 @@ fn read_fixture(path_value: string) -> string {
 }
 
 fn assert_format_invariants(source: string, formatted: string) -> unit {
+    let parsed = parser::parse(source);
+    let migrated = migrate_collection_literals(source, located_node(parsed.root, 0));
     testing::assert_eq(parser::parse(formatted).diagnostics.len(), 0);
     match format_source(formatted) {
         Ok(again) => testing::assert_eq(again, formatted),
         Err(_) => testing::fail("second format failed"),
     };
-    testing::assert_eq(token_signature(formatted), token_signature(source));
+    testing::assert_eq(token_signature(formatted), token_signature(migrated));
     testing::assert_eq(literal_signature(formatted), literal_signature(source));
     testing::assert_eq(
         token_kind_signature(formatted, lexer::TokenKind::Comment),
         token_kind_signature(source, lexer::TokenKind::Comment),
     );
     testing::assert(!has_trailing_space(formatted))
+}
+
+#[test]
+fn migrates_collection_literals_losslessly() -> unit {
+    let source = "fn main() -> unit { let nested = Vec::[Vec::[1], Vec::[]]; let map = HashMap::{ // key\n \"a\" // arrow\n => // value\n Vec::[2], \"b\" => Vec::[], }; let explicit = Vec::[int]::new(); let text = \"Vec::[unchanged]\"; let _ = (nested, map, explicit, text); }";
+    let formatted = match format_source(source) {
+        Ok(value) => value,
+        Err(_) => {
+            testing::fail("collection migration failed");
+            ""
+        },
+    };
+    testing::assert(
+        formatted.contains("Vec::from_array([Vec::from_array([1]), Vec::from_array([])])"),
+    );
+    testing::assert(formatted.contains("HashMap::from_array("));
+    testing::assert(formatted.contains("// key"));
+    testing::assert(formatted.contains("// arrow"));
+    testing::assert(formatted.contains("// value"));
+    testing::assert(formatted.contains("Vec::[int]::new()"));
+    testing::assert(formatted.contains("\"Vec::[unchanged]\""));
+    match format_source(formatted) {
+        Ok(again) => testing::assert_eq(again, formatted),
+        Err(_) => testing::fail("migrated source was not idempotent"),
+    }
 }
 
 fn formatter_fixture_root() -> string {
@@ -169,15 +196,20 @@ fn renders_flat_and_broken_groups() -> unit {
     let docs = doc_builder();
     let document = docs.group(
         concat(
-            Vec::[
-                text("call("),
-                Doc::Line,
-                indent(
-                    join(concat2(text(","), Doc::SoftLine), Vec::[text("first"), text("second")]),
-                ),
-                Doc::Line,
-                text(")"),
-            ],
+            Vec::from_array(
+                [
+                    text("call("),
+                    Doc::Line,
+                    indent(
+                        join(
+                            concat2(text(","), Doc::SoftLine),
+                            Vec::from_array([text("first"), text("second")]),
+                        ),
+                    ),
+                    Doc::Line,
+                    text(")"),
+                ],
+            ),
         ),
     ).doc;
     testing::assert_eq(render(document, 40), "call(first, second)");
@@ -189,17 +221,24 @@ fn renders_nested_groups_independently() -> unit {
     let docs = doc_builder();
     let inner = docs.group(
         concat(
-            Vec::[
-                text("inner("),
-                Doc::Line,
-                indent(join(concat2(text(","), Doc::SoftLine), Vec::[text("one"), text("two")])),
-                Doc::Line,
-                text(")"),
-            ],
+            Vec::from_array(
+                [
+                    text("inner("),
+                    Doc::Line,
+                    indent(
+                        join(
+                            concat2(text(","), Doc::SoftLine),
+                            Vec::from_array([text("one"), text("two")]),
+                        ),
+                    ),
+                    Doc::Line,
+                    text(")"),
+                ],
+            ),
         ),
     ).doc;
     let outer = docs.group(
-        concat(Vec::[text("a_very_long_outer_prefix"), Doc::SoftLine, indent(inner)]),
+        concat(Vec::from_array([text("a_very_long_outer_prefix"), Doc::SoftLine, indent(inner)])),
     ).doc;
     testing::assert_eq(render(outer, 28), "a_very_long_outer_prefix\n    inner(one, two)")
 }
@@ -207,9 +246,11 @@ fn renders_nested_groups_independently() -> unit {
 #[test]
 fn measures_unicode_by_codepoint() -> unit {
     let docs = doc_builder();
-    let fits = docs.group(concat(Vec::[text("你好"), Doc::SoftLine, text("世界")])).doc;
+    let fits = docs.group(concat(Vec::from_array([text("你好"), Doc::SoftLine, text("世界")]))).doc;
     testing::assert_eq(render(fits, 5), "你好 世界");
-    let breaks = doc_builder().group(concat(Vec::[text("你好"), Doc::SoftLine, text("世界")])).doc;
+    let breaks = doc_builder().group(
+        concat(Vec::from_array([text("你好"), Doc::SoftLine, text("世界")])),
+    ).doc;
     testing::assert_eq(render(breaks, 4), "你好\n世界")
 }
 
@@ -220,16 +261,20 @@ fn renders_conditional_commas_suffixes_and_verbatim_text() -> unit {
     let list = docs.group_with_id(
         id,
         concat(
-            Vec::[
-                text("["),
-                Doc::Line,
-                indent(concat(Vec::[text("alphabet"), if_break(id, text(","), nil())])),
-                Doc::Line,
-                text("]"),
-                line_suffix(concat2(text(" "), text("// 尾注释"))),
-                Doc::HardLine,
-                verbatim("\\\\raw\n\\\\text"),
-            ],
+            Vec::from_array(
+                [
+                    text("["),
+                    Doc::Line,
+                    indent(
+                        concat(Vec::from_array([text("alphabet"), if_break(id, text(","), nil())])),
+                    ),
+                    Doc::Line,
+                    text("]"),
+                    line_suffix(concat2(text(" "), text("// 尾注释"))),
+                    Doc::HardLine,
+                    verbatim("\\\\raw\n\\\\text"),
+                ],
+            ),
         ),
     ).doc;
     testing::assert_eq(render(list, 8), "[\n    alphabet,\n] // 尾注释\n\\\\raw\n\\\\text")

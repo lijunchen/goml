@@ -1,6 +1,5 @@
 trait Provider {
     type Item: ToString;
-
     fn get(self: Self) -> Self::Item;
 }
 
@@ -32,11 +31,7 @@ fn read[P: Provider](provider: P) -> P::Item {
     provider.get()
 }
 
-fn read_as[P, T](provider: P) -> T
-where
-    P: Provider,
-    P::Item = T,
-{
+fn read_as[P, T](provider: P) -> T where P: Provider, P::Item = T {
     provider.get()
 }
 

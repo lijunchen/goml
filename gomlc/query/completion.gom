@@ -248,7 +248,7 @@ fn complete_static_namespace(value: Analysis, namespace: string, prefix: string)
     if namespace_is_package(value, canonical) {
         complete_namespace(value, canonical, prefix)
     } else {
-        let result: Vec[CompletionItem] = Vec::[];
+        let result: Vec[CompletionItem] = Vec::from_array([]);
         let current_name = value.package_name + "::" + canonical;
         for symbol in build_symbol_index(value).symbols {
             let owner = qualified_owner(symbol.qualified_name);
@@ -339,7 +339,7 @@ fn analysis_has_package(value: Analysis, package_name: string) -> bool {
 }
 
 fn complete_namespace(value: Analysis, package_name: string, prefix: string) -> Vec[CompletionItem] {
-    let result: Vec[CompletionItem] = Vec::[];
+    let result: Vec[CompletionItem] = Vec::from_array([]);
     for symbol in build_symbol_index(value).symbols {
         if immediate_package_member(symbol.qualified_name, package_name)
             && (symbol.package_name == value.package_name || symbol.public) {
@@ -422,8 +422,8 @@ fn complete_local_package_children(
 }
 
 fn complete_source_package(source: SourceFile, prefix: string) -> Vec[CompletionItem] {
-    let result: Vec[CompletionItem] = Vec::[];
-    let sources: Vec[SourceFile] = Vec::[];
+    let result: Vec[CompletionItem] = Vec::from_array([]);
+    let sources: Vec[SourceFile] = Vec::from_array([]);
     sources.push(source);
     for symbol in build_symbol_index_from_sources(sources).symbols {
         if symbol.public && immediate_package_member(symbol.qualified_name, source.package_name) {
@@ -442,7 +442,7 @@ fn complete_source_package(source: SourceFile, prefix: string) -> Vec[Completion
 }
 
 fn complete_import_namespace(value: Analysis, context: UseCompletionContext) -> Vec[CompletionItem] {
-    let result: Vec[CompletionItem] = Vec::[];
+    let result: Vec[CompletionItem] = Vec::from_array([]);
     if context.namespace == "" {
         push_package_completion(result, "std", "std", context.prefix)
     } else {
@@ -756,7 +756,7 @@ fn complete_named_methods(
 }
 
 fn complete_members(value: Analysis, dot: int, prefix: string) -> Vec[CompletionItem] {
-    let result: Vec[CompletionItem] = Vec::[];
+    let result: Vec[CompletionItem] = Vec::from_array([]);
     match receiver_type(value, dot) {
         Some(receiver) => {
             let receiver_name = type_owner_name(receiver);
@@ -962,7 +962,7 @@ fn append_prelude_scope_completions(result: Vec[CompletionItem], value: Analysis
 }
 
 fn complete_scope(value: Analysis, offset: int, prefix: string) -> Vec[CompletionItem] {
-    let result: Vec[CompletionItem] = Vec::[];
+    let result: Vec[CompletionItem] = Vec::from_array([]);
     for fact in value.checked.typeck_results.locals {
         if fact.source_path == value.source_path {
             match fact.span {
@@ -1018,48 +1018,50 @@ fn complete_scope(value: Analysis, offset: int, prefix: string) -> Vec[Completio
         },
         None => (),
     };
-    let keywords = Vec::[
-        "array",
-        "bool",
-        "char",
-        "dyn",
-        "else",
-        "enum",
-        "extern",
-        "false",
-        "float32",
-        "float64",
-        "fn",
-        "for",
-        "go",
-        "if",
-        "impl",
-        "in",
-        "int8",
-        "int16",
-        "int32",
-        "int64",
-        "let",
-        "loop",
-        "match",
-        "package",
-        "pub",
-        "return",
-        "string",
-        "struct",
-        "trait",
-        "true",
-        "type",
-        "uint",
-        "uint8",
-        "uint16",
-        "uint32",
-        "uint64",
-        "unit",
-        "use",
-        "while",
-        "_",
-    ];
+    let keywords = Vec::from_array(
+        [
+            "array",
+            "bool",
+            "char",
+            "dyn",
+            "else",
+            "enum",
+            "extern",
+            "false",
+            "float32",
+            "float64",
+            "fn",
+            "for",
+            "go",
+            "if",
+            "impl",
+            "in",
+            "int8",
+            "int16",
+            "int32",
+            "int64",
+            "let",
+            "loop",
+            "match",
+            "package",
+            "pub",
+            "return",
+            "string",
+            "struct",
+            "trait",
+            "true",
+            "type",
+            "uint",
+            "uint8",
+            "uint16",
+            "uint32",
+            "uint64",
+            "unit",
+            "use",
+            "while",
+            "_",
+        ],
+    );
     for keyword in keywords {
         push_completion(
             result,
@@ -1160,7 +1162,7 @@ fn completions_for_source(value: Analysis, source: string, offset: int, recover:
         None => if prefix == "" && member_dot(source, offset).is_none()
             && namespace_path(source, offset).is_none()
             && call_argument_context(source, offset) {
-            Vec::[]
+            Vec::from_array([])
         } else {
             let result = completion_query(value, source, offset, prefix);
             if !result.is_empty() || !recover

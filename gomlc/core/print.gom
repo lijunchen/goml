@@ -24,7 +24,7 @@ fn callable_doc(value: Callable) -> pretty::Doc {
             pretty::text("@go_ffi(" + import_path + ", " + symbol + ")")
         },
         TraitMethod { trait_ref: reference, method_name: name, .. } => pretty::concat(
-            Vec::[trait_ref_doc(reference), pretty::text("::" + name)],
+            Vec::from_array([trait_ref_doc(reference), pretty::text("::" + name)]),
         ),
         DynTraitMethod { trait_name: owner, dispatch_name: _, method_name: name } => {
             pretty::text("dyn " + owner + "::" + name)
@@ -49,18 +49,23 @@ fn record_doc(name: string, values: Vec[pretty::Doc]) -> pretty::Doc {
     } else {
         pretty::group(
             pretty::concat(
-                Vec::[
-                    pretty::text(name + " {"),
-                    pretty::nest(
-                        2,
-                        pretty::append(
-                            pretty::line(),
-                            pretty::join(pretty::append(pretty::text(","), pretty::line()), values),
+                Vec::from_array(
+                    [
+                        pretty::text(name + " {"),
+                        pretty::nest(
+                            2,
+                            pretty::append(
+                                pretty::line(),
+                                pretty::join(
+                                    pretty::append(pretty::text(","), pretty::line()),
+                                    values,
+                                ),
+                            ),
                         ),
-                    ),
-                    pretty::line(),
-                    pretty::text("}"),
-                ],
+                        pretty::line(),
+                        pretty::text("}"),
+                    ],
+                ),
             ),
         )
     }
@@ -75,7 +80,9 @@ fn constructor_doc(constructor: Constructor, args: Vec[Expr]) -> pretty::Doc {
             for index in 0..args.len() {
                 fields.push(
                     pretty::concat(
-                        Vec::[pretty::text(constructor.fields[index] + ": "), expr_doc(args[index])],
+                        Vec::from_array(
+                            [pretty::text(constructor.fields[index] + ": "), expr_doc(args[index])],
+                        ),
                     ),
                 )
             }
@@ -104,14 +111,16 @@ fn block_docs(value: Block) -> Vec[pretty::Doc] {
             result.push(
                 pretty::group(
                     pretty::concat(
-                        Vec::[
-                            pretty::text("let " + statement.name + " ="),
-                            pretty::nest(
-                                2,
-                                pretty::append(pretty::line(), expr_doc(statement.value)),
-                            ),
-                            pretty::text(" in"),
-                        ],
+                        Vec::from_array(
+                            [
+                                pretty::text("let " + statement.name + " ="),
+                                pretty::nest(
+                                    2,
+                                    pretty::append(pretty::line(), expr_doc(statement.value)),
+                                ),
+                                pretty::text(" in"),
+                            ],
+                        ),
                     ),
                 ),
             )
@@ -129,23 +138,30 @@ fn braced_docs(values: Vec[pretty::Doc], indentation: int) -> pretty::Doc {
         pretty::text("{}")
     } else {
         pretty::concat(
-            Vec::[
-                pretty::text("{"),
-                pretty::nest(indentation, pretty::append(pretty::hardline(), pretty::stack(values))),
-                pretty::hardline(),
-                pretty::text("}"),
-            ],
+            Vec::from_array(
+                [
+                    pretty::text("{"),
+                    pretty::nest(
+                        indentation,
+                        pretty::append(pretty::hardline(), pretty::stack(values)),
+                    ),
+                    pretty::hardline(),
+                    pretty::text("}"),
+                ],
+            ),
         )
     }
 }
 
 fn arm_doc(value: Arm) -> pretty::Doc {
     pretty::concat(
-        Vec::[
-            pretty::append(expr_doc(value.lhs), pretty::text(" => ")),
-            braced_docs(Vec::[expr_doc(value.body)], 2),
-            pretty::text(","),
-        ],
+        Vec::from_array(
+            [
+                pretty::append(expr_doc(value.lhs), pretty::text(" => ")),
+                braced_docs(Vec::from_array([expr_doc(value.body)]), 2),
+                pretty::text(","),
+            ],
+        ),
     )
 }
 
@@ -163,18 +179,22 @@ fn expr_doc(value: Expr) -> pretty::Doc {
             let values: Vec[pretty::Doc] = Vec::with_capacity(params.len());
             for param in params {
                 values.push(
-                    pretty::concat(Vec::[pretty::text(param.name + ": "), type_doc(param.ty)]),
+                    pretty::concat(
+                        Vec::from_array([pretty::text(param.name + ": "), type_doc(param.ty)]),
+                    ),
                 )
             }
             pretty::group(
                 pretty::concat(
-                    Vec::[
-                        pretty::text("|"),
-                        pretty::join(pretty::append(pretty::text(","), pretty::line()), values),
-                        pretty::text("| "),
-                        pretty::text("=> "),
-                        expr_doc(body),
-                    ],
+                    Vec::from_array(
+                        [
+                            pretty::text("|"),
+                            pretty::join(pretty::append(pretty::text(","), pretty::line()), values),
+                            pretty::text("| "),
+                            pretty::text("=> "),
+                            expr_doc(body),
+                        ],
+                    ),
                 ),
             )
         },
@@ -195,11 +215,13 @@ fn expr_doc(value: Expr) -> pretty::Doc {
                 Some(value) => values.push(
                     pretty::group(
                         pretty::concat(
-                            Vec::[
-                                pretty::text("_ =>"),
-                                pretty::nest(2, pretty::append(pretty::line(), expr_doc(value))),
-                                pretty::text(","),
-                            ],
+                            Vec::from_array(
+                                [
+                                    pretty::text("_ =>"),
+                                    pretty::nest(2, pretty::append(pretty::line(), expr_doc(value))),
+                                    pretty::text(","),
+                                ],
+                            ),
                         ),
                     ),
                 ),
@@ -208,20 +230,24 @@ fn expr_doc(value: Expr) -> pretty::Doc {
             pretty::block(pretty::append(pretty::text("match "), expr_doc(source)), values)
         },
         If { cond, then_branch, else_branch, ty: _ } => pretty::concat(
-            Vec::[
-                pretty::append(pretty::text("if "), expr_doc(cond)),
-                pretty::text(" "),
-                braced_docs(Vec::[expr_doc(then_branch)], 4),
-                pretty::text(" else "),
-                braced_docs(Vec::[expr_doc(else_branch)], 4),
-            ],
+            Vec::from_array(
+                [
+                    pretty::append(pretty::text("if "), expr_doc(cond)),
+                    pretty::text(" "),
+                    braced_docs(Vec::from_array([expr_doc(then_branch)]), 4),
+                    pretty::text(" else "),
+                    braced_docs(Vec::from_array([expr_doc(else_branch)]), 4),
+                ],
+            ),
         ),
         While { cond, body, ty: _ } => pretty::concat(
-            Vec::[
-                pretty::append(pretty::text("while "), expr_doc(cond)),
-                pretty::text(" "),
-                braced_docs(Vec::[expr_doc(body)], 4),
-            ],
+            Vec::from_array(
+                [
+                    pretty::append(pretty::text("while "), expr_doc(cond)),
+                    pretty::text(" "),
+                    braced_docs(Vec::from_array([expr_doc(body)]), 4),
+                ],
+            ),
         ),
         Loop { body, ty: _ } => {
             pretty::append(pretty::text("loop "), expr_doc(body))
@@ -266,48 +292,58 @@ fn expr_doc(value: Expr) -> pretty::Doc {
                 "_" + field_index.to_string()
             };
             pretty::concat(
-                Vec::[
-                    pretty::text(constructor.name + "." + field),
-                    arguments(Vec::[expr_doc(value)]),
-                ],
+                Vec::from_array(
+                    [
+                        pretty::text(constructor.name + "." + field),
+                        arguments(Vec::from_array([expr_doc(value)])),
+                    ],
+                ),
             )
         },
         Unary { op, expr: value, ty: _ } => pretty::concat(
-            Vec::[pretty::text("(" + unary_symbol(op)), expr_doc(value), pretty::text(")")],
+            Vec::from_array(
+                [pretty::text("(" + unary_symbol(op)), expr_doc(value), pretty::text(")")],
+            ),
         ),
         Cast { expr: value, ty } => pretty::concat(
-            Vec::[
-                pretty::text("("),
-                expr_doc(value),
-                pretty::text(" as "),
-                type_doc(ty),
-                pretty::text(")"),
-            ],
-        ),
-        Binary { op, lhs, rhs, ty: _ } => pretty::group(
-            pretty::concat(
-                Vec::[
+            Vec::from_array(
+                [
                     pretty::text("("),
-                    expr_doc(lhs),
-                    pretty::text(" " + binary_symbol(op)),
-                    pretty::nest(2, pretty::append(pretty::line(), expr_doc(rhs))),
+                    expr_doc(value),
+                    pretty::text(" as "),
+                    type_doc(ty),
                     pretty::text(")"),
                 ],
             ),
         ),
+        Binary { op, lhs, rhs, ty: _ } => pretty::group(
+            pretty::concat(
+                Vec::from_array(
+                    [
+                        pretty::text("("),
+                        expr_doc(lhs),
+                        pretty::text(" " + binary_symbol(op)),
+                        pretty::nest(2, pretty::append(pretty::line(), expr_doc(rhs))),
+                        pretty::text(")"),
+                    ],
+                ),
+            ),
+        ),
         Assign { name, value, target_ty: _, ty: _ } => pretty::concat(
-            Vec::[pretty::text(name + " = "), expr_doc(value)],
+            Vec::from_array([pretty::text(name + " = "), expr_doc(value)]),
         ),
         Call { func: function, args, ty: _ } => {
             pretty::append(expr_doc(function), arguments(exprs_doc(args)))
         },
         ToDyn { trait_name, for_ty, expr: value, ty: _ } => pretty::concat(
-            Vec::[
-                pretty::text("to_dyn[" + trait_name + "]{"),
-                type_doc(for_ty),
-                pretty::text("}"),
-                arguments(Vec::[expr_doc(value)]),
-            ],
+            Vec::from_array(
+                [
+                    pretty::text("to_dyn[" + trait_name + "]{"),
+                    type_doc(for_ty),
+                    pretty::text("}"),
+                    arguments(Vec::from_array([expr_doc(value)])),
+                ],
+            ),
         ),
         DynCall { trait_name, method_name, receiver, args, ty: _ } => {
             let values: Vec[pretty::Doc] = Vec::with_capacity(args.len() + 1);
@@ -316,12 +352,14 @@ fn expr_doc(value: Expr) -> pretty::Doc {
                 values.push(expr_doc(arg))
             }
             pretty::concat(
-                Vec::[
-                    pretty::text(
-                        "dyn_call[" + trait_name + "::" + dyn_method_name(method_name) + "]",
-                    ),
-                    arguments(values),
-                ],
+                Vec::from_array(
+                    [
+                        pretty::text(
+                            "dyn_call[" + trait_name + "::" + dyn_method_name(method_name) + "]",
+                        ),
+                        arguments(values),
+                    ],
+                ),
             )
         },
         TraitCall { trait_ref: reference, method_name, receiver, args, .. } => {
@@ -334,12 +372,14 @@ fn expr_doc(value: Expr) -> pretty::Doc {
                 values.push(expr_doc(arg))
             }
             pretty::concat(
-                Vec::[
-                    pretty::text("trait_call["),
-                    trait_ref_doc(reference),
-                    pretty::text("::" + method_name + "]"),
-                    arguments(values),
-                ],
+                Vec::from_array(
+                    [
+                        pretty::text("trait_call["),
+                        trait_ref_doc(reference),
+                        pretty::text("::" + method_name + "]"),
+                        arguments(values),
+                    ],
+                ),
             )
         },
         Proj { tuple: value, index, ty: _ } => {
@@ -351,7 +391,9 @@ fn expr_doc(value: Expr) -> pretty::Doc {
 fn params_doc(values: Vec[(string, Type)]) -> pretty::Doc {
     let result: Vec[pretty::Doc] = Vec::with_capacity(values.len());
     for value in values {
-        result.push(pretty::concat(Vec::[pretty::text(value.0 + ": "), type_doc(value.1)]))
+        result.push(
+            pretty::concat(Vec::from_array([pretty::text(value.0 + ": "), type_doc(value.1)])),
+        )
     }
     arguments(result)
 }
@@ -368,13 +410,15 @@ fn function_doc(value: Function) -> pretty::Doc {
     };
     pretty::block(
         pretty::concat(
-            Vec::[
-                pretty::text("fn " + value.name),
-                generics,
-                params_doc(value.params),
-                pretty::text(" -> "),
-                type_doc(value.ret_ty),
-            ],
+            Vec::from_array(
+                [
+                    pretty::text("fn " + value.name),
+                    generics,
+                    params_doc(value.params),
+                    pretty::text(" -> "),
+                    type_doc(value.ret_ty),
+                ],
+            ),
         ),
         block_docs(value.body),
     )
@@ -394,11 +438,13 @@ pub fn encode(value: File) -> string {
     }
     let constants_doc = pretty::stack(constants);
     let functions_doc = pretty::join(
-        pretty::concat(Vec::[pretty::hardline(), pretty::hardline()]),
+        pretty::concat(Vec::from_array([pretty::hardline(), pretty::hardline()])),
         functions,
     );
     let result = if !constants.is_empty() && !value.functions.is_empty() {
-        pretty::concat(Vec::[constants_doc, pretty::hardline(), pretty::hardline(), functions_doc])
+        pretty::concat(
+            Vec::from_array([constants_doc, pretty::hardline(), pretty::hardline(), functions_doc]),
+        )
     } else {
         pretty::append(constants_doc, functions_doc)
     };

@@ -61,7 +61,6 @@ fn main() {
     let tuple_result_miss = match_tuple((3, 4));
     let pair_first = match_struct(PairData { head: 100, tail: 200 });
     let pair_second = match_struct(PairData { head: 10, tail: 300 });
-
     let part1 = report("int8=", is_special8(5));
     let part2 = report(",int16=", is_special16(1024));
     let part3 = report(",int32=", is_special32(8192));
@@ -71,8 +70,6 @@ fn main() {
     let part7 = report(",tuple_miss=", tuple_result_miss);
     let part8 = report(",struct_first=", pair_first);
     let part9 = report(",struct_second=", pair_second);
-
     let message = part1 + part2 + part3 + part4 + part5 + part6 + part7 + part8 + part9;
     let _ = println(message);
-    ()
 }

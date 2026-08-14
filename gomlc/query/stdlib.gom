@@ -9,7 +9,7 @@ fn standard_library_children(package_name: string) -> Vec[string] {
 fn standard_library_sources(package_name: string) -> Result[Option[Vec[SourceFile]], string] {
     match resources::standard_sources(package_name)? {
         Some(values) => {
-            let result: Vec[SourceFile] = Vec::[];
+            let result: Vec[SourceFile] = Vec::from_array([]);
             for value in values {
                 result.push(SourceFile { path: value.path, source: value.source, package_name })
             }

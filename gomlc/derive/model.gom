@@ -59,431 +59,474 @@ fn spec(name: string, params: Vec[string], ret: string) -> DeriveIntrinsicSpec {
 }
 
 fn no_types() -> Vec[string] {
-    Vec::[]
+    Vec::from_array([])
 }
 
 fn one_type(first: string) -> Vec[string] {
-    Vec::[first]
+    Vec::from_array([first])
 }
 
 fn two_types(first: string, second: string) -> Vec[string] {
-    Vec::[first, second]
+    Vec::from_array([first, second])
 }
 
 fn three_types(first: string, second: string, third: string) -> Vec[string] {
-    Vec::[first, second, third]
+    Vec::from_array([first, second, third])
 }
 
 fn four_types(first: string, second: string, third: string, fourth: string) -> Vec[string] {
-    Vec::[first, second, third, fourth]
+    Vec::from_array([first, second, third, fourth])
 }
 
 fn five_types(first: string, second: string, third: string, fourth: string, fifth: string) -> Vec[
     string,
 ] {
-    Vec::[first, second, third, fourth, fifth]
+    Vec::from_array([first, second, third, fourth, fifth])
 }
 
 pub fn intrinsic_specs() -> Vec[DeriveIntrinsicSpec] {
-    Vec::[
-        spec("derive_item_name", one_type(DERIVE_INPUT_NAME), STRING_TYPE_NAME),
-        spec("derive_item_kind", one_type(DERIVE_INPUT_NAME), INT_TYPE_NAME),
-        spec("derive_generic_count", one_type(DERIVE_INPUT_NAME), INT_TYPE_NAME),
-        spec("derive_generic_name", two_types(DERIVE_INPUT_NAME, INT_TYPE_NAME), STRING_TYPE_NAME),
-        spec("derive_field_count", one_type(DERIVE_INPUT_NAME), INT_TYPE_NAME),
-        spec("derive_field_name", two_types(DERIVE_INPUT_NAME, INT_TYPE_NAME), STRING_TYPE_NAME),
-        spec("derive_field_type", two_types(DERIVE_INPUT_NAME, INT_TYPE_NAME), META_TYPE_NAME),
-        spec(
-            "derive_field_attribute_count",
-            two_types(DERIVE_INPUT_NAME, INT_TYPE_NAME),
-            INT_TYPE_NAME,
-        ),
-        spec(
-            "derive_field_attribute_name",
-            three_types(DERIVE_INPUT_NAME, INT_TYPE_NAME, INT_TYPE_NAME),
-            STRING_TYPE_NAME,
-        ),
-        spec(
-            "derive_field_attribute_text",
-            three_types(DERIVE_INPUT_NAME, INT_TYPE_NAME, INT_TYPE_NAME),
-            STRING_TYPE_NAME,
-        ),
-        spec("derive_variant_count", one_type(DERIVE_INPUT_NAME), INT_TYPE_NAME),
-        spec("derive_variant_name", two_types(DERIVE_INPUT_NAME, INT_TYPE_NAME), STRING_TYPE_NAME),
-        spec("derive_variant_kind", two_types(DERIVE_INPUT_NAME, INT_TYPE_NAME), INT_TYPE_NAME),
-        spec(
-            "derive_variant_attribute_count",
-            two_types(DERIVE_INPUT_NAME, INT_TYPE_NAME),
-            INT_TYPE_NAME,
-        ),
-        spec(
-            "derive_variant_attribute_name",
-            three_types(DERIVE_INPUT_NAME, INT_TYPE_NAME, INT_TYPE_NAME),
-            STRING_TYPE_NAME,
-        ),
-        spec(
-            "derive_variant_attribute_text",
-            three_types(DERIVE_INPUT_NAME, INT_TYPE_NAME, INT_TYPE_NAME),
-            STRING_TYPE_NAME,
-        ),
-        spec(
-            "derive_variant_field_count",
-            two_types(DERIVE_INPUT_NAME, INT_TYPE_NAME),
-            INT_TYPE_NAME,
-        ),
-        spec(
-            "derive_variant_field_name",
-            three_types(DERIVE_INPUT_NAME, INT_TYPE_NAME, INT_TYPE_NAME),
-            STRING_TYPE_NAME,
-        ),
-        spec(
-            "derive_variant_field_type",
-            three_types(DERIVE_INPUT_NAME, INT_TYPE_NAME, INT_TYPE_NAME),
-            META_TYPE_NAME,
-        ),
-        spec(
-            "derive_variant_field_attribute_count",
-            three_types(DERIVE_INPUT_NAME, INT_TYPE_NAME, INT_TYPE_NAME),
-            INT_TYPE_NAME,
-        ),
-        spec(
-            "derive_variant_field_attribute_name",
-            four_types(DERIVE_INPUT_NAME, INT_TYPE_NAME, INT_TYPE_NAME, INT_TYPE_NAME),
-            STRING_TYPE_NAME,
-        ),
-        spec(
-            "derive_variant_field_attribute_text",
-            four_types(DERIVE_INPUT_NAME, INT_TYPE_NAME, INT_TYPE_NAME, INT_TYPE_NAME),
-            STRING_TYPE_NAME,
-        ),
-        spec("derive_attribute_count", one_type(DERIVE_INPUT_NAME), INT_TYPE_NAME),
-        spec("derive_attribute_name", two_types(DERIVE_INPUT_NAME, INT_TYPE_NAME), STRING_TYPE_NAME),
-        spec("derive_attribute_text", two_types(DERIVE_INPUT_NAME, INT_TYPE_NAME), STRING_TYPE_NAME),
-        spec("derive_attribute", two_types(DERIVE_INPUT_NAME, INT_TYPE_NAME), META_ATTRIBUTE_NAME),
-        spec(
-            "derive_field_attribute",
-            three_types(DERIVE_INPUT_NAME, INT_TYPE_NAME, INT_TYPE_NAME),
-            META_ATTRIBUTE_NAME,
-        ),
-        spec(
-            "derive_variant_attribute",
-            three_types(DERIVE_INPUT_NAME, INT_TYPE_NAME, INT_TYPE_NAME),
-            META_ATTRIBUTE_NAME,
-        ),
-        spec(
-            "derive_variant_field_attribute",
-            four_types(DERIVE_INPUT_NAME, INT_TYPE_NAME, INT_TYPE_NAME, INT_TYPE_NAME),
-            META_ATTRIBUTE_NAME,
-        ),
-        spec("derive_target_type", one_type(DERIVE_INPUT_NAME), META_TYPE_NAME),
-        spec("derive_fresh_name", two_types(DERIVE_INPUT_NAME, STRING_TYPE_NAME), STRING_TYPE_NAME),
-        spec("meta_attribute_name", one_type(META_ATTRIBUTE_NAME), STRING_TYPE_NAME),
-        spec("meta_attribute_text", one_type(META_ATTRIBUTE_NAME), STRING_TYPE_NAME),
-        spec("meta_attribute_has_argument_list", one_type(META_ATTRIBUTE_NAME), BOOL_TYPE_NAME),
-        spec("meta_attribute_argument_count", one_type(META_ATTRIBUTE_NAME), INT_TYPE_NAME),
-        spec(
-            "meta_attribute_argument_kind",
-            two_types(META_ATTRIBUTE_NAME, INT_TYPE_NAME),
-            STRING_TYPE_NAME,
-        ),
-        spec(
-            "meta_attribute_argument_name",
-            two_types(META_ATTRIBUTE_NAME, INT_TYPE_NAME),
-            STRING_TYPE_NAME,
-        ),
-        spec(
-            "meta_attribute_argument_value_kind",
-            two_types(META_ATTRIBUTE_NAME, INT_TYPE_NAME),
-            STRING_TYPE_NAME,
-        ),
-        spec(
-            "meta_attribute_argument_text",
-            two_types(META_ATTRIBUTE_NAME, INT_TYPE_NAME),
-            STRING_TYPE_NAME,
-        ),
-        spec("meta_type_named", two_types(DERIVE_INPUT_NAME, STRING_TYPE_NAME), META_TYPE_NAME),
-        spec("meta_type_call_site", one_type(STRING_TYPE_NAME), META_TYPE_NAME),
-        spec("meta_type_list_new", no_types(), META_TYPE_LIST_NAME),
-        spec("meta_type_list_push", two_types(META_TYPE_LIST_NAME, META_TYPE_NAME), UNIT_TYPE_NAME),
-        spec("meta_type_tuple", one_type(META_TYPE_LIST_NAME), META_TYPE_NAME),
-        spec("meta_type_apply", two_types(META_TYPE_NAME, META_TYPE_LIST_NAME), META_TYPE_NAME),
-        spec("meta_type_array", two_types(META_TYPE_NAME, INT_TYPE_NAME), META_TYPE_NAME),
-        spec("meta_type_projection", two_types(META_TYPE_NAME, STRING_TYPE_NAME), META_TYPE_NAME),
-        spec("meta_type_kind", one_type(META_TYPE_NAME), STRING_TYPE_NAME),
-        spec("meta_type_name", one_type(META_TYPE_NAME), STRING_TYPE_NAME),
-        spec("meta_type_argument_count", one_type(META_TYPE_NAME), INT_TYPE_NAME),
-        spec("meta_type_argument", two_types(META_TYPE_NAME, INT_TYPE_NAME), META_TYPE_NAME),
-        spec("meta_type_tuple_count", one_type(META_TYPE_NAME), INT_TYPE_NAME),
-        spec("meta_type_tuple_item", two_types(META_TYPE_NAME, INT_TYPE_NAME), META_TYPE_NAME),
-        spec("meta_type_array_length", one_type(META_TYPE_NAME), INT_TYPE_NAME),
-        spec("meta_type_array_element", one_type(META_TYPE_NAME), META_TYPE_NAME),
-        spec("meta_type_function_parameter_count", one_type(META_TYPE_NAME), INT_TYPE_NAME),
-        spec(
-            "meta_type_function_parameter",
-            two_types(META_TYPE_NAME, INT_TYPE_NAME),
-            META_TYPE_NAME,
-        ),
-        spec("meta_type_function_return", one_type(META_TYPE_NAME), META_TYPE_NAME),
-        spec(
-            "meta_type_contains_generic",
-            two_types(DERIVE_INPUT_NAME, META_TYPE_NAME),
-            BOOL_TYPE_NAME,
-        ),
-        spec("meta_type_equal", two_types(META_TYPE_NAME, META_TYPE_NAME), BOOL_TYPE_NAME),
-        spec("meta_expr_var", one_type(STRING_TYPE_NAME), META_EXPR_NAME),
-        spec("meta_expr_unit", no_types(), META_EXPR_NAME),
-        spec("meta_expr_bool", one_type(BOOL_TYPE_NAME), META_EXPR_NAME),
-        spec("meta_expr_int", one_type(INT_TYPE_NAME), META_EXPR_NAME),
-        spec("meta_expr_integer", two_types(STRING_TYPE_NAME, META_TYPE_NAME), META_EXPR_NAME),
-        spec("meta_expr_string", one_type(STRING_TYPE_NAME), META_EXPR_NAME),
-        spec("meta_expr_char", one_type(STRING_TYPE_NAME), META_EXPR_NAME),
-        spec("meta_expr_field", two_types(META_EXPR_NAME, STRING_TYPE_NAME), META_EXPR_NAME),
-        spec("meta_expr_index", two_types(META_EXPR_NAME, META_EXPR_NAME), META_EXPR_NAME),
-        spec("meta_expr_unary", two_types(INT_TYPE_NAME, META_EXPR_NAME), META_EXPR_NAME),
-        spec(
-            "meta_expr_binary",
-            three_types(INT_TYPE_NAME, META_EXPR_NAME, META_EXPR_NAME),
-            META_EXPR_NAME,
-        ),
-        spec(
-            "meta_expr_call",
-            three_types(DERIVE_INPUT_NAME, STRING_TYPE_NAME, META_EXPR_LIST_NAME),
-            META_EXPR_NAME,
-        ),
-        spec(
-            "meta_expr_call_site",
-            two_types(STRING_TYPE_NAME, META_EXPR_LIST_NAME),
-            META_EXPR_NAME,
-        ),
-        spec(
-            "meta_expr_trait_call",
-            four_types(DERIVE_INPUT_NAME, STRING_TYPE_NAME, STRING_TYPE_NAME, META_EXPR_LIST_NAME),
-            META_EXPR_NAME,
-        ),
-        spec(
-            "meta_expr_trait_call_site",
-            three_types(STRING_TYPE_NAME, STRING_TYPE_NAME, META_EXPR_LIST_NAME),
-            META_EXPR_NAME,
-        ),
-        spec("meta_expr_tuple", one_type(META_EXPR_LIST_NAME), META_EXPR_NAME),
-        spec("meta_expr_array", one_type(META_EXPR_LIST_NAME), META_EXPR_NAME),
-        spec(
-            "meta_expr_if",
-            three_types(META_EXPR_NAME, META_EXPR_NAME, META_EXPR_NAME),
-            META_EXPR_NAME,
-        ),
-        spec("meta_expr_while", two_types(META_EXPR_NAME, META_EXPR_NAME), META_EXPR_NAME),
-        spec("meta_expr_match", two_types(META_EXPR_NAME, META_ARM_LIST_NAME), META_EXPR_NAME),
-        spec("meta_expr_cast", two_types(META_EXPR_NAME, META_TYPE_NAME), META_EXPR_NAME),
-        spec(
-            "meta_expr_constructor",
-            two_types(STRING_TYPE_NAME, META_EXPR_LIST_NAME),
-            META_EXPR_NAME,
-        ),
-        spec(
-            "meta_expr_target_constructor",
-            three_types(DERIVE_INPUT_NAME, STRING_TYPE_NAME, META_EXPR_LIST_NAME),
-            META_EXPR_NAME,
-        ),
-        spec("meta_expr_field_list_new", no_types(), META_EXPR_FIELD_LIST_NAME),
-        spec(
-            "meta_expr_field_list_push",
-            three_types(META_EXPR_FIELD_LIST_NAME, STRING_TYPE_NAME, META_EXPR_NAME),
-            UNIT_TYPE_NAME,
-        ),
-        spec(
-            "meta_expr_struct",
-            three_types(DERIVE_INPUT_NAME, STRING_TYPE_NAME, META_EXPR_FIELD_LIST_NAME),
-            META_EXPR_NAME,
-        ),
-        spec(
-            "meta_expr_struct_call_site",
-            two_types(STRING_TYPE_NAME, META_EXPR_FIELD_LIST_NAME),
-            META_EXPR_NAME,
-        ),
-        spec(
-            "meta_expr_target_struct",
-            two_types(DERIVE_INPUT_NAME, META_EXPR_FIELD_LIST_NAME),
-            META_EXPR_NAME,
-        ),
-        spec(
-            "meta_expr_target_variant_struct",
-            three_types(DERIVE_INPUT_NAME, STRING_TYPE_NAME, META_EXPR_FIELD_LIST_NAME),
-            META_EXPR_NAME,
-        ),
-        spec(
-            "meta_expr_method_call",
-            three_types(META_EXPR_NAME, STRING_TYPE_NAME, META_EXPR_LIST_NAME),
-            META_EXPR_NAME,
-        ),
-        spec("meta_expr_return", one_type(META_EXPR_NAME), META_EXPR_NAME),
-        spec("meta_expr_try", one_type(META_EXPR_NAME), META_EXPR_NAME),
-        spec("meta_expr_list_new", no_types(), META_EXPR_LIST_NAME),
-        spec("meta_expr_list_push", two_types(META_EXPR_LIST_NAME, META_EXPR_NAME), UNIT_TYPE_NAME),
-        spec("meta_pattern_wild", no_types(), META_PATTERN_NAME),
-        spec("meta_pattern_bind", one_type(STRING_TYPE_NAME), META_PATTERN_NAME),
-        spec("meta_pattern_unit", no_types(), META_PATTERN_NAME),
-        spec("meta_pattern_bool", one_type(BOOL_TYPE_NAME), META_PATTERN_NAME),
-        spec("meta_pattern_int", one_type(INT_TYPE_NAME), META_PATTERN_NAME),
-        spec("meta_pattern_string", one_type(STRING_TYPE_NAME), META_PATTERN_NAME),
-        spec("meta_pattern_char", one_type(STRING_TYPE_NAME), META_PATTERN_NAME),
-        spec("meta_pattern_tuple", one_type(META_PATTERN_LIST_NAME), META_PATTERN_NAME),
-        spec("meta_pattern_array", one_type(META_PATTERN_LIST_NAME), META_PATTERN_NAME),
-        spec(
-            "meta_pattern_constructor",
-            two_types(STRING_TYPE_NAME, META_PATTERN_LIST_NAME),
-            META_PATTERN_NAME,
-        ),
-        spec(
-            "meta_pattern_target_constructor",
-            three_types(DERIVE_INPUT_NAME, STRING_TYPE_NAME, META_PATTERN_LIST_NAME),
-            META_PATTERN_NAME,
-        ),
-        spec("meta_pattern_field_list_new", no_types(), META_PATTERN_FIELD_LIST_NAME),
-        spec(
-            "meta_pattern_field_list_push",
-            three_types(META_PATTERN_FIELD_LIST_NAME, STRING_TYPE_NAME, META_PATTERN_NAME),
-            UNIT_TYPE_NAME,
-        ),
-        spec(
-            "meta_pattern_struct",
-            three_types(STRING_TYPE_NAME, META_PATTERN_FIELD_LIST_NAME, BOOL_TYPE_NAME),
-            META_PATTERN_NAME,
-        ),
-        spec(
-            "meta_pattern_target_struct",
-            three_types(DERIVE_INPUT_NAME, META_PATTERN_FIELD_LIST_NAME, BOOL_TYPE_NAME),
-            META_PATTERN_NAME,
-        ),
-        spec(
-            "meta_pattern_alias",
-            two_types(STRING_TYPE_NAME, META_PATTERN_NAME),
-            META_PATTERN_NAME,
-        ),
-        spec("meta_pattern_or", one_type(META_PATTERN_LIST_NAME), META_PATTERN_NAME),
-        spec(
-            "meta_pattern_range",
-            three_types(META_PATTERN_NAME, META_PATTERN_NAME, BOOL_TYPE_NAME),
-            META_PATTERN_NAME,
-        ),
-        spec("meta_pattern_list_new", no_types(), META_PATTERN_LIST_NAME),
-        spec(
-            "meta_pattern_list_push",
-            two_types(META_PATTERN_LIST_NAME, META_PATTERN_NAME),
-            UNIT_TYPE_NAME,
-        ),
-        spec(
-            "meta_pattern_list_prepend",
-            two_types(META_PATTERN_LIST_NAME, META_PATTERN_NAME),
-            UNIT_TYPE_NAME,
-        ),
-        spec("meta_arm", two_types(META_PATTERN_NAME, META_EXPR_NAME), META_ARM_NAME),
-        spec(
-            "meta_arm_guarded",
-            three_types(META_PATTERN_NAME, META_EXPR_NAME, META_EXPR_NAME),
-            META_ARM_NAME,
-        ),
-        spec("meta_arm_list_new", no_types(), META_ARM_LIST_NAME),
-        spec("meta_arm_list_push", two_types(META_ARM_LIST_NAME, META_ARM_NAME), UNIT_TYPE_NAME),
-        spec("meta_block_new", no_types(), META_BLOCK_NAME),
-        spec(
-            "meta_block_let",
-            three_types(META_BLOCK_NAME, STRING_TYPE_NAME, META_EXPR_NAME),
-            UNIT_TYPE_NAME,
-        ),
-        spec(
-            "meta_block_let_mut",
-            three_types(META_BLOCK_NAME, STRING_TYPE_NAME, META_EXPR_NAME),
-            UNIT_TYPE_NAME,
-        ),
-        spec(
-            "meta_block_let_mut_typed",
-            four_types(META_BLOCK_NAME, STRING_TYPE_NAME, META_TYPE_NAME, META_EXPR_NAME),
-            UNIT_TYPE_NAME,
-        ),
-        spec(
-            "meta_block_let_typed",
-            four_types(META_BLOCK_NAME, STRING_TYPE_NAME, META_TYPE_NAME, META_EXPR_NAME),
-            UNIT_TYPE_NAME,
-        ),
-        spec(
-            "meta_block_let_pattern",
-            three_types(META_BLOCK_NAME, META_PATTERN_NAME, META_EXPR_NAME),
-            UNIT_TYPE_NAME,
-        ),
-        spec(
-            "meta_block_assign",
-            three_types(META_BLOCK_NAME, META_EXPR_NAME, META_EXPR_NAME),
-            UNIT_TYPE_NAME,
-        ),
-        spec("meta_block_expr", two_types(META_BLOCK_NAME, META_EXPR_NAME), UNIT_TYPE_NAME),
-        spec("meta_block_finish", two_types(META_BLOCK_NAME, META_EXPR_NAME), META_EXPR_NAME),
-        spec("meta_block_finish_unit", one_type(META_BLOCK_NAME), META_EXPR_NAME),
-        spec("meta_param_list_new", no_types(), META_PARAM_LIST_NAME),
-        spec(
-            "meta_param_list_push",
-            three_types(META_PARAM_LIST_NAME, STRING_TYPE_NAME, META_TYPE_NAME),
-            UNIT_TYPE_NAME,
-        ),
-        spec("meta_generic_list_new", no_types(), META_GENERIC_LIST_NAME),
-        spec(
-            "meta_generic_list_push",
-            two_types(META_GENERIC_LIST_NAME, STRING_TYPE_NAME),
-            UNIT_TYPE_NAME,
-        ),
-        spec(
-            "meta_generic_list_add_bound",
-            four_types(
-                DERIVE_INPUT_NAME,
-                META_GENERIC_LIST_NAME,
-                STRING_TYPE_NAME,
+    Vec::from_array(
+        [
+            spec("derive_item_name", one_type(DERIVE_INPUT_NAME), STRING_TYPE_NAME),
+            spec("derive_item_kind", one_type(DERIVE_INPUT_NAME), INT_TYPE_NAME),
+            spec("derive_generic_count", one_type(DERIVE_INPUT_NAME), INT_TYPE_NAME),
+            spec(
+                "derive_generic_name",
+                two_types(DERIVE_INPUT_NAME, INT_TYPE_NAME),
                 STRING_TYPE_NAME,
             ),
-            UNIT_TYPE_NAME,
-        ),
-        spec(
-            "meta_method",
-            four_types(STRING_TYPE_NAME, META_PARAM_LIST_NAME, META_TYPE_NAME, META_EXPR_NAME),
-            META_METHOD_NAME,
-        ),
-        spec(
-            "meta_method_generic",
-            five_types(
+            spec("derive_field_count", one_type(DERIVE_INPUT_NAME), INT_TYPE_NAME),
+            spec("derive_field_name", two_types(DERIVE_INPUT_NAME, INT_TYPE_NAME), STRING_TYPE_NAME),
+            spec("derive_field_type", two_types(DERIVE_INPUT_NAME, INT_TYPE_NAME), META_TYPE_NAME),
+            spec(
+                "derive_field_attribute_count",
+                two_types(DERIVE_INPUT_NAME, INT_TYPE_NAME),
+                INT_TYPE_NAME,
+            ),
+            spec(
+                "derive_field_attribute_name",
+                three_types(DERIVE_INPUT_NAME, INT_TYPE_NAME, INT_TYPE_NAME),
                 STRING_TYPE_NAME,
-                META_GENERIC_LIST_NAME,
-                META_PARAM_LIST_NAME,
+            ),
+            spec(
+                "derive_field_attribute_text",
+                three_types(DERIVE_INPUT_NAME, INT_TYPE_NAME, INT_TYPE_NAME),
+                STRING_TYPE_NAME,
+            ),
+            spec("derive_variant_count", one_type(DERIVE_INPUT_NAME), INT_TYPE_NAME),
+            spec(
+                "derive_variant_name",
+                two_types(DERIVE_INPUT_NAME, INT_TYPE_NAME),
+                STRING_TYPE_NAME,
+            ),
+            spec("derive_variant_kind", two_types(DERIVE_INPUT_NAME, INT_TYPE_NAME), INT_TYPE_NAME),
+            spec(
+                "derive_variant_attribute_count",
+                two_types(DERIVE_INPUT_NAME, INT_TYPE_NAME),
+                INT_TYPE_NAME,
+            ),
+            spec(
+                "derive_variant_attribute_name",
+                three_types(DERIVE_INPUT_NAME, INT_TYPE_NAME, INT_TYPE_NAME),
+                STRING_TYPE_NAME,
+            ),
+            spec(
+                "derive_variant_attribute_text",
+                three_types(DERIVE_INPUT_NAME, INT_TYPE_NAME, INT_TYPE_NAME),
+                STRING_TYPE_NAME,
+            ),
+            spec(
+                "derive_variant_field_count",
+                two_types(DERIVE_INPUT_NAME, INT_TYPE_NAME),
+                INT_TYPE_NAME,
+            ),
+            spec(
+                "derive_variant_field_name",
+                three_types(DERIVE_INPUT_NAME, INT_TYPE_NAME, INT_TYPE_NAME),
+                STRING_TYPE_NAME,
+            ),
+            spec(
+                "derive_variant_field_type",
+                three_types(DERIVE_INPUT_NAME, INT_TYPE_NAME, INT_TYPE_NAME),
                 META_TYPE_NAME,
+            ),
+            spec(
+                "derive_variant_field_attribute_count",
+                three_types(DERIVE_INPUT_NAME, INT_TYPE_NAME, INT_TYPE_NAME),
+                INT_TYPE_NAME,
+            ),
+            spec(
+                "derive_variant_field_attribute_name",
+                four_types(DERIVE_INPUT_NAME, INT_TYPE_NAME, INT_TYPE_NAME, INT_TYPE_NAME),
+                STRING_TYPE_NAME,
+            ),
+            spec(
+                "derive_variant_field_attribute_text",
+                four_types(DERIVE_INPUT_NAME, INT_TYPE_NAME, INT_TYPE_NAME, INT_TYPE_NAME),
+                STRING_TYPE_NAME,
+            ),
+            spec("derive_attribute_count", one_type(DERIVE_INPUT_NAME), INT_TYPE_NAME),
+            spec(
+                "derive_attribute_name",
+                two_types(DERIVE_INPUT_NAME, INT_TYPE_NAME),
+                STRING_TYPE_NAME,
+            ),
+            spec(
+                "derive_attribute_text",
+                two_types(DERIVE_INPUT_NAME, INT_TYPE_NAME),
+                STRING_TYPE_NAME,
+            ),
+            spec(
+                "derive_attribute",
+                two_types(DERIVE_INPUT_NAME, INT_TYPE_NAME),
+                META_ATTRIBUTE_NAME,
+            ),
+            spec(
+                "derive_field_attribute",
+                three_types(DERIVE_INPUT_NAME, INT_TYPE_NAME, INT_TYPE_NAME),
+                META_ATTRIBUTE_NAME,
+            ),
+            spec(
+                "derive_variant_attribute",
+                three_types(DERIVE_INPUT_NAME, INT_TYPE_NAME, INT_TYPE_NAME),
+                META_ATTRIBUTE_NAME,
+            ),
+            spec(
+                "derive_variant_field_attribute",
+                four_types(DERIVE_INPUT_NAME, INT_TYPE_NAME, INT_TYPE_NAME, INT_TYPE_NAME),
+                META_ATTRIBUTE_NAME,
+            ),
+            spec("derive_target_type", one_type(DERIVE_INPUT_NAME), META_TYPE_NAME),
+            spec(
+                "derive_fresh_name",
+                two_types(DERIVE_INPUT_NAME, STRING_TYPE_NAME),
+                STRING_TYPE_NAME,
+            ),
+            spec("meta_attribute_name", one_type(META_ATTRIBUTE_NAME), STRING_TYPE_NAME),
+            spec("meta_attribute_text", one_type(META_ATTRIBUTE_NAME), STRING_TYPE_NAME),
+            spec("meta_attribute_has_argument_list", one_type(META_ATTRIBUTE_NAME), BOOL_TYPE_NAME),
+            spec("meta_attribute_argument_count", one_type(META_ATTRIBUTE_NAME), INT_TYPE_NAME),
+            spec(
+                "meta_attribute_argument_kind",
+                two_types(META_ATTRIBUTE_NAME, INT_TYPE_NAME),
+                STRING_TYPE_NAME,
+            ),
+            spec(
+                "meta_attribute_argument_name",
+                two_types(META_ATTRIBUTE_NAME, INT_TYPE_NAME),
+                STRING_TYPE_NAME,
+            ),
+            spec(
+                "meta_attribute_argument_value_kind",
+                two_types(META_ATTRIBUTE_NAME, INT_TYPE_NAME),
+                STRING_TYPE_NAME,
+            ),
+            spec(
+                "meta_attribute_argument_text",
+                two_types(META_ATTRIBUTE_NAME, INT_TYPE_NAME),
+                STRING_TYPE_NAME,
+            ),
+            spec("meta_type_named", two_types(DERIVE_INPUT_NAME, STRING_TYPE_NAME), META_TYPE_NAME),
+            spec("meta_type_call_site", one_type(STRING_TYPE_NAME), META_TYPE_NAME),
+            spec("meta_type_list_new", no_types(), META_TYPE_LIST_NAME),
+            spec(
+                "meta_type_list_push",
+                two_types(META_TYPE_LIST_NAME, META_TYPE_NAME),
+                UNIT_TYPE_NAME,
+            ),
+            spec("meta_type_tuple", one_type(META_TYPE_LIST_NAME), META_TYPE_NAME),
+            spec("meta_type_apply", two_types(META_TYPE_NAME, META_TYPE_LIST_NAME), META_TYPE_NAME),
+            spec("meta_type_array", two_types(META_TYPE_NAME, INT_TYPE_NAME), META_TYPE_NAME),
+            spec(
+                "meta_type_projection",
+                two_types(META_TYPE_NAME, STRING_TYPE_NAME),
+                META_TYPE_NAME,
+            ),
+            spec("meta_type_kind", one_type(META_TYPE_NAME), STRING_TYPE_NAME),
+            spec("meta_type_name", one_type(META_TYPE_NAME), STRING_TYPE_NAME),
+            spec("meta_type_argument_count", one_type(META_TYPE_NAME), INT_TYPE_NAME),
+            spec("meta_type_argument", two_types(META_TYPE_NAME, INT_TYPE_NAME), META_TYPE_NAME),
+            spec("meta_type_tuple_count", one_type(META_TYPE_NAME), INT_TYPE_NAME),
+            spec("meta_type_tuple_item", two_types(META_TYPE_NAME, INT_TYPE_NAME), META_TYPE_NAME),
+            spec("meta_type_array_length", one_type(META_TYPE_NAME), INT_TYPE_NAME),
+            spec("meta_type_array_element", one_type(META_TYPE_NAME), META_TYPE_NAME),
+            spec("meta_type_function_parameter_count", one_type(META_TYPE_NAME), INT_TYPE_NAME),
+            spec(
+                "meta_type_function_parameter",
+                two_types(META_TYPE_NAME, INT_TYPE_NAME),
+                META_TYPE_NAME,
+            ),
+            spec("meta_type_function_return", one_type(META_TYPE_NAME), META_TYPE_NAME),
+            spec(
+                "meta_type_contains_generic",
+                two_types(DERIVE_INPUT_NAME, META_TYPE_NAME),
+                BOOL_TYPE_NAME,
+            ),
+            spec("meta_type_equal", two_types(META_TYPE_NAME, META_TYPE_NAME), BOOL_TYPE_NAME),
+            spec("meta_expr_var", one_type(STRING_TYPE_NAME), META_EXPR_NAME),
+            spec("meta_expr_unit", no_types(), META_EXPR_NAME),
+            spec("meta_expr_bool", one_type(BOOL_TYPE_NAME), META_EXPR_NAME),
+            spec("meta_expr_int", one_type(INT_TYPE_NAME), META_EXPR_NAME),
+            spec("meta_expr_integer", two_types(STRING_TYPE_NAME, META_TYPE_NAME), META_EXPR_NAME),
+            spec("meta_expr_string", one_type(STRING_TYPE_NAME), META_EXPR_NAME),
+            spec("meta_expr_char", one_type(STRING_TYPE_NAME), META_EXPR_NAME),
+            spec("meta_expr_field", two_types(META_EXPR_NAME, STRING_TYPE_NAME), META_EXPR_NAME),
+            spec("meta_expr_index", two_types(META_EXPR_NAME, META_EXPR_NAME), META_EXPR_NAME),
+            spec("meta_expr_unary", two_types(INT_TYPE_NAME, META_EXPR_NAME), META_EXPR_NAME),
+            spec(
+                "meta_expr_binary",
+                three_types(INT_TYPE_NAME, META_EXPR_NAME, META_EXPR_NAME),
                 META_EXPR_NAME,
             ),
-            META_METHOD_NAME,
-        ),
-        spec(
-            "derive_output_new",
-            two_types(DERIVE_INPUT_NAME, STRING_TYPE_NAME),
-            DERIVE_OUTPUT_NAME,
-        ),
-        spec(
-            "derive_output_new_call_site",
-            two_types(DERIVE_INPUT_NAME, STRING_TYPE_NAME),
-            DERIVE_OUTPUT_NAME,
-        ),
-        spec(
-            "derive_output_add_predicate",
-            three_types(DERIVE_OUTPUT_NAME, META_TYPE_NAME, STRING_TYPE_NAME),
-            UNIT_TYPE_NAME,
-        ),
-        spec(
-            "derive_output_add_call_site_predicate",
-            three_types(DERIVE_OUTPUT_NAME, META_TYPE_NAME, STRING_TYPE_NAME),
-            UNIT_TYPE_NAME,
-        ),
-        spec(
-            "derive_output_add_method",
-            two_types(DERIVE_OUTPUT_NAME, META_METHOD_NAME),
-            UNIT_TYPE_NAME,
-        ),
-        spec("derive_error", two_types(DERIVE_INPUT_NAME, STRING_TYPE_NAME), DERIVE_OUTPUT_NAME),
-    ]
+            spec(
+                "meta_expr_call",
+                three_types(DERIVE_INPUT_NAME, STRING_TYPE_NAME, META_EXPR_LIST_NAME),
+                META_EXPR_NAME,
+            ),
+            spec(
+                "meta_expr_call_site",
+                two_types(STRING_TYPE_NAME, META_EXPR_LIST_NAME),
+                META_EXPR_NAME,
+            ),
+            spec(
+                "meta_expr_trait_call",
+                four_types(
+                    DERIVE_INPUT_NAME,
+                    STRING_TYPE_NAME,
+                    STRING_TYPE_NAME,
+                    META_EXPR_LIST_NAME,
+                ),
+                META_EXPR_NAME,
+            ),
+            spec(
+                "meta_expr_trait_call_site",
+                three_types(STRING_TYPE_NAME, STRING_TYPE_NAME, META_EXPR_LIST_NAME),
+                META_EXPR_NAME,
+            ),
+            spec("meta_expr_tuple", one_type(META_EXPR_LIST_NAME), META_EXPR_NAME),
+            spec("meta_expr_array", one_type(META_EXPR_LIST_NAME), META_EXPR_NAME),
+            spec(
+                "meta_expr_if",
+                three_types(META_EXPR_NAME, META_EXPR_NAME, META_EXPR_NAME),
+                META_EXPR_NAME,
+            ),
+            spec("meta_expr_while", two_types(META_EXPR_NAME, META_EXPR_NAME), META_EXPR_NAME),
+            spec("meta_expr_match", two_types(META_EXPR_NAME, META_ARM_LIST_NAME), META_EXPR_NAME),
+            spec("meta_expr_cast", two_types(META_EXPR_NAME, META_TYPE_NAME), META_EXPR_NAME),
+            spec(
+                "meta_expr_constructor",
+                two_types(STRING_TYPE_NAME, META_EXPR_LIST_NAME),
+                META_EXPR_NAME,
+            ),
+            spec(
+                "meta_expr_target_constructor",
+                three_types(DERIVE_INPUT_NAME, STRING_TYPE_NAME, META_EXPR_LIST_NAME),
+                META_EXPR_NAME,
+            ),
+            spec("meta_expr_field_list_new", no_types(), META_EXPR_FIELD_LIST_NAME),
+            spec(
+                "meta_expr_field_list_push",
+                three_types(META_EXPR_FIELD_LIST_NAME, STRING_TYPE_NAME, META_EXPR_NAME),
+                UNIT_TYPE_NAME,
+            ),
+            spec(
+                "meta_expr_struct",
+                three_types(DERIVE_INPUT_NAME, STRING_TYPE_NAME, META_EXPR_FIELD_LIST_NAME),
+                META_EXPR_NAME,
+            ),
+            spec(
+                "meta_expr_struct_call_site",
+                two_types(STRING_TYPE_NAME, META_EXPR_FIELD_LIST_NAME),
+                META_EXPR_NAME,
+            ),
+            spec(
+                "meta_expr_target_struct",
+                two_types(DERIVE_INPUT_NAME, META_EXPR_FIELD_LIST_NAME),
+                META_EXPR_NAME,
+            ),
+            spec(
+                "meta_expr_target_variant_struct",
+                three_types(DERIVE_INPUT_NAME, STRING_TYPE_NAME, META_EXPR_FIELD_LIST_NAME),
+                META_EXPR_NAME,
+            ),
+            spec(
+                "meta_expr_method_call",
+                three_types(META_EXPR_NAME, STRING_TYPE_NAME, META_EXPR_LIST_NAME),
+                META_EXPR_NAME,
+            ),
+            spec("meta_expr_return", one_type(META_EXPR_NAME), META_EXPR_NAME),
+            spec("meta_expr_try", one_type(META_EXPR_NAME), META_EXPR_NAME),
+            spec("meta_expr_list_new", no_types(), META_EXPR_LIST_NAME),
+            spec(
+                "meta_expr_list_push",
+                two_types(META_EXPR_LIST_NAME, META_EXPR_NAME),
+                UNIT_TYPE_NAME,
+            ),
+            spec("meta_pattern_wild", no_types(), META_PATTERN_NAME),
+            spec("meta_pattern_bind", one_type(STRING_TYPE_NAME), META_PATTERN_NAME),
+            spec("meta_pattern_unit", no_types(), META_PATTERN_NAME),
+            spec("meta_pattern_bool", one_type(BOOL_TYPE_NAME), META_PATTERN_NAME),
+            spec("meta_pattern_int", one_type(INT_TYPE_NAME), META_PATTERN_NAME),
+            spec("meta_pattern_string", one_type(STRING_TYPE_NAME), META_PATTERN_NAME),
+            spec("meta_pattern_char", one_type(STRING_TYPE_NAME), META_PATTERN_NAME),
+            spec("meta_pattern_tuple", one_type(META_PATTERN_LIST_NAME), META_PATTERN_NAME),
+            spec("meta_pattern_array", one_type(META_PATTERN_LIST_NAME), META_PATTERN_NAME),
+            spec(
+                "meta_pattern_constructor",
+                two_types(STRING_TYPE_NAME, META_PATTERN_LIST_NAME),
+                META_PATTERN_NAME,
+            ),
+            spec(
+                "meta_pattern_target_constructor",
+                three_types(DERIVE_INPUT_NAME, STRING_TYPE_NAME, META_PATTERN_LIST_NAME),
+                META_PATTERN_NAME,
+            ),
+            spec("meta_pattern_field_list_new", no_types(), META_PATTERN_FIELD_LIST_NAME),
+            spec(
+                "meta_pattern_field_list_push",
+                three_types(META_PATTERN_FIELD_LIST_NAME, STRING_TYPE_NAME, META_PATTERN_NAME),
+                UNIT_TYPE_NAME,
+            ),
+            spec(
+                "meta_pattern_struct",
+                three_types(STRING_TYPE_NAME, META_PATTERN_FIELD_LIST_NAME, BOOL_TYPE_NAME),
+                META_PATTERN_NAME,
+            ),
+            spec(
+                "meta_pattern_target_struct",
+                three_types(DERIVE_INPUT_NAME, META_PATTERN_FIELD_LIST_NAME, BOOL_TYPE_NAME),
+                META_PATTERN_NAME,
+            ),
+            spec(
+                "meta_pattern_alias",
+                two_types(STRING_TYPE_NAME, META_PATTERN_NAME),
+                META_PATTERN_NAME,
+            ),
+            spec("meta_pattern_or", one_type(META_PATTERN_LIST_NAME), META_PATTERN_NAME),
+            spec(
+                "meta_pattern_range",
+                three_types(META_PATTERN_NAME, META_PATTERN_NAME, BOOL_TYPE_NAME),
+                META_PATTERN_NAME,
+            ),
+            spec("meta_pattern_list_new", no_types(), META_PATTERN_LIST_NAME),
+            spec(
+                "meta_pattern_list_push",
+                two_types(META_PATTERN_LIST_NAME, META_PATTERN_NAME),
+                UNIT_TYPE_NAME,
+            ),
+            spec(
+                "meta_pattern_list_prepend",
+                two_types(META_PATTERN_LIST_NAME, META_PATTERN_NAME),
+                UNIT_TYPE_NAME,
+            ),
+            spec("meta_arm", two_types(META_PATTERN_NAME, META_EXPR_NAME), META_ARM_NAME),
+            spec(
+                "meta_arm_guarded",
+                three_types(META_PATTERN_NAME, META_EXPR_NAME, META_EXPR_NAME),
+                META_ARM_NAME,
+            ),
+            spec("meta_arm_list_new", no_types(), META_ARM_LIST_NAME),
+            spec("meta_arm_list_push", two_types(META_ARM_LIST_NAME, META_ARM_NAME), UNIT_TYPE_NAME),
+            spec("meta_block_new", no_types(), META_BLOCK_NAME),
+            spec(
+                "meta_block_let",
+                three_types(META_BLOCK_NAME, STRING_TYPE_NAME, META_EXPR_NAME),
+                UNIT_TYPE_NAME,
+            ),
+            spec(
+                "meta_block_let_mut",
+                three_types(META_BLOCK_NAME, STRING_TYPE_NAME, META_EXPR_NAME),
+                UNIT_TYPE_NAME,
+            ),
+            spec(
+                "meta_block_let_mut_typed",
+                four_types(META_BLOCK_NAME, STRING_TYPE_NAME, META_TYPE_NAME, META_EXPR_NAME),
+                UNIT_TYPE_NAME,
+            ),
+            spec(
+                "meta_block_let_typed",
+                four_types(META_BLOCK_NAME, STRING_TYPE_NAME, META_TYPE_NAME, META_EXPR_NAME),
+                UNIT_TYPE_NAME,
+            ),
+            spec(
+                "meta_block_let_pattern",
+                three_types(META_BLOCK_NAME, META_PATTERN_NAME, META_EXPR_NAME),
+                UNIT_TYPE_NAME,
+            ),
+            spec(
+                "meta_block_assign",
+                three_types(META_BLOCK_NAME, META_EXPR_NAME, META_EXPR_NAME),
+                UNIT_TYPE_NAME,
+            ),
+            spec("meta_block_expr", two_types(META_BLOCK_NAME, META_EXPR_NAME), UNIT_TYPE_NAME),
+            spec("meta_block_finish", two_types(META_BLOCK_NAME, META_EXPR_NAME), META_EXPR_NAME),
+            spec("meta_block_finish_unit", one_type(META_BLOCK_NAME), META_EXPR_NAME),
+            spec("meta_param_list_new", no_types(), META_PARAM_LIST_NAME),
+            spec(
+                "meta_param_list_push",
+                three_types(META_PARAM_LIST_NAME, STRING_TYPE_NAME, META_TYPE_NAME),
+                UNIT_TYPE_NAME,
+            ),
+            spec("meta_generic_list_new", no_types(), META_GENERIC_LIST_NAME),
+            spec(
+                "meta_generic_list_push",
+                two_types(META_GENERIC_LIST_NAME, STRING_TYPE_NAME),
+                UNIT_TYPE_NAME,
+            ),
+            spec(
+                "meta_generic_list_add_bound",
+                four_types(
+                    DERIVE_INPUT_NAME,
+                    META_GENERIC_LIST_NAME,
+                    STRING_TYPE_NAME,
+                    STRING_TYPE_NAME,
+                ),
+                UNIT_TYPE_NAME,
+            ),
+            spec(
+                "meta_method",
+                four_types(STRING_TYPE_NAME, META_PARAM_LIST_NAME, META_TYPE_NAME, META_EXPR_NAME),
+                META_METHOD_NAME,
+            ),
+            spec(
+                "meta_method_generic",
+                five_types(
+                    STRING_TYPE_NAME,
+                    META_GENERIC_LIST_NAME,
+                    META_PARAM_LIST_NAME,
+                    META_TYPE_NAME,
+                    META_EXPR_NAME,
+                ),
+                META_METHOD_NAME,
+            ),
+            spec(
+                "derive_output_new",
+                two_types(DERIVE_INPUT_NAME, STRING_TYPE_NAME),
+                DERIVE_OUTPUT_NAME,
+            ),
+            spec(
+                "derive_output_new_call_site",
+                two_types(DERIVE_INPUT_NAME, STRING_TYPE_NAME),
+                DERIVE_OUTPUT_NAME,
+            ),
+            spec(
+                "derive_output_add_predicate",
+                three_types(DERIVE_OUTPUT_NAME, META_TYPE_NAME, STRING_TYPE_NAME),
+                UNIT_TYPE_NAME,
+            ),
+            spec(
+                "derive_output_add_call_site_predicate",
+                three_types(DERIVE_OUTPUT_NAME, META_TYPE_NAME, STRING_TYPE_NAME),
+                UNIT_TYPE_NAME,
+            ),
+            spec(
+                "derive_output_add_method",
+                two_types(DERIVE_OUTPUT_NAME, META_METHOD_NAME),
+                UNIT_TYPE_NAME,
+            ),
+            spec("derive_error", two_types(DERIVE_INPUT_NAME, STRING_TYPE_NAME), DERIVE_OUTPUT_NAME),
+        ],
+    )
 }
 
 pub fn is_intrinsic(name: string) -> bool {
@@ -553,22 +596,22 @@ pub fn new_state(request: DeriveRequest, int_width: int) -> DeriveState {
         request,
         int_width,
         definition_package: Ref::new(request.handler_package),
-        types: Vec::[],
-        type_lists: Vec::[],
-        attributes: Vec::[],
-        exprs: Vec::[],
-        expr_lists: Vec::[],
-        expr_fields: Vec::[],
-        patterns: Vec::[],
-        pattern_lists: Vec::[],
-        pattern_fields: Vec::[],
-        arms: Vec::[],
-        arm_lists: Vec::[],
-        blocks: Vec::[],
-        param_lists: Vec::[],
-        generic_lists: Vec::[],
-        methods: Vec::[],
-        outputs: Vec::[],
+        types: Vec::from_array([]),
+        type_lists: Vec::from_array([]),
+        attributes: Vec::from_array([]),
+        exprs: Vec::from_array([]),
+        expr_lists: Vec::from_array([]),
+        expr_fields: Vec::from_array([]),
+        patterns: Vec::from_array([]),
+        pattern_lists: Vec::from_array([]),
+        pattern_fields: Vec::from_array([]),
+        arms: Vec::from_array([]),
+        arm_lists: Vec::from_array([]),
+        blocks: Vec::from_array([]),
+        param_lists: Vec::from_array([]),
+        generic_lists: Vec::from_array([]),
+        methods: Vec::from_array([]),
+        outputs: Vec::from_array([]),
         fresh: Ref::new(0),
         operations: Ref::new(0),
     }
@@ -579,7 +622,7 @@ fn span(state: DeriveState) -> ast::Span {
 }
 
 fn path(value: string, value_span: ast::Span) -> ast::Path {
-    let segments: Vec[ast::PathSegment] = Vec::[];
+    let segments: Vec[ast::PathSegment] = Vec::from_array([]);
     for value in text::split(value, "::") {
         if value == "" {} else {
             segments.push(ast::PathSegment { ident: value, span: value_span })
@@ -658,7 +701,7 @@ fn item_attributes(value: DeriveItem) -> Vec[ast::Attribute] {
 
 fn target_type(value: DeriveItem, value_span: ast::Span) -> ast::TypeExpr {
     let base = ast::TypeExpr::Con { path: path(item_name(value), value_span) };
-    let args: Vec[ast::TypeExpr] = Vec::[];
+    let args: Vec[ast::TypeExpr] = Vec::from_array([]);
     for generic in item_generics(value) {
         args.push(ast::TypeExpr::Con { path: path(generic, value_span) })
     }
@@ -1401,7 +1444,7 @@ fn type_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
         Result::Ok(push_type(state, named_type(string_argument(args, 0)?, span(state))))
     } else if name == "meta_type_list_new" {
         let id = state.type_lists.len();
-        let values: Vec[ast::TypeExpr] = Vec::[];
+        let values: Vec[ast::TypeExpr] = Vec::from_array([]);
         state.type_lists.push(values);
         Result::Ok(meta(META_TYPE_LIST_NAME, id))
     } else if name == "meta_type_list_push" {
@@ -1562,8 +1605,8 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
                 state,
                 ast::Expr::Path {
                     path: path(string_argument(args, 0)?, value_span),
-                    owner_type_args: Vec::[],
-                    member_type_args: Vec::[],
+                    owner_type_args: Vec::from_array([]),
+                    member_type_args: Vec::from_array([]),
                     span: value_span,
                 },
             ),
@@ -1611,10 +1654,10 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
                     func: ast::Expr::Field {
                         expr: ast::Expr::Int { value: "0", span: value_span },
                         field_name,
-                        method_type_args: Vec::[],
+                        method_type_args: Vec::from_array([]),
                         span: value_span,
                     },
-                    args: Vec::[],
+                    args: Vec::from_array([]),
                     span: value_span,
                 },
                 Option::None => ast::Expr::Int { value: "0", span: value_span },
@@ -1649,7 +1692,7 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
                 ast::Expr::Field {
                     expr: expr_value(state, args, 0)?,
                     field_name: string_argument(args, 1)?,
-                    method_type_args: Vec::[],
+                    method_type_args: Vec::from_array([]),
                     span: value_span,
                 },
             ),
@@ -1711,8 +1754,8 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
                 ast::Expr::Call {
                     func: ast::Expr::Path {
                         path: path(function_name, value_span),
-                        owner_type_args: Vec::[],
-                        member_type_args: Vec::[],
+                        owner_type_args: Vec::from_array([]),
+                        member_type_args: Vec::from_array([]),
                         span: value_span,
                     },
                     args: state.expr_lists[list],
@@ -1747,8 +1790,8 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
                 ast::Expr::Call {
                     func: ast::Expr::Path {
                         path: path(function_name, value_span),
-                        owner_type_args: Vec::[],
-                        member_type_args: Vec::[],
+                        owner_type_args: Vec::from_array([]),
+                        member_type_args: Vec::from_array([]),
                         span: value_span,
                     },
                     args: state.expr_lists[list],
@@ -1853,7 +1896,7 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
         )
     } else if name == "meta_expr_field_list_new" {
         let id = state.expr_fields.len();
-        let values: Vec[(string, ast::Expr)] = Vec::[];
+        let values: Vec[(string, ast::Expr)] = Vec::from_array([]);
         state.expr_fields.push(values);
         Result::Ok(meta(META_EXPR_FIELD_LIST_NAME, id))
     } else if name == "meta_expr_field_list_push" {
@@ -1917,7 +1960,7 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
                     func: ast::Expr::Field {
                         expr: expr_value(state, args, 0)?,
                         field_name: string_argument(args, 1)?,
-                        method_type_args: Vec::[],
+                        method_type_args: Vec::from_array([]),
                         span: value_span,
                     },
                     args: state.expr_lists[id],
@@ -1941,7 +1984,7 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
         )
     } else if name == "meta_expr_list_new" {
         let id = state.expr_lists.len();
-        let values: Vec[ast::Expr] = Vec::[];
+        let values: Vec[ast::Expr] = Vec::from_array([]);
         state.expr_lists.push(values);
         Result::Ok(meta(META_EXPR_LIST_NAME, id))
     } else if name == "meta_expr_list_push" {
@@ -2022,7 +2065,7 @@ fn pattern_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue])
                 ast::Pat::Array {
                     prefix: state.pattern_lists[id],
                     rest: Option::None,
-                    suffix: Vec::[],
+                    suffix: Vec::from_array([]),
                     span: value_span,
                 },
             ),
@@ -2060,7 +2103,7 @@ fn pattern_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue])
         )
     } else if name == "meta_pattern_field_list_new" {
         let id = state.pattern_fields.len();
-        let values: Vec[(string, ast::Pat)] = Vec::[];
+        let values: Vec[(string, ast::Pat)] = Vec::from_array([]);
         state.pattern_fields.push(values);
         Result::Ok(meta(META_PATTERN_FIELD_LIST_NAME, id))
     } else if name == "meta_pattern_field_list_push" {
@@ -2132,7 +2175,7 @@ fn pattern_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue])
         )
     } else if name == "meta_pattern_list_new" {
         let id = state.pattern_lists.len();
-        let values: Vec[ast::Pat] = Vec::[];
+        let values: Vec[ast::Pat] = Vec::from_array([]);
         state.pattern_lists.push(values);
         Result::Ok(meta(META_PATTERN_LIST_NAME, id))
     } else if name == "meta_pattern_list_push" || name == "meta_pattern_list_prepend" {
@@ -2170,7 +2213,7 @@ fn pattern_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue])
         Result::Ok(meta(META_ARM_NAME, id))
     } else if name == "meta_arm_list_new" {
         let id = state.arm_lists.len();
-        let values: Vec[ast::Arm] = Vec::[];
+        let values: Vec[ast::Arm] = Vec::from_array([]);
         state.arm_lists.push(values);
         Result::Ok(meta(META_ARM_LIST_NAME, id))
     } else if name == "meta_arm_list_push" {
@@ -2198,7 +2241,9 @@ fn block_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) -
     let value_span = span(state);
     if name == "meta_block_new" {
         let id = state.blocks.len();
-        state.blocks.push(ast::Block { stmts: Vec::[], tail: Option::None, span: value_span });
+        state.blocks.push(
+            ast::Block { stmts: Vec::from_array([]), tail: Option::None, span: value_span },
+        );
         Result::Ok(meta(META_BLOCK_NAME, id))
     } else if name == "meta_block_let" || name == "meta_block_let_mut" {
         let id = checked_index(
@@ -2310,7 +2355,7 @@ fn output_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) 
     let value_span = span(state);
     if name == "meta_param_list_new" {
         let id = state.param_lists.len();
-        let values: Vec[(string, ast::TypeExpr)] = Vec::[];
+        let values: Vec[(string, ast::TypeExpr)] = Vec::from_array([]);
         state.param_lists.push(values);
         Result::Ok(meta(META_PARAM_LIST_NAME, id))
     } else if name == "meta_param_list_push" {
@@ -2323,7 +2368,7 @@ fn output_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) 
         Result::Ok(unit_value())
     } else if name == "meta_generic_list_new" {
         let id = state.generic_lists.len();
-        let values: Vec[(string, Vec[ast::TraitRef])] = Vec::[];
+        let values: Vec[(string, Vec[ast::TraitRef])] = Vec::from_array([]);
         state.generic_lists.push(values);
         Result::Ok(meta(META_GENERIC_LIST_NAME, id))
     } else if name == "meta_generic_list_push" {
@@ -2332,7 +2377,7 @@ fn output_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) 
             state.generic_lists.len(),
             "meta generic list",
         )?;
-        state.generic_lists[id].push((string_argument(args, 1)?, Vec::[]));
+        state.generic_lists[id].push((string_argument(args, 1)?, Vec::from_array([])));
         Result::Ok(unit_value())
     } else if name == "meta_generic_list_add_bound" {
         let id = checked_index(
@@ -2348,7 +2393,7 @@ fn output_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) 
                 entry.1.push(
                     ast::TraitRef {
                         path: path(definition_name(state, string_argument(args, 3)?), value_span),
-                        args: Vec::[],
+                        args: Vec::from_array([]),
                     },
                 );
                 state.generic_lists[id].set(index, entry);
@@ -2371,8 +2416,8 @@ fn output_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) 
             state.param_lists.len(),
             "meta parameter list",
         )?;
-        let generics: Vec[string] = Vec::[];
-        let generic_bounds: Vec[(string, Vec[ast::TraitRef])] = Vec::[];
+        let generics: Vec[string] = Vec::from_array([]);
+        let generic_bounds: Vec[(string, Vec[ast::TraitRef])] = Vec::from_array([]);
         if name == "meta_method_generic" {
             let generic_list = checked_index(
                 handle_argument(args, 1, META_GENERIC_LIST_NAME)?,
@@ -2384,25 +2429,25 @@ fn output_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) 
                 generic_bounds.push(generic)
             }
         } else {};
-        let param_type_spans: Vec[ast::Span] = Vec::[];
+        let param_type_spans: Vec[ast::Span] = Vec::from_array([]);
         for _ in state.param_lists[params] {
             param_type_spans.push(value_span)
         }
         let id = state.methods.len();
         state.methods.push(
             ast::Function {
-                attrs: Vec::[],
+                attrs: Vec::from_array([]),
                 visibility: ast::Visibility::Private,
                 name: string_argument(args, 0)?,
                 generics,
                 generic_bounds,
-                predicates: Vec::[],
+                predicates: Vec::from_array([]),
                 params: state.param_lists[params],
                 param_type_spans,
                 ret_ty: Option::Some(type_value(state, args, 2 + generic_offset)?),
                 ret_ty_span: Option::Some(value_span),
                 body: ast::Block {
-                    stmts: Vec::[],
+                    stmts: Vec::from_array([]),
                     tail: Option::Some(expr_value(state, args, 3 + generic_offset)?),
                     span: value_span,
                 },
@@ -2418,17 +2463,17 @@ fn output_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) 
         let id = state.outputs.len();
         state.outputs.push(
             ast::ImplBlock {
-                attrs: Vec::[],
+                attrs: Vec::from_array([]),
                 generics: item_generics(state.request.item),
-                generic_bounds: Vec::[],
-                predicates: Vec::[],
-                associated_types: Vec::[],
+                generic_bounds: Vec::from_array([]),
+                predicates: Vec::from_array([]),
+                associated_types: Vec::from_array([]),
                 trait_ref: Option::Some(
-                    ast::TraitRef { path: path(trait_name, value_span), args: Vec::[] },
+                    ast::TraitRef { path: path(trait_name, value_span), args: Vec::from_array([]) },
                 ),
                 for_type: target_type(state.request.item, value_span),
                 for_type_span: value_span,
-                methods: Vec::[],
+                methods: Vec::from_array([]),
             },
         );
         Result::Ok(meta(DERIVE_OUTPUT_NAME, id))
@@ -2447,7 +2492,10 @@ fn output_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) 
         state.outputs[id].predicates.push(
             ast::Predicate::Trait {
                 ty: type_value(state, args, 1)?,
-                trait_ref: ast::TraitRef { path: path(trait_name, value_span), args: Vec::[] },
+                trait_ref: ast::TraitRef {
+                    path: path(trait_name, value_span),
+                    args: Vec::from_array([]),
+                },
             },
         );
         Result::Ok(unit_value())

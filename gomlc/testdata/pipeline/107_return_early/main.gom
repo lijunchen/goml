@@ -1,14 +1,10 @@
 fn early(x: int32) -> int32 {
     if x < 0 {
         return 0
-    } else {
-        ()
-    };
+    } else {};
     if x == 0 {
         return 1
-    } else {
-        ()
-    };
+    } else {};
     x + 2
 }
 
@@ -16,9 +12,7 @@ fn closure_early(x: int32) -> int32 {
     let f = |y: int32| {
         if y > 5 {
             return y
-        } else {
-            ()
-        };
+        } else {};
         y + 10
     };
     f(x)
@@ -27,9 +21,7 @@ fn closure_early(x: int32) -> int32 {
 fn unit_ret(flag: bool) {
     if flag {
         return
-    } else {
-        ()
-    };
+    } else {};
     let _ = println("after");
 }
 

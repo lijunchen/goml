@@ -242,7 +242,7 @@ fn required_named_lang_item(item: string, kind: BuiltinLangItemKind) -> Result[
     string,
 ] {
     let value = required_lang_item(item)?;
-    validate_lang_properties(value, Vec::[])?;
+    validate_lang_properties(value, Vec::from_array([]))?;
     if value.kind == kind {
         Result::Ok(NamedLangItem { name: value.name })
     } else {
@@ -255,7 +255,7 @@ fn required_named_lang_item(item: string, kind: BuiltinLangItemKind) -> Result[
 
 fn required_function_lang_item(item: string) -> Result[FunctionLangItem, string] {
     let value = required_lang_item(item)?;
-    validate_lang_properties(value, Vec::["public_name"])?;
+    validate_lang_properties(value, Vec::from_array(["public_name"]))?;
     if value.kind == BuiltinLangItemKind::Function {
         Result::Ok(
             FunctionLangItem {
@@ -271,7 +271,7 @@ fn required_function_lang_item(item: string) -> Result[FunctionLangItem, string]
 
 fn required_collection_lang_item(item: string) -> Result[CollectionLangItem, string] {
     let value = required_lang_item(item)?;
-    validate_lang_properties(value, Vec::["from_array"])?;
+    validate_lang_properties(value, Vec::from_array(["from_array"]))?;
     if value.kind == BuiltinLangItemKind::Impl {
         Result::Ok(
             CollectionLangItem {
@@ -286,7 +286,7 @@ fn required_collection_lang_item(item: string) -> Result[CollectionLangItem, str
 
 fn required_method_lang_item(item: string) -> Result[MethodLangItem, string] {
     let value = required_trait_lang_item(item)?;
-    validate_lang_properties(value, Vec::["method"])?;
+    validate_lang_properties(value, Vec::from_array(["method"]))?;
     Result::Ok(MethodLangItem { name: value.name, method: required_trait_method(value, "method")? })
 }
 
@@ -313,14 +313,17 @@ fn builtin_inherent_method_exists(owner: string, method: string) -> Result[bool,
 
 fn load_builtin_contract() -> Result[BuiltinContract, string] {
     let iterator_value = required_trait_lang_item("iterator")?;
-    validate_lang_properties(iterator_value, Vec::["item", "next"])?;
+    validate_lang_properties(iterator_value, Vec::from_array(["item", "next"]))?;
     let iterator = IteratorLangItem {
         name: iterator_value.name,
         item: required_associated_type(iterator_value, "item")?,
         next: required_trait_method(iterator_value, "next")?,
     };
     let into_iterator_value = required_trait_lang_item("into_iterator")?;
-    validate_lang_properties(into_iterator_value, Vec::["item", "into_iter_type", "method"])?;
+    validate_lang_properties(
+        into_iterator_value,
+        Vec::from_array(["item", "into_iter_type", "method"]),
+    )?;
     let into_iterator = IntoIteratorLangItem {
         name: into_iterator_value.name,
         item: required_associated_type(into_iterator_value, "item")?,
@@ -328,21 +331,21 @@ fn load_builtin_contract() -> Result[BuiltinContract, string] {
         method: required_trait_method(into_iterator_value, "method")?,
     };
     let option_value = required_enum_lang_item("option")?;
-    validate_lang_properties(option_value, Vec::["none", "some"])?;
+    validate_lang_properties(option_value, Vec::from_array(["none", "some"]))?;
     let option = OptionLangItem {
         name: option_value.name,
         none: required_lang_variant(option_value, "none", 0)?,
         some: required_lang_variant(option_value, "some", 1)?,
     };
     let result_value = required_enum_lang_item("result")?;
-    validate_lang_properties(result_value, Vec::["ok", "err"])?;
+    validate_lang_properties(result_value, Vec::from_array(["ok", "err"]))?;
     let result = ResultLangItem {
         name: result_value.name,
         ok: required_lang_variant(result_value, "ok", 1)?,
         err: required_lang_variant(result_value, "err", 1)?,
     };
     let static_cell_value = required_lang_item("static_cell")?;
-    validate_lang_properties(static_cell_value, Vec::["constructor"])?;
+    validate_lang_properties(static_cell_value, Vec::from_array(["constructor"]))?;
     if static_cell_value.kind != BuiltinLangItemKind::Struct {
         return Result::Err("builtin lang item static_cell must be declared on a struct")
     } else {};
@@ -356,19 +359,21 @@ fn load_builtin_contract() -> Result[BuiltinContract, string] {
     let ordering_value = required_enum_lang_item("ordering")?;
     validate_lang_properties(
         ordering_value,
-        Vec::[
-            "less",
-            "equal",
-            "greater",
-            "partial_ord",
-            "partial_cmp",
-            "lt",
-            "le",
-            "gt",
-            "ge",
-            "ord",
-            "cmp",
-        ],
+        Vec::from_array(
+            [
+                "less",
+                "equal",
+                "greater",
+                "partial_ord",
+                "partial_cmp",
+                "lt",
+                "le",
+                "gt",
+                "ge",
+                "ord",
+                "cmp",
+            ],
+        ),
     )?;
     let ordering = OrderingLangItem {
         name: ordering_value.name,

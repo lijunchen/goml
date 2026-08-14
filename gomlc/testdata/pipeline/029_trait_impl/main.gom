@@ -1,4 +1,7 @@
-struct Point { x: int32, y: int32 }
+struct Point {
+    x: int32,
+    y: int32,
+}
 
 enum Maybe[T] {
     Just(T),
@@ -10,7 +13,9 @@ trait Display {
 }
 
 impl Display for Point {
-    fn show(self: Point) -> string { "Point" }
+    fn show(self: Point) -> string {
+        "Point"
+    }
 }
 
 impl Display for Maybe[int32] {
@@ -23,7 +28,11 @@ impl Display for Maybe[int32] {
 }
 
 fn make_maybe(flag: bool) -> Maybe[int32] {
-    if flag { Just(42) } else { Nothing }
+    if flag {
+        Just(42)
+    } else {
+        Nothing
+    }
 }
 
 fn main() {
@@ -33,5 +42,4 @@ fn main() {
     let _ = println(Display::show(point));
     let _ = println(Display::show(some_number));
     let _ = println(Display::show(none_number));
-    ()
 }

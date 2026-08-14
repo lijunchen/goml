@@ -441,12 +441,12 @@ fn collect_capture_block(value: tast::Block, result: Vec[string]) -> unit {
 }
 
 fn collect_closure_captures(params: Vec[tast::ClosureParam], body: tast::Expr, result: Vec[string]) -> unit {
-    let bound: Vec[string] = Vec::[];
+    let bound: Vec[string] = Vec::from_array([]);
     for param in params {
         push_name(bound, param.name)
     }
     collect_bound_expr(body, bound);
-    let references: Vec[string] = Vec::[];
+    let references: Vec[string] = Vec::from_array([]);
     collect_reference_expr(body, references);
     for name in references {
         if bound.contains(name) {} else {
@@ -529,11 +529,11 @@ fn collect_capture_expr(value: tast::Expr, result: Vec[string]) -> unit {
 }
 
 fn hidden_mutable_cells(value: tast::Block) -> Vec[(string, tast::Type)] {
-    let mutables: Vec[(string, tast::Type)] = Vec::[];
+    let mutables: Vec[(string, tast::Type)] = Vec::from_array([]);
     collect_mutable_block(value, mutables);
-    let captures: Vec[string] = Vec::[];
+    let captures: Vec[string] = Vec::from_array([]);
     collect_capture_block(value, captures);
-    let result: Vec[(string, tast::Type)] = Vec::[];
+    let result: Vec[(string, tast::Type)] = Vec::from_array([]);
     for value in mutables {
         if captures.contains(value.0) {
             result.push(value)
@@ -572,28 +572,28 @@ fn hidden_cell_var(name: string, inner_ty: tast::Type) -> LowerExpr {
 
 fn hidden_ref_alloc(value: LowerExpr, inner_ty: tast::Type) -> LowerExpr {
     let ref_ty = hidden_cell_type(inner_ty);
-    let params: Vec[tast::Type] = Vec::[];
+    let params: Vec[tast::Type] = Vec::from_array([]);
     params.push(inner_ty);
-    let args: Vec[LowerExpr] = Vec::[];
+    let args: Vec[LowerExpr] = Vec::from_array([]);
     args.push(value);
     LowerExpr::Call { func: intrinsic_expr("ref.new", params, ref_ty), args, ty: ref_ty }
 }
 
 fn hidden_ref_get(name: string, inner_ty: tast::Type) -> LowerExpr {
     let ref_ty = hidden_cell_type(inner_ty);
-    let params: Vec[tast::Type] = Vec::[];
+    let params: Vec[tast::Type] = Vec::from_array([]);
     params.push(ref_ty);
-    let args: Vec[LowerExpr] = Vec::[];
+    let args: Vec[LowerExpr] = Vec::from_array([]);
     args.push(hidden_cell_var(name, inner_ty));
     LowerExpr::Call { func: intrinsic_expr("ref.get", params, inner_ty), args, ty: inner_ty }
 }
 
 fn hidden_ref_set(name: string, inner_ty: tast::Type, value: LowerExpr) -> LowerExpr {
     let ref_ty = hidden_cell_type(inner_ty);
-    let params: Vec[tast::Type] = Vec::[];
+    let params: Vec[tast::Type] = Vec::from_array([]);
     params.push(ref_ty);
     params.push(inner_ty);
-    let args: Vec[LowerExpr] = Vec::[];
+    let args: Vec[LowerExpr] = Vec::from_array([]);
     args.push(hidden_cell_var(name, inner_ty));
     args.push(value);
     LowerExpr::Call {
@@ -604,7 +604,7 @@ fn hidden_ref_set(name: string, inner_ty: tast::Type, value: LowerExpr) -> Lower
 }
 
 fn lower_hidden_exprs(values: Vec[LowerExpr], cells: Vec[(string, tast::Type)]) -> Vec[LowerExpr] {
-    let result: Vec[LowerExpr] = Vec::[];
+    let result: Vec[LowerExpr] = Vec::from_array([]);
     for value in values {
         result.push(lower_hidden_expr(value, cells))
     }
@@ -612,7 +612,7 @@ fn lower_hidden_exprs(values: Vec[LowerExpr], cells: Vec[(string, tast::Type)]) 
 }
 
 fn lower_hidden_block(value: LowerBlock, cells: Vec[(string, tast::Type)]) -> LowerBlock {
-    let stmts: Vec[LowerLetStmt] = Vec::[];
+    let stmts: Vec[LowerLetStmt] = Vec::from_array([]);
     for stmt in value.stmts {
         let lowered = lower_hidden_expr(stmt.value, cells);
         match hidden_cell_inner(cells, stmt.name) {
@@ -636,7 +636,7 @@ fn lower_hidden_block(value: LowerBlock, cells: Vec[(string, tast::Type)]) -> Lo
 }
 
 fn lower_hidden_arms(values: Vec[LowerArm], cells: Vec[(string, tast::Type)]) -> Vec[LowerArm] {
-    let result: Vec[LowerArm] = Vec::[];
+    let result: Vec[LowerArm] = Vec::from_array([]);
     for value in values {
         result.push(
             LowerArm {

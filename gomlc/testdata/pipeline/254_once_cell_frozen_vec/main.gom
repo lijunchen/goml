@@ -1,7 +1,7 @@
 static VALUES: OnceCell[FrozenVec[int]] = OnceCell::new();
 
 fn values() -> FrozenVec[int] {
-    VALUES.get_or_init(|| Vec::[1, 2, 3].freeze())
+    VALUES.get_or_init(|| Vec::from_array([1, 2, 3]).freeze())
 }
 
 fn main() -> unit {

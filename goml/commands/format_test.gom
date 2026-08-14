@@ -9,28 +9,30 @@ fn formatting_graph_only_collects_owned_files() -> unit {
         module_dir: "/workspace/app",
         module_path: "alice::app",
         entry_package: "alice::app",
-        packages: Vec::[
-            project::Package {
-                name: "alice::app",
-                declared_name: "main",
-                module_name: "alice::app",
-                directory: "/workspace/app",
-                artifact_prefix: "pkg",
-                files: Vec::["/workspace/app/main.gom"],
-                imports: Vec::["bob::dep"],
-            },
-            project::Package {
-                name: "bob::dep",
-                declared_name: "dep",
-                module_name: "bob::dep",
-                directory: "/registry/bob/dep",
-                artifact_prefix: "deps/bob/dep",
-                files: Vec::["/registry/bob/dep/dep.gom"],
-                imports: Vec::new(),
-            },
-        ],
+        packages: Vec::from_array(
+            [
+                project::Package {
+                    name: "alice::app",
+                    declared_name: "main",
+                    module_name: "alice::app",
+                    directory: "/workspace/app",
+                    artifact_prefix: "pkg",
+                    files: Vec::from_array(["/workspace/app/main.gom"]),
+                    imports: Vec::from_array(["bob::dep"]),
+                },
+                project::Package {
+                    name: "bob::dep",
+                    declared_name: "dep",
+                    module_name: "bob::dep",
+                    directory: "/registry/bob/dep",
+                    artifact_prefix: "deps/bob/dep",
+                    files: Vec::from_array(["/registry/bob/dep/dep.gom"]),
+                    imports: Vec::new(),
+                },
+            ],
+        ),
         sources: Vec::new(),
-        order: Vec::["bob::dep", "alice::app"],
+        order: Vec::from_array(["bob::dep", "alice::app"]),
     };
     let files = Vec::new();
     collect_owned_graph_files(graph, graph.module_path, files);

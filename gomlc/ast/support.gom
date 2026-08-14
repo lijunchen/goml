@@ -77,7 +77,7 @@ fn type_head_span(value: LocatedNode) -> Span {
 }
 
 fn direct_nodes(value: LocatedNode) -> Vec[LocatedNode] {
-    let result: Vec[LocatedNode] = Vec::[];
+    let result: Vec[LocatedNode] = Vec::from_array([]);
     let mut cursor = value.start;
     for element in cst::node_children(value.node) {
         match element {
@@ -90,7 +90,7 @@ fn direct_nodes(value: LocatedNode) -> Vec[LocatedNode] {
 }
 
 fn direct_tokens(value: LocatedNode) -> Vec[LocatedToken] {
-    let result: Vec[LocatedToken] = Vec::[];
+    let result: Vec[LocatedToken] = Vec::from_array([]);
     let mut cursor = value.start;
     for element in cst::node_children(value.node) {
         match element {
@@ -103,7 +103,7 @@ fn direct_tokens(value: LocatedNode) -> Vec[LocatedToken] {
 }
 
 fn children_of_kind(value: LocatedNode, kind: cst::NodeKind) -> Vec[LocatedNode] {
-    let result: Vec[LocatedNode] = Vec::[];
+    let result: Vec[LocatedNode] = Vec::from_array([]);
     let mut cursor = value.start;
     for element in cst::node_children(value.node) {
         match element {
@@ -132,7 +132,7 @@ fn first_child(value: LocatedNode, kind: cst::NodeKind) -> Option[LocatedNode] {
 }
 
 fn tokens_of_kind(value: LocatedNode, kind: lexer::TokenKind) -> Vec[LocatedToken] {
-    let result: Vec[LocatedToken] = Vec::[];
+    let result: Vec[LocatedToken] = Vec::from_array([]);
     let mut cursor = value.start;
     for element in cst::node_children(value.node) {
         match element {
@@ -221,7 +221,7 @@ fn is_type_kind(kind: cst::NodeKind) -> bool {
 }
 
 fn filtered_children(value: LocatedNode, selector: (cst::NodeKind) -> bool) -> Vec[LocatedNode] {
-    let result: Vec[LocatedNode] = Vec::[];
+    let result: Vec[LocatedNode] = Vec::from_array([]);
     let mut cursor = value.start;
     for element in cst::node_children(value.node) {
         match element {

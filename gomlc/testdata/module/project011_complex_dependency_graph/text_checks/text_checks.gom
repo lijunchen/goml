@@ -4,9 +4,7 @@ use std::bytes;
 use std::text;
 
 fn check(ok: Ref[bool], condition: bool) -> unit {
-    if condition {
-        ()
-    } else {
+    if condition {} else {
         ok.set(false)
     }
 }
@@ -21,14 +19,12 @@ pub fn verify() -> bool {
         Result::Ok(value) => check(ok, value == source),
         Result::Err(_) => check(ok, false),
     };
-
     let invalid = bytes::Bytes::new();
     invalid.push(255);
     match invalid.to_string() {
         Result::Ok(_) => check(ok, false),
         Result::Err(message) => check(ok, message == "invalid UTF-8"),
     };
-
     let builder = text::StringBuilder::with_capacity(4);
     check(ok, builder.is_empty());
     builder.write_string("GoML");

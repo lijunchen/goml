@@ -1,13 +1,17 @@
 package ids;
 
 type RawId = uint64;
+
 type PairStorage[T] = (T, T);
 
 pub type Id = RawId;
+
 pub type Pair[T] = PairStorage[T];
 
 const OFFSET: int32 = 2;
+
 pub const ANSWER: int32 = 40 + OFFSET;
+
 pub const NEWLINE: byte = b'\n';
 
 pub fn make_id(value: Id) -> Id {

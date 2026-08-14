@@ -51,17 +51,17 @@ pub fn new_artifact_json_writer(pretty: bool) -> ArtifactJsonWriter {
         pretty,
         capture: false,
         depth: Ref::new(0),
-        object_scopes: Vec::[],
-        first_values: Vec::[],
+        object_scopes: Vec::from_array([]),
+        first_values: Vec::from_array([]),
         after_name: Ref::new(false),
-        captured_containers: Vec::[],
-        captured_values: Vec::[],
+        captured_containers: Vec::from_array([]),
+        captured_values: Vec::from_array([]),
         binary_mode: 0,
-        binary_seen: HashMap::{},
-        binary_strings: Vec::[],
+        binary_seen: HashMap::from_array([]),
+        binary_strings: Vec::from_array([]),
         binary_writer: new_artifact_binary_writer(),
         binary_table: empty_artifact_binary_string_table(),
-        binary_scopes: Vec::[],
+        binary_scopes: Vec::from_array([]),
         binary_error: Ref::new(Option::None),
     }
 }
@@ -72,17 +72,17 @@ pub fn new_artifact_value_writer() -> ArtifactJsonWriter {
         pretty: false,
         capture: true,
         depth: Ref::new(0),
-        object_scopes: Vec::[],
-        first_values: Vec::[],
+        object_scopes: Vec::from_array([]),
+        first_values: Vec::from_array([]),
         after_name: Ref::new(false),
-        captured_containers: Vec::[],
-        captured_values: Vec::[],
+        captured_containers: Vec::from_array([]),
+        captured_values: Vec::from_array([]),
         binary_mode: 1,
-        binary_seen: HashMap::{},
-        binary_strings: Vec::[],
+        binary_seen: HashMap::from_array([]),
+        binary_strings: Vec::from_array([]),
         binary_writer: new_artifact_binary_writer(),
         binary_table: empty_artifact_binary_string_table(),
-        binary_scopes: Vec::[],
+        binary_scopes: Vec::from_array([]),
         binary_error: Ref::new(Option::None),
     }
 }
@@ -93,17 +93,17 @@ pub fn new_artifact_binary_string_collector() -> ArtifactJsonWriter {
         pretty: false,
         capture: false,
         depth: Ref::new(0),
-        object_scopes: Vec::[],
-        first_values: Vec::[],
+        object_scopes: Vec::from_array([]),
+        first_values: Vec::from_array([]),
         after_name: Ref::new(false),
-        captured_containers: Vec::[],
-        captured_values: Vec::[],
+        captured_containers: Vec::from_array([]),
+        captured_values: Vec::from_array([]),
         binary_mode: 2,
-        binary_seen: HashMap::{},
-        binary_strings: Vec::[],
+        binary_seen: HashMap::from_array([]),
+        binary_strings: Vec::from_array([]),
         binary_writer: new_artifact_binary_writer(),
         binary_table: empty_artifact_binary_string_table(),
-        binary_scopes: Vec::[],
+        binary_scopes: Vec::from_array([]),
         binary_error: Ref::new(Option::None),
     }
 }
@@ -114,17 +114,17 @@ pub fn new_artifact_binary_value_stream(table: ArtifactBinaryStringTable) -> Art
         pretty: false,
         capture: false,
         depth: Ref::new(0),
-        object_scopes: Vec::[],
-        first_values: Vec::[],
+        object_scopes: Vec::from_array([]),
+        first_values: Vec::from_array([]),
         after_name: Ref::new(false),
-        captured_containers: Vec::[],
-        captured_values: Vec::[],
+        captured_containers: Vec::from_array([]),
+        captured_values: Vec::from_array([]),
         binary_mode: 3,
-        binary_seen: HashMap::{},
-        binary_strings: Vec::[],
+        binary_seen: HashMap::from_array([]),
+        binary_strings: Vec::from_array([]),
         binary_writer: new_artifact_binary_writer(),
         binary_table: table,
-        binary_scopes: Vec::[],
+        binary_scopes: Vec::from_array([]),
         binary_error: Ref::new(Option::None),
     }
 }
@@ -294,7 +294,10 @@ pub fn artifact_json_begin_object(value: ArtifactJsonWriter) -> unit {
         artifact_binary_stream_begin_container(value, 6, true)
     } else if value.capture {
         value.captured_containers.push(
-            ArtifactCapturedContainer::Object { fields: Vec::[], name: Ref::new(Option::None) },
+            ArtifactCapturedContainer::Object {
+                fields: Vec::from_array([]),
+                name: Ref::new(Option::None),
+            },
         )
     } else {
         artifact_json_before_value(value);
@@ -330,7 +333,7 @@ pub fn artifact_json_begin_array(value: ArtifactJsonWriter) -> unit {
     if value.binary_mode == 2 {} else if value.binary_mode == 3 {
         artifact_binary_stream_begin_container(value, 5, false)
     } else if value.capture {
-        value.captured_containers.push(ArtifactCapturedContainer::Array(Vec::[]))
+        value.captured_containers.push(ArtifactCapturedContainer::Array(Vec::from_array([])))
     } else {
         artifact_json_before_value(value);
         value.builder.write_char('[');

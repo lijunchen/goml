@@ -26,7 +26,9 @@ trait Inspect {
     fn inspect(self: Self) -> string;
 }
 
-struct Boxed { value: int32 }
+struct Boxed {
+    value: int32,
+}
 
 impl Display for int32 {
     fn show(self: int32) -> string {
@@ -113,7 +115,11 @@ impl Inspect for Boxed {
 }
 
 fn bool_text(x: bool) -> string {
-    if x { "true" } else { "false" }
+    if x {
+        "true"
+    } else {
+        "false"
+    }
 }
 
 fn show_both[T: Debug + Display](x: T) -> string {
@@ -128,7 +134,12 @@ fn combine_scaled[T: Add + Scale](a: T, b: T, factor: int32) -> T {
     a.add(b).scale(factor)
 }
 
-fn report_pair[T: Debug + Display + MyEq + MyHash, Q: Debug + MyHash](tag: Q, a: T, b: T, combined: T) -> string {
+fn report_pair[T: Debug + Display + MyEq + MyHash, Q: Debug + MyHash](
+    tag: Q,
+    a: T,
+    b: T,
+    combined: T,
+) -> string {
     let same = MyEq::eq(a, b);
     let header = tag_text(tag);
     let repr = show_both(combined);
@@ -136,7 +147,11 @@ fn report_pair[T: Debug + Display + MyEq + MyHash, Q: Debug + MyHash](tag: Q, a:
     ((header + " ") + repr) + ((" | eq=" + bool_text(same)) + (" | hash=" + h.to_string()))
 }
 
-fn full_report[T: Debug + MyHash + Display + MyEq + Add + Scale + Debug, Q: Debug + MyHash](tag: Q, a: T, b: T) -> string {
+fn full_report[T: Debug + MyHash + Display + MyEq + Add + Scale + Debug, Q: Debug + MyHash](
+    tag: Q,
+    a: T,
+    b: T,
+) -> string {
     let combined = combine_scaled(a, b, 2);
     report_pair(tag, a, b, combined)
 }
@@ -159,6 +174,7 @@ fn main() {
     let _ = println(full_report(tag, left, right));
     let _ = println(full_report(Boxed { value: 99 }, Boxed { value: 3 }, Boxed { value: 4 }));
     let _ = println(sum_and_tag(sum_tag, first, second, third));
-    let _ = println(sum_and_tag(Boxed { value: 1 }, Boxed { value: 5 }, Boxed { value: 6 }, Boxed { value: 7 }));
-    ()
+    let _ = println(
+        sum_and_tag(Boxed { value: 1 }, Boxed { value: 5 }, Boxed { value: 6 }, Boxed { value: 7 }),
+    );
 }

@@ -3,11 +3,9 @@ enum List[T] {
     Cons(T, List[T]),
 }
 
-fn prepend_with(
-    make: (int32, List[int32]) -> List[int32],
-    value: int32,
-    values: List[int32],
-) -> List[int32] {
+fn prepend_with(make: (int32, List[int32]) -> List[int32], value: int32, values: List[int32]) -> List[
+    int32,
+] {
     make(value, values)
 }
 
@@ -20,10 +18,6 @@ fn sum(values: List[int32]) -> int32 {
 
 fn main() -> unit {
     let cons: (int32, List[int32]) -> List[int32] = List::Cons;
-    let values = prepend_with(
-        cons,
-        1,
-        prepend_with(cons, 2, List::Nil),
-    );
+    let values = prepend_with(cons, 1, prepend_with(cons, 2, List::Nil));
     println(sum(values).to_string())
 }

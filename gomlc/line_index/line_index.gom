@@ -79,10 +79,10 @@ fn swar_is_plain_ascii(value: uint64) -> bool {
 }
 
 pub fn new(source: string) -> LineIndex {
-    let line_starts: Vec[int] = Vec::[0];
-    let line_ends: Vec[int] = Vec::[];
-    let wide_offsets: Vec[int] = Vec::[0];
-    let wide_chars: Vec[WideChar] = Vec::[];
+    let line_starts: Vec[int] = Vec::from_array([0]);
+    let line_ends: Vec[int] = Vec::from_array([]);
+    let wide_offsets: Vec[int] = Vec::from_array([0]);
+    let wide_chars: Vec[WideChar] = Vec::from_array([]);
     let mut line_start = 0;
     let mut offset = 0;
     while offset < source.byte_len() {

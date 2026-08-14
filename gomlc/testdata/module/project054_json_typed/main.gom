@@ -27,8 +27,6 @@ struct RawBytes {
 }
 
 impl Deserialize for RawBytes {
-
-
     fn deserialize[D: serde::Deserializer](deserializer: D) -> Result[RawBytes, string] {
         Result::Ok(RawBytes { values: deserializer.deserialize_bytes()? })
     }

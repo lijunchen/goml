@@ -1,7 +1,6 @@
 fn main() -> unit {
     let i = Ref::new(0);
     let total = Ref::new(0);
-
     while if i.get() == 0 {
         i.set(1);
         true
@@ -14,13 +13,10 @@ fn main() -> unit {
         if i.get() == 1 {
             i.set(2);
             continue
-        } else {
-            ()
-        };
+        } else {};
         i.set(i.get() + 1);
-    };
+    }
     println(total.get());
-
     let j = Ref::new(0);
     let total2 = Ref::new(0);
     while match j.get() {
@@ -38,9 +34,7 @@ fn main() -> unit {
         total2.set(total2.get() + j.get());
         if j.get() == 2 {
             break;
-        } else {
-            ()
-        };
-    };
+        } else {};
+    }
     println(total2.get());
 }

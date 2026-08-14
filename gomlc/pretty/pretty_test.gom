@@ -86,19 +86,25 @@ fn unavoidable_overflow_uses_the_shorter_first_line() -> unit {
 
 #[test]
 fn concat_join_and_folddoc_cover_empty_and_nil_elements() -> unit {
-    testing::assert_eq(layout(concat(Vec::[])), "");
-    testing::assert_eq(layout(concat(Vec::[text("a"), nil(), text("b")])), "ab");
-    testing::assert_eq(layout(join(text(","), Vec::[])), "");
-    testing::assert_eq(layout(join(text(","), Vec::[text("a"), nil(), text("b")])), "a,,b");
-    testing::assert_eq(layout(folddoc(above, Vec::[text("a"), text("b"), text("c")])), "a\nb\nc");
-    testing::assert_eq(layout(folddoc(append, Vec::[])), "");
-    testing::assert_eq(layout(folddoc(append, Vec::[text("only")])), "only")
+    testing::assert_eq(layout(concat(Vec::from_array([]))), "");
+    testing::assert_eq(layout(concat(Vec::from_array([text("a"), nil(), text("b")]))), "ab");
+    testing::assert_eq(layout(join(text(","), Vec::from_array([]))), "");
+    testing::assert_eq(
+        layout(join(text(","), Vec::from_array([text("a"), nil(), text("b")]))),
+        "a,,b",
+    );
+    testing::assert_eq(
+        layout(folddoc(above, Vec::from_array([text("a"), text("b"), text("c")]))),
+        "a\nb\nc",
+    );
+    testing::assert_eq(layout(folddoc(append, Vec::from_array([]))), "");
+    testing::assert_eq(layout(folddoc(append, Vec::from_array([text("only")]))), "only")
 }
 
 #[test]
 fn spread_stack_beside_and_above_match_the_paper() -> unit {
-    testing::assert_eq(layout(spread(Vec::[text("a"), text("b"), text("c")])), "a b c");
-    testing::assert_eq(layout(stack(Vec::[text("a"), text("b"), text("c")])), "a\nb\nc");
+    testing::assert_eq(layout(spread(Vec::from_array([text("a"), text("b"), text("c")]))), "a b c");
+    testing::assert_eq(layout(stack(Vec::from_array([text("a"), text("b"), text("c")]))), "a\nb\nc");
     testing::assert_eq(layout(beside(text("a"), text("b"))), "a b");
     testing::assert_eq(layout(above(text("a"), text("b"))), "a\nb")
 }
@@ -110,26 +116,26 @@ fn softline_and_bracket_have_flat_and_broken_layouts() -> unit {
     assert_pretty(2, soft, "a\nb");
     assert_pretty(3, soft_beside(text("a"), text("b")), "a b");
     assert_pretty(2, soft_beside(text("a"), text("b")), "a\nb");
-    let value = bracket("[", spread(Vec::[text("a"), text("b")]), "]");
+    let value = bracket("[", spread(Vec::from_array([text("a"), text("b")])), "]");
     assert_pretty(7, value, "[ a b ]");
     assert_pretty(6, value, "[\n  a b\n]")
 }
 
 #[test]
 fn fill_greedily_packs_plain_documents() -> unit {
-    let value = fill(Vec::[text("aaa"), text("bb"), text("c"), text("dddd")]);
+    let value = fill(Vec::from_array([text("aaa"), text("bb"), text("c"), text("dddd")]));
     assert_pretty(100, value, "aaa bb c dddd");
     assert_pretty(6, value, "aaa bb\nc dddd");
     assert_pretty(5, value, "aaa\nbb c\ndddd");
     testing::assert_eq(pretty(5, group(value)), pretty(5, value));
-    testing::assert_eq(pretty(5, fill(Vec::[])), "");
-    testing::assert_eq(pretty(5, fill(Vec::[text("only")])), "only")
+    testing::assert_eq(pretty(5, fill(Vec::from_array([]))), "");
+    testing::assert_eq(pretty(5, fill(Vec::from_array([text("only")]))), "only")
 }
 
 #[test]
 fn fill_flattens_a_document_only_when_put_beside_another() -> unit {
     let element = group(above(text("<em>"), above(text("word"), text("</em>"))));
-    let value = fill(Vec::[text("before"), element, text("after")]);
+    let value = fill(Vec::from_array([text("before"), element, text("after")]));
     assert_pretty(40, value, "before <em> word </em> after");
     assert_pretty(16, value, "before\n<em> word </em>\nafter");
     assert_pretty(13, value, "before\n<em>\nword\n</em>\nafter")
@@ -137,7 +143,7 @@ fn fill_flattens_a_document_only_when_put_beside_another() -> unit {
 
 #[test]
 fn fill_copies_its_input_vector() -> unit {
-    let values = Vec::[text("a"), text("b")];
+    let values = Vec::from_array([text("a"), text("b")]);
     let value = fill(values);
     values.set(0, text("changed"));
     testing::assert_eq(pretty(20, value), "a b")
@@ -193,18 +199,30 @@ fn show_trees(values: Vec[Tree], index: int) -> Doc {
 fn paper_tree() -> Tree {
     Tree::Node(
         "aaa",
-        Vec::[
-            Tree::Node("bbbbb", Vec::[Tree::Node("ccc", Vec::[]), Tree::Node("dd", Vec::[])]),
-            Tree::Node("eee", Vec::[]),
-            Tree::Node(
-                "ffff",
-                Vec::[
-                    Tree::Node("gg", Vec::[]),
-                    Tree::Node("hhh", Vec::[]),
-                    Tree::Node("ii", Vec::[]),
-                ],
-            ),
-        ],
+        Vec::from_array(
+            [
+                Tree::Node(
+                    "bbbbb",
+                    Vec::from_array(
+                        [
+                            Tree::Node("ccc", Vec::from_array([])),
+                            Tree::Node("dd", Vec::from_array([])),
+                        ],
+                    ),
+                ),
+                Tree::Node("eee", Vec::from_array([])),
+                Tree::Node(
+                    "ffff",
+                    Vec::from_array(
+                        [
+                            Tree::Node("gg", Vec::from_array([])),
+                            Tree::Node("hhh", Vec::from_array([])),
+                            Tree::Node("ii", Vec::from_array([])),
+                        ],
+                    ),
+                ),
+            ],
+        ),
     )
 }
 
@@ -258,15 +276,19 @@ fn hard_lines_and_break_lines_have_distinct_flat_layouts() -> unit {
 
 #[test]
 fn delimited_and_block_build_structured_documents() -> unit {
-    let arguments = delimited("(", ",", ")", Vec::[text("first"), text("second")]);
+    let arguments = delimited("(", ",", ")", Vec::from_array([text("first"), text("second")]));
     testing::assert_eq(pretty(20, arguments), "(first, second)");
     testing::assert_eq(pretty(8, arguments), "(\n  first,\n  second\n)");
-    let body = block(text("fn main()"), Vec::[text("first"), text("second")]);
+    let body = block(text("fn main()"), Vec::from_array([text("first"), text("second")]));
     testing::assert_eq(layout(body), "fn main() {\n  first\n  second\n}")
 }
 
 #[test]
 fn compact_uses_the_fully_flat_layout() -> unit {
-    let value = enclose("(", join(append(text(","), line()), Vec::[text("a"), text("b")]), ")");
+    let value = enclose(
+        "(",
+        join(append(text(","), line()), Vec::from_array([text("a"), text("b")])),
+        ")",
+    );
     testing::assert_eq(compact(value), "(a, b)")
 }

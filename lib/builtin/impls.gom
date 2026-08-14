@@ -194,7 +194,7 @@ impl string {
     }
 
     fn split(self: string, separator: string) -> Vec[string] {
-        let result: Vec[string] = Vec::[];
+        let result: Vec[string] = Vec::new();
         let separator_len = separator.byte_len();
         let value_len = self.byte_len();
         if separator_len == 0 {
@@ -250,7 +250,7 @@ impl string {
         if expected.byte_len() == 0 {
             self
         } else {
-            let parts: Vec[string] = Vec::[];
+            let parts: Vec[string] = Vec::new();
             let mut start = 0;
             loop {
                 match string_find_from(self, expected, start) {

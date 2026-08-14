@@ -6,10 +6,7 @@ trait Parent[T] {
     fn parent(self: Self) -> T;
 }
 
-trait Child[T: ToString]: Parent[T] + Render
-where
-    T: Eq,
-{
+trait Child[T: ToString]: Parent[T] + Render where T: Eq {
     fn child(self: Self) -> string;
 }
 
@@ -17,7 +14,7 @@ struct Box[T] {
     value: T,
 }
 
-impl[T] Parent[T] for Box[T] {
+impl[T] Parent[T]for Box[T] {
     fn parent(self: Box[T]) -> T {
         self.value
     }
@@ -29,7 +26,7 @@ impl[T] Render for Box[T] {
     }
 }
 
-impl[T: ToString + Eq] Child[T] for Box[T] {
+impl[T: ToString + Eq] Child[T]for Box[T] {
     fn child(self: Box[T]) -> string {
         ":child"
     }

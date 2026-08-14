@@ -37,12 +37,10 @@ fn state_new() -> CheckerState {
 
 fn reset_gensym(st: CheckerState) -> unit {
     let _ = st.gensym_counter.set(0);
-    ()
 }
 
 fn reset_level(st: CheckerState) -> unit {
     let _ = st.current_level.set(1);
-    ()
 }
 
 fn reset_type_variables(st: CheckerState) -> unit {
@@ -53,17 +51,19 @@ fn reset_type_variables(st: CheckerState) -> unit {
 fn enter_level(st: CheckerState) -> unit {
     let l = st.current_level.get();
     let _ = st.current_level.set(l + 1);
-    ()
 }
 
 fn leave_level(st: CheckerState) -> unit {
     let l = st.current_level.get();
     let _ = st.current_level.set(l - 1);
-    ()
 }
 
 fn min_i32(a: int32, b: int32) -> int32 {
-    if a < b { a } else { b }
+    if a < b {
+        a
+    } else {
+        b
+    }
 }
 
 fn nth_letter(n: int32) -> char {
@@ -133,10 +133,14 @@ fn typ_to_string(ty: Typ) -> string {
             Tv::Link(inner) => typ_to_string(inner),
         },
         Typ::TArrow(t1, t2) => {
-            let s1 = if typ_is_arrow(t1) { "(" + typ_to_string(t1) + ")" } else { typ_to_string(t1) };
+            let s1 = if typ_is_arrow(t1) {
+                "(" + typ_to_string(t1) + ")"
+            } else {
+                typ_to_string(t1)
+            };
             let s2 = typ_to_string(t2);
             s1 + " -> " + s2
-        }
+        },
     }
 }
 
@@ -281,7 +285,7 @@ fn inst_loop(st: CheckerState, subst: Vec[SubstEntry], ty: Typ) -> (Typ, Vec[Sub
                 let tv = newvar(st);
                 let new_subst = subst.pushed(SubstEntry { name, ty: tv });
                 (tv, new_subst)
-            }
+            },
         },
         Typ::TVar(tvref) => match tvref.get() {
             Tv::Link(inner) => inst_loop(st, subst, inner),
@@ -328,9 +332,9 @@ fn typeof(st: CheckerState, env: Vec[EnvEntry], e: Exp) -> Result[Typ, string] {
                                 Result::Ok(_) => Result::Ok(ty_res),
                                 Result::Err(e) => Result::Err(e),
                             }
-                        }
+                        },
                     }
-                }
+                },
             }
         },
         Exp::Let(x, e1, e2) => {
@@ -342,9 +346,9 @@ fn typeof(st: CheckerState, env: Vec[EnvEntry], e: Exp) -> Result[Typ, string] {
                 Result::Ok(ty1) => {
                     let env2 = env.pushed(EnvEntry { name: x, ty: gen(st, ty1) });
                     typeof(st, env2, e2)
-                }
+                },
             }
-        }
+        },
     }
 }
 
@@ -373,31 +377,28 @@ fn show_result(label: string, res: Result[Typ, string]) -> unit {
 
 fn main() -> unit {
     let st = state_new();
-
     let id = exp_lam("x", exp_var("x"));
     let c1 = exp_lam("x", exp_lam("y", exp_app(exp_var("x"), exp_var("y"))));
-
     reset_type_variables(st);
     show_result("id", typeof(st, env_empty(), id));
-
     reset_type_variables(st);
     show_result("c1", typeof(st, env_empty(), c1));
-
     reset_type_variables(st);
     show_result("let_x_c1_x", typeof(st, env_empty(), exp_let("x", c1, exp_var("x"))));
-
     reset_type_variables(st);
     show_result(
         "let_y_id_y",
         typeof(st, env_empty(), exp_let("y", exp_lam("z", exp_var("z")), exp_var("y"))),
     );
-
     reset_type_variables(st);
     show_result(
         "lam_x_let_y_id_y",
-        typeof(st, env_empty(), exp_lam("x", exp_let("y", exp_lam("z", exp_var("z")), exp_var("y")))),
+        typeof(
+            st,
+            env_empty(),
+            exp_lam("x", exp_let("y", exp_lam("z", exp_var("z")), exp_var("y"))),
+        ),
     );
-
     reset_type_variables(st);
     show_result(
         "lam_x_let_y_id_yx",
@@ -406,37 +407,26 @@ fn main() -> unit {
             env_empty(),
             exp_lam(
                 "x",
-                exp_let(
-                    "y",
-                    exp_lam("z", exp_var("z")),
-                    exp_app(exp_var("y"), exp_var("x")),
-                ),
+                exp_let("y", exp_lam("z", exp_var("z")), exp_app(exp_var("y"), exp_var("x"))),
             ),
         ),
     );
-
     reset_type_variables(st);
     show_result(
         "self_apply",
         typeof(st, env_empty(), exp_lam("x", exp_app(exp_var("x"), exp_var("x")))),
     );
-
     reset_type_variables(st);
     show_result("unbound_var", typeof(st, env_empty(), exp_let("x", exp_var("x"), exp_var("x"))));
-
     reset_type_variables(st);
     show_result(
         "max_heiber",
         typeof(
             st,
             env_empty(),
-            exp_lam(
-                "y",
-                exp_app(exp_var("y"), exp_lam("z", exp_app(exp_var("y"), exp_var("z")))),
-            ),
+            exp_lam("y", exp_app(exp_var("y"), exp_lam("z", exp_app(exp_var("y"), exp_var("z"))))),
         ),
     );
-
     reset_type_variables(st);
     show_result(
         "kirang",
@@ -450,7 +440,10 @@ fn main() -> unit {
                     exp_lam(
                         "k",
                         exp_app(
-                            exp_app(exp_var("k"), exp_app(exp_app(exp_var("k"), exp_var("x")), exp_var("y"))),
+                            exp_app(
+                                exp_var("k"),
+                                exp_app(exp_app(exp_var("k"), exp_var("x")), exp_var("y")),
+                            ),
                             exp_app(exp_app(exp_var("k"), exp_var("y")), exp_var("x")),
                         ),
                     ),
@@ -458,13 +451,11 @@ fn main() -> unit {
             ),
         ),
     );
-
     reset_type_variables(st);
     show_result(
         "let_id_idid",
         typeof(st, env_empty(), exp_let("id", id, exp_app(exp_var("id"), exp_var("id")))),
     );
-
     reset_type_variables(st);
     show_result(
         "nested_lets",
@@ -474,15 +465,10 @@ fn main() -> unit {
             exp_let(
                 "x",
                 c1,
-                exp_let(
-                    "y",
-                    exp_let("z", exp_app(exp_var("x"), id), exp_var("z")),
-                    exp_var("y"),
-                ),
+                exp_let("y", exp_let("z", exp_app(exp_var("x"), id), exp_var("z")), exp_var("y")),
             ),
         ),
     );
-
     reset_type_variables(st);
     show_result(
         "fun_x_fun_y_let_x_xy_fun_x_yx",
@@ -502,13 +488,11 @@ fn main() -> unit {
             ),
         ),
     );
-
     reset_type_variables(st);
     show_result(
         "sound_gen_1",
         typeof(st, env_empty(), exp_lam("x", exp_let("y", exp_var("x"), exp_var("y")))),
     );
-
     reset_type_variables(st);
     show_result(
         "sound_gen_2",
@@ -518,7 +502,6 @@ fn main() -> unit {
             exp_lam("x", exp_let("y", exp_lam("z", exp_var("x")), exp_var("y"))),
         ),
     );
-
     reset_type_variables(st);
     show_result(
         "sound_gen_3",
@@ -531,7 +514,6 @@ fn main() -> unit {
             ),
         ),
     );
-
     reset_type_variables(st);
     show_result(
         "double_apply",
@@ -551,7 +533,6 @@ fn main() -> unit {
             ),
         ),
     );
-
     reset_type_variables(st);
     show_result(
         "sound_gen_occurs",
@@ -561,7 +542,6 @@ fn main() -> unit {
             exp_lam("x", exp_let("y", exp_var("x"), exp_app(exp_var("y"), exp_var("y")))),
         ),
     );
-
     reset_gensym(st);
     show_result(
         "fun_x_let_y_let_z_x_id_z_y",
@@ -574,7 +554,6 @@ fn main() -> unit {
             ),
         ),
     );
-
     println("");
     println("All Done");
     println("");

@@ -33,18 +33,15 @@ fn main() -> unit {
     let make_vec: ([int; 3]) -> Vec[int] = Vec::from_array;
     let values = make_vec([1, 2, 3]);
     println(f"{values.len()}:{values[0]}:{values[2]}");
-
     let empty: Vec[int] = Vec::[int]::from_array([]);
     println(empty.len());
     let inferred_empty: Vec[int] = Vec::from_array([]);
     println(inferred_empty.len());
-
     let mut source = [Ref::new(1), Ref::new(2)];
     let copied = Vec::from_array(source);
     source[0].set(5);
     source[0] = Ref::new(9);
     println(f"{copied[0].get()}:{source[0].get()}");
-
     let log = Ref::new("");
     let table = HashMap::from_array(
         [
@@ -53,20 +50,19 @@ fn main() -> unit {
         ],
     );
     println(log.get());
-    println(match table.get(LoggedKey { id: 1, log }) {
-        Some(value) => value,
-        None => 0,
-    });
-
+    println(
+        match table.get(LoggedKey { id: 1, log }) {
+            Some(value) => value,
+            None => 0,
+        },
+    );
     let make_map: ([(string, int); 2]) -> HashMap[string, int] = HashMap::from_array;
     let words = make_map([("a", 1), ("b", 2)]);
     println(words.len());
-
     let no_words = HashMap::[string, int]::from_array([]);
     println(no_words.len());
     let inferred_no_words: HashMap[string, int] = HashMap::from_array([]);
     println(inferred_no_words.len());
-
     let pairs = Vec::from_array([(1, "a"), (2, "b")]);
     let nested = Vec::from_array([Vec::from_array([1, 2]), Vec::from_array([3, 4])]);
     let nested_map = HashMap::from_array([("values", Vec::from_array([5, 6]))]);

@@ -14,7 +14,7 @@ fn required_abi(value: Option[CallableAbiSpec]) -> CallableAbiSpec {
         Some(spec) => spec,
         None => {
             testing::fail("expected callable ABI entry");
-            callable_abi("", "", "", Vec::[])
+            callable_abi("", "", "", Vec::from_array([]))
         },
     }
 }
@@ -71,7 +71,7 @@ fn keeps_runtime_bridges_in_the_builtin_layer() -> unit {
         Ok(values) => values,
         Err(error) => {
             testing::fail(error);
-            Vec::[]
+            Vec::from_array([])
         },
     } {
         if source.source.contains("#[runtime(\"std.") {
@@ -83,7 +83,7 @@ fn keeps_runtime_bridges_in_the_builtin_layer() -> unit {
         Ok(values) => values,
         Err(error) => {
             testing::fail(error);
-            Vec::[]
+            Vec::from_array([])
         },
     } {
         testing::assert(!source.source.contains("#[runtime("))
@@ -132,54 +132,76 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
         Some(value) => value,
         None => {
             testing::fail("expected std::fs package metadata");
-            standard_package("", "", "", Vec::[], Vec::[], Vec::[])
+            standard_package(
+                "",
+                "",
+                "",
+                Vec::from_array([]),
+                Vec::from_array([]),
+                Vec::from_array([]),
+            )
         },
     };
     testing::assert_eq(fs.declared_name, "fs");
-    assert_strings(fs.source_paths, Vec::["std/fs/error.gom", "std/fs/fs.gom"]);
-    assert_strings(fs.dependencies, Vec::["std::bytes", "std::internal::host", "std::io"]);
-    assert_strings(fs.link_dependencies, Vec::["std::bytes", "std::internal::host", "std::io"]);
+    assert_strings(fs.source_paths, Vec::from_array(["std/fs/error.gom", "std/fs/fs.gom"]));
+    assert_strings(
+        fs.dependencies,
+        Vec::from_array(["std::bytes", "std::internal::host", "std::io"]),
+    );
+    assert_strings(
+        fs.link_dependencies,
+        Vec::from_array(["std::bytes", "std::internal::host", "std::io"]),
+    );
     let host = match standard_package_spec("std::internal::host") {
         Some(value) => value,
         None => {
             testing::fail("expected std::internal::host package metadata");
-            standard_package("", "", "", Vec::[], Vec::[], Vec::[])
+            standard_package(
+                "",
+                "",
+                "",
+                Vec::from_array([]),
+                Vec::from_array([]),
+                Vec::from_array([]),
+            )
         },
     };
-    assert_strings(host.source_paths, Vec::["std/internal/host/host.gom"]);
+    assert_strings(host.source_paths, Vec::from_array(["std/internal/host/host.gom"]));
     assert_strings(
         standard_package_children("std"),
-        Vec::[
-            "ascii",
-            "bincode",
-            "bytes",
-            "cmp",
-            "collections",
-            "error",
-            "crypto",
-            "env",
-            "fs",
-            "internal",
-            "io",
-            "iter",
-            "json",
-            "num",
-            "math",
-            "path",
-            "process",
-            "rand",
-            "serde",
-            "task",
-            "testing",
-            "text",
-            "toml",
-            "time",
-            "utf8",
-            "unicode",
-        ],
+        Vec::from_array(
+            [
+                "ascii",
+                "bincode",
+                "bytes",
+                "cmp",
+                "collections",
+                "error",
+                "crypto",
+                "env",
+                "fs",
+                "internal",
+                "io",
+                "iter",
+                "json",
+                "num",
+                "math",
+                "path",
+                "process",
+                "rand",
+                "serde",
+                "task",
+                "testing",
+                "text",
+                "toml",
+                "time",
+                "utf8",
+                "unicode",
+            ],
+        ),
     );
-    assert_strings(standard_package_children("std::internal"), Vec::["host", "task"]);
-    assert_strings(standard_package_children("std::crypto"), Vec::["hash", "rand"]);
+    assert_strings(standard_package_children("std::internal"), Vec::from_array(["host", "task"]));
+    assert_strings(standard_package_children("std::crypto"), Vec::from_array(["hash", "rand"]));
     match standard_sources("std::serde") {
         Ok(Some(values)) => testing::assert_eq(values.len(), 6),
         Ok(None) => testing::fail("expected serde package"),
@@ -196,32 +218,36 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
         Err(error) => testing::fail(error),
     };
     assert_strings(
-        standard_package_closure(Vec::["std::json", "std::fs"]),
-        Vec::[
-            "std::internal::host",
-            "std::bytes",
-            "std::io",
-            "std::num",
-            "std::serde",
-            "std::ascii",
-            "std::text",
-            "std::json",
-            "std::fs",
-        ],
+        standard_package_closure(Vec::from_array(["std::json", "std::fs"])),
+        Vec::from_array(
+            [
+                "std::internal::host",
+                "std::bytes",
+                "std::io",
+                "std::num",
+                "std::serde",
+                "std::ascii",
+                "std::text",
+                "std::json",
+                "std::fs",
+            ],
+        ),
     );
     assert_strings(
-        standard_package_link_closure(Vec::["std::json", "std::fs"]),
-        Vec::[
-            "std::internal::host",
-            "std::bytes",
-            "std::io",
-            "std::num",
-            "std::serde",
-            "std::ascii",
-            "std::text",
-            "std::json",
-            "std::fs",
-        ],
+        standard_package_link_closure(Vec::from_array(["std::json", "std::fs"])),
+        Vec::from_array(
+            [
+                "std::internal::host",
+                "std::bytes",
+                "std::io",
+                "std::num",
+                "std::serde",
+                "std::ascii",
+                "std::text",
+                "std::json",
+                "std::fs",
+            ],
+        ),
     )
 }
 

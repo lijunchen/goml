@@ -1,6 +1,5 @@
 trait Source {
     type Item;
-
     fn get(self: Self) -> Self::Item;
 }
 
@@ -8,7 +7,7 @@ trait Pick[T] {
     fn pick(self: Self) -> T;
 }
 
-impl[S: Source] Pick[S::Item] for S {
+impl[S: Source] Pick[S::Item]for S {
     fn pick(self: S) -> S::Item {
         Source::get(self)
     }

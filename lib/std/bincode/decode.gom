@@ -52,7 +52,7 @@ struct Decoder {
 }
 
 fn bincode_deserializer(input: Slice[byte], config: Config) -> Decoder {
-    Decoder { input, offset: Ref::new(0), config, frames: Vec::[] }
+    Decoder { input, offset: Ref::new(0), config, frames: Vec::from_array([]) }
 }
 
 fn bincode_current_index(index: Ref[int]) -> int {
@@ -332,9 +332,9 @@ fn read_optional(decoder: Decoder, schemas: Vec[serde::Schema]) -> Result[serde:
     } else {
         let tag = read_byte(decoder)?;
         if tag == 0 {
-            Result::Ok(serde::Value::Optional(Vec::[]))
+            Result::Ok(serde::Value::Optional(Vec::from_array([])))
         } else if tag == 1 {
-            Result::Ok(serde::Value::Optional(Vec::[read_schema(decoder, schemas[0])?]))
+            Result::Ok(serde::Value::Optional(Vec::from_array([read_schema(decoder, schemas[0])?])))
         } else {
             Result::Err(decoder_error(decoder, "invalid option tag"))
         }

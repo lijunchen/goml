@@ -6,14 +6,14 @@ enum Expr {
 }
 
 fn main() {
-    let a = Mul(Add(Zero,Zero),Zero);
+    let a = Mul(Add(Zero, Zero), Zero);
     match a {
-        Add(Zero,Zero) => print(0),
-        Mul(Zero,x) => print(1),
-        Add(Succ(x),y) => print(2),
-        Mul(x,Zero) => print(3),
-        Mul(Add(x,y),z) => print(4),
-        Add(x,Zero) => print(5),
+        Add(Zero, Zero) => print(0),
+        Mul(Zero, x) => print(1),
+        Add(Succ(x), y) => print(2),
+        Mul(x, Zero) => print(3),
+        Mul(Add(x, y), z) => print(4),
+        Add(x, Zero) => print(5),
         x => print(6),
     }
 }

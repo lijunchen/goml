@@ -81,8 +81,8 @@ fn evaluate_expression(expression: ctir::CtExpr, local_types: Vec[ctir::CtType],
     CtError,
 ] {
     let module = expression_module(expression, local_types);
-    match verify_module(module, Vec::[]) {
-        Ok(()) => evaluate_site(module, Vec::[], 0, limits),
+    match verify_module(module, Vec::from_array([])) {
+        Ok(()) => evaluate_site(module, Vec::from_array([]), 0, limits),
         Err(error) => {
             testing::fail(error);
             Result::Err(
@@ -91,7 +91,7 @@ fn evaluate_expression(expression: ctir::CtExpr, local_types: Vec[ctir::CtType],
                     message: error,
                     package_name: "test::expression",
                     origin: 0,
-                    stack: Vec::[],
+                    stack: Vec::from_array([]),
                 },
             )
         },
@@ -109,7 +109,7 @@ fn factorial_module() -> ctir::CtModule {
     let recursive = ctir::CtExpr {
         kind: ctir::CtExprKind::Call {
             target: ctir::CtCallTarget::Local(0),
-            args: Vec::[decrement],
+            args: Vec::from_array([decrement]),
         },
         ty: int_type(),
         origin: 0,
@@ -125,12 +125,16 @@ fn factorial_module() -> ctir::CtModule {
         ctir::CtFunction {
             id: 0,
             name: "factorial",
-            parameter_slots: Vec::[0],
-            parameter_types: Vec::[int_type()],
+            parameter_slots: Vec::from_array([0]),
+            parameter_types: Vec::from_array([int_type()]),
             local_count: 1,
-            local_types: Vec::[int_type()],
+            local_types: Vec::from_array([int_type()]),
             return_type: int_type(),
-            body: ctir::CtBlock { statements: Vec::[], tail: Option::Some(body_expr), origin: 0 },
+            body: ctir::CtBlock {
+                statements: Vec::from_array([]),
+                tail: Option::Some(body_expr),
+                origin: 0,
+            },
             origin: 0,
         },
     );
@@ -168,41 +172,44 @@ fn expect_string_intrinsic(name: string, args: Vec[ctir::CtValue]) -> ctir::CtVa
 
 #[test]
 fn evaluates_compile_time_string_intrinsics() -> unit {
-    match expect_string_intrinsic("comptime.string.len", Vec::[ctir::CtValue::String("éa")]) {
+    match expect_string_intrinsic(
+        "comptime.string.len",
+        Vec::from_array([ctir::CtValue::String("éa")]),
+    ) {
         ctir::CtValue::Integer { bits, .. } => testing::assert_eq(bits, 3),
         _ => testing::fail("expected string length"),
     };
     match expect_string_intrinsic(
         "comptime.string.get",
-        Vec::[ctir::CtValue::String("éa"), int_value(2)],
+        Vec::from_array([ctir::CtValue::String("éa"), int_value(2)]),
     ) {
         ctir::CtValue::Char(value) => testing::assert_eq(value, 'a'),
         _ => testing::fail("expected string character"),
     };
     match expect_string_intrinsic(
         "comptime.string.byte_get",
-        Vec::[ctir::CtValue::String("éa"), int_value(0)],
+        Vec::from_array([ctir::CtValue::String("éa"), int_value(0)]),
     ) {
         ctir::CtValue::Integer { bits, .. } => testing::assert_eq(bits, 195),
         _ => testing::fail("expected string byte"),
     };
     match expect_string_intrinsic(
         "comptime.string.byte_slice",
-        Vec::[ctir::CtValue::String("éa"), int_value(0), int_value(2)],
+        Vec::from_array([ctir::CtValue::String("éa"), int_value(0), int_value(2)]),
     ) {
         ctir::CtValue::String(value) => testing::assert_eq(value, "é"),
         _ => testing::fail("expected string slice"),
     };
     match expect_string_intrinsic(
         "comptime.string.is_char_boundary",
-        Vec::[ctir::CtValue::String("éa"), int_value(1)],
+        Vec::from_array([ctir::CtValue::String("éa"), int_value(1)]),
     ) {
         ctir::CtValue::Bool(value) => testing::assert(!value),
         _ => testing::fail("expected character boundary result"),
     };
     match expect_string_intrinsic(
         "comptime.string.contains",
-        Vec::[ctir::CtValue::String("derive"), ctir::CtValue::String("riv")],
+        Vec::from_array([ctir::CtValue::String("derive"), ctir::CtValue::String("riv")]),
     ) {
         ctir::CtValue::Bool(value) => testing::assert(value),
         _ => testing::fail("expected string search result"),
@@ -214,7 +221,7 @@ fn rejects_invalid_compile_time_string_boundaries() -> unit {
     match call_value_intrinsic(
         ctir::CtTarget { int_width: 64 },
         "comptime.string.get",
-        Vec::[ctir::CtValue::String("é"), int_value(1)],
+        Vec::from_array([ctir::CtValue::String("é"), int_value(1)]),
     ) {
         Some(Err(error)) => testing::assert(
             error.contains("out of bounds or not a character boundary"),
@@ -224,10 +231,12 @@ fn rejects_invalid_compile_time_string_boundaries() -> unit {
     match call_value_intrinsic(
         ctir::CtTarget { int_width: 32 },
         "comptime.string.byte_get",
-        Vec::[
-            ctir::CtValue::String("a"),
-            ctir::CtValue::Integer { signed: true, width: 32, bits: 4294967295 },
-        ],
+        Vec::from_array(
+            [
+                ctir::CtValue::String("a"),
+                ctir::CtValue::Integer { signed: true, width: 32, bits: 4294967295 },
+            ],
+        ),
     ) {
         Some(Err(error)) => testing::assert_eq(error, "comptime string byte index is out of bounds"),
         _ => testing::fail("expected negative target-width string index rejection"),
@@ -237,13 +246,19 @@ fn rejects_invalid_compile_time_string_boundaries() -> unit {
 #[test]
 fn evaluates_recursive_direct_calls() -> unit {
     let module = factorial_module();
-    match verify_module(module, Vec::[]) {
+    match verify_module(module, Vec::from_array([])) {
         Ok(()) => (),
         Err(error) => testing::fail(error),
     };
     testing::assert_eq(
         expect_int(
-            evaluate_entry(module, Vec::[], "factorial", Vec::[int_value(10)], default_limits()),
+            evaluate_entry(
+                module,
+                Vec::from_array([]),
+                "factorial",
+                Vec::from_array([int_value(10)]),
+                default_limits(),
+            ),
         ),
         3628800,
     )
@@ -271,10 +286,12 @@ fn loop_site_module() -> ctir::CtModule {
     let loop_body = ctir::CtExpr {
         kind: ctir::CtExprKind::Block(
             ctir::CtBlock {
-                statements: Vec::[
-                    ctir::CtStmt::Assign { slot: 1, value: add },
-                    ctir::CtStmt::Assign { slot: 0, value: increment },
-                ],
+                statements: Vec::from_array(
+                    [
+                        ctir::CtStmt::Assign { slot: 1, value: add },
+                        ctir::CtStmt::Assign { slot: 0, value: increment },
+                    ],
+                ),
                 tail: Option::None,
                 origin: 0,
             },
@@ -290,17 +307,19 @@ fn loop_site_module() -> ctir::CtModule {
     let body = ctir::CtExpr {
         kind: ctir::CtExprKind::Block(
             ctir::CtBlock {
-                statements: Vec::[
-                    ctir::CtStmt::Let {
-                        pattern: ctir::CtPattern::Bind { slot: 0 },
-                        value: int_expr(0),
-                    },
-                    ctir::CtStmt::Let {
-                        pattern: ctir::CtPattern::Bind { slot: 1 },
-                        value: int_expr(0),
-                    },
-                    ctir::CtStmt::Expr(while_expr),
-                ],
+                statements: Vec::from_array(
+                    [
+                        ctir::CtStmt::Let {
+                            pattern: ctir::CtPattern::Bind { slot: 0 },
+                            value: int_expr(0),
+                        },
+                        ctir::CtStmt::Let {
+                            pattern: ctir::CtPattern::Bind { slot: 1 },
+                            value: int_expr(0),
+                        },
+                        ctir::CtStmt::Expr(while_expr),
+                    ],
+                ),
                 tail: Option::Some(local_expr(1, int_type())),
                 origin: 0,
             },
@@ -314,7 +333,7 @@ fn loop_site_module() -> ctir::CtModule {
             id: 0,
             kind: ctir::CtSiteKind::Expression,
             local_count: 2,
-            local_types: Vec::[int_type(), int_type()],
+            local_types: Vec::from_array([int_type(), int_type()]),
             expression: body,
             origin: 0,
         },
@@ -325,11 +344,14 @@ fn loop_site_module() -> ctir::CtModule {
 #[test]
 fn evaluates_local_state_and_loops() -> unit {
     let module = loop_site_module();
-    match verify_module(module, Vec::[]) {
+    match verify_module(module, Vec::from_array([])) {
         Ok(()) => (),
         Err(error) => testing::fail(error),
     };
-    testing::assert_eq(expect_int(evaluate_site(module, Vec::[], 0, default_limits())), 10)
+    testing::assert_eq(
+        expect_int(evaluate_site(module, Vec::from_array([]), 0, default_limits())),
+        10,
+    )
 }
 
 #[test]
@@ -351,7 +373,7 @@ fn inclusive_range_stops_at_maximum_integer() -> unit {
         ty: ctir::CtType::Unit,
         origin: 0,
     };
-    match evaluate_expression(expression, Vec::[], default_limits()) {
+    match evaluate_expression(expression, Vec::from_array([]), default_limits()) {
         Ok(ctir::CtValue::Unit) => (),
         Ok(_) => testing::fail("expected unit range result"),
         Err(error) => testing::fail(error.message),
@@ -362,13 +384,13 @@ fn inclusive_range_stops_at_maximum_integer() -> unit {
 fn evaluates_structured_match_values() -> unit {
     let option_type = ctir::CtType::Enum {
         name: "test::OptionInt",
-        variants: Vec::[Vec::[int_type()], Vec::[]],
+        variants: Vec::from_array([Vec::from_array([int_type()]), Vec::from_array([])]),
     };
     let source = ctir::CtExpr {
         kind: ctir::CtExprKind::Enum {
             name: "test::OptionInt",
             variant: 0,
-            fields: Vec::[int_expr(42)],
+            fields: Vec::from_array([int_expr(42)]),
         },
         ty: option_type,
         origin: 0,
@@ -376,24 +398,26 @@ fn evaluates_structured_match_values() -> unit {
     let expression = ctir::CtExpr {
         kind: ctir::CtExprKind::Match {
             value: source,
-            arms: Vec::[
-                ctir::CtArm {
-                    pattern: ctir::CtPattern::Enum {
-                        name: "test::OptionInt",
-                        variant: 0,
-                        fields: Vec::[ctir::CtPattern::Bind { slot: 0 }],
+            arms: Vec::from_array(
+                [
+                    ctir::CtArm {
+                        pattern: ctir::CtPattern::Enum {
+                            name: "test::OptionInt",
+                            variant: 0,
+                            fields: Vec::from_array([ctir::CtPattern::Bind { slot: 0 }]),
+                        },
+                        guard: Option::None,
+                        body: local_expr(0, int_type()),
+                        origin: 0,
                     },
-                    guard: Option::None,
-                    body: local_expr(0, int_type()),
-                    origin: 0,
-                },
-                ctir::CtArm {
-                    pattern: ctir::CtPattern::Wild,
-                    guard: Option::None,
-                    body: int_expr(0),
-                    origin: 0,
-                },
-            ],
+                    ctir::CtArm {
+                        pattern: ctir::CtPattern::Wild,
+                        guard: Option::None,
+                        body: int_expr(0),
+                        origin: 0,
+                    },
+                ],
+            ),
         },
         ty: int_type(),
         origin: 0,
@@ -404,16 +428,19 @@ fn evaluates_structured_match_values() -> unit {
             id: 0,
             kind: ctir::CtSiteKind::Expression,
             local_count: 1,
-            local_types: Vec::[int_type()],
+            local_types: Vec::from_array([int_type()]),
             expression,
             origin: 0,
         },
     );
-    match verify_module(module, Vec::[]) {
+    match verify_module(module, Vec::from_array([])) {
         Ok(()) => (),
         Err(error) => testing::fail(error),
     };
-    testing::assert_eq(expect_int(evaluate_site(module, Vec::[], 0, default_limits())), 42)
+    testing::assert_eq(
+        expect_int(evaluate_site(module, Vec::from_array([]), 0, default_limits())),
+        42,
+    )
 }
 
 #[test]
@@ -434,12 +461,12 @@ fn reports_compile_errors_and_resource_limits() -> unit {
             id: 0,
             kind: ctir::CtSiteKind::Expression,
             local_count: 0,
-            local_types: Vec::[],
+            local_types: Vec::from_array([]),
             expression,
             origin: 0,
         },
     );
-    match evaluate_site(module, Vec::[], 0, default_limits()) {
+    match evaluate_site(module, Vec::from_array([]), 0, default_limits()) {
         Err(error) => testing::assert_eq(error.message, "stop"),
         Ok(_) => testing::fail("expected compile_error"),
     };
@@ -450,7 +477,13 @@ fn reports_compile_errors_and_resource_limits() -> unit {
         temporary_bytes: 1000,
         final_bytes: 100,
     };
-    match evaluate_entry(factorial_module(), Vec::[], "factorial", Vec::[int_value(10)], limits) {
+    match evaluate_entry(
+        factorial_module(),
+        Vec::from_array([]),
+        "factorial",
+        Vec::from_array([int_value(10)]),
+        limits,
+    ) {
         Err(error) => testing::assert_eq(error.message, "comptime instruction limit exceeded"),
         Ok(_) => testing::fail("expected fuel exhaustion"),
     }
@@ -467,9 +500,9 @@ fn enforces_depth_value_and_result_limits() -> unit {
     };
     match evaluate_entry(
         factorial_module(),
-        Vec::[],
+        Vec::from_array([]),
         "factorial",
-        Vec::[int_value(10)],
+        Vec::from_array([int_value(10)]),
         depth_limits,
     ) {
         Err(error) => testing::assert_eq(error.message, "comptime call depth limit exceeded"),
@@ -488,12 +521,12 @@ fn enforces_depth_value_and_result_limits() -> unit {
             id: 0,
             kind: ctir::CtSiteKind::Expression,
             local_count: 0,
-            local_types: Vec::[],
+            local_types: Vec::from_array([]),
             expression: int_expr(1),
             origin: 0,
         },
     );
-    match evaluate_site(module, Vec::[], 0, value_limits) {
+    match evaluate_site(module, Vec::from_array([]), 0, value_limits) {
         Err(error) => testing::assert_eq(error.message, "comptime temporary value limit exceeded"),
         Ok(_) => testing::fail("expected temporary value exhaustion"),
     };
@@ -504,7 +537,7 @@ fn enforces_depth_value_and_result_limits() -> unit {
         temporary_bytes: 1000,
         final_bytes: 4,
     };
-    match evaluate_site(module, Vec::[], 0, size_limits) {
+    match evaluate_site(module, Vec::from_array([]), 0, size_limits) {
         Err(error) => testing::assert_eq(error.message, "comptime result size limit exceeded"),
         Ok(_) => testing::fail("expected result size exhaustion"),
     }
@@ -525,12 +558,12 @@ fn applies_fixed_width_integer_semantics() -> unit {
             id: 0,
             kind: ctir::CtSiteKind::Expression,
             local_count: 0,
-            local_types: Vec::[],
+            local_types: Vec::from_array([]),
             expression: wrapping_add,
             origin: 0,
         },
     );
-    match evaluate_site(module, Vec::[], 0, default_limits()) {
+    match evaluate_site(module, Vec::from_array([]), 0, default_limits()) {
         Ok(ctir::CtValue::Integer { signed, width, bits }) => {
             testing::assert(signed);
             testing::assert_eq(width, 8);
@@ -551,16 +584,16 @@ fn applies_fixed_width_integer_semantics() -> unit {
             id: 0,
             kind: ctir::CtSiteKind::Expression,
             local_count: 0,
-            local_types: Vec::[],
+            local_types: Vec::from_array([]),
             expression: shifted,
             origin: 0,
         },
     );
-    match verify_module(module, Vec::[]) {
+    match verify_module(module, Vec::from_array([])) {
         Ok(()) => (),
         Err(error) => testing::fail(error),
     };
-    match evaluate_site(module, Vec::[], 0, default_limits()) {
+    match evaluate_site(module, Vec::from_array([]), 0, default_limits()) {
         Ok(ctir::CtValue::Integer { signed, width, bits }) => {
             testing::assert(!signed);
             testing::assert_eq(width, 8);
@@ -579,16 +612,16 @@ fn rejects_invalid_ctir_before_execution() -> unit {
             id: 0,
             kind: ctir::CtSiteKind::Expression,
             local_count: 0,
-            local_types: Vec::[],
+            local_types: Vec::from_array([]),
             expression: local_expr(1, int_type()),
             origin: 0,
         },
     );
-    match verify_module(module, Vec::[]) {
+    match verify_module(module, Vec::from_array([])) {
         Err(error) => testing::assert_eq(error, "invalid CTIR local slot or type"),
         Ok(()) => testing::fail("expected invalid local slot"),
     };
-    match evaluate_site(module, Vec::[], 0, default_limits()) {
+    match evaluate_site(module, Vec::from_array([]), 0, default_limits()) {
         Err(error) => testing::assert_eq(
             error.message,
             "invalid CTIR: invalid CTIR local slot or type",
@@ -601,17 +634,19 @@ fn rejects_invalid_ctir_before_execution() -> unit {
             id: 0,
             kind: ctir::CtSiteKind::Expression,
             local_count: 0,
-            local_types: Vec::[],
+            local_types: Vec::from_array([]),
             expression: ctir::CtExpr {
                 kind: ctir::CtExprKind::Call {
                     target: ctir::CtCallTarget::Local(0),
-                    args: Vec::[
-                        ctir::CtExpr {
-                            kind: ctir::CtExprKind::Value(ctir::CtValue::Bool(true)),
-                            ty: ctir::CtType::Bool,
-                            origin: 0,
-                        },
-                    ],
+                    args: Vec::from_array(
+                        [
+                            ctir::CtExpr {
+                                kind: ctir::CtExprKind::Value(ctir::CtValue::Bool(true)),
+                                ty: ctir::CtType::Bool,
+                                origin: 0,
+                            },
+                        ],
+                    ),
                 },
                 ty: int_type(),
                 origin: 0,
@@ -619,7 +654,7 @@ fn rejects_invalid_ctir_before_execution() -> unit {
             origin: 0,
         },
     );
-    match verify_module(caller, Vec::[]) {
+    match verify_module(caller, Vec::from_array([])) {
         Err(error) => testing::assert_eq(error, "CTIR call argument type mismatch"),
         Ok(()) => testing::fail("expected invalid call argument type"),
     }
@@ -633,19 +668,19 @@ fn evaluates_short_circuit_and_left_to_right_order() -> unit {
         compile_error_expr("right"),
         ctir::CtType::Bool,
     );
-    match evaluate_expression(short_circuit, Vec::[], default_limits()) {
+    match evaluate_expression(short_circuit, Vec::from_array([]), default_limits()) {
         Ok(ctir::CtValue::Bool(value)) => testing::assert(!value),
         Ok(_) => testing::fail("expected bool result"),
         Err(error) => testing::fail(error.message),
     };
     let ordered = ctir::CtExpr {
         kind: ctir::CtExprKind::Array(
-            Vec::[compile_error_expr("left"), compile_error_expr("right")],
+            Vec::from_array([compile_error_expr("left"), compile_error_expr("right")]),
         ),
         ty: ctir::CtType::Array { len: 2, elem: int_type() },
         origin: 0,
     };
-    match evaluate_expression(ordered, Vec::[], default_limits()) {
+    match evaluate_expression(ordered, Vec::from_array([]), default_limits()) {
         Err(error) => testing::assert_eq(error.message, "left"),
         Ok(_) => testing::fail("expected left-to-right failure"),
     }
@@ -687,7 +722,7 @@ fn evaluates_return_break_and_continue() -> unit {
     let loop_body = ctir::CtExpr {
         kind: ctir::CtExprKind::Block(
             ctir::CtBlock {
-                statements: Vec::[ctir::CtStmt::Assign { slot: 0, value: increment }],
+                statements: Vec::from_array([ctir::CtStmt::Assign { slot: 0, value: increment }]),
                 tail: Option::Some(continue_or_break),
                 origin: 0,
             },
@@ -698,12 +733,14 @@ fn evaluates_return_break_and_continue() -> unit {
     let loop_expr = ctir::CtExpr {
         kind: ctir::CtExprKind::Block(
             ctir::CtBlock {
-                statements: Vec::[
-                    ctir::CtStmt::Let {
-                        pattern: ctir::CtPattern::Bind { slot: 0 },
-                        value: int_expr(0),
-                    },
-                ],
+                statements: Vec::from_array(
+                    [
+                        ctir::CtStmt::Let {
+                            pattern: ctir::CtPattern::Bind { slot: 0 },
+                            value: int_expr(0),
+                        },
+                    ],
+                ),
                 tail: Option::Some(
                     ctir::CtExpr {
                         kind: ctir::CtExprKind::Loop { target: 0, body: loop_body },
@@ -718,7 +755,7 @@ fn evaluates_return_break_and_continue() -> unit {
         origin: 0,
     };
     testing::assert_eq(
-        expect_int(evaluate_expression(loop_expr, Vec::[int_type()], default_limits())),
+        expect_int(evaluate_expression(loop_expr, Vec::from_array([int_type()]), default_limits())),
         3,
     );
     let module = ctir::empty_module("test::return");
@@ -726,21 +763,23 @@ fn evaluates_return_break_and_continue() -> unit {
         ctir::CtFunction {
             id: 0,
             name: "return_value",
-            parameter_slots: Vec::[],
-            parameter_types: Vec::[],
+            parameter_slots: Vec::from_array([]),
+            parameter_types: Vec::from_array([]),
             local_count: 0,
-            local_types: Vec::[],
+            local_types: Vec::from_array([]),
             return_type: int_type(),
             body: ctir::CtBlock {
-                statements: Vec::[
-                    ctir::CtStmt::Expr(
-                        ctir::CtExpr {
-                            kind: ctir::CtExprKind::Return(Option::Some(int_expr(7))),
-                            ty: ctir::CtType::Never,
-                            origin: 0,
-                        },
-                    ),
-                ],
+                statements: Vec::from_array(
+                    [
+                        ctir::CtStmt::Expr(
+                            ctir::CtExpr {
+                                kind: ctir::CtExprKind::Return(Option::Some(int_expr(7))),
+                                ty: ctir::CtType::Never,
+                                origin: 0,
+                            },
+                        ),
+                    ],
+                ),
                 tail: Option::Some(int_expr(0)),
                 origin: 0,
             },
@@ -748,12 +787,20 @@ fn evaluates_return_break_and_continue() -> unit {
         },
     );
     module.entries.push(ctir::CtEntry { name: "return_value", function_id: 0, public: true });
-    match verify_module(module, Vec::[]) {
+    match verify_module(module, Vec::from_array([])) {
         Ok(()) => (),
         Err(error) => testing::fail(error),
     };
     testing::assert_eq(
-        expect_int(evaluate_entry(module, Vec::[], "return_value", Vec::[], default_limits())),
+        expect_int(
+            evaluate_entry(
+                module,
+                Vec::from_array([]),
+                "return_value",
+                Vec::from_array([]),
+                default_limits(),
+            ),
+        ),
         7,
     )
 }
@@ -768,7 +815,7 @@ fn applies_integer_casts_and_reports_numeric_failures() -> unit {
         ty: narrow_int_type(false, 64),
         origin: 0,
     };
-    match evaluate_expression(widened, Vec::[], default_limits()) {
+    match evaluate_expression(widened, Vec::from_array([]), default_limits()) {
         Ok(ctir::CtValue::Integer { signed, width, bits }) => {
             testing::assert(!signed);
             testing::assert_eq(width, 64);
@@ -785,13 +832,13 @@ fn applies_integer_casts_and_reports_numeric_failures() -> unit {
         ty: narrow_int_type(false, 8),
         origin: 0,
     };
-    match evaluate_expression(truncated, Vec::[], default_limits()) {
+    match evaluate_expression(truncated, Vec::from_array([]), default_limits()) {
         Ok(ctir::CtValue::Integer { bits, .. }) => testing::assert_eq(bits, 255),
         Ok(_) => testing::fail("expected truncated integer"),
         Err(error) => testing::fail(error.message),
     };
     let division = binary_expr(ctir::CtBinaryOp::Div, int_expr(1), int_expr(0), int_type());
-    match evaluate_expression(division, Vec::[], default_limits()) {
+    match evaluate_expression(division, Vec::from_array([]), default_limits()) {
         Err(error) => {
             testing::assert_eq(error.message, "division by zero during comptime evaluation")
         },
@@ -803,7 +850,7 @@ fn applies_integer_casts_and_reports_numeric_failures() -> unit {
         narrow_int_expr(true, 64, ~(0.to_uint64())),
         narrow_int_type(false, 8),
     );
-    match evaluate_expression(shift, Vec::[], default_limits()) {
+    match evaluate_expression(shift, Vec::from_array([]), default_limits()) {
         Err(error) => {
             testing::assert_eq(error.message, "negative shift count during comptime evaluation")
         },
@@ -812,7 +859,7 @@ fn applies_integer_casts_and_reports_numeric_failures() -> unit {
     let indexed = ctir::CtExpr {
         kind: ctir::CtExprKind::Index {
             value: ctir::CtExpr {
-                kind: ctir::CtExprKind::Array(Vec::[int_expr(1)]),
+                kind: ctir::CtExprKind::Array(Vec::from_array([int_expr(1)])),
                 ty: ctir::CtType::Array { len: 1, elem: int_type() },
                 origin: 0,
             },
@@ -821,7 +868,7 @@ fn applies_integer_casts_and_reports_numeric_failures() -> unit {
         ty: int_type(),
         origin: 0,
     };
-    match evaluate_expression(indexed, Vec::[], default_limits()) {
+    match evaluate_expression(indexed, Vec::from_array([]), default_limits()) {
         Err(error) => {
             testing::assert_eq(error.message, "index out of bounds during comptime evaluation")
         },
@@ -843,7 +890,7 @@ fn enforces_temporary_memory_and_target_limits() -> unit {
         temporary_bytes: 4,
         final_bytes: 100,
     };
-    match evaluate_expression(value, Vec::[], limits) {
+    match evaluate_expression(value, Vec::from_array([]), limits) {
         Err(error) => {
             testing::assert_eq(error.message, "comptime temporary memory limit exceeded")
         },
@@ -851,13 +898,13 @@ fn enforces_temporary_memory_and_target_limits() -> unit {
     };
     let module = factorial_module();
     module.target = ctir::CtTarget { int_width: 16 };
-    match verify_module(module, Vec::[]) {
+    match verify_module(module, Vec::from_array([])) {
         Err(error) => testing::assert_eq(error, "invalid CTIR target integer width"),
         Ok(()) => testing::fail("expected invalid target rejection"),
     };
     let invalid_local = factorial_module();
     invalid_local.functions[0].local_types.set(0, ctir::CtType::Bool);
-    match verify_module(invalid_local, Vec::[]) {
+    match verify_module(invalid_local, Vec::from_array([])) {
         Err(error) => testing::assert_eq(error, "CTIR parameter local type mismatch"),
         Ok(()) => testing::fail("expected local type rejection"),
     }
@@ -870,12 +917,16 @@ fn rejects_invalid_derive_ctir_artifacts() -> unit {
         ctir::CtFunction {
             id: 0,
             name: "handler",
-            parameter_slots: Vec::[],
-            parameter_types: Vec::[],
+            parameter_slots: Vec::from_array([]),
+            parameter_types: Vec::from_array([]),
             local_count: 0,
-            local_types: Vec::[],
+            local_types: Vec::from_array([]),
             return_type: int_type(),
-            body: ctir::CtBlock { statements: Vec::[], tail: Option::Some(int_expr(1)), origin: 0 },
+            body: ctir::CtBlock {
+                statements: Vec::from_array([]),
+                tail: Option::Some(int_expr(1)),
+                origin: 0,
+            },
             origin: 0,
         },
     );
@@ -887,7 +938,7 @@ fn rejects_invalid_derive_ctir_artifacts() -> unit {
             export_name: Option::None,
         },
     );
-    match verify_module(invalid_signature, Vec::[]) {
+    match verify_module(invalid_signature, Vec::from_array([])) {
         Err(error) => testing::assert_eq(error, "invalid CTIR derive entry signature"),
         Ok(()) => testing::fail("expected invalid derive signature"),
     };
@@ -898,18 +949,18 @@ fn rejects_invalid_derive_ctir_artifacts() -> unit {
         ctir::CtFunction {
             id: 0,
             name: "handler",
-            parameter_slots: Vec::[0],
-            parameter_types: Vec::[input_ty],
+            parameter_slots: Vec::from_array([0]),
+            parameter_types: Vec::from_array([input_ty]),
             local_count: 1,
-            local_types: Vec::[input_ty],
+            local_types: Vec::from_array([input_ty]),
             return_type: output_ty,
             body: ctir::CtBlock {
-                statements: Vec::[],
+                statements: Vec::from_array([]),
                 tail: Option::Some(
                     ctir::CtExpr {
                         kind: ctir::CtExprKind::Call {
                             target: ctir::CtCallTarget::Intrinsic("host_escape"),
-                            args: Vec::[local_expr(0, input_ty)],
+                            args: Vec::from_array([local_expr(0, input_ty)]),
                         },
                         ty: output_ty,
                         origin: 0,
@@ -928,7 +979,7 @@ fn rejects_invalid_derive_ctir_artifacts() -> unit {
             export_name: Option::None,
         },
     );
-    match verify_module(invalid_intrinsic, Vec::[]) {
+    match verify_module(invalid_intrinsic, Vec::from_array([])) {
         Err(error) => testing::assert_eq(error, "unknown CTIR intrinsic"),
         Ok(()) => testing::fail("expected invalid derive intrinsic"),
     }

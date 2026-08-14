@@ -83,7 +83,7 @@ fn constructor_variant_name(value: string) -> string {
 
 fn enum_variant_types(value: repr::EnumVariantFields) -> Vec[repr::Type] {
     match value {
-        Unit => Vec::[],
+        Unit => Vec::from_array([]),
         Tuple(values) => values,
         Struct(fields) => {
             let result: Vec[repr::Type] = Vec::with_capacity(fields.len());
@@ -580,17 +580,17 @@ fn verify_function(
         },
         None => (),
     };
-    let state = VerifyState { join_names: HashMap::{}, closures, structs, enums };
-    match verify_block(state, value.body, value.ret_ty, Vec::[]) {
+    let state = VerifyState { join_names: HashMap::from_array([]), closures, structs, enums };
+    match verify_block(state, value.body, value.ret_ty, Vec::from_array([])) {
         Ok(_) => Result::Ok(()),
         Err(message) => Result::Err("in function " + value.name + ": " + message),
     }
 }
 
 pub fn verify(value: File) -> Result[unit, string] {
-    let structs: HashMap[string, repr::StructDef] = HashMap::{};
-    let enums: HashMap[string, repr::EnumDef] = HashMap::{};
-    let type_names: HashMap[string, unit] = HashMap::{};
+    let structs: HashMap[string, repr::StructDef] = HashMap::from_array([]);
+    let enums: HashMap[string, repr::EnumDef] = HashMap::from_array([]);
+    let type_names: HashMap[string, unit] = HashMap::from_array([]);
     for definition in value.structs {
         if type_names.contains(definition.name) {
             return Result::Err("duplicate representation type " + definition.name)
@@ -625,7 +625,7 @@ pub fn verify(value: File) -> Result[unit, string] {
         let value_ty = verify_const_expr(constant.value)?;
         verify_type(value_ty, constant.ty, "constant type does not match " + constant.name)?
     }
-    let functions: HashMap[string, Function] = HashMap::{};
+    let functions: HashMap[string, Function] = HashMap::from_array([]);
     for function in value.functions {
         if functions.contains(function.name) {
             return Result::Err("duplicate ANF function " + function.name)
@@ -633,8 +633,8 @@ pub fn verify(value: File) -> Result[unit, string] {
             functions[function.name] = function;
         }
     }
-    let closures: HashMap[string, repr::ClosureDef] = HashMap::{};
-    let environments: HashMap[string, unit] = HashMap::{};
+    let closures: HashMap[string, repr::ClosureDef] = HashMap::from_array([]);
+    let environments: HashMap[string, unit] = HashMap::from_array([]);
     for definition in value.closure_defs {
         if environments.contains(definition.environment) {
             return Result::Err("duplicate closure environment " + definition.environment)

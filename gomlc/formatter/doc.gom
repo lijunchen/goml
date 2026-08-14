@@ -57,7 +57,7 @@ fn verbatim(value: string) -> Doc {
 }
 
 fn concat(values: Vec[Doc]) -> Doc {
-    let flattened: Vec[Doc] = Vec::[];
+    let flattened: Vec[Doc] = Vec::from_array([]);
     for value in values {
         match value {
             Nil => (),
@@ -80,11 +80,11 @@ fn concat(values: Vec[Doc]) -> Doc {
 }
 
 fn concat2(first: Doc, second: Doc) -> Doc {
-    concat(Vec::[first, second])
+    concat(Vec::from_array([first, second]))
 }
 
 fn concat3(first: Doc, second: Doc, third: Doc) -> Doc {
-    concat(Vec::[first, second, third])
+    concat(Vec::from_array([first, second, third]))
 }
 
 fn indent(value: Doc) -> Doc {
@@ -119,7 +119,7 @@ fn break_parent() -> Doc {
 }
 
 fn join(separator: Doc, values: Vec[Doc]) -> Doc {
-    let result: Vec[Doc] = Vec::[];
+    let result: Vec[Doc] = Vec::from_array([]);
     for index in 0..values.len() {
         if index > 0 {
             result.push(separator)

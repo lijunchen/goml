@@ -256,11 +256,11 @@ fn validate_closure_definition(
 }
 
 pub fn validate(value: File) -> Result[unit, string] {
-    let structs: HashMap[string, unit] = HashMap::{};
+    let structs: HashMap[string, unit] = HashMap::from_array([]);
     for definition in value.structs {
         structs[definition.name] = ();
     }
-    let functions: HashMap[string, Function] = HashMap::{};
+    let functions: HashMap[string, Function] = HashMap::from_array([]);
     for function in value.functions {
         if functions.contains(function.name) {
             return Result::Err("duplicate Lift function " + function.name)
@@ -268,8 +268,8 @@ pub fn validate(value: File) -> Result[unit, string] {
             functions[function.name] = function;
         }
     }
-    let environments: HashMap[string, unit] = HashMap::{};
-    let closures_by_apply: HashMap[string, repr::ClosureDef] = HashMap::{};
+    let environments: HashMap[string, unit] = HashMap::from_array([]);
+    let closures_by_apply: HashMap[string, repr::ClosureDef] = HashMap::from_array([]);
     for definition in value.closure_defs {
         if environments.contains(definition.environment) {
             return Result::Err("duplicate closure environment " + definition.environment)

@@ -51,7 +51,7 @@ fn method_call_target(value: tast::ReferenceTarget) -> bool {
 }
 
 fn function_parameter_names(value: ast::Function) -> Vec[string] {
-    let result: Vec[string] = Vec::[];
+    let result: Vec[string] = Vec::from_array([]);
     for parameter in value.params {
         result.push(parameter.0)
     }
@@ -59,7 +59,7 @@ fn function_parameter_names(value: ast::Function) -> Vec[string] {
 }
 
 fn extern_parameter_names(value: ast::ExternFunction) -> Vec[string] {
-    let result: Vec[string] = Vec::[];
+    let result: Vec[string] = Vec::from_array([]);
     for parameter in value.params {
         result.push(parameter.0)
     }
@@ -112,7 +112,7 @@ fn item_parameter_names(value: ast::Item, expected: string, expected_owner: Opti
             while index >= 0 {
                 let method = definition.method_sigs[index];
                 if method.name == expected {
-                    let names: Vec[string] = Vec::[];
+                    let names: Vec[string] = Vec::from_array([]);
                     for parameter in method.params {
                         names.push(parameter.0)
                     }
@@ -166,7 +166,7 @@ fn current_package_function(value: Analysis, target: tast::ReferenceTarget) -> b
 fn signature_parameter_names(value: Analysis, fact: tast::CallFact) -> Option[Vec[string]] {
     match fact.target {
         Callable(Intrinsic(name)) => if name == "vec.from_array" || name == "hashmap.from_array" {
-            return Option::Some(Vec::["values"])
+            return Option::Some(Vec::from_array(["values"]))
         } else {},
         _ => (),
     };
@@ -219,7 +219,7 @@ fn signature_parameters(value: Analysis, fact: tast::CallFact, types: Vec[tast::
         },
         None => 0,
     };
-    let result: Vec[string] = Vec::[];
+    let result: Vec[string] = Vec::from_array([]);
     for index in type_start..types.len() {
         let type_text = tast::diagnostic_type_text(types[index]);
         let name = match names {

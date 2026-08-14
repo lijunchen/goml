@@ -59,12 +59,9 @@ pub fn print_home() -> Result[unit, string] {
 
 pub fn ensure_home_layout() -> Result[unit, string] {
     let home = home_directory()?;
-    for directory in Vec::[
-        home,
-        path::join(home, "bin"),
-        path::join(home, "lib"),
-        path::join(home, "cache"),
-    ] {
+    for directory in Vec::from_array(
+        [home, path::join(home, "bin"), path::join(home, "lib"), path::join(home, "cache")],
+    ) {
         create_directory(directory)?
     }
     Result::Ok(())

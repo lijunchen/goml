@@ -22,7 +22,7 @@ fn binary_interface_fixture() -> artifact::ArtifactInterfaceUnit {
             value_exports: Vec::new(),
             enum_variants: Vec::new(),
         },
-        Vec::[("builtin", "0123456789abcdef")],
+        Vec::from_array([("builtin", "0123456789abcdef")]),
     )
 }
 
@@ -34,13 +34,13 @@ fn binary_comptime_module(value: int, source_path: string) -> ctir::CtModule {
         ctir::CtFunction {
             id: 0,
             name: "audit::comptime::value",
-            parameter_slots: Vec::[],
-            parameter_types: Vec::[],
+            parameter_slots: Vec::from_array([]),
+            parameter_types: Vec::from_array([]),
             local_count: 0,
-            local_types: Vec::[],
+            local_types: Vec::from_array([]),
             return_type: ty,
             body: ctir::CtBlock {
-                statements: Vec::[],
+                statements: Vec::from_array([]),
                 tail: Option::Some(
                     ctir::CtExpr {
                         kind: ctir::CtExprKind::Value(
@@ -71,9 +71,9 @@ fn binary_comptime_interface(value: int, source_path: string) -> artifact::Artif
         artifact::ArtifactFnScheme {
             name: "audit::comptime::value",
             comptime: tast::ComptimeCapability::Capable,
-            type_params: Vec::[],
-            constraints: Vec::[],
-            ty: tast::Type::Func { params: Vec::[], ret_ty: tast::Type::Int },
+            type_params: Vec::from_array([]),
+            constraints: Vec::from_array([]),
+            ty: tast::Type::Func { params: Vec::from_array([]), ret_ty: tast::Type::Int },
             body: tast::Callable::Function("audit::comptime::value"),
         },
     );
@@ -83,17 +83,17 @@ fn binary_comptime_interface(value: int, source_path: string) -> artifact::Artif
         artifact::ArtifactPackageInterface {
             package_name: "audit::comptime",
             name: "comptime",
-            value_exports: Vec::[("audit::comptime::value", 0)],
-            enum_variants: Vec::[],
+            value_exports: Vec::from_array([("audit::comptime::value", 0)]),
+            enum_variants: Vec::from_array([]),
         },
         Option::Some(interface_codec::new_comptime_unit(binary_comptime_module(value, source_path))),
-        Vec::[],
+        Vec::from_array([]),
     )
 }
 
 fn source_interface(source: string) -> artifact::ArtifactInterfaceUnit {
     let lowered_ast = ast::lower(parser::parse(source));
-    let public_names = public_item_names(Vec::[lowered_ast], "audit::value");
+    let public_names = public_item_names(Vec::from_array([lowered_ast]), "audit::value");
     let lowered = hir::lower_package(lowered_ast, "value.gom", "audit::value");
     let hir_file = match lowered.hir {
         Some(value) => value,
@@ -103,12 +103,12 @@ fn source_interface(source: string) -> artifact::ArtifactInterfaceUnit {
                 package_name: "audit::value",
                 path: "value.gom",
                 source_path: "value.gom",
-                imports: Vec::[],
-                import_aliases: Vec::[],
-                use_traits: Vec::[],
-                public_reexports: Vec::[],
-                items: Vec::[],
-                invalid_self_type_spans: Vec::[],
+                imports: Vec::from_array([]),
+                import_aliases: Vec::from_array([]),
+                use_traits: Vec::from_array([]),
+                public_reexports: Vec::from_array([]),
+                items: Vec::from_array([]),
+                invalid_self_type_spans: Vec::from_array([]),
             }
         },
     };
@@ -117,14 +117,17 @@ fn source_interface(source: string) -> artifact::ArtifactInterfaceUnit {
         Err(error) => {
             testing::fail(error);
             tast::PackageSignatures {
-                traits: Vec::[],
-                functions: Vec::[],
-                type_aliases: Vec::[],
-                constants: Vec::[],
+                traits: Vec::from_array([]),
+                functions: Vec::from_array([]),
+                type_aliases: Vec::from_array([]),
+                constants: Vec::from_array([]),
             }
         },
     };
-    let checked = tast::check_package_files_for_link_with_dependencies(Vec::[hir_file], Vec::[]);
+    let checked = tast::check_package_files_for_link_with_dependencies(
+        Vec::from_array([hir_file]),
+        Vec::from_array([]),
+    );
     if checked.diagnostics.is_empty() {} else {
         testing::fail(checked.diagnostics[0].message)
     };
@@ -133,11 +136,11 @@ fn source_interface(source: string) -> artifact::ArtifactInterfaceUnit {
         None => {
             testing::fail("expected source interface TAST");
             tast::File {
-                items: Vec::[],
-                enums: Vec::[],
-                structs: Vec::[],
-                constants: Vec::[],
-                statics: Vec::[],
+                items: Vec::from_array([]),
+                enums: Vec::from_array([]),
+                structs: Vec::from_array([]),
+                constants: Vec::from_array([]),
+                statics: Vec::from_array([]),
             }
         },
     };
@@ -146,36 +149,40 @@ fn source_interface(source: string) -> artifact::ArtifactInterfaceUnit {
         signatures,
         "audit::value",
         public_names,
-        Vec::[],
+        Vec::from_array([]),
         true,
-        Vec::[],
-        Vec::[],
+        Vec::from_array([]),
+        Vec::from_array([]),
     );
     interface_codec::new_unit_with_comptime(
         "audit::value",
         exports,
         artifact_package_interface("audit::value", "value", exports),
         artifact_comptime_unit(checked.comptime, exports),
-        Vec::[],
+        Vec::from_array([]),
     )
 }
 
 #[test]
 fn binary_artifact_value_round_trips_value_shapes() -> unit {
     let value = wire::ArtifactValue::Object(
-        Vec::[
-            ("null", wire::ArtifactValue::Null),
-            ("false", wire::ArtifactValue::Bool(false)),
-            ("true", wire::ArtifactValue::Bool(true)),
-            ("number", wire::ArtifactValue::Number("-12.5e2")),
-            ("string", wire::ArtifactValue::String("hello")),
-            (
-                "array",
-                wire::ArtifactValue::Array(
-                    Vec::[wire::ArtifactValue::Number("1"), wire::ArtifactValue::String("x")],
+        Vec::from_array(
+            [
+                ("null", wire::ArtifactValue::Null),
+                ("false", wire::ArtifactValue::Bool(false)),
+                ("true", wire::ArtifactValue::Bool(true)),
+                ("number", wire::ArtifactValue::Number("-12.5e2")),
+                ("string", wire::ArtifactValue::String("hello")),
+                (
+                    "array",
+                    wire::ArtifactValue::Array(
+                        Vec::from_array(
+                            [wire::ArtifactValue::Number("1"), wire::ArtifactValue::String("x")],
+                        ),
+                    ),
                 ),
-            ),
-        ],
+            ],
+        ),
     );
     let table = wire::artifact_binary_string_table(value);
     testing::assert_eq(wire::artifact_binary_string_id(table, "-12.5e2"), -1);
@@ -400,7 +407,7 @@ fn dependency_loader_rejects_invalid_comptime_local_types() -> unit {
         world.prelude.interface_unit.exports,
         world.standard,
         no_standard_needs(),
-        Vec::[interface],
+        Vec::from_array([interface]),
     ) {
         Ok(_) => testing::fail("expected invalid imported comptime module rejection"),
         Err(error) => testing::assert(error.contains("local type count does not match local count")),

@@ -53,10 +53,12 @@ fn main() -> unit {
         _ => println("wrong"),
     };
     let schema = serde::structure_schema(
-        Vec::[
-            ("item_name", serde::Schema::String),
-            ("value", serde::Schema::Integer { signed: true, width: 32 }),
-        ],
+        Vec::from_array(
+            [
+                ("item_name", serde::Schema::String),
+                ("value", serde::Schema::Integer { signed: true, width: 32 }),
+            ],
+        ),
     );
     match schema {
         serde::Schema::Struct(fields) => println(fields[0].0 + fields[1].0),

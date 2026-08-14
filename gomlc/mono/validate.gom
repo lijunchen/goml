@@ -218,7 +218,7 @@ fn validate_function(ctx: ValidateContext, value: Function) -> Result[unit, stri
 }
 
 pub fn validate(value: File) -> Result[unit, string] {
-    let type_names: HashMap[string, unit] = HashMap::{};
+    let type_names: HashMap[string, unit] = HashMap::from_array([]);
     for definition in value.enums {
         if type_names.contains(definition.name) {
             return Result::Err("duplicate Mono type definition " + definition.name)
@@ -233,7 +233,7 @@ pub fn validate(value: File) -> Result[unit, string] {
             type_names[definition.name] = ();
         }
     }
-    let instance_names: HashMap[string, unit] = HashMap::{};
+    let instance_names: HashMap[string, unit] = HashMap::from_array([]);
     for instance in value.type_instances {
         if instance_names.contains(instance.name) {
             return Result::Err("duplicate Mono type instance " + instance.name)

@@ -32,7 +32,7 @@ fn config() -> Config {
     Config {
         title: "GoML",
         enabled: true,
-        ports: Vec::[8000.to_uint16(), 8001.to_uint16()],
+        ports: Vec::from_array([8000.to_uint16(), 8001.to_uint16()]),
         database: Database { host: "localhost", port: 5432 },
         mode: Mode::Development,
     }
@@ -59,7 +59,7 @@ fn main() -> unit {
         Ok(value) => value,
         Err(error) => {
             println(error);
-            toml::Value::Table(Vec::[])
+            toml::Value::Table(Vec::from_array([]))
         },
     };
     match toml::field(value, "created") {

@@ -208,7 +208,7 @@ fn collect_package_files(
     source: string,
     overrides: Vec[SourceOverride],
 ) -> Result[Vec[SourceFile], string] {
-    let files: Vec[SourceFile] = Vec::[];
+    let files: Vec[SourceFile] = Vec::from_array([]);
     let include_tests = source_path.ends_with("_test.gom");
     match fs::read_dir(package_dir) {
         Ok(names) => for name in names {
@@ -279,7 +279,7 @@ fn collect_dependency_files(package_dir: string, overrides: Vec[SourceOverride])
     Vec[SourceFile],
     string,
 ] {
-    let files: Vec[SourceFile] = Vec::[];
+    let files: Vec[SourceFile] = Vec::from_array([]);
     match fs::read_dir(package_dir) {
         Ok(names) => for name in names {
             let file_path = path::join(package_dir, name);
@@ -309,7 +309,7 @@ fn collect_dependency_files(package_dir: string, overrides: Vec[SourceOverride])
 }
 
 fn source_files_with_package(files: Vec[SourceFile], package_name: string) -> Vec[SourceFile] {
-    let result: Vec[SourceFile] = Vec::[];
+    let result: Vec[SourceFile] = Vec::from_array([]);
     for file in files {
         result.push(SourceFile { path: file.path, source: file.source, package_name })
     }

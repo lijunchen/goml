@@ -5,6 +5,7 @@ struct Numbers {
 
 impl IntoIterator for Numbers {
     type Item = int32;
+
     type IntoIter = FnIterator[int32];
 
     fn into_iter(self: Numbers) -> FnIterator[int32] {
@@ -19,20 +20,14 @@ fn make_numbers(builds: Ref[int32], conversions: Ref[int32]) -> Numbers {
     values.push(1);
     values.push(2);
     values.push(3);
-    Numbers {
-        values,
-        conversions,
-    }
+    Numbers { values, conversions }
 }
 
-fn sum[S: IntoIterator](source: S) -> int32
-where
-    S::Item = int32,
-{
+fn sum[S: IntoIterator](source: S) -> int32 where S::Item = int32 {
     let total = Ref::new(0);
     for value in source {
         total.set(total.get() + value);
-    };
+    }
     total.get()
 }
 
@@ -42,7 +37,6 @@ fn main() -> unit {
     println(sum(make_numbers(builds, conversions)));
     println(builds.get());
     println(conversions.get());
-
     let values: Vec[int32] = Vec::new();
     values.push(10);
     values.push(20);

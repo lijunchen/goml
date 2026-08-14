@@ -14,26 +14,30 @@ fn project_context(entry_package: string) -> project::Context {
             module_dir: ".",
             module_path: "alice::demo",
             entry_package,
-            packages: Vec::[
-                project::Package {
-                    name: entry_package,
-                    declared_name: "main",
-                    module_name: "alice::demo",
-                    directory: ".",
-                    artifact_prefix: "pkg",
-                    files: Vec::new(),
-                    imports: Vec::new(),
-                },
-            ],
-            sources: Vec::[
-                project::ModuleSource {
-                    name: "alice::demo",
-                    directory: ".",
-                    artifact_prefix: "pkg",
-                    dependencies: Vec::new(),
-                },
-            ],
-            order: Vec::[entry_package],
+            packages: Vec::from_array(
+                [
+                    project::Package {
+                        name: entry_package,
+                        declared_name: "main",
+                        module_name: "alice::demo",
+                        directory: ".",
+                        artifact_prefix: "pkg",
+                        files: Vec::new(),
+                        imports: Vec::new(),
+                    },
+                ],
+            ),
+            sources: Vec::from_array(
+                [
+                    project::ModuleSource {
+                        name: "alice::demo",
+                        directory: ".",
+                        artifact_prefix: "pkg",
+                        dependencies: Vec::new(),
+                    },
+                ],
+            ),
+            order: Vec::from_array([entry_package]),
         },
         compiler: "gomlc",
         compiler_world: project::CompilerWorld::Source,
@@ -43,7 +47,7 @@ fn project_context(entry_package: string) -> project::Context {
 
 #[test]
 fn parses_fmt_options() -> unit {
-    match parse_fmt(Vec::["goml", "fmt", "--check", "--formatter", "/tmp/gomlfmt"]) {
+    match parse_fmt(Vec::from_array(["goml", "fmt", "--check", "--formatter", "/tmp/gomlfmt"])) {
         Ok(options) => {
             testing::assert(options.check);
             match options.formatter {
@@ -53,7 +57,7 @@ fn parses_fmt_options() -> unit {
         },
         Err(message) => testing::fail(message),
     };
-    match parse_fmt(Vec::["goml", "fmt"]) {
+    match parse_fmt(Vec::from_array(["goml", "fmt"])) {
         Ok(options) => {
             testing::assert(!options.check);
             testing::assert(options.formatter.is_none())
@@ -64,11 +68,11 @@ fn parses_fmt_options() -> unit {
 
 #[test]
 fn rejects_invalid_fmt_options() -> unit {
-    match parse_fmt(Vec::["goml", "fmt", "--check", "--check"]) {
+    match parse_fmt(Vec::from_array(["goml", "fmt", "--check", "--check"])) {
         Ok(_) => testing::fail("repeated --check accepted"),
         Err(message) => testing::assert_eq(message, "--check cannot be repeated"),
     };
-    match parse_fmt(Vec::["goml", "fmt", "main.gom"]) {
+    match parse_fmt(Vec::from_array(["goml", "fmt", "main.gom"])) {
         Ok(_) => testing::fail("fmt file target accepted"),
         Err(message) => testing::assert_eq(message, "unexpected argument main.gom"),
     }
@@ -80,9 +84,12 @@ fn utility_text_operations_are_deterministic() -> unit {
     testing::assert("abc".starts_with("ab"));
     testing::assert("abc".ends_with("bc"));
     testing::assert("abcdef".contains("cde"));
-    testing::assert(Vec::["goml", "gomlc"].contains("gomlc"));
-    testing::assert(Vec::[1, 2].contains(2));
-    testing::assert_eq(text::join(util::sorted_unique(Vec::["b", "a", "b"]), ","), "a,b")
+    testing::assert(Vec::from_array(["goml", "gomlc"]).contains("gomlc"));
+    testing::assert(Vec::from_array([1, 2]).contains(2));
+    testing::assert_eq(
+        text::join(util::sorted_unique(Vec::from_array(["b", "a", "b"])), ","),
+        "a,b",
+    )
 }
 
 #[test]

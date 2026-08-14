@@ -96,7 +96,7 @@ fn main() -> unit {
     println(path::relative("a", "a/b").unwrap_or("invalid"));
     println(process::look_path_structured("definitely-missing-goml-command").is_err());
     println(
-        process::Command::new("/bin/sh").args(Vec::["-c", "exit 0"]).status_structured().unwrap_or(
+        process::Command::new("/bin/sh").args(Vec::from_array(["-c", "exit 0"])).status_structured().unwrap_or(
             process::ExitStatus { code_value: -1 },
         ).success(),
     );
@@ -106,22 +106,22 @@ fn main() -> unit {
         ).unwrap_or("")
             == "ONLY=yes\n",
     );
-    let signaled = process::Command::new("/bin/sh").args(Vec::["-c", "kill -TERM $$"]).status_structured().unwrap_or(
+    let signaled = process::Command::new("/bin/sh").args(Vec::from_array(["-c", "kill -TERM $$"])).status_structured().unwrap_or(
         process::ExitStatus { code_value: -2 },
     );
     match signaled.reason() {
         process::ExitReason::Signaled => println("signal"),
         _ => println("other"),
     };
-    match process::Command::new("/bin/sh").args(Vec::["-c", "sleep 1"]).status_timeout_structured(
+    match process::Command::new("/bin/sh").args(Vec::from_array(["-c", "sleep 1"])).status_timeout_structured(
         time::Duration::from_milliseconds(5),
     ) {
         Ok(_) => println("unexpected timeout"),
         Err(error) => println(error.kind().to_string()),
     };
-    let valid: Vec[byte] = Vec::[240, 159, 152, 128];
+    let valid: Vec[byte] = Vec::from_array([240, 159, 152, 128]);
     println(utf8::decode(valid).unwrap_or("invalid"));
-    let invalid: Vec[byte] = Vec::[226, 40, 161];
+    let invalid: Vec[byte] = Vec::from_array([226, 40, 161]);
     match utf8::validate(invalid.slice(0, invalid.len())) {
         Result::Ok(()) => println("valid"),
         Result::Err(error) => {
@@ -154,7 +154,7 @@ fn main() -> unit {
     println(rand::next_u64(0));
     println(rand::int_range(7, 10, 20).unwrap_or(0));
     println(rand::bytes(1, 10).len());
-    for value in rand::shuffle(Vec::[1, 2, 3, 4], 42) {
+    for value in rand::shuffle(Vec::from_array([1, 2, 3, 4]), 42) {
         print(value)
     }
     println("");
@@ -235,7 +235,7 @@ fn main() -> unit {
         Err(error) => println(error.kind().to_string()),
     };
     println(fs::rename(copied, renamed).is_ok());
-    let empty_entries: Vec[fs::DirEntry] = Vec::[];
+    let empty_entries: Vec[fs::DirEntry] = Vec::from_array([]);
     let entries = fs::read_dir_structured(directory).unwrap_or(empty_entries);
     println(entries.len());
     println(fs::read_file_structured(renamed).unwrap_or("failed"));

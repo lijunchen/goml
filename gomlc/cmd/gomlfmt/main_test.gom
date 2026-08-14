@@ -5,7 +5,7 @@ use std::path;
 use std::testing;
 
 fn args(values: Vec[string]) -> Vec[string] {
-    let result = Vec::["gomlfmt"];
+    let result = Vec::from_array(["gomlfmt"]);
     for value in values {
         result.push(value)
     }
@@ -14,7 +14,7 @@ fn args(values: Vec[string]) -> Vec[string] {
 
 #[test]
 fn parses_formatter_modes() -> unit {
-    match parse_options(args(Vec::["-w", "-l", "first.gom", "second.gom"])) {
+    match parse_options(args(Vec::from_array(["-w", "-l", "first.gom", "second.gom"]))) {
         Ok(options) => {
             testing::assert(options.write);
             testing::assert(options.list);
@@ -27,7 +27,7 @@ fn parses_formatter_modes() -> unit {
 
 #[test]
 fn defaults_to_stdin() -> unit {
-    match parse_options(args(Vec::[])) {
+    match parse_options(args(Vec::from_array([]))) {
         Ok(options) => {
             testing::assert_eq(options.paths.len(), 1);
             testing::assert_eq(options.paths[0], "-")
@@ -38,7 +38,7 @@ fn defaults_to_stdin() -> unit {
 
 #[test]
 fn rejects_ambiguous_multiple_file_output() -> unit {
-    match parse_options(args(Vec::["first.gom", "second.gom"])) {
+    match parse_options(args(Vec::from_array(["first.gom", "second.gom"]))) {
         Ok(_) => testing::fail("multiple stdout files accepted"),
         Err(error) => testing::assert_eq(error, "multiple files require -w, -l, or --check"),
     }
@@ -46,7 +46,7 @@ fn rejects_ambiguous_multiple_file_output() -> unit {
 
 #[test]
 fn rejects_writing_stdin() -> unit {
-    match parse_options(args(Vec::["-w", "-"])) {
+    match parse_options(args(Vec::from_array(["-w", "-"]))) {
         Ok(_) => testing::fail("stdin write accepted"),
         Err(error) => testing::assert_eq(error, "-w cannot be used with stdin"),
     }
@@ -85,7 +85,9 @@ fn writes_only_after_all_files_format_successfully() -> unit {
     let original = "package main;\nfn main( )->unit{()}\n";
     write_test_file(valid, original);
     write_test_file(invalid, "package main;\nfn broken( {");
-    let code = run(Options { write: true, list: false, check: false, paths: Vec::[valid, invalid] });
+    let code = run(
+        Options { write: true, list: false, check: false, paths: Vec::from_array([valid, invalid]) },
+    );
     testing::assert_eq(code, 2);
     testing::assert_eq(read_test_file(valid), original)
 }
@@ -95,15 +97,15 @@ fn writes_and_checks_formatted_files() -> unit {
     let file = test_file("write-check.gom");
     write_test_file(file, "package main;\nfn main( )->unit{()}\n");
     testing::assert_eq(
-        run(Options { write: false, list: false, check: true, paths: Vec::[file] }),
+        run(Options { write: false, list: false, check: true, paths: Vec::from_array([file]) }),
         1,
     );
     testing::assert_eq(
-        run(Options { write: true, list: false, check: false, paths: Vec::[file] }),
+        run(Options { write: true, list: false, check: false, paths: Vec::from_array([file]) }),
         0,
     );
     testing::assert_eq(
-        run(Options { write: false, list: false, check: true, paths: Vec::[file] }),
+        run(Options { write: false, list: false, check: true, paths: Vec::from_array([file]) }),
         0,
     )
 }
@@ -114,7 +116,7 @@ fn list_mode_does_not_modify_files() -> unit {
     let original = "package main;\nfn main( )->unit{()}\n";
     write_test_file(file, original);
     testing::assert_eq(
-        run(Options { write: false, list: true, check: false, paths: Vec::[file] }),
+        run(Options { write: false, list: true, check: false, paths: Vec::from_array([file]) }),
         0,
     );
     testing::assert_eq(read_test_file(file), original)

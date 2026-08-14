@@ -12,13 +12,13 @@ pub struct Box[T] {
     value: T,
 }
 
-impl[T] Parent[T] for Box[T] {
+impl[T] Parent[T]for Box[T] {
     fn parent(self: Box[T]) -> T {
         self.value
     }
 }
 
-impl[T: ToString] Child[T] for Box[T] {
+impl[T: ToString] Child[T]for Box[T] {
     fn child(self: Box[T]) -> string {
         "child"
     }

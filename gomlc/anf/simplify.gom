@@ -285,7 +285,7 @@ fn collect_assigned_block(result: HashMap[string, unit], value: Block) -> unit {
 }
 
 fn assigned_names(value: Block) -> HashMap[string, unit] {
-    let result: HashMap[string, unit] = HashMap::{};
+    let result: HashMap[string, unit] = HashMap::from_array([]);
     collect_assigned_block(result, value);
     result
 }
@@ -420,11 +420,11 @@ fn select_known_match_arm(
 fn simplify_known_term(value: Term, known: Vec[KnownBinding], assigned: HashMap[string, unit]) -> Block {
     match value {
         Return(value) => Block {
-            binds: Vec::[],
+            binds: Vec::from_array([]),
             term: Term::Return(resolve_known_imm(value, known)),
         },
         Jump { target, args, ret_ty } => Block {
-            binds: Vec::[],
+            binds: Vec::from_array([]),
             term: Term::Jump { target, args: simplify_known_imms(args, known), ret_ty },
         },
         If { cond, then_, else_, ret_ty } => {
@@ -438,7 +438,7 @@ fn simplify_known_term(value: Term, known: Vec[KnownBinding], assigned: HashMap[
                     }
                 },
                 _ => Block {
-                    binds: Vec::[],
+                    binds: Vec::from_array([]),
                     term: Term::If {
                         cond,
                         then_: simplify_known_block_with(
@@ -474,7 +474,7 @@ fn simplify_known_term(value: Term, known: Vec[KnownBinding], assigned: HashMap[
                         )
                     }
                     Block {
-                        binds: Vec::[],
+                        binds: Vec::from_array([]),
                         term: Term::Match {
                             scrutinee: resolve_known_imm(scrutinee, known),
                             arms: lowered_arms,
@@ -494,7 +494,7 @@ fn simplify_known_term(value: Term, known: Vec[KnownBinding], assigned: HashMap[
                 },
             }
         },
-        Unreachable { ty } => Block { binds: Vec::[], term: Term::Unreachable { ty } },
+        Unreachable { ty } => Block { binds: Vec::from_array([]), term: Term::Unreachable { ty } },
     }
 }
 
@@ -561,7 +561,7 @@ fn simplify_known_block_with(
 
 fn simplify_known_block(value: Block) -> Block {
     let assigned = assigned_names(value);
-    simplify_known_block_with(value, Vec::[], assigned)
+    simplify_known_block_with(value, Vec::from_array([]), assigned)
 }
 
 fn count_join_uses_term(value: Term, target: string) -> int {
@@ -782,7 +782,7 @@ fn prepend_simplified_bind(value: Bind, rest: Block) -> Block {
 
 fn simplify_join_binds(values: Vec[Bind], index: int, term: Term) -> Block {
     if index >= values.len() {
-        Block { binds: Vec::[], term }
+        Block { binds: Vec::from_array([]), term }
     } else {
         let bind = values[index];
         let rest = simplify_join_binds(values, index + 1, term);

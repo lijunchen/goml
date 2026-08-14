@@ -7,7 +7,7 @@ use std::num;
 use std::text;
 
 fn lower_block(ctx: LowerCtx, node: LocatedNode) -> Option[Block] {
-    let stmts: Vec[Stmt] = Vec::[];
+    let stmts: Vec[Stmt] = Vec::from_array([]);
     for stmt in stmt_children(node) {
         match lower_stmt(ctx, stmt) {
             Some(value) => stmts.push(value),
@@ -257,7 +257,7 @@ fn lower_interpolated_string(ctx: LowerCtx, node: LocatedNode, trailing_args: Ve
     if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to interpolated string") {
         Option::None
     } else {
-        let parts: Vec[InterpolatedStringPart] = Vec::[];
+        let parts: Vec[InterpolatedStringPart] = Vec::from_array([]);
         let mut cursor = node.start;
         for element in cst::node_children(node.node) {
             match element {
@@ -358,7 +358,7 @@ struct LowerIdentParts {
 fn lower_type_application_args(ctx: LowerCtx, node: LocatedNode) -> Vec[TypeExpr] {
     match first_child(node, cst::NodeKind::TYPE_PARAM_LIST) {
         Some(list) => lower_type_list(ctx, list),
-        None => Vec::[],
+        None => Vec::from_array([]),
     }
 }
 
@@ -383,7 +383,11 @@ fn lower_ident_parts(ctx: LowerCtx, node: LocatedNode) -> Option[LowerIdentParts
         match first_child(node, cst::NodeKind::PATH) {
             Some(path_node) => match lower_path(ctx, path_node) {
                 Some(path) => Option::Some(
-                    LowerIdentParts { path, owner_type_args: Vec::[], member_type_args: Vec::[] },
+                    LowerIdentParts {
+                        path,
+                        owner_type_args: Vec::from_array([]),
+                        member_type_args: Vec::from_array([]),
+                    },
                 ),
                 None => Option::None,
             },
@@ -415,7 +419,7 @@ fn lower_ident_parts(ctx: LowerCtx, node: LocatedNode) -> Option[LowerIdentParts
                                 LowerIdentParts {
                                     path: append_path_segments(first_path, member_path),
                                     owner_type_args: first_args,
-                                    member_type_args: Vec::[],
+                                    member_type_args: Vec::from_array([]),
                                 },
                             ),
                             None => Option::None,
@@ -424,7 +428,7 @@ fn lower_ident_parts(ctx: LowerCtx, node: LocatedNode) -> Option[LowerIdentParts
                         Option::Some(
                             LowerIdentParts {
                                 path: first_path,
-                                owner_type_args: Vec::[],
+                                owner_type_args: Vec::from_array([]),
                                 member_type_args: first_args,
                             },
                         )
@@ -462,7 +466,7 @@ fn lower_closure(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> 
     if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to closure expression") {
         Option::None
     } else {
-        let params: Vec[ClosureParam] = Vec::[];
+        let params: Vec[ClosureParam] = Vec::from_array([]);
         match first_child(node, cst::NodeKind::CLOSURE_PARAM_LIST) {
             Some(list) => for param in children_of_kind(list, cst::NodeKind::CLOSURE_PARAM) {
                 match lower_closure_param(ctx, param) {
@@ -514,7 +518,7 @@ fn lower_struct_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
         match first_child(node, cst::NodeKind::PATH) {
             Some(path_node) => match lower_path(ctx, path_node) {
                 Some(path) => {
-                    let fields: Vec[(string, Expr)] = Vec::[];
+                    let fields: Vec[(string, Expr)] = Vec::from_array([]);
                     match first_child(node, cst::NodeKind::STRUCT_LITERAL_FIELD_LIST) {
                         Some(list) => for field in children_of_kind(
                             list,
@@ -538,8 +542,8 @@ fn lower_struct_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
                                                     path: path_from_single_ident(
                                                         name_token.token.text,
                                                     ),
-                                                    owner_type_args: Vec::[],
-                                                    member_type_args: Vec::[],
+                                                    owner_type_args: Vec::from_array([]),
+                                                    member_type_args: Vec::from_array([]),
                                                     span: node_span(field),
                                                 },
                                             ),
@@ -577,14 +581,14 @@ fn lower_struct_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
 }
 
 fn lower_expr(ctx: LowerCtx, node: LocatedNode) -> Option[Expr] {
-    lower_expr_with_args(ctx, node, Vec::[])
+    lower_expr_with_args(ctx, node, Vec::from_array([]))
 }
 
 fn lower_vec_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
     if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to Vec literal") {
         Option::None
     } else {
-        let items: Vec[Expr] = Vec::[];
+        let items: Vec[Expr] = Vec::from_array([]);
         for value in expr_children(node) {
             match lower_expr(ctx, value) {
                 Some(item) => items.push(item),
@@ -599,7 +603,7 @@ fn lower_hashmap_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Ex
     if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to HashMap literal") {
         Option::None
     } else {
-        let entries: Vec[(Expr, Expr)] = Vec::[];
+        let entries: Vec[(Expr, Expr)] = Vec::from_array([]);
         for entry in children_of_kind(node, cst::NodeKind::HASHMAP_LITERAL_ENTRY) {
             let values = expr_children(entry);
             if values.len() == 2 {
@@ -887,7 +891,7 @@ fn byte_string_values(value: string) -> Option[Vec[string]] {
         || value.byte_get(value.byte_len() - 1) != b'"' {
         return Option::None
     } else {};
-    let result: Vec[string] = Vec::[];
+    let result: Vec[string] = Vec::from_array([]);
     let mut index = 2;
     while index + 1 < value.byte_len() {
         let byte = value.byte_get(index);
@@ -941,7 +945,7 @@ fn raw_byte_string_values(value: string) -> Option[Vec[string]] {
     if start > end || value.byte_get(start - 1) != b'"' || value.byte_get(end) != b'"' {
         return Option::None
     } else {};
-    let result: Vec[string] = Vec::[];
+    let result: Vec[string] = Vec::from_array([]);
     for index in start..end {
         let byte = value.byte_get(index);
         if byte > 127 {
@@ -1112,7 +1116,7 @@ fn lower_expr_sequence(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr
     ) {
         Option::None
     } else {
-        let items: Vec[Expr] = Vec::[];
+        let items: Vec[Expr] = Vec::from_array([]);
         for child in expr_children(node) {
             match lower_expr(ctx, child) {
                 Some(value) => items.push(value),

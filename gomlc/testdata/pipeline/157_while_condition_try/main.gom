@@ -17,24 +17,20 @@ fn step_none(i: int32) -> Option[bool] {
 fn run_some() -> Option[int32] {
     let i = Ref::new(0);
     let total = Ref::new(0);
-
     while step_some(i.get())? {
         total.set(total.get() + i.get());
         i.set(i.get() + 1);
-    };
-
+    }
     Option::Some(total.get())
 }
 
 fn run_none() -> Option[int32] {
     let i = Ref::new(0);
     let total = Ref::new(0);
-
     while step_none(i.get())? {
         total.set(total.get() + i.get());
         i.set(i.get() + 1);
-    };
-
+    }
     Option::Some(total.get())
 }
 

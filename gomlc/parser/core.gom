@@ -182,7 +182,7 @@ fn new_parser(tokens: Vec[lexer::Token], source_len: int) -> Parser {
         cursor: Ref::new(0),
         fuel: Ref::new(256),
         events: Vec::with_capacity(event_capacity),
-        diagnostics: Vec::[],
+        diagnostics: Vec::from_array([]),
         stuck_reported: Ref::new(false),
         depth_limit_hit: Ref::new(false),
         expr_depth: Ref::new(0),
@@ -529,15 +529,15 @@ fn event_open(event: Event) -> Option[(cst::NodeKind, Option[int])] {
 
 fn build_tree(parser: Parser) -> cst::ParseResult {
     let mut cursor = 0;
-    let stack: Vec[cst::CstNode] = Vec::[];
-    let roots: Vec[cst::CstNode] = Vec::[];
+    let stack: Vec[cst::CstNode] = Vec::from_array([]);
+    let roots: Vec[cst::CstNode] = Vec::from_array([]);
     let mut index = 0;
     while index < parser.events.len() {
         let event = parser.events[index];
         parser.events[index] = event_tombstone();
         match event {
             Open { kind, forward_parent } => {
-                let kinds: Vec[cst::NodeKind] = Vec::[];
+                let kinds: Vec[cst::NodeKind] = Vec::from_array([]);
                 kinds.push(kind);
                 let mut event_index = index;
                 let mut parent = forward_parent;
@@ -562,7 +562,7 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
                 while kind_index >= 0 {
                     let current = kinds[kind_index];
                     if !cst::node_kind_equal(current, cst::NodeKind::TombStone) {
-                        stack.push(cst::node(current, Vec::[], 0))
+                        stack.push(cst::node(current, Vec::from_array([]), 0))
                     } else {};
                     kind_index = kind_index - 1;
                 }
@@ -587,7 +587,7 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
     let root = if !roots.is_empty() {
         roots[0]
     } else {
-        cst::node(cst::NodeKind::FILE, Vec::[], 0)
+        cst::node(cst::NodeKind::FILE, Vec::from_array([]), 0)
     };
     cst::parse_result(root, parser.diagnostics)
 }

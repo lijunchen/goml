@@ -131,7 +131,7 @@ pub fn positional_field(fields: Vec[(string, Value)], index: int) -> Result[Valu
 pub fn variant_parts(value: Value) -> Result[(string, int, Vec[(string, Value)]), string] {
     match value {
         Value::Variant { index: _, name, kind, fields } => Result::Ok((name, kind, fields)),
-        Value::String(name) => Result::Ok((name, 0, Vec::[])),
+        Value::String(name) => Result::Ok((name, 0, Vec::from_array([]))),
         Value::Struct(fields) => if fields.len() == 1 {
             let entry = fields[0];
             match entry.1 {
@@ -143,7 +143,7 @@ pub fn variant_parts(value: Value) -> Result[(string, int, Vec[(string, Value)])
                     Result::Ok((entry.0, 1, result))
                 },
                 Value::Struct(values) => Result::Ok((entry.0, 2, values)),
-                value => Result::Ok((entry.0, 1, Vec::[("", value)])),
+                value => Result::Ok((entry.0, 1, Vec::from_array([("", value)]))),
             }
         } else {
             Result::Err("expected externally tagged enum value")

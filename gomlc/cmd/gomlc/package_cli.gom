@@ -33,7 +33,7 @@ struct ExtractedWorldArgs {
 }
 
 fn extract_world_args(args: Vec[string]) -> Result[ExtractedWorldArgs, string] {
-    let result: Vec[string] = Vec::[];
+    let result: Vec[string] = Vec::from_array([]);
     let mut world: Option[string] = Option::None;
     let mut index = 0;
     let mut positional = false;
@@ -104,7 +104,7 @@ fn selected_package_usage(command: string, interface_paths: Vec[string]) -> stri
 
 fn sorted_unique_package_inputs(values: Vec[string]) -> Vec[string] {
     let sorted = wire::sort_artifact_names(values);
-    let result: Vec[string] = Vec::[];
+    let result: Vec[string] = Vec::from_array([]);
     for value in sorted {
         if result.is_empty() || result[result.len() - 1] != value {
             result.push(value)
@@ -118,8 +118,8 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
     let args = extracted.args;
     let mut package_name: Option[string] = Option::None;
     let mut output: Option[string] = Option::None;
-    let inputs: Vec[string] = Vec::[];
-    let interface_paths: Vec[string] = Vec::[];
+    let inputs: Vec[string] = Vec::from_array([]);
+    let interface_paths: Vec[string] = Vec::from_array([]);
     let mut index = 2;
     let mut positional = false;
     let command = args[1];
@@ -262,7 +262,7 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
             return Result::Err(unexpected_argument_error_with_usage(argument, false, usage))
         }
     }
-    let missing: Vec[string] = Vec::[];
+    let missing: Vec[string] = Vec::from_array([]);
     if !option_string_present(package_name) {
         missing.push("--package <PACKAGE>")
     } else {};
@@ -303,7 +303,7 @@ fn parse_link_command_args(args: Vec[string]) -> Result[LinkCommandArgs, string]
     let args = extracted.args;
     let mut entry: Option[string] = Option::None;
     let mut output: Option[string] = Option::None;
-    let inputs: Vec[string] = Vec::[];
+    let inputs: Vec[string] = Vec::from_array([]);
     let mut index = 2;
     let mut positional = false;
     let command = args[1];
@@ -406,7 +406,7 @@ fn parse_link_command_args(args: Vec[string]) -> Result[LinkCommandArgs, string]
             }
         }
     }
-    let missing: Vec[string] = Vec::[];
+    let missing: Vec[string] = Vec::from_array([]);
     if inputs.is_empty() {
         missing.push("--input <INPUT>...")
     } else {};
@@ -441,8 +441,8 @@ fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs
     let args = extracted.args;
     let mut output: Option[string] = Option::None;
     let mut manifest: Option[string] = Option::None;
-    let inputs: Vec[string] = Vec::[];
-    let packages: Vec[string] = Vec::[];
+    let inputs: Vec[string] = Vec::from_array([]);
+    let packages: Vec[string] = Vec::from_array([]);
     let mut index = 2;
     let mut positional = false;
     let command = args[1];
@@ -560,7 +560,7 @@ fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs
             }
         }
     }
-    let missing: Vec[string] = Vec::[];
+    let missing: Vec[string] = Vec::from_array([]);
     if inputs.is_empty() {
         missing.push("--input <INPUT>...")
     } else {};

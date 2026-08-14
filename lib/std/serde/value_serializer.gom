@@ -43,7 +43,7 @@ pub struct ValueSerializer {
 }
 
 pub fn value_serializer() -> ValueSerializer {
-    ValueSerializer { frames: Vec::[], result: Ref::new(Option::None) }
+    ValueSerializer { frames: Vec::from_array([]), result: Ref::new(Option::None) }
 }
 
 pub fn finish_value_serializer(serializer: ValueSerializer) -> Result[Value, string] {
@@ -121,7 +121,7 @@ fn append_serialized_value(serializer: ValueSerializer, value: Value) -> Result[
             } else if state.get() == 2 {
                 match key.get() {
                     Some(encoded_key) => {
-                        entries.push(Value::Tuple(Vec::[encoded_key, value]));
+                        entries.push(Value::Tuple(Vec::from_array([encoded_key, value])));
                         key.set(Option::None);
                         state.set(0);
                         Result::Ok(())
@@ -245,7 +245,11 @@ impl Serializer for ValueSerializer {
     fn begin_optional(self: ValueSerializer, present: bool) -> Result[unit, string] {
         begin_value_frame(
             self,
-            ValueSerializeFrame::Optional { values: Vec::[], present, ready: Ref::new(present) },
+            ValueSerializeFrame::Optional {
+                values: Vec::from_array([]),
+                present,
+                ready: Ref::new(present),
+            },
         )
     }
 

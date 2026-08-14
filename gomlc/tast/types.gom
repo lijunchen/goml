@@ -845,7 +845,7 @@ fn unify_parameter_aliases(left: Type, right: Type, substitutions: Vec[TypeSubst
 }
 
 fn predicate_type_aliases(predicates: Vec[TypePredicate]) -> Vec[TypeSubst] {
-    let substitutions: Vec[TypeSubst] = Vec::[];
+    let substitutions: Vec[TypeSubst] = Vec::from_array([]);
     for predicate in predicates {
         match predicate {
             Equality { lhs: left, rhs: right } => match (prune(left), prune(right)) {
@@ -906,7 +906,7 @@ fn type_list_contains(values: Vec[Type], expected: Type) -> bool {
 
 fn resolve_projection_alias(value: Type, aliases: Vec[ProjectionAlias]) -> Type {
     let mut current = value;
-    let seen: Vec[Type] = Vec::[];
+    let seen: Vec[Type] = Vec::from_array([]);
     loop {
         if type_list_contains(seen, current) {
             break current
@@ -923,8 +923,8 @@ fn resolve_projection_alias(value: Type, aliases: Vec[ProjectionAlias]) -> Type 
 }
 
 fn predicate_projection_aliases(predicates: Vec[TypePredicate]) -> Vec[ProjectionAlias] {
-    let aliases: Vec[ProjectionAlias] = Vec::[];
-    let equalities: Vec[(Type, Type)] = Vec::[];
+    let aliases: Vec[ProjectionAlias] = Vec::from_array([]);
+    let equalities: Vec[(Type, Type)] = Vec::from_array([]);
     for predicate in predicates {
         match predicate {
             Equality { lhs: left, rhs: right } => match (left, right) {
@@ -1030,7 +1030,7 @@ fn builtin_source_trait_satisfied(base: Type, reference: TraitRef, goals: Vec[st
             let substitutions = instantiate_substitutions(
                 Ref::new(0),
                 implementation.generics,
-                Vec::[],
+                Vec::from_array([]),
             );
             let owner = substitute_type(implementation.for_type, substitutions);
             let application = substitute_trait_ref(implementation.trait_ref, substitutions);
@@ -1046,18 +1046,18 @@ fn builtin_source_trait_satisfied(base: Type, reference: TraitRef, goals: Vec[st
 }
 
 pub fn builtin_trait_satisfied(base: Type, reference: TraitRef) -> bool {
-    builtin_source_trait_satisfied(base, reference, Vec::[])
+    builtin_source_trait_satisfied(base, reference, Vec::from_array([]))
 }
 
 pub fn builtin_projection(base: Type, name: string, qualifier: Option[TraitRef]) -> Option[Type] {
-    let candidates: Vec[Type] = Vec::[];
+    let candidates: Vec[Type] = Vec::from_array([]);
     for implementation in builtin_source_impl_infos() {
         match associated_binding(implementation, name) {
             Some(associated) => {
                 let substitutions = instantiate_substitutions(
                     Ref::new(0),
                     implementation.generics,
-                    Vec::[],
+                    Vec::from_array([]),
                 );
                 let owner = substitute_type(implementation.for_type, substitutions);
                 let application = substitute_trait_ref(implementation.trait_ref, substitutions);
@@ -1068,7 +1068,7 @@ pub fn builtin_projection(base: Type, name: string, qualifier: Option[TraitRef])
                 };
                 if trait_matches && unify(owner, base) {
                     let predicates = substitute_predicates(implementation.predicates, substitutions);
-                    if builtin_source_predicates_satisfied(predicates, Vec::[]) {
+                    if builtin_source_predicates_satisfied(predicates, Vec::from_array([])) {
                         let candidate = substitute_type(associated, substitutions);
                         if !type_list_contains(candidates, candidate) {
                             candidates.push(candidate)
@@ -1094,14 +1094,14 @@ fn impl_projection(ctx: Checker, base: Type, name: string, qualifier: Option[Tra
         return Option::None
     } else {};
     ctx.active_projections.push(goal);
-    let candidates: Vec[Type] = Vec::[];
+    let candidates: Vec[Type] = Vec::from_array([]);
     for impl_info in ctx.impls {
         match associated_binding(impl_info, name) {
             Some(associated) => {
                 let substitutions = instantiate_substitutions(
                     ctx.counter,
                     impl_info.generics,
-                    Vec::[],
+                    Vec::from_array([]),
                 );
                 let owner = substitute_type(impl_info.for_type, substitutions);
                 let application = substitute_trait_ref(impl_info.trait_ref, substitutions);
@@ -1113,7 +1113,8 @@ fn impl_projection(ctx: Checker, base: Type, name: string, qualifier: Option[Tra
                     };
                     let predicates = substitute_predicates(impl_info.predicates, substitutions);
                     apply_predicate_equalities(predicates);
-                    if trait_matches && predicates_satisfied_at(ctx, predicates, Vec::[]) {
+                    if trait_matches
+                        && predicates_satisfied_at(ctx, predicates, Vec::from_array([])) {
                         let candidate = substitute_type(associated, substitutions);
                         if !type_list_contains(candidates, candidate) {
                             candidates.push(candidate)
@@ -1133,7 +1134,7 @@ fn impl_projection(ctx: Checker, base: Type, name: string, qualifier: Option[Tra
 }
 
 fn normalize_types(ctx: Checker, values: Vec[Type]) -> Vec[Type] {
-    let result: Vec[Type] = Vec::[];
+    let result: Vec[Type] = Vec::from_array([]);
     for value in values {
         result.push(normalize_type(ctx, value))
     }
@@ -1158,13 +1159,13 @@ fn normalize_type(ctx: Checker, value: Type) -> Type {
     match prune(value) {
         Con { name } => Type::Con { name: canonical_imported_name(ctx, name) },
         Dyn { trait_name: name, args, associated_types, additional_bounds } => {
-            let normalized_associated: Vec[(string, Type)] = Vec::[];
+            let normalized_associated: Vec[(string, Type)] = Vec::from_array([]);
             for binding in associated_types {
                 normalized_associated.push((binding.0, normalize_type(ctx, binding.1)))
             }
-            let normalized_additional: Vec[DynTraitBound] = Vec::[];
+            let normalized_additional: Vec[DynTraitBound] = Vec::from_array([]);
             for bound in additional_bounds {
-                let bound_associated: Vec[(string, Type)] = Vec::[];
+                let bound_associated: Vec[(string, Type)] = Vec::from_array([]);
                 for binding in bound.associated_types {
                     bound_associated.push((binding.0, normalize_type(ctx, binding.1)))
                 }
@@ -1278,7 +1279,7 @@ fn substitute_type(value: Type, substitutions: Vec[TypeSubst]) -> Type {
             None => Type::Param { name },
         },
         Tuple { items: values } => {
-            let result: Vec[Type] = Vec::[];
+            let result: Vec[Type] = Vec::from_array([]);
             for item in values {
                 result.push(substitute_type(item, substitutions))
             }
@@ -1298,7 +1299,7 @@ fn substitute_type(value: Type, substitutions: Vec[TypeSubst]) -> Type {
             }
         },
         App { ty: base, args } => {
-            let result: Vec[Type] = Vec::[];
+            let result: Vec[Type] = Vec::from_array([]);
             for arg in args {
                 result.push(substitute_type(arg, substitutions))
             }
@@ -1316,7 +1317,7 @@ fn substitute_type(value: Type, substitutions: Vec[TypeSubst]) -> Type {
             value: substitute_type(item, substitutions),
         },
         Func { params, ret_ty } => {
-            let result: Vec[Type] = Vec::[];
+            let result: Vec[Type] = Vec::from_array([]);
             for param in params {
                 result.push(substitute_type(param, substitutions))
             }
@@ -1327,7 +1328,7 @@ fn substitute_type(value: Type, substitutions: Vec[TypeSubst]) -> Type {
 }
 
 pub fn substitute_params(value: Type, names: Vec[string], args: Vec[Type]) -> Type {
-    let substitutions: Vec[TypeSubst] = Vec::[];
+    let substitutions: Vec[TypeSubst] = Vec::from_array([]);
     for index in 0..names.len() {
         if index < args.len() {
             substitutions.push(TypeSubst { name: names[index], ty: args[index] })
@@ -1339,7 +1340,7 @@ pub fn substitute_params(value: Type, names: Vec[string], args: Vec[Type]) -> Ty
 fn instantiate_substitutions(counter: Ref[int], params: Vec[string], explicit: Vec[Type]) -> Vec[
     TypeSubst,
 ] {
-    let result: Vec[TypeSubst] = Vec::[];
+    let result: Vec[TypeSubst] = Vec::from_array([]);
     for index in 0..params.len() {
         result.push(
             TypeSubst {
@@ -1364,7 +1365,7 @@ pub fn resolve_type(value: Type) -> Type {
             Unbound { id: _, kind: Any } => Type::Error,
         },
         Tuple { items: values } => {
-            let result: Vec[Type] = Vec::[];
+            let result: Vec[Type] = Vec::from_array([]);
             for item in values {
                 result.push(resolve_type(item))
             }
@@ -1373,7 +1374,7 @@ pub fn resolve_type(value: Type) -> Type {
         Projection { for_ty: base, name, trait_ref: qualifier } => {
             let qualifier = match qualifier {
                 Some(reference) => {
-                    let args: Vec[Type] = Vec::[];
+                    let args: Vec[Type] = Vec::from_array([]);
                     for arg in reference.args {
                         args.push(resolve_type(arg))
                     }
@@ -1384,7 +1385,7 @@ pub fn resolve_type(value: Type) -> Type {
             Type::Projection { for_ty: resolve_type(base), name, trait_ref: qualifier }
         },
         App { ty: base, args } => {
-            let result: Vec[Type] = Vec::[];
+            let result: Vec[Type] = Vec::from_array([]);
             for arg in args {
                 result.push(resolve_type(arg))
             }
@@ -1400,7 +1401,7 @@ pub fn resolve_type(value: Type) -> Type {
         },
         Channel { elem } => Type::Channel { elem: resolve_type(elem) },
         Func { params, ret_ty } => {
-            let result: Vec[Type] = Vec::[];
+            let result: Vec[Type] = Vec::from_array([]);
             for param in params {
                 result.push(resolve_type(param))
             }
@@ -1425,7 +1426,7 @@ fn default_numeric_type(value: Type) -> Type {
             _ => Type::Var(variable),
         },
         Tuple { items } => {
-            let result: Vec[Type] = Vec::[];
+            let result: Vec[Type] = Vec::from_array([]);
             for item in items {
                 result.push(default_numeric_type(item))
             }
@@ -1434,7 +1435,7 @@ fn default_numeric_type(value: Type) -> Type {
         Projection { for_ty, name, trait_ref } => {
             let trait_ref = match trait_ref {
                 Some(reference) => {
-                    let args: Vec[Type] = Vec::[];
+                    let args: Vec[Type] = Vec::from_array([]);
                     for arg in reference.args {
                         args.push(default_numeric_type(arg))
                     }
@@ -1445,7 +1446,7 @@ fn default_numeric_type(value: Type) -> Type {
             Type::Projection { for_ty: default_numeric_type(for_ty), name, trait_ref }
         },
         App { ty, args } => {
-            let result: Vec[Type] = Vec::[];
+            let result: Vec[Type] = Vec::from_array([]);
             for arg in args {
                 result.push(default_numeric_type(arg))
             }
@@ -1461,7 +1462,7 @@ fn default_numeric_type(value: Type) -> Type {
         },
         Channel { elem } => Type::Channel { elem: default_numeric_type(elem) },
         Func { params, ret_ty } => {
-            let result: Vec[Type] = Vec::[];
+            let result: Vec[Type] = Vec::from_array([]);
             for param in params {
                 result.push(default_numeric_type(param))
             }

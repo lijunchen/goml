@@ -106,19 +106,21 @@ fn pretty_record_doc(header: doc::Doc, values: Vec[doc::Doc]) -> doc::Doc {
     } else {
         doc::group(
             doc::concat(
-                Vec::[
-                    header,
-                    doc::text(" {"),
-                    doc::nest(
-                        2,
-                        doc::append(
-                            doc::line(),
-                            doc::join(doc::append(doc::text(","), doc::line()), values),
+                Vec::from_array(
+                    [
+                        header,
+                        doc::text(" {"),
+                        doc::nest(
+                            2,
+                            doc::append(
+                                doc::line(),
+                                doc::join(doc::append(doc::text(","), doc::line()), values),
+                            ),
                         ),
-                    ),
-                    doc::line(),
-                    doc::text("}"),
-                ],
+                        doc::line(),
+                        doc::text("}"),
+                    ],
+                ),
             ),
         )
     }
@@ -129,12 +131,14 @@ fn pretty_braced_docs(values: Vec[doc::Doc], indentation: int) -> doc::Doc {
         doc::text("{}")
     } else {
         doc::concat(
-            Vec::[
-                doc::text("{"),
-                doc::nest(indentation, doc::append(doc::hardline(), doc::stack(values))),
-                doc::hardline(),
-                doc::text("}"),
-            ],
+            Vec::from_array(
+                [
+                    doc::text("{"),
+                    doc::nest(indentation, doc::append(doc::hardline(), doc::stack(values))),
+                    doc::hardline(),
+                    doc::text("}"),
+                ],
+            ),
         )
     }
 }
@@ -162,10 +166,12 @@ fn pretty_stmt_doc(value: Stmt) -> doc::Doc {
     match value {
         Defer { expr, span: _ } => doc::group(
             doc::concat(
-                Vec::[
-                    doc::text("defer"),
-                    doc::nest(2, doc::append(doc::line(), pretty_expr_doc(expr))),
-                ],
+                Vec::from_array(
+                    [
+                        doc::text("defer"),
+                        doc::nest(2, doc::append(doc::line(), pretty_expr_doc(expr))),
+                    ],
+                ),
             ),
         ),
         Let { is_mut, pat, annotation, value: expr, else_branch, span: _ } => {
@@ -175,44 +181,50 @@ fn pretty_stmt_doc(value: Stmt) -> doc::Doc {
             };
             let else_doc = match else_branch {
                 Some(value) => doc::concat(
-                    Vec::[
-                        doc::text(" else"),
-                        doc::nest(2, doc::append(doc::line(), pretty_expr_doc(value))),
-                    ],
+                    Vec::from_array(
+                        [
+                            doc::text(" else"),
+                            doc::nest(2, doc::append(doc::line(), pretty_expr_doc(value))),
+                        ],
+                    ),
                 ),
                 None => doc::nil(),
             };
             doc::group(
                 doc::concat(
-                    Vec::[
-                        doc::text(
-                            if is_mut {
-                                "let mut "
-                            } else {
-                                "let "
-                            },
-                        ),
-                        pretty_pat_doc(pat),
-                        annotation_doc,
-                        doc::text(" ="),
-                        doc::nest(2, doc::append(doc::line(), pretty_expr_doc(expr))),
-                        else_doc,
-                    ],
+                    Vec::from_array(
+                        [
+                            doc::text(
+                                if is_mut {
+                                    "let mut "
+                                } else {
+                                    "let "
+                                },
+                            ),
+                            pretty_pat_doc(pat),
+                            annotation_doc,
+                            doc::text(" ="),
+                            doc::nest(2, doc::append(doc::line(), pretty_expr_doc(expr))),
+                            else_doc,
+                        ],
+                    ),
                 ),
             )
         },
         Assign { target, op, value: expr, span: _ } => doc::group(
             doc::concat(
-                Vec::[
-                    pretty_expr_doc(target),
-                    doc::text(
-                        match op {
-                            Compound(value) => " " + pretty_binary_symbol(value) + "=",
-                            Plain => " =",
-                        },
-                    ),
-                    doc::nest(2, doc::append(doc::line(), pretty_expr_doc(expr))),
-                ],
+                Vec::from_array(
+                    [
+                        pretty_expr_doc(target),
+                        doc::text(
+                            match op {
+                                Compound(value) => " " + pretty_binary_symbol(value) + "=",
+                                Plain => " =",
+                            },
+                        ),
+                        doc::nest(2, doc::append(doc::line(), pretty_expr_doc(expr))),
+                    ],
+                ),
             ),
         ),
         Expr { expr, span: _ } => pretty_expr_doc(expr),
@@ -229,27 +241,31 @@ fn pretty_path_expr_doc(path: Path, owner_type_args: Vec[TypeExpr], member_type_
             prefixes.push(doc::text(path.segments[index].ident))
         }
         doc::concat(
-            Vec::[
-                doc::join(doc::text("::"), prefixes),
-                doc::text("::"),
-                doc::delimited("[", ",", "]", pretty_type_docs(owner_type_args)),
-                if last > 0 {
-                    doc::text("::" + path.segments[last].ident)
-                } else {
-                    doc::nil()
-                },
-            ],
+            Vec::from_array(
+                [
+                    doc::join(doc::text("::"), prefixes),
+                    doc::text("::"),
+                    doc::delimited("[", ",", "]", pretty_type_docs(owner_type_args)),
+                    if last > 0 {
+                        doc::text("::" + path.segments[last].ident)
+                    } else {
+                        doc::nil()
+                    },
+                ],
+            ),
         )
     };
     if member_type_args.is_empty() {
         owner
     } else {
         doc::concat(
-            Vec::[
-                owner,
-                doc::text("::"),
-                doc::delimited("[", ",", "]", pretty_type_docs(member_type_args)),
-            ],
+            Vec::from_array(
+                [
+                    owner,
+                    doc::text("::"),
+                    doc::delimited("[", ",", "]", pretty_type_docs(member_type_args)),
+                ],
+            ),
         )
     }
 }
@@ -261,13 +277,15 @@ fn pretty_arm_doc(value: Arm) -> doc::Doc {
     };
     doc::group(
         doc::concat(
-            Vec::[
-                pretty_pat_doc(value.pat),
-                guard,
-                doc::text(" =>"),
-                doc::nest(2, doc::append(doc::line(), pretty_expr_doc(value.body))),
-                doc::text(","),
-            ],
+            Vec::from_array(
+                [
+                    pretty_pat_doc(value.pat),
+                    guard,
+                    doc::text(" =>"),
+                    doc::nest(2, doc::append(doc::line(), pretty_expr_doc(value.body))),
+                    doc::text(","),
+                ],
+            ),
         ),
     )
 }
@@ -295,7 +313,11 @@ fn pretty_expr_doc(value: Expr) -> doc::Doc {
                 match part {
                     Text(value) => values.push(pretty_interpolated_text_doc(value)),
                     Expr(value) => values.push(
-                        doc::concat(Vec::[doc::text("{"), pretty_expr_doc(value), doc::text("}")]),
+                        doc::concat(
+                            Vec::from_array(
+                                [doc::text("{"), pretty_expr_doc(value), doc::text("}")],
+                            ),
+                        ),
                     ),
                 }
             }
@@ -326,7 +348,11 @@ fn pretty_expr_doc(value: Expr) -> doc::Doc {
                     },
             );
             for field in fields {
-                values.push(doc::concat(Vec::[doc::text(field.0 + ": "), pretty_expr_doc(field.1)]))
+                values.push(
+                    doc::concat(
+                        Vec::from_array([doc::text(field.0 + ": "), pretty_expr_doc(field.1)]),
+                    ),
+                )
             }
             match base {
                 Some(value) => {
@@ -351,11 +377,13 @@ fn pretty_expr_doc(value: Expr) -> doc::Doc {
                 values.push(
                     doc::group(
                         doc::concat(
-                            Vec::[
-                                pretty_expr_doc(entry.0),
-                                doc::text(" =>"),
-                                doc::nest(2, doc::append(doc::line(), pretty_expr_doc(entry.1))),
-                            ],
+                            Vec::from_array(
+                                [
+                                    pretty_expr_doc(entry.0),
+                                    doc::text(" =>"),
+                                    doc::nest(2, doc::append(doc::line(), pretty_expr_doc(entry.1))),
+                                ],
+                            ),
                         ),
                     ),
                 )
@@ -376,7 +404,7 @@ fn pretty_expr_doc(value: Expr) -> doc::Doc {
             } else {
                 doc::delimited("|", ",", "|", values)
             };
-            doc::concat(Vec::[parameters, doc::text(" "), pretty_expr_doc(body)])
+            doc::concat(Vec::from_array([parameters, doc::text(" "), pretty_expr_doc(body)]))
         },
         Match { expr, arms, span: _ } => {
             let values: Vec[doc::Doc] = Vec::with_capacity(arms.len());
@@ -384,31 +412,37 @@ fn pretty_expr_doc(value: Expr) -> doc::Doc {
                 values.push(pretty_arm_doc(arm))
             }
             doc::concat(
-                Vec::[
-                    doc::text("match "),
-                    pretty_expr_doc(expr),
-                    doc::text(" "),
-                    pretty_braced_docs(values, 4),
-                ],
+                Vec::from_array(
+                    [
+                        doc::text("match "),
+                        pretty_expr_doc(expr),
+                        doc::text(" "),
+                        pretty_braced_docs(values, 4),
+                    ],
+                ),
             )
         },
         If { cond, then_branch, else_branch, span: _ } => doc::concat(
-            Vec::[
-                doc::text("if "),
-                pretty_expr_doc(cond),
-                doc::text(" "),
-                pretty_braced_docs(Vec::[pretty_expr_doc(then_branch)], 4),
-                doc::text(" else "),
-                pretty_braced_docs(Vec::[pretty_expr_doc(else_branch)], 4),
-            ],
+            Vec::from_array(
+                [
+                    doc::text("if "),
+                    pretty_expr_doc(cond),
+                    doc::text(" "),
+                    pretty_braced_docs(Vec::from_array([pretty_expr_doc(then_branch)]), 4),
+                    doc::text(" else "),
+                    pretty_braced_docs(Vec::from_array([pretty_expr_doc(else_branch)]), 4),
+                ],
+            ),
         ),
         While { label, cond, body, span: _ } => doc::concat(
-            Vec::[
-                doc::text(pretty_loop_keyword("while", label) + " "),
-                pretty_expr_doc(cond),
-                doc::text(" "),
-                pretty_braced_docs(Vec::[pretty_expr_doc(body)], 4),
-            ],
+            Vec::from_array(
+                [
+                    doc::text(pretty_loop_keyword("while", label) + " "),
+                    pretty_expr_doc(cond),
+                    doc::text(" "),
+                    pretty_braced_docs(Vec::from_array([pretty_expr_doc(body)]), 4),
+                ],
+            ),
         ),
         Loop { label, body, span: _ } => doc::append(
             doc::text(pretty_loop_keyword("loop", label) + " "),
@@ -416,14 +450,16 @@ fn pretty_expr_doc(value: Expr) -> doc::Doc {
         ),
         For { label, pat, iterator, body, span: _ } => doc::group(
             doc::concat(
-                Vec::[
-                    doc::text(pretty_loop_keyword("for", label) + " "),
-                    pretty_pat_doc(pat),
-                    doc::text(" in"),
-                    doc::nest(2, doc::append(doc::line(), pretty_expr_doc(iterator))),
-                    doc::text(" "),
-                    pretty_expr_doc(body),
-                ],
+                Vec::from_array(
+                    [
+                        doc::text(pretty_loop_keyword("for", label) + " "),
+                        pretty_pat_doc(pat),
+                        doc::text(" in"),
+                        doc::nest(2, doc::append(doc::line(), pretty_expr_doc(iterator))),
+                        doc::text(" "),
+                        pretty_expr_doc(body),
+                    ],
+                ),
             ),
         ),
         Break { label, value, span: _ } => match value {
@@ -453,34 +489,40 @@ fn pretty_expr_doc(value: Expr) -> doc::Doc {
         },
         Cast { expr, ty, span: _ } => doc::group(
             doc::concat(
-                Vec::[
-                    pretty_expr_doc(expr),
-                    doc::text(" as"),
-                    doc::nest(2, doc::append(doc::line(), pretty_type_doc(ty))),
-                ],
+                Vec::from_array(
+                    [
+                        pretty_expr_doc(expr),
+                        doc::text(" as"),
+                        doc::nest(2, doc::append(doc::line(), pretty_type_doc(ty))),
+                    ],
+                ),
             ),
         ),
         Try { expr, span: _ } => doc::append(pretty_expr_doc(expr), doc::text("?")),
         Range { start, end, inclusive, span: _ } => doc::concat(
-            Vec::[
-                pretty_expr_doc(start),
-                doc::text(
-                    if inclusive {
-                        "..="
-                    } else {
-                        ".."
-                    },
-                ),
-                pretty_expr_doc(end),
-            ],
+            Vec::from_array(
+                [
+                    pretty_expr_doc(start),
+                    doc::text(
+                        if inclusive {
+                            "..="
+                        } else {
+                            ".."
+                        },
+                    ),
+                    pretty_expr_doc(end),
+                ],
+            ),
         ),
         Binary { op, lhs, rhs, span: _ } => doc::group(
             doc::concat(
-                Vec::[
-                    pretty_expr_doc(lhs),
-                    doc::text(" " + pretty_binary_symbol(op)),
-                    doc::nest(2, doc::append(doc::line(), pretty_expr_doc(rhs))),
-                ],
+                Vec::from_array(
+                    [
+                        pretty_expr_doc(lhs),
+                        doc::text(" " + pretty_binary_symbol(op)),
+                        doc::nest(2, doc::append(doc::line(), pretty_expr_doc(rhs))),
+                    ],
+                ),
             ),
         ),
         Proj { tuple: expr, index, span: _ } => {
@@ -492,16 +534,20 @@ fn pretty_expr_doc(value: Expr) -> doc::Doc {
                 base
             } else {
                 doc::concat(
-                    Vec::[
-                        base,
-                        doc::text("::"),
-                        doc::delimited("[", ",", "]", pretty_type_docs(method_type_args)),
-                    ],
+                    Vec::from_array(
+                        [
+                            base,
+                            doc::text("::"),
+                            doc::delimited("[", ",", "]", pretty_type_docs(method_type_args)),
+                        ],
+                    ),
                 )
             }
         },
         Index { base, index, span: _ } => doc::concat(
-            Vec::[pretty_expr_doc(base), doc::text("["), pretty_expr_doc(index), doc::text("]")],
+            Vec::from_array(
+                [pretty_expr_doc(base), doc::text("["), pretty_expr_doc(index), doc::text("]")],
+            ),
         ),
         Block { block, span: _ } => pretty_block_doc(block),
     }
@@ -558,7 +604,11 @@ fn pretty_pat_doc(value: Pat) -> doc::Doc {
                     },
             );
             for field in fields {
-                values.push(doc::concat(Vec::[doc::text(field.0 + ": "), pretty_pat_doc(field.1)]))
+                values.push(
+                    doc::concat(
+                        Vec::from_array([doc::text(field.0 + ": "), pretty_pat_doc(field.1)]),
+                    ),
+                )
             }
             if has_rest {
                 values.push(doc::text(".."))
@@ -595,30 +645,34 @@ fn pretty_pat_doc(value: Pat) -> doc::Doc {
             doc::delimited("[", ",", "]", values)
         },
         Alias { name, pat, span: _ } => doc::concat(
-            Vec::[
-                doc::text(name + " @ "),
-                if pretty_pat_is_or(pat) {
-                    doc::delimited("(", ",", ")", Vec::[pretty_pat_doc(pat)])
-                } else {
-                    pretty_pat_doc(pat)
-                },
-            ],
+            Vec::from_array(
+                [
+                    doc::text(name + " @ "),
+                    if pretty_pat_is_or(pat) {
+                        doc::delimited("(", ",", ")", Vec::from_array([pretty_pat_doc(pat)]))
+                    } else {
+                        pretty_pat_doc(pat)
+                    },
+                ],
+            ),
         ),
         Or { pats: values, span: _ } => doc::group(
             doc::join(doc::append(doc::text(" |"), doc::line()), pretty_pat_docs(values)),
         ),
         Range { start, end, inclusive, span: _ } => doc::concat(
-            Vec::[
-                pretty_pat_doc(start),
-                doc::text(
-                    if inclusive {
-                        "..="
-                    } else {
-                        ".."
-                    },
-                ),
-                pretty_pat_doc(end),
-            ],
+            Vec::from_array(
+                [
+                    pretty_pat_doc(start),
+                    doc::text(
+                        if inclusive {
+                            "..="
+                        } else {
+                            ".."
+                        },
+                    ),
+                    pretty_pat_doc(end),
+                ],
+            ),
         ),
         Wild { span: _ } => doc::text("_"),
     }

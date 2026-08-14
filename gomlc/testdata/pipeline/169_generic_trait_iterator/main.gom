@@ -6,13 +6,13 @@ trait Convert[T] {
 
 struct Token {}
 
-impl Convert[int32] for Token {
+impl Convert[int32]for Token {
     fn convert(self: Token) -> int32 {
         7
     }
 }
 
-impl Convert[string] for Token {
+impl Convert[string]for Token {
     fn convert(self: Token) -> string {
         "seven"
     }
@@ -28,7 +28,7 @@ trait Marker[T] {
 
 struct Any {}
 
-impl[T] Marker[T] for Any {
+impl[T] Marker[T]for Any {
     fn marker(self: Any) -> string {
         "marked"
     }
@@ -41,10 +41,7 @@ struct Counter {
 
 impl Counter {
     fn new(start: int32, end: int32) -> Self {
-        Counter {
-            current: Ref::new(start),
-            end,
-        }
+        Counter { current: Ref::new(start), end }
     }
 }
 
@@ -70,24 +67,24 @@ fn main() -> unit {
     println(Marker::[int32]::marker(Any {}));
     println(Marker::[string]::marker(Any {}));
     println(Marker::[Vec[int32]]::marker(Any {}));
-
     let mapped = iter::map(Counter::new(0, 8), |value: int32| value * 2);
     let filtered = iter::filter(mapped, |value: int32| value > 4);
     let limited = iter::take(filtered, 3);
     for value in limited {
         println(value);
-    };
-
-    let sum = iter::fold(range(1, 5), 0, |total: int, value: int| {
-        total + value
-    });
+    }
+    let sum = iter::fold(
+        range(1, 5),
+        0,
+        |total: int, value: int| {
+            total + value
+        },
+    );
     println(sum);
-
-    let texts: Vec[string] = iter::collect(iter::map(
-        range(1, 4),
-        |value: int| "v" + value.to_string(),
-    ));
+    let texts: Vec[string] = iter::collect(
+        iter::map(range(1, 4), |value: int| "v" + value.to_string()),
+    );
     for text in texts {
         println(text);
-    };
+    }
 }

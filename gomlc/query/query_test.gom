@@ -96,16 +96,16 @@ fn builtin_source_derive_expansion(source: string) -> string {
         ast::lower(parser::parse(source)),
         hir::DeriveEnvironment {
             builtin: Option::Some(required_builtin_comptime_module()),
-            dependencies: Vec::[],
-            reexports: Vec::[],
+            dependencies: Vec::from_array([]),
+            reexports: Vec::from_array([]),
         },
     );
     if expanded.diagnostics.is_empty() {} else {
         testing::fail(expanded.diagnostics[0].message)
     };
     let formatted = ast::pretty(expanded);
-    let inputs: Vec[(ast::LowerResult, string)] = Vec::[(expanded, "derive_test.gom")];
-    let files: Vec[hir::File] = Vec::[];
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::from_array([(expanded, "derive_test.gom")]);
+    let files: Vec[hir::File] = Vec::from_array([]);
     for lowered in hir::lower_expanded_package_files(inputs, "derive_test") {
         if lowered.diagnostics.is_empty() {} else {
             testing::fail(lowered.diagnostics[0].message)
@@ -119,16 +119,16 @@ fn builtin_source_derive_expansion(source: string) -> string {
         Ok(builtin_files) => match tast::builtin_dependency_environment(builtin_files) {
             Ok(environment) => tast::check_package_files_for_link_with_environments(
                 files,
-                Vec::[environment],
+                Vec::from_array([environment]),
             ),
             Err(error) => {
                 testing::fail(error);
-                tast::check_package_files_for_link_with_dependencies(files, Vec::[])
+                tast::check_package_files_for_link_with_dependencies(files, Vec::from_array([]))
             },
         },
         Err(error) => {
             testing::fail(error);
-            tast::check_package_files_for_link_with_dependencies(files, Vec::[])
+            tast::check_package_files_for_link_with_dependencies(files, Vec::from_array([]))
         },
     };
     if checked.diagnostics.is_empty() {} else {
@@ -160,7 +160,11 @@ fn expands_builtin_derives_from_toolchain_source_handlers() -> unit {
 fn builtin_derives_require_builtin_source_exports() -> unit {
     let expanded = hir::expand_derives_with_environment(
         ast::lower(parser::parse("#[derive(Eq)] struct Key { value: int }")),
-        hir::DeriveEnvironment { builtin: Option::None, dependencies: Vec::[], reexports: Vec::[] },
+        hir::DeriveEnvironment {
+            builtin: Option::None,
+            dependencies: Vec::from_array([]),
+            reexports: Vec::from_array([]),
+        },
     );
     testing::assert_eq(expanded.diagnostics.len(), 1);
     testing::assert(expanded.diagnostics[0].message.contains("derive name `Eq` is not in scope"))
@@ -330,16 +334,18 @@ fn resolves_qualified_type_without_short_name_collision() -> unit {
     let root = "../gomlc/testdata/module/project011_complex_dependency_graph";
     let main_path = root + "/main.gom";
     let source = "package main; use project011_complex_dependency_graph::core; fn inspect(value: core::Task[int]) -> unit { () } fn main() -> unit { () }";
-    let overrides = Vec::[
-        SourceOverride {
-            path: root + "/core/core.gom",
-            source: "package core; use project011_complex_dependency_graph::math; pub struct Task[T] { pub value: T } pub fn marker(value: math::Marker) -> math::Marker { value }",
-        },
-        SourceOverride {
-            path: root + "/math/math.gom",
-            source: "package math; enum Task { Pending } pub struct Marker {}",
-        },
-    ];
+    let overrides = Vec::from_array(
+        [
+            SourceOverride {
+                path: root + "/core/core.gom",
+                source: "package core; use project011_complex_dependency_graph::math; pub struct Task[T] { pub value: T } pub fn marker(value: math::Marker) -> math::Marker { value }",
+            },
+            SourceOverride {
+                path: root + "/math/math.gom",
+                source: "package math; enum Task { Pending } pub struct Marker {}",
+            },
+        ],
+    );
     let analysis = analyze_with_overrides(main_path, source, overrides);
     assert_no_diagnostics(analysis)
 }
@@ -1132,18 +1138,20 @@ fn indexes_attributed_declarations_by_declared_names() -> unit {
 
 #[test]
 fn navigates_bindings_across_pattern_and_closure_syntax() -> unit {
-    let source = "struct Pair { left: int, right: int } enum Maybe { Some(Pair), None } fn main() -> int { let Pair { left: left_value, right: right_value } = Pair { left: 1, right: 2 }; let if_result = if let Some(Pair { left: if_value, right: _ }) = Some(Pair { left: 3, right: 4 }) { if_value } else { 0 }; let match_result = match Some(Pair { left: 5, right: 6 }) { Some(Pair { left: match_value, right: _ }) => match_value, None => 0 }; let total = Ref::new(0); for (for_left, for_right) in Vec::[(7, 8)] { total.set(total.get() + for_left + for_right) }; let closure = |closure_value: int| closure_value + left_value; closure(right_value) + if_result + match_result + total.get() }";
+    let source = "struct Pair { left: int, right: int } enum Maybe { Some(Pair), None } fn main() -> int { let Pair { left: left_value, right: right_value } = Pair { left: 1, right: 2 }; let if_result = if let Some(Pair { left: if_value, right: _ }) = Some(Pair { left: 3, right: 4 }) { if_value } else { 0 }; let match_result = match Some(Pair { left: 5, right: 6 }) { Some(Pair { left: match_value, right: _ }) => match_value, None => 0 }; let total = Ref::new(0); for (for_left, for_right) in Vec::from_array([(7, 8)]) { total.set(total.get() + for_left + for_right) }; let closure = |closure_value: int| closure_value + left_value; closure(right_value) + if_result + match_result + total.get() }";
     let analysis = analyze("main.gom", source);
     assert_no_diagnostics(analysis);
-    for name in Vec::[
-        "left_value",
-        "right_value",
-        "if_value",
-        "match_value",
-        "for_left",
-        "for_right",
-        "closure_value",
-    ] {
+    for name in Vec::from_array(
+        [
+            "left_value",
+            "right_value",
+            "if_value",
+            "match_value",
+            "for_left",
+            "for_right",
+            "closure_value",
+        ],
+    ) {
         assert_local_navigation(analysis, source, name)
     }
 }
@@ -1321,7 +1329,7 @@ fn resolves_external_registry_packages_with_mvs() -> unit {
     let http = registry + "/alice/http/1.0.0";
     let shared_one = registry + "/alice/shared/1.0.0";
     let shared_two = registry + "/alice/shared/2.0.0";
-    for directory in Vec::[project, http, shared_one, shared_two] {
+    for directory in Vec::from_array([project, http, shared_one, shared_two]) {
         match fs::create_dir_all(directory) {
             Ok(()) => (),
             Err(error) => testing::fail(error),

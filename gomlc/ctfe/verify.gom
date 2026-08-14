@@ -219,7 +219,7 @@ fn value_type(value: ctir::CtValue) -> ctir::CtType {
             }
             let variants: Vec[Vec[ctir::CtType]] = Vec::with_capacity(variant + 1);
             for _ in 0..variant {
-                let empty: Vec[ctir::CtType] = Vec::[];
+                let empty: Vec[ctir::CtType] = Vec::from_array([]);
                 variants.push(empty)
             }
             variants.push(types);
@@ -569,7 +569,7 @@ fn derive_intrinsic_signature(module: ctir::CtModule, name: string) -> Option[
 ] {
     for spec in derive::intrinsic_specs() {
         if spec.name == name {
-            let params: Vec[ctir::CtType] = Vec::[];
+            let params: Vec[ctir::CtType] = Vec::from_array([]);
             for value in spec.params {
                 params.push(derive_abi_type(module, value))
             }
@@ -1077,7 +1077,7 @@ fn verify_function(
     } else if value.local_count != value.local_types.len() {
         return Result::Err("CTIR function local type count does not match local count")
     } else {};
-    let seen: Vec[int] = Vec::[];
+    let seen: Vec[int] = Vec::from_array([]);
     for index in 0..value.parameter_slots.len() {
         let slot = value.parameter_slots[index];
         if slot < 0 || slot >= value.local_count || seen.contains(slot) {
@@ -1101,7 +1101,7 @@ fn verify_function(
         local_count: value.local_count,
         local_types: value.local_types,
         return_type: value.return_type,
-        loop_targets: Vec::[],
+        loop_targets: Vec::from_array([]),
         value_nodes,
         value_bytes,
     };
@@ -1113,7 +1113,7 @@ fn verify_unique_module_names(module: ctir::CtModule, dependencies: Vec[ctir::Ct
     unit,
     string,
 ] {
-    let names: Vec[string] = Vec::[module.package_name];
+    let names: Vec[string] = Vec::from_array([module.package_name]);
     for dependency in dependencies {
         if names.contains(dependency.package_name) {
             return Result::Err("duplicate CTIR module package `" + dependency.package_name + "`")
@@ -1140,7 +1140,7 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
     verify_unique_module_names(module, dependencies)?;
     let value_nodes = Ref::new(0);
     let value_bytes = Ref::new(0);
-    let ids: Vec[int] = Vec::[];
+    let ids: Vec[int] = Vec::from_array([]);
     for function in module.functions {
         if function.id < 0 || ids.contains(function.id) {
             return Result::Err("duplicate or negative CTIR function id")
@@ -1149,7 +1149,7 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
         }
         verify_function(module, dependencies, function, value_nodes, value_bytes)?
     }
-    let entry_names: Vec[string] = Vec::[];
+    let entry_names: Vec[string] = Vec::from_array([]);
     for entry in module.entries {
         if entry.name == "" || entry_names.contains(entry.name)
             || verify_find_function(module, entry.function_id).is_none() {
@@ -1158,7 +1158,7 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
             entry_names.push(entry.name)
         }
     }
-    let derive_export_names: Vec[string] = Vec::[];
+    let derive_export_names: Vec[string] = Vec::from_array([]);
     for entry in module.derive_entries {
         if entry.name == "" || entry_names.contains(entry.name)
             || verify_find_function(module, entry.function_id).is_none() {
@@ -1186,7 +1186,7 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
             } else {}
         } else {}
     }
-    let site_ids: Vec[int] = Vec::[];
+    let site_ids: Vec[int] = Vec::from_array([]);
     for site in module.sites {
         if site.id < 0 || site_ids.contains(site.id) || site.local_count < 0
             || site.local_count != site.local_types.len() {
@@ -1200,14 +1200,14 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
             local_count: site.local_count,
             local_types: site.local_types,
             return_type: site.expression.ty,
-            loop_targets: Vec::[],
+            loop_targets: Vec::from_array([]),
             value_nodes,
             value_bytes,
         };
         verify_origin(ctx, site.origin)?;
         verify_expr(ctx, site.expression)?
     }
-    let constant_names: Vec[string] = Vec::[];
+    let constant_names: Vec[string] = Vec::from_array([]);
     for constant in module.constants {
         if constant.name == "" || constant_names.contains(constant.name) {
             return Result::Err("duplicate or empty CTIR constant")

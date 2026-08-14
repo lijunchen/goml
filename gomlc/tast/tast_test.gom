@@ -473,7 +473,7 @@ fn checks_cross_file_package_definitions() -> unit {
             None => testing::fail("expected cross-file HIR"),
         }
     }
-    let dependencies: Vec[DependencyEnvironment] = Vec::[];
+    let dependencies: Vec[DependencyEnvironment] = Vec::from_array([]);
     match implicit_builtin_dependency_environment() {
         Ok(environment) => dependencies.push(environment),
         Err(error) => testing::fail(error),
@@ -724,7 +724,7 @@ fn permits_runtime_externs_in_builtin_sources() -> unit {
         ),
         "builtin/runtime.gom",
     );
-    let files: Vec[hir::File] = Vec::[];
+    let files: Vec[hir::File] = Vec::from_array([]);
     match lowered.hir {
         Some(file) => files.push(file),
         None => testing::fail("expected builtin HIR"),
@@ -744,12 +744,12 @@ fn rejects_runtime_externs_in_prelude_sources() -> unit {
         "prelude/prelude.gom",
         "prelude",
     );
-    let files: Vec[hir::File] = Vec::[];
+    let files: Vec[hir::File] = Vec::from_array([]);
     match lowered.hir {
         Some(file) => files.push(file),
         None => testing::fail("expected prelude HIR"),
     };
-    let checked = check_package_files_for_link_with_dependencies(files, Vec::[]);
+    let checked = check_package_files_for_link_with_dependencies(files, Vec::from_array([]));
     testing::assert(
         has_diagnostic(checked.diagnostics, "extern output is not permitted in this source"),
     )
@@ -1377,32 +1377,35 @@ fn checks_indexed_assignment_roots() -> unit {
 #[test]
 fn checks_practical_expression_syntax() -> unit {
     let valid = checked_diagnostics(
-        "struct Point { x: int, y: int } fn main() -> unit { let mut point = Point { x: 1, y: 2 }; point.x += 3; let base = Point { x: 4, y: 5 }; let _ = Point { x: 6, ..base }; let values: Vec[int] = Vec::[]; let table: HashMap[string, int] = HashMap::{ \"x\" => 1 }; let _ = f\"{point.x}:{values.len()}:{table.len()}\"; }",
+        "struct Point { x: int, y: int } fn main() -> unit { let mut point = Point { x: 1, y: 2 }; point.x += 3; let base = Point { x: 4, y: 5 }; let _ = Point { x: 6, ..base }; let values: Vec[int] = Vec::from_array([]); let table: HashMap[string, int] = HashMap::from_array([(\"x\", 1)]); let _ = f\"{point.x}:{values.len()}:{table.len()}\"; }",
     );
     testing::assert_eq(valid.len(), 0)
 }
 
 #[test]
-fn rejects_uninferred_collection_literals() -> unit {
-    let empty = checked_diagnostics(
-        "fn main() -> unit { let values = Vec::[]; let entries = HashMap::{}; }",
+fn warns_for_deprecated_collection_literals() -> unit {
+    let diagnostics = checked_diagnostics(
+        "fn main() -> unit { let values: Vec[int] = Vec::[]; let entries: HashMap[string, int] = HashMap::{ \"x\" => 1 }; let _ = (values, entries); }",
     );
-    testing::assert(has_diagnostic(empty, "Cannot infer element type of empty vector literal"));
-    testing::assert(
-        has_diagnostic(empty, "Cannot infer key or value type of empty hash map literal"),
+    testing::assert_eq(diagnostics.len(), 2);
+    testing::assert_eq(
+        diagnostics.get(0).message,
+        "Vec collection literal is deprecated; use Vec::from_array([...])",
     );
-    testing::assert(
-        match empty.get(0).span {
-            Some(_) => true,
-            None => false,
-        },
+    testing::assert_eq(
+        diagnostics.get(1).message,
+        "HashMap collection literal is deprecated; use HashMap::from_array([(key, value), ...])",
     );
-    testing::assert(
-        match empty.get(0).primary_label {
-            Some(_) => true,
-            None => false,
-        },
-    )
+    for diagnostic in diagnostics {
+        match diagnostic.severity {
+            Warning => (),
+            Error => testing::fail("expected collection deprecation warning"),
+        };
+        match diagnostic.span {
+            Some(_) => (),
+            None => testing::fail("expected collection deprecation span"),
+        }
+    }
 }
 
 #[test]
@@ -1424,7 +1427,7 @@ fn checks_collection_from_array_inference_and_constraints() -> unit {
     );
     testing::assert(has_diagnostic_containing(missing_key_traits, "Hash"));
     testing::assert(has_diagnostic_containing(missing_key_traits, "Eq"));
-    let dependencies: Vec[hir::File] = Vec::[];
+    let dependencies: Vec[hir::File] = Vec::from_array([]);
     dependencies.push(dependency_hir("package shadow; pub struct Vec[T] {}", "vendor::shadow"));
     let shadowed = check_for_link_with_dependencies(
         hir::lower(
@@ -1470,7 +1473,7 @@ fn lowers_collection_from_array_to_specialized_intrinsic() -> unit {
 #[test]
 fn infers_empty_vectors_from_later_builtin_method_arguments() -> unit {
     let diagnostics = checked_diagnostics(
-        "fn main() -> unit { let values = Vec::[]; values.push(Vec::[1, 2]); }",
+        "fn main() -> unit { let values = Vec::from_array([]); values.push(Vec::from_array([1, 2])); }",
     );
     testing::assert_eq(diagnostics.len(), 0)
 }
@@ -1478,7 +1481,7 @@ fn infers_empty_vectors_from_later_builtin_method_arguments() -> unit {
 #[test]
 fn infers_empty_vectors_from_return_and_call_context() -> unit {
     let diagnostics = checked_diagnostics(
-        "fn values() -> Option[Vec[Vec[uint16]]] { Option::Some(Vec::[]) } fn main() -> unit { let values = values().unwrap_or(Vec::[]); let _ = values.len(); }",
+        "fn values() -> Option[Vec[Vec[uint16]]] { Option::Some(Vec::from_array([])) } fn main() -> unit { let values = values().unwrap_or(Vec::from_array([])); let _ = values.len(); }",
     );
     testing::assert_eq(diagnostics.len(), 0)
 }
@@ -1486,7 +1489,7 @@ fn infers_empty_vectors_from_return_and_call_context() -> unit {
 #[test]
 fn rejects_hashmap_index_compound_assignment() -> unit {
     let hashmap_compound = checked_diagnostics(
-        "fn main() -> unit { let values: HashMap[string, int] = HashMap::{ \"x\" => 1 }; values[\"x\"] += 2; }",
+        "fn main() -> unit { let values: HashMap[string, int] = HashMap::from_array([(\"x\", 1)]); values[\"x\"] += 2; }",
     );
     testing::assert(
         has_diagnostic(
@@ -3189,7 +3192,9 @@ fn accepts_recursively_immutable_composite_constants() -> unit {
 
 #[test]
 fn rejects_mutable_constant_types_and_composite_patterns() -> unit {
-    let mutable = checked_diagnostics("const BAD: Vec[int] = Vec::[1]; fn main() -> unit {}");
+    let mutable = checked_diagnostics(
+        "const BAD: Vec[int] = Vec::from_array([1]); fn main() -> unit {}",
+    );
     testing::assert(
         has_diagnostic(
             mutable,
@@ -3209,7 +3214,7 @@ fn rejects_mutable_constant_types_and_composite_patterns() -> unit {
 #[test]
 fn checks_once_cell_statics() -> unit {
     let file = checked_file(
-        "static VALUE: OnceCell[FrozenVec[int]] = OnceCell::new(); fn value() -> FrozenVec[int] { VALUE.get_or_init(|| Vec::[1, 2].freeze()) } fn main() -> unit { let _ = value(); }",
+        "static VALUE: OnceCell[FrozenVec[int]] = OnceCell::new(); fn value() -> FrozenVec[int] { VALUE.get_or_init(|| Vec::from_array([1, 2]).freeze()) } fn main() -> unit { let _ = value(); }",
     );
     testing::assert_eq(file.statics.len(), 1);
     let invalid_type = checked_diagnostics(
@@ -3255,53 +3260,57 @@ fn diagnoses_constant_cycles_and_non_constant_expressions() -> unit {
 
 #[test]
 fn direct_type_writer_matches_compact_document_rendering() -> unit {
-    let values = Vec::[
-        Type::Unit,
-        Type::Never,
-        Type::Bool,
-        Type::Int,
-        Type::Int8,
-        Type::Int16,
-        Type::Int32,
-        Type::Int64,
-        Type::Uint,
-        Type::Uint8,
-        Type::Uint16,
-        Type::Uint32,
-        Type::Uint64,
-        Type::Float32,
-        Type::Float64,
-        Type::String,
-        Type::Char,
-        Type::Tuple { items: Vec::[Type::Int, Type::String] },
-        Type::Con { name: "sample::Type" },
-        Type::Dyn {
-            trait_name: "sample::Trait",
-            args: Vec::[],
-            associated_types: Vec::[],
-            additional_bounds: Vec::[],
-        },
-        Type::Projection {
-            for_ty: Type::Con { name: "sample::Type" },
-            name: "Item",
-            trait_ref: Option::Some(TraitRef { name: "sample::Trait", args: Vec::[Type::Int] }),
-        },
-        Type::App { ty: Type::Con { name: "Option" }, args: Vec::[] },
-        Type::App { ty: Type::Con { name: "Option" }, args: Vec::[Type::String] },
-        Type::Array { len: 4, elem: Type::Uint8 },
-        Type::Slice { elem: Type::Char },
-        Type::VecType { elem: Type::String },
-        Type::RefType { elem: Type::Bool },
-        Type::HashMap { key: Type::String, value: Type::Int },
-        Type::Channel { elem: Type::Uint64 },
-        Type::Param { name: "T" },
-        Type::Func { params: Vec::[Type::Int, Type::String], ret_ty: Type::Bool },
-        Type::Var(Ref::new(TypeVar::Unbound { id: 1, kind: VarKind::Any })),
-        Type::Var(Ref::new(TypeVar::Unbound { id: 2, kind: VarKind::Integer })),
-        Type::Var(Ref::new(TypeVar::Unbound { id: 3, kind: VarKind::Float })),
-        Type::Var(Ref::new(TypeVar::Link(Type::Char))),
-        Type::Error,
-    ];
+    let values = Vec::from_array(
+        [
+            Type::Unit,
+            Type::Never,
+            Type::Bool,
+            Type::Int,
+            Type::Int8,
+            Type::Int16,
+            Type::Int32,
+            Type::Int64,
+            Type::Uint,
+            Type::Uint8,
+            Type::Uint16,
+            Type::Uint32,
+            Type::Uint64,
+            Type::Float32,
+            Type::Float64,
+            Type::String,
+            Type::Char,
+            Type::Tuple { items: Vec::from_array([Type::Int, Type::String]) },
+            Type::Con { name: "sample::Type" },
+            Type::Dyn {
+                trait_name: "sample::Trait",
+                args: Vec::from_array([]),
+                associated_types: Vec::from_array([]),
+                additional_bounds: Vec::from_array([]),
+            },
+            Type::Projection {
+                for_ty: Type::Con { name: "sample::Type" },
+                name: "Item",
+                trait_ref: Option::Some(
+                    TraitRef { name: "sample::Trait", args: Vec::from_array([Type::Int]) },
+                ),
+            },
+            Type::App { ty: Type::Con { name: "Option" }, args: Vec::from_array([]) },
+            Type::App { ty: Type::Con { name: "Option" }, args: Vec::from_array([Type::String]) },
+            Type::Array { len: 4, elem: Type::Uint8 },
+            Type::Slice { elem: Type::Char },
+            Type::VecType { elem: Type::String },
+            Type::RefType { elem: Type::Bool },
+            Type::HashMap { key: Type::String, value: Type::Int },
+            Type::Channel { elem: Type::Uint64 },
+            Type::Param { name: "T" },
+            Type::Func { params: Vec::from_array([Type::Int, Type::String]), ret_ty: Type::Bool },
+            Type::Var(Ref::new(TypeVar::Unbound { id: 1, kind: VarKind::Any })),
+            Type::Var(Ref::new(TypeVar::Unbound { id: 2, kind: VarKind::Integer })),
+            Type::Var(Ref::new(TypeVar::Unbound { id: 3, kind: VarKind::Float })),
+            Type::Var(Ref::new(TypeVar::Link(Type::Char))),
+            Type::Error,
+        ],
+    );
     for value in values {
         testing::assert_eq(type_text(value), pretty::compact(type_doc(value)))
     }

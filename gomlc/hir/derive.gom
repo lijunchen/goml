@@ -12,11 +12,11 @@ fn dummy_span() -> ast::Span {
 }
 
 fn empty_attributes() -> Vec[ast::Attribute] {
-    Vec::[]
+    Vec::from_array([])
 }
 
 fn one_segment_path(name: string) -> ast::Path {
-    let segments: Vec[ast::PathSegment] = Vec::[];
+    let segments: Vec[ast::PathSegment] = Vec::from_array([]);
     segments.push(ast::PathSegment { ident: name, span: dummy_span() });
     ast::Path { segments }
 }
@@ -59,7 +59,7 @@ fn trait_default_name(trait_name: string, method_name: string) -> string {
 }
 
 fn trait_default_ref(value: ast::TraitDef) -> ast::TraitRef {
-    let args: Vec[ast::TypeExpr] = Vec::[];
+    let args: Vec[ast::TypeExpr] = Vec::from_array([]);
     for generic in value.generics {
         args.push(type_for_name(generic))
     }
@@ -76,24 +76,24 @@ fn trait_default_function(
     for generic in method.generics {
         generics.push(generic)
     }
-    let generic_bounds: Vec[(string, Vec[ast::TraitRef])] = Vec::[];
+    let generic_bounds: Vec[(string, Vec[ast::TraitRef])] = Vec::from_array([]);
     for bound in trait_def.generic_bounds {
         generic_bounds.push(bound)
     }
-    let self_bounds: Vec[ast::TraitRef] = Vec::[];
+    let self_bounds: Vec[ast::TraitRef] = Vec::from_array([]);
     self_bounds.push(trait_default_ref(trait_def));
     generic_bounds.push(("Self", self_bounds));
     for bound in method.generic_bounds {
         generic_bounds.push(bound)
     }
-    let predicates: Vec[ast::Predicate] = Vec::[];
+    let predicates: Vec[ast::Predicate] = Vec::from_array([]);
     for predicate in trait_def.predicates {
         predicates.push(predicate)
     }
     for predicate in method.predicates {
         predicates.push(predicate)
     }
-    let param_type_spans: Vec[ast::Span] = Vec::[];
+    let param_type_spans: Vec[ast::Span] = Vec::from_array([]);
     for _ in method.params {
         param_type_spans.push(dummy_span())
     }
@@ -113,7 +113,7 @@ fn trait_default_function(
 }
 
 fn trait_default_functions(value: ast::TraitDef) -> Vec[ast::Function] {
-    let result: Vec[ast::Function] = Vec::[];
+    let result: Vec[ast::Function] = Vec::from_array([]);
     for method in value.method_sigs {
         match method.body {
             Some(body) => result.push(trait_default_function(value, method, body)),
@@ -143,7 +143,7 @@ enum ResolvedDerive {
 }
 
 fn environment_modules(value: DeriveEnvironment) -> Vec[ctir::CtModule] {
-    let result: Vec[ctir::CtModule] = Vec::[];
+    let result: Vec[ctir::CtModule] = Vec::from_array([]);
     match value.builtin {
         Some(module) => result.push(module),
         None => (),
@@ -169,7 +169,7 @@ fn derive_entry_export_name(value: ctir::CtDeriveEntry) -> string {
 }
 
 fn module_derive_exports(module: ctir::CtModule, name: string) -> Vec[ctir::CtDeriveEntry] {
-    let result: Vec[ctir::CtDeriveEntry] = Vec::[];
+    let result: Vec[ctir::CtDeriveEntry] = Vec::from_array([]);
     for entry in module.derive_entries {
         if entry.public && derive_entry_export_name(entry) == name {
             result.push(entry)
@@ -183,7 +183,7 @@ fn split_derive_export_target(value: string) -> Option[(string, string)] {
     if segments.len() < 2 {
         Option::None
     } else {
-        let package_segments: Vec[string] = Vec::[];
+        let package_segments: Vec[string] = Vec::from_array([]);
         for index in 0..segments.len() - 1 {
             package_segments.push(segments[index])
         }
@@ -198,14 +198,14 @@ fn resolve_derive_export_target(
     display_name: string,
 ) -> Result[(string, string), string] {
     let mut current = package_name + "::" + export_name;
-    let seen: Vec[string] = Vec::[];
+    let seen: Vec[string] = Vec::from_array([]);
     while true {
         if seen.contains(current) {
             return Result::Err("cyclic derive re-export `" + display_name + "`")
         } else {
             seen.push(current)
         };
-        let targets: Vec[string] = Vec::[];
+        let targets: Vec[string] = Vec::from_array([]);
         for value in environment.reexports {
             if value.0 == current {
                 targets.push(value.1)
@@ -246,7 +246,7 @@ fn resolve_package_derive(
         export_name,
         display_name,
     )?;
-    let matches: Vec[(ctir::CtModule, ctir::CtDeriveEntry)] = Vec::[];
+    let matches: Vec[(ctir::CtModule, ctir::CtDeriveEntry)] = Vec::from_array([]);
     for module in environment_modules(environment) {
         if module.package_name == resolved.0 {
             for entry in module_derive_exports(module, resolved.1) {
@@ -290,7 +290,7 @@ fn module_imported_derives(
     export_name: string,
     local_name: string,
 ) -> Vec[ImportedDerive] {
-    let result: Vec[ImportedDerive] = Vec::[];
+    let result: Vec[ImportedDerive] = Vec::from_array([]);
     let resolved = match resolve_derive_export_target(
         environment,
         package_name,
@@ -323,7 +323,7 @@ fn append_imported_derives(
 }
 
 fn derive_imports(file: ast::File, environment: DeriveEnvironment) -> Vec[ImportedDerive] {
-    let result: Vec[ImportedDerive] = Vec::[];
+    let result: Vec[ImportedDerive] = Vec::from_array([]);
     let aliases = prospective_use_aliases(file);
     for use_decl in file.uses {
         let target = path_segments(use_decl.path);
@@ -348,7 +348,7 @@ fn derive_imports(file: ast::File, environment: DeriveEnvironment) -> Vec[Import
         } else {
             match expand_use_alias(aliases, target) {
                 Some(expanded) => if expanded.len() > 1 {
-                    let package_segments: Vec[string] = Vec::[];
+                    let package_segments: Vec[string] = Vec::from_array([]);
                     for index in 0..expanded.len() - 1 {
                         package_segments.push(expanded[index])
                     }
@@ -375,7 +375,7 @@ fn resolve_bare_derive(file: ast::File, environment: DeriveEnvironment, name: st
     ResolvedDerive,
     string,
 ] {
-    let candidates: Vec[ResolvedDerive] = Vec::[];
+    let candidates: Vec[ResolvedDerive] = Vec::from_array([]);
     match environment.builtin {
         Some(module) => for entry in module_derive_exports(module, name) {
             candidates.push(ResolvedDerive::Handler { module, entry })
@@ -405,7 +405,7 @@ fn resolve_bare_derive(file: ast::File, environment: DeriveEnvironment, name: st
 }
 
 fn derive_dependencies(environment: DeriveEnvironment, package_name: string) -> Vec[ctir::CtModule] {
-    let result: Vec[ctir::CtModule] = Vec::[];
+    let result: Vec[ctir::CtModule] = Vec::from_array([]);
     for module in environment_modules(environment) {
         let mut present = false;
         for existing in result {
@@ -466,7 +466,7 @@ fn derive_impls(
     environment: DeriveEnvironment,
     diagnostics: Vec[cst::Diagnostic],
 ) -> Vec[ast::ImplBlock] {
-    let result: Vec[ast::ImplBlock] = Vec::[];
+    let result: Vec[ast::ImplBlock] = Vec::from_array([]);
     for attribute in attrs {
         if attribute.name == "derive" {
             for arg in attribute.args {
@@ -510,7 +510,7 @@ fn expand_file_derives(
     environment: DeriveEnvironment,
     diagnostics: Vec[cst::Diagnostic],
 ) -> ast::File {
-    let items: Vec[ast::Item] = Vec::[];
+    let items: Vec[ast::Item] = Vec::from_array([]);
     for item in value.items {
         items.push(item);
         match item {
@@ -568,10 +568,14 @@ pub fn expand_derives_with_environment(value: ast::LowerResult, environment: Der
 pub fn expand_derives_with_comptime(value: ast::LowerResult, modules: Vec[ctir::CtModule]) -> ast::LowerResult {
     expand_derives_with_environment(
         value,
-        DeriveEnvironment { builtin: Option::None, dependencies: modules, reexports: Vec::[] },
+        DeriveEnvironment {
+            builtin: Option::None,
+            dependencies: modules,
+            reexports: Vec::from_array([]),
+        },
     )
 }
 
 pub fn expand_derives(value: ast::LowerResult) -> ast::LowerResult {
-    expand_derives_with_comptime(value, Vec::[])
+    expand_derives_with_comptime(value, Vec::from_array([]))
 }

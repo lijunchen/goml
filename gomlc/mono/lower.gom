@@ -156,7 +156,7 @@ fn ensure_type_instance(
 fn expand_specialized_type_aliases_list(ctx: TypeCtx, values: Vec[core::Type], path: Vec[string]) -> Vec[
     core::Type,
 ] {
-    let result: Vec[core::Type] = Vec::[];
+    let result: Vec[core::Type] = Vec::from_array([]);
     for value in values {
         result.push(expand_specialized_type_aliases_from(ctx, value, path))
     }
@@ -237,7 +237,7 @@ fn expand_specialized_type_aliases_from(ctx: TypeCtx, value: core::Type, path: V
 }
 
 fn expand_specialized_type_aliases(ctx: TypeCtx, value: core::Type) -> core::Type {
-    expand_specialized_type_aliases_from(ctx, value, Vec::[])
+    expand_specialized_type_aliases_from(ctx, value, Vec::from_array([]))
 }
 
 fn find_generic_enum(ctx: TypeCtx, name: string) -> Option[core::EnumDef] {
@@ -271,13 +271,13 @@ fn type_instance_parameters(ctx: TypeCtx, name: string) -> Vec[string] {
         Some(value) => value.generics,
         None => match find_generic_struct(ctx, name) {
             Some(value) => value.generics,
-            None => Vec::[],
+            None => Vec::from_array([]),
         },
     }
 }
 
 fn type_instance_bindings(ctx: TypeCtx, name: string, args: Vec[core::Type]) -> Vec[TypeBinding] {
-    let result: Vec[TypeBinding] = Vec::[];
+    let result: Vec[TypeBinding] = Vec::from_array([]);
     let params = type_instance_parameters(ctx, name);
     for index in 0..params.len() {
         if index < args.len() {
@@ -342,7 +342,7 @@ fn recursive_type_specialization_message(ctx: TypeCtx, name: string, args: Vec[c
 }
 
 fn collapse_types(ctx: TypeCtx, values: Vec[core::Type]) -> Vec[Type] {
-    let result: Vec[Type] = Vec::[];
+    let result: Vec[Type] = Vec::from_array([]);
     for value in values {
         result.push(collapse_type(ctx, value))
     }
@@ -350,7 +350,7 @@ fn collapse_types(ctx: TypeCtx, values: Vec[core::Type]) -> Vec[Type] {
 }
 
 fn collapse_named_types(ctx: TypeCtx, values: Vec[(string, core::Type)]) -> Vec[(string, Type)] {
-    let result: Vec[(string, Type)] = Vec::[];
+    let result: Vec[(string, Type)] = Vec::from_array([]);
     for value in values {
         result.push((value.0, collapse_type(ctx, value.1)))
     }
@@ -391,13 +391,13 @@ fn collapse_type(ctx: TypeCtx, value: core::Type) -> Type {
         Tuple { items } => Type::Tuple { items: collapse_types(ctx, items) },
         Con { name } => Type::Named { name },
         Dyn { trait_name, args, associated_types, additional_bounds } => {
-            let collapsed_associated: Vec[(string, Type)] = Vec::[];
+            let collapsed_associated: Vec[(string, Type)] = Vec::from_array([]);
             for binding in associated_types {
                 collapsed_associated.push((binding.0, collapse_type(ctx, binding.1)))
             }
-            let collapsed_additional: Vec[DynTraitBound] = Vec::[];
+            let collapsed_additional: Vec[DynTraitBound] = Vec::from_array([]);
             for bound in additional_bounds {
-                let bound_associated: Vec[(string, Type)] = Vec::[];
+                let bound_associated: Vec[(string, Type)] = Vec::from_array([]);
                 for binding in bound.associated_types {
                     bound_associated.push((binding.0, collapse_type(ctx, binding.1)))
                 }
@@ -545,7 +545,7 @@ fn collapse_callable(ctx: TypeCtx, value: core::Callable) -> Callable {
 }
 
 fn collapse_closure_params(ctx: TypeCtx, values: Vec[core::ClosureParam]) -> Vec[ClosureParam] {
-    let result: Vec[ClosureParam] = Vec::[];
+    let result: Vec[ClosureParam] = Vec::from_array([]);
     for value in values {
         result.push(ClosureParam { name: value.name, ty: collapse_type(ctx, value.ty) })
     }
@@ -553,7 +553,7 @@ fn collapse_closure_params(ctx: TypeCtx, values: Vec[core::ClosureParam]) -> Vec
 }
 
 fn collapse_function_params(ctx: TypeCtx, values: Vec[(string, core::Type)]) -> Vec[(string, Type)] {
-    let result: Vec[(string, Type)] = Vec::[];
+    let result: Vec[(string, Type)] = Vec::from_array([]);
     for value in values {
         result.push((value.0, collapse_type(ctx, value.1)))
     }
@@ -663,7 +663,7 @@ fn lowered_trait_impl_name(reference: TraitRef, for_type: Type, method_name: str
 }
 
 fn lower_exprs(ctx: TypeCtx, values: Vec[core::Expr]) -> Vec[Expr] {
-    let result: Vec[Expr] = Vec::[];
+    let result: Vec[Expr] = Vec::from_array([]);
     for value in values {
         result.push(lower_expr(ctx, value))
     }
@@ -678,7 +678,7 @@ fn lower_optional_expr(ctx: TypeCtx, value: Option[core::Expr]) -> Option[Expr] 
 }
 
 fn lower_arms(ctx: TypeCtx, values: Vec[core::Arm]) -> Vec[Arm] {
-    let result: Vec[Arm] = Vec::[];
+    let result: Vec[Arm] = Vec::from_array([]);
     for value in values {
         result.push(Arm { lhs: lower_expr(ctx, value.lhs), body: lower_expr(ctx, value.body) })
     }
@@ -686,7 +686,7 @@ fn lower_arms(ctx: TypeCtx, values: Vec[core::Arm]) -> Vec[Arm] {
 }
 
 fn lower_block(ctx: TypeCtx, value: core::Block) -> Block {
-    let stmts: Vec[LetStmt] = Vec::[];
+    let stmts: Vec[LetStmt] = Vec::from_array([]);
     for stmt in value.stmts {
         stmts.push(
             LetStmt {
@@ -762,8 +762,8 @@ fn lower_static_trait_call(
     args: Vec[Expr],
     ty: Type,
 ) -> Expr {
-    let params: Vec[Type] = Vec::[];
-    let call_args: Vec[Expr] = Vec::[];
+    let params: Vec[Type] = Vec::from_array([]);
+    let call_args: Vec[Expr] = Vec::from_array([]);
     match receiver {
         Some(value) => {
             params.push(expr_type(value));
@@ -1084,12 +1084,12 @@ fn collect_expr_type_names(ctx: TypeCtx, value: core::Expr) -> unit {
 
 fn type_ctx(value: core::File, error: Ref[Option[string]]) -> TypeCtx {
     let ctx = TypeCtx {
-        instances: Vec::[],
-        instance_index: HashMap::{},
-        used_names: HashMap::{},
+        instances: Vec::from_array([]),
+        instance_index: HashMap::from_array([]),
+        used_names: HashMap::from_array([]),
         enums: value.enums,
         structs: value.structs,
-        active_instances: Vec::[],
+        active_instances: Vec::from_array([]),
         error,
     };
     for function in value.functions {
@@ -1290,16 +1290,16 @@ fn materialize_struct(
 }
 
 fn materialize_definitions(ctx: TypeCtx) -> (Vec[EnumDef], Vec[StructDef]) {
-    let enums: Vec[EnumDef] = Vec::[];
-    let structs: Vec[StructDef] = Vec::[];
+    let enums: Vec[EnumDef] = Vec::from_array([]);
+    let structs: Vec[StructDef] = Vec::from_array([]);
     for value in ctx.enums {
         if value.generics.is_empty() {
-            enums.push(materialize_enum(ctx, value, value.name, Vec::[]))
+            enums.push(materialize_enum(ctx, value, value.name, Vec::from_array([])))
         } else {}
     }
     for value in ctx.structs {
         if value.generics.is_empty() {
-            structs.push(materialize_struct(ctx, value, value.name, Vec::[]))
+            structs.push(materialize_struct(ctx, value, value.name, Vec::from_array([])))
         } else {}
     }
     let mut index = 0;
@@ -1331,12 +1331,12 @@ pub fn lower_checked(value: core::File) -> LowerResult {
         Ok(_) => (),
         Err(message) => return LowerResult {
             file: File {
-                functions: Vec::[],
-                enums: Vec::[],
-                structs: Vec::[],
-                type_instances: Vec::[],
-                constants: Vec::[],
-                statics: Vec::[],
+                functions: Vec::from_array([]),
+                enums: Vec::from_array([]),
+                structs: Vec::from_array([]),
+                type_instances: Vec::from_array([]),
+                constants: Vec::from_array([]),
+                statics: Vec::from_array([]),
             },
             error: Option::Some("invalid Core IR: " + message),
         },
@@ -1346,7 +1346,7 @@ pub fn lower_checked(value: core::File) -> LowerResult {
     let error = Ref::new(Option::None);
     let value = specialize(value, error);
     let ctx = type_ctx(value, error);
-    let functions: Vec[Function] = Vec::[];
+    let functions: Vec[Function] = Vec::from_array([]);
     for function in value.functions {
         functions.push(lower_function(ctx, function))
     }
@@ -1355,7 +1355,7 @@ pub fn lower_checked(value: core::File) -> LowerResult {
     let structs = definitions.1;
     let constants = collapse_constants(ctx, constants);
     let statics = collapse_statics(ctx, statics);
-    let type_instances: Vec[TypeInstance] = Vec::[];
+    let type_instances: Vec[TypeInstance] = Vec::from_array([]);
     for instance in ctx.instances {
         type_instances.push(
             TypeInstance {

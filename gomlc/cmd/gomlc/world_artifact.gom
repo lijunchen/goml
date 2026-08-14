@@ -143,8 +143,8 @@ fn world_core_unit(
         exports,
         core_ir: value,
         deps: interface.deps,
-        sources: Vec::[],
-        tests: Vec::[],
+        sources: Vec::from_array([]),
+        tests: Vec::from_array([]),
     }
 }
 
@@ -191,7 +191,7 @@ fn world_builtin_package(value: PackageWorld) -> ToolchainPackage {
 }
 
 fn world_all_packages(value: PackageWorld) -> Vec[ToolchainPackage] {
-    let result = Vec::[world_builtin_package(value), value.prelude];
+    let result = Vec::from_array([world_builtin_package(value), value.prelude]);
     for package_value in value.standard {
         result.push(package_value)
     }
@@ -220,12 +220,12 @@ fn world_required_package(values: Vec[ToolchainPackage], package_name: string) -
 }
 
 fn world_sorted_packages(values: Vec[ToolchainPackage]) -> Result[Vec[ToolchainPackage], string] {
-    let names: Vec[string] = Vec::[];
+    let names: Vec[string] = Vec::from_array([]);
     for value in values {
         names.push(value.interface_unit.package_name)
     }
     let names = wire::sort_artifact_names(names);
-    let result: Vec[ToolchainPackage] = Vec::[];
+    let result: Vec[ToolchainPackage] = Vec::from_array([]);
     let mut previous: Option[string] = Option::None;
     for name in names {
         match previous {
@@ -279,14 +279,16 @@ fn world_v1_package_section_id(package_name: string) -> Option[uint16] {
 }
 
 fn encode_package_world_v1(value: PackageWorld) -> Result[bytes::Bytes, string] {
-    let sections: Vec[wire::ArtifactBinarySection] = Vec::[
-        wire::ArtifactBinarySection {
-            id: 1,
-            version: 1,
-            flags: wire::required_section_flag(),
-            data: world_metadata_v1(value.counter.get()),
-        },
-    ];
+    let sections: Vec[wire::ArtifactBinarySection] = Vec::from_array(
+        [
+            wire::ArtifactBinarySection {
+                id: 1,
+                version: 1,
+                flags: wire::required_section_flag(),
+                data: world_metadata_v1(value.counter.get()),
+            },
+        ],
+    );
     for package_value in world_all_packages(value) {
         let section_id = match world_v1_package_section_id(
             package_value.interface_unit.package_name,
@@ -303,14 +305,16 @@ fn encode_package_world_v1(value: PackageWorld) -> Result[bytes::Bytes, string] 
 
 fn encode_package_world(value: PackageWorld) -> Result[bytes::Bytes, string] {
     let packages = world_sorted_packages(world_all_packages(value))?;
-    let sections: Vec[wire::ArtifactBinarySection] = Vec::[
-        wire::ArtifactBinarySection {
-            id: 1,
-            version: 2,
-            flags: wire::required_section_flag(),
-            data: world_metadata_v2(value, packages.len()),
-        },
-    ];
+    let sections: Vec[wire::ArtifactBinarySection] = Vec::from_array(
+        [
+            wire::ArtifactBinarySection {
+                id: 1,
+                version: 2,
+                flags: wire::required_section_flag(),
+                data: world_metadata_v2(value, packages.len()),
+            },
+        ],
+    );
     for index in 0..packages.len() {
         world_add_package_sections(sections, (2 + index * 2).to_uint16(), packages[index])?
     }
@@ -451,7 +455,7 @@ fn world_from_packages(metadata: WorldMetadata, packages: Vec[ToolchainPackage])
     ) {
         return Result::Err("world artifact prelude builtin dependency does not match")
     } else {};
-    let standard: Vec[ToolchainPackage] = Vec::[];
+    let standard: Vec[ToolchainPackage] = Vec::from_array([]);
     for package_value in packages {
         if package_value.interface_unit.package_name != "builtin"
             && package_value.interface_unit.package_name != "prelude" {
@@ -530,44 +534,46 @@ fn decode_package_world_v1(
     let crypto_rand = world_decode_package(container, 68, resources::STD_CRYPTO_RAND_PACKAGE)?;
     world_from_packages(
         metadata,
-        Vec::[
-            ToolchainPackage {
-                core_value: builtin_core.core_ir,
-                interface_unit: builtin_interface,
-                environment_exports: builtin_core.exports,
-            },
-            prelude,
-            root,
-            host,
-            ascii,
-            bincode,
-            bytes,
-            cmp,
-            collections,
-            error,
-            env,
-            fs_value,
-            io_value,
-            internal_task,
-            iter,
-            json,
-            num,
-            path_value,
-            process,
-            serde,
-            task,
-            testing,
-            text_value,
-            toml,
-            time_value,
-            utf8,
-            unicode,
-            math,
-            rand,
-            crypto,
-            crypto_hash,
-            crypto_rand,
-        ],
+        Vec::from_array(
+            [
+                ToolchainPackage {
+                    core_value: builtin_core.core_ir,
+                    interface_unit: builtin_interface,
+                    environment_exports: builtin_core.exports,
+                },
+                prelude,
+                root,
+                host,
+                ascii,
+                bincode,
+                bytes,
+                cmp,
+                collections,
+                error,
+                env,
+                fs_value,
+                io_value,
+                internal_task,
+                iter,
+                json,
+                num,
+                path_value,
+                process,
+                serde,
+                task,
+                testing,
+                text_value,
+                toml,
+                time_value,
+                utf8,
+                unicode,
+                math,
+                rand,
+                crypto,
+                crypto_hash,
+                crypto_rand,
+            ],
+        ),
     )
 }
 
@@ -579,14 +585,14 @@ fn decode_package_world_v2(
     if container.sections.len() != 1 + metadata.package_count * 2 {
         return Result::Err("world artifact package section count does not match")
     } else {};
-    let packages: Vec[ToolchainPackage] = Vec::[];
-    let names: Vec[string] = Vec::[];
+    let packages: Vec[ToolchainPackage] = Vec::from_array([]);
+    let names: Vec[string] = Vec::from_array([]);
     for index in 0..metadata.package_count {
         let package_value = world_decode_package_any(container, (2 + index * 2).to_uint16())?;
         names.push(package_value.interface_unit.package_name);
         packages.push(package_value)
     }
-    let sorted_names: Vec[string] = Vec::[];
+    let sorted_names: Vec[string] = Vec::from_array([]);
     for name in names {
         sorted_names.push(name)
     }
@@ -675,7 +681,7 @@ fn parse_prepare_world_args(args: Vec[string]) -> Result[string, string] {
     match output {
         Some(value) => Result::Ok(value),
         None => {
-            let missing: Vec[string] = Vec::["--output <OUTPUT>"];
+            let missing: Vec[string] = Vec::from_array(["--output <OUTPUT>"]);
             Result::Err(missing_required_arguments_error(PREPARE_WORLD_COMMAND, missing))
         },
     }

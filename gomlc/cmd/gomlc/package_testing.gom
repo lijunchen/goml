@@ -30,7 +30,7 @@ struct TestValidation {
 }
 
 fn named_test_attributes(values: Vec[ast::Attribute], expected: string) -> Vec[ast::Attribute] {
-    let result: Vec[ast::Attribute] = Vec::[];
+    let result: Vec[ast::Attribute] = Vec::from_array([]);
     for value in values {
         if value.name == expected {
             result.push(value)
@@ -55,13 +55,13 @@ fn package_test_diagnostic(stage: string, message: string, source_path: string, 
         source_path,
         span: Option::Some(span),
         primary_label: Option::None,
-        secondary_labels: Vec::[],
+        secondary_labels: Vec::from_array([]),
         sort_order: 0,
     }
 }
 
 fn duplicate_test_id_diagnostic(id: string, candidate: TestCandidate, first: TestCandidate) -> tast::Diagnostic {
-    let secondary_labels: Vec[tast::DiagnosticLabel] = Vec::[];
+    let secondary_labels: Vec[tast::DiagnosticLabel] = Vec::from_array([]);
     secondary_labels.push(
         tast::DiagnosticLabel {
             message: "first test declared here",
@@ -182,7 +182,7 @@ fn collect_function_test(
     if !case_attrs.is_empty() {
         let ignore_reason = test_ignore_reason(ignore_attrs, source_path, diagnostics);
         for case_attr in case_attrs {
-            let arguments: Vec[(string, string)] = Vec::[];
+            let arguments: Vec[(string, string)] = Vec::from_array([]);
             let mut valid = case_attr.has_argument_list && !case_attr.args.is_empty();
             if !valid {
                 diagnostics.push(
@@ -262,7 +262,7 @@ fn collect_function_test(
             label_end: test_attr.span.end,
             ignored: !ignore_attrs.is_empty(),
             ignore_reason,
-            arguments: Vec::[],
+            arguments: Vec::from_array([]),
         },
     )
 }
@@ -310,8 +310,8 @@ fn sort_test_descriptors(values: Vec[artifact::ArtifactTestDescriptor]) -> Vec[
 }
 
 fn collect_package_test_candidates(files: Vec[ast::LowerResult], source_paths: Vec[string]) -> TestCandidateCollection {
-    let candidates: Vec[TestCandidate] = Vec::[];
-    let diagnostics: Vec[tast::Diagnostic] = Vec::[];
+    let candidates: Vec[TestCandidate] = Vec::from_array([]);
+    let diagnostics: Vec[tast::Diagnostic] = Vec::from_array([]);
     for file_index in 0..files.len() {
         let source_path = if file_index < source_paths.len() {
             source_paths[file_index]
@@ -432,7 +432,7 @@ fn test_candidate_display(package_name: string, candidate: TestCandidate) -> str
     if candidate.arguments.is_empty() {
         symbol
     } else {
-        let values: Vec[string] = Vec::[];
+        let values: Vec[string] = Vec::from_array([]);
         for argument in candidate.arguments {
             values.push(
                 if argument.0 == "string" {
@@ -462,9 +462,9 @@ fn validate_package_tests(
     candidates: Vec[TestCandidate],
     exports: artifact::ArtifactPackageExports,
 ) -> TestValidation {
-    let tests: Vec[artifact::ArtifactTestDescriptor] = Vec::[];
-    let valid_candidates: Vec[TestCandidate] = Vec::[];
-    let diagnostics: Vec[tast::Diagnostic] = Vec::[];
+    let tests: Vec[artifact::ArtifactTestDescriptor] = Vec::from_array([]);
+    let valid_candidates: Vec[TestCandidate] = Vec::from_array([]);
+    let diagnostics: Vec[tast::Diagnostic] = Vec::from_array([]);
     for candidate in candidates {
         let span = ast::Span { start: candidate.start, end: candidate.end };
         let symbol = test_symbol(package_name, candidate.name);
@@ -711,7 +711,7 @@ fn encode_test_manifest(values: Vec[artifact::ArtifactTestDescriptor]) -> string
 fn test_link_cases(values: Vec[artifact::ArtifactTestDescriptor]) -> Vec[
     (string, string, Vec[(string, string)]),
 ] {
-    let result: Vec[(string, string, Vec[(string, string)])] = Vec::[];
+    let result: Vec[(string, string, Vec[(string, string)])] = Vec::from_array([]);
     for value in values {
         result.push((value.id, value.symbol, value.arguments))
     }

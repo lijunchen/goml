@@ -19,7 +19,11 @@ fn main() -> unit {
     let default_float = 0.5;
     let small: uint8 = 41;
     let inferred = [small, 2];
-    let branch = if true { 1 } else { small };
+    let branch = if true {
+        1
+    } else {
+        small
+    };
     let values: [uint16; 2] = [10, 20];
     let delayed = Ref::new(0);
     let byte = "A".byte_get(0);
@@ -33,8 +37,10 @@ fn main() -> unit {
     println(two_int16().to_string());
     println(read_uint32(delayed).to_string());
     println((byte == 65).to_string());
-    println(match byte {
-        65 => "byte",
-        _ => "other",
-    });
+    println(
+        match byte {
+            65 => "byte",
+            _ => "other",
+        },
+    );
 }

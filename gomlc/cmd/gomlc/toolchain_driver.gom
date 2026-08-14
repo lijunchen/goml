@@ -37,7 +37,7 @@ struct ToolchainPackArgs {
 }
 
 fn parse_toolchain_build_args(args: Vec[string]) -> Result[ToolchainBuildArgs, string] {
-    let regular = Vec::[args[0], BUILD_COMMAND];
+    let regular = Vec::from_array([args[0], BUILD_COMMAND]);
     let mut builtin_contract = false;
     let mut without_roots = false;
     let mut counter_output: Option[string] = Option::None;
@@ -92,8 +92,8 @@ fn toolchain_parse_sources(command: PackageCommandArgs) -> Result[
     (Vec[ast::LowerResult], Vec[(ast::LowerResult, string)]),
     string,
 ] {
-    let ast_values: Vec[ast::LowerResult] = Vec::[];
-    let inputs: Vec[(ast::LowerResult, string)] = Vec::[];
+    let ast_values: Vec[ast::LowerResult] = Vec::from_array([]);
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::from_array([]);
     for source_path in command.inputs {
         let parsed = parser::parse(read_source(source_path));
         if !parsed.diagnostics.is_empty() {
@@ -115,7 +115,7 @@ fn toolchain_lower_hir(
     inputs: Vec[(ast::LowerResult, string)],
     expanded: bool,
 ) -> Result[ToolchainParsedPackage, string] {
-    let hir_files: Vec[hir::File] = Vec::[];
+    let hir_files: Vec[hir::File] = Vec::from_array([]);
     let lowered_values = if expanded {
         hir::lower_expanded_package_files(inputs, command.package_name)
     } else {
@@ -155,12 +155,12 @@ fn toolchain_sorted_interfaces(values: Vec[artifact::ArtifactInterfaceUnit]) -> 
     Vec[artifact::ArtifactInterfaceUnit],
     string,
 ] {
-    let names: Vec[string] = Vec::[];
+    let names: Vec[string] = Vec::from_array([]);
     for value in values {
         names.push(value.package_name)
     }
     let names = wire::sort_artifact_names(names);
-    let result: Vec[artifact::ArtifactInterfaceUnit] = Vec::[];
+    let result: Vec[artifact::ArtifactInterfaceUnit] = Vec::from_array([]);
     let mut previous: Option[string] = Option::None;
     for name in names {
         match previous {
@@ -181,7 +181,7 @@ fn toolchain_sorted_interfaces(values: Vec[artifact::ArtifactInterfaceUnit]) -> 
 fn toolchain_dependency_hashes(values: Vec[artifact::ArtifactInterfaceUnit]) -> Vec[
     (string, string),
 ] {
-    let result: Vec[(string, string)] = Vec::[];
+    let result: Vec[(string, string)] = Vec::from_array([]);
     for value in values {
         result.push((value.package_name, value.interface_hash))
     }
@@ -192,7 +192,7 @@ fn toolchain_dependency_environments_from_interfaces(values: Vec[artifact::Artif
     Vec[tast::DependencyEnvironment],
     string,
 ] {
-    let modules: Vec[ctir::CtModule] = Vec::[];
+    let modules: Vec[ctir::CtModule] = Vec::from_array([]);
     for value in values {
         match value.comptime {
             Some(value) => modules.push(value.module),
@@ -200,7 +200,7 @@ fn toolchain_dependency_environments_from_interfaces(values: Vec[artifact::Artif
         };
     }
     artifact_verify_comptime_modules(modules)?;
-    let result: Vec[tast::DependencyEnvironment] = Vec::[];
+    let result: Vec[tast::DependencyEnvironment] = Vec::from_array([]);
     for value in values {
         let environment = artifact_dependency_environment_from_exports(value.exports)?;
         let environment = if value.package_name == "builtin" {
@@ -211,10 +211,10 @@ fn toolchain_dependency_environments_from_interfaces(values: Vec[artifact::Artif
                 environment.structs,
                 environment.type_aliases,
                 environment.constants,
-                Vec::[],
+                Vec::from_array([]),
                 environment.functions,
                 environment.methods,
-                Vec::[],
+                Vec::from_array([]),
             )
         } else {
             environment
@@ -233,8 +233,8 @@ fn toolchain_dependency_environments_from_interfaces(values: Vec[artifact::Artif
 }
 
 fn toolchain_derive_environment(values: Vec[artifact::ArtifactInterfaceUnit]) -> hir::DeriveEnvironment {
-    let dependencies: Vec[ctir::CtModule] = Vec::[];
-    let reexports: Vec[(string, string)] = Vec::[];
+    let dependencies: Vec[ctir::CtModule] = Vec::from_array([]);
+    let reexports: Vec[(string, string)] = Vec::from_array([]);
     let mut builtin: Option[ctir::CtModule] = Option::None;
     for value in values {
         match value.comptime {
@@ -257,7 +257,7 @@ fn toolchain_expand_and_lower(
     ast_values: Vec[ast::LowerResult],
     dependencies: Vec[artifact::ArtifactInterfaceUnit],
 ) -> Result[ToolchainParsedPackage, string] {
-    let inputs: Vec[(ast::LowerResult, string)] = Vec::[];
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::from_array([]);
     let environment = toolchain_derive_environment(dependencies);
     for index in 0..ast_values.len() {
         let expanded = hir::expand_derives_with_environment(ast_values[index], environment);
@@ -318,7 +318,7 @@ fn compile_toolchain_project_request(command: PackageCommandArgs, without_roots:
     } else {};
     let hir_file = merge_hir_files(package_value.hir_files, command.package_name);
     let public_reexports = if command.package_name == "prelude" {
-        let values: Vec[(string, string)] = Vec::[];
+        let values: Vec[(string, string)] = Vec::from_array([]);
         for name in resources::prelude_builtin_export_names() {
             values.push((name, name))
         }
@@ -406,7 +406,7 @@ fn write_toolchain_package(command: PackageCommandArgs, compilation: PackageComp
             core_ir: compilation.core_value,
             deps: compilation.interface_unit.deps,
             sources: command.inputs,
-            tests: Vec::[],
+            tests: Vec::from_array([]),
         },
     )
 }
@@ -448,8 +448,8 @@ fn run_toolchain_build(args: Vec[string]) -> unit {
 }
 
 fn parse_toolchain_pack_args(args: Vec[string]) -> Result[ToolchainPackArgs, string] {
-    let inputs: Vec[string] = Vec::[];
-    let sources: Vec[string] = Vec::[];
+    let inputs: Vec[string] = Vec::from_array([]);
+    let sources: Vec[string] = Vec::from_array([]);
     let mut output: Option[string] = Option::None;
     let mut counter_file: Option[string] = Option::None;
     let mut index = 2;
@@ -554,7 +554,7 @@ fn run_pack_toolchain_world(args: Vec[string]) -> unit {
             return
         },
     };
-    let packages: Vec[ToolchainPackage] = Vec::[];
+    let packages: Vec[ToolchainPackage] = Vec::from_array([]);
     for input in request.inputs {
         match read_toolchain_package(input) {
             Ok(value) => packages.push(value),

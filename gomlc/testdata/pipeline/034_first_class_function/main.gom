@@ -20,7 +20,10 @@ fn main() {
     let composed = compose(double, increment, first);
     let closure_apply = |value: int32| apply_once(increment, value);
     let closure_result = closure_apply(composed);
-    let global_invoker = |func_to_call: (int32) -> int32, value: int32| apply_once(func_to_call, value);
+    let global_invoker = |func_to_call: (int32) -> int32, value: int32| apply_once(
+        func_to_call,
+        value,
+    );
     let invoked_with_global = global_invoker(double, 3);
     let composer_closure = |value: int32| compose(double, increment, value);
     let composed_by_closure = composer_closure(5);
@@ -29,5 +32,4 @@ fn main() {
     let _ = printer(closure_result.to_string());
     let _ = printer(invoked_with_global.to_string());
     let _ = printer(composed_by_closure.to_string());
-    ()
 }

@@ -9,7 +9,7 @@ struct PackageInfoArgs {
 }
 
 fn parse_package_info_args(args: Vec[string]) -> Result[PackageInfoArgs, string] {
-    let inputs: Vec[string] = Vec::[];
+    let inputs: Vec[string] = Vec::from_array([]);
     let mut format: Option[string] = Option::None;
     let mut index = 2;
     let mut positional = false;
@@ -104,7 +104,7 @@ fn parse_package_info_args(args: Vec[string]) -> Result[PackageInfoArgs, string]
     } else if inputs.is_empty() {
         Result::Err(
             missing_required_arguments_error_with_usage(
-                Vec::["--input <INPUT>..."],
+                Vec::from_array(["--input <INPUT>..."]),
                 required_command_usage(PACKAGE_INFO_COMMAND),
             ),
         )
@@ -347,7 +347,7 @@ fn parse_package_info_file(source_path: string, source: string) -> Result[Packag
     } else {
         ("main", false)
     };
-    let uses: Vec[PackageInfoUse] = Vec::[];
+    let uses: Vec[PackageInfoUse] = Vec::from_array([]);
     package_info_skip_trivia(scanner);
     let mut parsing_uses = true;
     while parsing_uses {
@@ -371,7 +371,7 @@ fn parse_package_info_file(source_path: string, source: string) -> Result[Packag
             parsing_uses = false;
         };
     }
-    let resolved_uses: Vec[PackageInfoUse] = Vec::[];
+    let resolved_uses: Vec[PackageInfoUse] = Vec::from_array([]);
     for index in 0..uses.len() {
         let current = uses[index];
         let mut path = current.path;
@@ -417,7 +417,11 @@ fn package_info_json(args: PackageInfoArgs) -> string {
             Ok(value) => value,
             Err(error) => {
                 fail(error);
-                PackageInfoFile { package_name: "", package_explicit: false, uses: Vec::[] }
+                PackageInfoFile {
+                    package_name: "",
+                    package_explicit: false,
+                    uses: Vec::from_array([]),
+                }
             },
         };
         wire::artifact_json_begin_object(writer);

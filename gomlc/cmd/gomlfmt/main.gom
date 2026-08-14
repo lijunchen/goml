@@ -28,7 +28,7 @@ fn parse_options(args: Vec[string]) -> Result[Options, string] {
     let mut write = false;
     let mut list = false;
     let mut check = false;
-    let paths: Vec[string] = Vec::[];
+    let paths: Vec[string] = Vec::from_array([]);
     let mut positional = false;
     for index in 1..args.len() {
         let argument = args[index];
@@ -104,7 +104,7 @@ fn diagnostic_error(path: string, error: formatter::FormatError) -> string {
 }
 
 fn format_files(paths: Vec[string]) -> Result[Vec[FormattedFile], string] {
-    let result: Vec[FormattedFile] = Vec::[];
+    let result: Vec[FormattedFile] = Vec::from_array([]);
     for path in paths {
         let source = match read_source(path) {
             Ok(value) => value,

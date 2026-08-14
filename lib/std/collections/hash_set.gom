@@ -12,7 +12,7 @@ impl[K: Eq + Hash] Default for HashSet[K] {
 
 impl[K: Eq + Hash] HashSet[K] {
     pub fn new() -> HashSet[K] {
-        HashSet { entries: HashMap::{} }
+        HashSet { entries: HashMap::from_array([]) }
     }
 
     pub fn len(self: HashSet[K]) -> int {
