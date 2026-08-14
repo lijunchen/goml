@@ -289,7 +289,7 @@ fn assert_collections() -> unit {
         Option::Some(index) => testing::assert_eq(values.get(index), 3),
         Option::None => testing::fail("binary search failed"),
     };
-    testing::assert(collections::contains(values, 4));
+    testing::assert(values.contains(4));
     testing::assert_eq(collections::position_by(values, |value: int| value == 2).unwrap_or(-1), 1);
     testing::assert_eq(collections::min_by(values, compare_int).unwrap_or(0), 1);
     testing::assert_eq(collections::max_by(values, compare_int).unwrap_or(0), 4);

@@ -1,6 +1,5 @@
 package resources;
 
-use std::collections;
 use std::testing;
 
 fn assert_strings(actual: Vec[string], expected: Vec[string]) -> unit {
@@ -56,11 +55,11 @@ fn loads_builtin_and_prelude_layers_independently() -> unit {
 #[test]
 fn exposes_explicit_prelude_builtin_surface() -> unit {
     let names = prelude_builtin_export_names();
-    testing::assert(collections::contains(names, "Option"));
-    testing::assert(collections::contains(names, "Iterator"));
-    testing::assert(collections::contains(names, "vec_new"));
-    testing::assert(!collections::contains(names, "string_get_raw"));
-    testing::assert(!collections::contains(names, "derive_output_new"))
+    testing::assert(names.contains("Option"));
+    testing::assert(names.contains("Iterator"));
+    testing::assert(names.contains("vec_new"));
+    testing::assert(!names.contains("string_get_raw"));
+    testing::assert(!names.contains("derive_output_new"))
 }
 
 #[test]
