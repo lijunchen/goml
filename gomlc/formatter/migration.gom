@@ -1,0 +1,99 @@
+package formatter;
+
+use gomlc::cst;
+use gomlc::lexer;
+use std::text;
+
+struct MigrationEdit {
+    start: int,
+    end: int,
+    replacement: string,
+}
+
+fn migration_edit_compare(left: MigrationEdit, right: MigrationEdit) -> int {
+    left.start - right.start
+}
+
+fn direct_token(value: LocatedNode, kind: lexer::TokenKind) -> Option[LocatedToken] {
+    let cursor = child_cursor(value);
+    while cursor.remaining() > 0 {
+        match cursor.next() {
+            Some(Token(token)) => if token_is(token, kind) {
+                return Option::Some(token)
+            } else {},
+            _ => (),
+        }
+    }
+    Option::None
+}
+
+fn push_migration_edit(edits: Vec[MigrationEdit], start: int, end: int, replacement: string) -> unit {
+    edits.push(MigrationEdit { start, end, replacement })
+}
+
+fn collect_collection_migration_edits(node: LocatedNode, edits: Vec[MigrationEdit]) -> unit {
+    let cursor = child_cursor(node);
+    while cursor.remaining() > 0 {
+        match cursor.next() {
+            Some(Node(child)) => collect_collection_migration_edits(child, edits),
+            _ => (),
+        }
+    }
+    if node_is(node, cst::NodeKind::EXPR_VEC_LITERAL) {
+        match direct_token(node, lexer::TokenKind::LBracket) {
+            Some(open) => push_migration_edit(edits, open.start, open.start, "from_array("),
+            None => (),
+        };
+        match direct_token(node, lexer::TokenKind::RBracket) {
+            Some(close) => push_migration_edit(edits, close.end, close.end, ")"),
+            None => (),
+        }
+    } else if node_is(node, cst::NodeKind::EXPR_HASHMAP_LITERAL) {
+        match direct_token(node, lexer::TokenKind::LBrace) {
+            Some(open) => push_migration_edit(edits, open.start, open.end, "from_array(["),
+            None => (),
+        };
+        match direct_token(node, lexer::TokenKind::RBrace) {
+            Some(close) => push_migration_edit(edits, close.start, close.end, "])"),
+            None => (),
+        }
+    } else if node_is(node, cst::NodeKind::HASHMAP_LITERAL_ENTRY) {
+        let expressions = direct_nodes(node);
+        match first_significant_token(node) {
+            Some(first) => push_migration_edit(edits, first.start, first.start, "("),
+            None => (),
+        };
+        if expressions.is_empty() {} else {
+            match last_significant_token(expressions[0]) {
+                Some(key_end) => push_migration_edit(edits, key_end.end, key_end.end, ","),
+                None => (),
+            }
+        };
+        match direct_token(node, lexer::TokenKind::FatArrow) {
+            Some(arrow) => push_migration_edit(edits, arrow.start, arrow.end, ""),
+            None => (),
+        };
+        match last_significant_token(node) {
+            Some(last) => push_migration_edit(edits, last.end, last.end, ")"),
+            None => (),
+        }
+    } else {}
+}
+
+fn migrate_collection_literals(source: string, root: LocatedNode) -> string {
+    let edits: Vec[MigrationEdit] = Vec::from_array([]);
+    collect_collection_migration_edits(root, edits);
+    if edits.is_empty() {
+        return source
+    } else {};
+    edits.stable_sort_by(migration_edit_compare);
+    let output = text::StringBuilder::with_capacity(source.byte_len() + edits.len() * 12);
+    let cursor: Ref[int] = Ref::new(0);
+    for edit in edits {
+        output.write_string(source.byte_slice(cursor.get(), edit.start));
+        output.write_string(edit.replacement);
+        cursor.set(edit.end)
+    }
+    output.write_string(source.byte_slice(cursor.get(), source.byte_len()));
+    output.finish()
+}

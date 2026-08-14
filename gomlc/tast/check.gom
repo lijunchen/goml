@@ -556,14 +556,14 @@ fn coerce_to_dyn(ctx: Checker, value: Expr, expected_ty: Type) -> Expr {
                 Some(_) => if trait_bound_satisfied_at(
                     ctx,
                     actual,
-                    TraitRef { name: trait_name, args: Vec::[] },
-                    Vec::[],
+                    TraitRef { name: trait_name, args: Vec::from_array([]) },
+                    Vec::from_array([]),
                 ) {} else {
                     require_predicate(
                         ctx,
                         TypePredicate::Trait {
                             for_ty: actual,
-                            trait_ref: TraitRef { name: trait_name, args: Vec::[] },
+                            trait_ref: TraitRef { name: trait_name, args: Vec::from_array([]) },
                         },
                         "Type " + type_text(actual) + " does not implement trait " + trait_name,
                     )
@@ -577,7 +577,9 @@ fn coerce_to_dyn(ctx: Checker, value: Expr, expected_ty: Type) -> Expr {
                         lhs: Type::Projection {
                             for_ty: actual,
                             name: binding.0,
-                            trait_ref: Option::Some(TraitRef { name: trait_name, args: Vec::[] }),
+                            trait_ref: Option::Some(
+                                TraitRef { name: trait_name, args: Vec::from_array([]) },
+                            ),
                         },
                         rhs: binding.1,
                     },
@@ -1002,13 +1004,17 @@ fn check_name_ref_inner(ctx: Checker, value: hir::NameRef) -> Expr {
             Some(value) => Expr::Var { name: value.name, ty: value.ty },
             None => match find_function_by_def(ctx, definition) {
                 Some(scheme) => {
-                    let (callable, ty) = instantiate_scheme(ctx, scheme, Vec::[]);
+                    let (callable, ty) = instantiate_scheme(ctx, scheme, Vec::from_array([]));
                     Expr::Callable { callable, ty }
                 },
                 None => match find_rejected_extern(ctx, definition) {
                     Some(value) => match find_function_by_name(ctx, short_name(value.name)) {
                         Some(scheme) => {
-                            let (callable, ty) = instantiate_scheme(ctx, scheme, Vec::[]);
+                            let (callable, ty) = instantiate_scheme(
+                                ctx,
+                                scheme,
+                                Vec::from_array([]),
+                            );
                             Expr::Callable { callable, ty }
                         },
                         None => {
@@ -1018,7 +1024,7 @@ fn check_name_ref_inner(ctx: Checker, value: hir::NameRef) -> Expr {
                                     + " not found in environment",
                                 Option::None,
                             );
-                            let params: Vec[Type] = Vec::[];
+                            let params: Vec[Type] = Vec::from_array([]);
                             for _ in 0..value.arity {
                                 params.push(fresh_type(ctx.counter, VarKind::Any))
                             }
@@ -1048,7 +1054,7 @@ fn check_name_ref_inner(ctx: Checker, value: hir::NameRef) -> Expr {
                     };
                     match scheme {
                         Some(value) => {
-                            let (callable, ty) = instantiate_scheme(ctx, value, Vec::[]);
+                            let (callable, ty) = instantiate_scheme(ctx, value, Vec::from_array([]));
                             Expr::Callable { callable, ty }
                         },
                         None => {
@@ -1077,10 +1083,10 @@ fn check_name_ref(ctx: Checker, value: hir::NameRef) -> Expr {
 
 fn resolved_constructor_value_expr(ctx: Checker, info: ResolvedConstructor) -> Expr {
     if info.fields.is_empty() {
-        check_resolved_constructor_expr(ctx, info, Vec::[], Option::None)
+        check_resolved_constructor_expr(ctx, info, Vec::from_array([]), Option::None)
     } else if !(info.named) {
-        let params: Vec[ClosureParam] = Vec::[];
-        let args: Vec[Expr] = Vec::[];
+        let params: Vec[ClosureParam] = Vec::from_array([]);
+        let args: Vec[Expr] = Vec::from_array([]);
         for index in 0..info.fields.len() {
             let name = "ctor_arg_" + index.to_string();
             let ty = info.fields[index];
@@ -1098,7 +1104,7 @@ fn resolved_constructor_value_expr(ctx: Checker, info: ResolvedConstructor) -> E
             "Constructor " + info.constructor.name
                 + " is a struct-like enum variant and requires named fields",
         );
-        Expr::Constr { constructor: info.constructor, args: Vec::[], ty: Type::Error }
+        Expr::Constr { constructor: info.constructor, args: Vec::from_array([]), ty: Type::Error }
     }
 }
 
@@ -1219,11 +1225,11 @@ fn missing_constructor_expr(ctx: Checker, name: string, expected: Option[Type]) 
     Expr::Constr {
         constructor: Constructor {
             name: "<error>",
-            fields: Vec::[],
+            fields: Vec::from_array([]),
             is_struct: false,
             tag: Option::None,
         },
-        args: Vec::[],
+        args: Vec::from_array([]),
         ty: Type::Error,
     }
 }
@@ -1252,7 +1258,7 @@ fn check_resolved_constructor_expr(
         );
         return Expr::Constr {
             constructor: info.constructor,
-            args: Vec::[],
+            args: Vec::from_array([]),
             ty: fresh_unresolved_inference(ctx),
         }
     } else {};
@@ -1270,7 +1276,7 @@ fn check_resolved_constructor_expr(
                 + args.len().to_string(),
         )
     } else {};
-    let values: Vec[Expr] = Vec::[];
+    let values: Vec[Expr] = Vec::from_array([]);
     for index in 0..args.len() {
         let expected = if index < info.fields.len() {
             Option::Some(info.fields[index])
@@ -1363,8 +1369,8 @@ fn check_struct_update_expr(
                 Some(ty) => expect_type(ctx, info.ty, ty),
                 None => (),
             };
-            let stmts: Vec[Stmt] = Vec::[];
-            let checked_fields: Vec[(string, string, Type)] = Vec::[];
+            let stmts: Vec[Stmt] = Vec::from_array([]);
+            let checked_fields: Vec[(string, string, Type)] = Vec::from_array([]);
             for index in 0..fields.len() {
                 let provided = fields[index];
                 if named_expr_field_before(fields, index, provided.0) {
@@ -1415,7 +1421,7 @@ fn check_struct_update_expr(
                         value: checked_base,
                     },
                 );
-                let args: Vec[Expr] = Vec::[];
+                let args: Vec[Expr] = Vec::from_array([]);
                 for field in info.fields {
                     match checked_update_field(checked_fields, field.0) {
                         Some((local_name, field_ty)) => {
@@ -1477,7 +1483,7 @@ fn check_struct_expr(
                 report_error_inference(ctx, expected);
                 return Expr::Constr {
                     constructor: info.constructor,
-                    args: Vec::[],
+                    args: Vec::from_array([]),
                     ty: Type::Error,
                 }
             } else {};
@@ -1502,7 +1508,7 @@ fn check_struct_expr(
                     )
                 }
             }
-            let values: Vec[Expr] = Vec::[];
+            let values: Vec[Expr] = Vec::from_array([]);
             for field in info.fields {
                 match find_named_field(fields, field.0) {
                     Some(value) => values.push(check_expr(ctx, value, Option::Some(field.1))),
@@ -1529,11 +1535,11 @@ fn check_struct_expr(
             Expr::Constr {
                 constructor: Constructor {
                     name,
-                    fields: Vec::[],
+                    fields: Vec::from_array([]),
                     is_struct: false,
                     tag: Option::None,
                 },
-                args: Vec::[],
+                args: Vec::from_array([]),
                 ty: fresh_unresolved_inference(ctx),
             }
         },
@@ -1545,11 +1551,11 @@ fn check_struct_expr(
             Expr::Constr {
                 constructor: Constructor {
                     name,
-                    fields: Vec::[],
+                    fields: Vec::from_array([]),
                     is_struct: false,
                     tag: Option::None,
                 },
-                args: Vec::[],
+                args: Vec::from_array([]),
                 ty: fresh_unresolved_inference(ctx),
             }
         },
@@ -1562,11 +1568,11 @@ fn check_struct_expr(
             Expr::Constr {
                 constructor: Constructor {
                     name,
-                    fields: Vec::[],
+                    fields: Vec::from_array([]),
                     is_struct: false,
                     tag: Option::None,
                 },
-                args: Vec::[],
+                args: Vec::from_array([]),
                 ty: Type::Error,
             }
         },
@@ -1588,7 +1594,11 @@ fn check_positional_struct_expr(
             "Struct " + info.constructor.name + " has private fields and cannot be constructed here",
         );
         report_error_inference(ctx, expected);
-        return Expr::Constr { constructor: info.constructor, args: Vec::[], ty: Type::Error }
+        return Expr::Constr {
+            constructor: info.constructor,
+            args: Vec::from_array([]),
+            ty: Type::Error,
+        }
     } else {};
     match propagated_expected(expected) {
         Some(ty) => expect_type(ctx, info.ty, ty),
@@ -1604,7 +1614,7 @@ fn check_positional_struct_expr(
                 + args.len().to_string(),
         )
     } else {};
-    let values: Vec[Expr] = Vec::[];
+    let values: Vec[Expr] = Vec::from_array([]);
     for index in 0..args.len() {
         let expected = if index < info.fields.len() {
             Option::Some(info.fields[index].1)
@@ -1626,8 +1636,8 @@ fn check_positional_struct_expr(
 }
 
 fn check_tuple_expr(ctx: Checker, values: Vec[hir::Expr], expected: Option[Type]) -> Expr {
-    let items: Vec[Expr] = Vec::[];
-    let types: Vec[Type] = Vec::[];
+    let items: Vec[Expr] = Vec::from_array([]);
+    let types: Vec[Type] = Vec::from_array([]);
     for _ in values {
         types.push(fresh_type(ctx.counter, VarKind::Any))
     }
@@ -1648,7 +1658,7 @@ fn check_array_expr(ctx: Checker, values: Vec[hir::Expr], expected: Option[Type]
         Some(ty) => expect_type(ctx, array_ty, ty),
         None => (),
     };
-    let items: Vec[Expr] = Vec::[];
+    let items: Vec[Expr] = Vec::from_array([]);
     for value in values {
         items.push(check_expr(ctx, value, Option::Some(elem)))
     }
@@ -1656,27 +1666,45 @@ fn check_array_expr(ctx: Checker, values: Vec[hir::Expr], expected: Option[Type]
 }
 
 fn collection_from_array_call(name: string, array: Expr, ret_ty: Type) -> Expr {
-    let function_ty = Type::Func { params: Vec::[expr_type(array)], ret_ty };
+    let function_ty = Type::Func { params: Vec::from_array([expr_type(array)]), ret_ty };
     Expr::Call {
         func: Expr::Callable { callable: Callable::Intrinsic(name), ty: function_ty },
-        args: Vec::[array],
+        args: Vec::from_array([array]),
         ty: ret_ty,
     }
+}
+
+fn push_collection_literal_warning(ctx: Checker, message: string, span: ast::Span) -> unit {
+    for diagnostic in ctx.diagnostics {
+        if diagnostic.message == message
+            && match diagnostic.span {
+                Some(existing) => existing.start == span.start && existing.end == span.end,
+                None => false,
+            } {
+            return
+        } else {}
+    }
+    push_warning_at(ctx, message, Option::Some(span))
 }
 
 fn check_vec_literal_expr(
     ctx: Checker,
     values: Vec[hir::Expr],
     expected: Option[Type],
-    _value_span: ast::Span,
+    value_span: ast::Span,
 ) -> Expr {
+    push_collection_literal_warning(
+        ctx,
+        "Vec collection literal is deprecated; use Vec::from_array([...])",
+        value_span,
+    );
     let elem = fresh_type(ctx.counter, VarKind::Any);
     let vec_ty = Type::VecType { elem };
     match propagated_expected(expected) {
         Some(ty) => expect_type(ctx, vec_ty, ty),
         None => (),
     };
-    let items: Vec[Expr] = Vec::[];
+    let items: Vec[Expr] = Vec::from_array([]);
     for value in values {
         items.push(check_expr(ctx, value, Option::Some(elem)))
     }
@@ -1697,7 +1725,7 @@ fn check_byte_string_expr(
     expected: Option[Type],
     value_span: ast::Span,
 ) -> Expr {
-    let items: Vec[hir::Expr] = Vec::[];
+    let items: Vec[hir::Expr] = Vec::from_array([]);
     for value in values {
         items.push(hir::Expr { kind: hir::ExprKind::Byte { value }, span: value_span })
     }
@@ -1716,8 +1744,13 @@ fn check_hashmap_literal_expr(
     ctx: Checker,
     entries: Vec[(hir::Expr, hir::Expr)],
     expected: Option[Type],
-    _value_span: ast::Span,
+    value_span: ast::Span,
 ) -> Expr {
+    push_collection_literal_warning(
+        ctx,
+        "HashMap collection literal is deprecated; use HashMap::from_array([(key, value), ...])",
+        value_span,
+    );
     let key = fresh_type(ctx.counter, VarKind::Any);
     let value = fresh_type(ctx.counter, VarKind::Any);
     let map_ty = Type::HashMap { key, value };
@@ -1725,15 +1758,17 @@ fn check_hashmap_literal_expr(
         Some(ty) => expect_type(ctx, map_ty, ty),
         None => (),
     };
-    let items: Vec[Expr] = Vec::[];
+    let items: Vec[Expr] = Vec::from_array([]);
     for entry in entries {
         items.push(
             Expr::Tuple {
-                items: Vec::[
-                    check_expr(ctx, entry.0, Option::Some(key)),
-                    check_expr(ctx, entry.1, Option::Some(value)),
-                ],
-                ty: Type::Tuple { items: Vec::[key, value] },
+                items: Vec::from_array(
+                    [
+                        check_expr(ctx, entry.0, Option::Some(key)),
+                        check_expr(ctx, entry.1, Option::Some(value)),
+                    ],
+                ),
+                ty: Type::Tuple { items: Vec::from_array([key, value]) },
             },
         )
     }
@@ -1748,7 +1783,7 @@ fn check_hashmap_literal_expr(
                 items,
                 ty: Type::Array {
                     len: entries.len(),
-                    elem: Type::Tuple { items: Vec::[key, value] },
+                    elem: Type::Tuple { items: Vec::from_array([key, value]) },
                 },
             },
             map_ty,
@@ -1768,9 +1803,16 @@ fn interpolated_value_to_string(ctx: Checker, source: hir::Expr) -> Expr {
     match prune(normalize_type(ctx, receiver_ty)) {
         String => value,
         Error => Expr::Prim { value: Primitive::String { value: "" }, ty: Type::String },
-        _ => match resolve_method(ctx, receiver_ty, "to_string", Vec::[], Option::None, Vec::[]) {
+        _ => match resolve_method(
+            ctx,
+            receiver_ty,
+            "to_string",
+            Vec::from_array([]),
+            Option::None,
+            Vec::from_array([]),
+        ) {
             Some(resolved) => {
-                let args: Vec[Expr] = Vec::[];
+                let args: Vec[Expr] = Vec::from_array([]);
                 args.push(value);
                 Expr::Call {
                     func: Expr::Callable { callable: resolved.callable, ty: resolved.ty },
@@ -1827,17 +1869,17 @@ fn check_closure_expr(
     let expected_parts: (Vec[Type], Option[Type]) = match propagated_expected(expected) {
         Some(ty) => match prune(ty) {
             Func { params, ret_ty } => (params, Option::Some(ret_ty)),
-            _ => (Vec::[], Option::None),
+            _ => (Vec::from_array([]), Option::None),
         },
-        None => (Vec::[], Option::None),
+        None => (Vec::from_array([]), Option::None),
     };
     let ret_ty = match expected_parts.1 {
         Some(ty) => ty,
         None => fresh_type(ctx.counter, VarKind::Any),
     };
     let closure_ctx = closure_context(ctx, ret_ty);
-    let typed_params: Vec[ClosureParam] = Vec::[];
-    let param_types: Vec[Type] = Vec::[];
+    let typed_params: Vec[ClosureParam] = Vec::from_array([]);
+    let param_types: Vec[Type] = Vec::from_array([]);
     for param in params {
         let index = typed_params.len();
         let contextual = if index < expected_parts.0.len() {
@@ -1887,7 +1929,7 @@ fn callable_parts(ctx: Checker, value: Type, arity: int) -> (Vec[Type], Type) {
     match prune(value) {
         Func { params, ret_ty } => (params, ret_ty),
         Var(variable) => {
-            let params: Vec[Type] = Vec::[];
+            let params: Vec[Type] = Vec::from_array([]);
             for _ in 0..arity {
                 params.push(fresh_unresolved_inference(ctx))
             }
@@ -1899,10 +1941,10 @@ fn callable_parts(ctx: Checker, value: Type, arity: int) -> (Vec[Type], Type) {
             } else {};
             (params, ret_ty)
         },
-        Error => (Vec::[], Type::Error),
+        Error => (Vec::from_array([]), Type::Error),
         _ => {
             push_diagnostic(ctx, "Cannot call non-function type " + type_text(value));
-            (Vec::[], Type::Error)
+            (Vec::from_array([]), Type::Error)
         },
     }
 }
@@ -1953,7 +1995,7 @@ fn specialize_array_callable(function: Expr, values: Vec[Expr]) -> Expr {
         Callable { callable, ty: Func { params, ret_ty } } => {
             match array_wildcard_length(params, values) {
                 Some(length) => {
-                    let specialized: Vec[Type] = Vec::[];
+                    let specialized: Vec[Type] = Vec::from_array([]);
                     for param in params {
                         specialized.push(specialize_array_type(param, length))
                     }
@@ -1998,7 +2040,7 @@ fn specialize_array_callable_expected(function: Expr, expected: Option[Type]) ->
                 } else {}
             }
             if length >= 0 {
-                let specialized: Vec[Type] = Vec::[];
+                let specialized: Vec[Type] = Vec::from_array([]);
                 for param in params {
                     specialized.push(specialize_array_type(param, length))
                 }
@@ -2053,7 +2095,7 @@ fn dyn_trait_method(function: Expr, values: Vec[Expr]) -> Option[(string, string
 }
 
 fn arity_diagnostic_types(values: Vec[Type]) -> Vec[Type] {
-    let result: Vec[Type] = Vec::[];
+    let result: Vec[Type] = Vec::from_array([]);
     for value in values {
         result.push(arity_diagnostic_type(value))
     }
@@ -2115,7 +2157,7 @@ fn apply_typed_call(
     prefix_len: int,
     is_static: bool,
 ) -> Expr {
-    let values: Vec[Expr] = Vec::[];
+    let values: Vec[Expr] = Vec::from_array([]);
     for value in raw_values {
         let index = values.len();
         let expected = if index < params.len() {
@@ -2141,7 +2183,7 @@ fn apply_typed_call(
         && !trait_arguments_match(params, values, trait_has_receiver);
     let dyn_method = dyn_trait_method(function, values);
     if arity_mismatch {
-        let actual_params: Vec[Type] = Vec::[];
+        let actual_params: Vec[Type] = Vec::from_array([]);
         for value in values {
             actual_params.push(expr_type(value))
         }
@@ -2164,7 +2206,7 @@ fn apply_typed_call(
                         + type_text(Type::Func { params: found_params, ret_ty }),
                 )
             } else {
-                let found_params: Vec[Type] = Vec::[];
+                let found_params: Vec[Type] = Vec::from_array([]);
                 for _ in actual_params {
                     found_params.push(Type::Con { name: "unknown" })
                 }
@@ -2211,7 +2253,7 @@ fn apply_typed_call(
                     TypePredicate::Trait { for_ty: owner_ty, trait_ref: reference },
                     "type predicate not satisfied",
                 )
-            } else if !trait_bound_satisfied_at(ctx, owner_ty, reference, Vec::[]) {
+            } else if !trait_bound_satisfied_at(ctx, owner_ty, reference, Vec::from_array([])) {
                 push_diagnostic(
                     ctx,
                     predicate_requirement_message(
@@ -2242,12 +2284,12 @@ fn apply_typed_call(
                             ctx,
                             Type::Dyn {
                                 trait_name: owner,
-                                args: Vec::[],
-                                associated_types: Vec::[],
-                                additional_bounds: Vec::[],
+                                args: Vec::from_array([]),
+                                associated_types: Vec::from_array([]),
+                                additional_bounds: Vec::from_array([]),
                             },
                             reference,
-                            Vec::[],
+                            Vec::from_array([]),
                         ) {
                             Expr::Callable {
                                 callable: Callable::DynTraitMethod {
@@ -2324,7 +2366,7 @@ fn apply_call(ctx: Checker, function: Expr, prefix: Vec[Expr], args: Vec[hir::Ex
     let parts = callable_parts(ctx, expr_type(function), arity);
     let params = parts.0;
     let ret_ty = parts.1;
-    let values: Vec[Expr] = Vec::[];
+    let values: Vec[Expr] = Vec::from_array([]);
     for value in prefix {
         values.push(value)
     }
@@ -2388,7 +2430,7 @@ fn check_method_call(
     let needs_call_context = unresolved_receiver
         || method_shape_is_ambiguous(ctx, receiver_ty, name);
     let resolved = if needs_call_context {
-        let arg_types: Vec[Type] = Vec::[];
+        let arg_types: Vec[Type] = Vec::from_array([]);
         for source in args {
             let value = check_expr(ctx, source, Option::None);
             arg_types.push(expr_type(value))
@@ -2405,7 +2447,7 @@ fn check_method_call(
             None => resolve_method(ctx, receiver_ty, name, arg_types, expected, method_explicit),
         }
     } else {
-        let arg_types: Vec[Type] = Vec::[];
+        let arg_types: Vec[Type] = Vec::from_array([]);
         for _ in args {
             arg_types.push(fresh_type(ctx.counter, VarKind::Any))
         }
@@ -2466,7 +2508,7 @@ fn check_method_call(
             apply_call(
                 ctx,
                 Expr::Field { expr: receiver, field_name: name, ty: field_ty },
-                Vec::[],
+                Vec::from_array([]),
                 args,
             )
         },
@@ -2484,7 +2526,7 @@ fn struct_has_hidden_fields(ctx: Checker, ty: Type) -> bool {
 }
 
 fn one_expr(value: Expr) -> Vec[Expr] {
-    let result: Vec[Expr] = Vec::[];
+    let result: Vec[Expr] = Vec::from_array([]);
     result.push(value);
     result
 }
@@ -2567,7 +2609,7 @@ fn check_call_expr(
 ) -> Expr {
     let function_span = function.span;
     let function_source = function;
-    let argument_spans: Vec[ast::Span] = Vec::[];
+    let argument_spans: Vec[ast::Span] = Vec::from_array([]);
     for argument in args {
         argument_spans.push(argument.span)
     }
@@ -2577,12 +2619,12 @@ fn check_call_expr(
         },
         NameRef { name_ref: reference } => match function_scheme_for_name_ref(ctx, reference) {
             Some(scheme) => {
-                let candidate = instantiate_scheme_candidate(ctx, scheme, Vec::[]);
+                let candidate = instantiate_scheme_candidate(ctx, scheme, Vec::from_array([]));
                 constrain_callable_return(ctx, candidate.ty, expected);
                 let result = apply_call(
                     ctx,
                     Expr::Callable { callable: candidate.callable, ty: candidate.ty },
-                    Vec::[],
+                    Vec::from_array([]),
                     args,
                 );
                 require_predicates(ctx, candidate.predicates);
@@ -2595,7 +2637,7 @@ fn check_call_expr(
                         Some(_) => (),
                         None => push_global_diagnostic(ctx, INFERENCE_FAILURE_MESSAGE),
                     };
-                    let values: Vec[Expr] = Vec::[];
+                    let values: Vec[Expr] = Vec::from_array([]);
                     for value in args {
                         values.push(check_expr(ctx, value, Option::None))
                     }
@@ -2605,7 +2647,7 @@ fn check_call_expr(
                         ty: Type::Error,
                     }
                 },
-                _ => apply_call(ctx, check_name_ref(ctx, reference), Vec::[], args),
+                _ => apply_call(ctx, check_name_ref(ctx, reference), Vec::from_array([]), args),
             },
         },
         StaticMember {
@@ -2632,7 +2674,7 @@ fn check_call_expr(
                         let result = apply_call(
                             ctx,
                             Expr::Callable { callable: candidate.callable, ty: candidate.ty },
-                            Vec::[],
+                            Vec::from_array([]),
                             args,
                         );
                         require_predicates(ctx, candidate.predicates);
@@ -2681,7 +2723,7 @@ fn check_call_expr(
                         if defer_coercions {
                             ctx.defer_coercion_depth.set(ctx.defer_coercion_depth.get() + 1)
                         } else {};
-                        let result = apply_call(ctx, function, Vec::[], args);
+                        let result = apply_call(ctx, function, Vec::from_array([]), args);
                         if defer_coercions {
                             ctx.defer_coercion_depth.set(ctx.defer_coercion_depth.get() - 1)
                         } else {};
@@ -2700,7 +2742,7 @@ fn check_call_expr(
             ctx.current_span.set(previous_span);
             value
         },
-        _ => apply_call(ctx, check_expr(ctx, function, Option::None), Vec::[], args),
+        _ => apply_call(ctx, check_expr(ctx, function, Option::None), Vec::from_array([]), args),
     };
     let target = match function_source.kind {
         NameRef { name_ref: reference } => {
@@ -2868,8 +2910,8 @@ fn partial_order_trait(ctx: Checker, value: Type) -> Option[string] {
         Some(info) => if trait_bound_satisfied_at(
             ctx,
             value,
-            TraitRef { name: info.name, args: Vec::[] },
-            Vec::[],
+            TraitRef { name: info.name, args: Vec::from_array([]) },
+            Vec::from_array([]),
         ) {
             Option::Some(info.name)
         } else {
@@ -2990,8 +3032,8 @@ fn check_binary_expr(
             && !trait_bound_satisfied_at(
                 ctx,
                 expr_type(left),
-                TraitRef { name: ctx.builtin.partial_eq.name, args: Vec::[] },
-                Vec::[],
+                TraitRef { name: ctx.builtin.partial_eq.name, args: Vec::from_array([]) },
+                Vec::from_array([]),
             ) {
             push_diagnostic_at(
                 ctx,
@@ -2999,7 +3041,10 @@ fn check_binary_expr(
                     ctx,
                     TypePredicate::Trait {
                         for_ty: expr_type(left),
-                        trait_ref: TraitRef { name: ctx.builtin.partial_eq.name, args: Vec::[] },
+                        trait_ref: TraitRef {
+                            name: ctx.builtin.partial_eq.name,
+                            args: Vec::from_array([]),
+                        },
                     },
                     "type predicate not satisfied",
                 ),
@@ -3116,7 +3161,7 @@ fn check_unary_expr(ctx: Checker, op: ast::UnaryOp, source: hir::Expr, expected:
 }
 
 fn hir_pattern_locals(value: hir::Pat) -> Vec[hir::LocalId] {
-    let result: Vec[hir::LocalId] = Vec::[];
+    let result: Vec[hir::LocalId] = Vec::from_array([]);
     match value.kind {
         Var { name, is_mut: _ } => result.push(name),
         Constr { head: _, args } | Tuple { items: args } | Or { pats: args } => for arg in args {
@@ -3290,10 +3335,10 @@ fn check_match_expr(ctx: Checker, source: hir::Expr, arms: Vec[hir::Arm], expect
         Some(ty) => ty,
         None => fresh_type(ctx.counter, VarKind::Any),
     };
-    let typed_arms: Vec[Arm] = Vec::[];
-    let pattern_spans: Vec[ast::Span] = Vec::[];
-    let invalid_pattern_arms: Vec[bool] = Vec::[];
-    let pattern_errors: Vec[bool] = Vec::[];
+    let typed_arms: Vec[Arm] = Vec::from_array([]);
+    let pattern_spans: Vec[ast::Span] = Vec::from_array([]);
+    let invalid_pattern_arms: Vec[bool] = Vec::from_array([]);
+    let pattern_errors: Vec[bool] = Vec::from_array([]);
     for arm in arms {
         pattern_spans.push(arm.pat.span);
         let or_binding_mismatch = hir_or_pattern_binding_mismatch(arm.pat)
@@ -3412,7 +3457,7 @@ fn try_constructor(ctx: Checker, name: string, variant: string) -> Constructor {
             None => Option::None,
         },
     };
-    Constructor { name: name + "::" + variant, fields: Vec::[], is_struct: false, tag }
+    Constructor { name: name + "::" + variant, fields: Vec::from_array([]), is_struct: false, tag }
 }
 
 fn try_variant_fields(ctx: Checker, enum_name: string, variant_name: string, args: Vec[Type]) -> Option[
@@ -3423,7 +3468,7 @@ fn try_variant_fields(ctx: Checker, enum_name: string, variant_name: string, arg
             for offset in 0..info.variants.len() {
                 let variant = info.variants[info.variants.len() - 1 - offset];
                 if variant.name == variant_name {
-                    let fields: Vec[Type] = Vec::[];
+                    let fields: Vec[Type] = Vec::from_array([]);
                     for field in enum_variant_field_types(variant.fields) {
                         fields.push(substitute_params(field, info.generics, args))
                     }
@@ -3495,7 +3540,7 @@ fn check_option_try(ctx: Checker, index: int, inner: Expr, name: string, args: V
     };
     let inner_ty = expr_type(inner);
     let value_name = "try_value/" + index.to_string();
-    let success_args: Vec[Pat] = Vec::[];
+    let success_args: Vec[Pat] = Vec::from_array([]);
     success_args.push(Pat::Var { name: value_name, is_mut: false, ty: ok_ty });
     let success = Arm {
         pat: Pat::Constr {
@@ -3509,7 +3554,7 @@ fn check_option_try(ctx: Checker, index: int, inner: Expr, name: string, args: V
     let failure = Arm {
         pat: Pat::Constr {
             constructor: try_constructor(ctx, name, none_name),
-            args: Vec::[],
+            args: Vec::from_array([]),
             ty: inner_ty,
         },
         guard: Option::None,
@@ -3517,14 +3562,14 @@ fn check_option_try(ctx: Checker, index: int, inner: Expr, name: string, args: V
             expr: Option::Some(
                 Expr::Constr {
                     constructor: try_constructor(ctx, name, none_name),
-                    args: Vec::[],
+                    args: Vec::from_array([]),
                     ty: ctx.return_ty,
                 },
             ),
             ty: ok_ty,
         },
     };
-    let arms: Vec[Arm] = Vec::[];
+    let arms: Vec[Arm] = Vec::from_array([]);
     arms.push(success);
     arms.push(failure);
     Expr::Match { expr: inner, arms, coverage: Option::None, ty: ok_ty }
@@ -3555,7 +3600,7 @@ fn check_result_try(ctx: Checker, index: int, inner: Expr, name: string, args: V
     let inner_ty = expr_type(inner);
     let value_name = "try_value/" + index.to_string();
     let residual_name = "try_residual/" + index.to_string();
-    let success_args: Vec[Pat] = Vec::[];
+    let success_args: Vec[Pat] = Vec::from_array([]);
     success_args.push(Pat::Var { name: value_name, is_mut: false, ty: ok_ty });
     let success = Arm {
         pat: Pat::Constr {
@@ -3566,9 +3611,9 @@ fn check_result_try(ctx: Checker, index: int, inner: Expr, name: string, args: V
         guard: Option::None,
         body: Expr::Var { name: value_name, ty: ok_ty },
     };
-    let residual_args: Vec[Pat] = Vec::[];
+    let residual_args: Vec[Pat] = Vec::from_array([]);
     residual_args.push(Pat::Var { name: residual_name, is_mut: false, ty: error_ty });
-    let return_args: Vec[Expr] = Vec::[];
+    let return_args: Vec[Expr] = Vec::from_array([]);
     return_args.push(Expr::Var { name: residual_name, ty: error_ty });
     let failure = Arm {
         pat: Pat::Constr {
@@ -3588,7 +3633,7 @@ fn check_result_try(ctx: Checker, index: int, inner: Expr, name: string, args: V
             ty: ok_ty,
         },
     };
-    let arms: Vec[Arm] = Vec::[];
+    let arms: Vec[Arm] = Vec::from_array([]);
     arms.push(success);
     arms.push(failure);
     Expr::Match { expr: inner, arms, coverage: Option::None, ty: ok_ty }
@@ -3721,7 +3766,7 @@ fn check_try_expr(
 fn check_range_expr(ctx: Checker, start: hir::Expr, end: hir::Expr, inclusive: bool) -> Expr {
     let start = check_expr(ctx, start, Option::Some(Type::Int));
     let end = check_expr(ctx, end, Option::Some(Type::Int));
-    let args: Vec[Expr] = Vec::[];
+    let args: Vec[Expr] = Vec::from_array([]);
     args.push(start);
     args.push(end);
     let function_name = if inclusive {
@@ -3731,7 +3776,7 @@ fn check_range_expr(ctx: Checker, start: hir::Expr, end: hir::Expr, inclusive: b
     };
     match scoped_builtin_range_function_scheme(ctx.builtin, function_name) {
         Some(scheme) => {
-            let (callable, function_ty) = instantiate_scheme(ctx, scheme, Vec::[]);
+            let (callable, function_ty) = instantiate_scheme(ctx, scheme, Vec::from_array([]));
             match function_ty {
                 Func { params: _, ret_ty } => Expr::Call {
                     func: Expr::Callable { callable, ty: function_ty },
@@ -4158,7 +4203,7 @@ fn trait_projection(base: Type, name: string, trait_name: string) -> Type {
     Type::Projection {
         for_ty: base,
         name,
-        trait_ref: Option::Some(TraitRef { name: trait_name, args: Vec::[] }),
+        trait_ref: Option::Some(TraitRef { name: trait_name, args: Vec::from_array([]) }),
     }
 }
 
@@ -4175,8 +4220,8 @@ fn projected_into_iterator_item(ctx: Checker, iterator_ty: Type, preserve_projec
     } else if trait_bound_satisfied_at(
         ctx,
         iterator_ty,
-        TraitRef { name: iterator_trait, args: Vec::[] },
-        Vec::[],
+        TraitRef { name: iterator_trait, args: Vec::from_array([]) },
+        Vec::from_array([]),
     ) {
         normalize_type(ctx, trait_projection(iterator_ty, iterator_item, iterator_trait))
     } else if preserve_projection {
@@ -4216,12 +4261,13 @@ fn check_for_expr(
     let iterator_trait = ctx.builtin.iterator.name;
     let into_iterator_trait = ctx.builtin.into_iterator.name;
     let into_iterator_type = ctx.builtin.into_iterator.into_iter_type;
-    let into_iterator_ref = TraitRef { name: into_iterator_trait, args: Vec::[] };
+    let into_iterator_ref = TraitRef { name: into_iterator_trait, args: Vec::from_array([]) };
     let fixed_array = match normalize_type(ctx, source_ty) {
         Array { len: _, elem: _ } => true,
         _ => false,
     };
-    if !fixed_array && !trait_bound_satisfied_at(ctx, source_ty, into_iterator_ref, Vec::[]) {
+    if !fixed_array
+        && !trait_bound_satisfied_at(ctx, source_ty, into_iterator_ref, Vec::from_array([])) {
         push_diagnostic_at(
             ctx,
             "for loop expects a type implementing IntoIterator, got " + type_text(source_ty),
@@ -4249,8 +4295,8 @@ fn check_for_expr(
         && trait_bound_satisfied_at(
             ctx,
             source_ty,
-            TraitRef { name: iterator_trait, args: Vec::[] },
-            Vec::[],
+            TraitRef { name: iterator_trait, args: Vec::from_array([]) },
+            Vec::from_array([]),
         ) {
         source_ty
     } else {
@@ -4259,8 +4305,8 @@ fn check_for_expr(
     Expr::For {
         pat: typed_pat,
         iterator,
-        into_iter_trait_ref: TraitRef { name: into_iterator_trait, args: Vec::[] },
-        iterator_trait_ref: TraitRef { name: iterator_trait, args: Vec::[] },
+        into_iter_trait_ref: TraitRef { name: into_iterator_trait, args: Vec::from_array([]) },
+        iterator_trait_ref: TraitRef { name: iterator_trait, args: Vec::from_array([]) },
         iterator_ty,
         body,
         ty: Type::Unit,
@@ -4612,7 +4658,7 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
                 ctx.comptime_depth.set(ctx.comptime_depth.get() + 1);
                 let typed = check_block(ctx, block, Option::None);
                 ctx.comptime_depth.set(ctx.comptime_depth.get() - 1);
-                let origins: Vec[ast::Span] = Vec::[];
+                let origins: Vec[ast::Span] = Vec::from_array([]);
                 for index in origin_start..ctx.typeck_results.exprs.len() {
                     origins.push(ctx.typeck_results.exprs[index].span)
                 }
@@ -4843,7 +4889,7 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
             ctx.comptime_depth.set(ctx.comptime_depth.get() + 1);
             let typed = check_block(ctx, block, expected);
             ctx.comptime_depth.set(ctx.comptime_depth.get() - 1);
-            let origins: Vec[ast::Span] = Vec::[];
+            let origins: Vec[ast::Span] = Vec::from_array([]);
             for index in origin_start..ctx.typeck_results.exprs.len() {
                 origins.push(ctx.typeck_results.exprs[index].span)
             }
@@ -4990,7 +5036,7 @@ fn check_constructor_pattern(
                 return Pat::Wild { ty: expected }
             } else {};
             expect_type(ctx, expected, info.ty);
-            let values: Vec[Pat] = Vec::[];
+            let values: Vec[Pat] = Vec::from_array([]);
             if args.len() != info.fields.len() {
                 for value in args {
                     mark_unresolved_pattern_locals(ctx, value)
@@ -5193,7 +5239,7 @@ fn check_struct_pattern(
                     "Struct pattern " + name + " has unknown fields: " + unknown.finish(),
                 )
             } else {};
-            let values: Vec[Pat] = Vec::[];
+            let values: Vec[Pat] = Vec::from_array([]);
             for field in info.fields {
                 match find_named_pattern(fields, field.0) {
                     Some(value) => values.push(check_pattern(ctx, value, field.1)),
@@ -5275,7 +5321,7 @@ fn check_array_pattern(
     expected: Type,
 ) -> Pat {
     let (elem, rest_ty) = array_pattern_types(ctx, expected, prefix.len() + suffix.len());
-    let typed_prefix: Vec[Pat] = Vec::[];
+    let typed_prefix: Vec[Pat] = Vec::from_array([]);
     for value in prefix {
         typed_prefix.push(check_pattern(ctx, value, elem))
     }
@@ -5292,7 +5338,7 @@ fn check_array_pattern(
         },
         None => Option::None,
     };
-    let typed_suffix: Vec[Pat] = Vec::[];
+    let typed_suffix: Vec[Pat] = Vec::from_array([]);
     for value in suffix {
         typed_suffix.push(check_pattern(ctx, value, elem))
     }
@@ -5370,12 +5416,12 @@ fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
                 check_struct_pattern(ctx, head, fields, has_rest, expected)
             },
             Tuple { items: values } => {
-                let types: Vec[Type] = Vec::[];
+                let types: Vec[Type] = Vec::from_array([]);
                 for _ in values {
                     types.push(fresh_type(ctx.counter, VarKind::Any))
                 }
                 expect_type(ctx, expected, Type::Tuple { items: types });
-                let items: Vec[Pat] = Vec::[];
+                let items: Vec[Pat] = Vec::from_array([]);
                 for index in 0..values.len() {
                     items.push(check_pattern(ctx, values[index], types[index]))
                 }
@@ -5393,7 +5439,7 @@ fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
                 }
             },
             Or { pats: values } => {
-                let items: Vec[Pat] = Vec::[];
+                let items: Vec[Pat] = Vec::from_array([]);
                 for value in values {
                     items.push(check_pattern(ctx, value, expected))
                 }
@@ -5902,7 +5948,7 @@ fn hir_block_always_exits_loop_control(value: hir::Block) -> bool {
 }
 
 fn check_block(ctx: Checker, value: hir::Block, expected: Option[Type]) -> (Block, Type) {
-    let stmts: Vec[Stmt] = Vec::[];
+    let stmts: Vec[Stmt] = Vec::from_array([]);
     for stmt in value.stmts {
         stmts.push(check_stmt(ctx, stmt))
     }
