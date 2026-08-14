@@ -322,6 +322,14 @@ fn formats_enum_variants_like_rustfmt() -> unit {
 }
 
 #[test]
+fn formats_static_items() -> unit {
+    expect_format(
+        "static VALUE:OnceCell[int]=OnceCell::new();",
+        "static VALUE: OnceCell[int] = OnceCell::new();\n",
+    )
+}
+
+#[test]
 fn rejects_invalid_source() -> unit {
     match format_source("fn main( {") {
         Ok(_) => testing::fail("invalid source formatted"),
