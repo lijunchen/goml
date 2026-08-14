@@ -70,6 +70,7 @@ struct StandardLibrary {
 
 pub struct SourceCompiler {
     counter_start: int,
+    builtin_files: Vec[hir::File],
     builtins: core::File,
     builtin_interface: artifact::ArtifactInterfaceUnit,
     prelude: PackageCompilation,
@@ -688,7 +689,7 @@ fn create_source_compiler(standard_package_names: Vec[string]) -> SourceCompiler
     } else {
         Option::None
     };
-    SourceCompiler { counter_start, builtins, builtin_interface, prelude, standard }
+    SourceCompiler { counter_start, builtin_files, builtins, builtin_interface, prelude, standard }
 }
 
 pub fn source_compiler() -> SourceCompiler {
@@ -871,6 +872,16 @@ fn source_hir_dependencies(compiler: SourceCompiler, ast_value: ast::LowerResult
         },
         None => (),
     };
+    result
+}
+
+fn source_dependency_environments(compiler: SourceCompiler, ast_value: ast::LowerResult) -> Vec[
+    tast::DependencyEnvironment,
+] {
+    let result = Vec::[tast::builtin_dependency_environment(compiler.builtin_files)];
+    for environment in tast::dependency_environments(source_hir_dependencies(compiler, ast_value)) {
+        result.push(environment)
+    }
     result
 }
 
@@ -1445,9 +1456,9 @@ fn diagnostic_output_optional(
         return compact_hir_diagnostics(hir_value.diagnostics, source)
     } else {};
     let counter = Ref::new(compiler.counter_start);
-    let hir_dependencies = source_hir_dependencies(compiler, ast_value);
+    let environments = source_dependency_environments(compiler, ast_value);
     let core_dependencies = source_core_dependencies(compiler, ast_value);
-    let tast_value = tast::check_for_link_with_dependencies(hir_value, hir_dependencies);
+    let tast_value = tast::check_for_link_with_environments(hir_value, environments);
     if typer_diagnostics_have_errors(tast_value.diagnostics) {
         return compact_typer_diagnostics(tast_value.diagnostics, source_path, source)
     } else {};
@@ -1579,9 +1590,9 @@ fn compile_source_optional(
     fail_on_ast_diagnostics(ast_value.diagnostics, "derive", source_path, source);
     let hir_value = hir::lower_expanded(ast_value, source_path);
     let counter = Ref::new(compiler.counter_start);
-    let hir_dependencies = source_hir_dependencies(compiler, ast_value);
+    let environments = source_dependency_environments(compiler, ast_value);
     let core_dependencies = source_core_dependencies(compiler, ast_value);
-    let tast_value = tast::check_for_link_with_dependencies(hir_value, hir_dependencies);
+    let tast_value = tast::check_for_link_with_environments(hir_value, environments);
     fail_on_typer_diagnostics(tast_value.diagnostics, source_path, source);
     fail_on_missing_single_file_entrypoint(tast_value);
     let core_value = core::dce(
@@ -1659,9 +1670,9 @@ fn compile_source_or_diagnostics_optional(
         )
     } else {};
     let counter = Ref::new(compiler.counter_start);
-    let hir_dependencies = source_hir_dependencies(compiler, ast_value);
+    let environments = source_dependency_environments(compiler, ast_value);
     let core_dependencies = source_core_dependencies(compiler, ast_value);
-    let tast_value = tast::check_for_link_with_dependencies(hir_value, hir_dependencies);
+    let tast_value = tast::check_for_link_with_environments(hir_value, environments);
     if typer_diagnostics_have_errors(tast_value.diagnostics) {
         return SourceCompilation::Diagnostics(
             compact_typer_diagnostics(tast_value.diagnostics, source_path, source),

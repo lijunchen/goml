@@ -302,13 +302,6 @@ fn artifact_dependency_environments(
     artifact_verify_comptime_modules(comptime_modules)?;
     let result: Vec[tast::DependencyEnvironment] = Vec::[];
     let value = artifact_dependency_environment_from_exports(builtin)?;
-    let methods: Vec[tast::MethodInfo] = Vec::[];
-    for method in value.methods {
-        match method.trait_ref {
-            Some(_) => (),
-            None => methods.push(method),
-        }
-    }
     let functions: Vec[tast::FunctionScheme] = Vec::[];
     let prelude_names = resources::prelude_builtin_export_names();
     for function in value.functions {
@@ -326,7 +319,7 @@ fn artifact_dependency_environments(
             value.constants,
             Vec::[],
             functions,
-            methods,
+            value.methods,
             impls,
         ),
     );

@@ -25,6 +25,7 @@ pub struct Analysis {
 }
 
 pub struct AnalysisContext {
+    builtin_files: Result[Vec[hir::File], string],
     prelude_files: Result[Vec[hir::File], string],
     builtin_derive: Result[Option[ctir::CtModule], string],
     builtin_sources: Result[Vec[SourceFile], string],
@@ -48,6 +49,7 @@ struct ProjectCheck {
 
 pub fn analysis_context() -> AnalysisContext {
     AnalysisContext {
+        builtin_files: builtin_hir_files(),
         prelude_files: prelude_hir_files(),
         builtin_derive: builtin_comptime_module(),
         builtin_sources: builtin_navigation_sources(),
@@ -168,6 +170,22 @@ fn environments_with_comptime(files: Vec[hir::File], modules: Vec[ctir::CtModule
     environments
 }
 
+fn environments_with_builtin_and_comptime(
+    builtin: Option[tast::DependencyEnvironment],
+    files: Vec[hir::File],
+    modules: Vec[ctir::CtModule],
+) -> Vec[tast::DependencyEnvironment] {
+    let result: Vec[tast::DependencyEnvironment] = Vec::[];
+    match builtin {
+        Some(environment) => result.push(environment),
+        None => (),
+    }
+    for environment in environments_with_comptime(files, modules) {
+        result.push(environment)
+    }
+    result
+}
+
 fn package_has_comptime(files: Vec[hir::File]) -> bool {
     for file in files {
         for item in file.items {
@@ -217,6 +235,7 @@ fn collect_dependency(
     diagnostics: Vec[tast::Diagnostic],
     all_sources: Vec[SourceFile],
     source_path: string,
+    builtin_environment: Option[tast::DependencyEnvironment],
     builtin_derive: Option[ctir::CtModule],
     derive_modules: Vec[ctir::CtModule],
     derive_reexports: Vec[(string, string)],
@@ -253,6 +272,7 @@ fn collect_dependency(
                             diagnostics,
                             all_sources,
                             source_path,
+                            builtin_environment,
                             builtin_derive,
                             derive_modules,
                             derive_reexports,
@@ -271,7 +291,11 @@ fn collect_dependency(
                 if package_has_comptime(lowered.files) {
                     let checked = tast::check_package_files_for_link_with_environments(
                         lowered.files,
-                        environments_with_comptime(dependencies, derive_modules),
+                        environments_with_builtin_and_comptime(
+                            builtin_environment,
+                            dependencies,
+                            derive_modules,
+                        ),
                     );
                     if checked.diagnostics.is_empty() {
                         derive_modules.push(checked.comptime)
@@ -315,6 +339,13 @@ fn check_project(value: Project, overrides: Vec[SourceOverride], context: Analys
     }
     let dependencies: Vec[hir::File] = Vec::[];
     let diagnostics: Vec[tast::Diagnostic] = Vec::[];
+    let builtin_environment = match context.builtin_files {
+        Ok(files) => Option::Some(tast::builtin_dependency_environment(files)),
+        Err(error) => {
+            diagnostics.push(query_diagnostic(value.files[0].path, "builtin", error, Option::None));
+            Option::None
+        },
+    };
     match context.prelude_files {
         Ok(files) => for file in files {
             dependencies.push(file)
@@ -349,6 +380,7 @@ fn check_project(value: Project, overrides: Vec[SourceOverride], context: Analys
                 diagnostics,
                 all_sources,
                 value.files[0].path,
+                builtin_environment,
                 builtin_derive,
                 derive_modules,
                 derive_reexports,
@@ -366,8 +398,16 @@ fn check_project(value: Project, overrides: Vec[SourceOverride], context: Analys
     for file in dependencies {
         environment_files.push(file)
     }
-    let environments = environments_with_comptime(environment_files, derive_modules);
-    let dependency_environments = environments_with_comptime(dependencies, derive_modules);
+    let environments = environments_with_builtin_and_comptime(
+        builtin_environment,
+        environment_files,
+        derive_modules,
+    );
+    let dependency_environments = environments_with_builtin_and_comptime(
+        builtin_environment,
+        dependencies,
+        derive_modules,
+    );
     let checked = if !entry.files.is_empty() {
         tast::check_package_files_for_link_with_environments(entry.files, dependency_environments)
     } else {

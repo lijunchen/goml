@@ -232,11 +232,7 @@ fn artifact_dependency_inherent_for_type(value: artifact::ArtifactInherentImpl) 
             for generic in value.definition.params {
                 generics.push(tast::Type::Param { name: generic })
             }
-            if generics.is_empty() {
-                tast::Type::Con { name }
-            } else {
-                tast::Type::App { ty: tast::Type::Con { name }, args: generics }
-            }
+            tast::nominal_type(name, generics)
         },
     }
 }

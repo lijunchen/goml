@@ -1467,7 +1467,7 @@ fn type_constructor_name(value: Type) -> Option[string] {
     }
 }
 
-fn nominal_type(name: string, args: Vec[Type]) -> Type {
+pub fn nominal_type(name: string, args: Vec[Type]) -> Type {
     if name == "Vec" && args.len() == 1 {
         Type::VecType { elem: args[0] }
     } else if name == "Slice" && args.len() == 1 {

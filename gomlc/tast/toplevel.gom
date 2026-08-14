@@ -3520,8 +3520,24 @@ fn check_file(
     include_builtin_types: bool,
     allow_externs: bool,
 ) -> CheckResult {
-    let package_name = value.package_name;
     let environments = dependency_environments(dependencies);
+    check_file_with_dependency_environments(
+        value,
+        environments,
+        diagnostics,
+        include_builtin_types,
+        allow_externs,
+    )
+}
+
+fn check_file_with_dependency_environments(
+    value: hir::File,
+    environments: Vec[DependencyEnvironment],
+    diagnostics: Vec[Diagnostic],
+    include_builtin_types: bool,
+    allow_externs: bool,
+) -> CheckResult {
+    let package_name = value.package_name;
     let checked = check_file_with_package(
         value,
         Vec::[],
@@ -3623,14 +3639,30 @@ fn check_file_with_implicit_prelude(
     diagnostics: Vec[Diagnostic],
     include_builtins: bool,
 ) -> CheckResult {
-    let dependencies = match implicit_prelude_hir_files() {
+    let dependencies: Vec[DependencyEnvironment] = Vec::[];
+    match implicit_builtin_dependency_environment() {
+        Ok(environment) => dependencies.push(environment),
+        Err(error) => {
+            diagnostics.push(new_diagnostic("builtin", error, file.source_path, Option::None));
+        },
+    };
+    let prelude_dependencies = match implicit_prelude_hir_files() {
         Ok(files) => files,
         Err(error) => {
             diagnostics.push(new_diagnostic("prelude", error, file.source_path, Option::None));
             Vec::[]
         },
     };
-    check_file(file, dependencies, diagnostics, include_builtins, false)
+    for dependency in dependency_environments(prelude_dependencies) {
+        dependencies.push(dependency)
+    }
+    check_file_with_dependency_environments(
+        file,
+        dependencies,
+        diagnostics,
+        include_builtins,
+        false,
+    )
 }
 
 pub fn check(value: hir::LowerResult) -> CheckResult {
@@ -3670,6 +3702,28 @@ pub fn check_for_link(value: hir::LowerResult) -> CheckResult {
 pub fn check_for_link_with_dependencies(value: hir::LowerResult, dependencies: Vec[hir::File]) -> CheckResult {
     match value.hir {
         Some(file) => check_file(
+            file,
+            dependencies,
+            diagnostics_from_lower(value.diagnostics, value.source_path),
+            false,
+            false,
+        ),
+        None => CheckResult {
+            tast: Option::None,
+            comptime: ctir::empty_module("<unknown>"),
+            pending_constants: Vec::[],
+            diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
+            typeck_results: empty_typeck_results(),
+        },
+    }
+}
+
+pub fn check_for_link_with_environments(
+    value: hir::LowerResult,
+    dependencies: Vec[DependencyEnvironment],
+) -> CheckResult {
+    match value.hir {
+        Some(file) => check_file_with_dependency_environments(
             file,
             dependencies,
             diagnostics_from_lower(value.diagnostics, value.source_path),
