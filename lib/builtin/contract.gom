@@ -5,10 +5,42 @@ trait Iterator {
     fn next(self: Self) -> Option[Self::Item];
 }
 
-trait IntoIterator {
+trait IntoIterator where Self::Item = Self::IntoIter::Item {
     type Item;
     type IntoIter: Iterator;
     fn into_iter(self: Self) -> Self::IntoIter;
+}
+
+trait PartialEq {
+    fn eq(self: Self, other: Self) -> bool;
+}
+
+trait Eq: PartialEq {}
+
+trait Hash {
+    fn hash(self: Self) -> uint64;
+}
+
+trait Default {
+    fn default() -> Self;
+}
+
+trait ToString {
+    fn to_string(self: Self) -> string;
+}
+
+trait Debug {
+    fn debug(self: Self) -> string;
+}
+
+enum Option[T] {
+    None,
+    Some(T),
+}
+
+enum Result[T, E] {
+    Ok(T),
+    Err(E),
 }
 
 struct FnIterator[T] {

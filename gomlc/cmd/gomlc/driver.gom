@@ -205,7 +205,21 @@ fn dependency_structs(builtins: core::File, dependencies: Vec[core::File]) -> Ve
 fn toolchain_dependency_environments(hir_dependencies: Vec[hir::File]) -> Vec[
     tast::DependencyEnvironment,
 ] {
-    tast::dependency_environments(hir_dependencies)
+    let result: Vec[tast::DependencyEnvironment] = Vec::[];
+    let builtin_files: Vec[hir::File] = Vec::[];
+    for dependency in hir_dependencies {
+        if dependency.package_name == "builtin" {
+            builtin_files.push(dependency)
+        } else {
+            for environment in tast::dependency_environments(Vec::[dependency]) {
+                result.push(environment)
+            }
+        }
+    }
+    if !builtin_files.is_empty() {
+        result.push(tast::builtin_dependency_environment(builtin_files))
+    } else {}
+    result
 }
 
 fn compile_toolchain_package(
@@ -405,33 +419,6 @@ fn builtin_artifact_interface_unit_from_checked(
     checked: tast::CheckResult,
 ) -> artifact::ArtifactInterfaceUnit {
     let signatures = tast::package_signatures(merge_hir_files(builtin_files, "builtin"));
-    let traits: Vec[tast::TraitInfo] = Vec::[];
-    for value in signatures.traits {
-        if value.name == "Iterator" || value.name == "IntoIterator" {} else {
-            traits.push(value)
-        }
-    }
-    for name in Vec::[
-        "Iterator",
-        "IntoIterator",
-        "PartialEq",
-        "Eq",
-        "Hash",
-        "ToString",
-        "Debug",
-        "Default",
-    ] {
-        match tast::builtin_trait_info(name) {
-            Some(value) => traits.push(value),
-            None => fail("error[compile]: missing builtin trait " + name),
-        }
-    }
-    let signatures = tast::PackageSignatures {
-        traits,
-        functions: signatures.functions,
-        type_aliases: signatures.type_aliases,
-        constants: signatures.constants,
-    };
     let contract_functions = builtin_contract_function_names();
     let functions: Vec[tast::FunctionScheme] = Vec::[];
     for name in contract_functions {

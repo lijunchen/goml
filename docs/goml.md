@@ -360,7 +360,7 @@ All files in the same package can use private top-level items.The trait impl met
 | Generic application | `Option[int32]`、`pkg::Box[string]` | Use square brackets |
 | channel | `Channel[int]` | Go channel backend |
 | trait object | `dyn Render`、`dyn Iterator[Item = int]` | A single, non-generic dyn-safe trait; associated types must be bound |
-| Associative type projection | `I::Item`、`Self::Output` | There must be corresponding trait constraints |
+| Associative type projection | `I::Item`、`Self::Output`、`I::IntoIter::Item` | There must be corresponding trait constraints; projections may be chained |
 
 Example of function type:
 
@@ -1418,6 +1418,18 @@ trait Provider: Render {
     type Item: ToString;
 
     fn get(self) -> Self::Item;
+}
+```
+
+Associated type projections may be chained when every step is constrained by its declaring trait. For example, `I::IntoIter::Item` projects `IntoIter` from `I`, then projects `Item` from that iterator type. Chained projections can appear in signatures and `where` equalities:
+
+```goml
+trait IntoIterator
+where
+    Self::Item = Self::IntoIter::Item,
+{
+    type Item;
+    type IntoIter: Iterator;
 }
 ```
 

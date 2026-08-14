@@ -202,9 +202,25 @@ fn toolchain_dependency_environments_from_interfaces(values: Vec[artifact::Artif
     artifact_verify_comptime_modules(modules)?;
     let result: Vec[tast::DependencyEnvironment] = Vec::[];
     for value in values {
+        let environment = artifact_dependency_environment_from_exports(value.exports)?;
+        let environment = if value.package_name == "builtin" {
+            tast::dependency_environment(
+                environment.reexports,
+                environment.enums,
+                environment.structs,
+                environment.type_aliases,
+                environment.constants,
+                Vec::[],
+                environment.functions,
+                environment.methods,
+                Vec::[],
+            )
+        } else {
+            environment
+        };
         result.push(
             tast::dependency_environment_with_comptime(
-                artifact_dependency_environment_from_exports(value.exports)?,
+                environment,
                 match value.comptime {
                     Some(value) => Option::Some(value.module),
                     None => Option::None,

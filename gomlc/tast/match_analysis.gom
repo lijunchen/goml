@@ -723,23 +723,9 @@ fn coverage_enum_domain(info: EnumInfo, ty: Type) -> Vec[CoverageConstructor] {
 }
 
 fn coverage_builtin_domain(name: string, ty: Type) -> Option[Vec[CoverageConstructor]] {
-    let args = coverage_type_args(ty);
-    let result: Vec[CoverageConstructor] = Vec::[];
-    if short_name(name) == "Option" && args.len() == 1 {
-        result.push(CoverageConstructor { key: coverage_enum_key(name, 0), fields: Vec::[] });
-        result.push(CoverageConstructor { key: coverage_enum_key(name, 1), fields: Vec::[args[0]] });
-        Option::Some(result)
-    } else if short_name(name) == "Result" && args.len() == 2 {
-        result.push(CoverageConstructor { key: coverage_enum_key(name, 0), fields: Vec::[args[0]] });
-        result.push(CoverageConstructor { key: coverage_enum_key(name, 1), fields: Vec::[args[1]] });
-        Option::Some(result)
-    } else if short_name(name) == "Ordering" && args.is_empty() {
-        result.push(CoverageConstructor { key: coverage_enum_key(name, 0), fields: Vec::[] });
-        result.push(CoverageConstructor { key: coverage_enum_key(name, 1), fields: Vec::[] });
-        result.push(CoverageConstructor { key: coverage_enum_key(name, 2), fields: Vec::[] });
-        Option::Some(result)
-    } else {
-        Option::None
+    match builtin_source_enum_info(name) {
+        Some(info) => Option::Some(coverage_enum_domain(info, ty)),
+        None => Option::None,
     }
 }
 
@@ -1542,27 +1528,14 @@ fn coverage_enum_witness_text(
                 variant = info.variants[index].name;
             } else {}
         },
-        None => if short_name(name) == "Option" {
-            if constructor.key == coverage_enum_key(name, 0) {
-                variant = "None";
-            } else {
-                variant = "Some";
-            }
-        } else if short_name(name) == "Result" {
-            if constructor.key == coverage_enum_key(name, 0) {
-                variant = "Ok";
-            } else {
-                variant = "Err";
-            }
-        } else if short_name(name) == "Ordering" {
-            if constructor.key == coverage_enum_key(name, 0) {
-                variant = "Less";
-            } else if constructor.key == coverage_enum_key(name, 1) {
-                variant = "Equal";
-            } else {
-                variant = "Greater";
-            }
-        } else {},
+        None => match builtin_source_enum_info(name) {
+            Some(info) => for index in 0..info.variants.len() {
+                if constructor.key == coverage_enum_key(name, index) {
+                    variant = info.variants[index].name;
+                } else {}
+            },
+            None => (),
+        },
     };
     let base = short_name(name) + "::" + variant;
     if fields.is_empty() {

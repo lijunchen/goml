@@ -650,11 +650,14 @@ fn lower_type(ctx: LowerCtx, value: ast::TypeExpr, type_params: Vec[string]) -> 
         },
         Con { path } => {
             let parts = qualified_segments(ctx, path);
-            if parts.len() == 2 && (parts[0] == "Self" || type_params.contains(parts[0])) {
-                TypeExpr::Projection {
-                    base: TypeExpr::Con { name: parts[0] },
-                    associated: parts[1],
+            if parts.len() >= 2 && (parts[0] == "Self" || type_params.contains(parts[0])) {
+                let result: Ref[TypeExpr] = Ref::new(TypeExpr::Con { name: parts[0] });
+                for index in 1..parts.len() {
+                    result.set(
+                        TypeExpr::Projection { base: result.get(), associated: parts[index] },
+                    )
                 }
+                result.get()
             } else {
                 TypeExpr::Con { name: join_segments(parts) }
             }

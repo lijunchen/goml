@@ -198,7 +198,7 @@ fn find_expected_struct(ctx: Checker, name: string) -> Option[StructInfo] {
 }
 
 fn pattern_owner_is_builtin_enum(ctx: Checker, name: string) -> bool {
-    (name == "Option" || name == "Result") && find_enum_by_exact_name(ctx, name).is_none()
+    builtin_source_enum_info(name).is_some() && find_enum_by_exact_name(ctx, name).is_none()
         && find_struct_by_exact_name(ctx, name).is_none()
 }
 
@@ -270,11 +270,7 @@ fn resolve_named_constructor(ctx: Checker, enum_name: string, variant_name: stri
             }
             Option::None
         },
-        None => if canonical_enum_name == "Ordering" {
-            resolve_builtin_constructor(ctx, "Ordering::" + variant_name)
-        } else {
-            Option::None
-        },
+        None => resolve_builtin_constructor(ctx, canonical_enum_name + "::" + variant_name),
     }
 }
 
@@ -292,55 +288,17 @@ fn split_constructor_name(value: string) -> Option[(string, string)] {
 }
 
 fn resolve_builtin_constructor(ctx: Checker, name: string) -> Option[ResolvedConstructor] {
-    let t = fresh_type(ctx.counter, VarKind::Any);
-    let e = fresh_type(ctx.counter, VarKind::Any);
-    let fields: Vec[Type] = Vec::[];
-    let ty = if name == "Option::None" {
-        nominal_type("Option", one_type(t))
-    } else if name == "Option::Some" {
-        fields.push(t);
-        nominal_type("Option", one_type(t))
-    } else if name == "Result::Ok" {
-        fields.push(t);
-        nominal_type("Result", two_types(t, e))
-    } else if name == "Result::Err" {
-        fields.push(e);
-        nominal_type("Result", two_types(t, e))
-    } else if name == "Ordering::Less" || name == "Ordering::Equal" || name == "Ordering::Greater" {
-        Type::Con { name: "Ordering" }
-    } else {
-        Type::Error
-    };
-    if name == "Option::None" || name == "Option::Some" || name == "Result::Ok"
-        || name == "Result::Err"
-        || name == "Ordering::Less"
-        || name == "Ordering::Equal"
-        || name == "Ordering::Greater" {
-        Option::Some(
-            ResolvedConstructor {
-                constructor: Constructor {
-                    name,
-                    fields: Vec::[],
-                    is_struct: false,
-                    tag: if name == "Option::None" || name == "Result::Ok"
-                        || name == "Ordering::Less" {
-                        Option::Some(0)
-                    } else if name == "Ordering::Equal" {
-                        Option::Some(1)
-                    } else if name == "Ordering::Greater" {
-                        Option::Some(2)
-                    } else {
-                        Option::Some(1)
-                    },
-                },
-                fields,
-                ty,
-                named: false,
-            },
-        )
-    } else {
-        Option::None
+    let parts = split_constructor_name(name)?;
+    if !pattern_owner_is_builtin_enum(ctx, parts.0) {
+        return Option::None
+    } else {};
+    let info = builtin_source_enum_info(parts.0)?;
+    for index in 0..info.variants.len() {
+        if info.variants[index].name == parts.1 {
+            return resolve_user_constructor(ctx, info, index)
+        } else {}
     }
+    Option::None
 }
 
 fn resolve_constructor(ctx: Checker, value: hir::ConstructorRef) -> Option[ResolvedConstructor] {
@@ -1264,37 +1222,6 @@ fn resolve_required_predicates(ctx: Checker) -> bool {
     false
 }
 
-fn builtin_value_trait_type(value: Type) -> bool {
-    match prune(value) {
-        Unit | Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | Float32 | Float64 | String | Char => true,
-        Var(variable) => match variable.get() {
-            Unbound { id: _, kind: Integer } | Unbound { id: _, kind: Float } => true,
-            Link(inner) => builtin_value_trait_type(inner),
-            Unbound { id: _, kind: Any } => false,
-        },
-        _ => false,
-    }
-}
-
-fn builtin_total_value_trait_type(value: Type) -> bool {
-    match prune(value) {
-        Unit | Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | String | Char => true,
-        Var(variable) => match variable.get() {
-            Unbound { id: _, kind: Integer } => true,
-            Link(inner) => builtin_total_value_trait_type(inner),
-            Unbound { id: _, kind: Float } | Unbound { id: _, kind: Any } => false,
-        },
-        _ => false,
-    }
-}
-
-fn builtin_ordering_type(value: Type) -> bool {
-    match prune(value) {
-        Con { name } => short_name(name) == "Ordering",
-        _ => false,
-    }
-}
-
 fn iterator_trait_ref() -> TraitRef {
     TraitRef { name: "Iterator", args: Vec::[] }
 }
@@ -1306,23 +1233,17 @@ fn builtin_iterator_bound_satisfied(ctx: Checker, bound_ty: Type) -> bool {
     }
 }
 
-fn builtin_container_trait_satisfied(
-    ctx: Checker,
-    bound_ty: Type,
-    trait_name: string,
-    goals: Vec[string],
-) -> bool {
-    let reference = TraitRef { name: trait_name, args: Vec::[] };
+fn structural_trait_satisfied(ctx: Checker, bound_ty: Type, reference: TraitRef, goals: Vec[string]) -> bool {
     match bound_ty {
-        VecType { elem } | Slice { elem } => trait_bound_satisfied_at(ctx, elem, reference, goals),
-        App { ty: Con { name }, args } => if name == "Option" && args.len() == 1 {
-            trait_bound_satisfied_at(ctx, args[0], reference, goals)
-        } else if name == "Result" && args.len() == 2 {
-            trait_bound_satisfied_at(ctx, args[0], reference, goals)
-                && trait_bound_satisfied_at(ctx, args[1], reference, goals)
-        } else {
-            false
+        Tuple { items: values } => {
+            for value in values {
+                if !trait_bound_satisfied_at(ctx, value, reference, goals) {
+                    return false
+                } else {}
+            }
+            true
         },
+        Array { len: _, elem } => trait_bound_satisfied_at(ctx, elem, reference, goals),
         _ => false,
     }
 }
@@ -1347,140 +1268,14 @@ fn builtin_trait_bound_satisfied(
                 }
                 false
             },
-            _ => if trait_name == "ToString" || trait_name == "Debug" {
-                if builtin_value_trait_type(bound_ty) {
-                    true
-                } else {
-                    match bound_ty {
-                        RefType { elem: inner } => trait_bound_satisfied_at(
-                            ctx,
-                            inner,
-                            TraitRef { name: trait_name, args: Vec::[] },
-                            goals,
-                        ),
-                        _ => false,
-                    }
-                }
-            } else if trait_name == "PartialEq" || trait_name == "Eq" || trait_name == "Hash" {
-                if trait_name == "PartialEq" || trait_name == "Eq" {
-                    if builtin_ordering_type(bound_ty)
-                        || if trait_name == "PartialEq" {
-                            builtin_value_trait_type(bound_ty)
-                        } else {
-                            builtin_total_value_trait_type(bound_ty)
-                        } {
-                        true
-                    } else {
-                        match bound_ty {
-                            RefType { elem: _ } => true,
-                            Tuple { items: values } => {
-                                for value in values {
-                                    if !trait_bound_satisfied_at(
-                                        ctx,
-                                        value,
-                                        TraitRef { name: trait_name, args: Vec::[] },
-                                        goals,
-                                    ) {
-                                        return false
-                                    } else {}
-                                }
-                                true
-                            },
-                            Array { len: _, elem: element } => trait_bound_satisfied_at(
-                                ctx,
-                                element,
-                                TraitRef { name: trait_name, args: Vec::[] },
-                                goals,
-                            ),
-                            _ => builtin_container_trait_satisfied(ctx, bound_ty, trait_name, goals),
-                        }
-                    }
-                } else {
-                    builtin_total_value_trait_type(bound_ty)
-                        || match bound_ty {
-                            RefType { elem: _ } => true,
-                            Tuple { items: values } => {
-                                for value in values {
-                                    if !trait_bound_satisfied_at(
-                                        ctx,
-                                        value,
-                                        TraitRef { name: trait_name, args: Vec::[] },
-                                        goals,
-                                    ) {
-                                        return false
-                                    } else {}
-                                }
-                                true
-                            },
-                            Array { len: _, elem: element } => trait_bound_satisfied_at(
-                                ctx,
-                                element,
-                                TraitRef { name: trait_name, args: Vec::[] },
-                                goals,
-                            ),
-                            _ => builtin_container_trait_satisfied(ctx, bound_ty, trait_name, goals),
-                        }
-                }
-            } else if trait_name == "PartialOrd" || trait_name == "Ord" {
-                if if trait_name == "PartialOrd" {
-                    builtin_value_trait_type(bound_ty)
-                } else {
-                    builtin_total_value_trait_type(bound_ty)
-                } {
-                    true
-                } else {
-                    match bound_ty {
-                        Tuple { items: values } => {
-                            for value in values {
-                                if !trait_bound_satisfied_at(
-                                    ctx,
-                                    value,
-                                    TraitRef { name: reference.name, args: Vec::[] },
-                                    goals,
-                                ) {
-                                    return false
-                                } else {}
-                            }
-                            true
-                        },
-                        Array { len: _, elem: element } => trait_bound_satisfied_at(
-                            ctx,
-                            element,
-                            TraitRef { name: reference.name, args: Vec::[] },
-                            goals,
-                        ),
-                        _ => false,
-                    }
-                }
-            } else if trait_name == "Default" {
-                if builtin_value_trait_type(bound_ty) {
-                    true
-                } else {
-                    match bound_ty {
-                        VecType { elem: _ } => true,
-                        App { ty: Con { name }, args } => name == "Option" && args.len() == 1,
-                        Tuple { items: values } => {
-                            for value in values {
-                                if !trait_bound_satisfied_at(
-                                    ctx,
-                                    value,
-                                    TraitRef { name: trait_name, args: Vec::[] },
-                                    goals,
-                                ) {
-                                    return false
-                                } else {}
-                            }
-                            true
-                        },
-                        Array { len: _, elem: element } => trait_bound_satisfied_at(
-                            ctx,
-                            element,
-                            TraitRef { name: trait_name, args: Vec::[] },
-                            goals,
-                        ),
-                        _ => false,
-                    }
-                }
+            _ => if canonical_imported_name(ctx, reference.name) == "std::cmp::PartialOrd"
+                || canonical_imported_name(ctx, reference.name) == "std::cmp::Ord" {
+                structural_trait_satisfied(ctx, bound_ty, reference, goals)
+            } else if !trait_reference_uses_builtin(ctx, reference) {
+                false
+            } else if trait_name == "PartialEq" || trait_name == "Eq" || trait_name == "Hash"
+                || trait_name == "Default" {
+                structural_trait_satisfied(ctx, bound_ty, reference, goals)
             } else if trait_name == "Iterator" {
                 builtin_iterator_bound_satisfied(ctx, bound_ty)
             } else if trait_name == "IntoIterator" {
@@ -1516,6 +1311,45 @@ fn trait_names_match_in_context(ctx: Checker, left: string, right: string) -> bo
     names_match(canonical_imported_name(ctx, left), canonical_imported_name(ctx, right))
 }
 
+fn builtin_impl(value: ImplInfo) -> bool {
+    value.origin.starts_with("builtin#")
+}
+
+fn trait_reference_uses_builtin(ctx: Checker, reference: TraitRef) -> bool {
+    if ctx.package_name == "builtin" {
+        true
+    } else if builtin_trait_info(short_name(reference.name)).is_none() {
+        false
+    } else {
+        let canonical = canonical_imported_name(ctx, reference.name);
+        for value in ctx.traits {
+            if names_match(value.name, canonical) {
+                return false
+            } else {}
+        }
+        true
+    }
+}
+
+fn impl_matches_trait(ctx: Checker, value: ImplInfo, reference: TraitRef) -> bool {
+    if builtin_impl(value) {
+        trait_reference_uses_builtin(ctx, reference)
+            && short_name(value.trait_ref.name) == short_name(reference.name)
+    } else {
+        trait_names_match_in_context(ctx, value.trait_ref.name, reference.name)
+    }
+}
+
+fn impl_traits_match(ctx: Checker, left: ImplInfo, right: ImplInfo) -> bool {
+    if builtin_impl(left) {
+        impl_matches_trait(ctx, left, right.trait_ref)
+    } else if builtin_impl(right) {
+        impl_matches_trait(ctx, right, left.trait_ref)
+    } else {
+        trait_names_match_in_context(ctx, left.trait_ref.name, right.trait_ref.name)
+    }
+}
+
 fn trait_bound_satisfied_at(ctx: Checker, bound_ty: Type, reference: TraitRef, goals: Vec[string]) -> bool {
     let bound_ty = normalize_type(ctx, bound_ty);
     let reference = normalize_trait_ref(ctx, reference);
@@ -1540,7 +1374,7 @@ fn trait_bound_satisfied_at(ctx: Checker, bound_ty: Type, reference: TraitRef, g
             } else {};
             for impl_info in ctx.impls {
                 if !ctx.invalid_impl_origins.contains(impl_info.origin)
-                    && trait_names_match_in_context(ctx, impl_info.trait_ref.name, reference.name) {
+                    && impl_matches_trait(ctx, impl_info, reference) {
                     let substitutions = instantiate_substitutions(
                         ctx.counter,
                         impl_info.generics,
@@ -1572,7 +1406,7 @@ fn compatible_impl_count(ctx: Checker, bound_ty: Type, reference: TraitRef) -> i
     let mut count = 0;
     for impl_info in ctx.impls {
         if !ctx.invalid_impl_origins.contains(impl_info.origin)
-            && trait_names_match_in_context(ctx, impl_info.trait_ref.name, reference.name) {
+            && impl_matches_trait(ctx, impl_info, reference) {
             let substitutions = instantiate_substitutions(ctx.counter, impl_info.generics, Vec::[]);
             let owner = substitute_type(impl_info.for_type, substitutions);
             let application = normalize_trait_ref(
@@ -1598,7 +1432,7 @@ fn instantiated_impl_parts(ctx: Checker, value: ImplInfo) -> (Type, TraitRef, Ve
 }
 
 fn impls_overlap(ctx: Checker, left: ImplInfo, right: ImplInfo) -> bool {
-    if !trait_names_match_in_context(ctx, left.trait_ref.name, right.trait_ref.name) {
+    if !impl_traits_match(ctx, left, right) {
         false
     } else {
         let left = instantiated_impl_parts(ctx, left);
@@ -1618,10 +1452,23 @@ fn validate_impl_overlaps(ctx: Checker) -> unit {
             let left_impl = ctx.impls[left];
             let right_impl = ctx.impls[right];
             if impls_overlap(ctx, left_impl, right_impl) {
-                if !ctx.invalid_impl_origins.contains(right_impl.origin) {
-                    ctx.invalid_impl_origins.push(right_impl.origin)
+                let invalid_impl = if builtin_impl(left_impl) {
+                    right_impl
+                } else if builtin_impl(right_impl) {
+                    left_impl
+                } else {
+                    right_impl
+                };
+                if !ctx.invalid_impl_origins.contains(invalid_impl.origin) {
+                    ctx.invalid_impl_origins.push(invalid_impl.origin)
                 } else {};
-                if left_impl.generics.is_empty() && right_impl.generics.is_empty()
+                if builtin_impl(left_impl) || builtin_impl(right_impl) {
+                    push_diagnostic_at(
+                        ctx,
+                        f"Trait {short_name(invalid_impl.trait_ref.name)} implementation for {type_text(invalid_impl.for_type)} overlaps with builtin implementation",
+                        Option::Some(invalid_impl.span),
+                    )
+                } else if left_impl.generics.is_empty() && right_impl.generics.is_empty()
                     && types_equal(left_impl.for_type, right_impl.for_type)
                     && trait_ref_equal(left_impl.trait_ref, right_impl.trait_ref) {
                     push_diagnostic(
@@ -1643,46 +1490,6 @@ fn validate_impl_overlaps(ctx: Checker) -> unit {
             } else {}
         }
     }
-}
-
-fn builtin_ref_impl_trait(name: string) -> bool {
-    if names_match(name, "PartialEq") {
-        true
-    } else if names_match(name, "Eq") {
-        true
-    } else if names_match(name, "Hash") {
-        true
-    } else if names_match(name, "Debug") {
-        true
-    } else {
-        false
-    }
-}
-
-fn validate_builtin_impl_overlaps(ctx: Checker, value: hir::File) -> unit {
-    if value.package_name != "builtin" {
-        for item in value.items {
-            match item {
-                ImplBlock(block) => match block.trait_ref {
-                    Some(reference) => {
-                        let for_type = type_from_hir(block.for_type, block.generics, Option::None);
-                        match for_type {
-                            RefType { elem: _ } => if builtin_ref_impl_trait(reference.name) {
-                                push_diagnostic_at(
-                                    ctx,
-                                    f"Trait {short_name(reference.name)} implementation for {type_text(for_type)} overlaps with builtin implementation",
-                                    Option::Some(block.for_type_span),
-                                )
-                            } else {},
-                            _ => (),
-                        }
-                    },
-                    None => (),
-                },
-                _ => (),
-            }
-        }
-    } else {}
 }
 
 fn method_predicates_satisfied(ctx: Checker, predicates: Vec[TypePredicate]) -> bool {
@@ -2034,158 +1841,8 @@ fn find_trait_method(value: TraitInfo, name: string) -> Option[TraitMethodInfo] 
     Option::None
 }
 
-fn builtin_associated_type(name: string, bounds: Vec[TraitRef]) -> AssociatedTypeInfo {
-    AssociatedTypeInfo { name, bounds }
-}
-
-fn builtin_trait_method(name: string, params: Vec[Type], ret_ty: Type) -> TraitMethodInfo {
-    TraitMethodInfo {
-        name,
-        has_receiver: true,
-        generics: Vec::[],
-        predicates: Vec::[],
-        params,
-        ret_ty,
-        default_name: Option::None,
-    }
-}
-
-fn builtin_static_trait_method(name: string, params: Vec[Type], ret_ty: Type) -> TraitMethodInfo {
-    TraitMethodInfo {
-        name,
-        has_receiver: false,
-        generics: Vec::[],
-        predicates: Vec::[],
-        params,
-        ret_ty,
-        default_name: Option::None,
-    }
-}
-
 pub fn builtin_trait_info(name: string) -> Option[TraitInfo] {
-    let self_ty = Type::Param { name: "Self" };
-    if name == "Iterator" {
-        let associated_types: Vec[AssociatedTypeInfo] = Vec::[];
-        associated_types.push(builtin_associated_type("Item", Vec::[]));
-        let item = Type::Projection {
-            for_ty: self_ty,
-            name: "Item",
-            trait_ref: Option::Some(TraitRef { name: "Iterator", args: Vec::[] }),
-        };
-        let methods: Vec[TraitMethodInfo] = Vec::[];
-        methods.push(
-            builtin_trait_method("next", one_type(self_ty), nominal_type("Option", one_type(item))),
-        );
-        Option::Some(
-            TraitInfo {
-                name,
-                generics: Vec::[],
-                predicates: Vec::[],
-                supertraits: Vec::[],
-                associated_types,
-                methods,
-            },
-        )
-    } else if name == "IntoIterator" {
-        let into_iterator = TraitRef { name: "IntoIterator", args: Vec::[] };
-        let item = Type::Projection {
-            for_ty: self_ty,
-            name: "Item",
-            trait_ref: Option::Some(into_iterator),
-        };
-        let into_iter = Type::Projection {
-            for_ty: self_ty,
-            name: "IntoIter",
-            trait_ref: Option::Some(into_iterator),
-        };
-        let iterator = TraitRef { name: "Iterator", args: Vec::[] };
-        let iterator_item = Type::Projection {
-            for_ty: into_iter,
-            name: "Item",
-            trait_ref: Option::Some(iterator),
-        };
-        let predicates: Vec[TypePredicate] = Vec::[];
-        predicates.push(TypePredicate::Equality { lhs: item, rhs: iterator_item });
-        let into_iter_bounds: Vec[TraitRef] = Vec::[];
-        into_iter_bounds.push(iterator);
-        let associated_types: Vec[AssociatedTypeInfo] = Vec::[];
-        associated_types.push(builtin_associated_type("Item", Vec::[]));
-        associated_types.push(builtin_associated_type("IntoIter", into_iter_bounds));
-        let methods: Vec[TraitMethodInfo] = Vec::[];
-        methods.push(builtin_trait_method("into_iter", one_type(self_ty), into_iter));
-        Option::Some(
-            TraitInfo {
-                name,
-                generics: Vec::[],
-                predicates,
-                supertraits: Vec::[],
-                associated_types,
-                methods,
-            },
-        )
-    } else if name == "PartialEq" {
-        Option::Some(
-            TraitInfo {
-                name,
-                generics: Vec::[],
-                predicates: Vec::[],
-                supertraits: Vec::[],
-                associated_types: Vec::[],
-                methods: Vec::[builtin_trait_method("eq", two_types(self_ty, self_ty), Type::Bool)],
-            },
-        )
-    } else if name == "Eq" {
-        Option::Some(
-            TraitInfo {
-                name,
-                generics: Vec::[],
-                predicates: Vec::[],
-                supertraits: Vec::[TraitRef { name: "PartialEq", args: Vec::[] }],
-                associated_types: Vec::[],
-                methods: Vec::[],
-            },
-        )
-    } else if name == "Hash" {
-        Option::Some(
-            TraitInfo {
-                name,
-                generics: Vec::[],
-                predicates: Vec::[],
-                supertraits: Vec::[],
-                associated_types: Vec::[],
-                methods: Vec::[builtin_trait_method("hash", one_type(self_ty), Type::Uint64)],
-            },
-        )
-    } else if name == "Default" {
-        Option::Some(
-            TraitInfo {
-                name,
-                generics: Vec::[],
-                predicates: Vec::[],
-                supertraits: Vec::[],
-                associated_types: Vec::[],
-                methods: Vec::[builtin_static_trait_method("default", Vec::[], self_ty)],
-            },
-        )
-    } else if name == "ToString" || name == "Debug" {
-        let method_name = if name == "ToString" {
-            "to_string"
-        } else {
-            "debug"
-        };
-        Option::Some(
-            TraitInfo {
-                name,
-                generics: Vec::[],
-                predicates: Vec::[],
-                supertraits: Vec::[],
-                associated_types: Vec::[],
-                methods: Vec::[builtin_trait_method(method_name, one_type(self_ty), Type::String)],
-            },
-        )
-    } else {
-        Option::None
-    }
+    builtin_source_trait_info(name)
 }
 
 fn trait_ref_equal(left: TraitRef, right: TraitRef) -> bool {
@@ -2479,7 +2136,13 @@ fn nominal_arity(ctx: Checker, name: string) -> Option[int] {
         None => match find_struct_by_name(ctx, name) {
             Some(value) => Option::Some(value.generics.len()),
             None => if short_name(name) == name {
-                builtin_nominal_arity(name)
+                match builtin_source_enum_info(name) {
+                    Some(value) => Option::Some(value.generics.len()),
+                    None => match builtin_source_struct_info(name) {
+                        Some(value) => Option::Some(value.generics.len()),
+                        None => builtin_nominal_arity(name),
+                    },
+                }
             } else {
                 Option::None
             },
@@ -3235,27 +2898,7 @@ fn resolve_trait_static(
     explicit: Vec[Type],
     method_explicit: Vec[Type],
 ) -> Option[ResolvedCallable] {
-    if (owner == "ToString" && name == "to_string") || (owner == "Debug" && name == "debug") {
-        validate_explicit_method_type_arguments(ctx, name, "method", Vec::[], method_explicit);
-        let receiver = fresh_type(ctx.counter, VarKind::Any);
-        Option::Some(
-            trait_callable(owner, explicit, name, one_type(receiver), Type::String, receiver, true),
-        )
-    } else if owner == "PartialEq" && name == "eq" {
-        validate_explicit_method_type_arguments(ctx, name, "method", Vec::[], method_explicit);
-        let receiver = fresh_type(ctx.counter, VarKind::Any);
-        Option::Some(
-            trait_callable(
-                "PartialEq",
-                explicit,
-                name,
-                two_types(receiver, receiver),
-                Type::Bool,
-                receiver,
-                true,
-            ),
-        )
-    } else if owner == "Eq" && name == "eq" && !trait_infos_contain_exact_name(ctx.traits, "Eq") {
+    if owner == "Eq" && name == "eq" && !trait_infos_contain_exact_name(ctx.traits, "Eq") {
         validate_explicit_method_type_arguments(ctx, name, "method", Vec::[], method_explicit);
         let receiver = fresh_type(ctx.counter, VarKind::Any);
         push_diagnostic(ctx, "Trait Eq has no associated method eq; use PartialEq::eq");
@@ -3270,16 +2913,6 @@ fn resolve_trait_static(
                 true,
             ),
         )
-    } else if owner == "Hash" && name == "hash" {
-        validate_explicit_method_type_arguments(ctx, name, "method", Vec::[], method_explicit);
-        let receiver = fresh_type(ctx.counter, VarKind::Any);
-        Option::Some(
-            trait_callable(owner, explicit, name, one_type(receiver), Type::Uint64, receiver, true),
-        )
-    } else if owner == "Default" && name == "default" {
-        validate_explicit_method_type_arguments(ctx, name, "method", Vec::[], method_explicit);
-        let receiver = fresh_type(ctx.counter, VarKind::Any);
-        Option::Some(trait_callable(owner, explicit, name, Vec::[], receiver, receiver, false))
     } else {
         match find_trait(ctx, owner) {
             Some(info) => {

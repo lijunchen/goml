@@ -1,0 +1,173 @@
+package tast;
+
+use gomlc::ast;
+use gomlc::hir;
+use gomlc::parser;
+use gomlc::resources;
+
+static builtin_source_traits: OnceCell[FrozenVec[TraitInfo]] = OnceCell::new();
+
+static builtin_source_enums: OnceCell[FrozenVec[EnumInfo]] = OnceCell::new();
+
+static builtin_source_structs: OnceCell[FrozenVec[StructInfo]] = OnceCell::new();
+
+static builtin_source_functions: OnceCell[FrozenVec[FunctionScheme]] = OnceCell::new();
+
+static builtin_source_impls: OnceCell[FrozenVec[ImplInfo]] = OnceCell::new();
+
+fn load_builtin_source_traits() -> FrozenVec[TraitInfo] {
+    let result: Vec[TraitInfo] = Vec::[];
+    let source = match resources::builtin_contract_source() {
+        Ok(value) => value,
+        Err(_) => return result.freeze(),
+    };
+    let inputs = Vec::[(ast::lower(parser::parse(source.source)), source.path)];
+    for lowered in hir::lower_package_files(inputs, "builtin") {
+        match lowered.hir {
+            Some(file) => for item in file.items {
+                match item {
+                    hir::Item::TraitDef(value) => result.push(collect_trait(value)),
+                    _ => (),
+                }
+            },
+            None => (),
+        }
+    }
+    result.freeze()
+}
+
+fn builtin_source_trait_info(name: string) -> Option[TraitInfo] {
+    let values = builtin_source_traits.get_or_init(|| load_builtin_source_traits());
+    for value in values.to_vec() {
+        if value.name == name {
+            return Option::Some(value)
+        } else {}
+    }
+    Option::None
+}
+
+fn load_builtin_source_enums() -> FrozenVec[EnumInfo] {
+    let result: Vec[EnumInfo] = Vec::[];
+    let sources = match resources::builtin_enum_sources() {
+        Ok(values) => values,
+        Err(_) => return result.freeze(),
+    };
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::[];
+    for source in sources {
+        inputs.push((ast::lower(parser::parse(source.source)), source.path))
+    }
+    for lowered in hir::lower_package_files(inputs, "builtin") {
+        match lowered.hir {
+            Some(file) => for item in file.items {
+                match item {
+                    hir::Item::EnumDef(value) => result.push(collect_enum(value)),
+                    _ => (),
+                }
+            },
+            None => (),
+        }
+    }
+    result.freeze()
+}
+
+fn builtin_source_enum_infos() -> Vec[EnumInfo] {
+    builtin_source_enums.get_or_init(|| load_builtin_source_enums()).to_vec()
+}
+
+fn builtin_source_enum_info(name: string) -> Option[EnumInfo] {
+    for value in builtin_source_enum_infos() {
+        if value.name == short_name(name) {
+            return Option::Some(value)
+        } else {}
+    }
+    Option::None
+}
+
+fn load_builtin_source_structs() -> FrozenVec[StructInfo] {
+    let result: Vec[StructInfo] = Vec::[];
+    let source = match resources::builtin_contract_source() {
+        Ok(value) => value,
+        Err(_) => return result.freeze(),
+    };
+    let inputs = Vec::[(ast::lower(parser::parse(source.source)), source.path)];
+    for lowered in hir::lower_package_files(inputs, "builtin") {
+        match lowered.hir {
+            Some(file) => for item in file.items {
+                match item {
+                    hir::Item::StructDef(value) => result.push(collect_struct(value)),
+                    _ => (),
+                }
+            },
+            None => (),
+        }
+    }
+    result.freeze()
+}
+
+fn builtin_source_struct_info(name: string) -> Option[StructInfo] {
+    let values = builtin_source_structs.get_or_init(|| load_builtin_source_structs());
+    for value in values.to_vec() {
+        if value.name == short_name(name) {
+            return Option::Some(value)
+        } else {}
+    }
+    Option::None
+}
+
+fn load_builtin_source_functions() -> FrozenVec[FunctionScheme] {
+    let result: Vec[FunctionScheme] = Vec::[];
+    let files = match implicit_builtin_hir_files() {
+        Ok(values) => values,
+        Err(_) => return result.freeze(),
+    };
+    for file in files {
+        for value in dependency_environment_from_hir(file).functions {
+            result.push(value)
+        }
+    }
+    result.freeze()
+}
+
+fn builtin_source_function_scheme(name: string) -> Option[FunctionScheme] {
+    let values = builtin_source_functions.get_or_init(|| load_builtin_source_functions());
+    for value in values.to_vec() {
+        if value.name == name {
+            return Option::Some(value)
+        } else {}
+    }
+    Option::None
+}
+
+fn load_builtin_source_impls() -> FrozenVec[ImplInfo] {
+    let result: Vec[ImplInfo] = Vec::[];
+    let files = match implicit_builtin_hir_files() {
+        Ok(values) => values,
+        Err(_) => return result.freeze(),
+    };
+    for file in files {
+        for value in dependency_environment_from_hir(file).impls {
+            if value.associated_types.is_empty() {
+                result.push(
+                    ImplInfo {
+                        generics: value.generics,
+                        predicates: value.predicates,
+                        trait_ref: value.trait_ref,
+                        for_type: value.for_type,
+                        associated_types: value.associated_types,
+                        origin: "builtin#source#" + result.len().to_string(),
+                        span: value.span,
+                    },
+                )
+            } else {}
+        }
+    }
+    result.freeze()
+}
+
+fn append_builtin_source_impls(ctx: Checker) -> unit {
+    if ctx.package_name == "builtin" {} else {
+        for value in builtin_source_impls.get_or_init(|| load_builtin_source_impls()).to_vec() {
+            ctx.impls.push(value)
+        }
+    }
+}

@@ -1071,13 +1071,13 @@ fn impl_projection(ctx: Checker, base: Type, name: string, qualifier: Option[Tra
                 let application = substitute_trait_ref(impl_info.trait_ref, substitutions);
                 if unify(owner, base) {
                     let trait_matches = match qualifier {
-                        Some(reference) => trait_refs_equal(
-                            Option::Some(reference),
-                            Option::Some(application),
-                        ),
+                        Some(reference) => impl_matches_trait(ctx, impl_info, reference)
+                            && unify_types(application.args, reference.args),
                         None => true,
                     };
-                    if trait_matches {
+                    let predicates = substitute_predicates(impl_info.predicates, substitutions);
+                    apply_predicate_equalities(predicates);
+                    if trait_matches && predicates_satisfied_at(ctx, predicates, Vec::[]) {
                         let candidate = substitute_type(associated, substitutions);
                         if !type_list_contains(candidates, candidate) {
                             candidates.push(candidate)

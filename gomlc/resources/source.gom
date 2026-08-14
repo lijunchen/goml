@@ -548,6 +548,15 @@ pub fn builtin_layer_sources() -> Result[Vec[Source], string] {
     )
 }
 
+pub fn builtin_contract_source() -> Result[Source, string] {
+    let values = read_sources("builtin", Vec::["builtin/contract.gom"])?;
+    Result::Ok(values[0])
+}
+
+pub fn builtin_enum_sources() -> Result[Vec[Source], string] {
+    read_sources("builtin", Vec::["builtin/contract.gom"])
+}
+
 pub fn prelude_sources() -> Result[Vec[Source], string] {
     read_sources("prelude", Vec::["prelude/prelude.gom"])
 }
