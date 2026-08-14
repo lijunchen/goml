@@ -3,7 +3,7 @@ file main.gom
   static VALUES: OnceCell[FrozenVec[int]] = OnceCell::new();
 
   fn values() -> FrozenVec[int] {
-      def/1/0.get_or_init(|| Vec::[1, 2, 3].freeze())
+      def/1/0.get_or_init(|| Vec::from_array([1, 2, 3]).freeze())
   }
 
   fn main() -> unit {

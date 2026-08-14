@@ -31,8 +31,8 @@ fn classify(value: Maybe, numbers: Vec[int32]) -> string {
 fn arrays(values: [int32; 4]) -> int32 {
     let [first, middle @ .., last] = values;
     let tuple = (first, last);
-    let vector = Vec::[first, last];
-    let table = HashMap::{ "first" => first, "last" => last };
+    let vector = Vec::from_array([first, last]);
+    let table = HashMap::from_array([("first", first), ("last", last)]);
     let closure = |value: int32| value + table.get("first").unwrap_or(0);
     closure(tuple.0) + vector[1] + array_get(middle, 0)
 }

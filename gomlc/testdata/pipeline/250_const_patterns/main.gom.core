@@ -830,7 +830,7 @@ fn inherent#string#string#trim(self/94: string) -> string {
 }
 
 fn inherent#string#string#split(self/95: string, separator/96: string) -> Vec[string] {
-  let result/97 = @intrinsic(vec.from_array)([]) in
+  let result/97 = inherent#Vec#Vec[string]#new() in
   let separator_len/98 = inherent#string#string#byte_len(separator/96) in
   let value_len/99 = inherent#string#string#byte_len(self/95) in
   let _wild86 =
@@ -1013,7 +1013,7 @@ fn inherent#string#string#replace(
       }
   } else {
       {
-        let parts/114 = @intrinsic(vec.from_array)([]) in
+        let parts/114 = inherent#Vec#Vec[string]#new() in
         let start/115 = 0 in
         let _wild112 =
           loop {

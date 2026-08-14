@@ -37,17 +37,19 @@ fn main() {
     println(log.get());
     println(f"{updated.x},{updated.y}");
     log.set("");
-    let values = Vec::[record(log, "A", 10), record(log, "B", 20)];
+    let values = Vec::from_array([record(log, "A", 10), record(log, "B", 20)]);
     record_vec(log, "R", values)[record(log, "I", 1)] += record(log, "V", 5);
     println(log.get());
     println(f"{values.get(0)},{values.get(1)}");
     log.set("");
     let table =
-      HashMap::{
-        f"k{record(log, "K", 1)}" => record(log, "V", 11),
-        "same" => record(log, "A", 1),
-        "same" => record(log, "B", 2)
-      };
+      HashMap::from_array(
+        [
+          (f"k{record(log, "K", 1)}", record(log, "V", 11)),
+          ("same", record(log, "A", 1)),
+          ("same", record(log, "B", 2))
+        ]
+      );
     println(log.get());
     println(
       match table.get("same") {
@@ -55,8 +57,8 @@ fn main() {
           Option::None => "missing",
       }
     );
-    let empty_values: Vec[int] = Vec::[];
-    let empty_table: HashMap[string, int] = HashMap::{};
+    let empty_values: Vec[int] = Vec::from_array([]);
+    let empty_table: HashMap[string, int] = HashMap::from_array([]);
     println(f"empty={empty_values.len() + empty_table.len()} {{ok}}");
 }
 

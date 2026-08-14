@@ -1,35 +1,34 @@
 fn loop_return_unit(flag/0: bool) -> unit {
-  let _wild409 =
-    while if flag/0 {
-        {
-          return
-        }
-    } else {
-        {
-          return
-        }
-    } {
-        {
-          let _wild408 = println__T_string("unreachable") in
-        }
-    } in
+  while if flag/0 {
+      {
+        return
+      }
+  } else {
+      {
+        return
+      }
+  } {
+      {
+        let _wild408 = println__T_string("unreachable") in
+      }
+  }
 }
 
 fn loop_return() -> int32 {
-  let _wild412 =
+  let _wild411 =
     while {
       return 5
     } {
         {
-          let _wild411 = println__T_string("unreachable") in
+          let _wild410 = println__T_string("unreachable") in
         }
     } in
   0
 }
 
 fn main() -> unit {
-  let _wild413 = loop_return_unit(true) in
-  let _wild414 = println__T_int32(loop_return()) in
+  let _wild412 = loop_return_unit(true) in
+  let _wild413 = println__T_int32(loop_return()) in
 }
 
 fn println__T_string(value/1: string) -> unit {

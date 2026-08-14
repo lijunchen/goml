@@ -820,7 +820,7 @@ fn inherent#string#string#trim(self/94: string) -> string {
 }
 
 fn inherent#string#string#split(self/95: string, separator/96: string) -> Vec[string] {
-  let result/97 = @intrinsic(vec.from_array)([]) in
+  let result/97 = inherent#Vec#Vec[string]#new() in
   let separator_len/98 = inherent#string#string#byte_len(separator/96) in
   let value_len/99 = inherent#string#string#byte_len(self/95) in
   let _wild86 =
@@ -1003,7 +1003,7 @@ fn inherent#string#string#replace(
       }
   } else {
       {
-        let parts/114 = @intrinsic(vec.from_array)([]) in
+        let parts/114 = inherent#Vec#Vec[string]#new() in
         let start/115 = 0 in
         let _wild112 =
           loop {
@@ -3802,29 +3802,28 @@ fn trait_impl#Iterator#Values#next(self/0: Values) -> Option[int32] {
 }
 
 fn main() -> unit {
-  let _wild412 =
-    {
-      let for_iter408 = trait_call[IntoIterator::into_iter](Values {}) in
-      while true {
-          {
-            let for_next409 = trait_call[Iterator::next](for_iter408) in
-            match for_next409 {
-              Option::None => {
-                break
-              },
-              Option::Some(x410) => {
+  {
+    let for_iter408 = trait_call[IntoIterator::into_iter](Values {}) in
+    while true {
+        {
+          let for_next409 = trait_call[Iterator::next](for_iter408) in
+          match for_next409 {
+            Option::None => {
+              break
+            },
+            Option::Some(x410) => {
+              {
+                let x410 = Option::Some._0(for_next409) in
                 {
-                  let x410 = Option::Some._0(for_next409) in
+                  let value/1 = x410 in
                   {
-                    let value/1 = x410 in
-                    {
-                      let _wild411 = println(inherent#int32#int32#to_string(value/1)) in
-                    }
+                    let _wild411 = println(inherent#int32#int32#to_string(value/1)) in
                   }
                 }
-              },
-            }
+              }
+            },
           }
-      }
-    } in
+        }
+    }
+  }
 }

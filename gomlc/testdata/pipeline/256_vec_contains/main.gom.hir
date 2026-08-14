@@ -18,14 +18,14 @@ file main.gom
   }
 
   fn main() -> unit {
-      let local/1/4 = Vec::[1, 2, 3];
+      let local/1/4 = Vec::from_array([1, 2, 3]);
       println(values/4.contains(2).to_string());
       println(values/4.contains(9).to_string());
-      let local/1/5 = Vec::["alpha", "beta"];
+      let local/1/5 = Vec::from_array(["alpha", "beta"]);
       println(names/5.contains("beta").to_string());
-      let local/1/6 = Vec::[Pair { left: 1, right: 2 }];
+      let local/1/6 = Vec::from_array([Pair { left: 1, right: 2 }]);
       println(pairs/6.contains(Pair { left: 1, right: 2 }).to_string());
       println(def/1/2(values/4, 3).to_string());
-      let local/1/7: Vec[string] = Vec::[];
+      let local/1/7: Vec[string] = Vec::from_array([]);
       println(empty/7.contains("x").to_string())
   }

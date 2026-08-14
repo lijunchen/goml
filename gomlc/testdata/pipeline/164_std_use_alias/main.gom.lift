@@ -2017,7 +2017,7 @@ fn inherent#string#string#trim(self/94: string) -> string {
 }
 
 fn inherent#string#string#split(self/95: string, separator/96: string) -> Vec[string] {
-  let result/97 = @intrinsic(vec.from_array)([]) in
+  let result/97 = inherent#Vec#Vec[T]#new__T_string() in
   let separator_len/98 = inherent#string#string#byte_len(separator/96) in
   let value_len/99 = inherent#string#string#byte_len(self/95) in
   let _wild86 =
@@ -2152,7 +2152,7 @@ fn inherent#string#string#replace(
   if (inherent#string#string#byte_len(expected/112) == 0) {
       self/111
   } else {
-      let parts/114 = @intrinsic(vec.from_array)([]) in
+      let parts/114 = inherent#Vec#Vec[T]#new__T_string() in
       let start/115 = 0 in
       let _wild112 =
         loop let mtmp106 = string_find_from(self/111, expected/112, start/115) in
@@ -2691,6 +2691,10 @@ fn ascii_is_whitespace(value/140: uint8) -> bool {
   } else {
       (value/140 == 32)
   }
+}
+
+fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
+  @intrinsic(vec.new)()
 }
 
 fn inherent#Vec#Vec[T]#push__T_string(self/258: Vec[string], elem/259: string) -> unit {

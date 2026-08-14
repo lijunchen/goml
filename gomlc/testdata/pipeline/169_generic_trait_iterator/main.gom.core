@@ -820,7 +820,7 @@ fn inherent#string#string#trim(self/94: string) -> string {
 }
 
 fn inherent#string#string#split(self/95: string, separator/96: string) -> Vec[string] {
-  let result/97 = @intrinsic(vec.from_array)([]) in
+  let result/97 = inherent#Vec#Vec[string]#new() in
   let separator_len/98 = inherent#string#string#byte_len(separator/96) in
   let value_len/99 = inherent#string#string#byte_len(self/95) in
   let _wild86 =
@@ -1003,7 +1003,7 @@ fn inherent#string#string#replace(
       }
   } else {
       {
-        let parts/114 = @intrinsic(vec.from_array)([]) in
+        let parts/114 = inherent#Vec#Vec[string]#new() in
         let start/115 = 0 in
         let _wild112 =
           loop {
@@ -4668,22 +4668,21 @@ fn main() -> unit {
     std::iter::collect(
       std::iter::map(range(1, 4), |value/18: int| => ("v" + inherent#int#int#to_string(value/18)))
     ) in
-  let _wild427 =
-    {
-      let for_source421 = texts/19 in
-      let for_limit422 = @intrinsic(vec.len)(for_source421) in
-      let for_index423 = 0 in
-      while (for_index423 < for_limit422) {
+  {
+    let for_source421 = texts/19 in
+    let for_limit422 = @intrinsic(vec.len)(for_source421) in
+    let for_index423 = 0 in
+    while (for_index423 < for_limit422) {
+        {
+          let for_item424 = @intrinsic(vec.get)(for_source421, for_index423) in
+          let _wild425 = for_index423 = (for_index423 + 1) in
           {
-            let for_item424 = @intrinsic(vec.get)(for_source421, for_index423) in
-            let _wild425 = for_index423 = (for_index423 + 1) in
+            let text/20 = for_item424 in
             {
-              let text/20 = for_item424 in
-              {
-                let _wild426 = println(text/20) in
-              }
+              let _wild426 = println(text/20) in
             }
           }
-      }
-    } in
+        }
+    }
+  }
 }

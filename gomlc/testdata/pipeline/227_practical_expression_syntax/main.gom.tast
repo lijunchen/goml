@@ -44,15 +44,15 @@ fn main() -> unit {
     let base/13: Point = Point { x: 1, y: 2 };
     let updated/14: Point =
       {
-          let struct_update_field/780/0: int =
+          let struct_update_field/777/0: int =
             (record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "F", 7);
-          let struct_update_base/780: Point =
+          let struct_update_base/777: Point =
             (record_point : (Ref[string], string, Point) -> Point)(
               (log/12 : Ref[string]),
               "B",
               (base/13 : Point)
             );
-          Point { x: (struct_update_field/780/0 : int), y: (struct_update_base/780 : Point).y }
+          Point { x: (struct_update_field/777/0 : int), y: (struct_update_base/777 : Point).y }
       };
     (println : (string) -> unit)(
       (Ref[string]::get : (Ref[string]) -> string)((log/12 : Ref[string]))

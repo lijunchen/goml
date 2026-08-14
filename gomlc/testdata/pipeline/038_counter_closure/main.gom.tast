@@ -17,7 +17,6 @@ fn make_counter() -> (() -> int32, () -> unit) {
         {
             let _ : unit =
               (Ref[int32]::set : (Ref[int32], int32) -> unit)((cell/0 : Ref[int32]), 0);
-            ()
         };
     ((next/2 : () -> int32), (reset/3 : () -> unit))
 }
@@ -41,5 +40,4 @@ fn main() -> unit {
       (println : (string) -> unit)((int32::to_string : (int32) -> string)((third/9 : int32)));
     let _ : unit =
       (println : (string) -> unit)((int32::to_string : (int32) -> string)((fourth/12 : int32)));
-    ()
 }

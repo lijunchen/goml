@@ -8,7 +8,6 @@ fn sum_to(limit: int32) -> int32 {
               let current = i.get();
               let _ = acc.set(acc.get() + current);
               let _ = i.set(current + 1);
-              ()
           }
       };
     acc.get()
@@ -30,9 +29,7 @@ fn sum_even(limit: int32) -> int32 {
                       acc.set(acc.get() + current)
                   }
               } else {
-                  {
-                      ()
-                  }
+                  {}
               }
           }
       };
@@ -46,6 +43,5 @@ fn main() {
     let _ = println(first);
     let _ = print("sum_even(6)=");
     let _ = println(evens);
-    ()
 }
 

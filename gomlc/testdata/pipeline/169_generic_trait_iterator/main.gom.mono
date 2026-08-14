@@ -82,24 +82,23 @@ fn main() -> unit {
         |value/18| ("v" + inherent#int#int#to_string(value/18))
       )
     ) in
-  let _wild427 =
-    {
-      let for_source421 = texts/19 in
-      let for_limit422 = @intrinsic(vec.len)(for_source421) in
-      let for_index423 = 0 in
-      while (for_index423 < for_limit422) {
+  {
+    let for_source421 = texts/19 in
+    let for_limit422 = @intrinsic(vec.len)(for_source421) in
+    let for_index423 = 0 in
+    while (for_index423 < for_limit422) {
+        {
+          let for_item424 = @intrinsic(vec.get)(for_source421, for_index423) in
+          let _wild425 = for_index423 = (for_index423 + 1) in
           {
-            let for_item424 = @intrinsic(vec.get)(for_source421, for_index423) in
-            let _wild425 = for_index423 = (for_index423 + 1) in
+            let text/20 = for_item424 in
             {
-              let text/20 = for_item424 in
-              {
-                let _wild426 = println__T_string(text/20) in
-              }
+              let _wild426 = println__T_string(text/20) in
             }
           }
-      }
-    } in
+        }
+    }
+  }
 }
 
 fn inherent#Ref#Ref[T]#new__T_int32(value/431: int32) -> Ref[int32] {

@@ -8,19 +8,16 @@ fn fetch(flag/0: bool) -> Option[int32] {
               "a",
               7
             );
-            ()
         }
     } else {
-        {
-            ()
-        }
+        {}
     };
     let value/2: int32 =
       match (HashMap[string, int32]::get : (HashMap[string, int32], string) -> Option[int32])(
         (m/1 : HashMap[string, int32]),
         "a"
       ) {
-          Option::Some(try_value/18: int32) => (try_value/18 : int32),
+          Option::Some(try_value/16: int32) => (try_value/16 : int32),
           Option::None => return Option::None,
       };
     Option::Some((value/2 : int32) + 1)

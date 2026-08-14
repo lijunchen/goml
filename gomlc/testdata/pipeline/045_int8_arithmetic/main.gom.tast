@@ -15,7 +15,6 @@ fn show_int8(label/0: string, value/1: int8) -> unit {
       (println : (string) -> unit)(
         (label/0 : string) + (ToString::to_string : (int8) -> string)((value/1 : int8))
       );
-    ()
 }
 
 fn show_bool(label/2: string, value/3: bool) -> unit {
@@ -23,7 +22,6 @@ fn show_bool(label/2: string, value/3: bool) -> unit {
       (println : (string) -> unit)(
         (label/2 : string) + (ToString::to_string : (bool) -> string)((value/3 : bool))
       );
-    ()
 }
 
 fn main() -> unit {
@@ -45,5 +43,4 @@ fn main() -> unit {
     let _ : unit = (show_int8 : (string, int8) -> unit)("quot=", (quot/10 : int8));
     let _ : unit = (show_int8 : (string, int8) -> unit)("neg=", (neg/11 : int8));
     let _ : unit = (show_bool : (string, bool) -> unit)("b<a=", (less/12 : bool));
-    ()
 }

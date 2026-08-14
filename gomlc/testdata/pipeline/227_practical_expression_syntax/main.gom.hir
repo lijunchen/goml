@@ -38,17 +38,19 @@ file main.gom
       println(log/12.get());
       println(f"{updated/14.x},{updated/14.y}");
       log/12.set("");
-      let local/1/15 = Vec::[def/1/1(log/12, "A", 10), def/1/1(log/12, "B", 20)];
+      let local/1/15 = Vec::from_array([def/1/1(log/12, "A", 10), def/1/1(log/12, "B", 20)]);
       def/1/3(log/12, "R", values/15)[def/1/1(log/12, "I", 1)] += def/1/1(log/12, "V", 5);
       println(log/12.get());
       println(f"{values/15.get(0)},{values/15.get(1)}");
       log/12.set("");
       let local/1/16 =
-        HashMap::{
-          f"k{def/1/1(log/12, "K", 1)}" => def/1/1(log/12, "V", 11),
-          "same" => def/1/1(log/12, "A", 1),
-          "same" => def/1/1(log/12, "B", 2)
-        };
+        HashMap::from_array(
+          [
+            (f"k{def/1/1(log/12, "K", 1)}", def/1/1(log/12, "V", 11)),
+            ("same", def/1/1(log/12, "A", 1)),
+            ("same", def/1/1(log/12, "B", 2))
+          ]
+        );
       println(log/12.get());
       println(
         match table/16.get("same") {
@@ -56,7 +58,7 @@ file main.gom
             Option::None => "missing",
         }
       );
-      let local/1/18: Vec[int] = Vec::[];
-      let local/1/19: HashMap[string, int] = HashMap::{};
+      let local/1/18: Vec[int] = Vec::from_array([]);
+      let local/1/19: HashMap[string, int] = HashMap::from_array([]);
       println(f"empty={empty_values/18.len() + empty_table/19.len()} {{ok}}");
   }

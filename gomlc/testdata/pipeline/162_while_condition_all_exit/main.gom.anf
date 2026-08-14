@@ -1,6 +1,6 @@
 fn loop_return_unit(flag/0: bool) -> unit {
   joinrec {
-    join loop417() -> unit {
+    join loop416() -> unit {
       if flag/0 {
         ()
       } else {
@@ -8,41 +8,41 @@ fn loop_return_unit(flag/0: bool) -> unit {
       }
     } in
   } in
-  jump loop417()
+  jump loop416()
 }
 
 fn loop_return() -> int32 {
   joinrec {
-    join loop423() -> int32 {
+    join loop422() -> int32 {
       5
     } in
   } in
-  jump loop423()
+  jump loop422()
 }
 
 fn main() -> unit {
-  let _wild413 = loop_return_unit(true) in
-  let t425 = loop_return() in
-  let inline438 = trait_impl#ToString#int32#to_string(t425) in
-  let inline439 = @runtime(core.string_println)(inline438) in
+  let _wild412 = loop_return_unit(true) in
+  let t424 = loop_return() in
+  let inline437 = trait_impl#ToString#int32#to_string(t424) in
+  let inline438 = @runtime(core.string_println)(inline437) in
   ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont440(t427: string) -> unit {
-    let t428 = @runtime(core.string_println)(t427) in
+  join inline_cont439(t426: string) -> unit {
+    let t427 = @runtime(core.string_println)(t426) in
     ()
   } in
-  jump inline_cont440(value/1)
+  jump inline_cont439(value/1)
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join inline_cont441(t430: string) -> unit {
-    let t431 = @runtime(core.string_println)(t430) in
+  join inline_cont440(t429: string) -> unit {
+    let t430 = @runtime(core.string_println)(t429) in
     ()
   } in
-  let inline442 = @runtime(core.int32_to_string)(value/1) in
-  jump inline_cont441(inline442)
+  let inline441 = @runtime(core.int32_to_string)(value/1) in
+  jump inline_cont440(inline441)
 }
 
 fn trait_impl#ToString#string#to_string(self/149: string) -> string {
@@ -50,6 +50,6 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
 }
 
 fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
-  let t436 = @runtime(core.int32_to_string)(self/154) in
-  t436
+  let t435 = @runtime(core.int32_to_string)(self/154) in
+  t435
 }

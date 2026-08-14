@@ -25,13 +25,11 @@ fn accumulate(limit/1: int32) -> Option[int32] {
                     continue
                 }
             } else {
-                {
-                    ()
-                }
+                {}
             };
             let value/5: int32 =
               match (step : (int32) -> Option[int32])((cur/4 : int32)) {
-                  Option::Some(try_value/43: int32) => (try_value/43 : int32),
+                  Option::Some(try_value/42: int32) => (try_value/42 : int32),
                   Option::None => return Option::None,
               };
             (Ref[int32]::set : (Ref[int32], int32) -> unit)(

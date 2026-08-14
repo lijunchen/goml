@@ -82,7 +82,7 @@ fn sum_boxed(values: Vec[Boxed[int]]) -> int {
 }
 
 fn main() -> unit {
-    let boxed: Vec[Boxed[int]] = Vec::[Boxed::Value(19), Boxed::Value(23)];
+    let boxed: Vec[Boxed[int]] = Vec::from_array([Boxed::Value(19), Boxed::Value(23)]);
     println(classify(First::Shared(7)));
     println(classify(First::Idle));
     println(classify(First::Data { value: 9, label: "data" }));

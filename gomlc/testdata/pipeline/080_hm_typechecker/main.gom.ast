@@ -38,12 +38,10 @@ fn state_new() -> CheckerState {
 
 fn reset_gensym(st: CheckerState) -> unit {
     let _ = st.gensym_counter.set(0);
-    ()
 }
 
 fn reset_level(st: CheckerState) -> unit {
     let _ = st.current_level.set(1);
-    ()
 }
 
 fn reset_type_variables(st: CheckerState) -> unit {
@@ -54,13 +52,11 @@ fn reset_type_variables(st: CheckerState) -> unit {
 fn enter_level(st: CheckerState) -> unit {
     let l = st.current_level.get();
     let _ = st.current_level.set(l + 1);
-    ()
 }
 
 fn leave_level(st: CheckerState) -> unit {
     let l = st.current_level.get();
     let _ = st.current_level.set(l - 1);
-    ()
 }
 
 fn min_i32(a: int32, b: int32) -> int32 {

@@ -290,12 +290,12 @@ func main0() struct{} {
         x: 1,
         y: 2,
     }
-    var struct_update_field__780__0 int = record(log__12, "F", 7)
-    var struct_update_base__780 Point = record_point(log__12, "B", base__13)
-    var t489 int = struct_update_base__780.y
+    var struct_update_field__777__0 int = record(log__12, "F", 7)
+    var struct_update_base__777 Point = record_point(log__12, "B", base__13)
+    var t489 int = struct_update_base__777.y
     var t491 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(log__12)
     println__T_string(t491)
-    var t493 string = _goml_m_inherent_i_int_i_int_i_to__string(struct_update_field__780__0)
+    var t493 string = _goml_m_inherent_i_int_i_int_i_to__string(struct_update_field__777__0)
     var t494 string = "" + t493
     var t495 string = t494 + ","
     var t497 string = _goml_m_inherent_i_int_i_int_i_to__string(t489)

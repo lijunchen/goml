@@ -1,4 +1,4 @@
-FILE@0..2089
+FILE@0..2076
   ENUM@0..103
     EnumKeyword@0..4 "enum"
     Whitespace@4..5 " "
@@ -518,7 +518,7 @@ FILE@0..2089
           Whitespace@888..889 "\n"
       RBrace@889..890 "}"
       Whitespace@890..892 "\n\n"
-  FN@892..1134
+  FN@892..1133
     FnKeyword@892..894 "fn"
     Whitespace@894..895 " "
     Ident@895..904 "take_once"
@@ -543,7 +543,7 @@ FILE@0..2089
     TYPE_INT@928..932
       IntKeyword@928..931 "int"
       Whitespace@931..932 " "
-    BLOCK@932..1134
+    BLOCK@932..1133
       LBrace@932..933 "{"
       Whitespace@933..938 "\n    "
       STMT_LET@938..973
@@ -591,8 +591,8 @@ FILE@0..2089
             RParen@996..997 ")"
         Semi@997..998 ";"
         Whitespace@998..1003 "\n    "
-      STMT_EXPR@1003..1118
-        EXPR_WHILE@1003..1112
+      STMT_EXPR@1003..1117
+        EXPR_WHILE@1003..1117
           WhileKeyword@1003..1008 "while"
           Whitespace@1008..1009 " "
           EXPR_WHILE_COND@1009..1042
@@ -621,8 +621,8 @@ FILE@0..2089
                 LParen@1039..1040 "("
                 RParen@1040..1041 ")"
                 Whitespace@1041..1042 " "
-          EXPR_WHILE_BODY@1042..1112
-            BLOCK@1042..1112
+          EXPR_WHILE_BODY@1042..1117
+            BLOCK@1042..1117
               LBrace@1042..1043 "{"
               Whitespace@1043..1052 "\n        "
               STMT_EXPR@1052..1080
@@ -666,677 +666,680 @@ FILE@0..2089
                 Semi@1105..1106 ";"
                 Whitespace@1106..1111 "\n    "
               RBrace@1111..1112 "}"
-        Semi@1112..1113 ";"
-        Whitespace@1113..1118 "\n    "
-      EXPR_CALL@1118..1131
-        EXPR_BINARY@1118..1128
-          EXPR_IDENT@1118..1124
-            PATH@1118..1124
-              Ident@1118..1124 "result"
-          Dot@1124..1125 "."
-          EXPR_IDENT@1125..1128
-            PATH@1125..1128
-              Ident@1125..1128 "get"
-        ARG_LIST@1128..1131
-          LParen@1128..1129 "("
-          RParen@1129..1130 ")"
-          Whitespace@1130..1131 "\n"
-      RBrace@1131..1132 "}"
-      Whitespace@1132..1134 "\n\n"
-  FN@1134..1216
-    FnKeyword@1134..1136 "fn"
-    Whitespace@1136..1137 " "
-    Ident@1137..1142 "unbox"
-    PARAM_LIST@1142..1162
-      LParen@1142..1143 "("
-      PARAM@1143..1160
-        Ident@1143..1148 "value"
-        Colon@1148..1149 ":"
-        Whitespace@1149..1150 " "
-        TYPE_TAPP@1150..1160
-          PATH@1150..1155
-            Ident@1150..1155 "Boxed"
-          TYPE_PARAM_LIST@1155..1160
-            LBracket@1155..1156 "["
-            TYPE_INT@1156..1159
-              IntKeyword@1156..1159 "int"
-            RBracket@1159..1160 "]"
-      RParen@1160..1161 ")"
-      Whitespace@1161..1162 " "
-    Arrow@1162..1164 "->"
-    Whitespace@1164..1165 " "
-    TYPE_INT@1165..1169
-      IntKeyword@1165..1168 "int"
-      Whitespace@1168..1169 " "
-    BLOCK@1169..1216
-      LBrace@1169..1170 "{"
-      Whitespace@1170..1175 "\n    "
-      STMT_LET@1175..1206
-        LetKeyword@1175..1178 "let"
-        Whitespace@1178..1179 " "
-        PATTERN_CONSTR@1179..1193
-          PATH@1179..1184
-            Ident@1179..1184 "Value"
-          LParen@1184..1185 "("
-          PATTERN_VARIABLE@1185..1191
-            Ident@1185..1191 "number"
-          RParen@1191..1192 ")"
-          Whitespace@1192..1193 " "
-        Eq@1193..1194 "="
-        Whitespace@1194..1195 " "
-        EXPR_IDENT@1195..1200
-          PATH@1195..1200
-            Ident@1195..1200 "value"
-        Semi@1200..1201 ";"
-        Whitespace@1201..1206 "\n    "
-      EXPR_IDENT@1206..1213
-        PATH@1206..1213
-          Ident@1206..1212 "number"
-          Whitespace@1212..1213 "\n"
-      RBrace@1213..1214 "}"
-      Whitespace@1214..1216 "\n\n"
-  FN@1216..1397
-    FnKeyword@1216..1218 "fn"
-    Whitespace@1218..1219 " "
-    Ident@1219..1228 "sum_boxed"
-    PARAM_LIST@1228..1254
-      LParen@1228..1229 "("
-      PARAM@1229..1252
-        Ident@1229..1235 "values"
-        Colon@1235..1236 ":"
-        Whitespace@1236..1237 " "
-        TYPE_TAPP@1237..1252
-          PATH@1237..1240
-            Ident@1237..1240 "Vec"
-          TYPE_PARAM_LIST@1240..1252
-            LBracket@1240..1241 "["
-            TYPE_TAPP@1241..1251
-              PATH@1241..1246
-                Ident@1241..1246 "Boxed"
-              TYPE_PARAM_LIST@1246..1251
-                LBracket@1246..1247 "["
-                TYPE_INT@1247..1250
-                  IntKeyword@1247..1250 "int"
-                RBracket@1250..1251 "]"
-            RBracket@1251..1252 "]"
-      RParen@1252..1253 ")"
-      Whitespace@1253..1254 " "
-    Arrow@1254..1256 "->"
-    Whitespace@1256..1257 " "
-    TYPE_INT@1257..1261
-      IntKeyword@1257..1260 "int"
-      Whitespace@1260..1261 " "
-    BLOCK@1261..1397
-      LBrace@1261..1262 "{"
-      Whitespace@1262..1267 "\n    "
-      STMT_LET@1267..1297
-        LetKeyword@1267..1270 "let"
-        Whitespace@1270..1271 " "
-        PATTERN_VARIABLE@1271..1278
-          Ident@1271..1277 "result"
-          Whitespace@1277..1278 " "
-        Eq@1278..1279 "="
-        Whitespace@1279..1280 " "
-        EXPR_CALL@1280..1291
-          EXPR_IDENT@1280..1288
-            PATH@1280..1288
-              Ident@1280..1283 "Ref"
-              ColonColon@1283..1285 "::"
-              Ident@1285..1288 "new"
-          ARG_LIST@1288..1291
-            LParen@1288..1289 "("
-            ARG@1289..1290
-              EXPR_INT@1289..1290
-                Int@1289..1290 "0"
-            RParen@1290..1291 ")"
-        Semi@1291..1292 ";"
-        Whitespace@1292..1297 "\n    "
-      STMT_EXPR@1297..1381
-        EXPR_FOR@1297..1375
-          ForKeyword@1297..1300 "for"
-          Whitespace@1300..1301 " "
-          PATTERN_CONSTR@1301..1315
-            PATH@1301..1306
-              Ident@1301..1306 "Value"
-            LParen@1306..1307 "("
-            PATTERN_VARIABLE@1307..1313
-              Ident@1307..1313 "number"
-            RParen@1313..1314 ")"
-            Whitespace@1314..1315 " "
-          InKeyword@1315..1317 "in"
-          Whitespace@1317..1318 " "
-          EXPR_IDENT@1318..1325
-            PATH@1318..1325
-              Ident@1318..1324 "values"
-              Whitespace@1324..1325 " "
-          BLOCK@1325..1375
-            LBrace@1325..1326 "{"
-            Whitespace@1326..1335 "\n        "
-            STMT_EXPR@1335..1374
-              EXPR_CALL@1335..1368
-                EXPR_BINARY@1335..1345
-                  EXPR_IDENT@1335..1341
-                    PATH@1335..1341
-                      Ident@1335..1341 "result"
-                  Dot@1341..1342 "."
-                  EXPR_IDENT@1342..1345
-                    PATH@1342..1345
-                      Ident@1342..1345 "set"
-                ARG_LIST@1345..1368
-                  LParen@1345..1346 "("
-                  ARG@1346..1367
-                    EXPR_BINARY@1346..1367
-                      EXPR_CALL@1346..1359
-                        EXPR_BINARY@1346..1356
-                          EXPR_IDENT@1346..1352
-                            PATH@1346..1352
-                              Ident@1346..1352 "result"
-                          Dot@1352..1353 "."
-                          EXPR_IDENT@1353..1356
-                            PATH@1353..1356
-                              Ident@1353..1356 "get"
-                        ARG_LIST@1356..1359
-                          LParen@1356..1357 "("
-                          RParen@1357..1358 ")"
-                          Whitespace@1358..1359 " "
-                      Plus@1359..1360 "+"
-                      Whitespace@1360..1361 " "
-                      EXPR_IDENT@1361..1367
-                        PATH@1361..1367
-                          Ident@1361..1367 "number"
-                  RParen@1367..1368 ")"
-              Semi@1368..1369 ";"
-              Whitespace@1369..1374 "\n    "
-            RBrace@1374..1375 "}"
-        Semi@1375..1376 ";"
-        Whitespace@1376..1381 "\n    "
-      EXPR_CALL@1381..1394
-        EXPR_BINARY@1381..1391
-          EXPR_IDENT@1381..1387
-            PATH@1381..1387
-              Ident@1381..1387 "result"
-          Dot@1387..1388 "."
-          EXPR_IDENT@1388..1391
-            PATH@1388..1391
-              Ident@1388..1391 "get"
-        ARG_LIST@1391..1394
-          LParen@1391..1392 "("
-          RParen@1392..1393 ")"
-          Whitespace@1393..1394 "\n"
-      RBrace@1394..1395 "}"
-      Whitespace@1395..1397 "\n\n"
-  FN@1397..2089
-    FnKeyword@1397..1399 "fn"
-    Whitespace@1399..1400 " "
-    Ident@1400..1404 "main"
-    PARAM_LIST@1404..1407
-      LParen@1404..1405 "("
-      RParen@1405..1406 ")"
-      Whitespace@1406..1407 " "
-    Arrow@1407..1409 "->"
-    Whitespace@1409..1410 " "
-    TYPE_UNIT@1410..1415
-      UnitKeyword@1410..1414 "unit"
-      Whitespace@1414..1415 " "
-    BLOCK@1415..2089
-      LBrace@1415..1416 "{"
-      Whitespace@1416..1421 "\n    "
-      STMT_LET@1421..1520
-        LetKeyword@1421..1424 "let"
-        Whitespace@1424..1425 " "
-        PATTERN_VARIABLE@1425..1430
-          Ident@1425..1430 "boxed"
-        Colon@1430..1431 ":"
-        Whitespace@1431..1432 " "
-        TYPE_TAPP@1432..1448
-          PATH@1432..1435
-            Ident@1432..1435 "Vec"
-          TYPE_PARAM_LIST@1435..1448
-            LBracket@1435..1436 "["
-            TYPE_TAPP@1436..1446
-              PATH@1436..1441
-                Ident@1436..1441 "Boxed"
-              TYPE_PARAM_LIST@1441..1446
-                LBracket@1441..1442 "["
-                TYPE_INT@1442..1445
-                  IntKeyword@1442..1445 "int"
-                RBracket@1445..1446 "]"
-            RBracket@1446..1447 "]"
-            Whitespace@1447..1448 " "
-        Eq@1448..1449 "="
-        Whitespace@1449..1450 " "
-        EXPR_VEC_LITERAL@1450..1514
-          Ident@1450..1453 "Vec"
-          ColonColon@1453..1455 "::"
-          LBracket@1455..1456 "["
-          Whitespace@1456..1465 "\n        "
-          EXPR_CALL@1465..1481
-            EXPR_IDENT@1465..1477
-              PATH@1465..1477
-                Ident@1465..1470 "Boxed"
-                ColonColon@1470..1472 "::"
-                Ident@1472..1477 "Value"
-            ARG_LIST@1477..1481
-              LParen@1477..1478 "("
-              ARG@1478..1480
-                EXPR_INT@1478..1480
-                  Int@1478..1480 "19"
-              RParen@1480..1481 ")"
-          Comma@1481..1482 ","
-          Whitespace@1482..1491 "\n        "
-          EXPR_CALL@1491..1507
-            EXPR_IDENT@1491..1503
-              PATH@1491..1503
-                Ident@1491..1496 "Boxed"
-                ColonColon@1496..1498 "::"
-                Ident@1498..1503 "Value"
-            ARG_LIST@1503..1507
-              LParen@1503..1504 "("
-              ARG@1504..1506
-                EXPR_INT@1504..1506
-                  Int@1504..1506 "23"
-              RParen@1506..1507 ")"
-          Comma@1507..1508 ","
-          Whitespace@1508..1513 "\n    "
-          RBracket@1513..1514 "]"
-        Semi@1514..1515 ";"
-        Whitespace@1515..1520 "\n    "
-      STMT_EXPR@1520..1561
-        EXPR_CALL@1520..1555
-          EXPR_IDENT@1520..1527
-            PATH@1520..1527
-              Ident@1520..1527 "println"
-          ARG_LIST@1527..1555
-            LParen@1527..1528 "("
-            ARG@1528..1554
-              EXPR_CALL@1528..1554
-                EXPR_IDENT@1528..1536
-                  PATH@1528..1536
-                    Ident@1528..1536 "classify"
-                ARG_LIST@1536..1554
-                  LParen@1536..1537 "("
-                  ARG@1537..1553
-                    EXPR_CALL@1537..1553
-                      EXPR_IDENT@1537..1550
-                        PATH@1537..1550
-                          Ident@1537..1542 "First"
-                          ColonColon@1542..1544 "::"
-                          Ident@1544..1550 "Shared"
-                      ARG_LIST@1550..1553
-                        LParen@1550..1551 "("
-                        ARG@1551..1552
-                          EXPR_INT@1551..1552
-                            Int@1551..1552 "7"
-                        RParen@1552..1553 ")"
-                  RParen@1553..1554 ")"
-            RParen@1554..1555 ")"
-        Semi@1555..1556 ";"
-        Whitespace@1556..1561 "\n    "
-      STMT_EXPR@1561..1597
-        EXPR_CALL@1561..1591
-          EXPR_IDENT@1561..1568
-            PATH@1561..1568
-              Ident@1561..1568 "println"
-          ARG_LIST@1568..1591
-            LParen@1568..1569 "("
-            ARG@1569..1590
-              EXPR_CALL@1569..1590
-                EXPR_IDENT@1569..1577
-                  PATH@1569..1577
-                    Ident@1569..1577 "classify"
-                ARG_LIST@1577..1590
-                  LParen@1577..1578 "("
-                  ARG@1578..1589
-                    EXPR_IDENT@1578..1589
-                      PATH@1578..1589
-                        Ident@1578..1583 "First"
-                        ColonColon@1583..1585 "::"
-                        Ident@1585..1589 "Idle"
-                  RParen@1589..1590 ")"
-            RParen@1590..1591 ")"
-        Semi@1591..1592 ";"
-        Whitespace@1592..1597 "\n    "
-      STMT_EXPR@1597..1661
-        EXPR_CALL@1597..1655
-          EXPR_IDENT@1597..1604
-            PATH@1597..1604
-              Ident@1597..1604 "println"
-          ARG_LIST@1604..1655
-            LParen@1604..1605 "("
-            ARG@1605..1654
-              EXPR_CALL@1605..1654
-                EXPR_IDENT@1605..1613
-                  PATH@1605..1613
-                    Ident@1605..1613 "classify"
-                ARG_LIST@1613..1654
-                  LParen@1613..1614 "("
-                  ARG@1614..1653
-                    EXPR_STRUCT_LITERAL@1614..1653
-                      PATH@1614..1626
-                        Ident@1614..1619 "First"
-                        ColonColon@1619..1621 "::"
-                        Ident@1621..1625 "Data"
-                        Whitespace@1625..1626 " "
-                      STRUCT_LITERAL_FIELD_LIST@1626..1653
-                        LBrace@1626..1627 "{"
-                        Whitespace@1627..1628 " "
-                        STRUCT_LITERAL_FIELD@1628..1636
-                          Ident@1628..1633 "value"
-                          Colon@1633..1634 ":"
-                          Whitespace@1634..1635 " "
-                          EXPR_INT@1635..1636
-                            Int@1635..1636 "9"
-                        Comma@1636..1637 ","
-                        Whitespace@1637..1638 " "
-                        STRUCT_LITERAL_FIELD@1638..1652
-                          Ident@1638..1643 "label"
-                          Colon@1643..1644 ":"
-                          Whitespace@1644..1645 " "
-                          EXPR_STR@1645..1652
-                            Str@1645..1651 "\"data\""
-                            Whitespace@1651..1652 " "
-                        RBrace@1652..1653 "}"
-                  RParen@1653..1654 ")"
-            RParen@1654..1655 ")"
-        Semi@1655..1656 ";"
-        Whitespace@1656..1661 "\n    "
-      STMT_EXPR@1661..1712
-        EXPR_CALL@1661..1706
-          EXPR_IDENT@1661..1668
-            PATH@1661..1668
-              Ident@1661..1668 "println"
-          ARG_LIST@1668..1706
-            LParen@1668..1669 "("
-            ARG@1669..1705
-              EXPR_CALL@1669..1705
-                EXPR_IDENT@1669..1675
-                  PATH@1669..1675
-                    Ident@1669..1675 "nested"
-                ARG_LIST@1675..1705
-                  LParen@1675..1676 "("
-                  ARG@1676..1704
-                    EXPR_CALL@1676..1704
-                      EXPR_IDENT@1676..1688
-                        PATH@1676..1688
-                          Ident@1676..1682 "Option"
-                          ColonColon@1682..1684 "::"
-                          Ident@1684..1688 "Some"
-                      ARG_LIST@1688..1704
-                        LParen@1688..1689 "("
-                        ARG@1689..1703
-                          EXPR_CALL@1689..1703
-                            EXPR_IDENT@1689..1699
-                              PATH@1689..1699
-                                Ident@1689..1695 "Result"
-                                ColonColon@1695..1697 "::"
-                                Ident@1697..1699 "Ok"
-                            ARG_LIST@1699..1703
-                              LParen@1699..1700 "("
-                              ARG@1700..1702
-                                EXPR_INT@1700..1702
-                                  Int@1700..1702 "11"
-                              RParen@1702..1703 ")"
-                        RParen@1703..1704 ")"
-                  RParen@1704..1705 ")"
-            RParen@1705..1706 ")"
-        Semi@1706..1707 ";"
-        Whitespace@1707..1712 "\n    "
-      STMT_EXPR@1712..1767
-        EXPR_CALL@1712..1761
-          EXPR_IDENT@1712..1719
-            PATH@1712..1719
-              Ident@1712..1719 "println"
-          ARG_LIST@1719..1761
-            LParen@1719..1720 "("
-            ARG@1720..1760
-              EXPR_CALL@1720..1760
-                EXPR_IDENT@1720..1726
-                  PATH@1720..1726
-                    Ident@1720..1726 "nested"
-                ARG_LIST@1726..1760
-                  LParen@1726..1727 "("
-                  ARG@1727..1759
-                    EXPR_CALL@1727..1759
-                      EXPR_IDENT@1727..1739
-                        PATH@1727..1739
-                          Ident@1727..1733 "Option"
-                          ColonColon@1733..1735 "::"
-                          Ident@1735..1739 "Some"
-                      ARG_LIST@1739..1759
-                        LParen@1739..1740 "("
-                        ARG@1740..1758
-                          EXPR_CALL@1740..1758
-                            EXPR_IDENT@1740..1751
-                              PATH@1740..1751
-                                Ident@1740..1746 "Result"
-                                ColonColon@1746..1748 "::"
-                                Ident@1748..1751 "Err"
-                            ARG_LIST@1751..1758
-                              LParen@1751..1752 "("
-                              ARG@1752..1757
-                                EXPR_STR@1752..1757
-                                  Str@1752..1757 "\"bad\""
-                              RParen@1757..1758 ")"
-                        RParen@1758..1759 ")"
-                  RParen@1759..1760 ")"
-            RParen@1760..1761 ")"
-        Semi@1761..1762 ";"
-        Whitespace@1762..1767 "\n    "
-      STMT_EXPR@1767..1802
-        EXPR_CALL@1767..1796
-          EXPR_IDENT@1767..1774
-            PATH@1767..1774
-              Ident@1767..1774 "println"
-          ARG_LIST@1774..1796
-            LParen@1774..1775 "("
-            ARG@1775..1795
-              EXPR_CALL@1775..1795
-                EXPR_IDENT@1775..1781
-                  PATH@1775..1781
-                    Ident@1775..1781 "nested"
-                ARG_LIST@1781..1795
-                  LParen@1781..1782 "("
-                  ARG@1782..1794
-                    EXPR_IDENT@1782..1794
-                      PATH@1782..1794
-                        Ident@1782..1788 "Option"
-                        ColonColon@1788..1790 "::"
-                        Ident@1790..1794 "None"
-                  RParen@1794..1795 ")"
-            RParen@1795..1796 ")"
-        Semi@1796..1797 ";"
-        Whitespace@1797..1802 "\n    "
-      STMT_EXPR@1802..1850
-        EXPR_CALL@1802..1844
-          EXPR_IDENT@1802..1809
-            PATH@1802..1809
-              Ident@1802..1809 "println"
-          ARG_LIST@1809..1844
-            LParen@1809..1810 "("
-            ARG@1810..1843
-              EXPR_CALL@1810..1843
-                EXPR_IDENT@1810..1825
-                  PATH@1810..1825
-                    Ident@1810..1825 "optional_number"
-                ARG_LIST@1825..1843
-                  LParen@1825..1826 "("
-                  ARG@1826..1842
-                    EXPR_CALL@1826..1842
-                      EXPR_IDENT@1826..1838
-                        PATH@1826..1838
-                          Ident@1826..1832 "Option"
-                          ColonColon@1832..1834 "::"
-                          Ident@1834..1838 "Some"
-                      ARG_LIST@1838..1842
-                        LParen@1838..1839 "("
-                        ARG@1839..1841
-                          EXPR_INT@1839..1841
-                            Int@1839..1841 "13"
-                        RParen@1841..1842 ")"
-                  RParen@1842..1843 ")"
-            RParen@1843..1844 ")"
-        Semi@1844..1845 ";"
-        Whitespace@1845..1850 "\n    "
-      STMT_EXPR@1850..1894
-        EXPR_CALL@1850..1888
-          EXPR_IDENT@1850..1857
-            PATH@1850..1857
-              Ident@1850..1857 "println"
-          ARG_LIST@1857..1888
-            LParen@1857..1858 "("
-            ARG@1858..1887
-              EXPR_CALL@1858..1887
-                EXPR_IDENT@1858..1873
-                  PATH@1858..1873
-                    Ident@1858..1873 "optional_number"
-                ARG_LIST@1873..1887
-                  LParen@1873..1874 "("
-                  ARG@1874..1886
-                    EXPR_IDENT@1874..1886
-                      PATH@1874..1886
-                        Ident@1874..1880 "Option"
-                        ColonColon@1880..1882 "::"
-                        Ident@1882..1886 "None"
-                  RParen@1886..1887 ")"
-            RParen@1887..1888 ")"
-        Semi@1888..1889 ";"
-        Whitespace@1889..1894 "\n    "
-      STMT_EXPR@1894..1935
-        EXPR_CALL@1894..1929
-          EXPR_IDENT@1894..1901
-            PATH@1894..1901
-              Ident@1894..1901 "println"
-          ARG_LIST@1901..1929
-            LParen@1901..1902 "("
-            ARG@1902..1928
-              EXPR_CALL@1902..1928
-                EXPR_IDENT@1902..1915
-                  PATH@1902..1915
-                    Ident@1902..1915 "is_non_shared"
-                ARG_LIST@1915..1928
-                  LParen@1915..1916 "("
-                  ARG@1916..1927
-                    EXPR_IDENT@1916..1927
-                      PATH@1916..1927
-                        Ident@1916..1921 "First"
-                        ColonColon@1921..1923 "::"
-                        Ident@1923..1927 "Idle"
-                  RParen@1927..1928 ")"
-            RParen@1928..1929 ")"
-        Semi@1929..1930 ";"
-        Whitespace@1930..1935 "\n    "
-      STMT_EXPR@1935..1981
-        EXPR_CALL@1935..1975
-          EXPR_IDENT@1935..1942
-            PATH@1935..1942
-              Ident@1935..1942 "println"
-          ARG_LIST@1942..1975
-            LParen@1942..1943 "("
-            ARG@1943..1974
-              EXPR_CALL@1943..1974
-                EXPR_IDENT@1943..1956
-                  PATH@1943..1956
-                    Ident@1943..1956 "is_non_shared"
-                ARG_LIST@1956..1974
-                  LParen@1956..1957 "("
-                  ARG@1957..1973
-                    EXPR_CALL@1957..1973
-                      EXPR_IDENT@1957..1970
-                        PATH@1957..1970
-                          Ident@1957..1962 "First"
-                          ColonColon@1962..1964 "::"
-                          Ident@1964..1970 "Shared"
-                      ARG_LIST@1970..1973
-                        LParen@1970..1971 "("
-                        ARG@1971..1972
-                          EXPR_INT@1971..1972
-                            Int@1971..1972 "1"
-                        RParen@1972..1973 ")"
-                  RParen@1973..1974 ")"
-            RParen@1974..1975 ")"
-        Semi@1975..1976 ";"
-        Whitespace@1976..1981 "\n    "
-      STMT_EXPR@1981..2023
-        EXPR_CALL@1981..2017
-          EXPR_IDENT@1981..1988
-            PATH@1981..1988
-              Ident@1981..1988 "println"
-          ARG_LIST@1988..2017
-            LParen@1988..1989 "("
-            ARG@1989..2016
-              EXPR_CALL@1989..2016
-                EXPR_IDENT@1989..1998
-                  PATH@1989..1998
-                    Ident@1989..1998 "take_once"
-                ARG_LIST@1998..2016
-                  LParen@1998..1999 "("
-                  ARG@1999..2015
-                    EXPR_CALL@1999..2015
-                      EXPR_IDENT@1999..2011
-                        PATH@1999..2011
-                          Ident@1999..2005 "Option"
-                          ColonColon@2005..2007 "::"
-                          Ident@2007..2011 "Some"
-                      ARG_LIST@2011..2015
-                        LParen@2011..2012 "("
-                        ARG@2012..2014
-                          EXPR_INT@2012..2014
-                            Int@2012..2014 "15"
-                        RParen@2014..2015 ")"
-                  RParen@2015..2016 ")"
-            RParen@2016..2017 ")"
-        Semi@2017..2018 ";"
-        Whitespace@2018..2023 "\n    "
-      STMT_EXPR@2023..2061
-        EXPR_CALL@2023..2055
-          EXPR_IDENT@2023..2030
-            PATH@2023..2030
-              Ident@2023..2030 "println"
-          ARG_LIST@2030..2055
-            LParen@2030..2031 "("
-            ARG@2031..2054
-              EXPR_CALL@2031..2054
-                EXPR_IDENT@2031..2036
-                  PATH@2031..2036
-                    Ident@2031..2036 "unbox"
-                ARG_LIST@2036..2054
-                  LParen@2036..2037 "("
-                  ARG@2037..2053
-                    EXPR_CALL@2037..2053
-                      EXPR_IDENT@2037..2049
-                        PATH@2037..2049
-                          Ident@2037..2042 "Boxed"
-                          ColonColon@2042..2044 "::"
-                          Ident@2044..2049 "Value"
-                      ARG_LIST@2049..2053
-                        LParen@2049..2050 "("
-                        ARG@2050..2052
-                          EXPR_INT@2050..2052
-                            Int@2050..2052 "17"
-                        RParen@2052..2053 ")"
-                  RParen@2053..2054 ")"
-            RParen@2054..2055 ")"
-        Semi@2055..2056 ";"
-        Whitespace@2056..2061 "\n    "
-      EXPR_CALL@2061..2087
-        EXPR_IDENT@2061..2068
-          PATH@2061..2068
-            Ident@2061..2068 "println"
-        ARG_LIST@2068..2087
-          LParen@2068..2069 "("
-          ARG@2069..2085
-            EXPR_CALL@2069..2085
-              EXPR_IDENT@2069..2078
-                PATH@2069..2078
-                  Ident@2069..2078 "sum_boxed"
-              ARG_LIST@2078..2085
-                LParen@2078..2079 "("
-                ARG@2079..2084
-                  EXPR_IDENT@2079..2084
-                    PATH@2079..2084
-                      Ident@2079..2084 "boxed"
-                RParen@2084..2085 ")"
-          RParen@2085..2086 ")"
-          Whitespace@2086..2087 "\n"
-      RBrace@2087..2088 "}"
-      Whitespace@2088..2089 "\n"
+              Whitespace@1112..1117 "\n    "
+      EXPR_CALL@1117..1130
+        EXPR_BINARY@1117..1127
+          EXPR_IDENT@1117..1123
+            PATH@1117..1123
+              Ident@1117..1123 "result"
+          Dot@1123..1124 "."
+          EXPR_IDENT@1124..1127
+            PATH@1124..1127
+              Ident@1124..1127 "get"
+        ARG_LIST@1127..1130
+          LParen@1127..1128 "("
+          RParen@1128..1129 ")"
+          Whitespace@1129..1130 "\n"
+      RBrace@1130..1131 "}"
+      Whitespace@1131..1133 "\n\n"
+  FN@1133..1215
+    FnKeyword@1133..1135 "fn"
+    Whitespace@1135..1136 " "
+    Ident@1136..1141 "unbox"
+    PARAM_LIST@1141..1161
+      LParen@1141..1142 "("
+      PARAM@1142..1159
+        Ident@1142..1147 "value"
+        Colon@1147..1148 ":"
+        Whitespace@1148..1149 " "
+        TYPE_TAPP@1149..1159
+          PATH@1149..1154
+            Ident@1149..1154 "Boxed"
+          TYPE_PARAM_LIST@1154..1159
+            LBracket@1154..1155 "["
+            TYPE_INT@1155..1158
+              IntKeyword@1155..1158 "int"
+            RBracket@1158..1159 "]"
+      RParen@1159..1160 ")"
+      Whitespace@1160..1161 " "
+    Arrow@1161..1163 "->"
+    Whitespace@1163..1164 " "
+    TYPE_INT@1164..1168
+      IntKeyword@1164..1167 "int"
+      Whitespace@1167..1168 " "
+    BLOCK@1168..1215
+      LBrace@1168..1169 "{"
+      Whitespace@1169..1174 "\n    "
+      STMT_LET@1174..1205
+        LetKeyword@1174..1177 "let"
+        Whitespace@1177..1178 " "
+        PATTERN_CONSTR@1178..1192
+          PATH@1178..1183
+            Ident@1178..1183 "Value"
+          LParen@1183..1184 "("
+          PATTERN_VARIABLE@1184..1190
+            Ident@1184..1190 "number"
+          RParen@1190..1191 ")"
+          Whitespace@1191..1192 " "
+        Eq@1192..1193 "="
+        Whitespace@1193..1194 " "
+        EXPR_IDENT@1194..1199
+          PATH@1194..1199
+            Ident@1194..1199 "value"
+        Semi@1199..1200 ";"
+        Whitespace@1200..1205 "\n    "
+      EXPR_IDENT@1205..1212
+        PATH@1205..1212
+          Ident@1205..1211 "number"
+          Whitespace@1211..1212 "\n"
+      RBrace@1212..1213 "}"
+      Whitespace@1213..1215 "\n\n"
+  FN@1215..1395
+    FnKeyword@1215..1217 "fn"
+    Whitespace@1217..1218 " "
+    Ident@1218..1227 "sum_boxed"
+    PARAM_LIST@1227..1253
+      LParen@1227..1228 "("
+      PARAM@1228..1251
+        Ident@1228..1234 "values"
+        Colon@1234..1235 ":"
+        Whitespace@1235..1236 " "
+        TYPE_TAPP@1236..1251
+          PATH@1236..1239
+            Ident@1236..1239 "Vec"
+          TYPE_PARAM_LIST@1239..1251
+            LBracket@1239..1240 "["
+            TYPE_TAPP@1240..1250
+              PATH@1240..1245
+                Ident@1240..1245 "Boxed"
+              TYPE_PARAM_LIST@1245..1250
+                LBracket@1245..1246 "["
+                TYPE_INT@1246..1249
+                  IntKeyword@1246..1249 "int"
+                RBracket@1249..1250 "]"
+            RBracket@1250..1251 "]"
+      RParen@1251..1252 ")"
+      Whitespace@1252..1253 " "
+    Arrow@1253..1255 "->"
+    Whitespace@1255..1256 " "
+    TYPE_INT@1256..1260
+      IntKeyword@1256..1259 "int"
+      Whitespace@1259..1260 " "
+    BLOCK@1260..1395
+      LBrace@1260..1261 "{"
+      Whitespace@1261..1266 "\n    "
+      STMT_LET@1266..1296
+        LetKeyword@1266..1269 "let"
+        Whitespace@1269..1270 " "
+        PATTERN_VARIABLE@1270..1277
+          Ident@1270..1276 "result"
+          Whitespace@1276..1277 " "
+        Eq@1277..1278 "="
+        Whitespace@1278..1279 " "
+        EXPR_CALL@1279..1290
+          EXPR_IDENT@1279..1287
+            PATH@1279..1287
+              Ident@1279..1282 "Ref"
+              ColonColon@1282..1284 "::"
+              Ident@1284..1287 "new"
+          ARG_LIST@1287..1290
+            LParen@1287..1288 "("
+            ARG@1288..1289
+              EXPR_INT@1288..1289
+                Int@1288..1289 "0"
+            RParen@1289..1290 ")"
+        Semi@1290..1291 ";"
+        Whitespace@1291..1296 "\n    "
+      STMT_EXPR@1296..1379
+        EXPR_FOR@1296..1379
+          ForKeyword@1296..1299 "for"
+          Whitespace@1299..1300 " "
+          PATTERN_CONSTR@1300..1314
+            PATH@1300..1305
+              Ident@1300..1305 "Value"
+            LParen@1305..1306 "("
+            PATTERN_VARIABLE@1306..1312
+              Ident@1306..1312 "number"
+            RParen@1312..1313 ")"
+            Whitespace@1313..1314 " "
+          InKeyword@1314..1316 "in"
+          Whitespace@1316..1317 " "
+          EXPR_IDENT@1317..1324
+            PATH@1317..1324
+              Ident@1317..1323 "values"
+              Whitespace@1323..1324 " "
+          BLOCK@1324..1379
+            LBrace@1324..1325 "{"
+            Whitespace@1325..1334 "\n        "
+            STMT_EXPR@1334..1373
+              EXPR_CALL@1334..1367
+                EXPR_BINARY@1334..1344
+                  EXPR_IDENT@1334..1340
+                    PATH@1334..1340
+                      Ident@1334..1340 "result"
+                  Dot@1340..1341 "."
+                  EXPR_IDENT@1341..1344
+                    PATH@1341..1344
+                      Ident@1341..1344 "set"
+                ARG_LIST@1344..1367
+                  LParen@1344..1345 "("
+                  ARG@1345..1366
+                    EXPR_BINARY@1345..1366
+                      EXPR_CALL@1345..1358
+                        EXPR_BINARY@1345..1355
+                          EXPR_IDENT@1345..1351
+                            PATH@1345..1351
+                              Ident@1345..1351 "result"
+                          Dot@1351..1352 "."
+                          EXPR_IDENT@1352..1355
+                            PATH@1352..1355
+                              Ident@1352..1355 "get"
+                        ARG_LIST@1355..1358
+                          LParen@1355..1356 "("
+                          RParen@1356..1357 ")"
+                          Whitespace@1357..1358 " "
+                      Plus@1358..1359 "+"
+                      Whitespace@1359..1360 " "
+                      EXPR_IDENT@1360..1366
+                        PATH@1360..1366
+                          Ident@1360..1366 "number"
+                  RParen@1366..1367 ")"
+              Semi@1367..1368 ";"
+              Whitespace@1368..1373 "\n    "
+            RBrace@1373..1374 "}"
+            Whitespace@1374..1379 "\n    "
+      EXPR_CALL@1379..1392
+        EXPR_BINARY@1379..1389
+          EXPR_IDENT@1379..1385
+            PATH@1379..1385
+              Ident@1379..1385 "result"
+          Dot@1385..1386 "."
+          EXPR_IDENT@1386..1389
+            PATH@1386..1389
+              Ident@1386..1389 "get"
+        ARG_LIST@1389..1392
+          LParen@1389..1390 "("
+          RParen@1390..1391 ")"
+          Whitespace@1391..1392 "\n"
+      RBrace@1392..1393 "}"
+      Whitespace@1393..1395 "\n\n"
+  FN@1395..2076
+    FnKeyword@1395..1397 "fn"
+    Whitespace@1397..1398 " "
+    Ident@1398..1402 "main"
+    PARAM_LIST@1402..1405
+      LParen@1402..1403 "("
+      RParen@1403..1404 ")"
+      Whitespace@1404..1405 " "
+    Arrow@1405..1407 "->"
+    Whitespace@1407..1408 " "
+    TYPE_UNIT@1408..1413
+      UnitKeyword@1408..1412 "unit"
+      Whitespace@1412..1413 " "
+    BLOCK@1413..2076
+      LBrace@1413..1414 "{"
+      Whitespace@1414..1419 "\n    "
+      STMT_LET@1419..1507
+        LetKeyword@1419..1422 "let"
+        Whitespace@1422..1423 " "
+        PATTERN_VARIABLE@1423..1428
+          Ident@1423..1428 "boxed"
+        Colon@1428..1429 ":"
+        Whitespace@1429..1430 " "
+        TYPE_TAPP@1430..1446
+          PATH@1430..1433
+            Ident@1430..1433 "Vec"
+          TYPE_PARAM_LIST@1433..1446
+            LBracket@1433..1434 "["
+            TYPE_TAPP@1434..1444
+              PATH@1434..1439
+                Ident@1434..1439 "Boxed"
+              TYPE_PARAM_LIST@1439..1444
+                LBracket@1439..1440 "["
+                TYPE_INT@1440..1443
+                  IntKeyword@1440..1443 "int"
+                RBracket@1443..1444 "]"
+            RBracket@1444..1445 "]"
+            Whitespace@1445..1446 " "
+        Eq@1446..1447 "="
+        Whitespace@1447..1448 " "
+        EXPR_CALL@1448..1501
+          EXPR_IDENT@1448..1463
+            PATH@1448..1463
+              Ident@1448..1451 "Vec"
+              ColonColon@1451..1453 "::"
+              Ident@1453..1463 "from_array"
+          ARG_LIST@1463..1501
+            LParen@1463..1464 "("
+            ARG@1464..1500
+              EXPR_ARRAY_LITERAL@1464..1500
+                LBracket@1464..1465 "["
+                EXPR_CALL@1465..1481
+                  EXPR_IDENT@1465..1477
+                    PATH@1465..1477
+                      Ident@1465..1470 "Boxed"
+                      ColonColon@1470..1472 "::"
+                      Ident@1472..1477 "Value"
+                  ARG_LIST@1477..1481
+                    LParen@1477..1478 "("
+                    ARG@1478..1480
+                      EXPR_INT@1478..1480
+                        Int@1478..1480 "19"
+                    RParen@1480..1481 ")"
+                Comma@1481..1482 ","
+                Whitespace@1482..1483 " "
+                EXPR_CALL@1483..1499
+                  EXPR_IDENT@1483..1495
+                    PATH@1483..1495
+                      Ident@1483..1488 "Boxed"
+                      ColonColon@1488..1490 "::"
+                      Ident@1490..1495 "Value"
+                  ARG_LIST@1495..1499
+                    LParen@1495..1496 "("
+                    ARG@1496..1498
+                      EXPR_INT@1496..1498
+                        Int@1496..1498 "23"
+                    RParen@1498..1499 ")"
+                RBracket@1499..1500 "]"
+            RParen@1500..1501 ")"
+        Semi@1501..1502 ";"
+        Whitespace@1502..1507 "\n    "
+      STMT_EXPR@1507..1548
+        EXPR_CALL@1507..1542
+          EXPR_IDENT@1507..1514
+            PATH@1507..1514
+              Ident@1507..1514 "println"
+          ARG_LIST@1514..1542
+            LParen@1514..1515 "("
+            ARG@1515..1541
+              EXPR_CALL@1515..1541
+                EXPR_IDENT@1515..1523
+                  PATH@1515..1523
+                    Ident@1515..1523 "classify"
+                ARG_LIST@1523..1541
+                  LParen@1523..1524 "("
+                  ARG@1524..1540
+                    EXPR_CALL@1524..1540
+                      EXPR_IDENT@1524..1537
+                        PATH@1524..1537
+                          Ident@1524..1529 "First"
+                          ColonColon@1529..1531 "::"
+                          Ident@1531..1537 "Shared"
+                      ARG_LIST@1537..1540
+                        LParen@1537..1538 "("
+                        ARG@1538..1539
+                          EXPR_INT@1538..1539
+                            Int@1538..1539 "7"
+                        RParen@1539..1540 ")"
+                  RParen@1540..1541 ")"
+            RParen@1541..1542 ")"
+        Semi@1542..1543 ";"
+        Whitespace@1543..1548 "\n    "
+      STMT_EXPR@1548..1584
+        EXPR_CALL@1548..1578
+          EXPR_IDENT@1548..1555
+            PATH@1548..1555
+              Ident@1548..1555 "println"
+          ARG_LIST@1555..1578
+            LParen@1555..1556 "("
+            ARG@1556..1577
+              EXPR_CALL@1556..1577
+                EXPR_IDENT@1556..1564
+                  PATH@1556..1564
+                    Ident@1556..1564 "classify"
+                ARG_LIST@1564..1577
+                  LParen@1564..1565 "("
+                  ARG@1565..1576
+                    EXPR_IDENT@1565..1576
+                      PATH@1565..1576
+                        Ident@1565..1570 "First"
+                        ColonColon@1570..1572 "::"
+                        Ident@1572..1576 "Idle"
+                  RParen@1576..1577 ")"
+            RParen@1577..1578 ")"
+        Semi@1578..1579 ";"
+        Whitespace@1579..1584 "\n    "
+      STMT_EXPR@1584..1648
+        EXPR_CALL@1584..1642
+          EXPR_IDENT@1584..1591
+            PATH@1584..1591
+              Ident@1584..1591 "println"
+          ARG_LIST@1591..1642
+            LParen@1591..1592 "("
+            ARG@1592..1641
+              EXPR_CALL@1592..1641
+                EXPR_IDENT@1592..1600
+                  PATH@1592..1600
+                    Ident@1592..1600 "classify"
+                ARG_LIST@1600..1641
+                  LParen@1600..1601 "("
+                  ARG@1601..1640
+                    EXPR_STRUCT_LITERAL@1601..1640
+                      PATH@1601..1613
+                        Ident@1601..1606 "First"
+                        ColonColon@1606..1608 "::"
+                        Ident@1608..1612 "Data"
+                        Whitespace@1612..1613 " "
+                      STRUCT_LITERAL_FIELD_LIST@1613..1640
+                        LBrace@1613..1614 "{"
+                        Whitespace@1614..1615 " "
+                        STRUCT_LITERAL_FIELD@1615..1623
+                          Ident@1615..1620 "value"
+                          Colon@1620..1621 ":"
+                          Whitespace@1621..1622 " "
+                          EXPR_INT@1622..1623
+                            Int@1622..1623 "9"
+                        Comma@1623..1624 ","
+                        Whitespace@1624..1625 " "
+                        STRUCT_LITERAL_FIELD@1625..1639
+                          Ident@1625..1630 "label"
+                          Colon@1630..1631 ":"
+                          Whitespace@1631..1632 " "
+                          EXPR_STR@1632..1639
+                            Str@1632..1638 "\"data\""
+                            Whitespace@1638..1639 " "
+                        RBrace@1639..1640 "}"
+                  RParen@1640..1641 ")"
+            RParen@1641..1642 ")"
+        Semi@1642..1643 ";"
+        Whitespace@1643..1648 "\n    "
+      STMT_EXPR@1648..1699
+        EXPR_CALL@1648..1693
+          EXPR_IDENT@1648..1655
+            PATH@1648..1655
+              Ident@1648..1655 "println"
+          ARG_LIST@1655..1693
+            LParen@1655..1656 "("
+            ARG@1656..1692
+              EXPR_CALL@1656..1692
+                EXPR_IDENT@1656..1662
+                  PATH@1656..1662
+                    Ident@1656..1662 "nested"
+                ARG_LIST@1662..1692
+                  LParen@1662..1663 "("
+                  ARG@1663..1691
+                    EXPR_CALL@1663..1691
+                      EXPR_IDENT@1663..1675
+                        PATH@1663..1675
+                          Ident@1663..1669 "Option"
+                          ColonColon@1669..1671 "::"
+                          Ident@1671..1675 "Some"
+                      ARG_LIST@1675..1691
+                        LParen@1675..1676 "("
+                        ARG@1676..1690
+                          EXPR_CALL@1676..1690
+                            EXPR_IDENT@1676..1686
+                              PATH@1676..1686
+                                Ident@1676..1682 "Result"
+                                ColonColon@1682..1684 "::"
+                                Ident@1684..1686 "Ok"
+                            ARG_LIST@1686..1690
+                              LParen@1686..1687 "("
+                              ARG@1687..1689
+                                EXPR_INT@1687..1689
+                                  Int@1687..1689 "11"
+                              RParen@1689..1690 ")"
+                        RParen@1690..1691 ")"
+                  RParen@1691..1692 ")"
+            RParen@1692..1693 ")"
+        Semi@1693..1694 ";"
+        Whitespace@1694..1699 "\n    "
+      STMT_EXPR@1699..1754
+        EXPR_CALL@1699..1748
+          EXPR_IDENT@1699..1706
+            PATH@1699..1706
+              Ident@1699..1706 "println"
+          ARG_LIST@1706..1748
+            LParen@1706..1707 "("
+            ARG@1707..1747
+              EXPR_CALL@1707..1747
+                EXPR_IDENT@1707..1713
+                  PATH@1707..1713
+                    Ident@1707..1713 "nested"
+                ARG_LIST@1713..1747
+                  LParen@1713..1714 "("
+                  ARG@1714..1746
+                    EXPR_CALL@1714..1746
+                      EXPR_IDENT@1714..1726
+                        PATH@1714..1726
+                          Ident@1714..1720 "Option"
+                          ColonColon@1720..1722 "::"
+                          Ident@1722..1726 "Some"
+                      ARG_LIST@1726..1746
+                        LParen@1726..1727 "("
+                        ARG@1727..1745
+                          EXPR_CALL@1727..1745
+                            EXPR_IDENT@1727..1738
+                              PATH@1727..1738
+                                Ident@1727..1733 "Result"
+                                ColonColon@1733..1735 "::"
+                                Ident@1735..1738 "Err"
+                            ARG_LIST@1738..1745
+                              LParen@1738..1739 "("
+                              ARG@1739..1744
+                                EXPR_STR@1739..1744
+                                  Str@1739..1744 "\"bad\""
+                              RParen@1744..1745 ")"
+                        RParen@1745..1746 ")"
+                  RParen@1746..1747 ")"
+            RParen@1747..1748 ")"
+        Semi@1748..1749 ";"
+        Whitespace@1749..1754 "\n    "
+      STMT_EXPR@1754..1789
+        EXPR_CALL@1754..1783
+          EXPR_IDENT@1754..1761
+            PATH@1754..1761
+              Ident@1754..1761 "println"
+          ARG_LIST@1761..1783
+            LParen@1761..1762 "("
+            ARG@1762..1782
+              EXPR_CALL@1762..1782
+                EXPR_IDENT@1762..1768
+                  PATH@1762..1768
+                    Ident@1762..1768 "nested"
+                ARG_LIST@1768..1782
+                  LParen@1768..1769 "("
+                  ARG@1769..1781
+                    EXPR_IDENT@1769..1781
+                      PATH@1769..1781
+                        Ident@1769..1775 "Option"
+                        ColonColon@1775..1777 "::"
+                        Ident@1777..1781 "None"
+                  RParen@1781..1782 ")"
+            RParen@1782..1783 ")"
+        Semi@1783..1784 ";"
+        Whitespace@1784..1789 "\n    "
+      STMT_EXPR@1789..1837
+        EXPR_CALL@1789..1831
+          EXPR_IDENT@1789..1796
+            PATH@1789..1796
+              Ident@1789..1796 "println"
+          ARG_LIST@1796..1831
+            LParen@1796..1797 "("
+            ARG@1797..1830
+              EXPR_CALL@1797..1830
+                EXPR_IDENT@1797..1812
+                  PATH@1797..1812
+                    Ident@1797..1812 "optional_number"
+                ARG_LIST@1812..1830
+                  LParen@1812..1813 "("
+                  ARG@1813..1829
+                    EXPR_CALL@1813..1829
+                      EXPR_IDENT@1813..1825
+                        PATH@1813..1825
+                          Ident@1813..1819 "Option"
+                          ColonColon@1819..1821 "::"
+                          Ident@1821..1825 "Some"
+                      ARG_LIST@1825..1829
+                        LParen@1825..1826 "("
+                        ARG@1826..1828
+                          EXPR_INT@1826..1828
+                            Int@1826..1828 "13"
+                        RParen@1828..1829 ")"
+                  RParen@1829..1830 ")"
+            RParen@1830..1831 ")"
+        Semi@1831..1832 ";"
+        Whitespace@1832..1837 "\n    "
+      STMT_EXPR@1837..1881
+        EXPR_CALL@1837..1875
+          EXPR_IDENT@1837..1844
+            PATH@1837..1844
+              Ident@1837..1844 "println"
+          ARG_LIST@1844..1875
+            LParen@1844..1845 "("
+            ARG@1845..1874
+              EXPR_CALL@1845..1874
+                EXPR_IDENT@1845..1860
+                  PATH@1845..1860
+                    Ident@1845..1860 "optional_number"
+                ARG_LIST@1860..1874
+                  LParen@1860..1861 "("
+                  ARG@1861..1873
+                    EXPR_IDENT@1861..1873
+                      PATH@1861..1873
+                        Ident@1861..1867 "Option"
+                        ColonColon@1867..1869 "::"
+                        Ident@1869..1873 "None"
+                  RParen@1873..1874 ")"
+            RParen@1874..1875 ")"
+        Semi@1875..1876 ";"
+        Whitespace@1876..1881 "\n    "
+      STMT_EXPR@1881..1922
+        EXPR_CALL@1881..1916
+          EXPR_IDENT@1881..1888
+            PATH@1881..1888
+              Ident@1881..1888 "println"
+          ARG_LIST@1888..1916
+            LParen@1888..1889 "("
+            ARG@1889..1915
+              EXPR_CALL@1889..1915
+                EXPR_IDENT@1889..1902
+                  PATH@1889..1902
+                    Ident@1889..1902 "is_non_shared"
+                ARG_LIST@1902..1915
+                  LParen@1902..1903 "("
+                  ARG@1903..1914
+                    EXPR_IDENT@1903..1914
+                      PATH@1903..1914
+                        Ident@1903..1908 "First"
+                        ColonColon@1908..1910 "::"
+                        Ident@1910..1914 "Idle"
+                  RParen@1914..1915 ")"
+            RParen@1915..1916 ")"
+        Semi@1916..1917 ";"
+        Whitespace@1917..1922 "\n    "
+      STMT_EXPR@1922..1968
+        EXPR_CALL@1922..1962
+          EXPR_IDENT@1922..1929
+            PATH@1922..1929
+              Ident@1922..1929 "println"
+          ARG_LIST@1929..1962
+            LParen@1929..1930 "("
+            ARG@1930..1961
+              EXPR_CALL@1930..1961
+                EXPR_IDENT@1930..1943
+                  PATH@1930..1943
+                    Ident@1930..1943 "is_non_shared"
+                ARG_LIST@1943..1961
+                  LParen@1943..1944 "("
+                  ARG@1944..1960
+                    EXPR_CALL@1944..1960
+                      EXPR_IDENT@1944..1957
+                        PATH@1944..1957
+                          Ident@1944..1949 "First"
+                          ColonColon@1949..1951 "::"
+                          Ident@1951..1957 "Shared"
+                      ARG_LIST@1957..1960
+                        LParen@1957..1958 "("
+                        ARG@1958..1959
+                          EXPR_INT@1958..1959
+                            Int@1958..1959 "1"
+                        RParen@1959..1960 ")"
+                  RParen@1960..1961 ")"
+            RParen@1961..1962 ")"
+        Semi@1962..1963 ";"
+        Whitespace@1963..1968 "\n    "
+      STMT_EXPR@1968..2010
+        EXPR_CALL@1968..2004
+          EXPR_IDENT@1968..1975
+            PATH@1968..1975
+              Ident@1968..1975 "println"
+          ARG_LIST@1975..2004
+            LParen@1975..1976 "("
+            ARG@1976..2003
+              EXPR_CALL@1976..2003
+                EXPR_IDENT@1976..1985
+                  PATH@1976..1985
+                    Ident@1976..1985 "take_once"
+                ARG_LIST@1985..2003
+                  LParen@1985..1986 "("
+                  ARG@1986..2002
+                    EXPR_CALL@1986..2002
+                      EXPR_IDENT@1986..1998
+                        PATH@1986..1998
+                          Ident@1986..1992 "Option"
+                          ColonColon@1992..1994 "::"
+                          Ident@1994..1998 "Some"
+                      ARG_LIST@1998..2002
+                        LParen@1998..1999 "("
+                        ARG@1999..2001
+                          EXPR_INT@1999..2001
+                            Int@1999..2001 "15"
+                        RParen@2001..2002 ")"
+                  RParen@2002..2003 ")"
+            RParen@2003..2004 ")"
+        Semi@2004..2005 ";"
+        Whitespace@2005..2010 "\n    "
+      STMT_EXPR@2010..2048
+        EXPR_CALL@2010..2042
+          EXPR_IDENT@2010..2017
+            PATH@2010..2017
+              Ident@2010..2017 "println"
+          ARG_LIST@2017..2042
+            LParen@2017..2018 "("
+            ARG@2018..2041
+              EXPR_CALL@2018..2041
+                EXPR_IDENT@2018..2023
+                  PATH@2018..2023
+                    Ident@2018..2023 "unbox"
+                ARG_LIST@2023..2041
+                  LParen@2023..2024 "("
+                  ARG@2024..2040
+                    EXPR_CALL@2024..2040
+                      EXPR_IDENT@2024..2036
+                        PATH@2024..2036
+                          Ident@2024..2029 "Boxed"
+                          ColonColon@2029..2031 "::"
+                          Ident@2031..2036 "Value"
+                      ARG_LIST@2036..2040
+                        LParen@2036..2037 "("
+                        ARG@2037..2039
+                          EXPR_INT@2037..2039
+                            Int@2037..2039 "17"
+                        RParen@2039..2040 ")"
+                  RParen@2040..2041 ")"
+            RParen@2041..2042 ")"
+        Semi@2042..2043 ";"
+        Whitespace@2043..2048 "\n    "
+      EXPR_CALL@2048..2074
+        EXPR_IDENT@2048..2055
+          PATH@2048..2055
+            Ident@2048..2055 "println"
+        ARG_LIST@2055..2074
+          LParen@2055..2056 "("
+          ARG@2056..2072
+            EXPR_CALL@2056..2072
+              EXPR_IDENT@2056..2065
+                PATH@2056..2065
+                  Ident@2056..2065 "sum_boxed"
+              ARG_LIST@2065..2072
+                LParen@2065..2066 "("
+                ARG@2066..2071
+                  EXPR_IDENT@2066..2071
+                    PATH@2066..2071
+                      Ident@2066..2071 "boxed"
+                RParen@2071..2072 ")"
+          RParen@2072..2073 ")"
+          Whitespace@2073..2074 "\n"
+      RBrace@2074..2075 "}"
+      Whitespace@2075..2076 "\n"
