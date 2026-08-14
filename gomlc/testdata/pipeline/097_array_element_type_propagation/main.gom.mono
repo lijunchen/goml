@@ -1,37 +1,37 @@
 fn main() -> unit {
   let arr/0 = [10, 20, 30] in
   let i/1 = inherent#Ref#Ref[T]#new__T_int(0) in
-  let _wild184 =
+  let _wild189 =
     while (inherent#Ref#Ref[T]#get__T_int(i/1) < 3) {
         {
-          let _wild182 =
+          let _wild187 =
             println__T_string(
               trait_impl#ToString#uint8#to_string(
                 @intrinsic(array.get)(arr/0, inherent#Ref#Ref[T]#get__T_int(i/1))
               )
             ) in
-          let _wild183 =
+          let _wild188 =
             inherent#Ref#Ref[T]#set__T_int(i/1, (inherent#Ref#Ref[T]#get__T_int(i/1) + 1)) in
         }
     } in
   let floats/2 = [1.5, 2.5] in
-  let _wild185 =
+  let _wild190 =
     println__T_string(trait_impl#ToString#float32#to_string(@intrinsic(array.get)(floats/2, 0))) in
-  let _wild186 =
+  let _wild191 =
     println__T_string(trait_impl#ToString#float32#to_string(@intrinsic(array.get)(floats/2, 1))) in
   let longs/3 = [100, 200] in
-  let _wild187 =
+  let _wild192 =
     println__T_string(trait_impl#ToString#int64#to_string(@intrinsic(array.get)(longs/3, 0))) in
-  let _wild188 =
+  let _wild193 =
     println__T_string(trait_impl#ToString#int64#to_string(@intrinsic(array.get)(longs/3, 1))) in
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/270: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/270)
+fn inherent#Ref#Ref[T]#new__T_int(value/273: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/273)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/271: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/271)
+fn inherent#Ref#Ref[T]#get__T_int(self/274: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/274)
 }
 
 fn println__T_string(value/1: string) -> unit {
@@ -42,8 +42,8 @@ fn trait_impl#ToString#uint8#to_string(self/72: uint8) -> string {
   @runtime(core.uint8_to_string)(self/72)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/272: Ref[int], value/273: int) -> unit {
-  @intrinsic(ref.set)(self/272, value/273)
+fn inherent#Ref#Ref[T]#set__T_int(self/275: Ref[int], value/276: int) -> unit {
+  @intrinsic(ref.set)(self/275, value/276)
 }
 
 fn trait_impl#ToString#float32#to_string(self/76: float32) -> string {

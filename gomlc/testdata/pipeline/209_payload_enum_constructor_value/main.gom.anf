@@ -3,8 +3,8 @@ fn prepend_with(
   value/1: int32,
   values/2: List__int32
 ) -> List__int32 {
-  let t187 = make/0(value/1, values/2) in
-  t187
+  let t192 = make/0(value/1, values/2) in
+  t192
 }
 
 fn sum(values/3: List__int32) -> int32 {
@@ -13,49 +13,49 @@ fn sum(values/3: List__int32) -> int32 {
       0
     },
     Tag_1 => {
-      let x182 = List__int32::Cons._0(values/3) in
-      let x183 = List__int32::Cons._1(values/3) in
-      let t192 = sum(x183) in
-      let t193 = (x182 + t192) in
-      t193
+      let x187 = List__int32::Cons._0(values/3) in
+      let x188 = List__int32::Cons._1(values/3) in
+      let t197 = sum(x188) in
+      let t198 = (x187 + t197) in
+      t198
     },
   }
 }
 
 fn main() -> unit {
-  let t195 = closure_env_cons_0 {} in
-  let cons/6 = pack_closure[inherent#closure_env_cons_0#closure_env_cons_0#apply](t195) in
-  join inline_cont219(t196: List__int32) -> unit {
-    join inline_cont216(values/7: List__int32) -> unit {
-      let t197 = sum(values/7) in
-      join inline_cont214(t198: string) -> unit {
-        let inline212 = trait_impl#ToString#string#to_string(t198) in
-        let inline213 = @runtime(core.string_println)(inline212) in
+  let t200 = closure_env_cons_0 {} in
+  let cons/6 = pack_closure[inherent#closure_env_cons_0#closure_env_cons_0#apply](t200) in
+  join inline_cont224(t201: List__int32) -> unit {
+    join inline_cont221(values/7: List__int32) -> unit {
+      let t202 = sum(values/7) in
+      join inline_cont219(t203: string) -> unit {
+        let inline217 = trait_impl#ToString#string#to_string(t203) in
+        let inline218 = @runtime(core.string_println)(inline217) in
         ()
       } in
-      let inline215 = @runtime(core.int32_to_string)(t197) in
-      jump inline_cont214(inline215)
+      let inline220 = @runtime(core.int32_to_string)(t202) in
+      jump inline_cont219(inline220)
     } in
-    let inline217 = 1 in
-    let inline218 = cons/6(inline217, t196) in
-    jump inline_cont216(inline218)
+    let inline222 = 1 in
+    let inline223 = cons/6(inline222, t201) in
+    jump inline_cont221(inline223)
   } in
-  let inline220 = 2 in
-  let inline221 = cons/6(inline220, Tag_0) in
-  jump inline_cont219(inline221)
+  let inline225 = 2 in
+  let inline226 = cons/6(inline225, Tag_0) in
+  jump inline_cont224(inline226)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont222(t201: string) -> unit {
-    let t202 = @runtime(core.string_println)(t201) in
+  join inline_cont227(t206: string) -> unit {
+    let t207 = @runtime(core.string_println)(t206) in
     ()
   } in
-  jump inline_cont222(value/1)
+  jump inline_cont227(value/1)
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {
-  let t205 = @runtime(core.int32_to_string)(self/33) in
-  t205
+  let t210 = @runtime(core.int32_to_string)(self/33) in
+  t210
 }
 
 fn trait_impl#ToString#string#to_string(self/65: string) -> string {
@@ -63,10 +63,10 @@ fn trait_impl#ToString#string#to_string(self/65: string) -> string {
 }
 
 fn inherent#closure_env_cons_0#closure_env_cons_0#apply(
-  env184: closure_env_cons_0,
+  env189: closure_env_cons_0,
   ctor_arg_0: int32,
   ctor_arg_1: List__int32
 ) -> List__int32 {
-  let t210 = List__int32::Cons(ctor_arg_0, ctor_arg_1) in
-  t210
+  let t215 = List__int32::Cons(ctor_arg_0, ctor_arg_1) in
+  t215
 }

@@ -34,23 +34,23 @@ const (
 )
 
 func main0() struct{} {
-    var t186 string
-    var inline221 string = _goml_runtime_core_int_to_string(ANSWER)
-    t186 = inline221
-    var inline218 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t186)
+    var t191 string
+    var inline226 string = _goml_runtime_core_int_to_string(ANSWER)
+    t191 = inline226
+    var inline223 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t191)
+    _goml_runtime_core_string_println(inline223)
+    var t192 string
+    var inline221 string = _goml_runtime_core_uint8_to_string(MASK)
+    t192 = inline221
+    var inline218 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t192)
     _goml_runtime_core_string_println(inline218)
-    var t187 string
-    var inline216 string = _goml_runtime_core_uint8_to_string(MASK)
-    t187 = inline216
-    var inline213 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t187)
-    _goml_runtime_core_string_println(inline213)
-    var inline210 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(GREETING)
+    var inline215 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(GREETING)
+    _goml_runtime_core_string_println(inline215)
+    var t193 string
+    var inline213 string = _goml_runtime_core_bool_to_string(ENABLED)
+    t193 = inline213
+    var inline210 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t193)
     _goml_runtime_core_string_println(inline210)
-    var t188 string
-    var inline208 string = _goml_runtime_core_bool_to_string(ENABLED)
-    t188 = inline208
-    var inline205 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t188)
-    _goml_runtime_core_string_println(inline205)
     return struct{}{}
 }
 

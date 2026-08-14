@@ -1,97 +1,97 @@
 fn parse_text(ok/0: bool) -> Result__string__string {
   if ok/0 {
-    let t194 = Result__string__string::Ok("body") in
-    t194
+    let t199 = Result__string__string::Ok("body") in
+    t199
   } else {
-    let t195 = Result__string__string::Err("parse failed") in
-    t195
+    let t200 = Result__string__string::Err("parse failed") in
+    t200
   }
 }
 
 fn decorate(prefix/1: string, ok/2: bool) -> Result__string__string {
-  let t198 = closure_env_run_0 { ok_0: ok/2, prefix_1: prefix/1 } in
-  let run/4 = pack_closure[inherent#closure_env_run_0#closure_env_run_0#apply](t198) in
-  let t199 = run/4() in
-  t199
+  let t203 = closure_env_run_0 { ok_0: ok/2, prefix_1: prefix/1 } in
+  let run/4 = pack_closure[inherent#closure_env_run_0#closure_env_run_0#apply](t203) in
+  let t204 = run/4() in
+  t204
 }
 
 fn show(res/5: Result__string__string) -> string {
   match res/5 {
     Tag_0 => {
-      let x185 = Result__string__string::Ok._0(res/5) in
-      let t204 = ("ok " + x185) in
-      t204
+      let x190 = Result__string__string::Ok._0(res/5) in
+      let t209 = ("ok " + x190) in
+      t209
     },
     Tag_1 => {
-      let x186 = Result__string__string::Err._0(res/5) in
-      let t205 = ("err " + x186) in
-      t205
+      let x191 = Result__string__string::Err._0(res/5) in
+      let t210 = ("err " + x191) in
+      t210
     },
   }
 }
 
 fn main() -> unit {
-  join inline_cont250(t207: Result__string__string) -> unit {
-    join inline_cont243(t208: string) -> unit {
-      join inline_cont240(_wild187: unit) -> unit {
-        join inline_cont234(t209: Result__string__string) -> unit {
-          join inline_cont227(t210: string) -> unit {
-            let inline225 = trait_impl#ToString#string#to_string(t210) in
-            let inline226 = @runtime(core.string_println)(inline225) in
+  join inline_cont255(t212: Result__string__string) -> unit {
+    join inline_cont248(t213: string) -> unit {
+      join inline_cont245(_wild192: unit) -> unit {
+        join inline_cont239(t214: Result__string__string) -> unit {
+          join inline_cont232(t215: string) -> unit {
+            let inline230 = trait_impl#ToString#string#to_string(t215) in
+            let inline231 = @runtime(core.string_println)(inline230) in
             ()
           } in
-          match t209 {
+          match t214 {
             Tag_0 => {
-              let inline228 = Result__string__string::Ok._0(t209) in
-              let inline230 = ("ok " + inline228) in
-              jump inline_cont227(inline230)
+              let inline233 = Result__string__string::Ok._0(t214) in
+              let inline235 = ("ok " + inline233) in
+              jump inline_cont232(inline235)
             },
             Tag_1 => {
-              let inline231 = Result__string__string::Err._0(t209) in
-              let inline233 = ("err " + inline231) in
-              jump inline_cont227(inline233)
+              let inline236 = Result__string__string::Err._0(t214) in
+              let inline238 = ("err " + inline236) in
+              jump inline_cont232(inline238)
             },
           }
         } in
-        let inline235 = "outer" in
-        let inline236 = false in
-        let inline237 = closure_env_run_0 { ok_0: inline236, prefix_1: inline235 } in
-        let inline238 =
-          pack_closure[inherent#closure_env_run_0#closure_env_run_0#apply](inline237) in
-        let inline239 = inline238() in
-        jump inline_cont234(inline239)
+        let inline240 = "outer" in
+        let inline241 = false in
+        let inline242 = closure_env_run_0 { ok_0: inline241, prefix_1: inline240 } in
+        let inline243 =
+          pack_closure[inherent#closure_env_run_0#closure_env_run_0#apply](inline242) in
+        let inline244 = inline243() in
+        jump inline_cont239(inline244)
       } in
-      let inline241 = trait_impl#ToString#string#to_string(t208) in
-      let inline242 = @runtime(core.string_println)(inline241) in
-      jump inline_cont240(())
+      let inline246 = trait_impl#ToString#string#to_string(t213) in
+      let inline247 = @runtime(core.string_println)(inline246) in
+      jump inline_cont245(())
     } in
-    match t207 {
+    match t212 {
       Tag_0 => {
-        let inline244 = Result__string__string::Ok._0(t207) in
-        let inline246 = ("ok " + inline244) in
-        jump inline_cont243(inline246)
+        let inline249 = Result__string__string::Ok._0(t212) in
+        let inline251 = ("ok " + inline249) in
+        jump inline_cont248(inline251)
       },
       Tag_1 => {
-        let inline247 = Result__string__string::Err._0(t207) in
-        let inline249 = ("err " + inline247) in
-        jump inline_cont243(inline249)
+        let inline252 = Result__string__string::Err._0(t212) in
+        let inline254 = ("err " + inline252) in
+        jump inline_cont248(inline254)
       },
     }
   } in
-  let inline251 = "outer" in
-  let inline252 = true in
-  let inline253 = closure_env_run_0 { ok_0: inline252, prefix_1: inline251 } in
-  let inline254 = pack_closure[inherent#closure_env_run_0#closure_env_run_0#apply](inline253) in
-  let inline255 = inline254() in
-  jump inline_cont250(inline255)
+  let inline256 = "outer" in
+  let inline257 = true in
+  let inline258 = closure_env_run_0 { ok_0: inline257, prefix_1: inline256 } in
+  let inline259 = pack_closure[inherent#closure_env_run_0#closure_env_run_0#apply](inline258) in
+  let inline260 = inline259() in
+  jump inline_cont255(inline260)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont256(t212: string) -> unit {
-    let t213 = @runtime(core.string_println)(t212) in
+  join inline_cont261(t217: string) -> unit {
+    let t218 = @runtime(core.string_println)(t217) in
     ()
   } in
-  jump inline_cont256(value/1)
+  jump inline_cont261(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/65: string) -> string {
@@ -99,34 +99,34 @@ fn trait_impl#ToString#string#to_string(self/65: string) -> string {
 }
 
 fn inherent#closure_env_run_0#closure_env_run_0#apply(
-  env189: closure_env_run_0
+  env194: closure_env_run_0
 ) -> Result__string__string {
-  let ok/2 = closure_env_run_0.ok_0(env189) in
-  let prefix/1 = closure_env_run_0.prefix_1(env189) in
-  join inline_cont257(mtmp182: Result__string__string) -> Result__string__string {
-    join k218(jp219: string) -> Result__string__string {
-      let t220 = (prefix/1 + ":") in
-      let t221 = (t220 + jp219) in
-      let t222 = Result__string__string::Ok(t221) in
-      t222
+  let ok/2 = closure_env_run_0.ok_0(env194) in
+  let prefix/1 = closure_env_run_0.prefix_1(env194) in
+  join inline_cont262(mtmp187: Result__string__string) -> Result__string__string {
+    join k223(jp224: string) -> Result__string__string {
+      let t225 = (prefix/1 + ":") in
+      let t226 = (t225 + jp224) in
+      let t227 = Result__string__string::Ok(t226) in
+      t227
     } in
-    match mtmp182 {
+    match mtmp187 {
       Tag_0 => {
-        let x183 = Result__string__string::Ok._0(mtmp182) in
-        jump k218(x183)
+        let x188 = Result__string__string::Ok._0(mtmp187) in
+        jump k223(x188)
       },
       Tag_1 => {
-        let x184 = Result__string__string::Err._0(mtmp182) in
-        let t223 = Result__string__string::Err(x184) in
-        t223
+        let x189 = Result__string__string::Err._0(mtmp187) in
+        let t228 = Result__string__string::Err(x189) in
+        t228
       },
     }
   } in
   if ok/2 {
-    let inline258 = Result__string__string::Ok("body") in
-    jump inline_cont257(inline258)
+    let inline263 = Result__string__string::Ok("body") in
+    jump inline_cont262(inline263)
   } else {
-    let inline259 = Result__string__string::Err("parse failed") in
-    jump inline_cont257(inline259)
+    let inline264 = Result__string__string::Err("parse failed") in
+    jump inline_cont262(inline264)
   }
 }

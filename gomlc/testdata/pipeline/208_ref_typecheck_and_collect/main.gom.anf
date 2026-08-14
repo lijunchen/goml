@@ -1,39 +1,39 @@
 fn main() -> int32 {
-  join inline_cont205(value/0: Ref[int32]) -> int32 {
-    join inline_cont202(mtmp182: unit) -> int32 {
-      let inline201 = @intrinsic(ref.get)(value/0) in
-      inline201
+  join inline_cont210(value/0: Ref[int32]) -> int32 {
+    join inline_cont207(mtmp187: unit) -> int32 {
+      let inline206 = @intrinsic(ref.get)(value/0) in
+      inline206
     } in
-    let inline203 = 2 in
-    let inline204 = @intrinsic(ref.set)(value/0, inline203) in
-    jump inline_cont202(())
+    let inline208 = 2 in
+    let inline209 = @intrinsic(ref.set)(value/0, inline208) in
+    jump inline_cont207(())
   } in
-  let inline206 = 1 in
-  let inline207 = @intrinsic(ref.new)(inline206) in
-  jump inline_cont205(inline207)
+  let inline211 = 1 in
+  let inline212 = @intrinsic(ref.new)(inline211) in
+  jump inline_cont210(inline212)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/270: int32) -> Ref[int32] {
-  let t188 = @intrinsic(ref.new)(value/270) in
-  t188
-}
-
-fn inherent#Ref#Ref[T]#set__T_int32(self/272: Ref[int32], value/273: int32) -> unit {
-  let t190 = @intrinsic(ref.set)(self/272, value/273) in
-  ()
-}
-
-fn inherent#Ref#Ref[T]#get__T_int32(self/271: Ref[int32]) -> int32 {
-  let t193 = @intrinsic(ref.get)(self/271) in
+fn inherent#Ref#Ref[T]#new__T_int32(value/273: int32) -> Ref[int32] {
+  let t193 = @intrinsic(ref.new)(value/273) in
   t193
 }
 
+fn inherent#Ref#Ref[T]#set__T_int32(self/275: Ref[int32], value/276: int32) -> unit {
+  let t195 = @intrinsic(ref.set)(self/275, value/276) in
+  ()
+}
+
+fn inherent#Ref#Ref[T]#get__T_int32(self/274: Ref[int32]) -> int32 {
+  let t198 = @intrinsic(ref.get)(self/274) in
+  t198
+}
+
 fn trait_impl#PartialEq#int32#eq(self/107: int32, other/108: int32) -> bool {
-  let t196 = (self/107 == other/108) in
-  t196
+  let t201 = (self/107 == other/108) in
+  t201
 }
 
 fn trait_impl#Hash#int32#hash(self/130: int32) -> uint64 {
-  let t199 = @runtime(core.int32_hash)(self/130) in
-  t199
+  let t204 = @runtime(core.int32_hash)(self/130) in
+  t204
 }

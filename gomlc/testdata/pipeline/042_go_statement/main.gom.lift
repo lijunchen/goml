@@ -4,28 +4,28 @@ fn child(signal/0: Ref[int32]) -> unit {
 
 fn main() -> unit {
   let signal/1 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let _wild182 =
+  let _wild187 =
     go pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](
       closure_env_main_0 { signal_0: signal/1 }
     ) in
-  let _wild183 =
+  let _wild188 =
     while (inherent#Ref#Ref[T]#get__T_int32(signal/1) < 1) {
         ()
     } in
-  let _wild184 = println__T_string("main") in
+  let _wild189 = println__T_string("main") in
   ()
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/272: Ref[int32], value/273: int32) -> unit {
-  @intrinsic(ref.set)(self/272, value/273)
+fn inherent#Ref#Ref[T]#set__T_int32(self/275: Ref[int32], value/276: int32) -> unit {
+  @intrinsic(ref.set)(self/275, value/276)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/270: int32) -> Ref[int32] {
-  @intrinsic(ref.new)(value/270)
+fn inherent#Ref#Ref[T]#new__T_int32(value/273: int32) -> Ref[int32] {
+  @intrinsic(ref.new)(value/273)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/271: Ref[int32]) -> int32 {
-  @intrinsic(ref.get)(self/271)
+fn inherent#Ref#Ref[T]#get__T_int32(self/274: Ref[int32]) -> int32 {
+  @intrinsic(ref.get)(self/274)
 }
 
 fn println__T_string(value/1: string) -> unit {
@@ -44,7 +44,7 @@ fn trait_impl#Hash#int32#hash(self/130: int32) -> uint64 {
   @runtime(core.int32_hash)(self/130)
 }
 
-fn inherent#closure_env_main_0#closure_env_main_0#apply(env185: closure_env_main_0) -> unit {
-  let signal/1 = closure_env_main_0.signal_0(env185) in
+fn inherent#closure_env_main_0#closure_env_main_0#apply(env190: closure_env_main_0) -> unit {
+  let signal/1 = closure_env_main_0.signal_0(env190) in
   child(signal/1)
 }

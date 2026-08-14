@@ -11,17 +11,17 @@ func _goml_runtime_core_string_println(s string) struct{} {
 
 func main0() struct{} {
     var x__0 uint8 = 5
-    var jp185 string
+    var jp190 string
     switch x__0 {
     case 0:
-        jp185 = "zero"
+        jp190 = "zero"
     case 1:
-        jp185 = "one"
+        jp190 = "one"
     default:
-        jp185 = "other"
+        jp190 = "other"
     }
-    var inline192 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp185)
-    _goml_runtime_core_string_println(inline192)
+    var inline197 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp190)
+    _goml_runtime_core_string_println(inline197)
     return struct{}{}
 }
 

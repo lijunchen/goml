@@ -34,103 +34,103 @@ type Err struct {
 func (_ Err) isResult__int32__string() {}
 
 func main0() struct{} {
-    var t211 Result__int32__string
-    var inline260 bool = true
-    var inline261 closure_env_run_0 = closure_env_run_0{
-        flag_0: inline260,
+    var t216 Result__int32__string
+    var inline265 bool = true
+    var inline266 closure_env_run_0 = closure_env_run_0{
+        flag_0: inline265,
     }
-    var inline262 func() Result__int32__string = func() Result__int32__string {
-        return _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(inline261)
+    var inline267 func() Result__int32__string = func() Result__int32__string {
+        return _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(inline266)
     }
-    var inline263 Result__int32__string = inline262()
-    t211 = inline263
-    var t212 string
-    switch t211.(type) {
+    var inline268 Result__int32__string = inline267()
+    t216 = inline268
+    var t217 string
+    switch t216.(type) {
     case Ok:
-        var inline252 int32 = t211.(Ok)._0
-        var inline254 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline252)
-        var inline255 string = "ok=" + inline254
-        t212 = inline255
+        var inline257 int32 = t216.(Ok)._0
+        var inline259 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline257)
+        var inline260 string = "ok=" + inline259
+        t217 = inline260
     case Err:
-        var inline256 string = t211.(Err)._0
-        var inline258 string = "err=" + inline256
-        t212 = inline258
+        var inline261 string = t216.(Err)._0
+        var inline263 string = "err=" + inline261
+        t217 = inline263
     default:
         panic("non-exhaustive match")
     }
-    var inline249 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t212)
-    _goml_runtime_core_string_println(inline249)
-    var t213 Result__int32__string
-    var inline244 bool = false
-    var inline245 closure_env_run_0 = closure_env_run_0{
-        flag_0: inline244,
+    var inline254 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t217)
+    _goml_runtime_core_string_println(inline254)
+    var t218 Result__int32__string
+    var inline249 bool = false
+    var inline250 closure_env_run_0 = closure_env_run_0{
+        flag_0: inline249,
     }
-    var inline246 func() Result__int32__string = func() Result__int32__string {
-        return _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(inline245)
+    var inline251 func() Result__int32__string = func() Result__int32__string {
+        return _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(inline250)
     }
-    var inline247 Result__int32__string = inline246()
-    t213 = inline247
-    var t214 string
-    switch t213.(type) {
+    var inline252 Result__int32__string = inline251()
+    t218 = inline252
+    var t219 string
+    switch t218.(type) {
     case Ok:
-        var inline236 int32 = t213.(Ok)._0
-        var inline238 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline236)
-        var inline239 string = "ok=" + inline238
-        t214 = inline239
+        var inline241 int32 = t218.(Ok)._0
+        var inline243 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline241)
+        var inline244 string = "ok=" + inline243
+        t219 = inline244
     case Err:
-        var inline240 string = t213.(Err)._0
-        var inline242 string = "err=" + inline240
-        t214 = inline242
+        var inline245 string = t218.(Err)._0
+        var inline247 string = "err=" + inline245
+        t219 = inline247
     default:
         panic("non-exhaustive match")
     }
-    var inline233 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t214)
-    _goml_runtime_core_string_println(inline233)
+    var inline238 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t219)
+    _goml_runtime_core_string_println(inline238)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
-    var t217 string = _goml_runtime_core_int32_to_string(self__33)
-    return t217
+    var t222 string = _goml_runtime_core_int32_to_string(self__33)
+    return t222
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
     return self__65
 }
 
-func _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(env189 closure_env_run_0) Result__int32__string {
-    var flag__3 bool = env189.flag_0
-    var mtmp182 Result__int32__string
+func _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(env194 closure_env_run_0) Result__int32__string {
+    var flag__3 bool = env194.flag_0
+    var mtmp187 Result__int32__string
     if flag__3 {
-        var inline269 Result__int32__string = Ok{
+        var inline274 Result__int32__string = Ok{
             _0: 7,
         }
-        mtmp182 = inline269
+        mtmp187 = inline274
     } else {
-        var inline270 Result__int32__string = Err{
+        var inline275 Result__int32__string = Err{
             _0: "nope",
         }
-        mtmp182 = inline270
+        mtmp187 = inline275
     }
-    var jp226 int32
-    switch mtmp182.(type) {
+    var jp231 int32
+    switch mtmp187.(type) {
     case Ok:
-        var x183 int32 = mtmp182.(Ok)._0
-        jp226 = x183
-        var t227 int32
-        var inline266 int32 = 1
-        var inline267 int32 = jp226 + inline266
-        t227 = inline267
-        var t228 Result__int32__string = Ok{
-            _0: t227,
+        var x188 int32 = mtmp187.(Ok)._0
+        jp231 = x188
+        var t232 int32
+        var inline271 int32 = 1
+        var inline272 int32 = jp231 + inline271
+        t232 = inline272
+        var t233 Result__int32__string = Ok{
+            _0: t232,
         }
-        return t228
+        return t233
     case Err:
-        var x184 string = mtmp182.(Err)._0
-        var t229 Result__int32__string = Err{
-            _0: x184,
+        var x189 string = mtmp187.(Err)._0
+        var t234 Result__int32__string = Err{
+            _0: x189,
         }
-        return t229
+        return t234
     default:
         panic("non-exhaustive match")
     }

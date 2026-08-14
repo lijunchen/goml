@@ -34,36 +34,36 @@ type closure_env_main_0 struct {
 
 func main0() struct{} {
     var signal__1 *ref_int32_x
-    var inline226 int32 = 0
-    var inline227 *ref_int32_x = ref__Ref_5int32(inline226)
-    signal__1 = inline227
-    var t189 closure_env_main_0 = closure_env_main_0{
+    var inline231 int32 = 0
+    var inline232 *ref_int32_x = ref__Ref_5int32(inline231)
+    signal__1 = inline232
+    var t194 closure_env_main_0 = closure_env_main_0{
         signal_0: signal__1,
     }
-    var t190 func() struct{} = func() struct{} {
-        return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t189)
+    var t195 func() struct{} = func() struct{} {
+        return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t194)
     }
-    go t190()
-    Loop_loop192:
+    go t195()
+    Loop_loop197:
     for {
-        var t193 int32
-        var inline220 int32 = ref_get__Ref_5int32(signal__1)
-        t193 = inline220
-        var t194 bool = t193 < 1
-        if t194 {
+        var t198 int32
+        var inline225 int32 = ref_get__Ref_5int32(signal__1)
+        t198 = inline225
+        var t199 bool = t198 < 1
+        if t199 {
             continue
         } else {
-            break Loop_loop192
+            break Loop_loop197
         }
     }
-    var inline222 string = "main"
-    var inline223 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline222)
-    _goml_runtime_core_string_println(inline223)
+    var inline227 string = "main"
+    var inline228 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline227)
+    _goml_runtime_core_string_println(inline228)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__272 *ref_int32_x, value__273 int32) struct{} {
-    ref_set__Ref_5int32(self__272, value__273)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__275 *ref_int32_x, value__276 int32) struct{} {
+    ref_set__Ref_5int32(self__275, value__276)
     return struct{}{}
 }
 
@@ -71,8 +71,8 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) strin
     return self__65
 }
 
-func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env185 closure_env_main_0) struct{} {
-    var signal__1 *ref_int32_x = env185.signal_0
+func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env190 closure_env_main_0) struct{} {
+    var signal__1 *ref_int32_x = env190.signal_0
     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(signal__1, 1)
     return struct{}{}
 }

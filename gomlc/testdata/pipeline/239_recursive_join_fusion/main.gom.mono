@@ -1,21 +1,21 @@
 fn find(wanted/0: int) -> Option__int {
   let current/1 = inherent#Ref#Ref[T]#new__T_int(0) in
-  let _wild186 =
+  let _wild191 =
     loop {
       let value/2 = inherent#Ref#Ref[T]#get__T_int(current/1) in
-      let _wild185 =
+      let _wild190 =
         if (value/2 >= 5) {
             {
-              let _wild182 = return Option__int::None in
+              let _wild187 = return Option__int::None in
             }
         } else {
             if (value/2 == wanted/0) {
                 {
-                  let _wild183 = return Option__int::Some(value/2) in
+                  let _wild188 = return Option__int::Some(value/2) in
                 }
             } else {
                 {
-                  let _wild184 = inherent#Ref#Ref[T]#set__T_int(current/1, (value/2 + 1)) in
+                  let _wild189 = inherent#Ref#Ref[T]#set__T_int(current/1, (value/2 + 1)) in
                 }
             }
         } in
@@ -25,12 +25,12 @@ fn find(wanted/0: int) -> Option__int {
 
 fn any(wanted/3: int) -> bool {
   {
-    let mtmp187 = find(wanted/3) in
-    match mtmp187 {
+    let mtmp192 = find(wanted/3) in
+    match mtmp192 {
       Option__int::None => {
         false
       },
-      Option__int::Some(x188) => {
+      Option__int::Some(x193) => {
         {
           true
         }
@@ -40,20 +40,20 @@ fn any(wanted/3: int) -> bool {
 }
 
 fn main() -> unit {
-  let _wild189 = println__T_bool(any(3)) in
-  let _wild190 = println__T_bool(any(8)) in
+  let _wild194 = println__T_bool(any(3)) in
+  let _wild195 = println__T_bool(any(8)) in
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/270: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/270)
+fn inherent#Ref#Ref[T]#new__T_int(value/273: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/273)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/271: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/271)
+fn inherent#Ref#Ref[T]#get__T_int(self/274: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/274)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/272: Ref[int], value/273: int) -> unit {
-  @intrinsic(ref.set)(self/272, value/273)
+fn inherent#Ref#Ref[T]#set__T_int(self/275: Ref[int], value/276: int) -> unit {
+  @intrinsic(ref.set)(self/275, value/276)
 }
 
 fn println__T_bool(value/1: bool) -> unit {

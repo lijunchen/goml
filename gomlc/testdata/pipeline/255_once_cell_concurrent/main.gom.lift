@@ -2,11 +2,11 @@ static VALUE: OnceCell__int = OnceCell::new();
 
 fn main() -> unit {
   let results/0 = inherent#Channel#Channel[T]#new__T_int(2) in
-  let _wild182 =
+  let _wild187 =
     go pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](
       closure_env_main_1 { results_0: results/0 }
     ) in
-  let _wild183 =
+  let _wild188 =
     go pack_closure[inherent#closure_env_main_3#closure_env_main_3#apply](
       closure_env_main_3 { results_0: results/0 }
     ) in
@@ -23,43 +23,43 @@ fn main() -> unit {
   println__T_string(trait_impl#ToString#bool#to_string((first/1 == second/2)))
 }
 
-fn inherent#Channel#Channel[T]#new__T_int(capacity/274: int) -> Channel[int] {
-  @intrinsic(channel.new)(capacity/274)
+fn inherent#Channel#Channel[T]#new__T_int(capacity/277: int) -> Channel[int] {
+  @intrinsic(channel.new)(capacity/277)
 }
 
 fn inherent#OnceCell#OnceCell[T]#get_or_init__T_int(
-  self/241: OnceCell__int,
-  init/242: () -> int
+  self/244: OnceCell__int,
+  init/245: () -> int
 ) -> int {
-  @intrinsic(once_cell.get_or_init)(self/241, init/242)
+  @intrinsic(once_cell.get_or_init)(self/244, init/245)
 }
 
-fn inherent#Channel#Channel[T]#send__T_int(self/275: Channel[int], value/276: int) -> unit {
-  @intrinsic(channel.send)(self/275, value/276)
+fn inherent#Channel#Channel[T]#send__T_int(self/278: Channel[int], value/279: int) -> unit {
+  @intrinsic(channel.send)(self/278, value/279)
 }
 
-fn inherent#Channel#Channel[T]#recv__T_int(self/277: Channel[int]) -> Option__int {
-  let mtmp153 = @intrinsic(channel.recv)(self/277) in
-  let x154 = mtmp153.0 in
-  let x155 = mtmp153.1 in
-  let ok/279 = x155 in
-  let value/278 = x154 in
-  if ok/279 {
-      Option__int::Some(value/278)
+fn inherent#Channel#Channel[T]#recv__T_int(self/280: Channel[int]) -> Option__int {
+  let mtmp158 = @intrinsic(channel.recv)(self/280) in
+  let x159 = mtmp158.0 in
+  let x160 = mtmp158.1 in
+  let ok/282 = x160 in
+  let value/281 = x159 in
+  if ok/282 {
+      Option__int::Some(value/281)
   } else {
       Option__int::None
   }
 }
 
-fn inherent#Option#Option[T]#unwrap_or__T_int(self/297: Option__int, fallback/298: int) -> int {
-  match self/297 {
+fn inherent#Option#Option[T]#unwrap_or__T_int(self/300: Option__int, fallback/301: int) -> int {
+  match self/300 {
     Option__int::None => {
-      fallback/298
+      fallback/301
     },
-    Option__int::Some(x161) => {
-      let x161 = Option__int::Some._0(self/297) in
-      let value/299 = x161 in
-      value/299
+    Option__int::Some(x166) => {
+      let x166 = Option__int::Some._0(self/300) in
+      let value/302 = x166 in
+      value/302
     },
   }
 }
@@ -76,12 +76,12 @@ fn trait_impl#ToString#string#to_string(self/65: string) -> string {
   self/65
 }
 
-fn inherent#closure_env_main_0#closure_env_main_0#apply(env184: closure_env_main_0) -> int {
+fn inherent#closure_env_main_0#closure_env_main_0#apply(env189: closure_env_main_0) -> int {
   41
 }
 
-fn inherent#closure_env_main_1#closure_env_main_1#apply(env185: closure_env_main_1) -> unit {
-  let results/0 = closure_env_main_1.results_0(env185) in
+fn inherent#closure_env_main_1#closure_env_main_1#apply(env190: closure_env_main_1) -> unit {
+  let results/0 = closure_env_main_1.results_0(env190) in
   inherent#Channel#Channel[T]#send__T_int(
     results/0,
     inherent#OnceCell#OnceCell[T]#get_or_init__T_int(
@@ -91,12 +91,12 @@ fn inherent#closure_env_main_1#closure_env_main_1#apply(env185: closure_env_main
   )
 }
 
-fn inherent#closure_env_main_2#closure_env_main_2#apply(env186: closure_env_main_2) -> int {
+fn inherent#closure_env_main_2#closure_env_main_2#apply(env191: closure_env_main_2) -> int {
   42
 }
 
-fn inherent#closure_env_main_3#closure_env_main_3#apply(env187: closure_env_main_3) -> unit {
-  let results/0 = closure_env_main_3.results_0(env187) in
+fn inherent#closure_env_main_3#closure_env_main_3#apply(env192: closure_env_main_3) -> unit {
+  let results/0 = closure_env_main_3.results_0(env192) in
   inherent#Channel#Channel[T]#send__T_int(
     results/0,
     inherent#OnceCell#OnceCell[T]#get_or_init__T_int(

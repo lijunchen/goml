@@ -121,27 +121,27 @@ var VALUE *OnceCell__int = func() *OnceCell__int {
 
 func main0() struct{} {
     var results__0 chan int
-    var inline265 int = 2
-    var inline266 chan int = func(p0 int) chan int {
+    var inline270 int = 2
+    var inline271 chan int = func(p0 int) chan int {
         return make(chan int, p0)
-    }(inline265)
-    results__0 = inline266
-    var t189 closure_env_main_1 = closure_env_main_1{
+    }(inline270)
+    results__0 = inline271
+    var t194 closure_env_main_1 = closure_env_main_1{
         results_0: results__0,
     }
-    var t190 func() struct{} = func() struct{} {
-        return _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(t189)
+    var t195 func() struct{} = func() struct{} {
+        return _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(t194)
     }
-    go t190()
-    var t191 closure_env_main_3 = closure_env_main_3{
+    go t195()
+    var t196 closure_env_main_3 = closure_env_main_3{
         results_0: results__0,
     }
-    var t192 func() struct{} = func() struct{} {
-        return _goml_m_inherent_i_closure__env__main__3_i_closure__env__main__3_i_apply(t191)
+    var t197 func() struct{} = func() struct{} {
+        return _goml_m_inherent_i_closure__env__main__3_i_closure__env__main__3_i_apply(t196)
     }
-    go t192()
-    var t193 Option__int
-    var inline258 Tuple2_3int_4bool = func(p0 chan int) Tuple2_3int_4bool {
+    go t197()
+    var t198 Option__int
+    var inline263 Tuple2_3int_4bool = func(p0 chan int) Tuple2_3int_4bool {
         var value int
         var ok bool
         value, ok = <-p0
@@ -150,29 +150,29 @@ func main0() struct{} {
             _1: ok,
         }
     }(results__0)
-    var inline259 int = inline258._0
-    var inline260 bool = inline258._1
-    if inline260 {
-        var inline263 Option__int = Some{
-            _0: inline259,
+    var inline264 int = inline263._0
+    var inline265 bool = inline263._1
+    if inline265 {
+        var inline268 Option__int = Some{
+            _0: inline264,
         }
-        t193 = inline263
+        t198 = inline268
     } else {
-        t193 = None{}
+        t198 = None{}
     }
     var first__1 int
-    var inline254 int = 0
-    switch t193.(type) {
+    var inline259 int = 0
+    switch t198.(type) {
     case None:
-        first__1 = inline254
+        first__1 = inline259
     case Some:
-        var inline255 int = t193.(Some)._0
-        first__1 = inline255
+        var inline260 int = t198.(Some)._0
+        first__1 = inline260
     default:
         panic("non-exhaustive match")
     }
-    var t194 Option__int
-    var inline247 Tuple2_3int_4bool = func(p0 chan int) Tuple2_3int_4bool {
+    var t199 Option__int
+    var inline252 Tuple2_3int_4bool = func(p0 chan int) Tuple2_3int_4bool {
         var value int
         var ok bool
         value, ok = <-p0
@@ -181,33 +181,33 @@ func main0() struct{} {
             _1: ok,
         }
     }(results__0)
-    var inline248 int = inline247._0
-    var inline249 bool = inline247._1
-    if inline249 {
-        var inline252 Option__int = Some{
-            _0: inline248,
+    var inline253 int = inline252._0
+    var inline254 bool = inline252._1
+    if inline254 {
+        var inline257 Option__int = Some{
+            _0: inline253,
         }
-        t194 = inline252
+        t199 = inline257
     } else {
-        t194 = None{}
+        t199 = None{}
     }
     var second__2 int
-    var inline243 int = 0
-    switch t194.(type) {
+    var inline248 int = 0
+    switch t199.(type) {
     case None:
-        second__2 = inline243
+        second__2 = inline248
     case Some:
-        var inline244 int = t194.(Some)._0
-        second__2 = inline244
+        var inline249 int = t199.(Some)._0
+        second__2 = inline249
     default:
         panic("non-exhaustive match")
     }
-    var t195 bool = first__1 == second__2
-    var t196 string
-    var inline241 string = _goml_runtime_core_bool_to_string(t195)
-    t196 = inline241
-    var inline238 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t196)
-    _goml_runtime_core_string_println(inline238)
+    var t200 bool = first__1 == second__2
+    var t201 string
+    var inline246 string = _goml_runtime_core_bool_to_string(t200)
+    t201 = inline246
+    var inline243 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t201)
+    _goml_runtime_core_string_println(inline243)
     return struct{}{}
 }
 
@@ -215,43 +215,43 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) strin
     return self__65
 }
 
-func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env184 closure_env_main_0) int {
+func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env189 closure_env_main_0) int {
     return 41
 }
 
-func _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(env185 closure_env_main_1) struct{} {
-    var results__0 chan int = env185.results_0
-    var t226 closure_env_main_0 = closure_env_main_0{}
-    var t227 func() int = func() int {
-        return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t226)
+func _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(env190 closure_env_main_1) struct{} {
+    var results__0 chan int = env190.results_0
+    var t231 closure_env_main_0 = closure_env_main_0{}
+    var t232 func() int = func() int {
+        return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t231)
     }
-    var t228 int
-    var inline271 int = once_cell_get_or_init__OnceCell__int(VALUE, t227)
-    t228 = inline271
+    var t233 int
+    var inline276 int = once_cell_get_or_init__OnceCell__int(VALUE, t232)
+    t233 = inline276
     func(p0 chan int, p1 int) struct{} {
         p0 <- p1
         return struct{}{}
-    }(results__0, t228)
+    }(results__0, t233)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(env186 closure_env_main_2) int {
+func _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(env191 closure_env_main_2) int {
     return 42
 }
 
-func _goml_m_inherent_i_closure__env__main__3_i_closure__env__main__3_i_apply(env187 closure_env_main_3) struct{} {
-    var results__0 chan int = env187.results_0
-    var t233 closure_env_main_2 = closure_env_main_2{}
-    var t234 func() int = func() int {
-        return _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(t233)
+func _goml_m_inherent_i_closure__env__main__3_i_closure__env__main__3_i_apply(env192 closure_env_main_3) struct{} {
+    var results__0 chan int = env192.results_0
+    var t238 closure_env_main_2 = closure_env_main_2{}
+    var t239 func() int = func() int {
+        return _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(t238)
     }
-    var t235 int
-    var inline275 int = once_cell_get_or_init__OnceCell__int(VALUE, t234)
-    t235 = inline275
+    var t240 int
+    var inline280 int = once_cell_get_or_init__OnceCell__int(VALUE, t239)
+    t240 = inline280
     func(p0 chan int, p1 int) struct{} {
         p0 <- p1
         return struct{}{}
-    }(results__0, t235)
+    }(results__0, t240)
     return struct{}{}
 }
 

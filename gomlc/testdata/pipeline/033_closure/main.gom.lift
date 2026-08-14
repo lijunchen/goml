@@ -5,7 +5,7 @@ fn test() -> unit {
     pack_closure[inherent#closure_env_f_0#closure_env_f_0#apply](
       closure_env_f_0 { y_0: y/0, z_1: z/1 }
     ) in
-  let mtmp182 = println__T_string(inherent#int32#int32#to_string(f/3(2))) in
+  let mtmp187 = println__T_string(inherent#int32#int32#to_string(f/3(2))) in
   println__T_string(inherent#int32#int32#to_string(f/3(3)))
 }
 
@@ -24,21 +24,21 @@ fn main() -> unit {
     pack_closure[inherent#closure_env_printer_2#closure_env_printer_2#apply](
       closure_env_printer_2 {}
     ) in
-  let mtmp183 = printer/13("result: ", result/9) in
+  let mtmp188 = printer/13("result: ", result/9) in
   let no_capture/17 =
     pack_closure[inherent#closure_env_no_capture_3#closure_env_no_capture_3#apply](
       closure_env_no_capture_3 {}
     ) in
   let doubled/18 = no_capture/17(3) in
-  let mtmp184 = println__T_string(inherent#int32#int32#to_string(doubled/18)) in
-  let mtmp185 = test() in
+  let mtmp189 = println__T_string(inherent#int32#int32#to_string(doubled/18)) in
+  let mtmp190 = test() in
   let list123/19 = IntList::Cons(1, IntList::Cons(2, IntList::Cons(3, IntList::Nil))) in
   let point/20 = Point { x: 10, y: 20 } in
   let play_list_and_point/25 =
     pack_closure[inherent#closure_env_play_list_and_point_4#closure_env_play_list_and_point_4#apply](
       closure_env_play_list_and_point_4 { list123_0: list123/19, point_1: point/20 }
     ) in
-  let mtmp192 = play_list_and_point/25() in
+  let mtmp197 = play_list_and_point/25() in
   ()
 }
 
@@ -54,22 +54,22 @@ fn trait_impl#ToString#string#to_string(self/65: string) -> string {
   self/65
 }
 
-fn inherent#closure_env_f_0#closure_env_f_0#apply(env193: closure_env_f_0, x/2: int32) -> int32 {
-  let y/0 = closure_env_f_0.y_0(env193) in
-  let z/1 = closure_env_f_0.z_1(env193) in
+fn inherent#closure_env_f_0#closure_env_f_0#apply(env198: closure_env_f_0, x/2: int32) -> int32 {
+  let y/0 = closure_env_f_0.y_0(env198) in
+  let z/1 = closure_env_f_0.z_1(env198) in
   ((x/2 * y/0) * z/1)
 }
 
 fn inherent#closure_env_add_base_1#closure_env_add_base_1#apply(
-  env194: closure_env_add_base_1,
+  env199: closure_env_add_base_1,
   x/7: int32
 ) -> int32 {
-  let base/6 = closure_env_add_base_1.base_0(env194) in
+  let base/6 = closure_env_add_base_1.base_0(env199) in
   (x/7 + base/6)
 }
 
 fn inherent#closure_env_printer_2#closure_env_printer_2#apply(
-  env195: closure_env_printer_2,
+  env200: closure_env_printer_2,
   prefix/10: string,
   value/11: int32
 ) -> unit {
@@ -78,30 +78,30 @@ fn inherent#closure_env_printer_2#closure_env_printer_2#apply(
 }
 
 fn inherent#closure_env_no_capture_3#closure_env_no_capture_3#apply(
-  env196: closure_env_no_capture_3,
+  env201: closure_env_no_capture_3,
   z/16: int32
 ) -> int32 {
   (z/16 * 2)
 }
 
 fn inherent#closure_env_play_list_and_point_4#closure_env_play_list_and_point_4#apply(
-  env197: closure_env_play_list_and_point_4
+  env202: closure_env_play_list_and_point_4
 ) -> unit {
-  let list123/19 = closure_env_play_list_and_point_4.list123_0(env197) in
-  let point/20 = closure_env_play_list_and_point_4.point_1(env197) in
+  let list123/19 = closure_env_play_list_and_point_4.list123_0(env202) in
+  let point/20 = closure_env_play_list_and_point_4.point_1(env202) in
   match list123/19 {
     IntList::Nil => {
       println__T_string("Empty list")
     },
-    IntList::Cons(x186, x187) => {
-      let x186 = IntList::Cons._0(list123/19) in
-      let head/21 = x186 in
-      let mtmp188 = println__T_string(inherent#int32#int32#to_string(head/21)) in
-      let x189 = Point.x(point/20) in
-      let x190 = Point.y(point/20) in
-      let y/24 = x190 in
-      let x/23 = x189 in
-      let mtmp191 =
+    IntList::Cons(x191, x192) => {
+      let x191 = IntList::Cons._0(list123/19) in
+      let head/21 = x191 in
+      let mtmp193 = println__T_string(inherent#int32#int32#to_string(head/21)) in
+      let x194 = Point.x(point/20) in
+      let x195 = Point.y(point/20) in
+      let y/24 = x195 in
+      let x/23 = x194 in
+      let mtmp196 =
         println__T_string(
           (((("Point: (" + inherent#int32#int32#to_string(x/23)) + ", ") +
             inherent#int32#int32#to_string(y/24)) +

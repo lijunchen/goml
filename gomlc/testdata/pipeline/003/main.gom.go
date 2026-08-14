@@ -26,34 +26,34 @@ func _goml_runtime_core_string_print(s string) struct{} {
 }
 
 func main0() struct{} {
-    var inline218 struct{} = struct{}{}
-    var inline219 string = _goml_m_trait__impl_i_ToString_i_unit_i_to__string(inline218)
-    _goml_runtime_core_string_print(inline219)
-    var inline214 bool = true
-    var inline215 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline214)
-    _goml_runtime_core_string_print(inline215)
-    var inline210 bool = false
-    var inline211 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline210)
-    _goml_runtime_core_string_print(inline211)
-    var inline206 int = 123
-    var inline207 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline206)
-    _goml_runtime_core_string_print(inline207)
+    var inline223 struct{} = struct{}{}
+    var inline224 string = _goml_m_trait__impl_i_ToString_i_unit_i_to__string(inline223)
+    _goml_runtime_core_string_print(inline224)
+    var inline219 bool = true
+    var inline220 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline219)
+    _goml_runtime_core_string_print(inline220)
+    var inline215 bool = false
+    var inline216 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline215)
+    _goml_runtime_core_string_print(inline216)
+    var inline211 int = 123
+    var inline212 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline211)
+    _goml_runtime_core_string_print(inline212)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_unit_i_to__string(self__63 struct{}) string {
-    var t198 string = _goml_runtime_core_unit_to_string(self__63)
-    return t198
+    var t203 string = _goml_runtime_core_unit_to_string(self__63)
+    return t203
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
-    var t201 string = _goml_runtime_core_bool_to_string(self__64)
-    return t201
+    var t206 string = _goml_runtime_core_bool_to_string(self__64)
+    return t206
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
-    var t204 string = _goml_runtime_core_int_to_string(self__67)
-    return t204
+    var t209 string = _goml_runtime_core_int_to_string(self__67)
+    return t209
 }
 
 func main() {

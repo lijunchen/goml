@@ -34,31 +34,31 @@ func main0() struct{} {
     var step64__9 int64 = 2000000000
     var remain64__10 int64 = big64__8 - step64__9
     var neg64__11 int64 = -step64__9
-    var t184 string
-    var inline222 string = _goml_runtime_core_int16_to_string(sum16__2)
-    t184 = inline222
-    var t185 string = t184 + ", "
-    var t186 string
-    var inline220 string = _goml_runtime_core_int16_to_string(flipped16__3)
-    t186 = inline220
-    var t187 string = t185 + t186
-    var t188 string = t187 + "; "
     var t189 string
-    var inline218 string = _goml_runtime_core_int32_to_string(diff32__7)
-    t189 = inline218
-    var t190 string = t188 + t189
-    var t191 string = t190 + "; "
-    var t192 string
-    var inline216 string = _goml_runtime_core_int64_to_string(remain64__10)
-    t192 = inline216
-    var t193 string = t191 + t192
-    var t194 string = t193 + "; "
-    var t195 string
-    var inline214 string = _goml_runtime_core_int64_to_string(neg64__11)
-    t195 = inline214
-    var message__12 string = t194 + t195
-    var inline211 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(message__12)
-    _goml_runtime_core_string_println(inline211)
+    var inline227 string = _goml_runtime_core_int16_to_string(sum16__2)
+    t189 = inline227
+    var t190 string = t189 + ", "
+    var t191 string
+    var inline225 string = _goml_runtime_core_int16_to_string(flipped16__3)
+    t191 = inline225
+    var t192 string = t190 + t191
+    var t193 string = t192 + "; "
+    var t194 string
+    var inline223 string = _goml_runtime_core_int32_to_string(diff32__7)
+    t194 = inline223
+    var t195 string = t193 + t194
+    var t196 string = t195 + "; "
+    var t197 string
+    var inline221 string = _goml_runtime_core_int64_to_string(remain64__10)
+    t197 = inline221
+    var t198 string = t196 + t197
+    var t199 string = t198 + "; "
+    var t200 string
+    var inline219 string = _goml_runtime_core_int64_to_string(neg64__11)
+    t200 = inline219
+    var message__12 string = t199 + t200
+    var inline216 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(message__12)
+    _goml_runtime_core_string_println(inline216)
     return struct{}{}
 }
 

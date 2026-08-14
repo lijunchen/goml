@@ -1,0 +1,208 @@
+fn trait_impl#PartialEq#Pair#eq(self/0: Pair, other/1: Pair) -> bool {
+  if if true {
+      trait_impl#PartialEq#int#eq(Pair.left(self/0), Pair.left(other/1))
+  } else {
+      false
+  } {
+      trait_impl#PartialEq#int#eq(Pair.right(self/0), Pair.right(other/1))
+  } else {
+      false
+  }
+}
+
+fn main() -> unit {
+  let values/4 =
+    {
+      let vec_literal/208 = inherent#Vec#Vec[T]#new__T_int() in
+      let _wild187 = inherent#Vec#Vec[T]#push__T_int(vec_literal/208, 1) in
+      let _wild188 = inherent#Vec#Vec[T]#push__T_int(vec_literal/208, 2) in
+      let _wild189 = inherent#Vec#Vec[T]#push__T_int(vec_literal/208, 3) in
+      vec_literal/208
+    } in
+  let _wild190 =
+    println__T_string(
+      trait_impl#ToString#bool#to_string(inherent#Vec#Vec[T]#contains__T_int(values/4, 2))
+    ) in
+  let _wild191 =
+    println__T_string(
+      trait_impl#ToString#bool#to_string(inherent#Vec#Vec[T]#contains__T_int(values/4, 9))
+    ) in
+  let names/5 =
+    {
+      let vec_literal/330 = inherent#Vec#Vec[T]#new__T_string() in
+      let _wild192 = inherent#Vec#Vec[T]#push__T_string(vec_literal/330, "alpha") in
+      let _wild193 = inherent#Vec#Vec[T]#push__T_string(vec_literal/330, "beta") in
+      vec_literal/330
+    } in
+  let _wild194 =
+    println__T_string(
+      trait_impl#ToString#bool#to_string(inherent#Vec#Vec[T]#contains__T_string(names/5, "beta"))
+    ) in
+  let pairs/6 =
+    {
+      let vec_literal/419 = inherent#Vec#Vec[T]#new__T_Pair() in
+      let _wild195 =
+        inherent#Vec#Vec[T]#push__T_Pair(vec_literal/419, Pair { left: 1, right: 2 }) in
+      vec_literal/419
+    } in
+  let _wild196 =
+    println__T_string(
+      trait_impl#ToString#bool#to_string(
+        inherent#Vec#Vec[T]#contains__T_Pair(pairs/6, Pair { left: 1, right: 2 })
+      )
+    ) in
+  let _wild197 =
+    println__T_string(trait_impl#ToString#bool#to_string(contains_any__T_int(values/4, 3))) in
+  let empty/7 =
+    {
+      let vec_literal/602 = inherent#Vec#Vec[T]#new__T_string() in
+      vec_literal/602
+    } in
+  println__T_string(
+    trait_impl#ToString#bool#to_string(inherent#Vec#Vec[T]#contains__T_string(empty/7, "x"))
+  )
+}
+
+fn trait_impl#PartialEq#int#eq(self/101: int, other/102: int) -> bool {
+  (self/101 == other/102)
+}
+
+fn inherent#Vec#Vec[T]#new__T_int() -> Vec[int] {
+  @intrinsic(vec.new)()
+}
+
+fn inherent#Vec#Vec[T]#push__T_int(self/174: Vec[int], elem/175: int) -> unit {
+  @intrinsic(vec.push)(self/174, elem/175)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn inherent#Vec#Vec[T]#contains__T_int(self/235: Vec[int], expected/236: int) -> bool {
+  let index/237 = 0 in
+  let _wild151 =
+    while (index/237 < inherent#Vec#Vec[T]#len__T_int(self/235)) {
+        {
+          let _wild147 =
+            if trait_impl#PartialEq#int#eq(@intrinsic(vec.get)(self/235, index/237), expected/236) {
+                {
+                  return true
+                }
+            } else {
+                {
+                  ()
+                }
+            } in
+          let _wild150 =
+            {
+              let compound_old148 = index/237 in
+              let compound_value149 = 1 in
+              index/237 = (compound_old148 + compound_value149)
+            } in
+        }
+    } in
+  false
+}
+
+fn trait_impl#ToString#bool#to_string(self/64: bool) -> string {
+  @runtime(core.bool_to_string)(self/64)
+}
+
+fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
+  @intrinsic(vec.new)()
+}
+
+fn inherent#Vec#Vec[T]#push__T_string(self/174: Vec[string], elem/175: string) -> unit {
+  @intrinsic(vec.push)(self/174, elem/175)
+}
+
+fn inherent#Vec#Vec[T]#contains__T_string(self/235: Vec[string], expected/236: string) -> bool {
+  let index/237 = 0 in
+  let _wild151 =
+    while (index/237 < inherent#Vec#Vec[T]#len__T_string(self/235)) {
+        {
+          let _wild147 =
+            if trait_impl#PartialEq#string#eq(
+              @intrinsic(vec.get)(self/235, index/237),
+              expected/236
+            ) {
+                {
+                  return true
+                }
+            } else {
+                {
+                  ()
+                }
+            } in
+          let _wild150 =
+            {
+              let compound_old148 = index/237 in
+              let compound_value149 = 1 in
+              index/237 = (compound_old148 + compound_value149)
+            } in
+        }
+    } in
+  false
+}
+
+fn inherent#Vec#Vec[T]#new__T_Pair() -> Vec[Pair] {
+  @intrinsic(vec.new)()
+}
+
+fn inherent#Vec#Vec[T]#push__T_Pair(self/174: Vec[Pair], elem/175: Pair) -> unit {
+  @intrinsic(vec.push)(self/174, elem/175)
+}
+
+fn inherent#Vec#Vec[T]#contains__T_Pair(self/235: Vec[Pair], expected/236: Pair) -> bool {
+  let index/237 = 0 in
+  let _wild151 =
+    while (index/237 < inherent#Vec#Vec[T]#len__T_Pair(self/235)) {
+        {
+          let _wild147 =
+            if trait_impl#PartialEq#Pair#eq(
+              @intrinsic(vec.get)(self/235, index/237),
+              expected/236
+            ) {
+                {
+                  return true
+                }
+            } else {
+                {
+                  ()
+                }
+            } in
+          let _wild150 =
+            {
+              let compound_old148 = index/237 in
+              let compound_value149 = 1 in
+              index/237 = (compound_old148 + compound_value149)
+            } in
+        }
+    } in
+  false
+}
+
+fn contains_any__T_int(values/2: Vec[int], expected/3: int) -> bool {
+  inherent#Vec#Vec[T]#contains__T_int(values/2, expected/3)
+}
+
+fn trait_impl#ToString#string#to_string(self/65: string) -> string {
+  self/65
+}
+
+fn inherent#Vec#Vec[T]#len__T_int(self/189: Vec[int]) -> int {
+  @intrinsic(vec.len)(self/189)
+}
+
+fn inherent#Vec#Vec[T]#len__T_string(self/189: Vec[string]) -> int {
+  @intrinsic(vec.len)(self/189)
+}
+
+fn trait_impl#PartialEq#string#eq(self/97: string, other/98: string) -> bool {
+  (self/97 == other/98)
+}
+
+fn inherent#Vec#Vec[T]#len__T_Pair(self/189: Vec[Pair]) -> int {
+  @intrinsic(vec.len)(self/189)
+}

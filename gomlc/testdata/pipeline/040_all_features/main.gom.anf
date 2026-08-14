@@ -1,60 +1,60 @@
 fn trait_impl#Describe#Tracker#describe(self/0: Tracker) -> string {
-  let x183 = Tracker.label(self/0) in
-  let x184 = Tracker.count(self/0) in
-  let x185 = Tracker.toggled(self/0) in
-  join inline_cont360(current/4: int32) -> string {
-    join inline_cont358(flag/5: bool) -> string {
-      let with_label/6 = ("Tracker(" + x183) in
+  let x188 = Tracker.label(self/0) in
+  let x189 = Tracker.count(self/0) in
+  let x190 = Tracker.toggled(self/0) in
+  join inline_cont365(current/4: int32) -> string {
+    join inline_cont363(flag/5: bool) -> string {
+      let with_label/6 = ("Tracker(" + x188) in
       let with_count_label/7 = (with_label/6 + ", count: ") in
-      join inline_cont356(t224: string) -> string {
-        let with_count/8 = (with_count_label/7 + t224) in
+      join inline_cont361(t229: string) -> string {
+        let with_count/8 = (with_count_label/7 + t229) in
         let with_flag_label/9 = (with_count/8 + ", toggled: ") in
-        join inline_cont354(t225: string) -> string {
-          let t226 = (with_flag_label/9 + t225) in
-          let t227 = (t226 + ")") in
-          t227
+        join inline_cont359(t230: string) -> string {
+          let t231 = (with_flag_label/9 + t230) in
+          let t232 = (t231 + ")") in
+          t232
         } in
-        let inline355 = @runtime(core.bool_to_string)(flag/5) in
-        jump inline_cont354(inline355)
+        let inline360 = @runtime(core.bool_to_string)(flag/5) in
+        jump inline_cont359(inline360)
       } in
-      let inline357 = @runtime(core.int32_to_string)(current/4) in
-      jump inline_cont356(inline357)
+      let inline362 = @runtime(core.int32_to_string)(current/4) in
+      jump inline_cont361(inline362)
     } in
-    let inline359 = @intrinsic(ref.get)(x185) in
-    jump inline_cont358(inline359)
+    let inline364 = @intrinsic(ref.get)(x190) in
+    jump inline_cont363(inline364)
   } in
-  let inline361 = @intrinsic(ref.get)(x184) in
-  jump inline_cont360(inline361)
+  let inline366 = @intrinsic(ref.get)(x189) in
+  jump inline_cont365(inline366)
 }
 
 fn trait_impl#Describe#Record__int32#describe(self/10: Record__int32) -> string {
   match self/10 {
     Tag_0 => {
-      let x186 = Record__int32::Value._0(self/10) in
-      join inline_cont362(t232: string) -> string {
-        let t233 = ("Value(" + t232) in
-        let t234 = (t233 + ")") in
-        t234
+      let x191 = Record__int32::Value._0(self/10) in
+      join inline_cont367(t237: string) -> string {
+        let t238 = ("Value(" + t237) in
+        let t239 = (t238 + ")") in
+        t239
       } in
-      let inline363 = @runtime(core.int32_to_string)(x186) in
-      jump inline_cont362(inline363)
+      let inline368 = @runtime(core.int32_to_string)(x191) in
+      jump inline_cont367(inline368)
     },
     Tag_1 => {
-      let x187 = Record__int32::Pair._0(self/10) in
-      let x188 = Record__int32::Pair._1(self/10) in
-      join inline_cont366(t235: string) -> string {
-        let prefix/14 = ("Pair(" + t235) in
-        let t236 = (prefix/14 + ", ") in
-        join inline_cont364(t237: string) -> string {
-          let t238 = (t236 + t237) in
-          let t239 = (t238 + ")") in
-          t239
+      let x192 = Record__int32::Pair._0(self/10) in
+      let x193 = Record__int32::Pair._1(self/10) in
+      join inline_cont371(t240: string) -> string {
+        let prefix/14 = ("Pair(" + t240) in
+        let t241 = (prefix/14 + ", ") in
+        join inline_cont369(t242: string) -> string {
+          let t243 = (t241 + t242) in
+          let t244 = (t243 + ")") in
+          t244
         } in
-        let inline365 = @runtime(core.int32_to_string)(x188) in
-        jump inline_cont364(inline365)
+        let inline370 = @runtime(core.int32_to_string)(x193) in
+        jump inline_cont369(inline370)
       } in
-      let inline367 = @runtime(core.int32_to_string)(x187) in
-      jump inline_cont366(inline367)
+      let inline372 = @runtime(core.int32_to_string)(x192) in
+      jump inline_cont371(inline372)
     },
     Tag_2 => {
       "Empty"
@@ -65,19 +65,19 @@ fn trait_impl#Describe#Record__int32#describe(self/10: Record__int32) -> string 
 fn trait_impl#Describe#Record__string#describe(self/15: Record__string) -> string {
   match self/15 {
     Tag_0 => {
-      let x189 = Record__string::Value._0(self/15) in
-      let t244 = ("Value(" + x189) in
-      let t245 = (t244 + ")") in
-      t245
+      let x194 = Record__string::Value._0(self/15) in
+      let t249 = ("Value(" + x194) in
+      let t250 = (t249 + ")") in
+      t250
     },
     Tag_1 => {
-      let x190 = Record__string::Pair._0(self/15) in
-      let x191 = Record__string::Pair._1(self/15) in
-      let prefix/19 = ("Pair(" + x190) in
-      let t246 = (prefix/19 + ", ") in
-      let t247 = (t246 + x191) in
-      let t248 = (t247 + ")") in
-      t248
+      let x195 = Record__string::Pair._0(self/15) in
+      let x196 = Record__string::Pair._1(self/15) in
+      let prefix/19 = ("Pair(" + x195) in
+      let t251 = (prefix/19 + ", ") in
+      let t252 = (t251 + x196) in
+      let t253 = (t252 + ")") in
+      t253
     },
     Tag_2 => {
       "Empty"
@@ -86,30 +86,30 @@ fn trait_impl#Describe#Record__string#describe(self/15: Record__string) -> strin
 }
 
 fn format_total(total/26: int32) -> string {
-  join inline_cont368(t251: string) -> string {
-    let t252 = ("total: " + t251) in
-    t252
+  join inline_cont373(t256: string) -> string {
+    let t257 = ("total: " + t256) in
+    t257
   } in
-  let inline369 = @runtime(core.int32_to_string)(total/26) in
-  jump inline_cont368(inline369)
+  let inline374 = @runtime(core.int32_to_string)(total/26) in
+  jump inline_cont373(inline374)
 }
 
 fn increment(value/27: int32) -> int32 {
-  let t255 = (value/27 + 1) in
-  t255
+  let t260 = (value/27 + 1) in
+  t260
 }
 
 fn triple(value/28: int32) -> int32 {
-  let t258 = (value/28 * 3) in
-  t258
+  let t263 = (value/28 * 3) in
+  t263
 }
 
 fn pair_join(parts/29: (string, string)) -> string {
-  let x194 = parts/29.0 in
-  let x195 = parts/29.1 in
-  let t261 = (x194 + " -> ") in
-  let t262 = (t261 + x195) in
-  t262
+  let x199 = parts/29.0 in
+  let x200 = parts/29.1 in
+  let t266 = (x199 + " -> ") in
+  let t267 = (t266 + x200) in
+  t267
 }
 
 fn run_transforms(value/32: int32, transforms/33: [(int32) -> int32; 2]) -> [int32; 2] {
@@ -118,25 +118,25 @@ fn run_transforms(value/32: int32, transforms/33: [(int32) -> int32; 2]) -> [int
   let first_result/36 = first/34(value/32) in
   let second_result/37 = second/35(first_result/36) in
   let results/38 = [first_result/36, value/32] in
-  let place_root196 = results/38 in
-  let index197 = 1 in
-  let place198 = @intrinsic(array.get)(place_root196, index197) in
-  let t265 = @intrinsic(array.set)(place_root196, index197, second_result/37) in
-  let t266 = results/38 = t265 in
+  let place_root201 = results/38 in
+  let index202 = 1 in
+  let place203 = @intrinsic(array.get)(place_root201, index202) in
+  let t270 = @intrinsic(array.set)(place_root201, index202, second_result/37) in
+  let t271 = results/38 = t270 in
   results/38
 }
 
 fn gather(record/39: Record__int32) -> Maybe__int32 {
   match record/39 {
     Tag_0 => {
-      let x201 = Record__int32::Value._0(record/39) in
-      let t271 = Maybe__int32::Some(x201) in
-      t271
+      let x206 = Record__int32::Value._0(record/39) in
+      let t276 = Maybe__int32::Some(x206) in
+      t276
     },
     Tag_1 => {
-      let x203 = Record__int32::Pair._1(record/39) in
-      let t272 = Maybe__int32::Some(x203) in
-      t272
+      let x208 = Record__int32::Pair._1(record/39) in
+      let t277 = Maybe__int32::Some(x208) in
+      t277
     },
     Tag_2 => {
       Tag_1
@@ -150,180 +150,180 @@ fn build_counter(label/42: string, start/43: int32) -> (
   (int32) -> Record__int32,
   () -> Record__string
 ) {
-  join inline_cont373(count/44: Ref[int32]) -> (
+  join inline_cont378(count/44: Ref[int32]) -> (
     Tracker,
     () -> Record__int32,
     (int32) -> Record__int32,
     () -> Record__string
   ) {
-    join inline_cont370(toggled/45: Ref[bool]) -> (
+    join inline_cont375(toggled/45: Ref[bool]) -> (
       Tracker,
       () -> Record__int32,
       (int32) -> Record__int32,
       () -> Record__string
     ) {
       let tracker/46 = Tracker { label: label/42, count: count/44, toggled: toggled/45 } in
-      let t275 = closure_env_snapshot_0 { count_0: count/44 } in
+      let t280 = closure_env_snapshot_0 { count_0: count/44 } in
       let snapshot/47 =
-        pack_closure[inherent#closure_env_snapshot_0#closure_env_snapshot_0#apply](t275) in
-      let t276 = closure_env_bump_1 { count_0: count/44 } in
-      let bump/50 = pack_closure[inherent#closure_env_bump_1#closure_env_bump_1#apply](t276) in
-      let t277 = closure_env_flip_2 { toggled_0: toggled/45 } in
-      let flip/53 = pack_closure[inherent#closure_env_flip_2#closure_env_flip_2#apply](t277) in
-      let t278 = (tracker/46, snapshot/47, bump/50, flip/53) in
-      t278
+        pack_closure[inherent#closure_env_snapshot_0#closure_env_snapshot_0#apply](t280) in
+      let t281 = closure_env_bump_1 { count_0: count/44 } in
+      let bump/50 = pack_closure[inherent#closure_env_bump_1#closure_env_bump_1#apply](t281) in
+      let t282 = closure_env_flip_2 { toggled_0: toggled/45 } in
+      let flip/53 = pack_closure[inherent#closure_env_flip_2#closure_env_flip_2#apply](t282) in
+      let t283 = (tracker/46, snapshot/47, bump/50, flip/53) in
+      t283
     } in
-    let inline371 = false in
-    let inline372 = @intrinsic(ref.new)(inline371) in
-    jump inline_cont370(inline372)
+    let inline376 = false in
+    let inline377 = @intrinsic(ref.new)(inline376) in
+    jump inline_cont375(inline377)
   } in
-  let inline374 = @intrinsic(ref.new)(start/43) in
-  jump inline_cont373(inline374)
+  let inline379 = @intrinsic(ref.new)(start/43) in
+  jump inline_cont378(inline379)
 }
 
 fn main() -> unit {
-  let mtmp206 = build_counter("goml", 2) in
-  let x207 = mtmp206.0 in
-  let x208 = mtmp206.1 in
-  let x209 = mtmp206.2 in
-  let x210 = mtmp206.3 in
-  let tracker_info/58 = trait_impl#Describe#Tracker#describe(x207) in
-  let first_record/59 = x208() in
-  let bumped_record/60 = x209(5) in
-  let flipped_record/61 = x210() in
+  let mtmp211 = build_counter("goml", 2) in
+  let x212 = mtmp211.0 in
+  let x213 = mtmp211.1 in
+  let x214 = mtmp211.2 in
+  let x215 = mtmp211.3 in
+  let tracker_info/58 = trait_impl#Describe#Tracker#describe(x212) in
+  let first_record/59 = x213() in
+  let bumped_record/60 = x214(5) in
+  let flipped_record/61 = x215() in
   let maybe_first/62 = gather(first_record/59) in
   let maybe_second/63 = gather(bumped_record/60) in
   let chosen/64 = choose__T_Maybe[int32](true, maybe_second/63, maybe_first/62) in
   let stringified/65 = map_maybe__T_int32__U_string(chosen/64, format_total) in
   let transforms/66 = [increment, triple] in
-  join inline_cont410(results/67: [int32; 2]) -> unit {
+  join inline_cont415(results/67: [int32; 2]) -> unit {
     let first_result/68 = @intrinsic(array.get)(results/67, 0) in
     let second_result/69 = @intrinsic(array.get)(results/67, 1) in
-    let t288 = (first_result/68 < second_result/69) in
-    join k280(jp281: bool) -> unit {
+    let t293 = (first_result/68 < second_result/69) in
+    join k285(jp286: bool) -> unit {
       let first_text/71 = trait_impl#Describe#Record__int32#describe(first_record/59) in
       let bumped_text/72 = trait_impl#Describe#Record__int32#describe(bumped_record/60) in
       let flipped_text/73 = trait_impl#Describe#Record__string#describe(flipped_record/61) in
-      join k282(jp283: string) -> unit {
-        join inline_cont408(t284: string) -> unit {
-          join inline_cont406(t285: string) -> unit {
-            join inline_cont398(pair_text/76: string) -> unit {
-              join inline_cont396(bool_text/77: string) -> unit {
-                join inline_cont393(mtmp212: unit) -> unit {
-                  join inline_cont390(mtmp213: unit) -> unit {
-                    join inline_cont387(mtmp214: unit) -> unit {
-                      join inline_cont384(mtmp215: unit) -> unit {
-                        join inline_cont381(mtmp216: unit) -> unit {
-                          join inline_cont378(mtmp217: unit) -> unit {
-                            let inline376 = trait_impl#ToString#string#to_string(bool_text/77) in
-                            let inline377 = @runtime(core.string_println)(inline376) in
+      join k287(jp288: string) -> unit {
+        join inline_cont413(t289: string) -> unit {
+          join inline_cont411(t290: string) -> unit {
+            join inline_cont403(pair_text/76: string) -> unit {
+              join inline_cont401(bool_text/77: string) -> unit {
+                join inline_cont398(mtmp217: unit) -> unit {
+                  join inline_cont395(mtmp218: unit) -> unit {
+                    join inline_cont392(mtmp219: unit) -> unit {
+                      join inline_cont389(mtmp220: unit) -> unit {
+                        join inline_cont386(mtmp221: unit) -> unit {
+                          join inline_cont383(mtmp222: unit) -> unit {
+                            let inline381 = trait_impl#ToString#string#to_string(bool_text/77) in
+                            let inline382 = @runtime(core.string_println)(inline381) in
                             ()
                           } in
-                          let inline379 = trait_impl#ToString#string#to_string(pair_text/76) in
-                          let inline380 = @runtime(core.string_println)(inline379) in
-                          jump inline_cont378(())
+                          let inline384 = trait_impl#ToString#string#to_string(pair_text/76) in
+                          let inline385 = @runtime(core.string_println)(inline384) in
+                          jump inline_cont383(())
                         } in
-                        let inline382 = trait_impl#ToString#string#to_string(jp283) in
-                        let inline383 = @runtime(core.string_println)(inline382) in
-                        jump inline_cont381(())
+                        let inline387 = trait_impl#ToString#string#to_string(jp288) in
+                        let inline388 = @runtime(core.string_println)(inline387) in
+                        jump inline_cont386(())
                       } in
-                      let inline385 = trait_impl#ToString#string#to_string(flipped_text/73) in
-                      let inline386 = @runtime(core.string_println)(inline385) in
-                      jump inline_cont384(())
+                      let inline390 = trait_impl#ToString#string#to_string(flipped_text/73) in
+                      let inline391 = @runtime(core.string_println)(inline390) in
+                      jump inline_cont389(())
                     } in
-                    let inline388 = trait_impl#ToString#string#to_string(bumped_text/72) in
-                    let inline389 = @runtime(core.string_println)(inline388) in
-                    jump inline_cont387(())
+                    let inline393 = trait_impl#ToString#string#to_string(bumped_text/72) in
+                    let inline394 = @runtime(core.string_println)(inline393) in
+                    jump inline_cont392(())
                   } in
-                  let inline391 = trait_impl#ToString#string#to_string(first_text/71) in
-                  let inline392 = @runtime(core.string_println)(inline391) in
-                  jump inline_cont390(())
+                  let inline396 = trait_impl#ToString#string#to_string(first_text/71) in
+                  let inline397 = @runtime(core.string_println)(inline396) in
+                  jump inline_cont395(())
                 } in
-                let inline394 = trait_impl#ToString#string#to_string(tracker_info/58) in
-                let inline395 = @runtime(core.string_println)(inline394) in
-                jump inline_cont393(())
+                let inline399 = trait_impl#ToString#string#to_string(tracker_info/58) in
+                let inline400 = @runtime(core.string_println)(inline399) in
+                jump inline_cont398(())
               } in
-              let inline397 = @runtime(core.bool_to_string)(jp281) in
-              jump inline_cont396(inline397)
+              let inline402 = @runtime(core.bool_to_string)(jp286) in
+              jump inline_cont401(inline402)
             } in
-            let inline404 = (t284 + " -> ") in
-            let inline405 = (inline404 + t285) in
-            jump inline_cont398(inline405)
+            let inline409 = (t289 + " -> ") in
+            let inline410 = (inline409 + t290) in
+            jump inline_cont403(inline410)
           } in
-          let inline407 = @runtime(core.int32_to_string)(second_result/69) in
-          jump inline_cont406(inline407)
+          let inline412 = @runtime(core.int32_to_string)(second_result/69) in
+          jump inline_cont411(inline412)
         } in
-        let inline409 = @runtime(core.int32_to_string)(first_result/68) in
-        jump inline_cont408(inline409)
+        let inline414 = @runtime(core.int32_to_string)(first_result/68) in
+        jump inline_cont413(inline414)
       } in
       match stringified/65 {
         Tag_0 => {
-          let x211 = Maybe__string::Some._0(stringified/65) in
-          let t287 = ("Snapshot: " + x211) in
-          jump k282(t287)
+          let x216 = Maybe__string::Some._0(stringified/65) in
+          let t292 = ("Snapshot: " + x216) in
+          jump k287(t292)
         },
         Tag_1 => {
-          jump k282("Snapshot: none")
+          jump k287("Snapshot: none")
         },
       }
     } in
-    if t288 {
-      jump k280(true)
+    if t293 {
+      jump k285(true)
     } else {
-      jump k280(false)
+      jump k285(false)
     }
   } in
-  let inline411 = 4 in
-  let inline412 = @intrinsic(array.get)(transforms/66, 0) in
-  let inline413 = @intrinsic(array.get)(transforms/66, 1) in
-  let inline414 = inline412(inline411) in
-  let inline415 = inline413(inline414) in
-  let inline416 = [inline414, inline411] in
-  let inline417 = inline416 in
-  let inline418 = 1 in
-  let inline419 = @intrinsic(array.get)(inline417, inline418) in
-  let inline421 = @intrinsic(array.set)(inline417, inline418, inline415) in
-  let inline422 = inline416 = inline421 in
-  jump inline_cont410(inline416)
+  let inline416 = 4 in
+  let inline417 = @intrinsic(array.get)(transforms/66, 0) in
+  let inline418 = @intrinsic(array.get)(transforms/66, 1) in
+  let inline419 = inline417(inline416) in
+  let inline420 = inline418(inline419) in
+  let inline421 = [inline419, inline416] in
+  let inline422 = inline421 in
+  let inline423 = 1 in
+  let inline424 = @intrinsic(array.get)(inline422, inline423) in
+  let inline426 = @intrinsic(array.set)(inline422, inline423, inline420) in
+  let inline427 = inline421 = inline426 in
+  jump inline_cont415(inline421)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/271: Ref[int32]) -> int32 {
-  let t291 = @intrinsic(ref.get)(self/271) in
-  t291
+fn inherent#Ref#Ref[T]#get__T_int32(self/274: Ref[int32]) -> int32 {
+  let t296 = @intrinsic(ref.get)(self/274) in
+  t296
 }
 
-fn inherent#Ref#Ref[T]#get__T_bool(self/271: Ref[bool]) -> bool {
-  let t294 = @intrinsic(ref.get)(self/271) in
-  t294
+fn inherent#Ref#Ref[T]#get__T_bool(self/274: Ref[bool]) -> bool {
+  let t299 = @intrinsic(ref.get)(self/274) in
+  t299
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {
-  let t297 = @runtime(core.int32_to_string)(self/33) in
-  t297
+  let t302 = @runtime(core.int32_to_string)(self/33) in
+  t302
 }
 
 fn trait_impl#ToString#bool#to_string(self/64: bool) -> string {
-  let t300 = @runtime(core.bool_to_string)(self/64) in
-  t300
+  let t305 = @runtime(core.bool_to_string)(self/64) in
+  t305
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/270: int32) -> Ref[int32] {
-  let t303 = @intrinsic(ref.new)(value/270) in
-  t303
+fn inherent#Ref#Ref[T]#new__T_int32(value/273: int32) -> Ref[int32] {
+  let t308 = @intrinsic(ref.new)(value/273) in
+  t308
 }
 
-fn inherent#Ref#Ref[T]#new__T_bool(value/270: bool) -> Ref[bool] {
-  let t306 = @intrinsic(ref.new)(value/270) in
-  t306
+fn inherent#Ref#Ref[T]#new__T_bool(value/273: bool) -> Ref[bool] {
+  let t311 = @intrinsic(ref.new)(value/273) in
+  t311
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/272: Ref[int32], value/273: int32) -> unit {
-  let t308 = @intrinsic(ref.set)(self/272, value/273) in
+fn inherent#Ref#Ref[T]#set__T_int32(self/275: Ref[int32], value/276: int32) -> unit {
+  let t313 = @intrinsic(ref.set)(self/275, value/276) in
   ()
 }
 
-fn inherent#Ref#Ref[T]#set__T_bool(self/272: Ref[bool], value/273: bool) -> unit {
-  let t310 = @intrinsic(ref.set)(self/272, value/273) in
+fn inherent#Ref#Ref[T]#set__T_bool(self/275: Ref[bool], value/276: bool) -> unit {
+  let t315 = @intrinsic(ref.set)(self/275, value/276) in
   ()
 }
 
@@ -342,10 +342,10 @@ fn choose__T_Maybe[int32](
 fn map_maybe__T_int32__U_string(value/23: Maybe__int32, f/24: (int32) -> string) -> Maybe__string {
   match value/23 {
     Tag_0 => {
-      let x192 = Maybe__int32::Some._0(value/23) in
-      let t319 = f/24(x192) in
-      let t320 = Maybe__string::Some(t319) in
-      t320
+      let x197 = Maybe__int32::Some._0(value/23) in
+      let t324 = f/24(x197) in
+      let t325 = Maybe__string::Some(t324) in
+      t325
     },
     Tag_1 => {
       Tag_1
@@ -354,11 +354,11 @@ fn map_maybe__T_int32__U_string(value/23: Maybe__int32, f/24: (int32) -> string)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont424(t322: string) -> unit {
-    let t323 = @runtime(core.string_println)(t322) in
+  join inline_cont429(t327: string) -> unit {
+    let t328 = @runtime(core.string_println)(t327) in
     ()
   } in
-  jump inline_cont424(value/1)
+  jump inline_cont429(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/65: string) -> string {
@@ -366,18 +366,18 @@ fn trait_impl#ToString#string#to_string(self/65: string) -> string {
 }
 
 fn trait_impl#PartialEq#int32#eq(self/107: int32, other/108: int32) -> bool {
-  let t328 = (self/107 == other/108) in
-  t328
+  let t333 = (self/107 == other/108) in
+  t333
 }
 
 fn trait_impl#Hash#int32#hash(self/130: int32) -> uint64 {
-  let t331 = @runtime(core.int32_hash)(self/130) in
-  t331
+  let t336 = @runtime(core.int32_hash)(self/130) in
+  t336
 }
 
 fn trait_impl#PartialEq#bool#eq(self/95: bool, other/96: bool) -> bool {
-  let t334 = (self/95 == other/96) in
-  t334
+  let t339 = (self/95 == other/96) in
+  t339
 }
 
 fn trait_impl#Hash#bool#hash(self/124: bool) -> uint64 {
@@ -389,64 +389,64 @@ fn trait_impl#Hash#bool#hash(self/124: bool) -> uint64 {
 }
 
 fn inherent#closure_env_snapshot_0#closure_env_snapshot_0#apply(
-  env219: closure_env_snapshot_0
+  env224: closure_env_snapshot_0
 ) -> Record__int32 {
-  let count/44 = closure_env_snapshot_0.count_0(env219) in
-  join inline_cont425(t341: int32) -> Record__int32 {
-    let t342 = Record__int32::Value(t341) in
-    t342
+  let count/44 = closure_env_snapshot_0.count_0(env224) in
+  join inline_cont430(t346: int32) -> Record__int32 {
+    let t347 = Record__int32::Value(t346) in
+    t347
   } in
-  let inline426 = @intrinsic(ref.get)(count/44) in
-  jump inline_cont425(inline426)
+  let inline431 = @intrinsic(ref.get)(count/44) in
+  jump inline_cont430(inline431)
 }
 
 fn inherent#closure_env_bump_1#closure_env_bump_1#apply(
-  env220: closure_env_bump_1,
+  env225: closure_env_bump_1,
   delta/48: int32
 ) -> Record__int32 {
-  let count/44 = closure_env_bump_1.count_0(env220) in
-  join inline_cont431(before/49: int32) -> Record__int32 {
-    let t345 = (before/49 + delta/48) in
-    join inline_cont429(mtmp204: unit) -> Record__int32 {
-      join inline_cont427(t346: int32) -> Record__int32 {
-        let t347 = Record__int32::Pair(before/49, t346) in
-        t347
+  let count/44 = closure_env_bump_1.count_0(env225) in
+  join inline_cont436(before/49: int32) -> Record__int32 {
+    let t350 = (before/49 + delta/48) in
+    join inline_cont434(mtmp209: unit) -> Record__int32 {
+      join inline_cont432(t351: int32) -> Record__int32 {
+        let t352 = Record__int32::Pair(before/49, t351) in
+        t352
       } in
-      let inline428 = @intrinsic(ref.get)(count/44) in
-      jump inline_cont427(inline428)
+      let inline433 = @intrinsic(ref.get)(count/44) in
+      jump inline_cont432(inline433)
     } in
-    let inline430 = @intrinsic(ref.set)(count/44, t345) in
-    jump inline_cont429(())
+    let inline435 = @intrinsic(ref.set)(count/44, t350) in
+    jump inline_cont434(())
   } in
-  let inline432 = @intrinsic(ref.get)(count/44) in
-  jump inline_cont431(inline432)
+  let inline437 = @intrinsic(ref.get)(count/44) in
+  jump inline_cont436(inline437)
 }
 
 fn inherent#closure_env_flip_2#closure_env_flip_2#apply(
-  env221: closure_env_flip_2
+  env226: closure_env_flip_2
 ) -> Record__string {
-  let toggled/45 = closure_env_flip_2.toggled_0(env221) in
-  join inline_cont441(before/51: bool) -> Record__string {
-    let t350 = (!before/51) in
-    join inline_cont439(mtmp205: unit) -> Record__string {
-      join inline_cont437(after/52: bool) -> Record__string {
-        join inline_cont435(t351: string) -> Record__string {
-          join inline_cont433(t352: string) -> Record__string {
-            let t353 = Record__string::Pair(t351, t352) in
-            t353
+  let toggled/45 = closure_env_flip_2.toggled_0(env226) in
+  join inline_cont446(before/51: bool) -> Record__string {
+    let t355 = (!before/51) in
+    join inline_cont444(mtmp210: unit) -> Record__string {
+      join inline_cont442(after/52: bool) -> Record__string {
+        join inline_cont440(t356: string) -> Record__string {
+          join inline_cont438(t357: string) -> Record__string {
+            let t358 = Record__string::Pair(t356, t357) in
+            t358
           } in
-          let inline434 = @runtime(core.bool_to_string)(after/52) in
-          jump inline_cont433(inline434)
+          let inline439 = @runtime(core.bool_to_string)(after/52) in
+          jump inline_cont438(inline439)
         } in
-        let inline436 = @runtime(core.bool_to_string)(before/51) in
-        jump inline_cont435(inline436)
+        let inline441 = @runtime(core.bool_to_string)(before/51) in
+        jump inline_cont440(inline441)
       } in
-      let inline438 = @intrinsic(ref.get)(toggled/45) in
-      jump inline_cont437(inline438)
+      let inline443 = @intrinsic(ref.get)(toggled/45) in
+      jump inline_cont442(inline443)
     } in
-    let inline440 = @intrinsic(ref.set)(toggled/45, t350) in
-    jump inline_cont439(())
+    let inline445 = @intrinsic(ref.set)(toggled/45, t355) in
+    jump inline_cont444(())
   } in
-  let inline442 = @intrinsic(ref.get)(toggled/45) in
-  jump inline_cont441(inline442)
+  let inline447 = @intrinsic(ref.get)(toggled/45) in
+  jump inline_cont446(inline447)
 }

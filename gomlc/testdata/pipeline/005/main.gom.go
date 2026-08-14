@@ -22,46 +22,46 @@ const (
 )
 
 func main0() struct{} {
-    var x182 Color = Blue
-    var x183 Color = Red
-    switch x183 {
+    var x187 Color = Blue
+    var x188 Color = Red
+    switch x188 {
     case Red:
-        switch x182 {
+        switch x187 {
         case Red:
-            var inline202 int = 1
-            var inline203 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline202)
-            _goml_runtime_core_string_print(inline203)
+            var inline207 int = 1
+            var inline208 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline207)
+            _goml_runtime_core_string_print(inline208)
             return struct{}{}
         default:
-            var inline206 int = 3
-            var inline207 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline206)
-            _goml_runtime_core_string_print(inline207)
+            var inline211 int = 3
+            var inline212 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline211)
+            _goml_runtime_core_string_print(inline212)
             return struct{}{}
         }
     case Green:
-        switch x182 {
+        switch x187 {
         case Red:
-            var inline210 int = 0
-            var inline211 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline210)
-            _goml_runtime_core_string_print(inline211)
+            var inline215 int = 0
+            var inline216 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline215)
+            _goml_runtime_core_string_print(inline216)
             return struct{}{}
         default:
-            var inline214 int = 3
-            var inline215 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline214)
-            _goml_runtime_core_string_print(inline215)
+            var inline219 int = 3
+            var inline220 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline219)
+            _goml_runtime_core_string_print(inline220)
             return struct{}{}
         }
     case Blue:
-        switch x182 {
+        switch x187 {
         case Blue:
-            var inline218 int = 2
-            var inline219 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline218)
-            _goml_runtime_core_string_print(inline219)
+            var inline223 int = 2
+            var inline224 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline223)
+            _goml_runtime_core_string_print(inline224)
             return struct{}{}
         default:
-            var inline222 int = 3
-            var inline223 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline222)
-            _goml_runtime_core_string_print(inline223)
+            var inline227 int = 3
+            var inline228 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline227)
+            _goml_runtime_core_string_print(inline228)
             return struct{}{}
         }
     default:
@@ -70,8 +70,8 @@ func main0() struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
-    var t200 string = _goml_runtime_core_int_to_string(self__67)
-    return t200
+    var t205 string = _goml_runtime_core_int_to_string(self__67)
+    return t205
 }
 
 func main() {

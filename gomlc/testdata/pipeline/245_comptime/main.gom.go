@@ -49,76 +49,76 @@ const (
 )
 
 func factorial(value__0 int) int {
-    var t200 bool = value__0 < 2
-    if t200 {
+    var t205 bool = value__0 < 2
+    if t205 {
         return 1
     } else {
-        var t201 int = value__0 - 1
-        var t202 int = factorial(t201)
-        var t203 int = value__0 * t202
-        return t203
+        var t206 int = value__0 - 1
+        var t207 int = factorial(t206)
+        var t208 int = value__0 * t207
+        return t208
     }
 }
 
 func main0() struct{} {
     var values__12 [3]int = [3]int{6, 10, 4}
-    var inline305 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(ANSWER)
-    _goml_runtime_core_string_println(inline305)
-    var t235 int = array_get__Array_3_3int(values__12, 0)
-    var inline302 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t235)
-    _goml_runtime_core_string_println(inline302)
-    var t236 int = array_get__Array_3_3int(values__12, 1)
-    var inline299 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t236)
-    _goml_runtime_core_string_println(inline299)
-    var t237 int = array_get__Array_3_3int(values__12, 2)
-    var inline296 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t237)
-    _goml_runtime_core_string_println(inline296)
-    var t238 int = 7
-    var t239 int = 8
-    var t240 int = t238 + t239
-    var inline293 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t240)
-    _goml_runtime_core_string_println(inline293)
-    var x190 int = 9
-    var inline265 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(x190)
-    _goml_runtime_core_string_println(inline265)
-    var t242 int = factorial(5)
-    var t243 bool = t242 == ANSWER
-    var inline290 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t243)
-    _goml_runtime_core_string_println(inline290)
+    var inline310 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(ANSWER)
+    _goml_runtime_core_string_println(inline310)
+    var t240 int = array_get__Array_3_3int(values__12, 0)
+    var inline307 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t240)
+    _goml_runtime_core_string_println(inline307)
+    var t241 int = array_get__Array_3_3int(values__12, 1)
+    var inline304 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t241)
+    _goml_runtime_core_string_println(inline304)
+    var t242 int = array_get__Array_3_3int(values__12, 2)
+    var inline301 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t242)
+    _goml_runtime_core_string_println(inline301)
+    var t243 int = 7
+    var t244 int = 8
+    var t245 int = t243 + t244
+    var inline298 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t245)
+    _goml_runtime_core_string_println(inline298)
+    var x195 int = 9
+    var inline270 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(x195)
+    _goml_runtime_core_string_println(inline270)
+    var t247 int = factorial(5)
+    var t248 bool = t247 == ANSWER
+    var inline295 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t248)
+    _goml_runtime_core_string_println(inline295)
     var shadowed__16 int = 12
-    var inline287 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(shadowed__16)
-    _goml_runtime_core_string_println(inline287)
-    var t244 int
-    var inline280 int = 3
-    var inline282 int = inline280 + 1
-    var inline283 int = inline282 * 2
-    var inline285 int = inline282 + inline283
-    t244 = inline285
-    var t245 bool = t244 == shadowed__16
-    var inline277 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t245)
-    _goml_runtime_core_string_println(inline277)
+    var inline292 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(shadowed__16)
+    _goml_runtime_core_string_println(inline292)
+    var t249 int
+    var inline285 int = 3
+    var inline287 int = inline285 + 1
+    var inline288 int = inline287 * 2
+    var inline290 int = inline287 + inline288
+    t249 = inline290
+    var t250 bool = t249 == shadowed__16
+    var inline282 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t250)
+    _goml_runtime_core_string_println(inline282)
     var widened__17 uint64 = 18446744073709551615
-    var t246 uint64
-    var inline274 int8 = -1
-    var inline275 uint64 = uint64(int8(inline274))
-    t246 = inline275
-    var t247 bool = widened__17 == t246
-    var inline271 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t247)
-    _goml_runtime_core_string_println(inline271)
-    var t248 int = factorial(4)
-    var inline268 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t248)
-    _goml_runtime_core_string_println(inline268)
+    var t251 uint64
+    var inline279 int8 = -1
+    var inline280 uint64 = uint64(int8(inline279))
+    t251 = inline280
+    var t252 bool = widened__17 == t251
+    var inline276 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t252)
+    _goml_runtime_core_string_println(inline276)
+    var t253 int = factorial(4)
+    var inline273 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t253)
+    _goml_runtime_core_string_println(inline273)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
-    var t260 string = _goml_runtime_core_int_to_string(self__67)
-    return t260
+    var t265 string = _goml_runtime_core_int_to_string(self__67)
+    return t265
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
-    var t263 string = _goml_runtime_core_bool_to_string(self__64)
-    return t263
+    var t268 string = _goml_runtime_core_bool_to_string(self__64)
+    return t268
 }
 
 func main() {

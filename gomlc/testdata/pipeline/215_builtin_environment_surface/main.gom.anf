@@ -2,103 +2,103 @@ fn main() -> unit {
   let native/0 = 7 in
   let small/1 = 8 in
   let unsigned/2 = 9 in
-  let t192 = @runtime(core.int_to_string)(native/0) in
-  let t193 = @runtime(core.int8_to_string)(small/1) in
-  let t194 = (t192 + t193) in
-  let t195 = @runtime(core.uint8_to_string)(unsigned/2) in
-  let t196 = (t194 + t195) in
-  join inline_cont321(t197: string) -> unit {
-    let text/3 = (t196 + t197) in
+  let t197 = @runtime(core.int_to_string)(native/0) in
+  let t198 = @runtime(core.int8_to_string)(small/1) in
+  let t199 = (t197 + t198) in
+  let t200 = @runtime(core.uint8_to_string)(unsigned/2) in
+  let t201 = (t199 + t200) in
+  join inline_cont326(t202: string) -> unit {
+    let text/3 = (t201 + t202) in
     let value/4 = @intrinsic(ref.new)(1) in
-    let _wild182 = @intrinsic(ref.set)(value/4, 2) in
+    let _wild187 = @intrinsic(ref.set)(value/4, 2) in
     let same/5 = @intrinsic(ref.ptr_eq)(value/4, value/4) in
-    let mtmp183 = @intrinsic(ref.ptr_hash)(value/4) in
+    let mtmp188 = @intrinsic(ref.ptr_hash)(value/4) in
     let values/6 = @intrinsic(vec.new)() in
-    let t198 = @intrinsic(ref.get)(value/4) in
-    let _wild184 = @intrinsic(vec.push)(values/6, t198) in
-    let _wild185 = @intrinsic(vec.push)(values/6, 3) in
-    let _wild186 = @intrinsic(vec.set)(values/6, 1, 4) in
-    let t199 = @intrinsic(vec.len)(values/6) in
-    let values_slice/7 = @intrinsic(slice.new)(values/6, 0, t199) in
-    let t200 = @intrinsic(slice.len)(values_slice/7) in
-    let nested/8 = @intrinsic(slice.sub)(values_slice/7, 0, t200) in
+    let t203 = @intrinsic(ref.get)(value/4) in
+    let _wild189 = @intrinsic(vec.push)(values/6, t203) in
+    let _wild190 = @intrinsic(vec.push)(values/6, 3) in
+    let _wild191 = @intrinsic(vec.set)(values/6, 1, 4) in
+    let t204 = @intrinsic(vec.len)(values/6) in
+    let values_slice/7 = @intrinsic(slice.new)(values/6, 0, t204) in
+    let t205 = @intrinsic(slice.len)(values_slice/7) in
+    let nested/8 = @intrinsic(slice.sub)(values_slice/7, 0, t205) in
     let channel/9 = @intrinsic(channel.new)(1) in
-    let t201 = @intrinsic(slice.get)(nested/8, 1) in
-    let _wild187 = @intrinsic(channel.send)(channel/9, t201) in
+    let t206 = @intrinsic(slice.get)(nested/8, 1) in
+    let _wild192 = @intrinsic(channel.send)(channel/9, t206) in
     let received/10 = @intrinsic(channel.recv)(channel/9) in
-    let _wild188 = @intrinsic(channel.close)(channel/9) in
-    join inline_cont317(t203: FnIterator__int) -> unit {
-      let t204 = closure_env_main_0 {} in
-      let t205 = pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](t204) in
-      let total/13 = std::iter::fold__A_int__I_FnIterator[int]__T_int(t203, 0, t205) in
-      join inline_cont315(t206: string) -> unit {
-        let t207 = (text/3 + t206) in
-        let t208 = received/10.0 in
-        join inline_cont313(t209: string) -> unit {
-          let t210 = (t207 + t209) in
-          let t211 = received/10.1 in
-          join inline_cont311(t212: string) -> unit {
-            let t213 = (t210 + t212) in
-            join inline_cont309(t214: string) -> unit {
-              let t215 = (t213 + t214) in
-              let inline307 = trait_impl#ToString#string#to_string(t215) in
-              let inline308 = @runtime(core.string_println)(inline307) in
+    let _wild193 = @intrinsic(channel.close)(channel/9) in
+    join inline_cont322(t208: FnIterator__int) -> unit {
+      let t209 = closure_env_main_0 {} in
+      let t210 = pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](t209) in
+      let total/13 = std::iter::fold__A_int__I_FnIterator[int]__T_int(t208, 0, t210) in
+      join inline_cont320(t211: string) -> unit {
+        let t212 = (text/3 + t211) in
+        let t213 = received/10.0 in
+        join inline_cont318(t214: string) -> unit {
+          let t215 = (t212 + t214) in
+          let t216 = received/10.1 in
+          join inline_cont316(t217: string) -> unit {
+            let t218 = (t215 + t217) in
+            join inline_cont314(t219: string) -> unit {
+              let t220 = (t218 + t219) in
+              let inline312 = trait_impl#ToString#string#to_string(t220) in
+              let inline313 = @runtime(core.string_println)(inline312) in
               ()
             } in
-            let inline310 = @runtime(core.int_to_string)(total/13) in
-            jump inline_cont309(inline310)
+            let inline315 = @runtime(core.int_to_string)(total/13) in
+            jump inline_cont314(inline315)
           } in
-          let inline312 = @runtime(core.bool_to_string)(t211) in
-          jump inline_cont311(inline312)
+          let inline317 = @runtime(core.bool_to_string)(t216) in
+          jump inline_cont316(inline317)
         } in
-        let inline314 = @runtime(core.int32_to_string)(t208) in
-        jump inline_cont313(inline314)
+        let inline319 = @runtime(core.int32_to_string)(t213) in
+        jump inline_cont318(inline319)
       } in
-      let inline316 = @runtime(core.bool_to_string)(same/5) in
-      jump inline_cont315(inline316)
+      let inline321 = @runtime(core.bool_to_string)(same/5) in
+      jump inline_cont320(inline321)
     } in
-    let inline318 = 0 in
-    let inline319 = 3 in
-    let inline320 = __goml_builtin_range(inline318, inline319) in
-    jump inline_cont317(inline320)
+    let inline323 = 0 in
+    let inline324 = 3 in
+    let inline325 = __goml_builtin_range(inline323, inline324) in
+    jump inline_cont322(inline325)
   } in
-  let inline322 = "abcd" in
-  let inline323 = 1 in
-  let inline324 = 3 in
-  let inline325 = string_is_char_boundary(inline322, inline323) in
-  join inline_join326(inline327: bool) -> unit {
-    if inline327 {
-      let inline328 = @runtime(core.string_byte_slice)(inline322, inline323, inline324) in
-      jump inline_cont321(inline328)
+  let inline327 = "abcd" in
+  let inline328 = 1 in
+  let inline329 = 3 in
+  let inline330 = string_is_char_boundary(inline327, inline328) in
+  join inline_join331(inline332: bool) -> unit {
+    if inline332 {
+      let inline333 = @runtime(core.string_byte_slice)(inline327, inline328, inline329) in
+      jump inline_cont326(inline333)
     } else {
-      let inline329 = @runtime(core.string_byte_slice)(inline322, -1, -1) in
-      jump inline_cont321(inline329)
+      let inline334 = @runtime(core.string_byte_slice)(inline327, -1, -1) in
+      jump inline_cont326(inline334)
     }
   } in
-  if inline325 {
-    let inline330 = string_is_char_boundary(inline322, inline324) in
-    jump inline_join326(inline330)
+  if inline330 {
+    let inline335 = string_is_char_boundary(inline327, inline329) in
+    jump inline_join331(inline335)
   } else {
-    jump inline_join326(false)
+    jump inline_join331(false)
   }
 }
 
 fn string_byte_slice(value/21: string, start/22: int, end/23: int) -> string {
-  let t225 = string_is_char_boundary(value/21, start/22) in
-  join k221(jp222: bool) -> string {
-    if jp222 {
-      let t223 = @runtime(core.string_byte_slice)(value/21, start/22, end/23) in
-      t223
+  let t230 = string_is_char_boundary(value/21, start/22) in
+  join k226(jp227: bool) -> string {
+    if jp227 {
+      let t228 = @runtime(core.string_byte_slice)(value/21, start/22, end/23) in
+      t228
     } else {
-      let t224 = @runtime(core.string_byte_slice)(value/21, -1, -1) in
-      t224
+      let t229 = @runtime(core.string_byte_slice)(value/21, -1, -1) in
+      t229
     }
   } in
-  if t225 {
-    let t226 = string_is_char_boundary(value/21, end/23) in
-    jump k221(t226)
+  if t230 {
+    let t231 = string_is_char_boundary(value/21, end/23) in
+    jump k226(t231)
   } else {
-    jump k221(false)
+    jump k226(false)
   }
 }
 
@@ -108,117 +108,117 @@ fn std::iter::fold__A_int__I_FnIterator[int]__T_int(
   combine/50: (int, int) -> int
 ) -> int {
   let accumulator/51 = initial/49 in
-  join exit229() -> int {
+  join exit234() -> int {
     accumulator/51
   } in
   joinrec {
-    join loop_expr230() -> int {
-      join inline_cont331(mtmp43: Option__int) -> int {
+    join loop_expr235() -> int {
+      join inline_cont336(mtmp43: Option__int) -> int {
         match mtmp43 {
           Tag_0 => {
-            jump exit229()
+            jump exit234()
           },
           Tag_1 => {
             let x44 = Option__int::Some._0(mtmp43) in
-            let t232 = combine/50(accumulator/51, x44) in
-            let _wild45 = accumulator/51 = t232 in
-            jump loop_expr230()
+            let t237 = combine/50(accumulator/51, x44) in
+            let _wild45 = accumulator/51 = t237 in
+            jump loop_expr235()
           },
         }
       } in
-      let inline332 = FnIterator__int.next_fn(iterator/48) in
-      let inline333 = inline332() in
-      jump inline_cont331(inline333)
+      let inline337 = FnIterator__int.next_fn(iterator/48) in
+      let inline338 = inline337() in
+      jump inline_cont336(inline338)
     } in
   } in
-  jump loop_expr230()
+  jump loop_expr235()
 }
 
 fn range(start/3: int, end/4: int) -> FnIterator__int {
-  let inline335 = @intrinsic(ref.new)(start/3) in
-  let inline336 = closure_env_goml_builtin_range_1 { current_0: inline335, end_1: end/4 } in
-  let inline337 =
+  let inline340 = @intrinsic(ref.new)(start/3) in
+  let inline341 = closure_env_goml_builtin_range_1 { current_0: inline340, end_1: end/4 } in
+  let inline342 =
     pack_closure[inherent#closure_env_goml_builtin_range_1#closure_env_goml_builtin_range_1#apply](
-      inline336
+      inline341
     ) in
-  let inline338 = inherent#FnIterator#FnIterator[T]#from_fn__T_int(inline337) in
-  inline338
+  let inline343 = inherent#FnIterator#FnIterator[T]#from_fn__T_int(inline342) in
+  inline343
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont339(t237: string) -> unit {
-    let t238 = @runtime(core.string_println)(t237) in
+  join inline_cont344(t242: string) -> unit {
+    let t243 = @runtime(core.string_println)(t242) in
     ()
   } in
-  jump inline_cont339(value/1)
+  jump inline_cont344(value/1)
 }
 
 fn trait_impl#ToString#bool#to_string(self/64: bool) -> string {
-  let t241 = @runtime(core.bool_to_string)(self/64) in
-  t241
+  let t246 = @runtime(core.bool_to_string)(self/64) in
+  t246
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {
-  let t244 = @runtime(core.int32_to_string)(self/33) in
-  t244
+  let t249 = @runtime(core.int32_to_string)(self/33) in
+  t249
 }
 
 fn inherent#int#int#to_string(self/32: int) -> string {
-  let t247 = @runtime(core.int_to_string)(self/32) in
-  t247
+  let t252 = @runtime(core.int_to_string)(self/32) in
+  t252
 }
 
 fn string_is_char_boundary(value/15: string, index/16: int) -> bool {
-  let t261 = (index/16 < 0) in
-  join k252(jp253: bool) -> bool {
-    if jp253 {
+  let t266 = (index/16 < 0) in
+  join k257(jp258: bool) -> bool {
+    if jp258 {
       false
     } else {
-      join inline_cont344(t256: int) -> bool {
-        let t257 = (index/16 == t256) in
-        if t257 {
+      join inline_cont349(t261: int) -> bool {
+        let t262 = (index/16 == t261) in
+        if t262 {
           true
         } else {
-          join inline_cont342(t258: uint8) -> bool {
-            let t259 = (t258 & 192) in
-            let t260 = (t259 != 128) in
-            t260
+          join inline_cont347(t263: uint8) -> bool {
+            let t264 = (t263 & 192) in
+            let t265 = (t264 != 128) in
+            t265
           } in
-          let inline343 = @runtime(core.string_byte_get)(value/15, index/16) in
-          jump inline_cont342(inline343)
+          let inline348 = @runtime(core.string_byte_get)(value/15, index/16) in
+          jump inline_cont347(inline348)
         }
       } in
-      let inline345 = @runtime(core.string_len)(value/15) in
-      jump inline_cont344(inline345)
+      let inline350 = @runtime(core.string_len)(value/15) in
+      jump inline_cont349(inline350)
     }
   } in
-  if t261 {
-    jump k252(true)
+  if t266 {
+    jump k257(true)
   } else {
-    join inline_cont340(t262: int) -> bool {
-      let t263 = (index/16 > t262) in
-      jump k252(t263)
+    join inline_cont345(t267: int) -> bool {
+      let t268 = (index/16 > t267) in
+      jump k257(t268)
     } in
-    let inline341 = @runtime(core.string_len)(value/15) in
-    jump inline_cont340(inline341)
+    let inline346 = @runtime(core.string_len)(value/15) in
+    jump inline_cont345(inline346)
   }
 }
 
 fn trait_impl#Iterator#FnIterator__int#next(self/171: FnIterator__int) -> Option__int {
-  let t266 = FnIterator__int.next_fn(self/171) in
-  let t267 = t266() in
-  t267
+  let t271 = FnIterator__int.next_fn(self/171) in
+  let t272 = t271() in
+  t272
 }
 
-fn __goml_builtin_range(start/333: int, end/334: int) -> FnIterator__int {
-  let current/335 = @intrinsic(ref.new)(start/333) in
-  let t270 = closure_env_goml_builtin_range_1 { current_0: current/335, end_1: end/334 } in
-  let t271 =
+fn __goml_builtin_range(start/336: int, end/337: int) -> FnIterator__int {
+  let current/338 = @intrinsic(ref.new)(start/336) in
+  let t275 = closure_env_goml_builtin_range_1 { current_0: current/338, end_1: end/337 } in
+  let t276 =
     pack_closure[inherent#closure_env_goml_builtin_range_1#closure_env_goml_builtin_range_1#apply](
-      t270
+      t275
     ) in
-  let inline347 = FnIterator__int { next_fn: t271 } in
-  inline347
+  let inline352 = FnIterator__int { next_fn: t276 } in
+  inline352
 }
 
 fn trait_impl#ToString#string#to_string(self/65: string) -> string {
@@ -226,63 +226,63 @@ fn trait_impl#ToString#string#to_string(self/65: string) -> string {
 }
 
 fn inherent#string#string#byte_len(self/36: string) -> int {
-  let t277 = @runtime(core.string_len)(self/36) in
-  t277
+  let t282 = @runtime(core.string_len)(self/36) in
+  t282
 }
 
 fn inherent#string#string#byte_get(self/39: string, index/40: int) -> uint8 {
-  let t280 = @runtime(core.string_byte_get)(self/39, index/40) in
-  t280
+  let t285 = @runtime(core.string_byte_get)(self/39, index/40) in
+  t285
 }
 
 fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(
   next_fn/170: () -> Option__int
 ) -> FnIterator__int {
-  let t283 = FnIterator__int { next_fn: next_fn/170 } in
-  t283
+  let t288 = FnIterator__int { next_fn: next_fn/170 } in
+  t288
 }
 
 fn trait_impl#PartialEq#int32#eq(self/107: int32, other/108: int32) -> bool {
-  let t286 = (self/107 == other/108) in
-  t286
+  let t291 = (self/107 == other/108) in
+  t291
 }
 
 fn trait_impl#Hash#int32#hash(self/130: int32) -> uint64 {
-  let t289 = @runtime(core.int32_hash)(self/130) in
-  t289
+  let t294 = @runtime(core.int32_hash)(self/130) in
+  t294
 }
 
 fn trait_impl#PartialEq#int#eq(self/101: int, other/102: int) -> bool {
-  let t292 = (self/101 == other/102) in
-  t292
+  let t297 = (self/101 == other/102) in
+  t297
 }
 
 fn trait_impl#Hash#int#hash(self/127: int) -> uint64 {
-  let t295 = @runtime(core.int_hash)(self/127) in
-  t295
+  let t300 = @runtime(core.int_hash)(self/127) in
+  t300
 }
 
 fn inherent#closure_env_main_0#closure_env_main_0#apply(
-  env189: closure_env_main_0,
+  env194: closure_env_main_0,
   sum/11: int,
   item/12: int
 ) -> int {
-  let t298 = (sum/11 + item/12) in
-  t298
+  let t303 = (sum/11 + item/12) in
+  t303
 }
 
 fn inherent#closure_env_goml_builtin_range_1#closure_env_goml_builtin_range_1#apply(
-  env190: closure_env_goml_builtin_range_1
+  env195: closure_env_goml_builtin_range_1
 ) -> Option__int {
-  let current/335 = closure_env_goml_builtin_range_1.current_0(env190) in
-  let end/334 = closure_env_goml_builtin_range_1.end_1(env190) in
-  let value/336 = @intrinsic(ref.get)(current/335) in
-  let t303 = (value/336 < end/334) in
-  if t303 {
-    let t304 = (value/336 + 1) in
-    let _wild178 = @intrinsic(ref.set)(current/335, t304) in
-    let t305 = Option__int::Some(value/336) in
-    t305
+  let current/338 = closure_env_goml_builtin_range_1.current_0(env195) in
+  let end/337 = closure_env_goml_builtin_range_1.end_1(env195) in
+  let value/339 = @intrinsic(ref.get)(current/338) in
+  let t308 = (value/339 < end/337) in
+  if t308 {
+    let t309 = (value/339 + 1) in
+    let _wild183 = @intrinsic(ref.set)(current/338, t309) in
+    let t310 = Option__int::Some(value/339) in
+    t310
   } else {
     Tag_0
   }

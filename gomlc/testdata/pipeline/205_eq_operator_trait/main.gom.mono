@@ -8,17 +8,17 @@ fn trait_impl#PartialEq#AlwaysDifferent#eq(
 fn main() -> unit {
   let first/2 = AlwaysDifferent { value: 7 } in
   let second/3 = AlwaysDifferent { value: 7 } in
-  let _wild182 = println__T_bool(trait_impl#PartialEq#AlwaysDifferent#eq(first/2, second/3)) in
-  let _wild183 = println__T_bool((!trait_impl#PartialEq#AlwaysDifferent#eq(first/2, second/3))) in
+  let _wild187 = println__T_bool(trait_impl#PartialEq#AlwaysDifferent#eq(first/2, second/3)) in
+  let _wild188 = println__T_bool((!trait_impl#PartialEq#AlwaysDifferent#eq(first/2, second/3))) in
   let left_tuple/4 = (AlwaysDifferent { value: 1 }, 2) in
   let right_tuple/5 = (AlwaysDifferent { value: 1 }, 2) in
-  let _wild186 =
+  let _wild191 =
     println__T_bool(
       {
-        let _eq_lhs184 = left_tuple/4 in
-        let _eq_rhs185 = right_tuple/5 in
-        if trait_impl#PartialEq#AlwaysDifferent#eq(_eq_lhs184.0, _eq_rhs185.0) {
-            trait_impl#PartialEq#int#eq(_eq_lhs184.1, _eq_rhs185.1)
+        let _eq_lhs189 = left_tuple/4 in
+        let _eq_rhs190 = right_tuple/5 in
+        if trait_impl#PartialEq#AlwaysDifferent#eq(_eq_lhs189.0, _eq_rhs190.0) {
+            trait_impl#PartialEq#int#eq(_eq_lhs189.1, _eq_rhs190.1)
         } else {
             false
         }
@@ -26,18 +26,18 @@ fn main() -> unit {
     ) in
   let left_array/6 = [AlwaysDifferent { value: 1 }, AlwaysDifferent { value: 2 }] in
   let right_array/7 = [AlwaysDifferent { value: 1 }, AlwaysDifferent { value: 2 }] in
-  let _wild189 =
+  let _wild194 =
     println__T_bool(
       {
-        let _eq_lhs187 = left_array/6 in
-        let _eq_rhs188 = right_array/7 in
+        let _eq_lhs192 = left_array/6 in
+        let _eq_rhs193 = right_array/7 in
         if trait_impl#PartialEq#AlwaysDifferent#eq(
-          @intrinsic(array.get)(_eq_lhs187, 0),
-          @intrinsic(array.get)(_eq_rhs188, 0)
+          @intrinsic(array.get)(_eq_lhs192, 0),
+          @intrinsic(array.get)(_eq_rhs193, 0)
         ) {
             trait_impl#PartialEq#AlwaysDifferent#eq(
-              @intrinsic(array.get)(_eq_lhs187, 1),
-              @intrinsic(array.get)(_eq_rhs188, 1)
+              @intrinsic(array.get)(_eq_lhs192, 1),
+              @intrinsic(array.get)(_eq_rhs193, 1)
             )
         } else {
             false

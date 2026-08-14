@@ -25,97 +25,97 @@ func match_int(n__0 int32) int32 {
 }
 
 func main0() struct{} {
-    var t204 int32 = match_int(0)
-    var t205 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t204)
-    println__T_string(t205)
-    var t206 int32 = match_int(5)
-    var t207 string
-    var inline272 string = _goml_runtime_core_int32_to_string(t206)
-    t207 = inline272
-    println__T_string(t207)
-    var t208 int32
-    t208 = 40
-    var t209 string
-    var inline268 string = _goml_runtime_core_int32_to_string(t208)
-    t209 = inline268
-    var inline265 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t209)
-    _goml_runtime_core_string_println(inline265)
-    var t210 int32
-    t210 = 40
-    var t211 string
-    var inline261 string = _goml_runtime_core_int32_to_string(t210)
-    t211 = inline261
-    var inline258 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t211)
-    _goml_runtime_core_string_println(inline258)
-    var t212 int32
-    var inline256 int32 = 2
-    switch inline256 {
+    var t209 int32 = match_int(0)
+    var t210 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t209)
+    println__T_string(t210)
+    var t211 int32 = match_int(5)
+    var t212 string
+    var inline277 string = _goml_runtime_core_int32_to_string(t211)
+    t212 = inline277
+    println__T_string(t212)
+    var t213 int32
+    t213 = 40
+    var t214 string
+    var inline273 string = _goml_runtime_core_int32_to_string(t213)
+    t214 = inline273
+    var inline270 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t214)
+    _goml_runtime_core_string_println(inline270)
+    var t215 int32
+    t215 = 40
+    var t216 string
+    var inline266 string = _goml_runtime_core_int32_to_string(t215)
+    t216 = inline266
+    var inline263 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t216)
+    _goml_runtime_core_string_println(inline263)
+    var t217 int32
+    var inline261 int32 = 2
+    switch inline261 {
     case 2:
-        t212 = 90
+        t217 = 90
     case 3:
-        t212 = 100
+        t217 = 100
     default:
-        t212 = 100
+        t217 = 100
     }
-    var t213 string
-    var inline254 string = _goml_runtime_core_int32_to_string(t212)
-    t213 = inline254
-    var inline251 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t213)
-    _goml_runtime_core_string_println(inline251)
-    var t214 int32
-    var inline249 int32 = 3
-    switch inline249 {
+    var t218 string
+    var inline259 string = _goml_runtime_core_int32_to_string(t217)
+    t218 = inline259
+    var inline256 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t218)
+    _goml_runtime_core_string_println(inline256)
+    var t219 int32
+    var inline254 int32 = 3
+    switch inline254 {
     case 2:
-        t214 = 90
+        t219 = 90
     case 3:
-        t214 = 100
+        t219 = 100
     default:
-        t214 = 100
+        t219 = 100
     }
-    var t215 string
-    var inline247 string = _goml_runtime_core_int32_to_string(t214)
-    t215 = inline247
-    var inline244 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t215)
-    _goml_runtime_core_string_println(inline244)
-    var t216 int32
-    var inline242 int32 = 1
-    switch inline242 {
+    var t220 string
+    var inline252 string = _goml_runtime_core_int32_to_string(t219)
+    t220 = inline252
+    var inline249 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t220)
+    _goml_runtime_core_string_println(inline249)
+    var t221 int32
+    var inline247 int32 = 1
+    switch inline247 {
     case 1:
-        t216 = 60
+        t221 = 60
     default:
-        t216 = 80
+        t221 = 80
     }
-    var t217 string
-    var inline240 string = _goml_runtime_core_int32_to_string(t216)
-    t217 = inline240
-    var inline237 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t217)
-    _goml_runtime_core_string_println(inline237)
-    var t218 int32
-    var inline235 int32 = 3
-    switch inline235 {
+    var t222 string
+    var inline245 string = _goml_runtime_core_int32_to_string(t221)
+    t222 = inline245
+    var inline242 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t222)
+    _goml_runtime_core_string_println(inline242)
+    var t223 int32
+    var inline240 int32 = 3
+    switch inline240 {
     case 1:
-        t218 = 60
+        t223 = 60
     default:
-        t218 = 80
+        t223 = 80
     }
-    var t219 string
-    var inline233 string = _goml_runtime_core_int32_to_string(t218)
-    t219 = inline233
-    var inline230 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t219)
-    _goml_runtime_core_string_println(inline230)
+    var t224 string
+    var inline238 string = _goml_runtime_core_int32_to_string(t223)
+    t224 = inline238
+    var inline235 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t224)
+    _goml_runtime_core_string_println(inline235)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t222 string
-    t222 = value__1
-    _goml_runtime_core_string_println(t222)
+    var t227 string
+    t227 = value__1
+    _goml_runtime_core_string_println(t227)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
-    var t226 string = _goml_runtime_core_int32_to_string(self__33)
-    return t226
+    var t231 string = _goml_runtime_core_int32_to_string(self__33)
+    return t231
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {

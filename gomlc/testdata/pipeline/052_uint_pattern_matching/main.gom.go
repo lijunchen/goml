@@ -56,128 +56,128 @@ func is_flag32(value__2 uint32) bool {
 }
 
 func report(label__5 string, value__6 bool) string {
-    var t209 string
-    var inline249 string = _goml_runtime_core_bool_to_string(value__6)
-    t209 = inline249
-    var t210 string = label__5 + t209
-    return t210
+    var t214 string
+    var inline254 string = _goml_runtime_core_bool_to_string(value__6)
+    t214 = inline254
+    var t215 string = label__5 + t214
+    return t215
 }
 
 func main0() struct{} {
-    var t212 bool = is_flag8(200)
-    var t213 string = report("u8_hit=", t212)
-    var t214 bool = is_flag8(15)
-    var t215 string = report(",u8_miss=", t214)
-    var t216 string = t213 + t215
-    var t217 bool = is_flag16(65000)
-    var t218 string = report(",u16_hit=", t217)
-    var t219 string = t216 + t218
-    var t220 bool = is_flag16(42)
-    var t221 string = report(",u16_miss=", t220)
-    var t222 string = t219 + t221
-    var t223 bool = is_flag32(1234567890)
-    var t224 string = report(",u32_hit=", t223)
-    var t225 string = t222 + t224
-    var t226 bool
-    var inline284 uint32 = 99
-    switch inline284 {
+    var t217 bool = is_flag8(200)
+    var t218 string = report("u8_hit=", t217)
+    var t219 bool = is_flag8(15)
+    var t220 string = report(",u8_miss=", t219)
+    var t221 string = t218 + t220
+    var t222 bool = is_flag16(65000)
+    var t223 string = report(",u16_hit=", t222)
+    var t224 string = t221 + t223
+    var t225 bool = is_flag16(42)
+    var t226 string = report(",u16_miss=", t225)
+    var t227 string = t224 + t226
+    var t228 bool = is_flag32(1234567890)
+    var t229 string = report(",u32_hit=", t228)
+    var t230 string = t227 + t229
+    var t231 bool
+    var inline289 uint32 = 99
+    switch inline289 {
     case 4000000000:
-        t226 = true
+        t231 = true
     case 1234567890:
-        t226 = true
+        t231 = true
     default:
-        t226 = false
+        t231 = false
     }
-    var t227 string
-    var inline280 string = ",u32_miss="
-    var inline281 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t226)
-    var inline282 string = inline280 + inline281
-    t227 = inline282
-    var t228 string = t225 + t227
-    var t229 bool
-    var inline278 uint64 = 900000000
-    switch inline278 {
+    var t232 string
+    var inline285 string = ",u32_miss="
+    var inline286 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t231)
+    var inline287 string = inline285 + inline286
+    t232 = inline287
+    var t233 string = t230 + t232
+    var t234 bool
+    var inline283 uint64 = 900000000
+    switch inline283 {
     case 900000000:
-        t229 = true
+        t234 = true
     case 600000000:
-        t229 = true
+        t234 = true
     default:
-        t229 = false
+        t234 = false
     }
-    var t230 string
-    var inline274 string = ",u64_hit="
-    var inline275 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t229)
-    var inline276 string = inline274 + inline275
-    t230 = inline276
-    var t231 string = t228 + t230
-    var t232 bool
-    var inline272 uint64 = 700000000
-    switch inline272 {
+    var t235 string
+    var inline279 string = ",u64_hit="
+    var inline280 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t234)
+    var inline281 string = inline279 + inline280
+    t235 = inline281
+    var t236 string = t233 + t235
+    var t237 bool
+    var inline277 uint64 = 700000000
+    switch inline277 {
     case 900000000:
-        t232 = true
+        t237 = true
     case 600000000:
-        t232 = true
+        t237 = true
     default:
-        t232 = false
+        t237 = false
     }
-    var t233 string
-    var inline268 string = ",u64_miss="
-    var inline269 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t232)
-    var inline270 string = inline268 + inline269
-    t233 = inline270
-    var t234 string = t231 + t233
-    var t235 bool
-    var inline265 uint32 = 4000000000
-    var inline266 uint64 = 900000000
-    switch inline266 {
+    var t238 string
+    var inline273 string = ",u64_miss="
+    var inline274 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t237)
+    var inline275 string = inline273 + inline274
+    t238 = inline275
+    var t239 string = t236 + t238
+    var t240 bool
+    var inline270 uint32 = 4000000000
+    var inline271 uint64 = 900000000
+    switch inline271 {
     case 900000000:
-        switch inline265 {
+        switch inline270 {
         case 4000000000:
-            t235 = true
+            t240 = true
         default:
-            t235 = false
+            t240 = false
         }
     case 600000000:
-        t235 = true
+        t240 = true
     default:
-        t235 = false
+        t240 = false
     }
-    var t236 string
-    var inline261 string = ",struct_first="
-    var inline262 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t235)
-    var inline263 string = inline261 + inline262
-    t236 = inline263
-    var t237 string = t234 + t236
-    var t238 bool
-    var inline258 uint32 = 12
-    var inline259 uint64 = 600000000
-    switch inline259 {
+    var t241 string
+    var inline266 string = ",struct_first="
+    var inline267 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t240)
+    var inline268 string = inline266 + inline267
+    t241 = inline268
+    var t242 string = t239 + t241
+    var t243 bool
+    var inline263 uint32 = 12
+    var inline264 uint64 = 600000000
+    switch inline264 {
     case 900000000:
-        switch inline258 {
+        switch inline263 {
         case 4000000000:
-            t238 = true
+            t243 = true
         default:
-            t238 = false
+            t243 = false
         }
     case 600000000:
-        t238 = true
+        t243 = true
     default:
-        t238 = false
+        t243 = false
     }
-    var t239 string
-    var inline254 string = ",struct_second="
-    var inline255 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t238)
-    var inline256 string = inline254 + inline255
-    t239 = inline256
-    var message__9 string = t237 + t239
-    var inline251 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(message__9)
-    _goml_runtime_core_string_println(inline251)
+    var t244 string
+    var inline259 string = ",struct_second="
+    var inline260 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t243)
+    var inline261 string = inline259 + inline260
+    t244 = inline261
+    var message__9 string = t242 + t244
+    var inline256 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(message__9)
+    _goml_runtime_core_string_println(inline256)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
-    var t242 string = _goml_runtime_core_bool_to_string(self__64)
-    return t242
+    var t247 string = _goml_runtime_core_bool_to_string(self__64)
+    return t247
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {

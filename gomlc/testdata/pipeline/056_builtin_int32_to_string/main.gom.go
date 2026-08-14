@@ -16,10 +16,10 @@ func _goml_runtime_core_string_println(s string) struct{} {
 func main0() struct{} {
     var value__0 int32 = 42
     var text__1 string
-    var inline196 string = _goml_runtime_core_int32_to_string(value__0)
-    text__1 = inline196
-    var inline193 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(text__1)
-    _goml_runtime_core_string_println(inline193)
+    var inline201 string = _goml_runtime_core_int32_to_string(value__0)
+    text__1 = inline201
+    var inline198 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(text__1)
+    _goml_runtime_core_string_println(inline198)
     return struct{}{}
 }
 

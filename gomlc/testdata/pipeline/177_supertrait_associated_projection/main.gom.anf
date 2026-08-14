@@ -1,6 +1,6 @@
 fn trait_impl#Parent#Count#get(self/0: Count) -> int32 {
-  let t185 = Count.value(self/0) in
-  t185
+  let t190 = Count.value(self/0) in
+  t190
 }
 
 fn trait_impl#Child#Count#child(self/1: Count) -> unit {
@@ -8,31 +8,31 @@ fn trait_impl#Child#Count#child(self/1: Count) -> unit {
 }
 
 fn main() -> unit {
-  let t188 = Count { value: 42 } in
-  join inline_cont202(t189: int32) -> unit {
-    let inline200 = trait_impl#ToString#int32#to_string(t189) in
-    let inline201 = @runtime(core.string_println)(inline200) in
+  let t193 = Count { value: 42 } in
+  join inline_cont207(t194: int32) -> unit {
+    let inline205 = trait_impl#ToString#int32#to_string(t194) in
+    let inline206 = @runtime(core.string_println)(inline205) in
     ()
   } in
-  let inline203 = trait_impl#Parent#Count#get(t188) in
-  jump inline_cont202(inline203)
+  let inline208 = trait_impl#Parent#Count#get(t193) in
+  jump inline_cont207(inline208)
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join inline_cont204(t191: string) -> unit {
-    let t192 = @runtime(core.string_println)(t191) in
+  join inline_cont209(t196: string) -> unit {
+    let t197 = @runtime(core.string_println)(t196) in
     ()
   } in
-  let inline205 = @runtime(core.int32_to_string)(value/1) in
-  jump inline_cont204(inline205)
+  let inline210 = @runtime(core.int32_to_string)(value/1) in
+  jump inline_cont209(inline210)
 }
 
 fn get_from_child__C_Count(value/2: Count) -> int32 {
-  let inline207 = Count.value(value/2) in
-  inline207
+  let inline212 = Count.value(value/2) in
+  inline212
 }
 
 fn trait_impl#ToString#int32#to_string(self/70: int32) -> string {
-  let t198 = @runtime(core.int32_to_string)(self/70) in
-  t198
+  let t203 = @runtime(core.int32_to_string)(self/70) in
+  t203
 }

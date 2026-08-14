@@ -1,18 +1,18 @@
 fn classify(value/0: First__int) -> string {
   match value/0 {
-    First__int::Shared(x182) => {
-      let x182 = First__int::Shared._0(value/0) in
-      let number/1 = x182 in
+    First__int::Shared(x187) => {
+      let x187 = First__int::Shared._0(value/0) in
+      let number/1 = x187 in
       ("shared:" + inherent#int#int#to_string(number/1))
     },
     First__int::Idle => {
       "idle"
     },
-    First__int::Data(x183, x184) => {
-      let x183 = First__int::Data._0(value/0) in
-      let x184 = First__int::Data._1(value/0) in
-      let label/3 = x184 in
-      let value/2 = x183 in
+    First__int::Data(x188, x189) => {
+      let x188 = First__int::Data._0(value/0) in
+      let x189 = First__int::Data._1(value/0) in
+      let label/3 = x189 in
+      let value/2 = x188 in
       ((label/3 + ":") + inherent#int#int#to_string(value/2))
     },
   }
@@ -23,17 +23,17 @@ fn nested(value/4: Option__Result__int__string) -> string {
     Option__Result__int__string::None => {
       "none"
     },
-    Option__Result__int__string::Some(x185) => {
-      let x185 = Option__Result__int__string::Some._0(value/4) in
-      match x185 {
-        Result__int__string::Ok(x186) => {
-          let x186 = Result__int__string::Ok._0(x185) in
-          let number/5 = x186 in
+    Option__Result__int__string::Some(x190) => {
+      let x190 = Option__Result__int__string::Some._0(value/4) in
+      match x190 {
+        Result__int__string::Ok(x191) => {
+          let x191 = Result__int__string::Ok._0(x190) in
+          let number/5 = x191 in
           ("ok:" + inherent#int#int#to_string(number/5))
         },
-        Result__int__string::Err(x187) => {
-          let x187 = Result__int__string::Err._0(x185) in
-          let message/6 = x187 in
+        Result__int__string::Err(x192) => {
+          let x192 = Result__int__string::Err._0(x190) in
+          let message/6 = x192 in
           ("err:" + message/6)
         },
       }
@@ -43,9 +43,9 @@ fn nested(value/4: Option__Result__int__string) -> string {
 
 fn optional_number(value/7: Option__int) -> int {
   match value/7 {
-    Option__int::Some(x188) => {
-      let x188 = Option__int::Some._0(value/7) in
-      let number/8 = x188 in
+    Option__int::Some(x193) => {
+      let x193 = Option__int::Some._0(value/7) in
+      let number/8 = x193 in
       number/8
     },
     _ => 0,
@@ -54,13 +54,13 @@ fn optional_number(value/7: Option__int) -> int {
 
 fn is_non_shared(value/9: First__int) -> bool {
   match value/9 {
-    First__int::Shared(x189) => {
+    First__int::Shared(x194) => {
       false
     },
     First__int::Idle => {
       true
     },
-    First__int::Data(x190, x191) => {
+    First__int::Data(x195, x196) => {
       true
     },
   }
@@ -69,15 +69,15 @@ fn is_non_shared(value/9: First__int) -> bool {
 fn take_once(value/10: Option__int) -> int {
   let current/11 = inherent#Ref#Ref[T]#new__T_Option[int](value/10) in
   let result/12 = inherent#Ref#Ref[T]#new__T_int(0) in
-  let _wild196 =
+  let _wild201 =
     while true {
-        let mtmp192 = inherent#Ref#Ref[T]#get__T_Option[int](current/11) in
-        match mtmp192 {
-          Option__int::Some(x193) => {
-            let x193 = Option__int::Some._0(mtmp192) in
-            let number/13 = x193 in
-            let _wild194 = inherent#Ref#Ref[T]#set__T_int(result/12, number/13) in
-            let _wild195 = inherent#Ref#Ref[T]#set__T_Option[int](current/11, Option__int::None) in
+        let mtmp197 = inherent#Ref#Ref[T]#get__T_Option[int](current/11) in
+        match mtmp197 {
+          Option__int::Some(x198) => {
+            let x198 = Option__int::Some._0(mtmp197) in
+            let number/13 = x198 in
+            let _wild199 = inherent#Ref#Ref[T]#set__T_int(result/12, number/13) in
+            let _wild200 = inherent#Ref#Ref[T]#set__T_Option[int](current/11, Option__int::None) in
             ()
           },
           _ => break,
@@ -87,11 +87,11 @@ fn take_once(value/10: Option__int) -> int {
 }
 
 fn unbox(value/14: Boxed__int) -> int {
-  let mtmp197 = value/14 in
-  match mtmp197 {
-    Boxed__int::Value(x198) => {
-      let x198 = Boxed__int::Value._0(mtmp197) in
-      let number/15 = x198 in
+  let mtmp202 = value/14 in
+  match mtmp202 {
+    Boxed__int::Value(x203) => {
+      let x203 = Boxed__int::Value._0(mtmp202) in
+      let number/15 = x203 in
       number/15
     },
   }
@@ -99,18 +99,18 @@ fn unbox(value/14: Boxed__int) -> int {
 
 fn sum_boxed(values/16: Vec[Boxed__int]) -> int {
   let result/17 = inherent#Ref#Ref[T]#new__T_int(0) in
-  let _wild206 =
-    let for_source199 = values/16 in
-    let for_limit200 = @intrinsic(vec.len)(for_source199) in
-    let for_index201 = 0 in
-    while (for_index201 < for_limit200) {
-        let for_item202 = @intrinsic(vec.get)(for_source199, for_index201) in
-        let _wild203 = for_index201 = (for_index201 + 1) in
-        match for_item202 {
-          Boxed__int::Value(x204) => {
-            let x204 = Boxed__int::Value._0(for_item202) in
-            let number/18 = x204 in
-            let _wild205 =
+  let _wild211 =
+    let for_source204 = values/16 in
+    let for_limit205 = @intrinsic(vec.len)(for_source204) in
+    let for_index206 = 0 in
+    while (for_index206 < for_limit205) {
+        let for_item207 = @intrinsic(vec.get)(for_source204, for_index206) in
+        let _wild208 = for_index206 = (for_index206 + 1) in
+        match for_item207 {
+          Boxed__int::Value(x209) => {
+            let x209 = Boxed__int::Value._0(for_item207) in
+            let number/18 = x209 in
+            let _wild210 =
               inherent#Ref#Ref[T]#set__T_int(
                 result/17,
                 (inherent#Ref#Ref[T]#get__T_int(result/17) + number/18)
@@ -125,25 +125,25 @@ fn sum_boxed(values/16: Vec[Boxed__int]) -> int {
 fn main() -> unit {
   let boxed/19 =
     let vec_literal/1450 = inherent#Vec#Vec[T]#new__T_Boxed[int]() in
-    let _wild207 =
+    let _wild212 =
       inherent#Vec#Vec[T]#push__T_Boxed[int](vec_literal/1450, Boxed__int::Value(19)) in
-    let _wild208 =
+    let _wild213 =
       inherent#Vec#Vec[T]#push__T_Boxed[int](vec_literal/1450, Boxed__int::Value(23)) in
     vec_literal/1450 in
-  let _wild209 = println__T_string(classify(First__int::Shared(7))) in
-  let _wild210 = println__T_string(classify(First__int::Idle)) in
-  let _wild211 = println__T_string(classify(First__int::Data(9, "data"))) in
-  let _wild212 =
+  let _wild214 = println__T_string(classify(First__int::Shared(7))) in
+  let _wild215 = println__T_string(classify(First__int::Idle)) in
+  let _wild216 = println__T_string(classify(First__int::Data(9, "data"))) in
+  let _wild217 =
     println__T_string(nested(Option__Result__int__string::Some(Result__int__string::Ok(11)))) in
-  let _wild213 =
+  let _wild218 =
     println__T_string(nested(Option__Result__int__string::Some(Result__int__string::Err("bad")))) in
-  let _wild214 = println__T_string(nested(Option__Result__int__string::None)) in
-  let _wild215 = println__T_int(optional_number(Option__int::Some(13))) in
-  let _wild216 = println__T_int(optional_number(Option__int::None)) in
-  let _wild217 = println__T_bool(is_non_shared(First__int::Idle)) in
-  let _wild218 = println__T_bool(is_non_shared(First__int::Shared(1))) in
-  let _wild219 = println__T_int(take_once(Option__int::Some(15))) in
-  let _wild220 = println__T_int(unbox(Boxed__int::Value(17))) in
+  let _wild219 = println__T_string(nested(Option__Result__int__string::None)) in
+  let _wild220 = println__T_int(optional_number(Option__int::Some(13))) in
+  let _wild221 = println__T_int(optional_number(Option__int::None)) in
+  let _wild222 = println__T_bool(is_non_shared(First__int::Idle)) in
+  let _wild223 = println__T_bool(is_non_shared(First__int::Shared(1))) in
+  let _wild224 = println__T_int(take_once(Option__int::Some(15))) in
+  let _wild225 = println__T_int(unbox(Boxed__int::Value(17))) in
   println__T_int(sum_boxed(boxed/19))
 }
 
@@ -151,31 +151,31 @@ fn inherent#int#int#to_string(self/32: int) -> string {
   @runtime(core.int_to_string)(self/32)
 }
 
-fn inherent#Ref#Ref[T]#new__T_Option[int](value/270: Option__int) -> Ref[Option__int] {
-  @intrinsic(ref.new)(value/270)
+fn inherent#Ref#Ref[T]#new__T_Option[int](value/273: Option__int) -> Ref[Option__int] {
+  @intrinsic(ref.new)(value/273)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/270: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/270)
+fn inherent#Ref#Ref[T]#new__T_int(value/273: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/273)
 }
 
-fn inherent#Ref#Ref[T]#get__T_Option[int](self/271: Ref[Option__int]) -> Option__int {
-  @intrinsic(ref.get)(self/271)
+fn inherent#Ref#Ref[T]#get__T_Option[int](self/274: Ref[Option__int]) -> Option__int {
+  @intrinsic(ref.get)(self/274)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/272: Ref[int], value/273: int) -> unit {
-  @intrinsic(ref.set)(self/272, value/273)
+fn inherent#Ref#Ref[T]#set__T_int(self/275: Ref[int], value/276: int) -> unit {
+  @intrinsic(ref.set)(self/275, value/276)
 }
 
 fn inherent#Ref#Ref[T]#set__T_Option[int](
-  self/272: Ref[Option__int],
-  value/273: Option__int
+  self/275: Ref[Option__int],
+  value/276: Option__int
 ) -> unit {
-  @intrinsic(ref.set)(self/272, value/273)
+  @intrinsic(ref.set)(self/275, value/276)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/271: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/271)
+fn inherent#Ref#Ref[T]#get__T_int(self/274: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/274)
 }
 
 fn inherent#Vec#Vec[T]#new__T_Boxed[int]() -> Vec[Boxed__int] {

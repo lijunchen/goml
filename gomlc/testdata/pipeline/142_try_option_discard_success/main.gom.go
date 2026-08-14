@@ -44,137 +44,137 @@ func (_ Option__string_Some) isOption__string() {}
 
 func cut_pair(ok__0 bool) _goml_m_Option_____o_string_c_string_q_ {
     if ok__0 {
-        var t192 Tuple2_6string_6string = Tuple2_6string_6string{
+        var t197 Tuple2_6string_6string = Tuple2_6string_6string{
             _0: "left",
             _1: "right",
         }
-        var t193 _goml_m_Option_____o_string_c_string_q_ = _goml_m_Option_____o_string_c_string_q__Some{
-            _0: t192,
+        var t198 _goml_m_Option_____o_string_c_string_q_ = _goml_m_Option_____o_string_c_string_q__Some{
+            _0: t197,
         }
-        return t193
+        return t198
     } else {
         return _goml_m_Option_____o_string_c_string_q__None{}
     }
 }
 
 func main0() struct{} {
-    var t205 Option__string
-    var inline241 bool = true
-    var inline242 _goml_m_Option_____o_string_c_string_q_ = cut_pair(inline241)
-    switch inline242.(type) {
+    var t210 Option__string
+    var inline246 bool = true
+    var inline247 _goml_m_Option_____o_string_c_string_q_ = cut_pair(inline246)
+    switch inline247.(type) {
     case _goml_m_Option_____o_string_c_string_q__None:
-        t205 = Option__string_None{}
-        var t206 string
-        switch t205.(type) {
+        t210 = Option__string_None{}
+        var t211 string
+        switch t210.(type) {
         case Option__string_None:
-            t206 = "none"
+            t211 = "none"
         case Option__string_Some:
-            var inline237 string = t205.(Option__string_Some)._0
-            var inline239 string = "some " + inline237
-            t206 = inline239
+            var inline242 string = t210.(Option__string_Some)._0
+            var inline244 string = "some " + inline242
+            t211 = inline244
         default:
             panic("non-exhaustive match")
         }
-        var inline234 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t206)
-        _goml_runtime_core_string_println(inline234)
-        var t207 Option__string
-        var inline225 bool = false
-        var inline226 _goml_m_Option_____o_string_c_string_q_ = cut_pair(inline225)
-        switch inline226.(type) {
+        var inline239 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t211)
+        _goml_runtime_core_string_println(inline239)
+        var t212 Option__string
+        var inline230 bool = false
+        var inline231 _goml_m_Option_____o_string_c_string_q_ = cut_pair(inline230)
+        switch inline231.(type) {
         case _goml_m_Option_____o_string_c_string_q__None:
-            t207 = Option__string_None{}
-            var t208 string
-            switch t207.(type) {
+            t212 = Option__string_None{}
+            var t213 string
+            switch t212.(type) {
             case Option__string_None:
-                t208 = "none"
+                t213 = "none"
             case Option__string_Some:
-                var inline221 string = t207.(Option__string_Some)._0
-                var inline223 string = "some " + inline221
-                t208 = inline223
+                var inline226 string = t212.(Option__string_Some)._0
+                var inline228 string = "some " + inline226
+                t213 = inline228
             default:
                 panic("non-exhaustive match")
             }
-            var inline218 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t208)
-            _goml_runtime_core_string_println(inline218)
+            var inline223 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t213)
+            _goml_runtime_core_string_println(inline223)
             return struct{}{}
         case _goml_m_Option_____o_string_c_string_q__Some:
-            var inline230 Option__string = Option__string_Some{
+            var inline235 Option__string = Option__string_Some{
                 _0: "ok",
             }
-            t207 = inline230
-            var t208 string
-            switch t207.(type) {
+            t212 = inline235
+            var t213 string
+            switch t212.(type) {
             case Option__string_None:
-                t208 = "none"
+                t213 = "none"
             case Option__string_Some:
-                var inline221 string = t207.(Option__string_Some)._0
-                var inline223 string = "some " + inline221
-                t208 = inline223
+                var inline226 string = t212.(Option__string_Some)._0
+                var inline228 string = "some " + inline226
+                t213 = inline228
             default:
                 panic("non-exhaustive match")
             }
-            var inline218 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t208)
-            _goml_runtime_core_string_println(inline218)
+            var inline223 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t213)
+            _goml_runtime_core_string_println(inline223)
             return struct{}{}
         default:
             panic("non-exhaustive match")
         }
     case _goml_m_Option_____o_string_c_string_q__Some:
-        var inline246 Option__string = Option__string_Some{
+        var inline251 Option__string = Option__string_Some{
             _0: "ok",
         }
-        t205 = inline246
-        var t206 string
-        switch t205.(type) {
+        t210 = inline251
+        var t211 string
+        switch t210.(type) {
         case Option__string_None:
-            t206 = "none"
+            t211 = "none"
         case Option__string_Some:
-            var inline237 string = t205.(Option__string_Some)._0
-            var inline239 string = "some " + inline237
-            t206 = inline239
+            var inline242 string = t210.(Option__string_Some)._0
+            var inline244 string = "some " + inline242
+            t211 = inline244
         default:
             panic("non-exhaustive match")
         }
-        var inline234 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t206)
-        _goml_runtime_core_string_println(inline234)
-        var t207 Option__string
-        var inline225 bool = false
-        var inline226 _goml_m_Option_____o_string_c_string_q_ = cut_pair(inline225)
-        switch inline226.(type) {
+        var inline239 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t211)
+        _goml_runtime_core_string_println(inline239)
+        var t212 Option__string
+        var inline230 bool = false
+        var inline231 _goml_m_Option_____o_string_c_string_q_ = cut_pair(inline230)
+        switch inline231.(type) {
         case _goml_m_Option_____o_string_c_string_q__None:
-            t207 = Option__string_None{}
-            var t208 string
-            switch t207.(type) {
+            t212 = Option__string_None{}
+            var t213 string
+            switch t212.(type) {
             case Option__string_None:
-                t208 = "none"
+                t213 = "none"
             case Option__string_Some:
-                var inline221 string = t207.(Option__string_Some)._0
-                var inline223 string = "some " + inline221
-                t208 = inline223
+                var inline226 string = t212.(Option__string_Some)._0
+                var inline228 string = "some " + inline226
+                t213 = inline228
             default:
                 panic("non-exhaustive match")
             }
-            var inline218 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t208)
-            _goml_runtime_core_string_println(inline218)
+            var inline223 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t213)
+            _goml_runtime_core_string_println(inline223)
             return struct{}{}
         case _goml_m_Option_____o_string_c_string_q__Some:
-            var inline230 Option__string = Option__string_Some{
+            var inline235 Option__string = Option__string_Some{
                 _0: "ok",
             }
-            t207 = inline230
-            var t208 string
-            switch t207.(type) {
+            t212 = inline235
+            var t213 string
+            switch t212.(type) {
             case Option__string_None:
-                t208 = "none"
+                t213 = "none"
             case Option__string_Some:
-                var inline221 string = t207.(Option__string_Some)._0
-                var inline223 string = "some " + inline221
-                t208 = inline223
+                var inline226 string = t212.(Option__string_Some)._0
+                var inline228 string = "some " + inline226
+                t213 = inline228
             default:
                 panic("non-exhaustive match")
             }
-            var inline218 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t208)
-            _goml_runtime_core_string_println(inline218)
+            var inline223 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t213)
+            _goml_runtime_core_string_println(inline223)
             return struct{}{}
         default:
             panic("non-exhaustive match")

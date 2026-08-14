@@ -1,138 +1,63 @@
 fn step_some(i/0: int32) -> Option__bool {
-  let t199 = (i/0 < 3) in
-  if t199 {
-    let t200 = Option__bool::Some(true) in
-    t200
+  let t204 = (i/0 < 3) in
+  if t204 {
+    let t205 = Option__bool::Some(true) in
+    t205
   } else {
-    let t201 = Option__bool::Some(false) in
-    t201
+    let t206 = Option__bool::Some(false) in
+    t206
   }
 }
 
 fn step_none(i/1: int32) -> Option__bool {
-  let t206 = (i/1 < 2) in
-  if t206 {
-    let t207 = Option__bool::Some(true) in
-    t207
+  let t211 = (i/1 < 2) in
+  if t211 {
+    let t212 = Option__bool::Some(true) in
+    t212
   } else {
     Tag_0
   }
 }
 
 fn run_some() -> Option__int32 {
-  join inline_cont290(i/2: Ref[int32]) -> Option__int32 {
-    join inline_cont287(total/3: Ref[int32]) -> Option__int32 {
-      join exit210() -> Option__int32 {
-        join inline_cont285(t211: int32) -> Option__int32 {
-          let t212 = Option__int32::Some(t211) in
-          t212
+  join inline_cont295(i/2: Ref[int32]) -> Option__int32 {
+    join inline_cont292(total/3: Ref[int32]) -> Option__int32 {
+      join exit215() -> Option__int32 {
+        join inline_cont290(t216: int32) -> Option__int32 {
+          let t217 = Option__int32::Some(t216) in
+          t217
         } in
-        let inline286 = @intrinsic(ref.get)(total/3) in
-        jump inline_cont285(inline286)
+        let inline291 = @intrinsic(ref.get)(total/3) in
+        jump inline_cont290(inline291)
       } in
       joinrec {
-        join loop213() -> Option__int32 {
-          join inline_cont283(t214: int32) -> Option__int32 {
-            join inline_cont279(mtmp182: Option__bool) -> Option__int32 {
-              join k215(jp216: bool) -> Option__int32 {
-                if jp216 {
-                  join inline_cont277(t217: int32) -> Option__int32 {
-                    join inline_cont275(t218: int32) -> Option__int32 {
-                      let t219 = (t217 + t218) in
-                      join inline_cont273(_wild184: unit) -> Option__int32 {
-                        join inline_cont271(t220: int32) -> Option__int32 {
-                          let t221 = (t220 + 1) in
-                          let inline270 = @intrinsic(ref.set)(i/2, t221) in
-                          jump loop213()
+        join loop218() -> Option__int32 {
+          join inline_cont288(t219: int32) -> Option__int32 {
+            join inline_cont284(mtmp187: Option__bool) -> Option__int32 {
+              join k220(jp221: bool) -> Option__int32 {
+                if jp221 {
+                  join inline_cont282(t222: int32) -> Option__int32 {
+                    join inline_cont280(t223: int32) -> Option__int32 {
+                      let t224 = (t222 + t223) in
+                      join inline_cont278(_wild189: unit) -> Option__int32 {
+                        join inline_cont276(t225: int32) -> Option__int32 {
+                          let t226 = (t225 + 1) in
+                          let inline275 = @intrinsic(ref.set)(i/2, t226) in
+                          jump loop218()
                         } in
-                        let inline272 = @intrinsic(ref.get)(i/2) in
-                        jump inline_cont271(inline272)
+                        let inline277 = @intrinsic(ref.get)(i/2) in
+                        jump inline_cont276(inline277)
                       } in
-                      let inline274 = @intrinsic(ref.set)(total/3, t219) in
-                      jump inline_cont273(())
+                      let inline279 = @intrinsic(ref.set)(total/3, t224) in
+                      jump inline_cont278(())
                     } in
-                    let inline276 = @intrinsic(ref.get)(i/2) in
-                    jump inline_cont275(inline276)
+                    let inline281 = @intrinsic(ref.get)(i/2) in
+                    jump inline_cont280(inline281)
                   } in
-                  let inline278 = @intrinsic(ref.get)(total/3) in
-                  jump inline_cont277(inline278)
+                  let inline283 = @intrinsic(ref.get)(total/3) in
+                  jump inline_cont282(inline283)
                 } else {
-                  jump exit210()
-                }
-              } in
-              match mtmp182 {
-                Tag_0 => {
-                  Tag_0
-                },
-                Tag_1 => {
-                  let x183 = Option__bool::Some._0(mtmp182) in
-                  jump k215(x183)
-                },
-              }
-            } in
-            let inline280 = (t214 < 3) in
-            if inline280 {
-              let inline281 = Option__bool::Some(true) in
-              jump inline_cont279(inline281)
-            } else {
-              let inline282 = Option__bool::Some(false) in
-              jump inline_cont279(inline282)
-            }
-          } in
-          let inline284 = @intrinsic(ref.get)(i/2) in
-          jump inline_cont283(inline284)
-        } in
-      } in
-      jump loop213()
-    } in
-    let inline288 = 0 in
-    let inline289 = @intrinsic(ref.new)(inline288) in
-    jump inline_cont287(inline289)
-  } in
-  let inline291 = 0 in
-  let inline292 = @intrinsic(ref.new)(inline291) in
-  jump inline_cont290(inline292)
-}
-
-fn run_none() -> Option__int32 {
-  join inline_cont313(i/4: Ref[int32]) -> Option__int32 {
-    join inline_cont310(total/5: Ref[int32]) -> Option__int32 {
-      join exit224() -> Option__int32 {
-        join inline_cont308(t225: int32) -> Option__int32 {
-          let t226 = Option__int32::Some(t225) in
-          t226
-        } in
-        let inline309 = @intrinsic(ref.get)(total/5) in
-        jump inline_cont308(inline309)
-      } in
-      joinrec {
-        join loop227() -> Option__int32 {
-          join inline_cont306(t228: int32) -> Option__int32 {
-            join inline_cont303(mtmp187: Option__bool) -> Option__int32 {
-              join k229(jp230: bool) -> Option__int32 {
-                if jp230 {
-                  join inline_cont301(t231: int32) -> Option__int32 {
-                    join inline_cont299(t232: int32) -> Option__int32 {
-                      let t233 = (t231 + t232) in
-                      join inline_cont297(_wild189: unit) -> Option__int32 {
-                        join inline_cont295(t234: int32) -> Option__int32 {
-                          let t235 = (t234 + 1) in
-                          let inline294 = @intrinsic(ref.set)(i/4, t235) in
-                          jump loop227()
-                        } in
-                        let inline296 = @intrinsic(ref.get)(i/4) in
-                        jump inline_cont295(inline296)
-                      } in
-                      let inline298 = @intrinsic(ref.set)(total/5, t233) in
-                      jump inline_cont297(())
-                    } in
-                    let inline300 = @intrinsic(ref.get)(i/4) in
-                    jump inline_cont299(inline300)
-                  } in
-                  let inline302 = @intrinsic(ref.get)(total/5) in
-                  jump inline_cont301(inline302)
-                } else {
-                  jump exit224()
+                  jump exit215()
                 }
               } in
               match mtmp187 {
@@ -141,31 +66,106 @@ fn run_none() -> Option__int32 {
                 },
                 Tag_1 => {
                   let x188 = Option__bool::Some._0(mtmp187) in
-                  jump k229(x188)
+                  jump k220(x188)
                 },
               }
             } in
-            let inline304 = (t228 < 2) in
-            if inline304 {
-              let inline305 = Option__bool::Some(true) in
-              jump inline_cont303(inline305)
+            let inline285 = (t219 < 3) in
+            if inline285 {
+              let inline286 = Option__bool::Some(true) in
+              jump inline_cont284(inline286)
             } else {
-              jump inline_cont303(Tag_0)
+              let inline287 = Option__bool::Some(false) in
+              jump inline_cont284(inline287)
             }
           } in
-          let inline307 = @intrinsic(ref.get)(i/4) in
-          jump inline_cont306(inline307)
+          let inline289 = @intrinsic(ref.get)(i/2) in
+          jump inline_cont288(inline289)
         } in
       } in
-      jump loop227()
+      jump loop218()
     } in
-    let inline311 = 0 in
-    let inline312 = @intrinsic(ref.new)(inline311) in
-    jump inline_cont310(inline312)
+    let inline293 = 0 in
+    let inline294 = @intrinsic(ref.new)(inline293) in
+    jump inline_cont292(inline294)
   } in
-  let inline314 = 0 in
-  let inline315 = @intrinsic(ref.new)(inline314) in
-  jump inline_cont313(inline315)
+  let inline296 = 0 in
+  let inline297 = @intrinsic(ref.new)(inline296) in
+  jump inline_cont295(inline297)
+}
+
+fn run_none() -> Option__int32 {
+  join inline_cont318(i/4: Ref[int32]) -> Option__int32 {
+    join inline_cont315(total/5: Ref[int32]) -> Option__int32 {
+      join exit229() -> Option__int32 {
+        join inline_cont313(t230: int32) -> Option__int32 {
+          let t231 = Option__int32::Some(t230) in
+          t231
+        } in
+        let inline314 = @intrinsic(ref.get)(total/5) in
+        jump inline_cont313(inline314)
+      } in
+      joinrec {
+        join loop232() -> Option__int32 {
+          join inline_cont311(t233: int32) -> Option__int32 {
+            join inline_cont308(mtmp192: Option__bool) -> Option__int32 {
+              join k234(jp235: bool) -> Option__int32 {
+                if jp235 {
+                  join inline_cont306(t236: int32) -> Option__int32 {
+                    join inline_cont304(t237: int32) -> Option__int32 {
+                      let t238 = (t236 + t237) in
+                      join inline_cont302(_wild194: unit) -> Option__int32 {
+                        join inline_cont300(t239: int32) -> Option__int32 {
+                          let t240 = (t239 + 1) in
+                          let inline299 = @intrinsic(ref.set)(i/4, t240) in
+                          jump loop232()
+                        } in
+                        let inline301 = @intrinsic(ref.get)(i/4) in
+                        jump inline_cont300(inline301)
+                      } in
+                      let inline303 = @intrinsic(ref.set)(total/5, t238) in
+                      jump inline_cont302(())
+                    } in
+                    let inline305 = @intrinsic(ref.get)(i/4) in
+                    jump inline_cont304(inline305)
+                  } in
+                  let inline307 = @intrinsic(ref.get)(total/5) in
+                  jump inline_cont306(inline307)
+                } else {
+                  jump exit229()
+                }
+              } in
+              match mtmp192 {
+                Tag_0 => {
+                  Tag_0
+                },
+                Tag_1 => {
+                  let x193 = Option__bool::Some._0(mtmp192) in
+                  jump k234(x193)
+                },
+              }
+            } in
+            let inline309 = (t233 < 2) in
+            if inline309 {
+              let inline310 = Option__bool::Some(true) in
+              jump inline_cont308(inline310)
+            } else {
+              jump inline_cont308(Tag_0)
+            }
+          } in
+          let inline312 = @intrinsic(ref.get)(i/4) in
+          jump inline_cont311(inline312)
+        } in
+      } in
+      jump loop232()
+    } in
+    let inline316 = 0 in
+    let inline317 = @intrinsic(ref.new)(inline316) in
+    jump inline_cont315(inline317)
+  } in
+  let inline319 = 0 in
+  let inline320 = @intrinsic(ref.new)(inline319) in
+  jump inline_cont318(inline320)
 }
 
 fn show(x/6: Option__int32) -> string {
@@ -174,82 +174,82 @@ fn show(x/6: Option__int32) -> string {
       "none"
     },
     Tag_1 => {
-      let x192 = Option__int32::Some._0(x/6) in
-      join inline_cont316(t240: string) -> string {
-        let t241 = ("some=" + t240) in
-        t241
+      let x197 = Option__int32::Some._0(x/6) in
+      join inline_cont321(t245: string) -> string {
+        let t246 = ("some=" + t245) in
+        t246
       } in
-      let inline317 = @runtime(core.int32_to_string)(x192) in
-      jump inline_cont316(inline317)
+      let inline322 = @runtime(core.int32_to_string)(x197) in
+      jump inline_cont321(inline322)
     },
   }
 }
 
 fn main() -> unit {
-  let t243 = run_some() in
-  join inline_cont329(t244: string) -> unit {
-    join inline_cont326(_wild193: unit) -> unit {
-      let t245 = run_none() in
-      join inline_cont321(t246: string) -> unit {
-        let inline319 = trait_impl#ToString#string#to_string(t246) in
-        let inline320 = @runtime(core.string_println)(inline319) in
+  let t248 = run_some() in
+  join inline_cont334(t249: string) -> unit {
+    join inline_cont331(_wild198: unit) -> unit {
+      let t250 = run_none() in
+      join inline_cont326(t251: string) -> unit {
+        let inline324 = trait_impl#ToString#string#to_string(t251) in
+        let inline325 = @runtime(core.string_println)(inline324) in
         ()
       } in
-      match t245 {
+      match t250 {
         Tag_0 => {
-          jump inline_cont321("none")
+          jump inline_cont326("none")
         },
         Tag_1 => {
-          let inline322 = Option__int32::Some._0(t245) in
-          let inline324 = inherent#int32#int32#to_string(inline322) in
-          let inline325 = ("some=" + inline324) in
-          jump inline_cont321(inline325)
+          let inline327 = Option__int32::Some._0(t250) in
+          let inline329 = inherent#int32#int32#to_string(inline327) in
+          let inline330 = ("some=" + inline329) in
+          jump inline_cont326(inline330)
         },
       }
     } in
-    let inline327 = trait_impl#ToString#string#to_string(t244) in
-    let inline328 = @runtime(core.string_println)(inline327) in
-    jump inline_cont326(())
+    let inline332 = trait_impl#ToString#string#to_string(t249) in
+    let inline333 = @runtime(core.string_println)(inline332) in
+    jump inline_cont331(())
   } in
-  match t243 {
+  match t248 {
     Tag_0 => {
-      jump inline_cont329("none")
+      jump inline_cont334("none")
     },
     Tag_1 => {
-      let inline330 = Option__int32::Some._0(t243) in
-      let inline332 = inherent#int32#int32#to_string(inline330) in
-      let inline333 = ("some=" + inline332) in
-      jump inline_cont329(inline333)
+      let inline335 = Option__int32::Some._0(t248) in
+      let inline337 = inherent#int32#int32#to_string(inline335) in
+      let inline338 = ("some=" + inline337) in
+      jump inline_cont334(inline338)
     },
   }
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/270: int32) -> Ref[int32] {
-  let t249 = @intrinsic(ref.new)(value/270) in
-  t249
+fn inherent#Ref#Ref[T]#new__T_int32(value/273: int32) -> Ref[int32] {
+  let t254 = @intrinsic(ref.new)(value/273) in
+  t254
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/271: Ref[int32]) -> int32 {
-  let t252 = @intrinsic(ref.get)(self/271) in
-  t252
+fn inherent#Ref#Ref[T]#get__T_int32(self/274: Ref[int32]) -> int32 {
+  let t257 = @intrinsic(ref.get)(self/274) in
+  t257
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/272: Ref[int32], value/273: int32) -> unit {
-  let t254 = @intrinsic(ref.set)(self/272, value/273) in
+fn inherent#Ref#Ref[T]#set__T_int32(self/275: Ref[int32], value/276: int32) -> unit {
+  let t259 = @intrinsic(ref.set)(self/275, value/276) in
   ()
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {
-  let t257 = @runtime(core.int32_to_string)(self/33) in
-  t257
+  let t262 = @runtime(core.int32_to_string)(self/33) in
+  t262
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont334(t259: string) -> unit {
-    let t260 = @runtime(core.string_println)(t259) in
+  join inline_cont339(t264: string) -> unit {
+    let t265 = @runtime(core.string_println)(t264) in
     ()
   } in
-  jump inline_cont334(value/1)
+  jump inline_cont339(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/65: string) -> string {
@@ -257,11 +257,11 @@ fn trait_impl#ToString#string#to_string(self/65: string) -> string {
 }
 
 fn trait_impl#PartialEq#int32#eq(self/107: int32, other/108: int32) -> bool {
-  let t265 = (self/107 == other/108) in
-  t265
+  let t270 = (self/107 == other/108) in
+  t270
 }
 
 fn trait_impl#Hash#int32#hash(self/130: int32) -> uint64 {
-  let t268 = @runtime(core.int32_hash)(self/130) in
-  t268
+  let t273 = @runtime(core.int32_hash)(self/130) in
+  t273
 }

@@ -20,21 +20,21 @@ type Tuple2_5int32_6string struct {
 
 func main0() struct{} {
     var value__3 Tuple2_5int32_6string
-    var inline205 int32 = 1
-    var inline206 string = "x"
-    var inline207 Tuple2_5int32_6string = Tuple2_5int32_6string{
-        _0: inline205,
-        _1: inline206,
+    var inline210 int32 = 1
+    var inline211 string = "x"
+    var inline212 Tuple2_5int32_6string = Tuple2_5int32_6string{
+        _0: inline210,
+        _1: inline211,
     }
-    value__3 = inline207
-    var t183 int32 = value__3._0
-    var t184 string
-    var inline203 string = _goml_runtime_core_int32_to_string(t183)
-    t184 = inline203
-    var t185 string = value__3._1
-    var t186 string = t184 + t185
-    var inline200 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t186)
-    _goml_runtime_core_string_println(inline200)
+    value__3 = inline212
+    var t188 int32 = value__3._0
+    var t189 string
+    var inline208 string = _goml_runtime_core_int32_to_string(t188)
+    t189 = inline208
+    var t190 string = value__3._1
+    var t191 string = t189 + t190
+    var inline205 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t191)
+    _goml_runtime_core_string_println(inline205)
     return struct{}{}
 }
 

@@ -1,38 +1,38 @@
 fn pair(first/0: int32, second/1: string) -> (int32, string) {
-  let t184 = (first/0, second/1) in
-  t184
+  let t189 = (first/0, second/1) in
+  t189
 }
 
 fn main() -> unit {
-  join inline_cont204(value/3: (int32, string)) -> unit {
-    let t186 = value/3.0 in
-    join inline_cont202(t187: string) -> unit {
-      let t188 = value/3.1 in
-      let t189 = (t187 + t188) in
-      let inline200 = trait_impl#ToString#string#to_string(t189) in
-      let inline201 = @runtime(core.string_println)(inline200) in
+  join inline_cont209(value/3: (int32, string)) -> unit {
+    let t191 = value/3.0 in
+    join inline_cont207(t192: string) -> unit {
+      let t193 = value/3.1 in
+      let t194 = (t192 + t193) in
+      let inline205 = trait_impl#ToString#string#to_string(t194) in
+      let inline206 = @runtime(core.string_println)(inline205) in
       ()
     } in
-    let inline203 = @runtime(core.int32_to_string)(t186) in
-    jump inline_cont202(inline203)
+    let inline208 = @runtime(core.int32_to_string)(t191) in
+    jump inline_cont207(inline208)
   } in
-  let inline205 = 1 in
-  let inline206 = "x" in
-  let inline207 = (inline205, inline206) in
-  jump inline_cont204(inline207)
+  let inline210 = 1 in
+  let inline211 = "x" in
+  let inline212 = (inline210, inline211) in
+  jump inline_cont209(inline212)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont208(t192: string) -> unit {
-    let t193 = @runtime(core.string_println)(t192) in
+  join inline_cont213(t197: string) -> unit {
+    let t198 = @runtime(core.string_println)(t197) in
     ()
   } in
-  jump inline_cont208(value/1)
+  jump inline_cont213(value/1)
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {
-  let t196 = @runtime(core.int32_to_string)(self/33) in
-  t196
+  let t201 = @runtime(core.int32_to_string)(self/33) in
+  t201
 }
 
 fn trait_impl#ToString#string#to_string(self/65: string) -> string {

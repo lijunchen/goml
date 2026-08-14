@@ -451,8 +451,8 @@ type _goml_m_Option_____o_char_c_int_q__Some struct {
 func (_ _goml_m_Option_____o_char_c_int_q__Some) is_goml_m_Option_____o_char_c_int_q_() {}
 
 func _goml_m_std_p_internal_p_host_p_args() *_goml_vec_string {
-    var t186 *_goml_vec_string = _goml_runtime_std_env_args()
-    return t186
+    var t191 *_goml_vec_string = _goml_runtime_std_env_args()
+    return t191
 }
 
 func _goml_m_std_p_internal_p_host_p_println(value__28 string) struct{} {
@@ -461,18 +461,18 @@ func _goml_m_std_p_internal_p_host_p_println(value__28 string) struct{} {
 }
 
 func main0() struct{} {
-    var t1204 *_goml_vec_string
-    var inline2150 *_goml_vec_string = _goml_m_std_p_internal_p_host_p_args()
-    t1204 = inline2150
-    var t1205 int
-    var inline2148 int = vec_len__Vec_6string(t1204)
-    t1205 = inline2148
-    var t1206 bool = t1205 > 0
-    var t1207 string
-    var inline2146 string = _goml_runtime_core_bool_to_string(t1206)
-    t1207 = inline2146
-    var inline2143 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1207)
-    _goml_m_std_p_internal_p_host_p_println(inline2143)
+    var t1209 *_goml_vec_string
+    var inline2155 *_goml_vec_string = _goml_m_std_p_internal_p_host_p_args()
+    t1209 = inline2155
+    var t1210 int
+    var inline2153 int = vec_len__Vec_6string(t1209)
+    t1210 = inline2153
+    var t1211 bool = t1210 > 0
+    var t1212 string
+    var inline2151 string = _goml_runtime_core_bool_to_string(t1211)
+    t1212 = inline2151
+    var inline2148 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1212)
+    _goml_m_std_p_internal_p_host_p_println(inline2148)
     return struct{}{}
 }
 

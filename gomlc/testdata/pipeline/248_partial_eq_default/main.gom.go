@@ -133,73 +133,73 @@ type Ignored struct {
 func (_ Ignored) isSelected__int() {}
 
 func _goml_m_trait__impl_i_PartialEq_i_Settings_i_eq(self__0 Settings, other__1 Settings) bool {
+    var jp219 bool
+    var t223 bool = self__0.enabled
+    var t224 bool = other__1.enabled
+    var inline377 bool = t223 == t224
+    jp219 = inline377
     var jp214 bool
-    var t218 bool = self__0.enabled
-    var t219 bool = other__1.enabled
-    var inline372 bool = t218 == t219
-    jp214 = inline372
-    var jp209 bool
-    if jp214 {
-        var t215 int = self__0.retries
-        var t216 int = other__1.retries
-        var inline374 bool = t215 == t216
-        jp209 = inline374
+    if jp219 {
+        var t220 int = self__0.retries
+        var t221 int = other__1.retries
+        var inline379 bool = t220 == t221
+        jp214 = inline379
     } else {
-        jp209 = false
+        jp214 = false
     }
-    if jp209 {
-        var t210 string = self__0.label
-        var t211 string = other__1.label
-        var inline376 bool = t210 == t211
-        return inline376
+    if jp214 {
+        var t215 string = self__0.label
+        var t216 string = other__1.label
+        var inline381 bool = t215 == t216
+        return inline381
     } else {
         return false
     }
 }
 
 func _goml_m_trait__impl_i_Default_i_Settings_i_default() Settings {
-    var t223 bool
-    t223 = false
-    var t224 int
-    t224 = 0
-    var t225 string
-    t225 = ""
-    var t226 Settings = Settings{
-        enabled: t223,
-        retries: t224,
-        label: t225,
+    var t228 bool
+    t228 = false
+    var t229 int
+    t229 = 0
+    var t230 string
+    t230 = ""
+    var t231 Settings = Settings{
+        enabled: t228,
+        retries: t229,
+        label: t230,
     }
-    return t226
+    return t231
 }
 
 func _goml_m_trait__impl_i_Debug_i_Settings_i_debug(self__2 Settings) string {
-    var x183 bool = self__2.enabled
-    var x184 int = self__2.retries
-    var x185 string = self__2.label
-    var t229 string = "Settings { " + "enabled: "
-    var t230 string
-    var inline385 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x183)
-    t230 = inline385
-    var t231 string = t229 + t230
-    var t232 string = t231 + ", "
-    var t233 string = t232 + "retries: "
-    var t234 string
-    var inline383 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(x184)
-    t234 = inline383
-    var t235 string = t233 + t234
-    var t236 string = t235 + ", "
-    var t237 string = t236 + "label: "
-    var t238 string
-    var inline381 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x185)
-    t238 = inline381
-    var t239 string = t237 + t238
-    var t240 string = t239 + " }"
-    return t240
+    var x188 bool = self__2.enabled
+    var x189 int = self__2.retries
+    var x190 string = self__2.label
+    var t234 string = "Settings { " + "enabled: "
+    var t235 string
+    var inline390 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x188)
+    t235 = inline390
+    var t236 string = t234 + t235
+    var t237 string = t236 + ", "
+    var t238 string = t237 + "retries: "
+    var t239 string
+    var inline388 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(x189)
+    t239 = inline388
+    var t240 string = t238 + t239
+    var t241 string = t240 + ", "
+    var t242 string = t241 + "label: "
+    var t243 string
+    var inline386 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x190)
+    t243 = inline386
+    var t244 string = t242 + t243
+    var t245 string = t244 + " }"
+    return t245
 }
 
 func _goml_m_trait__impl_i_Default_i_Empty_i_default() Empty {
-    var t243 Empty = Empty{}
-    return t243
+    var t248 Empty = Empty{}
+    return t248
 }
 
 func _goml_m_trait__impl_i_Debug_i_Empty_i_debug(self__6 Empty) string {
@@ -211,13 +211,13 @@ func _goml_m_trait__impl_i_Debug_i_State_i_debug(self__7 State) string {
     case Idle:
         return "State::Idle"
     case Running:
-        var x186 int = self__7.(Running)._0
-        var t252 string
-        var inline387 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(x186)
-        t252 = inline387
-        var t253 string = "State::Running(" + t252
-        var t254 string = t253 + ")"
-        return t254
+        var x191 int = self__7.(Running)._0
+        var t257 string
+        var inline392 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(x191)
+        t257 = inline392
+        var t258 string = "State::Running(" + t257
+        var t259 string = t258 + ")"
+        return t259
     default:
         panic("non-exhaustive match")
     }
@@ -226,19 +226,19 @@ func _goml_m_trait__impl_i_Debug_i_State_i_debug(self__7 State) string {
 func _goml_m_trait__impl_i_Debug_i_Message_i_debug(self__9 Message) string {
     switch self__9.(type) {
     case Message_Data:
-        var x187 string = self__9.(Message_Data)._0
-        var x188 int = self__9.(Message_Data)._1
-        var t264 string
-        var inline393 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x187)
-        t264 = inline393
-        var t265 string = "Message::Data(" + t264
-        var t266 string = t265 + ", "
-        var t267 string
-        var inline391 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(x188)
-        t267 = inline391
-        var t268 string = t266 + t267
-        var t269 string = t268 + ")"
-        return t269
+        var x192 string = self__9.(Message_Data)._0
+        var x193 int = self__9.(Message_Data)._1
+        var t269 string
+        var inline398 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x192)
+        t269 = inline398
+        var t270 string = "Message::Data(" + t269
+        var t271 string = t270 + ", "
+        var t272 string
+        var inline396 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(x193)
+        t272 = inline396
+        var t273 string = t271 + t272
+        var t274 string = t273 + ")"
+        return t274
     case Message_Empty:
         return "Message::Empty"
     default:
@@ -248,112 +248,112 @@ func _goml_m_trait__impl_i_Debug_i_Message_i_debug(self__9 Message) string {
 
 func main0() struct{} {
     var settings__15 Settings = _goml_m_trait__impl_i_Default_i_Settings_i_default()
-    var t288 string = _goml_m_trait__impl_i_Debug_i_Settings_i_debug(settings__15)
-    println__T_string(t288)
-    var t289 Settings = Settings{
+    var t293 string = _goml_m_trait__impl_i_Debug_i_Settings_i_debug(settings__15)
+    println__T_string(t293)
+    var t294 Settings = Settings{
         enabled: false,
         retries: 0,
         label: "",
     }
-    var t290 bool = _goml_m_trait__impl_i_PartialEq_i_Settings_i_eq(settings__15, t289)
-    var t291 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t290)
-    println__T_string(t291)
-    var empty__16 Empty = _goml_m_trait__impl_i_Default_i_Empty_i_default()
-    var t292 string = _goml_m_trait__impl_i_Debug_i_Empty_i_debug(empty__16)
-    println__T_string(t292)
-    var pair__17 PairDefaults__int = _goml_m_trait__impl_i_Default_i_PairDefaults____int_i_default()
-    var t293 int = pair__17.first
-    var t294 int = pair__17.second
-    var t295 int = t293 + t294
-    var t296 string = _goml_m_inherent_i_int_i_int_i_to__string(t295)
+    var t295 bool = _goml_m_trait__impl_i_PartialEq_i_Settings_i_eq(settings__15, t294)
+    var t296 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t295)
     println__T_string(t296)
-    var t297 Option__int = pair__17.nested
-    var t298 bool = _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__none____T__int(t297)
-    var t299 string
-    var inline445 string = _goml_runtime_core_bool_to_string(t298)
-    t299 = inline445
-    println__T_string(t299)
+    var empty__16 Empty = _goml_m_trait__impl_i_Default_i_Empty_i_default()
+    var t297 string = _goml_m_trait__impl_i_Debug_i_Empty_i_debug(empty__16)
+    println__T_string(t297)
+    var pair__17 PairDefaults__int = _goml_m_trait__impl_i_Default_i_PairDefaults____int_i_default()
+    var t298 int = pair__17.first
+    var t299 int = pair__17.second
+    var t300 int = t298 + t299
+    var t301 string = _goml_m_inherent_i_int_i_int_i_to__string(t300)
+    println__T_string(t301)
+    var t302 Option__int = pair__17.nested
+    var t303 bool = _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__none____T__int(t302)
+    var t304 string
+    var inline450 string = _goml_runtime_core_bool_to_string(t303)
+    t304 = inline450
+    println__T_string(t304)
     var state__18 State
     state__18 = Idle{}
-    var t300 string = _goml_m_trait__impl_i_Debug_i_State_i_debug(state__18)
-    var inline441 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t300)
-    _goml_runtime_core_string_println(inline441)
+    var t305 string = _goml_m_trait__impl_i_Debug_i_State_i_debug(state__18)
+    var inline446 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t305)
+    _goml_runtime_core_string_println(inline446)
     var message__19 Message
-    var inline437 string = _goml_m_trait__impl_i_Default_i_string_i_default()
-    var inline438 int = _goml_m_trait__impl_i_Default_i_int_i_default()
-    var inline439 Message = Message_Data{
-        _0: inline437,
-        _1: inline438,
+    var inline442 string = _goml_m_trait__impl_i_Default_i_string_i_default()
+    var inline443 int = _goml_m_trait__impl_i_Default_i_int_i_default()
+    var inline444 Message = Message_Data{
+        _0: inline442,
+        _1: inline443,
     }
-    message__19 = inline439
-    var t301 string = _goml_m_trait__impl_i_Debug_i_Message_i_debug(message__19)
-    var inline434 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t301)
-    _goml_runtime_core_string_println(inline434)
+    message__19 = inline444
+    var t306 string = _goml_m_trait__impl_i_Debug_i_Message_i_debug(message__19)
+    var inline439 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t306)
+    _goml_runtime_core_string_println(inline439)
     var event__20 Event
-    var inline430 string = _goml_m_trait__impl_i_Default_i_string_i_default()
-    var inline431 int = _goml_m_trait__impl_i_Default_i_int_i_default()
-    var inline432 Event = Event_Data{
-        _0: inline430,
-        _1: inline431,
+    var inline435 string = _goml_m_trait__impl_i_Default_i_string_i_default()
+    var inline436 int = _goml_m_trait__impl_i_Default_i_int_i_default()
+    var inline437 Event = Event_Data{
+        _0: inline435,
+        _1: inline436,
     }
-    event__20 = inline432
-    var t302 string
+    event__20 = inline437
+    var t307 string
     switch event__20.(type) {
     case Event_Data:
-        var inline417 string = event__20.(Event_Data)._0
-        var inline418 int = event__20.(Event_Data)._1
-        var inline421 string = "Event::Data { " + "name: "
-        var inline422 string = _goml_m_trait__impl_i_Debug_i_string_i_debug(inline417)
-        var inline423 string = inline421 + inline422
-        var inline424 string = inline423 + ", "
-        var inline425 string = inline424 + "count: "
-        var inline426 string = _goml_m_trait__impl_i_Debug_i_int_i_debug(inline418)
-        var inline427 string = inline425 + inline426
-        var inline428 string = inline427 + " }"
-        t302 = inline428
+        var inline422 string = event__20.(Event_Data)._0
+        var inline423 int = event__20.(Event_Data)._1
+        var inline426 string = "Event::Data { " + "name: "
+        var inline427 string = _goml_m_trait__impl_i_Debug_i_string_i_debug(inline422)
+        var inline428 string = inline426 + inline427
+        var inline429 string = inline428 + ", "
+        var inline430 string = inline429 + "count: "
+        var inline431 string = _goml_m_trait__impl_i_Debug_i_int_i_debug(inline423)
+        var inline432 string = inline430 + inline431
+        var inline433 string = inline432 + " }"
+        t307 = inline433
     case Event_Empty:
-        t302 = "Event::Empty"
+        t307 = "Event::Empty"
     default:
         panic("non-exhaustive match")
     }
-    var inline414 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t302)
-    _goml_runtime_core_string_println(inline414)
+    var inline419 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t307)
+    _goml_runtime_core_string_println(inline419)
     var lazy__21 Lazy__NoDefault
     lazy__21 = Lazy__NoDefault_Empty{}
-    var jp304 string
+    var jp309 string
     switch lazy__21.(type) {
     case Lazy__NoDefault_Empty:
-        jp304 = "empty"
+        jp309 = "empty"
     case Value:
-        jp304 = "value"
+        jp309 = "value"
     default:
         panic("non-exhaustive match")
     }
-    var inline410 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp304)
-    _goml_runtime_core_string_println(inline410)
+    var inline415 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp309)
+    _goml_runtime_core_string_println(inline415)
     var selected__22 Selected__int
-    var inline406 int = _goml_m_trait__impl_i_Default_i_int_i_default()
-    var inline407 int = _goml_m_trait__impl_i_Default_i_int_i_default()
-    var inline408 Selected__int = Values{
-        _0: inline406,
-        _1: inline407,
+    var inline411 int = _goml_m_trait__impl_i_Default_i_int_i_default()
+    var inline412 int = _goml_m_trait__impl_i_Default_i_int_i_default()
+    var inline413 Selected__int = Values{
+        _0: inline411,
+        _1: inline412,
     }
-    selected__22 = inline408
-    var jp306 string
+    selected__22 = inline413
+    var jp311 string
     switch selected__22.(type) {
     case Values:
-        var x201 int = selected__22.(Values)._0
-        var x202 int = selected__22.(Values)._1
-        var t308 int = x201 + x202
-        var inline401 string = _goml_runtime_core_int_to_string(t308)
-        jp306 = inline401
+        var x206 int = selected__22.(Values)._0
+        var x207 int = selected__22.(Values)._1
+        var t313 int = x206 + x207
+        var inline406 string = _goml_runtime_core_int_to_string(t313)
+        jp311 = inline406
     case Ignored:
-        jp306 = "ignored"
+        jp311 = "ignored"
     default:
         panic("non-exhaustive match")
     }
-    var inline403 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp306)
-    _goml_runtime_core_string_println(inline403)
+    var inline408 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp311)
+    _goml_runtime_core_string_println(inline408)
     return struct{}{}
 }
 
@@ -366,8 +366,8 @@ func _goml_m_trait__impl_i_Default_i_string_i_default() string {
 }
 
 func _goml_m_trait__impl_i_Debug_i_int_i_debug(self__82 int) string {
-    var inline449 string = _goml_runtime_core_int_to_string(self__82)
-    return inline449
+    var inline454 string = _goml_runtime_core_int_to_string(self__82)
+    return inline454
 }
 
 func _goml_m_trait__impl_i_Debug_i_string_i_debug(self__80 string) string {
@@ -375,54 +375,54 @@ func _goml_m_trait__impl_i_Debug_i_string_i_debug(self__80 string) string {
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t335 string
-    t335 = value__1
-    _goml_runtime_core_string_println(t335)
+    var t340 string
+    t340 = value__1
+    _goml_runtime_core_string_println(t340)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
-    var t339 string = _goml_runtime_core_bool_to_string(self__64)
-    return t339
+    var t344 string = _goml_runtime_core_bool_to_string(self__64)
+    return t344
 }
 
 func _goml_m_trait__impl_i_Default_i_PairDefaults____int_i_default() PairDefaults__int {
-    var t342 int
-    t342 = 0
-    var t343 int
-    t343 = 0
-    var t344 Option__int
-    t344 = None{}
-    var t345 PairDefaults__int = PairDefaults__int{
-        first: t342,
-        second: t343,
-        nested: t344,
+    var t347 int
+    t347 = 0
+    var t348 int
+    t348 = 0
+    var t349 Option__int
+    t349 = None{}
+    var t350 PairDefaults__int = PairDefaults__int{
+        first: t347,
+        second: t348,
+        nested: t349,
     }
-    return t345
+    return t350
 }
 
 func _goml_m_inherent_i_int_i_int_i_to__string(self__32 int) string {
-    var t348 string = _goml_runtime_core_int_to_string(self__32)
-    return t348
+    var t353 string = _goml_runtime_core_int_to_string(self__32)
+    return t353
 }
 
-func _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__none____T__int(self__296 Option__int) bool {
-    var t351 bool
-    switch self__296.(type) {
+func _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__none____T__int(self__299 Option__int) bool {
+    var t356 bool
+    switch self__299.(type) {
     case None:
-        t351 = false
+        t356 = false
     case Some:
-        t351 = true
+        t356 = true
     default:
         panic("non-exhaustive match")
     }
-    var t352 bool = !t351
-    return t352
+    var t357 bool = !t356
+    return t357
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
-    var t362 string = _goml_runtime_core_int_to_string(self__67)
-    return t362
+    var t367 string = _goml_runtime_core_int_to_string(self__67)
+    return t367
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {

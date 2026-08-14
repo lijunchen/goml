@@ -21,13 +21,13 @@ func ref_set__Ref_5int32(reference *ref_int32_x, value int32) struct{} {
 
 func main0() int32 {
     var value__0 *ref_int32_x
-    var inline206 int32 = 1
-    var inline207 *ref_int32_x = ref__Ref_5int32(inline206)
-    value__0 = inline207
-    var inline203 int32 = 2
-    ref_set__Ref_5int32(value__0, inline203)
-    var inline201 int32 = ref_get__Ref_5int32(value__0)
-    return inline201
+    var inline211 int32 = 1
+    var inline212 *ref_int32_x = ref__Ref_5int32(inline211)
+    value__0 = inline212
+    var inline208 int32 = 2
+    ref_set__Ref_5int32(value__0, inline208)
+    var inline206 int32 = ref_get__Ref_5int32(value__0)
+    return inline206
 }
 
 func main() {

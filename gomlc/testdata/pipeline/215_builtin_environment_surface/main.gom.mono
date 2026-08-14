@@ -7,21 +7,21 @@ fn main() -> unit {
       @runtime(core.uint8_to_string)(unsigned/2)) +
       string_byte_slice("abcd", 1, 3)) in
   let value/4 = @intrinsic(ref.new)(1) in
-  let _wild182 = @intrinsic(ref.set)(value/4, 2) in
+  let _wild187 = @intrinsic(ref.set)(value/4, 2) in
   let same/5 = @intrinsic(ref.ptr_eq)(value/4, value/4) in
-  let mtmp183 = @intrinsic(ref.ptr_hash)(value/4) in
+  let mtmp188 = @intrinsic(ref.ptr_hash)(value/4) in
   {
     let values/6 = @intrinsic(vec.new)() in
-    let _wild184 = @intrinsic(vec.push)(values/6, @intrinsic(ref.get)(value/4)) in
-    let _wild185 = @intrinsic(vec.push)(values/6, 3) in
-    let _wild186 = @intrinsic(vec.set)(values/6, 1, 4) in
+    let _wild189 = @intrinsic(vec.push)(values/6, @intrinsic(ref.get)(value/4)) in
+    let _wild190 = @intrinsic(vec.push)(values/6, 3) in
+    let _wild191 = @intrinsic(vec.set)(values/6, 1, 4) in
     let values_slice/7 = @intrinsic(slice.new)(values/6, 0, @intrinsic(vec.len)(values/6)) in
     let nested/8 =
       @intrinsic(slice.sub)(values_slice/7, 0, @intrinsic(slice.len)(values_slice/7)) in
     let channel/9 = @intrinsic(channel.new)(1) in
-    let _wild187 = @intrinsic(channel.send)(channel/9, @intrinsic(slice.get)(nested/8, 1)) in
+    let _wild192 = @intrinsic(channel.send)(channel/9, @intrinsic(slice.get)(nested/8, 1)) in
     let received/10 = @intrinsic(channel.recv)(channel/9) in
-    let _wild188 = @intrinsic(channel.close)(channel/9) in
+    let _wild193 = @intrinsic(channel.close)(channel/9) in
     let total/13 =
       std::iter::fold__A_int__I_FnIterator[int]__T_int(
         range(0, 3),
@@ -133,15 +133,15 @@ fn trait_impl#Iterator#FnIterator__int#next(self/171: FnIterator__int) -> Option
   FnIterator__int.next_fn(self/171)()
 }
 
-fn __goml_builtin_range(start/333: int, end/334: int) -> FnIterator__int {
-  let current/335 = @intrinsic(ref.new)(start/333) in
+fn __goml_builtin_range(start/336: int, end/337: int) -> FnIterator__int {
+  let current/338 = @intrinsic(ref.new)(start/336) in
   inherent#FnIterator#FnIterator[T]#from_fn__T_int(
     || {
-      let value/336 = @intrinsic(ref.get)(current/335) in
-      if (value/336 < end/334) {
+      let value/339 = @intrinsic(ref.get)(current/338) in
+      if (value/339 < end/337) {
           {
-            let _wild178 = @intrinsic(ref.set)(current/335, (value/336 + 1)) in
-            Option__int::Some(value/336)
+            let _wild183 = @intrinsic(ref.set)(current/338, (value/339 + 1)) in
+            Option__int::Some(value/339)
           }
       } else {
           {

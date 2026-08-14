@@ -169,19 +169,19 @@ type Some struct {
 func (_ Some) isOption__string() {}
 
 func print_lookup(map__0 *hashmap_Ref_4Node_string_x, key__1 *ref_Node_x) struct{} {
-    var mtmp182 Option__string
-    var inline257 Option__string = hashmap_get__HashMap_9Ref_4Node_6string(map__0, key__1)
-    mtmp182 = inline257
-    switch mtmp182.(type) {
+    var mtmp187 Option__string
+    var inline262 Option__string = hashmap_get__HashMap_9Ref_4Node_6string(map__0, key__1)
+    mtmp187 = inline262
+    switch mtmp187.(type) {
     case None:
-        var inline250 string = "missing"
-        var inline251 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline250)
-        _goml_runtime_core_string_println(inline251)
+        var inline255 string = "missing"
+        var inline256 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline255)
+        _goml_runtime_core_string_println(inline256)
         return struct{}{}
     case Some:
-        var x183 string = mtmp182.(Some)._0
-        var inline254 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x183)
-        _goml_runtime_core_string_println(inline254)
+        var x188 string = mtmp187.(Some)._0
+        var inline259 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x188)
+        _goml_runtime_core_string_println(inline259)
         return struct{}{}
     default:
         panic("non-exhaustive match")
@@ -189,117 +189,117 @@ func print_lookup(map__0 *hashmap_Ref_4Node_string_x, key__1 *ref_Node_x) struct
 }
 
 func main0() struct{} {
-    var t200 Node = Node{
+    var t205 Node = Node{
         value: 1,
     }
-    var first__3 *ref_Node_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Node(t200)
-    var t201 Node = Node{
+    var first__3 *ref_Node_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Node(t205)
+    var t206 Node = Node{
         value: 1,
     }
-    var distinct__5 *ref_Node_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Node(t201)
-    var t202 bool = _goml_m_trait__impl_i_PartialEq_i_Ref_l_Node_r__i_eq(first__3, first__3)
-    println__T_bool(t202)
-    var t203 bool = _goml_m_trait__impl_i_PartialEq_i_Ref_l_Node_r__i_eq(first__3, distinct__5)
-    println__T_bool(t203)
-    var t204 uint64 = _goml_m_trait__impl_i_Hash_i_Ref_l_Node_r__i_hash(first__3)
-    var t205 uint64 = _goml_m_trait__impl_i_Hash_i_Ref_l_Node_r__i_hash(first__3)
-    var t206 bool = t204 == t205
-    var inline298 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t206)
-    _goml_runtime_core_string_println(inline298)
+    var distinct__5 *ref_Node_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Node(t206)
+    var t207 bool = _goml_m_trait__impl_i_PartialEq_i_Ref_l_Node_r__i_eq(first__3, first__3)
+    println__T_bool(t207)
+    var t208 bool = _goml_m_trait__impl_i_PartialEq_i_Ref_l_Node_r__i_eq(first__3, distinct__5)
+    println__T_bool(t208)
+    var t209 uint64 = _goml_m_trait__impl_i_Hash_i_Ref_l_Node_r__i_hash(first__3)
+    var t210 uint64 = _goml_m_trait__impl_i_Hash_i_Ref_l_Node_r__i_hash(first__3)
+    var t211 bool = t209 == t210
+    var inline303 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t211)
+    _goml_runtime_core_string_println(inline303)
     var map__6 *hashmap_Ref_4Node_string_x
-    var inline296 *hashmap_Ref_4Node_string_x = hashmap_new__HashMap_9Ref_4Node_6string()
-    map__6 = inline296
-    var inline293 string = "first"
-    hashmap_set__HashMap_9Ref_4Node_6string(map__6, first__3, inline293)
+    var inline301 *hashmap_Ref_4Node_string_x = hashmap_new__HashMap_9Ref_4Node_6string()
+    map__6 = inline301
+    var inline298 string = "first"
+    hashmap_set__HashMap_9Ref_4Node_6string(map__6, first__3, inline298)
     print_lookup(map__6, first__3)
-    var inline287 Option__string = _goml_m_inherent_i_HashMap_i_H_h9ede9e5e4b19497ae51b9af572b3f34a_r_____V__string(map__6, distinct__5)
-    switch inline287.(type) {
+    var inline292 Option__string = _goml_m_inherent_i_HashMap_i_H_h9ede9e5e4b19497ae51b9af572b3f34a_r_____V__string(map__6, distinct__5)
+    switch inline292.(type) {
     case None:
         println__T_string("missing")
     case Some:
-        var inline289 string = inline287.(Some)._0
-        println__T_string(inline289)
+        var inline294 string = inline292.(Some)._0
+        println__T_string(inline294)
     default:
         panic("non-exhaustive match")
     }
-    var t207 Node = Node{
+    var t212 Node = Node{
         value: 2,
     }
-    ref_set__Ref_4Node(first__3, t207)
-    var inline279 Option__string = _goml_m_inherent_i_HashMap_i_H_h9ede9e5e4b19497ae51b9af572b3f34a_r_____V__string(map__6, first__3)
-    switch inline279.(type) {
+    ref_set__Ref_4Node(first__3, t212)
+    var inline284 Option__string = _goml_m_inherent_i_HashMap_i_H_h9ede9e5e4b19497ae51b9af572b3f34a_r_____V__string(map__6, first__3)
+    switch inline284.(type) {
     case None:
         println__T_string("missing")
     case Some:
-        var inline281 string = inline279.(Some)._0
-        println__T_string(inline281)
+        var inline286 string = inline284.(Some)._0
+        println__T_string(inline286)
     default:
         panic("non-exhaustive match")
     }
-    var inline276 string = "distinct"
-    hashmap_set__HashMap_9Ref_4Node_6string(map__6, distinct__5, inline276)
-    var t208 int
-    var inline274 int = hashmap_len__HashMap_9Ref_4Node_6string(map__6)
-    t208 = inline274
-    var inline271 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t208)
-    _goml_runtime_core_string_println(inline271)
-    var inline265 Option__string = _goml_m_inherent_i_HashMap_i_H_h9ede9e5e4b19497ae51b9af572b3f34a_r_____V__string(map__6, first__3)
-    switch inline265.(type) {
+    var inline281 string = "distinct"
+    hashmap_set__HashMap_9Ref_4Node_6string(map__6, distinct__5, inline281)
+    var t213 int
+    var inline279 int = hashmap_len__HashMap_9Ref_4Node_6string(map__6)
+    t213 = inline279
+    var inline276 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t213)
+    _goml_runtime_core_string_println(inline276)
+    var inline270 Option__string = _goml_m_inherent_i_HashMap_i_H_h9ede9e5e4b19497ae51b9af572b3f34a_r_____V__string(map__6, first__3)
+    switch inline270.(type) {
     case None:
         println__T_string("missing")
     case Some:
-        var inline267 string = inline265.(Some)._0
-        println__T_string(inline267)
+        var inline272 string = inline270.(Some)._0
+        println__T_string(inline272)
     default:
         panic("non-exhaustive match")
     }
-    var inline259 Option__string = _goml_m_inherent_i_HashMap_i_H_h9ede9e5e4b19497ae51b9af572b3f34a_r_____V__string(map__6, distinct__5)
-    switch inline259.(type) {
+    var inline264 Option__string = _goml_m_inherent_i_HashMap_i_H_h9ede9e5e4b19497ae51b9af572b3f34a_r_____V__string(map__6, distinct__5)
+    switch inline264.(type) {
     case None:
         println__T_string("missing")
         return struct{}{}
     case Some:
-        var inline261 string = inline259.(Some)._0
-        println__T_string(inline261)
+        var inline266 string = inline264.(Some)._0
+        println__T_string(inline266)
         return struct{}{}
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_inherent_i_HashMap_i_H_h9ede9e5e4b19497ae51b9af572b3f34a_r_____V__string(self__259 *hashmap_Ref_4Node_string_x, key__260 *ref_Node_x) Option__string {
-    var t212 Option__string = hashmap_get__HashMap_9Ref_4Node_6string(self__259, key__260)
-    return t212
+func _goml_m_inherent_i_HashMap_i_H_h9ede9e5e4b19497ae51b9af572b3f34a_r_____V__string(self__262 *hashmap_Ref_4Node_string_x, key__263 *ref_Node_x) Option__string {
+    var t217 Option__string = hashmap_get__HashMap_9Ref_4Node_6string(self__262, key__263)
+    return t217
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t214 string
-    t214 = value__1
-    _goml_runtime_core_string_println(t214)
+    var t219 string
+    t219 = value__1
+    _goml_runtime_core_string_println(t219)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Node(value__270 Node) *ref_Node_x {
-    var t218 *ref_Node_x = ref__Ref_4Node(value__270)
-    return t218
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Node(value__273 Node) *ref_Node_x {
+    var t223 *ref_Node_x = ref__Ref_4Node(value__273)
+    return t223
 }
 
 func println__T_bool(value__1 bool) struct{} {
-    var t220 string
-    var inline302 string = _goml_runtime_core_bool_to_string(value__1)
-    t220 = inline302
-    _goml_runtime_core_string_println(t220)
+    var t225 string
+    var inline307 string = _goml_runtime_core_bool_to_string(value__1)
+    t225 = inline307
+    _goml_runtime_core_string_println(t225)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_PartialEq_i_Ref_l_Node_r__i_eq(self__136 *ref_Node_x, other__137 *ref_Node_x) bool {
-    var t224 bool = ptr_eq__Ref_4Node(self__136, other__137)
-    return t224
+    var t229 bool = ptr_eq__Ref_4Node(self__136, other__137)
+    return t229
 }
 
 func _goml_m_trait__impl_i_Hash_i_Ref_l_Node_r__i_hash(self__138 *ref_Node_x) uint64 {
-    var t227 uint64 = ptr_hash__Ref_4Node(self__138)
-    return t227
+    var t232 uint64 = ptr_hash__Ref_4Node(self__138)
+    return t232
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
@@ -307,13 +307,13 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) strin
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
-    var t245 string = _goml_runtime_core_bool_to_string(self__64)
-    return t245
+    var t250 string = _goml_runtime_core_bool_to_string(self__64)
+    return t250
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
-    var t248 string = _goml_runtime_core_int_to_string(self__67)
-    return t248
+    var t253 string = _goml_runtime_core_int_to_string(self__67)
+    return t253
 }
 
 func main() {

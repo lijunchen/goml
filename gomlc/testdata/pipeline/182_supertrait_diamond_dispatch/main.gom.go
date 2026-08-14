@@ -28,18 +28,18 @@ func _goml_m_trait__impl_i_Diamond_i_Value_i_diamond(self__3 Value) string {
 }
 
 func main0() struct{} {
-    var t192 Value = Value{}
-    var t193 string
-    var inline212 string = _goml_m_trait__impl_i_Base_i_Value_i_base(t192)
-    var inline213 string = _goml_m_trait__impl_i_Left_i_Value_i_left(t192)
-    var inline214 string = inline212 + inline213
-    var inline215 string = _goml_m_trait__impl_i_Right_i_Value_i_right(t192)
-    var inline216 string = inline214 + inline215
-    var inline217 string = _goml_m_trait__impl_i_Diamond_i_Value_i_diamond(t192)
-    var inline218 string = inline216 + inline217
-    t193 = inline218
-    var inline209 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t193)
-    _goml_runtime_core_string_println(inline209)
+    var t197 Value = Value{}
+    var t198 string
+    var inline217 string = _goml_m_trait__impl_i_Base_i_Value_i_base(t197)
+    var inline218 string = _goml_m_trait__impl_i_Left_i_Value_i_left(t197)
+    var inline219 string = inline217 + inline218
+    var inline220 string = _goml_m_trait__impl_i_Right_i_Value_i_right(t197)
+    var inline221 string = inline219 + inline220
+    var inline222 string = _goml_m_trait__impl_i_Diamond_i_Value_i_diamond(t197)
+    var inline223 string = inline221 + inline222
+    t198 = inline223
+    var inline214 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t198)
+    _goml_runtime_core_string_println(inline214)
     return struct{}{}
 }
 

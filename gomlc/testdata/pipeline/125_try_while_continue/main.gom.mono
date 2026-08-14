@@ -13,12 +13,12 @@ fn step(i/0: int32) -> Option__int32 {
 fn accumulate(limit/1: int32) -> Option__int32 {
   let sum/2 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let i/3 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let _wild187 =
+  let _wild192 =
     while (inherent#Ref#Ref[T]#get__T_int32(i/3) < limit/1) {
         {
           let cur/4 = inherent#Ref#Ref[T]#get__T_int32(i/3) in
-          let _wild182 = inherent#Ref#Ref[T]#set__T_int32(i/3, (cur/4 + 1)) in
-          let _wild183 =
+          let _wild187 = inherent#Ref#Ref[T]#set__T_int32(i/3, (cur/4 + 1)) in
+          let _wild188 =
             if (cur/4 == 1) {
                 {
                   continue
@@ -30,23 +30,23 @@ fn accumulate(limit/1: int32) -> Option__int32 {
             } in
           let value/5 =
             {
-              let mtmp184 = step(cur/4) in
-              match mtmp184 {
+              let mtmp189 = step(cur/4) in
+              match mtmp189 {
                 Option__int32::None => {
                   return Option__int32::None
                 },
-                Option__int32::Some(x185) => {
+                Option__int32::Some(x190) => {
                   {
-                    let x185 = Option__int32::Some._0(mtmp184) in
+                    let x190 = Option__int32::Some._0(mtmp189) in
                     {
-                      let try_value/43 = x185 in
+                      let try_value/43 = x190 in
                       try_value/43
                     }
                   }
                 },
               }
             } in
-          let _wild186 =
+          let _wild191 =
             inherent#Ref#Ref[T]#set__T_int32(
               sum/2,
               (inherent#Ref#Ref[T]#get__T_int32(sum/2) + value/5)
@@ -61,11 +61,11 @@ fn show(opt/6: Option__int32) -> string {
     Option__int32::None => {
       "none"
     },
-    Option__int32::Some(x188) => {
+    Option__int32::Some(x193) => {
       {
-        let x188 = Option__int32::Some._0(opt/6) in
+        let x193 = Option__int32::Some._0(opt/6) in
         {
-          let value/7 = x188 in
+          let value/7 = x193 in
           ("some=" + inherent#int32#int32#to_string(value/7))
         }
       }
@@ -74,20 +74,20 @@ fn show(opt/6: Option__int32) -> string {
 }
 
 fn main() -> unit {
-  let _wild189 = println__T_string(show(accumulate(2))) in
-  let _wild190 = println__T_string(show(accumulate(4))) in
+  let _wild194 = println__T_string(show(accumulate(2))) in
+  let _wild195 = println__T_string(show(accumulate(4))) in
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/270: int32) -> Ref[int32] {
-  @intrinsic(ref.new)(value/270)
+fn inherent#Ref#Ref[T]#new__T_int32(value/273: int32) -> Ref[int32] {
+  @intrinsic(ref.new)(value/273)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/271: Ref[int32]) -> int32 {
-  @intrinsic(ref.get)(self/271)
+fn inherent#Ref#Ref[T]#get__T_int32(self/274: Ref[int32]) -> int32 {
+  @intrinsic(ref.get)(self/274)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/272: Ref[int32], value/273: int32) -> unit {
-  @intrinsic(ref.set)(self/272, value/273)
+fn inherent#Ref#Ref[T]#set__T_int32(self/275: Ref[int32], value/276: int32) -> unit {
+  @intrinsic(ref.set)(self/275, value/276)
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {

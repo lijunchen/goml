@@ -17,44 +17,44 @@ fn read_right(ok/1: bool) -> Result__int32__string {
 fn choose(choice/2: Choice) -> Result__int32__string {
   let value/6 =
     match choice/2 {
-      Choice::Left(x182) => {
-        let x182 = Choice::Left._0(choice/2) in
-        let ok/3 = x182 in
-        let mtmp185 = read_left(ok/3) in
-        match mtmp185 {
-          Result__int32__string::Ok(x186) => {
-            let x186 = Result__int32__string::Ok._0(mtmp185) in
-            let try_value/21 = x186 in
+      Choice::Left(x187) => {
+        let x187 = Choice::Left._0(choice/2) in
+        let ok/3 = x187 in
+        let mtmp190 = read_left(ok/3) in
+        match mtmp190 {
+          Result__int32__string::Ok(x191) => {
+            let x191 = Result__int32__string::Ok._0(mtmp190) in
+            let try_value/21 = x191 in
             try_value/21
           },
-          Result__int32__string::Err(x187) => {
-            let x187 = Result__int32__string::Err._0(mtmp185) in
-            let try_residual/21 = x187 in
+          Result__int32__string::Err(x192) => {
+            let x192 = Result__int32__string::Err._0(mtmp190) in
+            let try_residual/21 = x192 in
             return Result__int32__string::Err(try_residual/21)
           },
         }
       },
-      Choice::Right(x183) => {
-        let x183 = Choice::Right._0(choice/2) in
-        let ok/4 = x183 in
-        (let mtmp188 = read_right(ok/4) in
-        match mtmp188 {
-          Result__int32__string::Ok(x189) => {
-            let x189 = Result__int32__string::Ok._0(mtmp188) in
-            let try_value/25 = x189 in
+      Choice::Right(x188) => {
+        let x188 = Choice::Right._0(choice/2) in
+        let ok/4 = x188 in
+        (let mtmp193 = read_right(ok/4) in
+        match mtmp193 {
+          Result__int32__string::Ok(x194) => {
+            let x194 = Result__int32__string::Ok._0(mtmp193) in
+            let try_value/25 = x194 in
             try_value/25
           },
-          Result__int32__string::Err(x190) => {
-            let x190 = Result__int32__string::Err._0(mtmp188) in
-            let try_residual/25 = x190 in
+          Result__int32__string::Err(x195) => {
+            let x195 = Result__int32__string::Err._0(mtmp193) in
+            let try_residual/25 = x195 in
             return Result__int32__string::Err(try_residual/25)
           },
         } +
           1)
       },
-      Choice::Keep(x184) => {
-        let x184 = Choice::Keep._0(choice/2) in
-        let value/5 = x184 in
+      Choice::Keep(x189) => {
+        let x189 = Choice::Keep._0(choice/2) in
+        let value/5 = x189 in
         value/5
       },
     } in
@@ -63,25 +63,25 @@ fn choose(choice/2: Choice) -> Result__int32__string {
 
 fn show(res/7: Result__int32__string) -> string {
   match res/7 {
-    Result__int32__string::Ok(x191) => {
-      let x191 = Result__int32__string::Ok._0(res/7) in
-      let value/8 = x191 in
+    Result__int32__string::Ok(x196) => {
+      let x196 = Result__int32__string::Ok._0(res/7) in
+      let value/8 = x196 in
       ("ok " + inherent#int32#int32#to_string(value/8))
     },
-    Result__int32__string::Err(x192) => {
-      let x192 = Result__int32__string::Err._0(res/7) in
-      let err/9 = x192 in
+    Result__int32__string::Err(x197) => {
+      let x197 = Result__int32__string::Err._0(res/7) in
+      let err/9 = x197 in
       ("err " + err/9)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild193 = println__T_string(show(choose(Choice::Left(true)))) in
-  let _wild194 = println__T_string(show(choose(Choice::Right(true)))) in
-  let _wild195 = println__T_string(show(choose(Choice::Keep(5)))) in
-  let _wild196 = println__T_string(show(choose(Choice::Left(false)))) in
-  let _wild197 = println__T_string(show(choose(Choice::Right(false)))) in
+  let _wild198 = println__T_string(show(choose(Choice::Left(true)))) in
+  let _wild199 = println__T_string(show(choose(Choice::Right(true)))) in
+  let _wild200 = println__T_string(show(choose(Choice::Keep(5)))) in
+  let _wild201 = println__T_string(show(choose(Choice::Left(false)))) in
+  let _wild202 = println__T_string(show(choose(Choice::Right(false)))) in
   ()
 }
 

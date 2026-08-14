@@ -18,55 +18,55 @@ func array_get__Array_2_20Fn1_5int32_to_5int32(arr [2]func(int32) int32, index i
 }
 
 func double(x__0 int32) int32 {
-    var t187 int32 = x__0 * 2
-    return t187
+    var t192 int32 = x__0 * 2
+    return t192
 }
 
 func increment(x__1 int32) int32 {
-    var t190 int32 = x__1 + 1
-    return t190
+    var t195 int32 = x__1 + 1
+    return t195
 }
 
 func main0() struct{} {
     var xs__3 [2]func(int32) int32 = [2]func(int32) int32{double, increment}
     var f__4 func(int32) int32 = array_get__Array_2_20Fn1_5int32_to_5int32(xs__3, 0)
     var g__5 func(int32) int32 = array_get__Array_2_20Fn1_5int32_to_5int32(xs__3, 1)
-    var t196 int32 = f__4(10)
-    var t197 int32 = g__5(t196)
-    var inline230 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t197)
-    _goml_runtime_core_string_println(inline230)
+    var t201 int32 = f__4(10)
+    var t202 int32 = g__5(t201)
+    var inline235 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t202)
+    _goml_runtime_core_string_println(inline235)
     var chosen__6 func(int32) int32
-    var inline228 bool = true
-    if inline228 {
+    var inline233 bool = true
+    if inline233 {
         chosen__6 = double
     } else {
         chosen__6 = increment
     }
     var applied__7 int32 = chosen__6(5)
-    var t198 func(int32) int32
-    var inline226 bool = false
-    if inline226 {
-        t198 = double
+    var t203 func(int32) int32
+    var inline231 bool = false
+    if inline231 {
+        t203 = double
     } else {
-        t198 = increment
+        t203 = increment
     }
-    var direct__8 int32 = t198(5)
-    var t199 string
-    var inline224 string = _goml_runtime_core_int32_to_string(applied__7)
-    t199 = inline224
-    var inline221 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t199)
+    var direct__8 int32 = t203(5)
+    var t204 string
+    var inline229 string = _goml_runtime_core_int32_to_string(applied__7)
+    t204 = inline229
+    var inline226 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t204)
+    _goml_runtime_core_string_println(inline226)
+    var t205 string
+    var inline224 string = _goml_runtime_core_int32_to_string(direct__8)
+    t205 = inline224
+    var inline221 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t205)
     _goml_runtime_core_string_println(inline221)
-    var t200 string
-    var inline219 string = _goml_runtime_core_int32_to_string(direct__8)
-    t200 = inline219
-    var inline216 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t200)
-    _goml_runtime_core_string_println(inline216)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__70 int32) string {
-    var t212 string = _goml_runtime_core_int32_to_string(self__70)
-    return t212
+    var t217 string = _goml_runtime_core_int32_to_string(self__70)
+    return t217
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {

@@ -1,13 +1,13 @@
 fn unwrap_or_negative(value/0: Option__int) -> int {
-  let mtmp182 = value/0 in
-  match mtmp182 {
-    Option__int::Some(x183) => {
-      let x183 = Option__int::Some._0(mtmp182) in
-      let result/1 = x183 in
+  let mtmp187 = value/0 in
+  match mtmp187 {
+    Option__int::Some(x188) => {
+      let x188 = Option__int::Some._0(mtmp187) in
+      let result/1 = x188 in
       result/1
     },
     _ =>
-      let _wild184 = return -1 in
+      let _wild189 = return -1 in
       (),
   }
 }
@@ -15,37 +15,37 @@ fn unwrap_or_negative(value/0: Option__int) -> int {
 fn count_to(limit/2: int) -> int {
   let counter/3 = inherent#Ref#Ref[T]#new__T_int(0) in
   loop let current/4 = inherent#Ref#Ref[T]#get__T_int(counter/3) in
-  let _wild186 =
+  let _wild191 =
     if (current/4 >= limit/2) {
-        let _wild185 = break current/4 in
+        let _wild190 = break current/4 in
         ()
     } else {
         ()
     } in
-  let _wild187 = inherent#Ref#Ref[T]#set__T_int(counter/3, (current/4 + 1)) in
+  let _wild192 = inherent#Ref#Ref[T]#set__T_int(counter/3, (current/4 + 1)) in
   ()
 }
 
 fn loop_option(value/5: Option__int) -> int {
-  loop let mtmp188 = value/5 in
-  match mtmp188 {
-    Option__int::Some(x189) => {
-      let x189 = Option__int::Some._0(mtmp188) in
-      let item/6 = x189 in
-      let _wild190 = break item/6 in
+  loop let mtmp193 = value/5 in
+  match mtmp193 {
+    Option__int::Some(x194) => {
+      let x194 = Option__int::Some._0(mtmp193) in
+      let item/6 = x194 in
+      let _wild195 = break item/6 in
       ()
     },
     _ =>
-      let _wild191 = break -2 in
+      let _wild196 = break -2 in
       (),
   }
 }
 
 fn nested_loop_value() -> int {
-  loop let _wild193 =
-    loop let _wild192 = break in
+  loop let _wild198 =
+    loop let _wild197 = break in
     () in
-  let _wild194 = break 7 in
+  let _wild199 = break 7 in
   ()
 }
 
@@ -63,31 +63,31 @@ fn matches_raw_path(value/7: string) -> bool {
 }
 
 fn main() -> unit {
-  let _wild195 = println__T_string("C:\\tmp\\\"quoted\\\"") in
-  let _wild196 = println__T_string(("" + "}")) in
-  let _wild197 =
+  let _wild200 = println__T_string("C:\\tmp\\\"quoted\\\"") in
+  let _wild201 = println__T_string(("" + "}")) in
+  let _wild202 =
     println__T_string(inherent#int#int#to_string(unwrap_or_negative(Option__int::Some(11)))) in
-  let _wild198 =
-    println__T_string(inherent#int#int#to_string(unwrap_or_negative(Option__int::None))) in
-  let _wild199 = println__T_string(inherent#int#int#to_string(count_to(4))) in
-  let _wild200 = println__T_string(inherent#int#int#to_string(loop_option(Option__int::Some(9)))) in
-  let _wild201 = println__T_string(inherent#int#int#to_string(loop_option(Option__int::None))) in
-  let _wild202 = println__T_string(inherent#int#int#to_string(nested_loop_value())) in
   let _wild203 =
+    println__T_string(inherent#int#int#to_string(unwrap_or_negative(Option__int::None))) in
+  let _wild204 = println__T_string(inherent#int#int#to_string(count_to(4))) in
+  let _wild205 = println__T_string(inherent#int#int#to_string(loop_option(Option__int::Some(9)))) in
+  let _wild206 = println__T_string(inherent#int#int#to_string(loop_option(Option__int::None))) in
+  let _wild207 = println__T_string(inherent#int#int#to_string(nested_loop_value())) in
+  let _wild208 =
     println__T_string(trait_impl#ToString#bool#to_string(matches_raw_path("C:\\tmp"))) in
   ()
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/270: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/270)
+fn inherent#Ref#Ref[T]#new__T_int(value/273: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/273)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/271: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/271)
+fn inherent#Ref#Ref[T]#get__T_int(self/274: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/274)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/272: Ref[int], value/273: int) -> unit {
-  @intrinsic(ref.set)(self/272, value/273)
+fn inherent#Ref#Ref[T]#set__T_int(self/275: Ref[int], value/276: int) -> unit {
+  @intrinsic(ref.set)(self/275, value/276)
 }
 
 fn println__T_string(value/1: string) -> unit {

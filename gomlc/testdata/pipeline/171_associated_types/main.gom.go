@@ -22,49 +22,49 @@ type Box__string struct {
 }
 
 func _goml_m_trait__impl_i_Provider_i_Number_i_get(self__0 Number) int32 {
-    var t187 int32 = self__0.value
-    return t187
+    var t192 int32 = self__0.value
+    return t192
 }
 
 func main0() struct{} {
-    var t189 Number = Number{
+    var t194 Number = Number{
         value: 42,
     }
-    var t190 int32
-    var inline245 int32 = _goml_m_trait__impl_i_Provider_i_Number_i_get(t189)
-    t190 = inline245
-    var t191 string
-    var inline243 string = _goml_runtime_core_int32_to_string(t190)
-    t191 = inline243
-    var inline240 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t191)
-    _goml_runtime_core_string_println(inline240)
-    var t192 Number = Number{
+    var t195 int32
+    var inline250 int32 = _goml_m_trait__impl_i_Provider_i_Number_i_get(t194)
+    t195 = inline250
+    var t196 string
+    var inline248 string = _goml_runtime_core_int32_to_string(t195)
+    t196 = inline248
+    var inline245 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t196)
+    _goml_runtime_core_string_println(inline245)
+    var t197 Number = Number{
         value: 7,
     }
     var value__4 int32
-    var inline238 int32 = _goml_m_trait__impl_i_Provider_i_Number_i_get(t192)
-    value__4 = inline238
-    var t193 string
-    var inline236 string = _goml_runtime_core_int32_to_string(value__4)
-    t193 = inline236
-    var inline233 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t193)
-    _goml_runtime_core_string_println(inline233)
-    var t194 Box__string = Box__string{
+    var inline243 int32 = _goml_m_trait__impl_i_Provider_i_Number_i_get(t197)
+    value__4 = inline243
+    var t198 string
+    var inline241 string = _goml_runtime_core_int32_to_string(value__4)
+    t198 = inline241
+    var inline238 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t198)
+    _goml_runtime_core_string_println(inline238)
+    var t199 Box__string = Box__string{
         value: "generic",
     }
-    var t195 string
-    var inline231 string = _goml_m_trait__impl_i_Provider_i_Box____string_i_get(t194)
-    t195 = inline231
-    var inline228 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t195)
-    _goml_runtime_core_string_println(inline228)
-    var t197 int32
-    var inline226 int32 = 11
-    t197 = inline226
-    var t198 string
-    var inline224 string = _goml_runtime_core_int32_to_string(t197)
-    t198 = inline224
-    var inline221 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t198)
-    _goml_runtime_core_string_println(inline221)
+    var t200 string
+    var inline236 string = _goml_m_trait__impl_i_Provider_i_Box____string_i_get(t199)
+    t200 = inline236
+    var inline233 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t200)
+    _goml_runtime_core_string_println(inline233)
+    var t202 int32
+    var inline231 int32 = 11
+    t202 = inline231
+    var t203 string
+    var inline229 string = _goml_runtime_core_int32_to_string(t202)
+    t203 = inline229
+    var inline226 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t203)
+    _goml_runtime_core_string_println(inline226)
     return struct{}{}
 }
 
@@ -73,8 +73,8 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) strin
 }
 
 func _goml_m_trait__impl_i_Provider_i_Box____string_i_get(self__1 Box__string) string {
-    var t219 string = self__1.value
-    return t219
+    var t224 string = self__1.value
+    return t224
 }
 
 func main() {

@@ -1473,80 +1473,106 @@ fn inherent#Vec#Vec[T]#iter[T](self/230: Vec[T]) -> FnIterator[T] {
   )
 }
 
-fn inherent#FrozenVec#FrozenVec[T]#len[T](self/235: FrozenVec[T]) -> int {
-  inherent#Vec#Vec[T]#len(FrozenVec.values(self/235))
+fn inherent#Vec#Vec[T]#contains[T](self/235: Vec[T], expected/236: T) -> bool {
+  let index/237 = 0 in
+  let _wild151 =
+    while (index/237 < inherent#Vec#Vec[T]#len(self/235)) {
+        {
+          let _wild147 =
+            if trait_call[PartialEq::eq](@intrinsic(vec.get)(self/235, index/237), expected/236) {
+                {
+                  return true
+                }
+            } else {
+                {
+                  ()
+                }
+            } in
+          let _wild150 =
+            {
+              let compound_old148 = index/237 in
+              let compound_value149 = 1 in
+              index/237 = (compound_old148 + compound_value149)
+            } in
+        }
+    } in
+  false
 }
 
-fn inherent#FrozenVec#FrozenVec[T]#is_empty[T](self/236: FrozenVec[T]) -> bool {
-  inherent#Vec#Vec[T]#is_empty(FrozenVec.values(self/236))
+fn inherent#FrozenVec#FrozenVec[T]#len[T](self/238: FrozenVec[T]) -> int {
+  inherent#Vec#Vec[T]#len(FrozenVec.values(self/238))
 }
 
-fn inherent#FrozenVec#FrozenVec[T]#get[T](self/237: FrozenVec[T], index/238: int) -> T {
-  @intrinsic(vec.get)(FrozenVec.values(self/237), index/238)
+fn inherent#FrozenVec#FrozenVec[T]#is_empty[T](self/239: FrozenVec[T]) -> bool {
+  inherent#Vec#Vec[T]#is_empty(FrozenVec.values(self/239))
 }
 
-fn inherent#FrozenVec#FrozenVec[T]#to_vec[T](self/239: FrozenVec[T]) -> Vec[T] {
-  inherent#Vec#Vec[T]#copy(FrozenVec.values(self/239))
+fn inherent#FrozenVec#FrozenVec[T]#get[T](self/240: FrozenVec[T], index/241: int) -> T {
+  @intrinsic(vec.get)(FrozenVec.values(self/240), index/241)
 }
 
-fn inherent#FrozenVec#FrozenVec[T]#iter[T](self/240: FrozenVec[T]) -> FnIterator[T] {
-  inherent#Vec#Vec[T]#iter(FrozenVec.values(self/240))
+fn inherent#FrozenVec#FrozenVec[T]#to_vec[T](self/242: FrozenVec[T]) -> Vec[T] {
+  inherent#Vec#Vec[T]#copy(FrozenVec.values(self/242))
+}
+
+fn inherent#FrozenVec#FrozenVec[T]#iter[T](self/243: FrozenVec[T]) -> FnIterator[T] {
+  inherent#Vec#Vec[T]#iter(FrozenVec.values(self/243))
 }
 
 fn inherent#OnceCell#OnceCell[T]#new[T]() -> OnceCell[T] {
   @intrinsic(once_cell.new)()
 }
 
-fn inherent#OnceCell#OnceCell[T]#get_or_init[T](self/241: OnceCell[T], init/242: () -> T) -> T {
-  @intrinsic(once_cell.get_or_init)(self/241, init/242)
+fn inherent#OnceCell#OnceCell[T]#get_or_init[T](self/244: OnceCell[T], init/245: () -> T) -> T {
+  @intrinsic(once_cell.get_or_init)(self/244, init/245)
 }
 
-fn trait_impl#IntoIterator#Vec[T]#into_iter[T](self/243: Vec[T]) -> FnIterator[T] {
-  inherent#Vec#Vec[T]#iter(self/243)
+fn trait_impl#IntoIterator#Vec[T]#into_iter[T](self/246: Vec[T]) -> FnIterator[T] {
+  inherent#Vec#Vec[T]#iter(self/246)
 }
 
-fn inherent#Slice#Slice[T]#get[T](self/244: Slice[T], index/245: int) -> T {
-  @intrinsic(slice.get)(self/244, index/245)
+fn inherent#Slice#Slice[T]#get[T](self/247: Slice[T], index/248: int) -> T {
+  @intrinsic(slice.get)(self/247, index/248)
 }
 
-fn inherent#Slice#Slice[T]#len[T](self/246: Slice[T]) -> int {
-  @intrinsic(slice.len)(self/246)
+fn inherent#Slice#Slice[T]#len[T](self/249: Slice[T]) -> int {
+  @intrinsic(slice.len)(self/249)
 }
 
-fn inherent#Slice#Slice[T]#sub[T](self/247: Slice[T], start/248: int, end/249: int) -> Slice[T] {
-  @intrinsic(slice.sub)(self/247, start/248, end/249)
+fn inherent#Slice#Slice[T]#sub[T](self/250: Slice[T], start/251: int, end/252: int) -> Slice[T] {
+  @intrinsic(slice.sub)(self/250, start/251, end/252)
 }
 
-fn inherent#Slice#Slice[T]#to_vec[T](self/250: Slice[T]) -> Vec[T] {
-  let result/251 = inherent#Vec#Vec[T]#with_capacity(inherent#Slice#Slice[T]#len(self/250)) in
-  let index/252 = 0 in
-  let _wild151 =
-    while (index/252 < inherent#Slice#Slice[T]#len(self/250)) {
+fn inherent#Slice#Slice[T]#to_vec[T](self/253: Slice[T]) -> Vec[T] {
+  let result/254 = inherent#Vec#Vec[T]#with_capacity(inherent#Slice#Slice[T]#len(self/253)) in
+  let index/255 = 0 in
+  let _wild156 =
+    while (index/255 < inherent#Slice#Slice[T]#len(self/253)) {
         {
-          let _wild147 =
-            inherent#Vec#Vec[T]#push(result/251, @intrinsic(slice.get)(self/250, index/252)) in
-          let _wild150 =
+          let _wild152 =
+            inherent#Vec#Vec[T]#push(result/254, @intrinsic(slice.get)(self/253, index/255)) in
+          let _wild155 =
             {
-              let compound_old148 = index/252 in
-              let compound_value149 = 1 in
-              index/252 = (compound_old148 + compound_value149)
+              let compound_old153 = index/255 in
+              let compound_value154 = 1 in
+              index/255 = (compound_old153 + compound_value154)
             } in
         }
     } in
-  result/251
+  result/254
 }
 
-fn inherent#Slice#Slice[T]#iter[T](self/253: Slice[T]) -> FnIterator[T] {
-  let index/254 = @intrinsic(ref.new)(0) in
-  let len/255 = inherent#Slice#Slice[T]#len(self/253) in
+fn inherent#Slice#Slice[T]#iter[T](self/256: Slice[T]) -> FnIterator[T] {
+  let index/257 = @intrinsic(ref.new)(0) in
+  let len/258 = inherent#Slice#Slice[T]#len(self/256) in
   inherent#FnIterator#FnIterator#from_fn(
     || => {
-      let current/256 = @intrinsic(ref.get)(index/254) in
-      if (current/256 < len/255) {
+      let current/259 = @intrinsic(ref.get)(index/257) in
+      if (current/259 < len/258) {
           {
-            let value/257 = inherent#Slice#Slice[T]#get(self/253, current/256) in
-            let _wild152 = @intrinsic(ref.set)(index/254, (current/256 + 1)) in
-            Option::Some(value/257)
+            let value/260 = inherent#Slice#Slice[T]#get(self/256, current/259) in
+            let _wild157 = @intrinsic(ref.set)(index/257, (current/259 + 1)) in
+            Option::Some(value/260)
           }
       } else {
           {
@@ -1557,75 +1583,75 @@ fn inherent#Slice#Slice[T]#iter[T](self/253: Slice[T]) -> FnIterator[T] {
   )
 }
 
-fn trait_impl#IntoIterator#Slice[T]#into_iter[T](self/258: Slice[T]) -> FnIterator[T] {
-  inherent#Slice#Slice[T]#iter(self/258)
+fn trait_impl#IntoIterator#Slice[T]#into_iter[T](self/261: Slice[T]) -> FnIterator[T] {
+  inherent#Slice#Slice[T]#iter(self/261)
 }
 
 fn inherent#HashMap#HashMap[K,V]#new[K, V]() -> HashMap[K, V] {
   @intrinsic(hashmap.new)()
 }
 
-fn inherent#HashMap#HashMap[K,V]#get[K, V](self/259: HashMap[K, V], key/260: K) -> Option[V] {
-  @intrinsic(hashmap.get)(self/259, key/260)
+fn inherent#HashMap#HashMap[K,V]#get[K, V](self/262: HashMap[K, V], key/263: K) -> Option[V] {
+  @intrinsic(hashmap.get)(self/262, key/263)
 }
 
 fn inherent#HashMap#HashMap[K,V]#set[K, V](
-  self/261: HashMap[K, V],
-  key/262: K,
-  value/263: V
+  self/264: HashMap[K, V],
+  key/265: K,
+  value/266: V
 ) -> unit {
-  @intrinsic(hashmap.set)(self/261, key/262, value/263)
+  @intrinsic(hashmap.set)(self/264, key/265, value/266)
 }
 
-fn inherent#HashMap#HashMap[K,V]#remove[K, V](self/264: HashMap[K, V], key/265: K) -> unit {
-  @intrinsic(hashmap.remove)(self/264, key/265)
+fn inherent#HashMap#HashMap[K,V]#remove[K, V](self/267: HashMap[K, V], key/268: K) -> unit {
+  @intrinsic(hashmap.remove)(self/267, key/268)
 }
 
-fn inherent#HashMap#HashMap[K,V]#len[K, V](self/266: HashMap[K, V]) -> int {
-  @intrinsic(hashmap.len)(self/266)
+fn inherent#HashMap#HashMap[K,V]#len[K, V](self/269: HashMap[K, V]) -> int {
+  @intrinsic(hashmap.len)(self/269)
 }
 
-fn inherent#HashMap#HashMap[K,V]#contains[K, V](self/267: HashMap[K, V], key/268: K) -> bool {
-  @intrinsic(hashmap.contains)(self/267, key/268)
+fn inherent#HashMap#HashMap[K,V]#contains[K, V](self/270: HashMap[K, V], key/271: K) -> bool {
+  @intrinsic(hashmap.contains)(self/270, key/271)
 }
 
-fn inherent#HashMap#HashMap[K,V]#entries[K, V](self/269: HashMap[K, V]) -> Vec[(K, V)] {
-  @intrinsic(hashmap.entries)(self/269)
+fn inherent#HashMap#HashMap[K,V]#entries[K, V](self/272: HashMap[K, V]) -> Vec[(K, V)] {
+  @intrinsic(hashmap.entries)(self/272)
 }
 
-fn inherent#Ref#Ref[T]#new[T](value/270: T) -> Ref[T] {
-  @intrinsic(ref.new)(value/270)
+fn inherent#Ref#Ref[T]#new[T](value/273: T) -> Ref[T] {
+  @intrinsic(ref.new)(value/273)
 }
 
-fn inherent#Ref#Ref[T]#get[T](self/271: Ref[T]) -> T {
-  @intrinsic(ref.get)(self/271)
+fn inherent#Ref#Ref[T]#get[T](self/274: Ref[T]) -> T {
+  @intrinsic(ref.get)(self/274)
 }
 
-fn inherent#Ref#Ref[T]#set[T](self/272: Ref[T], value/273: T) -> unit {
-  @intrinsic(ref.set)(self/272, value/273)
+fn inherent#Ref#Ref[T]#set[T](self/275: Ref[T], value/276: T) -> unit {
+  @intrinsic(ref.set)(self/275, value/276)
 }
 
-fn inherent#Channel#Channel[T]#new[T](capacity/274: int) -> Channel[T] {
-  @intrinsic(channel.new)(capacity/274)
+fn inherent#Channel#Channel[T]#new[T](capacity/277: int) -> Channel[T] {
+  @intrinsic(channel.new)(capacity/277)
 }
 
-fn inherent#Channel#Channel[T]#send[T](self/275: Channel[T], value/276: T) -> unit {
-  @intrinsic(channel.send)(self/275, value/276)
+fn inherent#Channel#Channel[T]#send[T](self/278: Channel[T], value/279: T) -> unit {
+  @intrinsic(channel.send)(self/278, value/279)
 }
 
-fn inherent#Channel#Channel[T]#recv[T](self/277: Channel[T]) -> Option[T] {
-  let mtmp153 = @intrinsic(channel.recv)(self/277) in
+fn inherent#Channel#Channel[T]#recv[T](self/280: Channel[T]) -> Option[T] {
+  let mtmp158 = @intrinsic(channel.recv)(self/280) in
   {
-    let x154 = mtmp153.0 in
-    let x155 = mtmp153.1 in
+    let x159 = mtmp158.0 in
+    let x160 = mtmp158.1 in
     {
-      let ok/279 = x155 in
+      let ok/282 = x160 in
       {
-        let value/278 = x154 in
+        let value/281 = x159 in
         {
-          if ok/279 {
+          if ok/282 {
               {
-                Option::Some(value/278)
+                Option::Some(value/281)
               }
           } else {
               {
@@ -1638,64 +1664,64 @@ fn inherent#Channel#Channel[T]#recv[T](self/277: Channel[T]) -> Option[T] {
   }
 }
 
-fn inherent#Channel#Channel[T]#close[T](self/280: Channel[T]) -> unit {
-  @intrinsic(channel.close)(self/280)
+fn inherent#Channel#Channel[T]#close[T](self/283: Channel[T]) -> unit {
+  @intrinsic(channel.close)(self/283)
 }
 
-fn trait_impl#ToString#uint#to_string(self/281: uint) -> string {
-  @runtime(core.uint_to_string)(self/281)
+fn trait_impl#ToString#uint#to_string(self/284: uint) -> string {
+  @runtime(core.uint_to_string)(self/284)
 }
 
-fn trait_impl#Debug#uint#debug(self/282: uint) -> string {
-  trait_call[ToString::to_string](self/282)
+fn trait_impl#Debug#uint#debug(self/285: uint) -> string {
+  trait_call[ToString::to_string](self/285)
 }
 
-fn trait_impl#PartialEq#uint#eq(self/283: uint, other/284: uint) -> bool {
-  (self/283 == other/284)
+fn trait_impl#PartialEq#uint#eq(self/286: uint, other/287: uint) -> bool {
+  (self/286 == other/287)
 }
 
 fn trait_impl#Eq#uint#__marker() -> unit {
   ()
 }
 
-fn trait_impl#Hash#uint#hash(self/285: uint) -> uint64 {
-  @runtime(core.uint_hash)(self/285)
+fn trait_impl#Hash#uint#hash(self/288: uint) -> uint64 {
+  @runtime(core.uint_hash)(self/288)
 }
 
-fn inherent#string#string#starts_with(self/286: string, prefix/287: string) -> bool {
-  if if (inherent#string#string#byte_len(prefix/287) <= inherent#string#string#byte_len(self/286)) {
-      inherent#string#string#is_char_boundary(self/286, inherent#string#string#byte_len(prefix/287))
+fn inherent#string#string#starts_with(self/289: string, prefix/290: string) -> bool {
+  if if (inherent#string#string#byte_len(prefix/290) <= inherent#string#string#byte_len(self/289)) {
+      inherent#string#string#is_char_boundary(self/289, inherent#string#string#byte_len(prefix/290))
   } else {
       false
   } {
       (inherent#string#string#byte_slice(
-        self/286,
+        self/289,
         0,
-        inherent#string#string#byte_len(prefix/287)
+        inherent#string#string#byte_len(prefix/290)
       ) ==
-        prefix/287)
+        prefix/290)
   } else {
       false
   }
 }
 
-fn inherent#string#string#ends_with(self/288: string, suffix/289: string) -> bool {
-  if (inherent#string#string#byte_len(suffix/289) > inherent#string#string#byte_len(self/288)) {
+fn inherent#string#string#ends_with(self/291: string, suffix/292: string) -> bool {
+  if (inherent#string#string#byte_len(suffix/292) > inherent#string#string#byte_len(self/291)) {
       {
         false
       }
   } else {
       {
-        let start/290 =
-          (inherent#string#string#byte_len(self/288) -
-            inherent#string#string#byte_len(suffix/289)) in
-        if inherent#string#string#is_char_boundary(self/288, start/290) {
+        let start/293 =
+          (inherent#string#string#byte_len(self/291) -
+            inherent#string#string#byte_len(suffix/292)) in
+        if inherent#string#string#is_char_boundary(self/291, start/293) {
             (inherent#string#string#byte_slice(
-              self/288,
-              start/290,
-              inherent#string#string#byte_len(self/288)
+              self/291,
+              start/293,
+              inherent#string#string#byte_len(self/291)
             ) ==
-              suffix/289)
+              suffix/292)
         } else {
             false
         }
@@ -1703,59 +1729,59 @@ fn inherent#string#string#ends_with(self/288: string, suffix/289: string) -> boo
   }
 }
 
-fn inherent#string#string#contains(self/291: string, expected/292: string) -> bool {
-  if (inherent#string#string#byte_len(expected/292) == 0) {
+fn inherent#string#string#contains(self/294: string, expected/295: string) -> bool {
+  if (inherent#string#string#byte_len(expected/295) == 0) {
       {
         true
       }
   } else {
-      if (inherent#string#string#byte_len(expected/292) >
-        inherent#string#string#byte_len(self/291)) {
+      if (inherent#string#string#byte_len(expected/295) >
+        inherent#string#string#byte_len(self/294)) {
           {
             false
           }
       } else {
           {
-            let _wild159 =
+            let _wild164 =
               {
-                let for_iter156 =
+                let for_iter161 =
                   trait_call[IntoIterator::into_iter](
                     __goml_builtin_range(
                       0,
-                      ((inherent#string#string#byte_len(self/291) -
-                        inherent#string#string#byte_len(expected/292)) +
+                      ((inherent#string#string#byte_len(self/294) -
+                        inherent#string#string#byte_len(expected/295)) +
                         1)
                     )
                   ) in
                 while true {
                     {
-                      let for_next157 = trait_call[Iterator::next](for_iter156) in
-                      match for_next157 {
+                      let for_next162 = trait_call[Iterator::next](for_iter161) in
+                      match for_next162 {
                         Option::None => {
                           break
                         },
-                        Option::Some(x158) => {
+                        Option::Some(x163) => {
                           {
-                            let x158 = Option::Some._0(for_next157) in
+                            let x163 = Option::Some._0(for_next162) in
                             {
-                              let start/293 = x158 in
+                              let start/296 = x163 in
                               {
-                                let end/294 =
-                                  (start/293 + inherent#string#string#byte_len(expected/292)) in
+                                let end/297 =
+                                  (start/296 + inherent#string#string#byte_len(expected/295)) in
                                 if if if inherent#string#string#is_char_boundary(
-                                  self/291,
-                                  start/293
+                                  self/294,
+                                  start/296
                                 ) {
-                                    inherent#string#string#is_char_boundary(self/291, end/294)
+                                    inherent#string#string#is_char_boundary(self/294, end/297)
                                 } else {
                                     false
                                 } {
                                     (inherent#string#string#byte_slice(
-                                      self/291,
-                                      start/293,
-                                      end/294
+                                      self/294,
+                                      start/296,
+                                      end/297
                                     ) ==
-                                      expected/292)
+                                      expected/295)
                                 } else {
                                     false
                                 } {
@@ -1781,12 +1807,12 @@ fn inherent#string#string#contains(self/291: string, expected/292: string) -> bo
   }
 }
 
-fn inherent#Option#Option[T]#is_some[T](self/295: Option[T]) -> bool {
-  match self/295 {
+fn inherent#Option#Option[T]#is_some[T](self/298: Option[T]) -> bool {
+  match self/298 {
     Option::None => {
       false
     },
-    Option::Some(x160) => {
+    Option::Some(x165) => {
       {
         true
       }
@@ -1794,37 +1820,20 @@ fn inherent#Option#Option[T]#is_some[T](self/295: Option[T]) -> bool {
   }
 }
 
-fn inherent#Option#Option[T]#is_none[T](self/296: Option[T]) -> bool {
-  (!inherent#Option#Option[T]#is_some(self/296))
+fn inherent#Option#Option[T]#is_none[T](self/299: Option[T]) -> bool {
+  (!inherent#Option#Option[T]#is_some(self/299))
 }
 
-fn inherent#Option#Option[T]#unwrap_or[T](self/297: Option[T], fallback/298: T) -> T {
-  match self/297 {
-    Option::None => {
-      fallback/298
-    },
-    Option::Some(x161) => {
-      {
-        let x161 = Option::Some._0(self/297) in
-        {
-          let value/299 = x161 in
-          value/299
-        }
-      }
-    },
-  }
-}
-
-fn inherent#Option#Option[T]#unwrap_or_else[T](self/300: Option[T], fallback/301: () -> T) -> T {
+fn inherent#Option#Option[T]#unwrap_or[T](self/300: Option[T], fallback/301: T) -> T {
   match self/300 {
     Option::None => {
-      fallback/301()
+      fallback/301
     },
-    Option::Some(x162) => {
+    Option::Some(x166) => {
       {
-        let x162 = Option::Some._0(self/300) in
+        let x166 = Option::Some._0(self/300) in
         {
-          let value/302 = x162 in
+          let value/302 = x166 in
           value/302
         }
       }
@@ -1832,14 +1841,31 @@ fn inherent#Option#Option[T]#unwrap_or_else[T](self/300: Option[T], fallback/301
   }
 }
 
-fn inherent#Result#Result[T,E]#is_ok[T, E](self/303: Result[T, E]) -> bool {
+fn inherent#Option#Option[T]#unwrap_or_else[T](self/303: Option[T], fallback/304: () -> T) -> T {
   match self/303 {
-    Result::Ok(x163) => {
+    Option::None => {
+      fallback/304()
+    },
+    Option::Some(x167) => {
+      {
+        let x167 = Option::Some._0(self/303) in
+        {
+          let value/305 = x167 in
+          value/305
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#is_ok[T, E](self/306: Result[T, E]) -> bool {
+  match self/306 {
+    Result::Ok(x168) => {
       {
         true
       }
     },
-    Result::Err(x164) => {
+    Result::Err(x169) => {
       {
         false
       }
@@ -1847,66 +1873,66 @@ fn inherent#Result#Result[T,E]#is_ok[T, E](self/303: Result[T, E]) -> bool {
   }
 }
 
-fn inherent#Result#Result[T,E]#is_err[T, E](self/304: Result[T, E]) -> bool {
-  (!inherent#Result#Result[T,E]#is_ok(self/304))
+fn inherent#Result#Result[T,E]#is_err[T, E](self/307: Result[T, E]) -> bool {
+  (!inherent#Result#Result[T,E]#is_ok(self/307))
 }
 
-fn inherent#Result#Result[T,E]#unwrap_or[T, E](self/305: Result[T, E], fallback/306: T) -> T {
-  match self/305 {
-    Result::Ok(x165) => {
+fn inherent#Result#Result[T,E]#unwrap_or[T, E](self/308: Result[T, E], fallback/309: T) -> T {
+  match self/308 {
+    Result::Ok(x170) => {
       {
-        let x165 = Result::Ok._0(self/305) in
+        let x170 = Result::Ok._0(self/308) in
         {
-          let value/307 = x165 in
-          value/307
+          let value/310 = x170 in
+          value/310
         }
       }
     },
-    Result::Err(x166) => {
+    Result::Err(x171) => {
       {
-        fallback/306
+        fallback/309
       }
     },
   }
 }
 
 fn inherent#Result#Result[T,E]#unwrap_or_else[T, E](
-  self/308: Result[T, E],
-  fallback/309: (E) -> T
+  self/311: Result[T, E],
+  fallback/312: (E) -> T
 ) -> T {
-  match self/308 {
-    Result::Ok(x167) => {
+  match self/311 {
+    Result::Ok(x172) => {
       {
-        let x167 = Result::Ok._0(self/308) in
+        let x172 = Result::Ok._0(self/311) in
         {
-          let value/310 = x167 in
-          value/310
+          let value/313 = x172 in
+          value/313
         }
       }
     },
-    Result::Err(x168) => {
+    Result::Err(x173) => {
       {
-        let x168 = Result::Err._0(self/308) in
+        let x173 = Result::Err._0(self/311) in
         {
-          let error/311 = x168 in
-          fallback/309(error/311)
+          let error/314 = x173 in
+          fallback/312(error/314)
         }
       }
     },
   }
 }
 
-fn inherent#Option#Option[T]#map[T, U](self/312: Option[T], map_fn/313: (T) -> U) -> Option[U] {
-  match self/312 {
+fn inherent#Option#Option[T]#map[T, U](self/315: Option[T], map_fn/316: (T) -> U) -> Option[U] {
+  match self/315 {
     Option::None => {
       Option::None
     },
-    Option::Some(x169) => {
+    Option::Some(x174) => {
       {
-        let x169 = Option::Some._0(self/312) in
+        let x174 = Option::Some._0(self/315) in
         {
-          let value/314 = x169 in
-          Option::Some(map_fn/313(value/314))
+          let value/317 = x174 in
+          Option::Some(map_fn/316(value/317))
         }
       }
     },
@@ -1914,62 +1940,62 @@ fn inherent#Option#Option[T]#map[T, U](self/312: Option[T], map_fn/313: (T) -> U
 }
 
 fn inherent#Option#Option[T]#and_then[T, U](
-  self/315: Option[T],
-  next/316: (T) -> Option[U]
+  self/318: Option[T],
+  next/319: (T) -> Option[U]
 ) -> Option[U] {
-  match self/315 {
+  match self/318 {
     Option::None => {
       Option::None
     },
-    Option::Some(x170) => {
+    Option::Some(x175) => {
       {
-        let x170 = Option::Some._0(self/315) in
+        let x175 = Option::Some._0(self/318) in
         {
-          let value/317 = x170 in
-          next/316(value/317)
+          let value/320 = x175 in
+          next/319(value/320)
         }
       }
     },
   }
 }
 
-fn inherent#Option#Option[T]#ok_or[T, E](self/318: Option[T], error/319: E) -> Result[T, E] {
-  match self/318 {
+fn inherent#Option#Option[T]#ok_or[T, E](self/321: Option[T], error/322: E) -> Result[T, E] {
+  match self/321 {
     Option::None => {
-      Result::Err(error/319)
+      Result::Err(error/322)
     },
-    Option::Some(x171) => {
+    Option::Some(x176) => {
       {
-        let x171 = Option::Some._0(self/318) in
+        let x176 = Option::Some._0(self/321) in
         {
-          let value/320 = x171 in
-          Result::Ok(value/320)
+          let value/323 = x176 in
+          Result::Ok(value/323)
         }
       }
     },
   }
 }
 
-fn inherent#Result#Result[T,E]#map[T, E, U](self/321: Result[T, E], map_fn/322: (T) -> U) -> Result[
+fn inherent#Result#Result[T,E]#map[T, E, U](self/324: Result[T, E], map_fn/325: (T) -> U) -> Result[
   U,
   E
 ] {
-  match self/321 {
-    Result::Ok(x172) => {
+  match self/324 {
+    Result::Ok(x177) => {
       {
-        let x172 = Result::Ok._0(self/321) in
+        let x177 = Result::Ok._0(self/324) in
         {
-          let value/323 = x172 in
-          Result::Ok(map_fn/322(value/323))
+          let value/326 = x177 in
+          Result::Ok(map_fn/325(value/326))
         }
       }
     },
-    Result::Err(x173) => {
+    Result::Err(x178) => {
       {
-        let x173 = Result::Err._0(self/321) in
+        let x178 = Result::Err._0(self/324) in
         {
-          let error/324 = x173 in
-          Result::Err(error/324)
+          let error/327 = x178 in
+          Result::Err(error/327)
         }
       }
     },
@@ -1977,25 +2003,25 @@ fn inherent#Result#Result[T,E]#map[T, E, U](self/321: Result[T, E], map_fn/322: 
 }
 
 fn inherent#Result#Result[T,E]#map_err[T, E, F](
-  self/325: Result[T, E],
-  map_fn/326: (E) -> F
+  self/328: Result[T, E],
+  map_fn/329: (E) -> F
 ) -> Result[T, F] {
-  match self/325 {
-    Result::Ok(x174) => {
+  match self/328 {
+    Result::Ok(x179) => {
       {
-        let x174 = Result::Ok._0(self/325) in
+        let x179 = Result::Ok._0(self/328) in
         {
-          let value/327 = x174 in
-          Result::Ok(value/327)
+          let value/330 = x179 in
+          Result::Ok(value/330)
         }
       }
     },
-    Result::Err(x175) => {
+    Result::Err(x180) => {
       {
-        let x175 = Result::Err._0(self/325) in
+        let x180 = Result::Err._0(self/328) in
         {
-          let error/328 = x175 in
-          Result::Err(map_fn/326(error/328))
+          let error/331 = x180 in
+          Result::Err(map_fn/329(error/331))
         }
       }
     },
@@ -2003,40 +2029,40 @@ fn inherent#Result#Result[T,E]#map_err[T, E, F](
 }
 
 fn inherent#Result#Result[T,E]#and_then[T, E, U](
-  self/329: Result[T, E],
-  next/330: (T) -> Result[U, E]
+  self/332: Result[T, E],
+  next/333: (T) -> Result[U, E]
 ) -> Result[U, E] {
-  match self/329 {
-    Result::Ok(x176) => {
+  match self/332 {
+    Result::Ok(x181) => {
       {
-        let x176 = Result::Ok._0(self/329) in
+        let x181 = Result::Ok._0(self/332) in
         {
-          let value/331 = x176 in
-          next/330(value/331)
+          let value/334 = x181 in
+          next/333(value/334)
         }
       }
     },
-    Result::Err(x177) => {
+    Result::Err(x182) => {
       {
-        let x177 = Result::Err._0(self/329) in
+        let x182 = Result::Err._0(self/332) in
         {
-          let error/332 = x177 in
-          Result::Err(error/332)
+          let error/335 = x182 in
+          Result::Err(error/335)
         }
       }
     },
   }
 }
 
-fn __goml_builtin_range(start/333: int, end/334: int) -> FnIterator[int] {
-  let current/335 = @intrinsic(ref.new)(start/333) in
+fn __goml_builtin_range(start/336: int, end/337: int) -> FnIterator[int] {
+  let current/338 = @intrinsic(ref.new)(start/336) in
   inherent#FnIterator#FnIterator#from_fn(
     || => {
-      let value/336 = @intrinsic(ref.get)(current/335) in
-      if (value/336 < end/334) {
+      let value/339 = @intrinsic(ref.get)(current/338) in
+      if (value/339 < end/337) {
           {
-            let _wild178 = @intrinsic(ref.set)(current/335, (value/336 + 1)) in
-            Option::Some(value/336)
+            let _wild183 = @intrinsic(ref.set)(current/338, (value/339 + 1)) in
+            Option::Some(value/339)
           }
       } else {
           {
@@ -2047,33 +2073,33 @@ fn __goml_builtin_range(start/333: int, end/334: int) -> FnIterator[int] {
   )
 }
 
-fn __goml_builtin_range_inclusive(start/337: int, end/338: int) -> FnIterator[int] {
-  let current/339 = @intrinsic(ref.new)(start/337) in
-  let finished/340 = @intrinsic(ref.new)(false) in
+fn __goml_builtin_range_inclusive(start/340: int, end/341: int) -> FnIterator[int] {
+  let current/342 = @intrinsic(ref.new)(start/340) in
+  let finished/343 = @intrinsic(ref.new)(false) in
   inherent#FnIterator#FnIterator#from_fn(
     || => {
-      if if @intrinsic(ref.get)(finished/340) {
+      if if @intrinsic(ref.get)(finished/343) {
           true
       } else {
-          (@intrinsic(ref.get)(current/339) > end/338)
+          (@intrinsic(ref.get)(current/342) > end/341)
       } {
           {
             Option::None
           }
       } else {
           {
-            let value/341 = @intrinsic(ref.get)(current/339) in
-            let _wild181 =
-              if (value/341 == end/338) {
+            let value/344 = @intrinsic(ref.get)(current/342) in
+            let _wild186 =
+              if (value/344 == end/341) {
                   {
-                    let _wild179 = @intrinsic(ref.set)(finished/340, true) in
+                    let _wild184 = @intrinsic(ref.set)(finished/343, true) in
                   }
               } else {
                   {
-                    let _wild180 = @intrinsic(ref.set)(current/339, (value/341 + 1)) in
+                    let _wild185 = @intrinsic(ref.set)(current/342, (value/344 + 1)) in
                   }
               } in
-            Option::Some(value/341)
+            Option::Some(value/344)
           }
       }
     }
@@ -4010,40 +4036,40 @@ fn trait_impl#std::cmp::PartialOrd#Version#partial_cmp(self/2: Version, other/3:
   std::cmp::Ordering
 ] {
   {
-    let mtmp182 =
+    let mtmp187 =
       trait_call[std::cmp::PartialOrd::partial_cmp](
         Version.major(self/2),
         Version.major(other/3)
       ) in
-    match mtmp182 {
+    match mtmp187 {
       Option::None => {
         Option::None
       },
-      Option::Some(x183) => {
+      Option::Some(x188) => {
         {
-          let x183 = Option::Some._0(mtmp182) in
-          match x183 {
+          let x188 = Option::Some._0(mtmp187) in
+          match x188 {
             std::cmp::Ordering::Equal => {
               {
-                let mtmp184 =
+                let mtmp189 =
                   trait_call[std::cmp::PartialOrd::partial_cmp](
                     Version.minor(self/2),
                     Version.minor(other/3)
                   ) in
-                match mtmp184 {
+                match mtmp189 {
                   Option::None => {
                     Option::None
                   },
-                  Option::Some(x185) => {
+                  Option::Some(x190) => {
                     {
-                      let x185 = Option::Some._0(mtmp184) in
-                      match x185 {
+                      let x190 = Option::Some._0(mtmp189) in
+                      match x190 {
                         std::cmp::Ordering::Equal => {
                           Option::Some(std::cmp::Ordering::Equal)
                         },
                         _ =>
                           {
-                            let #derive0_ordering/4 = x185 in
+                            let #derive0_ordering/4 = x190 in
                             Option::Some(#derive0_ordering/4)
                           },
                       }
@@ -4054,7 +4080,7 @@ fn trait_impl#std::cmp::PartialOrd#Version#partial_cmp(self/2: Version, other/3:
             },
             _ =>
               {
-                let #derive1_ordering/5 = x183 in
+                let #derive1_ordering/5 = x188 in
                 Option::Some(#derive1_ordering/5)
               },
           }
@@ -4114,14 +4140,14 @@ fn trait_impl#std::cmp::Ord#Version#cmp(self/6: Version, other/7: Version) -> st
 
 fn trait_impl#Debug#Version#debug(self/10: Version) -> string {
   {
-    let mtmp186 = self/10 in
+    let mtmp191 = self/10 in
     {
-      let x187 = Version.major(mtmp186) in
-      let x188 = Version.minor(mtmp186) in
+      let x192 = Version.major(mtmp191) in
+      let x193 = Version.minor(mtmp191) in
       {
-        let #derive1_field/12 = x188 in
+        let #derive1_field/12 = x193 in
         {
-          let #derive0_field/11 = x187 in
+          let #derive0_field/11 = x192 in
           {
             (((((("Version { " + "major: ") + trait_call[Debug::debug](#derive0_field/11)) + ", ") +
               "minor: ") +
@@ -4136,36 +4162,36 @@ fn trait_impl#Debug#Version#debug(self/10: Version) -> string {
 
 fn trait_impl#PartialEq#Level#eq(self/13: Level, other/14: Level) -> bool {
   {
-    let mtmp189 = (self/13, other/14) in
+    let mtmp194 = (self/13, other/14) in
     {
-      let x190 = mtmp189.0 in
-      let x191 = mtmp189.1 in
-      match x191 {
+      let x195 = mtmp194.0 in
+      let x196 = mtmp194.1 in
+      match x196 {
         Level::Low => {
-          match x190 {
+          match x195 {
             Level::Low => {
               true
             },
             _ => false,
           }
         },
-        Level::Medium(x192, x193) => {
+        Level::Medium(x197, x198) => {
           {
-            let x192 = Level::Medium._0(x191) in
-            let x193 = Level::Medium._1(x191) in
-            match x190 {
-              Level::Medium(x200, x201) => {
+            let x197 = Level::Medium._0(x196) in
+            let x198 = Level::Medium._1(x196) in
+            match x195 {
+              Level::Medium(x205, x206) => {
                 {
-                  let x200 = Level::Medium._0(x190) in
-                  let x201 = Level::Medium._1(x190) in
+                  let x205 = Level::Medium._0(x195) in
+                  let x206 = Level::Medium._1(x195) in
                   {
-                    let #derive2_left/16 = x201 in
+                    let #derive2_left/16 = x206 in
                     {
-                      let #derive0_left/15 = x200 in
+                      let #derive0_left/15 = x205 in
                       {
-                        let #derive3_right/18 = x193 in
+                        let #derive3_right/18 = x198 in
                         {
-                          let #derive1_right/17 = x192 in
+                          let #derive1_right/17 = x197 in
                           if if true {
                               trait_call[PartialEq::eq](#derive0_left/15, #derive1_right/17)
                           } else {
@@ -4185,23 +4211,23 @@ fn trait_impl#PartialEq#Level#eq(self/13: Level, other/14: Level) -> bool {
             }
           }
         },
-        Level::High(x194, x195) => {
+        Level::High(x199, x200) => {
           {
-            let x194 = Level::High._0(x191) in
-            let x195 = Level::High._1(x191) in
-            match x190 {
-              Level::High(x206, x207) => {
+            let x199 = Level::High._0(x196) in
+            let x200 = Level::High._1(x196) in
+            match x195 {
+              Level::High(x211, x212) => {
                 {
-                  let x206 = Level::High._0(x190) in
-                  let x207 = Level::High._1(x190) in
+                  let x211 = Level::High._0(x195) in
+                  let x212 = Level::High._1(x195) in
                   {
-                    let #derive6_left/20 = x207 in
+                    let #derive6_left/20 = x212 in
                     {
-                      let #derive4_left/19 = x206 in
+                      let #derive4_left/19 = x211 in
                       {
-                        let #derive7_right/22 = x195 in
+                        let #derive7_right/22 = x200 in
                         {
-                          let #derive5_right/21 = x194 in
+                          let #derive5_right/21 = x199 in
                           if if true {
                               trait_call[PartialEq::eq](#derive4_left/19, #derive5_right/21)
                           } else {
@@ -4239,12 +4265,12 @@ fn trait_impl#std::cmp::PartialOrd#Level#partial_cmp(self/23: Level, other/24: L
         Level::Low => {
           0
         },
-        Level::Medium(x208, x209) => {
+        Level::Medium(x213, x214) => {
           {
             1
           }
         },
-        Level::High(x210, x211) => {
+        Level::High(x215, x216) => {
           {
             2
           }
@@ -4255,12 +4281,12 @@ fn trait_impl#std::cmp::PartialOrd#Level#partial_cmp(self/23: Level, other/24: L
         Level::Low => {
           0
         },
-        Level::Medium(x212, x213) => {
+        Level::Medium(x217, x218) => {
           {
             1
           }
         },
-        Level::High(x214, x215) => {
+        Level::High(x219, x220) => {
           {
             2
           }
@@ -4273,71 +4299,71 @@ fn trait_impl#std::cmp::PartialOrd#Level#partial_cmp(self/23: Level, other/24: L
             Option::Some(std::cmp::Ordering::Greater)
         } else {
             {
-              let mtmp216 = (self/23, other/24) in
+              let mtmp221 = (self/23, other/24) in
               {
-                let x217 = mtmp216.0 in
-                let x218 = mtmp216.1 in
-                match x218 {
+                let x222 = mtmp221.0 in
+                let x223 = mtmp221.1 in
+                match x223 {
                   Level::Low => {
-                    match x217 {
+                    match x222 {
                       Level::Low => {
                         Option::Some(std::cmp::Ordering::Equal)
                       },
                       _ => Option::Some(std::cmp::Ordering::Equal),
                     }
                   },
-                  Level::Medium(x219, x220) => {
+                  Level::Medium(x224, x225) => {
                     {
-                      let x219 = Level::Medium._0(x218) in
-                      let x220 = Level::Medium._1(x218) in
-                      match x217 {
-                        Level::Medium(x227, x228) => {
+                      let x224 = Level::Medium._0(x223) in
+                      let x225 = Level::Medium._1(x223) in
+                      match x222 {
+                        Level::Medium(x232, x233) => {
                           {
-                            let x227 = Level::Medium._0(x217) in
-                            let x228 = Level::Medium._1(x217) in
+                            let x232 = Level::Medium._0(x222) in
+                            let x233 = Level::Medium._1(x222) in
                             {
-                              let #derive2_left/28 = x228 in
+                              let #derive2_left/28 = x233 in
                               {
-                                let #derive5_left/27 = x227 in
+                                let #derive5_left/27 = x232 in
                                 {
-                                  let #derive3_right/30 = x220 in
+                                  let #derive3_right/30 = x225 in
                                   {
-                                    let #derive6_right/29 = x219 in
+                                    let #derive6_right/29 = x224 in
                                     {
-                                      let mtmp231 =
+                                      let mtmp236 =
                                         trait_call[std::cmp::PartialOrd::partial_cmp](
                                           #derive5_left/27,
                                           #derive6_right/29
                                         ) in
-                                      match mtmp231 {
+                                      match mtmp236 {
                                         Option::None => {
                                           Option::None
                                         },
-                                        Option::Some(x232) => {
+                                        Option::Some(x237) => {
                                           {
-                                            let x232 = Option::Some._0(mtmp231) in
-                                            match x232 {
+                                            let x237 = Option::Some._0(mtmp236) in
+                                            match x237 {
                                               std::cmp::Ordering::Equal => {
                                                 {
-                                                  let mtmp233 =
+                                                  let mtmp238 =
                                                     trait_call[std::cmp::PartialOrd::partial_cmp](
                                                       #derive2_left/28,
                                                       #derive3_right/30
                                                     ) in
-                                                  match mtmp233 {
+                                                  match mtmp238 {
                                                     Option::None => {
                                                       Option::None
                                                     },
-                                                    Option::Some(x234) => {
+                                                    Option::Some(x239) => {
                                                       {
-                                                        let x234 = Option::Some._0(mtmp233) in
-                                                        match x234 {
+                                                        let x239 = Option::Some._0(mtmp238) in
+                                                        match x239 {
                                                           std::cmp::Ordering::Equal => {
                                                             Option::Some(std::cmp::Ordering::Equal)
                                                           },
                                                           _ =>
                                                             {
-                                                              let #derive4_ordering/31 = x234 in
+                                                              let #derive4_ordering/31 = x239 in
                                                               Option::Some(#derive4_ordering/31)
                                                             },
                                                         }
@@ -4348,7 +4374,7 @@ fn trait_impl#std::cmp::PartialOrd#Level#partial_cmp(self/23: Level, other/24: L
                                               },
                                               _ =>
                                                 {
-                                                  let #derive7_ordering/32 = x232 in
+                                                  let #derive7_ordering/32 = x237 in
                                                   Option::Some(#derive7_ordering/32)
                                                 },
                                             }
@@ -4366,58 +4392,58 @@ fn trait_impl#std::cmp::PartialOrd#Level#partial_cmp(self/23: Level, other/24: L
                       }
                     }
                   },
-                  Level::High(x221, x222) => {
+                  Level::High(x226, x227) => {
                     {
-                      let x221 = Level::High._0(x218) in
-                      let x222 = Level::High._1(x218) in
-                      match x217 {
-                        Level::High(x237, x238) => {
+                      let x226 = Level::High._0(x223) in
+                      let x227 = Level::High._1(x223) in
+                      match x222 {
+                        Level::High(x242, x243) => {
                           {
-                            let x237 = Level::High._0(x217) in
-                            let x238 = Level::High._1(x217) in
+                            let x242 = Level::High._0(x222) in
+                            let x243 = Level::High._1(x222) in
                             {
-                              let #derive8_left/33 = x238 in
+                              let #derive8_left/33 = x243 in
                               {
-                                let #derive11_left/34 = x237 in
+                                let #derive11_left/34 = x242 in
                                 {
-                                  let #derive9_right/35 = x222 in
+                                  let #derive9_right/35 = x227 in
                                   {
-                                    let #derive12_right/36 = x221 in
+                                    let #derive12_right/36 = x226 in
                                     {
-                                      let mtmp239 =
+                                      let mtmp244 =
                                         trait_call[std::cmp::PartialOrd::partial_cmp](
                                           #derive11_left/34,
                                           #derive12_right/36
                                         ) in
-                                      match mtmp239 {
+                                      match mtmp244 {
                                         Option::None => {
                                           Option::None
                                         },
-                                        Option::Some(x240) => {
+                                        Option::Some(x245) => {
                                           {
-                                            let x240 = Option::Some._0(mtmp239) in
-                                            match x240 {
+                                            let x245 = Option::Some._0(mtmp244) in
+                                            match x245 {
                                               std::cmp::Ordering::Equal => {
                                                 {
-                                                  let mtmp241 =
+                                                  let mtmp246 =
                                                     trait_call[std::cmp::PartialOrd::partial_cmp](
                                                       #derive8_left/33,
                                                       #derive9_right/35
                                                     ) in
-                                                  match mtmp241 {
+                                                  match mtmp246 {
                                                     Option::None => {
                                                       Option::None
                                                     },
-                                                    Option::Some(x242) => {
+                                                    Option::Some(x247) => {
                                                       {
-                                                        let x242 = Option::Some._0(mtmp241) in
-                                                        match x242 {
+                                                        let x247 = Option::Some._0(mtmp246) in
+                                                        match x247 {
                                                           std::cmp::Ordering::Equal => {
                                                             Option::Some(std::cmp::Ordering::Equal)
                                                           },
                                                           _ =>
                                                             {
-                                                              let #derive10_ordering/37 = x242 in
+                                                              let #derive10_ordering/37 = x247 in
                                                               Option::Some(#derive10_ordering/37)
                                                             },
                                                         }
@@ -4428,7 +4454,7 @@ fn trait_impl#std::cmp::PartialOrd#Level#partial_cmp(self/23: Level, other/24: L
                                               },
                                               _ =>
                                                 {
-                                                  let #derive13_ordering/38 = x240 in
+                                                  let #derive13_ordering/38 = x245 in
                                                   Option::Some(#derive13_ordering/38)
                                                 },
                                             }
@@ -4477,12 +4503,12 @@ fn trait_impl#std::cmp::Ord#Level#cmp(self/39: Level, other/40: Level) -> std::c
         Level::Low => {
           0
         },
-        Level::Medium(x243, x244) => {
+        Level::Medium(x248, x249) => {
           {
             1
           }
         },
-        Level::High(x245, x246) => {
+        Level::High(x250, x251) => {
           {
             2
           }
@@ -4493,12 +4519,12 @@ fn trait_impl#std::cmp::Ord#Level#cmp(self/39: Level, other/40: Level) -> std::c
         Level::Low => {
           0
         },
-        Level::Medium(x247, x248) => {
+        Level::Medium(x252, x253) => {
           {
             1
           }
         },
-        Level::High(x249, x250) => {
+        Level::High(x254, x255) => {
           {
             2
           }
@@ -4511,36 +4537,36 @@ fn trait_impl#std::cmp::Ord#Level#cmp(self/39: Level, other/40: Level) -> std::c
             std::cmp::Ordering::Greater
         } else {
             {
-              let mtmp251 = (self/39, other/40) in
+              let mtmp256 = (self/39, other/40) in
               {
-                let x252 = mtmp251.0 in
-                let x253 = mtmp251.1 in
-                match x253 {
+                let x257 = mtmp256.0 in
+                let x258 = mtmp256.1 in
+                match x258 {
                   Level::Low => {
-                    match x252 {
+                    match x257 {
                       Level::Low => {
                         std::cmp::Ordering::Equal
                       },
                       _ => std::cmp::Ordering::Equal,
                     }
                   },
-                  Level::Medium(x254, x255) => {
+                  Level::Medium(x259, x260) => {
                     {
-                      let x254 = Level::Medium._0(x253) in
-                      let x255 = Level::Medium._1(x253) in
-                      match x252 {
-                        Level::Medium(x262, x263) => {
+                      let x259 = Level::Medium._0(x258) in
+                      let x260 = Level::Medium._1(x258) in
+                      match x257 {
+                        Level::Medium(x267, x268) => {
                           {
-                            let x262 = Level::Medium._0(x252) in
-                            let x263 = Level::Medium._1(x252) in
+                            let x267 = Level::Medium._0(x257) in
+                            let x268 = Level::Medium._1(x257) in
                             {
-                              let #derive2_left/44 = x263 in
+                              let #derive2_left/44 = x268 in
                               {
-                                let #derive5_left/43 = x262 in
+                                let #derive5_left/43 = x267 in
                                 {
-                                  let #derive3_right/46 = x255 in
+                                  let #derive3_right/46 = x260 in
                                   {
-                                    let #derive6_right/45 = x254 in
+                                    let #derive6_right/45 = x259 in
                                     {
                                       let #derive7_ordering/47 =
                                         trait_call[std::cmp::Ord::cmp](
@@ -4580,23 +4606,23 @@ fn trait_impl#std::cmp::Ord#Level#cmp(self/39: Level, other/40: Level) -> std::c
                       }
                     }
                   },
-                  Level::High(x256, x257) => {
+                  Level::High(x261, x262) => {
                     {
-                      let x256 = Level::High._0(x253) in
-                      let x257 = Level::High._1(x253) in
-                      match x252 {
-                        Level::High(x268, x269) => {
+                      let x261 = Level::High._0(x258) in
+                      let x262 = Level::High._1(x258) in
+                      match x257 {
+                        Level::High(x273, x274) => {
                           {
-                            let x268 = Level::High._0(x252) in
-                            let x269 = Level::High._1(x252) in
+                            let x273 = Level::High._0(x257) in
+                            let x274 = Level::High._1(x257) in
                             {
-                              let #derive8_left/49 = x269 in
+                              let #derive8_left/49 = x274 in
                               {
-                                let #derive11_left/50 = x268 in
+                                let #derive11_left/50 = x273 in
                                 {
-                                  let #derive9_right/51 = x257 in
+                                  let #derive9_right/51 = x262 in
                                   {
-                                    let #derive12_right/52 = x256 in
+                                    let #derive12_right/52 = x261 in
                                     {
                                       let #derive13_ordering/53 =
                                         trait_call[std::cmp::Ord::cmp](
@@ -4649,14 +4675,14 @@ fn trait_impl#Debug#Level#debug(self/55: Level) -> string {
     Level::Low => {
       "Level::Low"
     },
-    Level::Medium(x270, x271) => {
+    Level::Medium(x275, x276) => {
       {
-        let x270 = Level::Medium._0(self/55) in
-        let x271 = Level::Medium._1(self/55) in
+        let x275 = Level::Medium._0(self/55) in
+        let x276 = Level::Medium._1(self/55) in
         {
-          let #derive1_field/57 = x271 in
+          let #derive1_field/57 = x276 in
           {
-            let #derive0_field/56 = x270 in
+            let #derive0_field/56 = x275 in
             (((("Level::Medium(" + trait_call[Debug::debug](#derive0_field/56)) + ", ") +
               trait_call[Debug::debug](#derive1_field/57)) +
               ")")
@@ -4664,14 +4690,14 @@ fn trait_impl#Debug#Level#debug(self/55: Level) -> string {
         }
       }
     },
-    Level::High(x272, x273) => {
+    Level::High(x277, x278) => {
       {
-        let x272 = Level::High._0(self/55) in
-        let x273 = Level::High._1(self/55) in
+        let x277 = Level::High._0(self/55) in
+        let x278 = Level::High._1(self/55) in
         {
-          let #derive3_field/59 = x273 in
+          let #derive3_field/59 = x278 in
           {
-            let #derive2_field/58 = x272 in
+            let #derive2_field/58 = x277 in
             (((((("Level::High { " + "rank: ") + trait_call[Debug::debug](#derive2_field/58)) +
               ", ") +
               "detail: ") +
@@ -4697,25 +4723,25 @@ fn trait_impl#std::cmp::PartialOrd#MaybeNumber#partial_cmp(
   other/63: MaybeNumber
 ) -> Option[std::cmp::Ordering] {
   {
-    let mtmp274 =
+    let mtmp279 =
       trait_call[std::cmp::PartialOrd::partial_cmp](
         MaybeNumber.value(self/62),
         MaybeNumber.value(other/63)
       ) in
-    match mtmp274 {
+    match mtmp279 {
       Option::None => {
         Option::None
       },
-      Option::Some(x275) => {
+      Option::Some(x280) => {
         {
-          let x275 = Option::Some._0(mtmp274) in
-          match x275 {
+          let x280 = Option::Some._0(mtmp279) in
+          match x280 {
             std::cmp::Ordering::Equal => {
               Option::Some(std::cmp::Ordering::Equal)
             },
             _ =>
               {
-                let #derive0_ordering/64 = x275 in
+                let #derive0_ordering/64 = x280 in
                 Option::Some(#derive0_ordering/64)
               },
           }
@@ -4781,55 +4807,55 @@ fn trait_impl#std::cmp::PartialOrd#GenericPair[T]#partial_cmp[T](
   other/68: GenericPair[T]
 ) -> Option[std::cmp::Ordering] {
   {
-    let mtmp276 =
+    let mtmp281 =
       trait_call[std::cmp::PartialOrd::partial_cmp](
         GenericPair.first(self/67),
         GenericPair.first(other/68)
       ) in
-    match mtmp276 {
+    match mtmp281 {
       Option::None => {
         Option::None
       },
-      Option::Some(x277) => {
+      Option::Some(x282) => {
         {
-          let x277 = Option::Some._0(mtmp276) in
-          match x277 {
+          let x282 = Option::Some._0(mtmp281) in
+          match x282 {
             std::cmp::Ordering::Equal => {
               {
-                let mtmp278 =
+                let mtmp283 =
                   trait_call[std::cmp::PartialOrd::partial_cmp](
                     GenericPair.second(self/67),
                     GenericPair.second(other/68)
                   ) in
-                match mtmp278 {
+                match mtmp283 {
                   Option::None => {
                     Option::None
                   },
-                  Option::Some(x279) => {
+                  Option::Some(x284) => {
                     {
-                      let x279 = Option::Some._0(mtmp278) in
-                      match x279 {
+                      let x284 = Option::Some._0(mtmp283) in
+                      match x284 {
                         std::cmp::Ordering::Equal => {
                           {
-                            let mtmp280 =
+                            let mtmp285 =
                               trait_call[std::cmp::PartialOrd::partial_cmp](
                                 GenericPair.nested(self/67),
                                 GenericPair.nested(other/68)
                               ) in
-                            match mtmp280 {
+                            match mtmp285 {
                               Option::None => {
                                 Option::None
                               },
-                              Option::Some(x281) => {
+                              Option::Some(x286) => {
                                 {
-                                  let x281 = Option::Some._0(mtmp280) in
-                                  match x281 {
+                                  let x286 = Option::Some._0(mtmp285) in
+                                  match x286 {
                                     std::cmp::Ordering::Equal => {
                                       Option::Some(std::cmp::Ordering::Equal)
                                     },
                                     _ =>
                                       {
-                                        let #derive0_ordering/69 = x281 in
+                                        let #derive0_ordering/69 = x286 in
                                         Option::Some(#derive0_ordering/69)
                                       },
                                   }
@@ -4840,7 +4866,7 @@ fn trait_impl#std::cmp::PartialOrd#GenericPair[T]#partial_cmp[T](
                         },
                         _ =>
                           {
-                            let #derive1_ordering/70 = x279 in
+                            let #derive1_ordering/70 = x284 in
                             Option::Some(#derive1_ordering/70)
                           },
                       }
@@ -4851,7 +4877,7 @@ fn trait_impl#std::cmp::PartialOrd#GenericPair[T]#partial_cmp[T](
             },
             _ =>
               {
-                let #derive2_ordering/71 = x277 in
+                let #derive2_ordering/71 = x282 in
                 Option::Some(#derive2_ordering/71)
               },
           }
@@ -4928,17 +4954,17 @@ fn trait_impl#std::cmp::Ord#GenericPair[T]#cmp[T](
 
 fn trait_impl#Debug#GenericPair[T]#debug[T](self/77: GenericPair[T]) -> string {
   {
-    let mtmp282 = self/77 in
+    let mtmp287 = self/77 in
     {
-      let x283 = GenericPair.first(mtmp282) in
-      let x284 = GenericPair.second(mtmp282) in
-      let x285 = GenericPair.nested(mtmp282) in
+      let x288 = GenericPair.first(mtmp287) in
+      let x289 = GenericPair.second(mtmp287) in
+      let x290 = GenericPair.nested(mtmp287) in
       {
-        let #derive2_field/80 = x285 in
+        let #derive2_field/80 = x290 in
         {
-          let #derive1_field/79 = x284 in
+          let #derive1_field/79 = x289 in
           {
-            let #derive0_field/78 = x283 in
+            let #derive0_field/78 = x288 in
             {
               ((((((((("GenericPair { " + "first: ") +
                 trait_call[Debug::debug](#derive0_field/78)) +
@@ -4959,13 +4985,13 @@ fn trait_impl#Debug#GenericPair[T]#debug[T](self/77: GenericPair[T]) -> string {
 
 fn trait_impl#PartialEq#Phantom[T]#eq[T](self/81: Phantom[T], other/82: Phantom[T]) -> bool {
   {
-    let mtmp286 = (self/81, other/82) in
+    let mtmp291 = (self/81, other/82) in
     {
-      let x287 = mtmp286.0 in
-      let x288 = mtmp286.1 in
-      match x288 {
+      let x292 = mtmp291.0 in
+      let x293 = mtmp291.1 in
+      match x293 {
         Phantom::First => {
-          match x287 {
+          match x292 {
             Phantom::First => {
               true
             },
@@ -4973,7 +4999,7 @@ fn trait_impl#PartialEq#Phantom[T]#eq[T](self/81: Phantom[T], other/82: Phantom[
           }
         },
         Phantom::Second => {
-          match x287 {
+          match x292 {
             Phantom::Second => {
               true
             },
@@ -5019,13 +5045,13 @@ fn trait_impl#std::cmp::PartialOrd#Phantom[T]#partial_cmp[T](
             Option::Some(std::cmp::Ordering::Greater)
         } else {
             {
-              let mtmp289 = (self/83, other/84) in
+              let mtmp294 = (self/83, other/84) in
               {
-                let x290 = mtmp289.0 in
-                let x291 = mtmp289.1 in
-                match x291 {
+                let x295 = mtmp294.0 in
+                let x296 = mtmp294.1 in
+                match x296 {
                   Phantom::First => {
-                    match x290 {
+                    match x295 {
                       Phantom::First => {
                         Option::Some(std::cmp::Ordering::Equal)
                       },
@@ -5033,7 +5059,7 @@ fn trait_impl#std::cmp::PartialOrd#Phantom[T]#partial_cmp[T](
                     }
                   },
                   Phantom::Second => {
-                    match x290 {
+                    match x295 {
                       Phantom::Second => {
                         Option::Some(std::cmp::Ordering::Equal)
                       },
@@ -5106,13 +5132,13 @@ fn trait_impl#std::cmp::Ord#Phantom[T]#cmp[T](
             std::cmp::Ordering::Greater
         } else {
             {
-              let mtmp292 = (self/87, other/88) in
+              let mtmp297 = (self/87, other/88) in
               {
-                let x293 = mtmp292.0 in
-                let x294 = mtmp292.1 in
-                match x294 {
+                let x298 = mtmp297.0 in
+                let x299 = mtmp297.1 in
+                match x299 {
                   Phantom::First => {
-                    match x293 {
+                    match x298 {
                       Phantom::First => {
                         std::cmp::Ordering::Equal
                       },
@@ -5120,7 +5146,7 @@ fn trait_impl#std::cmp::Ord#Phantom[T]#cmp[T](
                     }
                   },
                   Phantom::Second => {
-                    match x293 {
+                    match x298 {
                       Phantom::Second => {
                         std::cmp::Ordering::Equal
                       },
@@ -5137,22 +5163,22 @@ fn trait_impl#std::cmp::Ord#Phantom[T]#cmp[T](
 
 fn trait_impl#PartialEq#PartialLevel#eq(self/91: PartialLevel, other/92: PartialLevel) -> bool {
   {
-    let mtmp295 = (self/91, other/92) in
+    let mtmp300 = (self/91, other/92) in
     {
-      let x296 = mtmp295.0 in
-      let x297 = mtmp295.1 in
-      match x297 {
-        PartialLevel::Value(x298) => {
+      let x301 = mtmp300.0 in
+      let x302 = mtmp300.1 in
+      match x302 {
+        PartialLevel::Value(x303) => {
           {
-            let x298 = PartialLevel::Value._0(x297) in
-            match x296 {
-              PartialLevel::Value(x299) => {
+            let x303 = PartialLevel::Value._0(x302) in
+            match x301 {
+              PartialLevel::Value(x304) => {
                 {
-                  let x299 = PartialLevel::Value._0(x296) in
+                  let x304 = PartialLevel::Value._0(x301) in
                   {
-                    let #derive0_left/93 = x299 in
+                    let #derive0_left/93 = x304 in
                     {
-                      let #derive1_right/94 = x298 in
+                      let #derive1_right/94 = x303 in
                       if true {
                           trait_call[PartialEq::eq](#derive0_left/93, #derive1_right/94)
                       } else {
@@ -5167,7 +5193,7 @@ fn trait_impl#PartialEq#PartialLevel#eq(self/91: PartialLevel, other/92: Partial
           }
         },
         PartialLevel::Empty => {
-          match x296 {
+          match x301 {
             PartialLevel::Empty => {
               true
             },
@@ -5186,7 +5212,7 @@ fn trait_impl#std::cmp::PartialOrd#PartialLevel#partial_cmp(
   {
     let #derive0_left_tag/97 =
       match self/95 {
-        PartialLevel::Value(x301) => {
+        PartialLevel::Value(x306) => {
           {
             0
           }
@@ -5197,7 +5223,7 @@ fn trait_impl#std::cmp::PartialOrd#PartialLevel#partial_cmp(
       } in
     let #derive1_right_tag/98 =
       match other/96 {
-        PartialLevel::Value(x302) => {
+        PartialLevel::Value(x307) => {
           {
             0
           }
@@ -5213,42 +5239,42 @@ fn trait_impl#std::cmp::PartialOrd#PartialLevel#partial_cmp(
             Option::Some(std::cmp::Ordering::Greater)
         } else {
             {
-              let mtmp303 = (self/95, other/96) in
+              let mtmp308 = (self/95, other/96) in
               {
-                let x304 = mtmp303.0 in
-                let x305 = mtmp303.1 in
-                match x305 {
-                  PartialLevel::Value(x306) => {
+                let x309 = mtmp308.0 in
+                let x310 = mtmp308.1 in
+                match x310 {
+                  PartialLevel::Value(x311) => {
                     {
-                      let x306 = PartialLevel::Value._0(x305) in
-                      match x304 {
-                        PartialLevel::Value(x307) => {
+                      let x311 = PartialLevel::Value._0(x310) in
+                      match x309 {
+                        PartialLevel::Value(x312) => {
                           {
-                            let x307 = PartialLevel::Value._0(x304) in
+                            let x312 = PartialLevel::Value._0(x309) in
                             {
-                              let #derive2_left/99 = x307 in
+                              let #derive2_left/99 = x312 in
                               {
-                                let #derive3_right/100 = x306 in
+                                let #derive3_right/100 = x311 in
                                 {
-                                  let mtmp308 =
+                                  let mtmp313 =
                                     trait_call[std::cmp::PartialOrd::partial_cmp](
                                       #derive2_left/99,
                                       #derive3_right/100
                                     ) in
-                                  match mtmp308 {
+                                  match mtmp313 {
                                     Option::None => {
                                       Option::None
                                     },
-                                    Option::Some(x309) => {
+                                    Option::Some(x314) => {
                                       {
-                                        let x309 = Option::Some._0(mtmp308) in
-                                        match x309 {
+                                        let x314 = Option::Some._0(mtmp313) in
+                                        match x314 {
                                           std::cmp::Ordering::Equal => {
                                             Option::Some(std::cmp::Ordering::Equal)
                                           },
                                           _ =>
                                             {
-                                              let #derive4_ordering/101 = x309 in
+                                              let #derive4_ordering/101 = x314 in
                                               Option::Some(#derive4_ordering/101)
                                             },
                                         }
@@ -5265,7 +5291,7 @@ fn trait_impl#std::cmp::PartialOrd#PartialLevel#partial_cmp(
                     }
                   },
                   PartialLevel::Empty => {
-                    match x304 {
+                    match x309 {
                       PartialLevel::Empty => {
                         Option::Some(std::cmp::Ordering::Equal)
                       },
@@ -5325,30 +5351,30 @@ fn ordering_name(value/102: std::cmp::Ordering) -> string {
 fn main() -> unit {
   let first/103 = Version { major: 1, minor: 9 } in
   let second/104 = Version { major: 2, minor: 0 } in
-  let _wild311 =
+  let _wild316 =
     println(
       trait_call[ToString::to_string](trait_call[std::cmp::PartialOrd::lt](first/103, second/104))
     ) in
-  let _wild312 = println(ordering_name(trait_call[std::cmp::Ord::cmp](first/103, second/104))) in
-  let _wild313 =
+  let _wild317 = println(ordering_name(trait_call[std::cmp::Ord::cmp](first/103, second/104))) in
+  let _wild318 =
     println(
       trait_call[ToString::to_string](
         trait_call[std::cmp::PartialOrd::lt](Level::Low, Level::Medium(0, 0))
       )
     ) in
-  let _wild314 =
+  let _wild319 =
     println(
       trait_call[ToString::to_string](
         trait_call[std::cmp::PartialOrd::lt](Level::Medium(1, 9), Level::Medium(2, 0))
       )
     ) in
-  let _wild315 =
+  let _wild320 =
     println(ordering_name(trait_call[std::cmp::Ord::cmp](Level::High(3, 1), Level::High(3, 1)))) in
   let zero/105 = 0 in
   let nan/106 = MaybeNumber { value: (zero/105 / zero/105) } in
-  let _wild316 =
+  let _wild321 =
     println(trait_call[ToString::to_string](trait_call[PartialEq::eq](nan/106, nan/106))) in
-  let _wild317 =
+  let _wild322 =
     println(
       trait_call[ToString::to_string](
         inherent#Option#Option[std::cmp::Ordering]#is_none(
@@ -5362,7 +5388,7 @@ fn main() -> unit {
       second: 2,
       nested: {
         let vec_literal/1621 = inherent#Vec#Vec[int]#new() in
-        let _wild318 = inherent#Vec#Vec[int]#push(vec_literal/1621, 3) in
+        let _wild323 = inherent#Vec#Vec[int]#push(vec_literal/1621, 3) in
         vec_literal/1621
       }
     } in
@@ -5372,11 +5398,11 @@ fn main() -> unit {
       second: 3,
       nested: {
         let vec_literal/1701 = inherent#Vec#Vec[int]#new() in
-        let _wild319 = inherent#Vec#Vec[int]#push(vec_literal/1701, 0) in
+        let _wild324 = inherent#Vec#Vec[int]#push(vec_literal/1701, 0) in
         vec_literal/1701
       }
     } in
-  let _wild320 =
+  let _wild325 =
     println(
       trait_call[ToString::to_string](
         trait_call[std::cmp::PartialOrd::lt](generic_first/107, generic_second/108)
@@ -5384,14 +5410,14 @@ fn main() -> unit {
     ) in
   let phantom_first/109 = Phantom::First in
   let phantom_second/110 = Phantom::Second in
-  let _wild321 =
+  let _wild326 =
     println(
       trait_call[ToString::to_string](
         trait_call[std::cmp::PartialOrd::lt](phantom_first/109, phantom_second/110)
       )
     ) in
   let partial_nan/111 = PartialLevel::Value((zero/105 / zero/105)) in
-  let _wild322 =
+  let _wild327 =
     println(
       trait_call[ToString::to_string](
         inherent#Option#Option[std::cmp::Ordering]#is_none(
@@ -5402,24 +5428,24 @@ fn main() -> unit {
   let first_values/112 =
     {
       let vec_literal/2131 = inherent#Vec#Vec[int]#new() in
-      let _wild323 = inherent#Vec#Vec[int]#push(vec_literal/2131, 1) in
-      let _wild324 = inherent#Vec#Vec[int]#push(vec_literal/2131, 2) in
+      let _wild328 = inherent#Vec#Vec[int]#push(vec_literal/2131, 1) in
+      let _wild329 = inherent#Vec#Vec[int]#push(vec_literal/2131, 2) in
       vec_literal/2131
     } in
   let second_values/113 =
     {
       let vec_literal/2178 = inherent#Vec#Vec[int]#new() in
-      let _wild325 = inherent#Vec#Vec[int]#push(vec_literal/2178, 1) in
-      let _wild326 = inherent#Vec#Vec[int]#push(vec_literal/2178, 3) in
+      let _wild330 = inherent#Vec#Vec[int]#push(vec_literal/2178, 1) in
+      let _wild331 = inherent#Vec#Vec[int]#push(vec_literal/2178, 3) in
       vec_literal/2178
     } in
-  let _wild327 =
+  let _wild332 =
     println(
       trait_call[ToString::to_string](
         trait_call[std::cmp::PartialOrd::lt](first_values/112, second_values/113)
       )
     ) in
-  let _wild328 =
+  let _wild333 =
     println(
       trait_call[ToString::to_string](
         trait_call[std::cmp::PartialOrd::lt](Option::Some(2), Option::Some(3))
@@ -5427,11 +5453,11 @@ fn main() -> unit {
     ) in
   let ok/114 = Result::Ok(1) in
   let error/115 = Result::Err("error") in
-  let _wild329 =
+  let _wild334 =
     println(
       trait_call[ToString::to_string](trait_call[std::cmp::PartialOrd::lt](ok/114, error/115))
     ) in
-  let _wild330 =
+  let _wild335 =
     println(
       trait_call[ToString::to_string](
         trait_call[std::cmp::PartialOrd::lt](
@@ -5441,17 +5467,17 @@ fn main() -> unit {
       )
     ) in
   let values/116 = inherent#HashMap#HashMap[Vec[int],string]#new() in
-  let _wild331 =
+  let _wild336 =
     inherent#HashMap#HashMap[Vec[int],string]#set(values/116, first_values/112, "vector") in
-  let _wild334 =
+  let _wild339 =
     println(
       inherent#Option#Option[string]#unwrap_or(
         inherent#HashMap#HashMap[Vec[int],string]#get(
           values/116,
           {
             let vec_literal/2661 = inherent#Vec#Vec[int]#new() in
-            let _wild332 = inherent#Vec#Vec[int]#push(vec_literal/2661, 1) in
-            let _wild333 = inherent#Vec#Vec[int]#push(vec_literal/2661, 2) in
+            let _wild337 = inherent#Vec#Vec[int]#push(vec_literal/2661, 1) in
+            let _wild338 = inherent#Vec#Vec[int]#push(vec_literal/2661, 2) in
             vec_literal/2661
           }
         ),
@@ -5459,14 +5485,14 @@ fn main() -> unit {
       )
     ) in
   let default_tuple/117 = trait_call[Default::default]() in
-  let _wild337 =
+  let _wild342 =
     println(
       trait_call[ToString::to_string](
         {
-          let _eq_lhs335 = default_tuple/117 in
-          let _eq_rhs336 = (0, "") in
-          if trait_call[PartialEq::eq](_eq_lhs335.0, _eq_rhs336.0) {
-              trait_call[PartialEq::eq](_eq_lhs335.1, _eq_rhs336.1)
+          let _eq_lhs340 = default_tuple/117 in
+          let _eq_rhs341 = (0, "") in
+          if trait_call[PartialEq::eq](_eq_lhs340.0, _eq_rhs341.0) {
+              trait_call[PartialEq::eq](_eq_lhs340.1, _eq_rhs341.1)
           } else {
               false
           }
@@ -5474,23 +5500,23 @@ fn main() -> unit {
       )
     ) in
   let default_array/118 = trait_call[Default::default]() in
-  let _wild340 =
+  let _wild345 =
     println(
       trait_call[ToString::to_string](
         {
-          let _eq_lhs338 = default_array/118 in
-          let _eq_rhs339 = [0, 0, 0] in
+          let _eq_lhs343 = default_array/118 in
+          let _eq_rhs344 = [0, 0, 0] in
           if trait_call[PartialEq::eq](
-            @intrinsic(array.get)(_eq_lhs338, 0),
-            @intrinsic(array.get)(_eq_rhs339, 0)
+            @intrinsic(array.get)(_eq_lhs343, 0),
+            @intrinsic(array.get)(_eq_rhs344, 0)
           ) {
               if trait_call[PartialEq::eq](
-                @intrinsic(array.get)(_eq_lhs338, 1),
-                @intrinsic(array.get)(_eq_rhs339, 1)
+                @intrinsic(array.get)(_eq_lhs343, 1),
+                @intrinsic(array.get)(_eq_rhs344, 1)
               ) {
                   trait_call[PartialEq::eq](
-                    @intrinsic(array.get)(_eq_lhs338, 2),
-                    @intrinsic(array.get)(_eq_rhs339, 2)
+                    @intrinsic(array.get)(_eq_lhs343, 2),
+                    @intrinsic(array.get)(_eq_rhs344, 2)
                   )
               } else {
                   false
@@ -5501,13 +5527,13 @@ fn main() -> unit {
         }
       )
     ) in
-  let _wild341 =
+  let _wild346 =
     println(
       trait_call[ToString::to_string](trait_call[std::cmp::PartialOrd::lt]((1, 2), (1, 3)))
     ) in
-  let _wild342 = println(ordering_name(trait_call[std::cmp::Ord::cmp]([1, 2], [1, 3]))) in
+  let _wild347 = println(ordering_name(trait_call[std::cmp::Ord::cmp]([1, 2], [1, 3]))) in
   let tuple_nan/119 = (0, (zero/105 / zero/105)) in
-  let _wild343 =
+  let _wild348 =
     println(
       trait_call[ToString::to_string](
         inherent#Option#Option[std::cmp::Ordering]#is_none(
@@ -5516,9 +5542,9 @@ fn main() -> unit {
       )
     ) in
   let tuple_values/120 = inherent#HashMap#HashMap[(int,string),string]#new() in
-  let _wild344 =
+  let _wild349 =
     inherent#HashMap#HashMap[(int,string),string]#set(tuple_values/120, (1, "one"), "tuple") in
-  let _wild345 =
+  let _wild350 =
     println(
       inherent#Option#Option[string]#unwrap_or(
         inherent#HashMap#HashMap[(int,string),string]#get(tuple_values/120, (1, "one")),
@@ -5526,7 +5552,7 @@ fn main() -> unit {
       )
     ) in
   let array_values/121 = inherent#HashMap#HashMap[[int;2],string]#new() in
-  let _wild346 = inherent#HashMap#HashMap[[int;2],string]#set(array_values/121, [1, 2], "array") in
+  let _wild351 = inherent#HashMap#HashMap[[int;2],string]#set(array_values/121, [1, 2], "array") in
   println(
     inherent#Option#Option[string]#unwrap_or(
       inherent#HashMap#HashMap[[int;2],string]#get(array_values/121, [1, 2]),

@@ -7,105 +7,105 @@ fn read(source/1: dyn Source[Item = int]) -> int {
 }
 
 fn labeled_cleanup() -> unit {
-  loop loop let _wild184 =
-    let _defer182 = println__T_string("inner cleanup") in
-    let _defer183 = println__T_string("outer cleanup") in
+  loop loop let _wild189 =
+    let _defer187 = println__T_string("inner cleanup") in
+    let _defer188 = println__T_string("outer cleanup") in
     break@1 in
-  let _defer185 = println__T_string("inner cleanup") in
+  let _defer190 = println__T_string("inner cleanup") in
   ()
 }
 
 fn main() -> unit {
-  let _wild186 = println__T_int(read(to_dyn[Source]{NumberSource}(NumberSource { value: 11 }))) in
-  let mtmp187 = (1, 2) in
-  let x188 = mtmp187.0 in
-  let x189 = mtmp187.1 in
-  let value/3 = x189 in
-  let index/2 = x188 in
-  let _wild192 =
-    let compound_old190 = index/2 in
-    let compound_value191 = value/3 in
-    index/2 = (compound_old190 + compound_value191) in
-  let _wild193 = println__T_int(index/2) in
-  let mtmp194 = (3, 0) in
-  let x195 = mtmp194.0 in
-  let captured/4 = @intrinsic(ref.new)(x195) in
+  let _wild191 = println__T_int(read(to_dyn[Source]{NumberSource}(NumberSource { value: 11 }))) in
+  let mtmp192 = (1, 2) in
+  let x193 = mtmp192.0 in
+  let x194 = mtmp192.1 in
+  let value/3 = x194 in
+  let index/2 = x193 in
+  let _wild197 =
+    let compound_old195 = index/2 in
+    let compound_value196 = value/3 in
+    index/2 = (compound_old195 + compound_value196) in
+  let _wild198 = println__T_int(index/2) in
+  let mtmp199 = (3, 0) in
+  let x200 = mtmp199.0 in
+  let captured/4 = @intrinsic(ref.new)(x200) in
   let increment/5 =
     pack_closure[inherent#closure_env_increment_0#closure_env_increment_0#apply](
       closure_env_increment_0 { captured_0: captured/4 }
     ) in
-  let _wild200 = increment/5() in
-  let _wild201 = println__T_int(@intrinsic(ref.get)(captured/4)) in
-  let _wild207 =
-    let mtmp202 = Option__int::Some(4) in
-    match mtmp202 {
+  let _wild205 = increment/5() in
+  let _wild206 = println__T_int(@intrinsic(ref.get)(captured/4)) in
+  let _wild212 =
+    let mtmp207 = Option__int::Some(4) in
+    match mtmp207 {
       Option__int::None => {
         ()
       },
-      Option__int::Some(x203) => {
-        let x203 = Option__int::Some._0(mtmp202) in
-        let count/6 = x203 in
-        let _wild206 =
-          let compound_old204 = count/6 in
-          let compound_value205 = 1 in
-          count/6 = (compound_old204 + compound_value205) in
+      Option__int::Some(x208) => {
+        let x208 = Option__int::Some._0(mtmp207) in
+        let count/6 = x208 in
+        let _wild211 =
+          let compound_old209 = count/6 in
+          let compound_value210 = 1 in
+          count/6 = (compound_old209 + compound_value210) in
         println__T_int(count/6)
       },
     } in
   let values/7 = inherent#Vec#Vec[T]#new__T_int() in
-  let _wild208 = inherent#Vec#Vec[T]#push__T_int(values/7, 6) in
-  let _wild217 =
-    let for_source209 = values/7 in
-    let for_limit210 = @intrinsic(vec.len)(for_source209) in
-    let for_index211 = 0 in
-    while (for_index211 < for_limit210) {
-        let for_item212 = @intrinsic(vec.get)(for_source209, for_index211) in
-        let _wild213 = for_index211 = (for_index211 + 1) in
-        let item/8 = for_item212 in
-        let _wild216 =
-          let compound_old214 = item/8 in
-          let compound_value215 = 1 in
-          item/8 = (compound_old214 + compound_value215) in
+  let _wild213 = inherent#Vec#Vec[T]#push__T_int(values/7, 6) in
+  let _wild222 =
+    let for_source214 = values/7 in
+    let for_limit215 = @intrinsic(vec.len)(for_source214) in
+    let for_index216 = 0 in
+    while (for_index216 < for_limit215) {
+        let for_item217 = @intrinsic(vec.get)(for_source214, for_index216) in
+        let _wild218 = for_index216 = (for_index216 + 1) in
+        let item/8 = for_item217 in
+        let _wild221 =
+          let compound_old219 = item/8 in
+          let compound_value220 = 1 in
+          item/8 = (compound_old219 + compound_value220) in
         println__T_int(item/8)
     } in
   let legacy/9 = (8, 9) in
-  let _wild221 =
-    let place_root218 = legacy/9 in
-    let place219 = place_root218.0 in
-    let value220 = 1 in
-    legacy/9 = ((place219 + value220), place_root218.1) in
-  let _wild225 =
-    let place_root222 = legacy/9 in
-    let place223 = place_root222.1 in
-    let value224 = 1 in
-    legacy/9 = (place_root222.0, (place223 + value224)) in
-  let _wild226 = println__T_int((legacy/9.0 + legacy/9.1)) in
+  let _wild226 =
+    let place_root223 = legacy/9 in
+    let place224 = place_root223.0 in
+    let value225 = 1 in
+    legacy/9 = ((place224 + value225), place_root223.1) in
+  let _wild230 =
+    let place_root227 = legacy/9 in
+    let place228 = place_root227.1 in
+    let value229 = 1 in
+    legacy/9 = (place_root227.0, (place228 + value229)) in
+  let _wild231 = println__T_int((legacy/9.0 + legacy/9.1)) in
   let steps/10 = 0 in
-  let _wild231 =
+  let _wild236 =
     while (steps/10 < 3) {
-        let _wild229 =
-          let compound_old227 = steps/10 in
-          let compound_value228 = 1 in
-          steps/10 = (compound_old227 + compound_value228) in
-        loop let _wild230 = continue@1 in
+        let _wild234 =
+          let compound_old232 = steps/10 in
+          let compound_value233 = 1 in
+          steps/10 = (compound_old232 + compound_value233) in
+        loop let _wild235 = continue@1 in
         ()
     } in
-  let _wild232 = println__T_int(steps/10) in
+  let _wild237 = println__T_int(steps/10) in
   let seen/11 = inherent#Ref#Ref[T]#new__T_int(0) in
-  let _wild243 =
-    let for_index233 = 0 in
-    let for_limit234 = 3 in
-    while (for_index233 < for_limit234) {
-        let for_item235 = for_index233 in
-        let _wild236 = for_index233 = (for_index233 + 1) in
-        let row/12 = for_item235 in
-        let for_index237 = 0 in
-        let for_limit238 = 3 in
-        while (for_index237 < for_limit238) {
-            let for_item239 = for_index237 in
-            let _wild240 = for_index237 = (for_index237 + 1) in
-            let column/13 = for_item239 in
-            let _wild241 =
+  let _wild248 =
+    let for_index238 = 0 in
+    let for_limit239 = 3 in
+    while (for_index238 < for_limit239) {
+        let for_item240 = for_index238 in
+        let _wild241 = for_index238 = (for_index238 + 1) in
+        let row/12 = for_item240 in
+        let for_index242 = 0 in
+        let for_limit243 = 3 in
+        while (for_index242 < for_limit243) {
+            let for_item244 = for_index242 in
+            let _wild245 = for_index242 = (for_index242 + 1) in
+            let column/13 = for_item244 in
+            let _wild246 =
               inherent#Ref#Ref[T]#set__T_int(
                 seen/11,
                 (inherent#Ref#Ref[T]#get__T_int(seen/11) + 1)
@@ -115,18 +115,18 @@ fn main() -> unit {
             } else {
                 false
             } {
-                let _wild242 = break@1 in
+                let _wild247 = break@1 in
                 ()
             } else {
                 ()
             }
         }
     } in
-  let _wild244 = println__T_int(inherent#Ref#Ref[T]#get__T_int(seen/11)) in
+  let _wild249 = println__T_int(inherent#Ref#Ref[T]#get__T_int(seen/11)) in
   let answer/14 =
-    loop loop let _wild245 = break@1 42 in
+    loop loop let _wild250 = break@1 42 in
     () in
-  let _wild246 = println__T_int(answer/14) in
+  let _wild251 = println__T_int(answer/14) in
   labeled_cleanup()
 }
 
@@ -146,16 +146,16 @@ fn inherent#Vec#Vec[T]#push__T_int(self/174: Vec[int], elem/175: int) -> unit {
   @intrinsic(vec.push)(self/174, elem/175)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/270: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/270)
+fn inherent#Ref#Ref[T]#new__T_int(value/273: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/273)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/271: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/271)
+fn inherent#Ref#Ref[T]#get__T_int(self/274: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/274)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/272: Ref[int], value/273: int) -> unit {
-  @intrinsic(ref.set)(self/272, value/273)
+fn inherent#Ref#Ref[T]#set__T_int(self/275: Ref[int], value/276: int) -> unit {
+  @intrinsic(ref.set)(self/275, value/276)
 }
 
 fn trait_impl#ToString#string#to_string(self/65: string) -> string {
@@ -175,12 +175,12 @@ fn trait_impl#Hash#int#hash(self/127: int) -> uint64 {
 }
 
 fn inherent#closure_env_increment_0#closure_env_increment_0#apply(
-  env247: closure_env_increment_0
+  env252: closure_env_increment_0
 ) -> unit {
-  let captured/4 = closure_env_increment_0.captured_0(env247) in
-  let _wild199 =
-    let compound_old197 = @intrinsic(ref.get)(captured/4) in
-    let compound_value198 = 1 in
-    @intrinsic(ref.set)(captured/4, (compound_old197 + compound_value198)) in
+  let captured/4 = closure_env_increment_0.captured_0(env252) in
+  let _wild204 =
+    let compound_old202 = @intrinsic(ref.get)(captured/4) in
+    let compound_value203 = 1 in
+    @intrinsic(ref.set)(captured/4, (compound_old202 + compound_value203)) in
   ()
 }

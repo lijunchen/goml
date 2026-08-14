@@ -18,15 +18,15 @@ func _goml_runtime_core_string_print(s string) struct{} {
 }
 
 func main0() struct{} {
-    var x187 bool = false
-    var inline198 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x187)
-    _goml_runtime_core_string_print(inline198)
+    var x192 bool = false
+    var inline203 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x192)
+    _goml_runtime_core_string_print(inline203)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
-    var t196 string = _goml_runtime_core_bool_to_string(self__64)
-    return t196
+    var t201 string = _goml_runtime_core_bool_to_string(self__64)
+    return t201
 }
 
 func main() {

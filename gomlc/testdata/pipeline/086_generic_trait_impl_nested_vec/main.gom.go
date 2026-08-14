@@ -22,20 +22,20 @@ type Wrap__string struct {
 }
 
 func main0() struct{} {
-    var t185 int32
-    t185 = 1
-    var t186 string
-    var inline211 string = _goml_runtime_core_int32_to_string(t185)
-    t186 = inline211
-    var inline208 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t186)
-    _goml_runtime_core_string_println(inline208)
-    var t187 int32
-    t187 = 1
-    var t188 string
-    var inline205 string = _goml_runtime_core_int32_to_string(t187)
-    t188 = inline205
-    var inline202 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t188)
-    _goml_runtime_core_string_println(inline202)
+    var t190 int32
+    t190 = 1
+    var t191 string
+    var inline216 string = _goml_runtime_core_int32_to_string(t190)
+    t191 = inline216
+    var inline213 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t191)
+    _goml_runtime_core_string_println(inline213)
+    var t192 int32
+    t192 = 1
+    var t193 string
+    var inline210 string = _goml_runtime_core_int32_to_string(t192)
+    t193 = inline210
+    var inline207 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t193)
+    _goml_runtime_core_string_println(inline207)
     return struct{}{}
 }
 

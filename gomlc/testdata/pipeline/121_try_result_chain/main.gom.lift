@@ -8,16 +8,16 @@ fn parse_text(ok/0: bool) -> Result__string__string {
 
 fn normalize_text(ok/1: bool) -> Result__string__string {
   let text/2 =
-    let mtmp182 = parse_text(ok/1) in
-    match mtmp182 {
-      Result__string__string::Ok(x183) => {
-        let x183 = Result__string__string::Ok._0(mtmp182) in
-        let try_value/12 = x183 in
+    let mtmp187 = parse_text(ok/1) in
+    match mtmp187 {
+      Result__string__string::Ok(x188) => {
+        let x188 = Result__string__string::Ok._0(mtmp187) in
+        let try_value/12 = x188 in
         try_value/12
       },
-      Result__string__string::Err(x184) => {
-        let x184 = Result__string__string::Err._0(mtmp182) in
-        let try_residual/12 = x184 in
+      Result__string__string::Err(x189) => {
+        let x189 = Result__string__string::Err._0(mtmp187) in
+        let try_residual/12 = x189 in
         return Result__string__string::Err(try_residual/12)
       },
     } in
@@ -26,16 +26,16 @@ fn normalize_text(ok/1: bool) -> Result__string__string {
 
 fn decorate_text(ok/3: bool) -> Result__string__string {
   let text/4 =
-    let mtmp185 = normalize_text(ok/3) in
-    match mtmp185 {
-      Result__string__string::Ok(x186) => {
-        let x186 = Result__string__string::Ok._0(mtmp185) in
-        let try_value/20 = x186 in
+    let mtmp190 = normalize_text(ok/3) in
+    match mtmp190 {
+      Result__string__string::Ok(x191) => {
+        let x191 = Result__string__string::Ok._0(mtmp190) in
+        let try_value/20 = x191 in
         try_value/20
       },
-      Result__string__string::Err(x187) => {
-        let x187 = Result__string__string::Err._0(mtmp185) in
-        let try_residual/20 = x187 in
+      Result__string__string::Err(x192) => {
+        let x192 = Result__string__string::Err._0(mtmp190) in
+        let try_residual/20 = x192 in
         return Result__string__string::Err(try_residual/20)
       },
     } in
@@ -44,22 +44,22 @@ fn decorate_text(ok/3: bool) -> Result__string__string {
 
 fn show(res/5: Result__string__string) -> string {
   match res/5 {
-    Result__string__string::Ok(x188) => {
-      let x188 = Result__string__string::Ok._0(res/5) in
-      let value/6 = x188 in
+    Result__string__string::Ok(x193) => {
+      let x193 = Result__string__string::Ok._0(res/5) in
+      let value/6 = x193 in
       ("ok " + value/6)
     },
-    Result__string__string::Err(x189) => {
-      let x189 = Result__string__string::Err._0(res/5) in
-      let err/7 = x189 in
+    Result__string__string::Err(x194) => {
+      let x194 = Result__string__string::Err._0(res/5) in
+      let err/7 = x194 in
       ("err " + err/7)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild190 = println__T_string(show(decorate_text(true))) in
-  let _wild191 = println__T_string(show(decorate_text(false))) in
+  let _wild195 = println__T_string(show(decorate_text(true))) in
+  let _wild196 = println__T_string(show(decorate_text(false))) in
   ()
 }
 

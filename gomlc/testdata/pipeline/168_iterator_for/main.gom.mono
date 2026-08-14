@@ -5,7 +5,7 @@ fn countdown(start/0: int32) -> FnIterator__int32 {
       let value/2 = inherent#Ref#Ref[T]#get__T_int32(current/1) in
       if (value/2 > 0) {
           {
-            let _wild182 = inherent#Ref#Ref[T]#set__T_int32(current/1, (value/2 - 1)) in
+            let _wild187 = inherent#Ref#Ref[T]#set__T_int32(current/1, (value/2 - 1)) in
             Option__int32::Some(value/2)
           }
       } else {
@@ -18,29 +18,29 @@ fn countdown(start/0: int32) -> FnIterator__int32 {
 }
 
 fn counted_range(calls/3: Ref[int32]) -> FnIterator__int {
-  let _wild183 =
+  let _wild188 =
     inherent#Ref#Ref[T]#set__T_int32(calls/3, (inherent#Ref#Ref[T]#get__T_int32(calls/3) + 1)) in
   range(1, 5)
 }
 
 fn first_even(values/4: FnIterator__int) -> int {
-  let _wild188 =
+  let _wild193 =
     {
-      let for_iter184 = trait_impl#IntoIterator#FnIterator__int#into_iter(values/4) in
+      let for_iter189 = trait_impl#IntoIterator#FnIterator__int#into_iter(values/4) in
       while true {
           {
-            let for_next185 = trait_impl#Iterator#FnIterator__int#next(for_iter184) in
-            match for_next185 {
+            let for_next190 = trait_impl#Iterator#FnIterator__int#next(for_iter189) in
+            match for_next190 {
               Option__int::None => {
                 break
               },
-              Option__int::Some(x186) => {
+              Option__int::Some(x191) => {
                 {
-                  let x186 = Option__int::Some._0(for_next185) in
+                  let x191 = Option__int::Some._0(for_next190) in
                   {
-                    let value/5 = x186 in
+                    let value/5 = x191 in
                     {
-                      let _wild187 =
+                      let _wild192 =
                         if (((value/5 / 2) * 2) == value/5) {
                             {
                               return value/5
@@ -63,23 +63,23 @@ fn first_even(values/4: FnIterator__int) -> int {
 
 fn main() -> unit {
   let values/6 = inherent#Vec#Vec[T]#new__T_int32() in
-  let _wild189 = inherent#Vec#Vec[T]#push__T_int32(values/6, 10) in
-  let _wild190 = inherent#Vec#Vec[T]#push__T_int32(values/6, 20) in
-  let _wild191 = inherent#Vec#Vec[T]#push__T_int32(values/6, 30) in
+  let _wild194 = inherent#Vec#Vec[T]#push__T_int32(values/6, 10) in
+  let _wild195 = inherent#Vec#Vec[T]#push__T_int32(values/6, 20) in
+  let _wild196 = inherent#Vec#Vec[T]#push__T_int32(values/6, 30) in
   let sum/7 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let _wild199 =
+  let _wild204 =
     {
-      let for_source192 = values/6 in
-      let for_limit193 = @intrinsic(vec.len)(for_source192) in
-      let for_index194 = 0 in
-      while (for_index194 < for_limit193) {
+      let for_source197 = values/6 in
+      let for_limit198 = @intrinsic(vec.len)(for_source197) in
+      let for_index199 = 0 in
+      while (for_index199 < for_limit198) {
           {
-            let for_item195 = @intrinsic(vec.get)(for_source192, for_index194) in
-            let _wild196 = for_index194 = (for_index194 + 1) in
+            let for_item200 = @intrinsic(vec.get)(for_source197, for_index199) in
+            let _wild201 = for_index199 = (for_index199 + 1) in
             {
-              let value/8 = for_item195 in
+              let value/8 = for_item200 in
               {
-                let _wild197 =
+                let _wild202 =
                   if (value/8 == 20) {
                       {
                         continue
@@ -89,7 +89,7 @@ fn main() -> unit {
                         ()
                       }
                   } in
-                let _wild198 =
+                let _wild203 =
                   inherent#Ref#Ref[T]#set__T_int32(
                     sum/7,
                     (inherent#Ref#Ref[T]#get__T_int32(sum/7) + value/8)
@@ -99,28 +99,28 @@ fn main() -> unit {
           }
       }
     } in
-  let _wild200 = println__T_int32(inherent#Ref#Ref[T]#get__T_int32(sum/7)) in
+  let _wild205 = println__T_int32(inherent#Ref#Ref[T]#get__T_int32(sum/7)) in
   let pairs/9 = inherent#Vec#Vec[T]#new__T_(int32,string)() in
-  let _wild201 = inherent#Vec#Vec[T]#push__T_(int32,string)(pairs/9, (1, "a")) in
-  let _wild202 = inherent#Vec#Vec[T]#push__T_(int32,string)(pairs/9, (2, "b")) in
-  let _wild211 =
+  let _wild206 = inherent#Vec#Vec[T]#push__T_(int32,string)(pairs/9, (1, "a")) in
+  let _wild207 = inherent#Vec#Vec[T]#push__T_(int32,string)(pairs/9, (2, "b")) in
+  let _wild216 =
     {
-      let for_source203 = pairs/9 in
-      let for_limit204 = @intrinsic(vec.len)(for_source203) in
-      let for_index205 = 0 in
-      while (for_index205 < for_limit204) {
+      let for_source208 = pairs/9 in
+      let for_limit209 = @intrinsic(vec.len)(for_source208) in
+      let for_index210 = 0 in
+      while (for_index210 < for_limit209) {
           {
-            let for_item206 = @intrinsic(vec.get)(for_source203, for_index205) in
-            let _wild207 = for_index205 = (for_index205 + 1) in
+            let for_item211 = @intrinsic(vec.get)(for_source208, for_index210) in
+            let _wild212 = for_index210 = (for_index210 + 1) in
             {
-              let x208 = for_item206.0 in
-              let x209 = for_item206.1 in
+              let x213 = for_item211.0 in
+              let x214 = for_item211.1 in
               {
-                let text/11 = x209 in
+                let text/11 = x214 in
                 {
-                  let number/10 = x208 in
+                  let number/10 = x213 in
                   {
-                    let _wild210 =
+                    let _wild215 =
                       println__T_string((inherent#int32#int32#to_string(number/10) + text/11)) in
                   }
                 }
@@ -131,24 +131,24 @@ fn main() -> unit {
     } in
   let calls/12 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let range_sum/13 = inherent#Ref#Ref[T]#new__T_int(0) in
-  let _wild216 =
+  let _wild221 =
     {
-      let for_iter212 =
+      let for_iter217 =
         trait_impl#IntoIterator#FnIterator__int#into_iter(counted_range(calls/12)) in
       while true {
           {
-            let for_next213 = trait_impl#Iterator#FnIterator__int#next(for_iter212) in
-            match for_next213 {
+            let for_next218 = trait_impl#Iterator#FnIterator__int#next(for_iter217) in
+            match for_next218 {
               Option__int::None => {
                 break
               },
-              Option__int::Some(x214) => {
+              Option__int::Some(x219) => {
                 {
-                  let x214 = Option__int::Some._0(for_next213) in
+                  let x219 = Option__int::Some._0(for_next218) in
                   {
-                    let value/14 = x214 in
+                    let value/14 = x219 in
                     {
-                      let _wild215 =
+                      let _wild220 =
                         inherent#Ref#Ref[T]#set__T_int(
                           range_sum/13,
                           (inherent#Ref#Ref[T]#get__T_int(range_sum/13) + value/14)
@@ -161,22 +161,22 @@ fn main() -> unit {
           }
       }
     } in
-  let _wild217 = println__T_int32(inherent#Ref#Ref[T]#get__T_int32(calls/12)) in
-  let _wild218 = println__T_int(inherent#Ref#Ref[T]#get__T_int(range_sum/13)) in
+  let _wild222 = println__T_int32(inherent#Ref#Ref[T]#get__T_int32(calls/12)) in
+  let _wild223 = println__T_int(inherent#Ref#Ref[T]#get__T_int(range_sum/13)) in
   let slice_sum/15 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let _wild225 =
+  let _wild230 =
     {
-      let for_source219 = inherent#Vec#Vec[T]#slice__T_int32(values/6, 1, 3) in
-      let for_limit220 = @intrinsic(slice.len)(for_source219) in
-      let for_index221 = 0 in
-      while (for_index221 < for_limit220) {
+      let for_source224 = inherent#Vec#Vec[T]#slice__T_int32(values/6, 1, 3) in
+      let for_limit225 = @intrinsic(slice.len)(for_source224) in
+      let for_index226 = 0 in
+      while (for_index226 < for_limit225) {
           {
-            let for_item222 = @intrinsic(slice.get)(for_source219, for_index221) in
-            let _wild223 = for_index221 = (for_index221 + 1) in
+            let for_item227 = @intrinsic(slice.get)(for_source224, for_index226) in
+            let _wild228 = for_index226 = (for_index226 + 1) in
             {
-              let value/16 = for_item222 in
+              let value/16 = for_item227 in
               {
-                let _wild224 =
+                let _wild229 =
                   inherent#Ref#Ref[T]#set__T_int32(
                     slice_sum/15,
                     (inherent#Ref#Ref[T]#get__T_int32(slice_sum/15) + value/16)
@@ -186,31 +186,31 @@ fn main() -> unit {
           }
       }
     } in
-  let _wild226 = println__T_int32(inherent#Ref#Ref[T]#get__T_int32(slice_sum/15)) in
-  let _wild232 =
+  let _wild231 = println__T_int32(inherent#Ref#Ref[T]#get__T_int32(slice_sum/15)) in
+  let _wild237 =
     {
-      let for_iter227 = trait_impl#IntoIterator#FnIterator__int32#into_iter(countdown(4)) in
+      let for_iter232 = trait_impl#IntoIterator#FnIterator__int32#into_iter(countdown(4)) in
       while true {
           {
-            let for_next228 = trait_impl#Iterator#FnIterator__int32#next(for_iter227) in
-            match for_next228 {
+            let for_next233 = trait_impl#Iterator#FnIterator__int32#next(for_iter232) in
+            match for_next233 {
               Option__int32::None => {
                 break
               },
-              Option__int32::Some(x229) => {
+              Option__int32::Some(x234) => {
                 {
-                  let x229 = Option__int32::Some._0(for_next228) in
+                  let x234 = Option__int32::Some._0(for_next233) in
                   {
-                    let value/17 = x229 in
+                    let value/17 = x234 in
                     {
-                      let _wild231 =
+                      let _wild236 =
                         if (value/17 == 2) {
                             {
                               break
                             }
                         } else {
                             {
-                              let _wild230 = println__T_int32(value/17) in
+                              let _wild235 = println__T_int32(value/17) in
                             }
                         } in
                     }
@@ -222,17 +222,17 @@ fn main() -> unit {
       }
     } in
   let empty/18 = range(0, 0) in
-  let _wild236 =
+  let _wild241 =
     {
-      let for_iter233 = trait_impl#IntoIterator#FnIterator__int#into_iter(empty/18) in
+      let for_iter238 = trait_impl#IntoIterator#FnIterator__int#into_iter(empty/18) in
       while true {
           {
-            let for_next234 = trait_impl#Iterator#FnIterator__int#next(for_iter233) in
-            match for_next234 {
+            let for_next239 = trait_impl#Iterator#FnIterator__int#next(for_iter238) in
+            match for_next239 {
               Option__int::None => {
                 break
               },
-              Option__int::Some(x235) => {
+              Option__int::Some(x240) => {
                 {
                   {
                     ()
@@ -243,20 +243,20 @@ fn main() -> unit {
           }
       }
     } in
-  let _wild237 = println__T_int(first_even(range(3, 8))) in
-  let _wild238 = println__T_string("done") in
+  let _wild242 = println__T_int(first_even(range(3, 8))) in
+  let _wild243 = println__T_string("done") in
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/270: int32) -> Ref[int32] {
-  @intrinsic(ref.new)(value/270)
+fn inherent#Ref#Ref[T]#new__T_int32(value/273: int32) -> Ref[int32] {
+  @intrinsic(ref.new)(value/273)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/271: Ref[int32]) -> int32 {
-  @intrinsic(ref.get)(self/271)
+fn inherent#Ref#Ref[T]#get__T_int32(self/274: Ref[int32]) -> int32 {
+  @intrinsic(ref.get)(self/274)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/272: Ref[int32], value/273: int32) -> unit {
-  @intrinsic(ref.set)(self/272, value/273)
+fn inherent#Ref#Ref[T]#set__T_int32(self/275: Ref[int32], value/276: int32) -> unit {
+  @intrinsic(ref.set)(self/275, value/276)
 }
 
 fn inherent#FnIterator#FnIterator[T]#from_fn__T_int32(
@@ -308,16 +308,16 @@ fn inherent#int32#int32#to_string(self/33: int32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/270: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/270)
+fn inherent#Ref#Ref[T]#new__T_int(value/273: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/273)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/271: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/271)
+fn inherent#Ref#Ref[T]#get__T_int(self/274: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/274)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/272: Ref[int], value/273: int) -> unit {
-  @intrinsic(ref.set)(self/272, value/273)
+fn inherent#Ref#Ref[T]#set__T_int(self/275: Ref[int], value/276: int) -> unit {
+  @intrinsic(ref.set)(self/275, value/276)
 }
 
 fn println__T_int(value/1: int) -> unit {
@@ -340,15 +340,15 @@ fn trait_impl#Iterator#FnIterator__int32#next(self/171: FnIterator__int32) -> Op
   FnIterator__int32.next_fn(self/171)()
 }
 
-fn __goml_builtin_range(start/333: int, end/334: int) -> FnIterator__int {
-  let current/335 = @intrinsic(ref.new)(start/333) in
+fn __goml_builtin_range(start/336: int, end/337: int) -> FnIterator__int {
+  let current/338 = @intrinsic(ref.new)(start/336) in
   inherent#FnIterator#FnIterator[T]#from_fn__T_int(
     || {
-      let value/336 = @intrinsic(ref.get)(current/335) in
-      if (value/336 < end/334) {
+      let value/339 = @intrinsic(ref.get)(current/338) in
+      if (value/339 < end/337) {
           {
-            let _wild178 = @intrinsic(ref.set)(current/335, (value/336 + 1)) in
-            Option__int::Some(value/336)
+            let _wild183 = @intrinsic(ref.set)(current/338, (value/339 + 1)) in
+            Option__int::Some(value/339)
           }
       } else {
           {

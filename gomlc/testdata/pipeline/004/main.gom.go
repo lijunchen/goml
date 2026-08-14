@@ -26,29 +26,29 @@ const (
 )
 
 func main0() bool {
-    var x182 Color = Blue
-    var x183 Color = Blue
-    switch x183 {
+    var x187 Color = Blue
+    var x188 Color = Blue
+    switch x188 {
     case Red:
-        switch x182 {
+        switch x187 {
         case Red:
             return true
         default:
             return false
         }
     case Green:
-        switch x182 {
+        switch x187 {
         case Red:
             return true
         default:
             return false
         }
     case Blue:
-        switch x182 {
+        switch x187 {
         case Blue:
-            var inline202 bool = true
-            var inline203 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline202)
-            _goml_runtime_core_string_print(inline203)
+            var inline207 bool = true
+            var inline208 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline207)
+            _goml_runtime_core_string_print(inline208)
             return false
         default:
             return false
@@ -59,8 +59,8 @@ func main0() bool {
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
-    var t200 string = _goml_runtime_core_bool_to_string(self__64)
-    return t200
+    var t205 string = _goml_runtime_core_bool_to_string(self__64)
+    return t205
 }
 
 func main() {

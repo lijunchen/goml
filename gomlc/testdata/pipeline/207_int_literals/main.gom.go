@@ -87,8 +87,8 @@ func ref_get__Ref_6uint32(reference *ref_uint32_x) uint32 {
 }
 
 func increment(value__0 uint8) uint8 {
-    var t195 uint8 = value__0 + 1
-    return t195
+    var t200 uint8 = value__0 + 1
+    return t200
 }
 
 func main0() struct{} {
@@ -96,109 +96,109 @@ func main0() struct{} {
     var default_float__3 float64 = 0.5
     var small__4 uint8 = 41
     var inferred__5 [2]uint8 = [2]uint8{small__4, 2}
-    var jp205 uint8
-    jp205 = 1
+    var jp210 uint8
+    jp210 = 1
     var values__7 [2]uint16 = [2]uint16{10, 20}
     var delayed__8 *ref_uint32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__uint32(0)
     var byte__9 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get("A", 0)
-    var t206 int = default_integer__2 + 2
-    var t207 string = _goml_m_inherent_i_int_i_int_i_to__string(t206)
-    println__T_string(t207)
-    var t208 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(default_float__3)
-    println__T_string(t208)
-    var t209 uint8 = increment(small__4)
-    var t210 string
-    var inline318 string = _goml_runtime_core_uint8_to_string(t209)
-    t210 = inline318
-    var inline315 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t210)
-    _goml_runtime_core_string_println(inline315)
-    var t211 uint8 = array_get__Array_2_5uint8(inferred__5, 1)
-    var t212 string
-    var inline313 string = _goml_runtime_core_uint8_to_string(t211)
-    t212 = inline313
-    var inline310 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t212)
-    _goml_runtime_core_string_println(inline310)
-    var t213 string
-    var inline308 string = _goml_runtime_core_uint8_to_string(jp205)
-    t213 = inline308
-    var inline305 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t213)
-    _goml_runtime_core_string_println(inline305)
-    var t214 uint16 = array_get__Array_2_6uint16(values__7, 1)
+    var t211 int = default_integer__2 + 2
+    var t212 string = _goml_m_inherent_i_int_i_int_i_to__string(t211)
+    println__T_string(t212)
+    var t213 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(default_float__3)
+    println__T_string(t213)
+    var t214 uint8 = increment(small__4)
     var t215 string
-    var inline303 string = _goml_runtime_core_uint16_to_string(t214)
-    t215 = inline303
-    var inline300 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t215)
-    _goml_runtime_core_string_println(inline300)
-    var t216 float32
-    t216 = 1
+    var inline323 string = _goml_runtime_core_uint8_to_string(t214)
+    t215 = inline323
+    var inline320 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t215)
+    _goml_runtime_core_string_println(inline320)
+    var t216 uint8 = array_get__Array_2_5uint8(inferred__5, 1)
     var t217 string
-    var inline297 string = _goml_runtime_core_float32_to_string(t216)
-    t217 = inline297
-    var inline294 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t217)
-    _goml_runtime_core_string_println(inline294)
-    var t218 int16
-    t218 = 2
-    var t219 string
-    var inline291 string = _goml_runtime_core_int16_to_string(t218)
-    t219 = inline291
-    var inline288 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t219)
-    _goml_runtime_core_string_println(inline288)
-    var t220 uint32
-    var inline286 uint32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__uint32(delayed__8)
-    t220 = inline286
-    var t221 string
-    var inline284 string = _goml_runtime_core_uint32_to_string(t220)
-    t221 = inline284
-    var inline281 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t221)
+    var inline318 string = _goml_runtime_core_uint8_to_string(t216)
+    t217 = inline318
+    var inline315 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t217)
+    _goml_runtime_core_string_println(inline315)
+    var t218 string
+    var inline313 string = _goml_runtime_core_uint8_to_string(jp210)
+    t218 = inline313
+    var inline310 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t218)
+    _goml_runtime_core_string_println(inline310)
+    var t219 uint16 = array_get__Array_2_6uint16(values__7, 1)
+    var t220 string
+    var inline308 string = _goml_runtime_core_uint16_to_string(t219)
+    t220 = inline308
+    var inline305 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t220)
+    _goml_runtime_core_string_println(inline305)
+    var t221 float32
+    t221 = 1
+    var t222 string
+    var inline302 string = _goml_runtime_core_float32_to_string(t221)
+    t222 = inline302
+    var inline299 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t222)
+    _goml_runtime_core_string_println(inline299)
+    var t223 int16
+    t223 = 2
+    var t224 string
+    var inline296 string = _goml_runtime_core_int16_to_string(t223)
+    t224 = inline296
+    var inline293 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t224)
+    _goml_runtime_core_string_println(inline293)
+    var t225 uint32
+    var inline291 uint32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__uint32(delayed__8)
+    t225 = inline291
+    var t226 string
+    var inline289 string = _goml_runtime_core_uint32_to_string(t225)
+    t226 = inline289
+    var inline286 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t226)
+    _goml_runtime_core_string_println(inline286)
+    var t227 bool = byte__9 == 65
+    var t228 string
+    var inline284 string = _goml_runtime_core_bool_to_string(t227)
+    t228 = inline284
+    var inline281 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t228)
     _goml_runtime_core_string_println(inline281)
-    var t222 bool = byte__9 == 65
-    var t223 string
-    var inline279 string = _goml_runtime_core_bool_to_string(t222)
-    t223 = inline279
-    var inline276 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t223)
-    _goml_runtime_core_string_println(inline276)
-    var jp225 string
+    var jp230 string
     switch byte__9 {
     case 65:
-        jp225 = "byte"
+        jp230 = "byte"
     default:
-        jp225 = "other"
+        jp230 = "other"
     }
-    var inline273 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp225)
-    _goml_runtime_core_string_println(inline273)
+    var inline278 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp230)
+    _goml_runtime_core_string_println(inline278)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__uint32(self__271 *ref_uint32_x) uint32 {
-    var t228 uint32 = ref_get__Ref_6uint32(self__271)
-    return t228
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__uint32(self__274 *ref_uint32_x) uint32 {
+    var t233 uint32 = ref_get__Ref_6uint32(self__274)
+    return t233
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__uint32(value__270 uint32) *ref_uint32_x {
-    var t231 *ref_uint32_x = ref__Ref_6uint32(value__270)
-    return t231
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__uint32(value__273 uint32) *ref_uint32_x {
+    var t236 *ref_uint32_x = ref__Ref_6uint32(value__273)
+    return t236
 }
 
 func _goml_m_inherent_i_string_i_string_i_byte__get(self__39 string, index__40 int) uint8 {
-    var t234 uint8 = _goml_runtime_core_string_byte_get(self__39, index__40)
-    return t234
+    var t239 uint8 = _goml_runtime_core_string_byte_get(self__39, index__40)
+    return t239
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t236 string
-    t236 = value__1
-    _goml_runtime_core_string_println(t236)
+    var t241 string
+    t241 = value__1
+    _goml_runtime_core_string_println(t241)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int_i_int_i_to__string(self__32 int) string {
-    var t240 string = _goml_runtime_core_int_to_string(self__32)
-    return t240
+    var t245 string = _goml_runtime_core_int_to_string(self__32)
+    return t245
 }
 
 func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__77 float64) string {
-    var t243 string = _goml_runtime_core_float64_to_string(self__77)
-    return t243
+    var t248 string = _goml_runtime_core_float64_to_string(self__77)
+    return t248
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {

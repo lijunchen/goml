@@ -19,23 +19,23 @@ func _goml_runtime_core_string_println(s string) struct{} {
 
 func main0() struct{} {
     var c__0 rune = 65
-    var t185 string
-    var inline220 string = char_to_string(c__0)
-    t185 = inline220
-    var inline217 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t185)
-    _goml_runtime_core_string_println(inline217)
+    var t190 string
+    var inline225 string = char_to_string(c__0)
+    t190 = inline225
+    var inline222 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t190)
+    _goml_runtime_core_string_println(inline222)
     var d__1 rune = 98
-    var jp187 string
+    var jp192 string
     switch d__1 {
     case 97:
-        jp187 = "A"
+        jp192 = "A"
     case 98:
-        jp187 = "B"
+        jp192 = "B"
     default:
-        jp187 = "?"
+        jp192 = "?"
     }
-    var inline214 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp187)
-    _goml_runtime_core_string_println(inline214)
+    var inline219 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp192)
+    _goml_runtime_core_string_println(inline219)
     return struct{}{}
 }
 
@@ -44,26 +44,26 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) strin
 }
 
 func char_to_string(value__29 rune) string {
-    var t200 uint32 = uint32(rune(value__29))
-    var t201 bool
-    var inline228 bool = t200 <= 1114111
-    if inline228 {
-        var inline229 bool = t200 >= 55296
-        var inline231 bool
-        if inline229 {
-            var inline233 bool = t200 <= 57343
-            inline231 = inline233
+    var t205 uint32 = uint32(rune(value__29))
+    var t206 bool
+    var inline233 bool = t205 <= 1114111
+    if inline233 {
+        var inline234 bool = t205 >= 55296
+        var inline236 bool
+        if inline234 {
+            var inline238 bool = t205 <= 57343
+            inline236 = inline238
         } else {
-            inline231 = false
+            inline236 = false
         }
-        var inline232 bool = !inline231
-        t201 = inline232
+        var inline237 bool = !inline236
+        t206 = inline237
     } else {
-        t201 = false
+        t206 = false
     }
-    if t201 {
-        var t202 string = _goml_runtime_core_char_to_string(value__29)
-        return t202
+    if t206 {
+        var t207 string = _goml_runtime_core_char_to_string(value__29)
+        return t207
     } else {
         _goml_runtime_core_string_get("", -1)
         return ""

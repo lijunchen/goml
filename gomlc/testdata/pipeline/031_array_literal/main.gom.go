@@ -10,9 +10,9 @@ func _goml_runtime_core_string_print(s string) struct{} {
 }
 
 func main0() struct{} {
-    var inline195 string = "array literal"
-    var inline196 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline195)
-    _goml_runtime_core_string_print(inline196)
+    var inline200 string = "array literal"
+    var inline201 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline200)
+    _goml_runtime_core_string_print(inline201)
     return struct{}{}
 }
 

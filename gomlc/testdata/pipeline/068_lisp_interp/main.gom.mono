@@ -54,7 +54,7 @@ fn is_int_text(text/2: string) -> bool {
         let saw_digit/5 = inherent#Ref#Ref[T]#new__T_bool(false) in
         let ok/6 = inherent#Ref#Ref[T]#new__T_bool(true) in
         let started/7 = inherent#Ref#Ref[T]#new__T_bool(false) in
-        let mtmp185 =
+        let mtmp190 =
           while if inherent#Ref#Ref[T]#get__T_bool(ok/6) {
               (inherent#Ref#Ref[T]#get__T_int(i/4) < len/3)
           } else {
@@ -69,7 +69,7 @@ fn is_int_text(text/2: string) -> bool {
                     false
                 } {
                     {
-                      let mtmp182 = inherent#Ref#Ref[T]#set__T_bool(started/7, true) in
+                      let mtmp187 = inherent#Ref#Ref[T]#set__T_bool(started/7, true) in
                       {
                         inherent#Ref#Ref[T]#set__T_int(
                           i/4,
@@ -80,9 +80,9 @@ fn is_int_text(text/2: string) -> bool {
                 } else {
                     if is_digit(ch/8) {
                         {
-                          let mtmp183 = inherent#Ref#Ref[T]#set__T_bool(started/7, true) in
+                          let mtmp188 = inherent#Ref#Ref[T]#set__T_bool(started/7, true) in
                           {
-                            let mtmp184 = inherent#Ref#Ref[T]#set__T_bool(saw_digit/5, true) in
+                            let mtmp189 = inherent#Ref#Ref[T]#set__T_bool(saw_digit/5, true) in
                             {
                               inherent#Ref#Ref[T]#set__T_int(
                                 i/4,
@@ -116,7 +116,7 @@ fn parse_int32(text/9: string) -> int32 {
   let negative/12 = inherent#Ref#Ref[T]#new__T_bool(false) in
   let started/13 = inherent#Ref#Ref[T]#new__T_bool(false) in
   let acc/14 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let mtmp190 =
+  let mtmp195 =
     while (inherent#Ref#Ref[T]#get__T_int(i/11) < len/10) {
         {
           let ch/15 = inherent#string#string#get(text/9, inherent#Ref#Ref[T]#get__T_int(i/11)) in
@@ -126,9 +126,9 @@ fn parse_int32(text/9: string) -> int32 {
               false
           } {
               {
-                let mtmp186 = inherent#Ref#Ref[T]#set__T_bool(started/13, true) in
+                let mtmp191 = inherent#Ref#Ref[T]#set__T_bool(started/13, true) in
                 {
-                  let mtmp187 = inherent#Ref#Ref[T]#set__T_bool(negative/12, true) in
+                  let mtmp192 = inherent#Ref#Ref[T]#set__T_bool(negative/12, true) in
                   {
                     inherent#Ref#Ref[T]#set__T_int(i/11, (inherent#Ref#Ref[T]#get__T_int(i/11) + 1))
                   }
@@ -136,10 +136,10 @@ fn parse_int32(text/9: string) -> int32 {
               }
           } else {
               {
-                let mtmp188 = inherent#Ref#Ref[T]#set__T_bool(started/13, true) in
+                let mtmp193 = inherent#Ref#Ref[T]#set__T_bool(started/13, true) in
                 {
                   let d/16 = digit_value(ch/15) in
-                  let mtmp189 =
+                  let mtmp194 =
                     inherent#Ref#Ref[T]#set__T_int32(
                       acc/14,
                       ((inherent#Ref#Ref[T]#get__T_int32(acc/14) * 10) + d/16)
@@ -182,7 +182,7 @@ fn lex_atom(source/18: string, start/19: int) -> (Token, int) {
   let text/21 = inherent#Ref#Ref[T]#new__T_string("") in
   let i/22 = inherent#Ref#Ref[T]#new__T_int(start/19) in
   let done/23 = inherent#Ref#Ref[T]#new__T_bool(false) in
-  let mtmp192 =
+  let mtmp197 =
     while if (!inherent#Ref#Ref[T]#get__T_bool(done/23)) {
         (inherent#Ref#Ref[T]#get__T_int(i/22) < len/20)
     } else {
@@ -196,7 +196,7 @@ fn lex_atom(source/18: string, start/19: int) -> (Token, int) {
               }
           } else {
               {
-                let mtmp191 =
+                let mtmp196 =
                   inherent#Ref#Ref[T]#set__T_string(
                     text/21,
                     (inherent#Ref#Ref[T]#get__T_string(text/21) +
@@ -239,13 +239,13 @@ fn lex(source/27: string) -> Vec[Token] {
   let toks0/29 = inherent#Vec#Vec[T]#new__T_Token() in
   let toks/30 = inherent#Ref#Ref[T]#new__T_Vec[Token](toks0/29) in
   let i/31 = inherent#Ref#Ref[T]#new__T_int(0) in
-  let mtmp199 =
+  let mtmp204 =
     while (inherent#Ref#Ref[T]#get__T_int(i/31) < len/28) {
         {
           let ch/32 = inherent#string#string#get(source/27, inherent#Ref#Ref[T]#get__T_int(i/31)) in
           if (ch/32 == '(') {
               {
-                let mtmp193 =
+                let mtmp198 =
                   inherent#Ref#Ref[T]#set__T_Vec[Token](
                     toks/30,
                     inherent#Vec#Vec[T]#pushed__T_Token(
@@ -260,7 +260,7 @@ fn lex(source/27: string) -> Vec[Token] {
           } else {
               if (ch/32 == ')') {
                   {
-                    let mtmp194 =
+                    let mtmp199 =
                       inherent#Ref#Ref[T]#set__T_Vec[Token](
                         toks/30,
                         inherent#Vec#Vec[T]#pushed__T_Token(
@@ -285,16 +285,16 @@ fn lex(source/27: string) -> Vec[Token] {
                       }
                   } else {
                       {
-                        let mtmp195 = lex_atom(source/27, inherent#Ref#Ref[T]#get__T_int(i/31)) in
+                        let mtmp200 = lex_atom(source/27, inherent#Ref#Ref[T]#get__T_int(i/31)) in
                         {
-                          let x196 = mtmp195.0 in
-                          let x197 = mtmp195.1 in
+                          let x201 = mtmp200.0 in
+                          let x202 = mtmp200.1 in
                           {
-                            let next/34 = x197 in
+                            let next/34 = x202 in
                             {
-                              let tok/33 = x196 in
+                              let tok/33 = x201 in
                               {
-                                let mtmp198 =
+                                let mtmp203 =
                                   inherent#Ref#Ref[T]#set__T_Vec[Token](
                                     toks/30,
                                     inherent#Vec#Vec[T]#pushed__T_Token(
@@ -324,7 +324,7 @@ fn env_lookup(env/35: Vec[Binding], name/36: string) -> Value {
   let i/37 = inherent#Ref#Ref[T]#new__T_int((inherent#Vec#Vec[T]#len__T_Binding(env/35) - 1)) in
   let result/38 = inherent#Ref#Ref[T]#new__T_Value(Value::Nil) in
   let done/39 = inherent#Ref#Ref[T]#new__T_bool(false) in
-  let mtmp201 =
+  let mtmp206 =
     while if (!inherent#Ref#Ref[T]#get__T_bool(done/39)) {
         (inherent#Ref#Ref[T]#get__T_int(i/37) >= 0)
     } else {
@@ -334,7 +334,7 @@ fn env_lookup(env/35: Vec[Binding], name/36: string) -> Value {
           let binding/40 = @intrinsic(vec.get)(env/35, inherent#Ref#Ref[T]#get__T_int(i/37)) in
           if (Binding.name(binding/40) == name/36) {
               {
-                let mtmp200 =
+                let mtmp205 =
                   inherent#Ref#Ref[T]#set__T_Value(result/38, Binding.value(binding/40)) in
                 {
                   inherent#Ref#Ref[T]#set__T_bool(done/39, true)
@@ -354,14 +354,14 @@ fn env_lookup(env/35: Vec[Binding], name/36: string) -> Value {
 
 fn lookup(local/41: Vec[Binding], global/42: Vec[Binding], name/43: string) -> Value {
   {
-    let mtmp202 = env_lookup(local/41, name/43) in
-    match mtmp202 {
+    let mtmp207 = env_lookup(local/41, name/43) in
+    match mtmp207 {
       Value::Nil => {
         env_lookup(global/42, name/43)
       },
       _ =>
         {
-          let other/44 = mtmp202 in
+          let other/44 = mtmp207 in
           other/44
         },
     }
@@ -373,7 +373,7 @@ fn parse_list(tokens/45: Vec[Token], start/46: int) -> (Vec[SExpr], int) {
   let exprs/48 = inherent#Ref#Ref[T]#new__T_Vec[SExpr](acc/47) in
   let i/49 = inherent#Ref#Ref[T]#new__T_int(start/46) in
   let done/50 = inherent#Ref#Ref[T]#new__T_bool(false) in
-  let mtmp215 =
+  let mtmp220 =
     while if (!inherent#Ref#Ref[T]#get__T_bool(done/50)) {
         (inherent#Ref#Ref[T]#get__T_int(i/49) < inherent#Vec#Vec[T]#len__T_Token(tokens/45))
     } else {
@@ -381,11 +381,11 @@ fn parse_list(tokens/45: Vec[Token], start/46: int) -> (Vec[SExpr], int) {
     } {
         {
           {
-            let mtmp206 = @intrinsic(vec.get)(tokens/45, inherent#Ref#Ref[T]#get__T_int(i/49)) in
-            match mtmp206 {
+            let mtmp211 = @intrinsic(vec.get)(tokens/45, inherent#Ref#Ref[T]#get__T_int(i/49)) in
+            match mtmp211 {
               Token::RParen => {
                 {
-                  let mtmp210 = inherent#Ref#Ref[T]#set__T_bool(done/50, true) in
+                  let mtmp215 = inherent#Ref#Ref[T]#set__T_bool(done/50, true) in
                   {
                     inherent#Ref#Ref[T]#set__T_int(i/49, (inherent#Ref#Ref[T]#get__T_int(i/49) + 1))
                   }
@@ -393,16 +393,16 @@ fn parse_list(tokens/45: Vec[Token], start/46: int) -> (Vec[SExpr], int) {
               },
               _ =>
                 {
-                  let mtmp211 = parse_expr(tokens/45, inherent#Ref#Ref[T]#get__T_int(i/49)) in
+                  let mtmp216 = parse_expr(tokens/45, inherent#Ref#Ref[T]#get__T_int(i/49)) in
                   {
-                    let x212 = mtmp211.0 in
-                    let x213 = mtmp211.1 in
+                    let x217 = mtmp216.0 in
+                    let x218 = mtmp216.1 in
                     {
-                      let next/52 = x213 in
+                      let next/52 = x218 in
                       {
-                        let expr/51 = x212 in
+                        let expr/51 = x217 in
                         {
-                          let mtmp214 =
+                          let mtmp219 =
                             inherent#Ref#Ref[T]#set__T_Vec[SExpr](
                               exprs/48,
                               inherent#Vec#Vec[T]#pushed__T_SExpr(
@@ -429,18 +429,18 @@ fn parse_list(tokens/45: Vec[Token], start/46: int) -> (Vec[SExpr], int) {
 
 fn parse_expr(tokens/53: Vec[Token], start/54: int) -> (SExpr, int) {
   {
-    let mtmp216 = @intrinsic(vec.get)(tokens/53, start/54) in
-    match mtmp216 {
+    let mtmp221 = @intrinsic(vec.get)(tokens/53, start/54) in
+    match mtmp221 {
       Token::LParen => {
         {
-          let mtmp220 = parse_list(tokens/53, (start/54 + 1)) in
+          let mtmp225 = parse_list(tokens/53, (start/54 + 1)) in
           {
-            let x221 = mtmp220.0 in
-            let x222 = mtmp220.1 in
+            let x226 = mtmp225.0 in
+            let x227 = mtmp225.1 in
             {
-              let next/56 = x222 in
+              let next/56 = x227 in
               {
-                let items/55 = x221 in
+                let items/55 = x226 in
                 {
                   (SExpr::List(items/55), next/56)
                 }
@@ -452,29 +452,29 @@ fn parse_expr(tokens/53: Vec[Token], start/54: int) -> (SExpr, int) {
       Token::RParen => {
         (SExpr::Sym(")"), (start/54 + 1))
       },
-      Token::Sym(x217) => {
+      Token::Sym(x222) => {
         {
-          let x217 = Token::Sym._0(mtmp216) in
+          let x222 = Token::Sym._0(mtmp221) in
           {
-            let name/59 = x217 in
+            let name/59 = x222 in
             (SExpr::Sym(name/59), (start/54 + 1))
           }
         }
       },
-      Token::Int(x218) => {
+      Token::Int(x223) => {
         {
-          let x218 = Token::Int._0(mtmp216) in
+          let x223 = Token::Int._0(mtmp221) in
           {
-            let n/58 = x218 in
+            let n/58 = x223 in
             (SExpr::Int(n/58), (start/54 + 1))
           }
         }
       },
-      Token::Bool(x219) => {
+      Token::Bool(x224) => {
         {
-          let x219 = Token::Bool._0(mtmp216) in
+          let x224 = Token::Bool._0(mtmp221) in
           {
-            let b/57 = x219 in
+            let b/57 = x224 in
             (SExpr::Bool(b/57), (start/54 + 1))
           }
         }
@@ -487,19 +487,19 @@ fn parse_program(tokens/60: Vec[Token]) -> Vec[SExpr] {
   let i/61 = inherent#Ref#Ref[T]#new__T_int(0) in
   let acc/62 = inherent#Vec#Vec[T]#new__T_SExpr() in
   let exprs/63 = inherent#Ref#Ref[T]#new__T_Vec[SExpr](acc/62) in
-  let mtmp227 =
+  let mtmp232 =
     while (inherent#Ref#Ref[T]#get__T_int(i/61) < inherent#Vec#Vec[T]#len__T_Token(tokens/60)) {
         {
-          let mtmp223 = parse_expr(tokens/60, inherent#Ref#Ref[T]#get__T_int(i/61)) in
+          let mtmp228 = parse_expr(tokens/60, inherent#Ref#Ref[T]#get__T_int(i/61)) in
           {
-            let x224 = mtmp223.0 in
-            let x225 = mtmp223.1 in
+            let x229 = mtmp228.0 in
+            let x230 = mtmp228.1 in
             {
-              let next/65 = x225 in
+              let next/65 = x230 in
               {
-                let expr/64 = x224 in
+                let expr/64 = x229 in
                 {
-                  let mtmp226 =
+                  let mtmp231 =
                     inherent#Ref#Ref[T]#set__T_Vec[SExpr](
                       exprs/63,
                       inherent#Vec#Vec[T]#pushed__T_SExpr(
@@ -523,25 +523,25 @@ fn parse_program(tokens/60: Vec[Token]) -> Vec[SExpr] {
 
 fn value_to_string(value/66: Value) -> string {
   match value/66 {
-    Value::Int(x228) => {
+    Value::Int(x233) => {
       {
-        let x228 = Value::Int._0(value/66) in
+        let x233 = Value::Int._0(value/66) in
         {
-          let n/67 = x228 in
+          let n/67 = x233 in
           inherent#int32#int32#to_string(n/67)
         }
       }
     },
-    Value::Bool(x229) => {
+    Value::Bool(x234) => {
       {
-        let x229 = Value::Bool._0(value/66) in
+        let x234 = Value::Bool._0(value/66) in
         {
-          let b/68 = x229 in
+          let b/68 = x234 in
           trait_impl#ToString#bool#to_string(b/68)
         }
       }
     },
-    Value::Func(x230) => {
+    Value::Func(x235) => {
       {
         "<lambda>"
       }
@@ -554,25 +554,25 @@ fn value_to_string(value/66: Value) -> string {
 
 fn truthy(value/69: Value) -> bool {
   match value/69 {
-    Value::Int(x231) => {
+    Value::Int(x236) => {
       {
-        let x231 = Value::Int._0(value/69) in
+        let x236 = Value::Int._0(value/69) in
         {
-          let n/71 = x231 in
+          let n/71 = x236 in
           (n/71 != 0)
         }
       }
     },
-    Value::Bool(x232) => {
+    Value::Bool(x237) => {
       {
-        let x232 = Value::Bool._0(value/69) in
+        let x237 = Value::Bool._0(value/69) in
         {
-          let b/70 = x232 in
+          let b/70 = x237 in
           b/70
         }
       }
     },
-    Value::Func(x233) => {
+    Value::Func(x238) => {
       {
         true
       }
@@ -585,38 +585,38 @@ fn truthy(value/69: Value) -> bool {
 
 fn eval(expr/72: SExpr, local/73: Vec[Binding], global/74: Ref[Vec[Binding]]) -> Value {
   match expr/72 {
-    SExpr::Int(x234) => {
+    SExpr::Int(x239) => {
       {
-        let x234 = SExpr::Int._0(expr/72) in
+        let x239 = SExpr::Int._0(expr/72) in
         {
-          let n/75 = x234 in
+          let n/75 = x239 in
           Value::Int(n/75)
         }
       }
     },
-    SExpr::Bool(x235) => {
+    SExpr::Bool(x240) => {
       {
-        let x235 = SExpr::Bool._0(expr/72) in
+        let x240 = SExpr::Bool._0(expr/72) in
         {
-          let b/76 = x235 in
+          let b/76 = x240 in
           Value::Bool(b/76)
         }
       }
     },
-    SExpr::Sym(x236) => {
+    SExpr::Sym(x241) => {
       {
-        let x236 = SExpr::Sym._0(expr/72) in
+        let x241 = SExpr::Sym._0(expr/72) in
         {
-          let name/77 = x236 in
+          let name/77 = x241 in
           lookup(local/73, inherent#Ref#Ref[T]#get__T_Vec[Binding](global/74), name/77)
         }
       }
     },
-    SExpr::List(x237) => {
+    SExpr::List(x242) => {
       {
-        let x237 = SExpr::List._0(expr/72) in
+        let x242 = SExpr::List._0(expr/72) in
         {
-          let items/78 = x237 in
+          let items/78 = x242 in
           eval_list(items/78, local/73, global/74)
         }
       }
@@ -633,11 +633,11 @@ fn eval_list(items/79: Vec[SExpr], local/80: Vec[Binding], global/81: Ref[Vec[Bi
       {
         let head/82 = @intrinsic(vec.get)(items/79, 0) in
         match head/82 {
-          SExpr::Sym(x240) => {
+          SExpr::Sym(x245) => {
             {
-              let x240 = SExpr::Sym._0(head/82) in
+              let x245 = SExpr::Sym._0(head/82) in
               {
-                let name/83 = x240 in
+                let name/83 = x245 in
                 eval_list_sym(name/83, items/79, local/80, global/81)
               }
             }
@@ -668,13 +668,13 @@ fn eval_list_sym(
         if (inherent#Vec#Vec[T]#len__T_SExpr(items/87) == 3) {
             {
               {
-                let mtmp242 = @intrinsic(vec.get)(items/87, 1) in
-                match mtmp242 {
-                  SExpr::Sym(x245) => {
+                let mtmp247 = @intrinsic(vec.get)(items/87, 1) in
+                match mtmp247 {
+                  SExpr::Sym(x250) => {
                     {
-                      let x245 = SExpr::Sym._0(mtmp242) in
+                      let x250 = SExpr::Sym._0(mtmp247) in
                       {
-                        let var/90 = x245 in
+                        let var/90 = x250 in
                         {
                           let value/91 =
                             eval(@intrinsic(vec.get)(items/87, 2), local/88, global/89) in
@@ -684,7 +684,7 @@ fn eval_list_sym(
                               env/92,
                               Binding { name: var/90, value: value/91 }
                             ) in
-                          let mtmp247 =
+                          let mtmp252 =
                             inherent#Ref#Ref[T]#set__T_Vec[Binding](global/89, updated/93) in
                           {
                             value/91
@@ -731,13 +731,13 @@ fn eval_list_sym(
         if (inherent#Vec#Vec[T]#len__T_SExpr(items/87) == 3) {
             {
               {
-                let mtmp248 = @intrinsic(vec.get)(items/87, 1) in
-                match mtmp248 {
-                  SExpr::List(x252) => {
+                let mtmp253 = @intrinsic(vec.get)(items/87, 1) in
+                match mtmp253 {
+                  SExpr::List(x257) => {
                     {
-                      let x252 = SExpr::List._0(mtmp248) in
+                      let x257 = SExpr::List._0(mtmp253) in
                       {
-                        let params_exprs/95 = x252 in
+                        let params_exprs/95 = x257 in
                         {
                           let params/96 = params_from_sexprs(params_exprs/95) in
                           let body/97 = @intrinsic(vec.get)(items/87, 2) in
@@ -796,7 +796,7 @@ fn eval_begin(
 ) -> Value {
   let i/104 = inherent#Ref#Ref[T]#new__T_int(start/101) in
   let last/105 = inherent#Ref#Ref[T]#new__T_Value(Value::Nil) in
-  let mtmp254 =
+  let mtmp259 =
     while (inherent#Ref#Ref[T]#get__T_int(i/104) < inherent#Vec#Vec[T]#len__T_SExpr(items/100)) {
         {
           let v/106 =
@@ -805,7 +805,7 @@ fn eval_begin(
               local/102,
               global/103
             ) in
-          let mtmp253 = inherent#Ref#Ref[T]#set__T_Value(last/105, v/106) in
+          let mtmp258 = inherent#Ref#Ref[T]#set__T_Value(last/105, v/106) in
           {
             inherent#Ref#Ref[T]#set__T_int(i/104, (inherent#Ref#Ref[T]#get__T_int(i/104) + 1))
           }
@@ -820,19 +820,19 @@ fn params_from_sexprs(items/107: Vec[SExpr]) -> Vec[string] {
   let i/108 = inherent#Ref#Ref[T]#new__T_int(0) in
   let acc/109 = inherent#Vec#Vec[T]#new__T_string() in
   let params/110 = inherent#Ref#Ref[T]#new__T_Vec[string](acc/109) in
-  let mtmp261 =
+  let mtmp266 =
     while (inherent#Ref#Ref[T]#get__T_int(i/108) < inherent#Vec#Vec[T]#len__T_SExpr(items/107)) {
         {
           {
-            let mtmp255 = @intrinsic(vec.get)(items/107, inherent#Ref#Ref[T]#get__T_int(i/108)) in
-            match mtmp255 {
-              SExpr::Sym(x258) => {
+            let mtmp260 = @intrinsic(vec.get)(items/107, inherent#Ref#Ref[T]#get__T_int(i/108)) in
+            match mtmp260 {
+              SExpr::Sym(x263) => {
                 {
-                  let x258 = SExpr::Sym._0(mtmp255) in
+                  let x263 = SExpr::Sym._0(mtmp260) in
                   {
-                    let name/111 = x258 in
+                    let name/111 = x263 in
                     {
-                      let mtmp260 =
+                      let mtmp265 =
                         inherent#Ref#Ref[T]#set__T_Vec[string](
                           params/110,
                           inherent#Vec#Vec[T]#pushed__T_string(
@@ -870,7 +870,7 @@ fn eval_args(
   let i/116 = inherent#Ref#Ref[T]#new__T_int(start/113) in
   let acc/117 = inherent#Vec#Vec[T]#new__T_Value() in
   let args/118 = inherent#Ref#Ref[T]#new__T_Vec[Value](acc/117) in
-  let mtmp263 =
+  let mtmp268 =
     while (inherent#Ref#Ref[T]#get__T_int(i/116) < inherent#Vec#Vec[T]#len__T_SExpr(items/112)) {
         {
           let v/119 =
@@ -879,7 +879,7 @@ fn eval_args(
               local/114,
               global/115
             ) in
-          let mtmp262 =
+          let mtmp267 =
             inherent#Ref#Ref[T]#set__T_Vec[Value](
               args/118,
               inherent#Vec#Vec[T]#pushed__T_Value(
@@ -903,22 +903,22 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
       if (inherent#Vec#Vec[T]#len__T_Value(args/121) == 2) {
           {
             {
-              let mtmp264 = (@intrinsic(vec.get)(args/121, 0), @intrinsic(vec.get)(args/121, 1)) in
+              let mtmp269 = (@intrinsic(vec.get)(args/121, 0), @intrinsic(vec.get)(args/121, 1)) in
               {
-                let x265 = mtmp264.0 in
-                let x266 = mtmp264.1 in
-                match x266 {
-                  Value::Int(x267) => {
+                let x270 = mtmp269.0 in
+                let x271 = mtmp269.1 in
+                match x271 {
+                  Value::Int(x272) => {
                     {
-                      let x267 = Value::Int._0(x266) in
-                      match x265 {
-                        Value::Int(x270) => {
+                      let x272 = Value::Int._0(x271) in
+                      match x270 {
+                        Value::Int(x275) => {
                           {
-                            let x270 = Value::Int._0(x265) in
+                            let x275 = Value::Int._0(x270) in
                             {
-                              let a/122 = x270 in
+                              let a/122 = x275 in
                               {
-                                let b/123 = x267 in
+                                let b/123 = x272 in
                                 Value::Bool((a/122 == b/123))
                               }
                             }
@@ -928,17 +928,17 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
                       }
                     }
                   },
-                  Value::Bool(x268) => {
+                  Value::Bool(x273) => {
                     {
-                      let x268 = Value::Bool._0(x266) in
-                      match x265 {
-                        Value::Bool(x274) => {
+                      let x273 = Value::Bool._0(x271) in
+                      match x270 {
+                        Value::Bool(x279) => {
                           {
-                            let x274 = Value::Bool._0(x265) in
+                            let x279 = Value::Bool._0(x270) in
                             {
-                              let a/124 = x274 in
+                              let a/124 = x279 in
                               {
-                                let b/125 = x268 in
+                                let b/125 = x273 in
                                 Value::Bool((a/124 == b/125))
                               }
                             }
@@ -963,21 +963,21 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
       {
         let i/126 = inherent#Ref#Ref[T]#new__T_int(0) in
         let acc/127 = inherent#Ref#Ref[T]#new__T_int32(0) in
-        let mtmp281 =
+        let mtmp286 =
           while (inherent#Ref#Ref[T]#get__T_int(i/126) <
             inherent#Vec#Vec[T]#len__T_Value(args/121)) {
               {
                 {
-                  let mtmp276 =
+                  let mtmp281 =
                     @intrinsic(vec.get)(args/121, inherent#Ref#Ref[T]#get__T_int(i/126)) in
-                  match mtmp276 {
-                    Value::Int(x277) => {
+                  match mtmp281 {
+                    Value::Int(x282) => {
                       {
-                        let x277 = Value::Int._0(mtmp276) in
+                        let x282 = Value::Int._0(mtmp281) in
                         {
-                          let n/128 = x277 in
+                          let n/128 = x282 in
                           {
-                            let mtmp280 =
+                            let mtmp285 =
                               inherent#Ref#Ref[T]#set__T_int32(
                                 acc/127,
                                 (inherent#Ref#Ref[T]#get__T_int32(acc/127) + n/128)
@@ -1010,21 +1010,21 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
       {
         let i/129 = inherent#Ref#Ref[T]#new__T_int(0) in
         let acc/130 = inherent#Ref#Ref[T]#new__T_int32(1) in
-        let mtmp287 =
+        let mtmp292 =
           while (inherent#Ref#Ref[T]#get__T_int(i/129) <
             inherent#Vec#Vec[T]#len__T_Value(args/121)) {
               {
                 {
-                  let mtmp282 =
+                  let mtmp287 =
                     @intrinsic(vec.get)(args/121, inherent#Ref#Ref[T]#get__T_int(i/129)) in
-                  match mtmp282 {
-                    Value::Int(x283) => {
+                  match mtmp287 {
+                    Value::Int(x288) => {
                       {
-                        let x283 = Value::Int._0(mtmp282) in
+                        let x288 = Value::Int._0(mtmp287) in
                         {
-                          let n/131 = x283 in
+                          let n/131 = x288 in
                           {
-                            let mtmp286 =
+                            let mtmp291 =
                               inherent#Ref#Ref[T]#set__T_int32(
                                 acc/130,
                                 (inherent#Ref#Ref[T]#get__T_int32(acc/130) * n/131)
@@ -1055,17 +1055,17 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
     },
     "-" => {
       {
-        let mtmp288 = inherent#Vec#Vec[T]#len__T_Value(args/121) in
-        match mtmp288 {
+        let mtmp293 = inherent#Vec#Vec[T]#len__T_Value(args/121) in
+        match mtmp293 {
           1 => {
             {
-              let mtmp289 = @intrinsic(vec.get)(args/121, 0) in
-              match mtmp289 {
-                Value::Int(x290) => {
+              let mtmp294 = @intrinsic(vec.get)(args/121, 0) in
+              match mtmp294 {
+                Value::Int(x295) => {
                   {
-                    let x290 = Value::Int._0(mtmp289) in
+                    let x295 = Value::Int._0(mtmp294) in
                     {
-                      let n/132 = x290 in
+                      let n/132 = x295 in
                       Value::Int((0 - n/132))
                     }
                   }
@@ -1076,22 +1076,22 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
           },
           2 => {
             {
-              let mtmp293 = (@intrinsic(vec.get)(args/121, 0), @intrinsic(vec.get)(args/121, 1)) in
+              let mtmp298 = (@intrinsic(vec.get)(args/121, 0), @intrinsic(vec.get)(args/121, 1)) in
               {
-                let x294 = mtmp293.0 in
-                let x295 = mtmp293.1 in
-                match x295 {
-                  Value::Int(x296) => {
+                let x299 = mtmp298.0 in
+                let x300 = mtmp298.1 in
+                match x300 {
+                  Value::Int(x301) => {
                     {
-                      let x296 = Value::Int._0(x295) in
-                      match x294 {
-                        Value::Int(x299) => {
+                      let x301 = Value::Int._0(x300) in
+                      match x299 {
+                        Value::Int(x304) => {
                           {
-                            let x299 = Value::Int._0(x294) in
+                            let x304 = Value::Int._0(x299) in
                             {
-                              let a/133 = x299 in
+                              let a/133 = x304 in
                               {
-                                let b/134 = x296 in
+                                let b/134 = x301 in
                                 Value::Int((a/133 - b/134))
                               }
                             }
@@ -1114,22 +1114,22 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
       if (inherent#Vec#Vec[T]#len__T_Value(args/121) == 2) {
           {
             {
-              let mtmp302 = (@intrinsic(vec.get)(args/121, 0), @intrinsic(vec.get)(args/121, 1)) in
+              let mtmp307 = (@intrinsic(vec.get)(args/121, 0), @intrinsic(vec.get)(args/121, 1)) in
               {
-                let x303 = mtmp302.0 in
-                let x304 = mtmp302.1 in
-                match x304 {
-                  Value::Int(x305) => {
+                let x308 = mtmp307.0 in
+                let x309 = mtmp307.1 in
+                match x309 {
+                  Value::Int(x310) => {
                     {
-                      let x305 = Value::Int._0(x304) in
-                      match x303 {
-                        Value::Int(x308) => {
+                      let x310 = Value::Int._0(x309) in
+                      match x308 {
+                        Value::Int(x313) => {
                           {
-                            let x308 = Value::Int._0(x303) in
+                            let x313 = Value::Int._0(x308) in
                             {
-                              let a/135 = x308 in
+                              let a/135 = x313 in
                               {
-                                let b/136 = x305 in
+                                let b/136 = x310 in
                                 Value::Int((a/135 / b/136))
                               }
                             }
@@ -1156,11 +1156,11 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
 
 fn apply(func/137: Value, args/138: Vec[Value], global/139: Ref[Vec[Binding]]) -> Value {
   match func/137 {
-    Value::Func(x313) => {
+    Value::Func(x318) => {
       {
-        let x313 = Value::Func._0(func/137) in
+        let x318 = Value::Func._0(func/137) in
         {
-          let fun/140 = x313 in
+          let fun/140 = x318 in
           apply_lambda(fun/140, args/138)
         }
       }
@@ -1172,7 +1172,7 @@ fn apply(func/137: Value, args/138: Vec[Value], global/139: Ref[Vec[Binding]]) -
 fn apply_lambda(lambda/141: Lambda, args/142: Vec[Value]) -> Value {
   let env/143 = inherent#Ref#Ref[T]#new__T_Vec[Binding](Lambda.env(lambda/141)) in
   let i/144 = inherent#Ref#Ref[T]#new__T_int(0) in
-  let mtmp315 =
+  let mtmp320 =
     while if (inherent#Ref#Ref[T]#get__T_int(i/144) <
       inherent#Vec#Vec[T]#len__T_string(Lambda.params(lambda/141))) {
         (inherent#Ref#Ref[T]#get__T_int(i/144) < inherent#Vec#Vec[T]#len__T_Value(args/142))
@@ -1188,7 +1188,7 @@ fn apply_lambda(lambda/141: Lambda, args/142: Vec[Value]) -> Value {
               inherent#Ref#Ref[T]#get__T_Vec[Binding](env/143),
               Binding { name: name/145, value: value/146 }
             ) in
-          let mtmp314 = inherent#Ref#Ref[T]#set__T_Vec[Binding](env/143, updated/147) in
+          let mtmp319 = inherent#Ref#Ref[T]#set__T_Vec[Binding](env/143, updated/147) in
           {
             inherent#Ref#Ref[T]#set__T_int(i/144, (inherent#Ref#Ref[T]#get__T_int(i/144) + 1))
           }
@@ -1210,12 +1210,12 @@ fn main() -> unit {
   let exprs/150 = parse_program(lex(program/149)) in
   let result/151 =
     eval(@intrinsic(vec.get)(exprs/150, 0), inherent#Vec#Vec[T]#new__T_Binding(), global/148) in
-  let mtmp316 = println__T_string(value_to_string(result/151)) in
+  let mtmp321 = println__T_string(value_to_string(result/151)) in
   {
     let exprs2/152 = parse_program(lex("(add3 10 20 30)")) in
     let result2/153 =
       eval(@intrinsic(vec.get)(exprs2/152, 0), inherent#Vec#Vec[T]#new__T_Binding(), global/148) in
-    let mtmp317 = println__T_string(value_to_string(result2/153)) in
+    let mtmp322 = println__T_string(value_to_string(result2/153)) in
     {
       ()
     }
@@ -1226,72 +1226,72 @@ fn inherent#string#string#len(self/35: string) -> int {
   @runtime(core.string_len)(self/35)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/270: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/270)
+fn inherent#Ref#Ref[T]#new__T_int(value/273: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/273)
 }
 
-fn inherent#Ref#Ref[T]#new__T_bool(value/270: bool) -> Ref[bool] {
-  @intrinsic(ref.new)(value/270)
+fn inherent#Ref#Ref[T]#new__T_bool(value/273: bool) -> Ref[bool] {
+  @intrinsic(ref.new)(value/273)
 }
 
-fn inherent#Ref#Ref[T]#get__T_bool(self/271: Ref[bool]) -> bool {
-  @intrinsic(ref.get)(self/271)
+fn inherent#Ref#Ref[T]#get__T_bool(self/274: Ref[bool]) -> bool {
+  @intrinsic(ref.get)(self/274)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/271: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/271)
+fn inherent#Ref#Ref[T]#get__T_int(self/274: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/274)
 }
 
 fn inherent#string#string#get(self/37: string, index/38: int) -> char {
   string_get(self/37, index/38)
 }
 
-fn inherent#Ref#Ref[T]#set__T_bool(self/272: Ref[bool], value/273: bool) -> unit {
-  @intrinsic(ref.set)(self/272, value/273)
+fn inherent#Ref#Ref[T]#set__T_bool(self/275: Ref[bool], value/276: bool) -> unit {
+  @intrinsic(ref.set)(self/275, value/276)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/272: Ref[int], value/273: int) -> unit {
-  @intrinsic(ref.set)(self/272, value/273)
+fn inherent#Ref#Ref[T]#set__T_int(self/275: Ref[int], value/276: int) -> unit {
+  @intrinsic(ref.set)(self/275, value/276)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/270: int32) -> Ref[int32] {
-  @intrinsic(ref.new)(value/270)
+fn inherent#Ref#Ref[T]#new__T_int32(value/273: int32) -> Ref[int32] {
+  @intrinsic(ref.new)(value/273)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/271: Ref[int32]) -> int32 {
-  @intrinsic(ref.get)(self/271)
+fn inherent#Ref#Ref[T]#get__T_int32(self/274: Ref[int32]) -> int32 {
+  @intrinsic(ref.get)(self/274)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/272: Ref[int32], value/273: int32) -> unit {
-  @intrinsic(ref.set)(self/272, value/273)
+fn inherent#Ref#Ref[T]#set__T_int32(self/275: Ref[int32], value/276: int32) -> unit {
+  @intrinsic(ref.set)(self/275, value/276)
 }
 
-fn inherent#Ref#Ref[T]#new__T_string(value/270: string) -> Ref[string] {
-  @intrinsic(ref.new)(value/270)
+fn inherent#Ref#Ref[T]#new__T_string(value/273: string) -> Ref[string] {
+  @intrinsic(ref.new)(value/273)
 }
 
-fn inherent#Ref#Ref[T]#get__T_string(self/271: Ref[string]) -> string {
-  @intrinsic(ref.get)(self/271)
+fn inherent#Ref#Ref[T]#get__T_string(self/274: Ref[string]) -> string {
+  @intrinsic(ref.get)(self/274)
 }
 
 fn inherent#char#char#to_string(self/34: char) -> string {
   char_to_string(self/34)
 }
 
-fn inherent#Ref#Ref[T]#set__T_string(self/272: Ref[string], value/273: string) -> unit {
-  @intrinsic(ref.set)(self/272, value/273)
+fn inherent#Ref#Ref[T]#set__T_string(self/275: Ref[string], value/276: string) -> unit {
+  @intrinsic(ref.set)(self/275, value/276)
 }
 
 fn inherent#Vec#Vec[T]#new__T_Token() -> Vec[Token] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Ref#Ref[T]#new__T_Vec[Token](value/270: Vec[Token]) -> Ref[Vec[Token]] {
-  @intrinsic(ref.new)(value/270)
+fn inherent#Ref#Ref[T]#new__T_Vec[Token](value/273: Vec[Token]) -> Ref[Vec[Token]] {
+  @intrinsic(ref.new)(value/273)
 }
 
-fn inherent#Ref#Ref[T]#get__T_Vec[Token](self/271: Ref[Vec[Token]]) -> Vec[Token] {
-  @intrinsic(ref.get)(self/271)
+fn inherent#Ref#Ref[T]#get__T_Vec[Token](self/274: Ref[Vec[Token]]) -> Vec[Token] {
+  @intrinsic(ref.get)(self/274)
 }
 
 fn inherent#Vec#Vec[T]#pushed__T_Token(self/176: Vec[Token], elem/177: Token) -> Vec[Token] {
@@ -1318,40 +1318,40 @@ fn inherent#Vec#Vec[T]#pushed__T_Token(self/176: Vec[Token], elem/177: Token) ->
   result/178
 }
 
-fn inherent#Ref#Ref[T]#set__T_Vec[Token](self/272: Ref[Vec[Token]], value/273: Vec[Token]) -> unit {
-  @intrinsic(ref.set)(self/272, value/273)
+fn inherent#Ref#Ref[T]#set__T_Vec[Token](self/275: Ref[Vec[Token]], value/276: Vec[Token]) -> unit {
+  @intrinsic(ref.set)(self/275, value/276)
 }
 
 fn inherent#Vec#Vec[T]#len__T_Binding(self/189: Vec[Binding]) -> int {
   @intrinsic(vec.len)(self/189)
 }
 
-fn inherent#Ref#Ref[T]#new__T_Value(value/270: Value) -> Ref[Value] {
-  @intrinsic(ref.new)(value/270)
+fn inherent#Ref#Ref[T]#new__T_Value(value/273: Value) -> Ref[Value] {
+  @intrinsic(ref.new)(value/273)
 }
 
-fn inherent#Ref#Ref[T]#set__T_Value(self/272: Ref[Value], value/273: Value) -> unit {
-  @intrinsic(ref.set)(self/272, value/273)
+fn inherent#Ref#Ref[T]#set__T_Value(self/275: Ref[Value], value/276: Value) -> unit {
+  @intrinsic(ref.set)(self/275, value/276)
 }
 
-fn inherent#Ref#Ref[T]#get__T_Value(self/271: Ref[Value]) -> Value {
-  @intrinsic(ref.get)(self/271)
+fn inherent#Ref#Ref[T]#get__T_Value(self/274: Ref[Value]) -> Value {
+  @intrinsic(ref.get)(self/274)
 }
 
 fn inherent#Vec#Vec[T]#new__T_SExpr() -> Vec[SExpr] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Ref#Ref[T]#new__T_Vec[SExpr](value/270: Vec[SExpr]) -> Ref[Vec[SExpr]] {
-  @intrinsic(ref.new)(value/270)
+fn inherent#Ref#Ref[T]#new__T_Vec[SExpr](value/273: Vec[SExpr]) -> Ref[Vec[SExpr]] {
+  @intrinsic(ref.new)(value/273)
 }
 
 fn inherent#Vec#Vec[T]#len__T_Token(self/189: Vec[Token]) -> int {
   @intrinsic(vec.len)(self/189)
 }
 
-fn inherent#Ref#Ref[T]#get__T_Vec[SExpr](self/271: Ref[Vec[SExpr]]) -> Vec[SExpr] {
-  @intrinsic(ref.get)(self/271)
+fn inherent#Ref#Ref[T]#get__T_Vec[SExpr](self/274: Ref[Vec[SExpr]]) -> Vec[SExpr] {
+  @intrinsic(ref.get)(self/274)
 }
 
 fn inherent#Vec#Vec[T]#pushed__T_SExpr(self/176: Vec[SExpr], elem/177: SExpr) -> Vec[SExpr] {
@@ -1378,8 +1378,8 @@ fn inherent#Vec#Vec[T]#pushed__T_SExpr(self/176: Vec[SExpr], elem/177: SExpr) ->
   result/178
 }
 
-fn inherent#Ref#Ref[T]#set__T_Vec[SExpr](self/272: Ref[Vec[SExpr]], value/273: Vec[SExpr]) -> unit {
-  @intrinsic(ref.set)(self/272, value/273)
+fn inherent#Ref#Ref[T]#set__T_Vec[SExpr](self/275: Ref[Vec[SExpr]], value/276: Vec[SExpr]) -> unit {
+  @intrinsic(ref.set)(self/275, value/276)
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {
@@ -1390,8 +1390,8 @@ fn trait_impl#ToString#bool#to_string(self/64: bool) -> string {
   @runtime(core.bool_to_string)(self/64)
 }
 
-fn inherent#Ref#Ref[T]#get__T_Vec[Binding](self/271: Ref[Vec[Binding]]) -> Vec[Binding] {
-  @intrinsic(ref.get)(self/271)
+fn inherent#Ref#Ref[T]#get__T_Vec[Binding](self/274: Ref[Vec[Binding]]) -> Vec[Binding] {
+  @intrinsic(ref.get)(self/274)
 }
 
 fn inherent#Vec#Vec[T]#len__T_SExpr(self/189: Vec[SExpr]) -> int {
@@ -1427,22 +1427,22 @@ fn inherent#Vec#Vec[T]#pushed__T_Binding(self/176: Vec[Binding], elem/177: Bindi
 }
 
 fn inherent#Ref#Ref[T]#set__T_Vec[Binding](
-  self/272: Ref[Vec[Binding]],
-  value/273: Vec[Binding]
+  self/275: Ref[Vec[Binding]],
+  value/276: Vec[Binding]
 ) -> unit {
-  @intrinsic(ref.set)(self/272, value/273)
+  @intrinsic(ref.set)(self/275, value/276)
 }
 
 fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Ref#Ref[T]#new__T_Vec[string](value/270: Vec[string]) -> Ref[Vec[string]] {
-  @intrinsic(ref.new)(value/270)
+fn inherent#Ref#Ref[T]#new__T_Vec[string](value/273: Vec[string]) -> Ref[Vec[string]] {
+  @intrinsic(ref.new)(value/273)
 }
 
-fn inherent#Ref#Ref[T]#get__T_Vec[string](self/271: Ref[Vec[string]]) -> Vec[string] {
-  @intrinsic(ref.get)(self/271)
+fn inherent#Ref#Ref[T]#get__T_Vec[string](self/274: Ref[Vec[string]]) -> Vec[string] {
+  @intrinsic(ref.get)(self/274)
 }
 
 fn inherent#Vec#Vec[T]#pushed__T_string(self/176: Vec[string], elem/177: string) -> Vec[string] {
@@ -1472,22 +1472,22 @@ fn inherent#Vec#Vec[T]#pushed__T_string(self/176: Vec[string], elem/177: string)
 }
 
 fn inherent#Ref#Ref[T]#set__T_Vec[string](
-  self/272: Ref[Vec[string]],
-  value/273: Vec[string]
+  self/275: Ref[Vec[string]],
+  value/276: Vec[string]
 ) -> unit {
-  @intrinsic(ref.set)(self/272, value/273)
+  @intrinsic(ref.set)(self/275, value/276)
 }
 
 fn inherent#Vec#Vec[T]#new__T_Value() -> Vec[Value] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Ref#Ref[T]#new__T_Vec[Value](value/270: Vec[Value]) -> Ref[Vec[Value]] {
-  @intrinsic(ref.new)(value/270)
+fn inherent#Ref#Ref[T]#new__T_Vec[Value](value/273: Vec[Value]) -> Ref[Vec[Value]] {
+  @intrinsic(ref.new)(value/273)
 }
 
-fn inherent#Ref#Ref[T]#get__T_Vec[Value](self/271: Ref[Vec[Value]]) -> Vec[Value] {
-  @intrinsic(ref.get)(self/271)
+fn inherent#Ref#Ref[T]#get__T_Vec[Value](self/274: Ref[Vec[Value]]) -> Vec[Value] {
+  @intrinsic(ref.get)(self/274)
 }
 
 fn inherent#Vec#Vec[T]#pushed__T_Value(self/176: Vec[Value], elem/177: Value) -> Vec[Value] {
@@ -1514,16 +1514,16 @@ fn inherent#Vec#Vec[T]#pushed__T_Value(self/176: Vec[Value], elem/177: Value) ->
   result/178
 }
 
-fn inherent#Ref#Ref[T]#set__T_Vec[Value](self/272: Ref[Vec[Value]], value/273: Vec[Value]) -> unit {
-  @intrinsic(ref.set)(self/272, value/273)
+fn inherent#Ref#Ref[T]#set__T_Vec[Value](self/275: Ref[Vec[Value]], value/276: Vec[Value]) -> unit {
+  @intrinsic(ref.set)(self/275, value/276)
 }
 
 fn inherent#Vec#Vec[T]#len__T_Value(self/189: Vec[Value]) -> int {
   @intrinsic(vec.len)(self/189)
 }
 
-fn inherent#Ref#Ref[T]#new__T_Vec[Binding](value/270: Vec[Binding]) -> Ref[Vec[Binding]] {
-  @intrinsic(ref.new)(value/270)
+fn inherent#Ref#Ref[T]#new__T_Vec[Binding](value/273: Vec[Binding]) -> Ref[Vec[Binding]] {
+  @intrinsic(ref.new)(value/273)
 }
 
 fn inherent#Vec#Vec[T]#len__T_string(self/189: Vec[string]) -> int {

@@ -1,76 +1,76 @@
 fn std::internal::task::scope_new(parent/0: int64) -> int64 {
-  let t200 = @runtime(std.task.scope_new)(parent/0) in
-  t200
+  let t205 = @runtime(std.task.scope_new)(parent/0) in
+  t205
 }
 
 fn std::internal::task::scope_spawn(scope/1: int64, body/2: () -> unit) -> bool {
-  let t203 = @runtime(std.task.scope_spawn)(scope/1, body/2) in
-  t203
+  let t208 = @runtime(std.task.scope_spawn)(scope/1, body/2) in
+  t208
 }
 
 fn std::internal::task::scope_run(scope/3: int64, body/4: () -> unit) -> unit {
-  let t205 = @runtime(std.task.scope_run)(scope/3, body/4) in
+  let t210 = @runtime(std.task.scope_run)(scope/3, body/4) in
   ()
 }
 
 fn std::internal::task::scope_try_spawn(scope/5: int64, body/6: () -> unit) -> bool {
-  let t208 = @runtime(std.task.scope_try_spawn)(scope/5, body/6) in
-  t208
+  let t213 = @runtime(std.task.scope_try_spawn)(scope/5, body/6) in
+  t213
 }
 
 fn std::internal::task::scope_cancel(scope/7: int64) -> unit {
-  let t210 = @runtime(std.task.scope_cancel)(scope/7) in
+  let t215 = @runtime(std.task.scope_cancel)(scope/7) in
   ()
 }
 
 fn std::internal::task::scope_finish(scope/8: int64) -> unit {
-  let t212 = @runtime(std.task.scope_finish)(scope/8) in
+  let t217 = @runtime(std.task.scope_finish)(scope/8) in
   ()
 }
 
 fn std::internal::task::scope_cancelled(scope/9: int64) -> bool {
-  let t215 = @runtime(std.task.scope_cancelled)(scope/9) in
-  t215
+  let t220 = @runtime(std.task.scope_cancelled)(scope/9) in
+  t220
 }
 
 fn std::internal::task::scope_sleep(scope/10: int64, nanoseconds/11: int64) -> bool {
-  let t218 = @runtime(std.task.sleep)(scope/10, nanoseconds/11) in
-  t218
+  let t223 = @runtime(std.task.sleep)(scope/10, nanoseconds/11) in
+  t223
 }
 
 fn std::internal::task::scope_count() -> int {
-  let t221 = @runtime(std.task.active_scope_count)() in
-  t221
+  let t226 = @runtime(std.task.active_scope_count)() in
+  t226
 }
 
 fn std::internal::task::root_scope() -> std::internal::task::ScopeHandle {
-  join inline_cont498(t224: int64) -> std::internal::task::ScopeHandle {
-    let t225 = std::internal::task::ScopeHandle { id: t224 } in
-    t225
+  join inline_cont503(t229: int64) -> std::internal::task::ScopeHandle {
+    let t230 = std::internal::task::ScopeHandle { id: t229 } in
+    t230
   } in
-  let inline499 = 0 in
-  let inline500 = @runtime(std.task.scope_new)(inline499) in
-  jump inline_cont498(inline500)
+  let inline504 = 0 in
+  let inline505 = @runtime(std.task.scope_new)(inline504) in
+  jump inline_cont503(inline505)
 }
 
 fn std::internal::task::child_scope(
   parent/12: std::internal::task::CancelToken
 ) -> std::internal::task::ScopeHandle {
-  let t228 = std::internal::task::CancelToken.id(parent/12) in
-  join inline_cont501(t229: int64) -> std::internal::task::ScopeHandle {
-    let t230 = std::internal::task::ScopeHandle { id: t229 } in
-    t230
+  let t233 = std::internal::task::CancelToken.id(parent/12) in
+  join inline_cont506(t234: int64) -> std::internal::task::ScopeHandle {
+    let t235 = std::internal::task::ScopeHandle { id: t234 } in
+    t235
   } in
-  let inline502 = @runtime(std.task.scope_new)(t228) in
-  jump inline_cont501(inline502)
+  let inline507 = @runtime(std.task.scope_new)(t233) in
+  jump inline_cont506(inline507)
 }
 
 fn std::internal::task::spawn(
   scope/13: std::internal::task::ScopeHandle,
   body/14: () -> unit
 ) -> unit {
-  let t232 = std::internal::task::ScopeHandle.id(scope/13) in
-  let inline504 = @runtime(std.task.scope_spawn)(t232, body/14) in
+  let t237 = std::internal::task::ScopeHandle.id(scope/13) in
+  let inline509 = @runtime(std.task.scope_spawn)(t237, body/14) in
   ()
 }
 
@@ -78,331 +78,331 @@ fn std::internal::task::try_spawn(
   scope/15: std::internal::task::ScopeHandle,
   body/16: () -> unit
 ) -> bool {
-  let t235 = std::internal::task::ScopeHandle.id(scope/15) in
-  let inline506 = @runtime(std.task.scope_try_spawn)(t235, body/16) in
-  inline506
+  let t240 = std::internal::task::ScopeHandle.id(scope/15) in
+  let inline511 = @runtime(std.task.scope_try_spawn)(t240, body/16) in
+  inline511
 }
 
 fn std::internal::task::run(
   scope/17: std::internal::task::ScopeHandle,
   body/18: () -> unit
 ) -> unit {
-  let t238 = std::internal::task::ScopeHandle.id(scope/17) in
-  join inline_cont509(_wild1: unit) -> unit {
-    let t239 = std::internal::task::ScopeHandle.id(scope/17) in
-    let inline508 = @runtime(std.task.scope_finish)(t239) in
+  let t243 = std::internal::task::ScopeHandle.id(scope/17) in
+  join inline_cont514(_wild1: unit) -> unit {
+    let t244 = std::internal::task::ScopeHandle.id(scope/17) in
+    let inline513 = @runtime(std.task.scope_finish)(t244) in
     ()
   } in
-  let inline510 = @runtime(std.task.scope_run)(t238, body/18) in
-  jump inline_cont509(())
+  let inline515 = @runtime(std.task.scope_run)(t243, body/18) in
+  jump inline_cont514(())
 }
 
 fn std::internal::task::cancel(scope/19: std::internal::task::ScopeHandle) -> unit {
-  let t242 = std::internal::task::ScopeHandle.id(scope/19) in
-  let inline512 = @runtime(std.task.scope_cancel)(t242) in
+  let t247 = std::internal::task::ScopeHandle.id(scope/19) in
+  let inline517 = @runtime(std.task.scope_cancel)(t247) in
   ()
 }
 
 fn std::internal::task::finish(scope/20: std::internal::task::ScopeHandle) -> unit {
-  let t245 = std::internal::task::ScopeHandle.id(scope/20) in
-  let inline514 = @runtime(std.task.scope_finish)(t245) in
+  let t250 = std::internal::task::ScopeHandle.id(scope/20) in
+  let inline519 = @runtime(std.task.scope_finish)(t250) in
   ()
 }
 
 fn std::internal::task::token(
   scope/21: std::internal::task::ScopeHandle
 ) -> std::internal::task::CancelToken {
-  let t249 = std::internal::task::ScopeHandle.id(scope/21) in
-  let t250 = std::internal::task::CancelToken { id: t249 } in
-  t250
+  let t254 = std::internal::task::ScopeHandle.id(scope/21) in
+  let t255 = std::internal::task::CancelToken { id: t254 } in
+  t255
 }
 
 fn std::internal::task::sleep_with(
   cancel/27: std::internal::task::CancelToken,
   nanoseconds/28: int64
 ) -> bool {
-  let t253 = std::internal::task::CancelToken.id(cancel/27) in
-  let inline516 = @runtime(std.task.sleep)(t253, nanoseconds/28) in
-  inline516
+  let t258 = std::internal::task::CancelToken.id(cancel/27) in
+  let inline521 = @runtime(std.task.sleep)(t258, nanoseconds/28) in
+  inline521
 }
 
 fn std::internal::task::id(cancel/29: std::internal::task::CancelToken) -> int64 {
-  let t257 = std::internal::task::CancelToken.id(cancel/29) in
-  t257
+  let t262 = std::internal::task::CancelToken.id(cancel/29) in
+  t262
 }
 
 fn std::internal::task::active_scope_count() -> int {
-  let inline518 = @runtime(std.task.active_scope_count)() in
-  inline518
+  let inline523 = @runtime(std.task.active_scope_count)() in
+  inline523
 }
 
 fn inherent#std::internal::task::CancelToken#std::internal::task::CancelToken#is_cancelled(
   self/30: std::internal::task::CancelToken
 ) -> bool {
-  let t263 = std::internal::task::CancelToken.id(self/30) in
-  let inline520 = @runtime(std.task.scope_cancelled)(t263) in
-  inline520
+  let t268 = std::internal::task::CancelToken.id(self/30) in
+  let inline525 = @runtime(std.task.scope_cancelled)(t268) in
+  inline525
 }
 
 fn inherent#std::task::ConcurrencyLimit#std::task::ConcurrencyLimit#new(
   limit/2: int
 ) -> std::task::ConcurrencyLimit {
-  let t275 = (limit/2 > 0) in
-  join k267(jp268: int) -> std::task::ConcurrencyLimit {
-    join inline_cont524(slots/4: Channel[unit]) -> std::task::ConcurrencyLimit {
+  let t280 = (limit/2 > 0) in
+  join k272(jp273: int) -> std::task::ConcurrencyLimit {
+    join inline_cont529(slots/4: Channel[unit]) -> std::task::ConcurrencyLimit {
       let for_index2 = 0 in
-      join exit269() -> std::task::ConcurrencyLimit {
-        let t270 = std::task::ConcurrencyLimit { slots: slots/4 } in
-        t270
+      join exit274() -> std::task::ConcurrencyLimit {
+        let t275 = std::task::ConcurrencyLimit { slots: slots/4 } in
+        t275
       } in
       joinrec {
-        join loop271() -> std::task::ConcurrencyLimit {
-          let t272 = (for_index2 < jp268) in
-          if t272 {
-            let t273 = (for_index2 + 1) in
-            let _wild5 = for_index2 = t273 in
-            let inline522 = () in
-            let inline523 = @intrinsic(channel.send)(slots/4, inline522) in
-            jump loop271()
+        join loop276() -> std::task::ConcurrencyLimit {
+          let t277 = (for_index2 < jp273) in
+          if t277 {
+            let t278 = (for_index2 + 1) in
+            let _wild5 = for_index2 = t278 in
+            let inline527 = () in
+            let inline528 = @intrinsic(channel.send)(slots/4, inline527) in
+            jump loop276()
           } else {
-            jump exit269()
+            jump exit274()
           }
         } in
       } in
-      jump loop271()
+      jump loop276()
     } in
-    let inline525 = @intrinsic(channel.new)(jp268) in
-    jump inline_cont524(inline525)
+    let inline530 = @intrinsic(channel.new)(jp273) in
+    jump inline_cont529(inline530)
   } in
-  if t275 {
-    jump k267(limit/2)
+  if t280 {
+    jump k272(limit/2)
   } else {
-    jump k267(1)
+    jump k272(1)
   }
 }
 
 fn std::task::active_scope_count() -> int {
-  let inline527 = std::internal::task::scope_count() in
-  inline527
+  let inline532 = std::internal::task::scope_count() in
+  inline532
 }
 
 fn inherent#std::task::Scope#std::task::Scope#cancel(self/39: std::task::Scope) -> unit {
-  let t280 = std::task::Scope.handle(self/39) in
-  let inline529 = std::internal::task::ScopeHandle.id(t280) in
-  let inline530 = std::internal::task::scope_cancel(inline529) in
+  let t285 = std::task::Scope.handle(self/39) in
+  let inline534 = std::internal::task::ScopeHandle.id(t285) in
+  let inline535 = std::internal::task::scope_cancel(inline534) in
   ()
 }
 
 fn inherent#std::task::Scope#std::task::Scope#token(
   self/40: std::task::Scope
 ) -> std::task::CancelToken {
-  let t284 = std::task::Scope.handle(self/40) in
-  join inline_cont531(t285: std::internal::task::CancelToken) -> std::task::CancelToken {
-    let t286 = std::task::CancelToken { value: t285 } in
-    t286
+  let t289 = std::task::Scope.handle(self/40) in
+  join inline_cont536(t290: std::internal::task::CancelToken) -> std::task::CancelToken {
+    let t291 = std::task::CancelToken { value: t290 } in
+    t291
   } in
-  let inline532 = std::internal::task::ScopeHandle.id(t284) in
-  let inline533 = std::internal::task::CancelToken { id: inline532 } in
-  jump inline_cont531(inline533)
+  let inline537 = std::internal::task::ScopeHandle.id(t289) in
+  let inline538 = std::internal::task::CancelToken { id: inline537 } in
+  jump inline_cont536(inline538)
 }
 
 fn inherent#std::task::CancelToken#std::task::CancelToken#is_cancelled(
   self/41: std::task::CancelToken
 ) -> bool {
-  let t289 = std::task::CancelToken.value(self/41) in
-  let inline535 = std::internal::task::CancelToken.id(t289) in
-  let inline536 = std::internal::task::scope_cancelled(inline535) in
-  inline536
+  let t294 = std::task::CancelToken.value(self/41) in
+  let inline540 = std::internal::task::CancelToken.id(t294) in
+  let inline541 = std::internal::task::scope_cancelled(inline540) in
+  inline541
 }
 
 fn inherent#std::task::CancelToken#std::task::CancelToken#runtime_id(
   self/42: std::task::CancelToken
 ) -> int64 {
-  let t293 = std::task::CancelToken.value(self/42) in
-  let inline538 = std::internal::task::CancelToken.id(t293) in
-  inline538
+  let t298 = std::task::CancelToken.value(self/42) in
+  let inline543 = std::internal::task::CancelToken.id(t298) in
+  inline543
 }
 
 fn std::task::sleep_nanoseconds_with(
   cancel/51: std::task::CancelToken,
   nanoseconds/52: int64
 ) -> std::task::WaitResult__unit {
-  let t299 = std::task::CancelToken.value(cancel/51) in
-  join inline_cont539(t300: bool) -> std::task::WaitResult__unit {
-    if t300 {
-      let t301 = std::task::WaitResult__unit::Completed(()) in
-      t301
+  let t304 = std::task::CancelToken.value(cancel/51) in
+  join inline_cont544(t305: bool) -> std::task::WaitResult__unit {
+    if t305 {
+      let t306 = std::task::WaitResult__unit::Completed(()) in
+      t306
     } else {
       Tag_1
     }
   } in
-  let inline540 = std::internal::task::CancelToken.id(t299) in
-  let inline541 = std::internal::task::scope_sleep(inline540, nanoseconds/52) in
-  jump inline_cont539(inline541)
+  let inline545 = std::internal::task::CancelToken.id(t304) in
+  let inline546 = std::internal::task::scope_sleep(inline545, nanoseconds/52) in
+  jump inline_cont544(inline546)
 }
 
 fn main() -> unit {
-  join inline_cont570(completed/0: Ref[bool]) -> unit {
-    let t303 = closure_env_main_3 { completed_0: completed/0 } in
-    let t304 = pack_closure[inherent#closure_env_main_3#closure_env_main_3#apply](t303) in
-    join inline_cont563(total/7: int) -> unit {
-      join inline_cont560(_wild183: unit) -> unit {
-        join inline_cont558(t305: bool) -> unit {
-          join inline_cont555(_wild184: unit) -> unit {
-            let t306 = closure_env_main_6 {} in
-            let t307 = pack_closure[inherent#closure_env_main_6#closure_env_main_6#apply](t306) in
-            join inline_cont548(nested/12: int) -> unit {
-              join inline_cont545(_wild185: unit) -> unit {
+  join inline_cont575(completed/0: Ref[bool]) -> unit {
+    let t308 = closure_env_main_3 { completed_0: completed/0 } in
+    let t309 = pack_closure[inherent#closure_env_main_3#closure_env_main_3#apply](t308) in
+    join inline_cont568(total/7: int) -> unit {
+      join inline_cont565(_wild188: unit) -> unit {
+        join inline_cont563(t310: bool) -> unit {
+          join inline_cont560(_wild189: unit) -> unit {
+            let t311 = closure_env_main_6 {} in
+            let t312 = pack_closure[inherent#closure_env_main_6#closure_env_main_6#apply](t311) in
+            join inline_cont553(nested/12: int) -> unit {
+              join inline_cont550(_wild190: unit) -> unit {
                 let scope/13 = 3 in
-                let t308 = closure_env_spawn_7 {} in
+                let t313 = closure_env_spawn_7 {} in
                 let spawn/15 =
-                  pack_closure[inherent#closure_env_spawn_7#closure_env_spawn_7#apply](t308) in
-                let t309 = spawn/15(scope/13) in
-                let inline543 = trait_impl#ToString#int#to_string(t309) in
-                let inline544 = @runtime(core.string_println)(inline543) in
+                  pack_closure[inherent#closure_env_spawn_7#closure_env_spawn_7#apply](t313) in
+                let t314 = spawn/15(scope/13) in
+                let inline548 = trait_impl#ToString#int#to_string(t314) in
+                let inline549 = @runtime(core.string_println)(inline548) in
                 ()
               } in
-              let inline546 = trait_impl#ToString#int#to_string(nested/12) in
-              let inline547 = @runtime(core.string_println)(inline546) in
-              jump inline_cont545(())
+              let inline551 = trait_impl#ToString#int#to_string(nested/12) in
+              let inline552 = @runtime(core.string_println)(inline551) in
+              jump inline_cont550(())
             } in
-            let inline549 = std::internal::task::root_scope() in
-            let inline550 = inherent#Ref#Ref[T]#new__T_Option[int](Tag_0) in
-            let inline551 =
+            let inline554 = std::internal::task::root_scope() in
+            let inline555 = inherent#Ref#Ref[T]#new__T_Option[int](Tag_0) in
+            let inline556 =
               closure_env_std_task_scope_T_int_8 {
-                result_0: inline550,
-                body_1: t307,
-                handle_2: inline549
+                result_0: inline555,
+                body_1: t312,
+                handle_2: inline554
               } in
-            let inline552 =
+            let inline557 =
               pack_closure[inherent#closure_env_std_task_scope_T_int_8#closure_env_std_task_scope_T_int_8#apply](
-                inline551
+                inline556
               ) in
-            let inline553 = std::internal::task::run(inline549, inline552) in
-            let inline554 = std::task::completed_scope_value__T_int(inline550) in
-            jump inline_cont548(inline554)
+            let inline558 = std::internal::task::run(inline554, inline557) in
+            let inline559 = std::task::completed_scope_value__T_int(inline555) in
+            jump inline_cont553(inline559)
           } in
-          let inline556 = trait_impl#ToString#bool#to_string(t305) in
-          let inline557 = @runtime(core.string_println)(inline556) in
-          jump inline_cont555(())
+          let inline561 = trait_impl#ToString#bool#to_string(t310) in
+          let inline562 = @runtime(core.string_println)(inline561) in
+          jump inline_cont560(())
         } in
-        let inline559 = @intrinsic(ref.get)(completed/0) in
-        jump inline_cont558(inline559)
+        let inline564 = @intrinsic(ref.get)(completed/0) in
+        jump inline_cont563(inline564)
       } in
-      let inline561 = trait_impl#ToString#int#to_string(total/7) in
-      let inline562 = @runtime(core.string_println)(inline561) in
-      jump inline_cont560(())
+      let inline566 = trait_impl#ToString#int#to_string(total/7) in
+      let inline567 = @runtime(core.string_println)(inline566) in
+      jump inline_cont565(())
     } in
-    let inline564 = std::internal::task::root_scope() in
-    let inline565 = inherent#Ref#Ref[T]#new__T_Option[int](Tag_0) in
-    let inline566 =
+    let inline569 = std::internal::task::root_scope() in
+    let inline570 = inherent#Ref#Ref[T]#new__T_Option[int](Tag_0) in
+    let inline571 =
       closure_env_std_task_scope_T_int_8 {
-        result_0: inline565,
-        body_1: t304,
-        handle_2: inline564
+        result_0: inline570,
+        body_1: t309,
+        handle_2: inline569
       } in
-    let inline567 =
+    let inline572 =
       pack_closure[inherent#closure_env_std_task_scope_T_int_8#closure_env_std_task_scope_T_int_8#apply](
-        inline566
+        inline571
       ) in
-    let inline568 = std::internal::task::run(inline564, inline567) in
-    let inline569 = std::task::completed_scope_value__T_int(inline565) in
-    jump inline_cont563(inline569)
+    let inline573 = std::internal::task::run(inline569, inline572) in
+    let inline574 = std::task::completed_scope_value__T_int(inline570) in
+    jump inline_cont568(inline574)
   } in
-  let inline571 = false in
-  let inline572 = @intrinsic(ref.new)(inline571) in
-  jump inline_cont570(inline572)
+  let inline576 = false in
+  let inline577 = @intrinsic(ref.new)(inline576) in
+  jump inline_cont575(inline577)
 }
 
-fn inherent#Channel#Channel[T]#new__T_unit(capacity/274: int) -> Channel[unit] {
-  let t313 = @intrinsic(channel.new)(capacity/274) in
-  t313
-}
-
-fn inherent#Channel#Channel[T]#send__T_unit(self/275: Channel[unit], value/276: unit) -> unit {
-  let t315 = @intrinsic(channel.send)(self/275, value/276) in
-  ()
-}
-
-fn inherent#Ref#Ref[T]#new__T_bool(value/270: bool) -> Ref[bool] {
-  let t318 = @intrinsic(ref.new)(value/270) in
+fn inherent#Channel#Channel[T]#new__T_unit(capacity/277: int) -> Channel[unit] {
+  let t318 = @intrinsic(channel.new)(capacity/277) in
   t318
 }
 
+fn inherent#Channel#Channel[T]#send__T_unit(self/278: Channel[unit], value/279: unit) -> unit {
+  let t320 = @intrinsic(channel.send)(self/278, value/279) in
+  ()
+}
+
+fn inherent#Ref#Ref[T]#new__T_bool(value/273: bool) -> Ref[bool] {
+  let t323 = @intrinsic(ref.new)(value/273) in
+  t323
+}
+
 fn std::task::scope__T_int(body/9: (std::task::Scope) -> int) -> int {
-  join inline_cont580(handle/10: std::internal::task::ScopeHandle) -> int {
-    join inline_cont578(result/11: Ref[Option__int]) -> int {
-      let t321 =
+  join inline_cont585(handle/10: std::internal::task::ScopeHandle) -> int {
+    join inline_cont583(result/11: Ref[Option__int]) -> int {
+      let t326 =
         closure_env_std_task_scope_T_int_8 {
           result_0: result/11,
           body_1: body/9,
           handle_2: handle/10
         } in
-      let t322 =
+      let t327 =
         pack_closure[inherent#closure_env_std_task_scope_T_int_8#closure_env_std_task_scope_T_int_8#apply](
-          t321
+          t326
         ) in
-      join inline_cont573(_wild11: unit) -> int {
-        let t323 = std::task::completed_scope_value__T_int(result/11) in
-        t323
+      join inline_cont578(_wild11: unit) -> int {
+        let t328 = std::task::completed_scope_value__T_int(result/11) in
+        t328
       } in
-      let inline574 = std::internal::task::ScopeHandle.id(handle/10) in
-      let inline575 = std::internal::task::scope_run(inline574, t322) in
-      let inline576 = std::internal::task::ScopeHandle.id(handle/10) in
-      let inline577 = std::internal::task::scope_finish(inline576) in
-      jump inline_cont573(())
+      let inline579 = std::internal::task::ScopeHandle.id(handle/10) in
+      let inline580 = std::internal::task::scope_run(inline579, t327) in
+      let inline581 = std::internal::task::ScopeHandle.id(handle/10) in
+      let inline582 = std::internal::task::scope_finish(inline581) in
+      jump inline_cont578(())
     } in
-    let inline579 = @intrinsic(ref.new)(Tag_0) in
-    jump inline_cont578(inline579)
+    let inline584 = @intrinsic(ref.new)(Tag_0) in
+    jump inline_cont583(inline584)
   } in
-  let inline581 = std::internal::task::scope_new(0) in
-  let inline582 = std::internal::task::ScopeHandle { id: inline581 } in
-  jump inline_cont580(inline582)
+  let inline586 = std::internal::task::scope_new(0) in
+  let inline587 = std::internal::task::ScopeHandle { id: inline586 } in
+  jump inline_cont585(inline587)
 }
 
 fn inherent#std::task::Scope#std::task::Scope#spawn__T_int(
   self/25: std::task::Scope,
   body/26: (std::task::CancelToken) -> int
 ) -> std::task::Task__int {
-  join inline_cont592(result/27: Ref[Option__int]) -> std::task::Task__int {
-    join inline_cont589(ready/28: Channel[unit]) -> std::task::Task__int {
-      let t326 = std::task::Scope.handle(self/25) in
-      join inline_cont586(t327: std::internal::task::CancelToken) -> std::task::Task__int {
-        let token/29 = std::task::CancelToken { value: t327 } in
-        let t329 = std::task::Scope.handle(self/25) in
-        let t330 =
+  join inline_cont597(result/27: Ref[Option__int]) -> std::task::Task__int {
+    join inline_cont594(ready/28: Channel[unit]) -> std::task::Task__int {
+      let t331 = std::task::Scope.handle(self/25) in
+      join inline_cont591(t332: std::internal::task::CancelToken) -> std::task::Task__int {
+        let token/29 = std::task::CancelToken { value: t332 } in
+        let t334 = std::task::Scope.handle(self/25) in
+        let t335 =
           closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9 {
             result_0: result/27,
             body_1: body/26,
             token_2: token/29,
             ready_3: ready/28
           } in
-        let t331 =
+        let t336 =
           pack_closure[inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9#apply](
-            t330
+            t335
           ) in
-        join inline_cont583(_wild18: unit) -> std::task::Task__int {
-          let t332 = std::task::Task__int { result: result/27, ready: ready/28 } in
-          t332
+        join inline_cont588(_wild18: unit) -> std::task::Task__int {
+          let t337 = std::task::Task__int { result: result/27, ready: ready/28 } in
+          t337
         } in
-        let inline584 = std::internal::task::ScopeHandle.id(t329) in
-        let inline585 = std::internal::task::scope_spawn(inline584, t331) in
-        jump inline_cont583(())
+        let inline589 = std::internal::task::ScopeHandle.id(t334) in
+        let inline590 = std::internal::task::scope_spawn(inline589, t336) in
+        jump inline_cont588(())
       } in
-      let inline587 = std::internal::task::ScopeHandle.id(t326) in
-      let inline588 = std::internal::task::CancelToken { id: inline587 } in
-      jump inline_cont586(inline588)
+      let inline592 = std::internal::task::ScopeHandle.id(t331) in
+      let inline593 = std::internal::task::CancelToken { id: inline592 } in
+      jump inline_cont591(inline593)
     } in
-    let inline590 = 0 in
-    let inline591 = @intrinsic(channel.new)(inline590) in
-    jump inline_cont589(inline591)
+    let inline595 = 0 in
+    let inline596 = @intrinsic(channel.new)(inline595) in
+    jump inline_cont594(inline596)
   } in
-  let inline593 = @intrinsic(ref.new)(Tag_0) in
-  jump inline_cont592(inline593)
+  let inline598 = @intrinsic(ref.new)(Tag_0) in
+  jump inline_cont597(inline598)
 }
 
-fn inherent#Ref#Ref[T]#set__T_bool(self/272: Ref[bool], value/273: bool) -> unit {
-  let t334 = @intrinsic(ref.set)(self/272, value/273) in
+fn inherent#Ref#Ref[T]#set__T_bool(self/275: Ref[bool], value/276: bool) -> unit {
+  let t339 = @intrinsic(ref.set)(self/275, value/276) in
   ()
 }
 
@@ -410,224 +410,224 @@ fn inherent#std::task::Scope#std::task::Scope#spawn__T_unit(
   self/25: std::task::Scope,
   body/26: (std::task::CancelToken) -> unit
 ) -> std::task::Task__unit {
-  join inline_cont603(result/27: Ref[Option__unit]) -> std::task::Task__unit {
-    join inline_cont600(ready/28: Channel[unit]) -> std::task::Task__unit {
-      let t337 = std::task::Scope.handle(self/25) in
-      join inline_cont597(t338: std::internal::task::CancelToken) -> std::task::Task__unit {
-        let token/29 = std::task::CancelToken { value: t338 } in
-        let t340 = std::task::Scope.handle(self/25) in
-        let t341 =
+  join inline_cont608(result/27: Ref[Option__unit]) -> std::task::Task__unit {
+    join inline_cont605(ready/28: Channel[unit]) -> std::task::Task__unit {
+      let t342 = std::task::Scope.handle(self/25) in
+      join inline_cont602(t343: std::internal::task::CancelToken) -> std::task::Task__unit {
+        let token/29 = std::task::CancelToken { value: t343 } in
+        let t345 = std::task::Scope.handle(self/25) in
+        let t346 =
           closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10 {
             result_0: result/27,
             body_1: body/26,
             token_2: token/29,
             ready_3: ready/28
           } in
-        let t342 =
+        let t347 =
           pack_closure[inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10#apply](
-            t341
+            t346
           ) in
-        join inline_cont594(_wild18: unit) -> std::task::Task__unit {
-          let t343 = std::task::Task__unit { result: result/27, ready: ready/28 } in
-          t343
+        join inline_cont599(_wild18: unit) -> std::task::Task__unit {
+          let t348 = std::task::Task__unit { result: result/27, ready: ready/28 } in
+          t348
         } in
-        let inline595 = std::internal::task::ScopeHandle.id(t340) in
-        let inline596 = std::internal::task::scope_spawn(inline595, t342) in
-        jump inline_cont594(())
+        let inline600 = std::internal::task::ScopeHandle.id(t345) in
+        let inline601 = std::internal::task::scope_spawn(inline600, t347) in
+        jump inline_cont599(())
       } in
-      let inline598 = std::internal::task::ScopeHandle.id(t337) in
-      let inline599 = std::internal::task::CancelToken { id: inline598 } in
-      jump inline_cont597(inline599)
+      let inline603 = std::internal::task::ScopeHandle.id(t342) in
+      let inline604 = std::internal::task::CancelToken { id: inline603 } in
+      jump inline_cont602(inline604)
     } in
-    let inline601 = 0 in
-    let inline602 = @intrinsic(channel.new)(inline601) in
-    jump inline_cont600(inline602)
+    let inline606 = 0 in
+    let inline607 = @intrinsic(channel.new)(inline606) in
+    jump inline_cont605(inline607)
   } in
-  let inline604 = @intrinsic(ref.new)(Tag_0) in
-  jump inline_cont603(inline604)
+  let inline609 = @intrinsic(ref.new)(Tag_0) in
+  jump inline_cont608(inline609)
 }
 
 fn inherent#std::task::Task#std::task::Task[T]#join__T_int(self/53: std::task::Task__int) -> int {
-  join exit346(jp347: int) -> int {
-    jp347
+  join exit351(jp352: int) -> int {
+    jp352
   } in
   joinrec {
-    join loop_expr348() -> int {
-      let t349 = std::task::Task__int.ready(self/53) in
-      join inline_cont607(mtmp25: Option__unit) -> int {
-        let t350 = std::task::Task__int.result(self/53) in
-        join inline_cont605(mtmp26: Option__int) -> int {
+    join loop_expr353() -> int {
+      let t354 = std::task::Task__int.ready(self/53) in
+      join inline_cont612(mtmp25: Option__unit) -> int {
+        let t355 = std::task::Task__int.result(self/53) in
+        join inline_cont610(mtmp26: Option__int) -> int {
           match mtmp26 {
             Tag_0 => {
-              jump loop_expr348()
+              jump loop_expr353()
             },
             Tag_1 => {
               let x27 = Option__int::Some._0(mtmp26) in
-              jump exit346(x27)
+              jump exit351(x27)
             },
           }
         } in
-        let inline606 = @intrinsic(ref.get)(t350) in
-        jump inline_cont605(inline606)
+        let inline611 = @intrinsic(ref.get)(t355) in
+        jump inline_cont610(inline611)
       } in
-      let inline608 = @intrinsic(channel.recv)(t349) in
-      let inline609 = inline608.0 in
-      let inline610 = inline608.1 in
-      if inline610 {
-        let inline613 = Option__unit::Some(inline609) in
-        jump inline_cont607(inline613)
+      let inline613 = @intrinsic(channel.recv)(t354) in
+      let inline614 = inline613.0 in
+      let inline615 = inline613.1 in
+      if inline615 {
+        let inline618 = Option__unit::Some(inline614) in
+        jump inline_cont612(inline618)
       } else {
-        jump inline_cont607(Tag_0)
+        jump inline_cont612(Tag_0)
       }
     } in
   } in
-  jump loop_expr348()
+  jump loop_expr353()
 }
 
 fn println__T_int(value/1: int) -> unit {
-  join inline_cont614(t353: string) -> unit {
-    let t354 = @runtime(core.string_println)(t353) in
+  join inline_cont619(t358: string) -> unit {
+    let t359 = @runtime(core.string_println)(t358) in
     ()
   } in
-  let inline615 = @runtime(core.int_to_string)(value/1) in
-  jump inline_cont614(inline615)
+  let inline620 = @runtime(core.int_to_string)(value/1) in
+  jump inline_cont619(inline620)
 }
 
 fn println__T_bool(value/1: bool) -> unit {
-  join inline_cont616(t356: string) -> unit {
-    let t357 = @runtime(core.string_println)(t356) in
+  join inline_cont621(t361: string) -> unit {
+    let t362 = @runtime(core.string_println)(t361) in
     ()
   } in
-  let inline617 = @runtime(core.bool_to_string)(value/1) in
-  jump inline_cont616(inline617)
+  let inline622 = @runtime(core.bool_to_string)(value/1) in
+  jump inline_cont621(inline622)
 }
 
-fn inherent#Ref#Ref[T]#get__T_bool(self/271: Ref[bool]) -> bool {
-  let t360 = @intrinsic(ref.get)(self/271) in
-  t360
+fn inherent#Ref#Ref[T]#get__T_bool(self/274: Ref[bool]) -> bool {
+  let t365 = @intrinsic(ref.get)(self/274) in
+  t365
 }
 
 fn std::task::scope_with__T_int(
   parent/12: std::task::CancelToken,
   body/13: (std::task::Scope) -> int
 ) -> int {
-  let t363 = std::task::CancelToken.value(parent/12) in
-  join inline_cont625(handle/14: std::internal::task::ScopeHandle) -> int {
-    join inline_cont623(result/15: Ref[Option__int]) -> int {
-      let t364 =
+  let t368 = std::task::CancelToken.value(parent/12) in
+  join inline_cont630(handle/14: std::internal::task::ScopeHandle) -> int {
+    join inline_cont628(result/15: Ref[Option__int]) -> int {
+      let t369 =
         closure_env_std_task_scope_with_T_int_11 {
           result_0: result/15,
           body_1: body/13,
           handle_2: handle/14
         } in
-      let t365 =
+      let t370 =
         pack_closure[inherent#closure_env_std_task_scope_with_T_int_11#closure_env_std_task_scope_with_T_int_11#apply](
-          t364
+          t369
         ) in
-      join inline_cont618(_wild12: unit) -> int {
-        let t366 = std::task::completed_scope_value__T_int(result/15) in
-        t366
+      join inline_cont623(_wild12: unit) -> int {
+        let t371 = std::task::completed_scope_value__T_int(result/15) in
+        t371
       } in
-      let inline619 = std::internal::task::ScopeHandle.id(handle/14) in
-      let inline620 = std::internal::task::scope_run(inline619, t365) in
-      let inline621 = std::internal::task::ScopeHandle.id(handle/14) in
-      let inline622 = std::internal::task::scope_finish(inline621) in
-      jump inline_cont618(())
+      let inline624 = std::internal::task::ScopeHandle.id(handle/14) in
+      let inline625 = std::internal::task::scope_run(inline624, t370) in
+      let inline626 = std::internal::task::ScopeHandle.id(handle/14) in
+      let inline627 = std::internal::task::scope_finish(inline626) in
+      jump inline_cont623(())
     } in
-    let inline624 = @intrinsic(ref.new)(Tag_0) in
-    jump inline_cont623(inline624)
+    let inline629 = @intrinsic(ref.new)(Tag_0) in
+    jump inline_cont628(inline629)
   } in
-  let inline626 = std::internal::task::CancelToken.id(t363) in
-  let inline627 = std::internal::task::scope_new(inline626) in
-  let inline628 = std::internal::task::ScopeHandle { id: inline627 } in
-  jump inline_cont625(inline628)
+  let inline631 = std::internal::task::CancelToken.id(t368) in
+  let inline632 = std::internal::task::scope_new(inline631) in
+  let inline633 = std::internal::task::ScopeHandle { id: inline632 } in
+  jump inline_cont630(inline633)
 }
 
-fn inherent#Ref#Ref[T]#new__T_Option[int](value/270: Option__int) -> Ref[Option__int] {
-  let t369 = @intrinsic(ref.new)(value/270) in
-  t369
+fn inherent#Ref#Ref[T]#new__T_Option[int](value/273: Option__int) -> Ref[Option__int] {
+  let t374 = @intrinsic(ref.new)(value/273) in
+  t374
 }
 
 fn inherent#Ref#Ref[T]#set__T_Option[int](
-  self/272: Ref[Option__int],
-  value/273: Option__int
+  self/275: Ref[Option__int],
+  value/276: Option__int
 ) -> unit {
-  let t371 = @intrinsic(ref.set)(self/272, value/273) in
+  let t376 = @intrinsic(ref.set)(self/275, value/276) in
   ()
 }
 
 fn std::task::completed_scope_value__T_int(result/0: Ref[Option__int]) -> int {
-  join exit374(jp375: int) -> int {
-    jp375
+  join exit379(jp380: int) -> int {
+    jp380
   } in
   joinrec {
-    join loop_expr376() -> int {
-      join inline_cont629(mtmp0: Option__int) -> int {
+    join loop_expr381() -> int {
+      join inline_cont634(mtmp0: Option__int) -> int {
         match mtmp0 {
           Tag_0 => {
-            jump loop_expr376()
+            jump loop_expr381()
           },
           Tag_1 => {
             let x1 = Option__int::Some._0(mtmp0) in
-            jump exit374(x1)
+            jump exit379(x1)
           },
         }
       } in
-      let inline630 = @intrinsic(ref.get)(result/0) in
-      jump inline_cont629(inline630)
+      let inline635 = @intrinsic(ref.get)(result/0) in
+      jump inline_cont634(inline635)
     } in
   } in
-  jump loop_expr376()
+  jump loop_expr381()
 }
 
-fn inherent#Channel#Channel[T]#close__T_unit(self/280: Channel[unit]) -> unit {
-  let t379 = @intrinsic(channel.close)(self/280) in
+fn inherent#Channel#Channel[T]#close__T_unit(self/283: Channel[unit]) -> unit {
+  let t384 = @intrinsic(channel.close)(self/283) in
   ()
 }
 
-fn inherent#Ref#Ref[T]#new__T_Option[unit](value/270: Option__unit) -> Ref[Option__unit] {
-  let t382 = @intrinsic(ref.new)(value/270) in
-  t382
+fn inherent#Ref#Ref[T]#new__T_Option[unit](value/273: Option__unit) -> Ref[Option__unit] {
+  let t387 = @intrinsic(ref.new)(value/273) in
+  t387
 }
 
 fn inherent#Ref#Ref[T]#set__T_Option[unit](
-  self/272: Ref[Option__unit],
-  value/273: Option__unit
+  self/275: Ref[Option__unit],
+  value/276: Option__unit
 ) -> unit {
-  let t384 = @intrinsic(ref.set)(self/272, value/273) in
+  let t389 = @intrinsic(ref.set)(self/275, value/276) in
   ()
 }
 
-fn inherent#Channel#Channel[T]#recv__T_unit(self/277: Channel[unit]) -> Option__unit {
-  let mtmp153 = @intrinsic(channel.recv)(self/277) in
-  let x154 = mtmp153.0 in
-  let x155 = mtmp153.1 in
-  if x155 {
-    let t389 = Option__unit::Some(x154) in
-    t389
+fn inherent#Channel#Channel[T]#recv__T_unit(self/280: Channel[unit]) -> Option__unit {
+  let mtmp158 = @intrinsic(channel.recv)(self/280) in
+  let x159 = mtmp158.0 in
+  let x160 = mtmp158.1 in
+  if x160 {
+    let t394 = Option__unit::Some(x159) in
+    t394
   } else {
     Tag_0
   }
 }
 
-fn inherent#Ref#Ref[T]#get__T_Option[int](self/271: Ref[Option__int]) -> Option__int {
-  let t392 = @intrinsic(ref.get)(self/271) in
-  t392
+fn inherent#Ref#Ref[T]#get__T_Option[int](self/274: Ref[Option__int]) -> Option__int {
+  let t397 = @intrinsic(ref.get)(self/274) in
+  t397
 }
 
 fn trait_impl#ToString#int#to_string(self/67: int) -> string {
-  let t395 = @runtime(core.int_to_string)(self/67) in
-  t395
+  let t400 = @runtime(core.int_to_string)(self/67) in
+  t400
 }
 
 fn trait_impl#ToString#bool#to_string(self/64: bool) -> string {
-  let t398 = @runtime(core.bool_to_string)(self/64) in
-  t398
+  let t403 = @runtime(core.bool_to_string)(self/64) in
+  t403
 }
 
 fn trait_impl#PartialEq#bool#eq(self/95: bool, other/96: bool) -> bool {
-  let t401 = (self/95 == other/96) in
-  t401
+  let t406 = (self/95 == other/96) in
+  t406
 }
 
 fn trait_impl#Hash#bool#hash(self/124: bool) -> uint64 {
@@ -655,8 +655,8 @@ fn trait_impl#PartialEq#Option__int#eq(self/151: Option__int, other/152: Option_
       match self/151 {
         Tag_1 => {
           let x66 = Option__int::Some._0(self/151) in
-          let inline632 = (x66 == x64) in
-          inline632
+          let inline637 = (x66 == x64) in
+          inline637
         },
         _ => {
           false
@@ -673,12 +673,12 @@ fn trait_impl#Hash#Option__int#hash(self/155: Option__int) -> uint64 {
     },
     Tag_1 => {
       let x67 = Option__int::Some._0(self/155) in
-      join inline_cont633(t419: uint64) -> uint64 {
-        let t420 = (14695981039346656039 + t419) in
-        t420
+      join inline_cont638(t424: uint64) -> uint64 {
+        let t425 = (14695981039346656039 + t424) in
+        t425
       } in
-      let inline634 = @runtime(core.int_hash)(x67) in
-      jump inline_cont633(inline634)
+      let inline639 = @runtime(core.int_hash)(x67) in
+      jump inline_cont638(inline639)
     },
   }
 }
@@ -714,23 +714,23 @@ fn trait_impl#Hash#Option__unit#hash(self/155: Option__unit) -> uint64 {
       14695981039346656038
     },
     Tag_1 => {
-      join inline_cont636(t434: uint64) -> uint64 {
-        let t435 = (14695981039346656039 + t434) in
-        t435
+      join inline_cont641(t439: uint64) -> uint64 {
+        let t440 = (14695981039346656039 + t439) in
+        t440
       } in
-      jump inline_cont636(0)
+      jump inline_cont641(0)
     },
   }
 }
 
 fn trait_impl#PartialEq#int#eq(self/101: int, other/102: int) -> bool {
-  let t438 = (self/101 == other/102) in
-  t438
+  let t443 = (self/101 == other/102) in
+  t443
 }
 
 fn trait_impl#Hash#int#hash(self/127: int) -> uint64 {
-  let t441 = @runtime(core.int_hash)(self/127) in
-  t441
+  let t446 = @runtime(core.int_hash)(self/127) in
+  t446
 }
 
 fn trait_impl#PartialEq#unit#eq(self/93: unit, other/94: unit) -> bool {
@@ -742,249 +742,249 @@ fn trait_impl#Hash#unit#hash(self/123: unit) -> uint64 {
 }
 
 fn inherent#closure_env_main_0#closure_env_main_0#apply(
-  env186: closure_env_main_0,
+  env191: closure_env_main_0,
   _cancel/2: std::task::CancelToken
 ) -> int {
   20
 }
 
 fn inherent#closure_env_main_1#closure_env_main_1#apply(
-  env187: closure_env_main_1,
+  env192: closure_env_main_1,
   _cancel/4: std::task::CancelToken
 ) -> int {
   22
 }
 
 fn inherent#closure_env_main_2#closure_env_main_2#apply(
-  env188: closure_env_main_2,
+  env193: closure_env_main_2,
   _cancel/6: std::task::CancelToken
 ) -> unit {
-  let completed/0 = closure_env_main_2.completed_0(env188) in
-  let inline638 = true in
-  let inline639 = @intrinsic(ref.set)(completed/0, inline638) in
+  let completed/0 = closure_env_main_2.completed_0(env193) in
+  let inline643 = true in
+  let inline644 = @intrinsic(ref.set)(completed/0, inline643) in
   ()
 }
 
 fn inherent#closure_env_main_3#closure_env_main_3#apply(
-  env189: closure_env_main_3,
+  env194: closure_env_main_3,
   scope/1: std::task::Scope
 ) -> int {
-  let completed/0 = closure_env_main_3.completed_0(env189) in
-  let t454 = closure_env_main_0 {} in
-  let t455 = pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](t454) in
-  join inline_cont662(left/3: std::task::Task__int) -> int {
-    let t456 = closure_env_main_1 {} in
-    let t457 = pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](t456) in
-    join inline_cont651(right/5: std::task::Task__int) -> int {
-      let t458 = closure_env_main_2 { completed_0: completed/0 } in
-      let t459 = pack_closure[inherent#closure_env_main_2#closure_env_main_2#apply](t458) in
-      join inline_cont640(mtmp182: std::task::Task__unit) -> int {
-        let t460 = inherent#std::task::Task#std::task::Task[T]#join__T_int(left/3) in
-        let t461 = inherent#std::task::Task#std::task::Task[T]#join__T_int(right/5) in
-        let t462 = (t460 + t461) in
-        t462
+  let completed/0 = closure_env_main_3.completed_0(env194) in
+  let t459 = closure_env_main_0 {} in
+  let t460 = pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](t459) in
+  join inline_cont667(left/3: std::task::Task__int) -> int {
+    let t461 = closure_env_main_1 {} in
+    let t462 = pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](t461) in
+    join inline_cont656(right/5: std::task::Task__int) -> int {
+      let t463 = closure_env_main_2 { completed_0: completed/0 } in
+      let t464 = pack_closure[inherent#closure_env_main_2#closure_env_main_2#apply](t463) in
+      join inline_cont645(mtmp187: std::task::Task__unit) -> int {
+        let t465 = inherent#std::task::Task#std::task::Task[T]#join__T_int(left/3) in
+        let t466 = inherent#std::task::Task#std::task::Task[T]#join__T_int(right/5) in
+        let t467 = (t465 + t466) in
+        t467
       } in
-      let inline641 = inherent#Ref#Ref[T]#new__T_Option[unit](Tag_0) in
-      let inline642 = inherent#Channel#Channel[T]#new__T_unit(0) in
-      let inline643 = std::task::Scope.handle(scope/1) in
-      let inline644 = std::internal::task::token(inline643) in
-      let inline645 = std::task::CancelToken { value: inline644 } in
-      let inline646 = std::task::Scope.handle(scope/1) in
-      let inline647 =
+      let inline646 = inherent#Ref#Ref[T]#new__T_Option[unit](Tag_0) in
+      let inline647 = inherent#Channel#Channel[T]#new__T_unit(0) in
+      let inline648 = std::task::Scope.handle(scope/1) in
+      let inline649 = std::internal::task::token(inline648) in
+      let inline650 = std::task::CancelToken { value: inline649 } in
+      let inline651 = std::task::Scope.handle(scope/1) in
+      let inline652 =
         closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10 {
-          result_0: inline641,
-          body_1: t459,
-          token_2: inline645,
-          ready_3: inline642
+          result_0: inline646,
+          body_1: t464,
+          token_2: inline650,
+          ready_3: inline647
         } in
-      let inline648 =
+      let inline653 =
         pack_closure[inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10#apply](
-          inline647
+          inline652
         ) in
-      let inline649 = std::internal::task::spawn(inline646, inline648) in
-      let inline650 = std::task::Task__unit { result: inline641, ready: inline642 } in
-      jump inline_cont640(inline650)
+      let inline654 = std::internal::task::spawn(inline651, inline653) in
+      let inline655 = std::task::Task__unit { result: inline646, ready: inline647 } in
+      jump inline_cont645(inline655)
     } in
-    let inline652 = inherent#Ref#Ref[T]#new__T_Option[int](Tag_0) in
-    let inline653 = inherent#Channel#Channel[T]#new__T_unit(0) in
-    let inline654 = std::task::Scope.handle(scope/1) in
-    let inline655 = std::internal::task::token(inline654) in
-    let inline656 = std::task::CancelToken { value: inline655 } in
-    let inline657 = std::task::Scope.handle(scope/1) in
-    let inline658 =
+    let inline657 = inherent#Ref#Ref[T]#new__T_Option[int](Tag_0) in
+    let inline658 = inherent#Channel#Channel[T]#new__T_unit(0) in
+    let inline659 = std::task::Scope.handle(scope/1) in
+    let inline660 = std::internal::task::token(inline659) in
+    let inline661 = std::task::CancelToken { value: inline660 } in
+    let inline662 = std::task::Scope.handle(scope/1) in
+    let inline663 =
       closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9 {
-        result_0: inline652,
-        body_1: t457,
-        token_2: inline656,
-        ready_3: inline653
+        result_0: inline657,
+        body_1: t462,
+        token_2: inline661,
+        ready_3: inline658
       } in
-    let inline659 =
+    let inline664 =
       pack_closure[inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9#apply](
-        inline658
+        inline663
       ) in
-    let inline660 = std::internal::task::spawn(inline657, inline659) in
-    let inline661 = std::task::Task__int { result: inline652, ready: inline653 } in
-    jump inline_cont651(inline661)
+    let inline665 = std::internal::task::spawn(inline662, inline664) in
+    let inline666 = std::task::Task__int { result: inline657, ready: inline658 } in
+    jump inline_cont656(inline666)
   } in
-  let inline663 = inherent#Ref#Ref[T]#new__T_Option[int](Tag_0) in
-  let inline664 = inherent#Channel#Channel[T]#new__T_unit(0) in
-  let inline665 = std::task::Scope.handle(scope/1) in
-  let inline666 = std::internal::task::token(inline665) in
-  let inline667 = std::task::CancelToken { value: inline666 } in
-  let inline668 = std::task::Scope.handle(scope/1) in
-  let inline669 =
+  let inline668 = inherent#Ref#Ref[T]#new__T_Option[int](Tag_0) in
+  let inline669 = inherent#Channel#Channel[T]#new__T_unit(0) in
+  let inline670 = std::task::Scope.handle(scope/1) in
+  let inline671 = std::internal::task::token(inline670) in
+  let inline672 = std::task::CancelToken { value: inline671 } in
+  let inline673 = std::task::Scope.handle(scope/1) in
+  let inline674 =
     closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9 {
-      result_0: inline663,
-      body_1: t455,
-      token_2: inline667,
-      ready_3: inline664
+      result_0: inline668,
+      body_1: t460,
+      token_2: inline672,
+      ready_3: inline669
     } in
-  let inline670 =
+  let inline675 =
     pack_closure[inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9#apply](
-      inline669
+      inline674
     ) in
-  let inline671 = std::internal::task::spawn(inline668, inline670) in
-  let inline672 = std::task::Task__int { result: inline663, ready: inline664 } in
-  jump inline_cont662(inline672)
+  let inline676 = std::internal::task::spawn(inline673, inline675) in
+  let inline677 = std::task::Task__int { result: inline668, ready: inline669 } in
+  jump inline_cont667(inline677)
 }
 
 fn inherent#closure_env_main_4#closure_env_main_4#apply(
-  env190: closure_env_main_4,
+  env195: closure_env_main_4,
   _cancel/10: std::task::CancelToken
 ) -> int {
   7
 }
 
 fn inherent#closure_env_main_5#closure_env_main_5#apply(
-  env191: closure_env_main_5,
+  env196: closure_env_main_5,
   scope/9: std::task::Scope
 ) -> int {
-  let t467 = closure_env_main_4 {} in
-  let t468 = pack_closure[inherent#closure_env_main_4#closure_env_main_4#apply](t467) in
-  join inline_cont673(value/11: std::task::Task__int) -> int {
-    let t469 = inherent#std::task::Task#std::task::Task[T]#join__T_int(value/11) in
-    t469
+  let t472 = closure_env_main_4 {} in
+  let t473 = pack_closure[inherent#closure_env_main_4#closure_env_main_4#apply](t472) in
+  join inline_cont678(value/11: std::task::Task__int) -> int {
+    let t474 = inherent#std::task::Task#std::task::Task[T]#join__T_int(value/11) in
+    t474
   } in
-  let inline674 = inherent#Ref#Ref[T]#new__T_Option[int](Tag_0) in
-  let inline675 = inherent#Channel#Channel[T]#new__T_unit(0) in
-  let inline676 = std::task::Scope.handle(scope/9) in
-  let inline677 = std::internal::task::token(inline676) in
-  let inline678 = std::task::CancelToken { value: inline677 } in
-  let inline679 = std::task::Scope.handle(scope/9) in
-  let inline680 =
+  let inline679 = inherent#Ref#Ref[T]#new__T_Option[int](Tag_0) in
+  let inline680 = inherent#Channel#Channel[T]#new__T_unit(0) in
+  let inline681 = std::task::Scope.handle(scope/9) in
+  let inline682 = std::internal::task::token(inline681) in
+  let inline683 = std::task::CancelToken { value: inline682 } in
+  let inline684 = std::task::Scope.handle(scope/9) in
+  let inline685 =
     closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9 {
-      result_0: inline674,
-      body_1: t468,
-      token_2: inline678,
-      ready_3: inline675
+      result_0: inline679,
+      body_1: t473,
+      token_2: inline683,
+      ready_3: inline680
     } in
-  let inline681 =
+  let inline686 =
     pack_closure[inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9#apply](
-      inline680
+      inline685
     ) in
-  let inline682 = std::internal::task::spawn(inline679, inline681) in
-  let inline683 = std::task::Task__int { result: inline674, ready: inline675 } in
-  jump inline_cont673(inline683)
+  let inline687 = std::internal::task::spawn(inline684, inline686) in
+  let inline688 = std::task::Task__int { result: inline679, ready: inline680 } in
+  jump inline_cont678(inline688)
 }
 
 fn inherent#closure_env_main_6#closure_env_main_6#apply(
-  env192: closure_env_main_6,
+  env197: closure_env_main_6,
   scope/8: std::task::Scope
 ) -> int {
-  join inline_cont692(t473: std::task::CancelToken) -> int {
-    let t474 = closure_env_main_5 {} in
-    let t475 = pack_closure[inherent#closure_env_main_5#closure_env_main_5#apply](t474) in
-    let inline685 = std::task::CancelToken.value(t473) in
-    let inline686 = std::internal::task::child_scope(inline685) in
-    let inline687 = inherent#Ref#Ref[T]#new__T_Option[int](Tag_0) in
-    let inline688 =
+  join inline_cont697(t478: std::task::CancelToken) -> int {
+    let t479 = closure_env_main_5 {} in
+    let t480 = pack_closure[inherent#closure_env_main_5#closure_env_main_5#apply](t479) in
+    let inline690 = std::task::CancelToken.value(t478) in
+    let inline691 = std::internal::task::child_scope(inline690) in
+    let inline692 = inherent#Ref#Ref[T]#new__T_Option[int](Tag_0) in
+    let inline693 =
       closure_env_std_task_scope_with_T_int_11 {
-        result_0: inline687,
-        body_1: t475,
-        handle_2: inline686
+        result_0: inline692,
+        body_1: t480,
+        handle_2: inline691
       } in
-    let inline689 =
+    let inline694 =
       pack_closure[inherent#closure_env_std_task_scope_with_T_int_11#closure_env_std_task_scope_with_T_int_11#apply](
-        inline688
+        inline693
       ) in
-    let inline690 = std::internal::task::run(inline686, inline689) in
-    let inline691 = std::task::completed_scope_value__T_int(inline687) in
-    inline691
+    let inline695 = std::internal::task::run(inline691, inline694) in
+    let inline696 = std::task::completed_scope_value__T_int(inline692) in
+    inline696
   } in
-  let inline693 = std::task::Scope.handle(scope/8) in
-  let inline694 = std::internal::task::token(inline693) in
-  let inline695 = std::task::CancelToken { value: inline694 } in
-  jump inline_cont692(inline695)
+  let inline698 = std::task::Scope.handle(scope/8) in
+  let inline699 = std::internal::task::token(inline698) in
+  let inline700 = std::task::CancelToken { value: inline699 } in
+  jump inline_cont697(inline700)
 }
 
 fn inherent#closure_env_spawn_7#closure_env_spawn_7#apply(
-  env193: closure_env_spawn_7,
+  env198: closure_env_spawn_7,
   value/14: int
 ) -> int {
-  let t479 = (value/14 + 1) in
-  t479
+  let t484 = (value/14 + 1) in
+  t484
 }
 
 fn inherent#closure_env_std_task_scope_T_int_8#closure_env_std_task_scope_T_int_8#apply(
-  env194: closure_env_std_task_scope_T_int_8
+  env199: closure_env_std_task_scope_T_int_8
 ) -> unit {
-  let result/11 = closure_env_std_task_scope_T_int_8.result_0(env194) in
-  let body/9 = closure_env_std_task_scope_T_int_8.body_1(env194) in
-  let handle/10 = closure_env_std_task_scope_T_int_8.handle_2(env194) in
-  let t481 = std::task::Scope { handle: handle/10 } in
-  let t482 = body/9(t481) in
-  let t483 = Option__int::Some(t482) in
-  let inline697 = @intrinsic(ref.set)(result/11, t483) in
+  let result/11 = closure_env_std_task_scope_T_int_8.result_0(env199) in
+  let body/9 = closure_env_std_task_scope_T_int_8.body_1(env199) in
+  let handle/10 = closure_env_std_task_scope_T_int_8.handle_2(env199) in
+  let t486 = std::task::Scope { handle: handle/10 } in
+  let t487 = body/9(t486) in
+  let t488 = Option__int::Some(t487) in
+  let inline702 = @intrinsic(ref.set)(result/11, t488) in
   ()
 }
 
 fn inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9#apply(
-  env195: closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9
+  env200: closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9
 ) -> unit {
   let result/27 =
-    closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9.result_0(env195) in
-  let body/26 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9.body_1(env195) in
-  let token/29 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9.token_2(env195) in
-  let ready/28 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9.ready_3(env195) in
-  let t486 = body/26(token/29) in
-  let t487 = Option__int::Some(t486) in
-  join inline_cont700(_wild17: unit) -> unit {
-    let inline699 = @intrinsic(channel.close)(ready/28) in
+    closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9.result_0(env200) in
+  let body/26 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9.body_1(env200) in
+  let token/29 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9.token_2(env200) in
+  let ready/28 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9.ready_3(env200) in
+  let t491 = body/26(token/29) in
+  let t492 = Option__int::Some(t491) in
+  join inline_cont705(_wild17: unit) -> unit {
+    let inline704 = @intrinsic(channel.close)(ready/28) in
     ()
   } in
-  let inline701 = @intrinsic(ref.set)(result/27, t487) in
-  jump inline_cont700(())
+  let inline706 = @intrinsic(ref.set)(result/27, t492) in
+  jump inline_cont705(())
 }
 
 fn inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10#apply(
-  env196: closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10
+  env201: closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10
 ) -> unit {
   let result/27 =
-    closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10.result_0(env196) in
-  let body/26 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10.body_1(env196) in
+    closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10.result_0(env201) in
+  let body/26 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10.body_1(env201) in
   let token/29 =
-    closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10.token_2(env196) in
+    closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10.token_2(env201) in
   let ready/28 =
-    closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10.ready_3(env196) in
-  let t490 = body/26(token/29) in
-  let t491 = Option__unit::Some(t490) in
-  join inline_cont704(_wild17: unit) -> unit {
-    let inline703 = @intrinsic(channel.close)(ready/28) in
+    closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10.ready_3(env201) in
+  let t495 = body/26(token/29) in
+  let t496 = Option__unit::Some(t495) in
+  join inline_cont709(_wild17: unit) -> unit {
+    let inline708 = @intrinsic(channel.close)(ready/28) in
     ()
   } in
-  let inline705 = @intrinsic(ref.set)(result/27, t491) in
-  jump inline_cont704(())
+  let inline710 = @intrinsic(ref.set)(result/27, t496) in
+  jump inline_cont709(())
 }
 
 fn inherent#closure_env_std_task_scope_with_T_int_11#closure_env_std_task_scope_with_T_int_11#apply(
-  env197: closure_env_std_task_scope_with_T_int_11
+  env202: closure_env_std_task_scope_with_T_int_11
 ) -> unit {
-  let result/15 = closure_env_std_task_scope_with_T_int_11.result_0(env197) in
-  let body/13 = closure_env_std_task_scope_with_T_int_11.body_1(env197) in
-  let handle/14 = closure_env_std_task_scope_with_T_int_11.handle_2(env197) in
-  let t494 = std::task::Scope { handle: handle/14 } in
-  let t495 = body/13(t494) in
-  let t496 = Option__int::Some(t495) in
-  let inline707 = @intrinsic(ref.set)(result/15, t496) in
+  let result/15 = closure_env_std_task_scope_with_T_int_11.result_0(env202) in
+  let body/13 = closure_env_std_task_scope_with_T_int_11.body_1(env202) in
+  let handle/14 = closure_env_std_task_scope_with_T_int_11.handle_2(env202) in
+  let t499 = std::task::Scope { handle: handle/14 } in
+  let t500 = body/13(t499) in
+  let t501 = Option__int::Some(t500) in
+  let inline712 = @intrinsic(ref.set)(result/15, t501) in
   ()
 }

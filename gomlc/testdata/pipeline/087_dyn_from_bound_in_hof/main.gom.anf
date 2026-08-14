@@ -1,46 +1,46 @@
 fn trait_impl#Display#int32#show(self/0: int32) -> string {
-  let inline205 = @runtime(core.int32_to_string)(self/0) in
-  inline205
+  let inline210 = @runtime(core.int32_to_string)(self/0) in
+  inline210
 }
 
 fn main() -> unit {
   let value/3 = 42 in
-  join inline_cont209(f/4: () -> string) -> unit {
-    let t188 = f/4() in
-    let inline207 = trait_impl#ToString#string#to_string(t188) in
-    let inline208 = @runtime(core.string_println)(inline207) in
+  join inline_cont214(f/4: () -> string) -> unit {
+    let t193 = f/4() in
+    let inline212 = trait_impl#ToString#string#to_string(t193) in
+    let inline213 = @runtime(core.string_println)(inline212) in
     ()
   } in
-  let inline210 = to_dyn[Display]{int32}(value/3) in
-  let inline211 = closure_env_mk_renderer_T_int32_0 { d_0: inline210 } in
-  let inline212 =
+  let inline215 = to_dyn[Display]{int32}(value/3) in
+  let inline216 = closure_env_mk_renderer_T_int32_0 { d_0: inline215 } in
+  let inline217 =
     pack_closure[inherent#closure_env_mk_renderer_T_int32_0#closure_env_mk_renderer_T_int32_0#apply](
-      inline211
+      inline216
     ) in
-  jump inline_cont209(inline212)
+  jump inline_cont214(inline217)
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {
-  let t191 = @runtime(core.int32_to_string)(self/33) in
-  t191
+  let t196 = @runtime(core.int32_to_string)(self/33) in
+  t196
 }
 
 fn mk_renderer__T_int32(x/1: int32) -> () -> string {
   let d/2 = to_dyn[Display]{int32}(x/1) in
-  let t194 = closure_env_mk_renderer_T_int32_0 { d_0: d/2 } in
-  let t195 =
+  let t199 = closure_env_mk_renderer_T_int32_0 { d_0: d/2 } in
+  let t200 =
     pack_closure[inherent#closure_env_mk_renderer_T_int32_0#closure_env_mk_renderer_T_int32_0#apply](
-      t194
+      t199
     ) in
-  t195
+  t200
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont213(t197: string) -> unit {
-    let t198 = @runtime(core.string_println)(t197) in
+  join inline_cont218(t202: string) -> unit {
+    let t203 = @runtime(core.string_println)(t202) in
     ()
   } in
-  jump inline_cont213(value/1)
+  jump inline_cont218(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/65: string) -> string {
@@ -48,9 +48,9 @@ fn trait_impl#ToString#string#to_string(self/65: string) -> string {
 }
 
 fn inherent#closure_env_mk_renderer_T_int32_0#closure_env_mk_renderer_T_int32_0#apply(
-  env183: closure_env_mk_renderer_T_int32_0
+  env188: closure_env_mk_renderer_T_int32_0
 ) -> string {
-  let d/2 = closure_env_mk_renderer_T_int32_0.d_0(env183) in
-  let t203 = dyn_call[Display::show](d/2) in
-  t203
+  let d/2 = closure_env_mk_renderer_T_int32_0.d_0(env188) in
+  let t208 = dyn_call[Display::show](d/2) in
+  t208
 }

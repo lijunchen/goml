@@ -1,0 +1,30 @@
+package main;
+#[derive(PartialEq)]
+struct Pair {
+    left: int,
+    right: int,
+}
+
+impl PartialEq for Pair {
+  fn eq(self: Pair, other: Pair) -> bool {
+      true && PartialEq::eq(self.left, other.left) && PartialEq::eq(self.right, other.right)
+  }
+}
+
+fn contains_any[T: PartialEq](values: Vec[T], expected: T) -> bool {
+    values.contains(expected)
+}
+
+fn main() -> unit {
+    let values = Vec::[1, 2, 3];
+    println(values.contains(2).to_string());
+    println(values.contains(9).to_string());
+    let names = Vec::["alpha", "beta"];
+    println(names.contains("beta").to_string());
+    let pairs = Vec::[Pair { left: 1, right: 2 }];
+    println(pairs.contains(Pair { left: 1, right: 2 }).to_string());
+    println(contains_any(values, 3).to_string());
+    let empty: Vec[string] = Vec::[];
+    println(empty.contains("x").to_string())
+}
+

@@ -127,87 +127,87 @@ var VALUES *OnceCell__FrozenVec__int = func() *OnceCell__FrozenVec__int {
 
 func main0() struct{} {
     var frozen__0 FrozenVec__int
-    var inline295 closure_env_values_0 = closure_env_values_0{}
-    var inline296 func() FrozenVec__int = func() FrozenVec__int {
-        return _goml_m_inherent_i_closure__env__values__0_i_closure__env__values__0_i_apply(inline295)
+    var inline300 closure_env_values_0 = closure_env_values_0{}
+    var inline301 func() FrozenVec__int = func() FrozenVec__int {
+        return _goml_m_inherent_i_closure__env__values__0_i_closure__env__values__0_i_apply(inline300)
     }
-    var inline297 FrozenVec__int = _goml_m_inherent_i_OnceCell_i__hd25730924ff6191d03d6c0a0b7510106_zenVec_l_int_r_(VALUES, inline296)
-    frozen__0 = inline297
+    var inline302 FrozenVec__int = _goml_m_inherent_i_OnceCell_i__hd25730924ff6191d03d6c0a0b7510106_zenVec_l_int_r_(VALUES, inline301)
+    frozen__0 = inline302
     var copy__1 *_goml_vec_int
-    var inline292 *_goml_vec_int = frozen__0.values
-    var inline293 *_goml_vec_int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_copy____T__int(inline292)
-    copy__1 = inline293
-    var inline288 int = 0
-    var inline289 int = 9
-    vec_set__Vec_3int(copy__1, inline288, inline289)
-    var t195 int
-    var inline284 int = 0
-    var inline285 *_goml_vec_int = frozen__0.values
-    var inline286 int = vec_get__Vec_3int(inline285, inline284)
-    t195 = inline286
-    var t196 string
-    var inline282 string = _goml_runtime_core_int_to_string(t195)
-    t196 = inline282
-    var inline279 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t196)
-    _goml_runtime_core_string_println(inline279)
-    var t197 int
-    var inline276 int = 0
-    var inline277 int = vec_get__Vec_3int(copy__1, inline276)
-    t197 = inline277
-    var t198 string
-    var inline274 string = _goml_runtime_core_int_to_string(t197)
-    t198 = inline274
-    var inline271 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t198)
-    _goml_runtime_core_string_println(inline271)
-    var t199 FrozenVec__int
-    var inline267 closure_env_values_0 = closure_env_values_0{}
-    var inline268 func() FrozenVec__int = func() FrozenVec__int {
-        return _goml_m_inherent_i_closure__env__values__0_i_closure__env__values__0_i_apply(inline267)
-    }
-    var inline269 FrozenVec__int = _goml_m_inherent_i_OnceCell_i__hd25730924ff6191d03d6c0a0b7510106_zenVec_l_int_r_(VALUES, inline268)
-    t199 = inline269
+    var inline297 *_goml_vec_int = frozen__0.values
+    var inline298 *_goml_vec_int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_copy____T__int(inline297)
+    copy__1 = inline298
+    var inline293 int = 0
+    var inline294 int = 9
+    vec_set__Vec_3int(copy__1, inline293, inline294)
     var t200 int
-    var inline263 int = 1
-    var inline264 *_goml_vec_int = t199.values
-    var inline265 int = vec_get__Vec_3int(inline264, inline263)
-    t200 = inline265
+    var inline289 int = 0
+    var inline290 *_goml_vec_int = frozen__0.values
+    var inline291 int = vec_get__Vec_3int(inline290, inline289)
+    t200 = inline291
     var t201 string
-    var inline261 string = _goml_runtime_core_int_to_string(t200)
-    t201 = inline261
-    var inline258 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t201)
-    _goml_runtime_core_string_println(inline258)
+    var inline287 string = _goml_runtime_core_int_to_string(t200)
+    t201 = inline287
+    var inline284 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t201)
+    _goml_runtime_core_string_println(inline284)
+    var t202 int
+    var inline281 int = 0
+    var inline282 int = vec_get__Vec_3int(copy__1, inline281)
+    t202 = inline282
+    var t203 string
+    var inline279 string = _goml_runtime_core_int_to_string(t202)
+    t203 = inline279
+    var inline276 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t203)
+    _goml_runtime_core_string_println(inline276)
+    var t204 FrozenVec__int
+    var inline272 closure_env_values_0 = closure_env_values_0{}
+    var inline273 func() FrozenVec__int = func() FrozenVec__int {
+        return _goml_m_inherent_i_closure__env__values__0_i_closure__env__values__0_i_apply(inline272)
+    }
+    var inline274 FrozenVec__int = _goml_m_inherent_i_OnceCell_i__hd25730924ff6191d03d6c0a0b7510106_zenVec_l_int_r_(VALUES, inline273)
+    t204 = inline274
+    var t205 int
+    var inline268 int = 1
+    var inline269 *_goml_vec_int = t204.values
+    var inline270 int = vec_get__Vec_3int(inline269, inline268)
+    t205 = inline270
+    var t206 string
+    var inline266 string = _goml_runtime_core_int_to_string(t205)
+    t206 = inline266
+    var inline263 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t206)
+    _goml_runtime_core_string_println(inline263)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_OnceCell_i__hd25730924ff6191d03d6c0a0b7510106_zenVec_l_int_r_(self__241 *OnceCell__FrozenVec__int, init__242 func() FrozenVec__int) FrozenVec__int {
-    var t214 FrozenVec__int = once_cell_get_or_init__OnceCell__FrozenVec__int(self__241, init__242)
-    return t214
+func _goml_m_inherent_i_OnceCell_i__hd25730924ff6191d03d6c0a0b7510106_zenVec_l_int_r_(self__244 *OnceCell__FrozenVec__int, init__245 func() FrozenVec__int) FrozenVec__int {
+    var t219 FrozenVec__int = once_cell_get_or_init__OnceCell__FrozenVec__int(self__244, init__245)
+    return t219
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_copy____T__int(self__180 *_goml_vec_int) *_goml_vec_int {
-    var t236 int
-    var inline306 int = vec_len__Vec_3int(self__180)
-    t236 = inline306
+    var t241 int
+    var inline311 int = vec_len__Vec_3int(self__180)
+    t241 = inline311
     var result__181 *_goml_vec_int
-    var inline304 *_goml_vec_int = vec_with_capacity__Vec_3int(t236)
-    result__181 = inline304
+    var inline309 *_goml_vec_int = vec_with_capacity__Vec_3int(t241)
+    result__181 = inline309
     var index__182 int = 0
-    Loop_loop238:
+    Loop_loop243:
     for {
-        var t239 int
-        var inline302 int = vec_len__Vec_3int(self__180)
-        t239 = inline302
-        var t240 bool = index__182 < t239
-        if t240 {
-            var t241 int = vec_get__Vec_3int(self__180, index__182)
-            vec_push__Vec_3int(result__181, t241)
+        var t244 int
+        var inline307 int = vec_len__Vec_3int(self__180)
+        t244 = inline307
+        var t245 bool = index__182 < t244
+        if t245 {
+            var t246 int = vec_get__Vec_3int(self__180, index__182)
+            vec_push__Vec_3int(result__181, t246)
             var compound_old86 int = index__182
             var compound_value87 int = 1
-            var t242 int = compound_old86 + compound_value87
-            index__182 = t242
+            var t247 int = compound_old86 + compound_value87
+            index__182 = t247
             continue
         } else {
-            break Loop_loop238
+            break Loop_loop243
         }
     }
     return result__181
@@ -217,21 +217,21 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) strin
     return self__65
 }
 
-func _goml_m_inherent_i_closure__env__values__0_i_closure__env__values__0_i_apply(env188 closure_env_values_0) FrozenVec__int {
+func _goml_m_inherent_i_closure__env__values__0_i_closure__env__values__0_i_apply(env193 closure_env_values_0) FrozenVec__int {
     var vec_literal__118 *_goml_vec_int
-    var inline320 *_goml_vec_int = vec_new__Vec_3int()
-    vec_literal__118 = inline320
-    var inline317 int = 1
-    vec_push__Vec_3int(vec_literal__118, inline317)
-    var inline314 int = 2
-    vec_push__Vec_3int(vec_literal__118, inline314)
-    var inline311 int = 3
-    vec_push__Vec_3int(vec_literal__118, inline311)
-    var inline308 *_goml_vec_int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_copy____T__int(vec_literal__118)
-    var inline309 FrozenVec__int = FrozenVec__int{
-        values: inline308,
+    var inline325 *_goml_vec_int = vec_new__Vec_3int()
+    vec_literal__118 = inline325
+    var inline322 int = 1
+    vec_push__Vec_3int(vec_literal__118, inline322)
+    var inline319 int = 2
+    vec_push__Vec_3int(vec_literal__118, inline319)
+    var inline316 int = 3
+    vec_push__Vec_3int(vec_literal__118, inline316)
+    var inline313 *_goml_vec_int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_copy____T__int(vec_literal__118)
+    var inline314 FrozenVec__int = FrozenVec__int{
+        values: inline313,
     }
-    return inline309
+    return inline314
 }
 
 func main() {
