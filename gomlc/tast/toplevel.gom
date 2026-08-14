@@ -18,6 +18,7 @@ fn function_context(
     let param_aliases = predicate_type_aliases(predicates);
     let projection_aliases = predicate_projection_aliases(predicates);
     Checker {
+        builtin: base.builtin,
         counter: base.counter,
         diagnostics: base.diagnostics,
         typeck_results: base.typeck_results,
@@ -81,6 +82,7 @@ fn function_context(
 
 fn closure_context(base: Checker, ret_ty: Type) -> Checker {
     Checker {
+        builtin: base.builtin,
         counter: base.counter,
         diagnostics: base.diagnostics,
         typeck_results: base.typeck_results,
@@ -592,14 +594,20 @@ fn check_function(
     };
     let type_params = append_names(inherited_generics, value.generics);
     let raw_ret_ty = match value.ret_ty {
-        Some(ty) => type_from_hir(ty, type_params, self_ty),
+        Some(ty) => type_from_hir(base.builtin, ty, type_params, self_ty),
         None => Type::Unit,
     };
     let predicates = resolve_signature_predicates(
         base,
         append_predicates(
             inherited_predicates,
-            predicates_from_hir(value.generic_bounds, value.predicates, type_params, self_ty),
+            predicates_from_hir(
+                base.builtin,
+                value.generic_bounds,
+                value.predicates,
+                type_params,
+                self_ty,
+            ),
         ),
         true,
     );
@@ -639,7 +647,7 @@ fn check_function(
         );
         let ty = resolve_signature_type(
             ctx,
-            type_from_hir(param.1, type_params, self_ty),
+            type_from_hir(ctx.builtin, param.1, type_params, self_ty),
             predicates,
             true,
         );
@@ -808,7 +816,7 @@ fn check_constant(base: Checker, value: hir::Constant) -> (
     base.current_span.set(Option::Some(value.ty_span));
     let ty = resolve_signature_type(
         base,
-        type_from_hir(value.ty, Vec::[], Option::None),
+        type_from_hir(base.builtin, value.ty, Vec::[], Option::None),
         Vec::[],
         true,
     );
@@ -873,14 +881,16 @@ fn check_constant(base: Checker, value: hir::Constant) -> (
     result
 }
 
-fn once_cell_type(value: Type) -> bool {
+fn once_cell_type(builtin: BuiltinContract, value: Type) -> bool {
     match resolve_type(value) {
-        App { ty: Con { name }, args } => short_name(name) == "OnceCell" && args.len() == 1,
+        App { ty: Con { name }, args } => {
+            names_match(name, builtin.static_cell.name) && args.len() == 1
+        },
         _ => false,
     }
 }
 
-fn hir_once_cell_initializer(value: hir::Expr) -> bool {
+fn hir_once_cell_initializer(builtin: BuiltinContract, value: hir::Expr) -> bool {
     match value.kind {
         Call {
             func: hir::Expr {
@@ -895,18 +905,20 @@ fn hir_once_cell_initializer(value: hir::Expr) -> bool {
                 span: _,
             },
             args,
-        } => short_name(owner) == "OnceCell" && member == "new" && args.is_empty(),
+        } => names_match(owner, builtin.static_cell.name)
+            && member == builtin.static_cell.constructor
+            && args.is_empty(),
         _ => false,
     }
 }
 
 fn check_static(base: Checker, value: hir::Static) -> Static {
-    let valid_initializer = hir_once_cell_initializer(value.value);
+    let valid_initializer = hir_once_cell_initializer(base.builtin, value.value);
     let previous_span = base.current_span.get();
     base.current_span.set(Option::Some(value.ty_span));
     let ty = resolve_signature_type(
         base,
-        type_from_hir(value.ty, Vec::[], Option::None),
+        type_from_hir(base.builtin, value.ty, Vec::[], Option::None),
         Vec::[],
         true,
     );
@@ -925,7 +937,7 @@ fn check_static(base: Checker, value: hir::Static) -> Static {
     resolve_coercion_constraints(ctx);
     resolve_numeric_literal_constraints(ctx);
     let _ = resolve_deferred_expr(ctx, checked);
-    if !once_cell_type(ty) || !valid_initializer {
+    if !once_cell_type(base.builtin, ty) || !valid_initializer {
         push_diagnostic(base, "static initializer must be `OnceCell::new()`")
     } else {};
     base.current_span.set(previous_span);
@@ -1163,7 +1175,7 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
     let mut invalid = false;
     let previous_span = base.current_span.get();
     base.current_span.set(Option::Some(value.for_type_span));
-    let raw_for_type = type_from_hir(value.for_type, value.generics, Option::None);
+    let raw_for_type = type_from_hir(base.builtin, value.for_type, value.generics, Option::None);
     let wrong_arity = nominal_application_has_wrong_arity(base, raw_for_type);
     let for_type = resolve_signature_type(
         base,
@@ -1185,6 +1197,7 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
     let predicates = resolve_signature_predicates(
         base,
         predicates_from_hir(
+            base.builtin,
             value.generic_bounds,
             value.predicates,
             value.generics,
@@ -1194,7 +1207,12 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
     );
     let trait_ref = match value.trait_ref {
         Some(reference) => {
-            let reference = trait_ref_from_hir(reference, value.generics, Option::Some(for_type));
+            let reference = trait_ref_from_hir(
+                base.builtin,
+                reference,
+                value.generics,
+                Option::Some(for_type),
+            );
             match find_trait(base, reference.name) {
                 Some(_) => validate_trait_reference(base, reference),
                 None => push_diagnostic(
@@ -1244,7 +1262,12 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
                 associated.0,
                 resolve_signature_type(
                     base,
-                    type_from_hir(associated.1, value.generics, Option::Some(for_type)),
+                    type_from_hir(
+                        base.builtin,
+                        associated.1,
+                        value.generics,
+                        Option::Some(for_type),
+                    ),
                     associated_predicates,
                     true,
                 ),
@@ -1920,8 +1943,9 @@ fn validate_trait_impl(
                             owner_predicates.len(),
                         )
                     },
-                    None => if reference.name == "Eq" && method.name == "eq"
-                        && !trait_infos_contain_exact_name(ctx.traits, "Eq") {
+                    None => if names_match(reference.name, ctx.builtin.eq.name)
+                        && method.name == ctx.builtin.partial_eq.method
+                        && !trait_infos_contain_exact_name(ctx.traits, ctx.builtin.eq.name) {
                         push_diagnostic(
                             ctx,
                             "Old-style Eq implementations cannot define eq; implement PartialEq with fn eq and use an empty impl Eq",
@@ -2240,14 +2264,14 @@ fn validate_local_definitions(ctx: Checker, enum_count: int, struct_count: int, 
     }
 }
 
-fn builtin_enum_definitions() -> Vec[EnumDef] {
+fn builtin_enum_definitions(builtin: BuiltinContract) -> Vec[EnumDef] {
     let result: Vec[EnumDef] = Vec::[];
     for value in builtin_source_enum_infos() {
         let variants: Vec[EnumVariantDef] = Vec::[];
         for variant in value.variants {
             variants.push(EnumVariantDef { name: variant.name, fields: variant.fields })
         }
-        let option_variants = enum_option_variants(value.name, variants);
+        let option_variants = enum_option_variants(builtin, value.name, variants);
         result.push(
             EnumDef { name: value.name, generics: value.generics, variants, option_variants },
         )
@@ -2255,10 +2279,14 @@ fn builtin_enum_definitions() -> Vec[EnumDef] {
     result
 }
 
-fn enum_option_variants(name: string, variants: Vec[EnumVariantDef]) -> Option[(string, string)] {
-    if name != "Option" {
+fn enum_option_variants(builtin: BuiltinContract, name: string, variants: Vec[EnumVariantDef]) -> Option[
+    (string, string),
+] {
+    if !names_match(name, builtin.option.name) {
         return Option::None
     } else {};
+    let expected_some = builtin.option.some.name;
+    let expected_none = builtin.option.none.name;
     let some_name = Ref::new(Option::None);
     let none_name = Ref::new(Option::None);
     let payload_name = Ref::new(Option::None);
@@ -2270,13 +2298,13 @@ fn enum_option_variants(name: string, variants: Vec[EnumVariantDef]) -> Option[(
         if fields.len() == 1 {
             payload_count.set(payload_count.get() + 1);
             payload_name.set(Option::Some(variant.name));
-            if variant.name == "Some" {
+            if variant.name == expected_some {
                 some_name.set(Option::Some(variant.name))
             } else {}
         } else if fields.is_empty() {
             empty_count.set(empty_count.get() + 1);
             empty_name.set(Option::Some(variant.name));
-            if variant.name == "None" {
+            if variant.name == expected_none {
                 none_name.set(Option::Some(variant.name))
             } else {}
         } else {}
@@ -2659,17 +2687,20 @@ fn validate_extern_declarations(ctx: Checker) -> unit {
 fn validate_lang_item_attributes(ctx: Checker, attrs: Vec[ast::Attribute], allow_lang_items: bool) -> unit {
     if allow_lang_items {} else {
         for attribute in attrs {
-            match extern_attribute_payload(attribute, "lang") {
-                Some(name) => ctx.diagnostics.push(
+            if attribute.name == "lang" {
+                let name = match lang_item_attribute(Vec::[attribute]) {
+                    Some(value) => value,
+                    None => "<invalid>",
+                };
+                ctx.diagnostics.push(
                     new_diagnostic(
                         TYPER_STAGE,
                         "lang item " + name + " is not permitted in this source",
                         ctx.source_path,
                         Option::None,
                     ),
-                ),
-                None => (),
-            }
+                )
+            } else {}
         }
     }
 }
@@ -2701,7 +2732,9 @@ fn validate_lang_item_declarations(ctx: Checker, value: hir::File, allow_lang_it
             Static(value) => {
                 validate_lang_item_attributes(ctx, value.attrs, allow_lang_items)
             },
-            ImplBlock(_) => (),
+            ImplBlock(value) => {
+                validate_lang_item_attributes(ctx, value.attrs, allow_lang_items)
+            },
         }
     }
 }
@@ -3195,7 +3228,20 @@ fn check_file_with_package(
     validate_function_names: bool,
     allow_externs: bool,
 ) -> CheckResult {
-    let ctx = collect_environment(value, allow_externs);
+    let builtin = match builtin_contract() {
+        Ok(value) => value,
+        Err(error) => {
+            diagnostics.push(new_diagnostic("builtin", error, value.source_path, Option::None));
+            return CheckResult {
+                tast: Option::None,
+                comptime: ctir::empty_module(value.package_name),
+                pending_constants: Vec::[],
+                diagnostics,
+                typeck_results: empty_typeck_results(),
+            }
+        },
+    };
+    let ctx = collect_environment(value, allow_externs, builtin);
     for diagnostic in diagnostics {
         ctx.diagnostics.push(diagnostic)
     }
@@ -3277,7 +3323,7 @@ fn check_file_with_package(
                 ctx.current_span.set(Option::Some(alias.ty_span));
                 let _ = resolve_signature_type(
                     ctx,
-                    type_from_hir(alias.ty, alias.generics, Option::None),
+                    type_from_hir(ctx.builtin, alias.ty, alias.generics, Option::None),
                     Vec::[],
                     true,
                 );
@@ -3337,6 +3383,7 @@ fn check_file_with_package(
         }
     }
     let pattern_values = evaluate_pattern_constants(
+        ctx.builtin,
         File { items: Vec::[], enums: Vec::[], structs: Vec::[], constants, statics: Vec::[] },
         ctx.package_name,
         pattern_dependencies,
@@ -3371,7 +3418,7 @@ fn check_file_with_package(
     }
     attach_file_diagnostic_spans(ctx, value);
     let enums = if include_builtin_types {
-        builtin_enum_definitions()
+        builtin_enum_definitions(ctx.builtin)
     } else {
         Vec::[]
     };
@@ -3381,7 +3428,7 @@ fn check_file_with_package(
         for variant in value.variants {
             variants.push(EnumVariantDef { name: variant.name, fields: variant.fields })
         }
-        let option_variants = enum_option_variants(value.name, variants);
+        let option_variants = enum_option_variants(ctx.builtin, value.name, variants);
         enums.push(
             EnumDef { name: value.name, generics: value.generics, variants, option_variants },
         )
@@ -3507,7 +3554,19 @@ fn check_file(
     include_builtin_types: bool,
     allow_externs: bool,
 ) -> CheckResult {
-    let environments = dependency_environments(dependencies);
+    let environments = match dependency_environments(dependencies) {
+        Ok(values) => values,
+        Err(error) => {
+            diagnostics.push(new_diagnostic("builtin", error, value.source_path, Option::None));
+            return CheckResult {
+                tast: Option::None,
+                comptime: ctir::empty_module(value.package_name),
+                pending_constants: Vec::[],
+                diagnostics,
+                typeck_results: empty_typeck_results(),
+            }
+        },
+    };
     check_file_with_dependency_environments(
         value,
         environments,
@@ -3582,9 +3641,14 @@ fn finalize_check_comptime(
     dependencies: Vec[ctir::CtModule],
     environments: Vec[DependencyEnvironment],
 ) -> CheckResult {
+    let builtin = match builtin_contract() {
+        Ok(value) => value,
+        Err(_) => return checked,
+    };
     match checked.tast {
         Some(file) => {
             let finalized = finalize_comptime(
+                builtin,
                 file,
                 checked.pending_constants,
                 package_name,
@@ -3640,8 +3704,13 @@ fn check_file_with_implicit_prelude(
             Vec::[]
         },
     };
-    for dependency in dependency_environments(prelude_dependencies) {
-        dependencies.push(dependency)
+    match dependency_environments(prelude_dependencies) {
+        Ok(values) => for dependency in values {
+            dependencies.push(dependency)
+        },
+        Err(error) => {
+            diagnostics.push(new_diagnostic("builtin", error, file.source_path, Option::None))
+        },
     }
     check_file_with_dependency_environments(
         file,
@@ -3753,12 +3822,11 @@ pub fn check_package_files_for_link_with_dependencies(
     values: Vec[hir::File],
     dependencies: Vec[hir::File],
 ) -> CheckResult {
-    check_package_files_for_link_with_environments_options(
-        values,
-        dependency_environments(dependencies),
-        false,
-        false,
-    )
+    let dependencies = match dependency_environments(dependencies) {
+        Ok(values) => values,
+        Err(_) => Vec::[],
+    };
+    check_package_files_for_link_with_environments_options(values, dependencies, false, false)
 }
 
 pub fn check_builtin_package_files(values: Vec[hir::File]) -> CheckResult {
@@ -3769,12 +3837,11 @@ pub fn check_package_files_for_link_with_dependencies_allowing_externs(
     values: Vec[hir::File],
     dependencies: Vec[hir::File],
 ) -> CheckResult {
-    check_package_files_for_link_with_environments_options(
-        values,
-        dependency_environments(dependencies),
-        true,
-        false,
-    )
+    let dependencies = match dependency_environments(dependencies) {
+        Ok(values) => values,
+        Err(_) => Vec::[],
+    };
+    check_package_files_for_link_with_environments_options(values, dependencies, true, false)
 }
 
 pub fn check_package_files_for_link_with_environments(

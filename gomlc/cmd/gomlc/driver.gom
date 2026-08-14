@@ -211,13 +211,19 @@ fn toolchain_dependency_environments(hir_dependencies: Vec[hir::File]) -> Vec[
         if dependency.package_name == "builtin" {
             builtin_files.push(dependency)
         } else {
-            for environment in tast::dependency_environments(Vec::[dependency]) {
-                result.push(environment)
+            match tast::dependency_environments(Vec::[dependency]) {
+                Ok(environments) => for environment in environments {
+                    result.push(environment)
+                },
+                Err(error) => fail("error[compile]: " + error),
             }
         }
     }
     if !builtin_files.is_empty() {
-        result.push(tast::builtin_dependency_environment(builtin_files))
+        match tast::builtin_dependency_environment(builtin_files) {
+            Ok(environment) => result.push(environment),
+            Err(error) => fail("error[compile]: " + error),
+        }
     } else {}
     result
 }
@@ -270,7 +276,18 @@ fn compile_toolchain_package(
     if !tast_value.diagnostics.is_empty() {
         fail(render_typer_diagnostics(tast_value.diagnostics, hir_file.source_path, ""))
     } else {};
-    let signatures = tast::package_signatures(hir_file);
+    let signatures = match tast::package_signatures(hir_file) {
+        Ok(value) => value,
+        Err(error) => {
+            fail("error[compile]: " + error);
+            tast::PackageSignatures {
+                traits: Vec::[],
+                functions: Vec::[],
+                type_aliases: Vec::[],
+                constants: Vec::[],
+            }
+        },
+    };
     let comptime_module = tast_value.comptime;
     let tast_file = match tast_value.tast {
         Some(value) => value,
@@ -293,7 +310,7 @@ fn compile_toolchain_package(
     for definition in dependency_structs(builtins, core_dependencies) {
         struct_names.push(definition.name)
     }
-    let public_exports = artifact_package_exports(
+    let public_exports = required_artifact_package_exports(
         tast_file,
         signatures,
         package_name,
@@ -303,7 +320,7 @@ fn compile_toolchain_package(
         enum_names,
         struct_names,
     );
-    let exports = artifact_package_exports(
+    let exports = required_artifact_package_exports(
         tast_file,
         signatures,
         package_name,
@@ -418,7 +435,18 @@ fn builtin_artifact_interface_unit_from_checked(
     builtin_files: Vec[hir::File],
     checked: tast::CheckResult,
 ) -> artifact::ArtifactInterfaceUnit {
-    let signatures = tast::package_signatures(merge_hir_files(builtin_files, "builtin"));
+    let signatures = match tast::package_signatures(merge_hir_files(builtin_files, "builtin")) {
+        Ok(value) => value,
+        Err(error) => {
+            fail("error[compile]: " + error);
+            tast::PackageSignatures {
+                traits: Vec::[],
+                functions: Vec::[],
+                type_aliases: Vec::[],
+                constants: Vec::[],
+            }
+        },
+    };
     let contract_functions = builtin_contract_function_names();
     let functions: Vec[tast::FunctionScheme] = Vec::[];
     for name in contract_functions {
@@ -458,7 +486,7 @@ fn builtin_artifact_interface_unit_from_checked(
             }
         },
     };
-    let exports = artifact_package_exports(
+    let exports = required_artifact_package_exports(
         file,
         signatures,
         "builtin",
@@ -763,14 +791,16 @@ fn source_hir_dependencies(compiler: SourceCompiler, ast_value: ast::LowerResult
     result
 }
 
-fn source_dependency_environments(compiler: SourceCompiler, ast_value: ast::LowerResult) -> Vec[
-    tast::DependencyEnvironment,
+fn source_dependency_environments(compiler: SourceCompiler, ast_value: ast::LowerResult) -> Result[
+    Vec[tast::DependencyEnvironment],
+    string,
 ] {
-    let result = Vec::[tast::builtin_dependency_environment(compiler.builtin_files)];
-    for environment in tast::dependency_environments(source_hir_dependencies(compiler, ast_value)) {
+    let result: Vec[tast::DependencyEnvironment] = Vec::[];
+    result.push(tast::builtin_dependency_environment(compiler.builtin_files)?);
+    for environment in tast::dependency_environments(source_hir_dependencies(compiler, ast_value))? {
         result.push(environment)
     }
-    result
+    Result::Ok(result)
 }
 
 fn source_core_dependencies(compiler: SourceCompiler, ast_value: ast::LowerResult) -> Vec[
@@ -1344,7 +1374,10 @@ fn diagnostic_output_optional(
         return compact_hir_diagnostics(hir_value.diagnostics, source)
     } else {};
     let counter = Ref::new(compiler.counter_start);
-    let environments = source_dependency_environments(compiler, ast_value);
+    let environments = match source_dependency_environments(compiler, ast_value) {
+        Ok(value) => value,
+        Err(error) => return "error[builtin]: " + error + "\n",
+    };
     let core_dependencies = source_core_dependencies(compiler, ast_value);
     let tast_value = tast::check_for_link_with_environments(hir_value, environments);
     if typer_diagnostics_have_errors(tast_value.diagnostics) {
@@ -1478,7 +1511,13 @@ fn compile_source_optional(
     fail_on_ast_diagnostics(ast_value.diagnostics, "derive", source_path, source);
     let hir_value = hir::lower_expanded(ast_value, source_path);
     let counter = Ref::new(compiler.counter_start);
-    let environments = source_dependency_environments(compiler, ast_value);
+    let environments = match source_dependency_environments(compiler, ast_value) {
+        Ok(value) => value,
+        Err(error) => {
+            fail("error[builtin]: " + error);
+            Vec::[]
+        },
+    };
     let core_dependencies = source_core_dependencies(compiler, ast_value);
     let tast_value = tast::check_for_link_with_environments(hir_value, environments);
     fail_on_typer_diagnostics(tast_value.diagnostics, source_path, source);
@@ -1558,7 +1597,10 @@ fn compile_source_or_diagnostics_optional(
         )
     } else {};
     let counter = Ref::new(compiler.counter_start);
-    let environments = source_dependency_environments(compiler, ast_value);
+    let environments = match source_dependency_environments(compiler, ast_value) {
+        Ok(value) => value,
+        Err(error) => return SourceCompilation::Diagnostics("error[builtin]: " + error + "\n"),
+    };
     let core_dependencies = source_core_dependencies(compiler, ast_value);
     let tast_value = tast::check_for_link_with_environments(hir_value, environments);
     if typer_diagnostics_have_errors(tast_value.diagnostics) {

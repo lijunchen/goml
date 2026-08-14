@@ -2,6 +2,7 @@ package core;
 
 use gomlc::ast;
 use gomlc::pretty;
+use gomlc::tast;
 use std::text;
 
 fn utf8_width(value: uint8) -> int {
@@ -97,7 +98,15 @@ fn write_quoted_char(builder: text::StringBuilder, value: char) -> unit {
     builder.write_char('\'')
 }
 
-fn type_docs(values: Vec[Type]) -> Vec[pretty::Doc] {
+fn type_docs(builtin: tast::BuiltinContract, values: Vec[Type]) -> Vec[pretty::Doc] {
+    let result: Vec[pretty::Doc] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(type_doc_with_contract(builtin, value))
+    }
+    result
+}
+
+fn standalone_type_docs(values: Vec[Type]) -> Vec[pretty::Doc] {
     let result: Vec[pretty::Doc] = Vec::with_capacity(values.len());
     for value in values {
         result.push(type_doc(value))
@@ -105,10 +114,19 @@ fn type_docs(values: Vec[Type]) -> Vec[pretty::Doc] {
     result
 }
 
-fn dyn_bound_doc(trait_name: string, args: Vec[Type], associated_types: Vec[(string, Type)]) -> pretty::Doc {
-    let arguments = type_docs(args);
+fn dyn_bound_doc(
+    builtin: tast::BuiltinContract,
+    trait_name: string,
+    args: Vec[Type],
+    associated_types: Vec[(string, Type)],
+) -> pretty::Doc {
+    let arguments = type_docs(builtin, args);
     for binding in associated_types {
-        arguments.push(pretty::concat(Vec::[pretty::text(binding.0 + " = "), type_doc(binding.1)]))
+        arguments.push(
+            pretty::concat(
+                Vec::[pretty::text(binding.0 + " = "), type_doc_with_contract(builtin, binding.1)],
+            ),
+        )
     }
     pretty::append(
         pretty::text(trait_name),
@@ -121,6 +139,13 @@ fn dyn_bound_doc(trait_name: string, args: Vec[Type], associated_types: Vec[(str
 }
 
 pub fn type_doc(value: Type) -> pretty::Doc {
+    match tast::builtin_contract() {
+        Ok(builtin) => type_doc_with_contract(builtin, value),
+        Err(error) => pretty::text("<builtin contract error: " + error + ">"),
+    }
+}
+
+fn type_doc_with_contract(builtin: tast::BuiltinContract, value: Type) -> pretty::Doc {
     match value {
         Unit => pretty::text("unit"),
         Never => pretty::text("never"),
@@ -139,55 +164,69 @@ pub fn type_doc(value: Type) -> pretty::Doc {
         Float64 => pretty::text("float64"),
         String => pretty::text("string"),
         Char => pretty::text("char"),
-        Tuple { items } => pretty::delimited("(", ",", ")", type_docs(items)),
+        Tuple { items } => pretty::delimited("(", ",", ")", type_docs(builtin, items)),
         Con { name } => pretty::text(name),
         Dyn { trait_name, args, associated_types, additional_bounds } => {
             let values: Vec[pretty::Doc] = Vec::[];
-            values.push(dyn_bound_doc(trait_name, args, associated_types));
+            values.push(dyn_bound_doc(builtin, trait_name, args, associated_types));
             for bound in additional_bounds {
-                values.push(dyn_bound_doc(bound.trait_name, bound.args, bound.associated_types))
+                values.push(
+                    dyn_bound_doc(builtin, bound.trait_name, bound.args, bound.associated_types),
+                )
             }
             pretty::append(pretty::text("dyn "), pretty::join(pretty::text(" + "), values))
         },
         Projection { for_ty, name, trait_ref: _ } => {
-            pretty::append(type_doc(for_ty), pretty::text("::" + name))
+            pretty::append(type_doc_with_contract(builtin, for_ty), pretty::text("::" + name))
         },
         App { ty, args } => {
             if args.is_empty() {
-                type_doc(ty)
+                type_doc_with_contract(builtin, ty)
             } else {
-                pretty::append(type_doc(ty), pretty::delimited("[", ",", "]", type_docs(args)))
+                pretty::append(
+                    type_doc_with_contract(builtin, ty),
+                    pretty::delimited("[", ",", "]", type_docs(builtin, args)),
+                )
             }
         },
         Array { len, elem } => pretty::concat(
-            Vec::[pretty::text("["), type_doc(elem), pretty::text("; " + len.to_string() + "]")],
+            Vec::[
+                pretty::text("["),
+                type_doc_with_contract(builtin, elem),
+                pretty::text("; " + len.to_string() + "]"),
+            ],
         ),
         Slice { elem } => pretty::append(
-            pretty::text("Slice"),
-            pretty::delimited("[", ",", "]", Vec::[type_doc(elem)]),
+            pretty::text(builtin.slice.name),
+            pretty::delimited("[", ",", "]", Vec::[type_doc_with_contract(builtin, elem)]),
         ),
         VecType { elem } => pretty::append(
-            pretty::text("Vec"),
-            pretty::delimited("[", ",", "]", Vec::[type_doc(elem)]),
+            pretty::text(builtin.vec.name),
+            pretty::delimited("[", ",", "]", Vec::[type_doc_with_contract(builtin, elem)]),
         ),
         RefType { elem } => pretty::append(
-            pretty::text("Ref"),
-            pretty::delimited("[", ",", "]", Vec::[type_doc(elem)]),
+            pretty::text(builtin.ref_type.name),
+            pretty::delimited("[", ",", "]", Vec::[type_doc_with_contract(builtin, elem)]),
         ),
         HashMap { key, value } => pretty::append(
-            pretty::text("HashMap"),
-            pretty::delimited("[", ",", "]", Vec::[type_doc(key), type_doc(value)]),
+            pretty::text(builtin.hashmap.name),
+            pretty::delimited(
+                "[",
+                ",",
+                "]",
+                Vec::[type_doc_with_contract(builtin, key), type_doc_with_contract(builtin, value)],
+            ),
         ),
         Channel { elem } => pretty::append(
-            pretty::text("Channel"),
-            pretty::delimited("[", ",", "]", Vec::[type_doc(elem)]),
+            pretty::text(builtin.channel.name),
+            pretty::delimited("[", ",", "]", Vec::[type_doc_with_contract(builtin, elem)]),
         ),
         Param { name } => pretty::text(name),
         Func { params, ret_ty } => pretty::concat(
             Vec::[
-                pretty::delimited("(", ",", ")", type_docs(params)),
+                pretty::delimited("(", ",", ")", type_docs(builtin, params)),
                 pretty::text(" -> "),
-                type_doc(ret_ty),
+                type_doc_with_contract(builtin, ret_ty),
             ],
         ),
         Error => pretty::text("<error>"),
@@ -200,7 +239,7 @@ pub fn trait_ref_doc(value: TraitRef) -> pretty::Doc {
     } else {
         pretty::append(
             pretty::text(value.name),
-            pretty::delimited("[", ",", "]", type_docs(value.args)),
+            pretty::delimited("[", ",", "]", standalone_type_docs(value.args)),
         )
     }
 }
@@ -348,7 +387,7 @@ fn compact_core_type(value: Type) -> string {
     result.finish()
 }
 
-fn inherent_type_base(value: Type) -> string {
+fn inherent_type_base(builtin: tast::BuiltinContract, value: Type) -> string {
     match value {
         Unit => "unit",
         Bool => "bool",
@@ -367,18 +406,24 @@ fn inherent_type_base(value: Type) -> string {
         String => "string",
         Char => "char",
         Con { name } => name,
-        App { ty, args: _ } => inherent_type_base(ty),
-        Slice { elem: _ } => "Slice",
-        VecType { elem: _ } => "Vec",
-        RefType { elem: _ } => "Ref",
-        HashMap { key: _, value: _ } => "HashMap",
-        Channel { elem: _ } => "Channel",
+        App { ty, args: _ } => inherent_type_base(builtin, ty),
+        Slice { elem: _ } => builtin.slice.name,
+        VecType { elem: _ } => builtin.vec.name,
+        RefType { elem: _ } => builtin.ref_type.name,
+        HashMap { key: _, value: _ } => builtin.hashmap.name,
+        Channel { elem: _ } => builtin.channel.name,
         other => compact_core_type(other),
     }
 }
 
 pub fn core_inherent_method_name(owner: Type, name: string) -> string {
-    "inherent#" + inherent_type_base(owner) + "#" + compact_core_type(owner) + "#" + name
+    match tast::builtin_contract() {
+        Ok(builtin) => {
+            "inherent#" + inherent_type_base(builtin, owner) + "#" + compact_core_type(owner) + "#"
+                + name
+        },
+        Err(error) => "<builtin contract error: " + error + ">",
+    }
 }
 
 pub fn write_type(builder: text::StringBuilder, value: Type) -> unit {

@@ -28,16 +28,20 @@ fn artifact_fn_scheme(value: tast::FunctionScheme) -> artifact::ArtifactFnScheme
     }
 }
 
-fn artifact_package_fn_scheme(package_name: string, value: tast::FunctionScheme) -> artifact::ArtifactFnScheme {
+fn artifact_package_fn_scheme(
+    builtin: tast::BuiltinContract,
+    package_name: string,
+    value: tast::FunctionScheme,
+) -> artifact::ArtifactFnScheme {
     let scheme = artifact_fn_scheme(value);
-    if package_name == "prelude" && scheme.name == "range" {
+    if package_name == "prelude" && builtin.range.public_name == Option::Some(scheme.name) {
         artifact::ArtifactFnScheme {
             name: scheme.name,
             comptime: scheme.comptime,
             type_params: scheme.type_params,
             constraints: scheme.constraints,
             ty: scheme.ty,
-            body: tast::Callable::LangItem { item: "range", function_name: "range" },
+            body: tast::Callable::LangItem { item: builtin.range.item, function_name: scheme.name },
         }
     } else {
         scheme
@@ -305,15 +309,15 @@ fn artifact_trait_impl(value: tast::ImplBlock) -> artifact::ArtifactTraitImpl {
     }
 }
 
-fn artifact_inherent_constructor(value: tast::Type) -> string {
+fn artifact_inherent_constructor(builtin: tast::BuiltinContract, value: tast::Type) -> string {
     match tast::resolve_type(value) {
         Con { name } => name,
-        App { ty: base, args: _ } => artifact_inherent_constructor(base),
-        Slice { elem: _ } => "Slice",
-        VecType { elem: _ } => "Vec",
-        RefType { elem: _ } => "Ref",
-        Channel { elem: _ } => "Channel",
-        HashMap { key: _, value: _ } => "HashMap",
+        App { ty: base, args: _ } => artifact_inherent_constructor(builtin, base),
+        Slice { elem: _ } => builtin.slice.name,
+        VecType { elem: _ } => builtin.vec.name,
+        RefType { elem: _ } => builtin.ref_type.name,
+        Channel { elem: _ } => builtin.channel.name,
+        HashMap { key: _, value: _ } => builtin.hashmap.name,
         _ => {
             fail("error[compile]: invalid inherent implementation in compiler artifact");
             "<error>"
@@ -321,10 +325,12 @@ fn artifact_inherent_constructor(value: tast::Type) -> string {
     }
 }
 
-fn artifact_inherent_impl(value: tast::ImplBlock, public_only: bool) -> artifact::ArtifactInherentImpl {
+fn artifact_inherent_impl(builtin: tast::BuiltinContract, value: tast::ImplBlock, public_only: bool) -> artifact::ArtifactInherentImpl {
     artifact::ArtifactInherentImpl {
         key: if !value.generics.is_empty() {
-            artifact::ArtifactInherentImplKey::Constr(artifact_inherent_constructor(value.for_type))
+            artifact::ArtifactInherentImplKey::Constr(
+                artifact_inherent_constructor(builtin, value.for_type),
+            )
         } else {
             artifact::ArtifactInherentImplKey::Exact(value.for_type)
         },
@@ -469,7 +475,8 @@ fn artifact_add_type_name(values: Vec[string], name: string) -> unit {
     }
 }
 
-fn artifact_package_exports(
+fn artifact_package_exports_with_contract(
+    builtin: tast::BuiltinContract,
     file: tast::File,
     signatures: tast::PackageSignatures,
     package_name: string,
@@ -519,7 +526,7 @@ fn artifact_package_exports(
         match function.comptime {
             tast::ComptimeCapability::Derive => (),
             _ => if !public_only || public_names.contains(function.name) {
-                result.functions.push(artifact_package_fn_scheme(package_name, function))
+                result.functions.push(artifact_package_fn_scheme(builtin, package_name, function))
             } else {},
         }
     }
@@ -543,7 +550,7 @@ fn artifact_package_exports(
                     result.trait_impls.push(artifact_trait_impl(value))
                 } else {},
                 None => {
-                    let implementation = artifact_inherent_impl(value, public_only);
+                    let implementation = artifact_inherent_impl(builtin, value, public_only);
                     if !public_only || !implementation.definition.methods.is_empty() {
                         result.inherent_impls.push(implementation)
                     } else {}
@@ -553,6 +560,59 @@ fn artifact_package_exports(
         }
     }
     result
+}
+
+fn artifact_package_exports(
+    file: tast::File,
+    signatures: tast::PackageSignatures,
+    package_name: string,
+    public_names: Vec[string],
+    public_reexports: Vec[(string, string)],
+    public_only: bool,
+    enum_type_names: Vec[string],
+    struct_type_names: Vec[string],
+) -> Result[artifact::ArtifactPackageExports, string] {
+    Result::Ok(
+        artifact_package_exports_with_contract(
+            tast::builtin_contract()?,
+            file,
+            signatures,
+            package_name,
+            public_names,
+            public_reexports,
+            public_only,
+            enum_type_names,
+            struct_type_names,
+        ),
+    )
+}
+
+fn required_artifact_package_exports(
+    file: tast::File,
+    signatures: tast::PackageSignatures,
+    package_name: string,
+    public_names: Vec[string],
+    public_reexports: Vec[(string, string)],
+    public_only: bool,
+    enum_type_names: Vec[string],
+    struct_type_names: Vec[string],
+) -> artifact::ArtifactPackageExports {
+    match artifact_package_exports(
+        file,
+        signatures,
+        package_name,
+        public_names,
+        public_reexports,
+        public_only,
+        enum_type_names,
+        struct_type_names,
+    ) {
+        Ok(value) => value,
+        Err(error) => {
+            fail("error[compile]: " + error);
+            interface_codec::empty_exports()
+        },
+    }
 }
 
 fn artifact_comptime_unit(value: ctir::CtModule, exports: artifact::ArtifactPackageExports) -> Option[

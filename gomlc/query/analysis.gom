@@ -146,10 +146,11 @@ fn expanded_source_for_path(values: Vec[(string, string)], source_path: string) 
     ""
 }
 
-fn environments_with_comptime(files: Vec[hir::File], modules: Vec[ctir::CtModule]) -> Vec[
-    tast::DependencyEnvironment,
+fn environments_with_comptime(files: Vec[hir::File], modules: Vec[ctir::CtModule]) -> Result[
+    Vec[tast::DependencyEnvironment],
+    string,
 ] {
-    let environments = tast::dependency_environments(files);
+    let environments = tast::dependency_environments(files)?;
     let attached_modules: Vec[string] = Vec::[];
     for index in 0..environments.len() {
         let module = Ref::new(Option::None);
@@ -167,23 +168,23 @@ fn environments_with_comptime(files: Vec[hir::File], modules: Vec[ctir::CtModule
             tast::dependency_environment_with_comptime(environments[index], module.get()),
         )
     }
-    environments
+    Result::Ok(environments)
 }
 
 fn environments_with_builtin_and_comptime(
     builtin: Option[tast::DependencyEnvironment],
     files: Vec[hir::File],
     modules: Vec[ctir::CtModule],
-) -> Vec[tast::DependencyEnvironment] {
+) -> Result[Vec[tast::DependencyEnvironment], string] {
     let result: Vec[tast::DependencyEnvironment] = Vec::[];
     match builtin {
         Some(environment) => result.push(environment),
         None => (),
     }
-    for environment in environments_with_comptime(files, modules) {
+    for environment in environments_with_comptime(files, modules)? {
         result.push(environment)
     }
-    result
+    Result::Ok(result)
 }
 
 fn package_has_comptime(files: Vec[hir::File]) -> bool {
@@ -289,13 +290,22 @@ fn collect_dependency(
                     diagnostics.push(diagnostic)
                 }
                 if package_has_comptime(lowered.files) {
+                    let environments = match environments_with_builtin_and_comptime(
+                        builtin_environment,
+                        dependencies,
+                        derive_modules,
+                    ) {
+                        Ok(value) => value,
+                        Err(error) => {
+                            diagnostics.push(
+                                query_diagnostic(source_path, "builtin", error, Option::None),
+                            );
+                            Vec::[]
+                        },
+                    };
                     let checked = tast::check_package_files_for_link_with_environments(
                         lowered.files,
-                        environments_with_builtin_and_comptime(
-                            builtin_environment,
-                            dependencies,
-                            derive_modules,
-                        ),
+                        environments,
                     );
                     if checked.diagnostics.is_empty() {
                         derive_modules.push(checked.comptime)
@@ -340,7 +350,15 @@ fn check_project(value: Project, overrides: Vec[SourceOverride], context: Analys
     let dependencies: Vec[hir::File] = Vec::[];
     let diagnostics: Vec[tast::Diagnostic] = Vec::[];
     let builtin_environment = match context.builtin_files {
-        Ok(files) => Option::Some(tast::builtin_dependency_environment(files)),
+        Ok(files) => match tast::builtin_dependency_environment(files) {
+            Ok(value) => Option::Some(value),
+            Err(error) => {
+                diagnostics.push(
+                    query_diagnostic(value.files[0].path, "builtin", error, Option::None),
+                );
+                Option::None
+            },
+        },
         Err(error) => {
             diagnostics.push(query_diagnostic(value.files[0].path, "builtin", error, Option::None));
             Option::None
@@ -398,16 +416,28 @@ fn check_project(value: Project, overrides: Vec[SourceOverride], context: Analys
     for file in dependencies {
         environment_files.push(file)
     }
-    let environments = environments_with_builtin_and_comptime(
+    let environments = match environments_with_builtin_and_comptime(
         builtin_environment,
         environment_files,
         derive_modules,
-    );
-    let dependency_environments = environments_with_builtin_and_comptime(
+    ) {
+        Ok(values) => values,
+        Err(error) => {
+            diagnostics.push(query_diagnostic(value.files[0].path, "builtin", error, Option::None));
+            Vec::[]
+        },
+    };
+    let dependency_environments = match environments_with_builtin_and_comptime(
         builtin_environment,
         dependencies,
         derive_modules,
-    );
+    ) {
+        Ok(values) => values,
+        Err(error) => {
+            diagnostics.push(query_diagnostic(value.files[0].path, "builtin", error, Option::None));
+            Vec::[]
+        },
+    };
     let checked = if !entry.files.is_empty() {
         tast::check_package_files_for_link_with_environments(entry.files, dependency_environments)
     } else {

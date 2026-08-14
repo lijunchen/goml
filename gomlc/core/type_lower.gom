@@ -551,3 +551,7 @@ pub fn builtin_projection(for_ty: Type, name: string, trait_ref: Option[TraitRef
         None => Option::None,
     }
 }
+
+pub fn builtin_trait_satisfied(for_ty: Type, trait_ref: TraitRef) -> bool {
+    tast::builtin_trait_satisfied(type_to_tast(for_ty), trait_ref_to_tast(trait_ref))
+}

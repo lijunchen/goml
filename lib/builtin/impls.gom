@@ -1026,6 +1026,7 @@ impl[I: Iterator] IntoIterator for I {
     }
 }
 
+#[lang("vec")]
 impl[T] Vec[T] {
     fn new() -> Self {
         vec_new()
@@ -1459,6 +1460,7 @@ impl[T] IntoIterator for Vec[T] {
     }
 }
 
+#[lang("slice")]
 impl[T] Slice[T] {
     fn get(self: Self, index: int) -> T {
         slice_get(self, index)
@@ -1510,6 +1512,7 @@ impl[T] IntoIterator for Slice[T] {
     }
 }
 
+#[lang("hashmap")]
 impl[K: Hash + Eq, V] HashMap[K, V] {
     fn new() -> Self {
         hashmap_new()
@@ -1540,6 +1543,7 @@ impl[K: Hash + Eq, V] HashMap[K, V] {
     }
 }
 
+#[lang("ref")]
 impl[T] Ref[T] {
     fn new(value: T) -> Self {
         ref(value)
@@ -1554,6 +1558,7 @@ impl[T] Ref[T] {
     }
 }
 
+#[lang("channel")]
 impl[T] Channel[T] {
     fn new(capacity: int) -> Self {
         channel_new(capacity)

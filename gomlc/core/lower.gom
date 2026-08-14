@@ -6,6 +6,7 @@ use gomlc::tast;
 use std::text;
 
 struct Lowerer {
+    builtin: tast::BuiltinContract,
     counter: Ref[int],
     enums: Vec[tast::EnumDef],
     structs: Vec[tast::StructDef],
@@ -47,7 +48,7 @@ fn compact_type(value: tast::Type) -> string {
     compact_text(type_text(value))
 }
 
-fn inherent_base(value: tast::Type) -> string {
+fn inherent_base(builtin: tast::BuiltinContract, value: tast::Type) -> string {
     match tast::resolve_type(value) {
         Unit => "unit",
         Bool => "bool",
@@ -66,18 +67,18 @@ fn inherent_base(value: tast::Type) -> string {
         String => "string",
         Char => "char",
         Con { name } => name,
-        App { ty: base, args: _ } => inherent_base(base),
-        Slice { elem: _ } => "Slice",
-        VecType { elem: _ } => "Vec",
-        RefType { elem: _ } => "Ref",
-        HashMap { key: _, value: _ } => "HashMap",
-        Channel { elem: _ } => "Channel",
+        App { ty: base, args: _ } => inherent_base(builtin, base),
+        Slice { elem: _ } => builtin.slice.name,
+        VecType { elem: _ } => builtin.vec.name,
+        RefType { elem: _ } => builtin.ref_type.name,
+        HashMap { key: _, value: _ } => builtin.hashmap.name,
+        Channel { elem: _ } => builtin.channel.name,
         other => compact_type(other),
     }
 }
 
-pub fn inherent_method_name(owner: tast::Type, name: string) -> string {
-    "inherent#" + inherent_base(owner) + "#" + compact_type(owner) + "#" + name
+fn inherent_method_name(builtin: tast::BuiltinContract, owner: tast::Type, name: string) -> string {
+    "inherent#" + inherent_base(builtin, owner) + "#" + compact_type(owner) + "#" + name
 }
 
 fn nominal_parts(value: tast::Type) -> Option[(string, Vec[tast::Type])] {
@@ -841,7 +842,7 @@ fn lower_index(ctx: Lowerer, base: tast::Expr, index: tast::Expr, ty: tast::Type
 }
 
 fn lower_field(ctx: Lowerer, value: tast::Expr, name: string, ty: tast::Type) -> LowerExpr {
-    let owner = inherent_base(tast::expr_type(value));
+    let owner = inherent_base(ctx.builtin, tast::expr_type(value));
     match find_struct(ctx, owner) {
         Some(definition) => {
             let fields: Vec[string] = Vec::[];
@@ -1205,20 +1206,19 @@ fn lower_direct_for(ctx: Lowerer, pattern: tast::Pat, iterator: tast::Expr, body
 ] {
     match iterator {
         Call {
-            func: Callable { callable: LangItem { item: "range", function_name: _ }, ty: _ },
+            func: Callable { callable: LangItem { item, function_name: _ }, ty: _ },
             args,
             ty: _,
-        } => {
+        } if item == ctx.builtin.range.item => {
             direct_range_for(ctx, pattern, args, body)
         },
         Call {
-            func: Callable {
-                callable: LangItem { item: "range_inclusive", function_name: _ },
-                ty: _,
-            },
+            func: Callable { callable: LangItem { item, function_name: _ }, ty: _ },
             args,
             ty: _,
-        } => direct_inclusive_range_for(ctx, pattern, args, body),
+        } if item == ctx.builtin.range_inclusive.item => {
+            direct_inclusive_range_for(ctx, pattern, args, body)
+        },
         other => {
             let container_ty = tast::resolve_type(tast::expr_type(other));
             match container_ty {
@@ -1265,7 +1265,10 @@ fn lower_iterator_for(
     let item_ty = tast::pat_type(pattern);
     let option_args: Vec[tast::Type] = Vec::[];
     option_args.push(item_ty);
-    let option_ty = tast::Type::App { ty: tast::Type::Con { name: "Option" }, args: option_args };
+    let option_name = ctx.builtin.option.name;
+    let some_name = ctx.builtin.option.some.name;
+    let none_name = ctx.builtin.option.none.name;
+    let option_ty = tast::Type::App { ty: tast::Type::Con { name: option_name }, args: option_args };
     let iterator_name = gensym(ctx, "for_iter");
     let next_name = gensym(ctx, "for_next");
     let no_args: Vec[LowerExpr] = Vec::[];
@@ -1273,7 +1276,7 @@ fn lower_iterator_for(
     let iterator_for_ty = lower_expr_type(iterator_receiver);
     let iterator_value = LowerExpr::TraitCall {
         trait_ref: into_iterator,
-        method_name: "into_iter",
+        method_name: ctx.builtin.into_iterator.method,
         instance_name: Option::None,
         for_ty: iterator_for_ty,
         receiver: Option::Some(iterator_receiver),
@@ -1283,7 +1286,7 @@ fn lower_iterator_for(
     let next_args: Vec[LowerExpr] = Vec::[];
     let next_value = LowerExpr::TraitCall {
         trait_ref: iterator_trait,
-        method_name: "next",
+        method_name: ctx.builtin.iterator.next,
         instance_name: Option::None,
         for_ty: iterator_ty,
         receiver: Option::Some(LowerExpr::Var { name: iterator_name, ty: iterator_ty }),
@@ -1297,10 +1300,10 @@ fn lower_iterator_for(
         tast::Arm {
             pat: tast::Pat::Constr {
                 constructor: tast::Constructor {
-                    name: "Option::Some",
+                    name: option_name + "::" + some_name,
                     fields: Vec::[],
                     is_struct: false,
-                    tag: Option::Some(1),
+                    tag: Option::Some(ctx.builtin.option.some.tag),
                 },
                 args: some_patterns,
                 ty: option_ty,
@@ -1313,10 +1316,10 @@ fn lower_iterator_for(
         tast::Arm {
             pat: tast::Pat::Constr {
                 constructor: tast::Constructor {
-                    name: "Option::None",
+                    name: option_name + "::" + none_name,
                     fields: Vec::[],
                     is_struct: false,
-                    tag: Option::Some(0),
+                    tag: Option::Some(ctx.builtin.option.none.tag),
                 },
                 args: Vec::[],
                 ty: option_ty,
@@ -1960,6 +1963,7 @@ fn lower_marker_trait_witness(block: tast::ImplBlock, reference: tast::TraitRef)
 }
 
 fn lower_file_with_types(
+    builtin: tast::BuiltinContract,
     value: tast::File,
     counter: Ref[int],
     dependency_enums: Vec[tast::EnumDef],
@@ -1983,6 +1987,7 @@ fn lower_file_with_types(
         all_structs.push(definition)
     }
     let ctx = Lowerer {
+        builtin,
         counter,
         enums: all_enums,
         structs: all_structs,
@@ -2039,7 +2044,7 @@ fn lower_file_with_types(
                             block.for_type,
                             method.name,
                         ),
-                        None => inherent_method_name(block.for_type, method.name),
+                        None => inherent_method_name(ctx.builtin, block.for_type, method.name),
                     };
                     let origin = match block.trait_ref {
                         Some(_) => LowerFunctionOrigin::TraitImplementation {
@@ -2065,8 +2070,19 @@ fn lower_file_with_types(
     }
 }
 
-fn lower_file(value: tast::File, counter: Ref[int]) -> LowerFile {
-    lower_file_with_types(value, counter, Vec::[], Vec::[], false)
+fn lower_file(builtin: tast::BuiltinContract, value: tast::File, counter: Ref[int]) -> LowerFile {
+    lower_file_with_types(builtin, value, counter, Vec::[], Vec::[], false)
+}
+
+fn empty_lower_file() -> LowerFile {
+    LowerFile {
+        functions: Vec::[],
+        enums: Vec::[],
+        structs: Vec::[],
+        type_instances: Vec::[],
+        constants: Vec::[],
+        statics: Vec::[],
+    }
 }
 
 fn lower_raw_with_counter_types_and_options(
@@ -2077,21 +2093,18 @@ fn lower_raw_with_counter_types_and_options(
     optimize_builtin_iterators: bool,
 ) -> LowerFile {
     match value.tast {
-        Some(file) => lower_file_with_types(
-            file,
-            counter,
-            dependency_enums,
-            dependency_structs,
-            optimize_builtin_iterators,
-        ),
-        None => LowerFile {
-            functions: Vec::[],
-            enums: Vec::[],
-            structs: Vec::[],
-            type_instances: Vec::[],
-            constants: Vec::[],
-            statics: Vec::[],
+        Some(file) => match tast::builtin_contract() {
+            Ok(builtin) => lower_file_with_types(
+                builtin,
+                file,
+                counter,
+                dependency_enums,
+                dependency_structs,
+                optimize_builtin_iterators,
+            ),
+            Err(_) => empty_lower_file(),
         },
+        None => empty_lower_file(),
     }
 }
 
@@ -2131,15 +2144,11 @@ pub fn lower_with_counter_and_types(
 pub fn lower_with_counter(value: tast::CheckResult, counter: Ref[int]) -> File {
     detach_file(
         match value.tast {
-            Some(file) => lower_file(file, counter),
-            None => LowerFile {
-                functions: Vec::[],
-                enums: Vec::[],
-                structs: Vec::[],
-                type_instances: Vec::[],
-                constants: Vec::[],
-                statics: Vec::[],
+            Some(file) => match tast::builtin_contract() {
+                Ok(builtin) => lower_file(builtin, file, counter),
+                Err(_) => empty_lower_file(),
             },
+            None => empty_lower_file(),
         },
     )
 }

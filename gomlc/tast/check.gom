@@ -1884,7 +1884,7 @@ fn check_closure_expr(
             Some(value) => {
                 let declared = resolve_signature_type(
                     ctx,
-                    type_from_hir(value, ctx.type_params, ctx.self_ty),
+                    type_from_hir(ctx.builtin, value, ctx.type_params, ctx.self_ty),
                     ctx.predicates,
                     true,
                 );
@@ -2466,7 +2466,7 @@ fn check_method_call(
 }
 
 fn struct_has_hidden_fields(ctx: Checker, ty: Type) -> bool {
-    match type_constructor_name(ty) {
+    match type_constructor_name(ctx.builtin, ty) {
         Some(name) => match find_struct_by_name(ctx, name) {
             Some(info) => info.has_hidden_fields,
             None => false,
@@ -2856,7 +2856,7 @@ fn order_comparable_type(value: Type) -> bool {
 }
 
 fn partial_order_trait(ctx: Checker, value: Type) -> Option[string] {
-    match find_trait(ctx, "PartialOrd") {
+    match find_trait(ctx, ctx.builtin.ordering.partial_ord) {
         Some(info) => if trait_bound_satisfied_at(
             ctx,
             value,
@@ -2982,7 +2982,7 @@ fn check_binary_expr(
             && !trait_bound_satisfied_at(
                 ctx,
                 expr_type(left),
-                TraitRef { name: "PartialEq", args: Vec::[] },
+                TraitRef { name: ctx.builtin.partial_eq.name, args: Vec::[] },
                 Vec::[],
             ) {
             push_diagnostic_at(
@@ -2991,7 +2991,7 @@ fn check_binary_expr(
                     ctx,
                     TypePredicate::Trait {
                         for_ty: expr_type(left),
-                        trait_ref: TraitRef { name: "PartialEq", args: Vec::[] },
+                        trait_ref: TraitRef { name: ctx.builtin.partial_eq.name, args: Vec::[] },
                     },
                     "type predicate not satisfied",
                 ),
@@ -3026,7 +3026,7 @@ fn check_binary_expr(
                 if builtin_equality_type(expr_type(left)) {
                     BinaryResolution::Builtin
                 } else {
-                    BinaryResolution::Overloaded { trait_name: "PartialEq" }
+                    BinaryResolution::Overloaded { trait_name: ctx.builtin.partial_eq.name }
                 }
             } else if is_order_op(op) && !order_comparable_type(expr_type(left)) {
                 match partial_order_trait(ctx, expr_type(left)) {
@@ -3364,9 +3364,9 @@ fn check_if_expr(
     }
 }
 
-fn try_type_parts(value: Type) -> Option[(string, Vec[Type])] {
+fn try_type_parts(builtin: BuiltinContract, value: Type) -> Option[(string, Vec[Type])] {
     match prune(value) {
-        App { ty: base, args } => match type_constructor_name(base) {
+        App { ty: base, args } => match type_constructor_name(builtin, base) {
             Some(name) => Option::Some((name, args)),
             None => Option::None,
         },
@@ -3391,10 +3391,17 @@ fn user_try_variant_tag(ctx: Checker, name: string, variant: string) -> Option[i
 fn try_constructor(ctx: Checker, name: string, variant: string) -> Constructor {
     let tag = match find_enum_by_name(ctx, name) {
         Some(_) => user_try_variant_tag(ctx, name, variant),
-        None => if variant == "None" || variant == "Ok" {
-            Option::Some(0)
-        } else {
-            Option::Some(1)
+        None => match builtin_source_enum_info(name) {
+            Some(definition) => {
+                let result = Ref::new(Option::None);
+                for index in 0..definition.variants.len() {
+                    if definition.variants[index].name == variant {
+                        result.set(Option::Some(index))
+                    } else {}
+                }
+                result.get()
+            },
+            None => Option::None,
         },
     };
     Constructor { name: name + "::" + variant, fields: Vec::[], is_struct: false, tag }
@@ -3422,10 +3429,12 @@ fn try_variant_fields(ctx: Checker, enum_name: string, variant_name: string, arg
 }
 
 fn option_try_shape_is_valid(ctx: Checker, name: string, args: Vec[Type]) -> bool {
+    let some_name = ctx.builtin.option.some.name;
+    let none_name = ctx.builtin.option.none.name;
     match find_enum_by_name(ctx, name) {
         Some(_) => match (
-            try_variant_fields(ctx, name, "Some", args),
-            try_variant_fields(ctx, name, "None", args),
+            try_variant_fields(ctx, name, some_name, args),
+            try_variant_fields(ctx, name, none_name, args),
         ) {
             (Some(some), Some(none)) => {
                 some.len() == 1 && none.is_empty()
@@ -3438,10 +3447,12 @@ fn option_try_shape_is_valid(ctx: Checker, name: string, args: Vec[Type]) -> boo
 }
 
 fn result_try_shape_is_valid(ctx: Checker, name: string, args: Vec[Type]) -> bool {
+    let ok_name = ctx.builtin.result.ok.name;
+    let error_name = ctx.builtin.result.err.name;
     match find_enum_by_name(ctx, name) {
         Some(_) => match (
-            try_variant_fields(ctx, name, "Ok", args),
-            try_variant_fields(ctx, name, "Err", args),
+            try_variant_fields(ctx, name, ok_name, args),
+            try_variant_fields(ctx, name, error_name, args),
         ) {
             (Some(ok), Some(error)) => {
                 ok.len() == 1 && error.len() == 1
@@ -3455,17 +3466,19 @@ fn result_try_shape_is_valid(ctx: Checker, name: string, args: Vec[Type]) -> boo
 }
 
 fn check_option_try(ctx: Checker, index: int, inner: Expr, name: string, args: Vec[Type]) -> Expr {
+    let some_name = ctx.builtin.option.some.name;
+    let none_name = ctx.builtin.option.none.name;
     let ok_ty = args[0];
     let outer_ok = fresh_type(ctx.counter, VarKind::Any);
     let return_valid = match prune(ctx.return_ty) {
         Var(_) => true,
-        _ => match try_type_parts(ctx.return_ty) {
+        _ => match try_type_parts(ctx.builtin, ctx.return_ty) {
             Some(parts) => names_match(parts.0, name) && parts.1.len() == 1,
             None => false,
         },
     };
     if return_valid {
-        let _ = unify(ctx.return_ty, nominal_type(name, one_type(outer_ok)));
+        let _ = unify(ctx.return_ty, nominal_type(ctx.builtin, name, one_type(outer_ok)));
     } else {
         push_diagnostic(
             ctx,
@@ -3478,7 +3491,7 @@ fn check_option_try(ctx: Checker, index: int, inner: Expr, name: string, args: V
     success_args.push(Pat::Var { name: value_name, is_mut: false, ty: ok_ty });
     let success = Arm {
         pat: Pat::Constr {
-            constructor: try_constructor(ctx, name, "Some"),
+            constructor: try_constructor(ctx, name, some_name),
             args: success_args,
             ty: inner_ty,
         },
@@ -3487,7 +3500,7 @@ fn check_option_try(ctx: Checker, index: int, inner: Expr, name: string, args: V
     };
     let failure = Arm {
         pat: Pat::Constr {
-            constructor: try_constructor(ctx, name, "None"),
+            constructor: try_constructor(ctx, name, none_name),
             args: Vec::[],
             ty: inner_ty,
         },
@@ -3495,7 +3508,7 @@ fn check_option_try(ctx: Checker, index: int, inner: Expr, name: string, args: V
         body: Expr::Return {
             expr: Option::Some(
                 Expr::Constr {
-                    constructor: try_constructor(ctx, name, "None"),
+                    constructor: try_constructor(ctx, name, none_name),
                     args: Vec::[],
                     ty: ctx.return_ty,
                 },
@@ -3510,19 +3523,21 @@ fn check_option_try(ctx: Checker, index: int, inner: Expr, name: string, args: V
 }
 
 fn check_result_try(ctx: Checker, index: int, inner: Expr, name: string, args: Vec[Type]) -> Expr {
+    let ok_name = ctx.builtin.result.ok.name;
+    let error_name = ctx.builtin.result.err.name;
     let ok_ty = args[0];
     let error_ty = args[1];
     let outer_ok = fresh_type(ctx.counter, VarKind::Any);
     let return_valid = match prune(ctx.return_ty) {
         Var(_) => true,
-        _ => match try_type_parts(ctx.return_ty) {
+        _ => match try_type_parts(ctx.builtin, ctx.return_ty) {
             Some(parts) => names_match(parts.0, name) && parts.1.len() == 2
                 && types_equal(parts.1[1], error_ty),
             None => false,
         },
     };
     if return_valid {
-        let _ = unify(ctx.return_ty, nominal_type(name, two_types(outer_ok, error_ty)));
+        let _ = unify(ctx.return_ty, nominal_type(ctx.builtin, name, two_types(outer_ok, error_ty)));
     } else {
         push_diagnostic(
             ctx,
@@ -3536,7 +3551,7 @@ fn check_result_try(ctx: Checker, index: int, inner: Expr, name: string, args: V
     success_args.push(Pat::Var { name: value_name, is_mut: false, ty: ok_ty });
     let success = Arm {
         pat: Pat::Constr {
-            constructor: try_constructor(ctx, name, "Ok"),
+            constructor: try_constructor(ctx, name, ok_name),
             args: success_args,
             ty: inner_ty,
         },
@@ -3549,7 +3564,7 @@ fn check_result_try(ctx: Checker, index: int, inner: Expr, name: string, args: V
     return_args.push(Expr::Var { name: residual_name, ty: error_ty });
     let failure = Arm {
         pat: Pat::Constr {
-            constructor: try_constructor(ctx, name, "Err"),
+            constructor: try_constructor(ctx, name, error_name),
             args: residual_args,
             ty: inner_ty,
         },
@@ -3557,7 +3572,7 @@ fn check_result_try(ctx: Checker, index: int, inner: Expr, name: string, args: V
         body: Expr::Return {
             expr: Option::Some(
                 Expr::Constr {
-                    constructor: try_constructor(ctx, name, "Err"),
+                    constructor: try_constructor(ctx, name, error_name),
                     args: return_args,
                     ty: ctx.return_ty,
                 },
@@ -3579,25 +3594,31 @@ fn check_try_expr(
     result_expected: Option[Type],
 ) -> Expr {
     let expected = match propagated_expected(result_expected) {
-        Some(ok_ty) => match try_type_parts(ctx.return_ty) {
-            Some(parts) => if names_match(parts.0, "Option") && parts.1.len() == 1 {
-                Option::Some(nominal_type(parts.0, one_type(ok_ty)))
-            } else if names_match(parts.0, "Result") && parts.1.len() == 2 {
-                Option::Some(nominal_type(parts.0, two_types(ok_ty, parts.1[1])))
+        Some(ok_ty) => match try_type_parts(ctx.builtin, ctx.return_ty) {
+            Some(parts) => if names_match(parts.0, ctx.builtin.option.name) && parts.1.len() == 1 {
+                Option::Some(nominal_type(ctx.builtin, parts.0, one_type(ok_ty)))
+            } else if names_match(parts.0, ctx.builtin.result.name) && parts.1.len() == 2 {
+                Option::Some(nominal_type(ctx.builtin, parts.0, two_types(ok_ty, parts.1[1])))
             } else {
                 Option::None
             },
             None => Option::None,
         },
         None => if is_numeric_literal_source(source) {
-            match try_type_parts(ctx.return_ty) {
-                Some(parts) => if names_match(parts.0, "Option") && parts.1.len() == 1 {
-                    Option::Some(
-                        nominal_type(parts.0, one_type(fresh_type(ctx.counter, VarKind::Any))),
-                    )
-                } else if names_match(parts.0, "Result") && parts.1.len() == 2 {
+            match try_type_parts(ctx.builtin, ctx.return_ty) {
+                Some(parts) => if names_match(parts.0, ctx.builtin.option.name)
+                    && parts.1.len() == 1 {
                     Option::Some(
                         nominal_type(
+                            ctx.builtin,
+                            parts.0,
+                            one_type(fresh_type(ctx.counter, VarKind::Any)),
+                        ),
+                    )
+                } else if names_match(parts.0, ctx.builtin.result.name) && parts.1.len() == 2 {
+                    Option::Some(
+                        nominal_type(
+                            ctx.builtin,
                             parts.0,
                             two_types(fresh_type(ctx.counter, VarKind::Any), parts.1[1]),
                         ),
@@ -3649,8 +3670,8 @@ fn check_try_expr(
             )
         }
     } else {};
-    match try_type_parts(expr_type(inner)) {
-        Some(parts) => if names_match(parts.0, "Option") && parts.1.len() == 1 {
+    match try_type_parts(ctx.builtin, expr_type(inner)) {
+        Some(parts) => if names_match(parts.0, ctx.builtin.option.name) && parts.1.len() == 1 {
             if option_try_shape_is_valid(ctx, parts.0, parts.1) {
                 check_option_try(ctx, index, inner, parts.0, parts.1)
             } else {
@@ -3660,7 +3681,7 @@ fn check_try_expr(
                 );
                 Expr::Var { name: "<try>", ty: Type::Error }
             }
-        } else if names_match(parts.0, "Result") && parts.1.len() == 2 {
+        } else if names_match(parts.0, ctx.builtin.result.name) && parts.1.len() == 2 {
             if result_try_shape_is_valid(ctx, parts.0, parts.1) {
                 check_result_try(ctx, index, inner, parts.0, parts.1)
             } else {
@@ -3696,11 +3717,11 @@ fn check_range_expr(ctx: Checker, start: hir::Expr, end: hir::Expr, inclusive: b
     args.push(start);
     args.push(end);
     let function_name = if inclusive {
-        "__goml_builtin_range_inclusive"
+        ctx.builtin.range_inclusive.name
     } else {
-        "__goml_builtin_range"
+        ctx.builtin.range.name
     };
-    match builtin_function_scheme(function_name) {
+    match scoped_builtin_range_function_scheme(ctx.builtin, function_name) {
         Some(scheme) => {
             let (callable, function_ty) = instantiate_scheme(ctx, scheme, Vec::[]);
             match function_ty {
@@ -3845,7 +3866,7 @@ fn check_field_expr(ctx: Checker, source: hir::Expr, name: string) -> Expr {
             Some(ty) => Expr::Field { expr: value, field_name: name, ty },
             None => match defer_field_type(ctx, expr_type(value), name) {
                 Some(ty) => Expr::Field { expr: value, field_name: name, ty },
-                None => match type_constructor_name(expr_type(value)) {
+                None => match type_constructor_name(ctx.builtin, expr_type(value)) {
                     Some(owner) => match find_struct_by_name(ctx, owner) {
                         Some(_) => {
                             push_diagnostic_at(
@@ -3934,7 +3955,10 @@ fn check_index_expr(ctx: Checker, base_source: hir::Expr, index_source: hir::Exp
             Array { len: _, elem } | VecType { elem } | Slice { elem } => {
                 (Type::Int, elem)
             },
-            HashMap { key, value } => (key, nominal_type("Option", one_type(value))),
+            HashMap { key, value } => (
+                key,
+                nominal_type(ctx.builtin, ctx.builtin.option.name, one_type(value)),
+            ),
             String => (Type::Int, Type::Char),
             _ => {
                 push_diagnostic(ctx, "indexable value required");
@@ -3960,7 +3984,7 @@ fn check_assign_target(ctx: Checker, target: hir::Expr, compound: bool) -> (Expr
                     push_diagnostic_at(
                         ctx,
                         "cannot assign to "
-                            + if once_cell_type(value.ty) {
+                            + if once_cell_type(ctx.builtin, value.ty) {
                                 "static binding `"
                             } else {
                                 "constant `"
@@ -4005,7 +4029,11 @@ fn check_assign_target(ctx: Checker, target: hir::Expr, compound: bool) -> (Expr
                     index,
                     ty: if compound {
                         match prune(expr_type(base)) {
-                            HashMap { key: _, value } => nominal_type("Option", one_type(value)),
+                            HashMap { key: _, value } => nominal_type(
+                                ctx.builtin,
+                                ctx.builtin.option.name,
+                                one_type(value),
+                            ),
                             _ => parts.2,
                         }
                     } else {
@@ -4127,22 +4155,27 @@ fn trait_projection(base: Type, name: string, trait_name: string) -> Type {
 }
 
 fn projected_into_iterator_item(ctx: Checker, iterator_ty: Type, preserve_projection: bool) -> Type {
-    let direct = trait_projection(iterator_ty, "Item", "IntoIterator");
+    let iterator_trait = ctx.builtin.iterator.name;
+    let into_iterator_trait = ctx.builtin.into_iterator.name;
+    let iterator_item = ctx.builtin.iterator.item;
+    let into_iterator_item = ctx.builtin.into_iterator.item;
+    let into_iterator_type = ctx.builtin.into_iterator.into_iter_type;
+    let direct = trait_projection(iterator_ty, into_iterator_item, into_iterator_trait);
     let normalized = normalize_type(ctx, direct);
     if !types_equal(normalized, direct) {
         normalized
     } else if trait_bound_satisfied_at(
         ctx,
         iterator_ty,
-        TraitRef { name: "Iterator", args: Vec::[] },
+        TraitRef { name: iterator_trait, args: Vec::[] },
         Vec::[],
     ) {
-        normalize_type(ctx, trait_projection(iterator_ty, "Item", "Iterator"))
+        normalize_type(ctx, trait_projection(iterator_ty, iterator_item, iterator_trait))
     } else if preserve_projection {
         trait_projection(
-            trait_projection(iterator_ty, "IntoIter", "IntoIterator"),
-            "Item",
-            "Iterator",
+            trait_projection(iterator_ty, into_iterator_type, into_iterator_trait),
+            iterator_item,
+            iterator_trait,
         )
     } else {
         fresh_type(ctx.counter, VarKind::Any)
@@ -4152,12 +4185,7 @@ fn projected_into_iterator_item(ctx: Checker, iterator_ty: Type, preserve_projec
 fn into_iterator_item_type(ctx: Checker, iterator_ty: Type) -> Type {
     let iterator_ty = normalize_type(ctx, iterator_ty);
     match prune(iterator_ty) {
-        Array { len: _, elem } | VecType { elem } | Slice { elem } => elem,
-        App { ty: Con { name }, args } => if name == "FnIterator" && args.len() == 1 {
-            args[0]
-        } else {
-            projected_into_iterator_item(ctx, iterator_ty, false)
-        },
+        Array { len: _, elem } => elem,
         Param { name: _ } | Projection { for_ty: _, name: _, trait_ref: _ } => {
             projected_into_iterator_item(ctx, iterator_ty, true)
         },
@@ -4177,7 +4205,10 @@ fn check_for_expr(
     let body_span = body_source.span;
     let iterator = check_expr(ctx, iterator_source, Option::None);
     let source_ty = expr_type(iterator);
-    let into_iterator_ref = TraitRef { name: "IntoIterator", args: Vec::[] };
+    let iterator_trait = ctx.builtin.iterator.name;
+    let into_iterator_trait = ctx.builtin.into_iterator.name;
+    let into_iterator_type = ctx.builtin.into_iterator.into_iter_type;
+    let into_iterator_ref = TraitRef { name: into_iterator_trait, args: Vec::[] };
     let fixed_array = match normalize_type(ctx, source_ty) {
         Array { len: _, elem: _ } => true,
         _ => false,
@@ -4204,13 +4235,13 @@ fn check_for_expr(
     expect_type_at(ctx, expr_type(body), Type::Unit, Option::Some(body_span));
     ctx.loop_depth.set(ctx.loop_depth.get() - 1);
     let _ = ctx.loop_results.pop();
-    let projected_iterator_ty = trait_projection(source_ty, "IntoIter", "IntoIterator");
+    let projected_iterator_ty = trait_projection(source_ty, into_iterator_type, into_iterator_trait);
     let normalized_iterator_ty = normalize_type(ctx, projected_iterator_ty);
     let iterator_ty = if types_equal(normalized_iterator_ty, projected_iterator_ty)
         && trait_bound_satisfied_at(
             ctx,
             source_ty,
-            TraitRef { name: "Iterator", args: Vec::[] },
+            TraitRef { name: iterator_trait, args: Vec::[] },
             Vec::[],
         ) {
         source_ty
@@ -4220,8 +4251,8 @@ fn check_for_expr(
     Expr::For {
         pat: typed_pat,
         iterator,
-        into_iter_trait_ref: TraitRef { name: "IntoIterator", args: Vec::[] },
-        iterator_trait_ref: TraitRef { name: "Iterator", args: Vec::[] },
+        into_iter_trait_ref: TraitRef { name: into_iterator_trait, args: Vec::[] },
+        iterator_trait_ref: TraitRef { name: iterator_trait, args: Vec::[] },
         iterator_ty,
         body,
         ty: Type::Unit,
@@ -4516,7 +4547,7 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
             Cast { expr: value, ty } => {
                 let target = resolve_signature_type(
                     ctx,
-                    type_from_hir(ty, ctx.type_params, ctx.self_ty),
+                    type_from_hir(ctx.builtin, ty, ctx.type_params, ctx.self_ty),
                     ctx.predicates,
                     true,
                 );
@@ -5449,7 +5480,7 @@ fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
             );
             let annotation_result = match annotation {
                 Some(value) => {
-                    let raw = type_from_hir(value, ctx.type_params, ctx.self_ty);
+                    let raw = type_from_hir(ctx.builtin, value, ctx.type_params, ctx.self_ty);
                     let invalid = nominal_application_has_wrong_arity(ctx, raw);
                     (Option::Some(resolve_signature_type(ctx, raw, ctx.predicates, true)), invalid)
                 },

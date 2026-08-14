@@ -1045,6 +1045,10 @@ fn builtin_source_trait_satisfied(base: Type, reference: TraitRef, goals: Vec[st
     false
 }
 
+pub fn builtin_trait_satisfied(base: Type, reference: TraitRef) -> bool {
+    builtin_source_trait_satisfied(base, reference, Vec::[])
+}
+
 pub fn builtin_projection(base: Type, name: string, qualifier: Option[TraitRef]) -> Option[Type] {
     let candidates: Vec[Type] = Vec::[];
     for implementation in builtin_source_impl_infos() {
@@ -1467,15 +1471,15 @@ fn default_numeric_type(value: Type) -> Type {
     }
 }
 
-fn type_constructor_name(value: Type) -> Option[string] {
+fn type_constructor_name(builtin: BuiltinContract, value: Type) -> Option[string] {
     match prune(value) {
         Con { name } => Option::Some(name),
-        App { ty: base, args: _ } => type_constructor_name(base),
-        Slice { elem: _ } => Option::Some("Slice"),
-        VecType { elem: _ } => Option::Some("Vec"),
-        RefType { elem: _ } => Option::Some("Ref"),
-        HashMap { key: _, value: _ } => Option::Some("HashMap"),
-        Channel { elem: _ } => Option::Some("Channel"),
+        App { ty: base, args: _ } => type_constructor_name(builtin, base),
+        Slice { elem: _ } => Option::Some(builtin.slice.name),
+        VecType { elem: _ } => Option::Some(builtin.vec.name),
+        RefType { elem: _ } => Option::Some(builtin.ref_type.name),
+        HashMap { key: _, value: _ } => Option::Some(builtin.hashmap.name),
+        Channel { elem: _ } => Option::Some(builtin.channel.name),
         Unit => Option::Some("unit"),
         Bool => Option::Some("bool"),
         Int => Option::Some("int"),
@@ -1497,16 +1501,16 @@ fn type_constructor_name(value: Type) -> Option[string] {
     }
 }
 
-pub fn nominal_type(name: string, args: Vec[Type]) -> Type {
-    if name == "Vec" && args.len() == 1 {
+pub fn nominal_type(builtin: BuiltinContract, name: string, args: Vec[Type]) -> Type {
+    if names_match(name, builtin.vec.name) && args.len() == 1 {
         Type::VecType { elem: args[0] }
-    } else if name == "Slice" && args.len() == 1 {
+    } else if names_match(name, builtin.slice.name) && args.len() == 1 {
         Type::Slice { elem: args[0] }
-    } else if name == "Ref" && args.len() == 1 {
+    } else if names_match(name, builtin.ref_type.name) && args.len() == 1 {
         Type::RefType { elem: args[0] }
-    } else if name == "HashMap" && args.len() == 2 {
+    } else if names_match(name, builtin.hashmap.name) && args.len() == 2 {
         Type::HashMap { key: args[0], value: args[1] }
-    } else if name == "Channel" && args.len() == 1 {
+    } else if names_match(name, builtin.channel.name) && args.len() == 1 {
         Type::Channel { elem: args[0] }
     } else if args.is_empty() {
         Type::Con { name }

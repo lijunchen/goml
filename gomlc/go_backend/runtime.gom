@@ -3,6 +3,7 @@ package go_backend;
 use gomlc::anf;
 use gomlc::resources;
 use gomlc::repr;
+use gomlc::tast;
 use std::cmp;
 use std::collections;
 use std::text;
@@ -1489,6 +1490,7 @@ fn synthetic_option_items(value: repr::Type) -> Vec[Item] {
 }
 
 fn hashmap_option_info(
+    builtin: tast::BuiltinContract,
     value: repr::Type,
     instances: Vec[repr::TypeInstance],
     enums: Vec[repr::EnumDef],
@@ -1497,7 +1499,7 @@ fn hashmap_option_info(
 ) -> (Type, Type, Type, bool) {
     let args: Vec[repr::Type] = Vec::[];
     args.push(value);
-    match find_instance(instances, "Option", args) {
+    match find_instance(instances, builtin.option.name, args) {
         Some(instance) => {
             let variants = match find_enum(enums, instance.name) {
                 Some(definition) => definition.option_variants,
@@ -1505,7 +1507,7 @@ fn hashmap_option_info(
             };
             let variants = match variants {
                 Some(value) => value,
-                None => ("Some", "None"),
+                None => (builtin.option.some.name, builtin.option.none.name),
             };
             (
                 Type::Named { name: go_user_type_name(instance.name) },
@@ -1548,24 +1550,26 @@ fn hashmap_trait_impl_name(trait_name: string, key: repr::Type, method: string) 
     go_ident("trait_impl#" + trait_name + "#" + compact_type(key) + "#" + method)
 }
 
-fn hashmap_hash_expr(key: repr::Type, value: Expr) -> Expr {
+fn hashmap_hash_expr(builtin: tast::BuiltinContract, key: repr::Type, value: Expr) -> Expr {
+    let hash_trait = builtin.hash.name;
+    let hash_method = builtin.hash.method;
     match repr::resolve_type(key) {
-        Dyn { trait_name: name, .. } => if name == "Hash" || name.ends_with("::Hash") {
+        Dyn { trait_name: name, .. } => if backend_names_match(name, builtin.hash.name) {
             Expr::Call {
                 func: Expr::Field {
                     expr: Expr::Field { expr: value, field_name: "vtable" },
-                    field_name: "hash",
+                    field_name: hash_method,
                 },
                 args: Vec::[Expr::Field { expr: value, field_name: "data" }],
             }
         } else {
             Expr::Call {
-                func: Expr::Var { name: hashmap_trait_impl_name("Hash", key, "hash") },
+                func: Expr::Var { name: hashmap_trait_impl_name(hash_trait, key, hash_method) },
                 args: Vec::[value],
             }
         },
         _ => Expr::Call {
-            func: Expr::Var { name: hashmap_trait_impl_name("Hash", key, "hash") },
+            func: Expr::Var { name: hashmap_trait_impl_name(hash_trait, key, hash_method) },
             args: Vec::[value],
         },
     }
@@ -1630,7 +1634,7 @@ fn hashmap_len_item(key: repr::Type, value: repr::Type) -> Item {
     )
 }
 
-fn hashmap_lookup_item(key: repr::Type, value: repr::Type) -> Item {
+fn hashmap_lookup_item(builtin: tast::BuiltinContract, key: repr::Type, value: repr::Type) -> Item {
     let map_ty = repr::Type::HashMap { key, value };
     let lowered_map = lower_type(map_ty);
     let lowered_key = lower_type(key);
@@ -1658,7 +1662,7 @@ fn hashmap_lookup_item(key: repr::Type, value: repr::Type) -> Item {
         Stmt::Var {
             name: "h",
             ty: Type::Uint64,
-            value: Option::Some(hashmap_hash_expr(key, Expr::Var { name: "key" })),
+            value: Option::Some(hashmap_hash_expr(builtin, key, Expr::Var { name: "key" })),
         },
     );
     stmts.push(
@@ -1718,7 +1722,13 @@ fn hashmap_lookup_item(key: repr::Type, value: repr::Type) -> Item {
                 op: BinaryOp::And,
                 lhs: Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "active" },
                 rhs: Expr::Call {
-                    func: Expr::Var { name: hashmap_trait_impl_name("PartialEq", key, "eq") },
+                    func: Expr::Var {
+                        name: hashmap_trait_impl_name(
+                            builtin.partial_eq.name,
+                            key,
+                            builtin.partial_eq.method,
+                        ),
+                    },
                     args: eq_args,
                 },
             },
@@ -1832,7 +1842,7 @@ fn hashmap_increment_len() -> Stmt {
     }
 }
 
-fn hashmap_set_item(key: repr::Type, value: repr::Type) -> Item {
+fn hashmap_set_item(builtin: tast::BuiltinContract, key: repr::Type, value: repr::Type) -> Item {
     let map_ty = repr::Type::HashMap { key, value };
     let lowered_map = lower_type(map_ty);
     let lowered_key = lower_type(key);
@@ -1864,7 +1874,7 @@ fn hashmap_set_item(key: repr::Type, value: repr::Type) -> Item {
         Stmt::Var {
             name: "h",
             ty: Type::Uint64,
-            value: Option::Some(hashmap_hash_expr(key, Expr::Var { name: "key" })),
+            value: Option::Some(hashmap_hash_expr(builtin, key, Expr::Var { name: "key" })),
         },
     );
     stmts.push(
@@ -1955,7 +1965,13 @@ fn hashmap_set_item(key: repr::Type, value: repr::Type) -> Item {
                 op: BinaryOp::And,
                 lhs: Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "active" },
                 rhs: Expr::Call {
-                    func: Expr::Var { name: hashmap_trait_impl_name("PartialEq", key, "eq") },
+                    func: Expr::Var {
+                        name: hashmap_trait_impl_name(
+                            builtin.partial_eq.name,
+                            key,
+                            builtin.partial_eq.method,
+                        ),
+                    },
                     args: eq_args,
                 },
             },
@@ -2043,7 +2059,7 @@ fn hashmap_set_item(key: repr::Type, value: repr::Type) -> Item {
     )
 }
 
-fn hashmap_remove_item(key: repr::Type, value: repr::Type) -> Item {
+fn hashmap_remove_item(builtin: tast::BuiltinContract, key: repr::Type, value: repr::Type) -> Item {
     let map_ty = repr::Type::HashMap { key, value };
     let lowered_map = lower_type(map_ty);
     let lowered_key = lower_type(key);
@@ -2066,7 +2082,7 @@ fn hashmap_remove_item(key: repr::Type, value: repr::Type) -> Item {
         Stmt::Var {
             name: "h",
             ty: Type::Uint64,
-            value: Option::Some(hashmap_hash_expr(key, Expr::Var { name: "key" })),
+            value: Option::Some(hashmap_hash_expr(builtin, key, Expr::Var { name: "key" })),
         },
     );
     stmts.push(
@@ -2142,7 +2158,13 @@ fn hashmap_remove_item(key: repr::Type, value: repr::Type) -> Item {
                 op: BinaryOp::And,
                 lhs: Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "active" },
                 rhs: Expr::Call {
-                    func: Expr::Var { name: hashmap_trait_impl_name("PartialEq", key, "eq") },
+                    func: Expr::Var {
+                        name: hashmap_trait_impl_name(
+                            builtin.partial_eq.name,
+                            key,
+                            builtin.partial_eq.method,
+                        ),
+                    },
                     args: eq_args,
                 },
             },
@@ -2172,7 +2194,7 @@ fn hashmap_remove_item(key: repr::Type, value: repr::Type) -> Item {
     )
 }
 
-fn hashmap_contains_item(key: repr::Type, value: repr::Type) -> Item {
+fn hashmap_contains_item(builtin: tast::BuiltinContract, key: repr::Type, value: repr::Type) -> Item {
     let map_ty = repr::Type::HashMap { key, value };
     let lowered_map = lower_type(map_ty);
     let lowered_key = lower_type(key);
@@ -2195,7 +2217,7 @@ fn hashmap_contains_item(key: repr::Type, value: repr::Type) -> Item {
         Stmt::Var {
             name: "h",
             ty: Type::Uint64,
-            value: Option::Some(hashmap_hash_expr(key, Expr::Var { name: "key" })),
+            value: Option::Some(hashmap_hash_expr(builtin, key, Expr::Var { name: "key" })),
         },
     );
     stmts.push(
@@ -2252,7 +2274,13 @@ fn hashmap_contains_item(key: repr::Type, value: repr::Type) -> Item {
                 op: BinaryOp::And,
                 lhs: Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "active" },
                 rhs: Expr::Call {
-                    func: Expr::Var { name: hashmap_trait_impl_name("PartialEq", key, "eq") },
+                    func: Expr::Var {
+                        name: hashmap_trait_impl_name(
+                            builtin.partial_eq.name,
+                            key,
+                            builtin.partial_eq.method,
+                        ),
+                    },
                     args: eq_args,
                 },
             },
@@ -2428,6 +2456,7 @@ fn hashmap_entries_item(key: repr::Type, value: repr::Type) -> Item {
 }
 
 fn hashmap_items(
+    builtin: tast::BuiltinContract,
     key: repr::Type,
     value: repr::Type,
     instances: Vec[repr::TypeInstance],
@@ -2457,7 +2486,7 @@ fn hashmap_items(
     fields.push(("hashes", Type::Slice { elem: Type::Uint64 }));
     fields.push(("len", Type::Int));
     result.push(Item::Struct(StructDef { name, fields }));
-    let option = hashmap_option_info(value, instances, enums, structs, function_names);
+    let option = hashmap_option_info(builtin, value, instances, enums, structs, function_names);
     if include_option && option.3 {
         for item in synthetic_option_items(value) {
             result.push(item)
@@ -2465,19 +2494,23 @@ fn hashmap_items(
     } else {};
     result.push(hashmap_new_item(key, value));
     result.push(hashmap_len_item(key, value));
-    result.push(hashmap_lookup_item(key, value));
+    result.push(hashmap_lookup_item(builtin, key, value));
     result.push(hashmap_get_item(key, value, option.0, option.1, option.2));
-    result.push(hashmap_set_item(key, value));
-    result.push(hashmap_remove_item(key, value));
-    result.push(hashmap_contains_item(key, value));
+    result.push(hashmap_set_item(builtin, key, value));
+    result.push(hashmap_remove_item(builtin, key, value));
+    result.push(hashmap_contains_item(builtin, key, value));
     result.push(hashmap_entries_item(key, value));
     result
 }
 
-fn option_available(instances: Vec[repr::TypeInstance], value: repr::Type) -> bool {
+fn option_available(
+    builtin: tast::BuiltinContract,
+    instances: Vec[repr::TypeInstance],
+    value: repr::Type,
+) -> bool {
     let args: Vec[repr::Type] = Vec::[];
     args.push(value);
-    find_instance(instances, "Option", args).is_some()
+    find_instance(instances, builtin.option.name, args).is_some()
 }
 
 fn dyn_vtable_name(trait_name: string) -> string {
@@ -2597,7 +2630,9 @@ fn collect_dyn_call_methods(result: Vec[DynMethod], trait_name: string, block: a
     }
 }
 
-fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMethod] {
+fn dyn_methods(builtin: tast::BuiltinContract, functions: Vec[anf::Function], trait_name: string) -> Vec[
+    DynMethod,
+] {
     let result: Vec[DynMethod] = Vec::[];
     for function in functions {
         match (function.trait_impl, trait_impl_method_name(function)) {
@@ -2623,28 +2658,33 @@ fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMeth
     for function in functions {
         collect_dyn_call_methods(result, trait_name, function.body)
     }
-    if trait_name == "Hash" && !contains_method(result, "hash") {
+    let hash_method = builtin.hash.method;
+    let to_string_method = builtin.to_string.method;
+    let debug_method = builtin.debug.method;
+    if backend_names_match(trait_name, builtin.hash.name) && !contains_method(result, hash_method) {
         result.push(
             DynMethod {
-                name: "hash",
+                name: hash_method,
                 dispatch_trait: trait_name,
                 params: Vec::[],
                 ret_ty: repr::Type::Uint64,
             },
         )
-    } else if trait_name == "ToString" && !contains_method(result, "to_string") {
+    } else if backend_names_match(trait_name, builtin.to_string.name)
+        && !contains_method(result, to_string_method) {
         result.push(
             DynMethod {
-                name: "to_string",
+                name: to_string_method,
                 dispatch_trait: trait_name,
                 params: Vec::[],
                 ret_ty: repr::Type::String,
             },
         )
-    } else if trait_name == "Debug" && !contains_method(result, "debug") {
+    } else if backend_names_match(trait_name, builtin.debug.name)
+        && !contains_method(result, debug_method) {
         result.push(
             DynMethod {
-                name: "debug",
+                name: debug_method,
                 dispatch_trait: trait_name,
                 params: Vec::[],
                 ret_ty: repr::Type::String,
@@ -2665,13 +2705,14 @@ fn dyn_factory_name_count(coercions: Vec[DynCoercion], expected: string) -> int 
 }
 
 fn dyn_wrapper_name_count(
+    builtin: tast::BuiltinContract,
     coercions: Vec[DynCoercion],
     functions: Vec[anf::Function],
     expected: string,
 ) -> int {
     let mut count = 0;
     for coercion in coercions {
-        for method in dyn_methods(functions, coercion.trait_name) {
+        for method in dyn_methods(builtin, functions, coercion.trait_name) {
             if raw_dyn_wrapper_name(coercion.trait_name, coercion.for_ty, method.name) == expected {
                 count = count + 1;
             } else {}
@@ -2680,7 +2721,11 @@ fn dyn_wrapper_name_count(
     count
 }
 
-pub fn build_dyn_helper_names(coercions: Vec[DynCoercion], functions: Vec[anf::Function]) -> DynHelperNames {
+pub fn build_dyn_helper_names(
+    builtin: tast::BuiltinContract,
+    coercions: Vec[DynCoercion],
+    functions: Vec[anf::Function],
+) -> DynHelperNames {
     let factories: Vec[(string, string, string)] = Vec::[];
     let wrappers: Vec[(string, string, string, string)] = Vec::[];
     for coercion in coercions {
@@ -2695,13 +2740,13 @@ pub fn build_dyn_helper_names(coercions: Vec[DynCoercion], functions: Vec[anf::F
                 ),
             )
         } else {};
-        for method in dyn_methods(functions, coercion.trait_name) {
+        for method in dyn_methods(builtin, functions, coercion.trait_name) {
             let raw_wrapper = raw_dyn_wrapper_name(
                 coercion.trait_name,
                 coercion.for_ty,
                 method.name,
             );
-            if dyn_wrapper_name_count(coercions, functions, raw_wrapper) > 1 {
+            if dyn_wrapper_name_count(builtin, coercions, functions, raw_wrapper) > 1 {
                 wrappers.push(
                     (
                         coercion.trait_name,
@@ -2911,6 +2956,7 @@ fn dyn_coercion_items(
 }
 
 pub fn emit_builtin_runtime_items(
+    builtin: tast::BuiltinContract,
     items: Vec[Item],
     types: Vec[repr::Type],
     missing_types: Vec[repr::Type],
@@ -2920,7 +2966,8 @@ pub fn emit_builtin_runtime_items(
     function_names: FunctionNames,
 ) -> unit {
     for instance in instances {
-        if instance.base_name == "OnceCell" && instance.args.len() == 1 {
+        if backend_names_match(instance.base_name, builtin.static_cell.name)
+            && instance.args.len() == 1 {
             items.push(once_cell_new_item(instance));
             items.push(once_cell_get_or_init_item(instance))
         } else {}
@@ -2963,8 +3010,9 @@ pub fn emit_builtin_runtime_items(
             HashMap { key, value } => {
                 let option = synthetic_option_base(value);
                 let include_option = !options.contains(option)
-                    && !option_available(instances, value);
+                    && !option_available(builtin, instances, value);
                 for item in hashmap_items(
+                    builtin,
                     key,
                     value,
                     instances,
@@ -2994,6 +3042,7 @@ pub fn emit_builtin_runtime_items(
 }
 
 pub fn emit_dyn_runtime_items(
+    builtin: tast::BuiltinContract,
     items: Vec[Item],
     types: Vec[repr::Type],
     coercions: Vec[DynCoercion],
@@ -3007,7 +3056,7 @@ pub fn emit_dyn_runtime_items(
         match repr::resolve_type(ty) {
             Dyn { trait_name: name, .. } => {
                 if !dyn_traits.contains(name) {
-                    for item in dyn_type_items(name, dyn_methods(functions, name)) {
+                    for item in dyn_type_items(name, dyn_methods(builtin, functions, name)) {
                         items.push(item)
                     }
                     dyn_traits.push(name)
@@ -3022,7 +3071,7 @@ pub fn emit_dyn_runtime_items(
             enums,
             instances,
             coercion,
-            dyn_methods(functions, coercion.trait_name),
+            dyn_methods(builtin, functions, coercion.trait_name),
             names,
         ) {
             items.push(item)

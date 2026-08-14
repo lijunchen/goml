@@ -223,7 +223,7 @@ fn instantiate_enum(ctx: Checker, value: EnumInfo) -> (Type, Vec[TypeSubst]) {
             None => (),
         }
     };
-    (nominal_type(value.name, args), substitutions)
+    (nominal_type(ctx.builtin, value.name, args), substitutions)
 }
 
 fn resolve_user_constructor(ctx: Checker, value: EnumInfo, variant_index: int) -> Option[
@@ -344,7 +344,7 @@ fn normalized_pattern_expected(ctx: Checker, expected: Type) -> Type {
 }
 
 fn pattern_expected_owner(ctx: Checker, expected: Type) -> Option[string] {
-    type_constructor_name(normalized_pattern_expected(ctx, expected))
+    type_constructor_name(ctx.builtin, normalized_pattern_expected(ctx, expected))
 }
 
 fn resolve_contextual_constructor(ctx: Checker, name: string, expected: Type) -> Option[
@@ -410,7 +410,7 @@ fn instantiate_struct(ctx: Checker, value: StructInfo) -> ResolvedStruct {
             tag: Option::None,
         },
         fields,
-        ty: nominal_type(value.name, args),
+        ty: nominal_type(ctx.builtin, value.name, args),
         has_hidden_fields: value.has_hidden_fields,
     }
 }
@@ -572,7 +572,7 @@ fn substitutions_for_nominal(params: Vec[string], value: Type) -> Vec[TypeSubst]
 
 fn resolve_field_type(ctx: Checker, receiver: Type, name: string) -> Option[Type] {
     let receiver = normalize_type(ctx, receiver);
-    match type_constructor_name(receiver) {
+    match type_constructor_name(ctx.builtin, receiver) {
         Some(owner) => match find_struct_by_name(ctx, owner) {
             Some(info) => {
                 let substitutions = substitutions_for_nominal(info.generics, receiver);
@@ -609,10 +609,13 @@ fn find_named_pattern(values: Vec[(string, hir::Pat)], name: string) -> Option[h
     Option::None
 }
 
-fn receiver_matches(owner: Type, receiver: Type) -> bool {
+fn receiver_matches(builtin: BuiltinContract, owner: Type, receiver: Type) -> bool {
     match prune(owner) {
         Param { name: _ } | Var(_) => true,
-        owner => match (type_constructor_name(owner), type_constructor_name(receiver)) {
+        owner => match (
+            type_constructor_name(builtin, owner),
+            type_constructor_name(builtin, receiver),
+        ) {
             (Some(first), Some(second)) => names_match(first, second),
             _ => false,
         },
@@ -811,7 +814,7 @@ fn resolve_user_method(
             _ => false,
         };
         if trait_matches && value.function.name == name
-            && receiver_matches(value.for_type, receiver) {
+            && receiver_matches(ctx.builtin, value.for_type, receiver) {
             let candidate = instantiate_method_candidate(
                 ctx,
                 value,
@@ -1257,18 +1260,26 @@ fn builtin_trait_bound_satisfied(
                 }
                 false
             },
-            _ => if canonical_imported_name(ctx, reference.name) == "std::cmp::PartialOrd"
-                || canonical_imported_name(ctx, reference.name) == "std::cmp::Ord" {
-                structural_trait_satisfied(ctx, bound_ty, reference, goals)
-            } else if !trait_reference_uses_builtin(ctx, reference) {
-                false
-            } else if trait_name == "PartialEq" || trait_name == "Eq" || trait_name == "Hash"
-                || trait_name == "Default" {
+            _ => if trait_reference_matches_name(ctx, reference, ctx.builtin.partial_eq.name)
+                || trait_reference_matches_name(ctx, reference, ctx.builtin.eq.name)
+                || trait_reference_matches_name(ctx, reference, ctx.builtin.hash.name)
+                || trait_reference_matches_name(ctx, reference, ctx.builtin.default.name)
+                || trait_reference_matches_name(ctx, reference, ctx.builtin.ordering.partial_ord)
+                || trait_reference_matches_name(ctx, reference, ctx.builtin.ordering.ord) {
                 structural_trait_satisfied(ctx, bound_ty, reference, goals)
             } else {
                 false
             },
         }
+    }
+}
+
+fn trait_reference_matches_name(ctx: Checker, reference: TraitRef, expected: string) -> bool {
+    if expected.contains("::") {
+        canonical_imported_name(ctx, reference.name) == expected
+    } else {
+        trait_reference_uses_builtin(ctx, reference)
+            && short_name(reference.name) == short_name(expected)
     }
 }
 
@@ -1548,7 +1559,7 @@ fn deferred_method_candidate(
 fn method_shape_is_ambiguous(ctx: Checker, receiver: Type, name: string) -> bool {
     let mut matches = 0;
     for value in ctx.methods {
-        if value.function.name == name && receiver_matches(value.for_type, receiver)
+        if value.function.name == name && receiver_matches(ctx.builtin, value.for_type, receiver)
             && method_trait_in_scope(ctx, value) {
             matches += 1;
         } else {}
@@ -1572,7 +1583,7 @@ fn resolve_user_method_for_call(
         Option::None
     };
     for value in ctx.methods {
-        if value.function.name == name && receiver_matches(value.for_type, receiver)
+        if value.function.name == name && receiver_matches(ctx.builtin, value.for_type, receiver)
             && method_trait_in_scope(ctx, value) {
             let candidate = instantiate_method_candidate(ctx, value, Vec::[], method_explicit);
             let matches = match value.trait_ref {
@@ -1757,7 +1768,7 @@ fn resolve_method(
 }
 
 fn hashmap_option_shape_is_valid(ctx: Checker) -> bool {
-    match find_enum_by_name(ctx, "Option") {
+    match find_enum_by_name(ctx, ctx.builtin.option.name) {
         Some(info) => if info.generics.len() == 1 && info.variants.len() == 2 {
             let mut empty = 0;
             let mut payload = 0;
@@ -1781,22 +1792,16 @@ fn hashmap_option_shape_is_valid(ctx: Checker) -> bool {
 fn require_hashmap_type(ctx: Checker, value: Type) -> unit {
     match prune(normalize_type(ctx, value)) {
         HashMap { key, value: _ } => {
-            require_predicate(
-                ctx,
-                TypePredicate::Trait {
-                    for_ty: key,
-                    trait_ref: TraitRef { name: "Eq", args: Vec::[] },
-                },
-                "type predicate not satisfied",
-            );
-            require_predicate(
-                ctx,
-                TypePredicate::Trait {
-                    for_ty: key,
-                    trait_ref: TraitRef { name: "Hash", args: Vec::[] },
-                },
-                "type predicate not satisfied",
-            )
+            for name in Vec::[ctx.builtin.eq.name, ctx.builtin.hash.name] {
+                require_predicate(
+                    ctx,
+                    TypePredicate::Trait {
+                        for_ty: key,
+                        trait_ref: TraitRef { name, args: Vec::[] },
+                    },
+                    "type predicate not satisfied",
+                )
+            }
         },
         _ => (),
     }
@@ -2872,13 +2877,17 @@ fn resolve_trait_static(
     explicit: Vec[Type],
     method_explicit: Vec[Type],
 ) -> Option[ResolvedCallable] {
-    if owner == "Eq" && name == "eq" && !trait_infos_contain_exact_name(ctx.traits, "Eq") {
+    let eq_trait = ctx.builtin.eq.name;
+    let partial_eq_trait = ctx.builtin.partial_eq.name;
+    let equality_method = ctx.builtin.partial_eq.method;
+    if owner == eq_trait && name == equality_method
+        && !trait_infos_contain_exact_name(ctx.traits, eq_trait) {
         validate_explicit_method_type_arguments(ctx, name, "method", Vec::[], method_explicit);
         let receiver = fresh_type(ctx.counter, VarKind::Any);
         push_diagnostic(ctx, "Trait Eq has no associated method eq; use PartialEq::eq");
         Option::Some(
             trait_callable(
-                "PartialEq",
+                partial_eq_trait,
                 explicit,
                 name,
                 two_types(receiver, receiver),
@@ -2961,7 +2970,7 @@ fn resolve_trait_static(
 fn explicit_types(ctx: Checker, values: Vec[hir::TypeExpr]) -> Vec[Type] {
     let result: Vec[Type] = Vec::[];
     for value in values {
-        result.push(type_from_hir(value, ctx.type_params, ctx.self_ty))
+        result.push(type_from_hir(ctx.builtin, value, ctx.type_params, ctx.self_ty))
     }
     result
 }
@@ -2991,7 +3000,7 @@ fn resolve_static_member(
         None => match resolve_trait_static(ctx, owner, member, owner_explicit, method_explicit) {
             Some(value) => Option::Some(value),
             None => {
-                let owner_ty = nominal_type(owner, owner_explicit);
+                let owner_ty = nominal_type(ctx.builtin, owner, owner_explicit);
                 match resolve_user_method(
                     ctx,
                     owner_ty,

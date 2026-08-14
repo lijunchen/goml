@@ -2,6 +2,7 @@ package mono;
 
 use gomlc::ast;
 use gomlc::core;
+use gomlc::tast;
 use std::cmp;
 use std::collections;
 use std::text;
@@ -26,6 +27,7 @@ struct TraitSelection {
 }
 
 struct SpecializeCtx {
+    builtin: tast::BuiltinContract,
     functions: Vec[core::Function],
     function_index: HashMap[string, core::Function],
     inherent_method_index: FunctionIndex,
@@ -351,7 +353,7 @@ fn inherent_function_method(value: core::Function) -> Option[string] {
     }
 }
 
-fn canonical_inherent_owner_type(value: core::Type) -> core::Type {
+fn canonical_inherent_owner_type(builtin: tast::BuiltinContract, value: core::Type) -> core::Type {
     match core::resolve_type(value) {
         Con { name } => if name.starts_with("builtin::") {
             core::Type::Con { name: name.byte_slice(9, name.byte_len()) }
@@ -359,25 +361,25 @@ fn canonical_inherent_owner_type(value: core::Type) -> core::Type {
             core::Type::Con { name }
         },
         App { ty, args } => {
-            let base = canonical_inherent_owner_type(ty);
+            let base = canonical_inherent_owner_type(builtin, ty);
             let values: Vec[core::Type] = Vec::[];
             for arg in args {
-                values.push(canonical_inherent_owner_type(arg))
+                values.push(canonical_inherent_owner_type(builtin, arg))
             }
             match base {
-                Con { name: "Vec" } if values.len() == 1 => {
+                Con { name } if mono_names_match(name, builtin.vec.name) && values.len() == 1 => {
                     core::Type::VecType { elem: values[0] }
                 },
-                Con { name: "Slice" } if values.len() == 1 => {
+                Con { name } if mono_names_match(name, builtin.slice.name) && values.len() == 1 => {
                     core::Type::Slice { elem: values[0] }
                 },
-                Con { name: "Ref" } if values.len() == 1 => {
+                Con { name } if mono_names_match(name, builtin.ref_type.name) && values.len() == 1 => {
                     core::Type::RefType { elem: values[0] }
                 },
-                Con { name: "HashMap" } if values.len() == 2 => {
+                Con { name } if mono_names_match(name, builtin.hashmap.name) && values.len() == 2 => {
                     core::Type::HashMap { key: values[0], value: values[1] }
                 },
-                Con { name: "Channel" } if values.len() == 1 => {
+                Con { name } if mono_names_match(name, builtin.channel.name) && values.len() == 1 => {
                     core::Type::Channel { elem: values[0] }
                 },
                 other => core::Type::App { ty: other, args: values },
@@ -414,6 +416,10 @@ fn mono_short_name(value: string) -> string {
         Some(index) => value.byte_slice(index + 2, value.byte_len()),
         None => value,
     }
+}
+
+fn mono_names_match(name: string, expected: string) -> bool {
+    name == expected || (!name.contains("::") && mono_short_name(name) == mono_short_name(expected))
 }
 
 fn structural_trait_type(value: core::Type) -> bool {
@@ -501,15 +507,15 @@ fn core_bool_conjunction(values: Vec[core::Expr]) -> core::Expr {
     result
 }
 
-fn structural_partial_eq_body(ty: core::Type) -> core::Expr {
+fn structural_partial_eq_body(builtin: tast::BuiltinContract, ty: core::Type) -> core::Expr {
     let left = structural_items(core_var("self", ty), ty);
     let right = structural_items(core_var("other", ty), ty);
     let comparisons: Vec[core::Expr] = Vec::[];
     for index in 0..left.len() {
         comparisons.push(
             core_trait_call(
-                core::TraitRef { name: "PartialEq", args: Vec::[] },
-                "eq",
+                core::TraitRef { name: builtin.partial_eq.name, args: Vec::[] },
+                builtin.partial_eq.method,
                 left[index].1,
                 Option::Some(left[index].0),
                 Vec::[right[index].0],
@@ -520,7 +526,7 @@ fn structural_partial_eq_body(ty: core::Type) -> core::Expr {
     core_bool_conjunction(comparisons)
 }
 
-fn structural_hash_body(ty: core::Type) -> core::Expr {
+fn structural_hash_body(builtin: tast::BuiltinContract, ty: core::Type) -> core::Expr {
     let stmts: Vec[core::LetStmt] = Vec::[];
     let mut previous = "_structural_hash_0";
     stmts.push(
@@ -533,8 +539,8 @@ fn structural_hash_body(ty: core::Type) -> core::Expr {
     let mut index = 0;
     for item in structural_items(core_var("self", ty), ty) {
         let hash = core_trait_call(
-            core::TraitRef { name: "Hash", args: Vec::[] },
-            "hash",
+            core::TraitRef { name: builtin.hash.name, args: Vec::[] },
+            builtin.hash.method,
             item.1,
             Option::Some(item.0),
             Vec::[],
@@ -567,15 +573,15 @@ fn structural_hash_body(ty: core::Type) -> core::Expr {
     }
 }
 
-fn structural_default_body(ty: core::Type) -> core::Expr {
+fn structural_default_body(builtin: tast::BuiltinContract, ty: core::Type) -> core::Expr {
     match core::resolve_type(ty) {
         Tuple { items } => {
             let values: Vec[core::Expr] = Vec::[];
             for item in items {
                 values.push(
                     core_trait_call(
-                        core::TraitRef { name: "Default", args: Vec::[] },
-                        "default",
+                        core::TraitRef { name: builtin.default.name, args: Vec::[] },
+                        builtin.default.method,
                         item,
                         Option::None,
                         Vec::[],
@@ -590,8 +596,8 @@ fn structural_default_body(ty: core::Type) -> core::Expr {
             for _ in 0..len {
                 values.push(
                     core_trait_call(
-                        core::TraitRef { name: "Default", args: Vec::[] },
-                        "default",
+                        core::TraitRef { name: builtin.default.name, args: Vec::[] },
+                        builtin.default.method,
                         elem,
                         Option::None,
                         Vec::[],
@@ -646,27 +652,40 @@ fn option_item_type(value: core::Type) -> core::Type {
     }
 }
 
-fn ordering_is_equal(value: core::Expr, ordering_ty: core::Type) -> core::Expr {
+fn ordering_is_equal(builtin: tast::BuiltinContract, value: core::Expr, ordering_ty: core::Type) -> core::Expr {
     core_trait_call(
-        core::TraitRef { name: "PartialEq", args: Vec::[] },
-        "eq",
+        core::TraitRef { name: builtin.partial_eq.name, args: Vec::[] },
+        builtin.partial_eq.method,
         ordering_ty,
         Option::Some(value),
-        Vec::[ordering_constructor(ordering_ty, "Equal", 1)],
+        Vec::[
+            ordering_constructor(
+                ordering_ty,
+                builtin.ordering.equal.name,
+                builtin.ordering.equal.tag,
+            ),
+        ],
         core::Type::Bool,
     )
 }
 
-fn structural_partial_ord_bool_body(reference: core::TraitRef, method_name: string, ty: core::Type) -> core::Expr {
+fn structural_partial_ord_bool_body(
+    builtin: tast::BuiltinContract,
+    reference: core::TraitRef,
+    method_name: string,
+    ty: core::Type,
+) -> core::Expr {
     let left = structural_items(core_var("self", ty), ty);
     let right = structural_items(core_var("other", ty), ty);
-    let mut result = core_bool(method_name == "le" || method_name == "ge");
+    let mut result = core_bool(
+        method_name == builtin.ordering.le || method_name == builtin.ordering.ge,
+    );
     let mut index = left.len();
     while index > 0 {
         index = index - 1;
         let equals = core_trait_call(
-            core::TraitRef { name: "PartialEq", args: Vec::[] },
-            "eq",
+            core::TraitRef { name: builtin.partial_eq.name, args: Vec::[] },
+            builtin.partial_eq.method,
             left[index].1,
             Option::Some(left[index].0),
             Vec::[right[index].0],
@@ -674,10 +693,10 @@ fn structural_partial_ord_bool_body(reference: core::TraitRef, method_name: stri
         );
         let ordered = core_trait_call(
             reference,
-            if method_name == "le" {
-                "lt"
-            } else if method_name == "ge" {
-                "gt"
+            if method_name == builtin.ordering.le {
+                builtin.ordering.lt
+            } else if method_name == builtin.ordering.ge {
+                builtin.ordering.gt
             } else {
                 method_name
             },
@@ -696,17 +715,26 @@ fn structural_partial_ord_bool_body(reference: core::TraitRef, method_name: stri
     result
 }
 
-fn structural_ord_body(reference: core::TraitRef, ty: core::Type, ordering_ty: core::Type) -> core::Expr {
+fn structural_ord_body(
+    builtin: tast::BuiltinContract,
+    reference: core::TraitRef,
+    ty: core::Type,
+    ordering_ty: core::Type,
+) -> core::Expr {
     let left = structural_items(core_var("self", ty), ty);
     let right = structural_items(core_var("other", ty), ty);
-    let mut result = ordering_constructor(ordering_ty, "Equal", 1);
+    let mut result = ordering_constructor(
+        ordering_ty,
+        builtin.ordering.equal.name,
+        builtin.ordering.equal.tag,
+    );
     let mut index = left.len();
     while index > 0 {
         index = index - 1;
         let name = "_structural_ordering_" + index.to_string();
         let comparison = core_trait_call(
             reference,
-            "cmp",
+            builtin.ordering.cmp,
             left[index].1,
             Option::Some(left[index].0),
             Vec::[right[index].0],
@@ -717,7 +745,7 @@ fn structural_ord_body(reference: core::TraitRef, ty: core::Type, ordering_ty: c
                 stmts: Vec::[core::LetStmt { name, value: comparison, ty: ordering_ty }],
                 tail: Option::Some(
                     core::Expr::If {
-                        cond: ordering_is_equal(core_var(name, ordering_ty), ordering_ty),
+                        cond: ordering_is_equal(builtin, core_var(name, ordering_ty), ordering_ty),
                         then_branch: result,
                         else_branch: core_var(name, ordering_ty),
                         ty: ordering_ty,
@@ -730,27 +758,38 @@ fn structural_ord_body(reference: core::TraitRef, ty: core::Type, ordering_ty: c
     result
 }
 
-fn structural_partial_ord_body(reference: core::TraitRef, ty: core::Type, option_ty: core::Type) -> core::Expr {
+fn structural_partial_ord_body(
+    builtin: tast::BuiltinContract,
+    reference: core::TraitRef,
+    ty: core::Type,
+    option_ty: core::Type,
+) -> core::Expr {
     let ordering_ty = option_item_type(option_ty);
     let left = structural_items(core_var("self", ty), ty);
     let right = structural_items(core_var("other", ty), ty);
     let mut result = option_constructor(
         option_ty,
-        "Some",
-        1,
-        Vec::[ordering_constructor(ordering_ty, "Equal", 1)],
+        builtin.option.some.name,
+        builtin.option.some.tag,
+        Vec::[
+            ordering_constructor(
+                ordering_ty,
+                builtin.ordering.equal.name,
+                builtin.ordering.equal.tag,
+            ),
+        ],
     );
     let some = core::Constructor {
-        name: nominal_type_name(option_ty) + "::Some",
+        name: nominal_type_name(option_ty) + "::" + builtin.option.some.name,
         fields: Vec::[],
         is_struct: false,
-        tag: Option::Some(1),
+        tag: Option::Some(builtin.option.some.tag),
     };
     let none = core::Constructor {
-        name: nominal_type_name(option_ty) + "::None",
+        name: nominal_type_name(option_ty) + "::" + builtin.option.none.name,
         fields: Vec::[],
         is_struct: false,
-        tag: Option::Some(0),
+        tag: Option::Some(builtin.option.none.tag),
     };
     let mut index = left.len();
     while index > 0 {
@@ -759,7 +798,7 @@ fn structural_partial_ord_body(reference: core::TraitRef, ty: core::Type, option
         let ordering_name = comparison_name + "_value";
         let comparison = core_trait_call(
             reference,
-            "partial_cmp",
+            builtin.ordering.partial_cmp,
             left[index].1,
             Option::Some(left[index].0),
             Vec::[right[index].0],
@@ -778,7 +817,11 @@ fn structural_partial_ord_body(reference: core::TraitRef, ty: core::Type, option
                 ],
                 tail: Option::Some(
                     core::Expr::If {
-                        cond: ordering_is_equal(core_var(ordering_name, ordering_ty), ordering_ty),
+                        cond: ordering_is_equal(
+                            builtin,
+                            core_var(ordering_name, ordering_ty),
+                            ordering_ty,
+                        ),
                         then_branch: result,
                         else_branch: core_var(comparison_name, option_ty),
                         ty: option_ty,
@@ -825,6 +868,7 @@ fn structural_partial_ord_body(reference: core::TraitRef, ty: core::Type, option
 }
 
 fn synthetic_structural_trait_function(
+    builtin: tast::BuiltinContract,
     reference: core::TraitRef,
     method_name: string,
     for_ty: core::Type,
@@ -833,27 +877,32 @@ fn synthetic_structural_trait_function(
     if !structural_trait_type(for_ty) {
         Option::None
     } else {
-        let trait_name = mono_short_name(reference.name);
-        let body = if trait_name == "PartialEq" && method_name == "eq" {
-            structural_partial_eq_body(for_ty)
-        } else if trait_name == "Hash" && method_name == "hash" {
-            structural_hash_body(for_ty)
-        } else if trait_name == "Default" && method_name == "default" {
-            structural_default_body(for_ty)
-        } else if trait_name == "PartialOrd" && method_name == "partial_cmp" {
-            structural_partial_ord_body(reference, for_ty, ret_ty)
-        } else if trait_name == "PartialOrd"
-            && (method_name == "lt" || method_name == "le" || method_name == "gt"
-                || method_name == "ge") {
-            structural_partial_ord_bool_body(reference, method_name, for_ty)
-        } else if trait_name == "Ord" && method_name == "cmp" {
-            structural_ord_body(reference, for_ty, ret_ty)
+        let body = if mono_names_match(reference.name, builtin.partial_eq.name)
+            && method_name == builtin.partial_eq.method {
+            structural_partial_eq_body(builtin, for_ty)
+        } else if mono_names_match(reference.name, builtin.hash.name)
+            && method_name == builtin.hash.method {
+            structural_hash_body(builtin, for_ty)
+        } else if mono_names_match(reference.name, builtin.default.name)
+            && method_name == builtin.default.method {
+            structural_default_body(builtin, for_ty)
+        } else if mono_names_match(reference.name, builtin.ordering.partial_ord)
+            && method_name == builtin.ordering.partial_cmp {
+            structural_partial_ord_body(builtin, reference, for_ty, ret_ty)
+        } else if mono_names_match(reference.name, builtin.ordering.partial_ord)
+            && (method_name == builtin.ordering.lt || method_name == builtin.ordering.le
+                || method_name == builtin.ordering.gt
+                || method_name == builtin.ordering.ge) {
+            structural_partial_ord_bool_body(builtin, reference, method_name, for_ty)
+        } else if mono_names_match(reference.name, builtin.ordering.ord)
+            && method_name == builtin.ordering.cmp {
+            structural_ord_body(builtin, reference, for_ty, ret_ty)
         } else {
             return Option::None
         };
-        let params = if method_name == "default" {
+        let params = if method_name == builtin.default.method {
             Vec::[]
-        } else if method_name == "hash" {
+        } else if method_name == builtin.hash.method {
             Vec::[("self", for_ty)]
         } else {
             Vec::[("self", for_ty), ("other", for_ty)]
@@ -889,7 +938,7 @@ fn register_structural_trait_function(
     for_ty: core::Type,
     ret_ty: core::Type,
 ) -> unit {
-    match synthetic_structural_trait_function(reference, method_name, for_ty, ret_ty) {
+    match synthetic_structural_trait_function(ctx.builtin, reference, method_name, for_ty, ret_ty) {
         Some(function) => if ctx.function_index.contains(function.name) {} else {
             ctx.functions.push(function);
             ctx.function_index[function.name] = function;
@@ -917,8 +966,8 @@ fn find_inherent_function(
             core::FunctionOrigin::Inherent { owner: template, method_name: _ } => {
                 let bindings: Vec[TypeBinding] = Vec::[];
                 let owner_matches = unify_type(
-                    canonical_inherent_owner_type(template),
-                    canonical_inherent_owner_type(owner),
+                    canonical_inherent_owner_type(ctx.builtin, template),
+                    canonical_inherent_owner_type(ctx.builtin, owner),
                     bindings,
                 );
                 let callable_matches = unify_type(function_type(function), callable_ty, Vec::[]);
@@ -1675,7 +1724,7 @@ fn predicates_are_satisfied_up_to(
                 let for_ty = substitute_type(for_ty, bindings);
                 let reference = substitute_trait_ref(reference, bindings);
                 if type_is_concrete(for_ty)
-                    && (builtin_trait_satisfied(for_ty, reference)
+                    && (builtin_trait_satisfied(ctx.builtin, for_ty, reference)
                         || matching_trait_selections(ctx, for_ty, reference, bindings).len() == 1) {} else {
                     return false
                 }
@@ -1706,54 +1755,53 @@ fn builtin_total_scalar_type(value: core::Type) -> bool {
     }
 }
 
-fn builtin_structural_trait_satisfied(for_ty: core::Type, reference: core::TraitRef) -> bool {
+fn builtin_structural_trait_satisfied(
+    builtin: tast::BuiltinContract,
+    for_ty: core::Type,
+    reference: core::TraitRef,
+) -> bool {
     match core::resolve_type(for_ty) {
         RefType { elem: _ } => true,
         Tuple { items } => {
             for item in items {
-                if !builtin_trait_satisfied(item, reference) {
+                if !builtin_trait_satisfied(builtin, item, reference) {
                     return false
                 } else {}
             }
             true
         },
-        Array { len: _, elem } => builtin_trait_satisfied(elem, reference),
+        Array { len: _, elem } => builtin_trait_satisfied(builtin, elem, reference),
         _ => false,
     }
 }
 
-fn builtin_iterator_type(value: core::Type) -> bool {
-    match core::resolve_type(value) {
-        App { ty: Con { name }, args } => name == "FnIterator" && args.len() == 1,
-        _ => false,
-    }
-}
-
-fn builtin_trait_satisfied(for_ty: core::Type, reference: core::TraitRef) -> bool {
+fn builtin_trait_satisfied(
+    builtin: tast::BuiltinContract,
+    for_ty: core::Type,
+    reference: core::TraitRef,
+) -> bool {
     reference.args.is_empty()
         && match core::resolve_type(for_ty) {
             Dyn { trait_name: name, .. } => reference.name == name,
-            other => if mono_short_name(reference.name) == "ToString"
-                || mono_short_name(reference.name) == "Debug" {
+            other => if core::builtin_trait_satisfied(other, reference) {
+                true
+            } else if mono_names_match(reference.name, builtin.to_string.name)
+                || mono_names_match(reference.name, builtin.debug.name) {
                 builtin_scalar_type(other)
-            } else if mono_short_name(reference.name) == "PartialEq" {
-                builtin_scalar_type(other) || builtin_structural_trait_satisfied(other, reference)
-            } else if mono_short_name(reference.name) == "Eq"
-                || mono_short_name(reference.name) == "Hash"
-                || mono_short_name(reference.name) == "Ord" {
+            } else if mono_names_match(reference.name, builtin.partial_eq.name) {
+                builtin_scalar_type(other)
+                    || builtin_structural_trait_satisfied(builtin, other, reference)
+            } else if mono_names_match(reference.name, builtin.eq.name)
+                || mono_names_match(reference.name, builtin.hash.name)
+                || mono_names_match(reference.name, builtin.ordering.ord) {
                 builtin_total_scalar_type(other)
-                    || builtin_structural_trait_satisfied(other, reference)
-            } else if mono_short_name(reference.name) == "PartialOrd" {
-                builtin_scalar_type(other) || builtin_structural_trait_satisfied(other, reference)
-            } else if mono_short_name(reference.name) == "Default" {
-                builtin_scalar_type(other) || builtin_structural_trait_satisfied(other, reference)
-            } else if mono_short_name(reference.name) == "Iterator" {
-                builtin_iterator_type(other)
-            } else if mono_short_name(reference.name) == "IntoIterator" {
-                match other {
-                    VecType { elem: _ } | Slice { elem: _ } => true,
-                    value => builtin_iterator_type(value),
-                }
+                    || builtin_structural_trait_satisfied(builtin, other, reference)
+            } else if mono_names_match(reference.name, builtin.ordering.partial_ord) {
+                builtin_scalar_type(other)
+                    || builtin_structural_trait_satisfied(builtin, other, reference)
+            } else if mono_names_match(reference.name, builtin.default.name) {
+                builtin_scalar_type(other)
+                    || builtin_structural_trait_satisfied(builtin, other, reference)
             } else {
                 false
             },
@@ -1795,7 +1843,7 @@ fn incomplete_function_message(
                 let for_ty = substitute_type(for_ty, bindings);
                 let reference = substitute_trait_ref(reference, bindings);
                 if type_is_concrete(for_ty)
-                    && (builtin_trait_satisfied(for_ty, reference)
+                    && (builtin_trait_satisfied(ctx.builtin, for_ty, reference)
                         || matching_trait_selections(ctx, for_ty, reference, bindings).len() == 1) {} else {
                     return "cannot specialize " + value.name + ": " + compact_type(for_ty)
                         + " does not satisfy "
@@ -2337,8 +2385,20 @@ fn ensure_runtime_trait_impl(
 }
 
 fn ensure_eq_hash_impls(ctx: SpecializeCtx, ty: core::Type) -> unit {
-    ensure_runtime_trait_impl(ctx, "PartialEq", "eq", Vec::[ty, ty], core::Type::Bool);
-    ensure_runtime_trait_impl(ctx, "Hash", "hash", Vec::[ty], core::Type::Uint64)
+    ensure_runtime_trait_impl(
+        ctx,
+        ctx.builtin.partial_eq.name,
+        ctx.builtin.partial_eq.method,
+        Vec::[ty, ty],
+        core::Type::Bool,
+    );
+    ensure_runtime_trait_impl(
+        ctx,
+        ctx.builtin.hash.name,
+        ctx.builtin.hash.method,
+        Vec::[ty],
+        core::Type::Uint64,
+    )
 }
 
 fn ensure_runtime_trait_impls_for_types(ctx: SpecializeCtx, values: Vec[core::Type]) -> unit {
@@ -2539,6 +2599,13 @@ fn specialize_function(ctx: SpecializeCtx, instance: Instance, value: core::Func
 }
 
 fn specialize(value: core::File, error: Ref[Option[string]]) -> core::File {
+    let builtin = match tast::builtin_contract() {
+        Ok(value) => value,
+        Err(message) => {
+            error.set(Option::Some("invalid builtin contract: " + message));
+            return value
+        },
+    };
     let enums = value.enums;
     let structs = value.structs;
     let type_instances = value.type_instances;
@@ -2576,6 +2643,7 @@ fn specialize(value: core::File, error: Ref[Option[string]]) -> core::File {
         }
     }
     let ctx = SpecializeCtx {
+        builtin,
         functions: value.functions,
         function_index,
         inherent_method_index,

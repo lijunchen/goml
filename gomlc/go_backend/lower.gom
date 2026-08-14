@@ -5,6 +5,7 @@ use gomlc::ast;
 use gomlc::numeric;
 use gomlc::resources;
 use gomlc::repr;
+use gomlc::tast;
 use std::task;
 use std::num;
 
@@ -15,6 +16,7 @@ pub struct FunctionNames {
 }
 
 struct LowerEnv {
+    builtin: tast::BuiltinContract,
     joins: Vec[anf::JoinBind],
     emitted_loop_labels: Vec[string],
     variants: VariantInfos,
@@ -615,10 +617,13 @@ fn compile_imms_expected(env: LowerEnv, values: Vec[anf::Imm], expected: Vec[rep
     result
 }
 
-fn find_dyn_method(functions: Vec[anf::Function], trait_name: string, method_name: string) -> Option[
-    DynMethod,
-] {
-    let methods = dyn_methods(functions, trait_name);
+fn find_dyn_method(
+    builtin: tast::BuiltinContract,
+    functions: Vec[anf::Function],
+    trait_name: string,
+    method_name: string,
+) -> Option[DynMethod] {
+    let methods = dyn_methods(builtin, functions, trait_name);
     let mut index = methods.len() - 1;
     while index >= 0 {
         let method = methods[index];
@@ -1239,7 +1244,12 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
             let receiver = compile_imm(env, receiver);
             let values: Vec[Expr] = Vec::[];
             values.push(Expr::Field { expr: receiver, field_name: "data" });
-            let expected = match find_dyn_method(env.functions, trait_name, method_name) {
+            let expected = match find_dyn_method(
+                env.builtin,
+                env.functions,
+                trait_name,
+                method_name,
+            ) {
                 Some(info) => info.params,
                 None => Vec::[],
             };
@@ -3099,6 +3109,7 @@ fn collect_dyn_block(result: Vec[DynCoercion], value: anf::Block) -> unit {
 }
 
 fn compile_function(
+    builtin: tast::BuiltinContract,
     value: anf::Function,
     variants: VariantInfos,
     structs: Vec[repr::StructDef],
@@ -3114,6 +3125,7 @@ fn compile_function(
         params.push((go_local_ident(param.0), lower_type(param.1)))
     }
     let env = LowerEnv {
+        builtin,
         joins,
         emitted_loop_labels: Vec::[],
         variants,
@@ -3132,6 +3144,7 @@ fn compile_function(
 }
 
 fn compile_functions(
+    builtin: tast::BuiltinContract,
     values: Vec[anf::Function],
     variants: VariantInfos,
     structs: Vec[repr::StructDef],
@@ -3151,6 +3164,7 @@ fn compile_functions(
         |_: task::CancelToken, item: (int, anf::Function)| {
             compiled[item.0] = Option::Some(
                 compile_function(
+                    builtin,
                     item.1,
                     variants,
                     structs,
@@ -3173,6 +3187,7 @@ fn compile_functions(
             Some(value) => result.push(value),
             None => result.push(
                 compile_function(
+                    builtin,
                     values[index],
                     variants,
                     structs,
@@ -3251,6 +3266,7 @@ fn lower_with_test_cases(
     testing: bool,
     test_cases: Vec[(string, string, Vec[(string, string)])],
 ) -> Result[File, string] {
+    let builtin = tast::builtin_contract()?;
     let enums = value.enums;
     let structs = value.structs;
     let type_instances = value.type_instances;
@@ -3285,7 +3301,8 @@ fn lower_with_test_cases(
     }
     let runtime_hooks = resolve_runtime_hooks(runtime_hook_keys)?;
     for instance in type_instances {
-        if instance.base_name == "OnceCell" && instance.args.len() == 1 {
+        if backend_names_match(instance.base_name, builtin.static_cell.name)
+            && instance.args.len() == 1 {
             if !intrinsics.contains("once_cell.new") {
                 intrinsics.push("once_cell.new")
             } else {};
@@ -3299,13 +3316,14 @@ fn lower_with_test_cases(
             resources::RuntimeHook::Standard(resources::StandardRuntimeHook::TestingFail),
         )
     } else {};
-    let dyn_helper_names = build_dyn_helper_names(coercions, value.functions);
+    let dyn_helper_names = build_dyn_helper_names(builtin, coercions, value.functions);
     collect_type_definition_fields(types, enums, structs, type_instances);
     emit_go_foreign_import_items(items, go_foreign);
     emit_runtime_hook_items(items, runtime_hooks, intrinsics);
     emit_go_foreign_wrapper_items(items, go_foreign);
     emit_missing_base_item(items, missing_types.values);
     emit_builtin_runtime_items(
+        builtin,
         items,
         types.values,
         missing_types.values,
@@ -3314,10 +3332,11 @@ fn lower_with_test_cases(
         structs,
         function_names,
     );
-    emit_user_type_items(items, variants, enums, structs, type_instances, function_names);
+    emit_user_type_items(builtin, items, variants, enums, structs, type_instances, function_names);
     emit_constants(items, constants, variants);
     emit_statics(items, statics);
     emit_dyn_runtime_items(
+        builtin,
         items,
         types.values,
         coercions,
@@ -3327,6 +3346,7 @@ fn lower_with_test_cases(
         dyn_helper_names,
     );
     for function in compile_functions(
+        builtin,
         value.functions,
         variants,
         structs,

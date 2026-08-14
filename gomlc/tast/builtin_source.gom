@@ -17,8 +17,308 @@ static builtin_source_arities: OnceCell[FrozenVec[(string, int)]] = OnceCell::ne
 
 static builtin_source_impls: OnceCell[FrozenVec[ImplInfo]] = OnceCell::new();
 
+static builtin_source_lang_items: OnceCell[Result[FrozenVec[BuiltinLangItem], string]] = OnceCell::new();
+
+#[derive(PartialEq, Eq)]
+enum BuiltinLangItemKind {
+    Enum,
+    Struct,
+    Trait,
+    Function,
+    Extern,
+    TypeAlias,
+    Constant,
+    Static,
+    Impl,
+}
+
+struct BuiltinLangItem {
+    item: string,
+    kind: BuiltinLangItemKind,
+    name: string,
+    properties: Vec[(string, string)],
+    variants: Vec[string],
+    variant_arities: Vec[int],
+    methods: Vec[string],
+    associated_types: Vec[string],
+}
+
+fn builtin_lang_item_kind_name(value: BuiltinLangItemKind) -> string {
+    match value {
+        Enum => "enum",
+        Struct => "struct",
+        Trait => "trait",
+        Function => "function",
+        Extern => "extern function",
+        TypeAlias => "type alias",
+        Constant => "constant",
+        Static => "static",
+        Impl => "impl",
+    }
+}
+
+fn builtin_lang_item_from_attrs(
+    attrs: Vec[ast::Attribute],
+    kind: BuiltinLangItemKind,
+    name: string,
+    variants: Vec[string],
+    variant_arities: Vec[int],
+    methods: Vec[string],
+    associated_types: Vec[string],
+) -> Result[Option[BuiltinLangItem], string] {
+    let found: Ref[Option[BuiltinLangItem]] = Ref::new(Option::None);
+    let kind_name = builtin_lang_item_kind_name(kind);
+    for attribute in attrs {
+        if attribute.name == "lang" {
+            if found.get().is_some() {
+                return Result::Err(
+                    "duplicate #[lang] attribute on builtin " + kind_name + " " + name,
+                )
+            } else if attribute.args.is_empty() {
+                return Result::Err("missing lang item name on builtin " + kind_name + " " + name)
+            } else {};
+            match attribute.args[0] {
+                ast::AttributeArg::String(item) => {
+                    if item.byte_len() == 0 {
+                        return Result::Err(
+                            "empty lang item name on builtin " + kind_name + " " + name,
+                        )
+                    } else {};
+                    let properties: Vec[(string, string)] = Vec::[];
+                    for index in 1..attribute.args.len() {
+                        match attribute.args[index] {
+                            ast::AttributeArg::Named { name, value_kind, value } => if value_kind
+                                == "string" {
+                                for property in properties {
+                                    if property.0 == name {
+                                        return Result::Err(
+                                            "duplicate property " + name + " on lang item " + item,
+                                        )
+                                    } else {}
+                                }
+                                properties.push((name, value))
+                            } else {
+                                return Result::Err(
+                                    "lang item " + item + " property " + name + " must be a string",
+                                )
+                            },
+                            _ => return Result::Err(
+                                "lang item " + item + " properties must be named strings",
+                            ),
+                        }
+                    }
+                    found.set(
+                        Option::Some(
+                            BuiltinLangItem {
+                                item,
+                                kind,
+                                name,
+                                properties,
+                                variants,
+                                variant_arities,
+                                methods,
+                                associated_types,
+                            },
+                        ),
+                    )
+                },
+                _ => return Result::Err(
+                    "lang item name on builtin " + kind_name + " " + name + " must be a string",
+                ),
+            }
+        } else {}
+    }
+    Result::Ok(found.get())
+}
+
+fn append_builtin_lang_item(
+    result: Vec[BuiltinLangItem],
+    attrs: Vec[ast::Attribute],
+    kind: BuiltinLangItemKind,
+    name: string,
+    variants: Vec[string],
+    variant_arities: Vec[int],
+    methods: Vec[string],
+    associated_types: Vec[string],
+) -> Result[unit, string] {
+    match builtin_lang_item_from_attrs(
+        attrs,
+        kind,
+        short_name(name),
+        variants,
+        variant_arities,
+        methods,
+        associated_types,
+    )? {
+        Some(value) => result.push(value),
+        None => (),
+    };
+    Result::Ok(())
+}
+
+fn builtin_lang_item_type_name(value: hir::TypeExpr) -> Option[string] {
+    match value {
+        hir::TypeExpr::Con { name } => Option::Some(name),
+        hir::TypeExpr::App { ty: hir::TypeExpr::Con { name }, args: _ } => Option::Some(name),
+        _ => Option::None,
+    }
+}
+
+fn builtin_lang_item_variant_arity(value: hir::EnumVariantFields) -> int {
+    match value {
+        hir::EnumVariantFields::Unit => 0,
+        hir::EnumVariantFields::Tuple(values) => values.len(),
+        hir::EnumVariantFields::Struct(values) => values.len(),
+    }
+}
+
+fn load_builtin_source_lang_items() -> Result[FrozenVec[BuiltinLangItem], string] {
+    let result: Vec[BuiltinLangItem] = Vec::[];
+    let files = implicit_builtin_hir_files()?;
+    for file in files {
+        for item in file.items {
+            match item {
+                hir::Item::EnumDef(value) => {
+                    let variants: Vec[string] = Vec::[];
+                    let variant_arities: Vec[int] = Vec::[];
+                    for variant in value.variants {
+                        variants.push(variant.name);
+                        variant_arities.push(builtin_lang_item_variant_arity(variant.fields))
+                    }
+                    append_builtin_lang_item(
+                        result,
+                        value.attrs,
+                        BuiltinLangItemKind::Enum,
+                        value.name,
+                        variants,
+                        variant_arities,
+                        Vec::[],
+                        Vec::[],
+                    )?
+                },
+                hir::Item::StructDef(value) => {
+                    append_builtin_lang_item(
+                        result,
+                        value.attrs,
+                        BuiltinLangItemKind::Struct,
+                        value.name,
+                        Vec::[],
+                        Vec::[],
+                        Vec::[],
+                        Vec::[],
+                    )?
+                },
+                hir::Item::TraitDef(value) => {
+                    let methods: Vec[string] = Vec::[];
+                    for method in value.method_sigs {
+                        methods.push(method.name)
+                    }
+                    let associated_types: Vec[string] = Vec::[];
+                    for associated in value.associated_types {
+                        associated_types.push(associated.name)
+                    }
+                    append_builtin_lang_item(
+                        result,
+                        value.attrs,
+                        BuiltinLangItemKind::Trait,
+                        value.name,
+                        Vec::[],
+                        Vec::[],
+                        methods,
+                        associated_types,
+                    )?
+                },
+                hir::Item::Function(value) => {
+                    append_builtin_lang_item(
+                        result,
+                        value.attrs,
+                        BuiltinLangItemKind::Function,
+                        value.name,
+                        Vec::[],
+                        Vec::[],
+                        Vec::[],
+                        Vec::[],
+                    )?
+                },
+                hir::Item::ExternFunction(value) => {
+                    append_builtin_lang_item(
+                        result,
+                        value.attrs,
+                        BuiltinLangItemKind::Extern,
+                        value.name,
+                        Vec::[],
+                        Vec::[],
+                        Vec::[],
+                        Vec::[],
+                    )?
+                },
+                hir::Item::TypeAlias(value) => {
+                    append_builtin_lang_item(
+                        result,
+                        value.attrs,
+                        BuiltinLangItemKind::TypeAlias,
+                        value.name,
+                        Vec::[],
+                        Vec::[],
+                        Vec::[],
+                        Vec::[],
+                    )?
+                },
+                hir::Item::Constant(value) => {
+                    append_builtin_lang_item(
+                        result,
+                        value.attrs,
+                        BuiltinLangItemKind::Constant,
+                        value.name,
+                        Vec::[],
+                        Vec::[],
+                        Vec::[],
+                        Vec::[],
+                    )?
+                },
+                hir::Item::Static(value) => {
+                    append_builtin_lang_item(
+                        result,
+                        value.attrs,
+                        BuiltinLangItemKind::Static,
+                        value.name,
+                        Vec::[],
+                        Vec::[],
+                        Vec::[],
+                        Vec::[],
+                    )?
+                },
+                hir::Item::ImplBlock(value) => match builtin_lang_item_type_name(value.for_type) {
+                    Some(name) => {
+                        let methods: Vec[string] = Vec::[];
+                        for method in value.methods {
+                            methods.push(method.name)
+                        }
+                        append_builtin_lang_item(
+                            result,
+                            value.attrs,
+                            BuiltinLangItemKind::Impl,
+                            name,
+                            Vec::[],
+                            Vec::[],
+                            methods,
+                            Vec::[],
+                        )?
+                    },
+                    None => (),
+                },
+            }
+        }
+    }
+    Result::Ok(result.freeze())
+}
+
 fn load_builtin_source_traits() -> FrozenVec[TraitInfo] {
     let result: Vec[TraitInfo] = Vec::[];
+    let builtin = match builtin_contract() {
+        Ok(value) => value,
+        Err(_) => return result.freeze(),
+    };
     let source = match resources::builtin_contract_source() {
         Ok(value) => value,
         Err(_) => return result.freeze(),
@@ -28,7 +328,7 @@ fn load_builtin_source_traits() -> FrozenVec[TraitInfo] {
         match lowered.hir {
             Some(file) => for item in file.items {
                 match item {
-                    hir::Item::TraitDef(value) => result.push(collect_trait(value)),
+                    hir::Item::TraitDef(value) => result.push(collect_trait(builtin, value)),
                     _ => (),
                 }
             },
@@ -50,6 +350,10 @@ fn builtin_source_trait_info(name: string) -> Option[TraitInfo] {
 
 fn load_builtin_source_enums() -> FrozenVec[EnumInfo] {
     let result: Vec[EnumInfo] = Vec::[];
+    let builtin = match builtin_contract() {
+        Ok(value) => value,
+        Err(_) => return result.freeze(),
+    };
     let sources = match resources::builtin_enum_sources() {
         Ok(values) => values,
         Err(_) => return result.freeze(),
@@ -62,7 +366,7 @@ fn load_builtin_source_enums() -> FrozenVec[EnumInfo] {
         match lowered.hir {
             Some(file) => for item in file.items {
                 match item {
-                    hir::Item::EnumDef(value) => result.push(collect_enum(value)),
+                    hir::Item::EnumDef(value) => result.push(collect_enum(builtin, value)),
                     _ => (),
                 }
             },
@@ -87,6 +391,10 @@ fn builtin_source_enum_info(name: string) -> Option[EnumInfo] {
 
 fn load_builtin_source_structs() -> FrozenVec[StructInfo] {
     let result: Vec[StructInfo] = Vec::[];
+    let builtin = match builtin_contract() {
+        Ok(value) => value,
+        Err(_) => return result.freeze(),
+    };
     let source = match resources::builtin_contract_source() {
         Ok(value) => value,
         Err(_) => return result.freeze(),
@@ -96,7 +404,7 @@ fn load_builtin_source_structs() -> FrozenVec[StructInfo] {
         match lowered.hir {
             Some(file) => for item in file.items {
                 match item {
-                    hir::Item::StructDef(value) => result.push(collect_struct(value)),
+                    hir::Item::StructDef(value) => result.push(collect_struct(builtin, value)),
                     _ => (),
                 }
             },
@@ -118,12 +426,16 @@ fn builtin_source_struct_info(name: string) -> Option[StructInfo] {
 
 fn load_builtin_source_functions() -> FrozenVec[FunctionScheme] {
     let result: Vec[FunctionScheme] = Vec::[];
+    let builtin = match builtin_contract() {
+        Ok(value) => value,
+        Err(_) => return result.freeze(),
+    };
     let files = match implicit_builtin_hir_files() {
         Ok(values) => values,
         Err(_) => return result.freeze(),
     };
     for file in files {
-        for value in dependency_environment_from_hir(file).functions {
+        for value in dependency_environment_from_hir_with_contract(file, builtin).functions {
             result.push(value)
         }
     }
@@ -199,12 +511,16 @@ fn builtin_source_nominal_arity(name: string) -> Option[int] {
 
 fn load_builtin_source_impls() -> FrozenVec[ImplInfo] {
     let result: Vec[ImplInfo] = Vec::[];
+    let builtin = match builtin_contract() {
+        Ok(value) => value,
+        Err(_) => return result.freeze(),
+    };
     let files = match implicit_builtin_hir_files() {
         Ok(values) => values,
         Err(_) => return result.freeze(),
     };
     for file in files {
-        for value in dependency_environment_from_hir(file).impls {
+        for value in dependency_environment_from_hir_with_contract(file, builtin).impls {
             result.push(
                 ImplInfo {
                     generics: value.generics,

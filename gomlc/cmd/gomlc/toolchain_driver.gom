@@ -325,7 +325,7 @@ fn compile_toolchain_project_request(command: PackageCommandArgs, without_roots:
     } else {
         hir_file.public_reexports
     };
-    let signatures = tast::package_signatures(hir_file);
+    let signatures = tast::package_signatures(hir_file)?;
     let comptime_module = checked.comptime;
     let Some(tast_file) = checked.tast else {
         return Result::Err("missing typed toolchain package " + command.package_name)
@@ -343,7 +343,7 @@ fn compile_toolchain_project_request(command: PackageCommandArgs, without_roots:
         true,
         enum_names,
         struct_names,
-    );
+    )?;
     let exports = artifact_package_exports(
         tast_file,
         signatures,
@@ -353,7 +353,7 @@ fn compile_toolchain_project_request(command: PackageCommandArgs, without_roots:
         false,
         enum_names,
         struct_names,
-    );
+    )?;
     let interface_unit = interface_codec::new_unit_with_comptime(
         command.package_name,
         public_exports,

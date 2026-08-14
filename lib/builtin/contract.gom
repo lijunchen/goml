@@ -1,54 +1,67 @@
 package builtin;
 
+#[lang("iterator", item = "Item", next = "next")]
 trait Iterator {
     type Item;
     fn next(self: Self) -> Option[Self::Item];
 }
 
+#[lang("into_iterator", item = "Item", into_iter_type = "IntoIter", method = "into_iter")]
 trait IntoIterator where Self::Item = Self::IntoIter::Item {
     type Item;
     type IntoIter: Iterator;
     fn into_iter(self: Self) -> Self::IntoIter;
 }
 
+#[lang("partial_eq", method = "eq")]
 trait PartialEq {
     fn eq(self: Self, other: Self) -> bool;
 }
 
+#[lang("eq")]
 trait Eq: PartialEq {}
 
+#[lang("hash", method = "hash")]
 trait Hash {
     fn hash(self: Self) -> uint64;
 }
 
+#[lang("default", method = "default")]
 trait Default {
     fn default() -> Self;
 }
 
+#[lang("to_string", method = "to_string")]
 trait ToString {
     fn to_string(self: Self) -> string;
 }
 
+#[lang("debug", method = "debug")]
 trait Debug {
     fn debug(self: Self) -> string;
 }
 
+#[lang("option", none = "None", some = "Some")]
 enum Option[T] {
     None,
     Some(T),
 }
 
+#[lang("result", ok = "Ok", err = "Err")]
 enum Result[T, E] {
     Ok(T),
     Err(E),
 }
 
+#[lang("fn_iterator")]
 struct FnIterator[T] {
     next_fn: () -> Option[T],
 }
 
+#[lang("static_cell", constructor = "new")]
 struct OnceCell[T] {}
 
+#[lang("frozen_vec")]
 struct FrozenVec[T] {
     values: Vec[T],
 }

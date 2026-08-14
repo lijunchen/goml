@@ -762,7 +762,7 @@ fn compile_artifact_package(
         checked.diagnostics.push(diagnostic)
     }
     let hir_file = merge_hir_files(hir_files, command.package_name);
-    let signatures = tast::package_signatures(hir_file);
+    let signatures = tast::package_signatures(hir_file)?;
     let comptime_module = checked.comptime;
     let Some(tast_file) = checked.tast else {
         return Result::Err("failed to typecheck package " + command.package_name)
@@ -781,7 +781,7 @@ fn compile_artifact_package(
         true,
         enum_names,
         struct_names,
-    );
+    )?;
     let exports = artifact_package_exports(
         tast_file,
         signatures,
@@ -791,7 +791,7 @@ fn compile_artifact_package(
         false,
         enum_names,
         struct_names,
-    );
+    )?;
     let test_validation = validate_package_tests(
         command.package_name,
         test_candidates.candidates,

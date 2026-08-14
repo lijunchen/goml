@@ -2,7 +2,16 @@ package go_backend;
 
 use gomlc::repr;
 use gomlc::pretty;
+use gomlc::tast;
 use std::text;
+
+fn backend_names_match(name: string, expected: string) -> bool {
+    name == expected || name.ends_with("::" + expected)
+}
+
+fn backend_instance_matches(name: string, expected: string) -> bool {
+    name == expected || name.starts_with(expected + "__")
+}
 
 pub fn compact_type(value: repr::Type) -> string {
     let source = pretty::compact(repr::type_doc(value));
@@ -149,6 +158,13 @@ pub fn type_name(value: repr::Type) -> string {
 }
 
 pub fn lower_type(value: repr::Type) -> Type {
+    match tast::builtin_contract() {
+        Ok(builtin) => lower_type_with_contract(builtin, value),
+        Err(_) => Type::Unit,
+    }
+}
+
+fn lower_type_with_contract(builtin: tast::BuiltinContract, value: repr::Type) -> Type {
     match repr::resolve_type(value) {
         Unit | Never => Type::Unit,
         Bool => Type::Bool,
@@ -167,15 +183,17 @@ pub fn lower_type(value: repr::Type) -> Type {
         String => Type::String,
         Char => Type::Char,
         Tuple { items: _ } => Type::Named { name: type_name(value) },
-        Named { name } => if name == "OnceCell" || name.starts_with("OnceCell__") {
+        Named { name } => if backend_instance_matches(name, builtin.static_cell.name) {
             Type::Pointer { elem: Type::Named { name: go_user_type_name(name) } }
         } else {
             Type::Named { name: go_user_type_name(name) }
         },
         ClosureEnvironment { name } => Type::Named { name: go_user_type_name(name) },
         Dyn { trait_name: name, .. } => Type::Named { name: go_dyn_struct_name(name) },
-        Array { len: length, elem } => Type::Array { len: length, elem: lower_type(elem) },
-        Slice { elem } => Type::Slice { elem: lower_type(elem) },
+        Array { len: length, elem } => {
+            Type::Array { len: length, elem: lower_type_with_contract(builtin, elem) }
+        },
+        Slice { elem } => Type::Slice { elem: lower_type_with_contract(builtin, elem) },
         VecType { elem } => {
             Type::Pointer {
                 elem: Type::Named {
@@ -199,13 +217,13 @@ pub fn lower_type(value: repr::Type) -> Type {
                 },
             }
         },
-        Channel { elem } => Type::Chan { elem: lower_type(elem) },
+        Channel { elem } => Type::Chan { elem: lower_type_with_contract(builtin, elem) },
         Func { params, ret_ty } => {
             let lowered: Vec[Type] = Vec::[];
             for value in params {
-                lowered.push(lower_type(value))
+                lowered.push(lower_type_with_contract(builtin, value))
             }
-            Type::Func { params: lowered, ret_ty: lower_type(ret_ty) }
+            Type::Func { params: lowered, ret_ty: lower_type_with_contract(builtin, ret_ty) }
         },
     }
 }

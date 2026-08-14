@@ -13,6 +13,7 @@ pub struct ComptimeFinalizeResult {
 }
 
 struct CtLowerContext {
+    builtin: BuiltinContract,
     package_name: string,
     file: File,
     module: ctir::CtModule,
@@ -797,7 +798,7 @@ fn lower_ct_for(ctx: CtLowerContext, pattern: Pat, iterator: Expr, body: Expr) -
             func: Callable { callable: Callable::LangItem { item, function_name: _ }, ty: _ },
             args,
             ty: _,
-        } => if item == "range" || item == "range_inclusive" {
+        } => if item == ctx.builtin.range.item || item == ctx.builtin.range_inclusive.item {
             if args.len() != 2 {
                 Result::Err("comptime range for expects two bounds")
             } else {
@@ -807,7 +808,7 @@ fn lower_ct_for(ctx: CtLowerContext, pattern: Pat, iterator: Expr, body: Expr) -
                         pattern,
                         start: lower_ct_expr(ctx, args[0])?,
                         end: lower_ct_expr(ctx, args[1])?,
-                        inclusive: item == "range_inclusive",
+                        inclusive: item == ctx.builtin.range_inclusive.item,
                         body: lower_ct_for_body(ctx, target, body)?,
                     },
                 )
@@ -1054,7 +1055,7 @@ fn lower_ct_expr(ctx: CtLowerContext, value: Expr) -> Result[ctir::CtExpr, strin
         Binary { op, lhs, rhs, ty: _, resolution } => {
             match resolution {
                 BinaryResolution::Builtin => (),
-                BinaryResolution::Overloaded { trait_name } => if trait_name == "PartialEq"
+                BinaryResolution::Overloaded { trait_name: _ } => if is_equality_op(op)
                     && ct_builtin_equality_type(expr_type(lhs))
                     && ct_builtin_equality_type(expr_type(rhs)) {} else {
                     return Result::Err("overloaded operators are not available in comptime")
@@ -1138,6 +1139,7 @@ fn capable_functions(file: File) -> Vec[Function] {
 }
 
 fn build_comptime_module(
+    builtin: BuiltinContract,
     file: File,
     constant_names: Vec[string],
     package_name: string,
@@ -1211,6 +1213,7 @@ fn build_comptime_module(
             parameter_source_types.push(parameter.1)
         }
         let ctx = CtLowerContext {
+            builtin,
             package_name,
             file,
             module,
@@ -1427,13 +1430,16 @@ fn module_constant_primitive(module: ctir::CtModule, name: string, ty: Type) -> 
     Option::None
 }
 
-fn evaluate_pattern_constants(file: File, package_name: string, dependencies: Vec[ctir::CtModule]) -> Vec[
-    (string, Primitive),
-] {
+fn evaluate_pattern_constants(
+    builtin: BuiltinContract,
+    file: File,
+    package_name: string,
+    dependencies: Vec[ctir::CtModule],
+) -> Vec[(string, Primitive)] {
     let module = ctir::empty_module(package_name);
     let names = comptime_constant_names(file, Vec::[]);
     let diagnostics: Vec[Diagnostic] = Vec::[];
-    let _ = evaluate_constants(file, Vec::[], module, dependencies, names, diagnostics);
+    let _ = evaluate_constants(builtin, file, Vec::[], module, dependencies, names, diagnostics);
     let result: Vec[(string, Primitive)] = Vec::[];
     for constant in file.constants {
         match module_constant_primitive(module, constant.name, constant.ty) {
@@ -1445,6 +1451,7 @@ fn evaluate_pattern_constants(file: File, package_name: string, dependencies: Ve
 }
 
 fn constant_candidates(
+    builtin: BuiltinContract,
     file: File,
     pending: Vec[PendingConstant],
     module: ctir::CtModule,
@@ -1456,6 +1463,7 @@ fn constant_candidates(
     for value in file.constants {
         let origin = add_origin(module, "<" + module.package_name + ">", 0, 0);
         let ctx = CtLowerContext {
+            builtin,
             package_name: module.package_name,
             file,
             module,
@@ -1491,6 +1499,7 @@ fn constant_candidates(
     for value in pending {
         let origin = add_origin(module, value.source_path, value.start, value.end);
         let ctx = CtLowerContext {
+            builtin,
             package_name: module.package_name,
             file,
             module,
@@ -1529,6 +1538,7 @@ fn constant_candidates(
 }
 
 fn evaluate_constants(
+    builtin: BuiltinContract,
     file: File,
     pending: Vec[PendingConstant],
     module: ctir::CtModule,
@@ -1537,6 +1547,7 @@ fn evaluate_constants(
     diagnostics: Vec[Diagnostic],
 ) -> Vec[Constant] {
     let candidates = constant_candidates(
+        builtin,
         file,
         pending,
         module,
@@ -1794,6 +1805,7 @@ fn reify_ct_value(file: File, value: ctir::CtValue, ty: Type) -> Result[Expr, st
 }
 
 fn rewrite_comptime_exprs(
+    builtin: BuiltinContract,
     file: File,
     module: ctir::CtModule,
     dependencies: Vec[ctir::CtModule],
@@ -1804,7 +1816,15 @@ fn rewrite_comptime_exprs(
     let result: Vec[Expr] = Vec::[];
     for value in values {
         result.push(
-            rewrite_comptime_expr(file, module, dependencies, diagnostics, next_site, value),
+            rewrite_comptime_expr(
+                builtin,
+                file,
+                module,
+                dependencies,
+                diagnostics,
+                next_site,
+                value,
+            ),
         )
     }
     result
@@ -1911,6 +1931,7 @@ pub fn contains_comptime(value: File) -> bool {
 }
 
 fn rewrite_comptime_block(
+    builtin: BuiltinContract,
     file: File,
     module: ctir::CtModule,
     dependencies: Vec[ctir::CtModule],
@@ -1924,6 +1945,7 @@ fn rewrite_comptime_block(
             match statement {
                 Defer { expr } => Stmt::Defer {
                     expr: rewrite_comptime_expr(
+                        builtin,
                         file,
                         module,
                         dependencies,
@@ -1936,6 +1958,7 @@ fn rewrite_comptime_block(
                     is_mut,
                     pat,
                     value: rewrite_comptime_expr(
+                        builtin,
                         file,
                         module,
                         dependencies,
@@ -1948,6 +1971,7 @@ fn rewrite_comptime_block(
                     is_mut,
                     pat,
                     value: rewrite_comptime_expr(
+                        builtin,
                         file,
                         module,
                         dependencies,
@@ -1956,6 +1980,7 @@ fn rewrite_comptime_block(
                         value,
                     ),
                     else_branch: rewrite_comptime_expr(
+                        builtin,
                         file,
                         module,
                         dependencies,
@@ -1966,6 +1991,7 @@ fn rewrite_comptime_block(
                 },
                 Assign { target, op, value } => Stmt::Assign {
                     target: rewrite_comptime_expr(
+                        builtin,
                         file,
                         module,
                         dependencies,
@@ -1975,6 +2001,7 @@ fn rewrite_comptime_block(
                     ),
                     op,
                     value: rewrite_comptime_expr(
+                        builtin,
                         file,
                         module,
                         dependencies,
@@ -1985,6 +2012,7 @@ fn rewrite_comptime_block(
                 },
                 Expr { expr } => Stmt::Expr {
                     expr: rewrite_comptime_expr(
+                        builtin,
                         file,
                         module,
                         dependencies,
@@ -2000,7 +2028,15 @@ fn rewrite_comptime_block(
         stmts,
         tail: match value.tail {
             Some(value) => Option::Some(
-                rewrite_comptime_expr(file, module, dependencies, diagnostics, next_site, value),
+                rewrite_comptime_expr(
+                    builtin,
+                    file,
+                    module,
+                    dependencies,
+                    diagnostics,
+                    next_site,
+                    value,
+                ),
             ),
             None => Option::None,
         },
@@ -2008,6 +2044,7 @@ fn rewrite_comptime_block(
 }
 
 fn rewrite_comptime_expr(
+    builtin: BuiltinContract,
     file: File,
     module: ctir::CtModule,
     dependencies: Vec[ctir::CtModule],
@@ -2021,6 +2058,7 @@ fn rewrite_comptime_expr(
             next_site.set(site_id + 1);
             let origin = add_origin(module, source_path, start, end);
             let ctx = CtLowerContext {
+                builtin,
                 package_name: module.package_name,
                 file,
                 module,
@@ -2083,24 +2121,64 @@ fn rewrite_comptime_expr(
         Var { .. } | Callable { .. } | Prim { .. } => value,
         Constr { constructor, args, ty } => Expr::Constr {
             constructor,
-            args: rewrite_comptime_exprs(file, module, dependencies, diagnostics, next_site, args),
+            args: rewrite_comptime_exprs(
+                builtin,
+                file,
+                module,
+                dependencies,
+                diagnostics,
+                next_site,
+                args,
+            ),
             ty,
         },
         Tuple { items, ty } => Expr::Tuple {
-            items: rewrite_comptime_exprs(file, module, dependencies, diagnostics, next_site, items),
+            items: rewrite_comptime_exprs(
+                builtin,
+                file,
+                module,
+                dependencies,
+                diagnostics,
+                next_site,
+                items,
+            ),
             ty,
         },
         Array { items, ty } => Expr::Array {
-            items: rewrite_comptime_exprs(file, module, dependencies, diagnostics, next_site, items),
+            items: rewrite_comptime_exprs(
+                builtin,
+                file,
+                module,
+                dependencies,
+                diagnostics,
+                next_site,
+                items,
+            ),
             ty,
         },
         Closure { params, body, ty } => Expr::Closure {
             params,
-            body: rewrite_comptime_expr(file, module, dependencies, diagnostics, next_site, body),
+            body: rewrite_comptime_expr(
+                builtin,
+                file,
+                module,
+                dependencies,
+                diagnostics,
+                next_site,
+                body,
+            ),
             ty,
         },
         Block { block, ty } => Expr::Block {
-            block: rewrite_comptime_block(file, module, dependencies, diagnostics, next_site, block),
+            block: rewrite_comptime_block(
+                builtin,
+                file,
+                module,
+                dependencies,
+                diagnostics,
+                next_site,
+                block,
+            ),
             ty,
         },
         Match { expr, arms, coverage, ty } => {
@@ -2112,6 +2190,7 @@ fn rewrite_comptime_expr(
                         guard: match arm.guard {
                             Some(value) => Option::Some(
                                 rewrite_comptime_expr(
+                                    builtin,
                                     file,
                                     module,
                                     dependencies,
@@ -2123,6 +2202,7 @@ fn rewrite_comptime_expr(
                             None => Option::None,
                         },
                         body: rewrite_comptime_expr(
+                            builtin,
                             file,
                             module,
                             dependencies,
@@ -2135,6 +2215,7 @@ fn rewrite_comptime_expr(
             }
             Expr::Match {
                 expr: rewrite_comptime_expr(
+                    builtin,
                     file,
                     module,
                     dependencies,
@@ -2148,8 +2229,17 @@ fn rewrite_comptime_expr(
             }
         },
         If { cond, then_branch, else_branch, ty } => Expr::If {
-            cond: rewrite_comptime_expr(file, module, dependencies, diagnostics, next_site, cond),
+            cond: rewrite_comptime_expr(
+                builtin,
+                file,
+                module,
+                dependencies,
+                diagnostics,
+                next_site,
+                cond,
+            ),
             then_branch: rewrite_comptime_expr(
+                builtin,
                 file,
                 module,
                 dependencies,
@@ -2158,6 +2248,7 @@ fn rewrite_comptime_expr(
                 then_branch,
             ),
             else_branch: rewrite_comptime_expr(
+                builtin,
                 file,
                 module,
                 dependencies,
@@ -2168,18 +2259,43 @@ fn rewrite_comptime_expr(
             ty,
         },
         While { cond, body, ty } => Expr::While {
-            cond: rewrite_comptime_expr(file, module, dependencies, diagnostics, next_site, cond),
-            body: rewrite_comptime_expr(file, module, dependencies, diagnostics, next_site, body),
+            cond: rewrite_comptime_expr(
+                builtin,
+                file,
+                module,
+                dependencies,
+                diagnostics,
+                next_site,
+                cond,
+            ),
+            body: rewrite_comptime_expr(
+                builtin,
+                file,
+                module,
+                dependencies,
+                diagnostics,
+                next_site,
+                body,
+            ),
             ty,
         },
         Loop { body, ty } => Expr::Loop {
-            body: rewrite_comptime_expr(file, module, dependencies, diagnostics, next_site, body),
+            body: rewrite_comptime_expr(
+                builtin,
+                file,
+                module,
+                dependencies,
+                diagnostics,
+                next_site,
+                body,
+            ),
             ty,
         },
         For { pat, iterator, into_iter_trait_ref, iterator_trait_ref, iterator_ty, body, ty } => {
             Expr::For {
                 pat,
                 iterator: rewrite_comptime_expr(
+                    builtin,
                     file,
                     module,
                     dependencies,
@@ -2191,6 +2307,7 @@ fn rewrite_comptime_expr(
                 iterator_trait_ref,
                 iterator_ty,
                 body: rewrite_comptime_expr(
+                    builtin,
                     file,
                     module,
                     dependencies,
@@ -2205,7 +2322,15 @@ fn rewrite_comptime_expr(
             target,
             value: match value {
                 Some(value) => Option::Some(
-                    rewrite_comptime_expr(file, module, dependencies, diagnostics, next_site, value),
+                    rewrite_comptime_expr(
+                        builtin,
+                        file,
+                        module,
+                        dependencies,
+                        diagnostics,
+                        next_site,
+                        value,
+                    ),
                 ),
                 None => Option::None,
             },
@@ -2215,62 +2340,167 @@ fn rewrite_comptime_expr(
         Return { expr, ty } => Expr::Return {
             expr: match expr {
                 Some(value) => Option::Some(
-                    rewrite_comptime_expr(file, module, dependencies, diagnostics, next_site, value),
+                    rewrite_comptime_expr(
+                        builtin,
+                        file,
+                        module,
+                        dependencies,
+                        diagnostics,
+                        next_site,
+                        value,
+                    ),
                 ),
                 None => Option::None,
             },
             ty,
         },
         Go { expr, ty } => Expr::Go {
-            expr: rewrite_comptime_expr(file, module, dependencies, diagnostics, next_site, expr),
+            expr: rewrite_comptime_expr(
+                builtin,
+                file,
+                module,
+                dependencies,
+                diagnostics,
+                next_site,
+                expr,
+            ),
             ty,
         },
         Call { func, args, ty } => Expr::Call {
-            func: rewrite_comptime_expr(file, module, dependencies, diagnostics, next_site, func),
-            args: rewrite_comptime_exprs(file, module, dependencies, diagnostics, next_site, args),
+            func: rewrite_comptime_expr(
+                builtin,
+                file,
+                module,
+                dependencies,
+                diagnostics,
+                next_site,
+                func,
+            ),
+            args: rewrite_comptime_exprs(
+                builtin,
+                file,
+                module,
+                dependencies,
+                diagnostics,
+                next_site,
+                args,
+            ),
             ty,
         },
         Unary { op, expr, ty } => Expr::Unary {
             op,
-            expr: rewrite_comptime_expr(file, module, dependencies, diagnostics, next_site, expr),
+            expr: rewrite_comptime_expr(
+                builtin,
+                file,
+                module,
+                dependencies,
+                diagnostics,
+                next_site,
+                expr,
+            ),
             ty,
         },
         Cast { expr, ty } => Expr::Cast {
-            expr: rewrite_comptime_expr(file, module, dependencies, diagnostics, next_site, expr),
+            expr: rewrite_comptime_expr(
+                builtin,
+                file,
+                module,
+                dependencies,
+                diagnostics,
+                next_site,
+                expr,
+            ),
             ty,
         },
         Proj { tuple, index, ty } => Expr::Proj {
-            tuple: rewrite_comptime_expr(file, module, dependencies, diagnostics, next_site, tuple),
+            tuple: rewrite_comptime_expr(
+                builtin,
+                file,
+                module,
+                dependencies,
+                diagnostics,
+                next_site,
+                tuple,
+            ),
             index,
             ty,
         },
         Field { expr, field_name, ty } => Expr::Field {
-            expr: rewrite_comptime_expr(file, module, dependencies, diagnostics, next_site, expr),
+            expr: rewrite_comptime_expr(
+                builtin,
+                file,
+                module,
+                dependencies,
+                diagnostics,
+                next_site,
+                expr,
+            ),
             field_name,
             ty,
         },
         Index { base, index, ty } => Expr::Index {
-            base: rewrite_comptime_expr(file, module, dependencies, diagnostics, next_site, base),
-            index: rewrite_comptime_expr(file, module, dependencies, diagnostics, next_site, index),
+            base: rewrite_comptime_expr(
+                builtin,
+                file,
+                module,
+                dependencies,
+                diagnostics,
+                next_site,
+                base,
+            ),
+            index: rewrite_comptime_expr(
+                builtin,
+                file,
+                module,
+                dependencies,
+                diagnostics,
+                next_site,
+                index,
+            ),
             ty,
         },
         Binary { op, lhs, rhs, ty, resolution } => Expr::Binary {
             op,
-            lhs: rewrite_comptime_expr(file, module, dependencies, diagnostics, next_site, lhs),
-            rhs: rewrite_comptime_expr(file, module, dependencies, diagnostics, next_site, rhs),
+            lhs: rewrite_comptime_expr(
+                builtin,
+                file,
+                module,
+                dependencies,
+                diagnostics,
+                next_site,
+                lhs,
+            ),
+            rhs: rewrite_comptime_expr(
+                builtin,
+                file,
+                module,
+                dependencies,
+                diagnostics,
+                next_site,
+                rhs,
+            ),
             ty,
             resolution,
         },
         ToDyn { trait_name, for_ty, expr, ty } => Expr::ToDyn {
             trait_name,
             for_ty,
-            expr: rewrite_comptime_expr(file, module, dependencies, diagnostics, next_site, expr),
+            expr: rewrite_comptime_expr(
+                builtin,
+                file,
+                module,
+                dependencies,
+                diagnostics,
+                next_site,
+                expr,
+            ),
             ty,
         },
     }
 }
 
 pub fn finalize_comptime(
+    builtin: BuiltinContract,
     file: File,
     pending_constants: Vec[PendingConstant],
     package_name: string,
@@ -2302,6 +2532,7 @@ pub fn finalize_comptime(
     };
     let constant_names = comptime_constant_names(metadata_file, pending_constants);
     let module = build_comptime_module(
+        builtin,
         metadata_file,
         constant_names,
         package_name,
@@ -2309,6 +2540,7 @@ pub fn finalize_comptime(
         diagnostics,
     );
     let constants = evaluate_constants(
+        builtin,
         metadata_file,
         pending_constants,
         module,
@@ -2336,6 +2568,7 @@ pub fn finalize_comptime(
                         params: value.params,
                         ret_ty: value.ret_ty,
                         body: rewrite_comptime_block(
+                            builtin,
                             metadata_file,
                             module,
                             dependencies,
@@ -2363,6 +2596,7 @@ pub fn finalize_comptime(
                                 params: method.params,
                                 ret_ty: method.ret_ty,
                                 body: rewrite_comptime_block(
+                                    builtin,
                                     metadata_file,
                                     module,
                                     dependencies,

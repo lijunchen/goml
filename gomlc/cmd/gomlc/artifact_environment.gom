@@ -224,7 +224,10 @@ fn artifact_dependency_struct(value: tast::StructDef) -> tast::StructInfo {
     }
 }
 
-fn artifact_dependency_inherent_for_type(value: artifact::ArtifactInherentImpl) -> tast::Type {
+fn artifact_dependency_inherent_for_type(
+    builtin: tast::BuiltinContract,
+    value: artifact::ArtifactInherentImpl,
+) -> tast::Type {
     match value.key {
         Exact(value) => value,
         Constr(name) => {
@@ -232,7 +235,7 @@ fn artifact_dependency_inherent_for_type(value: artifact::ArtifactInherentImpl) 
             for generic in value.definition.params {
                 generics.push(tast::Type::Param { name: generic })
             }
-            tast::nominal_type(name, generics)
+            tast::nominal_type(builtin, name, generics)
         },
     }
 }
@@ -241,6 +244,7 @@ fn artifact_dependency_environment_from_exports(value: artifact::ArtifactPackage
     tast::DependencyEnvironment,
     string,
 ] {
+    let builtin = tast::builtin_contract()?;
     let enums: Vec[tast::EnumInfo] = Vec::[];
     for definition in value.enums {
         enums.push(artifact_dependency_enum(definition))
@@ -323,7 +327,7 @@ fn artifact_dependency_environment_from_exports(value: artifact::ArtifactPackage
     }
     for implementation in value.inherent_impls {
         if implementation.definition.valid {
-            let for_type = artifact_dependency_inherent_for_type(implementation);
+            let for_type = artifact_dependency_inherent_for_type(builtin, implementation);
             for method in implementation.definition.methods {
                 let callable = tast::Callable::InherentMethod {
                     receiver_ty: for_type,
