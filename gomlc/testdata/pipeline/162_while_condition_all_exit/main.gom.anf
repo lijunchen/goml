@@ -1,6 +1,6 @@
 fn loop_return_unit(flag/0: bool) -> unit {
   joinrec {
-    join loop196() -> unit {
+    join loop417() -> unit {
       if flag/0 {
         ()
       } else {
@@ -8,48 +8,48 @@ fn loop_return_unit(flag/0: bool) -> unit {
       }
     } in
   } in
-  jump loop196()
+  jump loop417()
 }
 
 fn loop_return() -> int32 {
   joinrec {
-    join loop202() -> int32 {
+    join loop423() -> int32 {
       5
     } in
   } in
-  jump loop202()
+  jump loop423()
 }
 
 fn main() -> unit {
-  let _wild192 = loop_return_unit(true) in
-  let t204 = loop_return() in
-  let inline217 = trait_impl#ToString#int32#to_string(t204) in
-  let inline218 = @runtime(core.string_println)(inline217) in
+  let _wild413 = loop_return_unit(true) in
+  let t425 = loop_return() in
+  let inline438 = trait_impl#ToString#int32#to_string(t425) in
+  let inline439 = @runtime(core.string_println)(inline438) in
   ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont219(t206: string) -> unit {
-    let t207 = @runtime(core.string_println)(t206) in
+  join inline_cont440(t427: string) -> unit {
+    let t428 = @runtime(core.string_println)(t427) in
     ()
   } in
-  jump inline_cont219(value/1)
+  jump inline_cont440(value/1)
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join inline_cont220(t209: string) -> unit {
-    let t210 = @runtime(core.string_println)(t209) in
+  join inline_cont441(t430: string) -> unit {
+    let t431 = @runtime(core.string_println)(t430) in
     ()
   } in
-  let inline221 = @runtime(core.int32_to_string)(value/1) in
-  jump inline_cont220(inline221)
+  let inline442 = @runtime(core.int32_to_string)(value/1) in
+  jump inline_cont441(inline442)
 }
 
-fn trait_impl#ToString#string#to_string(self/65: string) -> string {
-  self/65
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
 }
 
-fn trait_impl#ToString#int32#to_string(self/70: int32) -> string {
-  let t215 = @runtime(core.int32_to_string)(self/70) in
-  t215
+fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+  let t436 = @runtime(core.int32_to_string)(self/154) in
+  t436
 }

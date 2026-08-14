@@ -16,14 +16,13 @@ file main.gom
   impl Eq for Version where int: Eq {}
 
   impl std::cmp::PartialOrd for Version {
-    fn partial_cmp(local/1/2: Version, local/1/3: Version) -> Option[std::cmp::Ordering] {
+    fn partial_cmp(local/1/2: Version, local/1/3: Version) -> Option[Ordering] {
         match std::cmp::PartialOrd::partial_cmp(self/2.major, other/3.major) {
             Option::None => Option::None,
-            Option::Some(std::cmp::Ordering::Equal) =>
+            Option::Some(Ordering::Equal) =>
               match std::cmp::PartialOrd::partial_cmp(self/2.minor, other/3.minor) {
                   Option::None => Option::None,
-                  Option::Some(std::cmp::Ordering::Equal) =>
-                    Option::Some(std::cmp::Ordering::Equal),
+                  Option::Some(Ordering::Equal) => Option::Some(Ordering::Equal),
                   Option::Some(local/1/4) => Option::Some(#derive0_ordering/4),
               },
             Option::Some(local/1/5) => Option::Some(#derive1_ordering/5),
@@ -32,13 +31,12 @@ file main.gom
   }
 
   impl std::cmp::Ord for Version {
-    fn cmp(local/1/6: Version, local/1/7: Version) -> std::cmp::Ordering {
+    fn cmp(local/1/6: Version, local/1/7: Version) -> Ordering {
         {
             let local/1/8 = std::cmp::Ord::cmp(self/6.major, other/7.major);
-            if #derive1_ordering/8 == std::cmp::Ordering::Equal {
+            if #derive1_ordering/8 == Ordering::Equal {
                 let local/1/9 = std::cmp::Ord::cmp(self/6.minor, other/7.minor);
-                if #derive0_ordering/9 ==
-                  std::cmp::Ordering::Equal std::cmp::Ordering::Equal else #derive0_ordering/9
+                if #derive0_ordering/9 == Ordering::Equal Ordering::Equal else #derive0_ordering/9
             } else #derive1_ordering/8
         }
     }
@@ -86,7 +84,7 @@ file main.gom
   impl Eq for Level where int: Eq {}
 
   impl std::cmp::PartialOrd for Level {
-    fn partial_cmp(local/1/23: Level, local/1/24: Level) -> Option[std::cmp::Ordering] {
+    fn partial_cmp(local/1/23: Level, local/1/24: Level) -> Option[Ordering] {
         {
             let local/1/25 =
               match self/23 {
@@ -101,25 +99,24 @@ file main.gom
                   ctor(def/1/6::v2) { rank: _, detail: _ } => 2,
               };
             if #derive0_left_tag/25 < #derive1_right_tag/26 Option::Some(
-              std::cmp::Ordering::Less
+              Ordering::Less
             ) else if #derive0_left_tag/25 > #derive1_right_tag/26 Option::Some(
-              std::cmp::Ordering::Greater
+              Ordering::Greater
             ) else match (self/23, other/24) {
-                (ctor(def/1/6::v0), ctor(def/1/6::v0)) => Option::Some(std::cmp::Ordering::Equal),
+                (ctor(def/1/6::v0), ctor(def/1/6::v0)) => Option::Some(Ordering::Equal),
                 (
                   ctor(def/1/6::v1)(local/1/27, local/1/28),
                   ctor(def/1/6::v1)(local/1/29, local/1/30)
                 ) =>
                   match std::cmp::PartialOrd::partial_cmp(#derive5_left/27, #derive6_right/29) {
                       Option::None => Option::None,
-                      Option::Some(std::cmp::Ordering::Equal) =>
+                      Option::Some(Ordering::Equal) =>
                         match std::cmp::PartialOrd::partial_cmp(
                           #derive2_left/28,
                           #derive3_right/30
                         ) {
                             Option::None => Option::None,
-                            Option::Some(std::cmp::Ordering::Equal) =>
-                              Option::Some(std::cmp::Ordering::Equal),
+                            Option::Some(Ordering::Equal) => Option::Some(Ordering::Equal),
                             Option::Some(local/1/31) => Option::Some(#derive4_ordering/31),
                         },
                       Option::Some(local/1/32) => Option::Some(#derive7_ordering/32),
@@ -130,26 +127,25 @@ file main.gom
                 ) =>
                   match std::cmp::PartialOrd::partial_cmp(#derive11_left/34, #derive12_right/36) {
                       Option::None => Option::None,
-                      Option::Some(std::cmp::Ordering::Equal) =>
+                      Option::Some(Ordering::Equal) =>
                         match std::cmp::PartialOrd::partial_cmp(
                           #derive8_left/33,
                           #derive9_right/35
                         ) {
                             Option::None => Option::None,
-                            Option::Some(std::cmp::Ordering::Equal) =>
-                              Option::Some(std::cmp::Ordering::Equal),
+                            Option::Some(Ordering::Equal) => Option::Some(Ordering::Equal),
                             Option::Some(local/1/37) => Option::Some(#derive10_ordering/37),
                         },
                       Option::Some(local/1/38) => Option::Some(#derive13_ordering/38),
                   },
-                _ => Option::Some(std::cmp::Ordering::Equal),
+                _ => Option::Some(Ordering::Equal),
             }
         }
     }
   }
 
   impl std::cmp::Ord for Level {
-    fn cmp(local/1/39: Level, local/1/40: Level) -> std::cmp::Ordering {
+    fn cmp(local/1/39: Level, local/1/40: Level) -> Ordering {
         {
             let local/1/41 =
               match self/39 {
@@ -164,19 +160,19 @@ file main.gom
                   ctor(def/1/6::v2) { rank: _, detail: _ } => 2,
               };
             if #derive0_left_tag/41 <
-              #derive1_right_tag/42 std::cmp::Ordering::Less else if #derive0_left_tag/41 >
-              #derive1_right_tag/42 std::cmp::Ordering::Greater else match (self/39, other/40) {
-                (ctor(def/1/6::v0), ctor(def/1/6::v0)) => std::cmp::Ordering::Equal,
+              #derive1_right_tag/42 Ordering::Less else if #derive0_left_tag/41 >
+              #derive1_right_tag/42 Ordering::Greater else match (self/39, other/40) {
+                (ctor(def/1/6::v0), ctor(def/1/6::v0)) => Ordering::Equal,
                 (
                   ctor(def/1/6::v1)(local/1/43, local/1/44),
                   ctor(def/1/6::v1)(local/1/45, local/1/46)
                 ) =>
                   {
                       let local/1/47 = std::cmp::Ord::cmp(#derive5_left/43, #derive6_right/45);
-                      if #derive7_ordering/47 == std::cmp::Ordering::Equal {
+                      if #derive7_ordering/47 == Ordering::Equal {
                           let local/1/48 = std::cmp::Ord::cmp(#derive2_left/44, #derive3_right/46);
                           if #derive4_ordering/48 ==
-                            std::cmp::Ordering::Equal std::cmp::Ordering::Equal else #derive4_ordering/48
+                            Ordering::Equal Ordering::Equal else #derive4_ordering/48
                       } else #derive7_ordering/47
                   },
                 (
@@ -185,13 +181,13 @@ file main.gom
                 ) =>
                   {
                       let local/1/53 = std::cmp::Ord::cmp(#derive11_left/50, #derive12_right/52);
-                      if #derive13_ordering/53 == std::cmp::Ordering::Equal {
+                      if #derive13_ordering/53 == Ordering::Equal {
                           let local/1/54 = std::cmp::Ord::cmp(#derive8_left/49, #derive9_right/51);
                           if #derive10_ordering/54 ==
-                            std::cmp::Ordering::Equal std::cmp::Ordering::Equal else #derive10_ordering/54
+                            Ordering::Equal Ordering::Equal else #derive10_ordering/54
                       } else #derive13_ordering/53
                   },
-                _ => std::cmp::Ordering::Equal,
+                _ => Ordering::Equal,
             }
         }
     }
@@ -225,10 +221,10 @@ file main.gom
   }
 
   impl std::cmp::PartialOrd for MaybeNumber {
-    fn partial_cmp(local/1/62: MaybeNumber, local/1/63: MaybeNumber) -> Option[std::cmp::Ordering] {
+    fn partial_cmp(local/1/62: MaybeNumber, local/1/63: MaybeNumber) -> Option[Ordering] {
         match std::cmp::PartialOrd::partial_cmp(self/62.value, other/63.value) {
             Option::None => Option::None,
-            Option::Some(std::cmp::Ordering::Equal) => Option::Some(std::cmp::Ordering::Equal),
+            Option::Some(Ordering::Equal) => Option::Some(Ordering::Equal),
             Option::Some(local/1/64) => Option::Some(#derive0_ordering/64),
         }
     }
@@ -254,19 +250,16 @@ file main.gom
   impl[T] std::cmp::PartialOrd for GenericPair[T] where
     T: std::cmp::PartialOrd,
     Vec[T]: std::cmp::PartialOrd {
-    fn partial_cmp(local/1/67: GenericPair[T], local/1/68: GenericPair[T]) -> Option[
-      std::cmp::Ordering
-    ] {
+    fn partial_cmp(local/1/67: GenericPair[T], local/1/68: GenericPair[T]) -> Option[Ordering] {
         match std::cmp::PartialOrd::partial_cmp(self/67.first, other/68.first) {
             Option::None => Option::None,
-            Option::Some(std::cmp::Ordering::Equal) =>
+            Option::Some(Ordering::Equal) =>
               match std::cmp::PartialOrd::partial_cmp(self/67.second, other/68.second) {
                   Option::None => Option::None,
-                  Option::Some(std::cmp::Ordering::Equal) =>
+                  Option::Some(Ordering::Equal) =>
                     match std::cmp::PartialOrd::partial_cmp(self/67.nested, other/68.nested) {
                         Option::None => Option::None,
-                        Option::Some(std::cmp::Ordering::Equal) =>
-                          Option::Some(std::cmp::Ordering::Equal),
+                        Option::Some(Ordering::Equal) => Option::Some(Ordering::Equal),
                         Option::Some(local/1/69) => Option::Some(#derive0_ordering/69),
                     },
                   Option::Some(local/1/70) => Option::Some(#derive1_ordering/70),
@@ -277,15 +270,15 @@ file main.gom
   }
 
   impl[T] std::cmp::Ord for GenericPair[T] where T: std::cmp::Ord, Vec[T]: std::cmp::Ord {
-    fn cmp(local/1/72: GenericPair[T], local/1/73: GenericPair[T]) -> std::cmp::Ordering {
+    fn cmp(local/1/72: GenericPair[T], local/1/73: GenericPair[T]) -> Ordering {
         {
             let local/1/74 = std::cmp::Ord::cmp(self/72.first, other/73.first);
-            if #derive2_ordering/74 == std::cmp::Ordering::Equal {
+            if #derive2_ordering/74 == Ordering::Equal {
                 let local/1/75 = std::cmp::Ord::cmp(self/72.second, other/73.second);
-                if #derive1_ordering/75 == std::cmp::Ordering::Equal {
+                if #derive1_ordering/75 == Ordering::Equal {
                     let local/1/76 = std::cmp::Ord::cmp(self/72.nested, other/73.nested);
                     if #derive0_ordering/76 ==
-                      std::cmp::Ordering::Equal std::cmp::Ordering::Equal else #derive0_ordering/76
+                      Ordering::Equal Ordering::Equal else #derive0_ordering/76
                 } else #derive1_ordering/75
             } else #derive2_ordering/74
         }
@@ -327,7 +320,7 @@ file main.gom
   impl[T] Eq for Phantom[T] {}
 
   impl[T] std::cmp::PartialOrd for Phantom[T] {
-    fn partial_cmp(local/1/83: Phantom[T], local/1/84: Phantom[T]) -> Option[std::cmp::Ordering] {
+    fn partial_cmp(local/1/83: Phantom[T], local/1/84: Phantom[T]) -> Option[Ordering] {
         {
             let local/1/85 =
               match self/83 {
@@ -340,20 +333,20 @@ file main.gom
                   ctor(def/1/22::v1) => 1,
               };
             if #derive0_left_tag/85 < #derive1_right_tag/86 Option::Some(
-              std::cmp::Ordering::Less
+              Ordering::Less
             ) else if #derive0_left_tag/85 > #derive1_right_tag/86 Option::Some(
-              std::cmp::Ordering::Greater
+              Ordering::Greater
             ) else match (self/83, other/84) {
-                (ctor(def/1/22::v0), ctor(def/1/22::v0)) => Option::Some(std::cmp::Ordering::Equal),
-                (ctor(def/1/22::v1), ctor(def/1/22::v1)) => Option::Some(std::cmp::Ordering::Equal),
-                _ => Option::Some(std::cmp::Ordering::Equal),
+                (ctor(def/1/22::v0), ctor(def/1/22::v0)) => Option::Some(Ordering::Equal),
+                (ctor(def/1/22::v1), ctor(def/1/22::v1)) => Option::Some(Ordering::Equal),
+                _ => Option::Some(Ordering::Equal),
             }
         }
     }
   }
 
   impl[T] std::cmp::Ord for Phantom[T] {
-    fn cmp(local/1/87: Phantom[T], local/1/88: Phantom[T]) -> std::cmp::Ordering {
+    fn cmp(local/1/87: Phantom[T], local/1/88: Phantom[T]) -> Ordering {
         {
             let local/1/89 =
               match self/87 {
@@ -366,11 +359,11 @@ file main.gom
                   ctor(def/1/22::v1) => 1,
               };
             if #derive0_left_tag/89 <
-              #derive1_right_tag/90 std::cmp::Ordering::Less else if #derive0_left_tag/89 >
-              #derive1_right_tag/90 std::cmp::Ordering::Greater else match (self/87, other/88) {
-                (ctor(def/1/22::v0), ctor(def/1/22::v0)) => std::cmp::Ordering::Equal,
-                (ctor(def/1/22::v1), ctor(def/1/22::v1)) => std::cmp::Ordering::Equal,
-                _ => std::cmp::Ordering::Equal,
+              #derive1_right_tag/90 Ordering::Less else if #derive0_left_tag/89 >
+              #derive1_right_tag/90 Ordering::Greater else match (self/87, other/88) {
+                (ctor(def/1/22::v0), ctor(def/1/22::v0)) => Ordering::Equal,
+                (ctor(def/1/22::v1), ctor(def/1/22::v1)) => Ordering::Equal,
+                _ => Ordering::Equal,
             }
         }
     }
@@ -394,9 +387,7 @@ file main.gom
   }
 
   impl std::cmp::PartialOrd for PartialLevel {
-    fn partial_cmp(local/1/95: PartialLevel, local/1/96: PartialLevel) -> Option[
-      std::cmp::Ordering
-    ] {
+    fn partial_cmp(local/1/95: PartialLevel, local/1/96: PartialLevel) -> Option[Ordering] {
         {
             let local/1/97 =
               match self/95 {
@@ -409,19 +400,18 @@ file main.gom
                   ctor(def/1/27::v1) => 1,
               };
             if #derive0_left_tag/97 < #derive1_right_tag/98 Option::Some(
-              std::cmp::Ordering::Less
+              Ordering::Less
             ) else if #derive0_left_tag/97 > #derive1_right_tag/98 Option::Some(
-              std::cmp::Ordering::Greater
+              Ordering::Greater
             ) else match (self/95, other/96) {
                 (ctor(def/1/27::v0)(local/1/99), ctor(def/1/27::v0)(local/1/100)) =>
                   match std::cmp::PartialOrd::partial_cmp(#derive2_left/99, #derive3_right/100) {
                       Option::None => Option::None,
-                      Option::Some(std::cmp::Ordering::Equal) =>
-                        Option::Some(std::cmp::Ordering::Equal),
+                      Option::Some(Ordering::Equal) => Option::Some(Ordering::Equal),
                       Option::Some(local/1/101) => Option::Some(#derive4_ordering/101),
                   },
-                (ctor(def/1/27::v1), ctor(def/1/27::v1)) => Option::Some(std::cmp::Ordering::Equal),
-                _ => Option::Some(std::cmp::Ordering::Equal),
+                (ctor(def/1/27::v1), ctor(def/1/27::v1)) => Option::Some(Ordering::Equal),
+                _ => Option::Some(Ordering::Equal),
             }
         }
     }

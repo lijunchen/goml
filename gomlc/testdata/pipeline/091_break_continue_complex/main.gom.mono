@@ -1,10 +1,10 @@
 fn main() -> unit {
   let sum/0 = inherent#Ref#Ref[T]#new__T_int(0) in
   let i/1 = inherent#Ref#Ref[T]#new__T_int(1) in
-  let _wild190 =
+  let _wild411 =
     while (inherent#Ref#Ref[T]#get__T_int(i/1) <= 100) {
         {
-          let _wild187 =
+          let _wild408 =
             if trait_impl#PartialEq#int#eq(inherent#Ref#Ref[T]#get__T_int(i/1), 50) {
                 {
                   break
@@ -14,30 +14,30 @@ fn main() -> unit {
                   ()
                 }
             } in
-          let _wild188 =
+          let _wild409 =
             inherent#Ref#Ref[T]#set__T_int(
               sum/0,
               (inherent#Ref#Ref[T]#get__T_int(sum/0) + inherent#Ref#Ref[T]#get__T_int(i/1))
             ) in
-          let _wild189 =
+          let _wild410 =
             inherent#Ref#Ref[T]#set__T_int(i/1, (inherent#Ref#Ref[T]#get__T_int(i/1) + 1)) in
         }
     } in
-  let mtmp191 = print__T_string("sum up to break: ") in
+  let mtmp412 = print__T_string("sum up to break: ") in
   {
-    let mtmp192 = println__T_int(inherent#Ref#Ref[T]#get__T_int(sum/0)) in
+    let mtmp413 = println__T_int(inherent#Ref#Ref[T]#get__T_int(sum/0)) in
     {
       let even_sum/2 = inherent#Ref#Ref[T]#new__T_int(0) in
       let j/3 = inherent#Ref#Ref[T]#new__T_int(1) in
-      let _wild196 =
+      let _wild417 =
         while (inherent#Ref#Ref[T]#get__T_int(j/3) <= 10) {
             {
               let cur/4 = inherent#Ref#Ref[T]#get__T_int(j/3) in
-              let _wild193 = inherent#Ref#Ref[T]#set__T_int(j/3, (cur/4 + 1)) in
-              let _wild195 =
+              let _wild414 = inherent#Ref#Ref[T]#set__T_int(j/3, (cur/4 + 1)) in
+              let _wild416 =
                 if trait_impl#PartialEq#int#eq(cur/4, ((cur/4 / 2) * 2)) {
                     {
-                      let _wild194 =
+                      let _wild415 =
                         inherent#Ref#Ref[T]#set__T_int(
                           even_sum/2,
                           (inherent#Ref#Ref[T]#get__T_int(even_sum/2) + cur/4)
@@ -51,9 +51,9 @@ fn main() -> unit {
                 } in
             }
         } in
-      let mtmp197 = print__T_string("even sum: ") in
+      let mtmp418 = print__T_string("even sum: ") in
       {
-        let mtmp198 = println__T_int(inherent#Ref#Ref[T]#get__T_int(even_sum/2)) in
+        let mtmp419 = println__T_int(inherent#Ref#Ref[T]#get__T_int(even_sum/2)) in
         {
           ()
         }
@@ -62,20 +62,20 @@ fn main() -> unit {
   }
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/273: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/273)
+fn inherent#Ref#Ref[T]#new__T_int(value/431: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/431)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/274: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/274)
+fn inherent#Ref#Ref[T]#get__T_int(self/432: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/432)
 }
 
-fn trait_impl#PartialEq#int#eq(self/101: int, other/102: int) -> bool {
-  (self/101 == other/102)
+fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+  (self/185 == other/186)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/275: Ref[int], value/276: int) -> unit {
-  @intrinsic(ref.set)(self/275, value/276)
+fn inherent#Ref#Ref[T]#set__T_int(self/433: Ref[int], value/434: int) -> unit {
+  @intrinsic(ref.set)(self/433, value/434)
 }
 
 fn print__T_string(value/0: string) -> unit {
@@ -86,14 +86,14 @@ fn println__T_int(value/1: int) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
 }
 
-fn trait_impl#ToString#string#to_string(self/65: string) -> string {
-  self/65
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
 }
 
-fn trait_impl#ToString#int#to_string(self/67: int) -> string {
-  @runtime(core.int_to_string)(self/67)
+fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+  @runtime(core.int_to_string)(self/151)
 }
 
-fn trait_impl#Hash#int#hash(self/127: int) -> uint64 {
-  @runtime(core.int_hash)(self/127)
+fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+  @runtime(core.int_hash)(self/211)
 }

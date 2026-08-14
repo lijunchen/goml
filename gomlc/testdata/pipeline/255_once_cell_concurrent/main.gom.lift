@@ -2,11 +2,11 @@ static VALUE: OnceCell__int = OnceCell::new();
 
 fn main() -> unit {
   let results/0 = inherent#Channel#Channel[T]#new__T_int(2) in
-  let _wild187 =
+  let _wild408 =
     go pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](
       closure_env_main_1 { results_0: results/0 }
     ) in
-  let _wild188 =
+  let _wild409 =
     go pack_closure[inherent#closure_env_main_3#closure_env_main_3#apply](
       closure_env_main_3 { results_0: results/0 }
     ) in
@@ -23,43 +23,43 @@ fn main() -> unit {
   println__T_string(trait_impl#ToString#bool#to_string((first/1 == second/2)))
 }
 
-fn inherent#Channel#Channel[T]#new__T_int(capacity/277: int) -> Channel[int] {
-  @intrinsic(channel.new)(capacity/277)
+fn inherent#Channel#Channel[T]#new__T_int(capacity/435: int) -> Channel[int] {
+  @intrinsic(channel.new)(capacity/435)
 }
 
 fn inherent#OnceCell#OnceCell[T]#get_or_init__T_int(
-  self/244: OnceCell__int,
-  init/245: () -> int
+  self/402: OnceCell__int,
+  init/403: () -> int
 ) -> int {
-  @intrinsic(once_cell.get_or_init)(self/244, init/245)
+  @intrinsic(once_cell.get_or_init)(self/402, init/403)
 }
 
-fn inherent#Channel#Channel[T]#send__T_int(self/278: Channel[int], value/279: int) -> unit {
-  @intrinsic(channel.send)(self/278, value/279)
+fn inherent#Channel#Channel[T]#send__T_int(self/436: Channel[int], value/437: int) -> unit {
+  @intrinsic(channel.send)(self/436, value/437)
 }
 
-fn inherent#Channel#Channel[T]#recv__T_int(self/280: Channel[int]) -> Option__int {
-  let mtmp158 = @intrinsic(channel.recv)(self/280) in
-  let x159 = mtmp158.0 in
-  let x160 = mtmp158.1 in
-  let ok/282 = x160 in
-  let value/281 = x159 in
-  if ok/282 {
-      Option__int::Some(value/281)
+fn inherent#Channel#Channel[T]#recv__T_int(self/438: Channel[int]) -> Option__int {
+  let mtmp379 = @intrinsic(channel.recv)(self/438) in
+  let x380 = mtmp379.0 in
+  let x381 = mtmp379.1 in
+  let ok/440 = x381 in
+  let value/439 = x380 in
+  if ok/440 {
+      Option__int::Some(value/439)
   } else {
       Option__int::None
   }
 }
 
-fn inherent#Option#Option[T]#unwrap_or__T_int(self/300: Option__int, fallback/301: int) -> int {
-  match self/300 {
+fn inherent#Option#Option[T]#unwrap_or__T_int(self/458: Option__int, fallback/459: int) -> int {
+  match self/458 {
     Option__int::None => {
-      fallback/301
+      fallback/459
     },
-    Option__int::Some(x166) => {
-      let x166 = Option__int::Some._0(self/300) in
-      let value/302 = x166 in
-      value/302
+    Option__int::Some(x387) => {
+      let x387 = Option__int::Some._0(self/458) in
+      let value/460 = x387 in
+      value/460
     },
   }
 }
@@ -68,20 +68,20 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#bool#to_string(self/64: bool) -> string {
-  @runtime(core.bool_to_string)(self/64)
+fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
+  @runtime(core.bool_to_string)(self/148)
 }
 
-fn trait_impl#ToString#string#to_string(self/65: string) -> string {
-  self/65
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
 }
 
-fn inherent#closure_env_main_0#closure_env_main_0#apply(env189: closure_env_main_0) -> int {
+fn inherent#closure_env_main_0#closure_env_main_0#apply(env410: closure_env_main_0) -> int {
   41
 }
 
-fn inherent#closure_env_main_1#closure_env_main_1#apply(env190: closure_env_main_1) -> unit {
-  let results/0 = closure_env_main_1.results_0(env190) in
+fn inherent#closure_env_main_1#closure_env_main_1#apply(env411: closure_env_main_1) -> unit {
+  let results/0 = closure_env_main_1.results_0(env411) in
   inherent#Channel#Channel[T]#send__T_int(
     results/0,
     inherent#OnceCell#OnceCell[T]#get_or_init__T_int(
@@ -91,12 +91,12 @@ fn inherent#closure_env_main_1#closure_env_main_1#apply(env190: closure_env_main
   )
 }
 
-fn inherent#closure_env_main_2#closure_env_main_2#apply(env191: closure_env_main_2) -> int {
+fn inherent#closure_env_main_2#closure_env_main_2#apply(env412: closure_env_main_2) -> int {
   42
 }
 
-fn inherent#closure_env_main_3#closure_env_main_3#apply(env192: closure_env_main_3) -> unit {
-  let results/0 = closure_env_main_3.results_0(env192) in
+fn inherent#closure_env_main_3#closure_env_main_3#apply(env413: closure_env_main_3) -> unit {
+  let results/0 = closure_env_main_3.results_0(env413) in
   inherent#Channel#Channel[T]#send__T_int(
     results/0,
     inherent#OnceCell#OnceCell[T]#get_or_init__T_int(

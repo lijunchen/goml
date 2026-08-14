@@ -1,37 +1,37 @@
 fn inherent#Point#Point#new(x/0: int32, y/1: int32) -> Point {
-  let t194 = Point { x: x/0, y: y/1 } in
-  t194
+  let t415 = Point { x: x/0, y: y/1 } in
+  t415
 }
 
 fn inherent#Point#Point#copy(self/2: Point, other/3: Point) -> Point {
-  let t197 = Point.x(self/2) in
-  let t198 = Point.x(other/3) in
-  let t199 = (t197 + t198) in
-  let t200 = Point.y(self/2) in
-  let t201 = Point.y(other/3) in
-  let t202 = (t200 + t201) in
-  let t203 = Point { x: t199, y: t202 } in
-  t203
+  let t418 = Point.x(self/2) in
+  let t419 = Point.x(other/3) in
+  let t420 = (t418 + t419) in
+  let t421 = Point.y(self/2) in
+  let t422 = Point.y(other/3) in
+  let t423 = (t421 + t422) in
+  let t424 = Point { x: t420, y: t423 } in
+  t424
 }
 
 fn inherent#Point#Point#origin() -> Point {
-  let t206 = Point { x: 0, y: 0 } in
-  t206
+  let t427 = Point { x: 0, y: 0 } in
+  t427
 }
 
 fn shape_value(value/7: Shape__int32) -> int32 {
   match value/7 {
     Tag_0 => {
-      let x187 = Shape__int32::Dot._0(value/7) in
-      let t211 = Point.x(x187) in
-      let t212 = Point.y(x187) in
-      let t213 = (t211 + t212) in
-      t213
+      let x408 = Shape__int32::Dot._0(value/7) in
+      let t432 = Point.x(x408) in
+      let t433 = Point.y(x408) in
+      let t434 = (t432 + t433) in
+      t434
     },
     Tag_1 => {
-      let x188 = Shape__int32::Wrapped._0(value/7) in
-      let t214 = Wrapper__int32.value(x188) in
-      t214
+      let x409 = Shape__int32::Wrapped._0(value/7) in
+      let t435 = Wrapper__int32.value(x409) in
+      t435
     },
     Tag_2 => {
       0
@@ -42,12 +42,12 @@ fn shape_value(value/7: Shape__int32) -> int32 {
 fn list_value(value/10: List) -> int32 {
   match value/10 {
     Tag_0 => {
-      let x189 = List::Cons._0(value/10) in
-      let t219 = Node.value(x189) in
-      let t220 = Node.next(x189) in
-      let t221 = list_value(t220) in
-      let t222 = (t219 + t221) in
-      t222
+      let x410 = List::Cons._0(value/10) in
+      let t440 = Node.value(x410) in
+      let t441 = Node.next(x410) in
+      let t442 = list_value(t441) in
+      let t443 = (t440 + t442) in
+      t443
     },
     Tag_1 => {
       0
@@ -57,90 +57,90 @@ fn list_value(value/10: List) -> int32 {
 
 fn main() -> unit {
   let offset/12 = 1 in
-  let t224 = closure_env_add_0 { offset_0: offset/12 } in
-  let add/14 = pack_closure[inherent#closure_env_add_0#closure_env_add_0#apply](t224) in
-  let t225 = add/14(1) in
-  join inline_cont285(point/15: Point) -> unit {
-    join inline_cont283(t226: Point) -> unit {
-      join inline_cont275(combined/16: Point) -> unit {
-        join inline_cont270(t227: int32) -> unit {
-          let t229 = Node { value: 5, next: Tag_1 } in
-          let list/18 = List::Cons(t229) in
-          let t230 = Point.x(combined/16) in
-          let t231 = Point.y(combined/16) in
-          let t232 = (t230 + t231) in
-          join inline_cont261(t233: int32) -> unit {
-            let t234 = (t232 + t233) in
-            let t235 = list_value(list/18) in
-            let t236 = (t234 + t235) in
-            join inline_cont259(t237: string) -> unit {
-              let inline257 = trait_impl#ToString#string#to_string(t237) in
-              let inline258 = @runtime(core.string_println)(inline257) in
+  let t445 = closure_env_add_0 { offset_0: offset/12 } in
+  let add/14 = pack_closure[inherent#closure_env_add_0#closure_env_add_0#apply](t445) in
+  let t446 = add/14(1) in
+  join inline_cont506(point/15: Point) -> unit {
+    join inline_cont504(t447: Point) -> unit {
+      join inline_cont496(combined/16: Point) -> unit {
+        join inline_cont491(t448: int32) -> unit {
+          let t450 = Node { value: 5, next: Tag_1 } in
+          let list/18 = List::Cons(t450) in
+          let t451 = Point.x(combined/16) in
+          let t452 = Point.y(combined/16) in
+          let t453 = (t451 + t452) in
+          join inline_cont482(t454: int32) -> unit {
+            let t455 = (t453 + t454) in
+            let t456 = list_value(list/18) in
+            let t457 = (t455 + t456) in
+            join inline_cont480(t458: string) -> unit {
+              let inline478 = trait_impl#ToString#string#to_string(t458) in
+              let inline479 = @runtime(core.string_println)(inline478) in
               ()
             } in
-            let inline260 = @runtime(core.int32_to_string)(t236) in
-            jump inline_cont259(inline260)
+            let inline481 = @runtime(core.int32_to_string)(t457) in
+            jump inline_cont480(inline481)
           } in
-          jump inline_cont261(t227)
+          jump inline_cont482(t448)
         } in
-        let inline271 = 4 in
-        let inline272 = closure_env_id_1 {} in
-        let inline273 = pack_closure[inherent#closure_env_id_1#closure_env_id_1#apply](inline272) in
-        let inline274 = inline273(inline271) in
-        jump inline_cont270(inline274)
+        let inline492 = 4 in
+        let inline493 = closure_env_id_1 {} in
+        let inline494 = pack_closure[inherent#closure_env_id_1#closure_env_id_1#apply](inline493) in
+        let inline495 = inline494(inline492) in
+        jump inline_cont491(inline495)
       } in
-      let inline276 = Point.x(point/15) in
-      let inline277 = Point.x(t226) in
-      let inline278 = (inline276 + inline277) in
-      let inline279 = Point.y(point/15) in
-      let inline280 = Point.y(t226) in
-      let inline281 = (inline279 + inline280) in
-      let inline282 = Point { x: inline278, y: inline281 } in
-      jump inline_cont275(inline282)
+      let inline497 = Point.x(point/15) in
+      let inline498 = Point.x(t447) in
+      let inline499 = (inline497 + inline498) in
+      let inline500 = Point.y(point/15) in
+      let inline501 = Point.y(t447) in
+      let inline502 = (inline500 + inline501) in
+      let inline503 = Point { x: inline499, y: inline502 } in
+      jump inline_cont496(inline503)
     } in
-    let inline284 = Point { x: 0, y: 0 } in
-    jump inline_cont283(inline284)
+    let inline505 = Point { x: 0, y: 0 } in
+    jump inline_cont504(inline505)
   } in
-  let inline286 = 3 in
-  let inline287 = Point { x: t225, y: inline286 } in
-  jump inline_cont285(inline287)
+  let inline507 = 3 in
+  let inline508 = Point { x: t446, y: inline507 } in
+  jump inline_cont506(inline508)
 }
 
 fn wrap__T_int32(value/4: int32) -> int32 {
-  let t241 = closure_env_id_1 {} in
-  let id/6 = pack_closure[inherent#closure_env_id_1#closure_env_id_1#apply](t241) in
-  let t242 = id/6(value/4) in
-  t242
+  let t462 = closure_env_id_1 {} in
+  let id/6 = pack_closure[inherent#closure_env_id_1#closure_env_id_1#apply](t462) in
+  let t463 = id/6(value/4) in
+  t463
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont288(t244: string) -> unit {
-    let t245 = @runtime(core.string_println)(t244) in
+  join inline_cont509(t465: string) -> unit {
+    let t466 = @runtime(core.string_println)(t465) in
     ()
   } in
-  jump inline_cont288(value/1)
+  jump inline_cont509(value/1)
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {
-  let t248 = @runtime(core.int32_to_string)(self/33) in
-  t248
+  let t469 = @runtime(core.int32_to_string)(self/33) in
+  t469
 }
 
-fn trait_impl#ToString#string#to_string(self/65: string) -> string {
-  self/65
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
 }
 
 fn inherent#closure_env_add_0#closure_env_add_0#apply(
-  env190: closure_env_add_0,
+  env411: closure_env_add_0,
   value/13: int32
 ) -> int32 {
-  let offset/12 = closure_env_add_0.offset_0(env190) in
-  let t253 = (value/13 + offset/12) in
-  t253
+  let offset/12 = closure_env_add_0.offset_0(env411) in
+  let t474 = (value/13 + offset/12) in
+  t474
 }
 
 fn inherent#closure_env_id_1#closure_env_id_1#apply(
-  env191: closure_env_id_1,
+  env412: closure_env_id_1,
   item/5: int32
 ) -> int32 {
   item/5

@@ -1,11 +1,11 @@
 fn main() -> unit {
   let i/0 = inherent#Ref#Ref[T]#new__T_int(0) in
   let sum/1 = inherent#Ref#Ref[T]#new__T_int(0) in
-  let _wild190 =
+  let _wild411 =
     while (inherent#Ref#Ref[T]#get__T_int(i/0) < 7) {
         let cur/2 = inherent#Ref#Ref[T]#get__T_int(i/0) in
-        let _wild187 = inherent#Ref#Ref[T]#set__T_int(i/0, (cur/2 + 1)) in
-        let mtmp188 =
+        let _wild408 = inherent#Ref#Ref[T]#set__T_int(i/0, (cur/2 + 1)) in
+        let mtmp409 =
           if (cur/2 < 5) {
               match cur/2 {
                 1 => {
@@ -24,38 +24,38 @@ fn main() -> unit {
                 _ => (),
               }
           } in
-        let _wild189 =
+        let _wild410 =
           inherent#Ref#Ref[T]#set__T_int(sum/1, (inherent#Ref#Ref[T]#get__T_int(sum/1) + cur/2)) in
         ()
     } in
-  let _wild191 = println__T_int(inherent#Ref#Ref[T]#get__T_int(sum/1)) in
+  let _wild412 = println__T_int(inherent#Ref#Ref[T]#get__T_int(sum/1)) in
   ()
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/273: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/273)
+fn inherent#Ref#Ref[T]#new__T_int(value/431: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/431)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/274: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/274)
+fn inherent#Ref#Ref[T]#get__T_int(self/432: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/432)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/275: Ref[int], value/276: int) -> unit {
-  @intrinsic(ref.set)(self/275, value/276)
+fn inherent#Ref#Ref[T]#set__T_int(self/433: Ref[int], value/434: int) -> unit {
+  @intrinsic(ref.set)(self/433, value/434)
 }
 
 fn println__T_int(value/1: int) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
 }
 
-fn trait_impl#ToString#int#to_string(self/67: int) -> string {
-  @runtime(core.int_to_string)(self/67)
+fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+  @runtime(core.int_to_string)(self/151)
 }
 
-fn trait_impl#PartialEq#int#eq(self/101: int, other/102: int) -> bool {
-  (self/101 == other/102)
+fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+  (self/185 == other/186)
 }
 
-fn trait_impl#Hash#int#hash(self/127: int) -> uint64 {
-  @runtime(core.int_hash)(self/127)
+fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+  @runtime(core.int_hash)(self/211)
 }

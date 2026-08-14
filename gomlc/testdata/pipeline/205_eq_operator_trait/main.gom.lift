@@ -8,33 +8,33 @@ fn trait_impl#PartialEq#AlwaysDifferent#eq(
 fn main() -> unit {
   let first/2 = AlwaysDifferent { value: 7 } in
   let second/3 = AlwaysDifferent { value: 7 } in
-  let _wild187 = println__T_bool(trait_impl#PartialEq#AlwaysDifferent#eq(first/2, second/3)) in
-  let _wild188 = println__T_bool((!trait_impl#PartialEq#AlwaysDifferent#eq(first/2, second/3))) in
+  let _wild408 = println__T_bool(trait_impl#PartialEq#AlwaysDifferent#eq(first/2, second/3)) in
+  let _wild409 = println__T_bool((!trait_impl#PartialEq#AlwaysDifferent#eq(first/2, second/3))) in
   let left_tuple/4 = (AlwaysDifferent { value: 1 }, 2) in
   let right_tuple/5 = (AlwaysDifferent { value: 1 }, 2) in
-  let _wild191 =
+  let _wild412 =
     println__T_bool(
-      let _eq_lhs189 = left_tuple/4 in
-      let _eq_rhs190 = right_tuple/5 in
-      if trait_impl#PartialEq#AlwaysDifferent#eq(_eq_lhs189.0, _eq_rhs190.0) {
-          trait_impl#PartialEq#int#eq(_eq_lhs189.1, _eq_rhs190.1)
+      let _eq_lhs410 = left_tuple/4 in
+      let _eq_rhs411 = right_tuple/5 in
+      if trait_impl#PartialEq#AlwaysDifferent#eq(_eq_lhs410.0, _eq_rhs411.0) {
+          trait_impl#PartialEq#int#eq(_eq_lhs410.1, _eq_rhs411.1)
       } else {
           false
       }
     ) in
   let left_array/6 = [AlwaysDifferent { value: 1 }, AlwaysDifferent { value: 2 }] in
   let right_array/7 = [AlwaysDifferent { value: 1 }, AlwaysDifferent { value: 2 }] in
-  let _wild194 =
+  let _wild415 =
     println__T_bool(
-      let _eq_lhs192 = left_array/6 in
-      let _eq_rhs193 = right_array/7 in
+      let _eq_lhs413 = left_array/6 in
+      let _eq_rhs414 = right_array/7 in
       if trait_impl#PartialEq#AlwaysDifferent#eq(
-        @intrinsic(array.get)(_eq_lhs192, 0),
-        @intrinsic(array.get)(_eq_rhs193, 0)
+        @intrinsic(array.get)(_eq_lhs413, 0),
+        @intrinsic(array.get)(_eq_rhs414, 0)
       ) {
           trait_impl#PartialEq#AlwaysDifferent#eq(
-            @intrinsic(array.get)(_eq_lhs192, 1),
-            @intrinsic(array.get)(_eq_rhs193, 1)
+            @intrinsic(array.get)(_eq_lhs413, 1),
+            @intrinsic(array.get)(_eq_rhs414, 1)
           )
       } else {
           false
@@ -47,10 +47,10 @@ fn println__T_bool(value/1: bool) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
 }
 
-fn trait_impl#PartialEq#int#eq(self/101: int, other/102: int) -> bool {
-  (self/101 == other/102)
+fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+  (self/185 == other/186)
 }
 
-fn trait_impl#ToString#bool#to_string(self/64: bool) -> string {
-  @runtime(core.bool_to_string)(self/64)
+fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
+  @runtime(core.bool_to_string)(self/148)
 }

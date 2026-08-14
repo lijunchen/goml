@@ -2,6 +2,8 @@ package main
 
 type Values struct {}
 
+type Ordering int32
+
 type Option__int32 interface {
     isOption__int32()
 }

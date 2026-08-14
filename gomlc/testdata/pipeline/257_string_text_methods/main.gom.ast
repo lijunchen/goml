@@ -1,0 +1,23 @@
+package main;
+fn main() -> unit {
+    let text = "  Héllo, World!  ";
+    println("[" + text.trim() + "]");
+    println("[" + text.trim_start() + "]");
+    println("[" + text.trim_end() + "]");
+    println(text.split(",").join("|"));
+    println(text.split_once(",").unwrap_or(("", "")).1);
+    println(text.lines().len().to_string());
+    println(text.find("World").unwrap_or(-1).to_string());
+    println(text.rfind("l").unwrap_or(-1).to_string());
+    println(text.find_bytes("lo").unwrap_or(-1).to_string());
+    println(text.starts_with_at(2, "Hé").to_string());
+    println(text.char_count().to_string());
+    println(text.slice_chars(2, 7).unwrap_or("none"));
+    println(text.replace("l", "L"));
+    println("ab".repeat(3));
+    println(text.is_ascii().to_string());
+    println("ABC".eq_ignore_ascii_case("abc").to_string());
+    println("AbC".to_ascii_lowercase());
+    println("aBc".to_ascii_uppercase())
+}
+

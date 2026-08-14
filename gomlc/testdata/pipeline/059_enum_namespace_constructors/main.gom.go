@@ -1,5 +1,7 @@
 package main
 
+type Ordering int32
+
 type Color int32
 
 const (

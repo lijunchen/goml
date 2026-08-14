@@ -17,6 +17,8 @@ type closure_env_mk_renderer_T_int32_0 struct {
     d_0 dyn__Display
 }
 
+type Ordering int32
+
 type dyn__Display_vtable struct {
     show func(any) string
 }
@@ -37,38 +39,38 @@ func dyn__Display__vtable__int32() *dyn__Display_vtable {
 }
 
 func _goml_m_trait__impl_i_Display_i_int32_i_show(self__0 int32) string {
-    var inline210 string = _goml_runtime_core_int32_to_string(self__0)
-    return inline210
+    var inline431 string = _goml_runtime_core_int32_to_string(self__0)
+    return inline431
 }
 
 func main0() struct{} {
     var value__3 int32 = 42
     var f__4 func() string
-    var inline215 dyn__Display = dyn__Display{
+    var inline436 dyn__Display = dyn__Display{
         data: int32(value__3),
         vtable: dyn__Display__vtable__int32(),
     }
-    var inline216 closure_env_mk_renderer_T_int32_0 = closure_env_mk_renderer_T_int32_0{
-        d_0: inline215,
+    var inline437 closure_env_mk_renderer_T_int32_0 = closure_env_mk_renderer_T_int32_0{
+        d_0: inline436,
     }
-    var inline217 func() string = func() string {
-        return _goml_m_inherent_i_closure__en_hdbe3b8bac53e729aca2514d7798cc493_nt32__0_i_apply(inline216)
+    var inline438 func() string = func() string {
+        return _goml_m_inherent_i_closure__en_hdbe3b8bac53e729aca2514d7798cc493_nt32__0_i_apply(inline437)
     }
-    f__4 = inline217
-    var t193 string = f__4()
-    var inline212 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t193)
-    _goml_runtime_core_string_println(inline212)
+    f__4 = inline438
+    var t414 string = f__4()
+    var inline433 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t414)
+    _goml_runtime_core_string_println(inline433)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
-func _goml_m_inherent_i_closure__en_hdbe3b8bac53e729aca2514d7798cc493_nt32__0_i_apply(env188 closure_env_mk_renderer_T_int32_0) string {
-    var d__2 dyn__Display = env188.d_0
-    var t208 string = d__2.vtable.show(d__2.data)
-    return t208
+func _goml_m_inherent_i_closure__en_hdbe3b8bac53e729aca2514d7798cc493_nt32__0_i_apply(env409 closure_env_mk_renderer_T_int32_0) string {
+    var d__2 dyn__Display = env409.d_0
+    var t429 string = d__2.vtable.show(d__2.data)
+    return t429
 }
 
 func main() {

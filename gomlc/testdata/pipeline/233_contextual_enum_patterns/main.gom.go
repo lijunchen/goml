@@ -82,6 +82,8 @@ func ref_set__Ref_3int(reference *ref_int_x, value int) struct{} {
     return struct{}{}
 }
 
+type Ordering int32
+
 type Second interface {
     isSecond()
 }
@@ -170,23 +172,23 @@ func (_ Value) isBoxed__int() {}
 func classify(value__0 First__int) string {
     switch value__0.(type) {
     case First__int_Shared:
-        var x187 int = value__0.(First__int_Shared)._0
-        var t230 string
-        var inline362 string = _goml_runtime_core_int_to_string(x187)
-        t230 = inline362
-        var t231 string = "shared:" + t230
-        return t231
+        var x408 int = value__0.(First__int_Shared)._0
+        var t451 string
+        var inline583 string = _goml_runtime_core_int_to_string(x408)
+        t451 = inline583
+        var t452 string = "shared:" + t451
+        return t452
     case Idle:
         return "idle"
     case Data:
-        var x188 int = value__0.(Data)._0
-        var x189 string = value__0.(Data)._1
-        var t232 string = x189 + ":"
-        var t233 string
-        var inline364 string = _goml_runtime_core_int_to_string(x188)
-        t233 = inline364
-        var t234 string = t232 + t233
-        return t234
+        var x409 int = value__0.(Data)._0
+        var x410 string = value__0.(Data)._1
+        var t453 string = x410 + ":"
+        var t454 string
+        var inline585 string = _goml_runtime_core_int_to_string(x409)
+        t454 = inline585
+        var t455 string = t453 + t454
+        return t455
     default:
         panic("non-exhaustive match")
     }
@@ -197,19 +199,19 @@ func nested(value__4 Option__Result__int__string) string {
     case Option__Result__int__string_None:
         return "none"
     case Option__Result__int__string_Some:
-        var x190 Result__int__string = value__4.(Option__Result__int__string_Some)._0
-        switch x190.(type) {
+        var x411 Result__int__string = value__4.(Option__Result__int__string_Some)._0
+        switch x411.(type) {
         case Ok:
-            var x191 int = x190.(Ok)._0
-            var t241 string
-            var inline366 string = _goml_runtime_core_int_to_string(x191)
-            t241 = inline366
-            var t242 string = "ok:" + t241
-            return t242
+            var x412 int = x411.(Ok)._0
+            var t462 string
+            var inline587 string = _goml_runtime_core_int_to_string(x412)
+            t462 = inline587
+            var t463 string = "ok:" + t462
+            return t463
         case Err:
-            var x192 string = x190.(Err)._0
-            var t243 string = "err:" + x192
-            return t243
+            var x413 string = x411.(Err)._0
+            var t464 string = "err:" + x413
+            return t464
         default:
             panic("non-exhaustive match")
         }
@@ -220,170 +222,170 @@ func nested(value__4 Option__Result__int__string) string {
 
 func take_once(value__10 Option__int) int {
     var current__11 *ref_Option__int_x
-    var inline379 *ref_Option__int_x = ref__Ref_11Option__int(value__10)
-    current__11 = inline379
+    var inline600 *ref_Option__int_x = ref__Ref_11Option__int(value__10)
+    current__11 = inline600
     var result__12 *ref_int_x
-    var inline376 int = 0
-    var inline377 *ref_int_x = ref__Ref_3int(inline376)
-    result__12 = inline377
-    Loop_loop256:
+    var inline597 int = 0
+    var inline598 *ref_int_x = ref__Ref_3int(inline597)
+    result__12 = inline598
+    Loop_loop477:
     for {
-        var mtmp197 Option__int
-        var inline372 Option__int = ref_get__Ref_11Option__int(current__11)
-        mtmp197 = inline372
-        switch mtmp197.(type) {
+        var mtmp418 Option__int
+        var inline593 Option__int = ref_get__Ref_11Option__int(current__11)
+        mtmp418 = inline593
+        switch mtmp418.(type) {
         case Option__int_Some:
-            var x198 int = mtmp197.(Option__int_Some)._0
-            ref_set__Ref_3int(result__12, x198)
+            var x419 int = mtmp418.(Option__int_Some)._0
+            ref_set__Ref_3int(result__12, x419)
             ref_set__Ref_11Option__int(current__11, Option__int_None{})
             continue
         default:
-            break Loop_loop256
+            break Loop_loop477
         }
     }
-    var inline374 int = ref_get__Ref_3int(result__12)
-    return inline374
+    var inline595 int = ref_get__Ref_3int(result__12)
+    return inline595
 }
 
 func sum_boxed(values__16 *_goml_vec_Boxed__int) int {
     var result__17 *ref_int_x
-    var inline387 int = 0
-    var inline388 *ref_int_x = ref__Ref_3int(inline387)
-    result__17 = inline388
-    var for_limit205 int = vec_len__Vec_10Boxed__int(values__16)
-    var for_index206 int = 0
-    Loop_loop266:
+    var inline608 int = 0
+    var inline609 *ref_int_x = ref__Ref_3int(inline608)
+    result__17 = inline609
+    var for_limit426 int = vec_len__Vec_10Boxed__int(values__16)
+    var for_index427 int = 0
+    Loop_loop487:
     for {
-        var t267 bool = for_index206 < for_limit205
-        if t267 {
-            var for_item207 Boxed__int = vec_get__Vec_10Boxed__int(values__16, for_index206)
-            var t268 int = for_index206 + 1
-            for_index206 = t268
-            switch for_item207.(type) {
+        var t488 bool = for_index427 < for_limit426
+        if t488 {
+            var for_item428 Boxed__int = vec_get__Vec_10Boxed__int(values__16, for_index427)
+            var t489 int = for_index427 + 1
+            for_index427 = t489
+            switch for_item428.(type) {
             case Value:
-                var x209 int = for_item207.(Value)._0
-                var t270 int
-                var inline383 int = ref_get__Ref_3int(result__17)
-                t270 = inline383
-                var t271 int = t270 + x209
-                ref_set__Ref_3int(result__17, t271)
+                var x430 int = for_item428.(Value)._0
+                var t491 int
+                var inline604 int = ref_get__Ref_3int(result__17)
+                t491 = inline604
+                var t492 int = t491 + x430
+                ref_set__Ref_3int(result__17, t492)
                 continue
             default:
                 panic("non-exhaustive match")
             }
         } else {
-            break Loop_loop266
+            break Loop_loop487
         }
     }
-    var inline385 int = ref_get__Ref_3int(result__17)
-    return inline385
+    var inline606 int = ref_get__Ref_3int(result__17)
+    return inline606
 }
 
 func main0() struct{} {
     var vec_literal__1450 *_goml_vec_Boxed__int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__Boxed_l_int_r_()
-    var t273 Boxed__int = Value{
+    var t494 Boxed__int = Value{
         _0: 19,
     }
-    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__Boxed_l_int_r_(vec_literal__1450, t273)
-    var t274 Boxed__int = Value{
+    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__Boxed_l_int_r_(vec_literal__1450, t494)
+    var t495 Boxed__int = Value{
         _0: 23,
     }
-    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__Boxed_l_int_r_(vec_literal__1450, t274)
-    var t275 First__int = First__int_Shared{
+    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__Boxed_l_int_r_(vec_literal__1450, t495)
+    var t496 First__int = First__int_Shared{
         _0: 7,
     }
-    var t276 string = classify(t275)
-    println__T_string(t276)
-    var t277 string = classify(Idle{})
-    println__T_string(t277)
-    var t278 First__int = Data{
+    var t497 string = classify(t496)
+    println__T_string(t497)
+    var t498 string = classify(Idle{})
+    println__T_string(t498)
+    var t499 First__int = Data{
         _0: 9,
         _1: "data",
     }
-    var t279 string = classify(t278)
-    println__T_string(t279)
-    var t280 Result__int__string = Ok{
+    var t500 string = classify(t499)
+    println__T_string(t500)
+    var t501 Result__int__string = Ok{
         _0: 11,
     }
-    var t281 Option__Result__int__string = Option__Result__int__string_Some{
-        _0: t280,
+    var t502 Option__Result__int__string = Option__Result__int__string_Some{
+        _0: t501,
     }
-    var t282 string = nested(t281)
-    println__T_string(t282)
-    var t283 Result__int__string = Err{
+    var t503 string = nested(t502)
+    println__T_string(t503)
+    var t504 Result__int__string = Err{
         _0: "bad",
     }
-    var t284 Option__Result__int__string = Option__Result__int__string_Some{
-        _0: t283,
+    var t505 Option__Result__int__string = Option__Result__int__string_Some{
+        _0: t504,
     }
-    var t285 string = nested(t284)
-    println__T_string(t285)
-    var t286 string = nested(Option__Result__int__string_None{})
-    var inline423 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t286)
-    _goml_runtime_core_string_println(inline423)
-    var t288 int
-    var inline420 int = 13
-    t288 = inline420
-    var inline417 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t288)
-    _goml_runtime_core_string_println(inline417)
-    var t289 int
-    t289 = 0
-    var inline411 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t289)
-    _goml_runtime_core_string_println(inline411)
-    var t290 bool
-    t290 = true
-    var inline407 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t290)
-    _goml_runtime_core_string_println(inline407)
-    var t292 bool
-    t292 = false
-    var inline403 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t292)
-    _goml_runtime_core_string_println(inline403)
-    var t293 Option__int = Option__int_Some{
+    var t506 string = nested(t505)
+    println__T_string(t506)
+    var t507 string = nested(Option__Result__int__string_None{})
+    var inline644 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t507)
+    _goml_runtime_core_string_println(inline644)
+    var t509 int
+    var inline641 int = 13
+    t509 = inline641
+    var inline638 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t509)
+    _goml_runtime_core_string_println(inline638)
+    var t510 int
+    t510 = 0
+    var inline632 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t510)
+    _goml_runtime_core_string_println(inline632)
+    var t511 bool
+    t511 = true
+    var inline628 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t511)
+    _goml_runtime_core_string_println(inline628)
+    var t513 bool
+    t513 = false
+    var inline624 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t513)
+    _goml_runtime_core_string_println(inline624)
+    var t514 Option__int = Option__int_Some{
         _0: 15,
     }
-    var t294 int = take_once(t293)
-    var inline400 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t294)
-    _goml_runtime_core_string_println(inline400)
-    var t296 int
-    var inline397 int = 17
-    t296 = inline397
-    var inline393 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t296)
-    _goml_runtime_core_string_println(inline393)
-    var t297 int = sum_boxed(vec_literal__1450)
-    var inline390 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t297)
-    _goml_runtime_core_string_println(inline390)
+    var t515 int = take_once(t514)
+    var inline621 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t515)
+    _goml_runtime_core_string_println(inline621)
+    var t517 int
+    var inline618 int = 17
+    t517 = inline618
+    var inline614 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t517)
+    _goml_runtime_core_string_println(inline614)
+    var t518 int = sum_boxed(vec_literal__1450)
+    var inline611 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t518)
+    _goml_runtime_core_string_println(inline611)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__Boxed_l_int_r_() *_goml_vec_Boxed__int {
-    var t320 *_goml_vec_Boxed__int = vec_new__Vec_10Boxed__int()
-    return t320
+    var t541 *_goml_vec_Boxed__int = vec_new__Vec_10Boxed__int()
+    return t541
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__Boxed_l_int_r_(self__174 *_goml_vec_Boxed__int, elem__175 Boxed__int) struct{} {
-    vec_push__Vec_10Boxed__int(self__174, elem__175)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__Boxed_l_int_r_(self__258 *_goml_vec_Boxed__int, elem__259 Boxed__int) struct{} {
+    vec_push__Vec_10Boxed__int(self__258, elem__259)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t324 string
-    t324 = value__1
-    _goml_runtime_core_string_println(t324)
+    var t545 string
+    t545 = value__1
+    _goml_runtime_core_string_println(t545)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
-    var t336 string = _goml_runtime_core_int_to_string(self__67)
-    return t336
+func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+    var t557 string = _goml_runtime_core_int_to_string(self__151)
+    return t557
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
-    var t339 string = _goml_runtime_core_bool_to_string(self__64)
-    return t339
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__148 bool) string {
+    var t560 string = _goml_runtime_core_bool_to_string(self__148)
+    return t560
 }
 
 func main() {

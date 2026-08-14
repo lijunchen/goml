@@ -1,84 +1,84 @@
 fn trait_impl#Render#Vec[int32]#render(self/0: Vec[int32]) -> string {
-  join inline_cont225(t194: int) -> string {
-    join inline_cont223(t195: string) -> string {
-      let t196 = ("items=" + t195) in
-      t196
+  join inline_cont446(t415: int) -> string {
+    join inline_cont444(t416: string) -> string {
+      let t417 = ("items=" + t416) in
+      t417
     } in
-    let inline224 = @runtime(core.int_to_string)(t194) in
-    jump inline_cont223(inline224)
+    let inline445 = @runtime(core.int_to_string)(t415) in
+    jump inline_cont444(inline445)
   } in
-  let inline226 = @intrinsic(vec.len)(self/0) in
-  jump inline_cont225(inline226)
+  let inline447 = @intrinsic(vec.len)(self/0) in
+  jump inline_cont446(inline447)
 }
 
 fn main() -> unit {
   let values/5 = @intrinsic(vec.new)() in
-  join inline_cont245(_wild187: unit) -> unit {
-    join inline_cont242(_wild188: unit) -> unit {
-      join inline_cont240(t198: string) -> unit {
-        join inline_cont237(_wild189: unit) -> unit {
-          join inline_cont235(text/6: string) -> unit {
-            join inline_cont232(_wild190: unit) -> unit {
+  join inline_cont466(_wild408: unit) -> unit {
+    join inline_cont463(_wild409: unit) -> unit {
+      join inline_cont461(t419: string) -> unit {
+        join inline_cont458(_wild410: unit) -> unit {
+          join inline_cont456(text/6: string) -> unit {
+            join inline_cont453(_wild411: unit) -> unit {
               let selected/7 = Wrap__int32 { value: 7 } in
-              join inline_cont230(t199: string) -> unit {
-                let inline228 = trait_impl#ToString#string#to_string(t199) in
-                let inline229 = @runtime(core.string_println)(inline228) in
+              join inline_cont451(t420: string) -> unit {
+                let inline449 = trait_impl#ToString#string#to_string(t420) in
+                let inline450 = @runtime(core.string_println)(inline449) in
                 ()
               } in
-              let inline231 = trait_impl#Selected#Wrap__int32#selected(selected/7) in
-              jump inline_cont230(inline231)
+              let inline452 = trait_impl#Selected#Wrap__int32#selected(selected/7) in
+              jump inline_cont451(inline452)
             } in
-            let inline233 = trait_impl#ToString#string#to_string(text/6) in
-            let inline234 = @runtime(core.string_println)(inline233) in
-            jump inline_cont232(())
+            let inline454 = trait_impl#ToString#string#to_string(text/6) in
+            let inline455 = @runtime(core.string_println)(inline454) in
+            jump inline_cont453(())
           } in
-          let inline236 = "equal" in
-          jump inline_cont235(inline236)
+          let inline457 = "equal" in
+          jump inline_cont456(inline457)
         } in
-        let inline238 = trait_impl#ToString#string#to_string(t198) in
-        let inline239 = @runtime(core.string_println)(inline238) in
-        jump inline_cont237(())
+        let inline459 = trait_impl#ToString#string#to_string(t419) in
+        let inline460 = @runtime(core.string_println)(inline459) in
+        jump inline_cont458(())
       } in
-      let inline241 = trait_impl#Render#Vec[int32]#render(values/5) in
-      jump inline_cont240(inline241)
+      let inline462 = trait_impl#Render#Vec[int32]#render(values/5) in
+      jump inline_cont461(inline462)
     } in
-    let inline243 = 2 in
-    let inline244 = @intrinsic(vec.push)(values/5, inline243) in
-    jump inline_cont242(())
+    let inline464 = 2 in
+    let inline465 = @intrinsic(vec.push)(values/5, inline464) in
+    jump inline_cont463(())
   } in
-  let inline246 = 1 in
-  let inline247 = @intrinsic(vec.push)(values/5, inline246) in
-  jump inline_cont245(())
+  let inline467 = 1 in
+  let inline468 = @intrinsic(vec.push)(values/5, inline467) in
+  jump inline_cont466(())
 }
 
-fn inherent#Vec#Vec[T]#len__T_int32(self/189: Vec[int32]) -> int {
-  let t202 = @intrinsic(vec.len)(self/189) in
-  t202
+fn inherent#Vec#Vec[T]#len__T_int32(self/273: Vec[int32]) -> int {
+  let t423 = @intrinsic(vec.len)(self/273) in
+  t423
 }
 
 fn inherent#int#int#to_string(self/32: int) -> string {
-  let t205 = @runtime(core.int_to_string)(self/32) in
-  t205
+  let t426 = @runtime(core.int_to_string)(self/32) in
+  t426
 }
 
-fn inherent#Vec#Vec[T]#push__T_int32(self/174: Vec[int32], elem/175: int32) -> unit {
-  let t207 = @intrinsic(vec.push)(self/174, elem/175) in
+fn inherent#Vec#Vec[T]#push__T_int32(self/258: Vec[int32], elem/259: int32) -> unit {
+  let t428 = @intrinsic(vec.push)(self/258, elem/259) in
   ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont248(t209: string) -> unit {
-    let t210 = @runtime(core.string_println)(t209) in
+  join inline_cont469(t430: string) -> unit {
+    let t431 = @runtime(core.string_println)(t430) in
     ()
   } in
-  jump inline_cont248(value/1)
+  jump inline_cont469(value/1)
 }
 
 fn render_all__T_int32(values/2: Vec[int32]) -> string {
-  let inline250 = inherent#Vec#Vec[T]#len__T_int32(values/2) in
-  let inline251 = inherent#int#int#to_string(inline250) in
-  let inline252 = ("items=" + inline251) in
-  inline252
+  let inline471 = inherent#Vec#Vec[T]#len__T_int32(values/2) in
+  let inline472 = inherent#int#int#to_string(inline471) in
+  let inline473 = ("items=" + inline472) in
+  inline473
 }
 
 fn same__T_string__U_string(value/3: string) -> string {
@@ -89,8 +89,8 @@ fn require__T_Wrap[int32](value/4: Wrap__int32) -> string {
   "selected"
 }
 
-fn trait_impl#ToString#string#to_string(self/65: string) -> string {
-  self/65
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
 }
 
 fn trait_impl#Selected#Wrap__int32#selected(self/1: Wrap__int32) -> string {

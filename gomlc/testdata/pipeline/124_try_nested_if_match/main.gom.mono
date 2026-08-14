@@ -19,16 +19,16 @@ fn nested(top/1: bool, mode/2: Mode, inner_flag/3: bool) -> Option__int32 {
               {
                 let inner/4 =
                   {
-                    let mtmp187 = maybe_num(inner_flag/3) in
-                    match mtmp187 {
+                    let mtmp408 = maybe_num(inner_flag/3) in
+                    match mtmp408 {
                       Option__int32::None => {
                         return Option__int32::None
                       },
-                      Option__int32::Some(x188) => {
+                      Option__int32::Some(x409) => {
                         {
-                          let x188 = Option__int32::Some._0(mtmp187) in
+                          let x409 = Option__int32::Some._0(mtmp408) in
                           {
-                            let try_value/13 = x188 in
+                            let try_value/13 = x409 in
                             try_value/13
                           }
                         }
@@ -47,16 +47,16 @@ fn nested(top/1: bool, mode/2: Mode, inner_flag/3: bool) -> Option__int32 {
         {
           let inner/5 =
             {
-              let mtmp189 = maybe_num(inner_flag/3) in
-              match mtmp189 {
+              let mtmp410 = maybe_num(inner_flag/3) in
+              match mtmp410 {
                 Option__int32::None => {
                   return Option__int32::None
                 },
-                Option__int32::Some(x190) => {
+                Option__int32::Some(x411) => {
                   {
-                    let x190 = Option__int32::Some._0(mtmp189) in
+                    let x411 = Option__int32::Some._0(mtmp410) in
                     {
-                      let try_value/24 = x190 in
+                      let try_value/24 = x411 in
                       try_value/24
                     }
                   }
@@ -74,11 +74,11 @@ fn show(opt/7: Option__int32) -> string {
     Option__int32::None => {
       "none"
     },
-    Option__int32::Some(x191) => {
+    Option__int32::Some(x412) => {
       {
-        let x191 = Option__int32::Some._0(opt/7) in
+        let x412 = Option__int32::Some._0(opt/7) in
         {
-          let value/8 = x191 in
+          let value/8 = x412 in
           ("some=" + inherent#int32#int32#to_string(value/8))
         }
       }
@@ -87,9 +87,9 @@ fn show(opt/7: Option__int32) -> string {
 }
 
 fn main() -> unit {
-  let _wild192 = println__T_string(show(nested(true, Mode::Take, true))) in
-  let _wild193 = println__T_string(show(nested(true, Mode::Skip, false))) in
-  let _wild194 = println__T_string(show(nested(false, Mode::Take, false))) in
+  let _wild413 = println__T_string(show(nested(true, Mode::Take, true))) in
+  let _wild414 = println__T_string(show(nested(true, Mode::Skip, false))) in
+  let _wild415 = println__T_string(show(nested(false, Mode::Take, false))) in
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {
@@ -100,6 +100,6 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#string#to_string(self/65: string) -> string {
-  self/65
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
 }

@@ -11,6 +11,8 @@ func _goml_runtime_core_string_println(s string) struct{} {
 
 type S struct {}
 
+type Ordering int32
+
 type dyn__Display_vtable struct {
     show func(any) string
 }
@@ -35,19 +37,19 @@ func _goml_m_trait__impl_i_Display_i_S_i_show(self__0 S) string {
 }
 
 func main0() struct{} {
-    var t192 S = S{}
+    var t413 S = S{}
     _ = dyn__Display{
-        data: t192,
+        data: t413,
         vtable: dyn__Display__vtable__S(),
     }
-    var inline202 string = "ok"
-    var inline203 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline202)
-    _goml_runtime_core_string_println(inline203)
+    var inline423 string = "ok"
+    var inline424 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline423)
+    _goml_runtime_core_string_println(inline424)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
 func main() {

@@ -30,24 +30,26 @@ type Pair__uint8__float32 struct {
     second float32
 }
 
+type Ordering int32
+
 func main0() struct{} {
-    var t190 uint8 = 10
-    var t191 string
-    var inline214 string = _goml_runtime_core_uint8_to_string(t190)
-    t191 = inline214
-    var inline211 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t191)
-    _goml_runtime_core_string_println(inline211)
-    var t192 float32 = 3.140000104904175
-    var t193 string
-    var inline209 string = _goml_runtime_core_float32_to_string(t192)
-    t193 = inline209
-    var inline206 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t193)
-    _goml_runtime_core_string_println(inline206)
+    var t411 uint8 = 10
+    var t412 string
+    var inline435 string = _goml_runtime_core_uint8_to_string(t411)
+    t412 = inline435
+    var inline432 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t412)
+    _goml_runtime_core_string_println(inline432)
+    var t413 float32 = 3.140000104904175
+    var t414 string
+    var inline430 string = _goml_runtime_core_float32_to_string(t413)
+    t414 = inline430
+    var inline427 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t414)
+    _goml_runtime_core_string_println(inline427)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
 func main() {

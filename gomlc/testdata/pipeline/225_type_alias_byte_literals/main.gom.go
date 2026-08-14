@@ -26,79 +26,81 @@ type Tuple2_5int32_5int32 struct {
     _1 int32
 }
 
+type Ordering int32
+
 func main0() struct{} {
     var user__2 uint64 = 255
     var marker__4 uint8 = 65
-    var inline264 string = _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(user__2)
-    _goml_runtime_core_string_println(inline264)
-    var t209 int32
-    var inline260 int32 = 10
-    var inline261 int32 = 10
-    var inline262 int32 = inline260 + inline261
-    t209 = inline262
-    var inline257 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t209)
-    _goml_runtime_core_string_println(inline257)
-    var inline254 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(marker__4)
-    _goml_runtime_core_string_println(inline254)
-    var t210 string
-    var inline250 bool = marker__4 == 10
-    if inline250 {
-        t210 = "newline"
+    var inline485 string = _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(user__2)
+    _goml_runtime_core_string_println(inline485)
+    var t430 int32
+    var inline481 int32 = 10
+    var inline482 int32 = 10
+    var inline483 int32 = inline481 + inline482
+    t430 = inline483
+    var inline478 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t430)
+    _goml_runtime_core_string_println(inline478)
+    var inline475 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(marker__4)
+    _goml_runtime_core_string_println(inline475)
+    var t431 string
+    var inline471 bool = marker__4 == 10
+    if inline471 {
+        t431 = "newline"
     } else {
-        var inline251 bool = marker__4 >= 65
-        if inline251 {
-            var inline252 bool = marker__4 <= 90
-            if inline252 {
-                t210 = "uppercase"
+        var inline472 bool = marker__4 >= 65
+        if inline472 {
+            var inline473 bool = marker__4 <= 90
+            if inline473 {
+                t431 = "uppercase"
             } else {
-                t210 = "other"
+                t431 = "other"
             }
         } else {
-            t210 = "other"
+            t431 = "other"
         }
     }
-    var inline246 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t210)
-    _goml_runtime_core_string_println(inline246)
-    var t211 string
-    var inline240 uint8 = 10
-    var inline242 bool = inline240 == 10
-    if inline242 {
-        t211 = "newline"
+    var inline467 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t431)
+    _goml_runtime_core_string_println(inline467)
+    var t432 string
+    var inline461 uint8 = 10
+    var inline463 bool = inline461 == 10
+    if inline463 {
+        t432 = "newline"
     } else {
-        var inline243 bool = inline240 >= 65
-        if inline243 {
-            var inline244 bool = inline240 <= 90
-            if inline244 {
-                t211 = "uppercase"
+        var inline464 bool = inline461 >= 65
+        if inline464 {
+            var inline465 bool = inline461 <= 90
+            if inline465 {
+                t432 = "uppercase"
             } else {
-                t211 = "other"
+                t432 = "other"
             }
         } else {
-            t211 = "other"
+            t432 = "other"
         }
     }
-    var inline237 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t211)
-    _goml_runtime_core_string_println(inline237)
+    var inline458 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t432)
+    _goml_runtime_core_string_println(inline458)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(self__75 uint64) string {
-    var t227 string = _goml_runtime_core_uint64_to_string(self__75)
-    return t227
+func _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(self__159 uint64) string {
+    var t448 string = _goml_runtime_core_uint64_to_string(self__159)
+    return t448
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__70 int32) string {
-    var t230 string = _goml_runtime_core_int32_to_string(self__70)
-    return t230
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
+    var t451 string = _goml_runtime_core_int32_to_string(self__154)
+    return t451
 }
 
-func _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(self__72 uint8) string {
-    var t233 string = _goml_runtime_core_uint8_to_string(self__72)
-    return t233
+func _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(self__156 uint8) string {
+    var t454 string = _goml_runtime_core_uint8_to_string(self__156)
+    return t454
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
 func main() {

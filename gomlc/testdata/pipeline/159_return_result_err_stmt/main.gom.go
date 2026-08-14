@@ -1,5 +1,7 @@
 package main
 
+type Ordering int32
+
 type Result__unit__string interface {
     isResult__unit__string()
 }

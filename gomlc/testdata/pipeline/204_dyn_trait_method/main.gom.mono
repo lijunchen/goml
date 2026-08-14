@@ -7,14 +7,14 @@ fn trait_impl#Display#Point#show(self/1: Point, prefix/2: string) -> string {
 }
 
 fn render(value/3: dyn Display) -> unit {
-  let _wild187 = println__T_string(dyn_call[Display::show](value/3, "value=")) in
-  let _wild188 = println__T_string(dyn_call[Display::name](value/3)) in
-  let _wild189 = println__T_string(dyn_call[Display::show](value/3, "again=")) in
+  let _wild408 = println__T_string(dyn_call[Display::show](value/3, "value=")) in
+  let _wild409 = println__T_string(dyn_call[Display::name](value/3)) in
+  let _wild410 = println__T_string(dyn_call[Display::show](value/3, "again=")) in
 }
 
 fn main() -> unit {
   let value/4 = to_dyn[Display]{Point}(Point { value: 7 }) in
-  let _wild190 = render(value/4) in
+  let _wild411 = render(value/4) in
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {
@@ -25,6 +25,6 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#string#to_string(self/65: string) -> string {
-  self/65
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
 }

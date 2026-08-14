@@ -25,6 +25,8 @@ type Line struct {
     color Color
 }
 
+type Ordering int32
+
 type Color int32
 
 const (
@@ -49,65 +51,65 @@ type Cons struct {
 func (_ Cons) isLineList() {}
 
 func _goml_m_trait__impl_i_ToString_i_Point_i_to__string(self__1 Point) string {
-    var x188 int32 = self__1.x
-    var x189 int32 = self__1.y
-    var x190 Color = self__1.color
-    var t204 string = "Point { " + "x: "
-    var t205 string
-    var inline260 string = _goml_runtime_core_int32_to_string(x188)
-    t205 = inline260
-    var t206 string = t204 + t205
-    var t207 string = t206 + ", "
-    var t208 string = t207 + "y: "
-    var t209 string
-    var inline258 string = _goml_runtime_core_int32_to_string(x189)
-    t209 = inline258
-    var t210 string = t208 + t209
-    var t211 string = t210 + ", "
-    var t212 string = t211 + "color: "
-    var t213 string
-    switch x190 {
+    var x409 int32 = self__1.x
+    var x410 int32 = self__1.y
+    var x411 Color = self__1.color
+    var t425 string = "Point { " + "x: "
+    var t426 string
+    var inline481 string = _goml_runtime_core_int32_to_string(x409)
+    t426 = inline481
+    var t427 string = t425 + t426
+    var t428 string = t427 + ", "
+    var t429 string = t428 + "y: "
+    var t430 string
+    var inline479 string = _goml_runtime_core_int32_to_string(x410)
+    t430 = inline479
+    var t431 string = t429 + t430
+    var t432 string = t431 + ", "
+    var t433 string = t432 + "color: "
+    var t434 string
+    switch x411 {
     case Red:
-        t213 = "Color::Red"
+        t434 = "Color::Red"
     case Green:
-        t213 = "Color::Green"
+        t434 = "Color::Green"
     case Blue:
-        t213 = "Color::Blue"
+        t434 = "Color::Blue"
     default:
         panic("non-exhaustive match")
     }
-    var t214 string = t212 + t213
-    var t215 string = t214 + " }"
-    return t215
+    var t435 string = t433 + t434
+    var t436 string = t435 + " }"
+    return t436
 }
 
 func _goml_m_trait__impl_i_ToString_i_Line_i_to__string(self__8 Line) string {
-    var x192 Point = self__8.from
-    var x193 Point = self__8.to
-    var x194 Color = self__8.color
-    var t221 string = "Line { " + "from: "
-    var t222 string = _goml_m_trait__impl_i_ToString_i_Point_i_to__string(x192)
-    var t223 string = t221 + t222
-    var t224 string = t223 + ", "
-    var t225 string = t224 + "to: "
-    var t226 string = _goml_m_trait__impl_i_ToString_i_Point_i_to__string(x193)
-    var t227 string = t225 + t226
-    var t228 string = t227 + ", "
-    var t229 string = t228 + "color: "
-    var t230 string
-    switch x194 {
+    var x413 Point = self__8.from
+    var x414 Point = self__8.to
+    var x415 Color = self__8.color
+    var t442 string = "Line { " + "from: "
+    var t443 string = _goml_m_trait__impl_i_ToString_i_Point_i_to__string(x413)
+    var t444 string = t442 + t443
+    var t445 string = t444 + ", "
+    var t446 string = t445 + "to: "
+    var t447 string = _goml_m_trait__impl_i_ToString_i_Point_i_to__string(x414)
+    var t448 string = t446 + t447
+    var t449 string = t448 + ", "
+    var t450 string = t449 + "color: "
+    var t451 string
+    switch x415 {
     case Red:
-        t230 = "Color::Red"
+        t451 = "Color::Red"
     case Green:
-        t230 = "Color::Green"
+        t451 = "Color::Green"
     case Blue:
-        t230 = "Color::Blue"
+        t451 = "Color::Blue"
     default:
         panic("non-exhaustive match")
     }
-    var t231 string = t229 + t230
-    var t232 string = t231 + " }"
-    return t232
+    var t452 string = t450 + t451
+    var t453 string = t452 + " }"
+    return t453
 }
 
 func _goml_m_trait__impl_i_ToString_i_LineList_i_to__string(self__15 LineList) string {
@@ -115,15 +117,15 @@ func _goml_m_trait__impl_i_ToString_i_LineList_i_to__string(self__15 LineList) s
     case Nil:
         return "LineList::Nil"
     case Cons:
-        var x195 Line = self__15.(Cons)._0
-        var x196 LineList = self__15.(Cons)._1
-        var t240 string = _goml_m_trait__impl_i_ToString_i_Line_i_to__string(x195)
-        var t241 string = "LineList::Cons(" + t240
-        var t242 string = t241 + ", "
-        var t243 string = _goml_m_trait__impl_i_ToString_i_LineList_i_to__string(x196)
-        var t244 string = t242 + t243
-        var t245 string = t244 + ")"
-        return t245
+        var x416 Line = self__15.(Cons)._0
+        var x417 LineList = self__15.(Cons)._1
+        var t461 string = _goml_m_trait__impl_i_ToString_i_Line_i_to__string(x416)
+        var t462 string = "LineList::Cons(" + t461
+        var t463 string = t462 + ", "
+        var t464 string = _goml_m_trait__impl_i_ToString_i_LineList_i_to__string(x417)
+        var t465 string = t463 + t464
+        var t466 string = t465 + ")"
+        return t466
     default:
         panic("non-exhaustive match")
     }
@@ -131,42 +133,42 @@ func _goml_m_trait__impl_i_ToString_i_LineList_i_to__string(self__15 LineList) s
 
 func main0() struct{} {
     var from__18 Point
-    var inline272 int32 = 10
-    var inline273 int32 = 20
-    var inline274 Point = Point{
-        x: inline272,
-        y: inline273,
+    var inline493 int32 = 10
+    var inline494 int32 = 20
+    var inline495 Point = Point{
+        x: inline493,
+        y: inline494,
         color: Red,
     }
-    from__18 = inline274
+    from__18 = inline495
     var to__19 Point
-    var inline268 int32 = 30
-    var inline269 int32 = 40
-    var inline270 Point = Point{
-        x: inline268,
-        y: inline269,
+    var inline489 int32 = 30
+    var inline490 int32 = 40
+    var inline491 Point = Point{
+        x: inline489,
+        y: inline490,
         color: Green,
     }
-    to__19 = inline270
+    to__19 = inline491
     var line__20 Line
-    var inline266 Line = Line{
+    var inline487 Line = Line{
         from: from__18,
         to: to__19,
         color: Blue,
     }
-    line__20 = inline266
+    line__20 = inline487
     var lines__21 LineList = Cons{
         _0: line__20,
         _1: Nil{},
     }
-    var t247 string = _goml_m_trait__impl_i_ToString_i_LineList_i_to__string(lines__21)
-    var inline263 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t247)
-    _goml_runtime_core_string_println(inline263)
+    var t468 string = _goml_m_trait__impl_i_ToString_i_LineList_i_to__string(lines__21)
+    var inline484 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t468)
+    _goml_runtime_core_string_println(inline484)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
 func main() {

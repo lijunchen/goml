@@ -9,15 +9,15 @@ impl PartialEq for FloatKey {
 }
 
 impl std::cmp::PartialOrd for FloatKey {
-  fn partial_cmp(self/2: FloatKey, other/3: FloatKey) -> Option[std::cmp::Ordering] {
-      match (std::cmp::PartialOrd::partial_cmp : (float64, float64) -> Option[std::cmp::Ordering])(
+  fn partial_cmp(self/2: FloatKey, other/3: FloatKey) -> Option[Ordering] {
+      match (std::cmp::PartialOrd::partial_cmp : (float64, float64) -> Option[Ordering])(
         (self/2 : FloatKey).value,
         (other/3 : FloatKey).value
       ) {
           Option::None => Option::None,
-          Option::Some(std::cmp::Ordering::Equal) => Option::Some(std::cmp::Ordering::Equal),
-          Option::Some(#derive0_ordering/4: std::cmp::Ordering) =>
-            Option::Some((#derive0_ordering/4 : std::cmp::Ordering)),
+          Option::Some(Ordering::Equal) => Option::Some(Ordering::Equal),
+          Option::Some(#derive0_ordering/4: Ordering) =>
+            Option::Some((#derive0_ordering/4 : Ordering)),
       }
   }
   fn lt(default_arg0: FloatKey, default_arg1: FloatKey) -> bool {
@@ -101,8 +101,8 @@ fn float_comparison_contracts() -> unit {
     );
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)(
-        (Option[std::cmp::Ordering]::is_none : (Option[std::cmp::Ordering]) -> bool)(
-          (std::cmp::PartialOrd::partial_cmp : (float64, float64) -> Option[std::cmp::Ordering])(
+        (Option[Ordering]::is_none : (Option[Ordering]) -> bool)(
+          (std::cmp::PartialOrd::partial_cmp : (float64, float64) -> Option[Ordering])(
             (nan/16 : float64),
             (nan/16 : float64)
           )

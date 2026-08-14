@@ -9,92 +9,94 @@ func _goml_runtime_core_string_println(s string) struct{} {
     return struct{}{}
 }
 
+type Ordering int32
+
 func main0() struct{} {
-    var t197 string
-    var inline231 float64 = 0
-    switch inline231 {
+    var t418 string
+    var inline452 float64 = 0
+    switch inline452 {
     case 0:
-        t197 = "zero"
+        t418 = "zero"
     case 1:
-        t197 = "one"
+        t418 = "one"
     case -1:
-        t197 = "minus one"
+        t418 = "minus one"
     case 3.14:
-        t197 = "pi"
+        t418 = "pi"
     default:
-        t197 = "other"
+        t418 = "other"
     }
-    var inline228 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t197)
-    _goml_runtime_core_string_println(inline228)
-    var t198 string
-    var inline226 float64 = 1
-    switch inline226 {
+    var inline449 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t418)
+    _goml_runtime_core_string_println(inline449)
+    var t419 string
+    var inline447 float64 = 1
+    switch inline447 {
     case 0:
-        t198 = "zero"
+        t419 = "zero"
     case 1:
-        t198 = "one"
+        t419 = "one"
     case -1:
-        t198 = "minus one"
+        t419 = "minus one"
     case 3.14:
-        t198 = "pi"
+        t419 = "pi"
     default:
-        t198 = "other"
+        t419 = "other"
     }
-    var inline223 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t198)
-    _goml_runtime_core_string_println(inline223)
-    var t199 float64 = -1
-    var t200 string
-    switch t199 {
+    var inline444 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t419)
+    _goml_runtime_core_string_println(inline444)
+    var t420 float64 = -1
+    var t421 string
+    switch t420 {
     case 0:
-        t200 = "zero"
+        t421 = "zero"
     case 1:
-        t200 = "one"
+        t421 = "one"
     case -1:
-        t200 = "minus one"
+        t421 = "minus one"
     case 3.14:
-        t200 = "pi"
+        t421 = "pi"
     default:
-        t200 = "other"
+        t421 = "other"
     }
-    var inline219 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t200)
-    _goml_runtime_core_string_println(inline219)
-    var t201 string
-    var inline217 float64 = 3.14
-    switch inline217 {
+    var inline440 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t421)
+    _goml_runtime_core_string_println(inline440)
+    var t422 string
+    var inline438 float64 = 3.14
+    switch inline438 {
     case 0:
-        t201 = "zero"
+        t422 = "zero"
     case 1:
-        t201 = "one"
+        t422 = "one"
     case -1:
-        t201 = "minus one"
+        t422 = "minus one"
     case 3.14:
-        t201 = "pi"
+        t422 = "pi"
     default:
-        t201 = "other"
+        t422 = "other"
     }
-    var inline214 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t201)
-    _goml_runtime_core_string_println(inline214)
-    var t202 string
-    var inline212 float64 = 42
-    switch inline212 {
+    var inline435 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t422)
+    _goml_runtime_core_string_println(inline435)
+    var t423 string
+    var inline433 float64 = 42
+    switch inline433 {
     case 0:
-        t202 = "zero"
+        t423 = "zero"
     case 1:
-        t202 = "one"
+        t423 = "one"
     case -1:
-        t202 = "minus one"
+        t423 = "minus one"
     case 3.14:
-        t202 = "pi"
+        t423 = "pi"
     default:
-        t202 = "other"
+        t423 = "other"
     }
-    var inline209 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t202)
-    _goml_runtime_core_string_println(inline209)
+    var inline430 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t423)
+    _goml_runtime_core_string_println(inline430)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
 func main() {

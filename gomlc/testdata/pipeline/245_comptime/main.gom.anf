@@ -1,188 +1,188 @@
 const ANSWER: int = 120;
 
 fn factorial(value/0: int) -> int {
-  let t205 = (value/0 < 2) in
-  if t205 {
+  let t426 = (value/0 < 2) in
+  if t426 {
     1
   } else {
-    let t206 = (value/0 - 1) in
-    let t207 = factorial(t206) in
-    let t208 = (value/0 * t207) in
-    t208
+    let t427 = (value/0 - 1) in
+    let t428 = factorial(t427) in
+    let t429 = (value/0 * t428) in
+    t429
   }
 }
 
 fn accumulate(limit/1: int) -> int {
   let index/2 = 0 in
   let total/3 = 0 in
-  join exit211() -> int {
+  join exit432() -> int {
     total/3
   } in
   joinrec {
-    join loop212() -> int {
-      let t213 = (index/2 < limit/1) in
-      if t213 {
-        let t214 = (total/3 + index/2) in
-        let _wild187 = total/3 = t214 in
-        let t215 = (index/2 + 1) in
-        let _wild188 = index/2 = t215 in
-        jump loop212()
+    join loop433() -> int {
+      let t434 = (index/2 < limit/1) in
+      if t434 {
+        let t435 = (total/3 + index/2) in
+        let _wild408 = total/3 = t435 in
+        let t436 = (index/2 + 1) in
+        let _wild409 = index/2 = t436 in
+        jump loop433()
       } else {
-        jump exit211()
+        jump exit432()
       }
     } in
   } in
-  jump loop212()
+  jump loop433()
 }
 
 fn make_pair(value/4: int) -> Pair {
-  let t218 = (value/4 + 1) in
-  let t219 = Pair { left: value/4, right: t218 } in
-  t219
+  let t439 = (value/4 + 1) in
+  let t440 = Pair { left: value/4, right: t439 } in
+  t440
 }
 
 fn choose(value/5: int) -> Choice {
-  let t224 = (value/5 > 0) in
-  if t224 {
-    let t225 = Choice::Value(value/5) in
-    t225
+  let t445 = (value/5 > 0) in
+  if t445 {
+    let t446 = Choice::Value(value/5) in
+    t446
   } else {
     Tag_1
   }
 }
 
 fn nonnegative(value/6: int) -> int {
-  let t230 = (value/6 < 0) in
-  join k228(jp229: int) -> int {
-    jp229
+  let t451 = (value/6 < 0) in
+  join k449(jp450: int) -> int {
+    jp450
   } in
-  if t230 {
-    let t231 = @intrinsic(compiler.missing)("value must be non-negative") in
-    jump k228(t231)
+  if t451 {
+    let t452 = @intrinsic(compiler.missing)("value must be non-negative") in
+    jump k449(t452)
   } else {
-    jump k228(value/6)
+    jump k449(value/6)
   }
 }
 
 fn shadow(value/7: int) -> int {
   let base/9 = (value/7 + 1) in
-  let t234 = (base/9 * 2) in
-  let t235 = (base/9 + t234) in
-  t235
+  let t455 = (base/9 * 2) in
+  let t456 = (base/9 + t455) in
+  t456
 }
 
 fn widen_negative(value/11: int8) -> uint64 {
-  let t238 = (value/11 as uint64) in
-  t238
+  let t459 = (value/11 as uint64) in
+  t459
 }
 
 fn main() -> unit {
   let values/12 = [6, 10, 4] in
-  join inline_cont309(_wild190: unit) -> unit {
-    let t240 = @intrinsic(array.get)(values/12, 0) in
-    join inline_cont306(_wild191: unit) -> unit {
-      let t241 = @intrinsic(array.get)(values/12, 1) in
-      join inline_cont303(_wild192: unit) -> unit {
-        let t242 = @intrinsic(array.get)(values/12, 2) in
-        join inline_cont300(_wild193: unit) -> unit {
-          let t243 = 7 in
-          let t244 = 8 in
-          let t245 = (t243 + t244) in
-          join inline_cont297(_wild194: unit) -> unit {
-            join k246() -> unit {
-              let t247 = factorial(5) in
-              let t248 = (t247 == ANSWER) in
-              join inline_cont294(_wild197: unit) -> unit {
+  join inline_cont530(_wild411: unit) -> unit {
+    let t461 = @intrinsic(array.get)(values/12, 0) in
+    join inline_cont527(_wild412: unit) -> unit {
+      let t462 = @intrinsic(array.get)(values/12, 1) in
+      join inline_cont524(_wild413: unit) -> unit {
+        let t463 = @intrinsic(array.get)(values/12, 2) in
+        join inline_cont521(_wild414: unit) -> unit {
+          let t464 = 7 in
+          let t465 = 8 in
+          let t466 = (t464 + t465) in
+          join inline_cont518(_wild415: unit) -> unit {
+            join k467() -> unit {
+              let t468 = factorial(5) in
+              let t469 = (t468 == ANSWER) in
+              join inline_cont515(_wild418: unit) -> unit {
                 let shadowed/16 = 12 in
-                join inline_cont291(_wild198: unit) -> unit {
-                  join inline_cont284(t249: int) -> unit {
-                    let t250 = (t249 == shadowed/16) in
-                    join inline_cont281(_wild199: unit) -> unit {
+                join inline_cont512(_wild419: unit) -> unit {
+                  join inline_cont505(t470: int) -> unit {
+                    let t471 = (t470 == shadowed/16) in
+                    join inline_cont502(_wild420: unit) -> unit {
                       let widened/17 = 18446744073709551615 in
-                      join inline_cont278(t251: uint64) -> unit {
-                        let t252 = (widened/17 == t251) in
-                        join inline_cont275(_wild200: unit) -> unit {
-                          let t253 = factorial(4) in
-                          let inline273 = trait_impl#ToString#int#to_string(t253) in
-                          let inline274 = @runtime(core.string_println)(inline273) in
+                      join inline_cont499(t472: uint64) -> unit {
+                        let t473 = (widened/17 == t472) in
+                        join inline_cont496(_wild421: unit) -> unit {
+                          let t474 = factorial(4) in
+                          let inline494 = trait_impl#ToString#int#to_string(t474) in
+                          let inline495 = @runtime(core.string_println)(inline494) in
                           ()
                         } in
-                        let inline276 = trait_impl#ToString#bool#to_string(t252) in
-                        let inline277 = @runtime(core.string_println)(inline276) in
-                        jump inline_cont275(())
+                        let inline497 = trait_impl#ToString#bool#to_string(t473) in
+                        let inline498 = @runtime(core.string_println)(inline497) in
+                        jump inline_cont496(())
                       } in
-                      let inline279 = -1 in
-                      let inline280 = (inline279 as uint64) in
-                      jump inline_cont278(inline280)
+                      let inline500 = -1 in
+                      let inline501 = (inline500 as uint64) in
+                      jump inline_cont499(inline501)
                     } in
-                    let inline282 = trait_impl#ToString#bool#to_string(t250) in
-                    let inline283 = @runtime(core.string_println)(inline282) in
-                    jump inline_cont281(())
+                    let inline503 = trait_impl#ToString#bool#to_string(t471) in
+                    let inline504 = @runtime(core.string_println)(inline503) in
+                    jump inline_cont502(())
                   } in
-                  let inline285 = 3 in
-                  let inline287 = (inline285 + 1) in
-                  let inline288 = (inline287 * 2) in
-                  let inline290 = (inline287 + inline288) in
-                  jump inline_cont284(inline290)
+                  let inline506 = 3 in
+                  let inline508 = (inline506 + 1) in
+                  let inline509 = (inline508 * 2) in
+                  let inline511 = (inline508 + inline509) in
+                  jump inline_cont505(inline511)
                 } in
-                let inline292 = trait_impl#ToString#int#to_string(shadowed/16) in
-                let inline293 = @runtime(core.string_println)(inline292) in
-                jump inline_cont291(())
+                let inline513 = trait_impl#ToString#int#to_string(shadowed/16) in
+                let inline514 = @runtime(core.string_println)(inline513) in
+                jump inline_cont512(())
               } in
-              let inline295 = trait_impl#ToString#bool#to_string(t248) in
-              let inline296 = @runtime(core.string_println)(inline295) in
-              jump inline_cont294(())
+              let inline516 = trait_impl#ToString#bool#to_string(t469) in
+              let inline517 = @runtime(core.string_println)(inline516) in
+              jump inline_cont515(())
             } in
-            let x195 = 9 in
-            let inline270 = trait_impl#ToString#int#to_string(x195) in
-            let inline271 = @runtime(core.string_println)(inline270) in
-            jump k246()
+            let x416 = 9 in
+            let inline491 = trait_impl#ToString#int#to_string(x416) in
+            let inline492 = @runtime(core.string_println)(inline491) in
+            jump k467()
           } in
-          let inline298 = trait_impl#ToString#int#to_string(t245) in
-          let inline299 = @runtime(core.string_println)(inline298) in
-          jump inline_cont297(())
+          let inline519 = trait_impl#ToString#int#to_string(t466) in
+          let inline520 = @runtime(core.string_println)(inline519) in
+          jump inline_cont518(())
         } in
-        let inline301 = trait_impl#ToString#int#to_string(t242) in
-        let inline302 = @runtime(core.string_println)(inline301) in
-        jump inline_cont300(())
+        let inline522 = trait_impl#ToString#int#to_string(t463) in
+        let inline523 = @runtime(core.string_println)(inline522) in
+        jump inline_cont521(())
       } in
-      let inline304 = trait_impl#ToString#int#to_string(t241) in
-      let inline305 = @runtime(core.string_println)(inline304) in
-      jump inline_cont303(())
+      let inline525 = trait_impl#ToString#int#to_string(t462) in
+      let inline526 = @runtime(core.string_println)(inline525) in
+      jump inline_cont524(())
     } in
-    let inline307 = trait_impl#ToString#int#to_string(t240) in
-    let inline308 = @runtime(core.string_println)(inline307) in
-    jump inline_cont306(())
+    let inline528 = trait_impl#ToString#int#to_string(t461) in
+    let inline529 = @runtime(core.string_println)(inline528) in
+    jump inline_cont527(())
   } in
-  let inline310 = trait_impl#ToString#int#to_string(ANSWER) in
-  let inline311 = @runtime(core.string_println)(inline310) in
-  jump inline_cont309(())
+  let inline531 = trait_impl#ToString#int#to_string(ANSWER) in
+  let inline532 = @runtime(core.string_println)(inline531) in
+  jump inline_cont530(())
 }
 
 fn println__T_int(value/1: int) -> unit {
-  join inline_cont312(t258: string) -> unit {
-    let t259 = @runtime(core.string_println)(t258) in
+  join inline_cont533(t479: string) -> unit {
+    let t480 = @runtime(core.string_println)(t479) in
     ()
   } in
-  let inline313 = @runtime(core.int_to_string)(value/1) in
-  jump inline_cont312(inline313)
+  let inline534 = @runtime(core.int_to_string)(value/1) in
+  jump inline_cont533(inline534)
 }
 
 fn println__T_bool(value/1: bool) -> unit {
-  join inline_cont314(t261: string) -> unit {
-    let t262 = @runtime(core.string_println)(t261) in
+  join inline_cont535(t482: string) -> unit {
+    let t483 = @runtime(core.string_println)(t482) in
     ()
   } in
-  let inline315 = @runtime(core.bool_to_string)(value/1) in
-  jump inline_cont314(inline315)
+  let inline536 = @runtime(core.bool_to_string)(value/1) in
+  jump inline_cont535(inline536)
 }
 
-fn trait_impl#ToString#int#to_string(self/67: int) -> string {
-  let t265 = @runtime(core.int_to_string)(self/67) in
-  t265
+fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+  let t486 = @runtime(core.int_to_string)(self/151) in
+  t486
 }
 
-fn trait_impl#ToString#bool#to_string(self/64: bool) -> string {
-  let t268 = @runtime(core.bool_to_string)(self/64) in
-  t268
+fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
+  let t489 = @runtime(core.bool_to_string)(self/148) in
+  t489
 }

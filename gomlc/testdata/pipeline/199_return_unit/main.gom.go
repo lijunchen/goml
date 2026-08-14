@@ -9,15 +9,17 @@ func _goml_runtime_core_string_println(s string) struct{} {
     return struct{}{}
 }
 
+type Ordering int32
+
 func main0() struct{} {
-    var inline198 string = "continued"
-    var inline199 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline198)
-    _goml_runtime_core_string_println(inline199)
+    var inline419 string = "continued"
+    var inline420 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline419)
+    _goml_runtime_core_string_println(inline420)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
 func main() {

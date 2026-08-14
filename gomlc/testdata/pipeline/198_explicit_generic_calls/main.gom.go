@@ -13,25 +13,27 @@ func _goml_runtime_core_string_println(s string) struct{} {
     return struct{}{}
 }
 
+type Ordering int32
+
 func main0() struct{} {
-    var t189 string
-    var inline216 string = "direct"
-    t189 = inline216
-    var inline213 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t189)
-    _goml_runtime_core_string_println(inline213)
-    var t190 int32
-    var inline211 int32 = 42
-    t190 = inline211
-    var t191 string
-    var inline209 string = _goml_runtime_core_int32_to_string(t190)
-    t191 = inline209
-    var inline206 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t191)
-    _goml_runtime_core_string_println(inline206)
+    var t410 string
+    var inline437 string = "direct"
+    t410 = inline437
+    var inline434 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t410)
+    _goml_runtime_core_string_println(inline434)
+    var t411 int32
+    var inline432 int32 = 42
+    t411 = inline432
+    var t412 string
+    var inline430 string = _goml_runtime_core_int32_to_string(t411)
+    t412 = inline430
+    var inline427 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t412)
+    _goml_runtime_core_string_println(inline427)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
 func main() {

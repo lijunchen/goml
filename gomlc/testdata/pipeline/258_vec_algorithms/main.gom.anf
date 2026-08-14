@@ -1,0 +1,6072 @@
+fn trait_impl#std::cmp::PartialOrd#Ordering#partial_cmp(
+  self/12: Ordering,
+  other/13: Ordering
+) -> Option__Ordering {
+  join inline_cont1918(t470: bool) -> Option__Ordering {
+    join k467(jp468: Ordering) -> Option__Ordering {
+      let t469 = Option__Ordering::Some(jp468) in
+      t469
+    } in
+    if t470 {
+      jump k467(Tag_1)
+    } else {
+      match self/12 {
+        Tag_0 => {
+          jump k467(Tag_0)
+        },
+        Tag_1 => {
+          join inline_cont1917(t475: bool) -> Option__Ordering {
+            if t475 {
+              jump k467(Tag_0)
+            } else {
+              jump k467(Tag_2)
+            }
+          } in
+          match other/13 {
+            Tag_0 => {
+              jump inline_cont1917(false)
+            },
+            Tag_1 => {
+              jump inline_cont1917(false)
+            },
+            Tag_2 => {
+              jump inline_cont1917(true)
+            },
+          }
+        },
+        Tag_2 => {
+          jump k467(Tag_2)
+        },
+      }
+    }
+  } in
+  match self/12 {
+    Tag_0 => {
+      match other/13 {
+        Tag_0 => {
+          jump inline_cont1918(true)
+        },
+        _ => {
+          jump inline_cont1918(false)
+        },
+      }
+    },
+    Tag_1 => {
+      match other/13 {
+        Tag_1 => {
+          jump inline_cont1918(true)
+        },
+        _ => {
+          jump inline_cont1918(false)
+        },
+      }
+    },
+    Tag_2 => {
+      match other/13 {
+        Tag_2 => {
+          jump inline_cont1918(true)
+        },
+        _ => {
+          jump inline_cont1918(false)
+        },
+      }
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#Ordering#lt(
+  default_arg0: Ordering,
+  default_arg1: Ordering
+) -> bool {
+  let inline1920 =
+    trait_impl#std::cmp::PartialOrd#Ordering#partial_cmp(default_arg0, default_arg1) in
+  match inline1920 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline1921 = Option__Ordering::Some._0(inline1920) in
+      let inline1923 = trait_impl#PartialEq#Ordering#eq(inline1921, Tag_0) in
+      inline1923
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#Ordering#le(
+  default_arg0: Ordering,
+  default_arg1: Ordering
+) -> bool {
+  let inline1925 =
+    trait_impl#std::cmp::PartialOrd#Ordering#partial_cmp(default_arg0, default_arg1) in
+  match inline1925 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline1926 = Option__Ordering::Some._0(inline1925) in
+      let inline1928 = trait_impl#PartialEq#Ordering#eq(inline1926, Tag_2) in
+      let inline1929 = (!inline1928) in
+      inline1929
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#Ordering#gt(
+  default_arg0: Ordering,
+  default_arg1: Ordering
+) -> bool {
+  let inline1931 =
+    trait_impl#std::cmp::PartialOrd#Ordering#partial_cmp(default_arg0, default_arg1) in
+  match inline1931 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline1932 = Option__Ordering::Some._0(inline1931) in
+      let inline1934 = trait_impl#PartialEq#Ordering#eq(inline1932, Tag_2) in
+      inline1934
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#Ordering#ge(
+  default_arg0: Ordering,
+  default_arg1: Ordering
+) -> bool {
+  let inline1936 =
+    trait_impl#std::cmp::PartialOrd#Ordering#partial_cmp(default_arg0, default_arg1) in
+  match inline1936 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline1937 = Option__Ordering::Some._0(inline1936) in
+      let inline1939 = trait_impl#PartialEq#Ordering#eq(inline1937, Tag_0) in
+      let inline1940 = (!inline1939) in
+      inline1940
+    },
+  }
+}
+
+fn trait_impl#std::cmp::Ord#Ordering#cmp(self/14: Ordering, other/15: Ordering) -> Ordering {
+  join inline_cont1942(t492: bool) -> Ordering {
+    if t492 {
+      Tag_1
+    } else {
+      match self/14 {
+        Tag_0 => {
+          Tag_0
+        },
+        Tag_1 => {
+          join inline_cont1941(t497: bool) -> Ordering {
+            if t497 {
+              Tag_0
+            } else {
+              Tag_2
+            }
+          } in
+          match other/15 {
+            Tag_0 => {
+              jump inline_cont1941(false)
+            },
+            Tag_1 => {
+              jump inline_cont1941(false)
+            },
+            Tag_2 => {
+              jump inline_cont1941(true)
+            },
+          }
+        },
+        Tag_2 => {
+          Tag_2
+        },
+      }
+    }
+  } in
+  match self/14 {
+    Tag_0 => {
+      match other/15 {
+        Tag_0 => {
+          jump inline_cont1942(true)
+        },
+        _ => {
+          jump inline_cont1942(false)
+        },
+      }
+    },
+    Tag_1 => {
+      match other/15 {
+        Tag_1 => {
+          jump inline_cont1942(true)
+        },
+        _ => {
+          jump inline_cont1942(false)
+        },
+      }
+    },
+    Tag_2 => {
+      match other/15 {
+        Tag_2 => {
+          jump inline_cont1942(true)
+        },
+        _ => {
+          jump inline_cont1942(false)
+        },
+      }
+    },
+  }
+}
+
+fn trait_impl#std::cmp::Ord#unit#cmp(self/16: unit, other/17: unit) -> Ordering {
+  Tag_1
+}
+
+fn trait_impl#std::cmp::PartialOrd#unit#partial_cmp(
+  self/18: unit,
+  other/19: unit
+) -> Option__Ordering {
+  let t502 = Option__Ordering::Some(Tag_1) in
+  t502
+}
+
+fn trait_impl#std::cmp::PartialOrd#unit#lt(default_arg0: unit, default_arg1: unit) -> bool {
+  let inline1944 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(default_arg0, default_arg1) in
+  match inline1944 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline1945 = Option__Ordering::Some._0(inline1944) in
+      let inline1947 = trait_impl#PartialEq#Ordering#eq(inline1945, Tag_0) in
+      inline1947
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#unit#le(default_arg0: unit, default_arg1: unit) -> bool {
+  let inline1949 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(default_arg0, default_arg1) in
+  match inline1949 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline1950 = Option__Ordering::Some._0(inline1949) in
+      let inline1952 = trait_impl#PartialEq#Ordering#eq(inline1950, Tag_2) in
+      let inline1953 = (!inline1952) in
+      inline1953
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#unit#gt(default_arg0: unit, default_arg1: unit) -> bool {
+  let inline1955 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(default_arg0, default_arg1) in
+  match inline1955 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline1956 = Option__Ordering::Some._0(inline1955) in
+      let inline1958 = trait_impl#PartialEq#Ordering#eq(inline1956, Tag_2) in
+      inline1958
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#unit#ge(default_arg0: unit, default_arg1: unit) -> bool {
+  let inline1960 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(default_arg0, default_arg1) in
+  match inline1960 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline1961 = Option__Ordering::Some._0(inline1960) in
+      let inline1963 = trait_impl#PartialEq#Ordering#eq(inline1961, Tag_0) in
+      let inline1964 = (!inline1963) in
+      inline1964
+    },
+  }
+}
+
+fn trait_impl#std::cmp::Ord#bool#cmp(self/20: bool, other/21: bool) -> Ordering {
+  let t519 = (self/20 == other/21) in
+  if t519 {
+    Tag_1
+  } else {
+    if self/20 {
+      Tag_2
+    } else {
+      Tag_0
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#bool#partial_cmp(
+  self/22: bool,
+  other/23: bool
+) -> Option__Ordering {
+  let t527 = (self/22 == other/23) in
+  join k524(jp525: Ordering) -> Option__Ordering {
+    let t526 = Option__Ordering::Some(jp525) in
+    t526
+  } in
+  if t527 {
+    jump k524(Tag_1)
+  } else {
+    if self/22 {
+      jump k524(Tag_2)
+    } else {
+      jump k524(Tag_0)
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#bool#lt(default_arg0: bool, default_arg1: bool) -> bool {
+  let inline1966 = trait_impl#std::cmp::PartialOrd#bool#partial_cmp(default_arg0, default_arg1) in
+  match inline1966 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline1967 = Option__Ordering::Some._0(inline1966) in
+      let inline1969 = trait_impl#PartialEq#Ordering#eq(inline1967, Tag_0) in
+      inline1969
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#bool#le(default_arg0: bool, default_arg1: bool) -> bool {
+  let inline1971 = trait_impl#std::cmp::PartialOrd#bool#partial_cmp(default_arg0, default_arg1) in
+  match inline1971 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline1972 = Option__Ordering::Some._0(inline1971) in
+      let inline1974 = trait_impl#PartialEq#Ordering#eq(inline1972, Tag_2) in
+      let inline1975 = (!inline1974) in
+      inline1975
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#bool#gt(default_arg0: bool, default_arg1: bool) -> bool {
+  let inline1977 = trait_impl#std::cmp::PartialOrd#bool#partial_cmp(default_arg0, default_arg1) in
+  match inline1977 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline1978 = Option__Ordering::Some._0(inline1977) in
+      let inline1980 = trait_impl#PartialEq#Ordering#eq(inline1978, Tag_2) in
+      inline1980
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#bool#ge(default_arg0: bool, default_arg1: bool) -> bool {
+  let inline1982 = trait_impl#std::cmp::PartialOrd#bool#partial_cmp(default_arg0, default_arg1) in
+  match inline1982 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline1983 = Option__Ordering::Some._0(inline1982) in
+      let inline1985 = trait_impl#PartialEq#Ordering#eq(inline1983, Tag_0) in
+      let inline1986 = (!inline1985) in
+      inline1986
+    },
+  }
+}
+
+fn trait_impl#std::cmp::Ord#string#cmp(self/24: string, other/25: string) -> Ordering {
+  let t546 = (self/24 < other/25) in
+  if t546 {
+    Tag_0
+  } else {
+    let t549 = (self/24 > other/25) in
+    if t549 {
+      Tag_2
+    } else {
+      Tag_1
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#string#partial_cmp(
+  self/26: string,
+  other/27: string
+) -> Option__Ordering {
+  let t555 = (self/26 < other/27) in
+  join k552(jp553: Ordering) -> Option__Ordering {
+    let t554 = Option__Ordering::Some(jp553) in
+    t554
+  } in
+  if t555 {
+    jump k552(Tag_0)
+  } else {
+    let t558 = (self/26 > other/27) in
+    if t558 {
+      jump k552(Tag_2)
+    } else {
+      jump k552(Tag_1)
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#string#lt(default_arg0: string, default_arg1: string) -> bool {
+  let inline1988 = trait_impl#std::cmp::PartialOrd#string#partial_cmp(default_arg0, default_arg1) in
+  match inline1988 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline1989 = Option__Ordering::Some._0(inline1988) in
+      let inline1991 = trait_impl#PartialEq#Ordering#eq(inline1989, Tag_0) in
+      inline1991
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#string#le(default_arg0: string, default_arg1: string) -> bool {
+  let inline1993 = trait_impl#std::cmp::PartialOrd#string#partial_cmp(default_arg0, default_arg1) in
+  match inline1993 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline1994 = Option__Ordering::Some._0(inline1993) in
+      let inline1996 = trait_impl#PartialEq#Ordering#eq(inline1994, Tag_2) in
+      let inline1997 = (!inline1996) in
+      inline1997
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#string#gt(default_arg0: string, default_arg1: string) -> bool {
+  let inline1999 = trait_impl#std::cmp::PartialOrd#string#partial_cmp(default_arg0, default_arg1) in
+  match inline1999 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2000 = Option__Ordering::Some._0(inline1999) in
+      let inline2002 = trait_impl#PartialEq#Ordering#eq(inline2000, Tag_2) in
+      inline2002
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#string#ge(default_arg0: string, default_arg1: string) -> bool {
+  let inline2004 = trait_impl#std::cmp::PartialOrd#string#partial_cmp(default_arg0, default_arg1) in
+  match inline2004 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2005 = Option__Ordering::Some._0(inline2004) in
+      let inline2007 = trait_impl#PartialEq#Ordering#eq(inline2005, Tag_0) in
+      let inline2008 = (!inline2007) in
+      inline2008
+    },
+  }
+}
+
+fn trait_impl#std::cmp::Ord#char#cmp(self/28: char, other/29: char) -> Ordering {
+  let t575 = (self/28 < other/29) in
+  if t575 {
+    Tag_0
+  } else {
+    let t578 = (self/28 > other/29) in
+    if t578 {
+      Tag_2
+    } else {
+      Tag_1
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#char#partial_cmp(
+  self/30: char,
+  other/31: char
+) -> Option__Ordering {
+  let t584 = (self/30 < other/31) in
+  join k581(jp582: Ordering) -> Option__Ordering {
+    let t583 = Option__Ordering::Some(jp582) in
+    t583
+  } in
+  if t584 {
+    jump k581(Tag_0)
+  } else {
+    let t587 = (self/30 > other/31) in
+    if t587 {
+      jump k581(Tag_2)
+    } else {
+      jump k581(Tag_1)
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#char#lt(default_arg0: char, default_arg1: char) -> bool {
+  let inline2010 = trait_impl#std::cmp::PartialOrd#char#partial_cmp(default_arg0, default_arg1) in
+  match inline2010 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2011 = Option__Ordering::Some._0(inline2010) in
+      let inline2013 = trait_impl#PartialEq#Ordering#eq(inline2011, Tag_0) in
+      inline2013
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#char#le(default_arg0: char, default_arg1: char) -> bool {
+  let inline2015 = trait_impl#std::cmp::PartialOrd#char#partial_cmp(default_arg0, default_arg1) in
+  match inline2015 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2016 = Option__Ordering::Some._0(inline2015) in
+      let inline2018 = trait_impl#PartialEq#Ordering#eq(inline2016, Tag_2) in
+      let inline2019 = (!inline2018) in
+      inline2019
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#char#gt(default_arg0: char, default_arg1: char) -> bool {
+  let inline2021 = trait_impl#std::cmp::PartialOrd#char#partial_cmp(default_arg0, default_arg1) in
+  match inline2021 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2022 = Option__Ordering::Some._0(inline2021) in
+      let inline2024 = trait_impl#PartialEq#Ordering#eq(inline2022, Tag_2) in
+      inline2024
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#char#ge(default_arg0: char, default_arg1: char) -> bool {
+  let inline2026 = trait_impl#std::cmp::PartialOrd#char#partial_cmp(default_arg0, default_arg1) in
+  match inline2026 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2027 = Option__Ordering::Some._0(inline2026) in
+      let inline2029 = trait_impl#PartialEq#Ordering#eq(inline2027, Tag_0) in
+      let inline2030 = (!inline2029) in
+      inline2030
+    },
+  }
+}
+
+fn trait_impl#std::cmp::Ord#int#cmp(self/32: int, other/33: int) -> Ordering {
+  let t604 = (self/32 < other/33) in
+  if t604 {
+    Tag_0
+  } else {
+    let t607 = (self/32 > other/33) in
+    if t607 {
+      Tag_2
+    } else {
+      Tag_1
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int#partial_cmp(
+  self/34: int,
+  other/35: int
+) -> Option__Ordering {
+  let t613 = (self/34 < other/35) in
+  join k610(jp611: Ordering) -> Option__Ordering {
+    let t612 = Option__Ordering::Some(jp611) in
+    t612
+  } in
+  if t613 {
+    jump k610(Tag_0)
+  } else {
+    let t616 = (self/34 > other/35) in
+    if t616 {
+      jump k610(Tag_2)
+    } else {
+      jump k610(Tag_1)
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int#lt(default_arg0: int, default_arg1: int) -> bool {
+  let inline2032 = trait_impl#std::cmp::PartialOrd#int#partial_cmp(default_arg0, default_arg1) in
+  match inline2032 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2033 = Option__Ordering::Some._0(inline2032) in
+      let inline2035 = trait_impl#PartialEq#Ordering#eq(inline2033, Tag_0) in
+      inline2035
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int#le(default_arg0: int, default_arg1: int) -> bool {
+  let inline2037 = trait_impl#std::cmp::PartialOrd#int#partial_cmp(default_arg0, default_arg1) in
+  match inline2037 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2038 = Option__Ordering::Some._0(inline2037) in
+      let inline2040 = trait_impl#PartialEq#Ordering#eq(inline2038, Tag_2) in
+      let inline2041 = (!inline2040) in
+      inline2041
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int#gt(default_arg0: int, default_arg1: int) -> bool {
+  let inline2043 = trait_impl#std::cmp::PartialOrd#int#partial_cmp(default_arg0, default_arg1) in
+  match inline2043 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2044 = Option__Ordering::Some._0(inline2043) in
+      let inline2046 = trait_impl#PartialEq#Ordering#eq(inline2044, Tag_2) in
+      inline2046
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int#ge(default_arg0: int, default_arg1: int) -> bool {
+  let inline2048 = trait_impl#std::cmp::PartialOrd#int#partial_cmp(default_arg0, default_arg1) in
+  match inline2048 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2049 = Option__Ordering::Some._0(inline2048) in
+      let inline2051 = trait_impl#PartialEq#Ordering#eq(inline2049, Tag_0) in
+      let inline2052 = (!inline2051) in
+      inline2052
+    },
+  }
+}
+
+fn trait_impl#std::cmp::Ord#int8#cmp(self/36: int8, other/37: int8) -> Ordering {
+  let t633 = (self/36 < other/37) in
+  if t633 {
+    Tag_0
+  } else {
+    let t636 = (self/36 > other/37) in
+    if t636 {
+      Tag_2
+    } else {
+      Tag_1
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int8#partial_cmp(
+  self/38: int8,
+  other/39: int8
+) -> Option__Ordering {
+  let t642 = (self/38 < other/39) in
+  join k639(jp640: Ordering) -> Option__Ordering {
+    let t641 = Option__Ordering::Some(jp640) in
+    t641
+  } in
+  if t642 {
+    jump k639(Tag_0)
+  } else {
+    let t645 = (self/38 > other/39) in
+    if t645 {
+      jump k639(Tag_2)
+    } else {
+      jump k639(Tag_1)
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int8#lt(default_arg0: int8, default_arg1: int8) -> bool {
+  let inline2054 = trait_impl#std::cmp::PartialOrd#int8#partial_cmp(default_arg0, default_arg1) in
+  match inline2054 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2055 = Option__Ordering::Some._0(inline2054) in
+      let inline2057 = trait_impl#PartialEq#Ordering#eq(inline2055, Tag_0) in
+      inline2057
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int8#le(default_arg0: int8, default_arg1: int8) -> bool {
+  let inline2059 = trait_impl#std::cmp::PartialOrd#int8#partial_cmp(default_arg0, default_arg1) in
+  match inline2059 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2060 = Option__Ordering::Some._0(inline2059) in
+      let inline2062 = trait_impl#PartialEq#Ordering#eq(inline2060, Tag_2) in
+      let inline2063 = (!inline2062) in
+      inline2063
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int8#gt(default_arg0: int8, default_arg1: int8) -> bool {
+  let inline2065 = trait_impl#std::cmp::PartialOrd#int8#partial_cmp(default_arg0, default_arg1) in
+  match inline2065 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2066 = Option__Ordering::Some._0(inline2065) in
+      let inline2068 = trait_impl#PartialEq#Ordering#eq(inline2066, Tag_2) in
+      inline2068
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int8#ge(default_arg0: int8, default_arg1: int8) -> bool {
+  let inline2070 = trait_impl#std::cmp::PartialOrd#int8#partial_cmp(default_arg0, default_arg1) in
+  match inline2070 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2071 = Option__Ordering::Some._0(inline2070) in
+      let inline2073 = trait_impl#PartialEq#Ordering#eq(inline2071, Tag_0) in
+      let inline2074 = (!inline2073) in
+      inline2074
+    },
+  }
+}
+
+fn trait_impl#std::cmp::Ord#int16#cmp(self/40: int16, other/41: int16) -> Ordering {
+  let t662 = (self/40 < other/41) in
+  if t662 {
+    Tag_0
+  } else {
+    let t665 = (self/40 > other/41) in
+    if t665 {
+      Tag_2
+    } else {
+      Tag_1
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int16#partial_cmp(
+  self/42: int16,
+  other/43: int16
+) -> Option__Ordering {
+  let t671 = (self/42 < other/43) in
+  join k668(jp669: Ordering) -> Option__Ordering {
+    let t670 = Option__Ordering::Some(jp669) in
+    t670
+  } in
+  if t671 {
+    jump k668(Tag_0)
+  } else {
+    let t674 = (self/42 > other/43) in
+    if t674 {
+      jump k668(Tag_2)
+    } else {
+      jump k668(Tag_1)
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int16#lt(default_arg0: int16, default_arg1: int16) -> bool {
+  let inline2076 = trait_impl#std::cmp::PartialOrd#int16#partial_cmp(default_arg0, default_arg1) in
+  match inline2076 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2077 = Option__Ordering::Some._0(inline2076) in
+      let inline2079 = trait_impl#PartialEq#Ordering#eq(inline2077, Tag_0) in
+      inline2079
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int16#le(default_arg0: int16, default_arg1: int16) -> bool {
+  let inline2081 = trait_impl#std::cmp::PartialOrd#int16#partial_cmp(default_arg0, default_arg1) in
+  match inline2081 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2082 = Option__Ordering::Some._0(inline2081) in
+      let inline2084 = trait_impl#PartialEq#Ordering#eq(inline2082, Tag_2) in
+      let inline2085 = (!inline2084) in
+      inline2085
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int16#gt(default_arg0: int16, default_arg1: int16) -> bool {
+  let inline2087 = trait_impl#std::cmp::PartialOrd#int16#partial_cmp(default_arg0, default_arg1) in
+  match inline2087 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2088 = Option__Ordering::Some._0(inline2087) in
+      let inline2090 = trait_impl#PartialEq#Ordering#eq(inline2088, Tag_2) in
+      inline2090
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int16#ge(default_arg0: int16, default_arg1: int16) -> bool {
+  let inline2092 = trait_impl#std::cmp::PartialOrd#int16#partial_cmp(default_arg0, default_arg1) in
+  match inline2092 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2093 = Option__Ordering::Some._0(inline2092) in
+      let inline2095 = trait_impl#PartialEq#Ordering#eq(inline2093, Tag_0) in
+      let inline2096 = (!inline2095) in
+      inline2096
+    },
+  }
+}
+
+fn trait_impl#std::cmp::Ord#int32#cmp(self/44: int32, other/45: int32) -> Ordering {
+  let t691 = (self/44 < other/45) in
+  if t691 {
+    Tag_0
+  } else {
+    let t694 = (self/44 > other/45) in
+    if t694 {
+      Tag_2
+    } else {
+      Tag_1
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int32#partial_cmp(
+  self/46: int32,
+  other/47: int32
+) -> Option__Ordering {
+  let t700 = (self/46 < other/47) in
+  join k697(jp698: Ordering) -> Option__Ordering {
+    let t699 = Option__Ordering::Some(jp698) in
+    t699
+  } in
+  if t700 {
+    jump k697(Tag_0)
+  } else {
+    let t703 = (self/46 > other/47) in
+    if t703 {
+      jump k697(Tag_2)
+    } else {
+      jump k697(Tag_1)
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int32#lt(default_arg0: int32, default_arg1: int32) -> bool {
+  let inline2098 = trait_impl#std::cmp::PartialOrd#int32#partial_cmp(default_arg0, default_arg1) in
+  match inline2098 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2099 = Option__Ordering::Some._0(inline2098) in
+      let inline2101 = trait_impl#PartialEq#Ordering#eq(inline2099, Tag_0) in
+      inline2101
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int32#le(default_arg0: int32, default_arg1: int32) -> bool {
+  let inline2103 = trait_impl#std::cmp::PartialOrd#int32#partial_cmp(default_arg0, default_arg1) in
+  match inline2103 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2104 = Option__Ordering::Some._0(inline2103) in
+      let inline2106 = trait_impl#PartialEq#Ordering#eq(inline2104, Tag_2) in
+      let inline2107 = (!inline2106) in
+      inline2107
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int32#gt(default_arg0: int32, default_arg1: int32) -> bool {
+  let inline2109 = trait_impl#std::cmp::PartialOrd#int32#partial_cmp(default_arg0, default_arg1) in
+  match inline2109 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2110 = Option__Ordering::Some._0(inline2109) in
+      let inline2112 = trait_impl#PartialEq#Ordering#eq(inline2110, Tag_2) in
+      inline2112
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int32#ge(default_arg0: int32, default_arg1: int32) -> bool {
+  let inline2114 = trait_impl#std::cmp::PartialOrd#int32#partial_cmp(default_arg0, default_arg1) in
+  match inline2114 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2115 = Option__Ordering::Some._0(inline2114) in
+      let inline2117 = trait_impl#PartialEq#Ordering#eq(inline2115, Tag_0) in
+      let inline2118 = (!inline2117) in
+      inline2118
+    },
+  }
+}
+
+fn trait_impl#std::cmp::Ord#int64#cmp(self/48: int64, other/49: int64) -> Ordering {
+  let t720 = (self/48 < other/49) in
+  if t720 {
+    Tag_0
+  } else {
+    let t723 = (self/48 > other/49) in
+    if t723 {
+      Tag_2
+    } else {
+      Tag_1
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int64#partial_cmp(
+  self/50: int64,
+  other/51: int64
+) -> Option__Ordering {
+  let t729 = (self/50 < other/51) in
+  join k726(jp727: Ordering) -> Option__Ordering {
+    let t728 = Option__Ordering::Some(jp727) in
+    t728
+  } in
+  if t729 {
+    jump k726(Tag_0)
+  } else {
+    let t732 = (self/50 > other/51) in
+    if t732 {
+      jump k726(Tag_2)
+    } else {
+      jump k726(Tag_1)
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int64#lt(default_arg0: int64, default_arg1: int64) -> bool {
+  let inline2120 = trait_impl#std::cmp::PartialOrd#int64#partial_cmp(default_arg0, default_arg1) in
+  match inline2120 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2121 = Option__Ordering::Some._0(inline2120) in
+      let inline2123 = trait_impl#PartialEq#Ordering#eq(inline2121, Tag_0) in
+      inline2123
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int64#le(default_arg0: int64, default_arg1: int64) -> bool {
+  let inline2125 = trait_impl#std::cmp::PartialOrd#int64#partial_cmp(default_arg0, default_arg1) in
+  match inline2125 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2126 = Option__Ordering::Some._0(inline2125) in
+      let inline2128 = trait_impl#PartialEq#Ordering#eq(inline2126, Tag_2) in
+      let inline2129 = (!inline2128) in
+      inline2129
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int64#gt(default_arg0: int64, default_arg1: int64) -> bool {
+  let inline2131 = trait_impl#std::cmp::PartialOrd#int64#partial_cmp(default_arg0, default_arg1) in
+  match inline2131 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2132 = Option__Ordering::Some._0(inline2131) in
+      let inline2134 = trait_impl#PartialEq#Ordering#eq(inline2132, Tag_2) in
+      inline2134
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int64#ge(default_arg0: int64, default_arg1: int64) -> bool {
+  let inline2136 = trait_impl#std::cmp::PartialOrd#int64#partial_cmp(default_arg0, default_arg1) in
+  match inline2136 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2137 = Option__Ordering::Some._0(inline2136) in
+      let inline2139 = trait_impl#PartialEq#Ordering#eq(inline2137, Tag_0) in
+      let inline2140 = (!inline2139) in
+      inline2140
+    },
+  }
+}
+
+fn trait_impl#std::cmp::Ord#uint#cmp(self/52: uint, other/53: uint) -> Ordering {
+  let t749 = (self/52 < other/53) in
+  if t749 {
+    Tag_0
+  } else {
+    let t752 = (self/52 > other/53) in
+    if t752 {
+      Tag_2
+    } else {
+      Tag_1
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint#partial_cmp(
+  self/54: uint,
+  other/55: uint
+) -> Option__Ordering {
+  let t758 = (self/54 < other/55) in
+  join k755(jp756: Ordering) -> Option__Ordering {
+    let t757 = Option__Ordering::Some(jp756) in
+    t757
+  } in
+  if t758 {
+    jump k755(Tag_0)
+  } else {
+    let t761 = (self/54 > other/55) in
+    if t761 {
+      jump k755(Tag_2)
+    } else {
+      jump k755(Tag_1)
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint#lt(default_arg0: uint, default_arg1: uint) -> bool {
+  let inline2142 = trait_impl#std::cmp::PartialOrd#uint#partial_cmp(default_arg0, default_arg1) in
+  match inline2142 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2143 = Option__Ordering::Some._0(inline2142) in
+      let inline2145 = trait_impl#PartialEq#Ordering#eq(inline2143, Tag_0) in
+      inline2145
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint#le(default_arg0: uint, default_arg1: uint) -> bool {
+  let inline2147 = trait_impl#std::cmp::PartialOrd#uint#partial_cmp(default_arg0, default_arg1) in
+  match inline2147 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2148 = Option__Ordering::Some._0(inline2147) in
+      let inline2150 = trait_impl#PartialEq#Ordering#eq(inline2148, Tag_2) in
+      let inline2151 = (!inline2150) in
+      inline2151
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint#gt(default_arg0: uint, default_arg1: uint) -> bool {
+  let inline2153 = trait_impl#std::cmp::PartialOrd#uint#partial_cmp(default_arg0, default_arg1) in
+  match inline2153 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2154 = Option__Ordering::Some._0(inline2153) in
+      let inline2156 = trait_impl#PartialEq#Ordering#eq(inline2154, Tag_2) in
+      inline2156
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint#ge(default_arg0: uint, default_arg1: uint) -> bool {
+  let inline2158 = trait_impl#std::cmp::PartialOrd#uint#partial_cmp(default_arg0, default_arg1) in
+  match inline2158 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2159 = Option__Ordering::Some._0(inline2158) in
+      let inline2161 = trait_impl#PartialEq#Ordering#eq(inline2159, Tag_0) in
+      let inline2162 = (!inline2161) in
+      inline2162
+    },
+  }
+}
+
+fn trait_impl#std::cmp::Ord#uint8#cmp(self/56: uint8, other/57: uint8) -> Ordering {
+  let t778 = (self/56 < other/57) in
+  if t778 {
+    Tag_0
+  } else {
+    let t781 = (self/56 > other/57) in
+    if t781 {
+      Tag_2
+    } else {
+      Tag_1
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint8#partial_cmp(
+  self/58: uint8,
+  other/59: uint8
+) -> Option__Ordering {
+  let t787 = (self/58 < other/59) in
+  join k784(jp785: Ordering) -> Option__Ordering {
+    let t786 = Option__Ordering::Some(jp785) in
+    t786
+  } in
+  if t787 {
+    jump k784(Tag_0)
+  } else {
+    let t790 = (self/58 > other/59) in
+    if t790 {
+      jump k784(Tag_2)
+    } else {
+      jump k784(Tag_1)
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint8#lt(default_arg0: uint8, default_arg1: uint8) -> bool {
+  let inline2164 = trait_impl#std::cmp::PartialOrd#uint8#partial_cmp(default_arg0, default_arg1) in
+  match inline2164 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2165 = Option__Ordering::Some._0(inline2164) in
+      let inline2167 = trait_impl#PartialEq#Ordering#eq(inline2165, Tag_0) in
+      inline2167
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint8#le(default_arg0: uint8, default_arg1: uint8) -> bool {
+  let inline2169 = trait_impl#std::cmp::PartialOrd#uint8#partial_cmp(default_arg0, default_arg1) in
+  match inline2169 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2170 = Option__Ordering::Some._0(inline2169) in
+      let inline2172 = trait_impl#PartialEq#Ordering#eq(inline2170, Tag_2) in
+      let inline2173 = (!inline2172) in
+      inline2173
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint8#gt(default_arg0: uint8, default_arg1: uint8) -> bool {
+  let inline2175 = trait_impl#std::cmp::PartialOrd#uint8#partial_cmp(default_arg0, default_arg1) in
+  match inline2175 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2176 = Option__Ordering::Some._0(inline2175) in
+      let inline2178 = trait_impl#PartialEq#Ordering#eq(inline2176, Tag_2) in
+      inline2178
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint8#ge(default_arg0: uint8, default_arg1: uint8) -> bool {
+  let inline2180 = trait_impl#std::cmp::PartialOrd#uint8#partial_cmp(default_arg0, default_arg1) in
+  match inline2180 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2181 = Option__Ordering::Some._0(inline2180) in
+      let inline2183 = trait_impl#PartialEq#Ordering#eq(inline2181, Tag_0) in
+      let inline2184 = (!inline2183) in
+      inline2184
+    },
+  }
+}
+
+fn trait_impl#std::cmp::Ord#uint16#cmp(self/60: uint16, other/61: uint16) -> Ordering {
+  let t807 = (self/60 < other/61) in
+  if t807 {
+    Tag_0
+  } else {
+    let t810 = (self/60 > other/61) in
+    if t810 {
+      Tag_2
+    } else {
+      Tag_1
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint16#partial_cmp(
+  self/62: uint16,
+  other/63: uint16
+) -> Option__Ordering {
+  let t816 = (self/62 < other/63) in
+  join k813(jp814: Ordering) -> Option__Ordering {
+    let t815 = Option__Ordering::Some(jp814) in
+    t815
+  } in
+  if t816 {
+    jump k813(Tag_0)
+  } else {
+    let t819 = (self/62 > other/63) in
+    if t819 {
+      jump k813(Tag_2)
+    } else {
+      jump k813(Tag_1)
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint16#lt(default_arg0: uint16, default_arg1: uint16) -> bool {
+  let inline2186 = trait_impl#std::cmp::PartialOrd#uint16#partial_cmp(default_arg0, default_arg1) in
+  match inline2186 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2187 = Option__Ordering::Some._0(inline2186) in
+      let inline2189 = trait_impl#PartialEq#Ordering#eq(inline2187, Tag_0) in
+      inline2189
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint16#le(default_arg0: uint16, default_arg1: uint16) -> bool {
+  let inline2191 = trait_impl#std::cmp::PartialOrd#uint16#partial_cmp(default_arg0, default_arg1) in
+  match inline2191 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2192 = Option__Ordering::Some._0(inline2191) in
+      let inline2194 = trait_impl#PartialEq#Ordering#eq(inline2192, Tag_2) in
+      let inline2195 = (!inline2194) in
+      inline2195
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint16#gt(default_arg0: uint16, default_arg1: uint16) -> bool {
+  let inline2197 = trait_impl#std::cmp::PartialOrd#uint16#partial_cmp(default_arg0, default_arg1) in
+  match inline2197 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2198 = Option__Ordering::Some._0(inline2197) in
+      let inline2200 = trait_impl#PartialEq#Ordering#eq(inline2198, Tag_2) in
+      inline2200
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint16#ge(default_arg0: uint16, default_arg1: uint16) -> bool {
+  let inline2202 = trait_impl#std::cmp::PartialOrd#uint16#partial_cmp(default_arg0, default_arg1) in
+  match inline2202 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2203 = Option__Ordering::Some._0(inline2202) in
+      let inline2205 = trait_impl#PartialEq#Ordering#eq(inline2203, Tag_0) in
+      let inline2206 = (!inline2205) in
+      inline2206
+    },
+  }
+}
+
+fn trait_impl#std::cmp::Ord#uint32#cmp(self/64: uint32, other/65: uint32) -> Ordering {
+  let t836 = (self/64 < other/65) in
+  if t836 {
+    Tag_0
+  } else {
+    let t839 = (self/64 > other/65) in
+    if t839 {
+      Tag_2
+    } else {
+      Tag_1
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint32#partial_cmp(
+  self/66: uint32,
+  other/67: uint32
+) -> Option__Ordering {
+  let t845 = (self/66 < other/67) in
+  join k842(jp843: Ordering) -> Option__Ordering {
+    let t844 = Option__Ordering::Some(jp843) in
+    t844
+  } in
+  if t845 {
+    jump k842(Tag_0)
+  } else {
+    let t848 = (self/66 > other/67) in
+    if t848 {
+      jump k842(Tag_2)
+    } else {
+      jump k842(Tag_1)
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint32#lt(default_arg0: uint32, default_arg1: uint32) -> bool {
+  let inline2208 = trait_impl#std::cmp::PartialOrd#uint32#partial_cmp(default_arg0, default_arg1) in
+  match inline2208 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2209 = Option__Ordering::Some._0(inline2208) in
+      let inline2211 = trait_impl#PartialEq#Ordering#eq(inline2209, Tag_0) in
+      inline2211
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint32#le(default_arg0: uint32, default_arg1: uint32) -> bool {
+  let inline2213 = trait_impl#std::cmp::PartialOrd#uint32#partial_cmp(default_arg0, default_arg1) in
+  match inline2213 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2214 = Option__Ordering::Some._0(inline2213) in
+      let inline2216 = trait_impl#PartialEq#Ordering#eq(inline2214, Tag_2) in
+      let inline2217 = (!inline2216) in
+      inline2217
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint32#gt(default_arg0: uint32, default_arg1: uint32) -> bool {
+  let inline2219 = trait_impl#std::cmp::PartialOrd#uint32#partial_cmp(default_arg0, default_arg1) in
+  match inline2219 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2220 = Option__Ordering::Some._0(inline2219) in
+      let inline2222 = trait_impl#PartialEq#Ordering#eq(inline2220, Tag_2) in
+      inline2222
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint32#ge(default_arg0: uint32, default_arg1: uint32) -> bool {
+  let inline2224 = trait_impl#std::cmp::PartialOrd#uint32#partial_cmp(default_arg0, default_arg1) in
+  match inline2224 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2225 = Option__Ordering::Some._0(inline2224) in
+      let inline2227 = trait_impl#PartialEq#Ordering#eq(inline2225, Tag_0) in
+      let inline2228 = (!inline2227) in
+      inline2228
+    },
+  }
+}
+
+fn trait_impl#std::cmp::Ord#uint64#cmp(self/68: uint64, other/69: uint64) -> Ordering {
+  let t865 = (self/68 < other/69) in
+  if t865 {
+    Tag_0
+  } else {
+    let t868 = (self/68 > other/69) in
+    if t868 {
+      Tag_2
+    } else {
+      Tag_1
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint64#partial_cmp(
+  self/70: uint64,
+  other/71: uint64
+) -> Option__Ordering {
+  let t874 = (self/70 < other/71) in
+  join k871(jp872: Ordering) -> Option__Ordering {
+    let t873 = Option__Ordering::Some(jp872) in
+    t873
+  } in
+  if t874 {
+    jump k871(Tag_0)
+  } else {
+    let t877 = (self/70 > other/71) in
+    if t877 {
+      jump k871(Tag_2)
+    } else {
+      jump k871(Tag_1)
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint64#lt(default_arg0: uint64, default_arg1: uint64) -> bool {
+  let inline2230 = trait_impl#std::cmp::PartialOrd#uint64#partial_cmp(default_arg0, default_arg1) in
+  match inline2230 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2231 = Option__Ordering::Some._0(inline2230) in
+      let inline2233 = trait_impl#PartialEq#Ordering#eq(inline2231, Tag_0) in
+      inline2233
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint64#le(default_arg0: uint64, default_arg1: uint64) -> bool {
+  let inline2235 = trait_impl#std::cmp::PartialOrd#uint64#partial_cmp(default_arg0, default_arg1) in
+  match inline2235 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2236 = Option__Ordering::Some._0(inline2235) in
+      let inline2238 = trait_impl#PartialEq#Ordering#eq(inline2236, Tag_2) in
+      let inline2239 = (!inline2238) in
+      inline2239
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint64#gt(default_arg0: uint64, default_arg1: uint64) -> bool {
+  let inline2241 = trait_impl#std::cmp::PartialOrd#uint64#partial_cmp(default_arg0, default_arg1) in
+  match inline2241 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2242 = Option__Ordering::Some._0(inline2241) in
+      let inline2244 = trait_impl#PartialEq#Ordering#eq(inline2242, Tag_2) in
+      inline2244
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint64#ge(default_arg0: uint64, default_arg1: uint64) -> bool {
+  let inline2246 = trait_impl#std::cmp::PartialOrd#uint64#partial_cmp(default_arg0, default_arg1) in
+  match inline2246 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2247 = Option__Ordering::Some._0(inline2246) in
+      let inline2249 = trait_impl#PartialEq#Ordering#eq(inline2247, Tag_0) in
+      let inline2250 = (!inline2249) in
+      inline2250
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#float32#partial_cmp(
+  self/72: float32,
+  other/73: float32
+) -> Option__Ordering {
+  let t894 = (self/72 < other/73) in
+  if t894 {
+    let t895 = Option__Ordering::Some(Tag_0) in
+    t895
+  } else {
+    let t898 = (self/72 > other/73) in
+    if t898 {
+      let t899 = Option__Ordering::Some(Tag_2) in
+      t899
+    } else {
+      let t902 = (self/72 == other/73) in
+      if t902 {
+        let t903 = Option__Ordering::Some(Tag_1) in
+        t903
+      } else {
+        Tag_0
+      }
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#float32#lt(
+  default_arg0: float32,
+  default_arg1: float32
+) -> bool {
+  let inline2252 =
+    trait_impl#std::cmp::PartialOrd#float32#partial_cmp(default_arg0, default_arg1) in
+  match inline2252 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2253 = Option__Ordering::Some._0(inline2252) in
+      let inline2255 = trait_impl#PartialEq#Ordering#eq(inline2253, Tag_0) in
+      inline2255
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#float32#le(
+  default_arg0: float32,
+  default_arg1: float32
+) -> bool {
+  let inline2257 =
+    trait_impl#std::cmp::PartialOrd#float32#partial_cmp(default_arg0, default_arg1) in
+  match inline2257 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2258 = Option__Ordering::Some._0(inline2257) in
+      let inline2260 = trait_impl#PartialEq#Ordering#eq(inline2258, Tag_2) in
+      let inline2261 = (!inline2260) in
+      inline2261
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#float32#gt(
+  default_arg0: float32,
+  default_arg1: float32
+) -> bool {
+  let inline2263 =
+    trait_impl#std::cmp::PartialOrd#float32#partial_cmp(default_arg0, default_arg1) in
+  match inline2263 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2264 = Option__Ordering::Some._0(inline2263) in
+      let inline2266 = trait_impl#PartialEq#Ordering#eq(inline2264, Tag_2) in
+      inline2266
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#float32#ge(
+  default_arg0: float32,
+  default_arg1: float32
+) -> bool {
+  let inline2268 =
+    trait_impl#std::cmp::PartialOrd#float32#partial_cmp(default_arg0, default_arg1) in
+  match inline2268 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2269 = Option__Ordering::Some._0(inline2268) in
+      let inline2271 = trait_impl#PartialEq#Ordering#eq(inline2269, Tag_0) in
+      let inline2272 = (!inline2271) in
+      inline2272
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#float64#partial_cmp(
+  self/74: float64,
+  other/75: float64
+) -> Option__Ordering {
+  let t920 = (self/74 < other/75) in
+  if t920 {
+    let t921 = Option__Ordering::Some(Tag_0) in
+    t921
+  } else {
+    let t924 = (self/74 > other/75) in
+    if t924 {
+      let t925 = Option__Ordering::Some(Tag_2) in
+      t925
+    } else {
+      let t928 = (self/74 == other/75) in
+      if t928 {
+        let t929 = Option__Ordering::Some(Tag_1) in
+        t929
+      } else {
+        Tag_0
+      }
+    }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#float64#lt(
+  default_arg0: float64,
+  default_arg1: float64
+) -> bool {
+  let inline2274 =
+    trait_impl#std::cmp::PartialOrd#float64#partial_cmp(default_arg0, default_arg1) in
+  match inline2274 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2275 = Option__Ordering::Some._0(inline2274) in
+      let inline2277 = trait_impl#PartialEq#Ordering#eq(inline2275, Tag_0) in
+      inline2277
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#float64#le(
+  default_arg0: float64,
+  default_arg1: float64
+) -> bool {
+  let inline2279 =
+    trait_impl#std::cmp::PartialOrd#float64#partial_cmp(default_arg0, default_arg1) in
+  match inline2279 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2280 = Option__Ordering::Some._0(inline2279) in
+      let inline2282 = trait_impl#PartialEq#Ordering#eq(inline2280, Tag_2) in
+      let inline2283 = (!inline2282) in
+      inline2283
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#float64#gt(
+  default_arg0: float64,
+  default_arg1: float64
+) -> bool {
+  let inline2285 =
+    trait_impl#std::cmp::PartialOrd#float64#partial_cmp(default_arg0, default_arg1) in
+  match inline2285 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2286 = Option__Ordering::Some._0(inline2285) in
+      let inline2288 = trait_impl#PartialEq#Ordering#eq(inline2286, Tag_2) in
+      inline2288
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#float64#ge(
+  default_arg0: float64,
+  default_arg1: float64
+) -> bool {
+  let inline2290 =
+    trait_impl#std::cmp::PartialOrd#float64#partial_cmp(default_arg0, default_arg1) in
+  match inline2290 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      let inline2291 = Option__Ordering::Some._0(inline2290) in
+      let inline2293 = trait_impl#PartialEq#Ordering#eq(inline2291, Tag_0) in
+      let inline2294 = (!inline2293) in
+      inline2294
+    },
+  }
+}
+
+fn main() -> unit {
+  let vec_literal/52 = inherent#Vec#Vec[T]#new__T_int() in
+  let _wild408 = inherent#Vec#Vec[T]#push__T_int(vec_literal/52, 3) in
+  let _wild409 = inherent#Vec#Vec[T]#push__T_int(vec_literal/52, 1) in
+  let _wild410 = inherent#Vec#Vec[T]#push__T_int(vec_literal/52, 4) in
+  let _wild411 = inherent#Vec#Vec[T]#push__T_int(vec_literal/52, 1) in
+  let _wild412 = inherent#Vec#Vec[T]#push__T_int(vec_literal/52, 5) in
+  let _wild413 = inherent#Vec#Vec[T]#push__T_int(vec_literal/52, 9) in
+  let _wild414 = inherent#Vec#Vec[T]#push__T_int(vec_literal/52, 2) in
+  let _wild415 = inherent#Vec#Vec[T]#push__T_int(vec_literal/52, 6) in
+  let t943 = closure_env_main_0 {} in
+  let t944 = pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](t943) in
+  let t945 = inherent#Vec#Vec[T]#position__T_int(vec_literal/52, t944) in
+  let t946 = inherent#Option#Option[T]#unwrap_or__T_int(t945, -1) in
+  let t947 = inherent#int#int#to_string(t946) in
+  let _wild416 = println__T_string(t947) in
+  let t948 = closure_env_main_1 {} in
+  let t949 = pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](t948) in
+  let t950 = inherent#Vec#Vec[T]#position__T_int(vec_literal/52, t949) in
+  let t951 = inherent#Option#Option[T]#unwrap_or__T_int(t950, -1) in
+  let t952 = inherent#int#int#to_string(t951) in
+  let _wild417 = println__T_string(t952) in
+  let t953 = closure_env_main_2 {} in
+  let t954 = pack_closure[inherent#closure_env_main_2#closure_env_main_2#apply](t953) in
+  let _wild418 = inherent#Vec#Vec[T]#sort_by__T_int(vec_literal/52, t954) in
+  let t955 = inherent#Vec#Vec[T]#join__T_int(vec_literal/52, ",") in
+  let _wild419 = println__T_string(t955) in
+  let _wild420 = inherent#Vec#Vec[T]#dedup__T_int(vec_literal/52) in
+  let t956 = inherent#Vec#Vec[T]#join__T_int(vec_literal/52, ",") in
+  let _wild421 = println__T_string(t956) in
+  let vec_literal/404 = inherent#Vec#Vec[T]#new__T_int() in
+  let _wild422 = inherent#Vec#Vec[T]#push__T_int(vec_literal/404, 1) in
+  let _wild423 = inherent#Vec#Vec[T]#push__T_int(vec_literal/404, 2) in
+  let _wild424 = inherent#Vec#Vec[T]#push__T_int(vec_literal/404, 4) in
+  let _wild425 = inherent#Vec#Vec[T]#push__T_int(vec_literal/404, 4) in
+  let _wild426 = inherent#Vec#Vec[T]#push__T_int(vec_literal/404, 5) in
+  let t957 = closure_env_main_3 {} in
+  let t958 = pack_closure[inherent#closure_env_main_3#closure_env_main_3#apply](t957) in
+  let t959 = inherent#Vec#Vec[T]#binary_search_by__T_int(vec_literal/404, t958) in
+  let t960 = inherent#Option#Option[T]#unwrap_or__T_int(t959, -1) in
+  let t961 = inherent#int#int#to_string(t960) in
+  let _wild427 = println__T_string(t961) in
+  let t962 = closure_env_main_4 {} in
+  let t963 = pack_closure[inherent#closure_env_main_4#closure_env_main_4#apply](t962) in
+  let t964 = inherent#Vec#Vec[T]#binary_search_by__T_int(vec_literal/404, t963) in
+  let t965 = inherent#Option#Option[T]#unwrap_or__T_int(t964, -1) in
+  let t966 = inherent#int#int#to_string(t965) in
+  let _wild428 = println__T_string(t966) in
+  let t967 = closure_env_main_5 {} in
+  let t968 = pack_closure[inherent#closure_env_main_5#closure_env_main_5#apply](t967) in
+  let t969 = inherent#Vec#Vec[T]#min_by__T_int(vec_literal/404, t968) in
+  let t970 = inherent#Option#Option[T]#unwrap_or__T_int(t969, 0) in
+  let t971 = inherent#int#int#to_string(t970) in
+  let _wild429 = println__T_string(t971) in
+  let t972 = closure_env_main_6 {} in
+  let t973 = pack_closure[inherent#closure_env_main_6#closure_env_main_6#apply](t972) in
+  let t974 = inherent#Vec#Vec[T]#max_by__T_int(vec_literal/404, t973) in
+  let t975 = inherent#Option#Option[T]#unwrap_or__T_int(t974, 0) in
+  let t976 = inherent#int#int#to_string(t975) in
+  let _wild430 = println__T_string(t976) in
+  let vec_literal/804 = inherent#Vec#Vec[T]#new__T_string() in
+  let _wild431 = inherent#Vec#Vec[T]#push__T_string(vec_literal/804, "beta") in
+  let _wild432 = inherent#Vec#Vec[T]#push__T_string(vec_literal/804, "alpha") in
+  let _wild433 = inherent#Vec#Vec[T]#push__T_string(vec_literal/804, "gamma") in
+  let t977 = closure_env_main_7 {} in
+  let t978 = pack_closure[inherent#closure_env_main_7#closure_env_main_7#apply](t977) in
+  let _wild434 = inherent#Vec#Vec[T]#sort_by_ordering__T_string(vec_literal/804, t978) in
+  let t979 = inherent#Vec#Vec[T]#join__T_string(vec_literal/804, "|") in
+  let _wild435 = println__T_string(t979) in
+  let vec_literal/968 = inherent#Vec#Vec[T]#new__T_(int,int)() in
+  let t980 = (1, 2) in
+  let _wild436 = inherent#Vec#Vec[T]#push__T_(int,int)(vec_literal/968, t980) in
+  let t981 = (1, 1) in
+  let _wild437 = inherent#Vec#Vec[T]#push__T_(int,int)(vec_literal/968, t981) in
+  let t982 = (0, 9) in
+  let _wild438 = inherent#Vec#Vec[T]#push__T_(int,int)(vec_literal/968, t982) in
+  let t983 = closure_env_main_8 {} in
+  let t984 = pack_closure[inherent#closure_env_main_8#closure_env_main_8#apply](t983) in
+  let _wild439 = inherent#Vec#Vec[T]#sort_by_ordering__T_(int,int)(vec_literal/968, t984) in
+  let t985 = inherent#Vec#Vec[T]#len__T_(int,int)(vec_literal/968) in
+  let t986 = inherent#int#int#to_string(t985) in
+  let _wild440 = println__T_string(t986) in
+  let vec_literal/1149 = inherent#Vec#Vec[T]#new__T_int() in
+  let _wild441 = inherent#Vec#Vec[T]#push__T_int(vec_literal/1149, 7) in
+  join inline_cont2346(_wild442: unit) -> unit {
+    join inline_cont2343(_wild443: unit) -> unit {
+      join inline_cont2339(view/18: Slice[int]) -> unit {
+        let t987 = inherent#Slice#Slice[T]#contains__T_int(view/18, 8) in
+        join inline_cont2337(t988: string) -> unit {
+          join inline_cont2334(_wild444: unit) -> unit {
+            let t989 = inherent#Slice#Slice[T]#contains__T_int(view/18, 9) in
+            join inline_cont2332(t990: string) -> unit {
+              join inline_cont2329(_wild445: unit) -> unit {
+                join inline_cont2327(vec_literal/1280: Vec[int]) -> unit {
+                  join inline_cont2324(_wild446: unit) -> unit {
+                    join inline_cont2321(_wild447: unit) -> unit {
+                      join inline_cont2318(frozen/19: FrozenVec__int) -> unit {
+                        let t991 = inherent#FrozenVec#FrozenVec[T]#contains__T_int(frozen/19, 1) in
+                        join inline_cont2316(t992: string) -> unit {
+                          join inline_cont2313(_wild448: unit) -> unit {
+                            let t993 =
+                              inherent#FrozenVec#FrozenVec[T]#contains__T_int(frozen/19, 3) in
+                            join inline_cont2311(t994: string) -> unit {
+                              join inline_cont2308(_wild449: unit) -> unit {
+                                join inline_cont2306(vec_literal/1418: Vec[int]) -> unit {
+                                  let t995 =
+                                    inherent#Vec#Vec[T]#join__T_int(vec_literal/1418, ",") in
+                                  join inline_cont2303(_wild450: unit) -> unit {
+                                    let t996 = closure_env_main_9 {} in
+                                    let t997 =
+                                      pack_closure[inherent#closure_env_main_9#closure_env_main_9#apply](
+                                        t996
+                                      ) in
+                                    let t998 =
+                                      inherent#Vec#Vec[T]#min_by__T_int(vec_literal/1418, t997) in
+                                    join inline_cont2300(t999: bool) -> unit {
+                                      join inline_cont2298(t1000: string) -> unit {
+                                        let inline2296 =
+                                          trait_impl#ToString#string#to_string(t1000) in
+                                        let inline2297 =
+                                          @runtime(core.string_println)(inline2296) in
+                                        ()
+                                      } in
+                                      let inline2299 = @runtime(core.bool_to_string)(t999) in
+                                      jump inline_cont2298(inline2299)
+                                    } in
+                                    let inline2301 =
+                                      inherent#Option#Option[T]#is_some__T_int(t998) in
+                                    let inline2302 = (!inline2301) in
+                                    jump inline_cont2300(inline2302)
+                                  } in
+                                  let inline2304 = trait_impl#ToString#string#to_string(t995) in
+                                  let inline2305 = @runtime(core.string_println)(inline2304) in
+                                  jump inline_cont2303(())
+                                } in
+                                let inline2307 = @intrinsic(vec.new)() in
+                                jump inline_cont2306(inline2307)
+                              } in
+                              let inline2309 = trait_impl#ToString#string#to_string(t994) in
+                              let inline2310 = @runtime(core.string_println)(inline2309) in
+                              jump inline_cont2308(())
+                            } in
+                            let inline2312 = @runtime(core.bool_to_string)(t993) in
+                            jump inline_cont2311(inline2312)
+                          } in
+                          let inline2314 = trait_impl#ToString#string#to_string(t992) in
+                          let inline2315 = @runtime(core.string_println)(inline2314) in
+                          jump inline_cont2313(())
+                        } in
+                        let inline2317 = @runtime(core.bool_to_string)(t991) in
+                        jump inline_cont2316(inline2317)
+                      } in
+                      let inline2319 = inherent#Vec#Vec[T]#copy__T_int(vec_literal/1280) in
+                      let inline2320 = FrozenVec__int { values: inline2319 } in
+                      jump inline_cont2318(inline2320)
+                    } in
+                    let inline2322 = 2 in
+                    let inline2323 = @intrinsic(vec.push)(vec_literal/1280, inline2322) in
+                    jump inline_cont2321(())
+                  } in
+                  let inline2325 = 1 in
+                  let inline2326 = @intrinsic(vec.push)(vec_literal/1280, inline2325) in
+                  jump inline_cont2324(())
+                } in
+                let inline2328 = @intrinsic(vec.new)() in
+                jump inline_cont2327(inline2328)
+              } in
+              let inline2330 = trait_impl#ToString#string#to_string(t990) in
+              let inline2331 = @runtime(core.string_println)(inline2330) in
+              jump inline_cont2329(())
+            } in
+            let inline2333 = @runtime(core.bool_to_string)(t989) in
+            jump inline_cont2332(inline2333)
+          } in
+          let inline2335 = trait_impl#ToString#string#to_string(t988) in
+          let inline2336 = @runtime(core.string_println)(inline2335) in
+          jump inline_cont2334(())
+        } in
+        let inline2338 = @runtime(core.bool_to_string)(t987) in
+        jump inline_cont2337(inline2338)
+      } in
+      let inline2340 = 0 in
+      let inline2341 = 2 in
+      let inline2342 = @intrinsic(slice.new)(vec_literal/1149, inline2340, inline2341) in
+      jump inline_cont2339(inline2342)
+    } in
+    let inline2344 = 9 in
+    let inline2345 = @intrinsic(vec.push)(vec_literal/1149, inline2344) in
+    jump inline_cont2343(())
+  } in
+  let inline2347 = 8 in
+  let inline2348 = @intrinsic(vec.push)(vec_literal/1149, inline2347) in
+  jump inline_cont2346(())
+}
+
+fn trait_impl#PartialEq#Ordering#eq(self/845: Ordering, other/846: Ordering) -> bool {
+  match self/845 {
+    Tag_0 => {
+      match other/846 {
+        Tag_0 => {
+          true
+        },
+        _ => {
+          false
+        },
+      }
+    },
+    Tag_1 => {
+      match other/846 {
+        Tag_1 => {
+          true
+        },
+        _ => {
+          false
+        },
+      }
+    },
+    Tag_2 => {
+      match other/846 {
+        Tag_2 => {
+          true
+        },
+        _ => {
+          false
+        },
+      }
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_Ordering(
+  self/0: Ordering,
+  other/1: Ordering
+) -> bool {
+  join commute_arm3090(commute_field3089: Ordering) -> bool {
+    match commute_field3089 {
+      Tag_0 => {
+        true
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        false
+      },
+    }
+  } in
+  let inline2351 = trait_impl#PartialEq#Ordering#eq(self/0, other/1) in
+  join inline_join2352(inline2353: Ordering) -> bool {
+    jump commute_arm3090(inline2353)
+  } in
+  if inline2351 {
+    jump inline_join2352(Tag_1)
+  } else {
+    match self/0 {
+      Tag_0 => {
+        jump inline_join2352(Tag_0)
+      },
+      Tag_1 => {
+        let inline2355 = trait_impl#PartialEq#Ordering#eq(other/1, Tag_2) in
+        if inline2355 {
+          jump inline_join2352(Tag_0)
+        } else {
+          jump inline_join2352(Tag_2)
+        }
+      },
+      Tag_2 => {
+        jump inline_join2352(Tag_2)
+      },
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_Ordering(
+  self/3: Ordering,
+  other/4: Ordering
+) -> bool {
+  join commute_arm3093(commute_field3092: Ordering) -> bool {
+    join inline_cont2356(t1021: bool) -> bool {
+      let t1022 = (!t1021) in
+      t1022
+    } in
+    match commute_field3092 {
+      Tag_0 => {
+        jump inline_cont2356(false)
+      },
+      Tag_1 => {
+        jump inline_cont2356(false)
+      },
+      Tag_2 => {
+        jump inline_cont2356(true)
+      },
+    }
+  } in
+  let inline2358 = trait_impl#PartialEq#Ordering#eq(self/3, other/4) in
+  join inline_join2359(inline2360: Ordering) -> bool {
+    jump commute_arm3093(inline2360)
+  } in
+  if inline2358 {
+    jump inline_join2359(Tag_1)
+  } else {
+    match self/3 {
+      Tag_0 => {
+        jump inline_join2359(Tag_0)
+      },
+      Tag_1 => {
+        let inline2362 = trait_impl#PartialEq#Ordering#eq(other/4, Tag_2) in
+        if inline2362 {
+          jump inline_join2359(Tag_0)
+        } else {
+          jump inline_join2359(Tag_2)
+        }
+      },
+      Tag_2 => {
+        jump inline_join2359(Tag_2)
+      },
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_Ordering(
+  self/6: Ordering,
+  other/7: Ordering
+) -> bool {
+  join commute_arm3096(commute_field3095: Ordering) -> bool {
+    match commute_field3095 {
+      Tag_0 => {
+        false
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        true
+      },
+    }
+  } in
+  let inline2365 = trait_impl#PartialEq#Ordering#eq(self/6, other/7) in
+  join inline_join2366(inline2367: Ordering) -> bool {
+    jump commute_arm3096(inline2367)
+  } in
+  if inline2365 {
+    jump inline_join2366(Tag_1)
+  } else {
+    match self/6 {
+      Tag_0 => {
+        jump inline_join2366(Tag_0)
+      },
+      Tag_1 => {
+        let inline2369 = trait_impl#PartialEq#Ordering#eq(other/7, Tag_2) in
+        if inline2369 {
+          jump inline_join2366(Tag_0)
+        } else {
+          jump inline_join2366(Tag_2)
+        }
+      },
+      Tag_2 => {
+        jump inline_join2366(Tag_2)
+      },
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_Ordering(
+  self/9: Ordering,
+  other/10: Ordering
+) -> bool {
+  join commute_arm3099(commute_field3098: Ordering) -> bool {
+    join inline_cont2370(t1032: bool) -> bool {
+      let t1033 = (!t1032) in
+      t1033
+    } in
+    match commute_field3098 {
+      Tag_0 => {
+        jump inline_cont2370(true)
+      },
+      Tag_1 => {
+        jump inline_cont2370(false)
+      },
+      Tag_2 => {
+        jump inline_cont2370(false)
+      },
+    }
+  } in
+  let inline2372 = trait_impl#PartialEq#Ordering#eq(self/9, other/10) in
+  join inline_join2373(inline2374: Ordering) -> bool {
+    jump commute_arm3099(inline2374)
+  } in
+  if inline2372 {
+    jump inline_join2373(Tag_1)
+  } else {
+    match self/9 {
+      Tag_0 => {
+        jump inline_join2373(Tag_0)
+      },
+      Tag_1 => {
+        let inline2376 = trait_impl#PartialEq#Ordering#eq(other/10, Tag_2) in
+        if inline2376 {
+          jump inline_join2373(Tag_0)
+        } else {
+          jump inline_join2373(Tag_2)
+        }
+      },
+      Tag_2 => {
+        jump inline_join2373(Tag_2)
+      },
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_unit(self/0: unit, other/1: unit) -> bool {
+  join commute_arm3102(commute_field3101: Ordering) -> bool {
+    match commute_field3101 {
+      Tag_0 => {
+        true
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        false
+      },
+    }
+  } in
+  jump commute_arm3102(Tag_1)
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_unit(self/3: unit, other/4: unit) -> bool {
+  join commute_arm3105(commute_field3104: Ordering) -> bool {
+    join inline_cont2380(t1043: bool) -> bool {
+      let t1044 = (!t1043) in
+      t1044
+    } in
+    match commute_field3104 {
+      Tag_0 => {
+        jump inline_cont2380(false)
+      },
+      Tag_1 => {
+        jump inline_cont2380(false)
+      },
+      Tag_2 => {
+        jump inline_cont2380(true)
+      },
+    }
+  } in
+  jump commute_arm3105(Tag_1)
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_unit(self/6: unit, other/7: unit) -> bool {
+  join commute_arm3108(commute_field3107: Ordering) -> bool {
+    match commute_field3107 {
+      Tag_0 => {
+        false
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        true
+      },
+    }
+  } in
+  jump commute_arm3108(Tag_1)
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_unit(self/9: unit, other/10: unit) -> bool {
+  join commute_arm3111(commute_field3110: Ordering) -> bool {
+    join inline_cont2386(t1054: bool) -> bool {
+      let t1055 = (!t1054) in
+      t1055
+    } in
+    match commute_field3110 {
+      Tag_0 => {
+        jump inline_cont2386(true)
+      },
+      Tag_1 => {
+        jump inline_cont2386(false)
+      },
+      Tag_2 => {
+        jump inline_cont2386(false)
+      },
+    }
+  } in
+  jump commute_arm3111(Tag_1)
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_bool(self/0: bool, other/1: bool) -> bool {
+  join commute_arm3114(commute_field3113: Ordering) -> bool {
+    match commute_field3113 {
+      Tag_0 => {
+        true
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        false
+      },
+    }
+  } in
+  let inline2391 = (self/0 == other/1) in
+  join inline_join2392(inline2393: Ordering) -> bool {
+    jump commute_arm3114(inline2393)
+  } in
+  if inline2391 {
+    jump inline_join2392(Tag_1)
+  } else {
+    if self/0 {
+      jump inline_join2392(Tag_2)
+    } else {
+      jump inline_join2392(Tag_0)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_bool(self/3: bool, other/4: bool) -> bool {
+  join commute_arm3117(commute_field3116: Ordering) -> bool {
+    join inline_cont2395(t1065: bool) -> bool {
+      let t1066 = (!t1065) in
+      t1066
+    } in
+    match commute_field3116 {
+      Tag_0 => {
+        jump inline_cont2395(false)
+      },
+      Tag_1 => {
+        jump inline_cont2395(false)
+      },
+      Tag_2 => {
+        jump inline_cont2395(true)
+      },
+    }
+  } in
+  let inline2397 = (self/3 == other/4) in
+  join inline_join2398(inline2399: Ordering) -> bool {
+    jump commute_arm3117(inline2399)
+  } in
+  if inline2397 {
+    jump inline_join2398(Tag_1)
+  } else {
+    if self/3 {
+      jump inline_join2398(Tag_2)
+    } else {
+      jump inline_join2398(Tag_0)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_bool(self/6: bool, other/7: bool) -> bool {
+  join commute_arm3120(commute_field3119: Ordering) -> bool {
+    match commute_field3119 {
+      Tag_0 => {
+        false
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        true
+      },
+    }
+  } in
+  let inline2403 = (self/6 == other/7) in
+  join inline_join2404(inline2405: Ordering) -> bool {
+    jump commute_arm3120(inline2405)
+  } in
+  if inline2403 {
+    jump inline_join2404(Tag_1)
+  } else {
+    if self/6 {
+      jump inline_join2404(Tag_2)
+    } else {
+      jump inline_join2404(Tag_0)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_bool(self/9: bool, other/10: bool) -> bool {
+  join commute_arm3123(commute_field3122: Ordering) -> bool {
+    join inline_cont2407(t1076: bool) -> bool {
+      let t1077 = (!t1076) in
+      t1077
+    } in
+    match commute_field3122 {
+      Tag_0 => {
+        jump inline_cont2407(true)
+      },
+      Tag_1 => {
+        jump inline_cont2407(false)
+      },
+      Tag_2 => {
+        jump inline_cont2407(false)
+      },
+    }
+  } in
+  let inline2409 = (self/9 == other/10) in
+  join inline_join2410(inline2411: Ordering) -> bool {
+    jump commute_arm3123(inline2411)
+  } in
+  if inline2409 {
+    jump inline_join2410(Tag_1)
+  } else {
+    if self/9 {
+      jump inline_join2410(Tag_2)
+    } else {
+      jump inline_join2410(Tag_0)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_string(self/0: string, other/1: string) -> bool {
+  join commute_arm3126(commute_field3125: Ordering) -> bool {
+    match commute_field3125 {
+      Tag_0 => {
+        true
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        false
+      },
+    }
+  } in
+  let inline2415 = (self/0 < other/1) in
+  join inline_join2416(inline2417: Ordering) -> bool {
+    jump commute_arm3126(inline2417)
+  } in
+  if inline2415 {
+    jump inline_join2416(Tag_0)
+  } else {
+    let inline2419 = (self/0 > other/1) in
+    if inline2419 {
+      jump inline_join2416(Tag_2)
+    } else {
+      jump inline_join2416(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_string(self/3: string, other/4: string) -> bool {
+  join commute_arm3129(commute_field3128: Ordering) -> bool {
+    join inline_cont2420(t1087: bool) -> bool {
+      let t1088 = (!t1087) in
+      t1088
+    } in
+    match commute_field3128 {
+      Tag_0 => {
+        jump inline_cont2420(false)
+      },
+      Tag_1 => {
+        jump inline_cont2420(false)
+      },
+      Tag_2 => {
+        jump inline_cont2420(true)
+      },
+    }
+  } in
+  let inline2422 = (self/3 < other/4) in
+  join inline_join2423(inline2424: Ordering) -> bool {
+    jump commute_arm3129(inline2424)
+  } in
+  if inline2422 {
+    jump inline_join2423(Tag_0)
+  } else {
+    let inline2426 = (self/3 > other/4) in
+    if inline2426 {
+      jump inline_join2423(Tag_2)
+    } else {
+      jump inline_join2423(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_string(self/6: string, other/7: string) -> bool {
+  join commute_arm3132(commute_field3131: Ordering) -> bool {
+    match commute_field3131 {
+      Tag_0 => {
+        false
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        true
+      },
+    }
+  } in
+  let inline2429 = (self/6 < other/7) in
+  join inline_join2430(inline2431: Ordering) -> bool {
+    jump commute_arm3132(inline2431)
+  } in
+  if inline2429 {
+    jump inline_join2430(Tag_0)
+  } else {
+    let inline2433 = (self/6 > other/7) in
+    if inline2433 {
+      jump inline_join2430(Tag_2)
+    } else {
+      jump inline_join2430(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_string(self/9: string, other/10: string) -> bool {
+  join commute_arm3135(commute_field3134: Ordering) -> bool {
+    join inline_cont2434(t1098: bool) -> bool {
+      let t1099 = (!t1098) in
+      t1099
+    } in
+    match commute_field3134 {
+      Tag_0 => {
+        jump inline_cont2434(true)
+      },
+      Tag_1 => {
+        jump inline_cont2434(false)
+      },
+      Tag_2 => {
+        jump inline_cont2434(false)
+      },
+    }
+  } in
+  let inline2436 = (self/9 < other/10) in
+  join inline_join2437(inline2438: Ordering) -> bool {
+    jump commute_arm3135(inline2438)
+  } in
+  if inline2436 {
+    jump inline_join2437(Tag_0)
+  } else {
+    let inline2440 = (self/9 > other/10) in
+    if inline2440 {
+      jump inline_join2437(Tag_2)
+    } else {
+      jump inline_join2437(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_char(self/0: char, other/1: char) -> bool {
+  join commute_arm3138(commute_field3137: Ordering) -> bool {
+    match commute_field3137 {
+      Tag_0 => {
+        true
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        false
+      },
+    }
+  } in
+  let inline2443 = (self/0 < other/1) in
+  join inline_join2444(inline2445: Ordering) -> bool {
+    jump commute_arm3138(inline2445)
+  } in
+  if inline2443 {
+    jump inline_join2444(Tag_0)
+  } else {
+    let inline2447 = (self/0 > other/1) in
+    if inline2447 {
+      jump inline_join2444(Tag_2)
+    } else {
+      jump inline_join2444(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_char(self/3: char, other/4: char) -> bool {
+  join commute_arm3141(commute_field3140: Ordering) -> bool {
+    join inline_cont2448(t1109: bool) -> bool {
+      let t1110 = (!t1109) in
+      t1110
+    } in
+    match commute_field3140 {
+      Tag_0 => {
+        jump inline_cont2448(false)
+      },
+      Tag_1 => {
+        jump inline_cont2448(false)
+      },
+      Tag_2 => {
+        jump inline_cont2448(true)
+      },
+    }
+  } in
+  let inline2450 = (self/3 < other/4) in
+  join inline_join2451(inline2452: Ordering) -> bool {
+    jump commute_arm3141(inline2452)
+  } in
+  if inline2450 {
+    jump inline_join2451(Tag_0)
+  } else {
+    let inline2454 = (self/3 > other/4) in
+    if inline2454 {
+      jump inline_join2451(Tag_2)
+    } else {
+      jump inline_join2451(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_char(self/6: char, other/7: char) -> bool {
+  join commute_arm3144(commute_field3143: Ordering) -> bool {
+    match commute_field3143 {
+      Tag_0 => {
+        false
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        true
+      },
+    }
+  } in
+  let inline2457 = (self/6 < other/7) in
+  join inline_join2458(inline2459: Ordering) -> bool {
+    jump commute_arm3144(inline2459)
+  } in
+  if inline2457 {
+    jump inline_join2458(Tag_0)
+  } else {
+    let inline2461 = (self/6 > other/7) in
+    if inline2461 {
+      jump inline_join2458(Tag_2)
+    } else {
+      jump inline_join2458(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_char(self/9: char, other/10: char) -> bool {
+  join commute_arm3147(commute_field3146: Ordering) -> bool {
+    join inline_cont2462(t1120: bool) -> bool {
+      let t1121 = (!t1120) in
+      t1121
+    } in
+    match commute_field3146 {
+      Tag_0 => {
+        jump inline_cont2462(true)
+      },
+      Tag_1 => {
+        jump inline_cont2462(false)
+      },
+      Tag_2 => {
+        jump inline_cont2462(false)
+      },
+    }
+  } in
+  let inline2464 = (self/9 < other/10) in
+  join inline_join2465(inline2466: Ordering) -> bool {
+    jump commute_arm3147(inline2466)
+  } in
+  if inline2464 {
+    jump inline_join2465(Tag_0)
+  } else {
+    let inline2468 = (self/9 > other/10) in
+    if inline2468 {
+      jump inline_join2465(Tag_2)
+    } else {
+      jump inline_join2465(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_int(self/0: int, other/1: int) -> bool {
+  join commute_arm3150(commute_field3149: Ordering) -> bool {
+    match commute_field3149 {
+      Tag_0 => {
+        true
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        false
+      },
+    }
+  } in
+  let inline2471 = (self/0 < other/1) in
+  join inline_join2472(inline2473: Ordering) -> bool {
+    jump commute_arm3150(inline2473)
+  } in
+  if inline2471 {
+    jump inline_join2472(Tag_0)
+  } else {
+    let inline2475 = (self/0 > other/1) in
+    if inline2475 {
+      jump inline_join2472(Tag_2)
+    } else {
+      jump inline_join2472(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_int(self/3: int, other/4: int) -> bool {
+  join commute_arm3153(commute_field3152: Ordering) -> bool {
+    join inline_cont2476(t1131: bool) -> bool {
+      let t1132 = (!t1131) in
+      t1132
+    } in
+    match commute_field3152 {
+      Tag_0 => {
+        jump inline_cont2476(false)
+      },
+      Tag_1 => {
+        jump inline_cont2476(false)
+      },
+      Tag_2 => {
+        jump inline_cont2476(true)
+      },
+    }
+  } in
+  let inline2478 = (self/3 < other/4) in
+  join inline_join2479(inline2480: Ordering) -> bool {
+    jump commute_arm3153(inline2480)
+  } in
+  if inline2478 {
+    jump inline_join2479(Tag_0)
+  } else {
+    let inline2482 = (self/3 > other/4) in
+    if inline2482 {
+      jump inline_join2479(Tag_2)
+    } else {
+      jump inline_join2479(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_int(self/6: int, other/7: int) -> bool {
+  join commute_arm3156(commute_field3155: Ordering) -> bool {
+    match commute_field3155 {
+      Tag_0 => {
+        false
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        true
+      },
+    }
+  } in
+  let inline2485 = (self/6 < other/7) in
+  join inline_join2486(inline2487: Ordering) -> bool {
+    jump commute_arm3156(inline2487)
+  } in
+  if inline2485 {
+    jump inline_join2486(Tag_0)
+  } else {
+    let inline2489 = (self/6 > other/7) in
+    if inline2489 {
+      jump inline_join2486(Tag_2)
+    } else {
+      jump inline_join2486(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_int(self/9: int, other/10: int) -> bool {
+  join commute_arm3159(commute_field3158: Ordering) -> bool {
+    join inline_cont2490(t1142: bool) -> bool {
+      let t1143 = (!t1142) in
+      t1143
+    } in
+    match commute_field3158 {
+      Tag_0 => {
+        jump inline_cont2490(true)
+      },
+      Tag_1 => {
+        jump inline_cont2490(false)
+      },
+      Tag_2 => {
+        jump inline_cont2490(false)
+      },
+    }
+  } in
+  let inline2492 = (self/9 < other/10) in
+  join inline_join2493(inline2494: Ordering) -> bool {
+    jump commute_arm3159(inline2494)
+  } in
+  if inline2492 {
+    jump inline_join2493(Tag_0)
+  } else {
+    let inline2496 = (self/9 > other/10) in
+    if inline2496 {
+      jump inline_join2493(Tag_2)
+    } else {
+      jump inline_join2493(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_int8(self/0: int8, other/1: int8) -> bool {
+  join commute_arm3162(commute_field3161: Ordering) -> bool {
+    match commute_field3161 {
+      Tag_0 => {
+        true
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        false
+      },
+    }
+  } in
+  let inline2499 = (self/0 < other/1) in
+  join inline_join2500(inline2501: Ordering) -> bool {
+    jump commute_arm3162(inline2501)
+  } in
+  if inline2499 {
+    jump inline_join2500(Tag_0)
+  } else {
+    let inline2503 = (self/0 > other/1) in
+    if inline2503 {
+      jump inline_join2500(Tag_2)
+    } else {
+      jump inline_join2500(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_int8(self/3: int8, other/4: int8) -> bool {
+  join commute_arm3165(commute_field3164: Ordering) -> bool {
+    join inline_cont2504(t1153: bool) -> bool {
+      let t1154 = (!t1153) in
+      t1154
+    } in
+    match commute_field3164 {
+      Tag_0 => {
+        jump inline_cont2504(false)
+      },
+      Tag_1 => {
+        jump inline_cont2504(false)
+      },
+      Tag_2 => {
+        jump inline_cont2504(true)
+      },
+    }
+  } in
+  let inline2506 = (self/3 < other/4) in
+  join inline_join2507(inline2508: Ordering) -> bool {
+    jump commute_arm3165(inline2508)
+  } in
+  if inline2506 {
+    jump inline_join2507(Tag_0)
+  } else {
+    let inline2510 = (self/3 > other/4) in
+    if inline2510 {
+      jump inline_join2507(Tag_2)
+    } else {
+      jump inline_join2507(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_int8(self/6: int8, other/7: int8) -> bool {
+  join commute_arm3168(commute_field3167: Ordering) -> bool {
+    match commute_field3167 {
+      Tag_0 => {
+        false
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        true
+      },
+    }
+  } in
+  let inline2513 = (self/6 < other/7) in
+  join inline_join2514(inline2515: Ordering) -> bool {
+    jump commute_arm3168(inline2515)
+  } in
+  if inline2513 {
+    jump inline_join2514(Tag_0)
+  } else {
+    let inline2517 = (self/6 > other/7) in
+    if inline2517 {
+      jump inline_join2514(Tag_2)
+    } else {
+      jump inline_join2514(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_int8(self/9: int8, other/10: int8) -> bool {
+  join commute_arm3171(commute_field3170: Ordering) -> bool {
+    join inline_cont2518(t1164: bool) -> bool {
+      let t1165 = (!t1164) in
+      t1165
+    } in
+    match commute_field3170 {
+      Tag_0 => {
+        jump inline_cont2518(true)
+      },
+      Tag_1 => {
+        jump inline_cont2518(false)
+      },
+      Tag_2 => {
+        jump inline_cont2518(false)
+      },
+    }
+  } in
+  let inline2520 = (self/9 < other/10) in
+  join inline_join2521(inline2522: Ordering) -> bool {
+    jump commute_arm3171(inline2522)
+  } in
+  if inline2520 {
+    jump inline_join2521(Tag_0)
+  } else {
+    let inline2524 = (self/9 > other/10) in
+    if inline2524 {
+      jump inline_join2521(Tag_2)
+    } else {
+      jump inline_join2521(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_int16(self/0: int16, other/1: int16) -> bool {
+  join commute_arm3174(commute_field3173: Ordering) -> bool {
+    match commute_field3173 {
+      Tag_0 => {
+        true
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        false
+      },
+    }
+  } in
+  let inline2527 = (self/0 < other/1) in
+  join inline_join2528(inline2529: Ordering) -> bool {
+    jump commute_arm3174(inline2529)
+  } in
+  if inline2527 {
+    jump inline_join2528(Tag_0)
+  } else {
+    let inline2531 = (self/0 > other/1) in
+    if inline2531 {
+      jump inline_join2528(Tag_2)
+    } else {
+      jump inline_join2528(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_int16(self/3: int16, other/4: int16) -> bool {
+  join commute_arm3177(commute_field3176: Ordering) -> bool {
+    join inline_cont2532(t1175: bool) -> bool {
+      let t1176 = (!t1175) in
+      t1176
+    } in
+    match commute_field3176 {
+      Tag_0 => {
+        jump inline_cont2532(false)
+      },
+      Tag_1 => {
+        jump inline_cont2532(false)
+      },
+      Tag_2 => {
+        jump inline_cont2532(true)
+      },
+    }
+  } in
+  let inline2534 = (self/3 < other/4) in
+  join inline_join2535(inline2536: Ordering) -> bool {
+    jump commute_arm3177(inline2536)
+  } in
+  if inline2534 {
+    jump inline_join2535(Tag_0)
+  } else {
+    let inline2538 = (self/3 > other/4) in
+    if inline2538 {
+      jump inline_join2535(Tag_2)
+    } else {
+      jump inline_join2535(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_int16(self/6: int16, other/7: int16) -> bool {
+  join commute_arm3180(commute_field3179: Ordering) -> bool {
+    match commute_field3179 {
+      Tag_0 => {
+        false
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        true
+      },
+    }
+  } in
+  let inline2541 = (self/6 < other/7) in
+  join inline_join2542(inline2543: Ordering) -> bool {
+    jump commute_arm3180(inline2543)
+  } in
+  if inline2541 {
+    jump inline_join2542(Tag_0)
+  } else {
+    let inline2545 = (self/6 > other/7) in
+    if inline2545 {
+      jump inline_join2542(Tag_2)
+    } else {
+      jump inline_join2542(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_int16(self/9: int16, other/10: int16) -> bool {
+  join commute_arm3183(commute_field3182: Ordering) -> bool {
+    join inline_cont2546(t1186: bool) -> bool {
+      let t1187 = (!t1186) in
+      t1187
+    } in
+    match commute_field3182 {
+      Tag_0 => {
+        jump inline_cont2546(true)
+      },
+      Tag_1 => {
+        jump inline_cont2546(false)
+      },
+      Tag_2 => {
+        jump inline_cont2546(false)
+      },
+    }
+  } in
+  let inline2548 = (self/9 < other/10) in
+  join inline_join2549(inline2550: Ordering) -> bool {
+    jump commute_arm3183(inline2550)
+  } in
+  if inline2548 {
+    jump inline_join2549(Tag_0)
+  } else {
+    let inline2552 = (self/9 > other/10) in
+    if inline2552 {
+      jump inline_join2549(Tag_2)
+    } else {
+      jump inline_join2549(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_int32(self/0: int32, other/1: int32) -> bool {
+  join commute_arm3186(commute_field3185: Ordering) -> bool {
+    match commute_field3185 {
+      Tag_0 => {
+        true
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        false
+      },
+    }
+  } in
+  let inline2555 = (self/0 < other/1) in
+  join inline_join2556(inline2557: Ordering) -> bool {
+    jump commute_arm3186(inline2557)
+  } in
+  if inline2555 {
+    jump inline_join2556(Tag_0)
+  } else {
+    let inline2559 = (self/0 > other/1) in
+    if inline2559 {
+      jump inline_join2556(Tag_2)
+    } else {
+      jump inline_join2556(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_int32(self/3: int32, other/4: int32) -> bool {
+  join commute_arm3189(commute_field3188: Ordering) -> bool {
+    join inline_cont2560(t1197: bool) -> bool {
+      let t1198 = (!t1197) in
+      t1198
+    } in
+    match commute_field3188 {
+      Tag_0 => {
+        jump inline_cont2560(false)
+      },
+      Tag_1 => {
+        jump inline_cont2560(false)
+      },
+      Tag_2 => {
+        jump inline_cont2560(true)
+      },
+    }
+  } in
+  let inline2562 = (self/3 < other/4) in
+  join inline_join2563(inline2564: Ordering) -> bool {
+    jump commute_arm3189(inline2564)
+  } in
+  if inline2562 {
+    jump inline_join2563(Tag_0)
+  } else {
+    let inline2566 = (self/3 > other/4) in
+    if inline2566 {
+      jump inline_join2563(Tag_2)
+    } else {
+      jump inline_join2563(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_int32(self/6: int32, other/7: int32) -> bool {
+  join commute_arm3192(commute_field3191: Ordering) -> bool {
+    match commute_field3191 {
+      Tag_0 => {
+        false
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        true
+      },
+    }
+  } in
+  let inline2569 = (self/6 < other/7) in
+  join inline_join2570(inline2571: Ordering) -> bool {
+    jump commute_arm3192(inline2571)
+  } in
+  if inline2569 {
+    jump inline_join2570(Tag_0)
+  } else {
+    let inline2573 = (self/6 > other/7) in
+    if inline2573 {
+      jump inline_join2570(Tag_2)
+    } else {
+      jump inline_join2570(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_int32(self/9: int32, other/10: int32) -> bool {
+  join commute_arm3195(commute_field3194: Ordering) -> bool {
+    join inline_cont2574(t1208: bool) -> bool {
+      let t1209 = (!t1208) in
+      t1209
+    } in
+    match commute_field3194 {
+      Tag_0 => {
+        jump inline_cont2574(true)
+      },
+      Tag_1 => {
+        jump inline_cont2574(false)
+      },
+      Tag_2 => {
+        jump inline_cont2574(false)
+      },
+    }
+  } in
+  let inline2576 = (self/9 < other/10) in
+  join inline_join2577(inline2578: Ordering) -> bool {
+    jump commute_arm3195(inline2578)
+  } in
+  if inline2576 {
+    jump inline_join2577(Tag_0)
+  } else {
+    let inline2580 = (self/9 > other/10) in
+    if inline2580 {
+      jump inline_join2577(Tag_2)
+    } else {
+      jump inline_join2577(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_int64(self/0: int64, other/1: int64) -> bool {
+  join commute_arm3198(commute_field3197: Ordering) -> bool {
+    match commute_field3197 {
+      Tag_0 => {
+        true
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        false
+      },
+    }
+  } in
+  let inline2583 = (self/0 < other/1) in
+  join inline_join2584(inline2585: Ordering) -> bool {
+    jump commute_arm3198(inline2585)
+  } in
+  if inline2583 {
+    jump inline_join2584(Tag_0)
+  } else {
+    let inline2587 = (self/0 > other/1) in
+    if inline2587 {
+      jump inline_join2584(Tag_2)
+    } else {
+      jump inline_join2584(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_int64(self/3: int64, other/4: int64) -> bool {
+  join commute_arm3201(commute_field3200: Ordering) -> bool {
+    join inline_cont2588(t1219: bool) -> bool {
+      let t1220 = (!t1219) in
+      t1220
+    } in
+    match commute_field3200 {
+      Tag_0 => {
+        jump inline_cont2588(false)
+      },
+      Tag_1 => {
+        jump inline_cont2588(false)
+      },
+      Tag_2 => {
+        jump inline_cont2588(true)
+      },
+    }
+  } in
+  let inline2590 = (self/3 < other/4) in
+  join inline_join2591(inline2592: Ordering) -> bool {
+    jump commute_arm3201(inline2592)
+  } in
+  if inline2590 {
+    jump inline_join2591(Tag_0)
+  } else {
+    let inline2594 = (self/3 > other/4) in
+    if inline2594 {
+      jump inline_join2591(Tag_2)
+    } else {
+      jump inline_join2591(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_int64(self/6: int64, other/7: int64) -> bool {
+  join commute_arm3204(commute_field3203: Ordering) -> bool {
+    match commute_field3203 {
+      Tag_0 => {
+        false
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        true
+      },
+    }
+  } in
+  let inline2597 = (self/6 < other/7) in
+  join inline_join2598(inline2599: Ordering) -> bool {
+    jump commute_arm3204(inline2599)
+  } in
+  if inline2597 {
+    jump inline_join2598(Tag_0)
+  } else {
+    let inline2601 = (self/6 > other/7) in
+    if inline2601 {
+      jump inline_join2598(Tag_2)
+    } else {
+      jump inline_join2598(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_int64(self/9: int64, other/10: int64) -> bool {
+  join commute_arm3207(commute_field3206: Ordering) -> bool {
+    join inline_cont2602(t1230: bool) -> bool {
+      let t1231 = (!t1230) in
+      t1231
+    } in
+    match commute_field3206 {
+      Tag_0 => {
+        jump inline_cont2602(true)
+      },
+      Tag_1 => {
+        jump inline_cont2602(false)
+      },
+      Tag_2 => {
+        jump inline_cont2602(false)
+      },
+    }
+  } in
+  let inline2604 = (self/9 < other/10) in
+  join inline_join2605(inline2606: Ordering) -> bool {
+    jump commute_arm3207(inline2606)
+  } in
+  if inline2604 {
+    jump inline_join2605(Tag_0)
+  } else {
+    let inline2608 = (self/9 > other/10) in
+    if inline2608 {
+      jump inline_join2605(Tag_2)
+    } else {
+      jump inline_join2605(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_uint(self/0: uint, other/1: uint) -> bool {
+  join commute_arm3210(commute_field3209: Ordering) -> bool {
+    match commute_field3209 {
+      Tag_0 => {
+        true
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        false
+      },
+    }
+  } in
+  let inline2611 = (self/0 < other/1) in
+  join inline_join2612(inline2613: Ordering) -> bool {
+    jump commute_arm3210(inline2613)
+  } in
+  if inline2611 {
+    jump inline_join2612(Tag_0)
+  } else {
+    let inline2615 = (self/0 > other/1) in
+    if inline2615 {
+      jump inline_join2612(Tag_2)
+    } else {
+      jump inline_join2612(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_uint(self/3: uint, other/4: uint) -> bool {
+  join commute_arm3213(commute_field3212: Ordering) -> bool {
+    join inline_cont2616(t1241: bool) -> bool {
+      let t1242 = (!t1241) in
+      t1242
+    } in
+    match commute_field3212 {
+      Tag_0 => {
+        jump inline_cont2616(false)
+      },
+      Tag_1 => {
+        jump inline_cont2616(false)
+      },
+      Tag_2 => {
+        jump inline_cont2616(true)
+      },
+    }
+  } in
+  let inline2618 = (self/3 < other/4) in
+  join inline_join2619(inline2620: Ordering) -> bool {
+    jump commute_arm3213(inline2620)
+  } in
+  if inline2618 {
+    jump inline_join2619(Tag_0)
+  } else {
+    let inline2622 = (self/3 > other/4) in
+    if inline2622 {
+      jump inline_join2619(Tag_2)
+    } else {
+      jump inline_join2619(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_uint(self/6: uint, other/7: uint) -> bool {
+  join commute_arm3216(commute_field3215: Ordering) -> bool {
+    match commute_field3215 {
+      Tag_0 => {
+        false
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        true
+      },
+    }
+  } in
+  let inline2625 = (self/6 < other/7) in
+  join inline_join2626(inline2627: Ordering) -> bool {
+    jump commute_arm3216(inline2627)
+  } in
+  if inline2625 {
+    jump inline_join2626(Tag_0)
+  } else {
+    let inline2629 = (self/6 > other/7) in
+    if inline2629 {
+      jump inline_join2626(Tag_2)
+    } else {
+      jump inline_join2626(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_uint(self/9: uint, other/10: uint) -> bool {
+  join commute_arm3219(commute_field3218: Ordering) -> bool {
+    join inline_cont2630(t1252: bool) -> bool {
+      let t1253 = (!t1252) in
+      t1253
+    } in
+    match commute_field3218 {
+      Tag_0 => {
+        jump inline_cont2630(true)
+      },
+      Tag_1 => {
+        jump inline_cont2630(false)
+      },
+      Tag_2 => {
+        jump inline_cont2630(false)
+      },
+    }
+  } in
+  let inline2632 = (self/9 < other/10) in
+  join inline_join2633(inline2634: Ordering) -> bool {
+    jump commute_arm3219(inline2634)
+  } in
+  if inline2632 {
+    jump inline_join2633(Tag_0)
+  } else {
+    let inline2636 = (self/9 > other/10) in
+    if inline2636 {
+      jump inline_join2633(Tag_2)
+    } else {
+      jump inline_join2633(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_uint8(self/0: uint8, other/1: uint8) -> bool {
+  join commute_arm3222(commute_field3221: Ordering) -> bool {
+    match commute_field3221 {
+      Tag_0 => {
+        true
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        false
+      },
+    }
+  } in
+  let inline2639 = (self/0 < other/1) in
+  join inline_join2640(inline2641: Ordering) -> bool {
+    jump commute_arm3222(inline2641)
+  } in
+  if inline2639 {
+    jump inline_join2640(Tag_0)
+  } else {
+    let inline2643 = (self/0 > other/1) in
+    if inline2643 {
+      jump inline_join2640(Tag_2)
+    } else {
+      jump inline_join2640(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_uint8(self/3: uint8, other/4: uint8) -> bool {
+  join commute_arm3225(commute_field3224: Ordering) -> bool {
+    join inline_cont2644(t1263: bool) -> bool {
+      let t1264 = (!t1263) in
+      t1264
+    } in
+    match commute_field3224 {
+      Tag_0 => {
+        jump inline_cont2644(false)
+      },
+      Tag_1 => {
+        jump inline_cont2644(false)
+      },
+      Tag_2 => {
+        jump inline_cont2644(true)
+      },
+    }
+  } in
+  let inline2646 = (self/3 < other/4) in
+  join inline_join2647(inline2648: Ordering) -> bool {
+    jump commute_arm3225(inline2648)
+  } in
+  if inline2646 {
+    jump inline_join2647(Tag_0)
+  } else {
+    let inline2650 = (self/3 > other/4) in
+    if inline2650 {
+      jump inline_join2647(Tag_2)
+    } else {
+      jump inline_join2647(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_uint8(self/6: uint8, other/7: uint8) -> bool {
+  join commute_arm3228(commute_field3227: Ordering) -> bool {
+    match commute_field3227 {
+      Tag_0 => {
+        false
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        true
+      },
+    }
+  } in
+  let inline2653 = (self/6 < other/7) in
+  join inline_join2654(inline2655: Ordering) -> bool {
+    jump commute_arm3228(inline2655)
+  } in
+  if inline2653 {
+    jump inline_join2654(Tag_0)
+  } else {
+    let inline2657 = (self/6 > other/7) in
+    if inline2657 {
+      jump inline_join2654(Tag_2)
+    } else {
+      jump inline_join2654(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_uint8(self/9: uint8, other/10: uint8) -> bool {
+  join commute_arm3231(commute_field3230: Ordering) -> bool {
+    join inline_cont2658(t1274: bool) -> bool {
+      let t1275 = (!t1274) in
+      t1275
+    } in
+    match commute_field3230 {
+      Tag_0 => {
+        jump inline_cont2658(true)
+      },
+      Tag_1 => {
+        jump inline_cont2658(false)
+      },
+      Tag_2 => {
+        jump inline_cont2658(false)
+      },
+    }
+  } in
+  let inline2660 = (self/9 < other/10) in
+  join inline_join2661(inline2662: Ordering) -> bool {
+    jump commute_arm3231(inline2662)
+  } in
+  if inline2660 {
+    jump inline_join2661(Tag_0)
+  } else {
+    let inline2664 = (self/9 > other/10) in
+    if inline2664 {
+      jump inline_join2661(Tag_2)
+    } else {
+      jump inline_join2661(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_uint16(self/0: uint16, other/1: uint16) -> bool {
+  join commute_arm3234(commute_field3233: Ordering) -> bool {
+    match commute_field3233 {
+      Tag_0 => {
+        true
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        false
+      },
+    }
+  } in
+  let inline2667 = (self/0 < other/1) in
+  join inline_join2668(inline2669: Ordering) -> bool {
+    jump commute_arm3234(inline2669)
+  } in
+  if inline2667 {
+    jump inline_join2668(Tag_0)
+  } else {
+    let inline2671 = (self/0 > other/1) in
+    if inline2671 {
+      jump inline_join2668(Tag_2)
+    } else {
+      jump inline_join2668(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_uint16(self/3: uint16, other/4: uint16) -> bool {
+  join commute_arm3237(commute_field3236: Ordering) -> bool {
+    join inline_cont2672(t1285: bool) -> bool {
+      let t1286 = (!t1285) in
+      t1286
+    } in
+    match commute_field3236 {
+      Tag_0 => {
+        jump inline_cont2672(false)
+      },
+      Tag_1 => {
+        jump inline_cont2672(false)
+      },
+      Tag_2 => {
+        jump inline_cont2672(true)
+      },
+    }
+  } in
+  let inline2674 = (self/3 < other/4) in
+  join inline_join2675(inline2676: Ordering) -> bool {
+    jump commute_arm3237(inline2676)
+  } in
+  if inline2674 {
+    jump inline_join2675(Tag_0)
+  } else {
+    let inline2678 = (self/3 > other/4) in
+    if inline2678 {
+      jump inline_join2675(Tag_2)
+    } else {
+      jump inline_join2675(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_uint16(self/6: uint16, other/7: uint16) -> bool {
+  join commute_arm3240(commute_field3239: Ordering) -> bool {
+    match commute_field3239 {
+      Tag_0 => {
+        false
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        true
+      },
+    }
+  } in
+  let inline2681 = (self/6 < other/7) in
+  join inline_join2682(inline2683: Ordering) -> bool {
+    jump commute_arm3240(inline2683)
+  } in
+  if inline2681 {
+    jump inline_join2682(Tag_0)
+  } else {
+    let inline2685 = (self/6 > other/7) in
+    if inline2685 {
+      jump inline_join2682(Tag_2)
+    } else {
+      jump inline_join2682(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_uint16(self/9: uint16, other/10: uint16) -> bool {
+  join commute_arm3243(commute_field3242: Ordering) -> bool {
+    join inline_cont2686(t1296: bool) -> bool {
+      let t1297 = (!t1296) in
+      t1297
+    } in
+    match commute_field3242 {
+      Tag_0 => {
+        jump inline_cont2686(true)
+      },
+      Tag_1 => {
+        jump inline_cont2686(false)
+      },
+      Tag_2 => {
+        jump inline_cont2686(false)
+      },
+    }
+  } in
+  let inline2688 = (self/9 < other/10) in
+  join inline_join2689(inline2690: Ordering) -> bool {
+    jump commute_arm3243(inline2690)
+  } in
+  if inline2688 {
+    jump inline_join2689(Tag_0)
+  } else {
+    let inline2692 = (self/9 > other/10) in
+    if inline2692 {
+      jump inline_join2689(Tag_2)
+    } else {
+      jump inline_join2689(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_uint32(self/0: uint32, other/1: uint32) -> bool {
+  join commute_arm3246(commute_field3245: Ordering) -> bool {
+    match commute_field3245 {
+      Tag_0 => {
+        true
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        false
+      },
+    }
+  } in
+  let inline2695 = (self/0 < other/1) in
+  join inline_join2696(inline2697: Ordering) -> bool {
+    jump commute_arm3246(inline2697)
+  } in
+  if inline2695 {
+    jump inline_join2696(Tag_0)
+  } else {
+    let inline2699 = (self/0 > other/1) in
+    if inline2699 {
+      jump inline_join2696(Tag_2)
+    } else {
+      jump inline_join2696(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_uint32(self/3: uint32, other/4: uint32) -> bool {
+  join commute_arm3249(commute_field3248: Ordering) -> bool {
+    join inline_cont2700(t1307: bool) -> bool {
+      let t1308 = (!t1307) in
+      t1308
+    } in
+    match commute_field3248 {
+      Tag_0 => {
+        jump inline_cont2700(false)
+      },
+      Tag_1 => {
+        jump inline_cont2700(false)
+      },
+      Tag_2 => {
+        jump inline_cont2700(true)
+      },
+    }
+  } in
+  let inline2702 = (self/3 < other/4) in
+  join inline_join2703(inline2704: Ordering) -> bool {
+    jump commute_arm3249(inline2704)
+  } in
+  if inline2702 {
+    jump inline_join2703(Tag_0)
+  } else {
+    let inline2706 = (self/3 > other/4) in
+    if inline2706 {
+      jump inline_join2703(Tag_2)
+    } else {
+      jump inline_join2703(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_uint32(self/6: uint32, other/7: uint32) -> bool {
+  join commute_arm3252(commute_field3251: Ordering) -> bool {
+    match commute_field3251 {
+      Tag_0 => {
+        false
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        true
+      },
+    }
+  } in
+  let inline2709 = (self/6 < other/7) in
+  join inline_join2710(inline2711: Ordering) -> bool {
+    jump commute_arm3252(inline2711)
+  } in
+  if inline2709 {
+    jump inline_join2710(Tag_0)
+  } else {
+    let inline2713 = (self/6 > other/7) in
+    if inline2713 {
+      jump inline_join2710(Tag_2)
+    } else {
+      jump inline_join2710(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_uint32(self/9: uint32, other/10: uint32) -> bool {
+  join commute_arm3255(commute_field3254: Ordering) -> bool {
+    join inline_cont2714(t1318: bool) -> bool {
+      let t1319 = (!t1318) in
+      t1319
+    } in
+    match commute_field3254 {
+      Tag_0 => {
+        jump inline_cont2714(true)
+      },
+      Tag_1 => {
+        jump inline_cont2714(false)
+      },
+      Tag_2 => {
+        jump inline_cont2714(false)
+      },
+    }
+  } in
+  let inline2716 = (self/9 < other/10) in
+  join inline_join2717(inline2718: Ordering) -> bool {
+    jump commute_arm3255(inline2718)
+  } in
+  if inline2716 {
+    jump inline_join2717(Tag_0)
+  } else {
+    let inline2720 = (self/9 > other/10) in
+    if inline2720 {
+      jump inline_join2717(Tag_2)
+    } else {
+      jump inline_join2717(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_uint64(self/0: uint64, other/1: uint64) -> bool {
+  join commute_arm3258(commute_field3257: Ordering) -> bool {
+    match commute_field3257 {
+      Tag_0 => {
+        true
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        false
+      },
+    }
+  } in
+  let inline2723 = (self/0 < other/1) in
+  join inline_join2724(inline2725: Ordering) -> bool {
+    jump commute_arm3258(inline2725)
+  } in
+  if inline2723 {
+    jump inline_join2724(Tag_0)
+  } else {
+    let inline2727 = (self/0 > other/1) in
+    if inline2727 {
+      jump inline_join2724(Tag_2)
+    } else {
+      jump inline_join2724(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_uint64(self/3: uint64, other/4: uint64) -> bool {
+  join commute_arm3261(commute_field3260: Ordering) -> bool {
+    join inline_cont2728(t1329: bool) -> bool {
+      let t1330 = (!t1329) in
+      t1330
+    } in
+    match commute_field3260 {
+      Tag_0 => {
+        jump inline_cont2728(false)
+      },
+      Tag_1 => {
+        jump inline_cont2728(false)
+      },
+      Tag_2 => {
+        jump inline_cont2728(true)
+      },
+    }
+  } in
+  let inline2730 = (self/3 < other/4) in
+  join inline_join2731(inline2732: Ordering) -> bool {
+    jump commute_arm3261(inline2732)
+  } in
+  if inline2730 {
+    jump inline_join2731(Tag_0)
+  } else {
+    let inline2734 = (self/3 > other/4) in
+    if inline2734 {
+      jump inline_join2731(Tag_2)
+    } else {
+      jump inline_join2731(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_uint64(self/6: uint64, other/7: uint64) -> bool {
+  join commute_arm3264(commute_field3263: Ordering) -> bool {
+    match commute_field3263 {
+      Tag_0 => {
+        false
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        true
+      },
+    }
+  } in
+  let inline2737 = (self/6 < other/7) in
+  join inline_join2738(inline2739: Ordering) -> bool {
+    jump commute_arm3264(inline2739)
+  } in
+  if inline2737 {
+    jump inline_join2738(Tag_0)
+  } else {
+    let inline2741 = (self/6 > other/7) in
+    if inline2741 {
+      jump inline_join2738(Tag_2)
+    } else {
+      jump inline_join2738(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_uint64(self/9: uint64, other/10: uint64) -> bool {
+  join commute_arm3267(commute_field3266: Ordering) -> bool {
+    join inline_cont2742(t1340: bool) -> bool {
+      let t1341 = (!t1340) in
+      t1341
+    } in
+    match commute_field3266 {
+      Tag_0 => {
+        jump inline_cont2742(true)
+      },
+      Tag_1 => {
+        jump inline_cont2742(false)
+      },
+      Tag_2 => {
+        jump inline_cont2742(false)
+      },
+    }
+  } in
+  let inline2744 = (self/9 < other/10) in
+  join inline_join2745(inline2746: Ordering) -> bool {
+    jump commute_arm3267(inline2746)
+  } in
+  if inline2744 {
+    jump inline_join2745(Tag_0)
+  } else {
+    let inline2748 = (self/9 > other/10) in
+    if inline2748 {
+      jump inline_join2745(Tag_2)
+    } else {
+      jump inline_join2745(Tag_1)
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_float32(self/0: float32, other/1: float32) -> bool {
+  join commute_arm3270(commute_field3269: Ordering) -> bool {
+    match commute_field3269 {
+      Tag_0 => {
+        true
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        false
+      },
+    }
+  } in
+  let inline2751 = (self/0 < other/1) in
+  if inline2751 {
+    jump commute_arm3270(Tag_0)
+  } else {
+    let inline2753 = (self/0 > other/1) in
+    if inline2753 {
+      jump commute_arm3270(Tag_2)
+    } else {
+      let inline2755 = (self/0 == other/1) in
+      if inline2755 {
+        jump commute_arm3270(Tag_1)
+      } else {
+        false
+      }
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_float32(self/3: float32, other/4: float32) -> bool {
+  join commute_arm3273(commute_field3272: Ordering) -> bool {
+    join inline_cont2757(t1351: bool) -> bool {
+      let t1352 = (!t1351) in
+      t1352
+    } in
+    match commute_field3272 {
+      Tag_0 => {
+        jump inline_cont2757(false)
+      },
+      Tag_1 => {
+        jump inline_cont2757(false)
+      },
+      Tag_2 => {
+        jump inline_cont2757(true)
+      },
+    }
+  } in
+  let inline2759 = (self/3 < other/4) in
+  if inline2759 {
+    jump commute_arm3273(Tag_0)
+  } else {
+    let inline2761 = (self/3 > other/4) in
+    if inline2761 {
+      jump commute_arm3273(Tag_2)
+    } else {
+      let inline2763 = (self/3 == other/4) in
+      if inline2763 {
+        jump commute_arm3273(Tag_1)
+      } else {
+        false
+      }
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_float32(self/6: float32, other/7: float32) -> bool {
+  join commute_arm3276(commute_field3275: Ordering) -> bool {
+    match commute_field3275 {
+      Tag_0 => {
+        false
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        true
+      },
+    }
+  } in
+  let inline2767 = (self/6 < other/7) in
+  if inline2767 {
+    jump commute_arm3276(Tag_0)
+  } else {
+    let inline2769 = (self/6 > other/7) in
+    if inline2769 {
+      jump commute_arm3276(Tag_2)
+    } else {
+      let inline2771 = (self/6 == other/7) in
+      if inline2771 {
+        jump commute_arm3276(Tag_1)
+      } else {
+        false
+      }
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_float32(self/9: float32, other/10: float32) -> bool {
+  join commute_arm3279(commute_field3278: Ordering) -> bool {
+    join inline_cont2773(t1362: bool) -> bool {
+      let t1363 = (!t1362) in
+      t1363
+    } in
+    match commute_field3278 {
+      Tag_0 => {
+        jump inline_cont2773(true)
+      },
+      Tag_1 => {
+        jump inline_cont2773(false)
+      },
+      Tag_2 => {
+        jump inline_cont2773(false)
+      },
+    }
+  } in
+  let inline2775 = (self/9 < other/10) in
+  if inline2775 {
+    jump commute_arm3279(Tag_0)
+  } else {
+    let inline2777 = (self/9 > other/10) in
+    if inline2777 {
+      jump commute_arm3279(Tag_2)
+    } else {
+      let inline2779 = (self/9 == other/10) in
+      if inline2779 {
+        jump commute_arm3279(Tag_1)
+      } else {
+        false
+      }
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_float64(self/0: float64, other/1: float64) -> bool {
+  join commute_arm3282(commute_field3281: Ordering) -> bool {
+    match commute_field3281 {
+      Tag_0 => {
+        true
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        false
+      },
+    }
+  } in
+  let inline2783 = (self/0 < other/1) in
+  if inline2783 {
+    jump commute_arm3282(Tag_0)
+  } else {
+    let inline2785 = (self/0 > other/1) in
+    if inline2785 {
+      jump commute_arm3282(Tag_2)
+    } else {
+      let inline2787 = (self/0 == other/1) in
+      if inline2787 {
+        jump commute_arm3282(Tag_1)
+      } else {
+        false
+      }
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_float64(self/3: float64, other/4: float64) -> bool {
+  join commute_arm3285(commute_field3284: Ordering) -> bool {
+    join inline_cont2789(t1373: bool) -> bool {
+      let t1374 = (!t1373) in
+      t1374
+    } in
+    match commute_field3284 {
+      Tag_0 => {
+        jump inline_cont2789(false)
+      },
+      Tag_1 => {
+        jump inline_cont2789(false)
+      },
+      Tag_2 => {
+        jump inline_cont2789(true)
+      },
+    }
+  } in
+  let inline2791 = (self/3 < other/4) in
+  if inline2791 {
+    jump commute_arm3285(Tag_0)
+  } else {
+    let inline2793 = (self/3 > other/4) in
+    if inline2793 {
+      jump commute_arm3285(Tag_2)
+    } else {
+      let inline2795 = (self/3 == other/4) in
+      if inline2795 {
+        jump commute_arm3285(Tag_1)
+      } else {
+        false
+      }
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_float64(self/6: float64, other/7: float64) -> bool {
+  join commute_arm3288(commute_field3287: Ordering) -> bool {
+    match commute_field3287 {
+      Tag_0 => {
+        false
+      },
+      Tag_1 => {
+        false
+      },
+      Tag_2 => {
+        true
+      },
+    }
+  } in
+  let inline2799 = (self/6 < other/7) in
+  if inline2799 {
+    jump commute_arm3288(Tag_0)
+  } else {
+    let inline2801 = (self/6 > other/7) in
+    if inline2801 {
+      jump commute_arm3288(Tag_2)
+    } else {
+      let inline2803 = (self/6 == other/7) in
+      if inline2803 {
+        jump commute_arm3288(Tag_1)
+      } else {
+        false
+      }
+    }
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_float64(self/9: float64, other/10: float64) -> bool {
+  join commute_arm3291(commute_field3290: Ordering) -> bool {
+    join inline_cont2805(t1384: bool) -> bool {
+      let t1385 = (!t1384) in
+      t1385
+    } in
+    match commute_field3290 {
+      Tag_0 => {
+        jump inline_cont2805(true)
+      },
+      Tag_1 => {
+        jump inline_cont2805(false)
+      },
+      Tag_2 => {
+        jump inline_cont2805(false)
+      },
+    }
+  } in
+  let inline2807 = (self/9 < other/10) in
+  if inline2807 {
+    jump commute_arm3291(Tag_0)
+  } else {
+    let inline2809 = (self/9 > other/10) in
+    if inline2809 {
+      jump commute_arm3291(Tag_2)
+    } else {
+      let inline2811 = (self/9 == other/10) in
+      if inline2811 {
+        jump commute_arm3291(Tag_1)
+      } else {
+        false
+      }
+    }
+  }
+}
+
+fn inherent#Vec#Vec[T]#new__T_int() -> Vec[int] {
+  let t1388 = @intrinsic(vec.new)() in
+  t1388
+}
+
+fn inherent#Vec#Vec[T]#push__T_int(self/258: Vec[int], elem/259: int) -> unit {
+  let t1390 = @intrinsic(vec.push)(self/258, elem/259) in
+  ()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join inline_cont2813(t1392: string) -> unit {
+    let t1393 = @runtime(core.string_println)(t1392) in
+    ()
+  } in
+  jump inline_cont2813(value/1)
+}
+
+fn inherent#Vec#Vec[T]#position__T_int(
+  self/319: Vec[int],
+  predicate/320: (int) -> bool
+) -> Option__int {
+  join inline_cont2824(t1396: int) -> Option__int {
+    join inline_cont2818(t1397: FnIterator__int) -> Option__int {
+      join inline_cont2817(for_iter257: FnIterator__int) -> Option__int {
+        join exit1398() -> Option__int {
+          Tag_0
+        } in
+        joinrec {
+          join loop1399() -> Option__int {
+            join inline_cont2814(for_next258: Option__int) -> Option__int {
+              match for_next258 {
+                Tag_0 => {
+                  jump exit1398()
+                },
+                Tag_1 => {
+                  let x259 = Option__int::Some._0(for_next258) in
+                  let t1402 = @intrinsic(vec.get)(self/319, x259) in
+                  let t1403 = predicate/320(t1402) in
+                  if t1403 {
+                    let t1404 = Option__int::Some(x259) in
+                    t1404
+                  } else {
+                    jump loop1399()
+                  }
+                },
+              }
+            } in
+            let inline2815 = FnIterator__int.next_fn(for_iter257) in
+            let inline2816 = inline2815() in
+            jump inline_cont2814(inline2816)
+          } in
+        } in
+        jump loop1399()
+      } in
+      jump inline_cont2817(t1397)
+    } in
+    let inline2819 = 0 in
+    let inline2820 = @intrinsic(ref.new)(inline2819) in
+    let inline2821 = closure_env_goml_builtin_range_13 { current_0: inline2820, end_1: t1396 } in
+    let inline2822 =
+      pack_closure[inherent#closure_env_goml_builtin_range_13#closure_env_goml_builtin_range_13#apply](
+        inline2821
+      ) in
+    let inline2823 = inherent#FnIterator#FnIterator[T]#from_fn__T_int(inline2822) in
+    jump inline_cont2818(inline2823)
+  } in
+  let inline2825 = @intrinsic(vec.len)(self/319) in
+  jump inline_cont2824(inline2825)
+}
+
+fn inherent#Option#Option[T]#unwrap_or__T_int(self/458: Option__int, fallback/459: int) -> int {
+  match self/458 {
+    Tag_0 => {
+      fallback/459
+    },
+    Tag_1 => {
+      let x387 = Option__int::Some._0(self/458) in
+      x387
+    },
+  }
+}
+
+fn inherent#int#int#to_string(self/32: int) -> string {
+  let t1411 = @runtime(core.int_to_string)(self/32) in
+  t1411
+}
+
+fn inherent#Vec#Vec[T]#sort_by__T_int(self/335: Vec[int], compare/336: (int, int) -> int) -> unit {
+  let t1413 = inherent#Vec#Vec[T]#stable_sort_by__T_int(self/335, compare/336) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#join__T_int(self/378: Vec[int], separator/379: string) -> string {
+  join inline_cont2864(t1416: int) -> string {
+    join inline_cont2862(parts/380: Vec[string]) -> string {
+      join inline_cont2860(t1417: int) -> string {
+        join inline_cont2854(t1418: FnIterator__int) -> string {
+          join inline_cont2853(for_iter349: FnIterator__int) -> string {
+            join exit1419() -> string {
+              join inline_cont2851(t1420: int) -> string {
+                let t1421 = (t1420 * 2) in
+                join inline_cont2849(result/382: Vec[string]) -> string {
+                  join inline_cont2847(t1422: int) -> string {
+                    join inline_cont2841(t1423: FnIterator__int) -> string {
+                      join inline_cont2840(for_iter353: FnIterator__int) -> string {
+                        join exit1424() -> string {
+                          let t1425 = @runtime(core.string_concat)(result/382) in
+                          t1425
+                        } in
+                        joinrec {
+                          join loop1426() -> string {
+                            join inline_cont2837(for_next354: Option__int) -> string {
+                              match for_next354 {
+                                Tag_0 => {
+                                  jump exit1424()
+                                },
+                                Tag_1 => {
+                                  let x355 = Option__int::Some._0(for_next354) in
+                                  let t1431 = (x355 > 0) in
+                                  join k1428() -> string {
+                                    let t1429 = @intrinsic(vec.get)(parts/380, x355) in
+                                    let inline2836 = @intrinsic(vec.push)(result/382, t1429) in
+                                    jump loop1426()
+                                  } in
+                                  if t1431 {
+                                    let inline2834 =
+                                      @intrinsic(vec.push)(result/382, separator/379) in
+                                    jump k1428()
+                                  } else {
+                                    jump k1428()
+                                  }
+                                },
+                              }
+                            } in
+                            let inline2838 = FnIterator__int.next_fn(for_iter353) in
+                            let inline2839 = inline2838() in
+                            jump inline_cont2837(inline2839)
+                          } in
+                        } in
+                        jump loop1426()
+                      } in
+                      jump inline_cont2840(t1423)
+                    } in
+                    let inline2842 = 0 in
+                    let inline2843 = @intrinsic(ref.new)(inline2842) in
+                    let inline2844 =
+                      closure_env_goml_builtin_range_13 { current_0: inline2843, end_1: t1422 } in
+                    let inline2845 =
+                      pack_closure[inherent#closure_env_goml_builtin_range_13#closure_env_goml_builtin_range_13#apply](
+                        inline2844
+                      ) in
+                    let inline2846 = inherent#FnIterator#FnIterator[T]#from_fn__T_int(inline2845) in
+                    jump inline_cont2841(inline2846)
+                  } in
+                  let inline2848 = @intrinsic(vec.len)(parts/380) in
+                  jump inline_cont2847(inline2848)
+                } in
+                let inline2850 = @intrinsic(vec.with_capacity)(t1421) in
+                jump inline_cont2849(inline2850)
+              } in
+              let inline2852 = @intrinsic(vec.len)(parts/380) in
+              jump inline_cont2851(inline2852)
+            } in
+            joinrec {
+              join loop1433() -> string {
+                join inline_cont2830(for_next350: Option__int) -> string {
+                  match for_next350 {
+                    Tag_0 => {
+                      jump exit1419()
+                    },
+                    Tag_1 => {
+                      let x351 = Option__int::Some._0(for_next350) in
+                      let t1435 = @intrinsic(vec.get)(self/378, x351) in
+                      join inline_cont2828(t1436: string) -> string {
+                        let inline2827 = @intrinsic(vec.push)(parts/380, t1436) in
+                        jump loop1433()
+                      } in
+                      let inline2829 = @runtime(core.int_to_string)(t1435) in
+                      jump inline_cont2828(inline2829)
+                    },
+                  }
+                } in
+                let inline2831 = FnIterator__int.next_fn(for_iter349) in
+                let inline2832 = inline2831() in
+                jump inline_cont2830(inline2832)
+              } in
+            } in
+            jump loop1433()
+          } in
+          jump inline_cont2853(t1418)
+        } in
+        let inline2855 = 0 in
+        let inline2856 = @intrinsic(ref.new)(inline2855) in
+        let inline2857 =
+          closure_env_goml_builtin_range_13 { current_0: inline2856, end_1: t1417 } in
+        let inline2858 =
+          pack_closure[inherent#closure_env_goml_builtin_range_13#closure_env_goml_builtin_range_13#apply](
+            inline2857
+          ) in
+        let inline2859 = inherent#FnIterator#FnIterator[T]#from_fn__T_int(inline2858) in
+        jump inline_cont2854(inline2859)
+      } in
+      let inline2861 = @intrinsic(vec.len)(self/378) in
+      jump inline_cont2860(inline2861)
+    } in
+    let inline2863 = @intrinsic(vec.with_capacity)(t1416) in
+    jump inline_cont2862(inline2863)
+  } in
+  let inline2865 = @intrinsic(vec.len)(self/378) in
+  jump inline_cont2864(inline2865)
+}
+
+fn inherent#Vec#Vec[T]#dedup__T_int(self/387: Vec[int]) -> unit {
+  let t1439 = closure_env_inherent_Vec_Vec_T_dedup_T_int_10 {} in
+  let t1440 =
+    pack_closure[inherent#closure_env_inherent_Vec_Vec_T_dedup_T_int_10#closure_env_inherent_Vec_Vec_T_dedup_T_int_10#apply](
+      t1439
+    ) in
+  let t1441 = inherent#Vec#Vec[T]#dedup_by__T_int(self/387, t1440) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#binary_search_by__T_int(
+  self/345: Vec[int],
+  compare/346: (int) -> int
+) -> Option__int {
+  let low/347 = 0 in
+  join inline_cont2868(high/348: int) -> Option__int {
+    join exit1444() -> Option__int {
+      join inline_cont2866(t1450: int) -> Option__int {
+        let t1451 = (low/347 < t1450) in
+        join k1447(jp1448: bool) -> Option__int {
+          if jp1448 {
+            let t1449 = Option__int::Some(low/347) in
+            t1449
+          } else {
+            Tag_0
+          }
+        } in
+        if t1451 {
+          let t1452 = @intrinsic(vec.get)(self/345, low/347) in
+          let t1453 = compare/346(t1452) in
+          let t1454 = (t1453 == 0) in
+          jump k1447(t1454)
+        } else {
+          jump k1447(false)
+        }
+      } in
+      let inline2867 = @intrinsic(vec.len)(self/345) in
+      jump inline_cont2866(inline2867)
+    } in
+    joinrec {
+      join loop1455() -> Option__int {
+        let t1456 = (low/347 < high/348) in
+        if t1456 {
+          let t1457 = (high/348 - low/347) in
+          let t1458 = (t1457 / 2) in
+          let middle/349 = (low/347 + t1458) in
+          let t1460 = @intrinsic(vec.get)(self/345, middle/349) in
+          let t1461 = compare/346(t1460) in
+          let t1462 = (t1461 < 0) in
+          if t1462 {
+            let t1463 = (middle/349 + 1) in
+            let _wild323 = low/347 = t1463 in
+            jump loop1455()
+          } else {
+            let _wild324 = high/348 = middle/349 in
+            jump loop1455()
+          }
+        } else {
+          jump exit1444()
+        }
+      } in
+    } in
+    jump loop1455()
+  } in
+  let inline2869 = @intrinsic(vec.len)(self/345) in
+  jump inline_cont2868(inline2869)
+}
+
+fn inherent#Vec#Vec[T]#min_by__T_int(
+  self/353: Vec[int],
+  compare/354: (int, int) -> int
+) -> Option__int {
+  join inline_cont2882(t1468: bool) -> Option__int {
+    if t1468 {
+      Tag_0
+    } else {
+      let best/355 = @intrinsic(vec.get)(self/353, 0) in
+      join inline_cont2880(t1469: int) -> Option__int {
+        join inline_cont2874(t1470: FnIterator__int) -> Option__int {
+          join inline_cont2873(for_iter326: FnIterator__int) -> Option__int {
+            join exit1471() -> Option__int {
+              let t1472 = Option__int::Some(best/355) in
+              t1472
+            } in
+            joinrec {
+              join loop1473() -> Option__int {
+                join inline_cont2870(for_next327: Option__int) -> Option__int {
+                  match for_next327 {
+                    Tag_0 => {
+                      jump exit1471()
+                    },
+                    Tag_1 => {
+                      let x328 = Option__int::Some._0(for_next327) in
+                      let value/357 = @intrinsic(vec.get)(self/353, x328) in
+                      let t1476 = compare/354(value/357, best/355) in
+                      let t1477 = (t1476 < 0) in
+                      if t1477 {
+                        let _wild329 = best/355 = value/357 in
+                        jump loop1473()
+                      } else {
+                        jump loop1473()
+                      }
+                    },
+                  }
+                } in
+                let inline2871 = FnIterator__int.next_fn(for_iter326) in
+                let inline2872 = inline2871() in
+                jump inline_cont2870(inline2872)
+              } in
+            } in
+            jump loop1473()
+          } in
+          jump inline_cont2873(t1470)
+        } in
+        let inline2875 = 1 in
+        let inline2876 = @intrinsic(ref.new)(inline2875) in
+        let inline2877 =
+          closure_env_goml_builtin_range_13 { current_0: inline2876, end_1: t1469 } in
+        let inline2878 =
+          pack_closure[inherent#closure_env_goml_builtin_range_13#closure_env_goml_builtin_range_13#apply](
+            inline2877
+          ) in
+        let inline2879 = inherent#FnIterator#FnIterator[T]#from_fn__T_int(inline2878) in
+        jump inline_cont2874(inline2879)
+      } in
+      let inline2881 = @intrinsic(vec.len)(self/353) in
+      jump inline_cont2880(inline2881)
+    }
+  } in
+  let inline2883 = @intrinsic(vec.len)(self/353) in
+  let inline2884 = (inline2883 == 0) in
+  jump inline_cont2882(inline2884)
+}
+
+fn inherent#Vec#Vec[T]#max_by__T_int(
+  self/358: Vec[int],
+  compare/359: (int, int) -> int
+) -> Option__int {
+  join inline_cont2897(t1482: bool) -> Option__int {
+    if t1482 {
+      Tag_0
+    } else {
+      let best/360 = @intrinsic(vec.get)(self/358, 0) in
+      join inline_cont2895(t1483: int) -> Option__int {
+        join inline_cont2889(t1484: FnIterator__int) -> Option__int {
+          join inline_cont2888(for_iter331: FnIterator__int) -> Option__int {
+            join exit1485() -> Option__int {
+              let t1486 = Option__int::Some(best/360) in
+              t1486
+            } in
+            joinrec {
+              join loop1487() -> Option__int {
+                join inline_cont2885(for_next332: Option__int) -> Option__int {
+                  match for_next332 {
+                    Tag_0 => {
+                      jump exit1485()
+                    },
+                    Tag_1 => {
+                      let x333 = Option__int::Some._0(for_next332) in
+                      let value/362 = @intrinsic(vec.get)(self/358, x333) in
+                      let t1490 = compare/359(value/362, best/360) in
+                      let t1491 = (t1490 > 0) in
+                      if t1491 {
+                        let _wild334 = best/360 = value/362 in
+                        jump loop1487()
+                      } else {
+                        jump loop1487()
+                      }
+                    },
+                  }
+                } in
+                let inline2886 = FnIterator__int.next_fn(for_iter331) in
+                let inline2887 = inline2886() in
+                jump inline_cont2885(inline2887)
+              } in
+            } in
+            jump loop1487()
+          } in
+          jump inline_cont2888(t1484)
+        } in
+        let inline2890 = 1 in
+        let inline2891 = @intrinsic(ref.new)(inline2890) in
+        let inline2892 =
+          closure_env_goml_builtin_range_13 { current_0: inline2891, end_1: t1483 } in
+        let inline2893 =
+          pack_closure[inherent#closure_env_goml_builtin_range_13#closure_env_goml_builtin_range_13#apply](
+            inline2892
+          ) in
+        let inline2894 = inherent#FnIterator#FnIterator[T]#from_fn__T_int(inline2893) in
+        jump inline_cont2889(inline2894)
+      } in
+      let inline2896 = @intrinsic(vec.len)(self/358) in
+      jump inline_cont2895(inline2896)
+    }
+  } in
+  let inline2898 = @intrinsic(vec.len)(self/358) in
+  let inline2899 = (inline2898 == 0) in
+  jump inline_cont2897(inline2899)
+}
+
+fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
+  let t1494 = @intrinsic(vec.new)() in
+  t1494
+}
+
+fn inherent#Vec#Vec[T]#push__T_string(self/258: Vec[string], elem/259: string) -> unit {
+  let t1496 = @intrinsic(vec.push)(self/258, elem/259) in
+  ()
+}
+
+fn std::cmp::compare__T_string(left/124: string, right/125: string) -> Ordering {
+  let inline2901 = (left/124 < right/125) in
+  if inline2901 {
+    Tag_0
+  } else {
+    let inline2902 = (left/124 > right/125) in
+    if inline2902 {
+      Tag_2
+    } else {
+      Tag_1
+    }
+  }
+}
+
+fn inherent#Vec#Vec[T]#sort_by_ordering__T_string(
+  self/337: Vec[string],
+  compare/338: (string, string) -> Ordering
+) -> unit {
+  let t1501 =
+    closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_string_11 { compare_0: compare/338 } in
+  let t1502 =
+    pack_closure[inherent#closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_string_11#closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_string_11#apply](
+      t1501
+    ) in
+  let inline2904 = inherent#Vec#Vec[T]#stable_sort_by__T_string(self/337, t1502) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#join__T_string(self/378: Vec[string], separator/379: string) -> string {
+  join inline_cont2942(t1506: int) -> string {
+    join inline_cont2940(parts/380: Vec[string]) -> string {
+      join inline_cont2938(t1507: int) -> string {
+        join inline_cont2932(t1508: FnIterator__int) -> string {
+          join inline_cont2931(for_iter349: FnIterator__int) -> string {
+            join exit1509() -> string {
+              join inline_cont2929(t1510: int) -> string {
+                let t1511 = (t1510 * 2) in
+                join inline_cont2927(result/382: Vec[string]) -> string {
+                  join inline_cont2925(t1512: int) -> string {
+                    join inline_cont2919(t1513: FnIterator__int) -> string {
+                      join inline_cont2918(for_iter353: FnIterator__int) -> string {
+                        join exit1514() -> string {
+                          let t1515 = @runtime(core.string_concat)(result/382) in
+                          t1515
+                        } in
+                        joinrec {
+                          join loop1516() -> string {
+                            join inline_cont2915(for_next354: Option__int) -> string {
+                              match for_next354 {
+                                Tag_0 => {
+                                  jump exit1514()
+                                },
+                                Tag_1 => {
+                                  let x355 = Option__int::Some._0(for_next354) in
+                                  let t1521 = (x355 > 0) in
+                                  join k1518() -> string {
+                                    let t1519 = @intrinsic(vec.get)(parts/380, x355) in
+                                    let inline2914 = @intrinsic(vec.push)(result/382, t1519) in
+                                    jump loop1516()
+                                  } in
+                                  if t1521 {
+                                    let inline2912 =
+                                      @intrinsic(vec.push)(result/382, separator/379) in
+                                    jump k1518()
+                                  } else {
+                                    jump k1518()
+                                  }
+                                },
+                              }
+                            } in
+                            let inline2916 = FnIterator__int.next_fn(for_iter353) in
+                            let inline2917 = inline2916() in
+                            jump inline_cont2915(inline2917)
+                          } in
+                        } in
+                        jump loop1516()
+                      } in
+                      jump inline_cont2918(t1513)
+                    } in
+                    let inline2920 = 0 in
+                    let inline2921 = @intrinsic(ref.new)(inline2920) in
+                    let inline2922 =
+                      closure_env_goml_builtin_range_13 { current_0: inline2921, end_1: t1512 } in
+                    let inline2923 =
+                      pack_closure[inherent#closure_env_goml_builtin_range_13#closure_env_goml_builtin_range_13#apply](
+                        inline2922
+                      ) in
+                    let inline2924 = inherent#FnIterator#FnIterator[T]#from_fn__T_int(inline2923) in
+                    jump inline_cont2919(inline2924)
+                  } in
+                  let inline2926 = @intrinsic(vec.len)(parts/380) in
+                  jump inline_cont2925(inline2926)
+                } in
+                let inline2928 = @intrinsic(vec.with_capacity)(t1511) in
+                jump inline_cont2927(inline2928)
+              } in
+              let inline2930 = @intrinsic(vec.len)(parts/380) in
+              jump inline_cont2929(inline2930)
+            } in
+            joinrec {
+              join loop1523() -> string {
+                join inline_cont2908(for_next350: Option__int) -> string {
+                  match for_next350 {
+                    Tag_0 => {
+                      jump exit1509()
+                    },
+                    Tag_1 => {
+                      let x351 = Option__int::Some._0(for_next350) in
+                      let t1525 = @intrinsic(vec.get)(self/378, x351) in
+                      join inline_cont2907(t1526: string) -> string {
+                        let inline2906 = @intrinsic(vec.push)(parts/380, t1526) in
+                        jump loop1523()
+                      } in
+                      jump inline_cont2907(t1525)
+                    },
+                  }
+                } in
+                let inline2909 = FnIterator__int.next_fn(for_iter349) in
+                let inline2910 = inline2909() in
+                jump inline_cont2908(inline2910)
+              } in
+            } in
+            jump loop1523()
+          } in
+          jump inline_cont2931(t1508)
+        } in
+        let inline2933 = 0 in
+        let inline2934 = @intrinsic(ref.new)(inline2933) in
+        let inline2935 =
+          closure_env_goml_builtin_range_13 { current_0: inline2934, end_1: t1507 } in
+        let inline2936 =
+          pack_closure[inherent#closure_env_goml_builtin_range_13#closure_env_goml_builtin_range_13#apply](
+            inline2935
+          ) in
+        let inline2937 = inherent#FnIterator#FnIterator[T]#from_fn__T_int(inline2936) in
+        jump inline_cont2932(inline2937)
+      } in
+      let inline2939 = @intrinsic(vec.len)(self/378) in
+      jump inline_cont2938(inline2939)
+    } in
+    let inline2941 = @intrinsic(vec.with_capacity)(t1506) in
+    jump inline_cont2940(inline2941)
+  } in
+  let inline2943 = @intrinsic(vec.len)(self/378) in
+  jump inline_cont2942(inline2943)
+}
+
+fn inherent#Vec#Vec[T]#new__T_(int,int)() -> Vec[(int, int)] {
+  let t1530 = @intrinsic(vec.new)() in
+  t1530
+}
+
+fn inherent#Vec#Vec[T]#push__T_(int,int)(self/258: Vec[(int, int)], elem/259: (int, int)) -> unit {
+  let t1532 = @intrinsic(vec.push)(self/258, elem/259) in
+  ()
+}
+
+fn std::cmp::compare__T_int(left/124: int, right/125: int) -> Ordering {
+  let inline2945 = (left/124 < right/125) in
+  if inline2945 {
+    Tag_0
+  } else {
+    let inline2946 = (left/124 > right/125) in
+    if inline2946 {
+      Tag_2
+    } else {
+      Tag_1
+    }
+  }
+}
+
+fn inherent#Vec#Vec[T]#sort_by_ordering__T_(int,int)(
+  self/337: Vec[(int, int)],
+  compare/338: ((int, int), (int, int)) -> Ordering
+) -> unit {
+  let t1537 =
+    closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_int_int_12 { compare_0: compare/338 } in
+  let t1538 =
+    pack_closure[inherent#closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_int_int_12#closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_int_int_12#apply](
+      t1537
+    ) in
+  let inline2948 = inherent#Vec#Vec[T]#stable_sort_by__T_(int,int)(self/337, t1538) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#len__T_(int,int)(self/273: Vec[(int, int)]) -> int {
+  let t1542 = @intrinsic(vec.len)(self/273) in
+  t1542
+}
+
+fn inherent#Vec#Vec[T]#slice__T_int(self/311: Vec[int], start/312: int, end/313: int) -> Slice[
+  int
+] {
+  let t1545 = @intrinsic(slice.new)(self/311, start/312, end/313) in
+  t1545
+}
+
+fn inherent#Slice#Slice[T]#contains__T_int(self/390: Slice[int], expected/391: int) -> bool {
+  let index/392 = 0 in
+  join exit1548() -> bool {
+    false
+  } in
+  joinrec {
+    join loop1549() -> bool {
+      join inline_cont2951(t1550: int) -> bool {
+        let t1551 = (index/392 < t1550) in
+        if t1551 {
+          let t1555 = @intrinsic(slice.get)(self/390, index/392) in
+          join inline_cont2949(t1556: bool) -> bool {
+            join k1552() -> bool {
+              let compound_old364 = index/392 in
+              let compound_value365 = 1 in
+              let t1553 = (compound_old364 + compound_value365) in
+              let t1554 = index/392 = t1553 in
+              jump loop1549()
+            } in
+            if t1556 {
+              true
+            } else {
+              jump k1552()
+            }
+          } in
+          let inline2950 = (t1555 == expected/391) in
+          jump inline_cont2949(inline2950)
+        } else {
+          jump exit1548()
+        }
+      } in
+      let inline2952 = @intrinsic(slice.len)(self/390) in
+      jump inline_cont2951(inline2952)
+    } in
+  } in
+  jump loop1549()
+}
+
+fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
+  let t1559 = @runtime(core.bool_to_string)(self/148) in
+  t1559
+}
+
+fn inherent#Vec#Vec[T]#freeze__T_int(self/267: Vec[int]) -> FrozenVec__int {
+  let t1562 = inherent#Vec#Vec[T]#copy__T_int(self/267) in
+  let t1563 = FrozenVec__int { values: t1562 } in
+  t1563
+}
+
+fn inherent#FrozenVec#FrozenVec[T]#contains__T_int(
+  self/393: FrozenVec__int,
+  expected/394: int
+) -> bool {
+  let index/395 = 0 in
+  join exit1566() -> bool {
+    false
+  } in
+  joinrec {
+    join loop1567() -> bool {
+      join inline_cont2958(t1568: int) -> bool {
+        let t1569 = (index/395 < t1568) in
+        if t1569 {
+          join inline_cont2955(t1573: int) -> bool {
+            join inline_cont2953(t1574: bool) -> bool {
+              join k1570() -> bool {
+                let compound_old369 = index/395 in
+                let compound_value370 = 1 in
+                let t1571 = (compound_old369 + compound_value370) in
+                let t1572 = index/395 = t1571 in
+                jump loop1567()
+              } in
+              if t1574 {
+                true
+              } else {
+                jump k1570()
+              }
+            } in
+            let inline2954 = (t1573 == expected/394) in
+            jump inline_cont2953(inline2954)
+          } in
+          let inline2956 = FrozenVec__int.values(self/393) in
+          let inline2957 = @intrinsic(vec.get)(inline2956, index/395) in
+          jump inline_cont2955(inline2957)
+        } else {
+          jump exit1566()
+        }
+      } in
+      let inline2959 = FrozenVec__int.values(self/393) in
+      let inline2960 = inherent#Vec#Vec[T]#len__T_int(inline2959) in
+      jump inline_cont2958(inline2960)
+    } in
+  } in
+  jump loop1567()
+}
+
+fn inherent#Option#Option[T]#is_none__T_int(self/457: Option__int) -> bool {
+  join inline_cont2961(t1577: bool) -> bool {
+    let t1578 = (!t1577) in
+    t1578
+  } in
+  match self/457 {
+    Tag_0 => {
+      jump inline_cont2961(false)
+    },
+    Tag_1 => {
+      jump inline_cont2961(true)
+    },
+  }
+}
+
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
+}
+
+fn __goml_builtin_range(start/494: int, end/495: int) -> FnIterator__int {
+  let current/496 = @intrinsic(ref.new)(start/494) in
+  let t1583 = closure_env_goml_builtin_range_13 { current_0: current/496, end_1: end/495 } in
+  let t1584 =
+    pack_closure[inherent#closure_env_goml_builtin_range_13#closure_env_goml_builtin_range_13#apply](
+      t1583
+    ) in
+  let inline2963 = FnIterator__int { next_fn: t1584 } in
+  inline2963
+}
+
+fn inherent#Vec#Vec[T]#len__T_int(self/273: Vec[int]) -> int {
+  let t1588 = @intrinsic(vec.len)(self/273) in
+  t1588
+}
+
+fn trait_impl#IntoIterator#FnIterator__int#into_iter(self/256: FnIterator__int) -> FnIterator__int {
+  self/256
+}
+
+fn trait_impl#Iterator#FnIterator__int#next(self/255: FnIterator__int) -> Option__int {
+  let t1593 = FnIterator__int.next_fn(self/255) in
+  let t1594 = t1593() in
+  t1594
+}
+
+fn inherent#Vec#Vec[T]#stable_sort_by__T_int(
+  self/322: Vec[int],
+  compare/323: (int, int) -> int
+) -> unit {
+  join inline_cont2992(length/324: int) -> unit {
+    let t1656 = (length/324 < 2) in
+    join k1596() -> unit {
+      join inline_cont2990(buffer/325: Vec[int]) -> unit {
+        join inline_cont2984(t1597: FnIterator__int) -> unit {
+          join inline_cont2983(for_iter262: FnIterator__int) -> unit {
+            join exit1598() -> unit {
+              let width/327 = 1 in
+              join exit1599() -> unit {
+                ()
+              } in
+              joinrec {
+                join loop1600() -> unit {
+                  let t1601 = (width/327 < length/324) in
+                  if t1601 {
+                    let left/328 = 0 in
+                    join exit1602() -> unit {
+                      join inline_cont2977(t1603: FnIterator__int) -> unit {
+                        join inline_cont2976(for_iter313: FnIterator__int) -> unit {
+                          join exit1604() -> unit {
+                            let t1607 = (length/324 / 2) in
+                            let t1608 = (width/327 > t1607) in
+                            join k1605(jp1606: int) -> unit {
+                              let _wild322 = width/327 = jp1606 in
+                              jump loop1600()
+                            } in
+                            if t1608 {
+                              jump k1605(length/324)
+                            } else {
+                              let t1609 = (width/327 * 2) in
+                              jump k1605(t1609)
+                            }
+                          } in
+                          joinrec {
+                            join loop1610() -> unit {
+                              join inline_cont2973(for_next314: Option__int) -> unit {
+                                match for_next314 {
+                                  Tag_0 => {
+                                    jump exit1604()
+                                  },
+                                  Tag_1 => {
+                                    let x315 = Option__int::Some._0(for_next314) in
+                                    let place318 = @intrinsic(vec.get)(self/322, x315) in
+                                    let value319 = @intrinsic(vec.get)(buffer/325, x315) in
+                                    let t1612 = @intrinsic(vec.set)(self/322, x315, value319) in
+                                    jump loop1610()
+                                  },
+                                }
+                              } in
+                              let inline2974 = FnIterator__int.next_fn(for_iter313) in
+                              let inline2975 = inline2974() in
+                              jump inline_cont2973(inline2975)
+                            } in
+                          } in
+                          jump loop1610()
+                        } in
+                        jump inline_cont2976(t1603)
+                      } in
+                      let inline2978 = 0 in
+                      let inline2979 = @intrinsic(ref.new)(inline2978) in
+                      let inline2980 =
+                        closure_env_goml_builtin_range_13 {
+                          current_0: inline2979,
+                          end_1: length/324
+                        } in
+                      let inline2981 =
+                        pack_closure[inherent#closure_env_goml_builtin_range_13#closure_env_goml_builtin_range_13#apply](
+                          inline2980
+                        ) in
+                      let inline2982 =
+                        inherent#FnIterator#FnIterator[T]#from_fn__T_int(inline2981) in
+                      jump inline_cont2977(inline2982)
+                    } in
+                    joinrec {
+                      join loop1613() -> unit {
+                        let t1614 = (left/328 < length/324) in
+                        if t1614 {
+                          let t1615 = (left/328 + width/327) in
+                          join inline_cont2971(middle/329: int) -> unit {
+                            let t1616 = (middle/329 + width/327) in
+                            join inline_cont2969(right/330: int) -> unit {
+                              let first/331 = left/328 in
+                              let second/332 = middle/329 in
+                              let output/333 = left/328 in
+                              join exit1617() -> unit {
+                                join exit1618() -> unit {
+                                  join exit1619() -> unit {
+                                    let _wild311 = left/328 = right/330 in
+                                    jump loop1613()
+                                  } in
+                                  joinrec {
+                                    join loop1620() -> unit {
+                                      let t1621 = (second/332 < right/330) in
+                                      if t1621 {
+                                        let index300 = output/333 in
+                                        let place301 = @intrinsic(vec.get)(buffer/325, index300) in
+                                        let value302 = @intrinsic(vec.get)(self/322, second/332) in
+                                        let t1622 =
+                                          @intrinsic(vec.set)(buffer/325, index300, value302) in
+                                        let compound_old304 = second/332 in
+                                        let compound_value305 = 1 in
+                                        let t1623 = (compound_old304 + compound_value305) in
+                                        let t1624 = second/332 = t1623 in
+                                        let compound_old307 = output/333 in
+                                        let compound_value308 = 1 in
+                                        let t1625 = (compound_old307 + compound_value308) in
+                                        let t1626 = output/333 = t1625 in
+                                        jump loop1620()
+                                      } else {
+                                        jump exit1619()
+                                      }
+                                    } in
+                                  } in
+                                  jump loop1620()
+                                } in
+                                joinrec {
+                                  join loop1627() -> unit {
+                                    let t1628 = (first/331 < middle/329) in
+                                    if t1628 {
+                                      let index288 = output/333 in
+                                      let place289 = @intrinsic(vec.get)(buffer/325, index288) in
+                                      let value290 = @intrinsic(vec.get)(self/322, first/331) in
+                                      let t1629 =
+                                        @intrinsic(vec.set)(buffer/325, index288, value290) in
+                                      let compound_old292 = first/331 in
+                                      let compound_value293 = 1 in
+                                      let t1630 = (compound_old292 + compound_value293) in
+                                      let t1631 = first/331 = t1630 in
+                                      let compound_old295 = output/333 in
+                                      let compound_value296 = 1 in
+                                      let t1632 = (compound_old295 + compound_value296) in
+                                      let t1633 = output/333 = t1632 in
+                                      jump loop1627()
+                                    } else {
+                                      jump exit1618()
+                                    }
+                                  } in
+                                } in
+                                jump loop1627()
+                              } in
+                              joinrec {
+                                join loop1634() -> unit {
+                                  let t1650 = (first/331 < middle/329) in
+                                  join k1635(jp1636: bool) -> unit {
+                                    if jp1636 {
+                                      let t1640 = @intrinsic(vec.get)(self/322, first/331) in
+                                      let t1641 = @intrinsic(vec.get)(self/322, second/332) in
+                                      let t1642 = compare/323(t1640, t1641) in
+                                      let t1643 = (t1642 <= 0) in
+                                      join k1637() -> unit {
+                                        let compound_old283 = output/333 in
+                                        let compound_value284 = 1 in
+                                        let t1638 = (compound_old283 + compound_value284) in
+                                        let t1639 = output/333 = t1638 in
+                                        jump loop1634()
+                                      } in
+                                      if t1643 {
+                                        let index267 = output/333 in
+                                        let place268 = @intrinsic(vec.get)(buffer/325, index267) in
+                                        let value269 = @intrinsic(vec.get)(self/322, first/331) in
+                                        let t1644 =
+                                          @intrinsic(vec.set)(buffer/325, index267, value269) in
+                                        let compound_old271 = first/331 in
+                                        let compound_value272 = 1 in
+                                        let t1645 = (compound_old271 + compound_value272) in
+                                        let t1646 = first/331 = t1645 in
+                                        jump k1637()
+                                      } else {
+                                        let index275 = output/333 in
+                                        let place276 = @intrinsic(vec.get)(buffer/325, index275) in
+                                        let value277 = @intrinsic(vec.get)(self/322, second/332) in
+                                        let t1647 =
+                                          @intrinsic(vec.set)(buffer/325, index275, value277) in
+                                        let compound_old279 = second/332 in
+                                        let compound_value280 = 1 in
+                                        let t1648 = (compound_old279 + compound_value280) in
+                                        let t1649 = second/332 = t1648 in
+                                        jump k1637()
+                                      }
+                                    } else {
+                                      jump exit1617()
+                                    }
+                                  } in
+                                  if t1650 {
+                                    let t1651 = (second/332 < right/330) in
+                                    jump k1635(t1651)
+                                  } else {
+                                    jump k1635(false)
+                                  }
+                                } in
+                              } in
+                              jump loop1634()
+                            } in
+                            let inline2970 = (t1616 < length/324) in
+                            if inline2970 {
+                              jump inline_cont2969(t1616)
+                            } else {
+                              jump inline_cont2969(length/324)
+                            }
+                          } in
+                          let inline2972 = (t1615 < length/324) in
+                          if inline2972 {
+                            jump inline_cont2971(t1615)
+                          } else {
+                            jump inline_cont2971(length/324)
+                          }
+                        } else {
+                          jump exit1602()
+                        }
+                      } in
+                    } in
+                    jump loop1613()
+                  } else {
+                    jump exit1599()
+                  }
+                } in
+              } in
+              jump loop1600()
+            } in
+            joinrec {
+              join loop1652() -> unit {
+                join inline_cont2966(for_next263: Option__int) -> unit {
+                  match for_next263 {
+                    Tag_0 => {
+                      jump exit1598()
+                    },
+                    Tag_1 => {
+                      let x264 = Option__int::Some._0(for_next263) in
+                      let t1654 = @intrinsic(vec.get)(self/322, x264) in
+                      let inline2965 = @intrinsic(vec.push)(buffer/325, t1654) in
+                      jump loop1652()
+                    },
+                  }
+                } in
+                let inline2967 = FnIterator__int.next_fn(for_iter262) in
+                let inline2968 = inline2967() in
+                jump inline_cont2966(inline2968)
+              } in
+            } in
+            jump loop1652()
+          } in
+          jump inline_cont2983(t1597)
+        } in
+        let inline2985 = 0 in
+        let inline2986 = @intrinsic(ref.new)(inline2985) in
+        let inline2987 =
+          closure_env_goml_builtin_range_13 { current_0: inline2986, end_1: length/324 } in
+        let inline2988 =
+          pack_closure[inherent#closure_env_goml_builtin_range_13#closure_env_goml_builtin_range_13#apply](
+            inline2987
+          ) in
+        let inline2989 = inherent#FnIterator#FnIterator[T]#from_fn__T_int(inline2988) in
+        jump inline_cont2984(inline2989)
+      } in
+      let inline2991 = @intrinsic(vec.with_capacity)(length/324) in
+      jump inline_cont2990(inline2991)
+    } in
+    if t1656 {
+      ()
+    } else {
+      jump k1596()
+    }
+  } in
+  let inline2993 = @intrinsic(vec.len)(self/322) in
+  jump inline_cont2992(inline2993)
+}
+
+fn inherent#Vec#Vec[T]#with_capacity__T_string(capacity/257: int) -> Vec[string] {
+  let t1659 = @intrinsic(vec.with_capacity)(capacity/257) in
+  t1659
+}
+
+fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+  let t1662 = @runtime(core.int_to_string)(self/151) in
+  t1662
+}
+
+fn inherent#Vec#Vec[T]#len__T_string(self/273: Vec[string]) -> int {
+  let t1665 = @intrinsic(vec.len)(self/273) in
+  t1665
+}
+
+fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+  let t1668 = (self/185 == other/186) in
+  t1668
+}
+
+fn inherent#Vec#Vec[T]#dedup_by__T_int(self/371: Vec[int], equal/372: (int, int) -> bool) -> unit {
+  join inline_cont3008(t1685: int) -> unit {
+    let t1686 = (t1685 < 2) in
+    join k1670() -> unit {
+      let output/373 = 1 in
+      join inline_cont3006(t1671: int) -> unit {
+        join inline_cont3000(t1672: FnIterator__int) -> unit {
+          join inline_cont2999(for_iter337: FnIterator__int) -> unit {
+            join exit1673() -> unit {
+              let inline2998 = @intrinsic(vec.truncate)(self/371, output/373) in
+              ()
+            } in
+            joinrec {
+              join loop1675() -> unit {
+                join inline_cont2994(for_next338: Option__int) -> unit {
+                  match for_next338 {
+                    Tag_0 => {
+                      jump exit1673()
+                    },
+                    Tag_1 => {
+                      let x339 = Option__int::Some._0(for_next338) in
+                      let value/375 = @intrinsic(vec.get)(self/371, x339) in
+                      let t1678 = (output/373 - 1) in
+                      let t1679 = @intrinsic(vec.get)(self/371, t1678) in
+                      let t1680 = equal/372(t1679, value/375) in
+                      let t1681 = (!t1680) in
+                      if t1681 {
+                        let index341 = output/373 in
+                        let place342 = @intrinsic(vec.get)(self/371, index341) in
+                        let t1682 = @intrinsic(vec.set)(self/371, index341, value/375) in
+                        let compound_old345 = output/373 in
+                        let compound_value346 = 1 in
+                        let t1683 = (compound_old345 + compound_value346) in
+                        let t1684 = output/373 = t1683 in
+                        jump loop1675()
+                      } else {
+                        jump loop1675()
+                      }
+                    },
+                  }
+                } in
+                let inline2995 = FnIterator__int.next_fn(for_iter337) in
+                let inline2996 = inline2995() in
+                jump inline_cont2994(inline2996)
+              } in
+            } in
+            jump loop1675()
+          } in
+          jump inline_cont2999(t1672)
+        } in
+        let inline3001 = 1 in
+        let inline3002 = @intrinsic(ref.new)(inline3001) in
+        let inline3003 =
+          closure_env_goml_builtin_range_13 { current_0: inline3002, end_1: t1671 } in
+        let inline3004 =
+          pack_closure[inherent#closure_env_goml_builtin_range_13#closure_env_goml_builtin_range_13#apply](
+            inline3003
+          ) in
+        let inline3005 = inherent#FnIterator#FnIterator[T]#from_fn__T_int(inline3004) in
+        jump inline_cont3000(inline3005)
+      } in
+      let inline3007 = @intrinsic(vec.len)(self/371) in
+      jump inline_cont3006(inline3007)
+    } in
+    if t1686 {
+      ()
+    } else {
+      jump k1670()
+    }
+  } in
+  let inline3009 = @intrinsic(vec.len)(self/371) in
+  jump inline_cont3008(inline3009)
+}
+
+fn inherent#Vec#Vec[T]#is_empty__T_int(self/275: Vec[int]) -> bool {
+  let t1689 = @intrinsic(vec.len)(self/275) in
+  let t1690 = (t1689 == 0) in
+  t1690
+}
+
+fn inherent#Ordering#Ordering#to_int(self/833: Ordering) -> int {
+  match self/833 {
+    Tag_0 => {
+      -1
+    },
+    Tag_1 => {
+      0
+    },
+    Tag_2 => {
+      1
+    },
+  }
+}
+
+fn inherent#Vec#Vec[T]#sort_by__T_string(
+  self/335: Vec[string],
+  compare/336: (string, string) -> int
+) -> unit {
+  let t1696 = inherent#Vec#Vec[T]#stable_sort_by__T_string(self/335, compare/336) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#sort_by__T_(int,int)(
+  self/335: Vec[(int, int)],
+  compare/336: ((int, int), (int, int)) -> int
+) -> unit {
+  let t1698 = inherent#Vec#Vec[T]#stable_sort_by__T_(int,int)(self/335, compare/336) in
+  ()
+}
+
+fn inherent#Slice#Slice[T]#len__T_int(self/407: Slice[int]) -> int {
+  let t1701 = @intrinsic(slice.len)(self/407) in
+  t1701
+}
+
+fn inherent#Vec#Vec[T]#copy__T_int(self/264: Vec[int]) -> Vec[int] {
+  join inline_cont3016(t1704: int) -> Vec[int] {
+    join inline_cont3014(result/265: Vec[int]) -> Vec[int] {
+      let index/266 = 0 in
+      join exit1705() -> Vec[int] {
+        result/265
+      } in
+      joinrec {
+        join loop1706() -> Vec[int] {
+          join inline_cont3012(t1707: int) -> Vec[int] {
+            let t1708 = (index/266 < t1707) in
+            if t1708 {
+              let t1709 = @intrinsic(vec.get)(self/264, index/266) in
+              join inline_cont3010(_wild195: unit) -> Vec[int] {
+                let compound_old196 = index/266 in
+                let compound_value197 = 1 in
+                let t1710 = (compound_old196 + compound_value197) in
+                let t1711 = index/266 = t1710 in
+                jump loop1706()
+              } in
+              let inline3011 = @intrinsic(vec.push)(result/265, t1709) in
+              jump inline_cont3010(())
+            } else {
+              jump exit1705()
+            }
+          } in
+          let inline3013 = @intrinsic(vec.len)(self/264) in
+          jump inline_cont3012(inline3013)
+        } in
+      } in
+      jump loop1706()
+    } in
+    let inline3015 = @intrinsic(vec.with_capacity)(t1704) in
+    jump inline_cont3014(inline3015)
+  } in
+  let inline3017 = @intrinsic(vec.len)(self/264) in
+  jump inline_cont3016(inline3017)
+}
+
+fn inherent#FrozenVec#FrozenVec[T]#len__T_int(self/396: FrozenVec__int) -> int {
+  let t1714 = FrozenVec__int.values(self/396) in
+  let inline3019 = @intrinsic(vec.len)(t1714) in
+  inline3019
+}
+
+fn inherent#FrozenVec#FrozenVec[T]#get__T_int(self/398: FrozenVec__int, index/399: int) -> int {
+  let t1718 = FrozenVec__int.values(self/398) in
+  let t1719 = @intrinsic(vec.get)(t1718, index/399) in
+  t1719
+}
+
+fn inherent#Option#Option[T]#is_some__T_int(self/456: Option__int) -> bool {
+  match self/456 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      true
+    },
+  }
+}
+
+fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(
+  next_fn/254: () -> Option__int
+) -> FnIterator__int {
+  let t1726 = FnIterator__int { next_fn: next_fn/254 } in
+  t1726
+}
+
+fn inherent#Vec#Vec[T]#with_capacity__T_int(capacity/257: int) -> Vec[int] {
+  let t1729 = @intrinsic(vec.with_capacity)(capacity/257) in
+  t1729
+}
+
+fn smaller(left/376: int, right/377: int) -> int {
+  let t1734 = (left/376 < right/377) in
+  if t1734 {
+    left/376
+  } else {
+    right/377
+  }
+}
+
+fn inherent#Vec#Vec[T]#truncate__T_int(self/278: Vec[int], len/279: int) -> unit {
+  let t1736 = @intrinsic(vec.truncate)(self/278, len/279) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#stable_sort_by__T_string(
+  self/322: Vec[string],
+  compare/323: (string, string) -> int
+) -> unit {
+  join inline_cont3048(length/324: int) -> unit {
+    let t1798 = (length/324 < 2) in
+    join k1738() -> unit {
+      join inline_cont3046(buffer/325: Vec[string]) -> unit {
+        join inline_cont3040(t1739: FnIterator__int) -> unit {
+          join inline_cont3039(for_iter262: FnIterator__int) -> unit {
+            join exit1740() -> unit {
+              let width/327 = 1 in
+              join exit1741() -> unit {
+                ()
+              } in
+              joinrec {
+                join loop1742() -> unit {
+                  let t1743 = (width/327 < length/324) in
+                  if t1743 {
+                    let left/328 = 0 in
+                    join exit1744() -> unit {
+                      join inline_cont3033(t1745: FnIterator__int) -> unit {
+                        join inline_cont3032(for_iter313: FnIterator__int) -> unit {
+                          join exit1746() -> unit {
+                            let t1749 = (length/324 / 2) in
+                            let t1750 = (width/327 > t1749) in
+                            join k1747(jp1748: int) -> unit {
+                              let _wild322 = width/327 = jp1748 in
+                              jump loop1742()
+                            } in
+                            if t1750 {
+                              jump k1747(length/324)
+                            } else {
+                              let t1751 = (width/327 * 2) in
+                              jump k1747(t1751)
+                            }
+                          } in
+                          joinrec {
+                            join loop1752() -> unit {
+                              join inline_cont3029(for_next314: Option__int) -> unit {
+                                match for_next314 {
+                                  Tag_0 => {
+                                    jump exit1746()
+                                  },
+                                  Tag_1 => {
+                                    let x315 = Option__int::Some._0(for_next314) in
+                                    let place318 = @intrinsic(vec.get)(self/322, x315) in
+                                    let value319 = @intrinsic(vec.get)(buffer/325, x315) in
+                                    let t1754 = @intrinsic(vec.set)(self/322, x315, value319) in
+                                    jump loop1752()
+                                  },
+                                }
+                              } in
+                              let inline3030 = FnIterator__int.next_fn(for_iter313) in
+                              let inline3031 = inline3030() in
+                              jump inline_cont3029(inline3031)
+                            } in
+                          } in
+                          jump loop1752()
+                        } in
+                        jump inline_cont3032(t1745)
+                      } in
+                      let inline3034 = 0 in
+                      let inline3035 = @intrinsic(ref.new)(inline3034) in
+                      let inline3036 =
+                        closure_env_goml_builtin_range_13 {
+                          current_0: inline3035,
+                          end_1: length/324
+                        } in
+                      let inline3037 =
+                        pack_closure[inherent#closure_env_goml_builtin_range_13#closure_env_goml_builtin_range_13#apply](
+                          inline3036
+                        ) in
+                      let inline3038 =
+                        inherent#FnIterator#FnIterator[T]#from_fn__T_int(inline3037) in
+                      jump inline_cont3033(inline3038)
+                    } in
+                    joinrec {
+                      join loop1755() -> unit {
+                        let t1756 = (left/328 < length/324) in
+                        if t1756 {
+                          let t1757 = (left/328 + width/327) in
+                          join inline_cont3027(middle/329: int) -> unit {
+                            let t1758 = (middle/329 + width/327) in
+                            join inline_cont3025(right/330: int) -> unit {
+                              let first/331 = left/328 in
+                              let second/332 = middle/329 in
+                              let output/333 = left/328 in
+                              join exit1759() -> unit {
+                                join exit1760() -> unit {
+                                  join exit1761() -> unit {
+                                    let _wild311 = left/328 = right/330 in
+                                    jump loop1755()
+                                  } in
+                                  joinrec {
+                                    join loop1762() -> unit {
+                                      let t1763 = (second/332 < right/330) in
+                                      if t1763 {
+                                        let index300 = output/333 in
+                                        let place301 = @intrinsic(vec.get)(buffer/325, index300) in
+                                        let value302 = @intrinsic(vec.get)(self/322, second/332) in
+                                        let t1764 =
+                                          @intrinsic(vec.set)(buffer/325, index300, value302) in
+                                        let compound_old304 = second/332 in
+                                        let compound_value305 = 1 in
+                                        let t1765 = (compound_old304 + compound_value305) in
+                                        let t1766 = second/332 = t1765 in
+                                        let compound_old307 = output/333 in
+                                        let compound_value308 = 1 in
+                                        let t1767 = (compound_old307 + compound_value308) in
+                                        let t1768 = output/333 = t1767 in
+                                        jump loop1762()
+                                      } else {
+                                        jump exit1761()
+                                      }
+                                    } in
+                                  } in
+                                  jump loop1762()
+                                } in
+                                joinrec {
+                                  join loop1769() -> unit {
+                                    let t1770 = (first/331 < middle/329) in
+                                    if t1770 {
+                                      let index288 = output/333 in
+                                      let place289 = @intrinsic(vec.get)(buffer/325, index288) in
+                                      let value290 = @intrinsic(vec.get)(self/322, first/331) in
+                                      let t1771 =
+                                        @intrinsic(vec.set)(buffer/325, index288, value290) in
+                                      let compound_old292 = first/331 in
+                                      let compound_value293 = 1 in
+                                      let t1772 = (compound_old292 + compound_value293) in
+                                      let t1773 = first/331 = t1772 in
+                                      let compound_old295 = output/333 in
+                                      let compound_value296 = 1 in
+                                      let t1774 = (compound_old295 + compound_value296) in
+                                      let t1775 = output/333 = t1774 in
+                                      jump loop1769()
+                                    } else {
+                                      jump exit1760()
+                                    }
+                                  } in
+                                } in
+                                jump loop1769()
+                              } in
+                              joinrec {
+                                join loop1776() -> unit {
+                                  let t1792 = (first/331 < middle/329) in
+                                  join k1777(jp1778: bool) -> unit {
+                                    if jp1778 {
+                                      let t1782 = @intrinsic(vec.get)(self/322, first/331) in
+                                      let t1783 = @intrinsic(vec.get)(self/322, second/332) in
+                                      let t1784 = compare/323(t1782, t1783) in
+                                      let t1785 = (t1784 <= 0) in
+                                      join k1779() -> unit {
+                                        let compound_old283 = output/333 in
+                                        let compound_value284 = 1 in
+                                        let t1780 = (compound_old283 + compound_value284) in
+                                        let t1781 = output/333 = t1780 in
+                                        jump loop1776()
+                                      } in
+                                      if t1785 {
+                                        let index267 = output/333 in
+                                        let place268 = @intrinsic(vec.get)(buffer/325, index267) in
+                                        let value269 = @intrinsic(vec.get)(self/322, first/331) in
+                                        let t1786 =
+                                          @intrinsic(vec.set)(buffer/325, index267, value269) in
+                                        let compound_old271 = first/331 in
+                                        let compound_value272 = 1 in
+                                        let t1787 = (compound_old271 + compound_value272) in
+                                        let t1788 = first/331 = t1787 in
+                                        jump k1779()
+                                      } else {
+                                        let index275 = output/333 in
+                                        let place276 = @intrinsic(vec.get)(buffer/325, index275) in
+                                        let value277 = @intrinsic(vec.get)(self/322, second/332) in
+                                        let t1789 =
+                                          @intrinsic(vec.set)(buffer/325, index275, value277) in
+                                        let compound_old279 = second/332 in
+                                        let compound_value280 = 1 in
+                                        let t1790 = (compound_old279 + compound_value280) in
+                                        let t1791 = second/332 = t1790 in
+                                        jump k1779()
+                                      }
+                                    } else {
+                                      jump exit1759()
+                                    }
+                                  } in
+                                  if t1792 {
+                                    let t1793 = (second/332 < right/330) in
+                                    jump k1777(t1793)
+                                  } else {
+                                    jump k1777(false)
+                                  }
+                                } in
+                              } in
+                              jump loop1776()
+                            } in
+                            let inline3026 = (t1758 < length/324) in
+                            if inline3026 {
+                              jump inline_cont3025(t1758)
+                            } else {
+                              jump inline_cont3025(length/324)
+                            }
+                          } in
+                          let inline3028 = (t1757 < length/324) in
+                          if inline3028 {
+                            jump inline_cont3027(t1757)
+                          } else {
+                            jump inline_cont3027(length/324)
+                          }
+                        } else {
+                          jump exit1744()
+                        }
+                      } in
+                    } in
+                    jump loop1755()
+                  } else {
+                    jump exit1741()
+                  }
+                } in
+              } in
+              jump loop1742()
+            } in
+            joinrec {
+              join loop1794() -> unit {
+                join inline_cont3022(for_next263: Option__int) -> unit {
+                  match for_next263 {
+                    Tag_0 => {
+                      jump exit1740()
+                    },
+                    Tag_1 => {
+                      let x264 = Option__int::Some._0(for_next263) in
+                      let t1796 = @intrinsic(vec.get)(self/322, x264) in
+                      let inline3021 = @intrinsic(vec.push)(buffer/325, t1796) in
+                      jump loop1794()
+                    },
+                  }
+                } in
+                let inline3023 = FnIterator__int.next_fn(for_iter262) in
+                let inline3024 = inline3023() in
+                jump inline_cont3022(inline3024)
+              } in
+            } in
+            jump loop1794()
+          } in
+          jump inline_cont3039(t1739)
+        } in
+        let inline3041 = 0 in
+        let inline3042 = @intrinsic(ref.new)(inline3041) in
+        let inline3043 =
+          closure_env_goml_builtin_range_13 { current_0: inline3042, end_1: length/324 } in
+        let inline3044 =
+          pack_closure[inherent#closure_env_goml_builtin_range_13#closure_env_goml_builtin_range_13#apply](
+            inline3043
+          ) in
+        let inline3045 = inherent#FnIterator#FnIterator[T]#from_fn__T_int(inline3044) in
+        jump inline_cont3040(inline3045)
+      } in
+      let inline3047 = @intrinsic(vec.with_capacity)(length/324) in
+      jump inline_cont3046(inline3047)
+    } in
+    if t1798 {
+      ()
+    } else {
+      jump k1738()
+    }
+  } in
+  let inline3049 = @intrinsic(vec.len)(self/322) in
+  jump inline_cont3048(inline3049)
+}
+
+fn inherent#Vec#Vec[T]#stable_sort_by__T_(int,int)(
+  self/322: Vec[(int, int)],
+  compare/323: ((int, int), (int, int)) -> int
+) -> unit {
+  join inline_cont3078(length/324: int) -> unit {
+    let t1860 = (length/324 < 2) in
+    join k1800() -> unit {
+      join inline_cont3076(buffer/325: Vec[(int, int)]) -> unit {
+        join inline_cont3070(t1801: FnIterator__int) -> unit {
+          join inline_cont3069(for_iter262: FnIterator__int) -> unit {
+            join exit1802() -> unit {
+              let width/327 = 1 in
+              join exit1803() -> unit {
+                ()
+              } in
+              joinrec {
+                join loop1804() -> unit {
+                  let t1805 = (width/327 < length/324) in
+                  if t1805 {
+                    let left/328 = 0 in
+                    join exit1806() -> unit {
+                      join inline_cont3063(t1807: FnIterator__int) -> unit {
+                        join inline_cont3062(for_iter313: FnIterator__int) -> unit {
+                          join exit1808() -> unit {
+                            let t1811 = (length/324 / 2) in
+                            let t1812 = (width/327 > t1811) in
+                            join k1809(jp1810: int) -> unit {
+                              let _wild322 = width/327 = jp1810 in
+                              jump loop1804()
+                            } in
+                            if t1812 {
+                              jump k1809(length/324)
+                            } else {
+                              let t1813 = (width/327 * 2) in
+                              jump k1809(t1813)
+                            }
+                          } in
+                          joinrec {
+                            join loop1814() -> unit {
+                              join inline_cont3059(for_next314: Option__int) -> unit {
+                                match for_next314 {
+                                  Tag_0 => {
+                                    jump exit1808()
+                                  },
+                                  Tag_1 => {
+                                    let x315 = Option__int::Some._0(for_next314) in
+                                    let place318 = @intrinsic(vec.get)(self/322, x315) in
+                                    let value319 = @intrinsic(vec.get)(buffer/325, x315) in
+                                    let t1816 = @intrinsic(vec.set)(self/322, x315, value319) in
+                                    jump loop1814()
+                                  },
+                                }
+                              } in
+                              let inline3060 = FnIterator__int.next_fn(for_iter313) in
+                              let inline3061 = inline3060() in
+                              jump inline_cont3059(inline3061)
+                            } in
+                          } in
+                          jump loop1814()
+                        } in
+                        jump inline_cont3062(t1807)
+                      } in
+                      let inline3064 = 0 in
+                      let inline3065 = @intrinsic(ref.new)(inline3064) in
+                      let inline3066 =
+                        closure_env_goml_builtin_range_13 {
+                          current_0: inline3065,
+                          end_1: length/324
+                        } in
+                      let inline3067 =
+                        pack_closure[inherent#closure_env_goml_builtin_range_13#closure_env_goml_builtin_range_13#apply](
+                          inline3066
+                        ) in
+                      let inline3068 =
+                        inherent#FnIterator#FnIterator[T]#from_fn__T_int(inline3067) in
+                      jump inline_cont3063(inline3068)
+                    } in
+                    joinrec {
+                      join loop1817() -> unit {
+                        let t1818 = (left/328 < length/324) in
+                        if t1818 {
+                          let t1819 = (left/328 + width/327) in
+                          join inline_cont3057(middle/329: int) -> unit {
+                            let t1820 = (middle/329 + width/327) in
+                            join inline_cont3055(right/330: int) -> unit {
+                              let first/331 = left/328 in
+                              let second/332 = middle/329 in
+                              let output/333 = left/328 in
+                              join exit1821() -> unit {
+                                join exit1822() -> unit {
+                                  join exit1823() -> unit {
+                                    let _wild311 = left/328 = right/330 in
+                                    jump loop1817()
+                                  } in
+                                  joinrec {
+                                    join loop1824() -> unit {
+                                      let t1825 = (second/332 < right/330) in
+                                      if t1825 {
+                                        let index300 = output/333 in
+                                        let place301 = @intrinsic(vec.get)(buffer/325, index300) in
+                                        let value302 = @intrinsic(vec.get)(self/322, second/332) in
+                                        let t1826 =
+                                          @intrinsic(vec.set)(buffer/325, index300, value302) in
+                                        let compound_old304 = second/332 in
+                                        let compound_value305 = 1 in
+                                        let t1827 = (compound_old304 + compound_value305) in
+                                        let t1828 = second/332 = t1827 in
+                                        let compound_old307 = output/333 in
+                                        let compound_value308 = 1 in
+                                        let t1829 = (compound_old307 + compound_value308) in
+                                        let t1830 = output/333 = t1829 in
+                                        jump loop1824()
+                                      } else {
+                                        jump exit1823()
+                                      }
+                                    } in
+                                  } in
+                                  jump loop1824()
+                                } in
+                                joinrec {
+                                  join loop1831() -> unit {
+                                    let t1832 = (first/331 < middle/329) in
+                                    if t1832 {
+                                      let index288 = output/333 in
+                                      let place289 = @intrinsic(vec.get)(buffer/325, index288) in
+                                      let value290 = @intrinsic(vec.get)(self/322, first/331) in
+                                      let t1833 =
+                                        @intrinsic(vec.set)(buffer/325, index288, value290) in
+                                      let compound_old292 = first/331 in
+                                      let compound_value293 = 1 in
+                                      let t1834 = (compound_old292 + compound_value293) in
+                                      let t1835 = first/331 = t1834 in
+                                      let compound_old295 = output/333 in
+                                      let compound_value296 = 1 in
+                                      let t1836 = (compound_old295 + compound_value296) in
+                                      let t1837 = output/333 = t1836 in
+                                      jump loop1831()
+                                    } else {
+                                      jump exit1822()
+                                    }
+                                  } in
+                                } in
+                                jump loop1831()
+                              } in
+                              joinrec {
+                                join loop1838() -> unit {
+                                  let t1854 = (first/331 < middle/329) in
+                                  join k1839(jp1840: bool) -> unit {
+                                    if jp1840 {
+                                      let t1844 = @intrinsic(vec.get)(self/322, first/331) in
+                                      let t1845 = @intrinsic(vec.get)(self/322, second/332) in
+                                      let t1846 = compare/323(t1844, t1845) in
+                                      let t1847 = (t1846 <= 0) in
+                                      join k1841() -> unit {
+                                        let compound_old283 = output/333 in
+                                        let compound_value284 = 1 in
+                                        let t1842 = (compound_old283 + compound_value284) in
+                                        let t1843 = output/333 = t1842 in
+                                        jump loop1838()
+                                      } in
+                                      if t1847 {
+                                        let index267 = output/333 in
+                                        let place268 = @intrinsic(vec.get)(buffer/325, index267) in
+                                        let value269 = @intrinsic(vec.get)(self/322, first/331) in
+                                        let t1848 =
+                                          @intrinsic(vec.set)(buffer/325, index267, value269) in
+                                        let compound_old271 = first/331 in
+                                        let compound_value272 = 1 in
+                                        let t1849 = (compound_old271 + compound_value272) in
+                                        let t1850 = first/331 = t1849 in
+                                        jump k1841()
+                                      } else {
+                                        let index275 = output/333 in
+                                        let place276 = @intrinsic(vec.get)(buffer/325, index275) in
+                                        let value277 = @intrinsic(vec.get)(self/322, second/332) in
+                                        let t1851 =
+                                          @intrinsic(vec.set)(buffer/325, index275, value277) in
+                                        let compound_old279 = second/332 in
+                                        let compound_value280 = 1 in
+                                        let t1852 = (compound_old279 + compound_value280) in
+                                        let t1853 = second/332 = t1852 in
+                                        jump k1841()
+                                      }
+                                    } else {
+                                      jump exit1821()
+                                    }
+                                  } in
+                                  if t1854 {
+                                    let t1855 = (second/332 < right/330) in
+                                    jump k1839(t1855)
+                                  } else {
+                                    jump k1839(false)
+                                  }
+                                } in
+                              } in
+                              jump loop1838()
+                            } in
+                            let inline3056 = (t1820 < length/324) in
+                            if inline3056 {
+                              jump inline_cont3055(t1820)
+                            } else {
+                              jump inline_cont3055(length/324)
+                            }
+                          } in
+                          let inline3058 = (t1819 < length/324) in
+                          if inline3058 {
+                            jump inline_cont3057(t1819)
+                          } else {
+                            jump inline_cont3057(length/324)
+                          }
+                        } else {
+                          jump exit1806()
+                        }
+                      } in
+                    } in
+                    jump loop1817()
+                  } else {
+                    jump exit1803()
+                  }
+                } in
+              } in
+              jump loop1804()
+            } in
+            joinrec {
+              join loop1856() -> unit {
+                join inline_cont3052(for_next263: Option__int) -> unit {
+                  match for_next263 {
+                    Tag_0 => {
+                      jump exit1802()
+                    },
+                    Tag_1 => {
+                      let x264 = Option__int::Some._0(for_next263) in
+                      let t1858 = @intrinsic(vec.get)(self/322, x264) in
+                      let inline3051 = @intrinsic(vec.push)(buffer/325, t1858) in
+                      jump loop1856()
+                    },
+                  }
+                } in
+                let inline3053 = FnIterator__int.next_fn(for_iter262) in
+                let inline3054 = inline3053() in
+                jump inline_cont3052(inline3054)
+              } in
+            } in
+            jump loop1856()
+          } in
+          jump inline_cont3069(t1801)
+        } in
+        let inline3071 = 0 in
+        let inline3072 = @intrinsic(ref.new)(inline3071) in
+        let inline3073 =
+          closure_env_goml_builtin_range_13 { current_0: inline3072, end_1: length/324 } in
+        let inline3074 =
+          pack_closure[inherent#closure_env_goml_builtin_range_13#closure_env_goml_builtin_range_13#apply](
+            inline3073
+          ) in
+        let inline3075 = inherent#FnIterator#FnIterator[T]#from_fn__T_int(inline3074) in
+        jump inline_cont3070(inline3075)
+      } in
+      let inline3077 = @intrinsic(vec.with_capacity)(length/324) in
+      jump inline_cont3076(inline3077)
+    } in
+    if t1860 {
+      ()
+    } else {
+      jump k1800()
+    }
+  } in
+  let inline3079 = @intrinsic(vec.len)(self/322) in
+  jump inline_cont3078(inline3079)
+}
+
+fn inherent#Vec#Vec[T]#with_capacity__T_(int,int)(capacity/257: int) -> Vec[(int, int)] {
+  let t1863 = @intrinsic(vec.with_capacity)(capacity/257) in
+  t1863
+}
+
+fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+  let t1866 = @runtime(core.int_hash)(self/211) in
+  t1866
+}
+
+fn inherent#closure_env_main_0#closure_env_main_0#apply(
+  env451: closure_env_main_0,
+  value/1: int
+) -> bool {
+  let t1869 = (value/1 == 5) in
+  t1869
+}
+
+fn inherent#closure_env_main_1#closure_env_main_1#apply(
+  env452: closure_env_main_1,
+  value/2: int
+) -> bool {
+  let t1872 = (value/2 == 99) in
+  t1872
+}
+
+fn inherent#closure_env_main_2#closure_env_main_2#apply(
+  env453: closure_env_main_2,
+  left/3: int,
+  right/4: int
+) -> int {
+  let t1875 = (left/3 - right/4) in
+  t1875
+}
+
+fn inherent#closure_env_main_3#closure_env_main_3#apply(
+  env454: closure_env_main_3,
+  value/6: int
+) -> int {
+  let t1878 = (value/6 - 4) in
+  t1878
+}
+
+fn inherent#closure_env_main_4#closure_env_main_4#apply(
+  env455: closure_env_main_4,
+  value/7: int
+) -> int {
+  let t1881 = (value/7 - 3) in
+  t1881
+}
+
+fn inherent#closure_env_main_5#closure_env_main_5#apply(
+  env456: closure_env_main_5,
+  left/8: int,
+  right/9: int
+) -> int {
+  let t1884 = (left/8 - right/9) in
+  t1884
+}
+
+fn inherent#closure_env_main_6#closure_env_main_6#apply(
+  env457: closure_env_main_6,
+  left/10: int,
+  right/11: int
+) -> int {
+  let t1887 = (left/10 - right/11) in
+  t1887
+}
+
+fn inherent#closure_env_main_7#closure_env_main_7#apply(
+  env458: closure_env_main_7,
+  left/13: string,
+  right/14: string
+) -> Ordering {
+  let inline3081 = trait_impl#std::cmp::Ord#string#cmp(left/13, right/14) in
+  inline3081
+}
+
+fn inherent#closure_env_main_8#closure_env_main_8#apply(
+  env459: closure_env_main_8,
+  left/16: (int, int),
+  right/17: (int, int)
+) -> Ordering {
+  let t1893 = left/16.0 in
+  let t1894 = right/17.0 in
+  let inline3083 = trait_impl#std::cmp::Ord#int#cmp(t1893, t1894) in
+  inline3083
+}
+
+fn inherent#closure_env_main_9#closure_env_main_9#apply(
+  env460: closure_env_main_9,
+  left/21: int,
+  right/22: int
+) -> int {
+  let t1898 = (left/21 - right/22) in
+  t1898
+}
+
+fn inherent#closure_env_inherent_Vec_Vec_T_dedup_T_int_10#closure_env_inherent_Vec_Vec_T_dedup_T_int_10#apply(
+  env461: closure_env_inherent_Vec_Vec_T_dedup_T_int_10,
+  left/388: int,
+  right/389: int
+) -> bool {
+  let inline3085 = (left/388 == right/389) in
+  inline3085
+}
+
+fn inherent#closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_string_11#closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_string_11#apply(
+  env462: closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_string_11,
+  left/339: string,
+  right/340: string
+) -> int {
+  let compare/338 = closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_string_11.compare_0(env462) in
+  let t1904 = compare/338(left/339, right/340) in
+  match t1904 {
+    Tag_0 => {
+      -1
+    },
+    Tag_1 => {
+      0
+    },
+    Tag_2 => {
+      1
+    },
+  }
+}
+
+fn inherent#closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_int_int_12#closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_int_int_12#apply(
+  env463: closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_int_int_12,
+  left/339: (int, int),
+  right/340: (int, int)
+) -> int {
+  let compare/338 =
+    closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_int_int_12.compare_0(env463) in
+  let t1908 = compare/338(left/339, right/340) in
+  match t1908 {
+    Tag_0 => {
+      -1
+    },
+    Tag_1 => {
+      0
+    },
+    Tag_2 => {
+      1
+    },
+  }
+}
+
+fn inherent#closure_env_goml_builtin_range_13#closure_env_goml_builtin_range_13#apply(
+  env464: closure_env_goml_builtin_range_13
+) -> Option__int {
+  let current/496 = closure_env_goml_builtin_range_13.current_0(env464) in
+  let end/495 = closure_env_goml_builtin_range_13.end_1(env464) in
+  let value/497 = @intrinsic(ref.get)(current/496) in
+  let t1914 = (value/497 < end/495) in
+  if t1914 {
+    let t1915 = (value/497 + 1) in
+    let _wild404 = @intrinsic(ref.set)(current/496, t1915) in
+    let t1916 = Option__int::Some(value/497) in
+    t1916
+  } else {
+    Tag_0
+  }
+}

@@ -17,27 +17,29 @@ type Boxed struct {
     value int32
 }
 
+type Ordering int32
+
 func main0() struct{} {
-    var t197 string
-    t197 = "inherent"
-    var inline217 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t197)
-    _goml_runtime_core_string_println(inline217)
-    var t199 string
-    var inline214 int32 = 9
-    var inline215 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline214)
-    t199 = inline215
-    var inline211 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t199)
-    _goml_runtime_core_string_println(inline211)
+    var t418 string
+    t418 = "inherent"
+    var inline438 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t418)
+    _goml_runtime_core_string_println(inline438)
+    var t420 string
+    var inline435 int32 = 9
+    var inline436 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline435)
+    t420 = inline436
+    var inline432 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t420)
+    _goml_runtime_core_string_println(inline432)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
-    var t202 string = _goml_runtime_core_int32_to_string(self__33)
-    return t202
+    var t423 string = _goml_runtime_core_int32_to_string(self__33)
+    return t423
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
 func main() {

@@ -420,6 +420,8 @@ type Point struct {
     y int32
 }
 
+type Ordering int32
+
 type Key interface {
     isKey()
 }
@@ -457,56 +459,56 @@ func (_ Some) isOption__int32() {}
 func _goml_m_trait__impl_i_Hash_i_Key_i_hash(self__6 Key) uint64 {
     switch self__6.(type) {
     case A:
-        var t246_source int = 0
-        var t246 uint64 = uint64(int(t246_source))
-        var t247 uint64 = t246 + 14695981039346656037
-        var h__7 uint64 = t247 + 1
+        var t467_source int = 0
+        var t467 uint64 = uint64(int(t467_source))
+        var t468 uint64 = t467 + 14695981039346656037
+        var h__7 uint64 = t468 + 1
         return h__7
     case B:
-        var x187 int32 = self__6.(B)._0
-        var t248_source int = 0
-        var t248 uint64 = uint64(int(t248_source))
-        var t249 uint64 = t248 + 14695981039346656037
-        var h__9 uint64 = t249 + 2
-        var t250_source int = 0
-        var t250 uint64 = uint64(int(t250_source))
-        var t251 uint64 = t250 + 1099511628211
-        var t252 uint64 = h__9 * t251
-        var t253 uint64
-        var inline389 uint64 = _goml_runtime_core_int32_hash(x187)
-        t253 = inline389
-        var h__10 uint64 = t252 + t253
+        var x408 int32 = self__6.(B)._0
+        var t469_source int = 0
+        var t469 uint64 = uint64(int(t469_source))
+        var t470 uint64 = t469 + 14695981039346656037
+        var h__9 uint64 = t470 + 2
+        var t471_source int = 0
+        var t471 uint64 = uint64(int(t471_source))
+        var t472 uint64 = t471 + 1099511628211
+        var t473 uint64 = h__9 * t472
+        var t474 uint64
+        var inline610 uint64 = _goml_runtime_core_int32_hash(x408)
+        t474 = inline610
+        var h__10 uint64 = t473 + t474
         return h__10
     case P:
-        var x188 Point = self__6.(P)._0
-        var t254_source int = 0
-        var t254 uint64 = uint64(int(t254_source))
-        var t255 uint64 = t254 + 14695981039346656037
-        var h__12 uint64 = t255 + 3
-        var t256_source int = 0
-        var t256 uint64 = uint64(int(t256_source))
-        var t257 uint64 = t256 + 1099511628211
-        var t258 uint64 = h__12 * t257
-        var t259 uint64
-        var inline391_source int = 0
-        var inline391 uint64 = uint64(int(inline391_source))
-        var inline392 uint64 = inline391 + 14695981039346656037
-        var inline393_source int = 0
-        var inline393 uint64 = uint64(int(inline393_source))
-        var inline394 uint64 = inline393 + 1099511628211
-        var inline395 uint64 = inline392 * inline394
-        var inline396 int32 = x188.x
-        var inline397 uint64 = _goml_m_trait__impl_i_Hash_i_int32_i_hash(inline396)
-        var inline398 uint64 = inline395 + inline397
-        var inline399_source int = 0
-        var inline399 uint64 = uint64(int(inline399_source))
-        var inline400 uint64 = inline399 + 1099511628211
-        var inline401 uint64 = inline398 * inline400
-        var inline402 int32 = x188.y
-        var inline403 uint64 = _goml_m_trait__impl_i_Hash_i_int32_i_hash(inline402)
-        var inline404 uint64 = inline401 + inline403
-        t259 = inline404
-        var h__13 uint64 = t258 + t259
+        var x409 Point = self__6.(P)._0
+        var t475_source int = 0
+        var t475 uint64 = uint64(int(t475_source))
+        var t476 uint64 = t475 + 14695981039346656037
+        var h__12 uint64 = t476 + 3
+        var t477_source int = 0
+        var t477 uint64 = uint64(int(t477_source))
+        var t478 uint64 = t477 + 1099511628211
+        var t479 uint64 = h__12 * t478
+        var t480 uint64
+        var inline612_source int = 0
+        var inline612 uint64 = uint64(int(inline612_source))
+        var inline613 uint64 = inline612 + 14695981039346656037
+        var inline614_source int = 0
+        var inline614 uint64 = uint64(int(inline614_source))
+        var inline615 uint64 = inline614 + 1099511628211
+        var inline616 uint64 = inline613 * inline615
+        var inline617 int32 = x409.x
+        var inline618 uint64 = _goml_m_trait__impl_i_Hash_i_int32_i_hash(inline617)
+        var inline619 uint64 = inline616 + inline618
+        var inline620_source int = 0
+        var inline620 uint64 = uint64(int(inline620_source))
+        var inline621 uint64 = inline620 + 1099511628211
+        var inline622 uint64 = inline619 * inline621
+        var inline623 int32 = x409.y
+        var inline624 uint64 = _goml_m_trait__impl_i_Hash_i_int32_i_hash(inline623)
+        var inline625 uint64 = inline622 + inline624
+        t480 = inline625
+        var h__13 uint64 = t479 + t480
         return h__13
     default:
         panic("non-exhaustive match")
@@ -523,30 +525,30 @@ func _goml_m_trait__impl_i_PartialEq_i_Key_i_eq(self__14 Key, other__15 Key) boo
             return false
         }
     case B:
-        var x192 int32 = other__15.(B)._0
+        var x413 int32 = other__15.(B)._0
         switch self__14.(type) {
         case B:
-            var x196 int32 = self__14.(B)._0
-            var inline406 bool = x196 == x192
-            return inline406
+            var x417 int32 = self__14.(B)._0
+            var inline627 bool = x417 == x413
+            return inline627
         default:
             return false
         }
     case P:
-        var x193 Point = other__15.(P)._0
+        var x414 Point = other__15.(P)._0
         switch self__14.(type) {
         case P:
-            var x199 Point = self__14.(P)._0
-            var inline409 bool
-            var inline413 int32 = x199.x
-            var inline414 int32 = x193.x
-            var inline415 bool = _goml_m_trait__impl_i_PartialEq_i_int32_i_eq(inline413, inline414)
-            inline409 = inline415
-            if inline409 {
-                var inline410 int32 = x199.y
-                var inline411 int32 = x193.y
-                var inline412 bool = _goml_m_trait__impl_i_PartialEq_i_int32_i_eq(inline410, inline411)
-                return inline412
+            var x420 Point = self__14.(P)._0
+            var inline630 bool
+            var inline634 int32 = x420.x
+            var inline635 int32 = x414.x
+            var inline636 bool = _goml_m_trait__impl_i_PartialEq_i_int32_i_eq(inline634, inline635)
+            inline630 = inline636
+            if inline630 {
+                var inline631 int32 = x420.y
+                var inline632 int32 = x414.y
+                var inline633 bool = _goml_m_trait__impl_i_PartialEq_i_int32_i_eq(inline631, inline632)
+                return inline633
             } else {
                 return false
             }
@@ -561,14 +563,14 @@ func _goml_m_trait__impl_i_PartialEq_i_Key_i_eq(self__14 Key, other__15 Key) boo
 func print_opt_int(x__20 Option__int32) struct{} {
     switch x__20.(type) {
     case None:
-        var inline417 string = "none"
-        var inline418 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline417)
-        _goml_runtime_core_string_println(inline418)
+        var inline638 string = "none"
+        var inline639 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline638)
+        _goml_runtime_core_string_println(inline639)
         return struct{}{}
     case Some:
-        var x200 int32 = x__20.(Some)._0
-        var inline421 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x200)
-        _goml_runtime_core_string_println(inline421)
+        var x421 int32 = x__20.(Some)._0
+        var inline642 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x421)
+        _goml_runtime_core_string_println(inline642)
         return struct{}{}
     default:
         panic("non-exhaustive match")
@@ -578,236 +580,236 @@ func print_opt_int(x__20 Option__int32) struct{} {
 func main0() struct{} {
     var m1__22 *hashmap_Key_int32_x = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_new____K__Key____V__int32()
     _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__Key____V__int32(m1__22, A{}, 10)
-    var t281 Key = B{
+    var t502 Key = B{
         _0: 1,
     }
-    _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__Key____V__int32(m1__22, t281, 20)
-    var t282 int = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_len____K__Key____V__int32(m1__22)
-    println__T_int(t282)
-    var t283 Option__int32 = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_get____K__Key____V__int32(m1__22, A{})
-    print_opt_int(t283)
-    var t284 Key = B{
+    _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__Key____V__int32(m1__22, t502, 20)
+    var t503 int = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_len____K__Key____V__int32(m1__22)
+    println__T_int(t503)
+    var t504 Option__int32 = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_get____K__Key____V__int32(m1__22, A{})
+    print_opt_int(t504)
+    var t505 Key = B{
         _0: 1,
     }
-    var t285 bool = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_contains____K__Key____V__int32(m1__22, t284)
-    println__T_bool(t285)
-    var t286 Key = B{
+    var t506 bool = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_contains____K__Key____V__int32(m1__22, t505)
+    println__T_bool(t506)
+    var t507 Key = B{
         _0: 1,
     }
-    _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_remove____K__Key____V__int32(m1__22, t286)
-    var t287 Key = B{
+    _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_remove____K__Key____V__int32(m1__22, t507)
+    var t508 Key = B{
         _0: 1,
     }
-    var t288 bool = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_contains____K__Key____V__int32(m1__22, t287)
-    println__T_bool(t288)
-    var t289 int = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_len____K__Key____V__int32(m1__22)
-    println__T_int(t289)
+    var t509 bool = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_contains____K__Key____V__int32(m1__22, t508)
+    println__T_bool(t509)
+    var t510 int = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_len____K__Key____V__int32(m1__22)
+    println__T_int(t510)
     var m2__23 *hashmap_Ref_5Point_int32_x = _goml_m_inherent_i_HashMap_i_H_h8965aba642d8a393e2049e4587079c44__r_____V__int32()
-    var t290 Point = Point{
+    var t511 Point = Point{
         x: 1,
         y: 2,
     }
-    var p1__24 *ref_Point_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Point(t290)
-    var t291 Point = Point{
+    var p1__24 *ref_Point_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Point(t511)
+    var t512 Point = Point{
         x: 1,
         y: 2,
     }
-    var p2__25 *ref_Point_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Point(t291)
+    var p2__25 *ref_Point_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Point(t512)
     _goml_m_inherent_i_HashMap_i_H_h92a9b8ea001265f897bc67524ef74086__r_____V__int32(m2__23, p1__24, 99)
-    var t292 Option__int32 = _goml_m_inherent_i_HashMap_i_H_h8816d503fd85179e4f674a4a9db321b9__r_____V__int32(m2__23, p1__24)
-    switch t292.(type) {
+    var t513 Option__int32 = _goml_m_inherent_i_HashMap_i_H_h8816d503fd85179e4f674a4a9db321b9__r_____V__int32(m2__23, p1__24)
+    switch t513.(type) {
     case None:
         println__T_string("none")
     case Some:
-        var inline460 int32 = t292.(Some)._0
-        println__T_int32(inline460)
+        var inline681 int32 = t513.(Some)._0
+        println__T_int32(inline681)
     default:
         panic("non-exhaustive match")
     }
-    var t293 Option__int32
-    var inline457 Option__int32 = hashmap_get__HashMap_10Ref_5Point_5int32(m2__23, p2__25)
-    t293 = inline457
-    switch t293.(type) {
+    var t514 Option__int32
+    var inline678 Option__int32 = hashmap_get__HashMap_10Ref_5Point_5int32(m2__23, p2__25)
+    t514 = inline678
+    switch t514.(type) {
     case None:
         println__T_string("none")
     case Some:
-        var inline453 int32 = t293.(Some)._0
-        println__T_int32(inline453)
+        var inline674 int32 = t514.(Some)._0
+        println__T_int32(inline674)
     default:
         panic("non-exhaustive match")
     }
-    var t294 Point = Point{
+    var t515 Point = Point{
         x: 9,
         y: 8,
     }
-    ref_set__Ref_5Point(p1__24, t294)
-    var t295 Option__int32
-    var inline448 Option__int32 = hashmap_get__HashMap_10Ref_5Point_5int32(m2__23, p1__24)
-    t295 = inline448
-    switch t295.(type) {
+    ref_set__Ref_5Point(p1__24, t515)
+    var t516 Option__int32
+    var inline669 Option__int32 = hashmap_get__HashMap_10Ref_5Point_5int32(m2__23, p1__24)
+    t516 = inline669
+    switch t516.(type) {
     case None:
         println__T_string("none")
     case Some:
-        var inline444 int32 = t295.(Some)._0
-        println__T_int32(inline444)
+        var inline665 int32 = t516.(Some)._0
+        println__T_int32(inline665)
     default:
         panic("non-exhaustive match")
     }
-    var t296 bool
-    var inline441 bool = ptr_eq__Ref_5Point(p1__24, p2__25)
-    t296 = inline441
-    var inline438 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t296)
-    _goml_runtime_core_string_println(inline438)
+    var t517 bool
+    var inline662 bool = ptr_eq__Ref_5Point(p1__24, p2__25)
+    t517 = inline662
+    var inline659 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t517)
+    _goml_runtime_core_string_println(inline659)
     var m3__26 *hashmap_Ref_3Key_int32_x
-    var inline436 *hashmap_Ref_3Key_int32_x = hashmap_new__HashMap_8Ref_3Key_5int32()
-    m3__26 = inline436
-    var t297 Key = B{
+    var inline657 *hashmap_Ref_3Key_int32_x = hashmap_new__HashMap_8Ref_3Key_5int32()
+    m3__26 = inline657
+    var t518 Key = B{
         _0: 7,
     }
     var k1__27 *ref_Key_x
-    var inline434 *ref_Key_x = ref__Ref_3Key(t297)
-    k1__27 = inline434
-    var inline431 int32 = 123
-    hashmap_set__HashMap_8Ref_3Key_5int32(m3__26, k1__27, inline431)
-    var t298 Option__int32
-    var inline429 Option__int32 = hashmap_get__HashMap_8Ref_3Key_5int32(m3__26, k1__27)
-    t298 = inline429
-    switch t298.(type) {
+    var inline655 *ref_Key_x = ref__Ref_3Key(t518)
+    k1__27 = inline655
+    var inline652 int32 = 123
+    hashmap_set__HashMap_8Ref_3Key_5int32(m3__26, k1__27, inline652)
+    var t519 Option__int32
+    var inline650 Option__int32 = hashmap_get__HashMap_8Ref_3Key_5int32(m3__26, k1__27)
+    t519 = inline650
+    switch t519.(type) {
     case None:
         println__T_string("none")
         return struct{}{}
     case Some:
-        var inline425 int32 = t298.(Some)._0
-        println__T_int32(inline425)
+        var inline646 int32 = t519.(Some)._0
+        println__T_int32(inline646)
         return struct{}{}
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_trait__impl_i_Hash_i_int32_i_hash(self__130 int32) uint64 {
-    var t301 uint64 = _goml_runtime_core_int32_hash(self__130)
-    return t301
+func _goml_m_trait__impl_i_Hash_i_int32_i_hash(self__214 int32) uint64 {
+    var t522 uint64 = _goml_runtime_core_int32_hash(self__214)
+    return t522
 }
 
-func _goml_m_trait__impl_i_PartialEq_i_int32_i_eq(self__107 int32, other__108 int32) bool {
-    var t304 bool = self__107 == other__108
-    return t304
+func _goml_m_trait__impl_i_PartialEq_i_int32_i_eq(self__191 int32, other__192 int32) bool {
+    var t525 bool = self__191 == other__192
+    return t525
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t306 string
-    t306 = value__1
-    _goml_runtime_core_string_println(t306)
+    var t527 string
+    t527 = value__1
+    _goml_runtime_core_string_println(t527)
     return struct{}{}
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t309 string
-    var inline465 string = _goml_runtime_core_int32_to_string(value__1)
-    t309 = inline465
-    _goml_runtime_core_string_println(t309)
+    var t530 string
+    var inline686 string = _goml_runtime_core_int32_to_string(value__1)
+    t530 = inline686
+    _goml_runtime_core_string_println(t530)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_new____K__Key____V__int32() *hashmap_Key_int32_x {
-    var t313 *hashmap_Key_int32_x = hashmap_new__HashMap_3Key_5int32()
-    return t313
+    var t534 *hashmap_Key_int32_x = hashmap_new__HashMap_3Key_5int32()
+    return t534
 }
 
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__Key____V__int32(self__264 *hashmap_Key_int32_x, key__265 Key, value__266 int32) struct{} {
-    hashmap_set__HashMap_3Key_5int32(self__264, key__265, value__266)
+func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__Key____V__int32(self__422 *hashmap_Key_int32_x, key__423 Key, value__424 int32) struct{} {
+    hashmap_set__HashMap_3Key_5int32(self__422, key__423, value__424)
     return struct{}{}
 }
 
 func println__T_int(value__1 int) struct{} {
-    var t317 string
-    var inline467 string = _goml_runtime_core_int_to_string(value__1)
-    t317 = inline467
-    _goml_runtime_core_string_println(t317)
+    var t538 string
+    var inline688 string = _goml_runtime_core_int_to_string(value__1)
+    t538 = inline688
+    _goml_runtime_core_string_println(t538)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_len____K__Key____V__int32(self__269 *hashmap_Key_int32_x) int {
-    var t321 int = hashmap_len__HashMap_3Key_5int32(self__269)
-    return t321
+func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_len____K__Key____V__int32(self__427 *hashmap_Key_int32_x) int {
+    var t542 int = hashmap_len__HashMap_3Key_5int32(self__427)
+    return t542
 }
 
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_get____K__Key____V__int32(self__262 *hashmap_Key_int32_x, key__263 Key) Option__int32 {
-    var t324 Option__int32 = hashmap_get__HashMap_3Key_5int32(self__262, key__263)
-    return t324
+func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_get____K__Key____V__int32(self__420 *hashmap_Key_int32_x, key__421 Key) Option__int32 {
+    var t545 Option__int32 = hashmap_get__HashMap_3Key_5int32(self__420, key__421)
+    return t545
 }
 
 func println__T_bool(value__1 bool) struct{} {
-    var t326 string
-    var inline469 string = _goml_runtime_core_bool_to_string(value__1)
-    t326 = inline469
-    _goml_runtime_core_string_println(t326)
+    var t547 string
+    var inline690 string = _goml_runtime_core_bool_to_string(value__1)
+    t547 = inline690
+    _goml_runtime_core_string_println(t547)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_contains____K__Key____V__int32(self__270 *hashmap_Key_int32_x, key__271 Key) bool {
-    var t330 bool = hashmap_contains__HashMap_3Key_5int32(self__270, key__271)
-    return t330
+func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_contains____K__Key____V__int32(self__428 *hashmap_Key_int32_x, key__429 Key) bool {
+    var t551 bool = hashmap_contains__HashMap_3Key_5int32(self__428, key__429)
+    return t551
 }
 
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_remove____K__Key____V__int32(self__267 *hashmap_Key_int32_x, key__268 Key) struct{} {
-    hashmap_remove__HashMap_3Key_5int32(self__267, key__268)
+func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_remove____K__Key____V__int32(self__425 *hashmap_Key_int32_x, key__426 Key) struct{} {
+    hashmap_remove__HashMap_3Key_5int32(self__425, key__426)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_HashMap_i_H_h8965aba642d8a393e2049e4587079c44__r_____V__int32() *hashmap_Ref_5Point_int32_x {
-    var t335 *hashmap_Ref_5Point_int32_x = hashmap_new__HashMap_10Ref_5Point_5int32()
-    return t335
+    var t556 *hashmap_Ref_5Point_int32_x = hashmap_new__HashMap_10Ref_5Point_5int32()
+    return t556
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Point(value__273 Point) *ref_Point_x {
-    var t338 *ref_Point_x = ref__Ref_5Point(value__273)
-    return t338
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Point(value__431 Point) *ref_Point_x {
+    var t559 *ref_Point_x = ref__Ref_5Point(value__431)
+    return t559
 }
 
-func _goml_m_inherent_i_HashMap_i_H_h92a9b8ea001265f897bc67524ef74086__r_____V__int32(self__264 *hashmap_Ref_5Point_int32_x, key__265 *ref_Point_x, value__266 int32) struct{} {
-    hashmap_set__HashMap_10Ref_5Point_5int32(self__264, key__265, value__266)
+func _goml_m_inherent_i_HashMap_i_H_h92a9b8ea001265f897bc67524ef74086__r_____V__int32(self__422 *hashmap_Ref_5Point_int32_x, key__423 *ref_Point_x, value__424 int32) struct{} {
+    hashmap_set__HashMap_10Ref_5Point_5int32(self__422, key__423, value__424)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_HashMap_i_H_h8816d503fd85179e4f674a4a9db321b9__r_____V__int32(self__262 *hashmap_Ref_5Point_int32_x, key__263 *ref_Point_x) Option__int32 {
-    var t343 Option__int32 = hashmap_get__HashMap_10Ref_5Point_5int32(self__262, key__263)
-    return t343
+func _goml_m_inherent_i_HashMap_i_H_h8816d503fd85179e4f674a4a9db321b9__r_____V__int32(self__420 *hashmap_Ref_5Point_int32_x, key__421 *ref_Point_x) Option__int32 {
+    var t564 Option__int32 = hashmap_get__HashMap_10Ref_5Point_5int32(self__420, key__421)
+    return t564
 }
 
-func _goml_m_trait__impl_i_PartialEq_i_Ref_l_Point_r__i_eq(self__136 *ref_Point_x, other__137 *ref_Point_x) bool {
-    var t348 bool = ptr_eq__Ref_5Point(self__136, other__137)
-    return t348
+func _goml_m_trait__impl_i_PartialEq_i_Ref_l_Point_r__i_eq(self__220 *ref_Point_x, other__221 *ref_Point_x) bool {
+    var t569 bool = ptr_eq__Ref_5Point(self__220, other__221)
+    return t569
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__70 int32) string {
-    var t364 string = _goml_runtime_core_int32_to_string(self__70)
-    return t364
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
+    var t585 string = _goml_runtime_core_int32_to_string(self__154)
+    return t585
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
-    var t370 string = _goml_runtime_core_bool_to_string(self__64)
-    return t370
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__148 bool) string {
+    var t591 string = _goml_runtime_core_bool_to_string(self__148)
+    return t591
 }
 
-func _goml_m_trait__impl_i_Hash_i_Ref_l_Point_r__i_hash(self__138 *ref_Point_x) uint64 {
-    var t373 uint64 = ptr_hash__Ref_5Point(self__138)
-    return t373
+func _goml_m_trait__impl_i_Hash_i_Ref_l_Point_r__i_hash(self__222 *ref_Point_x) uint64 {
+    var t594 uint64 = ptr_hash__Ref_5Point(self__222)
+    return t594
 }
 
-func _goml_m_trait__impl_i_PartialEq_i_Ref_l_Key_r__i_eq(self__136 *ref_Key_x, other__137 *ref_Key_x) bool {
-    var t376 bool = ptr_eq__Ref_3Key(self__136, other__137)
-    return t376
+func _goml_m_trait__impl_i_PartialEq_i_Ref_l_Key_r__i_eq(self__220 *ref_Key_x, other__221 *ref_Key_x) bool {
+    var t597 bool = ptr_eq__Ref_3Key(self__220, other__221)
+    return t597
 }
 
-func _goml_m_trait__impl_i_Hash_i_Ref_l_Key_r__i_hash(self__138 *ref_Key_x) uint64 {
-    var t379 uint64 = ptr_hash__Ref_3Key(self__138)
-    return t379
+func _goml_m_trait__impl_i_Hash_i_Ref_l_Key_r__i_hash(self__222 *ref_Key_x) uint64 {
+    var t600 uint64 = ptr_hash__Ref_3Key(self__222)
+    return t600
 }
 
 func main() {

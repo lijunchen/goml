@@ -17,6 +17,8 @@ type Wrap__int32 struct {
     value int32
 }
 
+type Ordering int32
+
 type dyn__Show_vtable struct {
     show func(any) string
 }
@@ -37,32 +39,32 @@ func dyn__Show__vtable__Wrap__int32() *dyn__Show_vtable {
 }
 
 func _goml_m_trait__impl_i_Show_i_Wrap____int32_i_show(self__0 Wrap__int32) string {
-    var t189 int32 = self__0.value
-    var inline211 string = _goml_runtime_core_int32_to_string(t189)
-    return inline211
+    var t410 int32 = self__0.value
+    var inline432 string = _goml_runtime_core_int32_to_string(t410)
+    return inline432
 }
 
 func main0() struct{} {
     var value__3 int32 = 42
-    var t195 Wrap__int32
-    var inline218 Wrap__int32 = Wrap__int32{
+    var t416 Wrap__int32
+    var inline439 Wrap__int32 = Wrap__int32{
         value: value__3,
     }
-    t195 = inline218
-    var t196 dyn__Show = dyn__Show{
-        data: t195,
+    t416 = inline439
+    var t417 dyn__Show = dyn__Show{
+        data: t416,
         vtable: dyn__Show__vtable__Wrap__int32(),
     }
-    var t197 string
-    var inline216 string = t196.vtable.show(t196.data)
-    t197 = inline216
-    var inline213 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t197)
-    _goml_runtime_core_string_println(inline213)
+    var t418 string
+    var inline437 string = t417.vtable.show(t417.data)
+    t418 = inline437
+    var inline434 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t418)
+    _goml_runtime_core_string_println(inline434)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
 func main() {

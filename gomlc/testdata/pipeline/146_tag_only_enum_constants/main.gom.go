@@ -13,6 +13,8 @@ func _goml_runtime_core_string_println(s string) struct{} {
     return struct{}{}
 }
 
+type Ordering int32
+
 type Light int32
 
 const (
@@ -31,55 +33,55 @@ const (
 func main0() struct{} {
     var light__2 Light = Light_Red
     var paint__3 Paint = Paint_Red
-    var t199 int32
+    var t420 int32
     switch light__2 {
     case Light_Red:
-        t199 = 10
+        t420 = 10
     case Yellow:
-        t199 = 20
+        t420 = 20
     case Green:
-        t199 = 30
+        t420 = 30
     default:
         panic("non-exhaustive match")
     }
-    var t200 string
-    var inline238 string = _goml_runtime_core_int32_to_string(t199)
-    t200 = inline238
-    var inline235 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t200)
-    _goml_runtime_core_string_println(inline235)
-    var t201 int32
+    var t421 string
+    var inline459 string = _goml_runtime_core_int32_to_string(t420)
+    t421 = inline459
+    var inline456 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t421)
+    _goml_runtime_core_string_println(inline456)
+    var t422 int32
     switch paint__3 {
     case Paint_Red:
-        t201 = 1
+        t422 = 1
     case Blue:
-        t201 = 2
+        t422 = 2
     default:
         panic("non-exhaustive match")
     }
-    var t202 string
-    var inline232 string = _goml_runtime_core_int32_to_string(t201)
-    t202 = inline232
-    var inline229 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t202)
-    _goml_runtime_core_string_println(inline229)
-    var t203 int32
-    t203 = 30
-    var t204 string
-    var inline226 string = _goml_runtime_core_int32_to_string(t203)
-    t204 = inline226
-    var inline223 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t204)
-    _goml_runtime_core_string_println(inline223)
-    var t205 int32
-    t205 = 2
-    var t206 string
-    var inline220 string = _goml_runtime_core_int32_to_string(t205)
-    t206 = inline220
-    var inline217 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t206)
-    _goml_runtime_core_string_println(inline217)
+    var t423 string
+    var inline453 string = _goml_runtime_core_int32_to_string(t422)
+    t423 = inline453
+    var inline450 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t423)
+    _goml_runtime_core_string_println(inline450)
+    var t424 int32
+    t424 = 30
+    var t425 string
+    var inline447 string = _goml_runtime_core_int32_to_string(t424)
+    t425 = inline447
+    var inline444 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t425)
+    _goml_runtime_core_string_println(inline444)
+    var t426 int32
+    t426 = 2
+    var t427 string
+    var inline441 string = _goml_runtime_core_int32_to_string(t426)
+    t427 = inline441
+    var inline438 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t427)
+    _goml_runtime_core_string_println(inline438)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
 func main() {

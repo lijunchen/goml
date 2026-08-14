@@ -17,6 +17,8 @@ type Point struct {
     value int32
 }
 
+type Ordering int32
+
 type dyn__Display_vtable struct {
     show func(any) string
 }
@@ -37,31 +39,31 @@ func dyn__Display__vtable__Point() *dyn__Display_vtable {
 }
 
 func _goml_m_trait__impl_i_Display_i_Point_i_show(self__0 Point) string {
-    var t190 int32 = self__0.value
-    var inline210 string = _goml_runtime_core_int32_to_string(t190)
-    return inline210
+    var t411 int32 = self__0.value
+    var inline431 string = _goml_runtime_core_int32_to_string(t411)
+    return inline431
 }
 
 func main0() struct{} {
-    var t196 Point = Point{
+    var t417 Point = Point{
         value: 7,
     }
     var d__3 dyn__Display
-    var inline217 dyn__Display = dyn__Display{
-        data: t196,
+    var inline438 dyn__Display = dyn__Display{
+        data: t417,
         vtable: dyn__Display__vtable__Point(),
     }
-    d__3 = inline217
-    var t197 string
-    var inline215 string = d__3.vtable.show(d__3.data)
-    t197 = inline215
-    var inline212 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t197)
-    _goml_runtime_core_string_println(inline212)
+    d__3 = inline438
+    var t418 string
+    var inline436 string = d__3.vtable.show(d__3.data)
+    t418 = inline436
+    var inline433 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t418)
+    _goml_runtime_core_string_println(inline433)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
 func main() {

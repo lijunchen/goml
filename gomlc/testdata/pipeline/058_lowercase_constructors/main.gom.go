@@ -5,6 +5,8 @@ type Point struct {
     y int32
 }
 
+type Ordering int32
+
 type Maybe__int32 interface {
     isMaybe__int32()
 }
@@ -20,24 +22,24 @@ type None struct {}
 func (_ None) isMaybe__int32() {}
 
 func main0() int32 {
-    var commute_field225 int32
-    var inline223 int32 = 5
-    commute_field225 = inline223
+    var commute_field446 int32
+    var inline444 int32 = 5
+    commute_field446 = inline444
     var pt__7 Point
-    var inline220 int32 = 7
-    var inline221 Point = Point{
-        x: commute_field225,
-        y: inline220,
+    var inline441 int32 = 7
+    var inline442 Point = Point{
+        x: commute_field446,
+        y: inline441,
     }
-    pt__7 = inline221
-    var t207 int32 = pt__7.x
-    var t210 int32
-    var inline214 int32 = pt__7.x
-    var inline215 int32 = pt__7.y
-    var inline218 int32 = inline214 + inline215
-    t210 = inline218
-    var t211 int32 = t207 + t210
-    return t211
+    pt__7 = inline442
+    var t428 int32 = pt__7.x
+    var t431 int32
+    var inline435 int32 = pt__7.x
+    var inline436 int32 = pt__7.y
+    var inline439 int32 = inline435 + inline436
+    t431 = inline439
+    var t432 int32 = t428 + t431
+    return t432
 }
 
 func main() {

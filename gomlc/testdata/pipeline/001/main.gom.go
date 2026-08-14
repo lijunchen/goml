@@ -17,16 +17,18 @@ func _goml_runtime_core_string_print(s string) struct{} {
     return struct{}{}
 }
 
+type Ordering int32
+
 func main0() struct{} {
-    var x192 bool = false
-    var inline203 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x192)
-    _goml_runtime_core_string_print(inline203)
+    var x413 bool = false
+    var inline424 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x413)
+    _goml_runtime_core_string_print(inline424)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
-    var t201 string = _goml_runtime_core_bool_to_string(self__64)
-    return t201
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__148 bool) string {
+    var t422 string = _goml_runtime_core_bool_to_string(self__148)
+    return t422
 }
 
 func main() {

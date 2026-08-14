@@ -13,6 +13,8 @@ func _goml_runtime_core_string_println(s string) struct{} {
     return struct{}{}
 }
 
+type Ordering int32
+
 type Boxed interface {
     isBoxed()
 }
@@ -33,18 +35,18 @@ type dyn__Display struct {
 }
 
 func main0() struct{} {
-    var t194 int32
-    t194 = 9
-    var t195 string
-    var inline211 string = _goml_runtime_core_int32_to_string(t194)
-    t195 = inline211
-    var inline208 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t195)
-    _goml_runtime_core_string_println(inline208)
+    var t415 int32
+    t415 = 9
+    var t416 string
+    var inline432 string = _goml_runtime_core_int32_to_string(t415)
+    t416 = inline432
+    var inline429 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t416)
+    _goml_runtime_core_string_println(inline429)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
 func main() {

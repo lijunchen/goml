@@ -43,20 +43,20 @@ impl PartialEq for Rank {
 }
 
 impl std::cmp::PartialOrd for Rank {
-  fn partial_cmp(self/10: Rank, other/11: Rank) -> Option[std::cmp::Ordering] {
+  fn partial_cmp(self/10: Rank, other/11: Rank) -> Option[Ordering] {
       Option::Some(
         if (self/10 : Rank).value > (other/11 : Rank).value {
             {
-                std::cmp::Ordering::Less
+                Ordering::Less
             }
         } else {
             if (self/10 : Rank).value < (other/11 : Rank).value {
                 {
-                    std::cmp::Ordering::Greater
+                    Ordering::Greater
                 }
             } else {
                 {
-                    std::cmp::Ordering::Equal
+                    Ordering::Equal
                 }
             }
         }

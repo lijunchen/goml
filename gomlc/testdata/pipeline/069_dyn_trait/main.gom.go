@@ -22,6 +22,8 @@ type Flag struct {
     value bool
 }
 
+type Ordering int32
+
 type dyn__Display_vtable struct {
     show func(any) string
 }
@@ -52,24 +54,24 @@ func dyn__Display__vtable__Point() *dyn__Display_vtable {
 }
 
 func _goml_m_trait__impl_i_Display_i_Point_i_show(self__0 Point) string {
-    var t191 int32 = self__0.x
-    var t192 string
-    var inline218 string = _goml_runtime_core_int32_to_string(t191)
-    t192 = inline218
-    var t193 string = "Point(" + t192
-    var t194 string = t193 + ","
-    var t195 int32 = self__0.y
-    var t196 string
-    var inline216 string = _goml_runtime_core_int32_to_string(t195)
-    t196 = inline216
-    var t197 string = t194 + t196
-    var t198 string = t197 + ")"
-    return t198
+    var t412 int32 = self__0.x
+    var t413 string
+    var inline439 string = _goml_runtime_core_int32_to_string(t412)
+    t413 = inline439
+    var t414 string = "Point(" + t413
+    var t415 string = t414 + ","
+    var t416 int32 = self__0.y
+    var t417 string
+    var inline437 string = _goml_runtime_core_int32_to_string(t416)
+    t417 = inline437
+    var t418 string = t415 + t417
+    var t419 string = t418 + ")"
+    return t419
 }
 
 func _goml_m_trait__impl_i_Display_i_Flag_i_show(self__1 Flag) string {
-    var t203 bool = self__1.value
-    if t203 {
+    var t424 bool = self__1.value
+    if t424 {
         return "Flag(true)"
     } else {
         return "Flag(false)"
@@ -92,17 +94,17 @@ func main0() struct{} {
         data: t__3,
         vtable: dyn__Display__vtable__Flag(),
     }
-    var t205 string = dp__4.vtable.show(dp__4.data)
-    var inline223 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t205)
-    _goml_runtime_core_string_println(inline223)
-    var t206 string = dt__5.vtable.show(dt__5.data)
-    var inline220 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t206)
-    _goml_runtime_core_string_println(inline220)
+    var t426 string = dp__4.vtable.show(dp__4.data)
+    var inline444 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t426)
+    _goml_runtime_core_string_println(inline444)
+    var t427 string = dt__5.vtable.show(dt__5.data)
+    var inline441 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t427)
+    _goml_runtime_core_string_println(inline441)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
 func main() {

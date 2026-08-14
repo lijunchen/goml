@@ -60,69 +60,71 @@ func ref_set__Ref_3int(reference *ref_int_x, value int) struct{} {
     return struct{}{}
 }
 
+type Ordering int32
+
 func main0() struct{} {
     var arr__0 [3]uint8 = [3]uint8{10, 20, 30}
     var i__1 *ref_int_x
-    var inline274 int = 0
-    var inline275 *ref_int_x = ref__Ref_3int(inline274)
-    i__1 = inline275
-    Loop_loop204:
+    var inline495 int = 0
+    var inline496 *ref_int_x = ref__Ref_3int(inline495)
+    i__1 = inline496
+    Loop_loop425:
     for {
-        var t205 int
-        var inline252 int = ref_get__Ref_3int(i__1)
-        t205 = inline252
-        var t206 bool = t205 < 3
-        if t206 {
-            var t207 int
-            var inline250 int = ref_get__Ref_3int(i__1)
-            t207 = inline250
-            var t208 uint8 = array_get__Array_3_5uint8(arr__0, t207)
-            var t209 string
-            var inline248 string = _goml_runtime_core_uint8_to_string(t208)
-            t209 = inline248
-            var inline245 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t209)
-            _goml_runtime_core_string_println(inline245)
-            var t210 int
-            var inline243 int = ref_get__Ref_3int(i__1)
-            t210 = inline243
-            var t211 int = t210 + 1
-            ref_set__Ref_3int(i__1, t211)
+        var t426 int
+        var inline473 int = ref_get__Ref_3int(i__1)
+        t426 = inline473
+        var t427 bool = t426 < 3
+        if t427 {
+            var t428 int
+            var inline471 int = ref_get__Ref_3int(i__1)
+            t428 = inline471
+            var t429 uint8 = array_get__Array_3_5uint8(arr__0, t428)
+            var t430 string
+            var inline469 string = _goml_runtime_core_uint8_to_string(t429)
+            t430 = inline469
+            var inline466 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t430)
+            _goml_runtime_core_string_println(inline466)
+            var t431 int
+            var inline464 int = ref_get__Ref_3int(i__1)
+            t431 = inline464
+            var t432 int = t431 + 1
+            ref_set__Ref_3int(i__1, t432)
             continue
         } else {
-            break Loop_loop204
+            break Loop_loop425
         }
     }
     var floats__2 [2]float32 = [2]float32{1.5, 2.5}
-    var t196 float32 = array_get__Array_2_7float32(floats__2, 0)
-    var t197 string
-    var inline272 string = _goml_runtime_core_float32_to_string(t196)
-    t197 = inline272
-    var inline269 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t197)
-    _goml_runtime_core_string_println(inline269)
-    var t198 float32 = array_get__Array_2_7float32(floats__2, 1)
-    var t199 string
-    var inline267 string = _goml_runtime_core_float32_to_string(t198)
-    t199 = inline267
-    var inline264 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t199)
-    _goml_runtime_core_string_println(inline264)
+    var t417 float32 = array_get__Array_2_7float32(floats__2, 0)
+    var t418 string
+    var inline493 string = _goml_runtime_core_float32_to_string(t417)
+    t418 = inline493
+    var inline490 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t418)
+    _goml_runtime_core_string_println(inline490)
+    var t419 float32 = array_get__Array_2_7float32(floats__2, 1)
+    var t420 string
+    var inline488 string = _goml_runtime_core_float32_to_string(t419)
+    t420 = inline488
+    var inline485 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t420)
+    _goml_runtime_core_string_println(inline485)
     var longs__3 [2]int64 = [2]int64{100, 200}
-    var t200 int64 = array_get__Array_2_5int64(longs__3, 0)
-    var t201 string
-    var inline262 string = _goml_runtime_core_int64_to_string(t200)
-    t201 = inline262
-    var inline259 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t201)
-    _goml_runtime_core_string_println(inline259)
-    var t202 int64 = array_get__Array_2_5int64(longs__3, 1)
-    var t203 string
-    var inline257 string = _goml_runtime_core_int64_to_string(t202)
-    t203 = inline257
-    var inline254 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t203)
-    _goml_runtime_core_string_println(inline254)
+    var t421 int64 = array_get__Array_2_5int64(longs__3, 0)
+    var t422 string
+    var inline483 string = _goml_runtime_core_int64_to_string(t421)
+    t422 = inline483
+    var inline480 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t422)
+    _goml_runtime_core_string_println(inline480)
+    var t423 int64 = array_get__Array_2_5int64(longs__3, 1)
+    var t424 string
+    var inline478 string = _goml_runtime_core_int64_to_string(t423)
+    t424 = inline478
+    var inline475 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t424)
+    _goml_runtime_core_string_println(inline475)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
 func main() {

@@ -1,67 +1,67 @@
 fn main() -> unit {
   let arr/0 = [10, 20, 30] in
   let i/1 = inherent#Ref#Ref[T]#new__T_int(0) in
-  let _wild189 =
+  let _wild410 =
     while (inherent#Ref#Ref[T]#get__T_int(i/1) < 3) {
-        let _wild187 =
+        let _wild408 =
           println__T_string(
             trait_impl#ToString#uint8#to_string(
               @intrinsic(array.get)(arr/0, inherent#Ref#Ref[T]#get__T_int(i/1))
             )
           ) in
-        let _wild188 =
+        let _wild409 =
           inherent#Ref#Ref[T]#set__T_int(i/1, (inherent#Ref#Ref[T]#get__T_int(i/1) + 1)) in
         ()
     } in
   let floats/2 = [1.5, 2.5] in
-  let _wild190 =
+  let _wild411 =
     println__T_string(trait_impl#ToString#float32#to_string(@intrinsic(array.get)(floats/2, 0))) in
-  let _wild191 =
+  let _wild412 =
     println__T_string(trait_impl#ToString#float32#to_string(@intrinsic(array.get)(floats/2, 1))) in
   let longs/3 = [100, 200] in
-  let _wild192 =
+  let _wild413 =
     println__T_string(trait_impl#ToString#int64#to_string(@intrinsic(array.get)(longs/3, 0))) in
-  let _wild193 =
+  let _wild414 =
     println__T_string(trait_impl#ToString#int64#to_string(@intrinsic(array.get)(longs/3, 1))) in
   ()
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/273: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/273)
+fn inherent#Ref#Ref[T]#new__T_int(value/431: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/431)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/274: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/274)
+fn inherent#Ref#Ref[T]#get__T_int(self/432: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/432)
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#uint8#to_string(self/72: uint8) -> string {
-  @runtime(core.uint8_to_string)(self/72)
+fn trait_impl#ToString#uint8#to_string(self/156: uint8) -> string {
+  @runtime(core.uint8_to_string)(self/156)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/275: Ref[int], value/276: int) -> unit {
-  @intrinsic(ref.set)(self/275, value/276)
+fn inherent#Ref#Ref[T]#set__T_int(self/433: Ref[int], value/434: int) -> unit {
+  @intrinsic(ref.set)(self/433, value/434)
 }
 
-fn trait_impl#ToString#float32#to_string(self/76: float32) -> string {
-  @runtime(core.float32_to_string)(self/76)
+fn trait_impl#ToString#float32#to_string(self/160: float32) -> string {
+  @runtime(core.float32_to_string)(self/160)
 }
 
-fn trait_impl#ToString#int64#to_string(self/71: int64) -> string {
-  @runtime(core.int64_to_string)(self/71)
+fn trait_impl#ToString#int64#to_string(self/155: int64) -> string {
+  @runtime(core.int64_to_string)(self/155)
 }
 
-fn trait_impl#ToString#string#to_string(self/65: string) -> string {
-  self/65
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
 }
 
-fn trait_impl#PartialEq#int#eq(self/101: int, other/102: int) -> bool {
-  (self/101 == other/102)
+fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+  (self/185 == other/186)
 }
 
-fn trait_impl#Hash#int#hash(self/127: int) -> uint64 {
-  @runtime(core.int_hash)(self/127)
+fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+  @runtime(core.int_hash)(self/211)
 }

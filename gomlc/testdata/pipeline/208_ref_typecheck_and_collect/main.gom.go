@@ -19,15 +19,17 @@ func ref_set__Ref_5int32(reference *ref_int32_x, value int32) struct{} {
     return struct{}{}
 }
 
+type Ordering int32
+
 func main0() int32 {
     var value__0 *ref_int32_x
-    var inline211 int32 = 1
-    var inline212 *ref_int32_x = ref__Ref_5int32(inline211)
-    value__0 = inline212
-    var inline208 int32 = 2
-    ref_set__Ref_5int32(value__0, inline208)
-    var inline206 int32 = ref_get__Ref_5int32(value__0)
-    return inline206
+    var inline432 int32 = 1
+    var inline433 *ref_int32_x = ref__Ref_5int32(inline432)
+    value__0 = inline433
+    var inline429 int32 = 2
+    ref_set__Ref_5int32(value__0, inline429)
+    var inline427 int32 = ref_get__Ref_5int32(value__0)
+    return inline427
 }
 
 func main() {

@@ -1,0 +1,88 @@
+fn main() -> unit {
+    let text/0: string = "  Héllo, World!  ";
+    (println : (string) -> unit)(
+      "[" + (string::trim : (string) -> string)((text/0 : string)) + "]"
+    );
+    (println : (string) -> unit)(
+      "[" + (string::trim_start : (string) -> string)((text/0 : string)) + "]"
+    );
+    (println : (string) -> unit)(
+      "[" + (string::trim_end : (string) -> string)((text/0 : string)) + "]"
+    );
+    (println : (string) -> unit)(
+      (Vec[string]::join : (Vec[string], string) -> string)(
+        (string::split : (string, string) -> Vec[string])((text/0 : string), ","),
+        "|"
+      )
+    );
+    (println : (string) -> unit)(
+      (Option[(string, string)]::unwrap_or : (Option[(string, string)], (string, string)) -> (
+        string,
+        string
+      ))(
+        (string::split_once : (string, string) -> Option[(string, string)])((text/0 : string), ","),
+        ("", "")
+      ).1
+    );
+    (println : (string) -> unit)(
+      (int::to_string : (int) -> string)(
+        (Vec[string]::len : (Vec[string]) -> int)(
+          (string::lines : (string) -> Vec[string])((text/0 : string))
+        )
+      )
+    );
+    (println : (string) -> unit)(
+      (int::to_string : (int) -> string)(
+        (Option[int]::unwrap_or : (Option[int], int) -> int)(
+          (string::find : (string, string) -> Option[int])((text/0 : string), "World"),
+          -1
+        )
+      )
+    );
+    (println : (string) -> unit)(
+      (int::to_string : (int) -> string)(
+        (Option[int]::unwrap_or : (Option[int], int) -> int)(
+          (string::rfind : (string, string) -> Option[int])((text/0 : string), "l"),
+          -1
+        )
+      )
+    );
+    (println : (string) -> unit)(
+      (int::to_string : (int) -> string)(
+        (Option[int]::unwrap_or : (Option[int], int) -> int)(
+          (string::find_bytes : (string, string) -> Option[int])((text/0 : string), "lo"),
+          -1
+        )
+      )
+    );
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)(
+        (string::starts_with_at : (string, int, string) -> bool)((text/0 : string), 2, "Hé")
+      )
+    );
+    (println : (string) -> unit)(
+      (int::to_string : (int) -> string)((string::char_count : (string) -> int)((text/0 : string)))
+    );
+    (println : (string) -> unit)(
+      (Option[string]::unwrap_or : (Option[string], string) -> string)(
+        (string::slice_chars : (string, int, int) -> Option[string])((text/0 : string), 2, 7),
+        "none"
+      )
+    );
+    (println : (string) -> unit)(
+      (string::replace : (string, string, string) -> string)((text/0 : string), "l", "L")
+    );
+    (println : (string) -> unit)((string::repeat : (string, int) -> string)("ab", 3));
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)(
+        (string::is_ascii : (string) -> bool)((text/0 : string))
+      )
+    );
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)(
+        (string::eq_ignore_ascii_case : (string, string) -> bool)("ABC", "abc")
+      )
+    );
+    (println : (string) -> unit)((string::to_ascii_lowercase : (string) -> string)("AbC"));
+    (println : (string) -> unit)((string::to_ascii_uppercase : (string) -> string)("aBc"))
+}

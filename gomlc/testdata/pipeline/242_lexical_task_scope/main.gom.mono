@@ -190,7 +190,7 @@ fn main() -> unit {
           inherent#std::task::Scope#std::task::Scope#spawn__T_int(scope/1, |_cancel/2| 20) in
         let right/5 =
           inherent#std::task::Scope#std::task::Scope#spawn__T_int(scope/1, |_cancel/4| 22) in
-        let mtmp187 =
+        let mtmp408 =
           inherent#std::task::Scope#std::task::Scope#spawn__T_unit(
             scope/1,
             |_cancel/6| inherent#Ref#Ref[T]#set__T_bool(completed/0, true)
@@ -201,8 +201,8 @@ fn main() -> unit {
         }
       }
     ) in
-  let _wild188 = println__T_int(total/7) in
-  let _wild189 = println__T_bool(inherent#Ref#Ref[T]#get__T_bool(completed/0)) in
+  let _wild409 = println__T_int(total/7) in
+  let _wild410 = println__T_bool(inherent#Ref#Ref[T]#get__T_bool(completed/0)) in
   let nested/12 =
     std::task::scope__T_int(
       |scope/8| {
@@ -216,22 +216,22 @@ fn main() -> unit {
         )
       }
     ) in
-  let _wild190 = println__T_int(nested/12) in
+  let _wild411 = println__T_int(nested/12) in
   let scope/13 = 3 in
   let spawn/15 = |value/14| (value/14 + 1) in
   println__T_int(spawn/15(scope/13))
 }
 
-fn inherent#Channel#Channel[T]#new__T_unit(capacity/277: int) -> Channel[unit] {
-  @intrinsic(channel.new)(capacity/277)
+fn inherent#Channel#Channel[T]#new__T_unit(capacity/435: int) -> Channel[unit] {
+  @intrinsic(channel.new)(capacity/435)
 }
 
-fn inherent#Channel#Channel[T]#send__T_unit(self/278: Channel[unit], value/279: unit) -> unit {
-  @intrinsic(channel.send)(self/278, value/279)
+fn inherent#Channel#Channel[T]#send__T_unit(self/436: Channel[unit], value/437: unit) -> unit {
+  @intrinsic(channel.send)(self/436, value/437)
 }
 
-fn inherent#Ref#Ref[T]#new__T_bool(value/273: bool) -> Ref[bool] {
-  @intrinsic(ref.new)(value/273)
+fn inherent#Ref#Ref[T]#new__T_bool(value/431: bool) -> Ref[bool] {
+  @intrinsic(ref.new)(value/431)
 }
 
 fn std::task::scope__T_int(body/9: (std::task::Scope) -> int) -> int {
@@ -270,8 +270,8 @@ fn inherent#std::task::Scope#std::task::Scope#spawn__T_int(
   std::task::Task__int { result: result/27, ready: ready/28 }
 }
 
-fn inherent#Ref#Ref[T]#set__T_bool(self/275: Ref[bool], value/276: bool) -> unit {
-  @intrinsic(ref.set)(self/275, value/276)
+fn inherent#Ref#Ref[T]#set__T_bool(self/433: Ref[bool], value/434: bool) -> unit {
+  @intrinsic(ref.set)(self/433, value/434)
 }
 
 fn inherent#std::task::Scope#std::task::Scope#spawn__T_unit(
@@ -334,8 +334,8 @@ fn println__T_bool(value/1: bool) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
 }
 
-fn inherent#Ref#Ref[T]#get__T_bool(self/274: Ref[bool]) -> bool {
-  @intrinsic(ref.get)(self/274)
+fn inherent#Ref#Ref[T]#get__T_bool(self/432: Ref[bool]) -> bool {
+  @intrinsic(ref.get)(self/432)
 }
 
 fn std::task::scope_with__T_int(
@@ -355,15 +355,15 @@ fn std::task::scope_with__T_int(
   std::task::completed_scope_value__T_int(result/15)
 }
 
-fn inherent#Ref#Ref[T]#new__T_Option[int](value/273: Option__int) -> Ref[Option__int] {
-  @intrinsic(ref.new)(value/273)
+fn inherent#Ref#Ref[T]#new__T_Option[int](value/431: Option__int) -> Ref[Option__int] {
+  @intrinsic(ref.new)(value/431)
 }
 
 fn inherent#Ref#Ref[T]#set__T_Option[int](
-  self/275: Ref[Option__int],
-  value/276: Option__int
+  self/433: Ref[Option__int],
+  value/434: Option__int
 ) -> unit {
-  @intrinsic(ref.set)(self/275, value/276)
+  @intrinsic(ref.set)(self/433, value/434)
 }
 
 fn std::task::completed_scope_value__T_int(result/0: Ref[Option__int]) -> int {
@@ -388,34 +388,34 @@ fn std::task::completed_scope_value__T_int(result/0: Ref[Option__int]) -> int {
   }
 }
 
-fn inherent#Channel#Channel[T]#close__T_unit(self/283: Channel[unit]) -> unit {
-  @intrinsic(channel.close)(self/283)
+fn inherent#Channel#Channel[T]#close__T_unit(self/441: Channel[unit]) -> unit {
+  @intrinsic(channel.close)(self/441)
 }
 
-fn inherent#Ref#Ref[T]#new__T_Option[unit](value/273: Option__unit) -> Ref[Option__unit] {
-  @intrinsic(ref.new)(value/273)
+fn inherent#Ref#Ref[T]#new__T_Option[unit](value/431: Option__unit) -> Ref[Option__unit] {
+  @intrinsic(ref.new)(value/431)
 }
 
 fn inherent#Ref#Ref[T]#set__T_Option[unit](
-  self/275: Ref[Option__unit],
-  value/276: Option__unit
+  self/433: Ref[Option__unit],
+  value/434: Option__unit
 ) -> unit {
-  @intrinsic(ref.set)(self/275, value/276)
+  @intrinsic(ref.set)(self/433, value/434)
 }
 
-fn inherent#Channel#Channel[T]#recv__T_unit(self/280: Channel[unit]) -> Option__unit {
-  let mtmp158 = @intrinsic(channel.recv)(self/280) in
+fn inherent#Channel#Channel[T]#recv__T_unit(self/438: Channel[unit]) -> Option__unit {
+  let mtmp379 = @intrinsic(channel.recv)(self/438) in
   {
-    let x159 = mtmp158.0 in
-    let x160 = mtmp158.1 in
+    let x380 = mtmp379.0 in
+    let x381 = mtmp379.1 in
     {
-      let ok/282 = x160 in
+      let ok/440 = x381 in
       {
-        let value/281 = x159 in
+        let value/439 = x380 in
         {
-          if ok/282 {
+          if ok/440 {
               {
-                Option__unit::Some(value/281)
+                Option__unit::Some(value/439)
               }
           } else {
               {
@@ -428,24 +428,24 @@ fn inherent#Channel#Channel[T]#recv__T_unit(self/280: Channel[unit]) -> Option__
   }
 }
 
-fn inherent#Ref#Ref[T]#get__T_Option[int](self/274: Ref[Option__int]) -> Option__int {
-  @intrinsic(ref.get)(self/274)
+fn inherent#Ref#Ref[T]#get__T_Option[int](self/432: Ref[Option__int]) -> Option__int {
+  @intrinsic(ref.get)(self/432)
 }
 
-fn trait_impl#ToString#int#to_string(self/67: int) -> string {
-  @runtime(core.int_to_string)(self/67)
+fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+  @runtime(core.int_to_string)(self/151)
 }
 
-fn trait_impl#ToString#bool#to_string(self/64: bool) -> string {
-  @runtime(core.bool_to_string)(self/64)
+fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
+  @runtime(core.bool_to_string)(self/148)
 }
 
-fn trait_impl#PartialEq#bool#eq(self/95: bool, other/96: bool) -> bool {
-  (self/95 == other/96)
+fn trait_impl#PartialEq#bool#eq(self/179: bool, other/180: bool) -> bool {
+  (self/179 == other/180)
 }
 
-fn trait_impl#Hash#bool#hash(self/124: bool) -> uint64 {
-  if self/124 {
+fn trait_impl#Hash#bool#hash(self/208: bool) -> uint64 {
+  if self/208 {
       {
         1
       }
@@ -456,33 +456,33 @@ fn trait_impl#Hash#bool#hash(self/124: bool) -> uint64 {
   }
 }
 
-fn trait_impl#PartialEq#Option__int#eq(self/151: Option__int, other/152: Option__int) -> bool {
+fn trait_impl#PartialEq#Option__int#eq(self/235: Option__int, other/236: Option__int) -> bool {
   {
-    let mtmp61 = (self/151, other/152) in
+    let mtmp171 = (self/235, other/236) in
     {
-      let x62 = mtmp61.0 in
-      let x63 = mtmp61.1 in
-      match x63 {
+      let x172 = mtmp171.0 in
+      let x173 = mtmp171.1 in
+      match x173 {
         Option__int::None => {
-          match x62 {
+          match x172 {
             Option__int::None => {
               true
             },
             _ => false,
           }
         },
-        Option__int::Some(x64) => {
+        Option__int::Some(x174) => {
           {
-            let x64 = Option__int::Some._0(x63) in
-            match x62 {
-              Option__int::Some(x66) => {
+            let x174 = Option__int::Some._0(x173) in
+            match x172 {
+              Option__int::Some(x176) => {
                 {
-                  let x66 = Option__int::Some._0(x62) in
+                  let x176 = Option__int::Some._0(x172) in
                   {
-                    let left/153 = x66 in
+                    let left/237 = x176 in
                     {
-                      let right/154 = x64 in
-                      trait_impl#PartialEq#int#eq(left/153, right/154)
+                      let right/238 = x174 in
+                      trait_impl#PartialEq#int#eq(left/237, right/238)
                     }
                   }
                 }
@@ -496,50 +496,50 @@ fn trait_impl#PartialEq#Option__int#eq(self/151: Option__int, other/152: Option_
   }
 }
 
-fn trait_impl#Hash#Option__int#hash(self/155: Option__int) -> uint64 {
-  match self/155 {
+fn trait_impl#Hash#Option__int#hash(self/239: Option__int) -> uint64 {
+  match self/239 {
     Option__int::None => {
       14695981039346656038
     },
-    Option__int::Some(x67) => {
+    Option__int::Some(x177) => {
       {
-        let x67 = Option__int::Some._0(self/155) in
+        let x177 = Option__int::Some._0(self/239) in
         {
-          let value/156 = x67 in
-          (14695981039346656039 + trait_impl#Hash#int#hash(value/156))
+          let value/240 = x177 in
+          (14695981039346656039 + trait_impl#Hash#int#hash(value/240))
         }
       }
     },
   }
 }
 
-fn trait_impl#PartialEq#Option__unit#eq(self/151: Option__unit, other/152: Option__unit) -> bool {
+fn trait_impl#PartialEq#Option__unit#eq(self/235: Option__unit, other/236: Option__unit) -> bool {
   {
-    let mtmp61 = (self/151, other/152) in
+    let mtmp171 = (self/235, other/236) in
     {
-      let x62 = mtmp61.0 in
-      let x63 = mtmp61.1 in
-      match x63 {
+      let x172 = mtmp171.0 in
+      let x173 = mtmp171.1 in
+      match x173 {
         Option__unit::None => {
-          match x62 {
+          match x172 {
             Option__unit::None => {
               true
             },
             _ => false,
           }
         },
-        Option__unit::Some(x64) => {
+        Option__unit::Some(x174) => {
           {
-            let x64 = Option__unit::Some._0(x63) in
-            match x62 {
-              Option__unit::Some(x66) => {
+            let x174 = Option__unit::Some._0(x173) in
+            match x172 {
+              Option__unit::Some(x176) => {
                 {
-                  let x66 = Option__unit::Some._0(x62) in
+                  let x176 = Option__unit::Some._0(x172) in
                   {
-                    let left/153 = x66 in
+                    let left/237 = x176 in
                     {
-                      let right/154 = x64 in
-                      trait_impl#PartialEq#unit#eq(left/153, right/154)
+                      let right/238 = x174 in
+                      trait_impl#PartialEq#unit#eq(left/237, right/238)
                     }
                   }
                 }
@@ -553,35 +553,35 @@ fn trait_impl#PartialEq#Option__unit#eq(self/151: Option__unit, other/152: Optio
   }
 }
 
-fn trait_impl#Hash#Option__unit#hash(self/155: Option__unit) -> uint64 {
-  match self/155 {
+fn trait_impl#Hash#Option__unit#hash(self/239: Option__unit) -> uint64 {
+  match self/239 {
     Option__unit::None => {
       14695981039346656038
     },
-    Option__unit::Some(x67) => {
+    Option__unit::Some(x177) => {
       {
-        let x67 = Option__unit::Some._0(self/155) in
+        let x177 = Option__unit::Some._0(self/239) in
         {
-          let value/156 = x67 in
-          (14695981039346656039 + trait_impl#Hash#unit#hash(value/156))
+          let value/240 = x177 in
+          (14695981039346656039 + trait_impl#Hash#unit#hash(value/240))
         }
       }
     },
   }
 }
 
-fn trait_impl#PartialEq#int#eq(self/101: int, other/102: int) -> bool {
-  (self/101 == other/102)
+fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+  (self/185 == other/186)
 }
 
-fn trait_impl#Hash#int#hash(self/127: int) -> uint64 {
-  @runtime(core.int_hash)(self/127)
+fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+  @runtime(core.int_hash)(self/211)
 }
 
-fn trait_impl#PartialEq#unit#eq(self/93: unit, other/94: unit) -> bool {
+fn trait_impl#PartialEq#unit#eq(self/177: unit, other/178: unit) -> bool {
   true
 }
 
-fn trait_impl#Hash#unit#hash(self/123: unit) -> uint64 {
+fn trait_impl#Hash#unit#hash(self/207: unit) -> uint64 {
   0
 }

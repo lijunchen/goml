@@ -45,6 +45,8 @@ type Tuple2_7float32_7float64 struct {
     _1 float64
 }
 
+type Ordering int32
+
 type FloatEvent interface {
     isFloatEvent()
 }
@@ -66,21 +68,21 @@ func (_ Sample64) isFloatEvent() {}
 func summarize(event__0 FloatEvent) string {
     switch event__0.(type) {
     case Sample32:
-        var x187 string = event__0.(Sample32)._0
-        var x188 float32 = event__0.(Sample32)._1
-        var t198 string
-        var inline233 string = _goml_runtime_core_float32_to_string(x188)
-        t198 = inline233
-        var t199 string = x187 + t198
-        return t199
+        var x408 string = event__0.(Sample32)._0
+        var x409 float32 = event__0.(Sample32)._1
+        var t419 string
+        var inline454 string = _goml_runtime_core_float32_to_string(x409)
+        t419 = inline454
+        var t420 string = x408 + t419
+        return t420
     case Sample64:
-        var x189 string = event__0.(Sample64)._0
-        var x190 float64 = event__0.(Sample64)._1
-        var t200 string
-        var inline235 string = _goml_runtime_core_float64_to_string(x190)
-        t200 = inline235
-        var t201 string = x189 + t200
-        return t201
+        var x410 string = event__0.(Sample64)._0
+        var x411 float64 = event__0.(Sample64)._1
+        var t421 string
+        var inline456 string = _goml_runtime_core_float64_to_string(x411)
+        t421 = inline456
+        var t422 string = x410 + t421
+        return t422
     default:
         panic("non-exhaustive match")
     }
@@ -98,60 +100,60 @@ func main0() struct{} {
         _0: "f32_b=",
         _1: second_value__13,
     }
-    var t210 string = summarize(first__15)
-    var t211 string = summarize(second__16)
-    var t212 string = t210 + t211
-    var t213 string
-    var inline278 string = "f64="
-    var inline282 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(third_value__14)
-    var inline283 string = inline278 + inline282
-    t213 = inline283
-    var t214 string = t212 + t213
-    var t215 string
-    var inline258 float32 = 0.75
-    var inline259 float64 = 4
-    var inline262 float32 = 1
-    var inline263 float64 = 5
-    var inline264 bool = inline258 < inline262
-    var inline265 bool = inline259 < inline263
-    var inline266 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline264)
-    var inline267 string = "left<1?=" + inline266
-    var inline268 string = inline267 + ",right<5?="
-    var inline269 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline265)
-    var inline270 string = inline268 + inline269
-    t215 = inline270
-    var t216 string = t214 + t215
-    var t217 string
-    var inline244 float32 = 1.5
-    var inline245 float64 = 7.25
-    var inline248 float32 = 1
-    var inline249 float64 = 5
-    var inline250 bool = inline244 < inline248
-    var inline251 bool = inline245 < inline249
-    var inline252 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline250)
-    var inline253 string = "left<1?=" + inline252
-    var inline254 string = inline253 + ",right<5?="
-    var inline255 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline251)
-    var inline256 string = inline254 + inline255
-    t217 = inline256
-    var message__20 string = t216 + t217
-    var inline241 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(message__20)
-    _goml_runtime_core_string_println(inline241)
+    var t431 string = summarize(first__15)
+    var t432 string = summarize(second__16)
+    var t433 string = t431 + t432
+    var t434 string
+    var inline499 string = "f64="
+    var inline503 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(third_value__14)
+    var inline504 string = inline499 + inline503
+    t434 = inline504
+    var t435 string = t433 + t434
+    var t436 string
+    var inline479 float32 = 0.75
+    var inline480 float64 = 4
+    var inline483 float32 = 1
+    var inline484 float64 = 5
+    var inline485 bool = inline479 < inline483
+    var inline486 bool = inline480 < inline484
+    var inline487 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline485)
+    var inline488 string = "left<1?=" + inline487
+    var inline489 string = inline488 + ",right<5?="
+    var inline490 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline486)
+    var inline491 string = inline489 + inline490
+    t436 = inline491
+    var t437 string = t435 + t436
+    var t438 string
+    var inline465 float32 = 1.5
+    var inline466 float64 = 7.25
+    var inline469 float32 = 1
+    var inline470 float64 = 5
+    var inline471 bool = inline465 < inline469
+    var inline472 bool = inline466 < inline470
+    var inline473 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline471)
+    var inline474 string = "left<1?=" + inline473
+    var inline475 string = inline474 + ",right<5?="
+    var inline476 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline472)
+    var inline477 string = inline475 + inline476
+    t438 = inline477
+    var message__20 string = t437 + t438
+    var inline462 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(message__20)
+    _goml_runtime_core_string_println(inline462)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__77 float64) string {
-    var t223 string = _goml_runtime_core_float64_to_string(self__77)
-    return t223
+func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__161 float64) string {
+    var t444 string = _goml_runtime_core_float64_to_string(self__161)
+    return t444
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
-    var t226 string = _goml_runtime_core_bool_to_string(self__64)
-    return t226
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__148 bool) string {
+    var t447 string = _goml_runtime_core_bool_to_string(self__148)
+    return t447
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
 func main() {

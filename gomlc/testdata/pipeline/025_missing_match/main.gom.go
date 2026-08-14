@@ -5,6 +5,8 @@ type Point struct {
     y int32
 }
 
+type Ordering int32
+
 func main0() struct{} {
     return struct{}{}
 }

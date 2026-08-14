@@ -1,39 +1,39 @@
 fn main() -> unit {
   let a/0 = Expr::Mul(Expr::Add(Expr::Zero, Expr::Zero), Expr::Zero) in
   match a/0 {
-    Expr::Add(x188, x189) => {
-      let x188 = Expr::Add._0(a/0) in
-      let x189 = Expr::Add._1(a/0) in
-      match x189 {
+    Expr::Add(x409, x410) => {
+      let x409 = Expr::Add._0(a/0) in
+      let x410 = Expr::Add._1(a/0) in
+      match x410 {
         Expr::Zero => {
-          match x188 {
+          match x409 {
             Expr::Zero => {
               print__T_int(0)
             },
-            Expr::Succ(x197) => {
+            Expr::Succ(x418) => {
               print__T_int(2)
             },
             _ => print__T_int(5),
           }
         },
         _ =>
-          match x188 {
-            Expr::Succ(x202) => {
+          match x409 {
+            Expr::Succ(x423) => {
               print__T_int(2)
             },
             _ => print__T_int(6),
           },
       }
     },
-    Expr::Mul(x190, x191) => {
-      let x190 = Expr::Mul._0(a/0) in
-      let x191 = Expr::Mul._1(a/0) in
-      match x190 {
+    Expr::Mul(x411, x412) => {
+      let x411 = Expr::Mul._0(a/0) in
+      let x412 = Expr::Mul._1(a/0) in
+      match x411 {
         Expr::Zero => {
           print__T_int(1)
         },
-        Expr::Add(x208, x209) => {
-          match x191 {
+        Expr::Add(x429, x430) => {
+          match x412 {
             Expr::Zero => {
               print__T_int(3)
             },
@@ -41,7 +41,7 @@ fn main() -> unit {
           }
         },
         _ =>
-          match x191 {
+          match x412 {
             Expr::Zero => {
               print__T_int(3)
             },
@@ -57,6 +57,6 @@ fn print__T_int(value/0: int) -> unit {
   @runtime(core.string_print)(trait_impl#ToString#int#to_string(value/0))
 }
 
-fn trait_impl#ToString#int#to_string(self/67: int) -> string {
-  @runtime(core.int_to_string)(self/67)
+fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+  @runtime(core.int_to_string)(self/151)
 }

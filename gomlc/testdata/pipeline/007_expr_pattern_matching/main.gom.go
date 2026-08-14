@@ -13,6 +13,8 @@ func _goml_runtime_core_string_print(s string) struct{} {
     return struct{}{}
 }
 
+type Ordering int32
+
 type Expr interface {
     isExpr()
 }
@@ -42,24 +44,24 @@ type Mul struct {
 func (_ Mul) isExpr() {}
 
 func main0() struct{} {
-    var x191 Expr = Zero{}
-    switch x191.(type) {
+    var x412 Expr = Zero{}
+    switch x412.(type) {
     case Zero:
-        var inline249 int = 3
-        var inline250 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline249)
-        _goml_runtime_core_string_print(inline250)
+        var inline470 int = 3
+        var inline471 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline470)
+        _goml_runtime_core_string_print(inline471)
         return struct{}{}
     default:
-        var inline253 int = 4
-        var inline254 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline253)
-        _goml_runtime_core_string_print(inline254)
+        var inline474 int = 4
+        var inline475 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline474)
+        _goml_runtime_core_string_print(inline475)
         return struct{}{}
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
-    var t247 string = _goml_runtime_core_int_to_string(self__67)
-    return t247
+func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+    var t468 string = _goml_runtime_core_int_to_string(self__151)
+    return t468
 }
 
 func main() {

@@ -16,22 +16,22 @@ fn decorate(prefix/1: string, ok/2: bool) -> Result__string__string {
 
 fn show(res/5: Result__string__string) -> string {
   match res/5 {
-    Result__string__string::Ok(x190) => {
-      let x190 = Result__string__string::Ok._0(res/5) in
-      let value/6 = x190 in
+    Result__string__string::Ok(x411) => {
+      let x411 = Result__string__string::Ok._0(res/5) in
+      let value/6 = x411 in
       ("ok " + value/6)
     },
-    Result__string__string::Err(x191) => {
-      let x191 = Result__string__string::Err._0(res/5) in
-      let err/7 = x191 in
+    Result__string__string::Err(x412) => {
+      let x412 = Result__string__string::Err._0(res/5) in
+      let err/7 = x412 in
       ("err " + err/7)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild192 = println__T_string(show(decorate("outer", true))) in
-  let _wild193 = println__T_string(show(decorate("outer", false))) in
+  let _wild413 = println__T_string(show(decorate("outer", true))) in
+  let _wild414 = println__T_string(show(decorate("outer", false))) in
   ()
 }
 
@@ -39,26 +39,26 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#string#to_string(self/65: string) -> string {
-  self/65
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
 }
 
 fn inherent#closure_env_run_0#closure_env_run_0#apply(
-  env194: closure_env_run_0
+  env415: closure_env_run_0
 ) -> Result__string__string {
-  let ok/2 = closure_env_run_0.ok_0(env194) in
-  let prefix/1 = closure_env_run_0.prefix_1(env194) in
+  let ok/2 = closure_env_run_0.ok_0(env415) in
+  let prefix/1 = closure_env_run_0.prefix_1(env415) in
   let text/3 =
-    let mtmp187 = parse_text(ok/2) in
-    match mtmp187 {
-      Result__string__string::Ok(x188) => {
-        let x188 = Result__string__string::Ok._0(mtmp187) in
-        let try_value/12 = x188 in
+    let mtmp408 = parse_text(ok/2) in
+    match mtmp408 {
+      Result__string__string::Ok(x409) => {
+        let x409 = Result__string__string::Ok._0(mtmp408) in
+        let try_value/12 = x409 in
         try_value/12
       },
-      Result__string__string::Err(x189) => {
-        let x189 = Result__string__string::Err._0(mtmp187) in
-        let try_residual/12 = x189 in
+      Result__string__string::Err(x410) => {
+        let x410 = Result__string__string::Err._0(mtmp408) in
+        let try_residual/12 = x410 in
         return Result__string__string::Err(try_residual/12)
       },
     } in

@@ -1,48 +1,48 @@
 fn trait_impl#Show#Wrap__int32#show(self/0: Wrap__int32) -> string {
-  let t189 = Wrap__int32.value(self/0) in
-  let inline211 = @runtime(core.int32_to_string)(t189) in
-  inline211
+  let t410 = Wrap__int32.value(self/0) in
+  let inline432 = @runtime(core.int32_to_string)(t410) in
+  inline432
 }
 
 fn render(value/2: dyn Show) -> string {
-  let t193 = dyn_call[Show::show](value/2) in
-  t193
+  let t414 = dyn_call[Show::show](value/2) in
+  t414
 }
 
 fn main() -> unit {
   let value/3 = 42 in
-  join inline_cont217(t195: Wrap__int32) -> unit {
-    let t196 = to_dyn[Show]{Wrap__int32}(t195) in
-    join inline_cont215(t197: string) -> unit {
-      let inline213 = trait_impl#ToString#string#to_string(t197) in
-      let inline214 = @runtime(core.string_println)(inline213) in
+  join inline_cont438(t416: Wrap__int32) -> unit {
+    let t417 = to_dyn[Show]{Wrap__int32}(t416) in
+    join inline_cont436(t418: string) -> unit {
+      let inline434 = trait_impl#ToString#string#to_string(t418) in
+      let inline435 = @runtime(core.string_println)(inline434) in
       ()
     } in
-    let inline216 = dyn_call[Show::show](t196) in
-    jump inline_cont215(inline216)
+    let inline437 = dyn_call[Show::show](t417) in
+    jump inline_cont436(inline437)
   } in
-  let inline218 = Wrap__int32 { value: value/3 } in
-  jump inline_cont217(inline218)
+  let inline439 = Wrap__int32 { value: value/3 } in
+  jump inline_cont438(inline439)
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {
-  let t201 = @runtime(core.int32_to_string)(self/33) in
-  t201
+  let t422 = @runtime(core.int32_to_string)(self/33) in
+  t422
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont219(t203: string) -> unit {
-    let t204 = @runtime(core.string_println)(t203) in
+  join inline_cont440(t424: string) -> unit {
+    let t425 = @runtime(core.string_println)(t424) in
     ()
   } in
-  jump inline_cont219(value/1)
+  jump inline_cont440(value/1)
 }
 
 fn make_wrap__T_int32(value/1: int32) -> Wrap__int32 {
-  let t207 = Wrap__int32 { value: value/1 } in
-  t207
+  let t428 = Wrap__int32 { value: value/1 } in
+  t428
 }
 
-fn trait_impl#ToString#string#to_string(self/65: string) -> string {
-  self/65
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
 }

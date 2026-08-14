@@ -8,16 +8,16 @@ fn parse(flag/0: bool) -> Result__int32__string {
 
 fn compute(flag/1: bool) -> Result__int32__string {
   let value/2 =
-    let mtmp187 = parse(flag/1) in
-    match mtmp187 {
-      Result__int32__string::Err(x188) => {
-        let x188 = Result__int32__string::Err._0(mtmp187) in
-        let try_residual/12 = x188 in
+    let mtmp408 = parse(flag/1) in
+    match mtmp408 {
+      Result__int32__string::Err(x409) => {
+        let x409 = Result__int32__string::Err._0(mtmp408) in
+        let try_residual/12 = x409 in
         return Result__int32__string::Err(try_residual/12)
       },
-      Result__int32__string::Ok(x189) => {
-        let x189 = Result__int32__string::Ok._0(mtmp187) in
-        let try_value/12 = x189 in
+      Result__int32__string::Ok(x410) => {
+        let x410 = Result__int32__string::Ok._0(mtmp408) in
+        let try_value/12 = x410 in
         try_value/12
       },
     } in
@@ -26,21 +26,21 @@ fn compute(flag/1: bool) -> Result__int32__string {
 
 fn show(value/3: Result__int32__string) -> string {
   match value/3 {
-    Result__int32__string::Err(x190) => {
-      let x190 = Result__int32__string::Err._0(value/3) in
-      let error/5 = x190 in
+    Result__int32__string::Err(x411) => {
+      let x411 = Result__int32__string::Err._0(value/3) in
+      let error/5 = x411 in
       error/5
     },
-    Result__int32__string::Ok(x191) => {
-      let x191 = Result__int32__string::Ok._0(value/3) in
-      let value/4 = x191 in
+    Result__int32__string::Ok(x412) => {
+      let x412 = Result__int32__string::Ok._0(value/3) in
+      let value/4 = x412 in
       inherent#int32#int32#to_string(value/4)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild192 = println__T_string(show(compute(true))) in
+  let _wild413 = println__T_string(show(compute(true))) in
   println__T_string(show(compute(false)))
 }
 
@@ -52,6 +52,6 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#string#to_string(self/65: string) -> string {
-  self/65
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
 }

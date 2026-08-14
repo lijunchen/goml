@@ -27,81 +27,83 @@ type closure_env_main_1 struct {}
 
 type closure_env_main_2 struct {}
 
+type Ordering int32
+
 func main0() struct{} {
-    var t196 closure_env_main_0 = closure_env_main_0{}
-    var t197 func(int) string = func(p0 int) string {
-        return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t196, p0)
+    var t417 closure_env_main_0 = closure_env_main_0{}
+    var t418 func(int) string = func(p0 int) string {
+        return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t417, p0)
     }
     var text__6 Box__string
-    var inline260 int = 42
-    var inline261 string = t197(inline260)
-    var inline262 Box__string = Box__string{
-        value: inline261,
+    var inline481 int = 42
+    var inline482 string = t418(inline481)
+    var inline483 Box__string = Box__string{
+        value: inline482,
     }
-    text__6 = inline262
-    var t198 string = text__6.value
-    var inline257 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t198)
-    _goml_runtime_core_string_println(inline257)
-    var t199 closure_env_main_1 = closure_env_main_1{}
-    var t200 func(int) string = func(p0 int) string {
-        return _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(t199, p0)
+    text__6 = inline483
+    var t419 string = text__6.value
+    var inline478 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t419)
+    _goml_runtime_core_string_println(inline478)
+    var t420 closure_env_main_1 = closure_env_main_1{}
+    var t421 func(int) string = func(p0 int) string {
+        return _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(t420, p0)
     }
     var explicit__9 Box__string
-    var inline253 int = 7
-    var inline254 string = t200(inline253)
-    var inline255 Box__string = Box__string{
-        value: inline254,
+    var inline474 int = 7
+    var inline475 string = t421(inline474)
+    var inline476 Box__string = Box__string{
+        value: inline475,
     }
-    explicit__9 = inline255
-    var t201 string = explicit__9.value
-    var inline250 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t201)
-    _goml_runtime_core_string_println(inline250)
-    var t202 closure_env_main_2 = closure_env_main_2{}
-    var t203 func(int) string = func(p0 int) string {
-        return _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(t202, p0)
+    explicit__9 = inline476
+    var t422 string = explicit__9.value
+    var inline471 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t422)
+    _goml_runtime_core_string_println(inline471)
+    var t423 closure_env_main_2 = closure_env_main_2{}
+    var t424 func(int) string = func(p0 int) string {
+        return _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(t423, p0)
     }
     var static_call__12 Box__string
-    var inline246 int = 9
-    var inline247 string = t203(inline246)
-    var inline248 Box__string = Box__string{
-        value: inline247,
+    var inline467 int = 9
+    var inline468 string = t424(inline467)
+    var inline469 Box__string = Box__string{
+        value: inline468,
     }
-    static_call__12 = inline248
-    var t204 string = static_call__12.value
-    var inline243 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t204)
-    _goml_runtime_core_string_println(inline243)
+    static_call__12 = inline469
+    var t425 string = static_call__12.value
+    var inline464 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t425)
+    _goml_runtime_core_string_println(inline464)
     var rendered__13 string
-    var inline239 int = 5
-    var inline240 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline239)
-    var inline241 string = "value:" + inline240
-    rendered__13 = inline241
-    var inline236 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(rendered__13)
-    _goml_runtime_core_string_println(inline236)
+    var inline460 int = 5
+    var inline461 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline460)
+    var inline462 string = "value:" + inline461
+    rendered__13 = inline462
+    var inline457 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(rendered__13)
+    _goml_runtime_core_string_println(inline457)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
-    var t225 string = _goml_runtime_core_int_to_string(self__67)
-    return t225
+func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+    var t446 string = _goml_runtime_core_int_to_string(self__151)
+    return t446
 }
 
-func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env192 closure_env_main_0, value__5 int) string {
-    var inline267 string = _goml_runtime_core_int_to_string(value__5)
-    return inline267
+func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env413 closure_env_main_0, value__5 int) string {
+    var inline488 string = _goml_runtime_core_int_to_string(value__5)
+    return inline488
 }
 
-func _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(env193 closure_env_main_1, value__8 int) string {
-    var inline269 string = _goml_runtime_core_int_to_string(value__8)
-    return inline269
+func _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(env414 closure_env_main_1, value__8 int) string {
+    var inline490 string = _goml_runtime_core_int_to_string(value__8)
+    return inline490
 }
 
-func _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(env194 closure_env_main_2, value__11 int) string {
-    var inline271 string = _goml_runtime_core_int_to_string(value__11)
-    return inline271
+func _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(env415 closure_env_main_2, value__11 int) string {
+    var inline492 string = _goml_runtime_core_int_to_string(value__11)
+    return inline492
 }
 
 func main() {

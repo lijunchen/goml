@@ -13,15 +13,17 @@ type Person struct {
     name string
 }
 
+type Ordering int32
+
 func main0() struct{} {
     var name__0 string = "Alice"
-    var inline196 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(name__0)
-    _goml_runtime_core_string_println(inline196)
+    var inline417 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(name__0)
+    _goml_runtime_core_string_println(inline417)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
 func main() {

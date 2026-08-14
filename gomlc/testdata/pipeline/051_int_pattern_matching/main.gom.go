@@ -27,6 +27,8 @@ type PairData struct {
     tail int64
 }
 
+type Ordering int32
+
 func is_special8(value__0 int8) bool {
     switch value__0 {
     case 5:
@@ -39,11 +41,11 @@ func is_special8(value__0 int8) bool {
 }
 
 func match_tuple(values__4 Tuple2_4int8_5int16) bool {
-    var x187 int8 = values__4._0
-    var x188 int16 = values__4._1
-    switch x188 {
+    var x408 int8 = values__4._0
+    var x409 int16 = values__4._1
+    switch x409 {
     case 2:
-        switch x187 {
+        switch x408 {
         case 1:
             return true
         default:
@@ -55,11 +57,11 @@ func match_tuple(values__4 Tuple2_4int8_5int16) bool {
 }
 
 func match_struct(pair__5 PairData) bool {
-    var x189 int32 = pair__5.head
-    var x190 int64 = pair__5.tail
-    switch x190 {
+    var x410 int32 = pair__5.head
+    var x411 int64 = pair__5.tail
+    switch x411 {
     case 200:
-        switch x189 {
+        switch x410 {
         case 100:
             return true
         default:
@@ -75,132 +77,132 @@ func match_struct(pair__5 PairData) bool {
 func main0() struct{} {
     var tuple_first__8 int8 = 1
     var tuple_second__9 int16 = 2
-    var t225 Tuple2_4int8_5int16 = Tuple2_4int8_5int16{
+    var t446 Tuple2_4int8_5int16 = Tuple2_4int8_5int16{
         _0: tuple_first__8,
         _1: tuple_second__9,
     }
-    var tuple_result_hit__10 bool = match_tuple(t225)
-    var t226 Tuple2_4int8_5int16 = Tuple2_4int8_5int16{
+    var tuple_result_hit__10 bool = match_tuple(t446)
+    var t447 Tuple2_4int8_5int16 = Tuple2_4int8_5int16{
         _0: 3,
         _1: 4,
     }
-    var tuple_result_miss__11 bool = match_tuple(t226)
-    var t227 PairData = PairData{
+    var tuple_result_miss__11 bool = match_tuple(t447)
+    var t448 PairData = PairData{
         head: 100,
         tail: 200,
     }
-    var pair_first__12 bool = match_struct(t227)
-    var t228 PairData = PairData{
+    var pair_first__12 bool = match_struct(t448)
+    var t449 PairData = PairData{
         head: 10,
         tail: 300,
     }
-    var pair_second__13 bool = match_struct(t228)
-    var t229 bool = is_special8(5)
+    var pair_second__13 bool = match_struct(t449)
+    var t450 bool = is_special8(5)
     var part1__14 string
-    var inline295 string = "int8="
-    var inline296 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t229)
-    var inline297 string = inline295 + inline296
-    part1__14 = inline297
-    var t230 bool
-    var inline293 int16 = 1024
-    switch inline293 {
+    var inline516 string = "int8="
+    var inline517 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t450)
+    var inline518 string = inline516 + inline517
+    part1__14 = inline518
+    var t451 bool
+    var inline514 int16 = 1024
+    switch inline514 {
     case 1024:
-        t230 = true
+        t451 = true
     case 2048:
-        t230 = true
+        t451 = true
     default:
-        t230 = false
+        t451 = false
     }
     var part2__15 string
-    var inline289 string = ",int16="
-    var inline290 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t230)
-    var inline291 string = inline289 + inline290
-    part2__15 = inline291
-    var t231 bool
-    var inline287 int32 = 8192
-    switch inline287 {
+    var inline510 string = ",int16="
+    var inline511 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t451)
+    var inline512 string = inline510 + inline511
+    part2__15 = inline512
+    var t452 bool
+    var inline508 int32 = 8192
+    switch inline508 {
     case 4096:
-        t231 = true
+        t452 = true
     case 8192:
-        t231 = true
+        t452 = true
     default:
-        t231 = false
+        t452 = false
     }
     var part3__16 string
-    var inline283 string = ",int32="
-    var inline284 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t231)
-    var inline285 string = inline283 + inline284
-    part3__16 = inline285
-    var t232 bool
-    var inline281 int64 = 16384
-    switch inline281 {
+    var inline504 string = ",int32="
+    var inline505 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t452)
+    var inline506 string = inline504 + inline505
+    part3__16 = inline506
+    var t453 bool
+    var inline502 int64 = 16384
+    switch inline502 {
     case 16384:
-        t232 = true
+        t453 = true
     case 32768:
-        t232 = true
+        t453 = true
     default:
-        t232 = false
+        t453 = false
     }
     var part4__17 string
-    var inline277 string = ",int64_a="
-    var inline278 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t232)
-    var inline279 string = inline277 + inline278
-    part4__17 = inline279
-    var t233 bool
-    var inline275 int64 = 32768
-    switch inline275 {
+    var inline498 string = ",int64_a="
+    var inline499 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t453)
+    var inline500 string = inline498 + inline499
+    part4__17 = inline500
+    var t454 bool
+    var inline496 int64 = 32768
+    switch inline496 {
     case 16384:
-        t233 = true
+        t454 = true
     case 32768:
-        t233 = true
+        t454 = true
     default:
-        t233 = false
+        t454 = false
     }
     var part5__18 string
-    var inline271 string = ",int64_b="
-    var inline272 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t233)
-    var inline273 string = inline271 + inline272
-    part5__18 = inline273
+    var inline492 string = ",int64_b="
+    var inline493 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t454)
+    var inline494 string = inline492 + inline493
+    part5__18 = inline494
     var part6__19 string
-    var inline267 string = ",tuple_hit="
-    var inline268 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(tuple_result_hit__10)
-    var inline269 string = inline267 + inline268
-    part6__19 = inline269
+    var inline488 string = ",tuple_hit="
+    var inline489 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(tuple_result_hit__10)
+    var inline490 string = inline488 + inline489
+    part6__19 = inline490
     var part7__20 string
-    var inline263 string = ",tuple_miss="
-    var inline264 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(tuple_result_miss__11)
-    var inline265 string = inline263 + inline264
-    part7__20 = inline265
+    var inline484 string = ",tuple_miss="
+    var inline485 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(tuple_result_miss__11)
+    var inline486 string = inline484 + inline485
+    part7__20 = inline486
     var part8__21 string
-    var inline259 string = ",struct_first="
-    var inline260 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(pair_first__12)
-    var inline261 string = inline259 + inline260
-    part8__21 = inline261
+    var inline480 string = ",struct_first="
+    var inline481 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(pair_first__12)
+    var inline482 string = inline480 + inline481
+    part8__21 = inline482
     var part9__22 string
-    var inline255 string = ",struct_second="
-    var inline256 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(pair_second__13)
-    var inline257 string = inline255 + inline256
-    part9__22 = inline257
-    var t234 string = part1__14 + part2__15
-    var t235 string = t234 + part3__16
-    var t236 string = t235 + part4__17
-    var t237 string = t236 + part5__18
-    var t238 string = t237 + part6__19
-    var t239 string = t238 + part7__20
-    var t240 string = t239 + part8__21
-    var message__23 string = t240 + part9__22
-    var inline252 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(message__23)
-    _goml_runtime_core_string_println(inline252)
+    var inline476 string = ",struct_second="
+    var inline477 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(pair_second__13)
+    var inline478 string = inline476 + inline477
+    part9__22 = inline478
+    var t455 string = part1__14 + part2__15
+    var t456 string = t455 + part3__16
+    var t457 string = t456 + part4__17
+    var t458 string = t457 + part5__18
+    var t459 string = t458 + part6__19
+    var t460 string = t459 + part7__20
+    var t461 string = t460 + part8__21
+    var message__23 string = t461 + part9__22
+    var inline473 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(message__23)
+    _goml_runtime_core_string_println(inline473)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
-    var t243 string = _goml_runtime_core_bool_to_string(self__64)
-    return t243
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__148 bool) string {
+    var t464 string = _goml_runtime_core_bool_to_string(self__148)
+    return t464
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
 func main() {

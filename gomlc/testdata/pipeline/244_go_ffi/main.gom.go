@@ -49,31 +49,33 @@ type Tuple3_6string_6string_4bool struct {
     _2 bool
 }
 
+type Ordering int32
+
 func main0() struct{} {
-    var t196 string = _goml_ffi_strings_x00_ToUpper_x00__m__z_string_h76369dffc1fe27f425185fa360e330cd("goml")
-    var inline219 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t196)
-    _goml_runtime_core_string_println(inline219)
-    var mtmp188 Tuple3_6string_6string_4bool = _goml_ffi_strings_x00_Cut_x00__o__ng_c_bool_q__hbfb59822899b5650c9939dcbef222236("left:right", ":")
-    var x189 string = mtmp188._0
-    var x190 string = mtmp188._1
-    var x191 bool = mtmp188._2
-    var inline216 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x189)
-    _goml_runtime_core_string_println(inline216)
-    var inline213 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x190)
-    _goml_runtime_core_string_println(inline213)
-    var inline210 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x191)
-    _goml_runtime_core_string_println(inline210)
+    var t417 string = _goml_ffi_strings_x00_ToUpper_x00__m__z_string_h76369dffc1fe27f425185fa360e330cd("goml")
+    var inline440 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t417)
+    _goml_runtime_core_string_println(inline440)
+    var mtmp409 Tuple3_6string_6string_4bool = _goml_ffi_strings_x00_Cut_x00__o__ng_c_bool_q__hbfb59822899b5650c9939dcbef222236("left:right", ":")
+    var x410 string = mtmp409._0
+    var x411 string = mtmp409._1
+    var x412 bool = mtmp409._2
+    var inline437 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x410)
+    _goml_runtime_core_string_println(inline437)
+    var inline434 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x411)
+    _goml_runtime_core_string_println(inline434)
+    var inline431 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x412)
+    _goml_runtime_core_string_println(inline431)
     _goml_ffi_runtime_x00_Gosched_x00_q__m__z_unit_heb04ed8262b1bc7e893c8de929f316b2()
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
-    var t208 string = _goml_runtime_core_bool_to_string(self__64)
-    return t208
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__148 bool) string {
+    var t429 string = _goml_runtime_core_bool_to_string(self__148)
+    return t429
 }
 
 func main() {

@@ -32,70 +32,72 @@ func ref_set__Ref_3int(reference *ref_int_x, value int) struct{} {
     return struct{}{}
 }
 
+type Ordering int32
+
 func main0() struct{} {
     var i__0 *ref_int_x
-    var inline244 int = 0
-    var inline245 *ref_int_x = ref__Ref_3int(inline244)
-    i__0 = inline245
+    var inline465 int = 0
+    var inline466 *ref_int_x = ref__Ref_3int(inline465)
+    i__0 = inline466
     var sum__1 *ref_int_x
-    var inline241 int = 0
-    var inline242 *ref_int_x = ref__Ref_3int(inline241)
-    sum__1 = inline242
-    Loop_loop195:
+    var inline462 int = 0
+    var inline463 *ref_int_x = ref__Ref_3int(inline462)
+    sum__1 = inline463
+    Loop_loop416:
     for {
-        var t196 int
-        var inline234 int = ref_get__Ref_3int(i__0)
-        t196 = inline234
-        var t197 bool = t196 < 7
-        if t197 {
+        var t417 int
+        var inline455 int = ref_get__Ref_3int(i__0)
+        t417 = inline455
+        var t418 bool = t417 < 7
+        if t418 {
             var cur__2 int
-            var inline232 int = ref_get__Ref_3int(i__0)
-            cur__2 = inline232
-            var t198 int = cur__2 + 1
-            ref_set__Ref_3int(i__0, t198)
-            var t202 bool = cur__2 < 5
-            if t202 {
+            var inline453 int = ref_get__Ref_3int(i__0)
+            cur__2 = inline453
+            var t419 int = cur__2 + 1
+            ref_set__Ref_3int(i__0, t419)
+            var t423 bool = cur__2 < 5
+            if t423 {
                 switch cur__2 {
                 case 1:
                     continue
                 case 3:
                     continue
                 default:
-                    var t200 int
-                    var inline228 int = ref_get__Ref_3int(sum__1)
-                    t200 = inline228
-                    var t201 int = t200 + cur__2
-                    ref_set__Ref_3int(sum__1, t201)
+                    var t421 int
+                    var inline449 int = ref_get__Ref_3int(sum__1)
+                    t421 = inline449
+                    var t422 int = t421 + cur__2
+                    ref_set__Ref_3int(sum__1, t422)
                     continue
                 }
             } else {
                 switch cur__2 {
                 case 5:
-                    break Loop_loop195
+                    break Loop_loop416
                 default:
-                    var t200 int
-                    var inline228 int = ref_get__Ref_3int(sum__1)
-                    t200 = inline228
-                    var t201 int = t200 + cur__2
-                    ref_set__Ref_3int(sum__1, t201)
+                    var t421 int
+                    var inline449 int = ref_get__Ref_3int(sum__1)
+                    t421 = inline449
+                    var t422 int = t421 + cur__2
+                    ref_set__Ref_3int(sum__1, t422)
                     continue
                 }
             }
         } else {
-            break Loop_loop195
+            break Loop_loop416
         }
     }
-    var t194 int
-    var inline239 int = ref_get__Ref_3int(sum__1)
-    t194 = inline239
-    var inline236 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t194)
-    _goml_runtime_core_string_println(inline236)
+    var t415 int
+    var inline460 int = ref_get__Ref_3int(sum__1)
+    t415 = inline460
+    var inline457 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t415)
+    _goml_runtime_core_string_println(inline457)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
-    var t218 string = _goml_runtime_core_int_to_string(self__67)
-    return t218
+func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+    var t439 string = _goml_runtime_core_int_to_string(self__151)
+    return t439
 }
 
 func main() {

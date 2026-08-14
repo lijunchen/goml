@@ -3,14 +3,14 @@ fn trait_impl#ToString#Key#to_string(self/0: Key) -> string {
     Key::Empty => {
       "Key::Empty"
     },
-    Key::Point(x187, x188) => {
+    Key::Point(x408, x409) => {
       {
-        let x187 = Key::Point._0(self/0) in
-        let x188 = Key::Point._1(self/0) in
+        let x408 = Key::Point._0(self/0) in
+        let x409 = Key::Point._1(self/0) in
         {
-          let #derive1_field/2 = x188 in
+          let #derive1_field/2 = x409 in
           {
-            let #derive0_field/1 = x187 in
+            let #derive0_field/1 = x408 in
             (((((("Key::Point { " + "x: ") +
               trait_impl#ToString#int32#to_string(#derive0_field/1)) +
               ", ") +
@@ -32,14 +32,14 @@ fn trait_impl#Hash#Key#hash(self/3: Key) -> uint64 {
         h/4
       }
     },
-    Key::Point(x189, x190) => {
+    Key::Point(x410, x411) => {
       {
-        let x189 = Key::Point._0(self/3) in
-        let x190 = Key::Point._1(self/3) in
+        let x410 = Key::Point._0(self/3) in
+        let x411 = Key::Point._1(self/3) in
         {
-          let #derive1_field/6 = x190 in
+          let #derive1_field/6 = x411 in
           {
-            let #derive0_field/5 = x189 in
+            let #derive0_field/5 = x410 in
             {
               let h/7 = (((0 as uint64) + 14695981039346656037) + 2) in
               let h/8 =
@@ -59,36 +59,36 @@ fn trait_impl#Hash#Key#hash(self/3: Key) -> uint64 {
 
 fn trait_impl#PartialEq#Key#eq(self/10: Key, other/11: Key) -> bool {
   {
-    let mtmp191 = (self/10, other/11) in
+    let mtmp412 = (self/10, other/11) in
     {
-      let x192 = mtmp191.0 in
-      let x193 = mtmp191.1 in
-      match x193 {
+      let x413 = mtmp412.0 in
+      let x414 = mtmp412.1 in
+      match x414 {
         Key::Empty => {
-          match x192 {
+          match x413 {
             Key::Empty => {
               true
             },
             _ => false,
           }
         },
-        Key::Point(x194, x195) => {
+        Key::Point(x415, x416) => {
           {
-            let x194 = Key::Point._0(x193) in
-            let x195 = Key::Point._1(x193) in
-            match x192 {
-              Key::Point(x198, x199) => {
+            let x415 = Key::Point._0(x414) in
+            let x416 = Key::Point._1(x414) in
+            match x413 {
+              Key::Point(x419, x420) => {
                 {
-                  let x198 = Key::Point._0(x192) in
-                  let x199 = Key::Point._1(x192) in
+                  let x419 = Key::Point._0(x413) in
+                  let x420 = Key::Point._1(x413) in
                   {
-                    let #derive2_left/13 = x199 in
+                    let #derive2_left/13 = x420 in
                     {
-                      let #derive0_left/12 = x198 in
+                      let #derive0_left/12 = x419 in
                       {
-                        let #derive3_right/15 = x195 in
+                        let #derive3_right/15 = x416 in
                         {
-                          let #derive1_right/14 = x194 in
+                          let #derive1_right/14 = x415 in
                           if if true {
                               trait_impl#PartialEq#int32#eq(#derive0_left/12, #derive1_right/14)
                           } else {
@@ -118,19 +118,19 @@ fn score(value/16: Message__string) -> int32 {
     Message__string::Quit => {
       0
     },
-    Message__string::Write(x200) => {
+    Message__string::Write(x421) => {
       {
         1
       }
     },
-    Message__string::Move(x201, x202, x203) => {
+    Message__string::Move(x422, x423, x424) => {
       {
-        let x201 = Message__string::Move._0(value/16) in
-        let x202 = Message__string::Move._1(value/16) in
+        let x422 = Message__string::Move._0(value/16) in
+        let x423 = Message__string::Move._1(value/16) in
         {
-          let vertical/18 = x202 in
+          let vertical/18 = x423 in
           {
-            let x/17 = x201 in
+            let x/17 = x422 in
             (x/17 + vertical/18)
           }
         }
@@ -144,20 +144,20 @@ fn label(value/19: Message__string) -> string {
     Message__string::Quit => {
       "quit"
     },
-    Message__string::Write(x204) => {
+    Message__string::Write(x425) => {
       {
-        let x204 = Message__string::Write._0(value/19) in
+        let x425 = Message__string::Write._0(value/19) in
         {
-          let text/21 = x204 in
+          let text/21 = x425 in
           text/21
         }
       }
     },
-    Message__string::Move(x205, x206, x207) => {
+    Message__string::Move(x426, x427, x428) => {
       {
-        let x207 = Message__string::Move._2(value/19) in
+        let x428 = Message__string::Move._2(value/19) in
         {
-          let label/20 = x207 in
+          let label/20 = x428 in
           label/20
         }
       }
@@ -170,22 +170,22 @@ fn main() -> unit {
   let direction/23 = "north" in
   let first/24 = Message__string::Move(x/22, 4, direction/23) in
   let second/25 = Message__string::Move(3, 4, "north") in
-  let _wild208 = println__T_int32(score(first/24)) in
-  let _wild209 = println__T_string(label(second/25)) in
-  let _wild210 = println__T_string(trait_impl#ToString#Key#to_string(Key::Point(1, 2))) in
-  let _wild211 = println__T_bool(trait_impl#PartialEq#Key#eq(Key::Point(1, 2), Key::Point(1, 2))) in
+  let _wild429 = println__T_int32(score(first/24)) in
+  let _wild430 = println__T_string(label(second/25)) in
+  let _wild431 = println__T_string(trait_impl#ToString#Key#to_string(Key::Point(1, 2))) in
+  let _wild432 = println__T_bool(trait_impl#PartialEq#Key#eq(Key::Point(1, 2), Key::Point(1, 2))) in
 }
 
-fn trait_impl#ToString#int32#to_string(self/70: int32) -> string {
-  @runtime(core.int32_to_string)(self/70)
+fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+  @runtime(core.int32_to_string)(self/154)
 }
 
-fn trait_impl#Hash#int32#hash(self/130: int32) -> uint64 {
-  @runtime(core.int32_hash)(self/130)
+fn trait_impl#Hash#int32#hash(self/214: int32) -> uint64 {
+  @runtime(core.int32_hash)(self/214)
 }
 
-fn trait_impl#PartialEq#int32#eq(self/107: int32, other/108: int32) -> bool {
-  (self/107 == other/108)
+fn trait_impl#PartialEq#int32#eq(self/191: int32, other/192: int32) -> bool {
+  (self/191 == other/192)
 }
 
 fn println__T_int32(value/1: int32) -> unit {
@@ -200,10 +200,10 @@ fn println__T_bool(value/1: bool) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
 }
 
-fn trait_impl#ToString#string#to_string(self/65: string) -> string {
-  self/65
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
 }
 
-fn trait_impl#ToString#bool#to_string(self/64: bool) -> string {
-  @runtime(core.bool_to_string)(self/64)
+fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
+  @runtime(core.bool_to_string)(self/148)
 }

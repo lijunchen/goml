@@ -13,6 +13,8 @@ func _goml_runtime_core_string_println(s string) struct{} {
     return struct{}{}
 }
 
+type Ordering int32
+
 type Option__uint8 interface {
     isOption__uint8()
 }
@@ -28,17 +30,17 @@ type None struct {}
 func (_ None) isOption__uint8() {}
 
 func main0() struct{} {
-    var x187 uint8 = 42
-    var t191 string
-    var inline206 string = _goml_runtime_core_uint8_to_string(x187)
-    t191 = inline206
-    var inline203 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t191)
-    _goml_runtime_core_string_println(inline203)
+    var x408 uint8 = 42
+    var t412 string
+    var inline427 string = _goml_runtime_core_uint8_to_string(x408)
+    t412 = inline427
+    var inline424 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t412)
+    _goml_runtime_core_string_println(inline424)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
 func main() {

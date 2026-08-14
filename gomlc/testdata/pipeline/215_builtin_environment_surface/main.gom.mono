@@ -7,21 +7,21 @@ fn main() -> unit {
       @runtime(core.uint8_to_string)(unsigned/2)) +
       string_byte_slice("abcd", 1, 3)) in
   let value/4 = @intrinsic(ref.new)(1) in
-  let _wild187 = @intrinsic(ref.set)(value/4, 2) in
+  let _wild408 = @intrinsic(ref.set)(value/4, 2) in
   let same/5 = @intrinsic(ref.ptr_eq)(value/4, value/4) in
-  let mtmp188 = @intrinsic(ref.ptr_hash)(value/4) in
+  let mtmp409 = @intrinsic(ref.ptr_hash)(value/4) in
   {
     let values/6 = @intrinsic(vec.new)() in
-    let _wild189 = @intrinsic(vec.push)(values/6, @intrinsic(ref.get)(value/4)) in
-    let _wild190 = @intrinsic(vec.push)(values/6, 3) in
-    let _wild191 = @intrinsic(vec.set)(values/6, 1, 4) in
+    let _wild410 = @intrinsic(vec.push)(values/6, @intrinsic(ref.get)(value/4)) in
+    let _wild411 = @intrinsic(vec.push)(values/6, 3) in
+    let _wild412 = @intrinsic(vec.set)(values/6, 1, 4) in
     let values_slice/7 = @intrinsic(slice.new)(values/6, 0, @intrinsic(vec.len)(values/6)) in
     let nested/8 =
       @intrinsic(slice.sub)(values_slice/7, 0, @intrinsic(slice.len)(values_slice/7)) in
     let channel/9 = @intrinsic(channel.new)(1) in
-    let _wild192 = @intrinsic(channel.send)(channel/9, @intrinsic(slice.get)(nested/8, 1)) in
+    let _wild413 = @intrinsic(channel.send)(channel/9, @intrinsic(slice.get)(nested/8, 1)) in
     let received/10 = @intrinsic(channel.recv)(channel/9) in
-    let _wild193 = @intrinsic(channel.close)(channel/9) in
+    let _wild414 = @intrinsic(channel.close)(channel/9) in
     let total/13 =
       std::iter::fold__A_int__I_FnIterator[int]__T_int(
         range(0, 3),
@@ -95,8 +95,8 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#bool#to_string(self/64: bool) -> string {
-  @runtime(core.bool_to_string)(self/64)
+fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
+  @runtime(core.bool_to_string)(self/148)
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {
@@ -129,19 +129,19 @@ fn string_is_char_boundary(value/15: string, index/16: int) -> bool {
   }
 }
 
-fn trait_impl#Iterator#FnIterator__int#next(self/171: FnIterator__int) -> Option__int {
-  FnIterator__int.next_fn(self/171)()
+fn trait_impl#Iterator#FnIterator__int#next(self/255: FnIterator__int) -> Option__int {
+  FnIterator__int.next_fn(self/255)()
 }
 
-fn __goml_builtin_range(start/336: int, end/337: int) -> FnIterator__int {
-  let current/338 = @intrinsic(ref.new)(start/336) in
+fn __goml_builtin_range(start/494: int, end/495: int) -> FnIterator__int {
+  let current/496 = @intrinsic(ref.new)(start/494) in
   inherent#FnIterator#FnIterator[T]#from_fn__T_int(
     || {
-      let value/339 = @intrinsic(ref.get)(current/338) in
-      if (value/339 < end/337) {
+      let value/497 = @intrinsic(ref.get)(current/496) in
+      if (value/497 < end/495) {
           {
-            let _wild183 = @intrinsic(ref.set)(current/338, (value/339 + 1)) in
-            Option__int::Some(value/339)
+            let _wild404 = @intrinsic(ref.set)(current/496, (value/497 + 1)) in
+            Option__int::Some(value/497)
           }
       } else {
           {
@@ -152,8 +152,8 @@ fn __goml_builtin_range(start/336: int, end/337: int) -> FnIterator__int {
   )
 }
 
-fn trait_impl#ToString#string#to_string(self/65: string) -> string {
-  self/65
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
 }
 
 fn inherent#string#string#byte_len(self/36: string) -> int {
@@ -165,23 +165,23 @@ fn inherent#string#string#byte_get(self/39: string, index/40: int) -> uint8 {
 }
 
 fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(
-  next_fn/170: () -> Option__int
+  next_fn/254: () -> Option__int
 ) -> FnIterator__int {
-  FnIterator__int { next_fn: next_fn/170 }
+  FnIterator__int { next_fn: next_fn/254 }
 }
 
-fn trait_impl#PartialEq#int32#eq(self/107: int32, other/108: int32) -> bool {
-  (self/107 == other/108)
+fn trait_impl#PartialEq#int32#eq(self/191: int32, other/192: int32) -> bool {
+  (self/191 == other/192)
 }
 
-fn trait_impl#Hash#int32#hash(self/130: int32) -> uint64 {
-  @runtime(core.int32_hash)(self/130)
+fn trait_impl#Hash#int32#hash(self/214: int32) -> uint64 {
+  @runtime(core.int32_hash)(self/214)
 }
 
-fn trait_impl#PartialEq#int#eq(self/101: int, other/102: int) -> bool {
-  (self/101 == other/102)
+fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+  (self/185 == other/186)
 }
 
-fn trait_impl#Hash#int#hash(self/127: int) -> uint64 {
-  @runtime(core.int_hash)(self/127)
+fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+  @runtime(core.int_hash)(self/211)
 }

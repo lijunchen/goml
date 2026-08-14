@@ -52,6 +52,8 @@ type S struct {
     value int32
 }
 
+type Ordering int32
+
 type dyn__ToString_vtable struct {
     to_string func(any) string
 }
@@ -72,95 +74,95 @@ func dyn__ToString__vtable__S() *dyn__ToString_vtable {
 }
 
 func _goml_m_trait__impl_i_ToString_i_S_i_to__string(self__0 S) string {
-    var t200 int32 = self__0.value
-    var t201 string
-    var inline266 string = _goml_runtime_core_int32_to_string(t200)
-    t201 = inline266
-    var t202 string = "S(" + t201
-    var t203 string = t202 + ")"
-    return t203
+    var t421 int32 = self__0.value
+    var t422 string
+    var inline487 string = _goml_runtime_core_int32_to_string(t421)
+    t422 = inline487
+    var t423 string = "S(" + t422
+    var t424 string = t423 + ")"
+    return t424
 }
 
 func main0() struct{} {
-    var inline312 int = 1
-    var inline313 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline312)
-    _goml_runtime_core_string_println(inline313)
-    var inline308 bool = true
-    var inline309 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline308)
-    _goml_runtime_core_string_println(inline309)
-    var inline304 string = "hi"
-    var inline305 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline304)
-    _goml_runtime_core_string_println(inline305)
-    var inline300 struct{} = struct{}{}
-    var inline301 string = _goml_m_trait__impl_i_ToString_i_unit_i_to__string(inline300)
-    _goml_runtime_core_string_println(inline301)
-    var t205 string
-    var inline297 int = 2
-    var inline298 string = _goml_runtime_core_int_to_string(inline297)
-    t205 = inline298
-    var inline294 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t205)
-    _goml_runtime_core_string_println(inline294)
-    var t206 string
-    var inline291 int = 2
-    var inline292 string = _goml_runtime_core_int_to_string(inline291)
-    t206 = inline292
-    var inline288 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t206)
-    _goml_runtime_core_string_println(inline288)
+    var inline533 int = 1
+    var inline534 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline533)
+    _goml_runtime_core_string_println(inline534)
+    var inline529 bool = true
+    var inline530 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline529)
+    _goml_runtime_core_string_println(inline530)
+    var inline525 string = "hi"
+    var inline526 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline525)
+    _goml_runtime_core_string_println(inline526)
+    var inline521 struct{} = struct{}{}
+    var inline522 string = _goml_m_trait__impl_i_ToString_i_unit_i_to__string(inline521)
+    _goml_runtime_core_string_println(inline522)
+    var t426 string
+    var inline518 int = 2
+    var inline519 string = _goml_runtime_core_int_to_string(inline518)
+    t426 = inline519
+    var inline515 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t426)
+    _goml_runtime_core_string_println(inline515)
+    var t427 string
+    var inline512 int = 2
+    var inline513 string = _goml_runtime_core_int_to_string(inline512)
+    t427 = inline513
+    var inline509 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t427)
+    _goml_runtime_core_string_println(inline509)
     var s__1 S = S{
         value: 9,
     }
-    var inline285 string = _goml_m_trait__impl_i_ToString_i_S_i_to__string(s__1)
-    _goml_runtime_core_string_println(inline285)
+    var inline506 string = _goml_m_trait__impl_i_ToString_i_S_i_to__string(s__1)
+    _goml_runtime_core_string_println(inline506)
     var d__2 dyn__ToString = dyn__ToString{
         data: s__1,
         vtable: dyn__ToString__vtable__S(),
     }
-    var inline282 string = d__2.vtable.to_string(d__2.data)
-    _goml_runtime_core_string_println(inline282)
+    var inline503 string = d__2.vtable.to_string(d__2.data)
+    _goml_runtime_core_string_println(inline503)
     var r__3 *ref_int_x
-    var inline279 int = 5
-    var inline280 *ref_int_x = ref__Ref_3int(inline279)
-    r__3 = inline280
-    var inline276 string = _goml_m_trait__impl_i_ToString_i_Ref_l_int_r__i_to__string(r__3)
-    _goml_runtime_core_string_println(inline276)
-    var inline272 string = "no-newline"
-    var inline273 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline272)
-    _goml_runtime_core_string_print(inline273)
-    var inline268 string = "!"
-    var inline269 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline268)
-    _goml_runtime_core_string_println(inline269)
+    var inline500 int = 5
+    var inline501 *ref_int_x = ref__Ref_3int(inline500)
+    r__3 = inline501
+    var inline497 string = _goml_m_trait__impl_i_ToString_i_Ref_l_int_r__i_to__string(r__3)
+    _goml_runtime_core_string_println(inline497)
+    var inline493 string = "no-newline"
+    var inline494 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline493)
+    _goml_runtime_core_string_print(inline494)
+    var inline489 string = "!"
+    var inline490 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline489)
+    _goml_runtime_core_string_println(inline490)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__67 int) string {
-    var t224 string = _goml_runtime_core_int_to_string(self__67)
-    return t224
+func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+    var t445 string = _goml_runtime_core_int_to_string(self__151)
+    return t445
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__64 bool) string {
-    var t245 string = _goml_runtime_core_bool_to_string(self__64)
-    return t245
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__148 bool) string {
+    var t466 string = _goml_runtime_core_bool_to_string(self__148)
+    return t466
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
-func _goml_m_trait__impl_i_ToString_i_unit_i_to__string(self__63 struct{}) string {
-    var t250 string = _goml_runtime_core_unit_to_string(self__63)
-    return t250
+func _goml_m_trait__impl_i_ToString_i_unit_i_to__string(self__147 struct{}) string {
+    var t471 string = _goml_runtime_core_unit_to_string(self__147)
+    return t471
 }
 
-func _goml_m_trait__impl_i_ToString_i_Ref_l_int_r__i_to__string(self__166 *ref_int_x) string {
-    var v__167 int
-    var inline336 int = ref_get__Ref_3int(self__166)
-    v__167 = inline336
-    var t253 string
-    var inline334 string = _goml_runtime_core_int_to_string(v__167)
-    t253 = inline334
-    var t254 string = "ref(" + t253
-    var t255 string = t254 + ")"
-    return t255
+func _goml_m_trait__impl_i_ToString_i_Ref_l_int_r__i_to__string(self__250 *ref_int_x) string {
+    var v__251 int
+    var inline557 int = ref_get__Ref_3int(self__250)
+    v__251 = inline557
+    var t474 string
+    var inline555 string = _goml_runtime_core_int_to_string(v__251)
+    t474 = inline555
+    var t475 string = "ref(" + t474
+    var t476 string = t475 + ")"
+    return t476
 }
 
 func main() {

@@ -1,21 +1,21 @@
 fn fetch(flag/0: bool) -> Option__int32 {
   let m/1 = inherent#HashMap#HashMap[K,V]#new__K_string__V_int32() in
-  let _wild188 =
+  let _wild409 =
     if flag/0 {
-        let _wild187 = inherent#HashMap#HashMap[K,V]#set__K_string__V_int32(m/1, "a", 7) in
+        let _wild408 = inherent#HashMap#HashMap[K,V]#set__K_string__V_int32(m/1, "a", 7) in
         ()
     } else {
         ()
     } in
   let value/2 =
-    let mtmp189 = inherent#HashMap#HashMap[K,V]#get__K_string__V_int32(m/1, "a") in
-    match mtmp189 {
+    let mtmp410 = inherent#HashMap#HashMap[K,V]#get__K_string__V_int32(m/1, "a") in
+    match mtmp410 {
       Option__int32::None => {
         return Option__int32::None
       },
-      Option__int32::Some(x190) => {
-        let x190 = Option__int32::Some._0(mtmp189) in
-        let try_value/18 = x190 in
+      Option__int32::Some(x411) => {
+        let x411 = Option__int32::Some._0(mtmp410) in
+        let try_value/18 = x411 in
         try_value/18
       },
     } in
@@ -27,17 +27,17 @@ fn show(opt/3: Option__int32) -> string {
     Option__int32::None => {
       "none"
     },
-    Option__int32::Some(x191) => {
-      let x191 = Option__int32::Some._0(opt/3) in
-      let value/4 = x191 in
+    Option__int32::Some(x412) => {
+      let x412 = Option__int32::Some._0(opt/3) in
+      let value/4 = x412 in
       ("some=" + inherent#int32#int32#to_string(value/4))
     },
   }
 }
 
 fn main() -> unit {
-  let _wild192 = println__T_string(show(fetch(true))) in
-  let _wild193 = println__T_string(show(fetch(false))) in
+  let _wild413 = println__T_string(show(fetch(true))) in
+  let _wild414 = println__T_string(show(fetch(false))) in
   ()
 }
 
@@ -46,18 +46,18 @@ fn inherent#HashMap#HashMap[K,V]#new__K_string__V_int32() -> HashMap[string, int
 }
 
 fn inherent#HashMap#HashMap[K,V]#set__K_string__V_int32(
-  self/264: HashMap[string, int32],
-  key/265: string,
-  value/266: int32
+  self/422: HashMap[string, int32],
+  key/423: string,
+  value/424: int32
 ) -> unit {
-  @intrinsic(hashmap.set)(self/264, key/265, value/266)
+  @intrinsic(hashmap.set)(self/422, key/423, value/424)
 }
 
 fn inherent#HashMap#HashMap[K,V]#get__K_string__V_int32(
-  self/262: HashMap[string, int32],
-  key/263: string
+  self/420: HashMap[string, int32],
+  key/421: string
 ) -> Option__int32 {
-  @intrinsic(hashmap.get)(self/262, key/263)
+  @intrinsic(hashmap.get)(self/420, key/421)
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {
@@ -68,14 +68,14 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#string#to_string(self/65: string) -> string {
-  self/65
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
 }
 
-fn trait_impl#PartialEq#string#eq(self/97: string, other/98: string) -> bool {
-  (self/97 == other/98)
+fn trait_impl#PartialEq#string#eq(self/181: string, other/182: string) -> bool {
+  (self/181 == other/182)
 }
 
-fn trait_impl#Hash#string#hash(self/125: string) -> uint64 {
-  @runtime(core.string_hash)(self/125)
+fn trait_impl#Hash#string#hash(self/209: string) -> uint64 {
+  @runtime(core.string_hash)(self/209)
 }

@@ -22,34 +22,36 @@ func _goml_runtime_core_string_println(s string) struct{} {
     return struct{}{}
 }
 
+type Ordering int32
+
 func main0() struct{} {
     var x__0 int32 = 1
     var y__1 int8 = 1
-    var inline220 string = "int32: "
-    var inline221 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline220)
-    _goml_runtime_core_string_print(inline221)
-    var inline217 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x__0)
-    _goml_runtime_core_string_println(inline217)
-    var inline213 string = "int8: "
-    var inline214 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline213)
-    _goml_runtime_core_string_print(inline214)
-    var inline210 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(y__1)
-    _goml_runtime_core_string_println(inline210)
+    var inline441 string = "int32: "
+    var inline442 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline441)
+    _goml_runtime_core_string_print(inline442)
+    var inline438 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x__0)
+    _goml_runtime_core_string_println(inline438)
+    var inline434 string = "int8: "
+    var inline435 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline434)
+    _goml_runtime_core_string_print(inline435)
+    var inline431 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(y__1)
+    _goml_runtime_core_string_println(inline431)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__70 int32) string {
-    var t205 string = _goml_runtime_core_int32_to_string(self__70)
-    return t205
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
+    var t426 string = _goml_runtime_core_int32_to_string(self__154)
+    return t426
 }
 
-func _goml_m_trait__impl_i_ToString_i_int8_i_to__string(self__68 int8) string {
-    var t208 string = _goml_runtime_core_int8_to_string(self__68)
-    return t208
+func _goml_m_trait__impl_i_ToString_i_int8_i_to__string(self__152 int8) string {
+    var t429 string = _goml_runtime_core_int8_to_string(self__152)
+    return t429
 }
 
 func main() {

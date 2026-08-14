@@ -13,13 +13,13 @@ fn trait_impl#ToString#Color#to_string(self/0: Color) -> string {
 }
 
 fn trait_impl#ToString#Point#to_string(self/1: Point) -> string {
-  let mtmp187 = self/1 in
-  let x188 = Point.x(mtmp187) in
-  let x189 = Point.y(mtmp187) in
-  let x190 = Point.color(mtmp187) in
-  let #derive2_field/4 = x190 in
-  let #derive1_field/3 = x189 in
-  let #derive0_field/2 = x188 in
+  let mtmp408 = self/1 in
+  let x409 = Point.x(mtmp408) in
+  let x410 = Point.y(mtmp408) in
+  let x411 = Point.color(mtmp408) in
+  let #derive2_field/4 = x411 in
+  let #derive1_field/3 = x410 in
+  let #derive0_field/2 = x409 in
   ((((((((("Point { " + "x: ") + trait_impl#ToString#int32#to_string(#derive0_field/2)) + ", ") +
     "y: ") +
     trait_impl#ToString#int32#to_string(#derive1_field/3)) +
@@ -34,13 +34,13 @@ fn inherent#Point#Point#new(x/5: int32, y/6: int32, color/7: Color) -> Point {
 }
 
 fn trait_impl#ToString#Line#to_string(self/8: Line) -> string {
-  let mtmp191 = self/8 in
-  let x192 = Line.from(mtmp191) in
-  let x193 = Line.to(mtmp191) in
-  let x194 = Line.color(mtmp191) in
-  let #derive2_field/11 = x194 in
-  let #derive1_field/10 = x193 in
-  let #derive0_field/9 = x192 in
+  let mtmp412 = self/8 in
+  let x413 = Line.from(mtmp412) in
+  let x414 = Line.to(mtmp412) in
+  let x415 = Line.color(mtmp412) in
+  let #derive2_field/11 = x415 in
+  let #derive1_field/10 = x414 in
+  let #derive0_field/9 = x413 in
   ((((((((("Line { " + "from: ") + trait_impl#ToString#Point#to_string(#derive0_field/9)) + ", ") +
     "to: ") +
     trait_impl#ToString#Point#to_string(#derive1_field/10)) +
@@ -59,11 +59,11 @@ fn trait_impl#ToString#LineList#to_string(self/15: LineList) -> string {
     LineList::Nil => {
       "LineList::Nil"
     },
-    LineList::Cons(x195, x196) => {
-      let x195 = LineList::Cons._0(self/15) in
-      let x196 = LineList::Cons._1(self/15) in
-      let #derive1_field/17 = x196 in
-      let #derive0_field/16 = x195 in
+    LineList::Cons(x416, x417) => {
+      let x416 = LineList::Cons._0(self/15) in
+      let x417 = LineList::Cons._1(self/15) in
+      let #derive1_field/17 = x417 in
+      let #derive0_field/16 = x416 in
       (((("LineList::Cons(" + trait_impl#ToString#Line#to_string(#derive0_field/16)) + ", ") +
         trait_impl#ToString#LineList#to_string(#derive1_field/17)) +
         ")")
@@ -76,18 +76,18 @@ fn main() -> unit {
   let to/19 = inherent#Point#Point#new(30, 40, Color::Green) in
   let line/20 = inherent#Line#Line#new(from/18, to/19, Color::Blue) in
   let lines/21 = LineList::Cons(line/20, LineList::Nil) in
-  let _wild197 = println__T_string(trait_impl#ToString#LineList#to_string(lines/21)) in
+  let _wild418 = println__T_string(trait_impl#ToString#LineList#to_string(lines/21)) in
   ()
 }
 
-fn trait_impl#ToString#int32#to_string(self/70: int32) -> string {
-  @runtime(core.int32_to_string)(self/70)
+fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+  @runtime(core.int32_to_string)(self/154)
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#string#to_string(self/65: string) -> string {
-  self/65
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
 }

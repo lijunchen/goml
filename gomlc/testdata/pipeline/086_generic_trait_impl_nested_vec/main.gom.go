@@ -21,26 +21,28 @@ type Wrap__string struct {
     value string
 }
 
+type Ordering int32
+
 func main0() struct{} {
-    var t190 int32
-    t190 = 1
-    var t191 string
-    var inline216 string = _goml_runtime_core_int32_to_string(t190)
-    t191 = inline216
-    var inline213 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t191)
-    _goml_runtime_core_string_println(inline213)
-    var t192 int32
-    t192 = 1
-    var t193 string
-    var inline210 string = _goml_runtime_core_int32_to_string(t192)
-    t193 = inline210
-    var inline207 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t193)
-    _goml_runtime_core_string_println(inline207)
+    var t411 int32
+    t411 = 1
+    var t412 string
+    var inline437 string = _goml_runtime_core_int32_to_string(t411)
+    t412 = inline437
+    var inline434 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t412)
+    _goml_runtime_core_string_println(inline434)
+    var t413 int32
+    t413 = 1
+    var t414 string
+    var inline431 string = _goml_runtime_core_int32_to_string(t413)
+    t414 = inline431
+    var inline428 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t414)
+    _goml_runtime_core_string_println(inline428)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
 func main() {

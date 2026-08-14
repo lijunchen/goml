@@ -18,6 +18,8 @@ type Point struct {
     y int32
 }
 
+type Ordering int32
+
 type Message interface {
     isMessage()
 }
@@ -44,24 +46,24 @@ func _goml_m_trait__impl_i_ToString_i_Message_i_to__string(self__3 Message) stri
     case Quit:
         return "Message::Quit"
     case Move:
-        var x190 int32 = self__3.(Move)._0
-        var x191 int32 = self__3.(Move)._1
-        var t211 string
-        var inline237 string = _goml_runtime_core_int32_to_string(x190)
-        t211 = inline237
-        var t212 string = "Message::Move(" + t211
-        var t213 string = t212 + ", "
-        var t214 string
-        var inline235 string = _goml_runtime_core_int32_to_string(x191)
-        t214 = inline235
-        var t215 string = t213 + t214
-        var t216 string = t215 + ")"
-        return t216
+        var x411 int32 = self__3.(Move)._0
+        var x412 int32 = self__3.(Move)._1
+        var t432 string
+        var inline458 string = _goml_runtime_core_int32_to_string(x411)
+        t432 = inline458
+        var t433 string = "Message::Move(" + t432
+        var t434 string = t433 + ", "
+        var t435 string
+        var inline456 string = _goml_runtime_core_int32_to_string(x412)
+        t435 = inline456
+        var t436 string = t434 + t435
+        var t437 string = t436 + ")"
+        return t437
     case Write:
-        var x192 string = self__3.(Write)._0
-        var t217 string = "Message::Write(" + x192
-        var t218 string = t217 + ")"
-        return t218
+        var x413 string = self__3.(Write)._0
+        var t438 string = "Message::Write(" + x413
+        var t439 string = t438 + ")"
+        return t439
     default:
         panic("non-exhaustive match")
     }
@@ -69,45 +71,45 @@ func _goml_m_trait__impl_i_ToString_i_Message_i_to__string(self__3 Message) stri
 
 func main0() struct{} {
     var summary__8 string
-    var inline252 int32 = 4
-    var inline253 int32 = 7
-    var inline256 string = "Point { " + "x: "
-    var inline257 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(inline252)
-    var inline258 string = inline256 + inline257
-    var inline259 string = inline258 + ", "
-    var inline260 string = inline259 + "y: "
-    var inline261 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(inline253)
-    var inline262 string = inline260 + inline261
-    var inline263 string = inline262 + " }"
-    summary__8 = inline263
-    var t220 Message = Move{
+    var inline473 int32 = 4
+    var inline474 int32 = 7
+    var inline477 string = "Point { " + "x: "
+    var inline478 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(inline473)
+    var inline479 string = inline477 + inline478
+    var inline480 string = inline479 + ", "
+    var inline481 string = inline480 + "y: "
+    var inline482 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(inline474)
+    var inline483 string = inline481 + inline482
+    var inline484 string = inline483 + " }"
+    summary__8 = inline484
+    var t441 Message = Move{
         _0: 1,
         _1: 2,
     }
-    var mv__9 string = _goml_m_trait__impl_i_ToString_i_Message_i_to__string(t220)
-    var t221 Message = Write{
+    var mv__9 string = _goml_m_trait__impl_i_ToString_i_Message_i_to__string(t441)
+    var t442 Message = Write{
         _0: "done",
     }
-    var text__10 string = _goml_m_trait__impl_i_ToString_i_Message_i_to__string(t221)
+    var text__10 string = _goml_m_trait__impl_i_ToString_i_Message_i_to__string(t442)
     var exit__11 string = _goml_m_trait__impl_i_ToString_i_Message_i_to__string(Quit{})
-    var inline248 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(summary__8)
-    _goml_runtime_core_string_println(inline248)
-    var inline245 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(mv__9)
-    _goml_runtime_core_string_println(inline245)
-    var inline242 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(text__10)
-    _goml_runtime_core_string_println(inline242)
-    var inline239 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(exit__11)
-    _goml_runtime_core_string_println(inline239)
+    var inline469 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(summary__8)
+    _goml_runtime_core_string_println(inline469)
+    var inline466 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(mv__9)
+    _goml_runtime_core_string_println(inline466)
+    var inline463 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(text__10)
+    _goml_runtime_core_string_println(inline463)
+    var inline460 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(exit__11)
+    _goml_runtime_core_string_println(inline460)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__70 int32) string {
-    var t224 string = _goml_runtime_core_int32_to_string(self__70)
-    return t224
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
+    var t445 string = _goml_runtime_core_int32_to_string(self__154)
+    return t445
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
 func main() {

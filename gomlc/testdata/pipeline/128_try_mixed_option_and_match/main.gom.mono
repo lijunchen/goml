@@ -25,16 +25,16 @@ fn maybe_secondary(flag/1: bool) -> Option__int32 {
 fn mixed(primary/2: bool, secondary/3: bool) -> Option__string {
   let value/4 =
     {
-      let mtmp187 = maybe_primary(primary/2) in
-      match mtmp187 {
+      let mtmp408 = maybe_primary(primary/2) in
+      match mtmp408 {
         Option__int32::None => {
           return Option__string::None
         },
-        Option__int32::Some(x188) => {
+        Option__int32::Some(x409) => {
           {
-            let x188 = Option__int32::Some._0(mtmp187) in
+            let x409 = Option__int32::Some._0(mtmp408) in
             {
-              let try_value/18 = x188 in
+              let try_value/18 = x409 in
               try_value/18
             }
           }
@@ -43,16 +43,16 @@ fn mixed(primary/2: bool, secondary/3: bool) -> Option__string {
     } in
   let label/6 =
     {
-      let mtmp189 = maybe_secondary(secondary/3) in
-      match mtmp189 {
+      let mtmp410 = maybe_secondary(secondary/3) in
+      match mtmp410 {
         Option__int32::None => {
           "extra=none"
         },
-        Option__int32::Some(x190) => {
+        Option__int32::Some(x411) => {
           {
-            let x190 = Option__int32::Some._0(mtmp189) in
+            let x411 = Option__int32::Some._0(mtmp410) in
             {
-              let extra/5 = x190 in
+              let extra/5 = x411 in
               ("extra=" + inherent#int32#int32#to_string(extra/5))
             }
           }
@@ -67,11 +67,11 @@ fn show(opt/7: Option__string) -> string {
     Option__string::None => {
       "none"
     },
-    Option__string::Some(x191) => {
+    Option__string::Some(x412) => {
       {
-        let x191 = Option__string::Some._0(opt/7) in
+        let x412 = Option__string::Some._0(opt/7) in
         {
-          let value/8 = x191 in
+          let value/8 = x412 in
           ("some=" + value/8)
         }
       }
@@ -80,9 +80,9 @@ fn show(opt/7: Option__string) -> string {
 }
 
 fn main() -> unit {
-  let _wild192 = println__T_string(show(mixed(true, true))) in
-  let _wild193 = println__T_string(show(mixed(true, false))) in
-  let _wild194 = println__T_string(show(mixed(false, true))) in
+  let _wild413 = println__T_string(show(mixed(true, true))) in
+  let _wild414 = println__T_string(show(mixed(true, false))) in
+  let _wild415 = println__T_string(show(mixed(false, true))) in
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {
@@ -93,6 +93,6 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#string#to_string(self/65: string) -> string {
-  self/65
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
 }

@@ -1,0 +1,233 @@
+fn main() -> unit {
+    let values/0: Vec[int] =
+      {
+          let vec_literal/52: Vec[int] = (Vec[int]::new : () -> Vec[int])();
+          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/52 : Vec[int]), 3);
+          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/52 : Vec[int]), 1);
+          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/52 : Vec[int]), 4);
+          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/52 : Vec[int]), 1);
+          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/52 : Vec[int]), 5);
+          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/52 : Vec[int]), 9);
+          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/52 : Vec[int]), 2);
+          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/52 : Vec[int]), 6);
+          (vec_literal/52 : Vec[int])
+      };
+    (println : (string) -> unit)(
+      (int::to_string : (int) -> string)(
+        (Option[int]::unwrap_or : (Option[int], int) -> int)(
+          (Vec[int]::position : (Vec[int], (int) -> bool) -> Option[int])(
+            (values/0 : Vec[int]),
+            |value/1: int| => (value/1 : int) == 5
+          ),
+          -1
+        )
+      )
+    );
+    (println : (string) -> unit)(
+      (int::to_string : (int) -> string)(
+        (Option[int]::unwrap_or : (Option[int], int) -> int)(
+          (Vec[int]::position : (Vec[int], (int) -> bool) -> Option[int])(
+            (values/0 : Vec[int]),
+            |value/2: int| => (value/2 : int) == 99
+          ),
+          -1
+        )
+      )
+    );
+    (Vec[int]::sort_by : (Vec[int], (int, int) -> int) -> unit)(
+      (values/0 : Vec[int]),
+      |left/3: int, right/4: int| => (left/3 : int) - (right/4 : int)
+    );
+    (println : (string) -> unit)(
+      (Vec[int]::join : (Vec[int], string) -> string)((values/0 : Vec[int]), ",")
+    );
+    (Vec[int]::dedup : (Vec[int]) -> unit)((values/0 : Vec[int]));
+    (println : (string) -> unit)(
+      (Vec[int]::join : (Vec[int], string) -> string)((values/0 : Vec[int]), ",")
+    );
+    let ordered/5: Vec[int] =
+      {
+          let vec_literal/404: Vec[int] = (Vec[int]::new : () -> Vec[int])();
+          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/404 : Vec[int]), 1);
+          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/404 : Vec[int]), 2);
+          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/404 : Vec[int]), 4);
+          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/404 : Vec[int]), 4);
+          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/404 : Vec[int]), 5);
+          (vec_literal/404 : Vec[int])
+      };
+    (println : (string) -> unit)(
+      (int::to_string : (int) -> string)(
+        (Option[int]::unwrap_or : (Option[int], int) -> int)(
+          (Vec[int]::binary_search_by : (Vec[int], (int) -> int) -> Option[int])(
+            (ordered/5 : Vec[int]),
+            |value/6: int| => (value/6 : int) - 4
+          ),
+          -1
+        )
+      )
+    );
+    (println : (string) -> unit)(
+      (int::to_string : (int) -> string)(
+        (Option[int]::unwrap_or : (Option[int], int) -> int)(
+          (Vec[int]::binary_search_by : (Vec[int], (int) -> int) -> Option[int])(
+            (ordered/5 : Vec[int]),
+            |value/7: int| => (value/7 : int) - 3
+          ),
+          -1
+        )
+      )
+    );
+    (println : (string) -> unit)(
+      (int::to_string : (int) -> string)(
+        (Option[int]::unwrap_or : (Option[int], int) -> int)(
+          (Vec[int]::min_by : (Vec[int], (int, int) -> int) -> Option[int])(
+            (ordered/5 : Vec[int]),
+            |left/8: int, right/9: int| => (left/8 : int) - (right/9 : int)
+          ),
+          0
+        )
+      )
+    );
+    (println : (string) -> unit)(
+      (int::to_string : (int) -> string)(
+        (Option[int]::unwrap_or : (Option[int], int) -> int)(
+          (Vec[int]::max_by : (Vec[int], (int, int) -> int) -> Option[int])(
+            (ordered/5 : Vec[int]),
+            |left/10: int, right/11: int| => (left/10 : int) - (right/11 : int)
+          ),
+          0
+        )
+      )
+    );
+    let names/12: Vec[string] =
+      {
+          let vec_literal/804: Vec[string] = (Vec[string]::new : () -> Vec[string])();
+          (Vec[string]::push : (Vec[string], string) -> unit)(
+            (vec_literal/804 : Vec[string]),
+            "beta"
+          );
+          (Vec[string]::push : (Vec[string], string) -> unit)(
+            (vec_literal/804 : Vec[string]),
+            "alpha"
+          );
+          (Vec[string]::push : (Vec[string], string) -> unit)(
+            (vec_literal/804 : Vec[string]),
+            "gamma"
+          );
+          (vec_literal/804 : Vec[string])
+      };
+    (Vec[string]::sort_by_ordering : (Vec[string], (string, string) -> Ordering) -> unit)(
+      (names/12 : Vec[string]),
+      |left/13: string, right/14: string| =>
+        (std::cmp::compare : (string, string) -> Ordering)((left/13 : string), (right/14 : string))
+    );
+    (println : (string) -> unit)(
+      (Vec[string]::join : (Vec[string], string) -> string)((names/12 : Vec[string]), "|")
+    );
+    let pairs/15: Vec[(int, int)] =
+      {
+          let vec_literal/968: Vec[(int, int)] = (Vec[(int, int)]::new : () -> Vec[(int, int)])();
+          (Vec[(int, int)]::push : (Vec[(int, int)], (int, int)) -> unit)(
+            (vec_literal/968 : Vec[(int, int)]),
+            (1, 2)
+          );
+          (Vec[(int, int)]::push : (Vec[(int, int)], (int, int)) -> unit)(
+            (vec_literal/968 : Vec[(int, int)]),
+            (1, 1)
+          );
+          (Vec[(int, int)]::push : (Vec[(int, int)], (int, int)) -> unit)(
+            (vec_literal/968 : Vec[(int, int)]),
+            (0, 9)
+          );
+          (vec_literal/968 : Vec[(int, int)])
+      };
+    (Vec[(int, int)]::sort_by_ordering : (
+      Vec[(int, int)],
+      ((int, int), (int, int)) -> Ordering
+    ) -> unit)(
+      (pairs/15 : Vec[(int, int)]),
+      |left/16: (int, int), right/17: (int, int)| =>
+        (std::cmp::compare : (int, int) -> Ordering)(
+          (left/16 : (int, int)).0,
+          (right/17 : (int, int)).0
+        )
+    );
+    (println : (string) -> unit)(
+      (int::to_string : (int) -> string)(
+        (Vec[(int, int)]::len : (Vec[(int, int)]) -> int)((pairs/15 : Vec[(int, int)]))
+      )
+    );
+    let view/18: Slice[int] =
+      (Vec[
+        int
+      ]::slice : (
+        Vec[int],
+        int,
+        int
+      ) -> Slice[
+        int
+      ])(
+        {
+            let vec_literal/1149: Vec[int] = (Vec[int]::new : () -> Vec[int])();
+            (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/1149 : Vec[int]), 7);
+            (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/1149 : Vec[int]), 8);
+            (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/1149 : Vec[int]), 9);
+            (vec_literal/1149 : Vec[int])
+        },
+        0,
+        2
+      );
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)(
+        (Slice[int]::contains : (Slice[int], int) -> bool)((view/18 : Slice[int]), 8)
+      )
+    );
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)(
+        (Slice[int]::contains : (Slice[int], int) -> bool)((view/18 : Slice[int]), 9)
+      )
+    );
+    let frozen/19: FrozenVec[int] =
+      (Vec[
+        int
+      ]::freeze : (
+        Vec[int]
+      ) -> FrozenVec[
+        int
+      ])(
+        {
+            let vec_literal/1280: Vec[int] = (Vec[int]::new : () -> Vec[int])();
+            (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/1280 : Vec[int]), 1);
+            (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/1280 : Vec[int]), 2);
+            (vec_literal/1280 : Vec[int])
+        }
+      );
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)(
+        (FrozenVec[int]::contains : (FrozenVec[int], int) -> bool)((frozen/19 : FrozenVec[int]), 1)
+      )
+    );
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)(
+        (FrozenVec[int]::contains : (FrozenVec[int], int) -> bool)((frozen/19 : FrozenVec[int]), 3)
+      )
+    );
+    let empty/20: Vec[int] =
+      {
+          let vec_literal/1418: Vec[int] = (Vec[int]::new : () -> Vec[int])();
+          (vec_literal/1418 : Vec[int])
+      };
+    (println : (string) -> unit)(
+      (Vec[int]::join : (Vec[int], string) -> string)((empty/20 : Vec[int]), ",")
+    );
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)(
+        (Option[int]::is_none : (Option[int]) -> bool)(
+          (Vec[int]::min_by : (Vec[int], (int, int) -> int) -> Option[int])(
+            (empty/20 : Vec[int]),
+            |left/21: int, right/22: int| => (left/21 : int) - (right/22 : int)
+          )
+        )
+      )
+    )
+}

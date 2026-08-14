@@ -1,5 +1,5 @@
 fn bump(counter/0: Ref[int32], ok/1: bool) -> Result__int32__string {
-  let _wild187 =
+  let _wild408 =
     inherent#Ref#Ref[T]#set__T_int32(
       counter/0,
       (inherent#Ref#Ref[T]#get__T_int32(counter/0) + 1)
@@ -13,16 +13,16 @@ fn bump(counter/0: Ref[int32], ok/1: bool) -> Result__int32__string {
 
 fn use_try(counter/2: Ref[int32], ok/3: bool) -> Result__int32__string {
   let value/4 =
-    let mtmp188 = bump(counter/2, ok/3) in
-    match mtmp188 {
-      Result__int32__string::Ok(x189) => {
-        let x189 = Result__int32__string::Ok._0(mtmp188) in
-        let try_value/23 = x189 in
+    let mtmp409 = bump(counter/2, ok/3) in
+    match mtmp409 {
+      Result__int32__string::Ok(x410) => {
+        let x410 = Result__int32__string::Ok._0(mtmp409) in
+        let try_value/23 = x410 in
         try_value/23
       },
-      Result__int32__string::Err(x190) => {
-        let x190 = Result__int32__string::Err._0(mtmp188) in
-        let try_residual/23 = x190 in
+      Result__int32__string::Err(x411) => {
+        let x411 = Result__int32__string::Err._0(mtmp409) in
+        let try_residual/23 = x411 in
         return Result__int32__string::Err(try_residual/23)
       },
     } in
@@ -31,14 +31,14 @@ fn use_try(counter/2: Ref[int32], ok/3: bool) -> Result__int32__string {
 
 fn show(res/5: Result__int32__string) -> string {
   match res/5 {
-    Result__int32__string::Ok(x191) => {
-      let x191 = Result__int32__string::Ok._0(res/5) in
-      let value/6 = x191 in
+    Result__int32__string::Ok(x412) => {
+      let x412 = Result__int32__string::Ok._0(res/5) in
+      let value/6 = x412 in
       ("ok " + inherent#int32#int32#to_string(value/6))
     },
-    Result__int32__string::Err(x192) => {
-      let x192 = Result__int32__string::Err._0(res/5) in
-      let err/7 = x192 in
+    Result__int32__string::Err(x413) => {
+      let x413 = Result__int32__string::Err._0(res/5) in
+      let err/7 = x413 in
       ("err " + err/7)
     },
   }
@@ -52,39 +52,39 @@ fn run(ok/8: bool) -> string {
 }
 
 fn main() -> unit {
-  let _wild193 = println__T_string(run(true)) in
-  let _wild194 = println__T_string(run(false)) in
+  let _wild414 = println__T_string(run(true)) in
+  let _wild415 = println__T_string(run(false)) in
   ()
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/274: Ref[int32]) -> int32 {
-  @intrinsic(ref.get)(self/274)
+fn inherent#Ref#Ref[T]#get__T_int32(self/432: Ref[int32]) -> int32 {
+  @intrinsic(ref.get)(self/432)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/275: Ref[int32], value/276: int32) -> unit {
-  @intrinsic(ref.set)(self/275, value/276)
+fn inherent#Ref#Ref[T]#set__T_int32(self/433: Ref[int32], value/434: int32) -> unit {
+  @intrinsic(ref.set)(self/433, value/434)
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/273: int32) -> Ref[int32] {
-  @intrinsic(ref.new)(value/273)
+fn inherent#Ref#Ref[T]#new__T_int32(value/431: int32) -> Ref[int32] {
+  @intrinsic(ref.new)(value/431)
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#string#to_string(self/65: string) -> string {
-  self/65
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
 }
 
-fn trait_impl#PartialEq#int32#eq(self/107: int32, other/108: int32) -> bool {
-  (self/107 == other/108)
+fn trait_impl#PartialEq#int32#eq(self/191: int32, other/192: int32) -> bool {
+  (self/191 == other/192)
 }
 
-fn trait_impl#Hash#int32#hash(self/130: int32) -> uint64 {
-  @runtime(core.int32_hash)(self/130)
+fn trait_impl#Hash#int32#hash(self/214: int32) -> uint64 {
+  @runtime(core.int32_hash)(self/214)
 }

@@ -13,42 +13,44 @@ func _goml_runtime_core_string_println(s string) struct{} {
     return struct{}{}
 }
 
+type Ordering int32
+
 func main0() struct{} {
     var yes__3 int32
-    var inline221 bool = true
-    var inline222 int32 = 10
-    var inline223 int32 = 99
-    if inline221 {
-        yes__3 = inline222
+    var inline442 bool = true
+    var inline443 int32 = 10
+    var inline444 int32 = 99
+    if inline442 {
+        yes__3 = inline443
     } else {
-        yes__3 = inline223
+        yes__3 = inline444
     }
     var no__4 int32
-    var inline217 bool = false
-    var inline218 int32 = 10
-    var inline219 int32 = 99
-    if inline217 {
-        no__4 = inline218
+    var inline438 bool = false
+    var inline439 int32 = 10
+    var inline440 int32 = 99
+    if inline438 {
+        no__4 = inline439
     } else {
-        no__4 = inline219
+        no__4 = inline440
     }
-    var t194 string
-    var inline215 string = _goml_runtime_core_int32_to_string(yes__3)
-    t194 = inline215
-    var t195 string = "yes=" + t194
-    var inline212 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t195)
-    _goml_runtime_core_string_println(inline212)
-    var t196 string
-    var inline210 string = _goml_runtime_core_int32_to_string(no__4)
-    t196 = inline210
-    var t197 string = "no=" + t196
-    var inline207 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t197)
-    _goml_runtime_core_string_println(inline207)
+    var t415 string
+    var inline436 string = _goml_runtime_core_int32_to_string(yes__3)
+    t415 = inline436
+    var t416 string = "yes=" + t415
+    var inline433 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t416)
+    _goml_runtime_core_string_println(inline433)
+    var t417 string
+    var inline431 string = _goml_runtime_core_int32_to_string(no__4)
+    t417 = inline431
+    var t418 string = "no=" + t417
+    var inline428 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t418)
+    _goml_runtime_core_string_println(inline428)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__65 string) string {
-    return self__65
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
+    return self__149
 }
 
 func main() {
