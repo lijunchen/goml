@@ -996,60 +996,87 @@ fn associated_binding(value: ImplInfo, name: string) -> Option[Type] {
     Option::None
 }
 
-fn builtin_iterator_item(base: Type) -> Option[Type] {
-    match prune(base) {
-        App { ty: Con { name: owner }, args } => if owner == "FnIterator" && args.len() == 1 {
-            Option::Some(args[0])
-        } else {
-            Option::None
-        },
-        _ => Option::None,
-    }
+fn builtin_source_trait_goal(base: Type, reference: TraitRef) -> string {
+    type_text(base) + ": " + trait_ref_text(reference)
 }
 
-fn builtin_into_iterator_item(base: Type) -> Option[Type] {
-    match prune(base) {
-        VecType { elem } | Slice { elem } => Option::Some(elem),
-        other => builtin_iterator_item(other),
+fn builtin_source_predicates_satisfied(predicates: Vec[TypePredicate], goals: Vec[string]) -> bool {
+    apply_predicate_equalities(predicates);
+    for predicate in predicates {
+        match predicate {
+            TypePredicate::Trait { for_ty, trait_ref } => if !builtin_source_trait_satisfied(
+                for_ty,
+                trait_ref,
+                goals,
+            ) {
+                return false
+            } else {},
+            TypePredicate::Equality { lhs, rhs } => if !unify(lhs, rhs) {
+                return false
+            } else {},
+        }
     }
+    true
 }
 
-fn builtin_into_iterator_type(base: Type) -> Option[Type] {
-    match prune(base) {
-        VecType { elem } | Slice { elem } => {
-            Option::Some(nominal_type("FnIterator", one_type(elem)))
-        },
-        other => match builtin_iterator_item(other) {
-            Some(_) => Option::Some(other),
-            None => Option::None,
-        },
+fn builtin_source_trait_satisfied(base: Type, reference: TraitRef, goals: Vec[string]) -> bool {
+    let goal = builtin_source_trait_goal(base, reference);
+    if goals.contains(goal) {
+        return false
+    } else {};
+    let next_goals = extend_trait_goals(goals, goal);
+    for implementation in builtin_source_impl_infos() {
+        if names_match(implementation.trait_ref.name, reference.name) {
+            let substitutions = instantiate_substitutions(
+                Ref::new(0),
+                implementation.generics,
+                Vec::[],
+            );
+            let owner = substitute_type(implementation.for_type, substitutions);
+            let application = substitute_trait_ref(implementation.trait_ref, substitutions);
+            if unify(owner, base) && unify_types(application.args, reference.args) {
+                let predicates = substitute_predicates(implementation.predicates, substitutions);
+                if builtin_source_predicates_satisfied(predicates, next_goals) {
+                    return true
+                } else {}
+            } else {}
+        } else {}
     }
+    false
 }
 
 pub fn builtin_projection(base: Type, name: string, qualifier: Option[TraitRef]) -> Option[Type] {
-    if name == "Item" {
-        match qualifier {
-            Some(reference) => if names_match(reference.name, "Iterator") {
-                builtin_iterator_item(base)
-            } else if names_match(reference.name, "IntoIterator") {
-                builtin_into_iterator_item(base)
-            } else {
-                Option::None
+    let candidates: Vec[Type] = Vec::[];
+    for implementation in builtin_source_impl_infos() {
+        match associated_binding(implementation, name) {
+            Some(associated) => {
+                let substitutions = instantiate_substitutions(
+                    Ref::new(0),
+                    implementation.generics,
+                    Vec::[],
+                );
+                let owner = substitute_type(implementation.for_type, substitutions);
+                let application = substitute_trait_ref(implementation.trait_ref, substitutions);
+                let trait_matches = match qualifier {
+                    Some(reference) => names_match(application.name, reference.name)
+                        && unify_types(application.args, reference.args),
+                    None => true,
+                };
+                if trait_matches && unify(owner, base) {
+                    let predicates = substitute_predicates(implementation.predicates, substitutions);
+                    if builtin_source_predicates_satisfied(predicates, Vec::[]) {
+                        let candidate = substitute_type(associated, substitutions);
+                        if !type_list_contains(candidates, candidate) {
+                            candidates.push(candidate)
+                        } else {}
+                    } else {}
+                } else {}
             },
-            None => match builtin_iterator_item(base) {
-                Some(value) => Option::Some(value),
-                None => builtin_into_iterator_item(base),
-            },
+            None => (),
         }
-    } else if name == "IntoIter" {
-        match qualifier {
-            Some(reference) => if names_match(reference.name, "IntoIterator") {
-                builtin_into_iterator_type(base)
-            } else {
-                Option::None
-            },
-            None => builtin_into_iterator_type(base),
-        }
+    }
+    if candidates.len() == 1 {
+        Option::Some(candidates[0])
     } else {
         Option::None
     }
@@ -1058,6 +1085,11 @@ pub fn builtin_projection(base: Type, name: string, qualifier: Option[TraitRef])
 fn impl_projection(ctx: Checker, base: Type, name: string, qualifier: Option[TraitRef]) -> Option[
     Type,
 ] {
+    let goal = type_text(Type::Projection { for_ty: base, name, trait_ref: qualifier });
+    if ctx.active_projections.contains(goal) {
+        return Option::None
+    } else {};
+    ctx.active_projections.push(goal);
     let candidates: Vec[Type] = Vec::[];
     for impl_info in ctx.impls {
         match associated_binding(impl_info, name) {
@@ -1088,6 +1120,7 @@ fn impl_projection(ctx: Checker, base: Type, name: string, qualifier: Option[Tra
             None => (),
         }
     }
+    ctx.active_projections.truncate(ctx.active_projections.len() - 1);
     if candidates.len() == 1 {
         Option::Some(candidates[0])
     } else {
@@ -1158,12 +1191,9 @@ fn normalize_type(ctx: Checker, value: Type) -> Type {
                 Some(value) => Option::Some(value),
                 None => match projection_equality(ctx, base, name, qualifier) {
                     Some(value) => Option::Some(value),
-                    None => match builtin_projection(base, name, qualifier) {
-                        Some(value) => Option::Some(value),
-                        None => match base {
-                            Param { name: _ } | Var(_) => Option::None,
-                            _ => impl_projection(ctx, base, name, qualifier),
-                        },
+                    None => match base {
+                        Param { name: _ } | Var(_) => Option::None,
+                        _ => impl_projection(ctx, base, name, qualifier),
                     },
                 },
             };

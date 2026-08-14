@@ -13,6 +13,8 @@ static builtin_source_structs: OnceCell[FrozenVec[StructInfo]] = OnceCell::new()
 
 static builtin_source_functions: OnceCell[FrozenVec[FunctionScheme]] = OnceCell::new();
 
+static builtin_source_arities: OnceCell[FrozenVec[(string, int)]] = OnceCell::new();
+
 static builtin_source_impls: OnceCell[FrozenVec[ImplInfo]] = OnceCell::new();
 
 fn load_builtin_source_traits() -> FrozenVec[TraitInfo] {
@@ -138,6 +140,63 @@ fn builtin_source_function_scheme(name: string) -> Option[FunctionScheme] {
     Option::None
 }
 
+fn append_builtin_source_arity(values: Vec[(string, int)], name: string, arity: int) -> unit {
+    for value in values {
+        if value.0 == name {
+            return
+        } else {}
+    }
+    values.push((name, arity))
+}
+
+fn append_builtin_source_type_arity(values: Vec[(string, int)], value: hir::TypeExpr) -> unit {
+    match value {
+        hir::TypeExpr::Con { name } => append_builtin_source_arity(values, name, 0),
+        hir::TypeExpr::App { ty: hir::TypeExpr::Con { name }, args } => {
+            append_builtin_source_arity(values, name, args.len())
+        },
+        _ => (),
+    }
+}
+
+fn load_builtin_source_arities() -> FrozenVec[(string, int)] {
+    let result: Vec[(string, int)] = Vec::[];
+    let files = match implicit_builtin_hir_files() {
+        Ok(values) => values,
+        Err(_) => return result.freeze(),
+    };
+    for file in files {
+        for item in file.items {
+            match item {
+                hir::Item::EnumDef(value) => {
+                    append_builtin_source_arity(result, value.name, value.generics.len())
+                },
+                hir::Item::StructDef(value) => {
+                    append_builtin_source_arity(result, value.name, value.generics.len())
+                },
+                hir::Item::TypeAlias(value) => {
+                    append_builtin_source_arity(result, value.name, value.generics.len())
+                },
+                hir::Item::ImplBlock(value) => {
+                    append_builtin_source_type_arity(result, value.for_type)
+                },
+                _ => (),
+            }
+        }
+    }
+    result.freeze()
+}
+
+fn builtin_source_nominal_arity(name: string) -> Option[int] {
+    let values = builtin_source_arities.get_or_init(|| load_builtin_source_arities());
+    for value in values.to_vec() {
+        if value.0 == short_name(name) {
+            return Option::Some(value.1)
+        } else {}
+    }
+    Option::None
+}
+
 fn load_builtin_source_impls() -> FrozenVec[ImplInfo] {
     let result: Vec[ImplInfo] = Vec::[];
     let files = match implicit_builtin_hir_files() {
@@ -146,27 +205,29 @@ fn load_builtin_source_impls() -> FrozenVec[ImplInfo] {
     };
     for file in files {
         for value in dependency_environment_from_hir(file).impls {
-            if value.associated_types.is_empty() {
-                result.push(
-                    ImplInfo {
-                        generics: value.generics,
-                        predicates: value.predicates,
-                        trait_ref: value.trait_ref,
-                        for_type: value.for_type,
-                        associated_types: value.associated_types,
-                        origin: "builtin#source#" + result.len().to_string(),
-                        span: value.span,
-                    },
-                )
-            } else {}
+            result.push(
+                ImplInfo {
+                    generics: value.generics,
+                    predicates: value.predicates,
+                    trait_ref: value.trait_ref,
+                    for_type: value.for_type,
+                    associated_types: value.associated_types,
+                    origin: "builtin#source#" + result.len().to_string(),
+                    span: value.span,
+                },
+            )
         }
     }
     result.freeze()
 }
 
+fn builtin_source_impl_infos() -> Vec[ImplInfo] {
+    builtin_source_impls.get_or_init(|| load_builtin_source_impls()).to_vec()
+}
+
 fn append_builtin_source_impls(ctx: Checker) -> unit {
     if ctx.package_name == "builtin" {} else {
-        for value in builtin_source_impls.get_or_init(|| load_builtin_source_impls()).to_vec() {
+        for value in builtin_source_impl_infos() {
             ctx.impls.push(value)
         }
     }

@@ -535,11 +535,7 @@ fn has_local_variant(ctx: LowerCtx, enum_name: string, variant_name: string) -> 
 
 fn constructor_ref(ctx: LowerCtx, path: ast::Path) -> Option[ConstructorRef] {
     let parts = expand_segments(ctx, path);
-    if parts.len() == 2 && !has_local_variant(ctx, parts[0], parts[1])
-        && ((parts[0] == "Option" && (parts[1] == "Some" || parts[1] == "None"))
-            || (parts[0] == "Result" && (parts[1] == "Ok" || parts[1] == "Err"))) {
-        Option::Some(ConstructorRef::Unresolved(join_segments(parts)))
-    } else if parts.len() == 1 {
+    if parts.len() == 1 {
         let matches: Vec[(DefId, int)] = Vec::[];
         for info in ctx.enums {
             match enum_variant(info, parts[0]) {
