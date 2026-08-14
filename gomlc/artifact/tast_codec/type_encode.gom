@@ -2,7 +2,6 @@ package tast_codec;
 
 use gomlc::artifact::wire as wire;
 use gomlc::tast;
-use std::collections;
 
 pub struct ArtifactTypeContext {
     pub enum_names: Vec[string],
@@ -133,7 +132,7 @@ pub fn artifact_json_type(
             wire::artifact_json_end_object(writer);
             wire::artifact_json_end_object(writer)
         },
-        Con { name } => if collections::contains(context.enum_names, name) {
+        Con { name } => if context.enum_names.contains(name) {
             artifact_json_named_type(writer, TYPE_ENUM_TAG, "name", name)
         } else {
             artifact_json_named_type(writer, TYPE_STRUCT_TAG, "name", name)

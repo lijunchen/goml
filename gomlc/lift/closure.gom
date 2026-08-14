@@ -2,7 +2,6 @@ package lift;
 
 use gomlc::mono;
 use std::ascii;
-use std::collections;
 use std::text;
 
 struct ScopeEntry {
@@ -93,7 +92,7 @@ fn closure_for_type(state: State, ty: mono::Type) -> Option[ClosureInfo] {
 }
 
 fn record_used_type(values: Vec[string], name: string) -> unit {
-    if collections::contains(values, name) {} else {
+    if values.contains(name) {} else {
         values.push(name)
     }
 }
@@ -278,7 +277,7 @@ fn fresh_struct_name(state: State, hint: Option[string]) -> string {
             Some(name) => "closure_env_" + name + "_" + index.to_string(),
             None => "closure_env_" + index.to_string(),
         };
-        if collections::contains(state.used_types, candidate) {} else {
+        if state.used_types.contains(candidate) {} else {
             state.used_types.push(candidate);
             return candidate
         }
@@ -743,7 +742,7 @@ fn collect_captured(
     scope: Vec[ScopeEntry],
 ) -> unit {
     match value {
-        Var { name, ty: _ } => if collections::contains(bound, name) {} else {
+        Var { name, ty: _ } => if bound.contains(name) {} else {
             match find_scope(scope, name) {
                 Some(entry) => if capture_exists(captured, name) {} else {
                     captured.push(Capture { name, ty: entry.ty })

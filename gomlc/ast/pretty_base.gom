@@ -1,7 +1,6 @@
 package ast;
 
 use gomlc::pretty as doc;
-use std::collections;
 use std::text;
 
 fn pretty_path_doc(value: Path) -> doc::Doc {
@@ -405,7 +404,7 @@ fn pretty_struct_doc(value: StructDef) -> doc::Doc {
                     } else {
                         doc::nil()
                     },
-                    if collections::contains(value.public_fields, field.0) {
+                    if value.public_fields.contains(field.0) {
                         doc::text("pub ")
                     } else {
                         doc::nil()

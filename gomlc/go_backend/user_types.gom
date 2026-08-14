@@ -1,7 +1,6 @@
 package go_backend;
 
 use gomlc::repr;
-use std::collections;
 use std::text;
 
 fn find_enum(values: Vec[repr::EnumDef], name: string) -> Option[repr::EnumDef] {
@@ -354,7 +353,7 @@ pub fn emit_user_type_items(
             Some(value) => value.base_name == "OnceCell" || value.base_name == "FrozenVec",
             None => false,
         };
-        if collections::contains(emitted, definition.name) || custom {} else {
+        if emitted.contains(definition.name) || custom {} else {
             let fields: Vec[(string, Type)] = Vec::with_capacity(definition.fields.len());
             for field in definition.fields {
                 fields.push((go_ident(field.0), lower_type(field.1)))
@@ -364,7 +363,7 @@ pub fn emit_user_type_items(
         }
     }
     for instance in instances {
-        if collections::contains(emitted, instance.name) {} else {
+        if emitted.contains(instance.name) {} else {
             match builtin_struct_instance(instance, instances) {
                 Some(definition) => {
                     items.push(Item::Struct(definition));

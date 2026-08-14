@@ -481,7 +481,7 @@ enum RuntimeImport {
 }
 
 fn require_runtime_import(imports: Vec[RuntimeImport], value: RuntimeImport) -> unit {
-    if !collections::contains(imports, value) {
+    if !imports.contains(value) {
         imports.push(value)
     } else {}
 }
@@ -667,64 +667,64 @@ fn emit_runtime_import_items(items: Vec[Item], required: Vec[RuntimeImport]) -> 
         return
     } else {};
     let imports: Vec[(string, string)] = Vec::[];
-    if collections::contains(required, RuntimeImport::Bytes) {
+    if required.contains(RuntimeImport::Bytes) {
         imports.push(("_goml_bytes", "bytes"))
     } else {};
-    if collections::contains(required, RuntimeImport::Context) {
+    if required.contains(RuntimeImport::Context) {
         imports.push(("_goml_context", "context"))
     } else {};
-    if collections::contains(required, RuntimeImport::CryptoRand) {
+    if required.contains(RuntimeImport::CryptoRand) {
         imports.push(("_goml_cryptorand", "crypto/rand"))
     } else {};
-    if collections::contains(required, RuntimeImport::Fmt) {
+    if required.contains(RuntimeImport::Fmt) {
         imports.push(("_goml_fmt", "fmt"))
     } else {};
-    if collections::contains(required, RuntimeImport::Errors) {
+    if required.contains(RuntimeImport::Errors) {
         imports.push(("_goml_errors", "errors"))
     } else {};
-    if collections::contains(required, RuntimeImport::Hash) {
+    if required.contains(RuntimeImport::Hash) {
         imports.push(("_goml_hash", "hash"))
     } else {};
-    if collections::contains(required, RuntimeImport::Io) {
+    if required.contains(RuntimeImport::Io) {
         imports.push(("_goml_io", "io"))
     } else {};
-    if collections::contains(required, RuntimeImport::Math) {
+    if required.contains(RuntimeImport::Math) {
         imports.push(("_goml_math", "math"))
     } else {};
-    if collections::contains(required, RuntimeImport::Os) {
+    if required.contains(RuntimeImport::Os) {
         imports.push(("_goml_os", "os"))
     } else {};
-    if collections::contains(required, RuntimeImport::Exec) {
+    if required.contains(RuntimeImport::Exec) {
         imports.push(("_goml_exec", "os/exec"))
     } else {};
-    if collections::contains(required, RuntimeImport::Filepath) {
+    if required.contains(RuntimeImport::Filepath) {
         imports.push(("_goml_filepath", "path/filepath"))
     } else {};
-    if collections::contains(required, RuntimeImport::Reflect) {
+    if required.contains(RuntimeImport::Reflect) {
         imports.push(("_goml_reflect", "reflect"))
     } else {};
-    if collections::contains(required, RuntimeImport::Sha256) {
+    if required.contains(RuntimeImport::Sha256) {
         imports.push(("_goml_sha256", "crypto/sha256"))
     } else {};
-    if collections::contains(required, RuntimeImport::Slices) {
+    if required.contains(RuntimeImport::Slices) {
         imports.push(("_goml_slices", "slices"))
     } else {};
-    if collections::contains(required, RuntimeImport::Strconv) {
+    if required.contains(RuntimeImport::Strconv) {
         imports.push(("_goml_strconv", "strconv"))
     } else {};
-    if collections::contains(required, RuntimeImport::Strings) {
+    if required.contains(RuntimeImport::Strings) {
         imports.push(("_goml_strings", "strings"))
     } else {};
-    if collections::contains(required, RuntimeImport::Sync) {
+    if required.contains(RuntimeImport::Sync) {
         imports.push(("_goml_sync", "sync"))
     } else {};
-    if collections::contains(required, RuntimeImport::Runtime) {
+    if required.contains(RuntimeImport::Runtime) {
         imports.push(("_goml_runtime_pkg", "runtime"))
     } else {};
-    if collections::contains(required, RuntimeImport::Syscall) {
+    if required.contains(RuntimeImport::Syscall) {
         imports.push(("_goml_syscall", "syscall"))
     } else {};
-    if collections::contains(required, RuntimeImport::Time) {
+    if required.contains(RuntimeImport::Time) {
         imports.push(("_goml_time", "time"))
     } else {};
     items.push(Item::ImportGroup(imports))
@@ -872,8 +872,8 @@ pub fn emit_runtime_hook_items(
         require_runtime_import(required_imports, RuntimeImport::Syscall)
     } else {};
     emit_runtime_import_items(items, required_imports);
-    if collections::contains(intrinsics, "once_cell.new")
-        || collections::contains(intrinsics, "once_cell.get_or_init") {
+    if intrinsics.contains("once_cell.new")
+        || intrinsics.contains("once_cell.get_or_init") {
         items.push(once_cell_goroutine_id_item())
     } else {};
     let mut needs_task_support = false;
@@ -897,7 +897,7 @@ pub fn emit_runtime_hook_items(
         items.push(std_runtime_error_raw_code_item())
     } else {};
     for spec in resources::runtime_abi_specs() {
-        if collections::contains(hooks, spec.hook) {
+        if hooks.contains(spec.hook) {
             match spec.hook {
                 Core(hook) => items.push(core_runtime_hook_item(hook, spec.key)),
                 Standard(hook) => {
@@ -2963,7 +2963,7 @@ pub fn emit_builtin_runtime_items(
         match repr::resolve_type(ty) {
             HashMap { key, value } => {
                 let option = synthetic_option_base(value);
-                let include_option = !collections::contains(options, option)
+                let include_option = !options.contains(option)
                     && !option_available(instances, value);
                 for item in hashmap_items(
                     key,
@@ -3007,7 +3007,7 @@ pub fn emit_dyn_runtime_items(
     for ty in types {
         match repr::resolve_type(ty) {
             Dyn { trait_name: name, .. } => {
-                if !collections::contains(dyn_traits, name) {
+                if !dyn_traits.contains(name) {
                     for item in dyn_type_items(name, dyn_methods(functions, name)) {
                         items.push(item)
                     }

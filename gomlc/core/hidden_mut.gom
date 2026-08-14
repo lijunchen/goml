@@ -1,10 +1,9 @@
 package core;
 
 use gomlc::tast;
-use std::collections;
 
 fn push_name(values: Vec[string], value: string) -> unit {
-    if collections::contains(values, value) {} else {
+    if values.contains(value) {} else {
         values.push(value)
     }
 }
@@ -450,7 +449,7 @@ fn collect_closure_captures(params: Vec[tast::ClosureParam], body: tast::Expr, r
     let references: Vec[string] = Vec::[];
     collect_reference_expr(body, references);
     for name in references {
-        if collections::contains(bound, name) {} else {
+        if bound.contains(name) {} else {
             push_name(result, name)
         }
     }
@@ -536,7 +535,7 @@ fn hidden_mutable_cells(value: tast::Block) -> Vec[(string, tast::Type)] {
     collect_capture_block(value, captures);
     let result: Vec[(string, tast::Type)] = Vec::[];
     for value in mutables {
-        if collections::contains(captures, value.0) {
+        if captures.contains(value.0) {
             result.push(value)
         } else {}
     }

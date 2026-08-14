@@ -7,7 +7,6 @@ use gomlc::artifact;
 use gomlc::ast;
 use gomlc::ctir;
 use gomlc::tast;
-use std::collections;
 use std::path;
 
 fn artifact_function_type(params: Vec[(string, tast::Type)], ret_ty: tast::Type) -> tast::Type {
@@ -55,7 +54,7 @@ fn artifact_local_trait_name(owner: string, name: string, trait_names: Vec[strin
         } else {
             owner.byte_slice(0, separator + 2) + name
         };
-        if collections::contains(trait_names, candidate) {
+        if trait_names.contains(candidate) {
             candidate
         } else {
             name
@@ -351,7 +350,7 @@ fn artifact_struct_def(value: tast::StructDef, public_only: bool) -> tast::Struc
         let fields: Vec[(string, tast::Type)] = Vec::[];
         let public_fields: Vec[string] = Vec::[];
         for field in value.fields {
-            if collections::contains(value.public_fields, field.0) {
+            if value.public_fields.contains(field.0) {
                 fields.push(field);
                 public_fields.push(field.0)
             } else {}
@@ -465,7 +464,7 @@ fn artifact_trait_impl_is_public(
 }
 
 fn artifact_add_type_name(values: Vec[string], name: string) -> unit {
-    if collections::contains(values, name) {} else {
+    if values.contains(name) {} else {
         values.push(name)
     }
 }
@@ -492,18 +491,18 @@ fn artifact_package_exports(
     }
     for definition in file.enums {
         artifact_add_type_name(result.enum_type_names, definition.name);
-        if !public_only || collections::contains(public_names, definition.name) {
+        if !public_only || public_names.contains(definition.name) {
             result.enums.push(definition)
         } else {}
     }
     for definition in file.structs {
         artifact_add_type_name(result.struct_type_names, definition.name);
-        if !public_only || collections::contains(public_names, definition.name) {
+        if !public_only || public_names.contains(definition.name) {
             result.structs.push(artifact_struct_def(definition, public_only))
         } else {}
     }
     for alias in signatures.type_aliases {
-        if !public_only || collections::contains(public_names, alias.name) {
+        if !public_only || public_names.contains(alias.name) {
             result.type_aliases.push(alias)
         } else {}
     }
@@ -512,20 +511,20 @@ fn artifact_package_exports(
         trait_names.push(definition.name)
     }
     for definition in signatures.traits {
-        if !public_only || collections::contains(public_names, definition.name) {
+        if !public_only || public_names.contains(definition.name) {
             result.traits.push(artifact_trait_def(definition, trait_names))
         } else {}
     }
     for function in signatures.functions {
         match function.comptime {
             tast::ComptimeCapability::Derive => (),
-            _ => if !public_only || collections::contains(public_names, function.name) {
+            _ => if !public_only || public_names.contains(function.name) {
                 result.functions.push(artifact_package_fn_scheme(package_name, function))
             } else {},
         }
     }
     for value in signatures.constants {
-        if !public_only || collections::contains(public_names, value.name) {
+        if !public_only || public_names.contains(value.name) {
             result.constants.push(
                 tast::ConstantScheme {
                     def_id: Option::None,

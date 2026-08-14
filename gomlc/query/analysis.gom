@@ -6,7 +6,6 @@ use gomlc::ctir;
 use gomlc::hir;
 use gomlc::parser;
 use gomlc::tast;
-use std::collections;
 
 pub struct Analysis {
     pub source_path: string,
@@ -153,7 +152,7 @@ fn environments_with_comptime(files: Vec[hir::File], modules: Vec[ctir::CtModule
     for index in 0..environments.len() {
         let module = Ref::new(Option::None);
         let package_name = files[index].package_name;
-        if collections::contains(attached_modules, package_name) {} else {
+        if attached_modules.contains(package_name) {} else {
             for value in modules {
                 if value.package_name == package_name {
                     module.set(Option::Some(value));
@@ -222,7 +221,7 @@ fn collect_dependency(
     derive_modules: Vec[ctir::CtModule],
     derive_reexports: Vec[(string, string)],
 ) -> unit {
-    if collections::contains(visited, package_name) {} else {
+    if visited.contains(package_name) {} else {
         visited.push(package_name);
         match dependency_sources(module_root, module_path, package_name, overrides) {
             Ok(sources) => {

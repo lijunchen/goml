@@ -2,7 +2,6 @@ package ctfe;
 
 use gomlc::ctir;
 use gomlc::derive;
-use std::collections;
 
 struct VerifyContext {
     module: ctir::CtModule,
@@ -1081,7 +1080,7 @@ fn verify_function(
     let seen: Vec[int] = Vec::[];
     for index in 0..value.parameter_slots.len() {
         let slot = value.parameter_slots[index];
-        if slot < 0 || slot >= value.local_count || collections::contains(seen, slot) {
+        if slot < 0 || slot >= value.local_count || seen.contains(slot) {
             return Result::Err("invalid CTIR parameter slot")
         } else if !types_equal(value.local_types[slot], value.parameter_types[index]) {
             return Result::Err("CTIR parameter local type mismatch")
@@ -1116,7 +1115,7 @@ fn verify_unique_module_names(module: ctir::CtModule, dependencies: Vec[ctir::Ct
 ] {
     let names: Vec[string] = Vec::[module.package_name];
     for dependency in dependencies {
-        if collections::contains(names, dependency.package_name) {
+        if names.contains(dependency.package_name) {
             return Result::Err("duplicate CTIR module package `" + dependency.package_name + "`")
         } else if dependency.target.int_width != module.target.int_width {
             return Result::Err("CTIR target mismatch")
@@ -1143,7 +1142,7 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
     let value_bytes = Ref::new(0);
     let ids: Vec[int] = Vec::[];
     for function in module.functions {
-        if function.id < 0 || collections::contains(ids, function.id) {
+        if function.id < 0 || ids.contains(function.id) {
             return Result::Err("duplicate or negative CTIR function id")
         } else {
             ids.push(function.id)
@@ -1152,7 +1151,7 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
     }
     let entry_names: Vec[string] = Vec::[];
     for entry in module.entries {
-        if entry.name == "" || collections::contains(entry_names, entry.name)
+        if entry.name == "" || entry_names.contains(entry.name)
             || verify_find_function(module, entry.function_id).is_none() {
             return Result::Err("invalid CTIR entry")
         } else {
@@ -1161,7 +1160,7 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
     }
     let derive_export_names: Vec[string] = Vec::[];
     for entry in module.derive_entries {
-        if entry.name == "" || collections::contains(entry_names, entry.name)
+        if entry.name == "" || entry_names.contains(entry.name)
             || verify_find_function(module, entry.function_id).is_none() {
             return Result::Err("invalid CTIR derive entry")
         } else {
@@ -1175,7 +1174,7 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
         } else if entry.public {
             let export_name = derive_export_name(entry);
             if export_name == "" || export_name.contains("::")
-                || collections::contains(derive_export_names, export_name) {
+                || derive_export_names.contains(export_name) {
                 return Result::Err("invalid or duplicate CTIR derive export name")
             } else {
                 derive_export_names.push(export_name)
@@ -1189,7 +1188,7 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
     }
     let site_ids: Vec[int] = Vec::[];
     for site in module.sites {
-        if site.id < 0 || collections::contains(site_ids, site.id) || site.local_count < 0
+        if site.id < 0 || site_ids.contains(site.id) || site.local_count < 0
             || site.local_count != site.local_types.len() {
             return Result::Err("invalid CTIR site")
         } else {
@@ -1210,7 +1209,7 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
     }
     let constant_names: Vec[string] = Vec::[];
     for constant in module.constants {
-        if constant.name == "" || collections::contains(constant_names, constant.name) {
+        if constant.name == "" || constant_names.contains(constant.name) {
             return Result::Err("duplicate or empty CTIR constant")
         } else {
             constant_names.push(constant.name)

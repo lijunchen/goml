@@ -4,7 +4,6 @@ use gomlang::bootstrap_goml::manifest;
 use gomlang::bootstrap_goml::registry;
 use gomlang::bootstrap_goml::util;
 use std::bytes;
-use std::collections;
 use std::env;
 use std::fs;
 use std::json;
@@ -1093,7 +1092,7 @@ pub fn internal_test_graphs(context: Context) -> Result[Vec[Graph], string] {
         let files = source_files(package_value.directory, true)?;
         let test_files: Vec[string] = Vec::[];
         for file in files {
-            if !collections::contains(package_value.files, file) {
+            if !package_value.files.contains(file) {
                 test_files.push(file);
                 all_files.push(file)
             } else {}

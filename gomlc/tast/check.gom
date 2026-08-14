@@ -4,7 +4,6 @@ use gomlc::ast;
 use gomlc::derive;
 use gomlc::hir;
 use gomlc::numeric;
-use std::collections;
 use std::num;
 use std::text;
 
@@ -1166,10 +1165,7 @@ fn check_static_member(
                     _ => Expr::Callable { callable: value.callable, ty: value.ty },
                 },
                 None => {
-                    let infer_result = if collections::contains(
-                        ctx.invalid_impl_arity_owners,
-                        owner,
-                    ) {
+                    let infer_result = if ctx.invalid_impl_arity_owners.contains(owner) {
                         false
                     } else {
                         match find_enum_by_name(ctx, owner) {

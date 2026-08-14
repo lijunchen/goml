@@ -5,7 +5,6 @@ use gomlc::ast;
 use gomlc::numeric;
 use gomlc::resources;
 use gomlc::repr;
-use std::collections;
 use std::task;
 use std::num;
 
@@ -1412,7 +1411,7 @@ fn find_block_join(value: anf::Block, name: string) -> Option[anf::JoinBind] {
 fn block_target_with_visited(value: anf::Block, visited: Vec[string]) -> Option[string] {
     match term_target(value.term) {
         Some(target) => {
-            if collections::contains(visited, target) {
+            if visited.contains(target) {
                 Option::None
             } else {
                 match find_block_join(value, target) {
@@ -1493,7 +1492,7 @@ fn compile_branch_to_join(env: LowerEnv, value: anf::Block, target: string, join
     }
     let suppress = match value.term {
         Jump { target, args, ret_ty: _ } => {
-            args.is_empty() && collections::contains(loop_names, target)
+            args.is_empty() && loop_names.contains(target)
         },
         _ => false,
     };
@@ -1743,7 +1742,7 @@ fn fresh_loop_label_with_suffix(emitted: Vec[string], base: string, suffix: int)
     } else {
         base + "__" + suffix.to_string()
     };
-    if collections::contains(emitted, candidate) {
+    if emitted.contains(candidate) {
         fresh_loop_label_with_suffix(emitted, base, suffix + 1)
     } else {
         emitted.push(candidate);
@@ -1794,7 +1793,7 @@ fn term_reaches_target(
         Jump { target: name, args, ret_ty: _ } => {
             if name == target && args.is_empty() {
                 true
-            } else if collections::contains(visited, name) {
+            } else if visited.contains(name) {
                 false
             } else {
                 match find_join(joins, name) {
@@ -1868,7 +1867,7 @@ fn term_tail_target_through_joins(value: anf::Term, joins: Vec[anf::JoinBind], v
 ] {
     match value {
         Jump { target, args: _, ret_ty: _ } => {
-            if collections::contains(visited, target) {
+            if visited.contains(target) {
                 Option::None
             } else {
                 match find_join(joins, target) {
@@ -1919,7 +1918,7 @@ fn term_all_paths_reach_or_terminate(
         Jump { target: name, args: _, ret_ty: _ } => {
             if name == target {
                 true
-            } else if collections::contains(visited, name) {
+            } else if visited.contains(name) {
                 false
             } else {
                 match find_join(joins, name) {
@@ -2092,7 +2091,7 @@ fn compile_loop_branch_to_join(
     }
     let suppress = match value.term {
         Jump { target, args, ret_ty: _ } => {
-            args.is_empty() && collections::contains(loop_names, target)
+            args.is_empty() && loop_names.contains(target)
         },
         _ => false,
     };
@@ -2482,7 +2481,7 @@ fn compile_loop_block(
     }
     let suppress = match value.term {
         Jump { target, args, ret_ty: _ } => {
-            args.is_empty() && collections::contains(loop_names, target)
+            args.is_empty() && loop_names.contains(target)
         },
         _ => false,
     };
@@ -2671,7 +2670,7 @@ fn compile_block(env: LowerEnv, value: anf::Block) -> Block {
     }
     let suppress = match value.term {
         Jump { target, args, ret_ty: _ } => {
-            args.is_empty() && collections::contains(loop_names, target)
+            args.is_empty() && loop_names.contains(target)
         },
         _ => false,
     };
@@ -2760,12 +2759,12 @@ fn collect_runtime_imm(
 ) -> unit {
     match value {
         Callable { callable: Runtime(key), ty: _ } => {
-            if !collections::contains(result, key) {
+            if !result.contains(key) {
                 result.push(key)
             } else {}
         },
         Callable { callable: Intrinsic(key), ty: function_ty } => {
-            if !collections::contains(intrinsics, key) {
+            if !intrinsics.contains(key) {
                 intrinsics.push(key)
             } else {};
             if key == "compiler.missing" {
@@ -3287,10 +3286,10 @@ fn lower_with_test_cases(
     let runtime_hooks = resolve_runtime_hooks(runtime_hook_keys)?;
     for instance in type_instances {
         if instance.base_name == "OnceCell" && instance.args.len() == 1 {
-            if !collections::contains(intrinsics, "once_cell.new") {
+            if !intrinsics.contains("once_cell.new") {
                 intrinsics.push("once_cell.new")
             } else {};
-            if !collections::contains(intrinsics, "once_cell.get_or_init") {
+            if !intrinsics.contains("once_cell.get_or_init") {
                 intrinsics.push("once_cell.get_or_init")
             } else {}
         } else {}

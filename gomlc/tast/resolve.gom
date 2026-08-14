@@ -3,7 +3,6 @@ package tast;
 use gomlc::ast;
 use gomlc::derive;
 use gomlc::hir;
-use std::collections;
 use std::text;
 
 struct ResolvedConstructor {
@@ -1501,7 +1500,7 @@ fn trait_bound_satisfied_at(ctx: Checker, bound_ty: Type, reference: TraitRef, g
         true
     } else if context_trait_bound_satisfied(ctx, bound_ty, reference) {
         true
-    } else if collections::contains(goals, trait_goal_key(bound_ty, reference)) {
+    } else if goals.contains(trait_goal_key(bound_ty, reference)) {
         false
     } else {
         let goals = extend_trait_goals(goals, trait_goal_key(bound_ty, reference));
@@ -1517,7 +1516,7 @@ fn trait_bound_satisfied_at(ctx: Checker, bound_ty: Type, reference: TraitRef, g
                 return false
             } else {};
             for impl_info in ctx.impls {
-                if !collections::contains(ctx.invalid_impl_origins, impl_info.origin)
+                if !ctx.invalid_impl_origins.contains(impl_info.origin)
                     && trait_names_match_in_context(ctx, impl_info.trait_ref.name, reference.name) {
                     let substitutions = instantiate_substitutions(
                         ctx.counter,
@@ -1549,7 +1548,7 @@ fn trait_bound_satisfied_at(ctx: Checker, bound_ty: Type, reference: TraitRef, g
 fn compatible_impl_count(ctx: Checker, bound_ty: Type, reference: TraitRef) -> int {
     let mut count = 0;
     for impl_info in ctx.impls {
-        if !collections::contains(ctx.invalid_impl_origins, impl_info.origin)
+        if !ctx.invalid_impl_origins.contains(impl_info.origin)
             && trait_names_match_in_context(ctx, impl_info.trait_ref.name, reference.name) {
             let substitutions = instantiate_substitutions(ctx.counter, impl_info.generics, Vec::[]);
             let owner = substitute_type(impl_info.for_type, substitutions);
@@ -1596,7 +1595,7 @@ fn validate_impl_overlaps(ctx: Checker) -> unit {
             let left_impl = ctx.impls[left];
             let right_impl = ctx.impls[right];
             if impls_overlap(ctx, left_impl, right_impl) {
-                if !collections::contains(ctx.invalid_impl_origins, right_impl.origin) {
+                if !ctx.invalid_impl_origins.contains(right_impl.origin) {
                     ctx.invalid_impl_origins.push(right_impl.origin)
                 } else {};
                 if left_impl.generics.is_empty() && right_impl.generics.is_empty()
@@ -1669,9 +1668,9 @@ fn method_predicates_satisfied(ctx: Checker, predicates: Vec[TypePredicate]) -> 
 
 fn method_trait_in_scope(ctx: Checker, value: MethodInfo) -> bool {
     match value.trait_ref {
-        Some(reference) => if collections::contains(ctx.in_scope_traits, reference.name) {
+        Some(reference) => if ctx.in_scope_traits.contains(reference.name) {
             true
-        } else if collections::contains(ctx.imported_items, reference.name) {
+        } else if ctx.imported_items.contains(reference.name) {
             true
         } else if short_name(reference.name) == reference.name {
             let mut found = false;
@@ -2848,7 +2847,7 @@ fn resolve_projection_type(
                     let matches: Vec[TraitRef] = Vec::[];
                     for candidate in candidates {
                         if types_equal(candidate.for_ty, for_ty)
-                            && collections::contains(candidate.associated_names, name) {
+                            && candidate.associated_names.contains(name) {
                             matches.push(candidate.trait_ref)
                         } else {}
                     }
@@ -3383,7 +3382,7 @@ fn find_type_alias(ctx: Checker, name: string) -> Option[TypeAliasInfo] {
 fn expand_type_alias_inner(ctx: Checker, value: Type, stack: Vec[string], report: bool) -> Type {
     match prune(value) {
         Con { name } => match find_type_alias(ctx, name) {
-            Some(alias) => if collections::contains(stack, alias.name) {
+            Some(alias) => if stack.contains(alias.name) {
                 if report {
                     push_diagnostic(ctx, f"Cyclic type alias {short_name(alias.name)}")
                 } else {};
@@ -3413,7 +3412,7 @@ fn expand_type_alias_inner(ctx: Checker, value: Type, stack: Vec[string], report
             }
             match prune(base) {
                 Con { name } => match find_type_alias(ctx, name) {
-                    Some(alias) => if collections::contains(stack, alias.name) {
+                    Some(alias) => if stack.contains(alias.name) {
                         if report {
                             push_diagnostic(ctx, f"Cyclic type alias {short_name(alias.name)}")
                         } else {};

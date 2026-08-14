@@ -3,7 +3,6 @@ package lsp;
 use gomlc::ast;
 use gomlc::query;
 use gomlc::tast;
-use std::collections;
 use gomlc::version;
 use std::fs;
 use std::json;
@@ -206,7 +205,7 @@ fn hover_response(server: Server, params: json::Value) -> Result[json::Value, st
                 Warning => "+ ",
             }
                 + diagnostic_text(diagnostic);
-            if collections::contains(diagnostic_lines, line) {} else {
+            if diagnostic_lines.contains(line) {} else {
                 diagnostic_lines.push(line)
             }
         } else {}

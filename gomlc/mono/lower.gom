@@ -1,7 +1,6 @@
 package mono;
 
 use gomlc::core;
-use std::collections;
 use std::text;
 
 struct PendingTypeInstance {
@@ -184,7 +183,7 @@ fn expand_specialized_optional_trait_ref(
 
 fn expand_specialized_type_aliases_from(ctx: TypeCtx, value: core::Type, path: Vec[string]) -> core::Type {
     match core::resolve_type(value) {
-        Con { name } => if collections::contains(path, name) {
+        Con { name } => if path.contains(name) {
             core::Type::Con { name }
         } else {
             match find_type_instance_by_name(ctx, name) {

@@ -2,7 +2,6 @@ package main;
 
 use gomlc::hir;
 use std::cmp;
-use std::collections;
 
 struct PackageOrderNode {
     name: string,
@@ -14,7 +13,7 @@ fn direct_hir_dependencies(values: Vec[hir::File]) -> Vec[string] {
     let result: Vec[string] = Vec::[];
     for value in values {
         for dependency in value.import_aliases {
-            if collections::contains(result, dependency.package_name) {} else {
+            if result.contains(dependency.package_name) {} else {
                 result.push(dependency.package_name)
             }
         }
@@ -44,7 +43,7 @@ fn order_package_nodes(values: Vec[PackageOrderNode]) -> Result[Vec[int], string
     let remaining: Vec[PackageOrderNode] = Vec::[];
     let names: Vec[string] = Vec::[];
     for value in values {
-        if collections::contains(names, value.name) {
+        if names.contains(value.name) {
             return Result::Err("duplicate core provided for package " + value.name)
         } else {
             names.push(value.name);

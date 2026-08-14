@@ -2,7 +2,6 @@ package lift;
 
 use gomlc::mono;
 use gomlc::repr;
-use std::collections;
 
 fn detach_types(values: Vec[mono::Type], environments: Vec[string]) -> Vec[repr::Type] {
     let result: Vec[repr::Type] = Vec::with_capacity(values.len());
@@ -42,7 +41,7 @@ fn detach_type(value: mono::Type, environments: Vec[string]) -> repr::Type {
         String => repr::Type::String,
         Char => repr::Type::Char,
         Tuple { items } => repr::Type::Tuple { items: detach_types(items, environments) },
-        Named { name } => if collections::contains(environments, name) {
+        Named { name } => if environments.contains(name) {
             repr::Type::ClosureEnvironment { name }
         } else {
             repr::Type::Named { name }

@@ -831,7 +831,7 @@ fn coverage_type_inhabited_at(ctx: CoverageContext, ty: Type, visiting: Vec[stri
         true
     } else {
         let key = coverage_type_key(ty);
-        if collections::contains(visiting, key) {
+        if visiting.contains(key) {
             false
         } else {
             let next = coverage_copy_strings(visiting);
@@ -881,7 +881,7 @@ fn coverage_present(matrix: Vec[Vec[CoveragePat]]) -> Vec[string] {
     for row in matrix {
         if !row.is_empty() {
             match row[0].constructor {
-                Some(value) => if !collections::contains(result, value.key) {
+                Some(value) => if !result.contains(value.key) {
                     result.push(value.key)
                 } else {},
                 None => (),
@@ -1122,7 +1122,7 @@ fn coverage_scalar_boundaries(matrix: Vec[Vec[CoveragePat]], interval: CoverageS
 
 fn coverage_domain_complete(domain: Vec[CoverageConstructor], present: Vec[string]) -> bool {
     for constructor in domain {
-        if !collections::contains(present, constructor.key) {
+        if !present.contains(constructor.key) {
             return false
         } else {}
     }
@@ -1426,7 +1426,7 @@ fn coverage_find_witness(
                                         let missing: Vec[CoverageConstructor] = Vec::[];
                                         for constructor in domain {
                                             if missing.is_empty()
-                                                && !(collections::contains(present, constructor.key)) {
+                                                && !(present.contains(constructor.key)) {
                                                 missing.push(constructor)
                                             } else {}
                                         }

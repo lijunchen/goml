@@ -5,7 +5,6 @@ use gomlc::cst;
 use gomlc::ctfe;
 use gomlc::ctir;
 use gomlc::derive as derive_runtime;
-use std::collections;
 use std::text;
 
 fn dummy_span() -> ast::Span {
@@ -201,7 +200,7 @@ fn resolve_derive_export_target(
     let mut current = package_name + "::" + export_name;
     let seen: Vec[string] = Vec::[];
     while true {
-        if collections::contains(seen, current) {
+        if seen.contains(current) {
             return Result::Err("cyclic derive re-export `" + display_name + "`")
         } else {
             seen.push(current)

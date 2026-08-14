@@ -12,7 +12,6 @@ use gomlc::hir;
 use gomlc::parser;
 use gomlc::resources;
 use gomlc::tast;
-use std::collections;
 use std::fs;
 use std::task;
 
@@ -79,7 +78,7 @@ fn artifact_read_interface_units(paths: Vec[string]) -> Result[
     };
     let names: Vec[string] = Vec::[];
     for interface in result {
-        if collections::contains(names, interface.package_name) {
+        if names.contains(interface.package_name) {
             return Result::Err(
                 "multiple interface files provided for package " + interface.package_name,
             )
@@ -189,7 +188,7 @@ fn artifact_resolve_interface_units(
             }
         } else if request.package_name == current_package {
             return Result::Err("package " + current_package + " cannot use itself")
-        } else if collections::contains(resolved_names, request.package_name) {
+        } else if resolved_names.contains(request.package_name) {
             let actual = match artifact_standard_package(world.standard, request.package_name) {
                 Some(value) => value.interface_unit.interface_hash,
                 None => match artifact_find_interface_unit(resolved, request.package_name) {
@@ -313,7 +312,7 @@ fn artifact_dependency_environments(
     let functions: Vec[tast::FunctionScheme] = Vec::[];
     let prelude_names = resources::prelude_builtin_export_names();
     for function in value.functions {
-        if collections::contains(prelude_names, function.name) {
+        if prelude_names.contains(function.name) {
             functions.push(function)
         } else {}
     }
@@ -908,7 +907,7 @@ fn artifact_read_core_units(paths: Vec[string]) -> Result[Vec[artifact::Artifact
     };
     let names: Vec[string] = Vec::[];
     for core_unit in result {
-        if collections::contains(names, core_unit.package_name) {
+        if names.contains(core_unit.package_name) {
             return Result::Err("duplicate core provided for package " + core_unit.package_name)
         } else {
             names.push(core_unit.package_name);
@@ -946,7 +945,7 @@ fn artifact_reachable_core_units(roots: Vec[string], values: Vec[artifact::Artif
     let names: Vec[string] = Vec::[];
     while !pending.is_empty() {
         let package_name = pending.remove(pending.len() - 1);
-        if collections::contains(names, package_name) {} else {
+        if names.contains(package_name) {} else {
             let Some(core_unit) = artifact_find_core_unit(values, package_name) else {
                 return Result::Err("missing core for package " + package_name)
             };
@@ -960,7 +959,7 @@ fn artifact_reachable_core_units(roots: Vec[string], values: Vec[artifact::Artif
     }
     let result: Vec[artifact::ArtifactCoreUnit] = Vec::[];
     for value in values {
-        if collections::contains(names, value.package_name) {
+        if names.contains(value.package_name) {
             result.push(value)
         } else {}
     }

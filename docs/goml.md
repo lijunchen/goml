@@ -2371,7 +2371,7 @@ Current public entrances include:
 - `bytes::Bytes`, a mutable byte buffer with conversion to and from strings and `Vec[uint8]`
 - `cmp::Ordering`, `Ord`, `Reverse`, comparison helpers, and two-value minimum, maximum, and clamping operations
 - `collections::Arena`, `BitSet`, `Deque`, `HashSet`, `IndexMap`, `IndexVec`, `Interner`, and `Stack`; `HashSet::to_vec` returns a snapshot of its keys
-- `collections::sort`, `stable_sort`, `binary_search`, `min`, `max`, comparator-based variants, `position_by`, `contains`, `dedup_by`, and `dedup`
+- `collections::sort`, `stable_sort`, `binary_search`, `min`, `max`, comparator-based variants, `position_by`, `dedup_by`, and `dedup`
 - `crypto::hash` one-shot SHA-256 and `crypto::rand` operating-system random bytes
 - `error::Error`, `ErrorKind`, `Details`, and stable error-kind code conversion
 - `env::args`, current-directory and executable queries, and environment-variable reads

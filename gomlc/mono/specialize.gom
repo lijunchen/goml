@@ -1334,7 +1334,7 @@ fn matching_trait_selections(
                                 ),
                             };
                             let key = trait_selection_key(selection);
-                            if collections::contains(keys, key) {} else {
+                            if keys.contains(key) {} else {
                                 keys.push(key);
                                 selections.push(selection)
                             }
@@ -1411,7 +1411,7 @@ fn matching_projection_types(
                             if associated.0 == name {
                                 let value = substitute_type(associated.1, bindings);
                                 let key = compact_type(value);
-                                if collections::contains(keys, key) {} else {
+                                if keys.contains(key) {} else {
                                     keys.push(key);
                                     result.push(value)
                                 }
@@ -1435,7 +1435,7 @@ fn normalize_projection(
 ) -> core::Type {
     let projection = core::Type::Projection { for_ty: base, name, trait_ref: reference };
     let key = projection_binding_name(base, name, reference);
-    if collections::contains(active, key) {
+    if active.contains(key) {
         projection
     } else {
         let normalized = match core::builtin_projection(base, name, reference) {

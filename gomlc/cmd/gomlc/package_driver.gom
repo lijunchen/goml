@@ -13,7 +13,6 @@ use gomlc::mono;
 use gomlc::parser;
 use gomlc::resources;
 use gomlc::tast;
-use std::collections;
 use std::fs;
 use std::text;
 
@@ -108,36 +107,36 @@ fn no_standard_needs() -> StandardNeeds {
 fn standard_needs_from_package_names(package_names: Vec[string]) -> StandardNeeds {
     let closure = resources::standard_package_closure(package_names);
     StandardNeeds {
-        root: collections::contains(closure, resources::STD_ROOT_PACKAGE),
-        ascii: collections::contains(closure, resources::STD_ASCII_PACKAGE),
-        bincode: collections::contains(closure, resources::STD_BINCODE_PACKAGE),
-        bytes: collections::contains(closure, resources::STD_BYTES_PACKAGE),
-        cmp: collections::contains(closure, resources::STD_CMP_PACKAGE),
-        collections: collections::contains(closure, resources::STD_COLLECTIONS_PACKAGE),
-        error: collections::contains(closure, resources::STD_ERROR_PACKAGE),
-        env: collections::contains(closure, resources::STD_ENV_PACKAGE),
-        fs: collections::contains(closure, resources::STD_FS_PACKAGE),
-        io: collections::contains(closure, resources::STD_IO_PACKAGE),
-        internal_host: collections::contains(closure, resources::STD_INTERNAL_HOST_PACKAGE),
-        internal_task: collections::contains(closure, resources::STD_INTERNAL_TASK_PACKAGE),
-        iter: collections::contains(closure, resources::STD_ITER_PACKAGE),
-        json: collections::contains(closure, resources::STD_JSON_PACKAGE),
-        num: collections::contains(closure, resources::STD_NUM_PACKAGE),
-        path: collections::contains(closure, resources::STD_PATH_PACKAGE),
-        process: collections::contains(closure, resources::STD_PROCESS_PACKAGE),
-        serde: collections::contains(closure, resources::STD_SERDE_PACKAGE),
-        task: collections::contains(closure, resources::STD_TASK_PACKAGE),
-        testing: collections::contains(closure, resources::STD_TESTING_PACKAGE),
-        text: collections::contains(closure, resources::STD_TEXT_PACKAGE),
-        toml: collections::contains(closure, resources::STD_TOML_PACKAGE),
-        time: collections::contains(closure, resources::STD_TIME_PACKAGE),
-        utf8: collections::contains(closure, resources::STD_UTF8_PACKAGE),
-        unicode: collections::contains(closure, resources::STD_UNICODE_PACKAGE),
-        math: collections::contains(closure, resources::STD_MATH_PACKAGE),
-        rand: collections::contains(closure, resources::STD_RAND_PACKAGE),
-        crypto: collections::contains(closure, resources::STD_CRYPTO_PACKAGE),
-        crypto_hash: collections::contains(closure, resources::STD_CRYPTO_HASH_PACKAGE),
-        crypto_rand: collections::contains(closure, resources::STD_CRYPTO_RAND_PACKAGE),
+        root: closure.contains(resources::STD_ROOT_PACKAGE),
+        ascii: closure.contains(resources::STD_ASCII_PACKAGE),
+        bincode: closure.contains(resources::STD_BINCODE_PACKAGE),
+        bytes: closure.contains(resources::STD_BYTES_PACKAGE),
+        cmp: closure.contains(resources::STD_CMP_PACKAGE),
+        collections: closure.contains(resources::STD_COLLECTIONS_PACKAGE),
+        error: closure.contains(resources::STD_ERROR_PACKAGE),
+        env: closure.contains(resources::STD_ENV_PACKAGE),
+        fs: closure.contains(resources::STD_FS_PACKAGE),
+        io: closure.contains(resources::STD_IO_PACKAGE),
+        internal_host: closure.contains(resources::STD_INTERNAL_HOST_PACKAGE),
+        internal_task: closure.contains(resources::STD_INTERNAL_TASK_PACKAGE),
+        iter: closure.contains(resources::STD_ITER_PACKAGE),
+        json: closure.contains(resources::STD_JSON_PACKAGE),
+        num: closure.contains(resources::STD_NUM_PACKAGE),
+        path: closure.contains(resources::STD_PATH_PACKAGE),
+        process: closure.contains(resources::STD_PROCESS_PACKAGE),
+        serde: closure.contains(resources::STD_SERDE_PACKAGE),
+        task: closure.contains(resources::STD_TASK_PACKAGE),
+        testing: closure.contains(resources::STD_TESTING_PACKAGE),
+        text: closure.contains(resources::STD_TEXT_PACKAGE),
+        toml: closure.contains(resources::STD_TOML_PACKAGE),
+        time: closure.contains(resources::STD_TIME_PACKAGE),
+        utf8: closure.contains(resources::STD_UTF8_PACKAGE),
+        unicode: closure.contains(resources::STD_UNICODE_PACKAGE),
+        math: closure.contains(resources::STD_MATH_PACKAGE),
+        rand: closure.contains(resources::STD_RAND_PACKAGE),
+        crypto: closure.contains(resources::STD_CRYPTO_PACKAGE),
+        crypto_hash: closure.contains(resources::STD_CRYPTO_HASH_PACKAGE),
+        crypto_rand: closure.contains(resources::STD_CRYPTO_RAND_PACKAGE),
     }
 }
 
@@ -340,7 +339,7 @@ fn local_item_is_public(package_name: string, public_names: Vec[string], name: s
         true
     } else {
         let relative = name.byte_slice(prefix.byte_len(), name.byte_len());
-        relative.contains("::") || collections::contains(public_names, name)
+        relative.contains("::") || public_names.contains(name)
     }
 }
 
@@ -351,7 +350,7 @@ fn add_private_local_name(
     name: string,
 ) -> unit {
     if !local_item_is_public(package_name, public_names, name)
-        && !collections::contains(result, name) {
+        && !result.contains(name) {
         result.push(name)
     } else {}
 }
@@ -563,9 +562,9 @@ fn validate_public_fields_and_inherent_methods(
 ) -> Result[unit, string] {
     for item in value.items {
         match item {
-            StructDef(value) => if collections::contains(public_names, value.name) {
+            StructDef(value) => if public_names.contains(value.name) {
                 for field in value.fields {
-                    if collections::contains(value.public_fields, field.0) {
+                    if value.public_fields.contains(field.0) {
                         let private_names: Vec[string] = Vec::[];
                         collect_private_type_names(
                             private_names,

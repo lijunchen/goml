@@ -1,7 +1,6 @@
 package project;
 
 use gomlang::bootstrap_goml::util;
-use std::collections;
 use std::fs;
 use std::io;
 use std::path;
@@ -1020,7 +1019,7 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
                     } else {
                         following
                     };
-                    if producer >= 0 && !collections::contains(dependencies, producer) {
+                    if producer >= 0 && !dependencies.contains(producer) {
                         dependencies.push(producer)
                     } else {}
                 }
@@ -1034,7 +1033,7 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
                         },
                         None => (),
                     };
-                    if previous >= 0 && !collections::contains(dependencies, previous) {
+                    if previous >= 0 && !dependencies.contains(previous) {
                         dependencies.push(previous)
                     } else {}
                 }
@@ -1056,7 +1055,7 @@ fn build_node(nodes: Vec[BuildNode], index: int) -> Option[BuildNode] {
 
 fn build_node_ready(node: BuildNode, completed: Vec[int]) -> bool {
     for dependency in node.dependencies {
-        if !collections::contains(completed, dependency) {
+        if !completed.contains(dependency) {
             return false
         } else {}
     }

@@ -4,7 +4,6 @@ use gomlc::artifact::wire as wire;
 use gomlc::artifact;
 use gomlc::artifact::tast_codec as tast_codec;
 use gomlc::artifact::interface_codec as interface_codec;
-use std::collections;
 
 fn artifact_decode_optional_string(value: wire::ArtifactValue, expected: string) -> Result[
     Option[string],
@@ -91,7 +90,7 @@ fn artifact_test_descriptors_valid(
             || value.source_path == ""
             || value.start > value.end
             || (!value.ignored && tast_codec::option_string_present(value.ignore_reason))
-            || collections::contains(ids, value.id) {
+            || ids.contains(value.id) {
             return false
         } else {
             ids.push(value.id)
