@@ -605,6 +605,7 @@ fn require_explicit_dyn_conversion(ctx: Checker, value: Expr, expected_ty: Type)
 }
 
 fn coerce_expr(ctx: Checker, value: Expr, expected: Option[Type]) -> Expr {
+    let value = specialize_array_callable_expected(value, expected);
     match value {
         Break { ty: _, .. } | Continue { ty: _, .. } | Return { expr: _, ty: _ } => value,
         _ => match expected {
@@ -1654,20 +1655,11 @@ fn check_array_expr(ctx: Checker, values: Vec[hir::Expr], expected: Option[Type]
     coerce_expr(ctx, Expr::Array { items, ty: array_ty }, expected)
 }
 
-fn collection_literal_call(
-    owner: Type,
-    name: string,
-    params: Vec[Type],
-    ret_ty: Type,
-    args: Vec[Expr],
-) -> Expr {
-    let function_ty = Type::Func { params, ret_ty };
+fn collection_from_array_call(name: string, array: Expr, ret_ty: Type) -> Expr {
+    let function_ty = Type::Func { params: Vec::[expr_type(array)], ret_ty };
     Expr::Call {
-        func: Expr::Callable {
-            callable: Callable::InherentMethod { receiver_ty: owner, method_name: name },
-            ty: function_ty,
-        },
-        args,
+        func: Expr::Callable { callable: Callable::Intrinsic(name), ty: function_ty },
+        args: Vec::[array],
         ty: ret_ty,
     }
 }
@@ -1676,7 +1668,7 @@ fn check_vec_literal_expr(
     ctx: Checker,
     values: Vec[hir::Expr],
     expected: Option[Type],
-    value_span: ast::Span,
+    _value_span: ast::Span,
 ) -> Expr {
     let elem = fresh_type(ctx.counter, VarKind::Any);
     let vec_ty = Type::VecType { elem };
@@ -1684,37 +1676,17 @@ fn check_vec_literal_expr(
         Some(ty) => expect_type(ctx, vec_ty, ty),
         None => (),
     };
-    let local_name = "vec_literal/" + value_span.start.to_string();
-    let stmts: Vec[Stmt] = Vec::[];
-    stmts.push(
-        Stmt::Let {
-            is_mut: false,
-            pat: Pat::Var { name: local_name, is_mut: false, ty: vec_ty },
-            value: collection_literal_call(vec_ty, "new", Vec::[], vec_ty, Vec::[]),
-        },
-    );
+    let items: Vec[Expr] = Vec::[];
     for value in values {
-        let args: Vec[Expr] = Vec::[];
-        args.push(Expr::Var { name: local_name, ty: vec_ty });
-        args.push(check_expr(ctx, value, Option::Some(elem)));
-        stmts.push(
-            Stmt::Expr {
-                expr: collection_literal_call(
-                    vec_ty,
-                    "push",
-                    two_types(vec_ty, elem),
-                    Type::Unit,
-                    args,
-                ),
-            },
-        )
+        items.push(check_expr(ctx, value, Option::Some(elem)))
     }
     coerce_expr(
         ctx,
-        Expr::Block {
-            block: Block { stmts, tail: Option::Some(Expr::Var { name: local_name, ty: vec_ty }) },
-            ty: vec_ty,
-        },
+        collection_from_array_call(
+            "vec.from_array",
+            Expr::Array { items, ty: Type::Array { len: values.len(), elem } },
+            vec_ty,
+        ),
         expected,
     )
 }
@@ -1744,7 +1716,7 @@ fn check_hashmap_literal_expr(
     ctx: Checker,
     entries: Vec[(hir::Expr, hir::Expr)],
     expected: Option[Type],
-    value_span: ast::Span,
+    _value_span: ast::Span,
 ) -> Expr {
     let key = fresh_type(ctx.counter, VarKind::Any);
     let value = fresh_type(ctx.counter, VarKind::Any);
@@ -1753,29 +1725,15 @@ fn check_hashmap_literal_expr(
         Some(ty) => expect_type(ctx, map_ty, ty),
         None => (),
     };
-    let local_name = "hashmap_literal/" + value_span.start.to_string();
-    let stmts: Vec[Stmt] = Vec::[];
-    stmts.push(
-        Stmt::Let {
-            is_mut: false,
-            pat: Pat::Var { name: local_name, is_mut: false, ty: map_ty },
-            value: collection_literal_call(map_ty, "new", Vec::[], map_ty, Vec::[]),
-        },
-    );
+    let items: Vec[Expr] = Vec::[];
     for entry in entries {
-        let args: Vec[Expr] = Vec::[];
-        args.push(Expr::Var { name: local_name, ty: map_ty });
-        args.push(check_expr(ctx, entry.0, Option::Some(key)));
-        args.push(check_expr(ctx, entry.1, Option::Some(value)));
-        stmts.push(
-            Stmt::Expr {
-                expr: collection_literal_call(
-                    map_ty,
-                    "set",
-                    three_types(map_ty, key, value),
-                    Type::Unit,
-                    args,
-                ),
+        items.push(
+            Expr::Tuple {
+                items: Vec::[
+                    check_expr(ctx, entry.0, Option::Some(key)),
+                    check_expr(ctx, entry.1, Option::Some(value)),
+                ],
+                ty: Type::Tuple { items: Vec::[key, value] },
             },
         )
     }
@@ -1784,10 +1742,17 @@ fn check_hashmap_literal_expr(
     };
     coerce_expr(
         ctx,
-        Expr::Block {
-            block: Block { stmts, tail: Option::Some(Expr::Var { name: local_name, ty: map_ty }) },
-            ty: map_ty,
-        },
+        collection_from_array_call(
+            "hashmap.from_array",
+            Expr::Array {
+                items,
+                ty: Type::Array {
+                    len: entries.len(),
+                    elem: Type::Tuple { items: Vec::[key, value] },
+                },
+            },
+            map_ty,
+        ),
         expected,
     )
 }
@@ -2003,6 +1968,49 @@ fn specialize_array_callable(function: Expr, values: Vec[Expr]) -> Expr {
                 None => {
                     Expr::Callable { callable, ty: Type::Func { params, ret_ty } }
                 },
+            }
+        },
+        other => other,
+    }
+}
+
+fn specialize_array_callable_expected(function: Expr, expected: Option[Type]) -> Expr {
+    let expected_params = match expected {
+        Some(ty) => match prune(ty) {
+            Func { params, ret_ty: _ } => params,
+            _ => return function,
+        },
+        None => return function,
+    };
+    match function {
+        Callable { callable, ty: Func { params, ret_ty } } => {
+            let mut length = -1;
+            for index in 0..params.len() {
+                if index < expected_params.len() {
+                    match (prune(params[index]), prune(expected_params[index])) {
+                        (Array { len: wildcard, elem: _ }, Array { len: actual, elem: _ }) => if wildcard
+                            < 0
+                            && actual >= 0 {
+                            length = actual;
+                        } else {},
+                        _ => (),
+                    }
+                } else {}
+            }
+            if length >= 0 {
+                let specialized: Vec[Type] = Vec::[];
+                for param in params {
+                    specialized.push(specialize_array_type(param, length))
+                }
+                Expr::Callable {
+                    callable,
+                    ty: Type::Func {
+                        params: specialized,
+                        ret_ty: specialize_array_type(ret_ty, length),
+                    },
+                }
+            } else {
+                Expr::Callable { callable, ty: Type::Func { params, ret_ty } }
             }
         },
         other => other,

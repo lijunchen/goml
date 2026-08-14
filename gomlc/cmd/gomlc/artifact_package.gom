@@ -309,6 +309,7 @@ fn artifact_dependency_environments(
             functions.push(function)
         } else {}
     }
+    tast::append_builtin_collection_methods(value.methods)?;
     let impls: Vec[tast::ImplInfo] = Vec::[];
     result.push(
         tast::dependency_environment(

@@ -1026,7 +1026,7 @@ impl[I: Iterator] IntoIterator for I {
     }
 }
 
-#[lang("vec")]
+#[lang("vec", from_array = "from_array")]
 impl[T] Vec[T] {
     fn new() -> Self {
         vec_new()
@@ -1512,7 +1512,7 @@ impl[T] IntoIterator for Slice[T] {
     }
 }
 
-#[lang("hashmap")]
+#[lang("hashmap", from_array = "from_array")]
 impl[K: Hash + Eq, V] HashMap[K, V] {
     fn new() -> Self {
         hashmap_new()

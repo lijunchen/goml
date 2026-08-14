@@ -270,8 +270,79 @@ fn index_source_syntax(source: SourceFile, syntax: SyntaxIndex, symbols: Vec[Sym
     }
 }
 
+fn ast_type_owner_name(value: ast::TypeExpr) -> Option[string] {
+    match value {
+        Con { path } => if path.segments.is_empty() {
+            Option::None
+        } else {
+            Option::Some(path.segments[path.segments.len() - 1].ident)
+        },
+        App { ty, args: _ } => ast_type_owner_name(ty),
+        _ => Option::None,
+    }
+}
+
+fn collection_lang_method(attrs: Vec[ast::Attribute], item: string) -> Option[string] {
+    for attribute in attrs {
+        if attribute.name == "lang" && !attribute.args.is_empty() {
+            match attribute.args[0] {
+                ast::AttributeArg::String(name) => if name == item {
+                    for argument in attribute.args {
+                        match argument {
+                            ast::AttributeArg::Named { name, value_kind, value } => if name
+                                == "from_array"
+                                && value_kind == "string" {
+                                return Option::Some(value)
+                            } else {},
+                            _ => (),
+                        }
+                    }
+                } else {},
+                _ => (),
+            }
+        } else {}
+    }
+    Option::None
+}
+
+fn index_builtin_collection_methods(source: SourceFile, symbols: Vec[Symbol]) -> unit {
+    if source.package_name != "builtin" {
+        return
+    } else {};
+    let lowered = ast::lower(parser::parse(source.source));
+    match lowered.ast {
+        Some(file) => for item in file.items {
+            match item {
+                ImplBlock(block) => {
+                    let method = match collection_lang_method(block.attrs, "vec") {
+                        Some(value) => Option::Some(value),
+                        None => collection_lang_method(block.attrs, "hashmap"),
+                    };
+                    match (ast_type_owner_name(block.for_type), method) {
+                        (Some(owner), Some(name)) => symbols.push(
+                            Symbol {
+                                name,
+                                qualified_name: source.package_name + "::" + owner + "::" + name,
+                                package_name: source.package_name,
+                                source_path: source.path,
+                                span: block.for_type_span,
+                                kind: SymbolKind::Method,
+                                public: true,
+                            },
+                        ),
+                        _ => (),
+                    }
+                },
+                _ => (),
+            }
+        },
+        None => (),
+    }
+}
+
 fn index_source(source: SourceFile, symbols: Vec[Symbol]) -> unit {
-    index_source_syntax(source, syntax_index(parser::parse(source.source).root), symbols)
+    index_source_syntax(source, syntax_index(parser::parse(source.source).root), symbols);
+    index_builtin_collection_methods(source, symbols)
 }
 
 pub fn build_symbol_index(value: Analysis) -> SymbolIndex {
@@ -281,7 +352,8 @@ pub fn build_symbol_index(value: Analysis) -> SymbolIndex {
             let symbols: Vec[Symbol] = Vec::[];
             for source in value.sources {
                 if source.path == value.source_path {
-                    index_source_syntax(source, value.syntax, symbols)
+                    index_source_syntax(source, value.syntax, symbols);
+                    index_builtin_collection_methods(source, symbols)
                 } else {
                     index_source(source, symbols)
                 }

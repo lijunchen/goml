@@ -54,6 +54,11 @@ pub struct StaticCellLangItem {
     pub constructor: string,
 }
 
+pub struct CollectionLangItem {
+    pub name: string,
+    pub from_array: string,
+}
+
 pub struct OrderingLangItem {
     pub name: string,
     pub less: LangVariant,
@@ -84,9 +89,9 @@ pub struct BuiltinContract {
     pub static_cell: StaticCellLangItem,
     pub frozen_vec: NamedLangItem,
     pub ordering: OrderingLangItem,
-    pub vec: NamedLangItem,
+    pub vec: CollectionLangItem,
     pub slice: NamedLangItem,
-    pub hashmap: NamedLangItem,
+    pub hashmap: CollectionLangItem,
     pub ref_type: NamedLangItem,
     pub channel: NamedLangItem,
     pub range: FunctionLangItem,
@@ -264,6 +269,21 @@ fn required_function_lang_item(item: string) -> Result[FunctionLangItem, string]
     }
 }
 
+fn required_collection_lang_item(item: string) -> Result[CollectionLangItem, string] {
+    let value = required_lang_item(item)?;
+    validate_lang_properties(value, Vec::["from_array"])?;
+    if value.kind == BuiltinLangItemKind::Impl {
+        Result::Ok(
+            CollectionLangItem {
+                name: value.name,
+                from_array: required_lang_property(value, "from_array")?,
+            },
+        )
+    } else {
+        Result::Err("builtin lang item " + item + " must be declared on a impl")
+    }
+}
+
 fn required_method_lang_item(item: string) -> Result[MethodLangItem, string] {
     let value = required_trait_lang_item(item)?;
     validate_lang_properties(value, Vec::["method"])?;
@@ -383,9 +403,9 @@ fn load_builtin_contract() -> Result[BuiltinContract, string] {
             },
             frozen_vec: required_named_lang_item("frozen_vec", BuiltinLangItemKind::Struct)?,
             ordering,
-            vec: required_named_lang_item("vec", BuiltinLangItemKind::Impl)?,
+            vec: required_collection_lang_item("vec")?,
             slice: required_named_lang_item("slice", BuiltinLangItemKind::Impl)?,
-            hashmap: required_named_lang_item("hashmap", BuiltinLangItemKind::Impl)?,
+            hashmap: required_collection_lang_item("hashmap")?,
             ref_type: required_named_lang_item("ref", BuiltinLangItemKind::Impl)?,
             channel: required_named_lang_item("channel", BuiltinLangItemKind::Impl)?,
             range: required_function_lang_item("range")?,

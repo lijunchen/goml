@@ -204,6 +204,7 @@ fn toolchain_dependency_environments_from_interfaces(values: Vec[artifact::Artif
     for value in values {
         let environment = artifact_dependency_environment_from_exports(value.exports)?;
         let environment = if value.package_name == "builtin" {
+            tast::append_builtin_collection_methods(environment.methods)?;
             tast::dependency_environment(
                 environment.reexports,
                 environment.enums,

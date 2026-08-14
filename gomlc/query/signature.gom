@@ -164,6 +164,12 @@ fn current_package_function(value: Analysis, target: tast::ReferenceTarget) -> b
 }
 
 fn signature_parameter_names(value: Analysis, fact: tast::CallFact) -> Option[Vec[string]] {
+    match fact.target {
+        Callable(Intrinsic(name)) => if name == "vec.from_array" || name == "hashmap.from_array" {
+            return Option::Some(Vec::["values"])
+        } else {},
+        _ => (),
+    };
     let expected = short_type_name(call_target_name(value, fact));
     let expected_owner = signature_target_owner(fact.target);
     let checked_current = current_package_function(value, fact.target);

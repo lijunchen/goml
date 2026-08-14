@@ -944,8 +944,86 @@ fn compile_channel_callable(key: string, function_ty: repr::Type) -> Expr {
     }
 }
 
+fn compile_collection_from_array_callable(key: string, function_ty: repr::Type) -> Expr {
+    match repr::resolve_type(function_ty) {
+        Func { params: param_types, ret_ty } if param_types.len() == 1 => {
+            let params = Vec::[("values", lower_type(param_types[0]))];
+            let values = Expr::Var { name: "values" };
+            let stmts: Vec[Stmt] = Vec::[];
+            if key == "vec.from_array" {
+                let len_args = Vec::[values];
+                let items = Expr::Slice {
+                    base: values,
+                    start: Expr::Int { value: "0" },
+                    end: Expr::Call { func: Expr::Var { name: "len" }, args: len_args },
+                };
+                let result_ty = match lower_type(ret_ty) {
+                    Type::Pointer { elem } => elem,
+                    other => other,
+                };
+                stmts.push(
+                    Stmt::Return {
+                        expr: Option::Some(
+                            Expr::Unary {
+                                op: UnaryOp::Address,
+                                expr: Expr::StructLiteral {
+                                    ty: result_ty,
+                                    fields: Vec::[("items", items)],
+                                },
+                            },
+                        ),
+                    },
+                )
+            } else {
+                let result = Expr::Var { name: "result" };
+                stmts.push(
+                    Stmt::Var {
+                        name: "result",
+                        ty: lower_type(ret_ty),
+                        value: Option::Some(
+                            Expr::Call {
+                                func: Expr::Var { name: runtime_helper_name("hashmap_new", ret_ty) },
+                                args: Vec::[],
+                            },
+                        ),
+                    },
+                );
+                let entry = Expr::Var { name: "entry" };
+                let set_args = Vec::[
+                    result,
+                    Expr::Field { expr: entry, field_name: "_0" },
+                    Expr::Field { expr: entry, field_name: "_1" },
+                ];
+                stmts.push(
+                    Stmt::Range {
+                        names: Vec::["_", "entry"],
+                        expr: values,
+                        body: Block {
+                            stmts: Vec::[
+                                Stmt::Expr {
+                                    expr: Expr::Call {
+                                        func: Expr::Var {
+                                            name: runtime_helper_name("hashmap_set", ret_ty),
+                                        },
+                                        args: set_args,
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                );
+                stmts.push(Stmt::Return { expr: Option::Some(result) })
+            };
+            Expr::FuncLit { params, ret_ty: lower_type(ret_ty), body: Block { stmts } }
+        },
+        _ => Expr::Var { name: go_ident(key) },
+    }
+}
+
 fn compile_intrinsic_callable(key: string, function_ty: repr::Type) -> Expr {
-    if key == "slice.new" || key == "slice.get" || key == "slice.len" || key == "slice.sub" {
+    if key == "vec.from_array" || key == "hashmap.from_array" {
+        compile_collection_from_array_callable(key, function_ty)
+    } else if key == "slice.new" || key == "slice.get" || key == "slice.len" || key == "slice.sub" {
         compile_slice_callable(key, function_ty)
     } else if key == "channel.new" || key == "channel.send" || key == "channel.recv"
         || key == "channel.send_cancel"

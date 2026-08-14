@@ -29,6 +29,7 @@ pub fn intrinsic_abi_specs() -> Vec[CallableAbiSpec] {
         callable_abi("vec.capacity", "vec_capacity", "vec_capacity", Vec::[]),
         callable_abi("vec.reserve", "vec_reserve", "vec_reserve", Vec::[]),
         callable_abi("vec.truncate", "vec_truncate", "vec_truncate", Vec::[]),
+        callable_abi("vec.from_array", "vec_from_array", "vec_from_array", Vec::[]),
         callable_abi("once_cell.new", "once_cell_new", "once_cell_new", Vec::[]),
         callable_abi(
             "once_cell.get_or_init",
@@ -57,6 +58,7 @@ pub fn intrinsic_abi_specs() -> Vec[CallableAbiSpec] {
             "hash_map_entries",
             Vec::["hashmap_entries"],
         ),
+        callable_abi("hashmap.from_array", "hashmap_from_array", "hash_map_from_array", Vec::[]),
         callable_abi("channel.new", "channel_new", "channel_new", Vec::[]),
         callable_abi("channel.send", "channel_send", "channel_send", Vec::[]),
         callable_abi("channel.recv", "channel_recv", "channel_recv", Vec::[]),

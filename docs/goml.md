@@ -2226,15 +2226,18 @@ The index type is `int`.The underlying `array_get` and `array_set` can also be c
 ### `Vec[T]`
 
 ```goml
-let values = Vec::[1, 2, 3];
+let values = Vec::from_array([1, 2, 3]);
 let first = values.get(0);
 ```
 
-`Vec::[...]` creates a vector literal. Items are evaluated once from left to right. A trailing comma is allowed. An empty literal needs an expected element type, for example `let values: Vec[int32] = Vec::[];`.
+`Vec::from_array([values...])` creates a vector from a fixed array. Array items are evaluated once from left to right. The vector receives new outer backing storage, so replacing an array element later does not change the vector, while referenced elements remain shared because the copy is shallow. An empty array needs either an expected result type, as in `let values: Vec[int32] = Vec::from_array([]);`, or explicit owner arguments, as in `Vec::[int32]::from_array([])`. The associated function is an ordinary first-class value, for example `let make: ([int32; 3]) -> Vec[int32] = Vec::from_array;`.
+
+The legacy `Vec::[...]` collection literal remains accepted during the language transition and has the same typed and runtime lowering as `Vec::from_array([...])`.
 
 Commonly used methods:
 
 - `Vec::new() -> Vec[T]`
+- `Vec::from_array(values: [T; N]) -> Vec[T]`
 - `Vec::with_capacity(capacity) -> Vec[T]`
 - `push(value) -> unit`
 - `pushed(value) -> Vec[T]`
@@ -2302,16 +2305,15 @@ Commonly used methods: `get`, `len`, `contains`, `sub`, `to_vec`, `iter`.`contai
 The key type must implement both `Hash` and `Eq`; bucket equality dispatches through the `PartialEq` supertrait:
 
 ```goml
-let counts = HashMap::{
-    "a" => 1,
-    "b" => 2,
-};
+let counts = HashMap::from_array([("a", 1), ("b", 2)]);
 let value: Option[int32] = counts.get("a");
 ```
 
-`HashMap::{ key => value, ... }` evaluates each key followed by its value, proceeding from left to right. A trailing comma is allowed. Later duplicate keys overwrite earlier entries. An empty literal needs an expected key and value type, for example `let counts: HashMap[string, int32] = HashMap::{};`. The `=>` spelling reuses the same token used by match arms.
+`HashMap::from_array([(key, value), ...])` first evaluates the complete entries array from left to right, then inserts its pairs in array order. Later duplicate keys overwrite earlier entries. An empty array needs either an expected result type, as in `let counts: HashMap[string, int32] = HashMap::from_array([]);`, or explicit owner arguments, as in `HashMap::[string, int32]::from_array([])`. The associated function is an ordinary first-class value when its array length is fixed by a function type.
 
-Commonly used methods: `new`, `get`, `set`, `remove`, `len`, `contains`, and `entries`. `entries()` returns a snapshot `Vec[(K, V)]`.
+The legacy `HashMap::{ key => value, ... }` collection literal remains accepted during the language transition and lowers through the same `from_array` implementation.
+
+Commonly used methods: `new`, `from_array`, `get`, `set`, `remove`, `len`, `contains`, and `entries`. `entries()` returns a snapshot `Vec[(K, V)]`.
 
 Index reading returns `Option[V]`, and index assignment writes `V`:
 
@@ -2364,7 +2366,7 @@ New code should import `std::iter` for iterator construction, adapters, and cons
 ```goml
 use std::iter;
 
-let values = iter::map(Vec::[1, 2, 3].iter(), |value: int| value * 2);
+let values = iter::map(Vec::from_array([1, 2, 3]).iter(), |value: int| value * 2);
 let total = iter::fold(values, 0, |sum: int, value: int| sum + value);
 ```
 
