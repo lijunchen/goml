@@ -202,36 +202,10 @@ fn dependency_structs(builtins: core::File, dependencies: Vec[core::File]) -> Ve
     result
 }
 
-fn toolchain_dependency_environments(
-    hir_dependencies: Vec[hir::File],
-    builtin_function_names: Vec[string],
-) -> Vec[tast::DependencyEnvironment] {
-    let result = tast::dependency_environments(hir_dependencies);
-    if builtin_function_names.is_empty() {
-        result
-    } else {
-        let functions: Vec[tast::FunctionScheme] = Vec::[];
-        for name in builtin_function_names {
-            match tast::builtin_function_scheme(name) {
-                Some(value) => functions.push(value),
-                None => fail("error[compile]: missing builtin function " + name),
-            }
-        }
-        result.push(
-            tast::dependency_environment(
-                Vec::[],
-                Vec::[],
-                Vec::[],
-                Vec::[],
-                Vec::[],
-                Vec::[],
-                functions,
-                Vec::[],
-                Vec::[],
-            ),
-        );
-        result
-    }
+fn toolchain_dependency_environments(hir_dependencies: Vec[hir::File]) -> Vec[
+    tast::DependencyEnvironment,
+] {
+    tast::dependency_environments(hir_dependencies)
 }
 
 fn compile_toolchain_package(
@@ -242,7 +216,6 @@ fn compile_toolchain_package(
     core_dependencies: Vec[core::File],
     builtins: core::File,
     deps: Vec[(string, string)],
-    builtin_function_names: Vec[string],
 ) -> PackageCompilation {
     let ast_values: Vec[ast::LowerResult] = Vec::[];
     let inputs: Vec[(ast::LowerResult, string)] = Vec::[];
@@ -278,7 +251,7 @@ fn compile_toolchain_package(
     };
     let tast_value = tast::check_package_files_for_link_with_environments(
         hir_files,
-        toolchain_dependency_environments(hir_dependencies, builtin_function_names),
+        toolchain_dependency_environments(hir_dependencies),
     );
     if !tast_value.diagnostics.is_empty() {
         fail(render_typer_diagnostics(tast_value.diagnostics, hir_file.source_path, ""))
@@ -362,7 +335,6 @@ fn compile_standard_package(
         core_dependencies,
         builtins,
         deps,
-        Vec::["channel_recv_cancel", "channel_send_cancel"],
     )
 }
 
@@ -425,81 +397,12 @@ fn prelude_hir_files() -> Vec[hir::File] {
 }
 
 fn builtin_contract_function_names() -> Vec[string] {
-    Vec::[
-        "array_get",
-        "array_set",
-        "unit_to_string",
-        "bool_to_string",
-        "string_len",
-        "string_byte_get",
-        "string_to_bytes",
-        "string_concat",
-        "string_print",
-        "string_println",
-        "char_from_uint32_raw",
-        "int_to_string",
-        "int8_to_string",
-        "int16_to_string",
-        "int32_to_string",
-        "int64_to_string",
-        "uint_to_string",
-        "uint8_to_string",
-        "uint16_to_string",
-        "uint32_to_string",
-        "uint64_to_string",
-        "float32_to_string",
-        "float64_to_string",
-        "string_parse_float32",
-        "string_parse_float64",
-        "int_hash",
-        "int8_hash",
-        "int16_hash",
-        "int32_hash",
-        "int64_hash",
-        "uint_hash",
-        "uint8_hash",
-        "uint16_hash",
-        "uint32_hash",
-        "float32_hash",
-        "float64_hash",
-        "string_hash",
-        "char_hash",
-        "vec_new",
-        "vec_with_capacity",
-        "vec_push",
-        "vec_get",
-        "vec_set",
-        "vec_len",
-        "vec_capacity",
-        "vec_reserve",
-        "vec_truncate",
-        "slice",
-        "slice_get",
-        "slice_len",
-        "slice_sub",
-        "hashmap_new",
-        "hashmap_get",
-        "hashmap_set",
-        "hashmap_remove",
-        "hashmap_len",
-        "hashmap_contains",
-        "hashmap_entries",
-        "channel_new",
-        "channel_send",
-        "channel_recv",
-        "channel_close",
-        "ref",
-        "ref_get",
-        "ref_set",
-        "ptr_eq",
-        "ptr_hash",
-    ]
+    Vec::["array_get", "array_set"]
 }
 
 fn builtin_artifact_interface_unit_from_checked(
     builtin_files: Vec[hir::File],
     checked: tast::CheckResult,
-    extra_function_names: Vec[string],
 ) -> artifact::ArtifactInterfaceUnit {
     let signatures = tast::package_signatures(merge_hir_files(builtin_files, "builtin"));
     let traits: Vec[tast::TraitInfo] = Vec::[];
@@ -530,9 +433,6 @@ fn builtin_artifact_interface_unit_from_checked(
         constants: signatures.constants,
     };
     let contract_functions = builtin_contract_function_names();
-    for name in extra_function_names {
-        contract_functions.push(name)
-    }
     let functions: Vec[tast::FunctionScheme] = Vec::[];
     for name in contract_functions {
         match tast::builtin_function_scheme(name) {
@@ -549,6 +449,15 @@ fn builtin_artifact_interface_unit_from_checked(
         type_aliases: signatures.type_aliases,
         constants: signatures.constants,
     };
+    for index in 0..signatures.functions.len() {
+        for other in index + 1..signatures.functions.len() {
+            if signatures.functions[index].name == signatures.functions[other].name {
+                fail(
+                    "error[compile]: duplicate builtin function " + signatures.functions[index].name,
+                )
+            } else {}
+        }
+    }
     let file = match checked.tast {
         Some(file) => file,
         None => {
@@ -581,16 +490,13 @@ fn builtin_artifact_interface_unit_from_checked(
     )
 }
 
-fn builtin_artifact_interface_unit_from_files(
-    builtin_files: Vec[hir::File],
-    extra_function_names: Vec[string],
-) -> artifact::ArtifactInterfaceUnit {
+fn builtin_artifact_interface_unit_from_files(builtin_files: Vec[hir::File]) -> artifact::ArtifactInterfaceUnit {
     let checked = tast::check_builtin_package_files(builtin_files);
-    builtin_artifact_interface_unit_from_checked(builtin_files, checked, extra_function_names)
+    builtin_artifact_interface_unit_from_checked(builtin_files, checked)
 }
 
 fn builtin_artifact_interface_unit() -> artifact::ArtifactInterfaceUnit {
-    builtin_artifact_interface_unit_from_files(builtin_hir_files(), Vec::[])
+    builtin_artifact_interface_unit_from_files(builtin_hir_files())
 }
 
 fn builtin_artifact_dependency() -> (string, string) {
@@ -617,7 +523,6 @@ fn compile_prelude_package_with_builtin_files(
         Vec::[],
         builtins,
         Vec::[("builtin", builtin_interface.interface_hash)],
-        Vec::[],
     );
     PackageCompilation {
         hir_file: compilation.hir_file,
@@ -666,11 +571,7 @@ fn create_source_compiler(standard_package_names: Vec[string]) -> SourceCompiler
     let checked = tast::check_builtin_package_files(builtin_files);
     let builtins = lower_checked_builtin_core(checked, counter);
     let counter_start = counter.get();
-    let builtin_interface = builtin_artifact_interface_unit_from_checked(
-        builtin_files,
-        checked,
-        Vec::[],
-    );
+    let builtin_interface = builtin_artifact_interface_unit_from_checked(builtin_files, checked);
     let prelude = compile_prelude_package_with_builtin_files(
         builtins,
         builtin_interface,

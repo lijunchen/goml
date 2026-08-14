@@ -1005,7 +1005,7 @@ fn check_name_ref_inner(ctx: Checker, value: hir::NameRef) -> Expr {
                     Expr::Callable { callable, ty }
                 },
                 None => match find_rejected_extern(ctx, definition) {
-                    Some(value) => match builtin_function_scheme(short_name(value.name)) {
+                    Some(value) => match find_function_by_name(ctx, short_name(value.name)) {
                         Some(scheme) => {
                             let (callable, ty) = instantiate_scheme(ctx, scheme, Vec::[]);
                             Expr::Callable { callable, ty }

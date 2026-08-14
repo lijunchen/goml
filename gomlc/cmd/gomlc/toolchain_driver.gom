@@ -264,10 +264,7 @@ fn compile_builtin_contract_request(command: PackageCommandArgs) -> Result[
     } else {};
     let counter = Ref::new(0);
     let core_value = core::lower_with_counter(checked, counter);
-    let interface_unit = builtin_artifact_interface_unit_from_files(
-        package_value.hir_files,
-        Vec::["channel_recv_cancel", "channel_send_cancel"],
-    );
+    let interface_unit = builtin_artifact_interface_unit_from_files(package_value.hir_files);
     Result::Ok(
         (
             PackageCompilation {

@@ -190,11 +190,7 @@ fn package_world() -> PackageWorld {
     let builtin_files = builtin_hir_files();
     let checked = tast::check_builtin_package_files(builtin_files);
     let builtins = lower_checked_builtin_core(checked, counter);
-    let builtin_interface = builtin_artifact_interface_unit_from_checked(
-        builtin_files,
-        checked,
-        Vec::[],
-    );
+    let builtin_interface = builtin_artifact_interface_unit_from_checked(builtin_files, checked);
     let prelude_compilation = compile_prelude_package_with_builtin_files(
         builtins,
         builtin_interface,
@@ -349,8 +345,7 @@ fn add_private_local_name(
     public_names: Vec[string],
     name: string,
 ) -> unit {
-    if !local_item_is_public(package_name, public_names, name)
-        && !result.contains(name) {
+    if !local_item_is_public(package_name, public_names, name) && !result.contains(name) {
         result.push(name)
     } else {}
 }

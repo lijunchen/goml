@@ -872,8 +872,7 @@ pub fn emit_runtime_hook_items(
         require_runtime_import(required_imports, RuntimeImport::Syscall)
     } else {};
     emit_runtime_import_items(items, required_imports);
-    if intrinsics.contains("once_cell.new")
-        || intrinsics.contains("once_cell.get_or_init") {
+    if intrinsics.contains("once_cell.new") || intrinsics.contains("once_cell.get_or_init") {
         items.push(once_cell_goroutine_id_item())
     } else {};
     let mut needs_task_support = false;

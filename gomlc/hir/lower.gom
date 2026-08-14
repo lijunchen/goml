@@ -385,8 +385,7 @@ fn expand_segments(ctx: LowerCtx, path: ast::Path) -> Vec[string] {
 
 fn qualified_segments(ctx: LowerCtx, path: ast::Path) -> Vec[string] {
     let values = expand_segments(ctx, path);
-    if ctx.qualify_imports && !values.is_empty()
-        && ctx.nominal_types.contains(values[0]) {
+    if ctx.qualify_imports && !values.is_empty() && ctx.nominal_types.contains(values[0]) {
         let result: Vec[string] = Vec::[];
         result.push(full_name(ctx.package_name, values[0]));
         for index in 1..values.len() {
@@ -651,8 +650,7 @@ fn lower_type(ctx: LowerCtx, value: ast::TypeExpr, type_params: Vec[string]) -> 
         },
         Con { path } => {
             let parts = qualified_segments(ctx, path);
-            if parts.len() == 2
-                && (parts[0] == "Self" || type_params.contains(parts[0])) {
+            if parts.len() == 2 && (parts[0] == "Self" || type_params.contains(parts[0])) {
                 TypeExpr::Projection {
                     base: TypeExpr::Con { name: parts[0] },
                     associated: parts[1],
