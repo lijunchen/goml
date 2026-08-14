@@ -479,10 +479,11 @@ fn checks_cross_file_package_definitions() -> unit {
         Err(error) => testing::fail(error),
     };
     match implicit_prelude_hir_files() {
-        Ok(files) => {
-            for environment in dependency_environments(files) {
+        Ok(files) => match dependency_environments(files) {
+            Ok(values) => for environment in values {
                 dependencies.push(environment)
-            }
+            },
+            Err(error) => testing::fail(error),
         },
         Err(error) => testing::fail(error),
     };
@@ -2374,6 +2375,38 @@ fn preserves_builtin_inclusive_range_language_item_identity() -> unit {
         },
         _ => testing::fail("expected main function"),
     }
+}
+
+#[test]
+fn derives_builtin_protocols_from_language_item_metadata() -> unit {
+    match builtin_contract() {
+        Ok(value) => {
+            testing::assert_eq(value.option.name, "Option");
+            testing::assert_eq(value.option.none.name, "None");
+            testing::assert_eq(value.option.none.tag, 0);
+            testing::assert_eq(value.option.some.name, "Some");
+            testing::assert_eq(value.option.some.tag, 1);
+            testing::assert_eq(value.into_iterator.name, "IntoIterator");
+            testing::assert_eq(value.into_iterator.into_iter_type, "IntoIter");
+            testing::assert_eq(value.hashmap.name, "HashMap");
+            testing::assert_eq(value.ordering.partial_ord, "std::cmp::PartialOrd");
+            testing::assert_eq(value.ordering.equal.name, "Equal");
+            testing::assert_eq(value.ordering.equal.tag, 1)
+        },
+        Err(message) => testing::fail(message),
+    }
+}
+
+#[test]
+fn rejects_parameterized_language_items_outside_builtin_sources() -> unit {
+    testing::assert(
+        has_diagnostic(
+            checked_diagnostics(
+                "#[lang(\"option\", none = \"Nada\", some = \"Just\")] enum Maybe[T] { Nada, Just(T) }",
+            ),
+            "lang item option is not permitted in this source",
+        ),
+    )
 }
 
 #[test]

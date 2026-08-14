@@ -112,7 +112,18 @@ fn source_interface(source: string) -> artifact::ArtifactInterfaceUnit {
             }
         },
     };
-    let signatures = tast::package_signatures(hir_file);
+    let signatures = match tast::package_signatures(hir_file) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error);
+            tast::PackageSignatures {
+                traits: Vec::[],
+                functions: Vec::[],
+                type_aliases: Vec::[],
+                constants: Vec::[],
+            }
+        },
+    };
     let checked = tast::check_package_files_for_link_with_dependencies(Vec::[hir_file], Vec::[]);
     if checked.diagnostics.is_empty() {} else {
         testing::fail(checked.diagnostics[0].message)
@@ -130,7 +141,7 @@ fn source_interface(source: string) -> artifact::ArtifactInterfaceUnit {
             }
         },
     };
-    let exports = artifact_package_exports(
+    let exports = required_artifact_package_exports(
         file,
         signatures,
         "audit::value",

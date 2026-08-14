@@ -432,11 +432,16 @@ fn emits_complete_vec_runtime_helpers() -> unit {
 
 #[test]
 fn emits_complete_hashmap_and_ref_runtime_helpers() -> unit {
+    let Ok(builtin) = tast::builtin_contract() else {
+        testing::fail("expected builtin contract");
+        return
+    };
     let key = repr::Type::String;
     let value = repr::Type::Int32;
     let map_output = encode(
         File {
             items: hashmap_items(
+                builtin,
                 key,
                 value,
                 Vec::new(),

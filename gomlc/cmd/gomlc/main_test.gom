@@ -1007,7 +1007,10 @@ fn filters_private_types_traits_and_trait_impls() -> unit {
             }
         },
     };
-    let signatures = tast::package_signatures(file);
+    let Ok(signatures) = tast::package_signatures(file) else {
+        testing::fail("expected package signatures");
+        return
+    };
     let checked = tast::check_package_files_for_link_with_dependencies(Vec::[file], Vec::new());
     let tast_file = match checked.tast {
         Some(value) => value,
@@ -1022,7 +1025,7 @@ fn filters_private_types_traits_and_trait_impls() -> unit {
             }
         },
     };
-    let exports = artifact_package_exports(
+    let exports = required_artifact_package_exports(
         tast_file,
         signatures,
         "visibility_audit::api",
@@ -1264,7 +1267,10 @@ fn extracts_interface_unit_from_checked_package() -> unit {
             }
         },
     };
-    let signatures = tast::package_signatures(hir_file);
+    let Ok(signatures) = tast::package_signatures(hir_file) else {
+        testing::fail("expected package signatures");
+        return
+    };
     let checked = tast::check_package_files_for_link_with_dependencies(Vec::[hir_file], Vec::new());
     let tast_file = match checked.tast {
         Some(value) => value,
@@ -1279,7 +1285,7 @@ fn extracts_interface_unit_from_checked_package() -> unit {
             }
         },
     };
-    let exports = artifact_package_exports(
+    let exports = required_artifact_package_exports(
         tast_file,
         signatures,
         "audit::value",
@@ -1328,7 +1334,10 @@ fn extracts_trait_interface_from_checked_package() -> unit {
             }
         },
     };
-    let signatures = tast::package_signatures(hir_file);
+    let Ok(signatures) = tast::package_signatures(hir_file) else {
+        testing::fail("expected package signatures");
+        return
+    };
     let checked = tast::check_package_files_for_link_with_dependencies(Vec::[hir_file], Vec::new());
     let tast_file = match checked.tast {
         Some(value) => value,
@@ -1343,7 +1352,7 @@ fn extracts_trait_interface_from_checked_package() -> unit {
             }
         },
     };
-    let exports = artifact_package_exports(
+    let exports = required_artifact_package_exports(
         tast_file,
         signatures,
         "demo::api",
@@ -1453,7 +1462,10 @@ fn writes_core_unit_from_checked_package() -> unit {
             }
         },
     };
-    let signatures = tast::package_signatures(hir_file);
+    let Ok(signatures) = tast::package_signatures(hir_file) else {
+        testing::fail("expected package signatures");
+        return
+    };
     let checked = tast::check_package_files_for_link_with_dependencies(Vec::[hir_file], Vec::new());
     let tast_file = match checked.tast {
         Some(value) => value,
@@ -1468,7 +1480,7 @@ fn writes_core_unit_from_checked_package() -> unit {
             }
         },
     };
-    let public_exports = artifact_package_exports(
+    let public_exports = required_artifact_package_exports(
         tast_file,
         signatures,
         "audit::value",
@@ -1478,7 +1490,7 @@ fn writes_core_unit_from_checked_package() -> unit {
         Vec::new(),
         Vec::new(),
     );
-    let full_exports = artifact_package_exports(
+    let full_exports = required_artifact_package_exports(
         tast_file,
         signatures,
         "audit::value",
