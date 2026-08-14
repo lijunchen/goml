@@ -1,0 +1,13 @@
+package main;
+
+use test::collection_from_array::fixtures;
+
+fn main() -> unit {
+    let values = fixtures::values();
+    let counts = fixtures::counts();
+    let count = match counts.get("a") {
+        Some(value) => value,
+        None => 0,
+    };
+    println(f"{values.len()}:{values[1]}:{count}")
+}

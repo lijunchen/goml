@@ -615,6 +615,53 @@ fn resolves_builtin_method_definitions() -> unit {
 }
 
 #[test]
+fn resolves_collection_from_array_definitions() -> unit {
+    let source = "fn main() -> Vec[int] { Vec::from_array([1, 2]) }";
+    let analysis = analyze("main.gom", source);
+    assert_no_diagnostics(analysis);
+    match last_substring(source, "from_array") {
+        Some(offset) => {
+            let definitions = goto_definitions(analysis, offset);
+            testing::assert_eq(definitions.len(), 1);
+            let expected = Ref::new(Option::None);
+            for symbol in build_symbol_index(analysis).symbols {
+                if symbol.qualified_name == "builtin::Vec::from_array" {
+                    expected.set(Option::Some(symbol.span))
+                } else {}
+            }
+            match expected.get() {
+                Some(span) => {
+                    testing::assert_eq(definitions[0].span.start, span.start);
+                    testing::assert_eq(definitions[0].span.end, span.end)
+                },
+                None => testing::fail("expected Vec from_array symbol"),
+            }
+        },
+        None => testing::fail("expected Vec from_array call"),
+    };
+    let map_source = "fn main() -> HashMap[string, int] { HashMap::from_array([(\"a\", 1)]) }";
+    let map_analysis = analyze("main.gom", map_source);
+    assert_no_diagnostics(map_analysis);
+    match last_substring(map_source, "from_array") {
+        Some(offset) => match goto_definition(map_analysis, offset) {
+            Some(definition) => {
+                let found = Ref::new(false);
+                for symbol in build_symbol_index(map_analysis).symbols {
+                    if symbol.qualified_name == "builtin::HashMap::from_array"
+                        && symbol.span.start == definition.span.start
+                        && symbol.span.end == definition.span.end {
+                        found.set(true)
+                    } else {}
+                }
+                testing::assert(found.get())
+            },
+            None => testing::fail("expected HashMap from_array definition"),
+        },
+        None => testing::fail("expected HashMap from_array call"),
+    }
+}
+
+#[test]
 fn resolves_prelude_function_definitions() -> unit {
     let source = "fn main() -> unit { println(\"hello\") }";
     match last_substring(source, "println") {
@@ -727,6 +774,32 @@ fn hides_method_receivers_in_signature_help() -> unit {
             None => testing::fail("expected method signature"),
         },
         None => testing::fail("expected method call"),
+    }
+}
+
+#[test]
+fn shows_collection_from_array_signature_help() -> unit {
+    let source = "fn main() -> Vec[int] { Vec::from_array([1, 2]) }";
+    let analysis = analyze("main.gom", source);
+    assert_no_diagnostics(analysis);
+    match last_substring(source, "from_array(") {
+        Some(offset) => {
+            match hover(analysis, offset) {
+                Some(result) => {
+                    testing::assert(result.contents.contains("[int; 2]"));
+                    testing::assert(result.contents.contains("Vec[int]"))
+                },
+                None => testing::fail("expected Vec from_array hover"),
+            };
+            match signature_help(analysis, offset + "from_array(".byte_len()) {
+                Some(signature) => {
+                    testing::assert_eq(signature.label, "(values: [int; 2]) -> Vec[int]");
+                    testing::assert_eq(signature.parameters.len(), 1)
+                },
+                None => testing::fail("expected Vec from_array signature"),
+            }
+        },
+        None => testing::fail("expected Vec from_array call"),
     }
 }
 
@@ -852,6 +925,26 @@ fn completes_builtin_and_dyn_trait_members() -> unit {
             testing::fail("expected Vec with_capacity completion")
         },
         None => testing::fail("expected Vec static member"),
+    };
+    let from_array_source = "fn main() -> unit { let _ = Vec::from_; () }";
+    match last_substring(from_array_source, "from_") {
+        Some(offset) => if has_completion(
+            completions(analyze("main.gom", from_array_source), offset + "from_".byte_len()),
+            "from_array",
+        ) {} else {
+            testing::fail("expected Vec from_array completion")
+        },
+        None => testing::fail("expected Vec from_array static member"),
+    };
+    let map_from_array_source = "fn main() -> unit { let _ = HashMap::from_; () }";
+    match last_substring(map_from_array_source, "from_") {
+        Some(offset) => if has_completion(
+            completions(analyze("main.gom", map_from_array_source), offset + "from_".byte_len()),
+            "from_array",
+        ) {} else {
+            testing::fail("expected HashMap from_array completion")
+        },
+        None => testing::fail("expected HashMap from_array static member"),
     };
     let int_source = "fn main() -> string { let value = 1; value.to_ }";
     match last_substring(int_source, "to_") {

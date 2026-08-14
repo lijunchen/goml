@@ -1406,6 +1406,68 @@ fn rejects_uninferred_collection_literals() -> unit {
 }
 
 #[test]
+fn checks_collection_from_array_inference_and_constraints() -> unit {
+    let valid = checked_diagnostics(
+        "fn main() -> unit { let values: Vec[int] = Vec::from_array([]); let entries = HashMap::[string, int]::from_array([]); let make: ([int; 2]) -> Vec[int] = Vec::from_array; let _ = make([1, 2]); let _ = values; let _ = entries; }",
+    );
+    testing::assert_eq(valid.len(), 0);
+    let uninferred = checked_diagnostics(
+        "fn main() -> unit { let _ = Vec::from_array([]); let _ = HashMap::from_array([]); }",
+    );
+    testing::assert(has_diagnostic_containing(uninferred, "Could not infer"));
+    let wrong_element = checked_diagnostics(
+        "fn main() -> Vec[int] { Vec::from_array([1, \"wrong\"]) }",
+    );
+    testing::assert(has_diagnostic(wrong_element, "Type mismatch: expected int, found string"));
+    let missing_key_traits = checked_diagnostics(
+        "struct Key {} fn main() -> HashMap[Key, int] { HashMap::from_array([(Key {}, 1)]) }",
+    );
+    testing::assert(has_diagnostic_containing(missing_key_traits, "Hash"));
+    testing::assert(has_diagnostic_containing(missing_key_traits, "Eq"));
+    let dependencies: Vec[hir::File] = Vec::[];
+    dependencies.push(dependency_hir("package shadow; pub struct Vec[T] {}", "vendor::shadow"));
+    let shadowed = check_for_link_with_dependencies(
+        hir::lower(
+            ast::lower(
+                parser::parse(
+                    "use vendor::shadow; fn main() -> unit { let _ = shadow::Vec::from_array([1]); }",
+                ),
+            ),
+            "main.gom",
+        ),
+        dependencies,
+    );
+    testing::assert(has_diagnostic_containing(shadowed.diagnostics, "Method from_array not found"))
+}
+
+#[test]
+fn lowers_collection_from_array_to_specialized_intrinsic() -> unit {
+    let file = checked_file("fn main() -> Vec[int] { Vec::from_array([1, 2]) }");
+    match file.items[0] {
+        Function(value) => match value.body.tail {
+            Some(Call {
+                func: Callable { callable: Intrinsic(name), ty: Func { params, ret_ty: _ } },
+                args,
+                ty: _,
+            }) => {
+                testing::assert_eq(name, "vec.from_array");
+                testing::assert_eq(params.len(), 1);
+                match params[0] {
+                    Array { len, elem: _ } => testing::assert_eq(len, 2),
+                    _ => testing::fail("expected specialized array parameter"),
+                };
+                match args[0] {
+                    Array { items, ty: _ } => testing::assert_eq(items.len(), 2),
+                    _ => testing::fail("expected array argument"),
+                }
+            },
+            _ => testing::fail("expected from_array intrinsic call"),
+        },
+        _ => testing::fail("expected main function"),
+    }
+}
+
+#[test]
 fn infers_empty_vectors_from_later_builtin_method_arguments() -> unit {
     let diagnostics = checked_diagnostics(
         "fn main() -> unit { let values = Vec::[]; values.push(Vec::[1, 2]); }",
@@ -2389,6 +2451,8 @@ fn derives_builtin_protocols_from_language_item_metadata() -> unit {
             testing::assert_eq(value.into_iterator.name, "IntoIterator");
             testing::assert_eq(value.into_iterator.into_iter_type, "IntoIter");
             testing::assert_eq(value.hashmap.name, "HashMap");
+            testing::assert_eq(value.hashmap.from_array, "from_array");
+            testing::assert_eq(value.vec.from_array, "from_array");
             testing::assert_eq(value.ordering.partial_ord, "std::cmp::PartialOrd");
             testing::assert_eq(value.ordering.equal.name, "Equal");
             testing::assert_eq(value.ordering.equal.tag, 1)
