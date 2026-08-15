@@ -47,6 +47,7 @@ fn function_context(
         rejected_externs: base.rejected_externs,
         methods: base.methods,
         impls: base.impls,
+        impl_indices: base.impl_indices,
         invalid_impl_origins: base.invalid_impl_origins,
         invalid_impl_arity_owners: base.invalid_impl_arity_owners,
         predicates,
@@ -111,6 +112,7 @@ fn closure_context(base: Checker, ret_ty: Type) -> Checker {
         rejected_externs: base.rejected_externs,
         methods: base.methods,
         impls: base.impls,
+        impl_indices: base.impl_indices,
         invalid_impl_origins: base.invalid_impl_origins,
         invalid_impl_arity_owners: base.invalid_impl_arity_owners,
         predicates: base.predicates,
@@ -3199,6 +3201,7 @@ fn check_file_with_package(
     let local_enum_count = ctx.enums.len();
     let local_struct_count = ctx.structs.len();
     let local_trait_count = ctx.traits.len();
+    let local_impl_count = ctx.impls.len();
     for package_file in package_files {
         append_package_environment(ctx, package_file, allow_externs)
     }
@@ -3294,7 +3297,7 @@ fn check_file_with_package(
     append_default_trait_method_schemes(ctx);
     validate_local_definitions(ctx, local_enum_count, local_struct_count, local_trait_count);
     expand_in_scope_supertraits(ctx);
-    validate_impl_overlaps(ctx);
+    validate_impl_overlaps(ctx, local_impl_count);
     let constants: Vec[Constant] = Vec::from_array([]);
     let statics: Vec[Static] = Vec::from_array([]);
     let pending_constants: Vec[PendingConstant] = Vec::from_array([]);

@@ -565,7 +565,7 @@ fn append_builtin_source_impls(ctx: Checker) -> unit {
         let values = builtin_source_impl_infos();
         let mut index = 0;
         while index < values.len() {
-            ctx.impls.push(values.get(index));
+            push_impl_info(ctx, values.get(index));
             index += 1;
         }
     }

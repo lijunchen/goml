@@ -1094,6 +1094,43 @@ pub fn builtin_projection(base: Type, name: string, qualifier: Option[TraitRef])
     }
 }
 
+fn collect_impl_projection_candidate(
+    ctx: Checker,
+    impl_info: ImplInfo,
+    base: Type,
+    name: string,
+    qualifier: Option[TraitRef],
+    candidates: Vec[Type],
+) -> unit {
+    match associated_binding(impl_info, name) {
+        Some(associated) => {
+            let substitutions = instantiate_substitutions(
+                ctx.counter,
+                impl_info.generics,
+                Vec::from_array([]),
+            );
+            let owner = substitute_type(impl_info.for_type, substitutions);
+            let application = substitute_trait_ref(impl_info.trait_ref, substitutions);
+            if unify(owner, base) {
+                let trait_matches = match qualifier {
+                    Some(reference) => impl_matches_trait(ctx, impl_info, reference)
+                        && unify_types(application.args, reference.args),
+                    None => true,
+                };
+                let predicates = substitute_predicates(impl_info.predicates, substitutions);
+                apply_predicate_equalities(predicates);
+                if trait_matches && predicates_satisfied_at(ctx, predicates, Vec::from_array([])) {
+                    let candidate = substitute_type(associated, substitutions);
+                    if !type_list_contains(candidates, candidate) {
+                        candidates.push(candidate)
+                    } else {}
+                } else {}
+            } else {}
+        },
+        None => (),
+    }
+}
+
 fn impl_projection(ctx: Checker, base: Type, name: string, qualifier: Option[TraitRef]) -> Option[
     Type,
 ] {
@@ -1103,36 +1140,24 @@ fn impl_projection(ctx: Checker, base: Type, name: string, qualifier: Option[Tra
     } else {};
     ctx.active_projections.push(goal);
     let candidates: Vec[Type] = Vec::from_array([]);
-    for impl_info in ctx.impls {
-        match associated_binding(impl_info, name) {
-            Some(associated) => {
-                let substitutions = instantiate_substitutions(
-                    ctx.counter,
-                    impl_info.generics,
-                    Vec::from_array([]),
-                );
-                let owner = substitute_type(impl_info.for_type, substitutions);
-                let application = substitute_trait_ref(impl_info.trait_ref, substitutions);
-                if unify(owner, base) {
-                    let trait_matches = match qualifier {
-                        Some(reference) => impl_matches_trait(ctx, impl_info, reference)
-                            && unify_types(application.args, reference.args),
-                        None => true,
-                    };
-                    let predicates = substitute_predicates(impl_info.predicates, substitutions);
-                    apply_predicate_equalities(predicates);
-                    if trait_matches
-                        && predicates_satisfied_at(ctx, predicates, Vec::from_array([])) {
-                        let candidate = substitute_type(associated, substitutions);
-                        if !type_list_contains(candidates, candidate) {
-                            candidates.push(candidate)
-                        } else {}
-                    } else {}
-                } else {}
+    match qualifier {
+        Some(reference) => match impl_candidate_indices(ctx, reference.name) {
+            Some(indices) => for index in indices {
+                collect_impl_projection_candidate(
+                    ctx,
+                    ctx.impls[index],
+                    base,
+                    name,
+                    qualifier,
+                    candidates,
+                )
             },
             None => (),
-        }
-    }
+        },
+        None => for impl_info in ctx.impls {
+            collect_impl_projection_candidate(ctx, impl_info, base, name, qualifier, candidates)
+        },
+    };
     ctx.active_projections.truncate(ctx.active_projections.len() - 1);
     if candidates.len() == 1 {
         Option::Some(candidates[0])

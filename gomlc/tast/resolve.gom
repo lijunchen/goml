@@ -50,6 +50,33 @@ fn names_match(left: string, right: string) -> bool {
         || (!right.contains("::") && short_name(left) == short_name(right))
 }
 
+fn add_impl_index(values: HashMap[string, Vec[int]], value: ImplInfo, index: int) -> unit {
+    let name = short_name(value.trait_ref.name);
+    match values[name] {
+        Some(indices) => indices.push(index),
+        None => {
+            values[name] = Vec::from_array([index]);
+        },
+    }
+}
+
+fn impl_name_index(values: Vec[ImplInfo]) -> HashMap[string, Vec[int]] {
+    let result: HashMap[string, Vec[int]] = HashMap::from_array([]);
+    for index in 0..values.len() {
+        add_impl_index(result, values[index], index)
+    }
+    result
+}
+
+fn push_impl_info(ctx: Checker, value: ImplInfo) -> unit {
+    add_impl_index(ctx.impl_indices, value, ctx.impls.len());
+    ctx.impls.push(value)
+}
+
+fn impl_candidate_indices(ctx: Checker, trait_name: string) -> Option[Vec[int]] {
+    ctx.impl_indices[short_name(trait_name)]
+}
+
 fn add_name_index(
     exact: HashMap[string, int],
     short: HashMap[string, int],
@@ -1414,37 +1441,41 @@ fn trait_bound_satisfied_at(ctx: Checker, bound_ty: Type, reference: TraitRef, g
             if ambiguous {
                 return false
             } else {};
-            for impl_info in ctx.impls {
-                if !ctx.invalid_impl_origins.contains(impl_info.origin)
-                    && impl_matches_trait_with_builtin(
-                        ctx,
-                        impl_info,
-                        reference_uses_builtin,
-                        canonical_reference,
-                        reference_short_name,
-                    ) {
-                    let substitutions = instantiate_substitutions(
-                        ctx.counter,
-                        impl_info.generics,
-                        Vec::from_array([]),
-                    );
-                    let owner = substitute_type(impl_info.for_type, substitutions);
-                    let application = substitute_trait_ref(impl_info.trait_ref, substitutions);
-                    if unify(owner, bound_ty) {
-                        let application = normalize_trait_ref(ctx, application);
-                        if unify_types(application.args, reference.args) {
-                            let predicates = expand_implied_predicates(
-                                ctx,
-                                substitute_predicates(impl_info.predicates, substitutions),
-                            );
-                            apply_predicate_equalities(predicates);
-                            if predicates_satisfied_at(ctx, predicates, goals) {
-                                return true
+            match impl_candidate_indices(ctx, reference.name) {
+                Some(indices) => for index in indices {
+                    let impl_info = ctx.impls[index];
+                    if !ctx.invalid_impl_origins.contains(impl_info.origin)
+                        && impl_matches_trait_with_builtin(
+                            ctx,
+                            impl_info,
+                            reference_uses_builtin,
+                            canonical_reference,
+                            reference_short_name,
+                        ) {
+                        let substitutions = instantiate_substitutions(
+                            ctx.counter,
+                            impl_info.generics,
+                            Vec::from_array([]),
+                        );
+                        let owner = substitute_type(impl_info.for_type, substitutions);
+                        let application = substitute_trait_ref(impl_info.trait_ref, substitutions);
+                        if unify(owner, bound_ty) {
+                            let application = normalize_trait_ref(ctx, application);
+                            if unify_types(application.args, reference.args) {
+                                let predicates = expand_implied_predicates(
+                                    ctx,
+                                    substitute_predicates(impl_info.predicates, substitutions),
+                                );
+                                apply_predicate_equalities(predicates);
+                                if predicates_satisfied_at(ctx, predicates, goals) {
+                                    return true
+                                } else {}
                             } else {}
                         } else {}
                     } else {}
-                } else {}
-            }
+                },
+                None => (),
+            };
             false
         }
     }
@@ -1459,31 +1490,35 @@ fn compatible_impl_count(
     reference_short_name: string,
 ) -> int {
     let mut count = 0;
-    for impl_info in ctx.impls {
-        if !ctx.invalid_impl_origins.contains(impl_info.origin)
-            && impl_matches_trait_with_builtin(
-                ctx,
-                impl_info,
-                reference_uses_builtin,
-                canonical_reference,
-                reference_short_name,
-            ) {
-            let substitutions = instantiate_substitutions(
-                ctx.counter,
-                impl_info.generics,
-                Vec::from_array([]),
-            );
-            let owner = substitute_type(impl_info.for_type, substitutions);
-            let application = normalize_trait_ref(
-                ctx,
-                substitute_trait_ref(impl_info.trait_ref, substitutions),
-            );
-            if call_types_compatible(owner, bound_ty)
-                && call_type_lists_compatible(application.args, reference.args) {
-                count += 1;
+    match impl_candidate_indices(ctx, reference.name) {
+        Some(indices) => for index in indices {
+            let impl_info = ctx.impls[index];
+            if !ctx.invalid_impl_origins.contains(impl_info.origin)
+                && impl_matches_trait_with_builtin(
+                    ctx,
+                    impl_info,
+                    reference_uses_builtin,
+                    canonical_reference,
+                    reference_short_name,
+                ) {
+                let substitutions = instantiate_substitutions(
+                    ctx.counter,
+                    impl_info.generics,
+                    Vec::from_array([]),
+                );
+                let owner = substitute_type(impl_info.for_type, substitutions);
+                let application = normalize_trait_ref(
+                    ctx,
+                    substitute_trait_ref(impl_info.trait_ref, substitutions),
+                );
+                if call_types_compatible(owner, bound_ty)
+                    && call_type_lists_compatible(application.args, reference.args) {
+                    count += 1;
+                } else {}
             } else {}
-        } else {}
-    }
+        },
+        None => (),
+    };
     count
 }
 
@@ -1515,49 +1550,62 @@ fn impls_overlap(ctx: Checker, left: ImplInfo, right: ImplInfo) -> bool {
     }
 }
 
-fn validate_impl_overlaps(ctx: Checker) -> unit {
-    for left in 0..ctx.impls.len() {
-        for right in left + 1..ctx.impls.len() {
-            let left_impl = ctx.impls[left];
-            let right_impl = ctx.impls[right];
-            if !(builtin_impl(left_impl) && builtin_impl(right_impl))
-                && impls_overlap(ctx, left_impl, right_impl) {
-                let invalid_impl = if builtin_impl(left_impl) {
-                    right_impl
-                } else if builtin_impl(right_impl) {
-                    left_impl
-                } else {
-                    right_impl
-                };
-                if !ctx.invalid_impl_origins.contains(invalid_impl.origin) {
-                    ctx.invalid_impl_origins.push(invalid_impl.origin)
+fn validate_impl_overlaps(ctx: Checker, local_impl_count: int) -> unit {
+    for left in 0..local_impl_count {
+        match impl_candidate_indices(ctx, ctx.impls[left].trait_ref.name) {
+            Some(indices) => for right in indices {
+                if right <= left {
+                    continue
                 } else {};
-                if builtin_impl(left_impl) || builtin_impl(right_impl) {
-                    push_diagnostic_at(
-                        ctx,
-                        f"Trait {short_name(invalid_impl.trait_ref.name)} implementation for {type_text(invalid_impl.for_type)} overlaps with builtin implementation",
-                        Option::Some(invalid_impl.span),
-                    )
-                } else if left_impl.generics.is_empty() && right_impl.generics.is_empty()
-                    && types_equal(left_impl.for_type, right_impl.for_type)
-                    && trait_ref_equal(left_impl.trait_ref, right_impl.trait_ref) {
-                    push_diagnostic(
-                        ctx,
-                        f"Trait {trait_ref_text(left_impl.trait_ref)} implementation for {type_text(left_impl.for_type)} is already defined",
-                    )
-                } else {
-                    let origin = if !left_impl.generics.is_empty() {
-                        f"{left_impl.origin} at source range {left_impl.span.start}..{left_impl.span.end}"
+                let left_impl = ctx.impls[left];
+                let right_impl = ctx.impls[right];
+                if !(builtin_impl(left_impl) && builtin_impl(right_impl))
+                    && impls_overlap(ctx, left_impl, right_impl) {
+                    let invalid_impl = if builtin_impl(left_impl) {
+                        right_impl
+                    } else if builtin_impl(right_impl) {
+                        left_impl
+                    } else if right < local_impl_count {
+                        right_impl
                     } else {
-                        left_impl.origin
+                        left_impl
                     };
-                    push_diagnostic_at(
-                        ctx,
-                        f"Trait {short_name(right_impl.trait_ref.name)} implementation for {type_text(right_impl.for_type)} overlaps with implementation {origin}",
-                        Option::Some(right_impl.span),
-                    )
-                }
-            } else {}
+                    if !ctx.invalid_impl_origins.contains(invalid_impl.origin) {
+                        ctx.invalid_impl_origins.push(invalid_impl.origin)
+                    } else {};
+                    if builtin_impl(left_impl) || builtin_impl(right_impl) {
+                        push_diagnostic_at(
+                            ctx,
+                            f"Trait {short_name(invalid_impl.trait_ref.name)} implementation for {type_text(invalid_impl.for_type)} overlaps with builtin implementation",
+                            Option::Some(invalid_impl.span),
+                        )
+                    } else if left_impl.generics.is_empty() && right_impl.generics.is_empty()
+                        && types_equal(left_impl.for_type, right_impl.for_type)
+                        && trait_ref_equal(left_impl.trait_ref, right_impl.trait_ref) {
+                        push_diagnostic(
+                            ctx,
+                            f"Trait {trait_ref_text(left_impl.trait_ref)} implementation for {type_text(left_impl.for_type)} is already defined",
+                        )
+                    } else {
+                        let other_impl = if invalid_impl.origin == left_impl.origin {
+                            right_impl
+                        } else {
+                            left_impl
+                        };
+                        let origin = if !other_impl.generics.is_empty() {
+                            f"{other_impl.origin} at source range {other_impl.span.start}..{other_impl.span.end}"
+                        } else {
+                            other_impl.origin
+                        };
+                        push_diagnostic_at(
+                            ctx,
+                            f"Trait {short_name(invalid_impl.trait_ref.name)} implementation for {type_text(invalid_impl.for_type)} overlaps with implementation {origin}",
+                            Option::Some(invalid_impl.span),
+                        )
+                    }
+                } else {}
+            },
+            None => (),
         }
     }
 }
