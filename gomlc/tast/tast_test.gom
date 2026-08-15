@@ -1383,32 +1383,6 @@ fn checks_practical_expression_syntax() -> unit {
 }
 
 #[test]
-fn warns_for_deprecated_collection_literals() -> unit {
-    let diagnostics = checked_diagnostics(
-        "fn main() -> unit { let values: Vec[int] = Vec::[]; let entries: HashMap[string, int] = HashMap::{ \"x\" => 1 }; let _ = (values, entries); }",
-    );
-    testing::assert_eq(diagnostics.len(), 2);
-    testing::assert_eq(
-        diagnostics.get(0).message,
-        "Vec collection literal is deprecated; use Vec::from_array([...])",
-    );
-    testing::assert_eq(
-        diagnostics.get(1).message,
-        "HashMap collection literal is deprecated; use HashMap::from_array([(key, value), ...])",
-    );
-    for diagnostic in diagnostics {
-        match diagnostic.severity {
-            Warning => (),
-            Error => testing::fail("expected collection deprecation warning"),
-        };
-        match diagnostic.span {
-            Some(_) => (),
-            None => testing::fail("expected collection deprecation span"),
-        }
-    }
-}
-
-#[test]
 fn checks_collection_from_array_inference_and_constraints() -> unit {
     let valid = checked_diagnostics(
         "fn main() -> unit { let values: Vec[int] = Vec::from_array([]); let entries = HashMap::[string, int]::from_array([]); let make: ([int; 2]) -> Vec[int] = Vec::from_array; let _ = make([1, 2]); let _ = values; let _ = entries; }",

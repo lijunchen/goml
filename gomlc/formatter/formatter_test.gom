@@ -98,45 +98,18 @@ fn read_fixture(path_value: string) -> string {
 }
 
 fn assert_format_invariants(source: string, formatted: string) -> unit {
-    let parsed = parser::parse(source);
-    let migrated = migrate_collection_literals(source, located_node(parsed.root, 0));
     testing::assert_eq(parser::parse(formatted).diagnostics.len(), 0);
     match format_source(formatted) {
         Ok(again) => testing::assert_eq(again, formatted),
         Err(_) => testing::fail("second format failed"),
     };
-    testing::assert_eq(token_signature(formatted), token_signature(migrated));
+    testing::assert_eq(token_signature(formatted), token_signature(source));
     testing::assert_eq(literal_signature(formatted), literal_signature(source));
     testing::assert_eq(
         token_kind_signature(formatted, lexer::TokenKind::Comment),
         token_kind_signature(source, lexer::TokenKind::Comment),
     );
     testing::assert(!has_trailing_space(formatted))
-}
-
-#[test]
-fn migrates_collection_literals_losslessly() -> unit {
-    let source = "fn main() -> unit { let nested = Vec::[Vec::[1], Vec::[]]; let map = HashMap::{ // key\n \"a\" // arrow\n => // value\n Vec::[2], \"b\" => Vec::[], }; let explicit = Vec::[int]::new(); let text = \"Vec::[unchanged]\"; let _ = (nested, map, explicit, text); }";
-    let formatted = match format_source(source) {
-        Ok(value) => value,
-        Err(_) => {
-            testing::fail("collection migration failed");
-            ""
-        },
-    };
-    testing::assert(
-        formatted.contains("Vec::from_array([Vec::from_array([1]), Vec::from_array([])])"),
-    );
-    testing::assert(formatted.contains("HashMap::from_array("));
-    testing::assert(formatted.contains("// key"));
-    testing::assert(formatted.contains("// arrow"));
-    testing::assert(formatted.contains("// value"));
-    testing::assert(formatted.contains("Vec::[int]::new()"));
-    testing::assert(formatted.contains("\"Vec::[unchanged]\""));
-    match format_source(formatted) {
-        Ok(again) => testing::assert_eq(again, formatted),
-        Err(_) => testing::fail("migrated source was not idempotent"),
-    }
 }
 
 fn formatter_fixture_root() -> string {
@@ -298,7 +271,7 @@ fn normalizes_line_endings_and_empty_input() -> unit {
 
 #[test]
 fn preserves_tokens_literals_comments_and_ast() -> unit {
-    let source = "fn sample() -> unit { // 注释\nlet value = Vec::[0xFF_FF, 1_000,]; let ch = '\\u0041'; let byte = b'\\xFF'; let text = f\"值={value.get(0)}\"; () }\n";
+    let source = "fn sample() -> unit { // 注释\nlet value = Vec::from_array([0xFF_FF, 1_000]); let ch = '\\u0041'; let byte = b'\\xFF'; let text = f\"值={value.get(0)}\"; () }\n";
     let formatted = match format_source(source) {
         Ok(value) => value,
         Err(_) => {
