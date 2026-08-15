@@ -499,6 +499,38 @@ fn checks_cross_file_package_definitions() -> unit {
 }
 
 #[test]
+fn diagnoses_overlapping_impls_across_package_files() -> unit {
+    let parsed = Vec::from_array(
+        [
+            parser::parse(
+                "package values; trait Pick { fn pick(self: Self) -> int32; } struct Value {} impl Pick for Value { fn pick(self: Value) -> int32 { 1 } }",
+            ),
+            parser::parse(
+                "package values; impl Pick for Value { fn pick(self: Value) -> int32 { 2 } }",
+            ),
+        ],
+    );
+    let ast_files = ast::lower_package(parsed);
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::from_array(
+        [(ast_files[0], "first.gom"), (ast_files[1], "second.gom")],
+    );
+    let hir_files: Vec[hir::File] = Vec::from_array([]);
+    for lowered in hir::lower_package_files(inputs, "example::values") {
+        match lowered.hir {
+            Some(file) => hir_files.push(file),
+            None => testing::fail("expected overlapping impl HIR"),
+        }
+    }
+    let checked = check_package_files_for_link_with_dependencies(hir_files, Vec::from_array([]));
+    testing::assert(
+        has_diagnostic(
+            checked.diagnostics,
+            "Trait example::values::Pick implementation for example::values::Value is already defined",
+        ),
+    )
+}
+
+#[test]
 fn diagnoses_duplicate_functions_across_package_files() -> unit {
     let parsed = Vec::new();
     parsed.push(parser::parse("package values; fn duplicate() -> unit { () }"));
