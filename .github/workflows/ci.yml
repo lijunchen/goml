@@ -14,11 +14,12 @@ jobs:
     name: Build stage2
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version: '1.25'
-      - uses: extractions/setup-just@v2
+          cache: false
+      - uses: extractions/setup-just@v4
         with:
           just-version: '1.40.0'
       - name: Build stage2
@@ -29,7 +30,7 @@ jobs:
             stage2 \
             gomlc/_bootstrap/stage2/build/pkg \
             goml/_bootstrap/stage2/build/pkg
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: stage2-build
           path: stage2-build.tar.gz
@@ -69,14 +70,15 @@ jobs:
             node: false
             yaegi: false
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version: '1.25'
-      - uses: extractions/setup-just@v2
+          cache: false
+      - uses: extractions/setup-just@v4
         with:
           just-version: '1.40.0'
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         if: matrix.node
         with:
           node-version: '20'
@@ -85,7 +87,7 @@ jobs:
       - name: Install Yaegi interpreter
         if: matrix.yaegi
         run: curl -sfL https://raw.githubusercontent.com/traefik/yaegi/master/install.sh | bash -s -- -b "$(go env GOPATH)/bin" v0.16.1
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v8
         with:
           name: stage2-build
       - name: Unpack stage2 build
