@@ -41,13 +41,13 @@ func once_cell_new__OnceCell__FrozenVec__int() *OnceCell__FrozenVec__int {
 }
 
 func once_cell_get_or_init__OnceCell__FrozenVec__int(cell *OnceCell__FrozenVec__int, init func() FrozenVec__int) FrozenVec__int {
-    var goroutine uint64 = _goml_once_cell_goroutine_id()
     cell.mutex.Lock()
     for {
         if cell.state == 2 {
             cell.mutex.Unlock()
             return cell.value
         }
+        var goroutine uint64 = _goml_once_cell_goroutine_id()
         if cell.state == 1 {
             if cell.owner == goroutine {
                 cell.mutex.Unlock()

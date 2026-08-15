@@ -44,13 +44,13 @@ func once_cell_new__OnceCell__int() *OnceCell__int {
 }
 
 func once_cell_get_or_init__OnceCell__int(cell *OnceCell__int, init func() int) int {
-    var goroutine uint64 = _goml_once_cell_goroutine_id()
     cell.mutex.Lock()
     for {
         if cell.state == 2 {
             cell.mutex.Unlock()
             return cell.value
         }
+        var goroutine uint64 = _goml_once_cell_goroutine_id()
         if cell.state == 1 {
             if cell.owner == goroutine {
                 cell.mutex.Unlock()
