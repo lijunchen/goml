@@ -340,10 +340,13 @@ fn load_builtin_source_traits() -> FrozenVec[TraitInfo] {
 
 fn builtin_source_trait_info(name: string) -> Option[TraitInfo] {
     let values = builtin_source_traits.get_or_init(|| load_builtin_source_traits());
-    for value in values.to_vec() {
+    let mut index = 0;
+    while index < values.len() {
+        let value = values.get(index);
         if value.name == name {
             return Option::Some(value)
-        } else {}
+        } else {};
+        index += 1;
     }
     Option::None
 }
@@ -381,10 +384,15 @@ fn builtin_source_enum_infos() -> Vec[EnumInfo] {
 }
 
 fn builtin_source_enum_info(name: string) -> Option[EnumInfo] {
-    for value in builtin_source_enum_infos() {
-        if value.name == short_name(name) {
+    let expected = short_name(name);
+    let values = builtin_source_enums.get_or_init(|| load_builtin_source_enums());
+    let mut index = 0;
+    while index < values.len() {
+        let value = values.get(index);
+        if value.name == expected {
             return Option::Some(value)
-        } else {}
+        } else {};
+        index += 1;
     }
     Option::None
 }
@@ -415,11 +423,15 @@ fn load_builtin_source_structs() -> FrozenVec[StructInfo] {
 }
 
 fn builtin_source_struct_info(name: string) -> Option[StructInfo] {
+    let expected = short_name(name);
     let values = builtin_source_structs.get_or_init(|| load_builtin_source_structs());
-    for value in values.to_vec() {
-        if value.name == short_name(name) {
+    let mut index = 0;
+    while index < values.len() {
+        let value = values.get(index);
+        if value.name == expected {
             return Option::Some(value)
-        } else {}
+        } else {};
+        index += 1;
     }
     Option::None
 }
@@ -444,10 +456,13 @@ fn load_builtin_source_functions() -> FrozenVec[FunctionScheme] {
 
 fn builtin_source_function_scheme(name: string) -> Option[FunctionScheme] {
     let values = builtin_source_functions.get_or_init(|| load_builtin_source_functions());
-    for value in values.to_vec() {
+    let mut index = 0;
+    while index < values.len() {
+        let value = values.get(index);
         if value.name == name {
             return Option::Some(value)
-        } else {}
+        } else {};
+        index += 1;
     }
     Option::None
 }
@@ -500,11 +515,15 @@ fn load_builtin_source_arities() -> FrozenVec[(string, int)] {
 }
 
 fn builtin_source_nominal_arity(name: string) -> Option[int] {
+    let expected = short_name(name);
     let values = builtin_source_arities.get_or_init(|| load_builtin_source_arities());
-    for value in values.to_vec() {
-        if value.0 == short_name(name) {
+    let mut index = 0;
+    while index < values.len() {
+        let value = values.get(index);
+        if value.0 == expected {
             return Option::Some(value.1)
-        } else {}
+        } else {};
+        index += 1;
     }
     Option::None
 }
@@ -537,14 +556,17 @@ fn load_builtin_source_impls() -> FrozenVec[ImplInfo] {
     result.freeze()
 }
 
-fn builtin_source_impl_infos() -> Vec[ImplInfo] {
-    builtin_source_impls.get_or_init(|| load_builtin_source_impls()).to_vec()
+fn builtin_source_impl_infos() -> FrozenVec[ImplInfo] {
+    builtin_source_impls.get_or_init(|| load_builtin_source_impls())
 }
 
 fn append_builtin_source_impls(ctx: Checker) -> unit {
     if ctx.package_name == "builtin" {} else {
-        for value in builtin_source_impl_infos() {
-            ctx.impls.push(value)
+        let values = builtin_source_impl_infos();
+        let mut index = 0;
+        while index < values.len() {
+            ctx.impls.push(values.get(index));
+            index += 1;
         }
     }
 }

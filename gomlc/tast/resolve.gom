@@ -1320,12 +1320,19 @@ fn builtin_impl(value: ImplInfo) -> bool {
 }
 
 fn trait_reference_uses_builtin(ctx: Checker, reference: TraitRef) -> bool {
+    trait_reference_uses_builtin_with_canonical(
+        ctx,
+        reference,
+        canonical_imported_name(ctx, reference.name),
+    )
+}
+
+fn trait_reference_uses_builtin_with_canonical(ctx: Checker, reference: TraitRef, canonical: string) -> bool {
     if ctx.package_name == "builtin" {
         true
     } else if builtin_trait_info(short_name(reference.name)).is_none() {
         false
     } else {
-        let canonical = canonical_imported_name(ctx, reference.name);
         for value in ctx.traits {
             if names_match(value.name, canonical) {
                 return false
@@ -1336,11 +1343,27 @@ fn trait_reference_uses_builtin(ctx: Checker, reference: TraitRef) -> bool {
 }
 
 fn impl_matches_trait(ctx: Checker, value: ImplInfo, reference: TraitRef) -> bool {
+    let canonical = canonical_imported_name(ctx, reference.name);
+    impl_matches_trait_with_builtin(
+        ctx,
+        value,
+        trait_reference_uses_builtin_with_canonical(ctx, reference, canonical),
+        canonical,
+        short_name(reference.name),
+    )
+}
+
+fn impl_matches_trait_with_builtin(
+    ctx: Checker,
+    value: ImplInfo,
+    reference_uses_builtin: bool,
+    canonical_reference: string,
+    reference_short_name: string,
+) -> bool {
     if builtin_impl(value) {
-        trait_reference_uses_builtin(ctx, reference)
-            && short_name(value.trait_ref.name) == short_name(reference.name)
+        reference_uses_builtin && short_name(value.trait_ref.name) == reference_short_name
     } else {
-        trait_names_match_in_context(ctx, value.trait_ref.name, reference.name)
+        names_match(canonical_imported_name(ctx, value.trait_ref.name), canonical_reference)
     }
 }
 
@@ -1368,8 +1391,23 @@ fn trait_bound_satisfied_at(ctx: Checker, bound_ty: Type, reference: TraitRef, g
         if builtin_trait_bound_satisfied(ctx, bound_ty, reference, goals) {
             true
         } else {
+            let canonical_reference = canonical_imported_name(ctx, reference.name);
+            let reference_uses_builtin = trait_reference_uses_builtin_with_canonical(
+                ctx,
+                reference,
+                canonical_reference,
+            );
+            let reference_short_name = short_name(reference.name);
             let ambiguous = if contains_unbound_any_variable(bound_ty) {
-                compatible_impl_count(ctx, bound_ty, reference) > 1
+                compatible_impl_count(
+                    ctx,
+                    bound_ty,
+                    reference,
+                    reference_uses_builtin,
+                    canonical_reference,
+                    reference_short_name,
+                )
+                    > 1
             } else {
                 false
             };
@@ -1378,7 +1416,13 @@ fn trait_bound_satisfied_at(ctx: Checker, bound_ty: Type, reference: TraitRef, g
             } else {};
             for impl_info in ctx.impls {
                 if !ctx.invalid_impl_origins.contains(impl_info.origin)
-                    && impl_matches_trait(ctx, impl_info, reference) {
+                    && impl_matches_trait_with_builtin(
+                        ctx,
+                        impl_info,
+                        reference_uses_builtin,
+                        canonical_reference,
+                        reference_short_name,
+                    ) {
                     let substitutions = instantiate_substitutions(
                         ctx.counter,
                         impl_info.generics,
@@ -1406,11 +1450,24 @@ fn trait_bound_satisfied_at(ctx: Checker, bound_ty: Type, reference: TraitRef, g
     }
 }
 
-fn compatible_impl_count(ctx: Checker, bound_ty: Type, reference: TraitRef) -> int {
+fn compatible_impl_count(
+    ctx: Checker,
+    bound_ty: Type,
+    reference: TraitRef,
+    reference_uses_builtin: bool,
+    canonical_reference: string,
+    reference_short_name: string,
+) -> int {
     let mut count = 0;
     for impl_info in ctx.impls {
         if !ctx.invalid_impl_origins.contains(impl_info.origin)
-            && impl_matches_trait(ctx, impl_info, reference) {
+            && impl_matches_trait_with_builtin(
+                ctx,
+                impl_info,
+                reference_uses_builtin,
+                canonical_reference,
+                reference_short_name,
+            ) {
             let substitutions = instantiate_substitutions(
                 ctx.counter,
                 impl_info.generics,
@@ -1463,7 +1520,8 @@ fn validate_impl_overlaps(ctx: Checker) -> unit {
         for right in left + 1..ctx.impls.len() {
             let left_impl = ctx.impls[left];
             let right_impl = ctx.impls[right];
-            if impls_overlap(ctx, left_impl, right_impl) {
+            if !(builtin_impl(left_impl) && builtin_impl(right_impl))
+                && impls_overlap(ctx, left_impl, right_impl) {
                 let invalid_impl = if builtin_impl(left_impl) {
                     right_impl
                 } else if builtin_impl(right_impl) {

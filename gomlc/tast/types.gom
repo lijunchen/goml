@@ -1025,7 +1025,10 @@ fn builtin_source_trait_satisfied(base: Type, reference: TraitRef, goals: Vec[st
         return false
     } else {};
     let next_goals = extend_trait_goals(goals, goal);
-    for implementation in builtin_source_impl_infos() {
+    let implementations = builtin_source_impl_infos();
+    let mut implementation_index = 0;
+    while implementation_index < implementations.len() {
+        let implementation = implementations.get(implementation_index);
         if names_match(implementation.trait_ref.name, reference.name) {
             let substitutions = instantiate_substitutions(
                 Ref::new(0),
@@ -1040,7 +1043,8 @@ fn builtin_source_trait_satisfied(base: Type, reference: TraitRef, goals: Vec[st
                     return true
                 } else {}
             } else {}
-        } else {}
+        } else {};
+        implementation_index += 1;
     }
     false
 }
@@ -1051,7 +1055,10 @@ pub fn builtin_trait_satisfied(base: Type, reference: TraitRef) -> bool {
 
 pub fn builtin_projection(base: Type, name: string, qualifier: Option[TraitRef]) -> Option[Type] {
     let candidates: Vec[Type] = Vec::from_array([]);
-    for implementation in builtin_source_impl_infos() {
+    let implementations = builtin_source_impl_infos();
+    let mut implementation_index = 0;
+    while implementation_index < implementations.len() {
+        let implementation = implementations.get(implementation_index);
         match associated_binding(implementation, name) {
             Some(associated) => {
                 let substitutions = instantiate_substitutions(
@@ -1077,7 +1084,8 @@ pub fn builtin_projection(base: Type, name: string, qualifier: Option[TraitRef])
                 } else {}
             },
             None => (),
-        }
+        };
+        implementation_index += 1;
     }
     if candidates.len() == 1 {
         Option::Some(candidates[0])
