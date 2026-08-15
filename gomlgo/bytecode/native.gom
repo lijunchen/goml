@@ -104,7 +104,7 @@ fn native_type_key(world: go_types::World, type_id: go_types::TypeId) -> Result[
         ),
         Some(go_types::TypeData {
             id: _,
-            kind: go_types::TypeKind::Named { object, underlying, .. },
+            kind: go_types::TypeKind::Named { object, underlying, type_params, type_args, .. },
         }) => if go_types::is_interface(world, underlying) {
             let value = world.objects[object.value];
             if value.name == "error" {
@@ -112,8 +112,21 @@ fn native_type_key(world: go_types::World, type_id: go_types::TypeId) -> Result[
             } else {
                 Result::Ok("interface")
             }
+        } else if type_params.is_empty() && type_args.is_empty()
+            && native_opaque_underlying(world, underlying) {
+            let value = world.objects[object.value];
+            let owner = value.owner.ok_or("native opaque type has no package owner")?;
+            Result::Ok("native:" + world.packages[owner.value].path + "." + value.name)
         } else {
             native_type_key(world, underlying)
+        },
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } }) => {
+            let key = native_type_key(world, element)?;
+            if key.starts_with("native:") {
+                Result::Ok("native:*" + key.byte_slice(7, key.byte_len()))
+            } else {
+                Result::Err("pointer target is not a native opaque type")
+            }
         },
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Interface { .. } }) => {
             Result::Ok("interface")
@@ -156,6 +169,10 @@ fn native_type_key(world: go_types::World, type_id: go_types::TypeId) -> Result[
     }
 }
 
+fn native_intrinsic(import_path: string, symbol: string) -> bool {
+    import_path == "slices" && symbol == "Grow"
+}
+
 fn native_proxy_method(world: go_types::World, object: go_types::ObjectId) -> Result[
     native_api::NativeProxyMethodSpec,
     string,
@@ -176,15 +193,49 @@ fn native_proxy_method(world: go_types::World, object: go_types::ObjectId) -> Re
             if !receiver_type_params.is_empty() || !type_params.is_empty() || variadic {
                 return Result::Err("generic or variadic interface methods are not supported")
             } else {};
+            let parameter_type_keys = native_tuple(world, params)?.1;
+            let result_type_keys = native_tuple(world, results)?.1;
+            for key in parameter_type_keys {
+                if !native_proxy_type_key_supported(key) {
+                    return Result::Err("interface method parameter is not proxyable")
+                } else {}
+            }
+            for key in result_type_keys {
+                if !native_proxy_type_key_supported(key) {
+                    return Result::Err("interface method result is not proxyable")
+                } else {}
+            }
             Result::Ok(
                 native_api::NativeProxyMethodSpec {
                     name: value.name,
-                    parameter_type_keys: native_tuple(world, params)?.1,
-                    result_type_keys: native_tuple(world, results)?.1,
+                    parameter_type_keys,
+                    result_type_keys,
                 },
             )
         },
         _ => Result::Err("interface method has no signature"),
+    }
+}
+
+fn native_proxy_type_key_supported(value: string) -> bool {
+    if value.starts_with("[]") {
+        native_proxy_type_key_supported(value.byte_slice(2, value.byte_len()))
+    } else {
+        value == "bool" || value == "int" || value == "int8" || value == "int16" || value == "int32"
+            || value == "int64"
+            || value == "uint"
+            || value == "uint8"
+            || value == "uint16"
+            || value == "uint32"
+            || value == "uint64"
+            || value == "uintptr"
+            || value == "float32"
+            || value == "float64"
+            || value == "complex64"
+            || value == "complex128"
+            || value == "string"
+            || value == "error"
+            || value == "interface"
     }
 }
 
@@ -743,6 +794,9 @@ fn link_native_calls(program: execution::ExecutionProgram) -> NativeLinkResult {
                                     Some(owner_package) => if owner_package.mode
                                         == execution::ExecutionMode::Native
                                         && object.kind == go_types::ObjectKind::Func {
+                                        if native_intrinsic(owner_package.path, object.name) {
+                                            continue
+                                        } else {};
                                         if !generic {
                                             selected[object_id.value] = true;
                                         } else {};
@@ -1032,6 +1086,34 @@ pub fn native_manifest(program: BytecodeProgram) -> Result[native_api::Manifest,
                 name: value.name,
             },
         )
+    }
+    let selected: Vec[bool] = Vec::with_capacity(program.world.objects.len());
+    for _ in program.world.objects {
+        selected.push(false)
+    }
+    for function in program.functions {
+        for block in function.blocks {
+            for instruction in block.instructions {
+                match instruction.kind {
+                    InstructionKind::NativeGlobalLoad { target: _, object } => if !selected[object.value] {
+                        selected[object.value] = true;
+                        let value = program.world.objects[object.value];
+                        let owner = value.owner.ok_or("native global has no package owner")?;
+                        let import_path = program.world.packages[owner.value].path;
+                        if import_path != "os" || value.name != "Args" {
+                            manifest.globals.push(
+                                native_api::NativeGlobalSpec {
+                                    object_id: object.value,
+                                    import_path,
+                                    name: value.name,
+                                },
+                            )
+                        } else {}
+                    } else {},
+                    _ => {},
+                }
+            }
+        }
     }
     manifest.proxies = proxies;
     manifest.aggregates = native_aggregate_specs(program);

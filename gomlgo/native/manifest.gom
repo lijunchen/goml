@@ -5,7 +5,7 @@ use std::collections;
 use std::crypto::hash;
 use std::text;
 
-pub const NATIVE_BRIDGE_ABI_VERSION: uint32 = 4;
+pub const NATIVE_BRIDGE_ABI_VERSION: uint32 = 5;
 
 pub const NATIVE_BRIDGE_IMPORT_PATH: string = "gomlgo/nativebridge";
 
@@ -30,6 +30,12 @@ pub struct NativeCallSpec {
 
 pub struct NativeTypeSpec {
     pub key: string,
+    pub import_path: string,
+    pub name: string,
+}
+
+pub struct NativeGlobalSpec {
+    pub object_id: int,
     pub import_path: string,
     pub name: string,
 }
@@ -63,6 +69,7 @@ pub struct Manifest {
     pub initialization_packages: Vec[string],
     pub calls: Vec[NativeCallSpec],
     pub types: Vec[NativeTypeSpec],
+    pub globals: Vec[NativeGlobalSpec],
     pub proxies: Vec[NativeProxySpec],
     pub aggregates: Vec[NativeAggregateSpec],
 }
@@ -73,6 +80,7 @@ pub fn new_manifest(initialization_packages: Vec[string], calls: Vec[NativeCallS
         initialization_packages,
         calls,
         types: Vec::from_array([]),
+        globals: Vec::from_array([]),
         proxies: Vec::from_array([]),
         aggregates: Vec::from_array([]),
     }
@@ -222,6 +230,10 @@ fn compare_type(left: NativeTypeSpec, right: NativeTypeSpec) -> int {
     }
 }
 
+fn compare_global(left: NativeGlobalSpec, right: NativeGlobalSpec) -> int {
+    left.object_id - right.object_id
+}
+
 fn import_path_byte(value: byte) -> bool {
     (value >= b'a' && value <= b'z') || (value >= b'A' && value <= b'Z')
         || (value >= b'0' && value <= b'9')
@@ -354,6 +366,16 @@ fn validate_type(value: NativeTypeSpec) -> Result[unit, string] {
     }
 }
 
+fn validate_global(value: NativeGlobalSpec) -> Result[unit, string] {
+    if value.object_id < 0 || !valid_import_path(value.import_path)
+        || value.import_path == NATIVE_BRIDGE_IMPORT_PATH
+        || !valid_exported_symbol(value.name) {
+        Result::Err("native global has an invalid identity")
+    } else {
+        Result::Ok(())
+    }
+}
+
 fn validate_proxy(value: NativeProxySpec) -> Result[unit, string] {
     if !valid_import_path(value.import_path) || !valid_exported_symbol(value.name) {
         return Result::Err("native proxy has invalid interface identity")
@@ -443,6 +465,17 @@ pub fn canonical_manifest(value: Manifest) -> Result[Manifest, string] {
             return Result::Err("native type is registered twice")
         } else {}
     }
+    let globals: Vec[NativeGlobalSpec] = Vec::with_capacity(value.globals.len());
+    for global in value.globals {
+        validate_global(global)?;
+        globals.push(global)
+    }
+    collections::sort_by(globals, compare_global);
+    for index in 1..globals.len() {
+        if globals[index - 1].object_id == globals[index].object_id {
+            return Result::Err("native global is registered twice")
+        } else {}
+    }
     let proxies: Vec[NativeProxySpec] = Vec::with_capacity(value.proxies.len());
     for proxy in value.proxies {
         validate_proxy(proxy)?;
@@ -488,6 +521,7 @@ pub fn canonical_manifest(value: Manifest) -> Result[Manifest, string] {
             initialization_packages: unique,
             calls,
             types,
+            globals,
             proxies,
             aggregates,
         },
@@ -548,6 +582,12 @@ pub fn encode_manifest(value: Manifest) -> Result[string, string] {
         append_field(builder, type_value.key);
         append_field(builder, type_value.import_path);
         append_field(builder, type_value.name)
+    }
+    append_field(builder, value.globals.len().to_string());
+    for global in value.globals {
+        append_field(builder, global.object_id.to_string());
+        append_field(builder, global.import_path);
+        append_field(builder, global.name)
     }
     append_field(builder, value.proxies.len().to_string());
     for proxy in value.proxies {

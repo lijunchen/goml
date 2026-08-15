@@ -51,6 +51,38 @@ var defaultRegistry struct {
 	value *Registry
 }
 
+var nativeGlobals struct {
+	sync.RWMutex
+	values map[int]reflect.Value
+}
+
+func RegisterNativeGlobal(id int, value any) error {
+	if id < 0 {
+		return fmt.Errorf("native global ID is negative")
+	}
+	ref := reflect.ValueOf(value)
+	if !ref.IsValid() {
+		return fmt.Errorf("native global %d is invalid", id)
+	}
+	nativeGlobals.Lock()
+	defer nativeGlobals.Unlock()
+	if nativeGlobals.values == nil {
+		nativeGlobals.values = make(map[int]reflect.Value)
+	}
+	if current, exists := nativeGlobals.values[id]; exists && current.Type() != ref.Type() {
+		return fmt.Errorf("native global %d is registered with conflicting types", id)
+	}
+	nativeGlobals.values[id] = ref
+	return nil
+}
+
+func NativeGlobalValue(id int) any {
+	nativeGlobals.RLock()
+	value := nativeGlobals.values[id]
+	nativeGlobals.RUnlock()
+	return Clone(value)
+}
+
 func ValueOf(value any) ValueRef {
 	return reflect.ValueOf(value)
 }

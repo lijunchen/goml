@@ -276,6 +276,9 @@ extern fn new_native_nil() -> HostValueRef;
 #[go_ffi("gomlgo/nativebridge", "ProgramArgsValue")]
 extern fn native_program_args() -> HostValueRef;
 
+#[go_ffi("gomlgo/nativebridge", "NativeGlobalValue")]
+extern fn native_global_value(object_id: int) -> HostValueRef;
+
 #[go_ffi("gomlgo/nativebridge", "NewBoolValue")]
 extern fn new_native_bool(value: bool) -> HostValueRef;
 
@@ -299,6 +302,15 @@ extern fn new_native_value(type_key: string) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "AddressValue")]
 extern fn address_native_value(value: HostValueRef) -> HostValueRef;
+
+#[go_ffi("gomlgo/nativebridge", "IndirectValue")]
+extern fn indirect_native_value(value: HostValueRef) -> HostValueRef;
+
+#[go_ffi("gomlgo/nativebridge", "FieldReference")]
+extern fn native_field_reference(value: HostValueRef, index: int) -> HostValueRef;
+
+#[go_ffi("gomlgo/nativebridge", "SetValue")]
+extern fn set_native_value(target: HostValueRef, value: HostValueRef) -> bool;
 
 #[go_ffi("gomlgo/nativebridge", "SetAggregateValue")]
 extern fn set_native_aggregate_value(aggregate: HostValueRef, index: int, value: HostValueRef) -> bool;

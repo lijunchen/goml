@@ -20,6 +20,9 @@ fn function_package_paths(value: Manifest) -> Vec[string] {
     for type_value in value.types {
         paths.push(type_value.import_path)
     }
+    for global in value.globals {
+        paths.push(global.import_path)
+    }
     for proxy in value.proxies {
         paths.push(proxy.import_path)
     }
@@ -173,6 +176,30 @@ fn write_type_registrations(
     }
 }
 
+fn write_global_registrations(
+    builder: text::StringBuilder,
+    value: Manifest,
+    function_paths: Vec[string],
+) -> unit {
+    for global in value.globals {
+        builder.write_string("\tif err := _gomlgo_nativebridge.RegisterNativeGlobal(");
+        builder.write_string(global.object_id.to_string());
+        builder.write_string(", ");
+        builder.write_string(package_alias(function_paths, global.import_path));
+        builder.write_string(".");
+        builder.write_string(global.name);
+        builder.write_string("); err != nil {\n\t\treturn nil, err\n\t}\n")
+    }
+}
+
+fn proxy_go_type(value: string) -> string {
+    if value == "interface" {
+        "any"
+    } else {
+        value
+    }
+}
+
 fn write_proxy_method(builder: text::StringBuilder, proxy_index: int, method: NativeProxyMethodSpec) -> unit {
     builder.write_string("func (_gomlgo_receiver *_gomlgo_nativeproxy");
     builder.write_string(proxy_index.to_string());
@@ -186,12 +213,17 @@ fn write_proxy_method(builder: text::StringBuilder, proxy_index: int, method: Na
         builder.write_string("_gomlgo_arg");
         builder.write_string(index.to_string());
         builder.write_string(" ");
-        builder.write_string(method.parameter_type_keys[index])
+        builder.write_string(proxy_go_type(method.parameter_type_keys[index]))
     }
     builder.write_string(")");
     if !method.result_type_keys.is_empty() {
         builder.write_string(" (");
-        builder.write_string(text::join(method.result_type_keys, ", "));
+        for index in 0..method.result_type_keys.len() {
+            if index > 0 {
+                builder.write_string(", ")
+            } else {};
+            builder.write_string(proxy_go_type(method.result_type_keys[index]))
+        }
         builder.write_string(")")
     } else {};
     builder.write_string(" {\n");
@@ -214,7 +246,7 @@ fn write_proxy_method(builder: text::StringBuilder, proxy_index: int, method: Na
             builder.write_string(", ")
         } else {};
         builder.write_string("_gomlgo_reflect.TypeFor[");
-        builder.write_string(method.result_type_keys[index]);
+        builder.write_string(proxy_go_type(method.result_type_keys[index]));
         builder.write_string("]()")
     }
     builder.write_string("})\n");
@@ -225,7 +257,7 @@ fn write_proxy_method(builder: text::StringBuilder, proxy_index: int, method: Na
                 builder.write_string(", ")
             } else {};
             builder.write_string("_gomlgo_nativebridge.CallbackValue[");
-            builder.write_string(method.result_type_keys[index]);
+            builder.write_string(proxy_go_type(method.result_type_keys[index]));
             builder.write_string("](_gomlgo_results, ");
             builder.write_string(index.to_string());
             builder.write_string(")")
@@ -332,6 +364,7 @@ fn generate_registry_source_with_bridge(value: Manifest, bridge_import_path: str
     );
     write_aggregate_registrations(builder, value);
     write_type_registrations(builder, value, function_paths);
+    write_global_registrations(builder, value, function_paths);
     write_proxy_registrations(builder, value, function_paths);
     builder.write_string("\treturn _gomlgo_nativebridge.InstallDefault(\n");
     for call in value.calls {

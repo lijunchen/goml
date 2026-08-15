@@ -1742,6 +1742,13 @@ fn lower_call_target(builder: FunctionBuilder, node: syntax::NodeId) -> Result[C
         return Result::Err("call target object is outside the world")
     } else {};
     let value = builder.world.objects[object.value];
+    match value.owner {
+        Some(owner) => if builder.world.packages[owner.value].path == "slices"
+            && value.name == "Grow" {
+            return Result::Ok(CallTarget::Builtin(BuiltinKind::SliceGrow))
+        } else {},
+        None => {},
+    };
     match value.kind {
         go_types::ObjectKind::Builtin => Result::Ok(CallTarget::Builtin(builtin_kind(value.name)?)),
         go_types::ObjectKind::Func => match kind {
@@ -2683,17 +2690,6 @@ fn lower_expression(builder: FunctionBuilder, node: syntax::NodeId) -> Result[
                             )
                         },
                         go_types::ObjectKind::Var => {
-                            let value = builder.world.objects[object.value];
-                            let owner = value.owner.ok_or("native package variable has no owner")?;
-                            if builder.world.packages[owner.value].path != "os"
-                                || value.name != "Args" {
-                                return Result::Err(
-                                    "package variable " + builder.world.packages[owner.value].path
-                                        + "."
-                                        + value.name
-                                        + " requires an unsupported native global adapter",
-                                )
-                            } else {};
                             let target = new_register(builder, node_type(builder, node)?);
                             emit(
                                 builder,

@@ -1102,6 +1102,56 @@ func AddressValue(value any) any {
 	return ref.Addr()
 }
 
+func IndirectValue(value any) any {
+	ref, ok := reflectedValue(value)
+	if !ok {
+		return reflect.Value{}
+	}
+	ref = indirectInterface(ref)
+	if ref.Kind() != reflect.Pointer || ref.IsNil() {
+		return reflect.Value{}
+	}
+	return ref.Elem()
+}
+
+func FieldReference(value any, index int) any {
+	ref, ok := reflectedValue(value)
+	if !ok || index < 0 {
+		return reflect.Value{}
+	}
+	ref = indirectInterface(ref)
+	for ref.Kind() == reflect.Pointer {
+		if ref.IsNil() {
+			return reflect.Value{}
+		}
+		ref = indirectInterface(ref.Elem())
+	}
+	if ref.Kind() == reflect.Struct && index < ref.NumField() {
+		return ref.Field(index)
+	}
+	if ref.Kind() == reflect.Array && index < ref.Len() {
+		return ref.Index(index)
+	}
+	return reflect.Value{}
+}
+
+func SetValue(target any, source any) bool {
+	destination, ok := reflectedValue(target)
+	if !ok || !destination.CanSet() {
+		return false
+	}
+	value, ok := reflectedValue(source)
+	if !ok {
+		return false
+	}
+	converted, err := convertedValue(value, destination.Type(), 0)
+	if err != nil {
+		return false
+	}
+	destination.Set(converted)
+	return true
+}
+
 func SetAggregateValue(aggregate any, index int, element any) bool {
 	target, ok := reflectedValue(aggregate)
 	if !ok || index < 0 {

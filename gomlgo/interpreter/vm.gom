@@ -78,10 +78,18 @@ struct NativePrepared {
     variadic: bool,
 }
 
+enum RuntimePlace {
+    Local(Place),
+    Native {
+        value: dyn HostValueMarker,
+        type_id: go_types::TypeId,
+    },
+}
+
 struct Frame {
     function: bytecode::FunctionId,
     registers: Vec[Option[Value]],
-    places: Vec[Option[Place]],
+    places: Vec[Option[RuntimePlace]],
     locals: Vec[CellId],
     block: Ref[bytecode::BlockId],
     deferred: Vec[PreparedCall],
@@ -217,7 +225,16 @@ fn set_register(frame: Frame, id: bytecode::RegisterId, value: Value) -> Result[
     }
 }
 
-fn place(frame: Frame, id: bytecode::PlaceId) -> Result[Place, string] {
+fn copy_runtime_place(value: RuntimePlace) -> RuntimePlace {
+    match value {
+        RuntimePlace::Local(value) => RuntimePlace::Local(copy_place(value)),
+        RuntimePlace::Native { value, type_id } => {
+            RuntimePlace::Native { value, type_id }
+        },
+    }
+}
+
+fn place(frame: Frame, id: bytecode::PlaceId) -> Result[RuntimePlace, string] {
     if id.value < 0 || id.value >= frame.places.len() {
         Result::Err("invalid place " + id.value.to_string())
     } else {
@@ -225,12 +242,19 @@ fn place(frame: Frame, id: bytecode::PlaceId) -> Result[Place, string] {
     }
 }
 
-fn set_place(frame: Frame, id: bytecode::PlaceId, value: Place) -> Result[unit, string] {
+fn set_place(frame: Frame, id: bytecode::PlaceId, value: RuntimePlace) -> Result[unit, string] {
     if id.value < 0 || id.value >= frame.places.len() {
         Result::Err("invalid place " + id.value.to_string())
     } else {
-        frame.places[id.value] = Option::Some(copy_place(value));
+        frame.places[id.value] = Option::Some(copy_runtime_place(value));
         Result::Ok(())
+    }
+}
+
+fn local_runtime_place(value: RuntimePlace) -> Result[Place, string] {
+    match value {
+        RuntimePlace::Local(value) => Result::Ok(value),
+        RuntimePlace::Native { .. } => Result::Err("native place is not local memory"),
     }
 }
 
@@ -551,6 +575,31 @@ fn appended_slice(state: VmState, type_id: go_types::TypeId, source: SliceValue,
     }
     for index in 0..values.len() {
         store_place(state.memory, index_place(backing, existing.len() + index), values[index])?
+    }
+    Result::Ok(Value::Local(LocalValue::Slice(slice)))
+}
+
+fn grown_slice(state: VmState, type_id: go_types::TypeId, source: SliceValue, amount: int) -> Result[
+    Value,
+    string,
+] {
+    if amount < 0 {
+        return Result::Err("cannot be negative")
+    } else if amount <= source.capacity - source.length {
+        return Result::Ok(Value::Local(LocalValue::Slice(source)))
+    } else {};
+    let capacity = source.length + amount;
+    if capacity < source.length {
+        return Result::Err("len out of range")
+    } else {};
+    let existing = loaded_slice_values(state, source)?;
+    let result = make_slice(state, type_id, source.length, capacity)?;
+    let Value::Local(LocalValue::Slice(slice)) = result else {
+        return Result::Err("new grow backing is not a slice")
+    };
+    let backing = slice.backing.ok_or("new grow backing is missing")?;
+    for index in 0..existing.len() {
+        store_place(state.memory, index_place(backing, index), existing[index])?
     }
     Result::Ok(Value::Local(LocalValue::Slice(slice)))
 }
@@ -941,6 +990,25 @@ fn execute_builtin(
             }
         } else {
             Result::Err("append has an invalid call shape")
+        },
+        bytecode::BuiltinKind::SliceGrow => if arguments.len() == 2 && results.len() == 1 {
+            match arguments[0] {
+                Value::Local(LocalValue::Slice(slice)) => Result::Ok(
+                    Vec::from_array(
+                        [
+                            grown_slice(
+                                state,
+                                result_type(state, frame, results, 0)?,
+                                slice,
+                                integer_index(arguments[1])?,
+                            )?,
+                        ],
+                    ),
+                ),
+                _ => Result::Err("slices.Grow destination is not a slice"),
+            }
+        } else {
+            Result::Err("slices.Grow has an invalid call shape")
         },
         bytecode::BuiltinKind::Copy => if arguments.len() == 2 && results.len() == 1 {
             match arguments[0] {
@@ -1487,6 +1555,110 @@ fn native_type_value(state: VmState, type_id: go_types::TypeId) -> Option[byteco
     Option::None
 }
 
+fn runtime_native_type_key(state: VmState, type_id: go_types::TypeId) -> Result[string, string] {
+    match native_type_value(state, type_id) {
+        Some(value) => Result::Ok(value.key),
+        None => match go_types::get_type(
+            state.program.world,
+            go_types::unalias(state.program.world, type_id),
+        ) {
+            Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } }) => match native_type_value(
+                state,
+                element,
+            ) {
+                Some(value) => Result::Ok(
+                    "native:*" + value.key.byte_slice(7, value.key.byte_len()),
+                ),
+                None => native_runtime_type_key(state.program.world, type_id),
+            },
+            _ => native_runtime_type_key(state.program.world, type_id),
+        },
+    }
+}
+
+fn pointer_element_type(world: go_types::World, type_id: go_types::TypeId) -> Result[
+    go_types::TypeId,
+    string,
+] {
+    match go_types::get_type(world, go_types::unalias(world, type_id)) {
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } }) => Result::Ok(
+            element,
+        ),
+        _ => Result::Err("dereference of non-pointer value"),
+    }
+}
+
+fn native_field_type(world: go_types::World, type_id: go_types::TypeId, index: int) -> Result[
+    go_types::TypeId,
+    string,
+] {
+    match go_types::get_type(world, go_types::underlying(world, type_id)) {
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } }) => {
+            if index < 0 || index >= fields.len() {
+                Result::Err("native field index is out of range")
+            } else {
+                Result::Ok(fields[index].variable.type_id)
+            }
+        },
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Array { length: _, element } }) => Result::Ok(
+            element,
+        ),
+        _ => Result::Err("native field selection crosses a non-aggregate value"),
+    }
+}
+
+fn projected_runtime_place(state: VmState, base: RuntimePlace, indices: Vec[int]) -> Result[
+    RuntimePlace,
+    string,
+] {
+    match base {
+        RuntimePlace::Local(value) => Result::Ok(RuntimePlace::Local(field_place(value, indices))),
+        RuntimePlace::Native { value, type_id } => {
+            let mut current_value = value;
+            let mut current_type = type_id;
+            for index in indices {
+                current_type = native_field_type(state.program.world, current_type, index)?;
+                current_value = native_field_reference(current_value, index);
+                if !native_host_value_valid(current_value) {
+                    return Result::Err("native field is not accessible")
+                } else {}
+            }
+            Result::Ok(RuntimePlace::Native { value: current_value, type_id: current_type })
+        },
+    }
+}
+
+fn load_runtime_place(state: VmState, value: RuntimePlace) -> Result[Value, string] {
+    match value {
+        RuntimePlace::Local(value) => load_place(state.memory, value),
+        RuntimePlace::Native { value, type_id } => native_result(
+            state,
+            clone_host_value(value),
+            type_id,
+            runtime_native_type_key(state, type_id)?,
+        ),
+    }
+}
+
+fn store_runtime_place(state: VmState, target: RuntimePlace, value: Value) -> Result[unit, string] {
+    match target {
+        RuntimePlace::Local(target) => store_place(state.memory, target, value),
+        RuntimePlace::Native { value: target, type_id } => {
+            let source = native_argument(
+                state,
+                value,
+                type_id,
+                runtime_native_type_key(state, type_id)?,
+            )?;
+            if set_native_value(target, source) {
+                Result::Ok(())
+            } else {
+                Result::Err("native field is not assignable")
+            }
+        },
+    }
+}
+
 fn runtime_zero_value(state: VmState, type_id: go_types::TypeId) -> Result[Value, string] {
     match native_type_value(state, type_id) {
         Some(native_type) => {
@@ -1714,6 +1886,7 @@ fn native_argument(state: VmState, value: Value, type_id: go_types::TypeId, type
             },
             _ => Result::Err("interpreted pointer cannot cross the native bridge"),
         },
+        Value::Local(LocalValue::Pointer(None)) => Result::Ok(new_native_nil()),
         Value::Local(LocalValue::Bool(value)) => Result::Ok(new_native_bool(value)),
         Value::Local(LocalValue::Integer { bits, width: _, signed: _ }) => {
             Result::Ok(new_native_integer(type_key, bits))
@@ -1901,7 +2074,9 @@ fn native_result(
     type_id: go_types::TypeId,
     type_key: string,
 ) -> Result[Value, string] {
-    if type_key.starts_with("[]") {
+    if type_key.starts_with("native:") {
+        return Result::Ok(Value::Host { type_id, value })
+    } else if type_key.starts_with("[]") {
         return native_slice_result(state, value, type_id, type_key)
     } else if type_key.starts_with("gomlgo-type-") {
         return native_aggregate_result(state, value, type_id)
@@ -2452,60 +2627,107 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
             || local.value >= frame.locals.len() {
             Result::Err("invalid local " + local.value.to_string())
         } else {
-            set_place(frame, target, root_place(frame.locals[local.value]))
+            set_place(frame, target, RuntimePlace::Local(root_place(frame.locals[local.value])))
         },
         bytecode::InstructionKind::GlobalPlace { target, global } => if global.value < 0
             || global.value >= state.globals.len() {
             Result::Err("invalid global " + global.value.to_string())
         } else {
-            set_place(frame, target, root_place(state.globals[global.value]))
+            set_place(frame, target, RuntimePlace::Local(root_place(state.globals[global.value])))
         },
         bytecode::InstructionKind::NativeGlobalLoad { target, object } => {
             let value = state.program.world.objects[object.value];
             let owner = value.owner.ok_or("native global has no package owner")?;
-            if state.program.world.packages[owner.value].path != "os" || value.name != "Args" {
-                Result::Err("unsupported native global")
+            let import_path = state.program.world.packages[owner.value].path;
+            let host = if import_path == "os" && value.name == "Args" {
+                native_program_args()
+            } else {
+                native_global_value(object.value)
+            };
+            if !native_host_value_valid(host) {
+                Result::Err("native global is not registered")
             } else {
                 set_register(
                     frame,
                     target,
-                    native_result(state, native_program_args(), value.type_id, "[]string")?,
+                    native_result(
+                        state,
+                        host,
+                        value.type_id,
+                        runtime_native_type_key(state, value.type_id)?,
+                    )?,
                 )
             }
         },
         bytecode::InstructionKind::FieldPlace { target, base, index } => {
-            set_place(frame, target, field_place(place(frame, base)?, index))
+            set_place(frame, target, projected_runtime_place(state, place(frame, base)?, index)?)
         },
         bytecode::InstructionKind::IndexPlace { target, base, index } => set_place(
             frame,
             target,
-            indexed_place(
-                state.memory,
-                place(frame, base)?,
-                integer_index(register(frame, index)?)?,
-            )?,
+            RuntimePlace::Local(
+                indexed_place(
+                    state.memory,
+                    local_runtime_place(place(frame, base)?)?,
+                    integer_index(register(frame, index)?)?,
+                )?,
+            ),
         ),
         bytecode::InstructionKind::DereferencePlace { target, pointer } => match register(
             frame,
             pointer,
         )? {
-            Value::Local(LocalValue::Pointer(Some(place))) => set_place(frame, target, place),
+            Value::Local(LocalValue::Pointer(Some(place))) => {
+                set_place(frame, target, RuntimePlace::Local(place))
+            },
             Value::Local(LocalValue::Pointer(None)) => Result::Err(
                 "invalid memory address or nil pointer dereference",
             ),
+            Value::Host { type_id, value } => {
+                let indirect = indirect_native_value(value);
+                if native_host_value_valid(indirect) {
+                    set_place(
+                        frame,
+                        target,
+                        RuntimePlace::Native {
+                            value: indirect,
+                            type_id: pointer_element_type(state.program.world, type_id)?,
+                        },
+                    )
+                } else {
+                    Result::Err("invalid memory address or nil pointer dereference")
+                }
+            },
             _ => Result::Err("dereference of non-pointer value"),
         },
         bytecode::InstructionKind::Load { target, source } => {
-            set_register(frame, target, load_place(state.memory, place(frame, source)?)?)
+            set_register(frame, target, load_runtime_place(state, place(frame, source)?)?)
         },
         bytecode::InstructionKind::Store { target, value } => {
-            store_place(state.memory, place(frame, target)?, register(frame, value)?)
+            store_runtime_place(state, place(frame, target)?, register(frame, value)?)
         },
-        bytecode::InstructionKind::AddressOf { target, source } => set_register(
-            frame,
-            target,
-            Value::Local(LocalValue::Pointer(Option::Some(place(frame, source)?))),
-        ),
+        bytecode::InstructionKind::AddressOf { target, source } => match place(frame, source)? {
+            RuntimePlace::Local(source) => set_register(
+                frame,
+                target,
+                Value::Local(LocalValue::Pointer(Option::Some(source))),
+            ),
+            RuntimePlace::Native { value, type_id: _ } => {
+                let address = address_native_value(value);
+                if native_host_value_valid(address) {
+                    set_register(
+                        frame,
+                        target,
+                        Value::Host {
+                            type_id: state.program.functions[frame.function.value].register_types[target.value],
+                            value: address,
+                        },
+                    )
+                } else {
+                    Result::Err("native value is not addressable")
+                }
+            },
+        },
         bytecode::InstructionKind::Unary { target, op, operand } => set_register(
             frame,
             target,
@@ -2672,7 +2894,14 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
             set_register(
                 frame,
                 target,
-                sliced_place(state, place(frame, base)?, element_type, low, high, maximum)?,
+                sliced_place(
+                    state,
+                    local_runtime_place(place(frame, base)?)?,
+                    element_type,
+                    low,
+                    high,
+                    maximum,
+                )?,
             )
         },
         bytecode::InstructionKind::Allocate { target, type_id, value } => {
