@@ -626,10 +626,44 @@ fn links_and_deduplicates_concrete_standard_library_generic_instances() -> unit 
 }
 
 #[test]
-fn rejects_native_signatures_outside_the_value_bridge_boundary() -> unit {
+fn supports_native_opaque_pointer_results() -> unit {
     let result = lowered_fixture("native_unsupported");
-    testing::assert(result.program.is_none());
-    testing::assert(!result.diagnostics.is_empty());
-    testing::assert(result.diagnostics[0].message.contains("native link bytes.NewBuffer"));
-    testing::assert(result.diagnostics[0].message.contains("type *bytes.Buffer is not supported"))
+    if !result.diagnostics.is_empty() {
+        testing::fail(result.diagnostics[0].message);
+        return
+    } else {};
+    let program = testing::expect_some(result.program, "bytecode program is missing");
+    testing::assert_eq(program.native_calls.len(), 1);
+    testing::assert_eq(program.native_calls[0].result_type_keys.len(), 1);
+    testing::assert_eq(program.native_calls[0].result_type_keys[0], "native:*bytes.Buffer");
+    let found = Ref::new(false);
+    for value in program.native_types {
+        if value.key == "native:bytes.Buffer" {
+            found.set(true)
+        } else {}
+    }
+    testing::assert(found.get())
+}
+
+#[test]
+fn registers_referenced_native_globals() -> unit {
+    let result = lowered_fixture("native_globals");
+    if !result.diagnostics.is_empty() {
+        testing::fail(result.diagnostics[0].message);
+        return
+    } else {};
+    let program = testing::expect_some(result.program, "bytecode program is missing");
+    let manifest = testing::expect_ok(native_manifest(program), "native manifest failed");
+    testing::assert_eq(manifest.globals.len(), 2);
+    let unexpected_eof = Ref::new(false);
+    let stderr = Ref::new(false);
+    for value in manifest.globals {
+        if value.import_path == "io" && value.name == "ErrUnexpectedEOF" {
+            unexpected_eof.set(true)
+        } else if value.import_path == "os" && value.name == "Stderr" {
+            stderr.set(true)
+        } else {}
+    }
+    testing::assert(unexpected_eof.get());
+    testing::assert(stderr.get())
 }

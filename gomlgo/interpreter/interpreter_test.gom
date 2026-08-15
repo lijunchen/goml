@@ -67,6 +67,16 @@ fn executes_compiler_generated_vector_shape() -> unit {
 }
 
 #[test]
+fn executes_slices_grow_for_interpreted_structs() -> unit {
+    let program = load_bytecode("slices_grow");
+    testing::assert(program.native_calls.is_empty());
+    let result = run(program, default_config());
+    testing::assert_eq(result.exit_code, 0);
+    testing::assert_eq(result.stderr.to_string().unwrap_or(""), "1 5 7\n");
+    testing::assert(result.error.is_none())
+}
+
+#[test]
 fn converts_strings_and_byte_slices() -> unit {
     let result = run(load_bytecode("string_byte_conversion"), default_config());
     if result.exit_code != 0 {

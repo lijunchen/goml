@@ -535,6 +535,48 @@ func TestRegisteredProxyAndAggregateAdaptersUseDirectValues(t *testing.T) {
 	}
 }
 
+func TestNativeReferencesPreserveOpaqueFields(t *testing.T) {
+	type nested struct {
+		Value int
+	}
+	type holder struct {
+		Nested *nested
+		Text   string
+	}
+	value := holder{Nested: &nested{Value: 7}, Text: "before"}
+	root := ValueOf(&value)
+	indirect := IndirectValue(root)
+	if !ValidValue(indirect) {
+		t.Fatal("pointer did not produce an indirect value")
+	}
+	text := FieldReference(indirect, 1)
+	if !SetValue(text, ValueOf("after")) || value.Text != "after" {
+		t.Fatalf("field assignment produced %#v", value)
+	}
+	nestedPointer := FieldReference(indirect, 0)
+	nestedValue := IndirectValue(nestedPointer)
+	field := FieldReference(nestedValue, 0)
+	if !SetValue(field, ValueOf(11)) || value.Nested.Value != 11 {
+		t.Fatalf("nested field assignment produced %#v", value)
+	}
+}
+
+func TestNativeGlobalsAreRegisteredByObjectID(t *testing.T) {
+	nativeGlobals.Lock()
+	nativeGlobals.values = nil
+	nativeGlobals.Unlock()
+	if err := RegisterNativeGlobal(17, "goml"); err != nil {
+		t.Fatal(err)
+	}
+	value := NativeGlobalValue(17).(reflect.Value)
+	if value.String() != "goml" {
+		t.Fatalf("native global = %q", value.String())
+	}
+	if err := RegisterNativeGlobal(17, 3); err == nil {
+		t.Fatal("conflicting native global registration succeeded")
+	}
+}
+
 func TestChannelInvocationWakesCompletionQueue(t *testing.T) {
 	queue := NewInvocationQueue(1)
 	invocation := NewChannelInvocation()
