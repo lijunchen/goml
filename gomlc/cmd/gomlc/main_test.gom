@@ -15,8 +15,22 @@ use gomlc::resources;
 use gomlc::tast;
 use gomlc::version;
 use std::bytes;
+use std::env;
 use std::json;
 use std::testing;
+
+fn test_package_world() -> PackageWorld {
+    match env::var("GOML_TEST_COMPILER_WORLD") {
+        Some(path) => match read_package_world(path) {
+            Ok(value) => value,
+            Err(error) => {
+                testing::fail(error);
+                package_world()
+            },
+        },
+        None => package_world(),
+    }
+}
 
 fn main_string_contains(value: string, expected: string) -> bool {
     if expected.byte_len() == 0 {
@@ -1908,7 +1922,7 @@ fn toolchain_dependency_test_interface(package_name: string, deps: Vec[(string, 
 
 #[test]
 fn diagnoses_builtin_and_prelude_interface_mismatches_separately() -> unit {
-    let world = package_world();
+    let world = test_package_world();
     let builtin_mismatch = toolchain_dependency_test_interface(
         "demo::dependency",
         Vec::from_array([("builtin", "wrong"), ("prelude", artifact_prelude_interface_hash(world))]),
@@ -2241,7 +2255,7 @@ fn standard_interface_hashes_are_stable() -> unit {
 
 #[test]
 fn compiler_world_artifact_round_trips() -> unit {
-    let world = package_world();
+    let world = test_package_world();
     world.source_digest = "source-digest";
     let first = match encode_package_world(world) {
         Ok(value) => value,
@@ -2309,7 +2323,7 @@ fn compiler_world_artifact_round_trips() -> unit {
 
 #[test]
 fn compiler_world_artifact_validates_metadata_identity() -> unit {
-    let world = package_world();
+    let world = test_package_world();
     let encoded = match encode_package_world(world) {
         Ok(value) => value,
         Err(error) => {
@@ -2367,7 +2381,7 @@ fn compiler_world_artifact_validates_metadata_identity() -> unit {
 
 #[test]
 fn compiler_world_artifact_reads_v1() -> unit {
-    let world = package_world();
+    let world = test_package_world();
     let encoded = match encode_package_world_v1(world) {
         Ok(value) => value,
         Err(error) => {
@@ -2394,7 +2408,7 @@ fn compiler_world_artifact_reads_v1() -> unit {
 
 #[test]
 fn compiler_world_artifact_rejects_duplicate_and_missing_packages() -> unit {
-    let world = package_world();
+    let world = test_package_world();
     let duplicate = world_all_packages(world);
     duplicate.push(duplicate[0]);
     match world_sorted_packages(duplicate) {
@@ -2427,7 +2441,7 @@ fn compiler_world_artifact_rejects_duplicate_and_missing_packages() -> unit {
 
 #[test]
 fn compiler_world_artifact_validates_prelude_sections_and_hash_chain() -> unit {
-    let world = package_world();
+    let world = test_package_world();
     let encoded = match encode_package_world(world) {
         Ok(value) => value,
         Err(error) => {
@@ -2516,7 +2530,7 @@ fn renders_source_path_for_spanless_diagnostics() -> unit {
 #[test]
 fn preserves_generic_trait_methods_in_artifacts() -> unit {
     let expected = "deserialize";
-    let world = package_world();
+    let world = test_package_world();
     let toml = required_artifact_standard_package(world.standard, resources::STD_TOML_PACKAGE);
     let exports = toml.interface_unit.exports;
     let exported = Ref::new(false);

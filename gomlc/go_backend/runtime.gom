@@ -156,18 +156,6 @@ fn once_cell_get_or_init_item(instance: repr::TypeInstance) -> Item {
     params.push(("cell", lower_type(owner)));
     params.push(("init", Type::Func { params: Vec::from_array([]), ret_ty: lower_type(value_ty) }));
     let stmts: Vec[Stmt] = Vec::from_array([]);
-    stmts.push(
-        Stmt::Var {
-            name: "goroutine",
-            ty: Type::Uint64,
-            value: Option::Some(
-                Expr::Call {
-                    func: Expr::Var { name: go_generated_ident("_goml_once_cell_goroutine_id") },
-                    args: Vec::from_array([]),
-                },
-            ),
-        },
-    );
     stmts.push(once_cell_lock_stmt("Lock"));
     let loop_stmts: Vec[Stmt] = Vec::from_array([]);
     let ready_stmts: Vec[Stmt] = Vec::from_array([]);
@@ -182,6 +170,18 @@ fn once_cell_get_or_init_item(instance: repr::TypeInstance) -> Item {
             },
             then_: Block { stmts: ready_stmts },
             else_: Option::None,
+        },
+    );
+    loop_stmts.push(
+        Stmt::Var {
+            name: "goroutine",
+            ty: Type::Uint64,
+            value: Option::Some(
+                Expr::Call {
+                    func: Expr::Var { name: go_generated_ident("_goml_once_cell_goroutine_id") },
+                    args: Vec::from_array([]),
+                },
+            ),
         },
     );
     let initializing_stmts: Vec[Stmt] = Vec::from_array([]);
