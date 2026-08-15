@@ -1226,25 +1226,6 @@ fn lower_expr_value(
             }
             ExprKind::Array { items: result }
         },
-        VecLiteral { items: values, span: _ } => {
-            let result: Vec[Expr] = Vec::from_array([]);
-            for item in values {
-                result.push(lower_expr(ctx, item, env, type_params))
-            }
-            ExprKind::VecLiteral { items: result }
-        },
-        HashMapLiteral { entries, span: _ } => {
-            let result: Vec[(Expr, Expr)] = Vec::from_array([]);
-            for entry in entries {
-                result.push(
-                    (
-                        lower_expr(ctx, entry.0, env, type_params),
-                        lower_expr(ctx, entry.1, env, type_params),
-                    ),
-                )
-            }
-            ExprKind::HashMapLiteral { entries: result }
-        },
         Closure { params, body, span: _ } => {
             let closure_env = copy_bindings(env);
             let lowered_params: Vec[ClosureParam] = Vec::from_array([]);

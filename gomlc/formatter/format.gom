@@ -159,22 +159,17 @@ fn format_source_with_width(source: string, line_width: int) -> Result[string, F
     if !parsed.diagnostics.is_empty() {
         Result::Err(FormatError { diagnostics: parsed.diagnostics })
     } else {
-        let migrated = migrate_collection_literals(source, located_node(parsed.root, 0));
-        let migrated_parsed = parser::parse(migrated);
-        if !migrated_parsed.diagnostics.is_empty() {
-            return Result::Err(FormatError { diagnostics: migrated_parsed.diagnostics })
-        } else {};
-        let root = located_node(migrated_parsed.root, 0);
+        let root = located_node(parsed.root, 0);
         let formatted = canonical_file_ending(render(format_node(builder(), root).doc, line_width));
         let reparsed = parser::parse(formatted);
         if !reparsed.diagnostics.is_empty() {
             Result::Err(FormatError { diagnostics: reparsed.diagnostics })
-        } else if format_token_signature(migrated, root)
+        } else if format_token_signature(source, root)
             != format_token_signature(formatted, located_node(reparsed.root, 0)) {
             Result::Err(
                 FormatError {
                     diagnostics: Vec::from_array(
-                        [cst::diagnostic("formatter changed source tokens", 0, migrated.byte_len())],
+                        [cst::diagnostic("formatter changed source tokens", 0, source.byte_len())],
                     ),
                 },
             )

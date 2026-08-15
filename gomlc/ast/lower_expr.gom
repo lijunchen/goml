@@ -584,44 +584,6 @@ fn lower_expr(ctx: LowerCtx, node: LocatedNode) -> Option[Expr] {
     lower_expr_with_args(ctx, node, Vec::from_array([]))
 }
 
-fn lower_vec_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
-    if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to Vec literal") {
-        Option::None
-    } else {
-        let items: Vec[Expr] = Vec::from_array([]);
-        for value in expr_children(node) {
-            match lower_expr(ctx, value) {
-                Some(item) => items.push(item),
-                None => (),
-            }
-        }
-        Option::Some(Expr::VecLiteral { items, span: node_span(node) })
-    }
-}
-
-fn lower_hashmap_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
-    if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to HashMap literal") {
-        Option::None
-    } else {
-        let entries: Vec[(Expr, Expr)] = Vec::from_array([]);
-        for entry in children_of_kind(node, cst::NodeKind::HASHMAP_LITERAL_ENTRY) {
-            let values = expr_children(entry);
-            if values.len() == 2 {
-                match lower_expr(ctx, values[0]) {
-                    Some(key) => match lower_expr(ctx, values[1]) {
-                        Some(value) => entries.push((key, value)),
-                        None => (),
-                    },
-                    None => (),
-                }
-            } else {
-                push_error(ctx, node_span(entry), "HashMap literal entry requires a key and value")
-            }
-        }
-        Option::Some(Expr::HashMapLiteral { entries, span: node_span(node) })
-    }
-}
-
 fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
     if ctx.expr_depth.get() >= 256 {
         push_error(ctx, node_span(node), "expression is too deeply nested");
@@ -702,8 +664,6 @@ fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
                 }
             },
             EXPR_ARRAY_LITERAL => lower_expr_sequence(ctx, node, trailing_args, false),
-            EXPR_VEC_LITERAL => lower_vec_literal(ctx, node, trailing_args),
-            EXPR_HASHMAP_LITERAL => lower_hashmap_literal(ctx, node, trailing_args),
             EXPR_TUPLE => lower_expr_sequence(ctx, node, trailing_args, true),
             EXPR_PAREN => {
                 let values = expr_children(node);

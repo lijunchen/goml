@@ -102,59 +102,58 @@ fn array_literal(parser: Parser) -> MarkerClosed {
     parser.close(marker, cst::NodeKind::EXPR_ARRAY_LITERAL)
 }
 
-fn looks_like_vec_literal(parser: Parser) -> bool {
-    parser.at_contextual("Vec") && token_is(parser.nth(1), lexer::TokenKind::ColonColon)
-        && token_is(parser.nth(2), lexer::TokenKind::LBracket)
-        && !parser.bracket_is_followed_by_colon_colon(2)
+fn bracket_has_following_path_segment(parser: Parser, offset: int) -> bool {
+    let mut index = offset;
+    let mut depth = 0;
+    while !token_is(parser.nth(index), lexer::TokenKind::Eof) {
+        let kind = parser.nth(index);
+        if token_is(kind, lexer::TokenKind::LBracket) {
+            depth += 1;
+        } else if token_is(kind, lexer::TokenKind::RBracket) {
+            depth -= 1;
+            if depth == 0 {
+                return token_is(parser.nth(index + 1), lexer::TokenKind::ColonColon)
+            } else {}
+        } else {};
+        index += 1;
+    }
+    false
 }
 
-fn looks_like_hashmap_literal(parser: Parser) -> bool {
+fn looks_like_removed_vec_literal(parser: Parser) -> bool {
+    parser.at_contextual("Vec") && token_is(parser.nth(1), lexer::TokenKind::ColonColon)
+        && token_is(parser.nth(2), lexer::TokenKind::LBracket)
+        && !bracket_has_following_path_segment(parser, 2)
+}
+
+fn looks_like_removed_hashmap_literal(parser: Parser) -> bool {
     parser.at_contextual("HashMap") && token_is(parser.nth(1), lexer::TokenKind::ColonColon)
         && token_is(parser.nth(2), lexer::TokenKind::LBrace)
 }
 
-fn vec_literal(parser: Parser) -> MarkerClosed {
+fn removed_vec_literal(parser: Parser) -> MarkerClosed {
     let marker = parser.open();
+    parser.error("Vec collection literal syntax has been removed; use `Vec::from_array([...])`");
     parser.expect(lexer::TokenKind::Ident);
     parser.expect(lexer::TokenKind::ColonColon);
-    parser.expect(lexer::TokenKind::LBracket);
-    let previous = parser.set_struct_literals_allowed(true);
-    let mut parsing = !parser.at(lexer::TokenKind::RBracket);
-    while parsing && !parser.eof() {
-        if !expect_expr_with_message(parser, "expected an expression in Vec literal") {
-            parsing = false;
-        } else if parser.eat(lexer::TokenKind::Comma) {
-            if parser.at(lexer::TokenKind::RBracket) {
-                parsing = false;
-            } else {}
-        } else if is_expr_first_here(parser) {
-            parser.missing("expected `,` between Vec elements")
-        } else {
-            parsing = false;
-        }
-    }
-    parser.expect(lexer::TokenKind::RBracket);
-    parser.set_struct_literals_allowed(previous);
-    parser.close(marker, cst::NodeKind::EXPR_VEC_LITERAL)
+    let _ = array_literal(parser);
+    parser.close(marker, cst::NodeKind::ErrorTree)
 }
 
-fn hashmap_literal_entry(parser: Parser) -> unit {
+fn removed_hashmap_literal(parser: Parser) -> MarkerClosed {
     let marker = parser.open();
-    expect_expr_with_message(parser, "expected a key expression in HashMap literal");
-    parser.expect(lexer::TokenKind::FatArrow);
-    expect_expr_with_message(parser, "expected a value expression in HashMap literal");
-    let _ = parser.close(marker, cst::NodeKind::HASHMAP_LITERAL_ENTRY);
-}
-
-fn hashmap_literal(parser: Parser) -> MarkerClosed {
-    let marker = parser.open();
+    parser.error(
+        "HashMap collection literal syntax has been removed; use `HashMap::from_array([(key, value), ...])`",
+    );
     parser.expect(lexer::TokenKind::Ident);
     parser.expect(lexer::TokenKind::ColonColon);
     parser.expect(lexer::TokenKind::LBrace);
     let previous = parser.set_struct_literals_allowed(true);
     let mut parsing = !parser.at(lexer::TokenKind::RBrace);
     while parsing && !parser.eof() {
-        hashmap_literal_entry(parser);
+        expect_expr_with_message(parser, "expected a key expression in removed HashMap literal");
+        parser.expect(lexer::TokenKind::FatArrow);
+        expect_expr_with_message(parser, "expected a value expression in removed HashMap literal");
         if parser.eat(lexer::TokenKind::Comma) {
             if parser.at(lexer::TokenKind::RBrace) {
                 parsing = false;
@@ -167,7 +166,7 @@ fn hashmap_literal(parser: Parser) -> MarkerClosed {
     }
     parser.expect(lexer::TokenKind::RBrace);
     parser.set_struct_literals_allowed(previous);
-    parser.close(marker, cst::NodeKind::EXPR_HASHMAP_LITERAL)
+    parser.close(marker, cst::NodeKind::ErrorTree)
 }
 
 fn ident_expression(parser: Parser) -> MarkerClosed {
@@ -540,10 +539,10 @@ fn atom(parser: Parser) -> Option[MarkerClosed] {
             && (token_is(parser.nth(1), lexer::TokenKind::Pipe)
                 || token_is(parser.nth(1), lexer::TokenKind::OrOr)) {
             spawn_expression(parser)
-        } else if looks_like_vec_literal(parser) {
-            vec_literal(parser)
-        } else if looks_like_hashmap_literal(parser) {
-            hashmap_literal(parser)
+        } else if looks_like_removed_vec_literal(parser) {
+            removed_vec_literal(parser)
+        } else if looks_like_removed_hashmap_literal(parser) {
+            removed_hashmap_literal(parser)
         } else {
             ident_expression(parser)
         },

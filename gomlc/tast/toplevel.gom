@@ -366,42 +366,16 @@ fn pattern_has_unbound_any_inference(ctx: Checker, value: hir::Pat) -> bool {
     }
 }
 
-fn unresolved_expr_fact(ctx: Checker, value: hir::Expr) -> bool {
-    for fact in ctx.typeck_results.exprs {
-        if fact.source_path == ctx.source_path && fact.span.start == value.span.start
-            && fact.span.end == value.span.end
-            && contains_unbound_any_type_variable(fact.ty) {
-            return true
-        } else {}
-    }
-    false
-}
-
-fn empty_collection_literal(value: hir::Expr) -> bool {
-    match value.kind {
-        VecLiteral { items } => items.is_empty(),
-        HashMapLiteral { entries } => entries.is_empty(),
-        _ => false,
-    }
-}
-
 fn report_unresolved_block(ctx: Checker, value: hir::Block, report_all: bool) -> unit {
     for stmt in value.stmts {
         match stmt {
             Defer { expr } => report_unresolved_expr(ctx, expr, report_all),
             Let { is_mut: _, pat, annotation, value, else_branch } => {
-                if empty_collection_literal(value) {
-                    if annotation.is_none() && pattern_has_unbound_any_inference(ctx, pat) {
-                        report_unresolved_expr(ctx, value, report_all)
-                    } else {}
-                } else {
-                    if report_all && annotation.is_none()
-                        && pattern_has_unresolved_inference(ctx, pat) {
-                        push_inference_diagnostic_at(ctx, pat.span, 1);
-                        mark_unresolved_pattern_locals(ctx, pat)
-                    } else {};
-                    report_unresolved_expr(ctx, value, report_all)
-                };
+                if report_all && annotation.is_none() && pattern_has_unresolved_inference(ctx, pat) {
+                    push_inference_diagnostic_at(ctx, pat.span, 1);
+                    mark_unresolved_pattern_locals(ctx, pat)
+                } else {};
+                report_unresolved_expr(ctx, value, report_all);
                 match else_branch {
                     Some(value) => report_unresolved_expr(ctx, value, report_all),
                     None => (),
@@ -431,35 +405,6 @@ fn report_unresolved_expr(ctx: Checker, value: hir::Expr, report_all: bool) -> u
             }
         } else {},
         ConstructorValue { constructor: _ } => (),
-        VecLiteral { items: args } => if args.is_empty() {
-            if unresolved_expr_fact(ctx, value) {
-                push_inference_diagnostic_with_label_at(
-                    ctx,
-                    "Cannot infer element type of empty vector literal",
-                    "element type is unconstrained; add a type annotation",
-                    value.span,
-                    0,
-                )
-            } else {}
-        } else {
-            report_unresolved_exprs(ctx, args, report_all)
-        },
-        HashMapLiteral { entries } => if entries.is_empty() {
-            if unresolved_expr_fact(ctx, value) {
-                push_inference_diagnostic_with_label_at(
-                    ctx,
-                    "Cannot infer key or value type of empty hash map literal",
-                    "key or value type is unconstrained; add a type annotation",
-                    value.span,
-                    0,
-                )
-            } else {}
-        } else {
-            for entry in entries {
-                report_unresolved_expr(ctx, entry.0, report_all);
-                report_unresolved_expr(ctx, entry.1, report_all)
-            }
-        },
         Constr { constructor: _, args } | Tuple { items: args } | Array { items: args } => {
             report_unresolved_exprs(ctx, args, report_all)
         },
@@ -3068,14 +3013,8 @@ fn attach_expr_diagnostic_spans(ctx: Checker, value: hir::Expr) -> unit {
             }
         },
         ConstructorValue { constructor: _ } => (),
-        Constr { constructor: _, args } | Tuple { items: args } | Array { items: args } | VecLiteral {
-            items: args,
-        } => {
+        Constr { constructor: _, args } | Tuple { items: args } | Array { items: args } => {
             attach_expr_list_diagnostic_spans(ctx, args)
-        },
-        HashMapLiteral { entries } => for entry in entries {
-            attach_expr_diagnostic_spans(ctx, entry.0);
-            attach_expr_diagnostic_spans(ctx, entry.1)
         },
         InterpolatedString { parts } => for part in parts {
             match part {

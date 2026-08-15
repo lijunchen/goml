@@ -168,22 +168,6 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
             encode_span(builder, value_span);
             encode_exprs(builder, items)
         },
-        VecLiteral { items, span: value_span } => {
-            encode_open(builder, "Expr.VecLiteral");
-            encode_span(builder, value_span);
-            encode_exprs(builder, items)
-        },
-        HashMapLiteral { entries, span: value_span } => {
-            encode_open(builder, "Expr.HashMapLiteral");
-            encode_span(builder, value_span);
-            encode_list(builder, entries.len());
-            for entry in entries {
-                encode_open(builder, "HashMapEntry");
-                encode_expr(builder, entry.0);
-                encode_expr(builder, entry.1);
-                encode_close(builder)
-            }
-        },
         Closure { params, body, span: value_span } => {
             encode_open(builder, "Expr.Closure");
             encode_span(builder, value_span);

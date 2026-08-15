@@ -729,29 +729,6 @@ fn expr_doc(value: Expr) -> pretty::Doc {
         },
         Tuple { items: values } => pretty::delimited("(", ",", ")", expr_docs(values)),
         Array { items: values } => pretty::delimited("[", ",", "]", expr_docs(values)),
-        VecLiteral { items: values } => pretty::delimited("Vec::[", ",", "]", expr_docs(values)),
-        HashMapLiteral { entries } => {
-            let values: Vec[pretty::Doc] = Vec::with_capacity(entries.len());
-            for entry in entries {
-                values.push(
-                    pretty::group(
-                        pretty::concat(
-                            Vec::from_array(
-                                [
-                                    expr_doc(entry.0),
-                                    pretty::text(" =>"),
-                                    pretty::nest(
-                                        2,
-                                        pretty::append(pretty::line(), expr_doc(entry.1)),
-                                    ),
-                                ],
-                            ),
-                        ),
-                    ),
-                )
-            }
-            pretty::delimited("HashMap::{", ",", "}", values)
-        },
         Closure { params, body } => {
             let values: Vec[pretty::Doc] = Vec::with_capacity(params.len());
             for param in params {

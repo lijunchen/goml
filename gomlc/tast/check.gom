@@ -1665,60 +1665,6 @@ fn check_array_expr(ctx: Checker, values: Vec[hir::Expr], expected: Option[Type]
     coerce_expr(ctx, Expr::Array { items, ty: array_ty }, expected)
 }
 
-fn collection_from_array_call(name: string, array: Expr, ret_ty: Type) -> Expr {
-    let function_ty = Type::Func { params: Vec::from_array([expr_type(array)]), ret_ty };
-    Expr::Call {
-        func: Expr::Callable { callable: Callable::Intrinsic(name), ty: function_ty },
-        args: Vec::from_array([array]),
-        ty: ret_ty,
-    }
-}
-
-fn push_collection_literal_warning(ctx: Checker, message: string, span: ast::Span) -> unit {
-    for diagnostic in ctx.diagnostics {
-        if diagnostic.message == message
-            && match diagnostic.span {
-                Some(existing) => existing.start == span.start && existing.end == span.end,
-                None => false,
-            } {
-            return
-        } else {}
-    }
-    push_warning_at(ctx, message, Option::Some(span))
-}
-
-fn check_vec_literal_expr(
-    ctx: Checker,
-    values: Vec[hir::Expr],
-    expected: Option[Type],
-    value_span: ast::Span,
-) -> Expr {
-    push_collection_literal_warning(
-        ctx,
-        "Vec collection literal is deprecated; use Vec::from_array([...])",
-        value_span,
-    );
-    let elem = fresh_type(ctx.counter, VarKind::Any);
-    let vec_ty = Type::VecType { elem };
-    match propagated_expected(expected) {
-        Some(ty) => expect_type(ctx, vec_ty, ty),
-        None => (),
-    };
-    let items: Vec[Expr] = Vec::from_array([]);
-    for value in values {
-        items.push(check_expr(ctx, value, Option::Some(elem)))
-    }
-    coerce_expr(
-        ctx,
-        collection_from_array_call(
-            "vec.from_array",
-            Expr::Array { items, ty: Type::Array { len: values.len(), elem } },
-            vec_ty,
-        ),
-        expected,
-    )
-}
-
 fn check_byte_string_expr(
     ctx: Checker,
     values: Vec[string],
@@ -1738,58 +1684,6 @@ fn check_byte_string_expr(
     };
     let byte_vec = Type::VecType { elem: Type::Uint8 };
     coerce_expr(ctx, Expr::Prim { value: Primitive::Bytes { values }, ty: byte_vec }, expected)
-}
-
-fn check_hashmap_literal_expr(
-    ctx: Checker,
-    entries: Vec[(hir::Expr, hir::Expr)],
-    expected: Option[Type],
-    value_span: ast::Span,
-) -> Expr {
-    push_collection_literal_warning(
-        ctx,
-        "HashMap collection literal is deprecated; use HashMap::from_array([(key, value), ...])",
-        value_span,
-    );
-    let key = fresh_type(ctx.counter, VarKind::Any);
-    let value = fresh_type(ctx.counter, VarKind::Any);
-    let map_ty = Type::HashMap { key, value };
-    match propagated_expected(expected) {
-        Some(ty) => expect_type(ctx, map_ty, ty),
-        None => (),
-    };
-    let items: Vec[Expr] = Vec::from_array([]);
-    for entry in entries {
-        items.push(
-            Expr::Tuple {
-                items: Vec::from_array(
-                    [
-                        check_expr(ctx, entry.0, Option::Some(key)),
-                        check_expr(ctx, entry.1, Option::Some(value)),
-                    ],
-                ),
-                ty: Type::Tuple { items: Vec::from_array([key, value]) },
-            },
-        )
-    }
-    if contains_unbound_type_variable(key) {} else {
-        require_hashmap_type(ctx, map_ty)
-    };
-    coerce_expr(
-        ctx,
-        collection_from_array_call(
-            "hashmap.from_array",
-            Expr::Array {
-                items,
-                ty: Type::Array {
-                    len: entries.len(),
-                    elem: Type::Tuple { items: Vec::from_array([key, value]) },
-                },
-            },
-            map_ty,
-        ),
-        expected,
-    )
 }
 
 fn interpolated_value_to_string(ctx: Checker, source: hir::Expr) -> Expr {
@@ -4520,14 +4414,8 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
             },
             Tuple { items: values } => check_tuple_expr(ctx, values, Option::None),
             Array { items: values } => check_array_expr(ctx, values, Option::None),
-            VecLiteral { items: values } => {
-                check_vec_literal_expr(ctx, values, Option::None, value_span)
-            },
             ByteString { values } => {
                 check_byte_string_expr(ctx, values, Option::None, value_span)
-            },
-            HashMapLiteral { entries } => {
-                check_hashmap_literal_expr(ctx, entries, Option::None, value_span)
             },
             InterpolatedString { parts } => {
                 check_interpolated_string_expr(ctx, parts, Option::None)
@@ -4853,14 +4741,8 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
         },
         Tuple { items: values } => check_tuple_expr(ctx, values, expected),
         Array { items: values } => check_array_expr(ctx, values, expected),
-        VecLiteral { items: values } => {
-            check_vec_literal_expr(ctx, values, expected, value_span)
-        },
         ByteString { values } => {
             check_byte_string_expr(ctx, values, expected, value_span)
-        },
-        HashMapLiteral { entries } => {
-            check_hashmap_literal_expr(ctx, entries, expected, value_span)
         },
         InterpolatedString { parts } => {
             check_interpolated_string_expr(ctx, parts, expected)
@@ -5711,17 +5593,8 @@ fn hir_expr_contains_defer_control(value: hir::Expr) -> bool {
                 None => false,
             }
         },
-        Tuple { items: values } | Array { items: values } | VecLiteral { items: values } => {
+        Tuple { items: values } | Array { items: values } => {
             hir_expr_list_contains_defer_control(values)
-        },
-        HashMapLiteral { entries } => {
-            for entry in entries {
-                if hir_expr_contains_defer_control(entry.0)
-                    || hir_expr_contains_defer_control(entry.1) {
-                    return true
-                } else {}
-            }
-            false
         },
         InterpolatedString { parts } => {
             for part in parts {
@@ -5867,17 +5740,8 @@ fn hir_expr_always_exits_loop_control(value: hir::Expr) -> bool {
                     None => false,
                 }
         },
-        Tuple { items: values } | Array { items: values } | VecLiteral { items: values } => {
+        Tuple { items: values } | Array { items: values } => {
             hir_exprs_any_exit_loop_control(values)
-        },
-        HashMapLiteral { entries } => {
-            for entry in entries {
-                if hir_expr_always_exits_loop_control(entry.0)
-                    || hir_expr_always_exits_loop_control(entry.1) {
-                    return true
-                } else {}
-            }
-            false
         },
         InterpolatedString { parts } => {
             for part in parts {
