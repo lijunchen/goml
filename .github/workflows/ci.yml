@@ -6,23 +6,105 @@ on:
   pull_request:
     branches: main
 
+permissions:
+  contents: read
+
 jobs:
-  test:
+  build:
+    name: Build stage2
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
           go-version: '1.25'
+      - uses: extractions/setup-just@v2
+        with:
+          just-version: '1.40.0'
+      - name: Build stage2
+        run: just make
+      - name: Pack stage2 build
+        run: |
+          tar -czf stage2-build.tar.gz \
+            stage2 \
+            gomlc/_bootstrap/stage2/build/pkg \
+            goml/_bootstrap/stage2/build/pkg
+      - uses: actions/upload-artifact@v4
+        with:
+          name: stage2-build
+          path: stage2-build.tar.gz
+          if-no-files-found: error
+          retention-days: 1
+
+  checks:
+    name: ${{ matrix.name }}
+    needs: build
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Compiler tests
+            recipe: _ci-gomlc-test
+            node: false
+            yaegi: true
+          - name: Driver tests
+            recipe: _ci-goml-test
+            node: false
+            yaegi: false
+          - name: Script tests
+            recipe: _ci-scripts
+            node: false
+            yaegi: false
+          - name: Fixed point
+            recipe: _bootstrap-stage3
+            node: false
+            yaegi: false
+          - name: VS Code extension
+            recipe: _ci-vscode
+            node: true
+            yaegi: false
+          - name: Release archive smoke
+            recipe: _ci-release-smoke
+            node: false
+            yaegi: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+      - uses: extractions/setup-just@v2
+        with:
+          just-version: '1.40.0'
       - uses: actions/setup-node@v4
+        if: matrix.node
         with:
           node-version: '20'
           cache: npm
           cache-dependency-path: editors/vscode/package-lock.json
-      - uses: extractions/setup-just@v2
-        with:
-          just-version: '1.40.0'
       - name: Install Yaegi interpreter
+        if: matrix.yaegi
         run: curl -sfL https://raw.githubusercontent.com/traefik/yaegi/master/install.sh | bash -s -- -b "$(go env GOPATH)/bin" v0.16.1
-      - name: Self-hosted CI
-        run: just ci
+      - uses: actions/download-artifact@v5
+        with:
+          name: stage2-build
+      - name: Unpack stage2 build
+        run: tar -xzf stage2-build.tar.gz
+      - name: Run ${{ matrix.name }}
+        run: just ${{ matrix.recipe }}
+
+  test:
+    name: test
+    if: always()
+    needs:
+      - build
+      - checks
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Verify CI results
+        env:
+          BUILD_RESULT: ${{ needs.build.result }}
+          CHECKS_RESULT: ${{ needs.checks.result }}
+        run: |
+          test "$BUILD_RESULT" = success
+          test "$CHECKS_RESULT" = success
