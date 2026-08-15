@@ -724,6 +724,25 @@ fn preserves_iota_facts_during_initializer_dependency_analysis() -> unit {
 }
 
 #[test]
+fn deduplicates_type_facts_by_source_span() -> unit {
+    let source = "package p\ntype Item struct { Value int }\nvar Values = []Item{{Value: 1}, {Value: 2}, {Value: 3}}\nconst ( First = iota; Second; Third )\n";
+    let result = check_source(source);
+    testing::assert_eq(result.diagnostics.len(), 0);
+    let positions: HashMap[string, bool] = HashMap::from_array([]);
+    for fact in result.info.types {
+        match syntax::get_node(result.syntax.arena, fact.node) {
+            Some(node) => {
+                let key = node.file.value.to_string() + ":" + node.span.start.to_string() + ":"
+                    + node.span.end.to_string();
+                testing::assert(!positions.contains(key));
+                positions[key] = true;
+            },
+            None => {},
+        }
+    }
+}
+
+#[test]
 fn attaches_value_and_pointer_receiver_methods_to_named_types() -> unit {
     let source = "package p\ntype Box struct { Value int }\nfunc (b Box) Get() int { return b.Value }\nfunc (b *Box) Set(value int) { b.Value = value }\n";
     let config = default_config();
