@@ -178,6 +178,7 @@ struct CheckState {
     file_scopes: Vec[go_types::ScopeId],
     info: TypeInfo,
     type_fact_indices: HashMap[int, int],
+    type_fact_source_indices: HashMap[string, int],
     omitted_type_fact_nodes: HashMap[int, bool],
     preserved_type_fact_nodes: HashMap[int, bool],
     retained_invalid_type_fact_nodes: HashMap[int, bool],
@@ -264,11 +265,38 @@ struct CheckState {
     diagnostics: Vec[CheckDiagnostic],
 }
 
+fn type_fact_source_key(state: CheckState, node: syntax::NodeId) -> Option[string] {
+    match syntax::get_node(state.syntax.arena, node) {
+        Some(value) => Option::Some(
+            value.file.value.to_string() + ":" + value.span.start.to_string() + ":"
+                + value.span.end.to_string(),
+        ),
+        None => Option::None,
+    }
+}
+
+fn index_type_fact(state: CheckState, node: syntax::NodeId, index: int) -> unit {
+    state.type_fact_indices[node.value] = index;
+    match type_fact_source_key(state, node) {
+        Some(key) => if !state.type_fact_source_indices.contains(key) {
+            state.type_fact_source_indices[key] = index;
+        } else {},
+        None => {},
+    }
+}
+
+fn source_type_fact_index(state: CheckState, node: syntax::NodeId) -> Option[int] {
+    match type_fact_source_key(state, node) {
+        Some(key) => state.type_fact_source_indices[key],
+        None => Option::None,
+    }
+}
+
 fn record_type_expression(state: CheckState, node: syntax::NodeId, type_id: go_types::TypeId) -> unit {
     if state.type_fact_indices.contains(node.value) {
         return
     } else {};
-    state.type_fact_indices[node.value] = state.info.types.len();
+    index_type_fact(state, node, state.info.types.len());
     state.info.types.push(
         TypeFact {
             node,
@@ -6602,6 +6630,7 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
         file_scopes,
         info: empty_info(),
         type_fact_indices: HashMap::from_array([]),
+        type_fact_source_indices: HashMap::from_array([]),
         omitted_type_fact_nodes: HashMap::from_array([]),
         preserved_type_fact_nodes: HashMap::from_array([]),
         retained_invalid_type_fact_nodes: HashMap::from_array([]),

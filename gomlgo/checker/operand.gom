@@ -742,21 +742,14 @@ fn record_operand(state: CheckState, node: syntax::NodeId, operand: Operand) -> 
         };
         return
     } else {};
-    match syntax::get_node(state.syntax.arena, node) {
-        Some(current) => for index in 0..state.info.types.len() {
-            match syntax::get_node(state.syntax.arena, state.info.types[index].node) {
-                Some(existing) => if existing.file.value == current.file.value
-                    && existing.span.start == current.span.start
-                    && existing.span.end == current.span.end {
-                    state.type_fact_indices[node.value] = index;
-                    return
-                } else {},
-                None => {},
-            }
+    match source_type_fact_index(state, node) {
+        Some(index) => {
+            state.type_fact_indices[node.value] = index;
+            return
         },
         None => {},
     };
-    state.type_fact_indices[node.value] = state.info.types.len();
+    index_type_fact(state, node, state.info.types.len());
     let value = match operand.value {
         Some(value) => Option::Some(constant::constant_exact_string(value)),
         None => Option::None,

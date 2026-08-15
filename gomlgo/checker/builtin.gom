@@ -102,7 +102,7 @@ fn builtin_reference(state: CheckState, scope: go_types::ScopeId, node: syntax::
 
 fn record_builtin_fact_nodes(state: CheckState, node: syntax::NodeId) -> unit {
     if !state.type_fact_indices.contains(node.value) {
-        state.type_fact_indices[node.value] = state.info.types.len();
+        index_type_fact(state, node, state.info.types.len());
         state.info.types.push(
             TypeFact {
                 node,
