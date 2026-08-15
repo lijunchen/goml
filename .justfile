@@ -51,7 +51,7 @@ bootstrap:
     just _bootstrap-stage3
 
 _ci-scripts:
-    bash -n tools/release/release.sh tools/release/test.sh tools/release/lsp_smoke.sh
+    bash -n tools/release/release.sh tools/release/test.sh tools/release/package.sh tools/release/smoke.sh tools/release/lsp_smoke.sh
     bash -n tools/lib/install.sh tools/lib/test.sh tools/lib/finalize-toolchain.sh
     bash tools/release/test.sh
     bash tools/lib/test.sh stage2
@@ -73,6 +73,10 @@ _ci-vscode:
     bash tools/lib/install.sh editors/vscode
     cd editors/vscode && npm install
     cd editors/vscode && npm run compile
+
+_ci-release-smoke:
+    bash tools/release/package.sh "$(cat VERSION)"
+    bash tools/release/smoke.sh "$(cat VERSION)"
 
 ci:
     rm -rf gomlc/_bootstrap/stage1 gomlc/_bootstrap/stage2 gomlc/_bootstrap/stage3 gomlc/_bootstrap/stage3-fixed

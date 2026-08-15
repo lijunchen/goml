@@ -13,7 +13,7 @@ ci_pids+=("$!")
 GOML_BUILD_JOBS=2 just _bootstrap-stage3 &
 ci_pids+=("$!")
 
-for recipe in _ci-goml-test _ci-vscode; do
+for recipe in _ci-goml-test _ci-vscode _ci-release-smoke; do
     nice -n 10 just "$recipe" &
     ci_pids+=("$!")
 done
