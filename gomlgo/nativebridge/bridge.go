@@ -20,6 +20,7 @@ type Binding struct {
 
 type Registry struct {
 	functions map[CallID]reflect.Value
+	names     map[CallID]string
 }
 
 type Invocation struct {
@@ -246,11 +247,28 @@ func InvocationAppend(invocation any, value any) {
 		return
 	}
 	ref, ok := value.(reflect.Value)
-	if !ok || !ref.IsValid() {
-		call.result.Err = fmt.Errorf("native argument is invalid")
+	if !ok {
+		call.result.Err = fmt.Errorf("native call %s argument %d is not a reflected value", nativeCallName(call), len(call.arguments))
+		return
+	}
+	if !ref.IsValid() {
+		call.result.Err = fmt.Errorf("native call %s argument %d is invalid", nativeCallName(call), len(call.arguments))
 		return
 	}
 	call.arguments = append(call.arguments, ref)
+}
+
+func nativeCallName(call *Invocation) string {
+	if call.function.IsValid() {
+		return call.function.Type().String()
+	}
+	registry := DefaultRegistry()
+	if registry != nil {
+		if name := registry.names[call.id]; name != "" {
+			return fmt.Sprintf("%d (%s)", call.id, name)
+		}
+	}
+	return fmt.Sprint(call.id)
 }
 
 func InvocationRun(invocation any) {

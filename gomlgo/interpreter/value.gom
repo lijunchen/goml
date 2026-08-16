@@ -119,8 +119,17 @@ extern fn new_native_channel_invocation_value() -> HostValueRef;
 #[go_ffi("gomlgo/nativebridge", "ChannelInvocationAppendReceive")]
 extern fn append_native_channel_receive_value(invocation: HostValueRef, channel: HostValueRef) -> bool;
 
+#[go_ffi("gomlgo/nativebridge", "ChannelInvocationAppendDefault")]
+extern fn append_native_channel_default_value(invocation: HostValueRef) -> bool;
+
 #[go_ffi("gomlgo/nativebridge", "ChannelInvocationStart")]
 extern fn start_native_channel_invocation_value(queue: HostValueRef, invocation: HostValueRef) -> bool;
+
+#[go_ffi("gomlgo/nativebridge", "ChannelInvocationCancel")]
+extern fn cancel_native_channel_invocation_value(invocation: HostValueRef) -> bool;
+
+#[go_ffi("gomlgo/nativebridge", "ChannelInvocationWait")]
+extern fn wait_native_channel_invocation_value(invocation: HostValueRef) -> bool;
 
 #[go_ffi("gomlgo/nativebridge", "ChannelInvocationIndex")]
 extern fn native_channel_invocation_index_value(invocation: HostValueRef) -> int;
@@ -287,6 +296,9 @@ extern fn new_native_pointer_identity(root: int, projection: string) -> HostValu
 
 #[go_ffi("gomlgo/nativebridge", "ProgramArgsValue")]
 extern fn native_program_args() -> HostValueRef;
+
+#[go_ffi("gomlgo/nativebridge", "SetProgramExecutable")]
+extern fn set_native_program_executable(value: string) -> unit;
 
 #[go_ffi("gomlgo/nativebridge", "NativeGlobalValue")]
 extern fn native_global_value(object_id: int) -> HostValueRef;

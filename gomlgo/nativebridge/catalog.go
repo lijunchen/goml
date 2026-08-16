@@ -42,9 +42,33 @@ var catalogPointers struct {
 	values map[string]*catalogPointer
 }
 
+var programExecutable struct {
+	sync.RWMutex
+	value string
+}
+
+func SetProgramExecutable(value string) {
+	programExecutable.Lock()
+	programExecutable.value = value
+	programExecutable.Unlock()
+}
+
+func ProgramExecutable() (string, error) {
+	programExecutable.RLock()
+	value := programExecutable.value
+	programExecutable.RUnlock()
+	if value != "" {
+		return value, nil
+	}
+	return os.Executable()
+}
+
 func ResetCatalog() {
 	defaultRegistry.Lock()
-	defaultRegistry.value = &Registry{functions: make(map[CallID]reflect.Value)}
+	defaultRegistry.value = &Registry{
+		functions: make(map[CallID]reflect.Value),
+		names:     make(map[CallID]string),
+	}
 	defaultRegistry.Unlock()
 	nativeGlobals.Lock()
 	nativeGlobals.values = nil
@@ -167,16 +191,27 @@ func CatalogBind(
 	defaultRegistry.Lock()
 	defer defaultRegistry.Unlock()
 	if defaultRegistry.value == nil {
-		defaultRegistry.value = &Registry{functions: make(map[CallID]reflect.Value)}
+		defaultRegistry.value = &Registry{
+			functions: make(map[CallID]reflect.Value),
+			names:     make(map[CallID]string),
+		}
 	}
 	if defaultRegistry.value.functions == nil {
 		defaultRegistry.value.functions = make(map[CallID]reflect.Value)
+	}
+	if defaultRegistry.value.names == nil {
+		defaultRegistry.value.names = make(map[CallID]string)
 	}
 	callID := CallID(id)
 	if _, exists := defaultRegistry.value.functions[callID]; exists {
 		return false
 	}
 	defaultRegistry.value.functions[callID] = value
+	receiver := ""
+	if receiverName != "" {
+		receiver = receiverName + "."
+	}
+	defaultRegistry.value.names[callID] = importPath + "." + receiver + symbol
 	return true
 }
 
@@ -207,7 +242,7 @@ func catalogFunction(importPath string, symbol string) any {
 	case "os\x00Environ":
 		return os.Environ
 	case "os\x00Executable":
-		return os.Executable
+		return ProgramExecutable
 	case "os\x00Getwd":
 		return os.Getwd
 	case "os\x00IsExist":

@@ -179,13 +179,15 @@ type ChannelSelectResult struct {
 }
 
 type ChannelInvocation struct {
-	cases  []reflect.SelectCase
-	result ChannelSelectResult
-	done   chan struct{}
+	cases      []reflect.SelectCase
+	result     ChannelSelectResult
+	done       chan struct{}
+	cancel     chan struct{}
+	cancelOnce sync.Once
 }
 
 func NewChannelInvocation() any {
-	return reflect.ValueOf(&ChannelInvocation{done: make(chan struct{})})
+	return reflect.ValueOf(&ChannelInvocation{done: make(chan struct{}), cancel: make(chan struct{})})
 }
 
 func channelInvocationValue(value any) (*ChannelInvocation, bool) {
@@ -207,6 +209,15 @@ func ChannelInvocationAppendReceive(invocationValue any, channelValue any) bool 
 	return true
 }
 
+func ChannelInvocationAppendDefault(invocationValue any) bool {
+	invocation, ok := channelInvocationValue(invocationValue)
+	if !ok {
+		return false
+	}
+	invocation.cases = append(invocation.cases, reflect.SelectCase{Dir: reflect.SelectDefault})
+	return true
+}
+
 func ChannelInvocationStart(queueValue any, invocationValue any) bool {
 	queue, ok := invocationQueueValue(queueValue)
 	invocation, valid := channelInvocationValue(invocationValue)
@@ -217,14 +228,40 @@ func ChannelInvocationStart(queueValue any, invocationValue any) bool {
 		return false
 	}
 	go func() {
-		chosen, value, open := reflect.Select(invocation.cases)
-		invocation.result.Index = chosen
-		invocation.result.Value = value
-		invocation.result.Ready = true
-		invocation.result.Open = open
+		cases := append([]reflect.SelectCase{}, invocation.cases...)
+		cases = append(cases, reflect.SelectCase{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(invocation.cancel)})
+		chosen, value, open := reflect.Select(cases)
+		if chosen == len(invocation.cases) {
+			invocation.result.Index = -1
+		} else {
+			invocation.result.Index = chosen
+			invocation.result.Value = value
+			invocation.result.Ready = true
+			invocation.result.Open = open
+		}
 		_ = queue.Submit(AsyncCompletion{Target: invocation})
 		close(invocation.done)
 	}()
+	return true
+}
+
+func ChannelInvocationCancel(invocationValue any) bool {
+	invocation, ok := channelInvocationValue(invocationValue)
+	if !ok {
+		return false
+	}
+	invocation.cancelOnce.Do(func() {
+		close(invocation.cancel)
+	})
+	return true
+}
+
+func ChannelInvocationWait(invocationValue any) bool {
+	invocation, ok := channelInvocationValue(invocationValue)
+	if !ok {
+		return false
+	}
+	<-invocation.done
 	return true
 }
 

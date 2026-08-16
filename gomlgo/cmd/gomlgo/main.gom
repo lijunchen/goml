@@ -39,7 +39,7 @@ const BRIDGE_SOURCE_ENV: string = "GOMLGO_BRIDGE_SOURCE";
 
 const CACHE_ROOT_ENV: string = "GOMLGO_NATIVE_CACHE";
 
-const COMMAND_USAGE: string = "usage: gomlgo scan FILE | parse FILE | parse-expr EXPR | check FILE... | check-package DIRECTORY | run [--seed N] [--max-goroutines N] FILE [-- PROGRAM_ARGS...]";
+const COMMAND_USAGE: string = "usage: gomlgo scan FILE | parse FILE | parse-expr EXPR | check FILE... | check-package DIRECTORY | run [--seed N] [--max-goroutines N] [--max-steps N] [--program-executable FILE] FILE [-- PROGRAM_ARGS...]";
 
 fn fail(message: string) -> unit {
     println(message);
@@ -454,6 +454,29 @@ fn run_files(arguments: Vec[string]) -> unit {
                     1
                 },
             };
+            index += 2;
+        } else if arguments[index] == "--max-steps" {
+            if index + 1 >= arguments.len() {
+                fail(COMMAND_USAGE)
+            } else {};
+            vm_config.max_steps = match num::parse_int(arguments[index + 1]) {
+                Ok(value) => if value > 0 || value == -1 {
+                    value.to_int64()
+                } else {
+                    fail("maximum step count must be positive or -1");
+                    1.to_int64()
+                },
+                Err(message) => {
+                    fail("invalid maximum step count: " + message);
+                    1.to_int64()
+                },
+            };
+            index += 2;
+        } else if arguments[index] == "--program-executable" {
+            if index + 1 >= arguments.len() {
+                fail(COMMAND_USAGE)
+            } else {};
+            vm_config.program_executable = arguments[index + 1];
             index += 2;
         } else {
             files.push(arguments[index]);

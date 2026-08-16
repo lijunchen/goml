@@ -42,6 +42,7 @@ enum ScheduledNativeChannelTarget {
     Select {
         chosen: bytecode::RegisterId,
         cases: Vec[bytecode::SelectCase],
+        native_indices: Vec[int],
     },
 }
 
@@ -218,14 +219,14 @@ fn scheduled_interface_invocation(
     arguments: Vec[Value],
     first_argument: int,
 ) -> Result[ScheduledInvocation, string] {
+    let method_object = state.program.world.objects[method.value];
     let (dynamic_type, dynamic_value) = match receiver {
         Value::Interface { static_type: _, dynamic_type: Some(dynamic_type), value: Some(value) } => (
             dynamic_type,
             value.get(),
         ),
-        _ => return Result::Err("interface method call has a nil receiver"),
+        _ => return Result::Err("interface method " + method_object.name + " has a nil receiver"),
     };
-    let method_object = state.program.world.objects[method.value];
     let selection = go_types::lookup_field_or_method(
         state.program.world,
         dynamic_type,
@@ -381,6 +382,17 @@ fn scheduled_channel_id(frame: Frame, register_id: bytecode::RegisterId) -> Resu
     }
 }
 
+fn scheduled_channel_matches(frame: Frame, register_id: bytecode::RegisterId, target: int) -> Result[
+    bool,
+    string,
+] {
+    match register(frame, register_id)? {
+        Value::Local(LocalValue::Channel(value)) => Result::Ok(value == target),
+        Value::Host { type_id: _, value: _ } => Result::Ok(false),
+        _ => Result::Err("channel operation source is not a channel"),
+    }
+}
+
 fn checked_channel(state: VmState, id: int) -> Result[ChannelValue, string] {
     if id < 0 || id >= state.channels.len() {
         Result::Err("invalid channel " + id.to_string())
@@ -401,7 +413,7 @@ fn instruction_channel_matches(
         Some(bytecode::Instruction {
             kind: bytecode::InstructionKind::Send { channel, value: _ },
             location: _,
-        }) => if !receive && scheduled_channel_id(scheduled.frame, channel)? == target {
+        }) => if !receive && scheduled_channel_matches(scheduled.frame, channel, target)? {
             Result::Ok(-1)
         } else {
             Result::Ok(-2)
@@ -409,7 +421,7 @@ fn instruction_channel_matches(
         Some(bytecode::Instruction {
             kind: bytecode::InstructionKind::Receive { value: _, ok: _, channel },
             location: _,
-        }) => if receive && scheduled_channel_id(scheduled.frame, channel)? == target {
+        }) => if receive && scheduled_channel_matches(scheduled.frame, channel, target)? {
             Result::Ok(-1)
         } else {
             Result::Ok(-2)
@@ -422,9 +434,9 @@ fn instruction_channel_matches(
             for index in 0..cases.len() {
                 let matched = match cases[index].operation {
                     bytecode::SelectOperation::Send { channel, value: _ } => !receive
-                        && scheduled_channel_id(scheduled.frame, channel)? == target,
+                        && scheduled_channel_matches(scheduled.frame, channel, target)?,
                     bytecode::SelectOperation::Receive { channel, value: _, ok: _ } => receive
-                        && scheduled_channel_id(scheduled.frame, channel)? == target,
+                        && scheduled_channel_matches(scheduled.frame, channel, target)?,
                     bytecode::SelectOperation::Default => false,
                 };
                 if matched {
@@ -443,13 +455,30 @@ fn instruction_channel_matches(
     }
 }
 
+fn cancel_scheduled_native_channel(
+    scheduler: Scheduler,
+    goroutine_index: int,
+    pending: ScheduledNativeChannel,
+) -> Result[unit, string] {
+    if !cancel_native_channel_invocation_value(pending.invocation.value) {
+        return Result::Err("native channel invocation could not be canceled")
+    } else if !wait_native_channel_invocation_value(pending.invocation.value) {
+        return Result::Err("native channel invocation cancellation could not be joined")
+    } else {};
+    complete_native_channel(scheduler, goroutine_index, pending)
+}
+
+fn scheduled_channel_waiter(goroutine: ScheduledGoroutine) -> bool {
+    goroutine.state.get() == 1 && goroutine.native.get().is_none()
+}
+
 fn find_waiting_operation(scheduler: Scheduler, current: int, channel: int, receive: bool) -> Result[
     Option[WaitingOperation],
     string,
 ] {
     for index in 0..scheduler.goroutines.len() {
         let goroutine = scheduler.goroutines[index];
-        if index != current && goroutine.state.get() == 1 {
+        if index != current && scheduled_channel_waiter(goroutine) {
             let case_index = instruction_channel_matches(
                 scheduler,
                 goroutine,
@@ -458,7 +487,17 @@ fn find_waiting_operation(scheduler: Scheduler, current: int, channel: int, rece
                 true,
             )?;
             if case_index >= -1 {
-                return Result::Ok(Option::Some(WaitingOperation { goroutine: index, case_index }))
+                match goroutine.native_channel.get() {
+                    Some(pending) => {
+                        cancel_scheduled_native_channel(scheduler, index, pending)?;
+                        return Result::Ok(
+                            Option::Some(WaitingOperation { goroutine: index, case_index }),
+                        )
+                    },
+                    None => return Result::Ok(
+                        Option::Some(WaitingOperation { goroutine: index, case_index }),
+                    ),
+                }
             } else {}
         } else {}
     }
@@ -643,10 +682,13 @@ fn attempt_receive(scheduler: Scheduler, current: int, channel_id: int) -> Resul
 fn wake_channel(scheduler: Scheduler, channel: int) -> Result[unit, string] {
     for index in 0..scheduler.goroutines.len() {
         let goroutine = scheduler.goroutines[index];
-        if goroutine.state.get() == 1
+        if scheduled_channel_waiter(goroutine)
             && (instruction_channel_matches(scheduler, goroutine, channel, true, false)? >= -1
                 || instruction_channel_matches(scheduler, goroutine, channel, false, false)? >= -1) {
-            goroutine.state.set(0)
+            match goroutine.native_channel.get() {
+                Some(pending) => cancel_scheduled_native_channel(scheduler, index, pending)?,
+                None => goroutine.state.set(0),
+            }
         } else {}
     }
     Result::Ok(())
@@ -1012,6 +1054,7 @@ fn start_native_channel(
     goroutine_index: int,
     owner: ScheduledFrame,
     channels: Vec[dyn HostValueMarker],
+    default_case: bool,
     target: ScheduledNativeChannelTarget,
 ) -> Result[unit, string] {
     let invocation = new_native_channel_invocation();
@@ -1020,6 +1063,9 @@ fn start_native_channel(
             return Result::Err("native receive target is not a receive-capable channel")
         } else {}
     }
+    if default_case && !append_native_channel_default_value(invocation.value) {
+        return Result::Err("native channel default case could not be appended")
+    } else {};
     if !start_native_channel_invocation_value(scheduler.native_completions.value, invocation.value) {
         return Result::Err("native channel invocation could not start")
     } else {};
@@ -1060,11 +1106,14 @@ fn complete_native_channel(
             };
             advance_scheduled(pending.owner)
         },
-        ScheduledNativeChannelTarget::Select { chosen: target, cases } => {
-            if chosen < 0 || chosen >= cases.len() {
+        ScheduledNativeChannelTarget::Select { chosen: target, cases, native_indices } => {
+            if chosen == -1 {
+                return Result::Ok(())
+            } else if chosen < 0 || chosen >= native_indices.len() {
                 return Result::Err("native select returned an invalid case")
             } else {};
-            match cases[chosen].operation {
+            let case_index = native_indices[chosen];
+            match cases[case_index].operation {
                 bytecode::SelectOperation::Receive { channel, value, ok } => {
                     let function = scheduler.state.program.functions[pending.owner.frame.function.value];
                     let channel_type = function.register_types[channel.value];
@@ -1088,9 +1137,10 @@ fn complete_native_channel(
                         None => {},
                     }
                 },
+                bytecode::SelectOperation::Default => {},
                 _ => return Result::Err("native select chose a non-receive case"),
             };
-            select_case_enter(scheduler, goroutine, pending.owner, target, cases, chosen)?
+            select_case_enter(scheduler, goroutine, pending.owner, target, cases, case_index)?
         },
     };
     Result::Ok(())
@@ -1385,45 +1435,73 @@ fn execute_scheduled_select(
 ) -> Result[Option[InvocationOutcome], string] {
     count_scheduled_step(scheduler, scheduled, instruction.location)?;
     let native_channels: Vec[dyn HostValueMarker] = Vec::from_array([]);
-    let mut native = !cases.is_empty();
-    for item in cases {
-        match item.operation {
+    let native_indices: Vec[int] = Vec::from_array([]);
+    let mut default_index = -1;
+    for index in 0..cases.len() {
+        match cases[index].operation {
             bytecode::SelectOperation::Receive { channel, value: _, ok: _ } => match register(
                 scheduled.frame,
                 channel,
             )? {
-                Value::Host { type_id: _, value } => native_channels.push(value),
-                _ => {
-                    native = false;
+                Value::Host { type_id: _, value } => {
+                    native_channels.push(value);
+                    native_indices.push(index)
                 },
+                Value::Local(LocalValue::Channel(_)) => {},
+                _ => return Result::Err("select receive source is not a channel"),
             },
-            _ => {
-                native = false;
+            bytecode::SelectOperation::Send { channel, value: _ } => match register(
+                scheduled.frame,
+                channel,
+            )? {
+                Value::Local(LocalValue::Channel(_)) => {},
+                Value::Host { type_id: _, value: _ } => {
+                    return Result::Err("native channel sends in mixed selects are not supported")
+                },
+                _ => return Result::Err("select send target is not a channel"),
             },
-        }
-    }
-    if native {
-        start_native_channel(
-            scheduler,
-            goroutine_index,
-            scheduled,
-            native_channels,
-            ScheduledNativeChannelTarget::Select { chosen, cases },
-        )?;
-        return Result::Ok(Option::None)
-    } else {};
-    let ready: Vec[int] = Vec::from_array([]);
-    let mut default_index = -1;
-    for index in 0..cases.len() {
-        match cases[index].operation {
             bytecode::SelectOperation::Default => {
                 default_index = index;
             },
+        }
+    }
+    let ready: Vec[int] = Vec::from_array([]);
+    for index in 0..cases.len() {
+        match cases[index].operation {
+            bytecode::SelectOperation::Receive { channel, value: _, ok: _ } => match register(
+                scheduled.frame,
+                channel,
+            )? {
+                Value::Host { type_id: _, value: _ } => {},
+                _ => if select_case_ready(
+                    scheduler,
+                    goroutine_index,
+                    scheduled,
+                    cases[index].operation,
+                )? {
+                    ready.push(index)
+                } else {},
+            },
+            bytecode::SelectOperation::Default => {},
             operation => if select_case_ready(scheduler, goroutine_index, scheduled, operation)? {
                 ready.push(index)
             } else {},
         }
     }
+    if ready.is_empty() && !native_channels.is_empty() {
+        if default_index >= 0 {
+            native_indices.push(default_index)
+        } else {};
+        start_native_channel(
+            scheduler,
+            goroutine_index,
+            scheduled,
+            native_channels,
+            default_index >= 0,
+            ScheduledNativeChannelTarget::Select { chosen, cases, native_indices },
+        )?;
+        return Result::Ok(Option::None)
+    } else {};
     let selected = if ready.is_empty() {
         default_index
     } else {
@@ -1669,6 +1747,7 @@ fn execute_scheduled_instruction(
                         goroutine_index,
                         scheduled,
                         Vec::from_array([host]),
+                        false,
                         ScheduledNativeChannelTarget::Receive {
                             value,
                             ok,

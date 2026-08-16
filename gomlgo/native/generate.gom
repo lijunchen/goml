@@ -8,11 +8,20 @@ struct RegistryImport {
     alias: string,
 }
 
+fn bridge_function(call: NativeCallSpec) -> bool {
+    match call.binding {
+        NativeBindingKind::Function => call.import_path == "os" && call.symbol == "Executable",
+        _ => false,
+    }
+}
+
 fn function_package_paths(value: Manifest) -> Vec[string] {
     let paths: Vec[string] = Vec::from_array([]);
     for call in value.calls {
         match call.binding {
-            NativeBindingKind::Function => paths.push(call.import_path),
+            NativeBindingKind::Function => if !bridge_function(call) {
+                paths.push(call.import_path)
+            } else {},
             NativeBindingKind::Method => paths.push(call.import_path),
             NativeBindingKind::Exit => (),
         }
@@ -125,9 +134,13 @@ fn write_binding(builder: text::StringBuilder, call: NativeCallSpec, function_pa
             builder.write_string("Bind(_gomlgo_nativebridge.CallID(");
             builder.write_string(call.call_id.to_string());
             builder.write_string("), ");
-            builder.write_string(package_alias(function_paths, call.import_path));
-            builder.write_string(".");
-            builder.write_string(call.symbol);
+            if bridge_function(call) {
+                builder.write_string("_gomlgo_nativebridge.ProgramExecutable")
+            } else {
+                builder.write_string(package_alias(function_paths, call.import_path));
+                builder.write_string(".");
+                builder.write_string(call.symbol)
+            };
             if !call.type_argument_keys.is_empty() {
                 builder.write_string("[");
                 builder.write_string(text::join(call.type_argument_keys, ", "));

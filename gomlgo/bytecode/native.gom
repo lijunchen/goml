@@ -514,19 +514,7 @@ fn native_callable_signature(world: go_types::World, signature: go_types::TypeId
             let parameters = native_tuple(world, params)?;
             let result_values = native_tuple(world, results)?;
             let parameter_types = Vec::from_array([receiver.type_id]);
-            let parameter_type_keys = Vec::from_array(
-                [
-                    "native:"
-                        + if receiver.pointer {
-                            "*"
-                        } else {
-                            ""
-                        }
-                        + receiver.import_path
-                        + "."
-                        + receiver.name,
-                ],
-            );
+            let parameter_type_keys = Vec::from_array([native_type_key(world, receiver.type_id)?]);
             for value in parameters.0 {
                 parameter_types.push(value)
             }

@@ -11,6 +11,7 @@ pub struct VmConfig {
     pub instruction_quantum: int,
     pub select_seed: uint64,
     pub trace_bytecode: bool,
+    pub program_executable: string,
 }
 
 pub struct RuntimeStackFrame {
@@ -91,6 +92,7 @@ enum RuntimePlace {
 
 struct Frame {
     function: bytecode::FunctionId,
+    name: string,
     registers: Vec[Option[Value]],
     places: Vec[Option[RuntimePlace]],
     locals: Vec[CellId],
@@ -183,6 +185,7 @@ pub fn default_config() -> VmConfig {
         instruction_quantum: 64,
         select_seed: 1.to_uint64(),
         trace_bytecode: false,
+        program_executable: "",
     }
 }
 
@@ -215,7 +218,9 @@ fn register(frame: Frame, id: bytecode::RegisterId) -> Result[Value, string] {
     if id.value < 0 || id.value >= frame.registers.len() {
         Result::Err("invalid register " + id.value.to_string())
     } else {
-        frame.registers[id.value].ok_or("register " + id.value.to_string() + " is undefined")
+        frame.registers[id.value].ok_or(
+            "register " + id.value.to_string() + " is undefined in " + frame.name,
+        )
     }
 }
 
@@ -1471,10 +1476,34 @@ fn aggregate_value(
                     }
                     Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
                 },
-                Value::Host { type_id, value } => if values.is_empty() {
+                Value::Host { type_id, value } => {
+                    for element in values {
+                        let element_type = native_field_type(
+                            state.program.world,
+                            type_id,
+                            element.index,
+                        )?;
+                        let target = native_field_reference(value, element.index);
+                        if !native_host_value_valid(target) {
+                            return Result::Err(
+                                "native composite field " + element.index.to_string()
+                                    + " is not accessible",
+                            )
+                        } else {};
+                        let source = native_argument(
+                            state,
+                            register(frame, element.value)?,
+                            element_type,
+                            runtime_native_type_key(state, element_type)?,
+                        )?;
+                        if !set_native_value(target, source) {
+                            return Result::Err(
+                                "native composite field " + element.index.to_string()
+                                    + " is not assignable",
+                            )
+                        } else {}
+                    }
                     Result::Ok(Value::Host { type_id, value })
-                } else {
-                    Result::Err("native composite literals with elements are not supported")
                 },
                 _ => Result::Err("aggregate zero value is invalid"),
             }
@@ -1810,6 +1839,9 @@ fn native_runtime_type_key(world: go_types::World, type_id: go_types::TypeId) ->
             id: _,
             kind: go_types::TypeKind::Chan { direction: _, element: _ },
         }) => Result::Ok("channel"),
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Signature { .. } }) => Result::Ok(
+            "func()",
+        ),
         _ => Result::Err(
             "callback type " + go_types::format_type(world, type_id)
                 + " cannot cross the native bridge",
@@ -2436,10 +2468,10 @@ fn invoke_native(state: VmState, id: bytecode::NativeCallId, arguments: Vec[Valu
 fn native_interface_method_target(state: VmState, method: go_types::ObjectId, receiver: Value) -> Option[
     Value,
 ] {
+    let method_object = state.program.world.objects[method.value];
     match receiver {
         Value::Interface { static_type: _, dynamic_type: Some(_), value: Some(value) } => match value.get() {
             Value::Host { type_id: _, value } => {
-                let method_object = state.program.world.objects[method.value];
                 let function = native_method_value(value, method_object.name);
                 if native_host_value_valid(function) {
                     Option::Some(Value::Host { type_id: method_object.type_id, value: function })
@@ -2448,6 +2480,14 @@ fn native_interface_method_target(state: VmState, method: go_types::ObjectId, re
                 }
             },
             _ => Option::None,
+        },
+        Value::Host { type_id: _, value } => {
+            let function = native_method_value(value, method_object.name);
+            if native_host_value_valid(function) {
+                Option::Some(Value::Host { type_id: method_object.type_id, value: function })
+            } else {
+                Option::None
+            }
         },
         _ => Option::None,
     }
@@ -2474,9 +2514,15 @@ fn prepare_call(
         },
         bytecode::CallTarget::InterfaceMethod { method, receiver } => {
             let receiver = register(frame, receiver)?;
+            let method_name = state.program.world.objects[method.value].name;
             match receiver {
-                Value::Interface { static_type: _, dynamic_type: Some(_), value: Some(_) } => {},
-                _ => return Result::Err("interface method call has a nil receiver"),
+                Value::Interface { static_type: _, dynamic_type: Some(_), value: Some(_) } | Value::Host {
+                    type_id: _,
+                    value: _,
+                } => {},
+                _ => return Result::Err(
+                    "interface method " + method_name + " has a nil receiver in " + function.name,
+                ),
             };
             match native_interface_method_target(state, method, receiver) {
                 Some(target) => PreparedTarget::Dynamic(target),
@@ -2592,15 +2638,17 @@ fn invoke_prepared(
             )
         },
         PreparedTarget::InterfaceMethod { method, receiver } => {
+            let method_object = state.program.world.objects[method.value];
             let (dynamic_type, dynamic_value) = match receiver {
                 Value::Interface {
                     static_type: _,
                     dynamic_type: Some(dynamic_type),
                     value: Some(value),
                 } => (dynamic_type, value.get()),
-                _ => return Result::Err("interface method call has a nil receiver"),
+                _ => return Result::Err(
+                    "interface method " + method_object.name + " has a nil receiver",
+                ),
             };
-            let method_object = state.program.world.objects[method.value];
             let selection = go_types::lookup_field_or_method(
                 state.program.world,
                 dynamic_type,
@@ -2692,6 +2740,7 @@ fn invoke_prepared(
                     )
                 },
                 FunctionTarget::InterfaceMethod(method) => {
+                    let method_object = state.program.world.objects[method.value];
                     let receiver = match value.receiver {
                         Some(receiver) => receiver.get(),
                         None => if call.arguments.is_empty() {
@@ -2711,9 +2760,10 @@ fn invoke_prepared(
                             dynamic_type: Some(dynamic_type),
                             value: Some(value),
                         } => (dynamic_type, value.get()),
-                        _ => return Result::Err("interface method call has a nil receiver"),
+                        _ => return Result::Err(
+                            "interface method " + method_object.name + " has a nil receiver",
+                        ),
                     };
-                    let method_object = state.program.world.objects[method.value];
                     let selection = go_types::lookup_field_or_method(
                         state.program.world,
                         dynamic_type,
@@ -3204,12 +3254,18 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
             ),
         ),
         bytecode::InstructionKind::MakeInterfaceMethodValue { target, method, receiver } => {
+            let method_name = state.program.world.objects[method.value].name;
             let receiver = match receiver {
                 Some(value) => {
                     let receiver = register(frame, value)?;
                     match receiver {
-                        Value::Interface { static_type: _, dynamic_type: Some(_), value: Some(_) } => {},
-                        _ => return Result::Err("interface method value has a nil receiver"),
+                        Value::Interface { static_type: _, dynamic_type: Some(_), value: Some(_) } | Value::Host {
+                            type_id: _,
+                            value: _,
+                        } => {},
+                        _ => return Result::Err(
+                            "interface method " + method_name + " value has a nil receiver",
+                        ),
                     };
                     Option::Some(Ref::new(copy_value(receiver)))
                 },
@@ -3642,6 +3698,7 @@ fn frame_for_call(
     Result::Ok(
         Frame {
             function: function.id,
+            name: function.name,
             registers: empty_slots(function.register_types.len()),
             places: empty_slots(function.place_count),
             locals,
@@ -3801,6 +3858,7 @@ fn execute_function(
 }
 
 fn initialize_state(program: bytecode::BytecodeProgram, config: VmConfig) -> Result[VmState, string] {
+    set_native_program_executable(config.program_executable);
     let memory = new_memory();
     let native_completions = new_native_completion_queue(64);
     let state = VmState {
