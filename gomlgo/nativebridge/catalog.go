@@ -1,16 +1,23 @@
 package nativebridge
 
 import (
+	"bytes"
 	"context"
+	"crypto/sha256"
+	"errors"
 	"fmt"
+	"hash"
 	"io"
 	"io/fs"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"reflect"
 	"runtime"
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -19,6 +26,10 @@ type catalogPointer struct {
 }
 
 type catalogLockerProxy struct {
+	token *CallbackToken
+}
+
+type catalogReaderProxy struct {
 	token *CallbackToken
 }
 
@@ -78,6 +89,16 @@ func (value *catalogLockerProxy) Unlock() {
 	InvokeCallback(value.token, "Unlock", nil, nil)
 }
 
+func (value *catalogReaderProxy) Read(buffer []byte) (int, error) {
+	results := InvokeCallback(
+		value.token,
+		"Read",
+		Values(buffer),
+		[]reflect.Type{reflect.TypeFor[int](), reflect.TypeFor[error]()},
+	)
+	return CallbackValue[int](results, 0), CallbackValue[error](results, 1)
+}
+
 func (value *catalogWriterProxy) Write(buffer []byte) (int, error) {
 	results := InvokeCallback(
 		value.token,
@@ -90,6 +111,10 @@ func (value *catalogWriterProxy) Write(buffer []byte) (int, error) {
 
 func CatalogRegisterProxy(importPath string, name string) bool {
 	switch importPath + "\x00" + name {
+	case "io\x00Reader":
+		return RegisterInterfaceProxy((*io.Reader)(nil), func(token *CallbackToken) (ValueRef, error) {
+			return reflect.ValueOf(&catalogReaderProxy{token: token}), nil
+		}) == nil
 	case "io\x00Writer":
 		return RegisterInterfaceProxy((*io.Writer)(nil), func(token *CallbackToken) (ValueRef, error) {
 			return reflect.ValueOf(&catalogWriterProxy{token: token}), nil
@@ -105,7 +130,7 @@ func CatalogRegisterProxy(importPath string, name string) bool {
 
 func CatalogSupportsPackage(importPath string) bool {
 	switch importPath {
-	case "context", "fmt", "io", "io/fs", "os", "reflect", "runtime", "slices", "strconv", "strings", "sync", "time":
+	case "bytes", "context", "crypto/sha256", "errors", "fmt", "hash", "io", "io/fs", "os", "os/exec", "path/filepath", "reflect", "runtime", "slices", "strconv", "strings", "sync", "syscall", "time":
 		return true
 	default:
 		return false
@@ -157,10 +182,18 @@ func CatalogBind(
 
 func catalogFunction(importPath string, symbol string) any {
 	switch importPath + "\x00" + symbol {
+	case "bytes\x00NewReader":
+		return bytes.NewReader
 	case "context\x00Background":
 		return context.Background
 	case "context\x00WithCancel":
 		return context.WithCancel
+	case "context\x00WithTimeout":
+		return context.WithTimeout
+	case "crypto/sha256\x00New":
+		return sha256.New
+	case "errors\x00Is":
+		return errors.Is
 	case "fmt\x00Fprint":
 		return fmt.Fprint
 	case "fmt\x00Print":
@@ -169,16 +202,70 @@ func catalogFunction(importPath string, symbol string) any {
 		return fmt.Println
 	case "fmt\x00Sprintf":
 		return fmt.Sprintf
+	case "io\x00Copy":
+		return io.Copy
+	case "os\x00Environ":
+		return os.Environ
+	case "os\x00Executable":
+		return os.Executable
+	case "os\x00Getwd":
+		return os.Getwd
+	case "os\x00IsExist":
+		return os.IsExist
+	case "os\x00IsNotExist":
+		return os.IsNotExist
+	case "os\x00IsPermission":
+		return os.IsPermission
+	case "os\x00IsTimeout":
+		return os.IsTimeout
+	case "os\x00Link":
+		return os.Link
+	case "os\x00LookupEnv":
+		return os.LookupEnv
+	case "os\x00Mkdir":
+		return os.Mkdir
 	case "os\x00MkdirAll":
 		return os.MkdirAll
+	case "os\x00Open":
+		return os.Open
 	case "os\x00ReadDir":
 		return os.ReadDir
 	case "os\x00ReadFile":
 		return os.ReadFile
+	case "os\x00Remove":
+		return os.Remove
+	case "os\x00RemoveAll":
+		return os.RemoveAll
+	case "os\x00Rename":
+		return os.Rename
 	case "os\x00Stat":
 		return os.Stat
+	case "os\x00Symlink":
+		return os.Symlink
 	case "os\x00WriteFile":
 		return os.WriteFile
+	case "os/exec\x00Command":
+		return exec.Command
+	case "os/exec\x00CommandContext":
+		return exec.CommandContext
+	case "os/exec\x00LookPath":
+		return exec.LookPath
+	case "path/filepath\x00Abs":
+		return filepath.Abs
+	case "path/filepath\x00Base":
+		return filepath.Base
+	case "path/filepath\x00Clean":
+		return filepath.Clean
+	case "path/filepath\x00Dir":
+		return filepath.Dir
+	case "path/filepath\x00EvalSymlinks":
+		return filepath.EvalSymlinks
+	case "path/filepath\x00Ext":
+		return filepath.Ext
+	case "path/filepath\x00IsAbs":
+		return filepath.IsAbs
+	case "path/filepath\x00Join":
+		return filepath.Join
 	case "reflect\x00ValueOf":
 		return reflect.ValueOf
 	case "runtime\x00Gosched":
@@ -193,10 +280,18 @@ func catalogFunction(importPath string, symbol string) any {
 		return strings.Cut
 	case "strings\x00Join":
 		return strings.Join
+	case "strings\x00TrimPrefix":
+		return strings.TrimPrefix
+	case "strings\x00TrimSuffix":
+		return strings.TrimSuffix
 	case "strings\x00ToUpper":
 		return strings.ToUpper
 	case "sync\x00NewCond":
 		return sync.NewCond
+	case "syscall\x00Kill":
+		return syscall.Kill
+	case "time\x00Now":
+		return time.Now
 	default:
 		return nil
 	}
@@ -205,9 +300,49 @@ func catalogFunction(importPath string, symbol string) any {
 func catalogMethod(importPath string, receiverName string, receiverPointer bool, symbol string) any {
 	key := importPath + "\x00" + receiverName + "\x00" + symbol
 	switch key {
+	case "bytes\x00Buffer\x00Bytes":
+		if receiverPointer {
+			return (*bytes.Buffer).Bytes
+		}
+	case "context\x00Context\x00Done":
+		if !receiverPointer {
+			return context.Context.Done
+		}
+	case "context\x00Context\x00Err":
+		if !receiverPointer {
+			return context.Context.Err
+		}
+	case "hash\x00Hash\x00Sum":
+		if !receiverPointer {
+			return hash.Hash.Sum
+		}
 	case "io/fs\x00DirEntry\x00Name":
 		if !receiverPointer {
 			return fs.DirEntry.Name
+		}
+	case "io/fs\x00FileInfo\x00IsDir":
+		if !receiverPointer {
+			return fs.FileInfo.IsDir
+		}
+	case "io/fs\x00FileInfo\x00Mode":
+		if !receiverPointer {
+			return fs.FileInfo.Mode
+		}
+	case "io/fs\x00FileMode\x00IsRegular":
+		if !receiverPointer {
+			return fs.FileMode.IsRegular
+		}
+	case "os\x00File\x00Close":
+		if receiverPointer {
+			return (*os.File).Close
+		}
+	case "os\x00ProcessState\x00ExitCode":
+		if receiverPointer {
+			return (*os.ProcessState).ExitCode
+		}
+	case "os/exec\x00Cmd\x00Run":
+		if receiverPointer {
+			return (*exec.Cmd).Run
 		}
 	case "reflect\x00Value\x00Pointer":
 		if !receiverPointer {
@@ -249,6 +384,10 @@ func catalogMethod(importPath string, receiverName string, receiverPointer bool,
 		if receiverPointer {
 			return (*sync.WaitGroup).Wait
 		}
+	case "time\x00Time\x00UnixNano":
+		if !receiverPointer {
+			return time.Time.UnixNano
+		}
 	}
 	return nil
 }
@@ -285,10 +424,16 @@ func CatalogRegisterAggregate(key string, typeKeys string, tags string) bool {
 
 func catalogType(importPath string, name string) any {
 	switch importPath + "\x00" + name {
+	case "bytes\x00Buffer":
+		return bytes.Buffer{}
+	case "bytes\x00Reader":
+		return bytes.Reader{}
 	case "os\x00File":
 		return os.File{}
 	case "os\x00LinkError":
 		return os.LinkError{}
+	case "os\x00PathError":
+		return os.PathError{}
 	case "os\x00ProcAttr":
 		return os.ProcAttr{}
 	case "os\x00Process":
@@ -299,6 +444,8 @@ func catalogType(importPath string, name string) any {
 		return os.Root{}
 	case "os\x00SyscallError":
 		return os.SyscallError{}
+	case "os/exec\x00Cmd":
+		return exec.Cmd{}
 	case "reflect\x00MapIter":
 		return reflect.MapIter{}
 	case "reflect\x00Method":
@@ -359,6 +506,8 @@ func catalogType(importPath string, name string) any {
 		return sync.RWMutex{}
 	case "sync\x00WaitGroup":
 		return sync.WaitGroup{}
+	case "syscall\x00SysProcAttr":
+		return syscall.SysProcAttr{}
 	case "time\x00Time":
 		return time.Time{}
 	default:
@@ -369,6 +518,14 @@ func catalogType(importPath string, name string) any {
 func CatalogRegisterGlobal(id int, importPath string, name string) bool {
 	var value any
 	switch importPath + "\x00" + name {
+	case "context\x00DeadlineExceeded":
+		value = context.DeadlineExceeded
+	case "io\x00EOF":
+		value = io.EOF
+	case "io\x00ErrShortWrite":
+		value = io.ErrShortWrite
+	case "io\x00ErrUnexpectedEOF":
+		value = io.ErrUnexpectedEOF
 	case "os\x00Args":
 		value = os.Args
 	case "os\x00Stderr":
