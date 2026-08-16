@@ -386,21 +386,15 @@ fn builtin_operand(type_id: go_types::TypeId) -> Operand {
 
 fn mark_void_node(state: CheckState, node: syntax::NodeId) -> unit {
     let _ = state.omitted_type_fact_nodes.remove(node.value);
-    for existing in state.void_nodes {
-        if existing.value == node.value {
-            return
-        } else {}
-    }
+    if state.void_node_indices.contains(node.value) {
+        return
+    } else {};
+    state.void_node_indices[node.value] = true;
     state.void_nodes.push(node)
 }
 
 fn node_is_void(state: CheckState, node: syntax::NodeId) -> bool {
-    for existing in state.void_nodes {
-        if existing.value == node.value {
-            return true
-        } else {}
-    }
-    false
+    state.void_node_indices.contains(node.value)
 }
 
 fn void_operand(state: CheckState, node: syntax::NodeId) -> Operand {
