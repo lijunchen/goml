@@ -4,6 +4,7 @@ use gomlgo::execution;
 use gomlgo::checker;
 use gomlgo::syntax;
 use gomlgo::types as go_types;
+use std::collections;
 use std::num;
 
 struct FunctionSource {
@@ -38,6 +39,33 @@ struct CaptureUse {
     start: int,
     end: int,
     object: go_types::ObjectId,
+}
+
+fn compare_capture_use(left: CaptureUse, right: CaptureUse) -> int {
+    if left.file.value != right.file.value {
+        left.file.value - right.file.value
+    } else if left.start != right.start {
+        left.start - right.start
+    } else if left.end != right.end {
+        left.end - right.end
+    } else {
+        left.object.value - right.object.value
+    }
+}
+
+fn first_capture_use_at_or_after(uses: Vec[CaptureUse], file: syntax::FileId, start: int) -> int {
+    let mut low = 0;
+    let mut high = uses.len();
+    while low < high {
+        let middle = low + (high - low) / 2;
+        let usage = uses[middle];
+        if usage.file.value < file.value || (usage.file.value == file.value && usage.start < start) {
+            low = middle + 1;
+        } else {
+            high = middle;
+        }
+    }
+    low
 }
 
 struct IndexedRangeSource {
@@ -570,6 +598,7 @@ fn analyze_function_capture_objects(
             },
             None => {},
         };
+        collections::sort_by(uses, compare_capture_use);
         package_uses.push(uses)
     }
     let result: Vec[FunctionCaptures] = Vec::with_capacity(sources.len());
@@ -585,9 +614,14 @@ fn analyze_function_capture_objects(
             )?;
             let function_scope = execution::require_scope(package_value.index, source.type_node)?.scope;
             let selected: HashMap[int, bool] = HashMap::from_array([]);
-            for usage in package_uses[source.package_index] {
-                if usage.file.value == body.file.value && usage.start >= body.span.start
-                    && usage.end <= body.span.end {
+            let uses = package_uses[source.package_index];
+            let mut usage_index = first_capture_use_at_or_after(uses, body.file, body.span.start);
+            while usage_index < uses.len() {
+                let usage = uses[usage_index];
+                if usage.file.value != body.file.value || usage.start > body.span.end {
+                    break
+                } else {};
+                if usage.end <= body.span.end {
                     match object_scopes[usage.object.value] {
                         Some(scope) => match nearest_function_scope(program.world, scope) {
                             Some(owner) => if owner.value != function_scope.value
@@ -600,7 +634,8 @@ fn analyze_function_capture_objects(
                         },
                         None => {},
                     }
-                } else {}
+                } else {};
+                usage_index = usage_index + 1;
             }
         } else {};
         result.push(FunctionCaptures { objects: captures })
