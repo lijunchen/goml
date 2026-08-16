@@ -41,6 +41,14 @@ const CACHE_ROOT_ENV: string = "GOMLGO_NATIVE_CACHE";
 
 const COMMAND_USAGE: string = "usage: gomlgo scan FILE | parse FILE | parse-expr EXPR | check FILE... | check-package DIRECTORY | run [--seed N] [--max-goroutines N] [--max-steps N] [--program-executable FILE] FILE [-- PROGRAM_ARGS...]";
 
+#[go_ffi("gomlgo/nativebridge", "ReplaceProcess")]
+extern fn replace_process(
+    program: string,
+    arguments: Slice[string],
+    environment_key: string,
+    environment_value: string,
+) -> string;
+
 fn fail(message: string) -> unit {
     println(message);
     process::exit(1)
@@ -380,30 +388,20 @@ fn execute_loaded(
                     return
                 },
             };
-            let command = process::Command::new(image);
             let arguments = env::args();
+            let replacement_arguments: Vec[string] = Vec::with_capacity(arguments.len());
+            replacement_arguments.push(image);
             for index in 1..arguments.len() {
-                let _ = command.arg(arguments[index]);
+                replacement_arguments.push(arguments[index])
             }
-            let output = match command.env(EXECUTION_IMAGE_ENV, "1").output() {
-                Ok(value) => value,
-                Err(message) => {
-                    fail(message);
-                    return
-                },
-            };
-            match io::write_stdout(output.stdout()) {
-                Ok(()) => {},
-                Err(message) => fail(message),
-            };
-            match io::write_stderr(output.stderr()) {
-                Ok(()) => {},
-                Err(message) => fail(message),
-            };
-            let code = output.status().code().unwrap_or(1);
-            if code != 0 {
-                process::exit(code)
-            } else {};
+            fail(
+                replace_process(
+                    image,
+                    replacement_arguments.slice(0, replacement_arguments.len()),
+                    EXECUTION_IMAGE_ENV,
+                    "1",
+                ),
+            );
             return
         } else {}
     } else {};

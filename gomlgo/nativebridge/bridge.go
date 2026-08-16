@@ -7,7 +7,22 @@ import (
 	"reflect"
 	"runtime"
 	"sync"
+	"syscall"
 )
+
+func ReplaceProcess(program string, arguments []string, environmentKey string, environmentValue string) string {
+	previous, present := os.LookupEnv(environmentKey)
+	if err := os.Setenv(environmentKey, environmentValue); err != nil {
+		return err.Error()
+	}
+	err := syscall.Exec(program, arguments, os.Environ())
+	if present {
+		_ = os.Setenv(environmentKey, previous)
+	} else {
+		_ = os.Unsetenv(environmentKey)
+	}
+	return err.Error()
+}
 
 type CallID uint32
 

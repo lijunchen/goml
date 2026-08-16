@@ -2,6 +2,7 @@ package nativebridge
 
 import (
 	"errors"
+	"os"
 	"reflect"
 	"runtime"
 	"testing"
@@ -368,6 +369,18 @@ func TestOpaqueValueHelpersPreserveReflectValues(t *testing.T) {
 	}
 	if ValidValue(struct{}{}) || !NilValue(struct{}{}) || ValueType(struct{}{}) != "" {
 		t.Fatalf("non-reflect values were accepted")
+	}
+}
+
+func TestReplaceProcessRestoresEnvironmentAfterFailure(t *testing.T) {
+	const key = "GOMLGO_TEST_REPLACE_PROCESS"
+	t.Setenv(key, "before")
+	message := ReplaceProcess("/gomlgo/missing-executable", []string{"missing-executable"}, key, "after")
+	if message == "" {
+		t.Fatal("missing executable returned no error")
+	}
+	if value := os.Getenv(key); value != "before" {
+		t.Fatalf("environment value = %q, want before", value)
 	}
 }
 
