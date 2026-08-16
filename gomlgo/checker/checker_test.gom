@@ -99,6 +99,37 @@ fn checks_explicit_package_variable_and_matches_oracle_facts() -> unit {
     testing::assert_eq(variable_key, "a.go:$.fields.decls[0].fields.specs[0].fields.names[0]")
 }
 
+#[test]
+fn extracts_exported_api_without_checking_initializers_or_bodies() -> unit {
+    let config = default_config();
+    config.ignore_func_bodies = true;
+    config.exported_api_only = true;
+    config.disable_unused_import_check = true;
+    let result = check(
+        config,
+        PackageInput {
+            path: "example/p",
+            files: Vec::from_array(
+                [
+                    source_file(
+                        "a.go",
+                        "package p\nvar Exported = map[string]int{\"bad\": missing}\nvar private = []int{missing}\nfunc Visible() int { return missing }\nfunc hidden() Unknown { return missing }\n",
+                    ),
+                ],
+            ),
+        },
+    );
+    testing::assert_eq(result.diagnostics.len(), 0);
+    testing::assert_eq(
+        go_types::format_type(result.world, package_object(result, "Exported").type_id),
+        "map[string]int",
+    );
+    testing::assert_eq(
+        go_types::format_type(result.world, package_object(result, "Visible").type_id),
+        "func() int",
+    )
+}
+
 fn syntax_key_for_object(result: CheckResult, object: go_types::ObjectId) -> Option[string] {
     match result.world.objects[object.value].node {
         Some(node) => syntax::node_key(result.syntax, node),

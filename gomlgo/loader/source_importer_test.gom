@@ -31,6 +31,9 @@ fn loads_source_dependencies_with_platform_selection() -> unit {
     }
     let dependency = testing::expect_some(dependency, "missing source dependency");
     testing::assert(result.world.packages[dependency.value].complete);
+    for pkg in result.world.packages {
+        testing::assert(pkg.path != "example/r")
+    }
     testing::assert(
         go_types::lookup_local(result.world, result.world.packages[dependency.value].scope, "Linux").is_some(),
     );

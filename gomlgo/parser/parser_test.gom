@@ -97,6 +97,22 @@ fn parses_control_flow_statements() -> unit {
 }
 
 #[test]
+fn skips_function_bodies_for_package_api_parsing() -> unit {
+    let result = parse_file_bytes_without_bodies(
+        bytes::Bytes::from_string(
+            "package sample\nfunc Exported() int { if true { value := func() int { return 1 }; return value() }; return 0 }\nvar Next int\n",
+        ),
+    );
+    testing::assert_eq(result.diagnostics.len(), 0);
+    let file = testing::expect_some(result.root, "missing AST");
+    let declarations = ast::get_nodes(file, "decls");
+    testing::assert_eq(declarations.len(), 2);
+    let body = testing::expect_some(ast::get_node(declarations[0], "body"), "missing function body");
+    testing::assert_eq(ast::get_nodes(body, "list").len(), 0);
+    testing::assert(body.span.end > body.span.start)
+}
+
+#[test]
 fn invalid_file_returns_partial_ast() -> unit {
     let result = parse_file("package sample\nfunc broken( { if {\n");
     testing::assert(result.diagnostics.len() > 0);

@@ -107,3 +107,19 @@ fn preserves_explicit_semicolons() -> unit {
     testing::assert_eq(result.tokens[1].literal, ";");
     testing::assert(result.tokens[3].synthetic)
 }
+
+#[test]
+fn scans_package_header_without_function_body() -> unit {
+    let source = bytes::Bytes::from_string(
+        "//go:build linux\n// +build linux\npackage sample\nimport \"fmt\"\nimport (\n    alias \"strings\"\n    _ `embed`\n)\nfunc main() { let _ = \"ignored\" }\n",
+    );
+    let comments = leading_comments(source);
+    testing::assert_eq(comments.len(), 2);
+    testing::assert_eq(comments[0], "//go:build linux");
+    testing::assert_eq(package_name_bytes(source), "sample");
+    let imports = import_literals(source);
+    testing::assert_eq(imports.len(), 3);
+    testing::assert_eq(imports[0], "\"fmt\"");
+    testing::assert_eq(imports[1], "\"strings\"");
+    testing::assert_eq(imports[2], "`embed`")
+}
