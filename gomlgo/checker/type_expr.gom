@@ -1125,14 +1125,8 @@ fn resolve_function_type(
         node_start(state, node),
         scope_end,
     );
-    let mut recorded_scope = false;
-    for fact in state.info.scopes {
-        if fact.node.value == node.value {
-            recorded_scope = true;
-        } else {}
-    }
-    if !recorded_scope {
-        state.info.scopes.push(ScopeFact { node, scope: function_scope })
+    if !state.scope_fact_indices.contains(node.value) {
+        record_scope_fact(state, node, function_scope)
     } else {};
     let resolved_type_params = if state.ignore_function_type_params {
         Vec::from_array([])

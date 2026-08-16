@@ -190,6 +190,8 @@ struct CheckState {
     function_scope_ends: HashMap[int, int],
     loop_labels: HashMap[int, string],
     effect_expression_nodes: Vec[syntax::NodeId],
+    scope_fact_indices: HashMap[int, int],
+    scope_fact_previous_indices: Vec[Option[int]],
     selection_indices: HashMap[int, int],
     type_fact_indices: HashMap[int, int],
     type_fact_source_indices: HashMap[TypeFactSourceKey, int],
@@ -306,6 +308,43 @@ fn index_type_fact(state: CheckState, node: syntax::NodeId, index: int) -> unit 
             state.type_fact_source_indices[key] = index;
         } else {},
         None => {},
+    }
+}
+
+fn record_scope_fact(state: CheckState, node: syntax::NodeId, scope: go_types::ScopeId) -> unit {
+    let index = state.info.scopes.len();
+    state.scope_fact_previous_indices.push(state.scope_fact_indices[node.value]);
+    state.scope_fact_indices[node.value] = index;
+    state.info.scopes.push(ScopeFact { node, scope })
+}
+
+fn pop_scope_fact(state: CheckState) -> unit {
+    match state.info.scopes.pop() {
+        Some(fact) => match state.scope_fact_previous_indices.pop() {
+            Some(previous) => match previous {
+                Some(index) => {
+                    state.scope_fact_indices[fact.node.value] = index;
+                },
+                None => {
+                    let _ = state.scope_fact_indices.remove(fact.node.value);
+                },
+            },
+            None => {
+                let _ = state.scope_fact_indices.remove(fact.node.value);
+            },
+        },
+        None => {},
+    }
+}
+
+fn find_scope_fact(state: CheckState, node: syntax::NodeId) -> Option[ScopeFact] {
+    match state.scope_fact_indices[node.value] {
+        Some(index) => if index >= 0 && index < state.info.scopes.len() {
+            Option::Some(state.info.scopes[index])
+        } else {
+            Option::None
+        },
+        None => Option::None,
     }
 }
 
@@ -3139,7 +3178,7 @@ fn evaluate_type_object(state: CheckState, object: go_types::ObjectId) -> bool {
                 node_start(state, pending.declaration_node),
                 node_end(state, pending.declaration_node),
             );
-            state.info.scopes.push(ScopeFact { node: pending.declaration_node, scope });
+            record_scope_fact(state, pending.declaration_node, scope);
             scope
         },
         None => pending.file_scope,
@@ -6289,7 +6328,7 @@ fn initialize_file(state: CheckState, file_index: int, expected_name: string) ->
                 } else {},
                 None => diagnostic(state, name, "invalid package name", false),
             };
-            state.info.scopes.push(ScopeFact { node: file.root, scope: file_scope });
+            record_scope_fact(state, file.root, file_scope);
             state.info.file_versions.push(
                 FileVersionFact {
                     file: file.id,
@@ -6608,7 +6647,7 @@ fn refresh_deferred_function_body_facts(state: CheckState) -> unit {
                 let _ = state.diagnostics.pop();
             }
             while state.info.scopes.len() > scopes_start {
-                let _ = state.info.scopes.pop();
+                pop_scope_fact(state)
             }
             while state.info.defs.len() > defs_start {
                 let _ = state.info.defs.pop();
@@ -6828,6 +6867,8 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
         function_scope_ends,
         loop_labels,
         effect_expression_nodes,
+        scope_fact_indices: HashMap::from_array([]),
+        scope_fact_previous_indices: Vec::from_array([]),
         selection_indices: HashMap::from_array([]),
         type_fact_indices: HashMap::from_array([]),
         type_fact_source_indices: HashMap::from_array([]),

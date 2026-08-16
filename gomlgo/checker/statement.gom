@@ -25,7 +25,7 @@ fn new_node_scope(
         node_start(state, node),
         node_end(state, node),
     );
-    state.info.scopes.push(ScopeFact { node, scope: result });
+    record_scope_fact(state, node, result);
     result
 }
 
@@ -398,7 +398,7 @@ fn check_local_type_spec(state: CheckState, scope: go_types::ScopeId, node: synt
                         node_start(state, node),
                         node_end(state, node),
                     );
-                    state.info.scopes.push(ScopeFact { node, scope: value });
+                    record_scope_fact(state, node, value);
                     value
                 },
                 None => scope,
