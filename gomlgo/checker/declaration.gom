@@ -203,12 +203,14 @@ struct CheckState {
     constants: Vec[ConstantObjectValue],
     declarations: Vec[DeclaredObject],
     pending_values: Vec[PendingValue],
+    pending_value_indices: HashMap[int, int],
     active_value_objects: Vec[go_types::ObjectId],
     active_initialization_objects: Vec[go_types::ObjectId],
     initialization_dependencies: Vec[(go_types::ObjectId, go_types::ObjectId)],
     function_initialization_dependencies: Vec[(go_types::ObjectId, go_types::ObjectId)],
     value_cycles: Vec[ValueCycle],
     pending_types: Vec[PendingType],
+    pending_type_indices: HashMap[int, int],
     active_type_objects: Vec[go_types::ObjectId],
     deferred_type_validations: Vec[go_types::TypeId],
     invalid_type_objects: Vec[go_types::ObjectId],
@@ -229,6 +231,7 @@ struct CheckState {
     deferred_local_alias_body_objects: Vec[go_types::ObjectId],
     deferred_local_alias_bodies: Vec[syntax::NodeId],
     pending_functions: Vec[PendingFunction],
+    pending_function_indices: HashMap[int, int],
     pending_methods: Vec[PendingMethod],
     receiver_validation_nodes: Vec[syntax::NodeId],
     active_function_objects: Vec[go_types::ObjectId],
@@ -873,12 +876,7 @@ fn effective_file_version(package_version: string, file_version: string) -> stri
 }
 
 fn pending_type_index(state: CheckState, object: go_types::ObjectId) -> Option[int] {
-    for index in 0..state.pending_types.len() {
-        if state.pending_types[index].object.value == object.value {
-            return Option::Some(index)
-        } else {}
-    }
-    Option::None
+    state.pending_type_indices[object.value]
 }
 
 fn constraint_definition_node(state: CheckState, node: syntax::NodeId) -> bool {
@@ -3286,12 +3284,7 @@ fn evaluate_type_object(state: CheckState, object: go_types::ObjectId) -> bool {
 }
 
 fn pending_function_index(state: CheckState, object: go_types::ObjectId) -> Option[int] {
-    for index in 0..state.pending_functions.len() {
-        if state.pending_functions[index].object.value == object.value {
-            return Option::Some(index)
-        } else {}
-    }
-    Option::None
+    state.pending_function_indices[object.value]
 }
 
 fn evaluate_function_object(state: CheckState, object: go_types::ObjectId) -> bool {
@@ -4517,6 +4510,7 @@ fn predeclare_value_spec(
                                 constant::constant_exact_string(value),
                             );
                         } else {};
+                        state.pending_value_indices[object.value] = state.pending_values.len();
                         state.pending_values.push(
                             PendingValue {
                                 object,
@@ -4590,6 +4584,7 @@ fn predeclare_type_spec(
                     );
                     let _ = go_types::set_object_type(state.world, object, placeholder);
                     save_declared_object(state, name, Option::Some(object));
+                    state.pending_type_indices[object.value] = state.pending_types.len();
                     state.pending_types.push(
                         PendingType {
                             object,
@@ -4737,9 +4732,12 @@ fn predeclare_declaration(
             );
             save_declared_object(state, name, declared);
             match declared {
-                Some(object) => state.pending_functions.push(
-                    PendingFunction { object, file_scope, type_node, status: 0 },
-                ),
+                Some(object) => {
+                    state.pending_function_indices[object.value] = state.pending_functions.len();
+                    state.pending_functions.push(
+                        PendingFunction { object, file_scope, type_node, status: 0 },
+                    )
+                },
                 None => {},
             }
         } else {},
@@ -5127,12 +5125,7 @@ fn declaration_operand(
 }
 
 fn pending_value_index(state: CheckState, object: go_types::ObjectId) -> Option[int] {
-    for index in 0..state.pending_values.len() {
-        if state.pending_values[index].object.value == object.value {
-            return Option::Some(index)
-        } else {}
-    }
-    Option::None
+    state.pending_value_indices[object.value]
 }
 
 fn publish_active_initializer_root_type(
@@ -6758,12 +6751,14 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
         constants: Vec::from_array([]),
         declarations: Vec::from_array([]),
         pending_values: Vec::from_array([]),
+        pending_value_indices: HashMap::from_array([]),
         active_value_objects: Vec::from_array([]),
         active_initialization_objects: Vec::from_array([]),
         initialization_dependencies: Vec::from_array([]),
         function_initialization_dependencies: Vec::from_array([]),
         value_cycles: Vec::from_array([]),
         pending_types: Vec::from_array([]),
+        pending_type_indices: HashMap::from_array([]),
         active_type_objects: Vec::from_array([]),
         deferred_type_validations: Vec::from_array([]),
         invalid_type_objects: Vec::from_array([]),
@@ -6784,6 +6779,7 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
         deferred_local_alias_body_objects: Vec::from_array([]),
         deferred_local_alias_bodies: Vec::from_array([]),
         pending_functions: Vec::from_array([]),
+        pending_function_indices: HashMap::from_array([]),
         pending_methods: Vec::from_array([]),
         receiver_validation_nodes: Vec::from_array([]),
         active_function_objects: Vec::from_array([]),
