@@ -227,9 +227,13 @@ fn write_proxy_method(builder: text::StringBuilder, proxy_index: int, method: Na
         builder.write_string(")")
     } else {};
     builder.write_string(" {\n");
-    builder.write_string(
-        "\t_gomlgo_results := _gomlgo_nativebridge.InvokeCallback(_gomlgo_receiver.token, \"",
-    );
+    if method.result_type_keys.is_empty() {
+        builder.write_string("\t_gomlgo_nativebridge.InvokeCallback(_gomlgo_receiver.token, \"")
+    } else {
+        builder.write_string(
+            "\t_gomlgo_results := _gomlgo_nativebridge.InvokeCallback(_gomlgo_receiver.token, \"",
+        )
+    };
     builder.write_string(method.name);
     builder.write_string("\", []_gomlgo_nativebridge.ValueRef{");
     for index in 0..method.parameter_type_keys.len() {

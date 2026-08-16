@@ -76,6 +76,9 @@ struct NativePrepared {
     result_types: Vec[go_types::TypeId],
     result_keys: Vec[string],
     variadic: bool,
+    reflect_value_of: bool,
+    runtime_stack: bool,
+    argument_slices: Vec[Option[SliceValue]],
 }
 
 enum RuntimePlace {
@@ -1850,33 +1853,36 @@ fn native_argument(state: VmState, value: Value, type_id: go_types::TypeId, type
             let dynamic_value = value.get();
             match dynamic_value {
                 Value::Host { type_id: _, value } => Result::Ok(value),
-                _ => if type_key == "interface"
-                    && native_proxy_interface(state.program.world, type_id) {
-                    let queue = new_native_callback_queue(
-                        state.native_completions,
-                        state.config.max_goroutines,
-                    );
-                    state.native_callbacks.push(
-                        NativeCallbackBinding {
-                            queue,
-                            target: NativeCallbackTarget::Interface {
-                                receiver: Value::Interface {
-                                    static_type,
-                                    dynamic_type: Option::Some(dynamic_type),
-                                    value: Option::Some(value),
+                _ => match native_argument(
+                    state,
+                    dynamic_value,
+                    dynamic_type,
+                    runtime_native_type_key(state, dynamic_type)?,
+                ) {
+                    Ok(host) => Result::Ok(host),
+                    Err(message) => if type_key == "interface"
+                        && native_proxy_interface(state.program.world, type_id) {
+                        let queue = new_native_callback_queue(
+                            state.native_completions,
+                            state.config.max_goroutines,
+                        );
+                        state.native_callbacks.push(
+                            NativeCallbackBinding {
+                                queue,
+                                target: NativeCallbackTarget::Interface {
+                                    receiver: Value::Interface {
+                                        static_type,
+                                        dynamic_type: Option::Some(dynamic_type),
+                                        value: Option::Some(value),
+                                    },
+                                    interface_type: type_id,
                                 },
-                                interface_type: type_id,
                             },
-                        },
-                    );
-                    Result::Ok(native_callback_token(queue).value)
-                } else {
-                    native_argument(
-                        state,
-                        dynamic_value,
-                        dynamic_type,
-                        native_runtime_type_key(state.program.world, dynamic_type)?,
-                    )
+                        );
+                        Result::Ok(native_callback_token(queue).value)
+                    } else {
+                        Result::Err(message)
+                    },
                 },
             }
         },
@@ -2173,6 +2179,9 @@ fn static_native_prepared(state: VmState, id: bytecode::NativeCallId) -> Result[
             result_types: call.result_types,
             result_keys: call.result_type_keys,
             variadic: call.variadic,
+            reflect_value_of: call.import_path == "reflect" && call.symbol == "ValueOf",
+            runtime_stack: call.import_path == "runtime" && call.symbol == "Stack",
+            argument_slices: Vec::from_array([]),
         },
     )
 }
@@ -2193,8 +2202,47 @@ fn dynamic_native_prepared(
             result_types: shape.2,
             result_keys: shape.3,
             variadic,
+            reflect_value_of: false,
+            runtime_stack: false,
+            argument_slices: Vec::from_array([]),
         },
     )
+}
+
+fn pointer_projection_key(value: Place) -> string {
+    let mut result = "";
+    for projection in value.projections {
+        result += match projection {
+            Projection::Field(index) => "f" + index.to_string() + ";",
+            Projection::Index(index) => "i" + index.to_string() + ";",
+        };
+    }
+    result
+}
+
+fn pointer_identity_argument(value: Value) -> Option[dyn HostValueMarker] {
+    match value {
+        Value::Local(LocalValue::Pointer(Some(place))) => Option::Some(
+            new_native_pointer_identity(place.root.value, pointer_projection_key(place)),
+        ),
+        Value::Local(LocalValue::Pointer(None)) => {
+            Option::Some(new_native_pointer_identity(-1, ""))
+        },
+        Value::Interface { static_type: _, dynamic_type: Some(_), value: Some(value) } => {
+            pointer_identity_argument(value.get())
+        },
+        _ => Option::None,
+    }
+}
+
+fn native_argument_slice(value: Value) -> Option[SliceValue] {
+    match value {
+        Value::Local(LocalValue::Slice(slice)) => Option::Some(copy_slice(slice)),
+        Value::Interface { static_type: _, dynamic_type: Some(_), value: Some(value) } => {
+            native_argument_slice(value.get())
+        },
+        _ => Option::None,
+    }
 }
 
 fn prepare_native_value_invocation(state: VmState, native: NativePrepared, arguments: Vec[Value]) -> Result[
@@ -2216,17 +2264,88 @@ fn prepare_native_value_invocation(state: VmState, native: NativePrepared, argum
         ),
     };
     for index in 0..arguments.len() {
-        append_native_argument(
-            invocation.value as dyn HostValueMarker,
+        native.argument_slices.push(native_argument_slice(arguments[index]));
+        let argument = if native.reflect_value_of {
+            match pointer_identity_argument(arguments[index]) {
+                Some(value) => value,
+                None => native_argument(
+                    state,
+                    arguments[index],
+                    native.parameter_types[index],
+                    native.parameter_keys[index],
+                )?,
+            }
+        } else {
             native_argument(
                 state,
                 arguments[index],
                 native.parameter_types[index],
                 native.parameter_keys[index],
-            )?,
-        )
+            )?
+        };
+        append_native_argument(invocation.value as dyn HostValueMarker, argument)
     }
     Result::Ok(invocation)
+}
+
+fn prepare_native_runtime_context(
+    native: NativePrepared,
+    invocation: NativeInvocation,
+    goroutine: int,
+) -> Result[unit, string] {
+    if native.runtime_stack
+        && !use_native_runtime_stack(
+            invocation.value as dyn HostValueMarker,
+            (goroutine + 1).to_uint64(),
+        ) {
+        Result::Err("runtime.Stack native context could not be installed")
+    } else {
+        Result::Ok(())
+    }
+}
+
+fn apply_native_slice_writebacks(
+    state: VmState,
+    native: NativePrepared,
+    invocation: NativeInvocation,
+) -> Result[unit, string] {
+    for index in 0..native.argument_slices.len() {
+        match native.argument_slices[index] {
+            Some(slice) => match slice.backing {
+                Some(backing) => {
+                    let argument = native_invocation_argument(
+                        invocation.value as dyn HostValueMarker,
+                        index,
+                    );
+                    let native_length = native_value_length(argument);
+                    let length = if native_length < slice.length {
+                        native_length
+                    } else {
+                        slice.length
+                    };
+                    let element_key = native_runtime_type_key(
+                        state.program.world,
+                        slice.element_type,
+                    )?;
+                    for element_index in 0..length {
+                        store_place(
+                            state.memory,
+                            index_place(backing, slice.offset + element_index),
+                            native_result(
+                                state,
+                                native_value_index(argument, element_index),
+                                slice.element_type,
+                                element_key,
+                            )?,
+                        )?
+                    }
+                },
+                None => {},
+            },
+            None => {},
+        }
+    }
+    Result::Ok(())
 }
 
 fn finish_native_value_invocation(
@@ -2234,6 +2353,7 @@ fn finish_native_value_invocation(
     native: NativePrepared,
     invocation: NativeInvocation,
 ) -> Result[InvocationOutcome, string] {
+    apply_native_slice_writebacks(state, native, invocation)?;
     let error = native_invocation_error(invocation.value as dyn HostValueMarker);
     if error != "" {
         return Result::Err(error)
@@ -2277,28 +2397,15 @@ fn finish_native_value_invocation(
     Result::Ok(InvocationOutcome::Returned(values))
 }
 
-fn prepare_native_invocation(state: VmState, id: bytecode::NativeCallId, arguments: Vec[Value]) -> Result[
-    NativeInvocation,
-    string,
-] {
-    prepare_native_value_invocation(state, static_native_prepared(state, id)?, arguments)
-}
-
-fn finish_native_invocation(
-    state: VmState,
-    id: bytecode::NativeCallId,
-    invocation: NativeInvocation,
-) -> Result[InvocationOutcome, string] {
-    finish_native_value_invocation(state, static_native_prepared(state, id)?, invocation)
-}
-
 fn invoke_native(state: VmState, id: bytecode::NativeCallId, arguments: Vec[Value]) -> Result[
     InvocationOutcome,
     string,
 ] {
-    let invocation = prepare_native_invocation(state, id, arguments)?;
+    let native = static_native_prepared(state, id)?;
+    let invocation = prepare_native_value_invocation(state, native, arguments)?;
+    prepare_native_runtime_context(native, invocation, 0)?;
     run_native_invocation(invocation.value as dyn HostValueMarker);
-    finish_native_invocation(state, id, invocation)
+    finish_native_value_invocation(state, native, invocation)
 }
 
 fn native_interface_method_target(state: VmState, method: go_types::ObjectId, receiver: Value) -> Option[

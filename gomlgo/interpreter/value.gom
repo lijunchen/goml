@@ -54,6 +54,9 @@ extern fn append_native_argument(invocation: HostValueRef, value: HostValueRef) 
 #[go_ffi("gomlgo/nativebridge", "InvocationRun")]
 extern fn run_native_invocation(invocation: HostValueRef) -> unit;
 
+#[go_ffi("gomlgo/nativebridge", "InvocationUseRuntimeStack")]
+extern fn use_native_runtime_stack(invocation: HostValueRef, goroutine: uint64) -> bool;
+
 #[go_ffi("gomlgo/nativebridge", "InvocationStart")]
 extern fn start_native_invocation(invocation: HostValueRef) -> bool;
 
@@ -267,6 +270,9 @@ extern fn native_invocation_result_count(invocation: HostValueRef) -> int;
 #[go_ffi("gomlgo/nativebridge", "InvocationResult")]
 extern fn native_invocation_result(invocation: HostValueRef, index: int) -> HostValueRef;
 
+#[go_ffi("gomlgo/nativebridge", "InvocationArgument")]
+extern fn native_invocation_argument(invocation: HostValueRef, index: int) -> HostValueRef;
+
 #[go_ffi("gomlgo/nativebridge", "InvocationPanic")]
 extern fn native_invocation_panic(invocation: HostValueRef) -> HostValueRef;
 
@@ -275,6 +281,9 @@ extern fn new_native_integer(type_key: string, bits: uint64) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "NewNilValue")]
 extern fn new_native_nil() -> HostValueRef;
+
+#[go_ffi("gomlgo/nativebridge", "NewPointerIdentity")]
+extern fn new_native_pointer_identity(root: int, projection: string) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "ProgramArgsValue")]
 extern fn native_program_args() -> HostValueRef;
@@ -779,6 +788,10 @@ pub fn values_equal(world: go_types::World, left: Value, right: Value) -> Result
             Value::Interface { dynamic_type: None, static_type: _, value: _ },
         ) | (
             Value::Interface { dynamic_type: None, static_type: _, value: _ },
+            Value::Host { type_id: _, value },
+        ) => Result::Ok(native_value_nil(value)),
+        (Value::Host { type_id: _, value }, Value::Local(LocalValue::Pointer(None))) | (
+            Value::Local(LocalValue::Pointer(None)),
             Value::Host { type_id: _, value },
         ) => Result::Ok(native_value_nil(value)),
         (

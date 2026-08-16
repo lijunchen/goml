@@ -1,0 +1,95 @@
+package native;
+
+use std::text;
+
+#[go_ffi("gomlgo/nativebridge", "ResetCatalog")]
+extern fn reset_catalog() -> unit;
+
+#[go_ffi("gomlgo/nativebridge", "CatalogSupportsPackage")]
+extern fn catalog_supports_package(import_path: string) -> bool;
+
+#[go_ffi("gomlgo/nativebridge", "CatalogBind")]
+extern fn catalog_bind(
+    call_id: uint32,
+    import_path: string,
+    symbol: string,
+    receiver_name: string,
+    receiver_pointer: bool,
+    type_arguments: string,
+    exit: bool,
+) -> bool;
+
+#[go_ffi("gomlgo/nativebridge", "CatalogRegisterType")]
+extern fn catalog_register_type(key: string, import_path: string, name: string) -> bool;
+
+#[go_ffi("gomlgo/nativebridge", "CatalogRegisterAggregate")]
+extern fn catalog_register_aggregate(key: string, type_keys: string, tags: string) -> bool;
+
+#[go_ffi("gomlgo/nativebridge", "CatalogRegisterGlobal")]
+extern fn catalog_register_global(id: int, import_path: string, name: string) -> bool;
+
+#[go_ffi("gomlgo/nativebridge", "CatalogRegisterProxy")]
+extern fn catalog_register_proxy(import_path: string, name: string) -> bool;
+
+fn catalog_failed() -> bool {
+    reset_catalog();
+    false
+}
+
+pub fn install_catalog(value: Manifest) -> bool {
+    reset_catalog();
+    for import_path in value.initialization_packages {
+        if !catalog_supports_package(import_path) {
+            return catalog_failed()
+        } else {}
+    }
+    for aggregate in value.aggregates {
+        let type_keys: Vec[string] = Vec::with_capacity(aggregate.fields.len());
+        let tags: Vec[string] = Vec::with_capacity(aggregate.fields.len());
+        for field in aggregate.fields {
+            type_keys.push(field.type_key);
+            tags.push(field.tag)
+        }
+        if !catalog_register_aggregate(
+            aggregate.key,
+            text::join(type_keys, "\n"),
+            text::join(tags, "\n"),
+        ) {
+            return catalog_failed()
+        } else {}
+    }
+    for type_value in value.types {
+        if !catalog_register_type(type_value.key, type_value.import_path, type_value.name) {
+            return catalog_failed()
+        } else {}
+    }
+    for global in value.globals {
+        if !catalog_register_global(global.object_id, global.import_path, global.name) {
+            return catalog_failed()
+        } else {}
+    }
+    for proxy in value.proxies {
+        if !catalog_register_proxy(proxy.import_path, proxy.name) {
+            return catalog_failed()
+        } else {}
+    }
+    for call in value.calls {
+        let exit = match call.binding {
+            NativeBindingKind::Exit => true,
+            NativeBindingKind::Function => false,
+            NativeBindingKind::Method => false,
+        };
+        if !catalog_bind(
+            call.call_id,
+            call.import_path,
+            call.symbol,
+            call.receiver_name,
+            call.receiver_pointer,
+            text::join(call.type_argument_keys, "\n"),
+            exit,
+        ) {
+            return catalog_failed()
+        } else {}
+    }
+    true
+}

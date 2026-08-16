@@ -899,6 +899,7 @@ fn start_scheduled_native_call(
         _ => return Result::Err("scheduled native call target is not native"),
     };
     let invocation = prepare_native_value_invocation(scheduler.state, native, call.arguments)?;
+    prepare_native_runtime_context(native, invocation, goroutine_index)?;
     if !start_native_completion(scheduler.native_completions, invocation) {
         return Result::Err("native completion queue rejected invocation")
     } else {};

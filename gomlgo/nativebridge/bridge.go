@@ -5,6 +5,7 @@ import (
 	"math"
 	"os"
 	"reflect"
+	"runtime"
 	"sync"
 )
 
@@ -281,6 +282,20 @@ func InvocationRun(invocation any) {
 	call.result = invoke(function, arguments, call.slice)
 }
 
+func InvocationUseRuntimeStack(invocation any, goroutine uint64) bool {
+	call, err := invocationValue(invocation)
+	if err != nil {
+		return false
+	}
+	call.function = reflect.ValueOf(func(buffer []byte, all bool) int {
+		if all {
+			return runtime.Stack(buffer, all)
+		}
+		return copy(buffer, fmt.Sprintf("goroutine %d [running]:\n", goroutine))
+	})
+	return true
+}
+
 func InvocationStart(invocation any) bool {
 	call, err := invocationValue(invocation)
 	if err != nil {
@@ -361,6 +376,14 @@ func InvocationResult(invocation any, index int) any {
 		return reflect.Value{}
 	}
 	return call.result.Values[index]
+}
+
+func InvocationArgument(invocation any, index int) any {
+	call, err := invocationValue(invocation)
+	if err != nil || index < 0 || index >= len(call.arguments) {
+		return reflect.Value{}
+	}
+	return call.arguments[index]
 }
 
 func InvocationPanic(invocation any) any {

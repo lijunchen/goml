@@ -224,6 +224,10 @@ fn bridge_sources() -> Result[Vec[native::GeneratedFile], string] {
                             relative_path: "nativebridge/advanced.go",
                             content: fs::read_file(path::join(directory, "advanced.go"))?,
                         },
+                        native::GeneratedFile {
+                            relative_path: "nativebridge/catalog.go",
+                            content: fs::read_file(path::join(directory, "catalog.go"))?,
+                        },
                     ],
                 ),
             )
@@ -244,6 +248,12 @@ fn bridge_sources() -> Result[Vec[native::GeneratedFile], string] {
                             relative_path: "nativebridge/advanced.go",
                             content: fs::read_file(
                                 path::join(package_root, "nativebridge/advanced.go"),
+                            )?,
+                        },
+                        native::GeneratedFile {
+                            relative_path: "nativebridge/catalog.go",
+                            content: fs::read_file(
+                                path::join(package_root, "nativebridge/catalog.go"),
                             )?,
                         },
                     ],
@@ -327,38 +337,44 @@ fn execute_loaded(
         return
     };
     if !program.native_calls.is_empty() && env::var(EXECUTION_IMAGE_ENV).is_none() {
-        let image = match native_image(program, files, toolchain) {
-            Ok(value) => value,
-            Err(message) => {
-                fail("native link failed: " + message);
-                return
-            },
+        let catalog_installed = match bytecode::native_manifest(program) {
+            Ok(manifest) => native::install_catalog(manifest),
+            Err(_) => false,
         };
-        let command = process::Command::new(image);
-        let arguments = env::args();
-        for index in 1..arguments.len() {
-            let _ = command.arg(arguments[index]);
-        }
-        let output = match command.env(EXECUTION_IMAGE_ENV, "1").output() {
-            Ok(value) => value,
-            Err(message) => {
-                fail(message);
-                return
-            },
-        };
-        match io::write_stdout(output.stdout()) {
-            Ok(()) => {},
-            Err(message) => fail(message),
-        };
-        match io::write_stderr(output.stderr()) {
-            Ok(()) => {},
-            Err(message) => fail(message),
-        };
-        let code = output.status().code().unwrap_or(1);
-        if code != 0 {
-            process::exit(code)
-        } else {};
-        return
+        if !catalog_installed {
+            let image = match native_image(program, files, toolchain) {
+                Ok(value) => value,
+                Err(message) => {
+                    fail("native link failed: " + message);
+                    return
+                },
+            };
+            let command = process::Command::new(image);
+            let arguments = env::args();
+            for index in 1..arguments.len() {
+                let _ = command.arg(arguments[index]);
+            }
+            let output = match command.env(EXECUTION_IMAGE_ENV, "1").output() {
+                Ok(value) => value,
+                Err(message) => {
+                    fail(message);
+                    return
+                },
+            };
+            match io::write_stdout(output.stdout()) {
+                Ok(()) => {},
+                Err(message) => fail(message),
+            };
+            match io::write_stderr(output.stderr()) {
+                Ok(()) => {},
+                Err(message) => fail(message),
+            };
+            let code = output.status().code().unwrap_or(1);
+            if code != 0 {
+                process::exit(code)
+            } else {};
+            return
+        } else {}
     } else {};
     let result = interpreter::run(program, vm_config);
     match io::write_stdout(result.stdout) {

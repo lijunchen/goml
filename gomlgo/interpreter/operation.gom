@@ -121,21 +121,92 @@ fn integer_magnitude(value: constant::BigInt) -> uint64 {
     }
 }
 
-fn float_value(value: constant::ConstValue, kind: go_types::BasicKind) -> Result[Value, string] {
-    let sizes = go_types::gc_sizes("amd64").ok_or("amd64 sizes are unavailable")?;
-    let rounded = constant::convert_constant(value, kind, sizes).ok_or(
-        "floating-point constant is not representable",
-    )?;
-    let exact = constant::constant_string(rounded);
-    if kind == go_types::BasicKind::Float32 {
-        let parsed = num::parse_float32(exact)?;
-        Result::Ok(
-            Value::Local(LocalValue::Float { bits: float32_bits(parsed).to_uint64(), width: 32 }),
+fn natural_uint64(value: constant::Natural) -> Result[uint64, string] {
+    if value.limbs.len() > 2 {
+        return Result::Err("floating-point significand exceeds 64 bits")
+    } else {};
+    let mut result = 0.to_uint64();
+    if !value.limbs.is_empty() {
+        result = value.limbs[0].to_uint64();
+    } else {};
+    if value.limbs.len() > 1 {
+        result = result | (value.limbs[1].to_uint64() << 32);
+    } else {};
+    Result::Ok(result)
+}
+
+fn rounded_float_bits(value: constant::BigRat, width: int) -> Result[uint64, string] {
+    if value.numerator.sign == 0 {
+        return Result::Ok(0.to_uint64())
+    } else {};
+    let fraction_bits = if width == 32 {
+        23
+    } else {
+        52
+    };
+    let minimum_exponent = if width == 32 {
+        -126
+    } else {
+        -1022
+    };
+    let bias = if width == 32 {
+        127
+    } else {
+        1023
+    };
+    let denominator_exponent = constant::natural_bit_len(value.denominator) - 1;
+    let exponent = constant::natural_bit_len(value.numerator.magnitude) - 1 - denominator_exponent;
+    let shifted = if exponent < minimum_exponent {
+        constant::natural_shift_left(
+            value.numerator.magnitude,
+            fraction_bits - minimum_exponent - denominator_exponent,
         )
     } else {
-        let parsed = num::parse_float64(exact)?;
-        Result::Ok(Value::Local(LocalValue::Float { bits: float64_bits(parsed), width: 64 }))
-    }
+        let shift = fraction_bits - exponent - denominator_exponent;
+        if shift >= 0 {
+            constant::natural_shift_left(value.numerator.magnitude, shift)
+        } else {
+            constant::natural_shift_right(value.numerator.magnitude, -shift)
+        }
+    };
+    let significand = natural_uint64(shifted)?;
+    let fraction = if exponent < minimum_exponent {
+        significand
+    } else {
+        significand - (1.to_uint64() << fraction_bits)
+    };
+    let exponent_bits = if exponent < minimum_exponent {
+        0.to_uint64()
+    } else {
+        (exponent + bias).to_uint64()
+    };
+    let sign = if value.numerator.sign < 0 {
+        1.to_uint64() << (width - 1)
+    } else {
+        0.to_uint64()
+    };
+    Result::Ok(sign | (exponent_bits << fraction_bits) | fraction)
+}
+
+fn float_value(value: constant::ConstValue, kind: go_types::BasicKind) -> Result[Value, string] {
+    let sizes = go_types::gc_sizes("amd64").ok_or("amd64 sizes are unavailable")?;
+    let runtime_kind = if kind == go_types::BasicKind::Float32 {
+        go_types::BasicKind::Float32
+    } else {
+        go_types::BasicKind::Float64
+    };
+    let rounded = constant::convert_constant(value, runtime_kind, sizes).ok_or(
+        "floating-point constant is not representable",
+    )?;
+    let constant::ConstValue::Rat(value) = rounded else {
+        return Result::Err("rounded floating-point constant is not rational")
+    };
+    let width = if runtime_kind == go_types::BasicKind::Float32 {
+        32
+    } else {
+        64
+    };
+    Result::Ok(Value::Local(LocalValue::Float { bits: rounded_float_bits(value, width)?, width }))
 }
 
 fn complex_constant_value(value: constant::ConstValue, kind: go_types::BasicKind) -> Result[
@@ -694,6 +765,36 @@ pub fn binary_value(
     world: go_types::World,
 ) -> Result[Value, string] {
     match (left, right) {
+        (
+            Value::Local(LocalValue::Integer { bits, width, signed }),
+            Value::Local(LocalValue::Float { bits: right, width: right_width }),
+        ) => float_binary(
+            op,
+            float_result(
+                if signed {
+                    signed_float64(signed_integer(bits, width))?
+                } else {
+                    unsigned_float64(bits)?
+                },
+                right_width,
+            ),
+            Value::Local(LocalValue::Float { bits: right, width: right_width }),
+        ),
+        (
+            Value::Local(LocalValue::Float { bits: left, width: left_width }),
+            Value::Local(LocalValue::Integer { bits, width, signed }),
+        ) => float_binary(
+            op,
+            Value::Local(LocalValue::Float { bits: left, width: left_width }),
+            float_result(
+                if signed {
+                    signed_float64(signed_integer(bits, width))?
+                } else {
+                    unsigned_float64(bits)?
+                },
+                left_width,
+            ),
+        ),
         (Value::Local(LocalValue::Integer { bits, width, signed }), right) => integer_binary(
             op,
             Value::Local(LocalValue::Integer { bits, width, signed }),
