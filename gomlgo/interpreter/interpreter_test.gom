@@ -2,6 +2,7 @@ package interpreter;
 
 use gomlgo::bytecode;
 use gomlgo::execution;
+use gomlgo::native;
 use gomlgo::types as go_types;
 use std::env;
 use std::path;
@@ -73,6 +74,48 @@ fn executes_slices_grow_for_interpreted_structs() -> unit {
     let result = run(program, default_config());
     testing::assert_eq(result.exit_code, 0);
     testing::assert_eq(result.stderr.to_string().unwrap_or(""), "1 5 7\n");
+    testing::assert(result.error.is_none())
+}
+
+#[test]
+fn writes_native_slice_mutations_back_with_interpreted_goroutine_identity() -> unit {
+    let program = load_bytecode("runtime_stack");
+    testing::assert(
+        native::install_catalog(
+            testing::expect_ok(bytecode::native_manifest(program), "native manifest failed"),
+        ),
+    );
+    let result = run(program, default_config());
+    testing::assert_eq(result.exit_code, 0);
+    testing::assert_eq(result.stderr.to_string().unwrap_or(""), "true\n");
+    testing::assert(result.error.is_none())
+}
+
+#[test]
+fn passes_native_backed_pointers_through_native_interfaces() -> unit {
+    let program = load_bytecode("native_locker");
+    testing::assert(
+        native::install_catalog(
+            testing::expect_ok(bytecode::native_manifest(program), "native manifest failed"),
+        ),
+    );
+    let result = run(program, default_config());
+    testing::assert_eq(result.exit_code, 0);
+    testing::assert_eq(result.stderr.to_string().unwrap_or(""), "true\n");
+    testing::assert(result.error.is_none())
+}
+
+#[test]
+fn compares_host_backed_errors_with_nil() -> unit {
+    let program = load_bytecode("native_error_nil");
+    testing::assert(
+        native::install_catalog(
+            testing::expect_ok(bytecode::native_manifest(program), "native manifest failed"),
+        ),
+    );
+    let result = run(program, default_config());
+    testing::assert_eq(result.exit_code, 0);
+    testing::assert_eq(result.stderr.to_string().unwrap_or(""), "false\n");
     testing::assert(result.error.is_none())
 }
 
@@ -361,6 +404,11 @@ fn matches_go126_for_m1_single_file_corpus() -> unit {
 }
 
 #[test]
+fn matches_go126_for_mixed_numeric_switch_comparisons() -> unit {
+    assert_matches_go("float_match")
+}
+
+#[test]
 fn matches_go126_for_cooperative_scheduler() -> unit {
     assert_matches_go("channels");
     assert_matches_go("select");
@@ -420,6 +468,26 @@ fn copies_aggregate_values_and_preserves_pointer_identity() -> unit {
             "pointer comparison failed",
         ),
     )
+}
+
+#[test]
+fn preserves_precise_float64_constant_bits() -> unit {
+    let world = go_types::new_world();
+    let float_type = testing::expect_some(
+        go_types::basic_type(world, "float64"),
+        "missing float64 type",
+    );
+    let value = testing::expect_ok(
+        constant_value(world, float_type, "Float", "183186547087/10"),
+        "float constant conversion failed",
+    );
+    match value {
+        Value::Local(LocalValue::Float { bits, width }) => {
+            testing::assert_eq(width, 64);
+            testing::assert_eq(bits, float64_bits(18318654708.7))
+        },
+        _ => testing::fail("float constant did not produce a floating-point value"),
+    }
 }
 
 #[test]

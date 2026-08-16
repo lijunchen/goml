@@ -3,6 +3,7 @@ package nativebridge
 import (
 	"errors"
 	"reflect"
+	"runtime"
 	"testing"
 )
 
@@ -181,6 +182,40 @@ func TestValueInvocationCallsDirectFunction(t *testing.T) {
 	result := InvocationResult(invocation, 0).(reflect.Value)
 	if result.Int() != 42 {
 		t.Fatalf("result = %d", result.Int())
+	}
+}
+
+func TestInvocationArgumentRetainsSliceMutations(t *testing.T) {
+	invocation := NewValueInvocation(reflect.ValueOf(func(values []byte) {
+		values[0] = 42
+	}), false)
+	values := NewSliceValue("[]uint8", 1, false)
+	InvocationAppend(invocation, values)
+	InvocationRun(invocation)
+	if message := InvocationError(invocation); message != "" {
+		t.Fatal(message)
+	}
+	argument := InvocationArgument(invocation, 0).(reflect.Value)
+	if argument.Index(0).Uint() != 42 {
+		t.Fatalf("argument = %d", argument.Index(0).Uint())
+	}
+}
+
+func TestInvocationRuntimeStackUsesInterpretedGoroutine(t *testing.T) {
+	invocation := NewValueInvocation(reflect.ValueOf(runtime.Stack), false)
+	buffer := reflect.ValueOf(make([]byte, 64))
+	InvocationAppend(invocation, buffer)
+	InvocationAppend(invocation, reflect.ValueOf(false))
+	if !InvocationUseRuntimeStack(invocation, 37) {
+		t.Fatal("runtime stack context was rejected")
+	}
+	InvocationRun(invocation)
+	if message := InvocationError(invocation); message != "" {
+		t.Fatal(message)
+	}
+	length := InvocationResult(invocation, 0).(reflect.Value).Int()
+	if got := string(buffer.Bytes()[:length]); got != "goroutine 37 [running]:\n" {
+		t.Fatalf("stack = %q", got)
 	}
 }
 

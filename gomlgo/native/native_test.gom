@@ -261,6 +261,34 @@ fn generates_interface_proxies_and_aggregate_shells() -> unit {
 }
 
 #[test]
+fn generates_void_interface_proxy_methods_without_unused_results() -> unit {
+    let manifest = new_manifest(Vec::from_array([]), Vec::from_array([]));
+    manifest.proxies.push(
+        NativeProxySpec {
+            import_path: "sync",
+            name: "Locker",
+            methods: Vec::from_array(
+                [
+                    NativeProxyMethodSpec {
+                        name: "Lock",
+                        parameter_type_keys: Vec::from_array([]),
+                        result_type_keys: Vec::from_array([]),
+                    },
+                ],
+            ),
+        },
+    );
+    let source = testing::expect_ok(
+        generate_registry_source(manifest),
+        "void proxy registry generation failed",
+    );
+    testing::assert(
+        source.contains("\t_gomlgo_nativebridge.InvokeCallback(_gomlgo_receiver.token, \"Lock\""),
+    );
+    testing::assert(!source.contains("_gomlgo_results :="))
+}
+
+#[test]
 fn rejects_aggregate_fields_without_concrete_go_types() -> unit {
     let manifest = new_manifest(Vec::from_array([]), Vec::from_array([]));
     manifest.aggregates.push(
