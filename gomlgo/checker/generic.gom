@@ -3728,10 +3728,11 @@ fn recover_failed_call_from_target(
             Some(fact) => if fact.type_id.value == state.world.invalid.value {
                 update_operand_fact(state, call.1[index], parameter_type, Option::None);
                 let _ = state.omitted_type_fact_nodes.remove(call.1[index].value);
-                for selection_index in 0..state.info.selections.len() {
-                    if state.info.selections[selection_index].node.value == call.1[index].value {
+                match recorded_selection_index(state, call.1[index]) {
+                    Some(selection_index) => {
                         state.info.selections[selection_index].type_id = parameter_type;
-                    } else {}
+                    },
+                    None => {},
                 }
             } else {},
             None => {},

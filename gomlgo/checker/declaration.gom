@@ -190,6 +190,7 @@ struct CheckState {
     function_scope_ends: HashMap[int, int],
     loop_labels: HashMap[int, string],
     effect_expression_nodes: Vec[syntax::NodeId],
+    selection_indices: HashMap[int, int],
     type_fact_indices: HashMap[int, int],
     type_fact_source_indices: HashMap[TypeFactSourceKey, int],
     omitted_type_fact_nodes: HashMap[int, bool],
@@ -388,6 +389,7 @@ fn omit_invalid_operand_facts(state: CheckState) -> unit {
     for fact in retained_selections {
         state.info.selections.push(fact)
     }
+    rebuild_selection_indices(state)
 }
 
 fn refresh_cycle_identifier_facts(state: CheckState) -> unit {
@@ -6557,7 +6559,12 @@ fn refresh_deferred_function_body_facts(state: CheckState) -> unit {
                 let _ = state.info.implicits.pop();
             }
             while state.info.selections.len() > selections_start {
-                let _ = state.info.selections.pop();
+                match state.info.selections.pop() {
+                    Some(fact) => {
+                        let _ = state.selection_indices.remove(fact.node.value);
+                    },
+                    None => {},
+                }
             }
             while state.info.instances.len() > instances_start {
                 let _ = state.info.instances.pop();
@@ -6760,6 +6767,7 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
         function_scope_ends,
         loop_labels,
         effect_expression_nodes,
+        selection_indices: HashMap::from_array([]),
         type_fact_indices: HashMap::from_array([]),
         type_fact_source_indices: HashMap::from_array([]),
         omitted_type_fact_nodes: HashMap::from_array([]),

@@ -3915,12 +3915,10 @@ fn recover_void_call_fact(state: CheckState, node: syntax::NodeId) -> unit {
     if state.failed_inference_nodes.contains(function.value) {
         return
     } else {};
-    let mut selected: Option[go_types::TypeId] = Option::None;
-    for fact in state.info.selections {
-        if fact.node.value == function.value {
-            selected = Option::Some(method_value_type(state, fact.type_id));
-        } else {}
-    }
+    let selected = match recorded_selection_index(state, function) {
+        Some(index) => Option::Some(method_value_type(state, state.info.selections[index].type_id)),
+        None => Option::None,
+    };
     let signature = match recorded_type_fact(state, function) {
         Some(fact) => if fact.type_id.value != state.world.invalid.value
             && !type_contains_invalid(state, fact.type_id) {

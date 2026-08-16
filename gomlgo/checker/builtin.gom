@@ -2968,12 +2968,10 @@ fn check_deferred_type_info_expressions(state: CheckState) -> unit {
 }
 
 fn selection_fact(state: CheckState, node: syntax::NodeId) -> Option[SelectionFact] {
-    for selection in state.info.selections {
-        if selection.node.value == node.value {
-            return Option::Some(selection)
-        } else {}
+    match recorded_selection_index(state, node) {
+        Some(index) => Option::Some(state.info.selections[index]),
+        None => Option::None,
     }
-    Option::None
 }
 
 fn record_offsetof_selection(state: CheckState, node: syntax::NodeId, receiver: go_types::TypeId) -> unit {
@@ -2981,11 +2979,12 @@ fn record_offsetof_selection(state: CheckState, node: syntax::NodeId, receiver: 
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } }) => element,
         _ => receiver,
     };
-    for index in 0..state.info.selections.len() {
-        if state.info.selections[index].node.value == node.value {
+    match recorded_selection_index(state, node) {
+        Some(index) => {
             state.info.selections[index].receiver_type = base;
             state.info.selections[index].indirect = false;
-        } else {}
+        },
+        None => {},
     }
 }
 

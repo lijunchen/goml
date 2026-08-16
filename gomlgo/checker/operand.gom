@@ -2510,13 +2510,10 @@ fn check_call(
     state.generic_function_context_depth.set(state.generic_function_context_depth.get() + 1);
     let function = check_expression(state, scope, function_node);
     state.generic_function_context_depth.set(state.generic_function_context_depth.get() - 1);
-    let mut incomplete_named_selection = false;
-    for selection in state.info.selections {
-        if selection.node.value == function_node.value
-            && incomplete_named_instance(state, selection.type_id) {
-            incomplete_named_selection = true;
-        } else {}
-    }
+    let incomplete_named_selection = match recorded_selection_index(state, function_node) {
+        Some(index) => incomplete_named_instance(state, state.info.selections[index].type_id),
+        None => false,
+    };
     if incomplete_named_selection {
         for argument in arguments {
             let _ = check_expression(state, scope, argument);
@@ -2589,13 +2586,16 @@ fn check_call(
         for argument in arguments {
             let _ = check_expression(state, scope, argument);
         }
-        for selection in state.info.selections {
-            if selection.node.value == function_node.value
-                && direct_signature_type(state, selection.type_id)
-                && selection_type_contains_direct_invalid(state, selection.type_id) {
-                return recovered_signature_call_result(state, node, selection.type_id)
-            } else {}
-        }
+        match recorded_selection_index(state, function_node) {
+            Some(index) => {
+                let selection = state.info.selections[index];
+                if direct_signature_type(state, selection.type_id)
+                    && selection_type_contains_direct_invalid(state, selection.type_id) {
+                    return recovered_signature_call_result(state, node, selection.type_id)
+                } else {}
+            },
+            None => {},
+        };
         return invalid_operand(state)
     } else {};
     if !generic_parameters(state, function.type_id).is_empty()
@@ -4164,12 +4164,32 @@ fn method_value_selection_type(
     }
 }
 
-fn record_selection(state: CheckState, fact: SelectionFact) -> unit {
-    for existing in state.info.selections {
-        if existing.node.value == fact.node.value {
-            return
-        } else {}
+fn recorded_selection_index(state: CheckState, node: syntax::NodeId) -> Option[int] {
+    match state.selection_indices[node.value] {
+        Some(index) => if index >= 0 && index < state.info.selections.len()
+            && state.info.selections[index].node.value == node.value {
+            Option::Some(index)
+        } else {
+            Option::None
+        },
+        None => Option::None,
     }
+}
+
+fn rebuild_selection_indices(state: CheckState) -> unit {
+    for entry in state.selection_indices.entries() {
+        let _ = state.selection_indices.remove(entry.0);
+    }
+    for index in 0..state.info.selections.len() {
+        state.selection_indices[state.info.selections[index].node.value] = index;
+    }
+}
+
+fn record_selection(state: CheckState, fact: SelectionFact) -> unit {
+    if recorded_selection_index(state, fact.node).is_some() {
+        return
+    } else {};
+    state.selection_indices[fact.node.value] = state.info.selections.len();
     state.info.selections.push(fact)
 }
 
@@ -4383,18 +4403,21 @@ fn value_selector_operand(
 ) -> Operand {
     let mut base = check_expression(state, scope, expression);
     if base.type_id.value == state.world.invalid.value {
-        for fact in state.info.selections {
-            if fact.node.value == expression.value
-                && fact.type_id.value != state.world.invalid.value
-                && go_types::is_named(state.world, fact.type_id) {
-                base = Operand {
-                    type_id: fact.type_id,
-                    value: Option::None,
-                    addressable: base.addressable,
-                    assignable: base.assignable,
-                };
-                record_operand(state, expression, base);
-            } else {}
+        match recorded_selection_index(state, expression) {
+            Some(index) => {
+                let fact = state.info.selections[index];
+                if fact.type_id.value != state.world.invalid.value
+                    && go_types::is_named(state.world, fact.type_id) {
+                    base = Operand {
+                        type_id: fact.type_id,
+                        value: Option::None,
+                        addressable: base.addressable,
+                        assignable: base.assignable,
+                    };
+                    record_operand(state, expression, base);
+                } else {}
+            },
+            None => {},
         }
     } else {};
     let pointer_to_named = match go_types::get_type(
