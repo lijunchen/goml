@@ -1288,7 +1288,7 @@ fn identifier_operand(
                     } else if object.kind == go_types::ObjectKind::Func {
                         publish_active_initializer_root_type(state, node, object.type_id);
                         evaluate_function_dependency(state, object_id);
-                        if state.generic_function_context_depth == 0
+                        if state.generic_function_context_depth.get() == 0
                             && !generic_parameters(state, object.type_id).is_empty() {
                             diagnostic(
                                 state,
@@ -2507,9 +2507,9 @@ fn check_call(
         ),
         None => {},
     };
-    state.generic_function_context_depth += 1;
+    state.generic_function_context_depth.set(state.generic_function_context_depth.get() + 1);
     let function = check_expression(state, scope, function_node);
-    state.generic_function_context_depth -= 1;
+    state.generic_function_context_depth.set(state.generic_function_context_depth.get() - 1);
     let mut incomplete_named_selection = false;
     for selection in state.info.selections {
         if selection.node.value == function_node.value

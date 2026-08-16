@@ -2629,9 +2629,9 @@ fn infer_signature(
         if variadic && parameter_index + 1 == parameter_tuple.len() && ellipsis < 0 {
             formal = variadic_element(state, formal);
         } else {};
-        state.generic_function_context_depth += 1;
+        state.generic_function_context_depth.set(state.generic_function_context_depth.get() + 1);
         let actual = check_expression(state, scope, argument_nodes[index]);
-        state.generic_function_context_depth -= 1;
+        state.generic_function_context_depth.set(state.generic_function_context_depth.get() - 1);
         if state.failed_inference_nodes.contains(argument_nodes[index].value) {
             invalid_argument = true;
             continue
@@ -3747,9 +3747,9 @@ fn expression_with_target(
     target: go_types::TypeId,
 ) -> Operand {
     let diagnostic_start = state.diagnostics.len();
-    state.generic_function_context_depth += 1;
+    state.generic_function_context_depth.set(state.generic_function_context_depth.get() + 1);
     let operand = check_expression(state, scope, node);
-    state.generic_function_context_depth -= 1;
+    state.generic_function_context_depth.set(state.generic_function_context_depth.get() - 1);
     let untyped_nonconstant_shift = operand.value.is_none()
         && go_types::is_untyped(state.world, operand.type_id)
         && !go_types::is_untyped(state.world, target)
@@ -3847,9 +3847,9 @@ fn check_explicit_instance(
     expression: syntax::NodeId,
     argument_nodes: Vec[syntax::NodeId],
 ) -> Option[Operand] {
-    state.generic_function_context_depth += 1;
+    state.generic_function_context_depth.set(state.generic_function_context_depth.get() + 1);
     let origin = check_expression(state, scope, expression);
-    state.generic_function_context_depth -= 1;
+    state.generic_function_context_depth.set(state.generic_function_context_depth.get() - 1);
     if origin.type_id.value == state.world.invalid.value {
         if incomplete_import_selector(state, scope, expression) {
             for argument in argument_nodes {
