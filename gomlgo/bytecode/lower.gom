@@ -33,6 +33,13 @@ struct FunctionCaptures {
     objects: Vec[go_types::ObjectId],
 }
 
+struct CaptureUse {
+    file: syntax::FileId,
+    start: int,
+    end: int,
+    object: go_types::ObjectId,
+}
+
 struct IndexedRangeSource {
     source_type: go_types::TypeId,
     source: RegisterId,
@@ -100,7 +107,7 @@ struct FunctionBuilder {
     register_types: Vec[go_types::TypeId],
     place_count: Ref[int],
     locals: Vec[Local],
-    object_locals: Vec[Option[LocalId]],
+    object_locals: HashMap[int, LocalId],
     captures: Vec[LocalId],
     parameters: Vec[LocalId],
     results: Vec[LocalId],
@@ -162,14 +169,6 @@ fn option_slots[T](count: int) -> Vec[Option[T]] {
     let result: Vec[Option[T]] = Vec::with_capacity(count);
     for _ in 0..count {
         result.push(Option::None)
-    }
-    result
-}
-
-fn lower_bool_slots(count: int) -> Vec[bool] {
-    let result: Vec[bool] = Vec::with_capacity(count);
-    for _ in 0..count {
-        result.push(false)
     }
     result
 }
@@ -522,6 +521,37 @@ fn analyze_function_capture_objects(
             } else {}
         }
     }
+    let package_uses: Vec[Vec[CaptureUse]] = Vec::with_capacity(program.packages.len());
+    for package_value in program.packages {
+        let uses: Vec[CaptureUse] = Vec::from_array([]);
+        match package_value.syntax {
+            Some(package_syntax) => for node_index in 0..package_value.index.uses.len() {
+                match package_value.index.uses[node_index] {
+                    Some(fact) => match fact.object {
+                        Some(object) => if object.value >= 0
+                            && object.value < program.world.objects.len()
+                            && node_index < package_syntax.arena.nodes.len()
+                            && program.world.objects[object.value].kind == go_types::ObjectKind::Var
+                            && object_globals[object.value].is_none() {
+                            let node = package_syntax.arena.nodes[node_index];
+                            uses.push(
+                                CaptureUse {
+                                    file: node.file,
+                                    start: node.span.start,
+                                    end: node.span.end,
+                                    object,
+                                },
+                            )
+                        } else {},
+                        None => {},
+                    },
+                    None => {},
+                }
+            },
+            None => {},
+        };
+        package_uses.push(uses)
+    }
     let result: Vec[FunctionCaptures] = Vec::with_capacity(sources.len());
     for source in sources {
         let captures: Vec[go_types::ObjectId] = Vec::from_array([]);
@@ -534,51 +564,22 @@ fn analyze_function_capture_objects(
                 "function literal body is missing",
             )?;
             let function_scope = execution::require_scope(package_value.index, source.type_node)?.scope;
-            let selected = lower_bool_slots(program.world.objects.len());
-            for node_index in 0..package_value.index.uses.len() {
-                match package_value.index.uses[node_index] {
-                    Some(fact) => match fact.object {
-                        Some(object) => if object.value >= 0
-                            && object.value < program.world.objects.len() {
-                            match syntax::get_node(
-                                package_syntax.arena,
-                                syntax::node_id(node_index),
-                            ) {
-                                Some(node) => if node.file.value == body.file.value
-                                    && node.span.start >= body.span.start
-                                    && node.span.end <= body.span.end
-                                    && program.world.objects[object.value].kind
-                                        == go_types::ObjectKind::Var
-                                    && object_globals[object.value].is_none() {
-                                    match object_scopes[object.value] {
-                                        Some(scope) => match nearest_function_scope(
-                                            program.world,
-                                            scope,
-                                        ) {
-                                            Some(owner) => if owner.value != function_scope.value
-                                                && scope_is_ancestor(
-                                                    program.world,
-                                                    owner,
-                                                    function_scope,
-                                                ) {
-                                                selected[object.value] = true;
-                                            } else {},
-                                            None => {},
-                                        },
-                                        None => {},
-                                    }
-                                } else {},
-                                None => {},
-                            }
-                        } else {},
+            let selected: HashMap[int, bool] = HashMap::from_array([]);
+            for usage in package_uses[source.package_index] {
+                if usage.file.value == body.file.value && usage.start >= body.span.start
+                    && usage.end <= body.span.end {
+                    match object_scopes[usage.object.value] {
+                        Some(scope) => match nearest_function_scope(program.world, scope) {
+                            Some(owner) => if owner.value != function_scope.value
+                                && scope_is_ancestor(program.world, owner, function_scope)
+                                && !selected.contains(usage.object.value) {
+                                selected[usage.object.value] = true;
+                                captures.push(usage.object);
+                            } else {},
+                            None => {},
+                        },
                         None => {},
-                    },
-                    None => {},
-                }
-            }
-            for object in 0..selected.len() {
-                if selected[object] {
-                    captures.push(go_types::object_id(object))
+                    }
                 } else {}
             }
         } else {};
@@ -846,7 +847,7 @@ fn ensure_local(
     type_id: go_types::TypeId,
 ) -> Result[LocalId, string] {
     match object {
-        Some(value) => if value.value < 0 || value.value >= builder.object_locals.len() {
+        Some(value) => if value.value < 0 || value.value >= builder.world.objects.len() {
             Result::Err("local object is outside the world")
         } else {
             match builder.object_locals[value.value] {
@@ -854,7 +855,7 @@ fn ensure_local(
                 None => {
                     let local = local_id(builder.locals.len());
                     builder.locals.push(Local { id: local, object, name, type_id });
-                    builder.object_locals[value.value] = Option::Some(local);
+                    builder.object_locals[value.value] = local;
                     Result::Ok(local)
                 },
             }
@@ -5122,7 +5123,7 @@ fn lower_function(
         register_types: Vec::from_array([]),
         place_count: Ref::new(0),
         locals: Vec::from_array([]),
-        object_locals: option_slots(program.world.objects.len()),
+        object_locals: HashMap::from_array([]),
         captures: Vec::from_array([]),
         parameters: Vec::from_array([]),
         results: Vec::from_array([]),
@@ -5216,7 +5217,7 @@ fn lower_package_initializer(
         register_types: Vec::from_array([]),
         place_count: Ref::new(0),
         locals: Vec::from_array([]),
-        object_locals: option_slots(program.world.objects.len()),
+        object_locals: HashMap::from_array([]),
         captures: Vec::from_array([]),
         parameters: Vec::from_array([]),
         results: Vec::from_array([]),

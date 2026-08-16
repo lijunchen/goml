@@ -181,10 +181,13 @@ struct CheckState {
     world: go_types::World,
     syntax: syntax::PackageSyntax,
     sources: Vec[SourceFile],
+    source_texts: Vec[(string, string)],
     package_id: go_types::PackageId,
     file_scopes: Vec[go_types::ScopeId],
     info: TypeInfo,
     function_scope_ends: HashMap[int, int],
+    loop_labels: HashMap[int, string],
+    effect_expression_nodes: Vec[syntax::NodeId],
     type_fact_indices: HashMap[int, int],
     type_fact_source_indices: HashMap[TypeFactSourceKey, int],
     omitted_type_fact_nodes: HashMap[int, bool],
@@ -478,14 +481,10 @@ fn node_source_text(state: CheckState, node: syntax::NodeId) -> string {
     match syntax::get_node(state.syntax.arena, node) {
         Some(value) => if value.file.value >= 0 && value.file.value < state.syntax.files.len() {
             let name = state.syntax.files[value.file.value].name;
-            for source in state.sources {
-                if source.name == name {
-                    match source.source.to_string() {
-                        Ok(text) => if value.span.start >= 0 && value.span.end <= text.byte_len() {
-                            return text.byte_slice(value.span.start, value.span.end)
-                        } else {},
-                        Err(_) => {},
-                    }
+            for source in state.source_texts {
+                if source.0 == name && value.span.start >= 0
+                    && value.span.end <= source.1.byte_len() {
+                    return source.1.byte_slice(value.span.start, value.span.end)
                 } else {}
             }
         } else {},
@@ -6614,8 +6613,13 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
     let diagnostics: Vec[CheckDiagnostic] = Vec::from_array([]);
     let syntax_sources: Vec[syntax::SourceFile] = Vec::from_array([]);
     let source_lengths: Vec[(string, int)] = Vec::from_array([]);
+    let source_texts: Vec[(string, string)] = Vec::from_array([]);
     for file in input.files {
         source_lengths.push((file.name, file.source.len()));
+        match file.source.to_string() {
+            Ok(text) => source_texts.push((file.name, text)),
+            Err(_) => {},
+        }
         let parsed = if config.exported_api_only {
             parser::parse_file_bytes_without_bodies(file.source)
         } else {
@@ -6638,7 +6642,8 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
             None => {},
         }
     }
-    let syntax_package = if config.ignore_func_bodies && config.disable_unused_import_check {
+    let syntax_package = if !config.retain_syntax_paths
+        || (config.ignore_func_bodies && config.disable_unused_import_check) {
         syntax::lower_package_without_paths(syntax_sources)
     } else {
         syntax::lower_package(syntax_sources)
@@ -6684,6 +6689,8 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
     }
     let function_dependencies_enabled = !config.ignore_func_bodies;
     let function_scope_ends: HashMap[int, int] = HashMap::from_array([]);
+    let loop_labels: HashMap[int, string] = HashMap::from_array([]);
+    let effect_expression_nodes: Vec[syntax::NodeId] = Vec::from_array([]);
     for candidate in syntax_package.arena.nodes {
         match candidate.kind {
             syntax::SyntaxKind::FuncDecl { receiver: _, name: _, type_node, body: _ } | syntax::SyntaxKind::FuncLit {
@@ -6692,6 +6699,32 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
             } => {
                 function_scope_ends[type_node.value] = candidate.span.end;
             },
+            syntax::SyntaxKind::LabeledStmt { label, colon: _, statement } => match syntax::get_node(
+                syntax_package.arena,
+                label,
+            ) {
+                Some(syntax::SyntaxNode {
+                    id: _,
+                    file: _,
+                    span: _,
+                    path: _,
+                    kind: syntax::SyntaxKind::Ident { name_pos: _, name },
+                }) => {
+                    loop_labels[statement.value] = name;
+                },
+                _ => {},
+            },
+            syntax::SyntaxKind::CallExpr {
+                function: _,
+                lparen: _,
+                arguments: _,
+                ellipsis: _,
+                rparen: _,
+            } => effect_expression_nodes.push(candidate.id),
+            syntax::SyntaxKind::UnaryExpr { op_pos: _, op, expression: _ } => if op
+                == RECEIVE_OPERATOR {
+                effect_expression_nodes.push(candidate.id)
+            } else {},
             _ => {},
         }
     }
@@ -6702,10 +6735,13 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
         world,
         syntax: syntax_package,
         sources: input.files,
+        source_texts,
         package_id,
         file_scopes,
         info,
         function_scope_ends,
+        loop_labels,
+        effect_expression_nodes,
         type_fact_indices: HashMap::from_array([]),
         type_fact_source_indices: HashMap::from_array([]),
         omitted_type_fact_nodes: HashMap::from_array([]),

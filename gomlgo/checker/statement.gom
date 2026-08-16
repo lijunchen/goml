@@ -1957,16 +1957,10 @@ fn check_for_statement(
 }
 
 fn loop_label_name(state: CheckState, loop_node: syntax::NodeId) -> string {
-    for candidate in state.syntax.arena.nodes {
-        match candidate.kind {
-            syntax::SyntaxKind::LabeledStmt { label, colon: _, statement } => if statement.value
-                == loop_node.value {
-                return identifier(state, label).unwrap_or("")
-            } else {},
-            _ => {},
-        }
+    match state.loop_labels[loop_node.value] {
+        Some(name) => name,
+        None => "",
     }
-    ""
 }
 
 fn node_breaks_loop(state: CheckState, node: syntax::NodeId, label: string, nested_breakable: int) -> bool {

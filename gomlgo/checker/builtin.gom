@@ -634,7 +634,11 @@ fn expression_has_nonconstant_call_or_receive(state: CheckState, node: syntax::N
         Some(value) => value,
         None => return false,
     };
-    for candidate in state.syntax.arena.nodes {
+    for candidate_id in state.effect_expression_nodes {
+        if candidate_id.value < 0 || candidate_id.value >= state.syntax.arena.nodes.len() {
+            continue
+        } else {};
+        let candidate = state.syntax.arena.nodes[candidate_id.value];
         if candidate.file.value == outer.file.value && candidate.span.start >= outer.span.start
             && candidate.span.end <= outer.span.end {
             match candidate.kind {

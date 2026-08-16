@@ -230,6 +230,7 @@ fn load_checked_packages_with_order(
             checker_config.ignore_func_bodies = mode == ExecutionMode::Native;
             checker_config.exported_api_only = mode == ExecutionMode::Native;
             checker_config.disable_unused_import_check = mode == ExecutionMode::Native;
+            checker_config.retain_syntax_paths = false;
             let checked = checker::check_package_in_world(
                 checker_config,
                 checker::PackageInput {
