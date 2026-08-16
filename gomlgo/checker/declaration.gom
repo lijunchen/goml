@@ -275,6 +275,8 @@ struct CheckState {
     deferred_type_info_expressions: Vec[DeferredTypeInfoExpression],
     deferred_constraint_type_uses: Vec[DeferredConstraintTypeUse],
     deferred_function_bodies: Vec[DeferredFunctionBody],
+    deferred_function_body_indices: HashMap[int, int],
+    deferred_function_body_queue: Vec[int],
     deferred_function_type_diagnostics: Vec[DeferredFunctionTypeDiagnostic],
     partial_instances: Vec[PartialInstance],
     void_nodes: Vec[syntax::NodeId],
@@ -1383,11 +1385,11 @@ fn local_alias_cycle_seen(state: CheckState, object: go_types::ObjectId) -> bool
 fn suppress_deferred_local_alias_bodies(state: CheckState, object: go_types::ObjectId) -> unit {
     for association_index in 0..state.deferred_local_alias_bodies.len() {
         if state.deferred_local_alias_body_objects[association_index].value == object.value {
-            for deferred_index in 0..state.deferred_function_bodies.len() {
-                if state.deferred_function_bodies[deferred_index].body.value
-                    == state.deferred_local_alias_bodies[association_index].value {
+            match state.deferred_function_body_indices[state.deferred_local_alias_bodies[association_index].value] {
+                Some(deferred_index) => {
                     state.deferred_function_bodies[deferred_index].emitted = true;
-                } else {}
+                },
+                None => {},
             }
         } else {}
     }
@@ -6423,6 +6425,73 @@ fn check_file_function_bodies(state: CheckState, file_index: int) -> unit {
     }
 }
 
+fn deferred_function_body_before(state: CheckState, left: int, right: int) -> bool {
+    state.deferred_function_bodies[left].start < state.deferred_function_bodies[right].start
+        || (state.deferred_function_bodies[left].start
+            == state.deferred_function_bodies[right].start
+            && left < right)
+}
+
+fn push_deferred_function_body(state: CheckState, index: int) -> unit {
+    state.deferred_function_body_queue.push(index);
+    let mut position = state.deferred_function_body_queue.len() - 1;
+    while position > 0 {
+        let parent = (position - 1) / 2;
+        if !deferred_function_body_before(
+            state,
+            state.deferred_function_body_queue[position],
+            state.deferred_function_body_queue[parent],
+        ) {
+            return
+        } else {};
+        let value = state.deferred_function_body_queue[position];
+        state.deferred_function_body_queue[position] = state.deferred_function_body_queue[parent];
+        state.deferred_function_body_queue[parent] = value;
+        position = parent;
+    }
+}
+
+fn pop_deferred_function_body(state: CheckState) -> Option[int] {
+    if state.deferred_function_body_queue.is_empty() {
+        return Option::None
+    } else {};
+    let result = state.deferred_function_body_queue[0];
+    let last = state.deferred_function_body_queue.pop().unwrap_or(result);
+    if state.deferred_function_body_queue.is_empty() {
+        return Option::Some(result)
+    } else {};
+    state.deferred_function_body_queue[0] = last;
+    let mut position = 0;
+    loop {
+        let left = position * 2 + 1;
+        if left >= state.deferred_function_body_queue.len() {
+            return Option::Some(result)
+        } else {};
+        let right = left + 1;
+        let selected = if right < state.deferred_function_body_queue.len()
+            && deferred_function_body_before(
+                state,
+                state.deferred_function_body_queue[right],
+                state.deferred_function_body_queue[left],
+            ) {
+            right
+        } else {
+            left
+        };
+        if !deferred_function_body_before(
+            state,
+            state.deferred_function_body_queue[selected],
+            state.deferred_function_body_queue[position],
+        ) {
+            return Option::Some(result)
+        } else {};
+        let value = state.deferred_function_body_queue[position];
+        state.deferred_function_body_queue[position] = state.deferred_function_body_queue[selected];
+        state.deferred_function_body_queue[selected] = value;
+        position = selected;
+    }
+}
+
 fn defer_function_body(
     state: CheckState,
     signature_node: syntax::NodeId,
@@ -6430,11 +6499,11 @@ fn defer_function_body(
     body: syntax::NodeId,
     iota_value: int,
 ) -> unit {
-    for deferred in state.deferred_function_bodies {
-        if deferred.body.value == body.value {
-            return
-        } else {}
-    }
+    if state.deferred_function_body_indices.contains(body.value) {
+        return
+    } else {};
+    let index = state.deferred_function_bodies.len();
+    state.deferred_function_body_indices[body.value] = index;
     state.deferred_function_bodies.push(
         DeferredFunctionBody {
             signature_node,
@@ -6446,7 +6515,8 @@ fn defer_function_body(
             emitted: false,
             diagnostics: Vec::from_array([]),
         },
-    )
+    );
+    push_deferred_function_body(state, index)
 }
 
 fn check_deferred_function_body_early(
@@ -6457,14 +6527,15 @@ fn check_deferred_function_body_early(
     iota_value: int,
 ) -> unit {
     defer_function_body(state, signature_node, signature, body, iota_value);
-    for deferred in state.deferred_function_bodies {
-        if deferred.body.value == body.value && deferred.body_checked {
-            return
-        } else {}
-    }
-    if !state.function_dependencies_enabled {
+    let Some(deferred_index) = state.deferred_function_body_indices[body.value] else {
+        return
+    };
+    if state.deferred_function_bodies[deferred_index].body_checked {
         return
     } else {};
+    if !state.function_dependencies_enabled {
+        return
+    }
     let pending_statuses: Vec[int] = Vec::from_array([]);
     for pending in state.pending_values {
         pending_statuses.push(pending.status)
@@ -6484,28 +6555,17 @@ fn check_deferred_function_body_early(
     while state.diagnostics.len() > diagnostics_start {
         let _ = state.diagnostics.pop();
     }
-    for index in 0..state.deferred_function_bodies.len() {
-        if state.deferred_function_bodies[index].body.value == body.value {
-            state.deferred_function_bodies[index].body_checked = true;
-            state.deferred_function_bodies[index].diagnostics = captured;
-            return
-        } else {}
-    }
+    state.deferred_function_bodies[deferred_index].body_checked = true;
+    state.deferred_function_bodies[deferred_index].diagnostics = captured;
 }
 
 fn check_deferred_function_bodies(state: CheckState) -> unit {
     loop {
-        let mut selected = -1;
-        for index in 0..state.deferred_function_bodies.len() {
-            if !state.deferred_function_bodies[index].emitted
-                && (selected < 0
-                    || state.deferred_function_bodies[index].start
-                        < state.deferred_function_bodies[selected].start) {
-                selected = index;
-            } else {}
-        }
-        if selected < 0 {
+        let Some(selected) = pop_deferred_function_body(state) else {
             return
+        };
+        if state.deferred_function_bodies[selected].emitted {
+            continue
         } else {};
         state.deferred_function_bodies[selected].emitted = true;
         let deferred = state.deferred_function_bodies[selected];
@@ -6853,6 +6913,8 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
         deferred_type_info_expressions: Vec::from_array([]),
         deferred_constraint_type_uses: Vec::from_array([]),
         deferred_function_bodies: Vec::from_array([]),
+        deferred_function_body_indices: HashMap::from_array([]),
+        deferred_function_body_queue: Vec::from_array([]),
         deferred_function_type_diagnostics: Vec::from_array([]),
         partial_instances: Vec::from_array([]),
         void_nodes: Vec::from_array([]),
