@@ -1271,7 +1271,7 @@ fn literal_function_key(package_id: go_types::PackageId, node: syntax::NodeId) -
 }
 
 fn function_instance_matches(
-    builder: FunctionBuilder,
+    world: go_types::World,
     value: FunctionInstance,
     template: int,
     arguments: Vec[go_types::TypeId],
@@ -1280,7 +1280,7 @@ fn function_instance_matches(
         return false
     } else {};
     for index in 0..arguments.len() {
-        if !go_types::identical(builder.world, value.type_arguments[index], arguments[index]) {
+        if !go_types::identical(world, value.type_arguments[index], arguments[index]) {
             return false
         } else {}
     }
@@ -1428,7 +1428,7 @@ fn instantiate_function(
         )
     } else {};
     for instance in builder.function_instances {
-        if function_instance_matches(builder, instance, template, arguments) {
+        if function_instance_matches(builder.world, instance, template, arguments) {
             return Result::Ok(instance.function)
         } else {}
     }
