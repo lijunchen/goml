@@ -421,3 +421,64 @@ fn copies_aggregate_values_and_preserves_pointer_identity() -> unit {
         ),
     )
 }
+
+#[test]
+fn passes_host_backed_interfaces_directly_to_native_calls() -> unit {
+    let program = load_bytecode("control");
+    let world = program.world;
+    let package_id = go_types::add_package(world, "example/host", "host", world.universe, false);
+    let object = go_types::add_object(
+        world,
+        go_types::ObjectKind::TypeName,
+        "HostInterface",
+        Option::Some(package_id),
+        Option::None,
+        Option::None,
+        0,
+        world.invalid,
+    );
+    let underlying = go_types::add_type(
+        world,
+        go_types::TypeKind::Interface {
+            methods: Vec::from_array([]),
+            embeddeds: Vec::from_array([]),
+            comparable: false,
+            implicit: false,
+        },
+    );
+    let interface_type = go_types::add_type(
+        world,
+        go_types::TypeKind::Named {
+            object,
+            underlying,
+            type_params: Vec::from_array([]),
+            type_args: Vec::from_array([]),
+            methods: Vec::from_array([]),
+        },
+    );
+    testing::assert(go_types::set_object_type(world, object, interface_type));
+    let string_type = testing::expect_some(
+        go_types::basic_type(world, "string"),
+        "missing string type",
+    );
+    let host = new_native_string("host");
+    let state = testing::expect_ok(
+        initialize_state(program, default_config()),
+        "VM initialization failed",
+    );
+    let converted = testing::expect_ok(
+        native_argument(
+            state,
+            Value::Interface {
+                static_type: interface_type,
+                dynamic_type: Option::Some(string_type),
+                value: Option::Some(Ref::new(Value::Host { type_id: string_type, value: host })),
+            },
+            interface_type,
+            "interface",
+        ),
+        "host interface conversion failed",
+    );
+    testing::assert_eq(native_value_string(converted), "host");
+    testing::assert(state.native_callbacks.is_empty())
+}

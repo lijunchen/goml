@@ -377,6 +377,17 @@ func TestValueLengthAndCapacityPreserveSliceShape(t *testing.T) {
 	}
 }
 
+func TestMethodValueBindsReceiver(t *testing.T) {
+	method := MethodValue(reflect.ValueOf(counter{value: 3}), "Add").(reflect.Value)
+	if !method.IsValid() {
+		t.Fatal("method value is invalid")
+	}
+	result := method.Call(Values(4))
+	if len(result) != 1 || result[0].Int() != 7 {
+		t.Fatalf("unexpected method result: %v", result)
+	}
+}
+
 func assertSuccessful(t *testing.T, result CallResult) {
 	t.Helper()
 	if result.Err != nil || result.Panicked || result.Exited {
