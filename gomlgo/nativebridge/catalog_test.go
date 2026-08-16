@@ -117,6 +117,18 @@ func TestCatalogCoversPipelineFunctions(t *testing.T) {
 	}
 }
 
+func TestProgramExecutableOverride(t *testing.T) {
+	SetProgramExecutable("/toolchain/bin/gomlc")
+	t.Cleanup(func() { SetProgramExecutable("") })
+	value, err := ProgramExecutable()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if value != "/toolchain/bin/gomlc" {
+		t.Fatalf("program executable = %q", value)
+	}
+}
+
 func TestCatalogCoversPipelineTypesAndGlobals(t *testing.T) {
 	types := []struct {
 		path string

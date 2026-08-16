@@ -33,6 +33,46 @@ fn load_bytecode(name: string) -> bytecode::BytecodeProgram {
     testing::expect_some(lowered.program, "bytecode program is missing")
 }
 
+fn blocked_scheduler_goroutine() -> ScheduledGoroutine {
+    ScheduledGoroutine {
+        frames: Vec::from_array([]),
+        pending: Ref::new(Option::None),
+        native: Ref::new(Option::None),
+        native_channel: Ref::new(Option::None),
+        state: Ref::new(1),
+        startup: false,
+    }
+}
+
+#[test]
+fn excludes_native_call_waiters_from_channel_matching() -> unit {
+    let goroutine = blocked_scheduler_goroutine();
+    testing::assert(scheduled_channel_waiter(goroutine));
+    goroutine.native.set(
+        Option::Some(
+            ScheduledNativeCall {
+                native: NativePrepared {
+                    id: Option::None,
+                    function: Option::None,
+                    parameter_types: Vec::from_array([]),
+                    parameter_keys: Vec::from_array([]),
+                    result_types: Vec::from_array([]),
+                    result_keys: Vec::from_array([]),
+                    variadic: false,
+                    reflect_value_of: false,
+                    runtime_stack: false,
+                    argument_slices: Vec::from_array([]),
+                },
+                invocation: new_native_invocation(0, false),
+                owner: Option::None,
+                results: Vec::from_array([]),
+                deferred: false,
+            },
+        ),
+    );
+    testing::assert(!scheduled_channel_waiter(goroutine))
+}
+
 #[test]
 fn executes_functions_assignments_loops_and_switches() -> unit {
     let result = run(load_bytecode("control"), default_config());
@@ -117,7 +157,55 @@ fn compares_host_backed_errors_with_nil() -> unit {
     );
     let result = run(program, default_config());
     testing::assert_eq(result.exit_code, 0);
-    testing::assert_eq(result.stderr.to_string().unwrap_or(""), "false\n");
+    testing::assert_eq(result.stderr.to_string().unwrap_or(""), "false\ntrue\ntrue\ntrue\n");
+    testing::assert(result.error.is_none())
+}
+
+#[test]
+fn calls_host_interface_methods_with_named_scalar_results() -> unit {
+    let program = load_bytecode("native_filemode");
+    testing::assert(
+        native::install_catalog(
+            testing::expect_ok(bytecode::native_manifest(program), "native manifest failed"),
+        ),
+    );
+    let result = run(program, default_config());
+    if result.exit_code != 0 {
+        testing::fail(result.stderr.to_string().unwrap_or("native file mode execution failed"))
+    } else {};
+    testing::assert_eq(result.stderr.to_string().unwrap_or(""), "true true\n");
+    testing::assert(result.error.is_none())
+}
+
+#[test]
+fn wakes_mixed_native_selects_from_local_channels() -> unit {
+    let program = load_bytecode("mixed_native_select");
+    testing::assert(
+        native::install_catalog(
+            testing::expect_ok(bytecode::native_manifest(program), "native manifest failed"),
+        ),
+    );
+    let result = run(program, default_config());
+    if result.exit_code != 0 {
+        testing::fail(result.stderr.to_string().unwrap_or("mixed select execution failed"))
+    } else {};
+    testing::assert_eq(result.stderr.to_string().unwrap_or(""), "ready\ndefault\ndone\n");
+    testing::assert(result.error.is_none())
+}
+
+#[test]
+fn initializes_native_composite_literals_with_callbacks() -> unit {
+    let program = load_bytecode("native_cmd_literal");
+    testing::assert(
+        native::install_catalog(
+            testing::expect_ok(bytecode::native_manifest(program), "native manifest failed"),
+        ),
+    );
+    let result = run(program, default_config());
+    if result.exit_code != 0 {
+        testing::fail(result.stderr.to_string().unwrap_or("native command literal failed"))
+    } else {};
+    testing::assert_eq(result.stderr.to_string().unwrap_or(""), "/bin/true 1\n");
     testing::assert(result.error.is_none())
 }
 

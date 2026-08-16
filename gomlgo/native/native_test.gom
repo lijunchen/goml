@@ -141,6 +141,32 @@ fn imports_a_package_once_for_function_and_exit_bindings() -> unit {
 }
 
 #[test]
+fn routes_program_executable_through_the_bridge() -> unit {
+    let source = testing::expect_ok(
+        generate_registry_source(
+            new_manifest(
+                Vec::from_array([]),
+                Vec::from_array(
+                    [
+                        function_call(
+                            11,
+                            "os",
+                            "Executable",
+                            Vec::from_array([]),
+                            Vec::from_array(["string", "error"]),
+                            false,
+                        ),
+                    ],
+                ),
+            ),
+        ),
+        "registry generation failed",
+    );
+    testing::assert(source.contains("_gomlgo_nativebridge.ProgramExecutable"));
+    testing::assert(!source.contains("_gomlgo_nativepkg0 \"os\""))
+}
+
+#[test]
 fn generates_native_method_and_type_bindings() -> unit {
     let manifest = new_manifest(
         Vec::from_array([]),

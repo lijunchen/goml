@@ -599,3 +599,42 @@ func TestChannelInvocationWakesCompletionQueue(t *testing.T) {
 	}
 	InvocationQueueClose(queue)
 }
+
+func TestChannelInvocationCanBeCanceledAndJoined(t *testing.T) {
+	queue := NewInvocationQueue(1)
+	invocation := NewChannelInvocation()
+	if !ChannelInvocationAppendReceive(invocation, ValueOf(make(chan int))) {
+		t.Fatal("channel receive was rejected")
+	}
+	if !ChannelInvocationStart(queue, invocation) {
+		t.Fatal("channel invocation did not start")
+	}
+	if !ChannelInvocationCancel(invocation) || !ChannelInvocationWait(invocation) {
+		t.Fatal("channel invocation did not cancel")
+	}
+	if !ChannelInvocationReady(invocation) || ChannelInvocationIndex(invocation) != -1 {
+		t.Fatal("canceled channel invocation metadata is wrong")
+	}
+	if !InvocationQueueWait(queue) {
+		t.Fatal("canceled channel invocation did not notify its queue")
+	}
+	InvocationQueueClose(queue)
+}
+
+func TestChannelInvocationSelectsDefault(t *testing.T) {
+	queue := NewInvocationQueue(1)
+	invocation := NewChannelInvocation()
+	if !ChannelInvocationAppendReceive(invocation, ValueOf(make(chan int))) {
+		t.Fatal("channel receive was rejected")
+	}
+	if !ChannelInvocationAppendDefault(invocation) {
+		t.Fatal("channel default was rejected")
+	}
+	if !ChannelInvocationStart(queue, invocation) || !InvocationQueueWait(queue) {
+		t.Fatal("channel invocation did not complete")
+	}
+	if ChannelInvocationIndex(invocation) != 1 {
+		t.Fatalf("channel invocation index = %d", ChannelInvocationIndex(invocation))
+	}
+	InvocationQueueClose(queue)
+}
