@@ -58,12 +58,17 @@ fn native_option_slots(count: int) -> Vec[Option[NativeCallId]] {
 fn execution_package(program: execution::ExecutionProgram, package_id: go_types::PackageId) -> Option[
     execution::ExecutionPackage,
 ] {
-    for package_value in program.packages {
-        if package_value.package_id.value == package_id.value {
-            return Option::Some(package_value)
-        } else {}
+    if package_id.value < 0 || package_id.value >= program.package_indices.len() {
+        return Option::None
+    } else {};
+    match program.package_indices[package_id.value] {
+        Some(index) => if index >= 0 && index < program.packages.len() {
+            Option::Some(program.packages[index])
+        } else {
+            Option::None
+        },
+        None => Option::None,
     }
-    Option::None
 }
 
 fn native_basic_key(basic: go_types::BasicKind, untyped: bool) -> Result[string, string] {

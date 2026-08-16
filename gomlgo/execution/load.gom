@@ -301,11 +301,22 @@ fn load_checked_packages_with_order(
         None => diagnostics.push(linker_diagnostic(listed.root_path, "main.main is not defined")),
     };
     let program = if diagnostics.is_empty() {
+        let package_indices: Vec[Option[int]] = Vec::with_capacity(world.packages.len());
+        for _ in world.packages {
+            package_indices.push(Option::None)
+        }
+        for index in 0..packages.len() {
+            let package_id = packages[index].package_id;
+            if package_id.value >= 0 && package_id.value < package_indices.len() {
+                package_indices[package_id.value] = Option::Some(index);
+            } else {}
+        }
         match main_function {
             Some(main_function) => Option::Some(
                 ExecutionProgram {
                     world,
                     packages,
+                    package_indices,
                     initialization_order,
                     main_package: root_id,
                     main_function,
