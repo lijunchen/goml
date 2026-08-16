@@ -14,18 +14,59 @@ func TestCatalogCoversPipelineFunctions(t *testing.T) {
 		receiver string
 		pointer  bool
 	}{
+		{"bytes", "Bytes", "Buffer", true},
+		{"bytes", "NewReader", "", false},
 		{"context", "Background", "", false},
+		{"context", "Done", "Context", false},
+		{"context", "Err", "Context", false},
 		{"context", "WithCancel", "", false},
+		{"context", "WithTimeout", "", false},
+		{"crypto/sha256", "New", "", false},
+		{"errors", "Is", "", false},
 		{"fmt", "Fprint", "", false},
 		{"fmt", "Print", "", false},
 		{"fmt", "Println", "", false},
 		{"fmt", "Sprintf", "", false},
+		{"hash", "Sum", "Hash", false},
+		{"io", "Copy", "", false},
 		{"io/fs", "Name", "DirEntry", false},
+		{"io/fs", "IsDir", "FileInfo", false},
+		{"io/fs", "Mode", "FileInfo", false},
+		{"io/fs", "IsRegular", "FileMode", false},
+		{"os", "Close", "File", true},
+		{"os", "Environ", "", false},
+		{"os", "Executable", "", false},
+		{"os", "ExitCode", "ProcessState", true},
+		{"os", "Getwd", "", false},
+		{"os", "IsExist", "", false},
+		{"os", "IsNotExist", "", false},
+		{"os", "IsPermission", "", false},
+		{"os", "IsTimeout", "", false},
+		{"os", "Link", "", false},
+		{"os", "LookupEnv", "", false},
+		{"os", "Mkdir", "", false},
 		{"os", "MkdirAll", "", false},
+		{"os", "Open", "", false},
 		{"os", "ReadDir", "", false},
 		{"os", "ReadFile", "", false},
+		{"os", "Remove", "", false},
+		{"os", "RemoveAll", "", false},
+		{"os", "Rename", "", false},
 		{"os", "Stat", "", false},
+		{"os", "Symlink", "", false},
 		{"os", "WriteFile", "", false},
+		{"os/exec", "Command", "", false},
+		{"os/exec", "CommandContext", "", false},
+		{"os/exec", "LookPath", "", false},
+		{"os/exec", "Run", "Cmd", true},
+		{"path/filepath", "Abs", "", false},
+		{"path/filepath", "Base", "", false},
+		{"path/filepath", "Clean", "", false},
+		{"path/filepath", "Dir", "", false},
+		{"path/filepath", "EvalSymlinks", "", false},
+		{"path/filepath", "Ext", "", false},
+		{"path/filepath", "IsAbs", "", false},
+		{"path/filepath", "Join", "", false},
 		{"reflect", "Pointer", "Value", false},
 		{"reflect", "ValueOf", "", false},
 		{"runtime", "Gosched", "", false},
@@ -34,6 +75,8 @@ func TestCatalogCoversPipelineFunctions(t *testing.T) {
 		{"strconv", "ParseFloat", "", false},
 		{"strings", "Cut", "", false},
 		{"strings", "Join", "", false},
+		{"strings", "TrimPrefix", "", false},
+		{"strings", "TrimSuffix", "", false},
 		{"strings", "ToUpper", "", false},
 		{"sync", "Broadcast", "Cond", true},
 		{"sync", "Wait", "Cond", true},
@@ -45,6 +88,9 @@ func TestCatalogCoversPipelineFunctions(t *testing.T) {
 		{"sync", "Done", "WaitGroup", true},
 		{"sync", "Wait", "WaitGroup", true},
 		{"sync", "NewCond", "", false},
+		{"syscall", "Kill", "", false},
+		{"time", "Now", "", false},
+		{"time", "UnixNano", "Time", false},
 	}
 	ResetCatalog()
 	for index, function := range functions {
@@ -76,13 +122,17 @@ func TestCatalogCoversPipelineTypesAndGlobals(t *testing.T) {
 		path string
 		name string
 	}{
+		{"bytes", "Buffer"},
+		{"bytes", "Reader"},
 		{"os", "File"},
 		{"os", "LinkError"},
+		{"os", "PathError"},
 		{"os", "ProcAttr"},
 		{"os", "Process"},
 		{"os", "ProcessState"},
 		{"os", "Root"},
 		{"os", "SyscallError"},
+		{"os/exec", "Cmd"},
 		{"reflect", "MapIter"},
 		{"reflect", "Method"},
 		{"reflect", "SelectCase"},
@@ -113,6 +163,7 @@ func TestCatalogCoversPipelineTypesAndGlobals(t *testing.T) {
 		{"sync", "Pool"},
 		{"sync", "RWMutex"},
 		{"sync", "WaitGroup"},
+		{"syscall", "SysProcAttr"},
 		{"time", "Time"},
 	}
 	ResetCatalog()
@@ -125,14 +176,26 @@ func TestCatalogCoversPipelineTypesAndGlobals(t *testing.T) {
 	if CatalogRegisterType("native:net.IP", "net", "IP") {
 		t.Fatal("catalog accepted an unsupported type")
 	}
-	if !CatalogRegisterGlobal(1, "os", "Stderr") {
-		t.Fatal("catalog rejected os.Stderr")
+	globals := []struct {
+		path string
+		name string
+	}{
+		{"context", "DeadlineExceeded"},
+		{"io", "EOF"},
+		{"io", "ErrShortWrite"},
+		{"io", "ErrUnexpectedEOF"},
+		{"os", "Stderr"},
 	}
-	if CatalogRegisterGlobal(2, "os", "Unsupported") {
+	for index, global := range globals {
+		if !CatalogRegisterGlobal(index, global.path, global.name) {
+			t.Fatalf("catalog rejected %s.%s", global.path, global.name)
+		}
+	}
+	if CatalogRegisterGlobal(len(globals), "os", "Unsupported") {
 		t.Fatal("catalog accepted an unsupported global")
 	}
 	for _, importPath := range []string{
-		"context", "fmt", "io", "io/fs", "os", "reflect", "runtime", "slices", "strconv", "strings", "sync", "time",
+		"bytes", "context", "crypto/sha256", "errors", "fmt", "hash", "io", "io/fs", "os", "os/exec", "path/filepath", "reflect", "runtime", "slices", "strconv", "strings", "sync", "syscall", "time",
 	} {
 		if !CatalogSupportsPackage(importPath) {
 			t.Fatalf("catalog rejected package %s", importPath)
@@ -212,7 +275,7 @@ func TestCatalogInstallsLockerProxy(t *testing.T) {
 	if !reflect.DeepEqual(calls, []string{"Lock", "Unlock"}) {
 		t.Fatalf("calls = %v", calls)
 	}
-	if CatalogRegisterProxy("io", "Reader") {
+	if CatalogRegisterProxy("io", "Closer") {
 		t.Fatal("catalog accepted an unsupported proxy")
 	}
 }
@@ -241,5 +304,34 @@ func TestCatalogInstallsWriterProxy(t *testing.T) {
 	written, writeErr := value.Interface().(io.Writer).Write([]byte("goml"))
 	if written != 4 || writeErr != nil {
 		t.Fatalf("write = %d, %v", written, writeErr)
+	}
+}
+
+func TestCatalogInstallsReaderProxy(t *testing.T) {
+	ResetCatalog()
+	if !CatalogRegisterProxy("io", "Reader") {
+		t.Fatal("catalog rejected io.Reader")
+	}
+	token, err := NewCallbackToken(nil, func(invocation CallbackInvocation) CallResult {
+		if invocation.Method != "Read" || len(invocation.Arguments[0].Bytes()) != 4 {
+			t.Fatalf("invocation = %+v", invocation)
+		}
+		copy(invocation.Arguments[0].Bytes(), "goml")
+		return CallResult{Values: []ValueRef{
+			reflect.ValueOf(4),
+			reflect.Zero(reflect.TypeFor[error]()),
+		}}
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	value, err := MakeInterfaceProxy(reflect.TypeFor[io.Reader](), token)
+	if err != nil {
+		t.Fatal(err)
+	}
+	buffer := make([]byte, 4)
+	read, readErr := value.Interface().(io.Reader).Read(buffer)
+	if read != 4 || readErr != nil || string(buffer) != "goml" {
+		t.Fatalf("read = %d, %v, %q", read, readErr, buffer)
 	}
 }
