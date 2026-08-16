@@ -41,6 +41,35 @@ struct CaptureUse {
     object: go_types::ObjectId,
 }
 
+struct FunctionSourceRange {
+    source: int,
+    package_index: int,
+    file: int,
+    start: int,
+    end: int,
+    literal: bool,
+}
+
+fn compare_function_source_range(left: FunctionSourceRange, right: FunctionSourceRange) -> int {
+    if left.package_index != right.package_index {
+        left.package_index - right.package_index
+    } else if left.file != right.file {
+        left.file - right.file
+    } else if left.start != right.start {
+        left.start - right.start
+    } else if left.literal != right.literal {
+        if left.literal {
+            1
+        } else {
+            -1
+        }
+    } else if left.end != right.end {
+        right.end - left.end
+    } else {
+        left.source - right.source
+    }
+}
+
 fn compare_capture_use(left: CaptureUse, right: CaptureUse) -> int {
     if left.file.value != right.file.value {
         left.file.value - right.file.value
@@ -461,19 +490,13 @@ fn inherit_literal_type_parameters(
     program: execution::ExecutionProgram,
     sources: Vec[FunctionSource],
 ) -> unit {
-    let source_files: Vec[int] = Vec::with_capacity(sources.len());
-    let source_starts: Vec[int] = Vec::with_capacity(sources.len());
-    let source_ends: Vec[int] = Vec::with_capacity(sources.len());
-    for source in sources {
+    let ranges: Vec[FunctionSourceRange] = Vec::with_capacity(sources.len());
+    for index in 0..sources.len() {
+        let source = sources[index];
         let package_value = program.packages[source.package_index];
         let package_syntax = match package_value.syntax {
             Some(value) => value,
-            None => {
-                source_files.push(-1);
-                source_starts.push(-1);
-                source_ends.push(-1);
-                continue
-            },
+            None => continue,
         };
         let node = if source.literal {
             source.declaration
@@ -481,39 +504,52 @@ fn inherit_literal_type_parameters(
             source.body
         };
         match syntax::get_node(package_syntax.arena, node) {
-            Some(value) => {
-                source_files.push(value.file.value);
-                source_starts.push(value.span.start);
-                source_ends.push(value.span.end);
-            },
-            None => {
-                source_files.push(-1);
-                source_starts.push(-1);
-                source_ends.push(-1);
-            },
+            Some(value) => ranges.push(
+                FunctionSourceRange {
+                    source: index,
+                    package_index: source.package_index,
+                    file: value.file.value,
+                    start: value.span.start,
+                    end: value.span.end,
+                    literal: source.literal,
+                },
+            ),
+            None => {},
         }
     }
-    for index in 0..sources.len() {
-        if sources[index].literal && source_files[index] >= 0 {
+    collections::sort_by(ranges, compare_function_source_range);
+    let active: Vec[FunctionSourceRange] = Vec::from_array([]);
+    let mut current_package = -1;
+    let mut current_file = -1;
+    for value in ranges {
+        if value.package_index != current_package || value.file != current_file {
+            while !active.is_empty() {
+                let _ = active.pop();
+            }
+            current_package = value.package_index;
+            current_file = value.file;
+        } else {};
+        while !active.is_empty() && active[active.len() - 1].end < value.start {
+            let _ = active.pop();
+        }
+        if value.literal {
             let mut owner = -1;
             let mut owner_width = 0;
-            for candidate in 0..sources.len() {
-                if !sources[candidate].literal
-                    && sources[candidate].package_index == sources[index].package_index
-                    && source_files[candidate] == source_files[index]
-                    && source_starts[candidate] <= source_starts[index]
-                    && source_ends[candidate] >= source_ends[index] {
-                    let width = source_ends[candidate] - source_starts[candidate];
+            for candidate in active {
+                if candidate.end >= value.end {
+                    let width = candidate.end - candidate.start;
                     if owner < 0 || width < owner_width {
-                        owner = candidate;
+                        owner = candidate.source;
                         owner_width = width;
                     } else {}
                 } else {}
             }
             if owner >= 0 {
-                sources[index].type_parameters = sources[owner].type_parameters;
+                sources[value.source].type_parameters = sources[owner].type_parameters;
             } else {}
-        } else {}
+        } else {
+            active.push(value)
+        }
     }
 }
 
