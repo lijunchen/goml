@@ -37,6 +37,8 @@ func TestCatalogCoversPipelineFunctions(t *testing.T) {
 		{"strings", "ToUpper", "", false},
 		{"sync", "Broadcast", "Cond", true},
 		{"sync", "Wait", "Cond", true},
+		{"sync", "Lock", "Locker", false},
+		{"sync", "Unlock", "Locker", false},
 		{"sync", "Lock", "Mutex", true},
 		{"sync", "Unlock", "Mutex", true},
 		{"sync", "Add", "WaitGroup", true},
@@ -111,6 +113,7 @@ func TestCatalogCoversPipelineTypesAndGlobals(t *testing.T) {
 		{"sync", "Pool"},
 		{"sync", "RWMutex"},
 		{"sync", "WaitGroup"},
+		{"time", "Time"},
 	}
 	ResetCatalog()
 	for _, typeValue := range types {
@@ -129,7 +132,7 @@ func TestCatalogCoversPipelineTypesAndGlobals(t *testing.T) {
 		t.Fatal("catalog accepted an unsupported global")
 	}
 	for _, importPath := range []string{
-		"context", "fmt", "io", "io/fs", "os", "reflect", "runtime", "slices", "strconv", "strings", "sync",
+		"context", "fmt", "io", "io/fs", "os", "reflect", "runtime", "slices", "strconv", "strings", "sync", "time",
 	} {
 		if !CatalogSupportsPackage(importPath) {
 			t.Fatalf("catalog rejected package %s", importPath)

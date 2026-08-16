@@ -88,6 +88,37 @@ fn loads_a_named_go_source_file() -> unit {
 }
 
 #[test]
+fn loads_generated_files_from_native_api_catalog() -> unit {
+    let file = path::join(fixture("native_api"), "main.gom.go");
+    let loaded = testing::expect_ok(
+        load_files(default_config(), Vec::from_array([file])),
+        "generated native API loading failed",
+    );
+    testing::assert(loaded.diagnostics.is_empty());
+    let program = testing::expect_some(loaded.program, "generated native API program is missing");
+    testing::assert_eq(program.packages.len(), 4);
+    testing::assert(execution_package_named(program.packages, "io").is_some());
+    testing::assert(execution_package_named(program.packages, "fmt").is_some());
+    testing::assert(execution_package_named(program.packages, "slices").is_some())
+}
+
+#[test]
+fn falls_back_when_generated_file_uses_uncatalogued_api() -> unit {
+    let file = path::join(fixture("native_api_fallback"), "main.gom.go");
+    let loaded = testing::expect_ok(
+        load_files(default_config(), Vec::from_array([file])),
+        "generated native API fallback failed",
+    );
+    testing::assert(loaded.diagnostics.is_empty());
+    let program = testing::expect_some(
+        loaded.program,
+        "generated native API fallback program is missing",
+    );
+    testing::assert(program.packages.len() > 4);
+    testing::assert(execution_package_named(program.packages, "strings").is_some())
+}
+
+#[test]
 fn rejects_multiple_entry_source_files() -> unit {
     let file = path::join(
         path::join(env::current_dir().unwrap_or("."), "testdata/execute/pure/control"),

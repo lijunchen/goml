@@ -94,13 +94,15 @@ fn writes_native_slice_mutations_back_with_interpreted_goroutine_identity() -> u
 #[test]
 fn passes_native_backed_pointers_through_native_interfaces() -> unit {
     let program = load_bytecode("native_locker");
-    testing::assert(
-        native::install_catalog(
-            testing::expect_ok(bytecode::native_manifest(program), "native manifest failed"),
-        ),
-    );
+    let manifest = testing::expect_ok(bytecode::native_manifest(program), "native manifest failed");
+    match native::install_catalog_error(manifest) {
+        Some(error) => testing::fail(error),
+        None => {},
+    };
     let result = run(program, default_config());
-    testing::assert_eq(result.exit_code, 0);
+    if result.exit_code != 0 {
+        testing::fail(result.stderr.to_string().unwrap_or("native locker execution failed"))
+    } else {};
     testing::assert_eq(result.stderr.to_string().unwrap_or(""), "true\n");
     testing::assert(result.error.is_none())
 }
