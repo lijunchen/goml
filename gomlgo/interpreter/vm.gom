@@ -1158,6 +1158,28 @@ fn aggregate_element(state: VmState, value: Value, indices: Vec[int], offset: in
             let loaded = load_place(state.memory, place)?;
             aggregate_element(state, loaded, indices, offset)
         },
+        Value::Host { type_id, value } => {
+            let index = indices[offset];
+            let field_type = native_field_type(state.program.world, type_id, index)?;
+            let field = native_field_reference(value, index);
+            if !native_host_value_valid(field) {
+                Result::Err("native field is not accessible")
+            } else if offset + 1 < indices.len() {
+                aggregate_element(
+                    state,
+                    Value::Host { type_id: field_type, value: field },
+                    indices,
+                    offset + 1,
+                )
+            } else {
+                native_result(
+                    state,
+                    clone_host_value(field),
+                    field_type,
+                    runtime_native_type_key(state, field_type)?,
+                )
+            }
+        },
         _ => Result::Err("field selection on non-aggregate value"),
     }
 }
@@ -1596,6 +1618,9 @@ fn native_field_type(world: go_types::World, type_id: go_types::TypeId, index: i
     string,
 ] {
     match go_types::get_type(world, go_types::underlying(world, type_id)) {
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } }) => {
+            native_field_type(world, element, index)
+        },
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } }) => {
             if index < 0 || index >= fields.len() {
                 Result::Err("native field index is out of range")
@@ -3777,7 +3802,7 @@ fn execute_function(
 
 fn initialize_state(program: bytecode::BytecodeProgram, config: VmConfig) -> Result[VmState, string] {
     let memory = new_memory();
-    let native_completions = new_native_completion_queue(config.max_goroutines);
+    let native_completions = new_native_completion_queue(64);
     let state = VmState {
         program,
         config,

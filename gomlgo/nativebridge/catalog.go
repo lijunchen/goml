@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 type catalogPointer struct {
@@ -104,7 +105,7 @@ func CatalogRegisterProxy(importPath string, name string) bool {
 
 func CatalogSupportsPackage(importPath string) bool {
 	switch importPath {
-	case "context", "fmt", "io", "io/fs", "os", "reflect", "runtime", "slices", "strconv", "strings", "sync":
+	case "context", "fmt", "io", "io/fs", "os", "reflect", "runtime", "slices", "strconv", "strings", "sync", "time":
 		return true
 	default:
 		return false
@@ -219,6 +220,14 @@ func catalogMethod(importPath string, receiverName string, receiverPointer bool,
 	case "sync\x00Cond\x00Wait":
 		if receiverPointer {
 			return (*sync.Cond).Wait
+		}
+	case "sync\x00Locker\x00Lock":
+		if !receiverPointer {
+			return sync.Locker.Lock
+		}
+	case "sync\x00Locker\x00Unlock":
+		if !receiverPointer {
+			return sync.Locker.Unlock
 		}
 	case "sync\x00Mutex\x00Lock":
 		if receiverPointer {
@@ -350,6 +359,8 @@ func catalogType(importPath string, name string) any {
 		return sync.RWMutex{}
 	case "sync\x00WaitGroup":
 		return sync.WaitGroup{}
+	case "time\x00Time":
+		return time.Time{}
 	default:
 		return nil
 	}

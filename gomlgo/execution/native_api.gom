@@ -1,0 +1,211 @@
+package execution;
+
+use gomlgo::ast;
+use gomlgo::checker;
+use gomlgo::constant;
+use gomlgo::parser;
+use std::bytes;
+
+fn native_api_text(package_path: string) -> Option[string] {
+    match package_path {
+        "context" => Option::Some(
+            "package context\n" + "import \"time\"\n"
+                + "type Context interface { Deadline() (time.Time, bool); Done() <-chan struct{}; Err() error; Value(key any) any }\n"
+                + "type CancelFunc func()\n"
+                + "func Background() Context\n"
+                + "func WithCancel(parent Context) (Context, CancelFunc)\n",
+        ),
+        "fmt" => Option::Some(
+            "package fmt\n" + "import \"io\"\n"
+                + "func Fprint(w io.Writer, a ...any) (int, error)\n"
+                + "func Print(a ...any) (int, error)\n"
+                + "func Println(a ...any) (int, error)\n"
+                + "func Sprintf(format string, a ...any) string\n",
+        ),
+        "io" => Option::Some(
+            "package io\n" + "type Writer interface { Write(p []byte) (int, error) }\n",
+        ),
+        "io/fs" => Option::Some(
+            "package fs\n" + "import \"time\"\n" + "type FileMode uint32\n"
+                + "type DirEntry interface { Name() string; IsDir() bool; Type() FileMode; Info() (FileInfo, error) }\n"
+                + "type FileInfo interface { Name() string; Size() int64; Mode() FileMode; ModTime() time.Time; IsDir() bool; Sys() any }\n",
+        ),
+        "os" => Option::Some(
+            "package os\n" + "import \"io/fs\"\n" + "type File struct{}\n"
+                + "type FileMode = fs.FileMode\n"
+                + "type DirEntry = fs.DirEntry\n"
+                + "type FileInfo = fs.FileInfo\n"
+                + "func (file *File) Write(data []byte) (int, error)\n"
+                + "var Args []string\n"
+                + "var Stderr *File\n"
+                + "var Stdin *File\n"
+                + "var Stdout *File\n"
+                + "func Exit(code int)\n"
+                + "func MkdirAll(path string, perm FileMode) error\n"
+                + "func ReadDir(name string) ([]DirEntry, error)\n"
+                + "func ReadFile(name string) ([]byte, error)\n"
+                + "func Stat(name string) (FileInfo, error)\n"
+                + "func WriteFile(name string, data []byte, perm FileMode) error\n",
+        ),
+        "reflect" => Option::Some(
+            "package reflect\n" + "type Value struct{}\n" + "func ValueOf(value any) Value\n"
+                + "func (value Value) Pointer() uintptr\n",
+        ),
+        "runtime" => Option::Some(
+            "package runtime\n" + "func Gosched()\n" + "func Stack(buffer []byte, all bool) int\n",
+        ),
+        "slices" => Option::Some(
+            "package slices\n" + "func Grow[S ~[]E, E any](slice S, count int) S { return slice }\n",
+        ),
+        "strconv" => Option::Some(
+            "package strconv\n"
+                + "func FormatFloat(value float64, format byte, precision int, bits int) string\n"
+                + "func ParseFloat(value string, bits int) (float64, error)\n",
+        ),
+        "strings" => Option::Some(
+            "package strings\n"
+                + "func Cut(value string, separator string) (string, string, bool)\n"
+                + "func Join(values []string, separator string) string\n"
+                + "func ToUpper(value string) string\n",
+        ),
+        "sync" => Option::Some(
+            "package sync\n" + "type Locker interface { Lock(); Unlock() }\n"
+                + "type Mutex struct{}\n"
+                + "func (mutex *Mutex) Lock()\n"
+                + "func (mutex *Mutex) Unlock()\n"
+                + "type Cond struct { L Locker }\n"
+                + "func NewCond(locker Locker) *Cond\n"
+                + "func (condition *Cond) Broadcast()\n"
+                + "func (condition *Cond) Wait()\n"
+                + "type WaitGroup struct{}\n"
+                + "func (group *WaitGroup) Add(delta int)\n"
+                + "func (group *WaitGroup) Done()\n"
+                + "func (group *WaitGroup) Wait()\n",
+        ),
+        "time" => Option::Some("package time\n" + "type Time struct{}\n"),
+        _ => Option::None,
+    }
+}
+
+fn native_api_dependencies(package_path: string) -> Vec[string] {
+    match package_path {
+        "context" => Vec::from_array(["time"]),
+        "fmt" => Vec::from_array(["io"]),
+        "io/fs" => Vec::from_array(["time"]),
+        "os" => Vec::from_array(["io/fs"]),
+        _ => Vec::from_array([]),
+    }
+}
+
+fn native_api_file(name: string) -> bool {
+    name.ends_with(".gom.go") || name == "goml_generated.go"
+}
+
+fn native_api_source(package_path: string) -> Option[checker::SourceFile] {
+    match native_api_text(package_path) {
+        Some(source) => Option::Some(
+            checker::SourceFile {
+                name: "<native-api>/" + package_path + ".go",
+                source: bytes::Bytes::from_string(source),
+            },
+        ),
+        None => Option::None,
+    }
+}
+
+fn visit_native_api(package_path: string, states: HashMap[string, int], output: Vec[string]) -> bool {
+    match states[package_path] {
+        Some(1) => return false,
+        Some(2) => return true,
+        _ => {},
+    };
+    if native_api_text(package_path).is_none() {
+        return false
+    } else {};
+    states[package_path] = 1;
+    for dependency in native_api_dependencies(package_path) {
+        if !visit_native_api(dependency, states, output) {
+            return false
+        } else {}
+    }
+    states[package_path] = 2;
+    output.push(package_path);
+    true
+}
+
+fn native_api_order(imports: Vec[string]) -> Option[Vec[string]] {
+    let result: Vec[string] = Vec::from_array([]);
+    let states: HashMap[string, int] = HashMap::from_array([]);
+    for import_path in imports {
+        if import_path == "unsafe" || !visit_native_api(import_path, states, result) {
+            return Option::None
+        } else {}
+    }
+    Option::Some(result)
+}
+
+fn native_api_package_name(package_path: string) -> string {
+    match package_path {
+        "io/fs" => "fs",
+        _ => package_path,
+    }
+}
+
+fn native_api_file_header(source: bytes::Bytes) -> Option[(string, Vec[string])] {
+    let parsed = parser::parse_file_bytes_without_bodies(source);
+    if !parsed.diagnostics.is_empty() {
+        return Option::None
+    } else {};
+    let root = parsed.root?;
+    let name = ast::get_string(ast::get_node(root, "name")?, "name")?;
+    let imports: Vec[string] = Vec::from_array([]);
+    for import_spec in ast::get_nodes(root, "imports") {
+        let path = ast::get_node(import_spec, "path")?;
+        let literal = ast::get_string(path, "value")?;
+        match constant::parse_string_literal(literal) {
+            Ok(constant::ConstValue::String(value)) => imports.push(value),
+            _ => return Option::None,
+        }
+    }
+    Option::Some((name, imports))
+}
+
+fn native_api_listed(toolchain: GoToolchain, directory: string, name: string, source: bytes::Bytes) -> Option[
+    (GoListResult, Vec[string]),
+] {
+    let header = native_api_file_header(source)?;
+    let order = native_api_order(header.1)?;
+    let packages: Vec[GoListPackage] = Vec::with_capacity(order.len() + 1);
+    for package_path in order {
+        packages.push(
+            GoListPackage {
+                directory: "",
+                import_path: package_path,
+                name: native_api_package_name(package_path),
+                standard: true,
+                dependency_only: true,
+                module_path: "",
+                module_main: false,
+                module_go_version: "",
+                go_files: Vec::from_array([]),
+                imports: native_api_dependencies(package_path),
+            },
+        )
+    }
+    let root_path = "command-line-arguments";
+    packages.push(
+        GoListPackage {
+            directory,
+            import_path: root_path,
+            name: header.0,
+            standard: false,
+            dependency_only: false,
+            module_path: "",
+            module_main: false,
+            module_go_version: "",
+            go_files: Vec::from_array([name]),
+            imports: header.1,
+        },
+    );
+    Option::Some((GoListResult { toolchain, packages, root_path }, order))
+}
