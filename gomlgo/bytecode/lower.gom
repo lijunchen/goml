@@ -96,6 +96,7 @@ struct FunctionBuilder {
     object_native_calls: Vec[Option[NativeCallId]],
     native_calls: Vec[NativeCall],
     function_templates: Vec[FunctionSource],
+    function_template_indices: HashMap[int, int],
     function_instances: Vec[FunctionInstance],
     pending_functions: Vec[FunctionSource],
     next_function: Ref[int],
@@ -1375,12 +1376,7 @@ fn source_object(builder: FunctionBuilder, object: go_types::ObjectId) -> go_typ
 
 fn find_function_template(builder: FunctionBuilder, object: go_types::ObjectId) -> Option[int] {
     let source = source_object(builder, object);
-    for index in 0..builder.function_templates.len() {
-        if builder.function_templates[index].object.value == source.value {
-            return Option::Some(index)
-        } else {}
-    }
-    Option::None
+    builder.function_template_indices[source.value]
 }
 
 fn concrete_signature(
@@ -5096,6 +5092,7 @@ fn lower_function(
     object_native_calls: Vec[Option[NativeCallId]],
     native_calls: Vec[NativeCall],
     function_templates: Vec[FunctionSource],
+    function_template_indices: HashMap[int, int],
     function_instances: Vec[FunctionInstance],
     pending_functions: Vec[FunctionSource],
     next_function: Ref[int],
@@ -5131,6 +5128,7 @@ fn lower_function(
         object_native_calls,
         native_calls,
         function_templates,
+        function_template_indices,
         function_instances,
         pending_functions,
         next_function,
@@ -5190,6 +5188,7 @@ fn lower_package_initializer(
     object_native_calls: Vec[Option[NativeCallId]],
     native_calls: Vec[NativeCall],
     function_templates: Vec[FunctionSource],
+    function_template_indices: HashMap[int, int],
     function_instances: Vec[FunctionInstance],
     pending_functions: Vec[FunctionSource],
     next_function: Ref[int],
@@ -5225,6 +5224,7 @@ fn lower_package_initializer(
         object_native_calls,
         native_calls,
         function_templates,
+        function_template_indices,
         function_instances,
         pending_functions,
         next_function,
@@ -5447,6 +5447,7 @@ fn lower_pending_functions(
     object_native_calls: Vec[Option[NativeCallId]],
     native_calls: Vec[NativeCall],
     templates: Vec[FunctionSource],
+    template_indices: HashMap[int, int],
     instances: Vec[FunctionInstance],
     pending: Vec[FunctionSource],
     next_function: Ref[int],
@@ -5468,6 +5469,7 @@ fn lower_pending_functions(
             object_native_calls,
             native_calls,
             templates,
+            template_indices,
             instances,
             pending,
             next_function,
@@ -5516,6 +5518,10 @@ pub fn lower(program: execution::ExecutionProgram) -> LowerResult {
         literal_functions,
         diagnostics,
     );
+    let template_indices: HashMap[int, int] = HashMap::from_array([]);
+    for index in 0..templates.len() {
+        template_indices[templates[index].object.value] = index;
+    }
     inherit_literal_type_parameters(program, templates);
     let globals = collect_globals(program, object_globals);
     while native_link.object_calls.len() < program.world.objects.len() {
@@ -5566,6 +5572,7 @@ pub fn lower(program: execution::ExecutionProgram) -> LowerResult {
         native_link.object_calls,
         native_link.calls,
         templates,
+        template_indices,
         instances,
         pending,
         next_function,
@@ -5608,6 +5615,7 @@ pub fn lower(program: execution::ExecutionProgram) -> LowerResult {
                             native_link.object_calls,
                             native_link.calls,
                             templates,
+                            template_indices,
                             instances,
                             pending,
                             next_function,
@@ -5650,6 +5658,7 @@ pub fn lower(program: execution::ExecutionProgram) -> LowerResult {
         native_link.object_calls,
         native_link.calls,
         templates,
+        template_indices,
         instances,
         pending,
         next_function,
