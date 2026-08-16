@@ -1713,7 +1713,10 @@ fn named_type_reference_after(
         Some(node) => node.file,
         None => return Option::None,
     };
-    for candidate in state.syntax.arena.nodes {
+    for candidate_value in state.syntax.arena.nodes {
+        let Some(candidate) = candidate_value else {
+            continue
+        };
         if candidate.file.value == file.value && candidate.span.start >= start
             && candidate.span.end <= end
             && candidate.span.start > after
@@ -2270,7 +2273,10 @@ fn type_object_used_as_receiver(state: CheckState, object: go_types::ObjectId) -
         Some(object) => object.name,
         None => return false,
     };
-    for node in state.syntax.arena.nodes {
+    for node_value in state.syntax.arena.nodes {
+        let Some(node) = node_value else {
+            continue
+        };
         match node.kind {
             syntax::SyntaxKind::FuncDecl {
                 receiver: Some(receiver),
@@ -2666,7 +2672,10 @@ fn diagnostics_share_method_receiver(
     if left.file != right.file {
         return false
     } else {};
-    for node in state.syntax.arena.nodes {
+    for node_value in state.syntax.arena.nodes {
+        let Some(node) = node_value else {
+            continue
+        };
         match node.kind {
             syntax::SyntaxKind::FuncDecl {
                 receiver: Some(receiver),
@@ -5445,7 +5454,7 @@ fn sort_initializers(state: CheckState) -> unit {
     for fact in facts {
         let node = initializer_order_node(state, fact);
         if node.value >= 0 && node.value < state.syntax.arena.nodes.len() {
-            let value = state.syntax.arena.nodes[node.value];
+            let value = syntax::node_at(state.syntax.arena, node.value);
             if value.file.value >= 0 && value.file.value < state.syntax.files.len() {
                 order_files.push(state.syntax.files[value.file.value].name)
             } else {
@@ -6796,7 +6805,10 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
     let function_scope_ends: HashMap[int, int] = HashMap::from_array([]);
     let loop_labels: HashMap[int, string] = HashMap::from_array([]);
     let effect_expression_nodes: Vec[syntax::NodeId] = Vec::from_array([]);
-    for candidate in syntax_package.arena.nodes {
+    for candidate_value in syntax_package.arena.nodes {
+        let Some(candidate) = candidate_value else {
+            continue
+        };
         match candidate.kind {
             syntax::SyntaxKind::FuncDecl { receiver: _, name: _, type_node, body: _ } | syntax::SyntaxKind::FuncLit {
                 type_node,
@@ -6836,8 +6848,8 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
     collections::sort_by(
         effect_expression_nodes,
         |left: syntax::NodeId, right: syntax::NodeId| {
-            let left_node = syntax_package.arena.nodes[left.value];
-            let right_node = syntax_package.arena.nodes[right.value];
+            let left_node = syntax::node_at(syntax_package.arena, left.value);
+            let right_node = syntax::node_at(syntax_package.arena, right.value);
             if left_node.file.value < right_node.file.value {
                 -1
             } else if left_node.file.value > right_node.file.value {

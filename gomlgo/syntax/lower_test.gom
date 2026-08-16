@@ -125,7 +125,8 @@ fn lowers_valid_file_to_typed_nodes_and_canonical_paths() -> unit {
         _ => testing::fail("root is not a file"),
     };
     let kinds: Vec[string] = Vec::from_array([]);
-    for node in result.arena.nodes {
+    for node_value in result.arena.nodes {
+        let node = testing::expect_some(node_value, "missing syntax node");
         kinds.push(syntax_kind_name(node.kind))
     }
     testing::assert(contains(kinds, "StructType"));
@@ -147,7 +148,7 @@ fn node_ids_and_keys_are_unique_across_files() -> unit {
     testing::assert_eq(result.diagnostics.len(), 0);
     let keys: Vec[string] = Vec::from_array([]);
     for index in 0..result.arena.nodes.len() {
-        let node = result.arena.nodes[index];
+        let node = testing::expect_some(result.arena.nodes[index], "missing syntax node");
         testing::assert_eq(node.id.value, index);
         let key = testing::expect_some(node_key(result, node.id), "missing node key");
         testing::assert(!contains(keys, key));

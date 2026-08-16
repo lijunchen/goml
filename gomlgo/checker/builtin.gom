@@ -633,7 +633,7 @@ fn expression_has_nonconstant_call_or_receive(state: CheckState, node: syntax::N
     while low < high {
         let middle = low + (high - low) / 2;
         let candidate_id = state.effect_expression_nodes[middle];
-        let candidate = state.syntax.arena.nodes[candidate_id.value];
+        let candidate = syntax::node_at(state.syntax.arena, candidate_id.value);
         if candidate.file.value < outer.file.value
             || (candidate.file.value == outer.file.value && candidate.span.start < outer.span.start) {
             low = middle + 1;
@@ -644,7 +644,7 @@ fn expression_has_nonconstant_call_or_receive(state: CheckState, node: syntax::N
     let mut index = low;
     while index < state.effect_expression_nodes.len() {
         let candidate_id = state.effect_expression_nodes[index];
-        let candidate = state.syntax.arena.nodes[candidate_id.value];
+        let candidate = syntax::node_at(state.syntax.arena, candidate_id.value);
         if candidate.file.value != outer.file.value || candidate.span.start > outer.span.end {
             return false
         } else {};

@@ -424,7 +424,10 @@ fn collect_function_sources(
                 ),
             };
             match package_value.syntax {
-                Some(package_syntax) => for node in package_syntax.arena.nodes {
+                Some(package_syntax) => for node_value in package_syntax.arena.nodes {
+                    let Some(node) = node_value else {
+                        continue
+                    };
                     match node.kind {
                         syntax::SyntaxKind::FuncLit { type_node, body } => match execution::require_node_type(
                             package_value.index,
@@ -617,7 +620,7 @@ fn analyze_function_capture_objects(
                             && node_index < package_syntax.arena.nodes.len()
                             && program.world.objects[object.value].kind == go_types::ObjectKind::Var
                             && object_globals[object.value].is_none() {
-                            let node = package_syntax.arena.nodes[node_index];
+                            let node = syntax::node_at(package_syntax.arena, node_index);
                             uses.push(
                                 CaptureUse {
                                     file: node.file,
