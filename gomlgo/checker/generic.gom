@@ -6,8 +6,8 @@ use gomlgo::types as go_types;
 use std::text;
 
 fn generic_parameters(state: CheckState, value: go_types::TypeId) -> Vec[go_types::TypeParameter] {
-    match go_types::get_type(state.world, value) {
-        Some(go_types::TypeData {
+    match go_types::type_data(state.world, value) {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Named {
                 object: _,
@@ -16,20 +16,20 @@ fn generic_parameters(state: CheckState, value: go_types::TypeId) -> Vec[go_type
                 type_args,
                 methods: _,
             },
-        }) => if type_args.is_empty() {
+        } => if type_args.is_empty() {
             type_params
         } else {
             Vec::from_array([])
         },
-        Some(go_types::TypeData {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Alias { object: _, rhs: _, type_params, type_args },
-        }) => if type_args.is_empty() {
+        } => if type_args.is_empty() {
             type_params
         } else {
             Vec::from_array([])
         },
-        Some(go_types::TypeData {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Signature {
                 receiver: _,
@@ -39,7 +39,7 @@ fn generic_parameters(state: CheckState, value: go_types::TypeId) -> Vec[go_type
                 results: _,
                 variadic: _,
             },
-        }) => type_params,
+        } => type_params,
         _ => Vec::from_array([]),
     }
 }

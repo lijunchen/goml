@@ -30,11 +30,11 @@ pub fn unalias(world: World, value: TypeId) -> TypeId {
             return world.invalid
         } else {};
         visited.push(current.value);
-        match get_type(world, current) {
-            Some(TypeData {
+        match type_data(world, current) {
+            TypeData {
                 id: _,
                 kind: TypeKind::Alias { object: _, rhs, type_params: _, type_args: _ },
-            }) => {
+            } => {
                 current = rhs;
             },
             _ => return current,
@@ -50,8 +50,8 @@ pub fn underlying(world: World, value: TypeId) -> TypeId {
             return world.invalid
         } else {};
         visited.push(current.value);
-        match get_type(world, current) {
-            Some(TypeData {
+        match type_data(world, current) {
+            TypeData {
                 id: _,
                 kind: TypeKind::Named {
                     object: _,
@@ -60,7 +60,7 @@ pub fn underlying(world: World, value: TypeId) -> TypeId {
                     type_args: _,
                     methods: _,
                 },
-            }) => {
+            } => {
                 current = unalias(world, underlying);
             },
             _ => return current,
@@ -89,8 +89,8 @@ pub fn is_named(world: World, value: TypeId) -> bool {
 
 pub fn basic_kind(world: World, value: TypeId) -> Option[BasicKind] {
     let resolved = core_type(world, value).unwrap_or(world.invalid);
-    match get_type(world, resolved) {
-        Some(TypeData { id: _, kind: TypeKind::Basic { basic, name: _, untyped: _ } }) => {
+    match type_data(world, resolved) {
+        TypeData { id: _, kind: TypeKind::Basic { basic, name: _, untyped: _ } } => {
             Option::Some(basic)
         },
         _ => Option::None,
@@ -98,15 +98,15 @@ pub fn basic_kind(world: World, value: TypeId) -> Option[BasicKind] {
 }
 
 pub fn is_untyped(world: World, value: TypeId) -> bool {
-    match get_type(world, unalias(world, value)) {
-        Some(TypeData { id: _, kind: TypeKind::Basic { basic: _, name: _, untyped } }) => untyped,
+    match type_data(world, unalias(world, value)) {
+        TypeData { id: _, kind: TypeKind::Basic { basic: _, name: _, untyped } } => untyped,
         _ => false,
     }
 }
 
 pub fn is_type_parameter(world: World, value: TypeId) -> bool {
-    match get_type(world, unalias(world, value)) {
-        Some(TypeData { id: _, kind: TypeKind::TypeParam { object: _, constraint: _, index: _ } }) => true,
+    match type_data(world, unalias(world, value)) {
+        TypeData { id: _, kind: TypeKind::TypeParam { object: _, constraint: _, index: _ } } => true,
         _ => false,
     }
 }

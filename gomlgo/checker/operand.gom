@@ -409,9 +409,12 @@ fn type_contains_invalid_inner(state: CheckState, type_id: go_types::TypeId, vis
         } else {}
     }
     visited.push(type_id.value);
-    match go_types::get_type(state.world, type_id) {
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Invalid }) | None => true,
-        Some(go_types::TypeData {
+    if !go_types::has_type(state.world, type_id) {
+        return true
+    } else {};
+    match go_types::type_data(state.world, type_id) {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Invalid } => true,
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Array { length: _, element } | go_types::TypeKind::Slice {
                 element,
@@ -419,14 +422,14 @@ fn type_contains_invalid_inner(state: CheckState, type_id: go_types::TypeId, vis
                 direction: _,
                 element,
             },
-        }) => type_contains_invalid_inner(state, element, visited),
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Map { key, value } }) => type_contains_invalid_inner(
+        } => type_contains_invalid_inner(state, element, visited),
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Map { key, value } } => type_contains_invalid_inner(
             state,
             key,
             visited,
         )
             || type_contains_invalid_inner(state, value, visited),
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } } => {
             for variable in variables {
                 if type_contains_invalid_inner(state, variable.type_id, visited) {
                     return true
@@ -434,7 +437,7 @@ fn type_contains_invalid_inner(state: CheckState, type_id: go_types::TypeId, vis
             }
             false
         },
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } }) => {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } } => {
             for field in fields {
                 if type_contains_invalid_inner(state, field.variable.type_id, visited) {
                     return true
@@ -442,10 +445,10 @@ fn type_contains_invalid_inner(state: CheckState, type_id: go_types::TypeId, vis
             }
             false
         },
-        Some(go_types::TypeData {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Interface { methods, embeddeds, comparable: _, implicit: _ },
-        }) => {
+        } => {
             for method in methods {
                 match go_types::get_object(state.world, method) {
                     Some(object) => if type_contains_invalid_inner(state, object.type_id, visited) {
@@ -461,7 +464,7 @@ fn type_contains_invalid_inner(state: CheckState, type_id: go_types::TypeId, vis
             }
             false
         },
-        Some(go_types::TypeData {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Signature {
                 receiver,
@@ -471,7 +474,7 @@ fn type_contains_invalid_inner(state: CheckState, type_id: go_types::TypeId, vis
                 results,
                 variadic: _,
             },
-        }) => {
+        } => {
             match receiver {
                 Some(receiver) => if type_contains_invalid_inner(state, receiver.type_id, visited) {
                     return true
@@ -481,7 +484,7 @@ fn type_contains_invalid_inner(state: CheckState, type_id: go_types::TypeId, vis
             type_contains_invalid_inner(state, params, visited)
                 || type_contains_invalid_inner(state, results, visited)
         },
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Union { terms } }) => {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Union { terms } } => {
             for term in terms {
                 if type_contains_invalid_inner(state, term.type_id, visited) {
                     return true
@@ -489,7 +492,7 @@ fn type_contains_invalid_inner(state: CheckState, type_id: go_types::TypeId, vis
             }
             false
         },
-        Some(go_types::TypeData {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Named {
                 object: _,
@@ -498,7 +501,7 @@ fn type_contains_invalid_inner(state: CheckState, type_id: go_types::TypeId, vis
                 type_args: _,
                 methods: _,
             },
-        }) | Some(go_types::TypeData {
+        } | go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Alias {
                 object: _,
@@ -506,7 +509,7 @@ fn type_contains_invalid_inner(state: CheckState, type_id: go_types::TypeId, vis
                 type_params: _,
                 type_args: _,
             },
-        }) => type_contains_invalid_inner(state, underlying, visited),
+        } => type_contains_invalid_inner(state, underlying, visited),
         _ => false,
     }
 }
@@ -2016,8 +2019,8 @@ fn check_conversion(
 }
 
 fn tuple_variables(state: CheckState, node: go_types::TypeId) -> Vec[go_types::Variable] {
-    match go_types::get_type(state.world, node) {
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => variables,
+    match go_types::type_data(state.world, node) {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } } => variables,
         _ => Vec::from_array([]),
     }
 }

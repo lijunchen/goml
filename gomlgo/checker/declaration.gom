@@ -144,6 +144,7 @@ struct DeferredFunctionBody {
     signature_node: syntax::NodeId,
     signature: go_types::TypeId,
     body: syntax::NodeId,
+    start: int,
     iota_value: int,
     body_checked: bool,
     emitted: bool,
@@ -6442,6 +6443,7 @@ fn defer_function_body(
             signature_node,
             signature,
             body,
+            start: node_start(state, body),
             iota_value,
             body_checked: false,
             emitted: false,
@@ -6500,8 +6502,8 @@ fn check_deferred_function_bodies(state: CheckState) -> unit {
         for index in 0..state.deferred_function_bodies.len() {
             if !state.deferred_function_bodies[index].emitted
                 && (selected < 0
-                    || node_start(state, state.deferred_function_bodies[index].body)
-                        < node_start(state, state.deferred_function_bodies[selected].body)) {
+                    || state.deferred_function_bodies[index].start
+                        < state.deferred_function_bodies[selected].start) {
                 selected = index;
             } else {}
         }

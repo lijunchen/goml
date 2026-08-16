@@ -71,6 +71,18 @@ pub fn get_type(world: World, id: TypeId) -> Option[TypeData] {
     }
 }
 
+pub fn has_type(world: World, id: TypeId) -> bool {
+    id.value >= 0 && id.value < world.types.len()
+}
+
+pub fn type_data(world: World, id: TypeId) -> TypeData {
+    if has_type(world, id) {
+        world.types[id.value]
+    } else {
+        world.types[world.invalid.value]
+    }
+}
+
 pub fn add_scope(
     world: World,
     kind: ScopeKind,

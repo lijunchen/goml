@@ -773,8 +773,8 @@ fn common_channel_type(world: World, left: TypeId, right: TypeId) -> Option[Type
 }
 
 pub fn core_type(world: World, value: TypeId) -> Option[TypeId] {
-    match get_type(world, unalias(world, value)) {
-        Some(TypeData { id: _, kind: TypeKind::TypeParam { object: _, constraint, index: _ } }) => {
+    match type_data(world, unalias(world, value)) {
+        TypeData { id: _, kind: TypeKind::TypeParam { object: _, constraint, index: _ } } => {
             let terms = constraint_type_terms(world, constraint, Vec::from_array([]));
             if terms.all || terms.terms.is_empty() {
                 return Option::None

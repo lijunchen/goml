@@ -558,8 +558,8 @@ fn package_level_function(world: go_types::World, signature: go_types::TypeId) -
 }
 
 fn generic_function_signature(world: go_types::World, signature: go_types::TypeId) -> bool {
-    match go_types::get_type(world, go_types::unalias(world, signature)) {
-        Some(go_types::TypeData {
+    match go_types::type_data(world, go_types::unalias(world, signature)) {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Signature {
                 receiver: None,
@@ -569,7 +569,7 @@ fn generic_function_signature(world: go_types::World, signature: go_types::TypeI
                 results: _,
                 variadic: _,
             },
-        }) => !receiver_type_params.is_empty() || !type_params.is_empty(),
+        } => !receiver_type_params.is_empty() || !type_params.is_empty(),
         _ => false,
     }
 }

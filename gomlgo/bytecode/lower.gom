@@ -432,34 +432,53 @@ fn inherit_literal_type_parameters(
     program: execution::ExecutionProgram,
     sources: Vec[FunctionSource],
 ) -> unit {
+    let source_files: Vec[int] = Vec::with_capacity(sources.len());
+    let source_starts: Vec[int] = Vec::with_capacity(sources.len());
+    let source_ends: Vec[int] = Vec::with_capacity(sources.len());
+    for source in sources {
+        let package_value = program.packages[source.package_index];
+        let package_syntax = match package_value.syntax {
+            Some(value) => value,
+            None => {
+                source_files.push(-1);
+                source_starts.push(-1);
+                source_ends.push(-1);
+                continue
+            },
+        };
+        let node = if source.literal {
+            source.declaration
+        } else {
+            source.body
+        };
+        match syntax::get_node(package_syntax.arena, node) {
+            Some(value) => {
+                source_files.push(value.file.value);
+                source_starts.push(value.span.start);
+                source_ends.push(value.span.end);
+            },
+            None => {
+                source_files.push(-1);
+                source_starts.push(-1);
+                source_ends.push(-1);
+            },
+        }
+    }
     for index in 0..sources.len() {
-        if sources[index].literal {
-            let package_value = program.packages[sources[index].package_index];
-            let package_syntax = match package_value.syntax {
-                Some(value) => value,
-                None => continue,
-            };
-            let literal = match syntax::get_node(package_syntax.arena, sources[index].declaration) {
-                Some(value) => value,
-                None => continue,
-            };
+        if sources[index].literal && source_files[index] >= 0 {
             let mut owner = -1;
             let mut owner_width = 0;
             for candidate in 0..sources.len() {
                 if !sources[candidate].literal
-                    && sources[candidate].package_index == sources[index].package_index {
-                    match syntax::get_node(package_syntax.arena, sources[candidate].body) {
-                        Some(body) => if body.file.value == literal.file.value
-                            && body.span.start <= literal.span.start
-                            && body.span.end >= literal.span.end {
-                            let width = body.span.end - body.span.start;
-                            if owner < 0 || width < owner_width {
-                                owner = candidate;
-                                owner_width = width;
-                            } else {}
-                        } else {},
-                        None => {},
-                    }
+                    && sources[candidate].package_index == sources[index].package_index
+                    && source_files[candidate] == source_files[index]
+                    && source_starts[candidate] <= source_starts[index]
+                    && source_ends[candidate] >= source_ends[index] {
+                    let width = source_ends[candidate] - source_starts[candidate];
+                    if owner < 0 || width < owner_width {
+                        owner = candidate;
+                        owner_width = width;
+                    } else {}
                 } else {}
             }
             if owner >= 0 {
@@ -651,8 +670,8 @@ fn substitute_type(builder: FunctionBuilder, type_id: go_types::TypeId) -> go_ty
 
 fn runtime_type(builder: FunctionBuilder, type_id: go_types::TypeId) -> go_types::TypeId {
     let value = substitute_type(builder, type_id);
-    match go_types::get_type(builder.world, go_types::unalias(builder.world, value)) {
-        Some(go_types::TypeData {
+    match go_types::type_data(builder.world, go_types::unalias(builder.world, value)) {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Signature {
                 receiver: _,
@@ -662,7 +681,7 @@ fn runtime_type(builder: FunctionBuilder, type_id: go_types::TypeId) -> go_types
                 results,
                 variadic,
             },
-        }) => go_types::add_type(
+        } => go_types::add_type(
             builder.world,
             go_types::TypeKind::Signature {
                 receiver: Option::None,
