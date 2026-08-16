@@ -226,7 +226,13 @@ fn parse_function_declaration(parser: Parser) -> ast::Node {
         } else {}
     } else {};
     let body = if at(parser, token::Kind::Lbrace) {
-        Option::Some(parse_block_statement(parser))
+        Option::Some(
+            if parser.skip_function_bodies {
+                skip_block_statement(parser)
+            } else {
+                parse_block_statement(parser)
+            },
+        )
     } else {
         Option::None
     };
@@ -404,6 +410,12 @@ fn parse_file_node(parser: Parser) -> ast::Node {
 pub fn parse_file_bytes(source: bytes::Bytes) -> ParseResult {
     let parser = parser_new(source);
     let root = attach_comments(parser, parse_file_node(parser), false);
+    result(parser, Option::Some(root))
+}
+
+pub fn parse_file_bytes_without_bodies(source: bytes::Bytes) -> ParseResult {
+    let parser = parser_new_with_mode(source, false, true);
+    let root = parse_file_node(parser);
     result(parser, Option::Some(root))
 }
 

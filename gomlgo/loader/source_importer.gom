@@ -1,12 +1,9 @@
 package loader;
 
-use gomlgo::ast;
 use gomlgo::checker;
 use gomlgo::constant;
-use gomlgo::parser;
 use gomlgo::scanner;
 use gomlgo::syntax;
-use gomlgo::token;
 use gomlgo::types as go_types;
 use std::bytes;
 use std::collections;
@@ -38,6 +35,7 @@ struct LoadState {
     failures: Vec[string],
     retain_info: bool,
     infos: Vec[Option[LoadedInfo]],
+    source_cache: HashMap[string, Vec[checker::SourceFile]],
 }
 
 struct LoadedInfo {
@@ -119,20 +117,15 @@ fn filename_selected(name: string, config: LoadConfig) -> bool {
 }
 
 fn source_constraint_selected(source: bytes::Bytes, config: LoadConfig) -> bool {
-    let scanned = scanner::scan_bytes(source);
     let mut go_build: Option[string] = Option::None;
     let legacy: Vec[string] = Vec::from_array([]);
-    for value in scanned.tokens {
-        if token::equal(value.kind, token::Kind::Comment) {
-            if value.literal.starts_with("//go:build") {
-                let start = "//go:build".byte_len();
-                go_build = Option::Some(value.literal.byte_slice(start, value.literal.byte_len()));
-            } else if value.literal.starts_with("// +build") {
-                let start = "// +build".byte_len();
-                legacy.push(value.literal.byte_slice(start, value.literal.byte_len()));
-            } else {}
-        } else if token::equal(value.kind, token::Kind::Package) {
-            break
+    for value in scanner::leading_comments(source) {
+        if value.starts_with("//go:build") {
+            let start = "//go:build".byte_len();
+            go_build = Option::Some(value.byte_slice(start, value.byte_len()));
+        } else if value.starts_with("// +build") {
+            let start = "// +build".byte_len();
+            legacy.push(value.byte_slice(start, value.byte_len()));
         } else {}
     }
     match go_build {
@@ -163,14 +156,7 @@ fn source_constraint_selected(source: bytes::Bytes, config: LoadConfig) -> bool 
 }
 
 fn source_package_name(source: checker::SourceFile) -> string {
-    let parsed = parser::parse_file_bytes(source.source);
-    match parsed.root {
-        Some(root) => match ast::get_node(root, "name") {
-            Some(name) => ast::get_string(name, "name").unwrap_or(""),
-            None => "",
-        },
-        None => "",
-    }
+    scanner::package_name_bytes(source.source)
 }
 
 fn test_source(value: checker::SourceFile) -> bool {
@@ -288,25 +274,117 @@ pub fn selected_sources(config: LoadConfig, import_path: string) -> Result[
 
 fn source_imports(source: checker::SourceFile) -> Vec[string] {
     let result: Vec[string] = Vec::from_array([]);
-    let parsed = parser::parse_file_bytes(source.source);
-    match parsed.root {
-        Some(root) => for import in ast::get_nodes(root, "imports") {
-            match ast::get_node(import, "path") {
-                Some(path_node) => match ast::get_string(path_node, "value") {
-                    Some(value) => match constant::parse_string_literal(value) {
-                        Ok(constant::ConstValue::String(value)) => if valid_import_dependency(value) {
-                            result.push(value)
-                        } else {},
-                        _ => {},
-                    },
-                    None => {},
-                },
-                None => {},
-            }
-        },
-        None => {},
-    };
+    for literal in scanner::import_literals(source.source) {
+        match constant::parse_string_literal(literal) {
+            Ok(constant::ConstValue::String(value)) => if valid_import_dependency(value) {
+                result.push(value)
+            } else {},
+            _ => {},
+        }
+    }
     result
+}
+
+fn selected_sources_cached(state: LoadState, import_path: string) -> Result[
+    Vec[checker::SourceFile],
+    string,
+] {
+    match state.source_cache[import_path] {
+        Some(sources) => Result::Ok(sources),
+        None => {
+            let sources = selected_sources(state.config, import_path)?;
+            state.source_cache[import_path] = sources;
+            Result::Ok(sources)
+        },
+    }
+}
+
+fn package_name_from_sources(sources: Vec[checker::SourceFile], import_path: string) -> string {
+    for source in sources {
+        let name = source_package_name(source);
+        if name != "" {
+            return name
+        } else {}
+    }
+    let parts = text::split(import_path, "/");
+    parts[parts.len() - 1]
+}
+
+fn discovered_import_used(result: checker::CheckResult, import_path: string) -> bool {
+    for fact in result.info.uses {
+        match fact.object {
+            Some(object_id) => {
+                let object = result.world.objects[object_id.value];
+                match object.imported_package {
+                    Some(package_id) => if object.kind == go_types::ObjectKind::PackageName
+                        && result.world.packages[package_id.value].path == import_path {
+                        return true
+                    } else {},
+                    None => {},
+                }
+            },
+            None => {},
+        }
+    }
+    for fact in result.info.defs {
+        match fact.object {
+            Some(object_id) => {
+                let object = result.world.objects[object_id.value];
+                match object.imported_package {
+                    Some(package_id) => if object.kind == go_types::ObjectKind::PackageName
+                        && object.name == "."
+                        && result.world.packages[package_id.value].path == import_path {
+                        return true
+                    } else {},
+                    None => {},
+                }
+            },
+            None => {},
+        }
+    }
+    false
+}
+
+fn discover_api_imports(
+    state: LoadState,
+    import_path: string,
+    sources: Vec[checker::SourceFile],
+    imports: Vec[string],
+) -> Result[Vec[string], string] {
+    let config = state.config.checker_config;
+    config.go_version = "go1.26";
+    config.ignore_func_bodies = true;
+    config.exported_api_only = true;
+    config.disable_unused_import_check = true;
+    config.available_imports = Vec::from_array([]);
+    config.ignored_imports = Vec::from_array([]);
+    config.import_errors = Vec::from_array([]);
+    for dependency in imports {
+        if dependency != "unsafe"
+            && !(dependency == "C" && state.config.checker_config.fake_import_c) {
+            let dependency_sources = selected_sources_cached(state, dependency)?;
+            config.available_imports.push(
+                checker::AvailableImport {
+                    path: dependency,
+                    name: package_name_from_sources(dependency_sources, dependency),
+                },
+            )
+        } else {}
+    }
+    let checked = checker::check_package(
+        config,
+        checker::PackageInput {
+            path: resolved_package_path(state.config, import_path),
+            files: sources,
+        },
+    );
+    let result: Vec[string] = Vec::from_array([]);
+    for dependency in imports {
+        if discovered_import_used(checked, dependency) {
+            result.push(dependency)
+        } else {}
+    }
+    Result::Ok(result)
 }
 
 fn valid_import_dependency(value: string) -> bool {
@@ -362,7 +440,7 @@ fn load_package(state: LoadState, import_path: string, allow_diagnostics: bool) 
         return Result::Err("unsafe is built in")
     } else {};
     state.loading.push(import_path);
-    let sources = selected_sources(state.config, import_path)?;
+    let sources = selected_sources_cached(state, import_path)?;
     let imports: Vec[string] = Vec::from_array([]);
     for source in sources {
         for dependency in source_imports(source) {
@@ -373,7 +451,13 @@ fn load_package(state: LoadState, import_path: string, allow_diagnostics: bool) 
             } else {}
         }
     }
-    for dependency in imports {
+    let api_only = state.config.root_path != "" && import_path != state.config.root_path;
+    let selected_imports = if api_only {
+        discover_api_imports(state, import_path, sources, imports)?
+    } else {
+        imports
+    };
+    for dependency in selected_imports {
         if !string_in(state.loaded, dependency) {
             match load_package(state, dependency, false) {
                 Ok(checked) => {
@@ -397,10 +481,17 @@ fn load_package(state: LoadState, import_path: string, allow_diagnostics: bool) 
         } else {}
     }
     let checker_config = state.config.checker_config;
-    if state.config.root_path != "" && import_path != state.config.root_path {
+    if api_only {
         checker_config.go_version = "go1.26";
         checker_config.ignore_func_bodies = true;
+        checker_config.exported_api_only = true;
         checker_config.disable_unused_import_check = true;
+        checker_config.ignored_imports = Vec::from_array([]);
+        for dependency in imports {
+            if !string_in(selected_imports, dependency) {
+                checker_config.ignored_imports.push(dependency)
+            } else {}
+        }
     } else {};
     let result = checker::check_package_in_world(
         checker_config,
@@ -451,6 +542,7 @@ pub fn new_load_session(config: LoadConfig) -> LoadSession {
             failures: Vec::from_array([]),
             retain_info: false,
             infos: Vec::from_array([]),
+            source_cache: HashMap::from_array([]),
         },
     }
 }
@@ -465,6 +557,7 @@ pub fn new_info_load_session(config: LoadConfig) -> LoadSession {
             failures: Vec::from_array([]),
             retain_info: true,
             infos: Vec::from_array([]),
+            source_cache: HashMap::from_array([]),
         },
     }
 }
@@ -519,6 +612,9 @@ pub fn check_import_path(config: LoadConfig, import_path: string) -> Result[
     checker::CheckResult,
     string,
 ] {
+    if config.root_path == "" {
+        config.root_path = import_path;
+    } else {};
     let state = LoadState {
         config,
         world: go_types::new_world(),
@@ -527,6 +623,7 @@ pub fn check_import_path(config: LoadConfig, import_path: string) -> Result[
         failures: Vec::from_array([]),
         retain_info: false,
         infos: Vec::from_array([]),
+        source_cache: HashMap::from_array([]),
     };
     load_package(state, import_path, false)
 }
@@ -569,6 +666,7 @@ pub fn check_sources_with_diagnostics(
         failures: Vec::from_array([]),
         retain_info: false,
         infos: Vec::from_array([]),
+        source_cache: HashMap::from_array([]),
     };
     load_package(state, import_path, true)
 }

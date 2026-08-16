@@ -105,7 +105,15 @@ fn child_list(context: LowerContext, value: ast::Node, name: string, path: strin
             let result: Vec[NodeId] = Vec::with_capacity(children.len());
             for index in 0..children.len() {
                 result.push(
-                    lower_node(context, children[index], path + "[" + index.to_string() + "]"),
+                    lower_node(
+                        context,
+                        children[index],
+                        if path == "" {
+                            ""
+                        } else {
+                            path + "[" + index.to_string() + "]"
+                        },
+                    ),
                 )
             }
             result
@@ -123,7 +131,11 @@ fn child_list(context: LowerContext, value: ast::Node, name: string, path: strin
 }
 
 fn field_path(path: string, name: string) -> string {
-    path + ".fields." + name
+    if path == "" {
+        ""
+    } else {
+        path + ".fields." + name
+    }
 }
 
 fn lower_kind(context: LowerContext, value: ast::Node, path: string) -> SyntaxKind {
@@ -446,8 +458,28 @@ fn contains_name(values: Vec[string], name: string) -> bool {
     false
 }
 
-pub fn lower_package(sources: Vec[SourceFile]) -> PackageSyntax {
-    let nodes: Vec[SyntaxNode] = Vec::from_array([]);
+fn ast_node_count(value: ast::Node) -> int {
+    let mut count = 1;
+    for entry in value.fields {
+        match entry.1 {
+            ast::Value::Node(child) => {
+                count += ast_node_count(child);
+            },
+            ast::Value::Nodes(children) => for child in children {
+                count += ast_node_count(child);
+            },
+            _ => {},
+        }
+    }
+    count
+}
+
+fn lower_package_inner(sources: Vec[SourceFile], retain_paths: bool) -> PackageSyntax {
+    let mut node_count = 0;
+    for source in sources {
+        node_count += ast_node_count(source.root);
+    }
+    let nodes: Vec[SyntaxNode] = Vec::with_capacity(node_count);
     let diagnostics: Vec[LowerDiagnostic] = Vec::from_array([]);
     let files: Vec[SyntaxFile] = Vec::with_capacity(sources.len());
     let names: Vec[string] = Vec::from_array([]);
@@ -472,10 +504,26 @@ pub fn lower_package(sources: Vec[SourceFile]) -> PackageSyntax {
             imports: Vec::from_array([]),
             diagnostics,
         };
-        let root = lower_node(context, source.root, "$");
+        let root = lower_node(
+            context,
+            source.root,
+            if retain_paths {
+                "$"
+            } else {
+                ""
+            },
+        );
         files.push(SyntaxFile { id: file_id(index), name: source.name, root })
     }
     PackageSyntax { arena: SyntaxArena { nodes }, files, diagnostics }
+}
+
+pub fn lower_package(sources: Vec[SourceFile]) -> PackageSyntax {
+    lower_package_inner(sources, true)
+}
+
+pub fn lower_package_without_paths(sources: Vec[SourceFile]) -> PackageSyntax {
+    lower_package_inner(sources, false)
 }
 
 pub fn lower_file(name: string, root: ast::Node) -> PackageSyntax {

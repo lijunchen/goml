@@ -832,17 +832,19 @@ fn check_composite_literal(
             let suppress_invalid_literal = invalid_core && !invalid_type_parameter_literal;
             let track_type_cycle = state.array_length_depth > 0
                 && !state.active_type_objects.is_empty();
-            check_composite_literal_elements(
-                state,
-                scope,
-                node,
-                if suppress_invalid_literal && !track_type_cycle {
-                    state.world.invalid
-                } else {
-                    resolved
-                },
-                elements,
-            );
+            if !state.config.exported_api_only || state.initialization_depth == 0 {
+                check_composite_literal_elements(
+                    state,
+                    scope,
+                    node,
+                    if suppress_invalid_literal && !track_type_cycle {
+                        state.world.invalid
+                    } else {
+                        resolved
+                    },
+                    elements,
+                )
+            } else {};
             if resolved.value != state.world.invalid.value && !valid_literal_type
                 && !track_type_cycle
                 && !invalid_core {

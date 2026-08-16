@@ -121,6 +121,15 @@ fn incomplete_imported_package(state: CheckState, path: string, name: string) ->
     }
 }
 
+fn ignored_import(state: CheckState, path: string) -> bool {
+    for value in state.config.ignored_imports {
+        if value == path {
+            return true
+        } else {}
+    }
+    false
+}
+
 fn insert_dot_import(
     state: CheckState,
     file_scope: go_types::ScopeId,
@@ -185,7 +194,14 @@ fn bind_import(
     };
     if binding_name == "." {
         insert_dot_import(state, file_scope, package_id, node);
-        state.imports.push(ImportBinding { object, node, used: implicitly_used, ignored })
+        let index = state.imports.len();
+        state.imports.push(ImportBinding { object, node, used: implicitly_used, ignored });
+        match state.dot_import_indices[package_id.value] {
+            Some(indices) => indices.push(index),
+            None => {
+                state.dot_import_indices[package_id.value] = Vec::from_array([index]);
+            },
+        }
     } else if binding_name == "_" {} else {
         match go_types::insert(state.world, file_scope, binding_name, object) {
             Some(_) => diagnostic(
@@ -210,7 +226,8 @@ fn process_import_spec(state: CheckState, file_scope: go_types::ScopeId, node: s
             path: _,
             kind: syntax::SyntaxKind::ImportSpec { name, path, end_pos: _ },
         }) => match import_path(state, path) {
-            Some(import_path_value) => if import_path_value
+            Some(import_path_value) => if state.config.exported_api_only
+                && ignored_import(state, import_path_value) {} else if import_path_value
                 == state.world.packages[state.package_id.value].path {
                 diagnostic(state, path, "import cycle not allowed", false)
             } else if import_path_value == "C" && state.config.fake_import_c && name.is_some() {
@@ -278,21 +295,19 @@ fn mark_import_used(state: CheckState, object: go_types::ObjectId) -> unit {
 }
 
 fn mark_dot_import_used(state: CheckState, object: go_types::ObjectId) -> unit {
-    let owner = match go_types::get_object(state.world, object) {
-        Some(value) => value.owner,
-        None => Option::None,
+    let owner = if object.value >= 0 && object.value < state.world.objects.len() {
+        state.world.objects[object.value].owner
+    } else {
+        Option::None
     };
-    for index in 0..state.imports.len() {
-        match go_types::get_object(state.world, state.imports[index].object) {
-            Some(import_object) => if import_object.name == "."
-                && match (import_object.imported_package, owner) {
-                    (Some(imported), Some(owner)) => imported.value == owner.value,
-                    _ => false,
-                } {
+    match owner {
+        Some(package_id) => match state.dot_import_indices[package_id.value] {
+            Some(indices) => for index in indices {
                 state.imports[index].used = true;
-            } else {},
+            },
             None => {},
-        }
+        },
+        None => {},
     }
 }
 

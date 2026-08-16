@@ -71,7 +71,11 @@ fn parse_operand(parser: Parser) -> ast::Node {
     } else if at(parser, token::Kind::Func) {
         let function_type = parse_func_type(parser);
         if at(parser, token::Kind::Lbrace) {
-            let body = parse_block_statement(parser);
+            let body = if parser.skip_function_bodies {
+                skip_block_statement(parser)
+            } else {
+                parse_block_statement(parser)
+            };
             ast::node(
                 ast::Kind::FuncLit,
                 function_type.span.start,

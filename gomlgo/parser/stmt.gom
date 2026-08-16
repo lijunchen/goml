@@ -157,6 +157,27 @@ fn parse_block_statement(parser: Parser) -> ast::Node {
     block_node(left.start, statements, right.start)
 }
 
+fn skip_block_statement(parser: Parser) -> ast::Node {
+    let left = expect(parser, token::Kind::Lbrace);
+    let mut depth = 1;
+    let mut right = -1;
+    while depth > 0 && !eof(parser) {
+        let value = advance(parser);
+        if token::equal(value.kind, token::Kind::Lbrace) {
+            depth += 1;
+        } else if token::equal(value.kind, token::Kind::Rbrace) {
+            depth -= 1;
+            if depth == 0 {
+                right = value.start;
+            } else {}
+        } else {}
+    }
+    if right < 0 {
+        report(parser, current(parser).start, "expected '}', found 'EOF'")
+    } else {};
+    block_node(left.start, Vec::from_array([]), right)
+}
+
 fn unparenthesized_call_expression(value: ast::Node) -> ast::Node {
     if ast::kind_equal(value.kind, ast::Kind::ParenExpr) {
         match ast::get_node(value, "x") {

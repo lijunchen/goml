@@ -163,6 +163,13 @@ struct PartialInstance {
     inferred_arguments: Vec[go_types::TypeId],
 }
 
+#[derive(PartialEq, Eq, Hash)]
+struct TypeFactSourceKey {
+    file: int,
+    start: int,
+    end: int,
+}
+
 struct ActiveInstantiation {
     origin: go_types::TypeId,
     parameters: Vec[go_types::TypeParameter],
@@ -177,8 +184,9 @@ struct CheckState {
     package_id: go_types::PackageId,
     file_scopes: Vec[go_types::ScopeId],
     info: TypeInfo,
+    function_scope_ends: HashMap[int, int],
     type_fact_indices: HashMap[int, int],
-    type_fact_source_indices: HashMap[string, int],
+    type_fact_source_indices: HashMap[TypeFactSourceKey, int],
     omitted_type_fact_nodes: HashMap[int, bool],
     preserved_type_fact_nodes: HashMap[int, bool],
     retained_invalid_type_fact_nodes: HashMap[int, bool],
@@ -236,6 +244,7 @@ struct CheckState {
     target_inference_call: string,
     constraint_type_depth: int,
     imports: Vec[ImportBinding],
+    dot_import_indices: HashMap[int, Vec[int]],
     labels: Vec[LabelBinding],
     label_starts: Vec[int],
     active_labels: Vec[ActiveLabel],
@@ -265,11 +274,14 @@ struct CheckState {
     diagnostics: Vec[CheckDiagnostic],
 }
 
-fn type_fact_source_key(state: CheckState, node: syntax::NodeId) -> Option[string] {
+fn type_fact_source_key(state: CheckState, node: syntax::NodeId) -> Option[TypeFactSourceKey] {
     match syntax::get_node(state.syntax.arena, node) {
         Some(value) => Option::Some(
-            value.file.value.to_string() + ":" + value.span.start.to_string() + ":"
-                + value.span.end.to_string(),
+            TypeFactSourceKey {
+                file: value.file.value,
+                start: value.span.start,
+                end: value.span.end,
+            },
         ),
         None => Option::None,
     }
@@ -5277,79 +5289,81 @@ fn initializer_contains_object(fact: InitializerFact, object: go_types::ObjectId
     false
 }
 
-fn initializer_dependency_count(
-    state: CheckState,
-    facts: Vec[InitializerFact],
-    emitted: Vec[bool],
-    index: int,
-) -> int {
-    let dependencies: Vec[int] = Vec::from_array([]);
-    for source in facts[index].left {
-        for dependency in state.initialization_dependencies {
-            if dependency.0.value == source.value {
-                for candidate in 0..facts.len() {
-                    let mut present = false;
-                    for existing in dependencies {
-                        if existing == candidate {
-                            present = true;
-                        } else {}
-                    }
-                    if !emitted[candidate] && (candidate != index || facts[index].left.len() == 1)
-                        && initializer_contains_object(facts[candidate], dependency.1)
-                        && !present {
-                        dependencies.push(candidate)
-                    } else {}
-                }
-            } else {}
-        }
+fn initializer_dependency_count(dependencies: Vec[int], emitted: Vec[bool], cycle_dependency: bool) -> int {
+    let mut count = 0;
+    for dependency in dependencies {
+        if !emitted[dependency] {
+            count += 1;
+        } else {}
     }
-    if dependencies.is_empty() && facts[index].left.len() > 1 {
-        for cycle in state.value_cycles {
-            for object in cycle.objects {
-                if initializer_contains_object(facts[index], object) {
-                    return 1
-                } else {}
-            }
-        }
-    } else {};
-    dependencies.len()
+    if count == 0 && cycle_dependency {
+        1
+    } else {
+        count
+    }
 }
 
-fn initializer_before(state: CheckState, left: InitializerFact, right: InitializerFact) -> bool {
-    let left_node = if left.left.is_empty() {
-        left.right
-    } else {
-        match go_types::get_object(state.world, left.left[0]) {
-            Some(object) => object.node.unwrap_or(left.right),
-            None => left.right,
+fn initializer_dependency_indices(state: CheckState, facts: Vec[InitializerFact]) -> Vec[Vec[int]] {
+    let object_facts: HashMap[int, int] = HashMap::from_array([]);
+    let dependencies: Vec[Vec[int]] = Vec::from_array([]);
+    for index in 0..facts.len() {
+        dependencies.push(Vec::from_array([]));
+        for object in facts[index].left {
+            object_facts[object.value] = index;
         }
-    };
-    let right_node = if right.left.is_empty() {
-        right.right
-    } else {
-        match go_types::get_object(state.world, right.left[0]) {
-            Some(object) => object.node.unwrap_or(right.right),
-            None => right.right,
+    }
+    for dependency in state.initialization_dependencies {
+        match (object_facts[dependency.0.value], object_facts[dependency.1.value]) {
+            (Some(source), Some(target)) => if source != target || facts[source].left.len() == 1 {
+                let mut present = false;
+                for existing in dependencies[source] {
+                    if existing == target {
+                        present = true;
+                    } else {}
+                }
+                if !present {
+                    dependencies[source].push(target)
+                } else {}
+            } else {},
+            _ => {},
         }
-    };
-    let left_file = match node_file(state, left_node) {
-        Some(file) => if file.value >= 0 && file.value < state.syntax.files.len() {
-            state.syntax.files[file.value].name
+    }
+    dependencies
+}
+
+fn initializer_cycle_dependencies(state: CheckState, facts: Vec[InitializerFact]) -> Vec[bool] {
+    let cycle_objects: HashMap[int, bool] = HashMap::from_array([]);
+    for cycle in state.value_cycles {
+        for object in cycle.objects {
+            cycle_objects[object.value] = true;
+        }
+    }
+    let result: Vec[bool] = Vec::from_array([]);
+    for fact in facts {
+        let mut present = false;
+        if fact.left.len() > 1 {
+            for object in fact.left {
+                if cycle_objects.contains(object.value) {
+                    present = true;
+                } else {}
+            }
+        } else {};
+        result.push(present);
+    }
+    result
+}
+
+fn initializer_order_node(state: CheckState, fact: InitializerFact) -> syntax::NodeId {
+    if fact.left.is_empty() {
+        fact.right
+    } else {
+        let object = fact.left[0];
+        if object.value >= 0 && object.value < state.world.objects.len() {
+            state.world.objects[object.value].node.unwrap_or(fact.right)
         } else {
-            ""
-        },
-        None => "",
-    };
-    let right_file = match node_file(state, right_node) {
-        Some(file) => if file.value >= 0 && file.value < state.syntax.files.len() {
-            state.syntax.files[file.value].name
-        } else {
-            ""
-        },
-        None => "",
-    };
-    left_file < right_file
-        || (left_file == right_file && node_start(state, left_node) < node_start(state, right_node))
+            fact.right
+        }
+    }
 }
 
 fn sort_initializers(state: CheckState) -> unit {
@@ -5384,6 +5398,25 @@ fn sort_initializers(state: CheckState) -> unit {
     for _ in facts {
         emitted.push(false);
     }
+    let dependencies = initializer_dependency_indices(state, facts);
+    let cycle_dependencies = initializer_cycle_dependencies(state, facts);
+    let order_files: Vec[string] = Vec::with_capacity(facts.len());
+    let order_starts: Vec[int] = Vec::with_capacity(facts.len());
+    for fact in facts {
+        let node = initializer_order_node(state, fact);
+        if node.value >= 0 && node.value < state.syntax.arena.nodes.len() {
+            let value = state.syntax.arena.nodes[node.value];
+            if value.file.value >= 0 && value.file.value < state.syntax.files.len() {
+                order_files.push(state.syntax.files[value.file.value].name)
+            } else {
+                order_files.push("")
+            };
+            order_starts.push(value.span.start)
+        } else {
+            order_files.push("");
+            order_starts.push(-1)
+        }
+    }
     let sorted: Vec[InitializerFact] = Vec::from_array([]);
     let mut completed = 0;
     while completed < facts.len() {
@@ -5391,12 +5424,18 @@ fn sort_initializers(state: CheckState) -> unit {
         let mut selected_dependencies = -1;
         for index in 0..facts.len() {
             if !emitted[index] {
-                let dependencies = initializer_dependency_count(state, facts, emitted, index);
-                if selected < 0 || dependencies < selected_dependencies
-                    || (dependencies == selected_dependencies
-                        && initializer_before(state, facts[index], facts[selected])) {
+                let dependency_count = initializer_dependency_count(
+                    dependencies[index],
+                    emitted,
+                    cycle_dependencies[index],
+                );
+                if selected < 0 || dependency_count < selected_dependencies
+                    || (dependency_count == selected_dependencies
+                        && (order_files[index] < order_files[selected]
+                            || (order_files[index] == order_files[selected]
+                                && order_starts[index] < order_starts[selected]))) {
                     selected = index;
-                    selected_dependencies = dependencies;
+                    selected_dependencies = dependency_count;
                 } else {}
             } else {}
         }
@@ -5970,14 +6009,20 @@ fn check_value_spec(
                 if constant_declaration {
                     for name in names {
                         match declared_object(state, name) {
-                            Some(object) => evaluate_object(state, object),
+                            Some(object) => if !state.config.exported_api_only
+                                || state.world.objects[object.value].exported {
+                                evaluate_object(state, object)
+                            } else {},
                             None => {},
                         }
                     }
                 } else if type_node.is_none() {} else {
                     for name in names {
                         match declared_object(state, name) {
-                            Some(object) => evaluate_object(state, object),
+                            Some(object) => if !state.config.exported_api_only
+                                || state.world.objects[object.value].exported {
+                                evaluate_object(state, object)
+                            } else {},
                             None => {},
                         }
                     }
@@ -5985,14 +6030,20 @@ fn check_value_spec(
             } else if names.len() != values.len() && values.len() != 1 {
                 for name in names {
                     match declared_object(state, name) {
-                        Some(object) => evaluate_object(state, object),
+                        Some(object) => if !state.config.exported_api_only
+                            || state.world.objects[object.value].exported {
+                            evaluate_object(state, object)
+                        } else {},
                         None => {},
                     }
                 }
             } else {
                 for name in names {
                     match declared_object(state, name) {
-                        Some(object) => evaluate_object(state, object),
+                        Some(object) => if !state.config.exported_api_only
+                            || state.world.objects[object.value].exported {
+                            evaluate_object(state, object)
+                        } else {},
                         None => {},
                     }
                 }
@@ -6096,7 +6147,10 @@ fn check_declaration(
             None => {
                 match declared_object(state, name) {
                     Some(object) => {
-                        let _ = evaluate_function_object(state, object);
+                        if !state.config.exported_api_only
+                            || state.world.objects[object.value].exported {
+                            let _ = evaluate_function_object(state, object);
+                        } else {};
                         if !state.config.ignore_func_bodies {
                             match (go_types::get_object(state.world, object), body) {
                                 (Some(object), Some(body)) => check_function_body(
@@ -6562,7 +6616,11 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
     let source_lengths: Vec[(string, int)] = Vec::from_array([]);
     for file in input.files {
         source_lengths.push((file.name, file.source.len()));
-        let parsed = parser::parse_file_bytes(file.source);
+        let parsed = if config.exported_api_only {
+            parser::parse_file_bytes_without_bodies(file.source)
+        } else {
+            parser::parse_file_bytes(file.source)
+        };
         for value in parsed.diagnostics {
             diagnostics.push(
                 CheckDiagnostic {
@@ -6580,7 +6638,11 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
             None => {},
         }
     }
-    let syntax_package = syntax::lower_package(syntax_sources);
+    let syntax_package = if config.ignore_func_bodies && config.disable_unused_import_check {
+        syntax::lower_package_without_paths(syntax_sources)
+    } else {
+        syntax::lower_package(syntax_sources)
+    };
     for value in syntax_package.diagnostics {
         diagnostics.push(
             CheckDiagnostic {
@@ -6621,6 +6683,20 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
         )
     }
     let function_dependencies_enabled = !config.ignore_func_bodies;
+    let function_scope_ends: HashMap[int, int] = HashMap::from_array([]);
+    for candidate in syntax_package.arena.nodes {
+        match candidate.kind {
+            syntax::SyntaxKind::FuncDecl { receiver: _, name: _, type_node, body: _ } | syntax::SyntaxKind::FuncLit {
+                type_node,
+                body: _,
+            } => {
+                function_scope_ends[type_node.value] = candidate.span.end;
+            },
+            _ => {},
+        }
+    }
+    let info = empty_info();
+    info.types.reserve(syntax_package.arena.nodes.len());
     let state = CheckState {
         config,
         world,
@@ -6628,7 +6704,8 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
         sources: input.files,
         package_id,
         file_scopes,
-        info: empty_info(),
+        info,
+        function_scope_ends,
         type_fact_indices: HashMap::from_array([]),
         type_fact_source_indices: HashMap::from_array([]),
         omitted_type_fact_nodes: HashMap::from_array([]),
@@ -6688,6 +6765,7 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
         target_inference_call: "",
         constraint_type_depth: 0,
         imports: Vec::from_array([]),
+        dot_import_indices: HashMap::from_array([]),
         labels: Vec::from_array([]),
         label_starts: Vec::from_array([]),
         active_labels: Vec::from_array([]),

@@ -7,6 +7,8 @@ pub fn empty_world() -> World {
     let invalid = type_id(0);
     World {
         types: Vec::from_array([TypeData { id: invalid, kind: TypeKind::Invalid }]),
+        named_instances: HashMap::from_array([]),
+        named_type_objects: Vec::from_array([-1]),
         objects: Vec::from_array([]),
         scopes: Vec::from_array([]),
         packages: Vec::from_array([]),
@@ -18,14 +20,42 @@ pub fn empty_world() -> World {
     }
 }
 
+fn named_type_object(kind: TypeKind) -> int {
+    match kind {
+        TypeKind::Named { object, underlying: _, type_params: _, type_args: _, methods: _ } => {
+            object.value
+        },
+        _ => -1,
+    }
+}
+
+fn register_named_type(world: World, id: TypeId, object: int) -> unit {
+    match world.named_instances[object] {
+        Some(instances) => instances.push(id),
+        None => {
+            world.named_instances[object] = Vec::from_array([id]);
+        },
+    }
+}
+
 pub fn add_type(world: World, kind: TypeKind) -> TypeId {
     let id = type_id(world.types.len());
+    let object = named_type_object(kind);
     world.types.push(TypeData { id, kind });
+    world.named_type_objects.push(object);
+    if object >= 0 {
+        register_named_type(world, id, object)
+    } else {};
     id
 }
 
 pub fn set_type(world: World, id: TypeId, kind: TypeKind) -> bool {
     if id.value >= 0 && id.value < world.types.len() {
+        let object = named_type_object(kind);
+        if object >= 0 && world.named_type_objects[id.value] != object {
+            register_named_type(world, id, object)
+        } else {};
+        world.named_type_objects[id.value] = object;
         world.types[id.value] = TypeData { id, kind };
         true
     } else {

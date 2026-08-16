@@ -600,7 +600,6 @@ fn verify_type_arguments(
             if go_types::type_set_is_invalid(state.world, parameters[index].constraint) {
                 go_types::mark_invalid_type_set(state.world, constraint)
             } else {};
-            let constraint_text = constraint_diagnostic_string(state, constraint);
             let argument_node = match syntax::get_node(state.syntax.arena, node) {
                 Some(syntax::SyntaxNode {
                     id: _,
@@ -634,6 +633,7 @@ fn verify_type_arguments(
             };
             if requires_relaxed_comparable(state, arguments[index], constraint)
                 && !go_version_at_least(state, argument_node, 20) {
+                let constraint_text = constraint_diagnostic_string(state, constraint);
                 diagnostic(
                     state,
                     argument_node,
@@ -643,6 +643,7 @@ fn verify_type_arguments(
                     true,
                 )
             } else if !constraint_accepts(state, arguments[index], constraint) {
+                let constraint_text = constraint_diagnostic_string(state, constraint);
                 if go_types::type_set_is_empty(state.world, constraint) {
                     diagnostic(
                         state,

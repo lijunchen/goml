@@ -728,57 +728,64 @@ fn incomplete_type_parameters(world: World, values: Vec[TypeParameter]) -> bool 
     for value in values {
         if value.constraint.value == world.invalid.value {
             return true
-        } else {
-            match get_type(world, value.constraint) {
-                Some(TypeData { id: _, kind: TypeKind::Invalid }) | None => return true,
-                _ => {},
-            }
+        } else if value.constraint.value < 0 || value.constraint.value >= world.types.len() {
+            return true
+        } else {};
+        match world.types[value.constraint.value].kind {
+            TypeKind::Invalid => return true,
+            _ => {},
         }
     }
     false
 }
 
 pub fn refresh_named_instances(world: World, origin: TypeId) -> unit {
-    let origin_data = match get_type(world, origin) {
-        Some(TypeData {
-            id: _,
-            kind: TypeKind::Named { object, underlying, type_params, type_args: _, methods },
-        }) => (object, underlying, type_params, methods),
+    if origin.value < 0 || origin.value >= world.types.len() {
+        return
+    } else {};
+    let origin_data = match world.types[origin.value].kind {
+        TypeKind::Named { object, underlying, type_params, type_args: _, methods } => {
+            (object, underlying, type_params, methods)
+        },
         _ => return,
     };
-    let count = world.types.len();
-    for index in 0..count {
-        let instance = type_id(index);
-        match get_type(world, instance) {
-            Some(TypeData {
-                id: _,
-                kind: TypeKind::Named { object, underlying, type_params, type_args, methods: _ },
-            }) => if instance.value != origin.value && object.value == origin_data.0.value
-                && (underlying.value == world.invalid.value
-                    || match get_type(world, underlying) {
-                        Some(TypeData { id: _, kind: TypeKind::Invalid }) | None => true,
-                        _ => false,
-                    }
-                    || incomplete_type_parameters(world, type_params)) {
-                let _ = set_type(
-                    world,
-                    instance,
-                    TypeKind::Named {
-                        object,
-                        underlying: substitute(world, origin_data.1, origin_data.2, type_args),
-                        type_params: origin_data.2,
-                        type_args,
-                        methods: substitute_objects(
-                            world,
-                            origin_data.3,
-                            origin_data.2,
+    let instances = match world.named_instances[origin_data.0.value] {
+        Some(value) => value,
+        None => return,
+    };
+    for instance in instances {
+        if instance.value >= 0 && instance.value < world.types.len() {
+            match world.types[instance.value].kind {
+                TypeKind::Named { object, underlying, type_params, type_args, methods: _ } => if instance.value
+                    != origin.value
+                    && object.value == origin_data.0.value
+                    && (underlying.value == world.invalid.value || underlying.value < 0
+                        || underlying.value >= world.types.len()
+                        || match world.types[underlying.value].kind {
+                            TypeKind::Invalid => true,
+                            _ => false,
+                        }
+                        || incomplete_type_parameters(world, type_params)) {
+                    let _ = set_type(
+                        world,
+                        instance,
+                        TypeKind::Named {
+                            object,
+                            underlying: substitute(world, origin_data.1, origin_data.2, type_args),
+                            type_params: origin_data.2,
                             type_args,
-                            Vec::from_array([]),
-                        ),
-                    },
-                );
-            } else {},
-            _ => {},
-        }
+                            methods: substitute_objects(
+                                world,
+                                origin_data.3,
+                                origin_data.2,
+                                type_args,
+                                Vec::from_array([]),
+                            ),
+                        },
+                    );
+                } else {},
+                _ => {},
+            }
+        } else {}
     }
 }

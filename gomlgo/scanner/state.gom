@@ -289,8 +289,9 @@ fn switch_four(
 }
 
 pub fn scan_bytes(source: bytes::Bytes) -> ScanResult {
+    let capacity = source.len() / 3 + 1;
     let scanner = scanner_new(source.to_vec());
-    let tokens: Vec[gomlgo::token::Token] = Vec::from_array([]);
+    let tokens: Vec[gomlgo::token::Token] = Vec::with_capacity(capacity);
     let mut finished = false;
     while !finished {
         let next_token = scan_one(scanner);
@@ -298,6 +299,76 @@ pub fn scan_bytes(source: bytes::Bytes) -> ScanResult {
         tokens.push(next_token)
     }
     ScanResult { tokens, diagnostics: scanner.diagnostics }
+}
+
+pub fn leading_comments(source: bytes::Bytes) -> Vec[string] {
+    let scanner = scanner_new(source.to_vec());
+    let result: Vec[string] = Vec::from_array([]);
+    let mut finished = false;
+    while !finished {
+        let value = scan_one(scanner);
+        if gomlgo::token::equal(value.kind, gomlgo::token::Kind::Comment) {
+            result.push(value.literal)
+        } else if gomlgo::token::equal(value.kind, gomlgo::token::Kind::Package)
+            || gomlgo::token::equal(value.kind, gomlgo::token::Kind::Eof) {
+            finished = true;
+        } else {}
+    }
+    result
+}
+
+pub fn package_name_bytes(source: bytes::Bytes) -> string {
+    let scanner = scanner_new(source.to_vec());
+    let mut package_seen = false;
+    while true {
+        let value = scan_one(scanner);
+        if package_seen && gomlgo::token::equal(value.kind, gomlgo::token::Kind::Ident) {
+            return value.literal
+        } else if gomlgo::token::equal(value.kind, gomlgo::token::Kind::Package) {
+            package_seen = true;
+        } else if gomlgo::token::equal(value.kind, gomlgo::token::Kind::Eof) {
+            return ""
+        } else {}
+    }
+    ""
+}
+
+pub fn import_literals(source: bytes::Bytes) -> Vec[string] {
+    let scanner = scanner_new(source.to_vec());
+    let result: Vec[string] = Vec::from_array([]);
+    let mut package_seen = false;
+    let mut active = false;
+    let mut grouped = false;
+    let mut finished = false;
+    while !finished {
+        let value = scan_one(scanner);
+        if gomlgo::token::equal(value.kind, gomlgo::token::Kind::Eof) {
+            finished = true;
+        } else if !package_seen {
+            if gomlgo::token::equal(value.kind, gomlgo::token::Kind::Package) {
+                package_seen = true;
+            } else {}
+        } else if gomlgo::token::equal(value.kind, gomlgo::token::Kind::Import) {
+            active = true;
+        } else if active {
+            if gomlgo::token::equal(value.kind, gomlgo::token::Kind::Lparen) {
+                grouped = true;
+            } else if gomlgo::token::equal(value.kind, gomlgo::token::Kind::String) {
+                result.push(value.literal)
+            } else if gomlgo::token::equal(value.kind, gomlgo::token::Kind::Rparen) {
+                grouped = false;
+                active = false;
+            } else if gomlgo::token::equal(value.kind, gomlgo::token::Kind::Semicolon) && !grouped {
+                active = false;
+            } else {}
+        } else if gomlgo::token::equal(value.kind, gomlgo::token::Kind::Const)
+            || gomlgo::token::equal(value.kind, gomlgo::token::Kind::Type)
+            || gomlgo::token::equal(value.kind, gomlgo::token::Kind::Var)
+            || gomlgo::token::equal(value.kind, gomlgo::token::Kind::Func) {
+            finished = true;
+        } else {}
+    }
+    result
 }
 
 pub fn scan(source: string) -> ScanResult {

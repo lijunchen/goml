@@ -8,10 +8,12 @@ pub struct CheckConfig {
     pub go_version: string,
     pub sizes: go_types::TargetSizes,
     pub ignore_func_bodies: bool,
+    pub exported_api_only: bool,
     pub fake_import_c: bool,
     pub disable_unused_import_check: bool,
     pub enable_alias: bool,
     pub available_imports: Vec[AvailableImport],
+    pub ignored_imports: Vec[string],
     pub import_errors: Vec[ImportFailure],
 }
 
@@ -120,10 +122,12 @@ pub fn default_config() -> CheckConfig {
         go_version: "go1.26",
         sizes: go_types::TargetSizes { word_size: 8, max_align: 8 },
         ignore_func_bodies: false,
+        exported_api_only: false,
         fake_import_c: false,
         disable_unused_import_check: false,
         enable_alias: true,
         available_imports: Vec::from_array([]),
+        ignored_imports: Vec::from_array([]),
         import_errors: Vec::from_array([]),
     }
 }

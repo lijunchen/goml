@@ -179,6 +179,7 @@ fn load_checked_packages(config: ExecutionConfig, listed: GoListResult) -> Resul
             checker_config.go_version = checker_language_version(package_value);
             checker_config.sizes = sizes;
             checker_config.ignore_func_bodies = mode == ExecutionMode::Native;
+            checker_config.exported_api_only = mode == ExecutionMode::Native;
             checker_config.disable_unused_import_check = mode == ExecutionMode::Native;
             let checked = checker::check_package_in_world(
                 checker_config,

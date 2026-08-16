@@ -1111,17 +1111,12 @@ fn resolve_function_type(
         Some(value) => value.span.end,
         None => -1,
     };
-    for candidate in state.syntax.arena.nodes {
-        match candidate.kind {
-            syntax::SyntaxKind::FuncDecl { receiver: _, name: _, type_node, body: _ } | syntax::SyntaxKind::FuncLit {
-                type_node,
-                body: _,
-            } => if type_node.value == node.value {
-                scope_end = candidate.span.end;
-            } else {},
-            _ => {},
-        }
-    }
+    match state.function_scope_ends[node.value] {
+        Some(value) => {
+            scope_end = value;
+        },
+        None => {},
+    };
     let function_scope = go_types::add_scope(
         state.world,
         go_types::ScopeKind::Function,
