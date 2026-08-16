@@ -101,6 +101,7 @@ pub fn add_scope(
             start,
             end,
             entries: Vec::from_array([]),
+            entry_objects: HashMap::from_array([]),
             children: Vec::from_array([]),
         },
     );
@@ -205,12 +206,12 @@ pub fn insert(world: World, scope: ScopeId, name: string, object: ObjectId) -> O
     if scope.value < 0 || scope.value >= world.scopes.len() {
         return Option::Some(object)
     } else {};
-    for entry in world.scopes[scope.value].entries {
-        if entry.name == name {
-            return Option::Some(entry.object)
-        } else {}
-    }
+    match world.scopes[scope.value].entry_objects[name] {
+        Some(existing) => return Option::Some(existing),
+        None => {},
+    };
     world.scopes[scope.value].entries.push(ScopeEntry { name, object });
+    world.scopes[scope.value].entry_objects[name] = object;
     Option::None
 }
 
@@ -220,11 +221,10 @@ pub fn lookup(world: World, scope: ScopeId, name: string) -> Option[ObjectId] {
         if scope_id_value.value < 0 || scope_id_value.value >= world.scopes.len() {
             return Option::None
         } else {};
-        for entry in world.scopes[scope_id_value.value].entries {
-            if entry.name == name {
-                return Option::Some(entry.object)
-            } else {}
-        }
+        match world.scopes[scope_id_value.value].entry_objects[name] {
+            Some(object) => return Option::Some(object),
+            None => {},
+        };
         current = world.scopes[scope_id_value.value].parent;
     }
     Option::None
@@ -234,12 +234,7 @@ pub fn lookup_local(world: World, scope: ScopeId, name: string) -> Option[Object
     if scope.value < 0 || scope.value >= world.scopes.len() {
         return Option::None
     } else {};
-    for entry in world.scopes[scope.value].entries {
-        if entry.name == name {
-            return Option::Some(entry.object)
-        } else {}
-    }
-    Option::None
+    world.scopes[scope.value].entry_objects[name]
 }
 
 pub fn lookup_at(world: World, scope: ScopeId, name: string, position: int) -> Option[ObjectId] {
@@ -248,16 +243,15 @@ pub fn lookup_at(world: World, scope: ScopeId, name: string, position: int) -> O
         if scope_id_value.value < 0 || scope_id_value.value >= world.scopes.len() {
             return Option::None
         } else {};
-        for entry in world.scopes[scope_id_value.value].entries {
-            if entry.name == name {
-                match get_object(world, entry.object) {
-                    Some(object) => if object.position < 0 || object.position <= position {
-                        return Option::Some(entry.object)
-                    } else {},
-                    None => {},
-                }
-            } else {}
-        }
+        match world.scopes[scope_id_value.value].entry_objects[name] {
+            Some(entry_object) => match get_object(world, entry_object) {
+                Some(object) => if object.position < 0 || object.position <= position {
+                    return Option::Some(entry_object)
+                } else {},
+                None => {},
+            },
+            None => {},
+        };
         current = world.scopes[scope_id_value.value].parent;
     }
     Option::None
