@@ -6,6 +6,7 @@ use gomlgo::scanner;
 use gomlgo::syntax;
 use gomlgo::token;
 use gomlgo::types as go_types;
+use std::collections;
 use std::num;
 use std::text;
 
@@ -6723,6 +6724,28 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
             _ => {},
         }
     }
+    collections::sort_by(
+        effect_expression_nodes,
+        |left: syntax::NodeId, right: syntax::NodeId| {
+            let left_node = syntax_package.arena.nodes[left.value];
+            let right_node = syntax_package.arena.nodes[right.value];
+            if left_node.file.value < right_node.file.value {
+                -1
+            } else if left_node.file.value > right_node.file.value {
+                1
+            } else if left_node.span.start < right_node.span.start {
+                -1
+            } else if left_node.span.start > right_node.span.start {
+                1
+            } else if left_node.span.end < right_node.span.end {
+                -1
+            } else if left_node.span.end > right_node.span.end {
+                1
+            } else {
+                left.value - right.value
+            }
+        },
+    );
     let info = empty_info();
     info.types.reserve(syntax_package.arena.nodes.len());
     let state = CheckState {
