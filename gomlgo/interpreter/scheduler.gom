@@ -233,7 +233,9 @@ fn scheduled_interface_invocation(
         method_object.name,
     ).ok_or("dynamic interface method was not found")?;
     let function = state.program.object_functions[selection.object.value].ok_or(
-        "dynamic interface method has no interpreted body",
+        "scheduled dynamic interface method " + method_object.name + " on "
+            + go_types::format_type(state.program.world, dynamic_type)
+            + " has no interpreted body",
     )?;
     let values = Vec::from_array(
         [

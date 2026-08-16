@@ -45,6 +45,9 @@ extern fn new_native_invocation_value(call_id: int, variadic: bool) -> HostValue
 #[go_ffi("gomlgo/nativebridge", "NewValueInvocation")]
 extern fn new_native_value_invocation_value(function: HostValueRef, variadic: bool) -> HostValueRef;
 
+#[go_ffi("gomlgo/nativebridge", "MethodValue")]
+extern fn native_method_value(receiver: HostValueRef, name: string) -> HostValueRef;
+
 #[go_ffi("gomlgo/nativebridge", "InvocationAppend")]
 extern fn append_native_argument(invocation: HostValueRef, value: HostValueRef) -> unit;
 

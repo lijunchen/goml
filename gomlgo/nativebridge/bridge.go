@@ -231,6 +231,14 @@ func NewValueInvocation(function any, slice bool) any {
 	return reflect.ValueOf(&Invocation{function: ref, slice: slice, done: make(chan struct{})})
 }
 
+func MethodValue(receiver any, name string) any {
+	value, ok := receiver.(reflect.Value)
+	if !ok || !value.IsValid() {
+		return reflect.Value{}
+	}
+	return value.MethodByName(name)
+}
+
 func InvocationAppend(invocation any, value any) {
 	call, err := invocationValue(invocation)
 	if err != nil {

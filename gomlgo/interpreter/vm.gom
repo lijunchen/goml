@@ -1847,32 +1847,37 @@ fn native_argument(state: VmState, value: Value, type_id: go_types::TypeId, type
             Result::Ok(new_native_nil())
         },
         Value::Interface { static_type, dynamic_type: Some(dynamic_type), value: Some(value) } => {
-            if type_key == "interface" && native_proxy_interface(state.program.world, type_id) {
-                let queue = new_native_callback_queue(
-                    state.native_completions,
-                    state.config.max_goroutines,
-                );
-                state.native_callbacks.push(
-                    NativeCallbackBinding {
-                        queue,
-                        target: NativeCallbackTarget::Interface {
-                            receiver: Value::Interface {
-                                static_type,
-                                dynamic_type: Option::Some(dynamic_type),
-                                value: Option::Some(value),
+            let dynamic_value = value.get();
+            match dynamic_value {
+                Value::Host { type_id: _, value } => Result::Ok(value),
+                _ => if type_key == "interface"
+                    && native_proxy_interface(state.program.world, type_id) {
+                    let queue = new_native_callback_queue(
+                        state.native_completions,
+                        state.config.max_goroutines,
+                    );
+                    state.native_callbacks.push(
+                        NativeCallbackBinding {
+                            queue,
+                            target: NativeCallbackTarget::Interface {
+                                receiver: Value::Interface {
+                                    static_type,
+                                    dynamic_type: Option::Some(dynamic_type),
+                                    value: Option::Some(value),
+                                },
+                                interface_type: type_id,
                             },
-                            interface_type: type_id,
                         },
-                    },
-                );
-                Result::Ok(native_callback_token(queue).value)
-            } else {
-                native_argument(
-                    state,
-                    value.get(),
-                    dynamic_type,
-                    native_runtime_type_key(state.program.world, dynamic_type)?,
-                )
+                    );
+                    Result::Ok(native_callback_token(queue).value)
+                } else {
+                    native_argument(
+                        state,
+                        dynamic_value,
+                        dynamic_type,
+                        native_runtime_type_key(state.program.world, dynamic_type)?,
+                    )
+                },
             }
         },
         Value::Local(LocalValue::Pointer(Some(place))) => match borrow_place(state.memory, place)? {
@@ -2296,6 +2301,26 @@ fn invoke_native(state: VmState, id: bytecode::NativeCallId, arguments: Vec[Valu
     finish_native_invocation(state, id, invocation)
 }
 
+fn native_interface_method_target(state: VmState, method: go_types::ObjectId, receiver: Value) -> Option[
+    Value,
+] {
+    match receiver {
+        Value::Interface { static_type: _, dynamic_type: Some(_), value: Some(value) } => match value.get() {
+            Value::Host { type_id: _, value } => {
+                let method_object = state.program.world.objects[method.value];
+                let function = native_method_value(value, method_object.name);
+                if native_host_value_valid(function) {
+                    Option::Some(Value::Host { type_id: method_object.type_id, value: function })
+                } else {
+                    Option::None
+                }
+            },
+            _ => Option::None,
+        },
+        _ => Option::None,
+    }
+}
+
 fn prepare_call(
     state: VmState,
     frame: Frame,
@@ -2321,9 +2346,57 @@ fn prepare_call(
                 Value::Interface { static_type: _, dynamic_type: Some(_), value: Some(_) } => {},
                 _ => return Result::Err("interface method call has a nil receiver"),
             };
-            PreparedTarget::InterfaceMethod { method, receiver }
+            match native_interface_method_target(state, method, receiver) {
+                Some(target) => PreparedTarget::Dynamic(target),
+                None => PreparedTarget::InterfaceMethod { method, receiver },
+            }
         },
-        bytecode::CallTarget::Dynamic(target) => PreparedTarget::Dynamic(register(frame, target)?),
+        bytecode::CallTarget::Dynamic(target) => {
+            let target = register(frame, target)?;
+            match target {
+                Value::Local(LocalValue::Function(Some(function))) => match function.target {
+                    FunctionTarget::InterfaceMethod(method) => {
+                        let (receiver, first_argument) = match function.receiver {
+                            Some(receiver) => (receiver.get(), 0),
+                            None => if values.is_empty() {
+                                return Result::Err(
+                                    "interface method expression call has no receiver",
+                                )
+                            } else {
+                                (values[0], 1)
+                            },
+                        };
+                        match native_interface_method_target(state, method, receiver) {
+                            Some(target) => {
+                                let native_values: Vec[Value] = Vec::with_capacity(
+                                    values.len() - first_argument,
+                                );
+                                let native_types: Vec[go_types::TypeId] = Vec::with_capacity(
+                                    types.len() - first_argument,
+                                );
+                                for index in first_argument..values.len() {
+                                    native_values.push(values[index]);
+                                    native_types.push(types[index])
+                                }
+                                return Result::Ok(
+                                    PreparedCall {
+                                        target: PreparedTarget::Dynamic(target),
+                                        arguments: native_values,
+                                        argument_types: native_types,
+                                        variadic,
+                                        location,
+                                    },
+                                )
+                            },
+                            None => {},
+                        }
+                    },
+                    _ => {},
+                },
+                _ => {},
+            };
+            PreparedTarget::Dynamic(target)
+        },
         bytecode::CallTarget::Native(value) => PreparedTarget::Native(value),
         bytecode::CallTarget::NativeMethod { call, receiver } => {
             let native_values = Vec::from_array([register(frame, receiver)?]);
@@ -2403,7 +2476,9 @@ fn invoke_prepared(
                 method_object.name,
             ).ok_or("dynamic interface method was not found")?;
             let function = state.program.object_functions[selection.object.value].ok_or(
-                "dynamic interface method has no interpreted body",
+                "direct dynamic interface method " + method_object.name + " on "
+                    + go_types::format_type(state.program.world, dynamic_type)
+                    + " has no interpreted body",
             )?;
             let arguments = Vec::from_array(
                 [
@@ -2514,7 +2589,9 @@ fn invoke_prepared(
                         method_object.name,
                     ).ok_or("dynamic interface method was not found")?;
                     let function = state.program.object_functions[selection.object.value].ok_or(
-                        "dynamic interface method has no interpreted body",
+                        "function-valued dynamic interface method " + method_object.name + " on "
+                            + go_types::format_type(state.program.world, dynamic_type)
+                            + " has no interpreted body",
                     )?;
                     let arguments = Vec::from_array(
                         [
@@ -3006,20 +3083,27 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
                 },
                 None => Option::None,
             };
+            let function = match receiver {
+                Some(receiver) => native_interface_method_target(state, method, receiver.get()),
+                None => Option::None,
+            };
             set_register(
                 frame,
                 target,
-                Value::Local(
-                    LocalValue::Function(
-                        Option::Some(
-                            FunctionValue {
-                                target: FunctionTarget::InterfaceMethod(method),
-                                captures: Vec::from_array([]),
-                                receiver,
-                            },
+                match function {
+                    Some(function) => function,
+                    None => Value::Local(
+                        LocalValue::Function(
+                            Option::Some(
+                                FunctionValue {
+                                    target: FunctionTarget::InterfaceMethod(method),
+                                    captures: Vec::from_array([]),
+                                    receiver,
+                                },
+                            ),
                         ),
                     ),
-                ),
+                },
             )
         },
         bytecode::InstructionKind::RenewLocal { local } => if local.value < 0
