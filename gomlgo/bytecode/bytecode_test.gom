@@ -394,6 +394,50 @@ fn rejects_runtime_types_with_unsubstituted_type_parameters() -> unit {
 }
 
 #[test]
+fn detects_type_parameters_after_recursive_type_edges() -> unit {
+    let program = minimal_program();
+    let function = program.functions[0];
+    let recursive = go_types::add_type(program.world, go_types::TypeKind::Invalid);
+    let pointer = go_types::add_type(
+        program.world,
+        go_types::TypeKind::Pointer { element: recursive },
+    );
+    let parameter = go_types::add_type(
+        program.world,
+        go_types::TypeKind::TypeParam {
+            object: function.object,
+            constraint: program.world.invalid,
+            index: 0,
+        },
+    );
+    testing::assert(
+        go_types::set_type(
+            program.world,
+            recursive,
+            go_types::TypeKind::Tuple {
+                variables: Vec::from_array(
+                    [
+                        go_types::Variable {
+                            name: "recursive",
+                            owner: Option::None,
+                            type_id: pointer,
+                        },
+                        go_types::Variable {
+                            name: "parameter",
+                            owner: Option::None,
+                            type_id: parameter,
+                        },
+                    ],
+                ),
+            },
+        ),
+    );
+    program.functions[0].register_types.push(recursive);
+    let diagnostics = verify(program);
+    testing::assert(contains_message(diagnostics, "register type contains a type parameter"))
+}
+
+#[test]
 fn lowers_typed_functions_assignments_and_control_flow() -> unit {
     let file = path::join(execution_fixture("control"), "main.go");
     let loaded = testing::expect_ok(
