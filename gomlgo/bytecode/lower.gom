@@ -341,8 +341,11 @@ fn collect_function_sources(
                                         type_node,
                                         body: Some(body),
                                     },
-                                }) => match execution::require_definition(package_value.index, name) {
-                                    Ok(fact) => match fact.object {
+                                }) => match execution::require_definition_index(
+                                    package_value.index,
+                                    name,
+                                ) {
+                                    Ok(fact_index) => match package_value.index.definitions[fact_index].object {
                                         Some(object) => if object.value >= 0
                                             && object.value < object_functions.len() {
                                             if object_functions[object.value].is_some() {
@@ -437,11 +440,12 @@ fn collect_function_sources(
                         continue
                     };
                     match node.kind {
-                        syntax::SyntaxKind::FuncLit { type_node, body } => match execution::require_node_type(
+                        syntax::SyntaxKind::FuncLit { type_node, body } => match execution::require_node_type_index(
                             package_value.index,
                             node.id,
                         ) {
-                            Ok(fact) => {
+                            Ok(fact_index) => {
+                                let fact = package_value.index.types[fact_index];
                                 let function = function_id(-1);
                                 let object = go_types::add_object(
                                     program.world,
@@ -789,7 +793,7 @@ fn selection_receiver_type(builder: FunctionBuilder, selection: checker::Selecti
 }
 
 fn node_fact(builder: FunctionBuilder, node: syntax::NodeId) -> Result[checker::TypeFact, string] {
-    let fact = execution::require_node_type(builder.index, node)?;
+    let fact = builder.index.types[execution::require_node_type_index(builder.index, node)?];
     Result::Ok(
         checker::TypeFact {
             node: fact.node,
@@ -811,8 +815,8 @@ fn node_type(builder: FunctionBuilder, node: syntax::NodeId) -> Result[go_types:
     match node_fact(builder, node) {
         Ok(value) => Result::Ok(value.type_id),
         Err(message) => {
-            let definition_type = match execution::require_definition(builder.index, node) {
-                Ok(value) => match value.object {
+            let definition_type = match execution::require_definition_index(builder.index, node) {
+                Ok(fact_index) => match builder.index.definitions[fact_index].object {
                     Some(object) => object_type(builder, object),
                     None => Option::None,
                 },
@@ -821,8 +825,8 @@ fn node_type(builder: FunctionBuilder, node: syntax::NodeId) -> Result[go_types:
             match definition_type {
                 Some(value) => Result::Ok(value),
                 None => {
-                    let use_type = match execution::require_use(builder.index, node) {
-                        Ok(value) => match value.object {
+                    let use_type = match execution::require_use_index(builder.index, node) {
+                        Ok(fact_index) => match builder.index.uses[fact_index].object {
                             Some(object) => object_type(builder, object),
                             None => Option::None,
                         },
@@ -845,11 +849,13 @@ fn definition_object(builder: FunctionBuilder, node: syntax::NodeId) -> Result[
     Option[go_types::ObjectId],
     string,
 ] {
-    Result::Ok(execution::require_definition(builder.index, node)?.object)
+    Result::Ok(
+        builder.index.definitions[execution::require_definition_index(builder.index, node)?].object,
+    )
 }
 
 fn use_object(builder: FunctionBuilder, node: syntax::NodeId) -> Result[go_types::ObjectId, string] {
-    match execution::require_use(builder.index, node)?.object {
+    match builder.index.uses[execution::require_use_index(builder.index, node)?].object {
         Some(object) => Result::Ok(object),
         None => Result::Err("use fact has no object for node " + node.value.to_string()),
     }
@@ -1188,8 +1194,8 @@ fn lower_place(builder: FunctionBuilder, node: syntax::NodeId) -> Result[Option[
         syntax::SyntaxKind::Ident { name_pos: _, name } => if name == "_" {
             Result::Ok(Option::None)
         } else {
-            let object = match execution::require_use(builder.index, node) {
-                Ok(fact) => fact.object,
+            let object = match execution::require_use_index(builder.index, node) {
+                Ok(fact_index) => builder.index.uses[fact_index].object,
                 Err(_) => definition_object(builder, node)?,
             }.ok_or("identifier has no variable object")?;
             if object.value < 0 || object.value >= builder.world.objects.len() {
@@ -1443,8 +1449,8 @@ fn source_object(builder: FunctionBuilder, object: go_types::ObjectId) -> go_typ
         None => {},
     };
     match value.node {
-        Some(node) => match execution::require_definition(builder.index, node) {
-            Ok(fact) => fact.object.unwrap_or(object),
+        Some(node) => match execution::require_definition_index(builder.index, node) {
+            Ok(fact_index) => builder.index.definitions[fact_index].object.unwrap_or(object),
             Err(_) => object,
         },
         None => object,

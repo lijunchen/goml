@@ -340,19 +340,44 @@ fn valid_index_node(index: TypeInfoIndex, node: syntax::NodeId) -> bool {
     node.value >= 0 && node.value < index.node_count
 }
 
+fn require_fact_index(
+    kind: string,
+    index: TypeInfoIndex,
+    node: syntax::NodeId,
+    indices: Vec[int32],
+    fact_count: int,
+) -> Result[int, string] {
+    if !valid_index_node(index, node) {
+        Result::Err(missing_fact(kind, index, node))
+    } else {
+        let fact_index = indices[node.value].to_int();
+        if fact_index < 0 || fact_index >= fact_count {
+            Result::Err(missing_fact(kind, index, node))
+        } else {
+            Result::Ok(fact_index)
+        }
+    }
+}
+
+pub fn require_node_type_index(index: TypeInfoIndex, node: syntax::NodeId) -> Result[int, string] {
+    require_fact_index("type", index, node, index.type_indices, index.types.len())
+}
+
+pub fn require_definition_index(index: TypeInfoIndex, node: syntax::NodeId) -> Result[int, string] {
+    require_fact_index("definition", index, node, index.definition_indices, index.definitions.len())
+}
+
+pub fn require_use_index(index: TypeInfoIndex, node: syntax::NodeId) -> Result[int, string] {
+    require_fact_index("use", index, node, index.use_indices, index.uses.len())
+}
+
 pub fn require_node_type(index: TypeInfoIndex, node: syntax::NodeId) -> Result[
     checker::TypeFact,
     string,
 ] {
-    if !valid_index_node(index, node) {
-        Result::Err(missing_fact("type", index, node))
-    } else {
-        let fact_index = index.type_indices[node.value].to_int();
-        if fact_index < 0 || fact_index >= index.types.len() {
-            Result::Err(missing_fact("type", index, node))
-        } else {
-            Result::Ok(index.types[fact_index])
-        }
+    match require_node_type_index(index, node) {
+        Ok(fact_index) => Result::Ok(index.types[fact_index]),
+        Err(message) => Result::Err(message),
     }
 }
 
@@ -360,15 +385,9 @@ pub fn require_definition(index: TypeInfoIndex, node: syntax::NodeId) -> Result[
     checker::ObjectFact,
     string,
 ] {
-    if !valid_index_node(index, node) {
-        Result::Err(missing_fact("definition", index, node))
-    } else {
-        let fact_index = index.definition_indices[node.value].to_int();
-        if fact_index < 0 || fact_index >= index.definitions.len() {
-            Result::Err(missing_fact("definition", index, node))
-        } else {
-            Result::Ok(index.definitions[fact_index])
-        }
+    match require_definition_index(index, node) {
+        Ok(fact_index) => Result::Ok(index.definitions[fact_index]),
+        Err(message) => Result::Err(message),
     }
 }
 
@@ -376,15 +395,9 @@ pub fn require_use(index: TypeInfoIndex, node: syntax::NodeId) -> Result[
     checker::ObjectFact,
     string,
 ] {
-    if !valid_index_node(index, node) {
-        Result::Err(missing_fact("use", index, node))
-    } else {
-        let fact_index = index.use_indices[node.value].to_int();
-        if fact_index < 0 || fact_index >= index.uses.len() {
-            Result::Err(missing_fact("use", index, node))
-        } else {
-            Result::Ok(index.uses[fact_index])
-        }
+    match require_use_index(index, node) {
+        Ok(fact_index) => Result::Ok(index.uses[fact_index]),
+        Err(message) => Result::Err(message),
     }
 }
 
