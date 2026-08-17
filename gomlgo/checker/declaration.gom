@@ -6858,11 +6858,6 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
             },
         )
     }
-    let node_count = syntax_package.arena.nodes.len();
-    world.types.reserve(node_count / 3);
-    world.named_type_objects.reserve(node_count / 3);
-    world.objects.reserve(node_count / 7);
-    world.scopes.reserve(node_count / 18);
     let package_name = first_package_name(syntax_package);
     let package_id = go_types::add_package(world, input.path, package_name, world.universe, false);
     let package_scope = world.packages[package_id.value].scope;
@@ -6957,10 +6952,7 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
         },
     );
     let info = empty_info();
-    info.types.reserve(node_count);
-    info.defs.reserve(node_count / 10);
-    info.uses.reserve(node_count * 3 / 8);
-    info.scopes.reserve(node_count / 18);
+    info.types.reserve(syntax_package.arena.nodes.len());
     let state = CheckState {
         config,
         world,
