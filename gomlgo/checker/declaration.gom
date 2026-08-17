@@ -301,16 +301,12 @@ struct CheckState {
     diagnostics: Vec[CheckDiagnostic],
 }
 
-fn type_fact_source_key(state: CheckState, node: syntax::NodeId) -> Option[TypeFactSourceKey] {
-    match syntax::get_node(state.syntax.arena, node) {
-        Some(value) => Option::Some(
-            TypeFactSourceKey {
-                file: value.file.value.to_int32(),
-                start: value.span.start.to_int32(),
-                end: value.span.end.to_int32(),
-            },
-        ),
-        None => Option::None,
+fn type_fact_source_key(state: CheckState, node: syntax::NodeId) -> TypeFactSourceKey {
+    let value = syntax::node_at(state.syntax.arena, node.value);
+    TypeFactSourceKey {
+        file: value.file.value.to_int32(),
+        start: value.span.start.to_int32(),
+        end: value.span.end.to_int32(),
     }
 }
 
@@ -386,10 +382,10 @@ fn set_type_fact_index(state: CheckState, node: syntax::NodeId, index: int) -> u
 
 fn index_type_fact(state: CheckState, node: syntax::NodeId, index: int) -> unit {
     set_type_fact_index(state, node, index);
-    match type_fact_source_key(state, node) {
-        Some(key) => insert_type_fact_source(state.type_fact_source_indices, key, index),
-        None => {},
-    }
+    let key = type_fact_source_key(state, node);
+    if key.file >= 0 {
+        insert_type_fact_source(state.type_fact_source_indices, key, index);
+    } else {}
 }
 
 fn record_scope_fact(state: CheckState, node: syntax::NodeId, scope: go_types::ScopeId) -> unit {
@@ -430,9 +426,11 @@ fn find_scope_fact(state: CheckState, node: syntax::NodeId) -> Option[ScopeFact]
 }
 
 fn source_type_fact_index(state: CheckState, node: syntax::NodeId) -> Option[int] {
-    match type_fact_source_key(state, node) {
-        Some(key) => find_type_fact_source(state.type_fact_source_indices, key),
-        None => Option::None,
+    let key = type_fact_source_key(state, node);
+    if key.file >= 0 {
+        find_type_fact_source(state.type_fact_source_indices, key)
+    } else {
+        Option::None
     }
 }
 
