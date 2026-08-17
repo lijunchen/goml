@@ -521,43 +521,31 @@ fn copy_slice(value: SliceValue) -> SliceValue {
 
 pub fn copy_value(value: Value) -> Value {
     match value {
-        Value::Local(local) => Value::Local(
-            match local {
-                LocalValue::Unit => LocalValue::Unit,
-                LocalValue::Bool(value) => LocalValue::Bool(value),
-                LocalValue::Integer { bits, width, signed } => {
-                    LocalValue::Integer { bits, width, signed }
+        Value::Local(LocalValue::Pointer(value)) => Value::Local(
+            LocalValue::Pointer(
+                match value {
+                    Some(place) => Option::Some(copy_place(place)),
+                    None => Option::None,
                 },
-                LocalValue::Float { bits, width } => LocalValue::Float { bits, width },
-                LocalValue::Complex { real, imaginary, width } => {
-                    LocalValue::Complex { real, imaginary, width }
+            ),
+        ),
+        Value::Local(LocalValue::Slice(value)) => {
+            Value::Local(LocalValue::Slice(copy_slice(value)))
+        },
+        Value::Local(LocalValue::Aggregate { type_id, elements }) => {
+            let copied: Vec[Value] = Vec::with_capacity(elements.len());
+            for element in elements {
+                copied.push(copy_value(element))
+            }
+            Value::Local(LocalValue::Aggregate { type_id, elements: copied })
+        },
+        Value::Local(LocalValue::Function(value)) => Value::Local(
+            LocalValue::Function(
+                match value {
+                    Some(function) => Option::Some(copy_function(function)),
+                    None => Option::None,
                 },
-                LocalValue::String(value) => LocalValue::String(
-                    bytes::Bytes::from_vec(value.to_vec()),
-                ),
-                LocalValue::Pointer(value) => LocalValue::Pointer(
-                    match value {
-                        Some(place) => Option::Some(copy_place(place)),
-                        None => Option::None,
-                    },
-                ),
-                LocalValue::Slice(value) => LocalValue::Slice(copy_slice(value)),
-                LocalValue::Aggregate { type_id, elements } => {
-                    let copied: Vec[Value] = Vec::with_capacity(elements.len());
-                    for element in elements {
-                        copied.push(copy_value(element))
-                    }
-                    LocalValue::Aggregate { type_id, elements: copied }
-                },
-                LocalValue::Map(value) => LocalValue::Map(value),
-                LocalValue::Channel(value) => LocalValue::Channel(value),
-                LocalValue::Function(value) => LocalValue::Function(
-                    match value {
-                        Some(function) => Option::Some(copy_function(function)),
-                        None => Option::None,
-                    },
-                ),
-            },
+            ),
         ),
         Value::Host { type_id, value } => {
             Value::Host { type_id, value: clone_host_value(value) }
@@ -570,6 +558,7 @@ pub fn copy_value(value: Value) -> Value {
                 None => Option::None,
             },
         },
+        value => value,
     }
 }
 
