@@ -3692,6 +3692,10 @@ fn resolve_array_length(state: CheckState, scope: go_types::ScopeId, length_node
     }
 }
 
+fn valid_world_object(state: CheckState, object: go_types::ObjectId) -> bool {
+    object.value >= 0 && object.value < state.world.objects.len()
+}
+
 fn resolve_type(state: CheckState, scope: go_types::ScopeId, node: syntax::NodeId) -> go_types::TypeId {
     if state.diagnostic_override.is_none() {
         match recorded_type_fact(state, node) {
@@ -3750,8 +3754,9 @@ fn resolve_type(state: CheckState, scope: go_types::ScopeId, node: syntax::NodeI
                     record_invalid_type_expression(state, node);
                     state.world.invalid
                 } else if !evaluate_type_object(state, object_id) {
-                    match go_types::get_object(state.world, object_id) {
-                        Some(object) => if object.kind == go_types::ObjectKind::TypeName
+                    if valid_world_object(state, object_id) {
+                        let object = state.world.objects[object_id.value];
+                        if object.kind == go_types::ObjectKind::TypeName
                             && object.type_id.value != state.world.invalid.value {
                             mark_dot_import_used(state, object_id);
                             record_use(state, node, object_id);
@@ -3781,12 +3786,14 @@ fn resolve_type(state: CheckState, scope: go_types::ScopeId, node: syntax::NodeI
                             }
                         } else {
                             state.world.invalid
-                        },
-                        None => state.world.invalid,
+                        }
+                    } else {
+                        state.world.invalid
                     }
                 } else {
-                    match go_types::get_object(state.world, object_id) {
-                        Some(object) => if object.kind == go_types::ObjectKind::TypeName {
+                    if valid_world_object(state, object_id) {
+                        let object = state.world.objects[object_id.value];
+                        if object.kind == go_types::ObjectKind::TypeName {
                             mark_dot_import_used(state, object_id);
                             record_use(state, node, object_id);
                             record_type_expression(state, node, object.type_id);
@@ -3854,11 +3861,10 @@ fn resolve_type(state: CheckState, scope: go_types::ScopeId, node: syntax::NodeI
                             } else {};
                             record_type_expression(state, node, state.world.invalid);
                             state.world.invalid
-                        },
-                        None => {
-                            diagnostic(state, node, "invalid type object " + name, false);
-                            state.world.invalid
-                        },
+                        }
+                    } else {
+                        diagnostic(state, node, "invalid type object " + name, false);
+                        state.world.invalid
                     }
                 },
                 None => {
