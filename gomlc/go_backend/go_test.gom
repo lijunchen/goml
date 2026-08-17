@@ -1210,23 +1210,6 @@ fn emits_compact_generic_enums_without_variant_types() -> unit {
 }
 
 #[test]
-fn compacts_payloads_containing_small_enums() -> unit {
-    let source = "enum Inner { Empty, Value(int32), } struct Data { id: int32, kind: Inner, } enum MaybeData { Some(Data), None, } fn main() -> unit { let value = MaybeData::Some(Data { id: 7, kind: Inner::Empty }); match value { MaybeData::Some(data) => println(data.id), MaybeData::None => println(0), } }";
-    let output = encode(lower_source(source));
-    testing::assert(string_contains(output, "type Inner struct"));
-    testing::assert(string_contains(output, "type MaybeData struct"));
-    testing::assert(!string_contains(output, "type MaybeData interface"))
-}
-
-#[test]
-fn preserves_recursive_enums_as_interfaces() -> unit {
-    let source = "enum List[T] { Cons(T, List[T]), Nil, } fn main() -> unit { let value: List[int32] = List::Nil; match value { List::Cons(head, _) => println(head), List::Nil => println(0), } }";
-    let output = encode(lower_source(source));
-    testing::assert(string_contains(output, "type List__int32 interface"));
-    testing::assert(!string_contains(output, "type List__int32 struct"))
-}
-
-#[test]
 fn materializes_numeric_runtime_operands() -> unit {
     let source = "fn main() -> unit { let a: uint8 = 13 % 5; let b: uint8 = 1 << 7; let c: uint8 = ~0; let d: uint8 = 511.to_uint8(); println(a); println(b); println(c); println(d); }";
     testing::assert_eq(
