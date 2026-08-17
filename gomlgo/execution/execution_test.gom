@@ -215,7 +215,14 @@ fn indexes_type_facts_per_package_and_reports_missing_facts() -> unit {
     testing::assert(main.index.package_id.value == main.package_id.value);
     testing::assert(helper.index.package_id.value == helper.package_id.value);
     testing::assert(main.index.package_id.value != helper.index.package_id.value);
-    testing::assert(require_node_type(main.index, syntax::node_id(-1)).is_err())
+    testing::assert(require_node_type(main.index, syntax::node_id(-1)).is_err());
+    testing::assert(require_node_type_index(main.index, syntax::node_id(-1)).is_err());
+    let first = main.info.types[0];
+    let fact_index = testing::expect_ok(
+        require_node_type_index(main.index, first.node),
+        "type fact index is missing",
+    );
+    testing::assert(main.index.types[fact_index].node.value == first.node.value)
 }
 
 #[test]
