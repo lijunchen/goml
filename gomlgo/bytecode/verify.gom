@@ -57,19 +57,19 @@ fn type_contains_parameter_inner(
         return false
     } else {};
     visited.push(type_id.value);
-    match go_types::get_type(program.world, type_id) {
-        Some(go_types::TypeData {
+    match go_types::type_data(program.world, type_id) {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::TypeParam { object: _, constraint: _, index: _ },
-        }) => true,
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Array { length: _, element } } | go_types::TypeData {
+        } => true,
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Array { length: _, element } } | go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Slice { element } | go_types::TypeKind::Pointer { element } | go_types::TypeKind::Chan {
                 direction: _,
                 element,
             },
-        }) => type_contains_parameter_inner(program, element, visited),
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } }) => {
+        } => type_contains_parameter_inner(program, element, visited),
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } } => {
             for field in fields {
                 if type_contains_parameter_inner(program, field.variable.type_id, visited) {
                     return true
@@ -77,7 +77,7 @@ fn type_contains_parameter_inner(
             }
             false
         },
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } } => {
             for variable in variables {
                 if type_contains_parameter_inner(program, variable.type_id, visited) {
                     return true
@@ -85,7 +85,7 @@ fn type_contains_parameter_inner(
             }
             false
         },
-        Some(go_types::TypeData {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Signature {
                 receiver,
@@ -95,7 +95,7 @@ fn type_contains_parameter_inner(
                 results,
                 variadic: _,
             },
-        }) => {
+        } => {
             if !receiver_type_params.is_empty() || !type_params.is_empty() {
                 return true
             } else {};
@@ -108,10 +108,10 @@ fn type_contains_parameter_inner(
             type_contains_parameter_inner(program, params, visited)
                 || type_contains_parameter_inner(program, results, visited)
         },
-        Some(go_types::TypeData {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Interface { methods, embeddeds, comparable: _, implicit: _ },
-        }) => {
+        } => {
             for method in methods {
                 if valid_object(program, method)
                     && type_contains_parameter_inner(
@@ -129,11 +129,11 @@ fn type_contains_parameter_inner(
             }
             false
         },
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Map { key, value } }) => {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Map { key, value } } => {
             type_contains_parameter_inner(program, key, visited)
                 || type_contains_parameter_inner(program, value, visited)
         },
-        Some(go_types::TypeData {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Named {
                 object: _,
@@ -142,7 +142,7 @@ fn type_contains_parameter_inner(
                 type_args,
                 methods: _,
             },
-        }) => {
+        } => {
             if !type_params.is_empty() && type_args.is_empty() {
                 return true
             } else {};
@@ -153,10 +153,10 @@ fn type_contains_parameter_inner(
             }
             type_contains_parameter_inner(program, underlying, visited)
         },
-        Some(go_types::TypeData {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Alias { object: _, rhs, type_params, type_args },
-        }) => {
+        } => {
             if !type_params.is_empty() && type_args.is_empty() {
                 return true
             } else {};
@@ -167,7 +167,7 @@ fn type_contains_parameter_inner(
             }
             type_contains_parameter_inner(program, rhs, visited)
         },
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Union { terms } }) => {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Union { terms } } => {
             for term in terms {
                 if type_contains_parameter_inner(program, term.type_id, visited) {
                     return true
@@ -345,8 +345,8 @@ fn verified_register_type(function: BytecodeFunction, register: RegisterId) -> O
 fn verified_tuple_types(program: BytecodeProgram, type_id: go_types::TypeId) -> Option[
     Vec[go_types::TypeId],
 ] {
-    match go_types::get_type(program.world, type_id) {
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => {
+    match go_types::type_data(program.world, type_id) {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } } => {
             let result: Vec[go_types::TypeId] = Vec::with_capacity(variables.len());
             for variable in variables {
                 result.push(variable.type_id)
@@ -360,8 +360,8 @@ fn verified_tuple_types(program: BytecodeProgram, type_id: go_types::TypeId) -> 
 fn verified_signature_shape(program: BytecodeProgram, type_id: go_types::TypeId) -> Option[
     SignatureShape,
 ] {
-    match go_types::get_type(program.world, go_types::underlying(program.world, type_id)) {
-        Some(go_types::TypeData {
+    match go_types::type_data(program.world, go_types::underlying(program.world, type_id)) {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Signature {
                 receiver,
@@ -371,7 +371,7 @@ fn verified_signature_shape(program: BytecodeProgram, type_id: go_types::TypeId)
                 results,
                 variadic,
             },
-        }) => match (verified_tuple_types(program, params), verified_tuple_types(program, results)) {
+        } => match (verified_tuple_types(program, params), verified_tuple_types(program, results)) {
             (Some(parameters), Some(results)) => Option::Some(
                 SignatureShape {
                     receiver: match receiver {
@@ -392,8 +392,8 @@ fn verified_signature_shape(program: BytecodeProgram, type_id: go_types::TypeId)
 fn verified_map_types(program: BytecodeProgram, type_id: go_types::TypeId) -> Option[
     (go_types::TypeId, go_types::TypeId),
 ] {
-    match go_types::get_type(program.world, go_types::underlying(program.world, type_id)) {
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Map { key, value } }) => {
+    match go_types::type_data(program.world, go_types::underlying(program.world, type_id)) {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Map { key, value } } => {
             Option::Some((key, value))
         },
         _ => Option::None,
@@ -403,8 +403,8 @@ fn verified_map_types(program: BytecodeProgram, type_id: go_types::TypeId) -> Op
 fn verified_pointer_element(program: BytecodeProgram, type_id: go_types::TypeId) -> Option[
     go_types::TypeId,
 ] {
-    match go_types::get_type(program.world, go_types::underlying(program.world, type_id)) {
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } }) => {
+    match go_types::type_data(program.world, go_types::underlying(program.world, type_id)) {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } } => {
             Option::Some(element)
         },
         _ => Option::None,
@@ -610,8 +610,8 @@ fn check_call_target(
 fn verified_slice_element(program: BytecodeProgram, type_id: go_types::TypeId) -> Option[
     go_types::TypeId,
 ] {
-    match go_types::get_type(program.world, go_types::underlying(program.world, type_id)) {
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element } }) => {
+    match go_types::type_data(program.world, go_types::underlying(program.world, type_id)) {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element } } => {
             Option::Some(element)
         },
         _ => Option::None,
@@ -621,8 +621,8 @@ fn verified_slice_element(program: BytecodeProgram, type_id: go_types::TypeId) -
 fn verified_channel_element(program: BytecodeProgram, type_id: go_types::TypeId) -> Option[
     go_types::TypeId,
 ] {
-    match go_types::get_type(program.world, go_types::underlying(program.world, type_id)) {
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Chan { direction: _, element } }) => Option::Some(
+    match go_types::type_data(program.world, go_types::underlying(program.world, type_id)) {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Chan { direction: _, element } } => Option::Some(
             element,
         ),
         _ => Option::None,
@@ -632,8 +632,8 @@ fn verified_channel_element(program: BytecodeProgram, type_id: go_types::TypeId)
 fn verified_channel_type(program: BytecodeProgram, type_id: go_types::TypeId) -> Option[
     (int, go_types::TypeId),
 ] {
-    match go_types::get_type(program.world, go_types::underlying(program.world, type_id)) {
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Chan { direction, element } }) => Option::Some(
+    match go_types::type_data(program.world, go_types::underlying(program.world, type_id)) {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Chan { direction, element } } => Option::Some(
             (direction, element),
         ),
         _ => Option::None,
