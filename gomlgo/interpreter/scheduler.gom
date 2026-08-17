@@ -86,6 +86,13 @@ struct WaitingOperation {
     case_index: int,
 }
 
+struct ScheduledInstruction {
+    instructions: Vec[bytecode::Instruction],
+    index: int,
+    present: bool,
+    message: string,
+}
+
 enum SendAttempt {
     Sent,
     Blocked,
@@ -354,23 +361,40 @@ fn scheduled_call(state: VmState, call: PreparedCall) -> Result[Option[Scheduled
     }
 }
 
-fn scheduled_current_instruction(goroutine: ScheduledGoroutine) -> Result[
-    Option[bytecode::Instruction],
-    string,
-] {
-    let scheduled = scheduled_top(goroutine)?;
+fn invalid_scheduled_instruction(message: string) -> ScheduledInstruction {
+    ScheduledInstruction { instructions: Vec::from_array([]), index: -1, present: false, message }
+}
+
+fn scheduled_instruction(scheduled: ScheduledFrame) -> ScheduledInstruction {
     let block_id = scheduled.frame.block.get();
     if block_id.value < 0 || block_id.value >= scheduled.frame.blocks.len() {
-        return Result::Err("invalid current block " + block_id.value.to_string())
+        return invalid_scheduled_instruction("invalid current block " + block_id.value.to_string())
     } else {};
     let block = scheduled.frame.blocks[block_id.value];
     let index = scheduled.instruction.get();
     if index < 0 || index > block.instructions.len() {
-        Result::Err("invalid current instruction " + index.to_string())
-    } else if index == block.instructions.len() {
-        Result::Ok(Option::None)
+        invalid_scheduled_instruction("invalid current instruction " + index.to_string())
     } else {
-        Result::Ok(Option::Some(block.instructions[index]))
+        ScheduledInstruction {
+            instructions: block.instructions,
+            index,
+            present: index < block.instructions.len(),
+            message: "",
+        }
+    }
+}
+
+fn scheduled_current_instruction(scheduled: ScheduledFrame) -> Result[
+    Option[bytecode::Instruction],
+    string,
+] {
+    let current = scheduled_instruction(scheduled);
+    if current.message != "" {
+        Result::Err(current.message)
+    } else if current.present {
+        Result::Ok(Option::Some(current.instructions[current.index]))
+    } else {
+        Result::Ok(Option::None)
     }
 }
 
@@ -408,7 +432,7 @@ fn instruction_channel_matches(
     choose: bool,
 ) -> Result[int, string] {
     let scheduled = scheduled_top(goroutine)?;
-    match scheduled_current_instruction(goroutine)? {
+    match scheduled_current_instruction(scheduled)? {
         Some(bytecode::Instruction {
             kind: bytecode::InstructionKind::Send { channel, value: _ },
             location: _,
@@ -537,7 +561,7 @@ fn complete_waiting_receive(scheduler: Scheduler, waiting: WaitingOperation, val
 ] {
     let goroutine = scheduler.goroutines[waiting.goroutine];
     let scheduled = scheduled_top(goroutine)?;
-    match scheduled_current_instruction(goroutine)? {
+    match scheduled_current_instruction(scheduled)? {
         Some(bytecode::Instruction {
             kind: bytecode::InstructionKind::Receive { value: target, ok, channel: _ },
             location: _,
@@ -588,7 +612,7 @@ fn complete_waiting_receive(scheduler: Scheduler, waiting: WaitingOperation, val
 fn complete_waiting_send(scheduler: Scheduler, waiting: WaitingOperation) -> Result[Value, string] {
     let goroutine = scheduler.goroutines[waiting.goroutine];
     let scheduled = scheduled_top(goroutine)?;
-    match scheduled_current_instruction(goroutine)? {
+    match scheduled_current_instruction(scheduled)? {
         Some(bytecode::Instruction {
             kind: bytecode::InstructionKind::Send { channel: _, value },
             location: _,
@@ -1874,28 +1898,30 @@ fn execute_scheduled_step(scheduler: Scheduler, goroutine_index: int) -> Result[
         None => {},
     };
     let scheduled = scheduled_top(goroutine)?;
-    match scheduled_current_instruction(goroutine)? {
-        Some(instruction) => execute_scheduled_instruction(
+    let current = scheduled_instruction(scheduled);
+    if current.message != "" {
+        Result::Err(current.message)
+    } else if current.present {
+        execute_scheduled_instruction(
             scheduler,
             goroutine_index,
             scheduled,
-            instruction,
-        ),
-        None => {
-            let function = scheduler.state.program.functions[scheduled.frame.function.value];
-            let block = function.blocks[scheduled.frame.block.get().value];
-            match execute_terminator(scheduler.state, scheduled.frame, block.terminator)? {
-                FunctionControl::Jump { target, arguments } => {
-                    enter_block(function, scheduled.frame, target, arguments)?;
-                    scheduled.instruction.set(0);
-                    scheduled.waiting.set(false);
-                    Result::Ok(Option::None)
-                },
-                FunctionControl::Return(values) => {
-                    return_scheduled(scheduler, goroutine_index, values)
-                },
-            }
-        },
+            current.instructions[current.index],
+        )
+    } else {
+        let function = scheduler.state.program.functions[scheduled.frame.function.value];
+        let block = function.blocks[scheduled.frame.block.get().value];
+        match execute_terminator(scheduler.state, scheduled.frame, block.terminator)? {
+            FunctionControl::Jump { target, arguments } => {
+                enter_block(function, scheduled.frame, target, arguments)?;
+                scheduled.instruction.set(0);
+                scheduled.waiting.set(false);
+                Result::Ok(Option::None)
+            },
+            FunctionControl::Return(values) => {
+                return_scheduled(scheduler, goroutine_index, values)
+            },
+        }
     }
 }
 
