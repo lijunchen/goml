@@ -1321,7 +1321,7 @@ fn complete_method_declarations(state: CheckState) -> unit {
                     for entry in state.world.scopes[pending.resolution.scope.value].entries {
                         let _ = go_types::insert(state.world, scope, entry.name, entry.object);
                     }
-                    state.world.scopes[scope.value].parent = Option::Some(pending.file_scope);
+                    let _ = go_types::set_scope_parent(state.world, scope, pending.file_scope);
                 },
                 None => {},
             }
@@ -1411,7 +1411,9 @@ fn check_method_declaration(
                                             entry.object,
                                         );
                                     }
-                                    state.world.scopes[scope.value].parent = Option::Some(
+                                    let _ = go_types::set_scope_parent(
+                                        state.world,
+                                        scope,
                                         file_scope,
                                     );
                                 },

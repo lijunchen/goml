@@ -4279,10 +4279,7 @@ fn local_object_used(state: CheckState, object: go_types::ObjectId) -> bool {
 }
 
 fn local_scope_depth(state: CheckState, scope: go_types::ScopeId) -> int {
-    match state.world.scopes[scope.value].parent {
-        Some(parent) => local_scope_depth(state, parent) + 1,
-        None => 1,
-    }
+    state.world.scopes[scope.value].depth
 }
 
 fn report_unused_locals(state: CheckState, function_id: int, start: int) -> unit {

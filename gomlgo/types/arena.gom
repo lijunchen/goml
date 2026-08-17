@@ -93,6 +93,64 @@ pub fn type_data(world: World, id: TypeId) -> TypeData {
     }
 }
 
+fn valid_scope(world: World, scope: ScopeId) -> bool {
+    scope.value >= 0 && scope.value < world.scopes.len()
+}
+
+fn parent_scope_depth(world: World, parent: Option[ScopeId]) -> int {
+    match parent {
+        Some(scope) => if valid_scope(world, scope) {
+            world.scopes[scope.value].depth + 1
+        } else {
+            1
+        },
+        None => 1,
+    }
+}
+
+fn update_scope_depth(world: World, scope: ScopeId, depth: int) -> unit {
+    if valid_scope(world, scope) {
+        world.scopes[scope.value].depth = depth;
+        for child in world.scopes[scope.value].children {
+            update_scope_depth(world, child, depth + 1)
+        }
+    } else {}
+}
+
+fn remove_scope_child(world: World, parent: ScopeId, child: ScopeId) -> unit {
+    if valid_scope(world, parent) {
+        let children: Vec[ScopeId] = Vec::with_capacity(world.scopes[parent.value].children.len());
+        for candidate in world.scopes[parent.value].children {
+            if candidate.value != child.value {
+                children.push(candidate)
+            } else {}
+        }
+        world.scopes[parent.value].children = children;
+    } else {}
+}
+
+pub fn set_scope_parent(world: World, scope: ScopeId, parent: ScopeId) -> bool {
+    if !valid_scope(world, scope) || !valid_scope(world, parent) {
+        return false
+    } else {};
+    let previous = world.scopes[scope.value].parent;
+    let unchanged = match previous {
+        Some(value) => value.value == parent.value,
+        None => false,
+    };
+    if unchanged {
+        return true
+    } else {};
+    match previous {
+        Some(value) => remove_scope_child(world, value, scope),
+        None => {},
+    };
+    world.scopes[scope.value].parent = Option::Some(parent);
+    world.scopes[parent.value].children.push(scope);
+    update_scope_depth(world, scope, world.scopes[parent.value].depth + 1);
+    true
+}
+
 pub fn add_scope(
     world: World,
     kind: ScopeKind,
@@ -102,11 +160,13 @@ pub fn add_scope(
     end: int,
 ) -> ScopeId {
     let id = scope_id(world.scopes.len());
+    let depth = parent_scope_depth(world, parent);
     world.scopes.push(
         Scope {
             id,
             kind,
             parent,
+            depth,
             file,
             start,
             end,
