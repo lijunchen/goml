@@ -451,11 +451,32 @@ fn compile_constant_expr(variants: VariantInfos, value: repr::ConstExpr) -> Expr
         },
         Constr { constructor, args, ty } => {
             let fields: Vec[(string, Expr)] = Vec::with_capacity(args.len());
+            let info = match constructor.tag {
+                Some(tag) => find_variant_info(variants, ty, tag),
+                None => Option::None,
+            };
+            match info {
+                Some(value) => if value.compact {
+                    fields.push(("_tag", Expr::Int { value: value.tag.to_string() }))
+                } else {},
+                None => (),
+            };
             for index in 0..args.len() {
                 fields.push(
                     (
                         if constructor.is_struct && index < constructor.fields.len() {
                             go_ident(constructor.fields[index])
+                        } else if match info {
+                            Some(value) => value.compact,
+                            None => false,
+                        } {
+                            compact_variant_field_name(
+                                match constructor.tag {
+                                    Some(tag) => tag,
+                                    None => 0,
+                                },
+                                index,
+                            )
                         } else {
                             "_" + index.to_string()
                         },
@@ -466,10 +487,11 @@ fn compile_constant_expr(variants: VariantInfos, value: repr::ConstExpr) -> Expr
             let go_ty = if constructor.is_struct {
                 lower_type(ty)
             } else {
-                match constructor.tag {
-                    Some(tag) => match variant_type(variants, ty, tag) {
-                        Some(ty) => ty,
-                        None => constructor_type(constructor),
+                match info {
+                    Some(value) => if value.compact {
+                        lower_type(ty)
+                    } else {
+                        Type::Named { name: value.variant_name }
                     },
                     None => constructor_type(constructor),
                 }
@@ -629,9 +651,21 @@ fn compile_closure_function(
 
 fn compile_imm_expected(env: LowerEnv, value: anf::Imm, expected_ty: repr::Type) -> Expr {
     match value {
-        Tag { index: tag, ty: owner_ty } => match variant_type(env.variants, owner_ty, tag) {
-            Some(ty) => Expr::StructLiteral { ty, fields: Vec::from_array([]) },
-            None => compile_imm(env, value),
+        Tag { index: tag, ty: owner_ty } => {
+            match find_variant_info(env.variants, owner_ty, tag) {
+                Some(info) => if info.compact {
+                    Expr::StructLiteral {
+                        ty: lower_type(owner_ty),
+                        fields: Vec::from_array([("_tag", Expr::Int { value: tag.to_string() })]),
+                    }
+                } else {
+                    match variant_type(env.variants, owner_ty, tag) {
+                        Some(ty) => Expr::StructLiteral { ty, fields: Vec::from_array([]) },
+                        None => compile_imm(env, value),
+                    }
+                },
+                None => compile_imm(env, value),
+            }
         },
         _ => compile_imm(env, value),
     }
@@ -1193,6 +1227,14 @@ fn compile_constructor(
     ty: repr::Type,
 ) -> Expr {
     let expected: Vec[repr::Type] = Vec::from_array([]);
+    let info = if constructor.is_struct {
+        Option::None
+    } else {
+        match constructor.tag {
+            Some(tag) => find_variant_info(env.variants, ty, tag),
+            None => Option::None,
+        }
+    };
     if constructor.is_struct {
         for field_ty in struct_field_types(env, ty) {
             expected.push(field_ty)
@@ -1211,9 +1253,26 @@ fn compile_constructor(
         }
     };
     let fields: Vec[(string, Expr)] = Vec::from_array([]);
+    match info {
+        Some(value) => if value.compact {
+            fields.push(("_tag", Expr::Int { value: value.tag.to_string() }))
+        } else {},
+        None => (),
+    };
     for index in 0..args.len() {
         let name = if constructor.is_struct && index < constructor.fields.len() {
             go_ident(constructor.fields[index])
+        } else if match info {
+            Some(value) => value.compact,
+            None => false,
+        } {
+            compact_variant_field_name(
+                match constructor.tag {
+                    Some(tag) => tag,
+                    None => 0,
+                },
+                index,
+            )
         } else {
             "_" + index.to_string()
         };
@@ -1227,10 +1286,11 @@ fn compile_constructor(
     let go_ty = if constructor.is_struct {
         lower_type(ty)
     } else {
-        match constructor.tag {
-            Some(tag) => match variant_type(env.variants, ty, tag) {
-                Some(ty) => ty,
-                None => constructor_type(constructor),
+        match info {
+            Some(value) => if value.compact {
+                lower_type(ty)
+            } else {
+                Type::Named { name: value.variant_name }
             },
             None => constructor_type(constructor),
         }
@@ -1281,23 +1341,46 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
             }
         },
         ConstrGet { expr, constructor, field_index: index, ty: _ } => {
+            let owner_ty = anf::imm_type(expr);
+            let info = match constructor.tag {
+                Some(tag) => find_variant_info(env.variants, owner_ty, tag),
+                None => Option::None,
+            };
             let field = if constructor.is_struct && index < constructor.fields.len() {
                 go_ident(constructor.fields[index])
+            } else if match info {
+                Some(value) => value.compact,
+                None => false,
+            } {
+                compact_variant_field_name(
+                    match constructor.tag {
+                        Some(tag) => tag,
+                        None => 0,
+                    },
+                    index,
+                )
             } else {
                 "_" + index.to_string()
             };
             let target = if constructor.is_struct {
                 compile_imm(env, expr)
             } else {
-                let owner_ty = anf::imm_type(expr);
-                let go_ty = match constructor.tag {
-                    Some(tag) => match variant_type(env.variants, owner_ty, tag) {
-                        Some(ty) => ty,
-                        None => constructor_type(constructor),
+                match info {
+                    Some(value) => if value.compact {
+                        compile_imm(env, expr)
+                    } else {
+                        Expr::Cast {
+                            expr: compile_imm(env, expr),
+                            ty: Type::Named { name: value.variant_name },
+                        }
                     },
-                    None => constructor_type(constructor),
-                };
-                Expr::Cast { expr: compile_imm(env, expr), ty: go_ty }
+                    None => {
+                        Expr::Cast {
+                            expr: compile_imm(env, expr),
+                            ty: constructor_type(constructor),
+                        }
+                    },
+                }
             };
             Expr::Field { expr: target, field_name: field }
         },
@@ -1722,7 +1805,13 @@ fn compile_match_leaf(
             Some(body) => Option::Some(compile_block(env, body)),
             None => Option::Some(non_exhaustive_block()),
         };
-        result.push(Stmt::Switch { expr: compile_imm(env, scrut), cases, default: lowered_default })
+        result.push(
+            Stmt::Switch {
+                expr: compile_match_scrutinee(env, scrut),
+                cases,
+                default: lowered_default,
+            },
+        )
     };
     result
 }
@@ -1742,6 +1831,17 @@ fn match_uses_types(env: LowerEnv, values: Vec[anf::Arm]) -> bool {
         }
     }
     false
+}
+
+fn compile_match_scrutinee(env: LowerEnv, value: anf::Imm) -> Expr {
+    match find_variant_info(env.variants, anf::imm_type(value), 0) {
+        Some(info) => if info.compact {
+            Expr::Field { expr: compile_imm(env, value), field_name: "_tag" }
+        } else {
+            compile_imm(env, value)
+        },
+        None => compile_imm(env, value),
+    }
 }
 
 fn non_exhaustive_block() -> Block {
@@ -1844,7 +1944,11 @@ fn compile_term_to_join(env: LowerEnv, value: anf::Term, target: string, join: a
                     None => Option::Some(non_exhaustive_block()),
                 };
                 result.push(
-                    Stmt::Switch { expr: compile_imm(env, scrut), cases, default: lowered_default },
+                    Stmt::Switch {
+                        expr: compile_match_scrutinee(env, scrut),
+                        cases,
+                        default: lowered_default,
+                    },
                 )
             }
         },
@@ -2403,7 +2507,11 @@ fn compile_loop_term_leaf(
                     None => Option::Some(non_exhaustive_block()),
                 };
                 result.push(
-                    Stmt::Switch { expr: compile_imm(env, scrut), cases, default: lowered_default },
+                    Stmt::Switch {
+                        expr: compile_match_scrutinee(env, scrut),
+                        cases,
+                        default: lowered_default,
+                    },
                 )
             }
         },
@@ -2544,7 +2652,11 @@ fn compile_loop_term_to_join(
                     None => Option::Some(non_exhaustive_block()),
                 };
                 result.push(
-                    Stmt::Switch { expr: compile_imm(env, scrut), cases, default: lowered_default },
+                    Stmt::Switch {
+                        expr: compile_match_scrutinee(env, scrut),
+                        cases,
+                        default: lowered_default,
+                    },
                 )
             }
         },

@@ -1503,42 +1503,73 @@ fn hashmap_option_info(
     enums: Vec[repr::EnumDef],
     structs: Vec[repr::StructDef],
     function_names: FunctionNames,
-) -> (Type, Type, Type, bool) {
+) -> (Type, Type, Type, bool, bool, int, int) {
     let args: Vec[repr::Type] = Vec::from_array([]);
     args.push(value);
     match find_instance(instances, builtin.option.name, args) {
         Some(instance) => {
-            let variants = match find_enum(enums, instance.name) {
-                Some(definition) => definition.option_variants,
+            let definition = find_enum(enums, instance.name);
+            let variants = match definition {
+                Some(value) => value.option_variants,
                 None => Option::None,
             };
             let variants = match variants {
                 Some(value) => value,
                 None => (builtin.option.some.name, builtin.option.none.name),
             };
-            (
-                Type::Named { name: go_user_type_name(instance.name) },
-                Type::Named {
-                    name: variant_go_name(
-                        instance.name,
-                        variants.0,
-                        enums,
-                        structs,
-                        instances,
-                        function_names,
-                    ),
+            let mut some_tag = 0;
+            let mut none_tag = 1;
+            let compact = match definition {
+                Some(value) => {
+                    let fields: Vec[Vec[repr::Type]] = Vec::with_capacity(value.variants.len());
+                    for index in 0..value.variants.len() {
+                        let variant = value.variants[index];
+                        if variant.name == variants.0 {
+                            some_tag = index;
+                        } else if variant.name == variants.1 {
+                            none_tag = index;
+                        } else {};
+                        fields.push(enum_field_types(variant.fields))
+                    }
+                    compact_variant_fields(fields, structs)
                 },
-                Type::Named {
-                    name: variant_go_name(
-                        instance.name,
-                        variants.1,
-                        enums,
-                        structs,
-                        instances,
-                        function_names,
-                    ),
+                None => false,
+            };
+            let option_ty = Type::Named { name: go_user_type_name(instance.name) };
+            (
+                option_ty,
+                if compact {
+                    option_ty
+                } else {
+                    Type::Named {
+                        name: variant_go_name(
+                            instance.name,
+                            variants.0,
+                            enums,
+                            structs,
+                            instances,
+                            function_names,
+                        ),
+                    }
+                },
+                if compact {
+                    option_ty
+                } else {
+                    Type::Named {
+                        name: variant_go_name(
+                            instance.name,
+                            variants.1,
+                            enums,
+                            structs,
+                            instances,
+                            function_names,
+                        ),
+                    }
                 },
                 false,
+                compact,
+                some_tag,
+                none_tag,
             )
         },
         None => {
@@ -1548,6 +1579,9 @@ fn hashmap_option_info(
                 Type::Named { name: go_generated_ident(option_name + "_Some") },
                 Type::Named { name: go_generated_ident(option_name + "_None") },
                 true,
+                false,
+                0,
+                1,
             )
         },
     }
@@ -1778,6 +1812,9 @@ fn hashmap_get_item(
     option_ty: Type,
     some_ty: Type,
     none_ty: Type,
+    compact: bool,
+    some_tag: int,
+    none_tag: int,
 ) -> Item {
     let map_ty = repr::Type::HashMap { key, value };
     let params: Vec[(string, Type)] = Vec::from_array([]);
@@ -1802,7 +1839,12 @@ fn hashmap_get_item(
         },
     );
     let some_fields: Vec[(string, Expr)] = Vec::from_array([]);
-    some_fields.push(("_0", Expr::Var { name: "value" }));
+    if compact {
+        some_fields.push(("_tag", Expr::Int { value: some_tag.to_string() }));
+        some_fields.push((compact_variant_field_name(some_tag, 0), Expr::Var { name: "value" }))
+    } else {
+        some_fields.push(("_0", Expr::Var { name: "value" }))
+    };
     let some_stmts: Vec[Stmt] = Vec::from_array([]);
     some_stmts.push(
         Stmt::Return {
@@ -1816,9 +1858,13 @@ fn hashmap_get_item(
             else_: Option::None,
         },
     );
+    let none_fields: Vec[(string, Expr)] = Vec::from_array([]);
+    if compact {
+        none_fields.push(("_tag", Expr::Int { value: none_tag.to_string() }))
+    } else {};
     stmts.push(
         Stmt::Return {
-            expr: Option::Some(Expr::StructLiteral { ty: none_ty, fields: Vec::from_array([]) }),
+            expr: Option::Some(Expr::StructLiteral { ty: none_ty, fields: none_fields }),
         },
     );
     Item::Function(
@@ -2504,7 +2550,9 @@ fn hashmap_items(
     result.push(hashmap_new_item(key, value));
     result.push(hashmap_len_item(key, value));
     result.push(hashmap_lookup_item(builtin, key, value));
-    result.push(hashmap_get_item(key, value, option.0, option.1, option.2));
+    result.push(
+        hashmap_get_item(key, value, option.0, option.1, option.2, option.4, option.5, option.6),
+    );
     result.push(hashmap_set_item(builtin, key, value));
     result.push(hashmap_remove_item(builtin, key, value));
     result.push(hashmap_contains_item(builtin, key, value));
