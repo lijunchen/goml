@@ -316,10 +316,19 @@ const (
     Greater Ordering = 2
 )
 
-type Option__Ordering struct {
-    _tag int32
-    _v1_0 Ordering
+type Option__Ordering interface {
+    isOption__Ordering()
 }
+
+type Option__Ordering_None struct {}
+
+func (_ Option__Ordering_None) isOption__Ordering() {}
+
+type Option__Ordering_Some struct {
+    _0 Ordering
+}
+
+func (_ Option__Ordering_Some) isOption__Ordering() {}
 
 type Option__string struct {
     _tag int32
@@ -394,31 +403,26 @@ func float_comparison_contracts() struct{} {
     var t981 Option__Ordering
     var inline1947 bool = nan__16 < nan__16
     if inline1947 {
-        var inline1948 Option__Ordering = Option__Ordering{
-            _tag: 1,
-            _v1_0: Less,
+        var inline1948 Option__Ordering = Option__Ordering_Some{
+            _0: Less,
         }
         t981 = inline1948
     } else {
         var inline1949 bool = nan__16 > nan__16
         if inline1949 {
-            var inline1950 Option__Ordering = Option__Ordering{
-                _tag: 1,
-                _v1_0: Greater,
+            var inline1950 Option__Ordering = Option__Ordering_Some{
+                _0: Greater,
             }
             t981 = inline1950
         } else {
             var inline1951 bool = nan__16 == nan__16
             if inline1951 {
-                var inline1952 Option__Ordering = Option__Ordering{
-                    _tag: 1,
-                    _v1_0: Equal,
+                var inline1952 Option__Ordering = Option__Ordering_Some{
+                    _0: Equal,
                 }
                 t981 = inline1952
             } else {
-                t981 = Option__Ordering{
-                    _tag: 0,
-                }
+                t981 = Option__Ordering_None{}
             }
         }
     }
@@ -729,10 +733,10 @@ func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string
 }
 
 func _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__some____T__Ordering(self__456 Option__Ordering) bool {
-    switch self__456._tag {
-    case 0:
+    switch self__456.(type) {
+    case Option__Ordering_None:
         return false
-    case 1:
+    case Option__Ordering_Some:
         return true
     default:
         panic("non-exhaustive match")
