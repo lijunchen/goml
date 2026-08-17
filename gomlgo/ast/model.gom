@@ -81,6 +81,11 @@ pub enum Value {
     Bool(bool),
 }
 
+pub struct FieldLookup {
+    pub value: Value,
+    pub present: bool,
+}
+
 pub fn span(start: int, end: int) -> Span {
     Span { start, end }
 }
@@ -133,32 +138,44 @@ pub fn field(name: string, value: Value) -> (string, Value) {
     (name, value)
 }
 
-pub fn get_field(value: Node, name: string) -> Option[Value] {
+pub fn get_field(value: Node, name: string) -> FieldLookup {
     for entry in value.fields {
         if entry.0 == name {
-            return Option::Some(entry.1)
+            return FieldLookup { value: entry.1, present: true }
         } else {}
     }
-    Option::None
+    FieldLookup { value: Value::Null, present: false }
 }
 
 pub fn get_node(value: Node, name: string) -> Option[Node] {
-    match get_field(value, name) {
-        Some(Value::Node(node)) => Option::Some(node),
+    let field = get_field(value, name);
+    if !field.present {
+        return Option::None
+    } else {};
+    match field.value {
+        Value::Node(node) => Option::Some(node),
         _ => Option::None,
     }
 }
 
 pub fn get_nodes(value: Node, name: string) -> Vec[Node] {
-    match get_field(value, name) {
-        Some(Value::Nodes(nodes)) => nodes,
+    let field = get_field(value, name);
+    if !field.present {
+        return Vec::from_array([])
+    } else {};
+    match field.value {
+        Value::Nodes(nodes) => nodes,
         _ => Vec::from_array([]),
     }
 }
 
 pub fn get_string(value: Node, name: string) -> Option[string] {
-    match get_field(value, name) {
-        Some(Value::String(text)) => Option::Some(text),
+    let field = get_field(value, name);
+    if !field.present {
+        return Option::None
+    } else {};
+    match field.value {
+        Value::String(text) => Option::Some(text),
         _ => Option::None,
     }
 }

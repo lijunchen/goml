@@ -412,9 +412,13 @@ fn parse_case_clause(parser: Parser) -> ast::Node {
 }
 
 fn type_switch_assertion(value: ast::Node) -> bool {
-    ast::kind_equal(value.kind, ast::Kind::TypeAssertExpr)
-        && match ast::get_field(value, "type") {
-            Some(ast::Value::Null) => true,
+    if !ast::kind_equal(value.kind, ast::Kind::TypeAssertExpr) {
+        return false
+    } else {};
+    let field = ast::get_field(value, "type");
+    field.present
+        && match field.value {
+            ast::Value::Null => true,
             _ => false,
         }
 }
@@ -565,16 +569,16 @@ fn complete_range_statement(range_header: ast::Node, keyword: token::Token, body
     let key = ast::get_node(range_header, "key");
     let value = ast::get_node(range_header, "value");
     let source = ast::get_node(range_header, "x");
-    let token_position = match ast::get_field(range_header, "token_pos") {
-        Some(ast::Value::Int(value)) => value,
+    let token_position = match ast::get_field(range_header, "token_pos").value {
+        ast::Value::Int(value) => value,
         _ => -1,
     };
-    let assignment = match ast::get_field(range_header, "token") {
-        Some(ast::Value::String(value)) => value,
+    let assignment = match ast::get_field(range_header, "token").value {
+        ast::Value::String(value) => value,
         _ => "ILLEGAL",
     };
-    let range_position = match ast::get_field(range_header, "range") {
-        Some(ast::Value::Int(value)) => value,
+    let range_position = match ast::get_field(range_header, "range").value {
+        ast::Value::Int(value) => value,
         _ => keyword.end,
     };
     ast::node(

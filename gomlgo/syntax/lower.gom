@@ -22,42 +22,45 @@ fn report(context: LowerContext, value: ast::Node, message: string) -> unit {
 }
 
 fn int_field(context: LowerContext, value: ast::Node, name: string) -> int {
-    match ast::get_field(value, name) {
-        Some(ast::Value::Int(result)) => result,
-        Some(_) => {
+    let field = ast::get_field(value, name);
+    if !field.present {
+        report(context, value, "missing integer field " + name);
+        return -1
+    } else {};
+    match field.value {
+        ast::Value::Int(result) => result,
+        _ => {
             report(context, value, "expected integer field " + name);
-            -1
-        },
-        None => {
-            report(context, value, "missing integer field " + name);
             -1
         },
     }
 }
 
 fn string_field(context: LowerContext, value: ast::Node, name: string) -> string {
-    match ast::get_field(value, name) {
-        Some(ast::Value::String(result)) => result,
-        Some(_) => {
+    let field = ast::get_field(value, name);
+    if !field.present {
+        report(context, value, "missing string field " + name);
+        return ""
+    } else {};
+    match field.value {
+        ast::Value::String(result) => result,
+        _ => {
             report(context, value, "expected string field " + name);
-            ""
-        },
-        None => {
-            report(context, value, "missing string field " + name);
             ""
         },
     }
 }
 
 fn bool_field(context: LowerContext, value: ast::Node, name: string) -> bool {
-    match ast::get_field(value, name) {
-        Some(ast::Value::Bool(result)) => result,
-        Some(_) => {
+    let field = ast::get_field(value, name);
+    if !field.present {
+        report(context, value, "missing boolean field " + name);
+        return false
+    } else {};
+    match field.value {
+        ast::Value::Bool(result) => result,
+        _ => {
             report(context, value, "expected boolean field " + name);
-            false
-        },
-        None => {
-            report(context, value, "missing boolean field " + name);
             false
         },
     }
@@ -79,31 +82,40 @@ fn invalid_child(context: LowerContext, value: ast::Node, path: string, message:
 fn optional_child(context: LowerContext, value: ast::Node, name: string, path: string) -> Option[
     NodeId,
 ] {
-    match ast::get_field(value, name) {
-        Some(ast::Value::Node(child)) => Option::Some(lower_node(context, child, path)),
-        Some(ast::Value::Null) => Option::None,
-        Some(_) => {
+    let field = ast::get_field(value, name);
+    if !field.present {
+        report(context, value, "missing optional node field " + name);
+        return Option::None
+    } else {};
+    match field.value {
+        ast::Value::Node(child) => Option::Some(lower_node(context, child, path)),
+        ast::Value::Null => Option::None,
+        _ => {
             report(context, value, "expected optional node field " + name);
-            Option::None
-        },
-        None => {
-            report(context, value, "missing optional node field " + name);
             Option::None
         },
     }
 }
 
 fn required_child(context: LowerContext, value: ast::Node, name: string, path: string) -> NodeId {
-    match ast::get_field(value, name) {
-        Some(ast::Value::Node(child)) => lower_node(context, child, path),
-        Some(_) => invalid_child(context, value, path, "expected node field " + name),
-        None => invalid_child(context, value, path, "missing node field " + name),
+    let field = ast::get_field(value, name);
+    if !field.present {
+        return invalid_child(context, value, path, "missing node field " + name)
+    } else {};
+    match field.value {
+        ast::Value::Node(child) => lower_node(context, child, path),
+        _ => invalid_child(context, value, path, "expected node field " + name),
     }
 }
 
 fn child_list(context: LowerContext, value: ast::Node, name: string, path: string) -> Vec[NodeId] {
-    match ast::get_field(value, name) {
-        Some(ast::Value::Nodes(children)) => {
+    let field = ast::get_field(value, name);
+    if !field.present {
+        report(context, value, "missing node list field " + name);
+        return Vec::from_array([])
+    } else {};
+    match field.value {
+        ast::Value::Nodes(children) => {
             let result: Vec[NodeId] = Vec::with_capacity(children.len());
             for index in 0..children.len() {
                 result.push(
@@ -120,13 +132,9 @@ fn child_list(context: LowerContext, value: ast::Node, name: string, path: strin
             }
             result
         },
-        Some(ast::Value::Null) => Vec::from_array([]),
-        Some(_) => {
+        ast::Value::Null => Vec::from_array([]),
+        _ => {
             report(context, value, "expected node list field " + name);
-            Vec::from_array([])
-        },
-        None => {
-            report(context, value, "missing node list field " + name);
             Vec::from_array([])
         },
     }
