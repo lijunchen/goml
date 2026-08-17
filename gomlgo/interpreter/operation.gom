@@ -286,11 +286,8 @@ pub fn constant_value(
 
 pub fn zero_value(world: go_types::World, type_id: go_types::TypeId) -> Result[Value, string] {
     let underlying = go_types::underlying(world, type_id);
-    match go_types::get_type(world, underlying) {
-        Some(go_types::TypeData {
-            id: _,
-            kind: go_types::TypeKind::Basic { basic, name: _, untyped: _ },
-        }) => match integer_layout(basic) {
+    match go_types::type_data(world, underlying).kind {
+        go_types::TypeKind::Basic { basic, name: _, untyped: _ } => match integer_layout(basic) {
             Some((width, signed)) => Result::Ok(integer_value(0.to_uint64(), width, signed)),
             None => match basic {
                 go_types::BasicKind::Bool | go_types::BasicKind::UntypedBool => {
@@ -329,7 +326,7 @@ pub fn zero_value(world: go_types::World, type_id: go_types::TypeId) -> Result[V
                 _ => Result::Err("basic type has no runtime zero value"),
             },
         },
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Array { length, element } }) => {
+        go_types::TypeKind::Array { length, element } => {
             if length < 0.to_int64() || length > 9223372036854775807.to_int64() {
                 return Result::Err("array length is outside the host integer range")
             } else {};
@@ -339,24 +336,24 @@ pub fn zero_value(world: go_types::World, type_id: go_types::TypeId) -> Result[V
             }
             Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
         },
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } }) => {
+        go_types::TypeKind::Struct { fields } => {
             let elements: Vec[Value] = Vec::with_capacity(fields.len());
             for field in fields {
                 elements.push(zero_value(world, field.variable.type_id)?)
             }
             Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
         },
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => {
+        go_types::TypeKind::Tuple { variables } => {
             let elements: Vec[Value] = Vec::with_capacity(variables.len());
             for variable in variables {
                 elements.push(zero_value(world, variable.type_id)?)
             }
             Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
         },
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element: _ } }) => {
+        go_types::TypeKind::Pointer { element: _ } => {
             Result::Ok(Value::Local(LocalValue::Pointer(Option::None)))
         },
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element } }) => {
+        go_types::TypeKind::Slice { element } => {
             Result::Ok(
                 Value::Local(
                     LocalValue::Slice(
@@ -371,35 +368,21 @@ pub fn zero_value(world: go_types::World, type_id: go_types::TypeId) -> Result[V
                 ),
             )
         },
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Map { key: _, value: _ } }) => {
+        go_types::TypeKind::Map { key: _, value: _ } => {
             Result::Ok(Value::Local(LocalValue::Map(-1)))
         },
-        Some(go_types::TypeData {
-            id: _,
-            kind: go_types::TypeKind::Chan { direction: _, element: _ },
-        }) => {
+        go_types::TypeKind::Chan { direction: _, element: _ } => {
             Result::Ok(Value::Local(LocalValue::Channel(-1)))
         },
-        Some(go_types::TypeData {
-            id: _,
-            kind: go_types::TypeKind::Signature {
-                receiver: _,
-                receiver_type_params: _,
-                type_params: _,
-                params: _,
-                results: _,
-                variadic: _,
-            },
-        }) => Result::Ok(Value::Local(LocalValue::Function(Option::None))),
-        Some(go_types::TypeData {
-            id: _,
-            kind: go_types::TypeKind::Interface {
-                methods: _,
-                embeddeds: _,
-                comparable: _,
-                implicit: _,
-            },
-        }) => Result::Ok(
+        go_types::TypeKind::Signature {
+            receiver: _,
+            receiver_type_params: _,
+            type_params: _,
+            params: _,
+            results: _,
+            variadic: _,
+        } => Result::Ok(Value::Local(LocalValue::Function(Option::None))),
+        go_types::TypeKind::Interface { methods: _, embeddeds: _, comparable: _, implicit: _ } => Result::Ok(
             Value::Interface {
                 static_type: type_id,
                 dynamic_type: Option::None,

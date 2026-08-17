@@ -1733,11 +1733,11 @@ fn runtime_zero_value(state: VmState, type_id: go_types::TypeId) -> Result[Value
                 Result::Ok(Value::Host { type_id, value })
             }
         },
-        None => match go_types::get_type(
+        None => match go_types::type_data(
             state.program.world,
             go_types::underlying(state.program.world, type_id),
-        ) {
-            Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Array { length, element } }) => {
+        ).kind {
+            go_types::TypeKind::Array { length, element } => {
                 if length < 0.to_int64() || length > 9223372036854775807.to_int64() {
                     return Result::Err("array length is outside the host integer range")
                 } else {};
@@ -1747,14 +1747,14 @@ fn runtime_zero_value(state: VmState, type_id: go_types::TypeId) -> Result[Value
                 }
                 Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
             },
-            Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } }) => {
+            go_types::TypeKind::Struct { fields } => {
                 let elements: Vec[Value] = Vec::with_capacity(fields.len());
                 for field in fields {
                     elements.push(runtime_zero_value(state, field.variable.type_id)?)
                 }
                 Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
             },
-            Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => {
+            go_types::TypeKind::Tuple { variables } => {
                 let elements: Vec[Value] = Vec::with_capacity(variables.len());
                 for variable in variables {
                     elements.push(runtime_zero_value(state, variable.type_id)?)
