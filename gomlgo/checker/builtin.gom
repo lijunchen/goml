@@ -1842,13 +1842,13 @@ fn check_append_builtin(
         }
         for index in 1..arguments.len() {
             let diagnostic_count = state.diagnostics.len();
-            let previous_target_inference_context = state.target_inference_context;
-            let previous_target_inference_call = state.target_inference_call;
-            state.target_inference_context = 1;
-            state.target_inference_call = APPEND_BUILTIN;
+            let previous_target_inference_context = state.target_inference_context.get();
+            let previous_target_inference_call = state.target_inference_call.get();
+            state.target_inference_context.set(1);
+            state.target_inference_call.set(APPEND_BUILTIN);
             let value = expression_with_target(state, scope, arguments[index], element);
-            state.target_inference_context = previous_target_inference_context;
-            state.target_inference_call = previous_target_inference_call;
+            state.target_inference_context.set(previous_target_inference_context);
+            state.target_inference_call.set(previous_target_inference_call);
             update_contextual_operand_fact(state, arguments[index], value, element);
             if tuple_variables(state, value.type_id).len() > 1 {
                 diagnostic(

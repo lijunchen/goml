@@ -689,16 +689,16 @@ fn assignment_operands(
     let result: Vec[Operand] = Vec::from_array([]);
     for node_index in 0..nodes.len() {
         let node = nodes[node_index];
-        let previous_target_inference_description = state.target_inference_description;
+        let previous_target_inference_description = state.target_inference_description.get();
         if node_index < target_descriptions.len() {
-            state.target_inference_description = target_descriptions[node_index];
+            state.target_inference_description.set(target_descriptions[node_index]);
         } else {};
         let mut operand = if node_index < targets.len() {
             expression_with_target(state, scope, node, targets[node_index])
         } else {
             check_expression(state, scope, node)
         };
-        state.target_inference_description = previous_target_inference_description;
+        state.target_inference_description.set(previous_target_inference_description);
         if node_is_void(state, node) {
             diagnostic(
                 state,

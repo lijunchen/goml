@@ -3455,8 +3455,8 @@ fn target_inference_cannot_infer_message(
     target: go_types::TypeId,
     parameter: string,
 ) -> string {
-    if state.target_inference_context == 1 {
-        "in call to " + state.target_inference_call + ", type "
+    if state.target_inference_context.get() == 1 {
+        "in call to " + state.target_inference_call.get() + ", type "
             + diagnostic_type_string(state, signature)
             + " of "
             + expression_source_text(state, node)
@@ -3467,7 +3467,7 @@ fn target_inference_cannot_infer_message(
             + ")"
     } else {
         "type " + diagnostic_type_string(state, target) + " of "
-            + state.target_inference_description
+            + state.target_inference_description.get()
             + " does not match "
             + inference_signature_pattern(state, signature)
             + " (cannot infer "
@@ -3487,7 +3487,7 @@ fn target_inference_mismatch_message(
         + " does not match type "
         + diagnostic_type_string(state, target)
         + " of "
-        + state.target_inference_description
+        + state.target_inference_description.get()
 }
 
 fn partial_inference_arguments(state: CheckState, bindings: Vec[InferenceBinding]) -> Vec[
@@ -3601,7 +3601,7 @@ fn infer_signature_from_target(
                 "implicitly"
             }
                 + " instantiated function "
-                + if state.target_inference_context == 1 {
+                + if state.target_inference_context.get() == 1 {
                     "as argument"
                 } else {
                     "in assignment"
@@ -3806,7 +3806,7 @@ fn expression_with_target(
         }
         let _ = state.omitted_type_fact_nodes.remove(node.value);
         let _ = state.failed_inference_nodes.remove(node.value);
-    } else if state.target_inference_context != 1 {
+    } else if state.target_inference_context.get() != 1 {
         for index in 0..state.info.types.len() {
             if state.info.types[index].node.value == node.value {
                 state.info.types[index].type_id = inferred;

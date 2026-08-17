@@ -2755,10 +2755,10 @@ fn check_call(
                     return recovered_call_result(state, node, results)
                 } else {}
             } else {};
-            let previous_target_inference_context = state.target_inference_context;
-            let previous_target_inference_call = state.target_inference_call;
-            state.target_inference_context = 1;
-            state.target_inference_call = expression_source_text(state, function_node);
+            let previous_target_inference_context = state.target_inference_context.get();
+            let previous_target_inference_call = state.target_inference_call.get();
+            state.target_inference_context.set(1);
+            state.target_inference_call.set(expression_source_text(state, function_node));
             let checked_arguments = assignment_operands(
                 state,
                 scope,
@@ -2790,8 +2790,8 @@ fn check_call(
                 },
                 Vec::from_array([]),
             );
-            state.target_inference_context = previous_target_inference_context;
-            state.target_inference_call = previous_target_inference_call;
+            state.target_inference_context.set(previous_target_inference_context);
+            state.target_inference_call.set(previous_target_inference_call);
             if ellipsis >= 0 && !variadic {
                 diagnostic_at_position(
                     state,
