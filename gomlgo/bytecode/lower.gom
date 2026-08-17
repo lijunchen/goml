@@ -722,33 +722,18 @@ fn collect_globals(program: execution::ExecutionProgram, object_globals: Vec[Opt
     globals
 }
 
-struct SourceLocationLookup {
-    location: SourceLocation,
-    present: bool,
-}
-
-fn source_location(builder: FunctionBuilder, node: syntax::NodeId) -> SourceLocationLookup {
+fn source_location(builder: FunctionBuilder, node: syntax::NodeId) -> Result[SourceLocation, string] {
     match syntax::get_node(builder.syntax.arena, node) {
-        Some(value) => SourceLocationLookup {
-            location: SourceLocation {
+        Some(value) => Result::Ok(
+            SourceLocation {
                 package_id: builder.package_id,
                 file: value.file,
                 start: value.span.start,
                 end: value.span.end,
                 function: builder.function,
             },
-            present: true,
-        },
-        None => SourceLocationLookup {
-            location: SourceLocation {
-                package_id: builder.package_id,
-                file: syntax::file_id(-1),
-                start: -1,
-                end: -1,
-                function: builder.function,
-            },
-            present: false,
-        },
+        ),
+        None => Result::Err("invalid syntax node " + node.value.to_string()),
     }
 }
 
@@ -930,13 +915,8 @@ fn emit(builder: FunctionBuilder, node: syntax::NodeId, kind: InstructionKind) -
                 + " was terminated",
         )
     } else {};
-    let location = source_location(builder, node);
-    if !location.present {
-        return Result::Err("invalid syntax node " + node.value.to_string())
-    } else {};
-    builder.blocks[builder.current.get().value].instructions.push(
-        Instruction { kind, location: location.location },
-    );
+    let location = source_location(builder, node)?;
+    builder.blocks[builder.current.get().value].instructions.push(Instruction { kind, location });
     Result::Ok(())
 }
 
@@ -947,12 +927,9 @@ fn terminate(builder: FunctionBuilder, node: syntax::NodeId, kind: TerminatorKin
     if current_terminated(builder) {
         return Result::Err("basic block already has a terminator")
     } else {};
-    let location = source_location(builder, node);
-    if !location.present {
-        return Result::Err("invalid syntax node " + node.value.to_string())
-    } else {};
+    let location = source_location(builder, node)?;
     builder.blocks[builder.current.get().value].terminator = Option::Some(
-        Terminator { kind, location: location.location },
+        Terminator { kind, location },
     );
     Result::Ok(())
 }
@@ -5172,10 +5149,7 @@ fn finalize_blocks(builder: FunctionBuilder, source: syntax::NodeId) -> Result[
         }
     } else {};
     let result: Vec[BasicBlock] = Vec::from_array([]);
-    let fallback_location = source_location(builder, source);
-    if !fallback_location.present {
-        return Result::Err("invalid syntax node " + source.value.to_string())
-    } else {};
+    let fallback_location = source_location(builder, source)?;
     for block in builder.blocks {
         result.push(
             BasicBlock {
@@ -5183,10 +5157,7 @@ fn finalize_blocks(builder: FunctionBuilder, source: syntax::NodeId) -> Result[
                 parameters: block.parameters,
                 instructions: block.instructions,
                 terminator: block.terminator.unwrap_or(
-                    Terminator {
-                        kind: TerminatorKind::Unreachable,
-                        location: fallback_location.location,
-                    },
+                    Terminator { kind: TerminatorKind::Unreachable, location: fallback_location },
                 ),
             },
         )
