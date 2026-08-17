@@ -148,7 +148,7 @@ fn build_constraint_version(value: string) -> string {
     }
 }
 
-fn go_version_from_tokens(tokens: Vec[token::Token]) -> string {
+fn token_metadata(tokens: Vec[token::Token]) -> (string, bool) {
     let mut result = "";
     let mut index = 0;
     while index < tokens.len() && token::equal(tokens[index].kind, token::Kind::Comment) {
@@ -158,5 +158,12 @@ fn go_version_from_tokens(tokens: Vec[token::Token]) -> string {
         } else {};
         index += 1;
     }
-    result
+    let mut has_comments = index > 0;
+    while index < tokens.len() {
+        if token::equal(tokens[index].kind, token::Kind::Comment) {
+            has_comments = true;
+        } else {};
+        index += 1;
+    };
+    (result, has_comments)
 }

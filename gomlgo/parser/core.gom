@@ -41,7 +41,8 @@ fn parser_new_with_mode(source: bytes::Bytes, retain_comments: bool, skip_functi
     let scanned = scanner::scan_bytes(source);
     let comment_infos: Vec[CommentInfo] = Vec::from_array([]);
     let comment_nodes: Vec[ast::Node] = Vec::from_array([]);
-    if retain_comments && scanned.has_comments {
+    let (go_version, has_comments) = token_metadata(scanned.tokens);
+    if retain_comments && has_comments {
         let comments = analyze_comments(source, scanned.tokens);
         for value in comments.infos {
             comment_infos.push(value)
@@ -50,7 +51,6 @@ fn parser_new_with_mode(source: bytes::Bytes, retain_comments: bool, skip_functi
             comment_nodes.push(value)
         }
     } else {};
-    let go_version = go_version_from_tokens(scanned.tokens);
     Parser {
         tokens: scanned.tokens,
         cursor: Ref::new(0),
