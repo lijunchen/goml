@@ -157,6 +157,30 @@ fn scopes_support_shadowing_and_position_sensitive_lookup() -> unit {
 }
 
 #[test]
+fn scope_depths_follow_parent_changes() -> unit {
+    let world = new_world();
+    let outer = add_scope(
+        world,
+        ScopeKind::Block,
+        Option::Some(world.universe),
+        Option::None,
+        0,
+        100,
+    );
+    let inner = add_scope(world, ScopeKind::Block, Option::Some(outer), Option::None, 10, 90);
+    let function = add_scope(world, ScopeKind::Function, Option::Some(inner), Option::None, 20, 80);
+    let body = add_scope(world, ScopeKind::Block, Option::Some(function), Option::None, 30, 70);
+    testing::assert_eq(world.scopes[world.universe.value].depth, 1);
+    testing::assert_eq(world.scopes[function.value].depth, 4);
+    testing::assert_eq(world.scopes[body.value].depth, 5);
+    testing::assert(set_scope_parent(world, function, world.universe));
+    testing::assert_eq(world.scopes[function.value].depth, 2);
+    testing::assert_eq(world.scopes[body.value].depth, 3);
+    testing::assert_eq(world.scopes[inner.value].children.len(), 0);
+    testing::assert(!set_scope_parent(world, scope_id(-1), world.universe))
+}
+
+#[test]
 fn recursive_named_types_use_ids_and_format_stably() -> unit {
     let world = new_world();
     let pkg = add_package(world, "example/p", "p", world.universe, false);
