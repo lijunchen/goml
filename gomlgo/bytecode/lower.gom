@@ -723,26 +723,25 @@ fn collect_globals(program: execution::ExecutionProgram, object_globals: Vec[Opt
 }
 
 fn source_location(builder: FunctionBuilder, node: syntax::NodeId) -> Result[SourceLocation, string] {
-    let value = syntax::get_node(builder.syntax.arena, node).ok_or(
-        "invalid syntax node " + node.value.to_string(),
-    )?;
-    Result::Ok(
-        SourceLocation {
-            package_id: builder.package_id,
-            file: value.file,
-            start: value.span.start,
-            end: value.span.end,
-            function: builder.function,
-        },
-    )
+    match syntax::get_node(builder.syntax.arena, node) {
+        Some(value) => Result::Ok(
+            SourceLocation {
+                package_id: builder.package_id,
+                file: value.file,
+                start: value.span.start,
+                end: value.span.end,
+                function: builder.function,
+            },
+        ),
+        None => Result::Err("invalid syntax node " + node.value.to_string()),
+    }
 }
 
 fn node_kind(builder: FunctionBuilder, node: syntax::NodeId) -> Result[syntax::SyntaxKind, string] {
-    Result::Ok(
-        syntax::get_node(builder.syntax.arena, node).ok_or(
-            "invalid syntax node " + node.value.to_string(),
-        )?.kind,
-    )
+    match syntax::get_node(builder.syntax.arena, node) {
+        Some(value) => Result::Ok(value.kind),
+        None => Result::Err("invalid syntax node " + node.value.to_string()),
+    }
 }
 
 fn substitute_type(builder: FunctionBuilder, type_id: go_types::TypeId) -> go_types::TypeId {
@@ -850,9 +849,10 @@ fn definition_object(builder: FunctionBuilder, node: syntax::NodeId) -> Result[
 }
 
 fn use_object(builder: FunctionBuilder, node: syntax::NodeId) -> Result[go_types::ObjectId, string] {
-    execution::require_use(builder.index, node)?.object.ok_or(
-        "use fact has no object for node " + node.value.to_string(),
-    )
+    match execution::require_use(builder.index, node)?.object {
+        Some(object) => Result::Ok(object),
+        None => Result::Err("use fact has no object for node " + node.value.to_string()),
+    }
 }
 
 fn identifier(builder: FunctionBuilder, node: syntax::NodeId) -> Result[string, string] {
