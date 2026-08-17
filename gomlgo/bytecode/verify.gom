@@ -17,6 +17,14 @@ fn bool_slots(count: int) -> Vec[bool] {
     result
 }
 
+fn int_slots(count: int, value: int) -> Vec[int] {
+    let result: Vec[int] = Vec::with_capacity(count);
+    for _ in 0..count {
+        result.push(value)
+    }
+    result
+}
+
 fn report(
     diagnostics: Vec[VerifyDiagnostic],
     function: Option[FunctionId],
@@ -40,7 +48,11 @@ fn type_seen(values: Vec[int], value: int) -> bool {
     false
 }
 
-fn type_contains_parameter(program: BytecodeProgram, type_id: go_types::TypeId, visited: Vec[int]) -> bool {
+fn type_contains_parameter_inner(
+    program: BytecodeProgram,
+    type_id: go_types::TypeId,
+    visited: Vec[int],
+) -> bool {
     if !valid_type(program, type_id) || type_seen(visited, type_id.value) {
         return false
     } else {};
@@ -56,10 +68,10 @@ fn type_contains_parameter(program: BytecodeProgram, type_id: go_types::TypeId, 
                 direction: _,
                 element,
             },
-        }) => type_contains_parameter(program, element, visited),
+        }) => type_contains_parameter_inner(program, element, visited),
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } }) => {
             for field in fields {
-                if type_contains_parameter(program, field.variable.type_id, visited) {
+                if type_contains_parameter_inner(program, field.variable.type_id, visited) {
                     return true
                 } else {}
             }
@@ -67,7 +79,7 @@ fn type_contains_parameter(program: BytecodeProgram, type_id: go_types::TypeId, 
         },
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => {
             for variable in variables {
-                if type_contains_parameter(program, variable.type_id, visited) {
+                if type_contains_parameter_inner(program, variable.type_id, visited) {
                     return true
                 } else {}
             }
@@ -88,13 +100,13 @@ fn type_contains_parameter(program: BytecodeProgram, type_id: go_types::TypeId, 
                 return true
             } else {};
             match receiver {
-                Some(value) => if type_contains_parameter(program, value.type_id, visited) {
+                Some(value) => if type_contains_parameter_inner(program, value.type_id, visited) {
                     return true
                 } else {},
                 None => {},
             };
-            type_contains_parameter(program, params, visited)
-                || type_contains_parameter(program, results, visited)
+            type_contains_parameter_inner(program, params, visited)
+                || type_contains_parameter_inner(program, results, visited)
         },
         Some(go_types::TypeData {
             id: _,
@@ -102,7 +114,7 @@ fn type_contains_parameter(program: BytecodeProgram, type_id: go_types::TypeId, 
         }) => {
             for method in methods {
                 if valid_object(program, method)
-                    && type_contains_parameter(
+                    && type_contains_parameter_inner(
                         program,
                         program.world.objects[method.value].type_id,
                         visited,
@@ -111,15 +123,15 @@ fn type_contains_parameter(program: BytecodeProgram, type_id: go_types::TypeId, 
                 } else {}
             }
             for embedded in embeddeds {
-                if type_contains_parameter(program, embedded, visited) {
+                if type_contains_parameter_inner(program, embedded, visited) {
                     return true
                 } else {}
             }
             false
         },
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Map { key, value } }) => {
-            type_contains_parameter(program, key, visited)
-                || type_contains_parameter(program, value, visited)
+            type_contains_parameter_inner(program, key, visited)
+                || type_contains_parameter_inner(program, value, visited)
         },
         Some(go_types::TypeData {
             id: _,
@@ -135,11 +147,11 @@ fn type_contains_parameter(program: BytecodeProgram, type_id: go_types::TypeId, 
                 return true
             } else {};
             for argument in type_args {
-                if type_contains_parameter(program, argument, visited) {
+                if type_contains_parameter_inner(program, argument, visited) {
                     return true
                 } else {}
             }
-            type_contains_parameter(program, underlying, visited)
+            type_contains_parameter_inner(program, underlying, visited)
         },
         Some(go_types::TypeData {
             id: _,
@@ -149,21 +161,39 @@ fn type_contains_parameter(program: BytecodeProgram, type_id: go_types::TypeId, 
                 return true
             } else {};
             for argument in type_args {
-                if type_contains_parameter(program, argument, visited) {
+                if type_contains_parameter_inner(program, argument, visited) {
                     return true
                 } else {}
             }
-            type_contains_parameter(program, rhs, visited)
+            type_contains_parameter_inner(program, rhs, visited)
         },
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Union { terms } }) => {
             for term in terms {
-                if type_contains_parameter(program, term.type_id, visited) {
+                if type_contains_parameter_inner(program, term.type_id, visited) {
                     return true
                 } else {}
             }
             false
         },
         _ => false,
+    }
+}
+
+fn type_contains_parameter(program: BytecodeProgram, type_id: go_types::TypeId, cache: Vec[int]) -> bool {
+    if !valid_type(program, type_id) {
+        return false
+    } else {};
+    let cached = cache[type_id.value];
+    if cached >= 0 {
+        cached == 1
+    } else {
+        let result = type_contains_parameter_inner(program, type_id, Vec::from_array([]));
+        cache[type_id.value] = if result {
+            1
+        } else {
+            0
+        };
+        result
     }
 }
 
@@ -2146,6 +2176,7 @@ fn check_function(
     program: BytecodeProgram,
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
+    type_parameter_cache: Vec[int],
 ) -> unit {
     if !valid_package(program, function.package_id) {
         report(diagnostics, Option::Some(function.id), Option::None, -1, "invalid function package")
@@ -2191,7 +2222,7 @@ fn check_function(
         }
     };
     if valid_type(program, function.signature)
-        && type_contains_parameter(program, function.signature, Vec::from_array([])) {
+        && type_contains_parameter(program, function.signature, type_parameter_cache) {
         report(
             diagnostics,
             Option::Some(function.id),
@@ -2209,7 +2240,7 @@ fn check_function(
                 -1,
                 "function has an invalid register type",
             )
-        } else if type_contains_parameter(program, type_id, Vec::from_array([])) {
+        } else if type_contains_parameter(program, type_id, type_parameter_cache) {
             report(
                 diagnostics,
                 Option::Some(function.id),
@@ -2241,7 +2272,7 @@ fn check_function(
                 -1,
                 "local id does not match local index",
             )
-        } else if type_contains_parameter(program, local.type_id, Vec::from_array([])) {
+        } else if type_contains_parameter(program, local.type_id, type_parameter_cache) {
             report(
                 diagnostics,
                 Option::Some(function.id),
@@ -2371,6 +2402,7 @@ fn check_function(
 
 pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
     let diagnostics: Vec[VerifyDiagnostic] = Vec::from_array([]);
+    let type_parameter_cache = int_slots(program.world.types.len(), -1);
     if !function_valid(program, program.main) {
         report(diagnostics, Option::None, Option::None, -1, "invalid main function")
     } else {
@@ -2424,7 +2456,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                 "function id does not match function index",
             )
         } else {};
-        check_function(program, function, diagnostics)
+        check_function(program, function, diagnostics, type_parameter_cache)
     }
     for index in 0..program.globals.len() {
         let global = program.globals[index];
