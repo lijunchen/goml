@@ -92,6 +92,7 @@ enum RuntimePlace {
 
 struct Frame {
     function: bytecode::FunctionId,
+    blocks: Vec[bytecode::BasicBlock],
     name: string,
     registers: Vec[Option[Value]],
     places: Vec[Option[RuntimePlace]],
@@ -3698,6 +3699,7 @@ fn frame_for_call(
     Result::Ok(
         Frame {
             function: function.id,
+            blocks: function.blocks,
             name: function.name,
             registers: empty_slots(function.register_types.len()),
             places: empty_slots(function.place_count),

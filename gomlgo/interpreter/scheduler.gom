@@ -354,17 +354,16 @@ fn scheduled_call(state: VmState, call: PreparedCall) -> Result[Option[Scheduled
     }
 }
 
-fn scheduled_current_instruction(scheduler: Scheduler, goroutine: ScheduledGoroutine) -> Result[
+fn scheduled_current_instruction(goroutine: ScheduledGoroutine) -> Result[
     Option[bytecode::Instruction],
     string,
 ] {
     let scheduled = scheduled_top(goroutine)?;
-    let function = checked_function(scheduler.state, scheduled.frame.function, Option::None)?;
     let block_id = scheduled.frame.block.get();
-    if block_id.value < 0 || block_id.value >= function.blocks.len() {
+    if block_id.value < 0 || block_id.value >= scheduled.frame.blocks.len() {
         return Result::Err("invalid current block " + block_id.value.to_string())
     } else {};
-    let block = function.blocks[block_id.value];
+    let block = scheduled.frame.blocks[block_id.value];
     let index = scheduled.instruction.get();
     if index < 0 || index > block.instructions.len() {
         Result::Err("invalid current instruction " + index.to_string())
@@ -409,7 +408,7 @@ fn instruction_channel_matches(
     choose: bool,
 ) -> Result[int, string] {
     let scheduled = scheduled_top(goroutine)?;
-    match scheduled_current_instruction(scheduler, goroutine)? {
+    match scheduled_current_instruction(goroutine)? {
         Some(bytecode::Instruction {
             kind: bytecode::InstructionKind::Send { channel, value: _ },
             location: _,
@@ -538,7 +537,7 @@ fn complete_waiting_receive(scheduler: Scheduler, waiting: WaitingOperation, val
 ] {
     let goroutine = scheduler.goroutines[waiting.goroutine];
     let scheduled = scheduled_top(goroutine)?;
-    match scheduled_current_instruction(scheduler, goroutine)? {
+    match scheduled_current_instruction(goroutine)? {
         Some(bytecode::Instruction {
             kind: bytecode::InstructionKind::Receive { value: target, ok, channel: _ },
             location: _,
@@ -589,7 +588,7 @@ fn complete_waiting_receive(scheduler: Scheduler, waiting: WaitingOperation, val
 fn complete_waiting_send(scheduler: Scheduler, waiting: WaitingOperation) -> Result[Value, string] {
     let goroutine = scheduler.goroutines[waiting.goroutine];
     let scheduled = scheduled_top(goroutine)?;
-    match scheduled_current_instruction(scheduler, goroutine)? {
+    match scheduled_current_instruction(goroutine)? {
         Some(bytecode::Instruction {
             kind: bytecode::InstructionKind::Send { channel: _, value },
             location: _,
@@ -1875,7 +1874,7 @@ fn execute_scheduled_step(scheduler: Scheduler, goroutine_index: int) -> Result[
         None => {},
     };
     let scheduled = scheduled_top(goroutine)?;
-    match scheduled_current_instruction(scheduler, goroutine)? {
+    match scheduled_current_instruction(goroutine)? {
         Some(instruction) => execute_scheduled_instruction(
             scheduler,
             goroutine_index,
