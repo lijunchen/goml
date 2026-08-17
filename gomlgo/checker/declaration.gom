@@ -172,6 +172,16 @@ struct TypeFactSourceKey {
     end: int32,
 }
 
+struct TypeFactSourceEntry {
+    key: TypeFactSourceKey,
+    index: int32,
+}
+
+struct TypeFactSourceIndex {
+    entries: Vec[TypeFactSourceEntry],
+    mask: uint64,
+}
+
 struct ActiveInstantiation {
     origin: go_types::TypeId,
     parameters: Vec[go_types::TypeParameter],
@@ -194,7 +204,7 @@ struct CheckState {
     scope_fact_previous_indices: Vec[Option[int]],
     selection_indices: HashMap[int, int],
     type_fact_indices: Vec[int32],
-    type_fact_source_indices: HashMap[TypeFactSourceKey, int32],
+    type_fact_source_indices: TypeFactSourceIndex,
     type_visit_marks: Vec[int],
     type_visit_generation: Ref[int],
     type_invalid_cache: Vec[int32],
@@ -304,6 +314,50 @@ fn type_fact_source_key(state: CheckState, node: syntax::NodeId) -> Option[TypeF
     }
 }
 
+fn empty_type_fact_source_index(count: int) -> TypeFactSourceIndex {
+    let mut capacity = 16;
+    while capacity <= count {
+        capacity *= 2;
+    }
+    let entries: Vec[TypeFactSourceEntry] = Vec::with_capacity(capacity);
+    for _ in 0..capacity {
+        entries.push(
+            TypeFactSourceEntry { key: TypeFactSourceKey { file: 0, start: 0, end: 0 }, index: -1 },
+        )
+    }
+    TypeFactSourceIndex { entries, mask: (capacity - 1).to_uint64() }
+}
+
+fn type_fact_source_slot(index: TypeFactSourceIndex, key: TypeFactSourceKey) -> int {
+    let hash = key.hash();
+    let mut position = (hash & index.mask).to_int();
+    let mut perturb = hash;
+    loop {
+        let entry = index.entries[position];
+        if entry.index < 0 || entry.key == key {
+            return position
+        } else {};
+        position = ((position.to_uint64() * 5 + perturb + 1) & index.mask).to_int();
+        perturb >>= 5;
+    }
+}
+
+fn insert_type_fact_source(index: TypeFactSourceIndex, key: TypeFactSourceKey, value: int) -> unit {
+    let position = type_fact_source_slot(index, key);
+    if index.entries[position].index < 0 {
+        index.entries[position] = TypeFactSourceEntry { key, index: value.to_int32() };
+    } else {}
+}
+
+fn find_type_fact_source(index: TypeFactSourceIndex, key: TypeFactSourceKey) -> Option[int] {
+    let entry = index.entries[type_fact_source_slot(index, key)];
+    if entry.index >= 0 {
+        Option::Some(entry.index.to_int())
+    } else {
+        Option::None
+    }
+}
+
 fn fact_index_slots(count: int) -> Vec[int32] {
     let result: Vec[int32] = Vec::with_capacity(count);
     for _ in 0..count {
@@ -333,9 +387,7 @@ fn set_type_fact_index(state: CheckState, node: syntax::NodeId, index: int) -> u
 fn index_type_fact(state: CheckState, node: syntax::NodeId, index: int) -> unit {
     set_type_fact_index(state, node, index);
     match type_fact_source_key(state, node) {
-        Some(key) => if !state.type_fact_source_indices.contains(key) {
-            state.type_fact_source_indices[key] = index.to_int32();
-        } else {},
+        Some(key) => insert_type_fact_source(state.type_fact_source_indices, key, index),
         None => {},
     }
 }
@@ -379,10 +431,7 @@ fn find_scope_fact(state: CheckState, node: syntax::NodeId) -> Option[ScopeFact]
 
 fn source_type_fact_index(state: CheckState, node: syntax::NodeId) -> Option[int] {
     match type_fact_source_key(state, node) {
-        Some(key) => match state.type_fact_source_indices[key] {
-            Some(index) => Option::Some(index.to_int()),
-            None => Option::None,
-        },
+        Some(key) => find_type_fact_source(state.type_fact_source_indices, key),
         None => Option::None,
     }
 }
@@ -6920,7 +6969,7 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
         scope_fact_previous_indices: Vec::from_array([]),
         selection_indices: HashMap::from_array([]),
         type_fact_indices: fact_index_slots(syntax_package.arena.nodes.len()),
-        type_fact_source_indices: HashMap::from_array([]),
+        type_fact_source_indices: empty_type_fact_source_index(syntax_package.arena.nodes.len()),
         type_visit_marks: Vec::from_array([]),
         type_visit_generation: Ref::new(0),
         type_invalid_cache: Vec::from_array([]),
