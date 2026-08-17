@@ -362,16 +362,11 @@ fn fact_index_slots(count: int) -> Vec[int32] {
     result
 }
 
-fn type_fact_index(state: CheckState, node: syntax::NodeId) -> Option[int] {
+fn type_fact_index(state: CheckState, node: syntax::NodeId) -> int {
     if node.value < 0 || node.value >= state.type_fact_indices.len() {
-        return Option::None
+        return -1
     } else {};
-    let index = state.type_fact_indices[node.value].to_int();
-    if index >= 0 {
-        Option::Some(index)
-    } else {
-        Option::None
-    }
+    state.type_fact_indices[node.value].to_int()
 }
 
 fn set_type_fact_index(state: CheckState, node: syntax::NodeId, index: int) -> unit {
@@ -435,7 +430,7 @@ fn source_type_fact_index(state: CheckState, node: syntax::NodeId) -> Option[int
 }
 
 fn record_type_expression(state: CheckState, node: syntax::NodeId, type_id: go_types::TypeId) -> unit {
-    if type_fact_index(state, node).is_some() {
+    if type_fact_index(state, node) >= 0 {
         return
     } else {};
     index_type_fact(state, node, state.info.types.len());
@@ -457,20 +452,20 @@ fn record_type_expression(state: CheckState, node: syntax::NodeId, type_id: go_t
 }
 
 fn record_invalid_type_expression(state: CheckState, node: syntax::NodeId) -> unit {
-    match type_fact_index(state, node) {
-        Some(index) => {
-            state.info.types[index].type_id = state.world.invalid;
-            state.info.types[index].extra = Option::None;
-            state.info.types[index].void = false;
-            state.info.types[index].type_expr = true;
-            state.info.types[index].builtin = false;
-            state.info.types[index].value_expr = false;
-            state.info.types[index].nil = false;
-            state.info.types[index].addressable = false;
-            state.info.types[index].assignable = false;
-            state.info.types[index].comma_ok = false;
-        },
-        None => record_type_expression(state, node, state.world.invalid),
+    let index = type_fact_index(state, node);
+    if index >= 0 {
+        state.info.types[index].type_id = state.world.invalid;
+        state.info.types[index].extra = Option::None;
+        state.info.types[index].void = false;
+        state.info.types[index].type_expr = true;
+        state.info.types[index].builtin = false;
+        state.info.types[index].value_expr = false;
+        state.info.types[index].nil = false;
+        state.info.types[index].addressable = false;
+        state.info.types[index].assignable = false;
+        state.info.types[index].comma_ok = false;
+    } else {
+        record_type_expression(state, node, state.world.invalid)
     }
 }
 
@@ -512,29 +507,32 @@ fn omit_invalid_operand_facts(state: CheckState) -> unit {
 
 fn refresh_cycle_identifier_facts(state: CheckState) -> unit {
     for use_fact in state.info.uses {
-        match (type_fact_index(state, use_fact.node), use_fact.object) {
-            (Some(index), Some(object_id)) => if state.info.types[index].value_expr
-                && state.info.types[index].type_id.value == state.world.invalid.value {
-                match go_types::get_object(state.world, object_id) {
-                    Some(object) => if object.kind == go_types::ObjectKind::Var
-                        && object.type_id.value != state.world.invalid.value
-                        && !type_contains_invalid(state, object.type_id) {
-                        state.info.types[index].type_id = object.type_id;
-                        state.info.types[index].extra = Option::None;
-                        state.info.types[index].void = false;
-                        state.info.types[index].type_expr = false;
-                        state.info.types[index].builtin = false;
-                        state.info.types[index].value_expr = true;
-                        state.info.types[index].nil = false;
-                        state.info.types[index].addressable = true;
-                        state.info.types[index].assignable = true;
-                        state.info.types[index].comma_ok = false;
-                    } else {},
-                    None => {},
-                }
-            } else {},
-            _ => {},
-        }
+        let index = type_fact_index(state, use_fact.node);
+        if index >= 0 {
+            match use_fact.object {
+                Some(object_id) => if state.info.types[index].value_expr
+                    && state.info.types[index].type_id.value == state.world.invalid.value {
+                    match go_types::get_object(state.world, object_id) {
+                        Some(object) => if object.kind == go_types::ObjectKind::Var
+                            && object.type_id.value != state.world.invalid.value
+                            && !type_contains_invalid(state, object.type_id) {
+                            state.info.types[index].type_id = object.type_id;
+                            state.info.types[index].extra = Option::None;
+                            state.info.types[index].void = false;
+                            state.info.types[index].type_expr = false;
+                            state.info.types[index].builtin = false;
+                            state.info.types[index].value_expr = true;
+                            state.info.types[index].nil = false;
+                            state.info.types[index].addressable = true;
+                            state.info.types[index].assignable = true;
+                            state.info.types[index].comma_ok = false;
+                        } else {},
+                        None => {},
+                    }
+                } else {},
+                None => {},
+            }
+        } else {}
     }
 }
 

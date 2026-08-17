@@ -611,9 +611,11 @@ fn invalid_source_assignment_recoverable(state: CheckState, type_id: go_types::T
 }
 
 fn recorded_type_fact(state: CheckState, node: syntax::NodeId) -> Option[TypeFact] {
-    match type_fact_index(state, node) {
-        Some(index) => Option::Some(state.info.types[index]),
-        None => Option::None,
+    let index = type_fact_index(state, node);
+    if index >= 0 {
+        Option::Some(state.info.types[index])
+    } else {
+        Option::None
     }
 }
 
@@ -725,38 +727,33 @@ fn failed_inherited_initializer_operand(state: CheckState, node: syntax::NodeId,
 }
 
 fn record_operand(state: CheckState, node: syntax::NodeId, operand: Operand) -> unit {
-    if type_fact_index(state, node).is_some() {
+    let existing_index = type_fact_index(state, node);
+    if existing_index >= 0 {
         if state.preserved_type_fact_nodes.contains(node.value)
             || failed_inherited_initializer_operand(state, node, operand) {
             return
         } else {};
-        match type_fact_index(state, node) {
-            Some(index) => if state.info.types[index].type_expr || state.info.types[index].builtin {
-                return
-            } else {},
-            None => {},
-        };
-        match type_fact_index(state, node) {
-            Some(index) => if (state.info.types[index].type_id.value == state.world.invalid.value
-                && operand.type_id.value != state.world.invalid.value)
-                || state.current_iota >= 0 {
-                state.info.types[index].type_id = operand.type_id;
-                state.info.types[index].extra = match operand.value {
-                    Some(value) => type_fact_extra(
-                        Option::None,
-                        constant::constant_kind_name(value),
-                        Option::Some(constant::constant_exact_string(value)),
-                    ),
-                    None => Option::None,
-                };
-                state.info.types[index].value_expr = true;
-                state.info.types[index].nil = basic_kind(state, operand.type_id)
-                    == go_types::BasicKind::UntypedNil;
-                state.info.types[index].addressable = operand.addressable;
-                state.info.types[index].assignable = operand.assignable;
-            } else {},
-            None => {},
-        };
+        if state.info.types[existing_index].type_expr || state.info.types[existing_index].builtin {
+            return
+        } else {};
+        if (state.info.types[existing_index].type_id.value == state.world.invalid.value
+            && operand.type_id.value != state.world.invalid.value)
+            || state.current_iota >= 0 {
+            state.info.types[existing_index].type_id = operand.type_id;
+            state.info.types[existing_index].extra = match operand.value {
+                Some(value) => type_fact_extra(
+                    Option::None,
+                    constant::constant_kind_name(value),
+                    Option::Some(constant::constant_exact_string(value)),
+                ),
+                None => Option::None,
+            };
+            state.info.types[existing_index].value_expr = true;
+            state.info.types[existing_index].nil = basic_kind(state, operand.type_id)
+                == go_types::BasicKind::UntypedNil;
+            state.info.types[existing_index].addressable = operand.addressable;
+            state.info.types[existing_index].assignable = operand.assignable;
+        } else {};
         return
     } else {};
     match source_type_fact_index(state, node) {
@@ -820,19 +817,18 @@ fn update_operand_fact(
     type_id: go_types::TypeId,
     value: Option[constant::ConstValue],
 ) -> unit {
-    match type_fact_index(state, node) {
-        Some(index) => {
-            state.info.types[index].type_id = type_id;
-            match value {
-                Some(value) => {
-                    state.info.types[index].extra = type_fact_extra(
-                        Option::None,
-                        constant::constant_kind_name(value),
-                        Option::Some(constant::constant_exact_string(value)),
-                    );
-                },
-                None => {},
-            };
+    let index = type_fact_index(state, node);
+    if index < 0 {
+        return
+    } else {};
+    state.info.types[index].type_id = type_id;
+    match value {
+        Some(value) => {
+            state.info.types[index].extra = type_fact_extra(
+                Option::None,
+                constant::constant_kind_name(value),
+                Option::Some(constant::constant_exact_string(value)),
+            );
         },
         None => {},
     }
@@ -1121,12 +1117,10 @@ fn update_contextual_operand_fact(
 }
 
 fn retag_untyped_expression(state: CheckState, node: syntax::NodeId, target: go_types::TypeId) -> unit {
-    match type_fact_index(state, node) {
-        Some(index) => if go_types::is_untyped(state.world, state.info.types[index].type_id) {
-            state.info.types[index].type_id = target;
-        } else {},
-        None => {},
-    }
+    let index = type_fact_index(state, node);
+    if index >= 0 && go_types::is_untyped(state.world, state.info.types[index].type_id) {
+        state.info.types[index].type_id = target;
+    } else {}
 }
 
 fn save_constant(state: CheckState, object: go_types::ObjectId, value: constant::ConstValue) -> unit {
