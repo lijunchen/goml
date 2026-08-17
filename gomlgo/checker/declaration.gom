@@ -4905,11 +4905,8 @@ fn predeclare_file(state: CheckState, file_index: int) -> unit {
 
 fn find_basic_kind(state: CheckState, kind: go_types::BasicKind) -> go_types::TypeId {
     for entry in state.world.basics {
-        match go_types::get_type(state.world, entry.type_id) {
-            Some(go_types::TypeData {
-                id: _,
-                kind: go_types::TypeKind::Basic { basic, name: _, untyped: _ },
-            }) => if basic == kind {
+        match go_types::type_data(state.world, entry.type_id).kind {
+            go_types::TypeKind::Basic { basic, name: _, untyped: _ } => if basic == kind {
                 return entry.type_id
             } else {},
             _ => {},

@@ -1321,18 +1321,15 @@ fn check_assignment(
 }
 
 fn signature_results(state: CheckState, signature: go_types::TypeId) -> Vec[go_types::Variable] {
-    match go_types::get_type(state.world, go_types::unalias(state.world, signature)) {
-        Some(go_types::TypeData {
-            id: _,
-            kind: go_types::TypeKind::Signature {
-                receiver: _,
-                receiver_type_params: _,
-                type_params: _,
-                params: _,
-                results,
-                variadic: _,
-            },
-        }) => tuple_variables(state, results),
+    match go_types::type_data(state.world, go_types::unalias(state.world, signature)).kind {
+        go_types::TypeKind::Signature {
+            receiver: _,
+            receiver_type_params: _,
+            type_params: _,
+            params: _,
+            results,
+            variadic: _,
+        } => tuple_variables(state, results),
         _ => Vec::from_array([]),
     }
 }

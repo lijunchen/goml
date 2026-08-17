@@ -277,21 +277,14 @@ fn diagnostic_method_string(state: CheckState, object_id: go_types::ObjectId) ->
 }
 
 fn incomplete_named_instance(state: CheckState, value: go_types::TypeId) -> bool {
-    match go_types::get_type(state.world, go_types::unalias(state.world, value)) {
-        Some(go_types::TypeData {
-            id: _,
-            kind: go_types::TypeKind::Named {
-                object: _,
-                underlying: _,
-                type_params,
-                type_args,
-                methods: _,
-            } | go_types::TypeKind::Alias { object: _, rhs: _, type_params, type_args },
-        }) => type_params.len() != type_args.len(),
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } }) => incomplete_named_instance(
-            state,
-            element,
-        ),
+    match go_types::type_data(state.world, go_types::unalias(state.world, value)).kind {
+        go_types::TypeKind::Named { object: _, underlying: _, type_params, type_args, methods: _ } | go_types::TypeKind::Alias {
+            object: _,
+            rhs: _,
+            type_params,
+            type_args,
+        } => type_params.len() != type_args.len(),
+        go_types::TypeKind::Pointer { element } => incomplete_named_instance(state, element),
         _ => false,
     }
 }
@@ -625,18 +618,15 @@ fn recorded_type_fact(state: CheckState, node: syntax::NodeId) -> Option[TypeFac
 }
 
 fn snapshot_signature_type(state: CheckState, type_id: go_types::TypeId) -> go_types::TypeId {
-    match go_types::get_type(state.world, type_id) {
-        Some(go_types::TypeData {
-            id: _,
-            kind: go_types::TypeKind::Signature {
-                receiver,
-                receiver_type_params,
-                type_params,
-                params,
-                results,
-                variadic,
-            },
-        }) => go_types::add_type(
+    match go_types::type_data(state.world, type_id).kind {
+        go_types::TypeKind::Signature {
+            receiver,
+            receiver_type_params,
+            type_params,
+            params,
+            results,
+            variadic,
+        } => go_types::add_type(
             state.world,
             go_types::TypeKind::Signature {
                 receiver,
@@ -660,11 +650,8 @@ fn expression_has_comma_ok(state: CheckState, node: syntax::NodeId) -> bool {
             path: _,
             kind: syntax::SyntaxKind::IndexExpr { expression, lbrack: _, index: _, rbrack: _ },
         }) => match recorded_type_fact(state, expression) {
-            Some(fact) => match go_types::get_type(state.world, core_type_id(state, fact.type_id)) {
-                Some(go_types::TypeData {
-                    id: _,
-                    kind: go_types::TypeKind::Map { key: _, value: _ },
-                }) => true,
+            Some(fact) => match go_types::type_data(state.world, core_type_id(state, fact.type_id)).kind {
+                go_types::TypeKind::Map { key: _, value: _ } => true,
                 _ => false,
             },
             None => false,
@@ -676,11 +663,8 @@ fn expression_has_comma_ok(state: CheckState, node: syntax::NodeId) -> bool {
             path: _,
             kind: syntax::SyntaxKind::IndexListExpr { expression, lbrack: _, indices: _, rbrack: _ },
         }) => match recorded_type_fact(state, expression) {
-            Some(fact) => match go_types::get_type(state.world, core_type_id(state, fact.type_id)) {
-                Some(go_types::TypeData {
-                    id: _,
-                    kind: go_types::TypeKind::Map { key: _, value: _ },
-                }) => true,
+            Some(fact) => match go_types::type_data(state.world, core_type_id(state, fact.type_id)).kind {
+                go_types::TypeKind::Map { key: _, value: _ } => true,
                 _ => false,
             },
             None => false,
@@ -1297,9 +1281,14 @@ fn identifier_operand(
                     invalid_operand(state)
                 } else {
                     Operand {
-                        type_id: match go_types::get_type(state.world, object.type_id) {
-                            Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Invalid }) => state.world.invalid,
-                            _ => object.type_id,
+                        type_id: if go_types::has_type(state.world, object.type_id)
+                            && match go_types::type_data(state.world, object.type_id).kind {
+                                go_types::TypeKind::Invalid => true,
+                                _ => false,
+                            } {
+                            state.world.invalid
+                        } else {
+                            object.type_id
                         },
                         value: Option::None,
                         addressable: true,
@@ -4030,18 +4019,15 @@ fn method_value_type(state: CheckState, method_type: go_types::TypeId) -> go_typ
 }
 
 fn selection_type_contains_direct_invalid(state: CheckState, type_id: go_types::TypeId) -> bool {
-    match go_types::get_type(state.world, go_types::unalias(state.world, type_id)) {
-        Some(go_types::TypeData {
-            id: _,
-            kind: go_types::TypeKind::Signature {
-                receiver: _,
-                receiver_type_params: _,
-                type_params: _,
-                params,
-                results,
-                variadic: _,
-            },
-        }) => {
+    match go_types::type_data(state.world, go_types::unalias(state.world, type_id)).kind {
+        go_types::TypeKind::Signature {
+            receiver: _,
+            receiver_type_params: _,
+            type_params: _,
+            params,
+            results,
+            variadic: _,
+        } => {
             for variable in tuple_variables(state, params) {
                 if variable.type_id.value == state.world.invalid.value {
                     return true
@@ -4433,14 +4419,11 @@ fn value_selector_operand(
             None => {},
         }
     } else {};
-    let pointer_to_named = match go_types::get_type(
+    let pointer_to_named = match go_types::type_data(
         state.world,
         go_types::unalias(state.world, base.type_id),
-    ) {
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } }) => go_types::is_named(
-            state.world,
-            element,
-        ),
+    ).kind {
+        go_types::TypeKind::Pointer { element } => go_types::is_named(state.world, element),
         _ => false,
     };
     let invalid_struct = match underlying_kind(state, base.type_id) {
