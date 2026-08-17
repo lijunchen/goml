@@ -1248,106 +1248,87 @@ fn identifier_operand(
             record_initialization_dependency(state, object_id);
             evaluate_object(state, object_id);
             record_type_value_cycle(state, object_id);
-            match go_types::get_object(state.world, object_id) {
-                Some(object) => {
-                    mark_dot_import_used(state, object_id);
-                    record_use(state, node, object_id);
-                    if object.owner.is_none() && (name == "any" || name == "comparable")
-                        && !go_version_at_least(state, node, 18) {
-                        diagnostic(
-                            state,
-                            node,
-                            "predeclared " + name + " requires go1.18 or later",
-                            false,
-                        );
-                        invalid_operand(state)
-                    } else if object.kind == go_types::ObjectKind::Const {
-                        if object.name == "iota" && state.current_iota < 0 {
-                            diagnostic(
-                                state,
-                                node,
-                                "cannot use iota outside constant declaration",
-                                false,
-                            );
-                            invalid_operand(state)
-                        } else {
-                            Operand {
-                                type_id: object.type_id,
-                                value: find_constant(state, object_id),
-                                addressable: false,
-                                assignable: false,
-                            }
-                        }
-                    } else if object.kind == go_types::ObjectKind::Var {
-                        if state.active_type_objects.is_empty()
-                            && type_value_cycle_contains(state, object_id) {
-                            invalid_operand(state)
-                        } else {
-                            Operand {
-                                type_id: match go_types::get_type(state.world, object.type_id) {
-                                    Some(go_types::TypeData {
-                                        id: _,
-                                        kind: go_types::TypeKind::Invalid,
-                                    }) => state.world.invalid,
-                                    _ => object.type_id,
-                                },
-                                value: Option::None,
-                                addressable: true,
-                                assignable: true,
-                            }
-                        }
-                    } else if object.kind == go_types::ObjectKind::Func {
-                        publish_active_initializer_root_type(state, node, object.type_id);
-                        evaluate_function_dependency(state, object_id);
-                        if state.generic_function_context_depth.get() == 0
-                            && !generic_parameters(state, object.type_id).is_empty() {
-                            diagnostic(
-                                state,
-                                node,
-                                "cannot use generic function " + name + " without instantiation",
-                                false,
-                            );
-                            invalid_operand(state)
-                        } else {
-                            Operand {
-                                type_id: object.type_id,
-                                value: Option::None,
-                                addressable: false,
-                                assignable: false,
-                            }
-                        }
-                    } else if object.kind == go_types::ObjectKind::Nil {
-                        Operand {
-                            type_id: object.type_id,
-                            value: Option::None,
-                            addressable: false,
-                            assignable: false,
-                        }
-                    } else if object.kind == go_types::ObjectKind::TypeName {
-                        record_type_expression(state, node, object.type_id);
-                        diagnostic(state, node, name + " (type) is not an expression", false);
-                        invalid_operand(state)
-                    } else if object.kind == go_types::ObjectKind::PackageName {
-                        diagnostic(
-                            state,
-                            node,
-                            "use of package " + name + " not in selector",
-                            false,
-                        );
-                        invalid_operand(state)
-                    } else if object.kind == go_types::ObjectKind::Builtin {
-                        record_builtin_reference(
-                            state,
-                            BuiltinReference { name, object: object_id, node, fact_node: node },
-                        );
-                        diagnostic(state, node, name + " (built-in) must be called", false);
-                        invalid_operand(state)
-                    } else {
-                        diagnostic(state, node, name + " is not a value", false);
-                        invalid_operand(state)
+            if object_id.value < 0 || object_id.value >= state.world.objects.len() {
+                return invalid_operand(state)
+            } else {};
+            let object = state.world.objects[object_id.value];
+            mark_dot_import_used(state, object_id);
+            record_use(state, node, object_id);
+            if object.owner.is_none() && (name == "any" || name == "comparable")
+                && !go_version_at_least(state, node, 18) {
+                diagnostic(state, node, "predeclared " + name + " requires go1.18 or later", false);
+                invalid_operand(state)
+            } else if object.kind == go_types::ObjectKind::Const {
+                if object.name == "iota" && state.current_iota < 0 {
+                    diagnostic(state, node, "cannot use iota outside constant declaration", false);
+                    invalid_operand(state)
+                } else {
+                    Operand {
+                        type_id: object.type_id,
+                        value: find_constant(state, object_id),
+                        addressable: false,
+                        assignable: false,
                     }
-                },
-                None => invalid_operand(state),
+                }
+            } else if object.kind == go_types::ObjectKind::Var {
+                if state.active_type_objects.is_empty()
+                    && type_value_cycle_contains(state, object_id) {
+                    invalid_operand(state)
+                } else {
+                    Operand {
+                        type_id: match go_types::get_type(state.world, object.type_id) {
+                            Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Invalid }) => state.world.invalid,
+                            _ => object.type_id,
+                        },
+                        value: Option::None,
+                        addressable: true,
+                        assignable: true,
+                    }
+                }
+            } else if object.kind == go_types::ObjectKind::Func {
+                publish_active_initializer_root_type(state, node, object.type_id);
+                evaluate_function_dependency(state, object_id);
+                if state.generic_function_context_depth.get() == 0
+                    && !generic_parameters(state, object.type_id).is_empty() {
+                    diagnostic(
+                        state,
+                        node,
+                        "cannot use generic function " + name + " without instantiation",
+                        false,
+                    );
+                    invalid_operand(state)
+                } else {
+                    Operand {
+                        type_id: object.type_id,
+                        value: Option::None,
+                        addressable: false,
+                        assignable: false,
+                    }
+                }
+            } else if object.kind == go_types::ObjectKind::Nil {
+                Operand {
+                    type_id: object.type_id,
+                    value: Option::None,
+                    addressable: false,
+                    assignable: false,
+                }
+            } else if object.kind == go_types::ObjectKind::TypeName {
+                record_type_expression(state, node, object.type_id);
+                diagnostic(state, node, name + " (type) is not an expression", false);
+                invalid_operand(state)
+            } else if object.kind == go_types::ObjectKind::PackageName {
+                diagnostic(state, node, "use of package " + name + " not in selector", false);
+                invalid_operand(state)
+            } else if object.kind == go_types::ObjectKind::Builtin {
+                record_builtin_reference(
+                    state,
+                    BuiltinReference { name, object: object_id, node, fact_node: node },
+                );
+                diagnostic(state, node, name + " (built-in) must be called", false);
+                invalid_operand(state)
+            } else {
+                diagnostic(state, node, name + " is not a value", false);
+                invalid_operand(state)
             }
         },
         None => {
