@@ -1337,19 +1337,19 @@ fn preserves_constant_kinds_during_contextual_typing_and_string_conversion() -> 
             ".fields.decls[2].fields.body.fields.list[1].fields.results[0].fields.x.fields.x",
         ) {
             testing::assert_eq(go_types::format_type(result.world, fact.type_id), "int64");
-            testing::assert_eq(fact.constant_kind, "Float");
-            testing::assert_eq(fact.constant.unwrap_or(""), "100");
+            testing::assert_eq(type_fact_constant_kind(fact), "Float");
+            testing::assert_eq(type_fact_constant(fact).unwrap_or(""), "100");
             division_found = true;
         } else if key.ends_with(
             ".fields.decls[1].fields.specs[0].fields.values[0].fields.args[0].fields.args[0]",
         ) {
             testing::assert_eq(go_types::format_type(result.world, fact.type_id), "untyped int");
-            testing::assert_eq(fact.constant_kind, "Int");
+            testing::assert_eq(type_fact_constant_kind(fact), "Int");
             rune_found = true;
         } else if key.ends_with(".fields.decls[3].fields.specs[0].fields.values[0].fields.args[0]") {
             testing::assert_eq(go_types::format_type(result.world, fact.type_id), "float32");
-            testing::assert_eq(fact.constant_kind, "Int");
-            testing::assert_eq(fact.constant.unwrap_or(""), "16777217");
+            testing::assert_eq(type_fact_constant_kind(fact), "Int");
+            testing::assert_eq(type_fact_constant(fact).unwrap_or(""), "16777217");
             conversion_found = true;
         } else {}
     }
@@ -1447,7 +1447,7 @@ fn contextualizes_append_elements_to_named_types() -> unit {
         let key = syntax::node_key(result.syntax, fact.node).unwrap_or("");
         if key.ends_with(".fields.values[0].fields.args[1]") {
             testing::assert_eq(go_types::format_type(result.world, fact.type_id), "example/p.token");
-            testing::assert_eq(fact.constant.unwrap_or(""), "256");
+            testing::assert_eq(type_fact_constant(fact).unwrap_or(""), "256");
             found = true;
         } else {}
     }

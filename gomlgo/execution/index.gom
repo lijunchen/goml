@@ -111,8 +111,9 @@ pub fn build_type_info_index(
     let diagnostics: Vec[ExecutionDiagnostic] = Vec::from_array([]);
     for fact_index in 0..index.types.len() {
         let fact = index.types[fact_index];
-        if !valid_node(fact.node, node_count) && fact.key.is_some() {
-            let key = fact.key.unwrap_or("");
+        let fact_key = checker::type_fact_key(fact);
+        if !valid_node(fact.node, node_count) && fact_key.is_some() {
+            let key = fact_key.unwrap_or("");
             if !valid_type(world, fact.type_id) {
                 diagnostics.push(
                     index_diagnostic(

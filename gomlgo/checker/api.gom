@@ -47,12 +47,16 @@ pub struct CheckDiagnostic {
     pub secondary: bool,
 }
 
-pub struct TypeFact {
-    pub node: syntax::NodeId,
+pub struct TypeFactExtra {
     pub key: Option[string],
-    pub type_id: go_types::TypeId,
     pub constant_kind: string,
     pub constant: Option[string],
+}
+
+pub struct TypeFact {
+    pub node: syntax::NodeId,
+    pub type_id: go_types::TypeId,
+    pub extra: Option[TypeFactExtra],
     pub void: bool,
     pub type_expr: bool,
     pub builtin: bool,
@@ -61,6 +65,37 @@ pub struct TypeFact {
     pub addressable: bool,
     pub assignable: bool,
     pub comma_ok: bool,
+}
+
+pub fn type_fact_extra(key: Option[string], constant_kind: string, constant: Option[string]) -> Option[
+    TypeFactExtra,
+] {
+    if key.is_none() && constant.is_none() {
+        Option::None
+    } else {
+        Option::Some(TypeFactExtra { key, constant_kind, constant })
+    }
+}
+
+pub fn type_fact_key(value: TypeFact) -> Option[string] {
+    match value.extra {
+        Some(extra) => extra.key,
+        None => Option::None,
+    }
+}
+
+pub fn type_fact_constant_kind(value: TypeFact) -> string {
+    match value.extra {
+        Some(extra) => extra.constant_kind,
+        None => "",
+    }
+}
+
+pub fn type_fact_constant(value: TypeFact) -> Option[string] {
+    match value.extra {
+        Some(extra) => extra.constant,
+        None => Option::None,
+    }
 }
 
 pub struct ObjectFact {

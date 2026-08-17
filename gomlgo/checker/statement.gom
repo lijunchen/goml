@@ -3966,8 +3966,7 @@ fn recover_void_call_fact(state: CheckState, node: syntax::NodeId) -> unit {
                 state.world,
                 go_types::TypeKind::Tuple { variables: Vec::from_array([]) },
             );
-            state.info.types[index].constant_kind = "";
-            state.info.types[index].constant = Option::None;
+            state.info.types[index].extra = Option::None;
             state.info.types[index].void = true;
             state.info.types[index].type_expr = false;
             state.info.types[index].builtin = false;
@@ -4081,7 +4080,7 @@ fn check_statement(
                     + "]";
                 let mut exists = false;
                 for fact in state.info.types {
-                    match fact.key {
+                    match type_fact_key(fact) {
                         Some(existing) => if existing == key {
                             exists = true;
                         } else {},
@@ -4092,10 +4091,12 @@ fn check_statement(
                     state.info.types.push(
                         TypeFact {
                             node: syntax::node_id(-1),
-                            key: Option::Some(key),
                             type_id: operand.type_id,
-                            constant_kind: constant::constant_kind_name(fact_one),
-                            constant: Option::Some(constant::constant_exact_string(fact_one)),
+                            extra: type_fact_extra(
+                                Option::Some(key),
+                                constant::constant_kind_name(fact_one),
+                                Option::Some(constant::constant_exact_string(fact_one)),
+                            ),
                             void: false,
                             type_expr: false,
                             builtin: false,

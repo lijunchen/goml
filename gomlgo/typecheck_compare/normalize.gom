@@ -746,14 +746,20 @@ fn selection_kind(value: checker::CheckResult, fact: checker::SelectionFact) -> 
 fn normalize_type_facts(value: checker::CheckResult) -> Vec[json::Value] {
     let result: Vec[json::Value] = Vec::from_array([]);
     for fact in value.info.types {
-        let fact_node = fact.key.unwrap_or(node_key(value, fact.node));
+        let fact_node = checker::type_fact_key(fact).unwrap_or(node_key(value, fact.node));
         result.push(
             object_value(
                 Vec::from_array(
                     [
                         ("node", string_value(fact_node)),
                         ("type", normalize_type(value, fact.type_id)),
-                        ("value", normalize_constant(fact.constant_kind, fact.constant)),
+                        (
+                            "value",
+                            normalize_constant(
+                                checker::type_fact_constant_kind(fact),
+                                checker::type_fact_constant(fact),
+                            ),
+                        ),
                         ("void", bool_value(fact.void)),
                         ("type_expr", bool_value(fact.type_expr)),
                         ("builtin", bool_value(fact.builtin)),

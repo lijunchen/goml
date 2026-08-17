@@ -964,14 +964,16 @@ fn complete_type_parameters(
             state.info.types.push(
                 TypeFact {
                     node: syntax::node_id(-1),
-                    key: Option::Some(
-                        ":$unknown[*ast.InterfaceType:-1:"
-                            + node_end(state, binding.constraint_node).to_string()
-                            + "]",
-                    ),
                     type_id: constraint,
-                    constant_kind: "",
-                    constant: Option::None,
+                    extra: type_fact_extra(
+                        Option::Some(
+                            ":$unknown[*ast.InterfaceType:-1:"
+                                + node_end(state, binding.constraint_node).to_string()
+                                + "]",
+                        ),
+                        "",
+                        Option::None,
+                    ),
                     void: false,
                     type_expr: true,
                     builtin: false,

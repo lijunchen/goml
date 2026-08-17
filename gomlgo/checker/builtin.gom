@@ -106,10 +106,8 @@ fn record_builtin_fact_nodes(state: CheckState, node: syntax::NodeId) -> unit {
         state.info.types.push(
             TypeFact {
                 node,
-                key: Option::None,
                 type_id: state.world.invalid,
-                constant_kind: "",
-                constant: Option::None,
+                extra: Option::None,
                 void: false,
                 type_expr: false,
                 builtin: true,
@@ -662,7 +660,7 @@ fn expression_has_nonconstant_call_or_receive(state: CheckState, node: syntax::N
                     rparen: _,
                 } => {
                     let constant_call = match recorded_type_fact(state, candidate.id) {
-                        Some(fact) => fact.constant.is_some(),
+                        Some(fact) => type_fact_constant(fact).is_some(),
                         None => false,
                     };
                     let conversion = match recorded_type_fact(state, function) {
@@ -1541,7 +1539,7 @@ fn diagnostic_constant_string(state: CheckState, node: syntax::NodeId, value: co
             let exact = constant::constant_exact_string(value);
             for argument in arguments {
                 match recorded_type_fact(state, argument) {
-                    Some(fact) => match fact.constant {
+                    Some(fact) => match type_fact_constant(fact) {
                         Some(candidate) => if candidate == exact {
                             return expression_source_text(state, argument)
                         } else {},

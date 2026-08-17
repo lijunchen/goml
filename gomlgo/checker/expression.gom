@@ -1033,8 +1033,7 @@ fn omit_indirect_cycle_facts(state: CheckState, node: syntax::NodeId, expression
             match type_fact_index(state, function) {
                 Some(index) => {
                     state.info.types[index].type_id = state.world.invalid;
-                    state.info.types[index].constant_kind = "";
-                    state.info.types[index].constant = Option::None;
+                    state.info.types[index].extra = Option::None;
                 },
                 None => {},
             }

@@ -442,10 +442,8 @@ fn record_type_expression(state: CheckState, node: syntax::NodeId, type_id: go_t
     state.info.types.push(
         TypeFact {
             node,
-            key: Option::None,
             type_id,
-            constant_kind: "",
-            constant: Option::None,
+            extra: Option::None,
             void: false,
             type_expr: true,
             builtin: false,
@@ -462,8 +460,7 @@ fn record_invalid_type_expression(state: CheckState, node: syntax::NodeId) -> un
     match type_fact_index(state, node) {
         Some(index) => {
             state.info.types[index].type_id = state.world.invalid;
-            state.info.types[index].constant_kind = "";
-            state.info.types[index].constant = Option::None;
+            state.info.types[index].extra = Option::None;
             state.info.types[index].void = false;
             state.info.types[index].type_expr = true;
             state.info.types[index].builtin = false;
@@ -523,8 +520,7 @@ fn refresh_cycle_identifier_facts(state: CheckState) -> unit {
                         && object.type_id.value != state.world.invalid.value
                         && !type_contains_invalid(state, object.type_id) {
                         state.info.types[index].type_id = object.type_id;
-                        state.info.types[index].constant_kind = "";
-                        state.info.types[index].constant = Option::None;
+                        state.info.types[index].extra = Option::None;
                         state.info.types[index].void = false;
                         state.info.types[index].type_expr = false;
                         state.info.types[index].builtin = false;

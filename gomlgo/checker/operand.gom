@@ -757,12 +757,12 @@ fn record_operand(state: CheckState, node: syntax::NodeId, operand: Operand) -> 
                 && operand.type_id.value != state.world.invalid.value)
                 || state.current_iota >= 0 {
                 state.info.types[index].type_id = operand.type_id;
-                state.info.types[index].constant_kind = match operand.value {
-                    Some(value) => constant::constant_kind_name(value),
-                    None => "",
-                };
-                state.info.types[index].constant = match operand.value {
-                    Some(value) => Option::Some(constant::constant_exact_string(value)),
+                state.info.types[index].extra = match operand.value {
+                    Some(value) => type_fact_extra(
+                        Option::None,
+                        constant::constant_kind_name(value),
+                        Option::Some(constant::constant_exact_string(value)),
+                    ),
                     None => Option::None,
                 };
                 state.info.types[index].value_expr = true;
@@ -803,10 +803,8 @@ fn record_operand(state: CheckState, node: syntax::NodeId, operand: Operand) -> 
     state.info.types.push(
         TypeFact {
             node,
-            key: Option::None,
             type_id: fact_type,
-            constant_kind,
-            constant: value,
+            extra: type_fact_extra(Option::None, constant_kind, value),
             void,
             type_expr: false,
             builtin: false,
@@ -843,9 +841,10 @@ fn update_operand_fact(
             state.info.types[index].type_id = type_id;
             match value {
                 Some(value) => {
-                    state.info.types[index].constant_kind = constant::constant_kind_name(value);
-                    state.info.types[index].constant = Option::Some(
-                        constant::constant_exact_string(value),
+                    state.info.types[index].extra = type_fact_extra(
+                        Option::None,
+                        constant::constant_kind_name(value),
+                        Option::Some(constant::constant_exact_string(value)),
                     );
                 },
                 None => {},
@@ -861,8 +860,8 @@ fn contextualize_untyped_component(
     target: go_types::TypeId,
 ) -> unit {
     match recorded_type_fact(state, node) {
-        Some(fact) => match fact.constant {
-            Some(exact) => match constant::constant_from_exact(fact.constant_kind, exact) {
+        Some(fact) => match type_fact_constant(fact) {
+            Some(exact) => match constant::constant_from_exact(type_fact_constant_kind(fact), exact) {
                 Some(value) => if (go_types::is_type_parameter(state.world, target)
                     && constant_assignable_to_type_parameter(state, value, target))
                     || (!go_types::is_type_parameter(state.world, target)
@@ -912,8 +911,11 @@ fn contextualize_untyped_expression(
                 None => {},
             };
             let mut valid = true;
-            match fact.constant {
-                Some(exact) => match constant::constant_from_exact(fact.constant_kind, exact) {
+            match type_fact_constant(fact) {
+                Some(exact) => match constant::constant_from_exact(
+                    type_fact_constant_kind(fact),
+                    exact,
+                ) {
                     Some(value) => if go_types::is_type_parameter(state.world, target)
                         && constant_assignable_to_type_parameter(state, value, target) {
                         update_operand_fact(state, node, target, Option::Some(value))
@@ -980,7 +982,7 @@ fn contextualize_untyped_expression(
                 },
                 None => update_operand_fact(state, node, target, Option::None),
             };
-            if valid && fact.constant.is_none()
+            if valid && type_fact_constant(fact).is_none()
                 && (go_types::is_numeric(state.world, fact.type_id)
                     || basic_kind(state, fact.type_id) == go_types::BasicKind::UntypedBool) {
                 match syntax::get_node(state.syntax.arena, node) {
@@ -991,7 +993,7 @@ fn contextualize_untyped_expression(
                         path: _,
                         kind: syntax::SyntaxKind::BinaryExpr { left, op_pos: _, op, right },
                     }) => {
-                        if shift_operator(op) && fact.constant.is_none()
+                        if shift_operator(op) && type_fact_constant(fact).is_none()
                             && !go_types::is_integer(state.world, target) {
                             diagnostic(
                                 state,

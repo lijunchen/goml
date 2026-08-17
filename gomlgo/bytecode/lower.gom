@@ -794,10 +794,8 @@ fn node_fact(builder: FunctionBuilder, node: syntax::NodeId) -> Result[checker::
     Result::Ok(
         checker::TypeFact {
             node: fact.node,
-            key: fact.key,
             type_id: runtime_type(builder, fact.type_id),
-            constant_kind: fact.constant_kind,
-            constant: fact.constant,
+            extra: fact.extra,
             void: fact.void,
             type_expr: fact.type_expr,
             builtin: fact.builtin,
@@ -1026,7 +1024,7 @@ fn emit_zero(builder: FunctionBuilder, node: syntax::NodeId, type_id: go_types::
 
 fn emit_constant(builder: FunctionBuilder, node: syntax::NodeId) -> Result[RegisterId, string] {
     let fact = node_fact(builder, node)?;
-    let exact = fact.constant.ok_or("expression has no constant value")?;
+    let exact = checker::type_fact_constant(fact).ok_or("expression has no constant value")?;
     let target = new_register(builder, fact.type_id);
     emit(
         builder,
@@ -1034,7 +1032,7 @@ fn emit_constant(builder: FunctionBuilder, node: syntax::NodeId) -> Result[Regis
         InstructionKind::Constant {
             target,
             type_id: fact.type_id,
-            constant_kind: fact.constant_kind,
+            constant_kind: checker::type_fact_constant_kind(fact),
             exact,
         },
     )?;
@@ -2473,7 +2471,9 @@ fn lower_composite_literal(
                         element: _,
                     } => {
                         let fact = node_fact(builder, key)?;
-                        let exact = fact.constant.ok_or("composite literal index is not constant")?;
+                        let exact = checker::type_fact_constant(fact).ok_or(
+                            "composite literal index is not constant",
+                        )?;
                         let index = num::parse_int(exact)?;
                         if index < 0 {
                             return Result::Err("composite literal index is negative")
@@ -2592,7 +2592,7 @@ fn lower_expression(builder: FunctionBuilder, node: syntax::NodeId) -> Result[
         },
         syntax::SyntaxKind::Ident { name_pos: _, name } => {
             let fact = node_fact(builder, node)?;
-            if fact.constant.is_some() {
+            if checker::type_fact_constant(fact).is_some() {
                 Result::Ok(Vec::from_array([emit_constant(builder, node)?]))
             } else if fact.nil {
                 Result::Ok(Vec::from_array([emit_zero(builder, node, fact.type_id)?]))
