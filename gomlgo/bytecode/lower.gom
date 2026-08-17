@@ -432,7 +432,10 @@ fn collect_function_sources(
                 ),
             };
             match package_value.syntax {
-                Some(package_syntax) => for node in package_syntax.arena.nodes {
+                Some(package_syntax) => for node_value in package_syntax.arena.nodes {
+                    let Some(node) = node_value else {
+                        continue
+                    };
                     match node.kind {
                         syntax::SyntaxKind::FuncLit { type_node, body } => match execution::require_node_type(
                             package_value.index,
