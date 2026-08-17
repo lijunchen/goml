@@ -316,7 +316,7 @@ pub struct SyntaxFile {
 }
 
 pub struct SyntaxArena {
-    pub nodes: Vec[SyntaxNode],
+    pub nodes: Vec[Option[SyntaxNode]],
 }
 
 pub struct LowerDiagnostic {
@@ -413,7 +413,7 @@ pub fn syntax_kind_name(value: SyntaxKind) -> string {
 
 pub fn get_node(value: SyntaxArena, id: NodeId) -> Option[SyntaxNode] {
     if id.value >= 0 && id.value < value.nodes.len() {
-        Option::Some(value.nodes[id.value])
+        value.nodes[id.value]
     } else {
         Option::None
     }

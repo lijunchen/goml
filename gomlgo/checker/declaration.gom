@@ -1785,7 +1785,10 @@ fn named_type_reference_after(
         Some(node) => node.file,
         None => return Option::None,
     };
-    for candidate in state.syntax.arena.nodes {
+    for candidate_value in state.syntax.arena.nodes {
+        let Some(candidate) = candidate_value else {
+            continue
+        };
         if candidate.file.value == file.value && candidate.span.start >= start
             && candidate.span.end <= end
             && candidate.span.start > after
@@ -2342,7 +2345,10 @@ fn type_object_used_as_receiver(state: CheckState, object: go_types::ObjectId) -
         Some(object) => object.name,
         None => return false,
     };
-    for node in state.syntax.arena.nodes {
+    for node_value in state.syntax.arena.nodes {
+        let Some(node) = node_value else {
+            continue
+        };
         match node.kind {
             syntax::SyntaxKind::FuncDecl {
                 receiver: Some(receiver),
@@ -2738,7 +2744,10 @@ fn diagnostics_share_method_receiver(
     if left.file != right.file {
         return false
     } else {};
-    for node in state.syntax.arena.nodes {
+    for node_value in state.syntax.arena.nodes {
+        let Some(node) = node_value else {
+            continue
+        };
         match node.kind {
             syntax::SyntaxKind::FuncDecl {
                 receiver: Some(receiver),
@@ -6871,7 +6880,10 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
     let function_scope_ends: HashMap[int, int] = HashMap::from_array([]);
     let loop_labels: HashMap[int, string] = HashMap::from_array([]);
     let effect_expression_nodes: Vec[syntax::NodeId] = Vec::from_array([]);
-    for candidate in syntax_package.arena.nodes {
+    for candidate_value in syntax_package.arena.nodes {
+        let Some(candidate) = candidate_value else {
+            continue
+        };
         match candidate.kind {
             syntax::SyntaxKind::FuncDecl { receiver: _, name: _, type_node, body: _ } | syntax::SyntaxKind::FuncLit {
                 type_node,

@@ -737,19 +737,22 @@ fn resolve_receiver(
                 Some(source) => {
                     let id = syntax::node_id(state.syntax.arena.nodes.len());
                     state.syntax.arena.nodes.push(
-                        syntax::SyntaxNode {
-                            id,
-                            file: source.file,
-                            span: source.span,
-                            path: "$unknown[*ast.Ident:" + node_start(state, name_node).to_string()
-                                + ":"
-                                + (node_start(state, name_node) + 1).to_string()
-                                + "]",
-                            kind: syntax::SyntaxKind::Ident {
-                                name_pos: node_start(state, name_node),
-                                name,
+                        Option::Some(
+                            syntax::SyntaxNode {
+                                id,
+                                file: source.file,
+                                span: source.span,
+                                path: "$unknown[*ast.Ident:"
+                                    + node_start(state, name_node).to_string()
+                                    + ":"
+                                    + (node_start(state, name_node) + 1).to_string()
+                                    + "]",
+                                kind: syntax::SyntaxKind::Ident {
+                                    name_pos: node_start(state, name_node),
+                                    name,
+                                },
                             },
-                        },
+                        ),
                     );
                     id
                 },
