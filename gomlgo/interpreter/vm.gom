@@ -1,6 +1,7 @@
 package interpreter;
 
 use gomlgo::bytecode;
+use gomlgo::syntax;
 use gomlgo::types as go_types;
 use std::bytes;
 
@@ -153,7 +154,7 @@ struct VmState {
     stderr: bytes::Bytes,
     steps: Ref[int64],
     depth: Ref[int],
-    location: Ref[Option[bytecode::SourceLocation]],
+    location: Ref[bytecode::SourceLocation],
     native_completions: NativeCompletionQueue,
     native_callbacks: Vec[NativeCallbackBinding],
 }
@@ -275,15 +276,20 @@ fn register_values(frame: Frame, ids: Vec[bytecode::RegisterId]) -> Result[Vec[V
     Result::Ok(result)
 }
 
-fn use_step(state: VmState, location: bytecode::SourceLocation) -> Result[unit, string] {
-    state.location.set(Option::Some(location));
-    state.steps.set(state.steps.get() + 1.to_int64());
-    if state.config.max_steps >= 0.to_int64() && state.steps.get() > state.config.max_steps {
-        let _ = location;
-        Result::Err("instruction limit exceeded")
+fn current_location(state: VmState) -> Option[bytecode::SourceLocation] {
+    let location = state.location.get();
+    if location.function.value < 0 {
+        Option::None
     } else {
-        Result::Ok(())
+        Option::Some(location)
     }
+}
+
+fn use_step(state: VmState, location: bytecode::SourceLocation) -> bool {
+    state.location.set(location);
+    let steps = state.steps.get() + 1.to_int64();
+    state.steps.set(steps);
+    state.config.max_steps < 0.to_int64() || steps <= state.config.max_steps
 }
 
 fn append_bytes(target: bytes::Bytes, value: bytes::Bytes) -> unit {
@@ -3424,7 +3430,9 @@ fn execute_instruction(state: VmState, frame: Frame, instruction: bytecode::Inst
     InstructionControl,
     string,
 ] {
-    use_step(state, instruction.location)?;
+    if !use_step(state, instruction.location) {
+        return Result::Err("instruction limit exceeded")
+    } else {};
     match execute_instruction_effect(state, frame, instruction) {
         Ok(value) => Result::Ok(value),
         Err(message) => if runtime_fault(message) {
@@ -3589,7 +3597,9 @@ fn execute_terminator(state: VmState, frame: Frame, terminator: bytecode::Termin
     FunctionControl,
     string,
 ] {
-    use_step(state, terminator.location)?;
+    if !use_step(state, terminator.location) {
+        return Result::Err("instruction limit exceeded")
+    } else {};
     let result: Result[FunctionControl, string] = match terminator.kind {
         bytecode::TerminatorKind::Jump { target, arguments } => {
             jump_control(frame, target, arguments)
@@ -3875,7 +3885,15 @@ fn initialize_state(program: bytecode::BytecodeProgram, config: VmConfig) -> Res
         stderr: bytes::Bytes::new(),
         steps: Ref::new(0.to_int64()),
         depth: Ref::new(0),
-        location: Ref::new(Option::None),
+        location: Ref::new(
+            bytecode::SourceLocation {
+                package_id: go_types::package_id(-1),
+                file: syntax::file_id(-1),
+                start: 0,
+                end: 0,
+                function: bytecode::function_id(-1),
+            },
+        ),
         native_completions,
         native_callbacks: Vec::from_array([]),
     };
@@ -3976,7 +3994,7 @@ pub fn run(program: bytecode::BytecodeProgram, config: VmConfig) -> VmResult {
                 stdout: state.stdout,
                 stderr: state.stderr,
                 exit_code: 1,
-                error: Option::Some(runtime_error("panic", message, state.location.get())),
+                error: Option::Some(runtime_error("panic", message, current_location(state))),
                 steps: state.steps.get(),
             }
         },
@@ -3986,7 +4004,7 @@ pub fn run(program: bytecode::BytecodeProgram, config: VmConfig) -> VmResult {
                 stdout: state.stdout,
                 stderr: state.stderr,
                 exit_code: 1,
-                error: Option::Some(runtime_error("runtime", message, state.location.get())),
+                error: Option::Some(runtime_error("runtime", message, current_location(state))),
                 steps: state.steps.get(),
             }
         },

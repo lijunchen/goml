@@ -773,9 +773,9 @@ fn count_scheduled_step(
     scheduler: Scheduler,
     scheduled: ScheduledFrame,
     location: bytecode::SourceLocation,
-) -> Result[unit, string] {
+) -> bool {
     if scheduled.waiting.get() {
-        Result::Ok(())
+        true
     } else {
         use_step(scheduler.state, location)
     }
@@ -1456,7 +1456,9 @@ fn execute_scheduled_select(
     chosen: bytecode::RegisterId,
     cases: Vec[bytecode::SelectCase],
 ) -> Result[Option[InvocationOutcome], string] {
-    count_scheduled_step(scheduler, scheduled, instruction.location)?;
+    if !count_scheduled_step(scheduler, scheduled, instruction.location) {
+        return Result::Err("instruction limit exceeded")
+    } else {};
     let native_channels: Vec[dyn HostValueMarker] = Vec::from_array([]);
     let native_indices: Vec[int] = Vec::from_array([]);
     let mut default_index = -1;
@@ -1643,7 +1645,9 @@ fn execute_scheduled_instruction(
             };
             match prepared.target {
                 PreparedTarget::Native(_) | PreparedTarget::Dynamic(Value::Host { .. }) => {
-                    use_step(scheduler.state, instruction.location)?;
+                    if !use_step(scheduler.state, instruction.location) {
+                        return Result::Err("instruction limit exceeded")
+                    } else {};
                     start_scheduled_native_call(
                         scheduler,
                         goroutine_index,
@@ -1660,7 +1664,9 @@ fn execute_scheduled_instruction(
             };
             match scheduled_call(scheduler.state, prepared) {
                 Ok(Some(invocation)) => {
-                    use_step(scheduler.state, instruction.location)?;
+                    if !use_step(scheduler.state, instruction.location) {
+                        return Result::Err("instruction limit exceeded")
+                    } else {};
                     if goroutine.frames.len() >= scheduler.state.config.max_call_depth {
                         return Result::Err("maximum call depth exceeded")
                     } else {};
@@ -1694,7 +1700,9 @@ fn execute_scheduled_instruction(
             }
         },
         bytecode::InstructionKind::Spawn { target, arguments, variadic } => {
-            count_scheduled_step(scheduler, scheduled, instruction.location)?;
+            if !count_scheduled_step(scheduler, scheduled, instruction.location) {
+                return Result::Err("instruction limit exceeded")
+            } else {};
             let prepared = prepare_call(
                 scheduler.state,
                 scheduled.frame,
@@ -1711,7 +1719,9 @@ fn execute_scheduled_instruction(
             Result::Ok(Option::None)
         },
         bytecode::InstructionKind::MakeChannel { target, type_id, capacity } => {
-            count_scheduled_step(scheduler, scheduled, instruction.location)?;
+            if !count_scheduled_step(scheduler, scheduled, instruction.location) {
+                return Result::Err("instruction limit exceeded")
+            } else {};
             let capacity = integer_host(register(scheduled.frame, capacity)?)?;
             if capacity < 0 {
                 return panic_scheduled(
@@ -1737,7 +1747,9 @@ fn execute_scheduled_instruction(
             Result::Ok(Option::None)
         },
         bytecode::InstructionKind::Send { channel, value } => {
-            count_scheduled_step(scheduler, scheduled, instruction.location)?;
+            if !count_scheduled_step(scheduler, scheduled, instruction.location) {
+                return Result::Err("instruction limit exceeded")
+            } else {};
             let channel_id = scheduled_channel_id(scheduled.frame, channel)?;
             match attempt_send(
                 scheduler,
@@ -1762,7 +1774,9 @@ fn execute_scheduled_instruction(
             }
         },
         bytecode::InstructionKind::Receive { value, ok, channel } => {
-            count_scheduled_step(scheduler, scheduled, instruction.location)?;
+            if !count_scheduled_step(scheduler, scheduled, instruction.location) {
+                return Result::Err("instruction limit exceeded")
+            } else {};
             match register(scheduled.frame, channel)? {
                 Value::Host { type_id, value: host } => {
                     start_native_channel(
@@ -1807,7 +1821,9 @@ fn execute_scheduled_instruction(
             }
         },
         bytecode::InstructionKind::Close { channel } => {
-            count_scheduled_step(scheduler, scheduled, instruction.location)?;
+            if !count_scheduled_step(scheduler, scheduled, instruction.location) {
+                return Result::Err("instruction limit exceeded")
+            } else {};
             let channel_id = scheduled_channel_id(scheduled.frame, channel)?;
             if channel_id < 0 {
                 return panic_scheduled(
