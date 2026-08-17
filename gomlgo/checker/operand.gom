@@ -524,9 +524,28 @@ fn type_contains_invalid_inner(state: CheckState, type_id: go_types::TypeId, gen
 }
 
 fn type_contains_invalid(state: CheckState, type_id: go_types::TypeId) -> bool {
+    if !go_types::has_type(state.world, type_id) {
+        return true
+    } else {};
+    while state.type_invalid_cache.len() <= type_id.value {
+        state.type_invalid_cache.push(0.to_int32())
+    }
+    let revision = go_types::type_revision(state.world);
+    let cached = state.type_invalid_cache[type_id.value];
+    if cached == revision {
+        return false
+    } else if cached == -revision {
+        return true
+    } else {};
     let generation = state.type_visit_generation.get() + 1;
     state.type_visit_generation.set(generation);
-    type_contains_invalid_inner(state, type_id, generation)
+    let result = type_contains_invalid_inner(state, type_id, generation);
+    state.type_invalid_cache[type_id.value] = if result {
+        -revision
+    } else {
+        revision
+    };
+    result
 }
 
 fn type_contains_active_type_inner(state: CheckState, type_id: go_types::TypeId, visited: Vec[int]) -> bool {

@@ -7,6 +7,7 @@ pub fn empty_world() -> World {
     let invalid = type_id(0);
     World {
         types: Vec::from_array([TypeData { id: invalid, kind: TypeKind::Invalid }]),
+        type_revision: Ref::new(1),
         named_instances: HashMap::from_array([]),
         named_type_objects: Vec::from_array([-1]),
         objects: Vec::from_array([]),
@@ -18,6 +19,14 @@ pub fn empty_world() -> World {
         invalid,
         invalid_type_sets: Vec::from_array([]),
     }
+}
+
+fn advance_type_revision(world: World) -> unit {
+    world.type_revision.set(world.type_revision.get() + 1)
+}
+
+pub fn type_revision(world: World) -> int32 {
+    world.type_revision.get()
 }
 
 fn named_type_object(kind: TypeKind) -> int {
@@ -57,6 +66,7 @@ pub fn set_type(world: World, id: TypeId, kind: TypeKind) -> bool {
         } else {};
         world.named_type_objects[id.value] = object;
         world.types[id.value] = TypeData { id, kind };
+        advance_type_revision(world);
         true
     } else {
         false
@@ -176,7 +186,10 @@ pub fn get_object(world: World, id: ObjectId) -> Option[Object] {
 
 pub fn set_object_type(world: World, id: ObjectId, object_type: TypeId) -> bool {
     if id.value >= 0 && id.value < world.objects.len() {
-        world.objects[id.value].type_id = object_type;
+        if world.objects[id.value].type_id.value != object_type.value {
+            world.objects[id.value].type_id = object_type;
+            advance_type_revision(world)
+        } else {};
         true
     } else {
         false
