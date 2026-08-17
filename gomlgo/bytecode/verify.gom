@@ -39,24 +39,16 @@ fn valid_type(program: BytecodeProgram, type_id: go_types::TypeId) -> bool {
     type_id.value >= 0 && type_id.value < program.world.types.len()
 }
 
-fn type_seen(values: Vec[int], value: int) -> bool {
-    for existing in values {
-        if existing == value {
-            return true
-        } else {}
-    }
-    false
-}
-
 fn type_contains_parameter_inner(
     program: BytecodeProgram,
     type_id: go_types::TypeId,
-    visited: Vec[int],
+    marks: Vec[int],
+    generation: int,
 ) -> bool {
-    if !valid_type(program, type_id) || type_seen(visited, type_id.value) {
+    if !valid_type(program, type_id) || marks[type_id.value] == generation {
         return false
     } else {};
-    visited.push(type_id.value);
+    marks[type_id.value] = generation;
     match go_types::type_data(program.world, type_id) {
         go_types::TypeData {
             id: _,
@@ -68,10 +60,10 @@ fn type_contains_parameter_inner(
                 direction: _,
                 element,
             },
-        } => type_contains_parameter_inner(program, element, visited),
+        } => type_contains_parameter_inner(program, element, marks, generation),
         go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } } => {
             for field in fields {
-                if type_contains_parameter_inner(program, field.variable.type_id, visited) {
+                if type_contains_parameter_inner(program, field.variable.type_id, marks, generation) {
                     return true
                 } else {}
             }
@@ -79,7 +71,7 @@ fn type_contains_parameter_inner(
         },
         go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } } => {
             for variable in variables {
-                if type_contains_parameter_inner(program, variable.type_id, visited) {
+                if type_contains_parameter_inner(program, variable.type_id, marks, generation) {
                     return true
                 } else {}
             }
@@ -100,13 +92,18 @@ fn type_contains_parameter_inner(
                 return true
             } else {};
             match receiver {
-                Some(value) => if type_contains_parameter_inner(program, value.type_id, visited) {
+                Some(value) => if type_contains_parameter_inner(
+                    program,
+                    value.type_id,
+                    marks,
+                    generation,
+                ) {
                     return true
                 } else {},
                 None => {},
             };
-            type_contains_parameter_inner(program, params, visited)
-                || type_contains_parameter_inner(program, results, visited)
+            type_contains_parameter_inner(program, params, marks, generation)
+                || type_contains_parameter_inner(program, results, marks, generation)
         },
         go_types::TypeData {
             id: _,
@@ -117,21 +114,22 @@ fn type_contains_parameter_inner(
                     && type_contains_parameter_inner(
                         program,
                         program.world.objects[method.value].type_id,
-                        visited,
+                        marks,
+                        generation,
                     ) {
                     return true
                 } else {}
             }
             for embedded in embeddeds {
-                if type_contains_parameter_inner(program, embedded, visited) {
+                if type_contains_parameter_inner(program, embedded, marks, generation) {
                     return true
                 } else {}
             }
             false
         },
         go_types::TypeData { id: _, kind: go_types::TypeKind::Map { key, value } } => {
-            type_contains_parameter_inner(program, key, visited)
-                || type_contains_parameter_inner(program, value, visited)
+            type_contains_parameter_inner(program, key, marks, generation)
+                || type_contains_parameter_inner(program, value, marks, generation)
         },
         go_types::TypeData {
             id: _,
@@ -147,11 +145,11 @@ fn type_contains_parameter_inner(
                 return true
             } else {};
             for argument in type_args {
-                if type_contains_parameter_inner(program, argument, visited) {
+                if type_contains_parameter_inner(program, argument, marks, generation) {
                     return true
                 } else {}
             }
-            type_contains_parameter_inner(program, underlying, visited)
+            type_contains_parameter_inner(program, underlying, marks, generation)
         },
         go_types::TypeData {
             id: _,
@@ -161,15 +159,15 @@ fn type_contains_parameter_inner(
                 return true
             } else {};
             for argument in type_args {
-                if type_contains_parameter_inner(program, argument, visited) {
+                if type_contains_parameter_inner(program, argument, marks, generation) {
                     return true
                 } else {}
             }
-            type_contains_parameter_inner(program, rhs, visited)
+            type_contains_parameter_inner(program, rhs, marks, generation)
         },
         go_types::TypeData { id: _, kind: go_types::TypeKind::Union { terms } } => {
             for term in terms {
-                if type_contains_parameter_inner(program, term.type_id, visited) {
+                if type_contains_parameter_inner(program, term.type_id, marks, generation) {
                     return true
                 } else {}
             }
@@ -179,7 +177,13 @@ fn type_contains_parameter_inner(
     }
 }
 
-fn type_contains_parameter(program: BytecodeProgram, type_id: go_types::TypeId, cache: Vec[int]) -> bool {
+fn type_contains_parameter(
+    program: BytecodeProgram,
+    type_id: go_types::TypeId,
+    cache: Vec[int],
+    marks: Vec[int],
+    next_generation: Ref[int],
+) -> bool {
     if !valid_type(program, type_id) {
         return false
     } else {};
@@ -187,7 +191,9 @@ fn type_contains_parameter(program: BytecodeProgram, type_id: go_types::TypeId, 
     if cached >= 0 {
         cached == 1
     } else {
-        let result = type_contains_parameter_inner(program, type_id, Vec::from_array([]));
+        let generation = next_generation.get() + 1;
+        next_generation.set(generation);
+        let result = type_contains_parameter_inner(program, type_id, marks, generation);
         cache[type_id.value] = if result {
             1
         } else {
@@ -2177,6 +2183,8 @@ fn check_function(
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
     type_parameter_cache: Vec[int],
+    type_parameter_marks: Vec[int],
+    next_type_parameter_generation: Ref[int],
 ) -> unit {
     if !valid_package(program, function.package_id) {
         report(diagnostics, Option::Some(function.id), Option::None, -1, "invalid function package")
@@ -2222,7 +2230,13 @@ fn check_function(
         }
     };
     if valid_type(program, function.signature)
-        && type_contains_parameter(program, function.signature, type_parameter_cache) {
+        && type_contains_parameter(
+            program,
+            function.signature,
+            type_parameter_cache,
+            type_parameter_marks,
+            next_type_parameter_generation,
+        ) {
         report(
             diagnostics,
             Option::Some(function.id),
@@ -2240,7 +2254,13 @@ fn check_function(
                 -1,
                 "function has an invalid register type",
             )
-        } else if type_contains_parameter(program, type_id, type_parameter_cache) {
+        } else if type_contains_parameter(
+            program,
+            type_id,
+            type_parameter_cache,
+            type_parameter_marks,
+            next_type_parameter_generation,
+        ) {
             report(
                 diagnostics,
                 Option::Some(function.id),
@@ -2272,7 +2292,13 @@ fn check_function(
                 -1,
                 "local id does not match local index",
             )
-        } else if type_contains_parameter(program, local.type_id, type_parameter_cache) {
+        } else if type_contains_parameter(
+            program,
+            local.type_id,
+            type_parameter_cache,
+            type_parameter_marks,
+            next_type_parameter_generation,
+        ) {
             report(
                 diagnostics,
                 Option::Some(function.id),
@@ -2403,6 +2429,8 @@ fn check_function(
 pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
     let diagnostics: Vec[VerifyDiagnostic] = Vec::from_array([]);
     let type_parameter_cache = int_slots(program.world.types.len(), -1);
+    let type_parameter_marks = int_slots(program.world.types.len(), 0);
+    let next_type_parameter_generation = Ref::new(0);
     if !function_valid(program, program.main) {
         report(diagnostics, Option::None, Option::None, -1, "invalid main function")
     } else {
@@ -2456,7 +2484,14 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                 "function id does not match function index",
             )
         } else {};
-        check_function(program, function, diagnostics, type_parameter_cache)
+        check_function(
+            program,
+            function,
+            diagnostics,
+            type_parameter_cache,
+            type_parameter_marks,
+            next_type_parameter_generation,
+        )
     }
     for index in 0..program.globals.len() {
         let global = program.globals[index];
