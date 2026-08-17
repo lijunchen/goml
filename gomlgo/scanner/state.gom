@@ -17,6 +17,7 @@ extern fn go_is_digit(value: char) -> bool;
 pub struct ScanResult {
     pub tokens: Vec[gomlgo::token::Token],
     pub diagnostics: Vec[diagnostic::Diagnostic],
+    pub has_comments: bool,
 }
 
 struct Scanner {
@@ -293,12 +294,16 @@ pub fn scan_bytes(source: bytes::Bytes) -> ScanResult {
     let scanner = scanner_new(source.to_vec());
     let tokens: Vec[gomlgo::token::Token] = Vec::with_capacity(capacity);
     let mut finished = false;
+    let mut has_comments = false;
     while !finished {
         let next_token = scan_one(scanner);
+        if gomlgo::token::equal(next_token.kind, gomlgo::token::Kind::Comment) {
+            has_comments = true;
+        } else {}
         finished = gomlgo::token::equal(next_token.kind, gomlgo::token::Kind::Eof);
         tokens.push(next_token)
     }
-    ScanResult { tokens, diagnostics: scanner.diagnostics }
+    ScanResult { tokens, diagnostics: scanner.diagnostics, has_comments }
 }
 
 pub fn leading_comments(source: bytes::Bytes) -> Vec[string] {
