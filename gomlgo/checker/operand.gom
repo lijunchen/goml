@@ -451,16 +451,16 @@ fn type_contains_invalid_inner(state: CheckState, type_id: go_types::TypeId, gen
             kind: go_types::TypeKind::Interface { methods, embeddeds, comparable: _, implicit: _ },
         } => {
             for method in methods {
-                match go_types::get_object(state.world, method) {
-                    Some(object) => if type_contains_invalid_inner(
-                        state,
-                        object.type_id,
-                        generation,
-                    ) {
-                        return true
-                    } else {},
-                    None => return true,
-                }
+                if method.value < 0 || method.value >= state.world.objects.len() {
+                    return true
+                } else {};
+                if type_contains_invalid_inner(
+                    state,
+                    state.world.objects[method.value].type_id,
+                    generation,
+                ) {
+                    return true
+                } else {}
             }
             for embedded in embeddeds {
                 if type_contains_invalid_inner(state, embedded, generation) {
