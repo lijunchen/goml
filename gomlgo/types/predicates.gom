@@ -24,12 +24,12 @@ fn same_package(left: Option[PackageId], right: Option[PackageId]) -> bool {
 
 pub fn unalias(world: World, value: TypeId) -> TypeId {
     let mut current = value;
-    let visited: Vec[int] = Vec::from_array([]);
+    let mut remaining = world.types.len();
     loop {
-        if contains_id(visited, current.value) {
+        if remaining <= 0 {
             return world.invalid
         } else {};
-        visited.push(current.value);
+        remaining -= 1;
         match type_data(world, current) {
             TypeData {
                 id: _,
@@ -44,12 +44,12 @@ pub fn unalias(world: World, value: TypeId) -> TypeId {
 
 pub fn underlying(world: World, value: TypeId) -> TypeId {
     let mut current = unalias(world, value);
-    let visited: Vec[int] = Vec::from_array([]);
+    let mut remaining = world.types.len();
     loop {
-        if contains_id(visited, current.value) {
+        if remaining <= 0 {
             return world.invalid
         } else {};
-        visited.push(current.value);
+        remaining -= 1;
         match type_data(world, current) {
             TypeData {
                 id: _,
