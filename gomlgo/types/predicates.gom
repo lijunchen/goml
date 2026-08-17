@@ -69,20 +69,12 @@ pub fn underlying(world: World, value: TypeId) -> TypeId {
 }
 
 pub fn is_named(world: World, value: TypeId) -> bool {
-    match get_type(world, unalias(world, value)) {
-        Some(TypeData {
-            id: _,
-            kind: TypeKind::Named {
-                object: _,
-                underlying: _,
-                type_params: _,
-                type_args: _,
-                methods: _,
-            },
-        }) | Some(TypeData { id: _, kind: TypeKind::Basic { basic: _, name: _, untyped: _ } }) | Some(TypeData {
-            id: _,
-            kind: TypeKind::TypeParam { object: _, constraint: _, index: _ },
-        }) => true,
+    match type_data(world, unalias(world, value)).kind {
+        TypeKind::Named { object: _, underlying: _, type_params: _, type_args: _, methods: _ } | TypeKind::Basic {
+            basic: _,
+            name: _,
+            untyped: _,
+        } | TypeKind::TypeParam { object: _, constraint: _, index: _ } => true,
         _ => false,
     }
 }
@@ -296,60 +288,51 @@ fn identical_inner_mode(
     } else {};
     let next = visited;
     next.push(TypePair { left, right });
-    match (get_type(world, left), get_type(world, right)) {
+    match (type_data(world, left).kind, type_data(world, right).kind) {
         (
-            Some(TypeData { id: _, kind: TypeKind::Basic { basic: left, name: _, untyped: _ } }),
-            Some(TypeData { id: _, kind: TypeKind::Basic { basic: right, name: _, untyped: _ } }),
+            TypeKind::Basic { basic: left, name: _, untyped: _ },
+            TypeKind::Basic { basic: right, name: _, untyped: _ },
         ) => left == right,
         (
-            Some(TypeData {
-                id: _,
-                kind: TypeKind::Array { length: left_length, element: left_element },
-            }),
-            Some(TypeData {
-                id: _,
-                kind: TypeKind::Array { length: right_length, element: right_element },
-            }),
+            TypeKind::Array { length: left_length, element: left_element },
+            TypeKind::Array { length: right_length, element: right_element },
         ) => left_length == right_length
             && identical_inner_mode(world, left_element, right_element, next, compare_tags),
-        (
-            Some(TypeData { id: _, kind: TypeKind::Slice { element: left } }),
-            Some(TypeData { id: _, kind: TypeKind::Slice { element: right } }),
-        ) | (
-            Some(TypeData { id: _, kind: TypeKind::Pointer { element: left } }),
-            Some(TypeData { id: _, kind: TypeKind::Pointer { element: right } }),
+        (TypeKind::Slice { element: left }, TypeKind::Slice { element: right }) | (
+            TypeKind::Pointer { element: left },
+            TypeKind::Pointer { element: right },
         ) => identical_inner_mode(world, left, right, next, compare_tags),
+        (TypeKind::Struct { fields: left }, TypeKind::Struct { fields: right }) => identical_structs(
+            world,
+            left,
+            right,
+            next,
+            compare_tags,
+        ),
+        (TypeKind::Tuple { variables: left }, TypeKind::Tuple { variables: right }) => identical_variables(
+            world,
+            left,
+            right,
+            next,
+            compare_tags,
+        ),
         (
-            Some(TypeData { id: _, kind: TypeKind::Struct { fields: left } }),
-            Some(TypeData { id: _, kind: TypeKind::Struct { fields: right } }),
-        ) => identical_structs(world, left, right, next, compare_tags),
-        (
-            Some(TypeData { id: _, kind: TypeKind::Tuple { variables: left } }),
-            Some(TypeData { id: _, kind: TypeKind::Tuple { variables: right } }),
-        ) => identical_variables(world, left, right, next, compare_tags),
-        (
-            Some(TypeData {
-                id: _,
-                kind: TypeKind::Signature {
-                    receiver: _,
-                    receiver_type_params: _,
-                    type_params: left_parameters,
-                    params: left_params,
-                    results: left_results,
-                    variadic: left_variadic,
-                },
-            }),
-            Some(TypeData {
-                id: _,
-                kind: TypeKind::Signature {
-                    receiver: _,
-                    receiver_type_params: _,
-                    type_params: right_parameters,
-                    params: right_params,
-                    results: right_results,
-                    variadic: right_variadic,
-                },
-            }),
+            TypeKind::Signature {
+                receiver: _,
+                receiver_type_params: _,
+                type_params: left_parameters,
+                params: left_params,
+                results: left_results,
+                variadic: left_variadic,
+            },
+            TypeKind::Signature {
+                receiver: _,
+                receiver_type_params: _,
+                type_params: right_parameters,
+                params: right_params,
+                results: right_results,
+                variadic: right_variadic,
+            },
         ) => left_variadic == right_variadic
             && identical_type_parameters(
                 world,
@@ -361,24 +344,18 @@ fn identical_inner_mode(
             && identical_inner_mode(world, left_params, right_params, next, compare_tags)
             && identical_inner_mode(world, left_results, right_results, next, compare_tags),
         (
-            Some(TypeData {
-                id: _,
-                kind: TypeKind::Interface {
-                    methods: left_methods,
-                    embeddeds: left_embeddeds,
-                    comparable: left_comparable,
-                    implicit: _,
-                },
-            }),
-            Some(TypeData {
-                id: _,
-                kind: TypeKind::Interface {
-                    methods: right_methods,
-                    embeddeds: right_embeddeds,
-                    comparable: right_comparable,
-                    implicit: _,
-                },
-            }),
+            TypeKind::Interface {
+                methods: left_methods,
+                embeddeds: left_embeddeds,
+                comparable: left_comparable,
+                implicit: _,
+            },
+            TypeKind::Interface {
+                methods: right_methods,
+                embeddeds: right_embeddeds,
+                comparable: right_comparable,
+                implicit: _,
+            },
         ) => identical_interfaces(
             world,
             left,
@@ -393,58 +370,43 @@ fn identical_inner_mode(
             compare_tags,
         ),
         (
-            Some(TypeData { id: _, kind: TypeKind::Map { key: left_key, value: left_value } }),
-            Some(TypeData { id: _, kind: TypeKind::Map { key: right_key, value: right_value } }),
+            TypeKind::Map { key: left_key, value: left_value },
+            TypeKind::Map { key: right_key, value: right_value },
         ) => identical_inner_mode(world, left_key, right_key, next, compare_tags)
             && identical_inner_mode(world, left_value, right_value, next, compare_tags),
         (
-            Some(TypeData {
-                id: _,
-                kind: TypeKind::Chan { direction: left_direction, element: left_element },
-            }),
-            Some(TypeData {
-                id: _,
-                kind: TypeKind::Chan { direction: right_direction, element: right_element },
-            }),
+            TypeKind::Chan { direction: left_direction, element: left_element },
+            TypeKind::Chan { direction: right_direction, element: right_element },
         ) => left_direction == right_direction
             && identical_inner_mode(world, left_element, right_element, next, compare_tags),
         (
-            Some(TypeData {
-                id: _,
-                kind: TypeKind::Named {
-                    object: left_object,
-                    underlying: _,
-                    type_params: _,
-                    type_args: left_arguments,
-                    methods: _,
-                },
-            }),
-            Some(TypeData {
-                id: _,
-                kind: TypeKind::Named {
-                    object: right_object,
-                    underlying: _,
-                    type_params: _,
-                    type_args: right_arguments,
-                    methods: _,
-                },
-            }),
+            TypeKind::Named {
+                object: left_object,
+                underlying: _,
+                type_params: _,
+                type_args: left_arguments,
+                methods: _,
+            },
+            TypeKind::Named {
+                object: right_object,
+                underlying: _,
+                type_params: _,
+                type_args: right_arguments,
+                methods: _,
+            },
         ) => left_object.value == right_object.value
             && identical_type_arguments(world, left_arguments, right_arguments, next, compare_tags),
         (
-            Some(TypeData {
-                id: _,
-                kind: TypeKind::TypeParam { object: left, constraint: _, index: _ },
-            }),
-            Some(TypeData {
-                id: _,
-                kind: TypeKind::TypeParam { object: right, constraint: _, index: _ },
-            }),
+            TypeKind::TypeParam { object: left, constraint: _, index: _ },
+            TypeKind::TypeParam { object: right, constraint: _, index: _ },
         ) => left.value == right.value,
-        (
-            Some(TypeData { id: _, kind: TypeKind::Union { terms: left } }),
-            Some(TypeData { id: _, kind: TypeKind::Union { terms: right } }),
-        ) => identical_terms(world, left, right, next, compare_tags),
+        (TypeKind::Union { terms: left }, TypeKind::Union { terms: right }) => identical_terms(
+            world,
+            left,
+            right,
+            next,
+            compare_tags,
+        ),
         _ => false,
     }
 }

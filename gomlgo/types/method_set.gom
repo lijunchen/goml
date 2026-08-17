@@ -50,11 +50,8 @@ fn valid_object_id(world: World, value: ObjectId) -> bool {
 }
 
 fn pointer_indirection_forbidden(world: World, value: TypeId) -> bool {
-    match get_type(world, unalias(world, value)) {
-        Some(TypeData { id: _, kind: TypeKind::Pointer { element } }) => is_type_parameter(
-            world,
-            element,
-        )
+    match type_data(world, unalias(world, value)).kind {
+        TypeKind::Pointer { element } => is_type_parameter(world, element)
             || is_interface(world, element),
         _ => false,
     }
@@ -87,11 +84,8 @@ fn interface_methods_inner(world: World, value: TypeId, visited: Vec[TypeId], re
         return
     } else {};
     visited.push(resolved);
-    match get_type(world, resolved) {
-        Some(TypeData {
-            id: _,
-            kind: TypeKind::Interface { methods, embeddeds, comparable: _, implicit: _ },
-        }) => {
+    match type_data(world, resolved).kind {
+        TypeKind::Interface { methods, embeddeds, comparable: _, implicit: _ } => {
             for method in methods {
                 if valid_object_id(world, method) {
                     let object = world.objects[method.value];
@@ -145,11 +139,8 @@ pub fn interface_methods(world: World, value: TypeId) -> Vec[ObjectId] {
 }
 
 pub fn is_interface(world: World, value: TypeId) -> bool {
-    match get_type(world, underlying(world, value)) {
-        Some(TypeData {
-            id: _,
-            kind: TypeKind::Interface { methods: _, embeddeds: _, comparable: _, implicit: _ },
-        }) => true,
+    match type_data(world, underlying(world, value)).kind {
+        TypeKind::Interface { methods: _, embeddeds: _, comparable: _, implicit: _ } => true,
         _ => false,
     }
 }
@@ -157,20 +148,17 @@ pub fn is_interface(world: World, value: TypeId) -> bool {
 fn receiver_is_pointer(world: World, method: ObjectId) -> bool {
     if valid_object_id(world, method) {
         let object = world.objects[method.value];
-        match get_type(world, unalias(world, object.type_id)) {
-            Some(TypeData {
-                id: _,
-                kind: TypeKind::Signature {
-                    receiver,
-                    receiver_type_params: _,
-                    type_params: _,
-                    params: _,
-                    results: _,
-                    variadic: _,
-                },
-            }) => match receiver {
-                Some(receiver) => match get_type(world, unalias(world, receiver.type_id)) {
-                    Some(TypeData { id: _, kind: TypeKind::Pointer { element: _ } }) => true,
+        match type_data(world, unalias(world, object.type_id)).kind {
+            TypeKind::Signature {
+                receiver,
+                receiver_type_params: _,
+                type_params: _,
+                params: _,
+                results: _,
+                variadic: _,
+            } => match receiver {
+                Some(receiver) => match type_data(world, unalias(world, receiver.type_id)).kind {
+                    TypeKind::Pointer { element: _ } => true,
                     _ => false,
                 },
                 None => false,
@@ -203,11 +191,8 @@ fn add_method_candidate(
 }
 
 fn dereference(world: World, value: TypeId) -> (TypeId, bool) {
-    match get_type(world, unalias(world, value)) {
-        Some(TypeData { id: _, kind: TypeKind::Pointer { element } }) => (
-            unalias(world, element),
-            true,
-        ),
+    match type_data(world, unalias(world, value)).kind {
+        TypeKind::Pointer { element } => (unalias(world, element), true),
         _ => (unalias(world, value), false),
     }
 }
@@ -224,17 +209,14 @@ fn search_node(
     let value = dereferenced.0;
     let indirect = node.indirect || dereferenced.1;
     ensure_named_instance_methods(world, value);
-    match get_type(world, value) {
-        Some(TypeData {
-            id: _,
-            kind: TypeKind::Named {
-                object: _,
-                underlying: named_underlying,
-                type_params: _,
-                type_args: _,
-                methods,
-            },
-        }) => {
+    match type_data(world, value).kind {
+        TypeKind::Named {
+            object: _,
+            underlying: named_underlying,
+            type_params: _,
+            type_args: _,
+            methods,
+        } => {
             for method_index in 0..methods.len() {
                 add_method_candidate(
                     world,
@@ -258,10 +240,7 @@ fn search_node(
                 next,
             )
         },
-        Some(TypeData {
-            id: _,
-            kind: TypeKind::Interface { methods: _, embeddeds: _, comparable: _, implicit: _ },
-        }) => {
+        TypeKind::Interface { methods: _, embeddeds: _, comparable: _, implicit: _ } => {
             let methods = interface_methods(world, value);
             for method_index in 0..methods.len() {
                 add_method_candidate(
@@ -276,7 +255,7 @@ fn search_node(
                 )
             }
         },
-        Some(TypeData { id: _, kind: TypeKind::TypeParam { object: _, constraint, index: _ } }) => {
+        TypeKind::TypeParam { object: _, constraint, index: _ } => {
             let methods = interface_methods(world, constraint);
             for method_index in 0..methods.len() {
                 add_method_candidate(
@@ -306,8 +285,8 @@ fn search_underlying(
     next: Vec[SearchNode],
 ) -> unit {
     let _ = addressable;
-    match get_type(world, underlying(world, value)) {
-        Some(TypeData { id: _, kind: TypeKind::Pointer { element } }) => search_underlying(
+    match type_data(world, underlying(world, value)).kind {
+        TypeKind::Pointer { element } => search_underlying(
             world,
             element,
             path,
@@ -317,7 +296,7 @@ fn search_underlying(
             matches,
             next,
         ),
-        Some(TypeData { id: _, kind: TypeKind::Struct { fields } }) => {
+        TypeKind::Struct { fields } => {
             for field_index in 0..fields.len() {
                 let field = fields[field_index];
                 let field_path = append_index(path, field_index);
@@ -336,10 +315,7 @@ fn search_underlying(
                 } else {}
             }
         },
-        Some(TypeData {
-            id: _,
-            kind: TypeKind::Interface { methods: _, embeddeds: _, comparable: _, implicit: _ },
-        }) => {
+        TypeKind::Interface { methods: _, embeddeds: _, comparable: _, implicit: _ } => {
             let methods = interface_methods(world, value);
             for method_index in 0..methods.len() {
                 add_method_candidate(
@@ -415,17 +391,14 @@ fn collect_method_names_inner(
     } else {};
     visited.push(dereferenced);
     ensure_named_instance_methods(world, dereferenced);
-    match get_type(world, dereferenced) {
-        Some(TypeData {
-            id: _,
-            kind: TypeKind::Named {
-                object: _,
-                underlying: named_underlying,
-                type_params: _,
-                type_args: _,
-                methods,
-            },
-        }) => {
+    match type_data(world, dereferenced).kind {
+        TypeKind::Named {
+            object: _,
+            underlying: named_underlying,
+            type_params: _,
+            type_args: _,
+            methods,
+        } => {
             for method in methods {
                 if !object_seen(result, method) {
                     result.push(method)
@@ -433,20 +406,20 @@ fn collect_method_names_inner(
             }
             collect_method_names_inner(world, named_underlying, visited, result)
         },
-        Some(TypeData { id: _, kind: TypeKind::Struct { fields } }) => for field in fields {
+        TypeKind::Struct { fields } => for field in fields {
             if field.embedded {
                 collect_method_names_inner(world, field.variable.type_id, visited, result)
             } else {}
         },
-        Some(TypeData {
-            id: _,
-            kind: TypeKind::Interface { methods: _, embeddeds: _, comparable: _, implicit: _ },
-        }) => for method in interface_methods(world, dereferenced) {
+        TypeKind::Interface { methods: _, embeddeds: _, comparable: _, implicit: _ } => for method in interface_methods(
+            world,
+            dereferenced,
+        ) {
             if !object_seen(result, method) {
                 result.push(method)
             } else {}
         },
-        Some(TypeData { id: _, kind: TypeKind::TypeParam { object: _, constraint, index: _ } }) => for method in interface_methods(
+        TypeKind::TypeParam { object: _, constraint, index: _ } => for method in interface_methods(
             world,
             constraint,
         ) {
@@ -503,19 +476,16 @@ fn interface_comparable_inner(world: World, value: TypeId, visited: Vec[TypeId])
         return false
     } else {};
     visited.push(resolved);
-    match get_type(world, resolved) {
-        Some(TypeData { id: _, kind: TypeKind::TypeParam { object: _, constraint, index: _ } }) => return interface_comparable_inner(
+    match type_data(world, resolved).kind {
+        TypeKind::TypeParam { object: _, constraint, index: _ } => return interface_comparable_inner(
             world,
             constraint,
             visited,
         ),
         _ => {},
     };
-    match get_type(world, underlying(world, value)) {
-        Some(TypeData {
-            id: _,
-            kind: TypeKind::Interface { methods: _, embeddeds, comparable, implicit: _ },
-        }) => {
+    match type_data(world, underlying(world, value)).kind {
+        TypeKind::Interface { methods: _, embeddeds, comparable, implicit: _ } => {
             if comparable {
                 return true
             } else {};
@@ -544,25 +514,18 @@ fn constraint_interface_inner(world: World, value: TypeId, visited: Vec[TypeId])
         return false
     } else {};
     visited.push(resolved);
-    match get_type(world, resolved) {
-        Some(TypeData {
-            id: _,
-            kind: TypeKind::Interface { methods: _, embeddeds, comparable, implicit: _ },
-        }) => {
+    match type_data(world, resolved).kind {
+        TypeKind::Interface { methods: _, embeddeds, comparable, implicit: _ } => {
             if comparable {
                 return true
             } else {};
             for embedded in embeddeds {
-                match get_type(world, underlying(world, embedded)) {
-                    Some(TypeData {
-                        id: _,
-                        kind: TypeKind::Interface {
-                            methods: _,
-                            embeddeds: _,
-                            comparable: _,
-                            implicit: _,
-                        },
-                    }) => if constraint_interface_inner(world, embedded, visited) {
+                match type_data(world, underlying(world, embedded)).kind {
+                    TypeKind::Interface { methods: _, embeddeds: _, comparable: _, implicit: _ } => if constraint_interface_inner(
+                        world,
+                        embedded,
+                        visited,
+                    ) {
                         return true
                     } else {},
                     _ => return true,
