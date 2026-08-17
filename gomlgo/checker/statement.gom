@@ -3957,23 +3957,23 @@ fn recover_void_call_fact(state: CheckState, node: syntax::NodeId) -> unit {
         None => {},
     };
     mark_void_node(state, node);
-    let index = type_fact_index(state, node);
-    if index >= 0 {
-        state.info.types[index].type_id = go_types::add_type(
-            state.world,
-            go_types::TypeKind::Tuple { variables: Vec::from_array([]) },
-        );
-        state.info.types[index].extra = Option::None;
-        state.info.types[index].void = true;
-        state.info.types[index].type_expr = false;
-        state.info.types[index].builtin = false;
-        state.info.types[index].value_expr = false;
-        state.info.types[index].nil = false;
-        state.info.types[index].addressable = false;
-        state.info.types[index].assignable = false;
-        state.info.types[index].comma_ok = false;
-    } else {
-        record_operand(
+    match type_fact_index(state, node) {
+        Some(index) => {
+            state.info.types[index].type_id = go_types::add_type(
+                state.world,
+                go_types::TypeKind::Tuple { variables: Vec::from_array([]) },
+            );
+            state.info.types[index].extra = Option::None;
+            state.info.types[index].void = true;
+            state.info.types[index].type_expr = false;
+            state.info.types[index].builtin = false;
+            state.info.types[index].value_expr = false;
+            state.info.types[index].nil = false;
+            state.info.types[index].addressable = false;
+            state.info.types[index].assignable = false;
+            state.info.types[index].comma_ok = false;
+        },
+        None => record_operand(
             state,
             node,
             Operand {
@@ -3982,7 +3982,7 @@ fn recover_void_call_fact(state: CheckState, node: syntax::NodeId) -> unit {
                 addressable: false,
                 assignable: false,
             },
-        )
+        ),
     }
 }
 
