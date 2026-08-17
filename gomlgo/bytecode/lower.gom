@@ -139,6 +139,15 @@ struct OpenBlock {
     terminator: Option[Terminator],
 }
 
+fn open_block(id: BlockId) -> OpenBlock {
+    OpenBlock {
+        id,
+        parameters: Vec::from_array([]),
+        instructions: Vec::with_capacity(2),
+        terminator: Option::None,
+    }
+}
+
 struct FunctionBuilder {
     world: go_types::World,
     syntax: syntax::PackageSyntax,
@@ -876,14 +885,7 @@ fn new_place(builder: FunctionBuilder) -> PlaceId {
 
 fn new_block(builder: FunctionBuilder) -> BlockId {
     let result = block_id(builder.blocks.len());
-    builder.blocks.push(
-        OpenBlock {
-            id: result,
-            parameters: Vec::from_array([]),
-            instructions: Vec::from_array([]),
-            terminator: Option::None,
-        },
-    );
+    builder.blocks.push(open_block(result));
     result
 }
 
@@ -5189,14 +5191,7 @@ fn lower_function(
     } else {};
     let object = program.world.objects[source.object.value];
     let blocks: Vec[OpenBlock] = Vec::from_array([]);
-    blocks.push(
-        OpenBlock {
-            id: block_id(0),
-            parameters: Vec::from_array([]),
-            instructions: Vec::from_array([]),
-            terminator: Option::None,
-        },
-    );
+    blocks.push(open_block(block_id(0)));
     let builder = FunctionBuilder {
         world: program.world,
         syntax: package_syntax,
@@ -5287,14 +5282,7 @@ fn lower_package_initializer(
     } else {};
     let object = program.world.objects[source.object.value];
     let blocks: Vec[OpenBlock] = Vec::from_array([]);
-    blocks.push(
-        OpenBlock {
-            id: block_id(0),
-            parameters: Vec::from_array([]),
-            instructions: Vec::from_array([]),
-            terminator: Option::None,
-        },
-    );
+    blocks.push(open_block(block_id(0)));
     let builder = FunctionBuilder {
         world: program.world,
         syntax: package_syntax,
