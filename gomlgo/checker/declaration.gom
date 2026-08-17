@@ -167,9 +167,9 @@ struct PartialInstance {
 
 #[derive(PartialEq, Eq, Hash)]
 struct TypeFactSourceKey {
-    file: int,
-    start: int,
-    end: int,
+    file: int32,
+    start: int32,
+    end: int32,
 }
 
 struct ActiveInstantiation {
@@ -194,7 +194,7 @@ struct CheckState {
     scope_fact_previous_indices: Vec[Option[int]],
     selection_indices: HashMap[int, int],
     type_fact_indices: Vec[int32],
-    type_fact_source_indices: HashMap[TypeFactSourceKey, int],
+    type_fact_source_indices: HashMap[TypeFactSourceKey, int32],
     type_visit_marks: Vec[int],
     type_visit_generation: Ref[int],
     omitted_type_fact_nodes: HashMap[int, bool],
@@ -294,9 +294,9 @@ fn type_fact_source_key(state: CheckState, node: syntax::NodeId) -> Option[TypeF
     match syntax::get_node(state.syntax.arena, node) {
         Some(value) => Option::Some(
             TypeFactSourceKey {
-                file: value.file.value,
-                start: value.span.start,
-                end: value.span.end,
+                file: value.file.value.to_int32(),
+                start: value.span.start.to_int32(),
+                end: value.span.end.to_int32(),
             },
         ),
         None => Option::None,
@@ -333,7 +333,7 @@ fn index_type_fact(state: CheckState, node: syntax::NodeId, index: int) -> unit 
     set_type_fact_index(state, node, index);
     match type_fact_source_key(state, node) {
         Some(key) => if !state.type_fact_source_indices.contains(key) {
-            state.type_fact_source_indices[key] = index;
+            state.type_fact_source_indices[key] = index.to_int32();
         } else {},
         None => {},
     }
@@ -378,7 +378,10 @@ fn find_scope_fact(state: CheckState, node: syntax::NodeId) -> Option[ScopeFact]
 
 fn source_type_fact_index(state: CheckState, node: syntax::NodeId) -> Option[int] {
     match type_fact_source_key(state, node) {
-        Some(key) => state.type_fact_source_indices[key],
+        Some(key) => match state.type_fact_source_indices[key] {
+            Some(index) => Option::Some(index.to_int()),
+            None => Option::None,
+        },
         None => Option::None,
     }
 }
