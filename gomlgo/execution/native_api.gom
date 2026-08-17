@@ -1,9 +1,8 @@
 package execution;
 
-use gomlgo::ast;
 use gomlgo::checker;
 use gomlgo::constant;
-use gomlgo::parser;
+use gomlgo::scanner;
 use std::bytes;
 
 fn native_api_text(package_path: string) -> Option[string] {
@@ -246,16 +245,12 @@ fn native_api_package_name(package_path: string) -> string {
 }
 
 fn native_api_file_header(source: bytes::Bytes) -> Option[(string, Vec[string])] {
-    let parsed = parser::parse_file_bytes_without_bodies(source);
-    if !parsed.diagnostics.is_empty() {
+    let name = scanner::package_name_bytes(source);
+    if name == "" {
         return Option::None
     } else {};
-    let root = parsed.root?;
-    let name = ast::get_string(ast::get_node(root, "name")?, "name")?;
     let imports: Vec[string] = Vec::from_array([]);
-    for import_spec in ast::get_nodes(root, "imports") {
-        let path = ast::get_node(import_spec, "path")?;
-        let literal = ast::get_string(path, "value")?;
+    for literal in scanner::import_literals(source) {
         match constant::parse_string_literal(literal) {
             Ok(constant::ConstValue::String(value)) => imports.push(value),
             _ => return Option::None,
