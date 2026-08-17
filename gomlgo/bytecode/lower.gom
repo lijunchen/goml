@@ -24,7 +24,6 @@ struct FunctionSource {
 }
 
 struct FunctionInstance {
-    template: int,
     object: go_types::ObjectId,
     type_arguments: Vec[go_types::TypeId],
     function: FunctionId,
@@ -155,6 +154,7 @@ struct FunctionBuilder {
     function_templates: Vec[FunctionSource],
     function_template_indices: HashMap[int, int],
     function_instances: Vec[FunctionInstance],
+    function_instance_indices: Vec[Vec[int]],
     pending_functions: Vec[FunctionSource],
     next_function: Ref[int],
     literal_functions: HashMap[string, int],
@@ -227,6 +227,14 @@ fn option_slots[T](count: int) -> Vec[Option[T]] {
     let result: Vec[Option[T]] = Vec::with_capacity(count);
     for _ in 0..count {
         result.push(Option::None)
+    }
+    result
+}
+
+fn int_vector_slots(count: int) -> Vec[Vec[int]] {
+    let result: Vec[Vec[int]] = Vec::with_capacity(count);
+    for _ in 0..count {
+        result.push(Vec::from_array([]))
     }
     result
 }
@@ -1347,10 +1355,9 @@ fn literal_function_key(package_id: go_types::PackageId, node: syntax::NodeId) -
 fn function_instance_matches(
     world: go_types::World,
     value: FunctionInstance,
-    template: int,
     arguments: Vec[go_types::TypeId],
 ) -> bool {
-    if value.template != template || value.type_arguments.len() != arguments.len() {
+    if value.type_arguments.len() != arguments.len() {
         return false
     } else {};
     for index in 0..arguments.len() {
@@ -1501,8 +1508,9 @@ fn instantiate_function(
                 + source.type_parameters.len().to_string(),
         )
     } else {};
-    for instance in builder.function_instances {
-        if function_instance_matches(builder.world, instance, template, arguments) {
+    for instance_index in builder.function_instance_indices[template] {
+        let instance = builder.function_instances[instance_index];
+        if function_instance_matches(builder.world, instance, arguments) {
             return Result::Ok(instance.function)
         } else {}
     }
@@ -1542,14 +1550,15 @@ fn instantiate_function(
     if arguments.is_empty() {
         builder.object_functions[source.object.value] = Option::Some(function);
     } else {};
+    let instance_index = builder.function_instances.len();
     builder.function_instances.push(
         FunctionInstance {
-            template,
             object: instance_object,
             type_arguments: copied_type_arguments(arguments),
             function,
         },
     );
+    builder.function_instance_indices[template].push(instance_index);
     let captures = if source.template >= 0
         && source.template < builder.template_capture_objects.len() {
         builder.template_capture_objects[source.template]
@@ -5168,6 +5177,7 @@ fn lower_function(
     function_templates: Vec[FunctionSource],
     function_template_indices: HashMap[int, int],
     function_instances: Vec[FunctionInstance],
+    function_instance_indices: Vec[Vec[int]],
     pending_functions: Vec[FunctionSource],
     next_function: Ref[int],
     literal_functions: HashMap[string, int],
@@ -5204,6 +5214,7 @@ fn lower_function(
         function_templates,
         function_template_indices,
         function_instances,
+        function_instance_indices,
         pending_functions,
         next_function,
         literal_functions,
@@ -5264,6 +5275,7 @@ fn lower_package_initializer(
     function_templates: Vec[FunctionSource],
     function_template_indices: HashMap[int, int],
     function_instances: Vec[FunctionInstance],
+    function_instance_indices: Vec[Vec[int]],
     pending_functions: Vec[FunctionSource],
     next_function: Ref[int],
     literal_functions: HashMap[string, int],
@@ -5300,6 +5312,7 @@ fn lower_package_initializer(
         function_templates,
         function_template_indices,
         function_instances,
+        function_instance_indices,
         pending_functions,
         next_function,
         literal_functions,
@@ -5468,6 +5481,7 @@ fn seed_function_instances(
     captures: Vec[FunctionCaptures],
     object_functions: Vec[Option[FunctionId]],
     instances: Vec[FunctionInstance],
+    instance_indices: Vec[Vec[int]],
     pending: Vec[FunctionSource],
     instance_captures: Vec[FunctionCaptures],
     next_function: Ref[int],
@@ -5477,14 +5491,15 @@ fn seed_function_instances(
             let function = function_id(next_function.get());
             next_function.set(next_function.get() + 1);
             object_functions[template.object.value] = Option::Some(function);
+            let instance_index = instances.len();
             instances.push(
                 FunctionInstance {
-                    template: template.template,
                     object: template.object,
                     type_arguments: Vec::from_array([]),
                     function,
                 },
             );
+            instance_indices[template.template].push(instance_index);
             instance_captures.push(captures[template.template]);
             pending.push(
                 FunctionSource {
@@ -5523,6 +5538,7 @@ fn lower_pending_functions(
     templates: Vec[FunctionSource],
     template_indices: HashMap[int, int],
     instances: Vec[FunctionInstance],
+    instance_indices: Vec[Vec[int]],
     pending: Vec[FunctionSource],
     next_function: Ref[int],
     literal_functions: HashMap[string, int],
@@ -5545,6 +5561,7 @@ fn lower_pending_functions(
             templates,
             template_indices,
             instances,
+            instance_indices,
             pending,
             next_function,
             literal_functions,
@@ -5624,6 +5641,7 @@ pub fn lower(program: execution::ExecutionProgram) -> LowerResult {
         },
     };
     let instances: Vec[FunctionInstance] = Vec::from_array([]);
+    let instance_indices = int_vector_slots(templates.len());
     let pending: Vec[FunctionSource] = Vec::from_array([]);
     let instance_captures: Vec[FunctionCaptures] = Vec::from_array([]);
     let next_function = Ref::new(0);
@@ -5633,6 +5651,7 @@ pub fn lower(program: execution::ExecutionProgram) -> LowerResult {
         template_captures,
         object_functions,
         instances,
+        instance_indices,
         pending,
         instance_captures,
         next_function,
@@ -5648,6 +5667,7 @@ pub fn lower(program: execution::ExecutionProgram) -> LowerResult {
         templates,
         template_indices,
         instances,
+        instance_indices,
         pending,
         next_function,
         literal_functions,
@@ -5691,6 +5711,7 @@ pub fn lower(program: execution::ExecutionProgram) -> LowerResult {
                             templates,
                             template_indices,
                             instances,
+                            instance_indices,
                             pending,
                             next_function,
                             literal_functions,
@@ -5734,6 +5755,7 @@ pub fn lower(program: execution::ExecutionProgram) -> LowerResult {
         templates,
         template_indices,
         instances,
+        instance_indices,
         pending,
         next_function,
         literal_functions,
