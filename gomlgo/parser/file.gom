@@ -409,7 +409,12 @@ fn parse_file_node(parser: Parser) -> ast::Node {
 
 pub fn parse_file_bytes(source: bytes::Bytes) -> ParseResult {
     let parser = parser_new(source);
-    let root = attach_comments(parser, parse_file_node(parser), false);
+    let parsed = parse_file_node(parser);
+    let root = if parser.comment_infos.is_empty() {
+        parsed
+    } else {
+        attach_comments(parser, parsed, false)
+    };
     result(parser, Option::Some(root))
 }
 

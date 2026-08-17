@@ -36,12 +36,21 @@ struct Parser {
     skip_function_bodies: bool,
 }
 
+fn contains_comments(tokens: Vec[token::Token]) -> bool {
+    for value in tokens {
+        if token::equal(value.kind, token::Kind::Comment) {
+            return true
+        } else {}
+    }
+    false
+}
+
 fn parser_new_with_mode(source: bytes::Bytes, retain_comments: bool, skip_function_bodies: bool) -> Parser {
     let source_len = source.len();
     let scanned = scanner::scan_bytes(source);
     let comment_infos: Vec[CommentInfo] = Vec::from_array([]);
     let comment_nodes: Vec[ast::Node] = Vec::from_array([]);
-    if retain_comments {
+    if retain_comments && contains_comments(scanned.tokens) {
         let comments = analyze_comments(source, scanned.tokens);
         for value in comments.infos {
             comment_infos.push(value)
