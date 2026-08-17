@@ -219,6 +219,37 @@ fn recursive_named_types_use_ids_and_format_stably() -> unit {
 }
 
 #[test]
+fn type_revision_tracks_graph_mutations() -> unit {
+    let world = empty_world();
+    let initial = type_revision(world);
+    let placeholder = add_type(world, TypeKind::Pointer { element: world.invalid });
+    testing::assert_eq(type_revision(world), initial);
+    testing::assert(set_type(world, placeholder, TypeKind::Slice { element: world.invalid }));
+    let type_changed = type_revision(world);
+    testing::assert_eq(type_changed, initial + 1);
+    testing::assert(!set_type(world, type_id(-1), TypeKind::Invalid));
+    testing::assert_eq(type_revision(world), type_changed);
+    let object = add_object(
+        world,
+        ObjectKind::Var,
+        "value",
+        Option::None,
+        Option::None,
+        Option::None,
+        -1,
+        world.invalid,
+    );
+    testing::assert_eq(type_revision(world), type_changed);
+    testing::assert(set_object_type(world, object, placeholder));
+    let object_changed = type_revision(world);
+    testing::assert_eq(object_changed, type_changed + 1);
+    testing::assert(set_object_type(world, object, placeholder));
+    testing::assert_eq(type_revision(world), object_changed);
+    testing::assert(!set_object_type(world, object_id(-1), world.invalid));
+    testing::assert_eq(type_revision(world), object_changed)
+}
+
+#[test]
 fn exported_names_and_gc_sizes_match_target_rules() -> unit {
     testing::assert(is_exported("Exported"));
     testing::assert(is_exported("Éclair"));
