@@ -387,6 +387,76 @@ fn type_identity_distinguishes_named_types_and_unaliases() -> unit {
 }
 
 #[test]
+fn type_resolution_rejects_alias_and_named_cycles() -> unit {
+    let world = new_world();
+    let first_alias = add_type(
+        world,
+        TypeKind::Alias {
+            object: object_id(-1),
+            rhs: world.invalid,
+            type_params: Vec::from_array([]),
+            type_args: Vec::from_array([]),
+        },
+    );
+    let second_alias = add_type(
+        world,
+        TypeKind::Alias {
+            object: object_id(-1),
+            rhs: first_alias,
+            type_params: Vec::from_array([]),
+            type_args: Vec::from_array([]),
+        },
+    );
+    testing::assert(
+        set_type(
+            world,
+            first_alias,
+            TypeKind::Alias {
+                object: object_id(-1),
+                rhs: second_alias,
+                type_params: Vec::from_array([]),
+                type_args: Vec::from_array([]),
+            },
+        ),
+    );
+    testing::assert_eq(unalias(world, first_alias).value, world.invalid.value);
+    let first_named = add_type(
+        world,
+        TypeKind::Named {
+            object: object_id(-1),
+            underlying: world.invalid,
+            type_params: Vec::from_array([]),
+            type_args: Vec::from_array([]),
+            methods: Vec::from_array([]),
+        },
+    );
+    let second_named = add_type(
+        world,
+        TypeKind::Named {
+            object: object_id(-1),
+            underlying: first_named,
+            type_params: Vec::from_array([]),
+            type_args: Vec::from_array([]),
+            methods: Vec::from_array([]),
+        },
+    );
+    testing::assert(
+        set_type(
+            world,
+            first_named,
+            TypeKind::Named {
+                object: object_id(-1),
+                underlying: second_named,
+                type_params: Vec::from_array([]),
+                type_args: Vec::from_array([]),
+                methods: Vec::from_array([]),
+            },
+        ),
+    );
+    testing::assert_eq(underlying(world, first_named).value, world.invalid.value)
+}
+
+#[test]
 fn structural_identity_handles_recursive_composite_types() -> unit {
     let world = new_world();
     let int_type = required_type(world, "int");
