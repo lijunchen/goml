@@ -401,38 +401,38 @@ fn record_invalid_type_expression(state: CheckState, node: syntax::NodeId) -> un
 }
 
 fn omit_invalid_operand_facts(state: CheckState) -> unit {
-    let retained: Vec[TypeFact] = Vec::from_array([]);
-    for fact in state.info.types {
+    let mut retained_type_count = 0;
+    let type_count = state.info.types.len();
+    for index in 0..type_count {
+        let fact = state.info.types[index];
         if !(fact.value_expr && fact.type_id.value == state.world.invalid.value
             && !state.retained_invalid_type_fact_nodes.contains(fact.node.value))
             && !state.omitted_type_fact_nodes.contains(fact.node.value) {
-            retained.push(fact)
+            state.info.types[retained_type_count] = fact;
+            retained_type_count += 1;
         } else {}
     }
-    state.info.types.clear();
-    for fact in retained {
-        state.info.types.push(fact)
-    }
-    let retained_uses: Vec[ObjectFact] = Vec::from_array([]);
-    for fact in state.info.uses {
+    state.info.types.truncate(retained_type_count);
+    let mut retained_use_count = 0;
+    let use_count = state.info.uses.len();
+    for index in 0..use_count {
+        let fact = state.info.uses[index];
         if !state.omitted_use_fact_nodes.contains(fact.node.value) {
-            retained_uses.push(fact)
+            state.info.uses[retained_use_count] = fact;
+            retained_use_count += 1;
         } else {}
     }
-    state.info.uses.clear();
-    for fact in retained_uses {
-        state.info.uses.push(fact)
-    }
-    let retained_selections: Vec[SelectionFact] = Vec::from_array([]);
-    for fact in state.info.selections {
+    state.info.uses.truncate(retained_use_count);
+    let mut retained_selection_count = 0;
+    let selection_count = state.info.selections.len();
+    for index in 0..selection_count {
+        let fact = state.info.selections[index];
         if !state.omitted_type_fact_nodes.contains(fact.node.value) {
-            retained_selections.push(fact)
+            state.info.selections[retained_selection_count] = fact;
+            retained_selection_count += 1;
         } else {}
     }
-    state.info.selections.clear();
-    for fact in retained_selections {
-        state.info.selections.push(fact)
-    }
+    state.info.selections.truncate(retained_selection_count);
     rebuild_selection_indices(state)
 }
 
