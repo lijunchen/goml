@@ -1149,33 +1149,15 @@ type _goml_m_Result____Vec_l_std_p_serde_p_Value_r_____string struct {
     _v1_0 string
 }
 
-type _goml_m_Option____std_p_serde_p_Value interface {
-    is_goml_m_Option____std_p_serde_p_Value()
+type _goml_m_Option____std_p_serde_p_Value struct {
+    _tag int32
+    _v1_0 _goml_m_std_p_serde_p_Value
 }
 
-type _goml_m_Option____std_p_serde_p_Value_None struct {}
-
-func (_ _goml_m_Option____std_p_serde_p_Value_None) is_goml_m_Option____std_p_serde_p_Value() {}
-
-type _goml_m_Option____std_p_serde_p_Value_Some struct {
-    _0 _goml_m_std_p_serde_p_Value
+type _goml_m_Option____std_p_serde_p_ValueDeserializeFrame struct {
+    _tag int32
+    _v1_0 _goml_m_std_p_serde_p_ValueDeserializeFrame
 }
-
-func (_ _goml_m_Option____std_p_serde_p_Value_Some) is_goml_m_Option____std_p_serde_p_Value() {}
-
-type _goml_m_Option____std_p_serde_p_ValueDeserializeFrame interface {
-    is_goml_m_Option____std_p_serde_p_ValueDeserializeFrame()
-}
-
-type _goml_m_Option____std_p_serde_p_ValueDeserializeFrame_None struct {}
-
-func (_ _goml_m_Option____std_p_serde_p_ValueDeserializeFrame_None) is_goml_m_Option____std_p_serde_p_ValueDeserializeFrame() {}
-
-type _goml_m_Option____std_p_serde_p_ValueDeserializeFrame_Some struct {
-    _0 _goml_m_std_p_serde_p_ValueDeserializeFrame
-}
-
-func (_ _goml_m_Option____std_p_serde_p_ValueDeserializeFrame_Some) is_goml_m_Option____std_p_serde_p_ValueDeserializeFrame() {}
 
 type _goml_m_Result____Vec_l_uint8_r_____string struct {
     _tag int32
@@ -1291,19 +1273,10 @@ type _goml_m_Result____std_p_serde_p_VariantKey____string_Err struct {
 
 func (_ _goml_m_Result____std_p_serde_p_VariantKey____string_Err) is_goml_m_Result____std_p_serde_p_VariantKey____string() {}
 
-type _goml_m_Option____std_p_serde_p_ValueSerializeFrame interface {
-    is_goml_m_Option____std_p_serde_p_ValueSerializeFrame()
+type _goml_m_Option____std_p_serde_p_ValueSerializeFrame struct {
+    _tag int32
+    _v1_0 _goml_m_std_p_serde_p_ValueSerializeFrame
 }
-
-type _goml_m_Option____std_p_serde_p_ValueSerializeFrame_None struct {}
-
-func (_ _goml_m_Option____std_p_serde_p_ValueSerializeFrame_None) is_goml_m_Option____std_p_serde_p_ValueSerializeFrame() {}
-
-type _goml_m_Option____std_p_serde_p_ValueSerializeFrame_Some struct {
-    _0 _goml_m_std_p_serde_p_ValueSerializeFrame
-}
-
-func (_ _goml_m_Option____std_p_serde_p_ValueSerializeFrame_Some) is_goml_m_Option____std_p_serde_p_ValueSerializeFrame() {}
 
 type _goml_m_Option_____o_int_c_char_q_ struct {
     _tag int32
@@ -1324,19 +1297,10 @@ type _goml_m_Option_____o_string_c_string_q__Some struct {
 
 func (_ _goml_m_Option_____o_string_c_string_q__Some) is_goml_m_Option_____o_string_c_string_q_() {}
 
-type _goml_m_Option____std_p_json_p_JsonDeserializeFrame interface {
-    is_goml_m_Option____std_p_json_p_JsonDeserializeFrame()
+type _goml_m_Option____std_p_json_p_JsonDeserializeFrame struct {
+    _tag int32
+    _v1_0 _goml_m_std_p_json_p_JsonDeserializeFrame
 }
-
-type _goml_m_Option____std_p_json_p_JsonDeserializeFrame_None struct {}
-
-func (_ _goml_m_Option____std_p_json_p_JsonDeserializeFrame_None) is_goml_m_Option____std_p_json_p_JsonDeserializeFrame() {}
-
-type _goml_m_Option____std_p_json_p_JsonDeserializeFrame_Some struct {
-    _0 _goml_m_std_p_json_p_JsonDeserializeFrame
-}
-
-func (_ _goml_m_Option____std_p_json_p_JsonDeserializeFrame_Some) is_goml_m_Option____std_p_json_p_JsonDeserializeFrame() {}
 
 type _goml_m_Result_____o_bool_c_bool_c_bool_q_____string interface {
     is_goml_m_Result_____o_bool_c_bool_c_bool_q_____string()
@@ -1417,19 +1381,10 @@ type Option__char struct {
     _v1_0 rune
 }
 
-type _goml_m_Option____std_p_json_p_Value interface {
-    is_goml_m_Option____std_p_json_p_Value()
+type _goml_m_Option____std_p_json_p_Value struct {
+    _tag int32
+    _v1_0 _goml_m_std_p_json_p_Value
 }
-
-type _goml_m_Option____std_p_json_p_Value_None struct {}
-
-func (_ _goml_m_Option____std_p_json_p_Value_None) is_goml_m_Option____std_p_json_p_Value() {}
-
-type _goml_m_Option____std_p_json_p_Value_Some struct {
-    _0 _goml_m_std_p_json_p_Value
-}
-
-func (_ _goml_m_Option____std_p_json_p_Value_Some) is_goml_m_Option____std_p_json_p_Value() {}
 
 type Option__bool struct {
     _tag int32
@@ -1441,19 +1396,10 @@ type _goml_m_Option____Vec_l_std_p_json_p_Value_r_ struct {
     _v1_0 *_goml_vec__goml_m_std_p_json_p_Value
 }
 
-type _goml_m_Option____std_p_json_p_JsonSerializeFrame interface {
-    is_goml_m_Option____std_p_json_p_JsonSerializeFrame()
+type _goml_m_Option____std_p_json_p_JsonSerializeFrame struct {
+    _tag int32
+    _v1_0 _goml_m_std_p_json_p_JsonSerializeFrame
 }
-
-type _goml_m_Option____std_p_json_p_JsonSerializeFrame_None struct {}
-
-func (_ _goml_m_Option____std_p_json_p_JsonSerializeFrame_None) is_goml_m_Option____std_p_json_p_JsonSerializeFrame() {}
-
-type _goml_m_Option____std_p_json_p_JsonSerializeFrame_Some struct {
-    _0 _goml_m_std_p_json_p_JsonSerializeFrame
-}
-
-func (_ _goml_m_Option____std_p_json_p_JsonSerializeFrame_Some) is_goml_m_Option____std_p_json_p_JsonSerializeFrame() {}
 
 func _goml_m_inherent_i_std_p_text_p_StringBuilder_i_std_p_text_p_StringBuilder_i_new() _goml_m_std_p_text_p_StringBuilder {
     var t2909 [0]uint8 = [0]uint8{}
@@ -3822,8 +3768,9 @@ func _goml_m_std_p_json_p_field(value__266 _goml_m_std_p_json_p_Value, name__267
                 var t5471 bool = t5470 == name__267
                 if t5471 {
                     var t5472 _goml_m_std_p_json_p_Value = for_item884._1
-                    var t5473 _goml_m_Option____std_p_json_p_Value = _goml_m_Option____std_p_json_p_Value_Some{
-                        _0: t5472,
+                    var t5473 _goml_m_Option____std_p_json_p_Value = _goml_m_Option____std_p_json_p_Value{
+                        _tag: 1,
+                        _v1_0: t5472,
                     }
                     return t5473
                 } else {
@@ -3833,9 +3780,13 @@ func _goml_m_std_p_json_p_field(value__266 _goml_m_std_p_json_p_Value, name__267
                 break Loop_loop5466
             }
         }
-        return _goml_m_Option____std_p_json_p_Value_None{}
+        return _goml_m_Option____std_p_json_p_Value{
+            _tag: 0,
+        }
     default:
-        return _goml_m_Option____std_p_json_p_Value_None{}
+        return _goml_m_Option____std_p_json_p_Value{
+            _tag: 0,
+        }
     }
 }
 
@@ -3933,19 +3884,19 @@ func main0() struct{} {
         var x409 _goml_m_std_p_json_p_Value = mtmp408.(_goml_m_Result____std_p_json_p_Value____string_Ok)._0
         jp6286 = x409
         var mtmp412 _goml_m_Option____std_p_json_p_Value = _goml_m_std_p_json_p_field(jp6286, "name")
-        switch mtmp412.(type) {
-        case _goml_m_Option____std_p_json_p_Value_None:
+        switch mtmp412._tag {
+        case 0:
             var inline11006 string = "missing name"
             var inline11007 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline11006)
             _goml_runtime_core_string_println(inline11007)
             var mtmp417 _goml_m_Option____std_p_json_p_Value = _goml_m_std_p_json_p_field(jp6286, "version")
-            switch mtmp417.(type) {
-            case _goml_m_Option____std_p_json_p_Value_None:
+            switch mtmp417._tag {
+            case 0:
                 var inline11021 string = "missing version"
                 var inline11022 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline11021)
                 _goml_runtime_core_string_println(inline11022)
-            case _goml_m_Option____std_p_json_p_Value_Some:
-                var x418 _goml_m_std_p_json_p_Value = mtmp417.(_goml_m_Option____std_p_json_p_Value_Some)._0
+            case 1:
+                var x418 _goml_m_std_p_json_p_Value = mtmp417._v1_0
                 var mtmp419 Option__int
                 switch x418.(type) {
                 case _goml_m_std_p_json_p_Value_Number:
@@ -3973,16 +3924,16 @@ func main0() struct{} {
                 panic("non-exhaustive match")
             }
             var mtmp422 _goml_m_Option____std_p_json_p_Value = _goml_m_std_p_json_p_field(jp6286, "stable")
-            switch mtmp422.(type) {
-            case _goml_m_Option____std_p_json_p_Value_None:
+            switch mtmp422._tag {
+            case 0:
                 var inline11036 string = "missing stable"
                 var inline11037 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline11036)
                 _goml_runtime_core_string_println(inline11037)
                 var t6290 string = _goml_m_std_p_json_p_encode(jp6286)
                 println__T_string(t6290)
                 return struct{}{}
-            case _goml_m_Option____std_p_json_p_Value_Some:
-                var x423 _goml_m_std_p_json_p_Value = mtmp422.(_goml_m_Option____std_p_json_p_Value_Some)._0
+            case 1:
+                var x423 _goml_m_std_p_json_p_Value = mtmp422._v1_0
                 var commute_field11586 bool
                 switch x423.(type) {
                 case _goml_m_std_p_json_p_Value_Bool:
@@ -4004,8 +3955,8 @@ func main0() struct{} {
             default:
                 panic("non-exhaustive match")
             }
-        case _goml_m_Option____std_p_json_p_Value_Some:
-            var x413 _goml_m_std_p_json_p_Value = mtmp412.(_goml_m_Option____std_p_json_p_Value_Some)._0
+        case 1:
+            var x413 _goml_m_std_p_json_p_Value = mtmp412._v1_0
             var commute_field11592 string
             switch x413.(type) {
             case _goml_m_std_p_json_p_Value_String:
@@ -4014,13 +3965,13 @@ func main0() struct{} {
                 var inline11014 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(commute_field11592)
                 _goml_runtime_core_string_println(inline11014)
                 var mtmp417 _goml_m_Option____std_p_json_p_Value = _goml_m_std_p_json_p_field(jp6286, "version")
-                switch mtmp417.(type) {
-                case _goml_m_Option____std_p_json_p_Value_None:
+                switch mtmp417._tag {
+                case 0:
                     var inline11021 string = "missing version"
                     var inline11022 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline11021)
                     _goml_runtime_core_string_println(inline11022)
-                case _goml_m_Option____std_p_json_p_Value_Some:
-                    var x418 _goml_m_std_p_json_p_Value = mtmp417.(_goml_m_Option____std_p_json_p_Value_Some)._0
+                case 1:
+                    var x418 _goml_m_std_p_json_p_Value = mtmp417._v1_0
                     var mtmp419 Option__int
                     switch x418.(type) {
                     case _goml_m_std_p_json_p_Value_Number:
@@ -4048,16 +3999,16 @@ func main0() struct{} {
                     panic("non-exhaustive match")
                 }
                 var mtmp422 _goml_m_Option____std_p_json_p_Value = _goml_m_std_p_json_p_field(jp6286, "stable")
-                switch mtmp422.(type) {
-                case _goml_m_Option____std_p_json_p_Value_None:
+                switch mtmp422._tag {
+                case 0:
                     var inline11036 string = "missing stable"
                     var inline11037 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline11036)
                     _goml_runtime_core_string_println(inline11037)
                     var t6290 string = _goml_m_std_p_json_p_encode(jp6286)
                     println__T_string(t6290)
                     return struct{}{}
-                case _goml_m_Option____std_p_json_p_Value_Some:
-                    var x423 _goml_m_std_p_json_p_Value = mtmp422.(_goml_m_Option____std_p_json_p_Value_Some)._0
+                case 1:
+                    var x423 _goml_m_std_p_json_p_Value = mtmp422._v1_0
                     var commute_field11586 bool
                     switch x423.(type) {
                     case _goml_m_std_p_json_p_Value_Bool:
@@ -4084,13 +4035,13 @@ func main0() struct{} {
                 var inline11011 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline11010)
                 _goml_runtime_core_string_println(inline11011)
                 var mtmp417 _goml_m_Option____std_p_json_p_Value = _goml_m_std_p_json_p_field(jp6286, "version")
-                switch mtmp417.(type) {
-                case _goml_m_Option____std_p_json_p_Value_None:
+                switch mtmp417._tag {
+                case 0:
                     var inline11021 string = "missing version"
                     var inline11022 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline11021)
                     _goml_runtime_core_string_println(inline11022)
-                case _goml_m_Option____std_p_json_p_Value_Some:
-                    var x418 _goml_m_std_p_json_p_Value = mtmp417.(_goml_m_Option____std_p_json_p_Value_Some)._0
+                case 1:
+                    var x418 _goml_m_std_p_json_p_Value = mtmp417._v1_0
                     var mtmp419 Option__int
                     switch x418.(type) {
                     case _goml_m_std_p_json_p_Value_Number:
@@ -4118,16 +4069,16 @@ func main0() struct{} {
                     panic("non-exhaustive match")
                 }
                 var mtmp422 _goml_m_Option____std_p_json_p_Value = _goml_m_std_p_json_p_field(jp6286, "stable")
-                switch mtmp422.(type) {
-                case _goml_m_Option____std_p_json_p_Value_None:
+                switch mtmp422._tag {
+                case 0:
                     var inline11036 string = "missing stable"
                     var inline11037 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline11036)
                     _goml_runtime_core_string_println(inline11037)
                     var t6290 string = _goml_m_std_p_json_p_encode(jp6286)
                     println__T_string(t6290)
                     return struct{}{}
-                case _goml_m_Option____std_p_json_p_Value_Some:
-                    var x423 _goml_m_std_p_json_p_Value = mtmp422.(_goml_m_Option____std_p_json_p_Value_Some)._0
+                case 1:
+                    var x423 _goml_m_std_p_json_p_Value = mtmp422._v1_0
                     var commute_field11586 bool
                     switch x423.(type) {
                     case _goml_m_std_p_json_p_Value_Bool:

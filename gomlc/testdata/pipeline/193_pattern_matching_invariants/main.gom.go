@@ -39,19 +39,10 @@ type Next struct {
 
 func (_ Next) isLoop() {}
 
-type MaybeNever interface {
-    isMaybeNever()
+type MaybeNever struct {
+    _tag int32
+    _v1_0 Never
 }
-
-type Empty struct {}
-
-func (_ Empty) isMaybeNever() {}
-
-type Filled struct {
-    _0 Never
-}
-
-func (_ Filled) isMaybeNever() {}
 
 type Single struct {
     _tag int32
