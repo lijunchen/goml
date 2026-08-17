@@ -208,7 +208,58 @@ fn tag_only_variant_fields(values: Vec[Vec[repr::Type]]) -> bool {
     true
 }
 
-fn compact_type_size(value: repr::Type, structs: Vec[repr::StructDef], depth: int) -> int {
+fn compact_path_contains(values: Vec[string], expected: string) -> bool {
+    for value in values {
+        if value == expected {
+            return true
+        } else {}
+    }
+    false
+}
+
+fn compact_path_push(values: Vec[string], value: string) -> Vec[string] {
+    let result: Vec[string] = Vec::with_capacity(values.len() + 1);
+    for item in values {
+        result.push(item)
+    }
+    result.push(value);
+    result
+}
+
+fn compact_enum_size(
+    value: repr::EnumDef,
+    structs: Vec[repr::StructDef],
+    enums: Vec[repr::EnumDef],
+    path: Vec[string],
+    depth: int,
+) -> int {
+    let fields: Vec[repr::Type] = Vec::from_array([]);
+    for variant in value.variants {
+        for field in enum_field_types(variant.fields) {
+            fields.push(field)
+        }
+    }
+    if fields.is_empty() {
+        8
+    } else {
+        let size = compact_type_list_size(fields, structs, enums, path, depth + 1);
+        if size == -2 {
+            -2
+        } else if size < 0 {
+            16
+        } else {
+            size + 8
+        }
+    }
+}
+
+fn compact_type_size(
+    value: repr::Type,
+    structs: Vec[repr::StructDef],
+    enums: Vec[repr::EnumDef],
+    path: Vec[string],
+    depth: int,
+) -> int {
     if depth >= 8 {
         -1
     } else {
@@ -217,21 +268,33 @@ fn compact_type_size(value: repr::Type, structs: Vec[repr::StructDef], depth: in
             Bool | Int8 | Int16 | Int32 | Uint8 | Uint16 | Uint32 | Float32 | Char => 8,
             Int | Int64 | Uint | Uint64 | Float64 => 8,
             String => 16,
-            Tuple { items } => compact_type_list_size(items, structs, depth + 1),
-            Named { name } | ClosureEnvironment { name } => match find_struct(structs, name) {
-                Some(definition) => {
-                    let fields: Vec[repr::Type] = Vec::with_capacity(definition.fields.len());
-                    for field in definition.fields {
-                        fields.push(field.1)
-                    }
-                    compact_type_list_size(fields, structs, depth + 1)
-                },
-                None => -1,
+            Tuple { items } => compact_type_list_size(items, structs, enums, path, depth + 1),
+            Named { name } | ClosureEnvironment { name } => if compact_path_contains(path, name) {
+                -2
+            } else {
+                let next_path = compact_path_push(path, name);
+                match find_struct(structs, name) {
+                    Some(definition) => {
+                        let fields: Vec[repr::Type] = Vec::with_capacity(definition.fields.len());
+                        for field in definition.fields {
+                            fields.push(field.1)
+                        }
+                        compact_type_list_size(fields, structs, enums, next_path, depth + 1)
+                    },
+                    None => match find_enum(enums, name) {
+                        Some(definition) => {
+                            compact_enum_size(definition, structs, enums, next_path, depth + 1)
+                        },
+                        None => -1,
+                    },
+                }
             },
             Dyn { .. } | Slice { elem: _ } | Func { .. } => -1,
             Array { len, elem } => {
-                let item_size = compact_type_size(elem, structs, depth + 1);
-                if item_size < 0 || item_size * len > 24 {
+                let item_size = compact_type_size(elem, structs, enums, path, depth + 1);
+                if item_size == -2 {
+                    -2
+                } else if item_size < 0 || item_size * len > 24 {
                     -1
                 } else {
                     item_size * len
@@ -242,11 +305,19 @@ fn compact_type_size(value: repr::Type, structs: Vec[repr::StructDef], depth: in
     }
 }
 
-fn compact_type_list_size(values: Vec[repr::Type], structs: Vec[repr::StructDef], depth: int) -> int {
+fn compact_type_list_size(
+    values: Vec[repr::Type],
+    structs: Vec[repr::StructDef],
+    enums: Vec[repr::EnumDef],
+    path: Vec[string],
+    depth: int,
+) -> int {
     let mut result = 0;
     for value in values {
-        let size = compact_type_size(value, structs, depth);
-        if size < 0 || result + size > 24 {
+        let size = compact_type_size(value, structs, enums, path, depth);
+        if size == -2 {
+            return -2
+        } else if size < 0 || result + size > 24 {
             return -1
         } else {
             result = result + size;
@@ -255,14 +326,19 @@ fn compact_type_list_size(values: Vec[repr::Type], structs: Vec[repr::StructDef]
     result
 }
 
-fn compact_variant_fields(values: Vec[Vec[repr::Type]], structs: Vec[repr::StructDef]) -> bool {
+fn compact_variant_fields(
+    owner_name: string,
+    values: Vec[Vec[repr::Type]],
+    structs: Vec[repr::StructDef],
+    enums: Vec[repr::EnumDef],
+) -> bool {
     let fields: Vec[repr::Type] = Vec::from_array([]);
     for variant in values {
         for field in variant {
             fields.push(field)
         }
     }
-    compact_type_list_size(fields, structs, 0) >= 0
+    compact_type_list_size(fields, structs, enums, Vec::from_array([owner_name]), 0) >= 0
 }
 
 pub fn compact_variant_field_name(tag: int, index: int) -> string {
@@ -365,7 +441,7 @@ fn emit_enum_definition(
                 },
             ),
         )
-    } else if compact_variant_fields(fields_by_variant, structs) {
+    } else if compact_variant_fields(definition.name, fields_by_variant, structs, enums) {
         let fields: Vec[(string, Type)] = Vec::from_array([]);
         fields.push(("_tag", Type::Int32));
         for index in 0..definition.variants.len() {
