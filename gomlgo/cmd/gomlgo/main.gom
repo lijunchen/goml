@@ -367,7 +367,7 @@ fn execute_loaded(
         return
     };
     let toolchain = program.toolchain;
-    let lowered = bytecode::lower(program);
+    let lowered = bytecode::lower_unverified(program);
     for value in lowered.diagnostics {
         write_stderr(value.start.to_string() + ":" + value.end.to_string() + ": " + value.message)
     }

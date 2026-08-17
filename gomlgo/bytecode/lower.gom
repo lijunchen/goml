@@ -5588,7 +5588,7 @@ fn lower_pending_functions(
     }
 }
 
-pub fn lower(program: execution::ExecutionProgram) -> LowerResult {
+fn lower_with_verification(program: execution::ExecutionProgram, validate: bool) -> LowerResult {
     let diagnostics: Vec[LowerDiagnostic] = Vec::from_array([]);
     let native_link = link_native_calls(program);
     for diagnostic in native_link.diagnostics {
@@ -5806,10 +5806,12 @@ pub fn lower(program: execution::ExecutionProgram) -> LowerResult {
         initialization_order: program.initialization_order,
         main: main.unwrap_or(function_id(-1)),
     };
-    let verification = verify(bytecode);
-    for diagnostic in verification {
-        diagnostics.push(verifier_lower_diagnostic(diagnostic))
-    }
+    if validate {
+        let verification = verify(bytecode);
+        for diagnostic in verification {
+            diagnostics.push(verifier_lower_diagnostic(diagnostic))
+        }
+    } else {};
     LowerResult {
         program: if diagnostics.is_empty() {
             Option::Some(bytecode)
@@ -5818,4 +5820,12 @@ pub fn lower(program: execution::ExecutionProgram) -> LowerResult {
         },
         diagnostics,
     }
+}
+
+pub fn lower(program: execution::ExecutionProgram) -> LowerResult {
+    lower_with_verification(program, true)
+}
+
+pub fn lower_unverified(program: execution::ExecutionProgram) -> LowerResult {
+    lower_with_verification(program, false)
 }
