@@ -193,7 +193,7 @@ struct CheckState {
     scope_fact_indices: HashMap[int, int],
     scope_fact_previous_indices: Vec[Option[int]],
     selection_indices: HashMap[int, int],
-    type_fact_indices: HashMap[int, int],
+    type_fact_indices: Vec[int32],
     type_fact_source_indices: HashMap[TypeFactSourceKey, int],
     type_visit_marks: Vec[int],
     type_visit_generation: Ref[int],
@@ -202,7 +202,7 @@ struct CheckState {
     retained_invalid_type_fact_nodes: HashMap[int, bool],
     failed_inference_nodes: HashMap[int, bool],
     ignore_function_type_params: bool,
-    use_fact_nodes: HashMap[int, bool],
+    use_fact_indices: Vec[int32],
     omitted_use_fact_nodes: HashMap[int, bool],
     invalid_builtin_parameter_nodes: HashMap[int, bool],
     used_objects: HashMap[int, bool],
@@ -303,8 +303,34 @@ fn type_fact_source_key(state: CheckState, node: syntax::NodeId) -> Option[TypeF
     }
 }
 
+fn fact_index_slots(count: int) -> Vec[int32] {
+    let result: Vec[int32] = Vec::with_capacity(count);
+    for _ in 0..count {
+        result.push(-1)
+    }
+    result
+}
+
+fn type_fact_index(state: CheckState, node: syntax::NodeId) -> Option[int] {
+    if node.value < 0 || node.value >= state.type_fact_indices.len() {
+        return Option::None
+    } else {};
+    let index = state.type_fact_indices[node.value].to_int();
+    if index >= 0 {
+        Option::Some(index)
+    } else {
+        Option::None
+    }
+}
+
+fn set_type_fact_index(state: CheckState, node: syntax::NodeId, index: int) -> unit {
+    if node.value >= 0 && node.value < state.type_fact_indices.len() {
+        state.type_fact_indices[node.value] = index.to_int32();
+    } else {}
+}
+
 fn index_type_fact(state: CheckState, node: syntax::NodeId, index: int) -> unit {
-    state.type_fact_indices[node.value] = index;
+    set_type_fact_index(state, node, index);
     match type_fact_source_key(state, node) {
         Some(key) => if !state.type_fact_source_indices.contains(key) {
             state.type_fact_source_indices[key] = index;
@@ -358,7 +384,7 @@ fn source_type_fact_index(state: CheckState, node: syntax::NodeId) -> Option[int
 }
 
 fn record_type_expression(state: CheckState, node: syntax::NodeId, type_id: go_types::TypeId) -> unit {
-    if state.type_fact_indices.contains(node.value) {
+    if type_fact_index(state, node).is_some() {
         return
     } else {};
     index_type_fact(state, node, state.info.types.len());
@@ -382,7 +408,7 @@ fn record_type_expression(state: CheckState, node: syntax::NodeId, type_id: go_t
 }
 
 fn record_invalid_type_expression(state: CheckState, node: syntax::NodeId) -> unit {
-    match state.type_fact_indices[node.value] {
+    match type_fact_index(state, node) {
         Some(index) => {
             state.info.types[index].type_id = state.world.invalid;
             state.info.types[index].constant_kind = "";
@@ -438,7 +464,7 @@ fn omit_invalid_operand_facts(state: CheckState) -> unit {
 
 fn refresh_cycle_identifier_facts(state: CheckState) -> unit {
     for use_fact in state.info.uses {
-        match (state.type_fact_indices[use_fact.node.value], use_fact.object) {
+        match (type_fact_index(state, use_fact.node), use_fact.object) {
             (Some(index), Some(object_id)) => if state.info.types[index].value_expr
                 && state.info.types[index].type_id.value == state.world.invalid.value {
                 match go_types::get_object(state.world, object_id) {
@@ -467,16 +493,15 @@ fn refresh_cycle_identifier_facts(state: CheckState) -> unit {
 
 fn record_use(state: CheckState, node: syntax::NodeId, object: go_types::ObjectId) -> unit {
     state.used_objects[object.value] = true;
-    if state.use_fact_nodes.contains(node.value) {
-        for index in 0..state.info.uses.len() {
-            if state.info.uses[index].node.value == node.value {
-                state.info.uses[index].object = Option::Some(object);
-                return
-            } else {}
-        }
+    if node.value < 0 || node.value >= state.use_fact_indices.len() {
         return
     } else {};
-    state.use_fact_nodes[node.value] = true;
+    let index = state.use_fact_indices[node.value].to_int();
+    if index >= 0 && index < state.info.uses.len() {
+        state.info.uses[index].object = Option::Some(object);
+        return
+    } else {};
+    state.use_fact_indices[node.value] = state.info.uses.len().to_int32();
     state.info.uses.push(ObjectFact { node, object: Option::Some(object) })
 }
 
@@ -6890,7 +6915,7 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
         scope_fact_indices: HashMap::from_array([]),
         scope_fact_previous_indices: Vec::from_array([]),
         selection_indices: HashMap::from_array([]),
-        type_fact_indices: HashMap::from_array([]),
+        type_fact_indices: fact_index_slots(syntax_package.arena.nodes.len()),
         type_fact_source_indices: HashMap::from_array([]),
         type_visit_marks: Vec::from_array([]),
         type_visit_generation: Ref::new(0),
@@ -6899,7 +6924,7 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
         retained_invalid_type_fact_nodes: HashMap::from_array([]),
         failed_inference_nodes: HashMap::from_array([]),
         ignore_function_type_params: false,
-        use_fact_nodes: HashMap::from_array([]),
+        use_fact_indices: fact_index_slots(syntax_package.arena.nodes.len()),
         omitted_use_fact_nodes: HashMap::from_array([]),
         invalid_builtin_parameter_nodes: HashMap::from_array([]),
         used_objects: HashMap::from_array([]),

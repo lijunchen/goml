@@ -101,7 +101,7 @@ fn builtin_reference(state: CheckState, scope: go_types::ScopeId, node: syntax::
 }
 
 fn record_builtin_fact_nodes(state: CheckState, node: syntax::NodeId) -> unit {
-    if !state.type_fact_indices.contains(node.value) {
+    if type_fact_index(state, node).is_none() {
         index_type_fact(state, node, state.info.types.len());
         state.info.types.push(
             TypeFact {
@@ -139,7 +139,7 @@ fn record_builtin_reference(state: CheckState, reference: BuiltinReference) -> u
 }
 
 fn update_builtin_signature(state: CheckState, node: syntax::NodeId, signature: go_types::TypeId) -> unit {
-    match state.type_fact_indices[node.value] {
+    match type_fact_index(state, node) {
         Some(index) => {
             state.info.types[index].type_id = signature;
         },

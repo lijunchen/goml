@@ -3960,7 +3960,7 @@ fn recover_void_call_fact(state: CheckState, node: syntax::NodeId) -> unit {
         None => {},
     };
     mark_void_node(state, node);
-    match state.type_fact_indices[node.value] {
+    match type_fact_index(state, node) {
         Some(index) => {
             state.info.types[index].type_id = go_types::add_type(
                 state.world,

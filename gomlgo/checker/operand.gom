@@ -599,7 +599,7 @@ fn invalid_source_assignment_recoverable(state: CheckState, type_id: go_types::T
 }
 
 fn recorded_type_fact(state: CheckState, node: syntax::NodeId) -> Option[TypeFact] {
-    match state.type_fact_indices[node.value] {
+    match type_fact_index(state, node) {
         Some(index) => Option::Some(state.info.types[index]),
         None => Option::None,
     }
@@ -722,18 +722,18 @@ fn failed_inherited_initializer_operand(state: CheckState, node: syntax::NodeId,
 }
 
 fn record_operand(state: CheckState, node: syntax::NodeId, operand: Operand) -> unit {
-    if state.type_fact_indices.contains(node.value) {
+    if type_fact_index(state, node).is_some() {
         if state.preserved_type_fact_nodes.contains(node.value)
             || failed_inherited_initializer_operand(state, node, operand) {
             return
         } else {};
-        match state.type_fact_indices[node.value] {
+        match type_fact_index(state, node) {
             Some(index) => if state.info.types[index].type_expr || state.info.types[index].builtin {
                 return
             } else {},
             None => {},
         };
-        match state.type_fact_indices[node.value] {
+        match type_fact_index(state, node) {
             Some(index) => if (state.info.types[index].type_id.value == state.world.invalid.value
                 && operand.type_id.value != state.world.invalid.value)
                 || state.current_iota >= 0 {
@@ -758,7 +758,7 @@ fn record_operand(state: CheckState, node: syntax::NodeId, operand: Operand) -> 
     } else {};
     match source_type_fact_index(state, node) {
         Some(index) => {
-            state.type_fact_indices[node.value] = index;
+            set_type_fact_index(state, node, index);
             return
         },
         None => {},
@@ -819,7 +819,7 @@ fn update_operand_fact(
     type_id: go_types::TypeId,
     value: Option[constant::ConstValue],
 ) -> unit {
-    match state.type_fact_indices[node.value] {
+    match type_fact_index(state, node) {
         Some(index) => {
             state.info.types[index].type_id = type_id;
             match value {
@@ -1116,7 +1116,7 @@ fn update_contextual_operand_fact(
 }
 
 fn retag_untyped_expression(state: CheckState, node: syntax::NodeId, target: go_types::TypeId) -> unit {
-    match state.type_fact_indices[node.value] {
+    match type_fact_index(state, node) {
         Some(index) => if go_types::is_untyped(state.world, state.info.types[index].type_id) {
             state.info.types[index].type_id = target;
         } else {},
