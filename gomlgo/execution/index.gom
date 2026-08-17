@@ -4,10 +4,10 @@ use gomlgo::checker;
 use gomlgo::syntax;
 use gomlgo::types as go_types;
 
-fn empty_slots[T](count: int) -> Vec[Option[T]] {
-    let result: Vec[Option[T]] = Vec::with_capacity(count);
+fn empty_indices(count: int) -> Vec[int] {
+    let result: Vec[int] = Vec::with_capacity(count);
     for _ in 0..count {
-        result.push(Option::None)
+        result.push(-1)
     }
     result
 }
@@ -57,14 +57,22 @@ pub fn empty_type_info_index(package_id: go_types::PackageId) -> TypeInfoIndex {
         node_count: 0,
         file_count: 0,
         types: Vec::from_array([]),
+        type_indices: Vec::from_array([]),
         keyed_types: HashMap::from_array([]),
         definitions: Vec::from_array([]),
+        definition_indices: Vec::from_array([]),
         uses: Vec::from_array([]),
+        use_indices: Vec::from_array([]),
         implicits: Vec::from_array([]),
+        implicit_indices: Vec::from_array([]),
         selections: Vec::from_array([]),
+        selection_indices: Vec::from_array([]),
         instances: Vec::from_array([]),
+        instance_indices: Vec::from_array([]),
         scopes: Vec::from_array([]),
+        scope_indices: Vec::from_array([]),
         file_versions: Vec::from_array([]),
+        file_version_indices: Vec::from_array([]),
         initialization_order: Vec::from_array([]),
     }
 }
@@ -81,19 +89,28 @@ pub fn build_type_info_index(
         package_id,
         node_count,
         file_count,
-        types: empty_slots(node_count),
+        types: info.types,
+        type_indices: empty_indices(node_count),
         keyed_types: HashMap::from_array([]),
-        definitions: empty_slots(node_count),
-        uses: empty_slots(node_count),
-        implicits: empty_slots(node_count),
-        selections: empty_slots(node_count),
-        instances: empty_slots(node_count),
-        scopes: empty_slots(node_count),
-        file_versions: empty_slots(file_count),
+        definitions: info.defs,
+        definition_indices: empty_indices(node_count),
+        uses: info.uses,
+        use_indices: empty_indices(node_count),
+        implicits: info.implicits,
+        implicit_indices: empty_indices(node_count),
+        selections: info.selections,
+        selection_indices: empty_indices(node_count),
+        instances: info.instances,
+        instance_indices: empty_indices(node_count),
+        scopes: info.scopes,
+        scope_indices: empty_indices(node_count),
+        file_versions: info.file_versions,
+        file_version_indices: empty_indices(file_count),
         initialization_order: info.init_order,
     };
     let diagnostics: Vec[ExecutionDiagnostic] = Vec::from_array([]);
-    for fact in info.types {
+    for fact_index in 0..index.types.len() {
+        let fact = index.types[fact_index];
         if !valid_node(fact.node, node_count) && fact.key.is_some() {
             let key = fact.key.unwrap_or("");
             if !valid_type(world, fact.type_id) {
@@ -124,7 +141,7 @@ pub fn build_type_info_index(
                     "type fact has invalid type " + fact.type_id.value.to_string(),
                 ),
             )
-        } else if index.types[fact.node.value].is_some() {
+        } else if index.type_indices[fact.node.value] >= 0 {
             diagnostics.push(
                 index_diagnostic(
                     package_path,
@@ -132,10 +149,11 @@ pub fn build_type_info_index(
                 ),
             )
         } else {
-            index.types[fact.node.value] = Option::Some(fact);
+            index.type_indices[fact.node.value] = fact_index;
         }
     }
-    for fact in info.defs {
+    for fact_index in 0..index.definitions.len() {
+        let fact = index.definitions[fact_index];
         if !valid_node(fact.node, node_count) {
             diagnostics.push(
                 index_diagnostic(
@@ -145,7 +163,7 @@ pub fn build_type_info_index(
             )
         } else if !valid_optional_object(world, fact.object) {
             diagnostics.push(index_diagnostic(package_path, "definition fact has invalid object"))
-        } else if index.definitions[fact.node.value].is_some() {
+        } else if index.definition_indices[fact.node.value] >= 0 {
             diagnostics.push(
                 index_diagnostic(
                     package_path,
@@ -153,10 +171,11 @@ pub fn build_type_info_index(
                 ),
             )
         } else {
-            index.definitions[fact.node.value] = Option::Some(fact);
+            index.definition_indices[fact.node.value] = fact_index;
         }
     }
-    for fact in info.uses {
+    for fact_index in 0..index.uses.len() {
+        let fact = index.uses[fact_index];
         if !valid_node(fact.node, node_count) {
             diagnostics.push(
                 index_diagnostic(
@@ -166,7 +185,7 @@ pub fn build_type_info_index(
             )
         } else if !valid_optional_object(world, fact.object) {
             diagnostics.push(index_diagnostic(package_path, "use fact has invalid object"))
-        } else if index.uses[fact.node.value].is_some() {
+        } else if index.use_indices[fact.node.value] >= 0 {
             diagnostics.push(
                 index_diagnostic(
                     package_path,
@@ -174,10 +193,11 @@ pub fn build_type_info_index(
                 ),
             )
         } else {
-            index.uses[fact.node.value] = Option::Some(fact);
+            index.use_indices[fact.node.value] = fact_index;
         }
     }
-    for fact in info.implicits {
+    for fact_index in 0..index.implicits.len() {
+        let fact = index.implicits[fact_index];
         if !valid_node(fact.node, node_count) {
             diagnostics.push(
                 index_diagnostic(
@@ -187,7 +207,7 @@ pub fn build_type_info_index(
             )
         } else if !valid_optional_object(world, fact.object) {
             diagnostics.push(index_diagnostic(package_path, "implicit fact has invalid object"))
-        } else if index.implicits[fact.node.value].is_some() {
+        } else if index.implicit_indices[fact.node.value] >= 0 {
             diagnostics.push(
                 index_diagnostic(
                     package_path,
@@ -195,10 +215,11 @@ pub fn build_type_info_index(
                 ),
             )
         } else {
-            index.implicits[fact.node.value] = Option::Some(fact);
+            index.implicit_indices[fact.node.value] = fact_index;
         }
     }
-    for fact in info.selections {
+    for fact_index in 0..index.selections.len() {
+        let fact = index.selections[fact_index];
         if !valid_node(fact.node, node_count) {
             diagnostics.push(
                 index_diagnostic(
@@ -210,7 +231,7 @@ pub fn build_type_info_index(
             diagnostics.push(index_diagnostic(package_path, "selection fact has invalid type"))
         } else if !valid_object(world, fact.object) {
             diagnostics.push(index_diagnostic(package_path, "selection fact has invalid object"))
-        } else if index.selections[fact.node.value].is_some() {
+        } else if index.selection_indices[fact.node.value] >= 0 {
             diagnostics.push(
                 index_diagnostic(
                     package_path,
@@ -218,10 +239,11 @@ pub fn build_type_info_index(
                 ),
             )
         } else {
-            index.selections[fact.node.value] = Option::Some(fact);
+            index.selection_indices[fact.node.value] = fact_index;
         }
     }
-    for fact in info.instances {
+    for fact_index in 0..index.instances.len() {
+        let fact = index.instances[fact_index];
         let mut valid = valid_type(world, fact.type_id);
         for type_arg in fact.type_args {
             if !valid_type(world, type_arg) {
@@ -237,7 +259,7 @@ pub fn build_type_info_index(
             )
         } else if !valid {
             diagnostics.push(index_diagnostic(package_path, "instance fact has invalid type"))
-        } else if index.instances[fact.node.value].is_some() {
+        } else if index.instance_indices[fact.node.value] >= 0 {
             diagnostics.push(
                 index_diagnostic(
                     package_path,
@@ -245,10 +267,11 @@ pub fn build_type_info_index(
                 ),
             )
         } else {
-            index.instances[fact.node.value] = Option::Some(fact);
+            index.instance_indices[fact.node.value] = fact_index;
         }
     }
-    for fact in info.scopes {
+    for fact_index in 0..index.scopes.len() {
+        let fact = index.scopes[fact_index];
         if !valid_node(fact.node, node_count) {
             diagnostics.push(
                 index_diagnostic(
@@ -258,7 +281,7 @@ pub fn build_type_info_index(
             )
         } else if !valid_scope(world, fact.scope) {
             diagnostics.push(index_diagnostic(package_path, "scope fact has invalid scope"))
-        } else if index.scopes[fact.node.value].is_some() {
+        } else if index.scope_indices[fact.node.value] >= 0 {
             diagnostics.push(
                 index_diagnostic(
                     package_path,
@@ -266,10 +289,11 @@ pub fn build_type_info_index(
                 ),
             )
         } else {
-            index.scopes[fact.node.value] = Option::Some(fact);
+            index.scope_indices[fact.node.value] = fact_index;
         }
     }
-    for fact in info.file_versions {
+    for fact_index in 0..index.file_versions.len() {
+        let fact = index.file_versions[fact_index];
         if !valid_file(fact.file, file_count) {
             diagnostics.push(
                 index_diagnostic(
@@ -277,7 +301,7 @@ pub fn build_type_info_index(
                     "file version fact has invalid file " + fact.file.value.to_string(),
                 ),
             )
-        } else if index.file_versions[fact.file.value].is_some() {
+        } else if index.file_version_indices[fact.file.value] >= 0 {
             diagnostics.push(
                 index_diagnostic(
                     package_path,
@@ -285,7 +309,7 @@ pub fn build_type_info_index(
                 ),
             )
         } else {
-            index.file_versions[fact.file.value] = Option::Some(fact);
+            index.file_version_indices[fact.file.value] = fact_index;
         }
     }
     for initializer in index.initialization_order {
@@ -322,7 +346,12 @@ pub fn require_node_type(index: TypeInfoIndex, node: syntax::NodeId) -> Result[
     if !valid_index_node(index, node) {
         Result::Err(missing_fact("type", index, node))
     } else {
-        index.types[node.value].ok_or(missing_fact("type", index, node))
+        let fact_index = index.type_indices[node.value];
+        if fact_index < 0 || fact_index >= index.types.len() {
+            Result::Err(missing_fact("type", index, node))
+        } else {
+            Result::Ok(index.types[fact_index])
+        }
     }
 }
 
@@ -333,7 +362,12 @@ pub fn require_definition(index: TypeInfoIndex, node: syntax::NodeId) -> Result[
     if !valid_index_node(index, node) {
         Result::Err(missing_fact("definition", index, node))
     } else {
-        index.definitions[node.value].ok_or(missing_fact("definition", index, node))
+        let fact_index = index.definition_indices[node.value];
+        if fact_index < 0 || fact_index >= index.definitions.len() {
+            Result::Err(missing_fact("definition", index, node))
+        } else {
+            Result::Ok(index.definitions[fact_index])
+        }
     }
 }
 
@@ -344,7 +378,12 @@ pub fn require_use(index: TypeInfoIndex, node: syntax::NodeId) -> Result[
     if !valid_index_node(index, node) {
         Result::Err(missing_fact("use", index, node))
     } else {
-        index.uses[node.value].ok_or(missing_fact("use", index, node))
+        let fact_index = index.use_indices[node.value];
+        if fact_index < 0 || fact_index >= index.uses.len() {
+            Result::Err(missing_fact("use", index, node))
+        } else {
+            Result::Ok(index.uses[fact_index])
+        }
     }
 }
 
@@ -355,7 +394,12 @@ pub fn require_implicit(index: TypeInfoIndex, node: syntax::NodeId) -> Result[
     if !valid_index_node(index, node) {
         Result::Err(missing_fact("implicit", index, node))
     } else {
-        index.implicits[node.value].ok_or(missing_fact("implicit", index, node))
+        let fact_index = index.implicit_indices[node.value];
+        if fact_index < 0 || fact_index >= index.implicits.len() {
+            Result::Err(missing_fact("implicit", index, node))
+        } else {
+            Result::Ok(index.implicits[fact_index])
+        }
     }
 }
 
@@ -366,7 +410,12 @@ pub fn require_selection(index: TypeInfoIndex, node: syntax::NodeId) -> Result[
     if !valid_index_node(index, node) {
         Result::Err(missing_fact("selection", index, node))
     } else {
-        index.selections[node.value].ok_or(missing_fact("selection", index, node))
+        let fact_index = index.selection_indices[node.value];
+        if fact_index < 0 || fact_index >= index.selections.len() {
+            Result::Err(missing_fact("selection", index, node))
+        } else {
+            Result::Ok(index.selections[fact_index])
+        }
     }
 }
 
@@ -377,7 +426,12 @@ pub fn require_instance(index: TypeInfoIndex, node: syntax::NodeId) -> Result[
     if !valid_index_node(index, node) {
         Result::Err(missing_fact("instance", index, node))
     } else {
-        index.instances[node.value].ok_or(missing_fact("instance", index, node))
+        let fact_index = index.instance_indices[node.value];
+        if fact_index < 0 || fact_index >= index.instances.len() {
+            Result::Err(missing_fact("instance", index, node))
+        } else {
+            Result::Ok(index.instances[fact_index])
+        }
     }
 }
 
@@ -388,6 +442,25 @@ pub fn require_scope(index: TypeInfoIndex, node: syntax::NodeId) -> Result[
     if !valid_index_node(index, node) {
         Result::Err(missing_fact("scope", index, node))
     } else {
-        index.scopes[node.value].ok_or(missing_fact("scope", index, node))
+        let fact_index = index.scope_indices[node.value];
+        if fact_index < 0 || fact_index >= index.scopes.len() {
+            Result::Err(missing_fact("scope", index, node))
+        } else {
+            Result::Ok(index.scopes[fact_index])
+        }
     }
+}
+
+pub fn set_use(index: TypeInfoIndex, fact: checker::ObjectFact) -> bool {
+    if !valid_index_node(index, fact.node) {
+        return false
+    } else {};
+    let fact_index = index.use_indices[fact.node.value];
+    if fact_index >= 0 && fact_index < index.uses.len() {
+        index.uses[fact_index] = fact;
+    } else {
+        index.use_indices[fact.node.value] = index.uses.len();
+        index.uses.push(fact)
+    };
+    true
 }

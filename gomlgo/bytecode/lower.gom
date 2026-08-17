@@ -620,26 +620,24 @@ fn analyze_function_capture_objects(
     for package_value in program.packages {
         let uses: Vec[CaptureUse] = Vec::from_array([]);
         match package_value.syntax {
-            Some(package_syntax) => for node_index in 0..package_value.index.uses.len() {
-                match package_value.index.uses[node_index] {
-                    Some(fact) => match fact.object {
-                        Some(object) => if object.value >= 0
-                            && object.value < program.world.objects.len()
-                            && node_index < package_syntax.arena.nodes.len()
-                            && program.world.objects[object.value].kind == go_types::ObjectKind::Var
-                            && object_globals[object.value].is_none() {
-                            let node = syntax::node_at(package_syntax.arena, node_index);
-                            uses.push(
-                                CaptureUse {
-                                    file: node.file,
-                                    start: node.span.start,
-                                    end: node.span.end,
-                                    object,
-                                },
-                            )
-                        } else {},
-                        None => {},
-                    },
+            Some(package_syntax) => for fact in package_value.index.uses {
+                match fact.object {
+                    Some(object) => if object.value >= 0
+                        && object.value < program.world.objects.len()
+                        && fact.node.value >= 0
+                        && fact.node.value < package_syntax.arena.nodes.len()
+                        && program.world.objects[object.value].kind == go_types::ObjectKind::Var
+                        && object_globals[object.value].is_none() {
+                        let node = syntax::node_at(package_syntax.arena, fact.node.value);
+                        uses.push(
+                            CaptureUse {
+                                file: node.file,
+                                start: node.span.start,
+                                end: node.span.end,
+                                object,
+                            },
+                        )
+                    } else {},
                     None => {},
                 }
             },

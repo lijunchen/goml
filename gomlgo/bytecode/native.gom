@@ -895,166 +895,111 @@ fn link_native_calls(program: execution::ExecutionProgram) -> NativeLinkResult {
     }
     for source_package in program.packages {
         if source_package.mode == execution::ExecutionMode::Interpreted {
-            for fact in source_package.index.uses {
-                match fact {
-                    Some(value) => match value.object {
-                        Some(object_id) => if object_id.value >= 0
-                            && object_id.value < program.world.objects.len() {
-                            let object = program.world.objects[object_id.value];
-                            let generic = generic_function_signature(program.world, object.type_id);
-                            if !generic && selected[object_id.value] {
-                                continue
-                            } else {};
-                            match object.owner {
-                                Some(owner) => {
-                                    let owner_index = execution_package_index(program, owner);
-                                    if owner_index >= 0 {
-                                        let owner_package = program.packages[owner_index];
-                                        if owner_package.mode == execution::ExecutionMode::Native
-                                            && object.kind == go_types::ObjectKind::Func {
-                                            if native_intrinsic(owner_package.path, object.name) {
-                                                continue
-                                            } else {};
-                                            if !generic {
-                                                selected[object_id.value] = true;
-                                            } else {};
-                                            if !object.exported {
-                                                diagnostics.push(
-                                                    native_diagnostic(
-                                                        source_package,
-                                                        value.node,
-                                                        object_id,
-                                                        "native link " + owner_package.path + "."
-                                                            + object.name
-                                                            + ": symbol is not exported",
-                                                    ),
-                                                )
-                                            } else {
-                                                let mut signature = object.type_id;
-                                                let mut candidate_object = object_id;
-                                                let type_argument_keys: Vec[string] = Vec::from_array(
-                                                    [],
-                                                );
-                                                if generic {
-                                                    let instance = if value.node.value >= 0
-                                                        && value.node.value
-                                                            < source_package.index.instances.len() {
-                                                        source_package.index.instances[value.node.value]
-                                                    } else {
-                                                        Option::None
-                                                    };
-                                                    match instance {
-                                                        Some(instance) => {
-                                                            signature = instance.type_id;
-                                                            let mut deferred = false;
-                                                            for argument in instance.type_args {
-                                                                if native_type_has_parameter(
-                                                                    program.world,
-                                                                    argument,
-                                                                ) {
-                                                                    deferred = true;
-                                                                    continue
-                                                                } else {};
-                                                                match native_type_key(
-                                                                    program.world,
-                                                                    argument,
-                                                                ) {
-                                                                    Ok(key) => type_argument_keys.push(
-                                                                        key,
-                                                                    ),
-                                                                    Err(message) => diagnostics.push(
-                                                                        native_diagnostic(
-                                                                            source_package,
-                                                                            value.node,
-                                                                            object_id,
-                                                                            "native link "
-                                                                                + owner_package.path
-                                                                                + "."
-                                                                                + object.name
-                                                                                + ": type argument "
-                                                                                + message,
-                                                                        ),
-                                                                    ),
-                                                                }
-                                                            }
-                                                            if deferred {
+            for value in source_package.index.uses {
+                match value.object {
+                    Some(object_id) => if object_id.value >= 0
+                        && object_id.value < program.world.objects.len() {
+                        let object = program.world.objects[object_id.value];
+                        let generic = generic_function_signature(program.world, object.type_id);
+                        if !generic && selected[object_id.value] {
+                            continue
+                        } else {};
+                        match object.owner {
+                            Some(owner) => {
+                                let owner_index = execution_package_index(program, owner);
+                                if owner_index >= 0 {
+                                    let owner_package = program.packages[owner_index];
+                                    if owner_package.mode == execution::ExecutionMode::Native
+                                        && object.kind == go_types::ObjectKind::Func {
+                                        if native_intrinsic(owner_package.path, object.name) {
+                                            continue
+                                        } else {};
+                                        if !generic {
+                                            selected[object_id.value] = true;
+                                        } else {};
+                                        if !object.exported {
+                                            diagnostics.push(
+                                                native_diagnostic(
+                                                    source_package,
+                                                    value.node,
+                                                    object_id,
+                                                    "native link " + owner_package.path + "."
+                                                        + object.name
+                                                        + ": symbol is not exported",
+                                                ),
+                                            )
+                                        } else {
+                                            let mut signature = object.type_id;
+                                            let mut candidate_object = object_id;
+                                            let type_argument_keys: Vec[string] = Vec::from_array(
+                                                [],
+                                            );
+                                            if generic {
+                                                let instance = match execution::require_instance(
+                                                    source_package.index,
+                                                    value.node,
+                                                ) {
+                                                    Ok(instance) => Option::Some(instance),
+                                                    Err(_) => Option::None,
+                                                };
+                                                match instance {
+                                                    Some(instance) => {
+                                                        signature = instance.type_id;
+                                                        let mut deferred = false;
+                                                        for argument in instance.type_args {
+                                                            if native_type_has_parameter(
+                                                                program.world,
+                                                                argument,
+                                                            ) {
+                                                                deferred = true;
                                                                 continue
                                                             } else {};
-                                                            candidate_object = go_types::add_object(
+                                                            match native_type_key(
                                                                 program.world,
-                                                                go_types::ObjectKind::Func,
-                                                                object.name,
-                                                                object.owner,
-                                                                object.file,
-                                                                object.node,
-                                                                object.position,
-                                                                signature,
-                                                            );
-                                                            source_package.index.uses[value.node.value] = Option::Some(
-                                                                checker::ObjectFact {
-                                                                    node: value.node,
-                                                                    object: Option::Some(
-                                                                        candidate_object,
+                                                                argument,
+                                                            ) {
+                                                                Ok(key) => type_argument_keys.push(
+                                                                    key,
+                                                                ),
+                                                                Err(message) => diagnostics.push(
+                                                                    native_diagnostic(
+                                                                        source_package,
+                                                                        value.node,
+                                                                        object_id,
+                                                                        "native link "
+                                                                            + owner_package.path
+                                                                            + "."
+                                                                            + object.name
+                                                                            + ": type argument "
+                                                                            + message,
                                                                     ),
-                                                                },
-                                                            );
-                                                        },
-                                                        None => diagnostics.push(
-                                                            native_diagnostic(
-                                                                source_package,
-                                                                value.node,
-                                                                object_id,
-                                                                "native link " + owner_package.path
-                                                                    + "."
-                                                                    + object.name
-                                                                    + ": generic call has no concrete instance",
-                                                            ),
-                                                        ),
-                                                    }
-                                                } else {};
-                                                match native_callable_signature(
-                                                    program.world,
-                                                    signature,
-                                                ) {
-                                                    Ok((shape, receiver)) => {
-                                                        let (
-                                                            package_id,
-                                                            import_path,
-                                                            receiver_name,
-                                                            receiver_pointer,
-                                                        ) = match receiver {
-                                                            Some(receiver_value) => (
-                                                                receiver_value.package_id,
-                                                                receiver_value.import_path,
-                                                                receiver_value.name,
-                                                                receiver_value.pointer,
-                                                            ),
-                                                            None => (
-                                                                owner,
-                                                                owner_package.path,
-                                                                "",
-                                                                false,
-                                                            ),
-                                                        };
-                                                        candidates.push(
-                                                            NativeCandidate {
-                                                                source_package,
+                                                                ),
+                                                            }
+                                                        }
+                                                        if deferred {
+                                                            continue
+                                                        } else {};
+                                                        candidate_object = go_types::add_object(
+                                                            program.world,
+                                                            go_types::ObjectKind::Func,
+                                                            object.name,
+                                                            object.owner,
+                                                            object.file,
+                                                            object.node,
+                                                            object.position,
+                                                            signature,
+                                                        );
+                                                        execution::set_use(
+                                                            source_package.index,
+                                                            checker::ObjectFact {
                                                                 node: value.node,
-                                                                package_id,
-                                                                object: candidate_object,
-                                                                import_path,
-                                                                symbol: object.name,
-                                                                receiver_name,
-                                                                receiver_pointer,
-                                                                type_argument_keys,
-                                                                signature,
-                                                                shape,
-                                                                exit: owner_package.path == "os"
-                                                                    && object.name == "Exit",
+                                                                object: Option::Some(
+                                                                    candidate_object,
+                                                                ),
                                                             },
-                                                        )
+                                                        );
                                                     },
-                                                    Err(message) => diagnostics.push(
+                                                    None => diagnostics.push(
                                                         native_diagnostic(
                                                             source_package,
                                                             value.node,
@@ -1062,20 +1007,72 @@ fn link_native_calls(program: execution::ExecutionProgram) -> NativeLinkResult {
                                                             "native link " + owner_package.path
                                                                 + "."
                                                                 + object.name
-                                                                + ": "
-                                                                + message,
+                                                                + ": generic call has no concrete instance",
                                                         ),
                                                     ),
                                                 }
+                                            } else {};
+                                            match native_callable_signature(
+                                                program.world,
+                                                signature,
+                                            ) {
+                                                Ok((shape, receiver)) => {
+                                                    let (
+                                                        package_id,
+                                                        import_path,
+                                                        receiver_name,
+                                                        receiver_pointer,
+                                                    ) = match receiver {
+                                                        Some(receiver_value) => (
+                                                            receiver_value.package_id,
+                                                            receiver_value.import_path,
+                                                            receiver_value.name,
+                                                            receiver_value.pointer,
+                                                        ),
+                                                        None => (
+                                                            owner,
+                                                            owner_package.path,
+                                                            "",
+                                                            false,
+                                                        ),
+                                                    };
+                                                    candidates.push(
+                                                        NativeCandidate {
+                                                            source_package,
+                                                            node: value.node,
+                                                            package_id,
+                                                            object: candidate_object,
+                                                            import_path,
+                                                            symbol: object.name,
+                                                            receiver_name,
+                                                            receiver_pointer,
+                                                            type_argument_keys,
+                                                            signature,
+                                                            shape,
+                                                            exit: owner_package.path == "os"
+                                                                && object.name == "Exit",
+                                                        },
+                                                    )
+                                                },
+                                                Err(message) => diagnostics.push(
+                                                    native_diagnostic(
+                                                        source_package,
+                                                        value.node,
+                                                        object_id,
+                                                        "native link " + owner_package.path + "."
+                                                            + object.name
+                                                            + ": "
+                                                            + message,
+                                                    ),
+                                                ),
                                             }
-                                        } else {}
+                                        }
                                     } else {}
-                                },
-                                None => {},
-                            }
-                        } else {},
-                        None => {},
-                    },
+                                } else {}
+                            },
+                            None => {},
+                        }
+                    } else {},
                     None => {},
                 }
             }
@@ -1091,7 +1088,8 @@ fn link_native_calls(program: execution::ExecutionProgram) -> NativeLinkResult {
             && calls[calls.len() - 1].receiver_pointer == candidate.receiver_pointer
             && calls[calls.len() - 1].type_argument_keys == candidate.type_argument_keys {
             let existing = calls[calls.len() - 1];
-            candidate.source_package.index.uses[candidate.node.value] = Option::Some(
+            execution::set_use(
+                candidate.source_package.index,
                 checker::ObjectFact { node: candidate.node, object: Option::Some(existing.object) },
             );
             continue
