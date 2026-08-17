@@ -30,19 +30,10 @@ type _goml_m_Option_____o_string_c_string_q__Some struct {
 
 func (_ _goml_m_Option_____o_string_c_string_q__Some) is_goml_m_Option_____o_string_c_string_q_() {}
 
-type Option__string interface {
-    isOption__string()
+type Option__string struct {
+    _tag int32
+    _v1_0 string
 }
-
-type Option__string_None struct {}
-
-func (_ Option__string_None) isOption__string() {}
-
-type Option__string_Some struct {
-    _0 string
-}
-
-func (_ Option__string_Some) isOption__string() {}
 
 func cut_pair(ok__0 bool) _goml_m_Option_____o_string_c_string_q_ {
     if ok__0 {
@@ -81,7 +72,9 @@ func describe(ok__2 bool) Option__string {
     var jp428 Tuple2_6string_6string
     switch mtmp408.(type) {
     case _goml_m_Option_____o_string_c_string_q__None:
-        return Option__string_None{}
+        return Option__string{
+            _tag: 0,
+        }
     case _goml_m_Option_____o_string_c_string_q__Some:
         var x409 Tuple2_6string_6string = mtmp408.(_goml_m_Option_____o_string_c_string_q__Some)._0
         jp428 = x409
@@ -89,8 +82,9 @@ func describe(ok__2 bool) Option__string {
         var x412 string = jp428._1
         var t429 string = x411 + ":"
         var t430 string = t429 + x412
-        var t431 Option__string = Option__string_Some{
-            _0: t430,
+        var t431 Option__string = Option__string{
+            _tag: 1,
+            _v1_0: t430,
         }
         return t431
     default:
@@ -101,11 +95,11 @@ func describe(ok__2 bool) Option__string {
 func main0() struct{} {
     var t438 Option__string = describe(true)
     var t439 string
-    switch t438.(type) {
-    case Option__string_None:
+    switch t438._tag {
+    case 0:
         t439 = "none"
-    case Option__string_Some:
-        var inline478 string = t438.(Option__string_Some)._0
+    case 1:
+        var inline478 string = t438._v1_0
         var inline480 string = "some " + inline478
         t439 = inline480
     default:
@@ -119,13 +113,15 @@ func main0() struct{} {
     var inline463 Tuple2_6string_6string
     switch inline461.(type) {
     case _goml_m_Option_____o_string_c_string_q__None:
-        t440 = Option__string_None{}
+        t440 = Option__string{
+            _tag: 0,
+        }
         var t441 string
-        switch t440.(type) {
-        case Option__string_None:
+        switch t440._tag {
+        case 0:
             t441 = "none"
-        case Option__string_Some:
-            var inline456 string = t440.(Option__string_Some)._0
+        case 1:
+            var inline456 string = t440._v1_0
             var inline458 string = "some " + inline456
             t441 = inline458
         default:
@@ -141,16 +137,17 @@ func main0() struct{} {
         var inline466 string = inline463._1
         var inline469 string = inline465 + ":"
         var inline470 string = inline469 + inline466
-        var inline471 Option__string = Option__string_Some{
-            _0: inline470,
+        var inline471 Option__string = Option__string{
+            _tag: 1,
+            _v1_0: inline470,
         }
         t440 = inline471
         var t441 string
-        switch t440.(type) {
-        case Option__string_None:
+        switch t440._tag {
+        case 0:
             t441 = "none"
-        case Option__string_Some:
-            var inline456 string = t440.(Option__string_Some)._0
+        case 1:
+            var inline456 string = t440._v1_0
             var inline458 string = "some " + inline456
             t441 = inline458
         default:

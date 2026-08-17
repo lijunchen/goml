@@ -31,21 +31,11 @@ type Result__Handle__string_Err struct {
 
 func (_ Result__Handle__string_Err) isResult__Handle__string() {}
 
-type Result__unit__string interface {
-    isResult__unit__string()
+type Result__unit__string struct {
+    _tag int32
+    _v0_0 struct{}
+    _v1_0 string
 }
-
-type Result__unit__string_Ok struct {
-    _0 struct{}
-}
-
-func (_ Result__unit__string_Ok) isResult__unit__string() {}
-
-type Result__unit__string_Err struct {
-    _0 string
-}
-
-func (_ Result__unit__string_Err) isResult__unit__string() {}
 
 type Result__string__string interface {
     isResult__string__string()
@@ -87,27 +77,29 @@ func use_handle(open_ok__3 bool, close_ok__4 bool) Result__string__string {
         var name__6 string = jp438.name
         var mtmp411 Result__unit__string
         if close_ok__4 {
-            var inline463 Result__unit__string = Result__unit__string_Ok{
-                _0: struct{}{},
+            var inline463 Result__unit__string = Result__unit__string{
+                _tag: 0,
+                _v0_0: struct{}{},
             }
             mtmp411 = inline463
         } else {
             var inline464 string = jp438.name
             var inline465 string = "close failed for " + inline464
-            var inline466 Result__unit__string = Result__unit__string_Err{
-                _0: inline465,
+            var inline466 Result__unit__string = Result__unit__string{
+                _tag: 1,
+                _v1_0: inline465,
             }
             mtmp411 = inline466
         }
-        switch mtmp411.(type) {
-        case Result__unit__string_Ok:
+        switch mtmp411._tag {
+        case 0:
             var t440 string = "closed " + name__6
             var t441 Result__string__string = Result__string__string_Ok{
                 _0: t440,
             }
             return t441
-        case Result__unit__string_Err:
-            var x413 string = mtmp411.(Result__unit__string_Err)._0
+        case 1:
+            var x413 string = mtmp411._v1_0
             var t442 Result__string__string = Result__string__string_Err{
                 _0: x413,
             }

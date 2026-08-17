@@ -156,11 +156,14 @@ func hashmap_get__HashMap_9LoggedKey_3int(m *hashmap_LoggedKey_int_x, key Logged
     var ok bool
     value, ok = hashmap_lookup__HashMap_9LoggedKey_3int(m, key)
     if ok {
-        return Option__int_Some{
-            _0: value,
+        return Option__int{
+            _tag: 1,
+            _v1_0: value,
         }
     }
-    return Option__int_None{}
+    return Option__int{
+        _tag: 0,
+    }
 }
 
 func hashmap_set__HashMap_9LoggedKey_3int(m *hashmap_LoggedKey_int_x, key LoggedKey, value int) struct{} {
@@ -325,11 +328,14 @@ func hashmap_get__HashMap_6string_8Vec_3int(m *hashmap_string_Vec_3int_x, key st
     var ok bool
     value, ok = hashmap_lookup__HashMap_6string_8Vec_3int(m, key)
     if ok {
-        return _goml_m_Option____Vec_l_int_r__Some{
-            _0: value,
+        return _goml_m_Option____Vec_l_int_r_{
+            _tag: 1,
+            _v1_0: value,
         }
     }
-    return _goml_m_Option____Vec_l_int_r__None{}
+    return _goml_m_Option____Vec_l_int_r_{
+        _tag: 0,
+    }
 }
 
 func hashmap_set__HashMap_6string_8Vec_3int(m *hashmap_string_Vec_3int_x, key string, value *_goml_vec_int) struct{} {
@@ -403,33 +409,15 @@ type LoggedKey struct {
 
 type Ordering int32
 
-type Option__int interface {
-    isOption__int()
+type Option__int struct {
+    _tag int32
+    _v1_0 int
 }
 
-type Option__int_None struct {}
-
-func (_ Option__int_None) isOption__int() {}
-
-type Option__int_Some struct {
-    _0 int
+type _goml_m_Option____Vec_l_int_r_ struct {
+    _tag int32
+    _v1_0 *_goml_vec_int
 }
-
-func (_ Option__int_Some) isOption__int() {}
-
-type _goml_m_Option____Vec_l_int_r_ interface {
-    is_goml_m_Option____Vec_l_int_r_()
-}
-
-type _goml_m_Option____Vec_l_int_r__None struct {}
-
-func (_ _goml_m_Option____Vec_l_int_r__None) is_goml_m_Option____Vec_l_int_r_() {}
-
-type _goml_m_Option____Vec_l_int_r__Some struct {
-    _0 *_goml_vec_int
-}
-
-func (_ _goml_m_Option____Vec_l_int_r__Some) is_goml_m_Option____Vec_l_int_r_() {}
 
 func _goml_m_trait__impl_i_PartialEq_i_LoggedKey_i_eq(self__0 LoggedKey, other__1 LoggedKey) bool {
     var t433 *ref_string_x = self__0.log
@@ -589,11 +577,11 @@ func main0() struct{} {
     var inline633 Option__int = hashmap_get__HashMap_9LoggedKey_3int(table__16, t496)
     mtmp423 = inline633
     var jp498 int
-    switch mtmp423.(type) {
-    case Option__int_None:
+    switch mtmp423._tag {
+    case 0:
         jp498 = 0
-    case Option__int_Some:
-        var x424 int = mtmp423.(Option__int_Some)._0
+    case 1:
+        var x424 int = mtmp423._v1_0
         jp498 = x424
     default:
         panic("non-exhaustive match")
@@ -703,11 +691,11 @@ func main0() struct{} {
     var inline613 _goml_m_Option____Vec_l_int_r_ = hashmap_get__HashMap_6string_8Vec_3int(nested_map__24, inline612)
     mtmp429 = inline613
     var jp520 int
-    switch mtmp429.(type) {
-    case _goml_m_Option____Vec_l_int_r__None:
+    switch mtmp429._tag {
+    case 0:
         jp520 = 0
-    case _goml_m_Option____Vec_l_int_r__Some:
-        var x430 *_goml_vec_int = mtmp429.(_goml_m_Option____Vec_l_int_r__Some)._0
+    case 1:
+        var x430 *_goml_vec_int = mtmp429._v1_0
         var t533 int = vec_get__Vec_3int(x430, 0)
         jp520 = t533
     default:

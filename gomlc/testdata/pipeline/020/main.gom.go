@@ -32,62 +32,38 @@ type Wrapper__unit struct {
 
 type Ordering int32
 
-type Shape__int32 interface {
-    isShape__int32()
+type Shape__int32 struct {
+    _tag int32
+    _v0_0 Point
+    _v1_0 Wrapper__int32
 }
 
-type Shape__int32_Dot struct {
-    _0 Point
+type Shape__unit struct {
+    _tag int32
+    _v0_0 Point
+    _v1_0 Wrapper__unit
 }
-
-func (_ Shape__int32_Dot) isShape__int32() {}
-
-type Shape__int32_Wrapped struct {
-    _0 Wrapper__int32
-}
-
-func (_ Shape__int32_Wrapped) isShape__int32() {}
-
-type Shape__int32_Origin struct {}
-
-func (_ Shape__int32_Origin) isShape__int32() {}
-
-type Shape__unit interface {
-    isShape__unit()
-}
-
-type Shape__unit_Dot struct {
-    _0 Point
-}
-
-func (_ Shape__unit_Dot) isShape__unit() {}
-
-type Shape__unit_Wrapped struct {
-    _0 Wrapper__unit
-}
-
-func (_ Shape__unit_Wrapped) isShape__unit() {}
-
-type Shape__unit_Origin struct {}
-
-func (_ Shape__unit_Origin) isShape__unit() {}
 
 func bounce_int(shape__0 Shape__int32) Shape__int32 {
-    switch shape__0.(type) {
-    case Shape__int32_Dot:
-        var x408 Point = shape__0.(Shape__int32_Dot)._0
-        var t437 Shape__int32 = Shape__int32_Dot{
-            _0: x408,
+    switch shape__0._tag {
+    case 0:
+        var x408 Point = shape__0._v0_0
+        var t437 Shape__int32 = Shape__int32{
+            _tag: 0,
+            _v0_0: x408,
         }
         return t437
-    case Shape__int32_Wrapped:
-        var x409 Wrapper__int32 = shape__0.(Shape__int32_Wrapped)._0
-        var t438 Shape__int32 = Shape__int32_Wrapped{
-            _0: x409,
+    case 1:
+        var x409 Wrapper__int32 = shape__0._v1_0
+        var t438 Shape__int32 = Shape__int32{
+            _tag: 1,
+            _v1_0: x409,
         }
         return t438
-    case Shape__int32_Origin:
-        return Shape__int32_Origin{}
+    case 2:
+        return Shape__int32{
+            _tag: 2,
+        }
     default:
         panic("non-exhaustive match")
     }
@@ -130,9 +106,9 @@ func wrapper_unit_to_string(wrapper__17 Wrapper__unit) string {
 }
 
 func shape_int32_to_string(shape__20 Shape__int32) string {
-    switch shape__20.(type) {
-    case Shape__int32_Dot:
-        var x419 Point = shape__20.(Shape__int32_Dot)._0
+    switch shape__20._tag {
+    case 0:
+        var x419 Point = shape__20._v0_0
         var t465 string
         var inline525 int32 = x419.x
         var inline526 int32 = x419.y
@@ -146,8 +122,8 @@ func shape_int32_to_string(shape__20 Shape__int32) string {
         var prefix__22 string = "Shape::Dot(" + t465
         var t466 string = prefix__22 + ")"
         return t466
-    case Shape__int32_Wrapped:
-        var x420 Wrapper__int32 = shape__20.(Shape__int32_Wrapped)._0
+    case 1:
+        var x420 Wrapper__int32 = shape__20._v1_0
         var t467 string
         var inline537 int32 = x420.value
         var inline539 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline537)
@@ -157,7 +133,7 @@ func shape_int32_to_string(shape__20 Shape__int32) string {
         var prefix__24 string = "Shape::Wrapped(" + t467
         var t468 string = prefix__24 + ")"
         return t468
-    case Shape__int32_Origin:
+    case 2:
         return "Shape::Origin"
     default:
         panic("non-exhaustive match")
@@ -165,9 +141,9 @@ func shape_int32_to_string(shape__20 Shape__int32) string {
 }
 
 func shape_unit_to_string(shape__25 Shape__unit) string {
-    switch shape__25.(type) {
-    case Shape__unit_Dot:
-        var x421 Point = shape__25.(Shape__unit_Dot)._0
+    switch shape__25._tag {
+    case 0:
+        var x421 Point = shape__25._v0_0
         var t473 string
         var inline544 int32 = x421.x
         var inline545 int32 = x421.y
@@ -181,8 +157,8 @@ func shape_unit_to_string(shape__25 Shape__unit) string {
         var prefix__27 string = "Shape::Dot(" + t473
         var t474 string = prefix__27 + ")"
         return t474
-    case Shape__unit_Wrapped:
-        var x422 Wrapper__unit = shape__25.(Shape__unit_Wrapped)._0
+    case 1:
+        var x422 Wrapper__unit = shape__25._v1_0
         var t475 string
         var inline556 struct{} = x422.value
         var inline558 string = _goml_m_trait__impl_i_ToString_i_unit_i_to__string(inline556)
@@ -192,7 +168,7 @@ func shape_unit_to_string(shape__25 Shape__unit) string {
         var prefix__29 string = "Shape::Wrapped(" + t475
         var t476 string = prefix__29 + ")"
         return t476
-    case Shape__unit_Origin:
+    case 2:
         return "Shape::Origin"
     default:
         panic("non-exhaustive match")
@@ -216,21 +192,25 @@ func main0() struct{} {
     }
     var t483 string = wrapper_unit_to_string(t482)
     println__T_string(t483)
-    var bounced_origin__30 Shape__int32 = bounce_int(Shape__int32_Origin{})
+    var bounced_origin__30 Shape__int32 = bounce_int(Shape__int32{
+        _tag: 2,
+    })
     var t484 Point = Point{
         x: 3,
         y: 4,
     }
-    var t485 Shape__int32 = Shape__int32_Dot{
-        _0: t484,
+    var t485 Shape__int32 = Shape__int32{
+        _tag: 0,
+        _v0_0: t484,
     }
     var t486 string = shape_int32_to_string(t485)
     println__T_string(t486)
     var t487 Wrapper__int32 = Wrapper__int32{
         value: 7,
     }
-    var t488 Shape__int32 = Shape__int32_Wrapped{
-        _0: t487,
+    var t488 Shape__int32 = Shape__int32{
+        _tag: 1,
+        _v1_0: t487,
     }
     var t489 string = shape_int32_to_string(t488)
     var inline597 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t489)
@@ -242,8 +222,9 @@ func main0() struct{} {
         x: 3,
         y: 4,
     }
-    var t492 Shape__unit = Shape__unit_Dot{
-        _0: t491,
+    var t492 Shape__unit = Shape__unit{
+        _tag: 0,
+        _v0_0: t491,
     }
     var t493 string = shape_unit_to_string(t492)
     var inline591 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t493)
@@ -251,8 +232,9 @@ func main0() struct{} {
     var t494 Wrapper__unit = Wrapper__unit{
         value: struct{}{},
     }
-    var t495 Shape__unit = Shape__unit_Wrapped{
-        _0: t494,
+    var t495 Shape__unit = Shape__unit{
+        _tag: 1,
+        _v1_0: t494,
     }
     var t496 string = shape_unit_to_string(t495)
     var inline588 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t496)
@@ -262,11 +244,13 @@ func main0() struct{} {
     var inline574 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t497)
     _goml_runtime_core_string_println(inline574)
     var t498 Shape__int32
-    t498 = Shape__int32_Origin{}
-    switch t498.(type) {
-    case Shape__int32_Dot:
-    case Shape__int32_Wrapped:
-    case Shape__int32_Origin:
+    t498 = Shape__int32{
+        _tag: 2,
+    }
+    switch t498._tag {
+    case 0:
+    case 1:
+    case 2:
     default:
         panic("non-exhaustive match")
     }

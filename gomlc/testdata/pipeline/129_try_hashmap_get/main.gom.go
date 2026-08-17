@@ -73,11 +73,14 @@ func hashmap_get__HashMap_6string_5int32(m *hashmap_string_int32_x, key string) 
     var ok bool
     value, ok = hashmap_lookup__HashMap_6string_5int32(m, key)
     if ok {
-        return Some{
-            _0: value,
+        return Option__int32{
+            _tag: 1,
+            _v1_0: value,
         }
     }
-    return None{}
+    return Option__int32{
+        _tag: 0,
+    }
 }
 
 func hashmap_set__HashMap_6string_5int32(m *hashmap_string_int32_x, key string, value int32) struct{} {
@@ -126,19 +129,10 @@ func hashmap_set__HashMap_6string_5int32(m *hashmap_string_int32_x, key string, 
 
 type Ordering int32
 
-type Option__int32 interface {
-    isOption__int32()
+type Option__int32 struct {
+    _tag int32
+    _v1_0 int32
 }
-
-type None struct {}
-
-func (_ None) isOption__int32() {}
-
-type Some struct {
-    _0 int32
-}
-
-func (_ Some) isOption__int32() {}
 
 func fetch(flag__0 bool) Option__int32 {
     var m__1 *hashmap_string_int32_x
@@ -154,15 +148,18 @@ func fetch(flag__0 bool) Option__int32 {
     var inline461 Option__int32 = hashmap_get__HashMap_6string_5int32(m__1, inline460)
     mtmp410 = inline461
     var jp419 int32
-    switch mtmp410.(type) {
-    case None:
-        return None{}
-    case Some:
-        var x411 int32 = mtmp410.(Some)._0
+    switch mtmp410._tag {
+    case 0:
+        return Option__int32{
+            _tag: 0,
+        }
+    case 1:
+        var x411 int32 = mtmp410._v1_0
         jp419 = x411
         var t420 int32 = jp419 + 1
-        var t421 Option__int32 = Some{
-            _0: t420,
+        var t421 Option__int32 = Option__int32{
+            _tag: 1,
+            _v1_0: t420,
         }
         return t421
     default:
@@ -173,11 +170,11 @@ func fetch(flag__0 bool) Option__int32 {
 func main0() struct{} {
     var t429 Option__int32 = fetch(true)
     var t430 string
-    switch t429.(type) {
-    case None:
+    switch t429._tag {
+    case 0:
         t430 = "none"
-    case Some:
-        var inline478 int32 = t429.(Some)._0
+    case 1:
+        var inline478 int32 = t429._v1_0
         var inline480 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline478)
         var inline481 string = "some=" + inline480
         t430 = inline481
@@ -188,11 +185,11 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline475)
     var t431 Option__int32 = fetch(false)
     var t432 string
-    switch t431.(type) {
-    case None:
+    switch t431._tag {
+    case 0:
         t432 = "none"
-    case Some:
-        var inline470 int32 = t431.(Some)._0
+    case 1:
+        var inline470 int32 = t431._v1_0
         var inline472 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline470)
         var inline473 string = "some=" + inline472
         t432 = inline473

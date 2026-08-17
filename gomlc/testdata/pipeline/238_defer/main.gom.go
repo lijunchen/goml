@@ -55,19 +55,10 @@ type closure_env_run_0 struct {}
 
 type Ordering int32
 
-type Option__int interface {
-    isOption__int()
+type Option__int struct {
+    _tag int32
+    _v1_0 int
 }
-
-type None struct {}
-
-func (_ None) isOption__int() {}
-
-type Some struct {
-    _0 int
-}
-
-func (_ Some) isOption__int() {}
 
 func early_return() int {
     var defer_return408 int = 7
@@ -82,18 +73,21 @@ func early_return() int {
 
 func maybe(value__0 Option__int) Option__int {
     var jp463 int
-    switch value__0.(type) {
-    case None:
-        var defer_return417 Option__int = None{}
+    switch value__0._tag {
+    case 0:
+        var defer_return417 Option__int = Option__int{
+            _tag: 0,
+        }
         var inline543 string = "try:cleanup"
         var inline544 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline543)
         _goml_runtime_core_string_println(inline544)
         return defer_return417
-    case Some:
-        var x416 int = value__0.(Some)._0
+    case 1:
+        var x416 int = value__0._v1_0
         jp463 = x416
-        var defer_result419 Option__int = Some{
-            _0: jp463,
+        var defer_result419 Option__int = Option__int{
+            _tag: 1,
+            _v1_0: jp463,
         }
         var inline547 string = "try:cleanup"
         var inline548 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline547)
@@ -158,9 +152,9 @@ func loop_cleanup() struct{} {
 }
 
 func pattern_cleanup(value__5 Option__int) int {
-    switch value__5.(type) {
-    case Some:
-        var x432 int = value__5.(Some)._0
+    switch value__5._tag {
+    case 1:
+        var x432 int = value__5._v1_0
         var x435 int = 2
         var defer_tast_result431 int = x432 + x435
         var inline586 string = "pattern:cleanup"
@@ -185,15 +179,18 @@ func main0() struct{} {
     t491 = inline648
     var inline645 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t491)
     _goml_runtime_core_string_println(inline645)
-    maybe(None{})
+    maybe(Option__int{
+        _tag: 0,
+    })
     loop_cleanup()
     var inline639 *ref_string_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string("before")
     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(inline639, "after")
     var inline641 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(inline639)
     var inline642 string = "observed:" + inline641
     println__T_string(inline642)
-    var t492 Option__int = Some{
-        _0: 3,
+    var t492 Option__int = Option__int{
+        _tag: 1,
+        _v1_0: 3,
     }
     var t493 int = pattern_cleanup(t492)
     var t494 string

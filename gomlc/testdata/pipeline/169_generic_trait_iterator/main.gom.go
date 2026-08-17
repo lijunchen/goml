@@ -134,47 +134,20 @@ type closure_env_goml_builtin_range_8 struct {
 
 type Ordering int32
 
-type Option__int32 interface {
-    isOption__int32()
+type Option__int32 struct {
+    _tag int32
+    _v1_0 int32
 }
 
-type Option__int32_None struct {}
-
-func (_ Option__int32_None) isOption__int32() {}
-
-type Option__int32_Some struct {
-    _0 int32
+type Option__int struct {
+    _tag int32
+    _v1_0 int
 }
 
-func (_ Option__int32_Some) isOption__int32() {}
-
-type Option__int interface {
-    isOption__int()
+type Option__string struct {
+    _tag int32
+    _v1_0 string
 }
-
-type Option__int_None struct {}
-
-func (_ Option__int_None) isOption__int() {}
-
-type Option__int_Some struct {
-    _0 int
-}
-
-func (_ Option__int_Some) isOption__int() {}
-
-type Option__string interface {
-    isOption__string()
-}
-
-type Option__string_None struct {}
-
-func (_ Option__string_None) isOption__string() {}
-
-type Option__string_Some struct {
-    _0 string
-}
-
-func (_ Option__string_Some) isOption__string() {}
 
 func _goml_m_trait__impl_i_Convert_i__l_int32_r__x40_Token_i_convert(self__0 Token) int32 {
     return 7
@@ -268,11 +241,11 @@ func main0() struct{} {
         var inline677 func() Option__int32 = for_iter415.next_fn
         var inline678 Option__int32 = inline677()
         for_next416 = inline678
-        switch for_next416.(type) {
-        case Option__int32_None:
+        switch for_next416._tag {
+        case 0:
             break Loop_loop487
-        case Option__int32_Some:
-            var x417 int32 = for_next416.(Option__int32_Some)._0
+        case 1:
+            var x417 int32 = for_next416._v1_0
             var inline674 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x417)
             _goml_runtime_core_string_println(inline674)
             continue
@@ -373,11 +346,11 @@ func _goml_m_std_p_iter_p_fold____A__int____I__FnIterator_l_int_r_____T__int(ite
         var inline739 func() Option__int = iterator__48.next_fn
         var inline740 Option__int = inline739()
         mtmp43 = inline740
-        switch mtmp43.(type) {
-        case Option__int_None:
+        switch mtmp43._tag {
+        case 0:
             break Loop_loop_expr539
-        case Option__int_Some:
-            var x44 int = mtmp43.(Option__int_Some)._0
+        case 1:
+            var x44 int = mtmp43._v1_0
             var t541 int = combine__50(accumulator__51, x44)
             accumulator__51 = t541
             continue
@@ -398,11 +371,11 @@ func _goml_m_std_p_iter_p_collect____I__FnIterator_l_string_r_____T__string(iter
         var inline751 func() Option__string = iterator__53.next_fn
         var inline752 Option__string = inline751()
         mtmp47 = inline752
-        switch mtmp47.(type) {
-        case Option__string_None:
+        switch mtmp47._tag {
+        case 0:
             break Loop_loop_expr551
-        case Option__string_Some:
-            var x48 string = mtmp47.(Option__string_Some)._0
+        case 1:
+            var x48 string = mtmp47._v1_0
             vec_push__Vec_6string(values__54, x48)
             continue
         default:
@@ -497,12 +470,15 @@ func _goml_m_inherent_i_closure__en_h84ca90071873c33e0048783462740cfe_nter__4_i_
         _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(inline766, inline767)
         commute_field795 = inline763
         var t634 int32 = map_fn__5(commute_field795)
-        var t635 Option__int32 = Option__int32_Some{
-            _0: t634,
+        var t635 Option__int32 = Option__int32{
+            _tag: 1,
+            _v1_0: t634,
         }
         return t635
     } else {
-        return Option__int32_None{}
+        return Option__int32{
+            _tag: 0,
+        }
     }
 }
 
@@ -514,15 +490,18 @@ func _goml_m_inherent_i_closure__en_hedf27520c415a1aabc207467607f9d63_nt32__5_i_
         var inline771 func() Option__int32 = iterator__7.next_fn
         var inline772 Option__int32 = inline771()
         mtmp3 = inline772
-        switch mtmp3.(type) {
-        case Option__int32_None:
-            return Option__int32_None{}
-        case Option__int32_Some:
-            var x4 int32 = mtmp3.(Option__int32_Some)._0
+        switch mtmp3._tag {
+        case 0:
+            return Option__int32{
+                _tag: 0,
+            }
+        case 1:
+            var x4 int32 = mtmp3._v1_0
             var t643 bool = predicate__8(x4)
             if t643 {
-                var t644 Option__int32 = Option__int32_Some{
-                    _0: x4,
+                var t644 Option__int32 = Option__int32{
+                    _tag: 1,
+                    _v1_0: x4,
                 }
                 return t644
             } else {
@@ -542,7 +521,9 @@ func _goml_m_inherent_i_closure__en_heb4c08715b30bde4448bd9026c64bd4f_nt32__6_i_
     t649 = inline781
     var t650 bool = t649 == 0
     if t650 {
-        return Option__int32_None{}
+        return Option__int32{
+            _tag: 0,
+        }
     } else {
         var t651 int
         var inline779 int = ref_get__Ref_3int(remaining__16)
@@ -562,14 +543,17 @@ func _goml_m_inherent_i_closure__en_hee33584d6eb8d0339494367cef42ffc0__int__7_i_
     var inline783 func() Option__int = iterator__4.next_fn
     var inline784 Option__int = inline783()
     mtmp1 = inline784
-    switch mtmp1.(type) {
-    case Option__int_None:
-        return Option__string_None{}
-    case Option__int_Some:
-        var x2 int = mtmp1.(Option__int_Some)._0
+    switch mtmp1._tag {
+    case 0:
+        return Option__string{
+            _tag: 0,
+        }
+    case 1:
+        var x2 int = mtmp1._v1_0
         var t658 string = map_fn__5(x2)
-        var t659 Option__string = Option__string_Some{
-            _0: t658,
+        var t659 Option__string = Option__string{
+            _tag: 1,
+            _v1_0: t658,
         }
         return t659
     default:
@@ -585,12 +569,15 @@ func _goml_m_inherent_i_closure__en_he266c1d56cf5cac23de741e24d448aa5_ange__8_i_
     if t664 {
         var t665 int = value__497 + 1
         ref_set__Ref_3int(current__496, t665)
-        var t666 Option__int = Option__int_Some{
-            _0: value__497,
+        var t666 Option__int = Option__int{
+            _tag: 1,
+            _v1_0: value__497,
         }
         return t666
     } else {
-        return Option__int_None{}
+        return Option__int{
+            _tag: 0,
+        }
     }
 }
 

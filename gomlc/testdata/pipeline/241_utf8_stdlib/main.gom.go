@@ -70,33 +70,15 @@ type Tuple2_4bool_4char struct {
 
 type Ordering int32
 
-type _goml_m_Option_____o_char_c_int_q_ interface {
-    is_goml_m_Option_____o_char_c_int_q_()
+type _goml_m_Option_____o_char_c_int_q_ struct {
+    _tag int32
+    _v1_0 Tuple2_4char_3int
 }
 
-type _goml_m_Option_____o_char_c_int_q__None struct {}
-
-func (_ _goml_m_Option_____o_char_c_int_q__None) is_goml_m_Option_____o_char_c_int_q_() {}
-
-type _goml_m_Option_____o_char_c_int_q__Some struct {
-    _0 Tuple2_4char_3int
+type Option__char struct {
+    _tag int32
+    _v1_0 rune
 }
-
-func (_ _goml_m_Option_____o_char_c_int_q__Some) is_goml_m_Option_____o_char_c_int_q_() {}
-
-type Option__char interface {
-    isOption__char()
-}
-
-type Option__char_None struct {}
-
-func (_ Option__char_None) isOption__char() {}
-
-type Option__char_Some struct {
-    _0 rune
-}
-
-func (_ Option__char_Some) isOption__char() {}
 
 func check_utf8(bytes__0 *_goml_vec_uint8, expected__1 bool) struct{} {
     var expected_length__2 int
@@ -471,12 +453,12 @@ func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3in
         if t549 {
             var inline793 int = 1
             var inline794 Option__char = __goml_builtin_char_from_uint32(first__8)
-            switch inline794.(type) {
-            case Option__char_None:
+            switch inline794._tag {
+            case 0:
                 var inline795 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                 return inline795
-            case Option__char_Some:
-                var inline796 rune = inline794.(Option__char_Some)._0
+            case 1:
+                var inline796 rune = inline794._v1_0
                 var inline798 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                     _0: true,
                     _1: inline796,
@@ -538,12 +520,12 @@ func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3in
                             var t568 uint32 = t566 | t567
                             var inline806 int = 2
                             var inline807 Option__char = __goml_builtin_char_from_uint32(t568)
-                            switch inline807.(type) {
-                            case Option__char_None:
+                            switch inline807._tag {
+                            case 0:
                                 var inline808 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                                 return inline808
-                            case Option__char_Some:
-                                var inline809 rune = inline807.(Option__char_Some)._0
+                            case 1:
+                                var inline809 rune = inline807._v1_0
                                 var inline811 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                     _0: true,
                                     _1: inline809,
@@ -633,12 +615,12 @@ func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3in
                                 var t592 uint32 = t590 | t591
                                 var inline825 int = 3
                                 var inline826 Option__char = __goml_builtin_char_from_uint32(t592)
-                                switch inline826.(type) {
-                                case Option__char_None:
+                                switch inline826._tag {
+                                case 0:
                                     var inline827 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                                     return inline827
-                                case Option__char_Some:
-                                    var inline828 rune = inline826.(Option__char_Some)._0
+                                case 1:
+                                    var inline828 rune = inline826._v1_0
                                     var inline830 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                         _0: true,
                                         _1: inline828,
@@ -815,12 +797,15 @@ func __goml_builtin_char_from_uint32(value__30 uint32) Option__char {
     if t688 {
         var mtmp22 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__30)
         var x24 rune = mtmp22._1
-        var t689 Option__char = Option__char_Some{
-            _0: x24,
+        var t689 Option__char = Option__char{
+            _tag: 1,
+            _v1_0: x24,
         }
         return t689
     } else {
-        return Option__char_None{}
+        return Option__char{
+            _tag: 0,
+        }
     }
 }
 

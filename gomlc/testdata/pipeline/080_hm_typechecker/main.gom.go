@@ -287,21 +287,11 @@ type Some struct {
 
 func (_ Some) isOption__Typ() {}
 
-type Result__unit__string interface {
-    isResult__unit__string()
+type Result__unit__string struct {
+    _tag int32
+    _v0_0 struct{}
+    _v1_0 string
 }
-
-type Result__unit__string_Ok struct {
-    _0 struct{}
-}
-
-func (_ Result__unit__string_Ok) isResult__unit__string() {}
-
-type Result__unit__string_Err struct {
-    _0 string
-}
-
-func (_ Result__unit__string_Err) isResult__unit__string() {}
 
 type Result__Typ__string interface {
     isResult__Typ__string()
@@ -629,8 +619,9 @@ func occurs(st__40 CheckerState, tvr__41 *ref_Tv_x, ty__42 Typ) Result__unit__st
         var x434 *ref_Tv_x = ty__42.(TVar)._0
         var t729 bool = ptr_eq__Ref_2Tv(tvr__41, x434)
         if t729 {
-            var t730 Result__unit__string = Result__unit__string_Err{
-                _0: "occurs check",
+            var t730 Result__unit__string = Result__unit__string{
+                _tag: 1,
+                _v1_0: "occurs check",
             }
             return t730
         } else {
@@ -662,8 +653,9 @@ func occurs(st__40 CheckerState, tvr__41 *ref_Tv_x, ty__42 Typ) Result__unit__st
                     _1: jp734,
                 }
                 ref_set__Ref_2Tv(x434, t735)
-                var t736 Result__unit__string = Result__unit__string_Ok{
-                    _0: struct{}{},
+                var t736 Result__unit__string = Result__unit__string{
+                    _tag: 0,
+                    _v0_0: struct{}{},
                 }
                 return t736
             case Link:
@@ -678,22 +670,24 @@ func occurs(st__40 CheckerState, tvr__41 *ref_Tv_x, ty__42 Typ) Result__unit__st
         var x436 Typ = ty__42.(TArrow)._0
         var x437 Typ = ty__42.(TArrow)._1
         var mtmp447 Result__unit__string = occurs(st__40, tvr__41, x436)
-        switch mtmp447.(type) {
-        case Result__unit__string_Ok:
+        switch mtmp447._tag {
+        case 0:
             var t741 Result__unit__string = occurs(st__40, tvr__41, x437)
             return t741
-        case Result__unit__string_Err:
-            var x449 string = mtmp447.(Result__unit__string_Err)._0
-            var t742 Result__unit__string = Result__unit__string_Err{
-                _0: x449,
+        case 1:
+            var x449 string = mtmp447._v1_0
+            var t742 Result__unit__string = Result__unit__string{
+                _tag: 1,
+                _v1_0: x449,
             }
             return t742
         default:
             panic("non-exhaustive match")
         }
     default:
-        var t743 Result__unit__string = Result__unit__string_Ok{
-            _0: struct{}{},
+        var t743 Result__unit__string = Result__unit__string{
+            _tag: 0,
+            _v0_0: struct{}{},
         }
         return t743
     }
@@ -708,8 +702,9 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
             var x457 *ref_Tv_x = t1__53.(TVar)._0
             var t752 bool = ptr_eq__Ref_2Tv(x457, x453)
             if t752 {
-                var t753 Result__unit__string = Result__unit__string_Ok{
-                    _0: struct{}{},
+                var t753 Result__unit__string = Result__unit__string{
+                    _tag: 0,
+                    _v0_0: struct{}{},
                 }
                 return t753
             } else {
@@ -727,8 +722,8 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                             _0: x453,
                         }
                         var mtmp469 Result__unit__string = occurs(st__52, x457, t758)
-                        switch mtmp469.(type) {
-                        case Result__unit__string_Ok:
+                        switch mtmp469._tag {
+                        case 0:
                             var t761 Typ = TVar{
                                 _0: x453,
                             }
@@ -736,14 +731,16 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                                 _0: t761,
                             }
                             ref_set__Ref_2Tv(x457, t762)
-                            var t763 Result__unit__string = Result__unit__string_Ok{
-                                _0: struct{}{},
+                            var t763 Result__unit__string = Result__unit__string{
+                                _tag: 0,
+                                _v0_0: struct{}{},
                             }
                             return t763
-                        case Result__unit__string_Err:
-                            var x471 string = mtmp469.(Result__unit__string_Err)._0
-                            var t764 Result__unit__string = Result__unit__string_Err{
-                                _0: x471,
+                        case 1:
+                            var x471 string = mtmp469._v1_0
+                            var t764 Result__unit__string = Result__unit__string{
+                                _tag: 1,
+                                _v1_0: x471,
                             }
                             return t764
                         default:
@@ -777,20 +774,22 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
             switch mtmp473.(type) {
             case Unbound:
                 var mtmp477 Result__unit__string = occurs(st__52, x453, t1__53)
-                switch mtmp477.(type) {
-                case Result__unit__string_Ok:
+                switch mtmp477._tag {
+                case 0:
                     var t773 Tv = Link{
                         _0: t1__53,
                     }
                     ref_set__Ref_2Tv(x453, t773)
-                    var t774 Result__unit__string = Result__unit__string_Ok{
-                        _0: struct{}{},
+                    var t774 Result__unit__string = Result__unit__string{
+                        _tag: 0,
+                        _v0_0: struct{}{},
                     }
                     return t774
-                case Result__unit__string_Err:
-                    var x479 string = mtmp477.(Result__unit__string_Err)._0
-                    var t775 Result__unit__string = Result__unit__string_Err{
-                        _0: x479,
+                case 1:
+                    var x479 string = mtmp477._v1_0
+                    var t775 Result__unit__string = Result__unit__string{
+                        _tag: 1,
+                        _v1_0: x479,
                     }
                     return t775
                 default:
@@ -816,20 +815,22 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
             switch mtmp485.(type) {
             case Unbound:
                 var mtmp489 Result__unit__string = occurs(st__52, x481, t2__54)
-                switch mtmp489.(type) {
-                case Result__unit__string_Ok:
+                switch mtmp489._tag {
+                case 0:
                     var t783 Tv = Link{
                         _0: t2__54,
                     }
                     ref_set__Ref_2Tv(x481, t783)
-                    var t784 Result__unit__string = Result__unit__string_Ok{
-                        _0: struct{}{},
+                    var t784 Result__unit__string = Result__unit__string{
+                        _tag: 0,
+                        _v0_0: struct{}{},
                     }
                     return t784
-                case Result__unit__string_Err:
-                    var x491 string = mtmp489.(Result__unit__string_Err)._0
-                    var t785 Result__unit__string = Result__unit__string_Err{
-                        _0: x491,
+                case 1:
+                    var x491 string = mtmp489._v1_0
+                    var t785 Result__unit__string = Result__unit__string{
+                        _tag: 1,
+                        _v1_0: x491,
                     }
                     return t785
                 default:
@@ -846,22 +847,24 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
             var x483 Typ = t1__53.(TArrow)._0
             var x484 Typ = t1__53.(TArrow)._1
             var mtmp493 Result__unit__string = unify(st__52, x483, x455)
-            switch mtmp493.(type) {
-            case Result__unit__string_Ok:
+            switch mtmp493._tag {
+            case 0:
                 var t789 Result__unit__string = unify(st__52, x484, x456)
                 return t789
-            case Result__unit__string_Err:
-                var x495 string = mtmp493.(Result__unit__string_Err)._0
-                var t790 Result__unit__string = Result__unit__string_Err{
-                    _0: x495,
+            case 1:
+                var x495 string = mtmp493._v1_0
+                var t790 Result__unit__string = Result__unit__string{
+                    _tag: 1,
+                    _v1_0: x495,
                 }
                 return t790
             default:
                 panic("non-exhaustive match")
             }
         default:
-            var t791 Result__unit__string = Result__unit__string_Err{
-                _0: "unify error",
+            var t791 Result__unit__string = Result__unit__string{
+                _tag: 1,
+                _v1_0: "unify error",
             }
             return t791
         }
@@ -875,20 +878,22 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
             switch mtmp500.(type) {
             case Unbound:
                 var mtmp504 Result__unit__string = occurs(st__52, x496, t2__54)
-                switch mtmp504.(type) {
-                case Result__unit__string_Ok:
+                switch mtmp504._tag {
+                case 0:
                     var t798 Tv = Link{
                         _0: t2__54,
                     }
                     ref_set__Ref_2Tv(x496, t798)
-                    var t799 Result__unit__string = Result__unit__string_Ok{
-                        _0: struct{}{},
+                    var t799 Result__unit__string = Result__unit__string{
+                        _tag: 0,
+                        _v0_0: struct{}{},
                     }
                     return t799
-                case Result__unit__string_Err:
-                    var x506 string = mtmp504.(Result__unit__string_Err)._0
-                    var t800 Result__unit__string = Result__unit__string_Err{
-                        _0: x506,
+                case 1:
+                    var x506 string = mtmp504._v1_0
+                    var t800 Result__unit__string = Result__unit__string{
+                        _tag: 1,
+                        _v1_0: x506,
                     }
                     return t800
                 default:
@@ -902,8 +907,9 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                 panic("non-exhaustive match")
             }
         default:
-            var t802 Result__unit__string = Result__unit__string_Err{
-                _0: "unify error",
+            var t802 Result__unit__string = Result__unit__string{
+                _tag: 1,
+                _v1_0: "unify error",
             }
             return t802
         }
@@ -1096,14 +1102,14 @@ func typeof(st__102 CheckerState, env__103 *_goml_vec_EnvEntry, e__104 Exp) Resu
                     _1: ty_res__119,
                 }
                 var mtmp551 Result__unit__string = unify(st__102, x546, arrow__120)
-                switch mtmp551.(type) {
-                case Result__unit__string_Ok:
+                switch mtmp551._tag {
+                case 0:
                     var t852 Result__Typ__string = Result__Typ__string_Ok{
                         _0: ty_res__119,
                     }
                     return t852
-                case Result__unit__string_Err:
-                    var x553 string = mtmp551.(Result__unit__string_Err)._0
+                case 1:
+                    var x553 string = mtmp551._v1_0
                     var t853 Result__Typ__string = Result__Typ__string_Err{
                         _0: x553,
                     }

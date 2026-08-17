@@ -76,11 +76,14 @@ func hashmap_get__HashMap_4uint_6string(m *hashmap_uint_string_x, key uint) Opti
     var ok bool
     value, ok = hashmap_lookup__HashMap_4uint_6string(m, key)
     if ok {
-        return Some{
-            _0: value,
+        return Option__string{
+            _tag: 1,
+            _v1_0: value,
         }
     }
-    return None{}
+    return Option__string{
+        _tag: 0,
+    }
 }
 
 func hashmap_set__HashMap_4uint_6string(m *hashmap_uint_string_x, key uint, value string) struct{} {
@@ -129,19 +132,10 @@ func hashmap_set__HashMap_4uint_6string(m *hashmap_uint_string_x, key uint, valu
 
 type Ordering int32
 
-type Option__string interface {
-    isOption__string()
+type Option__string struct {
+    _tag int32
+    _v1_0 string
 }
-
-type None struct {}
-
-func (_ None) isOption__string() {}
-
-type Some struct {
-    _0 string
-}
-
-func (_ Some) isOption__string() {}
 
 func main0() struct{} {
     var left__3 uint = 19
@@ -186,14 +180,14 @@ func main0() struct{} {
     var inline478 uint = 42
     var inline479 Option__string = hashmap_get__HashMap_4uint_6string(values__6, inline478)
     mtmp414 = inline479
-    switch mtmp414.(type) {
-    case None:
+    switch mtmp414._tag {
+    case 0:
         var inline471 string = "missing"
         var inline472 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline471)
         _goml_runtime_core_string_println(inline472)
         return struct{}{}
-    case Some:
-        var x415 string = mtmp414.(Some)._0
+    case 1:
+        var x415 string = mtmp414._v1_0
         var inline475 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x415)
         _goml_runtime_core_string_println(inline475)
         return struct{}{}

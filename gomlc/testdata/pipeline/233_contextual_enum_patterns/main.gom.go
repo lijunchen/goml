@@ -73,15 +73,10 @@ func ref_set__Ref_3int(reference *ref_int_x, value int) struct{} {
 
 type Ordering int32
 
-type Second interface {
-    isSecond()
+type Second struct {
+    _tag int32
+    _v0_0 int
 }
-
-type Second_Shared struct {
-    _0 int
-}
-
-func (_ Second_Shared) isSecond() {}
 
 type First__int interface {
     isFirst__int()
@@ -104,21 +99,11 @@ type Data struct {
 
 func (_ Data) isFirst__int() {}
 
-type Result__int__string interface {
-    isResult__int__string()
+type Result__int__string struct {
+    _tag int32
+    _v0_0 int
+    _v1_0 string
 }
-
-type Ok struct {
-    _0 int
-}
-
-func (_ Ok) isResult__int__string() {}
-
-type Err struct {
-    _0 string
-}
-
-func (_ Err) isResult__int__string() {}
 
 type Option__Result__int__string interface {
     isOption__Result__int__string()
@@ -134,29 +119,15 @@ type Option__Result__int__string_Some struct {
 
 func (_ Option__Result__int__string_Some) isOption__Result__int__string() {}
 
-type Option__int interface {
-    isOption__int()
+type Option__int struct {
+    _tag int32
+    _v1_0 int
 }
 
-type Option__int_None struct {}
-
-func (_ Option__int_None) isOption__int() {}
-
-type Option__int_Some struct {
-    _0 int
+type Boxed__int struct {
+    _tag int32
+    _v0_0 int
 }
-
-func (_ Option__int_Some) isOption__int() {}
-
-type Boxed__int interface {
-    isBoxed__int()
-}
-
-type Value struct {
-    _0 int
-}
-
-func (_ Value) isBoxed__int() {}
 
 func classify(value__0 First__int) string {
     switch value__0.(type) {
@@ -189,16 +160,16 @@ func nested(value__4 Option__Result__int__string) string {
         return "none"
     case Option__Result__int__string_Some:
         var x411 Result__int__string = value__4.(Option__Result__int__string_Some)._0
-        switch x411.(type) {
-        case Ok:
-            var x412 int = x411.(Ok)._0
+        switch x411._tag {
+        case 0:
+            var x412 int = x411._v0_0
             var t460 string
             var inline581 string = _goml_runtime_core_int_to_string(x412)
             t460 = inline581
             var t461 string = "ok:" + t460
             return t461
-        case Err:
-            var x413 string = x411.(Err)._0
+        case 1:
+            var x413 string = x411._v1_0
             var t462 string = "err:" + x413
             return t462
         default:
@@ -222,11 +193,13 @@ func take_once(value__10 Option__int) int {
         var mtmp418 Option__int
         var inline587 Option__int = ref_get__Ref_11Option__int(current__11)
         mtmp418 = inline587
-        switch mtmp418.(type) {
-        case Option__int_Some:
-            var x419 int = mtmp418.(Option__int_Some)._0
+        switch mtmp418._tag {
+        case 1:
+            var x419 int = mtmp418._v1_0
             ref_set__Ref_3int(result__12, x419)
-            ref_set__Ref_11Option__int(current__11, Option__int_None{})
+            ref_set__Ref_11Option__int(current__11, Option__int{
+                _tag: 0,
+            })
             continue
         default:
             break Loop_loop475
@@ -250,9 +223,9 @@ func sum_boxed(values__16 *_goml_vec_Boxed__int) int {
             var for_item428 Boxed__int = vec_get__Vec_10Boxed__int(values__16, for_index427)
             var t487 int = for_index427 + 1
             for_index427 = t487
-            switch for_item428.(type) {
-            case Value:
-                var x430 int = for_item428.(Value)._0
+            switch for_item428._tag {
+            case 0:
+                var x430 int = for_item428._v0_0
                 var t489 int
                 var inline598 int = ref_get__Ref_3int(result__17)
                 t489 = inline598
@@ -271,11 +244,13 @@ func sum_boxed(values__16 *_goml_vec_Boxed__int) int {
 }
 
 func main0() struct{} {
-    var t492 Boxed__int = Value{
-        _0: 19,
+    var t492 Boxed__int = Boxed__int{
+        _tag: 0,
+        _v0_0: 19,
     }
-    var t493 Boxed__int = Value{
-        _0: 23,
+    var t493 Boxed__int = Boxed__int{
+        _tag: 0,
+        _v0_0: 23,
     }
     var t494 [2]Boxed__int = [2]Boxed__int{t492, t493}
     var boxed__19 *_goml_vec_Boxed__int = func(values [2]Boxed__int) *_goml_vec_Boxed__int {
@@ -296,16 +271,18 @@ func main0() struct{} {
     }
     var t499 string = classify(t498)
     println__T_string(t499)
-    var t500 Result__int__string = Ok{
-        _0: 11,
+    var t500 Result__int__string = Result__int__string{
+        _tag: 0,
+        _v0_0: 11,
     }
     var t501 Option__Result__int__string = Option__Result__int__string_Some{
         _0: t500,
     }
     var t502 string = nested(t501)
     println__T_string(t502)
-    var t503 Result__int__string = Err{
-        _0: "bad",
+    var t503 Result__int__string = Result__int__string{
+        _tag: 1,
+        _v1_0: "bad",
     }
     var t504 Option__Result__int__string = Option__Result__int__string_Some{
         _0: t503,
@@ -332,8 +309,9 @@ func main0() struct{} {
     t512 = false
     var inline618 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t512)
     _goml_runtime_core_string_println(inline618)
-    var t513 Option__int = Option__int_Some{
-        _0: 15,
+    var t513 Option__int = Option__int{
+        _tag: 1,
+        _v1_0: 15,
     }
     var t514 int = take_once(t513)
     var inline615 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t514)

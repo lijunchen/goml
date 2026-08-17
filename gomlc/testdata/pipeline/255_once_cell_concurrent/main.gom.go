@@ -101,19 +101,10 @@ type OnceCell__int struct {
 
 type Ordering int32
 
-type Option__int interface {
-    isOption__int()
+type Option__int struct {
+    _tag int32
+    _v1_0 int
 }
-
-type None struct {}
-
-func (_ None) isOption__int() {}
-
-type Some struct {
-    _0 int
-}
-
-func (_ Some) isOption__int() {}
 
 var VALUE *OnceCell__int = func() *OnceCell__int {
     var cell *OnceCell__int = once_cell_new__OnceCell__int()
@@ -155,20 +146,23 @@ func main0() struct{} {
     var inline485 int = inline484._0
     var inline486 bool = inline484._1
     if inline486 {
-        var inline489 Option__int = Some{
-            _0: inline485,
+        var inline489 Option__int = Option__int{
+            _tag: 1,
+            _v1_0: inline485,
         }
         t419 = inline489
     } else {
-        t419 = None{}
+        t419 = Option__int{
+            _tag: 0,
+        }
     }
     var first__1 int
     var inline480 int = 0
-    switch t419.(type) {
-    case None:
+    switch t419._tag {
+    case 0:
         first__1 = inline480
-    case Some:
-        var inline481 int = t419.(Some)._0
+    case 1:
+        var inline481 int = t419._v1_0
         first__1 = inline481
     default:
         panic("non-exhaustive match")
@@ -186,20 +180,23 @@ func main0() struct{} {
     var inline474 int = inline473._0
     var inline475 bool = inline473._1
     if inline475 {
-        var inline478 Option__int = Some{
-            _0: inline474,
+        var inline478 Option__int = Option__int{
+            _tag: 1,
+            _v1_0: inline474,
         }
         t420 = inline478
     } else {
-        t420 = None{}
+        t420 = Option__int{
+            _tag: 0,
+        }
     }
     var second__2 int
     var inline469 int = 0
-    switch t420.(type) {
-    case None:
+    switch t420._tag {
+    case 0:
         second__2 = inline469
-    case Some:
-        var inline470 int = t420.(Some)._0
+    case 1:
+        var inline470 int = t420._v1_0
         second__2 = inline470
     default:
         panic("non-exhaustive match")

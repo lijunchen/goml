@@ -7,19 +7,10 @@ type Point struct {
 
 type Ordering int32
 
-type Maybe__int32 interface {
-    isMaybe__int32()
+type Maybe__int32 struct {
+    _tag int32
+    _v0_0 int32
 }
-
-type Some struct {
-    _0 int32
-}
-
-func (_ Some) isMaybe__int32() {}
-
-type None struct {}
-
-func (_ None) isMaybe__int32() {}
 
 func main0() int32 {
     var commute_field446 int32

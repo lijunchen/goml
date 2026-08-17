@@ -320,19 +320,10 @@ type _goml_m_std_p_io_p_ErrorKind int32
 
 type _goml_m_std_p_fs_p_FileType int32
 
-type Option__uint8 interface {
-    isOption__uint8()
+type Option__uint8 struct {
+    _tag int32
+    _v1_0 uint8
 }
-
-type Option__uint8_None struct {}
-
-func (_ Option__uint8_None) isOption__uint8() {}
-
-type Option__uint8_Some struct {
-    _0 uint8
-}
-
-func (_ Option__uint8_Some) isOption__uint8() {}
 
 type Result__string__string interface {
     isResult__string__string()
@@ -350,33 +341,15 @@ type Result__string__string_Err struct {
 
 func (_ Result__string__string_Err) isResult__string__string() {}
 
-type Option__string interface {
-    isOption__string()
+type Option__string struct {
+    _tag int32
+    _v1_0 string
 }
 
-type Option__string_None struct {}
-
-func (_ Option__string_None) isOption__string() {}
-
-type Option__string_Some struct {
-    _0 string
+type Option__int struct {
+    _tag int32
+    _v1_0 int
 }
-
-func (_ Option__string_Some) isOption__string() {}
-
-type Option__int interface {
-    isOption__int()
-}
-
-type Option__int_None struct {}
-
-func (_ Option__int_None) isOption__int() {}
-
-type Option__int_Some struct {
-    _0 int
-}
-
-func (_ Option__int_Some) isOption__int() {}
 
 type _goml_m_Result____std_p_bytes_p_Bytes____std_p_io_p_Error interface {
     is_goml_m_Result____std_p_bytes_p_Bytes____std_p_io_p_Error()
@@ -426,37 +399,17 @@ type _goml_m_Result____unit____std_p_io_p_Error_Err struct {
 
 func (_ _goml_m_Result____unit____std_p_io_p_Error_Err) is_goml_m_Result____unit____std_p_io_p_Error() {}
 
-type _goml_m_Result____std_p_bytes_p_Bytes____string interface {
-    is_goml_m_Result____std_p_bytes_p_Bytes____string()
+type _goml_m_Result____std_p_bytes_p_Bytes____string struct {
+    _tag int32
+    _v0_0 _goml_m_std_p_bytes_p_Bytes
+    _v1_0 string
 }
 
-type _goml_m_Result____std_p_bytes_p_Bytes____string_Ok struct {
-    _0 _goml_m_std_p_bytes_p_Bytes
+type Result__unit__string struct {
+    _tag int32
+    _v0_0 struct{}
+    _v1_0 string
 }
-
-func (_ _goml_m_Result____std_p_bytes_p_Bytes____string_Ok) is_goml_m_Result____std_p_bytes_p_Bytes____string() {}
-
-type _goml_m_Result____std_p_bytes_p_Bytes____string_Err struct {
-    _0 string
-}
-
-func (_ _goml_m_Result____std_p_bytes_p_Bytes____string_Err) is_goml_m_Result____std_p_bytes_p_Bytes____string() {}
-
-type Result__unit__string interface {
-    isResult__unit__string()
-}
-
-type Result__unit__string_Ok struct {
-    _0 struct{}
-}
-
-func (_ Result__unit__string_Ok) isResult__unit__string() {}
-
-type Result__unit__string_Err struct {
-    _0 string
-}
-
-func (_ Result__unit__string_Err) isResult__unit__string() {}
 
 type _goml_m_Result____std_p_bytes_p_Bytes____std_p_fs_p_Error interface {
     is_goml_m_Result____std_p_bytes_p_Bytes____std_p_fs_p_Error()
@@ -554,35 +507,16 @@ type _goml_m_Result____Vec_l_std_p_fs_p_DirEntry_r_____std_p_fs_p_Error_Err stru
 
 func (_ _goml_m_Result____Vec_l_std_p_fs_p_DirEntry_r_____std_p_fs_p_Error_Err) is_goml_m_Result____Vec_l_std_p_fs_p_DirEntry_r_____std_p_fs_p_Error() {}
 
-type _goml_m_Result____Vec_l_string_r_____string interface {
-    is_goml_m_Result____Vec_l_string_r_____string()
+type _goml_m_Result____Vec_l_string_r_____string struct {
+    _tag int32
+    _v0_0 *_goml_vec_string
+    _v1_0 string
 }
 
-type _goml_m_Result____Vec_l_string_r_____string_Ok struct {
-    _0 *_goml_vec_string
+type Option__char struct {
+    _tag int32
+    _v1_0 rune
 }
-
-func (_ _goml_m_Result____Vec_l_string_r_____string_Ok) is_goml_m_Result____Vec_l_string_r_____string() {}
-
-type _goml_m_Result____Vec_l_string_r_____string_Err struct {
-    _0 string
-}
-
-func (_ _goml_m_Result____Vec_l_string_r_____string_Err) is_goml_m_Result____Vec_l_string_r_____string() {}
-
-type Option__char interface {
-    isOption__char()
-}
-
-type Option__char_None struct {}
-
-func (_ Option__char_None) isOption__char() {}
-
-type Option__char_Some struct {
-    _0 rune
-}
-
-func (_ Option__char_Some) isOption__char() {}
 
 func _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_from__vec(values__1 *_goml_vec_uint8) _goml_m_std_p_bytes_p_Bytes {
     var t427 _goml_m_std_p_bytes_p_Bytes = _goml_m_std_p_bytes_p_Bytes{
@@ -665,13 +599,15 @@ func _goml_m_std_p_fs_p_write__bytes(path__122 string, data__123 _goml_m_std_p_b
     var x71 bool = mtmp70._0
     var x72 string = mtmp70._1
     if x71 {
-        var t1128 Result__unit__string = Result__unit__string_Ok{
-            _0: struct{}{},
+        var t1128 Result__unit__string = Result__unit__string{
+            _tag: 0,
+            _v0_0: struct{}{},
         }
         return t1128
     } else {
-        var t1129 Result__unit__string = Result__unit__string_Err{
-            _0: x72,
+        var t1129 Result__unit__string = Result__unit__string{
+            _tag: 1,
+            _v1_0: x72,
         }
         return t1129
     }
@@ -713,26 +649,28 @@ func main0() struct{} {
     var inline1836 *_goml_vec_string = inline1834._1
     var inline1837 string = inline1834._2
     if inline1835 {
-        var inline1841 _goml_m_Result____Vec_l_string_r_____string = _goml_m_Result____Vec_l_string_r_____string_Ok{
-            _0: inline1836,
+        var inline1841 _goml_m_Result____Vec_l_string_r_____string = _goml_m_Result____Vec_l_string_r_____string{
+            _tag: 0,
+            _v0_0: inline1836,
         }
         t1193 = inline1841
     } else {
-        var inline1842 _goml_m_Result____Vec_l_string_r_____string = _goml_m_Result____Vec_l_string_r_____string_Err{
-            _0: inline1837,
+        var inline1842 _goml_m_Result____Vec_l_string_r_____string = _goml_m_Result____Vec_l_string_r_____string{
+            _tag: 1,
+            _v1_0: inline1837,
         }
         t1193 = inline1842
     }
     var t1194 string
-    switch t1193.(type) {
-    case _goml_m_Result____Vec_l_string_r_____string_Ok:
-        var inline1824 *_goml_vec_string = t1193.(_goml_m_Result____Vec_l_string_r_____string_Ok)._0
+    switch t1193._tag {
+    case 0:
+        var inline1824 *_goml_vec_string = t1193._v0_0
         var inline1826 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(inline1824)
         var inline1827 bool = inline1826 > 0
         var inline1828 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline1827)
         t1194 = inline1828
-    case _goml_m_Result____Vec_l_string_r_____string_Err:
-        var inline1829 string = t1193.(_goml_m_Result____Vec_l_string_r_____string_Err)._0
+    case 1:
+        var inline1829 string = t1193._v1_0
         var inline1831 string = "err " + inline1829
         t1194 = inline1831
     default:
@@ -819,12 +757,12 @@ func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3in
         if t1279 {
             var inline1884 int = 1
             var inline1885 Option__char = __goml_builtin_char_from_uint32(first__8)
-            switch inline1885.(type) {
-            case Option__char_None:
+            switch inline1885._tag {
+            case 0:
                 var inline1886 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                 return inline1886
-            case Option__char_Some:
-                var inline1887 rune = inline1885.(Option__char_Some)._0
+            case 1:
+                var inline1887 rune = inline1885._v1_0
                 var inline1889 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                     _0: true,
                     _1: inline1887,
@@ -886,12 +824,12 @@ func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3in
                             var t1298 uint32 = t1296 | t1297
                             var inline1897 int = 2
                             var inline1898 Option__char = __goml_builtin_char_from_uint32(t1298)
-                            switch inline1898.(type) {
-                            case Option__char_None:
+                            switch inline1898._tag {
+                            case 0:
                                 var inline1899 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                                 return inline1899
-                            case Option__char_Some:
-                                var inline1900 rune = inline1898.(Option__char_Some)._0
+                            case 1:
+                                var inline1900 rune = inline1898._v1_0
                                 var inline1902 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                     _0: true,
                                     _1: inline1900,
@@ -981,12 +919,12 @@ func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3in
                                 var t1322 uint32 = t1320 | t1321
                                 var inline1916 int = 3
                                 var inline1917 Option__char = __goml_builtin_char_from_uint32(t1322)
-                                switch inline1917.(type) {
-                                case Option__char_None:
+                                switch inline1917._tag {
+                                case 0:
                                     var inline1918 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                                     return inline1918
-                                case Option__char_Some:
-                                    var inline1919 rune = inline1917.(Option__char_Some)._0
+                                case 1:
+                                    var inline1919 rune = inline1917._v1_0
                                     var inline1921 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                         _0: true,
                                         _1: inline1919,
@@ -1162,12 +1100,15 @@ func __goml_builtin_char_from_uint32(value__30 uint32) Option__char {
     if t1423 {
         var mtmp22 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__30)
         var x24 rune = mtmp22._1
-        var t1424 Option__char = Option__char_Some{
-            _0: x24,
+        var t1424 Option__char = Option__char{
+            _tag: 1,
+            _v1_0: x24,
         }
         return t1424
     } else {
-        return Option__char_None{}
+        return Option__char{
+            _tag: 0,
+        }
     }
 }
 

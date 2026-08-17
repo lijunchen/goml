@@ -122,11 +122,14 @@ func hashmap_get__HashMap_12CollisionKey_5int32(m *hashmap_CollisionKey_int32_x,
     var ok bool
     value, ok = hashmap_lookup__HashMap_12CollisionKey_5int32(m, key)
     if ok {
-        return Option__int32_Some{
-            _0: value,
+        return Option__int32{
+            _tag: 1,
+            _v1_0: value,
         }
     }
-    return Option__int32_None{}
+    return Option__int32{
+        _tag: 0,
+    }
 }
 
 func hashmap_set__HashMap_12CollisionKey_5int32(m *hashmap_CollisionKey_int32_x, key CollisionKey, value int32) struct{} {
@@ -243,11 +246,14 @@ func hashmap_get__HashMap_18Ref_12CollisionKey_6string(m *hashmap_Ref_12Collisio
     var ok bool
     value, ok = hashmap_lookup__HashMap_18Ref_12CollisionKey_6string(m, key)
     if ok {
-        return Option__string_Some{
-            _0: value,
+        return Option__string{
+            _tag: 1,
+            _v1_0: value,
         }
     }
-    return Option__string_None{}
+    return Option__string{
+        _tag: 0,
+    }
 }
 
 func hashmap_set__HashMap_18Ref_12CollisionKey_6string(m *hashmap_Ref_12CollisionKey_string_x, key *ref_CollisionKey_x, value string) struct{} {
@@ -324,33 +330,15 @@ type Option__Ordering_Some struct {
 
 func (_ Option__Ordering_Some) isOption__Ordering() {}
 
-type Option__string interface {
-    isOption__string()
+type Option__string struct {
+    _tag int32
+    _v1_0 string
 }
 
-type Option__string_None struct {}
-
-func (_ Option__string_None) isOption__string() {}
-
-type Option__string_Some struct {
-    _0 string
+type Option__int32 struct {
+    _tag int32
+    _v1_0 int32
 }
-
-func (_ Option__string_Some) isOption__string() {}
-
-type Option__int32 interface {
-    isOption__int32()
-}
-
-type Option__int32_None struct {}
-
-func (_ Option__int32_None) isOption__int32() {}
-
-type Option__int32_Some struct {
-    _0 int32
-}
-
-func (_ Option__int32_Some) isOption__int32() {}
 
 func _goml_m_trait__impl_i_PartialEq_i_CollisionKey_i_eq(self__5 CollisionKey, other__6 CollisionKey) bool {
     var t957 int32 = self__5.value
@@ -364,14 +352,14 @@ func _goml_m_trait__impl_i_Hash_i_CollisionKey_i_hash(self__7 CollisionKey) uint
 }
 
 func print_opt_int(value__10 Option__int32) struct{} {
-    switch value__10.(type) {
-    case Option__int32_None:
+    switch value__10._tag {
+    case 0:
         var inline1932 string = "none"
         var inline1933 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline1932)
         _goml_runtime_core_string_println(inline1933)
         return struct{}{}
-    case Option__int32_Some:
-        var x411 int32 = value__10.(Option__int32_Some)._0
+    case 1:
+        var x411 int32 = value__10._v1_0
         var inline1936 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x411)
         _goml_runtime_core_string_println(inline1936)
         return struct{}{}
@@ -512,11 +500,11 @@ func collision_contracts() struct{} {
     var t1002 Option__int32
     var inline2014 Option__int32 = hashmap_get__HashMap_12CollisionKey_5int32(values__17, t1001)
     t1002 = inline2014
-    switch t1002.(type) {
-    case Option__int32_None:
+    switch t1002._tag {
+    case 0:
         println__T_string("none")
-    case Option__int32_Some:
-        var inline2010 int32 = t1002.(Option__int32_Some)._0
+    case 1:
+        var inline2010 int32 = t1002._v1_0
         println__T_int32(inline2010)
     default:
         panic("non-exhaustive match")
@@ -609,11 +597,11 @@ func reference_contracts() struct{} {
     var t1024 Option__string
     var inline2047 Option__string = hashmap_get__HashMap_18Ref_12CollisionKey_6string(values__20, key__21)
     t1024 = inline2047
-    switch t1024.(type) {
-    case Option__string_None:
+    switch t1024._tag {
+    case 0:
         println__T_string("none")
-    case Option__string_Some:
-        var inline2043 string = t1024.(Option__string_Some)._0
+    case 1:
+        var inline2043 string = t1024._v1_0
         println__T_string(inline2043)
     default:
         panic("non-exhaustive match")
@@ -621,11 +609,11 @@ func reference_contracts() struct{} {
     var t1025 Option__string
     var inline2040 Option__string = hashmap_get__HashMap_18Ref_12CollisionKey_6string(values__20, equal_value__23)
     t1025 = inline2040
-    switch t1025.(type) {
-    case Option__string_None:
+    switch t1025._tag {
+    case 0:
         println__T_string("none")
-    case Option__string_Some:
-        var inline2036 string = t1025.(Option__string_Some)._0
+    case 1:
+        var inline2036 string = t1025._v1_0
         println__T_string(inline2036)
     default:
         panic("non-exhaustive match")
@@ -637,12 +625,12 @@ func reference_contracts() struct{} {
     var t1027 Option__string
     var inline2031 Option__string = hashmap_get__HashMap_18Ref_12CollisionKey_6string(values__20, key__21)
     t1027 = inline2031
-    switch t1027.(type) {
-    case Option__string_None:
+    switch t1027._tag {
+    case 0:
         println__T_string("none")
         return struct{}{}
-    case Option__string_Some:
-        var inline2027 string = t1027.(Option__string_Some)._0
+    case 1:
+        var inline2027 string = t1027._v1_0
         println__T_string(inline2027)
         return struct{}{}
     default:

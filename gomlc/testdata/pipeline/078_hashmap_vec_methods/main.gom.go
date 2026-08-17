@@ -106,11 +106,14 @@ func hashmap_get__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key) Option__i
     var ok bool
     value, ok = hashmap_lookup__HashMap_3Key_5int32(m, key)
     if ok {
-        return Some{
-            _0: value,
+        return Option__int32{
+            _tag: 1,
+            _v1_0: value,
         }
     }
-    return None{}
+    return Option__int32{
+        _tag: 0,
+    }
 }
 
 func hashmap_set__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key, value int32) struct{} {
@@ -202,44 +205,26 @@ func hashmap_contains__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key) bool
 
 type Ordering int32
 
-type Key interface {
-    isKey()
+type Key struct {
+    _tag int32
+    _v1_0 int32
 }
 
-type A struct {}
-
-func (_ A) isKey() {}
-
-type B struct {
-    _0 int32
+type Option__int32 struct {
+    _tag int32
+    _v1_0 int32
 }
-
-func (_ B) isKey() {}
-
-type Option__int32 interface {
-    isOption__int32()
-}
-
-type None struct {}
-
-func (_ None) isOption__int32() {}
-
-type Some struct {
-    _0 int32
-}
-
-func (_ Some) isOption__int32() {}
 
 func _goml_m_trait__impl_i_Hash_i_Key_i_hash(self__0 Key) uint64 {
-    switch self__0.(type) {
-    case A:
+    switch self__0._tag {
+    case 0:
         var t435_source int = 0
         var t435 uint64 = uint64(int(t435_source))
         var t436 uint64 = t435 + 14695981039346656037
         var h__1 uint64 = t436 + 1
         return h__1
-    case B:
-        var x408 int32 = self__0.(B)._0
+    case 1:
+        var x408 int32 = self__0._v1_0
         var t437_source int = 0
         var t437 uint64 = uint64(int(t437_source))
         var t438 uint64 = t437 + 14695981039346656037
@@ -259,19 +244,19 @@ func _goml_m_trait__impl_i_Hash_i_Key_i_hash(self__0 Key) uint64 {
 }
 
 func _goml_m_trait__impl_i_PartialEq_i_Key_i_eq(self__5 Key, other__6 Key) bool {
-    switch other__6.(type) {
-    case A:
-        switch self__5.(type) {
-        case A:
+    switch other__6._tag {
+    case 0:
+        switch self__5._tag {
+        case 0:
             return true
         default:
             return false
         }
-    case B:
-        var x412 int32 = other__6.(B)._0
-        switch self__5.(type) {
-        case B:
-            var x414 int32 = self__5.(B)._0
+    case 1:
+        var x412 int32 = other__6._v1_0
+        switch self__5._tag {
+        case 1:
+            var x414 int32 = self__5._v1_0
             var inline531 bool = x414 == x412
             return inline531
         default:
@@ -306,9 +291,12 @@ func main0() struct{} {
     var inline575 *hashmap_Key_int32_x = hashmap_new__HashMap_3Key_5int32()
     m__12 = inline575
     var inline572 int32 = 10
-    hashmap_set__HashMap_3Key_5int32(m__12, A{}, inline572)
-    var t463 Key = B{
-        _0: 1,
+    hashmap_set__HashMap_3Key_5int32(m__12, Key{
+        _tag: 0,
+    }, inline572)
+    var t463 Key = Key{
+        _tag: 1,
+        _v1_0: 1,
     }
     var inline569 int32 = 20
     hashmap_set__HashMap_3Key_5int32(m__12, t463, inline569)
@@ -318,31 +306,36 @@ func main0() struct{} {
     var inline564 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t464)
     _goml_runtime_core_string_println(inline564)
     var t465 Option__int32
-    var inline562 Option__int32 = hashmap_get__HashMap_3Key_5int32(m__12, A{})
+    var inline562 Option__int32 = hashmap_get__HashMap_3Key_5int32(m__12, Key{
+        _tag: 0,
+    })
     t465 = inline562
-    switch t465.(type) {
-    case None:
+    switch t465._tag {
+    case 0:
         println__T_string("none")
-    case Some:
-        var inline558 int32 = t465.(Some)._0
+    case 1:
+        var inline558 int32 = t465._v1_0
         println__T_int32(inline558)
     default:
         panic("non-exhaustive match")
     }
-    var t466 Key = B{
-        _0: 1,
+    var t466 Key = Key{
+        _tag: 1,
+        _v1_0: 1,
     }
     var t467 bool
     var inline555 bool = hashmap_contains__HashMap_3Key_5int32(m__12, t466)
     t467 = inline555
     var inline552 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t467)
     _goml_runtime_core_string_println(inline552)
-    var t468 Key = B{
-        _0: 1,
+    var t468 Key = Key{
+        _tag: 1,
+        _v1_0: 1,
     }
     hashmap_remove__HashMap_3Key_5int32(m__12, t468)
-    var t469 Key = B{
-        _0: 1,
+    var t469 Key = Key{
+        _tag: 1,
+        _v1_0: 1,
     }
     var t470 bool
     var inline548 bool = hashmap_contains__HashMap_3Key_5int32(m__12, t469)

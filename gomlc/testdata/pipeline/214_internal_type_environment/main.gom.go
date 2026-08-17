@@ -49,25 +49,11 @@ type Nil struct {}
 
 func (_ Nil) isList() {}
 
-type Shape__int32 interface {
-    isShape__int32()
+type Shape__int32 struct {
+    _tag int32
+    _v0_0 Point
+    _v1_0 Wrapper__int32
 }
-
-type Dot struct {
-    _0 Point
-}
-
-func (_ Dot) isShape__int32() {}
-
-type Wrapped struct {
-    _0 Wrapper__int32
-}
-
-func (_ Wrapped) isShape__int32() {}
-
-type Origin struct {}
-
-func (_ Origin) isShape__int32() {}
 
 func list_value(value__10 List) int32 {
     switch value__10.(type) {

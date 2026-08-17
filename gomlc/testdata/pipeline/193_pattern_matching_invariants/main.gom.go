@@ -53,15 +53,10 @@ type Filled struct {
 
 func (_ Filled) isMaybeNever() {}
 
-type Single interface {
-    isSingle()
+type Single struct {
+    _tag int32
+    _v0_0 int32
 }
-
-type Only struct {
-    _0 int32
-}
-
-func (_ Only) isSingle() {}
 
 func main0() struct{} {
     var t489 int32

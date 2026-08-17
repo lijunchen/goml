@@ -24,25 +24,11 @@ type Point struct {
 
 type Ordering int32
 
-type State__int32 interface {
-    isState__int32()
+type State__int32 struct {
+    _tag int32
+    _v1_0 int32
+    _v2_0 int32
 }
-
-type State__int32_Idle struct {}
-
-func (_ State__int32_Idle) isState__int32() {}
-
-type State__int32_Value struct {
-    _0 int32
-}
-
-func (_ State__int32_Value) isState__int32() {}
-
-type State__int32_Named struct {
-    _0 int32
-}
-
-func (_ State__int32_Named) isState__int32() {}
 
 type State__Point interface {
     isState__Point()
@@ -64,25 +50,11 @@ type State__Point_Named struct {
 
 func (_ State__Point_Named) isState__Point() {}
 
-type State__int interface {
-    isState__int()
+type State__int struct {
+    _tag int32
+    _v1_0 int
+    _v2_0 int
 }
-
-type State__int_Idle struct {}
-
-func (_ State__int_Idle) isState__int() {}
-
-type State__int_Value struct {
-    _0 int
-}
-
-func (_ State__int_Value) isState__int() {}
-
-type State__int_Named struct {
-    _0 int
-}
-
-func (_ State__int_Named) isState__int() {}
 
 type dyn__Debug_vtable struct {
     debug func(any) string
@@ -126,7 +98,9 @@ func main0() struct{} {
         x: 3,
         label: "east",
     }
-    var idle__8 State__int32 = State__int32_Idle{}
+    var idle__8 State__int32 = State__int32{
+        _tag: 0,
+    }
     var t431 string = _goml_m_trait__impl_i_Debug_i_Point_i_debug(point__7)
     var inline534 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t431)
     _goml_runtime_core_string_println(inline534)
@@ -162,19 +136,19 @@ func main0() struct{} {
 }
 
 func _goml_m_trait__impl_i_Debug_i_State____int32_i_debug(self__3 State__int32) string {
-    switch self__3.(type) {
-    case State__int32_Idle:
+    switch self__3._tag {
+    case 0:
         return "State::Idle"
-    case State__int32_Value:
-        var x411 int32 = self__3.(State__int32_Value)._0
+    case 1:
+        var x411 int32 = self__3._v1_0
         var t451 string
         var inline541 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x411)
         t451 = inline541
         var t452 string = "State::Value(" + t451
         var t453 string = t452 + ")"
         return t453
-    case State__int32_Named:
-        var x412 int32 = self__3.(State__int32_Named)._0
+    case 2:
+        var x412 int32 = self__3._v2_0
         var t454 string = "State::Named { " + "value: "
         var t455 string
         var inline543 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x412)

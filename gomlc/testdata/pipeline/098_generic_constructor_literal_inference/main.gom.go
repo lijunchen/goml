@@ -15,19 +15,10 @@ func _goml_runtime_core_string_println(s string) struct{} {
 
 type Ordering int32
 
-type Option__uint8 interface {
-    isOption__uint8()
+type Option__uint8 struct {
+    _tag int32
+    _v0_0 uint8
 }
-
-type Some struct {
-    _0 uint8
-}
-
-func (_ Some) isOption__uint8() {}
-
-type None struct {}
-
-func (_ None) isOption__uint8() {}
 
 func main0() struct{} {
     var x408 uint8 = 42

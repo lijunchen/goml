@@ -219,75 +219,30 @@ type _goml_m_Option_____o_string_c_string_q__Some struct {
 
 func (_ _goml_m_Option_____o_string_c_string_q__Some) is_goml_m_Option_____o_string_c_string_q_() {}
 
-type Option__int interface {
-    isOption__int()
+type Option__int struct {
+    _tag int32
+    _v1_0 int
 }
 
-type Option__int_None struct {}
-
-func (_ Option__int_None) isOption__int() {}
-
-type Option__int_Some struct {
-    _0 int
+type Option__string struct {
+    _tag int32
+    _v1_0 string
 }
 
-func (_ Option__int_Some) isOption__int() {}
-
-type Option__string interface {
-    isOption__string()
+type Option__char struct {
+    _tag int32
+    _v1_0 rune
 }
 
-type Option__string_None struct {}
-
-func (_ Option__string_None) isOption__string() {}
-
-type Option__string_Some struct {
-    _0 string
+type _goml_m_Option_____o_int_c_char_q_ struct {
+    _tag int32
+    _v1_0 Tuple2_3int_4char
 }
 
-func (_ Option__string_Some) isOption__string() {}
-
-type Option__char interface {
-    isOption__char()
+type _goml_m_Option_____o_char_c_int_q_ struct {
+    _tag int32
+    _v1_0 Tuple2_4char_3int
 }
-
-type Option__char_None struct {}
-
-func (_ Option__char_None) isOption__char() {}
-
-type Option__char_Some struct {
-    _0 rune
-}
-
-func (_ Option__char_Some) isOption__char() {}
-
-type _goml_m_Option_____o_int_c_char_q_ interface {
-    is_goml_m_Option_____o_int_c_char_q_()
-}
-
-type _goml_m_Option_____o_int_c_char_q__None struct {}
-
-func (_ _goml_m_Option_____o_int_c_char_q__None) is_goml_m_Option_____o_int_c_char_q_() {}
-
-type _goml_m_Option_____o_int_c_char_q__Some struct {
-    _0 Tuple2_3int_4char
-}
-
-func (_ _goml_m_Option_____o_int_c_char_q__Some) is_goml_m_Option_____o_int_c_char_q_() {}
-
-type _goml_m_Option_____o_char_c_int_q_ interface {
-    is_goml_m_Option_____o_char_c_int_q_()
-}
-
-type _goml_m_Option_____o_char_c_int_q__None struct {}
-
-func (_ _goml_m_Option_____o_char_c_int_q__None) is_goml_m_Option_____o_char_c_int_q_() {}
-
-type _goml_m_Option_____o_char_c_int_q__Some struct {
-    _0 Tuple2_4char_3int
-}
-
-func (_ _goml_m_Option_____o_char_c_int_q__Some) is_goml_m_Option_____o_char_c_int_q_() {}
 
 func main0() struct{} {
     var text__0 string = "  Héllo, World!  "
@@ -351,11 +306,11 @@ func main0() struct{} {
     var t460 Option__string = _goml_m_inherent_i_string_i_string_i_slice__chars(text__0, 2, 7)
     var t461 string
     var inline1169 string = "none"
-    switch t460.(type) {
-    case Option__string_None:
+    switch t460._tag {
+    case 0:
         t461 = inline1169
-    case Option__string_Some:
-        var inline1170 string = t460.(Option__string_Some)._0
+    case 1:
+        var inline1170 string = t460._v1_0
         t461 = inline1170
     default:
         panic("non-exhaustive match")
@@ -489,15 +444,15 @@ func _goml_m_inherent_i_string_i_string_i_split(self__95 string, separator__96 s
         Loop_loop_expr509:
         for {
             var mtmp87 Option__int = string_find_from(self__95, separator__96, start__100)
-            switch mtmp87.(type) {
-            case Option__int_None:
+            switch mtmp87._tag {
+            case 0:
                 var t511 string
                 var inline1211 string = string_byte_slice(self__95, start__100, value_len__99)
                 t511 = inline1211
                 vec_push__Vec_6string(result__97, t511)
                 break Loop_loop_expr509
-            case Option__int_Some:
-                var x88 int = mtmp87.(Option__int_Some)._0
+            case 1:
+                var x88 int = mtmp87._v1_0
                 var t512 string
                 var inline1215 string = string_byte_slice(self__95, start__100, x88)
                 t512 = inline1215
@@ -543,11 +498,11 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_join____T__string(self__378 *_goml_ve
         var inline1226 func() Option__int = for_iter349.next_fn
         var inline1227 Option__int = inline1226()
         for_next350 = inline1227
-        switch for_next350.(type) {
-        case Option__int_None:
+        switch for_next350._tag {
+        case 0:
             break Loop_loop534
-        case Option__int_Some:
-            var x351 int = for_next350.(Option__int_Some)._0
+        case 1:
+            var x351 int = for_next350._v1_0
             var t536 string = vec_get__Vec_6string(self__378, x351)
             var t537 string
             t537 = t536
@@ -587,11 +542,11 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_join____T__string(self__378 *_goml_ve
         var inline1233 func() Option__int = for_iter353.next_fn
         var inline1234 Option__int = inline1233()
         for_next354 = inline1234
-        switch for_next354.(type) {
-        case Option__int_None:
+        switch for_next354._tag {
+        case 0:
             break Loop_loop527
-        case Option__int_Some:
-            var x355 int = for_next354.(Option__int_Some)._0
+        case 1:
+            var x355 int = for_next354._v1_0
             var t532 bool = x355 > 0
             if t532 {
                 vec_push__Vec_6string(result__382, separator__379)
@@ -621,11 +576,11 @@ func _goml_m_inherent_i_string_i_string_i_split__once(self__102 string, separato
         var mtmp93 Option__int
         var inline1267 Option__int = string_find_from(self__102, separator__103, 0)
         mtmp93 = inline1267
-        switch mtmp93.(type) {
-        case Option__int_None:
+        switch mtmp93._tag {
+        case 0:
             return _goml_m_Option_____o_string_c_string_q__None{}
-        case Option__int_Some:
-            var x94 int = mtmp93.(Option__int_Some)._0
+        case 1:
+            var x94 int = mtmp93._v1_0
             var t546 string
             var inline1264 int = 0
             var inline1265 string = string_byte_slice(self__102, inline1264, x94)
@@ -712,11 +667,11 @@ func _goml_m_inherent_i_string_i_string_i_lines(self__107 string) *_goml_vec_str
         var inline1294 func() Option__int = for_iter97.next_fn
         var inline1295 Option__int = inline1294()
         for_next98 = inline1295
-        switch for_next98.(type) {
-        case Option__int_None:
+        switch for_next98._tag {
+        case 0:
             break Loop_loop561
-        case Option__int_Some:
-            var x99 int = for_next98.(Option__int_Some)._0
+        case 1:
+            var x99 int = for_next98._v1_0
             var line__110 string = vec_get__Vec_6string(result__108, x99)
             var t569 int
             var inline1292 int = _goml_runtime_core_string_len(line__110)
@@ -774,11 +729,11 @@ func _goml_m_inherent_i_string_i_string_i_find(self__69 string, expected__70 str
 }
 
 func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__int(self__458 Option__int, fallback__459 int) int {
-    switch self__458.(type) {
-    case Option__int_None:
+    switch self__458._tag {
+    case 0:
         return fallback__459
-    case Option__int_Some:
-        var x387 int = self__458.(Option__int_Some)._0
+    case 1:
+        var x387 int = self__458._v1_0
         return x387
     default:
         panic("non-exhaustive match")
@@ -794,7 +749,9 @@ func _goml_m_inherent_i_string_i_string_i_rfind(self__85 string, expected__86 st
     expected_len__88 = inline1309
     var t600 bool = expected_len__88 > value_len__87
     if t600 {
-        return Option__int_None{}
+        return Option__int{
+            _tag: 0,
+        }
     } else {
         var start__89 int = value_len__87 - expected_len__88
         Loop_loop602:
@@ -803,8 +760,9 @@ func _goml_m_inherent_i_string_i_string_i_rfind(self__85 string, expected__86 st
             if t603 {
                 var t605 bool = _goml_m_inherent_i_string_i_string_i_starts__with__at(self__85, start__89, expected__86)
                 if t605 {
-                    var t606 Option__int = Option__int_Some{
-                        _0: start__89,
+                    var t606 Option__int = Option__int{
+                        _tag: 1,
+                        _v1_0: start__89,
                     }
                     return t606
                 } else {
@@ -818,7 +776,9 @@ func _goml_m_inherent_i_string_i_string_i_rfind(self__85 string, expected__86 st
                 break Loop_loop602
             }
         }
-        return Option__int_None{}
+        return Option__int{
+            _tag: 0,
+        }
     }
 }
 
@@ -892,10 +852,10 @@ func _goml_m_inherent_i_string_i_string_i_char__count(self__73 string) int {
         var inline1325 func() Option__char = for_iter43.next_fn
         var inline1326 Option__char = inline1325()
         for_next44 = inline1326
-        switch for_next44.(type) {
-        case Option__char_None:
+        switch for_next44._tag {
+        case 0:
             break Loop_loop639
-        case Option__char_Some:
+        case 1:
             var compound_old46 int = count__74
             var compound_value47 int = 1
             var t641 int = compound_old46 + compound_value47
@@ -918,29 +878,37 @@ func _goml_m_inherent_i_string_i_string_i_slice__chars(self__75 string, start__7
         jp648 = t684
     }
     if jp648 {
-        return Option__string_None{}
+        return Option__string{
+            _tag: 0,
+        }
     } else {
         var char_index__78 int = 0
         var t681 bool = start__76 == 0
         var jp650 Option__int
         if t681 {
-            var t682 Option__int = Option__int_Some{
-                _0: 0,
+            var t682 Option__int = Option__int{
+                _tag: 1,
+                _v1_0: 0,
             }
             jp650 = t682
         } else {
-            jp650 = Option__int_None{}
+            jp650 = Option__int{
+                _tag: 0,
+            }
         }
         var start_byte__79 Option__int = jp650
         var t679 bool = end__77 == 0
         var jp652 Option__int
         if t679 {
-            var t680 Option__int = Option__int_Some{
-                _0: 0,
+            var t680 Option__int = Option__int{
+                _tag: 1,
+                _v1_0: 0,
             }
             jp652 = t680
         } else {
-            jp652 = Option__int_None{}
+            jp652 = Option__int{
+                _tag: 0,
+            }
         }
         var end_byte__80 Option__int = jp652
         var t653 _goml_m_FnIterator_____o_int_c_char_q_
@@ -962,23 +930,25 @@ func _goml_m_inherent_i_string_i_string_i_slice__chars(self__75 string, start__7
             var inline1334 func() _goml_m_Option_____o_int_c_char_q_ = for_iter50.next_fn
             var inline1335 _goml_m_Option_____o_int_c_char_q_ = inline1334()
             for_next51 = inline1335
-            switch for_next51.(type) {
-            case _goml_m_Option_____o_int_c_char_q__None:
+            switch for_next51._tag {
+            case 0:
                 break Loop_loop669
-            case _goml_m_Option_____o_int_c_char_q__Some:
-                var x52 Tuple2_3int_4char = for_next51.(_goml_m_Option_____o_int_c_char_q__Some)._0
+            case 1:
+                var x52 Tuple2_3int_4char = for_next51._v1_0
                 var x54 int = x52._0
                 var t677 bool = char_index__78 == start__76
                 if t677 {
-                    var t678 Option__int = Option__int_Some{
-                        _0: x54,
+                    var t678 Option__int = Option__int{
+                        _tag: 1,
+                        _v1_0: x54,
                     }
                     start_byte__79 = t678
                 } else {}
                 var t675 bool = char_index__78 == end__77
                 if t675 {
-                    var t676 Option__int = Option__int_Some{
-                        _0: x54,
+                    var t676 Option__int = Option__int{
+                        _tag: 1,
+                        _v1_0: x54,
                     }
                     end_byte__80 = t676
                 } else {}
@@ -996,8 +966,9 @@ func _goml_m_inherent_i_string_i_string_i_slice__chars(self__75 string, start__7
             var t667 int
             var inline1337 int = _goml_runtime_core_string_len(self__75)
             t667 = inline1337
-            var t668 Option__int = Option__int_Some{
-                _0: t667,
+            var t668 Option__int = Option__int{
+                _tag: 1,
+                _v1_0: t667,
             }
             start_byte__79 = t668
         } else {}
@@ -1006,8 +977,9 @@ func _goml_m_inherent_i_string_i_string_i_slice__chars(self__75 string, start__7
             var t664 int
             var inline1339 int = _goml_runtime_core_string_len(self__75)
             t664 = inline1339
-            var t665 Option__int = Option__int_Some{
-                _0: t664,
+            var t665 Option__int = Option__int{
+                _tag: 1,
+                _v1_0: t664,
             }
             end_byte__80 = t665
         } else {}
@@ -1017,24 +989,29 @@ func _goml_m_inherent_i_string_i_string_i_slice__chars(self__75 string, start__7
         }
         var x69 Option__int = mtmp68._0
         var x70 Option__int = mtmp68._1
-        switch x70.(type) {
-        case Option__int_Some:
-            var x71 int = x70.(Option__int_Some)._0
-            switch x69.(type) {
-            case Option__int_Some:
-                var x72 int = x69.(Option__int_Some)._0
+        switch x70._tag {
+        case 1:
+            var x71 int = x70._v1_0
+            switch x69._tag {
+            case 1:
+                var x72 int = x69._v1_0
                 var t661 string
                 var inline1341 string = string_byte_slice(self__75, x72, x71)
                 t661 = inline1341
-                var t662 Option__string = Option__string_Some{
-                    _0: t661,
+                var t662 Option__string = Option__string{
+                    _tag: 1,
+                    _v1_0: t661,
                 }
                 return t662
             default:
-                return Option__string_None{}
+                return Option__string{
+                    _tag: 0,
+                }
             }
         default:
-            return Option__string_None{}
+            return Option__string{
+                _tag: 0,
+            }
         }
     }
 }
@@ -1054,8 +1031,8 @@ func _goml_m_inherent_i_string_i_string_i_replace(self__111 string, expected__11
         Loop_loop_expr697:
         for {
             var mtmp106 Option__int = string_find_from(self__111, expected__112, start__115)
-            switch mtmp106.(type) {
-            case Option__int_None:
+            switch mtmp106._tag {
+            case 0:
                 var t699 int
                 var inline1353 int = _goml_runtime_core_string_len(self__111)
                 t699 = inline1353
@@ -1064,8 +1041,8 @@ func _goml_m_inherent_i_string_i_string_i_replace(self__111 string, expected__11
                 t700 = inline1351
                 vec_push__Vec_6string(parts__114, t700)
                 break Loop_loop_expr697
-            case Option__int_Some:
-                var x107 int = mtmp106.(Option__int_Some)._0
+            case 1:
+                var x107 int = mtmp106._v1_0
                 var t701 string
                 var inline1361 string = string_byte_slice(self__111, start__115, x107)
                 t701 = inline1361
@@ -1124,10 +1101,10 @@ func _goml_m_inherent_i_string_i_string_i_repeat(self__117 string, count__118 in
             var inline1371 func() Option__int = for_iter113.next_fn
             var inline1372 Option__int = inline1371()
             for_next114 = inline1372
-            switch for_next114.(type) {
-            case Option__int_None:
+            switch for_next114._tag {
+            case 0:
                 break Loop_loop713
-            case Option__int_Some:
+            case 1:
                 vec_push__Vec_6string(parts__119, self__117)
                 continue
             default:
@@ -1163,11 +1140,11 @@ func _goml_m_inherent_i_string_i_string_i_is__ascii(self__120 string) bool {
         var inline1385 func() Option__int = for_iter117.next_fn
         var inline1386 Option__int = inline1385()
         for_next118 = inline1386
-        switch for_next118.(type) {
-        case Option__int_None:
+        switch for_next118._tag {
+        case 0:
             break Loop_loop724
-        case Option__int_Some:
-            var x119 int = for_next118.(Option__int_Some)._0
+        case 1:
+            var x119 int = for_next118._v1_0
             var t727 uint8
             var inline1383 uint8 = _goml_runtime_core_string_byte_get(self__120, x119)
             t727 = inline1383
@@ -1218,11 +1195,11 @@ func _goml_m_inherent_i_string_i_string_i_eq__ignore__ascii__case(self__122 stri
             var inline1405 func() Option__int = for_iter121.next_fn
             var inline1406 Option__int = inline1405()
             for_next122 = inline1406
-            switch for_next122.(type) {
-            case Option__int_None:
+            switch for_next122._tag {
+            case 0:
                 break Loop_loop739
-            case Option__int_Some:
-                var x123 int = for_next122.(Option__int_Some)._0
+            case 1:
+                var x123 int = for_next122._v1_0
                 var t742 uint8
                 var inline1403 uint8 = _goml_runtime_core_string_byte_get(self__122, x123)
                 t742 = inline1403
@@ -1276,11 +1253,11 @@ func _goml_m_inherent_i_string_i_string_i_to__ascii__lowercase(self__125 string)
         var inline1425 func() Option__int = for_iter125.next_fn
         var inline1426 Option__int = inline1425()
         for_next126 = inline1426
-        switch for_next126.(type) {
-        case Option__int_None:
+        switch for_next126._tag {
+        case 0:
             break Loop_loop751
-        case Option__int_Some:
-            var x127 int = for_next126.(Option__int_Some)._0
+        case 1:
+            var x127 int = for_next126._v1_0
             vec_get__Vec_5uint8(values__126, x127)
             var t753 uint8 = vec_get__Vec_5uint8(values__126, x127)
             var value131 uint8
@@ -1330,11 +1307,11 @@ func _goml_m_inherent_i_string_i_string_i_to__ascii__uppercase(self__129 string)
         var inline1443 func() Option__int = for_iter137.next_fn
         var inline1444 Option__int = inline1443()
         for_next138 = inline1444
-        switch for_next138.(type) {
-        case Option__int_None:
+        switch for_next138._tag {
+        case 0:
             break Loop_loop760
-        case Option__int_Some:
-            var x139 int = for_next138.(Option__int_Some)._0
+        case 1:
+            var x139 int = for_next138._v1_0
             vec_get__Vec_5uint8(values__130, x139)
             var t762 uint8 = vec_get__Vec_5uint8(values__130, x139)
             var value143 uint8
@@ -1424,19 +1401,24 @@ func string_find_from(value__133 string, expected__134 string, start__135 int) O
         jp803 = t821
     }
     if jp803 {
-        return Option__int_None{}
+        return Option__int{
+            _tag: 0,
+        }
     } else {
         var t806 bool = expected_len__137 == 0
         if t806 {
-            var t807 Option__int = Option__int_Some{
-                _0: start__135,
+            var t807 Option__int = Option__int{
+                _tag: 1,
+                _v1_0: start__135,
             }
             return t807
         } else {
             var t810 int = value_len__136 - start__135
             var t811 bool = expected_len__137 > t810
             if t811 {
-                return Option__int_None{}
+                return Option__int{
+                    _tag: 0,
+                }
             } else {
                 var limit__138 int = value_len__136 - expected_len__137
                 var index__139 int = start__135
@@ -1446,8 +1428,9 @@ func string_find_from(value__133 string, expected__134 string, start__135 int) O
                     if t814 {
                         var t816 bool = _goml_m_inherent_i_string_i_string_i_starts__with__at(value__133, index__139, expected__134)
                         if t816 {
-                            var t817 Option__int = Option__int_Some{
-                                _0: index__139,
+                            var t817 Option__int = Option__int{
+                                _tag: 1,
+                                _v1_0: index__139,
                             }
                             return t817
                         } else {
@@ -1461,7 +1444,9 @@ func string_find_from(value__133 string, expected__134 string, start__135 int) O
                         break Loop_loop813
                     }
                 }
-                return Option__int_None{}
+                return Option__int{
+                    _tag: 0,
+                }
             }
         }
     }
@@ -1633,12 +1618,12 @@ func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3in
         if t964 {
             var inline1502 int = 1
             var inline1503 Option__char = __goml_builtin_char_from_uint32(first__8)
-            switch inline1503.(type) {
-            case Option__char_None:
+            switch inline1503._tag {
+            case 0:
                 var inline1504 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                 return inline1504
-            case Option__char_Some:
-                var inline1505 rune = inline1503.(Option__char_Some)._0
+            case 1:
+                var inline1505 rune = inline1503._v1_0
                 var inline1507 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                     _0: true,
                     _1: inline1505,
@@ -1700,12 +1685,12 @@ func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3in
                             var t983 uint32 = t981 | t982
                             var inline1515 int = 2
                             var inline1516 Option__char = __goml_builtin_char_from_uint32(t983)
-                            switch inline1516.(type) {
-                            case Option__char_None:
+                            switch inline1516._tag {
+                            case 0:
                                 var inline1517 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                                 return inline1517
-                            case Option__char_Some:
-                                var inline1518 rune = inline1516.(Option__char_Some)._0
+                            case 1:
+                                var inline1518 rune = inline1516._v1_0
                                 var inline1520 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                     _0: true,
                                     _1: inline1518,
@@ -1795,12 +1780,12 @@ func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3in
                                 var t1007 uint32 = t1005 | t1006
                                 var inline1534 int = 3
                                 var inline1535 Option__char = __goml_builtin_char_from_uint32(t1007)
-                                switch inline1535.(type) {
-                                case Option__char_None:
+                                switch inline1535._tag {
+                                case 0:
                                     var inline1536 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                                     return inline1536
-                                case Option__char_Some:
-                                    var inline1537 rune = inline1535.(Option__char_Some)._0
+                                case 1:
+                                    var inline1537 rune = inline1535._v1_0
                                     var inline1539 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                         _0: true,
                                         _1: inline1537,
@@ -1977,12 +1962,15 @@ func __goml_builtin_char_from_uint32(value__30 uint32) Option__char {
     if t1103 {
         var mtmp22 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__30)
         var x24 rune = mtmp22._1
-        var t1104 Option__char = Option__char_Some{
-            _0: x24,
+        var t1104 Option__char = Option__char{
+            _tag: 1,
+            _v1_0: x24,
         }
         return t1104
     } else {
-        return Option__char_None{}
+        return Option__char{
+            _tag: 0,
+        }
     }
 }
 
@@ -2012,12 +2000,15 @@ func _goml_m_inherent_i_closure__en_h5b1fcaf2e23588c4625108f446fe7c51_ange__0_i_
     if t1125 {
         var t1126 int = value__497 + 1
         ref_set__Ref_3int(current__496, t1126)
-        var t1127 Option__int = Option__int_Some{
-            _0: value__497,
+        var t1127 Option__int = Option__int{
+            _tag: 1,
+            _v1_0: value__497,
         }
         return t1127
     } else {
-        return Option__int_None{}
+        return Option__int{
+            _tag: 0,
+        }
     }
 }
 
@@ -2041,12 +2032,15 @@ func _goml_m_inherent_i_closure__en_h6cc414bec6b61ab808929b69f0900e8f_hars__1_i_
         var compound_old34 int = ref_get__Ref_3int(index__53)
         var t1133 int = compound_old34 + x33
         ref_set__Ref_3int(index__53, t1133)
-        var t1135 Option__char = Option__char_Some{
-            _0: x32,
+        var t1135 Option__char = Option__char{
+            _tag: 1,
+            _v1_0: x32,
         }
         return t1135
     } else {
-        return Option__char_None{}
+        return Option__char{
+            _tag: 0,
+        }
     }
 }
 
@@ -2073,12 +2067,15 @@ func _goml_m_inherent_i_closure__en_hce113b295882d0c03e72873edb11c646_ices__2_i_
             _0: current__59,
             _1: x40,
         }
-        var t1142 _goml_m_Option_____o_int_c_char_q_ = _goml_m_Option_____o_int_c_char_q__Some{
-            _0: t1141,
+        var t1142 _goml_m_Option_____o_int_c_char_q_ = _goml_m_Option_____o_int_c_char_q_{
+            _tag: 1,
+            _v1_0: t1141,
         }
         return t1142
     } else {
-        return _goml_m_Option_____o_int_c_char_q__None{}
+        return _goml_m_Option_____o_int_c_char_q_{
+            _tag: 0,
+        }
     }
 }
 

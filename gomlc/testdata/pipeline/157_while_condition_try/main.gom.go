@@ -34,33 +34,15 @@ func ref_set__Ref_5int32(reference *ref_int32_x, value int32) struct{} {
 
 type Ordering int32
 
-type Option__bool interface {
-    isOption__bool()
+type Option__bool struct {
+    _tag int32
+    _v1_0 bool
 }
 
-type Option__bool_None struct {}
-
-func (_ Option__bool_None) isOption__bool() {}
-
-type Option__bool_Some struct {
-    _0 bool
+type Option__int32 struct {
+    _tag int32
+    _v1_0 int32
 }
-
-func (_ Option__bool_Some) isOption__bool() {}
-
-type Option__int32 interface {
-    isOption__int32()
-}
-
-type Option__int32_None struct {}
-
-func (_ Option__int32_None) isOption__int32() {}
-
-type Option__int32_Some struct {
-    _0 int32
-}
-
-func (_ Option__int32_Some) isOption__int32() {}
 
 func run_some() Option__int32 {
     var i__2 *ref_int32_x
@@ -79,22 +61,26 @@ func run_some() Option__int32 {
         var mtmp408 Option__bool
         var inline506 bool = t440 < 3
         if inline506 {
-            var inline507 Option__bool = Option__bool_Some{
-                _0: true,
+            var inline507 Option__bool = Option__bool{
+                _tag: 1,
+                _v1_0: true,
             }
             mtmp408 = inline507
         } else {
-            var inline508 Option__bool = Option__bool_Some{
-                _0: false,
+            var inline508 Option__bool = Option__bool{
+                _tag: 1,
+                _v1_0: false,
             }
             mtmp408 = inline508
         }
         var jp442 bool
-        switch mtmp408.(type) {
-        case Option__bool_None:
-            return Option__int32_None{}
-        case Option__bool_Some:
-            var x409 bool = mtmp408.(Option__bool_Some)._0
+        switch mtmp408._tag {
+        case 0:
+            return Option__int32{
+                _tag: 0,
+            }
+        case 1:
+            var x409 bool = mtmp408._v1_0
             jp442 = x409
             if jp442 {
                 var t443 int32
@@ -121,8 +107,9 @@ func run_some() Option__int32 {
     var t437 int32
     var inline512 int32 = ref_get__Ref_5int32(total__3)
     t437 = inline512
-    var t438 Option__int32 = Option__int32_Some{
-        _0: t437,
+    var t438 Option__int32 = Option__int32{
+        _tag: 1,
+        _v1_0: t437,
     }
     return t438
 }
@@ -144,19 +131,24 @@ func run_none() Option__int32 {
         var mtmp413 Option__bool
         var inline530 bool = t454 < 2
         if inline530 {
-            var inline531 Option__bool = Option__bool_Some{
-                _0: true,
+            var inline531 Option__bool = Option__bool{
+                _tag: 1,
+                _v1_0: true,
             }
             mtmp413 = inline531
         } else {
-            mtmp413 = Option__bool_None{}
+            mtmp413 = Option__bool{
+                _tag: 0,
+            }
         }
         var jp456 bool
-        switch mtmp413.(type) {
-        case Option__bool_None:
-            return Option__int32_None{}
-        case Option__bool_Some:
-            var x414 bool = mtmp413.(Option__bool_Some)._0
+        switch mtmp413._tag {
+        case 0:
+            return Option__int32{
+                _tag: 0,
+            }
+        case 1:
+            var x414 bool = mtmp413._v1_0
             jp456 = x414
             if jp456 {
                 var t457 int32
@@ -183,8 +175,9 @@ func run_none() Option__int32 {
     var t451 int32
     var inline535 int32 = ref_get__Ref_5int32(total__5)
     t451 = inline535
-    var t452 Option__int32 = Option__int32_Some{
-        _0: t451,
+    var t452 Option__int32 = Option__int32{
+        _tag: 1,
+        _v1_0: t451,
     }
     return t452
 }
@@ -192,11 +185,11 @@ func run_none() Option__int32 {
 func main0() struct{} {
     var t469 Option__int32 = run_some()
     var t470 string
-    switch t469.(type) {
-    case Option__int32_None:
+    switch t469._tag {
+    case 0:
         t470 = "none"
-    case Option__int32_Some:
-        var inline556 int32 = t469.(Option__int32_Some)._0
+    case 1:
+        var inline556 int32 = t469._v1_0
         var inline558 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline556)
         var inline559 string = "some=" + inline558
         t470 = inline559
@@ -207,11 +200,11 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline553)
     var t471 Option__int32 = run_none()
     var t472 string
-    switch t471.(type) {
-    case Option__int32_None:
+    switch t471._tag {
+    case 0:
         t472 = "none"
-    case Option__int32_Some:
-        var inline548 int32 = t471.(Option__int32_Some)._0
+    case 1:
+        var inline548 int32 = t471._v1_0
         var inline550 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline548)
         var inline551 string = "some=" + inline550
         t472 = inline551

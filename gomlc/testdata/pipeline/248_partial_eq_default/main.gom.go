@@ -45,94 +45,39 @@ type PairDefaults__int struct {
 
 type Ordering int32
 
-type State interface {
-    isState()
+type State struct {
+    _tag int32
+    _v1_0 int
 }
 
-type Idle struct {}
-
-func (_ Idle) isState() {}
-
-type Running struct {
-    _0 int
+type Message struct {
+    _tag int32
+    _v0_0 string
+    _v0_1 int
 }
 
-func (_ Running) isState() {}
-
-type Message interface {
-    isMessage()
+type Event struct {
+    _tag int32
+    _v0_0 string
+    _v0_1 int
 }
 
-type Message_Data struct {
-    _0 string
-    _1 int
+type Option__int struct {
+    _tag int32
+    _v1_0 int
 }
 
-func (_ Message_Data) isMessage() {}
-
-type Message_Empty struct {}
-
-func (_ Message_Empty) isMessage() {}
-
-type Event interface {
-    isEvent()
+type Lazy__NoDefault struct {
+    _tag int32
+    _v1_0 NoDefault
 }
 
-type Event_Data struct {
-    _0 string
-    _1 int
+type Selected__int struct {
+    _tag int32
+    _v0_0 int
+    _v0_1 int
+    _v1_0 *ref_NoDefault_x
 }
-
-func (_ Event_Data) isEvent() {}
-
-type Event_Empty struct {}
-
-func (_ Event_Empty) isEvent() {}
-
-type Option__int interface {
-    isOption__int()
-}
-
-type None struct {}
-
-func (_ None) isOption__int() {}
-
-type Some struct {
-    _0 int
-}
-
-func (_ Some) isOption__int() {}
-
-type Lazy__NoDefault interface {
-    isLazy__NoDefault()
-}
-
-type Lazy__NoDefault_Empty struct {}
-
-func (_ Lazy__NoDefault_Empty) isLazy__NoDefault() {}
-
-type Value struct {
-    _0 NoDefault
-}
-
-func (_ Value) isLazy__NoDefault() {}
-
-type Selected__int interface {
-    isSelected__int()
-}
-
-type Values struct {
-    _0 int
-    _1 int
-}
-
-func (_ Values) isSelected__int() {}
-
-type Ignored struct {
-    _0 *ref_NoDefault_x
-}
-
-func (_ Ignored) isSelected__int() {}
 
 func _goml_m_trait__impl_i_PartialEq_i_Settings_i_eq(self__0 Settings, other__1 Settings) bool {
     var jp440 bool
@@ -209,11 +154,11 @@ func _goml_m_trait__impl_i_Debug_i_Empty_i_debug(self__6 Empty) string {
 }
 
 func _goml_m_trait__impl_i_Debug_i_State_i_debug(self__7 State) string {
-    switch self__7.(type) {
-    case Idle:
+    switch self__7._tag {
+    case 0:
         return "State::Idle"
-    case Running:
-        var x412 int = self__7.(Running)._0
+    case 1:
+        var x412 int = self__7._v1_0
         var t478 string
         var inline613 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(x412)
         t478 = inline613
@@ -226,10 +171,10 @@ func _goml_m_trait__impl_i_Debug_i_State_i_debug(self__7 State) string {
 }
 
 func _goml_m_trait__impl_i_Debug_i_Message_i_debug(self__9 Message) string {
-    switch self__9.(type) {
-    case Message_Data:
-        var x413 string = self__9.(Message_Data)._0
-        var x414 int = self__9.(Message_Data)._1
+    switch self__9._tag {
+    case 0:
+        var x413 string = self__9._v0_0
+        var x414 int = self__9._v0_1
         var t490 string
         var inline619 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x413)
         t490 = inline619
@@ -241,7 +186,7 @@ func _goml_m_trait__impl_i_Debug_i_Message_i_debug(self__9 Message) string {
         var t494 string = t492 + t493
         var t495 string = t494 + ")"
         return t495
-    case Message_Empty:
+    case 1:
         return "Message::Empty"
     default:
         panic("non-exhaustive match")
@@ -276,16 +221,19 @@ func main0() struct{} {
     t525 = inline671
     println__T_string(t525)
     var state__18 State
-    state__18 = Idle{}
+    state__18 = State{
+        _tag: 0,
+    }
     var t526 string = _goml_m_trait__impl_i_Debug_i_State_i_debug(state__18)
     var inline667 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t526)
     _goml_runtime_core_string_println(inline667)
     var message__19 Message
     var inline663 string = _goml_m_trait__impl_i_Default_i_string_i_default()
     var inline664 int = _goml_m_trait__impl_i_Default_i_int_i_default()
-    var inline665 Message = Message_Data{
-        _0: inline663,
-        _1: inline664,
+    var inline665 Message = Message{
+        _tag: 0,
+        _v0_0: inline663,
+        _v0_1: inline664,
     }
     message__19 = inline665
     var t527 string = _goml_m_trait__impl_i_Debug_i_Message_i_debug(message__19)
@@ -294,16 +242,17 @@ func main0() struct{} {
     var event__20 Event
     var inline656 string = _goml_m_trait__impl_i_Default_i_string_i_default()
     var inline657 int = _goml_m_trait__impl_i_Default_i_int_i_default()
-    var inline658 Event = Event_Data{
-        _0: inline656,
-        _1: inline657,
+    var inline658 Event = Event{
+        _tag: 0,
+        _v0_0: inline656,
+        _v0_1: inline657,
     }
     event__20 = inline658
     var t528 string
-    switch event__20.(type) {
-    case Event_Data:
-        var inline643 string = event__20.(Event_Data)._0
-        var inline644 int = event__20.(Event_Data)._1
+    switch event__20._tag {
+    case 0:
+        var inline643 string = event__20._v0_0
+        var inline644 int = event__20._v0_1
         var inline647 string = "Event::Data { " + "name: "
         var inline648 string = _goml_m_trait__impl_i_Debug_i_string_i_debug(inline643)
         var inline649 string = inline647 + inline648
@@ -313,7 +262,7 @@ func main0() struct{} {
         var inline653 string = inline651 + inline652
         var inline654 string = inline653 + " }"
         t528 = inline654
-    case Event_Empty:
+    case 1:
         t528 = "Event::Empty"
     default:
         panic("non-exhaustive match")
@@ -321,12 +270,14 @@ func main0() struct{} {
     var inline640 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t528)
     _goml_runtime_core_string_println(inline640)
     var lazy__21 Lazy__NoDefault
-    lazy__21 = Lazy__NoDefault_Empty{}
+    lazy__21 = Lazy__NoDefault{
+        _tag: 0,
+    }
     var jp530 string
-    switch lazy__21.(type) {
-    case Lazy__NoDefault_Empty:
+    switch lazy__21._tag {
+    case 0:
         jp530 = "empty"
-    case Value:
+    case 1:
         jp530 = "value"
     default:
         panic("non-exhaustive match")
@@ -336,20 +287,21 @@ func main0() struct{} {
     var selected__22 Selected__int
     var inline632 int = _goml_m_trait__impl_i_Default_i_int_i_default()
     var inline633 int = _goml_m_trait__impl_i_Default_i_int_i_default()
-    var inline634 Selected__int = Values{
-        _0: inline632,
-        _1: inline633,
+    var inline634 Selected__int = Selected__int{
+        _tag: 0,
+        _v0_0: inline632,
+        _v0_1: inline633,
     }
     selected__22 = inline634
     var jp532 string
-    switch selected__22.(type) {
-    case Values:
-        var x427 int = selected__22.(Values)._0
-        var x428 int = selected__22.(Values)._1
+    switch selected__22._tag {
+    case 0:
+        var x427 int = selected__22._v0_0
+        var x428 int = selected__22._v0_1
         var t534 int = x427 + x428
         var inline627 string = _goml_runtime_core_int_to_string(t534)
         jp532 = inline627
-    case Ignored:
+    case 1:
         jp532 = "ignored"
     default:
         panic("non-exhaustive match")
@@ -394,7 +346,9 @@ func _goml_m_trait__impl_i_Default_i_PairDefaults____int_i_default() PairDefault
     var t569 int
     t569 = 0
     var t570 Option__int
-    t570 = None{}
+    t570 = Option__int{
+        _tag: 0,
+    }
     var t571 PairDefaults__int = PairDefaults__int{
         first: t568,
         second: t569,
@@ -410,10 +364,10 @@ func _goml_m_inherent_i_int_i_int_i_to__string(self__32 int) string {
 
 func _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__none____T__int(self__457 Option__int) bool {
     var t577 bool
-    switch self__457.(type) {
-    case None:
+    switch self__457._tag {
+    case 0:
         t577 = false
-    case Some:
+    case 1:
         t577 = true
     default:
         panic("non-exhaustive match")

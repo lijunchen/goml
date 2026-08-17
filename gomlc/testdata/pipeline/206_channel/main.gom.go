@@ -30,33 +30,15 @@ type closure_env_roundtrip_T_string_0 struct {
 
 type Ordering int32
 
-type Option__int interface {
-    isOption__int()
+type Option__int struct {
+    _tag int32
+    _v1_0 int
 }
 
-type Option__int_None struct {}
-
-func (_ Option__int_None) isOption__int() {}
-
-type Option__int_Some struct {
-    _0 int
+type Option__string struct {
+    _tag int32
+    _v1_0 string
 }
-
-func (_ Option__int_Some) isOption__int() {}
-
-type Option__string interface {
-    isOption__string()
-}
-
-type Option__string_None struct {}
-
-func (_ Option__string_None) isOption__string() {}
-
-type Option__string_Some struct {
-    _0 string
-}
-
-func (_ Option__string_Some) isOption__string() {}
 
 func main0() struct{} {
     var buffered__2 chan int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__int(2)
@@ -76,19 +58,22 @@ func main0() struct{} {
     var inline521 int = inline520._0
     var inline522 bool = inline520._1
     if inline522 {
-        var inline525 Option__int = Option__int_Some{
-            _0: inline521,
+        var inline525 Option__int = Option__int{
+            _tag: 1,
+            _v1_0: inline521,
         }
         mtmp412 = inline525
     } else {
-        mtmp412 = Option__int_None{}
+        mtmp412 = Option__int{
+            _tag: 0,
+        }
     }
     var jp431 int
-    switch mtmp412.(type) {
-    case Option__int_None:
+    switch mtmp412._tag {
+    case 0:
         jp431 = -1
-    case Option__int_Some:
-        var x413 int = mtmp412.(Option__int_Some)._0
+    case 1:
+        var x413 int = mtmp412._v1_0
         jp431 = x413
     default:
         panic("non-exhaustive match")
@@ -108,19 +93,22 @@ func main0() struct{} {
     var inline511 int = inline510._0
     var inline512 bool = inline510._1
     if inline512 {
-        var inline515 Option__int = Option__int_Some{
-            _0: inline511,
+        var inline515 Option__int = Option__int{
+            _tag: 1,
+            _v1_0: inline511,
         }
         mtmp415 = inline515
     } else {
-        mtmp415 = Option__int_None{}
+        mtmp415 = Option__int{
+            _tag: 0,
+        }
     }
     var jp433 int
-    switch mtmp415.(type) {
-    case Option__int_None:
+    switch mtmp415._tag {
+    case 0:
         jp433 = -1
-    case Option__int_Some:
-        var x416 int = mtmp415.(Option__int_Some)._0
+    case 1:
+        var x416 int = mtmp415._v1_0
         jp433 = x416
     default:
         panic("non-exhaustive match")
@@ -140,18 +128,21 @@ func main0() struct{} {
     var inline501 int = inline500._0
     var inline502 bool = inline500._1
     if inline502 {
-        var inline505 Option__int = Option__int_Some{
-            _0: inline501,
+        var inline505 Option__int = Option__int{
+            _tag: 1,
+            _v1_0: inline501,
         }
         mtmp418 = inline505
     } else {
-        mtmp418 = Option__int_None{}
+        mtmp418 = Option__int{
+            _tag: 0,
+        }
     }
     var jp435 string
-    switch mtmp418.(type) {
-    case Option__int_None:
+    switch mtmp418._tag {
+    case 0:
         jp435 = "closed"
-    case Option__int_Some:
+    case 1:
         jp435 = "open"
     default:
         panic("non-exhaustive match")
@@ -174,11 +165,11 @@ func main0() struct{} {
     var inline493 Option__string = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__string(unbuffered__5)
     mtmp421 = inline493
     var jp437 string
-    switch mtmp421.(type) {
-    case Option__string_None:
+    switch mtmp421._tag {
+    case 0:
         jp437 = "closed"
-    case Option__string_Some:
-        var x422 string = mtmp421.(Option__string_Some)._0
+    case 1:
+        var x422 string = mtmp421._v1_0
         jp437 = x422
     default:
         panic("non-exhaustive match")
@@ -244,12 +235,15 @@ func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__string(self__438 c
     var x380 string = mtmp379._0
     var x381 bool = mtmp379._1
     if x381 {
-        var t477 Option__string = Option__string_Some{
-            _0: x380,
+        var t477 Option__string = Option__string{
+            _tag: 1,
+            _v1_0: x380,
         }
         return t477
     } else {
-        return Option__string_None{}
+        return Option__string{
+            _tag: 0,
+        }
     }
 }
 

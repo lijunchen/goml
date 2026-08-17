@@ -395,61 +395,25 @@ type closure_env_inherent_string_string_char_indices_1 struct {
 
 type Ordering int32
 
-type Option__char interface {
-    isOption__char()
+type Option__char struct {
+    _tag int32
+    _v1_0 rune
 }
 
-type Option__char_None struct {}
-
-func (_ Option__char_None) isOption__char() {}
-
-type Option__char_Some struct {
-    _0 rune
+type _goml_m_Option_____o_int_c_char_q_ struct {
+    _tag int32
+    _v1_0 Tuple2_3int_4char
 }
 
-func (_ Option__char_Some) isOption__char() {}
-
-type _goml_m_Option_____o_int_c_char_q_ interface {
-    is_goml_m_Option_____o_int_c_char_q_()
+type _goml_m_Option_____o_char_c_int_q_ struct {
+    _tag int32
+    _v1_0 Tuple2_4char_3int
 }
 
-type _goml_m_Option_____o_int_c_char_q__None struct {}
-
-func (_ _goml_m_Option_____o_int_c_char_q__None) is_goml_m_Option_____o_int_c_char_q_() {}
-
-type _goml_m_Option_____o_int_c_char_q__Some struct {
-    _0 Tuple2_3int_4char
+type Option__int32 struct {
+    _tag int32
+    _v1_0 int32
 }
-
-func (_ _goml_m_Option_____o_int_c_char_q__Some) is_goml_m_Option_____o_int_c_char_q_() {}
-
-type _goml_m_Option_____o_char_c_int_q_ interface {
-    is_goml_m_Option_____o_char_c_int_q_()
-}
-
-type _goml_m_Option_____o_char_c_int_q__None struct {}
-
-func (_ _goml_m_Option_____o_char_c_int_q__None) is_goml_m_Option_____o_char_c_int_q_() {}
-
-type _goml_m_Option_____o_char_c_int_q__Some struct {
-    _0 Tuple2_4char_3int
-}
-
-func (_ _goml_m_Option_____o_char_c_int_q__Some) is_goml_m_Option_____o_char_c_int_q_() {}
-
-type Option__int32 interface {
-    isOption__int32()
-}
-
-type Option__int32_None struct {}
-
-func (_ Option__int32_None) isOption__int32() {}
-
-type Option__int32_Some struct {
-    _0 int32
-}
-
-func (_ Option__int32_Some) isOption__int32() {}
 
 func print_chars(value__0 string) struct{} {
     var t502 FnIterator__char
@@ -471,11 +435,11 @@ func print_chars(value__0 string) struct{} {
         var inline1038 func() Option__char = for_iter408.next_fn
         var inline1039 Option__char = inline1038()
         for_next409 = inline1039
-        switch for_next409.(type) {
-        case Option__char_None:
+        switch for_next409._tag {
+        case 0:
             break Loop_loop504
-        case Option__char_Some:
-            var x410 rune = for_next409.(Option__char_Some)._0
+        case 1:
+            var x410 rune = for_next409._v1_0
             var inline1035 string = _goml_m_trait__impl_i_ToString_i_char_i_to__string(x410)
             _goml_runtime_core_string_println(inline1035)
             continue
@@ -506,11 +470,11 @@ func print_char_indices(value__2 string) struct{} {
         var inline1054 func() _goml_m_Option_____o_int_c_char_q_ = for_iter411.next_fn
         var inline1055 _goml_m_Option_____o_int_c_char_q_ = inline1054()
         for_next412 = inline1055
-        switch for_next412.(type) {
-        case _goml_m_Option_____o_int_c_char_q__None:
+        switch for_next412._tag {
+        case 0:
             break Loop_loop510
-        case _goml_m_Option_____o_int_c_char_q__Some:
-            var x413 Tuple2_3int_4char = for_next412.(_goml_m_Option_____o_int_c_char_q__Some)._0
+        case 1:
+            var x413 Tuple2_3int_4char = for_next412._v1_0
             var x415 int = x413._0
             var x416 rune = x413._1
             var t512 string
@@ -558,13 +522,13 @@ func main0() struct{} {
     var t529 string = _goml_m_inherent_i_string_i_string_i_byte__slice(value__6, 1, 7)
     println__T_string(t529)
     var mtmp429 _goml_m_Option_____o_char_c_int_q_ = _goml_m_inherent_i_string_i_string_i_decode__at(value__6, 7)
-    switch mtmp429.(type) {
-    case _goml_m_Option_____o_char_c_int_q__None:
+    switch mtmp429._tag {
+    case 0:
         var inline1063 string = "missing"
         var inline1064 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline1063)
         _goml_runtime_core_string_println(inline1064)
-    case _goml_m_Option_____o_char_c_int_q__Some:
-        var x430 Tuple2_4char_3int = mtmp429.(_goml_m_Option_____o_char_c_int_q__Some)._0
+    case 1:
+        var x430 Tuple2_4char_3int = mtmp429._v1_0
         var x432 rune = x430._0
         var x433 int = x430._1
         var inline1070 string = _goml_m_trait__impl_i_ToString_i_char_i_to__string(x432)
@@ -632,26 +596,26 @@ func main0() struct{} {
     var t547 int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__int32(values__17, 1)
     println__T_int32(t547)
     var mtmp472 Option__int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_last____T__int32(values__17)
-    switch mtmp472.(type) {
-    case Option__int32_None:
+    switch mtmp472._tag {
+    case 0:
         var inline1073 int = -1
         var inline1074 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline1073)
         _goml_runtime_core_string_println(inline1074)
-    case Option__int32_Some:
-        var x473 int32 = mtmp472.(Option__int32_Some)._0
+    case 1:
+        var x473 int32 = mtmp472._v1_0
         var inline1077 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x473)
         _goml_runtime_core_string_println(inline1077)
     default:
         panic("non-exhaustive match")
     }
     var mtmp475 Option__int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pop____T__int32(values__17)
-    switch mtmp475.(type) {
-    case Option__int32_None:
+    switch mtmp475._tag {
+    case 0:
         var inline1080 int = -1
         var inline1081 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline1080)
         _goml_runtime_core_string_println(inline1081)
-    case Option__int32_Some:
-        var x476 int32 = mtmp475.(Option__int32_Some)._0
+    case 1:
+        var x476 int32 = mtmp475._v1_0
         var inline1084 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x476)
         _goml_runtime_core_string_println(inline1084)
     default:
@@ -831,12 +795,15 @@ func _goml_m_inherent_i_string_i_string_i_decode__at(self__46 string, index__47 
             _0: x27,
             _1: x28,
         }
-        var t639 _goml_m_Option_____o_char_c_int_q_ = _goml_m_Option_____o_char_c_int_q__Some{
-            _0: t638,
+        var t639 _goml_m_Option_____o_char_c_int_q_ = _goml_m_Option_____o_char_c_int_q_{
+            _tag: 1,
+            _v1_0: t638,
         }
         return t639
     } else {
-        return _goml_m_Option_____o_char_c_int_q__None{}
+        return _goml_m_Option_____o_char_c_int_q_{
+            _tag: 0,
+        }
     }
 }
 
@@ -1087,12 +1054,15 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_last____T__int32(self__281 *_goml_vec
     len__282 = inline1187
     var t741 bool = len__282 == 0
     if t741 {
-        return Option__int32_None{}
+        return Option__int32{
+            _tag: 0,
+        }
     } else {
         var t742 int = len__282 - 1
         var t743 int32 = vec_get__Vec_5int32(self__281, t742)
-        var t744 Option__int32 = Option__int32_Some{
-            _0: t743,
+        var t744 Option__int32 = Option__int32{
+            _tag: 1,
+            _v1_0: t743,
         }
         return t744
     }
@@ -1104,14 +1074,17 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pop____T__int32(self__283 *_goml_vec_
     len__284 = inline1191
     var t749 bool = len__284 == 0
     if t749 {
-        return Option__int32_None{}
+        return Option__int32{
+            _tag: 0,
+        }
     } else {
         var t750 int = len__284 - 1
         var value__285 int32 = vec_get__Vec_5int32(self__283, t750)
         var t751 int = len__284 - 1
         vec_truncate__Vec_5int32(self__283, t751)
-        var t752 Option__int32 = Option__int32_Some{
-            _0: value__285,
+        var t752 Option__int32 = Option__int32{
+            _tag: 1,
+            _v1_0: value__285,
         }
         return t752
     }
@@ -1278,12 +1251,12 @@ func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3in
         if t843 {
             var inline1216 int = 1
             var inline1217 Option__char = __goml_builtin_char_from_uint32(first__8)
-            switch inline1217.(type) {
-            case Option__char_None:
+            switch inline1217._tag {
+            case 0:
                 var inline1218 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                 return inline1218
-            case Option__char_Some:
-                var inline1219 rune = inline1217.(Option__char_Some)._0
+            case 1:
+                var inline1219 rune = inline1217._v1_0
                 var inline1221 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                     _0: true,
                     _1: inline1219,
@@ -1345,12 +1318,12 @@ func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3in
                             var t862 uint32 = t860 | t861
                             var inline1229 int = 2
                             var inline1230 Option__char = __goml_builtin_char_from_uint32(t862)
-                            switch inline1230.(type) {
-                            case Option__char_None:
+                            switch inline1230._tag {
+                            case 0:
                                 var inline1231 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                                 return inline1231
-                            case Option__char_Some:
-                                var inline1232 rune = inline1230.(Option__char_Some)._0
+                            case 1:
+                                var inline1232 rune = inline1230._v1_0
                                 var inline1234 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                     _0: true,
                                     _1: inline1232,
@@ -1440,12 +1413,12 @@ func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3in
                                 var t886 uint32 = t884 | t885
                                 var inline1248 int = 3
                                 var inline1249 Option__char = __goml_builtin_char_from_uint32(t886)
-                                switch inline1249.(type) {
-                                case Option__char_None:
+                                switch inline1249._tag {
+                                case 0:
                                     var inline1250 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                                     return inline1250
-                                case Option__char_Some:
-                                    var inline1251 rune = inline1249.(Option__char_Some)._0
+                                case 1:
+                                    var inline1251 rune = inline1249._v1_0
                                     var inline1253 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                         _0: true,
                                         _1: inline1251,
@@ -1640,12 +1613,15 @@ func __goml_builtin_char_from_uint32(value__30 uint32) Option__char {
     if t998 {
         var mtmp22 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__30)
         var x24 rune = mtmp22._1
-        var t999 Option__char = Option__char_Some{
-            _0: x24,
+        var t999 Option__char = Option__char{
+            _tag: 1,
+            _v1_0: x24,
         }
         return t999
     } else {
-        return Option__char_None{}
+        return Option__char{
+            _tag: 0,
+        }
     }
 }
 
@@ -1679,12 +1655,15 @@ func _goml_m_inherent_i_closure__en_h3f9733c4625dbd2f543c79fa467f2508_hars__0_i_
         var compound_old34 int = ref_get__Ref_3int(index__53)
         var t1024 int = compound_old34 + x33
         ref_set__Ref_3int(index__53, t1024)
-        var t1026 Option__char = Option__char_Some{
-            _0: x32,
+        var t1026 Option__char = Option__char{
+            _tag: 1,
+            _v1_0: x32,
         }
         return t1026
     } else {
-        return Option__char_None{}
+        return Option__char{
+            _tag: 0,
+        }
     }
 }
 
@@ -1711,12 +1690,15 @@ func _goml_m_inherent_i_closure__en_hf9055ebad38fcb339d5a880925418115_ices__1_i_
             _0: current__59,
             _1: x40,
         }
-        var t1033 _goml_m_Option_____o_int_c_char_q_ = _goml_m_Option_____o_int_c_char_q__Some{
-            _0: t1032,
+        var t1033 _goml_m_Option_____o_int_c_char_q_ = _goml_m_Option_____o_int_c_char_q_{
+            _tag: 1,
+            _v1_0: t1032,
         }
         return t1033
     } else {
-        return _goml_m_Option_____o_int_c_char_q__None{}
+        return _goml_m_Option_____o_int_c_char_q_{
+            _tag: 0,
+        }
     }
 }
 

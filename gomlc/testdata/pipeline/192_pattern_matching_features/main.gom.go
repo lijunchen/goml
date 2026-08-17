@@ -92,45 +92,26 @@ type Pair struct {
 
 type Ordering int32
 
-type Maybe interface {
-    isMaybe()
+type Maybe struct {
+    _tag int32
+    _v1_0 int32
 }
 
-type None struct {}
-
-func (_ None) isMaybe() {}
-
-type Some struct {
-    _0 int32
+type Either struct {
+    _tag int32
+    _v0_0 int32
+    _v1_0 int32
 }
-
-func (_ Some) isMaybe() {}
-
-type Either interface {
-    isEither()
-}
-
-type Left struct {
-    _0 int32
-}
-
-func (_ Left) isEither() {}
-
-type Right struct {
-    _0 int32
-}
-
-func (_ Right) isEither() {}
 
 func unwrap_either(value__0 Either) int32 {
-    switch value__0.(type) {
-    case Left:
-        var shared__2 int32 = value__0.(Left)._0
+    switch value__0._tag {
+    case 0:
+        var shared__2 int32 = value__0._v0_0
         var jp448 int32
-        switch value__0.(type) {
-        case Left:
+        switch value__0._tag {
+        case 0:
             jp448 = 0
-        case Right:
+        case 1:
             jp448 = 1
         default:
             panic("non-exhaustive match")
@@ -138,14 +119,14 @@ func unwrap_either(value__0 Either) int32 {
         var t449 int32 = shared__2 + jp448
         return t449
     default:
-        switch value__0.(type) {
-        case Right:
-            var shared__2 int32 = value__0.(Right)._0
+        switch value__0._tag {
+        case 1:
+            var shared__2 int32 = value__0._v1_0
             var jp453 int32
-            switch value__0.(type) {
-            case Left:
+            switch value__0._tag {
+            case 0:
                 jp453 = 0
-            case Right:
+            case 1:
                 jp453 = 1
             default:
                 panic("non-exhaustive match")
@@ -161,9 +142,9 @@ func unwrap_either(value__0 Either) int32 {
 
 func describe(value__4 Maybe, numbers__5 *_goml_vec_int32, view__6 []int32) string {
     var jp467 string
-    switch value__4.(type) {
-    case Some:
-        var x414 int32 = value__4.(Some)._0
+    switch value__4._tag {
+    case 1:
+        var x414 int32 = value__4._v1_0
         var t508 bool = x414 == 0
         if t508 {
             jp467 = "small"
@@ -285,19 +266,23 @@ func main0() struct{} {
     var inline616 int = vec_len__Vec_5int32(numbers__22)
     t530 = inline616
     var view__23 []int32 = numbers__22.items[0:t530]
-    var t531 Maybe = Some{
-        _0: 3,
+    var t531 Maybe = Maybe{
+        _tag: 1,
+        _v1_0: 3,
     }
     var t532 string = describe(t531, numbers__22, view__23)
     var inline613 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t532)
     _goml_runtime_core_string_println(inline613)
     var empty__24 *_goml_vec_int32 = vec_new__Vec_5int32()
     var empty_view__25 []int32 = empty__24.items[0:0]
-    var t533 string = describe(None{}, empty__24, empty_view__25)
+    var t533 string = describe(Maybe{
+        _tag: 0,
+    }, empty__24, empty_view__25)
     var inline610 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t533)
     _goml_runtime_core_string_println(inline610)
-    var t534 Maybe = Some{
-        _0: 7,
+    var t534 Maybe = Maybe{
+        _tag: 1,
+        _v1_0: 7,
     }
     var state__26 *ref_Maybe_x
     var inline608 *ref_Maybe_x = ref__Ref_5Maybe(t534)
@@ -307,12 +292,14 @@ func main0() struct{} {
         var mtmp428 Maybe
         var inline589 Maybe = ref_get__Ref_5Maybe(state__26)
         mtmp428 = inline589
-        switch mtmp428.(type) {
-        case Some:
-            var x429 int32 = mtmp428.(Some)._0
+        switch mtmp428._tag {
+        case 1:
+            var x429 int32 = mtmp428._v1_0
             var inline586 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x429)
             _goml_runtime_core_string_println(inline586)
-            ref_set__Ref_5Maybe(state__26, None{})
+            ref_set__Ref_5Maybe(state__26, Maybe{
+                _tag: 0,
+            })
             continue
         default:
             break Loop_loop548
@@ -330,8 +317,9 @@ func main0() struct{} {
     jp538 = t544
     var inline605 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(jp538)
     _goml_runtime_core_string_println(inline605)
-    var t539 Either = Right{
-        _0: 11,
+    var t539 Either = Either{
+        _tag: 1,
+        _v1_0: 11,
     }
     var t540 int32 = unwrap_either(t539)
     var inline602 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t540)

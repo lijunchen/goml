@@ -34,21 +34,11 @@ func ref_set__Ref_5int32(reference *ref_int32_x, value int32) struct{} {
 
 type Ordering int32
 
-type Result__int32__string interface {
-    isResult__int32__string()
+type Result__int32__string struct {
+    _tag int32
+    _v0_0 int32
+    _v1_0 string
 }
-
-type Ok struct {
-    _0 int32
-}
-
-func (_ Ok) isResult__int32__string() {}
-
-type Err struct {
-    _0 string
-}
-
-func (_ Err) isResult__int32__string() {}
 
 func use_try(counter__2 *ref_int32_x, ok__3 bool) Result__int32__string {
     var mtmp409 Result__int32__string
@@ -57,33 +47,37 @@ func use_try(counter__2 *ref_int32_x, ok__3 bool) Result__int32__string {
     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(counter__2, inline482)
     if ok__3 {
         var inline484 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(counter__2)
-        var inline485 Result__int32__string = Ok{
-            _0: inline484,
+        var inline485 Result__int32__string = Result__int32__string{
+            _tag: 0,
+            _v0_0: inline484,
         }
         mtmp409 = inline485
     } else {
-        var inline486 Result__int32__string = Err{
-            _0: "bump failed",
+        var inline486 Result__int32__string = Result__int32__string{
+            _tag: 1,
+            _v1_0: "bump failed",
         }
         mtmp409 = inline486
     }
     var jp428 int32
-    switch mtmp409.(type) {
-    case Ok:
-        var x410 int32 = mtmp409.(Ok)._0
+    switch mtmp409._tag {
+    case 0:
+        var x410 int32 = mtmp409._v0_0
         jp428 = x410
         var t429 int32
         var inline479 int32 = ref_get__Ref_5int32(counter__2)
         t429 = inline479
         var t430 int32 = jp428 + t429
-        var t431 Result__int32__string = Ok{
-            _0: t430,
+        var t431 Result__int32__string = Result__int32__string{
+            _tag: 0,
+            _v0_0: t430,
         }
         return t431
-    case Err:
-        var x411 string = mtmp409.(Err)._0
-        var t432 Result__int32__string = Err{
-            _0: x411,
+    case 1:
+        var x411 string = mtmp409._v1_0
+        var t432 Result__int32__string = Result__int32__string{
+            _tag: 1,
+            _v1_0: x411,
         }
         return t432
     default:
@@ -92,16 +86,16 @@ func use_try(counter__2 *ref_int32_x, ok__3 bool) Result__int32__string {
 }
 
 func show(res__5 Result__int32__string) string {
-    switch res__5.(type) {
-    case Ok:
-        var x412 int32 = res__5.(Ok)._0
+    switch res__5._tag {
+    case 0:
+        var x412 int32 = res__5._v0_0
         var t437 string
         var inline488 string = _goml_runtime_core_int32_to_string(x412)
         t437 = inline488
         var t438 string = "ok " + t437
         return t438
-    case Err:
-        var x413 string = res__5.(Err)._0
+    case 1:
+        var x413 string = res__5._v1_0
         var t439 string = "err " + x413
         return t439
     default:

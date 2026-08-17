@@ -230,11 +230,14 @@ func hashmap_get__HashMap_6string_5int32(m *hashmap_string_int32_x, key string) 
     var ok bool
     value, ok = hashmap_lookup__HashMap_6string_5int32(m, key)
     if ok {
-        return Some{
-            _0: value,
+        return Option__int32{
+            _tag: 1,
+            _v1_0: value,
         }
     }
-    return None{}
+    return Option__int32{
+        _tag: 0,
+    }
 }
 
 func hashmap_set__HashMap_6string_5int32(m *hashmap_string_int32_x, key string, value int32) struct{} {
@@ -293,19 +296,10 @@ type Holder struct {
 
 type Ordering int32
 
-type Option__int32 interface {
-    isOption__int32()
+type Option__int32 struct {
+    _tag int32
+    _v1_0 int32
 }
-
-type None struct {}
-
-func (_ None) isOption__int32() {}
-
-type Some struct {
-    _0 int32
-}
-
-func (_ Some) isOption__int32() {}
 
 func main0() struct{} {
     var t475 [2]int = [2]int{31, 32}
@@ -358,21 +352,21 @@ func main0() struct{} {
     var value428 int32 = 13
     hashmap_set__HashMap_6string_5int32(map__7, index426, value428)
     var t492 Option__int32 = hashmap_get__HashMap_6string_5int32(map__7, "a")
-    switch t492.(type) {
-    case None:
+    switch t492._tag {
+    case 0:
         println__T_string("none")
-    case Some:
-        var inline692 int32 = t492.(Some)._0
+    case 1:
+        var inline692 int32 = t492._v1_0
         println__T_int32(inline692)
     default:
         panic("non-exhaustive match")
     }
     var t493 Option__int32 = hashmap_get__HashMap_6string_5int32(map__7, "missing")
-    switch t493.(type) {
-    case None:
+    switch t493._tag {
+    case 0:
         println__T_string("none")
-    case Some:
-        var inline687 int32 = t493.(Some)._0
+    case 1:
+        var inline687 int32 = t493._v1_0
         println__T_int32(inline687)
     default:
         panic("non-exhaustive match")

@@ -15,15 +15,10 @@ func _goml_runtime_core_string_println(s string) struct{} {
 
 type Ordering int32
 
-type Boxed__int32 interface {
-    isBoxed__int32()
+type Boxed__int32 struct {
+    _tag int32
+    _v0_0 int32
 }
-
-type One struct {
-    _0 int32
-}
-
-func (_ One) isBoxed__int32() {}
 
 type dyn__Show_vtable struct {
     show func(any) string
@@ -50,9 +45,9 @@ func dyn__Show__vtable__Boxed__int32() *dyn__Show_vtable {
 }
 
 func _goml_m_trait__impl_i_Show_i_Boxed____int32_i_show(self__0 Boxed__int32) string {
-    switch self__0.(type) {
-    case One:
-        var x408 int32 = self__0.(One)._0
+    switch self__0._tag {
+    case 0:
+        var x408 int32 = self__0._v0_0
         var inline431 string = _goml_runtime_core_int32_to_string(x408)
         return inline431
     default:
@@ -62,8 +57,9 @@ func _goml_m_trait__impl_i_Show_i_Boxed____int32_i_show(self__0 Boxed__int32) st
 
 func main0() struct{} {
     var value__3 int32 = 42
-    var t418 Boxed__int32 = One{
-        _0: value__3,
+    var t418 Boxed__int32 = Boxed__int32{
+        _tag: 0,
+        _v0_0: value__3,
     }
     var t419 dyn__Show = dyn__Show{
         data: t418,

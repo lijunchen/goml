@@ -125,33 +125,15 @@ type closure_env_goml_builtin_range_1 struct {
 
 type Ordering int32
 
-type Option__int32 interface {
-    isOption__int32()
+type Option__int32 struct {
+    _tag int32
+    _v1_0 int32
 }
 
-type Option__int32_None struct {}
-
-func (_ Option__int32_None) isOption__int32() {}
-
-type Option__int32_Some struct {
-    _0 int32
+type Option__int struct {
+    _tag int32
+    _v1_0 int
 }
-
-func (_ Option__int32_Some) isOption__int32() {}
-
-type Option__int interface {
-    isOption__int()
-}
-
-type Option__int_None struct {}
-
-func (_ Option__int_None) isOption__int() {}
-
-type Option__int_Some struct {
-    _0 int
-}
-
-func (_ Option__int_Some) isOption__int() {}
 
 func counted_range(calls__3 *ref_int32_x) FnIterator__int {
     var t474 int32
@@ -174,11 +156,11 @@ func first_even(values__4 FnIterator__int) int {
         var inline644 func() Option__int = for_iter410.next_fn
         var inline645 Option__int = inline644()
         for_next411 = inline645
-        switch for_next411.(type) {
-        case Option__int_None:
+        switch for_next411._tag {
+        case 0:
             break Loop_loop480
-        case Option__int_Some:
-            var x412 int = for_next411.(Option__int_Some)._0
+        case 1:
+            var x412 int = for_next411._v1_0
             var t483 int = x412 / 2
             var t484 int = t483 * 2
             var t485 bool = t484 == x412
@@ -269,11 +251,11 @@ func main0() struct{} {
         var inline661 func() Option__int = for_iter438.next_fn
         var inline662 Option__int = inline661()
         for_next439 = inline662
-        switch for_next439.(type) {
-        case Option__int_None:
+        switch for_next439._tag {
+        case 0:
             break Loop_loop514
-        case Option__int_Some:
-            var x440 int = for_next439.(Option__int_Some)._0
+        case 1:
+            var x440 int = for_next439._v1_0
             var t516 int
             var inline659 int = ref_get__Ref_3int(range_sum__13)
             t516 = inline659
@@ -332,11 +314,11 @@ func main0() struct{} {
         var inline671 func() Option__int32 = for_iter453.next_fn
         var inline672 Option__int32 = inline671()
         for_next454 = inline672
-        switch for_next454.(type) {
-        case Option__int32_None:
+        switch for_next454._tag {
+        case 0:
             break Loop_loop505
-        case Option__int32_Some:
-            var x455 int32 = for_next454.(Option__int32_Some)._0
+        case 1:
+            var x455 int32 = for_next454._v1_0
             var t508 bool = x455 == 2
             if t508 {
                 break Loop_loop505
@@ -362,10 +344,10 @@ func main0() struct{} {
         var inline674 func() Option__int = for_iter459.next_fn
         var inline675 Option__int = inline674()
         for_next460 = inline675
-        switch for_next460.(type) {
-        case Option__int_None:
+        switch for_next460._tag {
+        case 0:
             break Loop_loop503
-        case Option__int_Some:
+        case 1:
             continue
         default:
             panic("non-exhaustive match")
@@ -495,12 +477,15 @@ func _goml_m_inherent_i_closure__en_hc257e8a36c560f54cbc91ed82b2d188c_down__0_i_
     if t621 {
         var t622 int32 = value__2 - 1
         ref_set__Ref_5int32(current__1, t622)
-        var t623 Option__int32 = Option__int32_Some{
-            _0: value__2,
+        var t623 Option__int32 = Option__int32{
+            _tag: 1,
+            _v1_0: value__2,
         }
         return t623
     } else {
-        return Option__int32_None{}
+        return Option__int32{
+            _tag: 0,
+        }
     }
 }
 
@@ -512,12 +497,15 @@ func _goml_m_inherent_i_closure__en_h07c29ff1f344b08e028033881af7c2d9_ange__1_i_
     if t628 {
         var t629 int = value__497 + 1
         ref_set__Ref_3int(current__496, t629)
-        var t630 Option__int = Option__int_Some{
-            _0: value__497,
+        var t630 Option__int = Option__int{
+            _tag: 1,
+            _v1_0: value__497,
         }
         return t630
     } else {
-        return Option__int_None{}
+        return Option__int{
+            _tag: 0,
+        }
     }
 }
 

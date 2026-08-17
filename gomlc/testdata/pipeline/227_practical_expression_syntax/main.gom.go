@@ -116,11 +116,14 @@ func hashmap_get__HashMap_6string_3int(m *hashmap_string_int_x, key string) Opti
     var ok bool
     value, ok = hashmap_lookup__HashMap_6string_3int(m, key)
     if ok {
-        return Some{
-            _0: value,
+        return Option__int{
+            _tag: 1,
+            _v1_0: value,
         }
     }
-    return None{}
+    return Option__int{
+        _tag: 0,
+    }
 }
 
 func hashmap_set__HashMap_6string_3int(m *hashmap_string_int_x, key string, value int) struct{} {
@@ -184,19 +187,10 @@ type Point struct {
 
 type Ordering int32
 
-type Option__int interface {
-    isOption__int()
+type Option__int struct {
+    _tag int32
+    _v1_0 int
 }
-
-type None struct {}
-
-func (_ None) isOption__int() {}
-
-type Some struct {
-    _0 int
-}
-
-func (_ Some) isOption__int() {}
 
 func record(log__0 *ref_string_x, label__1 string, value__2 int) int {
     var t449 string
@@ -397,11 +391,11 @@ func main0() struct{} {
     var inline598 Option__int = hashmap_get__HashMap_6string_3int(table__16, inline597)
     mtmp443 = inline598
     var jp525 string
-    switch mtmp443.(type) {
-    case None:
+    switch mtmp443._tag {
+    case 0:
         jp525 = "missing"
-    case Some:
-        var x444 int = mtmp443.(Some)._0
+    case 1:
+        var x444 int = mtmp443._v1_0
         var inline583 string = _goml_runtime_core_int_to_string(x444)
         jp525 = inline583
     default:
