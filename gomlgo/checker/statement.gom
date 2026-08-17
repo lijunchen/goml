@@ -686,7 +686,13 @@ fn assignment_operands(
     targets: Vec[go_types::TypeId],
     target_descriptions: Vec[string],
 ) -> Vec[Operand] {
-    let result: Vec[Operand] = Vec::from_array([]);
+    let result: Vec[Operand] = Vec::with_capacity(
+        if expected > nodes.len() {
+            expected
+        } else {
+            nodes.len()
+        },
+    );
     for node_index in 0..nodes.len() {
         let node = nodes[node_index];
         let previous_target_inference_description = state.target_inference_description;
