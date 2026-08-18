@@ -1404,7 +1404,6 @@ fn sliced_value(
             } else {};
             let cell = allocate_cell(
                 state.memory,
-                type_id,
                 Value::Local(LocalValue::Aggregate { type_id, elements }),
             );
             Result::Ok(
@@ -1462,7 +1461,6 @@ fn aggregate_value(
             }
             let backing = allocate_cell(
                 state.memory,
-                type_id,
                 Value::Local(LocalValue::Aggregate { type_id, elements }),
             );
             Result::Ok(
@@ -1548,7 +1546,6 @@ fn make_slice(state: VmState, type_id: go_types::TypeId, length: int, capacity: 
     }
     let backing = allocate_cell(
         state.memory,
-        type_id,
         Value::Local(LocalValue::Aggregate { type_id, elements }),
     );
     Result::Ok(
@@ -3182,7 +3179,7 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
                 Some(value) => register(frame, value)?,
                 None => runtime_zero_value(state, type_id)?,
             };
-            let cell = allocate_cell(state.memory, type_id, value);
+            let cell = allocate_cell(state.memory, value);
             set_register(
                 frame,
                 target,
@@ -3316,7 +3313,6 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
             let type_id = function.locals[local.value].type_id;
             frame.locals[local.value] = allocate_cell(
                 state.memory,
-                type_id,
                 runtime_zero_value(state, type_id)?,
             );
             Result::Ok(())
@@ -3328,7 +3324,7 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
             let function = state.program.functions[frame.function.value];
             let type_id = function.locals[local.value].type_id;
             let value = load_place(state.memory, root_place(frame.locals[local.value]))?;
-            frame.locals[local.value] = allocate_cell(state.memory, type_id, value);
+            frame.locals[local.value] = allocate_cell(state.memory, value);
             Result::Ok(())
         },
         bytecode::InstructionKind::MapSet { map, key, value } => match register(frame, map)? {
@@ -3715,7 +3711,7 @@ fn frame_for_call(
         } else {
             let local = function.locals[local_index];
             match runtime_zero_value(state, local.type_id) {
-                Ok(value) => locals.push(allocate_cell(state.memory, local.type_id, value)),
+                Ok(value) => locals.push(allocate_cell(state.memory, value)),
                 Err(message) => return Result::Err(message),
             }
         }
@@ -3921,7 +3917,7 @@ fn initialize_state(program: bytecode::BytecodeProgram, config: VmConfig) -> Res
     };
     for global in state.program.globals {
         match runtime_zero_value(state, global.type_id) {
-            Ok(value) => state.globals.push(allocate_cell(memory, global.type_id, value)),
+            Ok(value) => state.globals.push(allocate_cell(memory, value)),
             Err(message) => return Result::Err(message),
         }
     }

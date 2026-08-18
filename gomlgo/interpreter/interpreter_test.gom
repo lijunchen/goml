@@ -531,10 +531,9 @@ fn copies_aggregate_values_and_preserves_pointer_identity() -> unit {
     );
     let memory = new_memory();
     let initial = testing::expect_ok(zero_value(world, array_type), "zero array failed");
-    let first = allocate_cell(memory, array_type, initial);
+    let first = allocate_cell(memory, initial);
     let second = allocate_cell(
         memory,
-        array_type,
         testing::expect_ok(load_place(memory, root_place(first)), "array load failed"),
     );
     let one = testing::expect_ok(

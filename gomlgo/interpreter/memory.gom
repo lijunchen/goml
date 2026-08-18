@@ -1,10 +1,6 @@
 package interpreter;
 
-use gomlgo::types as go_types;
-
 pub struct Cell {
-    pub id: CellId,
-    pub type_id: go_types::TypeId,
     pub value: Ref[Value],
 }
 
@@ -16,9 +12,9 @@ pub fn new_memory() -> Memory {
     Memory { cells: Vec::from_array([]) }
 }
 
-pub fn allocate_cell(memory: Memory, type_id: go_types::TypeId, value: Value) -> CellId {
+pub fn allocate_cell(memory: Memory, value: Value) -> CellId {
     let id = cell_id(memory.cells.len());
-    memory.cells.push(Cell { id, type_id, value: Ref::new(copy_value(value)) });
+    memory.cells.push(Cell { value: Ref::new(copy_value(value)) });
     id
 }
 
