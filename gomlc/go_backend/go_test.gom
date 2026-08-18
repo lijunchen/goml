@@ -132,6 +132,59 @@ fn assert_appears_before(value: string, before: string, after: string) -> unit {
     testing::assert(required_text_position(value, before) < required_text_position(value, after))
 }
 
+fn large_struct_source(body: string) -> string {
+    let mut fields = "";
+    let mut values = "";
+    for index in 0..64 {
+        let name = "f" + index.to_string();
+        fields += name + ": int32,";
+        values += name + ": " + index.to_string() + ",";
+    }
+    "struct Large {" + fields + "} " + body + " fn main() -> unit { let value = Large {" + values
+        + "}; println(run(value, 1)); }"
+}
+
+#[test]
+fn passes_read_only_large_struct_parameters_by_pointer() -> unit {
+    let output = encode(
+        lower_source(
+            large_struct_source(
+                "fn run(value: Large, depth: int32) -> int32 { if depth == 0 { value.f0 } else { run(value, depth - 1) } }",
+            ),
+        ),
+    );
+    testing::assert(string_contains(output, "func run(value__0 *Large"));
+    testing::assert(string_contains(output, "run(value__0"));
+    testing::assert(string_contains(output, "run(&value__2"))
+}
+
+#[test]
+fn copies_mutated_large_struct_parameters_locally() -> unit {
+    let output = encode(
+        lower_source(
+            large_struct_source(
+                "fn run(value: Large, depth: int32) -> int32 { value.f0 = depth; if depth == 0 { value.f0 } else { run(value, depth - 1) } }",
+            ),
+        ),
+    );
+    testing::assert(string_contains(output, "func run(value__0_pointer *Large"));
+    testing::assert(string_contains(output, "var value__0 Large = *value__0_pointer"));
+    testing::assert(string_contains(output, "run(&value__0"))
+}
+
+#[test]
+fn keeps_escaped_large_struct_functions_value_typed() -> unit {
+    let output = encode(
+        lower_source(
+            large_struct_source(
+                "fn read(value: Large, depth: int32) -> int32 { if depth == 0 { value.f0 } else { read(value, depth - 1) } } fn apply(function: (Large, int32) -> int32, value: Large, depth: int32) -> int32 { function(value, depth) } fn run(value: Large, depth: int32) -> int32 { apply(read, value, depth) }",
+            ),
+        ),
+    );
+    testing::assert(string_contains(output, "func read(value__0 Large"));
+    testing::assert(!string_contains(output, "func read(value__0 *Large"))
+}
+
 #[test]
 fn bounds_qualified_variant_names_after_qualification() -> unit {
     let owner = "Option__(gomlc::ast::Path,Vec[gomlc::ast::TypeExpr])";
