@@ -1109,7 +1109,7 @@ fn emits_structs_before_generic_enums() -> unit {
     assert_appears_before(
         output,
         "type closure_env_build_0 struct",
-        "type _goml_m_Option_____o__q__m__z_int32 interface",
+        "type _goml_m_Option_____o__q__m__z_int32 struct",
     );
     testing::assert(string_contains(output, "type Option__int32 struct"));
     testing::assert(!string_contains(output, "type Option__int32 interface"));
@@ -1125,7 +1125,8 @@ fn preserves_enums_before_field_instances() -> unit {
     );
     let prefix = "package main\n\ntype Expr interface {\n    isExpr()\n}";
     testing::assert_eq(output.byte_slice(0, prefix.byte_len()), prefix);
-    testing::assert(string_contains(output, "type Option__Expr interface"))
+    testing::assert(string_contains(output, "type Option__Expr struct"));
+    testing::assert(!string_contains(output, "type Option__Expr interface"))
 }
 
 #[test]
@@ -1351,6 +1352,27 @@ fn emits_compact_generic_enums_without_variant_types() -> unit {
     testing::assert(!string_contains(output, "type Option__uint8 interface"));
     testing::assert(!string_contains(output, "type Some struct"));
     testing::assert(!string_contains(output, "type None struct"))
+}
+
+#[test]
+fn emits_compact_builtin_sums_around_interface_payloads() -> unit {
+    let source = "enum Payload { Left(string, string), Right(string, string), } fn result(value: Payload) -> Result[Payload, string] { Result::Ok(value) } fn option(value: Payload) -> Option[Payload] { Option::Some(value) } fn main() -> unit { let value = Payload::Left(\"a\", \"b\"); let _ = result(value); let _ = option(value); }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(output, "type Payload interface"));
+    testing::assert(
+        string_contains(
+            output,
+            "type Result__Payload__string struct {\n    _tag int32\n    _v0_0 Payload\n    _v1_0 string\n}",
+        ),
+    );
+    testing::assert(
+        string_contains(
+            output,
+            "type Option__Payload struct {\n    _tag int32\n    _v1_0 Payload\n}",
+        ),
+    );
+    testing::assert(!string_contains(output, "type Result__Payload__string interface"));
+    testing::assert(!string_contains(output, "type Option__Payload interface"))
 }
 
 #[test]
