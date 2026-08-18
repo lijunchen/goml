@@ -434,6 +434,28 @@ fn emits_complete_vec_runtime_helpers() -> unit {
 }
 
 #[test]
+fn stores_vec_from_array_header_and_items_together() -> unit {
+    let output = encode(
+        lower_linked_source(
+            "fn main() -> unit { let values = Vec::from_array([1, 2]); let empty: Vec[int] = Vec::from_array([]); println(values.len() + empty.len()) }",
+        ),
+    );
+    testing::assert(string_contains(output, "var storage struct {"));
+    testing::assert(string_contains(output, "vector _goml_vec_int"));
+    testing::assert(string_contains(output, "values [2]int"));
+    testing::assert(
+        string_contains(output, "storage.vector.items = storage.values[0:len(storage.values)]"),
+    );
+    testing::assert(string_contains(output, "return &storage.vector"));
+    testing::assert(
+        string_contains(
+            output,
+            "func(values [0]int) *_goml_vec_int {\n        return &_goml_vec_int{",
+        ),
+    )
+}
+
+#[test]
 fn emits_complete_hashmap_and_ref_runtime_helpers() -> unit {
     let Ok(builtin) = tast::builtin_contract() else {
         testing::fail("expected builtin contract");

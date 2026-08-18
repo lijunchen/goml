@@ -43,6 +43,11 @@ fn collect_type_names(result: NameSet, value: Type) -> unit {
                 collect_type_names(result, value)
             }
         },
+        Struct { fields } => {
+            for field in fields {
+                collect_type_names(result, field.1)
+            }
+        },
         Void | Any | Unit | Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | Float32 | Float64 | String | Char => (),
     }
 }

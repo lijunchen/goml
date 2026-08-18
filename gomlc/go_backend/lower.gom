@@ -1031,29 +1031,70 @@ fn compile_collection_from_array_callable(key: string, function_ty: repr::Type) 
             let values = Expr::Var { name: "values" };
             let stmts: Vec[Stmt] = Vec::from_array([]);
             if key == "vec.from_array" {
-                let len_args = Vec::from_array([values]);
-                let items = Expr::Slice {
-                    base: values,
-                    start: Expr::Int { value: "0" },
-                    end: Expr::Call { func: Expr::Var { name: "len" }, args: len_args },
-                };
                 let result_ty = match lower_type(ret_ty) {
                     Type::Pointer { elem } => elem,
                     other => other,
                 };
-                stmts.push(
-                    Stmt::Return {
-                        expr: Option::Some(
-                            Expr::Unary {
-                                op: UnaryOp::Address,
-                                expr: Expr::StructLiteral {
-                                    ty: result_ty,
-                                    fields: Vec::from_array([("items", items)]),
+                let empty = match repr::resolve_type(param_types[0]) {
+                    Array { len, elem: _ } => len == 0,
+                    _ => false,
+                };
+                if empty {
+                    let len_args = Vec::from_array([values]);
+                    let items = Expr::Slice {
+                        base: values,
+                        start: Expr::Int { value: "0" },
+                        end: Expr::Call { func: Expr::Var { name: "len" }, args: len_args },
+                    };
+                    stmts.push(
+                        Stmt::Return {
+                            expr: Option::Some(
+                                Expr::Unary {
+                                    op: UnaryOp::Address,
+                                    expr: Expr::StructLiteral {
+                                        ty: result_ty,
+                                        fields: Vec::from_array([("items", items)]),
+                                    },
                                 },
-                            },
+                            ),
+                        },
+                    )
+                } else {
+                    let storage = Expr::Var { name: "storage" };
+                    let storage_ty = Type::Struct {
+                        fields: Vec::from_array(
+                            [("vector", result_ty), ("values", lower_type(param_types[0]))],
                         ),
-                    },
-                )
+                    };
+                    stmts.push(Stmt::Var { name: "storage", ty: storage_ty, value: Option::None });
+                    stmts.push(
+                        Stmt::FieldAssign { target: storage, field_name: "values", value: values },
+                    );
+                    let stored_values = Expr::Field { expr: storage, field_name: "values" };
+                    let len_args = Vec::from_array([stored_values]);
+                    let items = Expr::Slice {
+                        base: stored_values,
+                        start: Expr::Int { value: "0" },
+                        end: Expr::Call { func: Expr::Var { name: "len" }, args: len_args },
+                    };
+                    stmts.push(
+                        Stmt::FieldAssign {
+                            target: Expr::Field { expr: storage, field_name: "vector" },
+                            field_name: "items",
+                            value: items,
+                        },
+                    );
+                    stmts.push(
+                        Stmt::Return {
+                            expr: Option::Some(
+                                Expr::Unary {
+                                    op: UnaryOp::Address,
+                                    expr: Expr::Field { expr: storage, field_name: "vector" },
+                                },
+                            ),
+                        },
+                    )
+                }
             } else {
                 let result = Expr::Var { name: "result" };
                 stmts.push(
