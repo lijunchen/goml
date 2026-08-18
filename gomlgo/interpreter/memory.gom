@@ -46,14 +46,6 @@ pub fn index_place(base: Place, index: int) -> Place {
     Place { root: base.root, projections }
 }
 
-fn checked_cell(memory: Memory, id: CellId) -> Result[Cell, string] {
-    if id.value < 0 || id.value >= memory.cells.len() {
-        Result::Err("invalid cell " + id.value.to_string())
-    } else {
-        Result::Ok(memory.cells[id.value])
-    }
-}
-
 fn slice_element_place(value: SliceValue, index: int) -> Result[Place, string] {
     if index < 0 || index >= value.length {
         return Result::Err(
@@ -100,7 +92,10 @@ fn load_projection(memory: Memory, value: Value, projections: Vec[Projection], o
 }
 
 pub fn load_place(memory: Memory, place: Place) -> Result[Value, string] {
-    let cell = checked_cell(memory, place.root)?;
+    if place.root.value < 0 || place.root.value >= memory.cells.len() {
+        return Result::Err("invalid cell " + place.root.value.to_string())
+    } else {};
+    let cell = memory.cells[place.root.value];
     load_projection(memory, cell.value.get(), place.projections, 0)
 }
 
@@ -130,7 +125,10 @@ fn borrow_projection(memory: Memory, value: Value, projections: Vec[Projection],
 }
 
 pub fn borrow_place(memory: Memory, place: Place) -> Result[Value, string] {
-    let cell = checked_cell(memory, place.root)?;
+    if place.root.value < 0 || place.root.value >= memory.cells.len() {
+        return Result::Err("invalid cell " + place.root.value.to_string())
+    } else {};
+    let cell = memory.cells[place.root.value];
     borrow_projection(memory, cell.value.get(), place.projections, 0)
 }
 
@@ -178,7 +176,10 @@ fn store_projection(
 }
 
 pub fn store_place(memory: Memory, place: Place, value: Value) -> Result[unit, string] {
-    let cell = checked_cell(memory, place.root)?;
+    if place.root.value < 0 || place.root.value >= memory.cells.len() {
+        return Result::Err("invalid cell " + place.root.value.to_string())
+    } else {};
+    let cell = memory.cells[place.root.value];
     if place.projections.is_empty() {
         cell.value.set(copy_value(value));
         Result::Ok(())
