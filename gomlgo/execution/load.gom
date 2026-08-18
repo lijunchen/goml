@@ -198,15 +198,19 @@ fn load_checked_packages_with_order(
     native_order: Option[Vec[string]],
 ) -> Result[ExecutionLoadResult, string] {
     let order = selected_package_order(listed, native_order)?;
-    let sizes = go_types::gc_sizes(config.goarch).ok_or("unsupported GOARCH " + config.goarch)?;
+    let sizes = match go_types::gc_sizes(config.goarch) {
+        Some(value) => value,
+        None => return Result::Err("unsupported GOARCH " + config.goarch),
+    };
     let mut world = go_types::new_world();
     let packages: Vec[ExecutionPackage] = Vec::from_array([]);
     let initialization_order: Vec[go_types::PackageId] = Vec::from_array([]);
     let diagnostics: Vec[ExecutionDiagnostic] = Vec::from_array([]);
     for package_path in order {
-        let package_value = listed_package(listed.packages, package_path).ok_or(
-            "go list omitted package " + package_path,
-        )?;
+        let package_value = match listed_package(listed.packages, package_path) {
+            Some(value) => value,
+            None => return Result::Err("go list omitted package " + package_path),
+        };
         let mode = execution_mode(config, package_value, listed.root_path);
         if package_path == "unsafe" {
             let dependencies = package_dependencies(world, package_value)?;
@@ -276,9 +280,10 @@ fn load_checked_packages_with_order(
             initialization_order.push(checked.package_id)
         }
     }
-    let root_id = world_package(world, listed.root_path).ok_or(
-        "entry package was not loaded: " + listed.root_path,
-    )?;
+    let root_id = match world_package(world, listed.root_path) {
+        Some(value) => value,
+        None => return Result::Err("entry package was not loaded: " + listed.root_path),
+    };
     let root_package = world.packages[root_id.value];
     if root_package.name != "main" {
         diagnostics.push(
