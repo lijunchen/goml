@@ -104,6 +104,11 @@ struct Frame {
     recover_state: Option[PanicState],
 }
 
+struct FrameSlots {
+    registers: Vec[Option[Value]],
+    places: Vec[Option[RuntimePlace]],
+}
+
 struct MapEntry {
     hash: uint64,
     key: Value,
@@ -161,6 +166,7 @@ struct VmState {
     instruction_panic: Ref[Option[Ref[PanicPayload]]],
     instruction_exit: Ref[int],
     zero_values: Vec[Option[Value]],
+    frame_slots: Vec[FrameSlots],
 }
 
 enum FunctionControl {
@@ -202,6 +208,37 @@ fn empty_slots[T](count: int) -> Vec[Option[T]] {
         result.push(Option::None)
     }
     result
+}
+
+fn prepared_slots[T](slots: Vec[Option[T]], count: int) -> Vec[Option[T]] {
+    slots.clear();
+    if slots.capacity() < count {
+        slots.reserve(count)
+    } else {};
+    for _ in 0..count {
+        slots.push(Option::None)
+    }
+    slots
+}
+
+fn take_frame_slots(state: VmState, register_count: int, place_count: int) -> FrameSlots {
+    match state.frame_slots.pop() {
+        Some(slots) => {
+            FrameSlots {
+                registers: prepared_slots(slots.registers, register_count),
+                places: prepared_slots(slots.places, place_count),
+            }
+        },
+        None => {
+            FrameSlots { registers: empty_slots(register_count), places: empty_slots(place_count) }
+        },
+    }
+}
+
+fn release_frame_slots(state: VmState, frame: Frame) -> unit {
+    frame.registers.clear();
+    frame.places.clear();
+    state.frame_slots.push(FrameSlots { registers: frame.registers, places: frame.places })
 }
 
 fn instruction_continue() -> InstructionControl {
@@ -3773,14 +3810,15 @@ fn frame_for_call(
             Err(message) => return Result::Err(message),
         }
     }
+    let slots = take_frame_slots(state, function.register_types.len(), function.place_count);
     Result::Ok(
         Frame {
             function: function.id,
             package_id: function.package_id,
             blocks: function.blocks,
             name: function.name,
-            registers: empty_slots(function.register_types.len()),
-            places: empty_slots(function.place_count),
+            registers: slots.registers,
+            places: slots.places,
             locals,
             block: Ref::new(function.entry),
             deferred: Vec::from_array([]),
@@ -3883,6 +3921,7 @@ fn execute_function(
         let block_id = frame.block.get();
         if block_id.value < 0 || block_id.value >= function.blocks.len() {
             state.depth.set(state.depth.get() - 1);
+            release_frame_slots(state, frame);
             return Result::Err("invalid current block " + block_id.value.to_string())
         } else {};
         let block = function.blocks[block_id.value];
@@ -3892,12 +3931,15 @@ fn execute_function(
                 let payload = control.panic.ok_or("panic instruction has no payload")?.get();
                 let outcome = finish_invocation(state, frame, function, Option::Some(payload));
                 state.depth.set(state.depth.get() - 1);
+                release_frame_slots(state, frame);
                 return outcome
             } else if control.kind == 2 {
                 state.depth.set(state.depth.get() - 1);
+                release_frame_slots(state, frame);
                 return Result::Ok(InvocationOutcome::Exited(control.exit_code))
             } else {
                 state.depth.set(state.depth.get() - 1);
+                release_frame_slots(state, frame);
                 return Result::Err(control.error)
             }
         }
@@ -3911,6 +3953,7 @@ fn execute_function(
                 Ok(()) => {},
                 Err(message) => {
                     state.depth.set(state.depth.get() - 1);
+                    release_frame_slots(state, frame);
                     return Result::Err(message)
                 },
             },
@@ -3919,15 +3962,18 @@ fn execute_function(
                     Ok(()) => {},
                     Err(message) => {
                         state.depth.set(state.depth.get() - 1);
+                        release_frame_slots(state, frame);
                         return Result::Err(message)
                     },
                 };
                 let outcome = finish_invocation(state, frame, function, Option::None);
                 state.depth.set(state.depth.get() - 1);
+                release_frame_slots(state, frame);
                 return outcome
             },
             Err(error) => {
                 state.depth.set(state.depth.get() - 1);
+                release_frame_slots(state, frame);
                 return Result::Err(error)
             },
         }
@@ -3964,6 +4010,7 @@ fn initialize_state(program: bytecode::BytecodeProgram, config: VmConfig) -> Res
         instruction_panic: Ref::new(Option::None),
         instruction_exit: Ref::new(0),
         zero_values: empty_slots(program.world.types.len()),
+        frame_slots: Vec::from_array([]),
     };
     for global in state.program.globals {
         match runtime_zero_value(state, global.type_id) {
