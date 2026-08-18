@@ -25,6 +25,14 @@ struct LowerEnv {
     functions: Vec[anf::Function],
     function_names: FunctionNames,
     dyn_helper_names: DynHelperNames,
+    pointer_params: Vec[PointerParamInfo],
+    pointer_vars: HashMap[string, bool],
+}
+
+struct PointerParamInfo {
+    function: string,
+    values: Vec[bool],
+    copies: Vec[bool],
 }
 
 struct CompiledValue {
@@ -584,7 +592,14 @@ fn compile_imm(env: LowerEnv, value: anf::Imm) -> Expr {
         Var { name, ty: _ } => {
             match mapped_function_name(env.function_names, name) {
                 Some(value) => Expr::Var { name: value },
-                None => Expr::Var { name: go_local_ident(name) },
+                None => {
+                    let result = Expr::Var { name: go_local_ident(name) };
+                    if env.pointer_vars.contains(name) {
+                        Expr::Unary { op: UnaryOp::Deref, expr: result }
+                    } else {
+                        result
+                    }
+                },
             }
         },
         Callable { callable: Intrinsic(key), ty: function_ty } => {
@@ -1181,6 +1196,19 @@ fn compile_call(env: LowerEnv, func: anf::Imm, args: Vec[anf::Imm]) -> Expr {
         _ => Vec::from_array([]),
     };
     let compiled = compile_imms_expected(env, args, expected);
+    match direct_function_name(func) {
+        Some(name) => for index in 0..compiled.len() {
+            if pointer_param_enabled(env.pointer_params, name, index) {
+                compiled[index] = match args[index] {
+                    Var { name, ty: _ } if env.pointer_vars.contains(name) => {
+                        Expr::Var { name: go_local_ident(name) }
+                    },
+                    _ => Expr::Unary { op: UnaryOp::Address, expr: compiled[index] },
+                };
+            } else {}
+        },
+        None => (),
+    };
     match func {
         Callable { callable: Intrinsic(key), ty: _ } => {
             if key == "slice.new" {
@@ -3413,6 +3441,243 @@ fn collect_dyn_block(result: Vec[DynCoercion], value: anf::Block) -> unit {
     }
 }
 
+fn block_assigns_name(value: anf::Block, name: string) -> bool {
+    for bind in value.binds {
+        match bind {
+            Let(value) => match value.value {
+                Assign { name: target, .. } if target == name => return true,
+                _ => (),
+            },
+            Join(value) => if block_assigns_name(value.body, name) {
+                return true
+            } else {},
+            JoinRec(values) => for value in values {
+                if block_assigns_name(value.body, name) {
+                    return true
+                } else {}
+            },
+        }
+    }
+    match value.term {
+        If { cond: _, then_, else_, ret_ty: _ } => {
+            block_assigns_name(then_, name) || block_assigns_name(else_, name)
+        },
+        Match { scrutinee: _, arms, default, ret_ty: _ } => {
+            for arm in arms {
+                if block_assigns_name(arm.body, name) {
+                    return true
+                } else {}
+            }
+            match default {
+                Some(body) => block_assigns_name(body, name),
+                None => false,
+            }
+        },
+        _ => false,
+    }
+}
+
+fn large_named_struct(structs: Vec[repr::StructDef], value: repr::Type) -> bool {
+    match repr::resolve_type(value) {
+        Named { name } => match find_struct(structs, name) {
+            Some(definition) => definition.fields.len() >= 64,
+            None => false,
+        },
+        _ => false,
+    }
+}
+
+fn direct_function_name(value: anf::Imm) -> Option[string] {
+    match value {
+        Var { name, ty: _ } => Option::Some(name),
+        Callable { callable: Function(name), ty: _ } => Option::Some(name),
+        Callable { callable: LangItem { item: _, function_name }, ty: _ } => {
+            Option::Some(function_name)
+        },
+        _ => Option::None,
+    }
+}
+
+fn imm_uses_function(value: anf::Imm, target: string) -> bool {
+    match direct_function_name(value) {
+        Some(name) => name == target,
+        None => false,
+    }
+}
+
+fn imms_use_function(values: Vec[anf::Imm], target: string) -> bool {
+    for value in values {
+        if imm_uses_function(value, target) {
+            return true
+        } else {}
+    }
+    false
+}
+
+fn pointer_call_argument(value: anf::Imm) -> bool {
+    match value {
+        Var { name: _, ty: _ } => true,
+        _ => false,
+    }
+}
+
+fn inspect_pointer_call(
+    value: anf::Value,
+    target: string,
+    parameter: int,
+    valid: Ref[bool],
+    calls: Ref[int],
+) -> unit {
+    match value {
+        Imm(value) => if imm_uses_function(value, target) {
+            valid.set(false)
+        } else {},
+        Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } | Array {
+            items: args,
+            ty: _,
+        } => if imms_use_function(args, target) {
+            valid.set(false)
+        } else {},
+        ConstrGet { expr, .. } | Unary { expr, .. } | Cast { expr, .. } | ToDyn { expr, .. } | Proj {
+            tuple: expr,
+            ..,
+        } => if imm_uses_function(expr, target) {
+            valid.set(false)
+        } else {},
+        Binary { lhs, rhs, .. } => if imm_uses_function(lhs, target)
+            || imm_uses_function(rhs, target) {
+            valid.set(false)
+        } else {},
+        Assign { name: _, value, target_ty: _, ty: _ } => {
+            if imm_uses_function(value, target) {
+                valid.set(false)
+            } else {}
+        },
+        Call { func, args, ty: _ } => match direct_function_name(func) {
+            Some(name) if name == target => {
+                calls.set(calls.get() + 1);
+                if parameter >= args.len() || !pointer_call_argument(args[parameter]) {
+                    valid.set(false)
+                } else {};
+                if imms_use_function(args, target) {
+                    valid.set(false)
+                } else {}
+            },
+            _ => {
+                if imm_uses_function(func, target) || imms_use_function(args, target) {
+                    valid.set(false)
+                } else {}
+            },
+        },
+        DynCall { receiver, args, .. } => if imm_uses_function(receiver, target)
+            || imms_use_function(args, target) {
+            valid.set(false)
+        } else {},
+        Go { closure, ty: _ } => if imm_uses_function(closure, target) {
+            valid.set(false)
+        } else {},
+        PackClosure { environment, apply, ty: _ } => if apply == target
+            || imm_uses_function(environment, target) {
+            valid.set(false)
+        } else {},
+    }
+}
+
+fn inspect_pointer_calls(
+    value: anf::Block,
+    target: string,
+    parameter: int,
+    valid: Ref[bool],
+    calls: Ref[int],
+) -> unit {
+    for bind in value.binds {
+        match bind {
+            Let(value) => inspect_pointer_call(value.value, target, parameter, valid, calls),
+            Join(value) => inspect_pointer_calls(value.body, target, parameter, valid, calls),
+            JoinRec(values) => for value in values {
+                inspect_pointer_calls(value.body, target, parameter, valid, calls)
+            },
+        }
+    }
+    match value.term {
+        Return(value) => if imm_uses_function(value, target) {
+            valid.set(false)
+        } else {},
+        Jump { target: _, args, ret_ty: _ } => if imms_use_function(args, target) {
+            valid.set(false)
+        } else {},
+        If { cond, then_, else_, ret_ty: _ } => {
+            if imm_uses_function(cond, target) {
+                valid.set(false)
+            } else {};
+            inspect_pointer_calls(then_, target, parameter, valid, calls);
+            inspect_pointer_calls(else_, target, parameter, valid, calls)
+        },
+        Match { scrutinee, arms, default, ret_ty: _ } => {
+            if imm_uses_function(scrutinee, target) {
+                valid.set(false)
+            } else {};
+            for arm in arms {
+                if imm_uses_function(arm.lhs, target) {
+                    valid.set(false)
+                } else {};
+                inspect_pointer_calls(arm.body, target, parameter, valid, calls)
+            }
+            match default {
+                Some(body) => inspect_pointer_calls(body, target, parameter, valid, calls),
+                None => (),
+            }
+        },
+        Unreachable { ty: _ } => (),
+    }
+}
+
+fn pointer_call_is_safe(functions: Vec[anf::Function], target: string, parameter: int) -> bool {
+    let valid = Ref::new(true);
+    let calls = Ref::new(0);
+    for function in functions {
+        inspect_pointer_calls(function.body, target, parameter, valid, calls)
+    }
+    valid.get() && calls.get() > 0
+}
+
+fn build_pointer_param_infos(functions: Vec[anf::Function], structs: Vec[repr::StructDef]) -> Vec[
+    PointerParamInfo,
+] {
+    let result: Vec[PointerParamInfo] = Vec::with_capacity(functions.len());
+    for function in functions {
+        let values: Vec[bool] = Vec::with_capacity(function.params.len());
+        let copies: Vec[bool] = Vec::with_capacity(function.params.len());
+        for index in 0..function.params.len() {
+            let parameter = function.params[index];
+            let enabled = large_named_struct(structs, parameter.1)
+                && pointer_call_is_safe(functions, function.name, index);
+            values.push(enabled);
+            copies.push(enabled && block_assigns_name(function.body, parameter.0))
+        }
+        result.push(PointerParamInfo { function: function.name, values, copies })
+    }
+    result
+}
+
+fn pointer_param_enabled(values: Vec[PointerParamInfo], function: string, index: int) -> bool {
+    for value in values {
+        if value.function == function {
+            return index >= 0 && index < value.values.len() && value.values[index]
+        } else {}
+    }
+    false
+}
+
+fn pointer_param_copied(values: Vec[PointerParamInfo], function: string, index: int) -> bool {
+    for value in values {
+        if value.function == function {
+            return index >= 0 && index < value.copies.len() && value.copies[index]
+        } else {}
+    }
+    false
+}
+
 fn compile_function(
     builtin: tast::BuiltinContract,
     value: anf::Function,
@@ -3422,12 +3687,35 @@ fn compile_function(
     functions: Vec[anf::Function],
     function_names: FunctionNames,
     dyn_helper_names: DynHelperNames,
+    pointer_params: Vec[PointerParamInfo],
 ) -> Function {
     let joins: Vec[anf::JoinBind] = Vec::from_array([]);
     collect_joins_block(joins, value.body);
     let params: Vec[(string, Type)] = Vec::from_array([]);
-    for param in value.params {
-        params.push((go_local_ident(param.0), lower_type(param.1)))
+    let pointer_vars: HashMap[string, bool] = HashMap::from_array([]);
+    let copied_params: Vec[(string, string, Type)] = Vec::from_array([]);
+    for index in 0..value.params.len() {
+        let param = value.params[index];
+        let name = go_local_ident(param.0);
+        let mut ty = lower_type(param.1);
+        if pointer_param_enabled(pointer_params, value.name, index) {
+            if pointer_param_copied(pointer_params, value.name, index) {
+                copied_params.push((name, name + "_pointer", ty))
+            } else {
+                pointer_vars[param.0] = true;
+            };
+            ty = Type::Pointer { elem: ty };
+        } else {};
+        params.push(
+            (
+                if pointer_param_copied(pointer_params, value.name, index) {
+                    name + "_pointer"
+                } else {
+                    name
+                },
+                ty,
+            ),
+        )
     }
     let env = LowerEnv {
         builtin,
@@ -3439,12 +3727,30 @@ fn compile_function(
         functions,
         function_names,
         dyn_helper_names,
+        pointer_params,
+        pointer_vars,
     };
+    let compiled_body = eliminate_dead_vars(compile_block(env, value.body));
+    let stmts: Vec[Stmt] = Vec::with_capacity(copied_params.len() + compiled_body.stmts.len());
+    for copied in copied_params {
+        stmts.push(
+            Stmt::Var {
+                name: copied.0,
+                ty: copied.2,
+                value: Option::Some(
+                    Expr::Unary { op: UnaryOp::Deref, expr: Expr::Var { name: copied.1 } },
+                ),
+            },
+        )
+    }
+    for stmt in compiled_body.stmts {
+        stmts.push(stmt)
+    }
     Function {
         name: env_function_name(env, value.name),
         params,
         ret_ty: Option::Some(lower_type(value.ret_ty)),
-        body: eliminate_dead_vars(compile_block(env, value.body)),
+        body: Block { stmts },
     }
 }
 
@@ -3456,6 +3762,7 @@ fn compile_functions(
     instances: Vec[repr::TypeInstance],
     function_names: FunctionNames,
     dyn_helper_names: DynHelperNames,
+    pointer_params: Vec[PointerParamInfo],
 ) -> Vec[Function] {
     let work: Vec[(int, anf::Function)] = Vec::with_capacity(values.len());
     let compiled: Vec[Option[Function]] = Vec::with_capacity(values.len());
@@ -3477,6 +3784,7 @@ fn compile_functions(
                     values,
                     function_names,
                     dyn_helper_names,
+                    pointer_params,
                 ),
             );
             Result::Ok(())
@@ -3500,6 +3808,7 @@ fn compile_functions(
                     values,
                     function_names,
                     dyn_helper_names,
+                    pointer_params,
                 ),
             ),
         }
@@ -3583,6 +3892,7 @@ fn lower_with_test_cases(
     let constants = value.constants;
     let statics = value.statics;
     let function_names = build_function_names(value.functions, structs, enums, type_instances);
+    let pointer_params = build_pointer_param_infos(value.functions, structs);
     let items: Vec[Item] = Vec::from_array([]);
     let types = new_collected_types();
     let runtime_hook_keys: Vec[string] = Vec::from_array([]);
@@ -3663,6 +3973,7 @@ fn lower_with_test_cases(
         type_instances,
         function_names,
         dyn_helper_names,
+        pointer_params,
     ) {
         items.push(Item::Function(function))
     }
