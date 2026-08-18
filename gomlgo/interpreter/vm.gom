@@ -3701,26 +3701,27 @@ fn frame_for_call(
     let locals: Vec[CellId] = Vec::with_capacity(function.locals.len());
     for local_index in 0..function.locals.len() {
         let mut captured = -1;
+        let mut parameter = -1;
         for capture_index in 0..function.captures.len() {
             if function.captures[capture_index].value == local_index {
                 captured = capture_index;
             } else {}
         }
+        for parameter_index in 0..function.parameters.len() {
+            if function.parameters[parameter_index].value == local_index {
+                parameter = parameter_index;
+            } else {}
+        }
         if captured >= 0 {
             locals.push(captures[captured])
+        } else if parameter >= 0 {
+            locals.push(allocate_cell(state.memory, arguments[parameter]))
         } else {
             let local = function.locals[local_index];
             match runtime_zero_value(state, local.type_id) {
                 Ok(value) => locals.push(allocate_cell(state.memory, value)),
                 Err(message) => return Result::Err(message),
             }
-        }
-    }
-    for index in 0..arguments.len() {
-        let local = function.parameters[index];
-        match store_place(state.memory, root_place(locals[local.value]), arguments[index]) {
-            Ok(()) => {},
-            Err(message) => return Result::Err(message),
         }
     }
     Result::Ok(
