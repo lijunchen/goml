@@ -93,6 +93,7 @@ enum RuntimePlace {
 
 struct Frame {
     function: bytecode::FunctionId,
+    package_id: go_types::PackageId,
     blocks: Vec[bytecode::BasicBlock],
     name: string,
     registers: Vec[Option[Value]],
@@ -296,6 +297,10 @@ fn use_step(state: VmState, location: bytecode::SourceLocation) -> bool {
     let steps = state.steps.get() + 1.to_int64();
     state.steps.set(steps);
     state.config.max_steps < 0.to_int64() || steps <= state.config.max_steps
+}
+
+fn frame_location(frame: Frame, location: bytecode::CodeLocation) -> bytecode::SourceLocation {
+    bytecode::expand_location(frame.package_id, frame.function, location)
 }
 
 fn append_bytes(target: bytes::Bytes, value: bytes::Bytes) -> unit {
@@ -3375,7 +3380,14 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
                 _ => match invoke_prepared(
                     state,
                     frame,
-                    prepare_call(state, frame, target, arguments, variadic, instruction.location)?,
+                    prepare_call(
+                        state,
+                        frame,
+                        target,
+                        arguments,
+                        variadic,
+                        frame_location(frame, instruction.location),
+                    )?,
                     Option::None,
                 )? {
                     InvocationOutcome::Returned(values) => values,
@@ -3398,7 +3410,14 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
         },
         bytecode::InstructionKind::Defer { target, arguments, variadic } => {
             frame.deferred.push(
-                prepare_call(state, frame, target, arguments, variadic, instruction.location)?,
+                prepare_call(
+                    state,
+                    frame,
+                    target,
+                    arguments,
+                    variadic,
+                    frame_location(frame, instruction.location),
+                )?,
             );
             Result::Ok(())
         },
@@ -3432,7 +3451,7 @@ fn execute_instruction(state: VmState, frame: Frame, instruction: bytecode::Inst
     InstructionControl,
     string,
 ] {
-    if !use_step(state, instruction.location) {
+    if !use_step(state, frame_location(frame, instruction.location)) {
         return Result::Err("instruction limit exceeded")
     } else {};
     match execute_instruction_effect(state, frame, instruction) {
@@ -3599,7 +3618,7 @@ fn execute_terminator(state: VmState, frame: Frame, terminator: bytecode::Termin
     FunctionControl,
     string,
 ] {
-    if !use_step(state, terminator.location) {
+    if !use_step(state, frame_location(frame, terminator.location)) {
         return Result::Err("instruction limit exceeded")
     } else {};
     let result: Result[FunctionControl, string] = match terminator.kind {
@@ -3711,6 +3730,7 @@ fn frame_for_call(
     Result::Ok(
         Frame {
             function: function.id,
+            package_id: function.package_id,
             blocks: function.blocks,
             name: function.name,
             registers: empty_slots(function.register_types.len()),

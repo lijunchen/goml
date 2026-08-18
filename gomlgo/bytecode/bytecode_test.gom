@@ -41,13 +41,7 @@ fn minimal_program() -> BytecodeProgram {
     );
     let _ = go_types::insert(world, world.packages[package_id.value].scope, "main", object);
     let function = function_id(0);
-    let location = SourceLocation {
-        package_id,
-        file: syntax::file_id(0),
-        start: 0,
-        end: 0,
-        function,
-    };
+    let location = CodeLocation { file: syntax::file_id(0), start: 0, end: 0 };
     let object_functions: Vec[Option[FunctionId]] = Vec::with_capacity(world.objects.len());
     let object_globals: Vec[Option[GlobalId]] = Vec::with_capacity(world.objects.len());
     for index in 0..world.objects.len() {
@@ -145,7 +139,7 @@ fn reports_invalid_control_flow_without_indexing_the_target() -> unit {
 }
 
 #[test]
-fn reports_instruction_type_and_location_mismatches() -> unit {
+fn reports_instruction_type_and_location_errors() -> unit {
     let program = minimal_program();
     let bool_type = testing::expect_some(
         go_types::basic_type(program.world, "bool"),
@@ -156,13 +150,7 @@ fn reports_instruction_type_and_location_mismatches() -> unit {
         "missing int type",
     );
     program.functions[0].register_types.push(bool_type);
-    let location = SourceLocation {
-        package_id: program.functions[0].package_id,
-        file: syntax::file_id(0),
-        start: 0,
-        end: 1,
-        function: function_id(9),
-    };
+    let location = CodeLocation { file: syntax::file_id(-2), start: 0, end: 1 };
     program.functions[0].blocks[0].instructions.push(
         Instruction {
             kind: InstructionKind::Constant {
@@ -176,7 +164,7 @@ fn reports_instruction_type_and_location_mismatches() -> unit {
     );
     let diagnostics = verify(program);
     testing::assert(contains_message(diagnostics, "target register type"));
-    testing::assert(contains_message(diagnostics, "source location belongs to function"))
+    testing::assert(contains_message(diagnostics, "invalid source file"))
 }
 
 #[test]

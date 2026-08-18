@@ -907,13 +907,7 @@ fn emit(builder: FunctionBuilder, node: syntax::NodeId, kind: InstructionKind) -
         Some(value) => value,
         None => return Result::Err("invalid syntax node " + node.value.to_string()),
     };
-    let location = SourceLocation {
-        package_id: builder.package_id,
-        file: value.file,
-        start: value.span.start,
-        end: value.span.end,
-        function: builder.function,
-    };
+    let location = CodeLocation { file: value.file, start: value.span.start, end: value.span.end };
     builder.blocks[builder.current.get().value].instructions.push(Instruction { kind, location });
     Result::Ok(())
 }
@@ -929,13 +923,7 @@ fn terminate(builder: FunctionBuilder, node: syntax::NodeId, kind: TerminatorKin
         Some(value) => value,
         None => return Result::Err("invalid syntax node " + node.value.to_string()),
     };
-    let location = SourceLocation {
-        package_id: builder.package_id,
-        file: value.file,
-        start: value.span.start,
-        end: value.span.end,
-        function: builder.function,
-    };
+    let location = CodeLocation { file: value.file, start: value.span.start, end: value.span.end };
     builder.blocks[builder.current.get().value].terminator = Option::Some(
         Terminator { kind, location },
     );
@@ -5162,12 +5150,10 @@ fn finalize_blocks(builder: FunctionBuilder, source: syntax::NodeId) -> Result[
         Some(value) => value,
         None => return Result::Err("invalid syntax node " + source.value.to_string()),
     };
-    let fallback_location = SourceLocation {
-        package_id: builder.package_id,
+    let fallback_location = CodeLocation {
         file: value.file,
         start: value.span.start,
         end: value.span.end,
-        function: builder.function,
     };
     for block in builder.blocks {
         result.push(

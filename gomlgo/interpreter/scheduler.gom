@@ -772,12 +772,12 @@ fn advance_scheduled(scheduled: ScheduledFrame) -> unit {
 fn count_scheduled_step(
     scheduler: Scheduler,
     scheduled: ScheduledFrame,
-    location: bytecode::SourceLocation,
+    location: bytecode::CodeLocation,
 ) -> bool {
     if scheduled.waiting.get() {
         true
     } else {
-        use_step(scheduler.state, location)
+        use_step(scheduler.state, frame_location(scheduled.frame, location))
     }
 }
 
@@ -883,7 +883,11 @@ fn start_native_callback(
         arguments.push(native_result(scheduler.state, host.value, shape.0[index], shape.1[index])?)
     }
     let entry = scheduler.state.program.functions[scheduler.state.program.main.value];
-    let location = entry.blocks[entry.entry.value].terminator.location;
+    let location = bytecode::expand_location(
+        entry.package_id,
+        entry.id,
+        entry.blocks[entry.entry.value].terminator.location,
+    );
     let call = PreparedCall {
         target,
         arguments,
@@ -1630,7 +1634,7 @@ fn execute_scheduled_instruction(
                 target,
                 arguments,
                 variadic,
-                instruction.location,
+                frame_location(scheduled.frame, instruction.location),
             ) {
                 Ok(value) => value,
                 Err(message) => return if runtime_fault(message) {
@@ -1645,7 +1649,10 @@ fn execute_scheduled_instruction(
             };
             match prepared.target {
                 PreparedTarget::Native(_) | PreparedTarget::Dynamic(Value::Host { .. }) => {
-                    if !use_step(scheduler.state, instruction.location) {
+                    if !use_step(
+                        scheduler.state,
+                        frame_location(scheduled.frame, instruction.location),
+                    ) {
                         return Result::Err("instruction limit exceeded")
                     } else {};
                     start_scheduled_native_call(
@@ -1664,7 +1671,10 @@ fn execute_scheduled_instruction(
             };
             match scheduled_call(scheduler.state, prepared) {
                 Ok(Some(invocation)) => {
-                    if !use_step(scheduler.state, instruction.location) {
+                    if !use_step(
+                        scheduler.state,
+                        frame_location(scheduled.frame, instruction.location),
+                    ) {
                         return Result::Err("instruction limit exceeded")
                     } else {};
                     if goroutine.frames.len() >= scheduler.state.config.max_call_depth {
@@ -1709,7 +1719,7 @@ fn execute_scheduled_instruction(
                 target,
                 arguments,
                 variadic,
-                instruction.location,
+                frame_location(scheduled.frame, instruction.location),
             )?;
             match scheduled_call(scheduler.state, prepared)? {
                 Some(invocation) => spawn_scheduled(scheduler, invocation)?,

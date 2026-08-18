@@ -74,6 +74,26 @@ pub struct SourceLocation {
     pub function: FunctionId,
 }
 
+pub struct CodeLocation {
+    pub file: syntax::FileId,
+    pub start: int,
+    pub end: int,
+}
+
+pub fn expand_location(
+    package_id: go_types::PackageId,
+    function: FunctionId,
+    location: CodeLocation,
+) -> SourceLocation {
+    SourceLocation {
+        package_id,
+        file: location.file,
+        start: location.start,
+        end: location.end,
+        function,
+    }
+}
+
 #[derive(PartialEq, Eq, ToString)]
 pub enum UnaryOp {
     Positive,
@@ -395,7 +415,7 @@ pub struct AggregateElement {
 
 pub struct Instruction {
     pub kind: InstructionKind,
-    pub location: SourceLocation,
+    pub location: CodeLocation,
 }
 
 pub struct SwitchArm {
@@ -430,7 +450,7 @@ pub enum TerminatorKind {
 
 pub struct Terminator {
     pub kind: TerminatorKind,
-    pub location: SourceLocation,
+    pub location: CodeLocation,
 }
 
 pub struct BasicBlock {

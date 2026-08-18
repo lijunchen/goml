@@ -1137,26 +1137,8 @@ fn check_location(
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
     instruction: int,
-    location: SourceLocation,
+    location: CodeLocation,
 ) -> unit {
-    if location.function.value != function.id.value {
-        report(
-            diagnostics,
-            Option::Some(function.id),
-            Option::Some(block),
-            instruction,
-            "source location belongs to function " + location.function.value.to_string(),
-        )
-    } else {};
-    if location.package_id.value != function.package_id.value {
-        report(
-            diagnostics,
-            Option::Some(function.id),
-            Option::Some(block),
-            instruction,
-            "source location belongs to package " + location.package_id.value.to_string(),
-        )
-    } else {};
     if location.file.value < -1 {
         report(
             diagnostics,
@@ -1168,7 +1150,7 @@ fn check_location(
     } else if location.file.value >= 0 {
         let mut found = false;
         for source in program.source_files {
-            if source.package_id.value == location.package_id.value
+            if source.package_id.value == function.package_id.value
                 && source.file.value == location.file.value {
                 found = true;
             } else {}
