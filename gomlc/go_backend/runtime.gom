@@ -1532,6 +1532,7 @@ fn hashmap_option_info(
                         fields.push(enum_field_types(variant.fields))
                     }
                     compact_variant_fields(fields, structs)
+                        || compact_builtin_variant_fields(fields, structs)
                 },
                 None => false,
             };
