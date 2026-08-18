@@ -1306,6 +1306,16 @@ fn reuses_materialized_hashmap_option_types() -> unit {
 }
 
 #[test]
+fn reuses_wide_compact_hashmap_option_types() -> unit {
+    let source = "enum Payload { Left(string, string), Right(string, string), } fn main() -> unit { let map: HashMap[string, Payload] = HashMap::new(); map.set(\"key\", Payload::Left(\"a\", \"b\")); match map.get(\"key\") { Option::Some(value) => match value { Payload::Left(a, _) => println(a), Payload::Right(a, _) => println(a), }, Option::None => println(\"missing\"), } }";
+    let output = encode(lower_linked_source(source));
+    testing::assert(string_contains(output, "type Option__Payload struct"));
+    testing::assert(string_contains(output, "func hashmap_get__HashMap_6string_7Payload("));
+    testing::assert(string_contains(output, "_v1_0: value"));
+    testing::assert(!string_contains(output, "Option__Payload_Some"))
+}
+
+#[test]
 fn emits_builtin_tostring_vtables() -> unit {
     let source = "fn main() { let inner: dyn ToString = 1 as dyn ToString; let r = Ref::new(inner); let value: dyn ToString = r as dyn ToString; println(ToString::to_string(value)); }";
     testing::assert_eq(
