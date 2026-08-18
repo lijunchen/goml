@@ -3477,10 +3477,86 @@ fn block_assigns_name(value: anf::Block, name: string) -> bool {
     }
 }
 
+struct GoSize {
+    size: int,
+    alignment: int,
+    known: bool,
+}
+
+fn known_go_size(size: int, alignment: int) -> GoSize {
+    GoSize { size, alignment, known: true }
+}
+
+fn unknown_go_size() -> GoSize {
+    GoSize { size: 0, alignment: 1, known: false }
+}
+
+fn aligned_go_size(size: int, alignment: int) -> int {
+    (size + alignment - 1) / alignment * alignment
+}
+
+fn go_type_list_size(values: Vec[repr::Type], structs: Vec[repr::StructDef], depth: int) -> GoSize {
+    let mut size = 0;
+    let mut alignment = 1;
+    for value in values {
+        let field = go_type_size(value, structs, depth + 1);
+        if !field.known {
+            return unknown_go_size()
+        } else {};
+        size = aligned_go_size(size, field.alignment) + field.size;
+        if field.alignment > alignment {
+            alignment = field.alignment;
+        } else {};
+    }
+    known_go_size(aligned_go_size(size, alignment), alignment)
+}
+
+fn go_type_size(value: repr::Type, structs: Vec[repr::StructDef], depth: int) -> GoSize {
+    if depth >= 16 {
+        unknown_go_size()
+    } else {
+        match repr::resolve_type(value) {
+            Unit | Never => known_go_size(0, 1),
+            Bool | Int8 | Uint8 => known_go_size(1, 1),
+            Int16 | Uint16 => known_go_size(2, 2),
+            Int32 | Uint32 | Float32 | Char => known_go_size(4, 4),
+            Int | Int64 | Uint | Uint64 | Float64 => known_go_size(8, 8),
+            String => known_go_size(16, 8),
+            Tuple { items } => go_type_list_size(items, structs, depth),
+            Named { name } | ClosureEnvironment { name } => match find_struct(structs, name) {
+                Some(definition) => {
+                    let fields: Vec[repr::Type] = Vec::with_capacity(definition.fields.len());
+                    for field in definition.fields {
+                        fields.push(field.1)
+                    }
+                    go_type_list_size(fields, structs, depth)
+                },
+                None => known_go_size(16, 8),
+            },
+            Dyn { .. } => known_go_size(16, 8),
+            Array { len, elem } => {
+                let item = go_type_size(elem, structs, depth + 1);
+                if item.known {
+                    known_go_size(aligned_go_size(item.size, item.alignment) * len, item.alignment)
+                } else {
+                    item
+                }
+            },
+            Slice { elem: _ } => known_go_size(24, 8),
+            VecType { elem: _ } | RefType { elem: _ } | HashMap { .. } | Channel { elem: _ } | Func {
+                ..,
+            } => known_go_size(8, 8),
+        }
+    }
+}
+
 fn large_named_struct(structs: Vec[repr::StructDef], value: repr::Type) -> bool {
     match repr::resolve_type(value) {
         Named { name } => match find_struct(structs, name) {
-            Some(definition) => definition.fields.len() >= 64,
+            Some(_) => {
+                let size = go_type_size(value, structs, 0);
+                size.known && size.size >= 128
+            },
             None => false,
         },
         _ => false,
