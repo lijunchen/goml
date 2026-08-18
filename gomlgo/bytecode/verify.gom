@@ -2315,7 +2315,8 @@ fn check_function(
             None => {},
         }
     }
-    for local in function.parameters {
+    for index in 0..function.parameters.len() {
+        let local = function.parameters[index];
         if !local_valid(function, local) {
             report(
                 diagnostics,
@@ -2324,10 +2325,19 @@ fn check_function(
                 -1,
                 "invalid parameter local " + local.value.to_string(),
             )
+        } else if local.value != function.captures.len() + index {
+            report(
+                diagnostics,
+                Option::Some(function.id),
+                Option::None,
+                -1,
+                "parameter local does not match parameter index",
+            )
         } else {}
     }
     let seen_captures = bool_slots(function.locals.len());
-    for local in function.captures {
+    for index in 0..function.captures.len() {
+        let local = function.captures[index];
         if !local_valid(function, local) {
             report(
                 diagnostics,
@@ -2335,6 +2345,14 @@ fn check_function(
                 Option::None,
                 -1,
                 "invalid capture local " + local.value.to_string(),
+            )
+        } else if local.value != index {
+            report(
+                diagnostics,
+                Option::Some(function.id),
+                Option::None,
+                -1,
+                "capture local does not match capture index",
             )
         } else if seen_captures[local.value] {
             report(
