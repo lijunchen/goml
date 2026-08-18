@@ -726,21 +726,6 @@ fn collect_globals(program: execution::ExecutionProgram, object_globals: Vec[Opt
     globals
 }
 
-fn source_location(builder: FunctionBuilder, node: syntax::NodeId) -> Result[SourceLocation, string] {
-    match syntax::get_node(builder.syntax.arena, node) {
-        Some(value) => Result::Ok(
-            SourceLocation {
-                package_id: builder.package_id,
-                file: value.file,
-                start: value.span.start,
-                end: value.span.end,
-                function: builder.function,
-            },
-        ),
-        None => Result::Err("invalid syntax node " + node.value.to_string()),
-    }
-}
-
 fn node_kind(builder: FunctionBuilder, node: syntax::NodeId) -> syntax::SyntaxKind {
     syntax::node_at(builder.syntax.arena, node.value).kind
 }
@@ -918,7 +903,17 @@ fn emit(builder: FunctionBuilder, node: syntax::NodeId, kind: InstructionKind) -
                 + " was terminated",
         )
     } else {};
-    let location = source_location(builder, node)?;
+    let value = match syntax::get_node(builder.syntax.arena, node) {
+        Some(value) => value,
+        None => return Result::Err("invalid syntax node " + node.value.to_string()),
+    };
+    let location = SourceLocation {
+        package_id: builder.package_id,
+        file: value.file,
+        start: value.span.start,
+        end: value.span.end,
+        function: builder.function,
+    };
     builder.blocks[builder.current.get().value].instructions.push(Instruction { kind, location });
     Result::Ok(())
 }
@@ -930,7 +925,17 @@ fn terminate(builder: FunctionBuilder, node: syntax::NodeId, kind: TerminatorKin
     if current_terminated(builder) {
         return Result::Err("basic block already has a terminator")
     } else {};
-    let location = source_location(builder, node)?;
+    let value = match syntax::get_node(builder.syntax.arena, node) {
+        Some(value) => value,
+        None => return Result::Err("invalid syntax node " + node.value.to_string()),
+    };
+    let location = SourceLocation {
+        package_id: builder.package_id,
+        file: value.file,
+        start: value.span.start,
+        end: value.span.end,
+        function: builder.function,
+    };
     builder.blocks[builder.current.get().value].terminator = Option::Some(
         Terminator { kind, location },
     );
@@ -5153,7 +5158,17 @@ fn finalize_blocks(builder: FunctionBuilder, source: syntax::NodeId) -> Result[
         }
     } else {};
     let result: Vec[BasicBlock] = Vec::from_array([]);
-    let fallback_location = source_location(builder, source)?;
+    let value = match syntax::get_node(builder.syntax.arena, source) {
+        Some(value) => value,
+        None => return Result::Err("invalid syntax node " + source.value.to_string()),
+    };
+    let fallback_location = SourceLocation {
+        package_id: builder.package_id,
+        file: value.file,
+        start: value.span.start,
+        end: value.span.end,
+        function: builder.function,
+    };
     for block in builder.blocks {
         result.push(
             BasicBlock {
