@@ -158,6 +158,8 @@ struct VmState {
     location: Ref[bytecode::SourceLocation],
     native_completions: NativeCompletionQueue,
     native_callbacks: Vec[NativeCallbackBinding],
+    instruction_panic: Ref[Option[Ref[PanicPayload]]],
+    instruction_exit: Ref[int],
 }
 
 enum FunctionControl {
@@ -168,10 +170,11 @@ enum FunctionControl {
     Return(Vec[Value]),
 }
 
-enum InstructionControl {
-    Continue,
-    Panic(PanicPayload),
-    Exit(int),
+struct InstructionControl {
+    kind: int,
+    panic: Option[Ref[PanicPayload]],
+    exit_code: int,
+    error: string,
 }
 
 enum InvocationOutcome {
@@ -198,6 +201,32 @@ fn empty_slots[T](count: int) -> Vec[Option[T]] {
         result.push(Option::None)
     }
     result
+}
+
+fn instruction_continue() -> InstructionControl {
+    InstructionControl { kind: 0, panic: Option::None, exit_code: 0, error: "" }
+}
+
+fn instruction_panic(payload: PanicPayload) -> InstructionControl {
+    InstructionControl { kind: 1, panic: Option::Some(Ref::new(payload)), exit_code: 0, error: "" }
+}
+
+fn instruction_exit(code: int) -> InstructionControl {
+    InstructionControl { kind: 2, panic: Option::None, exit_code: code, error: "" }
+}
+
+fn instruction_error(message: string) -> InstructionControl {
+    InstructionControl { kind: 3, panic: Option::None, exit_code: 0, error: message }
+}
+
+fn pending_instruction_panic(state: VmState, payload: PanicPayload) -> int {
+    state.instruction_panic.set(Option::Some(Ref::new(payload)));
+    1
+}
+
+fn pending_instruction_exit(state: VmState, code: int) -> int {
+    state.instruction_exit.set(code);
+    2
 }
 
 fn runtime_error(kind: string, message: string, location: Option[bytecode::SourceLocation]) -> RuntimeError {
@@ -2873,7 +2902,7 @@ fn runtime_fault_payload(state: VmState, message: string) -> Result[PanicPayload
 }
 
 fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecode::Instruction) -> Result[
-    InstructionControl,
+    int,
     string,
 ] {
     let result: Result[unit, string] = match instruction.kind {
@@ -3388,10 +3417,10 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
                 )? {
                     InvocationOutcome::Returned(values) => values,
                     InvocationOutcome::Panicked(payload) => {
-                        return Result::Ok(InstructionControl::Panic(payload))
+                        return Result::Ok(pending_instruction_panic(state, payload))
                     },
                     InvocationOutcome::Exited(code) => {
-                        return Result::Ok(InstructionControl::Exit(code))
+                        return Result::Ok(pending_instruction_exit(state, code))
                     },
                 },
             };
@@ -3418,7 +3447,8 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
             Result::Ok(())
         },
         bytecode::InstructionKind::Panic { value } => return Result::Ok(
-            InstructionControl::Panic(
+            pending_instruction_panic(
+                state,
                 new_panic_payload(
                     state,
                     register(frame, value)?,
@@ -3438,24 +3468,33 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
         _ => Result::Err("instruction is not implemented by the sequential VM"),
     };
     match result {
-        Ok(()) => Result::Ok(InstructionControl::Continue),
+        Ok(()) => Result::Ok(0),
         Err(message) => Result::Err(message),
     }
 }
 
-fn execute_instruction(state: VmState, frame: Frame, instruction: bytecode::Instruction) -> Result[
-    InstructionControl,
-    string,
-] {
+fn execute_instruction(state: VmState, frame: Frame, instruction: bytecode::Instruction) -> InstructionControl {
     if !use_step(state, frame_location(frame, instruction.location)) {
-        return Result::Err("instruction limit exceeded")
+        return instruction_error("instruction limit exceeded")
     } else {};
     match execute_instruction_effect(state, frame, instruction) {
-        Ok(value) => Result::Ok(value),
+        Ok(0) => instruction_continue(),
+        Ok(1) => match state.instruction_panic.get() {
+            Some(payload) => {
+                state.instruction_panic.set(Option::None);
+                instruction_panic(payload.get())
+            },
+            None => instruction_error("panic instruction has no payload"),
+        },
+        Ok(2) => instruction_exit(state.instruction_exit.get()),
+        Ok(_) => instruction_error("invalid instruction control"),
         Err(message) => if runtime_fault(message) {
-            Result::Ok(InstructionControl::Panic(runtime_fault_payload(state, message)?))
+            match runtime_fault_payload(state, message) {
+                Ok(payload) => instruction_panic(payload),
+                Err(message) => instruction_error(message),
+            }
         } else {
-            Result::Err(message)
+            instruction_error(message)
         },
     }
 }
@@ -3826,21 +3865,18 @@ fn execute_function(
         } else {};
         let block = function.blocks[block_id.value];
         for instruction in block.instructions {
-            match execute_instruction(state, frame, instruction) {
-                Ok(InstructionControl::Continue) => {},
-                Ok(InstructionControl::Panic(payload)) => {
-                    let outcome = finish_invocation(state, frame, function, Option::Some(payload));
-                    state.depth.set(state.depth.get() - 1);
-                    return outcome
-                },
-                Ok(InstructionControl::Exit(code)) => {
-                    state.depth.set(state.depth.get() - 1);
-                    return Result::Ok(InvocationOutcome::Exited(code))
-                },
-                Err(error) => {
-                    state.depth.set(state.depth.get() - 1);
-                    return Result::Err(error)
-                },
+            let control = execute_instruction(state, frame, instruction);
+            if control.kind == 0 {} else if control.kind == 1 {
+                let payload = control.panic.ok_or("panic instruction has no payload")?.get();
+                let outcome = finish_invocation(state, frame, function, Option::Some(payload));
+                state.depth.set(state.depth.get() - 1);
+                return outcome
+            } else if control.kind == 2 {
+                state.depth.set(state.depth.get() - 1);
+                return Result::Ok(InvocationOutcome::Exited(control.exit_code))
+            } else {
+                state.depth.set(state.depth.get() - 1);
+                return Result::Err(control.error)
             }
         }
         match execute_terminator(state, frame, block.terminator) {
@@ -3903,6 +3939,8 @@ fn initialize_state(program: bytecode::BytecodeProgram, config: VmConfig) -> Res
         ),
         native_completions,
         native_callbacks: Vec::from_array([]),
+        instruction_panic: Ref::new(Option::None),
+        instruction_exit: Ref::new(0),
     };
     for global in state.program.globals {
         match runtime_zero_value(state, global.type_id) {

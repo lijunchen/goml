@@ -1616,6 +1616,28 @@ fn execute_scheduled_select(
     }
 }
 
+fn finish_scheduled_instruction(
+    scheduler: Scheduler,
+    goroutine_index: int,
+    scheduled: ScheduledFrame,
+    control: InstructionControl,
+) -> Result[Option[InvocationOutcome], string] {
+    if control.kind == 0 {
+        advance_scheduled(scheduled);
+        Result::Ok(Option::None)
+    } else if control.kind == 1 {
+        panic_scheduled(
+            scheduler,
+            goroutine_index,
+            control.panic.ok_or("panic instruction has no payload")?.get(),
+        )
+    } else if control.kind == 2 {
+        Result::Ok(Option::Some(InvocationOutcome::Exited(control.exit_code)))
+    } else {
+        Result::Err(control.error)
+    }
+}
+
 fn execute_scheduled_instruction(
     scheduler: Scheduler,
     goroutine_index: int,
@@ -1686,18 +1708,12 @@ fn execute_scheduled_instruction(
                     );
                     Result::Ok(Option::None)
                 },
-                Ok(None) => match execute_instruction(scheduler.state, scheduled.frame, instruction)? {
-                    InstructionControl::Continue => {
-                        advance_scheduled(scheduled);
-                        Result::Ok(Option::None)
-                    },
-                    InstructionControl::Panic(payload) => {
-                        panic_scheduled(scheduler, goroutine_index, payload)
-                    },
-                    InstructionControl::Exit(code) => Result::Ok(
-                        Option::Some(InvocationOutcome::Exited(code)),
-                    ),
-                },
+                Ok(None) => finish_scheduled_instruction(
+                    scheduler,
+                    goroutine_index,
+                    scheduled,
+                    execute_instruction(scheduler.state, scheduled.frame, instruction),
+                ),
                 Err(message) => if runtime_fault(message) {
                     panic_scheduled(
                         scheduler,
@@ -1862,18 +1878,12 @@ fn execute_scheduled_instruction(
             chosen,
             cases,
         ),
-        _ => match execute_instruction(scheduler.state, scheduled.frame, instruction)? {
-            InstructionControl::Continue => {
-                advance_scheduled(scheduled);
-                Result::Ok(Option::None)
-            },
-            InstructionControl::Panic(payload) => {
-                panic_scheduled(scheduler, goroutine_index, payload)
-            },
-            InstructionControl::Exit(code) => {
-                Result::Ok(Option::Some(InvocationOutcome::Exited(code)))
-            },
-        },
+        _ => finish_scheduled_instruction(
+            scheduler,
+            goroutine_index,
+            scheduled,
+            execute_instruction(scheduler.state, scheduled.frame, instruction),
+        ),
     }
 }
 
@@ -2047,14 +2057,73 @@ fn instruction_needs_scheduler(kind: bytecode::InstructionKind) -> bool {
     }
 }
 
+fn callback_type(world: go_types::World, type_id: go_types::TypeId) -> bool {
+    match go_types::get_type(world, go_types::unalias(world, type_id)) {
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Signature { .. } }) => true,
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Named { underlying, .. } }) => {
+            go_types::is_interface(world, underlying)
+        },
+        _ => false,
+    }
+}
+
+fn register_callback_type(
+    world: go_types::World,
+    function: bytecode::BytecodeFunction,
+    register: bytecode::RegisterId,
+) -> bool {
+    register.value >= 0 && register.value < function.register_types.len()
+        && callback_type(world, function.register_types[register.value])
+}
+
+fn instruction_callback(
+    program: bytecode::BytecodeProgram,
+    function: bytecode::BytecodeFunction,
+    kind: bytecode::InstructionKind,
+) -> bool {
+    match kind {
+        bytecode::InstructionKind::Call { results: _, target, arguments, variadic: _ } | bytecode::InstructionKind::Defer {
+            target,
+            arguments,
+            variadic: _,
+        } => match target {
+            bytecode::CallTarget::Native(_) | bytecode::CallTarget::NativeMethod {
+                call: _,
+                receiver: _,
+            } | bytecode::CallTarget::Dynamic(_) | bytecode::CallTarget::InterfaceMethod {
+                method: _,
+                receiver: _,
+            } => {
+                for argument in arguments {
+                    if register_callback_type(program.world, function, argument) {
+                        return true
+                    } else {}
+                }
+                false
+            },
+            _ => false,
+        },
+        bytecode::InstructionKind::Convert { target: _, source, type_id } => {
+            !program.native_calls.is_empty() && go_types::is_interface(program.world, type_id)
+                && register_callback_type(program.world, function, source)
+        },
+        _ => false,
+    }
+}
+
 fn program_needs_scheduler(program: bytecode::BytecodeProgram) -> bool {
-    if !program.native_calls.is_empty() {
-        return true
-    } else {};
+    for call in program.native_calls {
+        for parameter in call.parameter_types {
+            if callback_type(program.world, parameter) {
+                return true
+            } else {}
+        }
+    }
     for function in program.functions {
         for block in function.blocks {
             for instruction in block.instructions {
-                if instruction_needs_scheduler(instruction.kind) {
+                if instruction_needs_scheduler(instruction.kind)
+                    || instruction_callback(program, function, instruction.kind) {
                     return true
                 } else {}
             }

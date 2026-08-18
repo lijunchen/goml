@@ -134,29 +134,39 @@ fn store_projection(
     projections: Vec[Projection],
     offset: int,
     value: Value,
-) -> Result[unit, string] {
+) -> Result[Value, string] {
     if offset >= projections.len() {
         return Result::Err("store projection ended without a cell")
     } else {};
     match (current, projections[offset]) {
-        (Value::Local(LocalValue::Aggregate { type_id: _, elements }), Projection::Field(index)) | (
-            Value::Local(LocalValue::Aggregate { type_id: _, elements }),
+        (Value::Local(LocalValue::Aggregate { type_id, elements }), Projection::Field(index)) | (
+            Value::Local(LocalValue::Aggregate { type_id, elements }),
             Projection::Index(index),
         ) => {
             if index < 0 || index >= elements.len() {
                 return Result::Err("aggregate index out of range")
             } else {};
-            if offset + 1 == projections.len() {
-                elements[index] = copy_value(value);
-                Result::Ok(())
-            } else {
-                store_projection(memory, elements[index], projections, offset + 1, value)
+            let updated: Vec[Value] = Vec::with_capacity(elements.len());
+            for element in elements {
+                updated.push(element)
             }
+            if offset + 1 == projections.len() {
+                updated[index] = copy_value(value);
+            } else {
+                updated[index] = store_projection(
+                    memory,
+                    elements[index],
+                    projections,
+                    offset + 1,
+                    value,
+                )?;
+            };
+            Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements: updated }))
         },
         (Value::Local(LocalValue::Slice(slice)), Projection::Index(index)) => {
             let mut projected = slice_element_place(slice, index)?;
             if offset + 1 == projections.len() {
-                store_place(memory, projected, value)
+                store_place(memory, projected, value)?;
             } else {
                 for projection_index in offset + 1..projections.len() {
                     projected = match projections[projection_index] {
@@ -164,8 +174,9 @@ fn store_projection(
                         Projection::Index(index) => index_place(projected, index),
                     };
                 }
-                store_place(memory, projected, value)
-            }
+                store_place(memory, projected, value)?;
+            };
+            Result::Ok(Value::Local(LocalValue::Slice(slice)))
         },
         _ => Result::Err("place projection does not match stored value"),
     }
@@ -180,6 +191,8 @@ pub fn store_place(memory: Memory, place: Place, value: Value) -> Result[unit, s
         cell.value.set(copy_value(value));
         Result::Ok(())
     } else {
-        store_projection(memory, cell.value.get(), place.projections, 0, value)
+        let updated = store_projection(memory, cell.value.get(), place.projections, 0, value)?;
+        cell.value.set(updated);
+        Result::Ok(())
     }
 }

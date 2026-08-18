@@ -463,100 +463,42 @@ pub enum Value {
     },
 }
 
-fn copied_projections(values: Vec[Projection]) -> Vec[Projection] {
-    let result: Vec[Projection] = Vec::with_capacity(values.len());
-    for value in values {
-        result.push(
-            match value {
-                Projection::Field(index) => Projection::Field(index),
-                Projection::Index(index) => Projection::Index(index),
-            },
-        )
-    }
-    result
-}
-
 pub fn copy_place(value: Place) -> Place {
-    Place { root: value.root, projections: copied_projections(value.projections) }
-}
-
-fn copy_function(value: FunctionValue) -> FunctionValue {
-    let captures: Vec[CellId] = Vec::with_capacity(value.captures.len());
-    for capture in value.captures {
-        captures.push(capture)
-    }
-    let target = match value.target {
-        FunctionTarget::Bytecode(function) => FunctionTarget::Bytecode(function),
-        FunctionTarget::MethodExpression { function, receiver_type, index } => {
-            let copied: Vec[int] = Vec::with_capacity(index.len());
-            for value in index {
-                copied.push(value)
-            }
-            FunctionTarget::MethodExpression { function, receiver_type, index: copied }
-        },
-        FunctionTarget::InterfaceMethod(method) => FunctionTarget::InterfaceMethod(method),
-    };
-    FunctionValue {
-        target,
-        captures,
-        receiver: match value.receiver {
-            Some(receiver) => Option::Some(Ref::new(copy_value(receiver.get()))),
-            None => Option::None,
-        },
-    }
+    value
 }
 
 fn copy_slice(value: SliceValue) -> SliceValue {
-    SliceValue {
-        element_type: value.element_type,
-        backing: match value.backing {
-            Some(place) => Option::Some(copy_place(place)),
-            None => Option::None,
-        },
-        offset: value.offset,
-        length: value.length,
-        capacity: value.capacity,
+    value
+}
+
+fn aggregate_has_host(elements: Vec[Value]) -> bool {
+    for element in elements {
+        match element {
+            Value::Host { .. } => return true,
+            Value::Local(LocalValue::Aggregate { type_id: _, elements }) => if aggregate_has_host(
+                elements,
+            ) {
+                return true
+            } else {},
+            _ => {},
+        }
     }
+    false
 }
 
 pub fn copy_value(value: Value) -> Value {
     match value {
-        Value::Local(LocalValue::Pointer(value)) => Value::Local(
-            LocalValue::Pointer(
-                match value {
-                    Some(place) => Option::Some(copy_place(place)),
-                    None => Option::None,
-                },
-            ),
-        ),
-        Value::Local(LocalValue::Slice(value)) => {
-            Value::Local(LocalValue::Slice(copy_slice(value)))
-        },
-        Value::Local(LocalValue::Aggregate { type_id, elements }) => {
+        Value::Local(LocalValue::Aggregate { type_id, elements }) => if aggregate_has_host(elements) {
             let copied: Vec[Value] = Vec::with_capacity(elements.len());
             for element in elements {
                 copied.push(copy_value(element))
             }
             Value::Local(LocalValue::Aggregate { type_id, elements: copied })
+        } else {
+            value
         },
-        Value::Local(LocalValue::Function(value)) => Value::Local(
-            LocalValue::Function(
-                match value {
-                    Some(function) => Option::Some(copy_function(function)),
-                    None => Option::None,
-                },
-            ),
-        ),
         Value::Host { type_id, value } => {
             Value::Host { type_id, value: clone_host_value(value) }
-        },
-        Value::Interface { static_type, dynamic_type, value } => Value::Interface {
-            static_type,
-            dynamic_type,
-            value: match value {
-                Some(inner) => Option::Some(Ref::new(copy_value(inner.get()))),
-                None => Option::None,
-            },
         },
         value => value,
     }
