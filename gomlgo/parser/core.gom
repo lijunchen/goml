@@ -31,6 +31,7 @@ struct Parser {
     imports: Vec[ast::Node],
     comment_infos: Vec[CommentInfo],
     comment_nodes: Vec[ast::Node],
+    comment_limit: int,
     go_version: string,
     source_len: int,
     skip_function_bodies: bool,
@@ -41,8 +42,8 @@ fn parser_new_with_mode(source: bytes::Bytes, retain_comments: bool, skip_functi
     let scanned = scanner::scan_bytes(source);
     let comment_infos: Vec[CommentInfo] = Vec::from_array([]);
     let comment_nodes: Vec[ast::Node] = Vec::from_array([]);
-    let (go_version, has_comments) = token_metadata(scanned.tokens);
-    if retain_comments && has_comments {
+    let (go_version, comment_limit) = token_metadata(scanned.tokens);
+    if retain_comments && comment_limit > 0 {
         let comments = analyze_comments(source, scanned.tokens);
         for value in comments.infos {
             comment_infos.push(value)
@@ -64,6 +65,7 @@ fn parser_new_with_mode(source: bytes::Bytes, retain_comments: bool, skip_functi
         imports: Vec::from_array([]),
         comment_infos,
         comment_nodes,
+        comment_limit,
         go_version,
         source_len,
         skip_function_bodies,
@@ -76,6 +78,14 @@ fn parser_new(source: bytes::Bytes) -> Parser {
 
 fn significant_index(parser: Parser, distance: int) -> int {
     let mut index = parser.cursor.get();
+    if index >= parser.comment_limit {
+        index += distance;
+        if index < parser.tokens.len() {
+            return index
+        } else {
+            return parser.tokens.len()
+        }
+    } else {};
     let mut remaining = distance;
     while index < parser.tokens.len() {
         if token::equal(parser.tokens[index].kind, token::Kind::Comment) {

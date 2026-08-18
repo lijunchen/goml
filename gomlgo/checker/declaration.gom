@@ -6812,7 +6812,7 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
         let parsed = if config.exported_api_only {
             parser::parse_file_bytes_without_bodies(file.source)
         } else {
-            parser::parse_file_bytes(file.source)
+            parser::parse_file_bytes_without_comments(file.source)
         };
         for value in parsed.diagnostics {
             diagnostics.push(

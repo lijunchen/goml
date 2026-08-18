@@ -153,6 +153,19 @@ fn attaches_comments_and_go_version() -> unit {
 }
 
 #[test]
+fn parses_without_attaching_comments() -> unit {
+    let result = parse_file_bytes_without_comments(
+        bytes::Bytes::from_string("//go:build go1.22\n\npackage p\n\n// D\nvar x int // C\n"),
+    );
+    testing::assert_eq(result.diagnostics.len(), 0);
+    let file = testing::expect_some(result.root, "missing AST");
+    testing::assert_eq(ast::get_string(file, "go_version").unwrap_or(""), "go1.22");
+    testing::assert_eq(ast::get_nodes(file, "comments").len(), 0);
+    let declaration = ast::get_nodes(file, "decls")[0];
+    testing::assert(ast::get_node(declaration, "doc").is_none())
+}
+
+#[test]
 fn parse_expr_matches_oracle_ambiguities() -> unit {
     assert_expression_matches("F[A, B](x)[i:j:k]");
     assert_expression_matches("(<-chan struct{})(ready)");

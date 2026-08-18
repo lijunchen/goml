@@ -148,7 +148,7 @@ fn build_constraint_version(value: string) -> string {
     }
 }
 
-fn token_metadata(tokens: Vec[token::Token]) -> (string, bool) {
+fn token_metadata(tokens: Vec[token::Token]) -> (string, int) {
     let mut result = "";
     let mut index = 0;
     while index < tokens.len() && token::equal(tokens[index].kind, token::Kind::Comment) {
@@ -158,12 +158,12 @@ fn token_metadata(tokens: Vec[token::Token]) -> (string, bool) {
         } else {};
         index += 1;
     }
-    let mut has_comments = index > 0;
+    let mut comment_limit = index;
     while index < tokens.len() {
         if token::equal(tokens[index].kind, token::Kind::Comment) {
-            has_comments = true;
+            comment_limit = index + 1;
         } else {};
         index += 1;
     };
-    (result, has_comments)
+    (result, comment_limit)
 }

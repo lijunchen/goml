@@ -418,6 +418,12 @@ pub fn parse_file_bytes(source: bytes::Bytes) -> ParseResult {
     result(parser, Option::Some(root))
 }
 
+pub fn parse_file_bytes_without_comments(source: bytes::Bytes) -> ParseResult {
+    let parser = parser_new_with_mode(source, false, false);
+    let root = parse_file_node(parser);
+    result(parser, Option::Some(root))
+}
+
 pub fn parse_file_bytes_without_bodies(source: bytes::Bytes) -> ParseResult {
     let parser = parser_new_with_mode(source, false, true);
     let root = parse_file_node(parser);
