@@ -733,23 +733,20 @@ fn failed_inherited_initializer_operand(state: CheckState, node: syntax::NodeId,
 }
 
 fn record_operand(state: CheckState, node: syntax::NodeId, operand: Operand) -> unit {
-    if type_fact_index(state, node).is_some() {
-        if state.preserved_type_fact_nodes.contains(node.value)
-            || failed_inherited_initializer_operand(state, node, operand) {
-            return
-        } else {};
-        match type_fact_index(state, node) {
-            Some(index) => if state.info.types[index].type_expr || state.info.types[index].builtin {
+    match type_fact_index(state, node) {
+        Some(index) => {
+            if state.preserved_type_fact_nodes.contains(node.value)
+                || failed_inherited_initializer_operand(state, node, operand) {
                 return
-            } else {},
-            None => {},
-        };
-        match type_fact_index(state, node) {
-            Some(index) => if (state.info.types[index].type_id.value == state.world.invalid.value
+            } else {};
+            let fact = state.info.types[index];
+            if fact.type_expr || fact.builtin {
+                return
+            } else {};
+            if (fact.type_id.value == state.world.invalid.value
                 && operand.type_id.value != state.world.invalid.value)
                 || state.current_iota >= 0 {
-                state.info.types[index].type_id = operand.type_id;
-                state.info.types[index].extra = match operand.value {
+                let extra = match operand.value {
                     Some(value) => type_fact_extra(
                         Option::None,
                         constant::constant_kind_name(value),
@@ -757,16 +754,24 @@ fn record_operand(state: CheckState, node: syntax::NodeId, operand: Operand) -> 
                     ),
                     None => Option::None,
                 };
-                state.info.types[index].value_expr = true;
-                state.info.types[index].nil = basic_kind(state, operand.type_id)
-                    == go_types::BasicKind::UntypedNil;
-                state.info.types[index].addressable = operand.addressable;
-                state.info.types[index].assignable = operand.assignable;
-            } else {},
-            None => {},
-        };
-        return
-    } else {};
+                state.info.types[index] = TypeFact {
+                    node: fact.node,
+                    type_id: operand.type_id,
+                    extra,
+                    void: fact.void,
+                    type_expr: fact.type_expr,
+                    builtin: fact.builtin,
+                    value_expr: true,
+                    nil: basic_kind(state, operand.type_id) == go_types::BasicKind::UntypedNil,
+                    addressable: operand.addressable,
+                    assignable: operand.assignable,
+                    comma_ok: fact.comma_ok,
+                };
+            } else {};
+            return
+        },
+        None => {},
+    };
     match source_type_fact_index(state, node) {
         Some(index) => {
             set_type_fact_index(state, node, index);
@@ -830,16 +835,27 @@ fn update_operand_fact(
 ) -> unit {
     match type_fact_index(state, node) {
         Some(index) => {
-            state.info.types[index].type_id = type_id;
-            match value {
-                Some(value) => {
-                    state.info.types[index].extra = type_fact_extra(
-                        Option::None,
-                        constant::constant_kind_name(value),
-                        Option::Some(constant::constant_exact_string(value)),
-                    );
-                },
-                None => {},
+            let fact = state.info.types[index];
+            let extra = match value {
+                Some(value) => type_fact_extra(
+                    Option::None,
+                    constant::constant_kind_name(value),
+                    Option::Some(constant::constant_exact_string(value)),
+                ),
+                None => fact.extra,
+            };
+            state.info.types[index] = TypeFact {
+                node: fact.node,
+                type_id,
+                extra,
+                void: fact.void,
+                type_expr: fact.type_expr,
+                builtin: fact.builtin,
+                value_expr: fact.value_expr,
+                nil: fact.nil,
+                addressable: fact.addressable,
+                assignable: fact.assignable,
+                comma_ok: fact.comma_ok,
             };
         },
         None => {},
