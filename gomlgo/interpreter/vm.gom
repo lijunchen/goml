@@ -490,11 +490,11 @@ fn convert_runtime_value(
     target: go_types::TypeId,
 ) -> Result[Value, string] {
     match value {
-        Value::Local(LocalValue::String(value)) => match go_types::get_type(
+        Value::Local(LocalValue::String(value)) => match go_types::type_data(
             state.program.world,
             go_types::underlying(state.program.world, target),
         ) {
-            Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element: _ } }) => {
+            go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element: _ } } => {
                 string_to_slice(state, value, target)
             },
             _ => convert_value(
@@ -1443,8 +1443,8 @@ fn aggregate_value(
     length: int,
 ) -> Result[Value, string] {
     let underlying = go_types::underlying(state.program.world, type_id);
-    match go_types::get_type(state.program.world, underlying) {
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element } }) => {
+    match go_types::type_data(state.program.world, underlying) {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element } } => {
             let elements: Vec[Value] = Vec::with_capacity(length);
             for _ in 0..length {
                 elements.push(runtime_zero_value(state, element)?)
@@ -1474,10 +1474,10 @@ fn aggregate_value(
                 ),
             )
         },
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Array { length: _, element: _ } }) | Some(go_types::TypeData {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Array { length: _, element: _ } } | go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Struct { fields: _ },
-        }) | Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables: _ } }) => {
+        } | go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables: _ } } => {
             let result = runtime_zero_value(state, type_id)?;
             match result {
                 Value::Local(LocalValue::Aggregate { type_id, elements }) => {
@@ -1625,11 +1625,11 @@ fn native_type_value(state: VmState, type_id: go_types::TypeId) -> Option[byteco
 fn runtime_native_type_key(state: VmState, type_id: go_types::TypeId) -> Result[string, string] {
     match native_type_value(state, type_id) {
         Some(value) => Result::Ok(value.key),
-        None => match go_types::get_type(
+        None => match go_types::type_data(
             state.program.world,
             go_types::unalias(state.program.world, type_id),
         ) {
-            Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } }) => match native_type_value(
+            go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } } => match native_type_value(
                 state,
                 element,
             ) {
@@ -1797,11 +1797,8 @@ fn native_runtime_type_key(world: go_types::World, type_id: go_types::TypeId) ->
     string,
 ] {
     let resolved = go_types::unalias(world, type_id);
-    match go_types::get_type(world, resolved) {
-        Some(go_types::TypeData {
-            id: _,
-            kind: go_types::TypeKind::Basic { basic, name: _, untyped },
-        }) => if untyped {
+    match go_types::type_data(world, resolved) {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Basic { basic, name: _, untyped } } => if untyped {
             Result::Err("untyped callback value cannot cross the native bridge")
         } else {
             match basic {
@@ -1825,34 +1822,33 @@ fn native_runtime_type_key(world: go_types::World, type_id: go_types::TypeId) ->
                 _ => Result::Err("callback basic type cannot cross the native bridge"),
             }
         },
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element } }) => {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element } } => {
             Result::Ok("[]" + native_runtime_type_key(world, element)?)
         },
-        Some(go_types::TypeData {
-            id: _,
-            kind: go_types::TypeKind::Named { object, underlying, .. },
-        }) => if go_types::is_interface(world, underlying) {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Named { object, underlying, .. } } => if go_types::is_interface(
+            world,
+            underlying,
+        ) {
             if world.objects[object.value].name == "error" {
                 Result::Ok("error")
             } else {
                 Result::Ok("interface")
             }
         } else {
-            match go_types::get_type(world, go_types::underlying(world, underlying)) {
-                Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields: _ } }) => Result::Ok(
+            match go_types::type_data(world, go_types::underlying(world, underlying)) {
+                go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields: _ } } => Result::Ok(
                     "gomlgo-type-" + resolved.value.to_string(),
                 ),
                 _ => native_runtime_type_key(world, underlying),
             }
         },
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Interface { .. } }) => {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Interface { .. } } => {
             Result::Ok("interface")
         },
-        Some(go_types::TypeData {
-            id: _,
-            kind: go_types::TypeKind::Chan { direction: _, element: _ },
-        }) => Result::Ok("channel"),
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Signature { .. } }) => Result::Ok(
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Chan { direction: _, element: _ } } => Result::Ok(
+            "channel",
+        ),
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Signature { .. } } => Result::Ok(
             "func()",
         ),
         _ => Result::Err(

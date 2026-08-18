@@ -278,8 +278,8 @@ fn signature_type_parameters(world: go_types::World, signature: go_types::TypeId
     go_types::TypeParameter,
 ] {
     let result: Vec[go_types::TypeParameter] = Vec::from_array([]);
-    match go_types::get_type(world, go_types::unalias(world, signature)) {
-        Some(go_types::TypeData {
+    match go_types::type_data(world, go_types::unalias(world, signature)) {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Signature {
                 receiver: _,
@@ -289,7 +289,7 @@ fn signature_type_parameters(world: go_types::World, signature: go_types::TypeId
                 results: _,
                 variadic: _,
             },
-        }) => {
+        } => {
             for parameter in receiver_type_params {
                 result.push(parameter)
             }
@@ -1469,8 +1469,8 @@ fn concrete_signature(
     arguments: Vec[go_types::TypeId],
 ) -> go_types::TypeId {
     let value = go_types::substitute(world, source, parameters, arguments);
-    match go_types::get_type(world, go_types::unalias(world, value)) {
-        Some(go_types::TypeData {
+    match go_types::type_data(world, go_types::unalias(world, value)) {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Signature {
                 receiver,
@@ -1480,7 +1480,7 @@ fn concrete_signature(
                 results,
                 variadic,
             },
-        }) => go_types::add_type(
+        } => go_types::add_type(
             world,
             go_types::TypeKind::Signature {
                 receiver,
@@ -2405,9 +2405,10 @@ fn lower_composite_literal(
 ) -> Result[Vec[RegisterId], string] {
     let type_id = node_type(builder, node)?;
     let underlying = go_types::underlying(builder.world, type_id);
-    let type_kind = go_types::get_type(builder.world, underlying).ok_or(
-        "composite literal has an invalid type",
-    )?.kind;
+    if !go_types::has_type(builder.world, underlying) {
+        return Result::Err("composite literal has an invalid type")
+    } else {};
+    let type_kind = go_types::type_data(builder.world, underlying).kind;
     match type_kind {
         go_types::TypeKind::Map { key: _, value: _ } => {
             let target = new_register(builder, type_id);

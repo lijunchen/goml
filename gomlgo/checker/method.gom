@@ -1079,8 +1079,8 @@ fn check_receiver_validations(state: CheckState) -> unit {
 
 fn check_field_method_collisions(state: CheckState) -> unit {
     for type_id in state.deferred_type_validations {
-        let methods = match go_types::get_type(state.world, type_id) {
-            Some(go_types::TypeData {
+        let methods = match go_types::type_data(state.world, type_id) {
+            go_types::TypeData {
                 id: _,
                 kind: go_types::TypeKind::Named {
                     object: _,
@@ -1089,14 +1089,14 @@ fn check_field_method_collisions(state: CheckState) -> unit {
                     type_args: _,
                     methods,
                 },
-            }) => methods,
+            } => methods,
             _ => Vec::from_array([]),
         };
-        let fields = match go_types::get_type(
+        let fields = match go_types::type_data(
             state.world,
             go_types::underlying(state.world, type_id),
         ) {
-            Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } }) => fields,
+            go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } } => fields,
             _ => Vec::from_array([]),
         };
         for method in methods {

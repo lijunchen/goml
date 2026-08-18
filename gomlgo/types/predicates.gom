@@ -621,16 +621,16 @@ pub fn assignable_types(world: World, source: TypeId, target: TypeId) -> bool {
             && (!is_named(world, source) || !is_named(world, target)) {
             true
         } else {
-            match (get_type(world, source_underlying), get_type(world, target_underlying)) {
+            match (type_data(world, source_underlying), type_data(world, target_underlying)) {
                 (
-                    Some(TypeData {
+                    TypeData {
                         id: _,
                         kind: TypeKind::Chan { direction: 3, element: source_element },
-                    }),
-                    Some(TypeData {
+                    },
+                    TypeData {
                         id: _,
                         kind: TypeKind::Chan { direction: _, element: target_element },
-                    }),
+                    },
                 ) => identical(world, source_element, target_element)
                     && (!is_named(world, source) || !is_named(world, target)),
                 _ => false,

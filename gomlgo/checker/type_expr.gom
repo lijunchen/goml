@@ -1555,14 +1555,14 @@ fn resolve_interface_type(
                         )
                     }
                 } else {};
-                let embedded_type_parameter = match go_types::get_type(
+                let embedded_type_parameter = match go_types::type_data(
                     state.world,
                     go_types::unalias(state.world, embedded),
                 ) {
-                    Some(go_types::TypeData {
+                    go_types::TypeData {
                         id: _,
                         kind: go_types::TypeKind::TypeParam { object: _, constraint: _, index: _ },
-                    }) => {
+                    } => {
                         invalid_type_set = true;
                         diagnostic(state, type_node, "term cannot be a type parameter", false);
                         true

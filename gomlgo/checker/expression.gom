@@ -201,8 +201,8 @@ fn check_composite_literal_elements(
         }
         return
     } else {};
-    match go_types::get_type(state.world, core_type_id(state, literal_type)) {
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } }) => check_struct_literal(
+    match go_types::type_data(state.world, core_type_id(state, literal_type)) {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } } => check_struct_literal(
             state,
             scope,
             node,
@@ -210,7 +210,7 @@ fn check_composite_literal_elements(
             fields,
             elements,
         ),
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Array { length, element } }) => {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Array { length, element } } => {
             let _ = check_sequence_literal(
                 state,
                 scope,
@@ -220,10 +220,10 @@ fn check_composite_literal_elements(
                 elements,
             );
         },
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element } }) => {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element } } => {
             let _ = check_sequence_literal(state, scope, node, element, Option::None, elements);
         },
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Map { key, value } }) => check_map_literal(
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Map { key, value } } => check_map_literal(
             state,
             scope,
             node,
@@ -809,11 +809,11 @@ fn check_composite_literal(
         },
         None => {
             let resolved = resolve_type(state, scope, type_node);
-            let valid_literal_type = match go_types::get_type(
+            let valid_literal_type = match go_types::type_data(
                 state.world,
                 core_type_id(state, resolved),
             ) {
-                Some(go_types::TypeData {
+                go_types::TypeData {
                     id: _,
                     kind: go_types::TypeKind::Struct { fields: _ } | go_types::TypeKind::Array {
                         length: _,
@@ -822,7 +822,7 @@ fn check_composite_literal(
                         key: _,
                         value: _,
                     },
-                }) => true,
+                } => true,
                 _ => false,
             };
             let invalid_core = resolved.value != state.world.invalid.value

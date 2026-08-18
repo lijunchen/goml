@@ -97,18 +97,18 @@ fn native_basic_key(basic: go_types::BasicKind, untyped: bool) -> Result[string,
 
 fn native_type_key(world: go_types::World, type_id: go_types::TypeId) -> Result[string, string] {
     let canonical = go_types::unalias(world, type_id);
-    match go_types::get_type(world, canonical) {
-        Some(go_types::TypeData {
-            id: _,
-            kind: go_types::TypeKind::Basic { basic, name: _, untyped },
-        }) => native_basic_key(basic, untyped),
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element } }) => Result::Ok(
+    match go_types::type_data(world, canonical) {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Basic { basic, name: _, untyped } } => native_basic_key(
+            basic,
+            untyped,
+        ),
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element } } => Result::Ok(
             "[]" + native_type_key(world, element)?,
         ),
-        Some(go_types::TypeData {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Named { object, underlying, type_params, type_args, .. },
-        }) => if go_types::is_interface(world, underlying) {
+        } => if go_types::is_interface(world, underlying) {
             let value = world.objects[object.value];
             if value.name == "error" {
                 Result::Ok("error")
@@ -123,7 +123,7 @@ fn native_type_key(world: go_types::World, type_id: go_types::TypeId) -> Result[
         } else {
             native_type_key(world, underlying)
         },
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } }) => {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } } => {
             let key = native_type_key(world, element)?;
             if key.starts_with("native:") {
                 Result::Ok("native:*" + key.byte_slice(7, key.byte_len()))
@@ -131,14 +131,13 @@ fn native_type_key(world: go_types::World, type_id: go_types::TypeId) -> Result[
                 Result::Err("pointer target is not a native opaque type")
             }
         },
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Interface { .. } }) => {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Interface { .. } } => {
             Result::Ok("interface")
         },
-        Some(go_types::TypeData {
-            id: _,
-            kind: go_types::TypeKind::Chan { direction: _, element: _ },
-        }) => Result::Ok("channel"),
-        Some(go_types::TypeData {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Chan { direction: _, element: _ } } => Result::Ok(
+            "channel",
+        ),
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Signature {
                 receiver: None,
@@ -148,7 +147,7 @@ fn native_type_key(world: go_types::World, type_id: go_types::TypeId) -> Result[
                 results,
                 variadic,
             },
-        }) => {
+        } => {
             if !receiver_type_params.is_empty() || !type_params.is_empty() {
                 return Result::Err("generic callback functions are not supported")
             } else {};

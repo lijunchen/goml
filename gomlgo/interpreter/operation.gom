@@ -52,11 +52,10 @@ fn float64_integer(value: float64) -> Result[int64, string] {
 
 pub fn basic_kind(world: go_types::World, type_id: go_types::TypeId) -> Option[go_types::BasicKind] {
     let underlying = go_types::underlying(world, type_id);
-    match go_types::get_type(world, underlying) {
-        Some(go_types::TypeData {
-            id: _,
-            kind: go_types::TypeKind::Basic { basic, name: _, untyped: _ },
-        }) => Option::Some(basic),
+    match go_types::type_data(world, underlying) {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Basic { basic, name: _, untyped: _ } } => Option::Some(
+            basic,
+        ),
         _ => Option::None,
     }
 }
@@ -869,11 +868,8 @@ pub fn convert_value(
             ),
         }
     } else {};
-    match go_types::get_type(world, go_types::underlying(world, target)) {
-        Some(go_types::TypeData {
-            id: _,
-            kind: go_types::TypeKind::Chan { direction: _, element: _ },
-        }) => return match value {
+    match go_types::type_data(world, go_types::underlying(world, target)) {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Chan { direction: _, element: _ } } => return match value {
             Value::Local(LocalValue::Channel(id)) => Result::Ok(
                 Value::Local(LocalValue::Channel(id)),
             ),

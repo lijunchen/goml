@@ -386,8 +386,8 @@ fn core_type_id(state: CheckState, value: go_types::TypeId) -> go_types::TypeId 
 }
 
 fn pointer_to_interface_type(state: CheckState, value: go_types::TypeId) -> bool {
-    match go_types::get_type(state.world, core_type_id(state, value)) {
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } }) => go_types::is_interface(
+    match go_types::type_data(state.world, core_type_id(state, value)) {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } } => go_types::is_interface(
             state.world,
             element,
         ),
@@ -594,8 +594,8 @@ fn type_contains_active_type(state: CheckState, type_id: go_types::TypeId) -> bo
 }
 
 fn invalid_source_assignment_recoverable(state: CheckState, type_id: go_types::TypeId) -> bool {
-    match go_types::get_type(state.world, go_types::unalias(state.world, type_id)) {
-        Some(go_types::TypeData {
+    match go_types::type_data(state.world, go_types::unalias(state.world, type_id)) {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Signature {
                 receiver: _,
@@ -605,7 +605,7 @@ fn invalid_source_assignment_recoverable(state: CheckState, type_id: go_types::T
                 results: _,
                 variadic: _,
             },
-        }) => false,
+        } => false,
         _ => true,
     }
 }
@@ -2441,8 +2441,8 @@ fn recovered_signature_call_result(
 }
 
 fn direct_signature_type(state: CheckState, type_id: go_types::TypeId) -> bool {
-    match go_types::get_type(state.world, go_types::unalias(state.world, type_id)) {
-        Some(go_types::TypeData {
+    match go_types::type_data(state.world, go_types::unalias(state.world, type_id)) {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Signature {
                 receiver: _,
@@ -2452,7 +2452,7 @@ fn direct_signature_type(state: CheckState, type_id: go_types::TypeId) -> bool {
                 results: _,
                 variadic: _,
             },
-        }) => true,
+        } => true,
         _ => false,
     }
 }
@@ -4048,8 +4048,8 @@ fn recovered_field_selection_type(state: CheckState, type_id: go_types::TypeId) 
     if incomplete_named_instance(state, type_id) {
         return state.world.invalid
     } else {};
-    match go_types::get_type(state.world, go_types::unalias(state.world, type_id)) {
-        Some(go_types::TypeData {
+    match go_types::type_data(state.world, go_types::unalias(state.world, type_id)) {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Signature {
                 receiver,
@@ -4059,7 +4059,7 @@ fn recovered_field_selection_type(state: CheckState, type_id: go_types::TypeId) 
                 results,
                 variadic,
             },
-        }) => {
+        } => {
             let parameter_variables: Vec[go_types::Variable] = Vec::from_array([]);
             let result_variables: Vec[go_types::Variable] = Vec::from_array([]);
             let mut changed = false;
@@ -4789,22 +4789,22 @@ fn dereference_operand(
 }
 
 fn anonymous_empty_type_parameter(state: CheckState, value: go_types::TypeId) -> bool {
-    match go_types::get_type(state.world, go_types::unalias(state.world, value)) {
-        Some(go_types::TypeData {
+    match go_types::type_data(state.world, go_types::unalias(state.world, value)) {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::TypeParam { object: _, constraint, index: _ },
-        }) => !go_types::is_named(state.world, constraint)
+        } => !go_types::is_named(state.world, constraint)
             && go_types::type_set_is_empty(state.world, constraint),
         _ => false,
     }
 }
 
 fn type_parameter_constraint_contains_invalid(state: CheckState, value: go_types::TypeId) -> bool {
-    match go_types::get_type(state.world, go_types::unalias(state.world, value)) {
-        Some(go_types::TypeData {
+    match go_types::type_data(state.world, go_types::unalias(state.world, value)) {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::TypeParam { object: _, constraint, index: _ },
-        }) => type_contains_invalid(state, constraint),
+        } => type_contains_invalid(state, constraint),
         _ => false,
     }
 }

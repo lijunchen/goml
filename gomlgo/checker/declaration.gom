@@ -2634,8 +2634,8 @@ fn check_deferred_type_validations(state: CheckState) -> unit {
     for type_id in state.deferred_type_validations {
         check_deferred_map_keys(state, type_id);
         let _ = validate_named_type_inner(state, type_id, Vec::from_array([]), Vec::from_array([]));
-        match go_types::get_type(state.world, go_types::unalias(state.world, type_id)) {
-            Some(go_types::TypeData {
+        match go_types::type_data(state.world, go_types::unalias(state.world, type_id)) {
+            go_types::TypeData {
                 id: _,
                 kind: go_types::TypeKind::Named {
                     object,
@@ -2644,7 +2644,7 @@ fn check_deferred_type_validations(state: CheckState) -> unit {
                     type_args: _,
                     methods: _,
                 },
-            }) => {
+            } => {
                 report_deferred_interface_method_diagnostics(state, object);
                 report_deferred_interface_overlap_diagnostics(state, object);
                 report_deferred_interface_version_diagnostics(state, object)
@@ -3453,8 +3453,8 @@ fn evaluate_function_object(state: CheckState, object: go_types::ObjectId) -> bo
         state.pending_functions[index].status = 3;
         false
     } else {
-        match go_types::get_type(state.world, signature) {
-            Some(go_types::TypeData {
+        match go_types::type_data(state.world, signature) {
+            go_types::TypeData {
                 id: _,
                 kind: go_types::TypeKind::Signature {
                     receiver,
@@ -3464,7 +3464,7 @@ fn evaluate_function_object(state: CheckState, object: go_types::ObjectId) -> bo
                     results,
                     variadic,
                 },
-            }) => {
+            } => {
                 let _ = go_types::set_type(
                     state.world,
                     provisional,
