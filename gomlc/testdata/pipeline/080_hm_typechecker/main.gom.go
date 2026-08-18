@@ -273,19 +273,10 @@ type Link struct {
 
 func (_ Link) isTv() {}
 
-type Option__Typ interface {
-    isOption__Typ()
+type Option__Typ struct {
+    _tag int32
+    _v1_0 Typ
 }
-
-type None struct {}
-
-func (_ None) isOption__Typ() {}
-
-type Some struct {
-    _0 Typ
-}
-
-func (_ Some) isOption__Typ() {}
 
 type Result__unit__string struct {
     _tag int32
@@ -293,21 +284,11 @@ type Result__unit__string struct {
     _v1_0 string
 }
 
-type Result__Typ__string interface {
-    isResult__Typ__string()
+type Result__Typ__string struct {
+    _tag int32
+    _v0_0 Typ
+    _v1_0 string
 }
-
-type Result__Typ__string_Ok struct {
-    _0 Typ
-}
-
-func (_ Result__Typ__string_Ok) isResult__Typ__string() {}
-
-type Result__Typ__string_Err struct {
-    _0 string
-}
-
-func (_ Result__Typ__string_Err) isResult__Typ__string() {}
 
 func state_new() CheckerState {
     var t606 *ref_int32_x
@@ -496,7 +477,9 @@ func env_lookup(env__28 *_goml_vec_EnvEntry, name__29 string) Option__Typ {
     var inline1249 *ref_int_x = ref__Ref_3int(t680)
     i__30 = inline1249
     var found__31 *ref_Option__Typ_x
-    var inline1247 *ref_Option__Typ_x = ref__Ref_11Option__Typ(None{})
+    var inline1247 *ref_Option__Typ_x = ref__Ref_11Option__Typ(Option__Typ{
+        _tag: 0,
+    })
     found__31 = inline1247
     var done__32 *ref_bool_x
     var inline1244 bool = false
@@ -527,8 +510,9 @@ func env_lookup(env__28 *_goml_vec_EnvEntry, name__29 string) Option__Typ {
             var t689 bool = t688 == name__29
             if t689 {
                 var t690 Typ = entry__33.ty
-                var t691 Option__Typ = Some{
-                    _0: t690,
+                var t691 Option__Typ = Option__Typ{
+                    _tag: 1,
+                    _v1_0: t690,
                 }
                 ref_set__Ref_11Option__Typ(found__31, t691)
                 var inline1229 bool = true
@@ -559,7 +543,9 @@ func subst_lookup(subst__34 *_goml_vec_SubstEntry, name__35 string) Option__Typ 
     var inline1275 *ref_int_x = ref__Ref_3int(t703)
     i__36 = inline1275
     var found__37 *ref_Option__Typ_x
-    var inline1273 *ref_Option__Typ_x = ref__Ref_11Option__Typ(None{})
+    var inline1273 *ref_Option__Typ_x = ref__Ref_11Option__Typ(Option__Typ{
+        _tag: 0,
+    })
     found__37 = inline1273
     var done__38 *ref_bool_x
     var inline1270 bool = false
@@ -590,8 +576,9 @@ func subst_lookup(subst__34 *_goml_vec_SubstEntry, name__35 string) Option__Typ 
             var t712 bool = t711 == name__35
             if t712 {
                 var t713 Typ = entry__39.ty
-                var t714 Option__Typ = Some{
-                    _0: t713,
+                var t714 Option__Typ = Option__Typ{
+                    _tag: 1,
+                    _v1_0: t713,
                 }
                 ref_set__Ref_11Option__Typ(found__37, t714)
                 var inline1255 bool = true
@@ -990,8 +977,8 @@ func inst_loop(st__83 CheckerState, subst__84 *_goml_vec_SubstEntry, ty__85 Typ)
     case QVar:
         var x517 string = ty__85.(QVar)._0
         var mtmp524 Option__Typ = subst_lookup(subst__84, x517)
-        switch mtmp524.(type) {
-        case None:
+        switch mtmp524._tag {
+        case 0:
             var tv__88 Typ
             var inline1311 string = gensym(st__83)
             var inline1312 *ref_int32_x = st__83.current_level
@@ -1015,8 +1002,8 @@ func inst_loop(st__83 CheckerState, subst__84 *_goml_vec_SubstEntry, ty__85 Typ)
                 _1: new_subst__89,
             }
             return t831
-        case Some:
-            var x525 Typ = mtmp524.(Some)._0
+        case 1:
+            var x525 Typ = mtmp524._v1_0
             var t832 Tuple2_3Typ_16Vec_10SubstEntry = Tuple2_3Typ_16Vec_10SubstEntry{
                 _0: x525,
                 _1: subst__84,
@@ -1053,21 +1040,23 @@ func typeof(st__102 CheckerState, env__103 *_goml_vec_EnvEntry, e__104 Exp) Resu
     case Var:
         var x535 string = e__104.(Var)._0
         var mtmp543 Option__Typ = env_lookup(env__103, x535)
-        switch mtmp543.(type) {
-        case None:
-            var t843 Result__Typ__string = Result__Typ__string_Err{
-                _0: "unbound var",
+        switch mtmp543._tag {
+        case 0:
+            var t843 Result__Typ__string = Result__Typ__string{
+                _tag: 1,
+                _v1_0: "unbound var",
             }
             return t843
-        case Some:
-            var x544 Typ = mtmp543.(Some)._0
+        case 1:
+            var x544 Typ = mtmp543._v1_0
             var t844 Typ
             var inline1320 *_goml_vec_SubstEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__SubstEntry()
             var inline1321 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__102, inline1320, x544)
             var inline1322 Typ = inline1321._0
             t844 = inline1322
-            var t845 Result__Typ__string = Result__Typ__string_Ok{
-                _0: t844,
+            var t845 Result__Typ__string = Result__Typ__string{
+                _tag: 0,
+                _v0_0: t844,
             }
             return t845
         default:
@@ -1077,13 +1066,13 @@ func typeof(st__102 CheckerState, env__103 *_goml_vec_EnvEntry, e__104 Exp) Resu
         var x536 Exp = e__104.(App)._0
         var x537 Exp = e__104.(App)._1
         var mtmp545 Result__Typ__string = typeof(st__102, env__103, x536)
-        switch mtmp545.(type) {
-        case Result__Typ__string_Ok:
-            var x546 Typ = mtmp545.(Result__Typ__string_Ok)._0
+        switch mtmp545._tag {
+        case 0:
+            var x546 Typ = mtmp545._v0_0
             var mtmp548 Result__Typ__string = typeof(st__102, env__103, x537)
-            switch mtmp548.(type) {
-            case Result__Typ__string_Ok:
-                var x549 Typ = mtmp548.(Result__Typ__string_Ok)._0
+            switch mtmp548._tag {
+            case 0:
+                var x549 Typ = mtmp548._v0_0
                 var ty_res__119 Typ
                 var inline1325 string = gensym(st__102)
                 var inline1326 *ref_int32_x = st__102.current_level
@@ -1104,32 +1093,36 @@ func typeof(st__102 CheckerState, env__103 *_goml_vec_EnvEntry, e__104 Exp) Resu
                 var mtmp551 Result__unit__string = unify(st__102, x546, arrow__120)
                 switch mtmp551._tag {
                 case 0:
-                    var t852 Result__Typ__string = Result__Typ__string_Ok{
-                        _0: ty_res__119,
+                    var t852 Result__Typ__string = Result__Typ__string{
+                        _tag: 0,
+                        _v0_0: ty_res__119,
                     }
                     return t852
                 case 1:
                     var x553 string = mtmp551._v1_0
-                    var t853 Result__Typ__string = Result__Typ__string_Err{
-                        _0: x553,
+                    var t853 Result__Typ__string = Result__Typ__string{
+                        _tag: 1,
+                        _v1_0: x553,
                     }
                     return t853
                 default:
                     panic("non-exhaustive match")
                 }
-            case Result__Typ__string_Err:
-                var x550 string = mtmp548.(Result__Typ__string_Err)._0
-                var t854 Result__Typ__string = Result__Typ__string_Err{
-                    _0: x550,
+            case 1:
+                var x550 string = mtmp548._v1_0
+                var t854 Result__Typ__string = Result__Typ__string{
+                    _tag: 1,
+                    _v1_0: x550,
                 }
                 return t854
             default:
                 panic("non-exhaustive match")
             }
-        case Result__Typ__string_Err:
-            var x547 string = mtmp545.(Result__Typ__string_Err)._0
-            var t855 Result__Typ__string = Result__Typ__string_Err{
-                _0: x547,
+        case 1:
+            var x547 string = mtmp545._v1_0
+            var t855 Result__Typ__string = Result__Typ__string{
+                _tag: 1,
+                _v1_0: x547,
             }
             return t855
         default:
@@ -1157,21 +1150,23 @@ func typeof(st__102 CheckerState, env__103 *_goml_vec_EnvEntry, e__104 Exp) Resu
         }
         var env2__110 *_goml_vec_EnvEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__EnvEntry(env__103, t856)
         var mtmp554 Result__Typ__string = typeof(st__102, env2__110, x539)
-        switch mtmp554.(type) {
-        case Result__Typ__string_Ok:
-            var x555 Typ = mtmp554.(Result__Typ__string_Ok)._0
+        switch mtmp554._tag {
+        case 0:
+            var x555 Typ = mtmp554._v0_0
             var t859 Typ = TArrow{
                 _0: ty_x__109,
                 _1: x555,
             }
-            var t860 Result__Typ__string = Result__Typ__string_Ok{
-                _0: t859,
+            var t860 Result__Typ__string = Result__Typ__string{
+                _tag: 0,
+                _v0_0: t859,
             }
             return t860
-        case Result__Typ__string_Err:
-            var x556 string = mtmp554.(Result__Typ__string_Err)._0
-            var t861 Result__Typ__string = Result__Typ__string_Err{
-                _0: x556,
+        case 1:
+            var x556 string = mtmp554._v1_0
+            var t861 Result__Typ__string = Result__Typ__string{
+                _tag: 1,
+                _v1_0: x556,
             }
             return t861
         default:
@@ -1192,9 +1187,9 @@ func typeof(st__102 CheckerState, env__103 *_goml_vec_EnvEntry, e__104 Exp) Resu
         var inline1341 *ref_int32_x = st__102.current_level
         var inline1342 int32 = inline1340 - 1
         _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(inline1341, inline1342)
-        switch ty_e__125.(type) {
-        case Result__Typ__string_Ok:
-            var x559 Typ = ty_e__125.(Result__Typ__string_Ok)._0
+        switch ty_e__125._tag {
+        case 0:
+            var x559 Typ = ty_e__125._v0_0
             var t864 Typ = gen(st__102, x559)
             var t865 EnvEntry = EnvEntry{
                 name: x540,
@@ -1203,10 +1198,11 @@ func typeof(st__102 CheckerState, env__103 *_goml_vec_EnvEntry, e__104 Exp) Resu
             var env2__128 *_goml_vec_EnvEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__EnvEntry(env__103, t865)
             var t866 Result__Typ__string = typeof(st__102, env2__128, x542)
             return t866
-        case Result__Typ__string_Err:
-            var x560 string = ty_e__125.(Result__Typ__string_Err)._0
-            var t867 Result__Typ__string = Result__Typ__string_Err{
-                _0: x560,
+        case 1:
+            var x560 string = ty_e__125._v1_0
+            var t867 Result__Typ__string = Result__Typ__string{
+                _tag: 1,
+                _v1_0: x560,
             }
             return t867
         default:
@@ -1250,17 +1246,17 @@ func exp_let(name__134 string, a__135 Exp, b__136 Exp) Exp {
 }
 
 func show_result(label__137 string, res__138 Result__Typ__string) struct{} {
-    switch res__138.(type) {
-    case Result__Typ__string_Ok:
-        var x561 Typ = res__138.(Result__Typ__string_Ok)._0
+    switch res__138._tag {
+    case 0:
+        var x561 Typ = res__138._v0_0
         var t882 string = label__137 + ": "
         var t883 string = typ_to_string(x561)
         var t884 string = t882 + t883
         var inline1351 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t884)
         _goml_runtime_core_string_println(inline1351)
         return struct{}{}
-    case Result__Typ__string_Err:
-        var x562 string = res__138.(Result__Typ__string_Err)._0
+    case 1:
+        var x562 string = res__138._v1_0
         var t886 string = label__137 + ": "
         var t887 string = t886 + x562
         var inline1354 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t887)
@@ -1524,15 +1520,15 @@ func main0() struct{} {
     t1038 = inline1383
     var t1039 Result__Typ__string = typeof(st__141, t1031, t1038)
     var inline1369 string = "fun_x_let_y_let_z_x_id_z_y"
-    switch t1039.(type) {
-    case Result__Typ__string_Ok:
-        var inline1370 Typ = t1039.(Result__Typ__string_Ok)._0
+    switch t1039._tag {
+    case 0:
+        var inline1370 Typ = t1039._v0_0
         var inline1372 string = inline1369 + ": "
         var inline1373 string = typ_to_string(inline1370)
         var inline1374 string = inline1372 + inline1373
         println__T_string(inline1374)
-    case Result__Typ__string_Err:
-        var inline1376 string = t1039.(Result__Typ__string_Err)._0
+    case 1:
+        var inline1376 string = t1039._v1_0
         var inline1378 string = inline1369 + ": "
         var inline1379 string = inline1378 + inline1376
         println__T_string(inline1379)

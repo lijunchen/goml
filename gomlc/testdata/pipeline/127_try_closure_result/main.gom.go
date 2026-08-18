@@ -16,21 +16,11 @@ type closure_env_run_0 struct {
 
 type Ordering int32
 
-type Result__string__string interface {
-    isResult__string__string()
+type Result__string__string struct {
+    _tag int32
+    _v0_0 string
+    _v1_0 string
 }
-
-type Ok struct {
-    _0 string
-}
-
-func (_ Ok) isResult__string__string() {}
-
-type Err struct {
-    _0 string
-}
-
-func (_ Err) isResult__string__string() {}
 
 func main0() struct{} {
     var t433 Result__string__string
@@ -46,13 +36,13 @@ func main0() struct{} {
     var inline481 Result__string__string = inline480()
     t433 = inline481
     var t434 string
-    switch t433.(type) {
-    case Ok:
-        var inline470 string = t433.(Ok)._0
+    switch t433._tag {
+    case 0:
+        var inline470 string = t433._v0_0
         var inline472 string = "ok " + inline470
         t434 = inline472
-    case Err:
-        var inline473 string = t433.(Err)._0
+    case 1:
+        var inline473 string = t433._v1_0
         var inline475 string = "err " + inline473
         t434 = inline475
     default:
@@ -73,13 +63,13 @@ func main0() struct{} {
     var inline465 Result__string__string = inline464()
     t435 = inline465
     var t436 string
-    switch t435.(type) {
-    case Ok:
-        var inline454 string = t435.(Ok)._0
+    switch t435._tag {
+    case 0:
+        var inline454 string = t435._v0_0
         var inline456 string = "ok " + inline454
         t436 = inline456
-    case Err:
-        var inline457 string = t435.(Err)._0
+    case 1:
+        var inline457 string = t435._v1_0
         var inline459 string = "err " + inline457
         t436 = inline459
     default:
@@ -99,31 +89,35 @@ func _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(env4
     var prefix__1 string = env415.prefix_1
     var mtmp408 Result__string__string
     if ok__2 {
-        var inline484 Result__string__string = Ok{
-            _0: "body",
+        var inline484 Result__string__string = Result__string__string{
+            _tag: 0,
+            _v0_0: "body",
         }
         mtmp408 = inline484
     } else {
-        var inline485 Result__string__string = Err{
-            _0: "parse failed",
+        var inline485 Result__string__string = Result__string__string{
+            _tag: 1,
+            _v1_0: "parse failed",
         }
         mtmp408 = inline485
     }
     var jp445 string
-    switch mtmp408.(type) {
-    case Ok:
-        var x409 string = mtmp408.(Ok)._0
+    switch mtmp408._tag {
+    case 0:
+        var x409 string = mtmp408._v0_0
         jp445 = x409
         var t446 string = prefix__1 + ":"
         var t447 string = t446 + jp445
-        var t448 Result__string__string = Ok{
-            _0: t447,
+        var t448 Result__string__string = Result__string__string{
+            _tag: 0,
+            _v0_0: t447,
         }
         return t448
-    case Err:
-        var x410 string = mtmp408.(Err)._0
-        var t449 Result__string__string = Err{
-            _0: x410,
+    case 1:
+        var x410 string = mtmp408._v1_0
+        var t449 Result__string__string = Result__string__string{
+            _tag: 1,
+            _v1_0: x410,
         }
         return t449
     default:

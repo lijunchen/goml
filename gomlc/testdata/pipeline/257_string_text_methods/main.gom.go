@@ -205,19 +205,10 @@ type closure_env_inherent_string_string_char_indices_2 struct {
 
 type Ordering int32
 
-type _goml_m_Option_____o_string_c_string_q_ interface {
-    is_goml_m_Option_____o_string_c_string_q_()
+type _goml_m_Option_____o_string_c_string_q_ struct {
+    _tag int32
+    _v1_0 Tuple2_6string_6string
 }
-
-type _goml_m_Option_____o_string_c_string_q__None struct {}
-
-func (_ _goml_m_Option_____o_string_c_string_q__None) is_goml_m_Option_____o_string_c_string_q_() {}
-
-type _goml_m_Option_____o_string_c_string_q__Some struct {
-    _0 Tuple2_6string_6string
-}
-
-func (_ _goml_m_Option_____o_string_c_string_q__Some) is_goml_m_Option_____o_string_c_string_q_() {}
 
 type Option__int struct {
     _tag int32
@@ -571,14 +562,18 @@ func _goml_m_inherent_i_string_i_string_i_split__once(self__102 string, separato
     value_len__105 = inline1269
     var t543 bool = separator_len__104 == 0
     if t543 {
-        return _goml_m_Option_____o_string_c_string_q__None{}
+        return _goml_m_Option_____o_string_c_string_q_{
+            _tag: 0,
+        }
     } else {
         var mtmp93 Option__int
         var inline1267 Option__int = string_find_from(self__102, separator__103, 0)
         mtmp93 = inline1267
         switch mtmp93._tag {
         case 0:
-            return _goml_m_Option_____o_string_c_string_q__None{}
+            return _goml_m_Option_____o_string_c_string_q_{
+                _tag: 0,
+            }
         case 1:
             var x94 int = mtmp93._v1_0
             var t546 string
@@ -593,8 +588,9 @@ func _goml_m_inherent_i_string_i_string_i_split__once(self__102 string, separato
                 _0: t546,
                 _1: t548,
             }
-            var t550 _goml_m_Option_____o_string_c_string_q_ = _goml_m_Option_____o_string_c_string_q__Some{
-                _0: t549,
+            var t550 _goml_m_Option_____o_string_c_string_q_ = _goml_m_Option_____o_string_c_string_q_{
+                _tag: 1,
+                _v1_0: t549,
             }
             return t550
         default:
@@ -604,11 +600,11 @@ func _goml_m_inherent_i_string_i_string_i_split__once(self__102 string, separato
 }
 
 func _goml_m_inherent_i_Option_i_Op_h43ad6114bf7944dd0f967bbedf6419b6_ing_c_string_q_(self__458 _goml_m_Option_____o_string_c_string_q_, fallback__459 Tuple2_6string_6string) Tuple2_6string_6string {
-    switch self__458.(type) {
-    case _goml_m_Option_____o_string_c_string_q__None:
+    switch self__458._tag {
+    case 0:
         return fallback__459
-    case _goml_m_Option_____o_string_c_string_q__Some:
-        var x387 Tuple2_6string_6string = self__458.(_goml_m_Option_____o_string_c_string_q__Some)._0
+    case 1:
+        var x387 Tuple2_6string_6string = self__458._v1_0
         return x387
     default:
         panic("non-exhaustive match")

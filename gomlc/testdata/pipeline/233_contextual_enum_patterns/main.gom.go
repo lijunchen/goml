@@ -105,19 +105,10 @@ type Result__int__string struct {
     _v1_0 string
 }
 
-type Option__Result__int__string interface {
-    isOption__Result__int__string()
+type Option__Result__int__string struct {
+    _tag int32
+    _v1_0 Result__int__string
 }
-
-type Option__Result__int__string_None struct {}
-
-func (_ Option__Result__int__string_None) isOption__Result__int__string() {}
-
-type Option__Result__int__string_Some struct {
-    _0 Result__int__string
-}
-
-func (_ Option__Result__int__string_Some) isOption__Result__int__string() {}
 
 type Option__int struct {
     _tag int32
@@ -155,11 +146,11 @@ func classify(value__0 First__int) string {
 }
 
 func nested(value__4 Option__Result__int__string) string {
-    switch value__4.(type) {
-    case Option__Result__int__string_None:
+    switch value__4._tag {
+    case 0:
         return "none"
-    case Option__Result__int__string_Some:
-        var x411 Result__int__string = value__4.(Option__Result__int__string_Some)._0
+    case 1:
+        var x411 Result__int__string = value__4._v1_0
         switch x411._tag {
         case 0:
             var x412 int = x411._v0_0
@@ -279,8 +270,9 @@ func main0() struct{} {
         _tag: 0,
         _v0_0: 11,
     }
-    var t501 Option__Result__int__string = Option__Result__int__string_Some{
-        _0: t500,
+    var t501 Option__Result__int__string = Option__Result__int__string{
+        _tag: 1,
+        _v1_0: t500,
     }
     var t502 string = nested(t501)
     println__T_string(t502)
@@ -288,12 +280,15 @@ func main0() struct{} {
         _tag: 1,
         _v1_0: "bad",
     }
-    var t504 Option__Result__int__string = Option__Result__int__string_Some{
-        _0: t503,
+    var t504 Option__Result__int__string = Option__Result__int__string{
+        _tag: 1,
+        _v1_0: t503,
     }
     var t505 string = nested(t504)
     println__T_string(t505)
-    var t506 string = nested(Option__Result__int__string_None{})
+    var t506 string = nested(Option__Result__int__string{
+        _tag: 0,
+    })
     var inline638 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t506)
     _goml_runtime_core_string_println(inline638)
     var t508 int

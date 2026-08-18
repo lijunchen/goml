@@ -197,19 +197,10 @@ const (
     Greater Ordering = 2
 )
 
-type Option__Ordering interface {
-    isOption__Ordering()
+type Option__Ordering struct {
+    _tag int32
+    _v1_0 Ordering
 }
-
-type Option__Ordering_None struct {}
-
-func (_ Option__Ordering_None) isOption__Ordering() {}
-
-type Option__Ordering_Some struct {
-    _0 Ordering
-}
-
-func (_ Option__Ordering_Some) isOption__Ordering() {}
 
 type Option__int struct {
     _tag int32

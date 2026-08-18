@@ -16,19 +16,10 @@ type Tuple2_6string_6string struct {
 
 type Ordering int32
 
-type _goml_m_Option_____o_string_c_string_q_ interface {
-    is_goml_m_Option_____o_string_c_string_q_()
+type _goml_m_Option_____o_string_c_string_q_ struct {
+    _tag int32
+    _v1_0 Tuple2_6string_6string
 }
-
-type _goml_m_Option_____o_string_c_string_q__None struct {}
-
-func (_ _goml_m_Option_____o_string_c_string_q__None) is_goml_m_Option_____o_string_c_string_q_() {}
-
-type _goml_m_Option_____o_string_c_string_q__Some struct {
-    _0 Tuple2_6string_6string
-}
-
-func (_ _goml_m_Option_____o_string_c_string_q__Some) is_goml_m_Option_____o_string_c_string_q_() {}
 
 type Option__string struct {
     _tag int32
@@ -41,12 +32,15 @@ func cut_pair(ok__0 bool) _goml_m_Option_____o_string_c_string_q_ {
             _0: "left",
             _1: "right",
         }
-        var t419 _goml_m_Option_____o_string_c_string_q_ = _goml_m_Option_____o_string_c_string_q__Some{
-            _0: t418,
+        var t419 _goml_m_Option_____o_string_c_string_q_ = _goml_m_Option_____o_string_c_string_q_{
+            _tag: 1,
+            _v1_0: t418,
         }
         return t419
     } else {
-        return _goml_m_Option_____o_string_c_string_q__None{}
+        return _goml_m_Option_____o_string_c_string_q_{
+            _tag: 0,
+        }
     }
 }
 
@@ -54,8 +48,8 @@ func main0() struct{} {
     var t431 Option__string
     var inline467 bool = true
     var inline468 _goml_m_Option_____o_string_c_string_q_ = cut_pair(inline467)
-    switch inline468.(type) {
-    case _goml_m_Option_____o_string_c_string_q__None:
+    switch inline468._tag {
+    case 0:
         t431 = Option__string{
             _tag: 0,
         }
@@ -75,8 +69,8 @@ func main0() struct{} {
         var t433 Option__string
         var inline451 bool = false
         var inline452 _goml_m_Option_____o_string_c_string_q_ = cut_pair(inline451)
-        switch inline452.(type) {
-        case _goml_m_Option_____o_string_c_string_q__None:
+        switch inline452._tag {
+        case 0:
             t433 = Option__string{
                 _tag: 0,
             }
@@ -94,7 +88,7 @@ func main0() struct{} {
             var inline444 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t434)
             _goml_runtime_core_string_println(inline444)
             return struct{}{}
-        case _goml_m_Option_____o_string_c_string_q__Some:
+        case 1:
             var inline456 Option__string = Option__string{
                 _tag: 1,
                 _v1_0: "ok",
@@ -117,7 +111,7 @@ func main0() struct{} {
         default:
             panic("non-exhaustive match")
         }
-    case _goml_m_Option_____o_string_c_string_q__Some:
+    case 1:
         var inline472 Option__string = Option__string{
             _tag: 1,
             _v1_0: "ok",
@@ -139,8 +133,8 @@ func main0() struct{} {
         var t433 Option__string
         var inline451 bool = false
         var inline452 _goml_m_Option_____o_string_c_string_q_ = cut_pair(inline451)
-        switch inline452.(type) {
-        case _goml_m_Option_____o_string_c_string_q__None:
+        switch inline452._tag {
+        case 0:
             t433 = Option__string{
                 _tag: 0,
             }
@@ -158,7 +152,7 @@ func main0() struct{} {
             var inline444 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t434)
             _goml_runtime_core_string_println(inline444)
             return struct{}{}
-        case _goml_m_Option_____o_string_c_string_q__Some:
+        case 1:
             var inline456 Option__string = Option__string{
                 _tag: 1,
                 _v1_0: "ok",

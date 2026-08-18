@@ -57,21 +57,11 @@ type Result__int__int struct {
     _v1_0 int
 }
 
-type Result__string__string interface {
-    isResult__string__string()
+type Result__string__string struct {
+    _tag int32
+    _v0_0 string
+    _v1_0 string
 }
-
-type Result__string__string_Ok struct {
-    _0 string
-}
-
-func (_ Result__string__string_Ok) isResult__string__string() {}
-
-type Result__string__string_Err struct {
-    _0 string
-}
-
-func (_ Result__string__string_Err) isResult__string__string() {}
 
 func main0() struct{} {
     var some__0 Option__int = Option__int{
@@ -171,11 +161,11 @@ func main0() struct{} {
     next__17 = inline562
     var t447 string
     var inline556 string = "missing"
-    switch next__17.(type) {
-    case Result__string__string_Ok:
-        var inline557 string = next__17.(Result__string__string_Ok)._0
+    switch next__17._tag {
+    case 0:
+        var inline557 string = next__17._v0_0
         t447 = inline557
-    case Result__string__string_Err:
+    case 1:
         t447 = inline556
     default:
         panic("non-exhaustive match")
@@ -360,8 +350,9 @@ func _goml_m_inherent_i_closure__env__main__7_i_closure__env__main__7_i_apply(en
     var inline604 string = _goml_runtime_core_int_to_string(value__16)
     t549 = inline604
     var t550 string = "next:" + t549
-    var t551 Result__string__string = Result__string__string_Ok{
-        _0: t550,
+    var t551 Result__string__string = Result__string__string{
+        _tag: 0,
+        _v0_0: t550,
     }
     return t551
 }

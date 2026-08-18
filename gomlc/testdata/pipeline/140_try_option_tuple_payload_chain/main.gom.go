@@ -16,19 +16,10 @@ type Tuple2_6string_6string struct {
 
 type Ordering int32
 
-type _goml_m_Option_____o_string_c_string_q_ interface {
-    is_goml_m_Option_____o_string_c_string_q_()
+type _goml_m_Option_____o_string_c_string_q_ struct {
+    _tag int32
+    _v1_0 Tuple2_6string_6string
 }
-
-type _goml_m_Option_____o_string_c_string_q__None struct {}
-
-func (_ _goml_m_Option_____o_string_c_string_q__None) is_goml_m_Option_____o_string_c_string_q_() {}
-
-type _goml_m_Option_____o_string_c_string_q__Some struct {
-    _0 Tuple2_6string_6string
-}
-
-func (_ _goml_m_Option_____o_string_c_string_q__Some) is_goml_m_Option_____o_string_c_string_q_() {}
 
 type Option__string struct {
     _tag int32
@@ -41,12 +32,15 @@ func cut_pair(ok__0 bool) _goml_m_Option_____o_string_c_string_q_ {
             _0: "left",
             _1: "right",
         }
-        var t421 _goml_m_Option_____o_string_c_string_q_ = _goml_m_Option_____o_string_c_string_q__Some{
-            _0: t420,
+        var t421 _goml_m_Option_____o_string_c_string_q_ = _goml_m_Option_____o_string_c_string_q_{
+            _tag: 1,
+            _v1_0: t420,
         }
         return t421
     } else {
-        return _goml_m_Option_____o_string_c_string_q__None{}
+        return _goml_m_Option_____o_string_c_string_q_{
+            _tag: 0,
+        }
     }
 }
 
@@ -56,12 +50,15 @@ func pair(ok__1 bool) _goml_m_Option_____o_string_c_string_q_ {
             _0: "left",
             _1: "right",
         }
-        var inline449 _goml_m_Option_____o_string_c_string_q_ = _goml_m_Option_____o_string_c_string_q__Some{
-            _0: inline448,
+        var inline449 _goml_m_Option_____o_string_c_string_q_ = _goml_m_Option_____o_string_c_string_q_{
+            _tag: 1,
+            _v1_0: inline448,
         }
         return inline449
     } else {
-        return _goml_m_Option_____o_string_c_string_q__None{}
+        return _goml_m_Option_____o_string_c_string_q_{
+            _tag: 0,
+        }
     }
 }
 
@@ -70,13 +67,13 @@ func describe(ok__2 bool) Option__string {
     var inline451 _goml_m_Option_____o_string_c_string_q_ = cut_pair(ok__2)
     mtmp408 = inline451
     var jp428 Tuple2_6string_6string
-    switch mtmp408.(type) {
-    case _goml_m_Option_____o_string_c_string_q__None:
+    switch mtmp408._tag {
+    case 0:
         return Option__string{
             _tag: 0,
         }
-    case _goml_m_Option_____o_string_c_string_q__Some:
-        var x409 Tuple2_6string_6string = mtmp408.(_goml_m_Option_____o_string_c_string_q__Some)._0
+    case 1:
+        var x409 Tuple2_6string_6string = mtmp408._v1_0
         jp428 = x409
         var x411 string = jp428._0
         var x412 string = jp428._1
@@ -111,8 +108,8 @@ func main0() struct{} {
     var inline460 bool = false
     var inline461 _goml_m_Option_____o_string_c_string_q_ = pair(inline460)
     var inline463 Tuple2_6string_6string
-    switch inline461.(type) {
-    case _goml_m_Option_____o_string_c_string_q__None:
+    switch inline461._tag {
+    case 0:
         t440 = Option__string{
             _tag: 0,
         }
@@ -130,8 +127,8 @@ func main0() struct{} {
         var inline453 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t441)
         _goml_runtime_core_string_println(inline453)
         return struct{}{}
-    case _goml_m_Option_____o_string_c_string_q__Some:
-        var inline472 Tuple2_6string_6string = inline461.(_goml_m_Option_____o_string_c_string_q__Some)._0
+    case 1:
+        var inline472 Tuple2_6string_6string = inline461._v1_0
         inline463 = inline472
         var inline465 string = inline463._0
         var inline466 string = inline463._1

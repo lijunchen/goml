@@ -298,21 +298,11 @@ type Option__uint8 struct {
     _v1_0 uint8
 }
 
-type Result__string__string interface {
-    isResult__string__string()
+type Result__string__string struct {
+    _tag int32
+    _v0_0 string
+    _v1_0 string
 }
-
-type Result__string__string_Ok struct {
-    _0 string
-}
-
-func (_ Result__string__string_Ok) isResult__string__string() {}
-
-type Result__string__string_Err struct {
-    _0 string
-}
-
-func (_ Result__string__string_Err) isResult__string__string() {}
 
 type Option__string struct {
     _tag int32
@@ -507,13 +497,15 @@ func _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_to__string(s
     var x7 bool = mtmp6._0
     var x8 string = mtmp6._1
     if x7 {
-        var t479 Result__string__string = Result__string__string_Ok{
-            _0: x8,
+        var t479 Result__string__string = Result__string__string{
+            _tag: 0,
+            _v0_0: x8,
         }
         return t479
     } else {
-        var t480 Result__string__string = Result__string__string_Err{
-            _0: "invalid UTF-8",
+        var t480 Result__string__string = Result__string__string{
+            _tag: 1,
+            _v1_0: "invalid UTF-8",
         }
         return t480
     }
@@ -652,20 +644,21 @@ func main0() struct{} {
         t1192 = inline1857
     case 1:
         var inline1858 string = inline1854._v1_0
-        var inline1860 Result__string__string = Result__string__string_Err{
-            _0: inline1858,
+        var inline1860 Result__string__string = Result__string__string{
+            _tag: 1,
+            _v1_0: inline1858,
         }
         t1192 = inline1860
     default:
         panic("non-exhaustive match")
     }
     var t1193 string
-    switch t1192.(type) {
-    case Result__string__string_Ok:
-        var inline1847 string = t1192.(Result__string__string_Ok)._0
+    switch t1192._tag {
+    case 0:
+        var inline1847 string = t1192._v0_0
         t1193 = inline1847
-    case Result__string__string_Err:
-        var inline1849 string = t1192.(Result__string__string_Err)._0
+    case 1:
+        var inline1849 string = t1192._v1_0
         var inline1851 string = "err " + inline1849
         t1193 = inline1851
     default:

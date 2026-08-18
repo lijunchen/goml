@@ -256,21 +256,11 @@ type Option__uint8 struct {
     _v1_0 uint8
 }
 
-type Result__string__string interface {
-    isResult__string__string()
+type Result__string__string struct {
+    _tag int32
+    _v0_0 string
+    _v1_0 string
 }
-
-type Result__string__string_Ok struct {
-    _0 string
-}
-
-func (_ Result__string__string_Ok) isResult__string__string() {}
-
-type Result__string__string_Err struct {
-    _0 string
-}
-
-func (_ Result__string__string_Err) isResult__string__string() {}
 
 type Option__string struct {
     _tag int32
@@ -347,19 +337,10 @@ type _goml_m_Option_____o_int_c_char_q_ struct {
     _v1_0 Tuple2_3int_4char
 }
 
-type _goml_m_Option_____o_string_c_string_q_ interface {
-    is_goml_m_Option_____o_string_c_string_q_()
+type _goml_m_Option_____o_string_c_string_q_ struct {
+    _tag int32
+    _v1_0 Tuple2_6string_6string
 }
-
-type _goml_m_Option_____o_string_c_string_q__None struct {}
-
-func (_ _goml_m_Option_____o_string_c_string_q__None) is_goml_m_Option_____o_string_c_string_q_() {}
-
-type _goml_m_Option_____o_string_c_string_q__Some struct {
-    _0 Tuple2_6string_6string
-}
-
-func (_ _goml_m_Option_____o_string_c_string_q__Some) is_goml_m_Option_____o_string_c_string_q_() {}
 
 type _goml_m_Result____string____std_p_env_p_VarError interface {
     is_goml_m_Result____string____std_p_env_p_VarError()

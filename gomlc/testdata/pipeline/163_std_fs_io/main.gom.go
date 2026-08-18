@@ -325,21 +325,11 @@ type Option__uint8 struct {
     _v1_0 uint8
 }
 
-type Result__string__string interface {
-    isResult__string__string()
+type Result__string__string struct {
+    _tag int32
+    _v0_0 string
+    _v1_0 string
 }
-
-type Result__string__string_Ok struct {
-    _0 string
-}
-
-func (_ Result__string__string_Ok) isResult__string__string() {}
-
-type Result__string__string_Err struct {
-    _0 string
-}
-
-func (_ Result__string__string_Err) isResult__string__string() {}
 
 type Option__string struct {
     _tag int32
@@ -570,20 +560,23 @@ func _goml_m_std_p_fs_p_read__file(path__113 string) Result__string__string {
         var inline1761 bool = inline1760._0
         var inline1762 string = inline1760._1
         if inline1761 {
-            var inline1765 Result__string__string = Result__string__string_Ok{
-                _0: inline1762,
+            var inline1765 Result__string__string = Result__string__string{
+                _tag: 0,
+                _v0_0: inline1762,
             }
             return inline1765
         } else {
-            var inline1766 Result__string__string = Result__string__string_Err{
-                _0: "invalid UTF-8",
+            var inline1766 Result__string__string = Result__string__string{
+                _tag: 1,
+                _v1_0: "invalid UTF-8",
             }
             return inline1766
         }
     } else {
         commute_field1954 = inline1771
-        var t1111 Result__string__string = Result__string__string_Err{
-            _0: commute_field1954,
+        var t1111 Result__string__string = Result__string__string{
+            _tag: 1,
+            _v1_0: commute_field1954,
         }
         return t1111
     }
@@ -620,12 +613,12 @@ func main0() struct{} {
     _goml_m_std_p_fs_p_write__bytes(inline1861, inline1863)
     var t1189 Result__string__string = _goml_m_std_p_fs_p_read__file("goml-std-test.txt")
     var t1190 string
-    switch t1189.(type) {
-    case Result__string__string_Ok:
-        var inline1855 string = t1189.(Result__string__string_Ok)._0
+    switch t1189._tag {
+    case 0:
+        var inline1855 string = t1189._v0_0
         t1190 = inline1855
-    case Result__string__string_Err:
-        var inline1857 string = t1189.(Result__string__string_Err)._0
+    case 1:
+        var inline1857 string = t1189._v1_0
         var inline1859 string = "err " + inline1857
         t1190 = inline1859
     default:
