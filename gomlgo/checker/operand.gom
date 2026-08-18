@@ -385,6 +385,14 @@ fn core_type_id(state: CheckState, value: go_types::TypeId) -> go_types::TypeId 
     go_types::core_type(state.world, value).unwrap_or(state.world.invalid)
 }
 
+fn checked_object_index(state: CheckState, object: go_types::ObjectId) -> int {
+    if object.value >= 0 && object.value < state.world.objects.len() {
+        object.value
+    } else {
+        -1
+    }
+}
+
 fn pointer_to_interface_type(state: CheckState, value: go_types::TypeId) -> bool {
     match go_types::type_data(state.world, core_type_id(state, value)) {
         go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } } => go_types::is_interface(
@@ -1145,29 +1153,29 @@ fn find_constant(state: CheckState, object: go_types::ObjectId) -> Option[consta
             return Option::Some(constant::constant_copy(entry.value))
         } else {}
     }
-    match go_types::get_object(state.world, object) {
-        Some(value) => if value.name == "iota" {
-            Option::Some(
-                constant::ConstValue::Int(
-                    constant::integer_from_int64(state.current_iota.to_int64()),
-                ),
-            )
-        } else {
-            match value.constant {
-                Some(exact) => match constant::constant_from_exact(value.constant_kind, exact) {
-                    Some(result) => Option::Some(result),
-                    None => Option::None,
-                },
-                None => if value.name == "true" {
-                    Option::Some(constant::ConstValue::Bool(true))
-                } else if value.name == "false" {
-                    Option::Some(constant::ConstValue::Bool(false))
-                } else {
-                    Option::None
-                },
-            }
-        },
-        None => Option::None,
+    let index = checked_object_index(state, object);
+    if index < 0 {
+        return Option::None
+    } else {};
+    let value = state.world.objects[index];
+    if value.name == "iota" {
+        Option::Some(
+            constant::ConstValue::Int(constant::integer_from_int64(state.current_iota.to_int64())),
+        )
+    } else {
+        match value.constant {
+            Some(exact) => match constant::constant_from_exact(value.constant_kind, exact) {
+                Some(result) => Option::Some(result),
+                None => Option::None,
+            },
+            None => if value.name == "true" {
+                Option::Some(constant::ConstValue::Bool(true))
+            } else if value.name == "false" {
+                Option::Some(constant::ConstValue::Bool(false))
+            } else {
+                Option::None
+            },
+        }
     }
 }
 
@@ -1393,17 +1401,18 @@ fn conversion_target(state: CheckState, scope: go_types::ScopeId, node: syntax::
             path: _,
             kind: syntax::SyntaxKind::Ident { name_pos: _, name },
         }) => match go_types::lookup(state.world, scope, name) {
-            Some(object) => match go_types::get_object(state.world, object) {
-                Some(value) => if value.kind == go_types::ObjectKind::TypeName {
+            Some(object) => {
+                let index = checked_object_index(state, object);
+                if index >= 0 && state.world.objects[index].kind == go_types::ObjectKind::TypeName {
+                    let declared = state.world.objects[index].type_id;
                     let previous = state.generic_type_short_diagnostic;
                     state.generic_type_short_diagnostic = true;
                     let result = resolve_conversion_type(state, scope, node);
                     state.generic_type_short_diagnostic = previous;
-                    Option::Some(recovered_conversion_target(state, result, value.type_id))
+                    Option::Some(recovered_conversion_target(state, result, declared))
                 } else {
                     Option::None
-                },
-                None => Option::None,
+                }
             },
             None => Option::None,
         },
@@ -1415,8 +1424,12 @@ fn conversion_target(state: CheckState, scope: go_types::ScopeId, node: syntax::
             kind: syntax::SyntaxKind::SelectorExpr { expression, selector },
         }) => match identifier(state, expression) {
             Some(name) => match go_types::lookup(state.world, scope, name) {
-                Some(object) => match go_types::get_object(state.world, object) {
-                    Some(value) => match value.imported_package {
+                Some(object) => {
+                    let object_index = checked_object_index(state, object);
+                    if object_index < 0 {
+                        return Option::None
+                    } else {};
+                    match state.world.objects[object_index].imported_package {
                         Some(pkg) => {
                             let member = identifier(state, selector).unwrap_or("");
                             if state.config.fake_import_c
@@ -1430,30 +1443,28 @@ fn conversion_target(state: CheckState, scope: go_types::ScopeId, node: syntax::
                                 state.world.packages[pkg.value].scope,
                                 member,
                             ) {
-                                Some(member) => match go_types::get_object(state.world, member) {
-                                    Some(value) => if value.kind == go_types::ObjectKind::TypeName {
+                                Some(member) => {
+                                    let member_index = checked_object_index(state, member);
+                                    if member_index >= 0
+                                        && state.world.objects[member_index].kind
+                                            == go_types::ObjectKind::TypeName {
+                                        let declared = state.world.objects[member_index].type_id;
                                         let previous = state.generic_type_short_diagnostic;
                                         state.generic_type_short_diagnostic = true;
                                         let result = resolve_conversion_type(state, scope, node);
                                         state.generic_type_short_diagnostic = previous;
                                         Option::Some(
-                                            recovered_conversion_target(
-                                                state,
-                                                result,
-                                                value.type_id,
-                                            ),
+                                            recovered_conversion_target(state, result, declared),
                                         )
                                     } else {
                                         Option::None
-                                    },
-                                    None => Option::None,
+                                    }
                                 },
                                 None => Option::None,
                             }
                         },
                         None => Option::None,
-                    },
-                    None => Option::None,
+                    }
                 },
                 None => Option::None,
             },
@@ -2572,13 +2583,13 @@ fn check_call(
     } else {};
     let function_object = match identifier(state, function_node) {
         Some(name) => match go_types::lookup(state.world, scope, name) {
-            Some(object_id) => match go_types::get_object(state.world, object_id) {
-                Some(object) => if object.kind == go_types::ObjectKind::Func {
+            Some(object_id) => {
+                let index = checked_object_index(state, object_id);
+                if index >= 0 && state.world.objects[index].kind == go_types::ObjectKind::Func {
                     Option::Some(object_id)
                 } else {
                     Option::None
-                },
-                None => Option::None,
+                }
             },
             None => Option::None,
         },

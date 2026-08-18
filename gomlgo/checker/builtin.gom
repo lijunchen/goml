@@ -24,13 +24,13 @@ fn builtin_reference(state: CheckState, scope: go_types::ScopeId, node: syntax::
             path: _,
             kind: syntax::SyntaxKind::Ident { name_pos: _, name },
         }) => match go_types::lookup(state.world, scope, name) {
-            Some(object) => match go_types::get_object(state.world, object) {
-                Some(value) => if value.kind == go_types::ObjectKind::Builtin {
+            Some(object) => {
+                let index = checked_object_index(state, object);
+                if index >= 0 && state.world.objects[index].kind == go_types::ObjectKind::Builtin {
                     Option::Some(BuiltinReference { name, object, node, fact_node: node })
                 } else {
                     Option::None
-                },
-                None => Option::None,
+                }
             },
             None => Option::None,
         },
@@ -59,8 +59,12 @@ fn builtin_reference(state: CheckState, scope: go_types::ScopeId, node: syntax::
             kind: syntax::SyntaxKind::SelectorExpr { expression, selector },
         }) => match identifier(state, expression) {
             Some(package_name) => match go_types::lookup(state.world, scope, package_name) {
-                Some(package_object) => match go_types::get_object(state.world, package_object) {
-                    Some(package_object_value) => match package_object_value.imported_package {
+                Some(package_object) => {
+                    let package_index = checked_object_index(state, package_object);
+                    if package_index < 0 {
+                        return Option::None
+                    } else {};
+                    match state.world.objects[package_index].imported_package {
                         Some(package_id) => {
                             let name = identifier(state, selector).unwrap_or("");
                             match go_types::lookup_local(
@@ -68,8 +72,11 @@ fn builtin_reference(state: CheckState, scope: go_types::ScopeId, node: syntax::
                                 state.world.packages[package_id.value].scope,
                                 name,
                             ) {
-                                Some(object) => match go_types::get_object(state.world, object) {
-                                    Some(value) => if value.kind == go_types::ObjectKind::Builtin {
+                                Some(object) => {
+                                    let index = checked_object_index(state, object);
+                                    if index >= 0
+                                        && state.world.objects[index].kind
+                                            == go_types::ObjectKind::Builtin {
                                         mark_import_used(state, package_object);
                                         record_use(state, expression, package_object);
                                         Option::Some(
@@ -82,15 +89,13 @@ fn builtin_reference(state: CheckState, scope: go_types::ScopeId, node: syntax::
                                         )
                                     } else {
                                         Option::None
-                                    },
-                                    None => Option::None,
+                                    }
                                 },
                                 None => Option::None,
                             }
                         },
                         None => Option::None,
-                    },
-                    None => Option::None,
+                    }
                 },
                 None => Option::None,
             },
@@ -176,9 +181,13 @@ fn builtin_empty_interface(state: CheckState) -> go_types::TypeId {
         )
     } else {};
     match go_types::lookup(state.world, state.world.universe, "any") {
-        Some(object) => match go_types::get_object(state.world, object) {
-            Some(object) => go_types::unalias(state.world, object.type_id),
-            None => state.world.invalid,
+        Some(object) => {
+            let index = checked_object_index(state, object);
+            if index >= 0 {
+                go_types::unalias(state.world, state.world.objects[index].type_id)
+            } else {
+                state.world.invalid
+            }
         },
         None => state.world.invalid,
     }

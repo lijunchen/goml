@@ -302,13 +302,18 @@ fn composite_literal_rbrace(state: CheckState, node: syntax::NodeId) -> int {
 
 fn struct_field_accessible(state: CheckState, field: go_types::StructField) -> bool {
     match field.object {
-        Some(object) => match go_types::get_object(state.world, object) {
-            Some(object) => object.exported
-                || match object.owner {
-                    Some(owner) => owner.value == state.package_id.value,
-                    None => true,
-                },
-            None => true,
+        Some(object) => {
+            let index = checked_object_index(state, object);
+            if index < 0 {
+                true
+            } else {
+                let object = state.world.objects[index];
+                object.exported
+                    || match object.owner {
+                        Some(owner) => owner.value == state.package_id.value,
+                        None => true,
+                    }
+            }
         },
         None => true,
     }
