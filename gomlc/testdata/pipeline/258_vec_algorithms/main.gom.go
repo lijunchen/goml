@@ -247,9 +247,13 @@ func _goml_m_trait__impl_i_std_p_cmp_p_Ord_i_int_i_cmp(self__32 int, other__33 i
 func main0() struct{} {
     var t919 [8]int = [8]int{3, 1, 4, 1, 5, 9, 2, 6}
     var values__0 *_goml_vec_int = func(values [8]int) *_goml_vec_int {
-        return &_goml_vec_int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_int
+            values [8]int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t919)
     var t920 closure_env_main_0 = closure_env_main_0{}
     var t921 func(int) bool = func(p0 int) bool {
@@ -279,9 +283,13 @@ func main0() struct{} {
     println__T_string(t933)
     var t934 [5]int = [5]int{1, 2, 4, 4, 5}
     var ordered__5 *_goml_vec_int = func(values [5]int) *_goml_vec_int {
-        return &_goml_vec_int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_int
+            values [5]int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t934)
     var t935 closure_env_main_3 = closure_env_main_3{}
     var t936 func(int) int = func(p0 int) int {
@@ -317,9 +325,13 @@ func main0() struct{} {
     println__T_string(t954)
     var t955 [3]string = [3]string{"beta", "alpha", "gamma"}
     var names__12 *_goml_vec_string = func(values [3]string) *_goml_vec_string {
-        return &_goml_vec_string{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_string
+            values [3]string
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t955)
     var t956 closure_env_main_7 = closure_env_main_7{}
     var t957 func(string, string) Ordering = func(p0 string, p1 string) Ordering {
@@ -342,9 +354,13 @@ func main0() struct{} {
     }
     var t962 [3]Tuple2_3int_3int = [3]Tuple2_3int_3int{t959, t960, t961}
     var pairs__15 *_goml_vec_Tuple2_3int_3int = func(values [3]Tuple2_3int_3int) *_goml_vec_Tuple2_3int_3int {
-        return &_goml_vec_Tuple2_3int_3int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_Tuple2_3int_3int
+            values [3]Tuple2_3int_3int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t962)
     var t963 closure_env_main_8 = closure_env_main_8{}
     var t964 func(Tuple2_3int_3int, Tuple2_3int_3int) Ordering = func(p0 Tuple2_3int_3int, p1 Tuple2_3int_3int) Ordering {
@@ -367,9 +383,13 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline2310)
     var t967 [3]int = [3]int{7, 8, 9}
     var t968 *_goml_vec_int = func(values [3]int) *_goml_vec_int {
-        return &_goml_vec_int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_int
+            values [3]int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t967)
     var view__18 []int
     var inline2306 int = 0
@@ -390,9 +410,13 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline2296)
     var t973 [2]int = [2]int{1, 2}
     var t974 *_goml_vec_int = func(values [2]int) *_goml_vec_int {
-        return &_goml_vec_int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_int
+            values [2]int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t973)
     var frozen__19 FrozenVec__int
     var inline2293 *_goml_vec_int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_copy____T__int(t974)

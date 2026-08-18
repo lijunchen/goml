@@ -1198,9 +1198,13 @@ func main0() struct{} {
     println__T_string(t1343)
     var t1344 [1]int = [1]int{3}
     var t1345 *_goml_vec_int = func(values [1]int) *_goml_vec_int {
-        return &_goml_vec_int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_int
+            values [1]int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t1344)
     var generic_first__107 GenericPair__int = GenericPair__int{
         first: 1,
@@ -1209,9 +1213,13 @@ func main0() struct{} {
     }
     var t1346 [1]int = [1]int{0}
     var t1347 *_goml_vec_int = func(values [1]int) *_goml_vec_int {
-        return &_goml_vec_int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_int
+            values [1]int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t1346)
     var generic_second__108 GenericPair__int = GenericPair__int{
         first: 1,
@@ -1237,15 +1245,23 @@ func main0() struct{} {
     println__T_string(t1355)
     var t1356 [2]int = [2]int{1, 2}
     var first_values__112 *_goml_vec_int = func(values [2]int) *_goml_vec_int {
-        return &_goml_vec_int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_int
+            values [2]int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t1356)
     var t1357 [2]int = [2]int{1, 3}
     var second_values__113 *_goml_vec_int = func(values [2]int) *_goml_vec_int {
-        return &_goml_vec_int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_int
+            values [2]int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t1357)
     var t1358 bool = _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Vec_l_int_r__i_lt(first_values__112, second_values__113)
     var t1359 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t1358)
@@ -1281,9 +1297,13 @@ func main0() struct{} {
     _goml_m_inherent_i_HashMap_i_H_h3b61239acaedb5e8f14c03ddfc2f1db6_r_____V__string(values__116, first_values__112, "vector")
     var t1370 [2]int = [2]int{1, 2}
     var t1371 *_goml_vec_int = func(values [2]int) *_goml_vec_int {
-        return &_goml_vec_int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_int
+            values [2]int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t1370)
     var t1372 Option__string = _goml_m_inherent_i_HashMap_i_H_hb4451e8158a298bbb7da359694bb16fc_r_____V__string(values__116, t1371)
     var t1373 string = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(t1372, "missing")

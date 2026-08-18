@@ -155,163 +155,255 @@ func main0() struct{} {
     check_utf8(t465, true)
     var t466 [1]uint8 = [1]uint8{0}
     var t467 *_goml_vec_uint8 = func(values [1]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [1]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t466)
     check_utf8(t467, true)
     var t468 [1]uint8 = [1]uint8{127}
     var t469 *_goml_vec_uint8 = func(values [1]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [1]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t468)
     check_utf8(t469, true)
     var t470 [2]uint8 = [2]uint8{194, 128}
     var t471 *_goml_vec_uint8 = func(values [2]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [2]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t470)
     check_scalar(t471, 128, 2)
     var t472 [2]uint8 = [2]uint8{223, 191}
     var t473 *_goml_vec_uint8 = func(values [2]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [2]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t472)
     check_scalar(t473, 2047, 2)
     var t474 [3]uint8 = [3]uint8{224, 160, 128}
     var t475 *_goml_vec_uint8 = func(values [3]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [3]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t474)
     check_scalar(t475, 2048, 3)
     var t476 [3]uint8 = [3]uint8{237, 159, 191}
     var t477 *_goml_vec_uint8 = func(values [3]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [3]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t476)
     check_scalar(t477, 55295, 3)
     var t478 [3]uint8 = [3]uint8{238, 128, 128}
     var t479 *_goml_vec_uint8 = func(values [3]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [3]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t478)
     check_scalar(t479, 57344, 3)
     var t480 [3]uint8 = [3]uint8{239, 191, 189}
     var t481 *_goml_vec_uint8 = func(values [3]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [3]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t480)
     check_scalar(t481, 65533, 3)
     var t482 [3]uint8 = [3]uint8{239, 191, 191}
     var t483 *_goml_vec_uint8 = func(values [3]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [3]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t482)
     check_scalar(t483, 65535, 3)
     var t484 [4]uint8 = [4]uint8{240, 144, 128, 128}
     var t485 *_goml_vec_uint8 = func(values [4]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [4]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t484)
     check_scalar(t485, 65536, 4)
     var t486 [4]uint8 = [4]uint8{244, 143, 191, 191}
     var t487 *_goml_vec_uint8 = func(values [4]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [4]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t486)
     check_scalar(t487, 1114111, 4)
     var t488 [1]uint8 = [1]uint8{128}
     var t489 *_goml_vec_uint8 = func(values [1]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [1]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t488)
     check_utf8(t489, false)
     var t490 [1]uint8 = [1]uint8{191}
     var t491 *_goml_vec_uint8 = func(values [1]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [1]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t490)
     check_utf8(t491, false)
     var t492 [2]uint8 = [2]uint8{192, 128}
     var t493 *_goml_vec_uint8 = func(values [2]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [2]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t492)
     check_utf8(t493, false)
     var t494 [2]uint8 = [2]uint8{193, 191}
     var t495 *_goml_vec_uint8 = func(values [2]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [2]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t494)
     check_utf8(t495, false)
     var t496 [1]uint8 = [1]uint8{194}
     var t497 *_goml_vec_uint8 = func(values [1]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [1]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t496)
     check_utf8(t497, false)
     var t498 [2]uint8 = [2]uint8{194, 127}
     var t499 *_goml_vec_uint8 = func(values [2]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [2]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t498)
     check_utf8(t499, false)
     var t500 [3]uint8 = [3]uint8{224, 159, 191}
     var t501 *_goml_vec_uint8 = func(values [3]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [3]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t500)
     check_utf8(t501, false)
     var t502 [2]uint8 = [2]uint8{225, 128}
     var t503 *_goml_vec_uint8 = func(values [2]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [2]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t502)
     check_utf8(t503, false)
     var t504 [3]uint8 = [3]uint8{225, 128, 127}
     var t505 *_goml_vec_uint8 = func(values [3]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [3]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t504)
     check_utf8(t505, false)
     var t506 [3]uint8 = [3]uint8{237, 160, 128}
     var t507 *_goml_vec_uint8 = func(values [3]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [3]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t506)
     check_utf8(t507, false)
     var t508 [4]uint8 = [4]uint8{240, 143, 191, 191}
     var t509 *_goml_vec_uint8 = func(values [4]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [4]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t508)
     check_utf8(t509, false)
     var t510 [3]uint8 = [3]uint8{240, 144, 128}
     var t511 *_goml_vec_uint8 = func(values [3]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [3]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t510)
     var inline772 bool = false
     var inline773 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__uint8(t511)
@@ -330,9 +422,13 @@ func main0() struct{} {
     }
     var t512 [4]uint8 = [4]uint8{244, 144, 128, 128}
     var t513 *_goml_vec_uint8 = func(values [4]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [4]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t512)
     var inline757 bool = false
     var inline758 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__uint8(t513)
@@ -351,9 +447,13 @@ func main0() struct{} {
     }
     var t514 [4]uint8 = [4]uint8{245, 128, 128, 128}
     var t515 *_goml_vec_uint8 = func(values [4]uint8) *_goml_vec_uint8 {
-        return &_goml_vec_uint8{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_uint8
+            values [4]uint8
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t514)
     var inline742 bool = false
     var inline743 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__uint8(t515)

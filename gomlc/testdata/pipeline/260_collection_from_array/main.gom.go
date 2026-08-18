@@ -422,9 +422,13 @@ func logged_key(log__3 *ref_string_x, label__4 string, id__5 int) LoggedKey {
 
 func main0() struct{} {
     var make_vec__9 func([3]int) *_goml_vec_int = func(values [3]int) *_goml_vec_int {
-        return &_goml_vec_int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_int
+            values [3]int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }
     var t458 [3]int = [3]int{1, 2, 3}
     var values__10 *_goml_vec_int = make_vec__9(t458)
@@ -460,9 +464,13 @@ func main0() struct{} {
     var t475 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(2)
     var source__13 [2]*ref_int_x = [2]*ref_int_x{t474, t475}
     var copied__14 *_goml_vec_Ref_3int = func(values [2]*ref_int_x) *_goml_vec_Ref_3int {
-        return &_goml_vec_Ref_3int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_Ref_3int
+            values [2]*ref_int_x
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(source__13)
     var t476 *ref_int_x = array_get__Array_2_8Ref_3int(source__13, 0)
     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(t476, 5)
@@ -607,33 +615,53 @@ func main0() struct{} {
     }
     var t509 [2]Tuple2_3int_6string = [2]Tuple2_3int_6string{t507, t508}
     var pairs__22 *_goml_vec_Tuple2_3int_6string = func(values [2]Tuple2_3int_6string) *_goml_vec_Tuple2_3int_6string {
-        return &_goml_vec_Tuple2_3int_6string{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_Tuple2_3int_6string
+            values [2]Tuple2_3int_6string
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t509)
     var t510 [2]int = [2]int{1, 2}
     var t511 *_goml_vec_int = func(values [2]int) *_goml_vec_int {
-        return &_goml_vec_int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_int
+            values [2]int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t510)
     var t512 [2]int = [2]int{3, 4}
     var t513 *_goml_vec_int = func(values [2]int) *_goml_vec_int {
-        return &_goml_vec_int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_int
+            values [2]int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t512)
     var t514 [2]*_goml_vec_int = [2]*_goml_vec_int{t511, t513}
     var nested__23 *_goml_vec_Vec_3int = func(values [2]*_goml_vec_int) *_goml_vec_Vec_3int {
-        return &_goml_vec_Vec_3int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_Vec_3int
+            values [2]*_goml_vec_int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t514)
     var t515 [2]int = [2]int{5, 6}
     var t516 *_goml_vec_int = func(values [2]int) *_goml_vec_int {
-        return &_goml_vec_int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_int
+            values [2]int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t515)
     var t517 Tuple2_6string_8Vec_3int = Tuple2_6string_8Vec_3int{
         _0: "values",

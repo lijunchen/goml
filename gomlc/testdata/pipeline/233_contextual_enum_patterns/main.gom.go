@@ -254,9 +254,13 @@ func main0() struct{} {
     }
     var t494 [2]Boxed__int = [2]Boxed__int{t492, t493}
     var boxed__19 *_goml_vec_Boxed__int = func(values [2]Boxed__int) *_goml_vec_Boxed__int {
-        return &_goml_vec_Boxed__int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_Boxed__int
+            values [2]Boxed__int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t494)
     var t495 First__int = First__int_Shared{
         _0: 7,

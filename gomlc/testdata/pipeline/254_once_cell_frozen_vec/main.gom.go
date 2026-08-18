@@ -225,9 +225,13 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
 func _goml_m_inherent_i_closure__env__values__0_i_closure__env__values__0_i_apply(env411 closure_env_values_0) FrozenVec__int {
     var t474 [3]int = [3]int{1, 2, 3}
     var t475 *_goml_vec_int = func(values [3]int) *_goml_vec_int {
-        return &_goml_vec_int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_int
+            values [3]int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t474)
     var inline530 *_goml_vec_int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_copy____T__int(t475)
     var inline531 FrozenVec__int = FrozenVec__int{

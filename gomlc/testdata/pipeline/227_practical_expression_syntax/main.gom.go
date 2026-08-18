@@ -273,9 +273,13 @@ func main0() struct{} {
     var t500 int = record(log__12, "B", 20)
     var t501 [2]int = [2]int{t499, t500}
     var values__15 *_goml_vec_int = func(values [2]int) *_goml_vec_int {
-        return &_goml_vec_int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_int
+            values [2]int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t501)
     var place_root434 *_goml_vec_int = record_vec(log__12, "R", values__15)
     var index435 int = record(log__12, "I", 1)
