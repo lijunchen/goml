@@ -160,6 +160,7 @@ struct VmState {
     native_callbacks: Vec[NativeCallbackBinding],
     instruction_panic: Ref[Option[Ref[PanicPayload]]],
     instruction_exit: Ref[int],
+    zero_values: Vec[Option[Value]],
 }
 
 enum FunctionControl {
@@ -1513,13 +1514,17 @@ fn aggregate_value(
             let result = runtime_zero_value(state, type_id)?;
             match result {
                 Value::Local(LocalValue::Aggregate { type_id, elements }) => {
+                    let updated: Vec[Value] = Vec::with_capacity(elements.len());
+                    for element in elements {
+                        updated.push(element)
+                    }
                     for value in values {
-                        if value.index < 0 || value.index >= elements.len() {
+                        if value.index < 0 || value.index >= updated.len() {
                             return Result::Err("aggregate literal index out of range")
                         } else {};
-                        elements[value.index] = copy_value(register(frame, value.value)?);
+                        updated[value.index] = copy_value(register(frame, value.value)?);
                     }
-                    Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
+                    Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements: updated }))
                 },
                 Value::Host { type_id, value } => {
                     for element in values {
@@ -1770,35 +1775,52 @@ fn runtime_zero_value(state: VmState, type_id: go_types::TypeId) -> Result[Value
                 Result::Ok(Value::Host { type_id, value })
             }
         },
-        None => match go_types::type_data(
-            state.program.world,
-            go_types::underlying(state.program.world, type_id),
-        ).kind {
-            go_types::TypeKind::Array { length, element } => {
-                if length < 0.to_int64() || length > 9223372036854775807.to_int64() {
-                    return Result::Err("array length is outside the host integer range")
-                } else {};
-                let elements: Vec[Value] = Vec::with_capacity(length.to_int());
-                for _ in 0..length.to_int() {
-                    elements.push(runtime_zero_value(state, element)?)
+        None => {
+            if type_id.value >= 0 && type_id.value < state.zero_values.len() {
+                match state.zero_values[type_id.value] {
+                    Some(value) => return Result::Ok(copy_value(value)),
+                    None => {},
                 }
-                Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
-            },
-            go_types::TypeKind::Struct { fields } => {
-                let elements: Vec[Value] = Vec::with_capacity(fields.len());
-                for field in fields {
-                    elements.push(runtime_zero_value(state, field.variable.type_id)?)
-                }
-                Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
-            },
-            go_types::TypeKind::Tuple { variables } => {
-                let elements: Vec[Value] = Vec::with_capacity(variables.len());
-                for variable in variables {
-                    elements.push(runtime_zero_value(state, variable.type_id)?)
-                }
-                Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
-            },
-            _ => zero_value(state.program.world, type_id),
+            } else {};
+            let result = match go_types::type_data(
+                state.program.world,
+                go_types::underlying(state.program.world, type_id),
+            ).kind {
+                go_types::TypeKind::Array { length, element } => {
+                    if length < 0.to_int64() || length > 9223372036854775807.to_int64() {
+                        return Result::Err("array length is outside the host integer range")
+                    } else {};
+                    let elements: Vec[Value] = Vec::with_capacity(length.to_int());
+                    for _ in 0..length.to_int() {
+                        elements.push(runtime_zero_value(state, element)?)
+                    }
+                    Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
+                },
+                go_types::TypeKind::Struct { fields } => {
+                    let elements: Vec[Value] = Vec::with_capacity(fields.len());
+                    for field in fields {
+                        elements.push(runtime_zero_value(state, field.variable.type_id)?)
+                    }
+                    Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
+                },
+                go_types::TypeKind::Tuple { variables } => {
+                    let elements: Vec[Value] = Vec::with_capacity(variables.len());
+                    for variable in variables {
+                        elements.push(runtime_zero_value(state, variable.type_id)?)
+                    }
+                    Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
+                },
+                _ => zero_value(state.program.world, type_id),
+            };
+            match result {
+                Ok(value) => {
+                    if type_id.value >= 0 && type_id.value < state.zero_values.len() {
+                        state.zero_values[type_id.value] = Option::Some(value);
+                    } else {};
+                    Result::Ok(value)
+                },
+                Err(message) => Result::Err(message),
+            }
         },
     }
 }
@@ -3941,6 +3963,7 @@ fn initialize_state(program: bytecode::BytecodeProgram, config: VmConfig) -> Res
         native_callbacks: Vec::from_array([]),
         instruction_panic: Ref::new(Option::None),
         instruction_exit: Ref::new(0),
+        zero_values: empty_slots(program.world.types.len()),
     };
     for global in state.program.globals {
         match runtime_zero_value(state, global.type_id) {
