@@ -265,6 +265,81 @@ fn compact_variant_fields(values: Vec[Vec[repr::Type]], structs: Vec[repr::Struc
     compact_type_list_size(fields, structs, 0) >= 0
 }
 
+fn builtin_compact_type_size(value: repr::Type, structs: Vec[repr::StructDef], depth: int) -> int {
+    if depth >= 8 {
+        -1
+    } else {
+        match repr::resolve_type(value) {
+            Unit | Never => 0,
+            Bool | Int8 | Int16 | Int32 | Uint8 | Uint16 | Uint32 | Float32 | Char => 8,
+            Int | Int64 | Uint | Uint64 | Float64 => 8,
+            String => 16,
+            Tuple { items } => builtin_compact_type_list_size(items, structs, depth + 1),
+            Named { name } | ClosureEnvironment { name } => match find_struct(structs, name) {
+                Some(definition) => {
+                    let fields: Vec[repr::Type] = Vec::with_capacity(definition.fields.len());
+                    for field in definition.fields {
+                        fields.push(field.1)
+                    }
+                    builtin_compact_type_list_size(fields, structs, depth + 1)
+                },
+                None => 16,
+            },
+            Dyn { .. } | Slice { elem: _ } => 24,
+            Func { .. } => 8,
+            Array { len, elem } => {
+                let item_size = builtin_compact_type_size(elem, structs, depth + 1);
+                if item_size < 0 || item_size * len > 48 {
+                    -1
+                } else {
+                    item_size * len
+                }
+            },
+            VecType { elem: _ } | RefType { elem: _ } | HashMap { .. } | Channel { elem: _ } => 8,
+        }
+    }
+}
+
+fn builtin_compact_type_list_size(
+    values: Vec[repr::Type],
+    structs: Vec[repr::StructDef],
+    depth: int,
+) -> int {
+    let mut result = 0;
+    for value in values {
+        let size = builtin_compact_type_size(value, structs, depth);
+        if size < 0 || result + size > 48 {
+            return -1
+        } else {
+            result = result + size;
+        }
+    }
+    result
+}
+
+fn compact_builtin_variant_fields(values: Vec[Vec[repr::Type]], structs: Vec[repr::StructDef]) -> bool {
+    let fields: Vec[repr::Type] = Vec::from_array([]);
+    for variant in values {
+        for field in variant {
+            fields.push(field)
+        }
+    }
+    builtin_compact_type_list_size(fields, structs, 0) >= 0
+}
+
+fn builtin_sum_enum(
+    builtin: tast::BuiltinContract,
+    definition: repr::EnumDef,
+    instances: Vec[repr::TypeInstance],
+) -> bool {
+    let base_name = match instance_by_name(instances, definition.name) {
+        Some(instance) => instance.base_name,
+        None => definition.name,
+    };
+    backend_names_match(base_name, builtin.option.name)
+        || backend_names_match(base_name, builtin.result.name)
+}
+
 pub fn compact_variant_field_name(tag: int, index: int) -> string {
     "_v" + tag.to_string() + "_" + index.to_string()
 }
@@ -338,11 +413,13 @@ fn tag_only_const_specs(
 }
 
 fn emit_enum_definition(
+    builtin: tast::BuiltinContract,
     items: Vec[Item],
     variants: VariantInfos,
     definition: repr::EnumDef,
     enums: Vec[repr::EnumDef],
     structs: Vec[repr::StructDef],
+    instances: Vec[repr::TypeInstance],
     function_names: FunctionNames,
 ) -> unit {
     let fields_by_variant: Vec[Vec[repr::Type]] = Vec::with_capacity(definition.variants.len());
@@ -365,7 +442,9 @@ fn emit_enum_definition(
                 },
             ),
         )
-    } else if compact_variant_fields(fields_by_variant, structs) {
+    } else if compact_variant_fields(fields_by_variant, structs)
+        || (builtin_sum_enum(builtin, definition, instances)
+            && compact_builtin_variant_fields(fields_by_variant, structs)) {
         let fields: Vec[(string, Type)] = Vec::from_array([]);
         fields.push(("_tag", Type::Int32));
         for index in 0..definition.variants.len() {
@@ -484,7 +563,16 @@ pub fn emit_user_type_items(
         }
     }
     for definition in enums {
-        emit_enum_definition(items, variants, definition, enums, structs, function_names)
+        emit_enum_definition(
+            builtin,
+            items,
+            variants,
+            definition,
+            enums,
+            structs,
+            instances,
+            function_names,
+        )
     }
 }
 
