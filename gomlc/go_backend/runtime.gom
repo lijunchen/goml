@@ -1616,6 +1616,473 @@ fn hashmap_hash_expr(builtin: tast::BuiltinContract, key: repr::Type, value: Exp
     }
 }
 
+fn hashmap_native_key(key: repr::Type) -> bool {
+    match repr::resolve_type(key) {
+        Unit | Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | String | Char => true,
+        _ => false,
+    }
+}
+
+fn hashmap_native_index_stmts() -> Vec[Stmt] {
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    stmts.push(Stmt::Var { name: "index", ty: Type::Int, value: Option::None });
+    stmts.push(Stmt::Var { name: "found", ty: Type::Bool, value: Option::None });
+    let names: Vec[string] = Vec::from_array([]);
+    names.push("index");
+    names.push("found");
+    stmts.push(
+        Stmt::MultiAssign {
+            names,
+            value: Expr::Index {
+                base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "indices" },
+                index: Expr::Var { name: "key" },
+            },
+        },
+    );
+    stmts
+}
+
+fn hashmap_native_new_item(key: repr::Type, value: repr::Type) -> Item {
+    let map_ty = repr::Type::HashMap { key, value };
+    let name = hashmap_name(key, value);
+    let fields: Vec[(string, Expr)] = Vec::from_array([]);
+    fields.push(
+        (
+            "indices",
+            Expr::Make {
+                ty: Type::Map { key: lower_type(key), value: Type::Int },
+                args: Vec::from_array([]),
+            },
+        ),
+    );
+    fields.push(("entries", Expr::Nil));
+    fields.push(("len", Expr::Int { value: "0" }));
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    stmts.push(
+        Stmt::Return {
+            expr: Option::Some(
+                Expr::Unary {
+                    op: UnaryOp::Address,
+                    expr: Expr::StructLiteral { ty: Type::Named { name }, fields },
+                },
+            ),
+        },
+    );
+    Item::Function(
+        Function {
+            name: runtime_helper_name("hashmap_new", map_ty),
+            params: Vec::from_array([]),
+            ret_ty: Option::Some(lower_type(map_ty)),
+            body: Block { stmts },
+        },
+    )
+}
+
+fn hashmap_native_lookup_item(key: repr::Type, value: repr::Type) -> Item {
+    let map_ty = repr::Type::HashMap { key, value };
+    let lowered_value = lower_type(value);
+    let entry_ty = Type::Named { name: go_generated_ident(hashmap_name(key, value) + "_entry") };
+    let params: Vec[(string, Type)] = Vec::from_array([]);
+    params.push(("m", lower_type(map_ty)));
+    params.push(("key", lower_type(key)));
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    let missing_stmts: Vec[Stmt] = Vec::from_array([]);
+    missing_stmts.push(Stmt::Var { name: "zero", ty: lowered_value, value: Option::None });
+    let missing_values: Vec[Expr] = Vec::from_array([]);
+    missing_values.push(Expr::Var { name: "zero" });
+    missing_values.push(Expr::Bool { value: false });
+    missing_stmts.push(Stmt::ReturnMulti { exprs: missing_values });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Binary { op: BinaryOp::Eq, lhs: Expr::Var { name: "m" }, rhs: Expr::Nil },
+            then_: Block { stmts: missing_stmts },
+            else_: Option::None,
+        },
+    );
+    for stmt in hashmap_native_index_stmts() {
+        stmts.push(stmt)
+    }
+    let not_found_stmts: Vec[Stmt] = Vec::from_array([]);
+    not_found_stmts.push(Stmt::Var { name: "zero", ty: lowered_value, value: Option::None });
+    let not_found_values: Vec[Expr] = Vec::from_array([]);
+    not_found_values.push(Expr::Var { name: "zero" });
+    not_found_values.push(Expr::Bool { value: false });
+    not_found_stmts.push(Stmt::ReturnMulti { exprs: not_found_values });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Unary { op: UnaryOp::Not, expr: Expr::Var { name: "found" } },
+            then_: Block { stmts: not_found_stmts },
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::Var {
+            name: "entry",
+            ty: entry_ty,
+            value: Option::Some(
+                Expr::Index {
+                    base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" },
+                    index: Expr::Var { name: "index" },
+                },
+            ),
+        },
+    );
+    let found_stmts: Vec[Stmt] = Vec::from_array([]);
+    let found_values: Vec[Expr] = Vec::from_array([]);
+    found_values.push(Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "value" });
+    found_values.push(Expr::Bool { value: true });
+    found_stmts.push(Stmt::ReturnMulti { exprs: found_values });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "active" },
+            then_: Block { stmts: found_stmts },
+            else_: Option::None,
+        },
+    );
+    stmts.push(Stmt::Var { name: "zero", ty: lowered_value, value: Option::None });
+    let inactive_values: Vec[Expr] = Vec::from_array([]);
+    inactive_values.push(Expr::Var { name: "zero" });
+    inactive_values.push(Expr::Bool { value: false });
+    stmts.push(Stmt::ReturnMulti { exprs: inactive_values });
+    let returns: Vec[Type] = Vec::from_array([]);
+    returns.push(lowered_value);
+    returns.push(Type::Bool);
+    Item::Function(
+        Function {
+            name: runtime_helper_name("hashmap_lookup", map_ty),
+            params,
+            ret_ty: Option::Some(Type::Multi { items: returns }),
+            body: Block { stmts },
+        },
+    )
+}
+
+fn hashmap_native_set_item(key: repr::Type, value: repr::Type) -> Item {
+    let map_ty = repr::Type::HashMap { key, value };
+    let entry_ty = Type::Named { name: go_generated_ident(hashmap_name(key, value) + "_entry") };
+    let params: Vec[(string, Type)] = Vec::from_array([]);
+    params.push(("m", lower_type(map_ty)));
+    params.push(("key", lower_type(key)));
+    params.push(("value", lower_type(value)));
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    let nil_stmts: Vec[Stmt] = Vec::from_array([]);
+    nil_stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Binary { op: BinaryOp::Eq, lhs: Expr::Var { name: "m" }, rhs: Expr::Nil },
+            then_: Block { stmts: nil_stmts },
+            else_: Option::None,
+        },
+    );
+    for stmt in hashmap_native_index_stmts() {
+        stmts.push(stmt)
+    }
+    let existing_stmts: Vec[Stmt] = Vec::from_array([]);
+    existing_stmts.push(
+        Stmt::Var {
+            name: "entry",
+            ty: entry_ty,
+            value: Option::Some(
+                Expr::Index {
+                    base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" },
+                    index: Expr::Var { name: "index" },
+                },
+            ),
+        },
+    );
+    let active_stmts: Vec[Stmt] = Vec::from_array([]);
+    active_stmts.push(
+        Stmt::FieldAssign {
+            target: Expr::Index {
+                base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" },
+                index: Expr::Var { name: "index" },
+            },
+            field_name: "value",
+            value: Expr::Var { name: "value" },
+        },
+    );
+    active_stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
+    existing_stmts.push(
+        Stmt::If {
+            cond: Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "active" },
+            then_: Block { stmts: active_stmts },
+            else_: Option::None,
+        },
+    );
+    existing_stmts.push(
+        Stmt::IndexAssign {
+            base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" },
+            index: Expr::Var { name: "index" },
+            value: hashmap_entry_expr(entry_ty),
+        },
+    );
+    existing_stmts.push(hashmap_increment_len());
+    existing_stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Var { name: "found" },
+            then_: Block { stmts: existing_stmts },
+            else_: Option::None,
+        },
+    );
+    let len_args: Vec[Expr] = Vec::from_array([]);
+    len_args.push(Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" });
+    stmts.push(
+        Stmt::Assign {
+            name: "index",
+            value: Expr::Call { func: Expr::Var { name: "len" }, args: len_args },
+        },
+    );
+    stmts.push(
+        Stmt::IndexAssign {
+            base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "indices" },
+            index: Expr::Var { name: "key" },
+            value: Expr::Var { name: "index" },
+        },
+    );
+    let append_args: Vec[Expr] = Vec::from_array([]);
+    append_args.push(Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" });
+    append_args.push(hashmap_entry_expr(entry_ty));
+    stmts.push(
+        Stmt::FieldAssign {
+            target: Expr::Var { name: "m" },
+            field_name: "entries",
+            value: Expr::Call { func: Expr::Var { name: "append" }, args: append_args },
+        },
+    );
+    stmts.push(hashmap_increment_len());
+    stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
+    Item::Function(
+        Function {
+            name: runtime_helper_name("hashmap_set", map_ty),
+            params,
+            ret_ty: Option::Some(Type::Unit),
+            body: Block { stmts },
+        },
+    )
+}
+
+fn hashmap_native_remove_item(key: repr::Type, value: repr::Type) -> Item {
+    let map_ty = repr::Type::HashMap { key, value };
+    let entry_ty = Type::Named { name: go_generated_ident(hashmap_name(key, value) + "_entry") };
+    let params: Vec[(string, Type)] = Vec::from_array([]);
+    params.push(("m", lower_type(map_ty)));
+    params.push(("key", lower_type(key)));
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    let nil_stmts: Vec[Stmt] = Vec::from_array([]);
+    nil_stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Binary { op: BinaryOp::Eq, lhs: Expr::Var { name: "m" }, rhs: Expr::Nil },
+            then_: Block { stmts: nil_stmts },
+            else_: Option::None,
+        },
+    );
+    for stmt in hashmap_native_index_stmts() {
+        stmts.push(stmt)
+    }
+    let missing_stmts: Vec[Stmt] = Vec::from_array([]);
+    missing_stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Unary { op: UnaryOp::Not, expr: Expr::Var { name: "found" } },
+            then_: Block { stmts: missing_stmts },
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::Var {
+            name: "entry",
+            ty: entry_ty,
+            value: Option::Some(
+                Expr::Index {
+                    base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" },
+                    index: Expr::Var { name: "index" },
+                },
+            ),
+        },
+    );
+    let inactive_stmts: Vec[Stmt] = Vec::from_array([]);
+    inactive_stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Unary {
+                op: UnaryOp::Not,
+                expr: Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "active" },
+            },
+            then_: Block { stmts: inactive_stmts },
+            else_: Option::None,
+        },
+    );
+    stmts.push(Stmt::Var { name: "zero", ty: entry_ty, value: Option::None });
+    stmts.push(
+        Stmt::IndexAssign {
+            base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" },
+            index: Expr::Var { name: "index" },
+            value: Expr::Var { name: "zero" },
+        },
+    );
+    stmts.push(
+        Stmt::FieldAssign {
+            target: Expr::Var { name: "m" },
+            field_name: "len",
+            value: Expr::Binary {
+                op: BinaryOp::Sub,
+                lhs: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "len" },
+                rhs: Expr::Int { value: "1" },
+            },
+        },
+    );
+    stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
+    Item::Function(
+        Function {
+            name: runtime_helper_name("hashmap_remove", map_ty),
+            params,
+            ret_ty: Option::Some(Type::Unit),
+            body: Block { stmts },
+        },
+    )
+}
+
+fn hashmap_native_contains_item(key: repr::Type, value: repr::Type) -> Item {
+    let map_ty = repr::Type::HashMap { key, value };
+    let params: Vec[(string, Type)] = Vec::from_array([]);
+    params.push(("m", lower_type(map_ty)));
+    params.push(("key", lower_type(key)));
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    let nil_stmts: Vec[Stmt] = Vec::from_array([]);
+    nil_stmts.push(Stmt::Return { expr: Option::Some(Expr::Bool { value: false }) });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Binary { op: BinaryOp::Eq, lhs: Expr::Var { name: "m" }, rhs: Expr::Nil },
+            then_: Block { stmts: nil_stmts },
+            else_: Option::None,
+        },
+    );
+    for stmt in hashmap_native_index_stmts() {
+        stmts.push(stmt)
+    }
+    let missing_stmts: Vec[Stmt] = Vec::from_array([]);
+    missing_stmts.push(Stmt::Return { expr: Option::Some(Expr::Bool { value: false }) });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Unary { op: UnaryOp::Not, expr: Expr::Var { name: "found" } },
+            then_: Block { stmts: missing_stmts },
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::Return {
+            expr: Option::Some(
+                Expr::Field {
+                    expr: Expr::Index {
+                        base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" },
+                        index: Expr::Var { name: "index" },
+                    },
+                    field_name: "active",
+                },
+            ),
+        },
+    );
+    Item::Function(
+        Function {
+            name: runtime_helper_name("hashmap_contains", map_ty),
+            params,
+            ret_ty: Option::Some(Type::Bool),
+            body: Block { stmts },
+        },
+    )
+}
+
+fn hashmap_native_entries_item(key: repr::Type, value: repr::Type) -> Item {
+    let map_ty = repr::Type::HashMap { key, value };
+    let pair_types: Vec[repr::Type] = Vec::from_array([]);
+    pair_types.push(key);
+    pair_types.push(value);
+    let pair_ty = repr::Type::Tuple { items: pair_types };
+    let lowered_pair = lower_type(pair_ty);
+    let result_slice_ty = Type::Slice { elem: lowered_pair };
+    let result_vec_ty = repr::Type::VecType { elem: pair_ty };
+    let result_vec_struct = Type::Named {
+        name: go_generated_ident("_goml_vec_" + go_ident(encode_type(pair_ty))),
+    };
+    let params: Vec[(string, Type)] = Vec::from_array([]);
+    params.push(("m", lower_type(map_ty)));
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    stmts.push(Stmt::Var { name: "result", ty: result_slice_ty, value: Option::None });
+    let nil_fields: Vec[(string, Expr)] = Vec::from_array([]);
+    nil_fields.push(("items", Expr::Var { name: "result" }));
+    let nil_stmts: Vec[Stmt] = Vec::from_array([]);
+    nil_stmts.push(
+        Stmt::Return {
+            expr: Option::Some(
+                Expr::Unary {
+                    op: UnaryOp::Address,
+                    expr: Expr::StructLiteral { ty: result_vec_struct, fields: nil_fields },
+                },
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Binary { op: BinaryOp::Eq, lhs: Expr::Var { name: "m" }, rhs: Expr::Nil },
+            then_: Block { stmts: nil_stmts },
+            else_: Option::None,
+        },
+    );
+    let range_stmts: Vec[Stmt] = Vec::from_array([]);
+    let pair_fields: Vec[(string, Expr)] = Vec::from_array([]);
+    pair_fields.push(("_0", Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "key" }));
+    pair_fields.push(("_1", Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "value" }));
+    let append_args: Vec[Expr] = Vec::from_array([]);
+    append_args.push(Expr::Var { name: "result" });
+    append_args.push(Expr::StructLiteral { ty: lowered_pair, fields: pair_fields });
+    let active_stmts: Vec[Stmt] = Vec::from_array([]);
+    active_stmts.push(
+        Stmt::Assign {
+            name: "result",
+            value: Expr::Call { func: Expr::Var { name: "append" }, args: append_args },
+        },
+    );
+    range_stmts.push(
+        Stmt::If {
+            cond: Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "active" },
+            then_: Block { stmts: active_stmts },
+            else_: Option::None,
+        },
+    );
+    let range_names: Vec[string] = Vec::from_array([]);
+    range_names.push("_");
+    range_names.push("entry");
+    stmts.push(
+        Stmt::Range {
+            names: range_names,
+            expr: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" },
+            body: Block { stmts: range_stmts },
+        },
+    );
+    let result_fields: Vec[(string, Expr)] = Vec::from_array([]);
+    result_fields.push(("items", Expr::Var { name: "result" }));
+    stmts.push(
+        Stmt::Return {
+            expr: Option::Some(
+                Expr::Unary {
+                    op: UnaryOp::Address,
+                    expr: Expr::StructLiteral { ty: result_vec_struct, fields: result_fields },
+                },
+            ),
+        },
+    );
+    Item::Function(
+        Function {
+            name: runtime_helper_name("hashmap_entries", map_ty),
+            params,
+            ret_ty: Option::Some(lower_type(result_vec_ty)),
+            body: Block { stmts },
+        },
+    )
+}
+
 fn hashmap_new_item(key: repr::Type, value: repr::Type) -> Item {
     let map_ty = repr::Type::HashMap { key, value };
     let name = hashmap_name(key, value);
@@ -2523,22 +2990,28 @@ fn hashmap_items(
     let result: Vec[Item] = Vec::from_array([]);
     let name = hashmap_name(key, value);
     let entry_name = go_generated_ident(name + "_entry");
+    let native_key = hashmap_native_key(key);
     let entry_fields: Vec[(string, Type)] = Vec::from_array([]);
     entry_fields.push(("active", Type::Bool));
     entry_fields.push(("key", lower_type(key)));
     entry_fields.push(("value", lower_type(value)));
     result.push(Item::Struct(StructDef { name: entry_name, fields: entry_fields }));
     let fields: Vec[(string, Type)] = Vec::from_array([]);
-    fields.push(
-        (
-            "buckets",
-            Type::Map {
-                key: Type::Uint64,
-                value: Type::Slice { elem: Type::Named { name: entry_name } },
-            },
-        ),
-    );
-    fields.push(("hashes", Type::Slice { elem: Type::Uint64 }));
+    if native_key {
+        fields.push(("indices", Type::Map { key: lower_type(key), value: Type::Int }));
+        fields.push(("entries", Type::Slice { elem: Type::Named { name: entry_name } }))
+    } else {
+        fields.push(
+            (
+                "buckets",
+                Type::Map {
+                    key: Type::Uint64,
+                    value: Type::Slice { elem: Type::Named { name: entry_name } },
+                },
+            ),
+        );
+        fields.push(("hashes", Type::Slice { elem: Type::Uint64 }))
+    };
     fields.push(("len", Type::Int));
     result.push(Item::Struct(StructDef { name, fields }));
     let option = hashmap_option_info(builtin, value, instances, enums, structs, function_names);
@@ -2547,16 +3020,35 @@ fn hashmap_items(
             result.push(item)
         }
     } else {};
-    result.push(hashmap_new_item(key, value));
+    result.push(
+        if native_key {
+            hashmap_native_new_item(key, value)
+        } else {
+            hashmap_new_item(key, value)
+        },
+    );
     result.push(hashmap_len_item(key, value));
-    result.push(hashmap_lookup_item(builtin, key, value));
+    result.push(
+        if native_key {
+            hashmap_native_lookup_item(key, value)
+        } else {
+            hashmap_lookup_item(builtin, key, value)
+        },
+    );
     result.push(
         hashmap_get_item(key, value, option.0, option.1, option.2, option.4, option.5, option.6),
     );
-    result.push(hashmap_set_item(builtin, key, value));
-    result.push(hashmap_remove_item(builtin, key, value));
-    result.push(hashmap_contains_item(builtin, key, value));
-    result.push(hashmap_entries_item(key, value));
+    if native_key {
+        result.push(hashmap_native_set_item(key, value));
+        result.push(hashmap_native_remove_item(key, value));
+        result.push(hashmap_native_contains_item(key, value));
+        result.push(hashmap_native_entries_item(key, value))
+    } else {
+        result.push(hashmap_set_item(builtin, key, value));
+        result.push(hashmap_remove_item(builtin, key, value));
+        result.push(hashmap_contains_item(builtin, key, value));
+        result.push(hashmap_entries_item(key, value))
+    };
     result
 }
 
