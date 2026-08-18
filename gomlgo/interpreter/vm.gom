@@ -220,9 +220,12 @@ fn register(frame: Frame, id: bytecode::RegisterId) -> Result[Value, string] {
     if id.value < 0 || id.value >= frame.registers.len() {
         Result::Err("invalid register " + id.value.to_string())
     } else {
-        frame.registers[id.value].ok_or(
-            "register " + id.value.to_string() + " is undefined in " + frame.name,
-        )
+        match frame.registers[id.value] {
+            Some(value) => Result::Ok(value),
+            None => Result::Err(
+                "register " + id.value.to_string() + " is undefined in " + frame.name,
+            ),
+        }
     }
 }
 
@@ -248,7 +251,10 @@ fn place(frame: Frame, id: bytecode::PlaceId) -> Result[RuntimePlace, string] {
     if id.value < 0 || id.value >= frame.places.len() {
         Result::Err("invalid place " + id.value.to_string())
     } else {
-        frame.places[id.value].ok_or("place " + id.value.to_string() + " is undefined")
+        match frame.places[id.value] {
+            Some(value) => Result::Ok(value),
+            None => Result::Err("place " + id.value.to_string() + " is undefined"),
+        }
     }
 }
 
