@@ -506,9 +506,11 @@ fn check_builtin_raw_arity(
 }
 
 fn underlying_kind(state: CheckState, value: go_types::TypeId) -> Option[go_types::TypeKind] {
-    match go_types::get_type(state.world, core_type_id(state, value)) {
-        Some(value) => Option::Some(value.kind),
-        None => Option::None,
+    let resolved = core_type_id(state, value);
+    if go_types::has_type(state.world, resolved) {
+        Option::Some(go_types::type_data(state.world, resolved).kind)
+    } else {
+        Option::None
     }
 }
 

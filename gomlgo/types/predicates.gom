@@ -503,26 +503,26 @@ pub fn supports_add(world: World, value: TypeId) -> bool {
 }
 
 pub fn comparable(world: World, value: TypeId) -> bool {
-    match get_type(world, unalias(world, value)) {
-        Some(TypeData { id: _, kind: TypeKind::TypeParam { object: _, constraint: _, index: _ } }) => return type_set_strictly_comparable(
+    match type_data(world, unalias(world, value)) {
+        TypeData { id: _, kind: TypeKind::TypeParam { object: _, constraint: _, index: _ } } => return type_set_strictly_comparable(
             world,
             value,
         ),
         _ => {},
     };
-    match get_type(world, underlying(world, value)) {
-        Some(TypeData { id: _, kind: TypeKind::Invalid }) | None => true,
-        Some(TypeData {
+    match type_data(world, underlying(world, value)) {
+        TypeData { id: _, kind: TypeKind::Invalid } => true,
+        TypeData {
             id: _,
             kind: TypeKind::Basic { basic: BasicKind::UntypedNil, name: _, untyped: _ },
-        }) => {
+        } => {
             false
         },
-        Some(TypeData { id: _, kind: TypeKind::Basic { basic: _, name: _, untyped: _ } }) => true,
-        Some(TypeData { id: _, kind: TypeKind::Array { length: _, element } }) => {
+        TypeData { id: _, kind: TypeKind::Basic { basic: _, name: _, untyped: _ } } => true,
+        TypeData { id: _, kind: TypeKind::Array { length: _, element } } => {
             comparable(world, element)
         },
-        Some(TypeData { id: _, kind: TypeKind::Struct { fields } }) => {
+        TypeData { id: _, kind: TypeKind::Struct { fields } } => {
             for field in fields {
                 if !comparable(world, field.variable.type_id) {
                     return false
@@ -530,21 +530,21 @@ pub fn comparable(world: World, value: TypeId) -> bool {
             }
             true
         },
-        Some(TypeData { id: _, kind: TypeKind::Pointer { element: _ } }) | Some(TypeData {
+        TypeData { id: _, kind: TypeKind::Pointer { element: _ } } | TypeData {
             id: _,
             kind: TypeKind::Chan { direction: _, element: _ },
-        }) | Some(TypeData {
+        } | TypeData {
             id: _,
             kind: TypeKind::Interface { methods: _, embeddeds: _, comparable: _, implicit: _ },
-        }) => true,
-        Some(TypeData { id: _, kind: TypeKind::TypeParam { object: _, constraint, index: _ } }) => match get_type(
+        } => true,
+        TypeData { id: _, kind: TypeKind::TypeParam { object: _, constraint, index: _ } } => match type_data(
             world,
             underlying(world, constraint),
         ) {
-            Some(TypeData {
+            TypeData {
                 id: _,
                 kind: TypeKind::Interface { methods: _, embeddeds: _, comparable, implicit: _ },
-            }) => comparable,
+            } => comparable,
             _ => false,
         },
         _ => false,

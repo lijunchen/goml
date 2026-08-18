@@ -1161,8 +1161,8 @@ fn expression_result_types(builder: FunctionBuilder, node: syntax::NodeId) -> Re
         return Result::Ok(result)
     } else {};
     let underlying = go_types::underlying(builder.world, fact.type_id);
-    match go_types::get_type(builder.world, underlying) {
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => {
+    match go_types::type_data(builder.world, underlying) {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } } => {
             for variable in variables {
                 result.push(substitute_type(builder, variable.type_id))
             }
@@ -2231,8 +2231,8 @@ fn callable_parameters(builder: FunctionBuilder, node: syntax::NodeId) -> Result
     string,
 ] {
     let signature = node_type(builder, node)?;
-    match go_types::get_type(builder.world, go_types::underlying(builder.world, signature)) {
-        Some(go_types::TypeData {
+    match go_types::type_data(builder.world, go_types::underlying(builder.world, signature)) {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Signature {
                 receiver: _,
@@ -2242,10 +2242,10 @@ fn callable_parameters(builder: FunctionBuilder, node: syntax::NodeId) -> Result
                 results: _,
                 variadic,
             },
-        }) => {
+        } => {
             let result: Vec[go_types::TypeId] = Vec::from_array([]);
-            match go_types::get_type(builder.world, params) {
-                Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => for variable in variables {
+            match go_types::type_data(builder.world, params) {
+                go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } } => for variable in variables {
                     result.push(substitute_type(builder, variable.type_id))
                 },
                 _ => return Result::Err("callable parameter list is not a tuple"),
@@ -5042,8 +5042,8 @@ fn signature_tuple_variables(builder: FunctionBuilder, type_id: go_types::TypeId
     Vec[go_types::Variable],
     string,
 ] {
-    match go_types::get_type(builder.world, type_id) {
-        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => {
+    match go_types::type_data(builder.world, type_id) {
+        go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } } => {
             Result::Ok(variables)
         },
         _ => Result::Err("signature component is not a tuple"),
@@ -5091,8 +5091,8 @@ fn initialize_signature_locals(
         },
         _ => return Result::Err("function declaration type is not a function type"),
     };
-    let signature = match go_types::get_type(builder.world, builder.signature) {
-        Some(go_types::TypeData {
+    let signature = match go_types::type_data(builder.world, builder.signature) {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Signature {
                 receiver,
@@ -5102,7 +5102,7 @@ fn initialize_signature_locals(
                 results,
                 variadic: _,
             },
-        }) => (receiver, params, results),
+        } => (receiver, params, results),
         _ => return Result::Err("function object does not have a signature"),
     };
     match signature.0 {

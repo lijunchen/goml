@@ -2626,8 +2626,8 @@ fn check_call(
             false,
         )
     } else {};
-    match go_types::get_type(state.world, core_type_id(state, function.type_id)) {
-        Some(go_types::TypeData {
+    match go_types::type_data(state.world, core_type_id(state, function.type_id)) {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Signature {
                 receiver: _,
@@ -2637,7 +2637,7 @@ fn check_call(
                 results: _,
                 variadic,
             },
-        }) => if !type_params.is_empty() {
+        } => if !type_params.is_empty() {
             let parameters = tuple_variables(state, params);
             let minimum = if variadic && !parameters.is_empty() {
                 parameters.len() - 1
@@ -2695,8 +2695,8 @@ fn check_call(
         }
         return recovered_generic_call_result(state, node, function.type_id)
     } else {};
-    match go_types::get_type(state.world, core_type_id(state, function_type)) {
-        Some(go_types::TypeData {
+    match go_types::type_data(state.world, core_type_id(state, function_type)) {
+        go_types::TypeData {
             id: _,
             kind: go_types::TypeKind::Signature {
                 receiver: _,
@@ -2706,7 +2706,7 @@ fn check_call(
                 results,
                 variadic,
             },
-        }) => {
+        } => {
             let parameters = tuple_variables(state, params);
             let minimum = if variadic && !parameters.is_empty() {
                 parameters.len() - 1

@@ -653,11 +653,11 @@ fn object_name(world: World, value: ObjectId) -> string {
 }
 
 pub fn ensure_named_instance_methods(world: World, instance: TypeId) -> unit {
-    let instance_data = match get_type(world, instance) {
-        Some(TypeData {
+    let instance_data = match type_data(world, instance) {
+        TypeData {
             id: _,
             kind: TypeKind::Named { object, underlying, type_params, type_args, methods },
-        }) => (object, underlying, type_params, type_args, methods),
+        } => (object, underlying, type_params, type_args, methods),
         _ => return,
     };
     if instance_data.3.is_empty() {
@@ -667,11 +667,11 @@ pub fn ensure_named_instance_methods(world: World, instance: TypeId) -> unit {
         Some(object) => object.type_id,
         None => return,
     };
-    let origin_data = match get_type(world, origin) {
-        Some(TypeData {
+    let origin_data = match type_data(world, origin) {
+        TypeData {
             id: _,
             kind: TypeKind::Named { object: _, underlying, type_params, type_args: _, methods },
-        }) => (underlying, type_params, methods),
+        } => (underlying, type_params, methods),
         _ => return,
     };
     let _ = set_type(
