@@ -70,19 +70,6 @@ func _goml_runtime_core_uint8_to_string(x uint8) string {
     return _goml_fmt.Sprintf("%d", x)
 }
 
-func _goml_runtime_core_string_hash(s string) uint64 {
-    var h uint64 = 14695981039346656037
-    var i int = 0
-    for {
-        if i >= int(len(s)) {
-            break
-        }
-        h = h * 1099511628211 + uint64(s[i])
-        i = i + 1
-    }
-    return h
-}
-
 func _goml_runtime_core_string_println(s string) struct{} {
     _goml_fmt.Println(s)
     return struct{}{}
@@ -235,46 +222,33 @@ type hashmap_string_int32_x_entry struct {
 }
 
 type hashmap_string_int32_x struct {
-    buckets map[uint64][]hashmap_string_int32_x_entry
-    hashes []uint64
+    indices map[string]int
+    entries []hashmap_string_int32_x_entry
     len int
 }
 
 func hashmap_new__HashMap_6string_5int32() *hashmap_string_int32_x {
     return &hashmap_string_int32_x{
-        buckets: make(map[uint64][]hashmap_string_int32_x_entry),
+        indices: make(map[string]int),
+        entries: nil,
         len: 0,
-        hashes: nil,
     }
 }
 
 func hashmap_set__HashMap_6string_5int32(m *hashmap_string_int32_x, key string, value int32) struct{} {
-    var reuse_index int = -1
     if m == nil {
         return struct{}{}
     }
-    var h uint64 = _goml_m_trait__impl_i_Hash_i_string_i_hash(key)
-    var bucket []hashmap_string_int32_x_entry = m.buckets[h]
-    if len(bucket) == 0 {
-        m.hashes = append(m.hashes, h)
-    }
-    var i int = 0
-    for {
-        if i >= int(len(bucket)) {
-            break
-        }
-        var entry hashmap_string_int32_x_entry = bucket[i]
-        if entry.active && _goml_m_trait__impl_i_PartialEq_i_string_i_eq(entry.key, key) {
-            bucket[i].value = value
+    var index int
+    var found bool
+    index, found = m.indices[key]
+    if found {
+        var entry hashmap_string_int32_x_entry = m.entries[index]
+        if entry.active {
+            m.entries[index].value = value
             return struct{}{}
         }
-        if !entry.active && reuse_index < 0 {
-            reuse_index = i
-        }
-        i = i + 1
-    }
-    if reuse_index >= 0 {
-        bucket[reuse_index] = hashmap_string_int32_x_entry{
+        m.entries[index] = hashmap_string_int32_x_entry{
             active: true,
             key: key,
             value: value,
@@ -282,12 +256,13 @@ func hashmap_set__HashMap_6string_5int32(m *hashmap_string_int32_x, key string, 
         m.len = m.len + 1
         return struct{}{}
     }
-    bucket = append(bucket, hashmap_string_int32_x_entry{
+    index = len(m.entries)
+    m.indices[key] = index
+    m.entries = append(m.entries, hashmap_string_int32_x_entry{
         active: true,
         key: key,
         value: value,
     })
-    m.buckets[h] = bucket
     m.len = m.len + 1
     return struct{}{}
 }
@@ -296,22 +271,19 @@ func hashmap_remove__HashMap_6string_5int32(m *hashmap_string_int32_x, key strin
     if m == nil {
         return struct{}{}
     }
-    var h uint64 = _goml_m_trait__impl_i_Hash_i_string_i_hash(key)
-    var bucket []hashmap_string_int32_x_entry = m.buckets[h]
-    var i int = 0
-    for {
-        if i >= int(len(bucket)) {
-            break
-        }
-        var entry hashmap_string_int32_x_entry = bucket[i]
-        if entry.active && _goml_m_trait__impl_i_PartialEq_i_string_i_eq(entry.key, key) {
-            var zero hashmap_string_int32_x_entry
-            bucket[i] = zero
-            m.len = m.len - 1
-            return struct{}{}
-        }
-        i = i + 1
+    var index int
+    var found bool
+    index, found = m.indices[key]
+    if !found {
+        return struct{}{}
     }
+    var entry hashmap_string_int32_x_entry = m.entries[index]
+    if !entry.active {
+        return struct{}{}
+    }
+    var zero hashmap_string_int32_x_entry
+    m.entries[index] = zero
+    m.len = m.len - 1
     return struct{}{}
 }
 
@@ -322,21 +294,12 @@ func hashmap_entries__HashMap_6string_5int32(m *hashmap_string_int32_x) *_goml_v
             items: result,
         }
     }
-    for _, h := range m.hashes {
-        var bucket []hashmap_string_int32_x_entry = m.buckets[h]
-        var i int = 0
-        for {
-            if i >= int(len(bucket)) {
-                break
-            }
-            var entry hashmap_string_int32_x_entry = bucket[i]
-            if entry.active {
-                result = append(result, Tuple2_6string_5int32{
-                    _0: entry.key,
-                    _1: entry.value,
-                })
-            }
-            i = i + 1
+    for _, entry := range m.entries {
+        if entry.active {
+            result = append(result, Tuple2_6string_5int32{
+                _0: entry.key,
+                _1: entry.value,
+            })
         }
     }
     return &_goml_vec_Tuple2_6string_5int32{
@@ -1623,16 +1586,6 @@ func __goml_builtin_char_from_uint32(value__30 uint32) Option__char {
             _tag: 0,
         }
     }
-}
-
-func _goml_m_trait__impl_i_PartialEq_i_string_i_eq(self__181 string, other__182 string) bool {
-    var t1002 bool = self__181 == other__182
-    return t1002
-}
-
-func _goml_m_trait__impl_i_Hash_i_string_i_hash(self__209 string) uint64 {
-    var t1005 uint64 = _goml_runtime_core_string_hash(self__209)
-    return t1005
 }
 
 func _goml_m_inherent_i_closure__en_h3f9733c4625dbd2f543c79fa467f2508_hars__0_i_apply(env499 closure_env_inherent_string_string_chars_0) Option__char {
