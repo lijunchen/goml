@@ -144,6 +144,44 @@ fn large_struct_source(body: string) -> string {
         + "}; println(run(value, 1)); }"
 }
 
+fn string_struct_source(field_count: int, body: string) -> string {
+    let mut fields = "";
+    let mut values = "";
+    for index in 0..field_count {
+        let name = "f" + index.to_string();
+        fields += name + ": string,";
+        values += name + ": \"\",";
+    }
+    "struct Wide {" + fields + "} " + body + " fn main() -> unit { let value = Wide {" + values
+        + "}; println(run(value, 1)); }"
+}
+
+#[test]
+fn passes_physically_large_struct_parameters_by_pointer() -> unit {
+    let output = encode(
+        lower_source(
+            string_struct_source(
+                8,
+                "fn run(value: Wide, depth: int32) -> int32 { if depth == 0 { value.f0.len() as int32 } else { run(value, depth - 1) } }",
+            ),
+        ),
+    );
+    testing::assert(string_contains(output, "func run(value__0 *Wide"))
+}
+
+#[test]
+fn keeps_physically_small_struct_parameters_value_typed() -> unit {
+    let output = encode(
+        lower_source(
+            string_struct_source(
+                7,
+                "fn run(value: Wide, depth: int32) -> int32 { if depth == 0 { value.f0.len() as int32 } else { run(value, depth - 1) } }",
+            ),
+        ),
+    );
+    testing::assert(string_contains(output, "func run(value__0 Wide"))
+}
+
 #[test]
 fn passes_read_only_large_struct_parameters_by_pointer() -> unit {
     let output = encode(
