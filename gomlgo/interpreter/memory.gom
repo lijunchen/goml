@@ -1,11 +1,7 @@
 package interpreter;
 
-pub struct Cell {
-    pub value: Ref[Value],
-}
-
 pub struct Memory {
-    pub cells: Vec[Cell],
+    pub cells: Vec[Value],
 }
 
 pub fn new_memory() -> Memory {
@@ -14,7 +10,7 @@ pub fn new_memory() -> Memory {
 
 pub fn allocate_cell(memory: Memory, value: Value) -> CellId {
     let id = cell_id(memory.cells.len());
-    memory.cells.push(Cell { value: Ref::new(copy_value(value)) });
+    memory.cells.push(copy_value(value));
     id
 }
 
@@ -105,10 +101,10 @@ pub fn load_place(memory: Memory, place: Place) -> Result[Value, string] {
     if place.root.value < 0 || place.root.value >= memory.cells.len() {
         return Result::Err("invalid cell " + place.root.value.to_string())
     } else {};
-    let cell = memory.cells[place.root.value];
+    let value = memory.cells[place.root.value];
     match place.projections {
-        Some(projections) => load_projection(memory, cell.value.get(), projections, 0),
-        None => Result::Ok(copy_value(cell.value.get())),
+        Some(projections) => load_projection(memory, value, projections, 0),
+        None => Result::Ok(copy_value(value)),
     }
 }
 
@@ -141,10 +137,10 @@ pub fn borrow_place(memory: Memory, place: Place) -> Result[Value, string] {
     if place.root.value < 0 || place.root.value >= memory.cells.len() {
         return Result::Err("invalid cell " + place.root.value.to_string())
     } else {};
-    let cell = memory.cells[place.root.value];
+    let value = memory.cells[place.root.value];
     match place.projections {
-        Some(projections) => borrow_projection(memory, cell.value.get(), projections, 0),
-        None => Result::Ok(cell.value.get()),
+        Some(projections) => borrow_projection(memory, value, projections, 0),
+        None => Result::Ok(value),
     }
 }
 
@@ -206,15 +202,20 @@ pub fn store_place(memory: Memory, place: Place, value: Value) -> Result[unit, s
     if place.root.value < 0 || place.root.value >= memory.cells.len() {
         return Result::Err("invalid cell " + place.root.value.to_string())
     } else {};
-    let cell = memory.cells[place.root.value];
     match place.projections {
         Some(projections) => {
-            let updated = store_projection(memory, cell.value.get(), projections, 0, value)?;
-            cell.value.set(updated);
+            let updated = store_projection(
+                memory,
+                memory.cells[place.root.value],
+                projections,
+                0,
+                value,
+            )?;
+            memory.cells[place.root.value] = updated;
             Result::Ok(())
         },
         None => {
-            cell.value.set(copy_value(value));
+            memory.cells[place.root.value] = copy_value(value);
             Result::Ok(())
         },
     }
