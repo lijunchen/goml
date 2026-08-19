@@ -5302,6 +5302,10 @@ fn instruction_failure_at(
     message: string,
 ) -> InstructionControl {
     state.location.set(frame_location(frame, location));
+    instruction_failure(state, message)
+}
+
+fn instruction_failure(state: VmState, message: string) -> InstructionControl {
     if runtime_fault(message) {
         match runtime_fault_payload(state, message) {
             Ok(payload) => instruction_panic(payload),
@@ -5310,6 +5314,16 @@ fn instruction_failure_at(
     } else {
         instruction_error(message)
     }
+}
+
+fn sequential_error_at(
+    state: VmState,
+    frame: Frame,
+    location: bytecode::CodeLocation,
+    message: string,
+) -> string {
+    state.location.set(frame_location(frame, location));
+    message
 }
 
 fn execute_sequential_integer_binary(
@@ -5321,15 +5335,10 @@ fn execute_sequential_integer_binary(
     left: int,
     right: int,
     target: int,
-) -> InstructionControl {
+) -> string {
     let instruction = block.instructions[index];
     if !count_step(state) {
-        return instruction_failure_at(
-            state,
-            frame,
-            instruction.location,
-            "instruction limit exceeded",
-        )
+        return sequential_error_at(state, frame, instruction.location, "instruction limit exceeded")
     } else {};
     if frame.scalar.is_empty() {
         return match (frame.registers[left], frame.registers[right]) {
@@ -5354,12 +5363,12 @@ fn execute_sequential_integer_binary(
                 state.false_value,
                 state.true_value,
             ) {
-                Ok(()) => instruction_continue(),
-                Err(message) => instruction_failure_at(state, frame, instruction.location, message),
+                Ok(()) => "",
+                Err(message) => sequential_error_at(state, frame, instruction.location, message),
             },
             _ => match execute_instruction_effect(state, frame, instruction) {
-                Ok(_) => instruction_continue(),
-                Err(message) => instruction_failure_at(state, frame, instruction.location, message),
+                Ok(_) => "",
+                Err(message) => sequential_error_at(state, frame, instruction.location, message),
             },
         }
     } else {};
@@ -5382,15 +5391,15 @@ fn execute_sequential_integer_binary(
                 state.true_value,
             );
             if message == "" {
-                return instruction_continue()
+                return ""
             } else {
-                return instruction_failure_at(state, frame, instruction.location, message)
+                return sequential_error_at(state, frame, instruction.location, message)
             }
         } else {}
     } else {};
     match execute_instruction_effect(state, frame, instruction) {
-        Ok(_) => instruction_continue(),
-        Err(message) => instruction_failure_at(state, frame, instruction.location, message),
+        Ok(_) => "",
+        Err(message) => sequential_error_at(state, frame, instruction.location, message),
     }
 }
 
@@ -5401,19 +5410,14 @@ fn execute_sequential_constant(
     index: int,
     source: int,
     target: int,
-) -> InstructionControl {
+) -> string {
     let instruction = block.instructions[index];
     if !count_step(state) {
-        return instruction_failure_at(
-            state,
-            frame,
-            instruction.location,
-            "instruction limit exceeded",
-        )
+        return sequential_error_at(state, frame, instruction.location, "instruction limit exceeded")
     } else {};
     match state.instruction_constants[source] {
         Some(value) => if target < 0 || target >= frame.registers.len() {
-            instruction_failure_at(
+            sequential_error_at(
                 state,
                 frame,
                 instruction.location,
@@ -5422,18 +5426,41 @@ fn execute_sequential_constant(
         } else {
             if frame.scalar.is_empty() {
                 frame.registers[target] = Option::Some(copy_value(value));
-                return instruction_continue()
+                return ""
             } else {};
             match set_register(frame, bytecode::register_id(target), value) {
-                Ok(()) => instruction_continue(),
-                Err(message) => instruction_failure_at(state, frame, instruction.location, message),
+                Ok(()) => "",
+                Err(message) => sequential_error_at(state, frame, instruction.location, message),
             }
         },
         None => match execute_instruction_effect(state, frame, instruction) {
-            Ok(_) => instruction_continue(),
-            Err(message) => instruction_failure_at(state, frame, instruction.location, message),
+            Ok(_) => "",
+            Err(message) => sequential_error_at(state, frame, instruction.location, message),
         },
     }
+}
+
+fn sequential_integer_register_index(frame: Frame, index: int) -> Result[int, string] {
+    if !frame.scalar.is_empty() && index >= 0 && index < frame.registers.len() {
+        let code = frame.scalar[frame.registers.len() + index];
+        let width = (code & 127.to_uint64()).to_int();
+        if code & 256.to_uint64() != 0.to_uint64() && width > 1 {
+            let bits = frame.scalar[index];
+            if code & 128.to_uint64() != 0.to_uint64() {
+                let value = signed_integer(bits, width).to_int();
+                if value < 0 {
+                    return Result::Err("index is outside the host integer range")
+                } else {
+                    return Result::Ok(value)
+                }
+            } else if bits > 9223372036854775807.to_uint64() {
+                return Result::Err("integer is outside the host integer range")
+            } else {
+                return Result::Ok(bits.to_int())
+            }
+        } else {}
+    } else {};
+    integer_register_index(frame, bytecode::register_id(index))
 }
 
 fn execute_sequential_index_place(
@@ -5444,25 +5471,20 @@ fn execute_sequential_index_place(
     target: int,
     base: int,
     index: int,
-) -> InstructionControl {
+) -> string {
     let instruction = block.instructions[instruction_index];
     if !count_step(state) {
-        return instruction_failure_at(
-            state,
-            frame,
-            instruction.location,
-            "instruction limit exceeded",
-        )
+        return sequential_error_at(state, frame, instruction.location, "instruction limit exceeded")
     } else {};
     if !frame.scalar.is_empty() {
-        match integer_register_index(frame, bytecode::register_id(index)) {
+        match sequential_integer_register_index(frame, index) {
             Ok(index) => {
                 let root = frame.place_roots[base];
                 if root != -1 && cell_valid(state.memory, root) {
                     match cell_value(state.memory, root) {
                         Value::Local(LocalValue::Slice(slice)) => {
                             if index < 0 || index >= slice.length {
-                                return instruction_failure_at(
+                                return sequential_error_at(
                                     state,
                                     frame,
                                     instruction.location,
@@ -5482,11 +5504,11 @@ fn execute_sequential_index_place(
                                                 index: slice.offset + index,
                                             },
                                         );
-                                        return instruction_continue()
+                                        return ""
                                     },
                                     None => {},
                                 },
-                                None => return instruction_failure_at(
+                                None => return sequential_error_at(
                                     state,
                                     frame,
                                     instruction.location,
@@ -5498,17 +5520,12 @@ fn execute_sequential_index_place(
                     }
                 } else {}
             },
-            Err(message) => return instruction_failure_at(
-                state,
-                frame,
-                instruction.location,
-                message,
-            ),
+            Err(message) => return sequential_error_at(state, frame, instruction.location, message),
         }
     } else {};
     match execute_instruction_effect(state, frame, instruction) {
-        Ok(_) => instruction_continue(),
-        Err(message) => instruction_failure_at(state, frame, instruction.location, message),
+        Ok(_) => "",
+        Err(message) => sequential_error_at(state, frame, instruction.location, message),
     }
 }
 
@@ -5519,15 +5536,10 @@ fn execute_sequential_load(
     instruction_index: int,
     source: int,
     target: int,
-) -> InstructionControl {
+) -> string {
     let instruction = block.instructions[instruction_index];
     if !count_step(state) {
-        return instruction_failure_at(
-            state,
-            frame,
-            instruction.location,
-            "instruction limit exceeded",
-        )
+        return sequential_error_at(state, frame, instruction.location, "instruction limit exceeded")
     } else {};
     match frame.bool_places[source] {
         Some(place) => {
@@ -5538,9 +5550,9 @@ fn execute_sequential_load(
                 state.false_value,
                 state.true_value,
             ) {
-                return instruction_continue()
+                return ""
             } else {
-                return instruction_failure_at(
+                return sequential_error_at(
                     state,
                     frame,
                     instruction.location,
@@ -5551,8 +5563,8 @@ fn execute_sequential_load(
         None => {},
     };
     match execute_instruction_effect(state, frame, instruction) {
-        Ok(_) => instruction_continue(),
-        Err(message) => instruction_failure_at(state, frame, instruction.location, message),
+        Ok(_) => "",
+        Err(message) => sequential_error_at(state, frame, instruction.location, message),
     }
 }
 
@@ -5563,34 +5575,43 @@ fn execute_sequential_store(
     instruction_index: int,
     target: int,
     source: int,
-) -> InstructionControl {
+) -> string {
     let instruction = block.instructions[instruction_index];
     if !count_step(state) {
-        return instruction_failure_at(
-            state,
-            frame,
-            instruction.location,
-            "instruction limit exceeded",
-        )
+        return sequential_error_at(state, frame, instruction.location, "instruction limit exceeded")
+    } else {};
+    if !frame.scalar.is_empty() && frame.place_roots[target] != -1 {
+        let local_value = frame.scalar[frame.registers.len() * 2 + frame.locals.len() * 2 + target];
+        if local_value > 0.to_uint64() && local_value <= frame.locals.len().to_uint64() {
+            let local = local_value.to_int() - 1;
+            let local_code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + local];
+            let source_code = frame.scalar[frame.registers.len() + source];
+            let local_width = local_code & 127.to_uint64();
+            let source_width = source_code & 127.to_uint64();
+            if local_width != 0.to_uint64() && source_code & 256.to_uint64() != 0.to_uint64()
+                && (local_width == 1.to_uint64()) == (source_width == 1.to_uint64()) {
+                frame.scalar[frame.registers.len() * 2 + local] = if local_width == 1.to_uint64() {
+                    frame.scalar[source]
+                } else {
+                    normalize_integer(frame.scalar[source], local_width.to_int())
+                };
+                return ""
+            } else {}
+        } else {}
     } else {};
     match frame.bool_places[target] {
         Some(place) => match boolean_register(frame, bytecode::register_id(source)) {
             Ok(value) => {
                 place.elements[place.index] = value;
-                return instruction_continue()
+                return ""
             },
-            Err(message) => return instruction_failure_at(
-                state,
-                frame,
-                instruction.location,
-                message,
-            ),
+            Err(message) => return sequential_error_at(state, frame, instruction.location, message),
         },
         None => {},
     };
     match execute_instruction_effect(state, frame, instruction) {
-        Ok(_) => instruction_continue(),
-        Err(message) => instruction_failure_at(state, frame, instruction.location, message),
+        Ok(_) => "",
+        Err(message) => sequential_error_at(state, frame, instruction.location, message),
     }
 }
 
@@ -5601,15 +5622,10 @@ fn execute_sequential_local_place(
     instruction_index: int,
     target: int,
     local: int,
-) -> InstructionControl {
+) -> string {
     let instruction = block.instructions[instruction_index];
     if !count_step(state) {
-        return instruction_failure_at(
-            state,
-            frame,
-            instruction.location,
-            "instruction limit exceeded",
-        )
+        return sequential_error_at(state, frame, instruction.location, "instruction limit exceeded")
     } else {};
     frame.place_roots[target] = frame.locals[local].value;
     frame.places[target] = Option::None;
@@ -5623,7 +5639,7 @@ fn execute_sequential_local_place(
             -1
         },
     );
-    instruction_continue()
+    ""
 }
 
 fn execute_sequential_boolean_not(
@@ -5633,15 +5649,10 @@ fn execute_sequential_boolean_not(
     instruction_index: int,
     source: int,
     target: int,
-) -> InstructionControl {
+) -> string {
     let instruction = block.instructions[instruction_index];
     if !count_step(state) {
-        return instruction_failure_at(
-            state,
-            frame,
-            instruction.location,
-            "instruction limit exceeded",
-        )
+        return sequential_error_at(state, frame, instruction.location, "instruction limit exceeded")
     } else {};
     match boolean_register(frame, bytecode::register_id(source)) {
         Ok(value) => if set_scalar_bool_register(
@@ -5651,16 +5662,16 @@ fn execute_sequential_boolean_not(
             state.false_value,
             state.true_value,
         ) {
-            instruction_continue()
+            ""
         } else {
-            instruction_failure_at(
+            sequential_error_at(
                 state,
                 frame,
                 instruction.location,
                 "invalid scalar boolean register",
             )
         },
-        Err(message) => instruction_failure_at(state, frame, instruction.location, message),
+        Err(message) => sequential_error_at(state, frame, instruction.location, message),
     }
 }
 
@@ -5673,9 +5684,9 @@ fn execute_sequential_root_load(
     local: int,
     cell: CellId,
     target: int,
-) -> InstructionControl {
+) -> string {
     if !count_step(state) {
-        return instruction_failure_at(
+        return sequential_error_at(
             state,
             frame,
             block.instructions[index].location,
@@ -5689,7 +5700,7 @@ fn execute_sequential_root_load(
         if local_code & 127.to_uint64() != 0.to_uint64()
             && frame.scalar[target_code_index] & 127.to_uint64() != 0.to_uint64() {
             if !count_step(state) {
-                return instruction_failure_at(
+                return sequential_error_at(
                     state,
                     frame,
                     block.instructions[index + 1].location,
@@ -5703,7 +5714,7 @@ fn execute_sequential_root_load(
             frame.scalar[target] = frame.scalar[frame.registers.len() * 2 + local];
             frame.scalar[target_code_index] = frame.scalar[target_code_index] | 256.to_uint64();
             frame.registers[target] = Option::None;
-            return instruction_continue()
+            return ""
         } else {}
     } else {};
     frame.place_roots[place] = cell.value;
@@ -5719,7 +5730,7 @@ fn execute_sequential_root_load(
         },
     );
     if !count_step(state) {
-        return instruction_failure_at(
+        return sequential_error_at(
             state,
             frame,
             block.instructions[index + 1].location,
@@ -5728,7 +5739,7 @@ fn execute_sequential_root_load(
     } else {};
     if frame.scalar.is_empty() {
         frame.registers[target] = Option::Some(copy_value(cell_value(state.memory, cell.value)));
-        return instruction_continue()
+        return ""
     } else {};
     match scalar_local_layout(frame, local) {
         Some(layout) if layout.width == 1 => match scalar_local_value(frame, local) {
@@ -5737,15 +5748,15 @@ fn execute_sequential_root_load(
                 bytecode::register_id(target),
                 Value::Local(LocalValue::Bool(bits != 0.to_uint64())),
             ) {
-                Ok(()) => instruction_continue(),
-                Err(message) => instruction_failure_at(
+                Ok(()) => "",
+                Err(message) => sequential_error_at(
                     state,
                     frame,
                     block.instructions[index + 1].location,
                     message,
                 ),
             },
-            Err(message) => instruction_failure_at(
+            Err(message) => sequential_error_at(
                 state,
                 frame,
                 block.instructions[index + 1].location,
@@ -5760,15 +5771,15 @@ fn execute_sequential_root_load(
                 layout.width,
                 layout.signed,
             ) {
-                Ok(()) => instruction_continue(),
-                Err(message) => instruction_failure_at(
+                Ok(()) => "",
+                Err(message) => sequential_error_at(
                     state,
                     frame,
                     block.instructions[index + 1].location,
                     message,
                 ),
             },
-            Err(message) => instruction_failure_at(
+            Err(message) => sequential_error_at(
                 state,
                 frame,
                 block.instructions[index + 1].location,
@@ -5780,8 +5791,8 @@ fn execute_sequential_root_load(
             bytecode::register_id(target),
             cell_value(state.memory, cell.value),
         ) {
-            Ok(()) => instruction_continue(),
-            Err(message) => instruction_failure_at(
+            Ok(()) => "",
+            Err(message) => sequential_error_at(
                 state,
                 frame,
                 block.instructions[index + 1].location,
@@ -5800,9 +5811,9 @@ fn execute_sequential_root_store(
     local: int,
     cell: CellId,
     value: int,
-) -> InstructionControl {
+) -> string {
     if !count_step(state) {
-        return instruction_failure_at(
+        return sequential_error_at(
             state,
             frame,
             block.instructions[index].location,
@@ -5816,7 +5827,7 @@ fn execute_sequential_root_store(
         if local_code & 127.to_uint64() != 0.to_uint64()
             && value_code & 256.to_uint64() != 0.to_uint64() {
             if !count_step(state) {
-                return instruction_failure_at(
+                return sequential_error_at(
                     state,
                     frame,
                     block.instructions[index + 1].location,
@@ -5831,7 +5842,7 @@ fn execute_sequential_root_store(
                 frame.scalar[value],
                 (local_code & 127.to_uint64()).to_int(),
             );
-            return instruction_continue()
+            return ""
         } else {}
     } else {};
     frame.place_roots[place] = cell.value;
@@ -5847,7 +5858,7 @@ fn execute_sequential_root_store(
         },
     );
     if !count_step(state) {
-        return instruction_failure_at(
+        return sequential_error_at(
             state,
             frame,
             block.instructions[index + 1].location,
@@ -5858,9 +5869,9 @@ fn execute_sequential_root_store(
         return match frame.registers[value] {
             Some(value) => {
                 set_cell_value(state.memory, cell.value, copy_value(value));
-                instruction_continue()
+                ""
             },
-            None => instruction_failure_at(
+            None => sequential_error_at(
                 state,
                 frame,
                 block.instructions[index + 1].location,
@@ -5882,15 +5893,15 @@ fn execute_sequential_root_store(
                     0.to_uint64()
                 },
             ) {
-                Ok(()) => instruction_continue(),
-                Err(message) => instruction_failure_at(
+                Ok(()) => "",
+                Err(message) => sequential_error_at(
                     state,
                     frame,
                     block.instructions[index + 1].location,
                     message,
                 ),
             },
-            Err(message) => instruction_failure_at(
+            Err(message) => sequential_error_at(
                 state,
                 frame,
                 block.instructions[index + 1].location,
@@ -5903,15 +5914,15 @@ fn execute_sequential_root_store(
                 local,
                 normalize_integer(bits, layout.width),
             ) {
-                Ok(()) => instruction_continue(),
-                Err(message) => instruction_failure_at(
+                Ok(()) => "",
+                Err(message) => sequential_error_at(
                     state,
                     frame,
                     block.instructions[index + 1].location,
                     message,
                 ),
             },
-            Err(message) => instruction_failure_at(
+            Err(message) => sequential_error_at(
                 state,
                 frame,
                 block.instructions[index + 1].location,
@@ -5921,9 +5932,9 @@ fn execute_sequential_root_store(
         None => match register(frame, bytecode::register_id(value)) {
             Ok(value) => {
                 set_cell_value(state.memory, cell.value, copy_value(value));
-                instruction_continue()
+                ""
             },
-            Err(_) => instruction_failure_at(
+            Err(_) => sequential_error_at(
                 state,
                 frame,
                 block.instructions[index + 1].location,
@@ -5940,9 +5951,9 @@ fn execute_sequential_renew_local(
     index: int,
     local: int,
     type_id: int,
-) -> InstructionControl {
+) -> string {
     if !count_step(state) {
-        return instruction_failure_at(
+        return sequential_error_at(
             state,
             frame,
             block.instructions[index].location,
@@ -5951,8 +5962,8 @@ fn execute_sequential_renew_local(
     } else {};
     match scalar_local_layout(frame, local) {
         Some(_) => return match replace_scalar_local(frame, local, 0.to_uint64()) {
-            Ok(()) => instruction_continue(),
-            Err(message) => instruction_failure_at(
+            Ok(()) => "",
+            Err(message) => sequential_error_at(
                 state,
                 frame,
                 block.instructions[index].location,
@@ -5964,9 +5975,9 @@ fn execute_sequential_renew_local(
     match runtime_zero_value(state, go_types::type_id(type_id)) {
         Ok(value) => {
             replace_local_cell(state, frame, local, value);
-            instruction_continue()
+            ""
         },
-        Err(message) => instruction_failure_at(
+        Err(message) => sequential_error_at(
             state,
             frame,
             block.instructions[index].location,
@@ -6483,120 +6494,129 @@ fn execute_function(
         let mut instruction_index = 0;
         while instruction_index < block.instructions.len() {
             let operation = operations[instruction_index];
-            let control = match operation.kind {
-                0 => execute_instruction(state, frame, block.instructions[instruction_index]),
-                1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 => execute_sequential_integer_binary(
-                    state,
-                    frame,
-                    block,
-                    instruction_index,
-                    operation.kind,
-                    operation.place,
-                    operation.source,
-                    operation.target,
-                ),
-                18 => execute_sequential_constant(
-                    state,
-                    frame,
-                    block,
-                    instruction_index,
-                    operation.source,
-                    operation.target,
-                ),
-                19 => execute_sequential_root_load(
-                    state,
-                    frame,
-                    block,
-                    instruction_index,
-                    operation.place,
-                    operation.source,
-                    frame.locals[operation.source],
-                    operation.target,
-                ),
-                20 => execute_sequential_root_store(
-                    state,
-                    frame,
-                    block,
-                    instruction_index,
-                    operation.place,
-                    operation.source,
-                    frame.locals[operation.source],
-                    operation.target,
-                ),
-                21 => execute_sequential_root_load(
-                    state,
-                    frame,
-                    block,
-                    instruction_index,
-                    operation.place,
-                    -1,
-                    state.globals[operation.source],
-                    operation.target,
-                ),
-                22 => execute_sequential_root_store(
-                    state,
-                    frame,
-                    block,
-                    instruction_index,
-                    operation.place,
-                    -1,
-                    state.globals[operation.source],
-                    operation.target,
-                ),
-                23 => execute_sequential_renew_local(
-                    state,
-                    frame,
-                    block,
-                    instruction_index,
-                    operation.source,
-                    operation.target,
-                ),
-                24 => execute_sequential_index_place(
-                    state,
-                    frame,
-                    block,
-                    instruction_index,
-                    operation.place,
-                    operation.source,
-                    operation.target,
-                ),
-                25 => execute_sequential_load(
-                    state,
-                    frame,
-                    block,
-                    instruction_index,
-                    operation.place,
-                    operation.target,
-                ),
-                26 => execute_sequential_store(
-                    state,
-                    frame,
-                    block,
-                    instruction_index,
-                    operation.place,
-                    operation.source,
-                ),
-                27 => execute_sequential_local_place(
-                    state,
-                    frame,
-                    block,
-                    instruction_index,
-                    operation.place,
-                    operation.source,
-                ),
-                _ => execute_sequential_boolean_not(
-                    state,
-                    frame,
-                    block,
-                    instruction_index,
-                    operation.source,
-                    operation.target,
-                ),
+            let control = if operation.kind == 0 {
+                execute_instruction(state, frame, block.instructions[instruction_index])
+            } else {
+                let message = match operation.kind {
+                    1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 => execute_sequential_integer_binary(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.kind,
+                        operation.place,
+                        operation.source,
+                        operation.target,
+                    ),
+                    18 => execute_sequential_constant(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.source,
+                        operation.target,
+                    ),
+                    19 => execute_sequential_root_load(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.place,
+                        operation.source,
+                        frame.locals[operation.source],
+                        operation.target,
+                    ),
+                    20 => execute_sequential_root_store(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.place,
+                        operation.source,
+                        frame.locals[operation.source],
+                        operation.target,
+                    ),
+                    21 => execute_sequential_root_load(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.place,
+                        -1,
+                        state.globals[operation.source],
+                        operation.target,
+                    ),
+                    22 => execute_sequential_root_store(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.place,
+                        -1,
+                        state.globals[operation.source],
+                        operation.target,
+                    ),
+                    23 => execute_sequential_renew_local(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.source,
+                        operation.target,
+                    ),
+                    24 => execute_sequential_index_place(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.place,
+                        operation.source,
+                        operation.target,
+                    ),
+                    25 => execute_sequential_load(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.place,
+                        operation.target,
+                    ),
+                    26 => execute_sequential_store(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.place,
+                        operation.source,
+                    ),
+                    27 => execute_sequential_local_place(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.place,
+                        operation.source,
+                    ),
+                    _ => execute_sequential_boolean_not(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.source,
+                        operation.target,
+                    ),
+                };
+                instruction_index += match operation.kind {
+                    19 | 20 | 21 | 22 => 2,
+                    _ => 1,
+                };
+                if message == "" {
+                    continue
+                } else {
+                    instruction_failure(state, message)
+                }
             };
-            instruction_index += match operation.kind {
-                19 | 20 | 21 | 22 => 2,
-                _ => 1,
-            };
+            instruction_index += 1;
             if control.kind == 0 {} else if control.kind == 1 {
                 let payload = control.panic.ok_or("panic instruction has no payload")?.get();
                 let outcome = finish_invocation(state, frame, function, Option::Some(payload));
