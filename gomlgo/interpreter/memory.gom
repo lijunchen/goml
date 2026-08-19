@@ -71,6 +71,21 @@ fn set_cell_value(memory: Memory, index: int, value: Value) -> unit {
     }
 }
 
+fn bool_backing(memory: Memory, place: Place) -> Option[Vec[bool]] {
+    let root = match place.projections {
+        Some(projections) => projections.is_empty(),
+        None => true,
+    };
+    if !root || !cell_valid(memory, place.root.value) {
+        Option::None
+    } else {
+        match cell_value(memory, place.root.value) {
+            Value::Local(LocalValue::BoolBacking(elements)) => Option::Some(elements),
+            _ => Option::None,
+        }
+    }
+}
+
 fn load_cell(memory: Memory, cell: CellId) -> Result[Value, string] {
     if !cell_valid(memory, cell.value) {
         Result::Err("invalid cell " + cell.value.to_string())
@@ -167,6 +182,18 @@ fn load_projection(memory: Memory, value: Value, projections: Vec[Projection], o
             let nested = load_place(memory, place)?;
             load_projection(memory, nested, projections, offset + 1)
         },
+        (Value::Local(LocalValue::BoolBacking(elements)), Projection::Index(index)) => {
+            if index < 0 || index >= elements.len() {
+                Result::Err("aggregate index out of range")
+            } else {
+                load_projection(
+                    memory,
+                    Value::Local(LocalValue::Bool(elements[index])),
+                    projections,
+                    offset + 1,
+                )
+            }
+        },
         _ => Result::Err("place projection does not match stored value"),
     }
 }
@@ -202,6 +229,18 @@ fn borrow_projection(memory: Memory, value: Value, projections: Vec[Projection],
             let place = slice_element_place(slice, index)?;
             let nested = borrow_place(memory, place)?;
             borrow_projection(memory, nested, projections, offset + 1)
+        },
+        (Value::Local(LocalValue::BoolBacking(elements)), Projection::Index(index)) => {
+            if index < 0 || index >= elements.len() {
+                Result::Err("aggregate index out of range")
+            } else {
+                borrow_projection(
+                    memory,
+                    Value::Local(LocalValue::Bool(elements[index])),
+                    projections,
+                    offset + 1,
+                )
+            }
         },
         _ => Result::Err("place projection does not match stored value"),
     }
@@ -252,6 +291,15 @@ fn store_projection(
                 )?;
             };
             Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements: updated }))
+        },
+        (Value::Local(LocalValue::BoolBacking(elements)), Projection::Index(index)) => {
+            if index < 0 || index >= elements.len() {
+                return Result::Err("aggregate index out of range")
+            } else if offset + 1 != projections.len() {
+                return Result::Err("place projection does not match stored value")
+            } else {};
+            elements[index] = boolean_value(value)?;
+            Result::Ok(Value::Local(LocalValue::BoolBacking(elements)))
         },
         (Value::Local(LocalValue::Slice(slice)), Projection::Index(index)) => {
             let mut projected = slice_element_place(slice, index)?;

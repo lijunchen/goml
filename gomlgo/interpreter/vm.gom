@@ -85,6 +85,11 @@ struct NativePrepared {
 
 enum RuntimePlace {
     Local(Place),
+    BoolElement {
+        backing: Place,
+        elements: Vec[bool],
+        index: int,
+    },
     Native {
         value: dyn HostValueMarker,
         type_id: go_types::TypeId,
@@ -311,7 +316,12 @@ fn allocate_local_cell(state: VmState, checkpoint: int, value: Value) -> CellId 
 
 fn replace_local_cell(state: VmState, frame: Frame, local: int, value: Value) -> unit {
     if frame.frame_cell_checkpoint >= 0 {
-        frame.locals[local] = allocate_frame_cell(state.memory, value);
+        let current = frame.locals[local];
+        if current.value <= -2 {
+            set_cell_value(state.memory, current.value, copy_value(value))
+        } else {
+            frame.locals[local] = allocate_frame_cell(state.memory, value);
+        }
     } else {
         frame.locals[local] = allocate_cell(state.memory, value);
     }
@@ -519,6 +529,145 @@ fn set_register(frame: Frame, id: bytecode::RegisterId, value: Value) -> Result[
     }
 }
 
+fn set_integer_register(
+    frame: Frame,
+    target: bytecode::RegisterId,
+    bits: uint64,
+    width: int,
+    signed: bool,
+) -> Result[unit, string] {
+    set_register(
+        frame,
+        target,
+        Value::Local(LocalValue::Integer { bits: normalize_integer(bits, width), width, signed }),
+    )
+}
+
+fn execute_integer_binary(
+    frame: Frame,
+    target: bytecode::RegisterId,
+    op: bytecode::BinaryOp,
+    left_bits: uint64,
+    width: int,
+    signed: bool,
+    right_bits: uint64,
+    right_width: int,
+    right_signed: bool,
+    false_value: Value,
+    true_value: Value,
+) -> Result[unit, string] {
+    match op {
+        bytecode::BinaryOp::Add => {
+            set_integer_register(frame, target, left_bits + right_bits, width, signed)
+        },
+        bytecode::BinaryOp::Subtract => {
+            set_integer_register(frame, target, left_bits - right_bits, width, signed)
+        },
+        bytecode::BinaryOp::Multiply => {
+            set_integer_register(frame, target, left_bits * right_bits, width, signed)
+        },
+        bytecode::BinaryOp::Divide | bytecode::BinaryOp::Remainder => {
+            if right_bits == 0.to_uint64() {
+                return Result::Err("integer divide by zero")
+            } else {};
+            let bits = if signed {
+                let left = signed_integer(left_bits, width);
+                let right = signed_integer(right_bits, right_width);
+                if op == bytecode::BinaryOp::Divide {
+                    (left / right).to_uint64()
+                } else {
+                    (left % right).to_uint64()
+                }
+            } else if op == bytecode::BinaryOp::Divide {
+                left_bits / right_bits
+            } else {
+                left_bits % right_bits
+            };
+            set_integer_register(frame, target, bits, width, signed)
+        },
+        bytecode::BinaryOp::BitAnd => {
+            set_integer_register(frame, target, left_bits & right_bits, width, signed)
+        },
+        bytecode::BinaryOp::BitOr => {
+            set_integer_register(frame, target, left_bits | right_bits, width, signed)
+        },
+        bytecode::BinaryOp::BitXor => {
+            set_integer_register(frame, target, left_bits ^ right_bits, width, signed)
+        },
+        bytecode::BinaryOp::AndNot => set_integer_register(
+            frame,
+            target,
+            left_bits & (maximum_uint64() ^ right_bits),
+            width,
+            signed,
+        ),
+        bytecode::BinaryOp::ShiftLeft | bytecode::BinaryOp::ShiftRight => {
+            if right_signed && signed_integer(right_bits, right_width) < 0.to_int64() {
+                return Result::Err("negative shift count")
+            } else {};
+            let bits = if op == bytecode::BinaryOp::ShiftLeft {
+                if right_bits >= 64.to_uint64() {
+                    0.to_uint64()
+                } else {
+                    left_bits << right_bits.to_int()
+                }
+            } else if signed {
+                if right_bits >= 64.to_uint64() {
+                    if signed_integer(left_bits, width) < 0.to_int64() {
+                        maximum_uint64()
+                    } else {
+                        0.to_uint64()
+                    }
+                } else {
+                    (signed_integer(left_bits, width) >> right_bits.to_int()).to_uint64()
+                }
+            } else if right_bits >= 64.to_uint64() {
+                0.to_uint64()
+            } else {
+                left_bits >> right_bits.to_int()
+            };
+            set_integer_register(frame, target, bits, width, signed)
+        },
+        bytecode::BinaryOp::Equal | bytecode::BinaryOp::NotEqual | bytecode::BinaryOp::Less | bytecode::BinaryOp::LessEqual | bytecode::BinaryOp::Greater | bytecode::BinaryOp::GreaterEqual => {
+            let comparison = if signed {
+                let left = signed_integer(left_bits, width);
+                let right = signed_integer(right_bits, right_width);
+                if left < right {
+                    -1
+                } else if left > right {
+                    1
+                } else {
+                    0
+                }
+            } else if left_bits < right_bits {
+                -1
+            } else if left_bits > right_bits {
+                1
+            } else {
+                0
+            };
+            let result = match op {
+                bytecode::BinaryOp::Equal => comparison == 0,
+                bytecode::BinaryOp::NotEqual => comparison != 0,
+                bytecode::BinaryOp::Less => comparison < 0,
+                bytecode::BinaryOp::LessEqual => comparison <= 0,
+                bytecode::BinaryOp::Greater => comparison > 0,
+                bytecode::BinaryOp::GreaterEqual => comparison >= 0,
+                _ => false,
+            };
+            set_register(
+                frame,
+                target,
+                if result {
+                    true_value
+                } else {
+                    false_value
+                },
+            )
+        },
+    }
+}
+
 fn load_cell_register(memory: Memory, frame: Frame, cell: CellId, target: bytecode::RegisterId) -> Result[
     unit,
     string,
@@ -580,6 +729,9 @@ fn set_place(frame: Frame, id: bytecode::PlaceId, value: RuntimePlace) -> Result
 fn local_runtime_place(value: RuntimePlace) -> Result[Place, string] {
     match value {
         RuntimePlace::Local(value) => Result::Ok(value),
+        RuntimePlace::BoolElement { backing, elements: _, index } => {
+            Result::Ok(index_place(backing, index))
+        },
         RuntimePlace::Native { .. } => Result::Err("native place is not local memory"),
     }
 }
@@ -1132,7 +1284,7 @@ fn hash_value(state: VmState, value: Value) -> Result[uint64, string] {
         Value::Interface { static_type: _, dynamic_type: Some(_), value: None } => {
             Result::Err("interface value is missing")
         },
-        Value::Local(LocalValue::Slice(_)) | Value::Local(LocalValue::Map(_)) | Value::Local(LocalValue::Function(_),) => Result::Err(
+        Value::Local(LocalValue::Slice(_)) | Value::Local(LocalValue::BoolBacking(_)) | Value::Local(LocalValue::Map(_)) | Value::Local(LocalValue::Function(_),) => Result::Err(
             "hash of unhashable type",
         ),
         Value::Host { type_id: _, value: _ } => Result::Err("hash of native value is not supported"),
@@ -1605,9 +1757,14 @@ fn indexed_value(state: VmState, value: Value, index: Value, result_type: go_typ
                 )
             } else {};
             let backing = slice.backing.ok_or("index of nil slice")?;
-            Result::Ok(
-                (load_place(state.memory, index_place(backing, slice.offset + index))?, true),
-            )
+            match bool_backing(state.memory, backing) {
+                Some(elements) => Result::Ok(
+                    (Value::Local(LocalValue::Bool(elements[slice.offset + index])), true),
+                ),
+                None => Result::Ok(
+                    (load_place(state.memory, index_place(backing, slice.offset + index))?, true),
+                ),
+            }
         },
         Value::Local(LocalValue::String(value)) => {
             let index = integer_index(index)?;
@@ -1917,14 +2074,20 @@ fn make_slice(state: VmState, type_id: go_types::TypeId, length: int, capacity: 
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element } }) => element,
         _ => return Result::Err("make slice target is not a slice"),
     };
-    let elements: Vec[Value] = Vec::with_capacity(capacity);
-    for _ in 0..capacity {
-        elements.push(runtime_zero_value(state, element)?)
-    }
-    let backing = allocate_cell(
-        state.memory,
-        Value::Local(LocalValue::Aggregate { type_id, elements }),
-    );
+    let backing = if basic_kind(state.program.world, element)
+        == Option::Some(go_types::BasicKind::Bool) {
+        let elements: Vec[bool] = Vec::with_capacity(capacity);
+        for _ in 0..capacity {
+            elements.push(false)
+        }
+        allocate_cell(state.memory, Value::Local(LocalValue::BoolBacking(elements)))
+    } else {
+        let elements: Vec[Value] = Vec::with_capacity(capacity);
+        for _ in 0..capacity {
+            elements.push(runtime_zero_value(state, element)?)
+        }
+        allocate_cell(state.memory, Value::Local(LocalValue::Aggregate { type_id, elements }))
+    };
     Result::Ok(
         Value::Local(
             LocalValue::Slice(
@@ -2088,6 +2251,9 @@ fn projected_runtime_place(state: VmState, base: RuntimePlace, indices: Vec[int]
 ] {
     match base {
         RuntimePlace::Local(value) => Result::Ok(RuntimePlace::Local(field_place(value, indices))),
+        RuntimePlace::BoolElement { .. } => {
+            Result::Err("field selection on boolean slice element")
+        },
         RuntimePlace::Native { value, type_id } => {
             let mut current_value = value;
             let mut current_type = type_id;
@@ -2116,6 +2282,9 @@ fn projected_frame_place(state: VmState, frame: Frame, base: bytecode::PlaceId, 
 fn load_runtime_place(state: VmState, value: RuntimePlace) -> Result[Value, string] {
     match value {
         RuntimePlace::Local(value) => load_place(state.memory, value),
+        RuntimePlace::BoolElement { backing: _, elements, index } => {
+            Result::Ok(Value::Local(LocalValue::Bool(elements[index])))
+        },
         RuntimePlace::Native { value, type_id } => native_result(
             state,
             clone_host_value(value),
@@ -2140,6 +2309,10 @@ fn load_frame_place_register(
 fn store_runtime_place(state: VmState, target: RuntimePlace, value: Value) -> Result[unit, string] {
     match target {
         RuntimePlace::Local(target) => store_place(state.memory, target, value),
+        RuntimePlace::BoolElement { backing: _, elements, index } => {
+            elements[index] = boolean_value(value)?;
+            Result::Ok(())
+        },
         RuntimePlace::Native { value: target, type_id } => {
             let source = native_argument(
                 state,
@@ -2153,6 +2326,38 @@ fn store_runtime_place(state: VmState, target: RuntimePlace, value: Value) -> Re
                 Result::Err("native field is not assignable")
             }
         },
+    }
+}
+
+fn set_indexed_runtime_place(
+    state: VmState,
+    frame: Frame,
+    target: bytecode::PlaceId,
+    base: bytecode::PlaceId,
+    index: int,
+) -> Result[unit, string] {
+    let base = local_frame_place(frame, base)?;
+    match load_place(state.memory, base) {
+        Ok(Value::Local(LocalValue::Slice(slice))) => {
+            if index < 0 || index >= slice.length {
+                return Result::Err(
+                    "index out of range [" + index.to_string() + "] with length "
+                        + slice.length.to_string(),
+                )
+            } else {};
+            let backing = slice.backing.ok_or("index of nil slice")?;
+            let index = slice.offset + index;
+            match bool_backing(state.memory, backing) {
+                Some(elements) => set_place(
+                    frame,
+                    target,
+                    RuntimePlace::BoolElement { backing, elements, index },
+                ),
+                None => set_place(frame, target, RuntimePlace::Local(index_place(backing, index))),
+            }
+        },
+        Ok(_) => set_place(frame, target, RuntimePlace::Local(index_place(base, index))),
+        Err(message) => Result::Err(message),
     }
 }
 
@@ -3415,16 +3620,12 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
         bytecode::InstructionKind::FieldPlace { target, base, index } => {
             set_place(frame, target, projected_frame_place(state, frame, base, index)?)
         },
-        bytecode::InstructionKind::IndexPlace { target, base, index } => set_place(
+        bytecode::InstructionKind::IndexPlace { target, base, index } => set_indexed_runtime_place(
+            state,
             frame,
             target,
-            RuntimePlace::Local(
-                indexed_place(
-                    state.memory,
-                    local_frame_place(frame, base)?,
-                    integer_index(register(frame, index)?)?,
-                )?,
-            ),
+            base,
+            integer_index(register(frame, index)?)?,
         ),
         bytecode::InstructionKind::DereferencePlace { target, pointer } => match register(
             frame,
@@ -3477,6 +3678,11 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
                     target,
                     Value::Local(LocalValue::Pointer(Option::Some(source))),
                 ),
+                RuntimePlace::BoolElement { backing, elements: _, index } => set_register(
+                    frame,
+                    target,
+                    Value::Local(LocalValue::Pointer(Option::Some(index_place(backing, index)))),
+                ),
                 RuntimePlace::Native { value, type_id: _ } => {
                     let address = address_native_value(value);
                     if native_host_value_valid(address) {
@@ -3504,19 +3710,45 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
                 state.program.world,
             )?,
         ),
-        bytecode::InstructionKind::Binary { target, op, left, right } => set_register(
-            frame,
-            target,
-            binary_value_cached(
-                op,
-                register(frame, left)?,
-                register(frame, right)?,
-                state.program.functions[frame.function.value].register_types[target.value],
-                state.program.world,
-                state.false_value,
-                state.true_value,
-            )?,
-        ),
+        bytecode::InstructionKind::Binary { target, op, left, right } => {
+            let left = register(frame, left)?;
+            let right = register(frame, right)?;
+            match (left, right) {
+                (
+                    Value::Local(LocalValue::Integer { bits, width, signed }),
+                    Value::Local(LocalValue::Integer {
+                        bits: right_bits,
+                        width: right_width,
+                        signed: right_signed,
+                    }),
+                ) => execute_integer_binary(
+                    frame,
+                    target,
+                    op,
+                    bits,
+                    width,
+                    signed,
+                    right_bits,
+                    right_width,
+                    right_signed,
+                    state.false_value,
+                    state.true_value,
+                ),
+                (left, right) => set_register(
+                    frame,
+                    target,
+                    binary_value_cached(
+                        op,
+                        left,
+                        right,
+                        state.program.functions[frame.function.value].register_types[target.value],
+                        state.program.world,
+                        state.false_value,
+                        state.true_value,
+                    )?,
+                ),
+            }
+        },
         bytecode::InstructionKind::Convert { target, source, type_id } => set_register(
             frame,
             target,
