@@ -165,6 +165,11 @@ struct CachedConstant {
     value: Value,
 }
 
+struct CachedSizeValue {
+    type_id: go_types::TypeId,
+    value: Value,
+}
+
 struct VmState {
     program: bytecode::BytecodeProgram,
     config: VmConfig,
@@ -189,6 +194,7 @@ struct VmState {
     false_value: Value,
     true_value: Value,
     empty_captures: Vec[CellId],
+    size_values: Vec[Option[CachedSizeValue]],
 }
 
 enum FunctionControl {
@@ -540,6 +546,20 @@ fn integer_for_type(state: VmState, type_id: go_types::TypeId, value: int) -> Re
             Value::Local(LocalValue::Integer { bits: value.to_uint64(), width, signed }),
         ),
         _ => Result::Err("builtin result is not integer typed"),
+    }
+}
+
+fn size_value(state: VmState, type_id: go_types::TypeId, value: int) -> Result[Value, string] {
+    if value < 0 || value >= state.size_values.len() {
+        return integer_for_type(state, type_id, value)
+    } else {};
+    match state.size_values[value] {
+        Some(cached) if cached.type_id.value == type_id.value => Result::Ok(cached.value),
+        _ => {
+            let result = integer_for_type(state, type_id, value)?;
+            state.size_values[value] = Option::Some(CachedSizeValue { type_id, value: result });
+            Result::Ok(result)
+        },
     }
 }
 
@@ -1135,7 +1155,7 @@ fn execute_size_builtin(
     set_register(
         frame,
         results[0],
-        integer_for_type(state, result_type(state, frame, results, 0)?, size)?,
+        size_value(state, result_type(state, frame, results, 0)?, size)?,
     )
 }
 
@@ -4331,6 +4351,7 @@ fn initialize_state(program: bytecode::BytecodeProgram, config: VmConfig) -> Res
         false_value: Value::Local(LocalValue::Bool(false)),
         true_value: Value::Local(LocalValue::Bool(true)),
         empty_captures: Vec::from_array([]),
+        size_values: empty_slots(64),
     };
     for global in state.program.globals {
         match runtime_zero_value(state, global.type_id) {
