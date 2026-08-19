@@ -5230,18 +5230,29 @@ fn execute_function(
                 },
             },
             Ok(FunctionControl::Return(values)) => {
-                match commit_function_results(state, frame, function, values) {
-                    Ok(()) => {},
-                    Err(message) => {
+                if frame.deferred.is_empty() {
+                    if values.len() != function.results.len() {
                         state.depth.set(state.depth.get() - 1);
                         release_frame_slots(state, frame);
-                        return Result::Err(message)
-                    },
-                };
-                let outcome = finish_invocation(state, frame, function, Option::None);
-                state.depth.set(state.depth.get() - 1);
-                release_frame_slots(state, frame);
-                return outcome
+                        return Result::Err("return value count does not match function results")
+                    } else {};
+                    state.depth.set(state.depth.get() - 1);
+                    release_frame_slots(state, frame);
+                    return Result::Ok(InvocationOutcome::Returned(values))
+                } else {
+                    match commit_function_results(state, frame, function, values) {
+                        Ok(()) => {},
+                        Err(message) => {
+                            state.depth.set(state.depth.get() - 1);
+                            release_frame_slots(state, frame);
+                            return Result::Err(message)
+                        },
+                    };
+                    let outcome = finish_invocation(state, frame, function, Option::None);
+                    state.depth.set(state.depth.get() - 1);
+                    release_frame_slots(state, frame);
+                    return outcome
+                }
             },
             Err(error) => {
                 state.depth.set(state.depth.get() - 1);
