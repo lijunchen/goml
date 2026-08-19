@@ -1110,6 +1110,34 @@ fn map_iterator_next(state: VmState, id: int) -> Result[(Value, Value, bool), st
     )
 }
 
+fn execute_size_builtin(
+    state: VmState,
+    frame: Frame,
+    arguments: Vec[bytecode::RegisterId],
+    results: Vec[bytecode::RegisterId],
+    capacity: bool,
+) -> Result[unit, string] {
+    if arguments.len() != 1 || results.len() != 1 {
+        return Result::Err(
+            if capacity {
+                "cap has an invalid call shape"
+            } else {
+                "len has an invalid call shape"
+            },
+        )
+    } else {};
+    let size = if capacity {
+        value_capacity(state, register(frame, arguments[0])?)?
+    } else {
+        value_length(state, register(frame, arguments[0])?)?
+    };
+    set_register(
+        frame,
+        results[0],
+        integer_for_type(state, result_type(state, frame, results, 0)?, size)?,
+    )
+}
+
 fn execute_builtin(
     state: VmState,
     frame: Frame,
@@ -3644,62 +3672,70 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
             };
             set_register(frame, ok, Value::Local(LocalValue::Bool(next.2)))
         },
-        bytecode::InstructionKind::Call { results, target, arguments, variadic } => {
-            let values = match target {
-                bytecode::CallTarget::Builtin(kind) => execute_builtin(
-                    state,
-                    frame,
-                    kind,
-                    block_argument_values(frame, arguments)?,
-                    results,
-                    variadic,
-                )?,
-                bytecode::CallTarget::Static(function) => match execute_function(
-                    state,
-                    function,
-                    block_argument_values(frame, arguments)?,
-                    Vec::from_array([]),
-                    Option::Some(frame_location(frame, instruction.location)),
-                    Option::None,
-                )? {
-                    InvocationOutcome::Returned(values) => values,
-                    InvocationOutcome::Panicked(payload) => {
-                        return Result::Ok(pending_instruction_panic(state, payload))
-                    },
-                    InvocationOutcome::Exited(code) => {
-                        return Result::Ok(pending_instruction_exit(state, code))
-                    },
-                },
-                _ => match invoke_prepared(
-                    state,
-                    frame,
-                    prepare_call(
+        bytecode::InstructionKind::Call { results, target, arguments, variadic } => match target {
+            bytecode::CallTarget::Builtin(bytecode::BuiltinKind::Len) => {
+                execute_size_builtin(state, frame, arguments, results, false)
+            },
+            bytecode::CallTarget::Builtin(bytecode::BuiltinKind::Cap) => {
+                execute_size_builtin(state, frame, arguments, results, true)
+            },
+            _ => {
+                let values = match target {
+                    bytecode::CallTarget::Builtin(kind) => execute_builtin(
                         state,
                         frame,
-                        target,
-                        arguments,
+                        kind,
+                        block_argument_values(frame, arguments)?,
+                        results,
                         variadic,
-                        frame_location(frame, instruction.location),
                     )?,
-                    Option::None,
-                )? {
-                    InvocationOutcome::Returned(values) => values,
-                    InvocationOutcome::Panicked(payload) => {
-                        return Result::Ok(pending_instruction_panic(state, payload))
+                    bytecode::CallTarget::Static(function) => match execute_function(
+                        state,
+                        function,
+                        block_argument_values(frame, arguments)?,
+                        Vec::from_array([]),
+                        Option::Some(frame_location(frame, instruction.location)),
+                        Option::None,
+                    )? {
+                        InvocationOutcome::Returned(values) => values,
+                        InvocationOutcome::Panicked(payload) => {
+                            return Result::Ok(pending_instruction_panic(state, payload))
+                        },
+                        InvocationOutcome::Exited(code) => {
+                            return Result::Ok(pending_instruction_exit(state, code))
+                        },
                     },
-                    InvocationOutcome::Exited(code) => {
-                        return Result::Ok(pending_instruction_exit(state, code))
+                    _ => match invoke_prepared(
+                        state,
+                        frame,
+                        prepare_call(
+                            state,
+                            frame,
+                            target,
+                            arguments,
+                            variadic,
+                            frame_location(frame, instruction.location),
+                        )?,
+                        Option::None,
+                    )? {
+                        InvocationOutcome::Returned(values) => values,
+                        InvocationOutcome::Panicked(payload) => {
+                            return Result::Ok(pending_instruction_panic(state, payload))
+                        },
+                        InvocationOutcome::Exited(code) => {
+                            return Result::Ok(pending_instruction_exit(state, code))
+                        },
                     },
-                },
-            };
-            if values.len() != results.len() {
-                Result::Err("call result count does not match destination count")
-            } else {
-                for index in 0..values.len() {
-                    set_register(frame, results[index], values[index])?
+                };
+                if values.len() != results.len() {
+                    Result::Err("call result count does not match destination count")
+                } else {
+                    for index in 0..values.len() {
+                        set_register(frame, results[index], values[index])?
+                    }
+                    Result::Ok(())
                 }
-                Result::Ok(())
-            }
+            },
         },
         bytecode::InstructionKind::Defer { target, arguments, variadic } => {
             frame.deferred.push(
