@@ -126,6 +126,7 @@ struct FrameSlots {
     place_roots: Vec[int],
     locals: Vec[CellId],
     block_arguments: Vec[Value],
+    block: Ref[bytecode::BlockId],
     deferred: Vec[PreparedCall],
 }
 
@@ -211,6 +212,8 @@ struct VmState {
     size_values: Vec[Option[CachedSizeValue]],
     sequential_operations: Vec[Vec[Vec[SequentialOperation]]],
     recyclable_functions: Vec[bool],
+    instruction_constants: Vec[Option[Value]],
+    small_integers: Vec[Value],
 }
 
 enum FunctionControl {
@@ -262,6 +265,9 @@ fn empty_slots[T](count: int) -> Vec[Option[T]] {
 }
 
 fn prepared_slots[T](slots: Vec[Option[T]], count: int) -> Vec[Option[T]] {
+    if slots.len() == count {
+        return slots
+    } else {};
     slots.clear();
     if slots.capacity() < count {
         slots.reserve(count)
@@ -273,6 +279,9 @@ fn prepared_slots[T](slots: Vec[Option[T]], count: int) -> Vec[Option[T]] {
 }
 
 fn prepared_place_roots(slots: Vec[int], count: int) -> Vec[int] {
+    if slots.len() == count {
+        return slots
+    } else {};
     slots.clear();
     if slots.capacity() < count {
         slots.reserve(count)
@@ -281,6 +290,18 @@ fn prepared_place_roots(slots: Vec[int], count: int) -> Vec[int] {
         slots.push(-1)
     }
     slots
+}
+
+fn reset_slots[T](slots: Vec[Option[T]]) -> unit {
+    for index in 0..slots.len() {
+        slots[index] = Option::None;
+    }
+}
+
+fn reset_place_roots(slots: Vec[int]) -> unit {
+    for index in 0..slots.len() {
+        slots[index] = -1;
+    }
 }
 
 fn take_frame_slots(state: VmState, register_count: int, place_count: int, local_count: int) -> FrameSlots {
@@ -299,6 +320,7 @@ fn take_frame_slots(state: VmState, register_count: int, place_count: int, local
                 place_roots: prepared_place_roots(slots.place_roots, place_count),
                 locals: slots.locals,
                 block_arguments: slots.block_arguments,
+                block: slots.block,
                 deferred: slots.deferred,
             }
         },
@@ -310,6 +332,7 @@ fn take_frame_slots(state: VmState, register_count: int, place_count: int, local
                 place_roots: prepared_place_roots(Vec::from_array([]), place_count),
                 locals: Vec::with_capacity(local_count),
                 block_arguments: Vec::from_array([]),
+                block: Ref::new(bytecode::block_id(-1)),
                 deferred: Vec::from_array([]),
             }
         },
@@ -341,12 +364,11 @@ fn release_frame_slots(state: VmState, frame: Frame) -> unit {
     if frame.frame_cell_checkpoint >= 0 {
         release_frame_cells(state.memory, frame.frame_cell_checkpoint)
     } else {};
-    frame.registers.clear();
-    frame.places.clear();
-    frame.bool_places.clear();
-    frame.place_roots.clear();
+    reset_slots(frame.registers);
+    reset_slots(frame.places);
+    reset_slots(frame.bool_places);
+    reset_place_roots(frame.place_roots);
     frame.locals.clear();
-    frame.block_arguments.clear();
     frame.deferred.clear();
     state.frame_slots.push(
         FrameSlots {
@@ -356,6 +378,7 @@ fn release_frame_slots(state: VmState, frame: Frame) -> unit {
             place_roots: frame.place_roots,
             locals: frame.locals,
             block_arguments: frame.block_arguments,
+            block: frame.block,
             deferred: frame.deferred,
         },
     )
@@ -377,21 +400,97 @@ fn instruction_error(message: string) -> InstructionControl {
     InstructionControl { kind: 3, panic: Option::None, exit_code: 0, error: message }
 }
 
+fn sequential_binary_kind(operation: bytecode::BinaryOp) -> int {
+    match operation {
+        bytecode::BinaryOp::Add => 1,
+        bytecode::BinaryOp::Subtract => 2,
+        bytecode::BinaryOp::Multiply => 3,
+        bytecode::BinaryOp::Divide => 4,
+        bytecode::BinaryOp::Remainder => 5,
+        bytecode::BinaryOp::BitAnd => 6,
+        bytecode::BinaryOp::BitOr => 7,
+        bytecode::BinaryOp::BitXor => 8,
+        bytecode::BinaryOp::AndNot => 9,
+        bytecode::BinaryOp::ShiftLeft => 10,
+        bytecode::BinaryOp::ShiftRight => 11,
+        bytecode::BinaryOp::Equal => 12,
+        bytecode::BinaryOp::NotEqual => 13,
+        bytecode::BinaryOp::Less => 14,
+        bytecode::BinaryOp::LessEqual => 15,
+        bytecode::BinaryOp::Greater => 16,
+        bytecode::BinaryOp::GreaterEqual => 17,
+    }
+}
+
+fn sequential_binary_operation(kind: int) -> bytecode::BinaryOp {
+    match kind {
+        1 => bytecode::BinaryOp::Add,
+        2 => bytecode::BinaryOp::Subtract,
+        3 => bytecode::BinaryOp::Multiply,
+        4 => bytecode::BinaryOp::Divide,
+        5 => bytecode::BinaryOp::Remainder,
+        6 => bytecode::BinaryOp::BitAnd,
+        7 => bytecode::BinaryOp::BitOr,
+        8 => bytecode::BinaryOp::BitXor,
+        9 => bytecode::BinaryOp::AndNot,
+        10 => bytecode::BinaryOp::ShiftLeft,
+        11 => bytecode::BinaryOp::ShiftRight,
+        12 => bytecode::BinaryOp::Equal,
+        13 => bytecode::BinaryOp::NotEqual,
+        14 => bytecode::BinaryOp::Less,
+        15 => bytecode::BinaryOp::LessEqual,
+        16 => bytecode::BinaryOp::Greater,
+        _ => bytecode::BinaryOp::GreaterEqual,
+    }
+}
+
+fn sequential_integer_register(
+    world: go_types::World,
+    function: bytecode::BytecodeFunction,
+    register: bytecode::RegisterId,
+) -> bool {
+    if register.value < 0 || register.value >= function.register_types.len() {
+        false
+    } else {
+        match basic_kind(world, function.register_types[register.value]) {
+            Some(kind) => integer_layout(kind).is_some(),
+            None => false,
+        }
+    }
+}
+
 fn sequential_fallback() -> SequentialOperation {
     SequentialOperation { kind: 0, place: 0, source: 0, target: 0 }
 }
 
 fn sequential_operation(
+    world: go_types::World,
     function: bytecode::BytecodeFunction,
     block: bytecode::BasicBlock,
     index: int,
     global_count: int,
+    constant_index: int,
 ) -> SequentialOperation {
     let current = block.instructions[index];
     match current.kind {
+        bytecode::InstructionKind::Binary { target, op, left, right } if target.value >= 0
+            && target.value < function.register_types.len()
+            && sequential_integer_register(world, function, left)
+            && sequential_integer_register(world, function, right) => return SequentialOperation {
+            kind: sequential_binary_kind(op),
+            place: left.value,
+            source: right.value,
+            target: target.value,
+        },
+        bytecode::InstructionKind::Constant { target, .. } => return SequentialOperation {
+            kind: 18,
+            place: 0,
+            source: constant_index,
+            target: target.value,
+        },
         bytecode::InstructionKind::RenewLocal { local } if local.value >= 0
             && local.value < function.locals.len() => return SequentialOperation {
-            kind: 5,
+            kind: 23,
             place: 0,
             source: local.value,
             target: function.locals[local.value].type_id.value,
@@ -411,7 +510,7 @@ fn sequential_operation(
             && target.value >= 0
             && target.value < function.register_types.len()
             && source.value == place.value => SequentialOperation {
-            kind: 1,
+            kind: 19,
             place: place.value,
             source: local.value,
             target: target.value,
@@ -424,7 +523,7 @@ fn sequential_operation(
             && value.value >= 0
             && value.value < function.register_types.len()
             && target.value == place.value => SequentialOperation {
-            kind: 2,
+            kind: 20,
             place: place.value,
             source: local.value,
             target: value.value,
@@ -437,7 +536,7 @@ fn sequential_operation(
             && target.value >= 0
             && target.value < function.register_types.len()
             && source.value == place.value => SequentialOperation {
-            kind: 3,
+            kind: 21,
             place: place.value,
             source: global.value,
             target: target.value,
@@ -450,7 +549,7 @@ fn sequential_operation(
             && value.value >= 0
             && value.value < function.register_types.len()
             && target.value == place.value => SequentialOperation {
-            kind: 4,
+            kind: 22,
             place: place.value,
             source: global.value,
             target: value.value,
@@ -461,18 +560,67 @@ fn sequential_operation(
 
 fn sequential_operations(program: bytecode::BytecodeProgram) -> Vec[Vec[Vec[SequentialOperation]]] {
     let functions: Vec[Vec[Vec[SequentialOperation]]] = Vec::with_capacity(program.functions.len());
+    let mut constant_index = 0;
     for function in program.functions {
         let blocks: Vec[Vec[SequentialOperation]] = Vec::with_capacity(function.blocks.len());
         for block in function.blocks {
             let operations: Vec[SequentialOperation] = Vec::with_capacity(block.instructions.len());
             for index in 0..block.instructions.len() {
-                operations.push(sequential_operation(function, block, index, program.globals.len()))
+                operations.push(
+                    sequential_operation(
+                        program.world,
+                        function,
+                        block,
+                        index,
+                        program.globals.len(),
+                        constant_index,
+                    ),
+                );
+                match block.instructions[index].kind {
+                    bytecode::InstructionKind::Constant { .. } => {
+                        constant_index += 1;
+                    },
+                    _ => {},
+                }
             }
             blocks.push(operations)
         }
         functions.push(blocks)
     }
     functions
+}
+
+fn predecoded_constants(program: bytecode::BytecodeProgram) -> Vec[Option[Value]] {
+    let values: Vec[Option[Value]] = Vec::from_array([]);
+    for function in program.functions {
+        for block in function.blocks {
+            for instruction in block.instructions {
+                match instruction.kind {
+                    bytecode::InstructionKind::Constant { target: _, type_id, constant_kind, exact } => match constant_value(
+                        program.world,
+                        type_id,
+                        constant_kind,
+                        exact,
+                    ) {
+                        Ok(value) => values.push(Option::Some(value)),
+                        Err(_) => values.push(Option::None),
+                    },
+                    _ => {},
+                }
+            }
+        }
+    }
+    values
+}
+
+fn small_integer_values() -> Vec[Value] {
+    let values: Vec[Value] = Vec::with_capacity(128);
+    for value in 0..128 {
+        values.push(
+            Value::Local(LocalValue::Integer { bits: value.to_uint64(), width: 64, signed: true }),
+        )
+    }
+    values
 }
 
 fn function_recyclable(function: bytecode::BytecodeFunction) -> bool {
@@ -548,14 +696,28 @@ fn set_integer_register(
     width: int,
     signed: bool,
 ) -> Result[unit, string] {
-    set_register(
-        frame,
-        target,
-        Value::Local(LocalValue::Integer { bits: normalize_integer(bits, width), width, signed }),
-    )
+    let bits = normalize_integer(bits, width);
+    set_register(frame, target, Value::Local(LocalValue::Integer { bits, width, signed }))
+}
+
+fn set_small_integer_register(
+    state: VmState,
+    frame: Frame,
+    target: bytecode::RegisterId,
+    bits: uint64,
+    width: int,
+    signed: bool,
+) -> Result[unit, string] {
+    let bits = normalize_integer(bits, width);
+    if width == 64 && signed && bits < state.small_integers.len().to_uint64() {
+        set_register(frame, target, state.small_integers[bits.to_int()])
+    } else {
+        set_register(frame, target, Value::Local(LocalValue::Integer { bits, width, signed }))
+    }
 }
 
 fn execute_integer_binary(
+    state: VmState,
     frame: Frame,
     target: bytecode::RegisterId,
     op: bytecode::BinaryOp,
@@ -570,10 +732,15 @@ fn execute_integer_binary(
 ) -> Result[unit, string] {
     match op {
         bytecode::BinaryOp::Add => {
-            set_integer_register(frame, target, left_bits + right_bits, width, signed)
+            let bits = left_bits + right_bits;
+            if (left_bits | right_bits) < 128.to_uint64() {
+                set_small_integer_register(state, frame, target, bits, width, signed)
+            } else {
+                set_integer_register(frame, target, bits, width, signed)
+            }
         },
         bytecode::BinaryOp::Subtract => {
-            set_integer_register(frame, target, left_bits - right_bits, width, signed)
+            set_small_integer_register(state, frame, target, left_bits - right_bits, width, signed)
         },
         bytecode::BinaryOp::Multiply => {
             set_integer_register(frame, target, left_bits * right_bits, width, signed)
@@ -3799,6 +3966,7 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
                         signed: right_signed,
                     }),
                 ) => execute_integer_binary(
+                    state,
                     frame,
                     target,
                     op,
@@ -4313,6 +4481,93 @@ fn instruction_failure_at(
     }
 }
 
+fn execute_sequential_integer_binary(
+    state: VmState,
+    frame: Frame,
+    block: bytecode::BasicBlock,
+    index: int,
+    kind: int,
+    left: int,
+    right: int,
+    target: int,
+) -> InstructionControl {
+    let instruction = block.instructions[index];
+    if !count_step(state) {
+        return instruction_failure_at(
+            state,
+            frame,
+            instruction.location,
+            "instruction limit exceeded",
+        )
+    } else {};
+    match (frame.registers[left], frame.registers[right]) {
+        (
+            Some(Value::Local(LocalValue::Integer { bits, width, signed })),
+            Some(Value::Local(LocalValue::Integer {
+                bits: right_bits,
+                width: right_width,
+                signed: right_signed,
+            },),),
+        ) => match execute_integer_binary(
+            state,
+            frame,
+            bytecode::register_id(target),
+            sequential_binary_operation(kind),
+            bits,
+            width,
+            signed,
+            right_bits,
+            right_width,
+            right_signed,
+            state.false_value,
+            state.true_value,
+        ) {
+            Ok(()) => instruction_continue(),
+            Err(message) => instruction_failure_at(state, frame, instruction.location, message),
+        },
+        _ => match execute_instruction_effect(state, frame, instruction) {
+            Ok(_) => instruction_continue(),
+            Err(message) => instruction_failure_at(state, frame, instruction.location, message),
+        },
+    }
+}
+
+fn execute_sequential_constant(
+    state: VmState,
+    frame: Frame,
+    block: bytecode::BasicBlock,
+    index: int,
+    source: int,
+    target: int,
+) -> InstructionControl {
+    let instruction = block.instructions[index];
+    if !count_step(state) {
+        return instruction_failure_at(
+            state,
+            frame,
+            instruction.location,
+            "instruction limit exceeded",
+        )
+    } else {};
+    match state.instruction_constants[source] {
+        Some(value) => if target < 0 || target >= frame.registers.len() {
+            instruction_failure_at(
+                state,
+                frame,
+                instruction.location,
+                "invalid register " + target.to_string(),
+            )
+        } else {
+            frame.registers[target] = Option::Some(copy_value(value));
+            instruction_continue()
+        },
+        None => match execute_instruction_effect(state, frame, instruction) {
+            Ok(_) => instruction_continue(),
+            Err(message) => instruction_failure_at(state, frame, instruction.location, message),
+        },
+    }
+}
+
 fn execute_sequential_root_load(
     state: VmState,
     frame: Frame,
@@ -4719,6 +4974,7 @@ fn frame_for_call(
         function.place_count,
         function.locals.len(),
     );
+    slots.block.set(function.entry);
     let locals = slots.locals;
     for capture in captures {
         locals.push(capture)
@@ -4750,7 +5006,7 @@ fn frame_for_call(
             place_roots: slots.place_roots,
             locals,
             block_arguments: slots.block_arguments,
-            block: Ref::new(function.entry),
+            block: slots.block,
             frame_cell_checkpoint: checkpoint,
             deferred: slots.deferred,
             recover_state,
@@ -4782,7 +5038,11 @@ fn function_result_values(state: VmState, frame: Frame, function: bytecode::Byte
     Vec[Value],
     string,
 ] {
-    let values: Vec[Value] = Vec::with_capacity(function.results.len());
+    let values = frame.block_arguments;
+    values.clear();
+    if values.capacity() < function.results.len() {
+        values.reserve(function.results.len())
+    } else {};
     for result in function.results {
         values.push(load_place(state.memory, root_place(frame.locals[result.value]))?)
     }
@@ -4864,7 +5124,27 @@ fn execute_function(
             let operation = operations[instruction_index];
             let control = if operation.kind == 0 {
                 execute_instruction(state, frame, block.instructions[instruction_index])
-            } else if operation.kind == 1 {
+            } else if operation.kind <= 17 {
+                execute_sequential_integer_binary(
+                    state,
+                    frame,
+                    block,
+                    instruction_index,
+                    operation.kind,
+                    operation.place,
+                    operation.source,
+                    operation.target,
+                )
+            } else if operation.kind == 18 {
+                execute_sequential_constant(
+                    state,
+                    frame,
+                    block,
+                    instruction_index,
+                    operation.source,
+                    operation.target,
+                )
+            } else if operation.kind == 19 {
                 execute_sequential_root_load(
                     state,
                     frame,
@@ -4874,7 +5154,7 @@ fn execute_function(
                     frame.locals[operation.source],
                     operation.target,
                 )
-            } else if operation.kind == 2 {
+            } else if operation.kind == 20 {
                 execute_sequential_root_store(
                     state,
                     frame,
@@ -4884,7 +5164,7 @@ fn execute_function(
                     frame.locals[operation.source],
                     operation.target,
                 )
-            } else if operation.kind == 3 {
+            } else if operation.kind == 21 {
                 execute_sequential_root_load(
                     state,
                     frame,
@@ -4894,7 +5174,7 @@ fn execute_function(
                     state.globals[operation.source],
                     operation.target,
                 )
-            } else if operation.kind == 4 {
+            } else if operation.kind == 22 {
                 execute_sequential_root_store(
                     state,
                     frame,
@@ -4914,10 +5194,10 @@ fn execute_function(
                     operation.target,
                 )
             };
-            instruction_index += if operation.kind == 0 || operation.kind == 5 {
-                1
-            } else {
+            instruction_index += if operation.kind >= 19 && operation.kind <= 22 {
                 2
+            } else {
+                1
             };
             if control.kind == 0 {} else if control.kind == 1 {
                 let payload = control.panic.ok_or("panic instruction has no payload")?.get();
@@ -5011,6 +5291,8 @@ fn initialize_state(program: bytecode::BytecodeProgram, config: VmConfig) -> Res
         size_values: empty_slots(64),
         sequential_operations: sequential_operations(program),
         recyclable_functions: recyclable_functions(program),
+        instruction_constants: predecoded_constants(program),
+        small_integers: small_integer_values(),
     };
     for global in state.program.globals {
         match runtime_zero_value(state, global.type_id) {
