@@ -370,6 +370,20 @@ fn set_register(frame: Frame, id: bytecode::RegisterId, value: Value) -> Result[
     }
 }
 
+fn load_cell_register(memory: Memory, frame: Frame, cell: CellId, target: bytecode::RegisterId) -> Result[
+    unit,
+    string,
+] {
+    if cell.value < 0 || cell.value >= memory.length.get() {
+        Result::Err("invalid cell " + cell.value.to_string())
+    } else if target.value < 0 || target.value >= frame.registers.len() {
+        Result::Err("invalid register " + target.value.to_string())
+    } else {
+        frame.registers[target.value] = Option::Some(copy_value(cell_value(memory, cell.value)));
+        Result::Ok(())
+    }
+}
+
 fn place(frame: Frame, id: bytecode::PlaceId) -> Result[RuntimePlace, string] {
     if id.value < 0 || id.value >= frame.places.len() {
         Result::Err("invalid place " + id.value.to_string())
@@ -1962,10 +1976,15 @@ fn load_runtime_place(state: VmState, value: RuntimePlace) -> Result[Value, stri
     }
 }
 
-fn load_frame_place(state: VmState, frame: Frame, id: bytecode::PlaceId) -> Result[Value, string] {
-    match root_frame_place(frame, id)? {
-        Some(root) => load_cell(state.memory, root),
-        None => load_runtime_place(state, place(frame, id)?),
+fn load_frame_place_register(
+    state: VmState,
+    frame: Frame,
+    source: bytecode::PlaceId,
+    target: bytecode::RegisterId,
+) -> Result[unit, string] {
+    match root_frame_place(frame, source)? {
+        Some(root) => load_cell_register(state.memory, frame, root, target),
+        None => set_register(frame, target, load_runtime_place(state, place(frame, source)?)?),
     }
 }
 
@@ -3289,7 +3308,7 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
             _ => Result::Err("dereference of non-pointer value"),
         },
         bytecode::InstructionKind::Load { target, source } => {
-            set_register(frame, target, load_frame_place(state, frame, source)?)
+            load_frame_place_register(state, frame, source, target)
         },
         bytecode::InstructionKind::Store { target, value } => {
             store_frame_place(state, frame, target, register(frame, value)?)
@@ -3860,11 +3879,8 @@ fn execute_root_load_pair(
     if !count_step(state) {
         return instruction_failure_at(state, frame, load_location, "instruction limit exceeded")
     } else {};
-    match load_cell(state.memory, cell) {
-        Ok(value) => match set_register(frame, target, value) {
-            Ok(()) => instruction_continue(),
-            Err(message) => instruction_failure_at(state, frame, load_location, message),
-        },
+    match load_cell_register(state.memory, frame, cell, target) {
+        Ok(()) => instruction_continue(),
         Err(message) => instruction_failure_at(state, frame, load_location, message),
     }
 }
