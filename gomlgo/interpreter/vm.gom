@@ -148,6 +148,12 @@ struct NativeCallbackBinding {
     target: NativeCallbackTarget,
 }
 
+struct CachedConstant {
+    type_id: go_types::TypeId,
+    constant_kind: string,
+    value: Value,
+}
+
 struct VmState {
     program: bytecode::BytecodeProgram,
     config: VmConfig,
@@ -166,6 +172,7 @@ struct VmState {
     instruction_panic: Ref[Option[Ref[PanicPayload]]],
     instruction_exit: Ref[int],
     zero_values: Vec[Option[Value]],
+    constant_values: HashMap[string, Vec[CachedConstant]],
     frame_slots: Vec[FrameSlots],
 }
 
@@ -1857,6 +1864,34 @@ fn runtime_zero_value(state: VmState, type_id: go_types::TypeId) -> Result[Value
     }
 }
 
+fn runtime_constant_value(
+    state: VmState,
+    type_id: go_types::TypeId,
+    constant_kind: string,
+    exact: string,
+) -> Result[Value, string] {
+    match state.constant_values[exact] {
+        Some(values) => for cached in values {
+            if cached.type_id.value == type_id.value && cached.constant_kind == constant_kind {
+                return Result::Ok(cached.value)
+            } else {}
+        },
+        None => {},
+    };
+    let value = constant_value(state.program.world, type_id, constant_kind, exact)?;
+    match state.constant_values[exact] {
+        Some(values) => {
+            values.push(CachedConstant { type_id, constant_kind, value })
+        },
+        None => {
+            state.constant_values[exact] = Vec::from_array(
+                [CachedConstant { type_id, constant_kind, value }],
+            );
+        },
+    };
+    Result::Ok(value)
+}
+
 fn native_slice_element_key(type_key: string) -> Result[string, string] {
     if type_key.starts_with("[]") {
         Result::Ok(type_key.byte_slice(2, type_key.byte_len()))
@@ -2966,7 +3001,7 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
         bytecode::InstructionKind::Constant { target, type_id, constant_kind, exact } => set_register(
             frame,
             target,
-            constant_value(state.program.world, type_id, constant_kind, exact)?,
+            runtime_constant_value(state, type_id, constant_kind, exact)?,
         ),
         bytecode::InstructionKind::Zero { target, type_id } => set_register(
             frame,
@@ -4010,6 +4045,7 @@ fn initialize_state(program: bytecode::BytecodeProgram, config: VmConfig) -> Res
         instruction_panic: Ref::new(Option::None),
         instruction_exit: Ref::new(0),
         zero_values: empty_slots(program.world.types.len()),
+        constant_values: HashMap::from_array([]),
         frame_slots: Vec::from_array([]),
     };
     for global in state.program.globals {
