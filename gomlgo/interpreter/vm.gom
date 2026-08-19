@@ -3549,6 +3549,22 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
                     results,
                     variadic,
                 )?,
+                bytecode::CallTarget::Static(function) => match execute_function(
+                    state,
+                    function,
+                    register_values(frame, arguments)?,
+                    Vec::from_array([]),
+                    Option::Some(frame_location(frame, instruction.location)),
+                    Option::None,
+                )? {
+                    InvocationOutcome::Returned(values) => values,
+                    InvocationOutcome::Panicked(payload) => {
+                        return Result::Ok(pending_instruction_panic(state, payload))
+                    },
+                    InvocationOutcome::Exited(code) => {
+                        return Result::Ok(pending_instruction_exit(state, code))
+                    },
+                },
                 _ => match invoke_prepared(
                     state,
                     frame,
