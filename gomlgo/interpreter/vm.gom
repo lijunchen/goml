@@ -96,6 +96,12 @@ enum RuntimePlace {
     },
 }
 
+struct BoolElementPlace {
+    backing: Place,
+    elements: Vec[bool],
+    index: int,
+}
+
 struct Frame {
     function: bytecode::FunctionId,
     package_id: go_types::PackageId,
@@ -103,6 +109,7 @@ struct Frame {
     name: string,
     registers: Vec[Option[Value]],
     places: Vec[Option[RuntimePlace]],
+    bool_places: Vec[Option[BoolElementPlace]],
     place_roots: Vec[int],
     locals: Vec[CellId],
     block_arguments: Vec[Value],
@@ -115,6 +122,7 @@ struct Frame {
 struct FrameSlots {
     registers: Vec[Option[Value]],
     places: Vec[Option[RuntimePlace]],
+    bool_places: Vec[Option[BoolElementPlace]],
     place_roots: Vec[int],
     locals: Vec[CellId],
     block_arguments: Vec[Value],
@@ -287,6 +295,7 @@ fn take_frame_slots(state: VmState, register_count: int, place_count: int, local
             FrameSlots {
                 registers: prepared_slots(slots.registers, register_count),
                 places: prepared_slots(slots.places, place_count),
+                bool_places: prepared_slots(slots.bool_places, place_count),
                 place_roots: prepared_place_roots(slots.place_roots, place_count),
                 locals: slots.locals,
                 block_arguments: slots.block_arguments,
@@ -297,6 +306,7 @@ fn take_frame_slots(state: VmState, register_count: int, place_count: int, local
             FrameSlots {
                 registers: empty_slots(register_count),
                 places: empty_slots(place_count),
+                bool_places: empty_slots(place_count),
                 place_roots: prepared_place_roots(Vec::from_array([]), place_count),
                 locals: Vec::with_capacity(local_count),
                 block_arguments: Vec::from_array([]),
@@ -333,6 +343,7 @@ fn release_frame_slots(state: VmState, frame: Frame) -> unit {
     } else {};
     frame.registers.clear();
     frame.places.clear();
+    frame.bool_places.clear();
     frame.place_roots.clear();
     frame.locals.clear();
     frame.block_arguments.clear();
@@ -341,6 +352,7 @@ fn release_frame_slots(state: VmState, frame: Frame) -> unit {
         FrameSlots {
             registers: frame.registers,
             places: frame.places,
+            bool_places: frame.bool_places,
             place_roots: frame.place_roots,
             locals: frame.locals,
             block_arguments: frame.block_arguments,
@@ -688,7 +700,16 @@ fn place(frame: Frame, id: bytecode::PlaceId) -> Result[RuntimePlace, string] {
     } else {
         match frame.places[id.value] {
             Some(value) => Result::Ok(value),
-            None => Result::Err("place " + id.value.to_string() + " is undefined"),
+            None => match frame.bool_places[id.value] {
+                Some(value) => Result::Ok(
+                    RuntimePlace::BoolElement {
+                        backing: value.backing,
+                        elements: value.elements,
+                        index: value.index,
+                    },
+                ),
+                None => Result::Err("place " + id.value.to_string() + " is undefined"),
+            },
         }
     }
 }
@@ -701,7 +722,10 @@ fn root_frame_place(frame: Frame, id: bytecode::PlaceId) -> Result[Option[CellId
     } else {
         match frame.places[id.value] {
             Some(_) => Result::Ok(Option::None),
-            None => Result::Err("place " + id.value.to_string() + " is undefined"),
+            None => match frame.bool_places[id.value] {
+                Some(_) => Result::Ok(Option::None),
+                None => Result::Err("place " + id.value.to_string() + " is undefined"),
+            },
         }
     }
 }
@@ -712,6 +736,7 @@ fn set_root_place(frame: Frame, id: bytecode::PlaceId, value: CellId) -> Result[
     } else {
         frame.place_roots[id.value] = value.value;
         frame.places[id.value] = Option::None;
+        frame.bool_places[id.value] = Option::None;
         Result::Ok(())
     }
 }
@@ -722,6 +747,24 @@ fn set_place(frame: Frame, id: bytecode::PlaceId, value: RuntimePlace) -> Result
     } else {
         frame.place_roots[id.value] = -1;
         frame.places[id.value] = Option::Some(value);
+        frame.bool_places[id.value] = Option::None;
+        Result::Ok(())
+    }
+}
+
+fn set_bool_place(
+    frame: Frame,
+    id: bytecode::PlaceId,
+    backing: Place,
+    elements: Vec[bool],
+    index: int,
+) -> Result[unit, string] {
+    if id.value < 0 || id.value >= frame.places.len() {
+        Result::Err("invalid place " + id.value.to_string())
+    } else {
+        frame.place_roots[id.value] = -1;
+        frame.places[id.value] = Option::None;
+        frame.bool_places[id.value] = Option::Some(BoolElementPlace { backing, elements, index });
         Result::Ok(())
     }
 }
@@ -1759,7 +1802,14 @@ fn indexed_value(state: VmState, value: Value, index: Value, result_type: go_typ
             let backing = slice.backing.ok_or("index of nil slice")?;
             match bool_backing(state.memory, backing) {
                 Some(elements) => Result::Ok(
-                    (Value::Local(LocalValue::Bool(elements[slice.offset + index])), true),
+                    (
+                        if elements[slice.offset + index] {
+                            state.true_value
+                        } else {
+                            state.false_value
+                        },
+                        true,
+                    ),
                 ),
                 None => Result::Ok(
                     (load_place(state.memory, index_place(backing, slice.offset + index))?, true),
@@ -2302,7 +2352,18 @@ fn load_frame_place_register(
 ) -> Result[unit, string] {
     match root_frame_place(frame, source)? {
         Some(root) => load_cell_register(state.memory, frame, root, target),
-        None => set_register(frame, target, load_runtime_place(state, place(frame, source)?)?),
+        None => match frame.bool_places[source.value] {
+            Some(value) => set_register(
+                frame,
+                target,
+                if value.elements[value.index] {
+                    state.true_value
+                } else {
+                    state.false_value
+                },
+            ),
+            None => set_register(frame, target, load_runtime_place(state, place(frame, source)?)?),
+        },
     }
 }
 
@@ -2348,11 +2409,7 @@ fn set_indexed_runtime_place(
             let backing = slice.backing.ok_or("index of nil slice")?;
             let index = slice.offset + index;
             match bool_backing(state.memory, backing) {
-                Some(elements) => set_place(
-                    frame,
-                    target,
-                    RuntimePlace::BoolElement { backing, elements, index },
-                ),
+                Some(elements) => set_bool_place(frame, target, backing, elements, index),
                 None => set_place(frame, target, RuntimePlace::Local(index_place(backing, index))),
             }
         },
@@ -2367,7 +2424,13 @@ fn store_frame_place(state: VmState, frame: Frame, id: bytecode::PlaceId, value:
 ] {
     match root_frame_place(frame, id)? {
         Some(root) => store_cell(state.memory, root, value),
-        None => store_runtime_place(state, place(frame, id)?, value),
+        None => match frame.bool_places[id.value] {
+            Some(target) => {
+                target.elements[target.index] = boolean_value(value)?;
+                Result::Ok(())
+            },
+            None => store_runtime_place(state, place(frame, id)?, value),
+        },
     }
 }
 
@@ -3700,16 +3763,30 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
                 },
             },
         },
-        bytecode::InstructionKind::Unary { target, op, operand } => set_register(
-            frame,
-            target,
-            unary_value(
-                op,
-                register(frame, operand)?,
-                state.program.functions[frame.function.value].register_types[target.value],
-                state.program.world,
-            )?,
-        ),
+        bytecode::InstructionKind::Unary { target, op, operand } => {
+            let operand = register(frame, operand)?;
+            match (op, operand) {
+                (bytecode::UnaryOp::Not, Value::Local(LocalValue::Bool(value))) => set_register(
+                    frame,
+                    target,
+                    if value {
+                        state.false_value
+                    } else {
+                        state.true_value
+                    },
+                ),
+                (_, operand) => set_register(
+                    frame,
+                    target,
+                    unary_value(
+                        op,
+                        operand,
+                        state.program.functions[frame.function.value].register_types[target.value],
+                        state.program.world,
+                    )?,
+                ),
+            }
+        },
         bytecode::InstructionKind::Binary { target, op, left, right } => {
             let left = register(frame, left)?;
             let right = register(frame, right)?;
@@ -4255,6 +4332,7 @@ fn execute_sequential_root_load(
     } else {};
     frame.place_roots[place] = cell.value;
     frame.places[place] = Option::None;
+    frame.bool_places[place] = Option::None;
     if !count_step(state) {
         return instruction_failure_at(
             state,
@@ -4286,6 +4364,7 @@ fn execute_sequential_root_store(
     } else {};
     frame.place_roots[place] = cell.value;
     frame.places[place] = Option::None;
+    frame.bool_places[place] = Option::None;
     if !count_step(state) {
         return instruction_failure_at(
             state,
@@ -4598,6 +4677,7 @@ fn failed_frame_call(message: string) -> FrameCallResult {
             name: "",
             registers: Vec::from_array([]),
             places: Vec::from_array([]),
+            bool_places: Vec::from_array([]),
             place_roots: Vec::from_array([]),
             locals: Vec::from_array([]),
             block_arguments: Vec::from_array([]),
@@ -4666,6 +4746,7 @@ fn frame_for_call(
             name: function.name,
             registers: slots.registers,
             places: slots.places,
+            bool_places: slots.bool_places,
             place_roots: slots.place_roots,
             locals,
             block_arguments: slots.block_arguments,
