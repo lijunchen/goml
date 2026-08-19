@@ -515,6 +515,42 @@ fn sequential_boolean_register(
     }
 }
 
+fn sequential_integer_local(
+    world: go_types::World,
+    function: bytecode::BytecodeFunction,
+    local: bytecode::LocalId,
+) -> bool {
+    if local.value < 0 || local.value >= function.locals.len() || !function_has_back_edge(function)
+        || !scalar_local_safe(function, local.value) {
+        false
+    } else {
+        match basic_kind(world, function.locals[local.value].type_id) {
+            Some(kind) => integer_layout(kind).is_some(),
+            None => false,
+        }
+    }
+}
+
+fn sequential_bool_slice_local(
+    world: go_types::World,
+    function: bytecode::BytecodeFunction,
+    local: bytecode::LocalId,
+) -> bool {
+    if local.value < 0 || local.value >= function.locals.len() || !function_has_back_edge(function) {
+        return false
+    } else {};
+    match go_types::type_data(
+        world,
+        go_types::underlying(world, function.locals[local.value].type_id),
+    ).kind {
+        go_types::TypeKind::Slice { element } => match basic_kind(world, element) {
+            Some(go_types::BasicKind::Bool) | Some(go_types::BasicKind::UntypedBool) => true,
+            _ => false,
+        },
+        _ => false,
+    }
+}
+
 fn sequential_fallback() -> SequentialOperation {
     SequentialOperation { kind: 0, place: 0, source: 0, target: 0 }
 }
@@ -593,6 +629,208 @@ fn sequential_single_operation(
     }
 }
 
+fn sequential_super_operation(
+    world: go_types::World,
+    function: bytecode::BytecodeFunction,
+    block: bytecode::BasicBlock,
+    index: int,
+    constant_index: int,
+) -> SequentialOperation {
+    if index + 3 >= block.instructions.len() {
+        return sequential_fallback()
+    } else {};
+    let (left_place, left_local) = match block.instructions[index].kind {
+        bytecode::InstructionKind::LocalPlace { target, local } => (target, local),
+        _ => return sequential_fallback(),
+    };
+    let left = match block.instructions[index + 1].kind {
+        bytecode::InstructionKind::Load { target, source } if source.value == left_place.value => {
+            target
+        },
+        _ => return sequential_fallback(),
+    };
+    if !sequential_integer_local(world, function, left_local)
+        || !sequential_integer_register(world, function, left) {
+        return sequential_fallback()
+    } else {};
+    match block.instructions[index + 2].kind {
+        bytecode::InstructionKind::Constant { target: right, constant_kind, exact, .. } => {
+            if !sequential_integer_register(world, function, right) {
+                return sequential_fallback()
+            } else {};
+            let (target, op, binary_left, binary_right) = match block.instructions[index + 3].kind {
+                bytecode::InstructionKind::Binary { target, op, left, right } => {
+                    (target, op, left, right)
+                },
+                _ => return sequential_fallback(),
+            };
+            if target.value < 0 || target.value >= function.register_types.len()
+                || binary_left.value != left.value
+                || binary_right.value != right.value {
+                return sequential_fallback()
+            } else {};
+            if index + 4 < block.instructions.len() && constant_kind == "Int" && exact == "1"
+                && sequential_integer_register(world, function, target)
+                && (op == bytecode::BinaryOp::Add || op == bytecode::BinaryOp::Subtract) {
+                match block.instructions[index + 4].kind {
+                    bytecode::InstructionKind::Store { target: store, value } if store.value
+                        == left_place.value
+                        && value.value == target.value => return SequentialOperation {
+                        kind: if op == bytecode::BinaryOp::Add {
+                            31
+                        } else {
+                            32
+                        },
+                        place: left_place.value,
+                        source: left_local.value,
+                        target: left.value,
+                    },
+                    _ => {},
+                }
+            } else {};
+            SequentialOperation {
+                kind: 35,
+                place: left_local.value,
+                source: constant_index,
+                target: sequential_binary_kind(op),
+            }
+        },
+        bytecode::InstructionKind::LocalPlace { target: right_place, local: right_local } => {
+            if index + 4 >= block.instructions.len()
+                || !sequential_integer_local(world, function, right_local) {
+                return sequential_fallback()
+            } else {};
+            let right = match block.instructions[index + 3].kind {
+                bytecode::InstructionKind::Load { target, source } if source.value
+                    == right_place.value => target,
+                _ => return sequential_fallback(),
+            };
+            if !sequential_integer_register(world, function, right) {
+                return sequential_fallback()
+            } else {};
+            let (target, op, binary_left, binary_right) = match block.instructions[index + 4].kind {
+                bytecode::InstructionKind::Binary { target, op, left, right } => {
+                    (target, op, left, right)
+                },
+                _ => return sequential_fallback(),
+            };
+            if target.value < 0 || target.value >= function.register_types.len()
+                || binary_left.value != left.value
+                || binary_right.value != right.value {
+                return sequential_fallback()
+            } else {};
+            if index + 5 < block.instructions.len()
+                && sequential_integer_register(world, function, target) {
+                match block.instructions[index + 5].kind {
+                    bytecode::InstructionKind::Store { target: store, value } if store.value
+                        == left_place.value
+                        && value.value == target.value => return SequentialOperation {
+                        kind: 33,
+                        place: left_local.value,
+                        source: right_local.value,
+                        target: sequential_binary_kind(op),
+                    },
+                    _ => {},
+                }
+            } else {};
+            SequentialOperation {
+                kind: 34,
+                place: left_local.value,
+                source: right_local.value,
+                target: sequential_binary_kind(op),
+            }
+        },
+        _ => sequential_fallback(),
+    }
+}
+
+fn sequential_bool_slice_super_operation(
+    world: go_types::World,
+    function: bytecode::BytecodeFunction,
+    block: bytecode::BasicBlock,
+    index: int,
+) -> SequentialOperation {
+    if index + 4 >= block.instructions.len() {
+        return sequential_fallback()
+    } else {};
+    let (slice_place, slice_local) = match block.instructions[index].kind {
+        bytecode::InstructionKind::LocalPlace { target, local } if sequential_bool_slice_local(
+            world,
+            function,
+            local,
+        ) => (target, local),
+        _ => return sequential_fallback(),
+    };
+    match block.instructions[index + 1].kind {
+        bytecode::InstructionKind::Load { target: slice, source } if source.value
+            == slice_place.value => {
+            let (index_place, index_local) = match block.instructions[index + 2].kind {
+                bytecode::InstructionKind::LocalPlace { target, local } if sequential_integer_local(
+                    world,
+                    function,
+                    local,
+                ) => (target, local),
+                _ => return sequential_fallback(),
+            };
+            let index_register = match block.instructions[index + 3].kind {
+                bytecode::InstructionKind::Load { target, source } if source.value
+                    == index_place.value => target,
+                _ => return sequential_fallback(),
+            };
+            match block.instructions[index + 4].kind {
+                bytecode::InstructionKind::IndexValue { target, base, index, ok: None } if base.value
+                    == slice.value
+                    && index.value == index_register.value
+                    && sequential_boolean_register(world, function, target) => SequentialOperation {
+                    kind: 36,
+                    place: slice_local.value,
+                    source: index_local.value,
+                    target: target.value,
+                },
+                _ => sequential_fallback(),
+            }
+        },
+        bytecode::InstructionKind::LocalPlace { target: index_place, local: index_local } if index
+            + 5
+            < block.instructions.len()
+            && sequential_integer_local(world, function, index_local) => {
+            let index_register = match block.instructions[index + 2].kind {
+                bytecode::InstructionKind::Load { target, source } if source.value
+                    == index_place.value => target,
+                _ => return sequential_fallback(),
+            };
+            let target_place = match block.instructions[index + 3].kind {
+                bytecode::InstructionKind::IndexPlace { target, base, index } if base.value
+                    == slice_place.value
+                    && index.value == index_register.value => target,
+                _ => return sequential_fallback(),
+            };
+            let (value_register, value) = match block.instructions[index + 4].kind {
+                bytecode::InstructionKind::Constant { target, constant_kind, exact, .. } if constant_kind
+                    == "Bool"
+                    && (exact == "true" || exact == "false") => (target, exact == "true"),
+                _ => return sequential_fallback(),
+            };
+            match block.instructions[index + 5].kind {
+                bytecode::InstructionKind::Store { target, value: source } if target.value
+                    == target_place.value
+                    && source.value == value_register.value => SequentialOperation {
+                    kind: 37,
+                    place: slice_local.value,
+                    source: index_local.value,
+                    target: if value {
+                        1
+                    } else {
+                        0
+                    },
+                },
+                _ => sequential_fallback(),
+            }
+        },
+        _ => sequential_fallback(),
+    }
+}
+
 fn sequential_operation(
     world: go_types::World,
     function: bytecode::BytecodeFunction,
@@ -602,6 +840,14 @@ fn sequential_operation(
     constant_index: int,
 ) -> SequentialOperation {
     let current = block.instructions[index];
+    let bool_slice_operation = sequential_bool_slice_super_operation(world, function, block, index);
+    if bool_slice_operation.kind != 0 {
+        return bool_slice_operation
+    } else {};
+    let super_operation = sequential_super_operation(world, function, block, index, constant_index);
+    if super_operation.kind != 0 {
+        return super_operation
+    } else {};
     match current.kind {
         bytecode::InstructionKind::Binary { target, op, left, right } if target.value >= 0
             && target.value < function.register_types.len()
@@ -5344,6 +5590,281 @@ fn sequential_error_at(
     message
 }
 
+fn count_sequential_steps(
+    state: VmState,
+    frame: Frame,
+    block: bytecode::BasicBlock,
+    index: int,
+    count: int,
+) -> string {
+    let current = state.steps.get();
+    let maximum = state.config.max_steps;
+    if maximum >= 0.to_int64() && current + count.to_int64() > maximum {
+        let offset = if current >= maximum {
+            0
+        } else {
+            (maximum - current).to_int()
+        };
+        state.steps.set(maximum + 1.to_int64());
+        sequential_error_at(
+            state,
+            frame,
+            block.instructions[index + offset].location,
+            "instruction limit exceeded",
+        )
+    } else {
+        state.steps.set(current + count.to_int64());
+        ""
+    }
+}
+
+fn install_sequential_local_place(frame: Frame, place: int, local: int) -> unit {
+    frame.place_roots[place] = frame.locals[local].value;
+    frame.places[place] = Option::None;
+    frame.bool_places[place] = Option::None;
+    frame.scalar[frame.registers.len() * 2 + frame.locals.len() * 2 + place] = (local + 1).to_uint64();
+}
+
+fn execute_sequential_increment(
+    state: VmState,
+    frame: Frame,
+    block: bytecode::BasicBlock,
+    index: int,
+    place: int,
+    local: int,
+    current: int,
+    add: bool,
+) -> string {
+    let step_error = count_sequential_steps(state, frame, block, index, 5);
+    if step_error != "" {
+        return step_error
+    } else {};
+    let constant = match block.instructions[index + 2].kind {
+        bytecode::InstructionKind::Constant { target, .. } => target.value,
+        _ => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[index + 2].location,
+            "invalid sequential increment constant",
+        ),
+    };
+    let result = match block.instructions[index + 3].kind {
+        bytecode::InstructionKind::Binary { target, .. } => target.value,
+        _ => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[index + 3].location,
+            "invalid sequential increment operation",
+        ),
+    };
+    let width = (frame.scalar[frame.registers.len() * 2 + frame.locals.len() + local]
+        & 127.to_uint64()).to_int();
+    let old = frame.scalar[frame.registers.len() * 2 + local];
+    let value = normalize_integer(
+        if add {
+            old + 1.to_uint64()
+        } else {
+            old - 1.to_uint64()
+        },
+        width,
+    );
+    install_sequential_local_place(frame, place, local);
+    if !set_scalar_integer_register(frame, current, old)
+        || !set_scalar_integer_register(frame, constant, 1.to_uint64())
+        || !set_scalar_integer_register(frame, result, value) {
+        return sequential_error_at(
+            state,
+            frame,
+            block.instructions[index + 3].location,
+            "invalid scalar increment register",
+        )
+    } else {};
+    frame.scalar[frame.registers.len() * 2 + local] = value;
+    ""
+}
+
+fn execute_sequential_local_binary(
+    state: VmState,
+    frame: Frame,
+    block: bytecode::BasicBlock,
+    index: int,
+    left_local: int,
+    right_local: int,
+    kind: int,
+    store: bool,
+) -> string {
+    let count = if store {
+        6
+    } else {
+        5
+    };
+    let step_error = count_sequential_steps(state, frame, block, index, count);
+    if step_error != "" {
+        return step_error
+    } else {};
+    let (left_place, left) = match (
+        block.instructions[index].kind,
+        block.instructions[index + 1].kind,
+    ) {
+        (
+            bytecode::InstructionKind::LocalPlace { target: place, local: _ },
+            bytecode::InstructionKind::Load { target, source: _ },
+        ) => (place.value, target.value),
+        _ => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[index].location,
+            "invalid sequential left operand",
+        ),
+    };
+    let (right_place, right) = match (
+        block.instructions[index + 2].kind,
+        block.instructions[index + 3].kind,
+    ) {
+        (
+            bytecode::InstructionKind::LocalPlace { target: place, local: _ },
+            bytecode::InstructionKind::Load { target, source: _ },
+        ) => (place.value, target.value),
+        _ => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[index + 2].location,
+            "invalid sequential right operand",
+        ),
+    };
+    let target = match block.instructions[index + 4].kind {
+        bytecode::InstructionKind::Binary { target, .. } => target.value,
+        _ => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[index + 4].location,
+            "invalid sequential binary operation",
+        ),
+    };
+    install_sequential_local_place(frame, left_place, left_local);
+    install_sequential_local_place(frame, right_place, right_local);
+    let left_code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + left_local];
+    let right_code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + right_local];
+    let left_bits = frame.scalar[frame.registers.len() * 2 + left_local];
+    let right_bits = frame.scalar[frame.registers.len() * 2 + right_local];
+    if !set_scalar_integer_register(frame, left, left_bits)
+        || !set_scalar_integer_register(frame, right, right_bits) {
+        return sequential_error_at(
+            state,
+            frame,
+            block.instructions[index + 3].location,
+            "invalid scalar local register",
+        )
+    } else {};
+    let message = execute_scalar_integer_binary(
+        frame,
+        kind,
+        target,
+        left_bits,
+        (left_code & 127.to_uint64()).to_int(),
+        left_code & 128.to_uint64() != 0.to_uint64(),
+        right_bits,
+        (right_code & 127.to_uint64()).to_int(),
+        right_code & 128.to_uint64() != 0.to_uint64(),
+        state.false_value,
+        state.true_value,
+    );
+    if message != "" {
+        return sequential_error_at(state, frame, block.instructions[index + 4].location, message)
+    } else {};
+    if store {
+        frame.scalar[frame.registers.len() * 2 + left_local] = normalize_integer(
+            frame.scalar[target],
+            (left_code & 127.to_uint64()).to_int(),
+        );
+    } else {};
+    ""
+}
+
+fn execute_sequential_local_constant_binary(
+    state: VmState,
+    frame: Frame,
+    block: bytecode::BasicBlock,
+    index: int,
+    local: int,
+    constant_index: int,
+    kind: int,
+) -> string {
+    let step_error = count_sequential_steps(state, frame, block, index, 4);
+    if step_error != "" {
+        return step_error
+    } else {};
+    let (place, left) = match (block.instructions[index].kind, block.instructions[index + 1].kind) {
+        (
+            bytecode::InstructionKind::LocalPlace { target: place, local: _ },
+            bytecode::InstructionKind::Load { target, source: _ },
+        ) => (place.value, target.value),
+        _ => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[index].location,
+            "invalid sequential constant left operand",
+        ),
+    };
+    let right = match block.instructions[index + 2].kind {
+        bytecode::InstructionKind::Constant { target, .. } => target.value,
+        _ => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[index + 2].location,
+            "invalid sequential constant operand",
+        ),
+    };
+    let target = match block.instructions[index + 3].kind {
+        bytecode::InstructionKind::Binary { target, .. } => target.value,
+        _ => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[index + 3].location,
+            "invalid sequential constant binary operation",
+        ),
+    };
+    let (right_bits, right_width, right_signed) = match state.instruction_constants[constant_index] {
+        Some(Value::Local(LocalValue::Integer { bits, width, signed })) => (bits, width, signed),
+        _ => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[index + 2].location,
+            "invalid sequential integer constant",
+        ),
+    };
+    install_sequential_local_place(frame, place, local);
+    let left_code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + local];
+    let left_bits = frame.scalar[frame.registers.len() * 2 + local];
+    if !set_scalar_integer_register(frame, left, left_bits)
+        || !set_scalar_integer_register(frame, right, right_bits) {
+        return sequential_error_at(
+            state,
+            frame,
+            block.instructions[index + 2].location,
+            "invalid scalar constant register",
+        )
+    } else {};
+    let message = execute_scalar_integer_binary(
+        frame,
+        kind,
+        target,
+        left_bits,
+        (left_code & 127.to_uint64()).to_int(),
+        left_code & 128.to_uint64() != 0.to_uint64(),
+        right_bits,
+        right_width,
+        right_signed,
+        state.false_value,
+        state.true_value,
+    );
+    if message == "" {
+        ""
+    } else {
+        sequential_error_at(state, frame, block.instructions[index + 3].location, message)
+    }
+}
+
 fn execute_sequential_integer_binary(
     state: VmState,
     frame: Frame,
@@ -5756,6 +6277,292 @@ fn execute_sequential_boolean_index(
     match execute_instruction_effect(state, frame, instruction) {
         Ok(_) => "",
         Err(message) => sequential_error_at(state, frame, instruction.location, message),
+    }
+}
+
+fn sequential_integer_local_index(frame: Frame, local: int) -> Result[int, string] {
+    if frame.scalar.is_empty() || local < 0 || local >= frame.locals.len() {
+        return Result::Err("invalid scalar index local")
+    } else {};
+    let code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + local];
+    let width = (code & 127.to_uint64()).to_int();
+    if width <= 1 {
+        return Result::Err("invalid scalar index local")
+    } else {};
+    let bits = frame.scalar[frame.registers.len() * 2 + local];
+    if code & 128.to_uint64() != 0.to_uint64() {
+        let value = signed_integer(bits, width).to_int();
+        if value < 0 {
+            Result::Err("index is outside the host integer range")
+        } else {
+            Result::Ok(value)
+        }
+    } else if bits > 9223372036854775807.to_uint64() {
+        Result::Err("integer is outside the host integer range")
+    } else {
+        Result::Ok(bits.to_int())
+    }
+}
+
+fn execute_sequential_bool_slice_index(
+    state: VmState,
+    frame: Frame,
+    block: bytecode::BasicBlock,
+    instruction_index: int,
+    slice_local: int,
+    index_local: int,
+    target: int,
+) -> string {
+    let step_error = count_sequential_steps(state, frame, block, instruction_index, 5);
+    if step_error != "" {
+        return step_error
+    } else {};
+    let (slice_place, slice_register) = match (
+        block.instructions[instruction_index].kind,
+        block.instructions[instruction_index + 1].kind,
+    ) {
+        (
+            bytecode::InstructionKind::LocalPlace { target: place, local: _ },
+            bytecode::InstructionKind::Load { target: register, source: _ },
+        ) => (place.value, register.value),
+        _ => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index].location,
+            "invalid sequential slice operand",
+        ),
+    };
+    let (index_place, index_register) = match (
+        block.instructions[instruction_index + 2].kind,
+        block.instructions[instruction_index + 3].kind,
+    ) {
+        (
+            bytecode::InstructionKind::LocalPlace { target: place, local: _ },
+            bytecode::InstructionKind::Load { target: register, source: _ },
+        ) => (place.value, register.value),
+        _ => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 2].location,
+            "invalid sequential index operand",
+        ),
+    };
+    install_sequential_local_place(frame, slice_place, slice_local);
+    install_sequential_local_place(frame, index_place, index_local);
+    let index = match sequential_integer_local_index(frame, index_local) {
+        Ok(value) => value,
+        Err(message) => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 3].location,
+            message,
+        ),
+    };
+    let index_bits = frame.scalar[frame.registers.len() * 2 + index_local];
+    if !set_scalar_integer_register(frame, index_register, index_bits) {
+        return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 3].location,
+            "invalid scalar index register",
+        )
+    } else {};
+    let slice_value = cell_value(state.memory, frame.locals[slice_local].value);
+    if set_register(frame, bytecode::register_id(slice_register), slice_value).is_err() {
+        return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 1].location,
+            "invalid slice register",
+        )
+    } else {};
+    let Value::Local(LocalValue::Slice(slice)) = slice_value else {
+        return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 4].location,
+            "index of non-slice value",
+        )
+    };
+    if index < 0 || index >= slice.length {
+        return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 4].location,
+            "index out of range [" + index.to_string() + "] with length " + slice.length.to_string(),
+        )
+    } else {};
+    let backing = match slice.backing {
+        Some(value) => value,
+        None => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 4].location,
+            "index of nil slice",
+        ),
+    };
+    match bool_backing(state.memory, backing) {
+        Some(elements) => if set_scalar_bool_register(
+            frame,
+            target,
+            elements[slice.offset + index],
+            state.false_value,
+            state.true_value,
+        ) {
+            ""
+        } else {
+            sequential_error_at(
+                state,
+                frame,
+                block.instructions[instruction_index + 4].location,
+                "invalid scalar boolean register",
+            )
+        },
+        None => sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 4].location,
+            "invalid boolean slice backing",
+        ),
+    }
+}
+
+fn execute_sequential_bool_slice_store(
+    state: VmState,
+    frame: Frame,
+    block: bytecode::BasicBlock,
+    instruction_index: int,
+    slice_local: int,
+    index_local: int,
+    value: bool,
+) -> string {
+    let step_error = count_sequential_steps(state, frame, block, instruction_index, 6);
+    if step_error != "" {
+        return step_error
+    } else {};
+    let slice_place = match block.instructions[instruction_index].kind {
+        bytecode::InstructionKind::LocalPlace { target, local: _ } => target.value,
+        _ => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index].location,
+            "invalid sequential slice place",
+        ),
+    };
+    let index_place = match block.instructions[instruction_index + 1].kind {
+        bytecode::InstructionKind::LocalPlace { target, local: _ } => target.value,
+        _ => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 1].location,
+            "invalid sequential index place",
+        ),
+    };
+    let index_register = match block.instructions[instruction_index + 2].kind {
+        bytecode::InstructionKind::Load { target, source: _ } => target.value,
+        _ => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 2].location,
+            "invalid sequential index load",
+        ),
+    };
+    let target_place = match block.instructions[instruction_index + 3].kind {
+        bytecode::InstructionKind::IndexPlace { target, base: _, index: _ } => target.value,
+        _ => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 3].location,
+            "invalid sequential indexed place",
+        ),
+    };
+    let value_register = match block.instructions[instruction_index + 4].kind {
+        bytecode::InstructionKind::Constant { target, .. } => target.value,
+        _ => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 4].location,
+            "invalid sequential boolean value",
+        ),
+    };
+    install_sequential_local_place(frame, slice_place, slice_local);
+    install_sequential_local_place(frame, index_place, index_local);
+    let index = match sequential_integer_local_index(frame, index_local) {
+        Ok(value) => value,
+        Err(message) => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 2].location,
+            message,
+        ),
+    };
+    let index_bits = frame.scalar[frame.registers.len() * 2 + index_local];
+    if !set_scalar_integer_register(frame, index_register, index_bits) {
+        return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 2].location,
+            "invalid scalar index register",
+        )
+    } else {};
+    let Value::Local(LocalValue::Slice(slice)) = cell_value(
+        state.memory,
+        frame.locals[slice_local].value,
+    ) else {
+        return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 3].location,
+            "index of non-slice value",
+        )
+    };
+    if index < 0 || index >= slice.length {
+        return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 3].location,
+            "index out of range [" + index.to_string() + "] with length " + slice.length.to_string(),
+        )
+    } else {};
+    let backing = match slice.backing {
+        Some(value) => value,
+        None => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 3].location,
+            "index of nil slice",
+        ),
+    };
+    match bool_backing(state.memory, backing) {
+        Some(elements) => {
+            frame.place_roots[target_place] = -1;
+            frame.places[target_place] = Option::None;
+            frame.bool_places[target_place] = Option::Some(
+                BoolElementPlace { backing, elements, index: slice.offset + index },
+            );
+            if !set_scalar_bool_register(
+                frame,
+                value_register,
+                value,
+                state.false_value,
+                state.true_value,
+            ) {
+                return sequential_error_at(
+                    state,
+                    frame,
+                    block.instructions[instruction_index + 4].location,
+                    "invalid scalar boolean register",
+                )
+            } else {};
+            elements[slice.offset + index] = value;
+            ""
+        },
+        None => sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 3].location,
+            "invalid boolean slice backing",
+        ),
     }
 }
 
@@ -6731,16 +7538,78 @@ fn execute_function(
                         operation.source,
                         operation.target,
                     ),
-                    _ => execute_sequential_clone_local(
+                    30 => execute_sequential_clone_local(
                         state,
                         frame,
                         block,
                         instruction_index,
                         operation.source,
                     ),
+                    31 | 32 => execute_sequential_increment(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.place,
+                        operation.source,
+                        operation.target,
+                        operation.kind == 31,
+                    ),
+                    33 => execute_sequential_local_binary(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.place,
+                        operation.source,
+                        operation.target,
+                        true,
+                    ),
+                    34 => execute_sequential_local_binary(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.place,
+                        operation.source,
+                        operation.target,
+                        false,
+                    ),
+                    35 => execute_sequential_local_constant_binary(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.place,
+                        operation.source,
+                        operation.target,
+                    ),
+                    36 => execute_sequential_bool_slice_index(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.place,
+                        operation.source,
+                        operation.target,
+                    ),
+                    _ => execute_sequential_bool_slice_store(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.place,
+                        operation.source,
+                        operation.target != 0,
+                    ),
                 };
                 instruction_index += match operation.kind {
                     19 | 20 | 21 | 22 => 2,
+                    31 | 32 | 34 => 5,
+                    33 => 6,
+                    35 => 4,
+                    36 => 5,
+                    37 => 6,
                     _ => 1,
                 };
                 if message == "" {
