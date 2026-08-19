@@ -188,6 +188,7 @@ struct VmState {
     frame_slots: Vec[FrameSlots],
     false_value: Value,
     true_value: Value,
+    empty_captures: Vec[CellId],
 }
 
 enum FunctionControl {
@@ -2924,7 +2925,7 @@ fn invoke_prepared(
             state,
             function,
             call.arguments,
-            Vec::from_array([]),
+            state.empty_captures,
             Option::Some(call.location),
             recover_state,
         ),
@@ -2937,7 +2938,7 @@ fn invoke_prepared(
                 state,
                 function,
                 arguments,
-                Vec::from_array([]),
+                state.empty_captures,
                 Option::Some(call.location),
                 recover_state,
             )
@@ -2983,7 +2984,7 @@ fn invoke_prepared(
                 state,
                 function,
                 arguments,
-                Vec::from_array([]),
+                state.empty_captures,
                 Option::Some(call.location),
                 recover_state,
             )
@@ -3098,7 +3099,7 @@ fn invoke_prepared(
                         state,
                         function,
                         arguments,
-                        Vec::from_array([]),
+                        state.empty_captures,
                         Option::Some(call.location),
                         recover_state,
                     )
@@ -3693,7 +3694,7 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
                         state,
                         function,
                         block_argument_values(frame, arguments)?,
-                        Vec::from_array([]),
+                        state.empty_captures,
                         Option::Some(frame_location(frame, instruction.location)),
                         Option::None,
                     )? {
@@ -4329,6 +4330,7 @@ fn initialize_state(program: bytecode::BytecodeProgram, config: VmConfig) -> Res
         frame_slots: Vec::from_array([]),
         false_value: Value::Local(LocalValue::Bool(false)),
         true_value: Value::Local(LocalValue::Bool(true)),
+        empty_captures: Vec::from_array([]),
     };
     for global in state.program.globals {
         match runtime_zero_value(state, global.type_id) {
@@ -4349,7 +4351,7 @@ fn execute_program(state: VmState) -> Result[InvocationOutcome, string] {
                             state,
                             function,
                             Vec::from_array([]),
-                            Vec::from_array([]),
+                            state.empty_captures,
                             Option::None,
                             Option::None,
                         )? {
@@ -4371,7 +4373,7 @@ fn execute_program(state: VmState) -> Result[InvocationOutcome, string] {
         state,
         state.program.main,
         Vec::from_array([]),
-        Vec::from_array([]),
+        state.empty_captures,
         Option::None,
         Option::None,
     )
