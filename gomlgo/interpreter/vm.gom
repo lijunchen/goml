@@ -217,6 +217,7 @@ struct VmState {
     empty_captures: Vec[CellId],
     size_values: Vec[Option[CachedSizeValue]],
     sequential_operations: Vec[Vec[Vec[SequentialOperation]]],
+    sequential_loops: Vec[SequentialLoopOperation],
     sequential_terminators: Vec[Vec[SequentialTerminator]],
     recyclable_functions: Vec[bool],
     scalar_register_layouts: Vec[Vec[ScalarLayout]],
@@ -245,6 +246,31 @@ struct SequentialOperation {
     place: int,
     source: int,
     target: int,
+}
+
+struct SequentialLoopOperation {
+    header_block: int,
+    header_index: int,
+    condition_local: int,
+    constant_index: int,
+    comparison_kind: int,
+    body_block: int,
+    body_when_true: bool,
+    body_index: int,
+    update_block: int,
+    update_index: int,
+    exit_block: int,
+    slice_local: int,
+    index_local: int,
+    value: bool,
+    left_local: int,
+    right_local: int,
+    binary_kind: int,
+}
+
+struct SequentialProgram {
+    operations: Vec[Vec[Vec[SequentialOperation]]],
+    loops: Vec[SequentialLoopOperation],
 }
 
 struct SequentialTerminator {
@@ -1615,8 +1641,81 @@ fn sequential_operation(
     sequential_single_operation(world, function, current)
 }
 
-fn sequential_operations(program: bytecode::BytecodeProgram) -> Vec[Vec[Vec[SequentialOperation]]] {
+fn sequential_prefix_operation_index(operations: Vec[SequentialOperation]) -> int {
+    let mut index = 0;
+    while index < operations.len() && operations[index].kind == 47 {
+        index += 1;
+    }
+    index
+}
+
+fn sequential_loop_candidate(
+    function: bytecode::BytecodeFunction,
+    blocks: Vec[Vec[SequentialOperation]],
+    header_block: int,
+    header_index: int,
+    body_block: int,
+    exit_block: int,
+    body_when_true: bool,
+) -> Option[SequentialLoopOperation] {
+    if body_block < 0 || body_block >= blocks.len() || exit_block < 0 || exit_block >= blocks.len() {
+        return Option::None
+    } else {};
+    let body_index = sequential_prefix_operation_index(blocks[body_block]);
+    if body_index >= blocks[body_block].len() {
+        return Option::None
+    } else {};
+    let body = blocks[body_block][body_index];
+    if body.kind != 51 {
+        return Option::None
+    } else {};
+    let update_block = body.target / 2;
+    if update_block < 0 || update_block >= blocks.len() {
+        return Option::None
+    } else {};
+    let update_index = sequential_prefix_operation_index(blocks[update_block]);
+    if update_index >= blocks[update_block].len() {
+        return Option::None
+    } else {};
+    let update = blocks[update_block][update_index];
+    if update.kind != 50 {
+        return Option::None
+    } else {};
+    let value = body.target % 2 != 0;
+    let left_local = update.place;
+    let right_local = update.source;
+    let binary_kind = update.target % 18;
+    let jump_target = update.target / 18;
+    if jump_target != header_block || (binary_kind != 1 && binary_kind != 2) {
+        return Option::None
+    } else {};
+    let header = blocks[header_block][header_index];
+    Option::Some(
+        SequentialLoopOperation {
+            header_block,
+            header_index,
+            condition_local: header.place,
+            constant_index: header.source,
+            comparison_kind: header.target % 18,
+            body_block,
+            body_when_true,
+            body_index,
+            update_block,
+            update_index,
+            exit_block,
+            slice_local: body.place,
+            index_local: body.source,
+            value,
+            left_local,
+            right_local,
+            binary_kind,
+        },
+    )
+}
+
+fn sequential_program(program: bytecode::BytecodeProgram) -> SequentialProgram {
     let functions: Vec[Vec[Vec[SequentialOperation]]] = Vec::with_capacity(program.functions.len());
+    let loops: Vec[SequentialLoopOperation] = Vec::from_array([]);
     let mut constant_index = 0;
     for function in program.functions {
         let blocks: Vec[Vec[SequentialOperation]] = Vec::with_capacity(function.blocks.len());
@@ -1642,9 +1741,52 @@ fn sequential_operations(program: bytecode::BytecodeProgram) -> Vec[Vec[Vec[Sequ
             }
             blocks.push(operations)
         }
+        for header_block in 0..blocks.len() {
+            let header_index = sequential_prefix_operation_index(blocks[header_block]);
+            if header_index >= blocks[header_block].len()
+                || blocks[header_block][header_index].kind != 45 {
+                continue
+            } else {};
+            let header = blocks[header_block][header_index];
+            let targets = header.target / 18;
+            let then_target = targets % function.blocks.len();
+            let else_target = targets / function.blocks.len();
+            let candidate = match sequential_loop_candidate(
+                function,
+                blocks,
+                header_block,
+                header_index,
+                then_target,
+                else_target,
+                true,
+            ) {
+                Some(value) => Option::Some(value),
+                None => sequential_loop_candidate(
+                    function,
+                    blocks,
+                    header_block,
+                    header_index,
+                    else_target,
+                    then_target,
+                    false,
+                ),
+            };
+            match candidate {
+                Some(value) => {
+                    blocks[header_block][0] = SequentialOperation {
+                        kind: 52,
+                        place: 0,
+                        source: loops.len(),
+                        target: 0,
+                    };
+                    loops.push(value)
+                },
+                None => {},
+            }
+        }
         functions.push(blocks)
     }
-    functions
+    SequentialProgram { operations: functions, loops }
 }
 
 fn sequential_terminator(
@@ -7688,6 +7830,181 @@ fn execute_fast_bool_slice_store(
     }
 }
 
+fn execute_bool_slice_update_effect(
+    state: VmState,
+    frame: Frame,
+    block: bytecode::BasicBlock,
+    instruction_index: int,
+    slice_local: int,
+    index_local: int,
+    value: bool,
+    left_local: int,
+    right_local: int,
+    binary_kind: int,
+) -> string {
+    let index = match sequential_integer_local_index(frame, index_local) {
+        Ok(value) => value,
+        Err(message) => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 2].location,
+            message,
+        ),
+    };
+    let Value::Local(LocalValue::Slice(slice)) = cell_value(
+        state.memory,
+        frame.locals[slice_local].value,
+    ) else {
+        return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 3].location,
+            "index of non-slice value",
+        )
+    };
+    if index < 0 || index >= slice.length {
+        return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 3].location,
+            "index out of range [" + index.to_string() + "] with length " + slice.length.to_string(),
+        )
+    } else {};
+    let backing = match slice.backing {
+        Some(value) => value,
+        None => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 3].location,
+            "index of nil slice",
+        ),
+    };
+    match backing.projections {
+        Some(projections) if !projections.is_empty() => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 3].location,
+            "invalid boolean slice backing",
+        ),
+        _ => {},
+    };
+    if !cell_valid(state.memory, backing.root.value) {
+        return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 3].location,
+            "invalid boolean slice backing",
+        )
+    } else {};
+    match cell_value(state.memory, backing.root.value) {
+        Value::Local(LocalValue::BoolBacking(elements)) => {
+            elements[slice.offset + index] = value;
+        },
+        _ => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 3].location,
+            "invalid boolean slice backing",
+        ),
+    };
+    let left_code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + left_local];
+    let left_bits = frame.scalar[frame.registers.len() * 2 + left_local];
+    let right_bits = frame.scalar[frame.registers.len() * 2 + right_local];
+    frame.scalar[frame.registers.len() * 2 + left_local] = normalize_integer(
+        if binary_kind == 1 {
+            left_bits + right_bits
+        } else {
+            left_bits - right_bits
+        },
+        (left_code & 127.to_uint64()).to_int(),
+    );
+    ""
+}
+
+fn execute_fast_bool_slice_loop(state: VmState, frame: Frame, operation: SequentialLoopOperation) -> string {
+    let header = frame.blocks[operation.header_block];
+    let body = frame.blocks[operation.body_block];
+    let update = frame.blocks[operation.update_block];
+    let (right_bits, right_width) = match state.instruction_constants[operation.constant_index] {
+        Some(Value::Local(LocalValue::Integer { bits, width, signed: _ })) => (bits, width),
+        _ => return sequential_error_at(
+            state,
+            frame,
+            header.instructions[operation.header_index + 2].location,
+            "invalid sequential integer constant",
+        ),
+    };
+    loop {
+        let step_error = count_sequential_branch_steps(
+            state,
+            frame,
+            header,
+            0,
+            operation.header_index + 4,
+        );
+        if step_error != "" {
+            return step_error
+        } else {};
+        let code = frame.scalar[frame.registers.len() * 2 + frame.locals.len()
+            + operation.condition_local];
+        let condition = match scalar_integer_comparison(
+            operation.comparison_kind,
+            frame.scalar[frame.registers.len() * 2 + operation.condition_local],
+            (code & 127.to_uint64()).to_int(),
+            code & 128.to_uint64() != 0.to_uint64(),
+            right_bits,
+            right_width,
+        ) {
+            Ok(value) => value,
+            Err(message) => return sequential_error_at(
+                state,
+                frame,
+                header.instructions[operation.header_index + 3].location,
+                message,
+            ),
+        };
+        if condition != operation.body_when_true {
+            frame.block.set(bytecode::block_id(operation.exit_block));
+            return ""
+        } else {};
+        let step_error = count_sequential_branch_steps(
+            state,
+            frame,
+            body,
+            0,
+            operation.body_index + 6,
+        );
+        if step_error != "" {
+            return step_error
+        } else {};
+        let step_error = count_sequential_branch_steps(
+            state,
+            frame,
+            update,
+            0,
+            operation.update_index + 6,
+        );
+        if step_error != "" {
+            return step_error
+        } else {};
+        let message = execute_bool_slice_update_effect(
+            state,
+            frame,
+            body,
+            operation.body_index,
+            operation.slice_local,
+            operation.index_local,
+            operation.value,
+            operation.left_local,
+            operation.right_local,
+            operation.binary_kind,
+        );
+        if message != "" {
+            return message
+        } else {}
+    }
+}
+
 fn execute_fast_bool_slice_branch(
     state: VmState,
     frame: Frame,
@@ -8933,7 +9250,7 @@ fn execute_function(
                         true,
                         operation.target / 18,
                     ),
-                    _ => execute_fast_bool_slice_store(
+                    51 => execute_fast_bool_slice_store(
                         state,
                         frame,
                         block,
@@ -8942,6 +9259,11 @@ fn execute_function(
                         operation.source,
                         operation.target % 2 != 0,
                         operation.target / 2,
+                    ),
+                    _ => execute_fast_bool_slice_loop(
+                        state,
+                        frame,
+                        state.sequential_loops[operation.source],
                     ),
                 };
                 instruction_index += match operation.kind {
@@ -8962,7 +9284,8 @@ fn execute_function(
                     if operation.kind == 45 || operation.kind == 46 || operation.kind == 48
                         || operation.kind == 49
                         || operation.kind == 50
-                        || operation.kind == 51 {
+                        || operation.kind == 51
+                        || operation.kind == 52 {
                         direct_branch = true;
                         break
                     } else {
@@ -9075,6 +9398,7 @@ fn initialize_state(program: bytecode::BytecodeProgram, config: VmConfig) -> Res
     set_native_program_executable(config.program_executable);
     let memory = new_memory();
     let native_completions = new_native_completion_queue(64);
+    let sequential = sequential_program(program);
     let state = VmState {
         program,
         config,
@@ -9108,7 +9432,8 @@ fn initialize_state(program: bytecode::BytecodeProgram, config: VmConfig) -> Res
         true_value: Value::Local(LocalValue::Bool(true)),
         empty_captures: Vec::from_array([]),
         size_values: empty_slots(64),
-        sequential_operations: sequential_operations(program),
+        sequential_operations: sequential.operations,
+        sequential_loops: sequential.loops,
         sequential_terminators: sequential_terminators(program),
         recyclable_functions: recyclable_functions(program),
         scalar_register_layouts: scalar_register_layouts(program),
