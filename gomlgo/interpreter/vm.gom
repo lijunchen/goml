@@ -744,6 +744,118 @@ fn sequential_super_operation(
     }
 }
 
+fn sequential_register_vector_contains(values: Vec[bytecode::RegisterId], register: int) -> bool {
+    for value in values {
+        if value.value == register {
+            return true
+        } else {}
+    }
+    false
+}
+
+fn sequential_instruction_uses_register(instruction: bytecode::Instruction, register: int) -> bool {
+    match instruction.kind {
+        bytecode::InstructionKind::Constant { .. } | bytecode::InstructionKind::Zero { .. } | bytecode::InstructionKind::LocalPlace {
+            ..,
+        } | bytecode::InstructionKind::GlobalPlace { .. } | bytecode::InstructionKind::NativeGlobalLoad {
+            ..,
+        } | bytecode::InstructionKind::FieldPlace { .. } | bytecode::InstructionKind::Load { .. } | bytecode::InstructionKind::AddressOf {
+            ..,
+        } | bytecode::InstructionKind::RenewLocal { .. } | bytecode::InstructionKind::CloneLocal {
+            ..,
+        } | bytecode::InstructionKind::Recover { .. } => false,
+        bytecode::InstructionKind::Move { target: _, source } | bytecode::InstructionKind::Copy {
+            target: _,
+            source,
+        } | bytecode::InstructionKind::Convert { target: _, source, type_id: _ } | bytecode::InstructionKind::TypeAssert {
+            target: _,
+            ok: _,
+            source,
+            type_id: _,
+        } | bytecode::InstructionKind::FieldValue { target: _, base: source, index: _ } => source.value
+            == register,
+        bytecode::InstructionKind::IndexPlace { target: _, base: _, index } | bytecode::InstructionKind::DereferencePlace {
+            target: _,
+            pointer: index,
+        } | bytecode::InstructionKind::Store { target: _, value: index } | bytecode::InstructionKind::Unary {
+            target: _,
+            op: _,
+            operand: index,
+        } => index.value == register,
+        bytecode::InstructionKind::Binary { target: _, op: _, left, right } | bytecode::InstructionKind::IndexValue {
+            target: _,
+            base: left,
+            index: right,
+            ok: _,
+        } => {
+            left.value == register || right.value == register
+        },
+        _ => true,
+    }
+}
+
+fn sequential_instruction_uses_place(instruction: bytecode::Instruction, place: int) -> bool {
+    match instruction.kind {
+        bytecode::InstructionKind::FieldPlace { target: _, base, index: _ } | bytecode::InstructionKind::IndexPlace {
+            target: _,
+            base,
+            index: _,
+        } | bytecode::InstructionKind::SlicePlace {
+            target: _,
+            base,
+            element_type: _,
+            low: _,
+            high: _,
+            maximum: _,
+        } => base.value == place,
+        bytecode::InstructionKind::Load { target: _, source } | bytecode::InstructionKind::AddressOf {
+            target: _,
+            source,
+        } => source.value == place,
+        bytecode::InstructionKind::Store { target, value: _ } => target.value == place,
+        _ => false,
+    }
+}
+
+fn sequential_terminator_uses_register(terminator: bytecode::Terminator, register: int) -> bool {
+    match terminator.kind {
+        bytecode::TerminatorKind::Jump { target: _, arguments } | bytecode::TerminatorKind::Return {
+            values: arguments,
+        } => {
+            sequential_register_vector_contains(arguments, register)
+        },
+        bytecode::TerminatorKind::Branch {
+            condition,
+            then_target: _,
+            then_arguments,
+            else_target: _,
+            else_arguments,
+        } => condition.value == register
+            || sequential_register_vector_contains(then_arguments, register)
+            || sequential_register_vector_contains(else_arguments, register),
+        bytecode::TerminatorKind::Switch { .. } => true,
+        bytecode::TerminatorKind::Unreachable => false,
+    }
+}
+
+fn sequential_register_unused_after(block: bytecode::BasicBlock, index: int, register: int) -> bool {
+    for offset in index..block.instructions.len() {
+        if sequential_instruction_uses_register(block.instructions[offset], register) {
+            return false
+        } else {}
+    }
+    !sequential_terminator_uses_register(block.terminator, register)
+}
+
+fn sequential_place_unused_after(block: bytecode::BasicBlock, index: int, place: int) -> bool {
+    for offset in index..block.instructions.len() {
+        if sequential_instruction_uses_place(block.instructions[offset], place) {
+            return false
+        } else {}
+    }
+    true
+}
+
 fn sequential_bool_slice_super_operation(
     world: go_types::World,
     function: bytecode::BytecodeFunction,
@@ -778,14 +890,24 @@ fn sequential_bool_slice_super_operation(
                 _ => return sequential_fallback(),
             };
             match block.instructions[index + 4].kind {
-                bytecode::InstructionKind::IndexValue { target, base, index, ok: None } if base.value
+                bytecode::InstructionKind::IndexValue { target, base, index: indexed, ok: None } if base.value
                     == slice.value
-                    && index.value == index_register.value
-                    && sequential_boolean_register(world, function, target) => SequentialOperation {
-                    kind: 36,
-                    place: slice_local.value,
-                    source: index_local.value,
-                    target: target.value,
+                    && indexed.value == index_register.value
+                    && sequential_boolean_register(world, function, target) => {
+                    let fast = sequential_register_unused_after(block, index + 5, slice.value)
+                        && sequential_register_unused_after(block, index + 5, index_register.value)
+                        && sequential_place_unused_after(block, index + 5, slice_place.value)
+                        && sequential_place_unused_after(block, index + 5, index_place.value);
+                    SequentialOperation {
+                        kind: if fast {
+                            38
+                        } else {
+                            36
+                        },
+                        place: slice_local.value,
+                        source: index_local.value,
+                        target: target.value,
+                    }
                 },
                 _ => sequential_fallback(),
             }
@@ -814,15 +936,30 @@ fn sequential_bool_slice_super_operation(
             match block.instructions[index + 5].kind {
                 bytecode::InstructionKind::Store { target, value: source } if target.value
                     == target_place.value
-                    && source.value == value_register.value => SequentialOperation {
-                    kind: 37,
-                    place: slice_local.value,
-                    source: index_local.value,
-                    target: if value {
-                        1
-                    } else {
-                        0
-                    },
+                    && source.value == value_register.value => {
+                    let fast = sequential_register_unused_after(
+                        block,
+                        index + 6,
+                        index_register.value,
+                    )
+                        && sequential_register_unused_after(block, index + 6, value_register.value)
+                        && sequential_place_unused_after(block, index + 6, slice_place.value)
+                        && sequential_place_unused_after(block, index + 6, index_place.value)
+                        && sequential_place_unused_after(block, index + 6, target_place.value);
+                    SequentialOperation {
+                        kind: if fast {
+                            39
+                        } else {
+                            37
+                        },
+                        place: slice_local.value,
+                        source: index_local.value,
+                        target: if value {
+                            1
+                        } else {
+                            0
+                        },
+                    }
                 },
                 _ => sequential_fallback(),
             }
@@ -6566,6 +6703,180 @@ fn execute_sequential_bool_slice_store(
     }
 }
 
+fn execute_fast_bool_slice_index(
+    state: VmState,
+    frame: Frame,
+    block: bytecode::BasicBlock,
+    instruction_index: int,
+    slice_local: int,
+    index_local: int,
+    target: int,
+) -> string {
+    let step_error = count_sequential_steps(state, frame, block, instruction_index, 5);
+    if step_error != "" {
+        return step_error
+    } else {};
+    let index = match sequential_integer_local_index(frame, index_local) {
+        Ok(value) => value,
+        Err(message) => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 3].location,
+            message,
+        ),
+    };
+    let Value::Local(LocalValue::Slice(slice)) = cell_value(
+        state.memory,
+        frame.locals[slice_local].value,
+    ) else {
+        return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 4].location,
+            "index of non-slice value",
+        )
+    };
+    if index < 0 || index >= slice.length {
+        return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 4].location,
+            "index out of range [" + index.to_string() + "] with length " + slice.length.to_string(),
+        )
+    } else {};
+    let backing = match slice.backing {
+        Some(value) => value,
+        None => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 4].location,
+            "index of nil slice",
+        ),
+    };
+    match backing.projections {
+        Some(projections) if !projections.is_empty() => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 4].location,
+            "invalid boolean slice backing",
+        ),
+        _ => {},
+    };
+    if !cell_valid(state.memory, backing.root.value) {
+        return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 4].location,
+            "invalid boolean slice backing",
+        )
+    } else {};
+    match cell_value(state.memory, backing.root.value) {
+        Value::Local(LocalValue::BoolBacking(elements)) => if set_scalar_bool_register(
+            frame,
+            target,
+            elements[slice.offset + index],
+            state.false_value,
+            state.true_value,
+        ) {
+            ""
+        } else {
+            sequential_error_at(
+                state,
+                frame,
+                block.instructions[instruction_index + 4].location,
+                "invalid scalar boolean register",
+            )
+        },
+        _ => sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 4].location,
+            "invalid boolean slice backing",
+        ),
+    }
+}
+
+fn execute_fast_bool_slice_store(
+    state: VmState,
+    frame: Frame,
+    block: bytecode::BasicBlock,
+    instruction_index: int,
+    slice_local: int,
+    index_local: int,
+    value: bool,
+) -> string {
+    let step_error = count_sequential_steps(state, frame, block, instruction_index, 6);
+    if step_error != "" {
+        return step_error
+    } else {};
+    let index = match sequential_integer_local_index(frame, index_local) {
+        Ok(value) => value,
+        Err(message) => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 2].location,
+            message,
+        ),
+    };
+    let Value::Local(LocalValue::Slice(slice)) = cell_value(
+        state.memory,
+        frame.locals[slice_local].value,
+    ) else {
+        return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 3].location,
+            "index of non-slice value",
+        )
+    };
+    if index < 0 || index >= slice.length {
+        return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 3].location,
+            "index out of range [" + index.to_string() + "] with length " + slice.length.to_string(),
+        )
+    } else {};
+    let backing = match slice.backing {
+        Some(value) => value,
+        None => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 3].location,
+            "index of nil slice",
+        ),
+    };
+    match backing.projections {
+        Some(projections) if !projections.is_empty() => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 3].location,
+            "invalid boolean slice backing",
+        ),
+        _ => {},
+    };
+    if !cell_valid(state.memory, backing.root.value) {
+        return sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 3].location,
+            "invalid boolean slice backing",
+        )
+    } else {};
+    match cell_value(state.memory, backing.root.value) {
+        Value::Local(LocalValue::BoolBacking(elements)) => {
+            elements[slice.offset + index] = value;
+            ""
+        },
+        _ => sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index + 3].location,
+            "invalid boolean slice backing",
+        ),
+    }
+}
+
 fn execute_sequential_clone_local(
     state: VmState,
     frame: Frame,
@@ -7593,7 +7904,25 @@ fn execute_function(
                         operation.source,
                         operation.target,
                     ),
-                    _ => execute_sequential_bool_slice_store(
+                    37 => execute_sequential_bool_slice_store(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.place,
+                        operation.source,
+                        operation.target != 0,
+                    ),
+                    38 => execute_fast_bool_slice_index(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.place,
+                        operation.source,
+                        operation.target,
+                    ),
+                    _ => execute_fast_bool_slice_store(
                         state,
                         frame,
                         block,
@@ -7610,6 +7939,8 @@ fn execute_function(
                     35 => 4,
                     36 => 5,
                     37 => 6,
+                    38 => 5,
+                    39 => 6,
                     _ => 1,
                 };
                 if message == "" {
