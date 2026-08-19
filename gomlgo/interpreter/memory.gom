@@ -30,6 +30,23 @@ fn set_cell_value(memory: Memory, index: int, value: Value) -> unit {
     memory.cells[index / memory_cell_block_size][index % memory_cell_block_size] = value;
 }
 
+fn load_cell(memory: Memory, cell: CellId) -> Result[Value, string] {
+    if cell.value < 0 || cell.value >= memory.length.get() {
+        Result::Err("invalid cell " + cell.value.to_string())
+    } else {
+        Result::Ok(copy_value(cell_value(memory, cell.value)))
+    }
+}
+
+fn store_cell(memory: Memory, cell: CellId, value: Value) -> Result[unit, string] {
+    if cell.value < 0 || cell.value >= memory.length.get() {
+        Result::Err("invalid cell " + cell.value.to_string())
+    } else {
+        set_cell_value(memory, cell.value, copy_value(value));
+        Result::Ok(())
+    }
+}
+
 pub fn root_place(cell: CellId) -> Place {
     Place { root: cell, projections: Option::None }
 }
