@@ -760,11 +760,20 @@ fn hash_mix(seed: uint64, value: uint64) -> uint64 {
 
 fn hash_place(value: Place) -> uint64 {
     let mut result = hash_mix(1469598103934665603.to_uint64(), value.root.value.to_uint64());
-    for projection in value.projections {
-        result = match projection {
-            Projection::Field(index) => hash_mix(hash_mix(result, 1.to_uint64()), index.to_uint64()),
-            Projection::Index(index) => hash_mix(hash_mix(result, 2.to_uint64()), index.to_uint64()),
-        };
+    match value.projections {
+        Some(projections) => for projection in projections {
+            result = match projection {
+                Projection::Field(index) => hash_mix(
+                    hash_mix(result, 1.to_uint64()),
+                    index.to_uint64(),
+                ),
+                Projection::Index(index) => hash_mix(
+                    hash_mix(result, 2.to_uint64()),
+                    index.to_uint64(),
+                ),
+            };
+        },
+        None => (),
     }
     result
 }
@@ -2353,11 +2362,14 @@ fn dynamic_native_prepared(
 
 fn pointer_projection_key(value: Place) -> string {
     let mut result = "";
-    for projection in value.projections {
-        result += match projection {
-            Projection::Field(index) => "f" + index.to_string() + ";",
-            Projection::Index(index) => "i" + index.to_string() + ";",
-        };
+    match value.projections {
+        Some(projections) => for projection in projections {
+            result += match projection {
+                Projection::Field(index) => "f" + index.to_string() + ";",
+                Projection::Index(index) => "i" + index.to_string() + ";",
+            };
+        },
+        None => (),
     }
     result
 }

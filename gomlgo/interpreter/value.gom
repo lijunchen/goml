@@ -394,7 +394,7 @@ pub enum Projection {
 
 pub struct Place {
     pub root: CellId,
-    pub projections: Vec[Projection],
+    pub projections: Option[Vec[Projection]],
 }
 
 pub enum FunctionTarget {
@@ -540,21 +540,30 @@ pub fn boolean_value(value: Value) -> Result[bool, string] {
     }
 }
 
-fn projections_equal(left: Vec[Projection], right: Vec[Projection]) -> bool {
-    if left.len() != right.len() {
-        return false
-    } else {};
-    for index in 0..left.len() {
-        let equal = match (left[index], right[index]) {
-            (Projection::Field(left), Projection::Field(right)) => left == right,
-            (Projection::Index(left), Projection::Index(right)) => left == right,
-            _ => false,
-        };
-        if !equal {
-            return false
-        } else {}
+fn projection_values_equal(left: Vec[Projection], right: Vec[Projection]) -> bool {
+    if left.len() == right.len() {
+        for index in 0..left.len() {
+            let equal = match (left[index], right[index]) {
+                (Projection::Field(left), Projection::Field(right)) => left == right,
+                (Projection::Index(left), Projection::Index(right)) => left == right,
+                _ => false,
+            };
+            if !equal {
+                return false
+            } else {}
+        }
+        true
+    } else {
+        false
     }
-    true
+}
+
+fn projections_equal(left: Option[Vec[Projection]], right: Option[Vec[Projection]]) -> bool {
+    match (left, right) {
+        (None, None) => true,
+        (Some(left), Some(right)) => projection_values_equal(left, right),
+        (None, Some(value)) | (Some(value), None) => value.is_empty(),
+    }
 }
 
 pub fn places_equal(left: Place, right: Place) -> bool {

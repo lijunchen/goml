@@ -19,27 +19,41 @@ pub fn allocate_cell(memory: Memory, value: Value) -> CellId {
 }
 
 pub fn root_place(cell: CellId) -> Place {
-    Place { root: cell, projections: Vec::from_array([]) }
+    Place { root: cell, projections: Option::None }
+}
+
+fn projection_count(value: Option[Vec[Projection]]) -> int {
+    match value {
+        Some(values) => values.len(),
+        None => 0,
+    }
+}
+
+fn append_projections(target: Vec[Projection], value: Option[Vec[Projection]]) -> unit {
+    match value {
+        Some(values) => for projection in values {
+            target.push(projection)
+        },
+        None => (),
+    }
 }
 
 pub fn field_place(base: Place, indices: Vec[int]) -> Place {
-    let projections: Vec[Projection] = Vec::with_capacity(base.projections.len() + indices.len());
-    for projection in base.projections {
-        projections.push(projection)
-    }
+    let projections: Vec[Projection] = Vec::with_capacity(
+        projection_count(base.projections) + indices.len(),
+    );
+    append_projections(projections, base.projections);
     for index in indices {
         projections.push(Projection::Field(index))
     }
-    Place { root: base.root, projections }
+    Place { root: base.root, projections: Option::Some(projections) }
 }
 
 pub fn index_place(base: Place, index: int) -> Place {
-    let projections: Vec[Projection] = Vec::with_capacity(base.projections.len() + 1);
-    for projection in base.projections {
-        projections.push(projection)
-    }
+    let projections: Vec[Projection] = Vec::with_capacity(projection_count(base.projections) + 1);
+    append_projections(projections, base.projections);
     projections.push(Projection::Index(index));
-    Place { root: base.root, projections }
+    Place { root: base.root, projections: Option::Some(projections) }
 }
 
 fn slice_element_place(value: SliceValue, index: int) -> Result[Place, string] {
@@ -92,7 +106,10 @@ pub fn load_place(memory: Memory, place: Place) -> Result[Value, string] {
         return Result::Err("invalid cell " + place.root.value.to_string())
     } else {};
     let cell = memory.cells[place.root.value];
-    load_projection(memory, cell.value.get(), place.projections, 0)
+    match place.projections {
+        Some(projections) => load_projection(memory, cell.value.get(), projections, 0),
+        None => Result::Ok(copy_value(cell.value.get())),
+    }
 }
 
 fn borrow_projection(memory: Memory, value: Value, projections: Vec[Projection], offset: int) -> Result[
@@ -125,7 +142,10 @@ pub fn borrow_place(memory: Memory, place: Place) -> Result[Value, string] {
         return Result::Err("invalid cell " + place.root.value.to_string())
     } else {};
     let cell = memory.cells[place.root.value];
-    borrow_projection(memory, cell.value.get(), place.projections, 0)
+    match place.projections {
+        Some(projections) => borrow_projection(memory, cell.value.get(), projections, 0),
+        None => Result::Ok(cell.value.get()),
+    }
 }
 
 fn store_projection(
@@ -187,12 +207,15 @@ pub fn store_place(memory: Memory, place: Place, value: Value) -> Result[unit, s
         return Result::Err("invalid cell " + place.root.value.to_string())
     } else {};
     let cell = memory.cells[place.root.value];
-    if place.projections.is_empty() {
-        cell.value.set(copy_value(value));
-        Result::Ok(())
-    } else {
-        let updated = store_projection(memory, cell.value.get(), place.projections, 0, value)?;
-        cell.value.set(updated);
-        Result::Ok(())
+    match place.projections {
+        Some(projections) => {
+            let updated = store_projection(memory, cell.value.get(), projections, 0, value)?;
+            cell.value.set(updated);
+            Result::Ok(())
+        },
+        None => {
+            cell.value.set(copy_value(value));
+            Result::Ok(())
+        },
     }
 }
