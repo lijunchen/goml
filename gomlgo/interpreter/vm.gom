@@ -195,6 +195,7 @@ struct VmState {
     true_value: Value,
     empty_captures: Vec[CellId],
     size_values: Vec[Option[CachedSizeValue]],
+    sequential_operations: Vec[Vec[Vec[SequentialOperation]]],
 }
 
 enum FunctionControl {
@@ -210,6 +211,13 @@ struct InstructionControl {
     panic: Option[Ref[PanicPayload]],
     exit_code: int,
     error: string,
+}
+
+struct SequentialOperation {
+    kind: int,
+    place: int,
+    source: int,
+    target: int,
 }
 
 enum InvocationOutcome {
@@ -324,6 +332,94 @@ fn instruction_exit(code: int) -> InstructionControl {
 
 fn instruction_error(message: string) -> InstructionControl {
     InstructionControl { kind: 3, panic: Option::None, exit_code: 0, error: message }
+}
+
+fn sequential_fallback() -> SequentialOperation {
+    SequentialOperation { kind: 0, place: 0, source: 0, target: 0 }
+}
+
+fn sequential_operation(
+    function: bytecode::BytecodeFunction,
+    block: bytecode::BasicBlock,
+    index: int,
+    global_count: int,
+) -> SequentialOperation {
+    if index + 1 >= block.instructions.len() {
+        return sequential_fallback()
+    } else {};
+    let current = block.instructions[index];
+    let next = block.instructions[index + 1];
+    match (current.kind, next.kind) {
+        (
+            bytecode::InstructionKind::LocalPlace { target: place, local },
+            bytecode::InstructionKind::Load { target, source },
+        ) if place.value >= 0 && place.value < function.place_count && local.value >= 0
+            && local.value < function.locals.len()
+            && target.value >= 0
+            && target.value < function.register_types.len()
+            && source.value == place.value => SequentialOperation {
+            kind: 1,
+            place: place.value,
+            source: local.value,
+            target: target.value,
+        },
+        (
+            bytecode::InstructionKind::LocalPlace { target: place, local },
+            bytecode::InstructionKind::Store { target, value },
+        ) if place.value >= 0 && place.value < function.place_count && local.value >= 0
+            && local.value < function.locals.len()
+            && value.value >= 0
+            && value.value < function.register_types.len()
+            && target.value == place.value => SequentialOperation {
+            kind: 2,
+            place: place.value,
+            source: local.value,
+            target: value.value,
+        },
+        (
+            bytecode::InstructionKind::GlobalPlace { target: place, global },
+            bytecode::InstructionKind::Load { target, source },
+        ) if place.value >= 0 && place.value < function.place_count && global.value >= 0
+            && global.value < global_count
+            && target.value >= 0
+            && target.value < function.register_types.len()
+            && source.value == place.value => SequentialOperation {
+            kind: 3,
+            place: place.value,
+            source: global.value,
+            target: target.value,
+        },
+        (
+            bytecode::InstructionKind::GlobalPlace { target: place, global },
+            bytecode::InstructionKind::Store { target, value },
+        ) if place.value >= 0 && place.value < function.place_count && global.value >= 0
+            && global.value < global_count
+            && value.value >= 0
+            && value.value < function.register_types.len()
+            && target.value == place.value => SequentialOperation {
+            kind: 4,
+            place: place.value,
+            source: global.value,
+            target: value.value,
+        },
+        _ => sequential_fallback(),
+    }
+}
+
+fn sequential_operations(program: bytecode::BytecodeProgram) -> Vec[Vec[Vec[SequentialOperation]]] {
+    let functions: Vec[Vec[Vec[SequentialOperation]]] = Vec::with_capacity(program.functions.len());
+    for function in program.functions {
+        let blocks: Vec[Vec[SequentialOperation]] = Vec::with_capacity(function.blocks.len());
+        for block in function.blocks {
+            let operations: Vec[SequentialOperation] = Vec::with_capacity(block.instructions.len());
+            for index in 0..block.instructions.len() {
+                operations.push(sequential_operation(function, block, index, program.globals.len()))
+            }
+            blocks.push(operations)
+        }
+        functions.push(blocks)
+    }
+    functions
 }
 
 fn pending_instruction_panic(state: VmState, payload: PanicPayload) -> int {
@@ -3860,56 +3956,75 @@ fn instruction_failure_at(
     }
 }
 
-fn execute_root_load_pair(
+fn execute_sequential_root_load(
     state: VmState,
     frame: Frame,
-    place: bytecode::PlaceId,
+    block: bytecode::BasicBlock,
+    index: int,
+    place: int,
     cell: CellId,
-    target: bytecode::RegisterId,
-    place_location: bytecode::CodeLocation,
-    load_location: bytecode::CodeLocation,
+    target: int,
 ) -> InstructionControl {
     if !count_step(state) {
-        return instruction_failure_at(state, frame, place_location, "instruction limit exceeded")
+        return instruction_failure_at(
+            state,
+            frame,
+            block.instructions[index].location,
+            "instruction limit exceeded",
+        )
     } else {};
-    match set_root_place(frame, place, cell) {
-        Ok(()) => {},
-        Err(message) => return instruction_failure_at(state, frame, place_location, message),
-    };
+    frame.place_roots[place] = cell.value;
+    frame.places[place] = Option::None;
     if !count_step(state) {
-        return instruction_failure_at(state, frame, load_location, "instruction limit exceeded")
+        return instruction_failure_at(
+            state,
+            frame,
+            block.instructions[index + 1].location,
+            "instruction limit exceeded",
+        )
     } else {};
-    match load_cell_register(state.memory, frame, cell, target) {
-        Ok(()) => instruction_continue(),
-        Err(message) => instruction_failure_at(state, frame, load_location, message),
-    }
+    frame.registers[target] = Option::Some(copy_value(cell_value(state.memory, cell.value)));
+    instruction_continue()
 }
 
-fn execute_root_store_pair(
+fn execute_sequential_root_store(
     state: VmState,
     frame: Frame,
-    place: bytecode::PlaceId,
+    block: bytecode::BasicBlock,
+    index: int,
+    place: int,
     cell: CellId,
-    value: bytecode::RegisterId,
-    place_location: bytecode::CodeLocation,
-    store_location: bytecode::CodeLocation,
+    value: int,
 ) -> InstructionControl {
     if !count_step(state) {
-        return instruction_failure_at(state, frame, place_location, "instruction limit exceeded")
+        return instruction_failure_at(
+            state,
+            frame,
+            block.instructions[index].location,
+            "instruction limit exceeded",
+        )
     } else {};
-    match set_root_place(frame, place, cell) {
-        Ok(()) => {},
-        Err(message) => return instruction_failure_at(state, frame, place_location, message),
-    };
+    frame.place_roots[place] = cell.value;
+    frame.places[place] = Option::None;
     if !count_step(state) {
-        return instruction_failure_at(state, frame, store_location, "instruction limit exceeded")
+        return instruction_failure_at(
+            state,
+            frame,
+            block.instructions[index + 1].location,
+            "instruction limit exceeded",
+        )
     } else {};
-    match register(frame, value) {
-        Ok(value) => match store_cell(state.memory, cell, value) {
-            Ok(()) => instruction_continue(),
-            Err(message) => instruction_failure_at(state, frame, store_location, message),
+    match frame.registers[value] {
+        Some(value) => {
+            set_cell_value(state.memory, cell.value, copy_value(value));
+            instruction_continue()
         },
-        Err(message) => instruction_failure_at(state, frame, store_location, message),
+        None => instruction_failure_at(
+            state,
+            frame,
+            block.instructions[index + 1].location,
+            "register " + value.to_string() + " is undefined in " + frame.name,
+        ),
     }
 }
 
@@ -4339,84 +4454,58 @@ fn execute_function(
             return Result::Err("invalid current block " + block_id.value.to_string())
         } else {};
         let block = function.blocks[block_id.value];
+        let operations = state.sequential_operations[function_id.value][block_id.value];
         let mut instruction_index = 0;
         while instruction_index < block.instructions.len() {
-            let instruction = block.instructions[instruction_index];
-            let mut consumed = 1;
-            let control = match instruction.kind {
-                bytecode::InstructionKind::LocalPlace { target, local } if instruction_index + 1
-                    < block.instructions.len()
-                    && local.value >= 0
-                    && local.value < frame.locals.len() => {
-                    let next = block.instructions[instruction_index + 1];
-                    match next.kind {
-                        bytecode::InstructionKind::Load { target: load_target, source } if source.value
-                            == target.value => {
-                            consumed = 2;
-                            execute_root_load_pair(
-                                state,
-                                frame,
-                                target,
-                                frame.locals[local.value],
-                                load_target,
-                                instruction.location,
-                                next.location,
-                            )
-                        },
-                        bytecode::InstructionKind::Store { target: store_target, value } if store_target.value
-                            == target.value => {
-                            consumed = 2;
-                            execute_root_store_pair(
-                                state,
-                                frame,
-                                target,
-                                frame.locals[local.value],
-                                value,
-                                instruction.location,
-                                next.location,
-                            )
-                        },
-                        _ => execute_instruction(state, frame, instruction),
-                    }
-                },
-                bytecode::InstructionKind::GlobalPlace { target, global } if instruction_index + 1
-                    < block.instructions.len()
-                    && global.value >= 0
-                    && global.value < state.globals.len() => {
-                    let next = block.instructions[instruction_index + 1];
-                    match next.kind {
-                        bytecode::InstructionKind::Load { target: load_target, source } if source.value
-                            == target.value => {
-                            consumed = 2;
-                            execute_root_load_pair(
-                                state,
-                                frame,
-                                target,
-                                state.globals[global.value],
-                                load_target,
-                                instruction.location,
-                                next.location,
-                            )
-                        },
-                        bytecode::InstructionKind::Store { target: store_target, value } if store_target.value
-                            == target.value => {
-                            consumed = 2;
-                            execute_root_store_pair(
-                                state,
-                                frame,
-                                target,
-                                state.globals[global.value],
-                                value,
-                                instruction.location,
-                                next.location,
-                            )
-                        },
-                        _ => execute_instruction(state, frame, instruction),
-                    }
-                },
-                _ => execute_instruction(state, frame, instruction),
+            let operation = operations[instruction_index];
+            let control = if operation.kind == 1 {
+                execute_sequential_root_load(
+                    state,
+                    frame,
+                    block,
+                    instruction_index,
+                    operation.place,
+                    frame.locals[operation.source],
+                    operation.target,
+                )
+            } else if operation.kind == 2 {
+                execute_sequential_root_store(
+                    state,
+                    frame,
+                    block,
+                    instruction_index,
+                    operation.place,
+                    frame.locals[operation.source],
+                    operation.target,
+                )
+            } else if operation.kind == 3 {
+                execute_sequential_root_load(
+                    state,
+                    frame,
+                    block,
+                    instruction_index,
+                    operation.place,
+                    state.globals[operation.source],
+                    operation.target,
+                )
+            } else if operation.kind == 4 {
+                execute_sequential_root_store(
+                    state,
+                    frame,
+                    block,
+                    instruction_index,
+                    operation.place,
+                    state.globals[operation.source],
+                    operation.target,
+                )
+            } else {
+                execute_instruction(state, frame, block.instructions[instruction_index])
             };
-            instruction_index += consumed;
+            instruction_index += if operation.kind == 0 {
+                1
+            } else {
+                2
+            };
             if control.kind == 0 {} else if control.kind == 1 {
                 let payload = control.panic.ok_or("panic instruction has no payload")?.get();
                 let outcome = finish_invocation(state, frame, function, Option::Some(payload));
@@ -4507,6 +4596,7 @@ fn initialize_state(program: bytecode::BytecodeProgram, config: VmConfig) -> Res
         true_value: Value::Local(LocalValue::Bool(true)),
         empty_captures: Vec::from_array([]),
         size_values: empty_slots(64),
+        sequential_operations: sequential_operations(program),
     };
     for global in state.program.globals {
         match runtime_zero_value(state, global.type_id) {
