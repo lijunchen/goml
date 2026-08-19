@@ -344,10 +344,20 @@ fn sequential_operation(
     index: int,
     global_count: int,
 ) -> SequentialOperation {
+    let current = block.instructions[index];
+    match current.kind {
+        bytecode::InstructionKind::RenewLocal { local } if local.value >= 0
+            && local.value < function.locals.len() => return SequentialOperation {
+            kind: 5,
+            place: 0,
+            source: local.value,
+            target: function.locals[local.value].type_id.value,
+        },
+        _ => {},
+    };
     if index + 1 >= block.instructions.len() {
         return sequential_fallback()
     } else {};
-    let current = block.instructions[index];
     let next = block.instructions[index + 1];
     match (current.kind, next.kind) {
         (
@@ -4028,6 +4038,36 @@ fn execute_sequential_root_store(
     }
 }
 
+fn execute_sequential_renew_local(
+    state: VmState,
+    frame: Frame,
+    block: bytecode::BasicBlock,
+    index: int,
+    local: int,
+    type_id: int,
+) -> InstructionControl {
+    if !count_step(state) {
+        return instruction_failure_at(
+            state,
+            frame,
+            block.instructions[index].location,
+            "instruction limit exceeded",
+        )
+    } else {};
+    match runtime_zero_value(state, go_types::type_id(type_id)) {
+        Ok(value) => {
+            frame.locals[local] = allocate_cell(state.memory, value);
+            instruction_continue()
+        },
+        Err(message) => instruction_failure_at(
+            state,
+            frame,
+            block.instructions[index].location,
+            message,
+        ),
+    }
+}
+
 fn method_field_path_type(world: go_types::World, source: go_types::TypeId, fields: Vec[int]) -> Result[
     go_types::TypeId,
     string,
@@ -4458,7 +4498,9 @@ fn execute_function(
         let mut instruction_index = 0;
         while instruction_index < block.instructions.len() {
             let operation = operations[instruction_index];
-            let control = if operation.kind == 1 {
+            let control = if operation.kind == 0 {
+                execute_instruction(state, frame, block.instructions[instruction_index])
+            } else if operation.kind == 1 {
                 execute_sequential_root_load(
                     state,
                     frame,
@@ -4499,9 +4541,16 @@ fn execute_function(
                     operation.target,
                 )
             } else {
-                execute_instruction(state, frame, block.instructions[instruction_index])
+                execute_sequential_renew_local(
+                    state,
+                    frame,
+                    block,
+                    instruction_index,
+                    operation.source,
+                    operation.target,
+                )
             };
-            instruction_index += if operation.kind == 0 {
+            instruction_index += if operation.kind == 0 || operation.kind == 5 {
                 1
             } else {
                 2
