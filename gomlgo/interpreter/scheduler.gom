@@ -541,7 +541,7 @@ fn select_case_enter(
     case_index: int,
 ) -> Result[unit, string] {
     let selected = cases[case_index];
-    let arguments = register_values(scheduled.frame, selected.arguments)?;
+    let arguments = block_argument_values(scheduled.frame, selected.arguments)?;
     let chosen_type = scheduler.state.program.functions[scheduled.frame.function.value].register_types[chosen.value];
     set_register(
         scheduled.frame,
@@ -1954,7 +1954,7 @@ fn execute_scheduled_step(scheduler: Scheduler, goroutine_index: int) -> Result[
         let block = function.blocks[scheduled.frame.block.get().value];
         match execute_terminator(scheduler.state, scheduled.frame, block.terminator)? {
             FunctionControl::Jump { target, arguments } => {
-                enter_block(function, scheduled.frame, target, arguments)?;
+                enter_block_registers(function, scheduled.frame, target, arguments)?;
                 scheduled.instruction.set(0);
                 scheduled.waiting.set(false);
                 Result::Ok(Option::None)

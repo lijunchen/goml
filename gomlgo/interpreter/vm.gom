@@ -100,6 +100,7 @@ struct Frame {
     registers: Vec[Option[Value]],
     places: Vec[Option[RuntimePlace]],
     locals: Vec[CellId],
+    block_arguments: Vec[Value],
     block: Ref[bytecode::BlockId],
     deferred: Vec[PreparedCall],
     recover_state: Option[PanicState],
@@ -109,6 +110,7 @@ struct FrameSlots {
     registers: Vec[Option[Value]],
     places: Vec[Option[RuntimePlace]],
     locals: Vec[CellId],
+    block_arguments: Vec[Value],
     deferred: Vec[PreparedCall],
 }
 
@@ -188,7 +190,7 @@ struct VmState {
 enum FunctionControl {
     Jump {
         target: bytecode::BlockId,
-        arguments: Vec[Value],
+        arguments: Vec[bytecode::RegisterId],
     },
     Return(Vec[Value]),
 }
@@ -244,11 +246,13 @@ fn take_frame_slots(state: VmState, register_count: int, place_count: int, local
             if slots.locals.capacity() < local_count {
                 slots.locals.reserve(local_count)
             } else {};
+            slots.block_arguments.clear();
             slots.deferred.clear();
             FrameSlots {
                 registers: prepared_slots(slots.registers, register_count),
                 places: prepared_slots(slots.places, place_count),
                 locals: slots.locals,
+                block_arguments: slots.block_arguments,
                 deferred: slots.deferred,
             }
         },
@@ -257,6 +261,7 @@ fn take_frame_slots(state: VmState, register_count: int, place_count: int, local
                 registers: empty_slots(register_count),
                 places: empty_slots(place_count),
                 locals: Vec::with_capacity(local_count),
+                block_arguments: Vec::from_array([]),
                 deferred: Vec::from_array([]),
             }
         },
@@ -267,12 +272,14 @@ fn release_frame_slots(state: VmState, frame: Frame) -> unit {
     frame.registers.clear();
     frame.places.clear();
     frame.locals.clear();
+    frame.block_arguments.clear();
     frame.deferred.clear();
     state.frame_slots.push(
         FrameSlots {
             registers: frame.registers,
             places: frame.places,
             locals: frame.locals,
+            block_arguments: frame.block_arguments,
             deferred: frame.deferred,
         },
     )
@@ -3834,11 +3841,11 @@ fn pointer_type(world: go_types::World, type_id: go_types::TypeId) -> Option[go_
     }
 }
 
-fn jump_control(frame: Frame, target: bytecode::BlockId, arguments: Vec[bytecode::RegisterId]) -> Result[
+fn jump_control(target: bytecode::BlockId, arguments: Vec[bytecode::RegisterId]) -> Result[
     FunctionControl,
     string,
 ] {
-    Result::Ok(FunctionControl::Jump { target, arguments: register_values(frame, arguments)? })
+    Result::Ok(FunctionControl::Jump { target, arguments })
 }
 
 fn execute_terminator(state: VmState, frame: Frame, terminator: bytecode::Terminator) -> Result[
@@ -3850,7 +3857,7 @@ fn execute_terminator(state: VmState, frame: Frame, terminator: bytecode::Termin
     } else {};
     let result: Result[FunctionControl, string] = match terminator.kind {
         bytecode::TerminatorKind::Jump { target, arguments } => {
-            jump_control(frame, target, arguments)
+            jump_control(target, arguments)
         },
         bytecode::TerminatorKind::Branch {
             condition,
@@ -3859,9 +3866,9 @@ fn execute_terminator(state: VmState, frame: Frame, terminator: bytecode::Termin
             else_target,
             else_arguments,
         } => if boolean_value(register(frame, condition)?)? {
-            jump_control(frame, then_target, then_arguments)
+            jump_control(then_target, then_arguments)
         } else {
-            jump_control(frame, else_target, else_arguments)
+            jump_control(else_target, else_arguments)
         },
         bytecode::TerminatorKind::Switch { value, arms, default_target, default_arguments } => {
             let value = register(frame, value)?;
@@ -3880,8 +3887,8 @@ fn execute_terminator(state: VmState, frame: Frame, terminator: bytecode::Termin
                 } else {}
             }
             match selected {
-                Some((target, arguments)) => jump_control(frame, target, arguments),
-                None => jump_control(frame, default_target, default_arguments),
+                Some((target, arguments)) => jump_control(target, arguments),
+                None => jump_control(default_target, default_arguments),
             }
         },
         bytecode::TerminatorKind::Return { values } => {
@@ -3912,6 +3919,29 @@ fn enter_block(
     Result::Ok(())
 }
 
+fn block_argument_values(frame: Frame, arguments: Vec[bytecode::RegisterId]) -> Result[
+    Vec[Value],
+    string,
+] {
+    frame.block_arguments.clear();
+    if frame.block_arguments.capacity() < arguments.len() {
+        frame.block_arguments.reserve(arguments.len())
+    } else {};
+    for argument in arguments {
+        frame.block_arguments.push(register(frame, argument)?)
+    }
+    Result::Ok(frame.block_arguments)
+}
+
+fn enter_block_registers(
+    function: bytecode::BytecodeFunction,
+    frame: Frame,
+    target: bytecode::BlockId,
+    arguments: Vec[bytecode::RegisterId],
+) -> Result[unit, string] {
+    enter_block(function, frame, target, block_argument_values(frame, arguments)?)
+}
+
 fn failed_frame_call(message: string) -> FrameCallResult {
     FrameCallResult {
         frame: Frame {
@@ -3922,6 +3952,7 @@ fn failed_frame_call(message: string) -> FrameCallResult {
             registers: Vec::from_array([]),
             places: Vec::from_array([]),
             locals: Vec::from_array([]),
+            block_arguments: Vec::from_array([]),
             block: Ref::new(bytecode::block_id(-1)),
             deferred: Vec::from_array([]),
             recover_state: Option::None,
@@ -3976,6 +4007,7 @@ fn frame_for_call(
             registers: slots.registers,
             places: slots.places,
             locals,
+            block_arguments: slots.block_arguments,
             block: Ref::new(function.entry),
             deferred: slots.deferred,
             recover_state,
@@ -4102,7 +4134,7 @@ fn execute_function(
             }
         }
         match execute_terminator(state, frame, block.terminator) {
-            Ok(FunctionControl::Jump { target, arguments }) => match enter_block(
+            Ok(FunctionControl::Jump { target, arguments }) => match enter_block_registers(
                 function,
                 frame,
                 target,
