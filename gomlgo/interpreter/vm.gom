@@ -172,6 +172,7 @@ struct VmState {
     instruction_panic: Ref[Option[Ref[PanicPayload]]],
     instruction_exit: Ref[int],
     zero_values: Vec[Option[Value]],
+    native_type_indices: Vec[int],
     constant_values: HashMap[string, Vec[CachedConstant]],
     frame_slots: Vec[FrameSlots],
 }
@@ -1689,12 +1690,38 @@ fn native_call_value(state: VmState, id: bytecode::NativeCallId) -> Result[
 }
 
 fn native_type_value(state: VmState, type_id: go_types::TypeId) -> Option[bytecode::NativeType] {
-    for value in state.program.native_types {
-        if go_types::identical(state.program.world, value.type_id, type_id) {
-            return Option::Some(value)
+    if type_id.value >= 0 && type_id.value < state.native_type_indices.len() {
+        let cached = state.native_type_indices[type_id.value];
+        if cached == -1 {
+            return Option::None
+        } else if cached >= 0 && cached < state.program.native_types.len() {
+            return Option::Some(state.program.native_types[cached])
         } else {}
+    } else {};
+    let mut index = 0;
+    while index < state.program.native_types.len() {
+        let value = state.program.native_types[index];
+        if value.type_id.value == type_id.value
+            || go_types::identical(state.program.world, value.type_id, type_id) {
+            if type_id.value >= 0 && type_id.value < state.native_type_indices.len() {
+                state.native_type_indices[type_id.value] = index;
+            } else {};
+            return Option::Some(value)
+        } else {};
+        index += 1;
     }
+    if type_id.value >= 0 && type_id.value < state.native_type_indices.len() {
+        state.native_type_indices[type_id.value] = -1;
+    } else {};
     Option::None
+}
+
+fn native_type_cache(count: int) -> Vec[int] {
+    let result: Vec[int] = Vec::with_capacity(count);
+    for _ in 0..count {
+        result.push(-2)
+    }
+    result
 }
 
 fn runtime_native_type_key(state: VmState, type_id: go_types::TypeId) -> Result[string, string] {
@@ -4045,6 +4072,7 @@ fn initialize_state(program: bytecode::BytecodeProgram, config: VmConfig) -> Res
         instruction_panic: Ref::new(Option::None),
         instruction_exit: Ref::new(0),
         zero_values: empty_slots(program.world.types.len()),
+        native_type_indices: native_type_cache(program.world.types.len()),
         constant_values: HashMap::from_array([]),
         frame_slots: Vec::from_array([]),
     };
