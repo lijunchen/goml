@@ -186,6 +186,8 @@ struct VmState {
     native_type_indices: Vec[int],
     constant_values: HashMap[string, Vec[CachedConstant]],
     frame_slots: Vec[FrameSlots],
+    false_value: Value,
+    true_value: Value,
 }
 
 enum FunctionControl {
@@ -1275,12 +1277,14 @@ fn execute_builtin(
                     bytecode::BinaryOp::Greater
                 };
                 if boolean_value(
-                    binary_value(
+                    binary_value_cached(
                         operator,
                         arguments[index],
                         selected,
                         result_type(state, frame, results, 0)?,
                         state.program.world,
+                        state.false_value,
+                        state.true_value,
                     )?,
                 )? {
                     selected = arguments[index];
@@ -3286,12 +3290,14 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
         bytecode::InstructionKind::Binary { target, op, left, right } => set_register(
             frame,
             target,
-            binary_value(
+            binary_value_cached(
                 op,
                 register(frame, left)?,
                 register(frame, right)?,
                 state.program.functions[frame.function.value].register_types[target.value],
                 state.program.world,
+                state.false_value,
+                state.true_value,
             )?,
         ),
         bytecode::InstructionKind::Convert { target, source, type_id } => set_register(
@@ -4285,6 +4291,8 @@ fn initialize_state(program: bytecode::BytecodeProgram, config: VmConfig) -> Res
         native_type_indices: native_type_cache(program.world.types.len()),
         constant_values: HashMap::from_array([]),
         frame_slots: Vec::from_array([]),
+        false_value: Value::Local(LocalValue::Bool(false)),
+        true_value: Value::Local(LocalValue::Bool(true)),
     };
     for global in state.program.globals {
         match runtime_zero_value(state, global.type_id) {

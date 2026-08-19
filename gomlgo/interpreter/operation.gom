@@ -462,7 +462,10 @@ pub fn unary_value(
     }
 }
 
-fn comparison_result(op: bytecode::BinaryOp, comparison: int) -> Result[Value, string] {
+fn comparison_result(op: bytecode::BinaryOp, comparison: int, false_value: Value, true_value: Value) -> Result[
+    Value,
+    string,
+] {
     let result = match op {
         bytecode::BinaryOp::Equal => comparison == 0,
         bytecode::BinaryOp::NotEqual => comparison != 0,
@@ -472,7 +475,13 @@ fn comparison_result(op: bytecode::BinaryOp, comparison: int) -> Result[Value, s
         bytecode::BinaryOp::GreaterEqual => comparison >= 0,
         _ => return Result::Err("operator is not a comparison"),
     };
-    Result::Ok(Value::Local(LocalValue::Bool(result)))
+    Result::Ok(
+        if result {
+            true_value
+        } else {
+            false_value
+        },
+    )
 }
 
 fn shift_count(value: Value) -> Result[uint64, string] {
@@ -484,7 +493,13 @@ fn shift_count(value: Value) -> Result[uint64, string] {
     }
 }
 
-fn integer_binary(op: bytecode::BinaryOp, left: Value, right: Value) -> Result[Value, string] {
+fn integer_binary(
+    op: bytecode::BinaryOp,
+    left: Value,
+    right: Value,
+    false_value: Value,
+    true_value: Value,
+) -> Result[Value, string] {
     let (left_bits, width, signed) = integer_bits(left)?;
     let (right_bits, right_width, right_signed) = integer_bits(right)?;
     match op {
@@ -593,7 +608,7 @@ fn integer_binary(op: bytecode::BinaryOp, left: Value, right: Value) -> Result[V
             } else {
                 0
             };
-            comparison_result(op, comparison)
+            comparison_result(op, comparison, false_value, true_value)
         },
     }
 }
@@ -622,7 +637,13 @@ fn float_result(value: float64, width: int) -> Value {
     }
 }
 
-fn float_binary(op: bytecode::BinaryOp, left: Value, right: Value) -> Result[Value, string] {
+fn float_binary(
+    op: bytecode::BinaryOp,
+    left: Value,
+    right: Value,
+    false_value: Value,
+    true_value: Value,
+) -> Result[Value, string] {
     let (left, width) = float_number(left)?;
     let (right, _) = float_number(right)?;
     match op {
@@ -630,13 +651,47 @@ fn float_binary(op: bytecode::BinaryOp, left: Value, right: Value) -> Result[Val
         bytecode::BinaryOp::Subtract => Result::Ok(float_result(left - right, width)),
         bytecode::BinaryOp::Multiply => Result::Ok(float_result(left * right, width)),
         bytecode::BinaryOp::Divide => Result::Ok(float_result(left / right, width)),
-        bytecode::BinaryOp::Equal => Result::Ok(Value::Local(LocalValue::Bool(left == right))),
-        bytecode::BinaryOp::NotEqual => Result::Ok(Value::Local(LocalValue::Bool(left != right))),
-        bytecode::BinaryOp::Less => Result::Ok(Value::Local(LocalValue::Bool(left < right))),
-        bytecode::BinaryOp::LessEqual => Result::Ok(Value::Local(LocalValue::Bool(left <= right))),
-        bytecode::BinaryOp::Greater => Result::Ok(Value::Local(LocalValue::Bool(left > right))),
+        bytecode::BinaryOp::Equal => Result::Ok(
+            if left == right {
+                true_value
+            } else {
+                false_value
+            },
+        ),
+        bytecode::BinaryOp::NotEqual => Result::Ok(
+            if left != right {
+                true_value
+            } else {
+                false_value
+            },
+        ),
+        bytecode::BinaryOp::Less => Result::Ok(
+            if left < right {
+                true_value
+            } else {
+                false_value
+            },
+        ),
+        bytecode::BinaryOp::LessEqual => Result::Ok(
+            if left <= right {
+                true_value
+            } else {
+                false_value
+            },
+        ),
+        bytecode::BinaryOp::Greater => Result::Ok(
+            if left > right {
+                true_value
+            } else {
+                false_value
+            },
+        ),
         bytecode::BinaryOp::GreaterEqual => Result::Ok(
-            Value::Local(LocalValue::Bool(left >= right)),
+            if left >= right {
+                true_value
+            } else {
+                false_value
+            },
         ),
         _ => Result::Err("invalid floating-point binary operation"),
     }
@@ -681,7 +736,13 @@ fn complex_result(real: float64, imaginary: float64, width: int) -> Value {
     }
 }
 
-fn complex_binary(op: bytecode::BinaryOp, left: Value, right: Value) -> Result[Value, string] {
+fn complex_binary(
+    op: bytecode::BinaryOp,
+    left: Value,
+    right: Value,
+    false_value: Value,
+    true_value: Value,
+) -> Result[Value, string] {
     let (left, width) = complex_number(left)?;
     let (right, _) = complex_number(right)?;
     match op {
@@ -709,10 +770,18 @@ fn complex_binary(op: bytecode::BinaryOp, left: Value, right: Value) -> Result[V
             )
         },
         bytecode::BinaryOp::Equal => Result::Ok(
-            Value::Local(LocalValue::Bool(left.0 == right.0 && left.1 == right.1)),
+            if left.0 == right.0 && left.1 == right.1 {
+                true_value
+            } else {
+                false_value
+            },
         ),
         bytecode::BinaryOp::NotEqual => Result::Ok(
-            Value::Local(LocalValue::Bool(left.0 != right.0 || left.1 != right.1)),
+            if left.0 != right.0 || left.1 != right.1 {
+                true_value
+            } else {
+                false_value
+            },
         ),
         _ => Result::Err("invalid complex binary operation"),
     }
@@ -740,12 +809,14 @@ fn bytes_compare(left: bytes::Bytes, right: bytes::Bytes) -> int {
     }
 }
 
-pub fn binary_value(
+fn binary_value_cached(
     op: bytecode::BinaryOp,
     left: Value,
     right: Value,
     result_type: go_types::TypeId,
     world: go_types::World,
+    false_value: Value,
+    true_value: Value,
 ) -> Result[Value, string] {
     match (left, right) {
         (
@@ -762,6 +833,8 @@ pub fn binary_value(
                 right_width,
             ),
             Value::Local(LocalValue::Float { bits: right, width: right_width }),
+            false_value,
+            true_value,
         ),
         (
             Value::Local(LocalValue::Float { bits: left, width: left_width }),
@@ -777,21 +850,29 @@ pub fn binary_value(
                 },
                 left_width,
             ),
+            false_value,
+            true_value,
         ),
         (Value::Local(LocalValue::Integer { bits, width, signed }), right) => integer_binary(
             op,
             Value::Local(LocalValue::Integer { bits, width, signed }),
             right,
+            false_value,
+            true_value,
         ),
         (Value::Local(LocalValue::Float { bits, width }), right) => float_binary(
             op,
             Value::Local(LocalValue::Float { bits, width }),
             right,
+            false_value,
+            true_value,
         ),
         (Value::Local(LocalValue::Complex { real, imaginary, width }), right) => complex_binary(
             op,
             Value::Local(LocalValue::Complex { real, imaginary, width }),
             right,
+            false_value,
+            true_value,
         ),
         (Value::Local(LocalValue::String(left)), Value::Local(LocalValue::String(right))) => {
             if op == bytecode::BinaryOp::Add {
@@ -804,7 +885,7 @@ pub fn binary_value(
                 }
                 Result::Ok(Value::Local(LocalValue::String(value)))
             } else {
-                comparison_result(op, bytes_compare(left, right))
+                comparison_result(op, bytes_compare(left, right), false_value, true_value)
             }
         },
         (Value::Local(LocalValue::Bool(left)), Value::Local(LocalValue::Bool(right))) => {
@@ -817,20 +898,23 @@ pub fn binary_value(
                 } else {
                     1
                 },
+                false_value,
+                true_value,
             )
         },
         (left, right) => if op == bytecode::BinaryOp::Equal || op == bytecode::BinaryOp::NotEqual {
             let equal = values_equal(world, left, right)?;
+            let result = if op == bytecode::BinaryOp::Equal {
+                equal
+            } else {
+                !equal
+            };
             Result::Ok(
-                Value::Local(
-                    LocalValue::Bool(
-                        if op == bytecode::BinaryOp::Equal {
-                            equal
-                        } else {
-                            !equal
-                        },
-                    ),
-                ),
+                if result {
+                    true_value
+                } else {
+                    false_value
+                },
             )
         } else {
             let _ = result_type;
@@ -838,6 +922,24 @@ pub fn binary_value(
             Result::Err("invalid binary operands")
         },
     }
+}
+
+pub fn binary_value(
+    op: bytecode::BinaryOp,
+    left: Value,
+    right: Value,
+    result_type: go_types::TypeId,
+    world: go_types::World,
+) -> Result[Value, string] {
+    binary_value_cached(
+        op,
+        left,
+        right,
+        result_type,
+        world,
+        Value::Local(LocalValue::Bool(false)),
+        Value::Local(LocalValue::Bool(true)),
+    )
 }
 
 pub fn convert_value(
