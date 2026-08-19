@@ -571,6 +571,24 @@ fn sequential_single_operation(
             source: operand.value,
             target: target.value,
         },
+        bytecode::InstructionKind::IndexValue { target, base, index, ok: None } if target.value >= 0
+            && target.value < function.register_types.len()
+            && base.value >= 0
+            && base.value < function.register_types.len()
+            && sequential_boolean_register(world, function, target)
+            && sequential_integer_register(world, function, index) => SequentialOperation {
+            kind: 29,
+            place: base.value,
+            source: index.value,
+            target: target.value,
+        },
+        bytecode::InstructionKind::CloneLocal { local } if local.value >= 0
+            && local.value < function.locals.len() => SequentialOperation {
+            kind: 30,
+            place: 0,
+            source: local.value,
+            target: 0,
+        },
         _ => sequential_fallback(),
     }
 }
@@ -5675,6 +5693,95 @@ fn execute_sequential_boolean_not(
     }
 }
 
+fn execute_sequential_boolean_index(
+    state: VmState,
+    frame: Frame,
+    block: bytecode::BasicBlock,
+    instruction_index: int,
+    base: int,
+    index: int,
+    target: int,
+) -> string {
+    let instruction = block.instructions[instruction_index];
+    if !count_step(state) {
+        return sequential_error_at(state, frame, instruction.location, "instruction limit exceeded")
+    } else {};
+    if !frame.scalar.is_empty() {
+        match frame.registers[base] {
+            Some(Value::Local(LocalValue::Slice(slice))) => match sequential_integer_register_index(
+                frame,
+                index,
+            ) {
+                Ok(index) => {
+                    if index < 0 || index >= slice.length {
+                        return sequential_error_at(
+                            state,
+                            frame,
+                            instruction.location,
+                            "index out of range [" + index.to_string() + "] with length "
+                                + slice.length.to_string(),
+                        )
+                    } else {};
+                    match slice.backing {
+                        Some(backing) => match bool_backing(state.memory, backing) {
+                            Some(elements) => if set_scalar_bool_register(
+                                frame,
+                                target,
+                                elements[slice.offset + index],
+                                state.false_value,
+                                state.true_value,
+                            ) {
+                                return ""
+                            } else {},
+                            None => {},
+                        },
+                        None => return sequential_error_at(
+                            state,
+                            frame,
+                            instruction.location,
+                            "index of nil slice",
+                        ),
+                    }
+                },
+                Err(message) => return sequential_error_at(
+                    state,
+                    frame,
+                    instruction.location,
+                    message,
+                ),
+            },
+            _ => {},
+        }
+    } else {};
+    match execute_instruction_effect(state, frame, instruction) {
+        Ok(_) => "",
+        Err(message) => sequential_error_at(state, frame, instruction.location, message),
+    }
+}
+
+fn execute_sequential_clone_local(
+    state: VmState,
+    frame: Frame,
+    block: bytecode::BasicBlock,
+    instruction_index: int,
+    local: int,
+) -> string {
+    let instruction = block.instructions[instruction_index];
+    if !count_step(state) {
+        return sequential_error_at(state, frame, instruction.location, "instruction limit exceeded")
+    } else {};
+    if !frame.scalar.is_empty() {
+        let code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + local];
+        if code & 127.to_uint64() != 0.to_uint64() {
+            return ""
+        } else {}
+    } else {};
+    match execute_instruction_effect(state, frame, instruction) {
+        Ok(_) => "",
+        Err(message) => sequential_error_at(state, frame, instruction.location, message),
+    }
+}
+
 fn execute_sequential_root_load(
     state: VmState,
     frame: Frame,
@@ -5736,6 +5843,16 @@ fn execute_sequential_root_load(
             block.instructions[index + 1].location,
             "instruction limit exceeded",
         )
+    } else {};
+    if !frame.scalar.is_empty() && local >= 0 && local < frame.locals.len() && target >= 0
+        && target < frame.registers.len() {
+        let local_code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + local];
+        let target_code = frame.scalar[frame.registers.len() + target];
+        if local_code & 127.to_uint64() == 0.to_uint64()
+            && target_code & 127.to_uint64() == 0.to_uint64() {
+            frame.registers[target] = Option::Some(copy_value(cell_value(state.memory, cell.value)));
+            return ""
+        } else {}
     } else {};
     if frame.scalar.is_empty() {
         frame.registers[target] = Option::Some(copy_value(cell_value(state.memory, cell.value)));
@@ -6597,13 +6714,29 @@ fn execute_function(
                         operation.place,
                         operation.source,
                     ),
-                    _ => execute_sequential_boolean_not(
+                    28 => execute_sequential_boolean_not(
                         state,
                         frame,
                         block,
                         instruction_index,
                         operation.source,
                         operation.target,
+                    ),
+                    29 => execute_sequential_boolean_index(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.place,
+                        operation.source,
+                        operation.target,
+                    ),
+                    _ => execute_sequential_clone_local(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.source,
                     ),
                 };
                 instruction_index += match operation.kind {
