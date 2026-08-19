@@ -675,21 +675,82 @@ fn sequential_super_operation(
                 match block.instructions[index + 4].kind {
                     bytecode::InstructionKind::Store { target: store, value } if store.value
                         == left_place.value
-                        && value.value == target.value => return SequentialOperation {
-                        kind: if op == bytecode::BinaryOp::Add {
-                            31
-                        } else {
-                            32
-                        },
-                        place: left_place.value,
-                        source: left_local.value,
-                        target: left.value,
+                        && value.value == target.value => {
+                        let fast = sequential_register_unused_outside(
+                            function,
+                            block,
+                            index,
+                            index + 5,
+                            left.value,
+                        )
+                            && sequential_register_unused_outside(
+                                function,
+                                block,
+                                index,
+                                index + 5,
+                                right.value,
+                            )
+                            && sequential_register_unused_outside(
+                                function,
+                                block,
+                                index,
+                                index + 5,
+                                target.value,
+                            )
+                            && sequential_place_unused_outside(
+                                function,
+                                block,
+                                index,
+                                index + 5,
+                                left_place.value,
+                            );
+                        return SequentialOperation {
+                            kind: if fast {
+                                if op == bytecode::BinaryOp::Add {
+                                    40
+                                } else {
+                                    41
+                                }
+                            } else if op == bytecode::BinaryOp::Add {
+                                31
+                            } else {
+                                32
+                            },
+                            place: left_place.value,
+                            source: left_local.value,
+                            target: left.value,
+                        }
                     },
                     _ => {},
                 }
             } else {};
+            let fast = sequential_register_unused_outside(
+                function,
+                block,
+                index,
+                index + 4,
+                left.value,
+            )
+                && sequential_register_unused_outside(
+                    function,
+                    block,
+                    index,
+                    index + 4,
+                    right.value,
+                )
+                && sequential_place_unused_outside(
+                    function,
+                    block,
+                    index,
+                    index + 4,
+                    left_place.value,
+                );
             SequentialOperation {
-                kind: 35,
+                kind: if fast {
+                    44
+                } else {
+                    35
+                },
                 place: left_local.value,
                 source: constant_index,
                 target: sequential_binary_kind(op),
@@ -724,17 +785,92 @@ fn sequential_super_operation(
                 match block.instructions[index + 5].kind {
                     bytecode::InstructionKind::Store { target: store, value } if store.value
                         == left_place.value
-                        && value.value == target.value => return SequentialOperation {
-                        kind: 33,
-                        place: left_local.value,
-                        source: right_local.value,
-                        target: sequential_binary_kind(op),
+                        && value.value == target.value => {
+                        let fast = (op == bytecode::BinaryOp::Add
+                            || op == bytecode::BinaryOp::Subtract)
+                            && sequential_register_unused_outside(
+                                function,
+                                block,
+                                index,
+                                index + 6,
+                                left.value,
+                            )
+                            && sequential_register_unused_outside(
+                                function,
+                                block,
+                                index,
+                                index + 6,
+                                right.value,
+                            )
+                            && sequential_register_unused_outside(
+                                function,
+                                block,
+                                index,
+                                index + 6,
+                                target.value,
+                            )
+                            && sequential_place_unused_outside(
+                                function,
+                                block,
+                                index,
+                                index + 6,
+                                left_place.value,
+                            )
+                            && sequential_place_unused_outside(
+                                function,
+                                block,
+                                index,
+                                index + 6,
+                                right_place.value,
+                            );
+                        return SequentialOperation {
+                            kind: if fast {
+                                42
+                            } else {
+                                33
+                            },
+                            place: left_local.value,
+                            source: right_local.value,
+                            target: sequential_binary_kind(op),
+                        }
                     },
                     _ => {},
                 }
             } else {};
+            let fast = sequential_register_unused_outside(
+                function,
+                block,
+                index,
+                index + 5,
+                left.value,
+            )
+                && sequential_register_unused_outside(
+                    function,
+                    block,
+                    index,
+                    index + 5,
+                    right.value,
+                )
+                && sequential_place_unused_outside(
+                    function,
+                    block,
+                    index,
+                    index + 5,
+                    left_place.value,
+                )
+                && sequential_place_unused_outside(
+                    function,
+                    block,
+                    index,
+                    index + 5,
+                    right_place.value,
+                );
             SequentialOperation {
-                kind: 34,
+                kind: if fast {
+                    43
+                } else {
+                    34
+                },
                 place: left_local.value,
                 source: right_local.value,
                 target: sequential_binary_kind(op),
@@ -747,6 +883,49 @@ fn sequential_super_operation(
 fn sequential_register_vector_contains(values: Vec[bytecode::RegisterId], register: int) -> bool {
     for value in values {
         if value.value == register {
+            return true
+        } else {}
+    }
+    false
+}
+
+fn sequential_optional_register_contains(value: Option[bytecode::RegisterId], register: int) -> bool {
+    match value {
+        Some(value) => value.value == register,
+        None => false,
+    }
+}
+
+fn sequential_call_target_uses_register(target: bytecode::CallTarget, register: int) -> bool {
+    match target {
+        bytecode::CallTarget::Method { function: _, receiver } | bytecode::CallTarget::InterfaceMethod {
+            method: _,
+            receiver,
+        } | bytecode::CallTarget::NativeMethod { call: _, receiver } | bytecode::CallTarget::Dynamic(receiver) => receiver.value
+            == register,
+        _ => false,
+    }
+}
+
+fn sequential_aggregate_uses_register(elements: Vec[bytecode::AggregateElement], register: int) -> bool {
+    for element in elements {
+        if element.value.value == register {
+            return true
+        } else {}
+    }
+    false
+}
+
+fn sequential_select_uses_register(cases: Vec[bytecode::SelectCase], register: int) -> bool {
+    for selected in cases {
+        let used = match selected.operation {
+            bytecode::SelectOperation::Send { channel, value } => channel.value == register
+                || value.value == register,
+            bytecode::SelectOperation::Receive { channel, value: _, ok: _ } => channel.value
+                == register,
+            bytecode::SelectOperation::Default => false,
+        };
+        if used || sequential_register_vector_contains(selected.arguments, register) {
             return true
         } else {}
     }
@@ -790,7 +969,72 @@ fn sequential_instruction_uses_register(instruction: bytecode::Instruction, regi
         } => {
             left.value == register || right.value == register
         },
-        _ => true,
+        bytecode::InstructionKind::MakeAggregate { target: _, type_id: _, elements, length: _ } => {
+            sequential_aggregate_uses_register(elements, register)
+        },
+        bytecode::InstructionKind::DecodeRune { rune: _, width: _, source, offset } => source.value
+            == register
+            || offset.value == register,
+        bytecode::InstructionKind::SliceValue { target: _, base, low, high, maximum } => base.value
+            == register
+            || sequential_optional_register_contains(low, register)
+            || sequential_optional_register_contains(high, register)
+            || sequential_optional_register_contains(maximum, register),
+        bytecode::InstructionKind::SlicePlace {
+            target: _,
+            base: _,
+            element_type: _,
+            low,
+            high,
+            maximum,
+        } => sequential_optional_register_contains(low, register)
+            || sequential_optional_register_contains(high, register)
+            || sequential_optional_register_contains(maximum, register),
+        bytecode::InstructionKind::Allocate { target: _, type_id: _, value } | bytecode::InstructionKind::MakeMap {
+            target: _,
+            type_id: _,
+            capacity: value,
+        } | bytecode::InstructionKind::MakeInterfaceMethodValue {
+            target: _,
+            method: _,
+            receiver: value,
+        } => sequential_optional_register_contains(value, register),
+        bytecode::InstructionKind::MakeSlice { target: _, type_id: _, length, capacity } | bytecode::InstructionKind::Send {
+            channel: length,
+            value: capacity,
+        } | bytecode::InstructionKind::MapDelete { map: length, key: capacity } => length.value
+            == register
+            || capacity.value == register,
+        bytecode::InstructionKind::MakeChannel { target: _, type_id: _, capacity } | bytecode::InstructionKind::MakeMethodValue {
+            target: _,
+            function: _,
+            receiver: capacity,
+        } | bytecode::InstructionKind::MapIterInit { target: _, map: capacity } | bytecode::InstructionKind::Receive {
+            value: _,
+            ok: _,
+            channel: capacity,
+        } | bytecode::InstructionKind::Close { channel: capacity } | bytecode::InstructionKind::Panic {
+            value: capacity,
+        } => capacity.value == register,
+        bytecode::InstructionKind::MakeClosure { .. } | bytecode::InstructionKind::MakeMethodExpression {
+            ..,
+        } => false,
+        bytecode::InstructionKind::Call { results: _, target, arguments, variadic: _ } | bytecode::InstructionKind::Defer {
+            target,
+            arguments,
+            variadic: _,
+        } | bytecode::InstructionKind::Spawn { target, arguments, variadic: _ } => {
+            sequential_call_target_uses_register(target, register)
+                || sequential_register_vector_contains(arguments, register)
+        },
+        bytecode::InstructionKind::MapSet { map, key, value } => map.value == register
+            || key.value == register
+            || value.value == register,
+        bytecode::InstructionKind::MapIterNext { key: _, value: _, ok: _, iterator } => iterator.value
+            == register,
+        bytecode::InstructionKind::Select { chosen: _, cases } => {
+            sequential_select_uses_register(cases, register)
+        },
     }
 }
 
@@ -833,25 +1077,59 @@ fn sequential_terminator_uses_register(terminator: bytecode::Terminator, registe
         } => condition.value == register
             || sequential_register_vector_contains(then_arguments, register)
             || sequential_register_vector_contains(else_arguments, register),
-        bytecode::TerminatorKind::Switch { .. } => true,
+        bytecode::TerminatorKind::Switch { value, arms, default_target: _, default_arguments } => {
+            if value.value == register
+                || sequential_register_vector_contains(default_arguments, register) {
+                return true
+            } else {};
+            for arm in arms {
+                if sequential_register_vector_contains(arm.comparisons, register)
+                    || sequential_register_vector_contains(arm.arguments, register) {
+                    return true
+                } else {}
+            }
+            false
+        },
         bytecode::TerminatorKind::Unreachable => false,
     }
 }
 
-fn sequential_register_unused_after(block: bytecode::BasicBlock, index: int, register: int) -> bool {
-    for offset in index..block.instructions.len() {
-        if sequential_instruction_uses_register(block.instructions[offset], register) {
+fn sequential_register_unused_outside(
+    function: bytecode::BytecodeFunction,
+    block: bytecode::BasicBlock,
+    start: int,
+    end: int,
+    register: int,
+) -> bool {
+    for candidate in function.blocks {
+        for offset in 0..candidate.instructions.len() {
+            let inside = candidate.id.value == block.id.value && offset >= start && offset < end;
+            if !inside
+                && sequential_instruction_uses_register(candidate.instructions[offset], register) {
+                return false
+            } else {}
+        }
+        if sequential_terminator_uses_register(candidate.terminator, register) {
             return false
         } else {}
     }
-    !sequential_terminator_uses_register(block.terminator, register)
+    true
 }
 
-fn sequential_place_unused_after(block: bytecode::BasicBlock, index: int, place: int) -> bool {
-    for offset in index..block.instructions.len() {
-        if sequential_instruction_uses_place(block.instructions[offset], place) {
-            return false
-        } else {}
+fn sequential_place_unused_outside(
+    function: bytecode::BytecodeFunction,
+    block: bytecode::BasicBlock,
+    start: int,
+    end: int,
+    place: int,
+) -> bool {
+    for candidate in function.blocks {
+        for offset in 0..candidate.instructions.len() {
+            let inside = candidate.id.value == block.id.value && offset >= start && offset < end;
+            if !inside && sequential_instruction_uses_place(candidate.instructions[offset], place) {
+                return false
+            } else {}
+        }
     }
     true
 }
@@ -894,10 +1172,34 @@ fn sequential_bool_slice_super_operation(
                     == slice.value
                     && indexed.value == index_register.value
                     && sequential_boolean_register(world, function, target) => {
-                    let fast = sequential_register_unused_after(block, index + 5, slice.value)
-                        && sequential_register_unused_after(block, index + 5, index_register.value)
-                        && sequential_place_unused_after(block, index + 5, slice_place.value)
-                        && sequential_place_unused_after(block, index + 5, index_place.value);
+                    let fast = sequential_register_unused_outside(
+                        function,
+                        block,
+                        index,
+                        index + 5,
+                        slice.value,
+                    )
+                        && sequential_register_unused_outside(
+                            function,
+                            block,
+                            index,
+                            index + 5,
+                            index_register.value,
+                        )
+                        && sequential_place_unused_outside(
+                            function,
+                            block,
+                            index,
+                            index + 5,
+                            slice_place.value,
+                        )
+                        && sequential_place_unused_outside(
+                            function,
+                            block,
+                            index,
+                            index + 5,
+                            index_place.value,
+                        );
                     SequentialOperation {
                         kind: if fast {
                             38
@@ -937,15 +1239,41 @@ fn sequential_bool_slice_super_operation(
                 bytecode::InstructionKind::Store { target, value: source } if target.value
                     == target_place.value
                     && source.value == value_register.value => {
-                    let fast = sequential_register_unused_after(
+                    let fast = sequential_register_unused_outside(
+                        function,
                         block,
+                        index,
                         index + 6,
                         index_register.value,
                     )
-                        && sequential_register_unused_after(block, index + 6, value_register.value)
-                        && sequential_place_unused_after(block, index + 6, slice_place.value)
-                        && sequential_place_unused_after(block, index + 6, index_place.value)
-                        && sequential_place_unused_after(block, index + 6, target_place.value);
+                        && sequential_register_unused_outside(
+                            function,
+                            block,
+                            index,
+                            index + 6,
+                            value_register.value,
+                        )
+                        && sequential_place_unused_outside(
+                            function,
+                            block,
+                            index,
+                            index + 6,
+                            slice_place.value,
+                        )
+                        && sequential_place_unused_outside(
+                            function,
+                            block,
+                            index,
+                            index + 6,
+                            index_place.value,
+                        )
+                        && sequential_place_unused_outside(
+                            function,
+                            block,
+                            index,
+                            index + 6,
+                            target_place.value,
+                        );
                     SequentialOperation {
                         kind: if fast {
                             39
@@ -6002,6 +6330,151 @@ fn execute_sequential_local_constant_binary(
     }
 }
 
+fn execute_fast_increment(
+    state: VmState,
+    frame: Frame,
+    block: bytecode::BasicBlock,
+    index: int,
+    local: int,
+    add: bool,
+) -> string {
+    let step_error = count_sequential_steps(state, frame, block, index, 5);
+    if step_error != "" {
+        return step_error
+    } else {};
+    let code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + local];
+    let value_index = frame.registers.len() * 2 + local;
+    frame.scalar[value_index] = normalize_integer(
+        if add {
+            frame.scalar[value_index] + 1.to_uint64()
+        } else {
+            frame.scalar[value_index] - 1.to_uint64()
+        },
+        (code & 127.to_uint64()).to_int(),
+    );
+    ""
+}
+
+fn execute_fast_local_binary(
+    state: VmState,
+    frame: Frame,
+    block: bytecode::BasicBlock,
+    index: int,
+    left_local: int,
+    right_local: int,
+    kind: int,
+    store: bool,
+) -> string {
+    let step_error = count_sequential_steps(
+        state,
+        frame,
+        block,
+        index,
+        if store {
+            6
+        } else {
+            5
+        },
+    );
+    if step_error != "" {
+        return step_error
+    } else {};
+    let left_code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + left_local];
+    let right_code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + right_local];
+    let left_bits = frame.scalar[frame.registers.len() * 2 + left_local];
+    let right_bits = frame.scalar[frame.registers.len() * 2 + right_local];
+    if store {
+        frame.scalar[frame.registers.len() * 2 + left_local] = normalize_integer(
+            if kind == 1 {
+                left_bits + right_bits
+            } else {
+                left_bits - right_bits
+            },
+            (left_code & 127.to_uint64()).to_int(),
+        );
+        return ""
+    } else {};
+    let target = match block.instructions[index + 4].kind {
+        bytecode::InstructionKind::Binary { target, .. } => target.value,
+        _ => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[index + 4].location,
+            "invalid fast local binary operation",
+        ),
+    };
+    let message = execute_scalar_integer_binary(
+        frame,
+        kind,
+        target,
+        left_bits,
+        (left_code & 127.to_uint64()).to_int(),
+        left_code & 128.to_uint64() != 0.to_uint64(),
+        right_bits,
+        (right_code & 127.to_uint64()).to_int(),
+        right_code & 128.to_uint64() != 0.to_uint64(),
+        state.false_value,
+        state.true_value,
+    );
+    if message == "" {
+        ""
+    } else {
+        sequential_error_at(state, frame, block.instructions[index + 4].location, message)
+    }
+}
+
+fn execute_fast_local_constant_binary(
+    state: VmState,
+    frame: Frame,
+    block: bytecode::BasicBlock,
+    index: int,
+    local: int,
+    constant_index: int,
+    kind: int,
+) -> string {
+    let step_error = count_sequential_steps(state, frame, block, index, 4);
+    if step_error != "" {
+        return step_error
+    } else {};
+    let target = match block.instructions[index + 3].kind {
+        bytecode::InstructionKind::Binary { target, .. } => target.value,
+        _ => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[index + 3].location,
+            "invalid fast constant binary operation",
+        ),
+    };
+    let (right_bits, right_width, right_signed) = match state.instruction_constants[constant_index] {
+        Some(Value::Local(LocalValue::Integer { bits, width, signed })) => (bits, width, signed),
+        _ => return sequential_error_at(
+            state,
+            frame,
+            block.instructions[index + 2].location,
+            "invalid sequential integer constant",
+        ),
+    };
+    let left_code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + local];
+    let message = execute_scalar_integer_binary(
+        frame,
+        kind,
+        target,
+        frame.scalar[frame.registers.len() * 2 + local],
+        (left_code & 127.to_uint64()).to_int(),
+        left_code & 128.to_uint64() != 0.to_uint64(),
+        right_bits,
+        right_width,
+        right_signed,
+        state.false_value,
+        state.true_value,
+    );
+    if message == "" {
+        ""
+    } else {
+        sequential_error_at(state, frame, block.instructions[index + 3].location, message)
+    }
+}
+
 fn execute_sequential_integer_binary(
     state: VmState,
     frame: Frame,
@@ -7922,7 +8395,7 @@ fn execute_function(
                         operation.source,
                         operation.target,
                     ),
-                    _ => execute_fast_bool_slice_store(
+                    39 => execute_fast_bool_slice_store(
                         state,
                         frame,
                         block,
@@ -7930,6 +8403,33 @@ fn execute_function(
                         operation.place,
                         operation.source,
                         operation.target != 0,
+                    ),
+                    40 | 41 => execute_fast_increment(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.source,
+                        operation.kind == 40,
+                    ),
+                    42 | 43 => execute_fast_local_binary(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.place,
+                        operation.source,
+                        operation.target,
+                        operation.kind == 42,
+                    ),
+                    _ => execute_fast_local_constant_binary(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.place,
+                        operation.source,
+                        operation.target,
                     ),
                 };
                 instruction_index += match operation.kind {
@@ -7941,6 +8441,9 @@ fn execute_function(
                     37 => 6,
                     38 => 5,
                     39 => 6,
+                    40 | 41 | 43 => 5,
+                    42 => 6,
+                    44 => 4,
                     _ => 1,
                 };
                 if message == "" {
