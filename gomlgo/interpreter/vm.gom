@@ -107,6 +107,7 @@ struct Frame {
 struct FrameSlots {
     registers: Vec[Option[Value]],
     places: Vec[Option[RuntimePlace]],
+    locals: Vec[CellId],
     deferred: Vec[PreparedCall],
 }
 
@@ -235,13 +236,18 @@ fn prepared_slots[T](slots: Vec[Option[T]], count: int) -> Vec[Option[T]] {
     slots
 }
 
-fn take_frame_slots(state: VmState, register_count: int, place_count: int) -> FrameSlots {
+fn take_frame_slots(state: VmState, register_count: int, place_count: int, local_count: int) -> FrameSlots {
     match state.frame_slots.pop() {
         Some(slots) => {
+            slots.locals.clear();
+            if slots.locals.capacity() < local_count {
+                slots.locals.reserve(local_count)
+            } else {};
             slots.deferred.clear();
             FrameSlots {
                 registers: prepared_slots(slots.registers, register_count),
                 places: prepared_slots(slots.places, place_count),
+                locals: slots.locals,
                 deferred: slots.deferred,
             }
         },
@@ -249,6 +255,7 @@ fn take_frame_slots(state: VmState, register_count: int, place_count: int) -> Fr
             FrameSlots {
                 registers: empty_slots(register_count),
                 places: empty_slots(place_count),
+                locals: Vec::with_capacity(local_count),
                 deferred: Vec::from_array([]),
             }
         },
@@ -258,9 +265,15 @@ fn take_frame_slots(state: VmState, register_count: int, place_count: int) -> Fr
 fn release_frame_slots(state: VmState, frame: Frame) -> unit {
     frame.registers.clear();
     frame.places.clear();
+    frame.locals.clear();
     frame.deferred.clear();
     state.frame_slots.push(
-        FrameSlots { registers: frame.registers, places: frame.places, deferred: frame.deferred },
+        FrameSlots {
+            registers: frame.registers,
+            places: frame.places,
+            locals: frame.locals,
+            deferred: frame.deferred,
+        },
     )
 }
 
@@ -3889,7 +3902,13 @@ fn frame_for_call(
     if captures.len() != function.captures.len() {
         return failed_frame_call("closure capture count does not match function")
     } else {};
-    let locals: Vec[CellId] = Vec::with_capacity(function.locals.len());
+    let slots = take_frame_slots(
+        state,
+        function.register_types.len(),
+        function.place_count,
+        function.locals.len(),
+    );
+    let locals = slots.locals;
     for capture in captures {
         locals.push(capture)
     }
@@ -3903,7 +3922,6 @@ fn frame_for_call(
             Err(message) => return failed_frame_call(message),
         }
     }
-    let slots = take_frame_slots(state, function.register_types.len(), function.place_count);
     FrameCallResult {
         frame: Frame {
             function: function.id,
