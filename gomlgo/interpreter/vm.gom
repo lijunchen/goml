@@ -531,6 +531,16 @@ fn sequential_integer_local(
     }
 }
 
+fn sequential_scalar_local(
+    world: go_types::World,
+    function: bytecode::BytecodeFunction,
+    local: bytecode::LocalId,
+) -> bool {
+    local.value >= 0 && local.value < function.locals.len()
+        && scalar_local_safe(function, local.value)
+        && scalar_layout(world, function.locals[local.value].type_id).width > 0
+}
+
 fn sequential_bool_slice_local(
     world: go_types::World,
     function: bytecode::BytecodeFunction,
@@ -620,7 +630,11 @@ fn sequential_single_operation(
         },
         bytecode::InstructionKind::CloneLocal { local } if local.value >= 0
             && local.value < function.locals.len() => SequentialOperation {
-            kind: 30,
+            kind: if sequential_scalar_local(world, function, local) {
+                47
+            } else {
+                30
+            },
             place: 0,
             source: local.value,
             target: 0,
@@ -704,19 +718,34 @@ fn sequential_super_operation(
                                 index + 5,
                                 left_place.value,
                             );
+                        let jump = if fast && index + 5 == block.instructions.len() {
+                            sequential_direct_jump_target(block)
+                        } else {
+                            Option::None
+                        };
                         return SequentialOperation {
                             kind: if fast {
-                                if op == bytecode::BinaryOp::Add {
-                                    40
-                                } else {
-                                    41
+                                match jump {
+                                    Some(_) => if op == bytecode::BinaryOp::Add {
+                                        48
+                                    } else {
+                                        49
+                                    },
+                                    None => if op == bytecode::BinaryOp::Add {
+                                        40
+                                    } else {
+                                        41
+                                    },
                                 }
                             } else if op == bytecode::BinaryOp::Add {
                                 31
                             } else {
                                 32
                             },
-                            place: left_place.value,
+                            place: match jump {
+                                Some(target) => target,
+                                None => left_place.value,
+                            },
                             source: left_local.value,
                             target: left.value,
                         }
@@ -843,15 +872,26 @@ fn sequential_super_operation(
                                 index + 6,
                                 right_place.value,
                             );
+                        let binary_kind = sequential_binary_kind(op);
+                        let jump = if fast && index + 6 == block.instructions.len() {
+                            sequential_direct_jump_target(block)
+                        } else {
+                            Option::None
+                        };
                         return SequentialOperation {
-                            kind: if fast {
+                            kind: if jump.is_some() {
+                                50
+                            } else if fast {
                                 42
                             } else {
                                 33
                             },
                             place: left_local.value,
                             source: right_local.value,
-                            target: sequential_binary_kind(op),
+                            target: match jump {
+                                Some(target) => binary_kind + 18 * target,
+                                None => binary_kind,
+                            },
                         }
                     },
                     _ => {},
@@ -1174,6 +1214,15 @@ fn sequential_direct_branch_targets(block: bytecode::BasicBlock, register: bytec
     }
 }
 
+fn sequential_direct_jump_target(block: bytecode::BasicBlock) -> Option[int] {
+    match block.terminator.kind {
+        bytecode::TerminatorKind::Jump { target, arguments } if arguments.is_empty() => {
+            Option::Some(target.value)
+        },
+        _ => Option::None,
+    }
+}
+
 fn sequential_place_unused_outside(
     function: bytecode::BytecodeFunction,
     block: bytecode::BasicBlock,
@@ -1422,18 +1471,33 @@ fn sequential_bool_slice_super_operation(
                             index + 6,
                             target_place.value,
                         );
+                    let jump = if fast && index + 6 == block.instructions.len() {
+                        sequential_direct_jump_target(block)
+                    } else {
+                        Option::None
+                    };
                     SequentialOperation {
-                        kind: if fast {
+                        kind: if jump.is_some() {
+                            51
+                        } else if fast {
                             39
                         } else {
                             37
                         },
                         place: slice_local.value,
                         source: index_local.value,
-                        target: if value {
-                            1
-                        } else {
-                            0
+                        target: match jump {
+                            Some(target) => (if value {
+                                1
+                            } else {
+                                0
+                            })
+                                + 2 * target,
+                            None => if value {
+                                1
+                            } else {
+                                0
+                            },
                         },
                     }
                 },
@@ -6539,8 +6603,13 @@ fn execute_fast_increment(
     index: int,
     local: int,
     add: bool,
+    jump_target: int,
 ) -> string {
-    let step_error = count_sequential_steps(state, frame, block, index, 5);
+    let step_error = if jump_target >= 0 {
+        count_sequential_branch_steps(state, frame, block, index, 5)
+    } else {
+        count_sequential_steps(state, frame, block, index, 5)
+    };
     if step_error != "" {
         return step_error
     } else {};
@@ -6554,6 +6623,9 @@ fn execute_fast_increment(
         },
         (code & 127.to_uint64()).to_int(),
     );
+    if jump_target >= 0 {
+        frame.block.set(bytecode::block_id(jump_target))
+    } else {};
     ""
 }
 
@@ -6566,18 +6638,18 @@ fn execute_fast_local_binary(
     right_local: int,
     kind: int,
     store: bool,
+    jump_target: int,
 ) -> string {
-    let step_error = count_sequential_steps(
-        state,
-        frame,
-        block,
-        index,
-        if store {
-            6
-        } else {
-            5
-        },
-    );
+    let instruction_count = if store {
+        6
+    } else {
+        5
+    };
+    let step_error = if jump_target >= 0 {
+        count_sequential_branch_steps(state, frame, block, index, instruction_count)
+    } else {
+        count_sequential_steps(state, frame, block, index, instruction_count)
+    };
     if step_error != "" {
         return step_error
     } else {};
@@ -6594,6 +6666,9 @@ fn execute_fast_local_binary(
             },
             (left_code & 127.to_uint64()).to_int(),
         );
+        if jump_target >= 0 {
+            frame.block.set(bytecode::block_id(jump_target))
+        } else {};
         return ""
     } else {};
     let target = match block.instructions[index + 4].kind {
@@ -7532,8 +7607,13 @@ fn execute_fast_bool_slice_store(
     slice_local: int,
     index_local: int,
     value: bool,
+    jump_target: int,
 ) -> string {
-    let step_error = count_sequential_steps(state, frame, block, instruction_index, 6);
+    let step_error = if jump_target >= 0 {
+        count_sequential_branch_steps(state, frame, block, instruction_index, 6)
+    } else {
+        count_sequential_steps(state, frame, block, instruction_index, 6)
+    };
     if step_error != "" {
         return step_error
     } else {};
@@ -7594,6 +7674,9 @@ fn execute_fast_bool_slice_store(
     match cell_value(state.memory, backing.root.value) {
         Value::Local(LocalValue::BoolBacking(elements)) => {
             elements[slice.offset + index] = value;
+            if jump_target >= 0 {
+                frame.block.set(bytecode::block_id(jump_target))
+            } else {};
             ""
         },
         _ => sequential_error_at(
@@ -7728,6 +7811,24 @@ fn execute_sequential_clone_local(
     match execute_instruction_effect(state, frame, instruction) {
         Ok(_) => "",
         Err(message) => sequential_error_at(state, frame, instruction.location, message),
+    }
+}
+
+fn execute_fast_clone_local(
+    state: VmState,
+    frame: Frame,
+    block: bytecode::BasicBlock,
+    instruction_index: int,
+) -> string {
+    if count_step(state) {
+        ""
+    } else {
+        sequential_error_at(
+            state,
+            frame,
+            block.instructions[instruction_index].location,
+            "instruction limit exceeded",
+        )
     }
 }
 
@@ -8762,6 +8863,7 @@ fn execute_function(
                         operation.place,
                         operation.source,
                         operation.target != 0,
+                        -1,
                     ),
                     40 | 41 => execute_fast_increment(
                         state,
@@ -8770,6 +8872,7 @@ fn execute_function(
                         instruction_index,
                         operation.source,
                         operation.kind == 40,
+                        -1,
                     ),
                     42 | 43 => execute_fast_local_binary(
                         state,
@@ -8780,6 +8883,7 @@ fn execute_function(
                         operation.source,
                         operation.target,
                         operation.kind == 42,
+                        -1,
                     ),
                     44 => execute_fast_local_constant_binary(
                         state,
@@ -8799,7 +8903,7 @@ fn execute_function(
                         operation.source,
                         operation.target,
                     ),
-                    _ => execute_fast_bool_slice_branch(
+                    46 => execute_fast_bool_slice_branch(
                         state,
                         frame,
                         block,
@@ -8807,6 +8911,37 @@ fn execute_function(
                         operation.place,
                         operation.source,
                         operation.target,
+                    ),
+                    47 => execute_fast_clone_local(state, frame, block, instruction_index),
+                    48 | 49 => execute_fast_increment(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.source,
+                        operation.kind == 48,
+                        operation.place,
+                    ),
+                    50 => execute_fast_local_binary(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.place,
+                        operation.source,
+                        operation.target % 18,
+                        true,
+                        operation.target / 18,
+                    ),
+                    _ => execute_fast_bool_slice_store(
+                        state,
+                        frame,
+                        block,
+                        instruction_index,
+                        operation.place,
+                        operation.source,
+                        operation.target % 2 != 0,
+                        operation.target / 2,
                     ),
                 };
                 instruction_index += match operation.kind {
@@ -8824,7 +8959,10 @@ fn execute_function(
                     _ => 1,
                 };
                 if message == "" {
-                    if operation.kind == 45 || operation.kind == 46 {
+                    if operation.kind == 45 || operation.kind == 46 || operation.kind == 48
+                        || operation.kind == 49
+                        || operation.kind == 50
+                        || operation.kind == 51 {
                         direct_branch = true;
                         break
                     } else {
