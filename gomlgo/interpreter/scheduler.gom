@@ -144,15 +144,19 @@ fn scheduled_frame(
 ) -> Result[ScheduledFrame, string] {
     validate_function(state, invocation.function)?;
     let function = state.program.functions[invocation.function.value];
+    let frame_result = frame_for_call(
+        state,
+        function,
+        invocation.arguments,
+        invocation.captures,
+        recover_state,
+    );
+    if frame_result.error != "" {
+        return Result::Err(frame_result.error)
+    } else {};
     Result::Ok(
         ScheduledFrame {
-            frame: frame_for_call(
-                state,
-                function,
-                invocation.arguments,
-                invocation.captures,
-                recover_state,
-            )?,
+            frame: frame_result.frame,
             instruction: Ref::new(0),
             waiting: Ref::new(false),
             results,

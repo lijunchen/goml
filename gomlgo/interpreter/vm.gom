@@ -107,6 +107,12 @@ struct Frame {
 struct FrameSlots {
     registers: Vec[Option[Value]],
     places: Vec[Option[RuntimePlace]],
+    deferred: Vec[PreparedCall],
+}
+
+struct FrameCallResult {
+    frame: Frame,
+    error: string,
 }
 
 struct MapEntry {
@@ -232,13 +238,19 @@ fn prepared_slots[T](slots: Vec[Option[T]], count: int) -> Vec[Option[T]] {
 fn take_frame_slots(state: VmState, register_count: int, place_count: int) -> FrameSlots {
     match state.frame_slots.pop() {
         Some(slots) => {
+            slots.deferred.clear();
             FrameSlots {
                 registers: prepared_slots(slots.registers, register_count),
                 places: prepared_slots(slots.places, place_count),
+                deferred: slots.deferred,
             }
         },
         None => {
-            FrameSlots { registers: empty_slots(register_count), places: empty_slots(place_count) }
+            FrameSlots {
+                registers: empty_slots(register_count),
+                places: empty_slots(place_count),
+                deferred: Vec::from_array([]),
+            }
         },
     }
 }
@@ -246,7 +258,10 @@ fn take_frame_slots(state: VmState, register_count: int, place_count: int) -> Fr
 fn release_frame_slots(state: VmState, frame: Frame) -> unit {
     frame.registers.clear();
     frame.places.clear();
-    state.frame_slots.push(FrameSlots { registers: frame.registers, places: frame.places })
+    frame.deferred.clear();
+    state.frame_slots.push(
+        FrameSlots { registers: frame.registers, places: frame.places, deferred: frame.deferred },
+    )
 }
 
 fn instruction_continue() -> InstructionControl {
@@ -3839,22 +3854,40 @@ fn enter_block(
     Result::Ok(())
 }
 
+fn failed_frame_call(message: string) -> FrameCallResult {
+    FrameCallResult {
+        frame: Frame {
+            function: bytecode::function_id(-1),
+            package_id: go_types::package_id(-1),
+            blocks: Vec::from_array([]),
+            name: "",
+            registers: Vec::from_array([]),
+            places: Vec::from_array([]),
+            locals: Vec::from_array([]),
+            block: Ref::new(bytecode::block_id(-1)),
+            deferred: Vec::from_array([]),
+            recover_state: Option::None,
+        },
+        error: message,
+    }
+}
+
 fn frame_for_call(
     state: VmState,
     function: bytecode::BytecodeFunction,
     arguments: Vec[Value],
     captures: Vec[CellId],
     recover_state: Option[PanicState],
-) -> Result[Frame, string] {
+) -> FrameCallResult {
     if arguments.len() != function.parameters.len() {
-        return Result::Err(
+        return failed_frame_call(
             "function " + function.name + " received " + arguments.len().to_string()
                 + " arguments, expected "
                 + function.parameters.len().to_string(),
         )
     } else {};
     if captures.len() != function.captures.len() {
-        return Result::Err("closure capture count does not match function")
+        return failed_frame_call("closure capture count does not match function")
     } else {};
     let locals: Vec[CellId] = Vec::with_capacity(function.locals.len());
     for capture in captures {
@@ -3867,12 +3900,12 @@ fn frame_for_call(
         let local = function.locals[local_index];
         match runtime_zero_value(state, local.type_id) {
             Ok(value) => locals.push(allocate_cell(state.memory, value)),
-            Err(message) => return Result::Err(message),
+            Err(message) => return failed_frame_call(message),
         }
     }
     let slots = take_frame_slots(state, function.register_types.len(), function.place_count);
-    Result::Ok(
-        Frame {
+    FrameCallResult {
+        frame: Frame {
             function: function.id,
             package_id: function.package_id,
             blocks: function.blocks,
@@ -3881,10 +3914,11 @@ fn frame_for_call(
             places: slots.places,
             locals,
             block: Ref::new(function.entry),
-            deferred: Vec::from_array([]),
+            deferred: slots.deferred,
             recover_state,
         },
-    )
+        error: "",
+    }
 }
 
 fn commit_function_results(
@@ -3972,13 +4006,12 @@ fn execute_function(
     let function = state.program.functions[function_id.value];
     let _ = call_location;
     state.depth.set(state.depth.get() + 1);
-    let frame = match frame_for_call(state, function, arguments, captures, recover_state) {
-        Ok(value) => value,
-        Err(error) => {
-            state.depth.set(state.depth.get() - 1);
-            return Result::Err(error)
-        },
-    };
+    let frame_result = frame_for_call(state, function, arguments, captures, recover_state);
+    if frame_result.error != "" {
+        state.depth.set(state.depth.get() - 1);
+        return Result::Err(frame_result.error)
+    } else {};
+    let frame = frame_result.frame;
     loop {
         let block_id = frame.block.get();
         if block_id.value < 0 || block_id.value >= function.blocks.len() {
