@@ -84,7 +84,6 @@ struct NativePrepared {
 }
 
 enum RuntimePlace {
-    Root(CellId),
     Local(Place),
     Native {
         value: dyn HostValueMarker,
@@ -99,6 +98,7 @@ struct Frame {
     name: string,
     registers: Vec[Option[Value]],
     places: Vec[Option[RuntimePlace]],
+    place_roots: Vec[int],
     locals: Vec[CellId],
     block_arguments: Vec[Value],
     block: Ref[bytecode::BlockId],
@@ -109,6 +109,7 @@ struct Frame {
 struct FrameSlots {
     registers: Vec[Option[Value]],
     places: Vec[Option[RuntimePlace]],
+    place_roots: Vec[int],
     locals: Vec[CellId],
     block_arguments: Vec[Value],
     deferred: Vec[PreparedCall],
@@ -239,6 +240,17 @@ fn prepared_slots[T](slots: Vec[Option[T]], count: int) -> Vec[Option[T]] {
     slots
 }
 
+fn prepared_place_roots(slots: Vec[int], count: int) -> Vec[int] {
+    slots.clear();
+    if slots.capacity() < count {
+        slots.reserve(count)
+    } else {};
+    for _ in 0..count {
+        slots.push(-1)
+    }
+    slots
+}
+
 fn take_frame_slots(state: VmState, register_count: int, place_count: int, local_count: int) -> FrameSlots {
     match state.frame_slots.pop() {
         Some(slots) => {
@@ -251,6 +263,7 @@ fn take_frame_slots(state: VmState, register_count: int, place_count: int, local
             FrameSlots {
                 registers: prepared_slots(slots.registers, register_count),
                 places: prepared_slots(slots.places, place_count),
+                place_roots: prepared_place_roots(slots.place_roots, place_count),
                 locals: slots.locals,
                 block_arguments: slots.block_arguments,
                 deferred: slots.deferred,
@@ -260,6 +273,7 @@ fn take_frame_slots(state: VmState, register_count: int, place_count: int, local
             FrameSlots {
                 registers: empty_slots(register_count),
                 places: empty_slots(place_count),
+                place_roots: prepared_place_roots(Vec::from_array([]), place_count),
                 locals: Vec::with_capacity(local_count),
                 block_arguments: Vec::from_array([]),
                 deferred: Vec::from_array([]),
@@ -271,6 +285,7 @@ fn take_frame_slots(state: VmState, register_count: int, place_count: int, local
 fn release_frame_slots(state: VmState, frame: Frame) -> unit {
     frame.registers.clear();
     frame.places.clear();
+    frame.place_roots.clear();
     frame.locals.clear();
     frame.block_arguments.clear();
     frame.deferred.clear();
@@ -278,6 +293,7 @@ fn release_frame_slots(state: VmState, frame: Frame) -> unit {
         FrameSlots {
             registers: frame.registers,
             places: frame.places,
+            place_roots: frame.place_roots,
             locals: frame.locals,
             block_arguments: frame.block_arguments,
             deferred: frame.deferred,
@@ -356,10 +372,34 @@ fn place(frame: Frame, id: bytecode::PlaceId) -> Result[RuntimePlace, string] {
     }
 }
 
+fn root_frame_place(frame: Frame, id: bytecode::PlaceId) -> Result[Option[CellId], string] {
+    if id.value < 0 || id.value >= frame.places.len() {
+        Result::Err("invalid place " + id.value.to_string())
+    } else if frame.place_roots[id.value] >= 0 {
+        Result::Ok(Option::Some(cell_id(frame.place_roots[id.value])))
+    } else {
+        match frame.places[id.value] {
+            Some(_) => Result::Ok(Option::None),
+            None => Result::Err("place " + id.value.to_string() + " is undefined"),
+        }
+    }
+}
+
+fn set_root_place(frame: Frame, id: bytecode::PlaceId, value: CellId) -> Result[unit, string] {
+    if id.value < 0 || id.value >= frame.places.len() {
+        Result::Err("invalid place " + id.value.to_string())
+    } else {
+        frame.place_roots[id.value] = value.value;
+        frame.places[id.value] = Option::None;
+        Result::Ok(())
+    }
+}
+
 fn set_place(frame: Frame, id: bytecode::PlaceId, value: RuntimePlace) -> Result[unit, string] {
     if id.value < 0 || id.value >= frame.places.len() {
         Result::Err("invalid place " + id.value.to_string())
     } else {
+        frame.place_roots[id.value] = -1;
         frame.places[id.value] = Option::Some(value);
         Result::Ok(())
     }
@@ -367,9 +407,15 @@ fn set_place(frame: Frame, id: bytecode::PlaceId, value: RuntimePlace) -> Result
 
 fn local_runtime_place(value: RuntimePlace) -> Result[Place, string] {
     match value {
-        RuntimePlace::Root(value) => Result::Ok(root_place(value)),
         RuntimePlace::Local(value) => Result::Ok(value),
         RuntimePlace::Native { .. } => Result::Err("native place is not local memory"),
+    }
+}
+
+fn local_frame_place(frame: Frame, id: bytecode::PlaceId) -> Result[Place, string] {
+    match root_frame_place(frame, id)? {
+        Some(root) => Result::Ok(root_place(root)),
+        None => local_runtime_place(place(frame, id)?),
     }
 }
 
@@ -1825,9 +1871,6 @@ fn projected_runtime_place(state: VmState, base: RuntimePlace, indices: Vec[int]
     string,
 ] {
     match base {
-        RuntimePlace::Root(value) => Result::Ok(
-            RuntimePlace::Local(field_place(root_place(value), indices)),
-        ),
         RuntimePlace::Local(value) => Result::Ok(RuntimePlace::Local(field_place(value, indices))),
         RuntimePlace::Native { value, type_id } => {
             let mut current_value = value;
@@ -1844,9 +1887,18 @@ fn projected_runtime_place(state: VmState, base: RuntimePlace, indices: Vec[int]
     }
 }
 
+fn projected_frame_place(state: VmState, frame: Frame, base: bytecode::PlaceId, indices: Vec[int]) -> Result[
+    RuntimePlace,
+    string,
+] {
+    match root_frame_place(frame, base)? {
+        Some(root) => Result::Ok(RuntimePlace::Local(field_place(root_place(root), indices))),
+        None => projected_runtime_place(state, place(frame, base)?, indices),
+    }
+}
+
 fn load_runtime_place(state: VmState, value: RuntimePlace) -> Result[Value, string] {
     match value {
-        RuntimePlace::Root(value) => load_cell(state.memory, value),
         RuntimePlace::Local(value) => load_place(state.memory, value),
         RuntimePlace::Native { value, type_id } => native_result(
             state,
@@ -1857,9 +1909,15 @@ fn load_runtime_place(state: VmState, value: RuntimePlace) -> Result[Value, stri
     }
 }
 
+fn load_frame_place(state: VmState, frame: Frame, id: bytecode::PlaceId) -> Result[Value, string] {
+    match root_frame_place(frame, id)? {
+        Some(root) => load_cell(state.memory, root),
+        None => load_runtime_place(state, place(frame, id)?),
+    }
+}
+
 fn store_runtime_place(state: VmState, target: RuntimePlace, value: Value) -> Result[unit, string] {
     match target {
-        RuntimePlace::Root(target) => store_cell(state.memory, target, value),
         RuntimePlace::Local(target) => store_place(state.memory, target, value),
         RuntimePlace::Native { value: target, type_id } => {
             let source = native_argument(
@@ -1874,6 +1932,16 @@ fn store_runtime_place(state: VmState, target: RuntimePlace, value: Value) -> Re
                 Result::Err("native field is not assignable")
             }
         },
+    }
+}
+
+fn store_frame_place(state: VmState, frame: Frame, id: bytecode::PlaceId, value: Value) -> Result[
+    unit,
+    string,
+] {
+    match root_frame_place(frame, id)? {
+        Some(root) => store_cell(state.memory, root, value),
+        None => store_runtime_place(state, place(frame, id)?, value),
     }
 }
 
@@ -3091,13 +3159,13 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
             || local.value >= frame.locals.len() {
             Result::Err("invalid local " + local.value.to_string())
         } else {
-            set_place(frame, target, RuntimePlace::Root(frame.locals[local.value]))
+            set_root_place(frame, target, frame.locals[local.value])
         },
         bytecode::InstructionKind::GlobalPlace { target, global } => if global.value < 0
             || global.value >= state.globals.len() {
             Result::Err("invalid global " + global.value.to_string())
         } else {
-            set_place(frame, target, RuntimePlace::Root(state.globals[global.value]))
+            set_root_place(frame, target, state.globals[global.value])
         },
         bytecode::InstructionKind::NativeGlobalLoad { target, object } => {
             let value = state.program.world.objects[object.value];
@@ -3124,7 +3192,7 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
             }
         },
         bytecode::InstructionKind::FieldPlace { target, base, index } => {
-            set_place(frame, target, projected_runtime_place(state, place(frame, base)?, index)?)
+            set_place(frame, target, projected_frame_place(state, frame, base, index)?)
         },
         bytecode::InstructionKind::IndexPlace { target, base, index } => set_place(
             frame,
@@ -3132,7 +3200,7 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
             RuntimePlace::Local(
                 indexed_place(
                     state.memory,
-                    local_runtime_place(place(frame, base)?)?,
+                    local_frame_place(frame, base)?,
                     integer_index(register(frame, index)?)?,
                 )?,
             ),
@@ -3144,7 +3212,7 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
             Value::Local(LocalValue::Pointer(Some(place))) => {
                 match place.projections {
                     Some(_) => set_place(frame, target, RuntimePlace::Local(place)),
-                    None => set_place(frame, target, RuntimePlace::Root(place.root)),
+                    None => set_root_place(frame, target, place.root),
                 }
             },
             Value::Local(LocalValue::Pointer(None)) => Result::Err(
@@ -3168,36 +3236,41 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
             _ => Result::Err("dereference of non-pointer value"),
         },
         bytecode::InstructionKind::Load { target, source } => {
-            set_register(frame, target, load_runtime_place(state, place(frame, source)?)?)
+            set_register(frame, target, load_frame_place(state, frame, source)?)
         },
         bytecode::InstructionKind::Store { target, value } => {
-            store_runtime_place(state, place(frame, target)?, register(frame, value)?)
+            store_frame_place(state, frame, target, register(frame, value)?)
         },
-        bytecode::InstructionKind::AddressOf { target, source } => match place(frame, source)? {
-            RuntimePlace::Root(source) => set_register(
+        bytecode::InstructionKind::AddressOf { target, source } => match root_frame_place(
+            frame,
+            source,
+        )? {
+            Some(source) => set_register(
                 frame,
                 target,
                 Value::Local(LocalValue::Pointer(Option::Some(root_place(source)))),
             ),
-            RuntimePlace::Local(source) => set_register(
-                frame,
-                target,
-                Value::Local(LocalValue::Pointer(Option::Some(source))),
-            ),
-            RuntimePlace::Native { value, type_id: _ } => {
-                let address = address_native_value(value);
-                if native_host_value_valid(address) {
-                    set_register(
-                        frame,
-                        target,
-                        Value::Host {
-                            type_id: state.program.functions[frame.function.value].register_types[target.value],
-                            value: address,
-                        },
-                    )
-                } else {
-                    Result::Err("native value is not addressable")
-                }
+            None => match place(frame, source)? {
+                RuntimePlace::Local(source) => set_register(
+                    frame,
+                    target,
+                    Value::Local(LocalValue::Pointer(Option::Some(source))),
+                ),
+                RuntimePlace::Native { value, type_id: _ } => {
+                    let address = address_native_value(value);
+                    if native_host_value_valid(address) {
+                        set_register(
+                            frame,
+                            target,
+                            Value::Host {
+                                type_id: state.program.functions[frame.function.value].register_types[target.value],
+                                value: address,
+                            },
+                        )
+                    } else {
+                        Result::Err("native value is not addressable")
+                    }
+                },
             },
         },
         bytecode::InstructionKind::Unary { target, op, operand } => set_register(
@@ -3368,7 +3441,7 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
                 target,
                 sliced_place(
                     state,
-                    local_runtime_place(place(frame, base)?)?,
+                    local_frame_place(frame, base)?,
                     element_type,
                     low,
                     high,
@@ -3958,6 +4031,7 @@ fn failed_frame_call(message: string) -> FrameCallResult {
             name: "",
             registers: Vec::from_array([]),
             places: Vec::from_array([]),
+            place_roots: Vec::from_array([]),
             locals: Vec::from_array([]),
             block_arguments: Vec::from_array([]),
             block: Ref::new(bytecode::block_id(-1)),
@@ -4013,6 +4087,7 @@ fn frame_for_call(
             name: function.name,
             registers: slots.registers,
             places: slots.places,
+            place_roots: slots.place_roots,
             locals,
             block_arguments: slots.block_arguments,
             block: Ref::new(function.entry),
