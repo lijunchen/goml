@@ -381,11 +381,15 @@ fn current_location(state: VmState) -> Option[bytecode::SourceLocation] {
     }
 }
 
-fn use_step(state: VmState, location: bytecode::SourceLocation) -> bool {
-    state.location.set(location);
+fn count_step(state: VmState) -> bool {
     let steps = state.steps.get() + 1.to_int64();
     state.steps.set(steps);
     state.config.max_steps < 0.to_int64() || steps <= state.config.max_steps
+}
+
+fn use_step(state: VmState, location: bytecode::SourceLocation) -> bool {
+    state.location.set(location);
+    count_step(state)
 }
 
 fn frame_location(frame: Frame, location: bytecode::CodeLocation) -> bytecode::SourceLocation {
@@ -3637,27 +3641,37 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
 }
 
 fn execute_instruction(state: VmState, frame: Frame, instruction: bytecode::Instruction) -> InstructionControl {
-    if !use_step(state, frame_location(frame, instruction.location)) {
+    if !count_step(state) {
+        state.location.set(frame_location(frame, instruction.location));
         return instruction_error("instruction limit exceeded")
     } else {};
     match execute_instruction_effect(state, frame, instruction) {
         Ok(0) => instruction_continue(),
-        Ok(1) => match state.instruction_panic.get() {
-            Some(payload) => {
-                state.instruction_panic.set(Option::None);
-                instruction_panic(payload.get())
-            },
-            None => instruction_error("panic instruction has no payload"),
+        Ok(1) => {
+            state.location.set(frame_location(frame, instruction.location));
+            match state.instruction_panic.get() {
+                Some(payload) => {
+                    state.instruction_panic.set(Option::None);
+                    instruction_panic(payload.get())
+                },
+                None => instruction_error("panic instruction has no payload"),
+            }
         },
         Ok(2) => instruction_exit(state.instruction_exit.get()),
-        Ok(_) => instruction_error("invalid instruction control"),
-        Err(message) => if runtime_fault(message) {
-            match runtime_fault_payload(state, message) {
-                Ok(payload) => instruction_panic(payload),
-                Err(message) => instruction_error(message),
+        Ok(_) => {
+            state.location.set(frame_location(frame, instruction.location));
+            instruction_error("invalid instruction control")
+        },
+        Err(message) => {
+            state.location.set(frame_location(frame, instruction.location));
+            if runtime_fault(message) {
+                match runtime_fault_payload(state, message) {
+                    Ok(payload) => instruction_panic(payload),
+                    Err(message) => instruction_error(message),
+                }
+            } else {
+                instruction_error(message)
             }
-        } else {
-            instruction_error(message)
         },
     }
 }
