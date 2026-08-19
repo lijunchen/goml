@@ -5,10 +5,11 @@ const memory_cell_block_size: int = 4096;
 pub struct Memory {
     pub cells: Vec[Vec[Value]],
     pub length: Ref[int],
+    frame_cells: Vec[Value],
 }
 
 pub fn new_memory() -> Memory {
-    Memory { cells: Vec::from_array([]), length: Ref::new(0) }
+    Memory { cells: Vec::from_array([]), length: Ref::new(0), frame_cells: Vec::from_array([]) }
 }
 
 pub fn allocate_cell(memory: Memory, value: Value) -> CellId {
@@ -22,16 +23,56 @@ pub fn allocate_cell(memory: Memory, value: Value) -> CellId {
     cell_id(index)
 }
 
+fn frame_cell_value(index: int) -> int {
+    -index - 2
+}
+
+fn frame_cell_index(value: int) -> int {
+    -value - 2
+}
+
+fn allocate_frame_cell(memory: Memory, value: Value) -> CellId {
+    let index = memory.frame_cells.len();
+    memory.frame_cells.push(copy_value(value));
+    cell_id(frame_cell_value(index))
+}
+
+fn frame_cell_checkpoint(memory: Memory) -> int {
+    memory.frame_cells.len()
+}
+
+fn release_frame_cells(memory: Memory, checkpoint: int) -> unit {
+    memory.frame_cells.truncate(checkpoint)
+}
+
+fn cell_valid(memory: Memory, value: int) -> bool {
+    if value >= 0 {
+        value < memory.length.get()
+    } else if value <= -2 {
+        frame_cell_index(value) < memory.frame_cells.len()
+    } else {
+        false
+    }
+}
+
 fn cell_value(memory: Memory, index: int) -> Value {
-    memory.cells[index / memory_cell_block_size][index % memory_cell_block_size]
+    if index >= 0 {
+        memory.cells[index / memory_cell_block_size][index % memory_cell_block_size]
+    } else {
+        memory.frame_cells[frame_cell_index(index)]
+    }
 }
 
 fn set_cell_value(memory: Memory, index: int, value: Value) -> unit {
-    memory.cells[index / memory_cell_block_size][index % memory_cell_block_size] = value;
+    if index >= 0 {
+        memory.cells[index / memory_cell_block_size][index % memory_cell_block_size] = value;
+    } else {
+        memory.frame_cells[frame_cell_index(index)] = value;
+    }
 }
 
 fn load_cell(memory: Memory, cell: CellId) -> Result[Value, string] {
-    if cell.value < 0 || cell.value >= memory.length.get() {
+    if !cell_valid(memory, cell.value) {
         Result::Err("invalid cell " + cell.value.to_string())
     } else {
         Result::Ok(copy_value(cell_value(memory, cell.value)))
@@ -39,7 +80,7 @@ fn load_cell(memory: Memory, cell: CellId) -> Result[Value, string] {
 }
 
 fn store_cell(memory: Memory, cell: CellId, value: Value) -> Result[unit, string] {
-    if cell.value < 0 || cell.value >= memory.length.get() {
+    if !cell_valid(memory, cell.value) {
         Result::Err("invalid cell " + cell.value.to_string())
     } else {
         set_cell_value(memory, cell.value, copy_value(value));
@@ -131,7 +172,7 @@ fn load_projection(memory: Memory, value: Value, projections: Vec[Projection], o
 }
 
 pub fn load_place(memory: Memory, place: Place) -> Result[Value, string] {
-    if place.root.value < 0 || place.root.value >= memory.length.get() {
+    if !cell_valid(memory, place.root.value) {
         return Result::Err("invalid cell " + place.root.value.to_string())
     } else {};
     let value = cell_value(memory, place.root.value);
@@ -167,7 +208,7 @@ fn borrow_projection(memory: Memory, value: Value, projections: Vec[Projection],
 }
 
 pub fn borrow_place(memory: Memory, place: Place) -> Result[Value, string] {
-    if place.root.value < 0 || place.root.value >= memory.length.get() {
+    if !cell_valid(memory, place.root.value) {
         return Result::Err("invalid cell " + place.root.value.to_string())
     } else {};
     let value = cell_value(memory, place.root.value);
@@ -232,7 +273,7 @@ fn store_projection(
 }
 
 pub fn store_place(memory: Memory, place: Place, value: Value) -> Result[unit, string] {
-    if place.root.value < 0 || place.root.value >= memory.length.get() {
+    if !cell_valid(memory, place.root.value) {
         return Result::Err("invalid cell " + place.root.value.to_string())
     } else {};
     match place.projections {

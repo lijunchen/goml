@@ -102,6 +102,7 @@ struct Frame {
     locals: Vec[CellId],
     block_arguments: Vec[Value],
     block: Ref[bytecode::BlockId],
+    frame_cell_checkpoint: int,
     deferred: Vec[PreparedCall],
     recover_state: Option[PanicState],
 }
@@ -196,6 +197,7 @@ struct VmState {
     empty_captures: Vec[CellId],
     size_values: Vec[Option[CachedSizeValue]],
     sequential_operations: Vec[Vec[Vec[SequentialOperation]]],
+    recyclable_functions: Vec[bool],
 }
 
 enum FunctionControl {
@@ -299,7 +301,26 @@ fn take_frame_slots(state: VmState, register_count: int, place_count: int, local
     }
 }
 
+fn allocate_local_cell(state: VmState, checkpoint: int, value: Value) -> CellId {
+    if checkpoint >= 0 {
+        allocate_frame_cell(state.memory, value)
+    } else {
+        allocate_cell(state.memory, value)
+    }
+}
+
+fn replace_local_cell(state: VmState, frame: Frame, local: int, value: Value) -> unit {
+    if frame.frame_cell_checkpoint >= 0 {
+        frame.locals[local] = allocate_frame_cell(state.memory, value);
+    } else {
+        frame.locals[local] = allocate_cell(state.memory, value);
+    }
+}
+
 fn release_frame_slots(state: VmState, frame: Frame) -> unit {
+    if frame.frame_cell_checkpoint >= 0 {
+        release_frame_cells(state.memory, frame.frame_cell_checkpoint)
+    } else {};
     frame.registers.clear();
     frame.places.clear();
     frame.place_roots.clear();
@@ -432,6 +453,28 @@ fn sequential_operations(program: bytecode::BytecodeProgram) -> Vec[Vec[Vec[Sequ
     functions
 }
 
+fn function_recyclable(function: bytecode::BytecodeFunction) -> bool {
+    for block in function.blocks {
+        for instruction in block.instructions {
+            match instruction.kind {
+                bytecode::InstructionKind::AddressOf { target: _, source: _ } => return false,
+                bytecode::InstructionKind::SlicePlace { .. } => return false,
+                bytecode::InstructionKind::MakeClosure { target: _, function: _, captures } if !captures.is_empty() => return false,
+                _ => {},
+            }
+        }
+    }
+    true
+}
+
+fn recyclable_functions(program: bytecode::BytecodeProgram) -> Vec[bool] {
+    let result: Vec[bool] = Vec::with_capacity(program.functions.len());
+    for function in program.functions {
+        result.push(function_recyclable(function))
+    }
+    result
+}
+
 fn pending_instruction_panic(state: VmState, payload: PanicPayload) -> int {
     state.instruction_panic.set(Option::Some(Ref::new(payload)));
     1
@@ -480,7 +523,7 @@ fn load_cell_register(memory: Memory, frame: Frame, cell: CellId, target: byteco
     unit,
     string,
 ] {
-    if cell.value < 0 || cell.value >= memory.length.get() {
+    if !cell_valid(memory, cell.value) {
         Result::Err("invalid cell " + cell.value.to_string())
     } else if target.value < 0 || target.value >= frame.registers.len() {
         Result::Err("invalid register " + target.value.to_string())
@@ -504,7 +547,7 @@ fn place(frame: Frame, id: bytecode::PlaceId) -> Result[RuntimePlace, string] {
 fn root_frame_place(frame: Frame, id: bytecode::PlaceId) -> Result[Option[CellId], string] {
     if id.value < 0 || id.value >= frame.places.len() {
         Result::Err("invalid place " + id.value.to_string())
-    } else if frame.place_roots[id.value] >= 0 {
+    } else if frame.place_roots[id.value] != -1 {
         Result::Ok(Option::Some(cell_id(frame.place_roots[id.value])))
     } else {
         match frame.places[id.value] {
@@ -3766,20 +3809,15 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
         } else {
             let function = state.program.functions[frame.function.value];
             let type_id = function.locals[local.value].type_id;
-            frame.locals[local.value] = allocate_cell(
-                state.memory,
-                runtime_zero_value(state, type_id)?,
-            );
+            replace_local_cell(state, frame, local.value, runtime_zero_value(state, type_id)?);
             Result::Ok(())
         },
         bytecode::InstructionKind::CloneLocal { local } => if local.value < 0
             || local.value >= frame.locals.len() {
             Result::Err("invalid cloned local")
         } else {
-            let function = state.program.functions[frame.function.value];
-            let type_id = function.locals[local.value].type_id;
             let value = load_place(state.memory, root_place(frame.locals[local.value]))?;
-            frame.locals[local.value] = allocate_cell(state.memory, value);
+            replace_local_cell(state, frame, local.value, value);
             Result::Ok(())
         },
         bytecode::InstructionKind::MapSet { map, key, value } => match register(frame, map)? {
@@ -4056,7 +4094,7 @@ fn execute_sequential_renew_local(
     } else {};
     match runtime_zero_value(state, go_types::type_id(type_id)) {
         Ok(value) => {
-            frame.locals[local] = allocate_cell(state.memory, value);
+            replace_local_cell(state, frame, local, value);
             instruction_continue()
         },
         Err(message) => instruction_failure_at(
@@ -4332,6 +4370,7 @@ fn failed_frame_call(message: string) -> FrameCallResult {
             locals: Vec::from_array([]),
             block_arguments: Vec::from_array([]),
             block: Ref::new(bytecode::block_id(-1)),
+            frame_cell_checkpoint: -1,
             deferred: Vec::from_array([]),
             recover_state: Option::None,
         },
@@ -4345,6 +4384,7 @@ fn frame_for_call(
     arguments: Vec[Value],
     captures: Vec[CellId],
     recover_state: Option[PanicState],
+    arena: bool,
 ) -> FrameCallResult {
     if arguments.len() != function.parameters.len() {
         return failed_frame_call(
@@ -4356,6 +4396,11 @@ fn frame_for_call(
     if captures.len() != function.captures.len() {
         return failed_frame_call("closure capture count does not match function")
     } else {};
+    let checkpoint = if arena && state.recyclable_functions[function.id.value] {
+        frame_cell_checkpoint(state.memory)
+    } else {
+        -1
+    };
     let slots = take_frame_slots(
         state,
         function.register_types.len(),
@@ -4367,13 +4412,18 @@ fn frame_for_call(
         locals.push(capture)
     }
     for argument in arguments {
-        locals.push(allocate_cell(state.memory, argument))
+        locals.push(allocate_local_cell(state, checkpoint, argument))
     }
     for local_index in locals.len()..function.locals.len() {
         let local = function.locals[local_index];
         match runtime_zero_value(state, local.type_id) {
-            Ok(value) => locals.push(allocate_cell(state.memory, value)),
-            Err(message) => return failed_frame_call(message),
+            Ok(value) => locals.push(allocate_local_cell(state, checkpoint, value)),
+            Err(message) => {
+                if checkpoint >= 0 {
+                    release_frame_cells(state.memory, checkpoint)
+                } else {};
+                return failed_frame_call(message)
+            },
         }
     }
     FrameCallResult {
@@ -4388,6 +4438,7 @@ fn frame_for_call(
             locals,
             block_arguments: slots.block_arguments,
             block: Ref::new(function.entry),
+            frame_cell_checkpoint: checkpoint,
             deferred: slots.deferred,
             recover_state,
         },
@@ -4480,7 +4531,7 @@ fn execute_function(
     let function = state.program.functions[function_id.value];
     let _ = call_location;
     state.depth.set(state.depth.get() + 1);
-    let frame_result = frame_for_call(state, function, arguments, captures, recover_state);
+    let frame_result = frame_for_call(state, function, arguments, captures, recover_state, true);
     if frame_result.error != "" {
         state.depth.set(state.depth.get() - 1);
         return Result::Err(frame_result.error)
@@ -4646,6 +4697,7 @@ fn initialize_state(program: bytecode::BytecodeProgram, config: VmConfig) -> Res
         empty_captures: Vec::from_array([]),
         size_values: empty_slots(64),
         sequential_operations: sequential_operations(program),
+        recyclable_functions: recyclable_functions(program),
     };
     for global in state.program.globals {
         match runtime_zero_value(state, global.type_id) {
