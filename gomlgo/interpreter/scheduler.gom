@@ -142,7 +142,8 @@ fn scheduled_frame(
     recover_state: Option[PanicState],
     deferred: bool,
 ) -> Result[ScheduledFrame, string] {
-    let function = checked_function(state, invocation.function, Option::None)?;
+    validate_function(state, invocation.function)?;
+    let function = state.program.functions[invocation.function.value];
     Result::Ok(
         ScheduledFrame {
             frame: frame_for_call(

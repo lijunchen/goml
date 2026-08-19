@@ -271,16 +271,11 @@ fn runtime_error(kind: string, message: string, location: Option[bytecode::Sourc
     RuntimeError { kind, message, location, stack: Vec::from_array([]) }
 }
 
-fn checked_function(
-    state: VmState,
-    id: bytecode::FunctionId,
-    location: Option[bytecode::SourceLocation],
-) -> Result[bytecode::BytecodeFunction, string] {
+fn validate_function(state: VmState, id: bytecode::FunctionId) -> Result[unit, string] {
     if id.value < 0 || id.value >= state.program.functions.len() {
-        let _ = location;
         Result::Err("invalid function " + id.value.to_string())
     } else {
-        Result::Ok(state.program.functions[id.value])
+        Result::Ok(())
     }
 }
 
@@ -306,15 +301,6 @@ fn set_register(frame: Frame, id: bytecode::RegisterId, value: Value) -> Result[
     }
 }
 
-fn copy_runtime_place(value: RuntimePlace) -> RuntimePlace {
-    match value {
-        RuntimePlace::Local(value) => RuntimePlace::Local(copy_place(value)),
-        RuntimePlace::Native { value, type_id } => {
-            RuntimePlace::Native { value, type_id }
-        },
-    }
-}
-
 fn place(frame: Frame, id: bytecode::PlaceId) -> Result[RuntimePlace, string] {
     if id.value < 0 || id.value >= frame.places.len() {
         Result::Err("invalid place " + id.value.to_string())
@@ -330,7 +316,7 @@ fn set_place(frame: Frame, id: bytecode::PlaceId, value: RuntimePlace) -> Result
     if id.value < 0 || id.value >= frame.places.len() {
         Result::Err("invalid place " + id.value.to_string())
     } else {
-        frame.places[id.value] = Option::Some(copy_runtime_place(value));
+        frame.places[id.value] = Option::Some(value);
         Result::Ok(())
     }
 }
@@ -3908,7 +3894,9 @@ fn execute_function(
     if state.depth.get() >= state.config.max_call_depth {
         return Result::Err("maximum call depth exceeded")
     } else {};
-    let function = checked_function(state, function_id, call_location)?;
+    validate_function(state, function_id)?;
+    let function = state.program.functions[function_id.value];
+    let _ = call_location;
     state.depth.set(state.depth.get() + 1);
     let frame = match frame_for_call(state, function, arguments, captures, recover_state) {
         Ok(value) => value,
