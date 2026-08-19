@@ -3852,7 +3852,8 @@ fn execute_terminator(state: VmState, frame: Frame, terminator: bytecode::Termin
     FunctionControl,
     string,
 ] {
-    if !use_step(state, frame_location(frame, terminator.location)) {
+    if !count_step(state) {
+        state.location.set(frame_location(frame, terminator.location));
         return Result::Err("instruction limit exceeded")
     } else {};
     let result: Result[FunctionControl, string] = match terminator.kind {
@@ -3892,11 +3893,17 @@ fn execute_terminator(state: VmState, frame: Frame, terminator: bytecode::Termin
             }
         },
         bytecode::TerminatorKind::Return { values } => {
-            Result::Ok(FunctionControl::Return(register_values(frame, values)?))
+            Result::Ok(FunctionControl::Return(block_argument_values(frame, values)?))
         },
         bytecode::TerminatorKind::Unreachable => Result::Err("reached unreachable code"),
     };
-    result
+    match result {
+        Ok(value) => Result::Ok(value),
+        Err(message) => {
+            state.location.set(frame_location(frame, terminator.location));
+            Result::Err(message)
+        },
+    }
 }
 
 fn enter_block(
