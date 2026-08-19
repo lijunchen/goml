@@ -519,6 +519,62 @@ fn sequential_fallback() -> SequentialOperation {
     SequentialOperation { kind: 0, place: 0, source: 0, target: 0 }
 }
 
+fn sequential_single_operation(
+    world: go_types::World,
+    function: bytecode::BytecodeFunction,
+    current: bytecode::Instruction,
+) -> SequentialOperation {
+    match current.kind {
+        bytecode::InstructionKind::IndexPlace { target, base, index } if target.value >= 0
+            && target.value < function.place_count
+            && base.value >= 0
+            && base.value < function.place_count
+            && sequential_integer_register(world, function, index) => SequentialOperation {
+            kind: 24,
+            place: target.value,
+            source: base.value,
+            target: index.value,
+        },
+        bytecode::InstructionKind::Load { target, source } if target.value >= 0
+            && target.value < function.register_types.len()
+            && source.value >= 0
+            && source.value < function.place_count => SequentialOperation {
+            kind: 25,
+            place: source.value,
+            source: 0,
+            target: target.value,
+        },
+        bytecode::InstructionKind::Store { target, value } if target.value >= 0
+            && target.value < function.place_count
+            && value.value >= 0
+            && value.value < function.register_types.len() => SequentialOperation {
+            kind: 26,
+            place: target.value,
+            source: value.value,
+            target: 0,
+        },
+        bytecode::InstructionKind::LocalPlace { target, local } if target.value >= 0
+            && target.value < function.place_count
+            && local.value >= 0
+            && local.value < function.locals.len() => SequentialOperation {
+            kind: 27,
+            place: target.value,
+            source: local.value,
+            target: 0,
+        },
+        bytecode::InstructionKind::Unary { target, op: bytecode::UnaryOp::Not, operand } if target.value
+            >= 0
+            && target.value < function.register_types.len()
+            && sequential_boolean_register(world, function, operand) => SequentialOperation {
+            kind: 28,
+            place: 0,
+            source: operand.value,
+            target: target.value,
+        },
+        _ => sequential_fallback(),
+    }
+}
+
 fn sequential_operation(
     world: go_types::World,
     function: bytecode::BytecodeFunction,
@@ -554,10 +610,10 @@ fn sequential_operation(
         _ => {},
     };
     if index + 1 >= block.instructions.len() {
-        return sequential_fallback()
+        return sequential_single_operation(world, function, current)
     } else {};
     let next = block.instructions[index + 1];
-    match (current.kind, next.kind) {
+    let paired = match (current.kind, next.kind) {
         (
             bytecode::InstructionKind::LocalPlace { target: place, local },
             bytecode::InstructionKind::Load { target, source },
@@ -611,7 +667,11 @@ fn sequential_operation(
             target: value.value,
         },
         _ => sequential_fallback(),
-    }
+    };
+    if paired.kind != 0 {
+        return paired
+    } else {};
+    sequential_single_operation(world, function, current)
 }
 
 fn sequential_operations(program: bytecode::BytecodeProgram) -> Vec[Vec[Vec[SequentialOperation]]] {
@@ -4616,7 +4676,17 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
                     replace_scalar_local(frame, local, normalize_integer(bits, layout.width))
                 }
             },
-            None => store_frame_place(state, frame, target, register(frame, value)?),
+            None => if target.value >= 0 && target.value < frame.bool_places.len() {
+                match frame.bool_places[target.value] {
+                    Some(place) => {
+                        place.elements[place.index] = boolean_register(frame, value)?;
+                        Result::Ok(())
+                    },
+                    None => store_frame_place(state, frame, target, register(frame, value)?),
+                }
+            } else {
+                store_frame_place(state, frame, target, register(frame, value)?)
+            },
         },
         bytecode::InstructionKind::AddressOf { target, source } => match root_frame_place(
             frame,
@@ -4656,6 +4726,23 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
             },
         },
         bytecode::InstructionKind::Unary { target, op, operand } => {
+            if op == bytecode::UnaryOp::Not {
+                match scalar_register_layout(frame, operand) {
+                    Some(layout) if layout.width == 1 => {
+                        if !set_scalar_bool_register(
+                            frame,
+                            target.value,
+                            !boolean_register(frame, operand)?,
+                            state.false_value,
+                            state.true_value,
+                        ) {
+                            return Result::Err("invalid scalar boolean register")
+                        } else {};
+                        return Result::Ok(0)
+                    },
+                    _ => {},
+                }
+            } else {};
             let operand = register(frame, operand)?;
             match (op, operand) {
                 (bytecode::UnaryOp::Not, Value::Local(LocalValue::Bool(value))) => set_register(
@@ -5346,6 +5433,234 @@ fn execute_sequential_constant(
             Ok(_) => instruction_continue(),
             Err(message) => instruction_failure_at(state, frame, instruction.location, message),
         },
+    }
+}
+
+fn execute_sequential_index_place(
+    state: VmState,
+    frame: Frame,
+    block: bytecode::BasicBlock,
+    instruction_index: int,
+    target: int,
+    base: int,
+    index: int,
+) -> InstructionControl {
+    let instruction = block.instructions[instruction_index];
+    if !count_step(state) {
+        return instruction_failure_at(
+            state,
+            frame,
+            instruction.location,
+            "instruction limit exceeded",
+        )
+    } else {};
+    if !frame.scalar.is_empty() {
+        match integer_register_index(frame, bytecode::register_id(index)) {
+            Ok(index) => {
+                let root = frame.place_roots[base];
+                if root != -1 && cell_valid(state.memory, root) {
+                    match cell_value(state.memory, root) {
+                        Value::Local(LocalValue::Slice(slice)) => {
+                            if index < 0 || index >= slice.length {
+                                return instruction_failure_at(
+                                    state,
+                                    frame,
+                                    instruction.location,
+                                    "index out of range [" + index.to_string() + "] with length "
+                                        + slice.length.to_string(),
+                                )
+                            } else {};
+                            match slice.backing {
+                                Some(backing) => match bool_backing(state.memory, backing) {
+                                    Some(elements) => {
+                                        frame.place_roots[target] = -1;
+                                        frame.places[target] = Option::None;
+                                        frame.bool_places[target] = Option::Some(
+                                            BoolElementPlace {
+                                                backing,
+                                                elements,
+                                                index: slice.offset + index,
+                                            },
+                                        );
+                                        return instruction_continue()
+                                    },
+                                    None => {},
+                                },
+                                None => return instruction_failure_at(
+                                    state,
+                                    frame,
+                                    instruction.location,
+                                    "index of nil slice",
+                                ),
+                            }
+                        },
+                        _ => {},
+                    }
+                } else {}
+            },
+            Err(message) => return instruction_failure_at(
+                state,
+                frame,
+                instruction.location,
+                message,
+            ),
+        }
+    } else {};
+    match execute_instruction_effect(state, frame, instruction) {
+        Ok(_) => instruction_continue(),
+        Err(message) => instruction_failure_at(state, frame, instruction.location, message),
+    }
+}
+
+fn execute_sequential_load(
+    state: VmState,
+    frame: Frame,
+    block: bytecode::BasicBlock,
+    instruction_index: int,
+    source: int,
+    target: int,
+) -> InstructionControl {
+    let instruction = block.instructions[instruction_index];
+    if !count_step(state) {
+        return instruction_failure_at(
+            state,
+            frame,
+            instruction.location,
+            "instruction limit exceeded",
+        )
+    } else {};
+    match frame.bool_places[source] {
+        Some(place) => {
+            if set_scalar_bool_register(
+                frame,
+                target,
+                place.elements[place.index],
+                state.false_value,
+                state.true_value,
+            ) {
+                return instruction_continue()
+            } else {
+                return instruction_failure_at(
+                    state,
+                    frame,
+                    instruction.location,
+                    "invalid scalar boolean register",
+                )
+            }
+        },
+        None => {},
+    };
+    match execute_instruction_effect(state, frame, instruction) {
+        Ok(_) => instruction_continue(),
+        Err(message) => instruction_failure_at(state, frame, instruction.location, message),
+    }
+}
+
+fn execute_sequential_store(
+    state: VmState,
+    frame: Frame,
+    block: bytecode::BasicBlock,
+    instruction_index: int,
+    target: int,
+    source: int,
+) -> InstructionControl {
+    let instruction = block.instructions[instruction_index];
+    if !count_step(state) {
+        return instruction_failure_at(
+            state,
+            frame,
+            instruction.location,
+            "instruction limit exceeded",
+        )
+    } else {};
+    match frame.bool_places[target] {
+        Some(place) => match boolean_register(frame, bytecode::register_id(source)) {
+            Ok(value) => {
+                place.elements[place.index] = value;
+                return instruction_continue()
+            },
+            Err(message) => return instruction_failure_at(
+                state,
+                frame,
+                instruction.location,
+                message,
+            ),
+        },
+        None => {},
+    };
+    match execute_instruction_effect(state, frame, instruction) {
+        Ok(_) => instruction_continue(),
+        Err(message) => instruction_failure_at(state, frame, instruction.location, message),
+    }
+}
+
+fn execute_sequential_local_place(
+    state: VmState,
+    frame: Frame,
+    block: bytecode::BasicBlock,
+    instruction_index: int,
+    target: int,
+    local: int,
+) -> InstructionControl {
+    let instruction = block.instructions[instruction_index];
+    if !count_step(state) {
+        return instruction_failure_at(
+            state,
+            frame,
+            instruction.location,
+            "instruction limit exceeded",
+        )
+    } else {};
+    frame.place_roots[target] = frame.locals[local].value;
+    frame.places[target] = Option::None;
+    frame.bool_places[target] = Option::None;
+    replace_scalar_place_local(
+        frame,
+        bytecode::place_id(target),
+        if scalar_local_layout(frame, local).is_some() {
+            local
+        } else {
+            -1
+        },
+    );
+    instruction_continue()
+}
+
+fn execute_sequential_boolean_not(
+    state: VmState,
+    frame: Frame,
+    block: bytecode::BasicBlock,
+    instruction_index: int,
+    source: int,
+    target: int,
+) -> InstructionControl {
+    let instruction = block.instructions[instruction_index];
+    if !count_step(state) {
+        return instruction_failure_at(
+            state,
+            frame,
+            instruction.location,
+            "instruction limit exceeded",
+        )
+    } else {};
+    match boolean_register(frame, bytecode::register_id(source)) {
+        Ok(value) => if set_scalar_bool_register(
+            frame,
+            target,
+            !value,
+            state.false_value,
+            state.true_value,
+        ) {
+            instruction_continue()
+        } else {
+            instruction_failure_at(
+                state,
+                frame,
+                instruction.location,
+                "invalid scalar boolean register",
+            )
+        },
+        Err(message) => instruction_failure_at(state, frame, instruction.location, message),
     }
 }
 
@@ -6228,7 +6543,48 @@ fn execute_function(
                     state.globals[operation.source],
                     operation.target,
                 ),
-                _ => execute_sequential_renew_local(
+                23 => execute_sequential_renew_local(
+                    state,
+                    frame,
+                    block,
+                    instruction_index,
+                    operation.source,
+                    operation.target,
+                ),
+                24 => execute_sequential_index_place(
+                    state,
+                    frame,
+                    block,
+                    instruction_index,
+                    operation.place,
+                    operation.source,
+                    operation.target,
+                ),
+                25 => execute_sequential_load(
+                    state,
+                    frame,
+                    block,
+                    instruction_index,
+                    operation.place,
+                    operation.target,
+                ),
+                26 => execute_sequential_store(
+                    state,
+                    frame,
+                    block,
+                    instruction_index,
+                    operation.place,
+                    operation.source,
+                ),
+                27 => execute_sequential_local_place(
+                    state,
+                    frame,
+                    block,
+                    instruction_index,
+                    operation.place,
+                    operation.source,
+                ),
+                _ => execute_sequential_boolean_not(
                     state,
                     frame,
                     block,
