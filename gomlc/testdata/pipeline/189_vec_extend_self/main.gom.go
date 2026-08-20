@@ -2,7 +2,6 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_slices "slices"
 )
 
 func _goml_runtime_core_int_to_string(x int) string {
@@ -42,7 +41,23 @@ func vec_len__Vec_5int32(vec *_goml_vec_int32) int {
 }
 
 func vec_reserve__Vec_5int32(vec *_goml_vec_int32, additional int) struct{} {
-    vec.items = _goml_slices.Grow(vec.items, int(additional))
+    if additional < 0 {
+        panic("negative vector capacity")
+    }
+    var length int = len(vec.items)
+    var required int = length + additional
+    if required < length {
+        panic("vector capacity overflow")
+    }
+    if required > cap(vec.items) {
+        var next_capacity int = cap(vec.items) * 2
+        if next_capacity < required {
+            next_capacity = required
+        }
+        var next_items []int32 = make([]int32, length, next_capacity)
+        copy(next_items, vec.items)
+        vec.items = next_items
+    }
     return struct{}{}
 }
 

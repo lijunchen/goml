@@ -38,19 +38,10 @@ func ref_set__Ref_3int(reference *ref_int_x, value int) struct{} {
 
 type Ordering int32
 
-type Option__int interface {
-    isOption__int()
+type Option__int struct {
+    _tag int32
+    _v1_0 int
 }
-
-type None struct {}
-
-func (_ None) isOption__int() {}
-
-type Some struct {
-    _0 int
-}
-
-func (_ Some) isOption__int() {}
 
 func find(wanted__0 int) Option__int {
     var current__1 *ref_int_x
@@ -63,12 +54,15 @@ func find(wanted__0 int) Option__int {
         value__2 = inline458
         var t423 bool = value__2 >= 5
         if t423 {
-            return None{}
+            return Option__int{
+                _tag: 0,
+            }
         } else {
             var t425 bool = value__2 == wanted__0
             if t425 {
-                var t426 Option__int = Some{
-                    _0: value__2,
+                var t426 Option__int = Option__int{
+                    _tag: 1,
+                    _v1_0: value__2,
                 }
                 return t426
             } else {
@@ -84,10 +78,10 @@ func main0() struct{} {
     var t433 bool
     var inline483 int = 3
     var inline484 Option__int = find(inline483)
-    switch inline484.(type) {
-    case None:
+    switch inline484._tag {
+    case 0:
         t433 = false
-    case Some:
+    case 1:
         t433 = true
     default:
         panic("non-exhaustive match")
@@ -97,10 +91,10 @@ func main0() struct{} {
     var t434 bool
     var inline477 int = 8
     var inline478 Option__int = find(inline477)
-    switch inline478.(type) {
-    case None:
+    switch inline478._tag {
+    case 0:
         t434 = false
-    case Some:
+    case 1:
         t434 = true
     default:
         panic("non-exhaustive match")

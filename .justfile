@@ -16,6 +16,69 @@ test: make-tools
     cd gomlc && GOML_TEST_GOML=../stage2/bin/goml GOML_TEST_GOMLC=../stage2/bin/gomlc GOML_TEST_COMPILER_WORLD=../stage2/lib/compiler/compiler-world-v2.gaf ../stage2/bin/goml test --target-dir ../_artifact/gomlc-test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m
     cd goml && GOML_TEST_GOML=../stage2/bin/goml GOML_TEST_GOMLC=../stage2/bin/gomlc ../stage2/bin/goml test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m
 
+gomlgo-oracle:
+    mkdir -p _artifact/gomlgo
+    cd gomlgo/oracle && "${GOMLGO_GO:-/usr/lib/go-1.26/bin/go}" test ./...
+    cd gomlgo/oracle && "${GOMLGO_GO:-/usr/lib/go-1.26/bin/go}" build -o ../../_artifact/gomlgo/oracle .
+
+gomlgo-test: make gomlgo-oracle
+    bash tools/lib/install.sh _artifact/gomlgo-test/test
+    cd gomlgo && GOMLGO_ORACLE=../_artifact/gomlgo/oracle ../stage2/bin/goml test --target-dir ../_artifact/gomlgo-test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m
+
+gomlgo-type-test: gomlgo-test
+
+gomlgo-build: make gomlgo-oracle
+    cd gomlgo && ../stage2/bin/goml build --target-dir ../_artifact/gomlgo-build --compiler ../stage2/bin/gomlc
+
+gomlgo-diff: gomlgo-build
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gomlgo_scan_diff/gomlgo_scan_diff gomlgo/testdata
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gomlgo_parse_diff/gomlgo_parse_diff ast-comments gomlgo/testdata/valid
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gomlgo_parse_diff/gomlgo_parse_diff parse-acceptance gomlgo/testdata/invalid
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gomlgo_parse_diff/gomlgo_parse_diff parse-acceptance gomlgo/testdata/regressions
+
+gomlgo-type-diff: gomlgo-build
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gomlgo_type_diff/gomlgo_type_diff gomlgo/testdata/typecheck
+
+gomlgo-type-diff-official: gomlgo-build
+    systemd-run --user --scope -p MemoryHigh=8G -p MemoryMax=10G -p MemorySwapMax=2G -p TasksMax=256 -p CPUQuota=300% sh -c 'find /usr/lib/go-1.26/src/internal/types/testdata/check /usr/lib/go-1.26/src/internal/types/testdata/spec /usr/lib/go-1.26/src/internal/types/testdata/examples /usr/lib/go-1.26/src/internal/types/testdata/fixedbugs /usr/lib/go-1.26/src/go/types/testdata/local -type f -name "*.go" -print0 | sort -z | xargs -0 -n1 env GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gomlgo_type_diff/gomlgo_type_diff info'
+
+gomlgo-type-diagnostics-official: gomlgo-build
+    systemd-run --user --scope -p MemoryHigh=8G -p MemoryMax=10G -p MemorySwapMax=2G -p TasksMax=256 -p CPUQuota=300% sh -c 'find /usr/lib/go-1.26/src/internal/types/testdata/check /usr/lib/go-1.26/src/internal/types/testdata/spec /usr/lib/go-1.26/src/internal/types/testdata/examples /usr/lib/go-1.26/src/internal/types/testdata/fixedbugs /usr/lib/go-1.26/src/go/types/testdata/local -type f -name "*.go" -print0 | sort -z | xargs -0 -n1 env GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gomlgo_type_diff/gomlgo_type_diff diagnostics'
+
+gomlgo-type-diff-goroot limit="-1" scope="std" mode="acceptance" goos="linux" goarch="amd64" cgo="0" tests="none": gomlgo-build
+    systemd-run --user --scope -p MemoryHigh=6G -p MemoryMax=8G -p MemorySwapMax=1G -p TasksMax=512 -p CPUQuota=300% env GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gomlgo_type_goroot_diff/gomlgo_type_goroot_diff "{{mode}}" "{{scope}}" "{{limit}}" /usr/lib/go-1.26/src "" "{{goos}}" "{{goarch}}" "{{cgo}}" "{{tests}}"
+
+gomlgo-type-diff-goroot-matrix limit="16": gomlgo-build
+    systemd-run --user --scope -p MemoryHigh=6G -p MemoryMax=8G -p MemorySwapMax=1G -p TasksMax=512 -p CPUQuota=300% sh -c 'for target in "linux amd64" "linux arm64" "windows amd64"; do set -- $target; GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gomlgo_type_goroot_diff/gomlgo_type_goroot_diff acceptance std "{{limit}}" /usr/lib/go-1.26/src "" "$1" "$2" 0 none || exit $?; done'
+
+gomlgo-type-diff-goroot-tests limit="16" tests="external": gomlgo-build
+    systemd-run --user --scope -p MemoryHigh=6G -p MemoryMax=8G -p MemorySwapMax=1G -p TasksMax=512 -p CPUQuota=300% env GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gomlgo_type_goroot_diff/gomlgo_type_goroot_diff acceptance std "{{limit}}" /usr/lib/go-1.26/src "" linux amd64 0 "{{tests}}"
+
+gomlgo-type-mutate-diff limit="25": gomlgo-build
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gomlgo_type_mutate_diff/gomlgo_type_mutate_diff gomlgo/testdata/typecheck/valid "{{limit}}" "$(pwd)/_artifact/gomlgo-type-diff/failures"
+
+gomlgo-diff-goroot: gomlgo-build
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gomlgo_scan_diff/gomlgo_scan_diff /usr/lib/go-1.26/src
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gomlgo_parse_diff/gomlgo_parse_diff ast-comments /usr/lib/go-1.26/src
+
+gomlgo-parse-diff: gomlgo-build
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gomlgo_parse_diff/gomlgo_parse_diff parse-acceptance gomlgo/testdata/valid
+
+gomlgo-parse-diff-goroot: gomlgo-build
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gomlgo_parse_diff/gomlgo_parse_diff parse-acceptance /usr/lib/go-1.26/src
+
+gomlgo-ast-shape-goroot: gomlgo-build
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gomlgo_parse_diff/gomlgo_parse_diff ast-shape /usr/lib/go-1.26/src
+
+gomlgo-ast-position-goroot: gomlgo-build
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gomlgo_parse_diff/gomlgo_parse_diff ast-position /usr/lib/go-1.26/src
+
+gomlgo-ast-comments-goroot: gomlgo-build
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gomlgo_parse_diff/gomlgo_parse_diff ast-comments /usr/lib/go-1.26/src
+
+gomlgo-mutate-diff limit="25": gomlgo-build
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gomlgo_mutate_diff/gomlgo_mutate_diff /usr/lib/go-1.26/src "{{limit}}" "$(pwd)/_artifact/gomlgo-diff/failures"
+
 all: test
 
 cloc:

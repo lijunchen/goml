@@ -15,28 +15,22 @@ func _goml_runtime_core_string_println(s string) struct{} {
 
 type Ordering int32
 
-type Option__int32 interface {
-    isOption__int32()
+type Option__int32 struct {
+    _tag int32
+    _v1_0 int32
 }
-
-type None struct {}
-
-func (_ None) isOption__int32() {}
-
-type Some struct {
-    _0 int32
-}
-
-func (_ Some) isOption__int32() {}
 
 func maybe_value(flag__0 bool) Option__int32 {
     if flag__0 {
-        var t417 Option__int32 = Some{
-            _0: 4,
+        var t417 Option__int32 = Option__int32{
+            _tag: 1,
+            _v1_0: 4,
         }
         return t417
     } else {
-        return None{}
+        return Option__int32{
+            _tag: 0,
+        }
     }
 }
 
@@ -50,15 +44,17 @@ func main0() struct{} {
     var inline479 bool = true
     var inline480 Option__int32 = maybe_value(inline479)
     var inline482 int32
-    switch inline480.(type) {
-    case None:
-        t434 = None{}
+    switch inline480._tag {
+    case 0:
+        t434 = Option__int32{
+            _tag: 0,
+        }
         var t435 string
-        switch t434.(type) {
-        case None:
+        switch t434._tag {
+        case 0:
             t435 = "none"
-        case Some:
-            var inline474 int32 = t434.(Some)._0
+        case 1:
+            var inline474 int32 = t434._v1_0
             var inline476 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline474)
             var inline477 string = "some=" + inline476
             t435 = inline477
@@ -71,15 +67,17 @@ func main0() struct{} {
         var inline462 bool = false
         var inline463 Option__int32 = maybe_value(inline462)
         var inline465 int32
-        switch inline463.(type) {
-        case None:
-            t436 = None{}
+        switch inline463._tag {
+        case 0:
+            t436 = Option__int32{
+                _tag: 0,
+            }
             var t437 string
-            switch t436.(type) {
-            case None:
+            switch t436._tag {
+            case 0:
                 t437 = "none"
-            case Some:
-                var inline457 int32 = t436.(Some)._0
+            case 1:
+                var inline457 int32 = t436._v1_0
                 var inline459 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline457)
                 var inline460 string = "some=" + inline459
                 t437 = inline460
@@ -89,20 +87,21 @@ func main0() struct{} {
             var inline454 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t437)
             _goml_runtime_core_string_println(inline454)
             return struct{}{}
-        case Some:
-            var inline468 int32 = inline463.(Some)._0
+        case 1:
+            var inline468 int32 = inline463._v1_0
             inline465 = inline468
             var inline466 int32 = add(inline465, 2)
-            var inline467 Option__int32 = Some{
-                _0: inline466,
+            var inline467 Option__int32 = Option__int32{
+                _tag: 1,
+                _v1_0: inline466,
             }
             t436 = inline467
             var t437 string
-            switch t436.(type) {
-            case None:
+            switch t436._tag {
+            case 0:
                 t437 = "none"
-            case Some:
-                var inline457 int32 = t436.(Some)._0
+            case 1:
+                var inline457 int32 = t436._v1_0
                 var inline459 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline457)
                 var inline460 string = "some=" + inline459
                 t437 = inline460
@@ -115,20 +114,21 @@ func main0() struct{} {
         default:
             panic("non-exhaustive match")
         }
-    case Some:
-        var inline485 int32 = inline480.(Some)._0
+    case 1:
+        var inline485 int32 = inline480._v1_0
         inline482 = inline485
         var inline483 int32 = add(inline482, 2)
-        var inline484 Option__int32 = Some{
-            _0: inline483,
+        var inline484 Option__int32 = Option__int32{
+            _tag: 1,
+            _v1_0: inline483,
         }
         t434 = inline484
         var t435 string
-        switch t434.(type) {
-        case None:
+        switch t434._tag {
+        case 0:
             t435 = "none"
-        case Some:
-            var inline474 int32 = t434.(Some)._0
+        case 1:
+            var inline474 int32 = t434._v1_0
             var inline476 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline474)
             var inline477 string = "some=" + inline476
             t435 = inline477
@@ -141,15 +141,17 @@ func main0() struct{} {
         var inline462 bool = false
         var inline463 Option__int32 = maybe_value(inline462)
         var inline465 int32
-        switch inline463.(type) {
-        case None:
-            t436 = None{}
+        switch inline463._tag {
+        case 0:
+            t436 = Option__int32{
+                _tag: 0,
+            }
             var t437 string
-            switch t436.(type) {
-            case None:
+            switch t436._tag {
+            case 0:
                 t437 = "none"
-            case Some:
-                var inline457 int32 = t436.(Some)._0
+            case 1:
+                var inline457 int32 = t436._v1_0
                 var inline459 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline457)
                 var inline460 string = "some=" + inline459
                 t437 = inline460
@@ -159,20 +161,21 @@ func main0() struct{} {
             var inline454 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t437)
             _goml_runtime_core_string_println(inline454)
             return struct{}{}
-        case Some:
-            var inline468 int32 = inline463.(Some)._0
+        case 1:
+            var inline468 int32 = inline463._v1_0
             inline465 = inline468
             var inline466 int32 = add(inline465, 2)
-            var inline467 Option__int32 = Some{
-                _0: inline466,
+            var inline467 Option__int32 = Option__int32{
+                _tag: 1,
+                _v1_0: inline466,
             }
             t436 = inline467
             var t437 string
-            switch t436.(type) {
-            case None:
+            switch t436._tag {
+            case 0:
                 t437 = "none"
-            case Some:
-                var inline457 int32 = t436.(Some)._0
+            case 1:
+                var inline457 int32 = t436._v1_0
                 var inline459 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline457)
                 var inline460 string = "some=" + inline459
                 t437 = inline460

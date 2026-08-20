@@ -25,6 +25,14 @@ struct LowerEnv {
     functions: Vec[anf::Function],
     function_names: FunctionNames,
     dyn_helper_names: DynHelperNames,
+    pointer_params: Vec[PointerParamInfo],
+    pointer_vars: HashMap[string, bool],
+}
+
+struct PointerParamInfo {
+    function: string,
+    values: Vec[bool],
+    copies: Vec[bool],
 }
 
 struct CompiledValue {
@@ -235,6 +243,32 @@ fn go_foreign_call(spec: GoForeignSpec, args: Vec[Expr]) -> Expr {
     }
 }
 
+fn go_foreign_opaque_dyn(value: repr::Type) -> bool {
+    match repr::resolve_type(value) {
+        Dyn { trait_name: _, args, associated_types, additional_bounds } => args.is_empty()
+            && associated_types.is_empty()
+            && additional_bounds.is_empty(),
+        _ => false,
+    }
+}
+
+fn go_foreign_argument(name: string, ty: repr::Type) -> Expr {
+    let value = Expr::Var { name };
+    if go_foreign_opaque_dyn(ty) {
+        Expr::Field { expr: value, field_name: "data" }
+    } else {
+        value
+    }
+}
+
+fn go_foreign_result(value: Expr, ty: repr::Type) -> Expr {
+    if go_foreign_opaque_dyn(ty) {
+        Expr::StructLiteral { ty: lower_type(ty), fields: Vec::from_array([("data", value)]) }
+    } else {
+        value
+    }
+}
+
 fn go_foreign_wrapper(spec: GoForeignSpec) -> Function {
     match repr::resolve_type(spec.ty) {
         Func { params: param_types, ret_ty } => {
@@ -243,7 +277,7 @@ fn go_foreign_wrapper(spec: GoForeignSpec) -> Function {
             for index in 0..param_types.len() {
                 let name = "arg" + index.to_string();
                 params.push((name, lower_type(param_types[index])));
-                args.push(Expr::Var { name })
+                args.push(go_foreign_argument(name, param_types[index]))
             }
             let call = go_foreign_call(spec, args);
             let stmts: Vec[Stmt] = Vec::from_array([]);
@@ -272,7 +306,9 @@ fn go_foreign_wrapper(spec: GoForeignSpec) -> Function {
                         },
                     )
                 },
-                _ => stmts.push(Stmt::Return { expr: Option::Some(call) }),
+                _ => stmts.push(
+                    Stmt::Return { expr: Option::Some(go_foreign_result(call, ret_ty)) },
+                ),
             };
             Function {
                 name: go_foreign_wrapper_name(spec.import_path, spec.symbol, spec.ty),
@@ -423,11 +459,32 @@ fn compile_constant_expr(variants: VariantInfos, value: repr::ConstExpr) -> Expr
         },
         Constr { constructor, args, ty } => {
             let fields: Vec[(string, Expr)] = Vec::with_capacity(args.len());
+            let info = match constructor.tag {
+                Some(tag) => find_variant_info(variants, ty, tag),
+                None => Option::None,
+            };
+            match info {
+                Some(value) => if value.compact {
+                    fields.push(("_tag", Expr::Int { value: value.tag.to_string() }))
+                } else {},
+                None => (),
+            };
             for index in 0..args.len() {
                 fields.push(
                     (
                         if constructor.is_struct && index < constructor.fields.len() {
                             go_ident(constructor.fields[index])
+                        } else if match info {
+                            Some(value) => value.compact,
+                            None => false,
+                        } {
+                            compact_variant_field_name(
+                                match constructor.tag {
+                                    Some(tag) => tag,
+                                    None => 0,
+                                },
+                                index,
+                            )
                         } else {
                             "_" + index.to_string()
                         },
@@ -438,10 +495,11 @@ fn compile_constant_expr(variants: VariantInfos, value: repr::ConstExpr) -> Expr
             let go_ty = if constructor.is_struct {
                 lower_type(ty)
             } else {
-                match constructor.tag {
-                    Some(tag) => match variant_type(variants, ty, tag) {
-                        Some(ty) => ty,
-                        None => constructor_type(constructor),
+                match info {
+                    Some(value) => if value.compact {
+                        lower_type(ty)
+                    } else {
+                        Type::Named { name: value.variant_name }
                     },
                     None => constructor_type(constructor),
                 }
@@ -534,7 +592,14 @@ fn compile_imm(env: LowerEnv, value: anf::Imm) -> Expr {
         Var { name, ty: _ } => {
             match mapped_function_name(env.function_names, name) {
                 Some(value) => Expr::Var { name: value },
-                None => Expr::Var { name: go_local_ident(name) },
+                None => {
+                    let result = Expr::Var { name: go_local_ident(name) };
+                    if env.pointer_vars.contains(name) {
+                        Expr::Unary { op: UnaryOp::Deref, expr: result }
+                    } else {
+                        result
+                    }
+                },
             }
         },
         Callable { callable: Intrinsic(key), ty: function_ty } => {
@@ -601,9 +666,21 @@ fn compile_closure_function(
 
 fn compile_imm_expected(env: LowerEnv, value: anf::Imm, expected_ty: repr::Type) -> Expr {
     match value {
-        Tag { index: tag, ty: owner_ty } => match variant_type(env.variants, owner_ty, tag) {
-            Some(ty) => Expr::StructLiteral { ty, fields: Vec::from_array([]) },
-            None => compile_imm(env, value),
+        Tag { index: tag, ty: owner_ty } => {
+            match find_variant_info(env.variants, owner_ty, tag) {
+                Some(info) => if info.compact {
+                    Expr::StructLiteral {
+                        ty: lower_type(owner_ty),
+                        fields: Vec::from_array([("_tag", Expr::Int { value: tag.to_string() })]),
+                    }
+                } else {
+                    match variant_type(env.variants, owner_ty, tag) {
+                        Some(ty) => Expr::StructLiteral { ty, fields: Vec::from_array([]) },
+                        None => compile_imm(env, value),
+                    }
+                },
+                None => compile_imm(env, value),
+            }
         },
         _ => compile_imm(env, value),
     }
@@ -969,29 +1046,70 @@ fn compile_collection_from_array_callable(key: string, function_ty: repr::Type) 
             let values = Expr::Var { name: "values" };
             let stmts: Vec[Stmt] = Vec::from_array([]);
             if key == "vec.from_array" {
-                let len_args = Vec::from_array([values]);
-                let items = Expr::Slice {
-                    base: values,
-                    start: Expr::Int { value: "0" },
-                    end: Expr::Call { func: Expr::Var { name: "len" }, args: len_args },
-                };
                 let result_ty = match lower_type(ret_ty) {
                     Type::Pointer { elem } => elem,
                     other => other,
                 };
-                stmts.push(
-                    Stmt::Return {
-                        expr: Option::Some(
-                            Expr::Unary {
-                                op: UnaryOp::Address,
-                                expr: Expr::StructLiteral {
-                                    ty: result_ty,
-                                    fields: Vec::from_array([("items", items)]),
+                let empty = match repr::resolve_type(param_types[0]) {
+                    Array { len, elem: _ } => len == 0,
+                    _ => false,
+                };
+                if empty {
+                    let len_args = Vec::from_array([values]);
+                    let items = Expr::Slice {
+                        base: values,
+                        start: Expr::Int { value: "0" },
+                        end: Expr::Call { func: Expr::Var { name: "len" }, args: len_args },
+                    };
+                    stmts.push(
+                        Stmt::Return {
+                            expr: Option::Some(
+                                Expr::Unary {
+                                    op: UnaryOp::Address,
+                                    expr: Expr::StructLiteral {
+                                        ty: result_ty,
+                                        fields: Vec::from_array([("items", items)]),
+                                    },
                                 },
-                            },
+                            ),
+                        },
+                    )
+                } else {
+                    let storage = Expr::Var { name: "storage" };
+                    let storage_ty = Type::Struct {
+                        fields: Vec::from_array(
+                            [("vector", result_ty), ("values", lower_type(param_types[0]))],
                         ),
-                    },
-                )
+                    };
+                    stmts.push(Stmt::Var { name: "storage", ty: storage_ty, value: Option::None });
+                    stmts.push(
+                        Stmt::FieldAssign { target: storage, field_name: "values", value: values },
+                    );
+                    let stored_values = Expr::Field { expr: storage, field_name: "values" };
+                    let len_args = Vec::from_array([stored_values]);
+                    let items = Expr::Slice {
+                        base: stored_values,
+                        start: Expr::Int { value: "0" },
+                        end: Expr::Call { func: Expr::Var { name: "len" }, args: len_args },
+                    };
+                    stmts.push(
+                        Stmt::FieldAssign {
+                            target: Expr::Field { expr: storage, field_name: "vector" },
+                            field_name: "items",
+                            value: items,
+                        },
+                    );
+                    stmts.push(
+                        Stmt::Return {
+                            expr: Option::Some(
+                                Expr::Unary {
+                                    op: UnaryOp::Address,
+                                    expr: Expr::Field { expr: storage, field_name: "vector" },
+                                },
+                            ),
+                        },
+                    )
+                }
             } else {
                 let result = Expr::Var { name: "result" };
                 stmts.push(
@@ -1078,6 +1196,19 @@ fn compile_call(env: LowerEnv, func: anf::Imm, args: Vec[anf::Imm]) -> Expr {
         _ => Vec::from_array([]),
     };
     let compiled = compile_imms_expected(env, args, expected);
+    match direct_function_name(func) {
+        Some(name) => for index in 0..compiled.len() {
+            if pointer_param_enabled(env.pointer_params, name, index) {
+                compiled[index] = match args[index] {
+                    Var { name, ty: _ } if env.pointer_vars.contains(name) => {
+                        Expr::Var { name: go_local_ident(name) }
+                    },
+                    _ => Expr::Unary { op: UnaryOp::Address, expr: compiled[index] },
+                };
+            } else {}
+        },
+        None => (),
+    };
     match func {
         Callable { callable: Intrinsic(key), ty: _ } => {
             if key == "slice.new" {
@@ -1165,6 +1296,14 @@ fn compile_constructor(
     ty: repr::Type,
 ) -> Expr {
     let expected: Vec[repr::Type] = Vec::from_array([]);
+    let info = if constructor.is_struct {
+        Option::None
+    } else {
+        match constructor.tag {
+            Some(tag) => find_variant_info(env.variants, ty, tag),
+            None => Option::None,
+        }
+    };
     if constructor.is_struct {
         for field_ty in struct_field_types(env, ty) {
             expected.push(field_ty)
@@ -1183,9 +1322,26 @@ fn compile_constructor(
         }
     };
     let fields: Vec[(string, Expr)] = Vec::from_array([]);
+    match info {
+        Some(value) => if value.compact {
+            fields.push(("_tag", Expr::Int { value: value.tag.to_string() }))
+        } else {},
+        None => (),
+    };
     for index in 0..args.len() {
         let name = if constructor.is_struct && index < constructor.fields.len() {
             go_ident(constructor.fields[index])
+        } else if match info {
+            Some(value) => value.compact,
+            None => false,
+        } {
+            compact_variant_field_name(
+                match constructor.tag {
+                    Some(tag) => tag,
+                    None => 0,
+                },
+                index,
+            )
         } else {
             "_" + index.to_string()
         };
@@ -1199,10 +1355,11 @@ fn compile_constructor(
     let go_ty = if constructor.is_struct {
         lower_type(ty)
     } else {
-        match constructor.tag {
-            Some(tag) => match variant_type(env.variants, ty, tag) {
-                Some(ty) => ty,
-                None => constructor_type(constructor),
+        match info {
+            Some(value) => if value.compact {
+                lower_type(ty)
+            } else {
+                Type::Named { name: value.variant_name }
             },
             None => constructor_type(constructor),
         }
@@ -1253,23 +1410,46 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
             }
         },
         ConstrGet { expr, constructor, field_index: index, ty: _ } => {
+            let owner_ty = anf::imm_type(expr);
+            let info = match constructor.tag {
+                Some(tag) => find_variant_info(env.variants, owner_ty, tag),
+                None => Option::None,
+            };
             let field = if constructor.is_struct && index < constructor.fields.len() {
                 go_ident(constructor.fields[index])
+            } else if match info {
+                Some(value) => value.compact,
+                None => false,
+            } {
+                compact_variant_field_name(
+                    match constructor.tag {
+                        Some(tag) => tag,
+                        None => 0,
+                    },
+                    index,
+                )
             } else {
                 "_" + index.to_string()
             };
             let target = if constructor.is_struct {
                 compile_imm(env, expr)
             } else {
-                let owner_ty = anf::imm_type(expr);
-                let go_ty = match constructor.tag {
-                    Some(tag) => match variant_type(env.variants, owner_ty, tag) {
-                        Some(ty) => ty,
-                        None => constructor_type(constructor),
+                match info {
+                    Some(value) => if value.compact {
+                        compile_imm(env, expr)
+                    } else {
+                        Expr::Cast {
+                            expr: compile_imm(env, expr),
+                            ty: Type::Named { name: value.variant_name },
+                        }
                     },
-                    None => constructor_type(constructor),
-                };
-                Expr::Cast { expr: compile_imm(env, expr), ty: go_ty }
+                    None => {
+                        Expr::Cast {
+                            expr: compile_imm(env, expr),
+                            ty: constructor_type(constructor),
+                        }
+                    },
+                }
             };
             Expr::Field { expr: target, field_name: field }
         },
@@ -1694,7 +1874,13 @@ fn compile_match_leaf(
             Some(body) => Option::Some(compile_block(env, body)),
             None => Option::Some(non_exhaustive_block()),
         };
-        result.push(Stmt::Switch { expr: compile_imm(env, scrut), cases, default: lowered_default })
+        result.push(
+            Stmt::Switch {
+                expr: compile_match_scrutinee(env, scrut),
+                cases,
+                default: lowered_default,
+            },
+        )
     };
     result
 }
@@ -1714,6 +1900,17 @@ fn match_uses_types(env: LowerEnv, values: Vec[anf::Arm]) -> bool {
         }
     }
     false
+}
+
+fn compile_match_scrutinee(env: LowerEnv, value: anf::Imm) -> Expr {
+    match find_variant_info(env.variants, anf::imm_type(value), 0) {
+        Some(info) => if info.compact {
+            Expr::Field { expr: compile_imm(env, value), field_name: "_tag" }
+        } else {
+            compile_imm(env, value)
+        },
+        None => compile_imm(env, value),
+    }
 }
 
 fn non_exhaustive_block() -> Block {
@@ -1816,7 +2013,11 @@ fn compile_term_to_join(env: LowerEnv, value: anf::Term, target: string, join: a
                     None => Option::Some(non_exhaustive_block()),
                 };
                 result.push(
-                    Stmt::Switch { expr: compile_imm(env, scrut), cases, default: lowered_default },
+                    Stmt::Switch {
+                        expr: compile_match_scrutinee(env, scrut),
+                        cases,
+                        default: lowered_default,
+                    },
                 )
             }
         },
@@ -2375,7 +2576,11 @@ fn compile_loop_term_leaf(
                     None => Option::Some(non_exhaustive_block()),
                 };
                 result.push(
-                    Stmt::Switch { expr: compile_imm(env, scrut), cases, default: lowered_default },
+                    Stmt::Switch {
+                        expr: compile_match_scrutinee(env, scrut),
+                        cases,
+                        default: lowered_default,
+                    },
                 )
             }
         },
@@ -2516,7 +2721,11 @@ fn compile_loop_term_to_join(
                     None => Option::Some(non_exhaustive_block()),
                 };
                 result.push(
-                    Stmt::Switch { expr: compile_imm(env, scrut), cases, default: lowered_default },
+                    Stmt::Switch {
+                        expr: compile_match_scrutinee(env, scrut),
+                        cases,
+                        default: lowered_default,
+                    },
                 )
             }
         },
@@ -3232,6 +3441,319 @@ fn collect_dyn_block(result: Vec[DynCoercion], value: anf::Block) -> unit {
     }
 }
 
+fn block_assigns_name(value: anf::Block, name: string) -> bool {
+    for bind in value.binds {
+        match bind {
+            Let(value) => match value.value {
+                Assign { name: target, .. } if target == name => return true,
+                _ => (),
+            },
+            Join(value) => if block_assigns_name(value.body, name) {
+                return true
+            } else {},
+            JoinRec(values) => for value in values {
+                if block_assigns_name(value.body, name) {
+                    return true
+                } else {}
+            },
+        }
+    }
+    match value.term {
+        If { cond: _, then_, else_, ret_ty: _ } => {
+            block_assigns_name(then_, name) || block_assigns_name(else_, name)
+        },
+        Match { scrutinee: _, arms, default, ret_ty: _ } => {
+            for arm in arms {
+                if block_assigns_name(arm.body, name) {
+                    return true
+                } else {}
+            }
+            match default {
+                Some(body) => block_assigns_name(body, name),
+                None => false,
+            }
+        },
+        _ => false,
+    }
+}
+
+struct GoSize {
+    size: int,
+    alignment: int,
+    known: bool,
+}
+
+fn known_go_size(size: int, alignment: int) -> GoSize {
+    GoSize { size, alignment, known: true }
+}
+
+fn unknown_go_size() -> GoSize {
+    GoSize { size: 0, alignment: 1, known: false }
+}
+
+fn aligned_go_size(size: int, alignment: int) -> int {
+    (size + alignment - 1) / alignment * alignment
+}
+
+fn go_type_list_size(values: Vec[repr::Type], structs: Vec[repr::StructDef], depth: int) -> GoSize {
+    let mut size = 0;
+    let mut alignment = 1;
+    for value in values {
+        let field = go_type_size(value, structs, depth + 1);
+        if !field.known {
+            return unknown_go_size()
+        } else {};
+        size = aligned_go_size(size, field.alignment) + field.size;
+        if field.alignment > alignment {
+            alignment = field.alignment;
+        } else {};
+    }
+    known_go_size(aligned_go_size(size, alignment), alignment)
+}
+
+fn go_type_size(value: repr::Type, structs: Vec[repr::StructDef], depth: int) -> GoSize {
+    if depth >= 16 {
+        unknown_go_size()
+    } else {
+        match repr::resolve_type(value) {
+            Unit | Never => known_go_size(0, 1),
+            Bool | Int8 | Uint8 => known_go_size(1, 1),
+            Int16 | Uint16 => known_go_size(2, 2),
+            Int32 | Uint32 | Float32 | Char => known_go_size(4, 4),
+            Int | Int64 | Uint | Uint64 | Float64 => known_go_size(8, 8),
+            String => known_go_size(16, 8),
+            Tuple { items } => go_type_list_size(items, structs, depth),
+            Named { name } | ClosureEnvironment { name } => match find_struct(structs, name) {
+                Some(definition) => {
+                    let fields: Vec[repr::Type] = Vec::with_capacity(definition.fields.len());
+                    for field in definition.fields {
+                        fields.push(field.1)
+                    }
+                    go_type_list_size(fields, structs, depth)
+                },
+                None => known_go_size(16, 8),
+            },
+            Dyn { .. } => known_go_size(16, 8),
+            Array { len, elem } => {
+                let item = go_type_size(elem, structs, depth + 1);
+                if item.known {
+                    known_go_size(aligned_go_size(item.size, item.alignment) * len, item.alignment)
+                } else {
+                    item
+                }
+            },
+            Slice { elem: _ } => known_go_size(24, 8),
+            VecType { elem: _ } | RefType { elem: _ } | HashMap { .. } | Channel { elem: _ } | Func {
+                ..,
+            } => known_go_size(8, 8),
+        }
+    }
+}
+
+fn large_named_struct(structs: Vec[repr::StructDef], value: repr::Type) -> bool {
+    match repr::resolve_type(value) {
+        Named { name } => match find_struct(structs, name) {
+            Some(_) => {
+                let size = go_type_size(value, structs, 0);
+                size.known && size.size >= 128
+            },
+            None => false,
+        },
+        _ => false,
+    }
+}
+
+fn direct_function_name(value: anf::Imm) -> Option[string] {
+    match value {
+        Var { name, ty: _ } => Option::Some(name),
+        Callable { callable: Function(name), ty: _ } => Option::Some(name),
+        Callable { callable: LangItem { item: _, function_name }, ty: _ } => {
+            Option::Some(function_name)
+        },
+        _ => Option::None,
+    }
+}
+
+fn imm_uses_function(value: anf::Imm, target: string) -> bool {
+    match direct_function_name(value) {
+        Some(name) => name == target,
+        None => false,
+    }
+}
+
+fn imms_use_function(values: Vec[anf::Imm], target: string) -> bool {
+    for value in values {
+        if imm_uses_function(value, target) {
+            return true
+        } else {}
+    }
+    false
+}
+
+fn pointer_call_argument(value: anf::Imm) -> bool {
+    match value {
+        Var { name: _, ty: _ } => true,
+        _ => false,
+    }
+}
+
+fn inspect_pointer_call(
+    value: anf::Value,
+    target: string,
+    parameter: int,
+    valid: Ref[bool],
+    calls: Ref[int],
+) -> unit {
+    match value {
+        Imm(value) => if imm_uses_function(value, target) {
+            valid.set(false)
+        } else {},
+        Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } | Array {
+            items: args,
+            ty: _,
+        } => if imms_use_function(args, target) {
+            valid.set(false)
+        } else {},
+        ConstrGet { expr, .. } | Unary { expr, .. } | Cast { expr, .. } | ToDyn { expr, .. } | Proj {
+            tuple: expr,
+            ..,
+        } => if imm_uses_function(expr, target) {
+            valid.set(false)
+        } else {},
+        Binary { lhs, rhs, .. } => if imm_uses_function(lhs, target)
+            || imm_uses_function(rhs, target) {
+            valid.set(false)
+        } else {},
+        Assign { name: _, value, target_ty: _, ty: _ } => {
+            if imm_uses_function(value, target) {
+                valid.set(false)
+            } else {}
+        },
+        Call { func, args, ty: _ } => match direct_function_name(func) {
+            Some(name) if name == target => {
+                calls.set(calls.get() + 1);
+                if parameter >= args.len() || !pointer_call_argument(args[parameter]) {
+                    valid.set(false)
+                } else {};
+                if imms_use_function(args, target) {
+                    valid.set(false)
+                } else {}
+            },
+            _ => {
+                if imm_uses_function(func, target) || imms_use_function(args, target) {
+                    valid.set(false)
+                } else {}
+            },
+        },
+        DynCall { receiver, args, .. } => if imm_uses_function(receiver, target)
+            || imms_use_function(args, target) {
+            valid.set(false)
+        } else {},
+        Go { closure, ty: _ } => if imm_uses_function(closure, target) {
+            valid.set(false)
+        } else {},
+        PackClosure { environment, apply, ty: _ } => if apply == target
+            || imm_uses_function(environment, target) {
+            valid.set(false)
+        } else {},
+    }
+}
+
+fn inspect_pointer_calls(
+    value: anf::Block,
+    target: string,
+    parameter: int,
+    valid: Ref[bool],
+    calls: Ref[int],
+) -> unit {
+    for bind in value.binds {
+        match bind {
+            Let(value) => inspect_pointer_call(value.value, target, parameter, valid, calls),
+            Join(value) => inspect_pointer_calls(value.body, target, parameter, valid, calls),
+            JoinRec(values) => for value in values {
+                inspect_pointer_calls(value.body, target, parameter, valid, calls)
+            },
+        }
+    }
+    match value.term {
+        Return(value) => if imm_uses_function(value, target) {
+            valid.set(false)
+        } else {},
+        Jump { target: _, args, ret_ty: _ } => if imms_use_function(args, target) {
+            valid.set(false)
+        } else {},
+        If { cond, then_, else_, ret_ty: _ } => {
+            if imm_uses_function(cond, target) {
+                valid.set(false)
+            } else {};
+            inspect_pointer_calls(then_, target, parameter, valid, calls);
+            inspect_pointer_calls(else_, target, parameter, valid, calls)
+        },
+        Match { scrutinee, arms, default, ret_ty: _ } => {
+            if imm_uses_function(scrutinee, target) {
+                valid.set(false)
+            } else {};
+            for arm in arms {
+                if imm_uses_function(arm.lhs, target) {
+                    valid.set(false)
+                } else {};
+                inspect_pointer_calls(arm.body, target, parameter, valid, calls)
+            }
+            match default {
+                Some(body) => inspect_pointer_calls(body, target, parameter, valid, calls),
+                None => (),
+            }
+        },
+        Unreachable { ty: _ } => (),
+    }
+}
+
+fn pointer_call_is_safe(functions: Vec[anf::Function], target: string, parameter: int) -> bool {
+    let valid = Ref::new(true);
+    let calls = Ref::new(0);
+    for function in functions {
+        inspect_pointer_calls(function.body, target, parameter, valid, calls)
+    }
+    valid.get() && calls.get() > 0
+}
+
+fn build_pointer_param_infos(functions: Vec[anf::Function], structs: Vec[repr::StructDef]) -> Vec[
+    PointerParamInfo,
+] {
+    let result: Vec[PointerParamInfo] = Vec::with_capacity(functions.len());
+    for function in functions {
+        let values: Vec[bool] = Vec::with_capacity(function.params.len());
+        let copies: Vec[bool] = Vec::with_capacity(function.params.len());
+        for index in 0..function.params.len() {
+            let parameter = function.params[index];
+            let enabled = large_named_struct(structs, parameter.1)
+                && pointer_call_is_safe(functions, function.name, index);
+            values.push(enabled);
+            copies.push(enabled && block_assigns_name(function.body, parameter.0))
+        }
+        result.push(PointerParamInfo { function: function.name, values, copies })
+    }
+    result
+}
+
+fn pointer_param_enabled(values: Vec[PointerParamInfo], function: string, index: int) -> bool {
+    for value in values {
+        if value.function == function {
+            return index >= 0 && index < value.values.len() && value.values[index]
+        } else {}
+    }
+    false
+}
+
+fn pointer_param_copied(values: Vec[PointerParamInfo], function: string, index: int) -> bool {
+    for value in values {
+        if value.function == function {
+            return index >= 0 && index < value.copies.len() && value.copies[index]
+        } else {}
+    }
+    false
+}
+
 fn compile_function(
     builtin: tast::BuiltinContract,
     value: anf::Function,
@@ -3241,12 +3763,35 @@ fn compile_function(
     functions: Vec[anf::Function],
     function_names: FunctionNames,
     dyn_helper_names: DynHelperNames,
+    pointer_params: Vec[PointerParamInfo],
 ) -> Function {
     let joins: Vec[anf::JoinBind] = Vec::from_array([]);
     collect_joins_block(joins, value.body);
     let params: Vec[(string, Type)] = Vec::from_array([]);
-    for param in value.params {
-        params.push((go_local_ident(param.0), lower_type(param.1)))
+    let pointer_vars: HashMap[string, bool] = HashMap::from_array([]);
+    let copied_params: Vec[(string, string, Type)] = Vec::from_array([]);
+    for index in 0..value.params.len() {
+        let param = value.params[index];
+        let name = go_local_ident(param.0);
+        let mut ty = lower_type(param.1);
+        if pointer_param_enabled(pointer_params, value.name, index) {
+            if pointer_param_copied(pointer_params, value.name, index) {
+                copied_params.push((name, name + "_pointer", ty))
+            } else {
+                pointer_vars[param.0] = true;
+            };
+            ty = Type::Pointer { elem: ty };
+        } else {};
+        params.push(
+            (
+                if pointer_param_copied(pointer_params, value.name, index) {
+                    name + "_pointer"
+                } else {
+                    name
+                },
+                ty,
+            ),
+        )
     }
     let env = LowerEnv {
         builtin,
@@ -3258,12 +3803,30 @@ fn compile_function(
         functions,
         function_names,
         dyn_helper_names,
+        pointer_params,
+        pointer_vars,
     };
+    let compiled_body = eliminate_dead_vars(compile_block(env, value.body));
+    let stmts: Vec[Stmt] = Vec::with_capacity(copied_params.len() + compiled_body.stmts.len());
+    for copied in copied_params {
+        stmts.push(
+            Stmt::Var {
+                name: copied.0,
+                ty: copied.2,
+                value: Option::Some(
+                    Expr::Unary { op: UnaryOp::Deref, expr: Expr::Var { name: copied.1 } },
+                ),
+            },
+        )
+    }
+    for stmt in compiled_body.stmts {
+        stmts.push(stmt)
+    }
     Function {
         name: env_function_name(env, value.name),
         params,
         ret_ty: Option::Some(lower_type(value.ret_ty)),
-        body: eliminate_dead_vars(compile_block(env, value.body)),
+        body: Block { stmts },
     }
 }
 
@@ -3275,6 +3838,7 @@ fn compile_functions(
     instances: Vec[repr::TypeInstance],
     function_names: FunctionNames,
     dyn_helper_names: DynHelperNames,
+    pointer_params: Vec[PointerParamInfo],
 ) -> Vec[Function] {
     let work: Vec[(int, anf::Function)] = Vec::with_capacity(values.len());
     let compiled: Vec[Option[Function]] = Vec::with_capacity(values.len());
@@ -3296,6 +3860,7 @@ fn compile_functions(
                     values,
                     function_names,
                     dyn_helper_names,
+                    pointer_params,
                 ),
             );
             Result::Ok(())
@@ -3319,6 +3884,7 @@ fn compile_functions(
                     values,
                     function_names,
                     dyn_helper_names,
+                    pointer_params,
                 ),
             ),
         }
@@ -3402,6 +3968,7 @@ fn lower_with_test_cases(
     let constants = value.constants;
     let statics = value.statics;
     let function_names = build_function_names(value.functions, structs, enums, type_instances);
+    let pointer_params = build_pointer_param_infos(value.functions, structs);
     let items: Vec[Item] = Vec::from_array([]);
     let types = new_collected_types();
     let runtime_hook_keys: Vec[string] = Vec::from_array([]);
@@ -3482,6 +4049,7 @@ fn lower_with_test_cases(
         type_instances,
         function_names,
         dyn_helper_names,
+        pointer_params,
     ) {
         items.push(Item::Function(function))
     }

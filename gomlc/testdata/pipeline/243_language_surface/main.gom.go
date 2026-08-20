@@ -70,19 +70,10 @@ type closure_env_increment_0 struct {
 
 type Ordering int32
 
-type Option__int interface {
-    isOption__int()
+type Option__int struct {
+    _tag int32
+    _v1_0 int
 }
-
-type None struct {}
-
-func (_ None) isOption__int() {}
-
-type Some struct {
-    _0 int
-}
-
-func (_ Some) isOption__int() {}
 
 type dyn__Source_vtable struct {
     get func(any) int

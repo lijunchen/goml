@@ -68,11 +68,14 @@ func hashmap_get__HashMap_9LegacyKey_6string(m *hashmap_LegacyKey_string_x, key 
     var ok bool
     value, ok = hashmap_lookup__HashMap_9LegacyKey_6string(m, key)
     if ok {
-        return Option__string_Some{
-            _0: value,
+        return Option__string{
+            _tag: 1,
+            _v1_0: value,
         }
     }
-    return Option__string_None{}
+    return Option__string{
+        _tag: 0,
+    }
 }
 
 func hashmap_set__HashMap_9LegacyKey_6string(m *hashmap_LegacyKey_string_x, key LegacyKey, value string) struct{} {
@@ -166,11 +169,14 @@ func hashmap_get__HashMap_9ModernKey_6string(m *hashmap_ModernKey_string_x, key 
     var ok bool
     value, ok = hashmap_lookup__HashMap_9ModernKey_6string(m, key)
     if ok {
-        return Option__string_Some{
-            _0: value,
+        return Option__string{
+            _tag: 1,
+            _v1_0: value,
         }
     }
-    return Option__string_None{}
+    return Option__string{
+        _tag: 0,
+    }
 }
 
 func hashmap_set__HashMap_9ModernKey_6string(m *hashmap_ModernKey_string_x, key ModernKey, value string) struct{} {
@@ -237,33 +243,15 @@ const (
     Greater Ordering = 2
 )
 
-type Option__Ordering interface {
-    isOption__Ordering()
+type Option__Ordering struct {
+    _tag int32
+    _v1_0 Ordering
 }
 
-type Option__Ordering_None struct {}
-
-func (_ Option__Ordering_None) isOption__Ordering() {}
-
-type Option__Ordering_Some struct {
-    _0 Ordering
+type Option__string struct {
+    _tag int32
+    _v1_0 string
 }
-
-func (_ Option__Ordering_Some) isOption__Ordering() {}
-
-type Option__string interface {
-    isOption__string()
-}
-
-type Option__string_None struct {}
-
-func (_ Option__string_None) isOption__string() {}
-
-type Option__string_Some struct {
-    _0 string
-}
-
-func (_ Option__string_Some) isOption__string() {}
 
 func _goml_m_trait__impl_i_PartialEq_i_LegacyKey_i_eq(self__0 LegacyKey, other__1 LegacyKey) bool {
     var t900 int = self__0.value
@@ -360,11 +348,11 @@ func main0() struct{} {
     t968 = inline1868
     var t969 string
     var inline1864 string = "missing"
-    switch t968.(type) {
-    case Option__string_None:
+    switch t968._tag {
+    case 0:
         t969 = inline1864
-    case Option__string_Some:
-        var inline1865 string = t968.(Option__string_Some)._0
+    case 1:
+        var inline1865 string = t968._v1_0
         t969 = inline1865
     default:
         panic("non-exhaustive match")
@@ -596,11 +584,11 @@ func _goml_m_inherent_i_HashMap_i_H_h4c415936d3e2c958d5274434037d6231_ey____V__s
 }
 
 func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(self__458 Option__string, fallback__459 string) string {
-    switch self__458.(type) {
-    case Option__string_None:
+    switch self__458._tag {
+    case 0:
         return fallback__459
-    case Option__string_Some:
-        var x387 string = self__458.(Option__string_Some)._0
+    case 1:
+        var x387 string = self__458._v1_0
         return x387
     default:
         panic("non-exhaustive match")

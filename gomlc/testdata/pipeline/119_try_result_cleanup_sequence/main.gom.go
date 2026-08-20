@@ -15,53 +15,23 @@ type Handle struct {
 
 type Ordering int32
 
-type Result__Handle__string interface {
-    isResult__Handle__string()
+type Result__Handle__string struct {
+    _tag int32
+    _v0_0 Handle
+    _v1_0 string
 }
 
-type Result__Handle__string_Ok struct {
-    _0 Handle
+type Result__unit__string struct {
+    _tag int32
+    _v0_0 struct{}
+    _v1_0 string
 }
 
-func (_ Result__Handle__string_Ok) isResult__Handle__string() {}
-
-type Result__Handle__string_Err struct {
-    _0 string
+type Result__string__string struct {
+    _tag int32
+    _v0_0 string
+    _v1_0 string
 }
-
-func (_ Result__Handle__string_Err) isResult__Handle__string() {}
-
-type Result__unit__string interface {
-    isResult__unit__string()
-}
-
-type Result__unit__string_Ok struct {
-    _0 struct{}
-}
-
-func (_ Result__unit__string_Ok) isResult__unit__string() {}
-
-type Result__unit__string_Err struct {
-    _0 string
-}
-
-func (_ Result__unit__string_Err) isResult__unit__string() {}
-
-type Result__string__string interface {
-    isResult__string__string()
-}
-
-type Result__string__string_Ok struct {
-    _0 string
-}
-
-func (_ Result__string__string_Ok) isResult__string__string() {}
-
-type Result__string__string_Err struct {
-    _0 string
-}
-
-func (_ Result__string__string_Err) isResult__string__string() {}
 
 func use_handle(open_ok__3 bool, close_ok__4 bool) Result__string__string {
     var mtmp408 Result__Handle__string
@@ -69,56 +39,63 @@ func use_handle(open_ok__3 bool, close_ok__4 bool) Result__string__string {
         var inline468 Handle = Handle{
             name: "config",
         }
-        var inline469 Result__Handle__string = Result__Handle__string_Ok{
-            _0: inline468,
+        var inline469 Result__Handle__string = Result__Handle__string{
+            _tag: 0,
+            _v0_0: inline468,
         }
         mtmp408 = inline469
     } else {
-        var inline470 Result__Handle__string = Result__Handle__string_Err{
-            _0: "open failed",
+        var inline470 Result__Handle__string = Result__Handle__string{
+            _tag: 1,
+            _v1_0: "open failed",
         }
         mtmp408 = inline470
     }
     var jp438 Handle
-    switch mtmp408.(type) {
-    case Result__Handle__string_Ok:
-        var x409 Handle = mtmp408.(Result__Handle__string_Ok)._0
+    switch mtmp408._tag {
+    case 0:
+        var x409 Handle = mtmp408._v0_0
         jp438 = x409
         var name__6 string = jp438.name
         var mtmp411 Result__unit__string
         if close_ok__4 {
-            var inline463 Result__unit__string = Result__unit__string_Ok{
-                _0: struct{}{},
+            var inline463 Result__unit__string = Result__unit__string{
+                _tag: 0,
+                _v0_0: struct{}{},
             }
             mtmp411 = inline463
         } else {
             var inline464 string = jp438.name
             var inline465 string = "close failed for " + inline464
-            var inline466 Result__unit__string = Result__unit__string_Err{
-                _0: inline465,
+            var inline466 Result__unit__string = Result__unit__string{
+                _tag: 1,
+                _v1_0: inline465,
             }
             mtmp411 = inline466
         }
-        switch mtmp411.(type) {
-        case Result__unit__string_Ok:
+        switch mtmp411._tag {
+        case 0:
             var t440 string = "closed " + name__6
-            var t441 Result__string__string = Result__string__string_Ok{
-                _0: t440,
+            var t441 Result__string__string = Result__string__string{
+                _tag: 0,
+                _v0_0: t440,
             }
             return t441
-        case Result__unit__string_Err:
-            var x413 string = mtmp411.(Result__unit__string_Err)._0
-            var t442 Result__string__string = Result__string__string_Err{
-                _0: x413,
+        case 1:
+            var x413 string = mtmp411._v1_0
+            var t442 Result__string__string = Result__string__string{
+                _tag: 1,
+                _v1_0: x413,
             }
             return t442
         default:
             panic("non-exhaustive match")
         }
-    case Result__Handle__string_Err:
-        var x410 string = mtmp408.(Result__Handle__string_Err)._0
-        var t443 Result__string__string = Result__string__string_Err{
-            _0: x410,
+    case 1:
+        var x410 string = mtmp408._v1_0
+        var t443 Result__string__string = Result__string__string{
+            _tag: 1,
+            _v1_0: x410,
         }
         return t443
     default:
@@ -129,13 +106,13 @@ func use_handle(open_ok__3 bool, close_ok__4 bool) Result__string__string {
 func main0() struct{} {
     var t451 Result__string__string = use_handle(true, true)
     var t452 string
-    switch t451.(type) {
-    case Result__string__string_Ok:
-        var inline495 string = t451.(Result__string__string_Ok)._0
+    switch t451._tag {
+    case 0:
+        var inline495 string = t451._v0_0
         var inline497 string = "ok " + inline495
         t452 = inline497
-    case Result__string__string_Err:
-        var inline498 string = t451.(Result__string__string_Err)._0
+    case 1:
+        var inline498 string = t451._v1_0
         var inline500 string = "err " + inline498
         t452 = inline500
     default:
@@ -145,13 +122,13 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline492)
     var t453 Result__string__string = use_handle(false, true)
     var t454 string
-    switch t453.(type) {
-    case Result__string__string_Ok:
-        var inline485 string = t453.(Result__string__string_Ok)._0
+    switch t453._tag {
+    case 0:
+        var inline485 string = t453._v0_0
         var inline487 string = "ok " + inline485
         t454 = inline487
-    case Result__string__string_Err:
-        var inline488 string = t453.(Result__string__string_Err)._0
+    case 1:
+        var inline488 string = t453._v1_0
         var inline490 string = "err " + inline488
         t454 = inline490
     default:
@@ -161,13 +138,13 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline482)
     var t455 Result__string__string = use_handle(true, false)
     var t456 string
-    switch t455.(type) {
-    case Result__string__string_Ok:
-        var inline475 string = t455.(Result__string__string_Ok)._0
+    switch t455._tag {
+    case 0:
+        var inline475 string = t455._v0_0
         var inline477 string = "ok " + inline475
         t456 = inline477
-    case Result__string__string_Err:
-        var inline478 string = t455.(Result__string__string_Err)._0
+    case 1:
+        var inline478 string = t455._v1_0
         var inline480 string = "err " + inline478
         t456 = inline480
     default:

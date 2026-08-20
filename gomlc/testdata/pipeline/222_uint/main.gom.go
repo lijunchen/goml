@@ -20,10 +20,6 @@ func _goml_runtime_core_uint64_to_string(x uint64) string {
     return _goml_fmt.Sprintf("%d", x)
 }
 
-func _goml_runtime_core_uint_hash(x uint) uint64 {
-    return uint64(x)
-}
-
 func _goml_runtime_core_string_println(s string) struct{} {
     _goml_fmt.Println(s)
     return struct{}{}
@@ -36,16 +32,16 @@ type hashmap_uint_string_x_entry struct {
 }
 
 type hashmap_uint_string_x struct {
-    buckets map[uint64][]hashmap_uint_string_x_entry
-    hashes []uint64
+    indices map[uint]int
+    entries []hashmap_uint_string_x_entry
     len int
 }
 
 func hashmap_new__HashMap_4uint_6string() *hashmap_uint_string_x {
     return &hashmap_uint_string_x{
-        buckets: make(map[uint64][]hashmap_uint_string_x_entry),
+        indices: make(map[uint]int),
+        entries: nil,
         len: 0,
-        hashes: nil,
     }
 }
 
@@ -54,18 +50,16 @@ func hashmap_lookup__HashMap_4uint_6string(m *hashmap_uint_string_x, key uint) (
         var zero string
         return zero, false
     }
-    var h uint64 = _goml_m_trait__impl_i_Hash_i_uint_i_hash(key)
-    var bucket []hashmap_uint_string_x_entry = m.buckets[h]
-    var i int = 0
-    for {
-        if i >= int(len(bucket)) {
-            break
-        }
-        var entry hashmap_uint_string_x_entry = bucket[i]
-        if entry.active && _goml_m_trait__impl_i_PartialEq_i_uint_i_eq(entry.key, key) {
-            return entry.value, true
-        }
-        i = i + 1
+    var index int
+    var found bool
+    index, found = m.indices[key]
+    if !found {
+        var zero string
+        return zero, false
+    }
+    var entry hashmap_uint_string_x_entry = m.entries[index]
+    if entry.active {
+        return entry.value, true
     }
     var zero string
     return zero, false
@@ -76,40 +70,30 @@ func hashmap_get__HashMap_4uint_6string(m *hashmap_uint_string_x, key uint) Opti
     var ok bool
     value, ok = hashmap_lookup__HashMap_4uint_6string(m, key)
     if ok {
-        return Some{
-            _0: value,
+        return Option__string{
+            _tag: 1,
+            _v1_0: value,
         }
     }
-    return None{}
+    return Option__string{
+        _tag: 0,
+    }
 }
 
 func hashmap_set__HashMap_4uint_6string(m *hashmap_uint_string_x, key uint, value string) struct{} {
-    var reuse_index int = -1
     if m == nil {
         return struct{}{}
     }
-    var h uint64 = _goml_m_trait__impl_i_Hash_i_uint_i_hash(key)
-    var bucket []hashmap_uint_string_x_entry = m.buckets[h]
-    if len(bucket) == 0 {
-        m.hashes = append(m.hashes, h)
-    }
-    var i int = 0
-    for {
-        if i >= int(len(bucket)) {
-            break
-        }
-        var entry hashmap_uint_string_x_entry = bucket[i]
-        if entry.active && _goml_m_trait__impl_i_PartialEq_i_uint_i_eq(entry.key, key) {
-            bucket[i].value = value
+    var index int
+    var found bool
+    index, found = m.indices[key]
+    if found {
+        var entry hashmap_uint_string_x_entry = m.entries[index]
+        if entry.active {
+            m.entries[index].value = value
             return struct{}{}
         }
-        if !entry.active && reuse_index < 0 {
-            reuse_index = i
-        }
-        i = i + 1
-    }
-    if reuse_index >= 0 {
-        bucket[reuse_index] = hashmap_uint_string_x_entry{
+        m.entries[index] = hashmap_uint_string_x_entry{
             active: true,
             key: key,
             value: value,
@@ -117,31 +101,23 @@ func hashmap_set__HashMap_4uint_6string(m *hashmap_uint_string_x, key uint, valu
         m.len = m.len + 1
         return struct{}{}
     }
-    bucket = append(bucket, hashmap_uint_string_x_entry{
+    index = len(m.entries)
+    m.indices[key] = index
+    m.entries = append(m.entries, hashmap_uint_string_x_entry{
         active: true,
         key: key,
         value: value,
     })
-    m.buckets[h] = bucket
     m.len = m.len + 1
     return struct{}{}
 }
 
 type Ordering int32
 
-type Option__string interface {
-    isOption__string()
+type Option__string struct {
+    _tag int32
+    _v1_0 string
 }
-
-type None struct {}
-
-func (_ None) isOption__string() {}
-
-type Some struct {
-    _0 string
-}
-
-func (_ Some) isOption__string() {}
 
 func main0() struct{} {
     var left__3 uint = 19
@@ -186,14 +162,14 @@ func main0() struct{} {
     var inline478 uint = 42
     var inline479 Option__string = hashmap_get__HashMap_4uint_6string(values__6, inline478)
     mtmp414 = inline479
-    switch mtmp414.(type) {
-    case None:
+    switch mtmp414._tag {
+    case 0:
         var inline471 string = "missing"
         var inline472 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline471)
         _goml_runtime_core_string_println(inline472)
         return struct{}{}
-    case Some:
-        var x415 string = mtmp414.(Some)._0
+    case 1:
+        var x415 string = mtmp414._v1_0
         var inline475 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x415)
         _goml_runtime_core_string_println(inline475)
         return struct{}{}
@@ -219,16 +195,6 @@ func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__148 bool) string {
 func _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(self__159 uint64) string {
     var t463 string = _goml_runtime_core_uint64_to_string(self__159)
     return t463
-}
-
-func _goml_m_trait__impl_i_PartialEq_i_uint_i_eq(self__444 uint, other__445 uint) bool {
-    var t466 bool = self__444 == other__445
-    return t466
-}
-
-func _goml_m_trait__impl_i_Hash_i_uint_i_hash(self__446 uint) uint64 {
-    var t469 uint64 = _goml_runtime_core_uint_hash(self__446)
-    return t469
 }
 
 func main() {

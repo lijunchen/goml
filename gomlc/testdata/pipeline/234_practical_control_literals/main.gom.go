@@ -42,24 +42,15 @@ func ref_set__Ref_3int(reference *ref_int_x, value int) struct{} {
 
 type Ordering int32
 
-type Option__int interface {
-    isOption__int()
+type Option__int struct {
+    _tag int32
+    _v1_0 int
 }
-
-type None struct {}
-
-func (_ None) isOption__int() {}
-
-type Some struct {
-    _0 int
-}
-
-func (_ Some) isOption__int() {}
 
 func unwrap_or_negative(value__0 Option__int) int {
-    switch value__0.(type) {
-    case Some:
-        var x409 int = value__0.(Some)._0
+    switch value__0._tag {
+    case 1:
+        var x409 int = value__0._v1_0
         return x409
     default:
         return -1
@@ -92,9 +83,9 @@ func count_to(limit__2 int) int {
 
 func loop_option(value__5 Option__int) int {
     var jp445 int
-    switch value__5.(type) {
-    case Some:
-        var x415 int = value__5.(Some)._0
+    switch value__5._tag {
+    case 1:
+        var x415 int = value__5._v1_0
         jp445 = x415
         return jp445
     default:
@@ -114,8 +105,9 @@ func main0() struct{} {
     var t465 string = "" + "}"
     var inline556 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t465)
     _goml_runtime_core_string_println(inline556)
-    var t466 Option__int = Some{
-        _0: 11,
+    var t466 Option__int = Option__int{
+        _tag: 1,
+        _v1_0: 11,
     }
     var t467 int = unwrap_or_negative(t466)
     var t468 string
@@ -136,8 +128,9 @@ func main0() struct{} {
     t472 = inline540
     var inline537 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t472)
     _goml_runtime_core_string_println(inline537)
-    var t473 Option__int = Some{
-        _0: 9,
+    var t473 Option__int = Option__int{
+        _tag: 1,
+        _v1_0: 9,
     }
     var t474 int = loop_option(t473)
     var t475 string
@@ -145,7 +138,9 @@ func main0() struct{} {
     t475 = inline535
     var inline532 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t475)
     _goml_runtime_core_string_println(inline532)
-    var t476 int = loop_option(None{})
+    var t476 int = loop_option(Option__int{
+        _tag: 0,
+    })
     var t477 string
     var inline530 string = _goml_runtime_core_int_to_string(t476)
     t477 = inline530

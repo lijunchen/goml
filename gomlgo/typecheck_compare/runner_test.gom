@@ -1,0 +1,17 @@
+package typecheck_compare;
+
+use std::env;
+use std::path;
+use std::testing;
+
+#[test]
+fn compares_local_typecheck_fixtures() -> unit {
+    if env::var("GOMLGO_ORACLE").is_some() {
+        let root = path::join(env::current_dir().unwrap_or("."), "testdata/typecheck");
+        let result = testing::expect_ok(compare_tree(root), "typecheck comparison failed");
+        testing::assert_eq(result.files, 3);
+        testing::assert_eq(result.accepted, 2);
+        testing::assert_eq(result.rejected, 1);
+        testing::assert_eq(result.info_compared, 2)
+    } else {}
+}

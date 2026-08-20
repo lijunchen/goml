@@ -133,6 +133,17 @@ fn type_doc(value: Type) -> pretty::Doc {
         Multi { items: values } => {
             fixed_delimited_doc("(", ")", type_docs(values))
         },
+        Struct { fields } => {
+            let values: Vec[pretty::Doc] = Vec::with_capacity(fields.len());
+            for field in fields {
+                values.push(
+                    pretty::concat(
+                        Vec::from_array([pretty::text(field.0 + " "), type_doc(field.1)]),
+                    ),
+                )
+            }
+            declaration_block_doc(pretty::text("struct"), values)
+        },
     }
 }
 
@@ -221,7 +232,15 @@ fn expr_doc(value: Expr) -> pretty::Doc {
             ),
         ),
         Field { expr: value, field_name: field } => {
-            pretty::append(expr_doc(value), pretty::text("." + field))
+            let target = match value {
+                Unary { op: _, expr: _ } => fixed_delimited_doc(
+                    "(",
+                    ")",
+                    Vec::from_array([expr_doc(value)]),
+                ),
+                _ => expr_doc(value),
+            };
+            pretty::append(target, pretty::text("." + field))
         },
         Index { base: value, index } => pretty::concat(
             Vec::from_array(

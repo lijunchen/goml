@@ -32,19 +32,10 @@ type Pair struct {
 
 type Ordering int32
 
-type Choice interface {
-    isChoice()
+type Choice struct {
+    _tag int32
+    _v0_0 int
 }
-
-type Value struct {
-    _0 int
-}
-
-func (_ Value) isChoice() {}
-
-type Empty struct {}
-
-func (_ Empty) isChoice() {}
 
 const (
     ANSWER int = 120

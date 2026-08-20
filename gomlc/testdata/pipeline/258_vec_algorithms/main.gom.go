@@ -2,7 +2,6 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_slices "slices"
     _goml_strings "strings"
 )
 
@@ -33,7 +32,7 @@ type _goml_vec_int struct {
 
 func vec_with_capacity__Vec_3int(capacity int) *_goml_vec_int {
     return &_goml_vec_int{
-        items: _goml_slices.Grow([]int{}, int(capacity)),
+        items: make([]int, 0, capacity),
     }
 }
 
@@ -72,7 +71,7 @@ type _goml_vec_string struct {
 
 func vec_with_capacity__Vec_6string(capacity int) *_goml_vec_string {
     return &_goml_vec_string{
-        items: _goml_slices.Grow([]string{}, int(capacity)),
+        items: make([]string, 0, capacity),
     }
 }
 
@@ -100,7 +99,7 @@ type _goml_vec_Tuple2_3int_3int struct {
 
 func vec_with_capacity__Vec_16Tuple2_3int_3int(capacity int) *_goml_vec_Tuple2_3int_3int {
     return &_goml_vec_Tuple2_3int_3int{
-        items: _goml_slices.Grow([]Tuple2_3int_3int{}, int(capacity)),
+        items: make([]Tuple2_3int_3int, 0, capacity),
     }
 }
 
@@ -197,33 +196,15 @@ const (
     Greater Ordering = 2
 )
 
-type Option__Ordering interface {
-    isOption__Ordering()
+type Option__Ordering struct {
+    _tag int32
+    _v1_0 Ordering
 }
 
-type Option__Ordering_None struct {}
-
-func (_ Option__Ordering_None) isOption__Ordering() {}
-
-type Option__Ordering_Some struct {
-    _0 Ordering
+type Option__int struct {
+    _tag int32
+    _v1_0 int
 }
-
-func (_ Option__Ordering_Some) isOption__Ordering() {}
-
-type Option__int interface {
-    isOption__int()
-}
-
-type Option__int_None struct {}
-
-func (_ Option__int_None) isOption__int() {}
-
-type Option__int_Some struct {
-    _0 int
-}
-
-func (_ Option__int_Some) isOption__int() {}
 
 func _goml_m_trait__impl_i_std_p_cmp_p_Ord_i_string_i_cmp(self__24 string, other__25 string) Ordering {
     var t522 bool = self__24 < other__25
@@ -256,9 +237,13 @@ func _goml_m_trait__impl_i_std_p_cmp_p_Ord_i_int_i_cmp(self__32 int, other__33 i
 func main0() struct{} {
     var t919 [8]int = [8]int{3, 1, 4, 1, 5, 9, 2, 6}
     var values__0 *_goml_vec_int = func(values [8]int) *_goml_vec_int {
-        return &_goml_vec_int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_int
+            values [8]int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t919)
     var t920 closure_env_main_0 = closure_env_main_0{}
     var t921 func(int) bool = func(p0 int) bool {
@@ -288,9 +273,13 @@ func main0() struct{} {
     println__T_string(t933)
     var t934 [5]int = [5]int{1, 2, 4, 4, 5}
     var ordered__5 *_goml_vec_int = func(values [5]int) *_goml_vec_int {
-        return &_goml_vec_int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_int
+            values [5]int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t934)
     var t935 closure_env_main_3 = closure_env_main_3{}
     var t936 func(int) int = func(p0 int) int {
@@ -326,9 +315,13 @@ func main0() struct{} {
     println__T_string(t954)
     var t955 [3]string = [3]string{"beta", "alpha", "gamma"}
     var names__12 *_goml_vec_string = func(values [3]string) *_goml_vec_string {
-        return &_goml_vec_string{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_string
+            values [3]string
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t955)
     var t956 closure_env_main_7 = closure_env_main_7{}
     var t957 func(string, string) Ordering = func(p0 string, p1 string) Ordering {
@@ -351,9 +344,13 @@ func main0() struct{} {
     }
     var t962 [3]Tuple2_3int_3int = [3]Tuple2_3int_3int{t959, t960, t961}
     var pairs__15 *_goml_vec_Tuple2_3int_3int = func(values [3]Tuple2_3int_3int) *_goml_vec_Tuple2_3int_3int {
-        return &_goml_vec_Tuple2_3int_3int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_Tuple2_3int_3int
+            values [3]Tuple2_3int_3int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t962)
     var t963 closure_env_main_8 = closure_env_main_8{}
     var t964 func(Tuple2_3int_3int, Tuple2_3int_3int) Ordering = func(p0 Tuple2_3int_3int, p1 Tuple2_3int_3int) Ordering {
@@ -376,9 +373,13 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline2310)
     var t967 [3]int = [3]int{7, 8, 9}
     var t968 *_goml_vec_int = func(values [3]int) *_goml_vec_int {
-        return &_goml_vec_int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_int
+            values [3]int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t967)
     var view__18 []int
     var inline2306 int = 0
@@ -399,9 +400,13 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline2296)
     var t973 [2]int = [2]int{1, 2}
     var t974 *_goml_vec_int = func(values [2]int) *_goml_vec_int {
-        return &_goml_vec_int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_int
+            values [2]int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t973)
     var frozen__19 FrozenVec__int
     var inline2293 *_goml_vec_int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_copy____T__int(t974)
@@ -478,16 +483,17 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_position____T__int(self__319 *_goml_v
         var inline2786 func() Option__int = for_iter257.next_fn
         var inline2787 Option__int = inline2786()
         for_next258 = inline2787
-        switch for_next258.(type) {
-        case Option__int_None:
+        switch for_next258._tag {
+        case 0:
             break Loop_loop1379
-        case Option__int_Some:
-            var x259 int = for_next258.(Option__int_Some)._0
+        case 1:
+            var x259 int = for_next258._v1_0
             var t1382 int = vec_get__Vec_3int(self__319, x259)
             var t1383 bool = predicate__320(t1382)
             if t1383 {
-                var t1384 Option__int = Option__int_Some{
-                    _0: x259,
+                var t1384 Option__int = Option__int{
+                    _tag: 1,
+                    _v1_0: x259,
                 }
                 return t1384
             } else {
@@ -497,15 +503,17 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_position____T__int(self__319 *_goml_v
             panic("non-exhaustive match")
         }
     }
-    return Option__int_None{}
+    return Option__int{
+        _tag: 0,
+    }
 }
 
 func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__int(self__458 Option__int, fallback__459 int) int {
-    switch self__458.(type) {
-    case Option__int_None:
+    switch self__458._tag {
+    case 0:
         return fallback__459
-    case Option__int_Some:
-        var x387 int = self__458.(Option__int_Some)._0
+    case 1:
+        var x387 int = self__458._v1_0
         return x387
     default:
         panic("non-exhaustive match")
@@ -552,11 +560,11 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_join____T__int(self__378 *_goml_vec_i
         var inline2802 func() Option__int = for_iter349.next_fn
         var inline2803 Option__int = inline2802()
         for_next350 = inline2803
-        switch for_next350.(type) {
-        case Option__int_None:
+        switch for_next350._tag {
+        case 0:
             break Loop_loop1413
-        case Option__int_Some:
-            var x351 int = for_next350.(Option__int_Some)._0
+        case 1:
+            var x351 int = for_next350._v1_0
             var t1415 int = vec_get__Vec_3int(self__378, x351)
             var t1416 string
             var inline2800 string = _goml_runtime_core_int_to_string(t1415)
@@ -597,11 +605,11 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_join____T__int(self__378 *_goml_vec_i
         var inline2809 func() Option__int = for_iter353.next_fn
         var inline2810 Option__int = inline2809()
         for_next354 = inline2810
-        switch for_next354.(type) {
-        case Option__int_None:
+        switch for_next354._tag {
+        case 0:
             break Loop_loop1406
-        case Option__int_Some:
-            var x355 int = for_next354.(Option__int_Some)._0
+        case 1:
+            var x355 int = for_next354._v1_0
             var t1411 bool = x355 > 0
             if t1411 {
                 vec_push__Vec_6string(result__382, separator__379)
@@ -667,12 +675,15 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_binary__search__by____T__int(self__34
         jp1428 = false
     }
     if jp1428 {
-        var t1429 Option__int = Option__int_Some{
-            _0: low__347,
+        var t1429 Option__int = Option__int{
+            _tag: 1,
+            _v1_0: low__347,
         }
         return t1429
     } else {
-        return Option__int_None{}
+        return Option__int{
+            _tag: 0,
+        }
     }
 }
 
@@ -682,7 +693,9 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_min__by____T__int(self__353 *_goml_ve
     var inline2855 bool = inline2854 == 0
     t1448 = inline2855
     if t1448 {
-        return Option__int_None{}
+        return Option__int{
+            _tag: 0,
+        }
     } else {
         var best__355 int = vec_get__Vec_3int(self__353, 0)
         var t1449 int
@@ -708,11 +721,11 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_min__by____T__int(self__353 *_goml_ve
             var inline2842 func() Option__int = for_iter326.next_fn
             var inline2843 Option__int = inline2842()
             for_next327 = inline2843
-            switch for_next327.(type) {
-            case Option__int_None:
+            switch for_next327._tag {
+            case 0:
                 break Loop_loop1453
-            case Option__int_Some:
-                var x328 int = for_next327.(Option__int_Some)._0
+            case 1:
+                var x328 int = for_next327._v1_0
                 var value__357 int = vec_get__Vec_3int(self__353, x328)
                 var t1456 int = compare__354(value__357, best__355)
                 var t1457 bool = t1456 < 0
@@ -726,8 +739,9 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_min__by____T__int(self__353 *_goml_ve
                 panic("non-exhaustive match")
             }
         }
-        var t1452 Option__int = Option__int_Some{
-            _0: best__355,
+        var t1452 Option__int = Option__int{
+            _tag: 1,
+            _v1_0: best__355,
         }
         return t1452
     }
@@ -739,7 +753,9 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_max__by____T__int(self__358 *_goml_ve
     var inline2870 bool = inline2869 == 0
     t1462 = inline2870
     if t1462 {
-        return Option__int_None{}
+        return Option__int{
+            _tag: 0,
+        }
     } else {
         var best__360 int = vec_get__Vec_3int(self__358, 0)
         var t1463 int
@@ -765,11 +781,11 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_max__by____T__int(self__358 *_goml_ve
             var inline2857 func() Option__int = for_iter331.next_fn
             var inline2858 Option__int = inline2857()
             for_next332 = inline2858
-            switch for_next332.(type) {
-            case Option__int_None:
+            switch for_next332._tag {
+            case 0:
                 break Loop_loop1467
-            case Option__int_Some:
-                var x333 int = for_next332.(Option__int_Some)._0
+            case 1:
+                var x333 int = for_next332._v1_0
                 var value__362 int = vec_get__Vec_3int(self__358, x333)
                 var t1470 int = compare__359(value__362, best__360)
                 var t1471 bool = t1470 > 0
@@ -783,8 +799,9 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_max__by____T__int(self__358 *_goml_ve
                 panic("non-exhaustive match")
             }
         }
-        var t1466 Option__int = Option__int_Some{
-            _0: best__360,
+        var t1466 Option__int = Option__int{
+            _tag: 1,
+            _v1_0: best__360,
         }
         return t1466
     }
@@ -831,11 +848,11 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_join____T__string(self__378 *_goml_ve
         var inline2880 func() Option__int = for_iter349.next_fn
         var inline2881 Option__int = inline2880()
         for_next350 = inline2881
-        switch for_next350.(type) {
-        case Option__int_None:
+        switch for_next350._tag {
+        case 0:
             break Loop_loop1498
-        case Option__int_Some:
-            var x351 int = for_next350.(Option__int_Some)._0
+        case 1:
+            var x351 int = for_next350._v1_0
             var t1500 string = vec_get__Vec_6string(self__378, x351)
             var t1501 string
             t1501 = t1500
@@ -875,11 +892,11 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_join____T__string(self__378 *_goml_ve
         var inline2887 func() Option__int = for_iter353.next_fn
         var inline2888 Option__int = inline2887()
         for_next354 = inline2888
-        switch for_next354.(type) {
-        case Option__int_None:
+        switch for_next354._tag {
+        case 0:
             break Loop_loop1491
-        case Option__int_Some:
-            var x355 int = for_next354.(Option__int_Some)._0
+        case 1:
+            var x355 int = for_next354._v1_0
             var t1496 bool = x355 > 0
             if t1496 {
                 vec_push__Vec_6string(result__382, separator__379)
@@ -997,11 +1014,11 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_stable__sort__by____T__int(self__322 
             var inline2938 func() Option__int = for_iter262.next_fn
             var inline2939 Option__int = inline2938()
             for_next263 = inline2939
-            switch for_next263.(type) {
-            case Option__int_None:
+            switch for_next263._tag {
+            case 0:
                 break Loop_loop1622
-            case Option__int_Some:
-                var x264 int = for_next263.(Option__int_Some)._0
+            case 1:
+                var x264 int = for_next263._v1_0
                 var t1624 int = vec_get__Vec_3int(self__322, x264)
                 vec_push__Vec_3int(buffer__325, t1624)
                 continue
@@ -1149,11 +1166,11 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_stable__sort__by____T__int(self__322 
                     var inline2945 func() Option__int = for_iter313.next_fn
                     var inline2946 Option__int = inline2945()
                     for_next314 = inline2946
-                    switch for_next314.(type) {
-                    case Option__int_None:
+                    switch for_next314._tag {
+                    case 0:
                         break Loop_loop1580
-                    case Option__int_Some:
-                        var x315 int = for_next314.(Option__int_Some)._0
+                    case 1:
+                        var x315 int = for_next314._v1_0
                         vec_get__Vec_3int(self__322, x315)
                         var value319 int = vec_get__Vec_3int(buffer__325, x315)
                         vec_set__Vec_3int(self__322, x315, value319)
@@ -1213,11 +1230,11 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_dedup__by____T__int(self__371 *_goml_
             var inline2966 func() Option__int = for_iter337.next_fn
             var inline2967 Option__int = inline2966()
             for_next338 = inline2967
-            switch for_next338.(type) {
-            case Option__int_None:
+            switch for_next338._tag {
+            case 0:
                 break Loop_loop1647
-            case Option__int_Some:
-                var x339 int = for_next338.(Option__int_Some)._0
+            case 1:
+                var x339 int = for_next338._v1_0
                 var value__375 int = vec_get__Vec_3int(self__371, x339)
                 var t1650 int = output__373 - 1
                 var t1651 int = vec_get__Vec_3int(self__371, t1650)
@@ -1279,10 +1296,10 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_copy____T__int(self__264 *_goml_vec_i
 }
 
 func _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__some____T__int(self__456 Option__int) bool {
-    switch self__456.(type) {
-    case Option__int_None:
+    switch self__456._tag {
+    case 0:
         return false
-    case Option__int_Some:
+    case 1:
         return true
     default:
         panic("non-exhaustive match")
@@ -1327,11 +1344,11 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_stable__sort__by____T__string(self__3
             var inline2994 func() Option__int = for_iter262.next_fn
             var inline2995 Option__int = inline2994()
             for_next263 = inline2995
-            switch for_next263.(type) {
-            case Option__int_None:
+            switch for_next263._tag {
+            case 0:
                 break Loop_loop1768
-            case Option__int_Some:
-                var x264 int = for_next263.(Option__int_Some)._0
+            case 1:
+                var x264 int = for_next263._v1_0
                 var t1770 string = vec_get__Vec_6string(self__322, x264)
                 vec_push__Vec_6string(buffer__325, t1770)
                 continue
@@ -1479,11 +1496,11 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_stable__sort__by____T__string(self__3
                     var inline3001 func() Option__int = for_iter313.next_fn
                     var inline3002 Option__int = inline3001()
                     for_next314 = inline3002
-                    switch for_next314.(type) {
-                    case Option__int_None:
+                    switch for_next314._tag {
+                    case 0:
                         break Loop_loop1726
-                    case Option__int_Some:
-                        var x315 int = for_next314.(Option__int_Some)._0
+                    case 1:
+                        var x315 int = for_next314._v1_0
                         vec_get__Vec_6string(self__322, x315)
                         var value319 string = vec_get__Vec_6string(buffer__325, x315)
                         vec_set__Vec_6string(self__322, x315, value319)
@@ -1542,11 +1559,11 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_stable__sort__by____T___o_int_c_int_q
             var inline3024 func() Option__int = for_iter262.next_fn
             var inline3025 Option__int = inline3024()
             for_next263 = inline3025
-            switch for_next263.(type) {
-            case Option__int_None:
+            switch for_next263._tag {
+            case 0:
                 break Loop_loop1830
-            case Option__int_Some:
-                var x264 int = for_next263.(Option__int_Some)._0
+            case 1:
+                var x264 int = for_next263._v1_0
                 var t1832 Tuple2_3int_3int = vec_get__Vec_16Tuple2_3int_3int(self__322, x264)
                 vec_push__Vec_16Tuple2_3int_3int(buffer__325, t1832)
                 continue
@@ -1694,11 +1711,11 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_stable__sort__by____T___o_int_c_int_q
                     var inline3031 func() Option__int = for_iter313.next_fn
                     var inline3032 Option__int = inline3031()
                     for_next314 = inline3032
-                    switch for_next314.(type) {
-                    case Option__int_None:
+                    switch for_next314._tag {
+                    case 0:
                         break Loop_loop1788
-                    case Option__int_Some:
-                        var x315 int = for_next314.(Option__int_Some)._0
+                    case 1:
+                        var x315 int = for_next314._v1_0
                         vec_get__Vec_16Tuple2_3int_3int(self__322, x315)
                         var value319 Tuple2_3int_3int = vec_get__Vec_16Tuple2_3int_3int(buffer__325, x315)
                         vec_set__Vec_16Tuple2_3int_3int(self__322, x315, value319)
@@ -1821,12 +1838,15 @@ func _goml_m_inherent_i_closure__en_h705ec68e290747cc19a5685005dd16c1_nge__13_i_
     if t1890 {
         var t1891 int = value__497 + 1
         ref_set__Ref_3int(current__496, t1891)
-        var t1892 Option__int = Option__int_Some{
-            _0: value__497,
+        var t1892 Option__int = Option__int{
+            _tag: 1,
+            _v1_0: value__497,
         }
         return t1892
     } else {
-        return Option__int_None{}
+        return Option__int{
+            _tag: 0,
+        }
     }
 }
 

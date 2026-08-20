@@ -32,19 +32,10 @@ type Generic__NoTraits__NoTraits struct {
 
 type Ordering int32
 
-type GenericChoice__NoTraits__NoTraits interface {
-    isGenericChoice__NoTraits__NoTraits()
+type GenericChoice__NoTraits__NoTraits struct {
+    _tag int32
+    _v1_0 Wrapper__NoTraits
 }
-
-type Empty struct {}
-
-func (_ Empty) isGenericChoice__NoTraits__NoTraits() {}
-
-type Value struct {
-    _0 Wrapper__NoTraits
-}
-
-func (_ Value) isGenericChoice__NoTraits__NoTraits() {}
 
 func main0() struct{} {
     var t426 NoTraits = NoTraits{
@@ -70,9 +61,12 @@ func main0() struct{} {
     var t431 bool = t429 == t430
     var inline563 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t431)
     _goml_runtime_core_string_println(inline563)
-    var empty__27 GenericChoice__NoTraits__NoTraits = Empty{}
-    var value__28 GenericChoice__NoTraits__NoTraits = Value{
-        _0: wrapped__24,
+    var empty__27 GenericChoice__NoTraits__NoTraits = GenericChoice__NoTraits__NoTraits{
+        _tag: 0,
+    }
+    var value__28 GenericChoice__NoTraits__NoTraits = GenericChoice__NoTraits__NoTraits{
+        _tag: 1,
+        _v1_0: wrapped__24,
     }
     var t432 string = _goml_m_trait__impl_i_ToString_hfd40b94e3e10293076a83269859fcdb0_ts_i_to__string(empty__27)
     var inline560 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t432)
@@ -175,10 +169,10 @@ func _goml_m_trait__impl_i_Hash_i_Generic____NoTraits____NoTraits_i_hash(self__9
 }
 
 func _goml_m_trait__impl_i_ToString_hfd40b94e3e10293076a83269859fcdb0_ts_i_to__string(self__13 GenericChoice__NoTraits__NoTraits) string {
-    switch self__13.(type) {
-    case Empty:
+    switch self__13._tag {
+    case 0:
         return "GenericChoice::Empty"
-    case Value:
+    case 1:
         var t485 string
         t485 = "wrapped"
         var t486 string = "GenericChoice::Value(" + t485
@@ -190,17 +184,17 @@ func _goml_m_trait__impl_i_ToString_hfd40b94e3e10293076a83269859fcdb0_ts_i_to__s
 }
 
 func _goml_m_trait__impl_i_PartialEq_i_GenericChoice____NoTraits____NoTraits_i_eq(self__15 GenericChoice__NoTraits__NoTraits, other__16 GenericChoice__NoTraits__NoTraits) bool {
-    switch other__16.(type) {
-    case Empty:
-        switch self__15.(type) {
-        case Empty:
+    switch other__16._tag {
+    case 0:
+        switch self__15._tag {
+        case 0:
             return true
         default:
             return false
         }
-    case Value:
-        switch self__15.(type) {
-        case Value:
+    case 1:
+        switch self__15._tag {
+        case 1:
             return true
         default:
             return false

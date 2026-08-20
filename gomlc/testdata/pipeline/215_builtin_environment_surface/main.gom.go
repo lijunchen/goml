@@ -134,19 +134,10 @@ type closure_env_goml_builtin_range_1 struct {
 
 type Ordering int32
 
-type Option__int interface {
-    isOption__int()
+type Option__int struct {
+    _tag int32
+    _v1_0 int
 }
-
-type None struct {}
-
-func (_ None) isOption__int() {}
-
-type Some struct {
-    _0 int
-}
-
-func (_ Some) isOption__int() {}
 
 func main0() struct{} {
     var native__0 int = 7
@@ -318,11 +309,11 @@ func _goml_m_std_p_iter_p_fold____A__int____I__FnIterator_l_int_r_____T__int(ite
         var inline558 func() Option__int = iterator__48.next_fn
         var inline559 Option__int = inline558()
         mtmp43 = inline559
-        switch mtmp43.(type) {
-        case None:
+        switch mtmp43._tag {
+        case 0:
             break Loop_loop_expr456
-        case Some:
-            var x44 int = mtmp43.(Some)._0
+        case 1:
+            var x44 int = mtmp43._v1_0
             var t458 int = combine__50(accumulator__51, x44)
             accumulator__51 = t458
             continue
@@ -398,12 +389,15 @@ func _goml_m_inherent_i_closure__en_h07c29ff1f344b08e028033881af7c2d9_ange__1_i_
     if t529 {
         var t530 int = value__497 + 1
         ref_set__Ref_3int(current__496, t530)
-        var t531 Option__int = Some{
-            _0: value__497,
+        var t531 Option__int = Option__int{
+            _tag: 1,
+            _v1_0: value__497,
         }
         return t531
     } else {
-        return None{}
+        return Option__int{
+            _tag: 0,
+        }
     }
 }
 

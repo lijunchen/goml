@@ -71,19 +71,10 @@ type Tuple2_4bool_4char struct {
 
 type Ordering int32
 
-type Option__char interface {
-    isOption__char()
+type Option__char struct {
+    _tag int32
+    _v1_0 rune
 }
-
-type None struct {}
-
-func (_ None) isOption__char() {}
-
-type Some struct {
-    _0 rune
-}
-
-func (_ Some) isOption__char() {}
 
 func show_u8(value__0 uint8) struct{} {
     var inline676 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(value__0)
@@ -359,13 +350,13 @@ func casts() struct{} {
     var inline809 uint32 = 128512
     var inline810 Option__char = __goml_builtin_char_from_uint32(inline809)
     mtmp469 = inline810
-    switch mtmp469.(type) {
-    case None:
+    switch mtmp469._tag {
+    case 0:
         var inline798 string = "invalid"
         var inline799 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline798)
         _goml_runtime_core_string_println(inline799)
-    case Some:
-        var x470 rune = mtmp469.(Some)._0
+    case 1:
+        var x470 rune = mtmp469._v1_0
         var t578 string
         var inline805 string = char_to_string(x470)
         t578 = inline805
@@ -494,12 +485,15 @@ func __goml_builtin_char_from_uint32(value__30 uint32) Option__char {
     if t656 {
         var mtmp22 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__30)
         var x24 rune = mtmp22._1
-        var t657 Option__char = Some{
-            _0: x24,
+        var t657 Option__char = Option__char{
+            _tag: 1,
+            _v1_0: x24,
         }
         return t657
     } else {
-        return None{}
+        return Option__char{
+            _tag: 0,
+        }
     }
 }
 

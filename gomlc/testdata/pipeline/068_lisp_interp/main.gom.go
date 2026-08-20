@@ -2,7 +2,6 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_slices "slices"
 )
 
 func _goml_runtime_core_bool_to_string(x bool) string {
@@ -57,7 +56,7 @@ func vec_new__Vec_5Token() *_goml_vec_Token {
 
 func vec_with_capacity__Vec_5Token(capacity int) *_goml_vec_Token {
     return &_goml_vec_Token{
-        items: _goml_slices.Grow([]Token{}, int(capacity)),
+        items: make([]Token, 0, capacity),
     }
 }
 
@@ -86,7 +85,7 @@ func vec_new__Vec_7Binding() *_goml_vec_Binding {
 
 func vec_with_capacity__Vec_7Binding(capacity int) *_goml_vec_Binding {
     return &_goml_vec_Binding{
-        items: _goml_slices.Grow([]Binding{}, int(capacity)),
+        items: make([]Binding, 0, capacity),
     }
 }
 
@@ -115,7 +114,7 @@ func vec_new__Vec_5SExpr() *_goml_vec_SExpr {
 
 func vec_with_capacity__Vec_5SExpr(capacity int) *_goml_vec_SExpr {
     return &_goml_vec_SExpr{
-        items: _goml_slices.Grow([]SExpr{}, int(capacity)),
+        items: make([]SExpr, 0, capacity),
     }
 }
 
@@ -144,7 +143,7 @@ func vec_new__Vec_5Value() *_goml_vec_Value {
 
 func vec_with_capacity__Vec_5Value(capacity int) *_goml_vec_Value {
     return &_goml_vec_Value{
-        items: _goml_slices.Grow([]Value{}, int(capacity)),
+        items: make([]Value, 0, capacity),
     }
 }
 
@@ -173,7 +172,7 @@ func vec_new__Vec_6string() *_goml_vec_string {
 
 func vec_with_capacity__Vec_6string(capacity int) *_goml_vec_string {
     return &_goml_vec_string{
-        items: _goml_slices.Grow([]string{}, int(capacity)),
+        items: make([]string, 0, capacity),
     }
 }
 
@@ -504,19 +503,10 @@ type List struct {
 
 func (_ List) isSExpr() {}
 
-type Option__char interface {
-    isOption__char()
+type Option__char struct {
+    _tag int32
+    _v1_0 rune
 }
-
-type None struct {}
-
-func (_ None) isOption__char() {}
-
-type Some struct {
-    _0 rune
-}
-
-func (_ Some) isOption__char() {}
 
 func is_int_text(text__2 string) bool {
     var len__3 int
@@ -2161,12 +2151,12 @@ func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3in
         if t1241 {
             var inline2000 int = 1
             var inline2001 Option__char = __goml_builtin_char_from_uint32(first__8)
-            switch inline2001.(type) {
-            case None:
+            switch inline2001._tag {
+            case 0:
                 var inline2002 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                 return inline2002
-            case Some:
-                var inline2003 rune = inline2001.(Some)._0
+            case 1:
+                var inline2003 rune = inline2001._v1_0
                 var inline2005 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                     _0: true,
                     _1: inline2003,
@@ -2228,12 +2218,12 @@ func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3in
                             var t1260 uint32 = t1258 | t1259
                             var inline2013 int = 2
                             var inline2014 Option__char = __goml_builtin_char_from_uint32(t1260)
-                            switch inline2014.(type) {
-                            case None:
+                            switch inline2014._tag {
+                            case 0:
                                 var inline2015 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                                 return inline2015
-                            case Some:
-                                var inline2016 rune = inline2014.(Some)._0
+                            case 1:
+                                var inline2016 rune = inline2014._v1_0
                                 var inline2018 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                     _0: true,
                                     _1: inline2016,
@@ -2323,12 +2313,12 @@ func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3in
                                 var t1284 uint32 = t1282 | t1283
                                 var inline2032 int = 3
                                 var inline2033 Option__char = __goml_builtin_char_from_uint32(t1284)
-                                switch inline2033.(type) {
-                                case None:
+                                switch inline2033._tag {
+                                case 0:
                                     var inline2034 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                                     return inline2034
-                                case Some:
-                                    var inline2035 rune = inline2033.(Some)._0
+                                case 1:
+                                    var inline2035 rune = inline2033._v1_0
                                     var inline2037 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                         _0: true,
                                         _1: inline2035,
@@ -2523,12 +2513,15 @@ func __goml_builtin_char_from_uint32(value__30 uint32) Option__char {
     if t1390 {
         var mtmp22 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__30)
         var x24 rune = mtmp22._1
-        var t1391 Option__char = Some{
-            _0: x24,
+        var t1391 Option__char = Option__char{
+            _tag: 1,
+            _v1_0: x24,
         }
         return t1391
     } else {
-        return None{}
+        return Option__char{
+            _tag: 0,
+        }
     }
 }
 

@@ -63,9 +63,13 @@ type Ordering int32
 func main0() struct{} {
     var t426 [3]int = [3]int{1, 2, 3}
     var values__4 *_goml_vec_int = func(values [3]int) *_goml_vec_int {
-        return &_goml_vec_int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_int
+            values [3]int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t426)
     var t427 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__int(values__4, 2)
     var t428 string
@@ -81,9 +85,13 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline532)
     var t431 [2]string = [2]string{"alpha", "beta"}
     var names__5 *_goml_vec_string = func(values [2]string) *_goml_vec_string {
-        return &_goml_vec_string{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_string
+            values [2]string
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t431)
     var t432 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__string(names__5, "beta")
     var t433 string
@@ -97,9 +105,13 @@ func main0() struct{} {
     }
     var t435 [1]Pair = [1]Pair{t434}
     var pairs__6 *_goml_vec_Pair = func(values [1]Pair) *_goml_vec_Pair {
-        return &_goml_vec_Pair{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_Pair
+            values [1]Pair
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t435)
     var t436 Pair = Pair{
         left: 1,

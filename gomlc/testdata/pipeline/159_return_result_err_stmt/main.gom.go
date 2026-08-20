@@ -2,21 +2,11 @@ package main
 
 type Ordering int32
 
-type Result__unit__string interface {
-    isResult__unit__string()
+type Result__unit__string struct {
+    _tag int32
+    _v0_0 struct{}
+    _v1_0 string
 }
-
-type Ok struct {
-    _0 struct{}
-}
-
-func (_ Ok) isResult__unit__string() {}
-
-type Err struct {
-    _0 string
-}
-
-func (_ Err) isResult__unit__string() {}
 
 func main0() struct{} {
     return struct{}{}

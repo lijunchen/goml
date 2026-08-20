@@ -99,11 +99,14 @@ func hashmap_get__HashMap_9Ref_4Node_6string(m *hashmap_Ref_4Node_string_x, key 
     var ok bool
     value, ok = hashmap_lookup__HashMap_9Ref_4Node_6string(m, key)
     if ok {
-        return Some{
-            _0: value,
+        return Option__string{
+            _tag: 1,
+            _v1_0: value,
         }
     }
-    return None{}
+    return Option__string{
+        _tag: 0,
+    }
 }
 
 func hashmap_set__HashMap_9Ref_4Node_6string(m *hashmap_Ref_4Node_string_x, key *ref_Node_x, value string) struct{} {
@@ -156,32 +159,23 @@ type Node struct {
 
 type Ordering int32
 
-type Option__string interface {
-    isOption__string()
+type Option__string struct {
+    _tag int32
+    _v1_0 string
 }
-
-type None struct {}
-
-func (_ None) isOption__string() {}
-
-type Some struct {
-    _0 string
-}
-
-func (_ Some) isOption__string() {}
 
 func print_lookup(map__0 *hashmap_Ref_4Node_string_x, key__1 *ref_Node_x) struct{} {
     var mtmp408 Option__string
     var inline483 Option__string = hashmap_get__HashMap_9Ref_4Node_6string(map__0, key__1)
     mtmp408 = inline483
-    switch mtmp408.(type) {
-    case None:
+    switch mtmp408._tag {
+    case 0:
         var inline476 string = "missing"
         var inline477 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline476)
         _goml_runtime_core_string_println(inline477)
         return struct{}{}
-    case Some:
-        var x409 string = mtmp408.(Some)._0
+    case 1:
+        var x409 string = mtmp408._v1_0
         var inline480 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x409)
         _goml_runtime_core_string_println(inline480)
         return struct{}{}
@@ -215,11 +209,11 @@ func main0() struct{} {
     hashmap_set__HashMap_9Ref_4Node_6string(map__6, first__3, inline519)
     print_lookup(map__6, first__3)
     var inline513 Option__string = _goml_m_inherent_i_HashMap_i_H_h9ede9e5e4b19497ae51b9af572b3f34a_r_____V__string(map__6, distinct__5)
-    switch inline513.(type) {
-    case None:
+    switch inline513._tag {
+    case 0:
         println__T_string("missing")
-    case Some:
-        var inline515 string = inline513.(Some)._0
+    case 1:
+        var inline515 string = inline513._v1_0
         println__T_string(inline515)
     default:
         panic("non-exhaustive match")
@@ -229,11 +223,11 @@ func main0() struct{} {
     }
     ref_set__Ref_4Node(first__3, t433)
     var inline505 Option__string = _goml_m_inherent_i_HashMap_i_H_h9ede9e5e4b19497ae51b9af572b3f34a_r_____V__string(map__6, first__3)
-    switch inline505.(type) {
-    case None:
+    switch inline505._tag {
+    case 0:
         println__T_string("missing")
-    case Some:
-        var inline507 string = inline505.(Some)._0
+    case 1:
+        var inline507 string = inline505._v1_0
         println__T_string(inline507)
     default:
         panic("non-exhaustive match")
@@ -246,22 +240,22 @@ func main0() struct{} {
     var inline497 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t434)
     _goml_runtime_core_string_println(inline497)
     var inline491 Option__string = _goml_m_inherent_i_HashMap_i_H_h9ede9e5e4b19497ae51b9af572b3f34a_r_____V__string(map__6, first__3)
-    switch inline491.(type) {
-    case None:
+    switch inline491._tag {
+    case 0:
         println__T_string("missing")
-    case Some:
-        var inline493 string = inline491.(Some)._0
+    case 1:
+        var inline493 string = inline491._v1_0
         println__T_string(inline493)
     default:
         panic("non-exhaustive match")
     }
     var inline485 Option__string = _goml_m_inherent_i_HashMap_i_H_h9ede9e5e4b19497ae51b9af572b3f34a_r_____V__string(map__6, distinct__5)
-    switch inline485.(type) {
-    case None:
+    switch inline485._tag {
+    case 0:
         println__T_string("missing")
         return struct{}{}
-    case Some:
-        var inline487 string = inline485.(Some)._0
+    case 1:
+        var inline487 string = inline485._v1_0
         println__T_string(inline487)
         return struct{}{}
     default:

@@ -16,37 +16,17 @@ type Tuple2_6string_6string struct {
 
 type Ordering int32
 
-type _goml_m_Result_____o_string_c_string_q_____string interface {
-    is_goml_m_Result_____o_string_c_string_q_____string()
+type _goml_m_Result_____o_string_c_string_q_____string struct {
+    _tag int32
+    _v0_0 Tuple2_6string_6string
+    _v1_0 string
 }
 
-type _goml_m_Result_____o_string_c_string_q_____string_Ok struct {
-    _0 Tuple2_6string_6string
+type Result__string__string struct {
+    _tag int32
+    _v0_0 string
+    _v1_0 string
 }
-
-func (_ _goml_m_Result_____o_string_c_string_q_____string_Ok) is_goml_m_Result_____o_string_c_string_q_____string() {}
-
-type _goml_m_Result_____o_string_c_string_q_____string_Err struct {
-    _0 string
-}
-
-func (_ _goml_m_Result_____o_string_c_string_q_____string_Err) is_goml_m_Result_____o_string_c_string_q_____string() {}
-
-type Result__string__string interface {
-    isResult__string__string()
-}
-
-type Result__string__string_Ok struct {
-    _0 string
-}
-
-func (_ Result__string__string_Ok) isResult__string__string() {}
-
-type Result__string__string_Err struct {
-    _0 string
-}
-
-func (_ Result__string__string_Err) isResult__string__string() {}
 
 func split_host_port(ok__0 bool) _goml_m_Result_____o_string_c_string_q_____string {
     if ok__0 {
@@ -54,13 +34,15 @@ func split_host_port(ok__0 bool) _goml_m_Result_____o_string_c_string_q_____stri
             _0: "localhost",
             _1: "8080",
         }
-        var t423 _goml_m_Result_____o_string_c_string_q_____string = _goml_m_Result_____o_string_c_string_q_____string_Ok{
-            _0: t422,
+        var t423 _goml_m_Result_____o_string_c_string_q_____string = _goml_m_Result_____o_string_c_string_q_____string{
+            _tag: 0,
+            _v0_0: t422,
         }
         return t423
     } else {
-        var t424 _goml_m_Result_____o_string_c_string_q_____string = _goml_m_Result_____o_string_c_string_q_____string_Err{
-            _0: "missing port",
+        var t424 _goml_m_Result_____o_string_c_string_q_____string = _goml_m_Result_____o_string_c_string_q_____string{
+            _tag: 1,
+            _v1_0: "missing port",
         }
         return t424
     }
@@ -71,22 +53,24 @@ func render(ok__2 bool) Result__string__string {
     var inline457 _goml_m_Result_____o_string_c_string_q_____string = split_host_port(ok__2)
     mtmp408 = inline457
     var jp431 Tuple2_6string_6string
-    switch mtmp408.(type) {
-    case _goml_m_Result_____o_string_c_string_q_____string_Ok:
-        var x409 Tuple2_6string_6string = mtmp408.(_goml_m_Result_____o_string_c_string_q_____string_Ok)._0
+    switch mtmp408._tag {
+    case 0:
+        var x409 Tuple2_6string_6string = mtmp408._v0_0
         jp431 = x409
         var x412 string = jp431._0
         var x413 string = jp431._1
         var t432 string = x412 + "="
         var t433 string = t432 + x413
-        var t434 Result__string__string = Result__string__string_Ok{
-            _0: t433,
+        var t434 Result__string__string = Result__string__string{
+            _tag: 0,
+            _v0_0: t433,
         }
         return t434
-    case _goml_m_Result_____o_string_c_string_q_____string_Err:
-        var x410 string = mtmp408.(_goml_m_Result_____o_string_c_string_q_____string_Err)._0
-        var t435 Result__string__string = Result__string__string_Err{
-            _0: x410,
+    case 1:
+        var x410 string = mtmp408._v1_0
+        var t435 Result__string__string = Result__string__string{
+            _tag: 1,
+            _v1_0: x410,
         }
         return t435
     default:
@@ -97,13 +81,13 @@ func render(ok__2 bool) Result__string__string {
 func main0() struct{} {
     var t443 Result__string__string = render(true)
     var t444 string
-    switch t443.(type) {
-    case Result__string__string_Ok:
-        var inline472 string = t443.(Result__string__string_Ok)._0
+    switch t443._tag {
+    case 0:
+        var inline472 string = t443._v0_0
         var inline474 string = "ok " + inline472
         t444 = inline474
-    case Result__string__string_Err:
-        var inline475 string = t443.(Result__string__string_Err)._0
+    case 1:
+        var inline475 string = t443._v1_0
         var inline477 string = "err " + inline475
         t444 = inline477
     default:
@@ -113,13 +97,13 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline469)
     var t445 Result__string__string = render(false)
     var t446 string
-    switch t445.(type) {
-    case Result__string__string_Ok:
-        var inline462 string = t445.(Result__string__string_Ok)._0
+    switch t445._tag {
+    case 0:
+        var inline462 string = t445._v0_0
         var inline464 string = "ok " + inline462
         t446 = inline464
-    case Result__string__string_Err:
-        var inline465 string = t445.(Result__string__string_Err)._0
+    case 1:
+        var inline465 string = t445._v1_0
         var inline467 string = "err " + inline465
         t446 = inline467
     default:

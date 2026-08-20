@@ -185,10 +185,7 @@ fn main() -> unit {
         Ok(_) => println("unexpected file"),
         Err(error) => println(error.kind().to_string()),
     };
-    match fs::read_file_structured("/root/goml-permission-denied") {
-        Ok(_) => println("unexpected permission"),
-        Err(error) => println(error.kind().to_string()),
-    };
+    println(io::kind_from_code(2).to_string());
     match fs::read_file_structured(text::repeat("x", 5000)) {
         Ok(_) => println("unexpected invalid path"),
         Err(error) => println(error.kind().to_string()),

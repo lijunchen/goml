@@ -20,19 +20,10 @@ type Point struct {
 
 type Ordering int32
 
-type Shape interface {
-    isShape()
+type Shape struct {
+    _tag int32
+    _v1_0 Point
 }
-
-type Unit struct {}
-
-func (_ Unit) isShape() {}
-
-type Location struct {
-    _0 Point
-}
-
-func (_ Location) isShape() {}
 
 func _goml_m_trait__impl_i_TypeName_i_Point_i_type__name(self__0 Point) string {
     var x409 int32 = self__0.x
@@ -51,11 +42,11 @@ func _goml_m_trait__impl_i_TypeName_i_Point_i_type__name(self__0 Point) string {
 }
 
 func _goml_m_trait__impl_i_TypeName_i_Shape_i_type__name(self__4 Shape) string {
-    switch self__4.(type) {
-    case Unit:
+    switch self__4._tag {
+    case 0:
         return "Unit"
-    case Location:
-        var x411 Point = self__4.(Location)._0
+    case 1:
+        var x411 Point = self__4._v1_0
         var t426 string
         var inline453 int32 = x411.x
         var inline454 int32 = x411.y
@@ -83,7 +74,9 @@ func main0() struct{} {
     t435 = inline494
     var inline491 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t435)
     _goml_runtime_core_string_println(inline491)
-    var unit_shape__9 Shape = Unit{}
+    var unit_shape__9 Shape = Shape{
+        _tag: 0,
+    }
     var t436 string
     var inline489 string = _goml_m_trait__impl_i_TypeName_i_Shape_i_type__name(unit_shape__9)
     t436 = inline489
@@ -93,8 +86,9 @@ func main0() struct{} {
         x: 1,
         y: 2,
     }
-    var location_shape__10 Shape = Location{
-        _0: t437,
+    var location_shape__10 Shape = Shape{
+        _tag: 1,
+        _v1_0: t437,
     }
     var t438 string
     var inline484 string = _goml_m_trait__impl_i_TypeName_i_Shape_i_type__name(location_shape__10)

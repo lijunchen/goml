@@ -17,33 +17,15 @@ type closure_env_main_0 struct {}
 
 type Ordering int32
 
-type Maybe__int interface {
-    isMaybe__int()
+type Maybe__int struct {
+    _tag int32
+    _v1_0 int
 }
 
-type Maybe__int_None struct {}
-
-func (_ Maybe__int_None) isMaybe__int() {}
-
-type Maybe__int_Some struct {
-    _0 int
+type Maybe__string struct {
+    _tag int32
+    _v1_0 string
 }
-
-func (_ Maybe__int_Some) isMaybe__int() {}
-
-type Maybe__string interface {
-    isMaybe__string()
-}
-
-type Maybe__string_None struct {}
-
-func (_ Maybe__string_None) isMaybe__string() {}
-
-type Maybe__string_Some struct {
-    _0 string
-}
-
-func (_ Maybe__string_Some) isMaybe__string() {}
 
 func main0() struct{} {
     var t413 closure_env_main_0 = closure_env_main_0{}

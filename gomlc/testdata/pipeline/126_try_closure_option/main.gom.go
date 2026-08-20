@@ -20,19 +20,10 @@ type closure_env_run_0 struct {
 
 type Ordering int32
 
-type Option__int32 interface {
-    isOption__int32()
+type Option__int32 struct {
+    _tag int32
+    _v1_0 int32
 }
-
-type None struct {}
-
-func (_ None) isOption__int32() {}
-
-type Some struct {
-    _0 int32
-}
-
-func (_ Some) isOption__int32() {}
 
 func main0() struct{} {
     var t430 Option__int32
@@ -48,11 +39,11 @@ func main0() struct{} {
     var inline477 Option__int32 = inline476()
     t430 = inline477
     var t431 string
-    switch t430.(type) {
-    case None:
+    switch t430._tag {
+    case 0:
         t431 = "none"
-    case Some:
-        var inline468 int32 = t430.(Some)._0
+    case 1:
+        var inline468 int32 = t430._v1_0
         var inline470 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline468)
         var inline471 string = "some=" + inline470
         t431 = inline471
@@ -74,11 +65,11 @@ func main0() struct{} {
     var inline463 Option__int32 = inline462()
     t432 = inline463
     var t433 string
-    switch t432.(type) {
-    case None:
+    switch t432._tag {
+    case 0:
         t433 = "none"
-    case Some:
-        var inline454 int32 = t432.(Some)._0
+    case 1:
+        var inline454 int32 = t432._v1_0
         var inline456 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline454)
         var inline457 string = "some=" + inline456
         t433 = inline457
@@ -104,23 +95,29 @@ func _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(env4
     var base__1 int32 = env413.base_1
     var mtmp408 Option__int32
     if flag__2 {
-        var inline480 Option__int32 = Some{
-            _0: 4,
+        var inline480 Option__int32 = Option__int32{
+            _tag: 1,
+            _v1_0: 4,
         }
         mtmp408 = inline480
     } else {
-        mtmp408 = None{}
+        mtmp408 = Option__int32{
+            _tag: 0,
+        }
     }
     var jp445 int32
-    switch mtmp408.(type) {
-    case None:
-        return None{}
-    case Some:
-        var x409 int32 = mtmp408.(Some)._0
+    switch mtmp408._tag {
+    case 0:
+        return Option__int32{
+            _tag: 0,
+        }
+    case 1:
+        var x409 int32 = mtmp408._v1_0
         jp445 = x409
         var t446 int32 = jp445 + base__1
-        var t447 Option__int32 = Some{
-            _0: t446,
+        var t447 Option__int32 = Option__int32{
+            _tag: 1,
+            _v1_0: t446,
         }
         return t447
     default:

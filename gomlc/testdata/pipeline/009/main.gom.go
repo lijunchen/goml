@@ -15,24 +15,15 @@ func _goml_runtime_core_string_println(s string) struct{} {
 
 type Ordering int32
 
-type T interface {
-    isT()
+type T struct {
+    _tag int32
+    _v1_0 bool
+    _v1_1 bool
 }
-
-type A struct {}
-
-func (_ A) isT() {}
-
-type B struct {
-    _0 bool
-    _1 bool
-}
-
-func (_ B) isT() {}
 
 func test(t__0 T) struct{} {
-    switch t__0.(type) {
-    case A:
+    switch t__0._tag {
+    case 0:
         var t416 string
         var inline445 int = 1
         var inline446 string = _goml_runtime_core_int_to_string(inline445)
@@ -40,9 +31,9 @@ func test(t__0 T) struct{} {
         var inline442 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t416)
         _goml_runtime_core_string_println(inline442)
         return struct{}{}
-    case B:
-        var x408 bool = t__0.(B)._0
-        var x409 bool = t__0.(B)._1
+    case 1:
+        var x408 bool = t__0._v1_0
+        var x409 bool = t__0._v1_1
         switch x409 {
         case true:
             switch x408 {
@@ -95,22 +86,27 @@ func test(t__0 T) struct{} {
 }
 
 func main0() struct{} {
-    var t430 T = B{
-        _0: true,
-        _1: true,
+    var t430 T = T{
+        _tag: 1,
+        _v1_0: true,
+        _v1_1: true,
     }
     test(t430)
-    var t431 T = B{
-        _0: false,
-        _1: true,
+    var t431 T = T{
+        _tag: 1,
+        _v1_0: false,
+        _v1_1: true,
     }
     test(t431)
-    var t432 T = B{
-        _0: false,
-        _1: false,
+    var t432 T = T{
+        _tag: 1,
+        _v1_0: false,
+        _v1_1: false,
     }
     test(t432)
-    test(A{})
+    test(T{
+        _tag: 0,
+    })
     return struct{}{}
 }
 

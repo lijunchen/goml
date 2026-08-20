@@ -59,19 +59,10 @@ type closure_env_goml_builtin_range_0 struct {
 
 type Ordering int32
 
-type Option__int interface {
-    isOption__int()
+type Option__int struct {
+    _tag int32
+    _v1_0 int
 }
-
-type None struct {}
-
-func (_ None) isOption__int() {}
-
-type Some struct {
-    _0 int
-}
-
-func (_ Some) isOption__int() {}
 
 func main0() struct{} {
     var value__0 string = "a你好z"
@@ -246,11 +237,11 @@ func _goml_m_inherent_i_string_i_string_i_contains(self__452 string, expected__4
                 var inline644 func() Option__int = for_iter382.next_fn
                 var inline645 Option__int = inline644()
                 for_next383 = inline645
-                switch for_next383.(type) {
-                case None:
+                switch for_next383._tag {
+                case 0:
                     break Loop_loop481
-                case Some:
-                    var x384 int = for_next383.(Some)._0
+                case 1:
+                    var x384 int = for_next383._v1_0
                     var t483 int
                     var inline642 int = _goml_runtime_core_string_len(expected__453)
                     t483 = inline642
@@ -388,12 +379,15 @@ func _goml_m_inherent_i_closure__en_h5b1fcaf2e23588c4625108f446fe7c51_ange__0_i_
     if t558 {
         var t559 int = value__497 + 1
         ref_set__Ref_3int(current__496, t559)
-        var t560 Option__int = Some{
-            _0: value__497,
+        var t560 Option__int = Option__int{
+            _tag: 1,
+            _v1_0: value__497,
         }
         return t560
     } else {
-        return None{}
+        return Option__int{
+            _tag: 0,
+        }
     }
 }
 

@@ -8,19 +8,6 @@ func _goml_runtime_core_int_to_string(x int) string {
     return _goml_fmt.Sprintf("%d", x)
 }
 
-func _goml_runtime_core_string_hash(s string) uint64 {
-    var h uint64 = 14695981039346656037
-    var i int = 0
-    for {
-        if i >= int(len(s)) {
-            break
-        }
-        h = h * 1099511628211 + uint64(s[i])
-        i = i + 1
-    }
-    return h
-}
-
 func _goml_runtime_core_string_println(s string) struct{} {
     _goml_fmt.Println(s)
     return struct{}{}
@@ -156,11 +143,14 @@ func hashmap_get__HashMap_9LoggedKey_3int(m *hashmap_LoggedKey_int_x, key Logged
     var ok bool
     value, ok = hashmap_lookup__HashMap_9LoggedKey_3int(m, key)
     if ok {
-        return Option__int_Some{
-            _0: value,
+        return Option__int{
+            _tag: 1,
+            _v1_0: value,
         }
     }
-    return Option__int_None{}
+    return Option__int{
+        _tag: 0,
+    }
 }
 
 func hashmap_set__HashMap_9LoggedKey_3int(m *hashmap_LoggedKey_int_x, key LoggedKey, value int) struct{} {
@@ -214,16 +204,16 @@ type hashmap_string_int_x_entry struct {
 }
 
 type hashmap_string_int_x struct {
-    buckets map[uint64][]hashmap_string_int_x_entry
-    hashes []uint64
+    indices map[string]int
+    entries []hashmap_string_int_x_entry
     len int
 }
 
 func hashmap_new__HashMap_6string_3int() *hashmap_string_int_x {
     return &hashmap_string_int_x{
-        buckets: make(map[uint64][]hashmap_string_int_x_entry),
+        indices: make(map[string]int),
+        entries: nil,
         len: 0,
-        hashes: nil,
     }
 }
 
@@ -235,32 +225,19 @@ func hashmap_len__HashMap_6string_3int(m *hashmap_string_int_x) int {
 }
 
 func hashmap_set__HashMap_6string_3int(m *hashmap_string_int_x, key string, value int) struct{} {
-    var reuse_index int = -1
     if m == nil {
         return struct{}{}
     }
-    var h uint64 = _goml_m_trait__impl_i_Hash_i_string_i_hash(key)
-    var bucket []hashmap_string_int_x_entry = m.buckets[h]
-    if len(bucket) == 0 {
-        m.hashes = append(m.hashes, h)
-    }
-    var i int = 0
-    for {
-        if i >= int(len(bucket)) {
-            break
-        }
-        var entry hashmap_string_int_x_entry = bucket[i]
-        if entry.active && _goml_m_trait__impl_i_PartialEq_i_string_i_eq(entry.key, key) {
-            bucket[i].value = value
+    var index int
+    var found bool
+    index, found = m.indices[key]
+    if found {
+        var entry hashmap_string_int_x_entry = m.entries[index]
+        if entry.active {
+            m.entries[index].value = value
             return struct{}{}
         }
-        if !entry.active && reuse_index < 0 {
-            reuse_index = i
-        }
-        i = i + 1
-    }
-    if reuse_index >= 0 {
-        bucket[reuse_index] = hashmap_string_int_x_entry{
+        m.entries[index] = hashmap_string_int_x_entry{
             active: true,
             key: key,
             value: value,
@@ -268,12 +245,13 @@ func hashmap_set__HashMap_6string_3int(m *hashmap_string_int_x, key string, valu
         m.len = m.len + 1
         return struct{}{}
     }
-    bucket = append(bucket, hashmap_string_int_x_entry{
+    index = len(m.entries)
+    m.indices[key] = index
+    m.entries = append(m.entries, hashmap_string_int_x_entry{
         active: true,
         key: key,
         value: value,
     })
-    m.buckets[h] = bucket
     m.len = m.len + 1
     return struct{}{}
 }
@@ -285,16 +263,16 @@ type hashmap_string_Vec_3int_x_entry struct {
 }
 
 type hashmap_string_Vec_3int_x struct {
-    buckets map[uint64][]hashmap_string_Vec_3int_x_entry
-    hashes []uint64
+    indices map[string]int
+    entries []hashmap_string_Vec_3int_x_entry
     len int
 }
 
 func hashmap_new__HashMap_6string_8Vec_3int() *hashmap_string_Vec_3int_x {
     return &hashmap_string_Vec_3int_x{
-        buckets: make(map[uint64][]hashmap_string_Vec_3int_x_entry),
+        indices: make(map[string]int),
+        entries: nil,
         len: 0,
-        hashes: nil,
     }
 }
 
@@ -303,18 +281,16 @@ func hashmap_lookup__HashMap_6string_8Vec_3int(m *hashmap_string_Vec_3int_x, key
         var zero *_goml_vec_int
         return zero, false
     }
-    var h uint64 = _goml_m_trait__impl_i_Hash_i_string_i_hash(key)
-    var bucket []hashmap_string_Vec_3int_x_entry = m.buckets[h]
-    var i int = 0
-    for {
-        if i >= int(len(bucket)) {
-            break
-        }
-        var entry hashmap_string_Vec_3int_x_entry = bucket[i]
-        if entry.active && _goml_m_trait__impl_i_PartialEq_i_string_i_eq(entry.key, key) {
-            return entry.value, true
-        }
-        i = i + 1
+    var index int
+    var found bool
+    index, found = m.indices[key]
+    if !found {
+        var zero *_goml_vec_int
+        return zero, false
+    }
+    var entry hashmap_string_Vec_3int_x_entry = m.entries[index]
+    if entry.active {
+        return entry.value, true
     }
     var zero *_goml_vec_int
     return zero, false
@@ -325,40 +301,30 @@ func hashmap_get__HashMap_6string_8Vec_3int(m *hashmap_string_Vec_3int_x, key st
     var ok bool
     value, ok = hashmap_lookup__HashMap_6string_8Vec_3int(m, key)
     if ok {
-        return _goml_m_Option____Vec_l_int_r__Some{
-            _0: value,
+        return _goml_m_Option____Vec_l_int_r_{
+            _tag: 1,
+            _v1_0: value,
         }
     }
-    return _goml_m_Option____Vec_l_int_r__None{}
+    return _goml_m_Option____Vec_l_int_r_{
+        _tag: 0,
+    }
 }
 
 func hashmap_set__HashMap_6string_8Vec_3int(m *hashmap_string_Vec_3int_x, key string, value *_goml_vec_int) struct{} {
-    var reuse_index int = -1
     if m == nil {
         return struct{}{}
     }
-    var h uint64 = _goml_m_trait__impl_i_Hash_i_string_i_hash(key)
-    var bucket []hashmap_string_Vec_3int_x_entry = m.buckets[h]
-    if len(bucket) == 0 {
-        m.hashes = append(m.hashes, h)
-    }
-    var i int = 0
-    for {
-        if i >= int(len(bucket)) {
-            break
-        }
-        var entry hashmap_string_Vec_3int_x_entry = bucket[i]
-        if entry.active && _goml_m_trait__impl_i_PartialEq_i_string_i_eq(entry.key, key) {
-            bucket[i].value = value
+    var index int
+    var found bool
+    index, found = m.indices[key]
+    if found {
+        var entry hashmap_string_Vec_3int_x_entry = m.entries[index]
+        if entry.active {
+            m.entries[index].value = value
             return struct{}{}
         }
-        if !entry.active && reuse_index < 0 {
-            reuse_index = i
-        }
-        i = i + 1
-    }
-    if reuse_index >= 0 {
-        bucket[reuse_index] = hashmap_string_Vec_3int_x_entry{
+        m.entries[index] = hashmap_string_Vec_3int_x_entry{
             active: true,
             key: key,
             value: value,
@@ -366,12 +332,13 @@ func hashmap_set__HashMap_6string_8Vec_3int(m *hashmap_string_Vec_3int_x, key st
         m.len = m.len + 1
         return struct{}{}
     }
-    bucket = append(bucket, hashmap_string_Vec_3int_x_entry{
+    index = len(m.entries)
+    m.indices[key] = index
+    m.entries = append(m.entries, hashmap_string_Vec_3int_x_entry{
         active: true,
         key: key,
         value: value,
     })
-    m.buckets[h] = bucket
     m.len = m.len + 1
     return struct{}{}
 }
@@ -403,33 +370,15 @@ type LoggedKey struct {
 
 type Ordering int32
 
-type Option__int interface {
-    isOption__int()
+type Option__int struct {
+    _tag int32
+    _v1_0 int
 }
 
-type Option__int_None struct {}
-
-func (_ Option__int_None) isOption__int() {}
-
-type Option__int_Some struct {
-    _0 int
+type _goml_m_Option____Vec_l_int_r_ struct {
+    _tag int32
+    _v1_0 *_goml_vec_int
 }
-
-func (_ Option__int_Some) isOption__int() {}
-
-type _goml_m_Option____Vec_l_int_r_ interface {
-    is_goml_m_Option____Vec_l_int_r_()
-}
-
-type _goml_m_Option____Vec_l_int_r__None struct {}
-
-func (_ _goml_m_Option____Vec_l_int_r__None) is_goml_m_Option____Vec_l_int_r_() {}
-
-type _goml_m_Option____Vec_l_int_r__Some struct {
-    _0 *_goml_vec_int
-}
-
-func (_ _goml_m_Option____Vec_l_int_r__Some) is_goml_m_Option____Vec_l_int_r_() {}
 
 func _goml_m_trait__impl_i_PartialEq_i_LoggedKey_i_eq(self__0 LoggedKey, other__1 LoggedKey) bool {
     var t433 *ref_string_x = self__0.log
@@ -473,9 +422,13 @@ func logged_key(log__3 *ref_string_x, label__4 string, id__5 int) LoggedKey {
 
 func main0() struct{} {
     var make_vec__9 func([3]int) *_goml_vec_int = func(values [3]int) *_goml_vec_int {
-        return &_goml_vec_int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_int
+            values [3]int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }
     var t458 [3]int = [3]int{1, 2, 3}
     var values__10 *_goml_vec_int = make_vec__9(t458)
@@ -511,9 +464,13 @@ func main0() struct{} {
     var t475 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(2)
     var source__13 [2]*ref_int_x = [2]*ref_int_x{t474, t475}
     var copied__14 *_goml_vec_Ref_3int = func(values [2]*ref_int_x) *_goml_vec_Ref_3int {
-        return &_goml_vec_Ref_3int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_Ref_3int
+            values [2]*ref_int_x
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(source__13)
     var t476 *ref_int_x = array_get__Array_2_8Ref_3int(source__13, 0)
     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(t476, 5)
@@ -589,11 +546,11 @@ func main0() struct{} {
     var inline633 Option__int = hashmap_get__HashMap_9LoggedKey_3int(table__16, t496)
     mtmp423 = inline633
     var jp498 int
-    switch mtmp423.(type) {
-    case Option__int_None:
+    switch mtmp423._tag {
+    case 0:
         jp498 = 0
-    case Option__int_Some:
-        var x424 int = mtmp423.(Option__int_Some)._0
+    case 1:
+        var x424 int = mtmp423._v1_0
         jp498 = x424
     default:
         panic("non-exhaustive match")
@@ -658,33 +615,53 @@ func main0() struct{} {
     }
     var t509 [2]Tuple2_3int_6string = [2]Tuple2_3int_6string{t507, t508}
     var pairs__22 *_goml_vec_Tuple2_3int_6string = func(values [2]Tuple2_3int_6string) *_goml_vec_Tuple2_3int_6string {
-        return &_goml_vec_Tuple2_3int_6string{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_Tuple2_3int_6string
+            values [2]Tuple2_3int_6string
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t509)
     var t510 [2]int = [2]int{1, 2}
     var t511 *_goml_vec_int = func(values [2]int) *_goml_vec_int {
-        return &_goml_vec_int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_int
+            values [2]int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t510)
     var t512 [2]int = [2]int{3, 4}
     var t513 *_goml_vec_int = func(values [2]int) *_goml_vec_int {
-        return &_goml_vec_int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_int
+            values [2]int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t512)
     var t514 [2]*_goml_vec_int = [2]*_goml_vec_int{t511, t513}
     var nested__23 *_goml_vec_Vec_3int = func(values [2]*_goml_vec_int) *_goml_vec_Vec_3int {
-        return &_goml_vec_Vec_3int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_Vec_3int
+            values [2]*_goml_vec_int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t514)
     var t515 [2]int = [2]int{5, 6}
     var t516 *_goml_vec_int = func(values [2]int) *_goml_vec_int {
-        return &_goml_vec_int{
-            items: values[0:len(values)],
+        var storage struct {
+            vector _goml_vec_int
+            values [2]int
         }
+        storage.values = values
+        storage.vector.items = storage.values[0:len(storage.values)]
+        return &storage.vector
     }(t515)
     var t517 Tuple2_6string_8Vec_3int = Tuple2_6string_8Vec_3int{
         _0: "values",
@@ -703,11 +680,11 @@ func main0() struct{} {
     var inline613 _goml_m_Option____Vec_l_int_r_ = hashmap_get__HashMap_6string_8Vec_3int(nested_map__24, inline612)
     mtmp429 = inline613
     var jp520 int
-    switch mtmp429.(type) {
-    case _goml_m_Option____Vec_l_int_r__None:
+    switch mtmp429._tag {
+    case 0:
         jp520 = 0
-    case _goml_m_Option____Vec_l_int_r__Some:
-        var x430 *_goml_vec_int = mtmp429.(_goml_m_Option____Vec_l_int_r__Some)._0
+    case 1:
+        var x430 *_goml_vec_int = mtmp429._v1_0
         var t533 int = vec_get__Vec_3int(x430, 0)
         jp520 = t533
     default:
@@ -795,16 +772,6 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
     var t575 string = _goml_runtime_core_int_to_string(self__151)
     return t575
-}
-
-func _goml_m_trait__impl_i_PartialEq_i_string_i_eq(self__181 string, other__182 string) bool {
-    var t578 bool = self__181 == other__182
-    return t578
-}
-
-func _goml_m_trait__impl_i_Hash_i_string_i_hash(self__209 string) uint64 {
-    var t581 uint64 = _goml_runtime_core_string_hash(self__209)
-    return t581
 }
 
 func main() {

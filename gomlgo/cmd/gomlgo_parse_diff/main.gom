@@ -1,0 +1,41 @@
+package main;
+
+use gomlgo::parser_diff;
+use std::env;
+use std::process;
+
+fn main() -> unit {
+    let arguments = env::args();
+    let mode = if arguments.len() >= 2 {
+        match parser_diff::mode_from_string(arguments[1]) {
+            Some(value) => value,
+            None => parser_diff::Mode::Acceptance,
+        }
+    } else {
+        parser_diff::Mode::Acceptance
+    };
+    let root = if arguments.len() == 3 {
+        arguments[2]
+    } else if arguments.len() == 2 && parser_diff::mode_from_string(arguments[1]).is_none() {
+        arguments[1]
+    } else {
+        "/usr/lib/go-1.26/src"
+    };
+    if arguments.len() > 3 {
+        println(
+            "usage: gomlgo_parse_diff [parse-acceptance|ast-shape|ast-position|ast-comments|diagnostic-strict] [ROOT]",
+        );
+        process::exit(1)
+    } else {};
+    match parser_diff::compare_tree(root, mode) {
+        Ok(summary) => println(
+            parser_diff::mode_name(mode) + " zero diff: files=" + summary.files.to_string()
+                + " accepted="
+                + summary.accepted.to_string(),
+        ),
+        Err(message) => {
+            println(message);
+            process::exit(1)
+        },
+    }
+}

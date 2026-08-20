@@ -67,19 +67,10 @@ type closure_env_goml_builtin_range_inclusive_0 struct {
 
 type Ordering int32
 
-type Option__int interface {
-    isOption__int()
+type Option__int struct {
+    _tag int32
+    _v1_0 int
 }
-
-type None struct {}
-
-func (_ None) isOption__int() {}
-
-type Some struct {
-    _0 int
-}
-
-func (_ Some) isOption__int() {}
 
 func main0() struct{} {
     var for_index409 int = 1
@@ -197,13 +188,13 @@ func main0() struct{} {
     var inline582 func() Option__int = iterator__10.next_fn
     var inline583 Option__int = inline582()
     mtmp436 = inline583
-    switch mtmp436.(type) {
-    case None:
+    switch mtmp436._tag {
+    case 0:
         var inline563 string = "missing"
         var inline564 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline563)
         _goml_runtime_core_string_println(inline564)
-    case Some:
-        var x437 int = mtmp436.(Some)._0
+    case 1:
+        var x437 int = mtmp436._v1_0
         var inline567 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(x437)
         _goml_runtime_core_string_println(inline567)
     default:
@@ -269,7 +260,9 @@ func _goml_m_inherent_i_closure__en_hb902f75cf29154a7d4df1174edbd9988_sive__0_i_
         jp538 = t545
     }
     if jp538 {
-        return None{}
+        return Option__int{
+            _tag: 0,
+        }
     } else {
         var value__502 int = ref_get__Ref_3int(current__500)
         var t541 bool = value__502 == end__499
@@ -279,8 +272,9 @@ func _goml_m_inherent_i_closure__en_hb902f75cf29154a7d4df1174edbd9988_sive__0_i_
             var t542 int = value__502 + 1
             ref_set__Ref_3int(current__500, t542)
         }
-        var t540 Option__int = Some{
-            _0: value__502,
+        var t540 Option__int = Option__int{
+            _tag: 1,
+            _v1_0: value__502,
         }
         return t540
     }

@@ -1,0 +1,44 @@
+package main;
+
+use gomlgo::mutation;
+use std::env;
+use std::num;
+use std::process;
+
+fn main() -> unit {
+    let arguments = env::args();
+    let root = if arguments.len() >= 2 {
+        arguments[1]
+    } else {
+        "/usr/lib/go-1.26/src"
+    };
+    let limit = if arguments.len() >= 3 {
+        match num::parse_int(arguments[2]) {
+            Ok(value) => value,
+            Err(message) => {
+                println(message);
+                process::exit(1);
+                0
+            },
+        }
+    } else {
+        25
+    };
+    let output = if arguments.len() >= 4 {
+        arguments[3]
+    } else {
+        "../_artifact/gomlgo-diff/failures"
+    };
+    match mutation::run(root, output, limit) {
+        Ok(summary) => println(
+            "mutation differential: seeds=" + summary.seeds.to_string() + " cases="
+                + summary.cases.to_string()
+                + " failures="
+                + summary.failures.to_string(),
+        ),
+        Err(message) => {
+            println(message);
+            process::exit(1)
+        },
+    }
+}

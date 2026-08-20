@@ -90,19 +90,10 @@ type closure_env_inherent_Vec_Vec_T_iter_T_int32_0 struct {
 
 type Ordering int32
 
-type Option__int32 interface {
-    isOption__int32()
+type Option__int32 struct {
+    _tag int32
+    _v1_0 int32
 }
-
-type None struct {}
-
-func (_ None) isOption__int32() {}
-
-type Some struct {
-    _0 int32
-}
-
-func (_ Some) isOption__int32() {}
 
 func main0() struct{} {
     var values__3 *_goml_vec_int32
@@ -140,10 +131,10 @@ func count__B_Numbers(batch__1 Numbers) int32 {
         var inline510 func() Option__int32 = for_iter408.next_fn
         var inline511 Option__int32 = inline510()
         for_next409 = inline511
-        switch for_next409.(type) {
-        case None:
+        switch for_next409._tag {
+        case 0:
             break Loop_loop437
-        case Some:
+        case 1:
             var t439 int32
             var inline508 int32 = ref_get__Ref_5int32(total__2)
             t439 = inline508
@@ -192,12 +183,15 @@ func _goml_m_inherent_i_closure__en_hc2f7b05843f81f2ab8cf844432967a9e_nt32__0_i_
         var value__318 int32 = vec_get__Vec_5int32(self__314, current__317)
         var t487 int = current__317 + 1
         ref_set__Ref_3int(index__315, t487)
-        var t488 Option__int32 = Some{
-            _0: value__318,
+        var t488 Option__int32 = Option__int32{
+            _tag: 1,
+            _v1_0: value__318,
         }
         return t488
     } else {
-        return None{}
+        return Option__int32{
+            _tag: 0,
+        }
     }
 }
 

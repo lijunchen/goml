@@ -97,19 +97,10 @@ type closure_env_inherent_Slice_Slice_T_iter_T_int32_1 struct {
 
 type Ordering int32
 
-type Option__int32 interface {
-    isOption__int32()
+type Option__int32 struct {
+    _tag int32
+    _v1_0 int32
 }
-
-type None struct {}
-
-func (_ None) isOption__int32() {}
-
-type Some struct {
-    _0 int32
-}
-
-func (_ Some) isOption__int32() {}
 
 func main0() struct{} {
     var builds__7 *ref_int32_x
@@ -228,11 +219,11 @@ func sum__S_Numbers(source__4 Numbers) int32 {
         var inline638 func() Option__int32 = for_iter413.next_fn
         var inline639 Option__int32 = inline638()
         for_next414 = inline639
-        switch for_next414.(type) {
-        case None:
+        switch for_next414._tag {
+        case 0:
             break Loop_loop474
-        case Some:
-            var x415 int32 = for_next414.(Some)._0
+        case 1:
+            var x415 int32 = for_next414._v1_0
             var t476 int32
             var inline636 int32 = ref_get__Ref_5int32(total__5)
             t476 = inline636
@@ -261,11 +252,11 @@ func _goml_m_sum____S__Vec_l_int32_r_(source__4 *_goml_vec_int32) int32 {
         var inline658 func() Option__int32 = for_iter413.next_fn
         var inline659 Option__int32 = inline658()
         for_next414 = inline659
-        switch for_next414.(type) {
-        case None:
+        switch for_next414._tag {
+        case 0:
             break Loop_loop482
-        case Some:
-            var x415 int32 = for_next414.(Some)._0
+        case 1:
+            var x415 int32 = for_next414._v1_0
             var t484 int32
             var inline656 int32 = ref_get__Ref_5int32(total__5)
             t484 = inline656
@@ -294,11 +285,11 @@ func _goml_m_sum____S__Slice_l_int32_r_(source__4 []int32) int32 {
         var inline672 func() Option__int32 = for_iter413.next_fn
         var inline673 Option__int32 = inline672()
         for_next414 = inline673
-        switch for_next414.(type) {
-        case None:
+        switch for_next414._tag {
+        case 0:
             break Loop_loop490
-        case Some:
-            var x415 int32 = for_next414.(Some)._0
+        case 1:
+            var x415 int32 = for_next414._v1_0
             var t492 int32
             var inline670 int32 = ref_get__Ref_5int32(total__5)
             t492 = inline670
@@ -347,12 +338,15 @@ func _goml_m_inherent_i_closure__en_hc2f7b05843f81f2ab8cf844432967a9e_nt32__0_i_
         var value__318 int32 = vec_get__Vec_5int32(self__314, current__317)
         var t544 int = current__317 + 1
         ref_set__Ref_3int(index__315, t544)
-        var t545 Option__int32 = Some{
-            _0: value__318,
+        var t545 Option__int32 = Option__int32{
+            _tag: 1,
+            _v1_0: value__318,
         }
         return t545
     } else {
-        return None{}
+        return Option__int32{
+            _tag: 0,
+        }
     }
 }
 
@@ -368,12 +362,15 @@ func _goml_m_inherent_i_closure__en_h229258edbe561187b6c6c2ae0c5f71a3_nt32__1_i_
         value__418 = inline698
         var t551 int = current__417 + 1
         ref_set__Ref_3int(index__415, t551)
-        var t552 Option__int32 = Some{
-            _0: value__418,
+        var t552 Option__int32 = Option__int32{
+            _tag: 1,
+            _v1_0: value__418,
         }
         return t552
     } else {
-        return None{}
+        return Option__int32{
+            _tag: 0,
+        }
     }
 }
 

@@ -35,32 +35,23 @@ type Tuple2_4bool_4char struct {
 
 type Ordering int32
 
-type Option__char interface {
-    isOption__char()
+type Option__char struct {
+    _tag int32
+    _v1_0 rune
 }
-
-type None struct {}
-
-func (_ None) isOption__char() {}
-
-type Some struct {
-    _0 rune
-}
-
-func (_ Some) isOption__char() {}
 
 func show_scalar(value__0 uint32) struct{} {
     var mtmp408 Option__char
     var inline478 Option__char = __goml_builtin_char_from_uint32(value__0)
     mtmp408 = inline478
-    switch mtmp408.(type) {
-    case None:
+    switch mtmp408._tag {
+    case 0:
         var inline471 string = "none"
         var inline472 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline471)
         _goml_runtime_core_string_println(inline472)
         return struct{}{}
-    case Some:
-        var x409 rune = mtmp408.(Some)._0
+    case 1:
+        var x409 rune = mtmp408._v1_0
         var t423 uint32 = uint32(rune(x409))
         var inline475 string = _goml_m_trait__impl_i_ToString_i_uint32_i_to__string(t423)
         _goml_runtime_core_string_println(inline475)
@@ -77,11 +68,11 @@ func main0() struct{} {
     show_scalar(55296)
     var inline516 uint32 = 57343
     var inline517 Option__char = char_from_uint32(inline516)
-    switch inline517.(type) {
-    case None:
+    switch inline517._tag {
+    case 0:
         println__T_string("none")
-    case Some:
-        var inline519 rune = inline517.(Some)._0
+    case 1:
+        var inline519 rune = inline517._v1_0
         var inline521 uint32 = uint32(rune(inline519))
         println__T_uint32(inline521)
     default:
@@ -89,11 +80,11 @@ func main0() struct{} {
     }
     var inline508 uint32 = 57344
     var inline509 Option__char = char_from_uint32(inline508)
-    switch inline509.(type) {
-    case None:
+    switch inline509._tag {
+    case 0:
         println__T_string("none")
-    case Some:
-        var inline511 rune = inline509.(Some)._0
+    case 1:
+        var inline511 rune = inline509._v1_0
         var inline513 uint32 = uint32(rune(inline511))
         println__T_uint32(inline513)
     default:
@@ -101,11 +92,11 @@ func main0() struct{} {
     }
     var inline500 uint32 = 1114111
     var inline501 Option__char = char_from_uint32(inline500)
-    switch inline501.(type) {
-    case None:
+    switch inline501._tag {
+    case 0:
         println__T_string("none")
-    case Some:
-        var inline503 rune = inline501.(Some)._0
+    case 1:
+        var inline503 rune = inline501._v1_0
         var inline505 uint32 = uint32(rune(inline503))
         println__T_uint32(inline505)
     default:
@@ -113,11 +104,11 @@ func main0() struct{} {
     }
     var inline492 uint32 = 1114112
     var inline493 Option__char = char_from_uint32(inline492)
-    switch inline493.(type) {
-    case None:
+    switch inline493._tag {
+    case 0:
         println__T_string("none")
-    case Some:
-        var inline495 rune = inline493.(Some)._0
+    case 1:
+        var inline495 rune = inline493._v1_0
         var inline497 uint32 = uint32(rune(inline495))
         println__T_uint32(inline497)
     default:
@@ -127,14 +118,14 @@ func main0() struct{} {
     var inline489 uint32 = 128512
     var inline490 Option__char = __goml_builtin_char_from_uint32(inline489)
     mtmp418 = inline490
-    switch mtmp418.(type) {
-    case None:
+    switch mtmp418._tag {
+    case 0:
         var inline480 string = "none"
         var inline481 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline480)
         _goml_runtime_core_string_println(inline481)
         return struct{}{}
-    case Some:
-        var x419 rune = mtmp418.(Some)._0
+    case 1:
+        var x419 rune = mtmp418._v1_0
         var t428 string
         var inline487 string = char_to_string(x419)
         t428 = inline487
@@ -151,12 +142,15 @@ func char_from_uint32(value__2 uint32) Option__char {
     if inline524 {
         var inline525 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__2)
         var inline526 rune = inline525._1
-        var inline528 Option__char = Some{
-            _0: inline526,
+        var inline528 Option__char = Option__char{
+            _tag: 1,
+            _v1_0: inline526,
         }
         return inline528
     } else {
-        return None{}
+        return Option__char{
+            _tag: 0,
+        }
     }
 }
 
@@ -195,12 +189,15 @@ func __goml_builtin_char_from_uint32(value__30 uint32) Option__char {
     if t446 {
         var mtmp22 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__30)
         var x24 rune = mtmp22._1
-        var t447 Option__char = Some{
-            _0: x24,
+        var t447 Option__char = Option__char{
+            _tag: 1,
+            _v1_0: x24,
         }
         return t447
     } else {
-        return None{}
+        return Option__char{
+            _tag: 0,
+        }
     }
 }
 

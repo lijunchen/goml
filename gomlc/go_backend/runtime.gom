@@ -474,7 +474,6 @@ enum RuntimeImport {
     Filepath,
     Reflect,
     Sha256,
-    Slices,
     Strconv,
     Strings,
     Sync,
@@ -709,9 +708,6 @@ fn emit_runtime_import_items(items: Vec[Item], required: Vec[RuntimeImport]) -> 
     if required.contains(RuntimeImport::Sha256) {
         imports.push(("_goml_sha256", "crypto/sha256"))
     } else {};
-    if required.contains(RuntimeImport::Slices) {
-        imports.push(("_goml_slices", "slices"))
-    } else {};
     if required.contains(RuntimeImport::Strconv) {
         imports.push(("_goml_strconv", "strconv"))
     } else {};
@@ -857,8 +853,6 @@ pub fn emit_runtime_hook_items(
     for intrinsic in intrinsics {
         if intrinsic == "ref.ptr_hash" {
             require_runtime_import(required_imports, RuntimeImport::Reflect)
-        } else if intrinsic == "vec.with_capacity" || intrinsic == "vec.reserve" {
-            require_runtime_import(required_imports, RuntimeImport::Slices)
         } else if intrinsic == "channel.send_cancel" || intrinsic == "channel.recv_cancel" {
             require_runtime_import(required_imports, RuntimeImport::Context);
             require_runtime_import(required_imports, RuntimeImport::Sync)
@@ -1018,25 +1012,12 @@ fn vec_runtime_items(vec_ty: repr::Type) -> Vec[Item] {
             );
             let with_capacity_params: Vec[(string, Type)] = Vec::from_array([]);
             with_capacity_params.push(("capacity", Type::Int));
-            let grow_args: Vec[Expr] = Vec::from_array([]);
-            grow_args.push(
-                Expr::ArrayLiteral {
-                    ty: Type::Slice { elem: lowered_elem },
-                    items: Vec::from_array([]),
-                },
-            );
-            grow_args.push(
-                Expr::Convert {
-                    ty: Type::Named { name: "int" },
-                    expr: Expr::Var { name: "capacity" },
-                },
-            );
+            let make_args: Vec[Expr] = Vec::from_array([]);
+            make_args.push(Expr::Int { value: "0" });
+            make_args.push(Expr::Var { name: "capacity" });
             let with_capacity_fields: Vec[(string, Expr)] = Vec::from_array([]);
             with_capacity_fields.push(
-                (
-                    "items",
-                    Expr::Call { func: Expr::Var { name: "_goml_slices.Grow" }, args: grow_args },
-                ),
+                ("items", Expr::Make { ty: Type::Slice { elem: lowered_elem }, args: make_args }),
             );
             let with_capacity_stmts: Vec[Stmt] = Vec::from_array([]);
             with_capacity_stmts.push(
@@ -1197,23 +1178,131 @@ fn vec_runtime_items(vec_ty: repr::Type) -> Vec[Item] {
             let reserve_params: Vec[(string, Type)] = Vec::from_array([]);
             reserve_params.push(("vec", lowered_vec));
             reserve_params.push(("additional", Type::Int));
-            let reserve_args: Vec[Expr] = Vec::from_array([]);
-            reserve_args.push(Expr::Field { expr: Expr::Var { name: "vec" }, field_name: "items" });
-            reserve_args.push(
-                Expr::Convert {
-                    ty: Type::Named { name: "int" },
-                    expr: Expr::Var { name: "additional" },
+            let reserve_stmts: Vec[Stmt] = Vec::from_array([]);
+            let negative_capacity_stmts: Vec[Stmt] = Vec::from_array([]);
+            negative_capacity_stmts.push(Stmt::Panic { message: "negative vector capacity" });
+            reserve_stmts.push(
+                Stmt::If {
+                    cond: Expr::Binary {
+                        op: BinaryOp::Less,
+                        lhs: Expr::Var { name: "additional" },
+                        rhs: Expr::Int { value: "0" },
+                    },
+                    then_: Block { stmts: negative_capacity_stmts },
+                    else_: Option::None,
                 },
             );
-            let reserve_stmts: Vec[Stmt] = Vec::from_array([]);
+            let length_args: Vec[Expr] = Vec::from_array([]);
+            length_args.push(Expr::Field { expr: Expr::Var { name: "vec" }, field_name: "items" });
             reserve_stmts.push(
+                Stmt::Var {
+                    name: "length",
+                    ty: Type::Int,
+                    value: Option::Some(
+                        Expr::Call { func: Expr::Var { name: "len" }, args: length_args },
+                    ),
+                },
+            );
+            reserve_stmts.push(
+                Stmt::Var {
+                    name: "required",
+                    ty: Type::Int,
+                    value: Option::Some(
+                        Expr::Binary {
+                            op: BinaryOp::Add,
+                            lhs: Expr::Var { name: "length" },
+                            rhs: Expr::Var { name: "additional" },
+                        },
+                    ),
+                },
+            );
+            let overflow_stmts: Vec[Stmt] = Vec::from_array([]);
+            overflow_stmts.push(Stmt::Panic { message: "vector capacity overflow" });
+            reserve_stmts.push(
+                Stmt::If {
+                    cond: Expr::Binary {
+                        op: BinaryOp::Less,
+                        lhs: Expr::Var { name: "required" },
+                        rhs: Expr::Var { name: "length" },
+                    },
+                    then_: Block { stmts: overflow_stmts },
+                    else_: Option::None,
+                },
+            );
+            let capacity_args: Vec[Expr] = Vec::from_array([]);
+            capacity_args.push(Expr::Field { expr: Expr::Var { name: "vec" }, field_name: "items" });
+            let grow_stmts: Vec[Stmt] = Vec::from_array([]);
+            let current_capacity_args: Vec[Expr] = Vec::from_array([]);
+            current_capacity_args.push(
+                Expr::Field { expr: Expr::Var { name: "vec" }, field_name: "items" },
+            );
+            grow_stmts.push(
+                Stmt::Var {
+                    name: "next_capacity",
+                    ty: Type::Int,
+                    value: Option::Some(
+                        Expr::Binary {
+                            op: BinaryOp::Mul,
+                            lhs: Expr::Call {
+                                func: Expr::Var { name: "cap" },
+                                args: current_capacity_args,
+                            },
+                            rhs: Expr::Int { value: "2" },
+                        },
+                    ),
+                },
+            );
+            let use_required_stmts: Vec[Stmt] = Vec::from_array([]);
+            use_required_stmts.push(
+                Stmt::Assign { name: "next_capacity", value: Expr::Var { name: "required" } },
+            );
+            grow_stmts.push(
+                Stmt::If {
+                    cond: Expr::Binary {
+                        op: BinaryOp::Less,
+                        lhs: Expr::Var { name: "next_capacity" },
+                        rhs: Expr::Var { name: "required" },
+                    },
+                    then_: Block { stmts: use_required_stmts },
+                    else_: Option::None,
+                },
+            );
+            let next_items_args: Vec[Expr] = Vec::from_array([]);
+            next_items_args.push(Expr::Var { name: "length" });
+            next_items_args.push(Expr::Var { name: "next_capacity" });
+            grow_stmts.push(
+                Stmt::Var {
+                    name: "next_items",
+                    ty: Type::Slice { elem: lowered_elem },
+                    value: Option::Some(
+                        Expr::Make { ty: Type::Slice { elem: lowered_elem }, args: next_items_args },
+                    ),
+                },
+            );
+            let copy_args: Vec[Expr] = Vec::from_array([]);
+            copy_args.push(Expr::Var { name: "next_items" });
+            copy_args.push(Expr::Field { expr: Expr::Var { name: "vec" }, field_name: "items" });
+            grow_stmts.push(
+                Stmt::Expr {
+                    expr: Expr::Call { func: Expr::Var { name: "copy" }, args: copy_args },
+                },
+            );
+            grow_stmts.push(
                 Stmt::FieldAssign {
                     target: Expr::Var { name: "vec" },
                     field_name: "items",
-                    value: Expr::Call {
-                        func: Expr::Var { name: "_goml_slices.Grow" },
-                        args: reserve_args,
+                    value: Expr::Var { name: "next_items" },
+                },
+            );
+            reserve_stmts.push(
+                Stmt::If {
+                    cond: Expr::Binary {
+                        op: BinaryOp::Greater,
+                        lhs: Expr::Var { name: "required" },
+                        rhs: Expr::Call { func: Expr::Var { name: "cap" }, args: capacity_args },
                     },
+                    then_: Block { stmts: grow_stmts },
+                    else_: Option::None,
                 },
             );
             reserve_stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
@@ -1503,42 +1592,74 @@ fn hashmap_option_info(
     enums: Vec[repr::EnumDef],
     structs: Vec[repr::StructDef],
     function_names: FunctionNames,
-) -> (Type, Type, Type, bool) {
+) -> (Type, Type, Type, bool, bool, int, int) {
     let args: Vec[repr::Type] = Vec::from_array([]);
     args.push(value);
     match find_instance(instances, builtin.option.name, args) {
         Some(instance) => {
-            let variants = match find_enum(enums, instance.name) {
-                Some(definition) => definition.option_variants,
+            let definition = find_enum(enums, instance.name);
+            let variants = match definition {
+                Some(value) => value.option_variants,
                 None => Option::None,
             };
             let variants = match variants {
                 Some(value) => value,
                 None => (builtin.option.some.name, builtin.option.none.name),
             };
-            (
-                Type::Named { name: go_user_type_name(instance.name) },
-                Type::Named {
-                    name: variant_go_name(
-                        instance.name,
-                        variants.0,
-                        enums,
-                        structs,
-                        instances,
-                        function_names,
-                    ),
+            let mut some_tag = 0;
+            let mut none_tag = 1;
+            let compact = match definition {
+                Some(value) => {
+                    let fields: Vec[Vec[repr::Type]] = Vec::with_capacity(value.variants.len());
+                    for index in 0..value.variants.len() {
+                        let variant = value.variants[index];
+                        if variant.name == variants.0 {
+                            some_tag = index;
+                        } else if variant.name == variants.1 {
+                            none_tag = index;
+                        } else {};
+                        fields.push(enum_field_types(variant.fields))
+                    }
+                    compact_variant_fields(fields, structs)
+                        || compact_builtin_variant_fields(fields, structs)
                 },
-                Type::Named {
-                    name: variant_go_name(
-                        instance.name,
-                        variants.1,
-                        enums,
-                        structs,
-                        instances,
-                        function_names,
-                    ),
+                None => false,
+            };
+            let option_ty = Type::Named { name: go_user_type_name(instance.name) };
+            (
+                option_ty,
+                if compact {
+                    option_ty
+                } else {
+                    Type::Named {
+                        name: variant_go_name(
+                            instance.name,
+                            variants.0,
+                            enums,
+                            structs,
+                            instances,
+                            function_names,
+                        ),
+                    }
+                },
+                if compact {
+                    option_ty
+                } else {
+                    Type::Named {
+                        name: variant_go_name(
+                            instance.name,
+                            variants.1,
+                            enums,
+                            structs,
+                            instances,
+                            function_names,
+                        ),
+                    }
                 },
                 false,
+                compact,
+                some_tag,
+                none_tag,
             )
         },
         None => {
@@ -1548,6 +1669,9 @@ fn hashmap_option_info(
                 Type::Named { name: go_generated_ident(option_name + "_Some") },
                 Type::Named { name: go_generated_ident(option_name + "_None") },
                 true,
+                false,
+                0,
+                1,
             )
         },
     }
@@ -1580,6 +1704,473 @@ fn hashmap_hash_expr(builtin: tast::BuiltinContract, key: repr::Type, value: Exp
             args: Vec::from_array([value]),
         },
     }
+}
+
+fn hashmap_native_key(key: repr::Type) -> bool {
+    match repr::resolve_type(key) {
+        Unit | Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | String | Char => true,
+        _ => false,
+    }
+}
+
+fn hashmap_native_index_stmts() -> Vec[Stmt] {
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    stmts.push(Stmt::Var { name: "index", ty: Type::Int, value: Option::None });
+    stmts.push(Stmt::Var { name: "found", ty: Type::Bool, value: Option::None });
+    let names: Vec[string] = Vec::from_array([]);
+    names.push("index");
+    names.push("found");
+    stmts.push(
+        Stmt::MultiAssign {
+            names,
+            value: Expr::Index {
+                base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "indices" },
+                index: Expr::Var { name: "key" },
+            },
+        },
+    );
+    stmts
+}
+
+fn hashmap_native_new_item(key: repr::Type, value: repr::Type) -> Item {
+    let map_ty = repr::Type::HashMap { key, value };
+    let name = hashmap_name(key, value);
+    let fields: Vec[(string, Expr)] = Vec::from_array([]);
+    fields.push(
+        (
+            "indices",
+            Expr::Make {
+                ty: Type::Map { key: lower_type(key), value: Type::Int },
+                args: Vec::from_array([]),
+            },
+        ),
+    );
+    fields.push(("entries", Expr::Nil));
+    fields.push(("len", Expr::Int { value: "0" }));
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    stmts.push(
+        Stmt::Return {
+            expr: Option::Some(
+                Expr::Unary {
+                    op: UnaryOp::Address,
+                    expr: Expr::StructLiteral { ty: Type::Named { name }, fields },
+                },
+            ),
+        },
+    );
+    Item::Function(
+        Function {
+            name: runtime_helper_name("hashmap_new", map_ty),
+            params: Vec::from_array([]),
+            ret_ty: Option::Some(lower_type(map_ty)),
+            body: Block { stmts },
+        },
+    )
+}
+
+fn hashmap_native_lookup_item(key: repr::Type, value: repr::Type) -> Item {
+    let map_ty = repr::Type::HashMap { key, value };
+    let lowered_value = lower_type(value);
+    let entry_ty = Type::Named { name: go_generated_ident(hashmap_name(key, value) + "_entry") };
+    let params: Vec[(string, Type)] = Vec::from_array([]);
+    params.push(("m", lower_type(map_ty)));
+    params.push(("key", lower_type(key)));
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    let missing_stmts: Vec[Stmt] = Vec::from_array([]);
+    missing_stmts.push(Stmt::Var { name: "zero", ty: lowered_value, value: Option::None });
+    let missing_values: Vec[Expr] = Vec::from_array([]);
+    missing_values.push(Expr::Var { name: "zero" });
+    missing_values.push(Expr::Bool { value: false });
+    missing_stmts.push(Stmt::ReturnMulti { exprs: missing_values });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Binary { op: BinaryOp::Eq, lhs: Expr::Var { name: "m" }, rhs: Expr::Nil },
+            then_: Block { stmts: missing_stmts },
+            else_: Option::None,
+        },
+    );
+    for stmt in hashmap_native_index_stmts() {
+        stmts.push(stmt)
+    }
+    let not_found_stmts: Vec[Stmt] = Vec::from_array([]);
+    not_found_stmts.push(Stmt::Var { name: "zero", ty: lowered_value, value: Option::None });
+    let not_found_values: Vec[Expr] = Vec::from_array([]);
+    not_found_values.push(Expr::Var { name: "zero" });
+    not_found_values.push(Expr::Bool { value: false });
+    not_found_stmts.push(Stmt::ReturnMulti { exprs: not_found_values });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Unary { op: UnaryOp::Not, expr: Expr::Var { name: "found" } },
+            then_: Block { stmts: not_found_stmts },
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::Var {
+            name: "entry",
+            ty: entry_ty,
+            value: Option::Some(
+                Expr::Index {
+                    base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" },
+                    index: Expr::Var { name: "index" },
+                },
+            ),
+        },
+    );
+    let found_stmts: Vec[Stmt] = Vec::from_array([]);
+    let found_values: Vec[Expr] = Vec::from_array([]);
+    found_values.push(Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "value" });
+    found_values.push(Expr::Bool { value: true });
+    found_stmts.push(Stmt::ReturnMulti { exprs: found_values });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "active" },
+            then_: Block { stmts: found_stmts },
+            else_: Option::None,
+        },
+    );
+    stmts.push(Stmt::Var { name: "zero", ty: lowered_value, value: Option::None });
+    let inactive_values: Vec[Expr] = Vec::from_array([]);
+    inactive_values.push(Expr::Var { name: "zero" });
+    inactive_values.push(Expr::Bool { value: false });
+    stmts.push(Stmt::ReturnMulti { exprs: inactive_values });
+    let returns: Vec[Type] = Vec::from_array([]);
+    returns.push(lowered_value);
+    returns.push(Type::Bool);
+    Item::Function(
+        Function {
+            name: runtime_helper_name("hashmap_lookup", map_ty),
+            params,
+            ret_ty: Option::Some(Type::Multi { items: returns }),
+            body: Block { stmts },
+        },
+    )
+}
+
+fn hashmap_native_set_item(key: repr::Type, value: repr::Type) -> Item {
+    let map_ty = repr::Type::HashMap { key, value };
+    let entry_ty = Type::Named { name: go_generated_ident(hashmap_name(key, value) + "_entry") };
+    let params: Vec[(string, Type)] = Vec::from_array([]);
+    params.push(("m", lower_type(map_ty)));
+    params.push(("key", lower_type(key)));
+    params.push(("value", lower_type(value)));
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    let nil_stmts: Vec[Stmt] = Vec::from_array([]);
+    nil_stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Binary { op: BinaryOp::Eq, lhs: Expr::Var { name: "m" }, rhs: Expr::Nil },
+            then_: Block { stmts: nil_stmts },
+            else_: Option::None,
+        },
+    );
+    for stmt in hashmap_native_index_stmts() {
+        stmts.push(stmt)
+    }
+    let existing_stmts: Vec[Stmt] = Vec::from_array([]);
+    existing_stmts.push(
+        Stmt::Var {
+            name: "entry",
+            ty: entry_ty,
+            value: Option::Some(
+                Expr::Index {
+                    base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" },
+                    index: Expr::Var { name: "index" },
+                },
+            ),
+        },
+    );
+    let active_stmts: Vec[Stmt] = Vec::from_array([]);
+    active_stmts.push(
+        Stmt::FieldAssign {
+            target: Expr::Index {
+                base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" },
+                index: Expr::Var { name: "index" },
+            },
+            field_name: "value",
+            value: Expr::Var { name: "value" },
+        },
+    );
+    active_stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
+    existing_stmts.push(
+        Stmt::If {
+            cond: Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "active" },
+            then_: Block { stmts: active_stmts },
+            else_: Option::None,
+        },
+    );
+    existing_stmts.push(
+        Stmt::IndexAssign {
+            base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" },
+            index: Expr::Var { name: "index" },
+            value: hashmap_entry_expr(entry_ty),
+        },
+    );
+    existing_stmts.push(hashmap_increment_len());
+    existing_stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Var { name: "found" },
+            then_: Block { stmts: existing_stmts },
+            else_: Option::None,
+        },
+    );
+    let len_args: Vec[Expr] = Vec::from_array([]);
+    len_args.push(Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" });
+    stmts.push(
+        Stmt::Assign {
+            name: "index",
+            value: Expr::Call { func: Expr::Var { name: "len" }, args: len_args },
+        },
+    );
+    stmts.push(
+        Stmt::IndexAssign {
+            base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "indices" },
+            index: Expr::Var { name: "key" },
+            value: Expr::Var { name: "index" },
+        },
+    );
+    let append_args: Vec[Expr] = Vec::from_array([]);
+    append_args.push(Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" });
+    append_args.push(hashmap_entry_expr(entry_ty));
+    stmts.push(
+        Stmt::FieldAssign {
+            target: Expr::Var { name: "m" },
+            field_name: "entries",
+            value: Expr::Call { func: Expr::Var { name: "append" }, args: append_args },
+        },
+    );
+    stmts.push(hashmap_increment_len());
+    stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
+    Item::Function(
+        Function {
+            name: runtime_helper_name("hashmap_set", map_ty),
+            params,
+            ret_ty: Option::Some(Type::Unit),
+            body: Block { stmts },
+        },
+    )
+}
+
+fn hashmap_native_remove_item(key: repr::Type, value: repr::Type) -> Item {
+    let map_ty = repr::Type::HashMap { key, value };
+    let entry_ty = Type::Named { name: go_generated_ident(hashmap_name(key, value) + "_entry") };
+    let params: Vec[(string, Type)] = Vec::from_array([]);
+    params.push(("m", lower_type(map_ty)));
+    params.push(("key", lower_type(key)));
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    let nil_stmts: Vec[Stmt] = Vec::from_array([]);
+    nil_stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Binary { op: BinaryOp::Eq, lhs: Expr::Var { name: "m" }, rhs: Expr::Nil },
+            then_: Block { stmts: nil_stmts },
+            else_: Option::None,
+        },
+    );
+    for stmt in hashmap_native_index_stmts() {
+        stmts.push(stmt)
+    }
+    let missing_stmts: Vec[Stmt] = Vec::from_array([]);
+    missing_stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Unary { op: UnaryOp::Not, expr: Expr::Var { name: "found" } },
+            then_: Block { stmts: missing_stmts },
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::Var {
+            name: "entry",
+            ty: entry_ty,
+            value: Option::Some(
+                Expr::Index {
+                    base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" },
+                    index: Expr::Var { name: "index" },
+                },
+            ),
+        },
+    );
+    let inactive_stmts: Vec[Stmt] = Vec::from_array([]);
+    inactive_stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Unary {
+                op: UnaryOp::Not,
+                expr: Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "active" },
+            },
+            then_: Block { stmts: inactive_stmts },
+            else_: Option::None,
+        },
+    );
+    stmts.push(Stmt::Var { name: "zero", ty: entry_ty, value: Option::None });
+    stmts.push(
+        Stmt::IndexAssign {
+            base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" },
+            index: Expr::Var { name: "index" },
+            value: Expr::Var { name: "zero" },
+        },
+    );
+    stmts.push(
+        Stmt::FieldAssign {
+            target: Expr::Var { name: "m" },
+            field_name: "len",
+            value: Expr::Binary {
+                op: BinaryOp::Sub,
+                lhs: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "len" },
+                rhs: Expr::Int { value: "1" },
+            },
+        },
+    );
+    stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
+    Item::Function(
+        Function {
+            name: runtime_helper_name("hashmap_remove", map_ty),
+            params,
+            ret_ty: Option::Some(Type::Unit),
+            body: Block { stmts },
+        },
+    )
+}
+
+fn hashmap_native_contains_item(key: repr::Type, value: repr::Type) -> Item {
+    let map_ty = repr::Type::HashMap { key, value };
+    let params: Vec[(string, Type)] = Vec::from_array([]);
+    params.push(("m", lower_type(map_ty)));
+    params.push(("key", lower_type(key)));
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    let nil_stmts: Vec[Stmt] = Vec::from_array([]);
+    nil_stmts.push(Stmt::Return { expr: Option::Some(Expr::Bool { value: false }) });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Binary { op: BinaryOp::Eq, lhs: Expr::Var { name: "m" }, rhs: Expr::Nil },
+            then_: Block { stmts: nil_stmts },
+            else_: Option::None,
+        },
+    );
+    for stmt in hashmap_native_index_stmts() {
+        stmts.push(stmt)
+    }
+    let missing_stmts: Vec[Stmt] = Vec::from_array([]);
+    missing_stmts.push(Stmt::Return { expr: Option::Some(Expr::Bool { value: false }) });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Unary { op: UnaryOp::Not, expr: Expr::Var { name: "found" } },
+            then_: Block { stmts: missing_stmts },
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::Return {
+            expr: Option::Some(
+                Expr::Field {
+                    expr: Expr::Index {
+                        base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" },
+                        index: Expr::Var { name: "index" },
+                    },
+                    field_name: "active",
+                },
+            ),
+        },
+    );
+    Item::Function(
+        Function {
+            name: runtime_helper_name("hashmap_contains", map_ty),
+            params,
+            ret_ty: Option::Some(Type::Bool),
+            body: Block { stmts },
+        },
+    )
+}
+
+fn hashmap_native_entries_item(key: repr::Type, value: repr::Type) -> Item {
+    let map_ty = repr::Type::HashMap { key, value };
+    let pair_types: Vec[repr::Type] = Vec::from_array([]);
+    pair_types.push(key);
+    pair_types.push(value);
+    let pair_ty = repr::Type::Tuple { items: pair_types };
+    let lowered_pair = lower_type(pair_ty);
+    let result_slice_ty = Type::Slice { elem: lowered_pair };
+    let result_vec_ty = repr::Type::VecType { elem: pair_ty };
+    let result_vec_struct = Type::Named {
+        name: go_generated_ident("_goml_vec_" + go_ident(encode_type(pair_ty))),
+    };
+    let params: Vec[(string, Type)] = Vec::from_array([]);
+    params.push(("m", lower_type(map_ty)));
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    stmts.push(Stmt::Var { name: "result", ty: result_slice_ty, value: Option::None });
+    let nil_fields: Vec[(string, Expr)] = Vec::from_array([]);
+    nil_fields.push(("items", Expr::Var { name: "result" }));
+    let nil_stmts: Vec[Stmt] = Vec::from_array([]);
+    nil_stmts.push(
+        Stmt::Return {
+            expr: Option::Some(
+                Expr::Unary {
+                    op: UnaryOp::Address,
+                    expr: Expr::StructLiteral { ty: result_vec_struct, fields: nil_fields },
+                },
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Binary { op: BinaryOp::Eq, lhs: Expr::Var { name: "m" }, rhs: Expr::Nil },
+            then_: Block { stmts: nil_stmts },
+            else_: Option::None,
+        },
+    );
+    let range_stmts: Vec[Stmt] = Vec::from_array([]);
+    let pair_fields: Vec[(string, Expr)] = Vec::from_array([]);
+    pair_fields.push(("_0", Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "key" }));
+    pair_fields.push(("_1", Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "value" }));
+    let append_args: Vec[Expr] = Vec::from_array([]);
+    append_args.push(Expr::Var { name: "result" });
+    append_args.push(Expr::StructLiteral { ty: lowered_pair, fields: pair_fields });
+    let active_stmts: Vec[Stmt] = Vec::from_array([]);
+    active_stmts.push(
+        Stmt::Assign {
+            name: "result",
+            value: Expr::Call { func: Expr::Var { name: "append" }, args: append_args },
+        },
+    );
+    range_stmts.push(
+        Stmt::If {
+            cond: Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "active" },
+            then_: Block { stmts: active_stmts },
+            else_: Option::None,
+        },
+    );
+    let range_names: Vec[string] = Vec::from_array([]);
+    range_names.push("_");
+    range_names.push("entry");
+    stmts.push(
+        Stmt::Range {
+            names: range_names,
+            expr: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" },
+            body: Block { stmts: range_stmts },
+        },
+    );
+    let result_fields: Vec[(string, Expr)] = Vec::from_array([]);
+    result_fields.push(("items", Expr::Var { name: "result" }));
+    stmts.push(
+        Stmt::Return {
+            expr: Option::Some(
+                Expr::Unary {
+                    op: UnaryOp::Address,
+                    expr: Expr::StructLiteral { ty: result_vec_struct, fields: result_fields },
+                },
+            ),
+        },
+    );
+    Item::Function(
+        Function {
+            name: runtime_helper_name("hashmap_entries", map_ty),
+            params,
+            ret_ty: Option::Some(lower_type(result_vec_ty)),
+            body: Block { stmts },
+        },
+    )
 }
 
 fn hashmap_new_item(key: repr::Type, value: repr::Type) -> Item {
@@ -1778,6 +2369,9 @@ fn hashmap_get_item(
     option_ty: Type,
     some_ty: Type,
     none_ty: Type,
+    compact: bool,
+    some_tag: int,
+    none_tag: int,
 ) -> Item {
     let map_ty = repr::Type::HashMap { key, value };
     let params: Vec[(string, Type)] = Vec::from_array([]);
@@ -1802,7 +2396,12 @@ fn hashmap_get_item(
         },
     );
     let some_fields: Vec[(string, Expr)] = Vec::from_array([]);
-    some_fields.push(("_0", Expr::Var { name: "value" }));
+    if compact {
+        some_fields.push(("_tag", Expr::Int { value: some_tag.to_string() }));
+        some_fields.push((compact_variant_field_name(some_tag, 0), Expr::Var { name: "value" }))
+    } else {
+        some_fields.push(("_0", Expr::Var { name: "value" }))
+    };
     let some_stmts: Vec[Stmt] = Vec::from_array([]);
     some_stmts.push(
         Stmt::Return {
@@ -1816,9 +2415,13 @@ fn hashmap_get_item(
             else_: Option::None,
         },
     );
+    let none_fields: Vec[(string, Expr)] = Vec::from_array([]);
+    if compact {
+        none_fields.push(("_tag", Expr::Int { value: none_tag.to_string() }))
+    } else {};
     stmts.push(
         Stmt::Return {
-            expr: Option::Some(Expr::StructLiteral { ty: none_ty, fields: Vec::from_array([]) }),
+            expr: Option::Some(Expr::StructLiteral { ty: none_ty, fields: none_fields }),
         },
     );
     Item::Function(
@@ -2477,22 +3080,28 @@ fn hashmap_items(
     let result: Vec[Item] = Vec::from_array([]);
     let name = hashmap_name(key, value);
     let entry_name = go_generated_ident(name + "_entry");
+    let native_key = hashmap_native_key(key);
     let entry_fields: Vec[(string, Type)] = Vec::from_array([]);
     entry_fields.push(("active", Type::Bool));
     entry_fields.push(("key", lower_type(key)));
     entry_fields.push(("value", lower_type(value)));
     result.push(Item::Struct(StructDef { name: entry_name, fields: entry_fields }));
     let fields: Vec[(string, Type)] = Vec::from_array([]);
-    fields.push(
-        (
-            "buckets",
-            Type::Map {
-                key: Type::Uint64,
-                value: Type::Slice { elem: Type::Named { name: entry_name } },
-            },
-        ),
-    );
-    fields.push(("hashes", Type::Slice { elem: Type::Uint64 }));
+    if native_key {
+        fields.push(("indices", Type::Map { key: lower_type(key), value: Type::Int }));
+        fields.push(("entries", Type::Slice { elem: Type::Named { name: entry_name } }))
+    } else {
+        fields.push(
+            (
+                "buckets",
+                Type::Map {
+                    key: Type::Uint64,
+                    value: Type::Slice { elem: Type::Named { name: entry_name } },
+                },
+            ),
+        );
+        fields.push(("hashes", Type::Slice { elem: Type::Uint64 }))
+    };
     fields.push(("len", Type::Int));
     result.push(Item::Struct(StructDef { name, fields }));
     let option = hashmap_option_info(builtin, value, instances, enums, structs, function_names);
@@ -2501,14 +3110,35 @@ fn hashmap_items(
             result.push(item)
         }
     } else {};
-    result.push(hashmap_new_item(key, value));
+    result.push(
+        if native_key {
+            hashmap_native_new_item(key, value)
+        } else {
+            hashmap_new_item(key, value)
+        },
+    );
     result.push(hashmap_len_item(key, value));
-    result.push(hashmap_lookup_item(builtin, key, value));
-    result.push(hashmap_get_item(key, value, option.0, option.1, option.2));
-    result.push(hashmap_set_item(builtin, key, value));
-    result.push(hashmap_remove_item(builtin, key, value));
-    result.push(hashmap_contains_item(builtin, key, value));
-    result.push(hashmap_entries_item(key, value));
+    result.push(
+        if native_key {
+            hashmap_native_lookup_item(key, value)
+        } else {
+            hashmap_lookup_item(builtin, key, value)
+        },
+    );
+    result.push(
+        hashmap_get_item(key, value, option.0, option.1, option.2, option.4, option.5, option.6),
+    );
+    if native_key {
+        result.push(hashmap_native_set_item(key, value));
+        result.push(hashmap_native_remove_item(key, value));
+        result.push(hashmap_native_contains_item(key, value));
+        result.push(hashmap_native_entries_item(key, value))
+    } else {
+        result.push(hashmap_set_item(builtin, key, value));
+        result.push(hashmap_remove_item(builtin, key, value));
+        result.push(hashmap_contains_item(builtin, key, value));
+        result.push(hashmap_entries_item(key, value))
+    };
     result
 }
 

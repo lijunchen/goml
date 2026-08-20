@@ -2,7 +2,6 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_slices "slices"
 )
 
 func _goml_runtime_core_int_to_string(x int) string {
@@ -30,7 +29,7 @@ func vec_new__Vec_5int32() *_goml_vec_int32 {
 
 func vec_with_capacity__Vec_5int32(capacity int) *_goml_vec_int32 {
     return &_goml_vec_int32{
-        items: _goml_slices.Grow([]int32{}, int(capacity)),
+        items: make([]int32, 0, capacity),
     }
 }
 

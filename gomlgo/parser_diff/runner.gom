@@ -1,0 +1,122 @@
+package parser_diff;
+
+use gomlgo::ast;
+use gomlgo::differential;
+use gomlgo::parser;
+use std::collections;
+use std::fs;
+use std::path;
+
+pub struct Summary {
+    pub files: int,
+    pub accepted: int,
+}
+
+fn collect_go_files(directory: string, files: Vec[string]) -> Result[unit, string] {
+    let names = fs::read_dir(directory)?;
+    collections::sort(names);
+    for name in names {
+        let entry = path::join(directory, name);
+        if fs::is_dir(entry) {
+            collect_go_files(entry, files)?
+        } else if fs::is_file(entry) && path::extension(entry) == Option::Some("go") {
+            files.push(entry)
+        } else {}
+    }
+    Result::Ok(())
+}
+
+fn compare_diagnostics(
+    file: string,
+    actual: parser::ParseResult,
+    expected: differential::OracleResponse,
+) -> Result[unit, string] {
+    if actual.diagnostics.len() != expected.diagnostics.len() {
+        Result::Err(
+            file + ": diagnostic count mismatch\nexpected=" + expected.diagnostics.len().to_string()
+                + "\nactual="
+                + actual.diagnostics.len().to_string(),
+        )
+    } else {
+        for index in 0..expected.diagnostics.len() {
+            if actual.diagnostics[index].offset != expected.diagnostics[index].offset
+                || actual.diagnostics[index].message != expected.diagnostics[index].message {
+                return Result::Err(
+                    file + ": diagnostic mismatch at index " + index.to_string() + "\nexpected="
+                        + expected.diagnostics[index].offset.to_string()
+                        + ": "
+                        + expected.diagnostics[index].message
+                        + "\nactual="
+                        + actual.diagnostics[index].offset.to_string()
+                        + ": "
+                        + actual.diagnostics[index].message,
+                )
+            } else {}
+        }
+        Result::Ok(())
+    }
+}
+
+fn compare_file(file: string, mode: Mode) -> Result[bool, string] {
+    let source = fs::read_bytes(file)?;
+    let actual = parser::parse_file_bytes(source);
+    let expected = differential::run_oracle("parse-file", source)?;
+    let actual_ok = actual.diagnostics.is_empty();
+    if actual_ok != expected.ok {
+        let actual_diagnostic = if actual.diagnostics.is_empty() {
+            "none"
+        } else {
+            actual.diagnostics[0].offset.to_string() + ": " + actual.diagnostics[0].message
+        };
+        let expected_diagnostic = if expected.diagnostics.is_empty() {
+            "none"
+        } else {
+            expected.diagnostics[0].offset.to_string() + ": " + expected.diagnostics[0].message
+        };
+        return Result::Err(
+            file + ": parse acceptance mismatch\nactual ok=" + actual_ok.to_string()
+                + " first diagnostic="
+                + actual_diagnostic
+                + "\nexpected ok="
+                + expected.ok.to_string()
+                + " first diagnostic="
+                + expected_diagnostic,
+        )
+    } else {};
+    if mode == Mode::Diagnostics {
+        compare_diagnostics(file, actual, expected)?
+    } else if mode != Mode::Acceptance && actual_ok {
+        let actual_ast = match actual.root {
+            Some(root) => ast::to_json(root),
+            None => return Result::Err(file + ": missing GoML AST"),
+        };
+        match compare_ast(actual_ast, expected.ast, mode) {
+            Some(value) => return Result::Err(
+                file + ": " + mode_name(mode) + " mismatch\npath=" + value.path + "\noffset="
+                    + value.offset.to_string()
+                    + "\nexpected="
+                    + value.expected
+                    + "\nactual="
+                    + value.actual,
+            ),
+            None => {},
+        }
+    } else {};
+    Result::Ok(actual_ok)
+}
+
+pub fn compare_tree(root: string, mode: Mode) -> Result[Summary, string] {
+    let files: Vec[string] = Vec::from_array([]);
+    if fs::is_file(root) {
+        files.push(root)
+    } else {
+        collect_go_files(root, files)?
+    };
+    let mut accepted = 0;
+    for file in files {
+        if compare_file(file, mode)? {
+            accepted += 1;
+        } else {}
+    }
+    Result::Ok(Summary { files: files.len(), accepted })
+}

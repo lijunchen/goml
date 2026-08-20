@@ -251,63 +251,26 @@ type Ordering int32
 
 type _goml_m_std_p_io_p_ErrorKind int32
 
-type Option__uint8 interface {
-    isOption__uint8()
+type Option__uint8 struct {
+    _tag int32
+    _v1_0 uint8
 }
 
-type Option__uint8_None struct {}
-
-func (_ Option__uint8_None) isOption__uint8() {}
-
-type Option__uint8_Some struct {
-    _0 uint8
+type Result__string__string struct {
+    _tag int32
+    _v0_0 string
+    _v1_0 string
 }
 
-func (_ Option__uint8_Some) isOption__uint8() {}
-
-type Result__string__string interface {
-    isResult__string__string()
+type Option__string struct {
+    _tag int32
+    _v1_0 string
 }
 
-type Result__string__string_Ok struct {
-    _0 string
+type Option__int struct {
+    _tag int32
+    _v1_0 int
 }
-
-func (_ Result__string__string_Ok) isResult__string__string() {}
-
-type Result__string__string_Err struct {
-    _0 string
-}
-
-func (_ Result__string__string_Err) isResult__string__string() {}
-
-type Option__string interface {
-    isOption__string()
-}
-
-type Option__string_None struct {}
-
-func (_ Option__string_None) isOption__string() {}
-
-type Option__string_Some struct {
-    _0 string
-}
-
-func (_ Option__string_Some) isOption__string() {}
-
-type Option__int interface {
-    isOption__int()
-}
-
-type Option__int_None struct {}
-
-func (_ Option__int_None) isOption__int() {}
-
-type Option__int_Some struct {
-    _0 int
-}
-
-func (_ Option__int_Some) isOption__int() {}
 
 type _goml_m_Result____std_p_bytes_p_Bytes____std_p_io_p_Error interface {
     is_goml_m_Result____std_p_bytes_p_Bytes____std_p_io_p_Error()
@@ -357,65 +320,27 @@ type _goml_m_Result____unit____std_p_io_p_Error_Err struct {
 
 func (_ _goml_m_Result____unit____std_p_io_p_Error_Err) is_goml_m_Result____unit____std_p_io_p_Error() {}
 
-type _goml_m_Result____std_p_bytes_p_Bytes____string interface {
-    is_goml_m_Result____std_p_bytes_p_Bytes____string()
+type _goml_m_Result____std_p_bytes_p_Bytes____string struct {
+    _tag int32
+    _v0_0 _goml_m_std_p_bytes_p_Bytes
+    _v1_0 string
 }
 
-type _goml_m_Result____std_p_bytes_p_Bytes____string_Ok struct {
-    _0 _goml_m_std_p_bytes_p_Bytes
+type Result__unit__string struct {
+    _tag int32
+    _v0_0 struct{}
+    _v1_0 string
 }
 
-func (_ _goml_m_Result____std_p_bytes_p_Bytes____string_Ok) is_goml_m_Result____std_p_bytes_p_Bytes____string() {}
-
-type _goml_m_Result____std_p_bytes_p_Bytes____string_Err struct {
-    _0 string
+type _goml_m_Option_____o_int_c_char_q_ struct {
+    _tag int32
+    _v1_0 Tuple2_3int_4char
 }
 
-func (_ _goml_m_Result____std_p_bytes_p_Bytes____string_Err) is_goml_m_Result____std_p_bytes_p_Bytes____string() {}
-
-type Result__unit__string interface {
-    isResult__unit__string()
+type _goml_m_Option_____o_string_c_string_q_ struct {
+    _tag int32
+    _v1_0 Tuple2_6string_6string
 }
-
-type Result__unit__string_Ok struct {
-    _0 struct{}
-}
-
-func (_ Result__unit__string_Ok) isResult__unit__string() {}
-
-type Result__unit__string_Err struct {
-    _0 string
-}
-
-func (_ Result__unit__string_Err) isResult__unit__string() {}
-
-type _goml_m_Option_____o_int_c_char_q_ interface {
-    is_goml_m_Option_____o_int_c_char_q_()
-}
-
-type _goml_m_Option_____o_int_c_char_q__None struct {}
-
-func (_ _goml_m_Option_____o_int_c_char_q__None) is_goml_m_Option_____o_int_c_char_q_() {}
-
-type _goml_m_Option_____o_int_c_char_q__Some struct {
-    _0 Tuple2_3int_4char
-}
-
-func (_ _goml_m_Option_____o_int_c_char_q__Some) is_goml_m_Option_____o_int_c_char_q_() {}
-
-type _goml_m_Option_____o_string_c_string_q_ interface {
-    is_goml_m_Option_____o_string_c_string_q_()
-}
-
-type _goml_m_Option_____o_string_c_string_q__None struct {}
-
-func (_ _goml_m_Option_____o_string_c_string_q__None) is_goml_m_Option_____o_string_c_string_q_() {}
-
-type _goml_m_Option_____o_string_c_string_q__Some struct {
-    _0 Tuple2_6string_6string
-}
-
-func (_ _goml_m_Option_____o_string_c_string_q__Some) is_goml_m_Option_____o_string_c_string_q_() {}
 
 type _goml_m_Result____string____std_p_env_p_VarError interface {
     is_goml_m_Result____string____std_p_env_p_VarError()
@@ -433,33 +358,15 @@ type _goml_m_Result____string____std_p_env_p_VarError_Err struct {
 
 func (_ _goml_m_Result____string____std_p_env_p_VarError_Err) is_goml_m_Result____string____std_p_env_p_VarError() {}
 
-type _goml_m_Option_____o_char_c_int_q_ interface {
-    is_goml_m_Option_____o_char_c_int_q_()
+type _goml_m_Option_____o_char_c_int_q_ struct {
+    _tag int32
+    _v1_0 Tuple2_4char_3int
 }
 
-type _goml_m_Option_____o_char_c_int_q__None struct {}
-
-func (_ _goml_m_Option_____o_char_c_int_q__None) is_goml_m_Option_____o_char_c_int_q_() {}
-
-type _goml_m_Option_____o_char_c_int_q__Some struct {
-    _0 Tuple2_4char_3int
+type Option__char struct {
+    _tag int32
+    _v1_0 rune
 }
-
-func (_ _goml_m_Option_____o_char_c_int_q__Some) is_goml_m_Option_____o_char_c_int_q_() {}
-
-type Option__char interface {
-    isOption__char()
-}
-
-type Option__char_None struct {}
-
-func (_ Option__char_None) isOption__char() {}
-
-type Option__char_Some struct {
-    _0 rune
-}
-
-func (_ Option__char_Some) isOption__char() {}
 
 func _goml_m_std_p_internal_p_host_p_args() *_goml_vec_string {
     var t413 *_goml_vec_string = _goml_runtime_std_env_args()

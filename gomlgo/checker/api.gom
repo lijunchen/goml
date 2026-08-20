@@ -1,0 +1,188 @@
+package checker;
+
+use gomlgo::syntax;
+use gomlgo::types as go_types;
+use std::bytes;
+
+pub struct CheckConfig {
+    pub go_version: string,
+    pub sizes: go_types::TargetSizes,
+    pub ignore_func_bodies: bool,
+    pub exported_api_only: bool,
+    pub fake_import_c: bool,
+    pub disable_unused_import_check: bool,
+    pub retain_syntax_paths: bool,
+    pub enable_alias: bool,
+    pub available_imports: Vec[AvailableImport],
+    pub ignored_imports: Vec[string],
+    pub import_errors: Vec[ImportFailure],
+}
+
+pub struct AvailableImport {
+    pub path: string,
+    pub name: string,
+}
+
+pub struct ImportFailure {
+    pub path: string,
+    pub message: string,
+}
+
+pub struct SourceFile {
+    pub name: string,
+    pub source: bytes::Bytes,
+}
+
+pub struct PackageInput {
+    pub path: string,
+    pub files: Vec[SourceFile],
+}
+
+pub struct CheckDiagnostic {
+    pub file: string,
+    pub start: int,
+    pub end: int,
+    pub message: string,
+    pub soft: bool,
+    pub secondary: bool,
+}
+
+pub struct TypeFactExtra {
+    pub key: Option[string],
+    pub constant_kind: string,
+    pub constant: Option[string],
+}
+
+pub struct TypeFact {
+    pub node: syntax::NodeId,
+    pub type_id: go_types::TypeId,
+    pub extra: Option[TypeFactExtra],
+    pub void: bool,
+    pub type_expr: bool,
+    pub builtin: bool,
+    pub value_expr: bool,
+    pub nil: bool,
+    pub addressable: bool,
+    pub assignable: bool,
+    pub comma_ok: bool,
+}
+
+pub fn type_fact_extra(key: Option[string], constant_kind: string, constant: Option[string]) -> Option[
+    TypeFactExtra,
+] {
+    if key.is_none() && constant.is_none() {
+        Option::None
+    } else {
+        Option::Some(TypeFactExtra { key, constant_kind, constant })
+    }
+}
+
+pub fn type_fact_key(value: TypeFact) -> Option[string] {
+    match value.extra {
+        Some(extra) => extra.key,
+        None => Option::None,
+    }
+}
+
+pub fn type_fact_constant_kind(value: TypeFact) -> string {
+    match value.extra {
+        Some(extra) => extra.constant_kind,
+        None => "",
+    }
+}
+
+pub fn type_fact_constant(value: TypeFact) -> Option[string] {
+    match value.extra {
+        Some(extra) => extra.constant,
+        None => Option::None,
+    }
+}
+
+pub struct ObjectFact {
+    pub node: syntax::NodeId,
+    pub object: Option[go_types::ObjectId],
+}
+
+pub struct SelectionFact {
+    pub node: syntax::NodeId,
+    pub receiver_type: go_types::TypeId,
+    pub object: go_types::ObjectId,
+    pub type_id: go_types::TypeId,
+    pub index: Vec[int],
+    pub indirect: bool,
+}
+
+pub struct ScopeFact {
+    pub node: syntax::NodeId,
+    pub scope: go_types::ScopeId,
+}
+
+pub struct InstanceFact {
+    pub node: syntax::NodeId,
+    pub type_args: Vec[go_types::TypeId],
+    pub type_id: go_types::TypeId,
+}
+
+pub struct InitializerFact {
+    pub left: Vec[go_types::ObjectId],
+    pub right: syntax::NodeId,
+}
+
+pub struct FileVersionFact {
+    pub file: syntax::FileId,
+    pub version: string,
+}
+
+pub struct TypeInfo {
+    pub types: Vec[TypeFact],
+    pub defs: Vec[ObjectFact],
+    pub uses: Vec[ObjectFact],
+    pub implicits: Vec[ObjectFact],
+    pub selections: Vec[SelectionFact],
+    pub scopes: Vec[ScopeFact],
+    pub instances: Vec[InstanceFact],
+    pub init_order: Vec[InitializerFact],
+    pub file_versions: Vec[FileVersionFact],
+}
+
+pub struct CheckResult {
+    pub world: go_types::World,
+    pub syntax: syntax::PackageSyntax,
+    pub package_id: go_types::PackageId,
+    pub info: TypeInfo,
+    pub diagnostics: Vec[CheckDiagnostic],
+}
+
+pub fn default_config() -> CheckConfig {
+    CheckConfig {
+        go_version: "go1.26",
+        sizes: go_types::TargetSizes { word_size: 8, max_align: 8 },
+        ignore_func_bodies: false,
+        exported_api_only: false,
+        fake_import_c: false,
+        disable_unused_import_check: false,
+        retain_syntax_paths: true,
+        enable_alias: true,
+        available_imports: Vec::from_array([]),
+        ignored_imports: Vec::from_array([]),
+        import_errors: Vec::from_array([]),
+    }
+}
+
+pub fn empty_info() -> TypeInfo {
+    TypeInfo {
+        types: Vec::from_array([]),
+        defs: Vec::from_array([]),
+        uses: Vec::from_array([]),
+        implicits: Vec::from_array([]),
+        selections: Vec::from_array([]),
+        scopes: Vec::from_array([]),
+        instances: Vec::from_array([]),
+        init_order: Vec::from_array([]),
+        file_versions: Vec::from_array([]),
+    }
+}
+
+pub fn check(config: CheckConfig, input: PackageInput) -> CheckResult {
+    check_package(config, input)
+}

@@ -15,20 +15,11 @@ func _goml_runtime_core_string_println(s string) struct{} {
 
 type Ordering int32
 
-type T interface {
-    isT()
+type T struct {
+    _tag int32
+    _v1_0 bool
+    _v1_1 struct{}
 }
-
-type A struct {}
-
-func (_ A) isT() {}
-
-type B struct {
-    _0 bool
-    _1 struct{}
-}
-
-func (_ B) isT() {}
 
 func main0() struct{} {
     var x408 bool = true

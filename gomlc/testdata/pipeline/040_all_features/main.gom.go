@@ -104,26 +104,12 @@ type closure_env_flip_2 struct {
 
 type Ordering int32
 
-type Record__int32 interface {
-    isRecord__int32()
+type Record__int32 struct {
+    _tag int32
+    _v0_0 int32
+    _v1_0 int32
+    _v1_1 int32
 }
-
-type Record__int32_Value struct {
-    _0 int32
-}
-
-func (_ Record__int32_Value) isRecord__int32() {}
-
-type Record__int32_Pair struct {
-    _0 int32
-    _1 int32
-}
-
-func (_ Record__int32_Pair) isRecord__int32() {}
-
-type Record__int32_Empty struct {}
-
-func (_ Record__int32_Empty) isRecord__int32() {}
 
 type Record__string interface {
     isRecord__string()
@@ -146,33 +132,15 @@ type Record__string_Empty struct {}
 
 func (_ Record__string_Empty) isRecord__string() {}
 
-type Maybe__int32 interface {
-    isMaybe__int32()
+type Maybe__int32 struct {
+    _tag int32
+    _v0_0 int32
 }
 
-type Maybe__int32_Some struct {
-    _0 int32
+type Maybe__string struct {
+    _tag int32
+    _v0_0 string
 }
-
-func (_ Maybe__int32_Some) isMaybe__int32() {}
-
-type Maybe__int32_None struct {}
-
-func (_ Maybe__int32_None) isMaybe__int32() {}
-
-type Maybe__string interface {
-    isMaybe__string()
-}
-
-type Maybe__string_Some struct {
-    _0 string
-}
-
-func (_ Maybe__string_Some) isMaybe__string() {}
-
-type Maybe__string_None struct {}
-
-func (_ Maybe__string_None) isMaybe__string() {}
 
 func _goml_m_trait__impl_i_Describe_i_Tracker_i_describe(self__0 Tracker) string {
     var x409 string = self__0.label
@@ -200,18 +168,18 @@ func _goml_m_trait__impl_i_Describe_i_Tracker_i_describe(self__0 Tracker) string
 }
 
 func _goml_m_trait__impl_i_Describe_i_Record____int32_i_describe(self__10 Record__int32) string {
-    switch self__10.(type) {
-    case Record__int32_Value:
-        var x412 int32 = self__10.(Record__int32_Value)._0
+    switch self__10._tag {
+    case 0:
+        var x412 int32 = self__10._v0_0
         var t458 string
         var inline589 string = _goml_runtime_core_int32_to_string(x412)
         t458 = inline589
         var t459 string = "Value(" + t458
         var t460 string = t459 + ")"
         return t460
-    case Record__int32_Pair:
-        var x413 int32 = self__10.(Record__int32_Pair)._0
-        var x414 int32 = self__10.(Record__int32_Pair)._1
+    case 1:
+        var x413 int32 = self__10._v1_0
+        var x414 int32 = self__10._v1_1
         var t461 string
         var inline593 string = _goml_runtime_core_int32_to_string(x413)
         t461 = inline593
@@ -223,7 +191,7 @@ func _goml_m_trait__impl_i_Describe_i_Record____int32_i_describe(self__10 Record
         var t464 string = t462 + t463
         var t465 string = t464 + ")"
         return t465
-    case Record__int32_Empty:
+    case 2:
         return "Empty"
     default:
         panic("non-exhaustive match")
@@ -271,21 +239,25 @@ func triple(value__28 int32) int32 {
 }
 
 func gather(record__39 Record__int32) Maybe__int32 {
-    switch record__39.(type) {
-    case Record__int32_Value:
-        var x427 int32 = record__39.(Record__int32_Value)._0
-        var t497 Maybe__int32 = Maybe__int32_Some{
-            _0: x427,
+    switch record__39._tag {
+    case 0:
+        var x427 int32 = record__39._v0_0
+        var t497 Maybe__int32 = Maybe__int32{
+            _tag: 0,
+            _v0_0: x427,
         }
         return t497
-    case Record__int32_Pair:
-        var x429 int32 = record__39.(Record__int32_Pair)._1
-        var t498 Maybe__int32 = Maybe__int32_Some{
-            _0: x429,
+    case 1:
+        var x429 int32 = record__39._v1_1
+        var t498 Maybe__int32 = Maybe__int32{
+            _tag: 0,
+            _v0_0: x429,
         }
         return t498
-    case Record__int32_Empty:
-        return Maybe__int32_None{}
+    case 2:
+        return Maybe__int32{
+            _tag: 1,
+        }
     default:
         panic("non-exhaustive match")
     }
@@ -372,12 +344,12 @@ func main0() struct{} {
     var bumped_text__72 string = _goml_m_trait__impl_i_Describe_i_Record____int32_i_describe(bumped_record__60)
     var flipped_text__73 string = _goml_m_trait__impl_i_Describe_i_Record____string_i_describe(flipped_record__61)
     var jp509 string
-    switch stringified__65.(type) {
-    case Maybe__string_Some:
-        var x437 string = stringified__65.(Maybe__string_Some)._0
+    switch stringified__65._tag {
+    case 0:
+        var x437 string = stringified__65._v0_0
         var t513 string = "Snapshot: " + x437
         jp509 = t513
-    case Maybe__string_None:
+    case 1:
         jp509 = "Snapshot: none"
     default:
         panic("non-exhaustive match")
@@ -421,16 +393,19 @@ func _goml_m_choose____T__Maybe_l_int32_r_(flag__20 bool, when_true__21 Maybe__i
 }
 
 func map_maybe__T_int32__U_string(value__23 Maybe__int32, f__24 func(int32) string) Maybe__string {
-    switch value__23.(type) {
-    case Maybe__int32_Some:
-        var x418 int32 = value__23.(Maybe__int32_Some)._0
+    switch value__23._tag {
+    case 0:
+        var x418 int32 = value__23._v0_0
         var t545 string = f__24(x418)
-        var t546 Maybe__string = Maybe__string_Some{
-            _0: t545,
+        var t546 Maybe__string = Maybe__string{
+            _tag: 0,
+            _v0_0: t545,
         }
         return t546
-    case Maybe__int32_None:
-        return Maybe__string_None{}
+    case 1:
+        return Maybe__string{
+            _tag: 1,
+        }
     default:
         panic("non-exhaustive match")
     }
@@ -445,8 +420,9 @@ func _goml_m_inherent_i_closure__env__snapshot__0_i_closure__env__snapshot__0_i_
     var t567 int32
     var inline652 int32 = ref_get__Ref_5int32(count__44)
     t567 = inline652
-    var t568 Record__int32 = Record__int32_Value{
-        _0: t567,
+    var t568 Record__int32 = Record__int32{
+        _tag: 0,
+        _v0_0: t567,
     }
     return t568
 }
@@ -461,9 +437,10 @@ func _goml_m_inherent_i_closure__env__bump__1_i_closure__env__bump__1_i_apply(en
     var t572 int32
     var inline654 int32 = ref_get__Ref_5int32(count__44)
     t572 = inline654
-    var t573 Record__int32 = Record__int32_Pair{
-        _0: before__49,
-        _1: t572,
+    var t573 Record__int32 = Record__int32{
+        _tag: 1,
+        _v1_0: before__49,
+        _v1_1: t572,
     }
     return t573
 }

@@ -23,20 +23,11 @@ func _goml_runtime_core_string_println(s string) struct{} {
 
 type Ordering int32
 
-type Key interface {
-    isKey()
+type Key struct {
+    _tag int32
+    _v1_0 int32
+    _v1_1 int32
 }
-
-type Empty struct {}
-
-func (_ Empty) isKey() {}
-
-type Point struct {
-    _0 int32
-    _1 int32
-}
-
-func (_ Point) isKey() {}
 
 type Message__string interface {
     isMessage__string()
@@ -61,21 +52,21 @@ type Move struct {
 func (_ Move) isMessage__string() {}
 
 func _goml_m_trait__impl_i_PartialEq_i_Key_i_eq(self__10 Key, other__11 Key) bool {
-    switch other__11.(type) {
-    case Empty:
-        switch self__10.(type) {
-        case Empty:
+    switch other__11._tag {
+    case 0:
+        switch self__10._tag {
+        case 0:
             return true
         default:
             return false
         }
-    case Point:
-        var x415 int32 = other__11.(Point)._0
-        var x416 int32 = other__11.(Point)._1
-        switch self__10.(type) {
-        case Point:
-            var x419 int32 = self__10.(Point)._0
-            var x420 int32 = self__10.(Point)._1
+    case 1:
+        var x415 int32 = other__11._v1_0
+        var x416 int32 = other__11._v1_1
+        switch self__10._tag {
+        case 1:
+            var x419 int32 = self__10._v1_0
+            var x420 int32 = self__10._v1_1
             var jp472 bool
             var inline524 bool = x419 == x415
             jp472 = inline524
@@ -120,13 +111,15 @@ func main0() struct{} {
     t488 = inline545
     var inline531 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t488)
     _goml_runtime_core_string_println(inline531)
-    var t489 Key = Point{
-        _0: 1,
-        _1: 2,
+    var t489 Key = Key{
+        _tag: 1,
+        _v1_0: 1,
+        _v1_1: 2,
     }
-    var t490 Key = Point{
-        _0: 1,
-        _1: 2,
+    var t490 Key = Key{
+        _tag: 1,
+        _v1_0: 1,
+        _v1_1: 2,
     }
     var t491 bool = _goml_m_trait__impl_i_PartialEq_i_Key_i_eq(t489, t490)
     var inline528 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t491)
