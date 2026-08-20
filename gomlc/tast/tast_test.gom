@@ -324,6 +324,20 @@ fn dependency_hir(source: string, package_name: string) -> hir::File {
     }
 }
 
+#[test]
+fn environment_collection_preserves_hir_trait_scope() -> unit {
+    let file = dependency_hir(
+        "package values; trait Local { fn value(self: Self) -> int32; }",
+        "example::values",
+    );
+    testing::assert_eq(file.use_traits.len(), 0);
+    match package_signatures(file) {
+        Ok(_) => (),
+        Err(error) => testing::fail(error),
+    };
+    testing::assert_eq(file.use_traits.len(), 0)
+}
+
 fn checked_file_with_dependencies(source: string, dependencies: Vec[hir::File]) -> File {
     let result = check_for_link_with_dependencies(
         hir::lower(ast::lower(parser::parse(source)), "main.gom"),
