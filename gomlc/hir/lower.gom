@@ -1270,6 +1270,40 @@ fn lower_expr_value(
             }
             ExprKind::Match { expr: lowered_expr, arms: lowered_arms }
         },
+        Select { arms, span: _ } => {
+            let lowered_arms: Vec[SelectArm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                match arm {
+                    Receive { channel, binding, body, span: _ } => {
+                        let arm_env = copy_bindings(env);
+                        let local = fresh_local(ctx, binding);
+                        if binding != "_" {
+                            arm_env.push((binding, local))
+                        } else {};
+                        lowered_arms.push(
+                            SelectArm::Receive {
+                                channel: lower_expr(ctx, channel, env, type_params),
+                                binding: local,
+                                body: lower_expr(ctx, body, arm_env, type_params),
+                            },
+                        )
+                    },
+                    Send { channel, value, body, span: _ } => lowered_arms.push(
+                        SelectArm::Send {
+                            channel: lower_expr(ctx, channel, env, type_params),
+                            value: lower_expr(ctx, value, env, type_params),
+                            body: lower_expr(ctx, body, copy_bindings(env), type_params),
+                        },
+                    ),
+                    Default { body, span: _ } => lowered_arms.push(
+                        SelectArm::Default {
+                            body: lower_expr(ctx, body, copy_bindings(env), type_params),
+                        },
+                    ),
+                }
+            }
+            ExprKind::Select { arms: lowered_arms }
+        },
         If { cond, then_branch, else_branch, span: _ } => ExprKind::If {
             cond: lower_expr(ctx, cond, env, type_params),
             then_branch: lower_expr(ctx, then_branch, copy_bindings(env), type_params),

@@ -3359,3 +3359,31 @@ fn direct_type_writer_matches_compact_document_rendering() -> unit {
         testing::assert_eq(type_text(value), pretty::compact(type_doc(value)))
     }
 }
+
+#[test]
+fn checks_select_channels_bindings_and_branch_types() -> unit {
+    let valid = checked_diagnostics(
+        "fn choose(input: Channel[int], output: Channel[int]) -> int { select { recv(input) as value => value.unwrap_or(0), send(output, 1) => 2, default => 3, } }",
+    );
+    testing::assert_eq(valid.len(), 0);
+    let receive = checked_diagnostics(
+        "fn main() -> unit { let _ = select { recv(1) as value => value, }; }",
+    );
+    testing::assert(has_diagnostic_containing(receive, "Channel"));
+    let send = checked_diagnostics(
+        "fn main(channel: Channel[int]) -> unit { select { send(channel, \"wrong\") => (), } }",
+    );
+    testing::assert(has_diagnostic(send, "Type mismatch: expected int, found string"));
+    let branches = checked_diagnostics(
+        "fn main(channel: Channel[int]) -> int { select { recv(channel) as _ => 1, default => \"wrong\", } }",
+    );
+    testing::assert(has_diagnostic(branches, "Type mismatch: expected int, found string"))
+}
+
+#[test]
+fn rejects_select_during_comptime_evaluation() -> unit {
+    let diagnostics = checked_diagnostics(
+        "fn main(channel: Channel[int]) -> unit { let _ = comptime { select { recv(channel) as _ => (), } }; }",
+    );
+    testing::assert(has_diagnostic(diagnostics, "select is not available in comptime"))
+}

@@ -86,6 +86,21 @@ fn collect_inline_term_names(
                 None => (),
             }
         },
+        Select { arms, default, .. } => {
+            for arm in arms {
+                match arm {
+                    Receive { binding, binding_ty, body, .. } => {
+                        add_inline_local(names, binding, binding_ty, counter);
+                        collect_inline_block_names(body, names, joins, counter)
+                    },
+                    Send { body, .. } => collect_inline_block_names(body, names, joins, counter),
+                }
+            }
+            match default {
+                Some(body) => collect_inline_block_names(body, names, joins, counter),
+                None => (),
+            }
+        },
         Return(_) | Jump { .. } | Unreachable { .. } => (),
     }
 }
@@ -286,6 +301,36 @@ fn clone_inline_term(
                 ret_ty,
             }
         },
+        Select { arms, default, ret_ty: _ } => {
+            let lowered: Vec[SelectArm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                lowered.push(
+                    match arm {
+                        Receive { channel, binding, binding_ty, body } => SelectArm::Receive {
+                            channel: clone_inline_imm(channel, names),
+                            binding: renamed_inline_name(names, binding),
+                            binding_ty,
+                            body: clone_inline_block(body, names, joins, continuation, ret_ty),
+                        },
+                        Send { channel, value, body } => SelectArm::Send {
+                            channel: clone_inline_imm(channel, names),
+                            value: clone_inline_imm(value, names),
+                            body: clone_inline_block(body, names, joins, continuation, ret_ty),
+                        },
+                    },
+                )
+            }
+            Term::Select {
+                arms: lowered,
+                default: match default {
+                    Some(body) => Option::Some(
+                        clone_inline_block(body, names, joins, continuation, ret_ty),
+                    ),
+                    None => Option::None,
+                },
+                ret_ty,
+            }
+        },
         Unreachable { ty: _ } => Term::Unreachable { ty: ret_ty },
     }
 }
@@ -351,6 +396,20 @@ fn inline_block_cost(value: Block) -> int {
                 None => result,
             }
         },
+        Select { arms, default, .. } => {
+            for arm in arms {
+                result = result
+                    + inline_block_cost(
+                        match arm {
+                            Receive { body, .. } | Send { body, .. } => body,
+                        },
+                    );
+            }
+            match default {
+                Some(body) => result + inline_block_cost(body),
+                None => result,
+            }
+        },
         Return(_) | Jump { .. } | Unreachable { .. } => result,
     }
 }
@@ -362,6 +421,21 @@ fn inline_term_has_joinrec(value: Term) -> bool {
         Match { arms, default, .. } => {
             for arm in arms {
                 if inline_block_has_joinrec(arm.body) {
+                    return true
+                } else {}
+            }
+            match default {
+                Some(body) => inline_block_has_joinrec(body),
+                None => false,
+            }
+        },
+        Select { arms, default, .. } => {
+            for arm in arms {
+                if inline_block_has_joinrec(
+                    match arm {
+                        Receive { body, .. } | Send { body, .. } => body,
+                    },
+                ) {
                     return true
                 } else {}
             }
@@ -402,6 +476,22 @@ fn inline_term_assigns(value: Term, name: string) -> bool {
         Match { arms, default, .. } => {
             for arm in arms {
                 if inline_block_assigns(arm.body, name) {
+                    return true
+                } else {}
+            }
+            match default {
+                Some(body) => inline_block_assigns(body, name),
+                None => false,
+            }
+        },
+        Select { arms, default, .. } => {
+            for arm in arms {
+                if inline_block_assigns(
+                    match arm {
+                        Receive { body, .. } | Send { body, .. } => body,
+                    },
+                    name,
+                ) {
                     return true
                 } else {}
             }
@@ -453,6 +543,22 @@ fn inline_term_calls(value: Term, name: string) -> bool {
         Match { arms, default, .. } => {
             for arm in arms {
                 if inline_block_calls(arm.body, name) {
+                    return true
+                } else {}
+            }
+            match default {
+                Some(body) => inline_block_calls(body, name),
+                None => false,
+            }
+        },
+        Select { arms, default, .. } => {
+            for arm in arms {
+                if inline_block_calls(
+                    match arm {
+                        Receive { body, .. } | Send { body, .. } => body,
+                    },
+                    name,
+                ) {
                     return true
                 } else {}
             }
@@ -524,7 +630,7 @@ fn inline_term_consumes(value: Term, name: string) -> bool {
                 None => true,
             }
         },
-        Return(_) | Jump { .. } | If { .. } | Match { .. } | Unreachable { .. } => false,
+        Return(_) | Jump { .. } | If { .. } | Match { .. } | Select { .. } | Unreachable { .. } => false,
     }
 }
 
@@ -540,6 +646,24 @@ fn inline_term_returns(value: Term) -> bool {
             } else {};
             for arm in arms {
                 if !inline_block_returns(arm.body) {
+                    return false
+                } else {}
+            }
+            match default {
+                Some(body) => inline_block_returns(body),
+                None => true,
+            }
+        },
+        Select { arms, default, .. } => {
+            if arms.is_empty() {
+                return false
+            } else {};
+            for arm in arms {
+                if !inline_block_returns(
+                    match arm {
+                        Receive { body, .. } | Send { body, .. } => body,
+                    },
+                ) {
                     return false
                 } else {}
             }
@@ -704,6 +828,36 @@ fn inline_term(
             }
             Term::Match {
                 scrutinee,
+                arms: lowered,
+                default: match default {
+                    Some(body) => Option::Some(
+                        inline_block(body, functions, caller, budget, counter),
+                    ),
+                    None => Option::None,
+                },
+                ret_ty,
+            }
+        },
+        Select { arms, default, ret_ty } => {
+            let lowered: Vec[SelectArm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                lowered.push(
+                    match arm {
+                        Receive { channel, binding, binding_ty, body } => SelectArm::Receive {
+                            channel,
+                            binding,
+                            binding_ty,
+                            body: inline_block(body, functions, caller, budget, counter),
+                        },
+                        Send { channel, value, body } => SelectArm::Send {
+                            channel,
+                            value,
+                            body: inline_block(body, functions, caller, budget, counter),
+                        },
+                    },
+                )
+            }
+            Term::Select {
                 arms: lowered,
                 default: match default {
                     Some(body) => Option::Some(

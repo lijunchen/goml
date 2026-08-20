@@ -912,6 +912,7 @@ fn lower_ct_expr(ctx: CtLowerContext, value: Expr) -> Result[ctir::CtExpr, strin
             }
             ctir::CtExprKind::Match { value: source, arms: result }
         },
+        Select { .. } => return Result::Err("select is not available in comptime"),
         If { cond, then_branch, else_branch, ty: _ } => ctir::CtExprKind::If {
             condition: lower_ct_expr(ctx, cond)?,
             then_branch: lower_ct_expr(ctx, then_branch)?,
@@ -1897,6 +1898,24 @@ fn contains_comptime_expr(value: Expr) -> bool {
             }
             false
         },
+        Select { arms, .. } => {
+            for arm in arms {
+                let found = match arm {
+                    Receive { channel, binding: _, binding_ty: _, body } => {
+                        contains_comptime_expr(channel) || contains_comptime_expr(body)
+                    },
+                    Send { channel, value, body } => {
+                        contains_comptime_expr(channel) || contains_comptime_expr(value)
+                            || contains_comptime_expr(body)
+                    },
+                    Default { body } => contains_comptime_expr(body),
+                };
+                if found {
+                    return true
+                } else {}
+            }
+            false
+        },
         If { cond, then_branch, else_branch, .. } => {
             contains_comptime_expr(cond) || contains_comptime_expr(then_branch)
                 || contains_comptime_expr(else_branch)
@@ -2239,6 +2258,78 @@ fn rewrite_comptime_expr(
                 coverage,
                 ty,
             }
+        },
+        Select { arms, ty } => {
+            let result: Vec[SelectArm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                result.push(
+                    match arm {
+                        Receive { channel, binding, binding_ty, body } => SelectArm::Receive {
+                            channel: rewrite_comptime_expr(
+                                builtin,
+                                file,
+                                module,
+                                dependencies,
+                                diagnostics,
+                                next_site,
+                                channel,
+                            ),
+                            binding,
+                            binding_ty,
+                            body: rewrite_comptime_expr(
+                                builtin,
+                                file,
+                                module,
+                                dependencies,
+                                diagnostics,
+                                next_site,
+                                body,
+                            ),
+                        },
+                        Send { channel, value, body } => SelectArm::Send {
+                            channel: rewrite_comptime_expr(
+                                builtin,
+                                file,
+                                module,
+                                dependencies,
+                                diagnostics,
+                                next_site,
+                                channel,
+                            ),
+                            value: rewrite_comptime_expr(
+                                builtin,
+                                file,
+                                module,
+                                dependencies,
+                                diagnostics,
+                                next_site,
+                                value,
+                            ),
+                            body: rewrite_comptime_expr(
+                                builtin,
+                                file,
+                                module,
+                                dependencies,
+                                diagnostics,
+                                next_site,
+                                body,
+                            ),
+                        },
+                        Default { body } => SelectArm::Default {
+                            body: rewrite_comptime_expr(
+                                builtin,
+                                file,
+                                module,
+                                dependencies,
+                                diagnostics,
+                                next_site,
+                                body,
+                            ),
+                        },
+                    },
+                )
+            }
+            Expr::Select { arms: result, ty }
         },
         If { cond, then_branch, else_branch, ty } => Expr::If {
             cond: rewrite_comptime_expr(

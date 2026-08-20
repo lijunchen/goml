@@ -144,6 +144,23 @@ fn validate_expr(ctx: ValidateContext, value: Expr, context: string) -> Result[u
             }
             validate_optional_expr(ctx, default, context + " match default")
         },
+        Select { arms, default, ty: _ } => {
+            for arm in arms {
+                match arm {
+                    Receive { channel, binding: _, binding_ty, body } => {
+                        validate_type(ctx, binding_ty, context + " select receive binding")?;
+                        validate_expr(ctx, channel, context + " select receive channel")?;
+                        validate_expr(ctx, body, context + " select receive body")?
+                    },
+                    Send { channel, value, body } => {
+                        validate_expr(ctx, channel, context + " select send channel")?;
+                        validate_expr(ctx, value, context + " select send value")?;
+                        validate_expr(ctx, body, context + " select send body")?
+                    },
+                }
+            }
+            validate_optional_expr(ctx, default, context + " select default")
+        },
         If { cond, then_branch, else_branch, ty: _ } => {
             validate_expr(ctx, cond, context + " if condition")?;
             validate_expr(ctx, then_branch, context + " if branch")?;

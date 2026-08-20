@@ -354,3 +354,11 @@ fn rejects_invalid_source() -> unit {
         Err(error) => testing::assert(error.diagnostics.len() > 0),
     }
 }
+
+#[test]
+fn formats_select_arms_vertically() -> unit {
+    expect_format(
+        "fn choose(input:Channel[int],output:Channel[int])->int{select{recv(input)as value=>value.unwrap_or(0),send(output,1)=>2,default=>{let fallback=3;fallback},}}",
+        "fn choose(input: Channel[int], output: Channel[int]) -> int {\n    select {\n        recv(input) as value => value.unwrap_or(0),\n        send(output, 1) => 2,\n        default => {\n            let fallback = 3;\n            fallback\n        },\n    }\n}\n",
+    )
+}

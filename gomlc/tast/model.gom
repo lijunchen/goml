@@ -234,6 +234,23 @@ pub enum ComptimeCapability {
     Derive,
 }
 
+pub enum SelectArm {
+    Receive {
+        channel: Expr,
+        binding: string,
+        binding_ty: Type,
+        body: Expr,
+    },
+    Send {
+        channel: Expr,
+        value: Expr,
+        body: Expr,
+    },
+    Default {
+        body: Expr,
+    },
+}
+
 pub enum Expr {
     Var {
         name: string,
@@ -282,6 +299,10 @@ pub enum Expr {
         expr: Expr,
         arms: Vec[Arm],
         coverage: Option[MatchCoverageInfo],
+        ty: Type,
+    },
+    Select {
+        arms: Vec[SelectArm],
         ty: Type,
     },
     If {
@@ -573,13 +594,16 @@ pub fn expr_type(value: Expr) -> Type {
         } | Array { ty, .. } | Closure { ty, .. } | Block { ty, .. } | Comptime { ty, .. } | Match {
             ty,
             ..,
-        } | If { ty, .. } | While { ty, .. } | Loop { ty, .. } | For { ty, .. } | Break { ty, .. } | Continue {
+        } | Select { ty, .. } | If { ty, .. } | While { ty, .. } | Loop { ty, .. } | For { ty, .. } | Break {
             ty,
             ..,
-        } | Return { ty, .. } | Go { ty, .. } | Call { ty, .. } | Unary { ty, .. } | Cast { ty, .. } | Proj {
+        } | Continue { ty, .. } | Return { ty, .. } | Go { ty, .. } | Call { ty, .. } | Unary {
             ty,
             ..,
-        } | Field { ty, .. } | Index { ty, .. } | Binary { ty, .. } | ToDyn { ty, .. } => ty,
+        } | Cast { ty, .. } | Proj { ty, .. } | Field { ty, .. } | Index { ty, .. } | Binary {
+            ty,
+            ..,
+        } | ToDyn { ty, .. } => ty,
     }
 }
 

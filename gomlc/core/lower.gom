@@ -1430,6 +1430,31 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> LowerExpr {
         Block { block, ty } => LowerExpr::Block { block: lower_block(ctx, block, ty), ty },
         Comptime { .. } => LowerExpr::Prim { value: tast::Primitive::Unit, ty: tast::Type::Error },
         Match { expr: source, arms, ty, .. } => lower_match(ctx, source, arms, ty),
+        Select { arms, ty } => {
+            let lowered_arms: Vec[LowerSelectArm] = Vec::with_capacity(arms.len());
+            let default: Ref[Option[LowerExpr]] = Ref::new(Option::None);
+            for arm in arms {
+                match arm {
+                    Receive { channel, binding, binding_ty, body } => lowered_arms.push(
+                        LowerSelectArm::Receive {
+                            channel: lower_expr(ctx, channel),
+                            binding,
+                            binding_ty,
+                            body: lower_expr(ctx, body),
+                        },
+                    ),
+                    Send { channel, value, body } => lowered_arms.push(
+                        LowerSelectArm::Send {
+                            channel: lower_expr(ctx, channel),
+                            value: lower_expr(ctx, value),
+                            body: lower_expr(ctx, body),
+                        },
+                    ),
+                    Default { body } => default.set(Option::Some(lower_expr(ctx, body))),
+                }
+            }
+            LowerExpr::Select { arms: lowered_arms, default: default.get(), ty }
+        },
         If { cond, then_branch, else_branch, ty } => LowerExpr::If {
             cond: lower_expr(ctx, cond),
             then_branch: lower_expr(ctx, then_branch),

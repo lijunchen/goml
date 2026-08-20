@@ -1,0 +1,60 @@
+package main;
+fn mark_channel(log: Ref[string], mark: string, channel: Channel[int]) -> Channel[int] {
+    log.set(log.get() + mark);
+    channel
+}
+
+fn mark_value(log: Ref[string], mark: string, value: int) -> int {
+    log.set(log.get() + mark);
+    value
+}
+
+fn main() -> unit {
+    let received = Channel::[int]::new(1);
+    received.send(7);
+    let first =
+      select {
+          recv(received) as value =>
+            {
+                let read = || value.unwrap_or(-1);
+                read()
+            },
+          default => 0,
+      };
+    println(first);
+    let sent = Channel::[string]::new(1);
+    let branch =
+      select {
+          send(sent, "ready") => "sent",
+          default => "blocked",
+      };
+    println(branch);
+    println(sent.recv().unwrap_or("missing"));
+    let empty = Channel::[int]::new(0);
+    let fallback =
+      select {
+          recv(empty) as _ => -1,
+          default => 42,
+      };
+    println(fallback);
+    let log = Ref::new("");
+    let left = Channel::[int]::new(0);
+    let right = Channel::[int]::new(0);
+    select {
+        send(mark_channel(log, "a", left), mark_value(log, "1", 1)) => (),
+        send(mark_channel(log, "b", right), mark_value(log, "2", 2)) => (),
+        default => (),
+    };
+    println(log.get());
+    received.close();
+    let closed =
+      select {
+          recv(received) as value =>
+            match value {
+                Some(_) => "open",
+                None => "closed",
+            },
+      };
+    println(closed)
+}
+

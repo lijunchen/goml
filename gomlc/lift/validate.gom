@@ -83,6 +83,24 @@ fn validate_arm(ctx: ValidateContext, value: Arm, context: string) -> Result[uni
     validate_expr(ctx, value.body, context + " body")
 }
 
+fn validate_select_arm(ctx: ValidateContext, value: SelectArm, context: string) -> Result[
+    unit,
+    string,
+] {
+    match value {
+        Receive { channel, binding: _, binding_ty, body } => {
+            validate_expr(ctx, channel, context + " channel")?;
+            validate_type(ctx, binding_ty, context + " binding")?;
+            validate_expr(ctx, body, context + " body")
+        },
+        Send { channel, value, body } => {
+            validate_expr(ctx, channel, context + " channel")?;
+            validate_expr(ctx, value, context + " value")?;
+            validate_expr(ctx, body, context + " body")
+        },
+    }
+}
+
 fn validate_block(ctx: ValidateContext, value: Block, context: string) -> Result[unit, string] {
     for statement in value.stmts {
         validate_type(ctx, statement.ty, context + " let " + statement.name)?;
@@ -128,6 +146,12 @@ fn validate_expr(ctx: ValidateContext, value: Expr, context: string) -> Result[u
                 validate_arm(ctx, arm, context + " match arm")?
             }
             validate_optional_expr(ctx, default, context + " match default")
+        },
+        Select { arms, default, ty: _ } => {
+            for arm in arms {
+                validate_select_arm(ctx, arm, context + " select arm")?
+            }
+            validate_optional_expr(ctx, default, context + " select default")
         },
         If { cond, then_branch, else_branch, ty: _ } => {
             validate_expr(ctx, cond, context + " if condition")?;

@@ -61,6 +61,31 @@ fn encode_arm(builder: text::StringBuilder, value: Arm) -> unit {
     encode_close(builder)
 }
 
+fn encode_select_arm(builder: text::StringBuilder, value: SelectArm) -> unit {
+    match value {
+        Receive { channel, binding, body, span: value_span } => {
+            encode_open(builder, "SelectArm.Receive");
+            encode_span(builder, value_span);
+            encode_expr(builder, channel);
+            encode_string_value(builder, binding);
+            encode_expr(builder, body)
+        },
+        Send { channel, value, body, span: value_span } => {
+            encode_open(builder, "SelectArm.Send");
+            encode_span(builder, value_span);
+            encode_expr(builder, channel);
+            encode_expr(builder, value);
+            encode_expr(builder, body)
+        },
+        Default { body, span: value_span } => {
+            encode_open(builder, "SelectArm.Default");
+            encode_span(builder, value_span);
+            encode_expr(builder, body)
+        },
+    };
+    encode_close(builder)
+}
+
 fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
     match value {
         Path { path, owner_type_args, member_type_args, span: value_span } => {
@@ -188,6 +213,14 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
             encode_list(builder, arms.len());
             for arm in arms {
                 encode_arm(builder, arm)
+            }
+        },
+        Select { arms, span: value_span } => {
+            encode_open(builder, "Expr.Select");
+            encode_span(builder, value_span);
+            encode_list(builder, arms.len());
+            for arm in arms {
+                encode_select_arm(builder, arm)
             }
         },
         If { cond, then_branch, else_branch, span: value_span } => {

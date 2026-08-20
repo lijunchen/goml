@@ -1,0 +1,189 @@
+fn mark_channel(log/0: Ref[string], mark/1: string, channel/2: Channel[int]) -> Channel[int] {
+  let _wild408 =
+    inherent#Ref#Ref[T]#set__T_string(log/0, (inherent#Ref#Ref[T]#get__T_string(log/0) + mark/1)) in
+  channel/2
+}
+
+fn mark_value(log/3: Ref[string], mark/4: string, value/5: int) -> int {
+  let _wild409 =
+    inherent#Ref#Ref[T]#set__T_string(log/3, (inherent#Ref#Ref[T]#get__T_string(log/3) + mark/4)) in
+  value/5
+}
+
+fn main() -> unit {
+  let received/6 = inherent#Channel#Channel[T]#new__T_int(1) in
+  let _wild410 = inherent#Channel#Channel[T]#send__T_int(received/6, 7) in
+  let first/9 =
+    select {
+      recv(received/6) as value/7 => {
+        let read/8 =
+          pack_closure[inherent#closure_env_read_0#closure_env_read_0#apply](
+            closure_env_read_0 { value_0: value/7 }
+          ) in
+        read/8()
+      },
+      default => {
+        0
+      },
+    } in
+  let _wild411 = println__T_int(first/9) in
+  let sent/10 = inherent#Channel#Channel[T]#new__T_string(1) in
+  let branch/11 =
+    select {
+      send(sent/10, "ready") => {
+        "sent"
+      },
+      default => {
+        "blocked"
+      },
+    } in
+  let _wild412 = println__T_string(branch/11) in
+  let _wild413 =
+    println__T_string(
+      inherent#Option#Option[T]#unwrap_or__T_string(
+        inherent#Channel#Channel[T]#recv__T_string(sent/10),
+        "missing"
+      )
+    ) in
+  let empty/12 = inherent#Channel#Channel[T]#new__T_int(0) in
+  let fallback/14 =
+    select {
+      recv(empty/12) as _/13 => {
+        -1
+      },
+      default => {
+        42
+      },
+    } in
+  let _wild414 = println__T_int(fallback/14) in
+  let log/15 = inherent#Ref#Ref[T]#new__T_string("") in
+  let left/16 = inherent#Channel#Channel[T]#new__T_int(0) in
+  let right/17 = inherent#Channel#Channel[T]#new__T_int(0) in
+  let _wild415 =
+    select {
+      send(mark_channel(log/15, "a", left/16), mark_value(log/15, "1", 1)) => {
+        ()
+      },
+      send(mark_channel(log/15, "b", right/17), mark_value(log/15, "2", 2)) => {
+        ()
+      },
+      default => {
+        ()
+      },
+    } in
+  let _wild416 = println__T_string(inherent#Ref#Ref[T]#get__T_string(log/15)) in
+  let _wild417 = inherent#Channel#Channel[T]#close__T_int(received/6) in
+  let closed/19 =
+    select {
+      recv(received/6) as value/18 => {
+        match value/18 {
+          Option__int::None => {
+            "closed"
+          },
+          Option__int::Some(x418) => {
+            "open"
+          },
+        }
+      },
+    } in
+  println__T_string(closed/19)
+}
+
+fn inherent#Ref#Ref[T]#get__T_string(self/432: Ref[string]) -> string {
+  @intrinsic(ref.get)(self/432)
+}
+
+fn inherent#Ref#Ref[T]#set__T_string(self/433: Ref[string], value/434: string) -> unit {
+  @intrinsic(ref.set)(self/433, value/434)
+}
+
+fn inherent#Channel#Channel[T]#new__T_int(capacity/435: int) -> Channel[int] {
+  @intrinsic(channel.new)(capacity/435)
+}
+
+fn inherent#Channel#Channel[T]#send__T_int(self/436: Channel[int], value/437: int) -> unit {
+  @intrinsic(channel.send)(self/436, value/437)
+}
+
+fn inherent#Option#Option[T]#unwrap_or__T_int(self/458: Option__int, fallback/459: int) -> int {
+  match self/458 {
+    Option__int::None => {
+      fallback/459
+    },
+    Option__int::Some(x387) => {
+      let x387 = Option__int::Some._0(self/458) in
+      let value/460 = x387 in
+      value/460
+    },
+  }
+}
+
+fn println__T_int(value/1: int) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
+}
+
+fn inherent#Channel#Channel[T]#new__T_string(capacity/435: int) -> Channel[string] {
+  @intrinsic(channel.new)(capacity/435)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn inherent#Channel#Channel[T]#recv__T_string(self/438: Channel[string]) -> Option__string {
+  let mtmp379 = @intrinsic(channel.recv)(self/438) in
+  let x380 = mtmp379.0 in
+  let x381 = mtmp379.1 in
+  let ok/440 = x381 in
+  let value/439 = x380 in
+  if ok/440 {
+      Option__string::Some(value/439)
+  } else {
+      Option__string::None
+  }
+}
+
+fn inherent#Option#Option[T]#unwrap_or__T_string(
+  self/458: Option__string,
+  fallback/459: string
+) -> string {
+  match self/458 {
+    Option__string::None => {
+      fallback/459
+    },
+    Option__string::Some(x387) => {
+      let x387 = Option__string::Some._0(self/458) in
+      let value/460 = x387 in
+      value/460
+    },
+  }
+}
+
+fn inherent#Ref#Ref[T]#new__T_string(value/431: string) -> Ref[string] {
+  @intrinsic(ref.new)(value/431)
+}
+
+fn inherent#Channel#Channel[T]#close__T_int(self/441: Channel[int]) -> unit {
+  @intrinsic(channel.close)(self/441)
+}
+
+fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+  @runtime(core.int_to_string)(self/151)
+}
+
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
+}
+
+fn trait_impl#PartialEq#string#eq(self/181: string, other/182: string) -> bool {
+  (self/181 == other/182)
+}
+
+fn trait_impl#Hash#string#hash(self/209: string) -> uint64 {
+  @runtime(core.string_hash)(self/209)
+}
+
+fn inherent#closure_env_read_0#closure_env_read_0#apply(env419: closure_env_read_0) -> int {
+  let value/7 = closure_env_read_0.value_0(env419) in
+  inherent#Option#Option[T]#unwrap_or__T_int(value/7, -1)
+}

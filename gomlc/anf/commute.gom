@@ -154,6 +154,20 @@ fn collect_commute_assigned_term(result: Vec[string], value: Term) -> unit {
                 None => (),
             }
         },
+        Select { arms, default, .. } => {
+            for arm in arms {
+                collect_commute_assigned_block(
+                    result,
+                    match arm {
+                        Receive { body, .. } | Send { body, .. } => body,
+                    },
+                )
+            }
+            match default {
+                Some(body) => collect_commute_assigned_block(result, body),
+                None => (),
+            }
+        },
         Return(_) | Jump { .. } | Unreachable { .. } => (),
     }
 }
@@ -243,6 +257,28 @@ fn term_uses_name(value: Term, name: string) -> bool {
                 None => false,
             }
         },
+        Select { arms, default, .. } => {
+            for arm in arms {
+                match arm {
+                    Receive { channel, binding: _, binding_ty: _, body } => if imm_uses_name(
+                        channel,
+                        name,
+                    )
+                        || block_uses_name(body, name) {
+                        return true
+                    } else {},
+                    Send { channel, value, body } => if imm_uses_name(channel, name)
+                        || imm_uses_name(value, name)
+                        || block_uses_name(body, name) {
+                        return true
+                    } else {},
+                }
+            }
+            match default {
+                Some(body) => block_uses_name(body, name),
+                None => false,
+            }
+        },
         Unreachable { .. } => false,
     }
 }
@@ -325,6 +361,22 @@ fn collect_commute_term_fields(
                 None => (),
             }
         },
+        Select { arms, default, .. } => {
+            for arm in arms {
+                collect_commute_block_fields(
+                    result,
+                    match arm {
+                        Receive { body, .. } | Send { body, .. } => body,
+                    },
+                    scrutinee,
+                    counter,
+                )
+            }
+            match default {
+                Some(body) => collect_commute_block_fields(result, body, scrutinee, counter),
+                None => (),
+            }
+        },
         Return(_) | Jump { .. } | Unreachable { .. } => (),
     }
 }
@@ -390,6 +442,34 @@ fn replace_commute_term(value: Term, fields: Vec[CommuteField], scrutinee: strin
             }
             Term::Match {
                 scrutinee: value,
+                arms: lowered,
+                default: match default {
+                    Some(body) => Option::Some(replace_commute_block(body, fields, scrutinee)),
+                    None => Option::None,
+                },
+                ret_ty,
+            }
+        },
+        Select { arms, default, ret_ty } => {
+            let lowered: Vec[SelectArm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                lowered.push(
+                    match arm {
+                        Receive { channel, binding, binding_ty, body } => SelectArm::Receive {
+                            channel,
+                            binding,
+                            binding_ty,
+                            body: replace_commute_block(body, fields, scrutinee),
+                        },
+                        Send { channel, value, body } => SelectArm::Send {
+                            channel,
+                            value,
+                            body: replace_commute_block(body, fields, scrutinee),
+                        },
+                    },
+                )
+            }
+            Term::Select {
                 arms: lowered,
                 default: match default {
                     Some(body) => Option::Some(replace_commute_block(body, fields, scrutinee)),
@@ -481,6 +561,34 @@ fn remove_commute_alias_term(value: Term) -> Term {
             }
             Term::Match {
                 scrutinee,
+                arms: lowered,
+                default: match default {
+                    Some(body) => Option::Some(remove_commute_aliases(body)),
+                    None => Option::None,
+                },
+                ret_ty,
+            }
+        },
+        Select { arms, default, ret_ty } => {
+            let lowered: Vec[SelectArm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                lowered.push(
+                    match arm {
+                        Receive { channel, binding, binding_ty, body } => SelectArm::Receive {
+                            channel,
+                            binding,
+                            binding_ty,
+                            body: remove_commute_aliases(body),
+                        },
+                        Send { channel, value, body } => SelectArm::Send {
+                            channel,
+                            value,
+                            body: remove_commute_aliases(body),
+                        },
+                    },
+                )
+            }
+            Term::Select {
                 arms: lowered,
                 default: match default {
                     Some(body) => Option::Some(remove_commute_aliases(body)),
@@ -768,6 +876,62 @@ fn rewrite_commute_term(
                 },
             )
         },
+        Select { arms: values, default: fallback, ret_ty } => {
+            let lowered: Vec[SelectArm] = Vec::with_capacity(values.len());
+            for value in values {
+                lowered.push(
+                    match value {
+                        Receive { channel, binding, binding_ty, body } => SelectArm::Receive {
+                            channel,
+                            binding,
+                            binding_ty,
+                            body: rewrite_commute_block(
+                                body,
+                                target,
+                                scrutinee_index,
+                                arms,
+                                default,
+                                copy_commute_bindings(known),
+                                assigned,
+                            )?,
+                        },
+                        Send { channel, value, body } => SelectArm::Send {
+                            channel,
+                            value,
+                            body: rewrite_commute_block(
+                                body,
+                                target,
+                                scrutinee_index,
+                                arms,
+                                default,
+                                copy_commute_bindings(known),
+                                assigned,
+                            )?,
+                        },
+                    },
+                )
+            }
+            Option::Some(
+                Term::Select {
+                    arms: lowered,
+                    default: match fallback {
+                        Some(body) => Option::Some(
+                            rewrite_commute_block(
+                                body,
+                                target,
+                                scrutinee_index,
+                                arms,
+                                default,
+                                copy_commute_bindings(known),
+                                assigned,
+                            )?,
+                        ),
+                        None => Option::None,
+                    },
+                    ret_ty,
+                },
+            )
+        },
         Return(value) => Option::Some(Term::Return(value)),
         Unreachable { ty } => Option::Some(Term::Unreachable { ty }),
     }
@@ -955,7 +1119,7 @@ fn try_commute_join(value: JoinBind, rest: Block, known: Vec[CommuteBinding], co
             )?;
             Option::Some(prepend_commute_joins(arms, default, ret_ty, rewritten))
         },
-        Return(_) | Jump { .. } | If { .. } | Unreachable { .. } => Option::None,
+        Return(_) | Jump { .. } | If { .. } | Select { .. } | Unreachable { .. } => Option::None,
     }
 }
 
@@ -1056,6 +1220,45 @@ fn commute_term(value: Term, known: Vec[CommuteBinding], counter: Ref[int]) -> B
                 binds: Vec::from_array([]),
                 term: Term::Match {
                     scrutinee,
+                    arms: lowered,
+                    default: match default {
+                        Some(body) => Option::Some(
+                            commute_block_with(body, copy_commute_bindings(known), counter),
+                        ),
+                        None => Option::None,
+                    },
+                    ret_ty,
+                },
+            }
+        },
+        Select { arms, default, ret_ty } => {
+            let lowered: Vec[SelectArm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                lowered.push(
+                    match arm {
+                        Receive { channel, binding, binding_ty, body } => {
+                            let arm_known = copy_commute_bindings(known);
+                            arm_known.push(
+                                CommuteBinding { name: binding, value: CommuteKnown::Unknown },
+                            );
+                            SelectArm::Receive {
+                                channel,
+                                binding,
+                                binding_ty,
+                                body: commute_block_with(body, arm_known, counter),
+                            }
+                        },
+                        Send { channel, value, body } => SelectArm::Send {
+                            channel,
+                            value,
+                            body: commute_block_with(body, copy_commute_bindings(known), counter),
+                        },
+                    },
+                )
+            }
+            Block {
+                binds: Vec::from_array([]),
+                term: Term::Select {
                     arms: lowered,
                     default: match default {
                         Some(body) => Option::Some(

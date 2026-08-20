@@ -3272,6 +3272,55 @@ fn check_match_expr(ctx: Checker, source: hir::Expr, arms: Vec[hir::Arm], expect
     }
 }
 
+fn select_channel_element(ctx: Checker, channel: Expr, span: ast::Span) -> Type {
+    let elem = fresh_type(ctx.counter, VarKind::Any);
+    expect_type_at(ctx, expr_type(channel), Type::Channel { elem }, Option::Some(span));
+    elem
+}
+
+fn check_select_expr(ctx: Checker, arms: Vec[hir::SelectArm], expected: Option[Type]) -> Expr {
+    let result_ty = match expected {
+        Some(ty) => ty,
+        None => fresh_type(ctx.counter, VarKind::Any),
+    };
+    let typed_arms: Vec[SelectArm] = Vec::with_capacity(arms.len());
+    for arm in arms {
+        match arm {
+            Receive { channel: source, binding, body: body_source } => {
+                let channel_span = source.span;
+                let channel = check_expr(ctx, source, Option::None);
+                let elem = select_channel_element(ctx, channel, channel_span);
+                let binding_ty = nominal_type(ctx.builtin, ctx.builtin.option.name, one_type(elem));
+                insert_local(ctx, binding, binding_ty);
+                typed_arms.push(
+                    SelectArm::Receive {
+                        channel,
+                        binding: local_name(binding),
+                        binding_ty,
+                        body: check_expr(ctx, body_source, Option::Some(result_ty)),
+                    },
+                )
+            },
+            Send { channel: source, value: value_source, body: body_source } => {
+                let channel_span = source.span;
+                let channel = check_expr(ctx, source, Option::None);
+                let elem = select_channel_element(ctx, channel, channel_span);
+                typed_arms.push(
+                    SelectArm::Send {
+                        channel,
+                        value: check_expr(ctx, value_source, Option::Some(elem)),
+                        body: check_expr(ctx, body_source, Option::Some(result_ty)),
+                    },
+                )
+            },
+            Default { body } => typed_arms.push(
+                SelectArm::Default { body: check_expr(ctx, body, Option::Some(result_ty)) },
+            ),
+        }
+    }
+    Expr::Select { arms: typed_arms, ty: result_ty }
+}
+
 fn diagnostics_invalidate_coverage(ctx: Checker, start: int) -> bool {
     for index in start..ctx.diagnostics.len() {
         let message = ctx.diagnostics[index].message;
@@ -3706,6 +3755,7 @@ fn with_expr_type(value: Expr, ty: Type) -> Expr {
         Match { expr: source, arms, coverage, ty: _ } => {
             Expr::Match { expr: source, arms, coverage, ty }
         },
+        Select { arms, ty: _ } => Expr::Select { arms, ty },
         If { cond, then_branch, else_branch, ty: _ } => {
             Expr::If { cond, then_branch, else_branch, ty }
         },
@@ -4426,6 +4476,7 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
             Match { expr: source, arms } => {
                 check_match_expr(ctx, source, arms, Option::None)
             },
+            Select { arms } => check_select_expr(ctx, arms, Option::None),
             If { cond, then_branch, else_branch } => {
                 check_if_expr(ctx, cond, then_branch, else_branch, Option::None)
             },
@@ -4753,6 +4804,7 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
             expected,
         ),
         Match { expr: source, arms } => check_match_expr(ctx, source, arms, expected),
+        Select { arms } => check_select_expr(ctx, arms, expected),
         If { cond, then_branch, else_branch } => {
             check_if_expr(ctx, cond, then_branch, else_branch, expected)
         },

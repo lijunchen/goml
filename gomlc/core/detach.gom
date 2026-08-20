@@ -41,6 +41,28 @@ fn detach_arms(values: Vec[LowerArm]) -> Vec[Arm] {
     result
 }
 
+fn detach_select_arms(values: Vec[LowerSelectArm]) -> Vec[SelectArm] {
+    let result: Vec[SelectArm] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(
+            match value {
+                Receive { channel, binding, binding_ty, body } => SelectArm::Receive {
+                    channel: detach_expr(channel),
+                    binding,
+                    binding_ty: lower_type(binding_ty),
+                    body: detach_expr(body),
+                },
+                Send { channel, value, body } => SelectArm::Send {
+                    channel: detach_expr(channel),
+                    value: detach_expr(value),
+                    body: detach_expr(body),
+                },
+            },
+        )
+    }
+    result
+}
+
 fn detach_expr(value: LowerExpr) -> Expr {
     match value {
         Var { name, ty } => Expr::Var { name, ty: lower_type(ty) },
@@ -66,6 +88,11 @@ fn detach_expr(value: LowerExpr) -> Expr {
         Match { expr, arms, default, ty } => Expr::Match {
             expr: detach_expr(expr),
             arms: detach_arms(arms),
+            default: detach_optional_expr(default),
+            ty: lower_type(ty),
+        },
+        Select { arms, default, ty } => Expr::Select {
+            arms: detach_select_arms(arms),
             default: detach_optional_expr(default),
             ty: lower_type(ty),
         },

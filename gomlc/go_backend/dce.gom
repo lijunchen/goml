@@ -176,7 +176,7 @@ fn add_stmt_uses(values: DceNames, value: Stmt) -> unit {
             };
             add_names(values, body_uses)
         },
-        Select { cases } => {
+        Select { cases, default } => {
             for case in cases {
                 match case.operation {
                     Receive { names, channel } => {
@@ -194,6 +194,10 @@ fn add_stmt_uses(values: DceNames, value: Stmt) -> unit {
                         add_block_uses(values, case.body)
                     },
                 }
+            }
+            match default {
+                Some(body) => add_block_uses(values, body),
+                None => (),
             }
         },
         Break | BreakLabel { label: _ } | Continue | Panic { message: _ } | Unreachable => (),
@@ -291,7 +295,7 @@ fn free_vars_in_block(value: Block) -> DceNames {
                     None => (),
                 }
             },
-            Select { cases } => {
+            Select { cases, default } => {
                 for case in cases {
                     let case_uses = free_vars_in_block(case.body);
                     match case.operation {
@@ -307,6 +311,10 @@ fn free_vars_in_block(value: Block) -> DceNames {
                         },
                     };
                     add_names(used, case_uses)
+                }
+                match default {
+                    Some(body) => add_names(used, free_vars_in_block(body)),
+                    None => (),
                 }
             },
             Break | BreakLabel { label: _ } | Continue | Panic { message: _ } | Unreachable => (),
@@ -656,29 +664,46 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                     },
                 )
             },
-            Select { cases } => {
+            Select { cases, default } => {
                 let lowered_cases: Vec[SelectCase] = Vec::with_capacity(cases.len());
                 for case in cases {
                     let result = dce_block_with_live(case.body, live);
-                    match case.operation {
+                    let operation = match case.operation {
                         Receive { names, channel } => {
+                            let lowered_names: Vec[string] = Vec::with_capacity(names.len());
                             for name in names {
+                                if contains_name(result.live, name) {
+                                    lowered_names.push(name);
+                                    add_name(needs_decl, name)
+                                } else {
+                                    lowered_names.push("_")
+                                };
                                 remove_name(result.live, name);
-                                remove_name(result.needs_decl, name);
-                                add_name(needs_decl, name)
+                                remove_name(result.needs_decl, name)
                             }
-                            add_expr_uses(live, channel)
+                            add_expr_uses(live, channel);
+                            SelectOperation::Receive { names: lowered_names, channel }
                         },
                         Send { channel, value } => {
                             add_expr_uses(live, channel);
-                            add_expr_uses(live, value)
+                            add_expr_uses(live, value);
+                            SelectOperation::Send { channel, value }
                         },
                     };
                     add_names(live, result.live);
                     add_names(needs_decl, result.needs_decl);
-                    lowered_cases.push(SelectCase { operation: case.operation, body: result.block })
+                    lowered_cases.push(SelectCase { operation, body: result.block })
                 }
-                output.push(Stmt::Select { cases: lowered_cases })
+                let lowered_default = match default {
+                    Some(body) => {
+                        let result = dce_block_with_live(body, live);
+                        add_names(live, result.live);
+                        add_names(needs_decl, result.needs_decl);
+                        Option::Some(result.block)
+                    },
+                    None => Option::None,
+                };
+                output.push(Stmt::Select { cases: lowered_cases, default: lowered_default })
             },
             Panic { message } => output.push(Stmt::Panic { message }),
             Unreachable => output.push(Stmt::Unreachable),

@@ -309,6 +309,22 @@ pub enum InterpolatedStringPart {
     Expr(Expr),
 }
 
+pub enum SelectArm {
+    Receive {
+        channel: Expr,
+        binding: LocalId,
+        body: Expr,
+    },
+    Send {
+        channel: Expr,
+        value: Expr,
+        body: Expr,
+    },
+    Default {
+        body: Expr,
+    },
+}
+
 pub enum ExprKind {
     NameRef {
         name_ref: NameRef,
@@ -371,6 +387,9 @@ pub enum ExprKind {
     Match {
         expr: Expr,
         arms: Vec[Arm],
+    },
+    Select {
+        arms: Vec[SelectArm],
     },
     If {
         cond: Expr,
