@@ -459,12 +459,8 @@ fn imports_intrinsic_runtime_dependencies() -> unit {
     let items: Vec[Item] = Vec::new();
     emit_runtime_hook_items(items, Vec::new(), intrinsics);
     let output = encode(File { items });
-    testing::assert(
-        string_contains(
-            output,
-            "import (\n" + "    _goml_reflect \"reflect\"\n" + "    _goml_slices \"slices\"\n" + ")",
-        ),
-    )
+    testing::assert(string_contains(output, "_goml_reflect \"reflect\""));
+    testing::assert(!string_contains(output, "\"slices\""))
 }
 
 #[test]
@@ -474,8 +470,7 @@ fn prunes_imports_used_only_by_dead_helpers() -> unit {
             "fn main() -> unit { let cell = Ref::new(1); cell.set(cell.get() + 1); let values: Vec[int32] = Vec::new(); values.push(cell.get()); println(values.len()); }",
         ),
     );
-    testing::assert(!string_contains(output, "_goml_reflect \"reflect\""));
-    testing::assert(!string_contains(output, "_goml_slices \"slices\""))
+    testing::assert(!string_contains(output, "_goml_reflect \"reflect\""))
 }
 
 #[test]
@@ -513,13 +508,20 @@ fn emits_complete_vec_runtime_helpers() -> unit {
     testing::assert(
         string_contains(output, "func vec_with_capacity__Vec_5int32(capacity int) *_goml_vec_int32"),
     );
-    testing::assert(string_contains(output, "items: _goml_slices.Grow([]int32{}, int(capacity)),"));
+    testing::assert(string_contains(output, "items: make([]int32, 0, capacity),"));
     testing::assert(
         string_contains(
             output,
             "func vec_reserve__Vec_5int32(vec *_goml_vec_int32, additional int) struct{}",
         ),
     );
+    testing::assert(string_contains(output, "if additional < 0 {"));
+    testing::assert(string_contains(output, "var required int = length + additional"));
+    testing::assert(string_contains(output, "var next_capacity int = cap(vec.items) * 2"));
+    testing::assert(
+        string_contains(output, "var next_items []int32 = make([]int32, length, next_capacity)"),
+    );
+    testing::assert(string_contains(output, "copy(next_items, vec.items)"));
     testing::assert(string_contains(output, "clear(vec.items[new_len:int(len(vec.items))])"));
     testing::assert(string_contains(output, "vec.items = vec.items[0:new_len]"))
 }

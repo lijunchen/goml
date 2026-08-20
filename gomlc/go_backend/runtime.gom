@@ -474,7 +474,6 @@ enum RuntimeImport {
     Filepath,
     Reflect,
     Sha256,
-    Slices,
     Strconv,
     Strings,
     Sync,
@@ -709,9 +708,6 @@ fn emit_runtime_import_items(items: Vec[Item], required: Vec[RuntimeImport]) -> 
     if required.contains(RuntimeImport::Sha256) {
         imports.push(("_goml_sha256", "crypto/sha256"))
     } else {};
-    if required.contains(RuntimeImport::Slices) {
-        imports.push(("_goml_slices", "slices"))
-    } else {};
     if required.contains(RuntimeImport::Strconv) {
         imports.push(("_goml_strconv", "strconv"))
     } else {};
@@ -857,8 +853,6 @@ pub fn emit_runtime_hook_items(
     for intrinsic in intrinsics {
         if intrinsic == "ref.ptr_hash" {
             require_runtime_import(required_imports, RuntimeImport::Reflect)
-        } else if intrinsic == "vec.with_capacity" || intrinsic == "vec.reserve" {
-            require_runtime_import(required_imports, RuntimeImport::Slices)
         } else if intrinsic == "channel.send_cancel" || intrinsic == "channel.recv_cancel" {
             require_runtime_import(required_imports, RuntimeImport::Context);
             require_runtime_import(required_imports, RuntimeImport::Sync)
@@ -1018,25 +1012,12 @@ fn vec_runtime_items(vec_ty: repr::Type) -> Vec[Item] {
             );
             let with_capacity_params: Vec[(string, Type)] = Vec::from_array([]);
             with_capacity_params.push(("capacity", Type::Int));
-            let grow_args: Vec[Expr] = Vec::from_array([]);
-            grow_args.push(
-                Expr::ArrayLiteral {
-                    ty: Type::Slice { elem: lowered_elem },
-                    items: Vec::from_array([]),
-                },
-            );
-            grow_args.push(
-                Expr::Convert {
-                    ty: Type::Named { name: "int" },
-                    expr: Expr::Var { name: "capacity" },
-                },
-            );
+            let make_args: Vec[Expr] = Vec::from_array([]);
+            make_args.push(Expr::Int { value: "0" });
+            make_args.push(Expr::Var { name: "capacity" });
             let with_capacity_fields: Vec[(string, Expr)] = Vec::from_array([]);
             with_capacity_fields.push(
-                (
-                    "items",
-                    Expr::Call { func: Expr::Var { name: "_goml_slices.Grow" }, args: grow_args },
-                ),
+                ("items", Expr::Make { ty: Type::Slice { elem: lowered_elem }, args: make_args }),
             );
             let with_capacity_stmts: Vec[Stmt] = Vec::from_array([]);
             with_capacity_stmts.push(
@@ -1197,23 +1178,131 @@ fn vec_runtime_items(vec_ty: repr::Type) -> Vec[Item] {
             let reserve_params: Vec[(string, Type)] = Vec::from_array([]);
             reserve_params.push(("vec", lowered_vec));
             reserve_params.push(("additional", Type::Int));
-            let reserve_args: Vec[Expr] = Vec::from_array([]);
-            reserve_args.push(Expr::Field { expr: Expr::Var { name: "vec" }, field_name: "items" });
-            reserve_args.push(
-                Expr::Convert {
-                    ty: Type::Named { name: "int" },
-                    expr: Expr::Var { name: "additional" },
+            let reserve_stmts: Vec[Stmt] = Vec::from_array([]);
+            let negative_capacity_stmts: Vec[Stmt] = Vec::from_array([]);
+            negative_capacity_stmts.push(Stmt::Panic { message: "negative vector capacity" });
+            reserve_stmts.push(
+                Stmt::If {
+                    cond: Expr::Binary {
+                        op: BinaryOp::Less,
+                        lhs: Expr::Var { name: "additional" },
+                        rhs: Expr::Int { value: "0" },
+                    },
+                    then_: Block { stmts: negative_capacity_stmts },
+                    else_: Option::None,
                 },
             );
-            let reserve_stmts: Vec[Stmt] = Vec::from_array([]);
+            let length_args: Vec[Expr] = Vec::from_array([]);
+            length_args.push(Expr::Field { expr: Expr::Var { name: "vec" }, field_name: "items" });
             reserve_stmts.push(
+                Stmt::Var {
+                    name: "length",
+                    ty: Type::Int,
+                    value: Option::Some(
+                        Expr::Call { func: Expr::Var { name: "len" }, args: length_args },
+                    ),
+                },
+            );
+            reserve_stmts.push(
+                Stmt::Var {
+                    name: "required",
+                    ty: Type::Int,
+                    value: Option::Some(
+                        Expr::Binary {
+                            op: BinaryOp::Add,
+                            lhs: Expr::Var { name: "length" },
+                            rhs: Expr::Var { name: "additional" },
+                        },
+                    ),
+                },
+            );
+            let overflow_stmts: Vec[Stmt] = Vec::from_array([]);
+            overflow_stmts.push(Stmt::Panic { message: "vector capacity overflow" });
+            reserve_stmts.push(
+                Stmt::If {
+                    cond: Expr::Binary {
+                        op: BinaryOp::Less,
+                        lhs: Expr::Var { name: "required" },
+                        rhs: Expr::Var { name: "length" },
+                    },
+                    then_: Block { stmts: overflow_stmts },
+                    else_: Option::None,
+                },
+            );
+            let capacity_args: Vec[Expr] = Vec::from_array([]);
+            capacity_args.push(Expr::Field { expr: Expr::Var { name: "vec" }, field_name: "items" });
+            let grow_stmts: Vec[Stmt] = Vec::from_array([]);
+            let current_capacity_args: Vec[Expr] = Vec::from_array([]);
+            current_capacity_args.push(
+                Expr::Field { expr: Expr::Var { name: "vec" }, field_name: "items" },
+            );
+            grow_stmts.push(
+                Stmt::Var {
+                    name: "next_capacity",
+                    ty: Type::Int,
+                    value: Option::Some(
+                        Expr::Binary {
+                            op: BinaryOp::Mul,
+                            lhs: Expr::Call {
+                                func: Expr::Var { name: "cap" },
+                                args: current_capacity_args,
+                            },
+                            rhs: Expr::Int { value: "2" },
+                        },
+                    ),
+                },
+            );
+            let use_required_stmts: Vec[Stmt] = Vec::from_array([]);
+            use_required_stmts.push(
+                Stmt::Assign { name: "next_capacity", value: Expr::Var { name: "required" } },
+            );
+            grow_stmts.push(
+                Stmt::If {
+                    cond: Expr::Binary {
+                        op: BinaryOp::Less,
+                        lhs: Expr::Var { name: "next_capacity" },
+                        rhs: Expr::Var { name: "required" },
+                    },
+                    then_: Block { stmts: use_required_stmts },
+                    else_: Option::None,
+                },
+            );
+            let next_items_args: Vec[Expr] = Vec::from_array([]);
+            next_items_args.push(Expr::Var { name: "length" });
+            next_items_args.push(Expr::Var { name: "next_capacity" });
+            grow_stmts.push(
+                Stmt::Var {
+                    name: "next_items",
+                    ty: Type::Slice { elem: lowered_elem },
+                    value: Option::Some(
+                        Expr::Make { ty: Type::Slice { elem: lowered_elem }, args: next_items_args },
+                    ),
+                },
+            );
+            let copy_args: Vec[Expr] = Vec::from_array([]);
+            copy_args.push(Expr::Var { name: "next_items" });
+            copy_args.push(Expr::Field { expr: Expr::Var { name: "vec" }, field_name: "items" });
+            grow_stmts.push(
+                Stmt::Expr {
+                    expr: Expr::Call { func: Expr::Var { name: "copy" }, args: copy_args },
+                },
+            );
+            grow_stmts.push(
                 Stmt::FieldAssign {
                     target: Expr::Var { name: "vec" },
                     field_name: "items",
-                    value: Expr::Call {
-                        func: Expr::Var { name: "_goml_slices.Grow" },
-                        args: reserve_args,
+                    value: Expr::Var { name: "next_items" },
+                },
+            );
+            reserve_stmts.push(
+                Stmt::If {
+                    cond: Expr::Binary {
+                        op: BinaryOp::Greater,
+                        lhs: Expr::Var { name: "required" },
+                        rhs: Expr::Call { func: Expr::Var { name: "cap" }, args: capacity_args },
                     },
+                    then_: Block { stmts: grow_stmts },
+                    else_: Option::None,
                 },
             );
             reserve_stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
