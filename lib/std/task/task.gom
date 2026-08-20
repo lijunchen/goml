@@ -346,11 +346,15 @@ pub fn race[T](bodies: Vec[(CancelToken) -> T]) -> Option[T] {
     } else {};
     scope(
         |scope: Scope| {
-            let results: Channel[T] = Channel::new(bodies.len());
+            let results: Channel[T] = Channel::new(1);
             for body in bodies {
                 let _ = scope.spawn(
                     |cancel: CancelToken| {
-                        results.send(body(cancel))
+                        let value = body(cancel);
+                        select {
+                            send(results, value) => (),
+                            default => (),
+                        }
                     },
                 );
             }
