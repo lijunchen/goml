@@ -250,6 +250,36 @@ fn verify_term(state: VerifyState, value: Term, expected_ty: repr::Type, joins: 
                 None => Result::Ok(()),
             }
         },
+        Select { arms, default, ret_ty } => {
+            verify_type(ret_ty, expected_ty, "select result type does not match its block")?;
+            for arm in arms {
+                match arm {
+                    Receive { channel, binding: _, binding_ty, body } => {
+                        repr::validate_type(binding_ty)?;
+                        match repr::resolve_type(imm_type(channel)) {
+                            Channel { elem: _ } => (),
+                            _ => return Result::Err("select receive operand is not a channel"),
+                        };
+                        verify_block(state, body, ret_ty, copy_join_signatures(joins))?
+                    },
+                    Send { channel, value, body } => {
+                        match repr::resolve_type(imm_type(channel)) {
+                            Channel { elem } => verify_type(
+                                imm_type(value),
+                                elem,
+                                "select send value type does not match its channel",
+                            )?,
+                            _ => return Result::Err("select send operand is not a channel"),
+                        };
+                        verify_block(state, body, ret_ty, copy_join_signatures(joins))?
+                    },
+                }
+            }
+            match default {
+                Some(body) => verify_block(state, body, ret_ty, copy_join_signatures(joins)),
+                None => Result::Ok(()),
+            }
+        },
         Unreachable { ty } => verify_type(
             ty,
             expected_ty,

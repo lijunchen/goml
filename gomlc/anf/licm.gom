@@ -86,6 +86,26 @@ fn licm_collect_local_names(value: Block, result: HashMap[string, unit]) -> unit
                 None => (),
             }
         },
+        Select { arms, default, .. } => {
+            for arm in arms {
+                match arm {
+                    Receive { binding, .. } => {
+                        result[binding] = ();
+                    },
+                    Send { .. } => (),
+                };
+                licm_collect_local_names(
+                    match arm {
+                        Receive { body, .. } | Send { body, .. } => body,
+                    },
+                    result,
+                )
+            }
+            match default {
+                Some(body) => licm_collect_local_names(body, result),
+                None => (),
+            }
+        },
         Return(_) | Jump { .. } | Unreachable { .. } => (),
     }
 }
@@ -111,6 +131,26 @@ fn licm_collect_param_names(value: Block, result: HashMap[string, unit]) -> unit
         Match { arms, default, .. } => {
             for arm in arms {
                 licm_collect_param_names(arm.body, result)
+            }
+            match default {
+                Some(body) => licm_collect_param_names(body, result),
+                None => (),
+            }
+        },
+        Select { arms, default, .. } => {
+            for arm in arms {
+                match arm {
+                    Receive { binding, .. } => {
+                        result[binding] = ();
+                    },
+                    Send { .. } => (),
+                };
+                licm_collect_param_names(
+                    match arm {
+                        Receive { body, .. } | Send { body, .. } => body,
+                    },
+                    result,
+                )
             }
             match default {
                 Some(body) => licm_collect_param_names(body, result),
@@ -152,6 +192,49 @@ fn licm_extract_term(
             }
             Term::Match {
                 scrutinee,
+                arms: lowered,
+                default: match default {
+                    Some(body) => {
+                        let result = licm_extract_block(body, local, invariant, params, assigned);
+                        licm_append_hoisted(hoisted, result.hoisted);
+                        Option::Some(result.value)
+                    },
+                    None => Option::None,
+                },
+                ret_ty,
+            }
+        },
+        Select { arms, default, ret_ty } => {
+            let lowered: Vec[SelectArm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                lowered.push(
+                    match arm {
+                        Receive { channel, binding, binding_ty, body } => {
+                            let result = licm_extract_block(
+                                body,
+                                local,
+                                invariant,
+                                params,
+                                assigned,
+                            );
+                            licm_append_hoisted(hoisted, result.hoisted);
+                            SelectArm::Receive { channel, binding, binding_ty, body: result.value }
+                        },
+                        Send { channel, value, body } => {
+                            let result = licm_extract_block(
+                                body,
+                                local,
+                                invariant,
+                                params,
+                                assigned,
+                            );
+                            licm_append_hoisted(hoisted, result.hoisted);
+                            SelectArm::Send { channel, value, body: result.value }
+                        },
+                    },
+                )
+            }
+            Term::Select {
                 arms: lowered,
                 default: match default {
                     Some(body) => {
@@ -264,6 +347,34 @@ fn licm_term(value: Term) -> Term {
             }
             Term::Match {
                 scrutinee,
+                arms: lowered,
+                default: match default {
+                    Some(body) => Option::Some(licm_block(body)),
+                    None => Option::None,
+                },
+                ret_ty,
+            }
+        },
+        Select { arms, default, ret_ty } => {
+            let lowered: Vec[SelectArm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                lowered.push(
+                    match arm {
+                        Receive { channel, binding, binding_ty, body } => SelectArm::Receive {
+                            channel,
+                            binding,
+                            binding_ty,
+                            body: licm_block(body),
+                        },
+                        Send { channel, value, body } => SelectArm::Send {
+                            channel,
+                            value,
+                            body: licm_block(body),
+                        },
+                    },
+                )
+            }
+            Term::Select {
                 arms: lowered,
                 default: match default {
                     Some(body) => Option::Some(licm_block(body)),

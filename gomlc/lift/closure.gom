@@ -165,6 +165,23 @@ fn collect_used_expr(values: Vec[string], expr: mono::Expr) -> unit {
             }
             collect_used_optional_expr(values, default)
         },
+        Select { arms, default, ty: _ } => {
+            for arm in arms {
+                match arm {
+                    Receive { channel, binding: _, binding_ty, body } => {
+                        collect_used_types(values, binding_ty);
+                        collect_used_expr(values, channel);
+                        collect_used_expr(values, body)
+                    },
+                    Send { channel, value, body } => {
+                        collect_used_expr(values, channel);
+                        collect_used_expr(values, value);
+                        collect_used_expr(values, body)
+                    },
+                }
+            }
+            collect_used_optional_expr(values, default)
+        },
         If { cond, then_branch: then_, else_branch: else_, ty: _ } => {
             collect_used_expr(values, cond);
             collect_used_expr(values, then_);
@@ -401,6 +418,23 @@ fn observe_expr(maximum: Ref[int], value: mono::Expr) -> unit {
             }
             observe_optional_expr(maximum, default)
         },
+        Select { arms, default, ty: _ } => {
+            for arm in arms {
+                match arm {
+                    Receive { channel, binding, binding_ty: _, body } => {
+                        observe_expr(maximum, channel);
+                        observe_name(maximum, binding);
+                        observe_expr(maximum, body)
+                    },
+                    Send { channel, value, body } => {
+                        observe_expr(maximum, channel);
+                        observe_expr(maximum, value);
+                        observe_expr(maximum, body)
+                    },
+                }
+            }
+            observe_optional_expr(maximum, default)
+        },
         If { cond, then_branch: then_, else_branch: else_, ty: _ } => {
             observe_expr(maximum, cond);
             observe_expr(maximum, then_);
@@ -532,6 +566,39 @@ fn transform_arms(
     result
 }
 
+fn transform_select_arms(
+    state: State,
+    scope: Vec[ScopeEntry],
+    values: Vec[mono::SelectArm],
+    context: Option[string],
+) -> Vec[LowerSelectArm] {
+    let result: Vec[LowerSelectArm] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(
+            match value {
+                Receive { channel, binding, binding_ty, body } => {
+                    let body_scope = copy_scope(scope);
+                    body_scope.push(
+                        ScopeEntry { name: binding, ty: binding_ty, closure_struct: Option::None },
+                    );
+                    LowerSelectArm::Receive {
+                        channel: transform_expr(state, scope, channel, context),
+                        binding,
+                        binding_ty,
+                        body: transform_expr(state, body_scope, body, context),
+                    }
+                },
+                Send { channel, value, body } => LowerSelectArm::Send {
+                    channel: transform_expr(state, scope, channel, context),
+                    value: transform_expr(state, scope, value, context),
+                    body: transform_expr(state, scope, body, context),
+                },
+            },
+        )
+    }
+    result
+}
+
 fn transform_call(
     state: State,
     scope: Vec[ScopeEntry],
@@ -604,6 +671,11 @@ fn transform_expr(state: State, scope: Vec[ScopeEntry], value: mono::Expr, conte
         Match { expr, arms, default, ty } => LowerExpr::Match {
             expr: transform_expr(state, scope, expr, context),
             arms: transform_arms(state, scope, arms, context),
+            default: transform_optional_expr(state, scope, default, context),
+            ty,
+        },
+        Select { arms, default, ty } => LowerExpr::Select {
+            arms: transform_select_arms(state, scope, arms, context),
             default: transform_optional_expr(state, scope, default, context),
             ty,
         },
@@ -764,6 +836,24 @@ fn collect_captured(
             for arm in arms {
                 collect_captured(arm.lhs, bound, captured, scope);
                 collect_captured(arm.body, bound, captured, scope)
+            }
+            collect_captured_optional(default, bound, captured, scope)
+        },
+        Select { arms, default, ty: _ } => {
+            for arm in arms {
+                match arm {
+                    Receive { channel, binding, binding_ty: _, body } => {
+                        collect_captured(channel, bound, captured, scope);
+                        bound.push(binding);
+                        collect_captured(body, bound, captured, scope);
+                        let _ = bound.pop();
+                    },
+                    Send { channel, value, body } => {
+                        collect_captured(channel, bound, captured, scope);
+                        collect_captured(value, bound, captured, scope);
+                        collect_captured(body, bound, captured, scope)
+                    },
+                }
             }
             collect_captured_optional(default, bound, captured, scope)
         },

@@ -1092,6 +1092,8 @@ fn block(parser: Parser) -> unit {
         } else if is_expr_first(parser.peek()) {
             let semicolon_optional = match parser.peek() {
                 IfKeyword | MatchKeyword | WhileKeyword | LoopKeyword | ForKeyword => true,
+                Ident if parser.at_contextual("select")
+                    && token_is(parser.nth(1), lexer::TokenKind::LBrace) => true,
                 _ => false,
             };
             match expr(parser) {

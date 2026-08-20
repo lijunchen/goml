@@ -682,6 +682,7 @@ fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
             EXPR_RANGE => lower_range_expr(ctx, node, trailing_args),
             EXPR_CLOSURE => lower_closure(ctx, node, trailing_args),
             EXPR_MATCH => lower_match_expr(ctx, node, trailing_args),
+            EXPR_SELECT => lower_select_expr(ctx, node, trailing_args),
             EXPR_IF => lower_if_expr(ctx, node, trailing_args),
             EXPR_WHILE => lower_while_expr(ctx, node, trailing_args),
             EXPR_LOOP => lower_loop_expr(ctx, node, trailing_args),

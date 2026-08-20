@@ -179,7 +179,7 @@ fn collect_stmt_names(result: NameSet, value: Stmt) -> unit {
                 None => (),
             }
         },
-        Select { cases } => {
+        Select { cases, default } => {
             for case in cases {
                 match case.operation {
                     Receive { names: _, channel } => collect_expr_names(result, channel),
@@ -189,6 +189,10 @@ fn collect_stmt_names(result: NameSet, value: Stmt) -> unit {
                     },
                 };
                 collect_block_names(result, case.body)
+            }
+            match default {
+                Some(body) => collect_block_names(result, body),
+                None => (),
             }
         },
         Break | BreakLabel { label: _ } | Continue | Panic { message: _ } | Unreachable => (),

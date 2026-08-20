@@ -304,7 +304,7 @@ fn format_impl(value: Builder, node: LocatedNode) -> BuiltDoc {
 
 fn vertical_body_uses_comma(kind: cst::NodeKind) -> bool {
     match kind {
-        VARIANT_LIST | STRUCT_FIELD_LIST | MATCH_ARM_LIST => true,
+        VARIANT_LIST | STRUCT_FIELD_LIST | MATCH_ARM_LIST | SELECT_ARM_LIST => true,
         _ => false,
     }
 }
@@ -391,7 +391,8 @@ fn format_vertical_body(value: Builder, node: LocatedNode) -> BuiltDoc {
     let content = parts();
     let item_count: Ref[int] = Ref::new(0);
     let kind = cst::node_kind(node.node);
-    let owns_open = cst::node_kind_equal(kind, cst::NodeKind::MATCH_ARM_LIST);
+    let owns_open = cst::node_kind_equal(kind, cst::NodeKind::MATCH_ARM_LIST)
+        || cst::node_kind_equal(kind, cst::NodeKind::SELECT_ARM_LIST);
     let vertical_variant_fields = cst::node_kind_equal(kind, cst::NodeKind::VARIANT_LIST)
         && enum_variants_require_vertical_fields(value, node);
     let cursor = child_cursor(node);

@@ -165,6 +165,35 @@ fn arm_doc(value: Arm) -> pretty::Doc {
     )
 }
 
+fn select_arm_doc(value: SelectArm) -> pretty::Doc {
+    match value {
+        Receive { channel, binding, binding_ty: _, body } => pretty::concat(
+            Vec::from_array(
+                [
+                    pretty::text("recv("),
+                    expr_doc(channel),
+                    pretty::text(") as " + binding + " => "),
+                    braced_docs(Vec::from_array([expr_doc(body)]), 2),
+                    pretty::text(","),
+                ],
+            ),
+        ),
+        Send { channel, value, body } => pretty::concat(
+            Vec::from_array(
+                [
+                    pretty::text("send("),
+                    expr_doc(channel),
+                    pretty::text(", "),
+                    expr_doc(value),
+                    pretty::text(") => "),
+                    braced_docs(Vec::from_array([expr_doc(body)]), 2),
+                    pretty::text(","),
+                ],
+            ),
+        ),
+    }
+}
+
 fn expr_doc(value: Expr) -> pretty::Doc {
     match value {
         Var { name, ty: _ } => pretty::text(name),
@@ -228,6 +257,34 @@ fn expr_doc(value: Expr) -> pretty::Doc {
                 None => (),
             };
             pretty::block(pretty::append(pretty::text("match "), expr_doc(source)), values)
+        },
+        Select { arms, default, ty: _ } => {
+            let values: Vec[pretty::Doc] = Vec::with_capacity(
+                arms.len()
+                    + if default.is_some() {
+                        1
+                    } else {
+                        0
+                    },
+            );
+            for arm in arms {
+                values.push(select_arm_doc(arm))
+            }
+            match default {
+                Some(value) => values.push(
+                    pretty::concat(
+                        Vec::from_array(
+                            [
+                                pretty::text("default => "),
+                                braced_docs(Vec::from_array([expr_doc(value)]), 2),
+                                pretty::text(","),
+                            ],
+                        ),
+                    ),
+                ),
+                None => (),
+            };
+            pretty::block(pretty::text("select"), values)
         },
         If { cond, then_branch, else_branch, ty: _ } => pretty::concat(
             Vec::from_array(

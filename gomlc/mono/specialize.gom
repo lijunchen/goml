@@ -2002,6 +2002,32 @@ fn specialize_arms(ctx: SpecializeCtx, bindings: Vec[TypeBinding], values: Vec[c
     result
 }
 
+fn specialize_select_arms(
+    ctx: SpecializeCtx,
+    bindings: Vec[TypeBinding],
+    values: Vec[core::SelectArm],
+) -> Vec[core::SelectArm] {
+    let result: Vec[core::SelectArm] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(
+            match value {
+                Receive { channel, binding, binding_ty, body } => core::SelectArm::Receive {
+                    channel: specialize_expr(ctx, bindings, channel),
+                    binding,
+                    binding_ty: specialize_type(ctx, binding_ty, bindings),
+                    body: specialize_expr(ctx, bindings, body),
+                },
+                Send { channel, value, body } => core::SelectArm::Send {
+                    channel: specialize_expr(ctx, bindings, channel),
+                    value: specialize_expr(ctx, bindings, value),
+                    body: specialize_expr(ctx, bindings, body),
+                },
+            },
+        )
+    }
+    result
+}
+
 fn specialize_block(ctx: SpecializeCtx, bindings: Vec[TypeBinding], value: core::Block) -> core::Block {
     let stmts: Vec[core::LetStmt] = Vec::from_array([]);
     for stmt in value.stmts {
@@ -2261,6 +2287,11 @@ fn specialize_expr(ctx: SpecializeCtx, bindings: Vec[TypeBinding], value: core::
             default: specialize_optional_expr(ctx, bindings, default),
             ty: specialize_type(ctx, ty, bindings),
         },
+        Select { arms, default, ty } => core::Expr::Select {
+            arms: specialize_select_arms(ctx, bindings, arms),
+            default: specialize_optional_expr(ctx, bindings, default),
+            ty: specialize_type(ctx, ty, bindings),
+        },
         If { cond, then_branch, else_branch, ty } => core::Expr::If {
             cond: specialize_expr(ctx, bindings, cond),
             then_branch: specialize_expr(ctx, bindings, then_branch),
@@ -2508,6 +2539,23 @@ fn ensure_runtime_trait_impls_for_expr(ctx: SpecializeCtx, value: core::Expr) ->
             for arm in arms {
                 ensure_runtime_trait_impls_for_expr(ctx, arm.lhs);
                 ensure_runtime_trait_impls_for_expr(ctx, arm.body)
+            }
+            ensure_runtime_trait_impls_for_optional_expr(ctx, default)
+        },
+        Select { arms, default, ty: _ } => {
+            for arm in arms {
+                match arm {
+                    Receive { channel, binding: _, binding_ty, body } => {
+                        ensure_runtime_trait_impls_for_type(ctx, binding_ty);
+                        ensure_runtime_trait_impls_for_expr(ctx, channel);
+                        ensure_runtime_trait_impls_for_expr(ctx, body)
+                    },
+                    Send { channel, value, body } => {
+                        ensure_runtime_trait_impls_for_expr(ctx, channel);
+                        ensure_runtime_trait_impls_for_expr(ctx, value);
+                        ensure_runtime_trait_impls_for_expr(ctx, body)
+                    },
+                }
             }
             ensure_runtime_trait_impls_for_optional_expr(ctx, default)
         },

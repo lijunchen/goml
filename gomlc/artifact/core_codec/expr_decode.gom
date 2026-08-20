@@ -92,6 +92,31 @@ fn artifact_decode_core_arms(context: ArtifactCoreDecodeContext, value: wire::Ar
     Result::Ok(result)
 }
 
+fn artifact_decode_core_select_arms(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+    Vec[core::SelectArm],
+    string,
+] {
+    let values = wire::artifact_json_array(value, "select arms")?;
+    let result: Vec[core::SelectArm] = Vec::from_array([]);
+    for value in values {
+        let object = wire::artifact_json_object(value, "select arm")?;
+        let kind = wire::artifact_json_field_string(object, "kind")?;
+        let channel = artifact_decode_core_expr_field(context, object, "channel")?;
+        let body = artifact_decode_core_expr_field(context, object, "body")?;
+        if kind == "receive" {
+            let binding = wire::artifact_json_field_string(object, "binding")?;
+            let binding_ty = artifact_decode_core_type_field(context, object, "binding_ty")?;
+            result.push(core::SelectArm::Receive { channel, binding, binding_ty, body })
+        } else if kind == "send" {
+            let value = artifact_decode_core_expr_field(context, object, "value")?;
+            result.push(core::SelectArm::Send { channel, value, body })
+        } else {
+            return Result::Err(wire::artifact_decode_error("select arm kind"))
+        }
+    }
+    Result::Ok(result)
+}
+
 fn artifact_decode_core_expr(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     core::Expr,
     string,
@@ -201,6 +226,13 @@ fn artifact_decode_core_expr(context: ArtifactCoreDecodeContext, value: wire::Ar
         let default = artifact_decode_optional_core_expr(context, value)?;
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
         Result::Ok(core::Expr::Match { expr, arms, default, ty })
+    } else if kind == "ESelect" {
+        let value = wire::artifact_json_required_field(object, "arms")?;
+        let arms = artifact_decode_core_select_arms(context, value)?;
+        let value = wire::artifact_json_required_field(object, "default")?;
+        let default = artifact_decode_optional_core_expr(context, value)?;
+        let ty = artifact_decode_core_type_field(context, object, "ty")?;
+        Result::Ok(core::Expr::Select { arms, default, ty })
     } else if kind == "EIf" {
         let cond = artifact_decode_core_expr_field(context, object, "cond")?;
         let then_branch = artifact_decode_core_expr_field(context, object, "then_branch")?;

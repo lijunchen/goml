@@ -60,6 +60,20 @@ struct LowerBlock {
     tail: Option[LowerExpr],
 }
 
+enum LowerSelectArm {
+    Receive {
+        channel: LowerExpr,
+        binding: string,
+        binding_ty: tast::Type,
+        body: LowerExpr,
+    },
+    Send {
+        channel: LowerExpr,
+        value: LowerExpr,
+        body: LowerExpr,
+    },
+}
+
 enum LowerExpr {
     Var {
         name: string,
@@ -98,6 +112,11 @@ enum LowerExpr {
     Match {
         expr: LowerExpr,
         arms: Vec[LowerArm],
+        default: Option[LowerExpr],
+        ty: tast::Type,
+    },
+    Select {
+        arms: Vec[LowerSelectArm],
         default: Option[LowerExpr],
         ty: tast::Type,
     },
@@ -204,18 +223,18 @@ fn lower_expr_type(value: LowerExpr) -> tast::Type {
         Var { ty, .. } | Callable { ty, .. } | Prim { ty, .. } | Constr { ty, .. } | Tuple {
             ty,
             ..,
-        } | Array { ty, .. } | Closure { ty, .. } | Block { ty, .. } | Match { ty, .. } | If {
+        } | Array { ty, .. } | Closure { ty, .. } | Block { ty, .. } | Match { ty, .. } | Select {
             ty,
             ..,
-        } | While { ty, .. } | Loop { ty, .. } | Break { ty, .. } | Continue { ty, .. } | Return {
+        } | If { ty, .. } | While { ty, .. } | Loop { ty, .. } | Break { ty, .. } | Continue {
             ty,
             ..,
-        } | Go { ty, .. } | ConstrGet { ty, .. } | Unary { ty, .. } | Cast { ty, .. } | Binary {
+        } | Return { ty, .. } | Go { ty, .. } | ConstrGet { ty, .. } | Unary { ty, .. } | Cast {
             ty,
             ..,
-        } | Assign { ty, .. } | Call { ty, .. } | ToDyn { ty, .. } | DynCall { ty, .. } | TraitCall {
+        } | Binary { ty, .. } | Assign { ty, .. } | Call { ty, .. } | ToDyn { ty, .. } | DynCall {
             ty,
             ..,
-        } | Proj { ty, .. } => ty,
+        } | TraitCall { ty, .. } | Proj { ty, .. } => ty,
     }
 }

@@ -77,6 +77,20 @@ fn collect_mutable_expr(value: tast::Expr, result: Vec[(string, tast::Type)]) ->
                 collect_mutable_expr(arm.body, result)
             }
         },
+        Select { arms, ty: _ } => for arm in arms {
+            match arm {
+                Receive { channel, binding: _, binding_ty: _, body } => {
+                    collect_mutable_expr(channel, result);
+                    collect_mutable_expr(body, result)
+                },
+                Send { channel, value, body } => {
+                    collect_mutable_expr(channel, result);
+                    collect_mutable_expr(value, result);
+                    collect_mutable_expr(body, result)
+                },
+                Default { body } => collect_mutable_expr(body, result),
+            }
+        },
         If { cond, then_branch, else_branch, ty: _ } => {
             collect_mutable_expr(cond, result);
             collect_mutable_expr(then_branch, result);
@@ -265,6 +279,21 @@ fn collect_bound_expr(value: tast::Expr, result: Vec[string]) -> unit {
                 collect_bound_expr(arm.body, result)
             }
         },
+        Select { arms, ty: _ } => for arm in arms {
+            match arm {
+                Receive { channel, binding, binding_ty: _, body } => {
+                    push_name(result, binding);
+                    collect_bound_expr(channel, result);
+                    collect_bound_expr(body, result)
+                },
+                Send { channel, value, body } => {
+                    collect_bound_expr(channel, result);
+                    collect_bound_expr(value, result);
+                    collect_bound_expr(body, result)
+                },
+                Default { body } => collect_bound_expr(body, result),
+            }
+        },
         If { cond, then_branch, else_branch, ty: _ } => {
             collect_bound_expr(cond, result);
             collect_bound_expr(then_branch, result);
@@ -365,6 +394,20 @@ fn collect_reference_expr(value: tast::Expr, result: Vec[string]) -> unit {
                     None => (),
                 };
                 collect_reference_expr(arm.body, result)
+            }
+        },
+        Select { arms, ty: _ } => for arm in arms {
+            match arm {
+                Receive { channel, binding: _, binding_ty: _, body } => {
+                    collect_reference_expr(channel, result);
+                    collect_reference_expr(body, result)
+                },
+                Send { channel, value, body } => {
+                    collect_reference_expr(channel, result);
+                    collect_reference_expr(value, result);
+                    collect_reference_expr(body, result)
+                },
+                Default { body } => collect_reference_expr(body, result),
             }
         },
         If { cond, then_branch, else_branch, ty: _ } => {
@@ -481,6 +524,20 @@ fn collect_capture_expr(value: tast::Expr, result: Vec[string]) -> unit {
                     None => (),
                 };
                 collect_capture_expr(arm.body, result)
+            }
+        },
+        Select { arms, ty: _ } => for arm in arms {
+            match arm {
+                Receive { channel, binding: _, binding_ty: _, body } => {
+                    collect_capture_expr(channel, result);
+                    collect_capture_expr(body, result)
+                },
+                Send { channel, value, body } => {
+                    collect_capture_expr(channel, result);
+                    collect_capture_expr(value, result);
+                    collect_capture_expr(body, result)
+                },
+                Default { body } => collect_capture_expr(body, result),
             }
         },
         If { cond, then_branch, else_branch, ty: _ } => {
@@ -648,6 +705,30 @@ fn lower_hidden_arms(values: Vec[LowerArm], cells: Vec[(string, tast::Type)]) ->
     result
 }
 
+fn lower_hidden_select_arms(values: Vec[LowerSelectArm], cells: Vec[(string, tast::Type)]) -> Vec[
+    LowerSelectArm,
+] {
+    let result: Vec[LowerSelectArm] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(
+            match value {
+                Receive { channel, binding, binding_ty, body } => LowerSelectArm::Receive {
+                    channel: lower_hidden_expr(channel, cells),
+                    binding,
+                    binding_ty,
+                    body: lower_hidden_expr(body, cells),
+                },
+                Send { channel, value, body } => LowerSelectArm::Send {
+                    channel: lower_hidden_expr(channel, cells),
+                    value: lower_hidden_expr(value, cells),
+                    body: lower_hidden_expr(body, cells),
+                },
+            },
+        )
+    }
+    result
+}
+
 fn lower_hidden_expr(value: LowerExpr, cells: Vec[(string, tast::Type)]) -> LowerExpr {
     match value {
         Var { name, ty } => match hidden_cell_inner(cells, name) {
@@ -668,6 +749,14 @@ fn lower_hidden_expr(value: LowerExpr, cells: Vec[(string, tast::Type)]) -> Lowe
         Match { expr: source, arms, default, ty } => LowerExpr::Match {
             expr: lower_hidden_expr(source, cells),
             arms: lower_hidden_arms(arms, cells),
+            default: match default {
+                Some(expr) => Option::Some(lower_hidden_expr(expr, cells)),
+                None => Option::None,
+            },
+            ty,
+        },
+        Select { arms, default, ty } => LowerExpr::Select {
+            arms: lower_hidden_select_arms(arms, cells),
             default: match default {
                 Some(expr) => Option::Some(lower_hidden_expr(expr, cells)),
                 None => Option::None,

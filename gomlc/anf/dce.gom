@@ -246,6 +246,38 @@ fn dce_term(value: Term) -> DceTermResult {
             };
             Term::Match { scrutinee, arms: lowered_arms, default: lowered_default, ret_ty }
         },
+        Select { arms, default, ret_ty } => {
+            let lowered_arms: Vec[SelectArm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                match arm {
+                    Receive { channel, binding, binding_ty, body } => {
+                        dce_collect_imm(live.values, channel);
+                        let result = dce_block_with_live(body);
+                        dce_names_remove(result.live.values, binding);
+                        dce_live_add_all(live, result.live);
+                        lowered_arms.push(
+                            SelectArm::Receive { channel, binding, binding_ty, body: result.value },
+                        )
+                    },
+                    Send { channel, value, body } => {
+                        dce_collect_imm(live.values, channel);
+                        dce_collect_imm(live.values, value);
+                        let result = dce_block_with_live(body);
+                        dce_live_add_all(live, result.live);
+                        lowered_arms.push(SelectArm::Send { channel, value, body: result.value })
+                    },
+                }
+            }
+            let lowered_default = match default {
+                Some(body) => {
+                    let result = dce_block_with_live(body);
+                    dce_live_add_all(live, result.live);
+                    Option::Some(result.value)
+                },
+                None => Option::None,
+            };
+            Term::Select { arms: lowered_arms, default: lowered_default, ret_ty }
+        },
         Unreachable { ty } => Term::Unreachable { ty },
     };
     DceTermResult { value: lowered, live }

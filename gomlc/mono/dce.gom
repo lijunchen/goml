@@ -57,6 +57,28 @@ fn dce_arms(values: Vec[Arm]) -> Vec[Arm] {
     result
 }
 
+fn dce_select_arms(values: Vec[SelectArm]) -> Vec[SelectArm] {
+    let result: Vec[SelectArm] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(
+            match value {
+                Receive { channel, binding, binding_ty, body } => SelectArm::Receive {
+                    channel: dce_expr(channel),
+                    binding,
+                    binding_ty,
+                    body: dce_expr(body),
+                },
+                Send { channel, value, body } => SelectArm::Send {
+                    channel: dce_expr(channel),
+                    value: dce_expr(value),
+                    body: dce_expr(body),
+                },
+            },
+        )
+    }
+    result
+}
+
 fn dce_expr(value: Expr) -> Expr {
     match value {
         Var { name, ty } => Expr::Var { name, ty },
@@ -74,6 +96,11 @@ fn dce_expr(value: Expr) -> Expr {
         Match { expr, arms, default, ty } => Expr::Match {
             expr: dce_expr(expr),
             arms: dce_arms(arms),
+            default: dce_optional_expr(default),
+            ty,
+        },
+        Select { arms, default, ty } => Expr::Select {
+            arms: dce_select_arms(arms),
             default: dce_optional_expr(default),
             ty,
         },
@@ -139,9 +166,9 @@ fn dce_pattern_names(value: Expr, result: DceNames) -> unit {
         Tuple { items, ty: _ } | Array { items, ty: _ } => for value in items {
             dce_pattern_names(value, result)
         },
-        Callable { .. } | Prim { .. } | Closure { .. } | Block { .. } | Match { .. } | If { .. } | While {
+        Callable { .. } | Prim { .. } | Closure { .. } | Block { .. } | Match { .. } | Select { .. } | If {
             ..,
-        } | Loop { .. } | Break { .. } | Continue { .. } | Return { .. } | Go { .. } | ConstrGet {
+        } | While { .. } | Loop { .. } | Break { .. } | Continue { .. } | Return { .. } | Go { .. } | ConstrGet {
             ..,
         } | Unary { .. } | Cast { .. } | Binary { .. } | Assign { .. } | Call { .. } | ToDyn { .. } | DynCall {
             ..,
@@ -193,6 +220,25 @@ fn dce_collect_expr(result: DceNames, value: Expr) -> unit {
                     dce_names_remove(free, name)
                 }
                 dce_names_add_all(result, free)
+            }
+            dce_collect_optional_expr(result, default)
+        },
+        Select { arms, default, ty: _ } => {
+            for arm in arms {
+                match arm {
+                    Receive { channel, binding, binding_ty: _, body } => {
+                        dce_collect_expr(result, channel);
+                        let free = new_dce_names();
+                        dce_collect_expr(free, body);
+                        dce_names_remove(free, binding);
+                        dce_names_add_all(result, free)
+                    },
+                    Send { channel, value, body } => {
+                        dce_collect_expr(result, channel);
+                        dce_collect_expr(result, value);
+                        dce_collect_expr(result, body)
+                    },
+                }
             }
             dce_collect_optional_expr(result, default)
         },
@@ -304,9 +350,9 @@ fn dce_expr_discardable(value: Expr) -> bool {
         Binary { op, lhs, rhs, .. } => dce_binary_discardable(op) && dce_expr_discardable(lhs)
             && dce_expr_discardable(rhs),
         Proj { tuple, .. } => dce_expr_discardable(tuple),
-        While { .. } | Loop { .. } | Break { .. } | Continue { .. } | Return { .. } | Go { .. } | Assign {
+        Select { .. } | While { .. } | Loop { .. } | Break { .. } | Continue { .. } | Return { .. } | Go {
             ..,
-        } | Call { .. } | DynCall { .. } => false,
+        } | Assign { .. } | Call { .. } | DynCall { .. } => false,
     }
 }
 

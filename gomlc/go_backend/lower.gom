@@ -965,6 +965,7 @@ fn compile_channel_callable(key: string, function_ty: repr::Type) -> Expr {
                                 },
                             ],
                         ),
+                        default: Option::None,
                     },
                 );
                 stmts.push(Stmt::Return { expr: Option::Some(Expr::Var { name: "completed" }) })
@@ -1014,6 +1015,7 @@ fn compile_channel_callable(key: string, function_ty: repr::Type) -> Expr {
                                 },
                             ],
                         ),
+                        default: Option::None,
                     },
                 );
                 let fields: Vec[(string, Expr)] = Vec::from_array([]);
@@ -1588,6 +1590,20 @@ fn collect_joins_term(result: Vec[anf::JoinBind], value: anf::Term) -> unit {
                 None => (),
             }
         },
+        Select { arms, default, ret_ty: _ } => {
+            for arm in arms {
+                collect_joins_block(
+                    result,
+                    match arm {
+                        Receive { body, .. } | Send { body, .. } => body,
+                    },
+                )
+            }
+            match default {
+                Some(body) => collect_joins_block(result, body),
+                None => (),
+            }
+        },
         Return(_) | Jump { target: _, args: _, ret_ty: _ } | Unreachable { ty: _ } => (),
     }
 }
@@ -1667,6 +1683,40 @@ fn match_block_target(arms: Vec[anf::Arm], default: Option[anf::Block]) -> Optio
     Option::Some(expected)
 }
 
+fn select_block_target(arms: Vec[anf::SelectArm], default: Option[anf::Block]) -> Option[string] {
+    if arms.is_empty() {
+        return match default {
+            Some(body) => block_target(body),
+            None => Option::None,
+        }
+    } else {};
+    let first = match arms[0] {
+        Receive { body, .. } | Send { body, .. } => body,
+    };
+    let expected = block_target(first)?;
+    for index in 1..arms.len() {
+        let body = match arms[index] {
+            Receive { body, .. } | Send { body, .. } => body,
+        };
+        match block_target(body) {
+            Some(value) => if value == expected {} else {
+                return Option::None
+            },
+            None => return Option::None,
+        }
+    }
+    match default {
+        Some(body) => match block_target(body) {
+            Some(value) => if value == expected {} else {
+                return Option::None
+            },
+            None => return Option::None,
+        },
+        None => (),
+    };
+    Option::Some(expected)
+}
+
 fn term_target(value: anf::Term) -> Option[string] {
     match value {
         Jump { target, args: _, ret_ty: _ } => Option::Some(target),
@@ -1674,6 +1724,7 @@ fn term_target(value: anf::Term) -> Option[string] {
             same_target(block_target(then_), block_target(else_))
         },
         Match { scrutinee: _, arms, default, ret_ty: _ } => match_block_target(arms, default),
+        Select { arms, default, ret_ty: _ } => select_block_target(arms, default),
         Return(_) | Unreachable { ty: _ } => Option::None,
     }
 }
@@ -1919,6 +1970,133 @@ fn non_exhaustive_block() -> Block {
     Block { stmts }
 }
 
+fn select_channel_elem(value: anf::Imm) -> repr::Type {
+    match repr::resolve_type(anf::imm_type(value)) {
+        Channel { elem } => elem,
+        _ => repr::Type::Unit,
+    }
+}
+
+fn select_option_expr(env: LowerEnv, ty: repr::Type, value: Option[anf::Imm]) -> Expr {
+    let owner = match repr::resolve_type(ty) {
+        Named { name } => name,
+        _ => env.builtin.option.name,
+    };
+    let args: Vec[anf::Imm] = Vec::from_array([]);
+    let variant = match value {
+        Some(value) => {
+            args.push(value);
+            env.builtin.option.some
+        },
+        None => env.builtin.option.none,
+    };
+    compile_constructor(
+        env,
+        repr::Constructor {
+            name: owner + "::" + variant.name,
+            fields: Vec::from_array([]),
+            is_struct: false,
+            tag: Option::Some(variant.tag),
+        },
+        args,
+        ty,
+    )
+}
+
+fn compile_select(
+    env: LowerEnv,
+    arms: Vec[anf::SelectArm],
+    default: Option[anf::Block],
+    compile_body: (anf::Block) -> Block,
+) -> Vec[Stmt] {
+    let result: Vec[Stmt] = Vec::from_array([]);
+    let cases: Vec[SelectCase] = Vec::with_capacity(arms.len());
+    for arm in arms {
+        match arm {
+            Receive { channel, binding, binding_ty, body } => {
+                let elem_ty = select_channel_elem(channel);
+                let value_name = binding + "#select_value";
+                let open_name = binding + "#select_open";
+                result.push(
+                    Stmt::Var {
+                        name: go_local_ident(value_name),
+                        ty: lower_type(elem_ty),
+                        value: Option::None,
+                    },
+                );
+                result.push(
+                    Stmt::Var {
+                        name: go_local_ident(open_name),
+                        ty: Type::Bool,
+                        value: Option::None,
+                    },
+                );
+                result.push(
+                    Stmt::Var {
+                        name: go_local_ident(binding),
+                        ty: lower_type(binding_ty),
+                        value: Option::Some(select_option_expr(env, binding_ty, Option::None)),
+                    },
+                );
+                let case_stmts: Vec[Stmt] = Vec::from_array([]);
+                case_stmts.push(
+                    Stmt::If {
+                        cond: Expr::Var { name: go_local_ident(open_name) },
+                        then_: Block {
+                            stmts: Vec::from_array(
+                                [
+                                    Stmt::Assign {
+                                        name: go_local_ident(binding),
+                                        value: select_option_expr(
+                                            env,
+                                            binding_ty,
+                                            Option::Some(
+                                                anf::Imm::Var { name: value_name, ty: elem_ty },
+                                            ),
+                                        ),
+                                    },
+                                ],
+                            ),
+                        },
+                        else_: Option::None,
+                    },
+                );
+                append_stmts(case_stmts, compile_body(body).stmts);
+                cases.push(
+                    SelectCase {
+                        operation: SelectOperation::Receive {
+                            names: Vec::from_array(
+                                [go_local_ident(value_name), go_local_ident(open_name)],
+                            ),
+                            channel: compile_imm(env, channel),
+                        },
+                        body: Block { stmts: case_stmts },
+                    },
+                )
+            },
+            Send { channel, value, body } => cases.push(
+                SelectCase {
+                    operation: SelectOperation::Send {
+                        channel: compile_imm(env, channel),
+                        value: compile_imm_expected(env, value, select_channel_elem(channel)),
+                    },
+                    body: compile_body(body),
+                },
+            ),
+        }
+    }
+    result.push(
+        Stmt::Select {
+            cases,
+            default: match default {
+                Some(body) => Option::Some(compile_body(body)),
+                None => Option::None,
+            },
+        },
+    );
+    result
+}
+
 fn compile_term_leaf(env: LowerEnv, value: anf::Term) -> Vec[Stmt] {
     let result: Vec[Stmt] = Vec::from_array([]);
     match value {
@@ -1944,6 +2122,10 @@ fn compile_term_leaf(env: LowerEnv, value: anf::Term) -> Vec[Stmt] {
         Match { scrutinee: scrut, arms, default, ret_ty: _ } => {
             append_stmts(result, compile_match_leaf(env, scrut, arms, default))
         },
+        Select { arms, default, ret_ty: _ } => append_stmts(
+            result,
+            compile_select(env, arms, default, |body| compile_block(env, body)),
+        ),
         Unreachable { ty: _ } => result.push(Stmt::Unreachable),
     };
     result
@@ -2021,6 +2203,15 @@ fn compile_term_to_join(env: LowerEnv, value: anf::Term, target: string, join: a
                 )
             }
         },
+        Select { arms, default, ret_ty: _ } => append_stmts(
+            result,
+            compile_select(
+                env,
+                arms,
+                default,
+                |body| compile_branch_to_join(env, body, target, join),
+            ),
+        ),
         _ => append_stmts(result, compile_term_leaf(env, value)),
     };
     result
@@ -2127,6 +2318,24 @@ fn term_reaches_target(
                     None => false,
                 }
         },
+        Select { arms, default, ret_ty: _ } => {
+            for arm in arms {
+                if block_reaches_target(
+                    match arm {
+                        Receive { body, .. } | Send { body, .. } => body,
+                    },
+                    target,
+                    joins,
+                    visited,
+                ) {
+                    return true
+                } else {}
+            }
+            match default {
+                Some(body) => block_reaches_target(body, target, joins, visited),
+                None => false,
+            }
+        },
         Return(_) | Unreachable { ty: _ } => false,
     }
 }
@@ -2155,6 +2364,45 @@ fn match_tail_target_through_joins(
     let expected = block_tail_target_through_joins(arms[0].body, joins, visited)?;
     for index in 1..arms.len() {
         match block_tail_target_through_joins(arms[index].body, joins, visited) {
+            Some(value) => if value == expected {} else {
+                return Option::None
+            },
+            None => return Option::None,
+        }
+    }
+    match default {
+        Some(body) => match block_tail_target_through_joins(body, joins, visited) {
+            Some(value) => if value == expected {} else {
+                return Option::None
+            },
+            None => return Option::None,
+        },
+        None => (),
+    };
+    Option::Some(expected)
+}
+
+fn select_tail_target_through_joins(
+    arms: Vec[anf::SelectArm],
+    default: Option[anf::Block],
+    joins: Vec[anf::JoinBind],
+    visited: Vec[string],
+) -> Option[string] {
+    if arms.is_empty() {
+        return match default {
+            Some(body) => block_tail_target_through_joins(body, joins, visited),
+            None => Option::None,
+        }
+    } else {};
+    let first = match arms[0] {
+        Receive { body, .. } | Send { body, .. } => body,
+    };
+    let expected = block_tail_target_through_joins(first, joins, visited)?;
+    for index in 1..arms.len() {
+        let body = match arms[index] {
+            Receive { body, .. } | Send { body, .. } => body,
+        };
+        match block_tail_target_through_joins(body, joins, visited) {
             Some(value) => if value == expected {} else {
                 return Option::None
             },
@@ -2204,6 +2452,9 @@ fn term_tail_target_through_joins(value: anf::Term, joins: Vec[anf::JoinBind], v
         },
         Match { scrutinee: _, arms, default, ret_ty: _ } => {
             match_tail_target_through_joins(arms, default, joins, visited)
+        },
+        Select { arms, default, ret_ty: _ } => {
+            select_tail_target_through_joins(arms, default, joins, visited)
         },
         Return(_) | Unreachable { ty: _ } => Option::None,
     }
@@ -2262,6 +2513,24 @@ fn term_all_paths_reach_or_terminate(
                 Some(body) => {
                     block_all_paths_reach_or_terminate(body, target, joins, visited)
                 },
+                None => true,
+            }
+        },
+        Select { arms, default, ret_ty: _ } => {
+            for arm in arms {
+                if !block_all_paths_reach_or_terminate(
+                    match arm {
+                        Receive { body, .. } | Send { body, .. } => body,
+                    },
+                    target,
+                    joins,
+                    visited,
+                ) {
+                    return false
+                } else {}
+            }
+            match default {
+                Some(body) => block_all_paths_reach_or_terminate(body, target, joins, visited),
                 None => true,
             }
         },
@@ -2584,6 +2853,17 @@ fn compile_loop_term_leaf(
                 )
             }
         },
+        Select { arms, default, ret_ty: _ } => {
+            append_stmts(
+                result,
+                compile_select(
+                    env,
+                    arms,
+                    default,
+                    |body| compile_loop_block(env, body, loop_name, exit_name, label),
+                ),
+            )
+        },
         _ => append_stmts(result, compile_term_leaf(env, value)),
     };
     result
@@ -2729,6 +3009,23 @@ fn compile_loop_term_to_join(
                 )
             }
         },
+        Select { arms, default, ret_ty: _ } => append_stmts(
+            result,
+            compile_select(
+                env,
+                arms,
+                default,
+                |body| compile_loop_branch_to_join(
+                    env,
+                    body,
+                    target,
+                    join,
+                    loop_name,
+                    exit_name,
+                    label,
+                ),
+            ),
+        ),
         _ => append_stmts(result, compile_loop_term_leaf(env, value, loop_name, exit_name, label)),
     };
     result
@@ -3237,6 +3534,31 @@ fn collect_runtime_block(
                 None => (),
             }
         },
+        Select { arms, default, ret_ty: _ } => {
+            for arm in arms {
+                match arm {
+                    Receive { channel, binding: _, binding_ty: _, body } => {
+                        collect_runtime_imm(result, missing_types, intrinsics, go_foreign, channel);
+                        collect_runtime_block(result, missing_types, intrinsics, go_foreign, body)
+                    },
+                    Send { channel, value, body } => {
+                        collect_runtime_imm(result, missing_types, intrinsics, go_foreign, channel);
+                        collect_runtime_imm(result, missing_types, intrinsics, go_foreign, value);
+                        collect_runtime_block(result, missing_types, intrinsics, go_foreign, body)
+                    },
+                }
+            }
+            match default {
+                Some(body) => collect_runtime_block(
+                    result,
+                    missing_types,
+                    intrinsics,
+                    go_foreign,
+                    body,
+                ),
+                None => (),
+            }
+        },
         Unreachable { ty: _ } => (),
     }
 }
@@ -3333,6 +3655,27 @@ fn collect_block_types(result: CollectedTypes, value: anf::Block) -> unit {
             for arm in arms {
                 collect_imm_type(result, arm.lhs);
                 collect_block_types(result, arm.body)
+            }
+            match default {
+                Some(body) => collect_block_types(result, body),
+                None => (),
+            }
+        },
+        Select { arms, default, ret_ty: ty } => {
+            collect_type(result, ty);
+            for arm in arms {
+                match arm {
+                    Receive { channel, binding: _, binding_ty, body } => {
+                        collect_imm_type(result, channel);
+                        collect_type(result, binding_ty);
+                        collect_block_types(result, body)
+                    },
+                    Send { channel, value, body } => {
+                        collect_imm_type(result, channel);
+                        collect_imm_type(result, value);
+                        collect_block_types(result, body)
+                    },
+                }
             }
             match default {
                 Some(body) => collect_block_types(result, body),
@@ -3698,6 +4041,28 @@ fn inspect_pointer_calls(
                     valid.set(false)
                 } else {};
                 inspect_pointer_calls(arm.body, target, parameter, valid, calls)
+            }
+            match default {
+                Some(body) => inspect_pointer_calls(body, target, parameter, valid, calls),
+                None => (),
+            }
+        },
+        Select { arms, default, ret_ty: _ } => {
+            for arm in arms {
+                match arm {
+                    Receive { channel, binding: _, binding_ty: _, body } => {
+                        if imm_uses_function(channel, target) {
+                            valid.set(false)
+                        } else {};
+                        inspect_pointer_calls(body, target, parameter, valid, calls)
+                    },
+                    Send { channel, value, body } => {
+                        if imm_uses_function(channel, target) || imm_uses_function(value, target) {
+                            valid.set(false)
+                        } else {};
+                        inspect_pointer_calls(body, target, parameter, valid, calls)
+                    },
+                }
             }
             match default {
                 Some(body) => inspect_pointer_calls(body, target, parameter, valid, calls),
@@ -4097,6 +4462,19 @@ fn validate_anf_term(value: anf::Term) -> Result[unit, string] {
         Match { scrutinee: _, arms, default, ret_ty: _ } => {
             for arm in arms {
                 validate_anf_block(arm.body)?
+            }
+            match default {
+                Some(body) => validate_anf_block(body),
+                None => Result::Ok(()),
+            }
+        },
+        Select { arms, default, ret_ty: _ } => {
+            for arm in arms {
+                validate_anf_block(
+                    match arm {
+                        Receive { body, .. } | Send { body, .. } => body,
+                    },
+                )?
             }
             match default {
                 Some(body) => validate_anf_block(body),

@@ -51,6 +51,20 @@ pub struct Block {
     pub tail: Option[Expr],
 }
 
+pub enum SelectArm {
+    Receive {
+        channel: Expr,
+        binding: string,
+        binding_ty: repr::Type,
+        body: Expr,
+    },
+    Send {
+        channel: Expr,
+        value: Expr,
+        body: Expr,
+    },
+}
+
 pub enum Expr {
     Var {
         name: string,
@@ -84,6 +98,11 @@ pub enum Expr {
     Match {
         expr: Expr,
         arms: Vec[Arm],
+        default: Option[Expr],
+        ty: repr::Type,
+    },
+    Select {
+        arms: Vec[SelectArm],
         default: Option[Expr],
         ty: repr::Type,
     },
@@ -186,18 +205,18 @@ pub fn expr_type(value: Expr) -> repr::Type {
         Var { ty, .. } | Callable { ty, .. } | Prim { ty, .. } | Constr { ty, .. } | Tuple {
             ty,
             ..,
-        } | Array { ty, .. } | Block { ty, .. } | Match { ty, .. } | If { ty, .. } | While {
+        } | Array { ty, .. } | Block { ty, .. } | Match { ty, .. } | Select { ty, .. } | If {
             ty,
             ..,
-        } | Loop { ty, .. } | Break { ty, .. } | Continue { ty, .. } | Return { ty, .. } | Go {
+        } | While { ty, .. } | Loop { ty, .. } | Break { ty, .. } | Continue { ty, .. } | Return {
             ty,
             ..,
-        } | ConstrGet { ty, .. } | Unary { ty, .. } | Cast { ty, .. } | Binary { ty, .. } | Assign {
+        } | Go { ty, .. } | ConstrGet { ty, .. } | Unary { ty, .. } | Cast { ty, .. } | Binary {
             ty,
             ..,
-        } | Call { ty, .. } | ToDyn { ty, .. } | DynCall { ty, .. } | Proj { ty, .. } | PackClosure {
+        } | Assign { ty, .. } | Call { ty, .. } | ToDyn { ty, .. } | DynCall { ty, .. } | Proj {
             ty,
             ..,
-        } => ty,
+        } | PackClosure { ty, .. } => ty,
     }
 }

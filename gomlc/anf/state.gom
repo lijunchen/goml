@@ -98,10 +98,10 @@ fn expr_is_control(value: lift::Expr) -> bool {
             arms: _,
             default: _,
             ty: _,
-        } | While { cond: _, body: _, ty: _ } | Loop { body: _, ty: _ } | Break { ty: _, .. } | Continue {
+        } | Select { arms: _, default: _, ty: _ } | While { cond: _, body: _, ty: _ } | Loop {
+            body: _,
             ty: _,
-            ..,
-        } | Return { expr: _, ty: _ } => true,
+        } | Break { ty: _, .. } | Continue { ty: _, .. } | Return { expr: _, ty: _ } => true,
         _ => false,
     }
 }
@@ -147,6 +147,21 @@ fn expr_always_exits(value: lift::Expr) -> bool {
                 None => (),
             };
             true
+        },
+        Select { arms, default, ty: _ } => {
+            for arm in arms {
+                let body = match arm {
+                    Receive { channel: _, binding: _, binding_ty: _, body } => body,
+                    Send { channel: _, value: _, body } => body,
+                };
+                if expr_always_exits(body) {} else {
+                    return false
+                }
+            }
+            match default {
+                Some(value) => expr_always_exits(value),
+                None => true,
+            }
         },
         While { cond, body: _, ty: _ } => expr_always_exits(cond),
         Loop { body: _, ty } => match repr::resolve_type(ty) {

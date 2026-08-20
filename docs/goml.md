@@ -11,9 +11,9 @@ GoML is a statically typed language with garbage collection. Its syntax is close
 3. Parameters of top-level functions must have types; the return type is fixed to `unit` when omitted and is not inferred from the function body.
 4. Generics use square brackets: `Vec[int32]`, `fn id[T](x: T) -> T`, not `<...>`.
 5. Generic calls usually rely on type inference; when explicit type arguments are required, write `id::[int32](1)`, not `id[int32](1)` or Rust's `id::<int32>(1)`.
-6. `if` is an expression; when `else` is omitted, the then branch must return `unit`.`match` must be exhaustive.
+6. `if`, `match`, and `select` are expressions. `if` without `else` must return `unit`; `match` must be exhaustive.
 7. The last semicolon-free expression of a block is the block value; adding a semicolon discards the value.
-8. `let` and assignment statements must end with a semicolon. Mutable bindings may be introduced with `let mut pattern` or precisely inside a pattern with `mut name`; the semicolon can be omitted for `if`, `match`, `while`, `loop` and `for` as statements.
+8. `let` and assignment statements must end with a semicolon. Mutable bindings may be introduced with `let mut pattern` or precisely inside a pattern with `mut name`; the semicolon can be omitted for `if`, `match`, `select`, `while`, `loop` and `for` as statements.
 9. Enumeration construction uses full names such as `Option::Some(value)`.In patterns, the enum qualifier may be omitted when the matched type determines it, such as `Some(value)` and `None`.
 10. For cross-package calls, write `alias::item`.Top-level items, structure fields, and native methods must all be marked with `pub` as required.
 11. Before using trait method syntax across packages, import the package and trait with `use alias::Trait;` or a braced import; when in doubt, use UFCS: `Trait::method(value)`.
@@ -827,7 +827,7 @@ GoML supports:
 - Integer conversion method `value.to_uint32()`
 - Explicit trait-object conversion `value as dyn Trait`
 - Half-open range expression `start..end`
-- `if`、`if let`、`match`、`while`、`while let`、`loop`、`for`
+- `if`、`if let`、`match`、`select`、`while`、`while let`、`loop`、`for`
 - closure
 - `return`, `break`, `continue`, `go` and `?`
 
@@ -1025,6 +1025,29 @@ match value {
     Option::None => 0,
 }
 ```
+
+### `select`
+
+`select` waits for one channel operation that can proceed and evaluates that arm as the value of the expression:
+
+```goml
+let outcome = select {
+    recv(messages) as message => match message {
+        Some(value) => "received " + value,
+        None => "messages closed",
+    },
+    send(events, "ready") => "sent",
+    default => "not ready",
+};
+```
+
+A receive arm has the form `recv(channel) as binding => body`. The channel must have type `Channel[T]`, and the binding has type `Option[T]`; a closed and drained channel selects immediately and supplies `None`. Write `_` when the received value and close state are not needed. A send arm has the form `send(channel, value) => body`, and the value must match the channel element type.
+
+Every `select` contains at least one `recv` or `send` arm. It may have one `default` arm, which must be last. Without `default`, execution blocks until an operation can proceed. With `default`, that arm runs immediately when no communication arm is ready. When several operations are ready, the selected arm is unspecified.
+
+Channel and send-value operands are evaluated exactly once from top to bottom before selection. Arm bodies are evaluated only after their operation is chosen, receive bindings are visible only in their own bodies, and all bodies must produce compatible types. A body may be a single expression or a block. Arms are comma-separated, with an optional final comma. `select`, `recv`, `send`, and `default` are contextual spellings rather than globally reserved identifiers.
+
+`select` is a runtime operation and is unavailable in `comptime` evaluation. There are currently no select-arm guards, timeout syntax, or direct cancellation syntax; these can be expressed with additional channels and ordinary arms.
 
 ### `while`
 
@@ -2345,6 +2368,8 @@ Commonly used methods:
 
 Capacity `0` creates an unbuffered channel.Sending to an unbuffered channel should generally be concurrently received by another `go` closure, and vice versa.
 
+Use `select` when a goroutine must wait on several channels, choose between sending and receiving, observe closure through `Option[T]`, or perform a non-blocking operation with `default`. The channel operands and send values are prepared once before selection.
+
 ### Iterator
 
 The built-in protocols are:
@@ -2785,7 +2810,7 @@ expression    = literal | raw_string | byte_string | raw_byte_string
               | call | field | index | unary | binary | cast | range_expression
               | try_expression
               | comptime_expression
-              | if_expression | match_expression | while_expression | loop_expression | for_expression
+              | if_expression | match_expression | select_expression | while_expression | loop_expression | for_expression
               | scope_expression | spawn_expression
               | "return" expression?
               | "break" loop_label? expression?
@@ -2800,13 +2825,20 @@ struct_literal = path "{" (struct_literal_field ("," struct_literal_field)*
                  ("," ".." expression)? ","? | ".." expression ","?)? "}"
 struct_literal_field = lower_ident (":" expression)?
 
-control_expression = if_expression | match_expression | while_expression | loop_expression | for_expression
+control_expression = if_expression | match_expression | select_expression
+                   | while_expression | loop_expression | for_expression
 if_expression = "if" expression block ("else" (block | if_expression))?
               | "if" "let" pattern "=" expression block
                 ("else" (block | if_expression))?
 match_expression = "match" expression
                    "{" (match_arm ",")* match_arm? "}"
 match_arm     = pattern ("if" expression)? "=>" (expression | block)
+select_expression = "select" "{" select_arm ("," select_arm)* ","? "}"
+select_arm    = "recv" "(" expression ")" "as" (lower_ident | "_")
+                "=>" (expression | block)
+              | "send" "(" expression "," expression ")"
+                "=>" (expression | block)
+              | "default" "=>" (expression | block)
 while_expression = loop_label_decl? "while" expression block
               | loop_label_decl? "while" "let" pattern "=" expression block
 loop_expression = loop_label_decl? "loop" block

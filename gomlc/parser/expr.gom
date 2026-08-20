@@ -301,6 +301,90 @@ fn match_expression(parser: Parser) -> MarkerClosed {
     parser.close(marker, cst::NodeKind::EXPR_MATCH)
 }
 
+fn select_arm_body(parser: Parser) -> unit {
+    parser.expect(lexer::TokenKind::FatArrow);
+    if parser.at(lexer::TokenKind::LBrace) {
+        block(parser)
+    } else {
+        let _ = expect_expr_with_message(parser, "expected an expression in select arm");
+    }
+}
+
+fn select_recv_arm(parser: Parser) -> unit {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::Ident);
+    parser.expect(lexer::TokenKind::LParen);
+    expect_expr_with_message(parser, "expected a channel expression in recv arm");
+    parser.expect(lexer::TokenKind::RParen);
+    parser.expect(lexer::TokenKind::AsKeyword);
+    let binding = parser.open();
+    if parser.eat(lexer::TokenKind::WildcardKeyword) {} else {
+        parser.expect_lower_ident("recv binding")
+    };
+    let _ = parser.close(binding, cst::NodeKind::SELECT_RECV_BINDING);
+    select_arm_body(parser);
+    let _ = parser.close(marker, cst::NodeKind::SELECT_RECV_ARM);
+}
+
+fn select_send_arm(parser: Parser) -> unit {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::Ident);
+    parser.expect(lexer::TokenKind::LParen);
+    expect_expr_with_message(parser, "expected a channel expression in send arm");
+    parser.expect(lexer::TokenKind::Comma);
+    expect_expr_with_message(parser, "expected a value expression in send arm");
+    parser.expect(lexer::TokenKind::RParen);
+    select_arm_body(parser);
+    let _ = parser.close(marker, cst::NodeKind::SELECT_SEND_ARM);
+}
+
+fn select_default_arm(parser: Parser) -> unit {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::Ident);
+    select_arm_body(parser);
+    let _ = parser.close(marker, cst::NodeKind::SELECT_DEFAULT_ARM);
+}
+
+fn select_arm_list(parser: Parser) -> unit {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::LBrace);
+    let mut communication_arms = 0;
+    let mut has_default = false;
+    while !parser.eof() && !parser.at(lexer::TokenKind::RBrace) && !is_list_boundary(parser.peek()) {
+        if has_default {
+            parser.error("default must be the last select arm")
+        } else {};
+        if parser.at_contextual("recv") {
+            communication_arms += 1;
+            select_recv_arm(parser)
+        } else if parser.at_contextual("send") {
+            communication_arms += 1;
+            select_send_arm(parser)
+        } else if parser.at_contextual("default") {
+            has_default = true;
+            select_default_arm(parser)
+        } else {
+            parser.advance_with_error("expected `recv`, `send`, or `default` select arm")
+        };
+        if parser.eat(lexer::TokenKind::Comma) {} else if parser.at(lexer::TokenKind::RBrace)
+            || is_list_boundary(parser.peek()) {} else {
+            parser.error("expected `,` between select arms")
+        }
+    }
+    if communication_arms == 0 {
+        parser.error("select requires at least one recv or send arm")
+    } else {};
+    parser.expect(lexer::TokenKind::RBrace);
+    let _ = parser.close(marker, cst::NodeKind::SELECT_ARM_LIST);
+}
+
+fn select_expression(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::Ident);
+    select_arm_list(parser);
+    parser.close(marker, cst::NodeKind::EXPR_SELECT)
+}
+
 fn while_expression(parser: Parser) -> MarkerClosed {
     let marker = parser.open();
     while_expression_with_marker(parser, marker)
@@ -530,8 +614,10 @@ fn atom(parser: Parser) -> Option[MarkerClosed] {
         ByteCharLit => simple_expression(parser, cst::NodeKind::EXPR_BYTE),
         ByteStr | RawByteStr => simple_expression(parser, cst::NodeKind::EXPR_BYTE_STRING),
         TrueKeyword | FalseKeyword => simple_expression(parser, cst::NodeKind::EXPR_BOOL),
-        Ident => if parser.at_contextual("scope")
+        Ident => if parser.at_contextual("select")
             && token_is(parser.nth(1), lexer::TokenKind::LBrace) {
+            select_expression(parser)
+        } else if parser.at_contextual("scope") && token_is(parser.nth(1), lexer::TokenKind::LBrace) {
             scope_expression(parser)
         } else if looks_like_comptime_expression(parser) {
             comptime_expression(parser)

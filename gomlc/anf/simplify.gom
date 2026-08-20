@@ -267,6 +267,20 @@ fn collect_assigned_term(result: HashMap[string, unit], value: Term) -> unit {
                 None => (),
             }
         },
+        Select { arms, default, .. } => {
+            for arm in arms {
+                collect_assigned_block(
+                    result,
+                    match arm {
+                        Receive { body, .. } | Send { body, .. } => body,
+                    },
+                )
+            }
+            match default {
+                Some(body) => collect_assigned_block(result, body),
+                None => (),
+            }
+        },
         Return(_) | Jump { .. } | Unreachable { .. } => (),
     }
 }
@@ -494,6 +508,47 @@ fn simplify_known_term(value: Term, known: Vec[KnownBinding], assigned: HashMap[
                 },
             }
         },
+        Select { arms, default, ret_ty } => {
+            let lowered: Vec[SelectArm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                lowered.push(
+                    match arm {
+                        Receive { channel, binding, binding_ty, body } => SelectArm::Receive {
+                            channel: resolve_known_imm(channel, known),
+                            binding,
+                            binding_ty,
+                            body: simplify_known_block_with(
+                                body,
+                                copy_known_bindings(known),
+                                assigned,
+                            ),
+                        },
+                        Send { channel, value, body } => SelectArm::Send {
+                            channel: resolve_known_imm(channel, known),
+                            value: resolve_known_imm(value, known),
+                            body: simplify_known_block_with(
+                                body,
+                                copy_known_bindings(known),
+                                assigned,
+                            ),
+                        },
+                    },
+                )
+            }
+            Block {
+                binds: Vec::from_array([]),
+                term: Term::Select {
+                    arms: lowered,
+                    default: match default {
+                        Some(body) => Option::Some(
+                            simplify_known_block_with(body, copy_known_bindings(known), assigned),
+                        ),
+                        None => Option::None,
+                    },
+                    ret_ty,
+                },
+            }
+        },
         Unreachable { ty } => Block { binds: Vec::from_array([]), term: Term::Unreachable { ty } },
     }
 }
@@ -584,6 +639,22 @@ fn count_join_uses_term(value: Term, target: string) -> int {
                 None => result,
             }
         },
+        Select { arms, default, .. } => {
+            let mut result = 0;
+            for arm in arms {
+                result = result
+                    + count_join_uses_block(
+                        match arm {
+                            Receive { body, .. } | Send { body, .. } => body,
+                        },
+                        target,
+                    );
+            }
+            match default {
+                Some(body) => result + count_join_uses_block(body, target),
+                None => result,
+            }
+        },
         Return(_) | Unreachable { .. } => 0,
     }
 }
@@ -659,6 +730,22 @@ fn join_rewrite_safe_term(value: Term, join: JoinBind) -> bool {
                 None => true,
             }
         },
+        Select { arms, default, .. } => {
+            for arm in arms {
+                if !join_rewrite_safe_block(
+                    match arm {
+                        Receive { body, .. } | Send { body, .. } => body,
+                    },
+                    join,
+                ) {
+                    return false
+                } else {}
+            }
+            match default {
+                Some(body) => join_rewrite_safe_block(body, join),
+                None => true,
+            }
+        },
         Return(_) | Unreachable { .. } => true,
     }
 }
@@ -716,6 +803,34 @@ fn rewrite_simple_join_term(value: Term, join: JoinBind) -> Term {
                 ret_ty,
             }
         },
+        Select { arms, default, ret_ty } => {
+            let lowered: Vec[SelectArm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                lowered.push(
+                    match arm {
+                        Receive { channel, binding, binding_ty, body } => SelectArm::Receive {
+                            channel,
+                            binding,
+                            binding_ty,
+                            body: rewrite_simple_join_block(body, join),
+                        },
+                        Send { channel, value, body } => SelectArm::Send {
+                            channel,
+                            value,
+                            body: rewrite_simple_join_block(body, join),
+                        },
+                    },
+                )
+            }
+            Term::Select {
+                arms: lowered,
+                default: match default {
+                    Some(body) => Option::Some(rewrite_simple_join_block(body, join)),
+                    None => Option::None,
+                },
+                ret_ty,
+            }
+        },
         Return(value) => Term::Return(value),
         Unreachable { ty } => Term::Unreachable { ty },
     }
@@ -765,7 +880,7 @@ fn join_is_simple(value: JoinBind) -> bool {
         } else {
             match value.body.term {
                 Return(_) | Jump { .. } => true,
-                If { .. } | Match { .. } | Unreachable { .. } => false,
+                If { .. } | Match { .. } | Select { .. } | Unreachable { .. } => false,
             }
         },
     }
@@ -838,6 +953,34 @@ fn simplify_join_term(value: Term) -> Term {
             }
             Term::Match {
                 scrutinee,
+                arms: lowered,
+                default: match default {
+                    Some(body) => Option::Some(simplify_join_block(body)),
+                    None => Option::None,
+                },
+                ret_ty,
+            }
+        },
+        Select { arms, default, ret_ty } => {
+            let lowered: Vec[SelectArm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                lowered.push(
+                    match arm {
+                        Receive { channel, binding, binding_ty, body } => SelectArm::Receive {
+                            channel,
+                            binding,
+                            binding_ty,
+                            body: simplify_join_block(body),
+                        },
+                        Send { channel, value, body } => SelectArm::Send {
+                            channel,
+                            value,
+                            body: simplify_join_block(body),
+                        },
+                    },
+                )
+            }
+            Term::Select {
                 arms: lowered,
                 default: match default {
                     Some(body) => Option::Some(simplify_join_block(body)),

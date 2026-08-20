@@ -193,6 +193,22 @@ fn artifact_prepare_core_expr(value: core::Expr, definitions: Vec[core::StructDe
             }
             artifact_prepare_optional_core_expr(default, definitions)
         },
+        Select { arms, default, ty: _ } => {
+            for arm in arms {
+                match arm {
+                    Receive { channel, binding: _, binding_ty: _, body } => {
+                        artifact_prepare_core_expr(channel, definitions);
+                        artifact_prepare_core_expr(body, definitions)
+                    },
+                    Send { channel, value, body } => {
+                        artifact_prepare_core_expr(channel, definitions);
+                        artifact_prepare_core_expr(value, definitions);
+                        artifact_prepare_core_expr(body, definitions)
+                    },
+                }
+            }
+            artifact_prepare_optional_core_expr(default, definitions)
+        },
         If { cond, then_branch, else_branch, ty: _ } => {
             artifact_prepare_core_expr(cond, definitions);
             artifact_prepare_core_expr(then_branch, definitions);

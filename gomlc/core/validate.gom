@@ -59,6 +59,22 @@ fn validate_expr(value: Expr, context: string) -> Result[unit, string] {
             }
             validate_optional_expr(default, context + " match default")
         },
+        Select { arms, default, ty: _ } => {
+            for arm in arms {
+                match arm {
+                    Receive { channel, binding: _, binding_ty: _, body } => {
+                        validate_expr(channel, context + " select receive channel")?;
+                        validate_expr(body, context + " select receive body")?
+                    },
+                    Send { channel, value, body } => {
+                        validate_expr(channel, context + " select send channel")?;
+                        validate_expr(value, context + " select send value")?;
+                        validate_expr(body, context + " select send body")?
+                    },
+                }
+            }
+            validate_optional_expr(default, context + " select default")
+        },
         If { cond, then_branch, else_branch, ty: _ } => {
             validate_expr(cond, context + " if condition")?;
             validate_expr(then_branch, context + " if branch")?;

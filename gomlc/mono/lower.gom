@@ -828,6 +828,31 @@ fn lower_expr(ctx: TypeCtx, value: core::Expr) -> Expr {
             default: lower_optional_expr(ctx, default),
             ty: collapse_type(ctx, ty),
         },
+        Select { arms, default, ty } => {
+            let lowered: Vec[SelectArm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                lowered.push(
+                    match arm {
+                        Receive { channel, binding, binding_ty, body } => SelectArm::Receive {
+                            channel: lower_expr(ctx, channel),
+                            binding,
+                            binding_ty: collapse_type(ctx, binding_ty),
+                            body: lower_expr(ctx, body),
+                        },
+                        Send { channel, value, body } => SelectArm::Send {
+                            channel: lower_expr(ctx, channel),
+                            value: lower_expr(ctx, value),
+                            body: lower_expr(ctx, body),
+                        },
+                    },
+                )
+            }
+            Expr::Select {
+                arms: lowered,
+                default: lower_optional_expr(ctx, default),
+                ty: collapse_type(ctx, ty),
+            }
+        },
         If { cond, then_branch, else_branch, ty } => Expr::If {
             cond: lower_expr(ctx, cond),
             then_branch: lower_expr(ctx, then_branch),
@@ -1032,6 +1057,23 @@ fn collect_expr_type_names(ctx: TypeCtx, value: core::Expr) -> unit {
             for arm in arms {
                 collect_expr_type_names(ctx, arm.lhs);
                 collect_expr_type_names(ctx, arm.body)
+            }
+            collect_optional_expr_type_names(ctx, default)
+        },
+        Select { arms, default, ty: _ } => {
+            for arm in arms {
+                match arm {
+                    Receive { channel, binding: _, binding_ty, body } => {
+                        collect_type_names(ctx, binding_ty);
+                        collect_expr_type_names(ctx, channel);
+                        collect_expr_type_names(ctx, body)
+                    },
+                    Send { channel, value, body } => {
+                        collect_expr_type_names(ctx, channel);
+                        collect_expr_type_names(ctx, value);
+                        collect_expr_type_names(ctx, body)
+                    },
+                }
             }
             collect_optional_expr_type_names(ctx, default)
         },

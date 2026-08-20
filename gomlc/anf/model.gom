@@ -171,6 +171,20 @@ pub struct Arm {
     pub body: Block,
 }
 
+pub enum SelectArm {
+    Receive {
+        channel: Imm,
+        binding: string,
+        binding_ty: repr::Type,
+        body: Block,
+    },
+    Send {
+        channel: Imm,
+        value: Imm,
+        body: Block,
+    },
+}
+
 pub enum Term {
     Return(Imm),
     Jump {
@@ -187,6 +201,11 @@ pub enum Term {
     Match {
         scrutinee: Imm,
         arms: Vec[Arm],
+        default: Option[Block],
+        ret_ty: repr::Type,
+    },
+    Select {
+        arms: Vec[SelectArm],
         default: Option[Block],
         ret_ty: repr::Type,
     },
@@ -217,7 +236,7 @@ pub fn value_type(value: Value) -> repr::Type {
 pub fn term_type(value: Term) -> repr::Type {
     match value {
         Return(value) => imm_type(value),
-        Jump { ret_ty, .. } | If { ret_ty, .. } | Match { ret_ty, .. } => ret_ty,
+        Jump { ret_ty, .. } | If { ret_ty, .. } | Match { ret_ty, .. } | Select { ret_ty, .. } => ret_ty,
         Unreachable { ty } => ty,
     }
 }

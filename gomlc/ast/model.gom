@@ -334,6 +334,25 @@ pub enum InterpolatedStringPart {
     Expr(Expr),
 }
 
+pub enum SelectArm {
+    Receive {
+        channel: Expr,
+        binding: string,
+        body: Expr,
+        span: Span,
+    },
+    Send {
+        channel: Expr,
+        value: Expr,
+        body: Expr,
+        span: Span,
+    },
+    Default {
+        body: Expr,
+        span: Span,
+    },
+}
+
 pub enum Expr {
     Path {
         path: Path,
@@ -407,6 +426,10 @@ pub enum Expr {
     Match {
         expr: Expr,
         arms: Vec[Arm],
+        span: Span,
+    },
+    Select {
+        arms: Vec[SelectArm],
         span: Span,
     },
     If {
@@ -620,22 +643,22 @@ pub fn expr_span(value: Expr) -> Span {
         } | ByteString { span, .. } | ConstructorValue { span, .. } | Constr { span, .. } | StructLiteral {
             span,
             ..,
-        } | Tuple { span, .. } | Array { span, .. } | Closure { span, .. } | Match { span, .. } | If {
+        } | Tuple { span, .. } | Array { span, .. } | Closure { span, .. } | Match { span, .. } | Select {
             span,
             ..,
-        } | While { span, .. } | Loop { span, .. } | For { span, .. } | Break { span, .. } | Continue {
+        } | If { span, .. } | While { span, .. } | Loop { span, .. } | For { span, .. } | Break {
             span,
             ..,
-        } | Return { span, .. } | Go { span, .. } | Scope { span, .. } | Comptime { span, .. } | Spawn {
+        } | Continue { span, .. } | Return { span, .. } | Go { span, .. } | Scope { span, .. } | Comptime {
             span,
             ..,
-        } | Call { span, .. } | Unary { span, .. } | Cast { span, .. } | Try { span, .. } | Range {
+        } | Spawn { span, .. } | Call { span, .. } | Unary { span, .. } | Cast { span, .. } | Try {
             span,
             ..,
-        } | Binary { span, .. } | Proj { span, .. } | Field { span, .. } | Index { span, .. } | Block {
+        } | Range { span, .. } | Binary { span, .. } | Proj { span, .. } | Field { span, .. } | Index {
             span,
             ..,
-        } => span,
+        } | Block { span, .. } => span,
     }
 }
 

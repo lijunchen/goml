@@ -105,6 +105,101 @@ fn lower_match_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
     }
 }
 
+fn lower_select_arm_body(ctx: LowerCtx, node: LocatedNode, expression_index: int) -> Option[Expr] {
+    let values = expr_children(node);
+    if expression_index < values.len() {
+        lower_expr(ctx, values[expression_index])
+    } else {
+        match first_child(node, cst::NodeKind::BLOCK) {
+            Some(block_node) => match lower_block(ctx, block_node) {
+                Some(block) => Option::Some(Expr::Block { block, span: node_span(block_node) }),
+                None => Option::None,
+            },
+            None => {
+                push_error(ctx, node_span(node), "Select arm has no body");
+                Option::None
+            },
+        }
+    }
+}
+
+fn lower_select_recv_arm(ctx: LowerCtx, node: LocatedNode) -> Option[SelectArm] {
+    let values = expr_children(node);
+    if values.is_empty() {
+        push_error(ctx, node_span(node), "Receive select arm has no channel");
+        Option::None
+    } else {
+        let binding = match first_child(node, cst::NodeKind::SELECT_RECV_BINDING) {
+            Some(binding_node) => match first_token(binding_node, lexer::TokenKind::Ident) {
+                Some(token) => token.token.text,
+                None => "_",
+            },
+            None => "_",
+        };
+        match (lower_expr(ctx, values[0]), lower_select_arm_body(ctx, node, 1)) {
+            (Some(channel), Some(body)) => Option::Some(
+                SelectArm::Receive { channel, binding, body, span: node_span(node) },
+            ),
+            _ => Option::None,
+        }
+    }
+}
+
+fn lower_select_send_arm(ctx: LowerCtx, node: LocatedNode) -> Option[SelectArm] {
+    let values = expr_children(node);
+    if values.len() < 2 {
+        push_error(ctx, node_span(node), "Send select arm requires a channel and value");
+        Option::None
+    } else {
+        match (
+            lower_expr(ctx, values[0]),
+            lower_expr(ctx, values[1]),
+            lower_select_arm_body(ctx, node, 2),
+        ) {
+            (Some(channel), Some(value), Some(body)) => Option::Some(
+                SelectArm::Send { channel, value, body, span: node_span(node) },
+            ),
+            _ => Option::None,
+        }
+    }
+}
+
+fn lower_select_default_arm(ctx: LowerCtx, node: LocatedNode) -> Option[SelectArm] {
+    match lower_select_arm_body(ctx, node, 0) {
+        Some(body) => Option::Some(SelectArm::Default { body, span: node_span(node) }),
+        None => Option::None,
+    }
+}
+
+fn lower_select_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
+    if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to select expression") {
+        Option::None
+    } else {
+        match first_child(node, cst::NodeKind::SELECT_ARM_LIST) {
+            Some(list) => {
+                let arms: Vec[SelectArm] = Vec::from_array([]);
+                for arm in direct_nodes(list) {
+                    let lowered = match node_kind(arm) {
+                        SELECT_RECV_ARM => lower_select_recv_arm(ctx, arm),
+                        SELECT_SEND_ARM => lower_select_send_arm(ctx, arm),
+                        SELECT_DEFAULT_ARM => lower_select_default_arm(ctx, arm),
+                        _ => Option::None,
+                    };
+                    match lowered {
+                        Some(value) => arms.push(value),
+                        None => (),
+                    }
+                }
+                Option::Some(Expr::Select { arms, span: node_span(node) })
+            },
+            None => {
+                push_error(ctx, node_span(node), "SelectExpr has no arms");
+                Option::None
+            },
+        }
+    }
+}
+
 fn lower_if_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
     if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to if expression") {
         Option::None
