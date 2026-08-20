@@ -9,7 +9,6 @@ use std::io;
 use std::json;
 use std::process;
 use std::task;
-use std::text;
 
 pub struct Options {
     pub filter: Option[string],
@@ -126,42 +125,44 @@ fn sorted_tests(values: Vec[Test]) -> Vec[Test] {
     values
 }
 
-fn escape_json(value: string) -> string {
-    let builder = text::StringBuilder::with_capacity(value.byte_len());
-    for character in value.chars() {
-        if character == '"' {
-            builder.write_string("\\\"")
-        } else if character == '\\' {
-            builder.write_string("\\\\")
-        } else if character == '\n' {
-            builder.write_string("\\n")
-        } else if character == '\r' {
-            builder.write_string("\\r")
-        } else if character == '\t' {
-            builder.write_string("\\t")
-        } else {
-            builder.write_char(character)
-        }
-    }
-    builder.finish()
+fn list_event_json(test: Test) -> string {
+    let reason = match test.ignore_reason {
+        Some(value) => json::Value::String(value),
+        None => json::Value::Null,
+    };
+    json::encode(
+        json::object(
+            Vec::from_array(
+                [
+                    ("event", json::Value::String("test")),
+                    ("ignored", json::Value::Bool(test.ignored)),
+                    ("kind", json::Value::String(test.kind)),
+                    ("name", json::Value::String(test.display_name)),
+                    ("reason", reason),
+                ],
+            ),
+        ),
+    )
+}
+
+fn result_event_json(event: string, name: string, seed: int) -> string {
+    json::encode(
+        json::object(
+            Vec::from_array(
+                [
+                    ("event", json::Value::String(event)),
+                    ("name", json::Value::String(name)),
+                    ("seed", json::Value::Number(seed.to_string())),
+                ],
+            ),
+        ),
+    )
 }
 
 fn print_list(tests: Vec[Test], options: Options) -> unit {
     for test in tests {
         if options.json {
-            let reason = match test.ignore_reason {
-                Some(value) => "\"" + escape_json(value) + "\"",
-                None => "null",
-            };
-            io::println(
-                "{\"event\":\"test\",\"ignored\":" + test.ignored.to_string() + ",\"kind\":\""
-                    + escape_json(test.kind)
-                    + "\",\"name\":\""
-                    + escape_json(test.display_name)
-                    + "\",\"reason\":"
-                    + reason
-                    + "}",
-            )
+            io::println(list_event_json(test))
         } else if test.ignored {
             io::println(f"{test.display_name}: ignored")
         } else {
@@ -364,12 +365,7 @@ fn report_json(values: Vec[Execution], seed: isize) -> isize {
                 "timed_out"
             },
         };
-        io::println(
-            "{\"event\":\"" + event + "\",\"name\":\"" + escape_json(value.test.display_name)
-                + "\",\"seed\":"
-                + seed.to_string()
-                + "}",
-        )
+        io::println(result_event_json(event, value.test.display_name, seed))
     }
     failed
 }
