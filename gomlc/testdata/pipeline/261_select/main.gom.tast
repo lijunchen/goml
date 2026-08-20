@@ -1,0 +1,86 @@
+fn mark_channel(log/0: Ref[string], mark/1: string, channel/2: Channel[int]) -> Channel[int] {
+    (Ref[string]::set : (Ref[string], string) -> unit)(
+      (log/0 : Ref[string]),
+      (Ref[string]::get : (Ref[string]) -> string)((log/0 : Ref[string])) + (mark/1 : string)
+    );
+    (channel/2 : Channel[int])
+}
+
+fn mark_value(log/3: Ref[string], mark/4: string, value/5: int) -> int {
+    (Ref[string]::set : (Ref[string], string) -> unit)(
+      (log/3 : Ref[string]),
+      (Ref[string]::get : (Ref[string]) -> string)((log/3 : Ref[string])) + (mark/4 : string)
+    );
+    (value/5 : int)
+}
+
+fn main() -> unit {
+    let received/6: Channel[int] = (Channel[int]::new : (int) -> Channel[int])(1);
+    (Channel[int]::send : (Channel[int], int) -> unit)((received/6 : Channel[int]), 7);
+    let first/9: int =
+      select {
+          recv((received/6 : Channel[int])) as value/7 =>
+            {
+                let read/8: () -> int =
+                  || =>
+                    (Option[int]::unwrap_or : (Option[int], int) -> int)(
+                      (value/7 : Option[int]),
+                      -1
+                    );
+                (read/8 : () -> int)()
+            },
+          default => 0,
+      };
+    (println : (int) -> unit)((first/9 : int));
+    let sent/10: Channel[string] = (Channel[string]::new : (int) -> Channel[string])(1);
+    let branch/11: string =
+      select {
+          send((sent/10 : Channel[string]), "ready") => "sent",
+          default => "blocked",
+      };
+    (println : (string) -> unit)((branch/11 : string));
+    (println : (string) -> unit)(
+      (Option[string]::unwrap_or : (Option[string], string) -> string)(
+        (Channel[string]::recv : (Channel[string]) -> Option[string])((sent/10 : Channel[string])),
+        "missing"
+      )
+    );
+    let empty/12: Channel[int] = (Channel[int]::new : (int) -> Channel[int])(0);
+    let fallback/14: int =
+      select {
+          recv((empty/12 : Channel[int])) as _/13 => -1,
+          default => 42,
+      };
+    (println : (int) -> unit)((fallback/14 : int));
+    let log/15: Ref[string] = (Ref[string]::new : (string) -> Ref[string])("");
+    let left/16: Channel[int] = (Channel[int]::new : (int) -> Channel[int])(0);
+    let right/17: Channel[int] = (Channel[int]::new : (int) -> Channel[int])(0);
+    select {
+        send((mark_channel : (Ref[string], string, Channel[int]) -> Channel[int])(
+          (log/15 : Ref[string]),
+          "a",
+          (left/16 : Channel[int])
+        ), (mark_value : (Ref[string], string, int) -> int)((log/15 : Ref[string]), "1", 1)) =>
+          (),
+        send((mark_channel : (Ref[string], string, Channel[int]) -> Channel[int])(
+          (log/15 : Ref[string]),
+          "b",
+          (right/17 : Channel[int])
+        ), (mark_value : (Ref[string], string, int) -> int)((log/15 : Ref[string]), "2", 2)) =>
+          (),
+        default => (),
+    };
+    (println : (string) -> unit)(
+      (Ref[string]::get : (Ref[string]) -> string)((log/15 : Ref[string]))
+    );
+    (Channel[int]::close : (Channel[int]) -> unit)((received/6 : Channel[int]));
+    let closed/19: string =
+      select {
+          recv((received/6 : Channel[int])) as value/18 =>
+            match (value/18 : Option[int]) {
+                Option::Some(_ : int) => "open",
+                Option::None => "closed",
+            },
+      };
+    (println : (string) -> unit)((closed/19 : string))
+}
