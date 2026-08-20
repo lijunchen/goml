@@ -17,6 +17,14 @@ fn strings_contain(values: Vec[string], expected: string) -> bool {
 }
 
 #[test]
+fn hashes_cache_text_with_standard_sha256() -> unit {
+    testing::assert_eq(
+        sha256_text("abc"),
+        "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+    )
+}
+
+#[test]
 fn derives_unicode_package_names_from_directories() -> unit {
     match package_name_for_directory("/tmp/项目", "alice::app", "/tmp/项目/工具/解析") {
         Ok(value) => testing::assert_eq(value, "alice::app::工具::解析"),
