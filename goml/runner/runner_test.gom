@@ -3,6 +3,25 @@ package runner;
 use std::testing;
 
 #[test]
-fn escapes_unicode_json_text() -> unit {
-    testing::assert_eq(escape_json("你好\n\"goml\"\\"), "你好\\n\\\"goml\\\"\\\\")
+fn encodes_list_json_event() -> unit {
+    let test = Test {
+        id: "test-id",
+        display_name: "suite::test",
+        ignored: true,
+        ignore_reason: Option::None,
+        kind: "internal",
+        executable: "runner",
+    };
+    testing::assert_eq(
+        list_event_json(test),
+        "{\"event\":\"test\",\"ignored\":true,\"kind\":\"internal\",\"name\":\"suite::test\",\"reason\":null}",
+    )
+}
+
+#[test]
+fn encodes_json_control_characters() -> unit {
+    testing::assert_eq(
+        result_event_json("ok", "你好\b\f\u0001\n\"goml\"\\", 17),
+        "{\"event\":\"ok\",\"name\":\"你好\\b\\f\\u0001\\n\\\"goml\\\"\\\\\",\"seed\":17}",
+    )
 }
