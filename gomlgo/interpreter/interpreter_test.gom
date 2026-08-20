@@ -3,6 +3,7 @@ package interpreter;
 use gomlgo::bytecode;
 use gomlgo::execution;
 use gomlgo::native;
+use gomlgo::syntax;
 use gomlgo::types as go_types;
 use std::env;
 use std::path;
@@ -42,6 +43,122 @@ fn blocked_scheduler_goroutine() -> ScheduledGoroutine {
         state: Ref::new(1),
         startup: false,
     }
+}
+
+fn test_instruction(kind: bytecode::InstructionKind) -> bytecode::Instruction {
+    bytecode::Instruction {
+        kind,
+        location: bytecode::CodeLocation { file: syntax::file_id(-1), start: 0, end: 0 },
+    }
+}
+
+fn test_function(local_count: int, place_count: int, instructions: Vec[bytecode::Instruction]) -> bytecode::BytecodeFunction {
+    let locals: Vec[bytecode::Local] = Vec::with_capacity(local_count);
+    for index in 0..local_count {
+        locals.push(
+            bytecode::Local {
+                id: bytecode::local_id(index),
+                object: Option::None,
+                name: "",
+                type_id: go_types::type_id(-1),
+            },
+        )
+    }
+    bytecode::BytecodeFunction {
+        id: bytecode::function_id(0),
+        package_id: go_types::package_id(-1),
+        object: go_types::object_id(-1),
+        name: "",
+        signature: go_types::type_id(-1),
+        register_types: Vec::from_array([]),
+        place_count,
+        locals,
+        captures: Vec::from_array([]),
+        parameters: Vec::from_array([]),
+        results: Vec::from_array([]),
+        blocks: Vec::from_array(
+            [
+                bytecode::BasicBlock {
+                    id: bytecode::block_id(0),
+                    parameters: Vec::from_array([]),
+                    instructions,
+                    terminator: bytecode::Terminator {
+                        kind: bytecode::TerminatorKind::Unreachable,
+                        location: bytecode::CodeLocation {
+                            file: syntax::file_id(-1),
+                            start: 0,
+                            end: 0,
+                        },
+                    },
+                },
+            ],
+        ),
+        entry: bytecode::block_id(0),
+    }
+}
+
+#[test]
+fn identifies_only_locals_with_escaping_storage() -> unit {
+    let function = test_function(
+        3,
+        3,
+        Vec::from_array(
+            [
+                test_instruction(
+                    bytecode::InstructionKind::LocalPlace {
+                        target: bytecode::place_id(0),
+                        local: bytecode::local_id(0),
+                    },
+                ),
+                test_instruction(
+                    bytecode::InstructionKind::FieldPlace {
+                        target: bytecode::place_id(1),
+                        base: bytecode::place_id(0),
+                        index: Vec::from_array([0]),
+                    },
+                ),
+                test_instruction(
+                    bytecode::InstructionKind::AddressOf {
+                        target: bytecode::register_id(0),
+                        source: bytecode::place_id(1),
+                    },
+                ),
+                test_instruction(
+                    bytecode::InstructionKind::MakeClosure {
+                        target: bytecode::register_id(1),
+                        function: bytecode::function_id(1),
+                        captures: Vec::from_array([bytecode::local_id(1)]),
+                    },
+                ),
+                test_instruction(
+                    bytecode::InstructionKind::LocalPlace {
+                        target: bytecode::place_id(2),
+                        local: bytecode::local_id(2),
+                    },
+                ),
+            ],
+        ),
+    );
+    let recyclable = recyclable_function_locals(function);
+    testing::assert(!recyclable[0]);
+    testing::assert(!recyclable[1]);
+    testing::assert(recyclable[2])
+}
+
+#[test]
+fn reuses_released_frame_cells() -> unit {
+    let memory = new_memory();
+    let first = allocate_reusable_cell(memory, Value::Local(LocalValue::Bool(false)));
+    release_reusable_cell(memory, first);
+    let second = allocate_reusable_cell(memory, Value::Local(LocalValue::Bool(true)));
+    testing::assert_eq(first.value, second.value);
+    testing::assert_eq(memory.length.get(), 1);
+    testing::assert(
+        testing::expect_ok(
+            boolean_value(testing::expect_ok(load_place(memory, root_place(second)), "load failed")),
+            "boolean failed",
+        ),
+    )
 }
 
 #[test]
