@@ -118,6 +118,7 @@ struct Frame {
     bool_places: Vec[Option[BoolElementPlace]],
     place_roots: Vec[int],
     locals: Vec[CellId],
+    owned_cells: Vec[CellId],
     block_arguments: Vec[Value],
     block: Ref[bytecode::BlockId],
     frame_cell_checkpoint: int,
@@ -132,6 +133,7 @@ struct FrameSlots {
     bool_places: Vec[Option[BoolElementPlace]],
     place_roots: Vec[int],
     locals: Vec[CellId],
+    owned_cells: Vec[CellId],
     block_arguments: Vec[Value],
     block: Ref[bytecode::BlockId],
     deferred: Vec[PreparedCall],
@@ -220,7 +222,7 @@ struct VmState {
     sequential_operations: Vec[Vec[Vec[SequentialOperation]]],
     sequential_loops: Vec[SequentialLoopOperation],
     sequential_terminators: Vec[Vec[SequentialTerminator]],
-    recyclable_functions: Vec[bool],
+    recyclable_locals: Vec[Vec[bool]],
     scalar_register_layouts: Vec[Vec[ScalarLayout]],
     scalar_local_layouts: Vec[Vec[ScalarLayout]],
     instruction_constants: Vec[Option[Value]],
@@ -423,6 +425,7 @@ fn take_frame_slots(
                 slots.locals.reserve(local_count)
             } else {};
             slots.block_arguments.clear();
+            slots.owned_cells.clear();
             slots.deferred.clear();
             FrameSlots {
                 registers: prepared_slots(slots.registers, register_count),
@@ -431,6 +434,7 @@ fn take_frame_slots(
                 bool_places: prepared_slots(slots.bool_places, place_count),
                 place_roots: prepared_place_roots(slots.place_roots, place_count),
                 locals: slots.locals,
+                owned_cells: slots.owned_cells,
                 block_arguments: slots.block_arguments,
                 block: slots.block,
                 deferred: slots.deferred,
@@ -444,6 +448,7 @@ fn take_frame_slots(
                 bool_places: empty_slots(place_count),
                 place_roots: prepared_place_roots(Vec::from_array([]), place_count),
                 locals: Vec::with_capacity(local_count),
+                owned_cells: Vec::from_array([]),
                 block_arguments: Vec::from_array([]),
                 block: Ref::new(bytecode::block_id(-1)),
                 deferred: Vec::from_array([]),
@@ -469,31 +474,45 @@ fn prepared_scalar_slots(slots: Vec[uint64], count: int) -> Vec[uint64] {
     slots
 }
 
-fn allocate_local_cell(state: VmState, checkpoint: int, value: Value) -> CellId {
-    if checkpoint >= 0 {
+fn allocate_local_cell(
+    state: VmState,
+    checkpoint: int,
+    recyclable: bool,
+    owned_cells: Vec[CellId],
+    value: Value,
+) -> CellId {
+    if !recyclable {
+        allocate_cell(state.memory, value)
+    } else if checkpoint >= 0 {
         allocate_frame_cell(state.memory, value)
     } else {
-        allocate_cell(state.memory, value)
+        let cell = allocate_reusable_cell(state.memory, value);
+        owned_cells.push(cell);
+        cell
     }
 }
 
 fn replace_local_cell(state: VmState, frame: Frame, local: int, value: Value) -> unit {
-    if frame.frame_cell_checkpoint >= 0 {
+    if state.recyclable_locals[frame.function.value][local] {
         let current = frame.locals[local];
-        if current.value <= -2 {
-            set_cell_value(state.memory, current.value, copy_value(value))
-        } else {
-            frame.locals[local] = allocate_frame_cell(state.memory, value);
-        }
+        set_cell_value(state.memory, current.value, copy_value(value))
     } else {
         frame.locals[local] = allocate_cell(state.memory, value);
     }
+}
+
+fn release_owned_cells(memory: Memory, cells: Vec[CellId]) -> unit {
+    for cell in cells {
+        release_reusable_cell(memory, cell)
+    }
+    cells.clear()
 }
 
 fn release_frame_slots(state: VmState, frame: Frame) -> unit {
     if frame.frame_cell_checkpoint >= 0 {
         release_frame_cells(state.memory, frame.frame_cell_checkpoint)
     } else {};
+    release_owned_cells(state.memory, frame.owned_cells);
     reset_slots(frame.registers);
     reset_slots(frame.places);
     reset_slots(frame.bool_places);
@@ -508,6 +527,7 @@ fn release_frame_slots(state: VmState, frame: Frame) -> unit {
             bool_places: frame.bool_places,
             place_roots: frame.place_roots,
             locals: frame.locals,
+            owned_cells: frame.owned_cells,
             block_arguments: frame.block_arguments,
             block: frame.block,
             deferred: frame.deferred,
@@ -2142,24 +2162,84 @@ fn fast_functions(program: bytecode::BytecodeProgram) -> Vec[FastFunction] {
     values
 }
 
-fn function_recyclable(function: bytecode::BytecodeFunction) -> bool {
+fn place_local_roots(function: bytecode::BytecodeFunction) -> Vec[int] {
+    let roots: Vec[int] = Vec::with_capacity(function.place_count);
+    let bases: Vec[int] = Vec::with_capacity(function.place_count);
+    for _ in 0..function.place_count {
+        roots.push(-1);
+        bases.push(-1)
+    }
     for block in function.blocks {
         for instruction in block.instructions {
             match instruction.kind {
-                bytecode::InstructionKind::AddressOf { target: _, source: _ } => return false,
-                bytecode::InstructionKind::SlicePlace { .. } => return false,
-                bytecode::InstructionKind::MakeClosure { target: _, function: _, captures } if !captures.is_empty() => return false,
+                bytecode::InstructionKind::LocalPlace { target, local } if target.value >= 0
+                    && target.value < roots.len()
+                    && local.value >= 0
+                    && local.value < function.locals.len() => {
+                    roots[target.value] = local.value;
+                },
+                bytecode::InstructionKind::FieldPlace { target, base, index: _ } | bytecode::InstructionKind::IndexPlace {
+                    target,
+                    base,
+                    index: _,
+                } if target.value >= 0 && target.value < bases.len() => {
+                    bases[target.value] = base.value;
+                },
                 _ => {},
             }
         }
     }
-    true
+    for index in 0..roots.len() {
+        let base = bases[index];
+        if roots[index] < 0 && base >= 0 && base < index {
+            roots[index] = roots[base];
+        } else {}
+    }
+    roots
 }
 
-fn recyclable_functions(program: bytecode::BytecodeProgram) -> Vec[bool] {
-    let result: Vec[bool] = Vec::with_capacity(program.functions.len());
+fn recyclable_function_locals(function: bytecode::BytecodeFunction) -> Vec[bool] {
+    let result: Vec[bool] = Vec::with_capacity(function.locals.len());
+    for _ in 0..function.locals.len() {
+        result.push(true)
+    }
+    for capture in function.captures {
+        if capture.value >= 0 && capture.value < result.len() {
+            result[capture.value] = false;
+        } else {}
+    }
+    let roots = place_local_roots(function);
+    for block in function.blocks {
+        for instruction in block.instructions {
+            match instruction.kind {
+                bytecode::InstructionKind::AddressOf { target: _, source } => if source.value >= 0
+                    && source.value < roots.len()
+                    && roots[source.value] >= 0 {
+                    result[roots[source.value]] = false;
+                } else {},
+                bytecode::InstructionKind::SlicePlace { base, .. } => if base.value >= 0
+                    && base.value < roots.len()
+                    && roots[base.value] >= 0 {
+                    result[roots[base.value]] = false;
+                } else {},
+                bytecode::InstructionKind::MakeClosure { target: _, function: _, captures } => {
+                    for capture in captures {
+                        if capture.value >= 0 && capture.value < result.len() {
+                            result[capture.value] = false;
+                        } else {}
+                    }
+                },
+                _ => {},
+            }
+        }
+    }
+    result
+}
+
+fn recyclable_locals(program: bytecode::BytecodeProgram) -> Vec[Vec[bool]] {
+    let result: Vec[Vec[bool]] = Vec::with_capacity(program.functions.len());
     for function in program.functions {
-        result.push(function_recyclable(function))
+        result.push(recyclable_function_locals(function))
     }
     result
 }
@@ -9177,6 +9257,7 @@ fn failed_frame_call(message: string) -> FrameCallResult {
             bool_places: Vec::from_array([]),
             place_roots: Vec::from_array([]),
             locals: Vec::from_array([]),
+            owned_cells: Vec::from_array([]),
             block_arguments: Vec::from_array([]),
             block: Ref::new(bytecode::block_id(-1)),
             frame_cell_checkpoint: -1,
@@ -9205,7 +9286,7 @@ fn frame_for_call(
     if captures.len() != function.captures.len() {
         return failed_frame_call("closure capture count does not match function")
     } else {};
-    let checkpoint = if arena && state.recyclable_functions[function.id.value] {
+    let checkpoint = if arena {
         frame_cell_checkpoint(state.memory)
     } else {
         -1
@@ -9226,20 +9307,40 @@ fn frame_for_call(
     );
     slots.block.set(function.entry);
     let locals = slots.locals;
+    let owned_cells = slots.owned_cells;
     for capture in captures {
         locals.push(capture)
     }
     for argument in arguments {
-        locals.push(allocate_local_cell(state, checkpoint, argument))
+        let local_index = locals.len();
+        locals.push(
+            allocate_local_cell(
+                state,
+                checkpoint,
+                state.recyclable_locals[function.id.value][local_index],
+                owned_cells,
+                argument,
+            ),
+        )
     }
     for local_index in locals.len()..function.locals.len() {
         let local = function.locals[local_index];
         match runtime_zero_value(state, local.type_id) {
-            Ok(value) => locals.push(allocate_local_cell(state, checkpoint, value)),
+            Ok(value) => locals.push(
+                allocate_local_cell(
+                    state,
+                    checkpoint,
+                    state.recyclable_locals[function.id.value][local_index],
+                    owned_cells,
+                    value,
+                ),
+            ),
             Err(message) => {
                 if checkpoint >= 0 {
                     release_frame_cells(state.memory, checkpoint)
-                } else {};
+                } else {
+                    release_owned_cells(state.memory, owned_cells)
+                };
                 return failed_frame_call(message)
             },
         }
@@ -9271,7 +9372,9 @@ fn frame_for_call(
                         _ => {
                             if checkpoint >= 0 {
                                 release_frame_cells(state.memory, checkpoint)
-                            } else {};
+                            } else {
+                                release_owned_cells(state.memory, owned_cells)
+                            };
                             return failed_frame_call("scalar boolean local has a non-boolean value")
                         },
                     }
@@ -9286,7 +9389,9 @@ fn frame_for_call(
                         Err(message) => {
                             if checkpoint >= 0 {
                                 release_frame_cells(state.memory, checkpoint)
-                            } else {};
+                            } else {
+                                release_owned_cells(state.memory, owned_cells)
+                            };
                             return failed_frame_call(message)
                         },
                     }
@@ -9307,6 +9412,7 @@ fn frame_for_call(
             bool_places: slots.bool_places,
             place_roots: slots.place_roots,
             locals,
+            owned_cells,
             block_arguments: slots.block_arguments,
             block: slots.block,
             frame_cell_checkpoint: checkpoint,
@@ -9881,7 +9987,7 @@ fn initialize_state(program: bytecode::BytecodeProgram, config: VmConfig) -> Res
         sequential_operations: sequential.operations,
         sequential_loops: sequential.loops,
         sequential_terminators: sequential_terminators(program),
-        recyclable_functions: recyclable_functions(program),
+        recyclable_locals: recyclable_locals(program),
         scalar_register_layouts: scalar_register_layouts(program),
         scalar_local_layouts: scalar_local_layouts(program),
         instruction_constants: predecoded_constants(program),

@@ -6,10 +6,16 @@ pub struct Memory {
     pub cells: Vec[Vec[Value]],
     pub length: Ref[int],
     frame_cells: Vec[Value],
+    reusable_cells: Vec[int],
 }
 
 pub fn new_memory() -> Memory {
-    Memory { cells: Vec::from_array([]), length: Ref::new(0), frame_cells: Vec::from_array([]) }
+    Memory {
+        cells: Vec::from_array([]),
+        length: Ref::new(0),
+        frame_cells: Vec::from_array([]),
+        reusable_cells: Vec::from_array([]),
+    }
 }
 
 pub fn allocate_cell(memory: Memory, value: Value) -> CellId {
@@ -35,6 +41,23 @@ fn allocate_frame_cell(memory: Memory, value: Value) -> CellId {
     let index = memory.frame_cells.len();
     memory.frame_cells.push(copy_value(value));
     cell_id(frame_cell_value(index))
+}
+
+fn allocate_reusable_cell(memory: Memory, value: Value) -> CellId {
+    match memory.reusable_cells.pop() {
+        Some(index) => {
+            set_cell_value(memory, index, copy_value(value));
+            cell_id(index)
+        },
+        None => allocate_cell(memory, value),
+    }
+}
+
+fn release_reusable_cell(memory: Memory, cell: CellId) -> unit {
+    if cell.value >= 0 && cell.value < memory.length.get() {
+        set_cell_value(memory, cell.value, Value::Local(LocalValue::Unit));
+        memory.reusable_cells.push(cell.value)
+    } else {}
 }
 
 fn frame_cell_checkpoint(memory: Memory) -> int {

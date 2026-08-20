@@ -1219,6 +1219,7 @@ fn complete_scheduled_frame(scheduler: Scheduler, goroutine_index: int, outcome:
     let goroutine = scheduler.goroutines[goroutine_index];
     let completed = scheduled_top(goroutine)?;
     let _ = goroutine.frames.pop().ok_or("scheduled frame stack is empty")?;
+    release_frame_slots(scheduler.state, completed.frame);
     match completed.callback.get() {
         Some(callback) => {
             if !goroutine.frames.is_empty() {
