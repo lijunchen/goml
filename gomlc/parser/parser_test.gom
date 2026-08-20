@@ -348,3 +348,46 @@ fn recovers_non_function_extern_declarations() -> unit {
     );
     testing::assert_eq(count_nodes(result.root, cst::NodeKind::FN), 1)
 }
+
+#[test]
+fn parses_select_arms_and_keeps_contextual_names_available() -> unit {
+    let source = "fn select(value: int) -> int { value } fn main(ch: Channel[int]) -> int { select { recv(ch) as value => value.unwrap_or(0), send(ch, select(1)) => 2, default => 3, } }";
+    let result = parse(source);
+    testing::assert_eq(result.diagnostics.len(), 0);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_SELECT), 1);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::SELECT_RECV_ARM), 1);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::SELECT_SEND_ARM), 1);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::SELECT_DEFAULT_ARM), 1)
+}
+
+#[test]
+fn accepts_select_as_a_semicolon_free_control_statement() -> unit {
+    let source = "fn main(ch: Channel[int]) -> unit { select { recv(ch) as _ => (), } let value = 1; let _ = value; }";
+    let result = parse(source);
+    testing::assert_eq(result.diagnostics.len(), 0);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_SELECT), 1)
+}
+
+#[test]
+fn diagnoses_invalid_select_arm_lists_recoverably() -> unit {
+    let missing_communication = parse("fn main() -> unit { select { default => (), } }");
+    testing::assert(
+        diagnostic_containing(
+            missing_communication.diagnostics,
+            "select requires at least one recv or send arm",
+        ).is_some(),
+    );
+    let misplaced_default = parse(
+        "fn main(ch: Channel[int]) -> unit { select { default => (), recv(ch) as _ => (), } }",
+    );
+    testing::assert(
+        diagnostic_containing(misplaced_default.diagnostics, "default must be the last select arm").is_some(),
+    );
+    let unknown_arm = parse("fn main() -> unit { select { wait(ch) => (), } }");
+    testing::assert(
+        diagnostic_containing(
+            unknown_arm.diagnostics,
+            "expected `recv`, `send`, or `default` select arm",
+        ).is_some(),
+    )
+}
