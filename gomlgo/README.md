@@ -19,27 +19,27 @@ The source importer evaluates `//go:build` and legacy `// +build` constraints, G
 From the repository root:
 
 ```bash
-just gofront-test
-just gofront-build
-just gofront-diff
-just gofront-type-test
-just gofront-type-diff
-just gofront-type-diff-official
-just gofront-type-diagnostics-official
-just gofront-type-diff-goroot 10 std
-just gofront-type-diff-goroot -1 cmd acceptance
-just gofront-type-diff-goroot -1 std info
-just gofront-type-diff-goroot 1 std acceptance linux arm64 0 none
-just gofront-type-diff-goroot-matrix 16
-just gofront-type-diff-goroot-tests 16 internal
-just gofront-type-diff-goroot-tests 16 external
-just gofront-type-mutate-diff 25
-just gofront-diff-goroot
-just gofront-parse-diff-goroot
-just gofront-ast-shape-goroot
-just gofront-ast-position-goroot
-just gofront-ast-comments-goroot
-just gofront-mutate-diff 25
+just gomlgo-test
+just gomlgo-build
+just gomlgo-diff
+just gomlgo-type-test
+just gomlgo-type-diff
+just gomlgo-type-diff-official
+just gomlgo-type-diagnostics-official
+just gomlgo-type-diff-goroot 10 std
+just gomlgo-type-diff-goroot -1 cmd acceptance
+just gomlgo-type-diff-goroot -1 std info
+just gomlgo-type-diff-goroot 1 std acceptance linux arm64 0 none
+just gomlgo-type-diff-goroot-matrix 16
+just gomlgo-type-diff-goroot-tests 16 internal
+just gomlgo-type-diff-goroot-tests 16 external
+just gomlgo-type-mutate-diff 25
+just gomlgo-diff-goroot
+just gomlgo-parse-diff-goroot
+just gomlgo-ast-shape-goroot
+just gomlgo-ast-position-goroot
+just gomlgo-ast-comments-goroot
+just gomlgo-mutate-diff 25
 ```
 
 The built CLI supports:
@@ -77,7 +77,7 @@ The GOROOT type differential recipes run their checker in a user systemd scope w
 
 The official type corpus recipes also run in a resource-limited user systemd scope. They invoke one checker process per source file so retained dependency state is released between cases; the hard limits are 10 GiB memory, 2 GiB swap, 256 tasks, and 300% CPU.
 
-`testdata/invalid/` contains recovery smoke cases. `testdata/regressions/` contains minimized differential failures and is checked by `just gofront-diff`.
+`testdata/invalid/` contains recovery smoke cases. `testdata/regressions/` contains minimized differential failures and is checked by `just gomlgo-diff`.
 
 ## Current parity
 
