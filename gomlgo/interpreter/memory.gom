@@ -167,8 +167,11 @@ fn load_projection(memory: Memory, value: Value, projections: Vec[Projection], o
         return Result::Ok(copy_value(value))
     } else {};
     match (value, projections[offset]) {
-        (Value::Local(LocalValue::Aggregate { type_id: _, elements }), Projection::Field(index)) | (
-            Value::Local(LocalValue::Aggregate { type_id: _, elements }),
+        (
+            Value::Local(LocalValue::Aggregate { type_id: _, elements, host: _ }),
+            Projection::Field(index),
+        ) | (
+            Value::Local(LocalValue::Aggregate { type_id: _, elements, host: _ }),
             Projection::Index(index),
         ) => {
             if index < 0 || index >= elements.len() {
@@ -217,8 +220,11 @@ fn borrow_projection(memory: Memory, value: Value, projections: Vec[Projection],
         return Result::Ok(value)
     } else {};
     match (value, projections[offset]) {
-        (Value::Local(LocalValue::Aggregate { type_id: _, elements }), Projection::Field(index)) | (
-            Value::Local(LocalValue::Aggregate { type_id: _, elements }),
+        (
+            Value::Local(LocalValue::Aggregate { type_id: _, elements, host: _ }),
+            Projection::Field(index),
+        ) | (
+            Value::Local(LocalValue::Aggregate { type_id: _, elements, host: _ }),
             Projection::Index(index),
         ) => if index < 0 || index >= elements.len() {
             Result::Err("aggregate index out of range")
@@ -268,8 +274,11 @@ fn store_projection(
         return Result::Err("store projection ended without a cell")
     } else {};
     match (current, projections[offset]) {
-        (Value::Local(LocalValue::Aggregate { type_id, elements }), Projection::Field(index)) | (
-            Value::Local(LocalValue::Aggregate { type_id, elements }),
+        (
+            Value::Local(LocalValue::Aggregate { type_id, elements, host: _ }),
+            Projection::Field(index),
+        ) | (
+            Value::Local(LocalValue::Aggregate { type_id, elements, host: _ }),
             Projection::Index(index),
         ) => {
             if index < 0 || index >= elements.len() {
@@ -290,7 +299,7 @@ fn store_projection(
                     value,
                 )?;
             };
-            Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements: updated }))
+            Result::Ok(local_aggregate(type_id, updated))
         },
         (Value::Local(LocalValue::BoolBacking(elements)), Projection::Index(index)) => {
             if index < 0 || index >= elements.len() {

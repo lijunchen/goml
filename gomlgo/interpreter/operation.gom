@@ -334,21 +334,21 @@ pub fn zero_value(world: go_types::World, type_id: go_types::TypeId) -> Result[V
             for _ in 0..length.to_int() {
                 elements.push(zero_value(world, element)?)
             }
-            Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
+            Result::Ok(local_aggregate(type_id, elements))
         },
         go_types::TypeKind::Struct { fields } => {
             let elements: Vec[Value] = Vec::with_capacity(fields.len());
             for field in fields {
                 elements.push(zero_value(world, field.variable.type_id)?)
             }
-            Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
+            Result::Ok(local_aggregate(type_id, elements))
         },
         go_types::TypeKind::Tuple { variables } => {
             let elements: Vec[Value] = Vec::with_capacity(variables.len());
             for variable in variables {
                 elements.push(zero_value(world, variable.type_id)?)
             }
-            Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
+            Result::Ok(local_aggregate(type_id, elements))
         },
         go_types::TypeKind::Pointer { element: _ } => {
             Result::Ok(Value::Local(LocalValue::Pointer(Option::None)))

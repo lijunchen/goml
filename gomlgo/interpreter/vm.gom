@@ -127,6 +127,7 @@ struct Frame {
 
 struct FrameSlots {
     registers: Vec[Option[Value]],
+    scalar: Vec[uint64],
     places: Vec[Option[RuntimePlace]],
     bool_places: Vec[Option[BoolElementPlace]],
     place_roots: Vec[int],
@@ -224,6 +225,7 @@ struct VmState {
     scalar_local_layouts: Vec[Vec[ScalarLayout]],
     instruction_constants: Vec[Option[Value]],
     small_integers: Vec[Value],
+    fast_functions: Vec[FastFunction],
 }
 
 enum FunctionControl {
@@ -278,6 +280,42 @@ struct SequentialTerminator {
     condition: int,
     first: int,
     second: int,
+}
+
+struct FastOperand {
+    argument: int,
+    fields: Vec[int],
+    type_id: go_types::TypeId,
+}
+
+enum FastExpression {
+    Unknown,
+    Operand(FastOperand),
+    Binary {
+        operation: bytecode::BinaryOp,
+        left: FastOperand,
+        right: FastOperand,
+        result_type: go_types::TypeId,
+    },
+}
+
+enum FastFunction {
+    Unavailable,
+    Constant {
+        value: Value,
+        steps: int,
+    },
+    Projection {
+        operand: FastOperand,
+        steps: int,
+    },
+    Binary {
+        operation: bytecode::BinaryOp,
+        left: FastOperand,
+        right: FastOperand,
+        result_type: go_types::TypeId,
+        steps: int,
+    },
 }
 
 enum InvocationOutcome {
@@ -371,7 +409,13 @@ fn reset_place_roots(slots: Vec[int]) -> unit {
     }
 }
 
-fn take_frame_slots(state: VmState, register_count: int, place_count: int, local_count: int) -> FrameSlots {
+fn take_frame_slots(
+    state: VmState,
+    register_count: int,
+    scalar_count: int,
+    place_count: int,
+    local_count: int,
+) -> FrameSlots {
     match state.frame_slots.pop() {
         Some(slots) => {
             slots.locals.clear();
@@ -382,6 +426,7 @@ fn take_frame_slots(state: VmState, register_count: int, place_count: int, local
             slots.deferred.clear();
             FrameSlots {
                 registers: prepared_slots(slots.registers, register_count),
+                scalar: prepared_scalar_slots(slots.scalar, scalar_count),
                 places: prepared_slots(slots.places, place_count),
                 bool_places: prepared_slots(slots.bool_places, place_count),
                 place_roots: prepared_place_roots(slots.place_roots, place_count),
@@ -394,6 +439,7 @@ fn take_frame_slots(state: VmState, register_count: int, place_count: int, local
         None => {
             FrameSlots {
                 registers: empty_slots(register_count),
+                scalar: empty_scalar_values(scalar_count),
                 places: empty_slots(place_count),
                 bool_places: empty_slots(place_count),
                 place_roots: prepared_place_roots(Vec::from_array([]), place_count),
@@ -404,6 +450,23 @@ fn take_frame_slots(state: VmState, register_count: int, place_count: int, local
             }
         },
     }
+}
+
+fn prepared_scalar_slots(slots: Vec[uint64], count: int) -> Vec[uint64] {
+    if slots.len() != count {
+        slots.clear();
+        if slots.capacity() < count {
+            slots.reserve(count)
+        } else {};
+        for _ in 0..count {
+            slots.push(0.to_uint64())
+        }
+    } else {
+        for index in 0..count {
+            slots[index] = 0.to_uint64();
+        }
+    };
+    slots
 }
 
 fn allocate_local_cell(state: VmState, checkpoint: int, value: Value) -> CellId {
@@ -440,6 +503,7 @@ fn release_frame_slots(state: VmState, frame: Frame) -> unit {
     state.frame_slots.push(
         FrameSlots {
             registers: frame.registers,
+            scalar: frame.scalar,
             places: frame.places,
             bool_places: frame.bool_places,
             place_roots: frame.place_roots,
@@ -1868,6 +1932,216 @@ fn small_integer_values() -> Vec[Value] {
     values
 }
 
+fn empty_fast_expressions(count: int) -> Vec[FastExpression] {
+    let values: Vec[FastExpression] = Vec::with_capacity(count);
+    for _ in 0..count {
+        values.push(FastExpression::Unknown)
+    }
+    values
+}
+
+fn empty_fast_places(count: int) -> Vec[int] {
+    let values: Vec[int] = Vec::with_capacity(count);
+    for _ in 0..count {
+        values.push(-1)
+    }
+    values
+}
+
+fn fast_operand(expression: FastExpression) -> Option[FastOperand] {
+    match expression {
+        FastExpression::Operand(value) => Option::Some(value),
+        _ => Option::None,
+    }
+}
+
+fn extend_fast_operand(operand: FastOperand, fields: Vec[int], type_id: go_types::TypeId) -> FastOperand {
+    let result: Vec[int] = Vec::with_capacity(operand.fields.len() + fields.len());
+    for field in operand.fields {
+        result.push(field)
+    }
+    for field in fields {
+        result.push(field)
+    }
+    FastOperand { argument: operand.argument, fields: result, type_id }
+}
+
+fn fast_binary_operation(operation: bytecode::BinaryOp) -> bool {
+    match operation {
+        bytecode::BinaryOp::Equal | bytecode::BinaryOp::NotEqual | bytecode::BinaryOp::Less | bytecode::BinaryOp::LessEqual | bytecode::BinaryOp::Greater | bytecode::BinaryOp::GreaterEqual => true,
+        _ => false,
+    }
+}
+
+fn fast_operand_type(world: go_types::World, type_id: go_types::TypeId) -> bool {
+    match basic_kind(world, type_id) {
+        Some(go_types::BasicKind::Bool) | Some(go_types::BasicKind::UntypedBool) | Some(go_types::BasicKind::Float32,) | Some(go_types::BasicKind::Float64) | Some(go_types::BasicKind::UntypedFloat) | Some(go_types::BasicKind::Complex64,) | Some(go_types::BasicKind::Complex128) | Some(go_types::BasicKind::UntypedComplex,) | Some(go_types::BasicKind::String) | Some(go_types::BasicKind::UntypedString) => true,
+        Some(kind) => integer_layout(kind).is_some(),
+        None => false,
+    }
+}
+
+fn fast_constant_function(world: go_types::World, function: bytecode::BytecodeFunction) -> FastFunction {
+    if !function.captures.is_empty() || function.blocks.len() != 1 || function.results.len() != 1 {
+        return FastFunction::Unavailable
+    } else {};
+    let block = function.blocks[0];
+    if block.instructions.len() != 1 {
+        return FastFunction::Unavailable
+    } else {};
+    let (target, value) = match block.instructions[0].kind {
+        bytecode::InstructionKind::Constant { target, type_id, constant_kind, exact } => match constant_value(
+            world,
+            type_id,
+            constant_kind,
+            exact,
+        ) {
+            Ok(value) => (target, value),
+            Err(_) => return FastFunction::Unavailable,
+        },
+        _ => return FastFunction::Unavailable,
+    };
+    match block.terminator.kind {
+        bytecode::TerminatorKind::Return { values } if values.len() == 1
+            && values[0].value == target.value => {
+            FastFunction::Constant { value, steps: 2 }
+        },
+        _ => FastFunction::Unavailable,
+    }
+}
+
+fn fast_binary_function(world: go_types::World, function: bytecode::BytecodeFunction) -> FastFunction {
+    if !function.captures.is_empty() || function.blocks.len() != 1 || function.results.len() != 1 {
+        return FastFunction::Unavailable
+    } else {};
+    let locals = empty_fast_expressions(function.locals.len());
+    for index in 0..function.parameters.len() {
+        let local = function.parameters[index].value;
+        if local < 0 || local >= locals.len() {
+            return FastFunction::Unavailable
+        } else {};
+        locals[local] = FastExpression::Operand(
+            FastOperand {
+                argument: index,
+                fields: Vec::from_array([]),
+                type_id: function.locals[local].type_id,
+            },
+        );
+    }
+    let registers = empty_fast_expressions(function.register_types.len());
+    let places = empty_fast_places(function.place_count);
+    let block = function.blocks[0];
+    for instruction in block.instructions {
+        match instruction.kind {
+            bytecode::InstructionKind::RenewLocal { local } => {
+                if local.value < 0 || local.value >= locals.len() {
+                    return FastFunction::Unavailable
+                } else {};
+                locals[local.value] = FastExpression::Unknown;
+            },
+            bytecode::InstructionKind::LocalPlace { target, local } => {
+                if target.value < 0 || target.value >= places.len() || local.value < 0
+                    || local.value >= locals.len() {
+                    return FastFunction::Unavailable
+                } else {};
+                places[target.value] = local.value;
+            },
+            bytecode::InstructionKind::Load { target, source } => {
+                if target.value < 0 || target.value >= registers.len() || source.value < 0
+                    || source.value >= places.len()
+                    || places[source.value] < 0 {
+                    return FastFunction::Unavailable
+                } else {};
+                registers[target.value] = locals[places[source.value]];
+            },
+            bytecode::InstructionKind::Store { target, value } => {
+                if target.value < 0 || target.value >= places.len() || places[target.value] < 0
+                    || value.value < 0
+                    || value.value >= registers.len() {
+                    return FastFunction::Unavailable
+                } else {};
+                locals[places[target.value]] = registers[value.value];
+            },
+            bytecode::InstructionKind::FieldValue { target, base, index } => {
+                if target.value < 0 || target.value >= registers.len() || base.value < 0
+                    || base.value >= registers.len() {
+                    return FastFunction::Unavailable
+                } else {};
+                let operand = match fast_operand(registers[base.value]) {
+                    Some(value) => value,
+                    None => return FastFunction::Unavailable,
+                };
+                registers[target.value] = FastExpression::Operand(
+                    extend_fast_operand(operand, index, function.register_types[target.value]),
+                );
+            },
+            bytecode::InstructionKind::Binary { target, op, left, right } => {
+                if target.value < 0 || target.value >= registers.len() || left.value < 0
+                    || left.value >= registers.len()
+                    || right.value < 0
+                    || right.value >= registers.len()
+                    || !fast_binary_operation(op) {
+                    return FastFunction::Unavailable
+                } else {};
+                let left = match fast_operand(registers[left.value]) {
+                    Some(value) => value,
+                    None => return FastFunction::Unavailable,
+                };
+                let right = match fast_operand(registers[right.value]) {
+                    Some(value) => value,
+                    None => return FastFunction::Unavailable,
+                };
+                if !fast_operand_type(world, left.type_id)
+                    || !fast_operand_type(world, right.type_id) {
+                    return FastFunction::Unavailable
+                } else {};
+                registers[target.value] = FastExpression::Binary {
+                    operation: op,
+                    left,
+                    right,
+                    result_type: function.register_types[target.value],
+                };
+            },
+            _ => return FastFunction::Unavailable,
+        }
+    }
+    match block.terminator.kind {
+        bytecode::TerminatorKind::Return { values } if values.len() == 1 && values[0].value >= 0
+            && values[0].value < registers.len() => match registers[values[0].value] {
+            FastExpression::Operand(operand) => FastFunction::Projection {
+                operand,
+                steps: block.instructions.len() + 1,
+            },
+            FastExpression::Binary { operation, left, right, result_type } => {
+                FastFunction::Binary {
+                    operation,
+                    left,
+                    right,
+                    result_type,
+                    steps: block.instructions.len() + 1,
+                }
+            },
+            _ => FastFunction::Unavailable,
+        },
+        _ => FastFunction::Unavailable,
+    }
+}
+
+fn fast_function(world: go_types::World, function: bytecode::BytecodeFunction) -> FastFunction {
+    match fast_constant_function(world, function) {
+        FastFunction::Unavailable => fast_binary_function(world, function),
+        value => value,
+    }
+}
+
+fn fast_functions(program: bytecode::BytecodeProgram) -> Vec[FastFunction] {
+    let values: Vec[FastFunction] = Vec::with_capacity(program.functions.len());
+    for function in program.functions {
+        values.push(fast_function(program.world, function))
+    }
+    values
+}
+
 fn function_recyclable(function: bytecode::BytecodeFunction) -> bool {
     for block in function.blocks {
         for instruction in block.instructions {
@@ -2759,6 +3033,116 @@ fn count_step(state: VmState) -> bool {
     state.config.max_steps < 0.to_int64() || steps <= state.config.max_steps
 }
 
+fn fast_steps_available(state: VmState, count: int) -> bool {
+    let maximum = state.config.max_steps;
+    maximum < 0.to_int64() || state.steps.get() + count.to_int64() <= maximum
+}
+
+fn consume_fast_steps(state: VmState, count: int) -> unit {
+    state.steps.set(state.steps.get() + count.to_int64())
+}
+
+fn fast_call_operand(
+    state: VmState,
+    frame: Frame,
+    arguments: Vec[bytecode::RegisterId],
+    operand: FastOperand,
+) -> Result[Value, string] {
+    if operand.argument < 0 || operand.argument >= arguments.len() {
+        return Result::Err("fast function argument is invalid")
+    } else {};
+    let value = register(frame, arguments[operand.argument])?;
+    if operand.fields.is_empty() {
+        Result::Ok(copy_value(value))
+    } else {
+        aggregate_element(state, value, operand.fields, 0)
+    }
+}
+
+fn fast_borrow_call_operand(
+    state: VmState,
+    frame: Frame,
+    arguments: Vec[bytecode::RegisterId],
+    operand: FastOperand,
+) -> Result[Value, string] {
+    if operand.argument < 0 || operand.argument >= arguments.len() {
+        return Result::Err("fast function argument is invalid")
+    } else {};
+    let value = register(frame, arguments[operand.argument])?;
+    if operand.fields.is_empty() {
+        Result::Ok(value)
+    } else {
+        borrow_aggregate_element(state, value, operand.fields, 0)
+    }
+}
+
+fn execute_fast_static_call(
+    state: VmState,
+    frame: Frame,
+    function_id: bytecode::FunctionId,
+    arguments: Vec[bytecode::RegisterId],
+    results: Vec[bytecode::RegisterId],
+) -> Option[Result[unit, string]] {
+    if function_id.value < 0 || function_id.value >= state.fast_functions.len()
+        || function_id.value >= state.program.functions.len()
+        || results.len() != 1 {
+        return Option::None
+    } else {};
+    let function = state.program.functions[function_id.value];
+    if arguments.len() != function.parameters.len()
+        || state.depth.get() >= state.config.max_call_depth {
+        return Option::None
+    } else {};
+    match state.fast_functions[function_id.value] {
+        FastFunction::Unavailable => Option::None,
+        FastFunction::Constant { value, steps } => {
+            if !fast_steps_available(state, steps) {
+                return Option::None
+            } else {};
+            consume_fast_steps(state, steps);
+            Option::Some(set_register(frame, results[0], value))
+        },
+        FastFunction::Projection { operand, steps } => {
+            if !fast_steps_available(state, steps) {
+                return Option::None
+            } else {};
+            let value = match fast_call_operand(state, frame, arguments, operand) {
+                Ok(value) => value,
+                Err(_) => return Option::None,
+            };
+            consume_fast_steps(state, steps);
+            Option::Some(set_register(frame, results[0], value))
+        },
+        FastFunction::Binary { operation, left, right, result_type, steps } => {
+            if !fast_steps_available(state, steps) {
+                return Option::None
+            } else {};
+            let left = match fast_borrow_call_operand(state, frame, arguments, left) {
+                Ok(value) => value,
+                Err(_) => return Option::None,
+            };
+            let right = match fast_borrow_call_operand(state, frame, arguments, right) {
+                Ok(value) => value,
+                Err(_) => return Option::None,
+            };
+            let value = match binary_value_cached(
+                operation,
+                left,
+                right,
+                result_type,
+                state.program.world,
+                state.false_value,
+                state.true_value,
+            ) {
+                Ok(value) => value,
+                Err(_) => return Option::None,
+            };
+            consume_fast_steps(state, steps);
+            Option::Some(set_register(frame, results[0], value))
+        },
+    }
+}
+
 fn use_step(state: VmState, location: bytecode::SourceLocation) -> bool {
     state.location.set(location);
     count_step(state)
@@ -2807,7 +3191,9 @@ fn value_length(state: VmState, value: Value) -> Result[int, string] {
     match value {
         Value::Local(LocalValue::Slice(value)) => Result::Ok(value.length),
         Value::Local(LocalValue::String(value)) => Result::Ok(value.len()),
-        Value::Local(LocalValue::Aggregate { type_id: _, elements }) => Result::Ok(elements.len()),
+        Value::Local(LocalValue::Aggregate { type_id: _, elements, host: _ }) => Result::Ok(
+            elements.len(),
+        ),
         Value::Local(LocalValue::Map(id)) => if id < 0 {
             Result::Ok(0)
         } else if id >= state.maps.len() {
@@ -2835,7 +3221,9 @@ fn value_length(state: VmState, value: Value) -> Result[int, string] {
 fn value_capacity(state: VmState, value: Value) -> Result[int, string] {
     match value {
         Value::Local(LocalValue::Slice(value)) => Result::Ok(value.capacity),
-        Value::Local(LocalValue::Aggregate { type_id: _, elements }) => Result::Ok(elements.len()),
+        Value::Local(LocalValue::Aggregate { type_id: _, elements, host: _ }) => Result::Ok(
+            elements.len(),
+        ),
         Value::Local(LocalValue::Channel(id)) => if id < 0 {
             Result::Ok(0)
         } else if id >= state.channels.len() {
@@ -3253,7 +3641,7 @@ fn hash_value(state: VmState, value: Value) -> Result[uint64, string] {
                 None => 13.to_uint64(),
             },
         ),
-        Value::Local(LocalValue::Aggregate { type_id: _, elements }) => {
+        Value::Local(LocalValue::Aggregate { type_id: _, elements, host: _ }) => {
             let mut result = hash_mix(17.to_uint64(), elements.len().to_uint64());
             for element in elements {
                 result = hash_mix(result, hash_value(state, element)?);
@@ -3687,7 +4075,7 @@ fn aggregate_element(state: VmState, value: Value, indices: Vec[int], offset: in
         return Result::Ok(copy_value(value))
     } else {};
     match value {
-        Value::Local(LocalValue::Aggregate { type_id: _, elements }) => {
+        Value::Local(LocalValue::Aggregate { type_id: _, elements, host: _ }) => {
             let index = indices[offset];
             if index < 0 || index >= elements.len() {
                 Result::Err("field index out of range")
@@ -3725,12 +4113,58 @@ fn aggregate_element(state: VmState, value: Value, indices: Vec[int], offset: in
     }
 }
 
+fn borrow_aggregate_element(state: VmState, value: Value, indices: Vec[int], offset: int) -> Result[
+    Value,
+    string,
+] {
+    if offset >= indices.len() {
+        return Result::Ok(value)
+    } else {};
+    match value {
+        Value::Local(LocalValue::Aggregate { type_id: _, elements, host: _ }) => {
+            let index = indices[offset];
+            if index < 0 || index >= elements.len() {
+                Result::Err("field index out of range")
+            } else {
+                borrow_aggregate_element(state, elements[index], indices, offset + 1)
+            }
+        },
+        Value::Local(LocalValue::Pointer(Some(place))) => {
+            let loaded = borrow_place(state.memory, place)?;
+            borrow_aggregate_element(state, loaded, indices, offset)
+        },
+        Value::Host { type_id, value } => {
+            let index = indices[offset];
+            let field_type = native_field_type(state.program.world, type_id, index)?;
+            let field = native_field_reference(value, index);
+            if !native_host_value_valid(field) {
+                Result::Err("native field is not accessible")
+            } else if offset + 1 < indices.len() {
+                borrow_aggregate_element(
+                    state,
+                    Value::Host { type_id: field_type, value: field },
+                    indices,
+                    offset + 1,
+                )
+            } else {
+                native_result(
+                    state,
+                    clone_host_value(field),
+                    field_type,
+                    runtime_native_type_key(state, field_type)?,
+                )
+            }
+        },
+        _ => Result::Err("field selection on non-aggregate value"),
+    }
+}
+
 fn indexed_value(state: VmState, value: Value, index: Value, result_type: go_types::TypeId) -> Result[
     (Value, bool),
     string,
 ] {
     match value {
-        Value::Local(LocalValue::Aggregate { type_id: _, elements }) => {
+        Value::Local(LocalValue::Aggregate { type_id: _, elements, host: _ }) => {
             let index = integer_index(index)?;
             if index < 0 || index >= elements.len() {
                 Result::Err(
@@ -3795,7 +4229,7 @@ fn indexed_value(state: VmState, value: Value, index: Value, result_type: go_typ
 
 fn indexed_integer_value(state: VmState, value: Value, index: int) -> Result[(Value, bool), string] {
     match value {
-        Value::Local(LocalValue::Aggregate { type_id: _, elements }) => {
+        Value::Local(LocalValue::Aggregate { type_id: _, elements, host: _ }) => {
             if index < 0 || index >= elements.len() {
                 Result::Err(
                     "index out of range [" + index.to_string() + "] with length "
@@ -3930,7 +4364,7 @@ fn sliced_place(
     maximum: Option[Value],
 ) -> Result[Value, string] {
     match load_place(state.memory, place)? {
-        Value::Local(LocalValue::Aggregate { type_id: _, elements }) => {
+        Value::Local(LocalValue::Aggregate { type_id: _, elements, host: _ }) => {
             let low = bounded_index(low, 0)?;
             let high = bounded_index(high, elements.len())?;
             let maximum = bounded_index(maximum, elements.len())?;
@@ -3984,7 +4418,7 @@ fn sliced_value(
                 ),
             )
         },
-        Value::Local(LocalValue::Aggregate { type_id, elements }) => {
+        Value::Local(LocalValue::Aggregate { type_id, elements, host }) => {
             let low = bounded_index(low, 0)?;
             let high = bounded_index(high, elements.len())?;
             let maximum = bounded_index(maximum, elements.len())?;
@@ -3993,7 +4427,7 @@ fn sliced_value(
             } else {};
             let cell = allocate_cell(
                 state.memory,
-                Value::Local(LocalValue::Aggregate { type_id, elements }),
+                Value::Local(LocalValue::Aggregate { type_id, elements, host }),
             );
             Result::Ok(
                 Value::Local(
@@ -4048,10 +4482,7 @@ fn aggregate_value(
                 } else {};
                 elements[value.index] = copy_value(register(frame, value.value)?);
             }
-            let backing = allocate_cell(
-                state.memory,
-                Value::Local(LocalValue::Aggregate { type_id, elements }),
-            );
+            let backing = allocate_cell(state.memory, local_aggregate(type_id, elements));
             Result::Ok(
                 Value::Local(
                     LocalValue::Slice(
@@ -4072,7 +4503,7 @@ fn aggregate_value(
         } | go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables: _ } } => {
             let result = runtime_zero_value(state, type_id)?;
             match result {
-                Value::Local(LocalValue::Aggregate { type_id, elements }) => {
+                Value::Local(LocalValue::Aggregate { type_id, elements, host: _ }) => {
                     let updated: Vec[Value] = Vec::with_capacity(elements.len());
                     for element in elements {
                         updated.push(element)
@@ -4083,7 +4514,7 @@ fn aggregate_value(
                         } else {};
                         updated[value.index] = copy_value(register(frame, value.value)?);
                     }
-                    Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements: updated }))
+                    Result::Ok(local_aggregate(type_id, updated))
                 },
                 Value::Host { type_id, value } => {
                     for element in values {
@@ -4145,7 +4576,7 @@ fn make_slice(state: VmState, type_id: go_types::TypeId, length: int, capacity: 
         for _ in 0..capacity {
             elements.push(runtime_zero_value(state, element)?)
         }
-        allocate_cell(state.memory, Value::Local(LocalValue::Aggregate { type_id, elements }))
+        allocate_cell(state.memory, local_aggregate(type_id, elements))
     };
     Result::Ok(
         Value::Local(
@@ -4472,21 +4903,21 @@ fn runtime_zero_value(state: VmState, type_id: go_types::TypeId) -> Result[Value
                     for _ in 0..length.to_int() {
                         elements.push(runtime_zero_value(state, element)?)
                     }
-                    Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
+                    Result::Ok(local_aggregate(type_id, elements))
                 },
                 go_types::TypeKind::Struct { fields } => {
                     let elements: Vec[Value] = Vec::with_capacity(fields.len());
                     for field in fields {
                         elements.push(runtime_zero_value(state, field.variable.type_id)?)
                     }
-                    Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
+                    Result::Ok(local_aggregate(type_id, elements))
                 },
                 go_types::TypeKind::Tuple { variables } => {
                     let elements: Vec[Value] = Vec::with_capacity(variables.len());
                     for variable in variables {
                         elements.push(runtime_zero_value(state, variable.type_id)?)
                     }
-                    Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
+                    Result::Ok(local_aggregate(type_id, elements))
                 },
                 _ => zero_value(state.program.world, type_id),
             };
@@ -4761,7 +5192,7 @@ fn native_argument(state: VmState, value: Value, type_id: go_types::TypeId, type
             } else {};
             Result::Ok(host)
         },
-        Value::Local(LocalValue::Aggregate { type_id: aggregate_type, elements }) => {
+        Value::Local(LocalValue::Aggregate { type_id: aggregate_type, elements, host: _ }) => {
             let host = new_native_aggregate(type_key);
             if !native_host_value_valid(host) {
                 return Result::Err("native aggregate type is not registered: " + type_key)
@@ -4901,7 +5332,7 @@ fn native_aggregate_result(state: VmState, value: dyn HostValueMarker, type_id: 
             )?,
         )
     }
-    Result::Ok(Value::Local(LocalValue::Aggregate { type_id, elements }))
+    Result::Ok(local_aggregate(type_id, elements))
 }
 
 fn native_result(
@@ -6285,20 +6716,32 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
                         results,
                         variadic,
                     )?,
-                    bytecode::CallTarget::Static(function) => match execute_function(
+                    bytecode::CallTarget::Static(function) => match execute_fast_static_call(
                         state,
+                        frame,
                         function,
-                        block_argument_values(frame, arguments)?,
-                        state.empty_captures,
-                        Option::Some(frame_location(frame, instruction.location)),
-                        Option::None,
-                    )? {
-                        InvocationOutcome::Returned(values) => values,
-                        InvocationOutcome::Panicked(payload) => {
-                            return Result::Ok(pending_instruction_panic(state, payload))
+                        arguments,
+                        results,
+                    ) {
+                        Some(result) => {
+                            result?;
+                            return Result::Ok(0)
                         },
-                        InvocationOutcome::Exited(code) => {
-                            return Result::Ok(pending_instruction_exit(state, code))
+                        None => match execute_function(
+                            state,
+                            function,
+                            block_argument_values(frame, arguments)?,
+                            state.empty_captures,
+                            Option::Some(frame_location(frame, instruction.location)),
+                            Option::None,
+                        )? {
+                            InvocationOutcome::Returned(values) => values,
+                            InvocationOutcome::Panicked(payload) => {
+                                return Result::Ok(pending_instruction_panic(state, payload))
+                            },
+                            InvocationOutcome::Exited(code) => {
+                                return Result::Ok(pending_instruction_exit(state, code))
+                            },
                         },
                     },
                     _ => match invoke_prepared(
@@ -8769,9 +9212,15 @@ fn frame_for_call(
     };
     let scalar_register_layouts = state.scalar_register_layouts[function.id.value];
     let scalar_local_layouts = state.scalar_local_layouts[function.id.value];
+    let scalar_count = if scalar_register_layouts.is_empty() {
+        0
+    } else {
+        scalar_register_layouts.len() * 2 + scalar_local_layouts.len() * 2 + function.place_count
+    };
     let slots = take_frame_slots(
         state,
         function.register_types.len(),
+        scalar_count,
         function.place_count,
         function.locals.len(),
     );
@@ -8796,12 +9245,9 @@ fn frame_for_call(
         }
     }
     let scalar = if scalar_register_layouts.is_empty() {
-        Vec::from_array([])
+        slots.scalar
     } else {
-        let scalar = empty_scalar_values(
-            scalar_register_layouts.len() * 2 + scalar_local_layouts.len() * 2
-                + function.place_count,
-        );
+        let scalar = slots.scalar;
         for register_index in 0..scalar_register_layouts.len() {
             scalar[scalar_register_layouts.len() + register_index] = scalar_layout_code(
                 scalar_register_layouts[register_index],
@@ -9440,6 +9886,7 @@ fn initialize_state(program: bytecode::BytecodeProgram, config: VmConfig) -> Res
         scalar_local_layouts: scalar_local_layouts(program),
         instruction_constants: predecoded_constants(program),
         small_integers: small_integer_values(),
+        fast_functions: fast_functions(program),
     };
     for global in state.program.globals {
         match runtime_zero_value(state, global.type_id) {

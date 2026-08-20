@@ -445,6 +445,7 @@ pub enum LocalValue {
     Aggregate {
         type_id: go_types::TypeId,
         elements: Vec[Value],
+        host: bool,
     },
     Map(int),
     Channel(int),
@@ -476,9 +477,7 @@ fn aggregate_has_host(elements: Vec[Value]) -> bool {
     for element in elements {
         match element {
             Value::Host { .. } => return true,
-            Value::Local(LocalValue::Aggregate { type_id: _, elements }) => if aggregate_has_host(
-                elements,
-            ) {
+            Value::Local(LocalValue::Aggregate { type_id: _, elements: _, host }) => if host {
                 return true
             } else {},
             _ => {},
@@ -487,14 +486,19 @@ fn aggregate_has_host(elements: Vec[Value]) -> bool {
     false
 }
 
+fn local_aggregate(type_id: go_types::TypeId, elements: Vec[Value]) -> Value {
+    let host = aggregate_has_host(elements);
+    Value::Local(LocalValue::Aggregate { type_id, elements, host })
+}
+
 pub fn copy_value(value: Value) -> Value {
     match value {
-        Value::Local(LocalValue::Aggregate { type_id, elements }) => if aggregate_has_host(elements) {
+        Value::Local(LocalValue::Aggregate { type_id, elements, host }) => if host {
             let copied: Vec[Value] = Vec::with_capacity(elements.len());
             for element in elements {
                 copied.push(copy_value(element))
             }
-            Value::Local(LocalValue::Aggregate { type_id, elements: copied })
+            Value::Local(LocalValue::Aggregate { type_id, elements: copied, host })
         } else {
             value
         },
@@ -699,8 +703,8 @@ pub fn values_equal(world: go_types::World, left: Value, right: Value) -> Result
             Value::Local(LocalValue::Function(Option::None)),
         ) => Result::Ok(false),
         (
-            Value::Local(LocalValue::Aggregate { type_id: _, elements: left }),
-            Value::Local(LocalValue::Aggregate { type_id: _, elements: right }),
+            Value::Local(LocalValue::Aggregate { type_id: _, elements: left, host: _ }),
+            Value::Local(LocalValue::Aggregate { type_id: _, elements: right, host: _ }),
         ) => {
             if left.len() != right.len() {
                 return Result::Ok(false)
