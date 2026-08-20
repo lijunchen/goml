@@ -2,7 +2,6 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_slices "slices"
     _goml_strings "strings"
 )
 
@@ -71,7 +70,7 @@ func vec_new__Vec_6string() *_goml_vec_string {
 
 func vec_with_capacity__Vec_6string(capacity int) *_goml_vec_string {
     return &_goml_vec_string{
-        items: _goml_slices.Grow([]string{}, int(capacity)),
+        items: make([]string, 0, capacity),
     }
 }
 

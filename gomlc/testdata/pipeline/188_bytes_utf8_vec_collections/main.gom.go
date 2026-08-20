@@ -2,7 +2,6 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_slices "slices"
     _goml_strings "strings"
 )
 
@@ -104,7 +103,7 @@ type _goml_vec_string struct {
 
 func vec_with_capacity__Vec_6string(capacity int) *_goml_vec_string {
     return &_goml_vec_string{
-        items: _goml_slices.Grow([]string{}, int(capacity)),
+        items: make([]string, 0, capacity),
     }
 }
 
@@ -123,7 +122,7 @@ type _goml_vec_int32 struct {
 
 func vec_with_capacity__Vec_5int32(capacity int) *_goml_vec_int32 {
     return &_goml_vec_int32{
-        items: _goml_slices.Grow([]int32{}, int(capacity)),
+        items: make([]int32, 0, capacity),
     }
 }
 
@@ -150,7 +149,23 @@ func vec_capacity__Vec_5int32(vec *_goml_vec_int32) int {
 }
 
 func vec_reserve__Vec_5int32(vec *_goml_vec_int32, additional int) struct{} {
-    vec.items = _goml_slices.Grow(vec.items, int(additional))
+    if additional < 0 {
+        panic("negative vector capacity")
+    }
+    var length int = len(vec.items)
+    var required int = length + additional
+    if required < length {
+        panic("vector capacity overflow")
+    }
+    if required > cap(vec.items) {
+        var next_capacity int = cap(vec.items) * 2
+        if next_capacity < required {
+            next_capacity = required
+        }
+        var next_items []int32 = make([]int32, length, next_capacity)
+        copy(next_items, vec.items)
+        vec.items = next_items
+    }
     return struct{}{}
 }
 

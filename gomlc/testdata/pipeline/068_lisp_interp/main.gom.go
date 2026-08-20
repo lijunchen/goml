@@ -2,7 +2,6 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_slices "slices"
 )
 
 func _goml_runtime_core_bool_to_string(x bool) string {
@@ -57,7 +56,7 @@ func vec_new__Vec_5Token() *_goml_vec_Token {
 
 func vec_with_capacity__Vec_5Token(capacity int) *_goml_vec_Token {
     return &_goml_vec_Token{
-        items: _goml_slices.Grow([]Token{}, int(capacity)),
+        items: make([]Token, 0, capacity),
     }
 }
 
@@ -86,7 +85,7 @@ func vec_new__Vec_7Binding() *_goml_vec_Binding {
 
 func vec_with_capacity__Vec_7Binding(capacity int) *_goml_vec_Binding {
     return &_goml_vec_Binding{
-        items: _goml_slices.Grow([]Binding{}, int(capacity)),
+        items: make([]Binding, 0, capacity),
     }
 }
 
@@ -115,7 +114,7 @@ func vec_new__Vec_5SExpr() *_goml_vec_SExpr {
 
 func vec_with_capacity__Vec_5SExpr(capacity int) *_goml_vec_SExpr {
     return &_goml_vec_SExpr{
-        items: _goml_slices.Grow([]SExpr{}, int(capacity)),
+        items: make([]SExpr, 0, capacity),
     }
 }
 
@@ -144,7 +143,7 @@ func vec_new__Vec_5Value() *_goml_vec_Value {
 
 func vec_with_capacity__Vec_5Value(capacity int) *_goml_vec_Value {
     return &_goml_vec_Value{
-        items: _goml_slices.Grow([]Value{}, int(capacity)),
+        items: make([]Value, 0, capacity),
     }
 }
 
@@ -173,7 +172,7 @@ func vec_new__Vec_6string() *_goml_vec_string {
 
 func vec_with_capacity__Vec_6string(capacity int) *_goml_vec_string {
     return &_goml_vec_string{
-        items: _goml_slices.Grow([]string{}, int(capacity)),
+        items: make([]string, 0, capacity),
     }
 }
 

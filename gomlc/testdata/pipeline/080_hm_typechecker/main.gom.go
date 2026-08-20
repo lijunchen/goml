@@ -2,7 +2,6 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_slices "slices"
 )
 
 func _goml_runtime_core_string_get(s string, i int) rune {
@@ -34,7 +33,7 @@ func vec_new__Vec_8EnvEntry() *_goml_vec_EnvEntry {
 
 func vec_with_capacity__Vec_8EnvEntry(capacity int) *_goml_vec_EnvEntry {
     return &_goml_vec_EnvEntry{
-        items: _goml_slices.Grow([]EnvEntry{}, int(capacity)),
+        items: make([]EnvEntry, 0, capacity),
     }
 }
 
@@ -63,7 +62,7 @@ func vec_new__Vec_10SubstEntry() *_goml_vec_SubstEntry {
 
 func vec_with_capacity__Vec_10SubstEntry(capacity int) *_goml_vec_SubstEntry {
     return &_goml_vec_SubstEntry{
-        items: _goml_slices.Grow([]SubstEntry{}, int(capacity)),
+        items: make([]SubstEntry, 0, capacity),
     }
 }
 

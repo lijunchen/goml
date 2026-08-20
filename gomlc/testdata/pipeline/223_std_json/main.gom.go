@@ -3,7 +3,6 @@ package main
 import (
     _goml_context "context"
     _goml_fmt "fmt"
-    _goml_slices "slices"
     _goml_sync "sync"
 )
 
@@ -82,7 +81,23 @@ func vec_push__Vec_5uint8(vec *_goml_vec_uint8, elem uint8) struct{} {
 }
 
 func vec_reserve__Vec_5uint8(vec *_goml_vec_uint8, additional int) struct{} {
-    vec.items = _goml_slices.Grow(vec.items, int(additional))
+    if additional < 0 {
+        panic("negative vector capacity")
+    }
+    var length int = len(vec.items)
+    var required int = length + additional
+    if required < length {
+        panic("vector capacity overflow")
+    }
+    if required > cap(vec.items) {
+        var next_capacity int = cap(vec.items) * 2
+        if next_capacity < required {
+            next_capacity = required
+        }
+        var next_items []uint8 = make([]uint8, length, next_capacity)
+        copy(next_items, vec.items)
+        vec.items = next_items
+    }
     return struct{}{}
 }
 

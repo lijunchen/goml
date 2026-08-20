@@ -2,7 +2,6 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_slices "slices"
     _goml_sync "sync"
     _goml_runtime_pkg "runtime"
 )
@@ -76,7 +75,7 @@ type _goml_vec_int struct {
 
 func vec_with_capacity__Vec_3int(capacity int) *_goml_vec_int {
     return &_goml_vec_int{
-        items: _goml_slices.Grow([]int{}, int(capacity)),
+        items: make([]int, 0, capacity),
     }
 }
 

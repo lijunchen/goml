@@ -2,7 +2,6 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_slices "slices"
     _goml_strings "strings"
 )
 
@@ -33,7 +32,7 @@ type _goml_vec_int struct {
 
 func vec_with_capacity__Vec_3int(capacity int) *_goml_vec_int {
     return &_goml_vec_int{
-        items: _goml_slices.Grow([]int{}, int(capacity)),
+        items: make([]int, 0, capacity),
     }
 }
 
@@ -72,7 +71,7 @@ type _goml_vec_string struct {
 
 func vec_with_capacity__Vec_6string(capacity int) *_goml_vec_string {
     return &_goml_vec_string{
-        items: _goml_slices.Grow([]string{}, int(capacity)),
+        items: make([]string, 0, capacity),
     }
 }
 
@@ -100,7 +99,7 @@ type _goml_vec_Tuple2_3int_3int struct {
 
 func vec_with_capacity__Vec_16Tuple2_3int_3int(capacity int) *_goml_vec_Tuple2_3int_3int {
     return &_goml_vec_Tuple2_3int_3int{
-        items: _goml_slices.Grow([]Tuple2_3int_3int{}, int(capacity)),
+        items: make([]Tuple2_3int_3int, 0, capacity),
     }
 }
 
