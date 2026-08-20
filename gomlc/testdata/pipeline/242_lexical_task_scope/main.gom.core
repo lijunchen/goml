@@ -4713,10 +4713,7 @@ fn std::task::race(bodies/91: Vec[(std::task::CancelToken) -> T]) -> Option[T] {
     } in
   std::task::scope(
     |scope/92: std::task::Scope| => {
-      let results/93 =
-        inherent#Channel#Channel[T]#new(
-          inherent#Vec#Vec[(std::task::CancelToken)->T]#len(bodies/91)
-        ) in
+      let results/93 = inherent#Channel#Channel[T]#new(1) in
       let _wild103 =
         {
           let for_source97 = bodies/91 in
@@ -4733,7 +4730,15 @@ fn std::task::race(bodies/91: Vec[(std::task::CancelToken) -> T]) -> Option[T] {
                       inherent#std::task::Scope#std::task::Scope#spawn(
                         scope/92,
                         |cancel/95: std::task::CancelToken| => {
-                          inherent#Channel#Channel[T]#send(results/93, body/94(cancel/95))
+                          let value/96 = body/94(cancel/95) in
+                          select {
+                            send(results/93, value/96) => {
+                              ()
+                            },
+                            default => {
+                              ()
+                            },
+                          }
                         }
                       ) in
                     {
@@ -4744,9 +4749,9 @@ fn std::task::race(bodies/91: Vec[(std::task::CancelToken) -> T]) -> Option[T] {
               }
           }
         } in
-      let value/96 = inherent#Channel#Channel[T]#recv(results/93) in
+      let value/97 = inherent#Channel#Channel[T]#recv(results/93) in
       let _wild104 = inherent#std::task::Scope#std::task::Scope#cancel(scope/92) in
-      value/96
+      value/97
     }
   )
 }
