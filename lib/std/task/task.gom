@@ -279,6 +279,18 @@ fn concurrent_worker[T, E](
     }
 }
 
+fn record_concurrent_result[E](ordered: Vec[Option[E]], received: Option[(int, Result[unit, E])]) -> unit {
+    match received {
+        Some(item) => match item.1 {
+            Ok(()) => (),
+            Err(error) => {
+                ordered[item.0] = Option::Some(error);
+            },
+        },
+        None => (),
+    }
+}
+
 pub fn for_each_concurrent[T, E](
     limit: int,
     values: Vec[T],
@@ -295,12 +307,8 @@ pub fn for_each_concurrent[T, E](
     } else {
         total
     };
-    let work: Channel[(int, T)] = Channel::new(total);
-    let results: Channel[(int, Result[unit, E])] = Channel::new(total);
-    for index in 0..total {
-        work.send((index, values[index]))
-    }
-    work.close();
+    let work: Channel[(int, T)] = Channel::new(worker_count);
+    let results: Channel[(int, Result[unit, E])] = Channel::new(worker_count);
     scope(
         |scope: Scope| {
             for _ in 0..worker_count {
@@ -312,17 +320,25 @@ pub fn for_each_concurrent[T, E](
             for _ in 0..total {
                 ordered.push(Option::None)
             }
-            for _ in 0..total {
-                match results.recv() {
-                    Some(item) => match item.1 {
-                        Ok(()) => (),
-                        Err(error) => {
-                            ordered[item.0] = Option::Some(error);
+            let mut dispatched = 0;
+            let mut completed = 0;
+            while completed < total {
+                if dispatched < total {
+                    select {
+                        send(work,(dispatched, values[dispatched])) => {
+                            dispatched += 1;
                         },
-                    },
-                    None => (),
-                }
+                        recv(results) as received => {
+                            record_concurrent_result(ordered, received);
+                            completed += 1;
+                        },
+                    }
+                } else {
+                    record_concurrent_result(ordered, results.recv());
+                    completed += 1;
+                };
             }
+            work.close();
             results.close();
             let errors: Vec[IndexedError[E]] = Vec::from_array([]);
             for index in 0..total {
