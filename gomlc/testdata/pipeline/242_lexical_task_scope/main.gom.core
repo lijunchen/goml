@@ -4491,13 +4491,65 @@ fn std::task::concurrent_worker(
   }
 }
 
+fn std::task::record_concurrent_result(
+  ordered/75: Vec[Option[E]],
+  received/76: Option[(int, Result[unit, E])]
+) -> unit {
+  match received/76 {
+    Option::None => {
+      ()
+    },
+    Option::Some(x55) => {
+      {
+        let x55 = Option::Some._0(received/76) in
+        {
+          let item/77 = x55 in
+          {
+            let mtmp56 = item/77.1 in
+            match mtmp56 {
+              Result::Ok(x57) => {
+                {
+                  let x57 = Result::Ok._0(mtmp56) in
+                  match x57 {
+                    () => {
+                      ()
+                    },
+                  }
+                }
+              },
+              Result::Err(x58) => {
+                {
+                  let x58 = Result::Err._0(mtmp56) in
+                  {
+                    let error/78 = x58 in
+                    {
+                      let _wild63 =
+                        {
+                          let place_root59 = ordered/75 in
+                          let index60 = item/77.0 in
+                          let place61 = @intrinsic(vec.get)(place_root59, index60) in
+                          let value62 = Option::Some(error/78) in
+                          @intrinsic(vec.set)(place_root59, index60, value62)
+                        } in
+                    }
+                  }
+                }
+              },
+            }
+          }
+        }
+      }
+    },
+  }
+}
+
 fn std::task::for_each_concurrent(
-  limit/75: int,
-  values/76: Vec[T],
-  body/77: (std::task::CancelToken, T) -> Result[unit, E]
+  limit/79: int,
+  values/80: Vec[T],
+  body/81: (std::task::CancelToken, T) -> Result[unit, E]
 ) -> Result[unit, Vec[std::task::IndexedError[E]]] {
-  let _wild55 =
-    if inherent#Vec#Vec[T]#is_empty(values/76) {
+  let _wild64 =
+    if inherent#Vec#Vec[T]#is_empty(values/80) {
         {
           return Result::Ok(())
         }
@@ -4506,64 +4558,43 @@ fn std::task::for_each_concurrent(
           ()
         }
     } in
-  let total/78 = inherent#Vec#Vec[T]#len(values/76) in
-  let worker_count/79 =
-    if (limit/75 <= 0) {
+  let total/82 = inherent#Vec#Vec[T]#len(values/80) in
+  let worker_count/83 =
+    if (limit/79 <= 0) {
         {
           1
         }
     } else {
-        if (limit/75 < total/78) {
+        if (limit/79 < total/82) {
             {
-              limit/75
+              limit/79
             }
         } else {
             {
-              total/78
+              total/82
             }
         }
     } in
-  let work/80 = inherent#Channel#Channel[(int,T)]#new(total/78) in
-  let results/81 = inherent#Channel#Channel[(int,Result[unit,E])]#new(total/78) in
-  let _wild60 =
-    {
-      let for_index56 = 0 in
-      let for_limit57 = total/78 in
-      while (for_index56 < for_limit57) {
-          {
-            let for_item58 = for_index56 in
-            let _wild59 = for_index56 = (for_index56 + 1) in
-            {
-              let index/82 = for_item58 in
-              {
-                inherent#Channel#Channel[(int,T)]#send(
-                  work/80,
-                  (index/82, @intrinsic(vec.get)(values/76, index/82))
-                )
-              }
-            }
-          }
-      }
-    } in
-  let _wild61 = inherent#Channel#Channel[(int,T)]#close(work/80) in
+  let work/84 = inherent#Channel#Channel[(int,T)]#new(worker_count/83) in
+  let results/85 = inherent#Channel#Channel[(int,Result[unit,E])]#new(worker_count/83) in
   std::task::scope(
-    |scope/83: std::task::Scope| => {
-      let _wild67 =
+    |scope/86: std::task::Scope| => {
+      let _wild70 =
         {
-          let for_index62 = 0 in
-          let for_limit63 = worker_count/79 in
-          while (for_index62 < for_limit63) {
+          let for_index65 = 0 in
+          let for_limit66 = worker_count/83 in
+          while (for_index65 < for_limit66) {
               {
-                let _wild65 = for_index62 = (for_index62 + 1) in
+                let _wild68 = for_index65 = (for_index65 + 1) in
                 {
-                  let mtmp66 =
+                  let mtmp69 =
                     inherent#std::task::Scope#std::task::Scope#spawn(
-                      scope/83,
-                      |cancel/84: std::task::CancelToken| => std::task::concurrent_worker(
-                        cancel/84,
-                        work/80,
-                        results/81,
-                        body/77
+                      scope/86,
+                      |cancel/87: std::task::CancelToken| => std::task::concurrent_worker(
+                        cancel/87,
+                        work/84,
+                        results/85,
+                        body/81
                       )
                     ) in
                   {
@@ -4573,109 +4604,101 @@ fn std::task::for_each_concurrent(
               }
           }
         } in
-      let ordered/85 = inherent#Vec#Vec[Option[E]]#with_capacity(total/78) in
-      let _wild72 =
+      let ordered/88 = inherent#Vec#Vec[Option[E]]#with_capacity(total/82) in
+      let _wild75 =
         {
-          let for_index68 = 0 in
-          let for_limit69 = total/78 in
-          while (for_index68 < for_limit69) {
+          let for_index71 = 0 in
+          let for_limit72 = total/82 in
+          while (for_index71 < for_limit72) {
               {
-                let _wild71 = for_index68 = (for_index68 + 1) in
+                let _wild74 = for_index71 = (for_index71 + 1) in
                 {
-                  inherent#Vec#Vec[Option[E]]#push(ordered/85, Option::None)
+                  inherent#Vec#Vec[Option[E]]#push(ordered/88, Option::None)
                 }
               }
           }
         } in
-      let _wild87 =
-        {
-          let for_index73 = 0 in
-          let for_limit74 = total/78 in
-          while (for_index73 < for_limit74) {
-              {
-                let _wild76 = for_index73 = (for_index73 + 1) in
-                {
-                  {
-                    let mtmp77 = inherent#Channel#Channel[(int,Result[unit,E])]#recv(results/81) in
-                    match mtmp77 {
-                      Option::None => {
-                        ()
-                      },
-                      Option::Some(x78) => {
-                        {
-                          let x78 = Option::Some._0(mtmp77) in
+      let dispatched/89 = 0 in
+      let completed/90 = 0 in
+      let _wild88 =
+        while (completed/90 < total/82) {
+            {
+              let _wild87 =
+                if (dispatched/89 < total/82) {
+                    {
+                      select {
+                        send(work/84, (
+                          dispatched/89,
+                          @intrinsic(vec.get)(values/80, dispatched/89)
+                        )) => {
                           {
-                            let item/86 = x78 in
-                            {
-                              let mtmp79 = item/86.1 in
-                              match mtmp79 {
-                                Result::Ok(x80) => {
-                                  {
-                                    let x80 = Result::Ok._0(mtmp79) in
-                                    match x80 {
-                                      () => {
-                                        ()
-                                      },
-                                    }
-                                  }
-                                },
-                                Result::Err(x81) => {
-                                  {
-                                    let x81 = Result::Err._0(mtmp79) in
-                                    {
-                                      let error/87 = x81 in
-                                      {
-                                        let _wild86 =
-                                          {
-                                            let place_root82 = ordered/85 in
-                                            let index83 = item/86.0 in
-                                            let place84 =
-                                              @intrinsic(vec.get)(place_root82, index83) in
-                                            let value85 = Option::Some(error/87) in
-                                            @intrinsic(vec.set)(place_root82, index83, value85)
-                                          } in
-                                      }
-                                    }
-                                  }
-                                },
-                              }
-                            }
+                            let _wild78 =
+                              {
+                                let compound_old76 = dispatched/89 in
+                                let compound_value77 = 1 in
+                                dispatched/89 = (compound_old76 + compound_value77)
+                              } in
                           }
-                        }
-                      },
+                        },
+                        recv(results/85) as received/91 => {
+                          {
+                            let _wild79 =
+                              std::task::record_concurrent_result(ordered/88, received/91) in
+                            let _wild82 =
+                              {
+                                let compound_old80 = completed/90 in
+                                let compound_value81 = 1 in
+                                completed/90 = (compound_old80 + compound_value81)
+                              } in
+                          }
+                        },
+                      }
                     }
-                  }
-                }
-              }
-          }
+                } else {
+                    {
+                      let _wild83 =
+                        std::task::record_concurrent_result(
+                          ordered/88,
+                          inherent#Channel#Channel[(int,Result[unit,E])]#recv(results/85)
+                        ) in
+                      let _wild86 =
+                        {
+                          let compound_old84 = completed/90 in
+                          let compound_value85 = 1 in
+                          completed/90 = (compound_old84 + compound_value85)
+                        } in
+                    }
+                } in
+            }
         } in
-      let _wild88 = inherent#Channel#Channel[(int,Result[unit,E])]#close(results/81) in
-      let errors/88 = @intrinsic(vec.from_array)([]) in
-      let _wild95 =
+      let _wild89 = inherent#Channel#Channel[(int,T)]#close(work/84) in
+      let _wild90 = inherent#Channel#Channel[(int,Result[unit,E])]#close(results/85) in
+      let errors/92 = @intrinsic(vec.from_array)([]) in
+      let _wild97 =
         {
-          let for_index89 = 0 in
-          let for_limit90 = total/78 in
-          while (for_index89 < for_limit90) {
+          let for_index91 = 0 in
+          let for_limit92 = total/82 in
+          while (for_index91 < for_limit92) {
               {
-                let for_item91 = for_index89 in
-                let _wild92 = for_index89 = (for_index89 + 1) in
+                let for_item93 = for_index91 in
+                let _wild94 = for_index91 = (for_index91 + 1) in
                 {
-                  let index/89 = for_item91 in
+                  let index/93 = for_item93 in
                   {
                     {
-                      let mtmp93 = @intrinsic(vec.get)(ordered/85, index/89) in
-                      match mtmp93 {
+                      let mtmp95 = @intrinsic(vec.get)(ordered/88, index/93) in
+                      match mtmp95 {
                         Option::None => {
                           ()
                         },
-                        Option::Some(x94) => {
+                        Option::Some(x96) => {
                           {
-                            let x94 = Option::Some._0(mtmp93) in
+                            let x96 = Option::Some._0(mtmp95) in
                             {
-                              let error/90 = x94 in
+                              let error/94 = x96 in
                               inherent#Vec#Vec[std::task::IndexedError[E]]#push(
-                                errors/88,
-                                std::task::IndexedError { index: index/89, error: error/90 }
+                                errors/92,
+                                std::task::IndexedError { index: index/93, error: error/94 }
                               )
                             }
                           }
@@ -4687,22 +4710,22 @@ fn std::task::for_each_concurrent(
               }
           }
         } in
-      if inherent#Vec#Vec[std::task::IndexedError[E]]#is_empty(errors/88) {
+      if inherent#Vec#Vec[std::task::IndexedError[E]]#is_empty(errors/92) {
           {
             Result::Ok(())
           }
       } else {
           {
-            Result::Err(errors/88)
+            Result::Err(errors/92)
           }
       }
     }
   )
 }
 
-fn std::task::race(bodies/91: Vec[(std::task::CancelToken) -> T]) -> Option[T] {
-  let _wild96 =
-    if inherent#Vec#Vec[(std::task::CancelToken)->T]#is_empty(bodies/91) {
+fn std::task::race(bodies/95: Vec[(std::task::CancelToken) -> T]) -> Option[T] {
+  let _wild98 =
+    if inherent#Vec#Vec[(std::task::CancelToken)->T]#is_empty(bodies/95) {
         {
           return Option::None
         }
@@ -4712,27 +4735,27 @@ fn std::task::race(bodies/91: Vec[(std::task::CancelToken) -> T]) -> Option[T] {
         }
     } in
   std::task::scope(
-    |scope/92: std::task::Scope| => {
-      let results/93 = inherent#Channel#Channel[T]#new(1) in
-      let _wild103 =
+    |scope/96: std::task::Scope| => {
+      let results/97 = inherent#Channel#Channel[T]#new(1) in
+      let _wild105 =
         {
-          let for_source97 = bodies/91 in
-          let for_limit98 = @intrinsic(vec.len)(for_source97) in
-          let for_index99 = 0 in
-          while (for_index99 < for_limit98) {
+          let for_source99 = bodies/95 in
+          let for_limit100 = @intrinsic(vec.len)(for_source99) in
+          let for_index101 = 0 in
+          while (for_index101 < for_limit100) {
               {
-                let for_item100 = @intrinsic(vec.get)(for_source97, for_index99) in
-                let _wild101 = for_index99 = (for_index99 + 1) in
+                let for_item102 = @intrinsic(vec.get)(for_source99, for_index101) in
+                let _wild103 = for_index101 = (for_index101 + 1) in
                 {
-                  let body/94 = for_item100 in
+                  let body/98 = for_item102 in
                   {
-                    let mtmp102 =
+                    let mtmp104 =
                       inherent#std::task::Scope#std::task::Scope#spawn(
-                        scope/92,
-                        |cancel/95: std::task::CancelToken| => {
-                          let value/96 = body/94(cancel/95) in
+                        scope/96,
+                        |cancel/99: std::task::CancelToken| => {
+                          let value/100 = body/98(cancel/99) in
                           select {
-                            send(results/93, value/96) => {
+                            send(results/97, value/100) => {
                               ()
                             },
                             default => {
@@ -4749,9 +4772,9 @@ fn std::task::race(bodies/91: Vec[(std::task::CancelToken) -> T]) -> Option[T] {
               }
           }
         } in
-      let value/97 = inherent#Channel#Channel[T]#recv(results/93) in
-      let _wild104 = inherent#std::task::Scope#std::task::Scope#cancel(scope/92) in
-      value/97
+      let value/101 = inherent#Channel#Channel[T]#recv(results/97) in
+      let _wild106 = inherent#std::task::Scope#std::task::Scope#cancel(scope/96) in
+      value/101
     }
   )
 }
