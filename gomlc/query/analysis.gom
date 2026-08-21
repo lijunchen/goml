@@ -1,11 +1,11 @@
 package query;
 
-use gomlc::ast;
-use gomlc::cst;
-use gomlc::ctir;
-use gomlc::hir;
-use gomlc::parser;
-use gomlc::tast;
+use module::ast;
+use module::cst;
+use module::ctir;
+use module::hir;
+use module::parser;
+use module::tast;
 
 pub struct Analysis {
     pub source_path: string,
@@ -208,6 +208,25 @@ fn is_local_package(module_path: string, package_name: string) -> bool {
     package_name == module_path || package_name.starts_with(module_path + "::")
 }
 
+fn dependency_module_path(module_path: string, package_name: string) -> string {
+    if package_name == "std" || package_name.starts_with("std::") {
+        "std"
+    } else if is_local_package(module_path, package_name) {
+        module_path
+    } else {
+        let mut separators = 0;
+        for index in 0..package_name.byte_len() - 1 {
+            if package_name.byte_get(index) == b':' && package_name.byte_get(index + 1) == b':' {
+                separators = separators + 1;
+                if separators == 2 {
+                    return package_name.byte_slice(0, index)
+                } else {}
+            } else {}
+        }
+        package_name
+    }
+}
+
 fn dependency_sources(
     module_root: string,
     module_path: string,
@@ -251,7 +270,7 @@ fn collect_dependency(
                 }
                 let project = Project {
                     module_root,
-                    module_path,
+                    module_path: dependency_module_path(module_path, package_name),
                     package_dir: "",
                     package_name,
                     files: sources,

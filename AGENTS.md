@@ -191,7 +191,7 @@ pub fn message() -> string {
 - A package's canonical identity is its directory path appended to `module.path`; its declared package name is the default local `use` alias.
 - `use full::package::path;` loads a package into one source file. `use full::package::path as alias;` selects an explicit alias.
 - `use alias::Trait;` brings a trait from an already loaded package into method-call scope.
-- `mod`, `crate::`, `self::`, `super::`, and rooted `::path` syntax are unsupported.
+- `module::path` resolves from the current module's canonical root. `mod`, `crate::`, `self::`, `super::`, and rooted `::path` syntax are unsupported.
 - `goml check`, `goml build`, and `goml test` always operate on the complete module found from the current directory and do not accept package targets.
 - `goml build` links every package declared as `package main`; each executable entry must define `fn main()`.
 - A `tests` directory is one black-box test package for its parent package. Its direct `.gom` files declare `package tests;`; nested test-suite directories are unsupported.
