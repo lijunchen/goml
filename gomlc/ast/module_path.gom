@@ -1,0 +1,48 @@
+package ast;
+
+use std::text;
+
+fn resolve_module_path(value: Path, module_path: string) -> Path {
+    if value.segments.len() < 2 || value.segments[0].ident != "module" {
+        return value
+    } else {};
+    let segments: Vec[PathSegment] = Vec::from_array([]);
+    for name in text::split(module_path, "::") {
+        segments.push(PathSegment { ident: name, span: value.segments[0].span })
+    }
+    for index in 1..value.segments.len() {
+        segments.push(value.segments[index])
+    }
+    Path { segments }
+}
+
+fn resolve_module_use(value: UseDecl, module_path: string) -> UseDecl {
+    UseDecl {
+        visibility: value.visibility,
+        path: resolve_module_path(value.path, module_path),
+        alias: value.alias,
+        items: value.items,
+    }
+}
+
+pub fn resolve_module_paths(value: LowerResult, module_path: string) -> LowerResult {
+    let ast = match value.ast {
+        Some(file) => {
+            let uses: Vec[UseDecl] = Vec::from_array([]);
+            for use_decl in file.uses {
+                uses.push(resolve_module_use(use_decl, module_path))
+            }
+            Option::Some(
+                File {
+                    package_name: file.package_name,
+                    package_explicit: file.package_explicit,
+                    uses,
+                    items: file.items,
+                    invalid_self_type_spans: file.invalid_self_type_spans,
+                },
+            )
+        },
+        None => Option::None,
+    };
+    LowerResult { ast, diagnostics: value.diagnostics }
+}

@@ -128,7 +128,7 @@ fn canonical_path_at(
 ) -> string {
     let raw = path_prefix(identifiers, token_index);
     if containing_use(value, node) {
-        raw
+        expand_module_namespace(value.module_path, raw)
     } else {
         match namespace_target(value, identifiers[0].text) {
             Some(package_name) => if token_index == 0 {

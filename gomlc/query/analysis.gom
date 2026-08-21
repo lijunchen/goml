@@ -11,6 +11,7 @@ pub struct Analysis {
     pub source_path: string,
     pub source: string,
     pub package_name: string,
+    pub module_path: string,
     pub overrides: Vec[SourceOverride],
     pub sources: Vec[SourceFile],
     pub environments: Vec[tast::DependencyEnvironment],
@@ -92,7 +93,7 @@ fn lower_package(
     let expanded_sources: Vec[(string, string)] = Vec::from_array([]);
     for file in value.files {
         let expanded = hir::expand_derives_with_environment(
-            ast::lower(parser::parse(file.source)),
+            ast::resolve_module_paths(ast::lower(parser::parse(file.source)), value.module_path),
             hir::DeriveEnvironment {
                 builtin: builtin_derive,
                 dependencies: derive_modules,
@@ -507,6 +508,7 @@ fn single_file_analysis(
         source_path,
         source,
         package_name,
+        module_path: package_name,
         overrides,
         sources: result.sources,
         environments: result.environments,
@@ -533,11 +535,13 @@ pub fn analyze_with_context(
     match discover_project(source_path, source, overrides) {
         Ok(Some(project)) => {
             let package_name = project.package_name;
+            let module_path = project.module_path;
             let result = check_project(project, overrides, context);
             Analysis {
                 source_path,
                 source,
                 package_name,
+                module_path,
                 overrides,
                 sources: result.sources,
                 environments: result.environments,
@@ -558,6 +562,7 @@ pub fn analyze_with_context(
             source_path,
             source,
             package_name: "",
+            module_path: "",
             overrides,
             sources: Vec::from_array([SourceFile { path: source_path, source, package_name: "" }]),
             environments: Vec::from_array([]),

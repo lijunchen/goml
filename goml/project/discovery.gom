@@ -410,6 +410,11 @@ fn local_import(sources: Vec[ModuleSource], current_module: string, import_path:
     Option[string],
     string,
 ] {
+    let import_path = if import_path.starts_with("module::") {
+        current_module + import_path.byte_slice("module".byte_len(), import_path.byte_len())
+    } else {
+        import_path
+    };
     if current_module != "std" && (import_path == "std" || import_path.starts_with("std::")) {
         Result::Ok(Option::None)
     } else {

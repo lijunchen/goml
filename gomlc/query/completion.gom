@@ -143,6 +143,16 @@ fn path_text(value: ast::Path) -> string {
     builder.finish()
 }
 
+fn expand_module_namespace(module_path: string, namespace: string) -> string {
+    if namespace == "module" {
+        module_path
+    } else if namespace.starts_with("module::") {
+        module_path + namespace.byte_slice("module".byte_len(), namespace.byte_len())
+    } else {
+        namespace
+    }
+}
+
 fn last_path_segment(value: ast::Path) -> string {
     if !value.segments.is_empty() {
         value.segments[value.segments.len() - 1].ident
@@ -164,7 +174,11 @@ fn namespace_target(value: Analysis, alias: string) -> Option[string] {
                         None => item.name,
                     };
                     if candidate == alias {
-                        return Option::Some(path_text(use_decl.path) + "::" + item.name)
+                        return Option::Some(
+                            expand_module_namespace(value.module_path, path_text(use_decl.path))
+                                + "::"
+                                + item.name,
+                        )
                     } else {}
                 }
                 let candidate = match use_decl.alias {
@@ -172,7 +186,9 @@ fn namespace_target(value: Analysis, alias: string) -> Option[string] {
                     None => last_path_segment(use_decl.path),
                 };
                 if candidate == alias {
-                    return Option::Some(path_text(use_decl.path))
+                    return Option::Some(
+                        expand_module_namespace(value.module_path, path_text(use_decl.path)),
+                    )
                 } else {
                     index = index - 1;
                 }
@@ -460,7 +476,11 @@ fn complete_import_namespace(value: Analysis, context: UseCompletionContext) -> 
     };
     match discover_project(value.source_path, value.source, value.overrides) {
         Ok(Some(project)) => {
-            match namespace_next_segment(project.module_path, context.namespace) {
+            if context.namespace == "" {
+                push_package_completion(result, "module", project.module_path, context.prefix)
+            } else {};
+            let namespace = expand_module_namespace(project.module_path, context.namespace);
+            match namespace_next_segment(project.module_path, namespace) {
                 Some(segment) => push_package_completion(
                     result,
                     segment,
@@ -469,13 +489,12 @@ fn complete_import_namespace(value: Analysis, context: UseCompletionContext) -> 
                 ),
                 None => (),
             };
-            if context.namespace == project.module_path
-                || context.namespace.starts_with(project.module_path + "::") {
-                complete_local_package_children(result, project, context.namespace, context.prefix)
+            if namespace == project.module_path || namespace.starts_with(project.module_path + "::") {
+                complete_local_package_children(result, project, namespace, context.prefix)
             } else {};
             match fs::read_file(path::join(project.module_root, MANIFEST_FILENAME)) {
                 Ok(manifest) => for dependency in manifest_dependencies(manifest) {
-                    match namespace_next_segment(dependency.name, context.namespace) {
+                    match namespace_next_segment(dependency.name, namespace) {
                         Some(segment) => push_package_completion(
                             result,
                             segment,

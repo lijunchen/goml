@@ -204,6 +204,7 @@ fn compile_package_command(
         Command::Compile {
             subcommand: command,
             package_name,
+            module_name: package_value.module_name,
             input_files: util::sorted(inputs),
             interface_files: relative_interfaces,
             output: module_relative(
@@ -234,7 +235,15 @@ fn compile_test_package_command(
         world,
     )?;
     match compiled {
-        Compile { subcommand, package_name, input_files, interface_files, output, world } => {
+        Compile {
+            subcommand,
+            package_name,
+            module_name,
+            input_files,
+            interface_files,
+            output,
+            world,
+        } => {
             if production_interface {
                 interface_files.push(
                     module_relative(
@@ -250,6 +259,7 @@ fn compile_test_package_command(
                 Command::Compile {
                     subcommand,
                     package_name,
+                    module_name,
                     input_files,
                     interface_files,
                     output,
@@ -414,6 +424,7 @@ pub fn toolchain_world_plan(context: Context, output: string) -> Result[Plan, st
         commands.push(
             Command::ToolchainCompile {
                 package_name,
+                module_name: package_value.module_name,
                 input_files: util::sorted(inputs),
                 interface_files: relative_interfaces,
                 output: module_relative(context.graph.module_dir, output),
@@ -706,11 +717,21 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             GOMLC_PROGRAM,
             Vec::from_array(["prepare-world", "--output", output]),
         ),
-        Compile { subcommand, package_name, input_files, interface_files, output, world } => {
+        Compile {
+            subcommand,
+            package_name,
+            module_name,
+            input_files,
+            interface_files,
+            output,
+            world,
+        } => {
             let args: Vec[string] = Vec::from_array([]);
             args.push(subcommand);
             args.push("--package");
             args.push(package_name);
+            args.push("--module");
+            args.push(module_name);
             for input in input_files {
                 args.push("--input");
                 args.push(input)
@@ -732,6 +753,7 @@ fn command_args(value: Command) -> (string, Vec[string]) {
         },
         ToolchainCompile {
             package_name,
+            module_name,
             input_files,
             interface_files,
             output,
@@ -755,6 +777,8 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             };
             args.push("--package");
             args.push(package_name);
+            args.push("--module");
+            args.push(module_name);
             args.push("--input");
             for value in input_files {
                 args.push(value)

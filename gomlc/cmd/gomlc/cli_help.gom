@@ -61,7 +61,7 @@ fn top_level_help() -> string {
 
 fn package_command_help(command: string) -> string {
     "Usage: gomlc " + command
-        + " [OPTIONS] --package <PACKAGE> --input <INPUT>... --output <OUTPUT>\n\nOptions:\n      --package <PACKAGE>                \n      --input <INPUT>...                 \n      --interface-path <INTERFACE_FILE>  \n      --output <OUTPUT>                  \n  -h, --help                             Print help"
+        + " [OPTIONS] --package <PACKAGE> --input <INPUT>... --output <OUTPUT>\n\nOptions:\n      --package <PACKAGE>                \n      --module <MODULE>                  \n      --input <INPUT>...                 \n      --interface-path <INTERFACE_FILE>  \n      --output <OUTPUT>                  \n  -h, --help                             Print help"
 }
 
 fn command_help(command: string) -> Option[string] {
@@ -299,6 +299,7 @@ fn cli_value_option(command: string, argument: string) -> bool {
     match command {
         CHECK_COMMAND | TEST_CHECK_COMMAND | BUILD_COMMAND | TEST_BUILD_COMMAND => argument
             == "--package"
+            || argument == "--module"
             || argument == "--input"
             || argument == "--interface-path"
             || argument == "--output",
@@ -323,6 +324,7 @@ fn known_cli_option(command: string, argument: string) -> bool {
             CHECK_COMMAND | TEST_CHECK_COMMAND | BUILD_COMMAND | TEST_BUILD_COMMAND => option_string_present(
                 inline_cli_value(argument, "--package"),
             )
+                || option_string_present(inline_cli_value(argument, "--module"))
                 || option_string_present(inline_cli_value(argument, "--input"))
                 || option_string_present(inline_cli_value(argument, "--interface-path"))
                 || option_string_present(inline_cli_value(argument, "--output")),

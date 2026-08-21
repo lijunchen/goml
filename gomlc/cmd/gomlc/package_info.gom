@@ -376,7 +376,7 @@ fn parse_package_info_file(source_path: string, source: string) -> Result[Packag
         let current = uses[index];
         let mut path = current.path;
         let mut remaining = uses.len() + 1;
-        while remaining > 0 {
+        while remaining > 0 && !path.starts_with("module::") {
             let mut changed = false;
             for candidate in uses {
                 match candidate.alias {

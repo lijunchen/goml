@@ -657,6 +657,9 @@ fn compile_artifact_package(
     }
     fail_on_typer_diagnostics(parser_diagnostics, "", "");
     let ast_values = ast::lower_package(parsed);
+    for index in 0..ast_values.len() {
+        ast_values.set(index, ast::resolve_module_paths(ast_values[index], command.module_name))
+    }
     let lower_diagnostics: Vec[tast::Diagnostic] = Vec::from_array([]);
     for index in 0..ast_values.len() {
         for diagnostic in ast_diagnostics(

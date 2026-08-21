@@ -99,7 +99,7 @@ fn toolchain_parse_sources(command: PackageCommandArgs) -> Result[
         if !parsed.diagnostics.is_empty() {
             return Result::Err("failed to parse toolchain source " + source_path)
         } else {};
-        let ast_value = ast::lower(parsed);
+        let ast_value = ast::resolve_module_paths(ast::lower(parsed), command.module_name);
         if !ast_value.diagnostics.is_empty() {
             return Result::Err("failed to lower toolchain source " + source_path)
         } else {};

@@ -6,6 +6,7 @@ use std::path;
 
 struct PackageCommandArgs {
     package_name: string,
+    module_name: string,
     inputs: Vec[string],
     interface_paths: Vec[string],
     output: string,
@@ -117,6 +118,7 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
     let extracted = extract_world_args(args)?;
     let args = extracted.args;
     let mut package_name: Option[string] = Option::None;
+    let mut module_name: Option[string] = Option::None;
     let mut output: Option[string] = Option::None;
     let inputs: Vec[string] = Vec::from_array([]);
     let interface_paths: Vec[string] = Vec::from_array([]);
@@ -171,6 +173,24 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 return Result::Err(repeated_argument_error(command, "--package <PACKAGE>"))
             } else {
                 package_name = inline_cli_value(argument, "--package");
+                index = index + 1;
+            }
+        } else if argument == "--module" {
+            if index + 1 >= args.len() || cli_option(args[index + 1]) {
+                return Result::Err(value_required_error("--module <MODULE>", Option::None))
+            } else if option_string_present(module_name) {
+                return Result::Err(repeated_argument_error(command, "--module <MODULE>"))
+            } else {
+                module_name = Option::Some(args[index + 1]);
+                index = index + 2;
+            }
+        } else if option_string_present(inline_cli_value(argument, "--module")) {
+            if option_string_present(module_name) {
+                return Result::Err(repeated_argument_error(command, "--module <MODULE>"))
+            } else if option_string_empty(inline_cli_value(argument, "--module")) {
+                return Result::Err(value_required_error("--module <MODULE>", Option::None))
+            } else {
+                module_name = inline_cli_value(argument, "--module");
                 index = index + 1;
             }
         } else if argument == "--input" {
@@ -285,6 +305,13 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 package_name: match package_name {
                     Some(value) => value,
                     None => "",
+                },
+                module_name: match module_name {
+                    Some(value) => value,
+                    None => match package_name {
+                        Some(value) => value,
+                        None => "",
+                    },
                 },
                 inputs: sorted_unique_package_inputs(inputs),
                 interface_paths,

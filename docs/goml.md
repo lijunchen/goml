@@ -17,7 +17,7 @@ GoML is a statically typed language with garbage collection. Its syntax is close
 9. Enumeration construction uses full names such as `Option::Some(value)`.In patterns, the enum qualifier may be omitted when the matched type determines it, such as `Some(value)` and `None`.
 10. For cross-package calls, write `alias::item`.Top-level items, structure fields, and native methods must all be marked with `pub` as required.
 11. Before using trait method syntax across packages, import the package and trait with `use alias::Trait;` or a braced import; when in doubt, use UFCS: `Trait::method(value)`.
-12. Do not generate `mod`, `crate::`, `self::`, `super::`, root paths `::x`, Rust references, or Go `var` / `:=`. A user `extern fn` is valid only with the typed Go FFI attribute described below.
+12. Use `module::path` for a package below the current module root. Do not generate `mod`, `crate::`, `self::`, `super::`, root paths `::x`, Rust references, or Go `var` / `:=`. A user `extern fn` is valid only with the typed Go FFI attribute described below.
 13. The test function uses `#[test]`, which must have no parameters, no type parameters and return `unit`; the white-box test is placed in `*_test.gom` of the same package, and the black-box test is placed in the `tests/` directory of the package under test.
 
 ## minimal program
@@ -268,6 +268,16 @@ Imports are not transitive: package A imports package B, which does not allow fi
 use alice::http::client;
 use alice::http::client as http_client;
 ```
+
+The contextual `module` path head denotes the canonical path declared by the current project's `[module].path`. It may be used from any package in that module, including modules whose canonical path contains multiple segments:
+
+```goml
+use module::http::client;
+use module::rendering::api::{Canvas, Render};
+pub use module::model::Request;
+```
+
+For a module declared as `alice::myapp`, these paths resolve to `alice::myapp::http::client`, `alice::myapp::rendering::api`, and `alice::myapp::model::Request`. The marker applies only at the start of a `use` path followed by `::`; dependency paths and aliases named `module` elsewhere retain their ordinary meaning. External dependencies continue to use canonical paths such as `alice::http::client`.
 
 After importing the package, access its public items through local aliases:
 
@@ -2736,7 +2746,7 @@ Sorting mutates a `Vec[T]` in place. `sort` and `stable_sort` use `cmp::Ord`; `s
 | `dyn A + B` | Use one dyn-safe trait; multiple bounds are reserved syntax but not yet supported |
 | `dyn TraitWithAssociatedType` | Bind every associated type, for example `dyn Iterator[Item = int]` |
 | `use pkg::*` | List the required public items explicitly with `use pkg::{A, B};` |
-| `mod`、`crate::`、`super::` | Directory packages and canonical `use` paths |
+| `mod`、`crate::`、`super::` | Directory packages, `module::path` for the current module, and canonical paths for dependencies |
 | `fn helper` inside function | Top-level function or local closure |
 | Unannotated user `extern fn` | Use a normal GoML function or `#[go_ffi("import/path", "ExportedSymbol")] extern fn` |
 | Call an ordinary function from `comptime` | Mark a supported free function with `#[comptime]` |
@@ -2749,9 +2759,10 @@ The following EBNF only describes the canonical form that should be generated; `
 ```text
 file          = package_decl? use_decl* item*
 package_decl  = "package" lower_ident ";"
-use_decl      = "pub"? "use" path ("as" ident | "::" "{" use_items "}")? ";"
+use_decl      = "pub"? "use" use_path ("as" ident | "::" "{" use_items "}")? ";"
 use_items     = use_item ("," use_item)* ","?
 use_item      = ident ("as" ident)?
+use_path      = path | "module" "::" path
 path          = ident ("::" ident)*
 
 item          = attribute* visibility? function
