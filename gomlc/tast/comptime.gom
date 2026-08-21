@@ -1901,11 +1901,20 @@ fn contains_comptime_expr(value: Expr) -> bool {
         Select { arms, .. } => {
             for arm in arms {
                 let found = match arm {
-                    Receive { channel, binding: _, binding_ty: _, body } => {
-                        contains_comptime_expr(channel) || contains_comptime_expr(body)
+                    Receive { channel, guard, binding: _, binding_ty: _, body } => {
+                        contains_comptime_expr(channel)
+                            || match guard {
+                                Some(value) => contains_comptime_expr(value),
+                                None => false,
+                            }
+                            || contains_comptime_expr(body)
                     },
-                    Send { channel, value, body } => {
+                    Send { channel, value, guard, body } => {
                         contains_comptime_expr(channel) || contains_comptime_expr(value)
+                            || match guard {
+                                Some(value) => contains_comptime_expr(value),
+                                None => false,
+                            }
                             || contains_comptime_expr(body)
                     },
                     Default { body } => contains_comptime_expr(body),
@@ -2259,12 +2268,12 @@ fn rewrite_comptime_expr(
                 ty,
             }
         },
-        Select { arms, ty } => {
+        Select { mode, arms, ty } => {
             let result: Vec[SelectArm] = Vec::with_capacity(arms.len());
             for arm in arms {
                 result.push(
                     match arm {
-                        Receive { channel, binding, binding_ty, body } => SelectArm::Receive {
+                        Receive { channel, guard, binding, binding_ty, body } => SelectArm::Receive {
                             channel: rewrite_comptime_expr(
                                 builtin,
                                 file,
@@ -2274,6 +2283,20 @@ fn rewrite_comptime_expr(
                                 next_site,
                                 channel,
                             ),
+                            guard: match guard {
+                                Some(value) => Option::Some(
+                                    rewrite_comptime_expr(
+                                        builtin,
+                                        file,
+                                        module,
+                                        dependencies,
+                                        diagnostics,
+                                        next_site,
+                                        value,
+                                    ),
+                                ),
+                                None => Option::None,
+                            },
                             binding,
                             binding_ty,
                             body: rewrite_comptime_expr(
@@ -2286,7 +2309,7 @@ fn rewrite_comptime_expr(
                                 body,
                             ),
                         },
-                        Send { channel, value, body } => SelectArm::Send {
+                        Send { channel, value, guard, body } => SelectArm::Send {
                             channel: rewrite_comptime_expr(
                                 builtin,
                                 file,
@@ -2305,6 +2328,20 @@ fn rewrite_comptime_expr(
                                 next_site,
                                 value,
                             ),
+                            guard: match guard {
+                                Some(value) => Option::Some(
+                                    rewrite_comptime_expr(
+                                        builtin,
+                                        file,
+                                        module,
+                                        dependencies,
+                                        diagnostics,
+                                        next_site,
+                                        value,
+                                    ),
+                                ),
+                                None => Option::None,
+                            },
                             body: rewrite_comptime_expr(
                                 builtin,
                                 file,
@@ -2329,7 +2366,7 @@ fn rewrite_comptime_expr(
                     },
                 )
             }
-            Expr::Select { arms: result, ty }
+            Expr::Select { mode, arms: result, ty }
         },
         If { cond, then_branch, else_branch, ty } => Expr::If {
             cond: rewrite_comptime_expr(

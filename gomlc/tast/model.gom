@@ -76,6 +76,7 @@ pub enum Type {
     },
     Channel {
         elem: Type,
+        direction: ast::ChannelDirection,
     },
     Param {
         name: string,
@@ -237,6 +238,7 @@ pub enum ComptimeCapability {
 pub enum SelectArm {
     Receive {
         channel: Expr,
+        guard: Option[Expr],
         binding: string,
         binding_ty: Type,
         body: Expr,
@@ -244,6 +246,7 @@ pub enum SelectArm {
     Send {
         channel: Expr,
         value: Expr,
+        guard: Option[Expr],
         body: Expr,
     },
     Default {
@@ -302,6 +305,7 @@ pub enum Expr {
         ty: Type,
     },
     Select {
+        mode: ast::SelectMode,
         arms: Vec[SelectArm],
         ty: Type,
     },

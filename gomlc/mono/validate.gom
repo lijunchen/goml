@@ -50,7 +50,7 @@ fn validate_type(ctx: ValidateContext, value: Type, context: string) -> Result[u
             validate_type(ctx, key, context + " map key")?;
             validate_type(ctx, value, context + " map value")
         },
-        Channel { elem } => validate_type(ctx, elem, context + " channel element"),
+        Channel { elem, direction: _ } => validate_type(ctx, elem, context + " channel element"),
         Func { params, ret_ty } => {
             validate_types(ctx, params, context + " function parameter")?;
             validate_type(ctx, ret_ty, context + " function return")
@@ -144,17 +144,19 @@ fn validate_expr(ctx: ValidateContext, value: Expr, context: string) -> Result[u
             }
             validate_optional_expr(ctx, default, context + " match default")
         },
-        Select { arms, default, ty: _ } => {
+        Select { arms, default, .. } => {
             for arm in arms {
                 match arm {
-                    Receive { channel, binding: _, binding_ty, body } => {
+                    Receive { channel, guard, binding: _, binding_ty, body } => {
                         validate_type(ctx, binding_ty, context + " select receive binding")?;
                         validate_expr(ctx, channel, context + " select receive channel")?;
+                        validate_optional_expr(ctx, guard, context + " select receive guard")?;
                         validate_expr(ctx, body, context + " select receive body")?
                     },
-                    Send { channel, value, body } => {
+                    Send { channel, value, guard, body } => {
                         validate_expr(ctx, channel, context + " select send channel")?;
                         validate_expr(ctx, value, context + " select send value")?;
+                        validate_optional_expr(ctx, guard, context + " select send guard")?;
                         validate_expr(ctx, body, context + " select send body")?
                     },
                 }

@@ -1,5 +1,7 @@
 package mono;
 
+use gomlc::ast;
+
 pub enum Type {
     Unit,
     Never,
@@ -49,6 +51,7 @@ pub enum Type {
     },
     Channel {
         elem: Type,
+        direction: ast::ChannelDirection,
     },
     Func {
         params: Vec[Type],
@@ -147,10 +150,12 @@ pub fn types_equal(left: Type, right: Type) -> bool {
         (Slice { elem: left }, Slice { elem: right }) | (
             VecType { elem: left },
             VecType { elem: right },
-        ) | (RefType { elem: left }, RefType { elem: right }) | (
-            Channel { elem: left },
-            Channel { elem: right },
-        ) => types_equal(left, right),
+        ) | (RefType { elem: left }, RefType { elem: right }) => types_equal(left, right),
+        (
+            Channel { elem: left, direction: left_direction },
+            Channel { elem: right, direction: right_direction },
+        ) => ast::channel_directions_equal(left_direction, right_direction)
+            && types_equal(left, right),
         (
             HashMap { key: left_key, value: left_value },
             HashMap { key: right_key, value: right_value },

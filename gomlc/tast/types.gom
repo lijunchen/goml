@@ -1,5 +1,7 @@
 package tast;
 
+use gomlc::ast;
+
 struct TypeSubst {
     name: string,
     ty: Type,
@@ -171,6 +173,7 @@ fn occurs(variable: Ref[TypeVar], value: Type) -> bool {
         },
         Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
             elem,
+            direction: _,
         } => occurs(variable, elem),
         HashMap { key, value: item } => occurs(variable, key) || occurs(variable, item),
         Func { params, ret_ty } => {
@@ -359,10 +362,12 @@ fn unify(left: Type, right: Type) -> bool {
         (Slice { elem: first }, Slice { elem: second }) | (
             VecType { elem: first },
             VecType { elem: second },
-        ) | (RefType { elem: first }, RefType { elem: second }) | (
-            Channel { elem: first },
-            Channel { elem: second },
-        ) => unify(first, second),
+        ) | (RefType { elem: first }, RefType { elem: second }) => unify(first, second),
+        (
+            Channel { elem: first, direction: first_direction },
+            Channel { elem: second, direction: second_direction },
+        ) => ast::channel_directions_equal(first_direction, second_direction)
+            && unify(first, second),
         (
             HashMap { key: first_key, value: first_value },
             HashMap { key: second_key, value: second_value },
@@ -532,8 +537,8 @@ fn first_unification_error(left: Type, right: Type) -> Option[string] {
             VecType { elem: first },
             VecType { elem: second },
         ) | (RefType { elem: first }, RefType { elem: second }) | (
-            Channel { elem: first },
-            Channel { elem: second },
+            Channel { elem: first, direction: _ },
+            Channel { elem: second, direction: _ },
         ) => {
             first_unification_error(first, second)
         },
@@ -652,10 +657,12 @@ pub fn types_equal(left: Type, right: Type) -> bool {
         (Slice { elem: first }, Slice { elem: second }) | (
             VecType { elem: first },
             VecType { elem: second },
-        ) | (RefType { elem: first }, RefType { elem: second }) | (
-            Channel { elem: first },
-            Channel { elem: second },
-        ) => types_equal(first, second),
+        ) | (RefType { elem: first }, RefType { elem: second }) => types_equal(first, second),
+        (
+            Channel { elem: first, direction: first_direction },
+            Channel { elem: second, direction: second_direction },
+        ) => ast::channel_directions_equal(first_direction, second_direction)
+            && types_equal(first, second),
         (
             HashMap { key: first_key, value: first_value },
             HashMap { key: second_key, value: second_value },
@@ -729,6 +736,7 @@ fn contains_parameter(value: Type, name: string, substitutions: Vec[TypeSubst]) 
         },
         Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
             elem,
+            direction: _,
         } => contains_parameter(elem, name, substitutions),
         HashMap { key, value: item } => {
             contains_parameter(key, name, substitutions)
@@ -823,11 +831,15 @@ fn unify_parameter_aliases(left: Type, right: Type, substitutions: Vec[TypeSubst
         (Slice { elem: left }, Slice { elem: right }) | (
             VecType { elem: left },
             VecType { elem: right },
-        ) | (RefType { elem: left }, RefType { elem: right }) | (
-            Channel { elem: left },
-            Channel { elem: right },
-        ) => {
+        ) | (RefType { elem: left }, RefType { elem: right }) => {
             unify_parameter_aliases(left, right, substitutions)
+        },
+        (
+            Channel { elem: left, direction: left_direction },
+            Channel { elem: right, direction: right_direction },
+        ) => {
+            ast::channel_directions_equal(left_direction, right_direction)
+                && unify_parameter_aliases(left, right, substitutions)
         },
         (HashMap { key: left_key, value: left_item }, HashMap { key: right_key, value: right_item }) => {
             unify_parameter_aliases(left_key, right_key, substitutions)
@@ -1251,7 +1263,7 @@ fn normalize_type(ctx: Checker, value: Type) -> Type {
         Slice { elem } => Type::Slice { elem: normalize_type(ctx, elem) },
         VecType { elem } => Type::VecType { elem: normalize_type(ctx, elem) },
         RefType { elem } => Type::RefType { elem: normalize_type(ctx, elem) },
-        Channel { elem } => Type::Channel { elem: normalize_type(ctx, elem) },
+        Channel { elem, direction } => Type::Channel { elem: normalize_type(ctx, elem), direction },
         HashMap { key, value: item } => {
             Type::HashMap { key: normalize_type(ctx, key), value: normalize_type(ctx, item) }
         },
@@ -1344,7 +1356,10 @@ fn substitute_type(value: Type, substitutions: Vec[TypeSubst]) -> Type {
         Slice { elem } => Type::Slice { elem: substitute_type(elem, substitutions) },
         VecType { elem } => Type::VecType { elem: substitute_type(elem, substitutions) },
         RefType { elem } => Type::RefType { elem: substitute_type(elem, substitutions) },
-        Channel { elem } => Type::Channel { elem: substitute_type(elem, substitutions) },
+        Channel { elem, direction } => Type::Channel {
+            elem: substitute_type(elem, substitutions),
+            direction,
+        },
         HashMap { key, value: item } => Type::HashMap {
             key: substitute_type(key, substitutions),
             value: substitute_type(item, substitutions),
@@ -1432,7 +1447,7 @@ pub fn resolve_type(value: Type) -> Type {
             key: resolve_type(key),
             value: resolve_type(item),
         },
-        Channel { elem } => Type::Channel { elem: resolve_type(elem) },
+        Channel { elem, direction } => Type::Channel { elem: resolve_type(elem), direction },
         Func { params, ret_ty } => {
             let result: Vec[Type] = Vec::from_array([]);
             for param in params {
@@ -1493,7 +1508,7 @@ fn default_numeric_type(value: Type) -> Type {
             key: default_numeric_type(key),
             value: default_numeric_type(value),
         },
-        Channel { elem } => Type::Channel { elem: default_numeric_type(elem) },
+        Channel { elem, direction } => Type::Channel { elem: default_numeric_type(elem), direction },
         Func { params, ret_ty } => {
             let result: Vec[Type] = Vec::from_array([]);
             for param in params {
@@ -1513,7 +1528,13 @@ fn type_constructor_name(builtin: BuiltinContract, value: Type) -> Option[string
         VecType { elem: _ } => Option::Some(builtin.vec.name),
         RefType { elem: _ } => Option::Some(builtin.ref_type.name),
         HashMap { key: _, value: _ } => Option::Some(builtin.hashmap.name),
-        Channel { elem: _ } => Option::Some(builtin.channel.name),
+        Channel { elem: _, direction } => Option::Some(
+            match direction {
+                ast::ChannelDirection::Both => builtin.channel.name,
+                ast::ChannelDirection::Send => builtin.sender.name,
+                ast::ChannelDirection::Receive => builtin.receiver.name,
+            },
+        ),
         Unit => Option::Some("unit"),
         Bool => Option::Some("bool"),
         Int => Option::Some("int"),
@@ -1545,7 +1566,11 @@ pub fn nominal_type(builtin: BuiltinContract, name: string, args: Vec[Type]) -> 
     } else if names_match(name, builtin.hashmap.name) && args.len() == 2 {
         Type::HashMap { key: args[0], value: args[1] }
     } else if names_match(name, builtin.channel.name) && args.len() == 1 {
-        Type::Channel { elem: args[0] }
+        Type::Channel { elem: args[0], direction: ast::ChannelDirection::Both }
+    } else if names_match(name, builtin.sender.name) && args.len() == 1 {
+        Type::Channel { elem: args[0], direction: ast::ChannelDirection::Send }
+    } else if names_match(name, builtin.receiver.name) && args.len() == 1 {
+        Type::Channel { elem: args[0], direction: ast::ChannelDirection::Receive }
     } else if args.is_empty() {
         Type::Con { name }
     } else {

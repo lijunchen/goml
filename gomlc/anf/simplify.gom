@@ -508,13 +508,17 @@ fn simplify_known_term(value: Term, known: Vec[KnownBinding], assigned: HashMap[
                 },
             }
         },
-        Select { arms, default, ret_ty } => {
+        Select { mode, arms, default, ret_ty } => {
             let lowered: Vec[SelectArm] = Vec::with_capacity(arms.len());
             for arm in arms {
                 lowered.push(
                     match arm {
-                        Receive { channel, binding, binding_ty, body } => SelectArm::Receive {
+                        Receive { channel, guard, binding, binding_ty, body } => SelectArm::Receive {
                             channel: resolve_known_imm(channel, known),
+                            guard: match guard {
+                                Some(value) => Option::Some(resolve_known_imm(value, known)),
+                                None => Option::None,
+                            },
                             binding,
                             binding_ty,
                             body: simplify_known_block_with(
@@ -523,9 +527,13 @@ fn simplify_known_term(value: Term, known: Vec[KnownBinding], assigned: HashMap[
                                 assigned,
                             ),
                         },
-                        Send { channel, value, body } => SelectArm::Send {
+                        Send { channel, value, guard, body } => SelectArm::Send {
                             channel: resolve_known_imm(channel, known),
                             value: resolve_known_imm(value, known),
+                            guard: match guard {
+                                Some(value) => Option::Some(resolve_known_imm(value, known)),
+                                None => Option::None,
+                            },
                             body: simplify_known_block_with(
                                 body,
                                 copy_known_bindings(known),
@@ -538,6 +546,7 @@ fn simplify_known_term(value: Term, known: Vec[KnownBinding], assigned: HashMap[
             Block {
                 binds: Vec::from_array([]),
                 term: Term::Select {
+                    mode,
                     arms: lowered,
                     default: match default {
                         Some(body) => Option::Some(
@@ -803,26 +812,29 @@ fn rewrite_simple_join_term(value: Term, join: JoinBind) -> Term {
                 ret_ty,
             }
         },
-        Select { arms, default, ret_ty } => {
+        Select { mode, arms, default, ret_ty } => {
             let lowered: Vec[SelectArm] = Vec::with_capacity(arms.len());
             for arm in arms {
                 lowered.push(
                     match arm {
-                        Receive { channel, binding, binding_ty, body } => SelectArm::Receive {
+                        Receive { channel, guard, binding, binding_ty, body } => SelectArm::Receive {
                             channel,
+                            guard,
                             binding,
                             binding_ty,
                             body: rewrite_simple_join_block(body, join),
                         },
-                        Send { channel, value, body } => SelectArm::Send {
+                        Send { channel, value, guard, body } => SelectArm::Send {
                             channel,
                             value,
+                            guard,
                             body: rewrite_simple_join_block(body, join),
                         },
                     },
                 )
             }
             Term::Select {
+                mode,
                 arms: lowered,
                 default: match default {
                     Some(body) => Option::Some(rewrite_simple_join_block(body, join)),
@@ -961,26 +973,29 @@ fn simplify_join_term(value: Term) -> Term {
                 ret_ty,
             }
         },
-        Select { arms, default, ret_ty } => {
+        Select { mode, arms, default, ret_ty } => {
             let lowered: Vec[SelectArm] = Vec::with_capacity(arms.len());
             for arm in arms {
                 lowered.push(
                     match arm {
-                        Receive { channel, binding, binding_ty, body } => SelectArm::Receive {
+                        Receive { channel, guard, binding, binding_ty, body } => SelectArm::Receive {
                             channel,
+                            guard,
                             binding,
                             binding_ty,
                             body: simplify_join_block(body),
                         },
-                        Send { channel, value, body } => SelectArm::Send {
+                        Send { channel, value, guard, body } => SelectArm::Send {
                             channel,
                             value,
+                            guard,
                             body: simplify_join_block(body),
                         },
                     },
                 )
             }
             Term::Select {
+                mode,
                 arms: lowered,
                 default: match default {
                     Some(body) => Option::Some(simplify_join_block(body)),

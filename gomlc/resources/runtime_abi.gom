@@ -163,6 +163,8 @@ pub enum TimeRuntimeHook {
     MonotonicNanoseconds,
     UnixNanoseconds,
     SleepNanoseconds,
+    TimerNew,
+    TimerStop,
 }
 
 #[derive(PartialEq, Eq)]
@@ -174,6 +176,7 @@ pub enum TaskRuntimeHook {
     ScopeCancel,
     ScopeFinish,
     ScopeCancelled,
+    ScopeDone,
     Sleep,
     ActiveScopeCount,
 }
@@ -834,6 +837,18 @@ pub fn runtime_abi_specs() -> Vec[RuntimeAbiSpec] {
                 "std_time_sleep_nanoseconds",
             ),
             runtime_abi(
+                RuntimeHook::Standard(StandardRuntimeHook::Time(TimeRuntimeHook::TimerNew)),
+                "std.time.timer_new",
+                "timer_new",
+                "std_time_timer_new",
+            ),
+            runtime_abi(
+                RuntimeHook::Standard(StandardRuntimeHook::Time(TimeRuntimeHook::TimerStop)),
+                "std.time.timer_stop",
+                "timer_stop",
+                "std_time_timer_stop",
+            ),
+            runtime_abi(
                 RuntimeHook::Standard(StandardRuntimeHook::Task(TaskRuntimeHook::ScopeNew)),
                 "std.task.scope_new",
                 "scope_new",
@@ -874,6 +889,12 @@ pub fn runtime_abi_specs() -> Vec[RuntimeAbiSpec] {
                 "std.task.scope_cancelled",
                 "scope_cancelled",
                 "std_task_scope_cancelled",
+            ),
+            runtime_abi(
+                RuntimeHook::Standard(StandardRuntimeHook::Task(TaskRuntimeHook::ScopeDone)),
+                "std.task.scope_done",
+                "scope_done",
+                "std_task_scope_done",
             ),
             runtime_abi(
                 RuntimeHook::Standard(StandardRuntimeHook::Task(TaskRuntimeHook::Sleep)),

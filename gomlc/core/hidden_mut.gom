@@ -77,15 +77,23 @@ fn collect_mutable_expr(value: tast::Expr, result: Vec[(string, tast::Type)]) ->
                 collect_mutable_expr(arm.body, result)
             }
         },
-        Select { arms, ty: _ } => for arm in arms {
+        Select { arms, .. } => for arm in arms {
             match arm {
-                Receive { channel, binding: _, binding_ty: _, body } => {
+                Receive { channel, guard, binding: _, binding_ty: _, body } => {
                     collect_mutable_expr(channel, result);
+                    match guard {
+                        Some(value) => collect_mutable_expr(value, result),
+                        None => (),
+                    };
                     collect_mutable_expr(body, result)
                 },
-                Send { channel, value, body } => {
+                Send { channel, value, guard, body } => {
                     collect_mutable_expr(channel, result);
                     collect_mutable_expr(value, result);
+                    match guard {
+                        Some(value) => collect_mutable_expr(value, result),
+                        None => (),
+                    };
                     collect_mutable_expr(body, result)
                 },
                 Default { body } => collect_mutable_expr(body, result),
@@ -279,16 +287,24 @@ fn collect_bound_expr(value: tast::Expr, result: Vec[string]) -> unit {
                 collect_bound_expr(arm.body, result)
             }
         },
-        Select { arms, ty: _ } => for arm in arms {
+        Select { arms, .. } => for arm in arms {
             match arm {
-                Receive { channel, binding, binding_ty: _, body } => {
+                Receive { channel, guard, binding, binding_ty: _, body } => {
                     push_name(result, binding);
                     collect_bound_expr(channel, result);
+                    match guard {
+                        Some(value) => collect_bound_expr(value, result),
+                        None => (),
+                    };
                     collect_bound_expr(body, result)
                 },
-                Send { channel, value, body } => {
+                Send { channel, value, guard, body } => {
                     collect_bound_expr(channel, result);
                     collect_bound_expr(value, result);
+                    match guard {
+                        Some(value) => collect_bound_expr(value, result),
+                        None => (),
+                    };
                     collect_bound_expr(body, result)
                 },
                 Default { body } => collect_bound_expr(body, result),
@@ -396,15 +412,23 @@ fn collect_reference_expr(value: tast::Expr, result: Vec[string]) -> unit {
                 collect_reference_expr(arm.body, result)
             }
         },
-        Select { arms, ty: _ } => for arm in arms {
+        Select { arms, .. } => for arm in arms {
             match arm {
-                Receive { channel, binding: _, binding_ty: _, body } => {
+                Receive { channel, guard, binding: _, binding_ty: _, body } => {
                     collect_reference_expr(channel, result);
+                    match guard {
+                        Some(value) => collect_reference_expr(value, result),
+                        None => (),
+                    };
                     collect_reference_expr(body, result)
                 },
-                Send { channel, value, body } => {
+                Send { channel, value, guard, body } => {
                     collect_reference_expr(channel, result);
                     collect_reference_expr(value, result);
+                    match guard {
+                        Some(value) => collect_reference_expr(value, result),
+                        None => (),
+                    };
                     collect_reference_expr(body, result)
                 },
                 Default { body } => collect_reference_expr(body, result),
@@ -526,15 +550,23 @@ fn collect_capture_expr(value: tast::Expr, result: Vec[string]) -> unit {
                 collect_capture_expr(arm.body, result)
             }
         },
-        Select { arms, ty: _ } => for arm in arms {
+        Select { arms, .. } => for arm in arms {
             match arm {
-                Receive { channel, binding: _, binding_ty: _, body } => {
+                Receive { channel, guard, binding: _, binding_ty: _, body } => {
                     collect_capture_expr(channel, result);
+                    match guard {
+                        Some(value) => collect_capture_expr(value, result),
+                        None => (),
+                    };
                     collect_capture_expr(body, result)
                 },
-                Send { channel, value, body } => {
+                Send { channel, value, guard, body } => {
                     collect_capture_expr(channel, result);
                     collect_capture_expr(value, result);
+                    match guard {
+                        Some(value) => collect_capture_expr(value, result),
+                        None => (),
+                    };
                     collect_capture_expr(body, result)
                 },
                 Default { body } => collect_capture_expr(body, result),
@@ -712,15 +744,23 @@ fn lower_hidden_select_arms(values: Vec[LowerSelectArm], cells: Vec[(string, tas
     for value in values {
         result.push(
             match value {
-                Receive { channel, binding, binding_ty, body } => LowerSelectArm::Receive {
+                Receive { channel, guard, binding, binding_ty, body } => LowerSelectArm::Receive {
                     channel: lower_hidden_expr(channel, cells),
+                    guard: match guard {
+                        Some(value) => Option::Some(lower_hidden_expr(value, cells)),
+                        None => Option::None,
+                    },
                     binding,
                     binding_ty,
                     body: lower_hidden_expr(body, cells),
                 },
-                Send { channel, value, body } => LowerSelectArm::Send {
+                Send { channel, value, guard, body } => LowerSelectArm::Send {
                     channel: lower_hidden_expr(channel, cells),
                     value: lower_hidden_expr(value, cells),
+                    guard: match guard {
+                        Some(value) => Option::Some(lower_hidden_expr(value, cells)),
+                        None => Option::None,
+                    },
                     body: lower_hidden_expr(body, cells),
                 },
             },
@@ -755,7 +795,8 @@ fn lower_hidden_expr(value: LowerExpr, cells: Vec[(string, tast::Type)]) -> Lowe
             },
             ty,
         },
-        Select { arms, default, ty } => LowerExpr::Select {
+        Select { mode, arms, default, ty } => LowerExpr::Select {
+            mode,
             arms: lower_hidden_select_arms(arms, cells),
             default: match default {
                 Some(expr) => Option::Some(lower_hidden_expr(expr, cells)),

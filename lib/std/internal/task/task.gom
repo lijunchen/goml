@@ -36,6 +36,10 @@ fn scope_cancelled(scope: int64) -> bool {
     __goml_std_task_scope_cancelled(scope)
 }
 
+fn scope_done(scope: int64) -> Receiver[unit] {
+    __goml_std_task_scope_done(scope)
+}
+
 fn scope_sleep(scope: int64, nanoseconds: int64) -> bool {
     __goml_std_task_scope_sleep(scope, nanoseconds)
 }
@@ -100,5 +104,9 @@ pub fn active_scope_count() -> int {
 impl CancelToken {
     pub fn is_cancelled(self: CancelToken) -> bool {
         scope_cancelled(self.id)
+    }
+
+    pub fn done(self: CancelToken) -> Receiver[unit] {
+        scope_done(self.id)
     }
 }

@@ -246,6 +246,27 @@ fn completion_kind(value: query::CompletionKind) -> int {
     }
 }
 
+fn completion_snippet(value: query::CompletionItem) -> Option[string] {
+    match value.kind {
+        query::CompletionKind::Keyword => match value.label {
+            "select" => Option::Some("select {\n    ${1:recv(channel) as value => value},\n}"),
+            "priority" => Option::Some(
+                "priority {\n    ${1:recv(channel) as value => value},\n    default => ${2:value},\n}",
+            ),
+            "recv" => Option::Some("recv(${1:channel}) as ${2:value} => ${3:body}"),
+            "send" => Option::Some("send(${1:channel}, ${2:value}) => ${3:body}"),
+            "default" => Option::Some("default => ${1:body}"),
+            "when" => Option::Some("when ${1:condition}"),
+            "as" => Option::Some("as ${1:value} => ${2:body}"),
+            "match" => Option::Some(
+                "match {\n    ${1:Some(value) => value},\n    ${2:None => value},\n}",
+            ),
+            _ => Option::None,
+        },
+        _ => Option::None,
+    }
+}
+
 fn completion_response(server: Server, params: json::Value) -> Result[json::Value, string] {
     let document = request_document(server, params)?;
     let position = request_position(params)?;
@@ -264,6 +285,13 @@ fn completion_response(server: Server, params: json::Value) -> Result[json::Valu
         push_json_field(fields, "label", json::Value::String(item.label));
         push_json_field(fields, "detail", json::Value::String(item.detail));
         push_json_field(fields, "kind", json::Value::Number(completion_kind(item.kind).to_string()));
+        match completion_snippet(item) {
+            Some(value) => {
+                push_json_field(fields, "insertText", json::Value::String(value));
+                push_json_field(fields, "insertTextFormat", json::Value::Number("2"))
+            },
+            None => (),
+        };
         result.push(json::Value::Object(fields))
     }
     Result::Ok(json::Value::Array(result))

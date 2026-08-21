@@ -655,24 +655,38 @@ fn arm_doc(value: Arm) -> pretty::Doc {
 
 fn select_arm_doc(value: SelectArm) -> pretty::Doc {
     let parts: Vec[pretty::Doc] = match value {
-        Receive { channel, binding, body } => Vec::from_array(
+        Receive { channel, guard, binding, body } => Vec::from_array(
             [
                 pretty::text("recv("),
                 expr_doc(channel),
-                pretty::text(") as "),
+                match guard {
+                    Some(value) => pretty::concat(
+                        Vec::from_array(
+                            [pretty::text(") when "), expr_doc(value), pretty::text(" as ")],
+                        ),
+                    ),
+                    None => pretty::text(") as "),
+                },
                 local_debug_doc(binding),
                 pretty::text(" =>"),
                 pretty::nest(2, pretty::append(pretty::line(), expr_doc(body))),
                 pretty::text(","),
             ],
         ),
-        Send { channel, value, body } => Vec::from_array(
+        Send { channel, value, guard, body } => Vec::from_array(
             [
                 pretty::text("send("),
                 expr_doc(channel),
                 pretty::text(", "),
                 expr_doc(value),
-                pretty::text(") =>"),
+                match guard {
+                    Some(value) => pretty::concat(
+                        Vec::from_array(
+                            [pretty::text(") when "), expr_doc(value), pretty::text(" =>")],
+                        ),
+                    ),
+                    None => pretty::text(") =>"),
+                },
                 pretty::nest(2, pretty::append(pretty::line(), expr_doc(body))),
                 pretty::text(","),
             ],
@@ -796,12 +810,24 @@ fn expr_doc(value: Expr) -> pretty::Doc {
                 ),
             )
         },
-        Select { arms } => {
+        Select { mode, arms } => {
             let values: Vec[pretty::Doc] = Vec::with_capacity(arms.len());
             for arm in arms {
                 values.push(select_arm_doc(arm))
             }
-            pretty::concat(Vec::from_array([pretty::text("select "), braced_docs(values, 4)]))
+            pretty::concat(
+                Vec::from_array(
+                    [
+                        pretty::text(
+                            match mode {
+                                ast::SelectMode::Normal => "select ",
+                                ast::SelectMode::Priority => "select priority ",
+                            },
+                        ),
+                        braced_docs(values, 4),
+                    ],
+                ),
+            )
         },
         If { cond, then_branch, else_branch } => pretty::concat(
             Vec::from_array(

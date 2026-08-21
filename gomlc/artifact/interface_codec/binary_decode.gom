@@ -3,6 +3,7 @@ package interface_codec;
 use gomlc::artifact::wire as wire;
 use gomlc::artifact;
 use gomlc::artifact::tast_codec as tast_codec;
+use gomlc::ast;
 use gomlc::tast;
 use std::bytes;
 
@@ -313,14 +314,26 @@ fn artifact_interface_binary_type(
                 Err(error) => Result::Err(error),
             }
         },
-        tast_codec::TYPE_SLICE_TAG | tast_codec::TYPE_VEC_TAG | tast_codec::TYPE_REF_TAG | tast_codec::TYPE_CHANNEL_TAG => {
+        tast_codec::TYPE_SLICE_TAG | tast_codec::TYPE_VEC_TAG | tast_codec::TYPE_REF_TAG => {
             let elem = artifact_interface_binary_element_type(reader, context, "element type")?;
             match kind {
                 tast_codec::TYPE_SLICE_TAG => Result::Ok(tast::Type::Slice { elem }),
                 tast_codec::TYPE_VEC_TAG => Result::Ok(tast::Type::VecType { elem }),
-                tast_codec::TYPE_REF_TAG => Result::Ok(tast::Type::RefType { elem }),
-                _ => Result::Ok(tast::Type::Channel { elem }),
+                _ => Result::Ok(tast::Type::RefType { elem }),
             }
+        },
+        tast_codec::TYPE_CHANNEL_TAG => {
+            artifact_interface_binary_object(reader, 2, "channel type")?;
+            artifact_interface_binary_field(reader, "elem")?;
+            let elem = artifact_interface_binary_type(reader, context)?;
+            artifact_interface_binary_field(reader, "direction")?;
+            let direction = match artifact_interface_binary_string(reader, "channel direction")? {
+                "both" => ast::ChannelDirection::Both,
+                "send" => ast::ChannelDirection::Send,
+                "receive" => ast::ChannelDirection::Receive,
+                value => return Result::Err("unknown channel direction " + value),
+            };
+            Result::Ok(tast::Type::Channel { elem, direction })
         },
         tast_codec::TYPE_HASH_MAP_TAG => {
             artifact_interface_binary_object(reader, 2, "hash map type")?;

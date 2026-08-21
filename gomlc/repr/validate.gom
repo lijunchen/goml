@@ -63,7 +63,7 @@ fn validate_type_in(value: Type, context: string) -> Result[unit, string] {
             validate_type_in(key, context + " map key")?;
             validate_type_in(value, context + " map value")
         },
-        Channel { elem } => validate_type_in(elem, context + " channel element"),
+        Channel { elem, direction: _ } => validate_type_in(elem, context + " channel element"),
         Func { params, ret_ty } => {
             validate_types(params, context + " function parameter")?;
             validate_type_in(ret_ty, context + " function return")

@@ -1,5 +1,6 @@
 package anf;
 
+use gomlc::ast;
 use gomlc::lift;
 use gomlc::repr;
 
@@ -196,6 +197,7 @@ fn lower_match(
 
 fn lower_select_arms_from(
     state: State,
+    mode: ast::SelectMode,
     values: Vec[lift::SelectArm],
     index: int,
     result: Vec[SelectArm],
@@ -213,35 +215,49 @@ fn lower_select_arms_from(
         };
         Block {
             binds: one_bind(Bind::Join(join)),
-            term: Term::Select { arms: result, default: lowered_default, ret_ty: join_ret_ty },
+            term: Term::Select { mode, arms: result, default: lowered_default, ret_ty: join_ret_ty },
         }
     } else {
         match values[index] {
-            Receive { channel, binding, binding_ty, body } => lower_expr(
+            Receive { channel, guard, binding, binding_ty, body } => lower_expr(
                 state,
                 channel,
                 |channel| {
-                    result.push(
-                        SelectArm::Receive {
-                            channel,
-                            binding,
-                            binding_ty,
-                            body: lower_branch(state, body, join.name, join_ret_ty, join_takes_arg),
-                        },
-                    );
-                    lower_select_arms_from(
-                        state,
-                        values,
-                        index + 1,
-                        result,
-                        default,
-                        join,
-                        join_ret_ty,
-                        join_takes_arg,
-                    )
+                    let finish = |guard| {
+                        result.push(
+                            SelectArm::Receive {
+                                channel,
+                                guard,
+                                binding,
+                                binding_ty,
+                                body: lower_branch(
+                                    state,
+                                    body,
+                                    join.name,
+                                    join_ret_ty,
+                                    join_takes_arg,
+                                ),
+                            },
+                        );
+                        lower_select_arms_from(
+                            state,
+                            mode,
+                            values,
+                            index + 1,
+                            result,
+                            default,
+                            join,
+                            join_ret_ty,
+                            join_takes_arg,
+                        )
+                    };
+                    match guard {
+                        Some(value) => lower_expr(state, value, |value| finish(Option::Some(value))),
+                        None => finish(Option::None),
+                    }
                 },
             ),
-            Send { channel, value, body } => lower_expr(
+            Send { channel, value, guard, body } => lower_expr(
                 state,
                 channel,
                 |channel| {
@@ -249,29 +265,41 @@ fn lower_select_arms_from(
                         state,
                         value,
                         |value| {
-                            result.push(
-                                SelectArm::Send {
-                                    channel,
+                            let finish = |guard| {
+                                result.push(
+                                    SelectArm::Send {
+                                        channel,
+                                        value,
+                                        guard,
+                                        body: lower_branch(
+                                            state,
+                                            body,
+                                            join.name,
+                                            join_ret_ty,
+                                            join_takes_arg,
+                                        ),
+                                    },
+                                );
+                                lower_select_arms_from(
+                                    state,
+                                    mode,
+                                    values,
+                                    index + 1,
+                                    result,
+                                    default,
+                                    join,
+                                    join_ret_ty,
+                                    join_takes_arg,
+                                )
+                            };
+                            match guard {
+                                Some(value) => lower_expr(
+                                    state,
                                     value,
-                                    body: lower_branch(
-                                        state,
-                                        body,
-                                        join.name,
-                                        join_ret_ty,
-                                        join_takes_arg,
-                                    ),
-                                },
-                            );
-                            lower_select_arms_from(
-                                state,
-                                values,
-                                index + 1,
-                                result,
-                                default,
-                                join,
-                                join_ret_ty,
-                                join_takes_arg,
-                            )
+                                    |value| finish(Option::Some(value)),
+                                ),
+                                None => finish(Option::None),
+                            }
                         },
                     )
                 },
@@ -282,18 +310,20 @@ fn lower_select_arms_from(
 
 fn lower_select(
     state: State,
+    mode: ast::SelectMode,
     arms: Vec[lift::SelectArm],
     default: Option[lift::Expr],
     ty: repr::Type,
     k: (Imm) -> Block,
 ) -> Block {
-    let expr = lift::Expr::Select { arms, default, ty };
+    let expr = lift::Expr::Select { mode, arms, default, ty };
     let reified = reify_k_for_expr(state, expr, k);
     let join = reified.0;
     let ret_ty = reified.1;
     let join_takes_arg = !join.params.is_empty();
     lower_select_arms_from(
         state,
+        mode,
         arms,
         0,
         Vec::with_capacity(arms.len()),
@@ -431,7 +461,7 @@ fn lower_expr(state: State, value: lift::Expr, k: (Imm) -> Block) -> Block {
             Match { expr: scrutinee, arms, default, ty } => {
                 lower_match(state, scrutinee, arms, default, ty, k)
             },
-            Select { arms, default, ty } => lower_select(state, arms, default, ty, k),
+            Select { mode, arms, default, ty } => lower_select(state, mode, arms, default, ty, k),
             While { cond, body, ty: _ } => lower_while(state, cond, body, k),
             Loop { body, ty } => lower_loop(state, body, ty, k),
             Break { target, value, ty: _ } => match loop_context(state, target) {

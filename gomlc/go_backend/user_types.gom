@@ -237,7 +237,10 @@ fn compact_type_size(value: repr::Type, structs: Vec[repr::StructDef], depth: in
                     item_size * len
                 }
             },
-            VecType { elem: _ } | RefType { elem: _ } | HashMap { .. } | Channel { elem: _ } => 8,
+            VecType { elem: _ } | RefType { elem: _ } | HashMap { .. } | Channel {
+                elem: _,
+                direction: _,
+            } => 8,
         }
     }
 }
@@ -295,7 +298,10 @@ fn builtin_compact_type_size(value: repr::Type, structs: Vec[repr::StructDef], d
                     item_size * len
                 }
             },
-            VecType { elem: _ } | RefType { elem: _ } | HashMap { .. } | Channel { elem: _ } => 8,
+            VecType { elem: _ } | RefType { elem: _ } | HashMap { .. } | Channel {
+                elem: _,
+                direction: _,
+            } => 8,
         }
     }
 }

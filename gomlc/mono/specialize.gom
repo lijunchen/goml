@@ -170,11 +170,15 @@ fn unify_type(template: core::Type, actual: core::Type, bindings: Vec[TypeBindin
         (Slice { elem: template }, Slice { elem: actual }) | (
             VecType { elem: template },
             VecType { elem: actual },
-        ) | (RefType { elem: template }, RefType { elem: actual }) | (
-            Channel { elem: template },
-            Channel { elem: actual },
-        ) => {
+        ) | (RefType { elem: template }, RefType { elem: actual }) => {
             unify_type(template, actual, bindings)
+        },
+        (
+            Channel { elem: template, direction: template_direction },
+            Channel { elem: actual, direction: actual_direction },
+        ) => {
+            ast::channel_directions_equal(template_direction, actual_direction)
+                && unify_type(template, actual, bindings)
         },
         (
             HashMap { key: template_key, value: template_value },
@@ -301,8 +305,8 @@ fn substitute_type(value: core::Type, bindings: Vec[TypeBinding]) -> core::Type 
         RefType { elem } => {
             core::Type::RefType { elem: substitute_type(elem, bindings) }
         },
-        Channel { elem } => {
-            core::Type::Channel { elem: substitute_type(elem, bindings) }
+        Channel { elem, direction } => {
+            core::Type::Channel { elem: substitute_type(elem, bindings), direction }
         },
         HashMap { key, value } => core::Type::HashMap {
             key: substitute_type(key, bindings),
@@ -380,7 +384,16 @@ fn canonical_inherent_owner_type(builtin: tast::BuiltinContract, value: core::Ty
                     core::Type::HashMap { key: values[0], value: values[1] }
                 },
                 Con { name } if mono_names_match(name, builtin.channel.name) && values.len() == 1 => {
-                    core::Type::Channel { elem: values[0] }
+                    core::Type::Channel { elem: values[0], direction: ast::ChannelDirection::Both }
+                },
+                Con { name } if mono_names_match(name, builtin.sender.name) && values.len() == 1 => {
+                    core::Type::Channel { elem: values[0], direction: ast::ChannelDirection::Send }
+                },
+                Con { name } if mono_names_match(name, builtin.receiver.name) && values.len() == 1 => {
+                    core::Type::Channel {
+                        elem: values[0],
+                        direction: ast::ChannelDirection::Receive,
+                    }
                 },
                 other => core::Type::App { ty: other, args: values },
             }
@@ -1189,6 +1202,7 @@ fn mono_type_contains_proper_subterm(value: core::Type, expected: core::Type) ->
         },
         Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
             elem,
+            direction: _,
         } => {
             mono_types_equal(elem, expected) || mono_type_contains_proper_subterm(elem, expected)
         },
@@ -1222,7 +1236,7 @@ fn mono_type_outer_constructor_matches(left: core::Type, right: core::Type) -> b
         ) | (Slice { elem: _ }, Slice { elem: _ }) | (VecType { elem: _ }, VecType { elem: _ }) | (
             RefType { elem: _ },
             RefType { elem: _ },
-        ) | (Channel { elem: _ }, Channel { elem: _ }) | (
+        ) | (Channel { elem: _, direction: _ }, Channel { elem: _, direction: _ }) | (
             HashMap { key: _, value: _ },
             HashMap { key: _, value: _ },
         ) | (Func { params: _, ret_ty: _ }, Func { params: _, ret_ty: _ }) => true,
@@ -1598,8 +1612,8 @@ fn normalize_type(ctx: SpecializeCtx, value: core::Type, active: Vec[string]) ->
         RefType { elem } => {
             core::Type::RefType { elem: normalize_type(ctx, elem, active) }
         },
-        Channel { elem } => {
-            core::Type::Channel { elem: normalize_type(ctx, elem, active) }
+        Channel { elem, direction } => {
+            core::Type::Channel { elem: normalize_type(ctx, elem, active), direction }
         },
         HashMap { key, value } => core::Type::HashMap {
             key: normalize_type(ctx, key, active),
@@ -1632,6 +1646,7 @@ fn type_contains_associated_projection(value: core::Type) -> bool {
         },
         Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
             elem,
+            direction: _,
         } => type_contains_associated_projection(elem),
         HashMap { key, value } => {
             type_contains_associated_projection(key) || type_contains_associated_projection(value)
@@ -2011,15 +2026,17 @@ fn specialize_select_arms(
     for value in values {
         result.push(
             match value {
-                Receive { channel, binding, binding_ty, body } => core::SelectArm::Receive {
+                Receive { channel, guard, binding, binding_ty, body } => core::SelectArm::Receive {
                     channel: specialize_expr(ctx, bindings, channel),
+                    guard: specialize_optional_expr(ctx, bindings, guard),
                     binding,
                     binding_ty: specialize_type(ctx, binding_ty, bindings),
                     body: specialize_expr(ctx, bindings, body),
                 },
-                Send { channel, value, body } => core::SelectArm::Send {
+                Send { channel, value, guard, body } => core::SelectArm::Send {
                     channel: specialize_expr(ctx, bindings, channel),
                     value: specialize_expr(ctx, bindings, value),
+                    guard: specialize_optional_expr(ctx, bindings, guard),
                     body: specialize_expr(ctx, bindings, body),
                 },
             },
@@ -2287,7 +2304,8 @@ fn specialize_expr(ctx: SpecializeCtx, bindings: Vec[TypeBinding], value: core::
             default: specialize_optional_expr(ctx, bindings, default),
             ty: specialize_type(ctx, ty, bindings),
         },
-        Select { arms, default, ty } => core::Expr::Select {
+        Select { mode, arms, default, ty } => core::Expr::Select {
+            mode,
             arms: specialize_select_arms(ctx, bindings, arms),
             default: specialize_optional_expr(ctx, bindings, default),
             ty: specialize_type(ctx, ty, bindings),
@@ -2478,7 +2496,7 @@ fn ensure_runtime_trait_impls_for_type(ctx: SpecializeCtx, value: core::Type) ->
             ensure_runtime_trait_impls_for_type(ctx, base);
             ensure_runtime_trait_impls_for_types(ctx, args)
         },
-        Array { len: _, elem } | Slice { elem } | VecType { elem } | Channel { elem } => ensure_runtime_trait_impls_for_type(
+        Array { len: _, elem } | Slice { elem } | VecType { elem } | Channel { elem, direction: _ } => ensure_runtime_trait_impls_for_type(
             ctx,
             elem,
         ),
@@ -2542,17 +2560,19 @@ fn ensure_runtime_trait_impls_for_expr(ctx: SpecializeCtx, value: core::Expr) ->
             }
             ensure_runtime_trait_impls_for_optional_expr(ctx, default)
         },
-        Select { arms, default, ty: _ } => {
+        Select { arms, default, .. } => {
             for arm in arms {
                 match arm {
-                    Receive { channel, binding: _, binding_ty, body } => {
+                    Receive { channel, guard, binding: _, binding_ty, body } => {
                         ensure_runtime_trait_impls_for_type(ctx, binding_ty);
                         ensure_runtime_trait_impls_for_expr(ctx, channel);
+                        ensure_runtime_trait_impls_for_optional_expr(ctx, guard);
                         ensure_runtime_trait_impls_for_expr(ctx, body)
                     },
-                    Send { channel, value, body } => {
+                    Send { channel, value, guard, body } => {
                         ensure_runtime_trait_impls_for_expr(ctx, channel);
                         ensure_runtime_trait_impls_for_expr(ctx, value);
+                        ensure_runtime_trait_impls_for_optional_expr(ctx, guard);
                         ensure_runtime_trait_impls_for_expr(ctx, body)
                     },
                 }

@@ -74,7 +74,9 @@ fn detach_type(value: mono::Type, environments: Vec[string]) -> repr::Type {
             key: detach_type(key, environments),
             value: detach_type(value, environments),
         },
-        Channel { elem } => repr::Type::Channel { elem: detach_type(elem, environments) },
+        Channel { elem, direction } => {
+            repr::Type::Channel { elem: detach_type(elem, environments), direction }
+        },
         Func { params, ret_ty } => repr::Type::Func {
             params: detach_types(params, environments),
             ret_ty: detach_type(ret_ty, environments),
@@ -200,15 +202,23 @@ fn detach_select_arms(values: Vec[LowerSelectArm], environments: Vec[string]) ->
     for value in values {
         result.push(
             match value {
-                Receive { channel, binding, binding_ty, body } => SelectArm::Receive {
+                Receive { channel, guard, binding, binding_ty, body } => SelectArm::Receive {
                     channel: detach_expr(channel, environments),
+                    guard: match guard {
+                        Some(value) => Option::Some(detach_expr(value, environments)),
+                        None => Option::None,
+                    },
                     binding,
                     binding_ty: detach_type(binding_ty, environments),
                     body: detach_expr(body, environments),
                 },
-                Send { channel, value, body } => SelectArm::Send {
+                Send { channel, value, guard, body } => SelectArm::Send {
                     channel: detach_expr(channel, environments),
                     value: detach_expr(value, environments),
+                    guard: match guard {
+                        Some(value) => Option::Some(detach_expr(value, environments)),
+                        None => Option::None,
+                    },
                     body: detach_expr(body, environments),
                 },
             },
@@ -252,7 +262,8 @@ fn detach_expr(value: LowerExpr, environments: Vec[string]) -> Expr {
             default: detach_optional_expr(default, environments),
             ty: detach_type(ty, environments),
         },
-        Select { arms, default, ty } => Expr::Select {
+        Select { mode, arms, default, ty } => Expr::Select {
+            mode,
             arms: detach_select_arms(arms, environments),
             default: detach_optional_expr(default, environments),
             ty: detach_type(ty, environments),

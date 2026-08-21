@@ -1,5 +1,6 @@
 package anf;
 
+use gomlc::ast;
 use gomlc::repr;
 use std::text;
 
@@ -250,26 +251,54 @@ fn verify_term(state: VerifyState, value: Term, expected_ty: repr::Type, joins: 
                 None => Result::Ok(()),
             }
         },
-        Select { arms, default, ret_ty } => {
+        Select { arms, default, ret_ty, .. } => {
             verify_type(ret_ty, expected_ty, "select result type does not match its block")?;
             for arm in arms {
                 match arm {
-                    Receive { channel, binding: _, binding_ty, body } => {
+                    Receive { channel, guard, binding: _, binding_ty, body } => {
                         repr::validate_type(binding_ty)?;
                         match repr::resolve_type(imm_type(channel)) {
-                            Channel { elem: _ } => (),
+                            Channel { elem: _, direction: ast::ChannelDirection::Both } | Channel {
+                                elem: _,
+                                direction: ast::ChannelDirection::Receive,
+                            } => (),
+                            Channel { elem: _, direction: ast::ChannelDirection::Send } => {
+                                return Result::Err("select receive operand is send-only")
+                            },
                             _ => return Result::Err("select receive operand is not a channel"),
+                        };
+                        match guard {
+                            Some(value) => verify_type(
+                                imm_type(value),
+                                repr::Type::Bool,
+                                "select guard is not bool",
+                            )?,
+                            None => (),
                         };
                         verify_block(state, body, ret_ty, copy_join_signatures(joins))?
                     },
-                    Send { channel, value, body } => {
+                    Send { channel, value, guard, body } => {
                         match repr::resolve_type(imm_type(channel)) {
-                            Channel { elem } => verify_type(
+                            Channel { elem, direction: ast::ChannelDirection::Both } | Channel {
+                                elem,
+                                direction: ast::ChannelDirection::Send,
+                            } => verify_type(
                                 imm_type(value),
                                 elem,
                                 "select send value type does not match its channel",
                             )?,
+                            Channel { elem: _, direction: ast::ChannelDirection::Receive } => {
+                                return Result::Err("select send operand is receive-only")
+                            },
                             _ => return Result::Err("select send operand is not a channel"),
+                        };
+                        match guard {
+                            Some(value) => verify_type(
+                                imm_type(value),
+                                repr::Type::Bool,
+                                "select guard is not bool",
+                            )?,
+                            None => (),
                         };
                         verify_block(state, body, ret_ty, copy_join_signatures(joins))?
                     },

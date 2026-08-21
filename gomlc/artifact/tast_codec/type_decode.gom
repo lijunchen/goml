@@ -1,6 +1,7 @@
 package tast_codec;
 
 use gomlc::artifact::wire as wire;
+use gomlc::ast;
 use gomlc::tast;
 
 pub struct ArtifactDecodeContext {
@@ -257,10 +258,24 @@ pub fn artifact_decode_type(context: ArtifactDecodeContext, value: wire::Artifac
                     }
                 },
                 TYPE_CHANNEL_TAG => {
-                    match artifact_decode_element_type(context, payload, "channel type") {
-                        Ok(value) => Result::Ok(tast::Type::Channel { elem: value }),
-                        Err(error) => Result::Err(error),
-                    }
+                    let object = wire::artifact_json_object(payload, "channel type")?;
+                    let elem = artifact_decode_type(
+                        context,
+                        wire::artifact_json_required_field(object, "elem")?,
+                    )?;
+                    let direction = match wire::artifact_json_optional_field(object, "direction")? {
+                        Some(value) => match wire::artifact_json_string_value(
+                            value,
+                            "channel direction",
+                        )? {
+                            "both" => ast::ChannelDirection::Both,
+                            "send" => ast::ChannelDirection::Send,
+                            "receive" => ast::ChannelDirection::Receive,
+                            value => return Result::Err("unknown channel direction " + value),
+                        },
+                        None => ast::ChannelDirection::Both,
+                    };
+                    Result::Ok(tast::Type::Channel { elem, direction })
                 },
                 TYPE_HASH_MAP_TAG => {
                     let object = wire::artifact_json_object(payload, "hash map type")?;

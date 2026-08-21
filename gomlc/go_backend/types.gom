@@ -1,5 +1,6 @@
 package go_backend;
 
+use gomlc::ast;
 use gomlc::repr;
 use gomlc::pretty;
 use gomlc::tast;
@@ -83,9 +84,15 @@ pub fn encode_type(value: repr::Type) -> string {
                 + value_name.byte_len().to_string()
                 + value_name
         },
-        Channel { elem } => {
+        Channel { elem, direction } => {
             let encoded = encode_type(elem);
-            "Channel_" + encoded.byte_len().to_string() + encoded
+            match direction {
+                ast::ChannelDirection::Both => "Channel_",
+                ast::ChannelDirection::Send => "Sender_",
+                ast::ChannelDirection::Receive => "Receiver_",
+            }
+                + encoded.byte_len().to_string()
+                + encoded
         },
         Func { params, ret_ty } => {
             let ret_name = encode_type(ret_ty);
@@ -141,7 +148,14 @@ pub fn type_name(value: repr::Type) -> string {
         HashMap { key, value } => {
             go_generated_ident("HashMap_" + type_name_part(key) + "_" + type_name_part(value))
         },
-        Channel { elem } => go_generated_ident("Channel_" + type_name_part(elem)),
+        Channel { elem, direction } => go_generated_ident(
+            match direction {
+                ast::ChannelDirection::Both => "Channel_",
+                ast::ChannelDirection::Send => "Sender_",
+                ast::ChannelDirection::Receive => "Receiver_",
+            }
+                + type_name_part(elem),
+        ),
         Func { params, ret_ty } => {
             let builder = text::StringBuilder::new();
             builder.write_string("TFunc");
@@ -217,7 +231,9 @@ fn lower_type_with_contract(builtin: tast::BuiltinContract, value: repr::Type) -
                 },
             }
         },
-        Channel { elem } => Type::Chan { elem: lower_type_with_contract(builtin, elem) },
+        Channel { elem, direction } => {
+            Type::Chan { elem: lower_type_with_contract(builtin, elem), direction }
+        },
         Func { params, ret_ty } => {
             let lowered: Vec[Type] = Vec::from_array([]);
             for value in params {

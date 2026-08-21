@@ -449,7 +449,11 @@ fn type_owner_name(value: tast::Type) -> string {
         RefType { elem: _ } => "Ref",
         Slice { elem: _ } => "Slice",
         HashMap { key: _, value: _ } => "HashMap",
-        Channel { elem: _ } => "Channel",
+        Channel { elem: _, direction } => match direction {
+            ast::ChannelDirection::Both => "Channel",
+            ast::ChannelDirection::Send => "Sender",
+            ast::ChannelDirection::Receive => "Receiver",
+        },
         other => tast::diagnostic_type_text(other),
     }
 }

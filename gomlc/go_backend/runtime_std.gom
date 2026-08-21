@@ -1,5 +1,6 @@
 package go_backend;
 
+use gomlc::ast;
 use gomlc::resources;
 use gomlc::repr;
 
@@ -2985,6 +2986,344 @@ fn std_time_sleep_nanoseconds_item(key: string) -> Item {
     std_function_item(key, params, Type::Unit, stmts)
 }
 
+fn std_time_timer_mutex_name() -> string {
+    go_generated_ident("_goml_time_timer_mutex")
+}
+
+fn std_time_timer_registry_name() -> string {
+    go_generated_ident("_goml_time_timer_registry")
+}
+
+fn std_time_timer_next_id_name() -> string {
+    go_generated_ident("_goml_time_timer_next_id")
+}
+
+fn std_time_timer_pointer_type() -> Type {
+    Type::Pointer { elem: Type::Named { name: "_goml_time.Timer" } }
+}
+
+fn std_time_timer_registry_type() -> Type {
+    Type::Map { key: Type::Int64, value: std_time_timer_pointer_type() }
+}
+
+fn std_time_timer_channel_type(direction: ast::ChannelDirection) -> Type {
+    Type::Chan { elem: Type::Unit, direction }
+}
+
+fn std_time_timer_fire_name() -> string {
+    go_generated_ident("_goml_time_timer_fire")
+}
+
+fn std_time_timer_support_items() -> Vec[Item] {
+    let items: Vec[Item] = Vec::from_array([]);
+    items.push(
+        Item::Global(
+            Global {
+                name: std_time_timer_mutex_name(),
+                ty: Option::Some(Type::Named { name: "_goml_sync.Mutex" }),
+                value: Expr::StructLiteral {
+                    ty: Type::Named { name: "_goml_sync.Mutex" },
+                    fields: Vec::from_array([]),
+                },
+            },
+        ),
+    );
+    items.push(
+        Item::Global(
+            Global {
+                name: std_time_timer_registry_name(),
+                ty: Option::Some(std_time_timer_registry_type()),
+                value: Expr::Make { ty: std_time_timer_registry_type(), args: Vec::from_array([]) },
+            },
+        ),
+    );
+    items.push(
+        Item::Global(
+            Global {
+                name: std_time_timer_next_id_name(),
+                ty: Option::Some(Type::Int64),
+                value: Expr::Int { value: "1" },
+            },
+        ),
+    );
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    stmts.push(
+        Stmt::Expr {
+            expr: std_method_call(
+                Expr::Var { name: std_time_timer_mutex_name() },
+                "Lock",
+                Vec::from_array([]),
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::Var {
+            name: "timer",
+            ty: std_time_timer_pointer_type(),
+            value: Option::Some(
+                Expr::Index {
+                    base: Expr::Var { name: std_time_timer_registry_name() },
+                    index: Expr::Var { name: "id" },
+                },
+            ),
+        },
+    );
+    let fire: Vec[Stmt] = Vec::from_array([]);
+    fire.push(
+        Stmt::Expr {
+            expr: std_call(
+                "delete",
+                Vec::from_array(
+                    [Expr::Var { name: std_time_timer_registry_name() }, Expr::Var { name: "id" }],
+                ),
+            ),
+        },
+    );
+    fire.push(
+        Stmt::Expr { expr: std_call("close", Vec::from_array([Expr::Var { name: "ready" }])) },
+    );
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Binary {
+                op: BinaryOp::NotEq,
+                lhs: Expr::Var { name: "timer" },
+                rhs: Expr::Nil,
+            },
+            then_: Block { stmts: fire },
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::Expr {
+            expr: std_method_call(
+                Expr::Var { name: std_time_timer_mutex_name() },
+                "Unlock",
+                Vec::from_array([]),
+            ),
+        },
+    );
+    stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
+    items.push(
+        Item::Function(
+            Function {
+                name: std_time_timer_fire_name(),
+                params: Vec::from_array(
+                    [
+                        ("id", Type::Int64),
+                        ("ready", std_time_timer_channel_type(ast::ChannelDirection::Both)),
+                    ],
+                ),
+                ret_ty: Option::Some(Type::Unit),
+                body: Block { stmts },
+            },
+        ),
+    );
+    items
+}
+
+fn std_time_timer_new_item(key: string) -> Item {
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    stmts.push(
+        Stmt::Var {
+            name: "ready",
+            ty: std_time_timer_channel_type(ast::ChannelDirection::Both),
+            value: Option::Some(
+                Expr::Make {
+                    ty: std_time_timer_channel_type(ast::ChannelDirection::Both),
+                    args: Vec::from_array([]),
+                },
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::Expr {
+            expr: std_method_call(
+                Expr::Var { name: std_time_timer_mutex_name() },
+                "Lock",
+                Vec::from_array([]),
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::Var {
+            name: "id",
+            ty: Type::Int64,
+            value: Option::Some(Expr::Var { name: std_time_timer_next_id_name() }),
+        },
+    );
+    stmts.push(
+        Stmt::Assign {
+            name: std_time_timer_next_id_name(),
+            value: Expr::Binary {
+                op: BinaryOp::Add,
+                lhs: Expr::Var { name: std_time_timer_next_id_name() },
+                rhs: Expr::Int { value: "1" },
+            },
+        },
+    );
+    let callback: Vec[Stmt] = Vec::from_array([]);
+    callback.push(
+        Stmt::Expr {
+            expr: std_call(
+                std_time_timer_fire_name(),
+                Vec::from_array([Expr::Var { name: "id" }, Expr::Var { name: "ready" }]),
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::Var {
+            name: "timer",
+            ty: std_time_timer_pointer_type(),
+            value: Option::Some(
+                std_call(
+                    "_goml_time.AfterFunc",
+                    Vec::from_array(
+                        [
+                            Expr::Convert {
+                                ty: Type::Named { name: "_goml_time.Duration" },
+                                expr: Expr::Var { name: "nanoseconds" },
+                            },
+                            Expr::FuncLit {
+                                params: Vec::from_array([]),
+                                ret_ty: Type::Void,
+                                body: Block { stmts: callback },
+                            },
+                        ],
+                    ),
+                ),
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::IndexAssign {
+            base: Expr::Var { name: std_time_timer_registry_name() },
+            index: Expr::Var { name: "id" },
+            value: Expr::Var { name: "timer" },
+        },
+    );
+    stmts.push(
+        Stmt::Expr {
+            expr: std_method_call(
+                Expr::Var { name: std_time_timer_mutex_name() },
+                "Unlock",
+                Vec::from_array([]),
+            ),
+        },
+    );
+    let ret_ty = std_tuple_type(
+        Vec::from_array(
+            [
+                repr::Type::Int64,
+                repr::Type::Channel {
+                    elem: repr::Type::Unit,
+                    direction: ast::ChannelDirection::Receive,
+                },
+            ],
+        ),
+    );
+    stmts.push(
+        Stmt::Return {
+            expr: Option::Some(
+                std_tuple_expr(
+                    ret_ty,
+                    Vec::from_array([Expr::Var { name: "id" }, Expr::Var { name: "ready" }]),
+                ),
+            ),
+        },
+    );
+    std_function_item(key, Vec::from_array([("nanoseconds", Type::Int64)]), ret_ty, stmts)
+}
+
+fn std_time_timer_stop_item(key: string) -> Item {
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    stmts.push(
+        Stmt::Expr {
+            expr: std_method_call(
+                Expr::Var { name: std_time_timer_mutex_name() },
+                "Lock",
+                Vec::from_array([]),
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::Var {
+            name: "timer",
+            ty: std_time_timer_pointer_type(),
+            value: Option::Some(
+                Expr::Index {
+                    base: Expr::Var { name: std_time_timer_registry_name() },
+                    index: Expr::Var { name: "id" },
+                },
+            ),
+        },
+    );
+    let missing: Vec[Stmt] = Vec::from_array([]);
+    missing.push(
+        Stmt::Expr {
+            expr: std_method_call(
+                Expr::Var { name: std_time_timer_mutex_name() },
+                "Unlock",
+                Vec::from_array([]),
+            ),
+        },
+    );
+    missing.push(Stmt::Return { expr: Option::Some(Expr::Bool { value: false }) });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Binary {
+                op: BinaryOp::Eq,
+                lhs: Expr::Var { name: "timer" },
+                rhs: Expr::Nil,
+            },
+            then_: Block { stmts: missing },
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::Var {
+            name: "stopped",
+            ty: Type::Bool,
+            value: Option::Some(
+                std_method_call(Expr::Var { name: "timer" }, "Stop", Vec::from_array([])),
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Var { name: "stopped" },
+            then_: Block {
+                stmts: Vec::from_array(
+                    [
+                        Stmt::Expr {
+                            expr: std_call(
+                                "delete",
+                                Vec::from_array(
+                                    [
+                                        Expr::Var { name: std_time_timer_registry_name() },
+                                        Expr::Var { name: "id" },
+                                    ],
+                                ),
+                            ),
+                        },
+                    ],
+                ),
+            },
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::Expr {
+            expr: std_method_call(
+                Expr::Var { name: std_time_timer_mutex_name() },
+                "Unlock",
+                Vec::from_array([]),
+            ),
+        },
+    );
+    stmts.push(Stmt::Return { expr: Option::Some(Expr::Var { name: "stopped" }) });
+    std_function_item(key, Vec::from_array([("id", Type::Int64)]), Type::Bool, stmts)
+}
+
 fn std_process_environment_type() -> repr::Type {
     repr::Type::VecType {
         elem: repr::Type::Tuple { items: Vec::from_array([repr::Type::String, repr::Type::String]) },
@@ -3872,6 +4211,8 @@ fn std_time_runtime_hook_item(hook: resources::TimeRuntimeHook, key: string) -> 
         MonotonicNanoseconds => std_time_monotonic_nanoseconds_item(key),
         UnixNanoseconds => std_time_unix_nanoseconds_item(key),
         SleepNanoseconds => std_time_sleep_nanoseconds_item(key),
+        TimerNew => std_time_timer_new_item(key),
+        TimerStop => std_time_timer_stop_item(key),
     }
 }
 

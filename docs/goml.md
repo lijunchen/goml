@@ -358,7 +358,7 @@ All files in the same package can use private top-level items.The trait impl met
 | fixed array | `[int32; 4]` | The length is part of the type |
 | function | `(int32, string) -> bool` | parameter type list to return type |
 | Generic application | `Option[int32]`、`pkg::Box[string]` | Use square brackets |
-| channel | `Channel[int]` | Go channel backend |
+| channel | `Channel[int]`, `Sender[int]`, `Receiver[int]` | Bidirectional and directional Go channel backends |
 | trait object | `dyn Render`、`dyn Iterator[Item = int]` | A single, non-generic dyn-safe trait; associated types must be bound |
 | Associative type projection | `I::Item`、`Self::Output`、`I::IntoIter::Item` | There must be corresponding trait constraints; projections may be chained |
 
@@ -1041,13 +1041,30 @@ let outcome = select {
 };
 ```
 
-A receive arm has the form `recv(channel) as binding => body`. The channel must have type `Channel[T]`, and the binding has type `Option[T]`; a closed and drained channel selects immediately and supplies `None`. Write `_` when the received value and close state are not needed. A send arm has the form `send(channel, value) => body`, and the value must match the channel element type.
+A receive arm has the form `recv(channel) as binding => body`. The channel must have type `Channel[T]` or `Receiver[T]`, and the binding has type `Option[T]`; a closed and drained channel selects immediately and supplies `None`. Write `_` when the received value and close state are not needed. A send arm has the form `send(channel, value) => body`, accepts `Channel[T]` or `Sender[T]`, and requires the value to match the channel element type.
+
+Communication arms may have a `when` guard after their operands. Operands and guards are evaluated exactly once in source order. A false guard disables its arm by selecting on a nil directional channel; if every arm is disabled, a select without `default` blocks and one with `default` runs immediately. The receive binding is not in scope in its guard.
+
+```goml
+select {
+    recv(messages) when accepting match {
+        Some(Event::Data { id, value }) => handle(id, value),
+        Some(Event::Stop) | None => stop(),
+    },
+    send(events, "ready") when publishing => published(),
+    default => idle(),
+}
+```
+
+`recv(channel) match { ... }` exhaustively matches the `Option[T]` result after communication succeeds. It is equivalent to receiving into a fresh binding and applying an ordinary `match`, so contextual variants, nested patterns, or-patterns, and exhaustiveness checking work normally. A refutable pattern cannot directly replace the receive binding because discarding a received value after a pattern failure would lose data invisibly.
+
+`select priority` is a deterministic non-blocking form. It requires one final `default`, probes communication arms from first to last, chooses the first arm that can complete immediately, and otherwise runs `default`. False guards are skipped. Ordinary `select` retains Go's unspecified choice among simultaneously ready operations.
 
 Every `select` contains at least one `recv` or `send` arm. It may have one `default` arm, which must be last. Without `default`, execution blocks until an operation can proceed. With `default`, that arm runs immediately when no communication arm is ready. When several operations are ready, the selected arm is unspecified.
 
-Channel and send-value operands are evaluated exactly once from top to bottom before selection. Arm bodies are evaluated only after their operation is chosen, receive bindings are visible only in their own bodies, and all bodies must produce compatible types. A body may be a single expression or a block. Arms are comma-separated, with an optional final comma. `select`, `recv`, `send`, and `default` are contextual spellings rather than globally reserved identifiers.
+Channel operands, send values, and guards are evaluated exactly once from top to bottom before selection. Arm bodies are evaluated only after their operation is chosen, receive bindings are visible only in their own bodies, and all bodies must produce compatible types. A body may be a single expression or a block. Arms are comma-separated, with an optional final comma. `select`, `priority`, `recv`, `send`, `when`, `match`, and `default` are contextual spellings in these positions rather than globally reserved identifiers.
 
-`select` is a runtime operation and is unavailable in `comptime` evaluation. There are currently no select-arm guards, timeout syntax, or direct cancellation syntax; these can be expressed with additional channels and ordinary arms.
+`select` is a runtime operation and is unavailable in `comptime` evaluation. Cancellation, task completion, and timers participate through `Receiver[unit]` values rather than dedicated select-arm syntax.
 
 ### `while`
 
@@ -1975,6 +1992,8 @@ The initial ABI supports values whose generated Go representations are already d
 | `[T; N]` | `[N]T` |
 | `Slice[T]` | `[]T` |
 | `Channel[T]` | `chan T` |
+| `Sender[T]` | `chan<- T` |
+| `Receiver[T]` | `<-chan T` |
 | Direct `dyn Marker` parameter or single return | Go `any` through the trait object's `data` field |
 | `unit` return | Go function with no result |
 | `(A, B, ...)` return | Multiple Go results in the same order |
@@ -2348,7 +2367,7 @@ let value = counts["a"];
 counts["b"] = 2;
 ```
 
-### `Channel[T]`
+### Channels
 
 `Channel[T]` is a Go channel backend that supports buffered and unbuffered communication:
 
@@ -2365,10 +2384,17 @@ Commonly used methods:
 - `send(value: T) -> unit`
 - `recv() -> Option[T]`, returns `Option::None` when closed and drained
 - `close() -> unit`
+- `sender() -> Sender[T]`
+- `receiver() -> Receiver[T]`
+- `split() -> (Sender[T], Receiver[T])`
+
+`Sender[T]` provides `send` and `close`; `Receiver[T]` provides `recv`. Direction is enforced statically and emitted as Go's `chan<- T` and `<-chan T`. Converting a bidirectional channel requires an explicit endpoint method. `Channel[T]` keeps its original send, receive, and close API.
 
 Capacity `0` creates an unbuffered channel.Sending to an unbuffered channel should generally be concurrently received by another `go` closure, and vice versa.
 
 Use `select` when a goroutine must wait on several channels, choose between sending and receiving, observe closure through `Option[T]`, or perform a non-blocking operation with `default`. The channel operands and send values are prepared once before selection.
+
+`std::channel` provides runtime-sized homogeneous selection. `Operation[T]` is either `Receive(Receiver[T])` or `Send(Sender[T], T)`. `select` blocks, `try_select` returns `Ok(None)` when nothing is ready, and `try_select_priority` probes from the lowest input index. Successful results are `Selection::Received { index, value }` or `Selection::Sent { index }`; a closed receive carries `None`. An empty operation slice returns `SelectError::Empty`.
 
 ### Iterator
 
@@ -2632,6 +2658,10 @@ Cancellation is cooperative. `Scope::cancel` changes the state observed by `Canc
 - `Command::output_with(token) -> Result[WaitResult[Output], string]`
 - `Command::status_with(token) -> Result[WaitResult[ExitStatus], string]`
 
+`CancelToken::done() -> Receiver[unit]` exposes the scope context's shared completion channel, and `Task::done() -> Receiver[unit]` exposes the task's shared ready channel. Neither method starts a bridge goroutine. A task stores its result before closing the ready channel, so `join()` is immediately observable after its completion event.
+
+`std::time::Timer::new(duration)` creates a stoppable one-shot timer. `done()` returns its `Receiver[unit]`, `stop()` reports whether it prevented a pending firing, and `time::after(duration)` is the one-shot convenience form. A successful stop leaves the completion channel unready. Timer firing and stopping are synchronized so the channel closes at most once.
+
 `WaitResult::Cancelled` means cancellation woke the operation. Process cancellation uses the host command context, so the scope waits for the process operation to return before it exits. Task scopes never close user channels automatically. `active_scope_count()` exposes the number of live runtime scopes for tests and leak diagnostics.
 
 GoML has no lifetime or linear type system, so a `Scope` value can currently escape its body. Calling `spawn` after the scope begins closing is a runtime error. Panic remains a fatal runtime exception and is not converted into `Result`. A panic in the scope body or a child task cancels sibling tasks, waits for them, removes the runtime scope, and is then re-raised in the scope owner.
@@ -2833,12 +2863,14 @@ if_expression = "if" expression block ("else" (block | if_expression))?
 match_expression = "match" expression
                    "{" (match_arm ",")* match_arm? "}"
 match_arm     = pattern ("if" expression)? "=>" (expression | block)
-select_expression = "select" "{" select_arm ("," select_arm)* ","? "}"
-select_arm    = "recv" "(" expression ")" "as" (lower_ident | "_")
-                "=>" (expression | block)
-              | "send" "(" expression "," expression ")"
+select_expression = "select" "priority"? "{" select_arm ("," select_arm)* ","? "}"
+select_arm    = "recv" "(" expression ")" select_guard? receive_continuation
+              | "send" "(" expression "," expression ")" select_guard?
                 "=>" (expression | block)
               | "default" "=>" (expression | block)
+select_guard  = "when" expression
+receive_continuation = "as" (lower_ident | "_") "=>" (expression | block)
+              | "match" "{" (match_arm ",")* match_arm? "}"
 while_expression = loop_label_decl? "while" expression block
               | loop_label_decl? "while" "let" pattern "=" expression block
 loop_expression = loop_label_decl? "loop" block

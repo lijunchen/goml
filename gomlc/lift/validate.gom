@@ -26,6 +26,7 @@ fn validate_type(ctx: ValidateContext, value: repr::Type, context: string) -> Re
         },
         Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
             elem,
+            direction: _,
         } => validate_type(ctx, elem, context),
         HashMap { key, value } => {
             validate_type(ctx, key, context)?;
@@ -88,14 +89,16 @@ fn validate_select_arm(ctx: ValidateContext, value: SelectArm, context: string) 
     string,
 ] {
     match value {
-        Receive { channel, binding: _, binding_ty, body } => {
+        Receive { channel, guard, binding: _, binding_ty, body } => {
             validate_expr(ctx, channel, context + " channel")?;
+            validate_optional_expr(ctx, guard, context + " guard")?;
             validate_type(ctx, binding_ty, context + " binding")?;
             validate_expr(ctx, body, context + " body")
         },
-        Send { channel, value, body } => {
+        Send { channel, value, guard, body } => {
             validate_expr(ctx, channel, context + " channel")?;
             validate_expr(ctx, value, context + " value")?;
+            validate_optional_expr(ctx, guard, context + " guard")?;
             validate_expr(ctx, body, context + " body")
         },
     }
@@ -147,7 +150,7 @@ fn validate_expr(ctx: ValidateContext, value: Expr, context: string) -> Result[u
             }
             validate_optional_expr(ctx, default, context + " match default")
         },
-        Select { arms, default, ty: _ } => {
+        Select { arms, default, .. } => {
             for arm in arms {
                 validate_select_arm(ctx, arm, context + " select arm")?
             }

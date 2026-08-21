@@ -106,17 +106,19 @@ fn observe_expr(maximum: Ref[int], value: lift::Expr) -> unit {
             }
             observe_optional_expr(maximum, default)
         },
-        Select { arms, default, ty: _ } => {
+        Select { arms, default, .. } => {
             for arm in arms {
                 match arm {
-                    Receive { channel, binding, binding_ty: _, body } => {
+                    Receive { channel, guard, binding, binding_ty: _, body } => {
                         observe_expr(maximum, channel);
+                        observe_optional_expr(maximum, guard);
                         observe_name(maximum, binding);
                         observe_expr(maximum, body)
                     },
-                    Send { channel, value, body } => {
+                    Send { channel, value, guard, body } => {
                         observe_expr(maximum, channel);
                         observe_expr(maximum, value);
+                        observe_optional_expr(maximum, guard);
                         observe_expr(maximum, body)
                     },
                 }

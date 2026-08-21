@@ -1046,6 +1046,7 @@ fn complete_scope(value: Analysis, offset: int, prefix: string) -> Vec[Completio
             "package",
             "pub",
             "return",
+            "select",
             "string",
             "struct",
             "trait",
@@ -1139,6 +1140,99 @@ fn insert_completion_placeholder(source: string, offset: int) -> string {
         + source.byte_slice(offset, source.byte_len())
 }
 
+fn completion_open_brace(source: string, end: int) -> Option[int] {
+    let mut index = end;
+    let mut depth = 0;
+    while index > 0 {
+        index = index - 1;
+        let value = source.byte_get(index);
+        if value == b'}' {
+            depth = depth + 1;
+        } else if value == b'{' {
+            if depth == 0 {
+                return Option::Some(index)
+            } else {
+                depth = depth - 1;
+            }
+        } else {}
+    }
+    Option::None
+}
+
+fn select_completion_open(source: string, offset: int) -> Option[int] {
+    match completion_open_brace(source, offset) {
+        Some(open) => {
+            let previous = completion_word_before(source, open);
+            if previous == "select" {
+                Option::Some(open)
+            } else if previous == "priority" {
+                match previous_completion_byte(source, open) {
+                    Some(last) => {
+                        let mut priority_start = last;
+                        while priority_start > 0
+                            && identifier_byte(source.byte_get(priority_start - 1)) {
+                            priority_start = priority_start - 1;
+                        }
+                        if completion_word_before(source, priority_start) == "select" {
+                            Option::Some(open)
+                        } else {
+                            Option::None
+                        }
+                    },
+                    None => Option::None,
+                }
+            } else {
+                Option::None
+            }
+        },
+        None => Option::None,
+    }
+}
+
+fn push_contextual_completion(
+    result: Vec[CompletionItem],
+    label: string,
+    detail: string,
+    prefix: string,
+) -> unit {
+    push_completion(result, CompletionItem { label, detail, kind: CompletionKind::Keyword }, prefix)
+}
+
+fn append_select_completions(
+    result: Vec[CompletionItem],
+    source: string,
+    offset: int,
+    prefix: string,
+) -> unit {
+    let start = prefix_start(source, offset);
+    if completion_word_before(source, start) == "select" {
+        push_contextual_completion(result, "priority", "priority select", prefix)
+    } else {};
+    match select_completion_open(source, start) {
+        Some(open) => {
+            let content = source.byte_slice(open + 1, start);
+            push_contextual_completion(result, "recv", "select receive arm", prefix);
+            push_contextual_completion(result, "send", "select send arm", prefix);
+            if !content.contains("default") {
+                push_contextual_completion(result, "default", "select default arm", prefix)
+            } else {};
+            let mut arm_start = content.byte_len();
+            while arm_start > 0 && content.byte_get(arm_start - 1) != b',' {
+                arm_start = arm_start - 1;
+            }
+            let arm = content.byte_slice(arm_start, content.byte_len());
+            if arm.contains("recv(") && arm.contains(")") && !arm.contains("=>") {
+                push_contextual_completion(result, "when", "select guard", prefix);
+                push_contextual_completion(result, "as", "receive binding", prefix);
+                push_contextual_completion(result, "match", "receive match", prefix)
+            } else if arm.contains("send(") && arm.contains(")") && !arm.contains("=>") {
+                push_contextual_completion(result, "when", "select guard", prefix)
+            } else {}
+        },
+        None => (),
+    }
+}
+
 fn completion_query(value: Analysis, source: string, offset: int, prefix: string) -> Vec[
     CompletionItem,
 ] {
@@ -1165,6 +1259,7 @@ fn completions_for_source(value: Analysis, source: string, offset: int, recover:
             Vec::from_array([])
         } else {
             let result = completion_query(value, source, offset, prefix);
+            append_select_completions(result, source, offset, prefix);
             if !result.is_empty() || !recover
                 || (member_dot(source, offset).is_none() && namespace_path(source, offset).is_none()) {
                 result

@@ -301,26 +301,35 @@ fn clone_inline_term(
                 ret_ty,
             }
         },
-        Select { arms, default, ret_ty: _ } => {
+        Select { mode, arms, default, ret_ty: _ } => {
             let lowered: Vec[SelectArm] = Vec::with_capacity(arms.len());
             for arm in arms {
                 lowered.push(
                     match arm {
-                        Receive { channel, binding, binding_ty, body } => SelectArm::Receive {
+                        Receive { channel, guard, binding, binding_ty, body } => SelectArm::Receive {
                             channel: clone_inline_imm(channel, names),
+                            guard: match guard {
+                                Some(value) => Option::Some(clone_inline_imm(value, names)),
+                                None => Option::None,
+                            },
                             binding: renamed_inline_name(names, binding),
                             binding_ty,
                             body: clone_inline_block(body, names, joins, continuation, ret_ty),
                         },
-                        Send { channel, value, body } => SelectArm::Send {
+                        Send { channel, value, guard, body } => SelectArm::Send {
                             channel: clone_inline_imm(channel, names),
                             value: clone_inline_imm(value, names),
+                            guard: match guard {
+                                Some(value) => Option::Some(clone_inline_imm(value, names)),
+                                None => Option::None,
+                            },
                             body: clone_inline_block(body, names, joins, continuation, ret_ty),
                         },
                     },
                 )
             }
             Term::Select {
+                mode,
                 arms: lowered,
                 default: match default {
                     Some(body) => Option::Some(
@@ -838,26 +847,29 @@ fn inline_term(
                 ret_ty,
             }
         },
-        Select { arms, default, ret_ty } => {
+        Select { mode, arms, default, ret_ty } => {
             let lowered: Vec[SelectArm] = Vec::with_capacity(arms.len());
             for arm in arms {
                 lowered.push(
                     match arm {
-                        Receive { channel, binding, binding_ty, body } => SelectArm::Receive {
+                        Receive { channel, guard, binding, binding_ty, body } => SelectArm::Receive {
                             channel,
+                            guard,
                             binding,
                             binding_ty,
                             body: inline_block(body, functions, caller, budget, counter),
                         },
-                        Send { channel, value, body } => SelectArm::Send {
+                        Send { channel, value, guard, body } => SelectArm::Send {
                             channel,
                             value,
+                            guard,
                             body: inline_block(body, functions, caller, budget, counter),
                         },
                     },
                 )
             }
             Term::Select {
+                mode,
                 arms: lowered,
                 default: match default {
                     Some(body) => Option::Some(

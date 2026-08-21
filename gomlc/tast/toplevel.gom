@@ -972,6 +972,7 @@ fn collect_injective_type_params(value: Type, result: Vec[string]) -> unit {
         },
         Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
             elem,
+            direction: _,
         } => collect_injective_type_params(elem, result),
         HashMap { key, value } => {
             collect_injective_type_params(key, result);
@@ -1011,6 +1012,7 @@ fn type_contains_projection(value: Type) -> bool {
         },
         Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
             elem,
+            direction: _,
         } => type_contains_projection(elem),
         HashMap { key, value } => {
             type_contains_projection(key) || type_contains_projection(value)
@@ -1525,6 +1527,7 @@ fn associated_type_reaches(
         },
         Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
             elem,
+            direction: _,
         } => {
             associated_type_reaches(values, elem, target_trait, target, active)
         },
@@ -1621,7 +1624,10 @@ fn resolve_impl_alias_type(ctx: Checker, value: Type) -> Type {
             key: resolve_impl_alias_type(ctx, key),
             value: resolve_impl_alias_type(ctx, value),
         },
-        Channel { elem } => Type::Channel { elem: resolve_impl_alias_type(ctx, elem) },
+        Channel { elem, direction } => Type::Channel {
+            elem: resolve_impl_alias_type(ctx, elem),
+            direction,
+        },
         Func { params, ret_ty } => Type::Func {
             params: resolve_impl_alias_types(ctx, params),
             ret_ty: resolve_impl_alias_type(ctx, ret_ty),

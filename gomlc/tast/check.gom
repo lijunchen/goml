@@ -675,6 +675,7 @@ fn contains_unbound_type_variable(value: Type) -> bool {
         },
         Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
             elem,
+            direction: _,
         } => contains_unbound_type_variable(elem),
         HashMap { key, value: item } => {
             contains_unbound_type_variable(key) || contains_unbound_type_variable(item)
@@ -739,6 +740,7 @@ fn contains_unbound_any_type_variable(value: Type) -> bool {
         },
         Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
             elem,
+            direction: _,
         } => contains_unbound_any_type_variable(elem),
         HashMap { key, value } => {
             contains_unbound_any_type_variable(key) || contains_unbound_any_type_variable(value)
@@ -815,6 +817,7 @@ fn contains_unresolved_inference(ctx: Checker, value: Type) -> bool {
         },
         Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
             elem,
+            direction: _,
         } => contains_unresolved_inference(ctx, elem),
         HashMap { key, value } => {
             contains_unresolved_inference(ctx, key) || contains_unresolved_inference(ctx, value)
@@ -894,6 +897,7 @@ fn has_unresolved_projection(value: Type) -> bool {
         },
         Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
             elem,
+            direction: _,
         } => has_unresolved_projection(elem),
         HashMap { key, value: item } => {
             has_unresolved_projection(key) || has_unresolved_projection(item)
@@ -2019,7 +2023,10 @@ fn arity_diagnostic_type(value: Type) -> Type {
             key: arity_diagnostic_type(key),
             value: arity_diagnostic_type(value),
         },
-        Channel { elem } => Type::Channel { elem: arity_diagnostic_type(elem) },
+        Channel { elem, direction } => Type::Channel {
+            elem: arity_diagnostic_type(elem),
+            direction,
+        },
         Func { params, ret_ty } => Type::Func {
             params: arity_diagnostic_types(params),
             ret_ty: arity_diagnostic_type(ret_ty),
@@ -3272,13 +3279,58 @@ fn check_match_expr(ctx: Checker, source: hir::Expr, arms: Vec[hir::Arm], expect
     }
 }
 
-fn select_channel_element(ctx: Checker, channel: Expr, span: ast::Span) -> Type {
-    let elem = fresh_type(ctx.counter, VarKind::Any);
-    expect_type_at(ctx, expr_type(channel), Type::Channel { elem }, Option::Some(span));
-    elem
+fn select_receive_channel_element(ctx: Checker, channel: Expr, span: ast::Span) -> Type {
+    match normalize_type(ctx, expr_type(channel)) {
+        Type::Channel { elem, direction: ast::ChannelDirection::Both } | Type::Channel {
+            elem,
+            direction: ast::ChannelDirection::Receive,
+        } => elem,
+        Type::Channel { elem, direction: ast::ChannelDirection::Send } => {
+            push_diagnostic_at(ctx, "Cannot receive from Sender", Option::Some(span));
+            elem
+        },
+        actual => {
+            let elem = fresh_type(ctx.counter, VarKind::Any);
+            expect_type_at(
+                ctx,
+                actual,
+                Type::Channel { elem, direction: ast::ChannelDirection::Both },
+                Option::Some(span),
+            );
+            elem
+        },
+    }
 }
 
-fn check_select_expr(ctx: Checker, arms: Vec[hir::SelectArm], expected: Option[Type]) -> Expr {
+fn select_send_channel_element(ctx: Checker, channel: Expr, span: ast::Span) -> Type {
+    match normalize_type(ctx, expr_type(channel)) {
+        Type::Channel { elem, direction: ast::ChannelDirection::Both } | Type::Channel {
+            elem,
+            direction: ast::ChannelDirection::Send,
+        } => elem,
+        Type::Channel { elem, direction: ast::ChannelDirection::Receive } => {
+            push_diagnostic_at(ctx, "Cannot send to Receiver", Option::Some(span));
+            elem
+        },
+        actual => {
+            let elem = fresh_type(ctx.counter, VarKind::Any);
+            expect_type_at(
+                ctx,
+                actual,
+                Type::Channel { elem, direction: ast::ChannelDirection::Both },
+                Option::Some(span),
+            );
+            elem
+        },
+    }
+}
+
+fn check_select_expr(
+    ctx: Checker,
+    mode: ast::SelectMode,
+    arms: Vec[hir::SelectArm],
+    expected: Option[Type],
+) -> Expr {
     let result_ty = match expected {
         Some(ty) => ty,
         None => fresh_type(ctx.counter, VarKind::Any),
@@ -3286,29 +3338,41 @@ fn check_select_expr(ctx: Checker, arms: Vec[hir::SelectArm], expected: Option[T
     let typed_arms: Vec[SelectArm] = Vec::with_capacity(arms.len());
     for arm in arms {
         match arm {
-            Receive { channel: source, binding, body: body_source } => {
+            Receive { channel: source, guard, binding, body: body_source } => {
                 let channel_span = source.span;
                 let channel = check_expr(ctx, source, Option::None);
-                let elem = select_channel_element(ctx, channel, channel_span);
+                let elem = select_receive_channel_element(ctx, channel, channel_span);
                 let binding_ty = nominal_type(ctx.builtin, ctx.builtin.option.name, one_type(elem));
                 insert_local(ctx, binding, binding_ty);
                 typed_arms.push(
                     SelectArm::Receive {
                         channel,
+                        guard: match guard {
+                            Some(value) => Option::Some(
+                                check_expr(ctx, value, Option::Some(Type::Bool)),
+                            ),
+                            None => Option::None,
+                        },
                         binding: local_name(binding),
                         binding_ty,
                         body: check_expr(ctx, body_source, Option::Some(result_ty)),
                     },
                 )
             },
-            Send { channel: source, value: value_source, body: body_source } => {
+            Send { channel: source, value: value_source, guard, body: body_source } => {
                 let channel_span = source.span;
                 let channel = check_expr(ctx, source, Option::None);
-                let elem = select_channel_element(ctx, channel, channel_span);
+                let elem = select_send_channel_element(ctx, channel, channel_span);
                 typed_arms.push(
                     SelectArm::Send {
                         channel,
                         value: check_expr(ctx, value_source, Option::Some(elem)),
+                        guard: match guard {
+                            Some(value) => Option::Some(
+                                check_expr(ctx, value, Option::Some(Type::Bool)),
+                            ),
+                            None => Option::None,
+                        },
                         body: check_expr(ctx, body_source, Option::Some(result_ty)),
                     },
                 )
@@ -3318,7 +3382,7 @@ fn check_select_expr(ctx: Checker, arms: Vec[hir::SelectArm], expected: Option[T
             ),
         }
     }
-    Expr::Select { arms: typed_arms, ty: result_ty }
+    Expr::Select { mode, arms: typed_arms, ty: result_ty }
 }
 
 fn diagnostics_invalidate_coverage(ctx: Checker, start: int) -> bool {
@@ -3755,7 +3819,7 @@ fn with_expr_type(value: Expr, ty: Type) -> Expr {
         Match { expr: source, arms, coverage, ty: _ } => {
             Expr::Match { expr: source, arms, coverage, ty }
         },
-        Select { arms, ty: _ } => Expr::Select { arms, ty },
+        Select { mode, arms, ty: _ } => Expr::Select { mode, arms, ty },
         If { cond, then_branch, else_branch, ty: _ } => {
             Expr::If { cond, then_branch, else_branch, ty }
         },
@@ -4476,7 +4540,7 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
             Match { expr: source, arms } => {
                 check_match_expr(ctx, source, arms, Option::None)
             },
-            Select { arms } => check_select_expr(ctx, arms, Option::None),
+            Select { mode, arms } => check_select_expr(ctx, mode, arms, Option::None),
             If { cond, then_branch, else_branch } => {
                 check_if_expr(ctx, cond, then_branch, else_branch, Option::None)
             },
@@ -4804,7 +4868,7 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
             expected,
         ),
         Match { expr: source, arms } => check_match_expr(ctx, source, arms, expected),
-        Select { arms } => check_select_expr(ctx, arms, expected),
+        Select { mode, arms } => check_select_expr(ctx, mode, arms, expected),
         If { cond, then_branch, else_branch } => {
             check_if_expr(ctx, cond, then_branch, else_branch, expected)
         },

@@ -1,5 +1,6 @@
 package go_backend;
 
+use gomlc::ast;
 use gomlc::repr;
 
 pub enum Type {
@@ -40,6 +41,7 @@ pub enum Type {
     },
     Chan {
         elem: Type,
+        direction: ast::ChannelDirection,
     },
     Func {
         params: Vec[Type],

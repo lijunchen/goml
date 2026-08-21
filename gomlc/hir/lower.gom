@@ -1270,11 +1270,11 @@ fn lower_expr_value(
             }
             ExprKind::Match { expr: lowered_expr, arms: lowered_arms }
         },
-        Select { arms, span: _ } => {
+        Select { mode, arms, span: _ } => {
             let lowered_arms: Vec[SelectArm] = Vec::with_capacity(arms.len());
             for arm in arms {
                 match arm {
-                    Receive { channel, binding, body, span: _ } => {
+                    Receive { channel, guard, binding, body, span: _ } => {
                         let arm_env = copy_bindings(env);
                         let local = fresh_local(ctx, binding);
                         if binding != "_" {
@@ -1283,15 +1283,27 @@ fn lower_expr_value(
                         lowered_arms.push(
                             SelectArm::Receive {
                                 channel: lower_expr(ctx, channel, env, type_params),
+                                guard: match guard {
+                                    Some(value) => Option::Some(
+                                        lower_expr(ctx, value, env, type_params),
+                                    ),
+                                    None => Option::None,
+                                },
                                 binding: local,
                                 body: lower_expr(ctx, body, arm_env, type_params),
                             },
                         )
                     },
-                    Send { channel, value, body, span: _ } => lowered_arms.push(
+                    Send { channel, value, guard, body, span: _ } => lowered_arms.push(
                         SelectArm::Send {
                             channel: lower_expr(ctx, channel, env, type_params),
                             value: lower_expr(ctx, value, env, type_params),
+                            guard: match guard {
+                                Some(value) => Option::Some(
+                                    lower_expr(ctx, value, env, type_params),
+                                ),
+                                None => Option::None,
+                            },
                             body: lower_expr(ctx, body, copy_bindings(env), type_params),
                         },
                     ),
@@ -1302,7 +1314,7 @@ fn lower_expr_value(
                     ),
                 }
             }
-            ExprKind::Select { arms: lowered_arms }
+            ExprKind::Select { mode, arms: lowered_arms }
         },
         If { cond, then_branch, else_branch, span: _ } => ExprKind::If {
             cond: lower_expr(ctx, cond, env, type_params),

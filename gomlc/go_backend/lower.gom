@@ -27,6 +27,7 @@ struct LowerEnv {
     dyn_helper_names: DynHelperNames,
     pointer_params: Vec[PointerParamInfo],
     pointer_vars: HashMap[string, bool],
+    select_counter: Ref[int],
 }
 
 struct PointerParamInfo {
@@ -901,12 +902,25 @@ fn compile_channel_callable(key: string, function_ty: repr::Type) -> Expr {
                 stmts.push(
                     Stmt::Return { expr: Option::Some(Expr::Make { ty: lower_type(ret_ty), args }) },
                 )
+            } else if key == "channel.sender" || key == "channel.receiver" {
+                stmts.push(Stmt::Return { expr: Option::Some(vars[0]) })
+            } else if key == "channel.split" {
+                stmts.push(
+                    Stmt::Return {
+                        expr: Option::Some(
+                            Expr::StructLiteral {
+                                ty: lower_type(ret_ty),
+                                fields: Vec::from_array([("_0", vars[0]), ("_1", vars[0])]),
+                            },
+                        ),
+                    },
+                )
             } else if key == "channel.send" {
                 stmts.push(Stmt::Expr { expr: Expr::Send { channel: vars[0], value: vars[1] } });
                 stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) })
             } else if key == "channel.recv" {
                 let elem = match repr::resolve_type(param_types[0]) {
-                    Channel { elem } => elem,
+                    Channel { elem, direction: _ } => elem,
                     _ => repr::Type::Unit,
                 };
                 stmts.push(Stmt::Var { name: "value", ty: lower_type(elem), value: Option::None });
@@ -971,7 +985,7 @@ fn compile_channel_callable(key: string, function_ty: repr::Type) -> Expr {
                 stmts.push(Stmt::Return { expr: Option::Some(Expr::Var { name: "completed" }) })
             } else if key == "channel.recv_cancel" {
                 let elem = match repr::resolve_type(param_types[0]) {
-                    Channel { elem } => elem,
+                    Channel { elem, direction: _ } => elem,
                     _ => repr::Type::Unit,
                 };
                 stmts.push(Stmt::Var { name: "value", ty: lower_type(elem), value: Option::None });
@@ -1038,6 +1052,623 @@ fn compile_channel_callable(key: string, function_ty: repr::Type) -> Expr {
             Expr::FuncLit { params, ret_ty: lower_type(ret_ty), body: Block { stmts } }
         },
         _ => Expr::Var { name: go_ident(key) },
+    }
+}
+
+fn dynamic_select_len(value: Expr) -> Expr {
+    Expr::Call { func: Expr::Var { name: "len" }, args: Vec::from_array([value]) }
+}
+
+fn dynamic_select_index(value: Expr, index: Expr) -> Expr {
+    Expr::Index { base: value, index }
+}
+
+fn dynamic_select_return(
+    ret_ty: Type,
+    index: Expr,
+    kind: Expr,
+    value: Expr,
+    open: Expr,
+    selected: Expr,
+) -> Stmt {
+    Stmt::Return {
+        expr: Option::Some(
+            Expr::StructLiteral {
+                ty: ret_ty,
+                fields: Vec::from_array(
+                    [("_0", index), ("_1", kind), ("_2", value), ("_3", open), ("_4", selected)],
+                ),
+            },
+        ),
+    }
+}
+
+fn compile_dynamic_priority_select_callable(function_ty: repr::Type) -> Expr {
+    match repr::resolve_type(function_ty) {
+        Func { params: param_types, ret_ty } => {
+            let params: Vec[(string, Type)] = Vec::from_array([]);
+            for index in 0..param_types.len() {
+                params.push(("p" + index.to_string(), lower_type(param_types[index])))
+            }
+            let elem = match repr::resolve_type(ret_ty) {
+                Tuple { items } => items[2],
+                _ => repr::Type::Unit,
+            };
+            let stmts: Vec[Stmt] = Vec::from_array([]);
+            stmts.push(
+                Stmt::Var {
+                    name: "index",
+                    ty: Type::Int,
+                    value: Option::Some(Expr::Int { value: "0" }),
+                },
+            );
+            stmts.push(
+                Stmt::Var {
+                    name: "receive_index",
+                    ty: Type::Int,
+                    value: Option::Some(Expr::Int { value: "0" }),
+                },
+            );
+            stmts.push(
+                Stmt::Var {
+                    name: "send_index",
+                    ty: Type::Int,
+                    value: Option::Some(Expr::Int { value: "0" }),
+                },
+            );
+            stmts.push(Stmt::Var { name: "value", ty: lower_type(elem), value: Option::None });
+            stmts.push(Stmt::Var { name: "open", ty: Type::Bool, value: Option::None });
+            stmts.push(Stmt::Var { name: "selected", ty: Type::Bool, value: Option::None });
+            let case_type = Type::Named { name: "_goml_reflect.SelectCase" };
+            stmts.push(
+                Stmt::Var {
+                    name: "cases",
+                    ty: Type::Slice { elem: case_type },
+                    value: Option::Some(
+                        Expr::Make {
+                            ty: Type::Slice { elem: case_type },
+                            args: Vec::from_array([Expr::Int { value: "2" }]),
+                        },
+                    ),
+                },
+            );
+            stmts.push(
+                Stmt::IndexAssign {
+                    base: Expr::Var { name: "cases" },
+                    index: Expr::Int { value: "1" },
+                    value: Expr::StructLiteral {
+                        ty: case_type,
+                        fields: Vec::from_array(
+                            [("Dir", Expr::Var { name: "_goml_reflect.SelectDefault" })],
+                        ),
+                    },
+                },
+            );
+            stmts.push(Stmt::Var { name: "chosen", ty: Type::Int, value: Option::None });
+            stmts.push(
+                Stmt::Var {
+                    name: "received",
+                    ty: Type::Named { name: "_goml_reflect.Value" },
+                    value: Option::None,
+                },
+            );
+            let loop_stmts: Vec[Stmt] = Vec::from_array([]);
+            loop_stmts.push(
+                Stmt::If {
+                    cond: Expr::Binary {
+                        op: BinaryOp::GreaterEq,
+                        lhs: Expr::Var { name: "index" },
+                        rhs: dynamic_select_len(Expr::Var { name: "p0" }),
+                    },
+                    then_: Block { stmts: Vec::from_array([Stmt::Break]) },
+                    else_: Option::None,
+                },
+            );
+            let receive_stmts: Vec[Stmt] = Vec::from_array([]);
+            receive_stmts.push(
+                Stmt::IndexAssign {
+                    base: Expr::Var { name: "cases" },
+                    index: Expr::Int { value: "0" },
+                    value: Expr::StructLiteral {
+                        ty: case_type,
+                        fields: Vec::from_array(
+                            [
+                                ("Dir", Expr::Var { name: "_goml_reflect.SelectRecv" }),
+                                (
+                                    "Chan",
+                                    Expr::Call {
+                                        func: Expr::Var { name: "_goml_reflect.ValueOf" },
+                                        args: Vec::from_array(
+                                            [
+                                                dynamic_select_index(
+                                                    Expr::Var { name: "p1" },
+                                                    Expr::Var { name: "receive_index" },
+                                                ),
+                                            ],
+                                        ),
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                },
+            );
+            receive_stmts.push(
+                Stmt::MultiAssign {
+                    names: Vec::from_array(["chosen", "received", "open"]),
+                    value: Expr::Call {
+                        func: Expr::Var { name: "_goml_reflect.Select" },
+                        args: Vec::from_array([Expr::Var { name: "cases" }]),
+                    },
+                },
+            );
+            receive_stmts.push(
+                Stmt::If {
+                    cond: Expr::Binary {
+                        op: BinaryOp::Eq,
+                        lhs: Expr::Var { name: "chosen" },
+                        rhs: Expr::Int { value: "0" },
+                    },
+                    then_: Block {
+                        stmts: Vec::from_array(
+                            [
+                                Stmt::Assign {
+                                    name: "value",
+                                    value: Expr::Cast {
+                                        expr: Expr::Call {
+                                            func: Expr::Field {
+                                                expr: Expr::Var { name: "received" },
+                                                field_name: "Interface",
+                                            },
+                                            args: Vec::from_array([]),
+                                        },
+                                        ty: lower_type(elem),
+                                    },
+                                },
+                                Stmt::Assign { name: "selected", value: Expr::Bool { value: true } },
+                            ],
+                        ),
+                    },
+                    else_: Option::None,
+                },
+            );
+            receive_stmts.push(
+                Stmt::Assign {
+                    name: "receive_index",
+                    value: Expr::Binary {
+                        op: BinaryOp::Add,
+                        lhs: Expr::Var { name: "receive_index" },
+                        rhs: Expr::Int { value: "1" },
+                    },
+                },
+            );
+            let send_stmts: Vec[Stmt] = Vec::from_array([]);
+            send_stmts.push(
+                Stmt::IndexAssign {
+                    base: Expr::Var { name: "cases" },
+                    index: Expr::Int { value: "0" },
+                    value: Expr::StructLiteral {
+                        ty: case_type,
+                        fields: Vec::from_array(
+                            [
+                                ("Dir", Expr::Var { name: "_goml_reflect.SelectSend" }),
+                                (
+                                    "Chan",
+                                    Expr::Call {
+                                        func: Expr::Var { name: "_goml_reflect.ValueOf" },
+                                        args: Vec::from_array(
+                                            [
+                                                dynamic_select_index(
+                                                    Expr::Var { name: "p2" },
+                                                    Expr::Var { name: "send_index" },
+                                                ),
+                                            ],
+                                        ),
+                                    },
+                                ),
+                                (
+                                    "Send",
+                                    Expr::Call {
+                                        func: Expr::Var { name: "_goml_reflect.ValueOf" },
+                                        args: Vec::from_array(
+                                            [
+                                                dynamic_select_index(
+                                                    Expr::Var { name: "p3" },
+                                                    Expr::Var { name: "send_index" },
+                                                ),
+                                            ],
+                                        ),
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                },
+            );
+            send_stmts.push(
+                Stmt::MultiAssign {
+                    names: Vec::from_array(["chosen", "received", "open"]),
+                    value: Expr::Call {
+                        func: Expr::Var { name: "_goml_reflect.Select" },
+                        args: Vec::from_array([Expr::Var { name: "cases" }]),
+                    },
+                },
+            );
+            send_stmts.push(
+                Stmt::If {
+                    cond: Expr::Binary {
+                        op: BinaryOp::Eq,
+                        lhs: Expr::Var { name: "chosen" },
+                        rhs: Expr::Int { value: "0" },
+                    },
+                    then_: Block {
+                        stmts: Vec::from_array(
+                            [Stmt::Assign { name: "selected", value: Expr::Bool { value: true } }],
+                        ),
+                    },
+                    else_: Option::None,
+                },
+            );
+            send_stmts.push(
+                Stmt::Assign {
+                    name: "send_index",
+                    value: Expr::Binary {
+                        op: BinaryOp::Add,
+                        lhs: Expr::Var { name: "send_index" },
+                        rhs: Expr::Int { value: "1" },
+                    },
+                },
+            );
+            loop_stmts.push(
+                Stmt::If {
+                    cond: Expr::Binary {
+                        op: BinaryOp::Eq,
+                        lhs: dynamic_select_index(
+                            Expr::Var { name: "p0" },
+                            Expr::Var { name: "index" },
+                        ),
+                        rhs: Expr::Int { value: "0" },
+                    },
+                    then_: Block { stmts: receive_stmts },
+                    else_: Option::Some(Block { stmts: send_stmts }),
+                },
+            );
+            loop_stmts.push(
+                Stmt::If {
+                    cond: Expr::Var { name: "selected" },
+                    then_: Block {
+                        stmts: Vec::from_array(
+                            [
+                                dynamic_select_return(
+                                    lower_type(ret_ty),
+                                    Expr::Var { name: "index" },
+                                    dynamic_select_index(
+                                        Expr::Var { name: "p0" },
+                                        Expr::Var { name: "index" },
+                                    ),
+                                    Expr::Var { name: "value" },
+                                    Expr::Var { name: "open" },
+                                    Expr::Bool { value: true },
+                                ),
+                            ],
+                        ),
+                    },
+                    else_: Option::None,
+                },
+            );
+            loop_stmts.push(
+                Stmt::Assign {
+                    name: "index",
+                    value: Expr::Binary {
+                        op: BinaryOp::Add,
+                        lhs: Expr::Var { name: "index" },
+                        rhs: Expr::Int { value: "1" },
+                    },
+                },
+            );
+            stmts.push(Stmt::Loop { body: Block { stmts: loop_stmts } });
+            stmts.push(
+                dynamic_select_return(
+                    lower_type(ret_ty),
+                    Expr::Int { value: "-1" },
+                    Expr::Int { value: "-1" },
+                    Expr::Var { name: "value" },
+                    Expr::Bool { value: false },
+                    Expr::Bool { value: false },
+                ),
+            );
+            Expr::FuncLit { params, ret_ty: lower_type(ret_ty), body: Block { stmts } }
+        },
+        _ => Expr::Var { name: "channel_dynamic_try_select_priority" },
+    }
+}
+
+fn compile_dynamic_reflect_select_callable(key: string, function_ty: repr::Type) -> Expr {
+    match repr::resolve_type(function_ty) {
+        Func { params: param_types, ret_ty } => {
+            let params: Vec[(string, Type)] = Vec::from_array([]);
+            for index in 0..param_types.len() {
+                params.push(("p" + index.to_string(), lower_type(param_types[index])))
+            }
+            let elem = match repr::resolve_type(ret_ty) {
+                Tuple { items } => items[2],
+                _ => repr::Type::Unit,
+            };
+            let try_select = key == "channel.dynamic_try_select";
+            let case_type = Type::Named { name: "_goml_reflect.SelectCase" };
+            let case_count = if try_select {
+                Expr::Binary {
+                    op: BinaryOp::Add,
+                    lhs: dynamic_select_len(Expr::Var { name: "p0" }),
+                    rhs: Expr::Int { value: "1" },
+                }
+            } else {
+                dynamic_select_len(Expr::Var { name: "p0" })
+            };
+            let stmts: Vec[Stmt] = Vec::from_array([]);
+            stmts.push(
+                Stmt::Var {
+                    name: "cases",
+                    ty: Type::Slice { elem: case_type },
+                    value: Option::Some(
+                        Expr::Make {
+                            ty: Type::Slice { elem: case_type },
+                            args: Vec::from_array([case_count]),
+                        },
+                    ),
+                },
+            );
+            stmts.push(
+                Stmt::Var {
+                    name: "index",
+                    ty: Type::Int,
+                    value: Option::Some(Expr::Int { value: "0" }),
+                },
+            );
+            stmts.push(
+                Stmt::Var {
+                    name: "receive_index",
+                    ty: Type::Int,
+                    value: Option::Some(Expr::Int { value: "0" }),
+                },
+            );
+            stmts.push(
+                Stmt::Var {
+                    name: "send_index",
+                    ty: Type::Int,
+                    value: Option::Some(Expr::Int { value: "0" }),
+                },
+            );
+            let loop_stmts: Vec[Stmt] = Vec::from_array([]);
+            loop_stmts.push(
+                Stmt::If {
+                    cond: Expr::Binary {
+                        op: BinaryOp::GreaterEq,
+                        lhs: Expr::Var { name: "index" },
+                        rhs: dynamic_select_len(Expr::Var { name: "p0" }),
+                    },
+                    then_: Block { stmts: Vec::from_array([Stmt::Break]) },
+                    else_: Option::None,
+                },
+            );
+            let receive_case = Expr::StructLiteral {
+                ty: case_type,
+                fields: Vec::from_array(
+                    [
+                        ("Dir", Expr::Var { name: "_goml_reflect.SelectRecv" }),
+                        (
+                            "Chan",
+                            Expr::Call {
+                                func: Expr::Var { name: "_goml_reflect.ValueOf" },
+                                args: Vec::from_array(
+                                    [
+                                        dynamic_select_index(
+                                            Expr::Var { name: "p1" },
+                                            Expr::Var { name: "receive_index" },
+                                        ),
+                                    ],
+                                ),
+                            },
+                        ),
+                    ],
+                ),
+            };
+            let send_case = Expr::StructLiteral {
+                ty: case_type,
+                fields: Vec::from_array(
+                    [
+                        ("Dir", Expr::Var { name: "_goml_reflect.SelectSend" }),
+                        (
+                            "Chan",
+                            Expr::Call {
+                                func: Expr::Var { name: "_goml_reflect.ValueOf" },
+                                args: Vec::from_array(
+                                    [
+                                        dynamic_select_index(
+                                            Expr::Var { name: "p2" },
+                                            Expr::Var { name: "send_index" },
+                                        ),
+                                    ],
+                                ),
+                            },
+                        ),
+                        (
+                            "Send",
+                            Expr::Call {
+                                func: Expr::Var { name: "_goml_reflect.ValueOf" },
+                                args: Vec::from_array(
+                                    [
+                                        dynamic_select_index(
+                                            Expr::Var { name: "p3" },
+                                            Expr::Var { name: "send_index" },
+                                        ),
+                                    ],
+                                ),
+                            },
+                        ),
+                    ],
+                ),
+            };
+            let receive_stmts: Vec[Stmt] = Vec::from_array([]);
+            receive_stmts.push(
+                Stmt::IndexAssign {
+                    base: Expr::Var { name: "cases" },
+                    index: Expr::Var { name: "index" },
+                    value: receive_case,
+                },
+            );
+            receive_stmts.push(
+                Stmt::Assign {
+                    name: "receive_index",
+                    value: Expr::Binary {
+                        op: BinaryOp::Add,
+                        lhs: Expr::Var { name: "receive_index" },
+                        rhs: Expr::Int { value: "1" },
+                    },
+                },
+            );
+            let send_stmts: Vec[Stmt] = Vec::from_array([]);
+            send_stmts.push(
+                Stmt::IndexAssign {
+                    base: Expr::Var { name: "cases" },
+                    index: Expr::Var { name: "index" },
+                    value: send_case,
+                },
+            );
+            send_stmts.push(
+                Stmt::Assign {
+                    name: "send_index",
+                    value: Expr::Binary {
+                        op: BinaryOp::Add,
+                        lhs: Expr::Var { name: "send_index" },
+                        rhs: Expr::Int { value: "1" },
+                    },
+                },
+            );
+            loop_stmts.push(
+                Stmt::If {
+                    cond: Expr::Binary {
+                        op: BinaryOp::Eq,
+                        lhs: dynamic_select_index(
+                            Expr::Var { name: "p0" },
+                            Expr::Var { name: "index" },
+                        ),
+                        rhs: Expr::Int { value: "0" },
+                    },
+                    then_: Block { stmts: receive_stmts },
+                    else_: Option::Some(Block { stmts: send_stmts }),
+                },
+            );
+            loop_stmts.push(
+                Stmt::Assign {
+                    name: "index",
+                    value: Expr::Binary {
+                        op: BinaryOp::Add,
+                        lhs: Expr::Var { name: "index" },
+                        rhs: Expr::Int { value: "1" },
+                    },
+                },
+            );
+            stmts.push(Stmt::Loop { body: Block { stmts: loop_stmts } });
+            if try_select {
+                stmts.push(
+                    Stmt::IndexAssign {
+                        base: Expr::Var { name: "cases" },
+                        index: dynamic_select_len(Expr::Var { name: "p0" }),
+                        value: Expr::StructLiteral {
+                            ty: case_type,
+                            fields: Vec::from_array(
+                                [("Dir", Expr::Var { name: "_goml_reflect.SelectDefault" })],
+                            ),
+                        },
+                    },
+                )
+            } else {};
+            stmts.push(Stmt::Var { name: "chosen", ty: Type::Int, value: Option::None });
+            stmts.push(
+                Stmt::Var {
+                    name: "received",
+                    ty: Type::Named { name: "_goml_reflect.Value" },
+                    value: Option::None,
+                },
+            );
+            stmts.push(Stmt::Var { name: "open", ty: Type::Bool, value: Option::None });
+            stmts.push(
+                Stmt::MultiAssign {
+                    names: Vec::from_array(["chosen", "received", "open"]),
+                    value: Expr::Call {
+                        func: Expr::Var { name: "_goml_reflect.Select" },
+                        args: Vec::from_array([Expr::Var { name: "cases" }]),
+                    },
+                },
+            );
+            stmts.push(Stmt::Var { name: "value", ty: lower_type(elem), value: Option::None });
+            if try_select {
+                stmts.push(
+                    Stmt::If {
+                        cond: Expr::Binary {
+                            op: BinaryOp::Eq,
+                            lhs: Expr::Var { name: "chosen" },
+                            rhs: dynamic_select_len(Expr::Var { name: "p0" }),
+                        },
+                        then_: Block {
+                            stmts: Vec::from_array(
+                                [
+                                    dynamic_select_return(
+                                        lower_type(ret_ty),
+                                        Expr::Int { value: "-1" },
+                                        Expr::Int { value: "-1" },
+                                        Expr::Var { name: "value" },
+                                        Expr::Bool { value: false },
+                                        Expr::Bool { value: false },
+                                    ),
+                                ],
+                            ),
+                        },
+                        else_: Option::None,
+                    },
+                )
+            } else {};
+            let receive_value = Expr::Call {
+                func: Expr::Field { expr: Expr::Var { name: "received" }, field_name: "Interface" },
+                args: Vec::from_array([]),
+            };
+            stmts.push(
+                Stmt::If {
+                    cond: Expr::Binary {
+                        op: BinaryOp::Eq,
+                        lhs: dynamic_select_index(
+                            Expr::Var { name: "p0" },
+                            Expr::Var { name: "chosen" },
+                        ),
+                        rhs: Expr::Int { value: "0" },
+                    },
+                    then_: Block {
+                        stmts: Vec::from_array(
+                            [
+                                Stmt::Assign {
+                                    name: "value",
+                                    value: Expr::Cast { expr: receive_value, ty: lower_type(elem) },
+                                },
+                            ],
+                        ),
+                    },
+                    else_: Option::None,
+                },
+            );
+            stmts.push(
+                dynamic_select_return(
+                    lower_type(ret_ty),
+                    Expr::Var { name: "chosen" },
+                    dynamic_select_index(Expr::Var { name: "p0" }, Expr::Var { name: "chosen" }),
+                    Expr::Var { name: "value" },
+                    Expr::Var { name: "open" },
+                    Expr::Bool { value: true },
+                ),
+            );
+            Expr::FuncLit { params, ret_ty: lower_type(ret_ty), body: Block { stmts } }
+        },
+        _ => Expr::Var { name: "channel_dynamic_select" },
     }
 }
 
@@ -1167,7 +1798,14 @@ fn compile_intrinsic_callable(key: string, function_ty: repr::Type) -> Expr {
         compile_collection_from_array_callable(key, function_ty)
     } else if key == "slice.new" || key == "slice.get" || key == "slice.len" || key == "slice.sub" {
         compile_slice_callable(key, function_ty)
+    } else if key == "channel.dynamic_try_select_priority" {
+        compile_dynamic_priority_select_callable(function_ty)
+    } else if key == "channel.dynamic_select" || key == "channel.dynamic_try_select" {
+        compile_dynamic_reflect_select_callable(key, function_ty)
     } else if key == "channel.new" || key == "channel.send" || key == "channel.recv"
+        || key == "channel.sender"
+        || key == "channel.receiver"
+        || key == "channel.split"
         || key == "channel.send_cancel"
         || key == "channel.recv_cancel"
         || key == "channel.close" {
@@ -1590,7 +2228,7 @@ fn collect_joins_term(result: Vec[anf::JoinBind], value: anf::Term) -> unit {
                 None => (),
             }
         },
-        Select { arms, default, ret_ty: _ } => {
+        Select { arms, default, .. } => {
             for arm in arms {
                 collect_joins_block(
                     result,
@@ -1724,7 +2362,7 @@ fn term_target(value: anf::Term) -> Option[string] {
             same_target(block_target(then_), block_target(else_))
         },
         Match { scrutinee: _, arms, default, ret_ty: _ } => match_block_target(arms, default),
-        Select { arms, default, ret_ty: _ } => select_block_target(arms, default),
+        Select { arms, default, .. } => select_block_target(arms, default),
         Return(_) | Unreachable { ty: _ } => Option::None,
     }
 }
@@ -1972,7 +2610,7 @@ fn non_exhaustive_block() -> Block {
 
 fn select_channel_elem(value: anf::Imm) -> repr::Type {
     match repr::resolve_type(anf::imm_type(value)) {
-        Channel { elem } => elem,
+        Channel { elem, direction: _ } => elem,
         _ => repr::Type::Unit,
     }
 }
@@ -2005,15 +2643,19 @@ fn select_option_expr(env: LowerEnv, ty: repr::Type, value: Option[anf::Imm]) ->
 
 fn compile_select(
     env: LowerEnv,
+    mode: ast::SelectMode,
     arms: Vec[anf::SelectArm],
     default: Option[anf::Block],
     compile_body: (anf::Block) -> Block,
 ) -> Vec[Stmt] {
     let result: Vec[Stmt] = Vec::from_array([]);
     let cases: Vec[SelectCase] = Vec::with_capacity(arms.len());
+    let select_index = env.select_counter.get();
+    env.select_counter.set(select_index + 1);
+    let mut arm_index = 0;
     for arm in arms {
         match arm {
-            Receive { channel, binding, binding_ty, body } => {
+            Receive { channel, guard, binding, binding_ty, body } => {
                 let elem_ty = select_channel_elem(channel);
                 let value_name = binding + "#select_value";
                 let open_name = binding + "#select_open";
@@ -2062,38 +2704,120 @@ fn compile_select(
                     },
                 );
                 append_stmts(case_stmts, compile_body(body).stmts);
+                let selected_channel = match guard {
+                    Some(value) => {
+                        let name = go_generated_ident(
+                            "select_channel_" + select_index.to_string() + "_"
+                                + arm_index.to_string(),
+                        );
+                        result.push(
+                            Stmt::Var {
+                                name,
+                                ty: lower_type(anf::imm_type(channel)),
+                                value: Option::None,
+                            },
+                        );
+                        result.push(
+                            Stmt::If {
+                                cond: compile_imm(env, value),
+                                then_: Block {
+                                    stmts: Vec::from_array(
+                                        [Stmt::Assign { name, value: compile_imm(env, channel) }],
+                                    ),
+                                },
+                                else_: Option::None,
+                            },
+                        );
+                        Expr::Var { name }
+                    },
+                    None => compile_imm(env, channel),
+                };
                 cases.push(
                     SelectCase {
                         operation: SelectOperation::Receive {
                             names: Vec::from_array(
                                 [go_local_ident(value_name), go_local_ident(open_name)],
                             ),
-                            channel: compile_imm(env, channel),
+                            channel: selected_channel,
                         },
                         body: Block { stmts: case_stmts },
                     },
                 )
             },
-            Send { channel, value, body } => cases.push(
-                SelectCase {
-                    operation: SelectOperation::Send {
-                        channel: compile_imm(env, channel),
-                        value: compile_imm_expected(env, value, select_channel_elem(channel)),
+            Send { channel, value, guard, body } => {
+                let selected_channel = match guard {
+                    Some(guard_value) => {
+                        let name = go_generated_ident(
+                            "select_channel_" + select_index.to_string() + "_"
+                                + arm_index.to_string(),
+                        );
+                        result.push(
+                            Stmt::Var {
+                                name,
+                                ty: lower_type(anf::imm_type(channel)),
+                                value: Option::None,
+                            },
+                        );
+                        result.push(
+                            Stmt::If {
+                                cond: compile_imm(env, guard_value),
+                                then_: Block {
+                                    stmts: Vec::from_array(
+                                        [Stmt::Assign { name, value: compile_imm(env, channel) }],
+                                    ),
+                                },
+                                else_: Option::None,
+                            },
+                        );
+                        Expr::Var { name }
                     },
-                    body: compile_body(body),
-                },
-            ),
-        }
-    }
-    result.push(
-        Stmt::Select {
-            cases,
-            default: match default {
-                Some(body) => Option::Some(compile_body(body)),
-                None => Option::None,
+                    None => compile_imm(env, channel),
+                };
+                cases.push(
+                    SelectCase {
+                        operation: SelectOperation::Send {
+                            channel: selected_channel,
+                            value: compile_imm_expected(env, value, select_channel_elem(channel)),
+                        },
+                        body: compile_body(body),
+                    },
+                )
             },
+        };
+        arm_index = arm_index + 1;
+    }
+    let lowered_default = match default {
+        Some(body) => Option::Some(compile_body(body)),
+        None => Option::None,
+    };
+    match mode {
+        ast::SelectMode::Normal => result.push(Stmt::Select { cases, default: lowered_default }),
+        ast::SelectMode::Priority => {
+            let nested: Ref[Block] = Ref::new(
+                match lowered_default {
+                    Some(body) => body,
+                    None => Block { stmts: Vec::from_array([]) },
+                },
+            );
+            let mut index = cases.len() - 1;
+            while index >= 0 {
+                nested.set(
+                    Block {
+                        stmts: Vec::from_array(
+                            [
+                                Stmt::Select {
+                                    cases: Vec::from_array([cases[index]]),
+                                    default: Option::Some(nested.get()),
+                                },
+                            ],
+                        ),
+                    },
+                );
+                index = index - 1;
+            }
+            append_stmts(result, nested.get().stmts)
         },
-    );
+    };
     result
 }
 
@@ -2122,9 +2846,9 @@ fn compile_term_leaf(env: LowerEnv, value: anf::Term) -> Vec[Stmt] {
         Match { scrutinee: scrut, arms, default, ret_ty: _ } => {
             append_stmts(result, compile_match_leaf(env, scrut, arms, default))
         },
-        Select { arms, default, ret_ty: _ } => append_stmts(
+        Select { mode, arms, default, ret_ty: _ } => append_stmts(
             result,
-            compile_select(env, arms, default, |body| compile_block(env, body)),
+            compile_select(env, mode, arms, default, |body| compile_block(env, body)),
         ),
         Unreachable { ty: _ } => result.push(Stmt::Unreachable),
     };
@@ -2203,10 +2927,11 @@ fn compile_term_to_join(env: LowerEnv, value: anf::Term, target: string, join: a
                 )
             }
         },
-        Select { arms, default, ret_ty: _ } => append_stmts(
+        Select { mode, arms, default, ret_ty: _ } => append_stmts(
             result,
             compile_select(
                 env,
+                mode,
                 arms,
                 default,
                 |body| compile_branch_to_join(env, body, target, join),
@@ -2318,7 +3043,7 @@ fn term_reaches_target(
                     None => false,
                 }
         },
-        Select { arms, default, ret_ty: _ } => {
+        Select { arms, default, .. } => {
             for arm in arms {
                 if block_reaches_target(
                     match arm {
@@ -2453,7 +3178,7 @@ fn term_tail_target_through_joins(value: anf::Term, joins: Vec[anf::JoinBind], v
         Match { scrutinee: _, arms, default, ret_ty: _ } => {
             match_tail_target_through_joins(arms, default, joins, visited)
         },
-        Select { arms, default, ret_ty: _ } => {
+        Select { arms, default, .. } => {
             select_tail_target_through_joins(arms, default, joins, visited)
         },
         Return(_) | Unreachable { ty: _ } => Option::None,
@@ -2516,7 +3241,7 @@ fn term_all_paths_reach_or_terminate(
                 None => true,
             }
         },
-        Select { arms, default, ret_ty: _ } => {
+        Select { arms, default, .. } => {
             for arm in arms {
                 if !block_all_paths_reach_or_terminate(
                     match arm {
@@ -2853,11 +3578,12 @@ fn compile_loop_term_leaf(
                 )
             }
         },
-        Select { arms, default, ret_ty: _ } => {
+        Select { mode, arms, default, ret_ty: _ } => {
             append_stmts(
                 result,
                 compile_select(
                     env,
+                    mode,
                     arms,
                     default,
                     |body| compile_loop_block(env, body, loop_name, exit_name, label),
@@ -3009,10 +3735,11 @@ fn compile_loop_term_to_join(
                 )
             }
         },
-        Select { arms, default, ret_ty: _ } => append_stmts(
+        Select { mode, arms, default, ret_ty: _ } => append_stmts(
             result,
             compile_select(
                 env,
+                mode,
                 arms,
                 default,
                 |body| compile_loop_branch_to_join(
@@ -3370,7 +4097,7 @@ fn collect_type(result: CollectedTypes, value: repr::Type) -> unit {
             add_collected_type(result, value);
             collect_type(result, elem);
         },
-        Channel { elem } => collect_type(result, elem),
+        Channel { elem, direction: _ } => collect_type(result, elem),
         HashMap { key, value } => {
             add_collected_type(result, repr::Type::HashMap { key, value });
             collect_type(result, key);
@@ -3534,16 +4261,36 @@ fn collect_runtime_block(
                 None => (),
             }
         },
-        Select { arms, default, ret_ty: _ } => {
+        Select { arms, default, .. } => {
             for arm in arms {
                 match arm {
-                    Receive { channel, binding: _, binding_ty: _, body } => {
+                    Receive { channel, guard, binding: _, binding_ty: _, body } => {
                         collect_runtime_imm(result, missing_types, intrinsics, go_foreign, channel);
+                        match guard {
+                            Some(value) => collect_runtime_imm(
+                                result,
+                                missing_types,
+                                intrinsics,
+                                go_foreign,
+                                value,
+                            ),
+                            None => (),
+                        };
                         collect_runtime_block(result, missing_types, intrinsics, go_foreign, body)
                     },
-                    Send { channel, value, body } => {
+                    Send { channel, value, guard, body } => {
                         collect_runtime_imm(result, missing_types, intrinsics, go_foreign, channel);
                         collect_runtime_imm(result, missing_types, intrinsics, go_foreign, value);
+                        match guard {
+                            Some(value) => collect_runtime_imm(
+                                result,
+                                missing_types,
+                                intrinsics,
+                                go_foreign,
+                                value,
+                            ),
+                            None => (),
+                        };
                         collect_runtime_block(result, missing_types, intrinsics, go_foreign, body)
                     },
                 }
@@ -3661,18 +4408,26 @@ fn collect_block_types(result: CollectedTypes, value: anf::Block) -> unit {
                 None => (),
             }
         },
-        Select { arms, default, ret_ty: ty } => {
+        Select { arms, default, ret_ty: ty, .. } => {
             collect_type(result, ty);
             for arm in arms {
                 match arm {
-                    Receive { channel, binding: _, binding_ty, body } => {
+                    Receive { channel, guard, binding: _, binding_ty, body } => {
                         collect_imm_type(result, channel);
+                        match guard {
+                            Some(value) => collect_imm_type(result, value),
+                            None => (),
+                        };
                         collect_type(result, binding_ty);
                         collect_block_types(result, body)
                     },
-                    Send { channel, value, body } => {
+                    Send { channel, value, guard, body } => {
                         collect_imm_type(result, channel);
                         collect_imm_type(result, value);
+                        match guard {
+                            Some(value) => collect_imm_type(result, value),
+                            None => (),
+                        };
                         collect_block_types(result, body)
                     },
                 }
@@ -3886,9 +4641,10 @@ fn go_type_size(value: repr::Type, structs: Vec[repr::StructDef], depth: int) ->
                 }
             },
             Slice { elem: _ } => known_go_size(24, 8),
-            VecType { elem: _ } | RefType { elem: _ } | HashMap { .. } | Channel { elem: _ } | Func {
-                ..,
-            } => known_go_size(8, 8),
+            VecType { elem: _ } | RefType { elem: _ } | HashMap { .. } | Channel {
+                elem: _,
+                direction: _,
+            } | Func { .. } => known_go_size(8, 8),
         }
     }
 }
@@ -4047,19 +4803,31 @@ fn inspect_pointer_calls(
                 None => (),
             }
         },
-        Select { arms, default, ret_ty: _ } => {
+        Select { arms, default, .. } => {
             for arm in arms {
                 match arm {
-                    Receive { channel, binding: _, binding_ty: _, body } => {
+                    Receive { channel, guard, binding: _, binding_ty: _, body } => {
                         if imm_uses_function(channel, target) {
                             valid.set(false)
                         } else {};
+                        match guard {
+                            Some(value) => if imm_uses_function(value, target) {
+                                valid.set(false)
+                            } else {},
+                            None => (),
+                        };
                         inspect_pointer_calls(body, target, parameter, valid, calls)
                     },
-                    Send { channel, value, body } => {
+                    Send { channel, value, guard, body } => {
                         if imm_uses_function(channel, target) || imm_uses_function(value, target) {
                             valid.set(false)
                         } else {};
+                        match guard {
+                            Some(value) => if imm_uses_function(value, target) {
+                                valid.set(false)
+                            } else {},
+                            None => (),
+                        };
                         inspect_pointer_calls(body, target, parameter, valid, calls)
                     },
                 }
@@ -4170,6 +4938,7 @@ fn compile_function(
         dyn_helper_names,
         pointer_params,
         pointer_vars,
+        select_counter: Ref::new(0),
     };
     let compiled_body = eliminate_dead_vars(compile_block(env, value.body));
     let stmts: Vec[Stmt] = Vec::with_capacity(copied_params.len() + compiled_body.stmts.len());
@@ -4468,7 +5237,7 @@ fn validate_anf_term(value: anf::Term) -> Result[unit, string] {
                 None => Result::Ok(()),
             }
         },
-        Select { arms, default, ret_ty: _ } => {
+        Select { arms, default, .. } => {
             for arm in arms {
                 validate_anf_block(
                     match arm {

@@ -310,19 +310,37 @@ fn select_arm_body(parser: Parser) -> unit {
     }
 }
 
+fn select_arm_guard(parser: Parser) -> unit {
+    if parser.at_contextual("when") {
+        let marker = parser.open();
+        parser.expect(lexer::TokenKind::Ident);
+        let previous = parser.enter_select_guard();
+        expect_expr_with_message(parser, "expected an expression after select guard `when`");
+        parser.leave_select_guard(previous);
+        let _ = parser.close(marker, cst::NodeKind::SELECT_ARM_GUARD);
+    } else {}
+}
+
 fn select_recv_arm(parser: Parser) -> unit {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::Ident);
     parser.expect(lexer::TokenKind::LParen);
     expect_expr_with_message(parser, "expected a channel expression in recv arm");
     parser.expect(lexer::TokenKind::RParen);
-    parser.expect(lexer::TokenKind::AsKeyword);
-    let binding = parser.open();
-    if parser.eat(lexer::TokenKind::WildcardKeyword) {} else {
-        parser.expect_lower_ident("recv binding")
+    select_arm_guard(parser);
+    if parser.eat(lexer::TokenKind::AsKeyword) {
+        let binding = parser.open();
+        if parser.eat(lexer::TokenKind::WildcardKeyword) {} else {
+            parser.expect_lower_ident("recv binding")
+        };
+        let _ = parser.close(binding, cst::NodeKind::SELECT_RECV_BINDING);
+        select_arm_body(parser)
+    } else if parser.at(lexer::TokenKind::MatchKeyword) {
+        parser.expect(lexer::TokenKind::MatchKeyword);
+        match_arm_list(parser)
+    } else {
+        parser.error("expected `as` or `match` after recv select arm")
     };
-    let _ = parser.close(binding, cst::NodeKind::SELECT_RECV_BINDING);
-    select_arm_body(parser);
     let _ = parser.close(marker, cst::NodeKind::SELECT_RECV_ARM);
 }
 
@@ -334,6 +352,7 @@ fn select_send_arm(parser: Parser) -> unit {
     parser.expect(lexer::TokenKind::Comma);
     expect_expr_with_message(parser, "expected a value expression in send arm");
     parser.expect(lexer::TokenKind::RParen);
+    select_arm_guard(parser);
     select_arm_body(parser);
     let _ = parser.close(marker, cst::NodeKind::SELECT_SEND_ARM);
 }
@@ -345,7 +364,7 @@ fn select_default_arm(parser: Parser) -> unit {
     let _ = parser.close(marker, cst::NodeKind::SELECT_DEFAULT_ARM);
 }
 
-fn select_arm_list(parser: Parser) -> unit {
+fn select_arm_list(parser: Parser, priority: bool) -> unit {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LBrace);
     let mut communication_arms = 0;
@@ -374,6 +393,9 @@ fn select_arm_list(parser: Parser) -> unit {
     if communication_arms == 0 {
         parser.error("select requires at least one recv or send arm")
     } else {};
+    if priority && !has_default {
+        parser.error("priority select requires a final default arm")
+    } else {};
     parser.expect(lexer::TokenKind::RBrace);
     let _ = parser.close(marker, cst::NodeKind::SELECT_ARM_LIST);
 }
@@ -381,7 +403,13 @@ fn select_arm_list(parser: Parser) -> unit {
 fn select_expression(parser: Parser) -> MarkerClosed {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::Ident);
-    select_arm_list(parser);
+    let priority = if parser.at_contextual("priority") {
+        parser.expect(lexer::TokenKind::Ident);
+        true
+    } else {
+        false
+    };
+    select_arm_list(parser, priority);
     parser.close(marker, cst::NodeKind::EXPR_SELECT)
 }
 
@@ -615,7 +643,9 @@ fn atom(parser: Parser) -> Option[MarkerClosed] {
         ByteStr | RawByteStr => simple_expression(parser, cst::NodeKind::EXPR_BYTE_STRING),
         TrueKeyword | FalseKeyword => simple_expression(parser, cst::NodeKind::EXPR_BOOL),
         Ident => if parser.at_contextual("select")
-            && token_is(parser.nth(1), lexer::TokenKind::LBrace) {
+            && (token_is(parser.nth(1), lexer::TokenKind::LBrace)
+                || (parser.nth_text(1) == "priority"
+                    && token_is(parser.nth(2), lexer::TokenKind::LBrace))) {
             select_expression(parser)
         } else if parser.at_contextual("scope") && token_is(parser.nth(1), lexer::TokenKind::LBrace) {
             scope_expression(parser)
@@ -952,6 +982,9 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                             lhs = marker.completed(parser, cst::NodeKind::EXPR_RANGE);
                             parsed_range = true;
                         }
+                    } else if token_is(operator, lexer::TokenKind::AsKeyword)
+                        && parser.at_select_guard_delimiter() {
+                        break
                     } else if token_is(operator, lexer::TokenKind::AsKeyword) {
                         let left_bp = 17;
                         if left_bp < min_bp {

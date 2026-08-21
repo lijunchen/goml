@@ -63,18 +63,32 @@ fn encode_arm(builder: text::StringBuilder, value: Arm) -> unit {
 
 fn encode_select_arm(builder: text::StringBuilder, value: SelectArm) -> unit {
     match value {
-        Receive { channel, binding, body, span: value_span } => {
+        Receive { channel, guard, binding, body, span: value_span } => {
             encode_open(builder, "SelectArm.Receive");
             encode_span(builder, value_span);
             encode_expr(builder, channel);
+            match guard {
+                Some(value) => {
+                    encode_some(builder);
+                    encode_expr(builder, value)
+                },
+                None => encode_none(builder),
+            };
             encode_string_value(builder, binding);
             encode_expr(builder, body)
         },
-        Send { channel, value, body, span: value_span } => {
+        Send { channel, value, guard, body, span: value_span } => {
             encode_open(builder, "SelectArm.Send");
             encode_span(builder, value_span);
             encode_expr(builder, channel);
             encode_expr(builder, value);
+            match guard {
+                Some(value) => {
+                    encode_some(builder);
+                    encode_expr(builder, value)
+                },
+                None => encode_none(builder),
+            };
             encode_expr(builder, body)
         },
         Default { body, span: value_span } => {
@@ -215,9 +229,16 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
                 encode_arm(builder, arm)
             }
         },
-        Select { arms, span: value_span } => {
+        Select { mode, arms, span: value_span } => {
             encode_open(builder, "Expr.Select");
             encode_span(builder, value_span);
+            encode_string_value(
+                builder,
+                match mode {
+                    SelectMode::Normal => "Normal",
+                    SelectMode::Priority => "Priority",
+                },
+            );
             encode_list(builder, arms.len());
             for arm in arms {
                 encode_select_arm(builder, arm)

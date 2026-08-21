@@ -73,8 +73,9 @@ fn artifact_dependency_trait_type(value: tast::Type) -> tast::Type {
         RefType { elem: element } => tast::Type::RefType {
             elem: artifact_dependency_trait_type(element),
         },
-        Channel { elem: element } => tast::Type::Channel {
+        Channel { elem: element, direction } => tast::Type::Channel {
             elem: artifact_dependency_trait_type(element),
+            direction,
         },
         HashMap { key, value } => tast::Type::HashMap {
             key: artifact_dependency_trait_type(key),

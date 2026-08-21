@@ -512,11 +512,11 @@
             "patterns": [
                 {
                     "name": "keyword.control.concurrency.goml",
-                    "match": "\\b(scope)(?=\\s*\\{)|\\b(spawn)(?=\\s*\\|)|\\b(select)(?=\\s*\\{)"
+                    "match": "\\b(scope)(?=\\s*\\{)|\\b(spawn)(?=\\s*\\|)|\\b(select)(?=\\s+(?:priority\\s+)?\\{)|\\b(priority)(?=\\s*\\{)"
                 },
                 {
                     "name": "keyword.control.concurrency.goml",
-                    "match": "\\b(recv)(?=\\s*\\([^\\r\\n]*\\)\\s+as\\s+(?:[A-Za-z_][A-Za-z0-9_]*|_)\\s*=>)|\\b(send)(?=\\s*\\([^\\r\\n]*\\)\\s*=>)|\\b(default)(?=\\s*=>)"
+                    "match": "\\b(recv)(?=\\s*\\([^\\r\\n]*\\)\\s*(?:when\\s+[^\\r\\n]+?\\s+)?(?:as\\s+(?:[A-Za-z_][A-Za-z0-9_]*|_)\\s*=>|match\\s*\\{))|\\b(send)(?=\\s*\\([^\\r\\n]*\\)\\s*(?:when\\s+[^\\r\\n]+?\\s+)?=>)|\\b(when)(?=[^\\r\\n]*(?:as\\s+(?:[A-Za-z_][A-Za-z0-9_]*|_)\\s*=>|match\\s*\\{|=>))|\\b(as)(?=\\s+(?:[A-Za-z_][A-Za-z0-9_]*|_)\\s*=>)|\\b(match)(?=\\s*\\{)|\\b(default)(?=\\s*=>)"
                 },
                 {
                     "name": "keyword.control.comptime.goml",

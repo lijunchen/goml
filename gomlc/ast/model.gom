@@ -337,6 +337,7 @@ pub enum InterpolatedStringPart {
 pub enum SelectArm {
     Receive {
         channel: Expr,
+        guard: Option[Expr],
         binding: string,
         body: Expr,
         span: Span,
@@ -344,6 +345,7 @@ pub enum SelectArm {
     Send {
         channel: Expr,
         value: Expr,
+        guard: Option[Expr],
         body: Expr,
         span: Span,
     },
@@ -351,6 +353,24 @@ pub enum SelectArm {
         body: Expr,
         span: Span,
     },
+}
+
+pub enum SelectMode {
+    Normal,
+    Priority,
+}
+
+pub enum ChannelDirection {
+    Both,
+    Send,
+    Receive,
+}
+
+pub fn channel_directions_equal(left: ChannelDirection, right: ChannelDirection) -> bool {
+    match (left, right) {
+        (Both, Both) | (Send, Send) | (Receive, Receive) => true,
+        _ => false,
+    }
 }
 
 pub enum Expr {
@@ -429,6 +449,7 @@ pub enum Expr {
         span: Span,
     },
     Select {
+        mode: SelectMode,
         arms: Vec[SelectArm],
         span: Span,
     },

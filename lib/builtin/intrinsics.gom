@@ -192,6 +192,48 @@ pub extern fn channel_recv_cancel[T](channel: Channel[T], cancel: int64) -> (T, 
 #[intrinsic("channel.close")]
 pub extern fn channel_close[T](channel: Channel[T]) -> unit;
 
+#[intrinsic("channel.sender")]
+pub extern fn channel_sender[T](channel: Channel[T]) -> Sender[T];
+
+#[intrinsic("channel.receiver")]
+pub extern fn channel_receiver[T](channel: Channel[T]) -> Receiver[T];
+
+#[intrinsic("channel.split")]
+pub extern fn channel_split[T](channel: Channel[T]) -> (Sender[T], Receiver[T]);
+
+#[intrinsic("channel.send")]
+pub extern fn sender_send[T](channel: Sender[T], value: T) -> unit;
+
+#[intrinsic("channel.recv")]
+pub extern fn receiver_recv[T](channel: Receiver[T]) -> (T, bool);
+
+#[intrinsic("channel.close")]
+pub extern fn sender_close[T](channel: Sender[T]) -> unit;
+
+#[intrinsic("channel.dynamic_select")]
+pub extern fn channel_dynamic_select[T](
+    kinds: Slice[int],
+    receivers: Slice[Receiver[T]],
+    senders: Slice[Sender[T]],
+    values: Slice[T],
+) -> (int, int, T, bool, bool);
+
+#[intrinsic("channel.dynamic_try_select")]
+pub extern fn channel_dynamic_try_select[T](
+    kinds: Slice[int],
+    receivers: Slice[Receiver[T]],
+    senders: Slice[Sender[T]],
+    values: Slice[T],
+) -> (int, int, T, bool, bool);
+
+#[intrinsic("channel.dynamic_try_select_priority")]
+pub extern fn channel_dynamic_try_select_priority[T](
+    kinds: Slice[int],
+    receivers: Slice[Receiver[T]],
+    senders: Slice[Sender[T]],
+    values: Slice[T],
+) -> (int, int, T, bool, bool);
+
 #[intrinsic("ref.new")]
 pub extern fn ref[T](value: T) -> Ref[T];
 

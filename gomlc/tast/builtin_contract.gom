@@ -94,6 +94,8 @@ pub struct BuiltinContract {
     pub hashmap: CollectionLangItem,
     pub ref_type: NamedLangItem,
     pub channel: NamedLangItem,
+    pub sender: NamedLangItem,
+    pub receiver: NamedLangItem,
     pub range: FunctionLangItem,
     pub range_inclusive: FunctionLangItem,
 }
@@ -413,6 +415,8 @@ fn load_builtin_contract() -> Result[BuiltinContract, string] {
             hashmap: required_collection_lang_item("hashmap")?,
             ref_type: required_named_lang_item("ref", BuiltinLangItemKind::Impl)?,
             channel: required_named_lang_item("channel", BuiltinLangItemKind::Impl)?,
+            sender: required_named_lang_item("sender", BuiltinLangItemKind::Impl)?,
+            receiver: required_named_lang_item("receiver", BuiltinLangItemKind::Impl)?,
             range: required_function_lang_item("range")?,
             range_inclusive: required_function_lang_item("range_inclusive")?,
         },

@@ -236,8 +236,14 @@ fn type_doc_with_contract(builtin: BuiltinContract, value: Type) -> pretty::Doc 
                 ),
             ),
         ),
-        Channel { elem } => pretty::append(
-            pretty::text(builtin.channel.name),
+        Channel { elem, direction } => pretty::append(
+            pretty::text(
+                match direction {
+                    ast::ChannelDirection::Both => builtin.channel.name,
+                    ast::ChannelDirection::Send => builtin.sender.name,
+                    ast::ChannelDirection::Receive => builtin.receiver.name,
+                },
+            ),
             pretty::delimited(
                 "[",
                 ",",
@@ -378,8 +384,14 @@ fn write_type_value(builtin: BuiltinContract, builder: text::StringBuilder, valu
             builder.write_string(builtin.hashmap.name);
             write_type_values(builtin, builder, Vec::from_array([key, value]), "[", "]")
         },
-        Channel { elem } => {
-            builder.write_string(builtin.channel.name);
+        Channel { elem, direction } => {
+            builder.write_string(
+                match direction {
+                    ast::ChannelDirection::Both => builtin.channel.name,
+                    ast::ChannelDirection::Send => builtin.sender.name,
+                    ast::ChannelDirection::Receive => builtin.receiver.name,
+                },
+            );
             write_type_values(builtin, builder, Vec::from_array([elem]), "[", "]")
         },
         Param { name } => builder.write_string(name),
@@ -447,7 +459,7 @@ fn diagnostic_type(value: Type) -> Type {
         HashMap { key, value } => {
             Type::HashMap { key: diagnostic_type(key), value: diagnostic_type(value) }
         },
-        Channel { elem } => Type::Channel { elem: diagnostic_type(elem) },
+        Channel { elem, direction } => Type::Channel { elem: diagnostic_type(elem), direction },
         Func { params, ret_ty } => {
             let result: Vec[Type] = Vec::from_array([]);
             for value in params {
@@ -782,22 +794,40 @@ fn arm_doc(value: Arm) -> pretty::Doc {
 
 fn select_arm_doc(value: SelectArm) -> pretty::Doc {
     let parts: Vec[pretty::Doc] = match value {
-        Receive { channel, binding, binding_ty: _, body } => Vec::from_array(
+        Receive { channel, guard, binding, binding_ty: _, body } => Vec::from_array(
             [
                 pretty::text("recv("),
                 expr_doc(channel),
-                pretty::text(") as " + binding + " =>"),
+                match guard {
+                    Some(value) => pretty::concat(
+                        Vec::from_array(
+                            [
+                                pretty::text(") when "),
+                                expr_doc(value),
+                                pretty::text(" as " + binding + " =>"),
+                            ],
+                        ),
+                    ),
+                    None => pretty::text(") as " + binding + " =>"),
+                },
                 pretty::nest(2, pretty::append(pretty::line(), expr_doc(body))),
                 pretty::text(","),
             ],
         ),
-        Send { channel, value, body } => Vec::from_array(
+        Send { channel, value, guard, body } => Vec::from_array(
             [
                 pretty::text("send("),
                 expr_doc(channel),
                 pretty::text(", "),
                 expr_doc(value),
-                pretty::text(") =>"),
+                match guard {
+                    Some(value) => pretty::concat(
+                        Vec::from_array(
+                            [pretty::text(") when "), expr_doc(value), pretty::text(" =>")],
+                        ),
+                    ),
+                    None => pretty::text(") =>"),
+                },
                 pretty::nest(2, pretty::append(pretty::line(), expr_doc(body))),
                 pretty::text(","),
             ],
@@ -883,12 +913,24 @@ fn expr_doc(value: Expr) -> pretty::Doc {
                 ),
             )
         },
-        Select { arms, ty: _ } => {
+        Select { mode, arms, ty: _ } => {
             let values: Vec[pretty::Doc] = Vec::with_capacity(arms.len());
             for arm in arms {
                 values.push(select_arm_doc(arm))
             }
-            pretty::concat(Vec::from_array([pretty::text("select "), braced_docs(values, 4)]))
+            pretty::concat(
+                Vec::from_array(
+                    [
+                        pretty::text(
+                            match mode {
+                                ast::SelectMode::Normal => "select ",
+                                ast::SelectMode::Priority => "select priority ",
+                            },
+                        ),
+                        braced_docs(values, 4),
+                    ],
+                ),
+            )
         },
         If { cond, then_branch, else_branch, ty: _ } => pretty::concat(
             Vec::from_array(

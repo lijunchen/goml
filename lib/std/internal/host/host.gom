@@ -350,6 +350,14 @@ pub fn sleep_nanoseconds(value: int64) -> unit {
     __goml_std_host_sleep_nanoseconds(value)
 }
 
+pub fn timer_new(value: int64) -> (int64, Receiver[unit]) {
+    __goml_std_host_timer_new(value)
+}
+
+pub fn timer_stop(id: int64) -> bool {
+    __goml_std_host_timer_stop(id)
+}
+
 pub fn math_float32_unary(operation: int, value: float32) -> float32 {
     __goml_std_host_math_float32_unary(operation, value)
 }

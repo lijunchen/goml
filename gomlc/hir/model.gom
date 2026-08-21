@@ -312,12 +312,14 @@ pub enum InterpolatedStringPart {
 pub enum SelectArm {
     Receive {
         channel: Expr,
+        guard: Option[Expr],
         binding: LocalId,
         body: Expr,
     },
     Send {
         channel: Expr,
         value: Expr,
+        guard: Option[Expr],
         body: Expr,
     },
     Default {
@@ -389,6 +391,7 @@ pub enum ExprKind {
         arms: Vec[Arm],
     },
     Select {
+        mode: ast::SelectMode,
         arms: Vec[SelectArm],
     },
     If {

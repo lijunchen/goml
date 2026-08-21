@@ -116,6 +116,9 @@ fn needs_space(previous: lexer::TokenKind, current: lexer::TokenKind) -> bool {
     } else if kind_is(previous, lexer::TokenKind::RBracket)
         && kind_is(current, lexer::TokenKind::Ident) {
         true
+    } else if kind_is(previous, lexer::TokenKind::RParen)
+        && kind_is(current, lexer::TokenKind::Ident) {
+        true
     } else if kind_is(previous, lexer::TokenKind::RBrace)
         && kind_is(current, lexer::TokenKind::ElseKeyword) {
         true

@@ -595,7 +595,7 @@ fn collect_task_runtime_imports(imports: Vec[RuntimeImport], hook: resources::Ta
     require_runtime_import(imports, RuntimeImport::Sync);
     match hook {
         Sleep => require_runtime_import(imports, RuntimeImport::Time),
-        ScopeNew | ScopeRun | ScopeSpawn | ScopeTrySpawn | ScopeCancel | ScopeFinish | ScopeCancelled | ActiveScopeCount => (),
+        ScopeNew | ScopeRun | ScopeSpawn | ScopeTrySpawn | ScopeCancel | ScopeFinish | ScopeCancelled | ScopeDone | ActiveScopeCount => (),
     }
 }
 
@@ -624,6 +624,10 @@ fn collect_standard_runtime_imports(
         Crypto(RandomBytes) => require_runtime_import(imports, RuntimeImport::CryptoRand),
         Time(MonotonicNanoseconds | UnixNanoseconds | SleepNanoseconds) => {
             require_runtime_import(imports, RuntimeImport::Time)
+        },
+        Time(TimerNew | TimerStop) => {
+            require_runtime_import(imports, RuntimeImport::Time);
+            require_runtime_import(imports, RuntimeImport::Sync)
         },
         Task(hook) => collect_task_runtime_imports(imports, hook),
     }
@@ -853,6 +857,9 @@ pub fn emit_runtime_hook_items(
     for intrinsic in intrinsics {
         if intrinsic == "ref.ptr_hash" {
             require_runtime_import(required_imports, RuntimeImport::Reflect)
+        } else if intrinsic == "channel.dynamic_select" || intrinsic == "channel.dynamic_try_select"
+            || intrinsic == "channel.dynamic_try_select_priority" {
+            require_runtime_import(required_imports, RuntimeImport::Reflect)
         } else if intrinsic == "channel.send_cancel" || intrinsic == "channel.recv_cancel" {
             require_runtime_import(required_imports, RuntimeImport::Context);
             require_runtime_import(required_imports, RuntimeImport::Sync)
@@ -871,6 +878,20 @@ pub fn emit_runtime_hook_items(
     emit_runtime_import_items(items, required_imports);
     if intrinsics.contains("once_cell.new") || intrinsics.contains("once_cell.get_or_init") {
         items.push(once_cell_goroutine_id_item())
+    } else {};
+    let mut needs_timer_support = false;
+    for hook in hooks {
+        match hook {
+            Standard(Time(TimerNew | TimerStop)) => {
+                needs_timer_support = true;
+            },
+            _ => (),
+        }
+    }
+    if needs_timer_support {
+        for item in std_time_timer_support_items() {
+            items.push(item)
+        }
     } else {};
     let mut needs_task_support = false;
     for hook in hooks {
@@ -901,7 +922,7 @@ pub fn emit_runtime_hook_items(
                         Time(MonotonicNanoseconds) => {
                             items.push(std_time_monotonic_origin_item())
                         },
-                        Env(_) | Fs(_) | Io(_) | Path(_) | Process(_) | TestingFail | Num(_) | Math(_) | Crypto(_) | Time(UnixNanoseconds | SleepNanoseconds) | Task(_) => (),
+                        Env(_) | Fs(_) | Io(_) | Path(_) | Process(_) | TestingFail | Num(_) | Math(_) | Crypto(_) | Time(UnixNanoseconds | SleepNanoseconds | TimerNew | TimerStop) | Task(_) => (),
                     };
                     items.push(standard_runtime_hook_item(hook, spec.key))
                 },

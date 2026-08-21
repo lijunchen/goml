@@ -177,6 +177,10 @@ impl CancelToken {
     pub fn runtime_id(self: CancelToken) -> int64 {
         internal_task::id(self.value)
     }
+
+    pub fn done(self: CancelToken) -> Receiver[unit] {
+        self.value.done()
+    }
 }
 
 pub fn recv_with[T](cancel: CancelToken, channel: Channel[T]) -> WaitResult[Option[T]] {
@@ -209,6 +213,10 @@ pub fn sleep_nanoseconds_with(cancel: CancelToken, nanoseconds: int64) -> WaitRe
 }
 
 impl[T] Task[T] {
+    pub fn done(self: Task[T]) -> Receiver[unit] {
+        self.ready.receiver()
+    }
+
     pub fn join(self: Task[T]) -> T {
         loop {
             let _ = self.ready.recv();

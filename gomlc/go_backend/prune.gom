@@ -25,6 +25,7 @@ fn collect_type_names(result: NameSet, value: Type) -> unit {
         Named { name } => add_reachable(result, name),
         Pointer { elem: inner } | Array { len: _, elem: inner } | Slice { elem: inner } | Chan {
             elem: inner,
+            direction: _,
         } => {
             collect_type_names(result, inner)
         },

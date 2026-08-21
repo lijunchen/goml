@@ -221,8 +221,9 @@ fn expand_specialized_type_aliases_from(ctx: TypeCtx, value: core::Type, path: V
         RefType { elem } => core::Type::RefType {
             elem: expand_specialized_type_aliases_from(ctx, elem, path),
         },
-        Channel { elem } => core::Type::Channel {
+        Channel { elem, direction } => core::Type::Channel {
             elem: expand_specialized_type_aliases_from(ctx, elem, path),
+            direction,
         },
         HashMap { key, value } => core::Type::HashMap {
             key: expand_specialized_type_aliases_from(ctx, key, path),
@@ -438,7 +439,7 @@ fn collapse_type(ctx: TypeCtx, value: core::Type) -> Type {
         Slice { elem } => Type::Slice { elem: collapse_type(ctx, elem) },
         VecType { elem } => Type::VecType { elem: collapse_type(ctx, elem) },
         RefType { elem } => Type::RefType { elem: collapse_type(ctx, elem) },
-        Channel { elem } => Type::Channel { elem: collapse_type(ctx, elem) },
+        Channel { elem, direction } => Type::Channel { elem: collapse_type(ctx, elem), direction },
         HashMap { key, value } => {
             Type::HashMap { key: collapse_type(ctx, key), value: collapse_type(ctx, value) }
         },
@@ -623,7 +624,9 @@ fn mono_type_to_core(value: Type) -> core::Type {
             key: mono_type_to_core(key),
             value: mono_type_to_core(value),
         },
-        Channel { elem } => core::Type::Channel { elem: mono_type_to_core(elem) },
+        Channel { elem, direction } => {
+            core::Type::Channel { elem: mono_type_to_core(elem), direction }
+        },
         Func { params, ret_ty } => core::Type::Func {
             params: mono_types_to_core(params),
             ret_ty: mono_type_to_core(ret_ty),
@@ -828,26 +831,29 @@ fn lower_expr(ctx: TypeCtx, value: core::Expr) -> Expr {
             default: lower_optional_expr(ctx, default),
             ty: collapse_type(ctx, ty),
         },
-        Select { arms, default, ty } => {
+        Select { mode, arms, default, ty } => {
             let lowered: Vec[SelectArm] = Vec::with_capacity(arms.len());
             for arm in arms {
                 lowered.push(
                     match arm {
-                        Receive { channel, binding, binding_ty, body } => SelectArm::Receive {
+                        Receive { channel, guard, binding, binding_ty, body } => SelectArm::Receive {
                             channel: lower_expr(ctx, channel),
+                            guard: lower_optional_expr(ctx, guard),
                             binding,
                             binding_ty: collapse_type(ctx, binding_ty),
                             body: lower_expr(ctx, body),
                         },
-                        Send { channel, value, body } => SelectArm::Send {
+                        Send { channel, value, guard, body } => SelectArm::Send {
                             channel: lower_expr(ctx, channel),
                             value: lower_expr(ctx, value),
+                            guard: lower_optional_expr(ctx, guard),
                             body: lower_expr(ctx, body),
                         },
                     },
                 )
             }
             Expr::Select {
+                mode,
                 arms: lowered,
                 default: lower_optional_expr(ctx, default),
                 ty: collapse_type(ctx, ty),
@@ -970,6 +976,7 @@ fn collect_type_names(ctx: TypeCtx, value: core::Type) -> unit {
         },
         Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
             elem,
+            direction: _,
         } => collect_type_names(ctx, elem),
         HashMap { key, value } => {
             collect_type_names(ctx, key);
@@ -1060,17 +1067,19 @@ fn collect_expr_type_names(ctx: TypeCtx, value: core::Expr) -> unit {
             }
             collect_optional_expr_type_names(ctx, default)
         },
-        Select { arms, default, ty: _ } => {
+        Select { arms, default, .. } => {
             for arm in arms {
                 match arm {
-                    Receive { channel, binding: _, binding_ty, body } => {
+                    Receive { channel, guard, binding: _, binding_ty, body } => {
                         collect_type_names(ctx, binding_ty);
                         collect_expr_type_names(ctx, channel);
+                        collect_optional_expr_type_names(ctx, guard);
                         collect_expr_type_names(ctx, body)
                     },
-                    Send { channel, value, body } => {
+                    Send { channel, value, guard, body } => {
                         collect_expr_type_names(ctx, channel);
                         collect_expr_type_names(ctx, value);
+                        collect_optional_expr_type_names(ctx, guard);
                         collect_expr_type_names(ctx, body)
                     },
                 }

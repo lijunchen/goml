@@ -39,6 +39,7 @@ struct Parser {
     type_depth: Ref[int],
     struct_literals_allowed: Ref[bool],
     contextual_blocks_allowed: Ref[bool],
+    select_guard_depth: Ref[int],
 }
 
 fn event_tombstone() -> Event {
@@ -190,6 +191,7 @@ fn new_parser(tokens: Vec[lexer::Token], source_len: int) -> Parser {
         type_depth: Ref::new(0),
         struct_literals_allowed: Ref::new(true),
         contextual_blocks_allowed: Ref::new(true),
+        select_guard_depth: Ref::new(-1),
     }
 }
 
@@ -383,6 +385,20 @@ impl Parser {
 
     pub fn leave_expr(self: Parser) -> unit {
         self.expr_depth.set(self.expr_depth.get() - 1)
+    }
+
+    pub fn enter_select_guard(self: Parser) -> int {
+        let previous = self.select_guard_depth.get();
+        self.select_guard_depth.set(self.expr_depth.get() + 1);
+        previous
+    }
+
+    pub fn leave_select_guard(self: Parser, previous: int) -> unit {
+        self.select_guard_depth.set(previous)
+    }
+
+    pub fn at_select_guard_delimiter(self: Parser) -> bool {
+        self.select_guard_depth.get() == self.expr_depth.get()
     }
 
     pub fn enter_pattern(self: Parser) -> bool {

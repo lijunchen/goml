@@ -62,15 +62,17 @@ fn dce_select_arms(values: Vec[SelectArm]) -> Vec[SelectArm] {
     for value in values {
         result.push(
             match value {
-                Receive { channel, binding, binding_ty, body } => SelectArm::Receive {
+                Receive { channel, guard, binding, binding_ty, body } => SelectArm::Receive {
                     channel: dce_expr(channel),
+                    guard: dce_optional_expr(guard),
                     binding,
                     binding_ty,
                     body: dce_expr(body),
                 },
-                Send { channel, value, body } => SelectArm::Send {
+                Send { channel, value, guard, body } => SelectArm::Send {
                     channel: dce_expr(channel),
                     value: dce_expr(value),
+                    guard: dce_optional_expr(guard),
                     body: dce_expr(body),
                 },
             },
@@ -99,7 +101,8 @@ fn dce_expr(value: Expr) -> Expr {
             default: dce_optional_expr(default),
             ty,
         },
-        Select { arms, default, ty } => Expr::Select {
+        Select { mode, arms, default, ty } => Expr::Select {
+            mode,
             arms: dce_select_arms(arms),
             default: dce_optional_expr(default),
             ty,
@@ -232,19 +235,21 @@ fn dce_collect_expr(result: DceNames, value: Expr) -> unit {
             }
             dce_collect_optional_expr(result, default)
         },
-        Select { arms, default, ty: _ } => {
+        Select { arms, default, .. } => {
             for arm in arms {
                 match arm {
-                    Receive { channel, binding, binding_ty: _, body } => {
+                    Receive { channel, guard, binding, binding_ty: _, body } => {
                         dce_collect_expr(result, channel);
+                        dce_collect_optional_expr(result, guard);
                         let free = new_dce_names();
                         dce_collect_expr(free, body);
                         dce_names_remove(free, binding);
                         dce_names_add_all(result, free)
                     },
-                    Send { channel, value, body } => {
+                    Send { channel, value, guard, body } => {
                         dce_collect_expr(result, channel);
                         dce_collect_expr(result, value);
+                        dce_collect_optional_expr(result, guard);
                         dce_collect_expr(result, body)
                     },
                 }

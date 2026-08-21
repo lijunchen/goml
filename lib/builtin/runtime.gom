@@ -413,6 +413,12 @@ extern fn __goml_std_host_unix_nanoseconds() -> int64;
 #[runtime("std.time.sleep_nanoseconds")]
 extern fn __goml_std_host_sleep_nanoseconds(value: int64) -> unit;
 
+#[runtime("std.time.timer_new")]
+extern fn __goml_std_host_timer_new(value: int64) -> (int64, Receiver[unit]);
+
+#[runtime("std.time.timer_stop")]
+extern fn __goml_std_host_timer_stop(id: int64) -> bool;
+
 #[runtime("std.math.float32_unary")]
 extern fn __goml_std_host_math_float32_unary(operation: int, value: float32) -> float32;
 
@@ -442,6 +448,9 @@ extern fn __goml_std_task_scope_finish(scope: int64) -> unit;
 
 #[runtime("std.task.scope_cancelled")]
 extern fn __goml_std_task_scope_cancelled(scope: int64) -> bool;
+
+#[runtime("std.task.scope_done")]
+extern fn __goml_std_task_scope_done(scope: int64) -> Receiver[unit];
 
 #[runtime("std.task.sleep")]
 extern fn __goml_std_task_scope_sleep(scope: int64, nanoseconds: int64) -> bool;

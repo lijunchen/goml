@@ -1,0 +1,140 @@
+package channel;
+
+pub enum Operation[T] {
+    Receive(Receiver[T]),
+    Send(Sender[T], T),
+}
+
+pub enum Selection[T] {
+    Received {
+        index: int,
+        value: Option[T],
+    },
+    Sent {
+        index: int,
+    },
+}
+
+pub enum SelectError {
+    Empty,
+}
+
+struct PreparedOperations[T] {
+    kinds: Vec[int],
+    receivers: Vec[Receiver[T]],
+    senders: Vec[Sender[T]],
+    values: Vec[T],
+}
+
+fn prepare[T](operations: Slice[Operation[T]]) -> PreparedOperations[T] {
+    let kinds: Vec[int] = Vec::with_capacity(operations.len());
+    let receivers: Vec[Receiver[T]] = Vec::new();
+    let senders: Vec[Sender[T]] = Vec::new();
+    let values: Vec[T] = Vec::new();
+    for operation in operations {
+        match operation {
+            Operation::Receive(receiver) => {
+                kinds.push(0);
+                receivers.push(receiver)
+            },
+            Operation::Send(sender, value) => {
+                kinds.push(1);
+                senders.push(sender);
+                values.push(value)
+            },
+        }
+    }
+    PreparedOperations { kinds, receivers, senders, values }
+}
+
+fn prepared_slices[T](prepared: PreparedOperations[T]) -> (
+    Slice[int],
+    Slice[Receiver[T]],
+    Slice[Sender[T]],
+    Slice[T],
+) {
+    (
+        slice(prepared.kinds, 0, prepared.kinds.len()),
+        slice(prepared.receivers, 0, prepared.receivers.len()),
+        slice(prepared.senders, 0, prepared.senders.len()),
+        slice(prepared.values, 0, prepared.values.len()),
+    )
+}
+
+fn selection[T](index: int, kind: int, value: T, open: bool) -> Selection[T] {
+    if kind == 0 {
+        Selection::Received {
+            index,
+            value: if open {
+                Option::Some(value)
+            } else {
+                Option::None
+            },
+        }
+    } else {
+        Selection::Sent { index }
+    }
+}
+
+pub fn select[T](operations: Slice[Operation[T]]) -> Result[Selection[T], SelectError] {
+    if operations.len() == 0 {
+        Result::Err(SelectError::Empty)
+    } else {
+        let prepared = prepare(operations);
+        let (kinds, receivers, senders, values) = prepared_slices(prepared);
+        let (index, kind, value, open, _) = channel_dynamic_select(
+            kinds,
+            receivers,
+            senders,
+            values,
+        );
+        Result::Ok(selection(index, kind, value, open))
+    }
+}
+
+pub fn try_select[T](operations: Slice[Operation[T]]) -> Result[Option[Selection[T]], SelectError] {
+    if operations.len() == 0 {
+        Result::Err(SelectError::Empty)
+    } else {
+        let prepared = prepare(operations);
+        let (kinds, receivers, senders, values) = prepared_slices(prepared);
+        let (index, kind, value, open, selected) = channel_dynamic_try_select(
+            kinds,
+            receivers,
+            senders,
+            values,
+        );
+        Result::Ok(
+            if selected {
+                Option::Some(selection(index, kind, value, open))
+            } else {
+                Option::None
+            },
+        )
+    }
+}
+
+pub fn try_select_priority[T](operations: Slice[Operation[T]]) -> Result[
+    Option[Selection[T]],
+    SelectError,
+] {
+    if operations.len() == 0 {
+        Result::Err(SelectError::Empty)
+    } else {
+        let prepared = prepare(operations);
+        let (kinds, receivers, senders, values) = prepared_slices(prepared);
+        let (index, kind, value, open, selected) = channel_dynamic_try_select_priority(
+            kinds,
+            receivers,
+            senders,
+            values,
+        );
+        Result::Ok(
+            if selected {
+                Option::Some(selection(index, kind, value, open))
+            } else {
+                Option::None
+            },
+        )
+    }
+}

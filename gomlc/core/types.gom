@@ -1,5 +1,7 @@
 package core;
 
+use gomlc::ast;
+
 pub enum Type {
     Unit,
     Never,
@@ -58,6 +60,7 @@ pub enum Type {
     },
     Channel {
         elem: Type,
+        direction: ast::ChannelDirection,
     },
     Param {
         name: string,
@@ -184,10 +187,12 @@ pub fn types_equal(left: Type, right: Type) -> bool {
         (Slice { elem: left }, Slice { elem: right }) | (
             VecType { elem: left },
             VecType { elem: right },
-        ) | (RefType { elem: left }, RefType { elem: right }) | (
-            Channel { elem: left },
-            Channel { elem: right },
-        ) => types_equal(left, right),
+        ) | (RefType { elem: left }, RefType { elem: right }) => types_equal(left, right),
+        (
+            Channel { elem: left, direction: left_direction },
+            Channel { elem: right, direction: right_direction },
+        ) => ast::channel_directions_equal(left_direction, right_direction)
+            && types_equal(left, right),
         (
             HashMap { key: left_key, value: left_value },
             HashMap { key: right_key, value: right_value },
@@ -269,9 +274,10 @@ pub fn type_contains_error(value: Type) -> bool {
                 false
             }
         },
-        Array { elem, .. } | Slice { elem } | VecType { elem } | RefType { elem } | Channel { elem } => type_contains_error(
+        Array { elem, .. } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
             elem,
-        ),
+            direction: _,
+        } => type_contains_error(elem),
         HashMap { key, value } => type_contains_error(key) || type_contains_error(value),
         Func { params, ret_ty } => {
             for param in params {
@@ -333,9 +339,10 @@ pub fn type_is_concrete(value: Type) -> bool {
             }
         },
         App { ty, args } => type_is_concrete(ty) && concrete_types(args),
-        Array { elem, .. } | Slice { elem } | VecType { elem } | RefType { elem } | Channel { elem } => type_is_concrete(
+        Array { elem, .. } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
             elem,
-        ),
+            direction: _,
+        } => type_is_concrete(elem),
         HashMap { key, value } => type_is_concrete(key) && type_is_concrete(value),
         Func { params, ret_ty } => concrete_types(params) && type_is_concrete(ret_ty),
     }
@@ -427,7 +434,9 @@ pub fn substitute_type(value: Type, bindings: Vec[(string, Type)]) -> Type {
             key: substitute_type(key, bindings),
             value: substitute_type(value, bindings),
         },
-        Channel { elem } => Type::Channel { elem: substitute_type(elem, bindings) },
+        Channel { elem, direction } => {
+            Type::Channel { elem: substitute_type(elem, bindings), direction }
+        },
         Func { params, ret_ty } => Type::Func {
             params: substitute_types(params, bindings),
             ret_ty: substitute_type(ret_ty, bindings),
@@ -486,10 +495,10 @@ fn collect_type_parameters(values: Vec[string], value: Type) -> unit {
                 collect_type_parameters(values, arg)
             }
         },
-        Array { elem, .. } | Slice { elem } | VecType { elem } | RefType { elem } | Channel { elem } => collect_type_parameters(
-            values,
+        Array { elem, .. } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
             elem,
-        ),
+            direction: _,
+        } => collect_type_parameters(values, elem),
         HashMap { key, value } => {
             collect_type_parameters(values, key);
             collect_type_parameters(values, value)

@@ -62,6 +62,7 @@ pub struct Block {
 pub enum SelectArm {
     Receive {
         channel: Expr,
+        guard: Option[Expr],
         binding: string,
         binding_ty: Type,
         body: Expr,
@@ -69,6 +70,7 @@ pub enum SelectArm {
     Send {
         channel: Expr,
         value: Expr,
+        guard: Option[Expr],
         body: Expr,
     },
 }
@@ -115,6 +117,7 @@ pub enum Expr {
         ty: Type,
     },
     Select {
+        mode: ast::SelectMode,
         arms: Vec[SelectArm],
         default: Option[Expr],
         ty: Type,

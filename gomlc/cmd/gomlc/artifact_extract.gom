@@ -121,8 +121,9 @@ fn artifact_trait_definition_type(value: tast::Type, owner: string, trait_names:
         RefType { elem: element } => tast::Type::RefType {
             elem: artifact_trait_definition_type(element, owner, trait_names),
         },
-        Channel { elem: element } => tast::Type::Channel {
+        Channel { elem: element, direction } => tast::Type::Channel {
             elem: artifact_trait_definition_type(element, owner, trait_names),
+            direction,
         },
         HashMap { key, value: item } => tast::Type::HashMap {
             key: artifact_trait_definition_type(key, owner, trait_names),
@@ -316,7 +317,11 @@ fn artifact_inherent_constructor(builtin: tast::BuiltinContract, value: tast::Ty
         Slice { elem: _ } => builtin.slice.name,
         VecType { elem: _ } => builtin.vec.name,
         RefType { elem: _ } => builtin.ref_type.name,
-        Channel { elem: _ } => builtin.channel.name,
+        Channel { elem: _, direction } => match direction {
+            ast::ChannelDirection::Both => builtin.channel.name,
+            ast::ChannelDirection::Send => builtin.sender.name,
+            ast::ChannelDirection::Receive => builtin.receiver.name,
+        },
         HashMap { key: _, value: _ } => builtin.hashmap.name,
         _ => {
             fail("error[compile]: invalid inherent implementation in compiler artifact");
@@ -415,7 +420,7 @@ fn artifact_type_has_public_names(
         },
         Array { len: _, elem: element } | Slice { elem: element } | VecType { elem: element } | RefType {
             elem: element,
-        } | Channel { elem: element } => artifact_type_has_public_names(
+        } | Channel { elem: element, direction: _ } => artifact_type_has_public_names(
             element,
             package_name,
             public_names,

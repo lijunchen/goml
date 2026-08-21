@@ -1,5 +1,6 @@
 package go_backend;
 
+use gomlc::ast;
 use gomlc::pretty;
 use std::task;
 use std::text;
@@ -118,7 +119,16 @@ fn type_doc(value: Type) -> pretty::Doc {
                 [pretty::text("map["), type_doc(key), pretty::text("]"), type_doc(value)],
             ),
         ),
-        Chan { elem } => pretty::append(pretty::text("chan "), type_doc(elem)),
+        Chan { elem, direction } => pretty::append(
+            pretty::text(
+                match direction {
+                    ast::ChannelDirection::Both => "chan ",
+                    ast::ChannelDirection::Send => "chan<- ",
+                    ast::ChannelDirection::Receive => "<-chan ",
+                },
+            ),
+            type_doc(elem),
+        ),
         Func { params, ret_ty } => {
             let result = match ret_ty {
                 Void => pretty::nil(),

@@ -60,6 +60,7 @@ struct LowerBlock {
 enum LowerSelectArm {
     Receive {
         channel: LowerExpr,
+        guard: Option[LowerExpr],
         binding: string,
         binding_ty: mono::Type,
         body: LowerExpr,
@@ -67,6 +68,7 @@ enum LowerSelectArm {
     Send {
         channel: LowerExpr,
         value: LowerExpr,
+        guard: Option[LowerExpr],
         body: LowerExpr,
     },
 }
@@ -108,6 +110,7 @@ enum LowerExpr {
         ty: mono::Type,
     },
     Select {
+        mode: ast::SelectMode,
         arms: Vec[LowerSelectArm],
         default: Option[LowerExpr],
         ty: mono::Type,

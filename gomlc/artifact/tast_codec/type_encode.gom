@@ -1,6 +1,7 @@
 package tast_codec;
 
 use gomlc::artifact::wire as wire;
+use gomlc::ast;
 use gomlc::tast;
 
 pub struct ArtifactTypeContext {
@@ -217,12 +218,21 @@ pub fn artifact_json_type(
             wire::artifact_json_end_object(writer);
             wire::artifact_json_end_object(writer)
         },
-        Channel { elem: element } => {
+        Channel { elem: element, direction } => {
             wire::artifact_json_begin_object(writer);
             wire::artifact_json_name(writer, TYPE_CHANNEL_TAG);
             wire::artifact_json_begin_object(writer);
             wire::artifact_json_name(writer, "elem");
             artifact_json_type(writer, context, element);
+            wire::artifact_json_name(writer, "direction");
+            wire::artifact_json_string(
+                writer,
+                match direction {
+                    ast::ChannelDirection::Both => "both",
+                    ast::ChannelDirection::Send => "send",
+                    ast::ChannelDirection::Receive => "receive",
+                },
+            );
             wire::artifact_json_end_object(writer);
             wire::artifact_json_end_object(writer)
         },

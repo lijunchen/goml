@@ -1,5 +1,6 @@
 package go_backend;
 
+use gomlc::ast;
 use gomlc::resources;
 
 fn task_state_name() -> string {
@@ -748,6 +749,17 @@ fn task_scope_cancelled_item(key: string) -> Item {
     std_function_item(key, Vec::from_array([("scope_id", Type::Int64)]), Type::Bool, stmts)
 }
 
+fn task_scope_done_item(key: string) -> Item {
+    let stmts: Vec[Stmt] = Vec::from_array([]);
+    stmts.push(task_return(task_context_done_expr(task_var("scope_id"))));
+    std_function_item(
+        key,
+        Vec::from_array([("scope_id", Type::Int64)]),
+        Type::Chan { elem: Type::Unit, direction: ast::ChannelDirection::Receive },
+        stmts,
+    )
+}
+
 fn task_scope_sleep_item(key: string) -> Item {
     let stmts: Vec[Stmt] = Vec::from_array([]);
     stmts.push(
@@ -830,6 +842,7 @@ fn task_runtime_hook_item(hook: resources::TaskRuntimeHook, key: string) -> Item
         ScopeCancel => task_scope_cancel_item(key),
         ScopeFinish => task_scope_finish_item(key),
         ScopeCancelled => task_scope_cancelled_item(key),
+        ScopeDone => task_scope_done_item(key),
         Sleep => task_scope_sleep_item(key),
         ActiveScopeCount => task_active_scope_count_item(key),
     }

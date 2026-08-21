@@ -204,12 +204,12 @@ fn licm_extract_term(
                 ret_ty,
             }
         },
-        Select { arms, default, ret_ty } => {
+        Select { mode, arms, default, ret_ty } => {
             let lowered: Vec[SelectArm] = Vec::with_capacity(arms.len());
             for arm in arms {
                 lowered.push(
                     match arm {
-                        Receive { channel, binding, binding_ty, body } => {
+                        Receive { channel, guard, binding, binding_ty, body } => {
                             let result = licm_extract_block(
                                 body,
                                 local,
@@ -218,9 +218,15 @@ fn licm_extract_term(
                                 assigned,
                             );
                             licm_append_hoisted(hoisted, result.hoisted);
-                            SelectArm::Receive { channel, binding, binding_ty, body: result.value }
+                            SelectArm::Receive {
+                                channel,
+                                guard,
+                                binding,
+                                binding_ty,
+                                body: result.value,
+                            }
                         },
-                        Send { channel, value, body } => {
+                        Send { channel, value, guard, body } => {
                             let result = licm_extract_block(
                                 body,
                                 local,
@@ -229,12 +235,13 @@ fn licm_extract_term(
                                 assigned,
                             );
                             licm_append_hoisted(hoisted, result.hoisted);
-                            SelectArm::Send { channel, value, body: result.value }
+                            SelectArm::Send { channel, value, guard, body: result.value }
                         },
                     },
                 )
             }
             Term::Select {
+                mode,
                 arms: lowered,
                 default: match default {
                     Some(body) => {
@@ -355,26 +362,29 @@ fn licm_term(value: Term) -> Term {
                 ret_ty,
             }
         },
-        Select { arms, default, ret_ty } => {
+        Select { mode, arms, default, ret_ty } => {
             let lowered: Vec[SelectArm] = Vec::with_capacity(arms.len());
             for arm in arms {
                 lowered.push(
                     match arm {
-                        Receive { channel, binding, binding_ty, body } => SelectArm::Receive {
+                        Receive { channel, guard, binding, binding_ty, body } => SelectArm::Receive {
                             channel,
+                            guard,
                             binding,
                             binding_ty,
                             body: licm_block(body),
                         },
-                        Send { channel, value, body } => SelectArm::Send {
+                        Send { channel, value, guard, body } => SelectArm::Send {
                             channel,
                             value,
+                            guard,
                             body: licm_block(body),
                         },
                     },
                 )
             }
             Term::Select {
+                mode,
                 arms: lowered,
                 default: match default {
                     Some(body) => Option::Some(licm_block(body)),

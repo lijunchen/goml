@@ -84,7 +84,7 @@ pub fn lower_type(value: tast::Type) -> Type {
         HashMap { key, value } => {
             Type::HashMap { key: lower_type(key), value: lower_type(value) }
         },
-        Channel { elem } => Type::Channel { elem: lower_type(elem) },
+        Channel { elem, direction } => Type::Channel { elem: lower_type(elem), direction },
         Param { name } => Type::Param { name },
         Func { params, ret_ty } => {
             Type::Func { params: lower_types(params), ret_ty: lower_type(ret_ty) }
@@ -529,7 +529,7 @@ pub fn type_to_tast(value: Type) -> tast::Type {
         HashMap { key, value } => {
             tast::Type::HashMap { key: type_to_tast(key), value: type_to_tast(value) }
         },
-        Channel { elem } => tast::Type::Channel { elem: type_to_tast(elem) },
+        Channel { elem, direction } => tast::Type::Channel { elem: type_to_tast(elem), direction },
         Param { name } => tast::Type::Param { name },
         Func { params, ret_ty } => {
             tast::Type::Func { params: tast_types(params), ret_ty: type_to_tast(ret_ty) }

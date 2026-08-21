@@ -7,6 +7,11 @@ pub struct Duration {
     nanoseconds: int64,
 }
 
+pub struct Timer {
+    id: int64,
+    ready: Receiver[unit],
+}
+
 impl Duration {
     pub fn zero() -> Duration {
         Duration { nanoseconds: 0 }
@@ -281,6 +286,25 @@ impl Eq for SystemTime {}
 
 pub fn sleep(duration: Duration) -> unit {
     host::sleep_nanoseconds(duration.as_nanoseconds())
+}
+
+impl Timer {
+    pub fn new(duration: Duration) -> Timer {
+        let (id, ready) = host::timer_new(duration.as_nanoseconds());
+        Timer { id, ready }
+    }
+
+    pub fn done(self: Timer) -> Receiver[unit] {
+        self.ready
+    }
+
+    pub fn stop(self: Timer) -> bool {
+        host::timer_stop(self.id)
+    }
+}
+
+pub fn after(duration: Duration) -> Receiver[unit] {
+    Timer::new(duration).done()
 }
 
 pub fn sleep_with(cancel: task::CancelToken, duration: Duration) -> task::WaitResult[unit] {

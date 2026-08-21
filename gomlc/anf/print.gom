@@ -1,5 +1,6 @@
 package anf;
 
+use gomlc::ast;
 use gomlc::pretty;
 use std::text;
 use gomlc::repr;
@@ -303,14 +304,25 @@ fn arm_doc(value: Arm) -> pretty::Doc {
 
 fn select_arm_doc(value: SelectArm) -> pretty::Doc {
     match value {
-        Receive { channel, binding, binding_ty: _, body } => pretty::append(
+        Receive { channel, guard, binding, binding_ty: _, body } => pretty::append(
             pretty::block(
                 pretty::concat(
                     Vec::from_array(
                         [
                             pretty::text("recv("),
                             imm_doc(channel),
-                            pretty::text(") as " + binding + " =>"),
+                            match guard {
+                                Some(value) => pretty::concat(
+                                    Vec::from_array(
+                                        [
+                                            pretty::text(") when "),
+                                            imm_doc(value),
+                                            pretty::text(" as " + binding + " =>"),
+                                        ],
+                                    ),
+                                ),
+                                None => pretty::text(") as " + binding + " =>"),
+                            },
                         ],
                     ),
                 ),
@@ -318,7 +330,7 @@ fn select_arm_doc(value: SelectArm) -> pretty::Doc {
             ),
             pretty::text(","),
         ),
-        Send { channel, value, body } => pretty::append(
+        Send { channel, value, guard, body } => pretty::append(
             pretty::block(
                 pretty::concat(
                     Vec::from_array(
@@ -327,7 +339,18 @@ fn select_arm_doc(value: SelectArm) -> pretty::Doc {
                             imm_doc(channel),
                             pretty::text(", "),
                             imm_doc(value),
-                            pretty::text(") =>"),
+                            match guard {
+                                Some(value) => pretty::concat(
+                                    Vec::from_array(
+                                        [
+                                            pretty::text(") when "),
+                                            imm_doc(value),
+                                            pretty::text(" =>"),
+                                        ],
+                                    ),
+                                ),
+                                None => pretty::text(") =>"),
+                            },
                         ],
                     ),
                 ),
@@ -379,7 +402,7 @@ fn term_doc(value: Term) -> pretty::Doc {
             };
             pretty::block(pretty::append(pretty::text("match "), imm_doc(scrutinee)), values)
         },
-        Select { arms, default, ret_ty: _ } => {
+        Select { mode, arms, default, ret_ty: _ } => {
             let values: Vec[pretty::Doc] = Vec::with_capacity(
                 arms.len()
                     + if default.is_some() {
@@ -400,7 +423,15 @@ fn term_doc(value: Term) -> pretty::Doc {
                 ),
                 None => (),
             };
-            pretty::block(pretty::text("select"), values)
+            pretty::block(
+                pretty::text(
+                    match mode {
+                        ast::SelectMode::Normal => "select",
+                        ast::SelectMode::Priority => "select priority",
+                    },
+                ),
+                values,
+            )
         },
         Unreachable { ty: _ } => pretty::text("unreachable"),
     }

@@ -580,7 +580,9 @@ fn resolve_pattern_named_field_constructor(ctx: Checker, head: hir::PatternHead,
 fn nominal_arguments(value: Type) -> Vec[Type] {
     match prune(value) {
         App { ty: _, args } => args,
-        VecType { elem } | Slice { elem } | RefType { elem } | Channel { elem } => one_type(elem),
+        VecType { elem } | Slice { elem } | RefType { elem } | Channel { elem, direction: _ } => {
+            one_type(elem)
+        },
         HashMap { key, value: item } => two_types(key, item),
         _ => Vec::from_array([]),
     }
@@ -713,11 +715,15 @@ fn call_types_compatible(left: Type, right: Type) -> bool {
         (Slice { elem: left }, Slice { elem: right }) | (
             VecType { elem: left },
             VecType { elem: right },
-        ) | (RefType { elem: left }, RefType { elem: right }) | (
-            Channel { elem: left },
-            Channel { elem: right },
-        ) => {
+        ) | (RefType { elem: left }, RefType { elem: right }) => {
             call_types_compatible(left, right)
+        },
+        (
+            Channel { elem: left, direction: left_direction },
+            Channel { elem: right, direction: right_direction },
+        ) => {
+            ast::channel_directions_equal(left_direction, right_direction)
+                && call_types_compatible(left, right)
         },
         (
             HashMap { key: left_key, value: left_value },
@@ -1005,6 +1011,7 @@ fn contains_unbound_any_variable(value: Type) -> bool {
         },
         Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
             elem,
+            direction: _,
         } => contains_unbound_any_variable(elem),
         HashMap { key, value } => {
             contains_unbound_any_variable(key) || contains_unbound_any_variable(value)
@@ -1078,6 +1085,7 @@ fn type_contains_error(value: Type) -> bool {
         },
         Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
             elem,
+            direction: _,
         } => type_contains_error(elem),
         HashMap { key, value } => {
             type_contains_error(key) || type_contains_error(value)
@@ -1149,6 +1157,7 @@ fn mark_unresolved_inference_type(ctx: Checker, value: Type) -> unit {
         },
         Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
             elem,
+            direction: _,
         } => {
             mark_unresolved_inference_type(ctx, elem)
         },
@@ -2175,8 +2184,9 @@ fn resolve_projection_type(
         RefType { elem } => Type::RefType {
             elem: resolve_projection_type(ctx, elem, candidates, report),
         },
-        Channel { elem } => Type::Channel {
+        Channel { elem, direction } => Type::Channel {
             elem: resolve_projection_type(ctx, elem, candidates, report),
+            direction,
         },
         HashMap { key, value } => Type::HashMap {
             key: resolve_projection_type(ctx, key, candidates, report),
@@ -2390,6 +2400,7 @@ fn type_contains_parameter(value: Type, expected: string) -> bool {
         },
         Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
             elem,
+            direction: _,
         } => type_contains_parameter(elem, expected),
         HashMap { key, value } => {
             type_contains_parameter(key, expected) || type_contains_parameter(value, expected)
@@ -2454,6 +2465,7 @@ fn type_contains_unbound_dyn_self(value: Type, associated_types: Vec[(string, Ty
         },
         Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
             elem,
+            direction: _,
         } => type_contains_unbound_dyn_self(elem, associated_types),
         HashMap { key, value } => {
             type_contains_unbound_dyn_self(key, associated_types)
@@ -2618,7 +2630,7 @@ fn validate_signature_type(ctx: Checker, value: Type) -> unit {
         },
         Array { len: _, elem: element } | Slice { elem: element } | VecType { elem: element } | RefType {
             elem: element,
-        } | Channel { elem: element } => validate_signature_type(ctx, element),
+        } | Channel { elem: element, direction: _ } => validate_signature_type(ctx, element),
         HashMap { key, value } => {
             validate_signature_type(ctx, key);
             validate_signature_type(ctx, value)
@@ -2761,8 +2773,9 @@ fn expand_type_alias_inner(ctx: Checker, value: Type, stack: Vec[string], report
         RefType { elem } => Type::RefType {
             elem: expand_type_alias_inner(ctx, elem, stack, report),
         },
-        Channel { elem } => Type::Channel {
+        Channel { elem, direction } => Type::Channel {
             elem: expand_type_alias_inner(ctx, elem, stack, report),
+            direction,
         },
         HashMap { key, value } => Type::HashMap {
             key: expand_type_alias_inner(ctx, key, stack, report),

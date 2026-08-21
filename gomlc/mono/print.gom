@@ -1,5 +1,6 @@
 package mono;
 
+use gomlc::ast;
 use gomlc::pretty;
 use std::text;
 
@@ -177,25 +178,47 @@ fn arm_doc(value: Arm, style: PrintStyle) -> pretty::Doc {
 
 fn select_arm_doc(value: SelectArm, style: PrintStyle) -> pretty::Doc {
     match value {
-        Receive { channel, binding, binding_ty: _, body } => pretty::concat(
+        Receive { channel, guard, binding, binding_ty: _, body } => pretty::concat(
             Vec::from_array(
                 [
                     pretty::text("recv("),
                     expr_doc(channel, style),
-                    pretty::text(") as " + binding + " => "),
+                    match guard {
+                        Some(value) => pretty::concat(
+                            Vec::from_array(
+                                [
+                                    pretty::text(") when "),
+                                    expr_doc(value, style),
+                                    pretty::text(" as " + binding + " => "),
+                                ],
+                            ),
+                        ),
+                        None => pretty::text(") as " + binding + " => "),
+                    },
                     braced_docs(Vec::from_array([expr_doc(body, style)]), 2),
                     pretty::text(","),
                 ],
             ),
         ),
-        Send { channel, value, body } => pretty::concat(
+        Send { channel, value, guard, body } => pretty::concat(
             Vec::from_array(
                 [
                     pretty::text("send("),
                     expr_doc(channel, style),
                     pretty::text(", "),
                     expr_doc(value, style),
-                    pretty::text(") => "),
+                    match guard {
+                        Some(value) => pretty::concat(
+                            Vec::from_array(
+                                [
+                                    pretty::text(") when "),
+                                    expr_doc(value, style),
+                                    pretty::text(" => "),
+                                ],
+                            ),
+                        ),
+                        None => pretty::text(") => "),
+                    },
                     braced_docs(Vec::from_array([expr_doc(body, style)]), 2),
                     pretty::text(","),
                 ],
@@ -283,7 +306,7 @@ fn expr_doc(value: Expr, style: PrintStyle) -> pretty::Doc {
             };
             pretty::block(pretty::append(pretty::text("match "), expr_doc(source, style)), values)
         },
-        Select { arms, default, ty: _ } => {
+        Select { mode, arms, default, ty: _ } => {
             let values: Vec[pretty::Doc] = Vec::with_capacity(
                 arms.len()
                     + if default.is_some() {
@@ -309,7 +332,15 @@ fn expr_doc(value: Expr, style: PrintStyle) -> pretty::Doc {
                 ),
                 None => (),
             };
-            pretty::block(pretty::text("select"), values)
+            pretty::block(
+                pretty::text(
+                    match mode {
+                        ast::SelectMode::Normal => "select",
+                        ast::SelectMode::Priority => "select priority",
+                    },
+                ),
+                values,
+            )
         },
         If { cond, then_branch, else_branch, ty: _ } => pretty::concat(
             Vec::from_array(

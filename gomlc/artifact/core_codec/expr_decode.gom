@@ -2,6 +2,7 @@ package core_codec;
 
 use gomlc::artifact::wire as wire;
 use gomlc::artifact::tast_codec as tast_codec;
+use gomlc::ast;
 use gomlc::core;
 use gomlc::tast;
 
@@ -103,13 +104,17 @@ fn artifact_decode_core_select_arms(context: ArtifactCoreDecodeContext, value: w
         let kind = wire::artifact_json_field_string(object, "kind")?;
         let channel = artifact_decode_core_expr_field(context, object, "channel")?;
         let body = artifact_decode_core_expr_field(context, object, "body")?;
+        let guard = match wire::artifact_json_optional_field(object, "guard")? {
+            Some(value) => artifact_decode_optional_core_expr(context, value)?,
+            None => Option::None,
+        };
         if kind == "receive" {
             let binding = wire::artifact_json_field_string(object, "binding")?;
             let binding_ty = artifact_decode_core_type_field(context, object, "binding_ty")?;
-            result.push(core::SelectArm::Receive { channel, binding, binding_ty, body })
+            result.push(core::SelectArm::Receive { channel, guard, binding, binding_ty, body })
         } else if kind == "send" {
             let value = artifact_decode_core_expr_field(context, object, "value")?;
-            result.push(core::SelectArm::Send { channel, value, body })
+            result.push(core::SelectArm::Send { channel, value, guard, body })
         } else {
             return Result::Err(wire::artifact_decode_error("select arm kind"))
         }
@@ -227,12 +232,20 @@ fn artifact_decode_core_expr(context: ArtifactCoreDecodeContext, value: wire::Ar
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
         Result::Ok(core::Expr::Match { expr, arms, default, ty })
     } else if kind == "ESelect" {
+        let mode = match wire::artifact_json_optional_field(object, "mode")? {
+            Some(value) => if wire::artifact_json_string_value(value, "select mode")? == "priority" {
+                ast::SelectMode::Priority
+            } else {
+                ast::SelectMode::Normal
+            },
+            None => ast::SelectMode::Normal,
+        };
         let value = wire::artifact_json_required_field(object, "arms")?;
         let arms = artifact_decode_core_select_arms(context, value)?;
         let value = wire::artifact_json_required_field(object, "default")?;
         let default = artifact_decode_optional_core_expr(context, value)?;
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
-        Result::Ok(core::Expr::Select { arms, default, ty })
+        Result::Ok(core::Expr::Select { mode, arms, default, ty })
     } else if kind == "EIf" {
         let cond = artifact_decode_core_expr_field(context, object, "cond")?;
         let then_branch = artifact_decode_core_expr_field(context, object, "then_branch")?;
