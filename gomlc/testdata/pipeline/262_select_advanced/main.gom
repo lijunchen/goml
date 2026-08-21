@@ -1,0 +1,51 @@
+fn mark_channel(log: Ref[string], mark: string, channel: Channel[int]) -> Channel[int] {
+    log.set(log.get() + mark);
+    channel
+}
+
+fn mark_value(log: Ref[string], mark: string, value: int) -> int {
+    log.set(log.get() + mark);
+    value
+}
+
+fn mark_guard(log: Ref[string], mark: string, value: bool) -> bool {
+    log.set(log.get() + mark);
+    value
+}
+
+fn main() -> unit {
+    let log = Ref::new("");
+    let disabled = Channel::[int]::new(1);
+    disabled.close();
+    let fallback = select {
+        send(
+            mark_channel(log, "c", disabled),
+            mark_value(log, "v", 1)
+        ) when mark_guard(log, "g", false) => "sent",
+        default => "default",
+    };
+    println(log.get());
+    println(fallback);
+
+    let first = Channel::[int]::new(1);
+    let second = Channel::[int]::new(1);
+    first.send(10);
+    second.send(20);
+    let selected = select priority {
+        recv(first) when true as value => value.unwrap_or(-1),
+        recv(second) when true as value => value.unwrap_or(-1),
+        default => 0,
+    };
+    println(selected);
+
+    let events = Channel::[int]::new(1);
+    events.send(7);
+    let matched = select {
+        recv(events) when 1 + 1 == 2 match {
+            Some(value) => value + 1,
+            None => 0,
+        },
+        default => -1,
+    };
+    println(matched)
+}

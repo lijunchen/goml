@@ -1,0 +1,32 @@
+use std::task;
+use std::time;
+
+fn main() -> unit {
+    let timer = time::Timer::new(time::Duration::zero());
+    select {
+        recv(timer.done()) as _ => println(1),
+    };
+    let stopped = time::Timer::new(time::Duration::from_seconds(60));
+    println(stopped.stop());
+    select priority {
+        recv(stopped.done()) as _ => println(2),
+        default => println(3),
+    };
+    task::scope(
+        |scope: task::Scope| {
+            let work = scope.spawn(|_: task::CancelToken| 42);
+            select {
+                recv(work.done()) as _ => println(work.join()),
+            }
+        },
+    );
+    task::scope(
+        |scope: task::Scope| {
+            let cancel = scope.token();
+            scope.cancel();
+            select {
+                recv(cancel.done()) as _ => println(4),
+            }
+        },
+    )
+}

@@ -1094,6 +1094,36 @@ fn filters_completion_scope_and_suggests_keywords() -> unit {
 }
 
 #[test]
+fn completes_select_syntax_contextually() -> unit {
+    let expression = "fn main() -> unit { sel }";
+    let expression_offset = last_substring(expression, "sel").unwrap_or(0) + 3;
+    testing::assert(
+        has_completion(completions(analyze("main.gom", expression), expression_offset), "select"),
+    );
+    let priority = "fn main() -> unit { select pri }";
+    let priority_offset = last_substring(priority, "pri").unwrap_or(0) + 3;
+    testing::assert(
+        has_completion(completions(analyze("main.gom", priority), priority_offset), "priority"),
+    );
+    let receive = "fn main() -> unit { select { re } }";
+    let receive_offset = last_substring(receive, "re").unwrap_or(0) + 2;
+    testing::assert(
+        has_completion(completions(analyze("main.gom", receive), receive_offset), "recv"),
+    );
+    let guard = "fn main() -> unit { let channel: Channel[int] = Channel::new(0); select { recv(channel) wh } }";
+    let guard_offset = last_substring(guard, "wh").unwrap_or(0) + 2;
+    testing::assert(has_completion(completions(analyze("main.gom", guard), guard_offset), "when"));
+    let binding = "fn main() -> unit { let channel: Channel[int] = Channel::new(0); select { recv(channel) a } }";
+    let binding_offset = last_substring(binding, " a").unwrap_or(0) + 2;
+    testing::assert(has_completion(completions(analyze("main.gom", binding), binding_offset), "as"));
+    let matching = "fn main() -> unit { let channel: Channel[int] = Channel::new(0); select { recv(channel) m } }";
+    let matching_offset = last_substring(matching, " m").unwrap_or(0) + 2;
+    testing::assert(
+        has_completion(completions(analyze("main.gom", matching), matching_offset), "match"),
+    )
+}
+
+#[test]
 fn indexes_syntax_with_absolute_ranges_and_parents() -> unit {
     let analysis = analyze("main.gom", "fn main() -> int32 { let value = 42; value }");
     testing::assert(analysis.syntax.nodes.len() > 1);

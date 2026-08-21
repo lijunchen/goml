@@ -362,3 +362,11 @@ fn formats_select_arms_vertically() -> unit {
         "fn choose(input: Channel[int], output: Channel[int]) -> int {\n    select {\n        recv(input) as value => value.unwrap_or(0),\n        send(output, 1) => 2,\n        default => {\n            let fallback = 3;\n            fallback\n        },\n    }\n}\n",
     )
 }
+
+#[test]
+fn formats_advanced_select_arms() -> unit {
+    expect_format(
+        "fn choose(input:Channel[int],output:Channel[int])->int{select priority{recv(input)when true match{Some(value)=>value,None=>0,},send(output,1)when false=>2,default=>3,}}",
+        "fn choose(input: Channel[int], output: Channel[int]) -> int {\n    select priority {\n        recv(input) when true match {\n            Some(value) => value,\n            None => 0,\n        },\n        send(output, 1) when false => 2,\n        default => 3,\n    }\n}\n",
+    )
+}

@@ -3345,7 +3345,7 @@ fn direct_type_writer_matches_compact_document_rendering() -> unit {
             Type::VecType { elem: Type::String },
             Type::RefType { elem: Type::Bool },
             Type::HashMap { key: Type::String, value: Type::Int },
-            Type::Channel { elem: Type::Uint64 },
+            Type::Channel { elem: Type::Uint64, direction: ast::ChannelDirection::Both },
             Type::Param { name: "T" },
             Type::Func { params: Vec::from_array([Type::Int, Type::String]), ret_ty: Type::Bool },
             Type::Var(Ref::new(TypeVar::Unbound { id: 1, kind: VarKind::Any })),
@@ -3378,6 +3378,42 @@ fn checks_select_channels_bindings_and_branch_types() -> unit {
         "fn main(channel: Channel[int]) -> int { select { recv(channel) as _ => 1, default => \"wrong\", } }",
     );
     testing::assert(has_diagnostic(branches, "Type mismatch: expected int, found string"))
+}
+
+#[test]
+fn checks_directional_channel_operations() -> unit {
+    let valid = checked_diagnostics(
+        "fn choose(channel: Channel[int]) -> unit { let sender: Sender[int] = channel.sender(); let receiver: Receiver[int] = channel.receiver(); select { recv(receiver) as _ => (), send(sender, 1) => (), default => (), } }",
+    );
+    testing::assert_eq(valid.len(), 0);
+    let receive = checked_diagnostics(
+        "fn main(sender: Sender[int]) -> unit { select { recv(sender) as _ => (), default => (), } }",
+    );
+    testing::assert(has_diagnostic(receive, "Cannot receive from Sender"));
+    let send = checked_diagnostics(
+        "fn main(receiver: Receiver[int]) -> unit { select { send(receiver, 1) => (), default => (), } }",
+    );
+    testing::assert(has_diagnostic(send, "Cannot send to Receiver"));
+    let method = checked_diagnostics(
+        "fn main(receiver: Receiver[int]) -> unit { receiver.close() }",
+    );
+    testing::assert(has_diagnostic_containing(method, "close"))
+}
+
+#[test]
+fn checks_select_guards_and_receive_match_scope() -> unit {
+    let valid = checked_diagnostics(
+        "fn choose(channel: Channel[int]) -> int { select priority { recv(channel) when true match { Some(value) => value, None => 0, }, default => -1, } }",
+    );
+    testing::assert_eq(valid.len(), 0);
+    let invalid_guard = checked_diagnostics(
+        "fn main(channel: Channel[int]) -> unit { select { recv(channel) when 1 as value => (), default => (), } }",
+    );
+    testing::assert(has_diagnostic(invalid_guard, "Numeric literal cannot be used as bool"));
+    let invalid_scope = checked_diagnostics(
+        "fn main(channel: Channel[int]) -> unit { select { recv(channel) when value.is_some() as value => (), default => (), } }",
+    );
+    testing::assert(has_diagnostic(invalid_scope, "Unresolved name value"))
 }
 
 #[test]

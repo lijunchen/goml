@@ -1,0 +1,59 @@
+use std::channel;
+
+fn print_selection(value: channel::Selection[int]) -> unit {
+    match value {
+        channel::Selection::Received { index, value } => {
+            println(index);
+            println(value.unwrap_or(-1))
+        },
+        channel::Selection::Sent { index } => println(index),
+    }
+}
+
+fn main() -> unit {
+    let first: Channel[int] = Channel::new(1);
+    let second: Channel[int] = Channel::new(1);
+    first.send(10);
+    second.send(20);
+    let operations = Vec::from_array(
+        [
+            channel::Operation::Receive(first.receiver()),
+            channel::Operation::Receive(second.receiver()),
+        ],
+    );
+    match channel::try_select_priority(slice(operations, 0, operations.len())) {
+        Ok(Some(value)) => print_selection(value),
+        _ => println(-1),
+    };
+    match channel::try_select(slice(operations, 0, operations.len())) {
+        Ok(Some(value)) => print_selection(value),
+        _ => println(-2),
+    };
+    let empty: Channel[int] = Channel::new(0);
+    let target: Channel[int] = Channel::new(1);
+    let mixed = Vec::from_array(
+        [
+            channel::Operation::Receive(empty.receiver()),
+            channel::Operation::Send(target.sender(), 30),
+        ],
+    );
+    match channel::select(slice(mixed, 0, mixed.len())) {
+        Ok(value) => print_selection(value),
+        Err(_) => println(-3),
+    };
+    println(target.recv().unwrap_or(-4));
+    let none = Vec::from_array([channel::Operation::Receive(empty.receiver())]);
+    println(
+        match channel::try_select(slice(none, 0, none.len())) {
+            Ok(None) => 40,
+            _ => -5,
+        },
+    );
+    let no_operations: Vec[channel::Operation[int]] = Vec::new();
+    println(
+        match channel::select(slice(no_operations, 0, no_operations.len())) {
+            Err(channel::SelectError::Empty) => 50,
+            _ => -6,
+        },
+    )
+}

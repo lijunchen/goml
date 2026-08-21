@@ -369,6 +369,16 @@ fn accepts_select_as_a_semicolon_free_control_statement() -> unit {
 }
 
 #[test]
+fn parses_select_guards_receive_matches_and_priority() -> unit {
+    let source = "fn main(ch: Channel[int]) -> int { select priority { recv(ch) when true match { Some(value) => value, None => 0, }, send(ch, 1) when false => 2, default => 3, } }";
+    let result = parse(source);
+    testing::assert_eq(result.diagnostics.len(), 0);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_SELECT), 1);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::SELECT_ARM_GUARD), 2);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::MATCH_ARM), 2)
+}
+
+#[test]
 fn diagnoses_invalid_select_arm_lists_recoverably() -> unit {
     let missing_communication = parse("fn main() -> unit { select { default => (), } }");
     testing::assert(
@@ -388,6 +398,15 @@ fn diagnoses_invalid_select_arm_lists_recoverably() -> unit {
         diagnostic_containing(
             unknown_arm.diagnostics,
             "expected `recv`, `send`, or `default` select arm",
+        ).is_some(),
+    );
+    let missing_priority_default = parse(
+        "fn main(ch: Channel[int]) -> unit { select priority { recv(ch) as _ => (), } }",
+    );
+    testing::assert(
+        diagnostic_containing(
+            missing_priority_default.diagnostics,
+            "priority select requires a final default arm",
         ).is_some(),
     )
 }

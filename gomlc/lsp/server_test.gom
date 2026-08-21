@@ -29,6 +29,33 @@ fn response_has_label(value: json::Value, expected: string) -> bool {
     false
 }
 
+fn response_has_snippet(value: json::Value, expected: string) -> bool {
+    match response_result(value) {
+        Some(result) => match json::as_array(result) {
+            Some(items) => for item in items {
+                let label_matches = match json::field(item, "label") {
+                    Some(label) => match json::as_string(label) {
+                        Some(label) => label == expected,
+                        None => false,
+                    },
+                    None => false,
+                };
+                if label_matches {
+                    match json::field(item, "insertTextFormat") {
+                        Some(json::Value::Number(value)) => if value == "2" {
+                            return true
+                        } else {},
+                        _ => (),
+                    }
+                } else {}
+            },
+            None => (),
+        },
+        None => (),
+    }
+    false
+}
+
 #[test]
 fn identifies_status_operations() -> unit {
     let hover = "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"textDocument/hover\",\"params\":{}}";
@@ -207,6 +234,27 @@ fn completes_from_cached_analysis_after_document_changes() -> unit {
     let check = "{\"jsonrpc\":\"2.0\",\"method\":\"goml/checkDiagnostics\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/completion-change.gom\"}}}";
     match handle_payload(server, check) {
         Ok(messages) => testing::assert_eq(messages.len(), 1),
+        Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
+fn completes_select_with_snippets() -> unit {
+    let server = new_server();
+    let source = "fn main() -> unit { sel }";
+    let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/select-completion.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\""
+        + source
+        + "\"}}}";
+    match handle_payload(server, open) {
+        Ok(_) => (),
+        Err(error) => testing::fail(error),
+    };
+    let completion = "{\"jsonrpc\":\"2.0\",\"id\":12,\"method\":\"textDocument/completion\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/select-completion.gom\"},\"position\":{\"line\":0,\"character\":23}}}";
+    match handle_payload(server, completion) {
+        Ok(messages) => {
+            testing::assert_eq(messages.len(), 1);
+            testing::assert(response_has_snippet(messages.get(0), "select"))
+        },
         Err(error) => testing::fail(error),
     }
 }
