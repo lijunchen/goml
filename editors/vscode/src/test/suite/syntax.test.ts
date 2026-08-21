@@ -55,4 +55,17 @@ suite('GoML Syntax Tests', () => {
         assert.ok(!contextual.test('let scope = 3;'));
         assert.ok(!contextual.test('spawn(scope)'));
     });
+
+    test('Select keywords remain contextual', () => {
+        const expressions = regex('keywords', 0);
+        const arms = regex('keywords', 1);
+        assert.ok(expressions.test('select {'));
+        assert.ok(arms.test('recv(input) as value => value'));
+        assert.ok(arms.test('send(output, select(1)) => 2'));
+        assert.ok(arms.test('default => 3'));
+        assert.ok(!expressions.test('select(value)'));
+        assert.ok(!arms.test('channel.recv()'));
+        assert.ok(!arms.test('channel.send(value)'));
+        assert.ok(!arms.test('let default = 3;'));
+    });
 });
