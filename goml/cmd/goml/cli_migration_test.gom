@@ -742,7 +742,7 @@ fn project_test_preserves_selection_order_when_workers_finish_out_of_order() -> 
     );
     test_support::write_file(
         path::join(root, "checks/checks_test.gom"),
-        "package checks;\n\nuse std::time;\n\n#[test]\nfn a_slow() -> unit { time::sleep(time::Duration::from_milliseconds(100)) }\n\n#[test]\nfn b_fast() -> unit {}\n",
+        "package checks;\n\nuse std::time;\n\n#[test]\nfn a_slow() -> unit { time::sleep(time::Duration::from_milliseconds(100)) }\n\n#[test]\nfn b_fast() -> unit {}\n\n#[test]\nfn c_fast() -> unit {}\n",
     );
     let text_output = test_support::project_command(
         "test",
@@ -760,7 +760,12 @@ fn project_test_preserves_selection_order_when_workers_finish_out_of_order() -> 
         testing::fail("text output omitted fast test");
         return
     };
+    let Some(text_last) = text::find(text_stdout, "demo::checks::c_fast ... ok") else {
+        testing::fail("text output omitted last test");
+        return
+    };
     testing::assert(text_slow < text_fast);
+    testing::assert(text_fast < text_last);
     let json_output = test_support::project_command(
         "test",
         "",
@@ -783,7 +788,15 @@ fn project_test_preserves_selection_order_when_workers_finish_out_of_order() -> 
         testing::fail("json output omitted fast test");
         return
     };
-    testing::assert(json_slow < json_fast)
+    let Some(json_last) = text::find(
+        json_stdout,
+        "{\"event\":\"ok\",\"name\":\"demo::checks::c_fast\",\"seed\":",
+    ) else {
+        testing::fail("json output omitted last test");
+        return
+    };
+    testing::assert(json_slow < json_fast);
+    testing::assert(json_fast < json_last)
 }
 
 #[test]
