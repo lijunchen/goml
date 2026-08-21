@@ -246,7 +246,7 @@ fn project_check_dry_run_prints_compiler_check_commands() -> unit {
     let stdout = test_support::stdout(output);
     test_support::assert_contains(
         stdout,
-        "gomlc check --package demo --input main.gom --output _artifact/check/pkg/demo/demo",
+        "gomlc check --package demo --module demo --input main.gom --output _artifact/check/pkg/demo/demo",
     );
     testing::assert(!fs::exists(path::join(root, "_artifact/check/pkg/demo/demo.interface")))
 }
@@ -260,7 +260,7 @@ fn project_build_dry_run_prints_compiler_build_and_link_commands() -> unit {
     let stdout = test_support::stdout(output);
     test_support::assert_contains(
         stdout,
-        "gomlc build --package demo --input main.gom --output _artifact/build/pkg/demo/demo",
+        "gomlc build --package demo --module demo --input main.gom --output _artifact/build/pkg/demo/demo",
     );
     test_support::assert_contains(
         stdout,
@@ -829,11 +829,11 @@ fn project_test_runs_and_aggregates_tests_from_all_packages() -> unit {
     test_support::assert_not_contains(plan, "_artifact/check/");
     test_support::assert_contains(
         plan,
-        "gomlc build --package demo::a --input a/a.gom --output _artifact/test/base/pkg/demo/a/a",
+        "gomlc build --package demo::a --module demo --input a/a.gom --output _artifact/test/base/pkg/demo/a/a",
     );
     test_support::assert_contains(
         plan,
-        "gomlc build --package demo::b --input b/b.gom --interface-path _artifact/test/base/pkg/demo/a/a.interface --output _artifact/test/base/pkg/demo/b/b",
+        "gomlc build --package demo::b --module demo --input b/b.gom --interface-path _artifact/test/base/pkg/demo/a/a.interface --output _artifact/test/base/pkg/demo/b/b",
     );
     test_support::assert_contains(
         plan,
@@ -912,7 +912,7 @@ fn project_test_dry_run_and_invalid_signature_diagnostics() -> unit {
     test_support::assert_success(dry_run);
     test_support::assert_contains(
         test_support::stdout(dry_run),
-        "gomlc test-build --package demo::value --input value/value.gom --input value/value_test.gom",
+        "gomlc test-build --package demo::value --module demo --input value/value.gom --input value/value_test.gom",
     );
     let output = test_support::project_command("test", "", Vec::new(), root);
     test_support::assert_failure(output);

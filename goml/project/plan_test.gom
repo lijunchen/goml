@@ -89,6 +89,7 @@ fn compile_command(name: string, interface_files: Vec[string], output: string) -
     Command::Compile {
         subcommand: "build",
         package_name: name,
+        module_name: "test",
         input_files: Vec::from_array([name + ".gom"]),
         interface_files,
         output,
@@ -248,6 +249,7 @@ fn build_graph_tracks_compiler_world_dependencies() -> unit {
     let command = Command::Compile {
         subcommand: "check",
         package_name: "a",
+        module_name: "test",
         input_files: Vec::from_array(["a.gom"]),
         interface_files: Vec::new(),
         output: "out/a",
@@ -345,6 +347,7 @@ fn cancellation_test_command(name: string) -> Command {
     Command::Compile {
         subcommand: "check",
         package_name: name,
+        module_name: "test",
         input_files: Vec::from_array([name + ".input"]),
         interface_files: Vec::from_array([]),
         output: path::join("out", name),

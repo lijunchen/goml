@@ -340,6 +340,13 @@ fn parses_package_information_without_lowering_file_bodies() -> unit {
             "error[parser]: main.gom: expected a path segment after '::'",
         ),
         Ok(_) => testing::fail("expected package information error"),
+    };
+    match parse_package_info_file(
+        "main.gom",
+        "use vendor::module as module; use module::local;",
+    ) {
+        Ok(value) => testing::assert_eq(value.uses.get(1).path, "module::local"),
+        Err(error) => testing::fail(error),
     }
 }
 
@@ -420,6 +427,8 @@ fn parses_package_command_arguments() -> unit {
     let values = Vec::new();
     values.push("--package");
     values.push("alice::app");
+    values.push("--module");
+    values.push("alice::workspace");
     values.push("--input");
     values.push("main.gom");
     values.push("extra.gom");
@@ -433,6 +442,7 @@ fn parses_package_command_arguments() -> unit {
     match parse_package_command_args(command_args_with("build", values)) {
         Ok(args) => {
             testing::assert_eq(args.package_name, "alice::app");
+            testing::assert_eq(args.module_name, "alice::workspace");
             testing::assert_eq(args.inputs.len(), 2);
             testing::assert_eq(args.inputs.get(0), "extra.gom");
             testing::assert_eq(args.inputs.get(1), "main.gom");
@@ -469,7 +479,8 @@ fn parses_toolchain_package_capabilities() -> unit {
     ) {
         Ok(value) => {
             testing::assert(value.builtin_contract);
-            testing::assert_eq(value.command.package_name, "builtin")
+            testing::assert_eq(value.command.package_name, "builtin");
+            testing::assert_eq(value.command.module_name, "builtin")
         },
         Err(error) => testing::fail(error),
     };

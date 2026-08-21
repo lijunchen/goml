@@ -220,6 +220,37 @@ fn analyzes_local_package_dependencies() -> unit {
 }
 
 #[test]
+fn analyzes_and_navigates_module_root_imports() -> unit {
+    let root = "../gomlc/testdata/module/project067_module_root";
+    let main_path = root + "/main.gom";
+    let source = match fs::read_file(main_path) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error);
+            ""
+        },
+    };
+    let analysis = analyze(main_path, source);
+    testing::assert_eq(analysis.module_path, "test::module_root");
+    assert_no_diagnostics(analysis);
+    let use_path = "module::service";
+    match last_substring(source, use_path) {
+        Some(offset) => match goto_definition(analysis, offset + use_path.byte_len() - 1) {
+            Some(definition) => testing::assert(
+                definition.source_path.ends_with("/service/service.gom"),
+            ),
+            None => testing::fail("expected module-relative package definition"),
+        },
+        None => testing::fail("expected module-relative use path"),
+    };
+    let completion_source = "package main;\nuse module::";
+    let completion_analysis = analyze(main_path, completion_source);
+    let items = completions(completion_analysis, completion_source.byte_len());
+    testing::assert(has_completion(items, "data"));
+    testing::assert(has_completion(items, "service"))
+}
+
+#[test]
 fn analyzes_cross_package_comptime_derives() -> unit {
     let root = "../gomlc/testdata/module/project050_comptime_derive";
     let main_path = root + "/main.gom";
