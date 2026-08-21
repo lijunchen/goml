@@ -28,16 +28,16 @@ type Maybe__string struct {
 }
 
 func main0() struct{} {
-    var t413 closure_env_main_0 = closure_env_main_0{}
-    var t414 func(int) string = func(p0 int) string {
-        return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t413, p0)
+    var t416 closure_env_main_0 = closure_env_main_0{}
+    var t417 func(int) string = func(p0 int) string {
+        return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t416, p0)
     }
-    var commute_field451 string
-    var inline443 int = 3
-    var inline445 string = t414(inline443)
-    commute_field451 = inline445
-    var inline440 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(commute_field451)
-    _goml_runtime_core_string_println(inline440)
+    var commute_field454 string
+    var inline446 int = 3
+    var inline448 string = t417(inline446)
+    commute_field454 = inline448
+    var inline443 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(commute_field454)
+    _goml_runtime_core_string_println(inline443)
     return struct{}{}
 }
 
@@ -45,9 +45,9 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
     return self__149
 }
 
-func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env411 closure_env_main_0, item__4 int) string {
-    var inline449 string = _goml_runtime_core_int_to_string(item__4)
-    return inline449
+func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env414 closure_env_main_0, item__4 int) string {
+    var inline452 string = _goml_runtime_core_int_to_string(item__4)
+    return inline452
 }
 
 func main() {

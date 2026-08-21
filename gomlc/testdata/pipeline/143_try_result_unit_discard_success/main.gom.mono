@@ -11,24 +11,24 @@ fn step(ok/0: bool) -> Result__unit__string {
 }
 
 fn run(ok/1: bool) -> Result__unit__string {
-  let mtmp411 =
+  let mtmp414 =
     {
-      let mtmp408 = step(ok/1) in
-      match mtmp408 {
-        Result__unit__string::Ok(x409) => {
+      let mtmp411 = step(ok/1) in
+      match mtmp411 {
+        Result__unit__string::Ok(x412) => {
           {
-            let x409 = Result__unit__string::Ok._0(mtmp408) in
+            let x412 = Result__unit__string::Ok._0(mtmp411) in
             {
-              let try_value/12 = x409 in
+              let try_value/12 = x412 in
               try_value/12
             }
           }
         },
-        Result__unit__string::Err(x410) => {
+        Result__unit__string::Err(x413) => {
           {
-            let x410 = Result__unit__string::Err._0(mtmp408) in
+            let x413 = Result__unit__string::Err._0(mtmp411) in
             {
-              let try_residual/12 = x410 in
+              let try_residual/12 = x413 in
               return Result__unit__string::Err(try_residual/12)
             }
           }
@@ -42,21 +42,21 @@ fn run(ok/1: bool) -> Result__unit__string {
 
 fn show(res/2: Result__unit__string) -> string {
   match res/2 {
-    Result__unit__string::Ok(x412) => {
+    Result__unit__string::Ok(x415) => {
       {
-        let x412 = Result__unit__string::Ok._0(res/2) in
-        match x412 {
+        let x415 = Result__unit__string::Ok._0(res/2) in
+        match x415 {
           () => {
             "ok unit"
           },
         }
       }
     },
-    Result__unit__string::Err(x413) => {
+    Result__unit__string::Err(x416) => {
       {
-        let x413 = Result__unit__string::Err._0(res/2) in
+        let x416 = Result__unit__string::Err._0(res/2) in
         {
-          let err/3 = x413 in
+          let err/3 = x416 in
           ("err " + err/3)
         }
       }
@@ -65,8 +65,8 @@ fn show(res/2: Result__unit__string) -> string {
 }
 
 fn main() -> unit {
-  let _wild414 = println__T_string(show(run(true))) in
-  let _wild415 = println__T_string(show(run(false))) in
+  let _wild417 = println__T_string(show(run(true))) in
+  let _wild418 = println__T_string(show(run(false))) in
 }
 
 fn println__T_string(value/1: string) -> unit {

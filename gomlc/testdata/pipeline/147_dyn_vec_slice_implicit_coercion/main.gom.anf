@@ -1,77 +1,77 @@
 fn trait_impl#Display#int32#show(self/0: int32) -> string {
-  let inline445 = @runtime(core.int32_to_string)(self/0) in
-  inline445
+  let inline448 = @runtime(core.int32_to_string)(self/0) in
+  inline448
 }
 
 fn render(x/1: dyn Display) -> string {
-  let t417 = dyn_call[Display::show](x/1) in
-  t417
+  let t420 = dyn_call[Display::show](x/1) in
+  t420
 }
 
 fn main() -> unit {
-  join inline_cont468(v/2: Vec[dyn Display]) -> unit {
+  join inline_cont471(v/2: Vec[dyn Display]) -> unit {
     let first/3 = 10 in
     let second/4 = 20 in
-    let t419 = to_dyn[Display]{int32}(first/3) in
-    join inline_cont466(_wild408: unit) -> unit {
-      let t420 = to_dyn[Display]{int32}(second/4) in
-      join inline_cont464(_wild409: unit) -> unit {
-        join inline_cont460(s/5: Slice[dyn Display]) -> unit {
-          let t421 = @intrinsic(slice.get)(s/5, 0) in
-          join inline_cont458(t422: string) -> unit {
-            join inline_cont455(_wild410: unit) -> unit {
-              join inline_cont451(t/6: Slice[dyn Display]) -> unit {
-                let t423 = @intrinsic(slice.get)(t/6, 0) in
-                join inline_cont449(t424: string) -> unit {
-                  let inline447 = trait_impl#ToString#string#to_string(t424) in
-                  let inline448 = @runtime(core.string_println)(inline447) in
+    let t422 = to_dyn[Display]{int32}(first/3) in
+    join inline_cont469(_wild411: unit) -> unit {
+      let t423 = to_dyn[Display]{int32}(second/4) in
+      join inline_cont467(_wild412: unit) -> unit {
+        join inline_cont463(s/5: Slice[dyn Display]) -> unit {
+          let t424 = @intrinsic(slice.get)(s/5, 0) in
+          join inline_cont461(t425: string) -> unit {
+            join inline_cont458(_wild413: unit) -> unit {
+              join inline_cont454(t/6: Slice[dyn Display]) -> unit {
+                let t426 = @intrinsic(slice.get)(t/6, 0) in
+                join inline_cont452(t427: string) -> unit {
+                  let inline450 = trait_impl#ToString#string#to_string(t427) in
+                  let inline451 = @runtime(core.string_println)(inline450) in
                   ()
                 } in
-                let inline450 = dyn_call[Display::show](t423) in
-                jump inline_cont449(inline450)
+                let inline453 = dyn_call[Display::show](t426) in
+                jump inline_cont452(inline453)
               } in
-              let inline452 = 1 in
-              let inline453 = 2 in
-              let inline454 = @intrinsic(slice.sub)(s/5, inline452, inline453) in
-              jump inline_cont451(inline454)
+              let inline455 = 1 in
+              let inline456 = 2 in
+              let inline457 = @intrinsic(slice.sub)(s/5, inline455, inline456) in
+              jump inline_cont454(inline457)
             } in
-            let inline456 = trait_impl#ToString#string#to_string(t422) in
-            let inline457 = @runtime(core.string_println)(inline456) in
-            jump inline_cont455(())
+            let inline459 = trait_impl#ToString#string#to_string(t425) in
+            let inline460 = @runtime(core.string_println)(inline459) in
+            jump inline_cont458(())
           } in
-          let inline459 = dyn_call[Display::show](t421) in
-          jump inline_cont458(inline459)
+          let inline462 = dyn_call[Display::show](t424) in
+          jump inline_cont461(inline462)
         } in
-        let inline461 = 0 in
-        let inline462 = 2 in
-        let inline463 = @intrinsic(slice.new)(v/2, inline461, inline462) in
-        jump inline_cont460(inline463)
+        let inline464 = 0 in
+        let inline465 = 2 in
+        let inline466 = @intrinsic(slice.new)(v/2, inline464, inline465) in
+        jump inline_cont463(inline466)
       } in
-      let inline465 = @intrinsic(vec.push)(v/2, t420) in
-      jump inline_cont464(())
+      let inline468 = @intrinsic(vec.push)(v/2, t423) in
+      jump inline_cont467(())
     } in
-    let inline467 = @intrinsic(vec.push)(v/2, t419) in
-    jump inline_cont466(())
+    let inline470 = @intrinsic(vec.push)(v/2, t422) in
+    jump inline_cont469(())
   } in
-  let inline469 = @intrinsic(vec.new)() in
-  jump inline_cont468(inline469)
+  let inline472 = @intrinsic(vec.new)() in
+  jump inline_cont471(inline472)
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {
-  let t427 = @runtime(core.int32_to_string)(self/33) in
-  t427
+  let t430 = @runtime(core.int32_to_string)(self/33) in
+  t430
 }
 
 fn inherent#Vec#Vec[T]#new__T_dynDisplay() -> Vec[dyn Display] {
-  let t430 = @intrinsic(vec.new)() in
-  t430
+  let t433 = @intrinsic(vec.new)() in
+  t433
 }
 
 fn inherent#Vec#Vec[T]#push__T_dynDisplay(
   self/258: Vec[dyn Display],
   elem/259: dyn Display
 ) -> unit {
-  let t432 = @intrinsic(vec.push)(self/258, elem/259) in
+  let t435 = @intrinsic(vec.push)(self/258, elem/259) in
   ()
 }
 
@@ -80,16 +80,16 @@ fn inherent#Vec#Vec[T]#slice__T_dynDisplay(
   start/312: int,
   end/313: int
 ) -> Slice[dyn Display] {
-  let t435 = @intrinsic(slice.new)(self/311, start/312, end/313) in
-  t435
+  let t438 = @intrinsic(slice.new)(self/311, start/312, end/313) in
+  t438
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont470(t437: string) -> unit {
-    let t438 = @runtime(core.string_println)(t437) in
+  join inline_cont473(t440: string) -> unit {
+    let t441 = @runtime(core.string_println)(t440) in
     ()
   } in
-  jump inline_cont470(value/1)
+  jump inline_cont473(value/1)
 }
 
 fn inherent#Slice#Slice[T]#sub__T_dynDisplay(
@@ -97,8 +97,8 @@ fn inherent#Slice#Slice[T]#sub__T_dynDisplay(
   start/409: int,
   end/410: int
 ) -> Slice[dyn Display] {
-  let t441 = @intrinsic(slice.sub)(self/408, start/409, end/410) in
-  t441
+  let t444 = @intrinsic(slice.sub)(self/408, start/409, end/410) in
+  t444
 }
 
 fn trait_impl#ToString#string#to_string(self/149: string) -> string {

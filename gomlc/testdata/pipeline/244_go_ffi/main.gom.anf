@@ -1,48 +1,48 @@
 fn main() -> unit {
-  let t417 = @go_ffi(strings, ToUpper)("goml") in
-  join inline_cont439(_wild408: unit) -> unit {
-    let mtmp409 = @go_ffi(strings, Cut)("left:right", ":") in
-    let x410 = mtmp409.0 in
-    let x411 = mtmp409.1 in
-    let x412 = mtmp409.2 in
-    join inline_cont436(_wild413: unit) -> unit {
-      join inline_cont433(_wild414: unit) -> unit {
-        join inline_cont430(_wild415: unit) -> unit {
-          let t418 = @go_ffi(runtime, Gosched)() in
+  let t420 = @go_ffi(strings, ToUpper)("goml") in
+  join inline_cont442(_wild411: unit) -> unit {
+    let mtmp412 = @go_ffi(strings, Cut)("left:right", ":") in
+    let x413 = mtmp412.0 in
+    let x414 = mtmp412.1 in
+    let x415 = mtmp412.2 in
+    join inline_cont439(_wild416: unit) -> unit {
+      join inline_cont436(_wild417: unit) -> unit {
+        join inline_cont433(_wild418: unit) -> unit {
+          let t421 = @go_ffi(runtime, Gosched)() in
           ()
         } in
-        let inline431 = trait_impl#ToString#bool#to_string(x412) in
-        let inline432 = @runtime(core.string_println)(inline431) in
-        jump inline_cont430(())
+        let inline434 = trait_impl#ToString#bool#to_string(x415) in
+        let inline435 = @runtime(core.string_println)(inline434) in
+        jump inline_cont433(())
       } in
-      let inline434 = trait_impl#ToString#string#to_string(x411) in
-      let inline435 = @runtime(core.string_println)(inline434) in
-      jump inline_cont433(())
+      let inline437 = trait_impl#ToString#string#to_string(x414) in
+      let inline438 = @runtime(core.string_println)(inline437) in
+      jump inline_cont436(())
     } in
-    let inline437 = trait_impl#ToString#string#to_string(x410) in
-    let inline438 = @runtime(core.string_println)(inline437) in
-    jump inline_cont436(())
+    let inline440 = trait_impl#ToString#string#to_string(x413) in
+    let inline441 = @runtime(core.string_println)(inline440) in
+    jump inline_cont439(())
   } in
-  let inline440 = trait_impl#ToString#string#to_string(t417) in
-  let inline441 = @runtime(core.string_println)(inline440) in
-  jump inline_cont439(())
+  let inline443 = trait_impl#ToString#string#to_string(t420) in
+  let inline444 = @runtime(core.string_println)(inline443) in
+  jump inline_cont442(())
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont442(t420: string) -> unit {
-    let t421 = @runtime(core.string_println)(t420) in
-    ()
-  } in
-  jump inline_cont442(value/1)
-}
-
-fn println__T_bool(value/1: bool) -> unit {
-  join inline_cont443(t423: string) -> unit {
+  join inline_cont445(t423: string) -> unit {
     let t424 = @runtime(core.string_println)(t423) in
     ()
   } in
-  let inline444 = @runtime(core.bool_to_string)(value/1) in
-  jump inline_cont443(inline444)
+  jump inline_cont445(value/1)
+}
+
+fn println__T_bool(value/1: bool) -> unit {
+  join inline_cont446(t426: string) -> unit {
+    let t427 = @runtime(core.string_println)(t426) in
+    ()
+  } in
+  let inline447 = @runtime(core.bool_to_string)(value/1) in
+  jump inline_cont446(inline447)
 }
 
 fn trait_impl#ToString#string#to_string(self/149: string) -> string {
@@ -50,6 +50,6 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
 }
 
 fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
-  let t429 = @runtime(core.bool_to_string)(self/148) in
-  t429
+  let t432 = @runtime(core.bool_to_string)(self/148) in
+  t432
 }

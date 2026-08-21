@@ -61,18 +61,18 @@ func _goml_m_trait__impl_i_PartialEq_i_Key_i_eq(self__10 Key, other__11 Key) boo
             return false
         }
     case 1:
-        var x415 int32 = other__11._v1_0
-        var x416 int32 = other__11._v1_1
+        var x418 int32 = other__11._v1_0
+        var x419 int32 = other__11._v1_1
         switch self__10._tag {
         case 1:
-            var x419 int32 = self__10._v1_0
-            var x420 int32 = self__10._v1_1
-            var jp472 bool
-            var inline524 bool = x419 == x415
-            jp472 = inline524
-            if jp472 {
-                var inline526 bool = x420 == x416
-                return inline526
+            var x422 int32 = self__10._v1_0
+            var x423 int32 = self__10._v1_1
+            var jp475 bool
+            var inline527 bool = x422 == x418
+            jp475 = inline527
+            if jp475 {
+                var inline529 bool = x423 == x419
+                return inline529
             } else {
                 return false
             }
@@ -86,50 +86,50 @@ func _goml_m_trait__impl_i_PartialEq_i_Key_i_eq(self__10 Key, other__11 Key) boo
 
 func main0() struct{} {
     var x__22 int32 = 3
-    var t485 int32
-    var inline559 int32 = 4
-    var inline562 int32 = x__22 + inline559
-    t485 = inline562
-    var inline555 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t485)
-    _goml_runtime_core_string_println(inline555)
-    var t486 string
-    var inline552 string = "north"
-    t486 = inline552
-    var inline547 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t486)
-    _goml_runtime_core_string_println(inline547)
-    var t488 string
-    var inline534 int32 = 1
-    var inline535 int32 = 2
-    var inline538 string = "Key::Point { " + "x: "
-    var inline539 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(inline534)
-    var inline540 string = inline538 + inline539
-    var inline541 string = inline540 + ", "
-    var inline542 string = inline541 + "y: "
-    var inline543 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(inline535)
-    var inline544 string = inline542 + inline543
-    var inline545 string = inline544 + " }"
-    t488 = inline545
-    var inline531 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t488)
+    var t488 int32
+    var inline562 int32 = 4
+    var inline565 int32 = x__22 + inline562
+    t488 = inline565
+    var inline558 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t488)
+    _goml_runtime_core_string_println(inline558)
+    var t489 string
+    var inline555 string = "north"
+    t489 = inline555
+    var inline550 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t489)
+    _goml_runtime_core_string_println(inline550)
+    var t491 string
+    var inline537 int32 = 1
+    var inline538 int32 = 2
+    var inline541 string = "Key::Point { " + "x: "
+    var inline542 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(inline537)
+    var inline543 string = inline541 + inline542
+    var inline544 string = inline543 + ", "
+    var inline545 string = inline544 + "y: "
+    var inline546 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(inline538)
+    var inline547 string = inline545 + inline546
+    var inline548 string = inline547 + " }"
+    t491 = inline548
+    var inline534 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t491)
+    _goml_runtime_core_string_println(inline534)
+    var t492 Key = Key{
+        _tag: 1,
+        _v1_0: 1,
+        _v1_1: 2,
+    }
+    var t493 Key = Key{
+        _tag: 1,
+        _v1_0: 1,
+        _v1_1: 2,
+    }
+    var t494 bool = _goml_m_trait__impl_i_PartialEq_i_Key_i_eq(t492, t493)
+    var inline531 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t494)
     _goml_runtime_core_string_println(inline531)
-    var t489 Key = Key{
-        _tag: 1,
-        _v1_0: 1,
-        _v1_1: 2,
-    }
-    var t490 Key = Key{
-        _tag: 1,
-        _v1_0: 1,
-        _v1_1: 2,
-    }
-    var t491 bool = _goml_m_trait__impl_i_PartialEq_i_Key_i_eq(t489, t490)
-    var inline528 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t491)
-    _goml_runtime_core_string_println(inline528)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
-    var t494 string = _goml_runtime_core_int32_to_string(self__154)
-    return t494
+    var t497 string = _goml_runtime_core_int32_to_string(self__154)
+    return t497
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
@@ -137,8 +137,8 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__148 bool) string {
-    var t514 string = _goml_runtime_core_bool_to_string(self__148)
-    return t514
+    var t517 string = _goml_runtime_core_bool_to_string(self__148)
+    return t517
 }
 
 func main() {

@@ -1,0 +1,4011 @@
+fn std::internal::task::scope_new(parent/0: int64) -> int64 {
+  let t423 = @runtime(std.task.scope_new)(parent/0) in
+  t423
+}
+
+fn std::internal::task::scope_spawn(scope/1: int64, body/2: () -> unit) -> bool {
+  let t426 = @runtime(std.task.scope_spawn)(scope/1, body/2) in
+  t426
+}
+
+fn std::internal::task::scope_run(scope/3: int64, body/4: () -> unit) -> unit {
+  let t428 = @runtime(std.task.scope_run)(scope/3, body/4) in
+  ()
+}
+
+fn std::internal::task::scope_try_spawn(scope/5: int64, body/6: () -> unit) -> bool {
+  let t431 = @runtime(std.task.scope_try_spawn)(scope/5, body/6) in
+  t431
+}
+
+fn std::internal::task::scope_cancel(scope/7: int64) -> unit {
+  let t433 = @runtime(std.task.scope_cancel)(scope/7) in
+  ()
+}
+
+fn std::internal::task::scope_finish(scope/8: int64) -> unit {
+  let t435 = @runtime(std.task.scope_finish)(scope/8) in
+  ()
+}
+
+fn std::internal::task::scope_cancelled(scope/9: int64) -> bool {
+  let t438 = @runtime(std.task.scope_cancelled)(scope/9) in
+  t438
+}
+
+fn std::internal::task::scope_done(scope/10: int64) -> Receiver[unit] {
+  let t441 = @runtime(std.task.scope_done)(scope/10) in
+  t441
+}
+
+fn std::internal::task::scope_sleep(scope/11: int64, nanoseconds/12: int64) -> bool {
+  let t444 = @runtime(std.task.sleep)(scope/11, nanoseconds/12) in
+  t444
+}
+
+fn std::internal::task::scope_count() -> int {
+  let t447 = @runtime(std.task.active_scope_count)() in
+  t447
+}
+
+fn std::internal::task::root_scope() -> std::internal::task::ScopeHandle {
+  join inline_cont1717(t450: int64) -> std::internal::task::ScopeHandle {
+    let t451 = std::internal::task::ScopeHandle { id: t450 } in
+    t451
+  } in
+  let inline1718 = 0 in
+  let inline1719 = @runtime(std.task.scope_new)(inline1718) in
+  jump inline_cont1717(inline1719)
+}
+
+fn std::internal::task::child_scope(
+  parent/13: std::internal::task::CancelToken
+) -> std::internal::task::ScopeHandle {
+  let t454 = std::internal::task::CancelToken.id(parent/13) in
+  join inline_cont1720(t455: int64) -> std::internal::task::ScopeHandle {
+    let t456 = std::internal::task::ScopeHandle { id: t455 } in
+    t456
+  } in
+  let inline1721 = @runtime(std.task.scope_new)(t454) in
+  jump inline_cont1720(inline1721)
+}
+
+fn std::internal::task::spawn(
+  scope/14: std::internal::task::ScopeHandle,
+  body/15: () -> unit
+) -> unit {
+  let t458 = std::internal::task::ScopeHandle.id(scope/14) in
+  let inline1723 = @runtime(std.task.scope_spawn)(t458, body/15) in
+  ()
+}
+
+fn std::internal::task::try_spawn(
+  scope/16: std::internal::task::ScopeHandle,
+  body/17: () -> unit
+) -> bool {
+  let t461 = std::internal::task::ScopeHandle.id(scope/16) in
+  let inline1725 = @runtime(std.task.scope_try_spawn)(t461, body/17) in
+  inline1725
+}
+
+fn std::internal::task::run(
+  scope/18: std::internal::task::ScopeHandle,
+  body/19: () -> unit
+) -> unit {
+  let t464 = std::internal::task::ScopeHandle.id(scope/18) in
+  join inline_cont1728(_wild1: unit) -> unit {
+    let t465 = std::internal::task::ScopeHandle.id(scope/18) in
+    let inline1727 = @runtime(std.task.scope_finish)(t465) in
+    ()
+  } in
+  let inline1729 = @runtime(std.task.scope_run)(t464, body/19) in
+  jump inline_cont1728(())
+}
+
+fn std::internal::task::cancel(scope/20: std::internal::task::ScopeHandle) -> unit {
+  let t468 = std::internal::task::ScopeHandle.id(scope/20) in
+  let inline1731 = @runtime(std.task.scope_cancel)(t468) in
+  ()
+}
+
+fn std::internal::task::finish(scope/21: std::internal::task::ScopeHandle) -> unit {
+  let t471 = std::internal::task::ScopeHandle.id(scope/21) in
+  let inline1733 = @runtime(std.task.scope_finish)(t471) in
+  ()
+}
+
+fn std::internal::task::token(
+  scope/22: std::internal::task::ScopeHandle
+) -> std::internal::task::CancelToken {
+  let t475 = std::internal::task::ScopeHandle.id(scope/22) in
+  let t476 = std::internal::task::CancelToken { id: t475 } in
+  t476
+}
+
+fn std::internal::task::sleep_with(
+  cancel/28: std::internal::task::CancelToken,
+  nanoseconds/29: int64
+) -> bool {
+  let t479 = std::internal::task::CancelToken.id(cancel/28) in
+  let inline1735 = @runtime(std.task.sleep)(t479, nanoseconds/29) in
+  inline1735
+}
+
+fn std::internal::task::id(cancel/30: std::internal::task::CancelToken) -> int64 {
+  let t483 = std::internal::task::CancelToken.id(cancel/30) in
+  t483
+}
+
+fn std::internal::task::active_scope_count() -> int {
+  let inline1737 = @runtime(std.task.active_scope_count)() in
+  inline1737
+}
+
+fn inherent#std::internal::task::CancelToken#std::internal::task::CancelToken#is_cancelled(
+  self/31: std::internal::task::CancelToken
+) -> bool {
+  let t489 = std::internal::task::CancelToken.id(self/31) in
+  let inline1739 = @runtime(std.task.scope_cancelled)(t489) in
+  inline1739
+}
+
+fn inherent#std::internal::task::CancelToken#std::internal::task::CancelToken#done(
+  self/32: std::internal::task::CancelToken
+) -> Receiver[unit] {
+  let t493 = std::internal::task::CancelToken.id(self/32) in
+  let inline1741 = @runtime(std.task.scope_done)(t493) in
+  inline1741
+}
+
+fn inherent#std::task::ConcurrencyLimit#std::task::ConcurrencyLimit#new(
+  limit/2: int
+) -> std::task::ConcurrencyLimit {
+  let t505 = (limit/2 > 0) in
+  join k497(jp498: int) -> std::task::ConcurrencyLimit {
+    join inline_cont1745(slots/4: Channel[unit]) -> std::task::ConcurrencyLimit {
+      let for_index2 = 0 in
+      join exit499() -> std::task::ConcurrencyLimit {
+        let t500 = std::task::ConcurrencyLimit { slots: slots/4 } in
+        t500
+      } in
+      joinrec {
+        join loop501() -> std::task::ConcurrencyLimit {
+          let t502 = (for_index2 < jp498) in
+          if t502 {
+            let t503 = (for_index2 + 1) in
+            let _wild5 = for_index2 = t503 in
+            let inline1743 = () in
+            let inline1744 = @intrinsic(channel.send)(slots/4, inline1743) in
+            jump loop501()
+          } else {
+            jump exit499()
+          }
+        } in
+      } in
+      jump loop501()
+    } in
+    let inline1746 = @intrinsic(channel.new)(jp498) in
+    jump inline_cont1745(inline1746)
+  } in
+  if t505 {
+    jump k497(limit/2)
+  } else {
+    jump k497(1)
+  }
+}
+
+fn std::task::active_scope_count() -> int {
+  let inline1748 = std::internal::task::scope_count() in
+  inline1748
+}
+
+fn inherent#std::task::Scope#std::task::Scope#cancel(self/39: std::task::Scope) -> unit {
+  let t510 = std::task::Scope.handle(self/39) in
+  let inline1750 = std::internal::task::ScopeHandle.id(t510) in
+  let inline1751 = std::internal::task::scope_cancel(inline1750) in
+  ()
+}
+
+fn inherent#std::task::Scope#std::task::Scope#token(
+  self/40: std::task::Scope
+) -> std::task::CancelToken {
+  let t514 = std::task::Scope.handle(self/40) in
+  join inline_cont1752(t515: std::internal::task::CancelToken) -> std::task::CancelToken {
+    let t516 = std::task::CancelToken { value: t515 } in
+    t516
+  } in
+  let inline1753 = std::internal::task::ScopeHandle.id(t514) in
+  let inline1754 = std::internal::task::CancelToken { id: inline1753 } in
+  jump inline_cont1752(inline1754)
+}
+
+fn inherent#std::task::CancelToken#std::task::CancelToken#is_cancelled(
+  self/41: std::task::CancelToken
+) -> bool {
+  let t519 = std::task::CancelToken.value(self/41) in
+  let inline1756 = std::internal::task::CancelToken.id(t519) in
+  let inline1757 = std::internal::task::scope_cancelled(inline1756) in
+  inline1757
+}
+
+fn inherent#std::task::CancelToken#std::task::CancelToken#runtime_id(
+  self/42: std::task::CancelToken
+) -> int64 {
+  let t523 = std::task::CancelToken.value(self/42) in
+  let inline1759 = std::internal::task::CancelToken.id(t523) in
+  inline1759
+}
+
+fn inherent#std::task::CancelToken#std::task::CancelToken#done(
+  self/43: std::task::CancelToken
+) -> Receiver[unit] {
+  let t527 = std::task::CancelToken.value(self/43) in
+  let inline1761 = std::internal::task::CancelToken.id(t527) in
+  let inline1762 = std::internal::task::scope_done(inline1761) in
+  inline1762
+}
+
+fn std::task::sleep_nanoseconds_with(
+  cancel/52: std::task::CancelToken,
+  nanoseconds/53: int64
+) -> std::task::WaitResult__unit {
+  let t533 = std::task::CancelToken.value(cancel/52) in
+  join inline_cont1763(t534: bool) -> std::task::WaitResult__unit {
+    if t534 {
+      let t535 = std::task::WaitResult__unit::Completed(()) in
+      t535
+    } else {
+      Tag_1
+    }
+  } in
+  let inline1764 = std::internal::task::CancelToken.id(t533) in
+  let inline1765 = std::internal::task::scope_sleep(inline1764, nanoseconds/53) in
+  jump inline_cont1763(inline1765)
+}
+
+fn std::internal::host::args() -> Vec[string] {
+  let t538 = @runtime(std.env.args)() in
+  t538
+}
+
+fn std::internal::host::current_dir() -> (bool, string, string) {
+  let t541 = @runtime(std.env.current_dir)() in
+  t541
+}
+
+fn std::internal::host::current_exe() -> (bool, string, string) {
+  let t544 = @runtime(std.env.current_exe)() in
+  t544
+}
+
+fn std::internal::host::env_var(name/0: string) -> (bool, string) {
+  let t547 = @runtime(std.env.var)(name/0) in
+  t547
+}
+
+fn std::internal::host::env_vars() -> Vec[string] {
+  let t550 = @runtime(std.env.vars)() in
+  t550
+}
+
+fn std::internal::host::read_file(path/1: string) -> (bool, string, string) {
+  let t553 = @runtime(std.fs.read_file)(path/1) in
+  t553
+}
+
+fn std::internal::host::write_file(path/2: string, content/3: string) -> (bool, string) {
+  let t556 = @runtime(std.fs.write_file)(path/2, content/3) in
+  t556
+}
+
+fn std::internal::host::read_bytes(path/4: string) -> (bool, Vec[uint8], string) {
+  let t559 = @runtime(std.fs.read_bytes)(path/4) in
+  t559
+}
+
+fn std::internal::host::read_bytes_v2(path/5: string) -> (
+  bool,
+  Vec[uint8],
+  int,
+  bool,
+  int,
+  string
+) {
+  let t562 = @runtime(std.fs.read_bytes.v2)(path/5) in
+  t562
+}
+
+fn std::internal::host::write_bytes(path/6: string, data/7: Vec[uint8]) -> (bool, string) {
+  let t565 = @runtime(std.fs.write_bytes)(path/6, data/7) in
+  t565
+}
+
+fn std::internal::host::write_bytes_v2(path/8: string, data/9: Vec[uint8]) -> (
+  bool,
+  int,
+  bool,
+  int,
+  string
+) {
+  let t568 = @runtime(std.fs.write_bytes.v2)(path/8, data/9) in
+  t568
+}
+
+fn std::internal::host::fs_path_operation_v2(
+  operation/10: int,
+  first/11: string,
+  second/12: string
+) -> (bool, int, bool, int, string) {
+  let t571 = @runtime(std.fs.path_operation.v2)(operation/10, first/11, second/12) in
+  t571
+}
+
+fn std::internal::host::fs_metadata_v2(path/13: string, follow/14: bool) -> (
+  bool,
+  int,
+  int64,
+  uint32,
+  int64,
+  int,
+  bool,
+  int,
+  string
+) {
+  let t574 = @runtime(std.fs.metadata.v2)(path/13, follow/14) in
+  t574
+}
+
+fn std::internal::host::fs_atomic_write_v2(path/15: string, data/16: Vec[uint8]) -> (
+  bool,
+  int,
+  bool,
+  int,
+  string
+) {
+  let t577 = @runtime(std.fs.atomic_write.v2)(path/15, data/16) in
+  t577
+}
+
+fn std::internal::host::create_dir_all(path/17: string) -> (bool, string) {
+  let t580 = @runtime(std.fs.create_dir_all)(path/17) in
+  t580
+}
+
+fn std::internal::host::remove_file(path/18: string) -> (bool, string) {
+  let t583 = @runtime(std.fs.remove_file)(path/18) in
+  t583
+}
+
+fn std::internal::host::remove_dir_all(path/19: string) -> (bool, string) {
+  let t586 = @runtime(std.fs.remove_dir_all)(path/19) in
+  t586
+}
+
+fn std::internal::host::file_exists(path/20: string) -> bool {
+  let t589 = @runtime(std.fs.file_exists)(path/20) in
+  t589
+}
+
+fn std::internal::host::is_file(path/21: string) -> bool {
+  let t592 = @runtime(std.fs.is_file)(path/21) in
+  t592
+}
+
+fn std::internal::host::is_dir(path/22: string) -> bool {
+  let t595 = @runtime(std.fs.is_dir)(path/22) in
+  t595
+}
+
+fn std::internal::host::canonicalize(path/23: string) -> (bool, string, string) {
+  let t598 = @runtime(std.fs.canonicalize)(path/23) in
+  t598
+}
+
+fn std::internal::host::read_dir(path/24: string) -> (bool, Vec[string], string) {
+  let t601 = @runtime(std.fs.read_dir)(path/24) in
+  t601
+}
+
+fn std::internal::host::read_dir_v2(path/25: string) -> (
+  bool,
+  Vec[string],
+  int,
+  bool,
+  int,
+  string
+) {
+  let t604 = @runtime(std.fs.read_dir.v2)(path/25) in
+  t604
+}
+
+fn std::internal::host::sha256_file(path/26: string) -> (bool, string, string) {
+  let t607 = @runtime(std.fs.sha256_file)(path/26) in
+  t607
+}
+
+fn std::internal::host::print(value/27: string) -> unit {
+  let t609 = @runtime(std.io.print)(value/27) in
+  ()
+}
+
+fn std::internal::host::println(value/28: string) -> unit {
+  let t611 = @runtime(std.io.println)(value/28) in
+  ()
+}
+
+fn std::internal::host::eprint(value/29: string) -> unit {
+  let t613 = @runtime(std.io.eprint)(value/29) in
+  ()
+}
+
+fn std::internal::host::read_stdin() -> (bool, Vec[uint8], string) {
+  let t616 = @runtime(std.io.read_stdin)() in
+  t616
+}
+
+fn std::internal::host::read_stdin_v2() -> (bool, Vec[uint8], int, bool, int, string) {
+  let t619 = @runtime(std.io.read_stdin.v2)() in
+  t619
+}
+
+fn std::internal::host::read_stdin_exact(length/30: int) -> (bool, Vec[uint8], string) {
+  let t622 = @runtime(std.io.read_stdin_exact)(length/30) in
+  t622
+}
+
+fn std::internal::host::read_stdin_exact_v2(length/31: int) -> (
+  bool,
+  Vec[uint8],
+  int,
+  bool,
+  int,
+  string
+) {
+  let t625 = @runtime(std.io.read_stdin_exact.v2)(length/31) in
+  t625
+}
+
+fn std::internal::host::write_stdout(data/32: Vec[uint8]) -> (bool, string) {
+  let t628 = @runtime(std.io.write_stdout)(data/32) in
+  t628
+}
+
+fn std::internal::host::write_stdout_v2(data/33: Vec[uint8]) -> (bool, int, bool, int, string) {
+  let t631 = @runtime(std.io.write_stdout.v2)(data/33) in
+  t631
+}
+
+fn std::internal::host::write_stderr(data/34: Vec[uint8]) -> (bool, string) {
+  let t634 = @runtime(std.io.write_stderr)(data/34) in
+  t634
+}
+
+fn std::internal::host::write_stderr_v2(data/35: Vec[uint8]) -> (bool, int, bool, int, string) {
+  let t637 = @runtime(std.io.write_stderr.v2)(data/35) in
+  t637
+}
+
+fn std::internal::host::path_join(base/36: string, child/37: string) -> string {
+  let t640 = @runtime(std.path.join)(base/36, child/37) in
+  t640
+}
+
+fn std::internal::host::path_clean(path/38: string) -> string {
+  let t643 = @runtime(std.path.clean)(path/38) in
+  t643
+}
+
+fn std::internal::host::path_is_absolute(path/39: string) -> bool {
+  let t646 = @runtime(std.path.is_absolute)(path/39) in
+  t646
+}
+
+fn std::internal::host::path_parent(path/40: string) -> (bool, string) {
+  let t649 = @runtime(std.path.parent)(path/40) in
+  t649
+}
+
+fn std::internal::host::path_file_name(path/41: string) -> (bool, string) {
+  let t652 = @runtime(std.path.file_name)(path/41) in
+  t652
+}
+
+fn std::internal::host::path_extension(path/42: string) -> (bool, string) {
+  let t655 = @runtime(std.path.extension)(path/42) in
+  t655
+}
+
+fn std::internal::host::path_file_stem(path/43: string) -> (bool, string) {
+  let t658 = @runtime(std.path.file_stem)(path/43) in
+  t658
+}
+
+fn std::internal::host::path_with_extension(path/44: string, extension/45: string) -> string {
+  let t661 = @runtime(std.path.with_extension)(path/44, extension/45) in
+  t661
+}
+
+fn std::internal::host::path_absolute(path/46: string) -> (bool, string, string) {
+  let t664 = @runtime(std.path.absolute)(path/46) in
+  t664
+}
+
+fn std::internal::host::path_relative(base/47: string, target/48: string) -> (
+  bool,
+  string,
+  string
+) {
+  let t667 = @runtime(std.path.relative)(base/47, target/48) in
+  t667
+}
+
+fn std::internal::host::path_separator() -> string {
+  let t670 = @runtime(std.path.separator)() in
+  t670
+}
+
+fn std::internal::host::exit(code/49: int) -> unit {
+  let t672 = @runtime(std.process.exit)(code/49) in
+  ()
+}
+
+fn std::internal::host::process_look_path(program/50: string) -> (bool, string, string) {
+  let t675 = @runtime(std.process.look_path)(program/50) in
+  t675
+}
+
+fn std::internal::host::process_output(
+  program/51: string,
+  arguments/52: Vec[string],
+  has_directory/53: bool,
+  directory/54: string,
+  environment/55: Vec[(string, string)],
+  has_input/56: bool,
+  input/57: Vec[uint8]
+) -> (bool, int, Vec[uint8], Vec[uint8], string) {
+  let t678 =
+    @runtime(std.process.output)(
+      program/51,
+      arguments/52,
+      has_directory/53,
+      directory/54,
+      environment/55,
+      has_input/56,
+      input/57
+    ) in
+  t678
+}
+
+fn std::internal::host::process_output_timeout(
+  program/58: string,
+  arguments/59: Vec[string],
+  has_directory/60: bool,
+  directory/61: string,
+  environment/62: Vec[(string, string)],
+  has_input/63: bool,
+  input/64: Vec[uint8],
+  timeout_ms/65: int
+) -> (bool, int, Vec[uint8], Vec[uint8], string, bool) {
+  let t681 =
+    @runtime(std.process.output_timeout)(
+      program/58,
+      arguments/59,
+      has_directory/60,
+      directory/61,
+      environment/62,
+      has_input/63,
+      input/64,
+      timeout_ms/65
+    ) in
+  t681
+}
+
+fn std::internal::host::process_output_cancel(
+  program/66: string,
+  arguments/67: Vec[string],
+  has_directory/68: bool,
+  directory/69: string,
+  environment/70: Vec[(string, string)],
+  has_input/71: bool,
+  input/72: Vec[uint8],
+  scope_id/73: int64
+) -> (bool, int, Vec[uint8], Vec[uint8], string, bool) {
+  let t684 =
+    @runtime(std.process.output_cancel)(
+      program/66,
+      arguments/67,
+      has_directory/68,
+      directory/69,
+      environment/70,
+      has_input/71,
+      input/72,
+      scope_id/73
+    ) in
+  t684
+}
+
+fn std::internal::host::process_status(
+  program/74: string,
+  arguments/75: Vec[string],
+  has_directory/76: bool,
+  directory/77: string,
+  environment/78: Vec[(string, string)]
+) -> (bool, int, string) {
+  let t687 =
+    @runtime(std.process.status)(
+      program/74,
+      arguments/75,
+      has_directory/76,
+      directory/77,
+      environment/78
+    ) in
+  t687
+}
+
+fn std::internal::host::process_status_timeout(
+  program/79: string,
+  arguments/80: Vec[string],
+  has_directory/81: bool,
+  directory/82: string,
+  environment/83: Vec[(string, string)],
+  timeout_ms/84: int
+) -> (bool, int, string, bool) {
+  let t690 =
+    @runtime(std.process.status_timeout)(
+      program/79,
+      arguments/80,
+      has_directory/81,
+      directory/82,
+      environment/83,
+      timeout_ms/84
+    ) in
+  t690
+}
+
+fn std::internal::host::process_status_cancel(
+  program/85: string,
+  arguments/86: Vec[string],
+  has_directory/87: bool,
+  directory/88: string,
+  environment/89: Vec[(string, string)],
+  scope_id/90: int64
+) -> (bool, int, string, bool) {
+  let t693 =
+    @runtime(std.process.status_cancel)(
+      program/85,
+      arguments/86,
+      has_directory/87,
+      directory/88,
+      environment/89,
+      scope_id/90
+    ) in
+  t693
+}
+
+fn std::internal::host::test_fail(message/91: string) -> unit {
+  let t695 = @runtime(std.testing.fail)(message/91) in
+  ()
+}
+
+fn std::internal::host::parse_int(value/92: string, radix/93: int) -> (bool, int, string) {
+  let t698 = @runtime(std.num.parse_int)(value/92, radix/93) in
+  t698
+}
+
+fn std::internal::host::parse_uint(value/94: string, radix/95: int) -> (bool, uint, string) {
+  let t701 = @runtime(std.num.parse_uint)(value/94, radix/95) in
+  t701
+}
+
+fn std::internal::host::parse_float32(value/96: string) -> (bool, float32, string) {
+  let t704 = @runtime(std.num.parse_float32)(value/96) in
+  t704
+}
+
+fn std::internal::host::parse_float64(value/97: string) -> (bool, float64, string) {
+  let t707 = @runtime(std.num.parse_float64)(value/97) in
+  t707
+}
+
+fn std::internal::host::monotonic_nanoseconds() -> int64 {
+  let t710 = @runtime(std.time.monotonic_nanoseconds)() in
+  t710
+}
+
+fn std::internal::host::unix_nanoseconds() -> int64 {
+  let t713 = @runtime(std.time.unix_nanoseconds)() in
+  t713
+}
+
+fn std::internal::host::sleep_nanoseconds(value/98: int64) -> unit {
+  let t715 = @runtime(std.time.sleep_nanoseconds)(value/98) in
+  ()
+}
+
+fn std::internal::host::timer_new(value/99: int64) -> (int64, Receiver[unit]) {
+  let t718 = @runtime(std.time.timer_new)(value/99) in
+  t718
+}
+
+fn std::internal::host::timer_stop(id/100: int64) -> bool {
+  let t721 = @runtime(std.time.timer_stop)(id/100) in
+  t721
+}
+
+fn std::internal::host::math_float32_unary(operation/101: int, value/102: float32) -> float32 {
+  let t724 = @runtime(std.math.float32_unary)(operation/101, value/102) in
+  t724
+}
+
+fn std::internal::host::math_float32_pow(value/103: float32, exponent/104: float32) -> float32 {
+  let t727 = @runtime(std.math.float32_pow)(value/103, exponent/104) in
+  t727
+}
+
+fn std::internal::host::crypto_random_bytes(length/105: int) -> (bool, Vec[uint8], string) {
+  let t730 = @runtime(std.crypto.rand.bytes)(length/105) in
+  t730
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
+  let t733 = [] in
+  let t734 = @intrinsic(vec.from_array)(t733) in
+  let t735 = std::bytes::Bytes { values: t734 } in
+  t735
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(
+  capacity/0: int
+) -> std::bytes::Bytes {
+  join inline_cont1766(t738: Vec[uint8]) -> std::bytes::Bytes {
+    let t739 = std::bytes::Bytes { values: t738 } in
+    t739
+  } in
+  let inline1767 = @intrinsic(vec.with_capacity)(capacity/0) in
+  jump inline_cont1766(inline1767)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(
+  values/1: Vec[uint8]
+) -> std::bytes::Bytes {
+  let t742 = std::bytes::Bytes { values: values/1 } in
+  t742
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_string(value/2: string) -> std::bytes::Bytes {
+  join inline_cont1768(t745: Vec[uint8]) -> std::bytes::Bytes {
+    let t746 = std::bytes::Bytes { values: t745 } in
+    t746
+  } in
+  let inline1769 = @runtime(core.string_to_bytes)(value/2) in
+  jump inline_cont1768(inline1769)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#len(self/3: std::bytes::Bytes) -> int {
+  let t749 = std::bytes::Bytes.values(self/3) in
+  let inline1771 = @intrinsic(vec.len)(t749) in
+  inline1771
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#capacity(self/4: std::bytes::Bytes) -> int {
+  let t753 = std::bytes::Bytes.values(self/4) in
+  let inline1773 = @intrinsic(vec.capacity)(t753) in
+  inline1773
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#is_empty(self/5: std::bytes::Bytes) -> bool {
+  let t757 = std::bytes::Bytes.values(self/5) in
+  let inline1775 = @intrinsic(vec.len)(t757) in
+  let inline1776 = (inline1775 == 0) in
+  inline1776
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#get(
+  self/6: std::bytes::Bytes,
+  index/7: int
+) -> uint8 {
+  let t761 = std::bytes::Bytes.values(self/6) in
+  let t762 = @intrinsic(vec.get)(t761, index/7) in
+  t762
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(
+  self/8: std::bytes::Bytes,
+  index/9: int,
+  value/10: uint8
+) -> unit {
+  let place1 = std::bytes::Bytes.values(self/8) in
+  let place3 = @intrinsic(vec.get)(place1, index/9) in
+  let t764 = @intrinsic(vec.set)(place1, index/9, value/10) in
+  ()
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(
+  self/11: std::bytes::Bytes,
+  value/12: uint8
+) -> unit {
+  let t766 = std::bytes::Bytes.values(self/11) in
+  let inline1778 = @intrinsic(vec.push)(t766, value/12) in
+  ()
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#pop(self/13: std::bytes::Bytes) -> Option__uint8 {
+  let t770 = std::bytes::Bytes.values(self/13) in
+  let inline1780 = inherent#Vec#Vec[T]#len__T_uint8(t770) in
+  let inline1781 = (inline1780 == 0) in
+  if inline1781 {
+    Tag_0
+  } else {
+    let inline1782 = (inline1780 - 1) in
+    let inline1783 = @intrinsic(vec.get)(t770, inline1782) in
+    let inline1784 = (inline1780 - 1) in
+    let inline1785 = inherent#Vec#Vec[T]#truncate__T_uint8(t770, inline1784) in
+    let inline1786 = Option__uint8::Some(inline1783) in
+    inline1786
+  }
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(
+  self/14: std::bytes::Bytes,
+  additional/15: int
+) -> unit {
+  let t773 = std::bytes::Bytes.values(self/14) in
+  let inline1788 = @intrinsic(vec.reserve)(t773, additional/15) in
+  ()
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(
+  self/16: std::bytes::Bytes,
+  len/17: int
+) -> unit {
+  let t776 = std::bytes::Bytes.values(self/16) in
+  let inline1790 = @intrinsic(vec.truncate)(t776, len/17) in
+  ()
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/18: std::bytes::Bytes) -> unit {
+  let t779 = std::bytes::Bytes.values(self/18) in
+  let inline1792 = inherent#Vec#Vec[T]#truncate__T_uint8(t779, 0) in
+  ()
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice(
+  self/19: std::bytes::Bytes,
+  start/20: int,
+  end/21: int
+) -> Slice[uint8] {
+  let t783 = std::bytes::Bytes.values(self/19) in
+  let inline1794 = @intrinsic(slice.new)(t783, start/20, end/21) in
+  inline1794
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/22: std::bytes::Bytes) -> Vec[uint8] {
+  let t787 = std::bytes::Bytes.values(self/22) in
+  t787
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(
+  self/23: std::bytes::Bytes
+) -> Result__string__string {
+  let t790 = std::bytes::Bytes.values(self/23) in
+  let mtmp6 = string_from_utf8(t790) in
+  let x7 = mtmp6.0 in
+  let x8 = mtmp6.1 in
+  if x7 {
+    let t793 = Result__string__string::Ok(x8) in
+    t793
+  } else {
+    let t794 = Result__string__string::Err("invalid UTF-8") in
+    t794
+  }
+}
+
+fn trait_impl#ToString#std::io::ErrorKind#to_string(self/0: std::io::ErrorKind) -> string {
+  match self/0 {
+    Tag_0 => {
+      "NotFound"
+    },
+    Tag_1 => {
+      "PermissionDenied"
+    },
+    Tag_2 => {
+      "AlreadyExists"
+    },
+    Tag_3 => {
+      "InvalidInput"
+    },
+    Tag_4 => {
+      "InvalidData"
+    },
+    Tag_5 => {
+      "TimedOut"
+    },
+    Tag_6 => {
+      "Interrupted"
+    },
+    Tag_7 => {
+      "UnexpectedEof"
+    },
+    Tag_8 => {
+      "WriteZero"
+    },
+    Tag_9 => {
+      "BrokenPipe"
+    },
+    Tag_10 => {
+      "WouldBlock"
+    },
+    Tag_11 => {
+      "Unsupported"
+    },
+    Tag_12 => {
+      "Other"
+    },
+  }
+}
+
+fn trait_impl#Debug#std::io::ErrorKind#debug(self/1: std::io::ErrorKind) -> string {
+  match self/1 {
+    Tag_0 => {
+      "NotFound"
+    },
+    Tag_1 => {
+      "PermissionDenied"
+    },
+    Tag_2 => {
+      "AlreadyExists"
+    },
+    Tag_3 => {
+      "InvalidInput"
+    },
+    Tag_4 => {
+      "InvalidData"
+    },
+    Tag_5 => {
+      "TimedOut"
+    },
+    Tag_6 => {
+      "Interrupted"
+    },
+    Tag_7 => {
+      "UnexpectedEof"
+    },
+    Tag_8 => {
+      "WriteZero"
+    },
+    Tag_9 => {
+      "BrokenPipe"
+    },
+    Tag_10 => {
+      "WouldBlock"
+    },
+    Tag_11 => {
+      "Unsupported"
+    },
+    Tag_12 => {
+      "Other"
+    },
+  }
+}
+
+fn trait_impl#PartialEq#std::io::ErrorKind#eq(
+  self/2: std::io::ErrorKind,
+  other/3: std::io::ErrorKind
+) -> bool {
+  join inline_cont1797(t804: int) -> bool {
+    join inline_cont1796(t805: int) -> bool {
+      let t806 = (t804 == t805) in
+      t806
+    } in
+    match other/3 {
+      Tag_0 => {
+        jump inline_cont1796(1)
+      },
+      Tag_1 => {
+        jump inline_cont1796(2)
+      },
+      Tag_2 => {
+        jump inline_cont1796(3)
+      },
+      Tag_3 => {
+        jump inline_cont1796(4)
+      },
+      Tag_4 => {
+        jump inline_cont1796(5)
+      },
+      Tag_5 => {
+        jump inline_cont1796(6)
+      },
+      Tag_6 => {
+        jump inline_cont1796(7)
+      },
+      Tag_7 => {
+        jump inline_cont1796(8)
+      },
+      Tag_8 => {
+        jump inline_cont1796(9)
+      },
+      Tag_9 => {
+        jump inline_cont1796(10)
+      },
+      Tag_10 => {
+        jump inline_cont1796(11)
+      },
+      Tag_11 => {
+        jump inline_cont1796(12)
+      },
+      Tag_12 => {
+        jump inline_cont1796(0)
+      },
+    }
+  } in
+  match self/2 {
+    Tag_0 => {
+      jump inline_cont1797(1)
+    },
+    Tag_1 => {
+      jump inline_cont1797(2)
+    },
+    Tag_2 => {
+      jump inline_cont1797(3)
+    },
+    Tag_3 => {
+      jump inline_cont1797(4)
+    },
+    Tag_4 => {
+      jump inline_cont1797(5)
+    },
+    Tag_5 => {
+      jump inline_cont1797(6)
+    },
+    Tag_6 => {
+      jump inline_cont1797(7)
+    },
+    Tag_7 => {
+      jump inline_cont1797(8)
+    },
+    Tag_8 => {
+      jump inline_cont1797(9)
+    },
+    Tag_9 => {
+      jump inline_cont1797(10)
+    },
+    Tag_10 => {
+      jump inline_cont1797(11)
+    },
+    Tag_11 => {
+      jump inline_cont1797(12)
+    },
+    Tag_12 => {
+      jump inline_cont1797(0)
+    },
+  }
+}
+
+fn std::io::kind_from_code(code/4: int) -> std::io::ErrorKind {
+  match code/4 {
+    1 => {
+      Tag_0
+    },
+    2 => {
+      Tag_1
+    },
+    3 => {
+      Tag_2
+    },
+    4 => {
+      Tag_3
+    },
+    5 => {
+      Tag_4
+    },
+    6 => {
+      Tag_5
+    },
+    7 => {
+      Tag_6
+    },
+    8 => {
+      Tag_7
+    },
+    9 => {
+      Tag_8
+    },
+    10 => {
+      Tag_9
+    },
+    11 => {
+      Tag_10
+    },
+    12 => {
+      Tag_11
+    },
+    _ => {
+      Tag_12
+    },
+  }
+}
+
+fn std::io::kind_code(kind/5: std::io::ErrorKind) -> int {
+  match kind/5 {
+    Tag_0 => {
+      1
+    },
+    Tag_1 => {
+      2
+    },
+    Tag_2 => {
+      3
+    },
+    Tag_3 => {
+      4
+    },
+    Tag_4 => {
+      5
+    },
+    Tag_5 => {
+      6
+    },
+    Tag_6 => {
+      7
+    },
+    Tag_7 => {
+      8
+    },
+    Tag_8 => {
+      9
+    },
+    Tag_9 => {
+      10
+    },
+    Tag_10 => {
+      11
+    },
+    Tag_11 => {
+      12
+    },
+    Tag_12 => {
+      0
+    },
+  }
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
+  kind/6: std::io::ErrorKind,
+  operation/7: string,
+  context/8: Option__string,
+  raw_os_code/9: Option__int,
+  message/10: string
+) -> std::io::ErrorDetails {
+  let t817 =
+    std::io::ErrorDetails {
+      kind_value: kind/6,
+      operation_value: operation/7,
+      context_value: context/8,
+      raw_os_code_value: raw_os_code/9,
+      message_value: message/10
+    } in
+  t817
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#kind(
+  self/11: std::io::ErrorDetails
+) -> std::io::ErrorKind {
+  let t820 = std::io::ErrorDetails.kind_value(self/11) in
+  t820
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#operation(
+  self/12: std::io::ErrorDetails
+) -> string {
+  let t823 = std::io::ErrorDetails.operation_value(self/12) in
+  t823
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#context(
+  self/13: std::io::ErrorDetails
+) -> Option__string {
+  let t826 = std::io::ErrorDetails.context_value(self/13) in
+  t826
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#raw_os_code(
+  self/14: std::io::ErrorDetails
+) -> Option__int {
+  let t829 = std::io::ErrorDetails.raw_os_code_value(self/14) in
+  t829
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#message(
+  self/15: std::io::ErrorDetails
+) -> string {
+  let t832 = std::io::ErrorDetails.message_value(self/15) in
+  t832
+}
+
+fn trait_impl#ToString#std::io::ErrorDetails#to_string(self/16: std::io::ErrorDetails) -> string {
+  let mtmp0 = std::io::ErrorDetails.context_value(self/16) in
+  match mtmp0 {
+    Tag_0 => {
+      let t837 = std::io::ErrorDetails.operation_value(self/16) in
+      let t838 = (t837 + ": ") in
+      let t839 = std::io::ErrorDetails.message_value(self/16) in
+      let t840 = (t838 + t839) in
+      t840
+    },
+    Tag_1 => {
+      let x1 = Option__string::Some._0(mtmp0) in
+      let t841 = std::io::ErrorDetails.operation_value(self/16) in
+      let t842 = (t841 + " ") in
+      let t843 = (t842 + x1) in
+      let t844 = (t843 + ": ") in
+      let t845 = std::io::ErrorDetails.message_value(self/16) in
+      let t846 = (t844 + t845) in
+      t846
+    },
+  }
+}
+
+fn trait_impl#Debug#std::io::ErrorDetails#debug(self/18: std::io::ErrorDetails) -> string {
+  let inline1799 = std::io::ErrorDetails.context_value(self/18) in
+  match inline1799 {
+    Tag_0 => {
+      let inline1800 = std::io::ErrorDetails.operation_value(self/18) in
+      let inline1801 = (inline1800 + ": ") in
+      let inline1802 = std::io::ErrorDetails.message_value(self/18) in
+      let inline1803 = (inline1801 + inline1802) in
+      inline1803
+    },
+    Tag_1 => {
+      let inline1804 = Option__string::Some._0(inline1799) in
+      let inline1806 = std::io::ErrorDetails.operation_value(self/18) in
+      let inline1807 = (inline1806 + " ") in
+      let inline1808 = (inline1807 + inline1804) in
+      let inline1809 = (inline1808 + ": ") in
+      let inline1810 = std::io::ErrorDetails.message_value(self/18) in
+      let inline1811 = (inline1809 + inline1810) in
+      inline1811
+    },
+  }
+}
+
+fn trait_impl#PartialEq#std::io::ErrorDetails#eq(
+  self/19: std::io::ErrorDetails,
+  other/20: std::io::ErrorDetails
+) -> bool {
+  let t869 = std::io::ErrorDetails.kind_value(self/19) in
+  let t870 = std::io::ErrorDetails.kind_value(other/20) in
+  join inline_cont1830(t871: bool) -> bool {
+    join k864(jp865: bool) -> bool {
+      join k859(jp860: bool) -> bool {
+        join k854(jp855: bool) -> bool {
+          if jp855 {
+            let t856 = std::io::ErrorDetails.message_value(self/19) in
+            let t857 = std::io::ErrorDetails.message_value(other/20) in
+            let t858 = (t856 == t857) in
+            t858
+          } else {
+            false
+          }
+        } in
+        if jp860 {
+          let t861 = std::io::ErrorDetails.raw_os_code_value(self/19) in
+          let t862 = std::io::ErrorDetails.raw_os_code_value(other/20) in
+          match t862 {
+            Tag_0 => {
+              match t861 {
+                Tag_0 => {
+                  jump k854(true)
+                },
+                _ => {
+                  jump k854(false)
+                },
+              }
+            },
+            Tag_1 => {
+              let inline1825 = Option__int::Some._0(t862) in
+              match t861 {
+                Tag_1 => {
+                  let inline1826 = Option__int::Some._0(t861) in
+                  let inline1829 = trait_impl#PartialEq#int#eq(inline1826, inline1825) in
+                  jump k854(inline1829)
+                },
+                _ => {
+                  jump k854(false)
+                },
+              }
+            },
+          }
+        } else {
+          jump k854(false)
+        }
+      } in
+      if jp865 {
+        let t866 = std::io::ErrorDetails.context_value(self/19) in
+        let t867 = std::io::ErrorDetails.context_value(other/20) in
+        match t867 {
+          Tag_0 => {
+            match t866 {
+              Tag_0 => {
+                jump k859(true)
+              },
+              _ => {
+                jump k859(false)
+              },
+            }
+          },
+          Tag_1 => {
+            let inline1816 = Option__string::Some._0(t867) in
+            match t866 {
+              Tag_1 => {
+                let inline1817 = Option__string::Some._0(t866) in
+                let inline1820 = trait_impl#PartialEq#string#eq(inline1817, inline1816) in
+                jump k859(inline1820)
+              },
+              _ => {
+                jump k859(false)
+              },
+            }
+          },
+        }
+      } else {
+        jump k859(false)
+      }
+    } in
+    if t871 {
+      let t872 = std::io::ErrorDetails.operation_value(self/19) in
+      let t873 = std::io::ErrorDetails.operation_value(other/20) in
+      let t874 = (t872 == t873) in
+      jump k864(t874)
+    } else {
+      jump k864(false)
+    }
+  } in
+  let inline1831 = std::io::kind_code(t869) in
+  let inline1832 = std::io::kind_code(t870) in
+  let inline1833 = (inline1831 == inline1832) in
+  jump inline_cont1830(inline1833)
+}
+
+fn inherent#std::io::Error#std::io::Error#new(
+  kind/21: std::io::ErrorKind,
+  operation/22: string,
+  context/23: Option__string,
+  raw_os_code/24: Option__int,
+  message/25: string
+) -> std::io::Error {
+  join inline_cont1834(t877: std::io::ErrorDetails) -> std::io::Error {
+    let t878 = std::io::Error { details: t877 } in
+    t878
+  } in
+  let inline1835 =
+    std::io::ErrorDetails {
+      kind_value: kind/21,
+      operation_value: operation/22,
+      context_value: context/23,
+      raw_os_code_value: raw_os_code/24,
+      message_value: message/25
+    } in
+  jump inline_cont1834(inline1835)
+}
+
+fn inherent#std::io::Error#std::io::Error#kind(self/26: std::io::Error) -> std::io::ErrorKind {
+  let t881 = std::io::Error.details(self/26) in
+  let inline1837 = std::io::ErrorDetails.kind_value(t881) in
+  inline1837
+}
+
+fn inherent#std::io::Error#std::io::Error#operation(self/27: std::io::Error) -> string {
+  let t885 = std::io::Error.details(self/27) in
+  let inline1839 = std::io::ErrorDetails.operation_value(t885) in
+  inline1839
+}
+
+fn inherent#std::io::Error#std::io::Error#context(self/28: std::io::Error) -> Option__string {
+  let t889 = std::io::Error.details(self/28) in
+  let inline1841 = std::io::ErrorDetails.context_value(t889) in
+  inline1841
+}
+
+fn inherent#std::io::Error#std::io::Error#raw_os_code(self/29: std::io::Error) -> Option__int {
+  let t893 = std::io::Error.details(self/29) in
+  let inline1843 = std::io::ErrorDetails.raw_os_code_value(t893) in
+  inline1843
+}
+
+fn inherent#std::io::Error#std::io::Error#message(self/30: std::io::Error) -> string {
+  let t897 = std::io::Error.details(self/30) in
+  let inline1845 = std::io::ErrorDetails.message_value(t897) in
+  inline1845
+}
+
+fn trait_impl#ToString#std::io::Error#to_string(self/31: std::io::Error) -> string {
+  let t901 = std::io::Error.details(self/31) in
+  let inline1847 = std::io::ErrorDetails.context_value(t901) in
+  match inline1847 {
+    Tag_0 => {
+      let inline1848 = std::io::ErrorDetails.operation_value(t901) in
+      let inline1849 = (inline1848 + ": ") in
+      let inline1850 = std::io::ErrorDetails.message_value(t901) in
+      let inline1851 = (inline1849 + inline1850) in
+      inline1851
+    },
+    Tag_1 => {
+      let inline1852 = Option__string::Some._0(inline1847) in
+      let inline1854 = std::io::ErrorDetails.operation_value(t901) in
+      let inline1855 = (inline1854 + " ") in
+      let inline1856 = (inline1855 + inline1852) in
+      let inline1857 = (inline1856 + ": ") in
+      let inline1858 = std::io::ErrorDetails.message_value(t901) in
+      let inline1859 = (inline1857 + inline1858) in
+      inline1859
+    },
+  }
+}
+
+fn trait_impl#Debug#std::io::Error#debug(self/32: std::io::Error) -> string {
+  let inline1861 = std::io::Error.details(self/32) in
+  let inline1862 = trait_impl#ToString#std::io::ErrorDetails#to_string(inline1861) in
+  inline1862
+}
+
+fn trait_impl#PartialEq#std::io::Error#eq(
+  self/33: std::io::Error,
+  other/34: std::io::Error
+) -> bool {
+  let t908 = std::io::Error.details(self/33) in
+  let t909 = std::io::Error.details(other/34) in
+  let t910 = trait_impl#PartialEq#std::io::ErrorDetails#eq(t908, t909) in
+  t910
+}
+
+fn std::io::structured_error(
+  operation/35: string,
+  kind_code/36: int,
+  has_raw_code/37: bool,
+  raw_code/38: int,
+  message/39: string
+) -> std::io::Error {
+  join inline_cont1866(t914: std::io::ErrorKind) -> std::io::Error {
+    join k915(jp916: Option__int) -> std::io::Error {
+      let inline1864 =
+        inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
+          t914,
+          operation/35,
+          Tag_0,
+          jp916,
+          message/39
+        ) in
+      let inline1865 = std::io::Error { details: inline1864 } in
+      inline1865
+    } in
+    if has_raw_code/37 {
+      let t918 = Option__int::Some(raw_code/38) in
+      jump k915(t918)
+    } else {
+      jump k915(Tag_0)
+    }
+  } in
+  match kind_code/36 {
+    1 => {
+      jump inline_cont1866(Tag_0)
+    },
+    2 => {
+      jump inline_cont1866(Tag_1)
+    },
+    3 => {
+      jump inline_cont1866(Tag_2)
+    },
+    4 => {
+      jump inline_cont1866(Tag_3)
+    },
+    5 => {
+      jump inline_cont1866(Tag_4)
+    },
+    6 => {
+      jump inline_cont1866(Tag_5)
+    },
+    7 => {
+      jump inline_cont1866(Tag_6)
+    },
+    8 => {
+      jump inline_cont1866(Tag_7)
+    },
+    9 => {
+      jump inline_cont1866(Tag_8)
+    },
+    10 => {
+      jump inline_cont1866(Tag_9)
+    },
+    11 => {
+      jump inline_cont1866(Tag_10)
+    },
+    12 => {
+      jump inline_cont1866(Tag_11)
+    },
+    _ => {
+      jump inline_cont1866(Tag_12)
+    },
+  }
+}
+
+fn std::io::read_stdin_structured() -> Result__std::bytes::Bytes__std::io::Error {
+  join inline_cont1876(
+    mtmp2: (bool, Vec[uint8], int, bool, int, string)
+  ) -> Result__std::bytes::Bytes__std::io::Error {
+    let x3 = mtmp2.0 in
+    let x4 = mtmp2.1 in
+    let x5 = mtmp2.2 in
+    let x6 = mtmp2.3 in
+    let x7 = mtmp2.4 in
+    let x8 = mtmp2.5 in
+    if x3 {
+      join inline_cont1867(t923: std::bytes::Bytes) -> Result__std::bytes::Bytes__std::io::Error {
+        let t924 = Result__std::bytes::Bytes__std::io::Error::Ok(t923) in
+        t924
+      } in
+      let inline1868 = std::bytes::Bytes { values: x4 } in
+      jump inline_cont1867(inline1868)
+    } else {
+      join inline_cont1869(t925: std::io::Error) -> Result__std::bytes::Bytes__std::io::Error {
+        let t926 = Result__std::bytes::Bytes__std::io::Error::Err(t925) in
+        t926
+      } in
+      let inline1870 = "read stdin" in
+      let inline1871 = std::io::kind_from_code(x5) in
+      join inline_join1872(inline1873: Option__int) -> Result__std::bytes::Bytes__std::io::Error {
+        let inline1874 =
+          inherent#std::io::Error#std::io::Error#new(
+            inline1871,
+            inline1870,
+            Tag_0,
+            inline1873,
+            x8
+          ) in
+        jump inline_cont1869(inline1874)
+      } in
+      if x6 {
+        let inline1875 = Option__int::Some(x7) in
+        jump inline_join1872(inline1875)
+      } else {
+        jump inline_join1872(Tag_0)
+      }
+    }
+  } in
+  let inline1877 = @runtime(std.io.read_stdin.v2)() in
+  jump inline_cont1876(inline1877)
+}
+
+fn std::io::read_stdin_to_string() -> Result__string__std::io::Error {
+  let mtmp9 = std::io::read_stdin_structured() in
+  match mtmp9 {
+    Tag_0 => {
+      let x10 = Result__std::bytes::Bytes__std::io::Error::Ok._0(mtmp9) in
+      join commute_arm2394(commute_field2393: string) -> Result__string__std::io::Error {
+        let t933 = Result__string__std::io::Error::Ok(commute_field2393) in
+        t933
+      } in
+      join commute_arm2396(commute_field2395: string) -> Result__string__std::io::Error {
+        join inline_cont1878(t934: std::io::Error) -> Result__string__std::io::Error {
+          let t935 = Result__string__std::io::Error::Err(t934) in
+          t935
+        } in
+        let inline1879 = "read stdin" in
+        let inline1880 =
+          inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
+            Tag_4,
+            inline1879,
+            Tag_0,
+            Tag_0,
+            commute_field2395
+          ) in
+        let inline1881 = std::io::Error { details: inline1880 } in
+        jump inline_cont1878(inline1881)
+      } in
+      let inline1883 = std::bytes::Bytes.values(x10) in
+      let inline1884 = string_from_utf8(inline1883) in
+      let inline1885 = inline1884.0 in
+      let inline1886 = inline1884.1 in
+      if inline1885 {
+        jump commute_arm2394(inline1886)
+      } else {
+        jump commute_arm2396("invalid UTF-8")
+      }
+    },
+    Tag_1 => {
+      let x11 = Result__std::bytes::Bytes__std::io::Error::Err._0(mtmp9) in
+      let t936 = Result__string__std::io::Error::Err(x11) in
+      t936
+    },
+  }
+}
+
+fn std::io::read_stdin_exact_structured(
+  length/50: int
+) -> Result__std::bytes::Bytes__std::io::Error {
+  let t941 = (length/50 < 0) in
+  if t941 {
+    join inline_cont1891(t942: std::io::Error) -> Result__std::bytes::Bytes__std::io::Error {
+      let t943 = Result__std::bytes::Bytes__std::io::Error::Err(t942) in
+      t943
+    } in
+    let inline1892 = "read stdin exact" in
+    let inline1893 = "read length must be non-negative" in
+    let inline1894 =
+      inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
+        Tag_3,
+        inline1892,
+        Tag_0,
+        Tag_0,
+        inline1893
+      ) in
+    let inline1895 = std::io::Error { details: inline1894 } in
+    jump inline_cont1891(inline1895)
+  } else {
+    join inline_cont1905(
+      mtmp15: (bool, Vec[uint8], int, bool, int, string)
+    ) -> Result__std::bytes::Bytes__std::io::Error {
+      let x16 = mtmp15.0 in
+      let x17 = mtmp15.1 in
+      let x18 = mtmp15.2 in
+      let x19 = mtmp15.3 in
+      let x20 = mtmp15.4 in
+      let x21 = mtmp15.5 in
+      if x16 {
+        join inline_cont1896(t946: std::bytes::Bytes) -> Result__std::bytes::Bytes__std::io::Error {
+          let t947 = Result__std::bytes::Bytes__std::io::Error::Ok(t946) in
+          t947
+        } in
+        let inline1897 = std::bytes::Bytes { values: x17 } in
+        jump inline_cont1896(inline1897)
+      } else {
+        join inline_cont1898(t948: std::io::Error) -> Result__std::bytes::Bytes__std::io::Error {
+          let t949 = Result__std::bytes::Bytes__std::io::Error::Err(t948) in
+          t949
+        } in
+        let inline1899 = "read stdin exact" in
+        let inline1900 = std::io::kind_from_code(x18) in
+        join inline_join1901(inline1902: Option__int) -> Result__std::bytes::Bytes__std::io::Error {
+          let inline1903 =
+            inherent#std::io::Error#std::io::Error#new(
+              inline1900,
+              inline1899,
+              Tag_0,
+              inline1902,
+              x21
+            ) in
+          jump inline_cont1898(inline1903)
+        } in
+        if x19 {
+          let inline1904 = Option__int::Some(x20) in
+          jump inline_join1901(inline1904)
+        } else {
+          jump inline_join1901(Tag_0)
+        }
+      }
+    } in
+    let inline1906 = @runtime(std.io.read_stdin_exact.v2)(length/50) in
+    jump inline_cont1905(inline1906)
+  }
+}
+
+fn std::io::write_structured(
+  stderr/57: bool,
+  data/58: std::bytes::Bytes
+) -> Result__unit__std::io::Error {
+  join k952(jp953: (bool, int, bool, int, string)) -> Result__unit__std::io::Error {
+    let x23 = jp953.0 in
+    let x24 = jp953.1 in
+    let x25 = jp953.2 in
+    let x26 = jp953.3 in
+    let x27 = jp953.4 in
+    if x23 {
+      let t956 = Result__unit__std::io::Error::Ok(()) in
+      t956
+    } else {
+      join k957(jp958: string) -> Result__unit__std::io::Error {
+        join inline_cont1915(t959: std::io::Error) -> Result__unit__std::io::Error {
+          let t960 = Result__unit__std::io::Error::Err(t959) in
+          t960
+        } in
+        let inline1916 = std::io::kind_from_code(x24) in
+        join inline_join1917(inline1918: Option__int) -> Result__unit__std::io::Error {
+          let inline1919 =
+            inherent#std::io::Error#std::io::Error#new(inline1916, jp958, Tag_0, inline1918, x27) in
+          jump inline_cont1915(inline1919)
+        } in
+        if x25 {
+          let inline1920 = Option__int::Some(x26) in
+          jump inline_join1917(inline1920)
+        } else {
+          jump inline_join1917(Tag_0)
+        }
+      } in
+      if stderr/57 {
+        jump k957("write stderr")
+      } else {
+        jump k957("write stdout")
+      }
+    }
+  } in
+  if stderr/57 {
+    join inline_cont1909(t961: Vec[uint8]) -> Result__unit__std::io::Error {
+      let inline1908 = @runtime(std.io.write_stderr.v2)(t961) in
+      jump k952(inline1908)
+    } in
+    let inline1910 = std::bytes::Bytes.values(data/58) in
+    jump inline_cont1909(inline1910)
+  } else {
+    join inline_cont1913(t963: Vec[uint8]) -> Result__unit__std::io::Error {
+      let inline1912 = @runtime(std.io.write_stdout.v2)(t963) in
+      jump k952(inline1912)
+    } in
+    let inline1914 = std::bytes::Bytes.values(data/58) in
+    jump inline_cont1913(inline1914)
+  }
+}
+
+fn std::io::write_stdout_structured(data/65: std::bytes::Bytes) -> Result__unit__std::io::Error {
+  let t967 = std::io::write_structured(false, data/65) in
+  t967
+}
+
+fn std::io::write_stderr_structured(data/66: std::bytes::Bytes) -> Result__unit__std::io::Error {
+  let t970 = std::io::write_structured(true, data/66) in
+  t970
+}
+
+fn std::io::read_stdin() -> Result__std::bytes::Bytes__string {
+  join inline_cont1923(mtmp28: (bool, Vec[uint8], string)) -> Result__std::bytes::Bytes__string {
+    let x29 = mtmp28.0 in
+    let x30 = mtmp28.1 in
+    let x31 = mtmp28.2 in
+    if x29 {
+      join inline_cont1921(t975: std::bytes::Bytes) -> Result__std::bytes::Bytes__string {
+        let t976 = Result__std::bytes::Bytes__string::Ok(t975) in
+        t976
+      } in
+      let inline1922 = std::bytes::Bytes { values: x30 } in
+      jump inline_cont1921(inline1922)
+    } else {
+      let t977 = Result__std::bytes::Bytes__string::Err(x31) in
+      t977
+    }
+  } in
+  let inline1924 = @runtime(std.io.read_stdin)() in
+  jump inline_cont1923(inline1924)
+}
+
+fn std::io::write_stdout(data/74: std::bytes::Bytes) -> Result__unit__string {
+  join inline_cont1927(t980: Vec[uint8]) -> Result__unit__string {
+    join inline_cont1925(mtmp32: (bool, string)) -> Result__unit__string {
+      let x33 = mtmp32.0 in
+      let x34 = mtmp32.1 in
+      if x33 {
+        let t983 = Result__unit__string::Ok(()) in
+        t983
+      } else {
+        let t984 = Result__unit__string::Err(x34) in
+        t984
+      }
+    } in
+    let inline1926 = @runtime(std.io.write_stdout)(t980) in
+    jump inline_cont1925(inline1926)
+  } in
+  let inline1928 = std::bytes::Bytes.values(data/74) in
+  jump inline_cont1927(inline1928)
+}
+
+fn std::io::write_stderr(data/77: std::bytes::Bytes) -> Result__unit__string {
+  join inline_cont1931(t987: Vec[uint8]) -> Result__unit__string {
+    join inline_cont1929(mtmp35: (bool, string)) -> Result__unit__string {
+      let x36 = mtmp35.0 in
+      let x37 = mtmp35.1 in
+      if x36 {
+        let t990 = Result__unit__string::Ok(()) in
+        t990
+      } else {
+        let t991 = Result__unit__string::Err(x37) in
+        t991
+      }
+    } in
+    let inline1930 = @runtime(std.io.write_stderr)(t987) in
+    jump inline_cont1929(inline1930)
+  } in
+  let inline1932 = std::bytes::Bytes.values(data/77) in
+  jump inline_cont1931(inline1932)
+}
+
+fn std::io::read_stdin_exact(length/80: int) -> Result__std::bytes::Bytes__string {
+  let t996 = (length/80 < 0) in
+  if t996 {
+    let t997 = Result__std::bytes::Bytes__string::Err("read length must be non-negative") in
+    t997
+  } else {
+    join inline_cont1935(mtmp38: (bool, Vec[uint8], string)) -> Result__std::bytes::Bytes__string {
+      let x39 = mtmp38.0 in
+      let x40 = mtmp38.1 in
+      let x41 = mtmp38.2 in
+      if x39 {
+        join inline_cont1933(t1000: std::bytes::Bytes) -> Result__std::bytes::Bytes__string {
+          let t1001 = Result__std::bytes::Bytes__string::Ok(t1000) in
+          t1001
+        } in
+        let inline1934 = std::bytes::Bytes { values: x40 } in
+        jump inline_cont1933(inline1934)
+      } else {
+        let t1002 = Result__std::bytes::Bytes__string::Err(x41) in
+        t1002
+      }
+    } in
+    let inline1936 = @runtime(std.io.read_stdin_exact)(length/80) in
+    jump inline_cont1935(inline1936)
+  }
+}
+
+fn inherent#std::time::Error#std::time::Error#new(
+  operation/0: string,
+  message/1: string
+) -> std::time::Error {
+  join inline_cont1937(t1005: std::io::ErrorDetails) -> std::time::Error {
+    let t1006 = std::time::Error { details: t1005 } in
+    t1006
+  } in
+  let inline1938 =
+    std::io::ErrorDetails {
+      kind_value: Tag_3,
+      operation_value: operation/0,
+      context_value: Tag_0,
+      raw_os_code_value: Tag_0,
+      message_value: message/1
+    } in
+  jump inline_cont1937(inline1938)
+}
+
+fn inherent#std::time::Error#std::time::Error#kind(self/2: std::time::Error) -> std::io::ErrorKind {
+  let t1009 = std::time::Error.details(self/2) in
+  let inline1940 = std::io::ErrorDetails.kind_value(t1009) in
+  inline1940
+}
+
+fn inherent#std::time::Error#std::time::Error#operation(self/3: std::time::Error) -> string {
+  let t1013 = std::time::Error.details(self/3) in
+  let inline1942 = std::io::ErrorDetails.operation_value(t1013) in
+  inline1942
+}
+
+fn inherent#std::time::Error#std::time::Error#context(self/4: std::time::Error) -> Option__string {
+  let t1017 = std::time::Error.details(self/4) in
+  let inline1944 = std::io::ErrorDetails.context_value(t1017) in
+  inline1944
+}
+
+fn inherent#std::time::Error#std::time::Error#raw_os_code(self/5: std::time::Error) -> Option__int {
+  let t1021 = std::time::Error.details(self/5) in
+  let inline1946 = std::io::ErrorDetails.raw_os_code_value(t1021) in
+  inline1946
+}
+
+fn inherent#std::time::Error#std::time::Error#message(self/6: std::time::Error) -> string {
+  let t1025 = std::time::Error.details(self/6) in
+  let inline1948 = std::io::ErrorDetails.message_value(t1025) in
+  inline1948
+}
+
+fn trait_impl#ToString#std::time::Error#to_string(self/7: std::time::Error) -> string {
+  let t1029 = std::time::Error.details(self/7) in
+  let inline1950 = std::io::ErrorDetails.context_value(t1029) in
+  match inline1950 {
+    Tag_0 => {
+      let inline1951 = std::io::ErrorDetails.operation_value(t1029) in
+      let inline1952 = (inline1951 + ": ") in
+      let inline1953 = std::io::ErrorDetails.message_value(t1029) in
+      let inline1954 = (inline1952 + inline1953) in
+      inline1954
+    },
+    Tag_1 => {
+      let inline1955 = Option__string::Some._0(inline1950) in
+      let inline1957 = std::io::ErrorDetails.operation_value(t1029) in
+      let inline1958 = (inline1957 + " ") in
+      let inline1959 = (inline1958 + inline1955) in
+      let inline1960 = (inline1959 + ": ") in
+      let inline1961 = std::io::ErrorDetails.message_value(t1029) in
+      let inline1962 = (inline1960 + inline1961) in
+      inline1962
+    },
+  }
+}
+
+fn trait_impl#Debug#std::time::Error#debug(self/8: std::time::Error) -> string {
+  let inline1964 = std::time::Error.details(self/8) in
+  let inline1965 = trait_impl#ToString#std::io::ErrorDetails#to_string(inline1964) in
+  inline1965
+}
+
+fn trait_impl#PartialEq#std::time::Error#eq(
+  self/9: std::time::Error,
+  other/10: std::time::Error
+) -> bool {
+  let t1036 = std::time::Error.details(self/9) in
+  let t1037 = std::time::Error.details(other/10) in
+  let t1038 = trait_impl#PartialEq#std::io::ErrorDetails#eq(t1036, t1037) in
+  t1038
+}
+
+fn inherent#std::time::Duration#std::time::Duration#zero() -> std::time::Duration {
+  let t1041 = std::time::Duration { nanoseconds: 0 } in
+  t1041
+}
+
+fn inherent#std::time::Duration#std::time::Duration#from_nanoseconds(
+  value/11: int64
+) -> std::time::Duration {
+  let t1047 = (value/11 < 0) in
+  join k1044(jp1045: int64) -> std::time::Duration {
+    let t1046 = std::time::Duration { nanoseconds: jp1045 } in
+    t1046
+  } in
+  if t1047 {
+    jump k1044(0)
+  } else {
+    jump k1044(value/11)
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#from_microseconds(
+  value/12: int64
+) -> std::time::Duration {
+  let t1050 = (value/12 * 1000) in
+  let inline1967 = (t1050 < 0) in
+  join inline_join1968(inline1969: int64) -> std::time::Duration {
+    let inline1970 = std::time::Duration { nanoseconds: inline1969 } in
+    inline1970
+  } in
+  if inline1967 {
+    jump inline_join1968(0)
+  } else {
+    jump inline_join1968(t1050)
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#from_milliseconds(
+  value/13: int64
+) -> std::time::Duration {
+  let t1054 = (value/13 * 1000000) in
+  let inline1972 = (t1054 < 0) in
+  join inline_join1973(inline1974: int64) -> std::time::Duration {
+    let inline1975 = std::time::Duration { nanoseconds: inline1974 } in
+    inline1975
+  } in
+  if inline1972 {
+    jump inline_join1973(0)
+  } else {
+    jump inline_join1973(t1054)
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#from_seconds(
+  value/14: int64
+) -> std::time::Duration {
+  let t1058 = (value/14 * 1000000000) in
+  let inline1977 = (t1058 < 0) in
+  join inline_join1978(inline1979: int64) -> std::time::Duration {
+    let inline1980 = std::time::Duration { nanoseconds: inline1979 } in
+    inline1980
+  } in
+  if inline1977 {
+    jump inline_join1978(0)
+  } else {
+    jump inline_join1978(t1058)
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#checked_from_microseconds(
+  value/15: int64
+) -> Option__std::time::Duration {
+  let inline1982 = 1000 in
+  let inline1983 = (value/15 < 0) in
+  join inline_join1984(inline1985: bool) -> Option__std::time::Duration {
+    if inline1985 {
+      Tag_0
+    } else {
+      let inline1986 = (value/15 * inline1982) in
+      let inline1987 =
+        inherent#std::time::Duration#std::time::Duration#from_nanoseconds(inline1986) in
+      let inline1988 = Option__std::time::Duration::Some(inline1987) in
+      inline1988
+    }
+  } in
+  if inline1983 {
+    jump inline_join1984(true)
+  } else {
+    let inline1989 = (9223372036854775807 / inline1982) in
+    let inline1990 = (value/15 > inline1989) in
+    jump inline_join1984(inline1990)
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#checked_from_milliseconds(
+  value/16: int64
+) -> Option__std::time::Duration {
+  let inline1992 = 1000000 in
+  let inline1993 = (value/16 < 0) in
+  join inline_join1994(inline1995: bool) -> Option__std::time::Duration {
+    if inline1995 {
+      Tag_0
+    } else {
+      let inline1996 = (value/16 * inline1992) in
+      let inline1997 =
+        inherent#std::time::Duration#std::time::Duration#from_nanoseconds(inline1996) in
+      let inline1998 = Option__std::time::Duration::Some(inline1997) in
+      inline1998
+    }
+  } in
+  if inline1993 {
+    jump inline_join1994(true)
+  } else {
+    let inline1999 = (9223372036854775807 / inline1992) in
+    let inline2000 = (value/16 > inline1999) in
+    jump inline_join1994(inline2000)
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#checked_from_seconds(
+  value/17: int64
+) -> Option__std::time::Duration {
+  let inline2002 = 1000000000 in
+  let inline2003 = (value/17 < 0) in
+  join inline_join2004(inline2005: bool) -> Option__std::time::Duration {
+    if inline2005 {
+      Tag_0
+    } else {
+      let inline2006 = (value/17 * inline2002) in
+      let inline2007 =
+        inherent#std::time::Duration#std::time::Duration#from_nanoseconds(inline2006) in
+      let inline2008 = Option__std::time::Duration::Some(inline2007) in
+      inline2008
+    }
+  } in
+  if inline2003 {
+    jump inline_join2004(true)
+  } else {
+    let inline2009 = (9223372036854775807 / inline2002) in
+    let inline2010 = (value/17 > inline2009) in
+    jump inline_join2004(inline2010)
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#checked_scaled(
+  value/18: int64,
+  scale/19: int64
+) -> Option__std::time::Duration {
+  let t1078 = (value/18 < 0) in
+  join k1073(jp1074: bool) -> Option__std::time::Duration {
+    if jp1074 {
+      Tag_0
+    } else {
+      let t1075 = (value/18 * scale/19) in
+      join inline_cont2011(t1076: std::time::Duration) -> Option__std::time::Duration {
+        let t1077 = Option__std::time::Duration::Some(t1076) in
+        t1077
+      } in
+      let inline2012 = (t1075 < 0) in
+      join inline_join2013(inline2014: int64) -> Option__std::time::Duration {
+        let inline2015 = std::time::Duration { nanoseconds: inline2014 } in
+        jump inline_cont2011(inline2015)
+      } in
+      if inline2012 {
+        jump inline_join2013(0)
+      } else {
+        jump inline_join2013(t1075)
+      }
+    }
+  } in
+  if t1078 {
+    jump k1073(true)
+  } else {
+    let t1079 = (9223372036854775807 / scale/19) in
+    let t1080 = (value/18 > t1079) in
+    jump k1073(t1080)
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#saturating_from_microseconds(
+  value/20: int64
+) -> std::time::Duration {
+  let inline2017 = 1000 in
+  let inline2018 =
+    inherent#std::time::Duration#std::time::Duration#checked_scaled(value/20, inline2017) in
+  match inline2018 {
+    Tag_0 => {
+      let inline2019 = (value/20 < 0) in
+      if inline2019 {
+        let inline2020 = inherent#std::time::Duration#std::time::Duration#zero() in
+        inline2020
+      } else {
+        let inline2021 =
+          inherent#std::time::Duration#std::time::Duration#from_nanoseconds(9223372036854775807) in
+        inline2021
+      }
+    },
+    Tag_1 => {
+      let inline2022 = Option__std::time::Duration::Some._0(inline2018) in
+      inline2022
+    },
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#saturating_from_milliseconds(
+  value/21: int64
+) -> std::time::Duration {
+  let inline2025 = 1000000 in
+  let inline2026 =
+    inherent#std::time::Duration#std::time::Duration#checked_scaled(value/21, inline2025) in
+  match inline2026 {
+    Tag_0 => {
+      let inline2027 = (value/21 < 0) in
+      if inline2027 {
+        let inline2028 = inherent#std::time::Duration#std::time::Duration#zero() in
+        inline2028
+      } else {
+        let inline2029 =
+          inherent#std::time::Duration#std::time::Duration#from_nanoseconds(9223372036854775807) in
+        inline2029
+      }
+    },
+    Tag_1 => {
+      let inline2030 = Option__std::time::Duration::Some._0(inline2026) in
+      inline2030
+    },
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#saturating_from_seconds(
+  value/22: int64
+) -> std::time::Duration {
+  let inline2033 = 1000000000 in
+  let inline2034 =
+    inherent#std::time::Duration#std::time::Duration#checked_scaled(value/22, inline2033) in
+  match inline2034 {
+    Tag_0 => {
+      let inline2035 = (value/22 < 0) in
+      if inline2035 {
+        let inline2036 = inherent#std::time::Duration#std::time::Duration#zero() in
+        inline2036
+      } else {
+        let inline2037 =
+          inherent#std::time::Duration#std::time::Duration#from_nanoseconds(9223372036854775807) in
+        inline2037
+      }
+    },
+    Tag_1 => {
+      let inline2038 = Option__std::time::Duration::Some._0(inline2034) in
+      inline2038
+    },
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#saturating_scaled(
+  value/23: int64,
+  scale/24: int64
+) -> std::time::Duration {
+  join commute_arm2397() -> std::time::Duration {
+    let t1096 = (value/23 < 0) in
+    if t1096 {
+      let inline2041 = std::time::Duration { nanoseconds: 0 } in
+      inline2041
+    } else {
+      let inline2043 = 9223372036854775807 in
+      let inline2044 = (inline2043 < 0) in
+      join inline_join2045(inline2046: int64) -> std::time::Duration {
+        let inline2047 = std::time::Duration { nanoseconds: inline2046 } in
+        inline2047
+      } in
+      if inline2044 {
+        jump inline_join2045(0)
+      } else {
+        jump inline_join2045(inline2043)
+      }
+    }
+  } in
+  join commute_arm2399(commute_field2398: std::time::Duration) -> std::time::Duration {
+    commute_field2398
+  } in
+  let inline2049 = (value/23 < 0) in
+  join inline_join2050(inline2051: bool) -> std::time::Duration {
+    if inline2051 {
+      jump commute_arm2397()
+    } else {
+      let inline2052 = (value/23 * scale/24) in
+      let inline2053 =
+        inherent#std::time::Duration#std::time::Duration#from_nanoseconds(inline2052) in
+      jump commute_arm2399(inline2053)
+    }
+  } in
+  if inline2049 {
+    jump inline_join2050(true)
+  } else {
+    let inline2055 = (9223372036854775807 / scale/24) in
+    let inline2056 = (value/23 > inline2055) in
+    jump inline_join2050(inline2056)
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#as_nanoseconds(
+  self/26: std::time::Duration
+) -> int64 {
+  let t1101 = std::time::Duration.nanoseconds(self/26) in
+  t1101
+}
+
+fn inherent#std::time::Duration#std::time::Duration#as_microseconds(
+  self/27: std::time::Duration
+) -> int64 {
+  let t1104 = std::time::Duration.nanoseconds(self/27) in
+  let t1105 = (t1104 / 1000) in
+  t1105
+}
+
+fn inherent#std::time::Duration#std::time::Duration#as_milliseconds(
+  self/28: std::time::Duration
+) -> int64 {
+  let t1108 = std::time::Duration.nanoseconds(self/28) in
+  let t1109 = (t1108 / 1000000) in
+  t1109
+}
+
+fn inherent#std::time::Duration#std::time::Duration#as_seconds(
+  self/29: std::time::Duration
+) -> int64 {
+  let t1112 = std::time::Duration.nanoseconds(self/29) in
+  let t1113 = (t1112 / 1000000000) in
+  t1113
+}
+
+fn inherent#std::time::Duration#std::time::Duration#is_zero(self/30: std::time::Duration) -> bool {
+  let t1116 = std::time::Duration.nanoseconds(self/30) in
+  let t1117 = (t1116 == 0) in
+  t1117
+}
+
+fn inherent#std::time::Duration#std::time::Duration#add(
+  self/31: std::time::Duration,
+  other/32: std::time::Duration
+) -> std::time::Duration {
+  let t1120 = std::time::Duration.nanoseconds(self/31) in
+  let t1121 = std::time::Duration.nanoseconds(other/32) in
+  let t1122 = (t1120 + t1121) in
+  let inline2058 = (t1122 < 0) in
+  join inline_join2059(inline2060: int64) -> std::time::Duration {
+    let inline2061 = std::time::Duration { nanoseconds: inline2060 } in
+    inline2061
+  } in
+  if inline2058 {
+    jump inline_join2059(0)
+  } else {
+    jump inline_join2059(t1122)
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#subtract(
+  self/33: std::time::Duration,
+  other/34: std::time::Duration
+) -> std::time::Duration {
+  let t1126 = std::time::Duration.nanoseconds(self/33) in
+  let t1127 = std::time::Duration.nanoseconds(other/34) in
+  let t1128 = (t1126 - t1127) in
+  let inline2063 = (t1128 < 0) in
+  join inline_join2064(inline2065: int64) -> std::time::Duration {
+    let inline2066 = std::time::Duration { nanoseconds: inline2065 } in
+    inline2066
+  } in
+  if inline2063 {
+    jump inline_join2064(0)
+  } else {
+    jump inline_join2064(t1128)
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#checked_add(
+  self/35: std::time::Duration,
+  other/36: std::time::Duration
+) -> Option__std::time::Duration {
+  let t1134 = std::time::Duration.nanoseconds(other/36) in
+  let t1135 = std::time::Duration.nanoseconds(self/35) in
+  let t1136 = (9223372036854775807 - t1135) in
+  let t1137 = (t1134 > t1136) in
+  if t1137 {
+    Tag_0
+  } else {
+    let t1138 = std::time::Duration.nanoseconds(self/35) in
+    let t1139 = std::time::Duration.nanoseconds(other/36) in
+    let t1140 = (t1138 + t1139) in
+    join inline_cont2067(t1141: std::time::Duration) -> Option__std::time::Duration {
+      let t1142 = Option__std::time::Duration::Some(t1141) in
+      t1142
+    } in
+    let inline2068 = (t1140 < 0) in
+    join inline_join2069(inline2070: int64) -> Option__std::time::Duration {
+      let inline2071 = std::time::Duration { nanoseconds: inline2070 } in
+      jump inline_cont2067(inline2071)
+    } in
+    if inline2068 {
+      jump inline_join2069(0)
+    } else {
+      jump inline_join2069(t1140)
+    }
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#saturating_add(
+  self/37: std::time::Duration,
+  other/38: std::time::Duration
+) -> std::time::Duration {
+  join inline_cont2081(t1145: Option__std::time::Duration) -> std::time::Duration {
+    join inline_cont2075(t1146: std::time::Duration) -> std::time::Duration {
+      match t1145 {
+        Tag_0 => {
+          t1146
+        },
+        Tag_1 => {
+          let inline2073 = Option__std::time::Duration::Some._0(t1145) in
+          inline2073
+        },
+      }
+    } in
+    let inline2076 = 9223372036854775807 in
+    let inline2077 = (inline2076 < 0) in
+    join inline_join2078(inline2079: int64) -> std::time::Duration {
+      let inline2080 = std::time::Duration { nanoseconds: inline2079 } in
+      jump inline_cont2075(inline2080)
+    } in
+    if inline2077 {
+      jump inline_join2078(0)
+    } else {
+      jump inline_join2078(inline2076)
+    }
+  } in
+  let inline2082 = std::time::Duration.nanoseconds(other/38) in
+  let inline2083 = std::time::Duration.nanoseconds(self/37) in
+  let inline2084 = (9223372036854775807 - inline2083) in
+  let inline2085 = (inline2082 > inline2084) in
+  if inline2085 {
+    jump inline_cont2081(Tag_0)
+  } else {
+    let inline2086 = std::time::Duration.nanoseconds(self/37) in
+    let inline2087 = std::time::Duration.nanoseconds(other/38) in
+    let inline2088 = (inline2086 + inline2087) in
+    let inline2089 =
+      inherent#std::time::Duration#std::time::Duration#from_nanoseconds(inline2088) in
+    let inline2090 = Option__std::time::Duration::Some(inline2089) in
+    jump inline_cont2081(inline2090)
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#checked_subtract(
+  self/39: std::time::Duration,
+  other/40: std::time::Duration
+) -> Option__std::time::Duration {
+  let t1152 = std::time::Duration.nanoseconds(self/39) in
+  let t1153 = std::time::Duration.nanoseconds(other/40) in
+  let t1154 = (t1152 < t1153) in
+  if t1154 {
+    Tag_0
+  } else {
+    let t1155 = std::time::Duration.nanoseconds(self/39) in
+    let t1156 = std::time::Duration.nanoseconds(other/40) in
+    let t1157 = (t1155 - t1156) in
+    join inline_cont2091(t1158: std::time::Duration) -> Option__std::time::Duration {
+      let t1159 = Option__std::time::Duration::Some(t1158) in
+      t1159
+    } in
+    let inline2092 = (t1157 < 0) in
+    join inline_join2093(inline2094: int64) -> Option__std::time::Duration {
+      let inline2095 = std::time::Duration { nanoseconds: inline2094 } in
+      jump inline_cont2091(inline2095)
+    } in
+    if inline2092 {
+      jump inline_join2093(0)
+    } else {
+      jump inline_join2093(t1157)
+    }
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#saturating_subtract(
+  self/41: std::time::Duration,
+  other/42: std::time::Duration
+) -> std::time::Duration {
+  join inline_cont2101(t1162: Option__std::time::Duration) -> std::time::Duration {
+    join inline_cont2099(t1163: std::time::Duration) -> std::time::Duration {
+      match t1162 {
+        Tag_0 => {
+          t1163
+        },
+        Tag_1 => {
+          let inline2097 = Option__std::time::Duration::Some._0(t1162) in
+          inline2097
+        },
+      }
+    } in
+    let inline2100 = std::time::Duration { nanoseconds: 0 } in
+    jump inline_cont2099(inline2100)
+  } in
+  let inline2102 = std::time::Duration.nanoseconds(self/41) in
+  let inline2103 = std::time::Duration.nanoseconds(other/42) in
+  let inline2104 = (inline2102 < inline2103) in
+  if inline2104 {
+    jump inline_cont2101(Tag_0)
+  } else {
+    let inline2105 = std::time::Duration.nanoseconds(self/41) in
+    let inline2106 = std::time::Duration.nanoseconds(other/42) in
+    let inline2107 = (inline2105 - inline2106) in
+    let inline2108 =
+      inherent#std::time::Duration#std::time::Duration#from_nanoseconds(inline2107) in
+    let inline2109 = Option__std::time::Duration::Some(inline2108) in
+    jump inline_cont2101(inline2109)
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#checked_multiply(
+  self/43: std::time::Duration,
+  factor/44: int64
+) -> Option__std::time::Duration {
+  let t1175 = (factor/44 < 0) in
+  join k1169(jp1170: bool) -> Option__std::time::Duration {
+    if jp1170 {
+      Tag_0
+    } else {
+      let t1171 = std::time::Duration.nanoseconds(self/43) in
+      let t1172 = (t1171 * factor/44) in
+      join inline_cont2110(t1173: std::time::Duration) -> Option__std::time::Duration {
+        let t1174 = Option__std::time::Duration::Some(t1173) in
+        t1174
+      } in
+      let inline2111 = (t1172 < 0) in
+      join inline_join2112(inline2113: int64) -> Option__std::time::Duration {
+        let inline2114 = std::time::Duration { nanoseconds: inline2113 } in
+        jump inline_cont2110(inline2114)
+      } in
+      if inline2111 {
+        jump inline_join2112(0)
+      } else {
+        jump inline_join2112(t1172)
+      }
+    }
+  } in
+  if t1175 {
+    jump k1169(true)
+  } else {
+    let t1178 = (factor/44 > 0) in
+    if t1178 {
+      let t1179 = std::time::Duration.nanoseconds(self/43) in
+      let t1180 = (9223372036854775807 / factor/44) in
+      let t1181 = (t1179 > t1180) in
+      jump k1169(t1181)
+    } else {
+      jump k1169(false)
+    }
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#saturating_multiply(
+  self/45: std::time::Duration,
+  factor/46: int64
+) -> std::time::Duration {
+  let mtmp2 =
+    inherent#std::time::Duration#std::time::Duration#checked_multiply(self/45, factor/46) in
+  match mtmp2 {
+    Tag_0 => {
+      let t1188 = (factor/46 < 0) in
+      if t1188 {
+        let inline2116 = std::time::Duration { nanoseconds: 0 } in
+        inline2116
+      } else {
+        let inline2118 = 9223372036854775807 in
+        let inline2119 = (inline2118 < 0) in
+        join inline_join2120(inline2121: int64) -> std::time::Duration {
+          let inline2122 = std::time::Duration { nanoseconds: inline2121 } in
+          inline2122
+        } in
+        if inline2119 {
+          jump inline_join2120(0)
+        } else {
+          jump inline_join2120(inline2118)
+        }
+      }
+    },
+    Tag_1 => {
+      let x3 = Option__std::time::Duration::Some._0(mtmp2) in
+      x3
+    },
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#compare(
+  self/48: std::time::Duration,
+  other/49: std::time::Duration
+) -> int {
+  let t1195 = std::time::Duration.nanoseconds(self/48) in
+  let t1196 = std::time::Duration.nanoseconds(other/49) in
+  let t1197 = (t1195 < t1196) in
+  if t1197 {
+    -1
+  } else {
+    let t1200 = std::time::Duration.nanoseconds(self/48) in
+    let t1201 = std::time::Duration.nanoseconds(other/49) in
+    let t1202 = (t1200 > t1201) in
+    if t1202 {
+      1
+    } else {
+      0
+    }
+  }
+}
+
+fn trait_impl#PartialEq#std::time::Duration#eq(
+  self/50: std::time::Duration,
+  other/51: std::time::Duration
+) -> bool {
+  let t1205 = std::time::Duration.nanoseconds(self/50) in
+  let t1206 = std::time::Duration.nanoseconds(other/51) in
+  let t1207 = (t1205 == t1206) in
+  t1207
+}
+
+fn inherent#std::time::Instant#std::time::Instant#now() -> std::time::Instant {
+  join inline_cont2123(t1210: int64) -> std::time::Instant {
+    let t1211 = std::time::Instant { nanoseconds: t1210 } in
+    t1211
+  } in
+  let inline2124 = @runtime(std.time.monotonic_nanoseconds)() in
+  jump inline_cont2123(inline2124)
+}
+
+fn inherent#std::time::Instant#std::time::Instant#elapsed(
+  self/52: std::time::Instant
+) -> std::time::Duration {
+  join inline_cont2130(t1214: std::time::Instant) -> std::time::Duration {
+    let inline2126 = std::time::Instant.nanoseconds(t1214) in
+    let inline2127 = std::time::Instant.nanoseconds(self/52) in
+    let inline2128 = (inline2126 - inline2127) in
+    let inline2129 =
+      inherent#std::time::Duration#std::time::Duration#from_nanoseconds(inline2128) in
+    inline2129
+  } in
+  let inline2131 = std::internal::host::monotonic_nanoseconds() in
+  let inline2132 = std::time::Instant { nanoseconds: inline2131 } in
+  jump inline_cont2130(inline2132)
+}
+
+fn inherent#std::time::Instant#std::time::Instant#duration_since(
+  self/53: std::time::Instant,
+  earlier/54: std::time::Instant
+) -> std::time::Duration {
+  let t1218 = std::time::Instant.nanoseconds(self/53) in
+  let t1219 = std::time::Instant.nanoseconds(earlier/54) in
+  let t1220 = (t1218 - t1219) in
+  let inline2134 = (t1220 < 0) in
+  join inline_join2135(inline2136: int64) -> std::time::Duration {
+    let inline2137 = std::time::Duration { nanoseconds: inline2136 } in
+    inline2137
+  } in
+  if inline2134 {
+    jump inline_join2135(0)
+  } else {
+    jump inline_join2135(t1220)
+  }
+}
+
+fn inherent#std::time::Instant#std::time::Instant#checked_duration_since(
+  self/55: std::time::Instant,
+  earlier/56: std::time::Instant
+) -> Option__std::time::Duration {
+  let t1226 = std::time::Instant.nanoseconds(self/55) in
+  let t1227 = std::time::Instant.nanoseconds(earlier/56) in
+  let t1228 = (t1226 < t1227) in
+  if t1228 {
+    Tag_0
+  } else {
+    let t1229 = std::time::Instant.nanoseconds(self/55) in
+    let t1230 = std::time::Instant.nanoseconds(earlier/56) in
+    let t1231 = (t1229 - t1230) in
+    join inline_cont2138(t1232: std::time::Duration) -> Option__std::time::Duration {
+      let t1233 = Option__std::time::Duration::Some(t1232) in
+      t1233
+    } in
+    let inline2139 = (t1231 < 0) in
+    join inline_join2140(inline2141: int64) -> Option__std::time::Duration {
+      let inline2142 = std::time::Duration { nanoseconds: inline2141 } in
+      jump inline_cont2138(inline2142)
+    } in
+    if inline2139 {
+      jump inline_join2140(0)
+    } else {
+      jump inline_join2140(t1231)
+    }
+  }
+}
+
+fn inherent#std::time::Instant#std::time::Instant#compare(
+  self/57: std::time::Instant,
+  other/58: std::time::Instant
+) -> int {
+  let t1238 = std::time::Instant.nanoseconds(self/57) in
+  let t1239 = std::time::Instant.nanoseconds(other/58) in
+  let t1240 = (t1238 < t1239) in
+  if t1240 {
+    -1
+  } else {
+    let t1243 = std::time::Instant.nanoseconds(self/57) in
+    let t1244 = std::time::Instant.nanoseconds(other/58) in
+    let t1245 = (t1243 > t1244) in
+    if t1245 {
+      1
+    } else {
+      0
+    }
+  }
+}
+
+fn trait_impl#PartialEq#std::time::Instant#eq(
+  self/59: std::time::Instant,
+  other/60: std::time::Instant
+) -> bool {
+  let t1248 = std::time::Instant.nanoseconds(self/59) in
+  let t1249 = std::time::Instant.nanoseconds(other/60) in
+  let t1250 = (t1248 == t1249) in
+  t1250
+}
+
+fn inherent#std::time::SystemTime#std::time::SystemTime#now() -> std::time::SystemTime {
+  join inline_cont2143(t1253: int64) -> std::time::SystemTime {
+    let t1254 = std::time::SystemTime { unix_nanoseconds: t1253 } in
+    t1254
+  } in
+  let inline2144 = @runtime(std.time.unix_nanoseconds)() in
+  jump inline_cont2143(inline2144)
+}
+
+fn inherent#std::time::SystemTime#std::time::SystemTime#from_unix_nanoseconds(
+  value/61: int64
+) -> std::time::SystemTime {
+  let t1257 = std::time::SystemTime { unix_nanoseconds: value/61 } in
+  t1257
+}
+
+fn inherent#std::time::SystemTime#std::time::SystemTime#checked_from_unix_milliseconds(
+  value/62: int64
+) -> Result__std::time::SystemTime__std::time::Error {
+  let t1269 = (value/62 > 9223372036854) in
+  join k1262(jp1263: bool) -> Result__std::time::SystemTime__std::time::Error {
+    if jp1263 {
+      join inline_cont2145(
+        t1264: std::time::Error
+      ) -> Result__std::time::SystemTime__std::time::Error {
+        let t1265 = Result__std::time::SystemTime__std::time::Error::Err(t1264) in
+        t1265
+      } in
+      let inline2146 = "system time conversion" in
+      let inline2147 = "milliseconds out of range" in
+      let inline2148 =
+        inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
+          Tag_3,
+          inline2146,
+          Tag_0,
+          Tag_0,
+          inline2147
+        ) in
+      let inline2149 = std::time::Error { details: inline2148 } in
+      jump inline_cont2145(inline2149)
+    } else {
+      let t1266 = (value/62 * 1000000) in
+      join inline_cont2150(
+        t1267: std::time::SystemTime
+      ) -> Result__std::time::SystemTime__std::time::Error {
+        let t1268 = Result__std::time::SystemTime__std::time::Error::Ok(t1267) in
+        t1268
+      } in
+      let inline2151 = std::time::SystemTime { unix_nanoseconds: t1266 } in
+      jump inline_cont2150(inline2151)
+    }
+  } in
+  if t1269 {
+    jump k1262(true)
+  } else {
+    let t1270 = (value/62 < -9223372036854) in
+    jump k1262(t1270)
+  }
+}
+
+fn inherent#std::time::SystemTime#std::time::SystemTime#checked_from_unix_seconds(
+  value/63: int64
+) -> Result__std::time::SystemTime__std::time::Error {
+  let t1282 = (value/63 > 9223372036) in
+  join k1275(jp1276: bool) -> Result__std::time::SystemTime__std::time::Error {
+    if jp1276 {
+      join inline_cont2152(
+        t1277: std::time::Error
+      ) -> Result__std::time::SystemTime__std::time::Error {
+        let t1278 = Result__std::time::SystemTime__std::time::Error::Err(t1277) in
+        t1278
+      } in
+      let inline2153 = "system time conversion" in
+      let inline2154 = "seconds out of range" in
+      let inline2155 =
+        inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
+          Tag_3,
+          inline2153,
+          Tag_0,
+          Tag_0,
+          inline2154
+        ) in
+      let inline2156 = std::time::Error { details: inline2155 } in
+      jump inline_cont2152(inline2156)
+    } else {
+      let t1279 = (value/63 * 1000000000) in
+      join inline_cont2157(
+        t1280: std::time::SystemTime
+      ) -> Result__std::time::SystemTime__std::time::Error {
+        let t1281 = Result__std::time::SystemTime__std::time::Error::Ok(t1280) in
+        t1281
+      } in
+      let inline2158 = std::time::SystemTime { unix_nanoseconds: t1279 } in
+      jump inline_cont2157(inline2158)
+    }
+  } in
+  if t1282 {
+    jump k1275(true)
+  } else {
+    let t1283 = (value/63 < -9223372036) in
+    jump k1275(t1283)
+  }
+}
+
+fn inherent#std::time::SystemTime#std::time::SystemTime#duration_since(
+  self/64: std::time::SystemTime,
+  earlier/65: std::time::SystemTime
+) -> Result__std::time::Duration__std::time::Error {
+  let t1288 = std::time::SystemTime.unix_nanoseconds(self/64) in
+  let t1289 = std::time::SystemTime.unix_nanoseconds(earlier/65) in
+  let t1290 = (t1288 < t1289) in
+  if t1290 {
+    join inline_cont2159(t1291: std::time::Error) -> Result__std::time::Duration__std::time::Error {
+      let t1292 = Result__std::time::Duration__std::time::Error::Err(t1291) in
+      t1292
+    } in
+    let inline2160 = "system time difference" in
+    let inline2161 = "earlier time is after receiver" in
+    let inline2162 =
+      inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
+        Tag_3,
+        inline2160,
+        Tag_0,
+        Tag_0,
+        inline2161
+      ) in
+    let inline2163 = std::time::Error { details: inline2162 } in
+    jump inline_cont2159(inline2163)
+  } else {
+    let t1293 = std::time::SystemTime.unix_nanoseconds(self/64) in
+    let t1294 = std::time::SystemTime.unix_nanoseconds(earlier/65) in
+    let t1295 = (t1293 - t1294) in
+    join inline_cont2164(
+      t1296: std::time::Duration
+    ) -> Result__std::time::Duration__std::time::Error {
+      let t1297 = Result__std::time::Duration__std::time::Error::Ok(t1296) in
+      t1297
+    } in
+    let inline2165 = (t1295 < 0) in
+    join inline_join2166(inline2167: int64) -> Result__std::time::Duration__std::time::Error {
+      let inline2168 = std::time::Duration { nanoseconds: inline2167 } in
+      jump inline_cont2164(inline2168)
+    } in
+    if inline2165 {
+      jump inline_join2166(0)
+    } else {
+      jump inline_join2166(t1295)
+    }
+  }
+}
+
+fn inherent#std::time::SystemTime#std::time::SystemTime#unix_nanoseconds(
+  self/66: std::time::SystemTime
+) -> int64 {
+  let t1300 = std::time::SystemTime.unix_nanoseconds(self/66) in
+  t1300
+}
+
+fn inherent#std::time::SystemTime#std::time::SystemTime#unix_milliseconds(
+  self/67: std::time::SystemTime
+) -> int64 {
+  let t1303 = std::time::SystemTime.unix_nanoseconds(self/67) in
+  let t1304 = (t1303 / 1000000) in
+  t1304
+}
+
+fn inherent#std::time::SystemTime#std::time::SystemTime#unix_seconds(
+  self/68: std::time::SystemTime
+) -> int64 {
+  let t1307 = std::time::SystemTime.unix_nanoseconds(self/68) in
+  let t1308 = (t1307 / 1000000000) in
+  t1308
+}
+
+fn inherent#std::time::SystemTime#std::time::SystemTime#compare(
+  self/69: std::time::SystemTime,
+  other/70: std::time::SystemTime
+) -> int {
+  let t1313 = std::time::SystemTime.unix_nanoseconds(self/69) in
+  let t1314 = std::time::SystemTime.unix_nanoseconds(other/70) in
+  let t1315 = (t1313 < t1314) in
+  if t1315 {
+    -1
+  } else {
+    let t1318 = std::time::SystemTime.unix_nanoseconds(self/69) in
+    let t1319 = std::time::SystemTime.unix_nanoseconds(other/70) in
+    let t1320 = (t1318 > t1319) in
+    if t1320 {
+      1
+    } else {
+      0
+    }
+  }
+}
+
+fn trait_impl#PartialEq#std::time::SystemTime#eq(
+  self/71: std::time::SystemTime,
+  other/72: std::time::SystemTime
+) -> bool {
+  let t1323 = std::time::SystemTime.unix_nanoseconds(self/71) in
+  let t1324 = std::time::SystemTime.unix_nanoseconds(other/72) in
+  let t1325 = (t1323 == t1324) in
+  t1325
+}
+
+fn std::time::sleep(duration/73: std::time::Duration) -> unit {
+  join inline_cont2171(t1327: int64) -> unit {
+    let inline2170 = @runtime(std.time.sleep_nanoseconds)(t1327) in
+    ()
+  } in
+  let inline2172 = std::time::Duration.nanoseconds(duration/73) in
+  jump inline_cont2171(inline2172)
+}
+
+fn inherent#std::time::Timer#std::time::Timer#new(
+  duration/74: std::time::Duration
+) -> std::time::Timer {
+  join inline_cont2175(t1331: int64) -> std::time::Timer {
+    join inline_cont2173(mtmp4: (int64, Receiver[unit])) -> std::time::Timer {
+      let x5 = mtmp4.0 in
+      let x6 = mtmp4.1 in
+      let t1332 = std::time::Timer { id: x5, ready: x6 } in
+      t1332
+    } in
+    let inline2174 = @runtime(std.time.timer_new)(t1331) in
+    jump inline_cont2173(inline2174)
+  } in
+  let inline2176 = std::time::Duration.nanoseconds(duration/74) in
+  jump inline_cont2175(inline2176)
+}
+
+fn inherent#std::time::Timer#std::time::Timer#done(self/77: std::time::Timer) -> Receiver[unit] {
+  let t1335 = std::time::Timer.ready(self/77) in
+  t1335
+}
+
+fn inherent#std::time::Timer#std::time::Timer#stop(self/78: std::time::Timer) -> bool {
+  let t1338 = std::time::Timer.id(self/78) in
+  let inline2178 = @runtime(std.time.timer_stop)(t1338) in
+  inline2178
+}
+
+fn std::time::after(duration/79: std::time::Duration) -> Receiver[unit] {
+  join inline_cont2181(t1342: std::time::Timer) -> Receiver[unit] {
+    let inline2180 = std::time::Timer.ready(t1342) in
+    inline2180
+  } in
+  let inline2182 = inherent#std::time::Duration#std::time::Duration#as_nanoseconds(duration/79) in
+  let inline2183 = std::internal::host::timer_new(inline2182) in
+  let inline2184 = inline2183.0 in
+  let inline2185 = inline2183.1 in
+  let inline2188 = std::time::Timer { id: inline2184, ready: inline2185 } in
+  jump inline_cont2181(inline2188)
+}
+
+fn std::time::sleep_with(
+  cancel/80: std::task::CancelToken,
+  duration/81: std::time::Duration
+) -> std::task::WaitResult__unit {
+  join inline_cont2193(t1346: int64) -> std::task::WaitResult__unit {
+    let inline2190 = std::task::CancelToken.value(cancel/80) in
+    let inline2191 = std::internal::task::sleep_with(inline2190, t1346) in
+    if inline2191 {
+      let inline2192 = std::task::WaitResult__unit::Completed(()) in
+      inline2192
+    } else {
+      Tag_1
+    }
+  } in
+  let inline2194 = std::time::Duration.nanoseconds(duration/81) in
+  jump inline_cont2193(inline2194)
+}
+
+fn main() -> unit {
+  join inline_cont2243(t1349: std::time::Duration) -> unit {
+    let timer/0 = inherent#std::time::Timer#std::time::Timer#new(t1349) in
+    join inline_cont2241(t1362: Receiver[unit]) -> unit {
+      join k1350() -> unit {
+        join inline_cont2237(t1351: std::time::Duration) -> unit {
+          join inline_cont2229(stopped/2: std::time::Timer) -> unit {
+            join inline_cont2226(t1352: bool) -> unit {
+              join inline_cont2223(_wild412: unit) -> unit {
+                join inline_cont2221(t1359: Receiver[unit]) -> unit {
+                  join k1353() -> unit {
+                    let t1354 = closure_env_main_1 {} in
+                    let t1355 =
+                      pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](t1354) in
+                    join inline_cont2214(_wild414: unit) -> unit {
+                      let t1356 = closure_env_main_2 {} in
+                      let t1357 =
+                        pack_closure[inherent#closure_env_main_2#closure_env_main_2#apply](t1356) in
+                      let inline2208 = std::internal::task::root_scope() in
+                      let inline2209 = inherent#Ref#Ref[T]#new__T_Option[unit](Tag_0) in
+                      let inline2210 =
+                        closure_env_std_task_scope_T_unit_3 {
+                          result_0: inline2209,
+                          body_1: t1357,
+                          handle_2: inline2208
+                        } in
+                      let inline2211 =
+                        pack_closure[inherent#closure_env_std_task_scope_T_unit_3#closure_env_std_task_scope_T_unit_3#apply](
+                          inline2210
+                        ) in
+                      let inline2212 = std::internal::task::run(inline2208, inline2211) in
+                      let inline2213 = std::task::completed_scope_value__T_unit(inline2209) in
+                      ()
+                    } in
+                    let inline2215 = std::internal::task::root_scope() in
+                    let inline2216 = inherent#Ref#Ref[T]#new__T_Option[unit](Tag_0) in
+                    let inline2217 =
+                      closure_env_std_task_scope_T_unit_3 {
+                        result_0: inline2216,
+                        body_1: t1355,
+                        handle_2: inline2215
+                      } in
+                    let inline2218 =
+                      pack_closure[inherent#closure_env_std_task_scope_T_unit_3#closure_env_std_task_scope_T_unit_3#apply](
+                        inline2217
+                      ) in
+                    let inline2219 = std::internal::task::run(inline2215, inline2218) in
+                    let inline2220 = std::task::completed_scope_value__T_unit(inline2216) in
+                    jump inline_cont2214(())
+                  } in
+                  select priority {
+                    recv(t1359) as _/3 => {
+                      let inline2200 = 2 in
+                      let inline2201 = trait_impl#ToString#int#to_string(inline2200) in
+                      let inline2202 = @runtime(core.string_println)(inline2201) in
+                      jump k1353()
+                    },
+                    default => {
+                      let inline2204 = 3 in
+                      let inline2205 = trait_impl#ToString#int#to_string(inline2204) in
+                      let inline2206 = @runtime(core.string_println)(inline2205) in
+                      jump k1353()
+                    },
+                  }
+                } in
+                let inline2222 = std::time::Timer.ready(stopped/2) in
+                jump inline_cont2221(inline2222)
+              } in
+              let inline2224 = trait_impl#ToString#bool#to_string(t1352) in
+              let inline2225 = @runtime(core.string_println)(inline2224) in
+              jump inline_cont2223(())
+            } in
+            let inline2227 = std::time::Timer.id(stopped/2) in
+            let inline2228 = std::internal::host::timer_stop(inline2227) in
+            jump inline_cont2226(inline2228)
+          } in
+          let inline2230 = inherent#std::time::Duration#std::time::Duration#as_nanoseconds(t1351) in
+          let inline2231 = std::internal::host::timer_new(inline2230) in
+          let inline2232 = inline2231.0 in
+          let inline2233 = inline2231.1 in
+          let inline2236 = std::time::Timer { id: inline2232, ready: inline2233 } in
+          jump inline_cont2229(inline2236)
+        } in
+        let inline2238 = 60 in
+        let inline2239 = (inline2238 * 1000000000) in
+        let inline2240 =
+          inherent#std::time::Duration#std::time::Duration#from_nanoseconds(inline2239) in
+        jump inline_cont2237(inline2240)
+      } in
+      select {
+        recv(t1362) as _/1 => {
+          let inline2196 = 1 in
+          let inline2197 = trait_impl#ToString#int#to_string(inline2196) in
+          let inline2198 = @runtime(core.string_println)(inline2197) in
+          jump k1350()
+        },
+      }
+    } in
+    let inline2242 = std::time::Timer.ready(timer/0) in
+    jump inline_cont2241(inline2242)
+  } in
+  let inline2244 = std::time::Duration { nanoseconds: 0 } in
+  jump inline_cont2243(inline2244)
+}
+
+fn inherent#Channel#Channel[T]#new__T_unit(capacity/435: int) -> Channel[unit] {
+  let t1366 = @intrinsic(channel.new)(capacity/435) in
+  t1366
+}
+
+fn inherent#Channel#Channel[T]#send__T_unit(self/436: Channel[unit], value/437: unit) -> unit {
+  let t1368 = @intrinsic(channel.send)(self/436, value/437) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/257: int) -> Vec[uint8] {
+  let t1371 = @intrinsic(vec.with_capacity)(capacity/257) in
+  t1371
+}
+
+fn inherent#string#string#to_bytes(self/51: string) -> Vec[uint8] {
+  let t1374 = @runtime(core.string_to_bytes)(self/51) in
+  t1374
+}
+
+fn inherent#Vec#Vec[T]#len__T_uint8(self/273: Vec[uint8]) -> int {
+  let t1377 = @intrinsic(vec.len)(self/273) in
+  t1377
+}
+
+fn inherent#Vec#Vec[T]#capacity__T_uint8(self/274: Vec[uint8]) -> int {
+  let t1380 = @intrinsic(vec.capacity)(self/274) in
+  t1380
+}
+
+fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/275: Vec[uint8]) -> bool {
+  let t1383 = @intrinsic(vec.len)(self/275) in
+  let t1384 = (t1383 == 0) in
+  t1384
+}
+
+fn inherent#Vec#Vec[T]#push__T_uint8(self/258: Vec[uint8], elem/259: uint8) -> unit {
+  let t1386 = @intrinsic(vec.push)(self/258, elem/259) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#pop__T_uint8(self/283: Vec[uint8]) -> Option__uint8 {
+  join inline_cont2247(len/284: int) -> Option__uint8 {
+    let t1391 = (len/284 == 0) in
+    if t1391 {
+      Tag_0
+    } else {
+      let t1392 = (len/284 - 1) in
+      let value/285 = @intrinsic(vec.get)(self/283, t1392) in
+      let t1393 = (len/284 - 1) in
+      join inline_cont2245(_wild200: unit) -> Option__uint8 {
+        let t1394 = Option__uint8::Some(value/285) in
+        t1394
+      } in
+      let inline2246 = @intrinsic(vec.truncate)(self/283, t1393) in
+      jump inline_cont2245(())
+    }
+  } in
+  let inline2248 = @intrinsic(vec.len)(self/283) in
+  jump inline_cont2247(inline2248)
+}
+
+fn inherent#Vec#Vec[T]#reserve__T_uint8(self/276: Vec[uint8], additional/277: int) -> unit {
+  let t1396 = @intrinsic(vec.reserve)(self/276, additional/277) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#truncate__T_uint8(self/278: Vec[uint8], len/279: int) -> unit {
+  let t1398 = @intrinsic(vec.truncate)(self/278, len/279) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#clear__T_uint8(self/280: Vec[uint8]) -> unit {
+  let inline2250 = 0 in
+  let inline2251 = @intrinsic(vec.truncate)(self/280, inline2250) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#slice__T_uint8(self/311: Vec[uint8], start/312: int, end/313: int) -> Slice[
+  uint8
+] {
+  let t1403 = @intrinsic(slice.new)(self/311, start/312, end/313) in
+  t1403
+}
+
+fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
+  let mtmp10 = @runtime(core.string_from_utf8)(bytes/24) in
+  let x12 = mtmp10.1 in
+  let index/26 = 0 in
+  join exit1406() -> (bool, string) {
+    let t1407 = (true, x12) in
+    t1407
+  } in
+  joinrec {
+    join loop1408() -> (bool, string) {
+      join inline_cont2252(t1409: int) -> (bool, string) {
+        let t1410 = (index/26 < t1409) in
+        if t1410 {
+          let mtmp13 = string_decode_utf8_at(x12, index/26) in
+          let x14 = mtmp13.0 in
+          let x16 = mtmp13.2 in
+          if x14 {
+            let compound_old17 = index/26 in
+            let t1412 = (compound_old17 + x16) in
+            let t1413 = index/26 = t1412 in
+            jump loop1408()
+          } else {
+            let t1414 = (false, "") in
+            t1414
+          }
+        } else {
+          jump exit1406()
+        }
+      } in
+      let inline2253 = @runtime(core.string_len)(x12) in
+      jump inline_cont2252(inline2253)
+    } in
+  } in
+  jump loop1408()
+}
+
+fn trait_impl#PartialEq#Option__string#eq(
+  self/235: Option__string,
+  other/236: Option__string
+) -> bool {
+  match other/236 {
+    Tag_0 => {
+      match self/235 {
+        Tag_0 => {
+          true
+        },
+        _ => {
+          false
+        },
+      }
+    },
+    Tag_1 => {
+      let x174 = Option__string::Some._0(other/236) in
+      match self/235 {
+        Tag_1 => {
+          let x176 = Option__string::Some._0(self/235) in
+          let inline2255 = (x176 == x174) in
+          inline2255
+        },
+        _ => {
+          false
+        },
+      }
+    },
+  }
+}
+
+fn trait_impl#PartialEq#Option__int#eq(self/235: Option__int, other/236: Option__int) -> bool {
+  match other/236 {
+    Tag_0 => {
+      match self/235 {
+        Tag_0 => {
+          true
+        },
+        _ => {
+          false
+        },
+      }
+    },
+    Tag_1 => {
+      let x174 = Option__int::Some._0(other/236) in
+      match self/235 {
+        Tag_1 => {
+          let x176 = Option__int::Some._0(self/235) in
+          let inline2257 = (x176 == x174) in
+          inline2257
+        },
+        _ => {
+          false
+        },
+      }
+    },
+  }
+}
+
+fn inherent#Option#Option[T]#unwrap_or__T_std::time::Duration(
+  self/467: Option__std::time::Duration,
+  fallback/468: std::time::Duration
+) -> std::time::Duration {
+  match self/467 {
+    Tag_0 => {
+      fallback/468
+    },
+    Tag_1 => {
+      let x390 = Option__std::time::Duration::Some._0(self/467) in
+      x390
+    },
+  }
+}
+
+fn println__T_int(value/1: int) -> unit {
+  join inline_cont2258(t1438: string) -> unit {
+    let t1439 = @runtime(core.string_println)(t1438) in
+    ()
+  } in
+  let inline2259 = @runtime(core.int_to_string)(value/1) in
+  jump inline_cont2258(inline2259)
+}
+
+fn println__T_bool(value/1: bool) -> unit {
+  join inline_cont2260(t1441: string) -> unit {
+    let t1442 = @runtime(core.string_println)(t1441) in
+    ()
+  } in
+  let inline2261 = @runtime(core.bool_to_string)(value/1) in
+  jump inline_cont2260(inline2261)
+}
+
+fn std::task::scope__T_unit(body/9: (std::task::Scope) -> unit) -> unit {
+  join inline_cont2269(handle/10: std::internal::task::ScopeHandle) -> unit {
+    join inline_cont2267(result/11: Ref[Option__unit]) -> unit {
+      let t1444 =
+        closure_env_std_task_scope_T_unit_3 {
+          result_0: result/11,
+          body_1: body/9,
+          handle_2: handle/10
+        } in
+      let t1445 =
+        pack_closure[inherent#closure_env_std_task_scope_T_unit_3#closure_env_std_task_scope_T_unit_3#apply](
+          t1444
+        ) in
+      join inline_cont2262(_wild11: unit) -> unit {
+        let t1446 = std::task::completed_scope_value__T_unit(result/11) in
+        ()
+      } in
+      let inline2263 = std::internal::task::ScopeHandle.id(handle/10) in
+      let inline2264 = std::internal::task::scope_run(inline2263, t1445) in
+      let inline2265 = std::internal::task::ScopeHandle.id(handle/10) in
+      let inline2266 = std::internal::task::scope_finish(inline2265) in
+      jump inline_cont2262(())
+    } in
+    let inline2268 = @intrinsic(ref.new)(Tag_0) in
+    jump inline_cont2267(inline2268)
+  } in
+  let inline2270 = std::internal::task::scope_new(0) in
+  let inline2271 = std::internal::task::ScopeHandle { id: inline2270 } in
+  jump inline_cont2269(inline2271)
+}
+
+fn inherent#std::task::Scope#std::task::Scope#spawn__T_int(
+  self/25: std::task::Scope,
+  body/26: (std::task::CancelToken) -> int
+) -> std::task::Task__int {
+  join inline_cont2281(result/27: Ref[Option__int]) -> std::task::Task__int {
+    join inline_cont2278(ready/28: Channel[unit]) -> std::task::Task__int {
+      let t1449 = std::task::Scope.handle(self/25) in
+      join inline_cont2275(t1450: std::internal::task::CancelToken) -> std::task::Task__int {
+        let token/29 = std::task::CancelToken { value: t1450 } in
+        let t1452 = std::task::Scope.handle(self/25) in
+        let t1453 =
+          closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_4 {
+            result_0: result/27,
+            body_1: body/26,
+            token_2: token/29,
+            ready_3: ready/28
+          } in
+        let t1454 =
+          pack_closure[inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_4#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_4#apply](
+            t1453
+          ) in
+        join inline_cont2272(_wild18: unit) -> std::task::Task__int {
+          let t1455 = std::task::Task__int { result: result/27, ready: ready/28 } in
+          t1455
+        } in
+        let inline2273 = std::internal::task::ScopeHandle.id(t1452) in
+        let inline2274 = std::internal::task::scope_spawn(inline2273, t1454) in
+        jump inline_cont2272(())
+      } in
+      let inline2276 = std::internal::task::ScopeHandle.id(t1449) in
+      let inline2277 = std::internal::task::CancelToken { id: inline2276 } in
+      jump inline_cont2275(inline2277)
+    } in
+    let inline2279 = 0 in
+    let inline2280 = @intrinsic(channel.new)(inline2279) in
+    jump inline_cont2278(inline2280)
+  } in
+  let inline2282 = @intrinsic(ref.new)(Tag_0) in
+  jump inline_cont2281(inline2282)
+}
+
+fn inherent#std::task::Task#std::task::Task[T]#done__T_int(
+  self/54: std::task::Task__int
+) -> Receiver[unit] {
+  let t1458 = std::task::Task__int.ready(self/54) in
+  let inline2284 = @intrinsic(channel.receiver)(t1458) in
+  inline2284
+}
+
+fn inherent#std::task::Task#std::task::Task[T]#join__T_int(self/55: std::task::Task__int) -> int {
+  join exit1462(jp1463: int) -> int {
+    jp1463
+  } in
+  joinrec {
+    join loop_expr1464() -> int {
+      let t1465 = std::task::Task__int.ready(self/55) in
+      join inline_cont2287(mtmp25: Option__unit) -> int {
+        let t1466 = std::task::Task__int.result(self/55) in
+        join inline_cont2285(mtmp26: Option__int) -> int {
+          match mtmp26 {
+            Tag_0 => {
+              jump loop_expr1464()
+            },
+            Tag_1 => {
+              let x27 = Option__int::Some._0(mtmp26) in
+              jump exit1462(x27)
+            },
+          }
+        } in
+        let inline2286 = @intrinsic(ref.get)(t1466) in
+        jump inline_cont2285(inline2286)
+      } in
+      let inline2288 = @intrinsic(channel.recv)(t1465) in
+      let inline2289 = inline2288.0 in
+      let inline2290 = inline2288.1 in
+      if inline2290 {
+        let inline2293 = Option__unit::Some(inline2289) in
+        jump inline_cont2287(inline2293)
+      } else {
+        jump inline_cont2287(Tag_0)
+      }
+    } in
+  } in
+  jump loop_expr1464()
+}
+
+fn inherent#string#string#byte_len(self/36: string) -> int {
+  let t1470 = @runtime(core.string_len)(self/36) in
+  t1470
+}
+
+fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
+  let length/7 = inherent#string#string#byte_len(value/5) in
+  let t1589 = (index/6 < 0) in
+  join k1586(jp1587: bool) -> (bool, char, int) {
+    join k1473() -> (bool, char, int) {
+      let t1474 = inherent#string#string#byte_get(value/5, index/6) in
+      let first/8 = (t1474 as uint32) in
+      let t1477 = (first/8 < 128) in
+      if t1477 {
+        let inline2297 = 1 in
+        let inline2298 = __goml_builtin_char_from_uint32(first/8) in
+        match inline2298 {
+          Tag_0 => {
+            let inline2299 = utf8_invalid_decode() in
+            inline2299
+          },
+          Tag_1 => {
+            let inline2300 = Option__char::Some._0(inline2298) in
+            let inline2302 = (true, inline2300, inline2297) in
+            inline2302
+          },
+        }
+      } else {
+        let t1481 = (first/8 < 194) in
+        if t1481 {
+          let inline2304 = (false, '\0', 0) in
+          inline2304
+        } else {
+          let t1485 = (first/8 < 224) in
+          if t1485 {
+            let t1498 = (length/7 - index/6) in
+            let t1499 = (t1498 < 2) in
+            join k1486() -> (bool, char, int) {
+              let t1487 = (index/6 + 1) in
+              join inline_cont2319(t1488: uint8) -> (bool, char, int) {
+                let second/9 = (t1488 as uint32) in
+                join inline_cont2316(t1491: bool) -> (bool, char, int) {
+                  if t1491 {
+                    let inline2308 = (false, '\0', 0) in
+                    inline2308
+                  } else {
+                    let t1493 = (first/8 & 31) in
+                    let t1494 = (t1493 << 6) in
+                    let t1495 = (second/9 & 63) in
+                    let t1496 = (t1494 | t1495) in
+                    let inline2310 = 2 in
+                    let inline2311 = __goml_builtin_char_from_uint32(t1496) in
+                    match inline2311 {
+                      Tag_0 => {
+                        let inline2312 = utf8_invalid_decode() in
+                        inline2312
+                      },
+                      Tag_1 => {
+                        let inline2313 = Option__char::Some._0(inline2311) in
+                        let inline2315 = (true, inline2313, inline2310) in
+                        inline2315
+                      },
+                    }
+                  }
+                } in
+                let inline2317 = (second/9 < 128) in
+                if inline2317 {
+                  jump inline_cont2316(true)
+                } else {
+                  let inline2318 = (second/9 > 191) in
+                  jump inline_cont2316(inline2318)
+                }
+              } in
+              let inline2320 = @runtime(core.string_byte_get)(value/5, t1487) in
+              jump inline_cont2319(inline2320)
+            } in
+            if t1499 {
+              let inline2306 = (false, '\0', 0) in
+              inline2306
+            } else {
+              jump k1486()
+            }
+          } else {
+            let t1503 = (first/8 < 240) in
+            if t1503 {
+              let t1536 = (length/7 - index/6) in
+              let t1537 = (t1536 < 3) in
+              join k1504() -> (bool, char, int) {
+                let t1505 = (index/6 + 1) in
+                let t1506 = inherent#string#string#byte_get(value/5, t1505) in
+                let second/10 = (t1506 as uint32) in
+                let t1507 = (index/6 + 2) in
+                let t1508 = inherent#string#string#byte_get(value/5, t1507) in
+                let third/11 = (t1508 as uint32) in
+                let t1534 = utf8_invalid_continuation(second/10) in
+                join k1528(jp1529: bool) -> (bool, char, int) {
+                  join k1522(jp1523: bool) -> (bool, char, int) {
+                    join k1511(jp1512: bool) -> (bool, char, int) {
+                      if jp1512 {
+                        let inline2327 = (false, '\0', 0) in
+                        inline2327
+                      } else {
+                        let t1514 = (first/8 & 15) in
+                        let t1515 = (t1514 << 12) in
+                        let t1516 = (second/10 & 63) in
+                        let t1517 = (t1516 << 6) in
+                        let t1518 = (t1515 | t1517) in
+                        let t1519 = (third/11 & 63) in
+                        let t1520 = (t1518 | t1519) in
+                        let inline2329 = 3 in
+                        let inline2330 = __goml_builtin_char_from_uint32(t1520) in
+                        match inline2330 {
+                          Tag_0 => {
+                            let inline2331 = utf8_invalid_decode() in
+                            inline2331
+                          },
+                          Tag_1 => {
+                            let inline2332 = Option__char::Some._0(inline2330) in
+                            let inline2334 = (true, inline2332, inline2329) in
+                            inline2334
+                          },
+                        }
+                      }
+                    } in
+                    if jp1523 {
+                      jump k1511(true)
+                    } else {
+                      let t1526 = (first/8 == 237) in
+                      if t1526 {
+                        let t1527 = (second/10 >= 160) in
+                        jump k1511(t1527)
+                      } else {
+                        jump k1511(false)
+                      }
+                    }
+                  } in
+                  if jp1529 {
+                    jump k1522(true)
+                  } else {
+                    let t1532 = (first/8 == 224) in
+                    if t1532 {
+                      let t1533 = (second/10 < 160) in
+                      jump k1522(t1533)
+                    } else {
+                      jump k1522(false)
+                    }
+                  }
+                } in
+                if t1534 {
+                  jump k1528(true)
+                } else {
+                  let inline2324 = (third/11 < 128) in
+                  if inline2324 {
+                    jump k1528(true)
+                  } else {
+                    let inline2325 = (third/11 > 191) in
+                    jump k1528(inline2325)
+                  }
+                }
+              } in
+              if t1537 {
+                let inline2322 = (false, '\0', 0) in
+                inline2322
+              } else {
+                jump k1504()
+              }
+            } else {
+              let t1541 = (first/8 < 245) in
+              if t1541 {
+                let t1582 = (length/7 - index/6) in
+                let t1583 = (t1582 < 4) in
+                join k1542() -> (bool, char, int) {
+                  let t1543 = (index/6 + 1) in
+                  let t1544 = inherent#string#string#byte_get(value/5, t1543) in
+                  let second/12 = (t1544 as uint32) in
+                  let t1545 = (index/6 + 2) in
+                  let t1546 = inherent#string#string#byte_get(value/5, t1545) in
+                  let third/13 = (t1546 as uint32) in
+                  let t1547 = (index/6 + 3) in
+                  let t1548 = inherent#string#string#byte_get(value/5, t1547) in
+                  let fourth/14 = (t1548 as uint32) in
+                  let t1580 = utf8_invalid_continuation(second/12) in
+                  join k1577(jp1578: bool) -> (bool, char, int) {
+                    join k1571(jp1572: bool) -> (bool, char, int) {
+                      join k1565(jp1566: bool) -> (bool, char, int) {
+                        join k1551(jp1552: bool) -> (bool, char, int) {
+                          if jp1552 {
+                            let t1553 = utf8_invalid_decode() in
+                            t1553
+                          } else {
+                            let t1554 = (first/8 & 7) in
+                            let t1555 = (t1554 << 18) in
+                            let t1556 = (second/12 & 63) in
+                            let t1557 = (t1556 << 12) in
+                            let t1558 = (t1555 | t1557) in
+                            let t1559 = (third/13 & 63) in
+                            let t1560 = (t1559 << 6) in
+                            let t1561 = (t1558 | t1560) in
+                            let t1562 = (fourth/14 & 63) in
+                            let t1563 = (t1561 | t1562) in
+                            let t1564 = utf8_valid_decode(t1563, 4) in
+                            t1564
+                          }
+                        } in
+                        if jp1566 {
+                          jump k1551(true)
+                        } else {
+                          let t1569 = (first/8 == 244) in
+                          if t1569 {
+                            let t1570 = (second/12 > 143) in
+                            jump k1551(t1570)
+                          } else {
+                            jump k1551(false)
+                          }
+                        }
+                      } in
+                      if jp1572 {
+                        jump k1565(true)
+                      } else {
+                        let t1575 = (first/8 == 240) in
+                        if t1575 {
+                          let t1576 = (second/12 < 144) in
+                          jump k1565(t1576)
+                        } else {
+                          jump k1565(false)
+                        }
+                      }
+                    } in
+                    if jp1578 {
+                      jump k1571(true)
+                    } else {
+                      let t1579 = utf8_invalid_continuation(fourth/14) in
+                      jump k1571(t1579)
+                    }
+                  } in
+                  if t1580 {
+                    jump k1577(true)
+                  } else {
+                    let t1581 = utf8_invalid_continuation(third/13) in
+                    jump k1577(t1581)
+                  }
+                } in
+                if t1583 {
+                  let t1584 = utf8_invalid_decode() in
+                  t1584
+                } else {
+                  jump k1542()
+                }
+              } else {
+                let t1585 = utf8_invalid_decode() in
+                t1585
+              }
+            }
+          }
+        }
+      }
+    } in
+    if jp1587 {
+      let inline2295 = (false, '\0', 0) in
+      inline2295
+    } else {
+      jump k1473()
+    }
+  } in
+  if t1589 {
+    jump k1586(true)
+  } else {
+    let t1590 = (index/6 >= length/7) in
+    jump k1586(t1590)
+  }
+}
+
+fn trait_impl#PartialEq#string#eq(self/181: string, other/182: string) -> bool {
+  let t1593 = (self/181 == other/182) in
+  t1593
+}
+
+fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+  let t1596 = (self/185 == other/186) in
+  t1596
+}
+
+fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+  let t1599 = @runtime(core.int_to_string)(self/151) in
+  t1599
+}
+
+fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
+  let t1602 = @runtime(core.bool_to_string)(self/148) in
+  t1602
+}
+
+fn inherent#Ref#Ref[T]#new__T_Option[unit](value/431: Option__unit) -> Ref[Option__unit] {
+  let t1605 = @intrinsic(ref.new)(value/431) in
+  t1605
+}
+
+fn inherent#Ref#Ref[T]#set__T_Option[unit](
+  self/433: Ref[Option__unit],
+  value/434: Option__unit
+) -> unit {
+  let t1607 = @intrinsic(ref.set)(self/433, value/434) in
+  ()
+}
+
+fn std::task::completed_scope_value__T_unit(result/0: Ref[Option__unit]) -> unit {
+  join exit1609() -> unit {
+    ()
+  } in
+  joinrec {
+    join loop_expr1610() -> unit {
+      join inline_cont2335(mtmp0: Option__unit) -> unit {
+        match mtmp0 {
+          Tag_0 => {
+            jump loop_expr1610()
+          },
+          Tag_1 => {
+            jump exit1609()
+          },
+        }
+      } in
+      let inline2336 = @intrinsic(ref.get)(result/0) in
+      jump inline_cont2335(inline2336)
+    } in
+  } in
+  jump loop_expr1610()
+}
+
+fn inherent#Ref#Ref[T]#new__T_Option[int](value/431: Option__int) -> Ref[Option__int] {
+  let t1614 = @intrinsic(ref.new)(value/431) in
+  t1614
+}
+
+fn inherent#Ref#Ref[T]#set__T_Option[int](
+  self/433: Ref[Option__int],
+  value/434: Option__int
+) -> unit {
+  let t1616 = @intrinsic(ref.set)(self/433, value/434) in
+  ()
+}
+
+fn inherent#Channel#Channel[T]#close__T_unit(self/441: Channel[unit]) -> unit {
+  let t1618 = @intrinsic(channel.close)(self/441) in
+  ()
+}
+
+fn inherent#Channel#Channel[T]#receiver__T_unit(self/443: Channel[unit]) -> Receiver[unit] {
+  let t1621 = @intrinsic(channel.receiver)(self/443) in
+  t1621
+}
+
+fn inherent#Channel#Channel[T]#recv__T_unit(self/438: Channel[unit]) -> Option__unit {
+  let mtmp379 = @intrinsic(channel.recv)(self/438) in
+  let x380 = mtmp379.0 in
+  let x381 = mtmp379.1 in
+  if x381 {
+    let t1626 = Option__unit::Some(x380) in
+    t1626
+  } else {
+    Tag_0
+  }
+}
+
+fn inherent#Ref#Ref[T]#get__T_Option[int](self/432: Ref[Option__int]) -> Option__int {
+  let t1629 = @intrinsic(ref.get)(self/432) in
+  t1629
+}
+
+fn utf8_invalid_decode() -> (bool, char, int) {
+  let t1632 = (false, '\0', 0) in
+  t1632
+}
+
+fn inherent#string#string#byte_get(self/39: string, index/40: int) -> uint8 {
+  let t1635 = @runtime(core.string_byte_get)(self/39, index/40) in
+  t1635
+}
+
+fn utf8_valid_decode(value/0: uint32, width/1: int) -> (bool, char, int) {
+  join commute_arm2406() -> (bool, char, int) {
+    let inline2338 = (false, '\0', 0) in
+    inline2338
+  } in
+  join commute_arm2408(commute_field2407: char) -> (bool, char, int) {
+    let t1641 = (true, commute_field2407, width/1) in
+    t1641
+  } in
+  let inline2340 = utf8_valid_scalar(value/0) in
+  if inline2340 {
+    let inline2341 = @runtime(core.char_from_uint32)(value/0) in
+    let inline2342 = inline2341.1 in
+    jump commute_arm2408(inline2342)
+  } else {
+    jump commute_arm2406()
+  }
+}
+
+fn utf8_invalid_continuation(value/3: uint32) -> bool {
+  let t1646 = (value/3 < 128) in
+  if t1646 {
+    true
+  } else {
+    let t1647 = (value/3 > 191) in
+    t1647
+  }
+}
+
+fn inherent#Ref#Ref[T]#get__T_Option[unit](self/432: Ref[Option__unit]) -> Option__unit {
+  let t1650 = @intrinsic(ref.get)(self/432) in
+  t1650
+}
+
+fn __goml_builtin_char_from_uint32(value/30: uint32) -> Option__char {
+  join inline_cont2345(t1655: bool) -> Option__char {
+    if t1655 {
+      let mtmp22 = @runtime(core.char_from_uint32)(value/30) in
+      let x24 = mtmp22.1 in
+      let t1656 = Option__char::Some(x24) in
+      t1656
+    } else {
+      Tag_0
+    }
+  } in
+  let inline2346 = (value/30 <= 1114111) in
+  if inline2346 {
+    let inline2347 = (value/30 >= 55296) in
+    join inline_join2348(inline2349: bool) -> Option__char {
+      let inline2350 = (!inline2349) in
+      jump inline_cont2345(inline2350)
+    } in
+    if inline2347 {
+      let inline2351 = (value/30 <= 57343) in
+      jump inline_join2348(inline2351)
+    } else {
+      jump inline_join2348(false)
+    }
+  } else {
+    jump inline_cont2345(false)
+  }
+}
+
+fn utf8_valid_scalar(value/4: uint32) -> bool {
+  let t1661 = (value/4 <= 1114111) in
+  if t1661 {
+    let t1665 = (value/4 >= 55296) in
+    join k1662(jp1663: bool) -> bool {
+      let t1664 = (!jp1663) in
+      t1664
+    } in
+    if t1665 {
+      let t1666 = (value/4 <= 57343) in
+      jump k1662(t1666)
+    } else {
+      jump k1662(false)
+    }
+  } else {
+    false
+  }
+}
+
+fn trait_impl#PartialEq#Option__unit#eq(self/235: Option__unit, other/236: Option__unit) -> bool {
+  match other/236 {
+    Tag_0 => {
+      match self/235 {
+        Tag_0 => {
+          true
+        },
+        _ => {
+          false
+        },
+      }
+    },
+    Tag_1 => {
+      match self/235 {
+        Tag_1 => {
+          true
+        },
+        _ => {
+          false
+        },
+      }
+    },
+  }
+}
+
+fn trait_impl#Hash#Option__unit#hash(self/239: Option__unit) -> uint64 {
+  match self/239 {
+    Tag_0 => {
+      14695981039346656038
+    },
+    Tag_1 => {
+      join inline_cont2353(t1680: uint64) -> uint64 {
+        let t1681 = (14695981039346656039 + t1680) in
+        t1681
+      } in
+      jump inline_cont2353(0)
+    },
+  }
+}
+
+fn trait_impl#Hash#Option__int#hash(self/239: Option__int) -> uint64 {
+  match self/239 {
+    Tag_0 => {
+      14695981039346656038
+    },
+    Tag_1 => {
+      let x177 = Option__int::Some._0(self/239) in
+      join inline_cont2354(t1686: uint64) -> uint64 {
+        let t1687 = (14695981039346656039 + t1686) in
+        t1687
+      } in
+      let inline2355 = @runtime(core.int_hash)(x177) in
+      jump inline_cont2354(inline2355)
+    },
+  }
+}
+
+fn trait_impl#PartialEq#unit#eq(self/177: unit, other/178: unit) -> bool {
+  true
+}
+
+fn trait_impl#Hash#unit#hash(self/207: unit) -> uint64 {
+  0
+}
+
+fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+  let t1694 = @runtime(core.int_hash)(self/211) in
+  t1694
+}
+
+fn inherent#closure_env_main_0#closure_env_main_0#apply(
+  env416: closure_env_main_0,
+  _/5: std::task::CancelToken
+) -> int {
+  42
+}
+
+fn inherent#closure_env_main_1#closure_env_main_1#apply(
+  env417: closure_env_main_1,
+  scope/4: std::task::Scope
+) -> unit {
+  let t1698 = closure_env_main_0 {} in
+  let t1699 = pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](t1698) in
+  join inline_cont2362(work/6: std::task::Task__int) -> unit {
+    join inline_cont2359(t1701: Receiver[unit]) -> unit {
+      select {
+        recv(t1701) as _/7 => {
+          let t1702 = inherent#std::task::Task#std::task::Task[T]#join__T_int(work/6) in
+          let inline2357 = trait_impl#ToString#int#to_string(t1702) in
+          let inline2358 = @runtime(core.string_println)(inline2357) in
+          ()
+        },
+      }
+    } in
+    let inline2360 = std::task::Task__int.ready(work/6) in
+    let inline2361 = inherent#Channel#Channel[T]#receiver__T_unit(inline2360) in
+    jump inline_cont2359(inline2361)
+  } in
+  let inline2363 = inherent#Ref#Ref[T]#new__T_Option[int](Tag_0) in
+  let inline2364 = inherent#Channel#Channel[T]#new__T_unit(0) in
+  let inline2365 = std::task::Scope.handle(scope/4) in
+  let inline2366 = std::internal::task::token(inline2365) in
+  let inline2367 = std::task::CancelToken { value: inline2366 } in
+  let inline2368 = std::task::Scope.handle(scope/4) in
+  let inline2369 =
+    closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_4 {
+      result_0: inline2363,
+      body_1: t1699,
+      token_2: inline2367,
+      ready_3: inline2364
+    } in
+  let inline2370 =
+    pack_closure[inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_4#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_4#apply](
+      inline2369
+    ) in
+  let inline2371 = std::internal::task::spawn(inline2368, inline2370) in
+  let inline2372 = std::task::Task__int { result: inline2363, ready: inline2364 } in
+  jump inline_cont2362(inline2372)
+}
+
+fn inherent#closure_env_main_2#closure_env_main_2#apply(
+  env418: closure_env_main_2,
+  scope/8: std::task::Scope
+) -> unit {
+  join inline_cont2383(cancel/9: std::task::CancelToken) -> unit {
+    join inline_cont2380(_wild415: unit) -> unit {
+      join inline_cont2377(t1706: Receiver[unit]) -> unit {
+        select {
+          recv(t1706) as _/10 => {
+            let inline2374 = 4 in
+            let inline2375 = trait_impl#ToString#int#to_string(inline2374) in
+            let inline2376 = @runtime(core.string_println)(inline2375) in
+            ()
+          },
+        }
+      } in
+      let inline2378 = std::task::CancelToken.value(cancel/9) in
+      let inline2379 =
+        inherent#std::internal::task::CancelToken#std::internal::task::CancelToken#done(
+          inline2378
+        ) in
+      jump inline_cont2377(inline2379)
+    } in
+    let inline2381 = std::task::Scope.handle(scope/8) in
+    let inline2382 = std::internal::task::cancel(inline2381) in
+    jump inline_cont2380(())
+  } in
+  let inline2384 = std::task::Scope.handle(scope/8) in
+  let inline2385 = std::internal::task::token(inline2384) in
+  let inline2386 = std::task::CancelToken { value: inline2385 } in
+  jump inline_cont2383(inline2386)
+}
+
+fn inherent#closure_env_std_task_scope_T_unit_3#closure_env_std_task_scope_T_unit_3#apply(
+  env419: closure_env_std_task_scope_T_unit_3
+) -> unit {
+  let result/11 = closure_env_std_task_scope_T_unit_3.result_0(env419) in
+  let body/9 = closure_env_std_task_scope_T_unit_3.body_1(env419) in
+  let handle/10 = closure_env_std_task_scope_T_unit_3.handle_2(env419) in
+  let t1709 = std::task::Scope { handle: handle/10 } in
+  let t1710 = body/9(t1709) in
+  let t1711 = Option__unit::Some(t1710) in
+  let inline2388 = @intrinsic(ref.set)(result/11, t1711) in
+  ()
+}
+
+fn inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_4#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_4#apply(
+  env420: closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_4
+) -> unit {
+  let result/27 =
+    closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_4.result_0(env420) in
+  let body/26 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_4.body_1(env420) in
+  let token/29 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_4.token_2(env420) in
+  let ready/28 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_4.ready_3(env420) in
+  let t1714 = body/26(token/29) in
+  let t1715 = Option__int::Some(t1714) in
+  join inline_cont2391(_wild17: unit) -> unit {
+    let inline2390 = @intrinsic(channel.close)(ready/28) in
+    ()
+  } in
+  let inline2392 = @intrinsic(ref.set)(result/27, t1715) in
+  jump inline_cont2391(())
+}

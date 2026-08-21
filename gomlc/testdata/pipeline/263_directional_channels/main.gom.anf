@@ -1,0 +1,160 @@
+fn main() -> unit {
+  join inline_cont496(channel/0: Channel[int]) -> unit {
+    join inline_cont494(mtmp411: (Sender[int], Receiver[int])) -> unit {
+      let x412 = mtmp411.0 in
+      let x413 = mtmp411.1 in
+      join inline_cont491(_wild414: unit) -> unit {
+        join k417() -> unit {
+          join inline_cont488(channel/4: Channel[int]) -> unit {
+            join inline_cont486(sender/5: Sender[int]) -> unit {
+              join inline_cont484(receiver/6: Receiver[int]) -> unit {
+                select priority {
+                  send(sender/5, 9) => {
+                    join inline_cont473(t419: Option__int) -> unit {
+                      join inline_cont469(t420: int) -> unit {
+                        let inline467 = trait_impl#ToString#int#to_string(t420) in
+                        let inline468 = @runtime(core.string_println)(inline467) in
+                        ()
+                      } in
+                      let inline470 = 0 in
+                      match t419 {
+                        Tag_0 => {
+                          jump inline_cont469(inline470)
+                        },
+                        Tag_1 => {
+                          let inline471 = Option__int::Some._0(t419) in
+                          jump inline_cont469(inline471)
+                        },
+                      }
+                    } in
+                    let inline474 = @intrinsic(channel.recv)(receiver/6) in
+                    let inline475 = inline474.0 in
+                    let inline476 = inline474.1 in
+                    if inline476 {
+                      let inline479 = Option__int::Some(inline475) in
+                      jump inline_cont473(inline479)
+                    } else {
+                      jump inline_cont473(Tag_0)
+                    }
+                  },
+                  default => {
+                    let inline481 = 2 in
+                    let inline482 = trait_impl#ToString#int#to_string(inline481) in
+                    let inline483 = @runtime(core.string_println)(inline482) in
+                    ()
+                  },
+                }
+              } in
+              let inline485 = @intrinsic(channel.receiver)(channel/4) in
+              jump inline_cont484(inline485)
+            } in
+            let inline487 = @intrinsic(channel.sender)(channel/4) in
+            jump inline_cont486(inline487)
+          } in
+          let inline489 = 1 in
+          let inline490 = @intrinsic(channel.new)(inline489) in
+          jump inline_cont488(inline490)
+        } in
+        select priority {
+          recv(x413) as value/3 => {
+            join inline_cont458(t423: int) -> unit {
+              let inline456 = trait_impl#ToString#int#to_string(t423) in
+              let inline457 = @runtime(core.string_println)(inline456) in
+              jump k417()
+            } in
+            let inline459 = 0 in
+            match value/3 {
+              Tag_0 => {
+                jump inline_cont458(inline459)
+              },
+              Tag_1 => {
+                let inline460 = Option__int::Some._0(value/3) in
+                jump inline_cont458(inline460)
+              },
+            }
+          },
+          default => {
+            let inline463 = 1 in
+            let inline464 = trait_impl#ToString#int#to_string(inline463) in
+            let inline465 = @runtime(core.string_println)(inline464) in
+            jump k417()
+          },
+        }
+      } in
+      let inline492 = 7 in
+      let inline493 = @intrinsic(channel.send)(x412, inline492) in
+      jump inline_cont491(())
+    } in
+    let inline495 = @intrinsic(channel.split)(channel/0) in
+    jump inline_cont494(inline495)
+  } in
+  let inline497 = 2 in
+  let inline498 = @intrinsic(channel.new)(inline497) in
+  jump inline_cont496(inline498)
+}
+
+fn inherent#Channel#Channel[T]#new__T_int(capacity/435: int) -> Channel[int] {
+  let t428 = @intrinsic(channel.new)(capacity/435) in
+  t428
+}
+
+fn inherent#Channel#Channel[T]#split__T_int(self/444: Channel[int]) -> (
+  Sender[int],
+  Receiver[int]
+) {
+  let t431 = @intrinsic(channel.split)(self/444) in
+  t431
+}
+
+fn inherent#Sender#Sender[T]#send__T_int(self/445: Sender[int], value/446: int) -> unit {
+  let t433 = @intrinsic(channel.send)(self/445, value/446) in
+  ()
+}
+
+fn println__T_int(value/1: int) -> unit {
+  join inline_cont499(t435: string) -> unit {
+    let t436 = @runtime(core.string_println)(t435) in
+    ()
+  } in
+  let inline500 = @runtime(core.int_to_string)(value/1) in
+  jump inline_cont499(inline500)
+}
+
+fn inherent#Option#Option[T]#unwrap_or__T_int(self/467: Option__int, fallback/468: int) -> int {
+  match self/467 {
+    Tag_0 => {
+      fallback/468
+    },
+    Tag_1 => {
+      let x390 = Option__int::Some._0(self/467) in
+      x390
+    },
+  }
+}
+
+fn inherent#Channel#Channel[T]#sender__T_int(self/442: Channel[int]) -> Sender[int] {
+  let t443 = @intrinsic(channel.sender)(self/442) in
+  t443
+}
+
+fn inherent#Channel#Channel[T]#receiver__T_int(self/443: Channel[int]) -> Receiver[int] {
+  let t446 = @intrinsic(channel.receiver)(self/443) in
+  t446
+}
+
+fn inherent#Receiver#Receiver[T]#recv__T_int(self/448: Receiver[int]) -> Option__int {
+  let mtmp382 = @intrinsic(channel.recv)(self/448) in
+  let x383 = mtmp382.0 in
+  let x384 = mtmp382.1 in
+  if x384 {
+    let t451 = Option__int::Some(x383) in
+    t451
+  } else {
+    Tag_0
+  }
+}
+
+fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+  let t454 = @runtime(core.int_to_string)(self/151) in
+  t454
+}

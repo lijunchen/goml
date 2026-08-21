@@ -1,17 +1,17 @@
 fn find(wanted/0: int) -> Option__int {
   let current/1 = inherent#Ref#Ref[T]#new__T_int(0) in
-  let _wild412 =
+  let _wild415 =
     loop let value/2 = inherent#Ref#Ref[T]#get__T_int(current/1) in
-    let _wild411 =
+    let _wild414 =
       if (value/2 >= 5) {
-          let _wild408 = return Option__int::None in
+          let _wild411 = return Option__int::None in
           ()
       } else {
           if (value/2 == wanted/0) {
-              let _wild409 = return Option__int::Some(value/2) in
+              let _wild412 = return Option__int::Some(value/2) in
               ()
           } else {
-              let _wild410 = inherent#Ref#Ref[T]#set__T_int(current/1, (value/2 + 1)) in
+              let _wild413 = inherent#Ref#Ref[T]#set__T_int(current/1, (value/2 + 1)) in
               ()
           }
       } in
@@ -20,20 +20,20 @@ fn find(wanted/0: int) -> Option__int {
 }
 
 fn any(wanted/3: int) -> bool {
-  let mtmp413 = find(wanted/3) in
-  match mtmp413 {
+  let mtmp416 = find(wanted/3) in
+  match mtmp416 {
     Option__int::None => {
       false
     },
-    Option__int::Some(x414) => {
+    Option__int::Some(x417) => {
       true
     },
   }
 }
 
 fn main() -> unit {
-  let _wild415 = println__T_bool(any(3)) in
-  let _wild416 = println__T_bool(any(8)) in
+  let _wild418 = println__T_bool(any(3)) in
+  let _wild419 = println__T_bool(any(8)) in
   ()
 }
 

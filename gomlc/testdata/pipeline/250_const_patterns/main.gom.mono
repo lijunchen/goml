@@ -18,8 +18,8 @@ fn make_enabled() -> bool {
 
 fn comptime_classify(value/0: int) -> int {
   {
-    let match408 = value/0 in
-    if (match408 == COMPUTED_ANSWER) {
+    let match411 = value/0 in
+    if (match411 == COMPUTED_ANSWER) {
         1
     } else {
         0
@@ -52,11 +52,11 @@ fn classify_bool(value/2: bool) -> string {
 
 fn classify_computed_bool(value/3: bool) -> string {
   {
-    let match409 = value/3 in
-    if (match409 == COMPUTED_ENABLED) {
+    let match412 = value/3 in
+    if (match412 == COMPUTED_ENABLED) {
         "enabled"
     } else {
-        if (match409 == false) {
+        if (match412 == false) {
             "disabled"
         } else {
             @intrinsic(compiler.missing)("")
@@ -68,19 +68,19 @@ fn classify_computed_bool(value/3: bool) -> string {
 fn classify_comptime_guard(value/4: bool) -> string {
   let result/5 =
     {
-      let match410 = value/4 in
-      if (match410 == true) {
+      let match413 = value/4 in
+      if (match413 == true) {
           if true {
               "enabled"
           } else {
-              if (match410 == false) {
+              if (match413 == false) {
                   "disabled"
               } else {
                   @intrinsic(compiler.missing)("")
               }
           }
       } else {
-          if (match410 == false) {
+          if (match413 == false) {
               "disabled"
           } else {
               @intrinsic(compiler.missing)("")
@@ -92,11 +92,11 @@ fn classify_comptime_guard(value/4: bool) -> string {
 
 fn classify_pair(value/6: (int, uint8)) -> bool {
   {
-    let x411 = value/6.0 in
-    let x412 = value/6.1 in
-    match x412 {
+    let x414 = value/6.0 in
+    let x415 = value/6.1 in
+    match x415 {
       65 => {
-        match x411 {
+        match x414 {
           42 => {
             true
           },
@@ -119,8 +119,8 @@ fn classify_string(value/7: string) -> bool {
 
 fn classify_float(value/8: float64) -> bool {
   {
-    let match413 = value/8 in
-    if (match413 == RATIO) {
+    let match416 = value/8 in
+    if (match416 == RATIO) {
         true
     } else {
         false
@@ -135,9 +135,9 @@ fn shadow_constant() -> int {
 
 fn explicit_binding(value/10: int) -> int {
   {
-    let match414 = value/10 in
+    let match417 = value/10 in
     {
-      let answer/11 = match414 in
+      let answer/11 = match417 in
       answer/11
     }
   }
@@ -158,8 +158,8 @@ fn matches_if_let(value/12: int) -> bool {
 }
 
 fn matches_let_else(value/13: int) -> bool {
-  let mtmp415 = value/13 in
-  match mtmp415 {
+  let mtmp418 = value/13 in
+  match mtmp418 {
     42 => {
       {
         true
@@ -174,17 +174,17 @@ fn matches_let_else(value/13: int) -> bool {
 
 fn for_binding() -> int {
   let total/14 = inherent#Ref#Ref[T]#new__T_int(0) in
-  let _wild421 =
+  let _wild424 =
     {
-      let for_source416 = [1, 2] in
-      let for_limit417 = 2 in
-      let for_index418 = 0 in
-      while (for_index418 < for_limit417) {
+      let for_source419 = [1, 2] in
+      let for_limit420 = 2 in
+      let for_index421 = 0 in
+      while (for_index421 < for_limit420) {
           {
-            let for_item419 = @intrinsic(array.get)(for_source416, for_index418) in
-            let _wild420 = for_index418 = (for_index418 + 1) in
+            let for_item422 = @intrinsic(array.get)(for_source419, for_index421) in
+            let _wild423 = for_index421 = (for_index421 + 1) in
             {
-              let answer/15 = for_item419 in
+              let answer/15 = for_item422 in
               {
                 inherent#Ref#Ref[T]#set__T_int(
                   total/14,
@@ -199,26 +199,26 @@ fn for_binding() -> int {
 }
 
 fn main() -> unit {
-  let _wild422 = println__T_string(classify(42)) in
-  let _wild423 = println__T_string(classify(7)) in
-  let _wild424 = println__T_string(classify(0)) in
-  let _wild425 = println__T_string(classify_bool(true)) in
-  let _wild426 = println__T_string(classify_bool(false)) in
-  let _wild427 = println__T_string(classify_computed_bool(true)) in
-  let _wild428 = println__T_string(classify_computed_bool(false)) in
-  let _wild429 = println__T_string(classify_comptime_guard(true)) in
-  let _wild430 = println__T_string(classify_comptime_guard(false)) in
-  let _wild431 = println__T_bool(classify_pair((42, 65))) in
-  let _wild432 = println__T_bool(classify_pair((42, 66))) in
-  let _wild433 = println__T_bool(classify_string("hello")) in
-  let _wild434 = println__T_bool(classify_float(1.5)) in
-  let _wild435 = println__T_int(shadow_constant()) in
-  let _wild436 = println__T_int(explicit_binding(11)) in
-  let _wild437 = println__T_bool(matches_if_let(42)) in
-  let _wild438 = println__T_bool(matches_if_let(41)) in
-  let _wild439 = println__T_bool(matches_let_else(42)) in
-  let _wild440 = println__T_bool(matches_let_else(41)) in
-  let _wild441 = println__T_int(for_binding()) in
+  let _wild425 = println__T_string(classify(42)) in
+  let _wild426 = println__T_string(classify(7)) in
+  let _wild427 = println__T_string(classify(0)) in
+  let _wild428 = println__T_string(classify_bool(true)) in
+  let _wild429 = println__T_string(classify_bool(false)) in
+  let _wild430 = println__T_string(classify_computed_bool(true)) in
+  let _wild431 = println__T_string(classify_computed_bool(false)) in
+  let _wild432 = println__T_string(classify_comptime_guard(true)) in
+  let _wild433 = println__T_string(classify_comptime_guard(false)) in
+  let _wild434 = println__T_bool(classify_pair((42, 65))) in
+  let _wild435 = println__T_bool(classify_pair((42, 66))) in
+  let _wild436 = println__T_bool(classify_string("hello")) in
+  let _wild437 = println__T_bool(classify_float(1.5)) in
+  let _wild438 = println__T_int(shadow_constant()) in
+  let _wild439 = println__T_int(explicit_binding(11)) in
+  let _wild440 = println__T_bool(matches_if_let(42)) in
+  let _wild441 = println__T_bool(matches_if_let(41)) in
+  let _wild442 = println__T_bool(matches_let_else(42)) in
+  let _wild443 = println__T_bool(matches_let_else(41)) in
+  let _wild444 = println__T_int(for_binding()) in
   println__T_int(CLASSIFIED_AT_COMPILE_TIME)
 }
 

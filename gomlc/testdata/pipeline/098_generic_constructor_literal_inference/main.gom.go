@@ -21,12 +21,12 @@ type Option__uint8 struct {
 }
 
 func main0() struct{} {
-    var x408 uint8 = 42
-    var t412 string
-    var inline427 string = _goml_runtime_core_uint8_to_string(x408)
-    t412 = inline427
-    var inline424 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t412)
-    _goml_runtime_core_string_println(inline424)
+    var x411 uint8 = 42
+    var t415 string
+    var inline430 string = _goml_runtime_core_uint8_to_string(x411)
+    t415 = inline430
+    var inline427 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t415)
+    _goml_runtime_core_string_println(inline427)
     return struct{}{}
 }
 

@@ -28,15 +28,15 @@ type Option__string struct {
 
 func cut_pair(ok__0 bool) _goml_m_Option_____o_string_c_string_q_ {
     if ok__0 {
-        var t420 Tuple2_6string_6string = Tuple2_6string_6string{
+        var t423 Tuple2_6string_6string = Tuple2_6string_6string{
             _0: "left",
             _1: "right",
         }
-        var t421 _goml_m_Option_____o_string_c_string_q_ = _goml_m_Option_____o_string_c_string_q_{
+        var t424 _goml_m_Option_____o_string_c_string_q_ = _goml_m_Option_____o_string_c_string_q_{
             _tag: 1,
-            _v1_0: t420,
+            _v1_0: t423,
         }
-        return t421
+        return t424
     } else {
         return _goml_m_Option_____o_string_c_string_q_{
             _tag: 0,
@@ -46,15 +46,15 @@ func cut_pair(ok__0 bool) _goml_m_Option_____o_string_c_string_q_ {
 
 func pair(ok__1 bool) _goml_m_Option_____o_string_c_string_q_ {
     if ok__1 {
-        var inline448 Tuple2_6string_6string = Tuple2_6string_6string{
+        var inline451 Tuple2_6string_6string = Tuple2_6string_6string{
             _0: "left",
             _1: "right",
         }
-        var inline449 _goml_m_Option_____o_string_c_string_q_ = _goml_m_Option_____o_string_c_string_q_{
+        var inline452 _goml_m_Option_____o_string_c_string_q_ = _goml_m_Option_____o_string_c_string_q_{
             _tag: 1,
-            _v1_0: inline448,
+            _v1_0: inline451,
         }
-        return inline449
+        return inline452
     } else {
         return _goml_m_Option_____o_string_c_string_q_{
             _tag: 0,
@@ -63,95 +63,95 @@ func pair(ok__1 bool) _goml_m_Option_____o_string_c_string_q_ {
 }
 
 func describe(ok__2 bool) Option__string {
-    var mtmp408 _goml_m_Option_____o_string_c_string_q_
-    var inline451 _goml_m_Option_____o_string_c_string_q_ = cut_pair(ok__2)
-    mtmp408 = inline451
-    var jp428 Tuple2_6string_6string
-    switch mtmp408._tag {
+    var mtmp411 _goml_m_Option_____o_string_c_string_q_
+    var inline454 _goml_m_Option_____o_string_c_string_q_ = cut_pair(ok__2)
+    mtmp411 = inline454
+    var jp431 Tuple2_6string_6string
+    switch mtmp411._tag {
     case 0:
         return Option__string{
             _tag: 0,
         }
     case 1:
-        var x409 Tuple2_6string_6string = mtmp408._v1_0
-        jp428 = x409
-        var x411 string = jp428._0
-        var x412 string = jp428._1
-        var t429 string = x411 + ":"
-        var t430 string = t429 + x412
-        var t431 Option__string = Option__string{
+        var x412 Tuple2_6string_6string = mtmp411._v1_0
+        jp431 = x412
+        var x414 string = jp431._0
+        var x415 string = jp431._1
+        var t432 string = x414 + ":"
+        var t433 string = t432 + x415
+        var t434 Option__string = Option__string{
             _tag: 1,
-            _v1_0: t430,
+            _v1_0: t433,
         }
-        return t431
+        return t434
     default:
         panic("non-exhaustive match")
     }
 }
 
 func main0() struct{} {
-    var t438 Option__string = describe(true)
-    var t439 string
-    switch t438._tag {
+    var t441 Option__string = describe(true)
+    var t442 string
+    switch t441._tag {
     case 0:
-        t439 = "none"
+        t442 = "none"
     case 1:
-        var inline478 string = t438._v1_0
-        var inline480 string = "some " + inline478
-        t439 = inline480
+        var inline481 string = t441._v1_0
+        var inline483 string = "some " + inline481
+        t442 = inline483
     default:
         panic("non-exhaustive match")
     }
-    var inline475 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t439)
-    _goml_runtime_core_string_println(inline475)
-    var t440 Option__string
-    var inline460 bool = false
-    var inline461 _goml_m_Option_____o_string_c_string_q_ = pair(inline460)
-    var inline463 Tuple2_6string_6string
-    switch inline461._tag {
+    var inline478 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t442)
+    _goml_runtime_core_string_println(inline478)
+    var t443 Option__string
+    var inline463 bool = false
+    var inline464 _goml_m_Option_____o_string_c_string_q_ = pair(inline463)
+    var inline466 Tuple2_6string_6string
+    switch inline464._tag {
     case 0:
-        t440 = Option__string{
+        t443 = Option__string{
             _tag: 0,
         }
-        var t441 string
-        switch t440._tag {
+        var t444 string
+        switch t443._tag {
         case 0:
-            t441 = "none"
+            t444 = "none"
         case 1:
-            var inline456 string = t440._v1_0
-            var inline458 string = "some " + inline456
-            t441 = inline458
+            var inline459 string = t443._v1_0
+            var inline461 string = "some " + inline459
+            t444 = inline461
         default:
             panic("non-exhaustive match")
         }
-        var inline453 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t441)
-        _goml_runtime_core_string_println(inline453)
+        var inline456 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t444)
+        _goml_runtime_core_string_println(inline456)
         return struct{}{}
     case 1:
-        var inline472 Tuple2_6string_6string = inline461._v1_0
-        inline463 = inline472
-        var inline465 string = inline463._0
-        var inline466 string = inline463._1
-        var inline469 string = inline465 + ":"
-        var inline470 string = inline469 + inline466
-        var inline471 Option__string = Option__string{
+        var inline475 Tuple2_6string_6string = inline464._v1_0
+        inline466 = inline475
+        var inline468 string = inline466._0
+        var inline469 string = inline466._1
+        var inline472 string = inline468 + ":"
+        var inline473 string = inline472 + inline469
+        var inline474 Option__string = Option__string{
             _tag: 1,
-            _v1_0: inline470,
+            _v1_0: inline473,
         }
-        t440 = inline471
-        var t441 string
-        switch t440._tag {
+        t443 = inline474
+        var t444 string
+        switch t443._tag {
         case 0:
-            t441 = "none"
+            t444 = "none"
         case 1:
-            var inline456 string = t440._v1_0
-            var inline458 string = "some " + inline456
-            t441 = inline458
+            var inline459 string = t443._v1_0
+            var inline461 string = "some " + inline459
+            t444 = inline461
         default:
             panic("non-exhaustive match")
         }
-        var inline453 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t441)
-        _goml_runtime_core_string_println(inline453)
+        var inline456 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t444)
+        _goml_runtime_core_string_println(inline456)
         return struct{}{}
     default:
         panic("non-exhaustive match")

@@ -17,15 +17,15 @@ type Ordering int32
 
 func main0() struct{} {
     var first__3 int32 = 1
-    var t412 int32
-    var inline433 int32 = _goml_m_trait__impl_i_Extra_i_int32_i_extra(first__3)
-    t412 = inline433
-    var inline430 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t412)
-    _goml_runtime_core_string_println(inline430)
-    var t413 int32
-    t413 = 42
-    var inline426 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t413)
-    _goml_runtime_core_string_println(inline426)
+    var t415 int32
+    var inline436 int32 = _goml_m_trait__impl_i_Extra_i_int32_i_extra(first__3)
+    t415 = inline436
+    var inline433 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t415)
+    _goml_runtime_core_string_println(inline433)
+    var t416 int32
+    t416 = 42
+    var inline429 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t416)
+    _goml_runtime_core_string_println(inline429)
     return struct{}{}
 }
 
@@ -34,8 +34,8 @@ func _goml_m_trait__impl_i_Extra_i_int32_i_extra(self__1 int32) int32 {
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
-    var t424 string = _goml_runtime_core_int32_to_string(self__154)
-    return t424
+    var t427 string = _goml_runtime_core_int32_to_string(self__154)
+    return t427
 }
 
 func main() {

@@ -1,0 +1,250 @@
+fn mark_channel(log/0: Ref[string], mark/1: string, channel/2: Channel[int]) -> Channel[int] {
+  join inline_cont491(t424: string) -> Channel[int] {
+    let t425 = (t424 + mark/1) in
+    let inline490 = @intrinsic(ref.set)(log/0, t425) in
+    channel/2
+  } in
+  let inline492 = @intrinsic(ref.get)(log/0) in
+  jump inline_cont491(inline492)
+}
+
+fn mark_value(log/3: Ref[string], mark/4: string, value/5: int) -> int {
+  join inline_cont495(t428: string) -> int {
+    let t429 = (t428 + mark/4) in
+    let inline494 = @intrinsic(ref.set)(log/3, t429) in
+    value/5
+  } in
+  let inline496 = @intrinsic(ref.get)(log/3) in
+  jump inline_cont495(inline496)
+}
+
+fn mark_guard(log/6: Ref[string], mark/7: string, value/8: bool) -> bool {
+  join inline_cont499(t432: string) -> bool {
+    let t433 = (t432 + mark/7) in
+    let inline498 = @intrinsic(ref.set)(log/6, t433) in
+    value/8
+  } in
+  let inline500 = @intrinsic(ref.get)(log/6) in
+  jump inline_cont499(inline500)
+}
+
+fn main() -> unit {
+  let log/9 = inherent#Ref#Ref[T]#new__T_string("") in
+  let disabled/10 = inherent#Channel#Channel[T]#new__T_int(1) in
+  let _wild414 = inherent#Channel#Channel[T]#close__T_int(disabled/10) in
+  join inline_cont553(t450: Channel[int]) -> unit {
+    join inline_cont547(t451: int) -> unit {
+      join inline_cont541(t452: bool) -> unit {
+        join k435(jp436: string) -> unit {
+          join inline_cont539(t437: string) -> unit {
+            join inline_cont536(_wild415: unit) -> unit {
+              join inline_cont533(_wild416: unit) -> unit {
+                join inline_cont530(first/12: Channel[int]) -> unit {
+                  join inline_cont527(second/13: Channel[int]) -> unit {
+                    join inline_cont524(_wild417: unit) -> unit {
+                      join inline_cont521(_wild418: unit) -> unit {
+                        join k438(jp439: int) -> unit {
+                          join inline_cont518(_wild419: unit) -> unit {
+                            join inline_cont515(events/17: Channel[int]) -> unit {
+                              join inline_cont512(_wild420: unit) -> unit {
+                                let t443 = (1 + 1) in
+                                let t444 = (t443 == 2) in
+                                join k440(jp441: int) -> unit {
+                                  let inline510 = trait_impl#ToString#int#to_string(jp441) in
+                                  let inline511 = @runtime(core.string_println)(inline510) in
+                                  ()
+                                } in
+                                select {
+                                  recv(events/17) when t444 as $select_recv_1170/18 => {
+                                    match $select_recv_1170/18 {
+                                      Tag_0 => {
+                                        jump k440(0)
+                                      },
+                                      Tag_1 => {
+                                        let x421 = Option__int::Some._0($select_recv_1170/18) in
+                                        let t447 = (x421 + 1) in
+                                        jump k440(t447)
+                                      },
+                                    }
+                                  },
+                                  default => {
+                                    jump k440(-1)
+                                  },
+                                }
+                              } in
+                              let inline513 = 7 in
+                              let inline514 = @intrinsic(channel.send)(events/17, inline513) in
+                              jump inline_cont512(())
+                            } in
+                            let inline516 = 1 in
+                            let inline517 = @intrinsic(channel.new)(inline516) in
+                            jump inline_cont515(inline517)
+                          } in
+                          let inline519 = trait_impl#ToString#int#to_string(jp439) in
+                          let inline520 = @runtime(core.string_println)(inline519) in
+                          jump inline_cont518(())
+                        } in
+                        select priority {
+                          recv(first/12) when true as value/14 => {
+                            let inline502 = -1 in
+                            match value/14 {
+                              Tag_0 => {
+                                jump k438(inline502)
+                              },
+                              Tag_1 => {
+                                let inline503 = Option__int::Some._0(value/14) in
+                                jump k438(inline503)
+                              },
+                            }
+                          },
+                          recv(second/13) when true as value/15 => {
+                            let inline506 = -1 in
+                            match value/15 {
+                              Tag_0 => {
+                                jump k438(inline506)
+                              },
+                              Tag_1 => {
+                                let inline507 = Option__int::Some._0(value/15) in
+                                jump k438(inline507)
+                              },
+                            }
+                          },
+                          default => {
+                            jump k438(0)
+                          },
+                        }
+                      } in
+                      let inline522 = 20 in
+                      let inline523 = @intrinsic(channel.send)(second/13, inline522) in
+                      jump inline_cont521(())
+                    } in
+                    let inline525 = 10 in
+                    let inline526 = @intrinsic(channel.send)(first/12, inline525) in
+                    jump inline_cont524(())
+                  } in
+                  let inline528 = 1 in
+                  let inline529 = @intrinsic(channel.new)(inline528) in
+                  jump inline_cont527(inline529)
+                } in
+                let inline531 = 1 in
+                let inline532 = @intrinsic(channel.new)(inline531) in
+                jump inline_cont530(inline532)
+              } in
+              let inline534 = trait_impl#ToString#string#to_string(jp436) in
+              let inline535 = @runtime(core.string_println)(inline534) in
+              jump inline_cont533(())
+            } in
+            let inline537 = trait_impl#ToString#string#to_string(t437) in
+            let inline538 = @runtime(core.string_println)(inline537) in
+            jump inline_cont536(())
+          } in
+          let inline540 = @intrinsic(ref.get)(log/9) in
+          jump inline_cont539(inline540)
+        } in
+        select {
+          send(t450, t451) when t452 => {
+            jump k435("sent")
+          },
+          default => {
+            jump k435("default")
+          },
+        }
+      } in
+      let inline542 = "g" in
+      let inline543 = false in
+      let inline544 = inherent#Ref#Ref[T]#get__T_string(log/9) in
+      let inline545 = (inline544 + inline542) in
+      let inline546 = inherent#Ref#Ref[T]#set__T_string(log/9, inline545) in
+      jump inline_cont541(inline543)
+    } in
+    let inline548 = "v" in
+    let inline549 = 1 in
+    let inline550 = inherent#Ref#Ref[T]#get__T_string(log/9) in
+    let inline551 = (inline550 + inline548) in
+    let inline552 = inherent#Ref#Ref[T]#set__T_string(log/9, inline551) in
+    jump inline_cont547(inline549)
+  } in
+  let inline554 = "c" in
+  let inline555 = inherent#Ref#Ref[T]#get__T_string(log/9) in
+  let inline556 = (inline555 + inline554) in
+  let inline557 = inherent#Ref#Ref[T]#set__T_string(log/9, inline556) in
+  jump inline_cont553(disabled/10)
+}
+
+fn inherent#Ref#Ref[T]#get__T_string(self/432: Ref[string]) -> string {
+  let t455 = @intrinsic(ref.get)(self/432) in
+  t455
+}
+
+fn inherent#Ref#Ref[T]#set__T_string(self/433: Ref[string], value/434: string) -> unit {
+  let t457 = @intrinsic(ref.set)(self/433, value/434) in
+  ()
+}
+
+fn inherent#Ref#Ref[T]#new__T_string(value/431: string) -> Ref[string] {
+  let t460 = @intrinsic(ref.new)(value/431) in
+  t460
+}
+
+fn inherent#Channel#Channel[T]#new__T_int(capacity/435: int) -> Channel[int] {
+  let t463 = @intrinsic(channel.new)(capacity/435) in
+  t463
+}
+
+fn inherent#Channel#Channel[T]#close__T_int(self/441: Channel[int]) -> unit {
+  let t465 = @intrinsic(channel.close)(self/441) in
+  ()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join inline_cont558(t467: string) -> unit {
+    let t468 = @runtime(core.string_println)(t467) in
+    ()
+  } in
+  jump inline_cont558(value/1)
+}
+
+fn inherent#Channel#Channel[T]#send__T_int(self/436: Channel[int], value/437: int) -> unit {
+  let t470 = @intrinsic(channel.send)(self/436, value/437) in
+  ()
+}
+
+fn inherent#Option#Option[T]#unwrap_or__T_int(self/467: Option__int, fallback/468: int) -> int {
+  match self/467 {
+    Tag_0 => {
+      fallback/468
+    },
+    Tag_1 => {
+      let x390 = Option__int::Some._0(self/467) in
+      x390
+    },
+  }
+}
+
+fn println__T_int(value/1: int) -> unit {
+  join inline_cont559(t476: string) -> unit {
+    let t477 = @runtime(core.string_println)(t476) in
+    ()
+  } in
+  let inline560 = @runtime(core.int_to_string)(value/1) in
+  jump inline_cont559(inline560)
+}
+
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
+}
+
+fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+  let t482 = @runtime(core.int_to_string)(self/151) in
+  t482
+}
+
+fn trait_impl#PartialEq#string#eq(self/181: string, other/182: string) -> bool {
+  let t485 = (self/181 == other/182) in
+  t485
+}
+
+fn trait_impl#Hash#string#hash(self/209: string) -> uint64 {
+  let t488 = @runtime(core.string_hash)(self/209) in
+  t488
+}

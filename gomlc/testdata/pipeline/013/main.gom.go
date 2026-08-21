@@ -18,10 +18,10 @@ type Ordering int32
 
 func main0() struct{} {
     var s__0 string = "abcde"
+    var inline426 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(s__0)
+    _goml_runtime_core_string_println(inline426)
     var inline423 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(s__0)
-    _goml_runtime_core_string_println(inline423)
-    var inline420 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(s__0)
-    _goml_runtime_core_string_print(inline420)
+    _goml_runtime_core_string_print(inline423)
     return struct{}{}
 }
 

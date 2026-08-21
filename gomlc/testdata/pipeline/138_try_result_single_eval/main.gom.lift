@@ -1,5 +1,5 @@
 fn bump(counter/0: Ref[int32], ok/1: bool) -> Result__int32__string {
-  let _wild408 =
+  let _wild411 =
     inherent#Ref#Ref[T]#set__T_int32(
       counter/0,
       (inherent#Ref#Ref[T]#get__T_int32(counter/0) + 1)
@@ -13,16 +13,16 @@ fn bump(counter/0: Ref[int32], ok/1: bool) -> Result__int32__string {
 
 fn use_try(counter/2: Ref[int32], ok/3: bool) -> Result__int32__string {
   let value/4 =
-    let mtmp409 = bump(counter/2, ok/3) in
-    match mtmp409 {
-      Result__int32__string::Ok(x410) => {
-        let x410 = Result__int32__string::Ok._0(mtmp409) in
-        let try_value/23 = x410 in
+    let mtmp412 = bump(counter/2, ok/3) in
+    match mtmp412 {
+      Result__int32__string::Ok(x413) => {
+        let x413 = Result__int32__string::Ok._0(mtmp412) in
+        let try_value/23 = x413 in
         try_value/23
       },
-      Result__int32__string::Err(x411) => {
-        let x411 = Result__int32__string::Err._0(mtmp409) in
-        let try_residual/23 = x411 in
+      Result__int32__string::Err(x414) => {
+        let x414 = Result__int32__string::Err._0(mtmp412) in
+        let try_residual/23 = x414 in
         return Result__int32__string::Err(try_residual/23)
       },
     } in
@@ -31,14 +31,14 @@ fn use_try(counter/2: Ref[int32], ok/3: bool) -> Result__int32__string {
 
 fn show(res/5: Result__int32__string) -> string {
   match res/5 {
-    Result__int32__string::Ok(x412) => {
-      let x412 = Result__int32__string::Ok._0(res/5) in
-      let value/6 = x412 in
+    Result__int32__string::Ok(x415) => {
+      let x415 = Result__int32__string::Ok._0(res/5) in
+      let value/6 = x415 in
       ("ok " + inherent#int32#int32#to_string(value/6))
     },
-    Result__int32__string::Err(x413) => {
-      let x413 = Result__int32__string::Err._0(res/5) in
-      let err/7 = x413 in
+    Result__int32__string::Err(x416) => {
+      let x416 = Result__int32__string::Err._0(res/5) in
+      let err/7 = x416 in
       ("err " + err/7)
     },
   }
@@ -52,8 +52,8 @@ fn run(ok/8: bool) -> string {
 }
 
 fn main() -> unit {
-  let _wild414 = println__T_string(run(true)) in
-  let _wild415 = println__T_string(run(false)) in
+  let _wild417 = println__T_string(run(true)) in
+  let _wild418 = println__T_string(run(false)) in
   ()
 }
 

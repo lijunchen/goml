@@ -1,75 +1,75 @@
 fn trait_impl#Display#Number#display(self/0: Number) -> string {
-  let t413 = Number.value(self/0) in
-  let inline446 = @runtime(core.int_to_string)(t413) in
-  inline446
+  let t416 = Number.value(self/0) in
+  let inline449 = @runtime(core.int_to_string)(t416) in
+  inline449
 }
 
 fn trait_impl#Source#Number#get(self/1: Number) -> int {
-  let t417 = Number.value(self/1) in
-  t417
+  let t420 = Number.value(self/1) in
+  t420
 }
 
 fn main() -> unit {
-  let t419 = Number { value: 42 } in
-  let display/3 = to_dyn[Display]{Number}(t419) in
-  let t420 = dyn_call[Display::display](display/3) in
-  join inline_cont458(_wild408: unit) -> unit {
-    let t421 = Number { value: 7 } in
-    join inline_cont456(erased/4: dyn Display) -> unit {
-      let t422 = dyn_call[Display::display](erased/4) in
-      join inline_cont453(_wild409: unit) -> unit {
-        let t423 = Number { value: 11 } in
-        let source/5 = to_dyn[Source]{Number}(t423) in
-        let t424 = dyn_call[Source::get](source/5) in
-        join inline_cont450(_wild410: unit) -> unit {
-          let t425 = Number { value: 13 } in
-          let same/6 = to_dyn[Display]{Number}(t425) in
-          let t426 = dyn_call[Display::display](same/6) in
-          let inline448 = trait_impl#ToString#string#to_string(t426) in
-          let inline449 = @runtime(core.string_println)(inline448) in
+  let t422 = Number { value: 42 } in
+  let display/3 = to_dyn[Display]{Number}(t422) in
+  let t423 = dyn_call[Display::display](display/3) in
+  join inline_cont461(_wild411: unit) -> unit {
+    let t424 = Number { value: 7 } in
+    join inline_cont459(erased/4: dyn Display) -> unit {
+      let t425 = dyn_call[Display::display](erased/4) in
+      join inline_cont456(_wild412: unit) -> unit {
+        let t426 = Number { value: 11 } in
+        let source/5 = to_dyn[Source]{Number}(t426) in
+        let t427 = dyn_call[Source::get](source/5) in
+        join inline_cont453(_wild413: unit) -> unit {
+          let t428 = Number { value: 13 } in
+          let same/6 = to_dyn[Display]{Number}(t428) in
+          let t429 = dyn_call[Display::display](same/6) in
+          let inline451 = trait_impl#ToString#string#to_string(t429) in
+          let inline452 = @runtime(core.string_println)(inline451) in
           ()
         } in
-        let inline451 = trait_impl#ToString#int#to_string(t424) in
-        let inline452 = @runtime(core.string_println)(inline451) in
-        jump inline_cont450(())
+        let inline454 = trait_impl#ToString#int#to_string(t427) in
+        let inline455 = @runtime(core.string_println)(inline454) in
+        jump inline_cont453(())
       } in
-      let inline454 = trait_impl#ToString#string#to_string(t422) in
-      let inline455 = @runtime(core.string_println)(inline454) in
-      jump inline_cont453(())
+      let inline457 = trait_impl#ToString#string#to_string(t425) in
+      let inline458 = @runtime(core.string_println)(inline457) in
+      jump inline_cont456(())
     } in
-    let inline457 = to_dyn[Display]{Number}(t421) in
-    jump inline_cont456(inline457)
+    let inline460 = to_dyn[Display]{Number}(t424) in
+    jump inline_cont459(inline460)
   } in
-  let inline459 = trait_impl#ToString#string#to_string(t420) in
-  let inline460 = @runtime(core.string_println)(inline459) in
-  jump inline_cont458(())
+  let inline462 = trait_impl#ToString#string#to_string(t423) in
+  let inline463 = @runtime(core.string_println)(inline462) in
+  jump inline_cont461(())
 }
 
 fn inherent#int#int#to_string(self/32: int) -> string {
-  let t430 = @runtime(core.int_to_string)(self/32) in
-  t430
+  let t433 = @runtime(core.int_to_string)(self/32) in
+  t433
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont461(t432: string) -> unit {
-    let t433 = @runtime(core.string_println)(t432) in
+  join inline_cont464(t435: string) -> unit {
+    let t436 = @runtime(core.string_println)(t435) in
     ()
   } in
-  jump inline_cont461(value/1)
+  jump inline_cont464(value/1)
 }
 
 fn erase__T_Number(value/2: Number) -> dyn Display {
-  let t436 = to_dyn[Display]{Number}(value/2) in
-  t436
+  let t439 = to_dyn[Display]{Number}(value/2) in
+  t439
 }
 
 fn println__T_int(value/1: int) -> unit {
-  join inline_cont462(t438: string) -> unit {
-    let t439 = @runtime(core.string_println)(t438) in
+  join inline_cont465(t441: string) -> unit {
+    let t442 = @runtime(core.string_println)(t441) in
     ()
   } in
-  let inline463 = @runtime(core.int_to_string)(value/1) in
-  jump inline_cont462(inline463)
+  let inline466 = @runtime(core.int_to_string)(value/1) in
+  jump inline_cont465(inline466)
 }
 
 fn trait_impl#ToString#string#to_string(self/149: string) -> string {
@@ -77,6 +77,6 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
 }
 
 fn trait_impl#ToString#int#to_string(self/151: int) -> string {
-  let t444 = @runtime(core.int_to_string)(self/151) in
-  t444
+  let t447 = @runtime(core.int_to_string)(self/151) in
+  t447
 }

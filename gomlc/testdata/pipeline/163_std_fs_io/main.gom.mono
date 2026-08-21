@@ -512,16 +512,24 @@ fn std::internal::host::sleep_nanoseconds(value/98: int64) -> unit {
   @runtime(std.time.sleep_nanoseconds)(value/98)
 }
 
-fn std::internal::host::math_float32_unary(operation/99: int, value/100: float32) -> float32 {
-  @runtime(std.math.float32_unary)(operation/99, value/100)
+fn std::internal::host::timer_new(value/99: int64) -> (int64, Receiver[unit]) {
+  @runtime(std.time.timer_new)(value/99)
 }
 
-fn std::internal::host::math_float32_pow(value/101: float32, exponent/102: float32) -> float32 {
-  @runtime(std.math.float32_pow)(value/101, exponent/102)
+fn std::internal::host::timer_stop(id/100: int64) -> bool {
+  @runtime(std.time.timer_stop)(id/100)
 }
 
-fn std::internal::host::crypto_random_bytes(length/103: int) -> (bool, Vec[uint8], string) {
-  @runtime(std.crypto.rand.bytes)(length/103)
+fn std::internal::host::math_float32_unary(operation/101: int, value/102: float32) -> float32 {
+  @runtime(std.math.float32_unary)(operation/101, value/102)
+}
+
+fn std::internal::host::math_float32_pow(value/103: float32, exponent/104: float32) -> float32 {
+  @runtime(std.math.float32_pow)(value/103, exponent/104)
+}
+
+fn std::internal::host::crypto_random_bytes(length/105: int) -> (bool, Vec[uint8], string) {
+  @runtime(std.crypto.rand.bytes)(length/105)
 }
 
 fn trait_impl#ToString#std::io::ErrorKind#to_string(self/0: std::io::ErrorKind) -> string {
@@ -2255,20 +2263,20 @@ fn std::fs::sha256_file(path/146: string) -> Result__string__string {
 
 fn show_read(res/0: Result__string__string) -> string {
   match res/0 {
-    Result__string__string::Ok(x408) => {
+    Result__string__string::Ok(x411) => {
       {
-        let x408 = Result__string__string::Ok._0(res/0) in
+        let x411 = Result__string__string::Ok._0(res/0) in
         {
-          let value/1 = x408 in
+          let value/1 = x411 in
           value/1
         }
       }
     },
-    Result__string__string::Err(x409) => {
+    Result__string__string::Err(x412) => {
       {
-        let x409 = Result__string__string::Err._0(res/0) in
+        let x412 = Result__string__string::Err._0(res/0) in
         {
-          let err/2 = x409 in
+          let err/2 = x412 in
           ("err " + err/2)
         }
       }
@@ -2278,20 +2286,20 @@ fn show_read(res/0: Result__string__string) -> string {
 
 fn show_dir(res/3: Result__Vec[string]__string) -> string {
   match res/3 {
-    Result__Vec[string]__string::Ok(x410) => {
+    Result__Vec[string]__string::Ok(x413) => {
       {
-        let x410 = Result__Vec[string]__string::Ok._0(res/3) in
+        let x413 = Result__Vec[string]__string::Ok._0(res/3) in
         {
-          let names/4 = x410 in
+          let names/4 = x413 in
           trait_impl#ToString#bool#to_string((inherent#Vec#Vec[T]#len__T_string(names/4) > 0))
         }
       }
     },
-    Result__Vec[string]__string::Err(x411) => {
+    Result__Vec[string]__string::Err(x414) => {
       {
-        let x411 = Result__Vec[string]__string::Err._0(res/3) in
+        let x414 = Result__Vec[string]__string::Err._0(res/3) in
         {
-          let err/5 = x411 in
+          let err/5 = x414 in
           ("err " + err/5)
         }
       }
@@ -2300,14 +2308,14 @@ fn show_dir(res/3: Result__Vec[string]__string) -> string {
 }
 
 fn main() -> unit {
-  let mtmp412 = std::fs::write_file("goml-std-test.txt", "std-ok") in
+  let mtmp415 = std::fs::write_file("goml-std-test.txt", "std-ok") in
   {
-    let _wild413 = std::io::println__T_string(show_read(std::fs::read_file("goml-std-test.txt"))) in
-    let _wild414 =
+    let _wild416 = std::io::println__T_string(show_read(std::fs::read_file("goml-std-test.txt"))) in
+    let _wild417 =
       std::io::println__T_string(
         trait_impl#ToString#bool#to_string(std::fs::exists("goml-std-test.txt"))
       ) in
-    let _wild415 = std::io::println__T_string(show_dir(std::fs::read_dir("."))) in
+    let _wild418 = std::io::println__T_string(show_dir(std::fs::read_dir("."))) in
   }
 }
 

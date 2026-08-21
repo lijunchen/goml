@@ -7,19 +7,19 @@ fn main() -> unit {
       @runtime(core.uint8_to_string)(unsigned/2)) +
       string_byte_slice("abcd", 1, 3)) in
   let value/4 = @intrinsic(ref.new)(1) in
-  let _wild408 = @intrinsic(ref.set)(value/4, 2) in
+  let _wild411 = @intrinsic(ref.set)(value/4, 2) in
   let same/5 = @intrinsic(ref.ptr_eq)(value/4, value/4) in
-  let mtmp409 = @intrinsic(ref.ptr_hash)(value/4) in
+  let mtmp412 = @intrinsic(ref.ptr_hash)(value/4) in
   let values/6 = @intrinsic(vec.new)() in
-  let _wild410 = @intrinsic(vec.push)(values/6, @intrinsic(ref.get)(value/4)) in
-  let _wild411 = @intrinsic(vec.push)(values/6, 3) in
-  let _wild412 = @intrinsic(vec.set)(values/6, 1, 4) in
+  let _wild413 = @intrinsic(vec.push)(values/6, @intrinsic(ref.get)(value/4)) in
+  let _wild414 = @intrinsic(vec.push)(values/6, 3) in
+  let _wild415 = @intrinsic(vec.set)(values/6, 1, 4) in
   let values_slice/7 = @intrinsic(slice.new)(values/6, 0, @intrinsic(vec.len)(values/6)) in
   let nested/8 = @intrinsic(slice.sub)(values_slice/7, 0, @intrinsic(slice.len)(values_slice/7)) in
   let channel/9 = @intrinsic(channel.new)(1) in
-  let _wild413 = @intrinsic(channel.send)(channel/9, @intrinsic(slice.get)(nested/8, 1)) in
+  let _wild416 = @intrinsic(channel.send)(channel/9, @intrinsic(slice.get)(nested/8, 1)) in
   let received/10 = @intrinsic(channel.recv)(channel/9) in
-  let _wild414 = @intrinsic(channel.close)(channel/9) in
+  let _wild417 = @intrinsic(channel.close)(channel/9) in
   let total/13 =
     std::iter::fold__A_int__I_FnIterator[int]__T_int(
       range(0, 3),
@@ -108,11 +108,11 @@ fn trait_impl#Iterator#FnIterator__int#next(self/255: FnIterator__int) -> Option
   FnIterator__int.next_fn(self/255)()
 }
 
-fn __goml_builtin_range(start/494: int, end/495: int) -> FnIterator__int {
-  let current/496 = @intrinsic(ref.new)(start/494) in
+fn __goml_builtin_range(start/503: int, end/504: int) -> FnIterator__int {
+  let current/505 = @intrinsic(ref.new)(start/503) in
   inherent#FnIterator#FnIterator[T]#from_fn__T_int(
     pack_closure[inherent#closure_env_goml_builtin_range_1#closure_env_goml_builtin_range_1#apply](
-      closure_env_goml_builtin_range_1 { current_0: current/496, end_1: end/495 }
+      closure_env_goml_builtin_range_1 { current_0: current/505, end_1: end/504 }
     )
   )
 }
@@ -152,7 +152,7 @@ fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
 }
 
 fn inherent#closure_env_main_0#closure_env_main_0#apply(
-  env415: closure_env_main_0,
+  env418: closure_env_main_0,
   sum/11: int,
   item/12: int
 ) -> int {
@@ -160,14 +160,14 @@ fn inherent#closure_env_main_0#closure_env_main_0#apply(
 }
 
 fn inherent#closure_env_goml_builtin_range_1#closure_env_goml_builtin_range_1#apply(
-  env416: closure_env_goml_builtin_range_1
+  env419: closure_env_goml_builtin_range_1
 ) -> Option__int {
-  let current/496 = closure_env_goml_builtin_range_1.current_0(env416) in
-  let end/495 = closure_env_goml_builtin_range_1.end_1(env416) in
-  let value/497 = @intrinsic(ref.get)(current/496) in
-  if (value/497 < end/495) {
-      let _wild404 = @intrinsic(ref.set)(current/496, (value/497 + 1)) in
-      Option__int::Some(value/497)
+  let current/505 = closure_env_goml_builtin_range_1.current_0(env419) in
+  let end/504 = closure_env_goml_builtin_range_1.end_1(env419) in
+  let value/506 = @intrinsic(ref.get)(current/505) in
+  if (value/506 < end/504) {
+      let _wild407 = @intrinsic(ref.set)(current/505, (value/506 + 1)) in
+      Option__int::Some(value/506)
   } else {
       Option__int::None
   }

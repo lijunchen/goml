@@ -1,0 +1,166 @@
+fn print_selection(value/0: std::channel::Selection[int]) -> unit {
+    match (value/0 : std::channel::Selection[int]) {
+        std::channel::Selection::Received(index/1: int, value/2: Option[int]) =>
+          {
+              (println : (int) -> unit)((index/1 : int));
+              (println : (int) -> unit)(
+                (Option[int]::unwrap_or : (Option[int], int) -> int)((value/2 : Option[int]), -1)
+              )
+          },
+        std::channel::Selection::Sent(index/3: int) => (println : (int) -> unit)((index/3 : int)),
+    }
+}
+
+fn main() -> unit {
+    let first/4: Channel[int] = (Channel[int]::new : (int) -> Channel[int])(1);
+    let second/5: Channel[int] = (Channel[int]::new : (int) -> Channel[int])(1);
+    (Channel[int]::send : (Channel[int], int) -> unit)((first/4 : Channel[int]), 10);
+    (Channel[int]::send : (Channel[int], int) -> unit)((second/5 : Channel[int]), 20);
+    let operations/6: Vec[std::channel::Operation[int]] =
+      (@intrinsic(vec.from_array) : ([std::channel::Operation[int]; 2]) -> Vec[
+        std::channel::Operation[int]
+      ])(
+        [
+          std::channel::Operation::Receive(
+            (Channel[int]::receiver : (Channel[int]) -> Receiver[int])((first/4 : Channel[int]))
+          ),
+          std::channel::Operation::Receive(
+            (Channel[int]::receiver : (Channel[int]) -> Receiver[int])((second/5 : Channel[int]))
+          )
+        ]
+      );
+    match (std::channel::try_select_priority : (Slice[std::channel::Operation[int]]) -> Result[
+      Option[std::channel::Selection[int]],
+      std::channel::SelectError
+    ])(
+      (@intrinsic(slice.new) : (Vec[std::channel::Operation[int]], int, int) -> Slice[
+        std::channel::Operation[int]
+      ])(
+        (operations/6 : Vec[std::channel::Operation[int]]),
+        0,
+        (Vec[std::channel::Operation[int]]::len : (Vec[std::channel::Operation[int]]) -> int)(
+          (operations/6 : Vec[std::channel::Operation[int]])
+        )
+      )
+    ) {
+        Result::Ok(Option::Some(value/7: std::channel::Selection[int])) =>
+          (print_selection : (std::channel::Selection[int]) -> unit)(
+            (value/7 : std::channel::Selection[int])
+          ),
+        _ : Result[Option[std::channel::Selection[int]], std::channel::SelectError] =>
+          (println : (int) -> unit)(-1),
+    };
+    match (std::channel::try_select : (Slice[std::channel::Operation[int]]) -> Result[
+      Option[std::channel::Selection[int]],
+      std::channel::SelectError
+    ])(
+      (@intrinsic(slice.new) : (Vec[std::channel::Operation[int]], int, int) -> Slice[
+        std::channel::Operation[int]
+      ])(
+        (operations/6 : Vec[std::channel::Operation[int]]),
+        0,
+        (Vec[std::channel::Operation[int]]::len : (Vec[std::channel::Operation[int]]) -> int)(
+          (operations/6 : Vec[std::channel::Operation[int]])
+        )
+      )
+    ) {
+        Result::Ok(Option::Some(value/8: std::channel::Selection[int])) =>
+          (print_selection : (std::channel::Selection[int]) -> unit)(
+            (value/8 : std::channel::Selection[int])
+          ),
+        _ : Result[Option[std::channel::Selection[int]], std::channel::SelectError] =>
+          (println : (int) -> unit)(-2),
+    };
+    let empty/9: Channel[int] = (Channel[int]::new : (int) -> Channel[int])(0);
+    let target/10: Channel[int] = (Channel[int]::new : (int) -> Channel[int])(1);
+    let mixed/11: Vec[std::channel::Operation[int]] =
+      (@intrinsic(vec.from_array) : ([std::channel::Operation[int]; 2]) -> Vec[
+        std::channel::Operation[int]
+      ])(
+        [
+          std::channel::Operation::Receive(
+            (Channel[int]::receiver : (Channel[int]) -> Receiver[int])((empty/9 : Channel[int]))
+          ),
+          std::channel::Operation::Send(
+            (Channel[int]::sender : (Channel[int]) -> Sender[int])((target/10 : Channel[int])),
+            30
+          )
+        ]
+      );
+    match (std::channel::select : (Slice[std::channel::Operation[int]]) -> Result[
+      std::channel::Selection[int],
+      std::channel::SelectError
+    ])(
+      (@intrinsic(slice.new) : (Vec[std::channel::Operation[int]], int, int) -> Slice[
+        std::channel::Operation[int]
+      ])(
+        (mixed/11 : Vec[std::channel::Operation[int]]),
+        0,
+        (Vec[std::channel::Operation[int]]::len : (Vec[std::channel::Operation[int]]) -> int)(
+          (mixed/11 : Vec[std::channel::Operation[int]])
+        )
+      )
+    ) {
+        Result::Ok(value/12: std::channel::Selection[int]) =>
+          (print_selection : (std::channel::Selection[int]) -> unit)(
+            (value/12 : std::channel::Selection[int])
+          ),
+        Result::Err(_ : std::channel::SelectError) => (println : (int) -> unit)(-3),
+    };
+    (println : (int) -> unit)(
+      (Option[int]::unwrap_or : (Option[int], int) -> int)(
+        (Channel[int]::recv : (Channel[int]) -> Option[int])((target/10 : Channel[int])),
+        -4
+      )
+    );
+    let none/13: Vec[std::channel::Operation[int]] =
+      (@intrinsic(vec.from_array) : ([std::channel::Operation[int]; 1]) -> Vec[
+        std::channel::Operation[int]
+      ])(
+        [
+          std::channel::Operation::Receive(
+            (Channel[int]::receiver : (Channel[int]) -> Receiver[int])((empty/9 : Channel[int]))
+          )
+        ]
+      );
+    (println : (int) -> unit)(
+      match (std::channel::try_select : (Slice[std::channel::Operation[int]]) -> Result[
+        Option[std::channel::Selection[int]],
+        std::channel::SelectError
+      ])(
+        (@intrinsic(slice.new) : (Vec[std::channel::Operation[int]], int, int) -> Slice[
+          std::channel::Operation[int]
+        ])(
+          (none/13 : Vec[std::channel::Operation[int]]),
+          0,
+          (Vec[std::channel::Operation[int]]::len : (Vec[std::channel::Operation[int]]) -> int)(
+            (none/13 : Vec[std::channel::Operation[int]])
+          )
+        )
+      ) {
+          Result::Ok(Option::None) => 40,
+          _ : Result[Option[std::channel::Selection[int]], std::channel::SelectError] => -5,
+      }
+    );
+    let no_operations/14: Vec[std::channel::Operation[int]] =
+      (Vec[std::channel::Operation[int]]::new : () -> Vec[std::channel::Operation[int]])();
+    (println : (int) -> unit)(
+      match (std::channel::select : (Slice[std::channel::Operation[int]]) -> Result[
+        std::channel::Selection[int],
+        std::channel::SelectError
+      ])(
+        (@intrinsic(slice.new) : (Vec[std::channel::Operation[int]], int, int) -> Slice[
+          std::channel::Operation[int]
+        ])(
+          (no_operations/14 : Vec[std::channel::Operation[int]]),
+          0,
+          (Vec[std::channel::Operation[int]]::len : (Vec[std::channel::Operation[int]]) -> int)(
+            (no_operations/14 : Vec[std::channel::Operation[int]])
+          )
+        )
+      ) {
+          Result::Err(std::channel::SelectError::Empty) => 50,
+          _ : Result[std::channel::Selection[int], std::channel::SelectError] => -6,
+      }
+    )
+}

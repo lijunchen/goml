@@ -39,21 +39,21 @@ func dyn__Display__vtable__int32() *dyn__Display_vtable {
 }
 
 func _goml_m_trait__impl_i_Display_i_int32_i_show(self__0 int32) string {
-    var inline428 string = _goml_runtime_core_int32_to_string(self__0)
-    return inline428
+    var inline431 string = _goml_runtime_core_int32_to_string(self__0)
+    return inline431
 }
 
 func main0() struct{} {
     var value__2 int32 = 42
-    var t416 dyn__Display = dyn__Display{
+    var t419 dyn__Display = dyn__Display{
         data: int32(value__2),
         vtable: dyn__Display__vtable__int32(),
     }
-    var t418 string
-    var inline433 string = t416.vtable.show(t416.data)
-    t418 = inline433
-    var inline430 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t418)
-    _goml_runtime_core_string_println(inline430)
+    var t421 string
+    var inline436 string = t419.vtable.show(t419.data)
+    t421 = inline436
+    var inline433 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t421)
+    _goml_runtime_core_string_println(inline433)
     return struct{}{}
 }
 

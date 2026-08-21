@@ -21,23 +21,23 @@ type Ordering int32
 
 func main0() struct{} {
     var c__0 rune = 65
-    var t411 string
-    var inline446 string = char_to_string(c__0)
-    t411 = inline446
-    var inline443 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t411)
-    _goml_runtime_core_string_println(inline443)
+    var t414 string
+    var inline449 string = char_to_string(c__0)
+    t414 = inline449
+    var inline446 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t414)
+    _goml_runtime_core_string_println(inline446)
     var d__1 rune = 98
-    var jp413 string
+    var jp416 string
     switch d__1 {
     case 97:
-        jp413 = "A"
+        jp416 = "A"
     case 98:
-        jp413 = "B"
+        jp416 = "B"
     default:
-        jp413 = "?"
+        jp416 = "?"
     }
-    var inline440 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp413)
-    _goml_runtime_core_string_println(inline440)
+    var inline443 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp416)
+    _goml_runtime_core_string_println(inline443)
     return struct{}{}
 }
 
@@ -46,26 +46,26 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
 }
 
 func char_to_string(value__29 rune) string {
-    var t426 uint32 = uint32(rune(value__29))
-    var t427 bool
-    var inline454 bool = t426 <= 1114111
-    if inline454 {
-        var inline455 bool = t426 >= 55296
-        var inline457 bool
-        if inline455 {
-            var inline459 bool = t426 <= 57343
-            inline457 = inline459
+    var t429 uint32 = uint32(rune(value__29))
+    var t430 bool
+    var inline457 bool = t429 <= 1114111
+    if inline457 {
+        var inline458 bool = t429 >= 55296
+        var inline460 bool
+        if inline458 {
+            var inline462 bool = t429 <= 57343
+            inline460 = inline462
         } else {
-            inline457 = false
+            inline460 = false
         }
-        var inline458 bool = !inline457
-        t427 = inline458
+        var inline461 bool = !inline460
+        t430 = inline461
     } else {
-        t427 = false
+        t430 = false
     }
-    if t427 {
-        var t428 string = _goml_runtime_core_char_to_string(value__29)
-        return t428
+    if t430 {
+        var t431 string = _goml_runtime_core_char_to_string(value__29)
+        return t431
     } else {
         _goml_runtime_core_string_get("", -1)
         return ""

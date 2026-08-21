@@ -9,29 +9,29 @@ fn step(i/0: int32) -> Option__int32 {
 fn accumulate(limit/1: int32) -> Option__int32 {
   let sum/2 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let i/3 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let _wild413 =
+  let _wild416 =
     while (inherent#Ref#Ref[T]#get__T_int32(i/3) < limit/1) {
         let cur/4 = inherent#Ref#Ref[T]#get__T_int32(i/3) in
-        let _wild408 = inherent#Ref#Ref[T]#set__T_int32(i/3, (cur/4 + 1)) in
-        let _wild409 =
+        let _wild411 = inherent#Ref#Ref[T]#set__T_int32(i/3, (cur/4 + 1)) in
+        let _wild412 =
           if (cur/4 == 1) {
               continue
           } else {
               ()
           } in
         let value/5 =
-          let mtmp410 = step(cur/4) in
-          match mtmp410 {
+          let mtmp413 = step(cur/4) in
+          match mtmp413 {
             Option__int32::None => {
               return Option__int32::None
             },
-            Option__int32::Some(x411) => {
-              let x411 = Option__int32::Some._0(mtmp410) in
-              let try_value/42 = x411 in
+            Option__int32::Some(x414) => {
+              let x414 = Option__int32::Some._0(mtmp413) in
+              let try_value/42 = x414 in
               try_value/42
             },
           } in
-        let _wild412 =
+        let _wild415 =
           inherent#Ref#Ref[T]#set__T_int32(
             sum/2,
             (inherent#Ref#Ref[T]#get__T_int32(sum/2) + value/5)
@@ -46,17 +46,17 @@ fn show(opt/6: Option__int32) -> string {
     Option__int32::None => {
       "none"
     },
-    Option__int32::Some(x414) => {
-      let x414 = Option__int32::Some._0(opt/6) in
-      let value/7 = x414 in
+    Option__int32::Some(x417) => {
+      let x417 = Option__int32::Some._0(opt/6) in
+      let value/7 = x417 in
       ("some=" + inherent#int32#int32#to_string(value/7))
     },
   }
 }
 
 fn main() -> unit {
-  let _wild415 = println__T_string(show(accumulate(2))) in
-  let _wild416 = println__T_string(show(accumulate(4))) in
+  let _wild418 = println__T_string(show(accumulate(2))) in
+  let _wild419 = println__T_string(show(accumulate(4))) in
   ()
 }
 

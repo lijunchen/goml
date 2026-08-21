@@ -1,5 +1,5 @@
 fn trait_impl#PartialEq#LoggedKey#eq(self/0: LoggedKey, other/1: LoggedKey) -> bool {
-  let _wild408 =
+  let _wild411 =
     inherent#Ref#Ref[T]#set__T_string(
       LoggedKey.log(self/0),
       (inherent#Ref#Ref[T]#get__T_string(LoggedKey.log(self/0)) + "E")
@@ -8,7 +8,7 @@ fn trait_impl#PartialEq#LoggedKey#eq(self/0: LoggedKey, other/1: LoggedKey) -> b
 }
 
 fn trait_impl#Hash#LoggedKey#hash(self/2: LoggedKey) -> uint64 {
-  let _wild409 =
+  let _wild412 =
     inherent#Ref#Ref[T]#set__T_string(
       LoggedKey.log(self/2),
       (inherent#Ref#Ref[T]#get__T_string(LoggedKey.log(self/2)) + "H")
@@ -17,7 +17,7 @@ fn trait_impl#Hash#LoggedKey#hash(self/2: LoggedKey) -> uint64 {
 }
 
 fn logged_key(log/3: Ref[string], label/4: string, id/5: int) -> LoggedKey {
-  let _wild410 =
+  let _wild413 =
     inherent#Ref#Ref[T]#set__T_string(
       log/3,
       (inherent#Ref#Ref[T]#get__T_string(log/3) + label/4)
@@ -26,7 +26,7 @@ fn logged_key(log/3: Ref[string], label/4: string, id/5: int) -> LoggedKey {
 }
 
 fn logged_value(log/6: Ref[string], label/7: string, value/8: int) -> int {
-  let _wild411 =
+  let _wild414 =
     inherent#Ref#Ref[T]#set__T_string(
       log/6,
       (inherent#Ref#Ref[T]#get__T_string(log/6) + label/7)
@@ -37,7 +37,7 @@ fn logged_value(log/6: Ref[string], label/7: string, value/8: int) -> int {
 fn main() -> unit {
   let make_vec/9 = @intrinsic(vec.from_array) in
   let values/10 = make_vec/9([1, 2, 3]) in
-  let _wild412 =
+  let _wild415 =
     println__T_string(
       ((((("" + inherent#int#int#to_string(inherent#Vec#Vec[T]#len__T_int(values/10))) + ":") +
         inherent#int#int#to_string(@intrinsic(vec.get)(values/10, 0))) +
@@ -45,21 +45,21 @@ fn main() -> unit {
         inherent#int#int#to_string(@intrinsic(vec.get)(values/10, 2)))
     ) in
   let empty/11 = @intrinsic(vec.from_array)([]) in
-  let _wild413 = println__T_int(inherent#Vec#Vec[T]#len__T_int(empty/11)) in
+  let _wild416 = println__T_int(inherent#Vec#Vec[T]#len__T_int(empty/11)) in
   let inferred_empty/12 = @intrinsic(vec.from_array)([]) in
-  let _wild414 = println__T_int(inherent#Vec#Vec[T]#len__T_int(inferred_empty/12)) in
+  let _wild417 = println__T_int(inherent#Vec#Vec[T]#len__T_int(inferred_empty/12)) in
   let source/13 = [inherent#Ref#Ref[T]#new__T_int(1), inherent#Ref#Ref[T]#new__T_int(2)] in
   let copied/14 = @intrinsic(vec.from_array)(source/13) in
-  let _wild415 = inherent#Ref#Ref[T]#set__T_int(@intrinsic(array.get)(source/13, 0), 5) in
-  let _wild420 =
+  let _wild418 = inherent#Ref#Ref[T]#set__T_int(@intrinsic(array.get)(source/13, 0), 5) in
+  let _wild423 =
     {
-      let place_root416 = source/13 in
-      let index417 = 0 in
-      let place418 = @intrinsic(array.get)(place_root416, index417) in
-      let value419 = inherent#Ref#Ref[T]#new__T_int(9) in
-      source/13 = @intrinsic(array.set)(place_root416, index417, value419)
+      let place_root419 = source/13 in
+      let index420 = 0 in
+      let place421 = @intrinsic(array.get)(place_root419, index420) in
+      let value422 = inherent#Ref#Ref[T]#new__T_int(9) in
+      source/13 = @intrinsic(array.set)(place_root419, index420, value422)
     } in
-  let _wild421 =
+  let _wild424 =
     println__T_string(
       ((("" +
         inherent#int#int#to_string(
@@ -78,24 +78,24 @@ fn main() -> unit {
         (logged_key(log/15, "B", 1), logged_value(log/15, "b", 20))
       ]
     ) in
-  let _wild422 = println__T_string(inherent#Ref#Ref[T]#get__T_string(log/15)) in
-  let _wild425 =
+  let _wild425 = println__T_string(inherent#Ref#Ref[T]#get__T_string(log/15)) in
+  let _wild428 =
     println__T_int(
       {
-        let mtmp423 =
+        let mtmp426 =
           inherent#HashMap#HashMap[K,V]#get__K_LoggedKey__V_int(
             table/16,
             LoggedKey { id: 1, log: log/15 }
           ) in
-        match mtmp423 {
+        match mtmp426 {
           Option__int::None => {
             0
           },
-          Option__int::Some(x424) => {
+          Option__int::Some(x427) => {
             {
-              let x424 = Option__int::Some._0(mtmp423) in
+              let x427 = Option__int::Some._0(mtmp426) in
               {
-                let value/17 = x424 in
+                let value/17 = x427 in
                 value/17
               }
             }
@@ -105,11 +105,11 @@ fn main() -> unit {
     ) in
   let make_map/18 = @intrinsic(hashmap.from_array) in
   let words/19 = make_map/18([("a", 1), ("b", 2)]) in
-  let _wild426 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_string__V_int(words/19)) in
+  let _wild429 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_string__V_int(words/19)) in
   let no_words/20 = @intrinsic(hashmap.from_array)([]) in
-  let _wild427 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_string__V_int(no_words/20)) in
+  let _wild430 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_string__V_int(no_words/20)) in
   let inferred_no_words/21 = @intrinsic(hashmap.from_array)([]) in
-  let _wild428 =
+  let _wild431 =
     println__T_int(inherent#HashMap#HashMap[K,V]#len__K_string__V_int(inferred_no_words/21)) in
   let pairs/22 = @intrinsic(vec.from_array)([(1, "a"), (2, "b")]) in
   let nested/23 =
@@ -120,17 +120,17 @@ fn main() -> unit {
     @intrinsic(hashmap.from_array)([("values", @intrinsic(vec.from_array)([5, 6]))]) in
   let nested_value/26 =
     {
-      let mtmp429 =
+      let mtmp432 =
         inherent#HashMap#HashMap[K,V]#get__K_string__V_Vec[int](nested_map/24, "values") in
-      match mtmp429 {
+      match mtmp432 {
         Option__Vec[int]::None => {
           0
         },
-        Option__Vec[int]::Some(x430) => {
+        Option__Vec[int]::Some(x433) => {
           {
-            let x430 = Option__Vec[int]::Some._0(mtmp429) in
+            let x433 = Option__Vec[int]::Some._0(mtmp432) in
             {
-              let values/25 = x430 in
+              let values/25 = x433 in
               @intrinsic(vec.get)(values/25, 0)
             }
           }

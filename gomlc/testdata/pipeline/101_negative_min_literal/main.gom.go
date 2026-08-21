@@ -21,17 +21,17 @@ type Ordering int32
 
 func main0() struct{} {
     var a__0 int8 = -128
-    var t411 string
-    var inline433 string = _goml_runtime_core_int8_to_string(a__0)
-    t411 = inline433
-    var inline430 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t411)
-    _goml_runtime_core_string_println(inline430)
+    var t414 string
+    var inline436 string = _goml_runtime_core_int8_to_string(a__0)
+    t414 = inline436
+    var inline433 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t414)
+    _goml_runtime_core_string_println(inline433)
     var b__1 int16 = -32768
-    var t412 string
-    var inline428 string = _goml_runtime_core_int16_to_string(b__1)
-    t412 = inline428
-    var inline425 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t412)
-    _goml_runtime_core_string_println(inline425)
+    var t415 string
+    var inline431 string = _goml_runtime_core_int16_to_string(b__1)
+    t415 = inline431
+    var inline428 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t415)
+    _goml_runtime_core_string_println(inline428)
     return struct{}{}
 }
 

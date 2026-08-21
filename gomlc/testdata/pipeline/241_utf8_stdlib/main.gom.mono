@@ -1,15 +1,15 @@
 fn check_utf8(bytes/0: Vec[uint8], expected/1: bool) -> unit {
   let expected_length/2 = inherent#Vec#Vec[T]#len__T_uint8(bytes/0) in
-  let mtmp408 = string_from_utf8(bytes/0) in
+  let mtmp411 = string_from_utf8(bytes/0) in
   {
-    let x409 = mtmp408.0 in
-    let x410 = mtmp408.1 in
+    let x412 = mtmp411.0 in
+    let x413 = mtmp411.1 in
     {
-      let value/4 = x410 in
+      let value/4 = x413 in
       {
-        let valid/3 = x409 in
+        let valid/3 = x412 in
         {
-          let _wild411 = println__T_bool((valid/3 == expected/1)) in
+          let _wild414 = println__T_bool((valid/3 == expected/1)) in
           if valid/3 {
               {
                 println__T_bool((inherent#string#string#byte_len(value/4) == expected_length/2))
@@ -26,41 +26,41 @@ fn check_utf8(bytes/0: Vec[uint8], expected/1: bool) -> unit {
 }
 
 fn check_scalar(bytes/5: Vec[uint8], expected/6: uint32, expected_width/7: int) -> unit {
-  let mtmp412 = string_from_utf8(bytes/5) in
+  let mtmp415 = string_from_utf8(bytes/5) in
   {
-    let x413 = mtmp412.0 in
-    let x414 = mtmp412.1 in
+    let x416 = mtmp415.0 in
+    let x417 = mtmp415.1 in
     {
-      let value/9 = x414 in
+      let value/9 = x417 in
       {
-        let valid/8 = x413 in
+        let valid/8 = x416 in
         {
-          let _wild415 = println__T_bool(valid/8) in
+          let _wild418 = println__T_bool(valid/8) in
           {
-            let mtmp416 = inherent#string#string#decode_at(value/9, 0) in
-            match mtmp416 {
+            let mtmp419 = inherent#string#string#decode_at(value/9, 0) in
+            match mtmp419 {
               Option__(char,int)::None => {
                 {
-                  let _wild418 = println__T_bool(false) in
+                  let _wild421 = println__T_bool(false) in
                   println__T_bool(false)
                 }
               },
-              Option__(char,int)::Some(x417) => {
+              Option__(char,int)::Some(x420) => {
                 {
-                  let x417 = Option__(char,int)::Some._0(mtmp416) in
+                  let x420 = Option__(char,int)::Some._0(mtmp419) in
                   {
-                    let decoded/10 = x417 in
+                    let decoded/10 = x420 in
                     {
-                      let mtmp419 = decoded/10 in
+                      let mtmp422 = decoded/10 in
                       {
-                        let x420 = mtmp419.0 in
-                        let x421 = mtmp419.1 in
+                        let x423 = mtmp422.0 in
+                        let x424 = mtmp422.1 in
                         {
-                          let width/12 = x421 in
+                          let width/12 = x424 in
                           {
-                            let character/11 = x420 in
+                            let character/11 = x423 in
                             {
-                              let _wild422 =
+                              let _wild425 =
                                 println__T_bool(((character/11 as uint32) == expected/6)) in
                               println__T_bool((width/12 == expected_width/7))
                             }
@@ -80,31 +80,31 @@ fn check_scalar(bytes/5: Vec[uint8], expected/6: uint32, expected_width/7: int) 
 }
 
 fn main() -> unit {
-  let _wild423 = check_utf8(@intrinsic(vec.from_array)([]), true) in
-  let _wild424 = check_utf8(@intrinsic(vec.from_array)([0]), true) in
-  let _wild425 = check_utf8(@intrinsic(vec.from_array)([127]), true) in
-  let _wild426 = check_scalar(@intrinsic(vec.from_array)([194, 128]), 128, 2) in
-  let _wild427 = check_scalar(@intrinsic(vec.from_array)([223, 191]), 2047, 2) in
-  let _wild428 = check_scalar(@intrinsic(vec.from_array)([224, 160, 128]), 2048, 3) in
-  let _wild429 = check_scalar(@intrinsic(vec.from_array)([237, 159, 191]), 55295, 3) in
-  let _wild430 = check_scalar(@intrinsic(vec.from_array)([238, 128, 128]), 57344, 3) in
-  let _wild431 = check_scalar(@intrinsic(vec.from_array)([239, 191, 189]), 65533, 3) in
-  let _wild432 = check_scalar(@intrinsic(vec.from_array)([239, 191, 191]), 65535, 3) in
-  let _wild433 = check_scalar(@intrinsic(vec.from_array)([240, 144, 128, 128]), 65536, 4) in
-  let _wild434 = check_scalar(@intrinsic(vec.from_array)([244, 143, 191, 191]), 1114111, 4) in
-  let _wild435 = check_utf8(@intrinsic(vec.from_array)([128]), false) in
-  let _wild436 = check_utf8(@intrinsic(vec.from_array)([191]), false) in
-  let _wild437 = check_utf8(@intrinsic(vec.from_array)([192, 128]), false) in
-  let _wild438 = check_utf8(@intrinsic(vec.from_array)([193, 191]), false) in
-  let _wild439 = check_utf8(@intrinsic(vec.from_array)([194]), false) in
-  let _wild440 = check_utf8(@intrinsic(vec.from_array)([194, 127]), false) in
-  let _wild441 = check_utf8(@intrinsic(vec.from_array)([224, 159, 191]), false) in
-  let _wild442 = check_utf8(@intrinsic(vec.from_array)([225, 128]), false) in
-  let _wild443 = check_utf8(@intrinsic(vec.from_array)([225, 128, 127]), false) in
-  let _wild444 = check_utf8(@intrinsic(vec.from_array)([237, 160, 128]), false) in
-  let _wild445 = check_utf8(@intrinsic(vec.from_array)([240, 143, 191, 191]), false) in
-  let _wild446 = check_utf8(@intrinsic(vec.from_array)([240, 144, 128]), false) in
-  let _wild447 = check_utf8(@intrinsic(vec.from_array)([244, 144, 128, 128]), false) in
+  let _wild426 = check_utf8(@intrinsic(vec.from_array)([]), true) in
+  let _wild427 = check_utf8(@intrinsic(vec.from_array)([0]), true) in
+  let _wild428 = check_utf8(@intrinsic(vec.from_array)([127]), true) in
+  let _wild429 = check_scalar(@intrinsic(vec.from_array)([194, 128]), 128, 2) in
+  let _wild430 = check_scalar(@intrinsic(vec.from_array)([223, 191]), 2047, 2) in
+  let _wild431 = check_scalar(@intrinsic(vec.from_array)([224, 160, 128]), 2048, 3) in
+  let _wild432 = check_scalar(@intrinsic(vec.from_array)([237, 159, 191]), 55295, 3) in
+  let _wild433 = check_scalar(@intrinsic(vec.from_array)([238, 128, 128]), 57344, 3) in
+  let _wild434 = check_scalar(@intrinsic(vec.from_array)([239, 191, 189]), 65533, 3) in
+  let _wild435 = check_scalar(@intrinsic(vec.from_array)([239, 191, 191]), 65535, 3) in
+  let _wild436 = check_scalar(@intrinsic(vec.from_array)([240, 144, 128, 128]), 65536, 4) in
+  let _wild437 = check_scalar(@intrinsic(vec.from_array)([244, 143, 191, 191]), 1114111, 4) in
+  let _wild438 = check_utf8(@intrinsic(vec.from_array)([128]), false) in
+  let _wild439 = check_utf8(@intrinsic(vec.from_array)([191]), false) in
+  let _wild440 = check_utf8(@intrinsic(vec.from_array)([192, 128]), false) in
+  let _wild441 = check_utf8(@intrinsic(vec.from_array)([193, 191]), false) in
+  let _wild442 = check_utf8(@intrinsic(vec.from_array)([194]), false) in
+  let _wild443 = check_utf8(@intrinsic(vec.from_array)([194, 127]), false) in
+  let _wild444 = check_utf8(@intrinsic(vec.from_array)([224, 159, 191]), false) in
+  let _wild445 = check_utf8(@intrinsic(vec.from_array)([225, 128]), false) in
+  let _wild446 = check_utf8(@intrinsic(vec.from_array)([225, 128, 127]), false) in
+  let _wild447 = check_utf8(@intrinsic(vec.from_array)([237, 160, 128]), false) in
+  let _wild448 = check_utf8(@intrinsic(vec.from_array)([240, 143, 191, 191]), false) in
+  let _wild449 = check_utf8(@intrinsic(vec.from_array)([240, 144, 128]), false) in
+  let _wild450 = check_utf8(@intrinsic(vec.from_array)([244, 144, 128, 128]), false) in
   check_utf8(@intrinsic(vec.from_array)([245, 128, 128, 128]), false)
 }
 

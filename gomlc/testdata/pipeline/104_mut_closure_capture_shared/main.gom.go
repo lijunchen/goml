@@ -40,19 +40,19 @@ type Ordering int32
 
 func main0() struct{} {
     var x__0 *ref_int_x = ref__Ref_3int(0)
-    var t413 closure_env_inc_0 = closure_env_inc_0{
+    var t416 closure_env_inc_0 = closure_env_inc_0{
         x_0: x__0,
     }
     var inc__1 func() int = func() int {
-        return _goml_m_inherent_i_closure__env__inc__0_i_closure__env__inc__0_i_apply(t413)
+        return _goml_m_inherent_i_closure__env__inc__0_i_closure__env__inc__0_i_apply(t416)
     }
     inc__1()
-    var t414 int = ref_get__Ref_3int(x__0)
-    var t415 string
-    var inline439 string = _goml_runtime_core_int_to_string(t414)
-    t415 = inline439
-    var inline436 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t415)
-    _goml_runtime_core_string_println(inline436)
+    var t417 int = ref_get__Ref_3int(x__0)
+    var t418 string
+    var inline442 string = _goml_runtime_core_int_to_string(t417)
+    t418 = inline442
+    var inline439 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t418)
+    _goml_runtime_core_string_println(inline439)
     return struct{}{}
 }
 
@@ -60,13 +60,13 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
     return self__149
 }
 
-func _goml_m_inherent_i_closure__env__inc__0_i_closure__env__inc__0_i_apply(env411 closure_env_inc_0) int {
-    var x__0 *ref_int_x = env411.x_0
-    var t432 int = ref_get__Ref_3int(x__0)
-    var t433 int = t432 + 1
-    ref_set__Ref_3int(x__0, t433)
-    var t434 int = ref_get__Ref_3int(x__0)
-    return t434
+func _goml_m_inherent_i_closure__env__inc__0_i_closure__env__inc__0_i_apply(env414 closure_env_inc_0) int {
+    var x__0 *ref_int_x = env414.x_0
+    var t435 int = ref_get__Ref_3int(x__0)
+    var t436 int = t435 + 1
+    ref_set__Ref_3int(x__0, t436)
+    var t437 int = ref_get__Ref_3int(x__0)
+    return t437
 }
 
 func main() {

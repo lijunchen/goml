@@ -1,55 +1,55 @@
 fn my_int_equal(x/0: int32, y/1: int32) -> bool {
-  let t412 = (x/0 < y/1) in
-  let t413 = (!t412) in
-  if t413 {
-    let t414 = (y/1 < x/0) in
-    let t415 = (!t414) in
-    t415
+  let t415 = (x/0 < y/1) in
+  let t416 = (!t415) in
+  if t416 {
+    let t417 = (y/1 < x/0) in
+    let t418 = (!t417) in
+    t418
   } else {
     false
   }
 }
 
 fn sum(n/2: int32) -> int32 {
-  join inline_cont433(t420: bool) -> int32 {
-    if t420 {
+  join inline_cont436(t423: bool) -> int32 {
+    if t423 {
       1
     } else {
-      let t421 = (n/2 - 1) in
-      let t422 = sum(t421) in
-      let t423 = (n/2 + t422) in
-      t423
+      let t424 = (n/2 - 1) in
+      let t425 = sum(t424) in
+      let t426 = (n/2 + t425) in
+      t426
     }
   } in
-  let inline434 = 1 in
-  let inline435 = (n/2 < inline434) in
-  let inline436 = (!inline435) in
-  if inline436 {
-    let inline437 = (inline434 < n/2) in
-    let inline438 = (!inline437) in
-    jump inline_cont433(inline438)
+  let inline437 = 1 in
+  let inline438 = (n/2 < inline437) in
+  let inline439 = (!inline438) in
+  if inline439 {
+    let inline440 = (inline437 < n/2) in
+    let inline441 = (!inline440) in
+    jump inline_cont436(inline441)
   } else {
-    jump inline_cont433(false)
+    jump inline_cont436(false)
   }
 }
 
 fn main() -> unit {
-  let t425 = sum(100) in
-  let inline440 = trait_impl#ToString#int32#to_string(t425) in
-  let inline441 = @runtime(core.string_println)(inline440) in
+  let t428 = sum(100) in
+  let inline443 = trait_impl#ToString#int32#to_string(t428) in
+  let inline444 = @runtime(core.string_println)(inline443) in
   ()
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join inline_cont442(t428: string) -> unit {
-    let t429 = @runtime(core.string_println)(t428) in
+  join inline_cont445(t431: string) -> unit {
+    let t432 = @runtime(core.string_println)(t431) in
     ()
   } in
-  let inline443 = @runtime(core.int32_to_string)(value/1) in
-  jump inline_cont442(inline443)
+  let inline446 = @runtime(core.int32_to_string)(value/1) in
+  jump inline_cont445(inline446)
 }
 
 fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
-  let t432 = @runtime(core.int32_to_string)(self/154) in
-  t432
+  let t435 = @runtime(core.int32_to_string)(self/154) in
+  t435
 }

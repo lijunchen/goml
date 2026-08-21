@@ -29,83 +29,83 @@ type Result__string__string struct {
 }
 
 func render(ok__1 bool) Result__string__string {
-    var mtmp408 _goml_m_Result_____o_string_c_string_q_____string
+    var mtmp411 _goml_m_Result_____o_string_c_string_q_____string
     if ok__1 {
-        var inline450 Tuple2_6string_6string = Tuple2_6string_6string{
+        var inline453 Tuple2_6string_6string = Tuple2_6string_6string{
             _0: "example.com",
             _1: "443",
         }
-        var inline451 _goml_m_Result_____o_string_c_string_q_____string = _goml_m_Result_____o_string_c_string_q_____string{
+        var inline454 _goml_m_Result_____o_string_c_string_q_____string = _goml_m_Result_____o_string_c_string_q_____string{
             _tag: 0,
-            _v0_0: inline450,
+            _v0_0: inline453,
         }
-        mtmp408 = inline451
+        mtmp411 = inline454
     } else {
-        var inline452 _goml_m_Result_____o_string_c_string_q_____string = _goml_m_Result_____o_string_c_string_q_____string{
+        var inline455 _goml_m_Result_____o_string_c_string_q_____string = _goml_m_Result_____o_string_c_string_q_____string{
             _tag: 1,
             _v1_0: "missing port",
         }
-        mtmp408 = inline452
+        mtmp411 = inline455
     }
-    var jp428 Tuple2_6string_6string
-    switch mtmp408._tag {
+    var jp431 Tuple2_6string_6string
+    switch mtmp411._tag {
     case 0:
-        var x409 Tuple2_6string_6string = mtmp408._v0_0
-        jp428 = x409
-        var x412 string = jp428._0
-        var x413 string = jp428._1
-        var t429 string = x412 + ":"
-        var t430 string = t429 + x413
-        var t431 Result__string__string = Result__string__string{
+        var x412 Tuple2_6string_6string = mtmp411._v0_0
+        jp431 = x412
+        var x415 string = jp431._0
+        var x416 string = jp431._1
+        var t432 string = x415 + ":"
+        var t433 string = t432 + x416
+        var t434 Result__string__string = Result__string__string{
             _tag: 0,
-            _v0_0: t430,
+            _v0_0: t433,
         }
-        return t431
+        return t434
     case 1:
-        var x410 string = mtmp408._v1_0
-        var t432 Result__string__string = Result__string__string{
+        var x413 string = mtmp411._v1_0
+        var t435 Result__string__string = Result__string__string{
             _tag: 1,
-            _v1_0: x410,
+            _v1_0: x413,
         }
-        return t432
+        return t435
     default:
         panic("non-exhaustive match")
     }
 }
 
 func main0() struct{} {
-    var t440 Result__string__string = render(true)
-    var t441 string
-    switch t440._tag {
+    var t443 Result__string__string = render(true)
+    var t444 string
+    switch t443._tag {
     case 0:
-        var inline467 string = t440._v0_0
-        var inline469 string = "ok " + inline467
-        t441 = inline469
+        var inline470 string = t443._v0_0
+        var inline472 string = "ok " + inline470
+        t444 = inline472
     case 1:
-        var inline470 string = t440._v1_0
-        var inline472 string = "err " + inline470
-        t441 = inline472
+        var inline473 string = t443._v1_0
+        var inline475 string = "err " + inline473
+        t444 = inline475
     default:
         panic("non-exhaustive match")
     }
-    var inline464 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t441)
-    _goml_runtime_core_string_println(inline464)
-    var t442 Result__string__string = render(false)
-    var t443 string
-    switch t442._tag {
+    var inline467 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t444)
+    _goml_runtime_core_string_println(inline467)
+    var t445 Result__string__string = render(false)
+    var t446 string
+    switch t445._tag {
     case 0:
-        var inline457 string = t442._v0_0
-        var inline459 string = "ok " + inline457
-        t443 = inline459
+        var inline460 string = t445._v0_0
+        var inline462 string = "ok " + inline460
+        t446 = inline462
     case 1:
-        var inline460 string = t442._v1_0
-        var inline462 string = "err " + inline460
-        t443 = inline462
+        var inline463 string = t445._v1_0
+        var inline465 string = "err " + inline463
+        t446 = inline465
     default:
         panic("non-exhaustive match")
     }
-    var inline454 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t443)
-    _goml_runtime_core_string_println(inline454)
+    var inline457 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t446)
+    _goml_runtime_core_string_println(inline457)
     return struct{}{}
 }
 

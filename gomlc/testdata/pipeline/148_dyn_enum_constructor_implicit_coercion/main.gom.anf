@@ -1,23 +1,23 @@
 fn trait_impl#Display#int32#show(self/0: int32) -> string {
-  let inline442 = @runtime(core.int32_to_string)(self/0) in
-  inline442
+  let inline445 = @runtime(core.int32_to_string)(self/0) in
+  inline445
 }
 
 fn render(value/1: Boxed) -> string {
   match value/1 {
     Tag_0 => {
-      let x408 = Boxed::One._0(value/1) in
-      let t420 = dyn_call[Display::show](x408) in
-      t420
+      let x411 = Boxed::One._0(value/1) in
+      let t423 = dyn_call[Display::show](x411) in
+      t423
     },
     Tag_1 => {
-      let x409 = Boxed::Pair._0(value/1) in
-      let x410 = Boxed::Pair._1(value/1) in
-      let t421 = dyn_call[Display::show](x409) in
-      let t422 = (t421 + "-") in
-      let t423 = dyn_call[Display::show](x410) in
-      let t424 = (t422 + t423) in
-      t424
+      let x412 = Boxed::Pair._0(value/1) in
+      let x413 = Boxed::Pair._1(value/1) in
+      let t424 = dyn_call[Display::show](x412) in
+      let t425 = (t424 + "-") in
+      let t426 = dyn_call[Display::show](x413) in
+      let t427 = (t425 + t426) in
+      t427
     },
   }
 }
@@ -26,41 +26,41 @@ fn main() -> unit {
   let one/5 = 42 in
   let left/6 = 7 in
   let right/7 = 9 in
-  let t426 = to_dyn[Display]{int32}(one/5) in
-  join inline_cont461(t428: string) -> unit {
-    join inline_cont458(_wild411: unit) -> unit {
-      let t429 = to_dyn[Display]{int32}(left/6) in
-      let t430 = to_dyn[Display]{int32}(right/7) in
-      join inline_cont446(t432: string) -> unit {
-        let inline444 = trait_impl#ToString#string#to_string(t432) in
-        let inline445 = @runtime(core.string_println)(inline444) in
+  let t429 = to_dyn[Display]{int32}(one/5) in
+  join inline_cont464(t431: string) -> unit {
+    join inline_cont461(_wild414: unit) -> unit {
+      let t432 = to_dyn[Display]{int32}(left/6) in
+      let t433 = to_dyn[Display]{int32}(right/7) in
+      join inline_cont449(t435: string) -> unit {
+        let inline447 = trait_impl#ToString#string#to_string(t435) in
+        let inline448 = @runtime(core.string_println)(inline447) in
         ()
       } in
-      let inline454 = dyn_call[Display::show](t429) in
-      let inline455 = (inline454 + "-") in
-      let inline456 = dyn_call[Display::show](t430) in
-      let inline457 = (inline455 + inline456) in
-      jump inline_cont446(inline457)
+      let inline457 = dyn_call[Display::show](t432) in
+      let inline458 = (inline457 + "-") in
+      let inline459 = dyn_call[Display::show](t433) in
+      let inline460 = (inline458 + inline459) in
+      jump inline_cont449(inline460)
     } in
-    let inline459 = trait_impl#ToString#string#to_string(t428) in
-    let inline460 = @runtime(core.string_println)(inline459) in
-    jump inline_cont458(())
+    let inline462 = trait_impl#ToString#string#to_string(t431) in
+    let inline463 = @runtime(core.string_println)(inline462) in
+    jump inline_cont461(())
   } in
-  let inline464 = dyn_call[Display::show](t426) in
-  jump inline_cont461(inline464)
+  let inline467 = dyn_call[Display::show](t429) in
+  jump inline_cont464(inline467)
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {
-  let t435 = @runtime(core.int32_to_string)(self/33) in
-  t435
+  let t438 = @runtime(core.int32_to_string)(self/33) in
+  t438
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont473(t437: string) -> unit {
-    let t438 = @runtime(core.string_println)(t437) in
+  join inline_cont476(t440: string) -> unit {
+    let t441 = @runtime(core.string_println)(t440) in
     ()
   } in
-  jump inline_cont473(value/1)
+  jump inline_cont476(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/149: string) -> string {

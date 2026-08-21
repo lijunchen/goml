@@ -9,22 +9,22 @@ type Ordering int32
 
 func main0() int32 {
     var p__2 Point
-    var inline431 int32 = 5
-    var inline432 int32 = inline431 + 1
-    var inline433 Point = Point{
-        x: inline431,
-        y: inline432,
+    var inline434 int32 = 5
+    var inline435 int32 = inline434 + 1
+    var inline436 Point = Point{
+        x: inline434,
+        y: inline435,
     }
-    p__2 = inline433
-    var t419 int32 = p__2.x
-    var t420 int32 = t419 + 1
-    var t421 int32 = p__2.y
-    var t422 int32 = t421 - 2
-    var t424 int32
-    var inline429 int32 = t420 + t422
-    t424 = inline429
-    var t425 int32 = t420 + t424
-    return t425
+    p__2 = inline436
+    var t422 int32 = p__2.x
+    var t423 int32 = t422 + 1
+    var t424 int32 = p__2.y
+    var t425 int32 = t424 - 2
+    var t427 int32
+    var inline432 int32 = t423 + t425
+    t427 = inline432
+    var t428 int32 = t423 + t427
+    return t428
 }
 
 func main() {

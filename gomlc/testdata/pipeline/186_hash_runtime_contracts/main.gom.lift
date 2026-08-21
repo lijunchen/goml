@@ -793,23 +793,23 @@ fn trait_impl#std::cmp::PartialOrd#FloatKey#partial_cmp(
   self/2: FloatKey,
   other/3: FloatKey
 ) -> Option__Ordering {
-  let mtmp408 =
+  let mtmp411 =
     trait_impl#std::cmp::PartialOrd#float64#partial_cmp(
       FloatKey.value(self/2),
       FloatKey.value(other/3)
     ) in
-  match mtmp408 {
+  match mtmp411 {
     Option__Ordering::None => {
       Option__Ordering::None
     },
-    Option__Ordering::Some(x409) => {
-      let x409 = Option__Ordering::Some._0(mtmp408) in
-      match x409 {
+    Option__Ordering::Some(x412) => {
+      let x412 = Option__Ordering::Some._0(mtmp411) in
+      match x412 {
         Ordering::Equal => {
           Option__Ordering::Some(Ordering::Equal)
         },
         _ =>
-          let #derive0_ordering/4 = x409 in
+          let #derive0_ordering/4 = x412 in
           Option__Ordering::Some(#derive0_ordering/4),
       }
     },
@@ -857,9 +857,9 @@ fn print_opt_string(value/8: Option__string) -> unit {
     Option__string::None => {
       println__T_string("none")
     },
-    Option__string::Some(x410) => {
-      let x410 = Option__string::Some._0(value/8) in
-      let text/9 = x410 in
+    Option__string::Some(x413) => {
+      let x413 = Option__string::Some._0(value/8) in
+      let text/9 = x413 in
       println__T_string(text/9)
     },
   }
@@ -870,9 +870,9 @@ fn print_opt_int(value/10: Option__int32) -> unit {
     Option__int32::None => {
       println__T_string("none")
     },
-    Option__int32::Some(x411) => {
-      let x411 = Option__int32::Some._0(value/10) in
-      let number/11 = x411 in
+    Option__int32::Some(x414) => {
+      let x414 = Option__int32::Some._0(value/10) in
+      let number/11 = x414 in
       println__T_int32(number/11)
     },
   }
@@ -881,13 +881,13 @@ fn print_opt_int(value/10: Option__int32) -> unit {
 fn float_comparison_contracts() -> unit {
   let zero32/12 = 0 in
   let negative_zero32/13 = (-zero32/12) in
-  let _wild412 =
+  let _wild415 =
     println__T_string(trait_impl#ToString#bool#to_string((zero32/12 == negative_zero32/13))) in
   let zero64/14 = 0 in
   let negative_zero64/15 = (-zero64/14) in
-  let _wild413 =
+  let _wild416 =
     println__T_string(trait_impl#ToString#bool#to_string((zero64/14 == negative_zero64/15))) in
-  let _wild414 =
+  let _wild417 =
     println__T_string(
       trait_impl#ToString#bool#to_string(
         trait_impl#PartialEq#FloatKey#eq(
@@ -897,8 +897,8 @@ fn float_comparison_contracts() -> unit {
       )
     ) in
   let nan/16 = (zero64/14 / zero64/14) in
-  let _wild415 = println__T_string(trait_impl#ToString#bool#to_string((nan/16 == nan/16))) in
-  let _wild416 =
+  let _wild418 = println__T_string(trait_impl#ToString#bool#to_string((nan/16 == nan/16))) in
+  let _wild419 =
     println__T_string(
       trait_impl#ToString#bool#to_string(
         inherent#Option#Option[T]#is_none__T_Ordering(
@@ -911,70 +911,55 @@ fn float_comparison_contracts() -> unit {
 
 fn collision_contracts() -> unit {
   let values/17 = inherent#HashMap#HashMap[K,V]#new__K_CollisionKey__V_int32() in
-  let _wild417 =
+  let _wild420 =
     inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(
       values/17,
       CollisionKey { value: 1 },
       10
     ) in
-  let _wild418 =
+  let _wild421 =
     inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(
       values/17,
       CollisionKey { value: 2 },
       20
     ) in
-  let _wild419 =
+  let _wild422 =
     inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(
       values/17,
       CollisionKey { value: 3 },
       30
     ) in
-  let _wild420 =
+  let _wild423 =
     inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(
       values/17,
       CollisionKey { value: 2 }
     ) in
-  let _wild421 =
+  let _wild424 =
     print_opt_int(
       inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(
         values/17,
         CollisionKey { value: 1 }
       )
     ) in
-  let _wild422 =
+  let _wild425 =
     print_opt_int(
       inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(
         values/17,
         CollisionKey { value: 2 }
       )
     ) in
-  let _wild423 =
+  let _wild426 =
     print_opt_int(
       inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(
         values/17,
         CollisionKey { value: 3 }
       )
     ) in
-  let _wild424 =
-    inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(
-      values/17,
-      CollisionKey { value: 4 },
-      40
-    ) in
-  let _wild425 =
-    println__T_int(inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(values/17)) in
-  let _wild426 =
-    print_opt_int(
-      inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(
-        values/17,
-        CollisionKey { value: 4 }
-      )
-    ) in
   let _wild427 =
     inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(
       values/17,
       CollisionKey { value: 4 },
-      41
+      40
     ) in
   let _wild428 =
     println__T_int(inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(values/17)) in
@@ -986,37 +971,52 @@ fn collision_contracts() -> unit {
       )
     ) in
   let _wild430 =
-    inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(
+    inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(
       values/17,
-      CollisionKey { value: 99 }
+      CollisionKey { value: 4 },
+      41
     ) in
   let _wild431 =
+    println__T_int(inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(values/17)) in
+  let _wild432 =
+    print_opt_int(
+      inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(
+        values/17,
+        CollisionKey { value: 4 }
+      )
+    ) in
+  let _wild433 =
     inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(
       values/17,
       CollisionKey { value: 99 }
     ) in
-  let _wild432 =
+  let _wild434 =
+    inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(
+      values/17,
+      CollisionKey { value: 99 }
+    ) in
+  let _wild435 =
     println__T_int(inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(values/17)) in
   let index/18 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let _wild436 =
+  let _wild439 =
     while (inherent#Ref#Ref[T]#get__T_int32(index/18) < 2000) {
         let key/19 = CollisionKey { value: (1000 + inherent#Ref#Ref[T]#get__T_int32(index/18)) } in
-        let _wild433 =
+        let _wild436 =
           inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(
             values/17,
             key/19,
             inherent#Ref#Ref[T]#get__T_int32(index/18)
           ) in
-        let _wild434 =
+        let _wild437 =
           inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(values/17, key/19) in
-        let _wild435 =
+        let _wild438 =
           inherent#Ref#Ref[T]#set__T_int32(
             index/18,
             (inherent#Ref#Ref[T]#get__T_int32(index/18) + 1)
           ) in
         ()
     } in
-  let _wild437 =
+  let _wild440 =
     println__T_int(inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(values/17)) in
   ()
 }
@@ -1026,30 +1026,30 @@ fn reference_contracts() -> unit {
   let key/21 = inherent#Ref#Ref[T]#new__T_CollisionKey(CollisionKey { value: 1 }) in
   let alias/22 = key/21 in
   let equal_value/23 = inherent#Ref#Ref[T]#new__T_CollisionKey(CollisionKey { value: 1 }) in
-  let _wild438 =
+  let _wild441 =
     inherent#HashMap#HashMap[K,V]#set__K_Ref[CollisionKey]__V_string(
       values/20,
       key/21,
       "identity"
     ) in
-  let _wild439 = println__T_bool(trait_impl#PartialEq#Ref[CollisionKey]#eq(key/21, alias/22)) in
-  let _wild440 =
+  let _wild442 = println__T_bool(trait_impl#PartialEq#Ref[CollisionKey]#eq(key/21, alias/22)) in
+  let _wild443 =
     println__T_bool(trait_impl#PartialEq#Ref[CollisionKey]#eq(key/21, equal_value/23)) in
-  let _wild441 =
+  let _wild444 =
     println__T_bool(
       (trait_impl#Hash#Ref[CollisionKey]#hash(key/21) ==
         trait_impl#Hash#Ref[CollisionKey]#hash(alias/22))
     ) in
-  let _wild442 =
+  let _wild445 =
     print_opt_string(
       inherent#HashMap#HashMap[K,V]#get__K_Ref[CollisionKey]__V_string(values/20, alias/22)
     ) in
-  let _wild443 =
+  let _wild446 =
     print_opt_string(
       inherent#HashMap#HashMap[K,V]#get__K_Ref[CollisionKey]__V_string(values/20, equal_value/23)
     ) in
-  let _wild444 = inherent#Ref#Ref[T]#set__T_CollisionKey(key/21, CollisionKey { value: 99 }) in
-  let _wild445 =
+  let _wild447 = inherent#Ref#Ref[T]#set__T_CollisionKey(key/21, CollisionKey { value: 99 }) in
+  let _wild448 =
     print_opt_string(
       inherent#HashMap#HashMap[K,V]#get__K_Ref[CollisionKey]__V_string(values/20, key/21)
     ) in
@@ -1057,16 +1057,16 @@ fn reference_contracts() -> unit {
 }
 
 fn main() -> unit {
-  let _wild446 = float_comparison_contracts() in
-  let _wild447 = collision_contracts() in
-  let _wild448 = reference_contracts() in
+  let _wild449 = float_comparison_contracts() in
+  let _wild450 = collision_contracts() in
+  let _wild451 = reference_contracts() in
   ()
 }
 
-fn trait_impl#PartialEq#Ordering#eq(self/845: Ordering, other/846: Ordering) -> bool {
-  match self/845 {
+fn trait_impl#PartialEq#Ordering#eq(self/854: Ordering, other/855: Ordering) -> bool {
+  match self/854 {
     Ordering::Less => {
-      match other/846 {
+      match other/855 {
         Ordering::Less => {
           true
         },
@@ -1074,7 +1074,7 @@ fn trait_impl#PartialEq#Ordering#eq(self/845: Ordering, other/846: Ordering) -> 
       }
     },
     Ordering::Equal => {
-      match other/846 {
+      match other/855 {
         Ordering::Equal => {
           true
         },
@@ -1082,7 +1082,7 @@ fn trait_impl#PartialEq#Ordering#eq(self/845: Ordering, other/846: Ordering) -> 
       }
     },
     Ordering::Greater => {
-      match other/846 {
+      match other/855 {
         Ordering::Greater => {
           true
         },
@@ -2140,8 +2140,8 @@ fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
   @runtime(core.bool_to_string)(self/148)
 }
 
-fn inherent#Option#Option[T]#is_none__T_Ordering(self/457: Option__Ordering) -> bool {
-  (!inherent#Option#Option[T]#is_some__T_Ordering(self/457))
+fn inherent#Option#Option[T]#is_none__T_Ordering(self/466: Option__Ordering) -> bool {
+  (!inherent#Option#Option[T]#is_some__T_Ordering(self/466))
 }
 
 fn inherent#HashMap#HashMap[K,V]#new__K_CollisionKey__V_int32() -> HashMap[CollisionKey, int32] {
@@ -2248,12 +2248,12 @@ fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
   @runtime(core.int32_to_string)(self/154)
 }
 
-fn inherent#Option#Option[T]#is_some__T_Ordering(self/456: Option__Ordering) -> bool {
-  match self/456 {
+fn inherent#Option#Option[T]#is_some__T_Ordering(self/465: Option__Ordering) -> bool {
+  match self/465 {
     Option__Ordering::None => {
       false
     },
-    Option__Ordering::Some(x386) => {
+    Option__Ordering::Some(x389) => {
       true
     },
   }

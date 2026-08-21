@@ -29,95 +29,95 @@ func main0() struct{} {
     var diff__6 int32 = sum__5 - 3
     var prod__7 int32 = diff__6 * 2
     var quot__8 int32 = prod__7 / 4
-    var inline504 string = "sum="
-    var inline505 string = _goml_m_inherent_i_int32_i_int32_i_to__string(sum__5)
-    var inline506 string = inline504 + inline505
-    println__T_string(inline506)
-    var inline499 string = "diff="
-    var inline500 string = _goml_m_inherent_i_int32_i_int32_i_to__string(diff__6)
-    var inline501 string = inline499 + inline500
-    println__T_string(inline501)
-    var inline494 string = "prod="
-    var inline495 string = _goml_m_inherent_i_int32_i_int32_i_to__string(prod__7)
-    var inline496 string = inline494 + inline495
-    println__T_string(inline496)
-    var inline489 string = "quot="
-    var inline490 string = _goml_m_inherent_i_int32_i_int32_i_to__string(quot__8)
-    var inline491 string = inline489 + inline490
-    println__T_string(inline491)
-    var jp428 bool
-    jp428 = false
-    var jp430 bool
-    jp430 = true
+    var inline507 string = "sum="
+    var inline508 string = _goml_m_inherent_i_int32_i_int32_i_to__string(sum__5)
+    var inline509 string = inline507 + inline508
+    println__T_string(inline509)
+    var inline502 string = "diff="
+    var inline503 string = _goml_m_inherent_i_int32_i_int32_i_to__string(diff__6)
+    var inline504 string = inline502 + inline503
+    println__T_string(inline504)
+    var inline497 string = "prod="
+    var inline498 string = _goml_m_inherent_i_int32_i_int32_i_to__string(prod__7)
+    var inline499 string = inline497 + inline498
+    println__T_string(inline499)
+    var inline492 string = "quot="
+    var inline493 string = _goml_m_inherent_i_int32_i_int32_i_to__string(quot__8)
+    var inline494 string = inline492 + inline493
+    println__T_string(inline494)
+    var jp431 bool
+    jp431 = false
+    var jp433 bool
+    jp433 = true
     var not_result__11 bool = !false
-    var t441 bool = !jp428
-    var jp434 bool
-    if t441 {
-        var t442 int32 = prod__7 * base__4
-        var t443 int32 = sum__5 + t442
-        var t444 int32 = prod__7 / 2
-        var mtmp414 int32 = t443 - t444
-        switch mtmp414 {
+    var t444 bool = !jp431
+    var jp437 bool
+    if t444 {
+        var t445 int32 = prod__7 * base__4
+        var t446 int32 = sum__5 + t445
+        var t447 int32 = prod__7 / 2
+        var mtmp417 int32 = t446 - t447
+        switch mtmp417 {
         case 0:
-            jp434 = false
+            jp437 = false
         default:
-            jp434 = true
+            jp437 = true
         }
     } else {
-        jp434 = false
+        jp437 = false
     }
-    var jp432 bool
-    if jp434 {
-        jp432 = true
+    var jp435 bool
+    if jp437 {
+        jp435 = true
     } else {
-        var t435 int32 = diff__6 - quot__8
-        var t436 int32 = t435 + base__4
-        var t437 int32 = sum__5 / 2
-        var mtmp415 int32 = t436 - t437
-        var jp439 bool
-        switch mtmp415 {
+        var t438 int32 = diff__6 - quot__8
+        var t439 int32 = t438 + base__4
+        var t440 int32 = sum__5 / 2
+        var mtmp418 int32 = t439 - t440
+        var jp442 bool
+        switch mtmp418 {
         case 0:
-            jp439 = false
+            jp442 = false
         default:
-            jp439 = true
+            jp442 = true
         }
-        var t440 bool = !jp439
-        jp432 = t440
+        var t443 bool = !jp442
+        jp435 = t443
     }
-    var inline484 string = "and="
-    var inline485 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(jp428)
-    var inline486 string = inline484 + inline485
-    println__T_string(inline486)
-    var inline479 string = "or="
-    var inline480 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(jp430)
-    var inline481 string = inline479 + inline480
-    println__T_string(inline481)
-    var inline474 string = "not="
-    var inline475 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(not_result__11)
-    var inline476 string = inline474 + inline475
-    println__T_string(inline476)
-    var inline469 string = "mixed="
-    var inline470 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(jp432)
-    var inline471 string = inline469 + inline470
-    println__T_string(inline471)
+    var inline487 string = "and="
+    var inline488 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(jp431)
+    var inline489 string = inline487 + inline488
+    println__T_string(inline489)
+    var inline482 string = "or="
+    var inline483 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(jp433)
+    var inline484 string = inline482 + inline483
+    println__T_string(inline484)
+    var inline477 string = "not="
+    var inline478 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(not_result__11)
+    var inline479 string = inline477 + inline478
+    println__T_string(inline479)
+    var inline472 string = "mixed="
+    var inline473 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(jp435)
+    var inline474 string = inline472 + inline473
+    println__T_string(inline474)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t448 string
-    t448 = value__1
-    _goml_runtime_core_string_println(t448)
+    var t451 string
+    t451 = value__1
+    _goml_runtime_core_string_println(t451)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
-    var t452 string = _goml_runtime_core_int32_to_string(self__33)
-    return t452
+    var t455 string = _goml_runtime_core_int32_to_string(self__33)
+    return t455
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__148 bool) string {
-    var t455 string = _goml_runtime_core_bool_to_string(self__148)
-    return t455
+    var t458 string = _goml_runtime_core_bool_to_string(self__148)
+    return t458
 }
 
 func main() {

@@ -24,17 +24,17 @@ fn trait_impl#Default#Settings#default() -> Settings {
 
 fn trait_impl#Debug#Settings#debug(self/2: Settings) -> string {
   {
-    let mtmp408 = self/2 in
+    let mtmp411 = self/2 in
     {
-      let x409 = Settings.enabled(mtmp408) in
-      let x410 = Settings.retries(mtmp408) in
-      let x411 = Settings.label(mtmp408) in
+      let x412 = Settings.enabled(mtmp411) in
+      let x413 = Settings.retries(mtmp411) in
+      let x414 = Settings.label(mtmp411) in
       {
-        let #derive2_field/5 = x411 in
+        let #derive2_field/5 = x414 in
         {
-          let #derive1_field/4 = x410 in
+          let #derive1_field/4 = x413 in
           {
-            let #derive0_field/3 = x409 in
+            let #derive0_field/3 = x412 in
             {
               ((((((((("Settings { " + "enabled: ") +
                 trait_impl#Debug#bool#debug(#derive0_field/3)) +
@@ -70,11 +70,11 @@ fn trait_impl#Debug#State#debug(self/7: State) -> string {
     State::Idle => {
       "State::Idle"
     },
-    State::Running(x412) => {
+    State::Running(x415) => {
       {
-        let x412 = State::Running._0(self/7) in
+        let x415 = State::Running._0(self/7) in
         {
-          let #derive0_field/8 = x412 in
+          let #derive0_field/8 = x415 in
           (("State::Running(" + trait_impl#Debug#int#debug(#derive0_field/8)) + ")")
         }
       }
@@ -88,14 +88,14 @@ fn trait_impl#Default#Message#default() -> Message {
 
 fn trait_impl#Debug#Message#debug(self/9: Message) -> string {
   match self/9 {
-    Message::Data(x413, x414) => {
+    Message::Data(x416, x417) => {
       {
-        let x413 = Message::Data._0(self/9) in
-        let x414 = Message::Data._1(self/9) in
+        let x416 = Message::Data._0(self/9) in
+        let x417 = Message::Data._1(self/9) in
         {
-          let #derive1_field/11 = x414 in
+          let #derive1_field/11 = x417 in
           {
-            let #derive0_field/10 = x413 in
+            let #derive0_field/10 = x416 in
             (((("Message::Data(" + trait_impl#Debug#string#debug(#derive0_field/10)) + ", ") +
               trait_impl#Debug#int#debug(#derive1_field/11)) +
               ")")
@@ -115,14 +115,14 @@ fn trait_impl#Default#Event#default() -> Event {
 
 fn trait_impl#Debug#Event#debug(self/12: Event) -> string {
   match self/12 {
-    Event::Data(x415, x416) => {
+    Event::Data(x418, x419) => {
       {
-        let x415 = Event::Data._0(self/12) in
-        let x416 = Event::Data._1(self/12) in
+        let x418 = Event::Data._0(self/12) in
+        let x419 = Event::Data._1(self/12) in
         {
-          let #derive1_field/14 = x416 in
+          let #derive1_field/14 = x419 in
           {
-            let #derive0_field/13 = x415 in
+            let #derive0_field/13 = x418 in
             (((((("Event::Data { " + "name: ") + trait_impl#Debug#string#debug(#derive0_field/13)) +
               ", ") +
               "count: ") +
@@ -140,8 +140,8 @@ fn trait_impl#Debug#Event#debug(self/12: Event) -> string {
 
 fn main() -> unit {
   let settings/15 = trait_impl#Default#Settings#default() in
-  let _wild417 = println__T_string(trait_impl#Debug#Settings#debug(settings/15)) in
-  let _wild418 =
+  let _wild420 = println__T_string(trait_impl#Debug#Settings#debug(settings/15)) in
+  let _wild421 =
     println__T_string(
       trait_impl#ToString#bool#to_string(
         trait_impl#PartialEq#Settings#eq(
@@ -151,34 +151,34 @@ fn main() -> unit {
       )
     ) in
   let empty/16 = trait_impl#Default#Empty#default() in
-  let _wild419 = println__T_string(trait_impl#Debug#Empty#debug(empty/16)) in
+  let _wild422 = println__T_string(trait_impl#Debug#Empty#debug(empty/16)) in
   let pair/17 = trait_impl#Default#PairDefaults__int#default() in
-  let _wild420 =
+  let _wild423 =
     println__T_string(
       inherent#int#int#to_string(
         (PairDefaults__int.first(pair/17) + PairDefaults__int.second(pair/17))
       )
     ) in
-  let _wild421 =
+  let _wild424 =
     println__T_string(
       trait_impl#ToString#bool#to_string(
         inherent#Option#Option[T]#is_none__T_int(PairDefaults__int.nested(pair/17))
       )
     ) in
   let state/18 = trait_impl#Default#State#default() in
-  let _wild422 = println__T_string(trait_impl#Debug#State#debug(state/18)) in
+  let _wild425 = println__T_string(trait_impl#Debug#State#debug(state/18)) in
   let message/19 = trait_impl#Default#Message#default() in
-  let _wild423 = println__T_string(trait_impl#Debug#Message#debug(message/19)) in
+  let _wild426 = println__T_string(trait_impl#Debug#Message#debug(message/19)) in
   let event/20 = trait_impl#Default#Event#default() in
-  let _wild424 = println__T_string(trait_impl#Debug#Event#debug(event/20)) in
+  let _wild427 = println__T_string(trait_impl#Debug#Event#debug(event/20)) in
   let lazy/21 = trait_impl#Default#Lazy__NoDefault#default() in
-  let _wild426 =
+  let _wild429 =
     println__T_string(
       match lazy/21 {
         Lazy__NoDefault::Empty => {
           "empty"
         },
-        Lazy__NoDefault::Value(x425) => {
+        Lazy__NoDefault::Value(x428) => {
           {
             "value"
           }
@@ -188,20 +188,20 @@ fn main() -> unit {
   let selected/22 = trait_impl#Default#Selected__int#default() in
   println__T_string(
     match selected/22 {
-      Selected__int::Values(x427, x428) => {
+      Selected__int::Values(x430, x431) => {
         {
-          let x427 = Selected__int::Values._0(selected/22) in
-          let x428 = Selected__int::Values._1(selected/22) in
+          let x430 = Selected__int::Values._0(selected/22) in
+          let x431 = Selected__int::Values._1(selected/22) in
           {
-            let second/24 = x428 in
+            let second/24 = x431 in
             {
-              let first/23 = x427 in
+              let first/23 = x430 in
               inherent#int#int#to_string((first/23 + second/24))
             }
           }
         }
       },
-      Selected__int::Ignored(x429) => {
+      Selected__int::Ignored(x432) => {
         {
           "ignored"
         }
@@ -266,8 +266,8 @@ fn inherent#int#int#to_string(self/32: int) -> string {
   @runtime(core.int_to_string)(self/32)
 }
 
-fn inherent#Option#Option[T]#is_none__T_int(self/457: Option__int) -> bool {
-  (!inherent#Option#Option[T]#is_some__T_int(self/457))
+fn inherent#Option#Option[T]#is_none__T_int(self/466: Option__int) -> bool {
+  (!inherent#Option#Option[T]#is_some__T_int(self/466))
 }
 
 fn trait_impl#Default#Lazy__NoDefault#default() -> Lazy__NoDefault {
@@ -290,12 +290,12 @@ fn trait_impl#Default#Option__int#default() -> Option__int {
   Option__int::None
 }
 
-fn inherent#Option#Option[T]#is_some__T_int(self/456: Option__int) -> bool {
-  match self/456 {
+fn inherent#Option#Option[T]#is_some__T_int(self/465: Option__int) -> bool {
+  match self/465 {
     Option__int::None => {
       false
     },
-    Option__int::Some(x386) => {
+    Option__int::Some(x389) => {
       {
         true
       }

@@ -36,23 +36,23 @@ type Ordering int32
 
 func main0() struct{} {
     var counter__8 *ref_int_x
-    var inline450 int = 0
-    var inline451 *ref_int_x = ref__Ref_3int(inline450)
-    counter__8 = inline451
-    var inline446 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(counter__8)
-    var inline447 int = inline446 + 1
-    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(counter__8, inline447)
-    var t414 int
-    var inline444 int = ref_get__Ref_3int(counter__8)
-    t414 = inline444
-    var inline441 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t414)
-    _goml_runtime_core_string_println(inline441)
+    var inline453 int = 0
+    var inline454 *ref_int_x = ref__Ref_3int(inline453)
+    counter__8 = inline454
+    var inline449 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(counter__8)
+    var inline450 int = inline449 + 1
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(counter__8, inline450)
+    var t417 int
+    var inline447 int = ref_get__Ref_3int(counter__8)
+    t417 = inline447
+    var inline444 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t417)
+    _goml_runtime_core_string_println(inline444)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__432 *ref_int_x) int {
-    var t418 int = ref_get__Ref_3int(self__432)
-    return t418
+    var t421 int = ref_get__Ref_3int(self__432)
+    return t421
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__433 *ref_int_x, value__434 int) struct{} {
@@ -61,8 +61,8 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__433 *ref_int_x, v
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
-    var t429 string = _goml_runtime_core_int_to_string(self__151)
-    return t429
+    var t432 string = _goml_runtime_core_int_to_string(self__151)
+    return t432
 }
 
 func main() {

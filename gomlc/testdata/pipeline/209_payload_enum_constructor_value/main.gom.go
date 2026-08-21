@@ -37,35 +37,35 @@ func sum(values__3 List__int32) int32 {
     case Nil:
         return 0
     case Cons:
-        var x408 int32 = values__3.(Cons)._0
-        var x409 List__int32 = values__3.(Cons)._1
-        var t418 int32 = sum(x409)
-        var t419 int32 = x408 + t418
-        return t419
+        var x411 int32 = values__3.(Cons)._0
+        var x412 List__int32 = values__3.(Cons)._1
+        var t421 int32 = sum(x412)
+        var t422 int32 = x411 + t421
+        return t422
     default:
         panic("non-exhaustive match")
     }
 }
 
 func main0() struct{} {
-    var t421 closure_env_cons_0 = closure_env_cons_0{}
+    var t424 closure_env_cons_0 = closure_env_cons_0{}
     var cons__6 func(int32, List__int32) List__int32 = func(p0 int32, p1 List__int32) List__int32 {
-        return _goml_m_inherent_i_closure__env__cons__0_i_closure__env__cons__0_i_apply(t421, p0, p1)
+        return _goml_m_inherent_i_closure__env__cons__0_i_closure__env__cons__0_i_apply(t424, p0, p1)
     }
-    var t422 List__int32
-    var inline446 int32 = 2
-    var inline447 List__int32 = cons__6(inline446, Nil{})
-    t422 = inline447
+    var t425 List__int32
+    var inline449 int32 = 2
+    var inline450 List__int32 = cons__6(inline449, Nil{})
+    t425 = inline450
     var values__7 List__int32
-    var inline443 int32 = 1
-    var inline444 List__int32 = cons__6(inline443, t422)
-    values__7 = inline444
-    var t423 int32 = sum(values__7)
-    var t424 string
-    var inline441 string = _goml_runtime_core_int32_to_string(t423)
-    t424 = inline441
-    var inline438 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t424)
-    _goml_runtime_core_string_println(inline438)
+    var inline446 int32 = 1
+    var inline447 List__int32 = cons__6(inline446, t425)
+    values__7 = inline447
+    var t426 int32 = sum(values__7)
+    var t427 string
+    var inline444 string = _goml_runtime_core_int32_to_string(t426)
+    t427 = inline444
+    var inline441 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t427)
+    _goml_runtime_core_string_println(inline441)
     return struct{}{}
 }
 
@@ -73,12 +73,12 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
     return self__149
 }
 
-func _goml_m_inherent_i_closure__env__cons__0_i_closure__env__cons__0_i_apply(env410 closure_env_cons_0, ctor_arg_0 int32, ctor_arg_1 List__int32) List__int32 {
-    var t436 List__int32 = Cons{
+func _goml_m_inherent_i_closure__env__cons__0_i_closure__env__cons__0_i_apply(env413 closure_env_cons_0, ctor_arg_0 int32, ctor_arg_1 List__int32) List__int32 {
+    var t439 List__int32 = Cons{
         _0: ctor_arg_0,
         _1: ctor_arg_1,
     }
-    return t436
+    return t439
 }
 
 func main() {

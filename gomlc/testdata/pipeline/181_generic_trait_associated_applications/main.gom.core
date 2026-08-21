@@ -3213,60 +3213,105 @@ fn inherent#Channel#Channel[T]#close[T](self/441: Channel[T]) -> unit {
   @intrinsic(channel.close)(self/441)
 }
 
-fn trait_impl#ToString#uint#to_string(self/442: uint) -> string {
-  @runtime(core.uint_to_string)(self/442)
+fn inherent#Channel#Channel[T]#sender[T](self/442: Channel[T]) -> Sender[T] {
+  @intrinsic(channel.sender)(self/442)
 }
 
-fn trait_impl#Debug#uint#debug(self/443: uint) -> string {
-  trait_call[ToString::to_string](self/443)
+fn inherent#Channel#Channel[T]#receiver[T](self/443: Channel[T]) -> Receiver[T] {
+  @intrinsic(channel.receiver)(self/443)
 }
 
-fn trait_impl#PartialEq#uint#eq(self/444: uint, other/445: uint) -> bool {
-  (self/444 == other/445)
+fn inherent#Channel#Channel[T]#split[T](self/444: Channel[T]) -> (Sender[T], Receiver[T]) {
+  @intrinsic(channel.split)(self/444)
+}
+
+fn inherent#Sender#Sender[T]#send[T](self/445: Sender[T], value/446: T) -> unit {
+  @intrinsic(channel.send)(self/445, value/446)
+}
+
+fn inherent#Sender#Sender[T]#close[T](self/447: Sender[T]) -> unit {
+  @intrinsic(channel.close)(self/447)
+}
+
+fn inherent#Receiver#Receiver[T]#recv[T](self/448: Receiver[T]) -> Option[T] {
+  let mtmp382 = @intrinsic(channel.recv)(self/448) in
+  {
+    let x383 = mtmp382.0 in
+    let x384 = mtmp382.1 in
+    {
+      let ok/450 = x384 in
+      {
+        let value/449 = x383 in
+        {
+          if ok/450 {
+              {
+                Option::Some(value/449)
+              }
+          } else {
+              {
+                Option::None
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn trait_impl#ToString#uint#to_string(self/451: uint) -> string {
+  @runtime(core.uint_to_string)(self/451)
+}
+
+fn trait_impl#Debug#uint#debug(self/452: uint) -> string {
+  trait_call[ToString::to_string](self/452)
+}
+
+fn trait_impl#PartialEq#uint#eq(self/453: uint, other/454: uint) -> bool {
+  (self/453 == other/454)
 }
 
 fn trait_impl#Eq#uint#__marker() -> unit {
   ()
 }
 
-fn trait_impl#Hash#uint#hash(self/446: uint) -> uint64 {
-  @runtime(core.uint_hash)(self/446)
+fn trait_impl#Hash#uint#hash(self/455: uint) -> uint64 {
+  @runtime(core.uint_hash)(self/455)
 }
 
-fn inherent#string#string#starts_with(self/447: string, prefix/448: string) -> bool {
-  if if (inherent#string#string#byte_len(prefix/448) <= inherent#string#string#byte_len(self/447)) {
-      inherent#string#string#is_char_boundary(self/447, inherent#string#string#byte_len(prefix/448))
+fn inherent#string#string#starts_with(self/456: string, prefix/457: string) -> bool {
+  if if (inherent#string#string#byte_len(prefix/457) <= inherent#string#string#byte_len(self/456)) {
+      inherent#string#string#is_char_boundary(self/456, inherent#string#string#byte_len(prefix/457))
   } else {
       false
   } {
       (inherent#string#string#byte_slice(
-        self/447,
+        self/456,
         0,
-        inherent#string#string#byte_len(prefix/448)
+        inherent#string#string#byte_len(prefix/457)
       ) ==
-        prefix/448)
+        prefix/457)
   } else {
       false
   }
 }
 
-fn inherent#string#string#ends_with(self/449: string, suffix/450: string) -> bool {
-  if (inherent#string#string#byte_len(suffix/450) > inherent#string#string#byte_len(self/449)) {
+fn inherent#string#string#ends_with(self/458: string, suffix/459: string) -> bool {
+  if (inherent#string#string#byte_len(suffix/459) > inherent#string#string#byte_len(self/458)) {
       {
         false
       }
   } else {
       {
-        let start/451 =
-          (inherent#string#string#byte_len(self/449) -
-            inherent#string#string#byte_len(suffix/450)) in
-        if inherent#string#string#is_char_boundary(self/449, start/451) {
+        let start/460 =
+          (inherent#string#string#byte_len(self/458) -
+            inherent#string#string#byte_len(suffix/459)) in
+        if inherent#string#string#is_char_boundary(self/458, start/460) {
             (inherent#string#string#byte_slice(
-              self/449,
-              start/451,
-              inherent#string#string#byte_len(self/449)
+              self/458,
+              start/460,
+              inherent#string#string#byte_len(self/458)
             ) ==
-              suffix/450)
+              suffix/459)
         } else {
             false
         }
@@ -3274,59 +3319,59 @@ fn inherent#string#string#ends_with(self/449: string, suffix/450: string) -> boo
   }
 }
 
-fn inherent#string#string#contains(self/452: string, expected/453: string) -> bool {
-  if (inherent#string#string#byte_len(expected/453) == 0) {
+fn inherent#string#string#contains(self/461: string, expected/462: string) -> bool {
+  if (inherent#string#string#byte_len(expected/462) == 0) {
       {
         true
       }
   } else {
-      if (inherent#string#string#byte_len(expected/453) >
-        inherent#string#string#byte_len(self/452)) {
+      if (inherent#string#string#byte_len(expected/462) >
+        inherent#string#string#byte_len(self/461)) {
           {
             false
           }
       } else {
           {
-            let _wild385 =
+            let _wild388 =
               {
-                let for_iter382 =
+                let for_iter385 =
                   trait_call[IntoIterator::into_iter](
                     __goml_builtin_range(
                       0,
-                      ((inherent#string#string#byte_len(self/452) -
-                        inherent#string#string#byte_len(expected/453)) +
+                      ((inherent#string#string#byte_len(self/461) -
+                        inherent#string#string#byte_len(expected/462)) +
                         1)
                     )
                   ) in
                 while true {
                     {
-                      let for_next383 = trait_call[Iterator::next](for_iter382) in
-                      match for_next383 {
+                      let for_next386 = trait_call[Iterator::next](for_iter385) in
+                      match for_next386 {
                         Option::None => {
                           break
                         },
-                        Option::Some(x384) => {
+                        Option::Some(x387) => {
                           {
-                            let x384 = Option::Some._0(for_next383) in
+                            let x387 = Option::Some._0(for_next386) in
                             {
-                              let start/454 = x384 in
+                              let start/463 = x387 in
                               {
-                                let end/455 =
-                                  (start/454 + inherent#string#string#byte_len(expected/453)) in
+                                let end/464 =
+                                  (start/463 + inherent#string#string#byte_len(expected/462)) in
                                 if if if inherent#string#string#is_char_boundary(
-                                  self/452,
-                                  start/454
+                                  self/461,
+                                  start/463
                                 ) {
-                                    inherent#string#string#is_char_boundary(self/452, end/455)
+                                    inherent#string#string#is_char_boundary(self/461, end/464)
                                 } else {
                                     false
                                 } {
                                     (inherent#string#string#byte_slice(
-                                      self/452,
-                                      start/454,
-                                      end/455
+                                      self/461,
+                                      start/463,
+                                      end/464
                                     ) ==
-                                      expected/453)
+                                      expected/462)
                                 } else {
                                     false
                                 } {
@@ -3352,12 +3397,12 @@ fn inherent#string#string#contains(self/452: string, expected/453: string) -> bo
   }
 }
 
-fn inherent#Option#Option[T]#is_some[T](self/456: Option[T]) -> bool {
-  match self/456 {
+fn inherent#Option#Option[T]#is_some[T](self/465: Option[T]) -> bool {
+  match self/465 {
     Option::None => {
       false
     },
-    Option::Some(x386) => {
+    Option::Some(x389) => {
       {
         true
       }
@@ -3365,52 +3410,52 @@ fn inherent#Option#Option[T]#is_some[T](self/456: Option[T]) -> bool {
   }
 }
 
-fn inherent#Option#Option[T]#is_none[T](self/457: Option[T]) -> bool {
-  (!inherent#Option#Option[T]#is_some(self/457))
+fn inherent#Option#Option[T]#is_none[T](self/466: Option[T]) -> bool {
+  (!inherent#Option#Option[T]#is_some(self/466))
 }
 
-fn inherent#Option#Option[T]#unwrap_or[T](self/458: Option[T], fallback/459: T) -> T {
-  match self/458 {
+fn inherent#Option#Option[T]#unwrap_or[T](self/467: Option[T], fallback/468: T) -> T {
+  match self/467 {
     Option::None => {
-      fallback/459
+      fallback/468
     },
-    Option::Some(x387) => {
+    Option::Some(x390) => {
       {
-        let x387 = Option::Some._0(self/458) in
+        let x390 = Option::Some._0(self/467) in
         {
-          let value/460 = x387 in
-          value/460
+          let value/469 = x390 in
+          value/469
         }
       }
     },
   }
 }
 
-fn inherent#Option#Option[T]#unwrap_or_else[T](self/461: Option[T], fallback/462: () -> T) -> T {
-  match self/461 {
+fn inherent#Option#Option[T]#unwrap_or_else[T](self/470: Option[T], fallback/471: () -> T) -> T {
+  match self/470 {
     Option::None => {
-      fallback/462()
+      fallback/471()
     },
-    Option::Some(x388) => {
+    Option::Some(x391) => {
       {
-        let x388 = Option::Some._0(self/461) in
+        let x391 = Option::Some._0(self/470) in
         {
-          let value/463 = x388 in
-          value/463
+          let value/472 = x391 in
+          value/472
         }
       }
     },
   }
 }
 
-fn inherent#Result#Result[T,E]#is_ok[T, E](self/464: Result[T, E]) -> bool {
-  match self/464 {
-    Result::Ok(x389) => {
+fn inherent#Result#Result[T,E]#is_ok[T, E](self/473: Result[T, E]) -> bool {
+  match self/473 {
+    Result::Ok(x392) => {
       {
         true
       }
     },
-    Result::Err(x390) => {
+    Result::Err(x393) => {
       {
         false
       }
@@ -3418,66 +3463,66 @@ fn inherent#Result#Result[T,E]#is_ok[T, E](self/464: Result[T, E]) -> bool {
   }
 }
 
-fn inherent#Result#Result[T,E]#is_err[T, E](self/465: Result[T, E]) -> bool {
-  (!inherent#Result#Result[T,E]#is_ok(self/465))
+fn inherent#Result#Result[T,E]#is_err[T, E](self/474: Result[T, E]) -> bool {
+  (!inherent#Result#Result[T,E]#is_ok(self/474))
 }
 
-fn inherent#Result#Result[T,E]#unwrap_or[T, E](self/466: Result[T, E], fallback/467: T) -> T {
-  match self/466 {
-    Result::Ok(x391) => {
+fn inherent#Result#Result[T,E]#unwrap_or[T, E](self/475: Result[T, E], fallback/476: T) -> T {
+  match self/475 {
+    Result::Ok(x394) => {
       {
-        let x391 = Result::Ok._0(self/466) in
+        let x394 = Result::Ok._0(self/475) in
         {
-          let value/468 = x391 in
-          value/468
+          let value/477 = x394 in
+          value/477
         }
       }
     },
-    Result::Err(x392) => {
+    Result::Err(x395) => {
       {
-        fallback/467
+        fallback/476
       }
     },
   }
 }
 
 fn inherent#Result#Result[T,E]#unwrap_or_else[T, E](
-  self/469: Result[T, E],
-  fallback/470: (E) -> T
+  self/478: Result[T, E],
+  fallback/479: (E) -> T
 ) -> T {
-  match self/469 {
-    Result::Ok(x393) => {
+  match self/478 {
+    Result::Ok(x396) => {
       {
-        let x393 = Result::Ok._0(self/469) in
+        let x396 = Result::Ok._0(self/478) in
         {
-          let value/471 = x393 in
-          value/471
+          let value/480 = x396 in
+          value/480
         }
       }
     },
-    Result::Err(x394) => {
+    Result::Err(x397) => {
       {
-        let x394 = Result::Err._0(self/469) in
+        let x397 = Result::Err._0(self/478) in
         {
-          let error/472 = x394 in
-          fallback/470(error/472)
+          let error/481 = x397 in
+          fallback/479(error/481)
         }
       }
     },
   }
 }
 
-fn inherent#Option#Option[T]#map[T, U](self/473: Option[T], map_fn/474: (T) -> U) -> Option[U] {
-  match self/473 {
+fn inherent#Option#Option[T]#map[T, U](self/482: Option[T], map_fn/483: (T) -> U) -> Option[U] {
+  match self/482 {
     Option::None => {
       Option::None
     },
-    Option::Some(x395) => {
+    Option::Some(x398) => {
       {
-        let x395 = Option::Some._0(self/473) in
+        let x398 = Option::Some._0(self/482) in
         {
-          let value/475 = x395 in
-          Option::Some(map_fn/474(value/475))
+          let value/484 = x398 in
+          Option::Some(map_fn/483(value/484))
         }
       }
     },
@@ -3485,62 +3530,62 @@ fn inherent#Option#Option[T]#map[T, U](self/473: Option[T], map_fn/474: (T) -> U
 }
 
 fn inherent#Option#Option[T]#and_then[T, U](
-  self/476: Option[T],
-  next/477: (T) -> Option[U]
+  self/485: Option[T],
+  next/486: (T) -> Option[U]
 ) -> Option[U] {
-  match self/476 {
+  match self/485 {
     Option::None => {
       Option::None
     },
-    Option::Some(x396) => {
+    Option::Some(x399) => {
       {
-        let x396 = Option::Some._0(self/476) in
+        let x399 = Option::Some._0(self/485) in
         {
-          let value/478 = x396 in
-          next/477(value/478)
+          let value/487 = x399 in
+          next/486(value/487)
         }
       }
     },
   }
 }
 
-fn inherent#Option#Option[T]#ok_or[T, E](self/479: Option[T], error/480: E) -> Result[T, E] {
-  match self/479 {
+fn inherent#Option#Option[T]#ok_or[T, E](self/488: Option[T], error/489: E) -> Result[T, E] {
+  match self/488 {
     Option::None => {
-      Result::Err(error/480)
+      Result::Err(error/489)
     },
-    Option::Some(x397) => {
+    Option::Some(x400) => {
       {
-        let x397 = Option::Some._0(self/479) in
+        let x400 = Option::Some._0(self/488) in
         {
-          let value/481 = x397 in
-          Result::Ok(value/481)
+          let value/490 = x400 in
+          Result::Ok(value/490)
         }
       }
     },
   }
 }
 
-fn inherent#Result#Result[T,E]#map[T, E, U](self/482: Result[T, E], map_fn/483: (T) -> U) -> Result[
+fn inherent#Result#Result[T,E]#map[T, E, U](self/491: Result[T, E], map_fn/492: (T) -> U) -> Result[
   U,
   E
 ] {
-  match self/482 {
-    Result::Ok(x398) => {
+  match self/491 {
+    Result::Ok(x401) => {
       {
-        let x398 = Result::Ok._0(self/482) in
+        let x401 = Result::Ok._0(self/491) in
         {
-          let value/484 = x398 in
-          Result::Ok(map_fn/483(value/484))
+          let value/493 = x401 in
+          Result::Ok(map_fn/492(value/493))
         }
       }
     },
-    Result::Err(x399) => {
+    Result::Err(x402) => {
       {
-        let x399 = Result::Err._0(self/482) in
+        let x402 = Result::Err._0(self/491) in
         {
-          let error/485 = x399 in
-          Result::Err(error/485)
+          let error/494 = x402 in
+          Result::Err(error/494)
         }
       }
     },
@@ -3548,25 +3593,25 @@ fn inherent#Result#Result[T,E]#map[T, E, U](self/482: Result[T, E], map_fn/483: 
 }
 
 fn inherent#Result#Result[T,E]#map_err[T, E, F](
-  self/486: Result[T, E],
-  map_fn/487: (E) -> F
+  self/495: Result[T, E],
+  map_fn/496: (E) -> F
 ) -> Result[T, F] {
-  match self/486 {
-    Result::Ok(x400) => {
+  match self/495 {
+    Result::Ok(x403) => {
       {
-        let x400 = Result::Ok._0(self/486) in
+        let x403 = Result::Ok._0(self/495) in
         {
-          let value/488 = x400 in
-          Result::Ok(value/488)
+          let value/497 = x403 in
+          Result::Ok(value/497)
         }
       }
     },
-    Result::Err(x401) => {
+    Result::Err(x404) => {
       {
-        let x401 = Result::Err._0(self/486) in
+        let x404 = Result::Err._0(self/495) in
         {
-          let error/489 = x401 in
-          Result::Err(map_fn/487(error/489))
+          let error/498 = x404 in
+          Result::Err(map_fn/496(error/498))
         }
       }
     },
@@ -3574,40 +3619,40 @@ fn inherent#Result#Result[T,E]#map_err[T, E, F](
 }
 
 fn inherent#Result#Result[T,E]#and_then[T, E, U](
-  self/490: Result[T, E],
-  next/491: (T) -> Result[U, E]
+  self/499: Result[T, E],
+  next/500: (T) -> Result[U, E]
 ) -> Result[U, E] {
-  match self/490 {
-    Result::Ok(x402) => {
+  match self/499 {
+    Result::Ok(x405) => {
       {
-        let x402 = Result::Ok._0(self/490) in
+        let x405 = Result::Ok._0(self/499) in
         {
-          let value/492 = x402 in
-          next/491(value/492)
+          let value/501 = x405 in
+          next/500(value/501)
         }
       }
     },
-    Result::Err(x403) => {
+    Result::Err(x406) => {
       {
-        let x403 = Result::Err._0(self/490) in
+        let x406 = Result::Err._0(self/499) in
         {
-          let error/493 = x403 in
-          Result::Err(error/493)
+          let error/502 = x406 in
+          Result::Err(error/502)
         }
       }
     },
   }
 }
 
-fn __goml_builtin_range(start/494: int, end/495: int) -> FnIterator[int] {
-  let current/496 = @intrinsic(ref.new)(start/494) in
+fn __goml_builtin_range(start/503: int, end/504: int) -> FnIterator[int] {
+  let current/505 = @intrinsic(ref.new)(start/503) in
   inherent#FnIterator#FnIterator#from_fn(
     || => {
-      let value/497 = @intrinsic(ref.get)(current/496) in
-      if (value/497 < end/495) {
+      let value/506 = @intrinsic(ref.get)(current/505) in
+      if (value/506 < end/504) {
           {
-            let _wild404 = @intrinsic(ref.set)(current/496, (value/497 + 1)) in
-            Option::Some(value/497)
+            let _wild407 = @intrinsic(ref.set)(current/505, (value/506 + 1)) in
+            Option::Some(value/506)
           }
       } else {
           {
@@ -3618,46 +3663,46 @@ fn __goml_builtin_range(start/494: int, end/495: int) -> FnIterator[int] {
   )
 }
 
-fn __goml_builtin_range_inclusive(start/498: int, end/499: int) -> FnIterator[int] {
-  let current/500 = @intrinsic(ref.new)(start/498) in
-  let finished/501 = @intrinsic(ref.new)(false) in
+fn __goml_builtin_range_inclusive(start/507: int, end/508: int) -> FnIterator[int] {
+  let current/509 = @intrinsic(ref.new)(start/507) in
+  let finished/510 = @intrinsic(ref.new)(false) in
   inherent#FnIterator#FnIterator#from_fn(
     || => {
-      if if @intrinsic(ref.get)(finished/501) {
+      if if @intrinsic(ref.get)(finished/510) {
           true
       } else {
-          (@intrinsic(ref.get)(current/500) > end/499)
+          (@intrinsic(ref.get)(current/509) > end/508)
       } {
           {
             Option::None
           }
       } else {
           {
-            let value/502 = @intrinsic(ref.get)(current/500) in
-            let _wild407 =
-              if (value/502 == end/499) {
+            let value/511 = @intrinsic(ref.get)(current/509) in
+            let _wild410 =
+              if (value/511 == end/508) {
                   {
-                    let _wild405 = @intrinsic(ref.set)(finished/501, true) in
+                    let _wild408 = @intrinsic(ref.set)(finished/510, true) in
                   }
               } else {
                   {
-                    let _wild406 = @intrinsic(ref.set)(current/500, (value/502 + 1)) in
+                    let _wild409 = @intrinsic(ref.set)(current/509, (value/511 + 1)) in
                   }
               } in
-            Option::Some(value/502)
+            Option::Some(value/511)
           }
       }
     }
   )
 }
 
-fn inherent#Ordering#Ordering#from_int(value/832: int) -> Ordering {
-  if (value/832 < 0) {
+fn inherent#Ordering#Ordering#from_int(value/841: int) -> Ordering {
+  if (value/841 < 0) {
       {
         Ordering::Less
       }
   } else {
-      if (value/832 > 0) {
+      if (value/841 > 0) {
           {
             Ordering::Greater
           }
@@ -3669,8 +3714,8 @@ fn inherent#Ordering#Ordering#from_int(value/832: int) -> Ordering {
   }
 }
 
-fn inherent#Ordering#Ordering#to_int(self/833: Ordering) -> int {
-  match self/833 {
+fn inherent#Ordering#Ordering#to_int(self/842: Ordering) -> int {
+  match self/842 {
     Ordering::Less => {
       -1
     },
@@ -3683,32 +3728,32 @@ fn inherent#Ordering#Ordering#to_int(self/833: Ordering) -> int {
   }
 }
 
-fn inherent#Ordering#Ordering#is_lt(self/834: Ordering) -> bool {
-  trait_call[PartialEq::eq](self/834, Ordering::Less)
+fn inherent#Ordering#Ordering#is_lt(self/843: Ordering) -> bool {
+  trait_call[PartialEq::eq](self/843, Ordering::Less)
 }
 
-fn inherent#Ordering#Ordering#is_eq(self/835: Ordering) -> bool {
-  trait_call[PartialEq::eq](self/835, Ordering::Equal)
+fn inherent#Ordering#Ordering#is_eq(self/844: Ordering) -> bool {
+  trait_call[PartialEq::eq](self/844, Ordering::Equal)
 }
 
-fn inherent#Ordering#Ordering#is_gt(self/836: Ordering) -> bool {
-  trait_call[PartialEq::eq](self/836, Ordering::Greater)
+fn inherent#Ordering#Ordering#is_gt(self/845: Ordering) -> bool {
+  trait_call[PartialEq::eq](self/845, Ordering::Greater)
 }
 
-fn inherent#Ordering#Ordering#is_le(self/837: Ordering) -> bool {
-  (!trait_call[PartialEq::eq](self/837, Ordering::Greater))
+fn inherent#Ordering#Ordering#is_le(self/846: Ordering) -> bool {
+  (!trait_call[PartialEq::eq](self/846, Ordering::Greater))
 }
 
-fn inherent#Ordering#Ordering#is_ge(self/838: Ordering) -> bool {
-  (!trait_call[PartialEq::eq](self/838, Ordering::Less))
+fn inherent#Ordering#Ordering#is_ge(self/847: Ordering) -> bool {
+  (!trait_call[PartialEq::eq](self/847, Ordering::Less))
 }
 
-fn inherent#Ordering#Ordering#is_ne(self/839: Ordering) -> bool {
-  (!trait_call[PartialEq::eq](self/839, Ordering::Equal))
+fn inherent#Ordering#Ordering#is_ne(self/848: Ordering) -> bool {
+  (!trait_call[PartialEq::eq](self/848, Ordering::Equal))
 }
 
-fn inherent#Ordering#Ordering#reverse(self/840: Ordering) -> Ordering {
-  match self/840 {
+fn inherent#Ordering#Ordering#reverse(self/849: Ordering) -> Ordering {
+  match self/849 {
     Ordering::Less => {
       Ordering::Greater
     },
@@ -3721,37 +3766,37 @@ fn inherent#Ordering#Ordering#reverse(self/840: Ordering) -> Ordering {
   }
 }
 
-fn inherent#Ordering#Ordering#then(self/841: Ordering, other/842: Ordering) -> Ordering {
-  if trait_call[PartialEq::eq](self/841, Ordering::Equal) {
+fn inherent#Ordering#Ordering#then(self/850: Ordering, other/851: Ordering) -> Ordering {
+  if trait_call[PartialEq::eq](self/850, Ordering::Equal) {
       {
-        other/842
+        other/851
       }
   } else {
       {
-        self/841
+        self/850
       }
   }
 }
 
 fn inherent#Ordering#Ordering#then_with(
-  self/843: Ordering,
-  compare/844: () -> Ordering
+  self/852: Ordering,
+  compare/853: () -> Ordering
 ) -> Ordering {
-  if trait_call[PartialEq::eq](self/843, Ordering::Equal) {
+  if trait_call[PartialEq::eq](self/852, Ordering::Equal) {
       {
-        compare/844()
+        compare/853()
       }
   } else {
       {
-        self/843
+        self/852
       }
   }
 }
 
-fn trait_impl#PartialEq#Ordering#eq(self/845: Ordering, other/846: Ordering) -> bool {
-  match self/845 {
+fn trait_impl#PartialEq#Ordering#eq(self/854: Ordering, other/855: Ordering) -> bool {
+  match self/854 {
     Ordering::Less => {
-      match other/846 {
+      match other/855 {
         Ordering::Less => {
           true
         },
@@ -3759,7 +3804,7 @@ fn trait_impl#PartialEq#Ordering#eq(self/845: Ordering, other/846: Ordering) -> 
       }
     },
     Ordering::Equal => {
-      match other/846 {
+      match other/855 {
         Ordering::Equal => {
           true
         },
@@ -3767,7 +3812,7 @@ fn trait_impl#PartialEq#Ordering#eq(self/845: Ordering, other/846: Ordering) -> 
       }
     },
     Ordering::Greater => {
-      match other/846 {
+      match other/855 {
         Ordering::Greater => {
           true
         },
@@ -3808,6 +3853,6 @@ fn trait_impl#Convert#[string]@Value#convert(self/1: Value) -> int32 {
 fn main() -> unit {
   let text/2 = trait_call[Convert[int32]::convert](Value {}) in
   let number/3 = trait_call[Convert[string]::convert](Value {}) in
-  let _wild408 = println(text/2) in
-  let _wild409 = println(number/3) in
+  let _wild411 = println(text/2) in
+  let _wild412 = println(number/3) in
 }

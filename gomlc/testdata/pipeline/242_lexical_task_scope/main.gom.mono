@@ -26,8 +26,12 @@ fn std::internal::task::scope_cancelled(scope/9: int64) -> bool {
   @runtime(std.task.scope_cancelled)(scope/9)
 }
 
-fn std::internal::task::scope_sleep(scope/10: int64, nanoseconds/11: int64) -> bool {
-  @runtime(std.task.sleep)(scope/10, nanoseconds/11)
+fn std::internal::task::scope_done(scope/10: int64) -> Receiver[unit] {
+  @runtime(std.task.scope_done)(scope/10)
+}
+
+fn std::internal::task::scope_sleep(scope/11: int64, nanoseconds/12: int64) -> bool {
+  @runtime(std.task.sleep)(scope/11, nanoseconds/12)
 }
 
 fn std::internal::task::scope_count() -> int {
@@ -39,63 +43,63 @@ fn std::internal::task::root_scope() -> std::internal::task::ScopeHandle {
 }
 
 fn std::internal::task::child_scope(
-  parent/12: std::internal::task::CancelToken
+  parent/13: std::internal::task::CancelToken
 ) -> std::internal::task::ScopeHandle {
   std::internal::task::ScopeHandle {
-    id: std::internal::task::scope_new(std::internal::task::CancelToken.id(parent/12))
+    id: std::internal::task::scope_new(std::internal::task::CancelToken.id(parent/13))
   }
 }
 
 fn std::internal::task::spawn(
-  scope/13: std::internal::task::ScopeHandle,
-  body/14: () -> unit
+  scope/14: std::internal::task::ScopeHandle,
+  body/15: () -> unit
 ) -> unit {
   let mtmp0 =
-    std::internal::task::scope_spawn(std::internal::task::ScopeHandle.id(scope/13), body/14) in
+    std::internal::task::scope_spawn(std::internal::task::ScopeHandle.id(scope/14), body/15) in
   {
     ()
   }
 }
 
 fn std::internal::task::try_spawn(
-  scope/15: std::internal::task::ScopeHandle,
-  body/16: () -> unit
+  scope/16: std::internal::task::ScopeHandle,
+  body/17: () -> unit
 ) -> bool {
-  std::internal::task::scope_try_spawn(std::internal::task::ScopeHandle.id(scope/15), body/16)
+  std::internal::task::scope_try_spawn(std::internal::task::ScopeHandle.id(scope/16), body/17)
 }
 
 fn std::internal::task::run(
-  scope/17: std::internal::task::ScopeHandle,
-  body/18: () -> unit
+  scope/18: std::internal::task::ScopeHandle,
+  body/19: () -> unit
 ) -> unit {
   let _wild1 =
-    std::internal::task::scope_run(std::internal::task::ScopeHandle.id(scope/17), body/18) in
-  std::internal::task::scope_finish(std::internal::task::ScopeHandle.id(scope/17))
+    std::internal::task::scope_run(std::internal::task::ScopeHandle.id(scope/18), body/19) in
+  std::internal::task::scope_finish(std::internal::task::ScopeHandle.id(scope/18))
 }
 
-fn std::internal::task::cancel(scope/19: std::internal::task::ScopeHandle) -> unit {
-  std::internal::task::scope_cancel(std::internal::task::ScopeHandle.id(scope/19))
+fn std::internal::task::cancel(scope/20: std::internal::task::ScopeHandle) -> unit {
+  std::internal::task::scope_cancel(std::internal::task::ScopeHandle.id(scope/20))
 }
 
-fn std::internal::task::finish(scope/20: std::internal::task::ScopeHandle) -> unit {
-  std::internal::task::scope_finish(std::internal::task::ScopeHandle.id(scope/20))
+fn std::internal::task::finish(scope/21: std::internal::task::ScopeHandle) -> unit {
+  std::internal::task::scope_finish(std::internal::task::ScopeHandle.id(scope/21))
 }
 
 fn std::internal::task::token(
-  scope/21: std::internal::task::ScopeHandle
+  scope/22: std::internal::task::ScopeHandle
 ) -> std::internal::task::CancelToken {
-  std::internal::task::CancelToken { id: std::internal::task::ScopeHandle.id(scope/21) }
+  std::internal::task::CancelToken { id: std::internal::task::ScopeHandle.id(scope/22) }
 }
 
 fn std::internal::task::sleep_with(
-  cancel/27: std::internal::task::CancelToken,
-  nanoseconds/28: int64
+  cancel/28: std::internal::task::CancelToken,
+  nanoseconds/29: int64
 ) -> bool {
-  std::internal::task::scope_sleep(std::internal::task::CancelToken.id(cancel/27), nanoseconds/28)
+  std::internal::task::scope_sleep(std::internal::task::CancelToken.id(cancel/28), nanoseconds/29)
 }
 
-fn std::internal::task::id(cancel/29: std::internal::task::CancelToken) -> int64 {
-  std::internal::task::CancelToken.id(cancel/29)
+fn std::internal::task::id(cancel/30: std::internal::task::CancelToken) -> int64 {
+  std::internal::task::CancelToken.id(cancel/30)
 }
 
 fn std::internal::task::active_scope_count() -> int {
@@ -103,9 +107,15 @@ fn std::internal::task::active_scope_count() -> int {
 }
 
 fn inherent#std::internal::task::CancelToken#std::internal::task::CancelToken#is_cancelled(
-  self/30: std::internal::task::CancelToken
+  self/31: std::internal::task::CancelToken
 ) -> bool {
-  std::internal::task::scope_cancelled(std::internal::task::CancelToken.id(self/30))
+  std::internal::task::scope_cancelled(std::internal::task::CancelToken.id(self/31))
+}
+
+fn inherent#std::internal::task::CancelToken#std::internal::task::CancelToken#done(
+  self/32: std::internal::task::CancelToken
+) -> Receiver[unit] {
+  std::internal::task::scope_done(std::internal::task::CancelToken.id(self/32))
 }
 
 fn inherent#std::task::ConcurrencyLimit#std::task::ConcurrencyLimit#new(
@@ -166,11 +176,19 @@ fn inherent#std::task::CancelToken#std::task::CancelToken#runtime_id(
   std::internal::task::id(std::task::CancelToken.value(self/42))
 }
 
+fn inherent#std::task::CancelToken#std::task::CancelToken#done(
+  self/43: std::task::CancelToken
+) -> Receiver[unit] {
+  inherent#std::internal::task::CancelToken#std::internal::task::CancelToken#done(
+    std::task::CancelToken.value(self/43)
+  )
+}
+
 fn std::task::sleep_nanoseconds_with(
-  cancel/51: std::task::CancelToken,
-  nanoseconds/52: int64
+  cancel/52: std::task::CancelToken,
+  nanoseconds/53: int64
 ) -> std::task::WaitResult__unit {
-  if std::internal::task::sleep_with(std::task::CancelToken.value(cancel/51), nanoseconds/52) {
+  if std::internal::task::sleep_with(std::task::CancelToken.value(cancel/52), nanoseconds/53) {
       {
         std::task::WaitResult__unit::Completed(())
       }
@@ -190,7 +208,7 @@ fn main() -> unit {
           inherent#std::task::Scope#std::task::Scope#spawn__T_int(scope/1, |_cancel/2| 20) in
         let right/5 =
           inherent#std::task::Scope#std::task::Scope#spawn__T_int(scope/1, |_cancel/4| 22) in
-        let mtmp408 =
+        let mtmp411 =
           inherent#std::task::Scope#std::task::Scope#spawn__T_unit(
             scope/1,
             |_cancel/6| inherent#Ref#Ref[T]#set__T_bool(completed/0, true)
@@ -201,8 +219,8 @@ fn main() -> unit {
         }
       }
     ) in
-  let _wild409 = println__T_int(total/7) in
-  let _wild410 = println__T_bool(inherent#Ref#Ref[T]#get__T_bool(completed/0)) in
+  let _wild412 = println__T_int(total/7) in
+  let _wild413 = println__T_bool(inherent#Ref#Ref[T]#get__T_bool(completed/0)) in
   let nested/12 =
     std::task::scope__T_int(
       |scope/8| {
@@ -216,7 +234,7 @@ fn main() -> unit {
         )
       }
     ) in
-  let _wild411 = println__T_int(nested/12) in
+  let _wild414 = println__T_int(nested/12) in
   let scope/13 = 3 in
   let spawn/15 = |value/14| (value/14 + 1) in
   println__T_int(spawn/15(scope/13))
@@ -299,12 +317,12 @@ fn inherent#std::task::Scope#std::task::Scope#spawn__T_unit(
   std::task::Task__unit { result: result/27, ready: ready/28 }
 }
 
-fn inherent#std::task::Task#std::task::Task[T]#join__T_int(self/53: std::task::Task__int) -> int {
+fn inherent#std::task::Task#std::task::Task[T]#join__T_int(self/55: std::task::Task__int) -> int {
   loop {
-    let mtmp25 = inherent#Channel#Channel[T]#recv__T_unit(std::task::Task__int.ready(self/53)) in
+    let mtmp25 = inherent#Channel#Channel[T]#recv__T_unit(std::task::Task__int.ready(self/55)) in
     {
       {
-        let mtmp26 = inherent#Ref#Ref[T]#get__T_Option[int](std::task::Task__int.result(self/53)) in
+        let mtmp26 = inherent#Ref#Ref[T]#get__T_Option[int](std::task::Task__int.result(self/55)) in
         match mtmp26 {
           Option__int::None => {
             ()
@@ -313,9 +331,9 @@ fn inherent#std::task::Task#std::task::Task[T]#join__T_int(self/53: std::task::T
             {
               let x27 = Option__int::Some._0(mtmp26) in
               {
-                let value/54 = x27 in
+                let value/56 = x27 in
                 {
-                  let _wild28 = break value/54 in
+                  let _wild28 = break value/56 in
                 }
               }
             }

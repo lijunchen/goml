@@ -4,10 +4,10 @@ fn trait_impl#Batch#Numbers#items(self/0: Numbers) -> Vec[int32] {
 
 fn main() -> unit {
   let values/3 = inherent#Vec#Vec[T]#new__T_int32() in
-  let _wild413 = inherent#Vec#Vec[T]#push__T_int32(values/3, 10) in
-  let _wild414 = inherent#Vec#Vec[T]#push__T_int32(values/3, 20) in
-  let _wild415 = inherent#Vec#Vec[T]#push__T_int32(values/3, 30) in
-  let _wild416 = println__T_int32(count__B_Numbers(Numbers { values: values/3 })) in
+  let _wild416 = inherent#Vec#Vec[T]#push__T_int32(values/3, 10) in
+  let _wild417 = inherent#Vec#Vec[T]#push__T_int32(values/3, 20) in
+  let _wild418 = inherent#Vec#Vec[T]#push__T_int32(values/3, 30) in
+  let _wild419 = println__T_int32(count__B_Numbers(Numbers { values: values/3 })) in
   ()
 }
 
@@ -25,17 +25,17 @@ fn println__T_int32(value/1: int32) -> unit {
 
 fn count__B_Numbers(batch/1: Numbers) -> int32 {
   let total/2 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let _wild412 =
-    let for_iter408 =
+  let _wild415 =
+    let for_iter411 =
       trait_impl#IntoIterator#Vec[int32]#into_iter(trait_impl#Batch#Numbers#items(batch/1)) in
     while true {
-        let for_next409 = trait_impl#Iterator#FnIterator__int32#next(for_iter408) in
-        match for_next409 {
+        let for_next412 = trait_impl#Iterator#FnIterator__int32#next(for_iter411) in
+        match for_next412 {
           Option__int32::None => {
             break
           },
-          Option__int32::Some(x410) => {
-            let _wild411 =
+          Option__int32::Some(x413) => {
+            let _wild414 =
               inherent#Ref#Ref[T]#set__T_int32(
                 total/2,
                 (inherent#Ref#Ref[T]#get__T_int32(total/2) + 1)
@@ -112,11 +112,11 @@ fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
 }
 
 fn inherent#closure_env_inherent_Vec_Vec_T_iter_T_int32_0#closure_env_inherent_Vec_Vec_T_iter_T_int32_0#apply(
-  env417: closure_env_inherent_Vec_Vec_T_iter_T_int32_0
+  env420: closure_env_inherent_Vec_Vec_T_iter_T_int32_0
 ) -> Option__int32 {
-  let index/315 = closure_env_inherent_Vec_Vec_T_iter_T_int32_0.index_0(env417) in
-  let len/316 = closure_env_inherent_Vec_Vec_T_iter_T_int32_0.len_1(env417) in
-  let self/314 = closure_env_inherent_Vec_Vec_T_iter_T_int32_0.self_2(env417) in
+  let index/315 = closure_env_inherent_Vec_Vec_T_iter_T_int32_0.index_0(env420) in
+  let len/316 = closure_env_inherent_Vec_Vec_T_iter_T_int32_0.len_1(env420) in
+  let self/314 = closure_env_inherent_Vec_Vec_T_iter_T_int32_0.self_2(env420) in
   let current/317 = @intrinsic(ref.get)(index/315) in
   if (current/317 < len/316) {
       let value/318 = @intrinsic(vec.get)(self/314, current/317) in

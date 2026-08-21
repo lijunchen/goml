@@ -35,25 +35,25 @@ type Ordering int32
 
 func main0() struct{} {
     var a__0 *ref_int_x
+    var inline441 int = 1
+    var inline442 *ref_int_x = ref__Ref_3int(inline441)
+    a__0 = inline442
+    var c__2 *ref_int_x
     var inline438 int = 1
     var inline439 *ref_int_x = ref__Ref_3int(inline438)
-    a__0 = inline439
-    var c__2 *ref_int_x
-    var inline435 int = 1
-    var inline436 *ref_int_x = ref__Ref_3int(inline435)
-    c__2 = inline436
-    var t411 bool = ptr_eq__Ref_3int(a__0, a__0)
-    var inline432 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t411)
+    c__2 = inline439
+    var t414 bool = ptr_eq__Ref_3int(a__0, a__0)
+    var inline435 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t414)
+    _goml_runtime_core_string_println(inline435)
+    var t415 bool = ptr_eq__Ref_3int(a__0, c__2)
+    var inline432 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t415)
     _goml_runtime_core_string_println(inline432)
-    var t412 bool = ptr_eq__Ref_3int(a__0, c__2)
-    var inline429 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t412)
-    _goml_runtime_core_string_println(inline429)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__148 bool) string {
-    var t421 string = _goml_runtime_core_bool_to_string(self__148)
-    return t421
+    var t424 string = _goml_runtime_core_bool_to_string(self__148)
+    return t424
 }
 
 func main() {

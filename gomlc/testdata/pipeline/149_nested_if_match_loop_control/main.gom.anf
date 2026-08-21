@@ -1,115 +1,115 @@
 fn main() -> unit {
-  join inline_cont464(i/0: Ref[int]) -> unit {
-    join inline_cont461(sum/1: Ref[int]) -> unit {
-      join exit414() -> unit {
-        join inline_cont459(t415: int) -> unit {
-          let inline457 = trait_impl#ToString#int#to_string(t415) in
-          let inline458 = @runtime(core.string_println)(inline457) in
+  join inline_cont467(i/0: Ref[int]) -> unit {
+    join inline_cont464(sum/1: Ref[int]) -> unit {
+      join exit417() -> unit {
+        join inline_cont462(t418: int) -> unit {
+          let inline460 = trait_impl#ToString#int#to_string(t418) in
+          let inline461 = @runtime(core.string_println)(inline460) in
           ()
         } in
-        let inline460 = @intrinsic(ref.get)(sum/1) in
-        jump inline_cont459(inline460)
+        let inline463 = @intrinsic(ref.get)(sum/1) in
+        jump inline_cont462(inline463)
       } in
       joinrec {
-        join loop416() -> unit {
-          join inline_cont454(t417: int) -> unit {
-            let t418 = (t417 < 7) in
-            if t418 {
-              join inline_cont452(cur/2: int) -> unit {
-                let t419 = (cur/2 + 1) in
-                join inline_cont450(_wild408: unit) -> unit {
-                  let t423 = (cur/2 < 5) in
-                  join k420() -> unit {
-                    join inline_cont448(t421: int) -> unit {
-                      let t422 = (t421 + cur/2) in
-                      let inline447 = @intrinsic(ref.set)(sum/1, t422) in
-                      jump loop416()
+        join loop419() -> unit {
+          join inline_cont457(t420: int) -> unit {
+            let t421 = (t420 < 7) in
+            if t421 {
+              join inline_cont455(cur/2: int) -> unit {
+                let t422 = (cur/2 + 1) in
+                join inline_cont453(_wild411: unit) -> unit {
+                  let t426 = (cur/2 < 5) in
+                  join k423() -> unit {
+                    join inline_cont451(t424: int) -> unit {
+                      let t425 = (t424 + cur/2) in
+                      let inline450 = @intrinsic(ref.set)(sum/1, t425) in
+                      jump loop419()
                     } in
-                    let inline449 = @intrinsic(ref.get)(sum/1) in
-                    jump inline_cont448(inline449)
+                    let inline452 = @intrinsic(ref.get)(sum/1) in
+                    jump inline_cont451(inline452)
                   } in
-                  if t423 {
+                  if t426 {
                     match cur/2 {
                       1 => {
-                        jump loop416()
+                        jump loop419()
                       },
                       3 => {
-                        jump loop416()
+                        jump loop419()
                       },
                       _ => {
-                        jump k420()
+                        jump k423()
                       },
                     }
                   } else {
                     match cur/2 {
                       5 => {
-                        jump exit414()
+                        jump exit417()
                       },
                       _ => {
-                        jump k420()
+                        jump k423()
                       },
                     }
                   }
                 } in
-                let inline451 = @intrinsic(ref.set)(i/0, t419) in
-                jump inline_cont450(())
+                let inline454 = @intrinsic(ref.set)(i/0, t422) in
+                jump inline_cont453(())
               } in
-              let inline453 = @intrinsic(ref.get)(i/0) in
-              jump inline_cont452(inline453)
+              let inline456 = @intrinsic(ref.get)(i/0) in
+              jump inline_cont455(inline456)
             } else {
-              jump exit414()
+              jump exit417()
             }
           } in
-          let inline455 = @intrinsic(ref.get)(i/0) in
-          jump inline_cont454(inline455)
+          let inline458 = @intrinsic(ref.get)(i/0) in
+          jump inline_cont457(inline458)
         } in
       } in
-      jump loop416()
+      jump loop419()
     } in
-    let inline462 = 0 in
-    let inline463 = @intrinsic(ref.new)(inline462) in
-    jump inline_cont461(inline463)
+    let inline465 = 0 in
+    let inline466 = @intrinsic(ref.new)(inline465) in
+    jump inline_cont464(inline466)
   } in
-  let inline465 = 0 in
-  let inline466 = @intrinsic(ref.new)(inline465) in
-  jump inline_cont464(inline466)
+  let inline468 = 0 in
+  let inline469 = @intrinsic(ref.new)(inline468) in
+  jump inline_cont467(inline469)
 }
 
 fn inherent#Ref#Ref[T]#new__T_int(value/431: int) -> Ref[int] {
-  let t428 = @intrinsic(ref.new)(value/431) in
-  t428
-}
-
-fn inherent#Ref#Ref[T]#get__T_int(self/432: Ref[int]) -> int {
-  let t431 = @intrinsic(ref.get)(self/432) in
+  let t431 = @intrinsic(ref.new)(value/431) in
   t431
 }
 
+fn inherent#Ref#Ref[T]#get__T_int(self/432: Ref[int]) -> int {
+  let t434 = @intrinsic(ref.get)(self/432) in
+  t434
+}
+
 fn inherent#Ref#Ref[T]#set__T_int(self/433: Ref[int], value/434: int) -> unit {
-  let t433 = @intrinsic(ref.set)(self/433, value/434) in
+  let t436 = @intrinsic(ref.set)(self/433, value/434) in
   ()
 }
 
 fn println__T_int(value/1: int) -> unit {
-  join inline_cont467(t435: string) -> unit {
-    let t436 = @runtime(core.string_println)(t435) in
+  join inline_cont470(t438: string) -> unit {
+    let t439 = @runtime(core.string_println)(t438) in
     ()
   } in
-  let inline468 = @runtime(core.int_to_string)(value/1) in
-  jump inline_cont467(inline468)
+  let inline471 = @runtime(core.int_to_string)(value/1) in
+  jump inline_cont470(inline471)
 }
 
 fn trait_impl#ToString#int#to_string(self/151: int) -> string {
-  let t439 = @runtime(core.int_to_string)(self/151) in
-  t439
-}
-
-fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
-  let t442 = (self/185 == other/186) in
+  let t442 = @runtime(core.int_to_string)(self/151) in
   t442
 }
 
-fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
-  let t445 = @runtime(core.int_hash)(self/211) in
+fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+  let t445 = (self/185 == other/186) in
   t445
+}
+
+fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+  let t448 = @runtime(core.int_hash)(self/211) in
+  t448
 }

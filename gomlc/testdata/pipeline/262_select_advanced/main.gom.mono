@@ -1,0 +1,145 @@
+fn mark_channel(log/0: Ref[string], mark/1: string, channel/2: Channel[int]) -> Channel[int] {
+  let _wild411 =
+    inherent#Ref#Ref[T]#set__T_string(log/0, (inherent#Ref#Ref[T]#get__T_string(log/0) + mark/1)) in
+  channel/2
+}
+
+fn mark_value(log/3: Ref[string], mark/4: string, value/5: int) -> int {
+  let _wild412 =
+    inherent#Ref#Ref[T]#set__T_string(log/3, (inherent#Ref#Ref[T]#get__T_string(log/3) + mark/4)) in
+  value/5
+}
+
+fn mark_guard(log/6: Ref[string], mark/7: string, value/8: bool) -> bool {
+  let _wild413 =
+    inherent#Ref#Ref[T]#set__T_string(log/6, (inherent#Ref#Ref[T]#get__T_string(log/6) + mark/7)) in
+  value/8
+}
+
+fn main() -> unit {
+  let log/9 = inherent#Ref#Ref[T]#new__T_string("") in
+  let disabled/10 = inherent#Channel#Channel[T]#new__T_int(1) in
+  let _wild414 = inherent#Channel#Channel[T]#close__T_int(disabled/10) in
+  let fallback/11 =
+    select {
+      send(mark_channel(log/9, "c", disabled/10), mark_value(log/9, "v", 1)) when mark_guard(
+        log/9,
+        "g",
+        false
+      ) => {
+        "sent"
+      },
+      default => {
+        "default"
+      },
+    } in
+  let _wild415 = println__T_string(inherent#Ref#Ref[T]#get__T_string(log/9)) in
+  let _wild416 = println__T_string(fallback/11) in
+  let first/12 = inherent#Channel#Channel[T]#new__T_int(1) in
+  let second/13 = inherent#Channel#Channel[T]#new__T_int(1) in
+  let _wild417 = inherent#Channel#Channel[T]#send__T_int(first/12, 10) in
+  let _wild418 = inherent#Channel#Channel[T]#send__T_int(second/13, 20) in
+  let selected/16 =
+    select priority {
+      recv(first/12) when true as value/14 => {
+        inherent#Option#Option[T]#unwrap_or__T_int(value/14, -1)
+      },
+      recv(second/13) when true as value/15 => {
+        inherent#Option#Option[T]#unwrap_or__T_int(value/15, -1)
+      },
+      default => {
+        0
+      },
+    } in
+  let _wild419 = println__T_int(selected/16) in
+  let events/17 = inherent#Channel#Channel[T]#new__T_int(1) in
+  let _wild420 = inherent#Channel#Channel[T]#send__T_int(events/17, 7) in
+  let matched/20 =
+    select {
+      recv(events/17) when ((1 + 1) == 2) as $select_recv_1170/18 => {
+        match $select_recv_1170/18 {
+          Option__int::None => {
+            0
+          },
+          Option__int::Some(x421) => {
+            {
+              let x421 = Option__int::Some._0($select_recv_1170/18) in
+              {
+                let value/19 = x421 in
+                (value/19 + 1)
+              }
+            }
+          },
+        }
+      },
+      default => {
+        -1
+      },
+    } in
+  println__T_int(matched/20)
+}
+
+fn inherent#Ref#Ref[T]#get__T_string(self/432: Ref[string]) -> string {
+  @intrinsic(ref.get)(self/432)
+}
+
+fn inherent#Ref#Ref[T]#set__T_string(self/433: Ref[string], value/434: string) -> unit {
+  @intrinsic(ref.set)(self/433, value/434)
+}
+
+fn inherent#Ref#Ref[T]#new__T_string(value/431: string) -> Ref[string] {
+  @intrinsic(ref.new)(value/431)
+}
+
+fn inherent#Channel#Channel[T]#new__T_int(capacity/435: int) -> Channel[int] {
+  @intrinsic(channel.new)(capacity/435)
+}
+
+fn inherent#Channel#Channel[T]#close__T_int(self/441: Channel[int]) -> unit {
+  @intrinsic(channel.close)(self/441)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn inherent#Channel#Channel[T]#send__T_int(self/436: Channel[int], value/437: int) -> unit {
+  @intrinsic(channel.send)(self/436, value/437)
+}
+
+fn inherent#Option#Option[T]#unwrap_or__T_int(self/467: Option__int, fallback/468: int) -> int {
+  match self/467 {
+    Option__int::None => {
+      fallback/468
+    },
+    Option__int::Some(x390) => {
+      {
+        let x390 = Option__int::Some._0(self/467) in
+        {
+          let value/469 = x390 in
+          value/469
+        }
+      }
+    },
+  }
+}
+
+fn println__T_int(value/1: int) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
+}
+
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
+}
+
+fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+  @runtime(core.int_to_string)(self/151)
+}
+
+fn trait_impl#PartialEq#string#eq(self/181: string, other/182: string) -> bool {
+  (self/181 == other/182)
+}
+
+fn trait_impl#Hash#string#hash(self/209: string) -> uint64 {
+  @runtime(core.string_hash)(self/209)
+}

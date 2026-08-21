@@ -20,22 +20,22 @@ func _goml_runtime_core_string_print(s string) struct{} {
 type Ordering int32
 
 func main0() struct{} {
-    var x408 bool = true
-    var x409 bool = false
-    switch x408 {
-    case true:
-        var inline425 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x409)
-        _goml_runtime_core_string_print(inline425)
-    case false:
-    default:
-        panic("non-exhaustive match")
-    }
     var x411 bool = true
-    var x412 bool = true
+    var x412 bool = false
     switch x411 {
     case true:
         var inline428 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x412)
         _goml_runtime_core_string_print(inline428)
+    case false:
+    default:
+        panic("non-exhaustive match")
+    }
+    var x414 bool = true
+    var x415 bool = true
+    switch x414 {
+    case true:
+        var inline431 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x415)
+        _goml_runtime_core_string_print(inline431)
         return struct{}{}
     case false:
         return struct{}{}
@@ -45,8 +45,8 @@ func main0() struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__148 bool) string {
-    var t423 string = _goml_runtime_core_bool_to_string(self__148)
-    return t423
+    var t426 string = _goml_runtime_core_bool_to_string(self__148)
+    return t426
 }
 
 func main() {

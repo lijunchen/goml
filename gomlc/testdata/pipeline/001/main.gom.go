@@ -20,15 +20,15 @@ func _goml_runtime_core_string_print(s string) struct{} {
 type Ordering int32
 
 func main0() struct{} {
-    var x413 bool = false
-    var inline424 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x413)
-    _goml_runtime_core_string_print(inline424)
+    var x416 bool = false
+    var inline427 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x416)
+    _goml_runtime_core_string_print(inline427)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__148 bool) string {
-    var t422 string = _goml_runtime_core_bool_to_string(self__148)
-    return t422
+    var t425 string = _goml_runtime_core_bool_to_string(self__148)
+    return t425
 }
 
 func main() {

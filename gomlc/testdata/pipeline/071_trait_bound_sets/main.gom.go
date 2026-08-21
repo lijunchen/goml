@@ -23,16 +23,16 @@ func _goml_m_trait__impl_i_C_i_S_i_bar(self__2 S) string {
 
 func main0() struct{} {
     var s__5 S = S{}
-    var t417 string
-    var inline439 string = _goml_m_trait__impl_i_A_i_S_i_foo(s__5)
-    t417 = inline439
-    var inline436 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t417)
-    _goml_runtime_core_string_println(inline436)
-    var t418 string
-    var inline434 string = _goml_m_trait__impl_i_C_i_S_i_bar(s__5)
-    t418 = inline434
-    var inline431 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t418)
-    _goml_runtime_core_string_println(inline431)
+    var t420 string
+    var inline442 string = _goml_m_trait__impl_i_A_i_S_i_foo(s__5)
+    t420 = inline442
+    var inline439 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t420)
+    _goml_runtime_core_string_println(inline439)
+    var t421 string
+    var inline437 string = _goml_m_trait__impl_i_C_i_S_i_bar(s__5)
+    t421 = inline437
+    var inline434 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t421)
+    _goml_runtime_core_string_println(inline434)
     return struct{}{}
 }
 

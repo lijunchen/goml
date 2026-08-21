@@ -23,124 +23,124 @@ type Result__int32__string struct {
 
 func parse(flag__0 bool) Result__int32__string {
     if flag__0 {
-        var t418 Result__int32__string = Result__int32__string{
+        var t421 Result__int32__string = Result__int32__string{
             _tag: 1,
             _v1_0: 41,
         }
-        return t418
+        return t421
     } else {
-        var t419 Result__int32__string = Result__int32__string{
+        var t422 Result__int32__string = Result__int32__string{
             _tag: 0,
             _v0_0: "bad",
         }
-        return t419
+        return t422
     }
 }
 
 func compute(flag__1 bool) Result__int32__string {
-    var mtmp408 Result__int32__string
+    var mtmp411 Result__int32__string
     if flag__1 {
-        var inline447 Result__int32__string = Result__int32__string{
+        var inline450 Result__int32__string = Result__int32__string{
             _tag: 1,
             _v1_0: 41,
         }
-        mtmp408 = inline447
+        mtmp411 = inline450
     } else {
-        var inline448 Result__int32__string = Result__int32__string{
+        var inline451 Result__int32__string = Result__int32__string{
             _tag: 0,
             _v0_0: "bad",
         }
-        mtmp408 = inline448
+        mtmp411 = inline451
     }
-    var jp423 int32
-    switch mtmp408._tag {
+    var jp426 int32
+    switch mtmp411._tag {
     case 0:
-        var x409 string = mtmp408._v0_0
-        var t426 Result__int32__string = Result__int32__string{
+        var x412 string = mtmp411._v0_0
+        var t429 Result__int32__string = Result__int32__string{
             _tag: 0,
-            _v0_0: x409,
+            _v0_0: x412,
         }
-        return t426
+        return t429
     case 1:
-        var x410 int32 = mtmp408._v1_0
-        jp423 = x410
-        var t424 int32 = jp423 + 1
-        var t425 Result__int32__string = Result__int32__string{
+        var x413 int32 = mtmp411._v1_0
+        jp426 = x413
+        var t427 int32 = jp426 + 1
+        var t428 Result__int32__string = Result__int32__string{
             _tag: 1,
-            _v1_0: t424,
+            _v1_0: t427,
         }
-        return t425
+        return t428
     default:
         panic("non-exhaustive match")
     }
 }
 
 func main0() struct{} {
-    var t433 Result__int32__string = compute(true)
-    var t434 string
-    switch t433._tag {
+    var t436 Result__int32__string = compute(true)
+    var t437 string
+    switch t436._tag {
     case 0:
-        var inline477 string = t433._v0_0
-        t434 = inline477
+        var inline480 string = t436._v0_0
+        t437 = inline480
     case 1:
-        var inline479 int32 = t433._v1_0
-        var inline481 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline479)
-        t434 = inline481
+        var inline482 int32 = t436._v1_0
+        var inline484 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline482)
+        t437 = inline484
     default:
         panic("non-exhaustive match")
     }
-    var inline474 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t434)
-    _goml_runtime_core_string_println(inline474)
-    var t435 Result__int32__string
-    var inline461 bool = false
-    var inline462 Result__int32__string = parse(inline461)
-    var inline464 int32
-    switch inline462._tag {
+    var inline477 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t437)
+    _goml_runtime_core_string_println(inline477)
+    var t438 Result__int32__string
+    var inline464 bool = false
+    var inline465 Result__int32__string = parse(inline464)
+    var inline467 int32
+    switch inline465._tag {
     case 0:
-        var inline468 string = inline462._v0_0
-        var inline470 Result__int32__string = Result__int32__string{
+        var inline471 string = inline465._v0_0
+        var inline473 Result__int32__string = Result__int32__string{
             _tag: 0,
-            _v0_0: inline468,
+            _v0_0: inline471,
         }
-        t435 = inline470
-        var t436 string
-        switch t435._tag {
+        t438 = inline473
+        var t439 string
+        switch t438._tag {
         case 0:
-            var inline455 string = t435._v0_0
-            t436 = inline455
+            var inline458 string = t438._v0_0
+            t439 = inline458
         case 1:
-            var inline457 int32 = t435._v1_0
-            var inline459 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline457)
-            t436 = inline459
+            var inline460 int32 = t438._v1_0
+            var inline462 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline460)
+            t439 = inline462
         default:
             panic("non-exhaustive match")
         }
-        var inline452 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t436)
-        _goml_runtime_core_string_println(inline452)
+        var inline455 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t439)
+        _goml_runtime_core_string_println(inline455)
         return struct{}{}
     case 1:
-        var inline471 int32 = inline462._v1_0
-        inline464 = inline471
-        var inline466 int32 = inline464 + 1
-        var inline467 Result__int32__string = Result__int32__string{
+        var inline474 int32 = inline465._v1_0
+        inline467 = inline474
+        var inline469 int32 = inline467 + 1
+        var inline470 Result__int32__string = Result__int32__string{
             _tag: 1,
-            _v1_0: inline466,
+            _v1_0: inline469,
         }
-        t435 = inline467
-        var t436 string
-        switch t435._tag {
+        t438 = inline470
+        var t439 string
+        switch t438._tag {
         case 0:
-            var inline455 string = t435._v0_0
-            t436 = inline455
+            var inline458 string = t438._v0_0
+            t439 = inline458
         case 1:
-            var inline457 int32 = t435._v1_0
-            var inline459 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline457)
-            t436 = inline459
+            var inline460 int32 = t438._v1_0
+            var inline462 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline460)
+            t439 = inline462
         default:
             panic("non-exhaustive match")
         }
-        var inline452 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t436)
-        _goml_runtime_core_string_println(inline452)
+        var inline455 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t439)
+        _goml_runtime_core_string_println(inline455)
         return struct{}{}
     default:
         panic("non-exhaustive match")
@@ -148,8 +148,8 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
-    var t440 string = _goml_runtime_core_int32_to_string(self__33)
-    return t440
+    var t443 string = _goml_runtime_core_int32_to_string(self__33)
+    return t443
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {

@@ -1,0 +1,115 @@
+fn main() -> unit {
+  let channel/0 = inherent#Channel#Channel[T]#new__T_int(2) in
+  let mtmp411 = inherent#Channel#Channel[T]#split__T_int(channel/0) in
+  {
+    let x412 = mtmp411.0 in
+    let x413 = mtmp411.1 in
+    {
+      let receiver/2 = x413 in
+      {
+        let sender/1 = x412 in
+        {
+          let _wild414 = inherent#Sender#Sender[T]#send__T_int(sender/1, 7) in
+          let _wild415 =
+            select priority {
+              recv(receiver/2) as value/3 => {
+                println__T_int(inherent#Option#Option[T]#unwrap_or__T_int(value/3, 0))
+              },
+              default => {
+                println__T_int(1)
+              },
+            } in
+          let channel/4 = inherent#Channel#Channel[T]#new__T_int(1) in
+          let sender/5 = inherent#Channel#Channel[T]#sender__T_int(channel/4) in
+          let receiver/6 = inherent#Channel#Channel[T]#receiver__T_int(channel/4) in
+          select priority {
+            send(sender/5, 9) => {
+              println__T_int(
+                inherent#Option#Option[T]#unwrap_or__T_int(
+                  inherent#Receiver#Receiver[T]#recv__T_int(receiver/6),
+                  0
+                )
+              )
+            },
+            default => {
+              println__T_int(2)
+            },
+          }
+        }
+      }
+    }
+  }
+}
+
+fn inherent#Channel#Channel[T]#new__T_int(capacity/435: int) -> Channel[int] {
+  @intrinsic(channel.new)(capacity/435)
+}
+
+fn inherent#Channel#Channel[T]#split__T_int(self/444: Channel[int]) -> (
+  Sender[int],
+  Receiver[int]
+) {
+  @intrinsic(channel.split)(self/444)
+}
+
+fn inherent#Sender#Sender[T]#send__T_int(self/445: Sender[int], value/446: int) -> unit {
+  @intrinsic(channel.send)(self/445, value/446)
+}
+
+fn println__T_int(value/1: int) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
+}
+
+fn inherent#Option#Option[T]#unwrap_or__T_int(self/467: Option__int, fallback/468: int) -> int {
+  match self/467 {
+    Option__int::None => {
+      fallback/468
+    },
+    Option__int::Some(x390) => {
+      {
+        let x390 = Option__int::Some._0(self/467) in
+        {
+          let value/469 = x390 in
+          value/469
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Channel#Channel[T]#sender__T_int(self/442: Channel[int]) -> Sender[int] {
+  @intrinsic(channel.sender)(self/442)
+}
+
+fn inherent#Channel#Channel[T]#receiver__T_int(self/443: Channel[int]) -> Receiver[int] {
+  @intrinsic(channel.receiver)(self/443)
+}
+
+fn inherent#Receiver#Receiver[T]#recv__T_int(self/448: Receiver[int]) -> Option__int {
+  let mtmp382 = @intrinsic(channel.recv)(self/448) in
+  {
+    let x383 = mtmp382.0 in
+    let x384 = mtmp382.1 in
+    {
+      let ok/450 = x384 in
+      {
+        let value/449 = x383 in
+        {
+          if ok/450 {
+              {
+                Option__int::Some(value/449)
+              }
+          } else {
+              {
+                Option__int::None
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+  @runtime(core.int_to_string)(self/151)
+}

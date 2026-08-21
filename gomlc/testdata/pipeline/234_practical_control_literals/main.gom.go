@@ -50,8 +50,8 @@ type Option__int struct {
 func unwrap_or_negative(value__0 Option__int) int {
     switch value__0._tag {
     case 1:
-        var x409 int = value__0._v1_0
-        return x409
+        var x412 int = value__0._v1_0
+        return x412
     default:
         return -1
     }
@@ -59,119 +59,119 @@ func unwrap_or_negative(value__0 Option__int) int {
 
 func count_to(limit__2 int) int {
     var counter__3 *ref_int_x
-    var inline512 int = 0
-    var inline513 *ref_int_x = ref__Ref_3int(inline512)
-    counter__3 = inline513
-    var jp437 int
-    Loop_loop_expr438:
+    var inline515 int = 0
+    var inline516 *ref_int_x = ref__Ref_3int(inline515)
+    counter__3 = inline516
+    var jp440 int
+    Loop_loop_expr441:
     for {
         var current__4 int
-        var inline510 int = ref_get__Ref_3int(counter__3)
-        current__4 = inline510
-        var t441 bool = current__4 >= limit__2
-        if t441 {
-            jp437 = current__4
-            break Loop_loop_expr438
+        var inline513 int = ref_get__Ref_3int(counter__3)
+        current__4 = inline513
+        var t444 bool = current__4 >= limit__2
+        if t444 {
+            jp440 = current__4
+            break Loop_loop_expr441
         } else {
-            var t440 int = current__4 + 1
-            ref_set__Ref_3int(counter__3, t440)
+            var t443 int = current__4 + 1
+            ref_set__Ref_3int(counter__3, t443)
             continue
         }
     }
-    return jp437
+    return jp440
 }
 
 func loop_option(value__5 Option__int) int {
-    var jp445 int
+    var jp448 int
     switch value__5._tag {
     case 1:
-        var x415 int = value__5._v1_0
-        jp445 = x415
-        return jp445
+        var x418 int = value__5._v1_0
+        jp448 = x418
+        return jp448
     default:
-        jp445 = -2
-        return jp445
+        jp448 = -2
+        return jp448
     }
 }
 
 func nested_loop_value() int {
-    var jp451 int
-    jp451 = 7
-    return jp451
+    var jp454 int
+    jp454 = 7
+    return jp454
 }
 
 func main0() struct{} {
     println__T_string("C:\\tmp\\\"quoted\\\"")
-    var t465 string = "" + "}"
-    var inline556 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t465)
-    _goml_runtime_core_string_println(inline556)
-    var t466 Option__int = Option__int{
+    var t468 string = "" + "}"
+    var inline559 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t468)
+    _goml_runtime_core_string_println(inline559)
+    var t469 Option__int = Option__int{
         _tag: 1,
         _v1_0: 11,
     }
-    var t467 int = unwrap_or_negative(t466)
-    var t468 string
-    var inline554 string = _goml_runtime_core_int_to_string(t467)
-    t468 = inline554
-    var inline551 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t468)
-    _goml_runtime_core_string_println(inline551)
-    var t469 int
-    t469 = -1
-    var t470 string
-    var inline545 string = _goml_runtime_core_int_to_string(t469)
-    t470 = inline545
-    var inline542 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t470)
-    _goml_runtime_core_string_println(inline542)
-    var t471 int = count_to(4)
-    var t472 string
-    var inline540 string = _goml_runtime_core_int_to_string(t471)
-    t472 = inline540
-    var inline537 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t472)
-    _goml_runtime_core_string_println(inline537)
-    var t473 Option__int = Option__int{
+    var t470 int = unwrap_or_negative(t469)
+    var t471 string
+    var inline557 string = _goml_runtime_core_int_to_string(t470)
+    t471 = inline557
+    var inline554 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t471)
+    _goml_runtime_core_string_println(inline554)
+    var t472 int
+    t472 = -1
+    var t473 string
+    var inline548 string = _goml_runtime_core_int_to_string(t472)
+    t473 = inline548
+    var inline545 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t473)
+    _goml_runtime_core_string_println(inline545)
+    var t474 int = count_to(4)
+    var t475 string
+    var inline543 string = _goml_runtime_core_int_to_string(t474)
+    t475 = inline543
+    var inline540 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t475)
+    _goml_runtime_core_string_println(inline540)
+    var t476 Option__int = Option__int{
         _tag: 1,
         _v1_0: 9,
     }
-    var t474 int = loop_option(t473)
-    var t475 string
-    var inline535 string = _goml_runtime_core_int_to_string(t474)
-    t475 = inline535
-    var inline532 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t475)
-    _goml_runtime_core_string_println(inline532)
-    var t476 int = loop_option(Option__int{
+    var t477 int = loop_option(t476)
+    var t478 string
+    var inline538 string = _goml_runtime_core_int_to_string(t477)
+    t478 = inline538
+    var inline535 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t478)
+    _goml_runtime_core_string_println(inline535)
+    var t479 int = loop_option(Option__int{
         _tag: 0,
     })
-    var t477 string
-    var inline530 string = _goml_runtime_core_int_to_string(t476)
-    t477 = inline530
-    var inline527 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t477)
-    _goml_runtime_core_string_println(inline527)
-    var t478 int = nested_loop_value()
-    var t479 string
-    var inline525 string = _goml_runtime_core_int_to_string(t478)
-    t479 = inline525
-    var inline522 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t479)
-    _goml_runtime_core_string_println(inline522)
-    var t480 bool
-    var inline520 string = "C:\\tmp"
-    switch inline520 {
+    var t480 string
+    var inline533 string = _goml_runtime_core_int_to_string(t479)
+    t480 = inline533
+    var inline530 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t480)
+    _goml_runtime_core_string_println(inline530)
+    var t481 int = nested_loop_value()
+    var t482 string
+    var inline528 string = _goml_runtime_core_int_to_string(t481)
+    t482 = inline528
+    var inline525 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t482)
+    _goml_runtime_core_string_println(inline525)
+    var t483 bool
+    var inline523 string = "C:\\tmp"
+    switch inline523 {
     case "C:\\tmp":
-        t480 = true
+        t483 = true
     default:
-        t480 = false
+        t483 = false
     }
-    var t481 string
-    var inline518 string = _goml_runtime_core_bool_to_string(t480)
-    t481 = inline518
-    var inline515 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t481)
-    _goml_runtime_core_string_println(inline515)
+    var t484 string
+    var inline521 string = _goml_runtime_core_bool_to_string(t483)
+    t484 = inline521
+    var inline518 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t484)
+    _goml_runtime_core_string_println(inline518)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t491 string
-    t491 = value__1
-    _goml_runtime_core_string_println(t491)
+    var t494 string
+    t494 = value__1
+    _goml_runtime_core_string_println(t494)
     return struct{}{}
 }
 

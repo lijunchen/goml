@@ -1,38 +1,38 @@
 fn trait_impl#ToString#S#to_string(self/0: S) -> string {
-  let t411 = S.value(self/0) in
-  join inline_cont425(t412: string) -> string {
-    let t413 = ("S(" + t412) in
-    let t414 = (t413 + ")") in
-    t414
+  let t414 = S.value(self/0) in
+  join inline_cont428(t415: string) -> string {
+    let t416 = ("S(" + t415) in
+    let t417 = (t416 + ")") in
+    t417
   } in
-  let inline426 = @runtime(core.int32_to_string)(t411) in
-  jump inline_cont425(inline426)
+  let inline429 = @runtime(core.int32_to_string)(t414) in
+  jump inline_cont428(inline429)
 }
 
 fn main() -> unit {
-  join inline_cont430(t416: string) -> unit {
-    let inline428 = trait_impl#ToString#string#to_string(t416) in
-    let inline429 = @runtime(core.string_println)(inline428) in
+  join inline_cont433(t419: string) -> unit {
+    let inline431 = trait_impl#ToString#string#to_string(t419) in
+    let inline432 = @runtime(core.string_println)(inline431) in
     ()
   } in
-  let inline431 = 7 in
-  let inline432 = inherent#int32#int32#to_string(inline431) in
-  let inline433 = ("S(" + inline432) in
-  let inline434 = (inline433 + ")") in
-  jump inline_cont430(inline434)
+  let inline434 = 7 in
+  let inline435 = inherent#int32#int32#to_string(inline434) in
+  let inline436 = ("S(" + inline435) in
+  let inline437 = (inline436 + ")") in
+  jump inline_cont433(inline437)
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {
-  let t419 = @runtime(core.int32_to_string)(self/33) in
-  t419
+  let t422 = @runtime(core.int32_to_string)(self/33) in
+  t422
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont435(t421: string) -> unit {
-    let t422 = @runtime(core.string_println)(t421) in
+  join inline_cont438(t424: string) -> unit {
+    let t425 = @runtime(core.string_println)(t424) in
     ()
   } in
-  jump inline_cont435(value/1)
+  jump inline_cont438(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/149: string) -> string {

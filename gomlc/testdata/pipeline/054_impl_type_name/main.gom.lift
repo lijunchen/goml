@@ -1,9 +1,9 @@
 fn trait_impl#TypeName#Point#type_name(self/0: Point) -> string {
-  let mtmp408 = self/0 in
-  let x409 = Point.x(mtmp408) in
-  let x410 = Point.y(mtmp408) in
-  let y/2 = x410 in
-  let x/1 = x409 in
+  let mtmp411 = self/0 in
+  let x412 = Point.x(mtmp411) in
+  let x413 = Point.y(mtmp411) in
+  let y/2 = x413 in
+  let x/1 = x412 in
   let prefix/3 = ("Point(" + inherent#int32#int32#to_string(x/1)) in
   (((prefix/3 + ", ") + inherent#int32#int32#to_string(y/2)) + ")")
 }
@@ -13,9 +13,9 @@ fn trait_impl#TypeName#Shape#type_name(self/4: Shape) -> string {
     Shape::Unit => {
       "Unit"
     },
-    Shape::Location(x411) => {
-      let x411 = Shape::Location._0(self/4) in
-      let point/5 = x411 in
+    Shape::Location(x414) => {
+      let x414 = Shape::Location._0(self/4) in
+      let point/5 = x414 in
       ("Shape::" + trait_impl#TypeName#Point#type_name(point/5))
     },
   }
@@ -31,11 +31,11 @@ fn show_shape(shape/7: Shape) -> string {
 
 fn main() -> unit {
   let point/8 = Point { x: 7, y: 9 } in
-  let mtmp412 = println__T_string(show_point(point/8)) in
+  let mtmp415 = println__T_string(show_point(point/8)) in
   let unit_shape/9 = Shape::Unit in
-  let mtmp413 = println__T_string(show_shape(unit_shape/9)) in
+  let mtmp416 = println__T_string(show_shape(unit_shape/9)) in
   let location_shape/10 = Shape::Location(Point { x: 1, y: 2 }) in
-  let mtmp414 = println__T_string(show_shape(location_shape/10)) in
+  let mtmp417 = println__T_string(show_shape(location_shape/10)) in
   ()
 }
 

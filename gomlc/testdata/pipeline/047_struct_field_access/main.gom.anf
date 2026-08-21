@@ -1,31 +1,31 @@
 fn make_point(base/0: int32) -> Point {
-  let t410 = (base/0 + 1) in
-  let t411 = Point { x: base/0, y: t410 } in
-  t411
+  let t413 = (base/0 + 1) in
+  let t414 = Point { x: base/0, y: t413 } in
+  t414
 }
 
 fn sum_point(p/1: Point) -> int32 {
-  let t414 = Point.x(p/1) in
-  let t415 = Point.y(p/1) in
-  let t416 = (t414 + t415) in
-  t416
+  let t417 = Point.x(p/1) in
+  let t418 = Point.y(p/1) in
+  let t419 = (t417 + t418) in
+  t419
 }
 
 fn main() -> int32 {
-  join inline_cont430(p/2: Point) -> int32 {
-    let t419 = Point.x(p/2) in
-    let t420 = (t419 + 1) in
-    let t421 = Point.y(p/2) in
-    let t422 = (t421 - 2) in
-    join inline_cont426(t424: int32) -> int32 {
-      let t425 = (t420 + t424) in
-      t425
+  join inline_cont433(p/2: Point) -> int32 {
+    let t422 = Point.x(p/2) in
+    let t423 = (t422 + 1) in
+    let t424 = Point.y(p/2) in
+    let t425 = (t424 - 2) in
+    join inline_cont429(t427: int32) -> int32 {
+      let t428 = (t423 + t427) in
+      t428
     } in
-    let inline429 = (t420 + t422) in
-    jump inline_cont426(inline429)
+    let inline432 = (t423 + t425) in
+    jump inline_cont429(inline432)
   } in
-  let inline431 = 5 in
-  let inline432 = (inline431 + 1) in
-  let inline433 = Point { x: inline431, y: inline432 } in
-  jump inline_cont430(inline433)
+  let inline434 = 5 in
+  let inline435 = (inline434 + 1) in
+  let inline436 = Point { x: inline434, y: inline435 } in
+  jump inline_cont433(inline436)
 }

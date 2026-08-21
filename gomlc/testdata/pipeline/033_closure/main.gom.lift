@@ -5,7 +5,7 @@ fn test() -> unit {
     pack_closure[inherent#closure_env_f_0#closure_env_f_0#apply](
       closure_env_f_0 { y_0: y/0, z_1: z/1 }
     ) in
-  let mtmp408 = println__T_string(inherent#int32#int32#to_string(f/3(2))) in
+  let mtmp411 = println__T_string(inherent#int32#int32#to_string(f/3(2))) in
   println__T_string(inherent#int32#int32#to_string(f/3(3)))
 }
 
@@ -24,21 +24,21 @@ fn main() -> unit {
     pack_closure[inherent#closure_env_printer_2#closure_env_printer_2#apply](
       closure_env_printer_2 {}
     ) in
-  let mtmp409 = printer/13("result: ", result/9) in
+  let mtmp412 = printer/13("result: ", result/9) in
   let no_capture/17 =
     pack_closure[inherent#closure_env_no_capture_3#closure_env_no_capture_3#apply](
       closure_env_no_capture_3 {}
     ) in
   let doubled/18 = no_capture/17(3) in
-  let mtmp410 = println__T_string(inherent#int32#int32#to_string(doubled/18)) in
-  let mtmp411 = test() in
+  let mtmp413 = println__T_string(inherent#int32#int32#to_string(doubled/18)) in
+  let mtmp414 = test() in
   let list123/19 = IntList::Cons(1, IntList::Cons(2, IntList::Cons(3, IntList::Nil))) in
   let point/20 = Point { x: 10, y: 20 } in
   let play_list_and_point/25 =
     pack_closure[inherent#closure_env_play_list_and_point_4#closure_env_play_list_and_point_4#apply](
       closure_env_play_list_and_point_4 { list123_0: list123/19, point_1: point/20 }
     ) in
-  let mtmp418 = play_list_and_point/25() in
+  let mtmp421 = play_list_and_point/25() in
   ()
 }
 
@@ -54,22 +54,22 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn inherent#closure_env_f_0#closure_env_f_0#apply(env419: closure_env_f_0, x/2: int32) -> int32 {
-  let y/0 = closure_env_f_0.y_0(env419) in
-  let z/1 = closure_env_f_0.z_1(env419) in
+fn inherent#closure_env_f_0#closure_env_f_0#apply(env422: closure_env_f_0, x/2: int32) -> int32 {
+  let y/0 = closure_env_f_0.y_0(env422) in
+  let z/1 = closure_env_f_0.z_1(env422) in
   ((x/2 * y/0) * z/1)
 }
 
 fn inherent#closure_env_add_base_1#closure_env_add_base_1#apply(
-  env420: closure_env_add_base_1,
+  env423: closure_env_add_base_1,
   x/7: int32
 ) -> int32 {
-  let base/6 = closure_env_add_base_1.base_0(env420) in
+  let base/6 = closure_env_add_base_1.base_0(env423) in
   (x/7 + base/6)
 }
 
 fn inherent#closure_env_printer_2#closure_env_printer_2#apply(
-  env421: closure_env_printer_2,
+  env424: closure_env_printer_2,
   prefix/10: string,
   value/11: int32
 ) -> unit {
@@ -78,30 +78,30 @@ fn inherent#closure_env_printer_2#closure_env_printer_2#apply(
 }
 
 fn inherent#closure_env_no_capture_3#closure_env_no_capture_3#apply(
-  env422: closure_env_no_capture_3,
+  env425: closure_env_no_capture_3,
   z/16: int32
 ) -> int32 {
   (z/16 * 2)
 }
 
 fn inherent#closure_env_play_list_and_point_4#closure_env_play_list_and_point_4#apply(
-  env423: closure_env_play_list_and_point_4
+  env426: closure_env_play_list_and_point_4
 ) -> unit {
-  let list123/19 = closure_env_play_list_and_point_4.list123_0(env423) in
-  let point/20 = closure_env_play_list_and_point_4.point_1(env423) in
+  let list123/19 = closure_env_play_list_and_point_4.list123_0(env426) in
+  let point/20 = closure_env_play_list_and_point_4.point_1(env426) in
   match list123/19 {
     IntList::Nil => {
       println__T_string("Empty list")
     },
-    IntList::Cons(x412, x413) => {
-      let x412 = IntList::Cons._0(list123/19) in
-      let head/21 = x412 in
-      let mtmp414 = println__T_string(inherent#int32#int32#to_string(head/21)) in
-      let x415 = Point.x(point/20) in
-      let x416 = Point.y(point/20) in
-      let y/24 = x416 in
-      let x/23 = x415 in
-      let mtmp417 =
+    IntList::Cons(x415, x416) => {
+      let x415 = IntList::Cons._0(list123/19) in
+      let head/21 = x415 in
+      let mtmp417 = println__T_string(inherent#int32#int32#to_string(head/21)) in
+      let x418 = Point.x(point/20) in
+      let x419 = Point.y(point/20) in
+      let y/24 = x419 in
+      let x/23 = x418 in
+      let mtmp420 =
         println__T_string(
           (((("Point: (" + inherent#int32#int32#to_string(x/23)) + ", ") +
             inherent#int32#int32#to_string(y/24)) +

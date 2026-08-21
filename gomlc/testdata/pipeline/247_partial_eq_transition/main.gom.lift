@@ -844,20 +844,20 @@ fn trait_impl#std::cmp::PartialOrd#Rank#ge(default_arg0: Rank, default_arg1: Ran
 fn main() -> unit {
   let legacy/14 = LegacyKey { value: 7 } in
   let modern/15 = ModernKey { value: 9 } in
-  let _wild408 = println__T_bool(equal__T_LegacyKey(legacy/14, LegacyKey { value: 7 })) in
-  let _wild409 =
+  let _wild411 = println__T_bool(equal__T_LegacyKey(legacy/14, LegacyKey { value: 7 })) in
+  let _wild412 =
     println__T_bool(trait_impl#PartialEq#LegacyKey#eq(legacy/14, LegacyKey { value: 8 })) in
-  let _wild410 = println__T_bool(equal__T_ModernKey(modern/15, ModernKey { value: 19 })) in
-  let _wild411 =
+  let _wild413 = println__T_bool(equal__T_ModernKey(modern/15, ModernKey { value: 19 })) in
+  let _wild414 =
     println__T_string(
       trait_impl#ToString#bool#to_string(
         (!trait_impl#PartialEq#ModernKey#eq(modern/15, ModernKey { value: 20 }))
       )
     ) in
   let legacy_map/16 = inherent#HashMap#HashMap[K,V]#new__K_LegacyKey__V_string() in
-  let _wild412 =
+  let _wild415 =
     inherent#HashMap#HashMap[K,V]#set__K_LegacyKey__V_string(legacy_map/16, legacy/14, "legacy") in
-  let _wild413 =
+  let _wild416 =
     println__T_string(
       inherent#Option#Option[T]#unwrap_or__T_string(
         inherent#HashMap#HashMap[K,V]#get__K_LegacyKey__V_string(
@@ -868,9 +868,9 @@ fn main() -> unit {
       )
     ) in
   let modern_map/17 = inherent#HashMap#HashMap[K,V]#new__K_ModernKey__V_string() in
-  let _wild414 =
+  let _wild417 =
     inherent#HashMap#HashMap[K,V]#set__K_ModernKey__V_string(modern_map/17, modern/15, "modern") in
-  let _wild415 =
+  let _wild418 =
     println__T_string(
       inherent#Option#Option[T]#unwrap_or__T_string(
         inherent#HashMap#HashMap[K,V]#get__K_ModernKey__V_string(
@@ -882,15 +882,15 @@ fn main() -> unit {
     ) in
   let high/18 = Rank { value: 2 } in
   let low/19 = Rank { value: 1 } in
-  let _wild416 =
+  let _wild419 =
     println__T_string(
       trait_impl#ToString#bool#to_string(trait_impl#std::cmp::PartialOrd#Rank#lt(high/18, low/19))
     ) in
-  let _wild417 =
+  let _wild420 =
     println__T_string(
       trait_impl#ToString#bool#to_string(trait_impl#std::cmp::PartialOrd#Rank#le(high/18, high/18))
     ) in
-  let _wild418 =
+  let _wild421 =
     println__T_string(
       trait_impl#ToString#bool#to_string(trait_impl#std::cmp::PartialOrd#Rank#gt(low/19, high/18))
     ) in
@@ -899,10 +899,10 @@ fn main() -> unit {
   )
 }
 
-fn trait_impl#PartialEq#Ordering#eq(self/845: Ordering, other/846: Ordering) -> bool {
-  match self/845 {
+fn trait_impl#PartialEq#Ordering#eq(self/854: Ordering, other/855: Ordering) -> bool {
+  match self/854 {
     Ordering::Less => {
-      match other/846 {
+      match other/855 {
         Ordering::Less => {
           true
         },
@@ -910,7 +910,7 @@ fn trait_impl#PartialEq#Ordering#eq(self/845: Ordering, other/846: Ordering) -> 
       }
     },
     Ordering::Equal => {
-      match other/846 {
+      match other/855 {
         Ordering::Equal => {
           true
         },
@@ -918,7 +918,7 @@ fn trait_impl#PartialEq#Ordering#eq(self/845: Ordering, other/846: Ordering) -> 
       }
     },
     Ordering::Greater => {
-      match other/846 {
+      match other/855 {
         Ordering::Greater => {
           true
         },
@@ -1996,17 +1996,17 @@ fn inherent#HashMap#HashMap[K,V]#get__K_LegacyKey__V_string(
 }
 
 fn inherent#Option#Option[T]#unwrap_or__T_string(
-  self/458: Option__string,
-  fallback/459: string
+  self/467: Option__string,
+  fallback/468: string
 ) -> string {
-  match self/458 {
+  match self/467 {
     Option__string::None => {
-      fallback/459
+      fallback/468
     },
-    Option__string::Some(x387) => {
-      let x387 = Option__string::Some._0(self/458) in
-      let value/460 = x387 in
-      value/460
+    Option__string::Some(x390) => {
+      let x390 = Option__string::Some._0(self/467) in
+      let value/469 = x390 in
+      value/469
     },
   }
 }

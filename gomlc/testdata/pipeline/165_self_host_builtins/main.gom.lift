@@ -499,16 +499,24 @@ fn std::internal::host::sleep_nanoseconds(value/98: int64) -> unit {
   @runtime(std.time.sleep_nanoseconds)(value/98)
 }
 
-fn std::internal::host::math_float32_unary(operation/99: int, value/100: float32) -> float32 {
-  @runtime(std.math.float32_unary)(operation/99, value/100)
+fn std::internal::host::timer_new(value/99: int64) -> (int64, Receiver[unit]) {
+  @runtime(std.time.timer_new)(value/99)
 }
 
-fn std::internal::host::math_float32_pow(value/101: float32, exponent/102: float32) -> float32 {
-  @runtime(std.math.float32_pow)(value/101, exponent/102)
+fn std::internal::host::timer_stop(id/100: int64) -> bool {
+  @runtime(std.time.timer_stop)(id/100)
 }
 
-fn std::internal::host::crypto_random_bytes(length/103: int) -> (bool, Vec[uint8], string) {
-  @runtime(std.crypto.rand.bytes)(length/103)
+fn std::internal::host::math_float32_unary(operation/101: int, value/102: float32) -> float32 {
+  @runtime(std.math.float32_unary)(operation/101, value/102)
+}
+
+fn std::internal::host::math_float32_pow(value/103: float32, exponent/104: float32) -> float32 {
+  @runtime(std.math.float32_pow)(value/103, exponent/104)
+}
+
+fn std::internal::host::crypto_random_bytes(length/105: int) -> (bool, Vec[uint8], string) {
+  @runtime(std.crypto.rand.bytes)(length/105)
 }
 
 fn trait_impl#ToString#std::io::ErrorKind#to_string(self/0: std::io::ErrorKind) -> string {
@@ -1759,12 +1767,12 @@ fn std::fs::sha256_file(path/146: string) -> Result__string__string {
 
 fn show_unit(result/0: Result__unit__string) -> string {
   match result/0 {
-    Result__unit__string::Ok(x408) => {
+    Result__unit__string::Ok(x411) => {
       "ok"
     },
-    Result__unit__string::Err(x409) => {
-      let x409 = Result__unit__string::Err._0(result/0) in
-      let err/1 = x409 in
+    Result__unit__string::Err(x412) => {
+      let x412 = Result__unit__string::Err._0(result/0) in
+      let err/1 = x412 in
       ("err " + err/1)
     },
   }
@@ -1772,26 +1780,26 @@ fn show_unit(result/0: Result__unit__string) -> string {
 
 fn show_string(result/2: Result__string__string) -> string {
   match result/2 {
-    Result__string__string::Ok(x410) => {
-      let x410 = Result__string__string::Ok._0(result/2) in
-      let value/3 = x410 in
+    Result__string__string::Ok(x413) => {
+      let x413 = Result__string__string::Ok._0(result/2) in
+      let value/3 = x413 in
       value/3
     },
-    Result__string__string::Err(x411) => {
-      let x411 = Result__string__string::Err._0(result/2) in
-      let err/4 = x411 in
+    Result__string__string::Err(x414) => {
+      let x414 = Result__string__string::Err._0(result/2) in
+      let err/4 = x414 in
       ("err " + err/4)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild412 = std::io::println__T_string(string_byte_slice("a你好z", 1, 7)) in
-  let _wild413 = std::io::eprint__T_string("") in
-  let _wild414 = std::io::eprintln__T_string("") in
-  let _wild415 =
+  let _wild415 = std::io::println__T_string(string_byte_slice("a你好z", 1, 7)) in
+  let _wild416 = std::io::eprint__T_string("") in
+  let _wild417 = std::io::eprintln__T_string("") in
+  let _wild418 =
     std::io::println__T_string(show_unit(std::fs::create_dir_all("goml-self-host/nested"))) in
-  let _wild416 =
+  let _wild419 =
     std::io::println__T_string(
       show_unit(std::fs::write_file("goml-self-host/nested/output.txt", "boot"))
     ) in

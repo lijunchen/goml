@@ -16,9 +16,9 @@ type Buffer struct {
 type Ordering int32
 
 func main0() struct{} {
-    var inline418 string = "array"
-    var inline419 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline418)
-    _goml_runtime_core_string_print(inline419)
+    var inline421 string = "array"
+    var inline422 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline421)
+    _goml_runtime_core_string_print(inline422)
     return struct{}{}
 }
 

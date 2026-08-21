@@ -1,12 +1,12 @@
 fn point32_to_string(p/0: Point) -> string {
-  let mtmp408 = p/0 in
+  let mtmp411 = p/0 in
   {
-    let x409 = Point.x(mtmp408) in
-    let x410 = Point.y(mtmp408) in
+    let x412 = Point.x(mtmp411) in
+    let x413 = Point.y(mtmp411) in
     {
-      let y/2 = x410 in
+      let y/2 = x413 in
       {
-        let x/1 = x409 in
+        let x/1 = x412 in
         {
           (((("Point { x: " + inherent#int32#int32#to_string(x/1)) + ", y: ") +
             inherent#int32#int32#to_string(y/2)) +
@@ -32,17 +32,17 @@ fn color_to_string(c/3: Color) -> string {
 }
 
 fn line_to_string(l/4: Line) -> string {
-  let mtmp411 = l/4 in
+  let mtmp414 = l/4 in
   {
-    let x412 = Line.from(mtmp411) in
-    let x413 = Line.to(mtmp411) in
-    let x414 = Line.color(mtmp411) in
+    let x415 = Line.from(mtmp414) in
+    let x416 = Line.to(mtmp414) in
+    let x417 = Line.color(mtmp414) in
     {
-      let color/7 = x414 in
+      let color/7 = x417 in
       {
-        let to/6 = x413 in
+        let to/6 = x416 in
         {
-          let from/5 = x412 in
+          let from/5 = x415 in
           {
             (((((("Line { from: " + point32_to_string(from/5)) + ", to: ") +
               point32_to_string(to/6)) +
@@ -58,11 +58,11 @@ fn line_to_string(l/4: Line) -> string {
 
 fn point_type(p/8: Point) -> string {
   {
-    let x415 = Point.x(p/8) in
-    let x416 = Point.y(p/8) in
-    match x415 {
+    let x418 = Point.x(p/8) in
+    let x419 = Point.y(p/8) in
+    match x418 {
       0 => {
-        match x416 {
+        match x419 {
           0 => {
             {
               "origin"
@@ -75,11 +75,11 @@ fn point_type(p/8: Point) -> string {
           },
           _ =>
             {
-              let y/9 = x416 in
+              let y/9 = x419 in
               {
                 {
-                  let mtmp417 = (0 < y/9) in
-                  match mtmp417 {
+                  let mtmp420 = (0 < y/9) in
+                  match mtmp420 {
                     true => {
                       "above"
                     },
@@ -93,7 +93,7 @@ fn point_type(p/8: Point) -> string {
         }
       },
       1 => {
-        match x416 {
+        match x419 {
           0 => {
             {
               "right"
@@ -109,7 +109,7 @@ fn point_type(p/8: Point) -> string {
 
 fn main() -> unit {
   let p0/10 = Point { x: 0, y: 0 } in
-  let mtmp418 = println__T_string(point_type(p0/10)) in
+  let mtmp421 = println__T_string(point_type(p0/10)) in
   {
     let p1/11 = Point { x: 10, y: 10 } in
     let line/12 = Line { from: p0/10, to: p1/11, color: Color::Red } in

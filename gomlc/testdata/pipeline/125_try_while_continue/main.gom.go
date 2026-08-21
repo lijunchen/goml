@@ -41,113 +41,113 @@ type Option__int32 struct {
 
 func accumulate(limit__1 int32) Option__int32 {
     var sum__2 *ref_int32_x
+    var inline495 int32 = 0
+    var inline496 *ref_int32_x = ref__Ref_5int32(inline495)
+    sum__2 = inline496
+    var i__3 *ref_int32_x
     var inline492 int32 = 0
     var inline493 *ref_int32_x = ref__Ref_5int32(inline492)
-    sum__2 = inline493
-    var i__3 *ref_int32_x
-    var inline489 int32 = 0
-    var inline490 *ref_int32_x = ref__Ref_5int32(inline489)
-    i__3 = inline490
-    Loop_loop429:
+    i__3 = inline493
+    Loop_loop432:
     for {
-        var t430 int32
-        var inline485 int32 = ref_get__Ref_5int32(i__3)
-        t430 = inline485
-        var t431 bool = t430 < limit__1
-        if t431 {
+        var t433 int32
+        var inline488 int32 = ref_get__Ref_5int32(i__3)
+        t433 = inline488
+        var t434 bool = t433 < limit__1
+        if t434 {
             var cur__4 int32
-            var inline483 int32 = ref_get__Ref_5int32(i__3)
-            cur__4 = inline483
-            var t432 int32 = cur__4 + 1
-            ref_set__Ref_5int32(i__3, t432)
-            var t438 bool = cur__4 == 1
-            if t438 {
+            var inline486 int32 = ref_get__Ref_5int32(i__3)
+            cur__4 = inline486
+            var t435 int32 = cur__4 + 1
+            ref_set__Ref_5int32(i__3, t435)
+            var t441 bool = cur__4 == 1
+            if t441 {
                 continue
             } else {
-                var mtmp410 Option__int32
-                var inline477 bool = cur__4 == 2
-                if inline477 {
-                    mtmp410 = Option__int32{
+                var mtmp413 Option__int32
+                var inline480 bool = cur__4 == 2
+                if inline480 {
+                    mtmp413 = Option__int32{
                         _tag: 0,
                     }
                 } else {
-                    var inline478 int32 = cur__4 + 10
-                    var inline479 Option__int32 = Option__int32{
+                    var inline481 int32 = cur__4 + 10
+                    var inline482 Option__int32 = Option__int32{
                         _tag: 1,
-                        _v1_0: inline478,
+                        _v1_0: inline481,
                     }
-                    mtmp410 = inline479
+                    mtmp413 = inline482
                 }
-                var jp435 int32
-                switch mtmp410._tag {
+                var jp438 int32
+                switch mtmp413._tag {
                 case 0:
                     return Option__int32{
                         _tag: 0,
                     }
                 case 1:
-                    var x411 int32 = mtmp410._v1_0
-                    jp435 = x411
-                    var t436 int32
-                    var inline475 int32 = ref_get__Ref_5int32(sum__2)
-                    t436 = inline475
-                    var t437 int32 = t436 + jp435
-                    ref_set__Ref_5int32(sum__2, t437)
+                    var x414 int32 = mtmp413._v1_0
+                    jp438 = x414
+                    var t439 int32
+                    var inline478 int32 = ref_get__Ref_5int32(sum__2)
+                    t439 = inline478
+                    var t440 int32 = t439 + jp438
+                    ref_set__Ref_5int32(sum__2, t440)
                     continue
                 default:
                     panic("non-exhaustive match")
                 }
             }
         } else {
-            break Loop_loop429
+            break Loop_loop432
         }
     }
-    var t427 int32
-    var inline487 int32 = ref_get__Ref_5int32(sum__2)
-    t427 = inline487
-    var t428 Option__int32 = Option__int32{
+    var t430 int32
+    var inline490 int32 = ref_get__Ref_5int32(sum__2)
+    t430 = inline490
+    var t431 Option__int32 = Option__int32{
         _tag: 1,
-        _v1_0: t427,
+        _v1_0: t430,
     }
-    return t428
+    return t431
 }
 
 func main0() struct{} {
-    var t446 Option__int32 = accumulate(2)
-    var t447 string
-    switch t446._tag {
+    var t449 Option__int32 = accumulate(2)
+    var t450 string
+    switch t449._tag {
     case 0:
-        t447 = "none"
+        t450 = "none"
     case 1:
-        var inline508 int32 = t446._v1_0
-        var inline510 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline508)
-        var inline511 string = "some=" + inline510
-        t447 = inline511
+        var inline511 int32 = t449._v1_0
+        var inline513 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline511)
+        var inline514 string = "some=" + inline513
+        t450 = inline514
     default:
         panic("non-exhaustive match")
     }
-    var inline505 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t447)
-    _goml_runtime_core_string_println(inline505)
-    var t448 Option__int32 = accumulate(4)
-    var t449 string
-    switch t448._tag {
+    var inline508 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t450)
+    _goml_runtime_core_string_println(inline508)
+    var t451 Option__int32 = accumulate(4)
+    var t452 string
+    switch t451._tag {
     case 0:
-        t449 = "none"
+        t452 = "none"
     case 1:
-        var inline500 int32 = t448._v1_0
-        var inline502 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline500)
-        var inline503 string = "some=" + inline502
-        t449 = inline503
+        var inline503 int32 = t451._v1_0
+        var inline505 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline503)
+        var inline506 string = "some=" + inline505
+        t452 = inline506
     default:
         panic("non-exhaustive match")
     }
-    var inline497 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t449)
-    _goml_runtime_core_string_println(inline497)
+    var inline500 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t452)
+    _goml_runtime_core_string_println(inline500)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
-    var t460 string = _goml_runtime_core_int32_to_string(self__33)
-    return t460
+    var t463 string = _goml_runtime_core_int32_to_string(self__33)
+    return t463
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {

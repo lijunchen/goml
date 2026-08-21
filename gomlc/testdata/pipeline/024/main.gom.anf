@@ -1,19 +1,19 @@
 fn point32_to_string(p/0: Point) -> string {
-  let x409 = Point.x(p/0) in
-  let x410 = Point.y(p/0) in
-  join inline_cont466(t421: string) -> string {
-    let t422 = ("Point { x: " + t421) in
-    let t423 = (t422 + ", y: ") in
-    join inline_cont464(t424: string) -> string {
-      let t425 = (t423 + t424) in
-      let t426 = (t425 + " }") in
-      t426
+  let x412 = Point.x(p/0) in
+  let x413 = Point.y(p/0) in
+  join inline_cont469(t424: string) -> string {
+    let t425 = ("Point { x: " + t424) in
+    let t426 = (t425 + ", y: ") in
+    join inline_cont467(t427: string) -> string {
+      let t428 = (t426 + t427) in
+      let t429 = (t428 + " }") in
+      t429
     } in
-    let inline465 = @runtime(core.int32_to_string)(x410) in
-    jump inline_cont464(inline465)
+    let inline468 = @runtime(core.int32_to_string)(x413) in
+    jump inline_cont467(inline468)
   } in
-  let inline467 = @runtime(core.int32_to_string)(x409) in
-  jump inline_cont466(inline467)
+  let inline470 = @runtime(core.int32_to_string)(x412) in
+  jump inline_cont469(inline470)
 }
 
 fn color_to_string(c/3: Color) -> string {
@@ -31,59 +31,59 @@ fn color_to_string(c/3: Color) -> string {
 }
 
 fn line_to_string(l/4: Line) -> string {
-  let x412 = Line.from(l/4) in
-  let x413 = Line.to(l/4) in
-  let x414 = Line.color(l/4) in
-  join inline_cont481(t433: string) -> string {
-    let t434 = ("Line { from: " + t433) in
-    let t435 = (t434 + ", to: ") in
-    join inline_cont469(t436: string) -> string {
-      let t437 = (t435 + t436) in
-      let t438 = (t437 + ", color: ") in
-      join inline_cont468(t439: string) -> string {
-        let t440 = (t438 + t439) in
-        let t441 = (t440 + " }") in
-        t441
+  let x415 = Line.from(l/4) in
+  let x416 = Line.to(l/4) in
+  let x417 = Line.color(l/4) in
+  join inline_cont484(t436: string) -> string {
+    let t437 = ("Line { from: " + t436) in
+    let t438 = (t437 + ", to: ") in
+    join inline_cont472(t439: string) -> string {
+      let t440 = (t438 + t439) in
+      let t441 = (t440 + ", color: ") in
+      join inline_cont471(t442: string) -> string {
+        let t443 = (t441 + t442) in
+        let t444 = (t443 + " }") in
+        t444
       } in
-      match x414 {
+      match x417 {
         Tag_0 => {
-          jump inline_cont468("Red")
+          jump inline_cont471("Red")
         },
         Tag_1 => {
-          jump inline_cont468("Green")
+          jump inline_cont471("Green")
         },
         Tag_2 => {
-          jump inline_cont468("Blue")
+          jump inline_cont471("Blue")
         },
       }
     } in
-    let inline471 = Point.x(x413) in
-    let inline472 = Point.y(x413) in
-    let inline475 = inherent#int32#int32#to_string(inline471) in
-    let inline476 = ("Point { x: " + inline475) in
-    let inline477 = (inline476 + ", y: ") in
-    let inline478 = inherent#int32#int32#to_string(inline472) in
-    let inline479 = (inline477 + inline478) in
-    let inline480 = (inline479 + " }") in
-    jump inline_cont469(inline480)
+    let inline474 = Point.x(x416) in
+    let inline475 = Point.y(x416) in
+    let inline478 = inherent#int32#int32#to_string(inline474) in
+    let inline479 = ("Point { x: " + inline478) in
+    let inline480 = (inline479 + ", y: ") in
+    let inline481 = inherent#int32#int32#to_string(inline475) in
+    let inline482 = (inline480 + inline481) in
+    let inline483 = (inline482 + " }") in
+    jump inline_cont472(inline483)
   } in
-  let inline483 = Point.x(x412) in
-  let inline484 = Point.y(x412) in
-  let inline487 = inherent#int32#int32#to_string(inline483) in
-  let inline488 = ("Point { x: " + inline487) in
-  let inline489 = (inline488 + ", y: ") in
-  let inline490 = inherent#int32#int32#to_string(inline484) in
-  let inline491 = (inline489 + inline490) in
-  let inline492 = (inline491 + " }") in
-  jump inline_cont481(inline492)
+  let inline486 = Point.x(x415) in
+  let inline487 = Point.y(x415) in
+  let inline490 = inherent#int32#int32#to_string(inline486) in
+  let inline491 = ("Point { x: " + inline490) in
+  let inline492 = (inline491 + ", y: ") in
+  let inline493 = inherent#int32#int32#to_string(inline487) in
+  let inline494 = (inline492 + inline493) in
+  let inline495 = (inline494 + " }") in
+  jump inline_cont484(inline495)
 }
 
 fn point_type(p/8: Point) -> string {
-  let x415 = Point.x(p/8) in
-  let x416 = Point.y(p/8) in
-  match x415 {
+  let x418 = Point.x(p/8) in
+  let x419 = Point.y(p/8) in
+  match x418 {
     0 => {
-      match x416 {
+      match x419 {
         0 => {
           "origin"
         },
@@ -91,8 +91,8 @@ fn point_type(p/8: Point) -> string {
           "up"
         },
         _ => {
-          let mtmp417 = (0 < x416) in
-          match mtmp417 {
+          let mtmp420 = (0 < x419) in
+          match mtmp420 {
             true => {
               "above"
             },
@@ -104,7 +104,7 @@ fn point_type(p/8: Point) -> string {
       }
     },
     1 => {
-      match x416 {
+      match x419 {
         0 => {
           "right"
         },
@@ -121,70 +121,70 @@ fn point_type(p/8: Point) -> string {
 
 fn main() -> unit {
   let p0/10 = Point { x: 0, y: 0 } in
-  join inline_cont499(t453: string) -> unit {
-    join inline_cont496(mtmp418: unit) -> unit {
+  join inline_cont502(t456: string) -> unit {
+    join inline_cont499(mtmp421: unit) -> unit {
       let p1/11 = Point { x: 10, y: 10 } in
       let line/12 = Line { from: p0/10, to: p1/11, color: Tag_0 } in
-      let t454 = line_to_string(line/12) in
-      let inline494 = trait_impl#ToString#string#to_string(t454) in
-      let inline495 = @runtime(core.string_println)(inline494) in
+      let t457 = line_to_string(line/12) in
+      let inline497 = trait_impl#ToString#string#to_string(t457) in
+      let inline498 = @runtime(core.string_println)(inline497) in
       ()
     } in
-    let inline497 = trait_impl#ToString#string#to_string(t453) in
-    let inline498 = @runtime(core.string_println)(inline497) in
-    jump inline_cont496(())
+    let inline500 = trait_impl#ToString#string#to_string(t456) in
+    let inline501 = @runtime(core.string_println)(inline500) in
+    jump inline_cont499(())
   } in
-  let inline500 = 0 in
-  let inline501 = 0 in
-  match inline500 {
+  let inline503 = 0 in
+  let inline504 = 0 in
+  match inline503 {
     0 => {
-      match inline501 {
+      match inline504 {
         0 => {
-          jump inline_cont499("origin")
+          jump inline_cont502("origin")
         },
         1 => {
-          jump inline_cont499("up")
+          jump inline_cont502("up")
         },
         _ => {
-          let inline503 = (0 < inline501) in
-          match inline503 {
+          let inline506 = (0 < inline504) in
+          match inline506 {
             true => {
-              jump inline_cont499("above")
+              jump inline_cont502("above")
             },
             false => {
-              jump inline_cont499("below")
+              jump inline_cont502("below")
             },
           }
         },
       }
     },
     1 => {
-      match inline501 {
+      match inline504 {
         0 => {
-          jump inline_cont499("right")
+          jump inline_cont502("right")
         },
         _ => {
-          jump inline_cont499("unknown")
+          jump inline_cont502("unknown")
         },
       }
     },
     _ => {
-      jump inline_cont499("unknown")
+      jump inline_cont502("unknown")
     },
   }
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {
-  let t458 = @runtime(core.int32_to_string)(self/33) in
-  t458
+  let t461 = @runtime(core.int32_to_string)(self/33) in
+  t461
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont504(t460: string) -> unit {
-    let t461 = @runtime(core.string_println)(t460) in
+  join inline_cont507(t463: string) -> unit {
+    let t464 = @runtime(core.string_println)(t463) in
     ()
   } in
-  jump inline_cont504(value/1)
+  jump inline_cont507(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/149: string) -> string {

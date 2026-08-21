@@ -16,32 +16,32 @@ func _goml_runtime_core_string_print(s string) struct{} {
 type Ordering int32
 
 func fib(x__0 int32) int32 {
-    var mtmp408 bool = x__0 < 2
-    switch mtmp408 {
+    var mtmp411 bool = x__0 < 2
+    switch mtmp411 {
     case true:
         return 1
     case false:
-        var t414 int32 = x__0 - 1
-        var t415 int32 = fib(t414)
-        var t416 int32 = x__0 - 2
-        var t417 int32 = fib(t416)
-        var t418 int32 = t415 + t417
-        return t418
+        var t417 int32 = x__0 - 1
+        var t418 int32 = fib(t417)
+        var t419 int32 = x__0 - 2
+        var t420 int32 = fib(t419)
+        var t421 int32 = t418 + t420
+        return t421
     default:
         panic("non-exhaustive match")
     }
 }
 
 func main0() struct{} {
-    var t420 int32 = fib(10)
-    var inline428 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t420)
-    _goml_runtime_core_string_print(inline428)
+    var t423 int32 = fib(10)
+    var inline431 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t423)
+    _goml_runtime_core_string_print(inline431)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
-    var t426 string = _goml_runtime_core_int32_to_string(self__154)
-    return t426
+    var t429 string = _goml_runtime_core_int32_to_string(self__154)
+    return t429
 }
 
 func main() {

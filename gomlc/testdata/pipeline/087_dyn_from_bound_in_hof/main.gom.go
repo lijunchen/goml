@@ -39,27 +39,27 @@ func dyn__Display__vtable__int32() *dyn__Display_vtable {
 }
 
 func _goml_m_trait__impl_i_Display_i_int32_i_show(self__0 int32) string {
-    var inline431 string = _goml_runtime_core_int32_to_string(self__0)
-    return inline431
+    var inline434 string = _goml_runtime_core_int32_to_string(self__0)
+    return inline434
 }
 
 func main0() struct{} {
     var value__3 int32 = 42
     var f__4 func() string
-    var inline436 dyn__Display = dyn__Display{
+    var inline439 dyn__Display = dyn__Display{
         data: int32(value__3),
         vtable: dyn__Display__vtable__int32(),
     }
-    var inline437 closure_env_mk_renderer_T_int32_0 = closure_env_mk_renderer_T_int32_0{
-        d_0: inline436,
+    var inline440 closure_env_mk_renderer_T_int32_0 = closure_env_mk_renderer_T_int32_0{
+        d_0: inline439,
     }
-    var inline438 func() string = func() string {
-        return _goml_m_inherent_i_closure__en_hdbe3b8bac53e729aca2514d7798cc493_nt32__0_i_apply(inline437)
+    var inline441 func() string = func() string {
+        return _goml_m_inherent_i_closure__en_hdbe3b8bac53e729aca2514d7798cc493_nt32__0_i_apply(inline440)
     }
-    f__4 = inline438
-    var t414 string = f__4()
-    var inline433 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t414)
-    _goml_runtime_core_string_println(inline433)
+    f__4 = inline441
+    var t417 string = f__4()
+    var inline436 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t417)
+    _goml_runtime_core_string_println(inline436)
     return struct{}{}
 }
 
@@ -67,10 +67,10 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
     return self__149
 }
 
-func _goml_m_inherent_i_closure__en_hdbe3b8bac53e729aca2514d7798cc493_nt32__0_i_apply(env409 closure_env_mk_renderer_T_int32_0) string {
-    var d__2 dyn__Display = env409.d_0
-    var t429 string = d__2.vtable.show(d__2.data)
-    return t429
+func _goml_m_inherent_i_closure__en_hdbe3b8bac53e729aca2514d7798cc493_nt32__0_i_apply(env412 closure_env_mk_renderer_T_int32_0) string {
+    var d__2 dyn__Display = env412.d_0
+    var t432 string = d__2.vtable.show(d__2.data)
+    return t432
 }
 
 func main() {

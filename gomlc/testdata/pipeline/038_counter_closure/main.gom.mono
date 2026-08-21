@@ -3,14 +3,14 @@ fn make_counter() -> (() -> int32, () -> unit) {
   let next/2 =
     || {
       let next/1 = (inherent#Ref#Ref[T]#get__T_int32(cell/0) + 1) in
-      let mtmp408 = inherent#Ref#Ref[T]#set__T_int32(cell/0, next/1) in
+      let mtmp411 = inherent#Ref#Ref[T]#set__T_int32(cell/0, next/1) in
       {
         next/1
       }
     } in
   let reset/3 =
     || {
-      let mtmp409 = inherent#Ref#Ref[T]#set__T_int32(cell/0, 0) in
+      let mtmp412 = inherent#Ref#Ref[T]#set__T_int32(cell/0, 0) in
       {
         ()
       }
@@ -20,35 +20,35 @@ fn make_counter() -> (() -> int32, () -> unit) {
 
 fn main() -> unit {
   let counter/4 = make_counter() in
-  let mtmp410 = counter/4 in
+  let mtmp413 = counter/4 in
   {
-    let x411 = mtmp410.0 in
-    let x412 = mtmp410.1 in
+    let x414 = mtmp413.0 in
+    let x415 = mtmp413.1 in
     {
-      let reset/6 = x412 in
+      let reset/6 = x415 in
       {
-        let next/5 = x411 in
+        let next/5 = x414 in
         {
           let first/7 = next/5() in
           let second/8 = next/5() in
-          let mtmp413 = reset/6() in
+          let mtmp416 = reset/6() in
           {
             let third/9 = next/5() in
             let new_counter/10 = make_counter() in
-            let mtmp414 = new_counter/10 in
+            let mtmp417 = new_counter/10 in
             {
-              let x415 = mtmp414.0 in
+              let x418 = mtmp417.0 in
               {
-                let new_next/11 = x415 in
+                let new_next/11 = x418 in
                 {
                   let fourth/12 = new_next/11() in
-                  let mtmp417 = println__T_string(inherent#int32#int32#to_string(first/7)) in
+                  let mtmp420 = println__T_string(inherent#int32#int32#to_string(first/7)) in
                   {
-                    let mtmp418 = println__T_string(inherent#int32#int32#to_string(second/8)) in
+                    let mtmp421 = println__T_string(inherent#int32#int32#to_string(second/8)) in
                     {
-                      let mtmp419 = println__T_string(inherent#int32#int32#to_string(third/9)) in
+                      let mtmp422 = println__T_string(inherent#int32#int32#to_string(third/9)) in
                       {
-                        let mtmp420 =
+                        let mtmp423 =
                           println__T_string(inherent#int32#int32#to_string(fourth/12)) in
                         {
                           ()

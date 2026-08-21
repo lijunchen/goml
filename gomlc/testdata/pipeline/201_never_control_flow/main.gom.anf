@@ -1,175 +1,175 @@
 fn choose(flag/0: bool) -> int32 {
-  join k416(jp417: int32) -> int32 {
-    let t418 = (jp417 + 1) in
-    t418
+  join k419(jp420: int32) -> int32 {
+    let t421 = (jp420 + 1) in
+    t421
   } in
   if flag/0 {
     10
   } else {
-    jump k416(20)
+    jump k419(20)
   }
 }
 
 fn continue_branch() -> unit {
-  join inline_cont477(count/2: Ref[int]) -> unit {
-    join exit420() -> unit {
+  join inline_cont480(count/2: Ref[int]) -> unit {
+    join exit423() -> unit {
       ()
     } in
     joinrec {
-      join loop421() -> unit {
-        join inline_cont475(t422: int) -> unit {
-          let t423 = (t422 < 2) in
-          if t423 {
-            join inline_cont473(t424: int) -> unit {
-              let t425 = (t424 + 1) in
-              join inline_cont471(_wild408: unit) -> unit {
-                join inline_cont469(t429: int) -> unit {
-                  let t430 = (t429 == 1) in
-                  join k426(jp427: int) -> unit {
-                    let inline467 = trait_impl#ToString#int#to_string(jp427) in
-                    let inline468 = @runtime(core.string_println)(inline467) in
-                    jump loop421()
+      join loop424() -> unit {
+        join inline_cont478(t425: int) -> unit {
+          let t426 = (t425 < 2) in
+          if t426 {
+            join inline_cont476(t427: int) -> unit {
+              let t428 = (t427 + 1) in
+              join inline_cont474(_wild411: unit) -> unit {
+                join inline_cont472(t432: int) -> unit {
+                  let t433 = (t432 == 1) in
+                  join k429(jp430: int) -> unit {
+                    let inline470 = trait_impl#ToString#int#to_string(jp430) in
+                    let inline471 = @runtime(core.string_println)(inline470) in
+                    jump loop424()
                   } in
-                  if t430 {
-                    jump loop421()
+                  if t433 {
+                    jump loop424()
                   } else {
-                    jump k426(7)
+                    jump k429(7)
                   }
                 } in
-                let inline470 = @intrinsic(ref.get)(count/2) in
-                jump inline_cont469(inline470)
+                let inline473 = @intrinsic(ref.get)(count/2) in
+                jump inline_cont472(inline473)
               } in
-              let inline472 = @intrinsic(ref.set)(count/2, t425) in
-              jump inline_cont471(())
+              let inline475 = @intrinsic(ref.set)(count/2, t428) in
+              jump inline_cont474(())
             } in
-            let inline474 = @intrinsic(ref.get)(count/2) in
-            jump inline_cont473(inline474)
+            let inline477 = @intrinsic(ref.get)(count/2) in
+            jump inline_cont476(inline477)
           } else {
-            jump exit420()
+            jump exit423()
           }
         } in
-        let inline476 = @intrinsic(ref.get)(count/2) in
-        jump inline_cont475(inline476)
+        let inline479 = @intrinsic(ref.get)(count/2) in
+        jump inline_cont478(inline479)
       } in
     } in
-    jump loop421()
+    jump loop424()
   } in
-  let inline478 = 0 in
-  let inline479 = @intrinsic(ref.new)(inline478) in
-  jump inline_cont477(inline479)
+  let inline481 = 0 in
+  let inline482 = @intrinsic(ref.new)(inline481) in
+  jump inline_cont480(inline482)
 }
 
 fn break_branch(stop/4: bool) -> unit {
-  join exit432() -> unit {
+  join exit435() -> unit {
     ()
   } in
   joinrec {
-    join loop433() -> unit {
-      join k434(jp435: int) -> unit {
-        let inline481 = trait_impl#ToString#int#to_string(jp435) in
-        let inline482 = @runtime(core.string_println)(inline481) in
-        jump exit432()
+    join loop436() -> unit {
+      join k437(jp438: int) -> unit {
+        let inline484 = trait_impl#ToString#int#to_string(jp438) in
+        let inline485 = @runtime(core.string_println)(inline484) in
+        jump exit435()
       } in
       if stop/4 {
-        jump exit432()
+        jump exit435()
       } else {
-        jump k434(9)
+        jump k437(9)
       }
     } in
   } in
-  jump loop433()
+  jump loop436()
 }
 
 fn main() -> unit {
-  join inline_cont495(t437: int32) -> unit {
-    join inline_cont492(_wild410: unit) -> unit {
-      join inline_cont486(t438: int32) -> unit {
-        join inline_cont483(_wild411: unit) -> unit {
-          let _wild412 = continue_branch() in
-          let _wild413 = break_branch(false) in
-          let t439 = break_branch(true) in
+  join inline_cont498(t440: int32) -> unit {
+    join inline_cont495(_wild413: unit) -> unit {
+      join inline_cont489(t441: int32) -> unit {
+        join inline_cont486(_wild414: unit) -> unit {
+          let _wild415 = continue_branch() in
+          let _wild416 = break_branch(false) in
+          let t442 = break_branch(true) in
           ()
         } in
-        let inline484 = trait_impl#ToString#int32#to_string(t438) in
-        let inline485 = @runtime(core.string_println)(inline484) in
-        jump inline_cont483(())
+        let inline487 = trait_impl#ToString#int32#to_string(t441) in
+        let inline488 = @runtime(core.string_println)(inline487) in
+        jump inline_cont486(())
       } in
-      let inline487 = true in
-      join inline_join488(inline489: int32) -> unit {
-        let inline491 = (inline489 + 1) in
-        jump inline_cont486(inline491)
+      let inline490 = true in
+      join inline_join491(inline492: int32) -> unit {
+        let inline494 = (inline492 + 1) in
+        jump inline_cont489(inline494)
       } in
-      if inline487 {
-        jump inline_cont486(10)
+      if inline490 {
+        jump inline_cont489(10)
       } else {
-        jump inline_join488(20)
+        jump inline_join491(20)
       }
     } in
-    let inline493 = trait_impl#ToString#int32#to_string(t437) in
-    let inline494 = @runtime(core.string_println)(inline493) in
-    jump inline_cont492(())
+    let inline496 = trait_impl#ToString#int32#to_string(t440) in
+    let inline497 = @runtime(core.string_println)(inline496) in
+    jump inline_cont495(())
   } in
-  let inline496 = false in
-  join inline_join497(inline498: int32) -> unit {
-    let inline500 = (inline498 + 1) in
-    jump inline_cont495(inline500)
+  let inline499 = false in
+  join inline_join500(inline501: int32) -> unit {
+    let inline503 = (inline501 + 1) in
+    jump inline_cont498(inline503)
   } in
-  if inline496 {
-    jump inline_cont495(10)
+  if inline499 {
+    jump inline_cont498(10)
   } else {
-    jump inline_join497(20)
+    jump inline_join500(20)
   }
 }
 
 fn inherent#Ref#Ref[T]#new__T_int(value/431: int) -> Ref[int] {
-  let t442 = @intrinsic(ref.new)(value/431) in
-  t442
-}
-
-fn inherent#Ref#Ref[T]#get__T_int(self/432: Ref[int]) -> int {
-  let t445 = @intrinsic(ref.get)(self/432) in
+  let t445 = @intrinsic(ref.new)(value/431) in
   t445
 }
 
+fn inherent#Ref#Ref[T]#get__T_int(self/432: Ref[int]) -> int {
+  let t448 = @intrinsic(ref.get)(self/432) in
+  t448
+}
+
 fn inherent#Ref#Ref[T]#set__T_int(self/433: Ref[int], value/434: int) -> unit {
-  let t447 = @intrinsic(ref.set)(self/433, value/434) in
+  let t450 = @intrinsic(ref.set)(self/433, value/434) in
   ()
 }
 
 fn println__T_int(value/1: int) -> unit {
-  join inline_cont501(t449: string) -> unit {
-    let t450 = @runtime(core.string_println)(t449) in
-    ()
-  } in
-  let inline502 = @runtime(core.int_to_string)(value/1) in
-  jump inline_cont501(inline502)
-}
-
-fn println__T_int32(value/1: int32) -> unit {
-  join inline_cont503(t452: string) -> unit {
+  join inline_cont504(t452: string) -> unit {
     let t453 = @runtime(core.string_println)(t452) in
     ()
   } in
-  let inline504 = @runtime(core.int32_to_string)(value/1) in
-  jump inline_cont503(inline504)
+  let inline505 = @runtime(core.int_to_string)(value/1) in
+  jump inline_cont504(inline505)
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  join inline_cont506(t455: string) -> unit {
+    let t456 = @runtime(core.string_println)(t455) in
+    ()
+  } in
+  let inline507 = @runtime(core.int32_to_string)(value/1) in
+  jump inline_cont506(inline507)
 }
 
 fn trait_impl#ToString#int#to_string(self/151: int) -> string {
-  let t456 = @runtime(core.int_to_string)(self/151) in
-  t456
-}
-
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
-  let t459 = @runtime(core.int32_to_string)(self/154) in
+  let t459 = @runtime(core.int_to_string)(self/151) in
   t459
 }
 
-fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
-  let t462 = (self/185 == other/186) in
+fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+  let t462 = @runtime(core.int32_to_string)(self/154) in
   t462
 }
 
-fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
-  let t465 = @runtime(core.int_hash)(self/211) in
+fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+  let t465 = (self/185 == other/186) in
   t465
+}
+
+fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+  let t468 = @runtime(core.int_hash)(self/211) in
+  t468
 }

@@ -22,21 +22,21 @@ type Ordering int32
 
 func main0() struct{} {
     var value__3 Tuple2_5int32_6string
-    var inline431 int32 = 1
-    var inline432 string = "x"
-    var inline433 Tuple2_5int32_6string = Tuple2_5int32_6string{
-        _0: inline431,
-        _1: inline432,
+    var inline434 int32 = 1
+    var inline435 string = "x"
+    var inline436 Tuple2_5int32_6string = Tuple2_5int32_6string{
+        _0: inline434,
+        _1: inline435,
     }
-    value__3 = inline433
-    var t412 int32 = value__3._0
-    var t413 string
-    var inline429 string = _goml_runtime_core_int32_to_string(t412)
-    t413 = inline429
-    var t414 string = value__3._1
-    var t415 string = t413 + t414
-    var inline426 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t415)
-    _goml_runtime_core_string_println(inline426)
+    value__3 = inline436
+    var t415 int32 = value__3._0
+    var t416 string
+    var inline432 string = _goml_runtime_core_int32_to_string(t415)
+    t416 = inline432
+    var t417 string = value__3._1
+    var t418 string = t416 + t417
+    var inline429 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t418)
+    _goml_runtime_core_string_println(inline429)
     return struct{}{}
 }
 

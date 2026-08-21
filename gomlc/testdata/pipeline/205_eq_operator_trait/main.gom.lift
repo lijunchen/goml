@@ -8,33 +8,33 @@ fn trait_impl#PartialEq#AlwaysDifferent#eq(
 fn main() -> unit {
   let first/2 = AlwaysDifferent { value: 7 } in
   let second/3 = AlwaysDifferent { value: 7 } in
-  let _wild408 = println__T_bool(trait_impl#PartialEq#AlwaysDifferent#eq(first/2, second/3)) in
-  let _wild409 = println__T_bool((!trait_impl#PartialEq#AlwaysDifferent#eq(first/2, second/3))) in
+  let _wild411 = println__T_bool(trait_impl#PartialEq#AlwaysDifferent#eq(first/2, second/3)) in
+  let _wild412 = println__T_bool((!trait_impl#PartialEq#AlwaysDifferent#eq(first/2, second/3))) in
   let left_tuple/4 = (AlwaysDifferent { value: 1 }, 2) in
   let right_tuple/5 = (AlwaysDifferent { value: 1 }, 2) in
-  let _wild412 =
+  let _wild415 =
     println__T_bool(
-      let _eq_lhs410 = left_tuple/4 in
-      let _eq_rhs411 = right_tuple/5 in
-      if trait_impl#PartialEq#AlwaysDifferent#eq(_eq_lhs410.0, _eq_rhs411.0) {
-          trait_impl#PartialEq#int#eq(_eq_lhs410.1, _eq_rhs411.1)
+      let _eq_lhs413 = left_tuple/4 in
+      let _eq_rhs414 = right_tuple/5 in
+      if trait_impl#PartialEq#AlwaysDifferent#eq(_eq_lhs413.0, _eq_rhs414.0) {
+          trait_impl#PartialEq#int#eq(_eq_lhs413.1, _eq_rhs414.1)
       } else {
           false
       }
     ) in
   let left_array/6 = [AlwaysDifferent { value: 1 }, AlwaysDifferent { value: 2 }] in
   let right_array/7 = [AlwaysDifferent { value: 1 }, AlwaysDifferent { value: 2 }] in
-  let _wild415 =
+  let _wild418 =
     println__T_bool(
-      let _eq_lhs413 = left_array/6 in
-      let _eq_rhs414 = right_array/7 in
+      let _eq_lhs416 = left_array/6 in
+      let _eq_rhs417 = right_array/7 in
       if trait_impl#PartialEq#AlwaysDifferent#eq(
-        @intrinsic(array.get)(_eq_lhs413, 0),
-        @intrinsic(array.get)(_eq_rhs414, 0)
+        @intrinsic(array.get)(_eq_lhs416, 0),
+        @intrinsic(array.get)(_eq_rhs417, 0)
       ) {
           trait_impl#PartialEq#AlwaysDifferent#eq(
-            @intrinsic(array.get)(_eq_lhs413, 1),
-            @intrinsic(array.get)(_eq_rhs414, 1)
+            @intrinsic(array.get)(_eq_lhs416, 1),
+            @intrinsic(array.get)(_eq_rhs417, 1)
           )
       } else {
           false

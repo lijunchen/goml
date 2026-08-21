@@ -1,62 +1,62 @@
 fn child(signal/0: Ref[int32]) -> unit {
-  let inline443 = 1 in
-  let inline444 = @intrinsic(ref.set)(signal/0, inline443) in
+  let inline446 = 1 in
+  let inline447 = @intrinsic(ref.set)(signal/0, inline446) in
   ()
 }
 
 fn main() -> unit {
-  join inline_cont451(signal/1: Ref[int32]) -> unit {
-    let t415 = closure_env_main_0 { signal_0: signal/1 } in
-    let t416 = pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](t415) in
-    let _wild408 = go t416 in
-    join exit417() -> unit {
-      let inline448 = "main" in
-      let inline449 = trait_impl#ToString#string#to_string(inline448) in
-      let inline450 = @runtime(core.string_println)(inline449) in
+  join inline_cont454(signal/1: Ref[int32]) -> unit {
+    let t418 = closure_env_main_0 { signal_0: signal/1 } in
+    let t419 = pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](t418) in
+    let _wild411 = go t419 in
+    join exit420() -> unit {
+      let inline451 = "main" in
+      let inline452 = trait_impl#ToString#string#to_string(inline451) in
+      let inline453 = @runtime(core.string_println)(inline452) in
       ()
     } in
     joinrec {
-      join loop418() -> unit {
-        join inline_cont445(t419: int32) -> unit {
-          let t420 = (t419 < 1) in
-          if t420 {
-            jump loop418()
+      join loop421() -> unit {
+        join inline_cont448(t422: int32) -> unit {
+          let t423 = (t422 < 1) in
+          if t423 {
+            jump loop421()
           } else {
-            jump exit417()
+            jump exit420()
           }
         } in
-        let inline446 = @intrinsic(ref.get)(signal/1) in
-        jump inline_cont445(inline446)
+        let inline449 = @intrinsic(ref.get)(signal/1) in
+        jump inline_cont448(inline449)
       } in
     } in
-    jump loop418()
+    jump loop421()
   } in
-  let inline452 = 0 in
-  let inline453 = @intrinsic(ref.new)(inline452) in
-  jump inline_cont451(inline453)
+  let inline455 = 0 in
+  let inline456 = @intrinsic(ref.new)(inline455) in
+  jump inline_cont454(inline456)
 }
 
 fn inherent#Ref#Ref[T]#set__T_int32(self/433: Ref[int32], value/434: int32) -> unit {
-  let t422 = @intrinsic(ref.set)(self/433, value/434) in
+  let t425 = @intrinsic(ref.set)(self/433, value/434) in
   ()
 }
 
 fn inherent#Ref#Ref[T]#new__T_int32(value/431: int32) -> Ref[int32] {
-  let t425 = @intrinsic(ref.new)(value/431) in
-  t425
-}
-
-fn inherent#Ref#Ref[T]#get__T_int32(self/432: Ref[int32]) -> int32 {
-  let t428 = @intrinsic(ref.get)(self/432) in
+  let t428 = @intrinsic(ref.new)(value/431) in
   t428
 }
 
+fn inherent#Ref#Ref[T]#get__T_int32(self/432: Ref[int32]) -> int32 {
+  let t431 = @intrinsic(ref.get)(self/432) in
+  t431
+}
+
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont454(t430: string) -> unit {
-    let t431 = @runtime(core.string_println)(t430) in
+  join inline_cont457(t433: string) -> unit {
+    let t434 = @runtime(core.string_println)(t433) in
     ()
   } in
-  jump inline_cont454(value/1)
+  jump inline_cont457(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/149: string) -> string {
@@ -64,17 +64,17 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
 }
 
 fn trait_impl#PartialEq#int32#eq(self/191: int32, other/192: int32) -> bool {
-  let t436 = (self/191 == other/192) in
-  t436
-}
-
-fn trait_impl#Hash#int32#hash(self/214: int32) -> uint64 {
-  let t439 = @runtime(core.int32_hash)(self/214) in
+  let t439 = (self/191 == other/192) in
   t439
 }
 
-fn inherent#closure_env_main_0#closure_env_main_0#apply(env411: closure_env_main_0) -> unit {
-  let signal/1 = closure_env_main_0.signal_0(env411) in
-  let inline456 = inherent#Ref#Ref[T]#set__T_int32(signal/1, 1) in
+fn trait_impl#Hash#int32#hash(self/214: int32) -> uint64 {
+  let t442 = @runtime(core.int32_hash)(self/214) in
+  t442
+}
+
+fn inherent#closure_env_main_0#closure_env_main_0#apply(env414: closure_env_main_0) -> unit {
+  let signal/1 = closure_env_main_0.signal_0(env414) in
+  let inline459 = inherent#Ref#Ref[T]#set__T_int32(signal/1, 1) in
   ()
 }

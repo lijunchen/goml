@@ -39,26 +39,26 @@ func dyn__Display__vtable__Point() *dyn__Display_vtable {
 }
 
 func _goml_m_trait__impl_i_Display_i_Point_i_show(self__0 Point) string {
-    var t411 int32 = self__0.value
-    var inline431 string = _goml_runtime_core_int32_to_string(t411)
-    return inline431
+    var t414 int32 = self__0.value
+    var inline434 string = _goml_runtime_core_int32_to_string(t414)
+    return inline434
 }
 
 func main0() struct{} {
-    var t417 Point = Point{
+    var t420 Point = Point{
         value: 7,
     }
     var d__3 dyn__Display
-    var inline438 dyn__Display = dyn__Display{
-        data: t417,
+    var inline441 dyn__Display = dyn__Display{
+        data: t420,
         vtable: dyn__Display__vtable__Point(),
     }
-    d__3 = inline438
-    var t418 string
-    var inline436 string = d__3.vtable.show(d__3.data)
-    t418 = inline436
-    var inline433 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t418)
-    _goml_runtime_core_string_println(inline433)
+    d__3 = inline441
+    var t421 string
+    var inline439 string = d__3.vtable.show(d__3.data)
+    t421 = inline439
+    var inline436 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t421)
+    _goml_runtime_core_string_println(inline436)
     return struct{}{}
 }
 

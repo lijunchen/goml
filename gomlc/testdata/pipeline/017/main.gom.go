@@ -30,21 +30,21 @@ type Ordering int32
 
 func main0() struct{} {
     var x__1 int = 123
-    var t414 string
-    var inline441 string = _goml_runtime_core_int_to_string(x__1)
-    t414 = inline441
-    var inline438 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t414)
-    _goml_runtime_core_string_println(inline438)
+    var t417 string
+    var inline444 string = _goml_runtime_core_int_to_string(x__1)
+    t417 = inline444
+    var inline441 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t417)
+    _goml_runtime_core_string_println(inline441)
     var x__2 bool = true
-    var t415 string
-    var inline436 string = _goml_runtime_core_bool_to_string(x__2)
-    t415 = inline436
-    var inline433 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t415)
-    _goml_runtime_core_string_println(inline433)
-    var t416 string
-    t416 = "(?, ?)"
-    var inline429 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t416)
-    _goml_runtime_core_string_println(inline429)
+    var t418 string
+    var inline439 string = _goml_runtime_core_bool_to_string(x__2)
+    t418 = inline439
+    var inline436 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t418)
+    _goml_runtime_core_string_println(inline436)
+    var t419 string
+    t419 = "(?, ?)"
+    var inline432 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t419)
+    _goml_runtime_core_string_println(inline432)
     return struct{}{}
 }
 

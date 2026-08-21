@@ -3213,60 +3213,105 @@ fn inherent#Channel#Channel[T]#close[T](self/441: Channel[T]) -> unit {
   @intrinsic(channel.close)(self/441)
 }
 
-fn trait_impl#ToString#uint#to_string(self/442: uint) -> string {
-  @runtime(core.uint_to_string)(self/442)
+fn inherent#Channel#Channel[T]#sender[T](self/442: Channel[T]) -> Sender[T] {
+  @intrinsic(channel.sender)(self/442)
 }
 
-fn trait_impl#Debug#uint#debug(self/443: uint) -> string {
-  trait_call[ToString::to_string](self/443)
+fn inherent#Channel#Channel[T]#receiver[T](self/443: Channel[T]) -> Receiver[T] {
+  @intrinsic(channel.receiver)(self/443)
 }
 
-fn trait_impl#PartialEq#uint#eq(self/444: uint, other/445: uint) -> bool {
-  (self/444 == other/445)
+fn inherent#Channel#Channel[T]#split[T](self/444: Channel[T]) -> (Sender[T], Receiver[T]) {
+  @intrinsic(channel.split)(self/444)
+}
+
+fn inherent#Sender#Sender[T]#send[T](self/445: Sender[T], value/446: T) -> unit {
+  @intrinsic(channel.send)(self/445, value/446)
+}
+
+fn inherent#Sender#Sender[T]#close[T](self/447: Sender[T]) -> unit {
+  @intrinsic(channel.close)(self/447)
+}
+
+fn inherent#Receiver#Receiver[T]#recv[T](self/448: Receiver[T]) -> Option[T] {
+  let mtmp382 = @intrinsic(channel.recv)(self/448) in
+  {
+    let x383 = mtmp382.0 in
+    let x384 = mtmp382.1 in
+    {
+      let ok/450 = x384 in
+      {
+        let value/449 = x383 in
+        {
+          if ok/450 {
+              {
+                Option::Some(value/449)
+              }
+          } else {
+              {
+                Option::None
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn trait_impl#ToString#uint#to_string(self/451: uint) -> string {
+  @runtime(core.uint_to_string)(self/451)
+}
+
+fn trait_impl#Debug#uint#debug(self/452: uint) -> string {
+  trait_call[ToString::to_string](self/452)
+}
+
+fn trait_impl#PartialEq#uint#eq(self/453: uint, other/454: uint) -> bool {
+  (self/453 == other/454)
 }
 
 fn trait_impl#Eq#uint#__marker() -> unit {
   ()
 }
 
-fn trait_impl#Hash#uint#hash(self/446: uint) -> uint64 {
-  @runtime(core.uint_hash)(self/446)
+fn trait_impl#Hash#uint#hash(self/455: uint) -> uint64 {
+  @runtime(core.uint_hash)(self/455)
 }
 
-fn inherent#string#string#starts_with(self/447: string, prefix/448: string) -> bool {
-  if if (inherent#string#string#byte_len(prefix/448) <= inherent#string#string#byte_len(self/447)) {
-      inherent#string#string#is_char_boundary(self/447, inherent#string#string#byte_len(prefix/448))
+fn inherent#string#string#starts_with(self/456: string, prefix/457: string) -> bool {
+  if if (inherent#string#string#byte_len(prefix/457) <= inherent#string#string#byte_len(self/456)) {
+      inherent#string#string#is_char_boundary(self/456, inherent#string#string#byte_len(prefix/457))
   } else {
       false
   } {
       (inherent#string#string#byte_slice(
-        self/447,
+        self/456,
         0,
-        inherent#string#string#byte_len(prefix/448)
+        inherent#string#string#byte_len(prefix/457)
       ) ==
-        prefix/448)
+        prefix/457)
   } else {
       false
   }
 }
 
-fn inherent#string#string#ends_with(self/449: string, suffix/450: string) -> bool {
-  if (inherent#string#string#byte_len(suffix/450) > inherent#string#string#byte_len(self/449)) {
+fn inherent#string#string#ends_with(self/458: string, suffix/459: string) -> bool {
+  if (inherent#string#string#byte_len(suffix/459) > inherent#string#string#byte_len(self/458)) {
       {
         false
       }
   } else {
       {
-        let start/451 =
-          (inherent#string#string#byte_len(self/449) -
-            inherent#string#string#byte_len(suffix/450)) in
-        if inherent#string#string#is_char_boundary(self/449, start/451) {
+        let start/460 =
+          (inherent#string#string#byte_len(self/458) -
+            inherent#string#string#byte_len(suffix/459)) in
+        if inherent#string#string#is_char_boundary(self/458, start/460) {
             (inherent#string#string#byte_slice(
-              self/449,
-              start/451,
-              inherent#string#string#byte_len(self/449)
+              self/458,
+              start/460,
+              inherent#string#string#byte_len(self/458)
             ) ==
-              suffix/450)
+              suffix/459)
         } else {
             false
         }
@@ -3274,59 +3319,59 @@ fn inherent#string#string#ends_with(self/449: string, suffix/450: string) -> boo
   }
 }
 
-fn inherent#string#string#contains(self/452: string, expected/453: string) -> bool {
-  if (inherent#string#string#byte_len(expected/453) == 0) {
+fn inherent#string#string#contains(self/461: string, expected/462: string) -> bool {
+  if (inherent#string#string#byte_len(expected/462) == 0) {
       {
         true
       }
   } else {
-      if (inherent#string#string#byte_len(expected/453) >
-        inherent#string#string#byte_len(self/452)) {
+      if (inherent#string#string#byte_len(expected/462) >
+        inherent#string#string#byte_len(self/461)) {
           {
             false
           }
       } else {
           {
-            let _wild385 =
+            let _wild388 =
               {
-                let for_iter382 =
+                let for_iter385 =
                   trait_call[IntoIterator::into_iter](
                     __goml_builtin_range(
                       0,
-                      ((inherent#string#string#byte_len(self/452) -
-                        inherent#string#string#byte_len(expected/453)) +
+                      ((inherent#string#string#byte_len(self/461) -
+                        inherent#string#string#byte_len(expected/462)) +
                         1)
                     )
                   ) in
                 while true {
                     {
-                      let for_next383 = trait_call[Iterator::next](for_iter382) in
-                      match for_next383 {
+                      let for_next386 = trait_call[Iterator::next](for_iter385) in
+                      match for_next386 {
                         Option::None => {
                           break
                         },
-                        Option::Some(x384) => {
+                        Option::Some(x387) => {
                           {
-                            let x384 = Option::Some._0(for_next383) in
+                            let x387 = Option::Some._0(for_next386) in
                             {
-                              let start/454 = x384 in
+                              let start/463 = x387 in
                               {
-                                let end/455 =
-                                  (start/454 + inherent#string#string#byte_len(expected/453)) in
+                                let end/464 =
+                                  (start/463 + inherent#string#string#byte_len(expected/462)) in
                                 if if if inherent#string#string#is_char_boundary(
-                                  self/452,
-                                  start/454
+                                  self/461,
+                                  start/463
                                 ) {
-                                    inherent#string#string#is_char_boundary(self/452, end/455)
+                                    inherent#string#string#is_char_boundary(self/461, end/464)
                                 } else {
                                     false
                                 } {
                                     (inherent#string#string#byte_slice(
-                                      self/452,
-                                      start/454,
-                                      end/455
+                                      self/461,
+                                      start/463,
+                                      end/464
                                     ) ==
-                                      expected/453)
+                                      expected/462)
                                 } else {
                                     false
                                 } {
@@ -3352,12 +3397,12 @@ fn inherent#string#string#contains(self/452: string, expected/453: string) -> bo
   }
 }
 
-fn inherent#Option#Option[T]#is_some[T](self/456: Option[T]) -> bool {
-  match self/456 {
+fn inherent#Option#Option[T]#is_some[T](self/465: Option[T]) -> bool {
+  match self/465 {
     Option::None => {
       false
     },
-    Option::Some(x386) => {
+    Option::Some(x389) => {
       {
         true
       }
@@ -3365,52 +3410,52 @@ fn inherent#Option#Option[T]#is_some[T](self/456: Option[T]) -> bool {
   }
 }
 
-fn inherent#Option#Option[T]#is_none[T](self/457: Option[T]) -> bool {
-  (!inherent#Option#Option[T]#is_some(self/457))
+fn inherent#Option#Option[T]#is_none[T](self/466: Option[T]) -> bool {
+  (!inherent#Option#Option[T]#is_some(self/466))
 }
 
-fn inherent#Option#Option[T]#unwrap_or[T](self/458: Option[T], fallback/459: T) -> T {
-  match self/458 {
+fn inherent#Option#Option[T]#unwrap_or[T](self/467: Option[T], fallback/468: T) -> T {
+  match self/467 {
     Option::None => {
-      fallback/459
+      fallback/468
     },
-    Option::Some(x387) => {
+    Option::Some(x390) => {
       {
-        let x387 = Option::Some._0(self/458) in
+        let x390 = Option::Some._0(self/467) in
         {
-          let value/460 = x387 in
-          value/460
+          let value/469 = x390 in
+          value/469
         }
       }
     },
   }
 }
 
-fn inherent#Option#Option[T]#unwrap_or_else[T](self/461: Option[T], fallback/462: () -> T) -> T {
-  match self/461 {
+fn inherent#Option#Option[T]#unwrap_or_else[T](self/470: Option[T], fallback/471: () -> T) -> T {
+  match self/470 {
     Option::None => {
-      fallback/462()
+      fallback/471()
     },
-    Option::Some(x388) => {
+    Option::Some(x391) => {
       {
-        let x388 = Option::Some._0(self/461) in
+        let x391 = Option::Some._0(self/470) in
         {
-          let value/463 = x388 in
-          value/463
+          let value/472 = x391 in
+          value/472
         }
       }
     },
   }
 }
 
-fn inherent#Result#Result[T,E]#is_ok[T, E](self/464: Result[T, E]) -> bool {
-  match self/464 {
-    Result::Ok(x389) => {
+fn inherent#Result#Result[T,E]#is_ok[T, E](self/473: Result[T, E]) -> bool {
+  match self/473 {
+    Result::Ok(x392) => {
       {
         true
       }
     },
-    Result::Err(x390) => {
+    Result::Err(x393) => {
       {
         false
       }
@@ -3418,66 +3463,66 @@ fn inherent#Result#Result[T,E]#is_ok[T, E](self/464: Result[T, E]) -> bool {
   }
 }
 
-fn inherent#Result#Result[T,E]#is_err[T, E](self/465: Result[T, E]) -> bool {
-  (!inherent#Result#Result[T,E]#is_ok(self/465))
+fn inherent#Result#Result[T,E]#is_err[T, E](self/474: Result[T, E]) -> bool {
+  (!inherent#Result#Result[T,E]#is_ok(self/474))
 }
 
-fn inherent#Result#Result[T,E]#unwrap_or[T, E](self/466: Result[T, E], fallback/467: T) -> T {
-  match self/466 {
-    Result::Ok(x391) => {
+fn inherent#Result#Result[T,E]#unwrap_or[T, E](self/475: Result[T, E], fallback/476: T) -> T {
+  match self/475 {
+    Result::Ok(x394) => {
       {
-        let x391 = Result::Ok._0(self/466) in
+        let x394 = Result::Ok._0(self/475) in
         {
-          let value/468 = x391 in
-          value/468
+          let value/477 = x394 in
+          value/477
         }
       }
     },
-    Result::Err(x392) => {
+    Result::Err(x395) => {
       {
-        fallback/467
+        fallback/476
       }
     },
   }
 }
 
 fn inherent#Result#Result[T,E]#unwrap_or_else[T, E](
-  self/469: Result[T, E],
-  fallback/470: (E) -> T
+  self/478: Result[T, E],
+  fallback/479: (E) -> T
 ) -> T {
-  match self/469 {
-    Result::Ok(x393) => {
+  match self/478 {
+    Result::Ok(x396) => {
       {
-        let x393 = Result::Ok._0(self/469) in
+        let x396 = Result::Ok._0(self/478) in
         {
-          let value/471 = x393 in
-          value/471
+          let value/480 = x396 in
+          value/480
         }
       }
     },
-    Result::Err(x394) => {
+    Result::Err(x397) => {
       {
-        let x394 = Result::Err._0(self/469) in
+        let x397 = Result::Err._0(self/478) in
         {
-          let error/472 = x394 in
-          fallback/470(error/472)
+          let error/481 = x397 in
+          fallback/479(error/481)
         }
       }
     },
   }
 }
 
-fn inherent#Option#Option[T]#map[T, U](self/473: Option[T], map_fn/474: (T) -> U) -> Option[U] {
-  match self/473 {
+fn inherent#Option#Option[T]#map[T, U](self/482: Option[T], map_fn/483: (T) -> U) -> Option[U] {
+  match self/482 {
     Option::None => {
       Option::None
     },
-    Option::Some(x395) => {
+    Option::Some(x398) => {
       {
-        let x395 = Option::Some._0(self/473) in
+        let x398 = Option::Some._0(self/482) in
         {
-          let value/475 = x395 in
-          Option::Some(map_fn/474(value/475))
+          let value/484 = x398 in
+          Option::Some(map_fn/483(value/484))
         }
       }
     },
@@ -3485,62 +3530,62 @@ fn inherent#Option#Option[T]#map[T, U](self/473: Option[T], map_fn/474: (T) -> U
 }
 
 fn inherent#Option#Option[T]#and_then[T, U](
-  self/476: Option[T],
-  next/477: (T) -> Option[U]
+  self/485: Option[T],
+  next/486: (T) -> Option[U]
 ) -> Option[U] {
-  match self/476 {
+  match self/485 {
     Option::None => {
       Option::None
     },
-    Option::Some(x396) => {
+    Option::Some(x399) => {
       {
-        let x396 = Option::Some._0(self/476) in
+        let x399 = Option::Some._0(self/485) in
         {
-          let value/478 = x396 in
-          next/477(value/478)
+          let value/487 = x399 in
+          next/486(value/487)
         }
       }
     },
   }
 }
 
-fn inherent#Option#Option[T]#ok_or[T, E](self/479: Option[T], error/480: E) -> Result[T, E] {
-  match self/479 {
+fn inherent#Option#Option[T]#ok_or[T, E](self/488: Option[T], error/489: E) -> Result[T, E] {
+  match self/488 {
     Option::None => {
-      Result::Err(error/480)
+      Result::Err(error/489)
     },
-    Option::Some(x397) => {
+    Option::Some(x400) => {
       {
-        let x397 = Option::Some._0(self/479) in
+        let x400 = Option::Some._0(self/488) in
         {
-          let value/481 = x397 in
-          Result::Ok(value/481)
+          let value/490 = x400 in
+          Result::Ok(value/490)
         }
       }
     },
   }
 }
 
-fn inherent#Result#Result[T,E]#map[T, E, U](self/482: Result[T, E], map_fn/483: (T) -> U) -> Result[
+fn inherent#Result#Result[T,E]#map[T, E, U](self/491: Result[T, E], map_fn/492: (T) -> U) -> Result[
   U,
   E
 ] {
-  match self/482 {
-    Result::Ok(x398) => {
+  match self/491 {
+    Result::Ok(x401) => {
       {
-        let x398 = Result::Ok._0(self/482) in
+        let x401 = Result::Ok._0(self/491) in
         {
-          let value/484 = x398 in
-          Result::Ok(map_fn/483(value/484))
+          let value/493 = x401 in
+          Result::Ok(map_fn/492(value/493))
         }
       }
     },
-    Result::Err(x399) => {
+    Result::Err(x402) => {
       {
-        let x399 = Result::Err._0(self/482) in
+        let x402 = Result::Err._0(self/491) in
         {
-          let error/485 = x399 in
-          Result::Err(error/485)
+          let error/494 = x402 in
+          Result::Err(error/494)
         }
       }
     },
@@ -3548,25 +3593,25 @@ fn inherent#Result#Result[T,E]#map[T, E, U](self/482: Result[T, E], map_fn/483: 
 }
 
 fn inherent#Result#Result[T,E]#map_err[T, E, F](
-  self/486: Result[T, E],
-  map_fn/487: (E) -> F
+  self/495: Result[T, E],
+  map_fn/496: (E) -> F
 ) -> Result[T, F] {
-  match self/486 {
-    Result::Ok(x400) => {
+  match self/495 {
+    Result::Ok(x403) => {
       {
-        let x400 = Result::Ok._0(self/486) in
+        let x403 = Result::Ok._0(self/495) in
         {
-          let value/488 = x400 in
-          Result::Ok(value/488)
+          let value/497 = x403 in
+          Result::Ok(value/497)
         }
       }
     },
-    Result::Err(x401) => {
+    Result::Err(x404) => {
       {
-        let x401 = Result::Err._0(self/486) in
+        let x404 = Result::Err._0(self/495) in
         {
-          let error/489 = x401 in
-          Result::Err(map_fn/487(error/489))
+          let error/498 = x404 in
+          Result::Err(map_fn/496(error/498))
         }
       }
     },
@@ -3574,40 +3619,40 @@ fn inherent#Result#Result[T,E]#map_err[T, E, F](
 }
 
 fn inherent#Result#Result[T,E]#and_then[T, E, U](
-  self/490: Result[T, E],
-  next/491: (T) -> Result[U, E]
+  self/499: Result[T, E],
+  next/500: (T) -> Result[U, E]
 ) -> Result[U, E] {
-  match self/490 {
-    Result::Ok(x402) => {
+  match self/499 {
+    Result::Ok(x405) => {
       {
-        let x402 = Result::Ok._0(self/490) in
+        let x405 = Result::Ok._0(self/499) in
         {
-          let value/492 = x402 in
-          next/491(value/492)
+          let value/501 = x405 in
+          next/500(value/501)
         }
       }
     },
-    Result::Err(x403) => {
+    Result::Err(x406) => {
       {
-        let x403 = Result::Err._0(self/490) in
+        let x406 = Result::Err._0(self/499) in
         {
-          let error/493 = x403 in
-          Result::Err(error/493)
+          let error/502 = x406 in
+          Result::Err(error/502)
         }
       }
     },
   }
 }
 
-fn __goml_builtin_range(start/494: int, end/495: int) -> FnIterator[int] {
-  let current/496 = @intrinsic(ref.new)(start/494) in
+fn __goml_builtin_range(start/503: int, end/504: int) -> FnIterator[int] {
+  let current/505 = @intrinsic(ref.new)(start/503) in
   inherent#FnIterator#FnIterator#from_fn(
     || => {
-      let value/497 = @intrinsic(ref.get)(current/496) in
-      if (value/497 < end/495) {
+      let value/506 = @intrinsic(ref.get)(current/505) in
+      if (value/506 < end/504) {
           {
-            let _wild404 = @intrinsic(ref.set)(current/496, (value/497 + 1)) in
-            Option::Some(value/497)
+            let _wild407 = @intrinsic(ref.set)(current/505, (value/506 + 1)) in
+            Option::Some(value/506)
           }
       } else {
           {
@@ -3618,46 +3663,46 @@ fn __goml_builtin_range(start/494: int, end/495: int) -> FnIterator[int] {
   )
 }
 
-fn __goml_builtin_range_inclusive(start/498: int, end/499: int) -> FnIterator[int] {
-  let current/500 = @intrinsic(ref.new)(start/498) in
-  let finished/501 = @intrinsic(ref.new)(false) in
+fn __goml_builtin_range_inclusive(start/507: int, end/508: int) -> FnIterator[int] {
+  let current/509 = @intrinsic(ref.new)(start/507) in
+  let finished/510 = @intrinsic(ref.new)(false) in
   inherent#FnIterator#FnIterator#from_fn(
     || => {
-      if if @intrinsic(ref.get)(finished/501) {
+      if if @intrinsic(ref.get)(finished/510) {
           true
       } else {
-          (@intrinsic(ref.get)(current/500) > end/499)
+          (@intrinsic(ref.get)(current/509) > end/508)
       } {
           {
             Option::None
           }
       } else {
           {
-            let value/502 = @intrinsic(ref.get)(current/500) in
-            let _wild407 =
-              if (value/502 == end/499) {
+            let value/511 = @intrinsic(ref.get)(current/509) in
+            let _wild410 =
+              if (value/511 == end/508) {
                   {
-                    let _wild405 = @intrinsic(ref.set)(finished/501, true) in
+                    let _wild408 = @intrinsic(ref.set)(finished/510, true) in
                   }
               } else {
                   {
-                    let _wild406 = @intrinsic(ref.set)(current/500, (value/502 + 1)) in
+                    let _wild409 = @intrinsic(ref.set)(current/509, (value/511 + 1)) in
                   }
               } in
-            Option::Some(value/502)
+            Option::Some(value/511)
           }
       }
     }
   )
 }
 
-fn inherent#Ordering#Ordering#from_int(value/832: int) -> Ordering {
-  if (value/832 < 0) {
+fn inherent#Ordering#Ordering#from_int(value/841: int) -> Ordering {
+  if (value/841 < 0) {
       {
         Ordering::Less
       }
   } else {
-      if (value/832 > 0) {
+      if (value/841 > 0) {
           {
             Ordering::Greater
           }
@@ -3669,8 +3714,8 @@ fn inherent#Ordering#Ordering#from_int(value/832: int) -> Ordering {
   }
 }
 
-fn inherent#Ordering#Ordering#to_int(self/833: Ordering) -> int {
-  match self/833 {
+fn inherent#Ordering#Ordering#to_int(self/842: Ordering) -> int {
+  match self/842 {
     Ordering::Less => {
       -1
     },
@@ -3683,32 +3728,32 @@ fn inherent#Ordering#Ordering#to_int(self/833: Ordering) -> int {
   }
 }
 
-fn inherent#Ordering#Ordering#is_lt(self/834: Ordering) -> bool {
-  trait_call[PartialEq::eq](self/834, Ordering::Less)
+fn inherent#Ordering#Ordering#is_lt(self/843: Ordering) -> bool {
+  trait_call[PartialEq::eq](self/843, Ordering::Less)
 }
 
-fn inherent#Ordering#Ordering#is_eq(self/835: Ordering) -> bool {
-  trait_call[PartialEq::eq](self/835, Ordering::Equal)
+fn inherent#Ordering#Ordering#is_eq(self/844: Ordering) -> bool {
+  trait_call[PartialEq::eq](self/844, Ordering::Equal)
 }
 
-fn inherent#Ordering#Ordering#is_gt(self/836: Ordering) -> bool {
-  trait_call[PartialEq::eq](self/836, Ordering::Greater)
+fn inherent#Ordering#Ordering#is_gt(self/845: Ordering) -> bool {
+  trait_call[PartialEq::eq](self/845, Ordering::Greater)
 }
 
-fn inherent#Ordering#Ordering#is_le(self/837: Ordering) -> bool {
-  (!trait_call[PartialEq::eq](self/837, Ordering::Greater))
+fn inherent#Ordering#Ordering#is_le(self/846: Ordering) -> bool {
+  (!trait_call[PartialEq::eq](self/846, Ordering::Greater))
 }
 
-fn inherent#Ordering#Ordering#is_ge(self/838: Ordering) -> bool {
-  (!trait_call[PartialEq::eq](self/838, Ordering::Less))
+fn inherent#Ordering#Ordering#is_ge(self/847: Ordering) -> bool {
+  (!trait_call[PartialEq::eq](self/847, Ordering::Less))
 }
 
-fn inherent#Ordering#Ordering#is_ne(self/839: Ordering) -> bool {
-  (!trait_call[PartialEq::eq](self/839, Ordering::Equal))
+fn inherent#Ordering#Ordering#is_ne(self/848: Ordering) -> bool {
+  (!trait_call[PartialEq::eq](self/848, Ordering::Equal))
 }
 
-fn inherent#Ordering#Ordering#reverse(self/840: Ordering) -> Ordering {
-  match self/840 {
+fn inherent#Ordering#Ordering#reverse(self/849: Ordering) -> Ordering {
+  match self/849 {
     Ordering::Less => {
       Ordering::Greater
     },
@@ -3721,37 +3766,37 @@ fn inherent#Ordering#Ordering#reverse(self/840: Ordering) -> Ordering {
   }
 }
 
-fn inherent#Ordering#Ordering#then(self/841: Ordering, other/842: Ordering) -> Ordering {
-  if trait_call[PartialEq::eq](self/841, Ordering::Equal) {
+fn inherent#Ordering#Ordering#then(self/850: Ordering, other/851: Ordering) -> Ordering {
+  if trait_call[PartialEq::eq](self/850, Ordering::Equal) {
       {
-        other/842
+        other/851
       }
   } else {
       {
-        self/841
+        self/850
       }
   }
 }
 
 fn inherent#Ordering#Ordering#then_with(
-  self/843: Ordering,
-  compare/844: () -> Ordering
+  self/852: Ordering,
+  compare/853: () -> Ordering
 ) -> Ordering {
-  if trait_call[PartialEq::eq](self/843, Ordering::Equal) {
+  if trait_call[PartialEq::eq](self/852, Ordering::Equal) {
       {
-        compare/844()
+        compare/853()
       }
   } else {
       {
-        self/843
+        self/852
       }
   }
 }
 
-fn trait_impl#PartialEq#Ordering#eq(self/845: Ordering, other/846: Ordering) -> bool {
-  match self/845 {
+fn trait_impl#PartialEq#Ordering#eq(self/854: Ordering, other/855: Ordering) -> bool {
+  match self/854 {
     Ordering::Less => {
-      match other/846 {
+      match other/855 {
         Ordering::Less => {
           true
         },
@@ -3759,7 +3804,7 @@ fn trait_impl#PartialEq#Ordering#eq(self/845: Ordering, other/846: Ordering) -> 
       }
     },
     Ordering::Equal => {
-      match other/846 {
+      match other/855 {
         Ordering::Equal => {
           true
         },
@@ -3767,7 +3812,7 @@ fn trait_impl#PartialEq#Ordering#eq(self/845: Ordering, other/846: Ordering) -> 
       }
     },
     Ordering::Greater => {
-      match other/846 {
+      match other/855 {
         Ordering::Greater => {
           true
         },
@@ -3825,8 +3870,12 @@ fn std::internal::task::scope_cancelled(scope/9: int64) -> bool {
   @runtime(std.task.scope_cancelled)(scope/9)
 }
 
-fn std::internal::task::scope_sleep(scope/10: int64, nanoseconds/11: int64) -> bool {
-  @runtime(std.task.sleep)(scope/10, nanoseconds/11)
+fn std::internal::task::scope_done(scope/10: int64) -> Receiver[unit] {
+  @runtime(std.task.scope_done)(scope/10)
+}
+
+fn std::internal::task::scope_sleep(scope/11: int64, nanoseconds/12: int64) -> bool {
+  @runtime(std.task.sleep)(scope/11, nanoseconds/12)
 }
 
 fn std::internal::task::scope_count() -> int {
@@ -3838,82 +3887,82 @@ fn std::internal::task::root_scope() -> std::internal::task::ScopeHandle {
 }
 
 fn std::internal::task::child_scope(
-  parent/12: std::internal::task::CancelToken
+  parent/13: std::internal::task::CancelToken
 ) -> std::internal::task::ScopeHandle {
   std::internal::task::ScopeHandle {
-    id: std::internal::task::scope_new(std::internal::task::CancelToken.id(parent/12))
+    id: std::internal::task::scope_new(std::internal::task::CancelToken.id(parent/13))
   }
 }
 
 fn std::internal::task::spawn(
-  scope/13: std::internal::task::ScopeHandle,
-  body/14: () -> unit
+  scope/14: std::internal::task::ScopeHandle,
+  body/15: () -> unit
 ) -> unit {
   let mtmp0 =
-    std::internal::task::scope_spawn(std::internal::task::ScopeHandle.id(scope/13), body/14) in
+    std::internal::task::scope_spawn(std::internal::task::ScopeHandle.id(scope/14), body/15) in
   {
     ()
   }
 }
 
 fn std::internal::task::try_spawn(
-  scope/15: std::internal::task::ScopeHandle,
-  body/16: () -> unit
+  scope/16: std::internal::task::ScopeHandle,
+  body/17: () -> unit
 ) -> bool {
-  std::internal::task::scope_try_spawn(std::internal::task::ScopeHandle.id(scope/15), body/16)
+  std::internal::task::scope_try_spawn(std::internal::task::ScopeHandle.id(scope/16), body/17)
 }
 
 fn std::internal::task::run(
-  scope/17: std::internal::task::ScopeHandle,
-  body/18: () -> unit
+  scope/18: std::internal::task::ScopeHandle,
+  body/19: () -> unit
 ) -> unit {
   let _wild1 =
-    std::internal::task::scope_run(std::internal::task::ScopeHandle.id(scope/17), body/18) in
-  std::internal::task::scope_finish(std::internal::task::ScopeHandle.id(scope/17))
+    std::internal::task::scope_run(std::internal::task::ScopeHandle.id(scope/18), body/19) in
+  std::internal::task::scope_finish(std::internal::task::ScopeHandle.id(scope/18))
 }
 
-fn std::internal::task::cancel(scope/19: std::internal::task::ScopeHandle) -> unit {
-  std::internal::task::scope_cancel(std::internal::task::ScopeHandle.id(scope/19))
+fn std::internal::task::cancel(scope/20: std::internal::task::ScopeHandle) -> unit {
+  std::internal::task::scope_cancel(std::internal::task::ScopeHandle.id(scope/20))
 }
 
-fn std::internal::task::finish(scope/20: std::internal::task::ScopeHandle) -> unit {
-  std::internal::task::scope_finish(std::internal::task::ScopeHandle.id(scope/20))
+fn std::internal::task::finish(scope/21: std::internal::task::ScopeHandle) -> unit {
+  std::internal::task::scope_finish(std::internal::task::ScopeHandle.id(scope/21))
 }
 
 fn std::internal::task::token(
-  scope/21: std::internal::task::ScopeHandle
+  scope/22: std::internal::task::ScopeHandle
 ) -> std::internal::task::CancelToken {
-  std::internal::task::CancelToken { id: std::internal::task::ScopeHandle.id(scope/21) }
+  std::internal::task::CancelToken { id: std::internal::task::ScopeHandle.id(scope/22) }
 }
 
 fn std::internal::task::recv_with(
-  cancel/22: std::internal::task::CancelToken,
-  channel/23: Channel[T]
+  cancel/23: std::internal::task::CancelToken,
+  channel/24: Channel[T]
 ) -> (T, bool, bool) {
-  @intrinsic(channel.recv_cancel)(channel/23, std::internal::task::CancelToken.id(cancel/22))
+  @intrinsic(channel.recv_cancel)(channel/24, std::internal::task::CancelToken.id(cancel/23))
 }
 
 fn std::internal::task::send_with(
-  cancel/24: std::internal::task::CancelToken,
-  channel/25: Channel[T],
-  value/26: T
+  cancel/25: std::internal::task::CancelToken,
+  channel/26: Channel[T],
+  value/27: T
 ) -> bool {
   @intrinsic(channel.send_cancel)(
-    channel/25,
-    value/26,
-    std::internal::task::CancelToken.id(cancel/24)
+    channel/26,
+    value/27,
+    std::internal::task::CancelToken.id(cancel/25)
   )
 }
 
 fn std::internal::task::sleep_with(
-  cancel/27: std::internal::task::CancelToken,
-  nanoseconds/28: int64
+  cancel/28: std::internal::task::CancelToken,
+  nanoseconds/29: int64
 ) -> bool {
-  std::internal::task::scope_sleep(std::internal::task::CancelToken.id(cancel/27), nanoseconds/28)
+  std::internal::task::scope_sleep(std::internal::task::CancelToken.id(cancel/28), nanoseconds/29)
 }
 
-fn std::internal::task::id(cancel/29: std::internal::task::CancelToken) -> int64 {
-  std::internal::task::CancelToken.id(cancel/29)
+fn std::internal::task::id(cancel/30: std::internal::task::CancelToken) -> int64 {
+  std::internal::task::CancelToken.id(cancel/30)
 }
 
 fn std::internal::task::active_scope_count() -> int {
@@ -3921,9 +3970,15 @@ fn std::internal::task::active_scope_count() -> int {
 }
 
 fn inherent#std::internal::task::CancelToken#std::internal::task::CancelToken#is_cancelled(
-  self/30: std::internal::task::CancelToken
+  self/31: std::internal::task::CancelToken
 ) -> bool {
-  std::internal::task::scope_cancelled(std::internal::task::CancelToken.id(self/30))
+  std::internal::task::scope_cancelled(std::internal::task::CancelToken.id(self/31))
+}
+
+fn inherent#std::internal::task::CancelToken#std::internal::task::CancelToken#done(
+  self/32: std::internal::task::CancelToken
+) -> Receiver[unit] {
+  std::internal::task::scope_done(std::internal::task::CancelToken.id(self/32))
 }
 
 fn std::task::completed_scope_value(result/0: Ref[Option[T]]) -> T {
@@ -4199,28 +4254,36 @@ fn inherent#std::task::CancelToken#std::task::CancelToken#runtime_id(
   std::internal::task::id(std::task::CancelToken.value(self/42))
 }
 
+fn inherent#std::task::CancelToken#std::task::CancelToken#done(
+  self/43: std::task::CancelToken
+) -> Receiver[unit] {
+  inherent#std::internal::task::CancelToken#std::internal::task::CancelToken#done(
+    std::task::CancelToken.value(self/43)
+  )
+}
+
 fn std::task::recv_with(
-  cancel/43: std::task::CancelToken,
-  channel/44: Channel[T]
+  cancel/44: std::task::CancelToken,
+  channel/45: Channel[T]
 ) -> std::task::WaitResult[Option[T]] {
   let mtmp21 =
-    std::internal::task::recv_with(std::task::CancelToken.value(cancel/43), channel/44) in
+    std::internal::task::recv_with(std::task::CancelToken.value(cancel/44), channel/45) in
   {
     let x22 = mtmp21.0 in
     let x23 = mtmp21.1 in
     let x24 = mtmp21.2 in
     {
-      let completed/47 = x24 in
+      let completed/48 = x24 in
       {
-        let open/46 = x23 in
+        let open/47 = x23 in
         {
-          let value/45 = x22 in
+          let value/46 = x22 in
           {
-            if completed/47 {
+            if completed/48 {
                 {
-                  if open/46 {
+                  if open/47 {
                       {
-                        std::task::WaitResult::Completed(Option::Some(value/45))
+                        std::task::WaitResult::Completed(Option::Some(value/46))
                       }
                   } else {
                       {
@@ -4241,11 +4304,11 @@ fn std::task::recv_with(
 }
 
 fn std::task::send_with(
-  cancel/48: std::task::CancelToken,
-  channel/49: Channel[T],
-  value/50: T
+  cancel/49: std::task::CancelToken,
+  channel/50: Channel[T],
+  value/51: T
 ) -> std::task::WaitResult[unit] {
-  if std::internal::task::send_with(std::task::CancelToken.value(cancel/48), channel/49, value/50) {
+  if std::internal::task::send_with(std::task::CancelToken.value(cancel/49), channel/50, value/51) {
       {
         std::task::WaitResult::Completed(())
       }
@@ -4257,10 +4320,10 @@ fn std::task::send_with(
 }
 
 fn std::task::sleep_nanoseconds_with(
-  cancel/51: std::task::CancelToken,
-  nanoseconds/52: int64
+  cancel/52: std::task::CancelToken,
+  nanoseconds/53: int64
 ) -> std::task::WaitResult[unit] {
-  if std::internal::task::sleep_with(std::task::CancelToken.value(cancel/51), nanoseconds/52) {
+  if std::internal::task::sleep_with(std::task::CancelToken.value(cancel/52), nanoseconds/53) {
       {
         std::task::WaitResult::Completed(())
       }
@@ -4271,12 +4334,18 @@ fn std::task::sleep_nanoseconds_with(
   }
 }
 
-fn inherent#std::task::Task#std::task::Task[T]#join[T](self/53: std::task::Task[T]) -> T {
+fn inherent#std::task::Task#std::task::Task[T]#done[T](self/54: std::task::Task[T]) -> Receiver[
+  unit
+] {
+  inherent#Channel#Channel[unit]#receiver(std::task::Task.ready(self/54))
+}
+
+fn inherent#std::task::Task#std::task::Task[T]#join[T](self/55: std::task::Task[T]) -> T {
   loop {
-    let mtmp25 = inherent#Channel#Channel[unit]#recv(std::task::Task.ready(self/53)) in
+    let mtmp25 = inherent#Channel#Channel[unit]#recv(std::task::Task.ready(self/55)) in
     {
       {
-        let mtmp26 = inherent#Ref#Ref[Option[T]]#get(std::task::Task.result(self/53)) in
+        let mtmp26 = inherent#Ref#Ref[Option[T]]#get(std::task::Task.result(self/55)) in
         match mtmp26 {
           Option::None => {
             ()
@@ -4285,9 +4354,9 @@ fn inherent#std::task::Task#std::task::Task[T]#join[T](self/53: std::task::Task[
             {
               let x27 = Option::Some._0(mtmp26) in
               {
-                let value/54 = x27 in
+                let value/56 = x27 in
                 {
-                  let _wild28 = break value/54 in
+                  let _wild28 = break value/56 in
                 }
               }
             }
@@ -4298,12 +4367,12 @@ fn inherent#std::task::Task#std::task::Task[T]#join[T](self/53: std::task::Task[
   }
 }
 
-fn std::task::join_all(tasks/55: Vec[std::task::Task[T]]) -> Vec[T] {
-  let values/56 =
-    inherent#Vec#Vec[T]#with_capacity(inherent#Vec#Vec[std::task::Task[T]]#len(tasks/55)) in
+fn std::task::join_all(tasks/57: Vec[std::task::Task[T]]) -> Vec[T] {
+  let values/58 =
+    inherent#Vec#Vec[T]#with_capacity(inherent#Vec#Vec[std::task::Task[T]]#len(tasks/57)) in
   let _wild34 =
     {
-      let for_source29 = tasks/55 in
+      let for_source29 = tasks/57 in
       let for_limit30 = @intrinsic(vec.len)(for_source29) in
       let for_index31 = 0 in
       while (for_index31 < for_limit30) {
@@ -4311,32 +4380,32 @@ fn std::task::join_all(tasks/55: Vec[std::task::Task[T]]) -> Vec[T] {
             let for_item32 = @intrinsic(vec.get)(for_source29, for_index31) in
             let _wild33 = for_index31 = (for_index31 + 1) in
             {
-              let task/57 = for_item32 in
+              let task/59 = for_item32 in
               {
                 inherent#Vec#Vec[T]#push(
-                  values/56,
-                  inherent#std::task::Task#std::task::Task[T]#join(task/57)
+                  values/58,
+                  inherent#std::task::Task#std::task::Task[T]#join(task/59)
                 )
               }
             }
           }
       }
     } in
-  values/56
+  values/58
 }
 
-fn std::task::join_all_results(tasks/58: Vec[std::task::Task[Result[T, E]]]) -> Result[
+fn std::task::join_all_results(tasks/60: Vec[std::task::Task[Result[T, E]]]) -> Result[
   Vec[T],
   Vec[E]
 ] {
-  let values/59 =
+  let values/61 =
     inherent#Vec#Vec[T]#with_capacity(
-      inherent#Vec#Vec[std::task::Task[Result[T,E]]]#len(tasks/58)
+      inherent#Vec#Vec[std::task::Task[Result[T,E]]]#len(tasks/60)
     ) in
-  let errors/60 = @intrinsic(vec.from_array)([]) in
+  let errors/62 = @intrinsic(vec.from_array)([]) in
   let _wild43 =
     {
-      let for_source35 = tasks/58 in
+      let for_source35 = tasks/60 in
       let for_limit36 = @intrinsic(vec.len)(for_source35) in
       let for_index37 = 0 in
       while (for_index37 < for_limit36) {
@@ -4344,18 +4413,18 @@ fn std::task::join_all_results(tasks/58: Vec[std::task::Task[Result[T, E]]]) -> 
             let for_item38 = @intrinsic(vec.get)(for_source35, for_index37) in
             let _wild39 = for_index37 = (for_index37 + 1) in
             {
-              let task/61 = for_item38 in
+              let task/63 = for_item38 in
               {
                 {
                   let mtmp40 =
-                    inherent#std::task::Task#std::task::Task[Result[T,E]]#join(task/61) in
+                    inherent#std::task::Task#std::task::Task[Result[T,E]]#join(task/63) in
                   match mtmp40 {
                     Result::Ok(x41) => {
                       {
                         let x41 = Result::Ok._0(mtmp40) in
                         {
-                          let value/62 = x41 in
-                          inherent#Vec#Vec[T]#push(values/59, value/62)
+                          let value/64 = x41 in
+                          inherent#Vec#Vec[T]#push(values/61, value/64)
                         }
                       }
                     },
@@ -4363,8 +4432,8 @@ fn std::task::join_all_results(tasks/58: Vec[std::task::Task[Result[T, E]]]) -> 
                       {
                         let x42 = Result::Err._0(mtmp40) in
                         {
-                          let error/63 = x42 in
-                          inherent#Vec#Vec[E]#push(errors/60, error/63)
+                          let error/65 = x42 in
+                          inherent#Vec#Vec[E]#push(errors/62, error/65)
                         }
                       }
                     },
@@ -4375,49 +4444,49 @@ fn std::task::join_all_results(tasks/58: Vec[std::task::Task[Result[T, E]]]) -> 
           }
       }
     } in
-  if inherent#Vec#Vec[E]#is_empty(errors/60) {
+  if inherent#Vec#Vec[E]#is_empty(errors/62) {
       {
-        Result::Ok(values/59)
+        Result::Ok(values/61)
       }
   } else {
       {
-        Result::Err(errors/60)
+        Result::Err(errors/62)
       }
   }
 }
 
-fn std::task::join_all_indexed_results(tasks/64: Vec[std::task::Task[Result[T, E]]]) -> Result[
+fn std::task::join_all_indexed_results(tasks/66: Vec[std::task::Task[Result[T, E]]]) -> Result[
   Vec[T],
   Vec[std::task::IndexedError[E]]
 ] {
-  let values/65 =
+  let values/67 =
     inherent#Vec#Vec[T]#with_capacity(
-      inherent#Vec#Vec[std::task::Task[Result[T,E]]]#len(tasks/64)
+      inherent#Vec#Vec[std::task::Task[Result[T,E]]]#len(tasks/66)
     ) in
-  let errors/66 = @intrinsic(vec.from_array)([]) in
+  let errors/68 = @intrinsic(vec.from_array)([]) in
   let _wild51 =
     {
       let for_index44 = 0 in
-      let for_limit45 = inherent#Vec#Vec[std::task::Task[Result[T,E]]]#len(tasks/64) in
+      let for_limit45 = inherent#Vec#Vec[std::task::Task[Result[T,E]]]#len(tasks/66) in
       while (for_index44 < for_limit45) {
           {
             let for_item46 = for_index44 in
             let _wild47 = for_index44 = (for_index44 + 1) in
             {
-              let index/67 = for_item46 in
+              let index/69 = for_item46 in
               {
                 {
                   let mtmp48 =
                     inherent#std::task::Task#std::task::Task[Result[T,E]]#join(
-                      @intrinsic(vec.get)(tasks/64, index/67)
+                      @intrinsic(vec.get)(tasks/66, index/69)
                     ) in
                   match mtmp48 {
                     Result::Ok(x49) => {
                       {
                         let x49 = Result::Ok._0(mtmp48) in
                         {
-                          let value/68 = x49 in
-                          inherent#Vec#Vec[T]#push(values/65, value/68)
+                          let value/70 = x49 in
+                          inherent#Vec#Vec[T]#push(values/67, value/70)
                         }
                       }
                     },
@@ -4425,10 +4494,10 @@ fn std::task::join_all_indexed_results(tasks/64: Vec[std::task::Task[Result[T, E
                       {
                         let x50 = Result::Err._0(mtmp48) in
                         {
-                          let error/69 = x50 in
+                          let error/71 = x50 in
                           inherent#Vec#Vec[std::task::IndexedError[E]]#push(
-                            errors/66,
-                            std::task::IndexedError { index: index/67, error: error/69 }
+                            errors/68,
+                            std::task::IndexedError { index: index/69, error: error/71 }
                           )
                         }
                       }
@@ -4440,26 +4509,26 @@ fn std::task::join_all_indexed_results(tasks/64: Vec[std::task::Task[Result[T, E
           }
       }
     } in
-  if inherent#Vec#Vec[std::task::IndexedError[E]]#is_empty(errors/66) {
+  if inherent#Vec#Vec[std::task::IndexedError[E]]#is_empty(errors/68) {
       {
-        Result::Ok(values/65)
+        Result::Ok(values/67)
       }
   } else {
       {
-        Result::Err(errors/66)
+        Result::Err(errors/68)
       }
   }
 }
 
 fn std::task::concurrent_worker(
-  cancel/70: std::task::CancelToken,
-  work/71: Channel[(int, T)],
-  results/72: Channel[(int, Result[unit, E])],
-  body/73: (std::task::CancelToken, T) -> Result[unit, E]
+  cancel/72: std::task::CancelToken,
+  work/73: Channel[(int, T)],
+  results/74: Channel[(int, Result[unit, E])],
+  body/75: (std::task::CancelToken, T) -> Result[unit, E]
 ) -> unit {
   loop {
     {
-      let mtmp52 = std::task::recv_with(cancel/70, work/71) in
+      let mtmp52 = std::task::recv_with(cancel/72, work/73) in
       match mtmp52 {
         std::task::WaitResult::Completed(x53) => {
           {
@@ -4472,10 +4541,10 @@ fn std::task::concurrent_worker(
                 {
                   let x54 = Option::Some._0(x53) in
                   {
-                    let item/74 = x54 in
+                    let item/76 = x54 in
                     inherent#Channel#Channel[(int,Result[unit,E])]#send(
-                      results/72,
-                      (item/74.0, body/73(cancel/70, item/74.1))
+                      results/74,
+                      (item/76.0, body/75(cancel/72, item/76.1))
                     )
                   }
                 }
@@ -4492,20 +4561,20 @@ fn std::task::concurrent_worker(
 }
 
 fn std::task::record_concurrent_result(
-  ordered/75: Vec[Option[E]],
-  received/76: Option[(int, Result[unit, E])]
+  ordered/77: Vec[Option[E]],
+  received/78: Option[(int, Result[unit, E])]
 ) -> unit {
-  match received/76 {
+  match received/78 {
     Option::None => {
       ()
     },
     Option::Some(x55) => {
       {
-        let x55 = Option::Some._0(received/76) in
+        let x55 = Option::Some._0(received/78) in
         {
-          let item/77 = x55 in
+          let item/79 = x55 in
           {
-            let mtmp56 = item/77.1 in
+            let mtmp56 = item/79.1 in
             match mtmp56 {
               Result::Ok(x57) => {
                 {
@@ -4521,14 +4590,14 @@ fn std::task::record_concurrent_result(
                 {
                   let x58 = Result::Err._0(mtmp56) in
                   {
-                    let error/78 = x58 in
+                    let error/80 = x58 in
                     {
                       let _wild63 =
                         {
-                          let place_root59 = ordered/75 in
-                          let index60 = item/77.0 in
+                          let place_root59 = ordered/77 in
+                          let index60 = item/79.0 in
                           let place61 = @intrinsic(vec.get)(place_root59, index60) in
-                          let value62 = Option::Some(error/78) in
+                          let value62 = Option::Some(error/80) in
                           @intrinsic(vec.set)(place_root59, index60, value62)
                         } in
                     }
@@ -4544,12 +4613,12 @@ fn std::task::record_concurrent_result(
 }
 
 fn std::task::for_each_concurrent(
-  limit/79: int,
-  values/80: Vec[T],
-  body/81: (std::task::CancelToken, T) -> Result[unit, E]
+  limit/81: int,
+  values/82: Vec[T],
+  body/83: (std::task::CancelToken, T) -> Result[unit, E]
 ) -> Result[unit, Vec[std::task::IndexedError[E]]] {
   let _wild64 =
-    if inherent#Vec#Vec[T]#is_empty(values/80) {
+    if inherent#Vec#Vec[T]#is_empty(values/82) {
         {
           return Result::Ok(())
         }
@@ -4558,43 +4627,43 @@ fn std::task::for_each_concurrent(
           ()
         }
     } in
-  let total/82 = inherent#Vec#Vec[T]#len(values/80) in
-  let worker_count/83 =
-    if (limit/79 <= 0) {
+  let total/84 = inherent#Vec#Vec[T]#len(values/82) in
+  let worker_count/85 =
+    if (limit/81 <= 0) {
         {
           1
         }
     } else {
-        if (limit/79 < total/82) {
+        if (limit/81 < total/84) {
             {
-              limit/79
+              limit/81
             }
         } else {
             {
-              total/82
+              total/84
             }
         }
     } in
-  let work/84 = inherent#Channel#Channel[(int,T)]#new(worker_count/83) in
-  let results/85 = inherent#Channel#Channel[(int,Result[unit,E])]#new(worker_count/83) in
+  let work/86 = inherent#Channel#Channel[(int,T)]#new(worker_count/85) in
+  let results/87 = inherent#Channel#Channel[(int,Result[unit,E])]#new(worker_count/85) in
   std::task::scope(
-    |scope/86: std::task::Scope| => {
+    |scope/88: std::task::Scope| => {
       let _wild70 =
         {
           let for_index65 = 0 in
-          let for_limit66 = worker_count/83 in
+          let for_limit66 = worker_count/85 in
           while (for_index65 < for_limit66) {
               {
                 let _wild68 = for_index65 = (for_index65 + 1) in
                 {
                   let mtmp69 =
                     inherent#std::task::Scope#std::task::Scope#spawn(
-                      scope/86,
-                      |cancel/87: std::task::CancelToken| => std::task::concurrent_worker(
-                        cancel/87,
-                        work/84,
-                        results/85,
-                        body/81
+                      scope/88,
+                      |cancel/89: std::task::CancelToken| => std::task::concurrent_worker(
+                        cancel/89,
+                        work/86,
+                        results/87,
+                        body/83
                       )
                     ) in
                   {
@@ -4604,51 +4673,51 @@ fn std::task::for_each_concurrent(
               }
           }
         } in
-      let ordered/88 = inherent#Vec#Vec[Option[E]]#with_capacity(total/82) in
+      let ordered/90 = inherent#Vec#Vec[Option[E]]#with_capacity(total/84) in
       let _wild75 =
         {
           let for_index71 = 0 in
-          let for_limit72 = total/82 in
+          let for_limit72 = total/84 in
           while (for_index71 < for_limit72) {
               {
                 let _wild74 = for_index71 = (for_index71 + 1) in
                 {
-                  inherent#Vec#Vec[Option[E]]#push(ordered/88, Option::None)
+                  inherent#Vec#Vec[Option[E]]#push(ordered/90, Option::None)
                 }
               }
           }
         } in
-      let dispatched/89 = 0 in
-      let completed/90 = 0 in
+      let dispatched/91 = 0 in
+      let completed/92 = 0 in
       let _wild88 =
-        while (completed/90 < total/82) {
+        while (completed/92 < total/84) {
             {
               let _wild87 =
-                if (dispatched/89 < total/82) {
+                if (dispatched/91 < total/84) {
                     {
                       select {
-                        send(work/84, (
-                          dispatched/89,
-                          @intrinsic(vec.get)(values/80, dispatched/89)
+                        send(work/86, (
+                          dispatched/91,
+                          @intrinsic(vec.get)(values/82, dispatched/91)
                         )) => {
                           {
                             let _wild78 =
                               {
-                                let compound_old76 = dispatched/89 in
+                                let compound_old76 = dispatched/91 in
                                 let compound_value77 = 1 in
-                                dispatched/89 = (compound_old76 + compound_value77)
+                                dispatched/91 = (compound_old76 + compound_value77)
                               } in
                           }
                         },
-                        recv(results/85) as received/91 => {
+                        recv(results/87) as received/93 => {
                           {
                             let _wild79 =
-                              std::task::record_concurrent_result(ordered/88, received/91) in
+                              std::task::record_concurrent_result(ordered/90, received/93) in
                             let _wild82 =
                               {
-                                let compound_old80 = completed/90 in
+                                let compound_old80 = completed/92 in
                                 let compound_value81 = 1 in
-                                completed/90 = (compound_old80 + compound_value81)
+                                completed/92 = (compound_old80 + compound_value81)
                               } in
                           }
                         },
@@ -4658,35 +4727,35 @@ fn std::task::for_each_concurrent(
                     {
                       let _wild83 =
                         std::task::record_concurrent_result(
-                          ordered/88,
-                          inherent#Channel#Channel[(int,Result[unit,E])]#recv(results/85)
+                          ordered/90,
+                          inherent#Channel#Channel[(int,Result[unit,E])]#recv(results/87)
                         ) in
                       let _wild86 =
                         {
-                          let compound_old84 = completed/90 in
+                          let compound_old84 = completed/92 in
                           let compound_value85 = 1 in
-                          completed/90 = (compound_old84 + compound_value85)
+                          completed/92 = (compound_old84 + compound_value85)
                         } in
                     }
                 } in
             }
         } in
-      let _wild89 = inherent#Channel#Channel[(int,T)]#close(work/84) in
-      let _wild90 = inherent#Channel#Channel[(int,Result[unit,E])]#close(results/85) in
-      let errors/92 = @intrinsic(vec.from_array)([]) in
+      let _wild89 = inherent#Channel#Channel[(int,T)]#close(work/86) in
+      let _wild90 = inherent#Channel#Channel[(int,Result[unit,E])]#close(results/87) in
+      let errors/94 = @intrinsic(vec.from_array)([]) in
       let _wild97 =
         {
           let for_index91 = 0 in
-          let for_limit92 = total/82 in
+          let for_limit92 = total/84 in
           while (for_index91 < for_limit92) {
               {
                 let for_item93 = for_index91 in
                 let _wild94 = for_index91 = (for_index91 + 1) in
                 {
-                  let index/93 = for_item93 in
+                  let index/95 = for_item93 in
                   {
                     {
-                      let mtmp95 = @intrinsic(vec.get)(ordered/88, index/93) in
+                      let mtmp95 = @intrinsic(vec.get)(ordered/90, index/95) in
                       match mtmp95 {
                         Option::None => {
                           ()
@@ -4695,10 +4764,10 @@ fn std::task::for_each_concurrent(
                           {
                             let x96 = Option::Some._0(mtmp95) in
                             {
-                              let error/94 = x96 in
+                              let error/96 = x96 in
                               inherent#Vec#Vec[std::task::IndexedError[E]]#push(
-                                errors/92,
-                                std::task::IndexedError { index: index/93, error: error/94 }
+                                errors/94,
+                                std::task::IndexedError { index: index/95, error: error/96 }
                               )
                             }
                           }
@@ -4710,22 +4779,22 @@ fn std::task::for_each_concurrent(
               }
           }
         } in
-      if inherent#Vec#Vec[std::task::IndexedError[E]]#is_empty(errors/92) {
+      if inherent#Vec#Vec[std::task::IndexedError[E]]#is_empty(errors/94) {
           {
             Result::Ok(())
           }
       } else {
           {
-            Result::Err(errors/92)
+            Result::Err(errors/94)
           }
       }
     }
   )
 }
 
-fn std::task::race(bodies/95: Vec[(std::task::CancelToken) -> T]) -> Option[T] {
+fn std::task::race(bodies/97: Vec[(std::task::CancelToken) -> T]) -> Option[T] {
   let _wild98 =
-    if inherent#Vec#Vec[(std::task::CancelToken)->T]#is_empty(bodies/95) {
+    if inherent#Vec#Vec[(std::task::CancelToken)->T]#is_empty(bodies/97) {
         {
           return Option::None
         }
@@ -4735,11 +4804,11 @@ fn std::task::race(bodies/95: Vec[(std::task::CancelToken) -> T]) -> Option[T] {
         }
     } in
   std::task::scope(
-    |scope/96: std::task::Scope| => {
-      let results/97 = inherent#Channel#Channel[T]#new(1) in
+    |scope/98: std::task::Scope| => {
+      let results/99 = inherent#Channel#Channel[T]#new(1) in
       let _wild105 =
         {
-          let for_source99 = bodies/95 in
+          let for_source99 = bodies/97 in
           let for_limit100 = @intrinsic(vec.len)(for_source99) in
           let for_index101 = 0 in
           while (for_index101 < for_limit100) {
@@ -4747,15 +4816,15 @@ fn std::task::race(bodies/95: Vec[(std::task::CancelToken) -> T]) -> Option[T] {
                 let for_item102 = @intrinsic(vec.get)(for_source99, for_index101) in
                 let _wild103 = for_index101 = (for_index101 + 1) in
                 {
-                  let body/98 = for_item102 in
+                  let body/100 = for_item102 in
                   {
                     let mtmp104 =
                       inherent#std::task::Scope#std::task::Scope#spawn(
-                        scope/96,
-                        |cancel/99: std::task::CancelToken| => {
-                          let value/100 = body/98(cancel/99) in
+                        scope/98,
+                        |cancel/101: std::task::CancelToken| => {
+                          let value/102 = body/100(cancel/101) in
                           select {
-                            send(results/97, value/100) => {
+                            send(results/99, value/102) => {
                               ()
                             },
                             default => {
@@ -4772,9 +4841,9 @@ fn std::task::race(bodies/95: Vec[(std::task::CancelToken) -> T]) -> Option[T] {
               }
           }
         } in
-      let value/101 = inherent#Channel#Channel[T]#recv(results/97) in
-      let _wild106 = inherent#std::task::Scope#std::task::Scope#cancel(scope/96) in
-      value/101
+      let value/103 = inherent#Channel#Channel[T]#recv(results/99) in
+      let _wild106 = inherent#std::task::Scope#std::task::Scope#cancel(scope/98) in
+      value/103
     }
   )
 }
@@ -4794,7 +4863,7 @@ fn main() -> unit {
             scope/1,
             |_cancel/4: std::task::CancelToken| => 22
           ) in
-        let mtmp408 =
+        let mtmp411 =
           inherent#std::task::Scope#std::task::Scope#spawn(
             scope/1,
             |_cancel/6: std::task::CancelToken| => inherent#Ref#Ref[bool]#set(completed/0, true)
@@ -4805,8 +4874,8 @@ fn main() -> unit {
         }
       }
     ) in
-  let _wild409 = println(total/7) in
-  let _wild410 = println(inherent#Ref#Ref[bool]#get(completed/0)) in
+  let _wild412 = println(total/7) in
+  let _wild413 = println(inherent#Ref#Ref[bool]#get(completed/0)) in
   let nested/12 =
     std::task::scope(
       |scope/8: std::task::Scope| => {
@@ -4823,7 +4892,7 @@ fn main() -> unit {
         )
       }
     ) in
-  let _wild411 = println(nested/12) in
+  let _wild414 = println(nested/12) in
   let scope/13 = 3 in
   let spawn/15 = |value/14: int| => (value/14 + 1) in
   println(spawn/15(scope/13))

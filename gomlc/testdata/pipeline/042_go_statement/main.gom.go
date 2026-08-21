@@ -36,31 +36,31 @@ type Ordering int32
 
 func main0() struct{} {
     var signal__1 *ref_int32_x
-    var inline452 int32 = 0
-    var inline453 *ref_int32_x = ref__Ref_5int32(inline452)
-    signal__1 = inline453
-    var t415 closure_env_main_0 = closure_env_main_0{
+    var inline455 int32 = 0
+    var inline456 *ref_int32_x = ref__Ref_5int32(inline455)
+    signal__1 = inline456
+    var t418 closure_env_main_0 = closure_env_main_0{
         signal_0: signal__1,
     }
-    var t416 func() struct{} = func() struct{} {
-        return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t415)
+    var t419 func() struct{} = func() struct{} {
+        return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t418)
     }
-    go t416()
-    Loop_loop418:
+    go t419()
+    Loop_loop421:
     for {
-        var t419 int32
-        var inline446 int32 = ref_get__Ref_5int32(signal__1)
-        t419 = inline446
-        var t420 bool = t419 < 1
-        if t420 {
+        var t422 int32
+        var inline449 int32 = ref_get__Ref_5int32(signal__1)
+        t422 = inline449
+        var t423 bool = t422 < 1
+        if t423 {
             continue
         } else {
-            break Loop_loop418
+            break Loop_loop421
         }
     }
-    var inline448 string = "main"
-    var inline449 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline448)
-    _goml_runtime_core_string_println(inline449)
+    var inline451 string = "main"
+    var inline452 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline451)
+    _goml_runtime_core_string_println(inline452)
     return struct{}{}
 }
 
@@ -73,8 +73,8 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
     return self__149
 }
 
-func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env411 closure_env_main_0) struct{} {
-    var signal__1 *ref_int32_x = env411.signal_0
+func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env414 closure_env_main_0) struct{} {
+    var signal__1 *ref_int32_x = env414.signal_0
     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(signal__1, 1)
     return struct{}{}
 }

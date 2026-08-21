@@ -12,9 +12,9 @@ func _goml_runtime_core_string_println(s string) struct{} {
 type Ordering int32
 
 func main0() struct{} {
-    var inline419 string = "continued"
-    var inline420 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline419)
-    _goml_runtime_core_string_println(inline420)
+    var inline422 string = "continued"
+    var inline423 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline422)
+    _goml_runtime_core_string_println(inline423)
     return struct{}{}
 }
 

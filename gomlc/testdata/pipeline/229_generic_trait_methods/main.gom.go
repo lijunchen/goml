@@ -21,39 +21,39 @@ type Ordering int32
 
 func main0() struct{} {
     var direct__3 string
-    var inline453 string = "ok"
-    var inline454 string = "direct:"
-    var inline455 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline453)
-    var inline456 string = inline454 + inline455
-    direct__3 = inline456
-    var inline450 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(direct__3)
-    _goml_runtime_core_string_println(inline450)
-    var t413 Prefix = Prefix{
+    var inline456 string = "ok"
+    var inline457 string = "direct:"
+    var inline458 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline456)
+    var inline459 string = inline457 + inline458
+    direct__3 = inline459
+    var inline453 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(direct__3)
+    _goml_runtime_core_string_println(inline453)
+    var t416 Prefix = Prefix{
         value: "generic:",
     }
     var generic__4 string
-    var inline448 string = _goml_m_trait__impl_i_RenderValue_i_Prefix_i_render____mono2(t413, 11)
-    generic__4 = inline448
-    var inline445 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(generic__4)
-    _goml_runtime_core_string_println(inline445)
+    var inline451 string = _goml_m_trait__impl_i_RenderValue_i_Prefix_i_render____mono2(t416, 11)
+    generic__4 = inline451
+    var inline448 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(generic__4)
+    _goml_runtime_core_string_println(inline448)
     var ufcs__5 string
-    var inline440 int = 12
-    var inline441 string = "ufcs:"
-    var inline442 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline440)
-    var inline443 string = inline441 + inline442
-    ufcs__5 = inline443
-    var inline437 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(ufcs__5)
-    _goml_runtime_core_string_println(inline437)
+    var inline443 int = 12
+    var inline444 string = "ufcs:"
+    var inline445 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline443)
+    var inline446 string = inline444 + inline445
+    ufcs__5 = inline446
+    var inline440 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(ufcs__5)
+    _goml_runtime_core_string_println(inline440)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_RenderValue_i_Prefix_i_render____mono2(self__0 Prefix, value__1 int) string {
-    var t428 string = self__0.value
-    var t429 string
-    var inline465 string = _goml_runtime_core_int_to_string(value__1)
-    t429 = inline465
-    var t430 string = t428 + t429
-    return t430
+    var t431 string = self__0.value
+    var t432 string
+    var inline468 string = _goml_runtime_core_int_to_string(value__1)
+    t432 = inline468
+    var t433 string = t431 + t432
+    return t433
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
@@ -61,8 +61,8 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
-    var t435 string = _goml_runtime_core_int_to_string(self__151)
-    return t435
+    var t438 string = _goml_runtime_core_int_to_string(self__151)
+    return t438
 }
 
 func main() {

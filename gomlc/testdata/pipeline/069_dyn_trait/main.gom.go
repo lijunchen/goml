@@ -54,24 +54,24 @@ func dyn__Display__vtable__Point() *dyn__Display_vtable {
 }
 
 func _goml_m_trait__impl_i_Display_i_Point_i_show(self__0 Point) string {
-    var t412 int32 = self__0.x
-    var t413 string
-    var inline439 string = _goml_runtime_core_int32_to_string(t412)
-    t413 = inline439
-    var t414 string = "Point(" + t413
-    var t415 string = t414 + ","
-    var t416 int32 = self__0.y
-    var t417 string
-    var inline437 string = _goml_runtime_core_int32_to_string(t416)
-    t417 = inline437
-    var t418 string = t415 + t417
-    var t419 string = t418 + ")"
-    return t419
+    var t415 int32 = self__0.x
+    var t416 string
+    var inline442 string = _goml_runtime_core_int32_to_string(t415)
+    t416 = inline442
+    var t417 string = "Point(" + t416
+    var t418 string = t417 + ","
+    var t419 int32 = self__0.y
+    var t420 string
+    var inline440 string = _goml_runtime_core_int32_to_string(t419)
+    t420 = inline440
+    var t421 string = t418 + t420
+    var t422 string = t421 + ")"
+    return t422
 }
 
 func _goml_m_trait__impl_i_Display_i_Flag_i_show(self__1 Flag) string {
-    var t424 bool = self__1.value
-    if t424 {
+    var t427 bool = self__1.value
+    if t427 {
         return "Flag(true)"
     } else {
         return "Flag(false)"
@@ -94,12 +94,12 @@ func main0() struct{} {
         data: t__3,
         vtable: dyn__Display__vtable__Flag(),
     }
-    var t426 string = dp__4.vtable.show(dp__4.data)
-    var inline444 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t426)
+    var t429 string = dp__4.vtable.show(dp__4.data)
+    var inline447 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t429)
+    _goml_runtime_core_string_println(inline447)
+    var t430 string = dt__5.vtable.show(dt__5.data)
+    var inline444 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t430)
     _goml_runtime_core_string_println(inline444)
-    var t427 string = dt__5.vtable.show(dt__5.data)
-    var inline441 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t427)
-    _goml_runtime_core_string_println(inline441)
     return struct{}{}
 }
 

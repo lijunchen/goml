@@ -20,20 +20,20 @@ type S struct {
 type Ordering int32
 
 func main0() struct{} {
-    var t416 string
-    var inline431 int32 = 7
-    var inline432 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline431)
-    var inline433 string = "S(" + inline432
-    var inline434 string = inline433 + ")"
-    t416 = inline434
-    var inline428 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t416)
-    _goml_runtime_core_string_println(inline428)
+    var t419 string
+    var inline434 int32 = 7
+    var inline435 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline434)
+    var inline436 string = "S(" + inline435
+    var inline437 string = inline436 + ")"
+    t419 = inline437
+    var inline431 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t419)
+    _goml_runtime_core_string_println(inline431)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
-    var t419 string = _goml_runtime_core_int32_to_string(self__33)
-    return t419
+    var t422 string = _goml_runtime_core_int32_to_string(self__33)
+    return t422
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {

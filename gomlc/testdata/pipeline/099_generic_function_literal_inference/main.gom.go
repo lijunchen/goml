@@ -33,29 +33,29 @@ type Ordering int32
 
 func main0() struct{} {
     var a__1 uint8
-    var inline455 uint8 = 42
-    a__1 = inline455
-    var t412 string
-    var inline453 string = _goml_runtime_core_uint8_to_string(a__1)
-    t412 = inline453
-    var inline450 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t412)
-    _goml_runtime_core_string_println(inline450)
+    var inline458 uint8 = 42
+    a__1 = inline458
+    var t415 string
+    var inline456 string = _goml_runtime_core_uint8_to_string(a__1)
+    t415 = inline456
+    var inline453 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t415)
+    _goml_runtime_core_string_println(inline453)
     var b__2 float32
-    var inline448 float32 = 3.140000104904175
-    b__2 = inline448
-    var t413 string
-    var inline446 string = _goml_runtime_core_float32_to_string(b__2)
-    t413 = inline446
-    var inline443 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t413)
-    _goml_runtime_core_string_println(inline443)
+    var inline451 float32 = 3.140000104904175
+    b__2 = inline451
+    var t416 string
+    var inline449 string = _goml_runtime_core_float32_to_string(b__2)
+    t416 = inline449
+    var inline446 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t416)
+    _goml_runtime_core_string_println(inline446)
     var c__3 int64
-    var inline441 int64 = 100
-    c__3 = inline441
-    var t414 string
-    var inline439 string = _goml_runtime_core_int64_to_string(c__3)
-    t414 = inline439
-    var inline436 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t414)
-    _goml_runtime_core_string_println(inline436)
+    var inline444 int64 = 100
+    c__3 = inline444
+    var t417 string
+    var inline442 string = _goml_runtime_core_int64_to_string(c__3)
+    t417 = inline442
+    var inline439 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t417)
+    _goml_runtime_core_string_println(inline439)
     return struct{}{}
 }
 

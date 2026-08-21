@@ -24,40 +24,40 @@ type RightSource struct {
 type Ordering int32
 
 func _goml_m_trait__impl_i_Mark_i_int32_i_marked(self__0 int32) string {
-    var t411 string
-    var inline440 string = _goml_runtime_core_int32_to_string(self__0)
-    t411 = inline440
-    var t412 string = "m" + t411
-    return t412
-}
-
-func _goml_m_trait__impl_i_Source_i_LeftSource_i_get(self__1 LeftSource) int32 {
-    var t415 int32 = self__1.value
+    var t414 string
+    var inline443 string = _goml_runtime_core_int32_to_string(self__0)
+    t414 = inline443
+    var t415 string = "m" + t414
     return t415
 }
 
-func _goml_m_trait__impl_i_Source_i_RightSource_i_get(self__2 RightSource) int32 {
-    var t418 int32 = self__2.value
+func _goml_m_trait__impl_i_Source_i_LeftSource_i_get(self__1 LeftSource) int32 {
+    var t418 int32 = self__1.value
     return t418
 }
 
+func _goml_m_trait__impl_i_Source_i_RightSource_i_get(self__2 RightSource) int32 {
+    var t421 int32 = self__2.value
+    return t421
+}
+
 func main0() struct{} {
-    var t420 LeftSource = LeftSource{
+    var t423 LeftSource = LeftSource{
         value: 3,
     }
-    var t421 RightSource = RightSource{
+    var t424 RightSource = RightSource{
         value: 4,
     }
-    var t422 string
-    var inline445 int32 = _goml_m_trait__impl_i_Source_i_LeftSource_i_get(t420)
-    var inline446 string = _goml_m_trait__impl_i_Mark_i_int32_i_marked(inline445)
-    var inline447 string = inline446 + ":"
-    var inline448 int32 = _goml_m_trait__impl_i_Source_i_RightSource_i_get(t421)
+    var t425 string
+    var inline448 int32 = _goml_m_trait__impl_i_Source_i_LeftSource_i_get(t423)
     var inline449 string = _goml_m_trait__impl_i_Mark_i_int32_i_marked(inline448)
-    var inline450 string = inline447 + inline449
-    t422 = inline450
-    var inline442 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t422)
-    _goml_runtime_core_string_println(inline442)
+    var inline450 string = inline449 + ":"
+    var inline451 int32 = _goml_m_trait__impl_i_Source_i_RightSource_i_get(t424)
+    var inline452 string = _goml_m_trait__impl_i_Mark_i_int32_i_marked(inline451)
+    var inline453 string = inline450 + inline452
+    t425 = inline453
+    var inline445 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t425)
+    _goml_runtime_core_string_println(inline445)
     return struct{}{}
 }
 

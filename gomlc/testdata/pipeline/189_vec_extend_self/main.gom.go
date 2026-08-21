@@ -64,25 +64,25 @@ func vec_reserve__Vec_5int32(vec *_goml_vec_int32, additional int) struct{} {
 type Ordering int32
 
 func print_values(values__0 *_goml_vec_int32) struct{} {
-    var t425 int
-    var inline469 int = vec_len__Vec_5int32(values__0)
-    t425 = inline469
-    var inline466 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t425)
-    _goml_runtime_core_string_println(inline466)
-    var for_limit410 int = vec_len__Vec_5int32(values__0)
-    var for_index411 int = 0
-    Loop_loop427:
+    var t428 int
+    var inline472 int = vec_len__Vec_5int32(values__0)
+    t428 = inline472
+    var inline469 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t428)
+    _goml_runtime_core_string_println(inline469)
+    var for_limit413 int = vec_len__Vec_5int32(values__0)
+    var for_index414 int = 0
+    Loop_loop430:
     for {
-        var t428 bool = for_index411 < for_limit410
-        if t428 {
-            var for_item412 int32 = vec_get__Vec_5int32(values__0, for_index411)
-            var t429 int = for_index411 + 1
-            for_index411 = t429
-            var inline463 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(for_item412)
-            _goml_runtime_core_string_println(inline463)
+        var t431 bool = for_index414 < for_limit413
+        if t431 {
+            var for_item415 int32 = vec_get__Vec_5int32(values__0, for_index414)
+            var t432 int = for_index414 + 1
+            for_index414 = t432
+            var inline466 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(for_item415)
+            _goml_runtime_core_string_println(inline466)
             continue
         } else {
-            break Loop_loop427
+            break Loop_loop430
         }
     }
     return struct{}{}
@@ -90,28 +90,28 @@ func print_values(values__0 *_goml_vec_int32) struct{} {
 
 func main0() struct{} {
     var values__2 *_goml_vec_int32
-    var inline490 *_goml_vec_int32 = vec_new__Vec_5int32()
-    values__2 = inline490
-    var inline487 int32 = 1
+    var inline493 *_goml_vec_int32 = vec_new__Vec_5int32()
+    values__2 = inline493
+    var inline490 int32 = 1
+    vec_push__Vec_5int32(values__2, inline490)
+    var inline487 int32 = 2
     vec_push__Vec_5int32(values__2, inline487)
-    var inline484 int32 = 2
+    var inline484 int32 = 3
     vec_push__Vec_5int32(values__2, inline484)
-    var inline481 int32 = 3
-    vec_push__Vec_5int32(values__2, inline481)
     _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_extend____T__int32(values__2, values__2)
     print_values(values__2)
     var aliased__3 *_goml_vec_int32
-    var inline479 *_goml_vec_int32 = vec_new__Vec_5int32()
-    aliased__3 = inline479
-    var inline476 int32 = 4
+    var inline482 *_goml_vec_int32 = vec_new__Vec_5int32()
+    aliased__3 = inline482
+    var inline479 int32 = 4
+    vec_push__Vec_5int32(aliased__3, inline479)
+    var inline476 int32 = 5
     vec_push__Vec_5int32(aliased__3, inline476)
-    var inline473 int32 = 5
-    vec_push__Vec_5int32(aliased__3, inline473)
     _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_extend____T__int32(aliased__3, aliased__3)
     print_values(aliased__3)
     var empty__5 *_goml_vec_int32
-    var inline471 *_goml_vec_int32 = vec_new__Vec_5int32()
-    empty__5 = inline471
+    var inline474 *_goml_vec_int32 = vec_new__Vec_5int32()
+    empty__5 = inline474
     _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_extend____T__int32(empty__5, empty__5)
     print_values(empty__5)
     return struct{}{}
@@ -119,36 +119,36 @@ func main0() struct{} {
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_extend____T__int32(self__307 *_goml_vec_int32, other__308 *_goml_vec_int32) struct{} {
     var len__309 int
-    var inline500 int = vec_len__Vec_5int32(other__308)
-    len__309 = inline500
+    var inline503 int = vec_len__Vec_5int32(other__308)
+    len__309 = inline503
     vec_reserve__Vec_5int32(self__307, len__309)
     var index__310 int = 0
-    Loop_loop449:
+    Loop_loop452:
     for {
-        var t450 bool = index__310 < len__309
-        if t450 {
-            var t451 int32 = vec_get__Vec_5int32(other__308, index__310)
-            vec_push__Vec_5int32(self__307, t451)
+        var t453 bool = index__310 < len__309
+        if t453 {
+            var t454 int32 = vec_get__Vec_5int32(other__308, index__310)
+            vec_push__Vec_5int32(self__307, t454)
             var compound_old253 int = index__310
             var compound_value254 int = 1
-            var t452 int = compound_old253 + compound_value254
-            index__310 = t452
+            var t455 int = compound_old253 + compound_value254
+            index__310 = t455
             continue
         } else {
-            break Loop_loop449
+            break Loop_loop452
         }
     }
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
-    var t456 string = _goml_runtime_core_int_to_string(self__151)
-    return t456
+    var t459 string = _goml_runtime_core_int_to_string(self__151)
+    return t459
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
-    var t459 string = _goml_runtime_core_int32_to_string(self__154)
-    return t459
+    var t462 string = _goml_runtime_core_int32_to_string(self__154)
+    return t462
 }
 
 func main() {

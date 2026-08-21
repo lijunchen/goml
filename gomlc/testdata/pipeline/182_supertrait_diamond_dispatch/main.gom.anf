@@ -15,47 +15,47 @@ fn trait_impl#Diamond#Value#diamond(self/3: Value) -> string {
 }
 
 fn main() -> unit {
-  let t418 = Value {} in
-  join inline_cont437(t419: string) -> unit {
-    let inline435 = trait_impl#ToString#string#to_string(t419) in
-    let inline436 = @runtime(core.string_println)(inline435) in
+  let t421 = Value {} in
+  join inline_cont440(t422: string) -> unit {
+    let inline438 = trait_impl#ToString#string#to_string(t422) in
+    let inline439 = @runtime(core.string_println)(inline438) in
     ()
   } in
-  let inline438 = trait_impl#Base#Value#base(t418) in
-  let inline439 = trait_impl#Left#Value#left(t418) in
-  let inline440 = (inline438 + inline439) in
-  let inline441 = trait_impl#Right#Value#right(t418) in
-  let inline442 = (inline440 + inline441) in
-  let inline443 = trait_impl#Diamond#Value#diamond(t418) in
-  let inline444 = (inline442 + inline443) in
-  jump inline_cont437(inline444)
+  let inline441 = trait_impl#Base#Value#base(t421) in
+  let inline442 = trait_impl#Left#Value#left(t421) in
+  let inline443 = (inline441 + inline442) in
+  let inline444 = trait_impl#Right#Value#right(t421) in
+  let inline445 = (inline443 + inline444) in
+  let inline446 = trait_impl#Diamond#Value#diamond(t421) in
+  let inline447 = (inline445 + inline446) in
+  jump inline_cont440(inline447)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont445(t421: string) -> unit {
-    let t422 = @runtime(core.string_println)(t421) in
+  join inline_cont448(t424: string) -> unit {
+    let t425 = @runtime(core.string_println)(t424) in
     ()
   } in
-  jump inline_cont445(value/1)
+  jump inline_cont448(value/1)
 }
 
 fn describe__T_Value(value/4: Value) -> string {
-  join inline_cont449(t425: string) -> string {
-    join inline_cont448(t426: string) -> string {
-      let t427 = (t425 + t426) in
-      join inline_cont447(t428: string) -> string {
-        let t429 = (t427 + t428) in
-        join inline_cont446(t430: string) -> string {
-          let t431 = (t429 + t430) in
-          t431
+  join inline_cont452(t428: string) -> string {
+    join inline_cont451(t429: string) -> string {
+      let t430 = (t428 + t429) in
+      join inline_cont450(t431: string) -> string {
+        let t432 = (t430 + t431) in
+        join inline_cont449(t433: string) -> string {
+          let t434 = (t432 + t433) in
+          t434
         } in
-        jump inline_cont446("D")
+        jump inline_cont449("D")
       } in
-      jump inline_cont447("R")
+      jump inline_cont450("R")
     } in
-    jump inline_cont448("L")
+    jump inline_cont451("L")
   } in
-  jump inline_cont449("B")
+  jump inline_cont452("B")
 }
 
 fn trait_impl#ToString#string#to_string(self/149: string) -> string {

@@ -389,16 +389,24 @@ fn std::internal::host::sleep_nanoseconds(value/98: int64) -> unit {
   @runtime(std.time.sleep_nanoseconds)(value/98)
 }
 
-fn std::internal::host::math_float32_unary(operation/99: int, value/100: float32) -> float32 {
-  @runtime(std.math.float32_unary)(operation/99, value/100)
+fn std::internal::host::timer_new(value/99: int64) -> (int64, Receiver[unit]) {
+  @runtime(std.time.timer_new)(value/99)
 }
 
-fn std::internal::host::math_float32_pow(value/101: float32, exponent/102: float32) -> float32 {
-  @runtime(std.math.float32_pow)(value/101, exponent/102)
+fn std::internal::host::timer_stop(id/100: int64) -> bool {
+  @runtime(std.time.timer_stop)(id/100)
 }
 
-fn std::internal::host::crypto_random_bytes(length/103: int) -> (bool, Vec[uint8], string) {
-  @runtime(std.crypto.rand.bytes)(length/103)
+fn std::internal::host::math_float32_unary(operation/101: int, value/102: float32) -> float32 {
+  @runtime(std.math.float32_unary)(operation/101, value/102)
+}
+
+fn std::internal::host::math_float32_pow(value/103: float32, exponent/104: float32) -> float32 {
+  @runtime(std.math.float32_pow)(value/103, exponent/104)
+}
+
+fn std::internal::host::crypto_random_bytes(length/105: int) -> (bool, Vec[uint8], string) {
+  @runtime(std.crypto.rand.bytes)(length/105)
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
@@ -11872,81 +11880,81 @@ fn std::json::into_serde_value(value/449: std::json::Value) -> std::serde::Value
 
 fn main() -> unit {
   let value/2 =
-    let mtmp408 = std::json::parse("{\"name\":\"goml\",\"version\":1,\"stable\":true}") in
-    match mtmp408 {
-      Result__std::json::Value__string::Ok(x409) => {
-        let x409 = Result__std::json::Value__string::Ok._0(mtmp408) in
-        let value/0 = x409 in
+    let mtmp411 = std::json::parse("{\"name\":\"goml\",\"version\":1,\"stable\":true}") in
+    match mtmp411 {
+      Result__std::json::Value__string::Ok(x412) => {
+        let x412 = Result__std::json::Value__string::Ok._0(mtmp411) in
+        let value/0 = x412 in
         value/0
       },
-      Result__std::json::Value__string::Err(x410) => {
-        let x410 = Result__std::json::Value__string::Err._0(mtmp408) in
-        let error/1 = x410 in
-        let _wild411 = println__T_string(error/1) in
+      Result__std::json::Value__string::Err(x413) => {
+        let x413 = Result__std::json::Value__string::Err._0(mtmp411) in
+        let error/1 = x413 in
+        let _wild414 = println__T_string(error/1) in
         return
       },
     } in
-  let _wild416 =
-    let mtmp412 = std::json::field(value/2, "name") in
-    match mtmp412 {
+  let _wild419 =
+    let mtmp415 = std::json::field(value/2, "name") in
+    match mtmp415 {
       Option__std::json::Value::None => {
         println__T_string("missing name")
       },
-      Option__std::json::Value::Some(x413) => {
-        let x413 = Option__std::json::Value::Some._0(mtmp412) in
-        let field/3 = x413 in
-        let mtmp414 = std::json::as_string(field/3) in
-        match mtmp414 {
+      Option__std::json::Value::Some(x416) => {
+        let x416 = Option__std::json::Value::Some._0(mtmp415) in
+        let field/3 = x416 in
+        let mtmp417 = std::json::as_string(field/3) in
+        match mtmp417 {
           Option__string::None => {
             println__T_string("invalid name")
           },
-          Option__string::Some(x415) => {
-            let x415 = Option__string::Some._0(mtmp414) in
-            let name/4 = x415 in
+          Option__string::Some(x418) => {
+            let x418 = Option__string::Some._0(mtmp417) in
+            let name/4 = x418 in
             println__T_string(name/4)
           },
         }
       },
     } in
-  let _wild421 =
-    let mtmp417 = std::json::field(value/2, "version") in
-    match mtmp417 {
+  let _wild424 =
+    let mtmp420 = std::json::field(value/2, "version") in
+    match mtmp420 {
       Option__std::json::Value::None => {
         println__T_string("missing version")
       },
-      Option__std::json::Value::Some(x418) => {
-        let x418 = Option__std::json::Value::Some._0(mtmp417) in
-        let field/5 = x418 in
-        let mtmp419 = std::json::as_int(field/5) in
-        match mtmp419 {
+      Option__std::json::Value::Some(x421) => {
+        let x421 = Option__std::json::Value::Some._0(mtmp420) in
+        let field/5 = x421 in
+        let mtmp422 = std::json::as_int(field/5) in
+        match mtmp422 {
           Option__int::None => {
             println__T_string("invalid version")
           },
-          Option__int::Some(x420) => {
-            let x420 = Option__int::Some._0(mtmp419) in
-            let version/6 = x420 in
+          Option__int::Some(x423) => {
+            let x423 = Option__int::Some._0(mtmp422) in
+            let version/6 = x423 in
             println__T_int(version/6)
           },
         }
       },
     } in
-  let _wild426 =
-    let mtmp422 = std::json::field(value/2, "stable") in
-    match mtmp422 {
+  let _wild429 =
+    let mtmp425 = std::json::field(value/2, "stable") in
+    match mtmp425 {
       Option__std::json::Value::None => {
         println__T_string("missing stable")
       },
-      Option__std::json::Value::Some(x423) => {
-        let x423 = Option__std::json::Value::Some._0(mtmp422) in
-        let field/7 = x423 in
-        let mtmp424 = std::json::as_bool(field/7) in
-        match mtmp424 {
+      Option__std::json::Value::Some(x426) => {
+        let x426 = Option__std::json::Value::Some._0(mtmp425) in
+        let field/7 = x426 in
+        let mtmp427 = std::json::as_bool(field/7) in
+        match mtmp427 {
           Option__bool::None => {
             println__T_string("invalid stable")
           },
-          Option__bool::Some(x425) => {
-            let x425 = Option__bool::Some._0(mtmp424) in
-            let stable/8 = x425 in
+          Option__bool::Some(x428) => {
+            let x428 = Option__bool::Some._0(mtmp427) in
+            let stable/8 = x428 in
             println__T_bool(stable/8)
           },
         }
@@ -12150,13 +12158,13 @@ fn inherent#Ref#Ref[T]#get__T_Option[std::serde::Value](
 }
 
 fn inherent#Option#Option[T]#is_some__T_std::serde::Value(
-  self/456: Option__std::serde::Value
+  self/465: Option__std::serde::Value
 ) -> bool {
-  match self/456 {
+  match self/465 {
     Option__std::serde::Value::None => {
       false
     },
-    Option__std::serde::Value::Some(x386) => {
+    Option__std::serde::Value::Some(x389) => {
       true
     },
   }
@@ -12202,8 +12210,8 @@ fn trait_impl#ToString#int64#to_string(self/155: int64) -> string {
   @runtime(core.int64_to_string)(self/155)
 }
 
-fn trait_impl#ToString#uint#to_string(self/442: uint) -> string {
-  @runtime(core.uint_to_string)(self/442)
+fn trait_impl#ToString#uint#to_string(self/451: uint) -> string {
+  @runtime(core.uint_to_string)(self/451)
 }
 
 fn trait_impl#ToString#uint8#to_string(self/156: uint8) -> string {
@@ -12289,9 +12297,9 @@ fn inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueSerializeFrame(
 }
 
 fn inherent#Option#Option[T]#is_none__T_std::serde::Value(
-  self/457: Option__std::serde::Value
+  self/466: Option__std::serde::Value
 ) -> bool {
-  (!inherent#Option#Option[T]#is_some__T_std::serde::Value(self/457))
+  (!inherent#Option#Option[T]#is_some__T_std::serde::Value(self/466))
 }
 
 fn inherent#Vec#Vec[T]#len__T_std::serde::ValueSerializeFrame(
@@ -12304,12 +12312,12 @@ fn inherent#Ref#Ref[T]#get__T_Option[string](self/432: Ref[Option__string]) -> O
   @intrinsic(ref.get)(self/432)
 }
 
-fn inherent#Option#Option[T]#is_some__T_string(self/456: Option__string) -> bool {
-  match self/456 {
+fn inherent#Option#Option[T]#is_some__T_string(self/465: Option__string) -> bool {
+  match self/465 {
     Option__string::None => {
       false
     },
-    Option__string::Some(x386) => {
+    Option__string::Some(x389) => {
       true
     },
   }
@@ -12988,41 +12996,41 @@ fn inherent#string#string#to_ascii_uppercase(self/129: string) -> string {
   result/132
 }
 
-fn inherent#string#string#contains(self/452: string, expected/453: string) -> bool {
-  if (inherent#string#string#byte_len(expected/453) == 0) {
+fn inherent#string#string#contains(self/461: string, expected/462: string) -> bool {
+  if (inherent#string#string#byte_len(expected/462) == 0) {
       true
   } else {
-      if (inherent#string#string#byte_len(expected/453) >
-        inherent#string#string#byte_len(self/452)) {
+      if (inherent#string#string#byte_len(expected/462) >
+        inherent#string#string#byte_len(self/461)) {
           false
       } else {
-          let _wild385 =
-            let for_iter382 =
+          let _wild388 =
+            let for_iter385 =
               trait_impl#IntoIterator#FnIterator__int#into_iter(
                 __goml_builtin_range(
                   0,
-                  ((inherent#string#string#byte_len(self/452) -
-                    inherent#string#string#byte_len(expected/453)) +
+                  ((inherent#string#string#byte_len(self/461) -
+                    inherent#string#string#byte_len(expected/462)) +
                     1)
                 )
               ) in
             while true {
-                let for_next383 = trait_impl#Iterator#FnIterator__int#next(for_iter382) in
-                match for_next383 {
+                let for_next386 = trait_impl#Iterator#FnIterator__int#next(for_iter385) in
+                match for_next386 {
                   Option__int::None => {
                     break
                   },
-                  Option__int::Some(x384) => {
-                    let x384 = Option__int::Some._0(for_next383) in
-                    let start/454 = x384 in
-                    let end/455 = (start/454 + inherent#string#string#byte_len(expected/453)) in
-                    if if if inherent#string#string#is_char_boundary(self/452, start/454) {
-                        inherent#string#string#is_char_boundary(self/452, end/455)
+                  Option__int::Some(x387) => {
+                    let x387 = Option__int::Some._0(for_next386) in
+                    let start/463 = x387 in
+                    let end/464 = (start/463 + inherent#string#string#byte_len(expected/462)) in
+                    if if if inherent#string#string#is_char_boundary(self/461, start/463) {
+                        inherent#string#string#is_char_boundary(self/461, end/464)
                     } else {
                         false
                     } {
-                        (inherent#string#string#byte_slice(self/452, start/454, end/455) ==
-                          expected/453)
+                        (inherent#string#string#byte_slice(self/461, start/463, end/464) ==
+                          expected/462)
                     } else {
                         false
                     } {
@@ -13476,11 +13484,11 @@ fn inherent#Vec#Vec[T]#pop__T_string(self/283: Vec[string]) -> Option__string {
   }
 }
 
-fn __goml_builtin_range(start/494: int, end/495: int) -> FnIterator__int {
-  let current/496 = @intrinsic(ref.new)(start/494) in
+fn __goml_builtin_range(start/503: int, end/504: int) -> FnIterator__int {
+  let current/505 = @intrinsic(ref.new)(start/503) in
   inherent#FnIterator#FnIterator[T]#from_fn__T_int(
     pack_closure[inherent#closure_env_goml_builtin_range_2#closure_env_goml_builtin_range_2#apply](
-      closure_env_goml_builtin_range_2 { current_0: current/496, end_1: end/495 }
+      closure_env_goml_builtin_range_2 { current_0: current/505, end_1: end/504 }
     )
   )
 }
@@ -13686,10 +13694,10 @@ fn trait_impl#Hash#string#hash(self/209: string) -> uint64 {
 }
 
 fn inherent#closure_env_inherent_string_string_char_indices_0#closure_env_inherent_string_string_char_indices_0#apply(
-  env427: closure_env_inherent_string_string_char_indices_0
+  env430: closure_env_inherent_string_string_char_indices_0
 ) -> Option__(int,char) {
-  let index/58 = closure_env_inherent_string_string_char_indices_0.index_0(env427) in
-  let self/57 = closure_env_inherent_string_string_char_indices_0.self_1(env427) in
+  let index/58 = closure_env_inherent_string_string_char_indices_0.index_0(env430) in
+  let self/57 = closure_env_inherent_string_string_char_indices_0.self_1(env430) in
   let current/59 = @intrinsic(ref.get)(index/58) in
   let mtmp37 = inherent#string#string#decode_at(self/57, current/59) in
   match mtmp37 {
@@ -13711,10 +13719,10 @@ fn inherent#closure_env_inherent_string_string_char_indices_0#closure_env_inhere
 }
 
 fn inherent#closure_env_inherent_string_string_chars_1#closure_env_inherent_string_string_chars_1#apply(
-  env428: closure_env_inherent_string_string_chars_1
+  env431: closure_env_inherent_string_string_chars_1
 ) -> Option__char {
-  let self/52 = closure_env_inherent_string_string_chars_1.self_0(env428) in
-  let index/53 = closure_env_inherent_string_string_chars_1.index_1(env428) in
+  let self/52 = closure_env_inherent_string_string_chars_1.self_0(env431) in
+  let index/53 = closure_env_inherent_string_string_chars_1.index_1(env431) in
   let mtmp29 = inherent#string#string#decode_at(self/52, @intrinsic(ref.get)(index/53)) in
   match mtmp29 {
     Option__(char,int)::None => {
@@ -13738,14 +13746,14 @@ fn inherent#closure_env_inherent_string_string_chars_1#closure_env_inherent_stri
 }
 
 fn inherent#closure_env_goml_builtin_range_2#closure_env_goml_builtin_range_2#apply(
-  env429: closure_env_goml_builtin_range_2
+  env432: closure_env_goml_builtin_range_2
 ) -> Option__int {
-  let current/496 = closure_env_goml_builtin_range_2.current_0(env429) in
-  let end/495 = closure_env_goml_builtin_range_2.end_1(env429) in
-  let value/497 = @intrinsic(ref.get)(current/496) in
-  if (value/497 < end/495) {
-      let _wild404 = @intrinsic(ref.set)(current/496, (value/497 + 1)) in
-      Option__int::Some(value/497)
+  let current/505 = closure_env_goml_builtin_range_2.current_0(env432) in
+  let end/504 = closure_env_goml_builtin_range_2.end_1(env432) in
+  let value/506 = @intrinsic(ref.get)(current/505) in
+  if (value/506 < end/504) {
+      let _wild407 = @intrinsic(ref.set)(current/505, (value/506 + 1)) in
+      Option__int::Some(value/506)
   } else {
       Option__int::None
   }

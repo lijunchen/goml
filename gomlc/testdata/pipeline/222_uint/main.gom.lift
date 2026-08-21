@@ -18,22 +18,22 @@ fn main() -> unit {
   let left/3 = 19 in
   let right/4 = (2 as uint) in
   let result/5 = combine(left/3, right/4) in
-  let _wild408 = println__T_uint(result/5) in
-  let _wild409 = println__T_string(trait_impl#ToString#uint#to_string(result/5)) in
-  let _wild410 = println__T_string(classify(result/5)) in
-  let _wild411 = println__T_bool((result/5 > left/3)) in
-  let _wild412 = println__T_uint64(((result/5 & 15) as uint64)) in
+  let _wild411 = println__T_uint(result/5) in
+  let _wild412 = println__T_string(trait_impl#ToString#uint#to_string(result/5)) in
+  let _wild413 = println__T_string(classify(result/5)) in
+  let _wild414 = println__T_bool((result/5 > left/3)) in
+  let _wild415 = println__T_uint64(((result/5 & 15) as uint64)) in
   let values/6 = inherent#HashMap#HashMap[K,V]#new__K_uint__V_string() in
-  let _wild413 =
+  let _wild416 =
     inherent#HashMap#HashMap[K,V]#set__K_uint__V_string(values/6, result/5, "stored") in
-  let mtmp414 = inherent#HashMap#HashMap[K,V]#get__K_uint__V_string(values/6, 42) in
-  match mtmp414 {
+  let mtmp417 = inherent#HashMap#HashMap[K,V]#get__K_uint__V_string(values/6, 42) in
+  match mtmp417 {
     Option__string::None => {
       println__T_string("missing")
     },
-    Option__string::Some(x415) => {
-      let x415 = Option__string::Some._0(mtmp414) in
-      let value/7 = x415 in
+    Option__string::Some(x418) => {
+      let x418 = Option__string::Some._0(mtmp417) in
+      let value/7 = x418 in
       println__T_string(value/7)
     },
   }
@@ -47,8 +47,8 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#uint#to_string(self/442: uint) -> string {
-  @runtime(core.uint_to_string)(self/442)
+fn trait_impl#ToString#uint#to_string(self/451: uint) -> string {
+  @runtime(core.uint_to_string)(self/451)
 }
 
 fn println__T_bool(value/1: bool) -> unit {
@@ -90,10 +90,10 @@ fn trait_impl#ToString#uint64#to_string(self/159: uint64) -> string {
   @runtime(core.uint64_to_string)(self/159)
 }
 
-fn trait_impl#PartialEq#uint#eq(self/444: uint, other/445: uint) -> bool {
-  (self/444 == other/445)
+fn trait_impl#PartialEq#uint#eq(self/453: uint, other/454: uint) -> bool {
+  (self/453 == other/454)
 }
 
-fn trait_impl#Hash#uint#hash(self/446: uint) -> uint64 {
-  @runtime(core.uint_hash)(self/446)
+fn trait_impl#Hash#uint#hash(self/455: uint) -> uint64 {
+  @runtime(core.uint_hash)(self/455)
 }

@@ -1,0 +1,2843 @@
+fn std::internal::task::scope_new(parent/0: int64) -> int64 {
+  @runtime(std.task.scope_new)(parent/0)
+}
+
+fn std::internal::task::scope_spawn(scope/1: int64, body/2: () -> unit) -> bool {
+  @runtime(std.task.scope_spawn)(scope/1, body/2)
+}
+
+fn std::internal::task::scope_run(scope/3: int64, body/4: () -> unit) -> unit {
+  @runtime(std.task.scope_run)(scope/3, body/4)
+}
+
+fn std::internal::task::scope_try_spawn(scope/5: int64, body/6: () -> unit) -> bool {
+  @runtime(std.task.scope_try_spawn)(scope/5, body/6)
+}
+
+fn std::internal::task::scope_cancel(scope/7: int64) -> unit {
+  @runtime(std.task.scope_cancel)(scope/7)
+}
+
+fn std::internal::task::scope_finish(scope/8: int64) -> unit {
+  @runtime(std.task.scope_finish)(scope/8)
+}
+
+fn std::internal::task::scope_cancelled(scope/9: int64) -> bool {
+  @runtime(std.task.scope_cancelled)(scope/9)
+}
+
+fn std::internal::task::scope_done(scope/10: int64) -> Receiver[unit] {
+  @runtime(std.task.scope_done)(scope/10)
+}
+
+fn std::internal::task::scope_sleep(scope/11: int64, nanoseconds/12: int64) -> bool {
+  @runtime(std.task.sleep)(scope/11, nanoseconds/12)
+}
+
+fn std::internal::task::scope_count() -> int {
+  @runtime(std.task.active_scope_count)()
+}
+
+fn std::internal::task::root_scope() -> std::internal::task::ScopeHandle {
+  std::internal::task::ScopeHandle { id: std::internal::task::scope_new(0) }
+}
+
+fn std::internal::task::child_scope(
+  parent/13: std::internal::task::CancelToken
+) -> std::internal::task::ScopeHandle {
+  std::internal::task::ScopeHandle {
+    id: std::internal::task::scope_new(std::internal::task::CancelToken.id(parent/13))
+  }
+}
+
+fn std::internal::task::spawn(
+  scope/14: std::internal::task::ScopeHandle,
+  body/15: () -> unit
+) -> unit {
+  let mtmp0 =
+    std::internal::task::scope_spawn(std::internal::task::ScopeHandle.id(scope/14), body/15) in
+  {
+    ()
+  }
+}
+
+fn std::internal::task::try_spawn(
+  scope/16: std::internal::task::ScopeHandle,
+  body/17: () -> unit
+) -> bool {
+  std::internal::task::scope_try_spawn(std::internal::task::ScopeHandle.id(scope/16), body/17)
+}
+
+fn std::internal::task::run(
+  scope/18: std::internal::task::ScopeHandle,
+  body/19: () -> unit
+) -> unit {
+  let _wild1 =
+    std::internal::task::scope_run(std::internal::task::ScopeHandle.id(scope/18), body/19) in
+  std::internal::task::scope_finish(std::internal::task::ScopeHandle.id(scope/18))
+}
+
+fn std::internal::task::cancel(scope/20: std::internal::task::ScopeHandle) -> unit {
+  std::internal::task::scope_cancel(std::internal::task::ScopeHandle.id(scope/20))
+}
+
+fn std::internal::task::finish(scope/21: std::internal::task::ScopeHandle) -> unit {
+  std::internal::task::scope_finish(std::internal::task::ScopeHandle.id(scope/21))
+}
+
+fn std::internal::task::token(
+  scope/22: std::internal::task::ScopeHandle
+) -> std::internal::task::CancelToken {
+  std::internal::task::CancelToken { id: std::internal::task::ScopeHandle.id(scope/22) }
+}
+
+fn std::internal::task::sleep_with(
+  cancel/28: std::internal::task::CancelToken,
+  nanoseconds/29: int64
+) -> bool {
+  std::internal::task::scope_sleep(std::internal::task::CancelToken.id(cancel/28), nanoseconds/29)
+}
+
+fn std::internal::task::id(cancel/30: std::internal::task::CancelToken) -> int64 {
+  std::internal::task::CancelToken.id(cancel/30)
+}
+
+fn std::internal::task::active_scope_count() -> int {
+  std::internal::task::scope_count()
+}
+
+fn inherent#std::internal::task::CancelToken#std::internal::task::CancelToken#is_cancelled(
+  self/31: std::internal::task::CancelToken
+) -> bool {
+  std::internal::task::scope_cancelled(std::internal::task::CancelToken.id(self/31))
+}
+
+fn inherent#std::internal::task::CancelToken#std::internal::task::CancelToken#done(
+  self/32: std::internal::task::CancelToken
+) -> Receiver[unit] {
+  std::internal::task::scope_done(std::internal::task::CancelToken.id(self/32))
+}
+
+fn inherent#std::task::ConcurrencyLimit#std::task::ConcurrencyLimit#new(
+  limit/2: int
+) -> std::task::ConcurrencyLimit {
+  let count/3 =
+    if (limit/2 > 0) {
+        {
+          limit/2
+        }
+    } else {
+        {
+          1
+        }
+    } in
+  let slots/4 = inherent#Channel#Channel[T]#new__T_unit(count/3) in
+  let _wild6 =
+    {
+      let for_index2 = 0 in
+      let for_limit3 = count/3 in
+      while (for_index2 < for_limit3) {
+          {
+            let _wild5 = for_index2 = (for_index2 + 1) in
+            {
+              inherent#Channel#Channel[T]#send__T_unit(slots/4, ())
+            }
+          }
+      }
+    } in
+  std::task::ConcurrencyLimit { slots: slots/4 }
+}
+
+fn std::task::active_scope_count() -> int {
+  std::internal::task::active_scope_count()
+}
+
+fn inherent#std::task::Scope#std::task::Scope#cancel(self/39: std::task::Scope) -> unit {
+  std::internal::task::cancel(std::task::Scope.handle(self/39))
+}
+
+fn inherent#std::task::Scope#std::task::Scope#token(
+  self/40: std::task::Scope
+) -> std::task::CancelToken {
+  std::task::CancelToken { value: std::internal::task::token(std::task::Scope.handle(self/40)) }
+}
+
+fn inherent#std::task::CancelToken#std::task::CancelToken#is_cancelled(
+  self/41: std::task::CancelToken
+) -> bool {
+  inherent#std::internal::task::CancelToken#std::internal::task::CancelToken#is_cancelled(
+    std::task::CancelToken.value(self/41)
+  )
+}
+
+fn inherent#std::task::CancelToken#std::task::CancelToken#runtime_id(
+  self/42: std::task::CancelToken
+) -> int64 {
+  std::internal::task::id(std::task::CancelToken.value(self/42))
+}
+
+fn inherent#std::task::CancelToken#std::task::CancelToken#done(
+  self/43: std::task::CancelToken
+) -> Receiver[unit] {
+  inherent#std::internal::task::CancelToken#std::internal::task::CancelToken#done(
+    std::task::CancelToken.value(self/43)
+  )
+}
+
+fn std::task::sleep_nanoseconds_with(
+  cancel/52: std::task::CancelToken,
+  nanoseconds/53: int64
+) -> std::task::WaitResult__unit {
+  if std::internal::task::sleep_with(std::task::CancelToken.value(cancel/52), nanoseconds/53) {
+      {
+        std::task::WaitResult__unit::Completed(())
+      }
+  } else {
+      {
+        std::task::WaitResult__unit::Cancelled
+      }
+  }
+}
+
+fn std::internal::host::args() -> Vec[string] {
+  @runtime(std.env.args)()
+}
+
+fn std::internal::host::current_dir() -> (bool, string, string) {
+  @runtime(std.env.current_dir)()
+}
+
+fn std::internal::host::current_exe() -> (bool, string, string) {
+  @runtime(std.env.current_exe)()
+}
+
+fn std::internal::host::env_var(name/0: string) -> (bool, string) {
+  @runtime(std.env.var)(name/0)
+}
+
+fn std::internal::host::env_vars() -> Vec[string] {
+  @runtime(std.env.vars)()
+}
+
+fn std::internal::host::read_file(path/1: string) -> (bool, string, string) {
+  @runtime(std.fs.read_file)(path/1)
+}
+
+fn std::internal::host::write_file(path/2: string, content/3: string) -> (bool, string) {
+  @runtime(std.fs.write_file)(path/2, content/3)
+}
+
+fn std::internal::host::read_bytes(path/4: string) -> (bool, Vec[uint8], string) {
+  @runtime(std.fs.read_bytes)(path/4)
+}
+
+fn std::internal::host::read_bytes_v2(path/5: string) -> (
+  bool,
+  Vec[uint8],
+  int,
+  bool,
+  int,
+  string
+) {
+  @runtime(std.fs.read_bytes.v2)(path/5)
+}
+
+fn std::internal::host::write_bytes(path/6: string, data/7: Vec[uint8]) -> (bool, string) {
+  @runtime(std.fs.write_bytes)(path/6, data/7)
+}
+
+fn std::internal::host::write_bytes_v2(path/8: string, data/9: Vec[uint8]) -> (
+  bool,
+  int,
+  bool,
+  int,
+  string
+) {
+  @runtime(std.fs.write_bytes.v2)(path/8, data/9)
+}
+
+fn std::internal::host::fs_path_operation_v2(
+  operation/10: int,
+  first/11: string,
+  second/12: string
+) -> (bool, int, bool, int, string) {
+  @runtime(std.fs.path_operation.v2)(operation/10, first/11, second/12)
+}
+
+fn std::internal::host::fs_metadata_v2(path/13: string, follow/14: bool) -> (
+  bool,
+  int,
+  int64,
+  uint32,
+  int64,
+  int,
+  bool,
+  int,
+  string
+) {
+  @runtime(std.fs.metadata.v2)(path/13, follow/14)
+}
+
+fn std::internal::host::fs_atomic_write_v2(path/15: string, data/16: Vec[uint8]) -> (
+  bool,
+  int,
+  bool,
+  int,
+  string
+) {
+  @runtime(std.fs.atomic_write.v2)(path/15, data/16)
+}
+
+fn std::internal::host::create_dir_all(path/17: string) -> (bool, string) {
+  @runtime(std.fs.create_dir_all)(path/17)
+}
+
+fn std::internal::host::remove_file(path/18: string) -> (bool, string) {
+  @runtime(std.fs.remove_file)(path/18)
+}
+
+fn std::internal::host::remove_dir_all(path/19: string) -> (bool, string) {
+  @runtime(std.fs.remove_dir_all)(path/19)
+}
+
+fn std::internal::host::file_exists(path/20: string) -> bool {
+  @runtime(std.fs.file_exists)(path/20)
+}
+
+fn std::internal::host::is_file(path/21: string) -> bool {
+  @runtime(std.fs.is_file)(path/21)
+}
+
+fn std::internal::host::is_dir(path/22: string) -> bool {
+  @runtime(std.fs.is_dir)(path/22)
+}
+
+fn std::internal::host::canonicalize(path/23: string) -> (bool, string, string) {
+  @runtime(std.fs.canonicalize)(path/23)
+}
+
+fn std::internal::host::read_dir(path/24: string) -> (bool, Vec[string], string) {
+  @runtime(std.fs.read_dir)(path/24)
+}
+
+fn std::internal::host::read_dir_v2(path/25: string) -> (
+  bool,
+  Vec[string],
+  int,
+  bool,
+  int,
+  string
+) {
+  @runtime(std.fs.read_dir.v2)(path/25)
+}
+
+fn std::internal::host::sha256_file(path/26: string) -> (bool, string, string) {
+  @runtime(std.fs.sha256_file)(path/26)
+}
+
+fn std::internal::host::print(value/27: string) -> unit {
+  @runtime(std.io.print)(value/27)
+}
+
+fn std::internal::host::println(value/28: string) -> unit {
+  @runtime(std.io.println)(value/28)
+}
+
+fn std::internal::host::eprint(value/29: string) -> unit {
+  @runtime(std.io.eprint)(value/29)
+}
+
+fn std::internal::host::read_stdin() -> (bool, Vec[uint8], string) {
+  @runtime(std.io.read_stdin)()
+}
+
+fn std::internal::host::read_stdin_v2() -> (bool, Vec[uint8], int, bool, int, string) {
+  @runtime(std.io.read_stdin.v2)()
+}
+
+fn std::internal::host::read_stdin_exact(length/30: int) -> (bool, Vec[uint8], string) {
+  @runtime(std.io.read_stdin_exact)(length/30)
+}
+
+fn std::internal::host::read_stdin_exact_v2(length/31: int) -> (
+  bool,
+  Vec[uint8],
+  int,
+  bool,
+  int,
+  string
+) {
+  @runtime(std.io.read_stdin_exact.v2)(length/31)
+}
+
+fn std::internal::host::write_stdout(data/32: Vec[uint8]) -> (bool, string) {
+  @runtime(std.io.write_stdout)(data/32)
+}
+
+fn std::internal::host::write_stdout_v2(data/33: Vec[uint8]) -> (bool, int, bool, int, string) {
+  @runtime(std.io.write_stdout.v2)(data/33)
+}
+
+fn std::internal::host::write_stderr(data/34: Vec[uint8]) -> (bool, string) {
+  @runtime(std.io.write_stderr)(data/34)
+}
+
+fn std::internal::host::write_stderr_v2(data/35: Vec[uint8]) -> (bool, int, bool, int, string) {
+  @runtime(std.io.write_stderr.v2)(data/35)
+}
+
+fn std::internal::host::path_join(base/36: string, child/37: string) -> string {
+  @runtime(std.path.join)(base/36, child/37)
+}
+
+fn std::internal::host::path_clean(path/38: string) -> string {
+  @runtime(std.path.clean)(path/38)
+}
+
+fn std::internal::host::path_is_absolute(path/39: string) -> bool {
+  @runtime(std.path.is_absolute)(path/39)
+}
+
+fn std::internal::host::path_parent(path/40: string) -> (bool, string) {
+  @runtime(std.path.parent)(path/40)
+}
+
+fn std::internal::host::path_file_name(path/41: string) -> (bool, string) {
+  @runtime(std.path.file_name)(path/41)
+}
+
+fn std::internal::host::path_extension(path/42: string) -> (bool, string) {
+  @runtime(std.path.extension)(path/42)
+}
+
+fn std::internal::host::path_file_stem(path/43: string) -> (bool, string) {
+  @runtime(std.path.file_stem)(path/43)
+}
+
+fn std::internal::host::path_with_extension(path/44: string, extension/45: string) -> string {
+  @runtime(std.path.with_extension)(path/44, extension/45)
+}
+
+fn std::internal::host::path_absolute(path/46: string) -> (bool, string, string) {
+  @runtime(std.path.absolute)(path/46)
+}
+
+fn std::internal::host::path_relative(base/47: string, target/48: string) -> (
+  bool,
+  string,
+  string
+) {
+  @runtime(std.path.relative)(base/47, target/48)
+}
+
+fn std::internal::host::path_separator() -> string {
+  @runtime(std.path.separator)()
+}
+
+fn std::internal::host::exit(code/49: int) -> unit {
+  @runtime(std.process.exit)(code/49)
+}
+
+fn std::internal::host::process_look_path(program/50: string) -> (bool, string, string) {
+  @runtime(std.process.look_path)(program/50)
+}
+
+fn std::internal::host::process_output(
+  program/51: string,
+  arguments/52: Vec[string],
+  has_directory/53: bool,
+  directory/54: string,
+  environment/55: Vec[(string, string)],
+  has_input/56: bool,
+  input/57: Vec[uint8]
+) -> (bool, int, Vec[uint8], Vec[uint8], string) {
+  @runtime(std.process.output)(
+    program/51,
+    arguments/52,
+    has_directory/53,
+    directory/54,
+    environment/55,
+    has_input/56,
+    input/57
+  )
+}
+
+fn std::internal::host::process_output_timeout(
+  program/58: string,
+  arguments/59: Vec[string],
+  has_directory/60: bool,
+  directory/61: string,
+  environment/62: Vec[(string, string)],
+  has_input/63: bool,
+  input/64: Vec[uint8],
+  timeout_ms/65: int
+) -> (bool, int, Vec[uint8], Vec[uint8], string, bool) {
+  @runtime(std.process.output_timeout)(
+    program/58,
+    arguments/59,
+    has_directory/60,
+    directory/61,
+    environment/62,
+    has_input/63,
+    input/64,
+    timeout_ms/65
+  )
+}
+
+fn std::internal::host::process_output_cancel(
+  program/66: string,
+  arguments/67: Vec[string],
+  has_directory/68: bool,
+  directory/69: string,
+  environment/70: Vec[(string, string)],
+  has_input/71: bool,
+  input/72: Vec[uint8],
+  scope_id/73: int64
+) -> (bool, int, Vec[uint8], Vec[uint8], string, bool) {
+  @runtime(std.process.output_cancel)(
+    program/66,
+    arguments/67,
+    has_directory/68,
+    directory/69,
+    environment/70,
+    has_input/71,
+    input/72,
+    scope_id/73
+  )
+}
+
+fn std::internal::host::process_status(
+  program/74: string,
+  arguments/75: Vec[string],
+  has_directory/76: bool,
+  directory/77: string,
+  environment/78: Vec[(string, string)]
+) -> (bool, int, string) {
+  @runtime(std.process.status)(
+    program/74,
+    arguments/75,
+    has_directory/76,
+    directory/77,
+    environment/78
+  )
+}
+
+fn std::internal::host::process_status_timeout(
+  program/79: string,
+  arguments/80: Vec[string],
+  has_directory/81: bool,
+  directory/82: string,
+  environment/83: Vec[(string, string)],
+  timeout_ms/84: int
+) -> (bool, int, string, bool) {
+  @runtime(std.process.status_timeout)(
+    program/79,
+    arguments/80,
+    has_directory/81,
+    directory/82,
+    environment/83,
+    timeout_ms/84
+  )
+}
+
+fn std::internal::host::process_status_cancel(
+  program/85: string,
+  arguments/86: Vec[string],
+  has_directory/87: bool,
+  directory/88: string,
+  environment/89: Vec[(string, string)],
+  scope_id/90: int64
+) -> (bool, int, string, bool) {
+  @runtime(std.process.status_cancel)(
+    program/85,
+    arguments/86,
+    has_directory/87,
+    directory/88,
+    environment/89,
+    scope_id/90
+  )
+}
+
+fn std::internal::host::test_fail(message/91: string) -> unit {
+  @runtime(std.testing.fail)(message/91)
+}
+
+fn std::internal::host::parse_int(value/92: string, radix/93: int) -> (bool, int, string) {
+  @runtime(std.num.parse_int)(value/92, radix/93)
+}
+
+fn std::internal::host::parse_uint(value/94: string, radix/95: int) -> (bool, uint, string) {
+  @runtime(std.num.parse_uint)(value/94, radix/95)
+}
+
+fn std::internal::host::parse_float32(value/96: string) -> (bool, float32, string) {
+  @runtime(std.num.parse_float32)(value/96)
+}
+
+fn std::internal::host::parse_float64(value/97: string) -> (bool, float64, string) {
+  @runtime(std.num.parse_float64)(value/97)
+}
+
+fn std::internal::host::monotonic_nanoseconds() -> int64 {
+  @runtime(std.time.monotonic_nanoseconds)()
+}
+
+fn std::internal::host::unix_nanoseconds() -> int64 {
+  @runtime(std.time.unix_nanoseconds)()
+}
+
+fn std::internal::host::sleep_nanoseconds(value/98: int64) -> unit {
+  @runtime(std.time.sleep_nanoseconds)(value/98)
+}
+
+fn std::internal::host::timer_new(value/99: int64) -> (int64, Receiver[unit]) {
+  @runtime(std.time.timer_new)(value/99)
+}
+
+fn std::internal::host::timer_stop(id/100: int64) -> bool {
+  @runtime(std.time.timer_stop)(id/100)
+}
+
+fn std::internal::host::math_float32_unary(operation/101: int, value/102: float32) -> float32 {
+  @runtime(std.math.float32_unary)(operation/101, value/102)
+}
+
+fn std::internal::host::math_float32_pow(value/103: float32, exponent/104: float32) -> float32 {
+  @runtime(std.math.float32_pow)(value/103, exponent/104)
+}
+
+fn std::internal::host::crypto_random_bytes(length/105: int) -> (bool, Vec[uint8], string) {
+  @runtime(std.crypto.rand.bytes)(length/105)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
+  std::bytes::Bytes { values: @intrinsic(vec.from_array)([]) }
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(
+  capacity/0: int
+) -> std::bytes::Bytes {
+  std::bytes::Bytes { values: inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/0) }
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(
+  values/1: Vec[uint8]
+) -> std::bytes::Bytes {
+  std::bytes::Bytes { values: values/1 }
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_string(value/2: string) -> std::bytes::Bytes {
+  std::bytes::Bytes { values: inherent#string#string#to_bytes(value/2) }
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#len(self/3: std::bytes::Bytes) -> int {
+  inherent#Vec#Vec[T]#len__T_uint8(std::bytes::Bytes.values(self/3))
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#capacity(self/4: std::bytes::Bytes) -> int {
+  inherent#Vec#Vec[T]#capacity__T_uint8(std::bytes::Bytes.values(self/4))
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#is_empty(self/5: std::bytes::Bytes) -> bool {
+  inherent#Vec#Vec[T]#is_empty__T_uint8(std::bytes::Bytes.values(self/5))
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#get(
+  self/6: std::bytes::Bytes,
+  index/7: int
+) -> uint8 {
+  @intrinsic(vec.get)(std::bytes::Bytes.values(self/6), index/7)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(
+  self/8: std::bytes::Bytes,
+  index/9: int,
+  value/10: uint8
+) -> unit {
+  let _wild5 =
+    {
+      let place_root0 = self/8 in
+      let place1 = std::bytes::Bytes.values(place_root0) in
+      let index2 = index/9 in
+      let place3 = @intrinsic(vec.get)(place1, index2) in
+      let value4 = value/10 in
+      @intrinsic(vec.set)(place1, index2, value4)
+    } in
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(
+  self/11: std::bytes::Bytes,
+  value/12: uint8
+) -> unit {
+  inherent#Vec#Vec[T]#push__T_uint8(std::bytes::Bytes.values(self/11), value/12)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#pop(self/13: std::bytes::Bytes) -> Option__uint8 {
+  inherent#Vec#Vec[T]#pop__T_uint8(std::bytes::Bytes.values(self/13))
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(
+  self/14: std::bytes::Bytes,
+  additional/15: int
+) -> unit {
+  inherent#Vec#Vec[T]#reserve__T_uint8(std::bytes::Bytes.values(self/14), additional/15)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(
+  self/16: std::bytes::Bytes,
+  len/17: int
+) -> unit {
+  inherent#Vec#Vec[T]#truncate__T_uint8(std::bytes::Bytes.values(self/16), len/17)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/18: std::bytes::Bytes) -> unit {
+  inherent#Vec#Vec[T]#clear__T_uint8(std::bytes::Bytes.values(self/18))
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice(
+  self/19: std::bytes::Bytes,
+  start/20: int,
+  end/21: int
+) -> Slice[uint8] {
+  inherent#Vec#Vec[T]#slice__T_uint8(std::bytes::Bytes.values(self/19), start/20, end/21)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/22: std::bytes::Bytes) -> Vec[uint8] {
+  std::bytes::Bytes.values(self/22)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(
+  self/23: std::bytes::Bytes
+) -> Result__string__string {
+  let mtmp6 = string_from_utf8(std::bytes::Bytes.values(self/23)) in
+  {
+    let x7 = mtmp6.0 in
+    let x8 = mtmp6.1 in
+    {
+      let value/25 = x8 in
+      {
+        let valid/24 = x7 in
+        {
+          if valid/24 {
+              {
+                Result__string__string::Ok(value/25)
+              }
+          } else {
+              {
+                Result__string__string::Err("invalid UTF-8")
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn trait_impl#ToString#std::io::ErrorKind#to_string(self/0: std::io::ErrorKind) -> string {
+  match self/0 {
+    std::io::ErrorKind::NotFound => {
+      "NotFound"
+    },
+    std::io::ErrorKind::PermissionDenied => {
+      "PermissionDenied"
+    },
+    std::io::ErrorKind::AlreadyExists => {
+      "AlreadyExists"
+    },
+    std::io::ErrorKind::InvalidInput => {
+      "InvalidInput"
+    },
+    std::io::ErrorKind::InvalidData => {
+      "InvalidData"
+    },
+    std::io::ErrorKind::TimedOut => {
+      "TimedOut"
+    },
+    std::io::ErrorKind::Interrupted => {
+      "Interrupted"
+    },
+    std::io::ErrorKind::UnexpectedEof => {
+      "UnexpectedEof"
+    },
+    std::io::ErrorKind::WriteZero => {
+      "WriteZero"
+    },
+    std::io::ErrorKind::BrokenPipe => {
+      "BrokenPipe"
+    },
+    std::io::ErrorKind::WouldBlock => {
+      "WouldBlock"
+    },
+    std::io::ErrorKind::Unsupported => {
+      "Unsupported"
+    },
+    std::io::ErrorKind::Other => {
+      "Other"
+    },
+  }
+}
+
+fn trait_impl#Debug#std::io::ErrorKind#debug(self/1: std::io::ErrorKind) -> string {
+  trait_impl#ToString#std::io::ErrorKind#to_string(self/1)
+}
+
+fn trait_impl#PartialEq#std::io::ErrorKind#eq(
+  self/2: std::io::ErrorKind,
+  other/3: std::io::ErrorKind
+) -> bool {
+  (std::io::kind_code(self/2) == std::io::kind_code(other/3))
+}
+
+fn std::io::kind_from_code(code/4: int) -> std::io::ErrorKind {
+  match code/4 {
+    1 => {
+      std::io::ErrorKind::NotFound
+    },
+    2 => {
+      std::io::ErrorKind::PermissionDenied
+    },
+    3 => {
+      std::io::ErrorKind::AlreadyExists
+    },
+    4 => {
+      std::io::ErrorKind::InvalidInput
+    },
+    5 => {
+      std::io::ErrorKind::InvalidData
+    },
+    6 => {
+      std::io::ErrorKind::TimedOut
+    },
+    7 => {
+      std::io::ErrorKind::Interrupted
+    },
+    8 => {
+      std::io::ErrorKind::UnexpectedEof
+    },
+    9 => {
+      std::io::ErrorKind::WriteZero
+    },
+    10 => {
+      std::io::ErrorKind::BrokenPipe
+    },
+    11 => {
+      std::io::ErrorKind::WouldBlock
+    },
+    12 => {
+      std::io::ErrorKind::Unsupported
+    },
+    _ => std::io::ErrorKind::Other,
+  }
+}
+
+fn std::io::kind_code(kind/5: std::io::ErrorKind) -> int {
+  match kind/5 {
+    std::io::ErrorKind::NotFound => {
+      1
+    },
+    std::io::ErrorKind::PermissionDenied => {
+      2
+    },
+    std::io::ErrorKind::AlreadyExists => {
+      3
+    },
+    std::io::ErrorKind::InvalidInput => {
+      4
+    },
+    std::io::ErrorKind::InvalidData => {
+      5
+    },
+    std::io::ErrorKind::TimedOut => {
+      6
+    },
+    std::io::ErrorKind::Interrupted => {
+      7
+    },
+    std::io::ErrorKind::UnexpectedEof => {
+      8
+    },
+    std::io::ErrorKind::WriteZero => {
+      9
+    },
+    std::io::ErrorKind::BrokenPipe => {
+      10
+    },
+    std::io::ErrorKind::WouldBlock => {
+      11
+    },
+    std::io::ErrorKind::Unsupported => {
+      12
+    },
+    std::io::ErrorKind::Other => {
+      0
+    },
+  }
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
+  kind/6: std::io::ErrorKind,
+  operation/7: string,
+  context/8: Option__string,
+  raw_os_code/9: Option__int,
+  message/10: string
+) -> std::io::ErrorDetails {
+  std::io::ErrorDetails {
+    kind_value: kind/6,
+    operation_value: operation/7,
+    context_value: context/8,
+    raw_os_code_value: raw_os_code/9,
+    message_value: message/10
+  }
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#kind(
+  self/11: std::io::ErrorDetails
+) -> std::io::ErrorKind {
+  std::io::ErrorDetails.kind_value(self/11)
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#operation(
+  self/12: std::io::ErrorDetails
+) -> string {
+  std::io::ErrorDetails.operation_value(self/12)
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#context(
+  self/13: std::io::ErrorDetails
+) -> Option__string {
+  std::io::ErrorDetails.context_value(self/13)
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#raw_os_code(
+  self/14: std::io::ErrorDetails
+) -> Option__int {
+  std::io::ErrorDetails.raw_os_code_value(self/14)
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#message(
+  self/15: std::io::ErrorDetails
+) -> string {
+  std::io::ErrorDetails.message_value(self/15)
+}
+
+fn trait_impl#ToString#std::io::ErrorDetails#to_string(self/16: std::io::ErrorDetails) -> string {
+  {
+    let mtmp0 = std::io::ErrorDetails.context_value(self/16) in
+    match mtmp0 {
+      Option__string::None => {
+        ((std::io::ErrorDetails.operation_value(self/16) + ": ") +
+          std::io::ErrorDetails.message_value(self/16))
+      },
+      Option__string::Some(x1) => {
+        {
+          let x1 = Option__string::Some._0(mtmp0) in
+          {
+            let context/17 = x1 in
+            ((((std::io::ErrorDetails.operation_value(self/16) + " ") + context/17) + ": ") +
+              std::io::ErrorDetails.message_value(self/16))
+          }
+        }
+      },
+    }
+  }
+}
+
+fn trait_impl#Debug#std::io::ErrorDetails#debug(self/18: std::io::ErrorDetails) -> string {
+  trait_impl#ToString#std::io::ErrorDetails#to_string(self/18)
+}
+
+fn trait_impl#PartialEq#std::io::ErrorDetails#eq(
+  self/19: std::io::ErrorDetails,
+  other/20: std::io::ErrorDetails
+) -> bool {
+  if if if if trait_impl#PartialEq#std::io::ErrorKind#eq(
+    std::io::ErrorDetails.kind_value(self/19),
+    std::io::ErrorDetails.kind_value(other/20)
+  ) {
+      (std::io::ErrorDetails.operation_value(self/19) ==
+        std::io::ErrorDetails.operation_value(other/20))
+  } else {
+      false
+  } {
+      trait_impl#PartialEq#Option__string#eq(
+        std::io::ErrorDetails.context_value(self/19),
+        std::io::ErrorDetails.context_value(other/20)
+      )
+  } else {
+      false
+  } {
+      trait_impl#PartialEq#Option__int#eq(
+        std::io::ErrorDetails.raw_os_code_value(self/19),
+        std::io::ErrorDetails.raw_os_code_value(other/20)
+      )
+  } else {
+      false
+  } {
+      (std::io::ErrorDetails.message_value(self/19) ==
+        std::io::ErrorDetails.message_value(other/20))
+  } else {
+      false
+  }
+}
+
+fn inherent#std::io::Error#std::io::Error#new(
+  kind/21: std::io::ErrorKind,
+  operation/22: string,
+  context/23: Option__string,
+  raw_os_code/24: Option__int,
+  message/25: string
+) -> std::io::Error {
+  std::io::Error {
+    details: inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
+      kind/21,
+      operation/22,
+      context/23,
+      raw_os_code/24,
+      message/25
+    )
+  }
+}
+
+fn inherent#std::io::Error#std::io::Error#kind(self/26: std::io::Error) -> std::io::ErrorKind {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#kind(std::io::Error.details(self/26))
+}
+
+fn inherent#std::io::Error#std::io::Error#operation(self/27: std::io::Error) -> string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#operation(std::io::Error.details(self/27))
+}
+
+fn inherent#std::io::Error#std::io::Error#context(self/28: std::io::Error) -> Option__string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#context(std::io::Error.details(self/28))
+}
+
+fn inherent#std::io::Error#std::io::Error#raw_os_code(self/29: std::io::Error) -> Option__int {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#raw_os_code(std::io::Error.details(self/29))
+}
+
+fn inherent#std::io::Error#std::io::Error#message(self/30: std::io::Error) -> string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#message(std::io::Error.details(self/30))
+}
+
+fn trait_impl#ToString#std::io::Error#to_string(self/31: std::io::Error) -> string {
+  trait_impl#ToString#std::io::ErrorDetails#to_string(std::io::Error.details(self/31))
+}
+
+fn trait_impl#Debug#std::io::Error#debug(self/32: std::io::Error) -> string {
+  trait_impl#ToString#std::io::Error#to_string(self/32)
+}
+
+fn trait_impl#PartialEq#std::io::Error#eq(
+  self/33: std::io::Error,
+  other/34: std::io::Error
+) -> bool {
+  trait_impl#PartialEq#std::io::ErrorDetails#eq(
+    std::io::Error.details(self/33),
+    std::io::Error.details(other/34)
+  )
+}
+
+fn std::io::structured_error(
+  operation/35: string,
+  kind_code/36: int,
+  has_raw_code/37: bool,
+  raw_code/38: int,
+  message/39: string
+) -> std::io::Error {
+  inherent#std::io::Error#std::io::Error#new(
+    std::io::kind_from_code(kind_code/36),
+    operation/35,
+    Option__string::None,
+    if has_raw_code/37 {
+        {
+          Option__int::Some(raw_code/38)
+        }
+    } else {
+        {
+          Option__int::None
+        }
+    },
+    message/39
+  )
+}
+
+fn std::io::read_stdin_structured() -> Result__std::bytes::Bytes__std::io::Error {
+  let mtmp2 = std::internal::host::read_stdin_v2() in
+  {
+    let x3 = mtmp2.0 in
+    let x4 = mtmp2.1 in
+    let x5 = mtmp2.2 in
+    let x6 = mtmp2.3 in
+    let x7 = mtmp2.4 in
+    let x8 = mtmp2.5 in
+    {
+      let message/45 = x8 in
+      {
+        let raw_code/44 = x7 in
+        {
+          let has_raw_code/43 = x6 in
+          {
+            let kind_code/42 = x5 in
+            {
+              let data/41 = x4 in
+              {
+                let ok/40 = x3 in
+                {
+                  if ok/40 {
+                      {
+                        Result__std::bytes::Bytes__std::io::Error::Ok(
+                          inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/41)
+                        )
+                      }
+                  } else {
+                      {
+                        Result__std::bytes::Bytes__std::io::Error::Err(
+                          std::io::structured_error(
+                            "read stdin",
+                            kind_code/42,
+                            has_raw_code/43,
+                            raw_code/44,
+                            message/45
+                          )
+                        )
+                      }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::io::read_stdin_to_string() -> Result__string__std::io::Error {
+  {
+    let mtmp9 = std::io::read_stdin_structured() in
+    match mtmp9 {
+      Result__std::bytes::Bytes__std::io::Error::Ok(x10) => {
+        {
+          let x10 = Result__std::bytes::Bytes__std::io::Error::Ok._0(mtmp9) in
+          {
+            let data/46 = x10 in
+            {
+              let mtmp12 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(data/46) in
+              match mtmp12 {
+                Result__string__string::Ok(x13) => {
+                  {
+                    let x13 = Result__string__string::Ok._0(mtmp12) in
+                    {
+                      let value/47 = x13 in
+                      Result__string__std::io::Error::Ok(value/47)
+                    }
+                  }
+                },
+                Result__string__string::Err(x14) => {
+                  {
+                    let x14 = Result__string__string::Err._0(mtmp12) in
+                    {
+                      let message/48 = x14 in
+                      Result__string__std::io::Error::Err(
+                        inherent#std::io::Error#std::io::Error#new(
+                          std::io::ErrorKind::InvalidData,
+                          "read stdin",
+                          Option__string::None,
+                          Option__int::None,
+                          message/48
+                        )
+                      )
+                    }
+                  }
+                },
+              }
+            }
+          }
+        }
+      },
+      Result__std::bytes::Bytes__std::io::Error::Err(x11) => {
+        {
+          let x11 = Result__std::bytes::Bytes__std::io::Error::Err._0(mtmp9) in
+          {
+            let error/49 = x11 in
+            Result__string__std::io::Error::Err(error/49)
+          }
+        }
+      },
+    }
+  }
+}
+
+fn std::io::read_stdin_exact_structured(
+  length/50: int
+) -> Result__std::bytes::Bytes__std::io::Error {
+  if (length/50 < 0) {
+      {
+        Result__std::bytes::Bytes__std::io::Error::Err(
+          inherent#std::io::Error#std::io::Error#new(
+            std::io::ErrorKind::InvalidInput,
+            "read stdin exact",
+            Option__string::None,
+            Option__int::None,
+            "read length must be non-negative"
+          )
+        )
+      }
+  } else {
+      {
+        let mtmp15 = std::internal::host::read_stdin_exact_v2(length/50) in
+        {
+          let x16 = mtmp15.0 in
+          let x17 = mtmp15.1 in
+          let x18 = mtmp15.2 in
+          let x19 = mtmp15.3 in
+          let x20 = mtmp15.4 in
+          let x21 = mtmp15.5 in
+          {
+            let message/56 = x21 in
+            {
+              let raw_code/55 = x20 in
+              {
+                let has_raw_code/54 = x19 in
+                {
+                  let kind_code/53 = x18 in
+                  {
+                    let data/52 = x17 in
+                    {
+                      let ok/51 = x16 in
+                      {
+                        if ok/51 {
+                            {
+                              Result__std::bytes::Bytes__std::io::Error::Ok(
+                                inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/52)
+                              )
+                            }
+                        } else {
+                            {
+                              Result__std::bytes::Bytes__std::io::Error::Err(
+                                std::io::structured_error(
+                                  "read stdin exact",
+                                  kind_code/53,
+                                  has_raw_code/54,
+                                  raw_code/55,
+                                  message/56
+                                )
+                              )
+                            }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+  }
+}
+
+fn std::io::write_structured(
+  stderr/57: bool,
+  data/58: std::bytes::Bytes
+) -> Result__unit__std::io::Error {
+  let result/59 =
+    if stderr/57 {
+        {
+          std::internal::host::write_stderr_v2(
+            inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/58)
+          )
+        }
+    } else {
+        {
+          std::internal::host::write_stdout_v2(
+            inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/58)
+          )
+        }
+    } in
+  let mtmp22 = result/59 in
+  {
+    let x23 = mtmp22.0 in
+    let x24 = mtmp22.1 in
+    let x25 = mtmp22.2 in
+    let x26 = mtmp22.3 in
+    let x27 = mtmp22.4 in
+    {
+      let message/64 = x27 in
+      {
+        let raw_code/63 = x26 in
+        {
+          let has_raw_code/62 = x25 in
+          {
+            let kind_code/61 = x24 in
+            {
+              let ok/60 = x23 in
+              {
+                if ok/60 {
+                    {
+                      Result__unit__std::io::Error::Ok(())
+                    }
+                } else {
+                    {
+                      Result__unit__std::io::Error::Err(
+                        std::io::structured_error(
+                          if stderr/57 {
+                              {
+                                "write stderr"
+                              }
+                          } else {
+                              {
+                                "write stdout"
+                              }
+                          },
+                          kind_code/61,
+                          has_raw_code/62,
+                          raw_code/63,
+                          message/64
+                        )
+                      )
+                    }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::io::write_stdout_structured(data/65: std::bytes::Bytes) -> Result__unit__std::io::Error {
+  std::io::write_structured(false, data/65)
+}
+
+fn std::io::write_stderr_structured(data/66: std::bytes::Bytes) -> Result__unit__std::io::Error {
+  std::io::write_structured(true, data/66)
+}
+
+fn std::io::read_stdin() -> Result__std::bytes::Bytes__string {
+  let mtmp28 = std::internal::host::read_stdin() in
+  {
+    let x29 = mtmp28.0 in
+    let x30 = mtmp28.1 in
+    let x31 = mtmp28.2 in
+    {
+      let err/73 = x31 in
+      {
+        let data/72 = x30 in
+        {
+          let ok/71 = x29 in
+          {
+            if ok/71 {
+                {
+                  Result__std::bytes::Bytes__string::Ok(
+                    inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/72)
+                  )
+                }
+            } else {
+                {
+                  Result__std::bytes::Bytes__string::Err(err/73)
+                }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::io::write_stdout(data/74: std::bytes::Bytes) -> Result__unit__string {
+  let mtmp32 =
+    std::internal::host::write_stdout(
+      inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/74)
+    ) in
+  {
+    let x33 = mtmp32.0 in
+    let x34 = mtmp32.1 in
+    {
+      let err/76 = x34 in
+      {
+        let ok/75 = x33 in
+        {
+          if ok/75 {
+              {
+                Result__unit__string::Ok(())
+              }
+          } else {
+              {
+                Result__unit__string::Err(err/76)
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::io::write_stderr(data/77: std::bytes::Bytes) -> Result__unit__string {
+  let mtmp35 =
+    std::internal::host::write_stderr(
+      inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/77)
+    ) in
+  {
+    let x36 = mtmp35.0 in
+    let x37 = mtmp35.1 in
+    {
+      let err/79 = x37 in
+      {
+        let ok/78 = x36 in
+        {
+          if ok/78 {
+              {
+                Result__unit__string::Ok(())
+              }
+          } else {
+              {
+                Result__unit__string::Err(err/79)
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::io::read_stdin_exact(length/80: int) -> Result__std::bytes::Bytes__string {
+  if (length/80 < 0) {
+      {
+        Result__std::bytes::Bytes__string::Err("read length must be non-negative")
+      }
+  } else {
+      {
+        let mtmp38 = std::internal::host::read_stdin_exact(length/80) in
+        {
+          let x39 = mtmp38.0 in
+          let x40 = mtmp38.1 in
+          let x41 = mtmp38.2 in
+          {
+            let err/83 = x41 in
+            {
+              let data/82 = x40 in
+              {
+                let ok/81 = x39 in
+                {
+                  if ok/81 {
+                      {
+                        Result__std::bytes::Bytes__string::Ok(
+                          inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/82)
+                        )
+                      }
+                  } else {
+                      {
+                        Result__std::bytes::Bytes__string::Err(err/83)
+                      }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+  }
+}
+
+fn inherent#std::time::Error#std::time::Error#new(
+  operation/0: string,
+  message/1: string
+) -> std::time::Error {
+  std::time::Error {
+    details: inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
+      std::io::ErrorKind::InvalidInput,
+      operation/0,
+      Option__string::None,
+      Option__int::None,
+      message/1
+    )
+  }
+}
+
+fn inherent#std::time::Error#std::time::Error#kind(self/2: std::time::Error) -> std::io::ErrorKind {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#kind(std::time::Error.details(self/2))
+}
+
+fn inherent#std::time::Error#std::time::Error#operation(self/3: std::time::Error) -> string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#operation(std::time::Error.details(self/3))
+}
+
+fn inherent#std::time::Error#std::time::Error#context(self/4: std::time::Error) -> Option__string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#context(std::time::Error.details(self/4))
+}
+
+fn inherent#std::time::Error#std::time::Error#raw_os_code(self/5: std::time::Error) -> Option__int {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#raw_os_code(std::time::Error.details(self/5))
+}
+
+fn inherent#std::time::Error#std::time::Error#message(self/6: std::time::Error) -> string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#message(std::time::Error.details(self/6))
+}
+
+fn trait_impl#ToString#std::time::Error#to_string(self/7: std::time::Error) -> string {
+  trait_impl#ToString#std::io::ErrorDetails#to_string(std::time::Error.details(self/7))
+}
+
+fn trait_impl#Debug#std::time::Error#debug(self/8: std::time::Error) -> string {
+  trait_impl#ToString#std::time::Error#to_string(self/8)
+}
+
+fn trait_impl#PartialEq#std::time::Error#eq(
+  self/9: std::time::Error,
+  other/10: std::time::Error
+) -> bool {
+  trait_impl#PartialEq#std::io::ErrorDetails#eq(
+    std::time::Error.details(self/9),
+    std::time::Error.details(other/10)
+  )
+}
+
+fn inherent#std::time::Duration#std::time::Duration#zero() -> std::time::Duration {
+  std::time::Duration { nanoseconds: 0 }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#from_nanoseconds(
+  value/11: int64
+) -> std::time::Duration {
+  std::time::Duration {
+    nanoseconds: if (value/11 < 0) {
+        {
+          0
+        }
+    } else {
+        {
+          value/11
+        }
+    }
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#from_microseconds(
+  value/12: int64
+) -> std::time::Duration {
+  inherent#std::time::Duration#std::time::Duration#from_nanoseconds((value/12 * 1000))
+}
+
+fn inherent#std::time::Duration#std::time::Duration#from_milliseconds(
+  value/13: int64
+) -> std::time::Duration {
+  inherent#std::time::Duration#std::time::Duration#from_nanoseconds((value/13 * 1000000))
+}
+
+fn inherent#std::time::Duration#std::time::Duration#from_seconds(
+  value/14: int64
+) -> std::time::Duration {
+  inherent#std::time::Duration#std::time::Duration#from_nanoseconds((value/14 * 1000000000))
+}
+
+fn inherent#std::time::Duration#std::time::Duration#checked_from_microseconds(
+  value/15: int64
+) -> Option__std::time::Duration {
+  inherent#std::time::Duration#std::time::Duration#checked_scaled(value/15, 1000)
+}
+
+fn inherent#std::time::Duration#std::time::Duration#checked_from_milliseconds(
+  value/16: int64
+) -> Option__std::time::Duration {
+  inherent#std::time::Duration#std::time::Duration#checked_scaled(value/16, 1000000)
+}
+
+fn inherent#std::time::Duration#std::time::Duration#checked_from_seconds(
+  value/17: int64
+) -> Option__std::time::Duration {
+  inherent#std::time::Duration#std::time::Duration#checked_scaled(value/17, 1000000000)
+}
+
+fn inherent#std::time::Duration#std::time::Duration#checked_scaled(
+  value/18: int64,
+  scale/19: int64
+) -> Option__std::time::Duration {
+  if if (value/18 < 0) {
+      true
+  } else {
+      (value/18 > (9223372036854775807 / scale/19))
+  } {
+      {
+        Option__std::time::Duration::None
+      }
+  } else {
+      {
+        Option__std::time::Duration::Some(
+          inherent#std::time::Duration#std::time::Duration#from_nanoseconds((value/18 * scale/19))
+        )
+      }
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#saturating_from_microseconds(
+  value/20: int64
+) -> std::time::Duration {
+  inherent#std::time::Duration#std::time::Duration#saturating_scaled(value/20, 1000)
+}
+
+fn inherent#std::time::Duration#std::time::Duration#saturating_from_milliseconds(
+  value/21: int64
+) -> std::time::Duration {
+  inherent#std::time::Duration#std::time::Duration#saturating_scaled(value/21, 1000000)
+}
+
+fn inherent#std::time::Duration#std::time::Duration#saturating_from_seconds(
+  value/22: int64
+) -> std::time::Duration {
+  inherent#std::time::Duration#std::time::Duration#saturating_scaled(value/22, 1000000000)
+}
+
+fn inherent#std::time::Duration#std::time::Duration#saturating_scaled(
+  value/23: int64,
+  scale/24: int64
+) -> std::time::Duration {
+  {
+    let mtmp0 =
+      inherent#std::time::Duration#std::time::Duration#checked_scaled(value/23, scale/24) in
+    match mtmp0 {
+      Option__std::time::Duration::None => {
+        if (value/23 < 0) {
+            {
+              inherent#std::time::Duration#std::time::Duration#zero()
+            }
+        } else {
+            {
+              inherent#std::time::Duration#std::time::Duration#from_nanoseconds(9223372036854775807)
+            }
+        }
+      },
+      Option__std::time::Duration::Some(x1) => {
+        {
+          let x1 = Option__std::time::Duration::Some._0(mtmp0) in
+          {
+            let duration/25 = x1 in
+            duration/25
+          }
+        }
+      },
+    }
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#as_nanoseconds(
+  self/26: std::time::Duration
+) -> int64 {
+  std::time::Duration.nanoseconds(self/26)
+}
+
+fn inherent#std::time::Duration#std::time::Duration#as_microseconds(
+  self/27: std::time::Duration
+) -> int64 {
+  (std::time::Duration.nanoseconds(self/27) / 1000)
+}
+
+fn inherent#std::time::Duration#std::time::Duration#as_milliseconds(
+  self/28: std::time::Duration
+) -> int64 {
+  (std::time::Duration.nanoseconds(self/28) / 1000000)
+}
+
+fn inherent#std::time::Duration#std::time::Duration#as_seconds(
+  self/29: std::time::Duration
+) -> int64 {
+  (std::time::Duration.nanoseconds(self/29) / 1000000000)
+}
+
+fn inherent#std::time::Duration#std::time::Duration#is_zero(self/30: std::time::Duration) -> bool {
+  (std::time::Duration.nanoseconds(self/30) == 0)
+}
+
+fn inherent#std::time::Duration#std::time::Duration#add(
+  self/31: std::time::Duration,
+  other/32: std::time::Duration
+) -> std::time::Duration {
+  inherent#std::time::Duration#std::time::Duration#from_nanoseconds(
+    (std::time::Duration.nanoseconds(self/31) + std::time::Duration.nanoseconds(other/32))
+  )
+}
+
+fn inherent#std::time::Duration#std::time::Duration#subtract(
+  self/33: std::time::Duration,
+  other/34: std::time::Duration
+) -> std::time::Duration {
+  inherent#std::time::Duration#std::time::Duration#from_nanoseconds(
+    (std::time::Duration.nanoseconds(self/33) - std::time::Duration.nanoseconds(other/34))
+  )
+}
+
+fn inherent#std::time::Duration#std::time::Duration#checked_add(
+  self/35: std::time::Duration,
+  other/36: std::time::Duration
+) -> Option__std::time::Duration {
+  if (std::time::Duration.nanoseconds(other/36) >
+    (9223372036854775807 - std::time::Duration.nanoseconds(self/35))) {
+      {
+        Option__std::time::Duration::None
+      }
+  } else {
+      {
+        Option__std::time::Duration::Some(
+          inherent#std::time::Duration#std::time::Duration#from_nanoseconds(
+            (std::time::Duration.nanoseconds(self/35) + std::time::Duration.nanoseconds(other/36))
+          )
+        )
+      }
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#saturating_add(
+  self/37: std::time::Duration,
+  other/38: std::time::Duration
+) -> std::time::Duration {
+  inherent#Option#Option[T]#unwrap_or__T_std::time::Duration(
+    inherent#std::time::Duration#std::time::Duration#checked_add(self/37, other/38),
+    inherent#std::time::Duration#std::time::Duration#from_nanoseconds(9223372036854775807)
+  )
+}
+
+fn inherent#std::time::Duration#std::time::Duration#checked_subtract(
+  self/39: std::time::Duration,
+  other/40: std::time::Duration
+) -> Option__std::time::Duration {
+  if (std::time::Duration.nanoseconds(self/39) < std::time::Duration.nanoseconds(other/40)) {
+      {
+        Option__std::time::Duration::None
+      }
+  } else {
+      {
+        Option__std::time::Duration::Some(
+          inherent#std::time::Duration#std::time::Duration#from_nanoseconds(
+            (std::time::Duration.nanoseconds(self/39) - std::time::Duration.nanoseconds(other/40))
+          )
+        )
+      }
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#saturating_subtract(
+  self/41: std::time::Duration,
+  other/42: std::time::Duration
+) -> std::time::Duration {
+  inherent#Option#Option[T]#unwrap_or__T_std::time::Duration(
+    inherent#std::time::Duration#std::time::Duration#checked_subtract(self/41, other/42),
+    inherent#std::time::Duration#std::time::Duration#zero()
+  )
+}
+
+fn inherent#std::time::Duration#std::time::Duration#checked_multiply(
+  self/43: std::time::Duration,
+  factor/44: int64
+) -> Option__std::time::Duration {
+  if if (factor/44 < 0) {
+      true
+  } else {
+      if (factor/44 > 0) {
+          (std::time::Duration.nanoseconds(self/43) > (9223372036854775807 / factor/44))
+      } else {
+          false
+      }
+  } {
+      {
+        Option__std::time::Duration::None
+      }
+  } else {
+      {
+        Option__std::time::Duration::Some(
+          inherent#std::time::Duration#std::time::Duration#from_nanoseconds(
+            (std::time::Duration.nanoseconds(self/43) * factor/44)
+          )
+        )
+      }
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#saturating_multiply(
+  self/45: std::time::Duration,
+  factor/46: int64
+) -> std::time::Duration {
+  {
+    let mtmp2 =
+      inherent#std::time::Duration#std::time::Duration#checked_multiply(self/45, factor/46) in
+    match mtmp2 {
+      Option__std::time::Duration::None => {
+        if (factor/46 < 0) {
+            {
+              inherent#std::time::Duration#std::time::Duration#zero()
+            }
+        } else {
+            {
+              inherent#std::time::Duration#std::time::Duration#from_nanoseconds(9223372036854775807)
+            }
+        }
+      },
+      Option__std::time::Duration::Some(x3) => {
+        {
+          let x3 = Option__std::time::Duration::Some._0(mtmp2) in
+          {
+            let duration/47 = x3 in
+            duration/47
+          }
+        }
+      },
+    }
+  }
+}
+
+fn inherent#std::time::Duration#std::time::Duration#compare(
+  self/48: std::time::Duration,
+  other/49: std::time::Duration
+) -> int {
+  if (std::time::Duration.nanoseconds(self/48) < std::time::Duration.nanoseconds(other/49)) {
+      {
+        -1
+      }
+  } else {
+      if (std::time::Duration.nanoseconds(self/48) > std::time::Duration.nanoseconds(other/49)) {
+          {
+            1
+          }
+      } else {
+          {
+            0
+          }
+      }
+  }
+}
+
+fn trait_impl#PartialEq#std::time::Duration#eq(
+  self/50: std::time::Duration,
+  other/51: std::time::Duration
+) -> bool {
+  (std::time::Duration.nanoseconds(self/50) == std::time::Duration.nanoseconds(other/51))
+}
+
+fn inherent#std::time::Instant#std::time::Instant#now() -> std::time::Instant {
+  std::time::Instant { nanoseconds: std::internal::host::monotonic_nanoseconds() }
+}
+
+fn inherent#std::time::Instant#std::time::Instant#elapsed(
+  self/52: std::time::Instant
+) -> std::time::Duration {
+  inherent#std::time::Instant#std::time::Instant#duration_since(
+    inherent#std::time::Instant#std::time::Instant#now(),
+    self/52
+  )
+}
+
+fn inherent#std::time::Instant#std::time::Instant#duration_since(
+  self/53: std::time::Instant,
+  earlier/54: std::time::Instant
+) -> std::time::Duration {
+  inherent#std::time::Duration#std::time::Duration#from_nanoseconds(
+    (std::time::Instant.nanoseconds(self/53) - std::time::Instant.nanoseconds(earlier/54))
+  )
+}
+
+fn inherent#std::time::Instant#std::time::Instant#checked_duration_since(
+  self/55: std::time::Instant,
+  earlier/56: std::time::Instant
+) -> Option__std::time::Duration {
+  if (std::time::Instant.nanoseconds(self/55) < std::time::Instant.nanoseconds(earlier/56)) {
+      {
+        Option__std::time::Duration::None
+      }
+  } else {
+      {
+        Option__std::time::Duration::Some(
+          inherent#std::time::Duration#std::time::Duration#from_nanoseconds(
+            (std::time::Instant.nanoseconds(self/55) - std::time::Instant.nanoseconds(earlier/56))
+          )
+        )
+      }
+  }
+}
+
+fn inherent#std::time::Instant#std::time::Instant#compare(
+  self/57: std::time::Instant,
+  other/58: std::time::Instant
+) -> int {
+  if (std::time::Instant.nanoseconds(self/57) < std::time::Instant.nanoseconds(other/58)) {
+      {
+        -1
+      }
+  } else {
+      if (std::time::Instant.nanoseconds(self/57) > std::time::Instant.nanoseconds(other/58)) {
+          {
+            1
+          }
+      } else {
+          {
+            0
+          }
+      }
+  }
+}
+
+fn trait_impl#PartialEq#std::time::Instant#eq(
+  self/59: std::time::Instant,
+  other/60: std::time::Instant
+) -> bool {
+  (std::time::Instant.nanoseconds(self/59) == std::time::Instant.nanoseconds(other/60))
+}
+
+fn inherent#std::time::SystemTime#std::time::SystemTime#now() -> std::time::SystemTime {
+  std::time::SystemTime { unix_nanoseconds: std::internal::host::unix_nanoseconds() }
+}
+
+fn inherent#std::time::SystemTime#std::time::SystemTime#from_unix_nanoseconds(
+  value/61: int64
+) -> std::time::SystemTime {
+  std::time::SystemTime { unix_nanoseconds: value/61 }
+}
+
+fn inherent#std::time::SystemTime#std::time::SystemTime#checked_from_unix_milliseconds(
+  value/62: int64
+) -> Result__std::time::SystemTime__std::time::Error {
+  if if (value/62 > 9223372036854) {
+      true
+  } else {
+      (value/62 < -9223372036854)
+  } {
+      {
+        Result__std::time::SystemTime__std::time::Error::Err(
+          inherent#std::time::Error#std::time::Error#new(
+            "system time conversion",
+            "milliseconds out of range"
+          )
+        )
+      }
+  } else {
+      {
+        Result__std::time::SystemTime__std::time::Error::Ok(
+          inherent#std::time::SystemTime#std::time::SystemTime#from_unix_nanoseconds(
+            (value/62 * 1000000)
+          )
+        )
+      }
+  }
+}
+
+fn inherent#std::time::SystemTime#std::time::SystemTime#checked_from_unix_seconds(
+  value/63: int64
+) -> Result__std::time::SystemTime__std::time::Error {
+  if if (value/63 > 9223372036) {
+      true
+  } else {
+      (value/63 < -9223372036)
+  } {
+      {
+        Result__std::time::SystemTime__std::time::Error::Err(
+          inherent#std::time::Error#std::time::Error#new(
+            "system time conversion",
+            "seconds out of range"
+          )
+        )
+      }
+  } else {
+      {
+        Result__std::time::SystemTime__std::time::Error::Ok(
+          inherent#std::time::SystemTime#std::time::SystemTime#from_unix_nanoseconds(
+            (value/63 * 1000000000)
+          )
+        )
+      }
+  }
+}
+
+fn inherent#std::time::SystemTime#std::time::SystemTime#duration_since(
+  self/64: std::time::SystemTime,
+  earlier/65: std::time::SystemTime
+) -> Result__std::time::Duration__std::time::Error {
+  if (std::time::SystemTime.unix_nanoseconds(self/64) <
+    std::time::SystemTime.unix_nanoseconds(earlier/65)) {
+      {
+        Result__std::time::Duration__std::time::Error::Err(
+          inherent#std::time::Error#std::time::Error#new(
+            "system time difference",
+            "earlier time is after receiver"
+          )
+        )
+      }
+  } else {
+      {
+        Result__std::time::Duration__std::time::Error::Ok(
+          inherent#std::time::Duration#std::time::Duration#from_nanoseconds(
+            (std::time::SystemTime.unix_nanoseconds(self/64) -
+              std::time::SystemTime.unix_nanoseconds(earlier/65))
+          )
+        )
+      }
+  }
+}
+
+fn inherent#std::time::SystemTime#std::time::SystemTime#unix_nanoseconds(
+  self/66: std::time::SystemTime
+) -> int64 {
+  std::time::SystemTime.unix_nanoseconds(self/66)
+}
+
+fn inherent#std::time::SystemTime#std::time::SystemTime#unix_milliseconds(
+  self/67: std::time::SystemTime
+) -> int64 {
+  (std::time::SystemTime.unix_nanoseconds(self/67) / 1000000)
+}
+
+fn inherent#std::time::SystemTime#std::time::SystemTime#unix_seconds(
+  self/68: std::time::SystemTime
+) -> int64 {
+  (std::time::SystemTime.unix_nanoseconds(self/68) / 1000000000)
+}
+
+fn inherent#std::time::SystemTime#std::time::SystemTime#compare(
+  self/69: std::time::SystemTime,
+  other/70: std::time::SystemTime
+) -> int {
+  if (std::time::SystemTime.unix_nanoseconds(self/69) <
+    std::time::SystemTime.unix_nanoseconds(other/70)) {
+      {
+        -1
+      }
+  } else {
+      if (std::time::SystemTime.unix_nanoseconds(self/69) >
+        std::time::SystemTime.unix_nanoseconds(other/70)) {
+          {
+            1
+          }
+      } else {
+          {
+            0
+          }
+      }
+  }
+}
+
+fn trait_impl#PartialEq#std::time::SystemTime#eq(
+  self/71: std::time::SystemTime,
+  other/72: std::time::SystemTime
+) -> bool {
+  (std::time::SystemTime.unix_nanoseconds(self/71) ==
+    std::time::SystemTime.unix_nanoseconds(other/72))
+}
+
+fn std::time::sleep(duration/73: std::time::Duration) -> unit {
+  std::internal::host::sleep_nanoseconds(
+    inherent#std::time::Duration#std::time::Duration#as_nanoseconds(duration/73)
+  )
+}
+
+fn inherent#std::time::Timer#std::time::Timer#new(
+  duration/74: std::time::Duration
+) -> std::time::Timer {
+  let mtmp4 =
+    std::internal::host::timer_new(
+      inherent#std::time::Duration#std::time::Duration#as_nanoseconds(duration/74)
+    ) in
+  {
+    let x5 = mtmp4.0 in
+    let x6 = mtmp4.1 in
+    {
+      let ready/76 = x6 in
+      {
+        let id/75 = x5 in
+        {
+          std::time::Timer { id: id/75, ready: ready/76 }
+        }
+      }
+    }
+  }
+}
+
+fn inherent#std::time::Timer#std::time::Timer#done(self/77: std::time::Timer) -> Receiver[unit] {
+  std::time::Timer.ready(self/77)
+}
+
+fn inherent#std::time::Timer#std::time::Timer#stop(self/78: std::time::Timer) -> bool {
+  std::internal::host::timer_stop(std::time::Timer.id(self/78))
+}
+
+fn std::time::after(duration/79: std::time::Duration) -> Receiver[unit] {
+  inherent#std::time::Timer#std::time::Timer#done(
+    inherent#std::time::Timer#std::time::Timer#new(duration/79)
+  )
+}
+
+fn std::time::sleep_with(
+  cancel/80: std::task::CancelToken,
+  duration/81: std::time::Duration
+) -> std::task::WaitResult__unit {
+  std::task::sleep_nanoseconds_with(
+    cancel/80,
+    inherent#std::time::Duration#std::time::Duration#as_nanoseconds(duration/81)
+  )
+}
+
+fn main() -> unit {
+  let timer/0 =
+    inherent#std::time::Timer#std::time::Timer#new(
+      inherent#std::time::Duration#std::time::Duration#zero()
+    ) in
+  let _wild411 =
+    select {
+      recv(inherent#std::time::Timer#std::time::Timer#done(timer/0)) as _/1 => {
+        println__T_int(1)
+      },
+    } in
+  let stopped/2 =
+    inherent#std::time::Timer#std::time::Timer#new(
+      inherent#std::time::Duration#std::time::Duration#from_seconds(60)
+    ) in
+  let _wild412 = println__T_bool(inherent#std::time::Timer#std::time::Timer#stop(stopped/2)) in
+  let _wild413 =
+    select priority {
+      recv(inherent#std::time::Timer#std::time::Timer#done(stopped/2)) as _/3 => {
+        println__T_int(2)
+      },
+      default => {
+        println__T_int(3)
+      },
+    } in
+  let _wild414 =
+    std::task::scope__T_unit(
+      |scope/4| {
+        let work/6 = inherent#std::task::Scope#std::task::Scope#spawn__T_int(scope/4, |_/5| 42) in
+        select {
+          recv(inherent#std::task::Task#std::task::Task[T]#done__T_int(work/6)) as _/7 => {
+            println__T_int(inherent#std::task::Task#std::task::Task[T]#join__T_int(work/6))
+          },
+        }
+      }
+    ) in
+  std::task::scope__T_unit(
+    |scope/8| {
+      let cancel/9 = inherent#std::task::Scope#std::task::Scope#token(scope/8) in
+      let _wild415 = inherent#std::task::Scope#std::task::Scope#cancel(scope/8) in
+      select {
+        recv(inherent#std::task::CancelToken#std::task::CancelToken#done(cancel/9)) as _/10 => {
+          println__T_int(4)
+        },
+      }
+    }
+  )
+}
+
+fn inherent#Channel#Channel[T]#new__T_unit(capacity/435: int) -> Channel[unit] {
+  @intrinsic(channel.new)(capacity/435)
+}
+
+fn inherent#Channel#Channel[T]#send__T_unit(self/436: Channel[unit], value/437: unit) -> unit {
+  @intrinsic(channel.send)(self/436, value/437)
+}
+
+fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/257: int) -> Vec[uint8] {
+  @intrinsic(vec.with_capacity)(capacity/257)
+}
+
+fn inherent#string#string#to_bytes(self/51: string) -> Vec[uint8] {
+  @runtime(core.string_to_bytes)(self/51)
+}
+
+fn inherent#Vec#Vec[T]#len__T_uint8(self/273: Vec[uint8]) -> int {
+  @intrinsic(vec.len)(self/273)
+}
+
+fn inherent#Vec#Vec[T]#capacity__T_uint8(self/274: Vec[uint8]) -> int {
+  @intrinsic(vec.capacity)(self/274)
+}
+
+fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/275: Vec[uint8]) -> bool {
+  (@intrinsic(vec.len)(self/275) == 0)
+}
+
+fn inherent#Vec#Vec[T]#push__T_uint8(self/258: Vec[uint8], elem/259: uint8) -> unit {
+  @intrinsic(vec.push)(self/258, elem/259)
+}
+
+fn inherent#Vec#Vec[T]#pop__T_uint8(self/283: Vec[uint8]) -> Option__uint8 {
+  let len/284 = inherent#Vec#Vec[T]#len__T_uint8(self/283) in
+  if (len/284 == 0) {
+      {
+        Option__uint8::None
+      }
+  } else {
+      {
+        let value/285 = @intrinsic(vec.get)(self/283, (len/284 - 1)) in
+        let _wild200 = inherent#Vec#Vec[T]#truncate__T_uint8(self/283, (len/284 - 1)) in
+        Option__uint8::Some(value/285)
+      }
+  }
+}
+
+fn inherent#Vec#Vec[T]#reserve__T_uint8(self/276: Vec[uint8], additional/277: int) -> unit {
+  @intrinsic(vec.reserve)(self/276, additional/277)
+}
+
+fn inherent#Vec#Vec[T]#truncate__T_uint8(self/278: Vec[uint8], len/279: int) -> unit {
+  @intrinsic(vec.truncate)(self/278, len/279)
+}
+
+fn inherent#Vec#Vec[T]#clear__T_uint8(self/280: Vec[uint8]) -> unit {
+  inherent#Vec#Vec[T]#truncate__T_uint8(self/280, 0)
+}
+
+fn inherent#Vec#Vec[T]#slice__T_uint8(self/311: Vec[uint8], start/312: int, end/313: int) -> Slice[
+  uint8
+] {
+  @intrinsic(slice.new)(self/311, start/312, end/313)
+}
+
+fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
+  let mtmp10 = @runtime(core.string_from_utf8)(bytes/24) in
+  {
+    let x12 = mtmp10.1 in
+    {
+      let value/25 = x12 in
+      {
+        let index/26 = 0 in
+        let _wild20 =
+          while (index/26 < inherent#string#string#byte_len(value/25)) {
+              {
+                let mtmp13 = string_decode_utf8_at(value/25, index/26) in
+                {
+                  let x14 = mtmp13.0 in
+                  let x16 = mtmp13.2 in
+                  {
+                    let width/28 = x16 in
+                    {
+                      let valid/27 = x14 in
+                      {
+                        if valid/27 {
+                            {
+                              let _wild19 =
+                                {
+                                  let compound_old17 = index/26 in
+                                  let compound_value18 = width/28 in
+                                  index/26 = (compound_old17 + compound_value18)
+                                } in
+                            }
+                        } else {
+                            {
+                              return (false, "")
+                            }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+          } in
+        (true, value/25)
+      }
+    }
+  }
+}
+
+fn trait_impl#PartialEq#Option__string#eq(
+  self/235: Option__string,
+  other/236: Option__string
+) -> bool {
+  {
+    let mtmp171 = (self/235, other/236) in
+    {
+      let x172 = mtmp171.0 in
+      let x173 = mtmp171.1 in
+      match x173 {
+        Option__string::None => {
+          match x172 {
+            Option__string::None => {
+              true
+            },
+            _ => false,
+          }
+        },
+        Option__string::Some(x174) => {
+          {
+            let x174 = Option__string::Some._0(x173) in
+            match x172 {
+              Option__string::Some(x176) => {
+                {
+                  let x176 = Option__string::Some._0(x172) in
+                  {
+                    let left/237 = x176 in
+                    {
+                      let right/238 = x174 in
+                      trait_impl#PartialEq#string#eq(left/237, right/238)
+                    }
+                  }
+                }
+              },
+              _ => false,
+            }
+          }
+        },
+      }
+    }
+  }
+}
+
+fn trait_impl#PartialEq#Option__int#eq(self/235: Option__int, other/236: Option__int) -> bool {
+  {
+    let mtmp171 = (self/235, other/236) in
+    {
+      let x172 = mtmp171.0 in
+      let x173 = mtmp171.1 in
+      match x173 {
+        Option__int::None => {
+          match x172 {
+            Option__int::None => {
+              true
+            },
+            _ => false,
+          }
+        },
+        Option__int::Some(x174) => {
+          {
+            let x174 = Option__int::Some._0(x173) in
+            match x172 {
+              Option__int::Some(x176) => {
+                {
+                  let x176 = Option__int::Some._0(x172) in
+                  {
+                    let left/237 = x176 in
+                    {
+                      let right/238 = x174 in
+                      trait_impl#PartialEq#int#eq(left/237, right/238)
+                    }
+                  }
+                }
+              },
+              _ => false,
+            }
+          }
+        },
+      }
+    }
+  }
+}
+
+fn inherent#Option#Option[T]#unwrap_or__T_std::time::Duration(
+  self/467: Option__std::time::Duration,
+  fallback/468: std::time::Duration
+) -> std::time::Duration {
+  match self/467 {
+    Option__std::time::Duration::None => {
+      fallback/468
+    },
+    Option__std::time::Duration::Some(x390) => {
+      {
+        let x390 = Option__std::time::Duration::Some._0(self/467) in
+        {
+          let value/469 = x390 in
+          value/469
+        }
+      }
+    },
+  }
+}
+
+fn println__T_int(value/1: int) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
+}
+
+fn println__T_bool(value/1: bool) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
+}
+
+fn std::task::scope__T_unit(body/9: (std::task::Scope) -> unit) -> unit {
+  let handle/10 = std::internal::task::root_scope() in
+  let result/11 = inherent#Ref#Ref[T]#new__T_Option[unit](Option__unit::None) in
+  let _wild11 =
+    std::internal::task::run(
+      handle/10,
+      || inherent#Ref#Ref[T]#set__T_Option[unit](
+        result/11,
+        Option__unit::Some(body/9(std::task::Scope { handle: handle/10 }))
+      )
+    ) in
+  std::task::completed_scope_value__T_unit(result/11)
+}
+
+fn inherent#std::task::Scope#std::task::Scope#spawn__T_int(
+  self/25: std::task::Scope,
+  body/26: (std::task::CancelToken) -> int
+) -> std::task::Task__int {
+  let result/27 = inherent#Ref#Ref[T]#new__T_Option[int](Option__int::None) in
+  let ready/28 = inherent#Channel#Channel[T]#new__T_unit(0) in
+  let token/29 =
+    std::task::CancelToken {
+      value: std::internal::task::token(std::task::Scope.handle(self/25))
+    } in
+  let _wild18 =
+    std::internal::task::spawn(
+      std::task::Scope.handle(self/25),
+      || {
+        let _wild17 =
+          inherent#Ref#Ref[T]#set__T_Option[int](result/27, Option__int::Some(body/26(token/29))) in
+        inherent#Channel#Channel[T]#close__T_unit(ready/28)
+      }
+    ) in
+  std::task::Task__int { result: result/27, ready: ready/28 }
+}
+
+fn inherent#std::task::Task#std::task::Task[T]#done__T_int(
+  self/54: std::task::Task__int
+) -> Receiver[unit] {
+  inherent#Channel#Channel[T]#receiver__T_unit(std::task::Task__int.ready(self/54))
+}
+
+fn inherent#std::task::Task#std::task::Task[T]#join__T_int(self/55: std::task::Task__int) -> int {
+  loop {
+    let mtmp25 = inherent#Channel#Channel[T]#recv__T_unit(std::task::Task__int.ready(self/55)) in
+    {
+      {
+        let mtmp26 = inherent#Ref#Ref[T]#get__T_Option[int](std::task::Task__int.result(self/55)) in
+        match mtmp26 {
+          Option__int::None => {
+            ()
+          },
+          Option__int::Some(x27) => {
+            {
+              let x27 = Option__int::Some._0(mtmp26) in
+              {
+                let value/56 = x27 in
+                {
+                  let _wild28 = break value/56 in
+                }
+              }
+            }
+          },
+        }
+      }
+    }
+  }
+}
+
+fn inherent#string#string#byte_len(self/36: string) -> int {
+  @runtime(core.string_len)(self/36)
+}
+
+fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
+  let length/7 = inherent#string#string#byte_len(value/5) in
+  let _wild2 =
+    if if (index/6 < 0) {
+        true
+    } else {
+        (index/6 >= length/7)
+    } {
+        {
+          return utf8_invalid_decode()
+        }
+    } else {
+        {
+          ()
+        }
+    } in
+  let first/8 = (inherent#string#string#byte_get(value/5, index/6) as uint32) in
+  if (first/8 < 128) {
+      {
+        utf8_valid_decode(first/8, 1)
+      }
+  } else {
+      if (first/8 < 194) {
+          {
+            utf8_invalid_decode()
+          }
+      } else {
+          if (first/8 < 224) {
+              {
+                let _wild3 =
+                  if ((length/7 - index/6) < 2) {
+                      {
+                        return utf8_invalid_decode()
+                      }
+                  } else {
+                      {
+                        ()
+                      }
+                  } in
+                let second/9 =
+                  (inherent#string#string#byte_get(value/5, (index/6 + 1)) as uint32) in
+                if utf8_invalid_continuation(second/9) {
+                    {
+                      utf8_invalid_decode()
+                    }
+                } else {
+                    {
+                      utf8_valid_decode((((first/8 & 31) << 6) | (second/9 & 63)), 2)
+                    }
+                }
+              }
+          } else {
+              if (first/8 < 240) {
+                  {
+                    let _wild4 =
+                      if ((length/7 - index/6) < 3) {
+                          {
+                            return utf8_invalid_decode()
+                          }
+                      } else {
+                          {
+                            ()
+                          }
+                      } in
+                    let second/10 =
+                      (inherent#string#string#byte_get(value/5, (index/6 + 1)) as uint32) in
+                    let third/11 =
+                      (inherent#string#string#byte_get(value/5, (index/6 + 2)) as uint32) in
+                    if if if if utf8_invalid_continuation(second/10) {
+                        true
+                    } else {
+                        utf8_invalid_continuation(third/11)
+                    } {
+                        true
+                    } else {
+                        if (first/8 == 224) {
+                            (second/10 < 160)
+                        } else {
+                            false
+                        }
+                    } {
+                        true
+                    } else {
+                        if (first/8 == 237) {
+                            (second/10 >= 160)
+                        } else {
+                            false
+                        }
+                    } {
+                        {
+                          utf8_invalid_decode()
+                        }
+                    } else {
+                        {
+                          utf8_valid_decode(
+                            ((((first/8 & 15) << 12) | ((second/10 & 63) << 6)) | (third/11 & 63)),
+                            3
+                          )
+                        }
+                    }
+                  }
+              } else {
+                  if (first/8 < 245) {
+                      {
+                        let _wild5 =
+                          if ((length/7 - index/6) < 4) {
+                              {
+                                return utf8_invalid_decode()
+                              }
+                          } else {
+                              {
+                                ()
+                              }
+                          } in
+                        let second/12 =
+                          (inherent#string#string#byte_get(value/5, (index/6 + 1)) as uint32) in
+                        let third/13 =
+                          (inherent#string#string#byte_get(value/5, (index/6 + 2)) as uint32) in
+                        let fourth/14 =
+                          (inherent#string#string#byte_get(value/5, (index/6 + 3)) as uint32) in
+                        if if if if if utf8_invalid_continuation(second/12) {
+                            true
+                        } else {
+                            utf8_invalid_continuation(third/13)
+                        } {
+                            true
+                        } else {
+                            utf8_invalid_continuation(fourth/14)
+                        } {
+                            true
+                        } else {
+                            if (first/8 == 240) {
+                                (second/12 < 144)
+                            } else {
+                                false
+                            }
+                        } {
+                            true
+                        } else {
+                            if (first/8 == 244) {
+                                (second/12 > 143)
+                            } else {
+                                false
+                            }
+                        } {
+                            {
+                              utf8_invalid_decode()
+                            }
+                        } else {
+                            {
+                              utf8_valid_decode(
+                                (((((first/8 & 7) << 18) | ((second/12 & 63) << 12)) |
+                                  ((third/13 & 63) << 6)) |
+                                  (fourth/14 & 63)),
+                                4
+                              )
+                            }
+                        }
+                      }
+                  } else {
+                      {
+                        utf8_invalid_decode()
+                      }
+                  }
+              }
+          }
+      }
+  }
+}
+
+fn trait_impl#PartialEq#string#eq(self/181: string, other/182: string) -> bool {
+  (self/181 == other/182)
+}
+
+fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+  (self/185 == other/186)
+}
+
+fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+  @runtime(core.int_to_string)(self/151)
+}
+
+fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
+  @runtime(core.bool_to_string)(self/148)
+}
+
+fn inherent#Ref#Ref[T]#new__T_Option[unit](value/431: Option__unit) -> Ref[Option__unit] {
+  @intrinsic(ref.new)(value/431)
+}
+
+fn inherent#Ref#Ref[T]#set__T_Option[unit](
+  self/433: Ref[Option__unit],
+  value/434: Option__unit
+) -> unit {
+  @intrinsic(ref.set)(self/433, value/434)
+}
+
+fn std::task::completed_scope_value__T_unit(result/0: Ref[Option__unit]) -> unit {
+  loop {
+    {
+      let mtmp0 = inherent#Ref#Ref[T]#get__T_Option[unit](result/0) in
+      match mtmp0 {
+        Option__unit::None => {
+          ()
+        },
+        Option__unit::Some(x1) => {
+          {
+            let x1 = Option__unit::Some._0(mtmp0) in
+            {
+              let value/1 = x1 in
+              break value/1
+            }
+          }
+        },
+      }
+    }
+  }
+}
+
+fn inherent#Ref#Ref[T]#new__T_Option[int](value/431: Option__int) -> Ref[Option__int] {
+  @intrinsic(ref.new)(value/431)
+}
+
+fn inherent#Ref#Ref[T]#set__T_Option[int](
+  self/433: Ref[Option__int],
+  value/434: Option__int
+) -> unit {
+  @intrinsic(ref.set)(self/433, value/434)
+}
+
+fn inherent#Channel#Channel[T]#close__T_unit(self/441: Channel[unit]) -> unit {
+  @intrinsic(channel.close)(self/441)
+}
+
+fn inherent#Channel#Channel[T]#receiver__T_unit(self/443: Channel[unit]) -> Receiver[unit] {
+  @intrinsic(channel.receiver)(self/443)
+}
+
+fn inherent#Channel#Channel[T]#recv__T_unit(self/438: Channel[unit]) -> Option__unit {
+  let mtmp379 = @intrinsic(channel.recv)(self/438) in
+  {
+    let x380 = mtmp379.0 in
+    let x381 = mtmp379.1 in
+    {
+      let ok/440 = x381 in
+      {
+        let value/439 = x380 in
+        {
+          if ok/440 {
+              {
+                Option__unit::Some(value/439)
+              }
+          } else {
+              {
+                Option__unit::None
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn inherent#Ref#Ref[T]#get__T_Option[int](self/432: Ref[Option__int]) -> Option__int {
+  @intrinsic(ref.get)(self/432)
+}
+
+fn utf8_invalid_decode() -> (bool, char, int) {
+  (false, '\0', 0)
+}
+
+fn inherent#string#string#byte_get(self/39: string, index/40: int) -> uint8 {
+  @runtime(core.string_byte_get)(self/39, index/40)
+}
+
+fn utf8_valid_decode(value/0: uint32, width/1: int) -> (bool, char, int) {
+  {
+    let mtmp0 = __goml_builtin_char_from_uint32(value/0) in
+    match mtmp0 {
+      Option__char::None => {
+        utf8_invalid_decode()
+      },
+      Option__char::Some(x1) => {
+        {
+          let x1 = Option__char::Some._0(mtmp0) in
+          {
+            let character/2 = x1 in
+            (true, character/2, width/1)
+          }
+        }
+      },
+    }
+  }
+}
+
+fn utf8_invalid_continuation(value/3: uint32) -> bool {
+  if (value/3 < 128) {
+      true
+  } else {
+      (value/3 > 191)
+  }
+}
+
+fn inherent#Ref#Ref[T]#get__T_Option[unit](self/432: Ref[Option__unit]) -> Option__unit {
+  @intrinsic(ref.get)(self/432)
+}
+
+fn __goml_builtin_char_from_uint32(value/30: uint32) -> Option__char {
+  if utf8_valid_scalar(value/30) {
+      {
+        let mtmp22 = @runtime(core.char_from_uint32)(value/30) in
+        {
+          let x24 = mtmp22.1 in
+          {
+            let character/31 = x24 in
+            {
+              Option__char::Some(character/31)
+            }
+          }
+        }
+      }
+  } else {
+      {
+        Option__char::None
+      }
+  }
+}
+
+fn utf8_valid_scalar(value/4: uint32) -> bool {
+  if (value/4 <= 1114111) {
+      (!if (value/4 >= 55296) {
+          (value/4 <= 57343)
+      } else {
+          false
+      })
+  } else {
+      false
+  }
+}
+
+fn trait_impl#PartialEq#Option__unit#eq(self/235: Option__unit, other/236: Option__unit) -> bool {
+  {
+    let mtmp171 = (self/235, other/236) in
+    {
+      let x172 = mtmp171.0 in
+      let x173 = mtmp171.1 in
+      match x173 {
+        Option__unit::None => {
+          match x172 {
+            Option__unit::None => {
+              true
+            },
+            _ => false,
+          }
+        },
+        Option__unit::Some(x174) => {
+          {
+            let x174 = Option__unit::Some._0(x173) in
+            match x172 {
+              Option__unit::Some(x176) => {
+                {
+                  let x176 = Option__unit::Some._0(x172) in
+                  {
+                    let left/237 = x176 in
+                    {
+                      let right/238 = x174 in
+                      trait_impl#PartialEq#unit#eq(left/237, right/238)
+                    }
+                  }
+                }
+              },
+              _ => false,
+            }
+          }
+        },
+      }
+    }
+  }
+}
+
+fn trait_impl#Hash#Option__unit#hash(self/239: Option__unit) -> uint64 {
+  match self/239 {
+    Option__unit::None => {
+      14695981039346656038
+    },
+    Option__unit::Some(x177) => {
+      {
+        let x177 = Option__unit::Some._0(self/239) in
+        {
+          let value/240 = x177 in
+          (14695981039346656039 + trait_impl#Hash#unit#hash(value/240))
+        }
+      }
+    },
+  }
+}
+
+fn trait_impl#Hash#Option__int#hash(self/239: Option__int) -> uint64 {
+  match self/239 {
+    Option__int::None => {
+      14695981039346656038
+    },
+    Option__int::Some(x177) => {
+      {
+        let x177 = Option__int::Some._0(self/239) in
+        {
+          let value/240 = x177 in
+          (14695981039346656039 + trait_impl#Hash#int#hash(value/240))
+        }
+      }
+    },
+  }
+}
+
+fn trait_impl#PartialEq#unit#eq(self/177: unit, other/178: unit) -> bool {
+  true
+}
+
+fn trait_impl#Hash#unit#hash(self/207: unit) -> uint64 {
+  0
+}
+
+fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+  @runtime(core.int_hash)(self/211)
+}

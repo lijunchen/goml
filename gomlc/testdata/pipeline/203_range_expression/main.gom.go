@@ -73,151 +73,151 @@ type Option__int struct {
 }
 
 func main0() struct{} {
-    var for_index409 int = 1
-    var for_limit410 int = 4
-    Loop_loop480:
+    var for_index412 int = 1
+    var for_limit413 int = 4
+    Loop_loop483:
     for {
-        var t481 bool = for_index409 < for_limit410
-        if t481 {
-            var for_item411 int = for_index409
-            var t482 int = for_index409 + 1
-            for_index409 = t482
-            var inline551 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(for_item411)
-            _goml_runtime_core_string_println(inline551)
-            continue
-        } else {
-            break Loop_loop480
-        }
-    }
-    var calls__5 *ref_int_x
-    var inline603 int = 0
-    var inline604 *ref_int_x = ref__Ref_3int(inline603)
-    calls__5 = inline604
-    var for_index415 int
-    var inline598 int = 4
-    var inline599 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(calls__5)
-    var inline600 int = inline599 + 1
-    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(calls__5, inline600)
-    for_index415 = inline598
-    var for_limit416 int
-    var inline593 int = 6
-    var inline594 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(calls__5)
-    var inline595 int = inline594 + 1
-    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(calls__5, inline595)
-    for_limit416 = inline593
-    var for_done417 bool = for_index415 > for_limit416
-    Loop_loop473:
-    for {
-        var t474 bool = !for_done417
-        if t474 {
-            var for_item418 int = for_index415
-            var t476 bool = for_index415 == for_limit416
-            if t476 {
-                for_done417 = true
-            } else {
-                var t478 int = for_index415 + 1
-                for_index415 = t478
-            }
-            var inline554 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(for_item418)
+        var t484 bool = for_index412 < for_limit413
+        if t484 {
+            var for_item414 int = for_index412
+            var t485 int = for_index412 + 1
+            for_index412 = t485
+            var inline554 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(for_item414)
             _goml_runtime_core_string_println(inline554)
             continue
         } else {
-            break Loop_loop473
+            break Loop_loop483
         }
     }
-    var for_index422 int = 3
-    var for_limit423 int = 1
-    var for_done424 bool = for_index422 > for_limit423
-    Loop_loop466:
+    var calls__5 *ref_int_x
+    var inline606 int = 0
+    var inline607 *ref_int_x = ref__Ref_3int(inline606)
+    calls__5 = inline607
+    var for_index418 int
+    var inline601 int = 4
+    var inline602 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(calls__5)
+    var inline603 int = inline602 + 1
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(calls__5, inline603)
+    for_index418 = inline601
+    var for_limit419 int
+    var inline596 int = 6
+    var inline597 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(calls__5)
+    var inline598 int = inline597 + 1
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(calls__5, inline598)
+    for_limit419 = inline596
+    var for_done420 bool = for_index418 > for_limit419
+    Loop_loop476:
     for {
-        var t467 bool = !for_done424
-        if t467 {
-            var for_item425 int = for_index422
-            var t469 bool = for_index422 == for_limit423
-            if t469 {
-                for_done424 = true
+        var t477 bool = !for_done420
+        if t477 {
+            var for_item421 int = for_index418
+            var t479 bool = for_index418 == for_limit419
+            if t479 {
+                for_done420 = true
             } else {
-                var t471 int = for_index422 + 1
-                for_index422 = t471
+                var t481 int = for_index418 + 1
+                for_index418 = t481
             }
-            var inline557 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(for_item425)
+            var inline557 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(for_item421)
             _goml_runtime_core_string_println(inline557)
             continue
         } else {
-            break Loop_loop466
+            break Loop_loop476
         }
     }
-    var maximum__8 int = 9223372036854775807
-    var for_index429 int = maximum__8
-    var for_done431 bool = for_index429 > maximum__8
-    Loop_loop459:
+    var for_index425 int = 3
+    var for_limit426 int = 1
+    var for_done427 bool = for_index425 > for_limit426
+    Loop_loop469:
     for {
-        var t460 bool = !for_done431
-        if t460 {
-            var for_item432 int = for_index429
-            var t462 bool = for_index429 == maximum__8
-            if t462 {
-                for_done431 = true
+        var t470 bool = !for_done427
+        if t470 {
+            var for_item428 int = for_index425
+            var t472 bool = for_index425 == for_limit426
+            if t472 {
+                for_done427 = true
             } else {
-                var t464 int = for_index429 + 1
-                for_index429 = t464
+                var t474 int = for_index425 + 1
+                for_index425 = t474
             }
-            var inline560 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(for_item432)
+            var inline560 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(for_item428)
             _goml_runtime_core_string_println(inline560)
             continue
         } else {
-            break Loop_loop459
+            break Loop_loop469
+        }
+    }
+    var maximum__8 int = 9223372036854775807
+    var for_index432 int = maximum__8
+    var for_done434 bool = for_index432 > maximum__8
+    Loop_loop462:
+    for {
+        var t463 bool = !for_done434
+        if t463 {
+            var for_item435 int = for_index432
+            var t465 bool = for_index432 == maximum__8
+            if t465 {
+                for_done434 = true
+            } else {
+                var t467 int = for_index432 + 1
+                for_index432 = t467
+            }
+            var inline563 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(for_item435)
+            _goml_runtime_core_string_println(inline563)
+            continue
+        } else {
+            break Loop_loop462
         }
     }
     var iterator__10 FnIterator__int
-    var inline585 int = 8
-    var inline586 int = 8
-    var inline587 *ref_int_x = ref__Ref_3int(inline585)
-    var inline588 *ref_bool_x = ref__Ref_4bool(false)
-    var inline589 closure_env_goml_builtin_range_inclusive_0 = closure_env_goml_builtin_range_inclusive_0{
-        finished_0: inline588,
-        current_1: inline587,
-        end_2: inline586,
+    var inline588 int = 8
+    var inline589 int = 8
+    var inline590 *ref_int_x = ref__Ref_3int(inline588)
+    var inline591 *ref_bool_x = ref__Ref_4bool(false)
+    var inline592 closure_env_goml_builtin_range_inclusive_0 = closure_env_goml_builtin_range_inclusive_0{
+        finished_0: inline591,
+        current_1: inline590,
+        end_2: inline589,
     }
-    var inline590 func() Option__int = func() Option__int {
-        return _goml_m_inherent_i_closure__en_hb902f75cf29154a7d4df1174edbd9988_sive__0_i_apply(inline589)
+    var inline593 func() Option__int = func() Option__int {
+        return _goml_m_inherent_i_closure__en_hb902f75cf29154a7d4df1174edbd9988_sive__0_i_apply(inline592)
     }
-    var inline591 FnIterator__int = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(inline590)
-    iterator__10 = inline591
-    var mtmp436 Option__int
-    var inline582 func() Option__int = iterator__10.next_fn
-    var inline583 Option__int = inline582()
-    mtmp436 = inline583
-    switch mtmp436._tag {
+    var inline594 FnIterator__int = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(inline593)
+    iterator__10 = inline594
+    var mtmp439 Option__int
+    var inline585 func() Option__int = iterator__10.next_fn
+    var inline586 Option__int = inline585()
+    mtmp439 = inline586
+    switch mtmp439._tag {
     case 0:
-        var inline563 string = "missing"
-        var inline564 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline563)
-        _goml_runtime_core_string_println(inline564)
-    case 1:
-        var x437 int = mtmp436._v1_0
-        var inline567 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(x437)
+        var inline566 string = "missing"
+        var inline567 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline566)
         _goml_runtime_core_string_println(inline567)
+    case 1:
+        var x440 int = mtmp439._v1_0
+        var inline570 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(x440)
+        _goml_runtime_core_string_println(inline570)
     default:
         panic("non-exhaustive match")
     }
-    var t455 int
-    var inline580 int = ref_get__Ref_3int(calls__5)
-    t455 = inline580
-    var inline577 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t455)
-    _goml_runtime_core_string_println(inline577)
-    var t456 int32
-    var inline573 int32 = 10
-    var inline574 int32 = 20
-    var inline575 int32 = inline573 + inline574
-    t456 = inline575
-    var inline570 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t456)
-    _goml_runtime_core_string_println(inline570)
+    var t458 int
+    var inline583 int = ref_get__Ref_3int(calls__5)
+    t458 = inline583
+    var inline580 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t458)
+    _goml_runtime_core_string_println(inline580)
+    var t459 int32
+    var inline576 int32 = 10
+    var inline577 int32 = 20
+    var inline578 int32 = inline576 + inline577
+    t459 = inline578
+    var inline573 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t459)
+    _goml_runtime_core_string_println(inline573)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__432 *ref_int_x) int {
-    var t485 int = ref_get__Ref_3int(self__432)
-    return t485
+    var t488 int = ref_get__Ref_3int(self__432)
+    return t488
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__433 *ref_int_x, value__434 int) struct{} {
@@ -226,15 +226,15 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__433 *ref_int_x, v
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
-    var t511 string = _goml_runtime_core_int_to_string(self__151)
-    return t511
+    var t514 string = _goml_runtime_core_int_to_string(self__151)
+    return t514
 }
 
 func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(next_fn__254 func() Option__int) FnIterator__int {
-    var t514 FnIterator__int = FnIterator__int{
+    var t517 FnIterator__int = FnIterator__int{
         next_fn: next_fn__254,
     }
-    return t514
+    return t517
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
@@ -242,41 +242,41 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
-    var t519 string = _goml_runtime_core_int32_to_string(self__154)
-    return t519
+    var t522 string = _goml_runtime_core_int32_to_string(self__154)
+    return t522
 }
 
-func _goml_m_inherent_i_closure__en_hb902f75cf29154a7d4df1174edbd9988_sive__0_i_apply(env441 closure_env_goml_builtin_range_inclusive_0) Option__int {
-    var finished__501 *ref_bool_x = env441.finished_0
-    var current__500 *ref_int_x = env441.current_1
-    var end__499 int = env441.end_2
-    var t543 bool = ref_get__Ref_4bool(finished__501)
-    var jp538 bool
-    if t543 {
-        jp538 = true
+func _goml_m_inherent_i_closure__en_hb902f75cf29154a7d4df1174edbd9988_sive__0_i_apply(env444 closure_env_goml_builtin_range_inclusive_0) Option__int {
+    var finished__510 *ref_bool_x = env444.finished_0
+    var current__509 *ref_int_x = env444.current_1
+    var end__508 int = env444.end_2
+    var t546 bool = ref_get__Ref_4bool(finished__510)
+    var jp541 bool
+    if t546 {
+        jp541 = true
     } else {
-        var t544 int = ref_get__Ref_3int(current__500)
-        var t545 bool = t544 > end__499
-        jp538 = t545
+        var t547 int = ref_get__Ref_3int(current__509)
+        var t548 bool = t547 > end__508
+        jp541 = t548
     }
-    if jp538 {
+    if jp541 {
         return Option__int{
             _tag: 0,
         }
     } else {
-        var value__502 int = ref_get__Ref_3int(current__500)
-        var t541 bool = value__502 == end__499
-        if t541 {
-            ref_set__Ref_4bool(finished__501, true)
+        var value__511 int = ref_get__Ref_3int(current__509)
+        var t544 bool = value__511 == end__508
+        if t544 {
+            ref_set__Ref_4bool(finished__510, true)
         } else {
-            var t542 int = value__502 + 1
-            ref_set__Ref_3int(current__500, t542)
+            var t545 int = value__511 + 1
+            ref_set__Ref_3int(current__509, t545)
         }
-        var t540 Option__int = Option__int{
+        var t543 Option__int = Option__int{
             _tag: 1,
-            _v1_0: value__502,
+            _v1_0: value__511,
         }
-        return t540
+        return t543
     }
 }
 

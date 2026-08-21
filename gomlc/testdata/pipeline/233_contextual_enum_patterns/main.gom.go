@@ -123,23 +123,23 @@ type Boxed__int struct {
 func classify(value__0 First__int) string {
     switch value__0.(type) {
     case First__int_Shared:
-        var x408 int = value__0.(First__int_Shared)._0
-        var t449 string
-        var inline577 string = _goml_runtime_core_int_to_string(x408)
-        t449 = inline577
-        var t450 string = "shared:" + t449
-        return t450
+        var x411 int = value__0.(First__int_Shared)._0
+        var t452 string
+        var inline580 string = _goml_runtime_core_int_to_string(x411)
+        t452 = inline580
+        var t453 string = "shared:" + t452
+        return t453
     case Idle:
         return "idle"
     case Data:
-        var x409 int = value__0.(Data)._0
-        var x410 string = value__0.(Data)._1
-        var t451 string = x410 + ":"
-        var t452 string
-        var inline579 string = _goml_runtime_core_int_to_string(x409)
-        t452 = inline579
-        var t453 string = t451 + t452
-        return t453
+        var x412 int = value__0.(Data)._0
+        var x413 string = value__0.(Data)._1
+        var t454 string = x413 + ":"
+        var t455 string
+        var inline582 string = _goml_runtime_core_int_to_string(x412)
+        t455 = inline582
+        var t456 string = t454 + t455
+        return t456
     default:
         panic("non-exhaustive match")
     }
@@ -150,19 +150,19 @@ func nested(value__4 Option__Result__int__string) string {
     case 0:
         return "none"
     case 1:
-        var x411 Result__int__string = value__4._v1_0
-        switch x411._tag {
+        var x414 Result__int__string = value__4._v1_0
+        switch x414._tag {
         case 0:
-            var x412 int = x411._v0_0
-            var t460 string
-            var inline581 string = _goml_runtime_core_int_to_string(x412)
-            t460 = inline581
-            var t461 string = "ok:" + t460
-            return t461
+            var x415 int = x414._v0_0
+            var t463 string
+            var inline584 string = _goml_runtime_core_int_to_string(x415)
+            t463 = inline584
+            var t464 string = "ok:" + t463
+            return t464
         case 1:
-            var x413 string = x411._v1_0
-            var t462 string = "err:" + x413
-            return t462
+            var x416 string = x414._v1_0
+            var t465 string = "err:" + x416
+            return t465
         default:
             panic("non-exhaustive match")
         }
@@ -173,77 +173,77 @@ func nested(value__4 Option__Result__int__string) string {
 
 func take_once(value__10 Option__int) int {
     var current__11 *ref_Option__int_x
-    var inline594 *ref_Option__int_x = ref__Ref_11Option__int(value__10)
-    current__11 = inline594
+    var inline597 *ref_Option__int_x = ref__Ref_11Option__int(value__10)
+    current__11 = inline597
     var result__12 *ref_int_x
-    var inline591 int = 0
-    var inline592 *ref_int_x = ref__Ref_3int(inline591)
-    result__12 = inline592
-    Loop_loop475:
+    var inline594 int = 0
+    var inline595 *ref_int_x = ref__Ref_3int(inline594)
+    result__12 = inline595
+    Loop_loop478:
     for {
-        var mtmp418 Option__int
-        var inline587 Option__int = ref_get__Ref_11Option__int(current__11)
-        mtmp418 = inline587
-        switch mtmp418._tag {
+        var mtmp421 Option__int
+        var inline590 Option__int = ref_get__Ref_11Option__int(current__11)
+        mtmp421 = inline590
+        switch mtmp421._tag {
         case 1:
-            var x419 int = mtmp418._v1_0
-            ref_set__Ref_3int(result__12, x419)
+            var x422 int = mtmp421._v1_0
+            ref_set__Ref_3int(result__12, x422)
             ref_set__Ref_11Option__int(current__11, Option__int{
                 _tag: 0,
             })
             continue
         default:
-            break Loop_loop475
+            break Loop_loop478
         }
     }
-    var inline589 int = ref_get__Ref_3int(result__12)
-    return inline589
+    var inline592 int = ref_get__Ref_3int(result__12)
+    return inline592
 }
 
 func sum_boxed(values__16 *_goml_vec_Boxed__int) int {
     var result__17 *ref_int_x
-    var inline602 int = 0
-    var inline603 *ref_int_x = ref__Ref_3int(inline602)
-    result__17 = inline603
-    var for_limit426 int = vec_len__Vec_10Boxed__int(values__16)
-    var for_index427 int = 0
-    Loop_loop485:
+    var inline605 int = 0
+    var inline606 *ref_int_x = ref__Ref_3int(inline605)
+    result__17 = inline606
+    var for_limit429 int = vec_len__Vec_10Boxed__int(values__16)
+    var for_index430 int = 0
+    Loop_loop488:
     for {
-        var t486 bool = for_index427 < for_limit426
-        if t486 {
-            var for_item428 Boxed__int = vec_get__Vec_10Boxed__int(values__16, for_index427)
-            var t487 int = for_index427 + 1
-            for_index427 = t487
-            switch for_item428._tag {
+        var t489 bool = for_index430 < for_limit429
+        if t489 {
+            var for_item431 Boxed__int = vec_get__Vec_10Boxed__int(values__16, for_index430)
+            var t490 int = for_index430 + 1
+            for_index430 = t490
+            switch for_item431._tag {
             case 0:
-                var x430 int = for_item428._v0_0
-                var t489 int
-                var inline598 int = ref_get__Ref_3int(result__17)
-                t489 = inline598
-                var t490 int = t489 + x430
-                ref_set__Ref_3int(result__17, t490)
+                var x433 int = for_item431._v0_0
+                var t492 int
+                var inline601 int = ref_get__Ref_3int(result__17)
+                t492 = inline601
+                var t493 int = t492 + x433
+                ref_set__Ref_3int(result__17, t493)
                 continue
             default:
                 panic("non-exhaustive match")
             }
         } else {
-            break Loop_loop485
+            break Loop_loop488
         }
     }
-    var inline600 int = ref_get__Ref_3int(result__17)
-    return inline600
+    var inline603 int = ref_get__Ref_3int(result__17)
+    return inline603
 }
 
 func main0() struct{} {
-    var t492 Boxed__int = Boxed__int{
+    var t495 Boxed__int = Boxed__int{
         _tag: 0,
         _v0_0: 19,
     }
-    var t493 Boxed__int = Boxed__int{
+    var t496 Boxed__int = Boxed__int{
         _tag: 0,
         _v0_0: 23,
     }
-    var t494 [2]Boxed__int = [2]Boxed__int{t492, t493}
+    var t497 [2]Boxed__int = [2]Boxed__int{t495, t496}
     var boxed__19 *_goml_vec_Boxed__int = func(values [2]Boxed__int) *_goml_vec_Boxed__int {
         var storage struct {
             vector _goml_vec_Boxed__int
@@ -252,33 +252,23 @@ func main0() struct{} {
         storage.values = values
         storage.vector.items = storage.values[0:len(storage.values)]
         return &storage.vector
-    }(t494)
-    var t495 First__int = First__int_Shared{
+    }(t497)
+    var t498 First__int = First__int_Shared{
         _0: 7,
-    }
-    var t496 string = classify(t495)
-    println__T_string(t496)
-    var t497 string = classify(Idle{})
-    println__T_string(t497)
-    var t498 First__int = Data{
-        _0: 9,
-        _1: "data",
     }
     var t499 string = classify(t498)
     println__T_string(t499)
-    var t500 Result__int__string = Result__int__string{
-        _tag: 0,
-        _v0_0: 11,
+    var t500 string = classify(Idle{})
+    println__T_string(t500)
+    var t501 First__int = Data{
+        _0: 9,
+        _1: "data",
     }
-    var t501 Option__Result__int__string = Option__Result__int__string{
-        _tag: 1,
-        _v1_0: t500,
-    }
-    var t502 string = nested(t501)
+    var t502 string = classify(t501)
     println__T_string(t502)
     var t503 Result__int__string = Result__int__string{
-        _tag: 1,
-        _v1_0: "bad",
+        _tag: 0,
+        _v0_0: 11,
     }
     var t504 Option__Result__int__string = Option__Result__int__string{
         _tag: 1,
@@ -286,50 +276,60 @@ func main0() struct{} {
     }
     var t505 string = nested(t504)
     println__T_string(t505)
-    var t506 string = nested(Option__Result__int__string{
+    var t506 Result__int__string = Result__int__string{
+        _tag: 1,
+        _v1_0: "bad",
+    }
+    var t507 Option__Result__int__string = Option__Result__int__string{
+        _tag: 1,
+        _v1_0: t506,
+    }
+    var t508 string = nested(t507)
+    println__T_string(t508)
+    var t509 string = nested(Option__Result__int__string{
         _tag: 0,
     })
-    var inline638 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t506)
-    _goml_runtime_core_string_println(inline638)
-    var t508 int
-    var inline635 int = 13
-    t508 = inline635
-    var inline632 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t508)
-    _goml_runtime_core_string_println(inline632)
-    var t509 int
-    t509 = 0
-    var inline626 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t509)
-    _goml_runtime_core_string_println(inline626)
-    var t510 bool
-    t510 = true
-    var inline622 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t510)
-    _goml_runtime_core_string_println(inline622)
-    var t512 bool
-    t512 = false
-    var inline618 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t512)
-    _goml_runtime_core_string_println(inline618)
-    var t513 Option__int = Option__int{
+    var inline641 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t509)
+    _goml_runtime_core_string_println(inline641)
+    var t511 int
+    var inline638 int = 13
+    t511 = inline638
+    var inline635 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t511)
+    _goml_runtime_core_string_println(inline635)
+    var t512 int
+    t512 = 0
+    var inline629 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t512)
+    _goml_runtime_core_string_println(inline629)
+    var t513 bool
+    t513 = true
+    var inline625 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t513)
+    _goml_runtime_core_string_println(inline625)
+    var t515 bool
+    t515 = false
+    var inline621 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t515)
+    _goml_runtime_core_string_println(inline621)
+    var t516 Option__int = Option__int{
         _tag: 1,
         _v1_0: 15,
     }
-    var t514 int = take_once(t513)
-    var inline615 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t514)
-    _goml_runtime_core_string_println(inline615)
-    var t516 int
-    var inline612 int = 17
-    t516 = inline612
-    var inline608 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t516)
+    var t517 int = take_once(t516)
+    var inline618 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t517)
+    _goml_runtime_core_string_println(inline618)
+    var t519 int
+    var inline615 int = 17
+    t519 = inline615
+    var inline611 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t519)
+    _goml_runtime_core_string_println(inline611)
+    var t520 int = sum_boxed(boxed__19)
+    var inline608 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t520)
     _goml_runtime_core_string_println(inline608)
-    var t517 int = sum_boxed(boxed__19)
-    var inline605 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t517)
-    _goml_runtime_core_string_println(inline605)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t539 string
-    t539 = value__1
-    _goml_runtime_core_string_println(t539)
+    var t542 string
+    t542 = value__1
+    _goml_runtime_core_string_println(t542)
     return struct{}{}
 }
 
@@ -338,13 +338,13 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
-    var t551 string = _goml_runtime_core_int_to_string(self__151)
-    return t551
+    var t554 string = _goml_runtime_core_int_to_string(self__151)
+    return t554
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__148 bool) string {
-    var t554 string = _goml_runtime_core_bool_to_string(self__148)
-    return t554
+    var t557 string = _goml_runtime_core_bool_to_string(self__148)
+    return t557
 }
 
 func main() {

@@ -1,6 +1,6 @@
 fn loop_return_unit(flag/0: bool) -> unit {
   joinrec {
-    join loop416() -> unit {
+    join loop419() -> unit {
       if flag/0 {
         ()
       } else {
@@ -8,41 +8,41 @@ fn loop_return_unit(flag/0: bool) -> unit {
       }
     } in
   } in
-  jump loop416()
+  jump loop419()
 }
 
 fn loop_return() -> int32 {
   joinrec {
-    join loop422() -> int32 {
+    join loop425() -> int32 {
       5
     } in
   } in
-  jump loop422()
+  jump loop425()
 }
 
 fn main() -> unit {
-  let _wild412 = loop_return_unit(true) in
-  let t424 = loop_return() in
-  let inline437 = trait_impl#ToString#int32#to_string(t424) in
-  let inline438 = @runtime(core.string_println)(inline437) in
+  let _wild415 = loop_return_unit(true) in
+  let t427 = loop_return() in
+  let inline440 = trait_impl#ToString#int32#to_string(t427) in
+  let inline441 = @runtime(core.string_println)(inline440) in
   ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont439(t426: string) -> unit {
-    let t427 = @runtime(core.string_println)(t426) in
-    ()
-  } in
-  jump inline_cont439(value/1)
-}
-
-fn println__T_int32(value/1: int32) -> unit {
-  join inline_cont440(t429: string) -> unit {
+  join inline_cont442(t429: string) -> unit {
     let t430 = @runtime(core.string_println)(t429) in
     ()
   } in
-  let inline441 = @runtime(core.int32_to_string)(value/1) in
-  jump inline_cont440(inline441)
+  jump inline_cont442(value/1)
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  join inline_cont443(t432: string) -> unit {
+    let t433 = @runtime(core.string_println)(t432) in
+    ()
+  } in
+  let inline444 = @runtime(core.int32_to_string)(value/1) in
+  jump inline_cont443(inline444)
 }
 
 fn trait_impl#ToString#string#to_string(self/149: string) -> string {
@@ -50,6 +50,6 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
 }
 
 fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
-  let t435 = @runtime(core.int32_to_string)(self/154) in
-  t435
+  let t438 = @runtime(core.int32_to_string)(self/154) in
+  t438
 }

@@ -5,14 +5,14 @@ fn trait_impl#Display#Point#show(self/0: Point) -> string {
 fn trait_impl#Display#Maybe__int32#show(self/1: Maybe__int32) -> string {
   match self/1 {
     Tag_0 => {
-      let x408 = Maybe__int32::Just._0(self/1) in
-      join inline_cont438(t418: string) -> string {
-        let t419 = ("Just(" + t418) in
-        let t420 = (t419 + ")") in
-        t420
+      let x411 = Maybe__int32::Just._0(self/1) in
+      join inline_cont441(t421: string) -> string {
+        let t422 = ("Just(" + t421) in
+        let t423 = (t422 + ")") in
+        t423
       } in
-      let inline439 = @runtime(core.int32_to_string)(x408) in
-      jump inline_cont438(inline439)
+      let inline442 = @runtime(core.int32_to_string)(x411) in
+      jump inline_cont441(inline442)
     },
     Tag_1 => {
       "Nothing"
@@ -22,89 +22,89 @@ fn trait_impl#Display#Maybe__int32#show(self/1: Maybe__int32) -> string {
 
 fn make_maybe(flag/3: bool) -> Maybe__int32 {
   if flag/3 {
-    let t425 = Maybe__int32::Just(42) in
-    t425
+    let t428 = Maybe__int32::Just(42) in
+    t428
   } else {
     Tag_1
   }
 }
 
 fn main() -> unit {
-  join inline_cont465(some_number/5: Maybe__int32) -> unit {
-    join inline_cont462(none_number/6: Maybe__int32) -> unit {
-      join inline_cont461(t427: string) -> unit {
-        join inline_cont458(mtmp409: unit) -> unit {
-          join inline_cont452(t428: string) -> unit {
-            join inline_cont449(mtmp410: unit) -> unit {
-              join inline_cont443(t429: string) -> unit {
-                let inline441 = trait_impl#ToString#string#to_string(t429) in
-                let inline442 = @runtime(core.string_println)(inline441) in
+  join inline_cont468(some_number/5: Maybe__int32) -> unit {
+    join inline_cont465(none_number/6: Maybe__int32) -> unit {
+      join inline_cont464(t430: string) -> unit {
+        join inline_cont461(mtmp412: unit) -> unit {
+          join inline_cont455(t431: string) -> unit {
+            join inline_cont452(mtmp413: unit) -> unit {
+              join inline_cont446(t432: string) -> unit {
+                let inline444 = trait_impl#ToString#string#to_string(t432) in
+                let inline445 = @runtime(core.string_println)(inline444) in
                 ()
               } in
               match none_number/6 {
                 Tag_0 => {
-                  let inline444 = Maybe__int32::Just._0(none_number/6) in
-                  let inline446 = inherent#int32#int32#to_string(inline444) in
-                  let inline447 = ("Just(" + inline446) in
-                  let inline448 = (inline447 + ")") in
-                  jump inline_cont443(inline448)
+                  let inline447 = Maybe__int32::Just._0(none_number/6) in
+                  let inline449 = inherent#int32#int32#to_string(inline447) in
+                  let inline450 = ("Just(" + inline449) in
+                  let inline451 = (inline450 + ")") in
+                  jump inline_cont446(inline451)
                 },
                 Tag_1 => {
-                  jump inline_cont443("Nothing")
+                  jump inline_cont446("Nothing")
                 },
               }
             } in
-            let inline450 = trait_impl#ToString#string#to_string(t428) in
-            let inline451 = @runtime(core.string_println)(inline450) in
-            jump inline_cont449(())
+            let inline453 = trait_impl#ToString#string#to_string(t431) in
+            let inline454 = @runtime(core.string_println)(inline453) in
+            jump inline_cont452(())
           } in
           match some_number/5 {
             Tag_0 => {
-              let inline453 = Maybe__int32::Just._0(some_number/5) in
-              let inline455 = inherent#int32#int32#to_string(inline453) in
-              let inline456 = ("Just(" + inline455) in
-              let inline457 = (inline456 + ")") in
-              jump inline_cont452(inline457)
+              let inline456 = Maybe__int32::Just._0(some_number/5) in
+              let inline458 = inherent#int32#int32#to_string(inline456) in
+              let inline459 = ("Just(" + inline458) in
+              let inline460 = (inline459 + ")") in
+              jump inline_cont455(inline460)
             },
             Tag_1 => {
-              jump inline_cont452("Nothing")
+              jump inline_cont455("Nothing")
             },
           }
         } in
-        let inline459 = trait_impl#ToString#string#to_string(t427) in
-        let inline460 = @runtime(core.string_println)(inline459) in
-        jump inline_cont458(())
+        let inline462 = trait_impl#ToString#string#to_string(t430) in
+        let inline463 = @runtime(core.string_println)(inline462) in
+        jump inline_cont461(())
       } in
-      jump inline_cont461("Point")
+      jump inline_cont464("Point")
     } in
-    let inline463 = false in
-    if inline463 {
-      let inline464 = Maybe__int32::Just(42) in
-      jump inline_cont462(inline464)
+    let inline466 = false in
+    if inline466 {
+      let inline467 = Maybe__int32::Just(42) in
+      jump inline_cont465(inline467)
     } else {
-      jump inline_cont462(Tag_1)
+      jump inline_cont465(Tag_1)
     }
   } in
-  let inline466 = true in
-  if inline466 {
-    let inline467 = Maybe__int32::Just(42) in
-    jump inline_cont465(inline467)
+  let inline469 = true in
+  if inline469 {
+    let inline470 = Maybe__int32::Just(42) in
+    jump inline_cont468(inline470)
   } else {
-    jump inline_cont465(Tag_1)
+    jump inline_cont468(Tag_1)
   }
 }
 
 fn inherent#int32#int32#to_string(self/33: int32) -> string {
-  let t432 = @runtime(core.int32_to_string)(self/33) in
-  t432
+  let t435 = @runtime(core.int32_to_string)(self/33) in
+  t435
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont468(t434: string) -> unit {
-    let t435 = @runtime(core.string_println)(t434) in
+  join inline_cont471(t437: string) -> unit {
+    let t438 = @runtime(core.string_println)(t437) in
     ()
   } in
-  jump inline_cont468(value/1)
+  jump inline_cont471(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/149: string) -> string {
