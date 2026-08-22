@@ -1,31 +1,151 @@
 fn main() -> unit {
-  let x415 = Tag_0 in
-  match x415 {
+  let x800 = Tag_0 in
+  match x800 {
     Tag_0 => {
-      let inline473 = 3 in
-      let inline474 = trait_impl#ToString#isize#to_string(inline473) in
-      let inline475 = @runtime(core.string_print)(inline474) in
+      let inline901 = 3 in
+      let inline902 = trait_impl#ToString#isize#to_string(inline901) in
+      let inline903 = @runtime(core.string_print)(inline902) in
       ()
     },
     _ => {
-      let inline477 = 4 in
-      let inline478 = trait_impl#ToString#isize#to_string(inline477) in
-      let inline479 = @runtime(core.string_print)(inline478) in
+      let inline905 = 4 in
+      let inline906 = trait_impl#ToString#isize#to_string(inline905) in
+      let inline907 = @runtime(core.string_print)(inline906) in
       ()
     },
   }
 }
 
 fn print__T_isize(value/0: isize) -> unit {
-  join inline_cont480(t467: string) -> unit {
-    let t468 = @runtime(core.string_print)(t467) in
+  join inline_cont908(t852: string) -> unit {
+    let t853 = @runtime(core.string_print)(t852) in
     ()
   } in
-  let inline481 = @runtime(core.int_to_string)(value/0) in
-  jump inline_cont480(inline481)
+  let inline909 = __goml_builtin_int_to_string(value/0) in
+  jump inline_cont908(inline909)
 }
 
-fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
-  let t471 = @runtime(core.int_to_string)(self/151) in
-  t471
+fn trait_impl#ToString#isize#to_string(self/404: isize) -> string {
+  let inline911 = (self/404 as i64) in
+  let inline912 = signed_decimal_string(inline911) in
+  inline912
+}
+
+fn __goml_builtin_int_to_string(value/222: isize) -> string {
+  let t859 = (value/222 as i64) in
+  let inline914 = (t859 < 0) in
+  if inline914 {
+    let inline915 = (t859 as u64) in
+    let inline916 = (0 - inline915) in
+    let inline917 = decimal_string(inline916) in
+    let inline918 = ("-" + inline917) in
+    inline918
+  } else {
+    let inline919 = (t859 as u64) in
+    let inline920 = decimal_string(inline919) in
+    inline920
+  }
+}
+
+fn signed_decimal_string(value/214: i64) -> string {
+  let t865 = (value/214 < 0) in
+  if t865 {
+    let t866 = (value/214 as u64) in
+    let t867 = (0 - t866) in
+    let t868 = decimal_string(t867) in
+    let t869 = ("-" + t868) in
+    t869
+  } else {
+    let t870 = (value/214 as u64) in
+    let t871 = decimal_string(t870) in
+    t871
+  }
+}
+
+fn decimal_string(value/208: u64) -> string {
+  let t894 = (value/208 == 0) in
+  join k874() -> string {
+    let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+    let remaining/210 = value/208 in
+    join exit875() -> string {
+      join inline_cont929(t876: isize) -> string {
+        let bytes/211 = @intrinsic(vec.with_capacity)(t876) in
+        let offset/212 = 0 in
+        join exit877() -> string {
+          let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+          let x364 = mtmp362.1 in
+          x364
+        } in
+        joinrec {
+          join loop878() -> string {
+            join inline_cont927(t879: isize) -> string {
+              let t880 = (offset/212 < t879) in
+              if t880 {
+                join inline_cont925(t881: isize) -> string {
+                  let t882 = (t881 - offset/212) in
+                  let t883 = (t882 - 1) in
+                  let t884 = @intrinsic(vec.get)(reversed/209, t883) in
+                  join inline_cont923(_wild357: unit) -> string {
+                    let compound_old358 = offset/212 in
+                    let compound_value359 = 1 in
+                    let t885 = (compound_old358 + compound_value359) in
+                    let t886 = offset/212 = t885 in
+                    jump loop878()
+                  } in
+                  let inline924 = @intrinsic(vec.push)(bytes/211, t884) in
+                  jump inline_cont923(())
+                } in
+                let inline926 = @intrinsic(vec.len)(reversed/209) in
+                jump inline_cont925(inline926)
+              } else {
+                jump exit877()
+              }
+            } in
+            let inline928 = @intrinsic(vec.len)(reversed/209) in
+            jump inline_cont927(inline928)
+          } in
+        } in
+        jump loop878()
+      } in
+      let inline930 = @intrinsic(vec.len)(reversed/209) in
+      jump inline_cont929(inline930)
+    } in
+    joinrec {
+      join loop887() -> string {
+        let t888 = (remaining/210 > 0) in
+        if t888 {
+          let t889 = (remaining/210 % 10) in
+          let t890 = (t889 as u8) in
+          let t891 = (t890 + 48) in
+          join inline_cont921(_wild352: unit) -> string {
+            let compound_old353 = remaining/210 in
+            let compound_value354 = 10 in
+            let t892 = (compound_old353 / compound_value354) in
+            let t893 = remaining/210 = t892 in
+            jump loop887()
+          } in
+          let inline922 = @intrinsic(vec.push)(reversed/209, t891) in
+          jump inline_cont921(())
+        } else {
+          jump exit875()
+        }
+      } in
+    } in
+    jump loop887()
+  } in
+  if t894 {
+    "0"
+  } else {
+    jump k874()
+  }
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  let t896 = @intrinsic(vec.push)(self/511, elem/512) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  let t899 = @intrinsic(vec.len)(self/526) in
+  t899
 }

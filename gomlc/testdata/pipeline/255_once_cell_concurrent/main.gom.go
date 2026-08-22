@@ -1,7 +1,7 @@
 package main
 
 import (
-    _goml_fmt "fmt"
+    _goml_os "os"
     _goml_sync "sync"
     _goml_runtime_pkg "runtime"
 )
@@ -33,7 +33,7 @@ func _goml_runtime_core_bool_to_string(x bool) string {
 }
 
 func _goml_runtime_core_string_println(s string) struct{} {
-    _goml_fmt.Println(s)
+    _goml_os.Stdout.WriteString(s + "\n")
     return struct{}{}
 }
 
@@ -73,9 +73,28 @@ func once_cell_get_or_init__OnceCell__isize(cell *OnceCell__isize, init func() i
     }
 }
 
+type _goml_vec_uint32 struct {
+    items []uint32
+}
+
 type Tuple2_3int_4bool struct {
     _0 int
     _1 bool
+}
+
+type FloatNatural struct {
+    words *_goml_vec_uint32
+}
+
+type ParsedFloat struct {
+    valid bool
+    negative bool
+    special int
+    numerator FloatNatural
+    decimal_exponent int
+    binary_exponent int
+    hexadecimal bool
+    significant_digits int
 }
 
 type closure_env_main_0 struct {}
@@ -114,27 +133,27 @@ var VALUE *OnceCell__isize = func() *OnceCell__isize {
 
 func main0() struct{} {
     var results__0 chan int
-    var inline494 int = 2
-    var inline495 chan int = func(p0 int) chan int {
+    var inline879 int = 2
+    var inline880 chan int = func(p0 int) chan int {
         return make(chan int, p0)
-    }(inline494)
-    results__0 = inline495
-    var t418 closure_env_main_1 = closure_env_main_1{
+    }(inline879)
+    results__0 = inline880
+    var t803 closure_env_main_1 = closure_env_main_1{
         results_0: results__0,
     }
-    var t419 func() struct{} = func() struct{} {
-        return _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(t418)
+    var t804 func() struct{} = func() struct{} {
+        return _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(t803)
     }
-    go t419()
-    var t420 closure_env_main_3 = closure_env_main_3{
+    go t804()
+    var t805 closure_env_main_3 = closure_env_main_3{
         results_0: results__0,
     }
-    var t421 func() struct{} = func() struct{} {
-        return _goml_m_inherent_i_closure__env__main__3_i_closure__env__main__3_i_apply(t420)
+    var t806 func() struct{} = func() struct{} {
+        return _goml_m_inherent_i_closure__env__main__3_i_closure__env__main__3_i_apply(t805)
     }
-    go t421()
-    var t422 Option__isize
-    var inline487 Tuple2_3int_4bool = func(p0 chan int) Tuple2_3int_4bool {
+    go t806()
+    var t807 Option__isize
+    var inline872 Tuple2_3int_4bool = func(p0 chan int) Tuple2_3int_4bool {
         var value int
         var ok bool
         value, ok = <-p0
@@ -143,32 +162,32 @@ func main0() struct{} {
             _1: ok,
         }
     }(results__0)
-    var inline488 int = inline487._0
-    var inline489 bool = inline487._1
-    if inline489 {
-        var inline492 Option__isize = Option__isize{
+    var inline873 int = inline872._0
+    var inline874 bool = inline872._1
+    if inline874 {
+        var inline877 Option__isize = Option__isize{
             _tag: 1,
-            _v1_0: inline488,
+            _v1_0: inline873,
         }
-        t422 = inline492
+        t807 = inline877
     } else {
-        t422 = Option__isize{
+        t807 = Option__isize{
             _tag: 0,
         }
     }
     var first__1 int
-    var inline483 int = 0
-    switch t422._tag {
+    var inline868 int = 0
+    switch t807._tag {
     case 0:
-        first__1 = inline483
+        first__1 = inline868
     case 1:
-        var inline484 int = t422._v1_0
-        first__1 = inline484
+        var inline869 int = t807._v1_0
+        first__1 = inline869
     default:
         panic("non-exhaustive match")
     }
-    var t423 Option__isize
-    var inline476 Tuple2_3int_4bool = func(p0 chan int) Tuple2_3int_4bool {
+    var t808 Option__isize
+    var inline861 Tuple2_3int_4bool = func(p0 chan int) Tuple2_3int_4bool {
         var value int
         var ok bool
         value, ok = <-p0
@@ -177,80 +196,80 @@ func main0() struct{} {
             _1: ok,
         }
     }(results__0)
-    var inline477 int = inline476._0
-    var inline478 bool = inline476._1
-    if inline478 {
-        var inline481 Option__isize = Option__isize{
+    var inline862 int = inline861._0
+    var inline863 bool = inline861._1
+    if inline863 {
+        var inline866 Option__isize = Option__isize{
             _tag: 1,
-            _v1_0: inline477,
+            _v1_0: inline862,
         }
-        t423 = inline481
+        t808 = inline866
     } else {
-        t423 = Option__isize{
+        t808 = Option__isize{
             _tag: 0,
         }
     }
     var second__2 int
-    var inline472 int = 0
-    switch t423._tag {
+    var inline857 int = 0
+    switch t808._tag {
     case 0:
-        second__2 = inline472
+        second__2 = inline857
     case 1:
-        var inline473 int = t423._v1_0
-        second__2 = inline473
+        var inline858 int = t808._v1_0
+        second__2 = inline858
     default:
         panic("non-exhaustive match")
     }
-    var t424 bool = first__1 == second__2
-    var t425 string
-    var inline470 string = _goml_runtime_core_bool_to_string(t424)
-    t425 = inline470
-    var inline467 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t425)
-    _goml_runtime_core_string_println(inline467)
+    var t809 bool = first__1 == second__2
+    var t810 string
+    var inline855 string = _goml_runtime_core_bool_to_string(t809)
+    t810 = inline855
+    var inline852 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t810)
+    _goml_runtime_core_string_println(inline852)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
-    return self__149
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__402 string) string {
+    return self__402
 }
 
-func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env413 closure_env_main_0) int {
+func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env798 closure_env_main_0) int {
     return 41
 }
 
-func _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(env414 closure_env_main_1) struct{} {
-    var results__0 chan int = env414.results_0
-    var t455 closure_env_main_0 = closure_env_main_0{}
-    var t456 func() int = func() int {
-        return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t455)
+func _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(env799 closure_env_main_1) struct{} {
+    var results__0 chan int = env799.results_0
+    var t840 closure_env_main_0 = closure_env_main_0{}
+    var t841 func() int = func() int {
+        return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t840)
     }
-    var t457 int
-    var inline500 int = once_cell_get_or_init__OnceCell__isize(VALUE, t456)
-    t457 = inline500
+    var t842 int
+    var inline885 int = once_cell_get_or_init__OnceCell__isize(VALUE, t841)
+    t842 = inline885
     func(p0 chan int, p1 int) struct{} {
         p0 <- p1
         return struct{}{}
-    }(results__0, t457)
+    }(results__0, t842)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(env415 closure_env_main_2) int {
+func _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(env800 closure_env_main_2) int {
     return 42
 }
 
-func _goml_m_inherent_i_closure__env__main__3_i_closure__env__main__3_i_apply(env416 closure_env_main_3) struct{} {
-    var results__0 chan int = env416.results_0
-    var t462 closure_env_main_2 = closure_env_main_2{}
-    var t463 func() int = func() int {
-        return _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(t462)
+func _goml_m_inherent_i_closure__env__main__3_i_closure__env__main__3_i_apply(env801 closure_env_main_3) struct{} {
+    var results__0 chan int = env801.results_0
+    var t847 closure_env_main_2 = closure_env_main_2{}
+    var t848 func() int = func() int {
+        return _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(t847)
     }
-    var t464 int
-    var inline504 int = once_cell_get_or_init__OnceCell__isize(VALUE, t463)
-    t464 = inline504
+    var t849 int
+    var inline889 int = once_cell_get_or_init__OnceCell__isize(VALUE, t848)
+    t849 = inline889
     func(p0 chan int, p1 int) struct{} {
         p0 <- p1
         return struct{}{}
-    }(results__0, t464)
+    }(results__0, t849)
     return struct{}{}
 }
 

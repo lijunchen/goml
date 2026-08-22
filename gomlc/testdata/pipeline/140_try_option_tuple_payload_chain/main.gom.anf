@@ -1,8 +1,8 @@
 fn cut_pair(ok/0: bool) -> Option__(string,string) {
   if ok/0 {
-    let t423 = ("left", "right") in
-    let t424 = Option__(string,string)::Some(t423) in
-    t424
+    let t808 = ("left", "right") in
+    let t809 = Option__(string,string)::Some(t808) in
+    t809
   } else {
     Tag_0
   }
@@ -10,36 +10,36 @@ fn cut_pair(ok/0: bool) -> Option__(string,string) {
 
 fn pair(ok/1: bool) -> Option__(string,string) {
   if ok/1 {
-    let inline451 = ("left", "right") in
-    let inline452 = Option__(string,string)::Some(inline451) in
-    inline452
+    let inline836 = ("left", "right") in
+    let inline837 = Option__(string,string)::Some(inline836) in
+    inline837
   } else {
     Tag_0
   }
 }
 
 fn describe(ok/2: bool) -> Option__string {
-  join inline_cont453(mtmp411: Option__(string,string)) -> Option__string {
-    join k430(jp431: (string, string)) -> Option__string {
-      let x414 = jp431.0 in
-      let x415 = jp431.1 in
-      let t432 = (x414 + ":") in
-      let t433 = (t432 + x415) in
-      let t434 = Option__string::Some(t433) in
-      t434
+  join inline_cont838(mtmp796: Option__(string,string)) -> Option__string {
+    join k815(jp816: (string, string)) -> Option__string {
+      let x799 = jp816.0 in
+      let x800 = jp816.1 in
+      let t817 = (x799 + ":") in
+      let t818 = (t817 + x800) in
+      let t819 = Option__string::Some(t818) in
+      t819
     } in
-    match mtmp411 {
+    match mtmp796 {
       Tag_0 => {
         Tag_0
       },
       Tag_1 => {
-        let x412 = Option__(string,string)::Some._0(mtmp411) in
-        jump k430(x412)
+        let x797 = Option__(string,string)::Some._0(mtmp796) in
+        jump k815(x797)
       },
     }
   } in
-  let inline454 = cut_pair(ok/2) in
-  jump inline_cont453(inline454)
+  let inline839 = cut_pair(ok/2) in
+  jump inline_cont838(inline839)
 }
 
 fn show(opt/5: Option__string) -> string {
@@ -48,78 +48,78 @@ fn show(opt/5: Option__string) -> string {
       "none"
     },
     Tag_1 => {
-      let x416 = Option__string::Some._0(opt/5) in
-      let t439 = ("some " + x416) in
-      t439
+      let x801 = Option__string::Some._0(opt/5) in
+      let t824 = ("some " + x801) in
+      t824
     },
   }
 }
 
 fn main() -> unit {
-  let t441 = describe(true) in
-  join inline_cont480(t442: string) -> unit {
-    join inline_cont477(_wild417: unit) -> unit {
-      join inline_cont462(t443: Option__string) -> unit {
-        join inline_cont458(t444: string) -> unit {
-          let inline456 = trait_impl#ToString#string#to_string(t444) in
-          let inline457 = @runtime(core.string_println)(inline456) in
+  let t826 = describe(true) in
+  join inline_cont865(t827: string) -> unit {
+    join inline_cont862(_wild802: unit) -> unit {
+      join inline_cont847(t828: Option__string) -> unit {
+        join inline_cont843(t829: string) -> unit {
+          let inline841 = trait_impl#ToString#string#to_string(t829) in
+          let inline842 = @runtime(core.string_println)(inline841) in
           ()
         } in
-        match t443 {
+        match t828 {
           Tag_0 => {
-            jump inline_cont458("none")
+            jump inline_cont843("none")
           },
           Tag_1 => {
-            let inline459 = Option__string::Some._0(t443) in
-            let inline461 = ("some " + inline459) in
-            jump inline_cont458(inline461)
+            let inline844 = Option__string::Some._0(t828) in
+            let inline846 = ("some " + inline844) in
+            jump inline_cont843(inline846)
           },
         }
       } in
-      let inline463 = false in
-      let inline464 = pair(inline463) in
-      join inline_join465(inline466: (string, string)) -> unit {
-        let inline468 = inline466.0 in
-        let inline469 = inline466.1 in
-        let inline472 = (inline468 + ":") in
-        let inline473 = (inline472 + inline469) in
-        let inline474 = Option__string::Some(inline473) in
-        jump inline_cont462(inline474)
+      let inline848 = false in
+      let inline849 = pair(inline848) in
+      join inline_join850(inline851: (string, string)) -> unit {
+        let inline853 = inline851.0 in
+        let inline854 = inline851.1 in
+        let inline857 = (inline853 + ":") in
+        let inline858 = (inline857 + inline854) in
+        let inline859 = Option__string::Some(inline858) in
+        jump inline_cont847(inline859)
       } in
-      match inline464 {
+      match inline849 {
         Tag_0 => {
-          jump inline_cont462(Tag_0)
+          jump inline_cont847(Tag_0)
         },
         Tag_1 => {
-          let inline475 = Option__(string,string)::Some._0(inline464) in
-          jump inline_join465(inline475)
+          let inline860 = Option__(string,string)::Some._0(inline849) in
+          jump inline_join850(inline860)
         },
       }
     } in
-    let inline478 = trait_impl#ToString#string#to_string(t442) in
-    let inline479 = @runtime(core.string_println)(inline478) in
-    jump inline_cont477(())
+    let inline863 = trait_impl#ToString#string#to_string(t827) in
+    let inline864 = @runtime(core.string_println)(inline863) in
+    jump inline_cont862(())
   } in
-  match t441 {
+  match t826 {
     Tag_0 => {
-      jump inline_cont480("none")
+      jump inline_cont865("none")
     },
     Tag_1 => {
-      let inline481 = Option__string::Some._0(t441) in
-      let inline483 = ("some " + inline481) in
-      jump inline_cont480(inline483)
+      let inline866 = Option__string::Some._0(t826) in
+      let inline868 = ("some " + inline866) in
+      jump inline_cont865(inline868)
     },
   }
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont484(t446: string) -> unit {
-    let t447 = @runtime(core.string_println)(t446) in
+  join inline_cont869(t831: string) -> unit {
+    let t832 = @runtime(core.string_println)(t831) in
     ()
   } in
-  jump inline_cont484(value/1)
+  jump inline_cont869(value/1)
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
 }

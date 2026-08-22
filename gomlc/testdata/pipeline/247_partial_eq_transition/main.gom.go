@@ -1,7 +1,7 @@
 package main
 
 import (
-    _goml_fmt "fmt"
+    _goml_os "os"
 )
 
 func _goml_runtime_core_bool_to_string(x bool) string {
@@ -17,8 +17,12 @@ func _goml_runtime_core_int_hash(x int) uint64 {
 }
 
 func _goml_runtime_core_string_println(s string) struct{} {
-    _goml_fmt.Println(s)
+    _goml_os.Stdout.WriteString(s + "\n")
     return struct{}{}
+}
+
+type _goml_vec_uint32 struct {
+    items []uint32
 }
 
 type hashmap_LegacyKey_string_x_entry struct {
@@ -223,6 +227,21 @@ func hashmap_set__HashMap_9ModernKey_6string(m *hashmap_ModernKey_string_x, key 
     return struct{}{}
 }
 
+type FloatNatural struct {
+    words *_goml_vec_uint32
+}
+
+type ParsedFloat struct {
+    valid bool
+    negative bool
+    special int
+    numerator FloatNatural
+    decimal_exponent int
+    binary_exponent int
+    hexadecimal bool
+    significant_digits int
+}
+
 type LegacyKey struct {
     value int
 }
@@ -254,45 +273,45 @@ type Option__string struct {
 }
 
 func _goml_m_trait__impl_i_PartialEq_i_LegacyKey_i_eq(self__0 LegacyKey, other__1 LegacyKey) bool {
-    var t903 int = self__0.value
-    var t904 int = other__1.value
-    var inline1810 bool = t903 == t904
-    return inline1810
+    var t1288 int = self__0.value
+    var t1289 int = other__1.value
+    var inline2195 bool = t1288 == t1289
+    return inline2195
 }
 
 func _goml_m_trait__impl_i_Hash_i_LegacyKey_i_hash(self__2 LegacyKey) uint64 {
-    var t908_source int = 0
-    var t908 uint64 = uint64(int(t908_source))
-    var h__3 uint64 = t908 + 14695981039346656037
-    var t909_source int = 0
-    var t909 uint64 = uint64(int(t909_source))
-    var t910 uint64 = t909 + 1099511628211
-    var t911 uint64 = h__3 * t910
-    var t912 int = self__2.value
-    var t913 uint64
-    var inline1812 uint64 = _goml_runtime_core_int_hash(t912)
-    t913 = inline1812
-    var h__4 uint64 = t911 + t913
+    var t1293_source int = 0
+    var t1293 uint64 = uint64(int(t1293_source))
+    var h__3 uint64 = t1293 + 14695981039346656037
+    var t1294_source int = 0
+    var t1294 uint64 = uint64(int(t1294_source))
+    var t1295 uint64 = t1294 + 1099511628211
+    var t1296 uint64 = h__3 * t1295
+    var t1297 int = self__2.value
+    var t1298 uint64
+    var inline2197 uint64 = _goml_runtime_core_int_hash(t1297)
+    t1298 = inline2197
+    var h__4 uint64 = t1296 + t1298
     return h__4
 }
 
 func _goml_m_trait__impl_i_PartialEq_i_ModernKey_i_eq(self__5 ModernKey, other__6 ModernKey) bool {
-    var t916 int = self__5.value
-    var t917_rhs int = 10
-    var t917 int = t916 % t917_rhs
-    var t918 int = other__6.value
-    var t919_rhs int = 10
-    var t919 int = t918 % t919_rhs
-    var t920 bool = t917 == t919
-    return t920
+    var t1301 int = self__5.value
+    var t1302_rhs int = 10
+    var t1302 int = t1301 % t1302_rhs
+    var t1303 int = other__6.value
+    var t1304_rhs int = 10
+    var t1304 int = t1303 % t1304_rhs
+    var t1305 bool = t1302 == t1304
+    return t1305
 }
 
 func _goml_m_trait__impl_i_Hash_i_ModernKey_i_hash(self__7 ModernKey) uint64 {
-    var t923 int = self__7.value
-    var t924_rhs int = 10
-    var t924 int = t923 % t924_rhs
-    var t925 uint64 = uint64(int(t924))
-    return t925
+    var t1308 int = self__7.value
+    var t1309_rhs int = 10
+    var t1309 int = t1308 % t1309_rhs
+    var t1310 uint64 = uint64(int(t1309))
+    return t1310
 }
 
 func main0() struct{} {
@@ -302,129 +321,129 @@ func main0() struct{} {
     var modern__15 ModernKey = ModernKey{
         value: 9,
     }
-    var t957 LegacyKey = LegacyKey{
+    var t1342 LegacyKey = LegacyKey{
         value: 7,
     }
-    var t958 bool = equal__T_LegacyKey(legacy__14, t957)
-    println__T_bool(t958)
-    var t959 LegacyKey = LegacyKey{
+    var t1343 bool = equal__T_LegacyKey(legacy__14, t1342)
+    println__T_bool(t1343)
+    var t1344 LegacyKey = LegacyKey{
         value: 8,
     }
-    var t960 bool = _goml_m_trait__impl_i_PartialEq_i_LegacyKey_i_eq(legacy__14, t959)
-    println__T_bool(t960)
-    var t961 ModernKey = ModernKey{
+    var t1345 bool = _goml_m_trait__impl_i_PartialEq_i_LegacyKey_i_eq(legacy__14, t1344)
+    println__T_bool(t1345)
+    var t1346 ModernKey = ModernKey{
         value: 19,
     }
-    var t962 bool = equal__T_ModernKey(modern__15, t961)
-    println__T_bool(t962)
-    var t963 ModernKey = ModernKey{
+    var t1347 bool = equal__T_ModernKey(modern__15, t1346)
+    println__T_bool(t1347)
+    var t1348 ModernKey = ModernKey{
         value: 20,
     }
-    var t964 bool = _goml_m_trait__impl_i_PartialEq_i_ModernKey_i_eq(modern__15, t963)
-    var t965 bool = !t964
-    var t966 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t965)
-    println__T_string(t966)
+    var t1349 bool = _goml_m_trait__impl_i_PartialEq_i_ModernKey_i_eq(modern__15, t1348)
+    var t1350 bool = !t1349
+    var t1351 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t1350)
+    println__T_string(t1351)
     var legacy_map__16 *hashmap_LegacyKey_string_x = _goml_m_inherent_i_HashMap_i_H_h4f35fad7fd3ed72455715cdf3969637d_ey____V__string()
     _goml_m_inherent_i_HashMap_i_H_h4c415936d3e2c958d5274434037d6231_ey____V__string(legacy_map__16, legacy__14, "legacy")
-    var t967 LegacyKey = LegacyKey{
+    var t1352 LegacyKey = LegacyKey{
         value: 7,
     }
-    var t968 Option__string
-    var inline1881 Option__string = hashmap_get__HashMap_9LegacyKey_6string(legacy_map__16, t967)
-    t968 = inline1881
-    var t969 string = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(t968, "missing")
-    var inline1878 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t969)
-    _goml_runtime_core_string_println(inline1878)
+    var t1353 Option__string
+    var inline2266 Option__string = hashmap_get__HashMap_9LegacyKey_6string(legacy_map__16, t1352)
+    t1353 = inline2266
+    var t1354 string = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(t1353, "missing")
+    var inline2263 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1354)
+    _goml_runtime_core_string_println(inline2263)
     var modern_map__17 *hashmap_ModernKey_string_x
-    var inline1876 *hashmap_ModernKey_string_x = hashmap_new__HashMap_9ModernKey_6string()
-    modern_map__17 = inline1876
-    var inline1873 string = "modern"
-    hashmap_set__HashMap_9ModernKey_6string(modern_map__17, modern__15, inline1873)
-    var t970 ModernKey = ModernKey{
+    var inline2261 *hashmap_ModernKey_string_x = hashmap_new__HashMap_9ModernKey_6string()
+    modern_map__17 = inline2261
+    var inline2258 string = "modern"
+    hashmap_set__HashMap_9ModernKey_6string(modern_map__17, modern__15, inline2258)
+    var t1355 ModernKey = ModernKey{
         value: 19,
     }
-    var t971 Option__string
-    var inline1871 Option__string = hashmap_get__HashMap_9ModernKey_6string(modern_map__17, t970)
-    t971 = inline1871
-    var t972 string
-    var inline1867 string = "missing"
-    switch t971._tag {
+    var t1356 Option__string
+    var inline2256 Option__string = hashmap_get__HashMap_9ModernKey_6string(modern_map__17, t1355)
+    t1356 = inline2256
+    var t1357 string
+    var inline2252 string = "missing"
+    switch t1356._tag {
     case 0:
-        t972 = inline1867
+        t1357 = inline2252
     case 1:
-        var inline1868 string = t971._v1_0
-        t972 = inline1868
+        var inline2253 string = t1356._v1_0
+        t1357 = inline2253
     default:
         panic("non-exhaustive match")
     }
-    var inline1864 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t972)
-    _goml_runtime_core_string_println(inline1864)
+    var inline2249 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1357)
+    _goml_runtime_core_string_println(inline2249)
     var high__18 Rank = Rank{
         value: 2,
     }
     var low__19 Rank = Rank{
         value: 1,
     }
-    var t973 bool
-    var inline1862 bool = _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_lt____Self__Rank(high__18, low__19)
-    t973 = inline1862
-    var t974 string
-    var inline1860 string = _goml_runtime_core_bool_to_string(t973)
-    t974 = inline1860
-    var inline1857 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t974)
-    _goml_runtime_core_string_println(inline1857)
-    var t975 bool
-    var inline1855 bool = _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_le____Self__Rank(high__18, high__18)
-    t975 = inline1855
-    var t976 string
-    var inline1853 string = _goml_runtime_core_bool_to_string(t975)
-    t976 = inline1853
-    var inline1850 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t976)
-    _goml_runtime_core_string_println(inline1850)
-    var t977 bool
-    var inline1848 bool = _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_gt____Self__Rank(low__19, high__18)
-    t977 = inline1848
-    var t978 string
-    var inline1846 string = _goml_runtime_core_bool_to_string(t977)
-    t978 = inline1846
-    var inline1843 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t978)
-    _goml_runtime_core_string_println(inline1843)
-    var t979 bool
-    var inline1841 bool = _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_ge____Self__Rank(low__19, low__19)
-    t979 = inline1841
-    var t980 string
-    var inline1839 string = _goml_runtime_core_bool_to_string(t979)
-    t980 = inline1839
-    var inline1836 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t980)
-    _goml_runtime_core_string_println(inline1836)
+    var t1358 bool
+    var inline2247 bool = _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_lt____Self__Rank(high__18, low__19)
+    t1358 = inline2247
+    var t1359 string
+    var inline2245 string = _goml_runtime_core_bool_to_string(t1358)
+    t1359 = inline2245
+    var inline2242 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1359)
+    _goml_runtime_core_string_println(inline2242)
+    var t1360 bool
+    var inline2240 bool = _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_le____Self__Rank(high__18, high__18)
+    t1360 = inline2240
+    var t1361 string
+    var inline2238 string = _goml_runtime_core_bool_to_string(t1360)
+    t1361 = inline2238
+    var inline2235 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1361)
+    _goml_runtime_core_string_println(inline2235)
+    var t1362 bool
+    var inline2233 bool = _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_gt____Self__Rank(low__19, high__18)
+    t1362 = inline2233
+    var t1363 string
+    var inline2231 string = _goml_runtime_core_bool_to_string(t1362)
+    t1363 = inline2231
+    var inline2228 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1363)
+    _goml_runtime_core_string_println(inline2228)
+    var t1364 bool
+    var inline2226 bool = _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_ge____Self__Rank(low__19, low__19)
+    t1364 = inline2226
+    var t1365 string
+    var inline2224 string = _goml_runtime_core_bool_to_string(t1364)
+    t1365 = inline2224
+    var inline2221 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1365)
+    _goml_runtime_core_string_println(inline2221)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_PartialEq_i_isize_i_eq(self__185 int, other__186 int) bool {
-    var t1368 bool = self__185 == other__186
-    return t1368
+func _goml_m_trait__impl_i_PartialEq_i_isize_i_eq(self__438 int, other__439 int) bool {
+    var t1753 bool = self__438 == other__439
+    return t1753
 }
 
 func _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_lt____Self__Rank(self__0 Rank, other__1 Rank) bool {
-    var commute_field2608 Ordering
-    var inline2348 int = self__0.value
-    var inline2349 int = other__1.value
-    var inline2350 bool = inline2348 > inline2349
-    var inline2352 Ordering
-    if inline2350 {
-        inline2352 = Less
+    var commute_field2993 Ordering
+    var inline2733 int = self__0.value
+    var inline2734 int = other__1.value
+    var inline2735 bool = inline2733 > inline2734
+    var inline2737 Ordering
+    if inline2735 {
+        inline2737 = Less
     } else {
-        var inline2354 int = self__0.value
-        var inline2355 int = other__1.value
-        var inline2356 bool = inline2354 < inline2355
-        if inline2356 {
-            inline2352 = Greater
+        var inline2739 int = self__0.value
+        var inline2740 int = other__1.value
+        var inline2741 bool = inline2739 < inline2740
+        if inline2741 {
+            inline2737 = Greater
         } else {
-            inline2352 = Equal
+            inline2737 = Equal
         }
     }
-    commute_field2608 = inline2352
-    switch commute_field2608 {
+    commute_field2993 = inline2737
+    switch commute_field2993 {
     case Less:
         return true
     case Equal:
@@ -437,59 +456,59 @@ func _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_lt____Self__Rank(self__0 
 }
 
 func _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_le____Self__Rank(self__3 Rank, other__4 Rank) bool {
-    var commute_field2611 Ordering
-    var inline2359 int = self__3.value
-    var inline2360 int = other__4.value
-    var inline2361 bool = inline2359 > inline2360
-    var inline2363 Ordering
-    if inline2361 {
-        inline2363 = Less
+    var commute_field2996 Ordering
+    var inline2744 int = self__3.value
+    var inline2745 int = other__4.value
+    var inline2746 bool = inline2744 > inline2745
+    var inline2748 Ordering
+    if inline2746 {
+        inline2748 = Less
     } else {
-        var inline2365 int = self__3.value
-        var inline2366 int = other__4.value
-        var inline2367 bool = inline2365 < inline2366
-        if inline2367 {
-            inline2363 = Greater
+        var inline2750 int = self__3.value
+        var inline2751 int = other__4.value
+        var inline2752 bool = inline2750 < inline2751
+        if inline2752 {
+            inline2748 = Greater
         } else {
-            inline2363 = Equal
+            inline2748 = Equal
         }
     }
-    commute_field2611 = inline2363
-    var t1381 bool
-    switch commute_field2611 {
+    commute_field2996 = inline2748
+    var t1766 bool
+    switch commute_field2996 {
     case Less:
-        t1381 = false
+        t1766 = false
     case Equal:
-        t1381 = false
+        t1766 = false
     case Greater:
-        t1381 = true
+        t1766 = true
     default:
         panic("non-exhaustive match")
     }
-    var t1382 bool = !t1381
-    return t1382
+    var t1767 bool = !t1766
+    return t1767
 }
 
 func _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_gt____Self__Rank(self__6 Rank, other__7 Rank) bool {
-    var commute_field2614 Ordering
-    var inline2370 int = self__6.value
-    var inline2371 int = other__7.value
-    var inline2372 bool = inline2370 > inline2371
-    var inline2374 Ordering
-    if inline2372 {
-        inline2374 = Less
+    var commute_field2999 Ordering
+    var inline2755 int = self__6.value
+    var inline2756 int = other__7.value
+    var inline2757 bool = inline2755 > inline2756
+    var inline2759 Ordering
+    if inline2757 {
+        inline2759 = Less
     } else {
-        var inline2376 int = self__6.value
-        var inline2377 int = other__7.value
-        var inline2378 bool = inline2376 < inline2377
-        if inline2378 {
-            inline2374 = Greater
+        var inline2761 int = self__6.value
+        var inline2762 int = other__7.value
+        var inline2763 bool = inline2761 < inline2762
+        if inline2763 {
+            inline2759 = Greater
         } else {
-            inline2374 = Equal
+            inline2759 = Equal
         }
     }
-    commute_field2614 = inline2374
-    switch commute_field2614 {
+    commute_field2999 = inline2759
+    switch commute_field2999 {
     case Less:
         return false
     case Equal:
@@ -502,101 +521,101 @@ func _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_gt____Self__Rank(self__6 
 }
 
 func _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_ge____Self__Rank(self__9 Rank, other__10 Rank) bool {
-    var commute_field2617 Ordering
-    var inline2381 int = self__9.value
-    var inline2382 int = other__10.value
-    var inline2383 bool = inline2381 > inline2382
-    var inline2385 Ordering
-    if inline2383 {
-        inline2385 = Less
+    var commute_field3002 Ordering
+    var inline2766 int = self__9.value
+    var inline2767 int = other__10.value
+    var inline2768 bool = inline2766 > inline2767
+    var inline2770 Ordering
+    if inline2768 {
+        inline2770 = Less
     } else {
-        var inline2387 int = self__9.value
-        var inline2388 int = other__10.value
-        var inline2389 bool = inline2387 < inline2388
-        if inline2389 {
-            inline2385 = Greater
+        var inline2772 int = self__9.value
+        var inline2773 int = other__10.value
+        var inline2774 bool = inline2772 < inline2773
+        if inline2774 {
+            inline2770 = Greater
         } else {
-            inline2385 = Equal
+            inline2770 = Equal
         }
     }
-    commute_field2617 = inline2385
-    var t1392 bool
-    switch commute_field2617 {
+    commute_field3002 = inline2770
+    var t1777 bool
+    switch commute_field3002 {
     case Less:
-        t1392 = true
+        t1777 = true
     case Equal:
-        t1392 = false
+        t1777 = false
     case Greater:
-        t1392 = false
+        t1777 = false
     default:
         panic("non-exhaustive match")
     }
-    var t1393 bool = !t1392
-    return t1393
+    var t1778 bool = !t1777
+    return t1778
 }
 
 func println__T_bool(value__1 bool) struct{} {
-    var t1395 string
-    var inline2391 string = _goml_runtime_core_bool_to_string(value__1)
-    t1395 = inline2391
-    _goml_runtime_core_string_println(t1395)
+    var t1780 string
+    var inline2776 string = _goml_runtime_core_bool_to_string(value__1)
+    t1780 = inline2776
+    _goml_runtime_core_string_println(t1780)
     return struct{}{}
 }
 
 func equal__T_LegacyKey(left__12 LegacyKey, right__13 LegacyKey) bool {
-    var inline2393 int = left__12.value
-    var inline2394 int = right__13.value
-    var inline2395 bool = _goml_m_trait__impl_i_PartialEq_i_isize_i_eq(inline2393, inline2394)
-    return inline2395
+    var inline2778 int = left__12.value
+    var inline2779 int = right__13.value
+    var inline2780 bool = _goml_m_trait__impl_i_PartialEq_i_isize_i_eq(inline2778, inline2779)
+    return inline2780
 }
 
 func equal__T_ModernKey(left__12 ModernKey, right__13 ModernKey) bool {
-    var inline2397 int = left__12.value
-    var inline2398_rhs int = 10
-    var inline2398 int = inline2397 % inline2398_rhs
-    var inline2399 int = right__13.value
-    var inline2400_rhs int = 10
-    var inline2400 int = inline2399 % inline2400_rhs
-    var inline2401 bool = inline2398 == inline2400
-    return inline2401
+    var inline2782 int = left__12.value
+    var inline2783_rhs int = 10
+    var inline2783 int = inline2782 % inline2783_rhs
+    var inline2784 int = right__13.value
+    var inline2785_rhs int = 10
+    var inline2785 int = inline2784 % inline2785_rhs
+    var inline2786 bool = inline2783 == inline2785
+    return inline2786
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t1404 string
-    t1404 = value__1
-    _goml_runtime_core_string_println(t1404)
+    var t1789 string
+    t1789 = value__1
+    _goml_runtime_core_string_println(t1789)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__148 bool) string {
-    var t1408 string = _goml_runtime_core_bool_to_string(self__148)
-    return t1408
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__401 bool) string {
+    var t1793 string = _goml_runtime_core_bool_to_string(self__401)
+    return t1793
 }
 
 func _goml_m_inherent_i_HashMap_i_H_h4f35fad7fd3ed72455715cdf3969637d_ey____V__string() *hashmap_LegacyKey_string_x {
-    var t1411 *hashmap_LegacyKey_string_x = hashmap_new__HashMap_9LegacyKey_6string()
-    return t1411
+    var t1796 *hashmap_LegacyKey_string_x = hashmap_new__HashMap_9LegacyKey_6string()
+    return t1796
 }
 
-func _goml_m_inherent_i_HashMap_i_H_h4c415936d3e2c958d5274434037d6231_ey____V__string(self__422 *hashmap_LegacyKey_string_x, key__423 LegacyKey, value__424 string) struct{} {
-    hashmap_set__HashMap_9LegacyKey_6string(self__422, key__423, value__424)
+func _goml_m_inherent_i_HashMap_i_H_h4c415936d3e2c958d5274434037d6231_ey____V__string(self__675 *hashmap_LegacyKey_string_x, key__676 LegacyKey, value__677 string) struct{} {
+    hashmap_set__HashMap_9LegacyKey_6string(self__675, key__676, value__677)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(self__467 Option__string, fallback__468 string) string {
-    switch self__467._tag {
+func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(self__720 Option__string, fallback__721 string) string {
+    switch self__720._tag {
     case 0:
-        return fallback__468
+        return fallback__721
     case 1:
-        var x390 string = self__467._v1_0
-        return x390
+        var x775 string = self__720._v1_0
+        return x775
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
-    return self__149
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__402 string) string {
+    return self__402
 }
 
 func main() {

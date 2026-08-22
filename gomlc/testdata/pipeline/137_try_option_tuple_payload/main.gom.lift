@@ -7,22 +7,22 @@ fn cut_pair(ok/0: bool) -> Option__(string,string) {
 }
 
 fn describe(ok/1: bool) -> Option__string {
-  let mtmp413 =
-    let mtmp411 = cut_pair(ok/1) in
-    match mtmp411 {
+  let mtmp798 =
+    let mtmp796 = cut_pair(ok/1) in
+    match mtmp796 {
       Option__(string,string)::None => {
         return Option__string::None
       },
-      Option__(string,string)::Some(x412) => {
-        let x412 = Option__(string,string)::Some._0(mtmp411) in
-        let try_value/13 = x412 in
+      Option__(string,string)::Some(x797) => {
+        let x797 = Option__(string,string)::Some._0(mtmp796) in
+        let try_value/13 = x797 in
         try_value/13
       },
     } in
-  let x414 = mtmp413.0 in
-  let x415 = mtmp413.1 in
-  let after/3 = x415 in
-  let before/2 = x414 in
+  let x799 = mtmp798.0 in
+  let x800 = mtmp798.1 in
+  let after/3 = x800 in
+  let before/2 = x799 in
   Option__string::Some(((before/2 + "|") + after/3))
 }
 
@@ -31,17 +31,17 @@ fn show(opt/4: Option__string) -> string {
     Option__string::None => {
       "none"
     },
-    Option__string::Some(x416) => {
-      let x416 = Option__string::Some._0(opt/4) in
-      let value/5 = x416 in
+    Option__string::Some(x801) => {
+      let x801 = Option__string::Some._0(opt/4) in
+      let value/5 = x801 in
       ("some " + value/5)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild417 = println__T_string(show(describe(true))) in
-  let _wild418 = println__T_string(show(describe(false))) in
+  let _wild802 = println__T_string(show(describe(true))) in
+  let _wild803 = println__T_string(show(describe(false))) in
   ()
 }
 
@@ -49,6 +49,6 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
 }

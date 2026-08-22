@@ -1,61 +1,61 @@
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
-  let t421 = [] in
-  let t422 = @intrinsic(vec.from_array)(t421) in
-  let t423 = std::bytes::Bytes { values: t422 } in
-  t423
+  let t806 = [] in
+  let t807 = @intrinsic(vec.from_array)(t806) in
+  let t808 = std::bytes::Bytes { values: t807 } in
+  t808
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(
   capacity/0: isize
 ) -> std::bytes::Bytes {
-  join inline_cont1444(t426: Vec[u8]) -> std::bytes::Bytes {
-    let t427 = std::bytes::Bytes { values: t426 } in
-    t427
+  join inline_cont1817(t811: Vec[u8]) -> std::bytes::Bytes {
+    let t812 = std::bytes::Bytes { values: t811 } in
+    t812
   } in
-  let inline1445 = @intrinsic(vec.with_capacity)(capacity/0) in
-  jump inline_cont1444(inline1445)
+  let inline1818 = @intrinsic(vec.with_capacity)(capacity/0) in
+  jump inline_cont1817(inline1818)
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(values/1: Vec[u8]) -> std::bytes::Bytes {
-  let t430 = std::bytes::Bytes { values: values/1 } in
-  t430
+  let t815 = std::bytes::Bytes { values: values/1 } in
+  t815
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_string(value/2: string) -> std::bytes::Bytes {
-  join inline_cont1446(t433: Vec[u8]) -> std::bytes::Bytes {
-    let t434 = std::bytes::Bytes { values: t433 } in
-    t434
+  join inline_cont1819(t818: Vec[u8]) -> std::bytes::Bytes {
+    let t819 = std::bytes::Bytes { values: t818 } in
+    t819
   } in
-  let inline1447 = @runtime(core.string_to_bytes)(value/2) in
-  jump inline_cont1446(inline1447)
+  let inline1820 = @runtime(core.string_to_bytes)(value/2) in
+  jump inline_cont1819(inline1820)
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#len(self/3: std::bytes::Bytes) -> isize {
-  let t437 = std::bytes::Bytes.values(self/3) in
-  let inline1449 = @intrinsic(vec.len)(t437) in
-  inline1449
+  let t822 = std::bytes::Bytes.values(self/3) in
+  let inline1822 = @intrinsic(vec.len)(t822) in
+  inline1822
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#capacity(self/4: std::bytes::Bytes) -> isize {
-  let t441 = std::bytes::Bytes.values(self/4) in
-  let inline1451 = @intrinsic(vec.capacity)(t441) in
-  inline1451
+  let t826 = std::bytes::Bytes.values(self/4) in
+  let inline1824 = @intrinsic(vec.capacity)(t826) in
+  inline1824
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#is_empty(self/5: std::bytes::Bytes) -> bool {
-  let t445 = std::bytes::Bytes.values(self/5) in
-  let inline1453 = @intrinsic(vec.len)(t445) in
-  let inline1454 = (inline1453 == 0) in
-  inline1454
+  let t830 = std::bytes::Bytes.values(self/5) in
+  let inline1826 = @intrinsic(vec.len)(t830) in
+  let inline1827 = (inline1826 == 0) in
+  inline1827
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#get(
   self/6: std::bytes::Bytes,
   index/7: isize
 ) -> u8 {
-  let t449 = std::bytes::Bytes.values(self/6) in
-  let t450 = @intrinsic(vec.get)(t449, index/7) in
-  t450
+  let t834 = std::bytes::Bytes.values(self/6) in
+  let t835 = @intrinsic(vec.get)(t834, index/7) in
+  t835
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(
@@ -65,7 +65,7 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(
 ) -> unit {
   let place1 = std::bytes::Bytes.values(self/8) in
   let place3 = @intrinsic(vec.get)(place1, index/9) in
-  let t452 = @intrinsic(vec.set)(place1, index/9, value/10) in
+  let t837 = @intrinsic(vec.set)(place1, index/9, value/10) in
   ()
 }
 
@@ -73,24 +73,24 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(
   self/11: std::bytes::Bytes,
   value/12: u8
 ) -> unit {
-  let t454 = std::bytes::Bytes.values(self/11) in
-  let inline1456 = @intrinsic(vec.push)(t454, value/12) in
+  let t839 = std::bytes::Bytes.values(self/11) in
+  let inline1829 = @intrinsic(vec.push)(t839, value/12) in
   ()
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#pop(self/13: std::bytes::Bytes) -> Option__u8 {
-  let t458 = std::bytes::Bytes.values(self/13) in
-  let inline1458 = inherent#Vec#Vec[T]#len__T_u8(t458) in
-  let inline1459 = (inline1458 == 0) in
-  if inline1459 {
+  let t843 = std::bytes::Bytes.values(self/13) in
+  let inline1831 = inherent#Vec#Vec[T]#len__T_u8(t843) in
+  let inline1832 = (inline1831 == 0) in
+  if inline1832 {
     Tag_0
   } else {
-    let inline1460 = (inline1458 - 1) in
-    let inline1461 = @intrinsic(vec.get)(t458, inline1460) in
-    let inline1462 = (inline1458 - 1) in
-    let inline1463 = inherent#Vec#Vec[T]#truncate__T_u8(t458, inline1462) in
-    let inline1464 = Option__u8::Some(inline1461) in
-    inline1464
+    let inline1833 = (inline1831 - 1) in
+    let inline1834 = @intrinsic(vec.get)(t843, inline1833) in
+    let inline1835 = (inline1831 - 1) in
+    let inline1836 = inherent#Vec#Vec[T]#truncate__T_u8(t843, inline1835) in
+    let inline1837 = Option__u8::Some(inline1834) in
+    inline1837
   }
 }
 
@@ -98,8 +98,8 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(
   self/14: std::bytes::Bytes,
   additional/15: isize
 ) -> unit {
-  let t461 = std::bytes::Bytes.values(self/14) in
-  let inline1466 = @intrinsic(vec.reserve)(t461, additional/15) in
+  let t846 = std::bytes::Bytes.values(self/14) in
+  let inline1839 = @intrinsic(vec.reserve)(t846, additional/15) in
   ()
 }
 
@@ -107,14 +107,14 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(
   self/16: std::bytes::Bytes,
   len/17: isize
 ) -> unit {
-  let t464 = std::bytes::Bytes.values(self/16) in
-  let inline1468 = @intrinsic(vec.truncate)(t464, len/17) in
+  let t849 = std::bytes::Bytes.values(self/16) in
+  let inline1841 = @intrinsic(vec.truncate)(t849, len/17) in
   ()
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/18: std::bytes::Bytes) -> unit {
-  let t467 = std::bytes::Bytes.values(self/18) in
-  let inline1470 = inherent#Vec#Vec[T]#truncate__T_u8(t467, 0) in
+  let t852 = std::bytes::Bytes.values(self/18) in
+  let inline1843 = inherent#Vec#Vec[T]#truncate__T_u8(t852, 0) in
   ()
 }
 
@@ -123,70 +123,70 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice(
   start/20: isize,
   end/21: isize
 ) -> Slice[u8] {
-  let t471 = std::bytes::Bytes.values(self/19) in
-  let inline1472 = @intrinsic(slice.new)(t471, start/20, end/21) in
-  inline1472
+  let t856 = std::bytes::Bytes.values(self/19) in
+  let inline1845 = @intrinsic(slice.new)(t856, start/20, end/21) in
+  inline1845
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/22: std::bytes::Bytes) -> Vec[u8] {
-  let t475 = std::bytes::Bytes.values(self/22) in
-  t475
+  let t860 = std::bytes::Bytes.values(self/22) in
+  t860
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(
   self/23: std::bytes::Bytes
 ) -> Result__string__string {
-  let t478 = std::bytes::Bytes.values(self/23) in
-  let mtmp6 = string_from_utf8(t478) in
+  let t863 = std::bytes::Bytes.values(self/23) in
+  let mtmp6 = string_from_utf8(t863) in
   let x7 = mtmp6.0 in
   let x8 = mtmp6.1 in
   if x7 {
-    let t481 = Result__string__string::Ok(x8) in
-    t481
+    let t866 = Result__string__string::Ok(x8) in
+    t866
   } else {
-    let t482 = Result__string__string::Err("invalid UTF-8") in
-    t482
+    let t867 = Result__string__string::Err("invalid UTF-8") in
+    t867
   }
 }
 
 fn std::internal::host::args() -> Vec[string] {
-  let t485 = @runtime(std.env.args)() in
-  t485
+  let t870 = @runtime(std.env.args)() in
+  t870
 }
 
 fn std::internal::host::current_dir() -> (bool, string, string) {
-  let t488 = @runtime(std.env.current_dir)() in
-  t488
+  let t873 = @runtime(std.env.current_dir)() in
+  t873
 }
 
 fn std::internal::host::current_exe() -> (bool, string, string) {
-  let t491 = @runtime(std.env.current_exe)() in
-  t491
+  let t876 = @runtime(std.env.current_exe)() in
+  t876
 }
 
 fn std::internal::host::env_var(name/0: string) -> (bool, string) {
-  let t494 = @runtime(std.env.var)(name/0) in
-  t494
+  let t879 = @runtime(std.env.var)(name/0) in
+  t879
 }
 
 fn std::internal::host::env_vars() -> Vec[string] {
-  let t497 = @runtime(std.env.vars)() in
-  t497
+  let t882 = @runtime(std.env.vars)() in
+  t882
 }
 
 fn std::internal::host::read_file(path/1: string) -> (bool, string, string) {
-  let t500 = @runtime(std.fs.read_file)(path/1) in
-  t500
+  let t885 = @runtime(std.fs.read_file)(path/1) in
+  t885
 }
 
 fn std::internal::host::write_file(path/2: string, content/3: string) -> (bool, string) {
-  let t503 = @runtime(std.fs.write_file)(path/2, content/3) in
-  t503
+  let t888 = @runtime(std.fs.write_file)(path/2, content/3) in
+  t888
 }
 
 fn std::internal::host::read_bytes(path/4: string) -> (bool, Vec[u8], string) {
-  let t506 = @runtime(std.fs.read_bytes)(path/4) in
-  t506
+  let t891 = @runtime(std.fs.read_bytes)(path/4) in
+  t891
 }
 
 fn std::internal::host::read_bytes_v2(path/5: string) -> (
@@ -197,13 +197,13 @@ fn std::internal::host::read_bytes_v2(path/5: string) -> (
   isize,
   string
 ) {
-  let t509 = @runtime(std.fs.read_bytes.v2)(path/5) in
-  t509
+  let t894 = @runtime(std.fs.read_bytes.v2)(path/5) in
+  t894
 }
 
 fn std::internal::host::write_bytes(path/6: string, data/7: Vec[u8]) -> (bool, string) {
-  let t512 = @runtime(std.fs.write_bytes)(path/6, data/7) in
-  t512
+  let t897 = @runtime(std.fs.write_bytes)(path/6, data/7) in
+  t897
 }
 
 fn std::internal::host::write_bytes_v2(path/8: string, data/9: Vec[u8]) -> (
@@ -213,8 +213,8 @@ fn std::internal::host::write_bytes_v2(path/8: string, data/9: Vec[u8]) -> (
   isize,
   string
 ) {
-  let t515 = @runtime(std.fs.write_bytes.v2)(path/8, data/9) in
-  t515
+  let t900 = @runtime(std.fs.write_bytes.v2)(path/8, data/9) in
+  t900
 }
 
 fn std::internal::host::fs_path_operation_v2(
@@ -222,8 +222,8 @@ fn std::internal::host::fs_path_operation_v2(
   first/11: string,
   second/12: string
 ) -> (bool, isize, bool, isize, string) {
-  let t518 = @runtime(std.fs.path_operation.v2)(operation/10, first/11, second/12) in
-  t518
+  let t903 = @runtime(std.fs.path_operation.v2)(operation/10, first/11, second/12) in
+  t903
 }
 
 fn std::internal::host::fs_metadata_v2(path/13: string, follow/14: bool) -> (
@@ -237,8 +237,8 @@ fn std::internal::host::fs_metadata_v2(path/13: string, follow/14: bool) -> (
   isize,
   string
 ) {
-  let t521 = @runtime(std.fs.metadata.v2)(path/13, follow/14) in
-  t521
+  let t906 = @runtime(std.fs.metadata.v2)(path/13, follow/14) in
+  t906
 }
 
 fn std::internal::host::fs_atomic_write_v2(path/15: string, data/16: Vec[u8]) -> (
@@ -248,48 +248,48 @@ fn std::internal::host::fs_atomic_write_v2(path/15: string, data/16: Vec[u8]) ->
   isize,
   string
 ) {
-  let t524 = @runtime(std.fs.atomic_write.v2)(path/15, data/16) in
-  t524
+  let t909 = @runtime(std.fs.atomic_write.v2)(path/15, data/16) in
+  t909
 }
 
 fn std::internal::host::create_dir_all(path/17: string) -> (bool, string) {
-  let t527 = @runtime(std.fs.create_dir_all)(path/17) in
-  t527
+  let t912 = @runtime(std.fs.create_dir_all)(path/17) in
+  t912
 }
 
 fn std::internal::host::remove_file(path/18: string) -> (bool, string) {
-  let t530 = @runtime(std.fs.remove_file)(path/18) in
-  t530
+  let t915 = @runtime(std.fs.remove_file)(path/18) in
+  t915
 }
 
 fn std::internal::host::remove_dir_all(path/19: string) -> (bool, string) {
-  let t533 = @runtime(std.fs.remove_dir_all)(path/19) in
-  t533
+  let t918 = @runtime(std.fs.remove_dir_all)(path/19) in
+  t918
 }
 
 fn std::internal::host::file_exists(path/20: string) -> bool {
-  let t536 = @runtime(std.fs.file_exists)(path/20) in
-  t536
+  let t921 = @runtime(std.fs.file_exists)(path/20) in
+  t921
 }
 
 fn std::internal::host::is_file(path/21: string) -> bool {
-  let t539 = @runtime(std.fs.is_file)(path/21) in
-  t539
+  let t924 = @runtime(std.fs.is_file)(path/21) in
+  t924
 }
 
 fn std::internal::host::is_dir(path/22: string) -> bool {
-  let t542 = @runtime(std.fs.is_dir)(path/22) in
-  t542
+  let t927 = @runtime(std.fs.is_dir)(path/22) in
+  t927
 }
 
 fn std::internal::host::canonicalize(path/23: string) -> (bool, string, string) {
-  let t545 = @runtime(std.fs.canonicalize)(path/23) in
-  t545
+  let t930 = @runtime(std.fs.canonicalize)(path/23) in
+  t930
 }
 
 fn std::internal::host::read_dir(path/24: string) -> (bool, Vec[string], string) {
-  let t548 = @runtime(std.fs.read_dir)(path/24) in
-  t548
+  let t933 = @runtime(std.fs.read_dir)(path/24) in
+  t933
 }
 
 fn std::internal::host::read_dir_v2(path/25: string) -> (
@@ -300,43 +300,43 @@ fn std::internal::host::read_dir_v2(path/25: string) -> (
   isize,
   string
 ) {
-  let t551 = @runtime(std.fs.read_dir.v2)(path/25) in
-  t551
+  let t936 = @runtime(std.fs.read_dir.v2)(path/25) in
+  t936
 }
 
 fn std::internal::host::sha256_file(path/26: string) -> (bool, string, string) {
-  let t554 = @runtime(std.fs.sha256_file)(path/26) in
-  t554
+  let t939 = @runtime(std.fs.sha256_file)(path/26) in
+  t939
 }
 
 fn std::internal::host::print(value/27: string) -> unit {
-  let t556 = @runtime(std.io.print)(value/27) in
+  let t941 = @runtime(std.io.print)(value/27) in
   ()
 }
 
 fn std::internal::host::println(value/28: string) -> unit {
-  let t558 = @runtime(std.io.println)(value/28) in
+  let t943 = @runtime(std.io.println)(value/28) in
   ()
 }
 
 fn std::internal::host::eprint(value/29: string) -> unit {
-  let t560 = @runtime(std.io.eprint)(value/29) in
+  let t945 = @runtime(std.io.eprint)(value/29) in
   ()
 }
 
 fn std::internal::host::read_stdin() -> (bool, Vec[u8], string) {
-  let t563 = @runtime(std.io.read_stdin)() in
-  t563
+  let t948 = @runtime(std.io.read_stdin)() in
+  t948
 }
 
 fn std::internal::host::read_stdin_v2() -> (bool, Vec[u8], isize, bool, isize, string) {
-  let t566 = @runtime(std.io.read_stdin.v2)() in
-  t566
+  let t951 = @runtime(std.io.read_stdin.v2)() in
+  t951
 }
 
 fn std::internal::host::read_stdin_exact(length/30: isize) -> (bool, Vec[u8], string) {
-  let t569 = @runtime(std.io.read_stdin_exact)(length/30) in
-  t569
+  let t954 = @runtime(std.io.read_stdin_exact)(length/30) in
+  t954
 }
 
 fn std::internal::host::read_stdin_exact_v2(length/31: isize) -> (
@@ -347,73 +347,73 @@ fn std::internal::host::read_stdin_exact_v2(length/31: isize) -> (
   isize,
   string
 ) {
-  let t572 = @runtime(std.io.read_stdin_exact.v2)(length/31) in
-  t572
+  let t957 = @runtime(std.io.read_stdin_exact.v2)(length/31) in
+  t957
 }
 
 fn std::internal::host::write_stdout(data/32: Vec[u8]) -> (bool, string) {
-  let t575 = @runtime(std.io.write_stdout)(data/32) in
-  t575
+  let t960 = @runtime(std.io.write_stdout)(data/32) in
+  t960
 }
 
 fn std::internal::host::write_stdout_v2(data/33: Vec[u8]) -> (bool, isize, bool, isize, string) {
-  let t578 = @runtime(std.io.write_stdout.v2)(data/33) in
-  t578
+  let t963 = @runtime(std.io.write_stdout.v2)(data/33) in
+  t963
 }
 
 fn std::internal::host::write_stderr(data/34: Vec[u8]) -> (bool, string) {
-  let t581 = @runtime(std.io.write_stderr)(data/34) in
-  t581
+  let t966 = @runtime(std.io.write_stderr)(data/34) in
+  t966
 }
 
 fn std::internal::host::write_stderr_v2(data/35: Vec[u8]) -> (bool, isize, bool, isize, string) {
-  let t584 = @runtime(std.io.write_stderr.v2)(data/35) in
-  t584
+  let t969 = @runtime(std.io.write_stderr.v2)(data/35) in
+  t969
 }
 
 fn std::internal::host::path_join(base/36: string, child/37: string) -> string {
-  let t587 = @runtime(std.path.join)(base/36, child/37) in
-  t587
+  let t972 = @runtime(std.path.join)(base/36, child/37) in
+  t972
 }
 
 fn std::internal::host::path_clean(path/38: string) -> string {
-  let t590 = @runtime(std.path.clean)(path/38) in
-  t590
+  let t975 = @runtime(std.path.clean)(path/38) in
+  t975
 }
 
 fn std::internal::host::path_is_absolute(path/39: string) -> bool {
-  let t593 = @runtime(std.path.is_absolute)(path/39) in
-  t593
+  let t978 = @runtime(std.path.is_absolute)(path/39) in
+  t978
 }
 
 fn std::internal::host::path_parent(path/40: string) -> (bool, string) {
-  let t596 = @runtime(std.path.parent)(path/40) in
-  t596
+  let t981 = @runtime(std.path.parent)(path/40) in
+  t981
 }
 
 fn std::internal::host::path_file_name(path/41: string) -> (bool, string) {
-  let t599 = @runtime(std.path.file_name)(path/41) in
-  t599
+  let t984 = @runtime(std.path.file_name)(path/41) in
+  t984
 }
 
 fn std::internal::host::path_extension(path/42: string) -> (bool, string) {
-  let t602 = @runtime(std.path.extension)(path/42) in
-  t602
+  let t987 = @runtime(std.path.extension)(path/42) in
+  t987
 }
 
 fn std::internal::host::path_file_stem(path/43: string) -> (bool, string) {
-  let t605 = @runtime(std.path.file_stem)(path/43) in
-  t605
+  let t990 = @runtime(std.path.file_stem)(path/43) in
+  t990
 }
 
 fn std::internal::host::path_with_extension(path/44: string, extension/45: string) -> string {
-  let t608 = @runtime(std.path.with_extension)(path/44, extension/45) in
-  t608
+  let t993 = @runtime(std.path.with_extension)(path/44, extension/45) in
+  t993
 }
 
 fn std::internal::host::path_absolute(path/46: string) -> (bool, string, string) {
-  let t611 = @runtime(std.path.absolute)(path/46) in
-  t611
+  let t996 = @runtime(std.path.absolute)(path/46) in
+  t996
 }
 
 fn std::internal::host::path_relative(base/47: string, target/48: string) -> (
@@ -421,23 +421,23 @@ fn std::internal::host::path_relative(base/47: string, target/48: string) -> (
   string,
   string
 ) {
-  let t614 = @runtime(std.path.relative)(base/47, target/48) in
-  t614
+  let t999 = @runtime(std.path.relative)(base/47, target/48) in
+  t999
 }
 
 fn std::internal::host::path_separator() -> string {
-  let t617 = @runtime(std.path.separator)() in
-  t617
+  let t1002 = @runtime(std.path.separator)() in
+  t1002
 }
 
 fn std::internal::host::exit(code/49: isize) -> unit {
-  let t619 = @runtime(std.process.exit)(code/49) in
+  let t1004 = @runtime(std.process.exit)(code/49) in
   ()
 }
 
 fn std::internal::host::process_look_path(program/50: string) -> (bool, string, string) {
-  let t622 = @runtime(std.process.look_path)(program/50) in
-  t622
+  let t1007 = @runtime(std.process.look_path)(program/50) in
+  t1007
 }
 
 fn std::internal::host::process_output(
@@ -449,7 +449,7 @@ fn std::internal::host::process_output(
   has_input/56: bool,
   input/57: Vec[u8]
 ) -> (bool, isize, Vec[u8], Vec[u8], string) {
-  let t625 =
+  let t1010 =
     @runtime(std.process.output)(
       program/51,
       arguments/52,
@@ -459,7 +459,7 @@ fn std::internal::host::process_output(
       has_input/56,
       input/57
     ) in
-  t625
+  t1010
 }
 
 fn std::internal::host::process_output_timeout(
@@ -472,7 +472,7 @@ fn std::internal::host::process_output_timeout(
   input/64: Vec[u8],
   timeout_ms/65: isize
 ) -> (bool, isize, Vec[u8], Vec[u8], string, bool) {
-  let t628 =
+  let t1013 =
     @runtime(std.process.output_timeout)(
       program/58,
       arguments/59,
@@ -483,7 +483,7 @@ fn std::internal::host::process_output_timeout(
       input/64,
       timeout_ms/65
     ) in
-  t628
+  t1013
 }
 
 fn std::internal::host::process_output_cancel(
@@ -496,7 +496,7 @@ fn std::internal::host::process_output_cancel(
   input/72: Vec[u8],
   scope_id/73: i64
 ) -> (bool, isize, Vec[u8], Vec[u8], string, bool) {
-  let t631 =
+  let t1016 =
     @runtime(std.process.output_cancel)(
       program/66,
       arguments/67,
@@ -507,7 +507,7 @@ fn std::internal::host::process_output_cancel(
       input/72,
       scope_id/73
     ) in
-  t631
+  t1016
 }
 
 fn std::internal::host::process_status(
@@ -517,7 +517,7 @@ fn std::internal::host::process_status(
   directory/77: string,
   environment/78: Vec[(string, string)]
 ) -> (bool, isize, string) {
-  let t634 =
+  let t1019 =
     @runtime(std.process.status)(
       program/74,
       arguments/75,
@@ -525,7 +525,7 @@ fn std::internal::host::process_status(
       directory/77,
       environment/78
     ) in
-  t634
+  t1019
 }
 
 fn std::internal::host::process_status_timeout(
@@ -536,7 +536,7 @@ fn std::internal::host::process_status_timeout(
   environment/83: Vec[(string, string)],
   timeout_ms/84: isize
 ) -> (bool, isize, string, bool) {
-  let t637 =
+  let t1022 =
     @runtime(std.process.status_timeout)(
       program/79,
       arguments/80,
@@ -545,7 +545,7 @@ fn std::internal::host::process_status_timeout(
       environment/83,
       timeout_ms/84
     ) in
-  t637
+  t1022
 }
 
 fn std::internal::host::process_status_cancel(
@@ -556,7 +556,7 @@ fn std::internal::host::process_status_cancel(
   environment/89: Vec[(string, string)],
   scope_id/90: i64
 ) -> (bool, isize, string, bool) {
-  let t640 =
+  let t1025 =
     @runtime(std.process.status_cancel)(
       program/85,
       arguments/86,
@@ -565,72 +565,52 @@ fn std::internal::host::process_status_cancel(
       environment/89,
       scope_id/90
     ) in
-  t640
+  t1025
 }
 
 fn std::internal::host::test_fail(message/91: string) -> unit {
-  let t642 = @runtime(std.testing.fail)(message/91) in
+  let t1027 = @runtime(std.testing.fail)(message/91) in
   ()
-}
-
-fn std::internal::host::parse_int(value/92: string, radix/93: isize) -> (bool, isize, string) {
-  let t645 = @runtime(std.num.parse_int)(value/92, radix/93) in
-  t645
-}
-
-fn std::internal::host::parse_uint(value/94: string, radix/95: isize) -> (bool, usize, string) {
-  let t648 = @runtime(std.num.parse_uint)(value/94, radix/95) in
-  t648
-}
-
-fn std::internal::host::parse_float32(value/96: string) -> (bool, f32, string) {
-  let t651 = @runtime(std.num.parse_float32)(value/96) in
-  t651
-}
-
-fn std::internal::host::parse_float64(value/97: string) -> (bool, f64, string) {
-  let t654 = @runtime(std.num.parse_float64)(value/97) in
-  t654
 }
 
 fn std::internal::host::monotonic_nanoseconds() -> i64 {
-  let t657 = @runtime(std.time.monotonic_nanoseconds)() in
-  t657
+  let t1030 = @runtime(std.time.monotonic_nanoseconds)() in
+  t1030
 }
 
 fn std::internal::host::unix_nanoseconds() -> i64 {
-  let t660 = @runtime(std.time.unix_nanoseconds)() in
-  t660
+  let t1033 = @runtime(std.time.unix_nanoseconds)() in
+  t1033
 }
 
-fn std::internal::host::sleep_nanoseconds(value/98: i64) -> unit {
-  let t662 = @runtime(std.time.sleep_nanoseconds)(value/98) in
+fn std::internal::host::sleep_nanoseconds(value/92: i64) -> unit {
+  let t1035 = @runtime(std.time.sleep_nanoseconds)(value/92) in
   ()
 }
 
-fn std::internal::host::timer_new(value/99: i64) -> (i64, Receiver[unit]) {
-  let t665 = @runtime(std.time.timer_new)(value/99) in
-  t665
+fn std::internal::host::timer_new(value/93: i64) -> (i64, Receiver[unit]) {
+  let t1038 = @runtime(std.time.timer_new)(value/93) in
+  t1038
 }
 
-fn std::internal::host::timer_stop(id/100: i64) -> bool {
-  let t668 = @runtime(std.time.timer_stop)(id/100) in
-  t668
+fn std::internal::host::timer_stop(id/94: i64) -> bool {
+  let t1041 = @runtime(std.time.timer_stop)(id/94) in
+  t1041
 }
 
-fn std::internal::host::math_float32_unary(operation/101: isize, value/102: f32) -> f32 {
-  let t671 = @runtime(std.math.float32_unary)(operation/101, value/102) in
-  t671
+fn std::internal::host::math_float32_unary(operation/95: isize, value/96: f32) -> f32 {
+  let t1044 = @runtime(std.math.float32_unary)(operation/95, value/96) in
+  t1044
 }
 
-fn std::internal::host::math_float32_pow(value/103: f32, exponent/104: f32) -> f32 {
-  let t674 = @runtime(std.math.float32_pow)(value/103, exponent/104) in
-  t674
+fn std::internal::host::math_float32_pow(value/97: f32, exponent/98: f32) -> f32 {
+  let t1047 = @runtime(std.math.float32_pow)(value/97, exponent/98) in
+  t1047
 }
 
-fn std::internal::host::crypto_random_bytes(length/105: isize) -> (bool, Vec[u8], string) {
-  let t677 = @runtime(std.crypto.rand.bytes)(length/105) in
-  t677
+fn std::internal::host::crypto_random_bytes(length/99: isize) -> (bool, Vec[u8], string) {
+  let t1050 = @runtime(std.crypto.rand.bytes)(length/99) in
+  t1050
 }
 
 fn trait_impl#ToString#std::io::ErrorKind#to_string(self/0: std::io::ErrorKind) -> string {
@@ -725,92 +705,92 @@ fn trait_impl#PartialEq#std::io::ErrorKind#eq(
   self/2: std::io::ErrorKind,
   other/3: std::io::ErrorKind
 ) -> bool {
-  join inline_cont1475(t687: isize) -> bool {
-    join inline_cont1474(t688: isize) -> bool {
-      let t689 = (t687 == t688) in
-      t689
+  join inline_cont1848(t1060: isize) -> bool {
+    join inline_cont1847(t1061: isize) -> bool {
+      let t1062 = (t1060 == t1061) in
+      t1062
     } in
     match other/3 {
       Tag_0 => {
-        jump inline_cont1474(1)
+        jump inline_cont1847(1)
       },
       Tag_1 => {
-        jump inline_cont1474(2)
+        jump inline_cont1847(2)
       },
       Tag_2 => {
-        jump inline_cont1474(3)
+        jump inline_cont1847(3)
       },
       Tag_3 => {
-        jump inline_cont1474(4)
+        jump inline_cont1847(4)
       },
       Tag_4 => {
-        jump inline_cont1474(5)
+        jump inline_cont1847(5)
       },
       Tag_5 => {
-        jump inline_cont1474(6)
+        jump inline_cont1847(6)
       },
       Tag_6 => {
-        jump inline_cont1474(7)
+        jump inline_cont1847(7)
       },
       Tag_7 => {
-        jump inline_cont1474(8)
+        jump inline_cont1847(8)
       },
       Tag_8 => {
-        jump inline_cont1474(9)
+        jump inline_cont1847(9)
       },
       Tag_9 => {
-        jump inline_cont1474(10)
+        jump inline_cont1847(10)
       },
       Tag_10 => {
-        jump inline_cont1474(11)
+        jump inline_cont1847(11)
       },
       Tag_11 => {
-        jump inline_cont1474(12)
+        jump inline_cont1847(12)
       },
       Tag_12 => {
-        jump inline_cont1474(0)
+        jump inline_cont1847(0)
       },
     }
   } in
   match self/2 {
     Tag_0 => {
-      jump inline_cont1475(1)
+      jump inline_cont1848(1)
     },
     Tag_1 => {
-      jump inline_cont1475(2)
+      jump inline_cont1848(2)
     },
     Tag_2 => {
-      jump inline_cont1475(3)
+      jump inline_cont1848(3)
     },
     Tag_3 => {
-      jump inline_cont1475(4)
+      jump inline_cont1848(4)
     },
     Tag_4 => {
-      jump inline_cont1475(5)
+      jump inline_cont1848(5)
     },
     Tag_5 => {
-      jump inline_cont1475(6)
+      jump inline_cont1848(6)
     },
     Tag_6 => {
-      jump inline_cont1475(7)
+      jump inline_cont1848(7)
     },
     Tag_7 => {
-      jump inline_cont1475(8)
+      jump inline_cont1848(8)
     },
     Tag_8 => {
-      jump inline_cont1475(9)
+      jump inline_cont1848(9)
     },
     Tag_9 => {
-      jump inline_cont1475(10)
+      jump inline_cont1848(10)
     },
     Tag_10 => {
-      jump inline_cont1475(11)
+      jump inline_cont1848(11)
     },
     Tag_11 => {
-      jump inline_cont1475(12)
+      jump inline_cont1848(12)
     },
     Tag_12 => {
-      jump inline_cont1475(0)
+      jump inline_cont1848(0)
     },
   }
 }
@@ -910,7 +890,7 @@ fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
   raw_os_code/9: Option__isize,
   message/10: string
 ) -> std::io::ErrorDetails {
-  let t700 =
+  let t1073 =
     std::io::ErrorDetails {
       kind_value: kind/6,
       operation_value: operation/7,
@@ -918,86 +898,86 @@ fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
       raw_os_code_value: raw_os_code/9,
       message_value: message/10
     } in
-  t700
+  t1073
 }
 
 fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#kind(
   self/11: std::io::ErrorDetails
 ) -> std::io::ErrorKind {
-  let t703 = std::io::ErrorDetails.kind_value(self/11) in
-  t703
+  let t1076 = std::io::ErrorDetails.kind_value(self/11) in
+  t1076
 }
 
 fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#operation(
   self/12: std::io::ErrorDetails
 ) -> string {
-  let t706 = std::io::ErrorDetails.operation_value(self/12) in
-  t706
+  let t1079 = std::io::ErrorDetails.operation_value(self/12) in
+  t1079
 }
 
 fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#context(
   self/13: std::io::ErrorDetails
 ) -> Option__string {
-  let t709 = std::io::ErrorDetails.context_value(self/13) in
-  t709
+  let t1082 = std::io::ErrorDetails.context_value(self/13) in
+  t1082
 }
 
 fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#raw_os_code(
   self/14: std::io::ErrorDetails
 ) -> Option__isize {
-  let t712 = std::io::ErrorDetails.raw_os_code_value(self/14) in
-  t712
+  let t1085 = std::io::ErrorDetails.raw_os_code_value(self/14) in
+  t1085
 }
 
 fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#message(
   self/15: std::io::ErrorDetails
 ) -> string {
-  let t715 = std::io::ErrorDetails.message_value(self/15) in
-  t715
+  let t1088 = std::io::ErrorDetails.message_value(self/15) in
+  t1088
 }
 
 fn trait_impl#ToString#std::io::ErrorDetails#to_string(self/16: std::io::ErrorDetails) -> string {
   let mtmp0 = std::io::ErrorDetails.context_value(self/16) in
   match mtmp0 {
     Tag_0 => {
-      let t720 = std::io::ErrorDetails.operation_value(self/16) in
-      let t721 = (t720 + ": ") in
-      let t722 = std::io::ErrorDetails.message_value(self/16) in
-      let t723 = (t721 + t722) in
-      t723
+      let t1093 = std::io::ErrorDetails.operation_value(self/16) in
+      let t1094 = (t1093 + ": ") in
+      let t1095 = std::io::ErrorDetails.message_value(self/16) in
+      let t1096 = (t1094 + t1095) in
+      t1096
     },
     Tag_1 => {
       let x1 = Option__string::Some._0(mtmp0) in
-      let t724 = std::io::ErrorDetails.operation_value(self/16) in
-      let t725 = (t724 + " ") in
-      let t726 = (t725 + x1) in
-      let t727 = (t726 + ": ") in
-      let t728 = std::io::ErrorDetails.message_value(self/16) in
-      let t729 = (t727 + t728) in
-      t729
+      let t1097 = std::io::ErrorDetails.operation_value(self/16) in
+      let t1098 = (t1097 + " ") in
+      let t1099 = (t1098 + x1) in
+      let t1100 = (t1099 + ": ") in
+      let t1101 = std::io::ErrorDetails.message_value(self/16) in
+      let t1102 = (t1100 + t1101) in
+      t1102
     },
   }
 }
 
 fn trait_impl#Debug#std::io::ErrorDetails#debug(self/18: std::io::ErrorDetails) -> string {
-  let inline1477 = std::io::ErrorDetails.context_value(self/18) in
-  match inline1477 {
+  let inline1850 = std::io::ErrorDetails.context_value(self/18) in
+  match inline1850 {
     Tag_0 => {
-      let inline1478 = std::io::ErrorDetails.operation_value(self/18) in
-      let inline1479 = (inline1478 + ": ") in
-      let inline1480 = std::io::ErrorDetails.message_value(self/18) in
-      let inline1481 = (inline1479 + inline1480) in
-      inline1481
+      let inline1851 = std::io::ErrorDetails.operation_value(self/18) in
+      let inline1852 = (inline1851 + ": ") in
+      let inline1853 = std::io::ErrorDetails.message_value(self/18) in
+      let inline1854 = (inline1852 + inline1853) in
+      inline1854
     },
     Tag_1 => {
-      let inline1482 = Option__string::Some._0(inline1477) in
-      let inline1484 = std::io::ErrorDetails.operation_value(self/18) in
-      let inline1485 = (inline1484 + " ") in
-      let inline1486 = (inline1485 + inline1482) in
-      let inline1487 = (inline1486 + ": ") in
-      let inline1488 = std::io::ErrorDetails.message_value(self/18) in
-      let inline1489 = (inline1487 + inline1488) in
-      inline1489
+      let inline1855 = Option__string::Some._0(inline1850) in
+      let inline1857 = std::io::ErrorDetails.operation_value(self/18) in
+      let inline1858 = (inline1857 + " ") in
+      let inline1859 = (inline1858 + inline1855) in
+      let inline1860 = (inline1859 + ": ") in
+      let inline1861 = std::io::ErrorDetails.message_value(self/18) in
+      let inline1862 = (inline1860 + inline1861) in
+      inline1862
     },
   }
 }
@@ -1006,98 +986,98 @@ fn trait_impl#PartialEq#std::io::ErrorDetails#eq(
   self/19: std::io::ErrorDetails,
   other/20: std::io::ErrorDetails
 ) -> bool {
-  let t752 = std::io::ErrorDetails.kind_value(self/19) in
-  let t753 = std::io::ErrorDetails.kind_value(other/20) in
-  join inline_cont1508(t754: bool) -> bool {
-    join k747(jp748: bool) -> bool {
-      join k742(jp743: bool) -> bool {
-        join k737(jp738: bool) -> bool {
-          if jp738 {
-            let t739 = std::io::ErrorDetails.message_value(self/19) in
-            let t740 = std::io::ErrorDetails.message_value(other/20) in
-            let t741 = (t739 == t740) in
-            t741
+  let t1125 = std::io::ErrorDetails.kind_value(self/19) in
+  let t1126 = std::io::ErrorDetails.kind_value(other/20) in
+  join inline_cont1881(t1127: bool) -> bool {
+    join k1120(jp1121: bool) -> bool {
+      join k1115(jp1116: bool) -> bool {
+        join k1110(jp1111: bool) -> bool {
+          if jp1111 {
+            let t1112 = std::io::ErrorDetails.message_value(self/19) in
+            let t1113 = std::io::ErrorDetails.message_value(other/20) in
+            let t1114 = (t1112 == t1113) in
+            t1114
           } else {
             false
           }
         } in
-        if jp743 {
-          let t744 = std::io::ErrorDetails.raw_os_code_value(self/19) in
-          let t745 = std::io::ErrorDetails.raw_os_code_value(other/20) in
-          match t745 {
+        if jp1116 {
+          let t1117 = std::io::ErrorDetails.raw_os_code_value(self/19) in
+          let t1118 = std::io::ErrorDetails.raw_os_code_value(other/20) in
+          match t1118 {
             Tag_0 => {
-              match t744 {
+              match t1117 {
                 Tag_0 => {
-                  jump k737(true)
+                  jump k1110(true)
                 },
                 _ => {
-                  jump k737(false)
+                  jump k1110(false)
                 },
               }
             },
             Tag_1 => {
-              let inline1503 = Option__isize::Some._0(t745) in
-              match t744 {
+              let inline1876 = Option__isize::Some._0(t1118) in
+              match t1117 {
                 Tag_1 => {
-                  let inline1504 = Option__isize::Some._0(t744) in
-                  let inline1507 = trait_impl#PartialEq#isize#eq(inline1504, inline1503) in
-                  jump k737(inline1507)
+                  let inline1877 = Option__isize::Some._0(t1117) in
+                  let inline1880 = trait_impl#PartialEq#isize#eq(inline1877, inline1876) in
+                  jump k1110(inline1880)
                 },
                 _ => {
-                  jump k737(false)
+                  jump k1110(false)
                 },
               }
             },
           }
         } else {
-          jump k737(false)
+          jump k1110(false)
         }
       } in
-      if jp748 {
-        let t749 = std::io::ErrorDetails.context_value(self/19) in
-        let t750 = std::io::ErrorDetails.context_value(other/20) in
-        match t750 {
+      if jp1121 {
+        let t1122 = std::io::ErrorDetails.context_value(self/19) in
+        let t1123 = std::io::ErrorDetails.context_value(other/20) in
+        match t1123 {
           Tag_0 => {
-            match t749 {
+            match t1122 {
               Tag_0 => {
-                jump k742(true)
+                jump k1115(true)
               },
               _ => {
-                jump k742(false)
+                jump k1115(false)
               },
             }
           },
           Tag_1 => {
-            let inline1494 = Option__string::Some._0(t750) in
-            match t749 {
+            let inline1867 = Option__string::Some._0(t1123) in
+            match t1122 {
               Tag_1 => {
-                let inline1495 = Option__string::Some._0(t749) in
-                let inline1498 = trait_impl#PartialEq#string#eq(inline1495, inline1494) in
-                jump k742(inline1498)
+                let inline1868 = Option__string::Some._0(t1122) in
+                let inline1871 = trait_impl#PartialEq#string#eq(inline1868, inline1867) in
+                jump k1115(inline1871)
               },
               _ => {
-                jump k742(false)
+                jump k1115(false)
               },
             }
           },
         }
       } else {
-        jump k742(false)
+        jump k1115(false)
       }
     } in
-    if t754 {
-      let t755 = std::io::ErrorDetails.operation_value(self/19) in
-      let t756 = std::io::ErrorDetails.operation_value(other/20) in
-      let t757 = (t755 == t756) in
-      jump k747(t757)
+    if t1127 {
+      let t1128 = std::io::ErrorDetails.operation_value(self/19) in
+      let t1129 = std::io::ErrorDetails.operation_value(other/20) in
+      let t1130 = (t1128 == t1129) in
+      jump k1120(t1130)
     } else {
-      jump k747(false)
+      jump k1120(false)
     }
   } in
-  let inline1509 = std::io::kind_code(t752) in
-  let inline1510 = std::io::kind_code(t753) in
-  let inline1511 = (inline1509 == inline1510) in
-  jump inline_cont1508(inline1511)
+  let inline1882 = std::io::kind_code(t1125) in
+  let inline1883 = std::io::kind_code(t1126) in
+  let inline1884 = (inline1882 == inline1883) in
+  jump inline_cont1881(inline1884)
 }
 
 fn inherent#std::io::Error#std::io::Error#new(
@@ -1107,11 +1087,11 @@ fn inherent#std::io::Error#std::io::Error#new(
   raw_os_code/24: Option__isize,
   message/25: string
 ) -> std::io::Error {
-  join inline_cont1512(t760: std::io::ErrorDetails) -> std::io::Error {
-    let t761 = std::io::Error { details: t760 } in
-    t761
+  join inline_cont1885(t1133: std::io::ErrorDetails) -> std::io::Error {
+    let t1134 = std::io::Error { details: t1133 } in
+    t1134
   } in
-  let inline1513 =
+  let inline1886 =
     std::io::ErrorDetails {
       kind_value: kind/21,
       operation_value: operation/22,
@@ -1119,77 +1099,77 @@ fn inherent#std::io::Error#std::io::Error#new(
       raw_os_code_value: raw_os_code/24,
       message_value: message/25
     } in
-  jump inline_cont1512(inline1513)
+  jump inline_cont1885(inline1886)
 }
 
 fn inherent#std::io::Error#std::io::Error#kind(self/26: std::io::Error) -> std::io::ErrorKind {
-  let t764 = std::io::Error.details(self/26) in
-  let inline1515 = std::io::ErrorDetails.kind_value(t764) in
-  inline1515
+  let t1137 = std::io::Error.details(self/26) in
+  let inline1888 = std::io::ErrorDetails.kind_value(t1137) in
+  inline1888
 }
 
 fn inherent#std::io::Error#std::io::Error#operation(self/27: std::io::Error) -> string {
-  let t768 = std::io::Error.details(self/27) in
-  let inline1517 = std::io::ErrorDetails.operation_value(t768) in
-  inline1517
+  let t1141 = std::io::Error.details(self/27) in
+  let inline1890 = std::io::ErrorDetails.operation_value(t1141) in
+  inline1890
 }
 
 fn inherent#std::io::Error#std::io::Error#context(self/28: std::io::Error) -> Option__string {
-  let t772 = std::io::Error.details(self/28) in
-  let inline1519 = std::io::ErrorDetails.context_value(t772) in
-  inline1519
+  let t1145 = std::io::Error.details(self/28) in
+  let inline1892 = std::io::ErrorDetails.context_value(t1145) in
+  inline1892
 }
 
 fn inherent#std::io::Error#std::io::Error#raw_os_code(self/29: std::io::Error) -> Option__isize {
-  let t776 = std::io::Error.details(self/29) in
-  let inline1521 = std::io::ErrorDetails.raw_os_code_value(t776) in
-  inline1521
+  let t1149 = std::io::Error.details(self/29) in
+  let inline1894 = std::io::ErrorDetails.raw_os_code_value(t1149) in
+  inline1894
 }
 
 fn inherent#std::io::Error#std::io::Error#message(self/30: std::io::Error) -> string {
-  let t780 = std::io::Error.details(self/30) in
-  let inline1523 = std::io::ErrorDetails.message_value(t780) in
-  inline1523
+  let t1153 = std::io::Error.details(self/30) in
+  let inline1896 = std::io::ErrorDetails.message_value(t1153) in
+  inline1896
 }
 
 fn trait_impl#ToString#std::io::Error#to_string(self/31: std::io::Error) -> string {
-  let t784 = std::io::Error.details(self/31) in
-  let inline1525 = std::io::ErrorDetails.context_value(t784) in
-  match inline1525 {
+  let t1157 = std::io::Error.details(self/31) in
+  let inline1898 = std::io::ErrorDetails.context_value(t1157) in
+  match inline1898 {
     Tag_0 => {
-      let inline1526 = std::io::ErrorDetails.operation_value(t784) in
-      let inline1527 = (inline1526 + ": ") in
-      let inline1528 = std::io::ErrorDetails.message_value(t784) in
-      let inline1529 = (inline1527 + inline1528) in
-      inline1529
+      let inline1899 = std::io::ErrorDetails.operation_value(t1157) in
+      let inline1900 = (inline1899 + ": ") in
+      let inline1901 = std::io::ErrorDetails.message_value(t1157) in
+      let inline1902 = (inline1900 + inline1901) in
+      inline1902
     },
     Tag_1 => {
-      let inline1530 = Option__string::Some._0(inline1525) in
-      let inline1532 = std::io::ErrorDetails.operation_value(t784) in
-      let inline1533 = (inline1532 + " ") in
-      let inline1534 = (inline1533 + inline1530) in
-      let inline1535 = (inline1534 + ": ") in
-      let inline1536 = std::io::ErrorDetails.message_value(t784) in
-      let inline1537 = (inline1535 + inline1536) in
-      inline1537
+      let inline1903 = Option__string::Some._0(inline1898) in
+      let inline1905 = std::io::ErrorDetails.operation_value(t1157) in
+      let inline1906 = (inline1905 + " ") in
+      let inline1907 = (inline1906 + inline1903) in
+      let inline1908 = (inline1907 + ": ") in
+      let inline1909 = std::io::ErrorDetails.message_value(t1157) in
+      let inline1910 = (inline1908 + inline1909) in
+      inline1910
     },
   }
 }
 
 fn trait_impl#Debug#std::io::Error#debug(self/32: std::io::Error) -> string {
-  let inline1539 = std::io::Error.details(self/32) in
-  let inline1540 = trait_impl#ToString#std::io::ErrorDetails#to_string(inline1539) in
-  inline1540
+  let inline1912 = std::io::Error.details(self/32) in
+  let inline1913 = trait_impl#ToString#std::io::ErrorDetails#to_string(inline1912) in
+  inline1913
 }
 
 fn trait_impl#PartialEq#std::io::Error#eq(
   self/33: std::io::Error,
   other/34: std::io::Error
 ) -> bool {
-  let t791 = std::io::Error.details(self/33) in
-  let t792 = std::io::Error.details(other/34) in
-  let t793 = trait_impl#PartialEq#std::io::ErrorDetails#eq(t791, t792) in
-  t793
+  let t1164 = std::io::Error.details(self/33) in
+  let t1165 = std::io::Error.details(other/34) in
+  let t1166 = trait_impl#PartialEq#std::io::ErrorDetails#eq(t1164, t1165) in
+  t1166
 }
 
 fn std::io::structured_error(
@@ -1199,71 +1179,71 @@ fn std::io::structured_error(
   raw_code/38: isize,
   message/39: string
 ) -> std::io::Error {
-  join inline_cont1544(t797: std::io::ErrorKind) -> std::io::Error {
-    join k798(jp799: Option__isize) -> std::io::Error {
-      let inline1542 =
+  join inline_cont1917(t1170: std::io::ErrorKind) -> std::io::Error {
+    join k1171(jp1172: Option__isize) -> std::io::Error {
+      let inline1915 =
         inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
-          t797,
+          t1170,
           operation/35,
           Tag_0,
-          jp799,
+          jp1172,
           message/39
         ) in
-      let inline1543 = std::io::Error { details: inline1542 } in
-      inline1543
+      let inline1916 = std::io::Error { details: inline1915 } in
+      inline1916
     } in
     if has_raw_code/37 {
-      let t801 = Option__isize::Some(raw_code/38) in
-      jump k798(t801)
+      let t1174 = Option__isize::Some(raw_code/38) in
+      jump k1171(t1174)
     } else {
-      jump k798(Tag_0)
+      jump k1171(Tag_0)
     }
   } in
   match kind_code/36 {
     1 => {
-      jump inline_cont1544(Tag_0)
+      jump inline_cont1917(Tag_0)
     },
     2 => {
-      jump inline_cont1544(Tag_1)
+      jump inline_cont1917(Tag_1)
     },
     3 => {
-      jump inline_cont1544(Tag_2)
+      jump inline_cont1917(Tag_2)
     },
     4 => {
-      jump inline_cont1544(Tag_3)
+      jump inline_cont1917(Tag_3)
     },
     5 => {
-      jump inline_cont1544(Tag_4)
+      jump inline_cont1917(Tag_4)
     },
     6 => {
-      jump inline_cont1544(Tag_5)
+      jump inline_cont1917(Tag_5)
     },
     7 => {
-      jump inline_cont1544(Tag_6)
+      jump inline_cont1917(Tag_6)
     },
     8 => {
-      jump inline_cont1544(Tag_7)
+      jump inline_cont1917(Tag_7)
     },
     9 => {
-      jump inline_cont1544(Tag_8)
+      jump inline_cont1917(Tag_8)
     },
     10 => {
-      jump inline_cont1544(Tag_9)
+      jump inline_cont1917(Tag_9)
     },
     11 => {
-      jump inline_cont1544(Tag_10)
+      jump inline_cont1917(Tag_10)
     },
     12 => {
-      jump inline_cont1544(Tag_11)
+      jump inline_cont1917(Tag_11)
     },
     _ => {
-      jump inline_cont1544(Tag_12)
+      jump inline_cont1917(Tag_12)
     },
   }
 }
 
 fn std::io::read_stdin_structured() -> Result__std::bytes::Bytes__std::io::Error {
-  join inline_cont1554(
+  join inline_cont1927(
     mtmp2: (bool, Vec[u8], isize, bool, isize, string)
   ) -> Result__std::bytes::Bytes__std::io::Error {
     let x3 = mtmp2.0 in
@@ -1273,40 +1253,40 @@ fn std::io::read_stdin_structured() -> Result__std::bytes::Bytes__std::io::Error
     let x7 = mtmp2.4 in
     let x8 = mtmp2.5 in
     if x3 {
-      join inline_cont1545(t806: std::bytes::Bytes) -> Result__std::bytes::Bytes__std::io::Error {
-        let t807 = Result__std::bytes::Bytes__std::io::Error::Ok(t806) in
-        t807
+      join inline_cont1918(t1179: std::bytes::Bytes) -> Result__std::bytes::Bytes__std::io::Error {
+        let t1180 = Result__std::bytes::Bytes__std::io::Error::Ok(t1179) in
+        t1180
       } in
-      let inline1546 = std::bytes::Bytes { values: x4 } in
-      jump inline_cont1545(inline1546)
+      let inline1919 = std::bytes::Bytes { values: x4 } in
+      jump inline_cont1918(inline1919)
     } else {
-      join inline_cont1547(t808: std::io::Error) -> Result__std::bytes::Bytes__std::io::Error {
-        let t809 = Result__std::bytes::Bytes__std::io::Error::Err(t808) in
-        t809
+      join inline_cont1920(t1181: std::io::Error) -> Result__std::bytes::Bytes__std::io::Error {
+        let t1182 = Result__std::bytes::Bytes__std::io::Error::Err(t1181) in
+        t1182
       } in
-      let inline1548 = "read stdin" in
-      let inline1549 = std::io::kind_from_code(x5) in
-      join inline_join1550(inline1551: Option__isize) -> Result__std::bytes::Bytes__std::io::Error {
-        let inline1552 =
+      let inline1921 = "read stdin" in
+      let inline1922 = std::io::kind_from_code(x5) in
+      join inline_join1923(inline1924: Option__isize) -> Result__std::bytes::Bytes__std::io::Error {
+        let inline1925 =
           inherent#std::io::Error#std::io::Error#new(
-            inline1549,
-            inline1548,
+            inline1922,
+            inline1921,
             Tag_0,
-            inline1551,
+            inline1924,
             x8
           ) in
-        jump inline_cont1547(inline1552)
+        jump inline_cont1920(inline1925)
       } in
       if x6 {
-        let inline1553 = Option__isize::Some(x7) in
-        jump inline_join1550(inline1553)
+        let inline1926 = Option__isize::Some(x7) in
+        jump inline_join1923(inline1926)
       } else {
-        jump inline_join1550(Tag_0)
+        jump inline_join1923(Tag_0)
       }
     }
   } in
-  let inline1555 = @runtime(std.io.read_stdin.v2)() in
-  jump inline_cont1554(inline1555)
+  let inline1928 = @runtime(std.io.read_stdin.v2)() in
+  jump inline_cont1927(inline1928)
 }
 
 fn std::io::read_stdin_to_string() -> Result__string__std::io::Error {
@@ -1314,41 +1294,41 @@ fn std::io::read_stdin_to_string() -> Result__string__std::io::Error {
   match mtmp9 {
     Tag_0 => {
       let x10 = Result__std::bytes::Bytes__std::io::Error::Ok._0(mtmp9) in
-      join commute_arm1947(commute_field1946: string) -> Result__string__std::io::Error {
-        let t816 = Result__string__std::io::Error::Ok(commute_field1946) in
-        t816
+      join commute_arm2320(commute_field2319: string) -> Result__string__std::io::Error {
+        let t1189 = Result__string__std::io::Error::Ok(commute_field2319) in
+        t1189
       } in
-      join commute_arm1949(commute_field1948: string) -> Result__string__std::io::Error {
-        join inline_cont1556(t817: std::io::Error) -> Result__string__std::io::Error {
-          let t818 = Result__string__std::io::Error::Err(t817) in
-          t818
+      join commute_arm2322(commute_field2321: string) -> Result__string__std::io::Error {
+        join inline_cont1929(t1190: std::io::Error) -> Result__string__std::io::Error {
+          let t1191 = Result__string__std::io::Error::Err(t1190) in
+          t1191
         } in
-        let inline1557 = "read stdin" in
-        let inline1558 =
+        let inline1930 = "read stdin" in
+        let inline1931 =
           inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
             Tag_4,
-            inline1557,
+            inline1930,
             Tag_0,
             Tag_0,
-            commute_field1948
+            commute_field2321
           ) in
-        let inline1559 = std::io::Error { details: inline1558 } in
-        jump inline_cont1556(inline1559)
+        let inline1932 = std::io::Error { details: inline1931 } in
+        jump inline_cont1929(inline1932)
       } in
-      let inline1561 = std::bytes::Bytes.values(x10) in
-      let inline1562 = string_from_utf8(inline1561) in
-      let inline1563 = inline1562.0 in
-      let inline1564 = inline1562.1 in
-      if inline1563 {
-        jump commute_arm1947(inline1564)
+      let inline1934 = std::bytes::Bytes.values(x10) in
+      let inline1935 = string_from_utf8(inline1934) in
+      let inline1936 = inline1935.0 in
+      let inline1937 = inline1935.1 in
+      if inline1936 {
+        jump commute_arm2320(inline1937)
       } else {
-        jump commute_arm1949("invalid UTF-8")
+        jump commute_arm2322("invalid UTF-8")
       }
     },
     Tag_1 => {
       let x11 = Result__std::bytes::Bytes__std::io::Error::Err._0(mtmp9) in
-      let t819 = Result__string__std::io::Error::Err(x11) in
-      t819
+      let t1192 = Result__string__std::io::Error::Err(x11) in
+      t1192
     },
   }
 }
@@ -1356,26 +1336,26 @@ fn std::io::read_stdin_to_string() -> Result__string__std::io::Error {
 fn std::io::read_stdin_exact_structured(
   length/50: isize
 ) -> Result__std::bytes::Bytes__std::io::Error {
-  let t824 = (length/50 < 0) in
-  if t824 {
-    join inline_cont1569(t825: std::io::Error) -> Result__std::bytes::Bytes__std::io::Error {
-      let t826 = Result__std::bytes::Bytes__std::io::Error::Err(t825) in
-      t826
+  let t1197 = (length/50 < 0) in
+  if t1197 {
+    join inline_cont1942(t1198: std::io::Error) -> Result__std::bytes::Bytes__std::io::Error {
+      let t1199 = Result__std::bytes::Bytes__std::io::Error::Err(t1198) in
+      t1199
     } in
-    let inline1570 = "read stdin exact" in
-    let inline1571 = "read length must be non-negative" in
-    let inline1572 =
+    let inline1943 = "read stdin exact" in
+    let inline1944 = "read length must be non-negative" in
+    let inline1945 =
       inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
         Tag_3,
-        inline1570,
+        inline1943,
         Tag_0,
         Tag_0,
-        inline1571
+        inline1944
       ) in
-    let inline1573 = std::io::Error { details: inline1572 } in
-    jump inline_cont1569(inline1573)
+    let inline1946 = std::io::Error { details: inline1945 } in
+    jump inline_cont1942(inline1946)
   } else {
-    join inline_cont1583(
+    join inline_cont1956(
       mtmp15: (bool, Vec[u8], isize, bool, isize, string)
     ) -> Result__std::bytes::Bytes__std::io::Error {
       let x16 = mtmp15.0 in
@@ -1385,42 +1365,44 @@ fn std::io::read_stdin_exact_structured(
       let x20 = mtmp15.4 in
       let x21 = mtmp15.5 in
       if x16 {
-        join inline_cont1574(t829: std::bytes::Bytes) -> Result__std::bytes::Bytes__std::io::Error {
-          let t830 = Result__std::bytes::Bytes__std::io::Error::Ok(t829) in
-          t830
-        } in
-        let inline1575 = std::bytes::Bytes { values: x17 } in
-        jump inline_cont1574(inline1575)
-      } else {
-        join inline_cont1576(t831: std::io::Error) -> Result__std::bytes::Bytes__std::io::Error {
-          let t832 = Result__std::bytes::Bytes__std::io::Error::Err(t831) in
-          t832
-        } in
-        let inline1577 = "read stdin exact" in
-        let inline1578 = std::io::kind_from_code(x18) in
-        join inline_join1579(
-          inline1580: Option__isize
+        join inline_cont1947(
+          t1202: std::bytes::Bytes
         ) -> Result__std::bytes::Bytes__std::io::Error {
-          let inline1581 =
+          let t1203 = Result__std::bytes::Bytes__std::io::Error::Ok(t1202) in
+          t1203
+        } in
+        let inline1948 = std::bytes::Bytes { values: x17 } in
+        jump inline_cont1947(inline1948)
+      } else {
+        join inline_cont1949(t1204: std::io::Error) -> Result__std::bytes::Bytes__std::io::Error {
+          let t1205 = Result__std::bytes::Bytes__std::io::Error::Err(t1204) in
+          t1205
+        } in
+        let inline1950 = "read stdin exact" in
+        let inline1951 = std::io::kind_from_code(x18) in
+        join inline_join1952(
+          inline1953: Option__isize
+        ) -> Result__std::bytes::Bytes__std::io::Error {
+          let inline1954 =
             inherent#std::io::Error#std::io::Error#new(
-              inline1578,
-              inline1577,
+              inline1951,
+              inline1950,
               Tag_0,
-              inline1580,
+              inline1953,
               x21
             ) in
-          jump inline_cont1576(inline1581)
+          jump inline_cont1949(inline1954)
         } in
         if x19 {
-          let inline1582 = Option__isize::Some(x20) in
-          jump inline_join1579(inline1582)
+          let inline1955 = Option__isize::Some(x20) in
+          jump inline_join1952(inline1955)
         } else {
-          jump inline_join1579(Tag_0)
+          jump inline_join1952(Tag_0)
         }
       }
     } in
-    let inline1584 = @runtime(std.io.read_stdin_exact.v2)(length/50) in
-    jump inline_cont1583(inline1584)
+    let inline1957 = @runtime(std.io.read_stdin_exact.v2)(length/50) in
+    jump inline_cont1956(inline1957)
   }
 }
 
@@ -1428,153 +1410,159 @@ fn std::io::write_structured(
   stderr/57: bool,
   data/58: std::bytes::Bytes
 ) -> Result__unit__std::io::Error {
-  join k835(jp836: (bool, isize, bool, isize, string)) -> Result__unit__std::io::Error {
-    let x23 = jp836.0 in
-    let x24 = jp836.1 in
-    let x25 = jp836.2 in
-    let x26 = jp836.3 in
-    let x27 = jp836.4 in
+  join k1208(jp1209: (bool, isize, bool, isize, string)) -> Result__unit__std::io::Error {
+    let x23 = jp1209.0 in
+    let x24 = jp1209.1 in
+    let x25 = jp1209.2 in
+    let x26 = jp1209.3 in
+    let x27 = jp1209.4 in
     if x23 {
-      let t839 = Result__unit__std::io::Error::Ok(()) in
-      t839
+      let t1212 = Result__unit__std::io::Error::Ok(()) in
+      t1212
     } else {
-      join k840(jp841: string) -> Result__unit__std::io::Error {
-        join inline_cont1593(t842: std::io::Error) -> Result__unit__std::io::Error {
-          let t843 = Result__unit__std::io::Error::Err(t842) in
-          t843
+      join k1213(jp1214: string) -> Result__unit__std::io::Error {
+        join inline_cont1966(t1215: std::io::Error) -> Result__unit__std::io::Error {
+          let t1216 = Result__unit__std::io::Error::Err(t1215) in
+          t1216
         } in
-        let inline1594 = std::io::kind_from_code(x24) in
-        join inline_join1595(inline1596: Option__isize) -> Result__unit__std::io::Error {
-          let inline1597 =
-            inherent#std::io::Error#std::io::Error#new(inline1594, jp841, Tag_0, inline1596, x27) in
-          jump inline_cont1593(inline1597)
+        let inline1967 = std::io::kind_from_code(x24) in
+        join inline_join1968(inline1969: Option__isize) -> Result__unit__std::io::Error {
+          let inline1970 =
+            inherent#std::io::Error#std::io::Error#new(
+              inline1967,
+              jp1214,
+              Tag_0,
+              inline1969,
+              x27
+            ) in
+          jump inline_cont1966(inline1970)
         } in
         if x25 {
-          let inline1598 = Option__isize::Some(x26) in
-          jump inline_join1595(inline1598)
+          let inline1971 = Option__isize::Some(x26) in
+          jump inline_join1968(inline1971)
         } else {
-          jump inline_join1595(Tag_0)
+          jump inline_join1968(Tag_0)
         }
       } in
       if stderr/57 {
-        jump k840("write stderr")
+        jump k1213("write stderr")
       } else {
-        jump k840("write stdout")
+        jump k1213("write stdout")
       }
     }
   } in
   if stderr/57 {
-    join inline_cont1587(t844: Vec[u8]) -> Result__unit__std::io::Error {
-      let inline1586 = @runtime(std.io.write_stderr.v2)(t844) in
-      jump k835(inline1586)
+    join inline_cont1960(t1217: Vec[u8]) -> Result__unit__std::io::Error {
+      let inline1959 = @runtime(std.io.write_stderr.v2)(t1217) in
+      jump k1208(inline1959)
     } in
-    let inline1588 = std::bytes::Bytes.values(data/58) in
-    jump inline_cont1587(inline1588)
+    let inline1961 = std::bytes::Bytes.values(data/58) in
+    jump inline_cont1960(inline1961)
   } else {
-    join inline_cont1591(t846: Vec[u8]) -> Result__unit__std::io::Error {
-      let inline1590 = @runtime(std.io.write_stdout.v2)(t846) in
-      jump k835(inline1590)
+    join inline_cont1964(t1219: Vec[u8]) -> Result__unit__std::io::Error {
+      let inline1963 = @runtime(std.io.write_stdout.v2)(t1219) in
+      jump k1208(inline1963)
     } in
-    let inline1592 = std::bytes::Bytes.values(data/58) in
-    jump inline_cont1591(inline1592)
+    let inline1965 = std::bytes::Bytes.values(data/58) in
+    jump inline_cont1964(inline1965)
   }
 }
 
 fn std::io::write_stdout_structured(data/65: std::bytes::Bytes) -> Result__unit__std::io::Error {
-  let t850 = std::io::write_structured(false, data/65) in
-  t850
+  let t1223 = std::io::write_structured(false, data/65) in
+  t1223
 }
 
 fn std::io::write_stderr_structured(data/66: std::bytes::Bytes) -> Result__unit__std::io::Error {
-  let t853 = std::io::write_structured(true, data/66) in
-  t853
+  let t1226 = std::io::write_structured(true, data/66) in
+  t1226
 }
 
 fn std::io::read_stdin() -> Result__std::bytes::Bytes__string {
-  join inline_cont1601(mtmp28: (bool, Vec[u8], string)) -> Result__std::bytes::Bytes__string {
+  join inline_cont1974(mtmp28: (bool, Vec[u8], string)) -> Result__std::bytes::Bytes__string {
     let x29 = mtmp28.0 in
     let x30 = mtmp28.1 in
     let x31 = mtmp28.2 in
     if x29 {
-      join inline_cont1599(t858: std::bytes::Bytes) -> Result__std::bytes::Bytes__string {
-        let t859 = Result__std::bytes::Bytes__string::Ok(t858) in
-        t859
+      join inline_cont1972(t1231: std::bytes::Bytes) -> Result__std::bytes::Bytes__string {
+        let t1232 = Result__std::bytes::Bytes__string::Ok(t1231) in
+        t1232
       } in
-      let inline1600 = std::bytes::Bytes { values: x30 } in
-      jump inline_cont1599(inline1600)
+      let inline1973 = std::bytes::Bytes { values: x30 } in
+      jump inline_cont1972(inline1973)
     } else {
-      let t860 = Result__std::bytes::Bytes__string::Err(x31) in
-      t860
+      let t1233 = Result__std::bytes::Bytes__string::Err(x31) in
+      t1233
     }
   } in
-  let inline1602 = @runtime(std.io.read_stdin)() in
-  jump inline_cont1601(inline1602)
+  let inline1975 = @runtime(std.io.read_stdin)() in
+  jump inline_cont1974(inline1975)
 }
 
 fn std::io::write_stdout(data/74: std::bytes::Bytes) -> Result__unit__string {
-  join inline_cont1605(t863: Vec[u8]) -> Result__unit__string {
-    join inline_cont1603(mtmp32: (bool, string)) -> Result__unit__string {
+  join inline_cont1978(t1236: Vec[u8]) -> Result__unit__string {
+    join inline_cont1976(mtmp32: (bool, string)) -> Result__unit__string {
       let x33 = mtmp32.0 in
       let x34 = mtmp32.1 in
       if x33 {
-        let t866 = Result__unit__string::Ok(()) in
-        t866
+        let t1239 = Result__unit__string::Ok(()) in
+        t1239
       } else {
-        let t867 = Result__unit__string::Err(x34) in
-        t867
+        let t1240 = Result__unit__string::Err(x34) in
+        t1240
       }
     } in
-    let inline1604 = @runtime(std.io.write_stdout)(t863) in
-    jump inline_cont1603(inline1604)
+    let inline1977 = @runtime(std.io.write_stdout)(t1236) in
+    jump inline_cont1976(inline1977)
   } in
-  let inline1606 = std::bytes::Bytes.values(data/74) in
-  jump inline_cont1605(inline1606)
+  let inline1979 = std::bytes::Bytes.values(data/74) in
+  jump inline_cont1978(inline1979)
 }
 
 fn std::io::write_stderr(data/77: std::bytes::Bytes) -> Result__unit__string {
-  join inline_cont1609(t870: Vec[u8]) -> Result__unit__string {
-    join inline_cont1607(mtmp35: (bool, string)) -> Result__unit__string {
+  join inline_cont1982(t1243: Vec[u8]) -> Result__unit__string {
+    join inline_cont1980(mtmp35: (bool, string)) -> Result__unit__string {
       let x36 = mtmp35.0 in
       let x37 = mtmp35.1 in
       if x36 {
-        let t873 = Result__unit__string::Ok(()) in
-        t873
+        let t1246 = Result__unit__string::Ok(()) in
+        t1246
       } else {
-        let t874 = Result__unit__string::Err(x37) in
-        t874
+        let t1247 = Result__unit__string::Err(x37) in
+        t1247
       }
     } in
-    let inline1608 = @runtime(std.io.write_stderr)(t870) in
-    jump inline_cont1607(inline1608)
+    let inline1981 = @runtime(std.io.write_stderr)(t1243) in
+    jump inline_cont1980(inline1981)
   } in
-  let inline1610 = std::bytes::Bytes.values(data/77) in
-  jump inline_cont1609(inline1610)
+  let inline1983 = std::bytes::Bytes.values(data/77) in
+  jump inline_cont1982(inline1983)
 }
 
 fn std::io::read_stdin_exact(length/80: isize) -> Result__std::bytes::Bytes__string {
-  let t879 = (length/80 < 0) in
-  if t879 {
-    let t880 = Result__std::bytes::Bytes__string::Err("read length must be non-negative") in
-    t880
+  let t1252 = (length/80 < 0) in
+  if t1252 {
+    let t1253 = Result__std::bytes::Bytes__string::Err("read length must be non-negative") in
+    t1253
   } else {
-    join inline_cont1613(mtmp38: (bool, Vec[u8], string)) -> Result__std::bytes::Bytes__string {
+    join inline_cont1986(mtmp38: (bool, Vec[u8], string)) -> Result__std::bytes::Bytes__string {
       let x39 = mtmp38.0 in
       let x40 = mtmp38.1 in
       let x41 = mtmp38.2 in
       if x39 {
-        join inline_cont1611(t883: std::bytes::Bytes) -> Result__std::bytes::Bytes__string {
-          let t884 = Result__std::bytes::Bytes__string::Ok(t883) in
-          t884
+        join inline_cont1984(t1256: std::bytes::Bytes) -> Result__std::bytes::Bytes__string {
+          let t1257 = Result__std::bytes::Bytes__string::Ok(t1256) in
+          t1257
         } in
-        let inline1612 = std::bytes::Bytes { values: x40 } in
-        jump inline_cont1611(inline1612)
+        let inline1985 = std::bytes::Bytes { values: x40 } in
+        jump inline_cont1984(inline1985)
       } else {
-        let t885 = Result__std::bytes::Bytes__string::Err(x41) in
-        t885
+        let t1258 = Result__std::bytes::Bytes__string::Err(x41) in
+        t1258
       }
     } in
-    let inline1614 = @runtime(std.io.read_stdin_exact)(length/80) in
-    jump inline_cont1613(inline1614)
+    let inline1987 = @runtime(std.io.read_stdin_exact)(length/80) in
+    jump inline_cont1986(inline1987)
   }
 }
 
@@ -1585,11 +1573,11 @@ fn inherent#std::fs::Error#std::fs::Error#new(
   raw_os_code/3: Option__isize,
   message/4: string
 ) -> std::fs::Error {
-  join inline_cont1615(t888: std::io::ErrorDetails) -> std::fs::Error {
-    let t889 = std::fs::Error { details: t888 } in
-    t889
+  join inline_cont1988(t1261: std::io::ErrorDetails) -> std::fs::Error {
+    let t1262 = std::fs::Error { details: t1261 } in
+    t1262
   } in
-  let inline1616 =
+  let inline1989 =
     std::io::ErrorDetails {
       kind_value: kind/0,
       operation_value: operation/1,
@@ -1597,83 +1585,83 @@ fn inherent#std::fs::Error#std::fs::Error#new(
       raw_os_code_value: raw_os_code/3,
       message_value: message/4
     } in
-  jump inline_cont1615(inline1616)
+  jump inline_cont1988(inline1989)
 }
 
 fn inherent#std::fs::Error#std::fs::Error#kind(self/5: std::fs::Error) -> std::io::ErrorKind {
-  let t892 = std::fs::Error.details(self/5) in
-  let inline1618 = std::io::ErrorDetails.kind_value(t892) in
-  inline1618
+  let t1265 = std::fs::Error.details(self/5) in
+  let inline1991 = std::io::ErrorDetails.kind_value(t1265) in
+  inline1991
 }
 
 fn inherent#std::fs::Error#std::fs::Error#operation(self/6: std::fs::Error) -> string {
-  let t896 = std::fs::Error.details(self/6) in
-  let inline1620 = std::io::ErrorDetails.operation_value(t896) in
-  inline1620
+  let t1269 = std::fs::Error.details(self/6) in
+  let inline1993 = std::io::ErrorDetails.operation_value(t1269) in
+  inline1993
 }
 
 fn inherent#std::fs::Error#std::fs::Error#path(self/7: std::fs::Error) -> Option__string {
-  let t900 = std::fs::Error.details(self/7) in
-  let inline1622 = std::io::ErrorDetails.context_value(t900) in
-  inline1622
+  let t1273 = std::fs::Error.details(self/7) in
+  let inline1995 = std::io::ErrorDetails.context_value(t1273) in
+  inline1995
 }
 
 fn inherent#std::fs::Error#std::fs::Error#context(self/8: std::fs::Error) -> Option__string {
-  let t904 = std::fs::Error.details(self/8) in
-  let inline1624 = std::io::ErrorDetails.context_value(t904) in
-  inline1624
+  let t1277 = std::fs::Error.details(self/8) in
+  let inline1997 = std::io::ErrorDetails.context_value(t1277) in
+  inline1997
 }
 
 fn inherent#std::fs::Error#std::fs::Error#raw_os_code(self/9: std::fs::Error) -> Option__isize {
-  let t908 = std::fs::Error.details(self/9) in
-  let inline1626 = std::io::ErrorDetails.raw_os_code_value(t908) in
-  inline1626
+  let t1281 = std::fs::Error.details(self/9) in
+  let inline1999 = std::io::ErrorDetails.raw_os_code_value(t1281) in
+  inline1999
 }
 
 fn inherent#std::fs::Error#std::fs::Error#message(self/10: std::fs::Error) -> string {
-  let t912 = std::fs::Error.details(self/10) in
-  let inline1628 = std::io::ErrorDetails.message_value(t912) in
-  inline1628
+  let t1285 = std::fs::Error.details(self/10) in
+  let inline2001 = std::io::ErrorDetails.message_value(t1285) in
+  inline2001
 }
 
 fn trait_impl#ToString#std::fs::Error#to_string(self/11: std::fs::Error) -> string {
-  let t916 = std::fs::Error.details(self/11) in
-  let inline1630 = std::io::ErrorDetails.context_value(t916) in
-  match inline1630 {
+  let t1289 = std::fs::Error.details(self/11) in
+  let inline2003 = std::io::ErrorDetails.context_value(t1289) in
+  match inline2003 {
     Tag_0 => {
-      let inline1631 = std::io::ErrorDetails.operation_value(t916) in
-      let inline1632 = (inline1631 + ": ") in
-      let inline1633 = std::io::ErrorDetails.message_value(t916) in
-      let inline1634 = (inline1632 + inline1633) in
-      inline1634
+      let inline2004 = std::io::ErrorDetails.operation_value(t1289) in
+      let inline2005 = (inline2004 + ": ") in
+      let inline2006 = std::io::ErrorDetails.message_value(t1289) in
+      let inline2007 = (inline2005 + inline2006) in
+      inline2007
     },
     Tag_1 => {
-      let inline1635 = Option__string::Some._0(inline1630) in
-      let inline1637 = std::io::ErrorDetails.operation_value(t916) in
-      let inline1638 = (inline1637 + " ") in
-      let inline1639 = (inline1638 + inline1635) in
-      let inline1640 = (inline1639 + ": ") in
-      let inline1641 = std::io::ErrorDetails.message_value(t916) in
-      let inline1642 = (inline1640 + inline1641) in
-      inline1642
+      let inline2008 = Option__string::Some._0(inline2003) in
+      let inline2010 = std::io::ErrorDetails.operation_value(t1289) in
+      let inline2011 = (inline2010 + " ") in
+      let inline2012 = (inline2011 + inline2008) in
+      let inline2013 = (inline2012 + ": ") in
+      let inline2014 = std::io::ErrorDetails.message_value(t1289) in
+      let inline2015 = (inline2013 + inline2014) in
+      inline2015
     },
   }
 }
 
 fn trait_impl#Debug#std::fs::Error#debug(self/12: std::fs::Error) -> string {
-  let inline1644 = std::fs::Error.details(self/12) in
-  let inline1645 = trait_impl#ToString#std::io::ErrorDetails#to_string(inline1644) in
-  inline1645
+  let inline2017 = std::fs::Error.details(self/12) in
+  let inline2018 = trait_impl#ToString#std::io::ErrorDetails#to_string(inline2017) in
+  inline2018
 }
 
 fn trait_impl#PartialEq#std::fs::Error#eq(
   self/13: std::fs::Error,
   other/14: std::fs::Error
 ) -> bool {
-  let t923 = std::fs::Error.details(self/13) in
-  let t924 = std::fs::Error.details(other/14) in
-  let t925 = trait_impl#PartialEq#std::io::ErrorDetails#eq(t923, t924) in
-  t925
+  let t1296 = std::fs::Error.details(self/13) in
+  let t1297 = std::fs::Error.details(other/14) in
+  let t1298 = trait_impl#PartialEq#std::io::ErrorDetails#eq(t1296, t1297) in
+  t1298
 }
 
 fn inherent#std::fs::FileType#std::fs::FileType#is_file(self/15: std::fs::FileType) -> bool {
@@ -1758,60 +1746,60 @@ fn trait_impl#PartialEq#std::fs::FileType#eq(
 }
 
 fn inherent#std::fs::Permissions#std::fs::Permissions#mode(self/20: std::fs::Permissions) -> u32 {
-  let t949 = std::fs::Permissions.mode_value(self/20) in
-  t949
+  let t1322 = std::fs::Permissions.mode_value(self/20) in
+  t1322
 }
 
 fn inherent#std::fs::Permissions#std::fs::Permissions#readonly(
   self/21: std::fs::Permissions
 ) -> bool {
-  let t952 = std::fs::Permissions.mode_value(self/21) in
-  let t953 = (t952 & 146) in
-  let t954 = (t953 == 0) in
-  t954
+  let t1325 = std::fs::Permissions.mode_value(self/21) in
+  let t1326 = (t1325 & 146) in
+  let t1327 = (t1326 == 0) in
+  t1327
 }
 
 fn inherent#std::fs::Metadata#std::fs::Metadata#file_type(
   self/22: std::fs::Metadata
 ) -> std::fs::FileType {
-  let t957 = std::fs::Metadata.file_type_value(self/22) in
-  t957
+  let t1330 = std::fs::Metadata.file_type_value(self/22) in
+  t1330
 }
 
 fn inherent#std::fs::Metadata#std::fs::Metadata#len(self/23: std::fs::Metadata) -> i64 {
-  let t960 = std::fs::Metadata.length_value(self/23) in
-  t960
+  let t1333 = std::fs::Metadata.length_value(self/23) in
+  t1333
 }
 
 fn inherent#std::fs::Metadata#std::fs::Metadata#permissions(
   self/24: std::fs::Metadata
 ) -> std::fs::Permissions {
-  let t963 = std::fs::Metadata.permissions_value(self/24) in
-  t963
+  let t1336 = std::fs::Metadata.permissions_value(self/24) in
+  t1336
 }
 
 fn inherent#std::fs::Metadata#std::fs::Metadata#modified_unix_nanoseconds(
   self/25: std::fs::Metadata
 ) -> i64 {
-  let t966 = std::fs::Metadata.modified_unix_nanoseconds_value(self/25) in
-  t966
+  let t1339 = std::fs::Metadata.modified_unix_nanoseconds_value(self/25) in
+  t1339
 }
 
 fn inherent#std::fs::DirEntry#std::fs::DirEntry#name(self/26: std::fs::DirEntry) -> string {
-  let t969 = std::fs::DirEntry.name_value(self/26) in
-  t969
+  let t1342 = std::fs::DirEntry.name_value(self/26) in
+  t1342
 }
 
 fn inherent#std::fs::DirEntry#std::fs::DirEntry#path(self/27: std::fs::DirEntry) -> string {
-  let t972 = std::fs::DirEntry.path_value(self/27) in
-  t972
+  let t1345 = std::fs::DirEntry.path_value(self/27) in
+  t1345
 }
 
 fn inherent#std::fs::DirEntry#std::fs::DirEntry#file_type(
   self/28: std::fs::DirEntry
 ) -> std::fs::FileType {
-  let t975 = std::fs::DirEntry.file_type_value(self/28) in
-  t975
+  let t1348 = std::fs::DirEntry.file_type_value(self/28) in
+  t1348
 }
 
 fn std::fs::structured_error(
@@ -1822,72 +1810,72 @@ fn std::fs::structured_error(
   raw_code/33: isize,
   message/34: string
 ) -> std::fs::Error {
-  join inline_cont1661(t980: std::io::ErrorKind) -> std::fs::Error {
-    let t981 = Option__string::Some(path/30) in
-    join k982(jp983: Option__isize) -> std::fs::Error {
-      let inline1659 =
+  join inline_cont2034(t1353: std::io::ErrorKind) -> std::fs::Error {
+    let t1354 = Option__string::Some(path/30) in
+    join k1355(jp1356: Option__isize) -> std::fs::Error {
+      let inline2032 =
         inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
-          t980,
+          t1353,
           operation/29,
-          t981,
-          jp983,
+          t1354,
+          jp1356,
           message/34
         ) in
-      let inline1660 = std::fs::Error { details: inline1659 } in
-      inline1660
+      let inline2033 = std::fs::Error { details: inline2032 } in
+      inline2033
     } in
     if has_raw_code/32 {
-      let t985 = Option__isize::Some(raw_code/33) in
-      jump k982(t985)
+      let t1358 = Option__isize::Some(raw_code/33) in
+      jump k1355(t1358)
     } else {
-      jump k982(Tag_0)
+      jump k1355(Tag_0)
     }
   } in
   match kind_code/31 {
     1 => {
-      jump inline_cont1661(Tag_0)
+      jump inline_cont2034(Tag_0)
     },
     2 => {
-      jump inline_cont1661(Tag_1)
+      jump inline_cont2034(Tag_1)
     },
     3 => {
-      jump inline_cont1661(Tag_2)
+      jump inline_cont2034(Tag_2)
     },
     4 => {
-      jump inline_cont1661(Tag_3)
+      jump inline_cont2034(Tag_3)
     },
     5 => {
-      jump inline_cont1661(Tag_4)
+      jump inline_cont2034(Tag_4)
     },
     6 => {
-      jump inline_cont1661(Tag_5)
+      jump inline_cont2034(Tag_5)
     },
     7 => {
-      jump inline_cont1661(Tag_6)
+      jump inline_cont2034(Tag_6)
     },
     8 => {
-      jump inline_cont1661(Tag_7)
+      jump inline_cont2034(Tag_7)
     },
     9 => {
-      jump inline_cont1661(Tag_8)
+      jump inline_cont2034(Tag_8)
     },
     10 => {
-      jump inline_cont1661(Tag_9)
+      jump inline_cont2034(Tag_9)
     },
     11 => {
-      jump inline_cont1661(Tag_10)
+      jump inline_cont2034(Tag_10)
     },
     12 => {
-      jump inline_cont1661(Tag_11)
+      jump inline_cont2034(Tag_11)
     },
     _ => {
-      jump inline_cont1661(Tag_12)
+      jump inline_cont2034(Tag_12)
     },
   }
 }
 
 fn std::fs::read_bytes_structured(path/35: string) -> Result__std::bytes::Bytes__std::fs::Error {
-  join inline_cont1672(
+  join inline_cont2045(
     mtmp3: (bool, Vec[u8], isize, bool, isize, string)
   ) -> Result__std::bytes::Bytes__std::fs::Error {
     let x4 = mtmp3.0 in
@@ -1897,41 +1885,41 @@ fn std::fs::read_bytes_structured(path/35: string) -> Result__std::bytes::Bytes_
     let x8 = mtmp3.4 in
     let x9 = mtmp3.5 in
     if x4 {
-      join inline_cont1662(t990: std::bytes::Bytes) -> Result__std::bytes::Bytes__std::fs::Error {
-        let t991 = Result__std::bytes::Bytes__std::fs::Error::Ok(t990) in
-        t991
+      join inline_cont2035(t1363: std::bytes::Bytes) -> Result__std::bytes::Bytes__std::fs::Error {
+        let t1364 = Result__std::bytes::Bytes__std::fs::Error::Ok(t1363) in
+        t1364
       } in
-      let inline1663 = std::bytes::Bytes { values: x5 } in
-      jump inline_cont1662(inline1663)
+      let inline2036 = std::bytes::Bytes { values: x5 } in
+      jump inline_cont2035(inline2036)
     } else {
-      join inline_cont1664(t992: std::fs::Error) -> Result__std::bytes::Bytes__std::fs::Error {
-        let t993 = Result__std::bytes::Bytes__std::fs::Error::Err(t992) in
-        t993
+      join inline_cont2037(t1365: std::fs::Error) -> Result__std::bytes::Bytes__std::fs::Error {
+        let t1366 = Result__std::bytes::Bytes__std::fs::Error::Err(t1365) in
+        t1366
       } in
-      let inline1665 = "read file" in
-      let inline1666 = std::io::kind_from_code(x6) in
-      let inline1667 = Option__string::Some(path/35) in
-      join inline_join1668(inline1669: Option__isize) -> Result__std::bytes::Bytes__std::fs::Error {
-        let inline1670 =
+      let inline2038 = "read file" in
+      let inline2039 = std::io::kind_from_code(x6) in
+      let inline2040 = Option__string::Some(path/35) in
+      join inline_join2041(inline2042: Option__isize) -> Result__std::bytes::Bytes__std::fs::Error {
+        let inline2043 =
           inherent#std::fs::Error#std::fs::Error#new(
-            inline1666,
-            inline1665,
-            inline1667,
-            inline1669,
+            inline2039,
+            inline2038,
+            inline2040,
+            inline2042,
             x9
           ) in
-        jump inline_cont1664(inline1670)
+        jump inline_cont2037(inline2043)
       } in
       if x7 {
-        let inline1671 = Option__isize::Some(x8) in
-        jump inline_join1668(inline1671)
+        let inline2044 = Option__isize::Some(x8) in
+        jump inline_join2041(inline2044)
       } else {
-        jump inline_join1668(Tag_0)
+        jump inline_join2041(Tag_0)
       }
     }
   } in
-  let inline1673 = @runtime(std.fs.read_bytes.v2)(path/35) in
-  jump inline_cont1672(inline1673)
+  let inline2046 = @runtime(std.fs.read_bytes.v2)(path/35) in
+  jump inline_cont2045(inline2046)
 }
 
 fn std::fs::read_file_structured(path/42: string) -> Result__string__std::fs::Error {
@@ -1939,42 +1927,42 @@ fn std::fs::read_file_structured(path/42: string) -> Result__string__std::fs::Er
   match mtmp10 {
     Tag_0 => {
       let x11 = Result__std::bytes::Bytes__std::fs::Error::Ok._0(mtmp10) in
-      join commute_arm1951(commute_field1950: string) -> Result__string__std::fs::Error {
-        let t1000 = Result__string__std::fs::Error::Ok(commute_field1950) in
-        t1000
+      join commute_arm2324(commute_field2323: string) -> Result__string__std::fs::Error {
+        let t1373 = Result__string__std::fs::Error::Ok(commute_field2323) in
+        t1373
       } in
-      join commute_arm1953(commute_field1952: string) -> Result__string__std::fs::Error {
-        let t1001 = Option__string::Some(path/42) in
-        join inline_cont1674(t1002: std::fs::Error) -> Result__string__std::fs::Error {
-          let t1003 = Result__string__std::fs::Error::Err(t1002) in
-          t1003
+      join commute_arm2326(commute_field2325: string) -> Result__string__std::fs::Error {
+        let t1374 = Option__string::Some(path/42) in
+        join inline_cont2047(t1375: std::fs::Error) -> Result__string__std::fs::Error {
+          let t1376 = Result__string__std::fs::Error::Err(t1375) in
+          t1376
         } in
-        let inline1675 = "read file" in
-        let inline1676 =
+        let inline2048 = "read file" in
+        let inline2049 =
           inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
             Tag_4,
-            inline1675,
-            t1001,
+            inline2048,
+            t1374,
             Tag_0,
-            commute_field1952
+            commute_field2325
           ) in
-        let inline1677 = std::fs::Error { details: inline1676 } in
-        jump inline_cont1674(inline1677)
+        let inline2050 = std::fs::Error { details: inline2049 } in
+        jump inline_cont2047(inline2050)
       } in
-      let inline1679 = std::bytes::Bytes.values(x11) in
-      let inline1680 = string_from_utf8(inline1679) in
-      let inline1681 = inline1680.0 in
-      let inline1682 = inline1680.1 in
-      if inline1681 {
-        jump commute_arm1951(inline1682)
+      let inline2052 = std::bytes::Bytes.values(x11) in
+      let inline2053 = string_from_utf8(inline2052) in
+      let inline2054 = inline2053.0 in
+      let inline2055 = inline2053.1 in
+      if inline2054 {
+        jump commute_arm2324(inline2055)
       } else {
-        jump commute_arm1953("invalid UTF-8")
+        jump commute_arm2326("invalid UTF-8")
       }
     },
     Tag_1 => {
       let x12 = Result__std::bytes::Bytes__std::fs::Error::Err._0(mtmp10) in
-      let t1004 = Result__string__std::fs::Error::Err(x12) in
-      t1004
+      let t1377 = Result__string__std::fs::Error::Err(x12) in
+      t1377
     },
   }
 }
@@ -1983,8 +1971,8 @@ fn std::fs::write_bytes_structured(
   path/47: string,
   data/48: std::bytes::Bytes
 ) -> Result__unit__std::fs::Error {
-  join inline_cont1697(t1007: Vec[u8]) -> Result__unit__std::fs::Error {
-    join inline_cont1695(
+  join inline_cont2070(t1380: Vec[u8]) -> Result__unit__std::fs::Error {
+    join inline_cont2068(
       mtmp16: (bool, isize, bool, isize, string)
     ) -> Result__unit__std::fs::Error {
       let x17 = mtmp16.0 in
@@ -1993,53 +1981,53 @@ fn std::fs::write_bytes_structured(
       let x20 = mtmp16.3 in
       let x21 = mtmp16.4 in
       if x17 {
-        let t1010 = Result__unit__std::fs::Error::Ok(()) in
-        t1010
+        let t1383 = Result__unit__std::fs::Error::Ok(()) in
+        t1383
       } else {
-        join inline_cont1687(t1011: std::fs::Error) -> Result__unit__std::fs::Error {
-          let t1012 = Result__unit__std::fs::Error::Err(t1011) in
-          t1012
+        join inline_cont2060(t1384: std::fs::Error) -> Result__unit__std::fs::Error {
+          let t1385 = Result__unit__std::fs::Error::Err(t1384) in
+          t1385
         } in
-        let inline1688 = "write file" in
-        let inline1689 = std::io::kind_from_code(x18) in
-        let inline1690 = Option__string::Some(path/47) in
-        join inline_join1691(inline1692: Option__isize) -> Result__unit__std::fs::Error {
-          let inline1693 =
+        let inline2061 = "write file" in
+        let inline2062 = std::io::kind_from_code(x18) in
+        let inline2063 = Option__string::Some(path/47) in
+        join inline_join2064(inline2065: Option__isize) -> Result__unit__std::fs::Error {
+          let inline2066 =
             inherent#std::fs::Error#std::fs::Error#new(
-              inline1689,
-              inline1688,
-              inline1690,
-              inline1692,
+              inline2062,
+              inline2061,
+              inline2063,
+              inline2065,
               x21
             ) in
-          jump inline_cont1687(inline1693)
+          jump inline_cont2060(inline2066)
         } in
         if x19 {
-          let inline1694 = Option__isize::Some(x20) in
-          jump inline_join1691(inline1694)
+          let inline2067 = Option__isize::Some(x20) in
+          jump inline_join2064(inline2067)
         } else {
-          jump inline_join1691(Tag_0)
+          jump inline_join2064(Tag_0)
         }
       }
     } in
-    let inline1696 = @runtime(std.fs.write_bytes.v2)(path/47, t1007) in
-    jump inline_cont1695(inline1696)
+    let inline2069 = @runtime(std.fs.write_bytes.v2)(path/47, t1380) in
+    jump inline_cont2068(inline2069)
   } in
-  let inline1698 = std::bytes::Bytes.values(data/48) in
-  jump inline_cont1697(inline1698)
+  let inline2071 = std::bytes::Bytes.values(data/48) in
+  jump inline_cont2070(inline2071)
 }
 
 fn std::fs::write_file_structured(
   path/54: string,
   content/55: string
 ) -> Result__unit__std::fs::Error {
-  join inline_cont1699(t1015: std::bytes::Bytes) -> Result__unit__std::fs::Error {
-    let t1016 = std::fs::write_bytes_structured(path/54, t1015) in
-    t1016
+  join inline_cont2072(t1388: std::bytes::Bytes) -> Result__unit__std::fs::Error {
+    let t1389 = std::fs::write_bytes_structured(path/54, t1388) in
+    t1389
   } in
-  let inline1700 = inherent#string#string#to_bytes(content/55) in
-  let inline1701 = std::bytes::Bytes { values: inline1700 } in
-  jump inline_cont1699(inline1701)
+  let inline2073 = inherent#string#string#to_bytes(content/55) in
+  let inline2074 = std::bytes::Bytes { values: inline2073 } in
+  jump inline_cont2072(inline2074)
 }
 
 fn std::fs::path_operation(
@@ -2048,91 +2036,91 @@ fn std::fs::path_operation(
   first/58: string,
   second/59: string
 ) -> Result__unit__std::fs::Error {
-  join inline_cont1709(mtmp22: (bool, isize, bool, isize, string)) -> Result__unit__std::fs::Error {
+  join inline_cont2082(mtmp22: (bool, isize, bool, isize, string)) -> Result__unit__std::fs::Error {
     let x23 = mtmp22.0 in
     let x24 = mtmp22.1 in
     let x25 = mtmp22.2 in
     let x26 = mtmp22.3 in
     let x27 = mtmp22.4 in
     if x23 {
-      let t1021 = Result__unit__std::fs::Error::Ok(()) in
-      t1021
+      let t1394 = Result__unit__std::fs::Error::Ok(()) in
+      t1394
     } else {
-      let t1026 = (second/59 == "") in
-      join k1022(jp1023: string) -> Result__unit__std::fs::Error {
-        join inline_cont1702(t1024: std::fs::Error) -> Result__unit__std::fs::Error {
-          let t1025 = Result__unit__std::fs::Error::Err(t1024) in
-          t1025
+      let t1399 = (second/59 == "") in
+      join k1395(jp1396: string) -> Result__unit__std::fs::Error {
+        join inline_cont2075(t1397: std::fs::Error) -> Result__unit__std::fs::Error {
+          let t1398 = Result__unit__std::fs::Error::Err(t1397) in
+          t1398
         } in
-        let inline1703 = std::io::kind_from_code(x24) in
-        let inline1704 = Option__string::Some(jp1023) in
-        join inline_join1705(inline1706: Option__isize) -> Result__unit__std::fs::Error {
-          let inline1707 =
+        let inline2076 = std::io::kind_from_code(x24) in
+        let inline2077 = Option__string::Some(jp1396) in
+        join inline_join2078(inline2079: Option__isize) -> Result__unit__std::fs::Error {
+          let inline2080 =
             inherent#std::fs::Error#std::fs::Error#new(
-              inline1703,
+              inline2076,
               name/57,
-              inline1704,
-              inline1706,
+              inline2077,
+              inline2079,
               x27
             ) in
-          jump inline_cont1702(inline1707)
+          jump inline_cont2075(inline2080)
         } in
         if x25 {
-          let inline1708 = Option__isize::Some(x26) in
-          jump inline_join1705(inline1708)
+          let inline2081 = Option__isize::Some(x26) in
+          jump inline_join2078(inline2081)
         } else {
-          jump inline_join1705(Tag_0)
+          jump inline_join2078(Tag_0)
         }
       } in
-      if t1026 {
-        jump k1022(first/58)
+      if t1399 {
+        jump k1395(first/58)
       } else {
-        let t1027 = (first/58 + " -> ") in
-        let t1028 = (t1027 + second/59) in
-        jump k1022(t1028)
+        let t1400 = (first/58 + " -> ") in
+        let t1401 = (t1400 + second/59) in
+        jump k1395(t1401)
       }
     }
   } in
-  let inline1710 = @runtime(std.fs.path_operation.v2)(operation/56, first/58, second/59) in
-  jump inline_cont1709(inline1710)
+  let inline2083 = @runtime(std.fs.path_operation.v2)(operation/56, first/58, second/59) in
+  jump inline_cont2082(inline2083)
 }
 
 fn std::fs::create_dir(path/65: string) -> Result__unit__std::fs::Error {
-  let t1031 = std::fs::path_operation(0, "create directory", path/65, "") in
-  t1031
+  let t1404 = std::fs::path_operation(0, "create directory", path/65, "") in
+  t1404
 }
 
 fn std::fs::rename(from/66: string, to/67: string) -> Result__unit__std::fs::Error {
-  let t1034 = std::fs::path_operation(1, "rename", from/66, to/67) in
-  t1034
+  let t1407 = std::fs::path_operation(1, "rename", from/66, to/67) in
+  t1407
 }
 
 fn std::fs::replace(from/68: string, to/69: string) -> Result__unit__std::fs::Error {
-  let t1037 = std::fs::path_operation(1, "replace", from/68, to/69) in
-  t1037
+  let t1410 = std::fs::path_operation(1, "replace", from/68, to/69) in
+  t1410
 }
 
 fn std::fs::hard_link(from/70: string, to/71: string) -> Result__unit__std::fs::Error {
-  let t1040 = std::fs::path_operation(2, "create hard link", from/70, to/71) in
-  t1040
+  let t1413 = std::fs::path_operation(2, "create hard link", from/70, to/71) in
+  t1413
 }
 
 fn std::fs::symbolic_link(from/72: string, to/73: string) -> Result__unit__std::fs::Error {
-  let t1043 = std::fs::path_operation(3, "create symbolic link", from/72, to/73) in
-  t1043
+  let t1416 = std::fs::path_operation(3, "create symbolic link", from/72, to/73) in
+  t1416
 }
 
 fn std::fs::copy(from/74: string, to/75: string) -> Result__unit__std::fs::Error {
-  let t1046 = std::fs::path_operation(4, "copy file", from/74, to/75) in
-  t1046
+  let t1419 = std::fs::path_operation(4, "copy file", from/74, to/75) in
+  t1419
 }
 
 fn std::fs::atomic_write_bytes(
   path/76: string,
   data/77: std::bytes::Bytes
 ) -> Result__unit__std::fs::Error {
-  join inline_cont1721(t1049: Vec[u8]) -> Result__unit__std::fs::Error {
-    join inline_cont1719(
+  join inline_cont2094(t1422: Vec[u8]) -> Result__unit__std::fs::Error {
+    join inline_cont2092(
       mtmp28: (bool, isize, bool, isize, string)
     ) -> Result__unit__std::fs::Error {
       let x29 = mtmp28.0 in
@@ -2141,63 +2129,63 @@ fn std::fs::atomic_write_bytes(
       let x32 = mtmp28.3 in
       let x33 = mtmp28.4 in
       if x29 {
-        let t1052 = Result__unit__std::fs::Error::Ok(()) in
-        t1052
+        let t1425 = Result__unit__std::fs::Error::Ok(()) in
+        t1425
       } else {
-        join inline_cont1711(t1053: std::fs::Error) -> Result__unit__std::fs::Error {
-          let t1054 = Result__unit__std::fs::Error::Err(t1053) in
-          t1054
+        join inline_cont2084(t1426: std::fs::Error) -> Result__unit__std::fs::Error {
+          let t1427 = Result__unit__std::fs::Error::Err(t1426) in
+          t1427
         } in
-        let inline1712 = "atomic write" in
-        let inline1713 = std::io::kind_from_code(x30) in
-        let inline1714 = Option__string::Some(path/76) in
-        join inline_join1715(inline1716: Option__isize) -> Result__unit__std::fs::Error {
-          let inline1717 =
+        let inline2085 = "atomic write" in
+        let inline2086 = std::io::kind_from_code(x30) in
+        let inline2087 = Option__string::Some(path/76) in
+        join inline_join2088(inline2089: Option__isize) -> Result__unit__std::fs::Error {
+          let inline2090 =
             inherent#std::fs::Error#std::fs::Error#new(
-              inline1713,
-              inline1712,
-              inline1714,
-              inline1716,
+              inline2086,
+              inline2085,
+              inline2087,
+              inline2089,
               x33
             ) in
-          jump inline_cont1711(inline1717)
+          jump inline_cont2084(inline2090)
         } in
         if x31 {
-          let inline1718 = Option__isize::Some(x32) in
-          jump inline_join1715(inline1718)
+          let inline2091 = Option__isize::Some(x32) in
+          jump inline_join2088(inline2091)
         } else {
-          jump inline_join1715(Tag_0)
+          jump inline_join2088(Tag_0)
         }
       }
     } in
-    let inline1720 = @runtime(std.fs.atomic_write.v2)(path/76, t1049) in
-    jump inline_cont1719(inline1720)
+    let inline2093 = @runtime(std.fs.atomic_write.v2)(path/76, t1422) in
+    jump inline_cont2092(inline2093)
   } in
-  let inline1722 = std::bytes::Bytes.values(data/77) in
-  jump inline_cont1721(inline1722)
+  let inline2095 = std::bytes::Bytes.values(data/77) in
+  jump inline_cont2094(inline2095)
 }
 
 fn std::fs::atomic_write(path/83: string, content/84: string) -> Result__unit__std::fs::Error {
-  join inline_cont1723(t1057: std::bytes::Bytes) -> Result__unit__std::fs::Error {
-    let t1058 = std::fs::atomic_write_bytes(path/83, t1057) in
-    t1058
+  join inline_cont2096(t1430: std::bytes::Bytes) -> Result__unit__std::fs::Error {
+    let t1431 = std::fs::atomic_write_bytes(path/83, t1430) in
+    t1431
   } in
-  let inline1724 = inherent#string#string#to_bytes(content/84) in
-  let inline1725 = std::bytes::Bytes { values: inline1724 } in
-  jump inline_cont1723(inline1725)
+  let inline2097 = inherent#string#string#to_bytes(content/84) in
+  let inline2098 = std::bytes::Bytes { values: inline2097 } in
+  jump inline_cont2096(inline2098)
 }
 
 fn std::fs::file_type_from_code(code/85: isize) -> std::fs::FileType {
-  let t1063 = (code/85 == 0) in
-  if t1063 {
+  let t1436 = (code/85 == 0) in
+  if t1436 {
     Tag_0
   } else {
-    let t1066 = (code/85 == 1) in
-    if t1066 {
+    let t1439 = (code/85 == 1) in
+    if t1439 {
       Tag_1
     } else {
-      let t1069 = (code/85 == 2) in
-      if t1069 {
+      let t1442 = (code/85 == 2) in
+      if t1442 {
         Tag_2
       } else {
         Tag_3
@@ -2210,7 +2198,7 @@ fn std::fs::query_metadata(
   path/86: string,
   follow/87: bool
 ) -> Result__std::fs::Metadata__std::fs::Error {
-  join inline_cont1738(
+  join inline_cont2111(
     mtmp34: (bool, isize, i64, u32, i64, isize, bool, isize, string)
   ) -> Result__std::fs::Metadata__std::fs::Error {
     let x35 = mtmp34.0 in
@@ -2223,115 +2211,115 @@ fn std::fs::query_metadata(
     let x42 = mtmp34.7 in
     let x43 = mtmp34.8 in
     if x35 {
-      join inline_cont1726(t1074: std::fs::FileType) -> Result__std::fs::Metadata__std::fs::Error {
-        let t1075 = std::fs::Permissions { mode_value: x38 } in
-        let t1076 =
+      join inline_cont2099(t1447: std::fs::FileType) -> Result__std::fs::Metadata__std::fs::Error {
+        let t1448 = std::fs::Permissions { mode_value: x38 } in
+        let t1449 =
           std::fs::Metadata {
-            file_type_value: t1074,
+            file_type_value: t1447,
             length_value: x37,
-            permissions_value: t1075,
+            permissions_value: t1448,
             modified_unix_nanoseconds_value: x39
           } in
-        let t1077 = Result__std::fs::Metadata__std::fs::Error::Ok(t1076) in
-        t1077
+        let t1450 = Result__std::fs::Metadata__std::fs::Error::Ok(t1449) in
+        t1450
       } in
-      let inline1727 = (x36 == 0) in
-      if inline1727 {
-        jump inline_cont1726(Tag_0)
+      let inline2100 = (x36 == 0) in
+      if inline2100 {
+        jump inline_cont2099(Tag_0)
       } else {
-        let inline1728 = (x36 == 1) in
-        if inline1728 {
-          jump inline_cont1726(Tag_1)
+        let inline2101 = (x36 == 1) in
+        if inline2101 {
+          jump inline_cont2099(Tag_1)
         } else {
-          let inline1729 = (x36 == 2) in
-          if inline1729 {
-            jump inline_cont1726(Tag_2)
+          let inline2102 = (x36 == 2) in
+          if inline2102 {
+            jump inline_cont2099(Tag_2)
           } else {
-            jump inline_cont1726(Tag_3)
+            jump inline_cont2099(Tag_3)
           }
         }
       }
     } else {
-      join inline_cont1730(t1078: std::fs::Error) -> Result__std::fs::Metadata__std::fs::Error {
-        let t1079 = Result__std::fs::Metadata__std::fs::Error::Err(t1078) in
-        t1079
+      join inline_cont2103(t1451: std::fs::Error) -> Result__std::fs::Metadata__std::fs::Error {
+        let t1452 = Result__std::fs::Metadata__std::fs::Error::Err(t1451) in
+        t1452
       } in
-      let inline1731 = "read metadata" in
-      let inline1732 = std::io::kind_from_code(x40) in
-      let inline1733 = Option__string::Some(path/86) in
-      join inline_join1734(inline1735: Option__isize) -> Result__std::fs::Metadata__std::fs::Error {
-        let inline1736 =
+      let inline2104 = "read metadata" in
+      let inline2105 = std::io::kind_from_code(x40) in
+      let inline2106 = Option__string::Some(path/86) in
+      join inline_join2107(inline2108: Option__isize) -> Result__std::fs::Metadata__std::fs::Error {
+        let inline2109 =
           inherent#std::fs::Error#std::fs::Error#new(
-            inline1732,
-            inline1731,
-            inline1733,
-            inline1735,
+            inline2105,
+            inline2104,
+            inline2106,
+            inline2108,
             x43
           ) in
-        jump inline_cont1730(inline1736)
+        jump inline_cont2103(inline2109)
       } in
       if x41 {
-        let inline1737 = Option__isize::Some(x42) in
-        jump inline_join1734(inline1737)
+        let inline2110 = Option__isize::Some(x42) in
+        jump inline_join2107(inline2110)
       } else {
-        jump inline_join1734(Tag_0)
+        jump inline_join2107(Tag_0)
       }
     }
   } in
-  let inline1739 = @runtime(std.fs.metadata.v2)(path/86, follow/87) in
-  jump inline_cont1738(inline1739)
+  let inline2112 = @runtime(std.fs.metadata.v2)(path/86, follow/87) in
+  jump inline_cont2111(inline2112)
 }
 
 fn std::fs::metadata(path/97: string) -> Result__std::fs::Metadata__std::fs::Error {
-  let t1082 = std::fs::query_metadata(path/97, true) in
-  t1082
+  let t1455 = std::fs::query_metadata(path/97, true) in
+  t1455
 }
 
 fn std::fs::symlink_metadata(path/98: string) -> Result__std::fs::Metadata__std::fs::Error {
-  let t1085 = std::fs::query_metadata(path/98, false) in
-  t1085
+  let t1458 = std::fs::query_metadata(path/98, false) in
+  t1458
 }
 
 fn std::fs::try_exists(path/99: string) -> Result__bool__std::fs::Error {
-  join inline_cont1747(
+  join inline_cont2120(
     mtmp44: Result__std::fs::Metadata__std::fs::Error
   ) -> Result__bool__std::fs::Error {
     match mtmp44 {
       Tag_0 => {
-        let t1090 = Result__bool__std::fs::Error::Ok(true) in
-        t1090
+        let t1463 = Result__bool__std::fs::Error::Ok(true) in
+        t1463
       },
       Tag_1 => {
         let x46 = Result__std::fs::Metadata__std::fs::Error::Err._0(mtmp44) in
-        join inline_cont1744(t1093: std::io::ErrorKind) -> Result__bool__std::fs::Error {
-          join inline_cont1740(t1094: bool) -> Result__bool__std::fs::Error {
-            if t1094 {
-              let t1095 = Result__bool__std::fs::Error::Ok(false) in
-              t1095
+        join inline_cont2117(t1466: std::io::ErrorKind) -> Result__bool__std::fs::Error {
+          join inline_cont2113(t1467: bool) -> Result__bool__std::fs::Error {
+            if t1467 {
+              let t1468 = Result__bool__std::fs::Error::Ok(false) in
+              t1468
             } else {
-              let t1096 = Result__bool__std::fs::Error::Err(x46) in
-              t1096
+              let t1469 = Result__bool__std::fs::Error::Err(x46) in
+              t1469
             }
           } in
-          let inline1741 = std::io::kind_code(t1093) in
-          let inline1742 = std::io::kind_code(Tag_0) in
-          let inline1743 = (inline1741 == inline1742) in
-          jump inline_cont1740(inline1743)
+          let inline2114 = std::io::kind_code(t1466) in
+          let inline2115 = std::io::kind_code(Tag_0) in
+          let inline2116 = (inline2114 == inline2115) in
+          jump inline_cont2113(inline2116)
         } in
-        let inline1745 = std::fs::Error.details(x46) in
-        let inline1746 = inherent#std::io::ErrorDetails#std::io::ErrorDetails#kind(inline1745) in
-        jump inline_cont1744(inline1746)
+        let inline2118 = std::fs::Error.details(x46) in
+        let inline2119 = inherent#std::io::ErrorDetails#std::io::ErrorDetails#kind(inline2118) in
+        jump inline_cont2117(inline2119)
       },
     }
   } in
-  let inline1748 = std::fs::query_metadata(path/99, true) in
-  jump inline_cont1747(inline1748)
+  let inline2121 = std::fs::query_metadata(path/99, true) in
+  jump inline_cont2120(inline2121)
 }
 
 fn std::fs::read_dir_structured(
   path/101: string
 ) -> Result__Vec[std::fs::DirEntry]__std::fs::Error {
-  join inline_cont1765(
+  join inline_cont2138(
     mtmp47: (bool, Vec[string], isize, bool, isize, string)
   ) -> Result__Vec[std::fs::DirEntry]__std::fs::Error {
     let x48 = mtmp47.0 in
@@ -2340,314 +2328,314 @@ fn std::fs::read_dir_structured(
     let x51 = mtmp47.3 in
     let x52 = mtmp47.4 in
     let x53 = mtmp47.5 in
-    let t1101 = (!x48) in
-    if t1101 {
-      join inline_cont1749(
-        t1102: std::fs::Error
+    let t1474 = (!x48) in
+    if t1474 {
+      join inline_cont2122(
+        t1475: std::fs::Error
       ) -> Result__Vec[std::fs::DirEntry]__std::fs::Error {
-        let t1103 = Result__Vec[std::fs::DirEntry]__std::fs::Error::Err(t1102) in
-        t1103
+        let t1476 = Result__Vec[std::fs::DirEntry]__std::fs::Error::Err(t1475) in
+        t1476
       } in
-      let inline1750 = "read directory" in
-      let inline1751 = std::io::kind_from_code(x50) in
-      let inline1752 = Option__string::Some(path/101) in
-      join inline_join1753(
-        inline1754: Option__isize
+      let inline2123 = "read directory" in
+      let inline2124 = std::io::kind_from_code(x50) in
+      let inline2125 = Option__string::Some(path/101) in
+      join inline_join2126(
+        inline2127: Option__isize
       ) -> Result__Vec[std::fs::DirEntry]__std::fs::Error {
-        let inline1755 =
+        let inline2128 =
           inherent#std::fs::Error#std::fs::Error#new(
-            inline1751,
-            inline1750,
-            inline1752,
-            inline1754,
+            inline2124,
+            inline2123,
+            inline2125,
+            inline2127,
             x53
           ) in
-        jump inline_cont1749(inline1755)
+        jump inline_cont2122(inline2128)
       } in
       if x51 {
-        let inline1756 = Option__isize::Some(x52) in
-        jump inline_join1753(inline1756)
+        let inline2129 = Option__isize::Some(x52) in
+        jump inline_join2126(inline2129)
       } else {
-        jump inline_join1753(Tag_0)
+        jump inline_join2126(Tag_0)
       }
     } else {
-      let t1104 = [] in
-      let entries/108 = @intrinsic(vec.from_array)(t1104) in
+      let t1477 = [] in
+      let entries/108 = @intrinsic(vec.from_array)(t1477) in
       let for_limit55 = @intrinsic(vec.len)(x49) in
       let for_index56 = 0 in
-      join exit1105() -> Result__Vec[std::fs::DirEntry]__std::fs::Error {
-        let t1106 = Result__Vec[std::fs::DirEntry]__std::fs::Error::Ok(entries/108) in
-        t1106
+      join exit1478() -> Result__Vec[std::fs::DirEntry]__std::fs::Error {
+        let t1479 = Result__Vec[std::fs::DirEntry]__std::fs::Error::Ok(entries/108) in
+        t1479
       } in
       joinrec {
-        join loop1107() -> Result__Vec[std::fs::DirEntry]__std::fs::Error {
-          let t1108 = (for_index56 < for_limit55) in
-          if t1108 {
+        join loop1480() -> Result__Vec[std::fs::DirEntry]__std::fs::Error {
+          let t1481 = (for_index56 < for_limit55) in
+          if t1481 {
             let for_item57 = @intrinsic(vec.get)(x49, for_index56) in
-            let t1109 = (for_index56 + 1) in
-            let _wild58 = for_index56 = t1109 in
-            join inline_cont1763(
+            let t1482 = (for_index56 + 1) in
+            let _wild58 = for_index56 = t1482 in
+            join inline_cont2136(
               entry_path/110: string
             ) -> Result__Vec[std::fs::DirEntry]__std::fs::Error {
-              join inline_cont1761(
+              join inline_cont2134(
                 mtmp59: Result__std::fs::Metadata__std::fs::Error
               ) -> Result__Vec[std::fs::DirEntry]__std::fs::Error {
                 match mtmp59 {
                   Tag_0 => {
                     let x60 = Result__std::fs::Metadata__std::fs::Error::Ok._0(mtmp59) in
-                    join inline_cont1759(
-                      t1111: std::fs::FileType
+                    join inline_cont2132(
+                      t1484: std::fs::FileType
                     ) -> Result__Vec[std::fs::DirEntry]__std::fs::Error {
-                      let t1112 =
+                      let t1485 =
                         std::fs::DirEntry {
                           name_value: for_item57,
                           path_value: entry_path/110,
-                          file_type_value: t1111
+                          file_type_value: t1484
                         } in
-                      let inline1758 = @intrinsic(vec.push)(entries/108, t1112) in
-                      jump loop1107()
+                      let inline2131 = @intrinsic(vec.push)(entries/108, t1485) in
+                      jump loop1480()
                     } in
-                    let inline1760 = std::fs::Metadata.file_type_value(x60) in
-                    jump inline_cont1759(inline1760)
+                    let inline2133 = std::fs::Metadata.file_type_value(x60) in
+                    jump inline_cont2132(inline2133)
                   },
                   Tag_1 => {
                     let x61 = Result__std::fs::Metadata__std::fs::Error::Err._0(mtmp59) in
-                    let t1114 = Result__Vec[std::fs::DirEntry]__std::fs::Error::Err(x61) in
-                    t1114
+                    let t1487 = Result__Vec[std::fs::DirEntry]__std::fs::Error::Err(x61) in
+                    t1487
                   },
                 }
               } in
-              let inline1762 = std::fs::query_metadata(entry_path/110, false) in
-              jump inline_cont1761(inline1762)
+              let inline2135 = std::fs::query_metadata(entry_path/110, false) in
+              jump inline_cont2134(inline2135)
             } in
-            let inline1764 = @runtime(std.path.join)(path/101, for_item57) in
-            jump inline_cont1763(inline1764)
+            let inline2137 = @runtime(std.path.join)(path/101, for_item57) in
+            jump inline_cont2136(inline2137)
           } else {
-            jump exit1105()
+            jump exit1478()
           }
         } in
       } in
-      jump loop1107()
+      jump loop1480()
     }
   } in
-  let inline1766 = @runtime(std.fs.read_dir.v2)(path/101) in
-  jump inline_cont1765(inline1766)
+  let inline2139 = @runtime(std.fs.read_dir.v2)(path/101) in
+  jump inline_cont2138(inline2139)
 }
 
 fn std::fs::read_file(path/113: string) -> Result__string__string {
-  join commute_arm1962(commute_field1961: std::bytes::Bytes) -> Result__string__string {
-    let inline1768 = std::bytes::Bytes.values(commute_field1961) in
-    let inline1769 = string_from_utf8(inline1768) in
-    let inline1770 = inline1769.0 in
-    let inline1771 = inline1769.1 in
-    if inline1770 {
-      let inline1774 = Result__string__string::Ok(inline1771) in
-      inline1774
+  join commute_arm2335(commute_field2334: std::bytes::Bytes) -> Result__string__string {
+    let inline2141 = std::bytes::Bytes.values(commute_field2334) in
+    let inline2142 = string_from_utf8(inline2141) in
+    let inline2143 = inline2142.0 in
+    let inline2144 = inline2142.1 in
+    if inline2143 {
+      let inline2147 = Result__string__string::Ok(inline2144) in
+      inline2147
     } else {
-      let inline1775 = Result__string__string::Err("invalid UTF-8") in
-      inline1775
+      let inline2148 = Result__string__string::Err("invalid UTF-8") in
+      inline2148
     }
   } in
-  join commute_arm1964(commute_field1963: string) -> Result__string__string {
-    let t1120 = Result__string__string::Err(commute_field1963) in
-    t1120
+  join commute_arm2337(commute_field2336: string) -> Result__string__string {
+    let t1493 = Result__string__string::Err(commute_field2336) in
+    t1493
   } in
-  let inline1777 = std::internal::host::read_bytes(path/113) in
-  let inline1778 = inline1777.0 in
-  let inline1779 = inline1777.1 in
-  let inline1780 = inline1777.2 in
-  if inline1778 {
-    let inline1784 = inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(inline1779) in
-    jump commute_arm1962(inline1784)
+  let inline2150 = std::internal::host::read_bytes(path/113) in
+  let inline2151 = inline2150.0 in
+  let inline2152 = inline2150.1 in
+  let inline2153 = inline2150.2 in
+  if inline2151 {
+    let inline2157 = inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(inline2152) in
+    jump commute_arm2335(inline2157)
   } else {
-    jump commute_arm1964(inline1780)
+    jump commute_arm2337(inline2153)
   }
 }
 
 fn std::fs::write_file(path/116: string, content/117: string) -> Result__unit__string {
-  join inline_cont1796(t1123: std::bytes::Bytes) -> Result__unit__string {
-    let inline1788 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(t1123) in
-    let inline1789 = std::internal::host::write_bytes(path/116, inline1788) in
-    let inline1790 = inline1789.0 in
-    let inline1791 = inline1789.1 in
-    if inline1790 {
-      let inline1794 = Result__unit__string::Ok(()) in
-      inline1794
+  join inline_cont2169(t1496: std::bytes::Bytes) -> Result__unit__string {
+    let inline2161 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(t1496) in
+    let inline2162 = std::internal::host::write_bytes(path/116, inline2161) in
+    let inline2163 = inline2162.0 in
+    let inline2164 = inline2162.1 in
+    if inline2163 {
+      let inline2167 = Result__unit__string::Ok(()) in
+      inline2167
     } else {
-      let inline1795 = Result__unit__string::Err(inline1791) in
-      inline1795
+      let inline2168 = Result__unit__string::Err(inline2164) in
+      inline2168
     }
   } in
-  let inline1797 = inherent#string#string#to_bytes(content/117) in
-  let inline1798 = std::bytes::Bytes { values: inline1797 } in
-  jump inline_cont1796(inline1798)
+  let inline2170 = inherent#string#string#to_bytes(content/117) in
+  let inline2171 = std::bytes::Bytes { values: inline2170 } in
+  jump inline_cont2169(inline2171)
 }
 
 fn std::fs::read_bytes(path/118: string) -> Result__std::bytes::Bytes__string {
-  join inline_cont1801(mtmp66: (bool, Vec[u8], string)) -> Result__std::bytes::Bytes__string {
+  join inline_cont2174(mtmp66: (bool, Vec[u8], string)) -> Result__std::bytes::Bytes__string {
     let x67 = mtmp66.0 in
     let x68 = mtmp66.1 in
     let x69 = mtmp66.2 in
     if x67 {
-      join inline_cont1799(t1129: std::bytes::Bytes) -> Result__std::bytes::Bytes__string {
-        let t1130 = Result__std::bytes::Bytes__string::Ok(t1129) in
-        t1130
+      join inline_cont2172(t1502: std::bytes::Bytes) -> Result__std::bytes::Bytes__string {
+        let t1503 = Result__std::bytes::Bytes__string::Ok(t1502) in
+        t1503
       } in
-      let inline1800 = std::bytes::Bytes { values: x68 } in
-      jump inline_cont1799(inline1800)
+      let inline2173 = std::bytes::Bytes { values: x68 } in
+      jump inline_cont2172(inline2173)
     } else {
-      let t1131 = Result__std::bytes::Bytes__string::Err(x69) in
-      t1131
+      let t1504 = Result__std::bytes::Bytes__string::Err(x69) in
+      t1504
     }
   } in
-  let inline1802 = @runtime(std.fs.read_bytes)(path/118) in
-  jump inline_cont1801(inline1802)
+  let inline2175 = @runtime(std.fs.read_bytes)(path/118) in
+  jump inline_cont2174(inline2175)
 }
 
 fn std::fs::write_bytes(path/122: string, data/123: std::bytes::Bytes) -> Result__unit__string {
-  join inline_cont1805(t1134: Vec[u8]) -> Result__unit__string {
-    join inline_cont1803(mtmp70: (bool, string)) -> Result__unit__string {
+  join inline_cont2178(t1507: Vec[u8]) -> Result__unit__string {
+    join inline_cont2176(mtmp70: (bool, string)) -> Result__unit__string {
       let x71 = mtmp70.0 in
       let x72 = mtmp70.1 in
       if x71 {
-        let t1137 = Result__unit__string::Ok(()) in
-        t1137
+        let t1510 = Result__unit__string::Ok(()) in
+        t1510
       } else {
-        let t1138 = Result__unit__string::Err(x72) in
-        t1138
+        let t1511 = Result__unit__string::Err(x72) in
+        t1511
       }
     } in
-    let inline1804 = @runtime(std.fs.write_bytes)(path/122, t1134) in
-    jump inline_cont1803(inline1804)
+    let inline2177 = @runtime(std.fs.write_bytes)(path/122, t1507) in
+    jump inline_cont2176(inline2177)
   } in
-  let inline1806 = std::bytes::Bytes.values(data/123) in
-  jump inline_cont1805(inline1806)
+  let inline2179 = std::bytes::Bytes.values(data/123) in
+  jump inline_cont2178(inline2179)
 }
 
 fn std::fs::create_dir_all(path/126: string) -> Result__unit__string {
-  join inline_cont1807(mtmp73: (bool, string)) -> Result__unit__string {
+  join inline_cont2180(mtmp73: (bool, string)) -> Result__unit__string {
     let x74 = mtmp73.0 in
     let x75 = mtmp73.1 in
     if x74 {
-      let t1143 = Result__unit__string::Ok(()) in
-      t1143
+      let t1516 = Result__unit__string::Ok(()) in
+      t1516
     } else {
-      let t1144 = Result__unit__string::Err(x75) in
-      t1144
+      let t1517 = Result__unit__string::Err(x75) in
+      t1517
     }
   } in
-  let inline1808 = @runtime(std.fs.create_dir_all)(path/126) in
-  jump inline_cont1807(inline1808)
+  let inline2181 = @runtime(std.fs.create_dir_all)(path/126) in
+  jump inline_cont2180(inline2181)
 }
 
 fn std::fs::remove_file(path/129: string) -> Result__unit__string {
-  join inline_cont1809(mtmp76: (bool, string)) -> Result__unit__string {
+  join inline_cont2182(mtmp76: (bool, string)) -> Result__unit__string {
     let x77 = mtmp76.0 in
     let x78 = mtmp76.1 in
     if x77 {
-      let t1149 = Result__unit__string::Ok(()) in
-      t1149
+      let t1522 = Result__unit__string::Ok(()) in
+      t1522
     } else {
-      let t1150 = Result__unit__string::Err(x78) in
-      t1150
+      let t1523 = Result__unit__string::Err(x78) in
+      t1523
     }
   } in
-  let inline1810 = @runtime(std.fs.remove_file)(path/129) in
-  jump inline_cont1809(inline1810)
+  let inline2183 = @runtime(std.fs.remove_file)(path/129) in
+  jump inline_cont2182(inline2183)
 }
 
 fn std::fs::remove_dir_all(path/132: string) -> Result__unit__string {
-  join inline_cont1811(mtmp79: (bool, string)) -> Result__unit__string {
+  join inline_cont2184(mtmp79: (bool, string)) -> Result__unit__string {
     let x80 = mtmp79.0 in
     let x81 = mtmp79.1 in
     if x80 {
-      let t1155 = Result__unit__string::Ok(()) in
-      t1155
+      let t1528 = Result__unit__string::Ok(()) in
+      t1528
     } else {
-      let t1156 = Result__unit__string::Err(x81) in
-      t1156
+      let t1529 = Result__unit__string::Err(x81) in
+      t1529
     }
   } in
-  let inline1812 = @runtime(std.fs.remove_dir_all)(path/132) in
-  jump inline_cont1811(inline1812)
+  let inline2185 = @runtime(std.fs.remove_dir_all)(path/132) in
+  jump inline_cont2184(inline2185)
 }
 
 fn std::fs::exists(path/135: string) -> bool {
-  let inline1814 = @runtime(std.fs.file_exists)(path/135) in
-  inline1814
+  let inline2187 = @runtime(std.fs.file_exists)(path/135) in
+  inline2187
 }
 
 fn std::fs::is_file(path/136: string) -> bool {
-  let inline1816 = @runtime(std.fs.is_file)(path/136) in
-  inline1816
+  let inline2189 = @runtime(std.fs.is_file)(path/136) in
+  inline2189
 }
 
 fn std::fs::is_dir(path/137: string) -> bool {
-  let inline1818 = @runtime(std.fs.is_dir)(path/137) in
-  inline1818
+  let inline2191 = @runtime(std.fs.is_dir)(path/137) in
+  inline2191
 }
 
 fn std::fs::canonicalize(path/138: string) -> Result__string__string {
-  join inline_cont1819(mtmp82: (bool, string, string)) -> Result__string__string {
+  join inline_cont2192(mtmp82: (bool, string, string)) -> Result__string__string {
     let x83 = mtmp82.0 in
     let x84 = mtmp82.1 in
     let x85 = mtmp82.2 in
     if x83 {
-      let t1170 = Result__string__string::Ok(x84) in
-      t1170
+      let t1543 = Result__string__string::Ok(x84) in
+      t1543
     } else {
-      let t1171 = Result__string__string::Err(x85) in
-      t1171
+      let t1544 = Result__string__string::Err(x85) in
+      t1544
     }
   } in
-  let inline1820 = @runtime(std.fs.canonicalize)(path/138) in
-  jump inline_cont1819(inline1820)
+  let inline2193 = @runtime(std.fs.canonicalize)(path/138) in
+  jump inline_cont2192(inline2193)
 }
 
 fn std::fs::read_dir(path/142: string) -> Result__Vec[string]__string {
-  join inline_cont1821(mtmp86: (bool, Vec[string], string)) -> Result__Vec[string]__string {
+  join inline_cont2194(mtmp86: (bool, Vec[string], string)) -> Result__Vec[string]__string {
     let x87 = mtmp86.0 in
     let x88 = mtmp86.1 in
     let x89 = mtmp86.2 in
     if x87 {
-      let t1176 = Result__Vec[string]__string::Ok(x88) in
-      t1176
+      let t1549 = Result__Vec[string]__string::Ok(x88) in
+      t1549
     } else {
-      let t1177 = Result__Vec[string]__string::Err(x89) in
-      t1177
+      let t1550 = Result__Vec[string]__string::Err(x89) in
+      t1550
     }
   } in
-  let inline1822 = @runtime(std.fs.read_dir)(path/142) in
-  jump inline_cont1821(inline1822)
+  let inline2195 = @runtime(std.fs.read_dir)(path/142) in
+  jump inline_cont2194(inline2195)
 }
 
 fn std::fs::sha256_file(path/146: string) -> Result__string__string {
-  join inline_cont1823(mtmp90: (bool, string, string)) -> Result__string__string {
+  join inline_cont2196(mtmp90: (bool, string, string)) -> Result__string__string {
     let x91 = mtmp90.0 in
     let x92 = mtmp90.1 in
     let x93 = mtmp90.2 in
     if x91 {
-      let t1182 = Result__string__string::Ok(x92) in
-      t1182
+      let t1555 = Result__string__string::Ok(x92) in
+      t1555
     } else {
-      let t1183 = Result__string__string::Err(x93) in
-      t1183
+      let t1556 = Result__string__string::Err(x93) in
+      t1556
     }
   } in
-  let inline1824 = @runtime(std.fs.sha256_file)(path/146) in
-  jump inline_cont1823(inline1824)
+  let inline2197 = @runtime(std.fs.sha256_file)(path/146) in
+  jump inline_cont2196(inline2197)
 }
 
 fn show_read(res/0: Result__string__string) -> string {
   match res/0 {
     Tag_0 => {
-      let x411 = Result__string__string::Ok._0(res/0) in
-      x411
+      let x796 = Result__string__string::Ok._0(res/0) in
+      x796
     },
     Tag_1 => {
-      let x412 = Result__string__string::Err._0(res/0) in
-      let t1188 = ("err " + x412) in
-      t1188
+      let x797 = Result__string__string::Err._0(res/0) in
+      let t1561 = ("err " + x797) in
+      t1561
     },
   }
 }
@@ -2655,217 +2643,217 @@ fn show_read(res/0: Result__string__string) -> string {
 fn show_dir(res/3: Result__Vec[string]__string) -> string {
   match res/3 {
     Tag_0 => {
-      let x413 = Result__Vec[string]__string::Ok._0(res/3) in
-      join inline_cont1827(t1193: isize) -> string {
-        let t1194 = (t1193 > 0) in
-        let inline1826 = @runtime(core.bool_to_string)(t1194) in
-        inline1826
+      let x798 = Result__Vec[string]__string::Ok._0(res/3) in
+      join inline_cont2200(t1566: isize) -> string {
+        let t1567 = (t1566 > 0) in
+        let inline2199 = @runtime(core.bool_to_string)(t1567) in
+        inline2199
       } in
-      let inline1828 = @intrinsic(vec.len)(x413) in
-      jump inline_cont1827(inline1828)
+      let inline2201 = @intrinsic(vec.len)(x798) in
+      jump inline_cont2200(inline2201)
     },
     Tag_1 => {
-      let x414 = Result__Vec[string]__string::Err._0(res/3) in
-      let t1196 = ("err " + x414) in
-      t1196
+      let x799 = Result__Vec[string]__string::Err._0(res/3) in
+      let t1569 = ("err " + x799) in
+      t1569
     },
   }
 }
 
 fn main() -> unit {
-  join inline_cont1869(mtmp415: Result__unit__string) -> unit {
-    let t1198 = std::fs::read_file("goml-std-test.txt") in
-    join inline_cont1863(t1199: string) -> unit {
-      join inline_cont1860(_wild416: unit) -> unit {
-        join inline_cont1857(t1200: bool) -> unit {
-          join inline_cont1855(t1201: string) -> unit {
-            join inline_cont1852(_wild417: unit) -> unit {
-              join inline_cont1841(t1202: Result__Vec[string]__string) -> unit {
-                join inline_cont1832(t1203: string) -> unit {
-                  let inline1830 = trait_impl#ToString#string#to_string(t1203) in
-                  let inline1831 = std::internal::host::println(inline1830) in
+  join inline_cont2242(mtmp800: Result__unit__string) -> unit {
+    let t1571 = std::fs::read_file("goml-std-test.txt") in
+    join inline_cont2236(t1572: string) -> unit {
+      join inline_cont2233(_wild801: unit) -> unit {
+        join inline_cont2230(t1573: bool) -> unit {
+          join inline_cont2228(t1574: string) -> unit {
+            join inline_cont2225(_wild802: unit) -> unit {
+              join inline_cont2214(t1575: Result__Vec[string]__string) -> unit {
+                join inline_cont2205(t1576: string) -> unit {
+                  let inline2203 = trait_impl#ToString#string#to_string(t1576) in
+                  let inline2204 = std::internal::host::println(inline2203) in
                   ()
                 } in
-                match t1202 {
+                match t1575 {
                   Tag_0 => {
-                    let inline1833 = Result__Vec[string]__string::Ok._0(t1202) in
-                    let inline1835 = inherent#Vec#Vec[T]#len__T_string(inline1833) in
-                    let inline1836 = (inline1835 > 0) in
-                    let inline1837 = trait_impl#ToString#bool#to_string(inline1836) in
-                    jump inline_cont1832(inline1837)
+                    let inline2206 = Result__Vec[string]__string::Ok._0(t1575) in
+                    let inline2208 = inherent#Vec#Vec[T]#len__T_string(inline2206) in
+                    let inline2209 = (inline2208 > 0) in
+                    let inline2210 = trait_impl#ToString#bool#to_string(inline2209) in
+                    jump inline_cont2205(inline2210)
                   },
                   Tag_1 => {
-                    let inline1838 = Result__Vec[string]__string::Err._0(t1202) in
-                    let inline1840 = ("err " + inline1838) in
-                    jump inline_cont1832(inline1840)
+                    let inline2211 = Result__Vec[string]__string::Err._0(t1575) in
+                    let inline2213 = ("err " + inline2211) in
+                    jump inline_cont2205(inline2213)
                   },
                 }
               } in
-              let inline1842 = "." in
-              let inline1843 = std::internal::host::read_dir(inline1842) in
-              let inline1844 = inline1843.0 in
-              let inline1845 = inline1843.1 in
-              let inline1846 = inline1843.2 in
-              if inline1844 {
-                let inline1850 = Result__Vec[string]__string::Ok(inline1845) in
-                jump inline_cont1841(inline1850)
+              let inline2215 = "." in
+              let inline2216 = std::internal::host::read_dir(inline2215) in
+              let inline2217 = inline2216.0 in
+              let inline2218 = inline2216.1 in
+              let inline2219 = inline2216.2 in
+              if inline2217 {
+                let inline2223 = Result__Vec[string]__string::Ok(inline2218) in
+                jump inline_cont2214(inline2223)
               } else {
-                let inline1851 = Result__Vec[string]__string::Err(inline1846) in
-                jump inline_cont1841(inline1851)
+                let inline2224 = Result__Vec[string]__string::Err(inline2219) in
+                jump inline_cont2214(inline2224)
               }
             } in
-            let inline1853 = trait_impl#ToString#string#to_string(t1201) in
-            let inline1854 = std::internal::host::println(inline1853) in
-            jump inline_cont1852(())
+            let inline2226 = trait_impl#ToString#string#to_string(t1574) in
+            let inline2227 = std::internal::host::println(inline2226) in
+            jump inline_cont2225(())
           } in
-          let inline1856 = @runtime(core.bool_to_string)(t1200) in
-          jump inline_cont1855(inline1856)
+          let inline2229 = @runtime(core.bool_to_string)(t1573) in
+          jump inline_cont2228(inline2229)
         } in
-        let inline1858 = "goml-std-test.txt" in
-        let inline1859 = std::internal::host::file_exists(inline1858) in
-        jump inline_cont1857(inline1859)
+        let inline2231 = "goml-std-test.txt" in
+        let inline2232 = std::internal::host::file_exists(inline2231) in
+        jump inline_cont2230(inline2232)
       } in
-      let inline1861 = trait_impl#ToString#string#to_string(t1199) in
-      let inline1862 = std::internal::host::println(inline1861) in
-      jump inline_cont1860(())
+      let inline2234 = trait_impl#ToString#string#to_string(t1572) in
+      let inline2235 = std::internal::host::println(inline2234) in
+      jump inline_cont2233(())
     } in
-    match t1198 {
+    match t1571 {
       Tag_0 => {
-        let inline1864 = Result__string__string::Ok._0(t1198) in
-        jump inline_cont1863(inline1864)
+        let inline2237 = Result__string__string::Ok._0(t1571) in
+        jump inline_cont2236(inline2237)
       },
       Tag_1 => {
-        let inline1866 = Result__string__string::Err._0(t1198) in
-        let inline1868 = ("err " + inline1866) in
-        jump inline_cont1863(inline1868)
+        let inline2239 = Result__string__string::Err._0(t1571) in
+        let inline2241 = ("err " + inline2239) in
+        jump inline_cont2236(inline2241)
       },
     }
   } in
-  let inline1870 = "goml-std-test.txt" in
-  let inline1871 = "std-ok" in
-  let inline1872 = inherent#std::bytes::Bytes#std::bytes::Bytes#from_string(inline1871) in
-  let inline1873 = std::fs::write_bytes(inline1870, inline1872) in
-  jump inline_cont1869(inline1873)
+  let inline2243 = "goml-std-test.txt" in
+  let inline2244 = "std-ok" in
+  let inline2245 = inherent#std::bytes::Bytes#std::bytes::Bytes#from_string(inline2244) in
+  let inline2246 = std::fs::write_bytes(inline2243, inline2245) in
+  jump inline_cont2242(inline2246)
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_u8(capacity/257: isize) -> Vec[u8] {
-  let t1206 = @intrinsic(vec.with_capacity)(capacity/257) in
-  t1206
+fn inherent#Vec#Vec[T]#with_capacity__T_u8(capacity/510: isize) -> Vec[u8] {
+  let t1579 = @intrinsic(vec.with_capacity)(capacity/510) in
+  t1579
 }
 
-fn inherent#string#string#to_bytes(self/51: string) -> Vec[u8] {
-  let t1209 = @runtime(core.string_to_bytes)(self/51) in
-  t1209
+fn inherent#string#string#to_bytes(self/304: string) -> Vec[u8] {
+  let t1582 = @runtime(core.string_to_bytes)(self/304) in
+  t1582
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/273: Vec[u8]) -> isize {
-  let t1212 = @intrinsic(vec.len)(self/273) in
-  t1212
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  let t1585 = @intrinsic(vec.len)(self/526) in
+  t1585
 }
 
-fn inherent#Vec#Vec[T]#capacity__T_u8(self/274: Vec[u8]) -> isize {
-  let t1215 = @intrinsic(vec.capacity)(self/274) in
-  t1215
+fn inherent#Vec#Vec[T]#capacity__T_u8(self/527: Vec[u8]) -> isize {
+  let t1588 = @intrinsic(vec.capacity)(self/527) in
+  t1588
 }
 
-fn inherent#Vec#Vec[T]#is_empty__T_u8(self/275: Vec[u8]) -> bool {
-  let t1218 = @intrinsic(vec.len)(self/275) in
-  let t1219 = (t1218 == 0) in
-  t1219
+fn inherent#Vec#Vec[T]#is_empty__T_u8(self/528: Vec[u8]) -> bool {
+  let t1591 = @intrinsic(vec.len)(self/528) in
+  let t1592 = (t1591 == 0) in
+  t1592
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/258: Vec[u8], elem/259: u8) -> unit {
-  let t1221 = @intrinsic(vec.push)(self/258, elem/259) in
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  let t1594 = @intrinsic(vec.push)(self/511, elem/512) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#pop__T_u8(self/283: Vec[u8]) -> Option__u8 {
-  join inline_cont1876(len/284: isize) -> Option__u8 {
-    let t1226 = (len/284 == 0) in
-    if t1226 {
+fn inherent#Vec#Vec[T]#pop__T_u8(self/536: Vec[u8]) -> Option__u8 {
+  join inline_cont2249(len/537: isize) -> Option__u8 {
+    let t1599 = (len/537 == 0) in
+    if t1599 {
       Tag_0
     } else {
-      let t1227 = (len/284 - 1) in
-      let value/285 = @intrinsic(vec.get)(self/283, t1227) in
-      let t1228 = (len/284 - 1) in
-      join inline_cont1874(_wild200: unit) -> Option__u8 {
-        let t1229 = Option__u8::Some(value/285) in
-        t1229
+      let t1600 = (len/537 - 1) in
+      let value/538 = @intrinsic(vec.get)(self/536, t1600) in
+      let t1601 = (len/537 - 1) in
+      join inline_cont2247(_wild585: unit) -> Option__u8 {
+        let t1602 = Option__u8::Some(value/538) in
+        t1602
       } in
-      let inline1875 = @intrinsic(vec.truncate)(self/283, t1228) in
-      jump inline_cont1874(())
+      let inline2248 = @intrinsic(vec.truncate)(self/536, t1601) in
+      jump inline_cont2247(())
     }
   } in
-  let inline1877 = @intrinsic(vec.len)(self/283) in
-  jump inline_cont1876(inline1877)
+  let inline2250 = @intrinsic(vec.len)(self/536) in
+  jump inline_cont2249(inline2250)
 }
 
-fn inherent#Vec#Vec[T]#reserve__T_u8(self/276: Vec[u8], additional/277: isize) -> unit {
-  let t1231 = @intrinsic(vec.reserve)(self/276, additional/277) in
+fn inherent#Vec#Vec[T]#reserve__T_u8(self/529: Vec[u8], additional/530: isize) -> unit {
+  let t1604 = @intrinsic(vec.reserve)(self/529, additional/530) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_u8(self/278: Vec[u8], len/279: isize) -> unit {
-  let t1233 = @intrinsic(vec.truncate)(self/278, len/279) in
+fn inherent#Vec#Vec[T]#truncate__T_u8(self/531: Vec[u8], len/532: isize) -> unit {
+  let t1606 = @intrinsic(vec.truncate)(self/531, len/532) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#clear__T_u8(self/280: Vec[u8]) -> unit {
-  let inline1879 = 0 in
-  let inline1880 = @intrinsic(vec.truncate)(self/280, inline1879) in
+fn inherent#Vec#Vec[T]#clear__T_u8(self/533: Vec[u8]) -> unit {
+  let inline2252 = 0 in
+  let inline2253 = @intrinsic(vec.truncate)(self/533, inline2252) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#slice__T_u8(self/311: Vec[u8], start/312: isize, end/313: isize) -> Slice[
+fn inherent#Vec#Vec[T]#slice__T_u8(self/564: Vec[u8], start/565: isize, end/566: isize) -> Slice[
   u8
 ] {
-  let t1238 = @intrinsic(slice.new)(self/311, start/312, end/313) in
-  t1238
+  let t1611 = @intrinsic(slice.new)(self/564, start/565, end/566) in
+  t1611
 }
 
-fn string_from_utf8(bytes/24: Vec[u8]) -> (bool, string) {
-  let mtmp10 = @runtime(core.string_from_utf8)(bytes/24) in
-  let x12 = mtmp10.1 in
-  let index/26 = 0 in
-  join exit1241() -> (bool, string) {
-    let t1242 = (true, x12) in
-    t1242
+fn string_from_utf8(bytes/277: Vec[u8]) -> (bool, string) {
+  let mtmp395 = @runtime(core.string_from_utf8)(bytes/277) in
+  let x397 = mtmp395.1 in
+  let index/279 = 0 in
+  join exit1614() -> (bool, string) {
+    let t1615 = (true, x397) in
+    t1615
   } in
   joinrec {
-    join loop1243() -> (bool, string) {
-      join inline_cont1881(t1244: isize) -> (bool, string) {
-        let t1245 = (index/26 < t1244) in
-        if t1245 {
-          let mtmp13 = string_decode_utf8_at(x12, index/26) in
-          let x14 = mtmp13.0 in
-          let x16 = mtmp13.2 in
-          if x14 {
-            let compound_old17 = index/26 in
-            let t1247 = (compound_old17 + x16) in
-            let t1248 = index/26 = t1247 in
-            jump loop1243()
+    join loop1616() -> (bool, string) {
+      join inline_cont2254(t1617: isize) -> (bool, string) {
+        let t1618 = (index/279 < t1617) in
+        if t1618 {
+          let mtmp398 = string_decode_utf8_at(x397, index/279) in
+          let x399 = mtmp398.0 in
+          let x401 = mtmp398.2 in
+          if x399 {
+            let compound_old402 = index/279 in
+            let t1620 = (compound_old402 + x401) in
+            let t1621 = index/279 = t1620 in
+            jump loop1616()
           } else {
-            let t1249 = (false, "") in
-            t1249
+            let t1622 = (false, "") in
+            t1622
           }
         } else {
-          jump exit1241()
+          jump exit1614()
         }
       } in
-      let inline1882 = @runtime(core.string_len)(x12) in
-      jump inline_cont1881(inline1882)
+      let inline2255 = @runtime(core.string_len)(x397) in
+      jump inline_cont2254(inline2255)
     } in
   } in
-  jump loop1243()
+  jump loop1616()
 }
 
 fn trait_impl#PartialEq#Option__string#eq(
-  self/235: Option__string,
-  other/236: Option__string
+  self/488: Option__string,
+  other/489: Option__string
 ) -> bool {
-  match other/236 {
+  match other/489 {
     Tag_0 => {
-      match self/235 {
+      match self/488 {
         Tag_0 => {
           true
         },
@@ -2875,12 +2863,12 @@ fn trait_impl#PartialEq#Option__string#eq(
       }
     },
     Tag_1 => {
-      let x174 = Option__string::Some._0(other/236) in
-      match self/235 {
+      let x559 = Option__string::Some._0(other/489) in
+      match self/488 {
         Tag_1 => {
-          let x176 = Option__string::Some._0(self/235) in
-          let inline1884 = (x176 == x174) in
-          inline1884
+          let x561 = Option__string::Some._0(self/488) in
+          let inline2257 = (x561 == x559) in
+          inline2257
         },
         _ => {
           false
@@ -2891,12 +2879,12 @@ fn trait_impl#PartialEq#Option__string#eq(
 }
 
 fn trait_impl#PartialEq#Option__isize#eq(
-  self/235: Option__isize,
-  other/236: Option__isize
+  self/488: Option__isize,
+  other/489: Option__isize
 ) -> bool {
-  match other/236 {
+  match other/489 {
     Tag_0 => {
-      match self/235 {
+      match self/488 {
         Tag_0 => {
           true
         },
@@ -2906,12 +2894,12 @@ fn trait_impl#PartialEq#Option__isize#eq(
       }
     },
     Tag_1 => {
-      let x174 = Option__isize::Some._0(other/236) in
-      match self/235 {
+      let x559 = Option__isize::Some._0(other/489) in
+      match self/488 {
         Tag_1 => {
-          let x176 = Option__isize::Some._0(self/235) in
-          let inline1886 = (x176 == x174) in
-          inline1886
+          let x561 = Option__isize::Some._0(self/488) in
+          let inline2259 = (x561 == x559) in
+          inline2259
         },
         _ => {
           false
@@ -2922,398 +2910,398 @@ fn trait_impl#PartialEq#Option__isize#eq(
 }
 
 fn inherent#Vec#Vec[T]#push__T_std::fs::DirEntry(
-  self/258: Vec[std::fs::DirEntry],
-  elem/259: std::fs::DirEntry
+  self/511: Vec[std::fs::DirEntry],
+  elem/512: std::fs::DirEntry
 ) -> unit {
-  let t1269 = @intrinsic(vec.push)(self/258, elem/259) in
+  let t1642 = @intrinsic(vec.push)(self/511, elem/512) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#len__T_string(self/273: Vec[string]) -> isize {
-  let t1272 = @intrinsic(vec.len)(self/273) in
-  t1272
+fn inherent#Vec#Vec[T]#len__T_string(self/526: Vec[string]) -> isize {
+  let t1645 = @intrinsic(vec.len)(self/526) in
+  t1645
 }
 
-fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
-  let t1275 = @runtime(core.bool_to_string)(self/148) in
-  t1275
+fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
+  let t1648 = @runtime(core.bool_to_string)(self/401) in
+  t1648
 }
 
 fn std::io::println__T_string(value/68: string) -> unit {
-  join inline_cont1889(t1277: string) -> unit {
-    let inline1888 = @runtime(std.io.println)(t1277) in
+  join inline_cont2262(t1650: string) -> unit {
+    let inline2261 = @runtime(std.io.println)(t1650) in
     ()
   } in
-  jump inline_cont1889(value/68)
+  jump inline_cont2262(value/68)
 }
 
-fn inherent#string#string#byte_len(self/36: string) -> isize {
-  let t1281 = @runtime(core.string_len)(self/36) in
-  t1281
+fn inherent#string#string#byte_len(self/289: string) -> isize {
+  let t1654 = @runtime(core.string_len)(self/289) in
+  t1654
 }
 
-fn string_decode_utf8_at(value/5: string, index/6: isize) -> (bool, char, isize) {
-  let length/7 = inherent#string#string#byte_len(value/5) in
-  let t1400 = (index/6 < 0) in
-  join k1397(jp1398: bool) -> (bool, char, isize) {
-    join k1284() -> (bool, char, isize) {
-      let t1285 = inherent#string#string#byte_get(value/5, index/6) in
-      let first/8 = (t1285 as u32) in
-      let t1288 = (first/8 < 128) in
-      if t1288 {
-        let inline1893 = 1 in
-        let inline1894 = __goml_builtin_char_from_uint32(first/8) in
-        match inline1894 {
+fn string_decode_utf8_at(value/258: string, index/259: isize) -> (bool, char, isize) {
+  let length/260 = inherent#string#string#byte_len(value/258) in
+  let t1773 = (index/259 < 0) in
+  join k1770(jp1771: bool) -> (bool, char, isize) {
+    join k1657() -> (bool, char, isize) {
+      let t1658 = inherent#string#string#byte_get(value/258, index/259) in
+      let first/261 = (t1658 as u32) in
+      let t1661 = (first/261 < 128) in
+      if t1661 {
+        let inline2266 = 1 in
+        let inline2267 = __goml_builtin_char_from_uint32(first/261) in
+        match inline2267 {
           Tag_0 => {
-            let inline1895 = utf8_invalid_decode() in
-            inline1895
+            let inline2268 = utf8_invalid_decode() in
+            inline2268
           },
           Tag_1 => {
-            let inline1896 = Option__char::Some._0(inline1894) in
-            let inline1898 = (true, inline1896, inline1893) in
-            inline1898
+            let inline2269 = Option__char::Some._0(inline2267) in
+            let inline2271 = (true, inline2269, inline2266) in
+            inline2271
           },
         }
       } else {
-        let t1292 = (first/8 < 194) in
-        if t1292 {
-          let inline1900 = (false, '\0', 0) in
-          inline1900
+        let t1665 = (first/261 < 194) in
+        if t1665 {
+          let inline2273 = (false, '\0', 0) in
+          inline2273
         } else {
-          let t1296 = (first/8 < 224) in
-          if t1296 {
-            let t1309 = (length/7 - index/6) in
-            let t1310 = (t1309 < 2) in
-            join k1297() -> (bool, char, isize) {
-              let t1298 = (index/6 + 1) in
-              join inline_cont1915(t1299: u8) -> (bool, char, isize) {
-                let second/9 = (t1299 as u32) in
-                join inline_cont1912(t1302: bool) -> (bool, char, isize) {
-                  if t1302 {
-                    let inline1904 = (false, '\0', 0) in
-                    inline1904
+          let t1669 = (first/261 < 224) in
+          if t1669 {
+            let t1682 = (length/260 - index/259) in
+            let t1683 = (t1682 < 2) in
+            join k1670() -> (bool, char, isize) {
+              let t1671 = (index/259 + 1) in
+              join inline_cont2288(t1672: u8) -> (bool, char, isize) {
+                let second/262 = (t1672 as u32) in
+                join inline_cont2285(t1675: bool) -> (bool, char, isize) {
+                  if t1675 {
+                    let inline2277 = (false, '\0', 0) in
+                    inline2277
                   } else {
-                    let t1304 = (first/8 & 31) in
-                    let t1305 = (t1304 << 6) in
-                    let t1306 = (second/9 & 63) in
-                    let t1307 = (t1305 | t1306) in
-                    let inline1906 = 2 in
-                    let inline1907 = __goml_builtin_char_from_uint32(t1307) in
-                    match inline1907 {
+                    let t1677 = (first/261 & 31) in
+                    let t1678 = (t1677 << 6) in
+                    let t1679 = (second/262 & 63) in
+                    let t1680 = (t1678 | t1679) in
+                    let inline2279 = 2 in
+                    let inline2280 = __goml_builtin_char_from_uint32(t1680) in
+                    match inline2280 {
                       Tag_0 => {
-                        let inline1908 = utf8_invalid_decode() in
-                        inline1908
+                        let inline2281 = utf8_invalid_decode() in
+                        inline2281
                       },
                       Tag_1 => {
-                        let inline1909 = Option__char::Some._0(inline1907) in
-                        let inline1911 = (true, inline1909, inline1906) in
-                        inline1911
+                        let inline2282 = Option__char::Some._0(inline2280) in
+                        let inline2284 = (true, inline2282, inline2279) in
+                        inline2284
                       },
                     }
                   }
                 } in
-                let inline1913 = (second/9 < 128) in
-                if inline1913 {
-                  jump inline_cont1912(true)
+                let inline2286 = (second/262 < 128) in
+                if inline2286 {
+                  jump inline_cont2285(true)
                 } else {
-                  let inline1914 = (second/9 > 191) in
-                  jump inline_cont1912(inline1914)
+                  let inline2287 = (second/262 > 191) in
+                  jump inline_cont2285(inline2287)
                 }
               } in
-              let inline1916 = @runtime(core.string_byte_get)(value/5, t1298) in
-              jump inline_cont1915(inline1916)
+              let inline2289 = @runtime(core.string_byte_get)(value/258, t1671) in
+              jump inline_cont2288(inline2289)
             } in
-            if t1310 {
-              let inline1902 = (false, '\0', 0) in
-              inline1902
+            if t1683 {
+              let inline2275 = (false, '\0', 0) in
+              inline2275
             } else {
-              jump k1297()
+              jump k1670()
             }
           } else {
-            let t1314 = (first/8 < 240) in
-            if t1314 {
-              let t1347 = (length/7 - index/6) in
-              let t1348 = (t1347 < 3) in
-              join k1315() -> (bool, char, isize) {
-                let t1316 = (index/6 + 1) in
-                let t1317 = inherent#string#string#byte_get(value/5, t1316) in
-                let second/10 = (t1317 as u32) in
-                let t1318 = (index/6 + 2) in
-                let t1319 = inherent#string#string#byte_get(value/5, t1318) in
-                let third/11 = (t1319 as u32) in
-                let t1345 = utf8_invalid_continuation(second/10) in
-                join k1339(jp1340: bool) -> (bool, char, isize) {
-                  join k1333(jp1334: bool) -> (bool, char, isize) {
-                    join k1322(jp1323: bool) -> (bool, char, isize) {
-                      if jp1323 {
-                        let inline1923 = (false, '\0', 0) in
-                        inline1923
+            let t1687 = (first/261 < 240) in
+            if t1687 {
+              let t1720 = (length/260 - index/259) in
+              let t1721 = (t1720 < 3) in
+              join k1688() -> (bool, char, isize) {
+                let t1689 = (index/259 + 1) in
+                let t1690 = inherent#string#string#byte_get(value/258, t1689) in
+                let second/263 = (t1690 as u32) in
+                let t1691 = (index/259 + 2) in
+                let t1692 = inherent#string#string#byte_get(value/258, t1691) in
+                let third/264 = (t1692 as u32) in
+                let t1718 = utf8_invalid_continuation(second/263) in
+                join k1712(jp1713: bool) -> (bool, char, isize) {
+                  join k1706(jp1707: bool) -> (bool, char, isize) {
+                    join k1695(jp1696: bool) -> (bool, char, isize) {
+                      if jp1696 {
+                        let inline2296 = (false, '\0', 0) in
+                        inline2296
                       } else {
-                        let t1325 = (first/8 & 15) in
-                        let t1326 = (t1325 << 12) in
-                        let t1327 = (second/10 & 63) in
-                        let t1328 = (t1327 << 6) in
-                        let t1329 = (t1326 | t1328) in
-                        let t1330 = (third/11 & 63) in
-                        let t1331 = (t1329 | t1330) in
-                        let inline1925 = 3 in
-                        let inline1926 = __goml_builtin_char_from_uint32(t1331) in
-                        match inline1926 {
+                        let t1698 = (first/261 & 15) in
+                        let t1699 = (t1698 << 12) in
+                        let t1700 = (second/263 & 63) in
+                        let t1701 = (t1700 << 6) in
+                        let t1702 = (t1699 | t1701) in
+                        let t1703 = (third/264 & 63) in
+                        let t1704 = (t1702 | t1703) in
+                        let inline2298 = 3 in
+                        let inline2299 = __goml_builtin_char_from_uint32(t1704) in
+                        match inline2299 {
                           Tag_0 => {
-                            let inline1927 = utf8_invalid_decode() in
-                            inline1927
+                            let inline2300 = utf8_invalid_decode() in
+                            inline2300
                           },
                           Tag_1 => {
-                            let inline1928 = Option__char::Some._0(inline1926) in
-                            let inline1930 = (true, inline1928, inline1925) in
-                            inline1930
+                            let inline2301 = Option__char::Some._0(inline2299) in
+                            let inline2303 = (true, inline2301, inline2298) in
+                            inline2303
                           },
                         }
                       }
                     } in
-                    if jp1334 {
-                      jump k1322(true)
+                    if jp1707 {
+                      jump k1695(true)
                     } else {
-                      let t1337 = (first/8 == 237) in
-                      if t1337 {
-                        let t1338 = (second/10 >= 160) in
-                        jump k1322(t1338)
+                      let t1710 = (first/261 == 237) in
+                      if t1710 {
+                        let t1711 = (second/263 >= 160) in
+                        jump k1695(t1711)
                       } else {
-                        jump k1322(false)
+                        jump k1695(false)
                       }
                     }
                   } in
-                  if jp1340 {
-                    jump k1333(true)
+                  if jp1713 {
+                    jump k1706(true)
                   } else {
-                    let t1343 = (first/8 == 224) in
-                    if t1343 {
-                      let t1344 = (second/10 < 160) in
-                      jump k1333(t1344)
+                    let t1716 = (first/261 == 224) in
+                    if t1716 {
+                      let t1717 = (second/263 < 160) in
+                      jump k1706(t1717)
                     } else {
-                      jump k1333(false)
+                      jump k1706(false)
                     }
                   }
                 } in
-                if t1345 {
-                  jump k1339(true)
+                if t1718 {
+                  jump k1712(true)
                 } else {
-                  let inline1920 = (third/11 < 128) in
-                  if inline1920 {
-                    jump k1339(true)
+                  let inline2293 = (third/264 < 128) in
+                  if inline2293 {
+                    jump k1712(true)
                   } else {
-                    let inline1921 = (third/11 > 191) in
-                    jump k1339(inline1921)
+                    let inline2294 = (third/264 > 191) in
+                    jump k1712(inline2294)
                   }
                 }
               } in
-              if t1348 {
-                let inline1918 = (false, '\0', 0) in
-                inline1918
+              if t1721 {
+                let inline2291 = (false, '\0', 0) in
+                inline2291
               } else {
-                jump k1315()
+                jump k1688()
               }
             } else {
-              let t1352 = (first/8 < 245) in
-              if t1352 {
-                let t1393 = (length/7 - index/6) in
-                let t1394 = (t1393 < 4) in
-                join k1353() -> (bool, char, isize) {
-                  let t1354 = (index/6 + 1) in
-                  let t1355 = inherent#string#string#byte_get(value/5, t1354) in
-                  let second/12 = (t1355 as u32) in
-                  let t1356 = (index/6 + 2) in
-                  let t1357 = inherent#string#string#byte_get(value/5, t1356) in
-                  let third/13 = (t1357 as u32) in
-                  let t1358 = (index/6 + 3) in
-                  let t1359 = inherent#string#string#byte_get(value/5, t1358) in
-                  let fourth/14 = (t1359 as u32) in
-                  let t1391 = utf8_invalid_continuation(second/12) in
-                  join k1388(jp1389: bool) -> (bool, char, isize) {
-                    join k1382(jp1383: bool) -> (bool, char, isize) {
-                      join k1376(jp1377: bool) -> (bool, char, isize) {
-                        join k1362(jp1363: bool) -> (bool, char, isize) {
-                          if jp1363 {
-                            let t1364 = utf8_invalid_decode() in
-                            t1364
+              let t1725 = (first/261 < 245) in
+              if t1725 {
+                let t1766 = (length/260 - index/259) in
+                let t1767 = (t1766 < 4) in
+                join k1726() -> (bool, char, isize) {
+                  let t1727 = (index/259 + 1) in
+                  let t1728 = inherent#string#string#byte_get(value/258, t1727) in
+                  let second/265 = (t1728 as u32) in
+                  let t1729 = (index/259 + 2) in
+                  let t1730 = inherent#string#string#byte_get(value/258, t1729) in
+                  let third/266 = (t1730 as u32) in
+                  let t1731 = (index/259 + 3) in
+                  let t1732 = inherent#string#string#byte_get(value/258, t1731) in
+                  let fourth/267 = (t1732 as u32) in
+                  let t1764 = utf8_invalid_continuation(second/265) in
+                  join k1761(jp1762: bool) -> (bool, char, isize) {
+                    join k1755(jp1756: bool) -> (bool, char, isize) {
+                      join k1749(jp1750: bool) -> (bool, char, isize) {
+                        join k1735(jp1736: bool) -> (bool, char, isize) {
+                          if jp1736 {
+                            let t1737 = utf8_invalid_decode() in
+                            t1737
                           } else {
-                            let t1365 = (first/8 & 7) in
-                            let t1366 = (t1365 << 18) in
-                            let t1367 = (second/12 & 63) in
-                            let t1368 = (t1367 << 12) in
-                            let t1369 = (t1366 | t1368) in
-                            let t1370 = (third/13 & 63) in
-                            let t1371 = (t1370 << 6) in
-                            let t1372 = (t1369 | t1371) in
-                            let t1373 = (fourth/14 & 63) in
-                            let t1374 = (t1372 | t1373) in
-                            let t1375 = utf8_valid_decode(t1374, 4) in
-                            t1375
+                            let t1738 = (first/261 & 7) in
+                            let t1739 = (t1738 << 18) in
+                            let t1740 = (second/265 & 63) in
+                            let t1741 = (t1740 << 12) in
+                            let t1742 = (t1739 | t1741) in
+                            let t1743 = (third/266 & 63) in
+                            let t1744 = (t1743 << 6) in
+                            let t1745 = (t1742 | t1744) in
+                            let t1746 = (fourth/267 & 63) in
+                            let t1747 = (t1745 | t1746) in
+                            let t1748 = utf8_valid_decode(t1747, 4) in
+                            t1748
                           }
                         } in
-                        if jp1377 {
-                          jump k1362(true)
+                        if jp1750 {
+                          jump k1735(true)
                         } else {
-                          let t1380 = (first/8 == 244) in
-                          if t1380 {
-                            let t1381 = (second/12 > 143) in
-                            jump k1362(t1381)
+                          let t1753 = (first/261 == 244) in
+                          if t1753 {
+                            let t1754 = (second/265 > 143) in
+                            jump k1735(t1754)
                           } else {
-                            jump k1362(false)
+                            jump k1735(false)
                           }
                         }
                       } in
-                      if jp1383 {
-                        jump k1376(true)
+                      if jp1756 {
+                        jump k1749(true)
                       } else {
-                        let t1386 = (first/8 == 240) in
-                        if t1386 {
-                          let t1387 = (second/12 < 144) in
-                          jump k1376(t1387)
+                        let t1759 = (first/261 == 240) in
+                        if t1759 {
+                          let t1760 = (second/265 < 144) in
+                          jump k1749(t1760)
                         } else {
-                          jump k1376(false)
+                          jump k1749(false)
                         }
                       }
                     } in
-                    if jp1389 {
-                      jump k1382(true)
+                    if jp1762 {
+                      jump k1755(true)
                     } else {
-                      let t1390 = utf8_invalid_continuation(fourth/14) in
-                      jump k1382(t1390)
+                      let t1763 = utf8_invalid_continuation(fourth/267) in
+                      jump k1755(t1763)
                     }
                   } in
-                  if t1391 {
-                    jump k1388(true)
+                  if t1764 {
+                    jump k1761(true)
                   } else {
-                    let t1392 = utf8_invalid_continuation(third/13) in
-                    jump k1388(t1392)
+                    let t1765 = utf8_invalid_continuation(third/266) in
+                    jump k1761(t1765)
                   }
                 } in
-                if t1394 {
-                  let t1395 = utf8_invalid_decode() in
-                  t1395
+                if t1767 {
+                  let t1768 = utf8_invalid_decode() in
+                  t1768
                 } else {
-                  jump k1353()
+                  jump k1726()
                 }
               } else {
-                let t1396 = utf8_invalid_decode() in
-                t1396
+                let t1769 = utf8_invalid_decode() in
+                t1769
               }
             }
           }
         }
       }
     } in
-    if jp1398 {
-      let inline1891 = (false, '\0', 0) in
-      inline1891
+    if jp1771 {
+      let inline2264 = (false, '\0', 0) in
+      inline2264
     } else {
-      jump k1284()
+      jump k1657()
     }
   } in
-  if t1400 {
-    jump k1397(true)
+  if t1773 {
+    jump k1770(true)
   } else {
-    let t1401 = (index/6 >= length/7) in
-    jump k1397(t1401)
+    let t1774 = (index/259 >= length/260) in
+    jump k1770(t1774)
   }
 }
 
-fn trait_impl#PartialEq#string#eq(self/181: string, other/182: string) -> bool {
-  let t1404 = (self/181 == other/182) in
-  t1404
+fn trait_impl#PartialEq#string#eq(self/434: string, other/435: string) -> bool {
+  let t1777 = (self/434 == other/435) in
+  t1777
 }
 
-fn trait_impl#PartialEq#isize#eq(self/185: isize, other/186: isize) -> bool {
-  let t1407 = (self/185 == other/186) in
-  t1407
+fn trait_impl#PartialEq#isize#eq(self/438: isize, other/439: isize) -> bool {
+  let t1780 = (self/438 == other/439) in
+  t1780
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
 }
 
 fn utf8_invalid_decode() -> (bool, char, isize) {
-  let t1412 = (false, '\0', 0) in
-  t1412
+  let t1785 = (false, '\0', 0) in
+  t1785
 }
 
-fn inherent#string#string#byte_get(self/39: string, index/40: isize) -> u8 {
-  let t1415 = @runtime(core.string_byte_get)(self/39, index/40) in
-  t1415
+fn inherent#string#string#byte_get(self/292: string, index/293: isize) -> u8 {
+  let t1788 = @runtime(core.string_byte_get)(self/292, index/293) in
+  t1788
 }
 
-fn utf8_valid_decode(value/0: u32, width/1: isize) -> (bool, char, isize) {
-  join commute_arm1965() -> (bool, char, isize) {
-    let inline1932 = (false, '\0', 0) in
-    inline1932
+fn utf8_valid_decode(value/253: u32, width/254: isize) -> (bool, char, isize) {
+  join commute_arm2338() -> (bool, char, isize) {
+    let inline2305 = (false, '\0', 0) in
+    inline2305
   } in
-  join commute_arm1967(commute_field1966: char) -> (bool, char, isize) {
-    let t1421 = (true, commute_field1966, width/1) in
-    t1421
+  join commute_arm2340(commute_field2339: char) -> (bool, char, isize) {
+    let t1794 = (true, commute_field2339, width/254) in
+    t1794
   } in
-  let inline1934 = utf8_valid_scalar(value/0) in
-  if inline1934 {
-    let inline1935 = @runtime(core.char_from_uint32)(value/0) in
-    let inline1936 = inline1935.1 in
-    jump commute_arm1967(inline1936)
+  let inline2307 = utf8_valid_scalar(value/253) in
+  if inline2307 {
+    let inline2308 = @runtime(core.char_from_uint32)(value/253) in
+    let inline2309 = inline2308.1 in
+    jump commute_arm2340(inline2309)
   } else {
-    jump commute_arm1965()
+    jump commute_arm2338()
   }
 }
 
-fn utf8_invalid_continuation(value/3: u32) -> bool {
-  let t1426 = (value/3 < 128) in
-  if t1426 {
+fn utf8_invalid_continuation(value/256: u32) -> bool {
+  let t1799 = (value/256 < 128) in
+  if t1799 {
     true
   } else {
-    let t1427 = (value/3 > 191) in
-    t1427
+    let t1800 = (value/256 > 191) in
+    t1800
   }
 }
 
-fn __goml_builtin_char_from_uint32(value/30: u32) -> Option__char {
-  join inline_cont1939(t1432: bool) -> Option__char {
-    if t1432 {
-      let mtmp22 = @runtime(core.char_from_uint32)(value/30) in
-      let x24 = mtmp22.1 in
-      let t1433 = Option__char::Some(x24) in
-      t1433
+fn __goml_builtin_char_from_uint32(value/283: u32) -> Option__char {
+  join inline_cont2312(t1805: bool) -> Option__char {
+    if t1805 {
+      let mtmp407 = @runtime(core.char_from_uint32)(value/283) in
+      let x409 = mtmp407.1 in
+      let t1806 = Option__char::Some(x409) in
+      t1806
     } else {
       Tag_0
     }
   } in
-  let inline1940 = (value/30 <= 1114111) in
-  if inline1940 {
-    let inline1941 = (value/30 >= 55296) in
-    join inline_join1942(inline1943: bool) -> Option__char {
-      let inline1944 = (!inline1943) in
-      jump inline_cont1939(inline1944)
+  let inline2313 = (value/283 <= 1114111) in
+  if inline2313 {
+    let inline2314 = (value/283 >= 55296) in
+    join inline_join2315(inline2316: bool) -> Option__char {
+      let inline2317 = (!inline2316) in
+      jump inline_cont2312(inline2317)
     } in
-    if inline1941 {
-      let inline1945 = (value/30 <= 57343) in
-      jump inline_join1942(inline1945)
+    if inline2314 {
+      let inline2318 = (value/283 <= 57343) in
+      jump inline_join2315(inline2318)
     } else {
-      jump inline_join1942(false)
+      jump inline_join2315(false)
     }
   } else {
-    jump inline_cont1939(false)
+    jump inline_cont2312(false)
   }
 }
 
-fn utf8_valid_scalar(value/4: u32) -> bool {
-  let t1438 = (value/4 <= 1114111) in
-  if t1438 {
-    let t1442 = (value/4 >= 55296) in
-    join k1439(jp1440: bool) -> bool {
-      let t1441 = (!jp1440) in
-      t1441
+fn utf8_valid_scalar(value/257: u32) -> bool {
+  let t1811 = (value/257 <= 1114111) in
+  if t1811 {
+    let t1815 = (value/257 >= 55296) in
+    join k1812(jp1813: bool) -> bool {
+      let t1814 = (!jp1813) in
+      t1814
     } in
-    if t1442 {
-      let t1443 = (value/4 <= 57343) in
-      jump k1439(t1443)
+    if t1815 {
+      let t1816 = (value/257 <= 57343) in
+      jump k1812(t1816)
     } else {
-      jump k1439(false)
+      jump k1812(false)
     }
   } else {
     false

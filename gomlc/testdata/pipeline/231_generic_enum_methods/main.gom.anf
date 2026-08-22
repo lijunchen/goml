@@ -1,19 +1,20 @@
 fn main() -> unit {
-  let t416 = closure_env_main_0 {} in
-  let t417 = pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](t416) in
-  join commute_arm455(commute_field454: string) -> unit {
-    let inline443 = trait_impl#ToString#string#to_string(commute_field454) in
-    let inline444 = @runtime(core.string_println)(inline443) in
+  let t801 = closure_env_main_0 {} in
+  let t802 = pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](t801) in
+  join commute_arm904(commute_field903: string) -> unit {
+    let inline871 = trait_impl#ToString#string#to_string(commute_field903) in
+    let inline872 = @runtime(core.string_println)(inline871) in
     ()
   } in
-  let inline446 = 3 in
-  let inline448 = t417(inline446) in
-  jump commute_arm455(inline448)
+  let inline874 = 3 in
+  let inline876 = t802(inline874) in
+  jump commute_arm904(inline876)
 }
 
-fn inherent#isize#isize#to_string(self/32: isize) -> string {
-  let t423 = @runtime(core.int_to_string)(self/32) in
-  t423
+fn inherent#isize#isize#to_string(self/285: isize) -> string {
+  let inline879 = (self/285 as i64) in
+  let inline880 = signed_decimal_string(inline879) in
+  inline880
 }
 
 fn inherent#Maybe#Maybe[T]#map__T_isize__U_string(
@@ -25,30 +26,149 @@ fn inherent#Maybe#Maybe[T]#map__T_isize__U_string(
       Tag_0
     },
     Tag_1 => {
-      let x411 = Maybe__isize::Some._0(self/0) in
-      let t428 = map_fn/1(x411) in
-      let t429 = Maybe__string::Some(t428) in
-      t429
+      let x796 = Maybe__isize::Some._0(self/0) in
+      let t813 = map_fn/1(x796) in
+      let t814 = Maybe__string::Some(t813) in
+      t814
     },
   }
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont450(t431: string) -> unit {
-    let t432 = @runtime(core.string_println)(t431) in
+  join inline_cont881(t816: string) -> unit {
+    let t817 = @runtime(core.string_println)(t816) in
     ()
   } in
-  jump inline_cont450(value/1)
+  jump inline_cont881(value/1)
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn __goml_builtin_int_to_string(value/222: isize) -> string {
+  let t820 = (value/222 as i64) in
+  let inline883 = (t820 < 0) in
+  if inline883 {
+    let inline884 = (t820 as u64) in
+    let inline885 = (0 - inline884) in
+    let inline886 = decimal_string(inline885) in
+    let inline887 = ("-" + inline886) in
+    inline887
+  } else {
+    let inline888 = (t820 as u64) in
+    let inline889 = decimal_string(inline888) in
+    inline889
+  }
+}
+
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
+}
+
+fn signed_decimal_string(value/214: i64) -> string {
+  let t828 = (value/214 < 0) in
+  if t828 {
+    let t829 = (value/214 as u64) in
+    let t830 = (0 - t829) in
+    let t831 = decimal_string(t830) in
+    let t832 = ("-" + t831) in
+    t832
+  } else {
+    let t833 = (value/214 as u64) in
+    let t834 = decimal_string(t833) in
+    t834
+  }
+}
+
+fn decimal_string(value/208: u64) -> string {
+  let t857 = (value/208 == 0) in
+  join k837() -> string {
+    let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+    let remaining/210 = value/208 in
+    join exit838() -> string {
+      join inline_cont898(t839: isize) -> string {
+        let bytes/211 = @intrinsic(vec.with_capacity)(t839) in
+        let offset/212 = 0 in
+        join exit840() -> string {
+          let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+          let x364 = mtmp362.1 in
+          x364
+        } in
+        joinrec {
+          join loop841() -> string {
+            join inline_cont896(t842: isize) -> string {
+              let t843 = (offset/212 < t842) in
+              if t843 {
+                join inline_cont894(t844: isize) -> string {
+                  let t845 = (t844 - offset/212) in
+                  let t846 = (t845 - 1) in
+                  let t847 = @intrinsic(vec.get)(reversed/209, t846) in
+                  join inline_cont892(_wild357: unit) -> string {
+                    let compound_old358 = offset/212 in
+                    let compound_value359 = 1 in
+                    let t848 = (compound_old358 + compound_value359) in
+                    let t849 = offset/212 = t848 in
+                    jump loop841()
+                  } in
+                  let inline893 = @intrinsic(vec.push)(bytes/211, t847) in
+                  jump inline_cont892(())
+                } in
+                let inline895 = @intrinsic(vec.len)(reversed/209) in
+                jump inline_cont894(inline895)
+              } else {
+                jump exit840()
+              }
+            } in
+            let inline897 = @intrinsic(vec.len)(reversed/209) in
+            jump inline_cont896(inline897)
+          } in
+        } in
+        jump loop841()
+      } in
+      let inline899 = @intrinsic(vec.len)(reversed/209) in
+      jump inline_cont898(inline899)
+    } in
+    joinrec {
+      join loop850() -> string {
+        let t851 = (remaining/210 > 0) in
+        if t851 {
+          let t852 = (remaining/210 % 10) in
+          let t853 = (t852 as u8) in
+          let t854 = (t853 + 48) in
+          join inline_cont890(_wild352: unit) -> string {
+            let compound_old353 = remaining/210 in
+            let compound_value354 = 10 in
+            let t855 = (compound_old353 / compound_value354) in
+            let t856 = remaining/210 = t855 in
+            jump loop850()
+          } in
+          let inline891 = @intrinsic(vec.push)(reversed/209, t854) in
+          jump inline_cont890(())
+        } else {
+          jump exit838()
+        }
+      } in
+    } in
+    jump loop850()
+  } in
+  if t857 {
+    "0"
+  } else {
+    jump k837()
+  }
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  let t859 = @intrinsic(vec.push)(self/511, elem/512) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  let t862 = @intrinsic(vec.len)(self/526) in
+  t862
 }
 
 fn inherent#closure_env_main_0#closure_env_main_0#apply(
-  env414: closure_env_main_0,
+  env799: closure_env_main_0,
   item/4: isize
 ) -> string {
-  let inline452 = @runtime(core.int_to_string)(item/4) in
-  inline452
+  let inline901 = __goml_builtin_int_to_string(item/4) in
+  inline901
 }

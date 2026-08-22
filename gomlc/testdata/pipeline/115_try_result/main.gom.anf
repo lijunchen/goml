@@ -1,148 +1,268 @@
 fn parse_flag(flag/0: bool) -> Result__i32__string {
   if flag/0 {
-    let t423 = Result__i32__string::Ok(7) in
-    t423
+    let t808 = Result__i32__string::Ok(7) in
+    t808
   } else {
-    let t424 = Result__i32__string::Err("nope") in
-    t424
+    let t809 = Result__i32__string::Err("nope") in
+    t809
   }
 }
 
 fn add(a/1: i32, b/2: i32) -> i32 {
-  let t427 = (a/1 + b/2) in
-  t427
+  let t812 = (a/1 + b/2) in
+  t812
 }
 
 fn plus_one(flag/3: bool) -> Result__i32__string {
-  let t430 = closure_env_run_0 { flag_0: flag/3 } in
-  let run/5 = pack_closure[inherent#closure_env_run_0#closure_env_run_0#apply](t430) in
-  let t431 = run/5() in
-  t431
+  let t815 = closure_env_run_0 { flag_0: flag/3 } in
+  let run/5 = pack_closure[inherent#closure_env_run_0#closure_env_run_0#apply](t815) in
+  let t816 = run/5() in
+  t816
 }
 
 fn show(res/6: Result__i32__string) -> string {
   match res/6 {
     Tag_0 => {
-      let x414 = Result__i32__string::Ok._0(res/6) in
-      join inline_cont459(t436: string) -> string {
-        let t437 = ("ok=" + t436) in
-        t437
+      let x799 = Result__i32__string::Ok._0(res/6) in
+      join inline_cont887(t821: string) -> string {
+        let t822 = ("ok=" + t821) in
+        t822
       } in
-      let inline460 = @runtime(core.int32_to_string)(x414) in
-      jump inline_cont459(inline460)
+      let inline888 = __goml_builtin_int32_to_string(x799) in
+      jump inline_cont887(inline888)
     },
     Tag_1 => {
-      let x415 = Result__i32__string::Err._0(res/6) in
-      let t438 = ("err=" + x415) in
-      t438
+      let x800 = Result__i32__string::Err._0(res/6) in
+      let t823 = ("err=" + x800) in
+      t823
     },
   }
 }
 
 fn main() -> unit {
-  join inline_cont488(t440: Result__i32__string) -> unit {
-    join inline_cont480(t441: string) -> unit {
-      join inline_cont477(_wild416: unit) -> unit {
-        join inline_cont472(t442: Result__i32__string) -> unit {
-          join inline_cont464(t443: string) -> unit {
-            let inline462 = trait_impl#ToString#string#to_string(t443) in
-            let inline463 = @runtime(core.string_println)(inline462) in
+  join inline_cont916(t825: Result__i32__string) -> unit {
+    join inline_cont908(t826: string) -> unit {
+      join inline_cont905(_wild801: unit) -> unit {
+        join inline_cont900(t827: Result__i32__string) -> unit {
+          join inline_cont892(t828: string) -> unit {
+            let inline890 = trait_impl#ToString#string#to_string(t828) in
+            let inline891 = @runtime(core.string_println)(inline890) in
             ()
           } in
-          match t442 {
+          match t827 {
             Tag_0 => {
-              let inline465 = Result__i32__string::Ok._0(t442) in
-              let inline467 = inherent#i32#i32#to_string(inline465) in
-              let inline468 = ("ok=" + inline467) in
-              jump inline_cont464(inline468)
+              let inline893 = Result__i32__string::Ok._0(t827) in
+              let inline895 = inherent#i32#i32#to_string(inline893) in
+              let inline896 = ("ok=" + inline895) in
+              jump inline_cont892(inline896)
             },
             Tag_1 => {
-              let inline469 = Result__i32__string::Err._0(t442) in
-              let inline471 = ("err=" + inline469) in
-              jump inline_cont464(inline471)
+              let inline897 = Result__i32__string::Err._0(t827) in
+              let inline899 = ("err=" + inline897) in
+              jump inline_cont892(inline899)
             },
           }
         } in
-        let inline473 = false in
-        let inline474 = closure_env_run_0 { flag_0: inline473 } in
-        let inline475 =
-          pack_closure[inherent#closure_env_run_0#closure_env_run_0#apply](inline474) in
-        let inline476 = inline475() in
-        jump inline_cont472(inline476)
+        let inline901 = false in
+        let inline902 = closure_env_run_0 { flag_0: inline901 } in
+        let inline903 =
+          pack_closure[inherent#closure_env_run_0#closure_env_run_0#apply](inline902) in
+        let inline904 = inline903() in
+        jump inline_cont900(inline904)
       } in
-      let inline478 = trait_impl#ToString#string#to_string(t441) in
-      let inline479 = @runtime(core.string_println)(inline478) in
-      jump inline_cont477(())
+      let inline906 = trait_impl#ToString#string#to_string(t826) in
+      let inline907 = @runtime(core.string_println)(inline906) in
+      jump inline_cont905(())
     } in
-    match t440 {
+    match t825 {
       Tag_0 => {
-        let inline481 = Result__i32__string::Ok._0(t440) in
-        let inline483 = inherent#i32#i32#to_string(inline481) in
-        let inline484 = ("ok=" + inline483) in
-        jump inline_cont480(inline484)
+        let inline909 = Result__i32__string::Ok._0(t825) in
+        let inline911 = inherent#i32#i32#to_string(inline909) in
+        let inline912 = ("ok=" + inline911) in
+        jump inline_cont908(inline912)
       },
       Tag_1 => {
-        let inline485 = Result__i32__string::Err._0(t440) in
-        let inline487 = ("err=" + inline485) in
-        jump inline_cont480(inline487)
+        let inline913 = Result__i32__string::Err._0(t825) in
+        let inline915 = ("err=" + inline913) in
+        jump inline_cont908(inline915)
       },
     }
   } in
-  let inline489 = true in
-  let inline490 = closure_env_run_0 { flag_0: inline489 } in
-  let inline491 = pack_closure[inherent#closure_env_run_0#closure_env_run_0#apply](inline490) in
-  let inline492 = inline491() in
-  jump inline_cont488(inline492)
+  let inline917 = true in
+  let inline918 = closure_env_run_0 { flag_0: inline917 } in
+  let inline919 = pack_closure[inherent#closure_env_run_0#closure_env_run_0#apply](inline918) in
+  let inline920 = inline919() in
+  jump inline_cont916(inline920)
 }
 
-fn inherent#i32#i32#to_string(self/33: i32) -> string {
-  let t446 = @runtime(core.int32_to_string)(self/33) in
-  t446
+fn inherent#i32#i32#to_string(self/286: i32) -> string {
+  let inline922 = (self/286 as i64) in
+  let inline923 = signed_decimal_string(inline922) in
+  inline923
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont493(t448: string) -> unit {
-    let t449 = @runtime(core.string_println)(t448) in
+  join inline_cont924(t833: string) -> unit {
+    let t834 = @runtime(core.string_println)(t833) in
     ()
   } in
-  jump inline_cont493(value/1)
+  jump inline_cont924(value/1)
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn __goml_builtin_int32_to_string(value/225: i32) -> string {
+  let t837 = (value/225 as i64) in
+  let inline926 = (t837 < 0) in
+  if inline926 {
+    let inline927 = (t837 as u64) in
+    let inline928 = (0 - inline927) in
+    let inline929 = decimal_string(inline928) in
+    let inline930 = ("-" + inline929) in
+    inline930
+  } else {
+    let inline931 = (t837 as u64) in
+    let inline932 = decimal_string(inline931) in
+    inline932
+  }
+}
+
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
+}
+
+fn signed_decimal_string(value/214: i64) -> string {
+  let t845 = (value/214 < 0) in
+  if t845 {
+    let t846 = (value/214 as u64) in
+    let t847 = (0 - t846) in
+    let t848 = decimal_string(t847) in
+    let t849 = ("-" + t848) in
+    t849
+  } else {
+    let t850 = (value/214 as u64) in
+    let t851 = decimal_string(t850) in
+    t851
+  }
+}
+
+fn decimal_string(value/208: u64) -> string {
+  let t874 = (value/208 == 0) in
+  join k854() -> string {
+    let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+    let remaining/210 = value/208 in
+    join exit855() -> string {
+      join inline_cont941(t856: isize) -> string {
+        let bytes/211 = @intrinsic(vec.with_capacity)(t856) in
+        let offset/212 = 0 in
+        join exit857() -> string {
+          let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+          let x364 = mtmp362.1 in
+          x364
+        } in
+        joinrec {
+          join loop858() -> string {
+            join inline_cont939(t859: isize) -> string {
+              let t860 = (offset/212 < t859) in
+              if t860 {
+                join inline_cont937(t861: isize) -> string {
+                  let t862 = (t861 - offset/212) in
+                  let t863 = (t862 - 1) in
+                  let t864 = @intrinsic(vec.get)(reversed/209, t863) in
+                  join inline_cont935(_wild357: unit) -> string {
+                    let compound_old358 = offset/212 in
+                    let compound_value359 = 1 in
+                    let t865 = (compound_old358 + compound_value359) in
+                    let t866 = offset/212 = t865 in
+                    jump loop858()
+                  } in
+                  let inline936 = @intrinsic(vec.push)(bytes/211, t864) in
+                  jump inline_cont935(())
+                } in
+                let inline938 = @intrinsic(vec.len)(reversed/209) in
+                jump inline_cont937(inline938)
+              } else {
+                jump exit857()
+              }
+            } in
+            let inline940 = @intrinsic(vec.len)(reversed/209) in
+            jump inline_cont939(inline940)
+          } in
+        } in
+        jump loop858()
+      } in
+      let inline942 = @intrinsic(vec.len)(reversed/209) in
+      jump inline_cont941(inline942)
+    } in
+    joinrec {
+      join loop867() -> string {
+        let t868 = (remaining/210 > 0) in
+        if t868 {
+          let t869 = (remaining/210 % 10) in
+          let t870 = (t869 as u8) in
+          let t871 = (t870 + 48) in
+          join inline_cont933(_wild352: unit) -> string {
+            let compound_old353 = remaining/210 in
+            let compound_value354 = 10 in
+            let t872 = (compound_old353 / compound_value354) in
+            let t873 = remaining/210 = t872 in
+            jump loop867()
+          } in
+          let inline934 = @intrinsic(vec.push)(reversed/209, t871) in
+          jump inline_cont933(())
+        } else {
+          jump exit855()
+        }
+      } in
+    } in
+    jump loop867()
+  } in
+  if t874 {
+    "0"
+  } else {
+    jump k854()
+  }
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  let t876 = @intrinsic(vec.push)(self/511, elem/512) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  let t879 = @intrinsic(vec.len)(self/526) in
+  t879
 }
 
 fn inherent#closure_env_run_0#closure_env_run_0#apply(
-  env418: closure_env_run_0
+  env803: closure_env_run_0
 ) -> Result__i32__string {
-  let flag/3 = closure_env_run_0.flag_0(env418) in
-  join inline_cont497(mtmp411: Result__i32__string) -> Result__i32__string {
-    join k454(jp455: i32) -> Result__i32__string {
-      join inline_cont494(t456: i32) -> Result__i32__string {
-        let t457 = Result__i32__string::Ok(t456) in
-        t457
+  let flag/3 = closure_env_run_0.flag_0(env803) in
+  join inline_cont946(mtmp796: Result__i32__string) -> Result__i32__string {
+    join k882(jp883: i32) -> Result__i32__string {
+      join inline_cont943(t884: i32) -> Result__i32__string {
+        let t885 = Result__i32__string::Ok(t884) in
+        t885
       } in
-      let inline495 = 1 in
-      let inline496 = (jp455 + inline495) in
-      jump inline_cont494(inline496)
+      let inline944 = 1 in
+      let inline945 = (jp883 + inline944) in
+      jump inline_cont943(inline945)
     } in
-    match mtmp411 {
+    match mtmp796 {
       Tag_0 => {
-        let x412 = Result__i32__string::Ok._0(mtmp411) in
-        jump k454(x412)
+        let x797 = Result__i32__string::Ok._0(mtmp796) in
+        jump k882(x797)
       },
       Tag_1 => {
-        let x413 = Result__i32__string::Err._0(mtmp411) in
-        let t458 = Result__i32__string::Err(x413) in
-        t458
+        let x798 = Result__i32__string::Err._0(mtmp796) in
+        let t886 = Result__i32__string::Err(x798) in
+        t886
       },
     }
   } in
   if flag/3 {
-    let inline498 = Result__i32__string::Ok(7) in
-    jump inline_cont497(inline498)
+    let inline947 = Result__i32__string::Ok(7) in
+    jump inline_cont946(inline947)
   } else {
-    let inline499 = Result__i32__string::Err("nope") in
-    jump inline_cont497(inline499)
+    let inline948 = Result__i32__string::Err("nope") in
+    jump inline_cont946(inline948)
   }
 }

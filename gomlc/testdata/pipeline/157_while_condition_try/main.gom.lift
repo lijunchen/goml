@@ -17,24 +17,24 @@ fn step_none(i/1: i32) -> Option__bool {
 fn run_some() -> Option__i32 {
   let i/2 = inherent#Ref#Ref[T]#new__T_i32(0) in
   let total/3 = inherent#Ref#Ref[T]#new__T_i32(0) in
-  let _wild415 =
-    while let mtmp411 = step_some(inherent#Ref#Ref[T]#get__T_i32(i/2)) in
-    match mtmp411 {
+  let _wild800 =
+    while let mtmp796 = step_some(inherent#Ref#Ref[T]#get__T_i32(i/2)) in
+    match mtmp796 {
       Option__bool::None => {
         return Option__i32::None
       },
-      Option__bool::Some(x412) => {
-        let x412 = Option__bool::Some._0(mtmp411) in
-        let try_value/31 = x412 in
+      Option__bool::Some(x797) => {
+        let x797 = Option__bool::Some._0(mtmp796) in
+        let try_value/31 = x797 in
         try_value/31
       },
     } {
-        let _wild413 =
+        let _wild798 =
           inherent#Ref#Ref[T]#set__T_i32(
             total/3,
             (inherent#Ref#Ref[T]#get__T_i32(total/3) + inherent#Ref#Ref[T]#get__T_i32(i/2))
           ) in
-        let _wild414 =
+        let _wild799 =
           inherent#Ref#Ref[T]#set__T_i32(i/2, (inherent#Ref#Ref[T]#get__T_i32(i/2) + 1)) in
         ()
     } in
@@ -44,24 +44,24 @@ fn run_some() -> Option__i32 {
 fn run_none() -> Option__i32 {
   let i/4 = inherent#Ref#Ref[T]#new__T_i32(0) in
   let total/5 = inherent#Ref#Ref[T]#new__T_i32(0) in
-  let _wild420 =
-    while let mtmp416 = step_none(inherent#Ref#Ref[T]#get__T_i32(i/4)) in
-    match mtmp416 {
+  let _wild805 =
+    while let mtmp801 = step_none(inherent#Ref#Ref[T]#get__T_i32(i/4)) in
+    match mtmp801 {
       Option__bool::None => {
         return Option__i32::None
       },
-      Option__bool::Some(x417) => {
-        let x417 = Option__bool::Some._0(mtmp416) in
-        let try_value/67 = x417 in
+      Option__bool::Some(x802) => {
+        let x802 = Option__bool::Some._0(mtmp801) in
+        let try_value/67 = x802 in
         try_value/67
       },
     } {
-        let _wild418 =
+        let _wild803 =
           inherent#Ref#Ref[T]#set__T_i32(
             total/5,
             (inherent#Ref#Ref[T]#get__T_i32(total/5) + inherent#Ref#Ref[T]#get__T_i32(i/4))
           ) in
-        let _wild419 =
+        let _wild804 =
           inherent#Ref#Ref[T]#set__T_i32(i/4, (inherent#Ref#Ref[T]#get__T_i32(i/4) + 1)) in
         ()
     } in
@@ -73,48 +73,111 @@ fn show(x/6: Option__i32) -> string {
     Option__i32::None => {
       "none"
     },
-    Option__i32::Some(x421) => {
-      let x421 = Option__i32::Some._0(x/6) in
-      let v/7 = x421 in
+    Option__i32::Some(x806) => {
+      let x806 = Option__i32::Some._0(x/6) in
+      let v/7 = x806 in
       ("some=" + inherent#i32#i32#to_string(v/7))
     },
   }
 }
 
 fn main() -> unit {
-  let _wild422 = println__T_string(show(run_some())) in
-  let _wild423 = println__T_string(show(run_none())) in
+  let _wild807 = println__T_string(show(run_some())) in
+  let _wild808 = println__T_string(show(run_none())) in
   ()
 }
 
-fn inherent#Ref#Ref[T]#new__T_i32(value/431: i32) -> Ref[i32] {
-  @intrinsic(ref.new)(value/431)
+fn inherent#Ref#Ref[T]#new__T_i32(value/684: i32) -> Ref[i32] {
+  @intrinsic(ref.new)(value/684)
 }
 
-fn inherent#Ref#Ref[T]#get__T_i32(self/432: Ref[i32]) -> i32 {
-  @intrinsic(ref.get)(self/432)
+fn inherent#Ref#Ref[T]#get__T_i32(self/685: Ref[i32]) -> i32 {
+  @intrinsic(ref.get)(self/685)
 }
 
-fn inherent#Ref#Ref[T]#set__T_i32(self/433: Ref[i32], value/434: i32) -> unit {
-  @intrinsic(ref.set)(self/433, value/434)
+fn inherent#Ref#Ref[T]#set__T_i32(self/686: Ref[i32], value/687: i32) -> unit {
+  @intrinsic(ref.set)(self/686, value/687)
 }
 
-fn inherent#i32#i32#to_string(self/33: i32) -> string {
-  @runtime(core.int32_to_string)(self/33)
+fn inherent#i32#i32#to_string(self/286: i32) -> string {
+  __goml_builtin_int32_to_string(self/286)
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn __goml_builtin_int32_to_string(value/225: i32) -> string {
+  signed_decimal_string((value/225 as i64))
 }
 
-fn trait_impl#PartialEq#i32#eq(self/191: i32, other/192: i32) -> bool {
-  (self/191 == other/192)
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
 }
 
-fn trait_impl#Hash#i32#hash(self/214: i32) -> u64 {
-  @runtime(core.int32_hash)(self/214)
+fn signed_decimal_string(value/214: i64) -> string {
+  if (value/214 < 0) {
+      ("-" + decimal_string((0 - (value/214 as u64))))
+  } else {
+      decimal_string((value/214 as u64))
+  }
+}
+
+fn decimal_string(value/208: u64) -> string {
+  let _wild351 =
+    if (value/208 == 0) {
+        return "0"
+    } else {
+        ()
+    } in
+  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/210 = value/208 in
+  let _wild356 =
+    while (remaining/210 > 0) {
+        let _wild352 =
+          inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
+        let _wild355 =
+          let compound_old353 = remaining/210 in
+          let compound_value354 = 10 in
+          remaining/210 = (compound_old353 / compound_value354) in
+        ()
+    } in
+  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
+  let offset/212 = 0 in
+  let _wild361 =
+    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
+        let _wild357 =
+          inherent#Vec#Vec[T]#push__T_u8(
+            bytes/211,
+            @intrinsic(vec.get)(
+              reversed/209,
+              ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+            )
+          ) in
+        let _wild360 =
+          let compound_old358 = offset/212 in
+          let compound_value359 = 1 in
+          offset/212 = (compound_old358 + compound_value359) in
+        ()
+    } in
+  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  let x364 = mtmp362.1 in
+  let result/213 = x364 in
+  result/213
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  @intrinsic(vec.push)(self/511, elem/512)
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/526)
+}
+
+fn trait_impl#PartialEq#i32#eq(self/444: i32, other/445: i32) -> bool {
+  (self/444 == other/445)
+}
+
+fn trait_impl#Hash#i32#hash(self/467: i32) -> u64 {
+  @runtime(core.int32_hash)(self/467)
 }

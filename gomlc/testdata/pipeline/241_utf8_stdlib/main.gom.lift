@@ -1,11 +1,11 @@
 fn check_utf8(bytes/0: Vec[u8], expected/1: bool) -> unit {
   let expected_length/2 = inherent#Vec#Vec[T]#len__T_u8(bytes/0) in
-  let mtmp411 = string_from_utf8(bytes/0) in
-  let x412 = mtmp411.0 in
-  let x413 = mtmp411.1 in
-  let value/4 = x413 in
-  let valid/3 = x412 in
-  let _wild414 = println__T_bool((valid/3 == expected/1)) in
+  let mtmp796 = string_from_utf8(bytes/0) in
+  let x797 = mtmp796.0 in
+  let x798 = mtmp796.1 in
+  let value/4 = x798 in
+  let valid/3 = x797 in
+  let _wild799 = println__T_bool((valid/3 == expected/1)) in
   if valid/3 {
       println__T_bool((inherent#string#string#byte_len(value/4) == expected_length/2))
   } else {
@@ -14,173 +14,175 @@ fn check_utf8(bytes/0: Vec[u8], expected/1: bool) -> unit {
 }
 
 fn check_scalar(bytes/5: Vec[u8], expected/6: u32, expected_width/7: isize) -> unit {
-  let mtmp415 = string_from_utf8(bytes/5) in
-  let x416 = mtmp415.0 in
-  let x417 = mtmp415.1 in
-  let value/9 = x417 in
-  let valid/8 = x416 in
-  let _wild418 = println__T_bool(valid/8) in
-  let mtmp419 = inherent#string#string#decode_at(value/9, 0) in
-  match mtmp419 {
+  let mtmp800 = string_from_utf8(bytes/5) in
+  let x801 = mtmp800.0 in
+  let x802 = mtmp800.1 in
+  let value/9 = x802 in
+  let valid/8 = x801 in
+  let _wild803 = println__T_bool(valid/8) in
+  let mtmp804 = inherent#string#string#decode_at(value/9, 0) in
+  match mtmp804 {
     Option__(char,isize)::None => {
-      let _wild421 = println__T_bool(false) in
+      let _wild806 = println__T_bool(false) in
       println__T_bool(false)
     },
-    Option__(char,isize)::Some(x420) => {
-      let x420 = Option__(char,isize)::Some._0(mtmp419) in
-      let decoded/10 = x420 in
-      let mtmp422 = decoded/10 in
-      let x423 = mtmp422.0 in
-      let x424 = mtmp422.1 in
-      let width/12 = x424 in
-      let character/11 = x423 in
-      let _wild425 = println__T_bool(((character/11 as u32) == expected/6)) in
+    Option__(char,isize)::Some(x805) => {
+      let x805 = Option__(char,isize)::Some._0(mtmp804) in
+      let decoded/10 = x805 in
+      let mtmp807 = decoded/10 in
+      let x808 = mtmp807.0 in
+      let x809 = mtmp807.1 in
+      let width/12 = x809 in
+      let character/11 = x808 in
+      let _wild810 = println__T_bool(((character/11 as u32) == expected/6)) in
       println__T_bool((width/12 == expected_width/7))
     },
   }
 }
 
 fn main() -> unit {
-  let _wild426 = check_utf8(@intrinsic(vec.from_array)([]), true) in
-  let _wild427 = check_utf8(@intrinsic(vec.from_array)([0]), true) in
-  let _wild428 = check_utf8(@intrinsic(vec.from_array)([127]), true) in
-  let _wild429 = check_scalar(@intrinsic(vec.from_array)([194, 128]), 128, 2) in
-  let _wild430 = check_scalar(@intrinsic(vec.from_array)([223, 191]), 2047, 2) in
-  let _wild431 = check_scalar(@intrinsic(vec.from_array)([224, 160, 128]), 2048, 3) in
-  let _wild432 = check_scalar(@intrinsic(vec.from_array)([237, 159, 191]), 55295, 3) in
-  let _wild433 = check_scalar(@intrinsic(vec.from_array)([238, 128, 128]), 57344, 3) in
-  let _wild434 = check_scalar(@intrinsic(vec.from_array)([239, 191, 189]), 65533, 3) in
-  let _wild435 = check_scalar(@intrinsic(vec.from_array)([239, 191, 191]), 65535, 3) in
-  let _wild436 = check_scalar(@intrinsic(vec.from_array)([240, 144, 128, 128]), 65536, 4) in
-  let _wild437 = check_scalar(@intrinsic(vec.from_array)([244, 143, 191, 191]), 1114111, 4) in
-  let _wild438 = check_utf8(@intrinsic(vec.from_array)([128]), false) in
-  let _wild439 = check_utf8(@intrinsic(vec.from_array)([191]), false) in
-  let _wild440 = check_utf8(@intrinsic(vec.from_array)([192, 128]), false) in
-  let _wild441 = check_utf8(@intrinsic(vec.from_array)([193, 191]), false) in
-  let _wild442 = check_utf8(@intrinsic(vec.from_array)([194]), false) in
-  let _wild443 = check_utf8(@intrinsic(vec.from_array)([194, 127]), false) in
-  let _wild444 = check_utf8(@intrinsic(vec.from_array)([224, 159, 191]), false) in
-  let _wild445 = check_utf8(@intrinsic(vec.from_array)([225, 128]), false) in
-  let _wild446 = check_utf8(@intrinsic(vec.from_array)([225, 128, 127]), false) in
-  let _wild447 = check_utf8(@intrinsic(vec.from_array)([237, 160, 128]), false) in
-  let _wild448 = check_utf8(@intrinsic(vec.from_array)([240, 143, 191, 191]), false) in
-  let _wild449 = check_utf8(@intrinsic(vec.from_array)([240, 144, 128]), false) in
-  let _wild450 = check_utf8(@intrinsic(vec.from_array)([244, 144, 128, 128]), false) in
+  let _wild811 = check_utf8(@intrinsic(vec.from_array)([]), true) in
+  let _wild812 = check_utf8(@intrinsic(vec.from_array)([0]), true) in
+  let _wild813 = check_utf8(@intrinsic(vec.from_array)([127]), true) in
+  let _wild814 = check_scalar(@intrinsic(vec.from_array)([194, 128]), 128, 2) in
+  let _wild815 = check_scalar(@intrinsic(vec.from_array)([223, 191]), 2047, 2) in
+  let _wild816 = check_scalar(@intrinsic(vec.from_array)([224, 160, 128]), 2048, 3) in
+  let _wild817 = check_scalar(@intrinsic(vec.from_array)([237, 159, 191]), 55295, 3) in
+  let _wild818 = check_scalar(@intrinsic(vec.from_array)([238, 128, 128]), 57344, 3) in
+  let _wild819 = check_scalar(@intrinsic(vec.from_array)([239, 191, 189]), 65533, 3) in
+  let _wild820 = check_scalar(@intrinsic(vec.from_array)([239, 191, 191]), 65535, 3) in
+  let _wild821 = check_scalar(@intrinsic(vec.from_array)([240, 144, 128, 128]), 65536, 4) in
+  let _wild822 = check_scalar(@intrinsic(vec.from_array)([244, 143, 191, 191]), 1114111, 4) in
+  let _wild823 = check_utf8(@intrinsic(vec.from_array)([128]), false) in
+  let _wild824 = check_utf8(@intrinsic(vec.from_array)([191]), false) in
+  let _wild825 = check_utf8(@intrinsic(vec.from_array)([192, 128]), false) in
+  let _wild826 = check_utf8(@intrinsic(vec.from_array)([193, 191]), false) in
+  let _wild827 = check_utf8(@intrinsic(vec.from_array)([194]), false) in
+  let _wild828 = check_utf8(@intrinsic(vec.from_array)([194, 127]), false) in
+  let _wild829 = check_utf8(@intrinsic(vec.from_array)([224, 159, 191]), false) in
+  let _wild830 = check_utf8(@intrinsic(vec.from_array)([225, 128]), false) in
+  let _wild831 = check_utf8(@intrinsic(vec.from_array)([225, 128, 127]), false) in
+  let _wild832 = check_utf8(@intrinsic(vec.from_array)([237, 160, 128]), false) in
+  let _wild833 = check_utf8(@intrinsic(vec.from_array)([240, 143, 191, 191]), false) in
+  let _wild834 = check_utf8(@intrinsic(vec.from_array)([240, 144, 128]), false) in
+  let _wild835 = check_utf8(@intrinsic(vec.from_array)([244, 144, 128, 128]), false) in
   check_utf8(@intrinsic(vec.from_array)([245, 128, 128, 128]), false)
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/273: Vec[u8]) -> isize {
-  @intrinsic(vec.len)(self/273)
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/526)
 }
 
-fn string_from_utf8(bytes/24: Vec[u8]) -> (bool, string) {
-  let mtmp10 = @runtime(core.string_from_utf8)(bytes/24) in
-  let x12 = mtmp10.1 in
-  let value/25 = x12 in
-  let index/26 = 0 in
-  let _wild20 =
-    while (index/26 < inherent#string#string#byte_len(value/25)) {
-        let mtmp13 = string_decode_utf8_at(value/25, index/26) in
-        let x14 = mtmp13.0 in
-        let x16 = mtmp13.2 in
-        let width/28 = x16 in
-        let valid/27 = x14 in
-        if valid/27 {
-            let _wild19 =
-              let compound_old17 = index/26 in
-              let compound_value18 = width/28 in
-              index/26 = (compound_old17 + compound_value18) in
+fn string_from_utf8(bytes/277: Vec[u8]) -> (bool, string) {
+  let mtmp395 = @runtime(core.string_from_utf8)(bytes/277) in
+  let x397 = mtmp395.1 in
+  let value/278 = x397 in
+  let index/279 = 0 in
+  let _wild405 =
+    while (index/279 < inherent#string#string#byte_len(value/278)) {
+        let mtmp398 = string_decode_utf8_at(value/278, index/279) in
+        let x399 = mtmp398.0 in
+        let x401 = mtmp398.2 in
+        let width/281 = x401 in
+        let valid/280 = x399 in
+        if valid/280 {
+            let _wild404 =
+              let compound_old402 = index/279 in
+              let compound_value403 = width/281 in
+              index/279 = (compound_old402 + compound_value403) in
             ()
         } else {
             return (false, "")
         }
     } in
-  (true, value/25)
+  (true, value/278)
 }
 
 fn println__T_bool(value/1: bool) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
 }
 
-fn inherent#string#string#byte_len(self/36: string) -> isize {
-  @runtime(core.string_len)(self/36)
+fn inherent#string#string#byte_len(self/289: string) -> isize {
+  @runtime(core.string_len)(self/289)
 }
 
-fn inherent#string#string#decode_at(self/46: string, index/47: isize) -> Option__(char,isize) {
-  let mtmp25 = string_decode_utf8_at(self/46, index/47) in
-  let x26 = mtmp25.0 in
-  let x27 = mtmp25.1 in
-  let x28 = mtmp25.2 in
-  let width/50 = x28 in
-  let value/49 = x27 in
-  let valid/48 = x26 in
-  if valid/48 {
-      Option__(char,isize)::Some((value/49, width/50))
+fn inherent#string#string#decode_at(self/299: string, index/300: isize) -> Option__(char,isize) {
+  let mtmp410 = string_decode_utf8_at(self/299, index/300) in
+  let x411 = mtmp410.0 in
+  let x412 = mtmp410.1 in
+  let x413 = mtmp410.2 in
+  let width/303 = x413 in
+  let value/302 = x412 in
+  let valid/301 = x411 in
+  if valid/301 {
+      Option__(char,isize)::Some((value/302, width/303))
   } else {
       Option__(char,isize)::None
   }
 }
 
-fn string_decode_utf8_at(value/5: string, index/6: isize) -> (bool, char, isize) {
-  let length/7 = inherent#string#string#byte_len(value/5) in
-  let _wild2 =
-    if if (index/6 < 0) {
+fn string_decode_utf8_at(value/258: string, index/259: isize) -> (bool, char, isize) {
+  let length/260 = inherent#string#string#byte_len(value/258) in
+  let _wild387 =
+    if if (index/259 < 0) {
         true
     } else {
-        (index/6 >= length/7)
+        (index/259 >= length/260)
     } {
         return utf8_invalid_decode()
     } else {
         ()
     } in
-  let first/8 = (inherent#string#string#byte_get(value/5, index/6) as u32) in
-  if (first/8 < 128) {
-      utf8_valid_decode(first/8, 1)
+  let first/261 = (inherent#string#string#byte_get(value/258, index/259) as u32) in
+  if (first/261 < 128) {
+      utf8_valid_decode(first/261, 1)
   } else {
-      if (first/8 < 194) {
+      if (first/261 < 194) {
           utf8_invalid_decode()
       } else {
-          if (first/8 < 224) {
-              let _wild3 =
-                if ((length/7 - index/6) < 2) {
+          if (first/261 < 224) {
+              let _wild388 =
+                if ((length/260 - index/259) < 2) {
                     return utf8_invalid_decode()
                 } else {
                     ()
                 } in
-              let second/9 = (inherent#string#string#byte_get(value/5, (index/6 + 1)) as u32) in
-              if utf8_invalid_continuation(second/9) {
+              let second/262 =
+                (inherent#string#string#byte_get(value/258, (index/259 + 1)) as u32) in
+              if utf8_invalid_continuation(second/262) {
                   utf8_invalid_decode()
               } else {
-                  utf8_valid_decode((((first/8 & 31) << 6) | (second/9 & 63)), 2)
+                  utf8_valid_decode((((first/261 & 31) << 6) | (second/262 & 63)), 2)
               }
           } else {
-              if (first/8 < 240) {
-                  let _wild4 =
-                    if ((length/7 - index/6) < 3) {
+              if (first/261 < 240) {
+                  let _wild389 =
+                    if ((length/260 - index/259) < 3) {
                         return utf8_invalid_decode()
                     } else {
                         ()
                     } in
-                  let second/10 =
-                    (inherent#string#string#byte_get(value/5, (index/6 + 1)) as u32) in
-                  let third/11 = (inherent#string#string#byte_get(value/5, (index/6 + 2)) as u32) in
-                  if if if if utf8_invalid_continuation(second/10) {
+                  let second/263 =
+                    (inherent#string#string#byte_get(value/258, (index/259 + 1)) as u32) in
+                  let third/264 =
+                    (inherent#string#string#byte_get(value/258, (index/259 + 2)) as u32) in
+                  if if if if utf8_invalid_continuation(second/263) {
                       true
                   } else {
-                      utf8_invalid_continuation(third/11)
+                      utf8_invalid_continuation(third/264)
                   } {
                       true
                   } else {
-                      if (first/8 == 224) {
-                          (second/10 < 160)
+                      if (first/261 == 224) {
+                          (second/263 < 160)
                       } else {
                           false
                       }
                   } {
                       true
                   } else {
-                      if (first/8 == 237) {
-                          (second/10 >= 160)
+                      if (first/261 == 237) {
+                          (second/263 >= 160)
                       } else {
                           false
                       }
@@ -188,45 +190,45 @@ fn string_decode_utf8_at(value/5: string, index/6: isize) -> (bool, char, isize)
                       utf8_invalid_decode()
                   } else {
                       utf8_valid_decode(
-                        ((((first/8 & 15) << 12) | ((second/10 & 63) << 6)) | (third/11 & 63)),
+                        ((((first/261 & 15) << 12) | ((second/263 & 63) << 6)) | (third/264 & 63)),
                         3
                       )
                   }
               } else {
-                  if (first/8 < 245) {
-                      let _wild5 =
-                        if ((length/7 - index/6) < 4) {
+                  if (first/261 < 245) {
+                      let _wild390 =
+                        if ((length/260 - index/259) < 4) {
                             return utf8_invalid_decode()
                         } else {
                             ()
                         } in
-                      let second/12 =
-                        (inherent#string#string#byte_get(value/5, (index/6 + 1)) as u32) in
-                      let third/13 =
-                        (inherent#string#string#byte_get(value/5, (index/6 + 2)) as u32) in
-                      let fourth/14 =
-                        (inherent#string#string#byte_get(value/5, (index/6 + 3)) as u32) in
-                      if if if if if utf8_invalid_continuation(second/12) {
+                      let second/265 =
+                        (inherent#string#string#byte_get(value/258, (index/259 + 1)) as u32) in
+                      let third/266 =
+                        (inherent#string#string#byte_get(value/258, (index/259 + 2)) as u32) in
+                      let fourth/267 =
+                        (inherent#string#string#byte_get(value/258, (index/259 + 3)) as u32) in
+                      if if if if if utf8_invalid_continuation(second/265) {
                           true
                       } else {
-                          utf8_invalid_continuation(third/13)
+                          utf8_invalid_continuation(third/266)
                       } {
                           true
                       } else {
-                          utf8_invalid_continuation(fourth/14)
+                          utf8_invalid_continuation(fourth/267)
                       } {
                           true
                       } else {
-                          if (first/8 == 240) {
-                              (second/12 < 144)
+                          if (first/261 == 240) {
+                              (second/265 < 144)
                           } else {
                               false
                           }
                       } {
                           true
                       } else {
-                          if (first/8 == 244) {
-                              (second/12 > 143)
+                          if (first/261 == 244) {
+                              (second/265 > 143)
                           } else {
                               false
                           }
@@ -234,9 +236,9 @@ fn string_decode_utf8_at(value/5: string, index/6: isize) -> (bool, char, isize)
                           utf8_invalid_decode()
                       } else {
                           utf8_valid_decode(
-                            (((((first/8 & 7) << 18) | ((second/12 & 63) << 12)) |
-                              ((third/13 & 63) << 6)) |
-                              (fourth/14 & 63)),
+                            (((((first/261 & 7) << 18) | ((second/265 & 63) << 12)) |
+                              ((third/266 & 63) << 6)) |
+                              (fourth/267 & 63)),
                             4
                           )
                       }
@@ -249,55 +251,55 @@ fn string_decode_utf8_at(value/5: string, index/6: isize) -> (bool, char, isize)
   }
 }
 
-fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
-  @runtime(core.bool_to_string)(self/148)
+fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
+  @runtime(core.bool_to_string)(self/401)
 }
 
 fn utf8_invalid_decode() -> (bool, char, isize) {
   (false, '\0', 0)
 }
 
-fn inherent#string#string#byte_get(self/39: string, index/40: isize) -> u8 {
-  @runtime(core.string_byte_get)(self/39, index/40)
+fn inherent#string#string#byte_get(self/292: string, index/293: isize) -> u8 {
+  @runtime(core.string_byte_get)(self/292, index/293)
 }
 
-fn utf8_valid_decode(value/0: u32, width/1: isize) -> (bool, char, isize) {
-  let mtmp0 = __goml_builtin_char_from_uint32(value/0) in
-  match mtmp0 {
+fn utf8_valid_decode(value/253: u32, width/254: isize) -> (bool, char, isize) {
+  let mtmp385 = __goml_builtin_char_from_uint32(value/253) in
+  match mtmp385 {
     Option__char::None => {
       utf8_invalid_decode()
     },
-    Option__char::Some(x1) => {
-      let x1 = Option__char::Some._0(mtmp0) in
-      let character/2 = x1 in
-      (true, character/2, width/1)
+    Option__char::Some(x386) => {
+      let x386 = Option__char::Some._0(mtmp385) in
+      let character/255 = x386 in
+      (true, character/255, width/254)
     },
   }
 }
 
-fn utf8_invalid_continuation(value/3: u32) -> bool {
-  if (value/3 < 128) {
+fn utf8_invalid_continuation(value/256: u32) -> bool {
+  if (value/256 < 128) {
       true
   } else {
-      (value/3 > 191)
+      (value/256 > 191)
   }
 }
 
-fn __goml_builtin_char_from_uint32(value/30: u32) -> Option__char {
-  if utf8_valid_scalar(value/30) {
-      let mtmp22 = @runtime(core.char_from_uint32)(value/30) in
-      let x24 = mtmp22.1 in
-      let character/31 = x24 in
-      Option__char::Some(character/31)
+fn __goml_builtin_char_from_uint32(value/283: u32) -> Option__char {
+  if utf8_valid_scalar(value/283) {
+      let mtmp407 = @runtime(core.char_from_uint32)(value/283) in
+      let x409 = mtmp407.1 in
+      let character/284 = x409 in
+      Option__char::Some(character/284)
   } else {
       Option__char::None
   }
 }
 
-fn utf8_valid_scalar(value/4: u32) -> bool {
-  if (value/4 <= 1114111) {
-      (!if (value/4 >= 55296) {
-          (value/4 <= 57343)
+fn utf8_valid_scalar(value/257: u32) -> bool {
+  if (value/257 <= 1114111) {
+      (!if (value/257 >= 55296) {
+          (value/257 <= 57343)
       } else {
           false
       })

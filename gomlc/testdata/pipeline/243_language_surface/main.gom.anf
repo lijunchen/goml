@@ -1,332 +1,452 @@
 fn trait_impl#Source#NumberSource#get(self/0: NumberSource) -> isize {
-  let t479 = NumberSource.value(self/0) in
-  t479
+  let t864 = NumberSource.value(self/0) in
+  t864
 }
 
 fn read(source/1: dyn Source[Item = isize]) -> isize {
-  let t482 = dyn_call[Source::get](source/1) in
-  t482
+  let t867 = dyn_call[Source::get](source/1) in
+  t867
 }
 
 fn labeled_cleanup() -> unit {
-  join exit484() -> unit {
+  join exit869() -> unit {
     ()
   } in
   joinrec {
-    join loop_expr485() -> unit {
+    join loop_expr870() -> unit {
       joinrec {
-        join loop_expr488() -> unit {
-          join inline_cont587(_defer411: unit) -> unit {
-            let inline584 = "outer cleanup" in
-            let inline585 = trait_impl#ToString#string#to_string(inline584) in
-            let inline586 = @runtime(core.string_println)(inline585) in
-            jump exit484()
+        join loop_expr873() -> unit {
+          join inline_cont1015(_defer796: unit) -> unit {
+            let inline1012 = "outer cleanup" in
+            let inline1013 = trait_impl#ToString#string#to_string(inline1012) in
+            let inline1014 = @runtime(core.string_println)(inline1013) in
+            jump exit869()
           } in
-          let inline588 = "inner cleanup" in
-          let inline589 = trait_impl#ToString#string#to_string(inline588) in
-          let inline590 = @runtime(core.string_println)(inline589) in
-          jump inline_cont587(())
+          let inline1016 = "inner cleanup" in
+          let inline1017 = trait_impl#ToString#string#to_string(inline1016) in
+          let inline1018 = @runtime(core.string_println)(inline1017) in
+          jump inline_cont1015(())
         } in
       } in
-      jump loop_expr488()
+      jump loop_expr873()
     } in
   } in
-  jump loop_expr485()
+  jump loop_expr870()
 }
 
 fn main() -> unit {
-  let t490 = NumberSource { value: 11 } in
-  let t491 = to_dyn[Source]{NumberSource}(t490) in
-  join inline_cont632(t492: isize) -> unit {
-    join inline_cont629(_wild415: unit) -> unit {
-      let x417 = 1 in
-      let x418 = 2 in
-      let index/2 = x417 in
-      let compound_old419 = index/2 in
-      let t493 = (compound_old419 + x418) in
-      let t494 = index/2 = t493 in
-      join inline_cont626(_wild422: unit) -> unit {
-        let x424 = 3 in
-        let captured/4 = @intrinsic(ref.new)(x424) in
-        let t495 = closure_env_increment_0 { captured_0: captured/4 } in
+  let t875 = NumberSource { value: 11 } in
+  let t876 = to_dyn[Source]{NumberSource}(t875) in
+  join inline_cont1060(t877: isize) -> unit {
+    join inline_cont1057(_wild800: unit) -> unit {
+      let x802 = 1 in
+      let x803 = 2 in
+      let index/2 = x802 in
+      let compound_old804 = index/2 in
+      let t878 = (compound_old804 + x803) in
+      let t879 = index/2 = t878 in
+      join inline_cont1054(_wild807: unit) -> unit {
+        let x809 = 3 in
+        let captured/4 = @intrinsic(ref.new)(x809) in
+        let t880 = closure_env_increment_0 { captured_0: captured/4 } in
         let increment/5 =
-          pack_closure[inherent#closure_env_increment_0#closure_env_increment_0#apply](t495) in
-        let _wild429 = increment/5() in
-        let t496 = @intrinsic(ref.get)(captured/4) in
-        join inline_cont623(_wild430: unit) -> unit {
-          join k497() -> unit {
-            join inline_cont621(values/7: Vec[isize]) -> unit {
-              join inline_cont618(_wild437: unit) -> unit {
-                let for_limit439 = @intrinsic(vec.len)(values/7) in
-                let for_index440 = 0 in
-                join exit498() -> unit {
+          pack_closure[inherent#closure_env_increment_0#closure_env_increment_0#apply](t880) in
+        let _wild814 = increment/5() in
+        let t881 = @intrinsic(ref.get)(captured/4) in
+        join inline_cont1051(_wild815: unit) -> unit {
+          join k882() -> unit {
+            join inline_cont1049(values/7: Vec[isize]) -> unit {
+              join inline_cont1046(_wild822: unit) -> unit {
+                let for_limit824 = @intrinsic(vec.len)(values/7) in
+                let for_index825 = 0 in
+                join exit883() -> unit {
                   let legacy/9 = (8, 9) in
-                  let place_root447 = legacy/9 in
-                  let place448 = place_root447.0 in
-                  let value449 = 1 in
-                  let t499 = (place448 + value449) in
-                  let t500 = place_root447.1 in
-                  let t501 = (t499, t500) in
-                  let t502 = legacy/9 = t501 in
-                  let place_root451 = legacy/9 in
-                  let place452 = place_root451.1 in
-                  let value453 = 1 in
-                  let t503 = place_root451.0 in
-                  let t504 = (place452 + value453) in
-                  let t505 = (t503, t504) in
-                  let t506 = legacy/9 = t505 in
-                  let t507 = legacy/9.0 in
-                  let t508 = legacy/9.1 in
-                  let t509 = (t507 + t508) in
-                  join inline_cont615(_wild455: unit) -> unit {
+                  let place_root832 = legacy/9 in
+                  let place833 = place_root832.0 in
+                  let value834 = 1 in
+                  let t884 = (place833 + value834) in
+                  let t885 = place_root832.1 in
+                  let t886 = (t884, t885) in
+                  let t887 = legacy/9 = t886 in
+                  let place_root836 = legacy/9 in
+                  let place837 = place_root836.1 in
+                  let value838 = 1 in
+                  let t888 = place_root836.0 in
+                  let t889 = (place837 + value838) in
+                  let t890 = (t888, t889) in
+                  let t891 = legacy/9 = t890 in
+                  let t892 = legacy/9.0 in
+                  let t893 = legacy/9.1 in
+                  let t894 = (t892 + t893) in
+                  join inline_cont1043(_wild840: unit) -> unit {
                     let steps/10 = 0 in
-                    join exit510() -> unit {
-                      join inline_cont612(_wild461: unit) -> unit {
-                        join inline_cont609(seen/11: Ref[isize]) -> unit {
-                          let for_index462 = 0 in
-                          let for_limit463 = 3 in
-                          join exit511() -> unit {
-                            join inline_cont607(t512: isize) -> unit {
-                              join inline_cont604(_wild473: unit) -> unit {
-                                join exit513(jp514: isize) -> unit {
-                                  join inline_cont601(_wild475: unit) -> unit {
-                                    let t515 = labeled_cleanup() in
+                    join exit895() -> unit {
+                      join inline_cont1040(_wild846: unit) -> unit {
+                        join inline_cont1037(seen/11: Ref[isize]) -> unit {
+                          let for_index847 = 0 in
+                          let for_limit848 = 3 in
+                          join exit896() -> unit {
+                            join inline_cont1035(t897: isize) -> unit {
+                              join inline_cont1032(_wild858: unit) -> unit {
+                                join exit898(jp899: isize) -> unit {
+                                  join inline_cont1029(_wild860: unit) -> unit {
+                                    let t900 = labeled_cleanup() in
                                     ()
                                   } in
-                                  let inline602 = trait_impl#ToString#isize#to_string(jp514) in
-                                  let inline603 = @runtime(core.string_println)(inline602) in
-                                  jump inline_cont601(())
+                                  let inline1030 = trait_impl#ToString#isize#to_string(jp899) in
+                                  let inline1031 = @runtime(core.string_println)(inline1030) in
+                                  jump inline_cont1029(())
                                 } in
                                 joinrec {
-                                  join loop_expr516() -> unit {
+                                  join loop_expr901() -> unit {
                                     joinrec {
-                                      join loop_expr519() -> unit {
-                                        jump exit513(42)
+                                      join loop_expr904() -> unit {
+                                        jump exit898(42)
                                       } in
                                     } in
-                                    jump loop_expr519()
+                                    jump loop_expr904()
                                   } in
                                 } in
-                                jump loop_expr516()
+                                jump loop_expr901()
                               } in
-                              let inline605 = trait_impl#ToString#isize#to_string(t512) in
-                              let inline606 = @runtime(core.string_println)(inline605) in
-                              jump inline_cont604(())
+                              let inline1033 = trait_impl#ToString#isize#to_string(t897) in
+                              let inline1034 = @runtime(core.string_println)(inline1033) in
+                              jump inline_cont1032(())
                             } in
-                            let inline608 = @intrinsic(ref.get)(seen/11) in
-                            jump inline_cont607(inline608)
+                            let inline1036 = @intrinsic(ref.get)(seen/11) in
+                            jump inline_cont1035(inline1036)
                           } in
                           joinrec {
-                            join loop520() -> unit {
-                              let t521 = (for_index462 < for_limit463) in
-                              if t521 {
-                                let for_item464 = for_index462 in
-                                let t522 = (for_index462 + 1) in
-                                let _wild465 = for_index462 = t522 in
-                                let for_index466 = 0 in
-                                let for_limit467 = 3 in
-                                join exit523() -> unit {
-                                  jump loop520()
+                            join loop905() -> unit {
+                              let t906 = (for_index847 < for_limit848) in
+                              if t906 {
+                                let for_item849 = for_index847 in
+                                let t907 = (for_index847 + 1) in
+                                let _wild850 = for_index847 = t907 in
+                                let for_index851 = 0 in
+                                let for_limit852 = 3 in
+                                join exit908() -> unit {
+                                  jump loop905()
                                 } in
-                                let t532 = (for_item464 == 1) in
+                                let t917 = (for_item849 == 1) in
                                 joinrec {
-                                  join loop524() -> unit {
-                                    let t525 = (for_index466 < for_limit467) in
-                                    if t525 {
-                                      let for_item468 = for_index466 in
-                                      let t526 = (for_index466 + 1) in
-                                      let _wild469 = for_index466 = t526 in
-                                      join inline_cont599(t527: isize) -> unit {
-                                        let t528 = (t527 + 1) in
-                                        join inline_cont597(_wild470: unit) -> unit {
-                                          join k530(jp531: bool) -> unit {
-                                            if jp531 {
-                                              jump exit511()
+                                  join loop909() -> unit {
+                                    let t910 = (for_index851 < for_limit852) in
+                                    if t910 {
+                                      let for_item853 = for_index851 in
+                                      let t911 = (for_index851 + 1) in
+                                      let _wild854 = for_index851 = t911 in
+                                      join inline_cont1027(t912: isize) -> unit {
+                                        let t913 = (t912 + 1) in
+                                        join inline_cont1025(_wild855: unit) -> unit {
+                                          join k915(jp916: bool) -> unit {
+                                            if jp916 {
+                                              jump exit896()
                                             } else {
-                                              jump loop524()
+                                              jump loop909()
                                             }
                                           } in
-                                          if t532 {
-                                            let t533 = (for_item468 == 1) in
-                                            jump k530(t533)
+                                          if t917 {
+                                            let t918 = (for_item853 == 1) in
+                                            jump k915(t918)
                                           } else {
-                                            jump k530(false)
+                                            jump k915(false)
                                           }
                                         } in
-                                        let inline598 = @intrinsic(ref.set)(seen/11, t528) in
-                                        jump inline_cont597(())
+                                        let inline1026 = @intrinsic(ref.set)(seen/11, t913) in
+                                        jump inline_cont1025(())
                                       } in
-                                      let inline600 = @intrinsic(ref.get)(seen/11) in
-                                      jump inline_cont599(inline600)
+                                      let inline1028 = @intrinsic(ref.get)(seen/11) in
+                                      jump inline_cont1027(inline1028)
                                     } else {
-                                      jump exit523()
+                                      jump exit908()
                                     }
                                   } in
                                 } in
-                                jump loop524()
+                                jump loop909()
                               } else {
-                                jump exit511()
+                                jump exit896()
                               }
                             } in
                           } in
-                          jump loop520()
+                          jump loop905()
                         } in
-                        let inline610 = 0 in
-                        let inline611 = @intrinsic(ref.new)(inline610) in
-                        jump inline_cont609(inline611)
+                        let inline1038 = 0 in
+                        let inline1039 = @intrinsic(ref.new)(inline1038) in
+                        jump inline_cont1037(inline1039)
                       } in
-                      let inline613 = trait_impl#ToString#isize#to_string(steps/10) in
-                      let inline614 = @runtime(core.string_println)(inline613) in
-                      jump inline_cont612(())
+                      let inline1041 = trait_impl#ToString#isize#to_string(steps/10) in
+                      let inline1042 = @runtime(core.string_println)(inline1041) in
+                      jump inline_cont1040(())
                     } in
                     joinrec {
-                      join loop534() -> unit {
-                        let t535 = (steps/10 < 3) in
-                        if t535 {
-                          let compound_old456 = steps/10 in
-                          let compound_value457 = 1 in
-                          let t536 = (compound_old456 + compound_value457) in
-                          let t537 = steps/10 = t536 in
+                      join loop919() -> unit {
+                        let t920 = (steps/10 < 3) in
+                        if t920 {
+                          let compound_old841 = steps/10 in
+                          let compound_value842 = 1 in
+                          let t921 = (compound_old841 + compound_value842) in
+                          let t922 = steps/10 = t921 in
                           joinrec {
-                            join loop_expr540() -> unit {
-                              jump loop534()
+                            join loop_expr925() -> unit {
+                              jump loop919()
                             } in
                           } in
-                          jump loop_expr540()
+                          jump loop_expr925()
                         } else {
-                          jump exit510()
+                          jump exit895()
                         }
                       } in
                     } in
-                    jump loop534()
+                    jump loop919()
                   } in
-                  let inline616 = trait_impl#ToString#isize#to_string(t509) in
-                  let inline617 = @runtime(core.string_println)(inline616) in
-                  jump inline_cont615(())
+                  let inline1044 = trait_impl#ToString#isize#to_string(t894) in
+                  let inline1045 = @runtime(core.string_println)(inline1044) in
+                  jump inline_cont1043(())
                 } in
                 joinrec {
-                  join loop541() -> unit {
-                    let t542 = (for_index440 < for_limit439) in
-                    if t542 {
-                      let for_item441 = @intrinsic(vec.get)(values/7, for_index440) in
-                      let t543 = (for_index440 + 1) in
-                      let _wild442 = for_index440 = t543 in
-                      let item/8 = for_item441 in
-                      let compound_old443 = item/8 in
-                      let compound_value444 = 1 in
-                      let t544 = (compound_old443 + compound_value444) in
-                      let t545 = item/8 = t544 in
-                      let inline595 = trait_impl#ToString#isize#to_string(item/8) in
-                      let inline596 = @runtime(core.string_println)(inline595) in
-                      jump loop541()
+                  join loop926() -> unit {
+                    let t927 = (for_index825 < for_limit824) in
+                    if t927 {
+                      let for_item826 = @intrinsic(vec.get)(values/7, for_index825) in
+                      let t928 = (for_index825 + 1) in
+                      let _wild827 = for_index825 = t928 in
+                      let item/8 = for_item826 in
+                      let compound_old828 = item/8 in
+                      let compound_value829 = 1 in
+                      let t929 = (compound_old828 + compound_value829) in
+                      let t930 = item/8 = t929 in
+                      let inline1023 = trait_impl#ToString#isize#to_string(item/8) in
+                      let inline1024 = @runtime(core.string_println)(inline1023) in
+                      jump loop926()
                     } else {
-                      jump exit498()
+                      jump exit883()
                     }
                   } in
                 } in
-                jump loop541()
+                jump loop926()
               } in
-              let inline619 = 6 in
-              let inline620 = @intrinsic(vec.push)(values/7, inline619) in
-              jump inline_cont618(())
+              let inline1047 = 6 in
+              let inline1048 = @intrinsic(vec.push)(values/7, inline1047) in
+              jump inline_cont1046(())
             } in
-            let inline622 = @intrinsic(vec.new)() in
-            jump inline_cont621(inline622)
+            let inline1050 = @intrinsic(vec.new)() in
+            jump inline_cont1049(inline1050)
           } in
-          let x432 = 4 in
-          let count/6 = x432 in
-          let compound_old433 = count/6 in
-          let compound_value434 = 1 in
-          let t547 = (compound_old433 + compound_value434) in
-          let t548 = count/6 = t547 in
-          let inline592 = trait_impl#ToString#isize#to_string(count/6) in
-          let inline593 = @runtime(core.string_println)(inline592) in
-          jump k497()
+          let x817 = 4 in
+          let count/6 = x817 in
+          let compound_old818 = count/6 in
+          let compound_value819 = 1 in
+          let t932 = (compound_old818 + compound_value819) in
+          let t933 = count/6 = t932 in
+          let inline1020 = trait_impl#ToString#isize#to_string(count/6) in
+          let inline1021 = @runtime(core.string_println)(inline1020) in
+          jump k882()
         } in
-        let inline624 = trait_impl#ToString#isize#to_string(t496) in
-        let inline625 = @runtime(core.string_println)(inline624) in
-        jump inline_cont623(())
+        let inline1052 = trait_impl#ToString#isize#to_string(t881) in
+        let inline1053 = @runtime(core.string_println)(inline1052) in
+        jump inline_cont1051(())
       } in
-      let inline627 = trait_impl#ToString#isize#to_string(index/2) in
-      let inline628 = @runtime(core.string_println)(inline627) in
-      jump inline_cont626(())
+      let inline1055 = trait_impl#ToString#isize#to_string(index/2) in
+      let inline1056 = @runtime(core.string_println)(inline1055) in
+      jump inline_cont1054(())
     } in
-    let inline630 = trait_impl#ToString#isize#to_string(t492) in
-    let inline631 = @runtime(core.string_println)(inline630) in
-    jump inline_cont629(())
+    let inline1058 = trait_impl#ToString#isize#to_string(t877) in
+    let inline1059 = @runtime(core.string_println)(inline1058) in
+    jump inline_cont1057(())
   } in
-  let inline633 = dyn_call[Source::get](t491) in
-  jump inline_cont632(inline633)
+  let inline1061 = dyn_call[Source::get](t876) in
+  jump inline_cont1060(inline1061)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont634(t551: string) -> unit {
-    let t552 = @runtime(core.string_println)(t551) in
+  join inline_cont1062(t936: string) -> unit {
+    let t937 = @runtime(core.string_println)(t936) in
     ()
   } in
-  jump inline_cont634(value/1)
+  jump inline_cont1062(value/1)
 }
 
 fn println__T_isize(value/1: isize) -> unit {
-  join inline_cont635(t554: string) -> unit {
-    let t555 = @runtime(core.string_println)(t554) in
+  join inline_cont1063(t939: string) -> unit {
+    let t940 = @runtime(core.string_println)(t939) in
     ()
   } in
-  let inline636 = @runtime(core.int_to_string)(value/1) in
-  jump inline_cont635(inline636)
+  let inline1064 = __goml_builtin_int_to_string(value/1) in
+  jump inline_cont1063(inline1064)
 }
 
 fn inherent#Vec#Vec[T]#new__T_isize() -> Vec[isize] {
-  let t558 = @intrinsic(vec.new)() in
-  t558
+  let t943 = @intrinsic(vec.new)() in
+  t943
 }
 
-fn inherent#Vec#Vec[T]#push__T_isize(self/258: Vec[isize], elem/259: isize) -> unit {
-  let t560 = @intrinsic(vec.push)(self/258, elem/259) in
+fn inherent#Vec#Vec[T]#push__T_isize(self/511: Vec[isize], elem/512: isize) -> unit {
+  let t945 = @intrinsic(vec.push)(self/511, elem/512) in
   ()
 }
 
-fn inherent#Ref#Ref[T]#new__T_isize(value/431: isize) -> Ref[isize] {
-  let t563 = @intrinsic(ref.new)(value/431) in
-  t563
+fn inherent#Ref#Ref[T]#new__T_isize(value/684: isize) -> Ref[isize] {
+  let t948 = @intrinsic(ref.new)(value/684) in
+  t948
 }
 
-fn inherent#Ref#Ref[T]#get__T_isize(self/432: Ref[isize]) -> isize {
-  let t566 = @intrinsic(ref.get)(self/432) in
-  t566
+fn inherent#Ref#Ref[T]#get__T_isize(self/685: Ref[isize]) -> isize {
+  let t951 = @intrinsic(ref.get)(self/685) in
+  t951
 }
 
-fn inherent#Ref#Ref[T]#set__T_isize(self/433: Ref[isize], value/434: isize) -> unit {
-  let t568 = @intrinsic(ref.set)(self/433, value/434) in
+fn inherent#Ref#Ref[T]#set__T_isize(self/686: Ref[isize], value/687: isize) -> unit {
+  let t953 = @intrinsic(ref.set)(self/686, value/687) in
   ()
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
 }
 
-fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
-  let t573 = @runtime(core.int_to_string)(self/151) in
-  t573
+fn trait_impl#ToString#isize#to_string(self/404: isize) -> string {
+  let inline1066 = (self/404 as i64) in
+  let inline1067 = signed_decimal_string(inline1066) in
+  inline1067
 }
 
-fn trait_impl#PartialEq#isize#eq(self/185: isize, other/186: isize) -> bool {
-  let t576 = (self/185 == other/186) in
-  t576
+fn __goml_builtin_int_to_string(value/222: isize) -> string {
+  let t961 = (value/222 as i64) in
+  let inline1069 = (t961 < 0) in
+  if inline1069 {
+    let inline1070 = (t961 as u64) in
+    let inline1071 = (0 - inline1070) in
+    let inline1072 = decimal_string(inline1071) in
+    let inline1073 = ("-" + inline1072) in
+    inline1073
+  } else {
+    let inline1074 = (t961 as u64) in
+    let inline1075 = decimal_string(inline1074) in
+    inline1075
+  }
 }
 
-fn trait_impl#Hash#isize#hash(self/211: isize) -> u64 {
-  let t579 = @runtime(core.int_hash)(self/211) in
-  t579
+fn signed_decimal_string(value/214: i64) -> string {
+  let t967 = (value/214 < 0) in
+  if t967 {
+    let t968 = (value/214 as u64) in
+    let t969 = (0 - t968) in
+    let t970 = decimal_string(t969) in
+    let t971 = ("-" + t970) in
+    t971
+  } else {
+    let t972 = (value/214 as u64) in
+    let t973 = decimal_string(t972) in
+    t973
+  }
+}
+
+fn decimal_string(value/208: u64) -> string {
+  let t996 = (value/208 == 0) in
+  join k976() -> string {
+    let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+    let remaining/210 = value/208 in
+    join exit977() -> string {
+      join inline_cont1084(t978: isize) -> string {
+        let bytes/211 = @intrinsic(vec.with_capacity)(t978) in
+        let offset/212 = 0 in
+        join exit979() -> string {
+          let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+          let x364 = mtmp362.1 in
+          x364
+        } in
+        joinrec {
+          join loop980() -> string {
+            join inline_cont1082(t981: isize) -> string {
+              let t982 = (offset/212 < t981) in
+              if t982 {
+                join inline_cont1080(t983: isize) -> string {
+                  let t984 = (t983 - offset/212) in
+                  let t985 = (t984 - 1) in
+                  let t986 = @intrinsic(vec.get)(reversed/209, t985) in
+                  join inline_cont1078(_wild357: unit) -> string {
+                    let compound_old358 = offset/212 in
+                    let compound_value359 = 1 in
+                    let t987 = (compound_old358 + compound_value359) in
+                    let t988 = offset/212 = t987 in
+                    jump loop980()
+                  } in
+                  let inline1079 = @intrinsic(vec.push)(bytes/211, t986) in
+                  jump inline_cont1078(())
+                } in
+                let inline1081 = @intrinsic(vec.len)(reversed/209) in
+                jump inline_cont1080(inline1081)
+              } else {
+                jump exit979()
+              }
+            } in
+            let inline1083 = @intrinsic(vec.len)(reversed/209) in
+            jump inline_cont1082(inline1083)
+          } in
+        } in
+        jump loop980()
+      } in
+      let inline1085 = @intrinsic(vec.len)(reversed/209) in
+      jump inline_cont1084(inline1085)
+    } in
+    joinrec {
+      join loop989() -> string {
+        let t990 = (remaining/210 > 0) in
+        if t990 {
+          let t991 = (remaining/210 % 10) in
+          let t992 = (t991 as u8) in
+          let t993 = (t992 + 48) in
+          join inline_cont1076(_wild352: unit) -> string {
+            let compound_old353 = remaining/210 in
+            let compound_value354 = 10 in
+            let t994 = (compound_old353 / compound_value354) in
+            let t995 = remaining/210 = t994 in
+            jump loop989()
+          } in
+          let inline1077 = @intrinsic(vec.push)(reversed/209, t993) in
+          jump inline_cont1076(())
+        } else {
+          jump exit977()
+        }
+      } in
+    } in
+    jump loop989()
+  } in
+  if t996 {
+    "0"
+  } else {
+    jump k976()
+  }
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  let t998 = @intrinsic(vec.push)(self/511, elem/512) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  let t1001 = @intrinsic(vec.len)(self/526) in
+  t1001
+}
+
+fn trait_impl#PartialEq#isize#eq(self/438: isize, other/439: isize) -> bool {
+  let t1004 = (self/438 == other/439) in
+  t1004
+}
+
+fn trait_impl#Hash#isize#hash(self/464: isize) -> u64 {
+  let t1007 = @runtime(core.int_hash)(self/464) in
+  t1007
 }
 
 fn inherent#closure_env_increment_0#closure_env_increment_0#apply(
-  env476: closure_env_increment_0
+  env861: closure_env_increment_0
 ) -> unit {
-  let captured/4 = closure_env_increment_0.captured_0(env476) in
-  let compound_old426 = @intrinsic(ref.get)(captured/4) in
-  let compound_value427 = 1 in
-  let t581 = (compound_old426 + compound_value427) in
-  let t582 = @intrinsic(ref.set)(captured/4, t581) in
+  let captured/4 = closure_env_increment_0.captured_0(env861) in
+  let compound_old811 = @intrinsic(ref.get)(captured/4) in
+  let compound_value812 = 1 in
+  let t1009 = (compound_old811 + compound_value812) in
+  let t1010 = @intrinsic(ref.set)(captured/4, t1009) in
   ()
 }

@@ -1,5 +1,5 @@
 fn main() -> unit {
-    let to_text/0: (i32) -> string = (@runtime(core.int32_to_string) : (i32) -> string);
+    let to_text/0: (i32) -> string = (int32_to_string : (i32) -> string);
     (println : (string) -> unit)((to_text/0 : (i32) -> string)(7));
     let get/1: (Vec[i32], isize) -> i32 = (@intrinsic(vec.get) : (Vec[i32], isize) -> i32);
     let push/2: (Vec[i32], i32) -> unit = (@intrinsic(vec.push) : (Vec[i32], i32) -> unit);

@@ -1,46 +1,46 @@
 fn print_int_list(xs/0: IntList) -> unit {
   match xs/0 {
     Tag_0 => {
-      let inline470 = "Nil" in
-      let inline471 = trait_impl#ToString#string#to_string(inline470) in
-      let inline472 = @runtime(core.string_println)(inline471) in
+      let inline898 = "Nil" in
+      let inline899 = trait_impl#ToString#string#to_string(inline898) in
+      let inline900 = @runtime(core.string_println)(inline899) in
       ()
     },
     Tag_1 => {
-      let x411 = IntList::Cons._0(xs/0) in
-      let x412 = IntList::Cons._1(xs/0) in
-      join inline_cont490(mtmp413: unit) -> unit {
-        join inline_cont486(mtmp414: unit) -> unit {
-          join inline_cont484(t439: string) -> unit {
-            join inline_cont481(mtmp415: unit) -> unit {
-              join inline_cont477(mtmp416: unit) -> unit {
-                let mtmp417 = print_int_list(x412) in
-                let inline474 = ")" in
-                let inline475 = trait_impl#ToString#string#to_string(inline474) in
-                let inline476 = @runtime(core.string_println)(inline475) in
+      let x796 = IntList::Cons._0(xs/0) in
+      let x797 = IntList::Cons._1(xs/0) in
+      join inline_cont918(mtmp798: unit) -> unit {
+        join inline_cont914(mtmp799: unit) -> unit {
+          join inline_cont912(t824: string) -> unit {
+            join inline_cont909(mtmp800: unit) -> unit {
+              join inline_cont905(mtmp801: unit) -> unit {
+                let mtmp802 = print_int_list(x797) in
+                let inline902 = ")" in
+                let inline903 = trait_impl#ToString#string#to_string(inline902) in
+                let inline904 = @runtime(core.string_println)(inline903) in
                 ()
               } in
-              let inline478 = ", " in
-              let inline479 = trait_impl#ToString#string#to_string(inline478) in
-              let inline480 = @runtime(core.string_println)(inline479) in
-              jump inline_cont477(())
+              let inline906 = ", " in
+              let inline907 = trait_impl#ToString#string#to_string(inline906) in
+              let inline908 = @runtime(core.string_println)(inline907) in
+              jump inline_cont905(())
             } in
-            let inline482 = trait_impl#ToString#string#to_string(t439) in
-            let inline483 = @runtime(core.string_println)(inline482) in
-            jump inline_cont481(())
+            let inline910 = trait_impl#ToString#string#to_string(t824) in
+            let inline911 = @runtime(core.string_println)(inline910) in
+            jump inline_cont909(())
           } in
-          let inline485 = @runtime(core.int32_to_string)(x411) in
-          jump inline_cont484(inline485)
+          let inline913 = __goml_builtin_int32_to_string(x796) in
+          jump inline_cont912(inline913)
         } in
-        let inline487 = "(" in
-        let inline488 = trait_impl#ToString#string#to_string(inline487) in
-        let inline489 = @runtime(core.string_println)(inline488) in
-        jump inline_cont486(())
+        let inline915 = "(" in
+        let inline916 = trait_impl#ToString#string#to_string(inline915) in
+        let inline917 = @runtime(core.string_println)(inline916) in
+        jump inline_cont914(())
       } in
-      let inline491 = "Cons" in
-      let inline492 = trait_impl#ToString#string#to_string(inline491) in
-      let inline493 = @runtime(core.string_println)(inline492) in
-      jump inline_cont490(())
+      let inline919 = "Cons" in
+      let inline920 = trait_impl#ToString#string#to_string(inline919) in
+      let inline921 = @runtime(core.string_println)(inline920) in
+      jump inline_cont918(())
     },
   }
 }
@@ -51,18 +51,18 @@ fn int_list_rev_aux(xs/3: IntList, acc/4: IntList) -> IntList {
       acc/4
     },
     Tag_1 => {
-      let x419 = IntList::Cons._0(xs/3) in
-      let x420 = IntList::Cons._1(xs/3) in
-      let t444 = IntList::Cons(x419, acc/4) in
-      let t445 = int_list_rev_aux(x420, t444) in
-      t445
+      let x804 = IntList::Cons._0(xs/3) in
+      let x805 = IntList::Cons._1(xs/3) in
+      let t829 = IntList::Cons(x804, acc/4) in
+      let t830 = int_list_rev_aux(x805, t829) in
+      t830
     },
   }
 }
 
 fn int_list_rev(xs/7: IntList) -> IntList {
-  let t448 = int_list_rev_aux(xs/7, Tag_0) in
-  t448
+  let t833 = int_list_rev_aux(xs/7, Tag_0) in
+  t833
 }
 
 fn int_list_length(xs/8: IntList) -> i32 {
@@ -71,103 +71,223 @@ fn int_list_length(xs/8: IntList) -> i32 {
       0
     },
     Tag_1 => {
-      let x422 = IntList::Cons._1(xs/8) in
-      let t453 = int_list_length(x422) in
-      let t454 = (1 + t453) in
-      t454
+      let x807 = IntList::Cons._1(xs/8) in
+      let t838 = int_list_length(x807) in
+      let t839 = (1 + t838) in
+      t839
     },
   }
 }
 
 fn print_int_list_length(xs/10: IntList) -> unit {
-  join inline_cont499(mtmp423: unit) -> unit {
-    let t456 = int_list_length(xs/10) in
-    join inline_cont497(t457: string) -> unit {
-      let inline495 = trait_impl#ToString#string#to_string(t457) in
-      let inline496 = @runtime(core.string_println)(inline495) in
+  join inline_cont927(mtmp808: unit) -> unit {
+    let t841 = int_list_length(xs/10) in
+    join inline_cont925(t842: string) -> unit {
+      let inline923 = trait_impl#ToString#string#to_string(t842) in
+      let inline924 = @runtime(core.string_println)(inline923) in
       ()
     } in
-    let inline498 = @runtime(core.int32_to_string)(t456) in
-    jump inline_cont497(inline498)
+    let inline926 = __goml_builtin_int32_to_string(t841) in
+    jump inline_cont925(inline926)
   } in
-  let inline500 = "Length: " in
-  let inline501 = trait_impl#ToString#string#to_string(inline500) in
-  let inline502 = @runtime(core.string_println)(inline501) in
-  jump inline_cont499(())
+  let inline928 = "Length: " in
+  let inline929 = trait_impl#ToString#string#to_string(inline928) in
+  let inline930 = @runtime(core.string_println)(inline929) in
+  jump inline_cont927(())
 }
 
 fn main() -> unit {
   let x/11 = Tag_0 in
-  let mtmp425 = print_int_list(x/11) in
-  join inline_cont532(mtmp426: unit) -> unit {
-    join inline_cont527(mtmp427: unit) -> unit {
+  let mtmp810 = print_int_list(x/11) in
+  join inline_cont960(mtmp811: unit) -> unit {
+    join inline_cont955(mtmp812: unit) -> unit {
       let x/12 = IntList::Cons(1, Tag_0) in
-      let mtmp428 = print_int_list(x/12) in
-      join inline_cont523(mtmp429: unit) -> unit {
-        join inline_cont518(mtmp430: unit) -> unit {
-          let t459 = IntList::Cons(3, Tag_0) in
-          let t460 = IntList::Cons(2, t459) in
-          let x/13 = IntList::Cons(1, t460) in
-          let mtmp431 = print_int_list(x/13) in
-          join inline_cont514(mtmp432: unit) -> unit {
-            join inline_cont509(mtmp433: unit) -> unit {
-              join inline_cont507(y/14: IntList) -> unit {
-                let mtmp434 = print_int_list(y/14) in
-                let inline504 = "" in
-                let inline505 = trait_impl#ToString#string#to_string(inline504) in
-                let inline506 = @runtime(core.string_println)(inline505) in
+      let mtmp813 = print_int_list(x/12) in
+      join inline_cont951(mtmp814: unit) -> unit {
+        join inline_cont946(mtmp815: unit) -> unit {
+          let t844 = IntList::Cons(3, Tag_0) in
+          let t845 = IntList::Cons(2, t844) in
+          let x/13 = IntList::Cons(1, t845) in
+          let mtmp816 = print_int_list(x/13) in
+          join inline_cont942(mtmp817: unit) -> unit {
+            join inline_cont937(mtmp818: unit) -> unit {
+              join inline_cont935(y/14: IntList) -> unit {
+                let mtmp819 = print_int_list(y/14) in
+                let inline932 = "" in
+                let inline933 = trait_impl#ToString#string#to_string(inline932) in
+                let inline934 = @runtime(core.string_println)(inline933) in
                 ()
               } in
-              let inline508 = int_list_rev_aux(x/13, Tag_0) in
-              jump inline_cont507(inline508)
+              let inline936 = int_list_rev_aux(x/13, Tag_0) in
+              jump inline_cont935(inline936)
             } in
-            let inline510 = println__T_string("Length: ") in
-            let inline511 = int_list_length(x/13) in
-            let inline512 = inherent#i32#i32#to_string(inline511) in
-            let inline513 = println__T_string(inline512) in
-            jump inline_cont509(())
+            let inline938 = println__T_string("Length: ") in
+            let inline939 = int_list_length(x/13) in
+            let inline940 = inherent#i32#i32#to_string(inline939) in
+            let inline941 = println__T_string(inline940) in
+            jump inline_cont937(())
           } in
-          let inline515 = "" in
-          let inline516 = trait_impl#ToString#string#to_string(inline515) in
-          let inline517 = @runtime(core.string_println)(inline516) in
-          jump inline_cont514(())
+          let inline943 = "" in
+          let inline944 = trait_impl#ToString#string#to_string(inline943) in
+          let inline945 = @runtime(core.string_println)(inline944) in
+          jump inline_cont942(())
         } in
-        let inline519 = println__T_string("Length: ") in
-        let inline520 = int_list_length(x/12) in
-        let inline521 = inherent#i32#i32#to_string(inline520) in
-        let inline522 = println__T_string(inline521) in
-        jump inline_cont518(())
+        let inline947 = println__T_string("Length: ") in
+        let inline948 = int_list_length(x/12) in
+        let inline949 = inherent#i32#i32#to_string(inline948) in
+        let inline950 = println__T_string(inline949) in
+        jump inline_cont946(())
       } in
-      let inline524 = "" in
-      let inline525 = trait_impl#ToString#string#to_string(inline524) in
-      let inline526 = @runtime(core.string_println)(inline525) in
-      jump inline_cont523(())
+      let inline952 = "" in
+      let inline953 = trait_impl#ToString#string#to_string(inline952) in
+      let inline954 = @runtime(core.string_println)(inline953) in
+      jump inline_cont951(())
     } in
-    let inline528 = println__T_string("Length: ") in
-    let inline529 = int_list_length(x/11) in
-    let inline530 = inherent#i32#i32#to_string(inline529) in
-    let inline531 = println__T_string(inline530) in
-    jump inline_cont527(())
+    let inline956 = println__T_string("Length: ") in
+    let inline957 = int_list_length(x/11) in
+    let inline958 = inherent#i32#i32#to_string(inline957) in
+    let inline959 = println__T_string(inline958) in
+    jump inline_cont955(())
   } in
-  let inline533 = "" in
-  let inline534 = trait_impl#ToString#string#to_string(inline533) in
-  let inline535 = @runtime(core.string_println)(inline534) in
-  jump inline_cont532(())
+  let inline961 = "" in
+  let inline962 = trait_impl#ToString#string#to_string(inline961) in
+  let inline963 = @runtime(core.string_println)(inline962) in
+  jump inline_cont960(())
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont536(t462: string) -> unit {
-    let t463 = @runtime(core.string_println)(t462) in
+  join inline_cont964(t847: string) -> unit {
+    let t848 = @runtime(core.string_println)(t847) in
     ()
   } in
-  jump inline_cont536(value/1)
+  jump inline_cont964(value/1)
 }
 
-fn inherent#i32#i32#to_string(self/33: i32) -> string {
-  let t466 = @runtime(core.int32_to_string)(self/33) in
-  t466
+fn inherent#i32#i32#to_string(self/286: i32) -> string {
+  let inline966 = (self/286 as i64) in
+  let inline967 = signed_decimal_string(inline966) in
+  inline967
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
+}
+
+fn __goml_builtin_int32_to_string(value/225: i32) -> string {
+  let t856 = (value/225 as i64) in
+  let inline969 = (t856 < 0) in
+  if inline969 {
+    let inline970 = (t856 as u64) in
+    let inline971 = (0 - inline970) in
+    let inline972 = decimal_string(inline971) in
+    let inline973 = ("-" + inline972) in
+    inline973
+  } else {
+    let inline974 = (t856 as u64) in
+    let inline975 = decimal_string(inline974) in
+    inline975
+  }
+}
+
+fn signed_decimal_string(value/214: i64) -> string {
+  let t862 = (value/214 < 0) in
+  if t862 {
+    let t863 = (value/214 as u64) in
+    let t864 = (0 - t863) in
+    let t865 = decimal_string(t864) in
+    let t866 = ("-" + t865) in
+    t866
+  } else {
+    let t867 = (value/214 as u64) in
+    let t868 = decimal_string(t867) in
+    t868
+  }
+}
+
+fn decimal_string(value/208: u64) -> string {
+  let t891 = (value/208 == 0) in
+  join k871() -> string {
+    let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+    let remaining/210 = value/208 in
+    join exit872() -> string {
+      join inline_cont984(t873: isize) -> string {
+        let bytes/211 = @intrinsic(vec.with_capacity)(t873) in
+        let offset/212 = 0 in
+        join exit874() -> string {
+          let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+          let x364 = mtmp362.1 in
+          x364
+        } in
+        joinrec {
+          join loop875() -> string {
+            join inline_cont982(t876: isize) -> string {
+              let t877 = (offset/212 < t876) in
+              if t877 {
+                join inline_cont980(t878: isize) -> string {
+                  let t879 = (t878 - offset/212) in
+                  let t880 = (t879 - 1) in
+                  let t881 = @intrinsic(vec.get)(reversed/209, t880) in
+                  join inline_cont978(_wild357: unit) -> string {
+                    let compound_old358 = offset/212 in
+                    let compound_value359 = 1 in
+                    let t882 = (compound_old358 + compound_value359) in
+                    let t883 = offset/212 = t882 in
+                    jump loop875()
+                  } in
+                  let inline979 = @intrinsic(vec.push)(bytes/211, t881) in
+                  jump inline_cont978(())
+                } in
+                let inline981 = @intrinsic(vec.len)(reversed/209) in
+                jump inline_cont980(inline981)
+              } else {
+                jump exit874()
+              }
+            } in
+            let inline983 = @intrinsic(vec.len)(reversed/209) in
+            jump inline_cont982(inline983)
+          } in
+        } in
+        jump loop875()
+      } in
+      let inline985 = @intrinsic(vec.len)(reversed/209) in
+      jump inline_cont984(inline985)
+    } in
+    joinrec {
+      join loop884() -> string {
+        let t885 = (remaining/210 > 0) in
+        if t885 {
+          let t886 = (remaining/210 % 10) in
+          let t887 = (t886 as u8) in
+          let t888 = (t887 + 48) in
+          join inline_cont976(_wild352: unit) -> string {
+            let compound_old353 = remaining/210 in
+            let compound_value354 = 10 in
+            let t889 = (compound_old353 / compound_value354) in
+            let t890 = remaining/210 = t889 in
+            jump loop884()
+          } in
+          let inline977 = @intrinsic(vec.push)(reversed/209, t888) in
+          jump inline_cont976(())
+        } else {
+          jump exit872()
+        }
+      } in
+    } in
+    jump loop884()
+  } in
+  if t891 {
+    "0"
+  } else {
+    jump k871()
+  }
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  let t893 = @intrinsic(vec.push)(self/511, elem/512) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  let t896 = @intrinsic(vec.len)(self/526) in
+  t896
 }

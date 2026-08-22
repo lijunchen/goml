@@ -1,17 +1,17 @@
 fn main() -> unit {
   let a/0 = Expr::Mul(Expr::Add(Expr::Zero, Expr::Zero), Expr::Zero) in
   match a/0 {
-    Expr::Add(x412, x413) => {
+    Expr::Add(x797, x798) => {
       {
-        let x412 = Expr::Add._0(a/0) in
-        let x413 = Expr::Add._1(a/0) in
-        match x413 {
+        let x797 = Expr::Add._0(a/0) in
+        let x798 = Expr::Add._1(a/0) in
+        match x798 {
           Expr::Zero => {
-            match x412 {
+            match x797 {
               Expr::Zero => {
                 print__T_isize(0)
               },
-              Expr::Succ(x421) => {
+              Expr::Succ(x806) => {
                 {
                   {
                     {
@@ -27,8 +27,8 @@ fn main() -> unit {
             }
           },
           _ =>
-            match x412 {
-              Expr::Succ(x426) => {
+            match x797 {
+              Expr::Succ(x811) => {
                 {
                   {
                     {
@@ -45,19 +45,19 @@ fn main() -> unit {
         }
       }
     },
-    Expr::Mul(x414, x415) => {
+    Expr::Mul(x799, x800) => {
       {
-        let x414 = Expr::Mul._0(a/0) in
-        let x415 = Expr::Mul._1(a/0) in
-        match x414 {
+        let x799 = Expr::Mul._0(a/0) in
+        let x800 = Expr::Mul._1(a/0) in
+        match x799 {
           Expr::Zero => {
             {
               print__T_isize(1)
             }
           },
-          Expr::Add(x432, x433) => {
+          Expr::Add(x817, x818) => {
             {
-              match x415 {
+              match x800 {
                 Expr::Zero => {
                   {
                     print__T_isize(3)
@@ -75,7 +75,7 @@ fn main() -> unit {
             }
           },
           _ =>
-            match x415 {
+            match x800 {
               Expr::Zero => {
                 {
                   print__T_isize(3)
@@ -100,6 +100,89 @@ fn print__T_isize(value/0: isize) -> unit {
   @runtime(core.string_print)(trait_impl#ToString#isize#to_string(value/0))
 }
 
-fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
-  @runtime(core.int_to_string)(self/151)
+fn trait_impl#ToString#isize#to_string(self/404: isize) -> string {
+  __goml_builtin_int_to_string(self/404)
+}
+
+fn __goml_builtin_int_to_string(value/222: isize) -> string {
+  signed_decimal_string((value/222 as i64))
+}
+
+fn signed_decimal_string(value/214: i64) -> string {
+  if (value/214 < 0) {
+      {
+        ("-" + decimal_string((0 - (value/214 as u64))))
+      }
+  } else {
+      {
+        decimal_string((value/214 as u64))
+      }
+  }
+}
+
+fn decimal_string(value/208: u64) -> string {
+  let _wild351 =
+    if (value/208 == 0) {
+        {
+          return "0"
+        }
+    } else {
+        {
+          ()
+        }
+    } in
+  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/210 = value/208 in
+  let _wild356 =
+    while (remaining/210 > 0) {
+        {
+          let _wild352 =
+            inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
+          let _wild355 =
+            {
+              let compound_old353 = remaining/210 in
+              let compound_value354 = 10 in
+              remaining/210 = (compound_old353 / compound_value354)
+            } in
+        }
+    } in
+  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
+  let offset/212 = 0 in
+  let _wild361 =
+    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
+        {
+          let _wild357 =
+            inherent#Vec#Vec[T]#push__T_u8(
+              bytes/211,
+              @intrinsic(vec.get)(
+                reversed/209,
+                ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+              )
+            ) in
+          let _wild360 =
+            {
+              let compound_old358 = offset/212 in
+              let compound_value359 = 1 in
+              offset/212 = (compound_old358 + compound_value359)
+            } in
+        }
+    } in
+  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  {
+    let x364 = mtmp362.1 in
+    {
+      let result/213 = x364 in
+      {
+        result/213
+      }
+    }
+  }
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  @intrinsic(vec.push)(self/511, elem/512)
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/526)
 }

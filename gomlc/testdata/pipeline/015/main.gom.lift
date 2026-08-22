@@ -3,17 +3,17 @@ fn print_int_list(xs/0: IntList) -> unit {
     IntList::Nil => {
       println__T_string("Nil")
     },
-    IntList::Cons(x411, x412) => {
-      let x411 = IntList::Cons._0(xs/0) in
-      let x412 = IntList::Cons._1(xs/0) in
-      let xs/2 = x412 in
-      let x/1 = x411 in
-      let mtmp413 = println__T_string("Cons") in
-      let mtmp414 = println__T_string("(") in
-      let mtmp415 = println__T_string(inherent#i32#i32#to_string(x/1)) in
-      let mtmp416 = println__T_string(", ") in
-      let mtmp417 = print_int_list(xs/2) in
-      let mtmp418 = println__T_string(")") in
+    IntList::Cons(x796, x797) => {
+      let x796 = IntList::Cons._0(xs/0) in
+      let x797 = IntList::Cons._1(xs/0) in
+      let xs/2 = x797 in
+      let x/1 = x796 in
+      let mtmp798 = println__T_string("Cons") in
+      let mtmp799 = println__T_string("(") in
+      let mtmp800 = println__T_string(inherent#i32#i32#to_string(x/1)) in
+      let mtmp801 = println__T_string(", ") in
+      let mtmp802 = print_int_list(xs/2) in
+      let mtmp803 = println__T_string(")") in
       ()
     },
   }
@@ -24,11 +24,11 @@ fn int_list_rev_aux(xs/3: IntList, acc/4: IntList) -> IntList {
     IntList::Nil => {
       acc/4
     },
-    IntList::Cons(x419, x420) => {
-      let x419 = IntList::Cons._0(xs/3) in
-      let x420 = IntList::Cons._1(xs/3) in
-      let tail/6 = x420 in
-      let head/5 = x419 in
+    IntList::Cons(x804, x805) => {
+      let x804 = IntList::Cons._0(xs/3) in
+      let x805 = IntList::Cons._1(xs/3) in
+      let tail/6 = x805 in
+      let head/5 = x804 in
       int_list_rev_aux(tail/6, IntList::Cons(head/5, acc/4))
     },
   }
@@ -43,36 +43,36 @@ fn int_list_length(xs/8: IntList) -> i32 {
     IntList::Nil => {
       0
     },
-    IntList::Cons(x421, x422) => {
-      let x422 = IntList::Cons._1(xs/8) in
-      let xs/9 = x422 in
+    IntList::Cons(x806, x807) => {
+      let x807 = IntList::Cons._1(xs/8) in
+      let xs/9 = x807 in
       (1 + int_list_length(xs/9))
     },
   }
 }
 
 fn print_int_list_length(xs/10: IntList) -> unit {
-  let mtmp423 = println__T_string("Length: ") in
-  let mtmp424 = println__T_string(inherent#i32#i32#to_string(int_list_length(xs/10))) in
+  let mtmp808 = println__T_string("Length: ") in
+  let mtmp809 = println__T_string(inherent#i32#i32#to_string(int_list_length(xs/10))) in
   ()
 }
 
 fn main() -> unit {
   let x/11 = IntList::Nil in
-  let mtmp425 = print_int_list(x/11) in
-  let mtmp426 = println__T_string("") in
-  let mtmp427 = print_int_list_length(x/11) in
+  let mtmp810 = print_int_list(x/11) in
+  let mtmp811 = println__T_string("") in
+  let mtmp812 = print_int_list_length(x/11) in
   let x/12 = IntList::Cons(1, IntList::Nil) in
-  let mtmp428 = print_int_list(x/12) in
-  let mtmp429 = println__T_string("") in
-  let mtmp430 = print_int_list_length(x/12) in
+  let mtmp813 = print_int_list(x/12) in
+  let mtmp814 = println__T_string("") in
+  let mtmp815 = print_int_list_length(x/12) in
   let x/13 = IntList::Cons(1, IntList::Cons(2, IntList::Cons(3, IntList::Nil))) in
-  let mtmp431 = print_int_list(x/13) in
-  let mtmp432 = println__T_string("") in
-  let mtmp433 = print_int_list_length(x/13) in
+  let mtmp816 = print_int_list(x/13) in
+  let mtmp817 = println__T_string("") in
+  let mtmp818 = print_int_list_length(x/13) in
   let y/14 = int_list_rev(x/13) in
-  let mtmp434 = print_int_list(y/14) in
-  let mtmp435 = println__T_string("") in
+  let mtmp819 = print_int_list(y/14) in
+  let mtmp820 = println__T_string("") in
   ()
 }
 
@@ -80,10 +80,73 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#i32#i32#to_string(self/33: i32) -> string {
-  @runtime(core.int32_to_string)(self/33)
+fn inherent#i32#i32#to_string(self/286: i32) -> string {
+  __goml_builtin_int32_to_string(self/286)
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
+}
+
+fn __goml_builtin_int32_to_string(value/225: i32) -> string {
+  signed_decimal_string((value/225 as i64))
+}
+
+fn signed_decimal_string(value/214: i64) -> string {
+  if (value/214 < 0) {
+      ("-" + decimal_string((0 - (value/214 as u64))))
+  } else {
+      decimal_string((value/214 as u64))
+  }
+}
+
+fn decimal_string(value/208: u64) -> string {
+  let _wild351 =
+    if (value/208 == 0) {
+        return "0"
+    } else {
+        ()
+    } in
+  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/210 = value/208 in
+  let _wild356 =
+    while (remaining/210 > 0) {
+        let _wild352 =
+          inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
+        let _wild355 =
+          let compound_old353 = remaining/210 in
+          let compound_value354 = 10 in
+          remaining/210 = (compound_old353 / compound_value354) in
+        ()
+    } in
+  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
+  let offset/212 = 0 in
+  let _wild361 =
+    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
+        let _wild357 =
+          inherent#Vec#Vec[T]#push__T_u8(
+            bytes/211,
+            @intrinsic(vec.get)(
+              reversed/209,
+              ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+            )
+          ) in
+        let _wild360 =
+          let compound_old358 = offset/212 in
+          let compound_value359 = 1 in
+          offset/212 = (compound_old358 + compound_value359) in
+        ()
+    } in
+  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  let x364 = mtmp362.1 in
+  let result/213 = x364 in
+  result/213
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  @intrinsic(vec.push)(self/511, elem/512)
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/526)
 }

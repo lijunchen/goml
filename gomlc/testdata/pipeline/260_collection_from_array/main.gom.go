@@ -1,15 +1,18 @@
 package main
 
 import (
-    _goml_fmt "fmt"
+    _goml_os "os"
 )
 
-func _goml_runtime_core_int_to_string(x int) string {
-    return _goml_fmt.Sprintf("%d", x)
+func _goml_runtime_core_string_from_utf8(bytes *_goml_vec_uint8) Tuple2_4bool_6string {
+    return Tuple2_4bool_6string{
+        _0: true,
+        _1: string(bytes.items),
+    }
 }
 
 func _goml_runtime_core_string_println(s string) struct{} {
-    _goml_fmt.Println(s)
+    _goml_os.Stdout.WriteString(s + "\n")
     return struct{}{}
 }
 
@@ -56,6 +59,33 @@ type _goml_vec_Vec_3int struct {
 
 func vec_get__Vec_8Vec_3int(vec *_goml_vec_Vec_3int, index int) *_goml_vec_int {
     return vec.items[index]
+}
+
+type _goml_vec_uint8 struct {
+    items []uint8
+}
+
+func vec_with_capacity__Vec_5uint8(capacity int) *_goml_vec_uint8 {
+    return &_goml_vec_uint8{
+        items: make([]uint8, 0, capacity),
+    }
+}
+
+func vec_push__Vec_5uint8(vec *_goml_vec_uint8, elem uint8) struct{} {
+    vec.items = append(vec.items, elem)
+    return struct{}{}
+}
+
+func vec_get__Vec_5uint8(vec *_goml_vec_uint8, index int) uint8 {
+    return vec.items[index]
+}
+
+func vec_len__Vec_5uint8(vec *_goml_vec_uint8) int {
+    return int(len(vec.items))
+}
+
+type _goml_vec_uint32 struct {
+    items []uint32
 }
 
 type ref_string_x struct {
@@ -363,6 +393,26 @@ type Tuple2_6string_8Vec_3int struct {
     _1 *_goml_vec_int
 }
 
+type Tuple2_4bool_6string struct {
+    _0 bool
+    _1 string
+}
+
+type FloatNatural struct {
+    words *_goml_vec_uint32
+}
+
+type ParsedFloat struct {
+    valid bool
+    negative bool
+    special int
+    numerator FloatNatural
+    decimal_exponent int
+    binary_exponent int
+    hexadecimal bool
+    significant_digits int
+}
+
 type LoggedKey struct {
     id int
     log *ref_string_x
@@ -381,43 +431,43 @@ type _goml_m_Option____Vec_l_isize_r_ struct {
 }
 
 func _goml_m_trait__impl_i_PartialEq_i_LoggedKey_i_eq(self__0 LoggedKey, other__1 LoggedKey) bool {
-    var t436 *ref_string_x = self__0.log
-    var t437 *ref_string_x = self__0.log
-    var t438 string
-    var inline594 string = ref_get__Ref_6string(t437)
-    t438 = inline594
-    var t439 string = t438 + "E"
-    ref_set__Ref_6string(t436, t439)
-    var t440 int = self__0.id
-    var t441 int = other__1.id
-    var t442 bool = t440 == t441
-    return t442
+    var t821 *ref_string_x = self__0.log
+    var t822 *ref_string_x = self__0.log
+    var t823 string
+    var inline1022 string = ref_get__Ref_6string(t822)
+    t823 = inline1022
+    var t824 string = t823 + "E"
+    ref_set__Ref_6string(t821, t824)
+    var t825 int = self__0.id
+    var t826 int = other__1.id
+    var t827 bool = t825 == t826
+    return t827
 }
 
 func _goml_m_trait__impl_i_Hash_i_LoggedKey_i_hash(self__2 LoggedKey) uint64 {
-    var t445 *ref_string_x = self__2.log
-    var t446 *ref_string_x = self__2.log
-    var t447 string
-    var inline598 string = ref_get__Ref_6string(t446)
-    t447 = inline598
-    var t448 string = t447 + "H"
-    ref_set__Ref_6string(t445, t448)
-    var t449 int = self__2.id
-    var t450 uint64 = uint64(int(t449))
-    return t450
+    var t830 *ref_string_x = self__2.log
+    var t831 *ref_string_x = self__2.log
+    var t832 string
+    var inline1026 string = ref_get__Ref_6string(t831)
+    t832 = inline1026
+    var t833 string = t832 + "H"
+    ref_set__Ref_6string(t830, t833)
+    var t834 int = self__2.id
+    var t835 uint64 = uint64(int(t834))
+    return t835
 }
 
 func logged_key(log__3 *ref_string_x, label__4 string, id__5 int) LoggedKey {
-    var t453 string
-    var inline602 string = ref_get__Ref_6string(log__3)
-    t453 = inline602
-    var t454 string = t453 + label__4
-    ref_set__Ref_6string(log__3, t454)
-    var t455 LoggedKey = LoggedKey{
+    var t838 string
+    var inline1030 string = ref_get__Ref_6string(log__3)
+    t838 = inline1030
+    var t839 string = t838 + label__4
+    ref_set__Ref_6string(log__3, t839)
+    var t840 LoggedKey = LoggedKey{
         id: id__5,
         log: log__3,
     }
-    return t455
+    return t840
 }
 
 func main0() struct{} {
@@ -430,39 +480,39 @@ func main0() struct{} {
         storage.vector.items = storage.values[0:len(storage.values)]
         return &storage.vector
     }
-    var t461 [3]int = [3]int{1, 2, 3}
-    var values__10 *_goml_vec_int = make_vec__9(t461)
-    var t462 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__isize(values__10)
-    var t463 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t462)
-    var t464 string = "" + t463
-    var t465 string = t464 + ":"
-    var t466 int = vec_get__Vec_3int(values__10, 0)
-    var t467 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t466)
-    var t468 string = t465 + t467
-    var t469 string = t468 + ":"
-    var t470 int = vec_get__Vec_3int(values__10, 2)
-    var t471 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t470)
-    var t472 string = t469 + t471
-    println__T_string(t472)
-    var t473 [0]int = [0]int{}
+    var t846 [3]int = [3]int{1, 2, 3}
+    var values__10 *_goml_vec_int = make_vec__9(t846)
+    var t847 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__isize(values__10)
+    var t848 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t847)
+    var t849 string = "" + t848
+    var t850 string = t849 + ":"
+    var t851 int = vec_get__Vec_3int(values__10, 0)
+    var t852 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t851)
+    var t853 string = t850 + t852
+    var t854 string = t853 + ":"
+    var t855 int = vec_get__Vec_3int(values__10, 2)
+    var t856 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t855)
+    var t857 string = t854 + t856
+    println__T_string(t857)
+    var t858 [0]int = [0]int{}
     var empty__11 *_goml_vec_int = func(values [0]int) *_goml_vec_int {
         return &_goml_vec_int{
             items: values[0:len(values)],
         }
-    }(t473)
-    var t474 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__isize(empty__11)
-    println__T_isize(t474)
-    var t475 [0]int = [0]int{}
+    }(t858)
+    var t859 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__isize(empty__11)
+    println__T_isize(t859)
+    var t860 [0]int = [0]int{}
     var inferred_empty__12 *_goml_vec_int = func(values [0]int) *_goml_vec_int {
         return &_goml_vec_int{
             items: values[0:len(values)],
         }
-    }(t475)
-    var t476 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__isize(inferred_empty__12)
-    println__T_isize(t476)
-    var t477 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__isize(1)
-    var t478 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__isize(2)
-    var source__13 [2]*ref_int_x = [2]*ref_int_x{t477, t478}
+    }(t860)
+    var t861 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__isize(inferred_empty__12)
+    println__T_isize(t861)
+    var t862 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__isize(1)
+    var t863 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__isize(2)
+    var source__13 [2]*ref_int_x = [2]*ref_int_x{t862, t863}
     var copied__14 *_goml_vec_Ref_3int = func(values [2]*ref_int_x) *_goml_vec_Ref_3int {
         var storage struct {
             vector _goml_vec_Ref_3int
@@ -472,91 +522,91 @@ func main0() struct{} {
         storage.vector.items = storage.values[0:len(storage.values)]
         return &storage.vector
     }(source__13)
-    var t479 *ref_int_x = array_get__Array_2_8Ref_3int(source__13, 0)
-    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(t479, 5)
-    var place_root419 [2]*ref_int_x = source__13
-    var index420 int = 0
-    array_get__Array_2_8Ref_3int(place_root419, index420)
-    var value422 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__isize(9)
-    var t480 [2]*ref_int_x = array_set__Array_2_8Ref_3int(place_root419, index420, value422)
-    source__13 = t480
-    var t482 *ref_int_x = vec_get__Vec_8Ref_3int(copied__14, 0)
-    var t483 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t482)
-    var t484 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t483)
-    var t485 string = "" + t484
-    var t486 string = t485 + ":"
-    var t487 *ref_int_x = array_get__Array_2_8Ref_3int(source__13, 0)
-    var t488 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t487)
-    var t489 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t488)
-    var t490 string = t486 + t489
-    println__T_string(t490)
+    var t864 *ref_int_x = array_get__Array_2_8Ref_3int(source__13, 0)
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(t864, 5)
+    var place_root804 [2]*ref_int_x = source__13
+    var index805 int = 0
+    array_get__Array_2_8Ref_3int(place_root804, index805)
+    var value807 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__isize(9)
+    var t865 [2]*ref_int_x = array_set__Array_2_8Ref_3int(place_root804, index805, value807)
+    source__13 = t865
+    var t867 *ref_int_x = vec_get__Vec_8Ref_3int(copied__14, 0)
+    var t868 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t867)
+    var t869 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t868)
+    var t870 string = "" + t869
+    var t871 string = t870 + ":"
+    var t872 *ref_int_x = array_get__Array_2_8Ref_3int(source__13, 0)
+    var t873 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t872)
+    var t874 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t873)
+    var t875 string = t871 + t874
+    println__T_string(t875)
     var log__15 *ref_string_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string("")
-    var t491 LoggedKey = logged_key(log__15, "A", 1)
-    var t492 int
-    var inline656 string = "a"
-    var inline657 int = 10
-    var inline658 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(log__15)
-    var inline659 string = inline658 + inline656
-    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(log__15, inline659)
-    t492 = inline657
-    var t493 Tuple2_9LoggedKey_3int = Tuple2_9LoggedKey_3int{
-        _0: t491,
-        _1: t492,
+    var t876 LoggedKey = logged_key(log__15, "A", 1)
+    var t877 int
+    var inline1084 string = "a"
+    var inline1085 int = 10
+    var inline1086 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(log__15)
+    var inline1087 string = inline1086 + inline1084
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(log__15, inline1087)
+    t877 = inline1085
+    var t878 Tuple2_9LoggedKey_3int = Tuple2_9LoggedKey_3int{
+        _0: t876,
+        _1: t877,
     }
-    var t494 LoggedKey
-    var inline649 string = "B"
-    var inline650 int = 1
-    var inline651 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(log__15)
-    var inline652 string = inline651 + inline649
-    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(log__15, inline652)
-    var inline654 LoggedKey = LoggedKey{
-        id: inline650,
+    var t879 LoggedKey
+    var inline1077 string = "B"
+    var inline1078 int = 1
+    var inline1079 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(log__15)
+    var inline1080 string = inline1079 + inline1077
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(log__15, inline1080)
+    var inline1082 LoggedKey = LoggedKey{
+        id: inline1078,
         log: log__15,
     }
-    t494 = inline654
-    var t495 int
-    var inline643 string = "b"
-    var inline644 int = 20
-    var inline645 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(log__15)
-    var inline646 string = inline645 + inline643
-    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(log__15, inline646)
-    t495 = inline644
-    var t496 Tuple2_9LoggedKey_3int = Tuple2_9LoggedKey_3int{
-        _0: t494,
-        _1: t495,
+    t879 = inline1082
+    var t880 int
+    var inline1071 string = "b"
+    var inline1072 int = 20
+    var inline1073 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(log__15)
+    var inline1074 string = inline1073 + inline1071
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(log__15, inline1074)
+    t880 = inline1072
+    var t881 Tuple2_9LoggedKey_3int = Tuple2_9LoggedKey_3int{
+        _0: t879,
+        _1: t880,
     }
-    var t497 [2]Tuple2_9LoggedKey_3int = [2]Tuple2_9LoggedKey_3int{t493, t496}
+    var t882 [2]Tuple2_9LoggedKey_3int = [2]Tuple2_9LoggedKey_3int{t878, t881}
     var table__16 *hashmap_LoggedKey_int_x = func(values [2]Tuple2_9LoggedKey_3int) *hashmap_LoggedKey_int_x {
         var result *hashmap_LoggedKey_int_x = hashmap_new__HashMap_9LoggedKey_3int()
         for _, entry := range values {
             hashmap_set__HashMap_9LoggedKey_3int(result, entry._0, entry._1)
         }
         return result
-    }(t497)
-    var t498 string
-    var inline641 string = ref_get__Ref_6string(log__15)
-    t498 = inline641
-    var inline638 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t498)
-    _goml_runtime_core_string_println(inline638)
-    var t499 LoggedKey = LoggedKey{
+    }(t882)
+    var t883 string
+    var inline1069 string = ref_get__Ref_6string(log__15)
+    t883 = inline1069
+    var inline1066 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t883)
+    _goml_runtime_core_string_println(inline1066)
+    var t884 LoggedKey = LoggedKey{
         id: 1,
         log: log__15,
     }
-    var mtmp426 Option__isize
-    var inline636 Option__isize = hashmap_get__HashMap_9LoggedKey_3int(table__16, t499)
-    mtmp426 = inline636
-    var jp501 int
-    switch mtmp426._tag {
+    var mtmp811 Option__isize
+    var inline1064 Option__isize = hashmap_get__HashMap_9LoggedKey_3int(table__16, t884)
+    mtmp811 = inline1064
+    var jp886 int
+    switch mtmp811._tag {
     case 0:
-        jp501 = 0
+        jp886 = 0
     case 1:
-        var x427 int = mtmp426._v1_0
-        jp501 = x427
+        var x812 int = mtmp811._v1_0
+        jp886 = x812
     default:
         panic("non-exhaustive match")
     }
-    var inline633 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(jp501)
-    _goml_runtime_core_string_println(inline633)
+    var inline1061 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(jp886)
+    _goml_runtime_core_string_println(inline1061)
     var make_map__18 func([2]Tuple2_6string_3int) *hashmap_string_int_x = func(values [2]Tuple2_6string_3int) *hashmap_string_int_x {
         var result *hashmap_string_int_x = hashmap_new__HashMap_6string_3int()
         for _, entry := range values {
@@ -564,56 +614,56 @@ func main0() struct{} {
         }
         return result
     }
-    var t502 Tuple2_6string_3int = Tuple2_6string_3int{
+    var t887 Tuple2_6string_3int = Tuple2_6string_3int{
         _0: "a",
         _1: 1,
     }
-    var t503 Tuple2_6string_3int = Tuple2_6string_3int{
+    var t888 Tuple2_6string_3int = Tuple2_6string_3int{
         _0: "b",
         _1: 2,
     }
-    var t504 [2]Tuple2_6string_3int = [2]Tuple2_6string_3int{t502, t503}
-    var words__19 *hashmap_string_int_x = make_map__18(t504)
-    var t505 int
-    var inline631 int = hashmap_len__HashMap_6string_3int(words__19)
-    t505 = inline631
-    var inline628 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t505)
-    _goml_runtime_core_string_println(inline628)
-    var t506 [0]Tuple2_6string_3int = [0]Tuple2_6string_3int{}
+    var t889 [2]Tuple2_6string_3int = [2]Tuple2_6string_3int{t887, t888}
+    var words__19 *hashmap_string_int_x = make_map__18(t889)
+    var t890 int
+    var inline1059 int = hashmap_len__HashMap_6string_3int(words__19)
+    t890 = inline1059
+    var inline1056 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t890)
+    _goml_runtime_core_string_println(inline1056)
+    var t891 [0]Tuple2_6string_3int = [0]Tuple2_6string_3int{}
     var no_words__20 *hashmap_string_int_x = func(values [0]Tuple2_6string_3int) *hashmap_string_int_x {
         var result *hashmap_string_int_x = hashmap_new__HashMap_6string_3int()
         for _, entry := range values {
             hashmap_set__HashMap_6string_3int(result, entry._0, entry._1)
         }
         return result
-    }(t506)
-    var t507 int
-    var inline626 int = hashmap_len__HashMap_6string_3int(no_words__20)
-    t507 = inline626
-    var inline623 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t507)
-    _goml_runtime_core_string_println(inline623)
-    var t508 [0]Tuple2_6string_3int = [0]Tuple2_6string_3int{}
+    }(t891)
+    var t892 int
+    var inline1054 int = hashmap_len__HashMap_6string_3int(no_words__20)
+    t892 = inline1054
+    var inline1051 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t892)
+    _goml_runtime_core_string_println(inline1051)
+    var t893 [0]Tuple2_6string_3int = [0]Tuple2_6string_3int{}
     var inferred_no_words__21 *hashmap_string_int_x = func(values [0]Tuple2_6string_3int) *hashmap_string_int_x {
         var result *hashmap_string_int_x = hashmap_new__HashMap_6string_3int()
         for _, entry := range values {
             hashmap_set__HashMap_6string_3int(result, entry._0, entry._1)
         }
         return result
-    }(t508)
-    var t509 int
-    var inline621 int = hashmap_len__HashMap_6string_3int(inferred_no_words__21)
-    t509 = inline621
-    var inline618 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t509)
-    _goml_runtime_core_string_println(inline618)
-    var t510 Tuple2_3int_6string = Tuple2_3int_6string{
+    }(t893)
+    var t894 int
+    var inline1049 int = hashmap_len__HashMap_6string_3int(inferred_no_words__21)
+    t894 = inline1049
+    var inline1046 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t894)
+    _goml_runtime_core_string_println(inline1046)
+    var t895 Tuple2_3int_6string = Tuple2_3int_6string{
         _0: 1,
         _1: "a",
     }
-    var t511 Tuple2_3int_6string = Tuple2_3int_6string{
+    var t896 Tuple2_3int_6string = Tuple2_3int_6string{
         _0: 2,
         _1: "b",
     }
-    var t512 [2]Tuple2_3int_6string = [2]Tuple2_3int_6string{t510, t511}
+    var t897 [2]Tuple2_3int_6string = [2]Tuple2_3int_6string{t895, t896}
     var pairs__22 *_goml_vec_Tuple2_3int_6string = func(values [2]Tuple2_3int_6string) *_goml_vec_Tuple2_3int_6string {
         var storage struct {
             vector _goml_vec_Tuple2_3int_6string
@@ -622,9 +672,9 @@ func main0() struct{} {
         storage.values = values
         storage.vector.items = storage.values[0:len(storage.values)]
         return &storage.vector
-    }(t512)
-    var t513 [2]int = [2]int{1, 2}
-    var t514 *_goml_vec_int = func(values [2]int) *_goml_vec_int {
+    }(t897)
+    var t898 [2]int = [2]int{1, 2}
+    var t899 *_goml_vec_int = func(values [2]int) *_goml_vec_int {
         var storage struct {
             vector _goml_vec_int
             values [2]int
@@ -632,9 +682,9 @@ func main0() struct{} {
         storage.values = values
         storage.vector.items = storage.values[0:len(storage.values)]
         return &storage.vector
-    }(t513)
-    var t515 [2]int = [2]int{3, 4}
-    var t516 *_goml_vec_int = func(values [2]int) *_goml_vec_int {
+    }(t898)
+    var t900 [2]int = [2]int{3, 4}
+    var t901 *_goml_vec_int = func(values [2]int) *_goml_vec_int {
         var storage struct {
             vector _goml_vec_int
             values [2]int
@@ -642,8 +692,8 @@ func main0() struct{} {
         storage.values = values
         storage.vector.items = storage.values[0:len(storage.values)]
         return &storage.vector
-    }(t515)
-    var t517 [2]*_goml_vec_int = [2]*_goml_vec_int{t514, t516}
+    }(t900)
+    var t902 [2]*_goml_vec_int = [2]*_goml_vec_int{t899, t901}
     var nested__23 *_goml_vec_Vec_3int = func(values [2]*_goml_vec_int) *_goml_vec_Vec_3int {
         var storage struct {
             vector _goml_vec_Vec_3int
@@ -652,9 +702,9 @@ func main0() struct{} {
         storage.values = values
         storage.vector.items = storage.values[0:len(storage.values)]
         return &storage.vector
-    }(t517)
-    var t518 [2]int = [2]int{5, 6}
-    var t519 *_goml_vec_int = func(values [2]int) *_goml_vec_int {
+    }(t902)
+    var t903 [2]int = [2]int{5, 6}
+    var t904 *_goml_vec_int = func(values [2]int) *_goml_vec_int {
         var storage struct {
             vector _goml_vec_int
             values [2]int
@@ -662,116 +712,208 @@ func main0() struct{} {
         storage.values = values
         storage.vector.items = storage.values[0:len(storage.values)]
         return &storage.vector
-    }(t518)
-    var t520 Tuple2_6string_8Vec_3int = Tuple2_6string_8Vec_3int{
+    }(t903)
+    var t905 Tuple2_6string_8Vec_3int = Tuple2_6string_8Vec_3int{
         _0: "values",
-        _1: t519,
+        _1: t904,
     }
-    var t521 [1]Tuple2_6string_8Vec_3int = [1]Tuple2_6string_8Vec_3int{t520}
+    var t906 [1]Tuple2_6string_8Vec_3int = [1]Tuple2_6string_8Vec_3int{t905}
     var nested_map__24 *hashmap_string_Vec_3int_x = func(values [1]Tuple2_6string_8Vec_3int) *hashmap_string_Vec_3int_x {
         var result *hashmap_string_Vec_3int_x = hashmap_new__HashMap_6string_8Vec_3int()
         for _, entry := range values {
             hashmap_set__HashMap_6string_8Vec_3int(result, entry._0, entry._1)
         }
         return result
-    }(t521)
-    var mtmp432 _goml_m_Option____Vec_l_isize_r_
-    var inline615 string = "values"
-    var inline616 _goml_m_Option____Vec_l_isize_r_ = hashmap_get__HashMap_6string_8Vec_3int(nested_map__24, inline615)
-    mtmp432 = inline616
-    var jp523 int
-    switch mtmp432._tag {
+    }(t906)
+    var mtmp817 _goml_m_Option____Vec_l_isize_r_
+    var inline1043 string = "values"
+    var inline1044 _goml_m_Option____Vec_l_isize_r_ = hashmap_get__HashMap_6string_8Vec_3int(nested_map__24, inline1043)
+    mtmp817 = inline1044
+    var jp908 int
+    switch mtmp817._tag {
     case 0:
-        jp523 = 0
+        jp908 = 0
     case 1:
-        var x433 *_goml_vec_int = mtmp432._v1_0
-        var t536 int = vec_get__Vec_3int(x433, 0)
-        jp523 = t536
+        var x818 *_goml_vec_int = mtmp817._v1_0
+        var t921 int = vec_get__Vec_3int(x818, 0)
+        jp908 = t921
     default:
         panic("non-exhaustive match")
     }
-    var t524 Tuple2_3int_6string = vec_get__Vec_19Tuple2_3int_6string(pairs__22, 1)
-    var t525 string = t524._1
-    var t526 string = "" + t525
-    var t527 string = t526 + ":"
-    var t528 *_goml_vec_int = vec_get__Vec_8Vec_3int(nested__23, 1)
-    var t529 int = vec_get__Vec_3int(t528, 0)
-    var t530 string
-    var inline613 string = _goml_runtime_core_int_to_string(t529)
-    t530 = inline613
-    var t531 string = t527 + t530
-    var t532 string = t531 + ":"
-    var t533 string
-    var inline611 string = _goml_runtime_core_int_to_string(jp523)
-    t533 = inline611
-    var t534 string = t532 + t533
-    var inline608 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t534)
-    _goml_runtime_core_string_println(inline608)
+    var t909 Tuple2_3int_6string = vec_get__Vec_19Tuple2_3int_6string(pairs__22, 1)
+    var t910 string = t909._1
+    var t911 string = "" + t910
+    var t912 string = t911 + ":"
+    var t913 *_goml_vec_int = vec_get__Vec_8Vec_3int(nested__23, 1)
+    var t914 int = vec_get__Vec_3int(t913, 0)
+    var t915 string
+    var inline1041 string = __goml_builtin_int_to_string(t914)
+    t915 = inline1041
+    var t916 string = t912 + t915
+    var t917 string = t916 + ":"
+    var t918 string
+    var inline1039 string = __goml_builtin_int_to_string(jp908)
+    t918 = inline1039
+    var t919 string = t917 + t918
+    var inline1036 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t919)
+    _goml_runtime_core_string_println(inline1036)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(self__432 *ref_string_x) string {
-    var t539 string = ref_get__Ref_6string(self__432)
-    return t539
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(self__685 *ref_string_x) string {
+    var t924 string = ref_get__Ref_6string(self__685)
+    return t924
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(self__433 *ref_string_x, value__434 string) struct{} {
-    ref_set__Ref_6string(self__433, value__434)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(self__686 *ref_string_x, value__687 string) struct{} {
+    ref_set__Ref_6string(self__686, value__687)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t543 string
-    t543 = value__1
-    _goml_runtime_core_string_println(t543)
+    var t928 string
+    t928 = value__1
+    _goml_runtime_core_string_println(t928)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__isize(self__273 *_goml_vec_int) int {
-    var t547 int = vec_len__Vec_3int(self__273)
-    return t547
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__isize(self__526 *_goml_vec_int) int {
+    var t932 int = vec_len__Vec_3int(self__526)
+    return t932
 }
 
-func _goml_m_inherent_i_isize_i_isize_i_to__string(self__32 int) string {
-    var t550 string = _goml_runtime_core_int_to_string(self__32)
-    return t550
+func _goml_m_inherent_i_isize_i_isize_i_to__string(self__285 int) string {
+    var inline1091 int64 = int64(int(self__285))
+    var inline1092 string = signed_decimal_string(inline1091)
+    return inline1092
 }
 
 func println__T_isize(value__1 int) struct{} {
-    var t552 string
-    var inline663 string = _goml_runtime_core_int_to_string(value__1)
-    t552 = inline663
-    _goml_runtime_core_string_println(t552)
+    var t937 string
+    var inline1094 string = __goml_builtin_int_to_string(value__1)
+    t937 = inline1094
+    _goml_runtime_core_string_println(t937)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__isize(value__431 int) *ref_int_x {
-    var t556 *ref_int_x = ref__Ref_3int(value__431)
-    return t556
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__isize(value__684 int) *ref_int_x {
+    var t941 *ref_int_x = ref__Ref_3int(value__684)
+    return t941
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(self__433 *ref_int_x, value__434 int) struct{} {
-    ref_set__Ref_3int(self__433, value__434)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(self__686 *ref_int_x, value__687 int) struct{} {
+    ref_set__Ref_3int(self__686, value__687)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(self__432 *ref_int_x) int {
-    var t561 int = ref_get__Ref_3int(self__432)
-    return t561
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(self__685 *ref_int_x) int {
+    var t946 int = ref_get__Ref_3int(self__685)
+    return t946
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string(value__431 string) *ref_string_x {
-    var t564 *ref_string_x = ref__Ref_6string(value__431)
-    return t564
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string(value__684 string) *ref_string_x {
+    var t949 *ref_string_x = ref__Ref_6string(value__684)
+    return t949
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
-    return self__149
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__402 string) string {
+    return self__402
 }
 
-func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
-    var t578 string = _goml_runtime_core_int_to_string(self__151)
-    return t578
+func __goml_builtin_int_to_string(value__222 int) string {
+    var t963 int64 = int64(int(value__222))
+    var inline1096 bool = t963 < 0
+    if inline1096 {
+        var inline1097 uint64 = uint64(int64(t963))
+        var inline1098 uint64 = 0 - inline1097
+        var inline1099 string = decimal_string(inline1098)
+        var inline1100 string = "-" + inline1099
+        return inline1100
+    } else {
+        var inline1101 uint64 = uint64(int64(t963))
+        var inline1102 string = decimal_string(inline1101)
+        return inline1102
+    }
+}
+
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__404 int) string {
+    var inline1104 int64 = int64(int(self__404))
+    var inline1105 string = signed_decimal_string(inline1104)
+    return inline1105
+}
+
+func signed_decimal_string(value__214 int64) string {
+    var t972 bool = value__214 < 0
+    if t972 {
+        var t973 uint64 = uint64(int64(value__214))
+        var t974 uint64 = 0 - t973
+        var t975 string = decimal_string(t974)
+        var t976 string = "-" + t975
+        return t976
+    } else {
+        var t977 uint64 = uint64(int64(value__214))
+        var t978 string = decimal_string(t977)
+        return t978
+    }
+}
+
+func decimal_string(value__208 uint64) string {
+    var t1001 bool = value__208 == 0
+    if t1001 {
+        return "0"
+    } else {
+        var reversed__209 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(20)
+        var remaining__210 uint64 = value__208
+        Loop_loop994:
+        for {
+            var t995 bool = remaining__210 > 0
+            if t995 {
+                var t996_rhs uint64 = 10
+                var t996 uint64 = remaining__210 % t996_rhs
+                var t997 uint8 = uint8(uint64(t996))
+                var t998 uint8 = t997 + 48
+                vec_push__Vec_5uint8(reversed__209, t998)
+                var compound_old353 uint64 = remaining__210
+                var compound_value354 uint64 = 10
+                var t999 uint64 = compound_old353 / compound_value354
+                remaining__210 = t999
+                continue
+            } else {
+                break Loop_loop994
+            }
+        }
+        var t983 int
+        var inline1115 int = vec_len__Vec_5uint8(reversed__209)
+        t983 = inline1115
+        var bytes__211 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t983)
+        var offset__212 int = 0
+        Loop_loop985:
+        for {
+            var t986 int
+            var inline1113 int = vec_len__Vec_5uint8(reversed__209)
+            t986 = inline1113
+            var t987 bool = offset__212 < t986
+            if t987 {
+                var t988 int
+                var inline1111 int = vec_len__Vec_5uint8(reversed__209)
+                t988 = inline1111
+                var t989 int = t988 - offset__212
+                var t990 int = t989 - 1
+                var t991 uint8 = vec_get__Vec_5uint8(reversed__209, t990)
+                vec_push__Vec_5uint8(bytes__211, t991)
+                var compound_old358 int = offset__212
+                var compound_value359 int = 1
+                var t992 int = compound_old358 + compound_value359
+                offset__212 = t992
+                continue
+            } else {
+                break Loop_loop985
+            }
+        }
+        var mtmp362 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__211)
+        var x364 string = mtmp362._1
+        return x364
+    }
 }
 
 func main() {

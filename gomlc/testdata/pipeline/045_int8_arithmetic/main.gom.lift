@@ -11,12 +11,12 @@ fn c_value() -> i8 {
 }
 
 fn show_int8(label/0: string, value/1: i8) -> unit {
-  let mtmp411 = println__T_string((label/0 + trait_impl#ToString#i8#to_string(value/1))) in
+  let mtmp796 = println__T_string((label/0 + trait_impl#ToString#i8#to_string(value/1))) in
   ()
 }
 
 fn show_bool(label/2: string, value/3: bool) -> unit {
-  let mtmp412 = println__T_string((label/2 + trait_impl#ToString#bool#to_string(value/3))) in
+  let mtmp797 = println__T_string((label/2 + trait_impl#ToString#bool#to_string(value/3))) in
   ()
 }
 
@@ -30,15 +30,15 @@ fn main() -> unit {
   let quot/10 = (a/4 / c/6) in
   let neg/11 = (-b/5) in
   let less/12 = (b/5 < a/4) in
-  let mtmp413 = show_int8("a=", a/4) in
-  let mtmp414 = show_int8("b=", b/5) in
-  let mtmp415 = show_int8("c=", c/6) in
-  let mtmp416 = show_int8("sum=", sum/7) in
-  let mtmp417 = show_int8("diff=", diff/8) in
-  let mtmp418 = show_int8("prod=", prod/9) in
-  let mtmp419 = show_int8("quot=", quot/10) in
-  let mtmp420 = show_int8("neg=", neg/11) in
-  let mtmp421 = show_bool("b<a=", less/12) in
+  let mtmp798 = show_int8("a=", a/4) in
+  let mtmp799 = show_int8("b=", b/5) in
+  let mtmp800 = show_int8("c=", c/6) in
+  let mtmp801 = show_int8("sum=", sum/7) in
+  let mtmp802 = show_int8("diff=", diff/8) in
+  let mtmp803 = show_int8("prod=", prod/9) in
+  let mtmp804 = show_int8("quot=", quot/10) in
+  let mtmp805 = show_int8("neg=", neg/11) in
+  let mtmp806 = show_bool("b<a=", less/12) in
   ()
 }
 
@@ -46,14 +46,77 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#i8#to_string(self/152: i8) -> string {
-  @runtime(core.int8_to_string)(self/152)
+fn trait_impl#ToString#i8#to_string(self/405: i8) -> string {
+  __goml_builtin_int8_to_string(self/405)
 }
 
-fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
-  @runtime(core.bool_to_string)(self/148)
+fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
+  @runtime(core.bool_to_string)(self/401)
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
+}
+
+fn __goml_builtin_int8_to_string(value/223: i8) -> string {
+  signed_decimal_string((value/223 as i64))
+}
+
+fn signed_decimal_string(value/214: i64) -> string {
+  if (value/214 < 0) {
+      ("-" + decimal_string((0 - (value/214 as u64))))
+  } else {
+      decimal_string((value/214 as u64))
+  }
+}
+
+fn decimal_string(value/208: u64) -> string {
+  let _wild351 =
+    if (value/208 == 0) {
+        return "0"
+    } else {
+        ()
+    } in
+  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/210 = value/208 in
+  let _wild356 =
+    while (remaining/210 > 0) {
+        let _wild352 =
+          inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
+        let _wild355 =
+          let compound_old353 = remaining/210 in
+          let compound_value354 = 10 in
+          remaining/210 = (compound_old353 / compound_value354) in
+        ()
+    } in
+  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
+  let offset/212 = 0 in
+  let _wild361 =
+    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
+        let _wild357 =
+          inherent#Vec#Vec[T]#push__T_u8(
+            bytes/211,
+            @intrinsic(vec.get)(
+              reversed/209,
+              ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+            )
+          ) in
+        let _wild360 =
+          let compound_old358 = offset/212 in
+          let compound_value359 = 1 in
+          offset/212 = (compound_old358 + compound_value359) in
+        ()
+    } in
+  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  let x364 = mtmp362.1 in
+  let result/213 = x364 in
+  result/213
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  @intrinsic(vec.push)(self/511, elem/512)
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/526)
 }

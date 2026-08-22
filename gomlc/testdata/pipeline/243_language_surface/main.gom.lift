@@ -7,105 +7,105 @@ fn read(source/1: dyn Source[Item = isize]) -> isize {
 }
 
 fn labeled_cleanup() -> unit {
-  loop loop let _wild413 =
-    let _defer411 = println__T_string("inner cleanup") in
-    let _defer412 = println__T_string("outer cleanup") in
+  loop loop let _wild798 =
+    let _defer796 = println__T_string("inner cleanup") in
+    let _defer797 = println__T_string("outer cleanup") in
     break@1 in
-  let _defer414 = println__T_string("inner cleanup") in
+  let _defer799 = println__T_string("inner cleanup") in
   ()
 }
 
 fn main() -> unit {
-  let _wild415 = println__T_isize(read(to_dyn[Source]{NumberSource}(NumberSource { value: 11 }))) in
-  let mtmp416 = (1, 2) in
-  let x417 = mtmp416.0 in
-  let x418 = mtmp416.1 in
-  let value/3 = x418 in
-  let index/2 = x417 in
-  let _wild421 =
-    let compound_old419 = index/2 in
-    let compound_value420 = value/3 in
-    index/2 = (compound_old419 + compound_value420) in
-  let _wild422 = println__T_isize(index/2) in
-  let mtmp423 = (3, 0) in
-  let x424 = mtmp423.0 in
-  let captured/4 = @intrinsic(ref.new)(x424) in
+  let _wild800 = println__T_isize(read(to_dyn[Source]{NumberSource}(NumberSource { value: 11 }))) in
+  let mtmp801 = (1, 2) in
+  let x802 = mtmp801.0 in
+  let x803 = mtmp801.1 in
+  let value/3 = x803 in
+  let index/2 = x802 in
+  let _wild806 =
+    let compound_old804 = index/2 in
+    let compound_value805 = value/3 in
+    index/2 = (compound_old804 + compound_value805) in
+  let _wild807 = println__T_isize(index/2) in
+  let mtmp808 = (3, 0) in
+  let x809 = mtmp808.0 in
+  let captured/4 = @intrinsic(ref.new)(x809) in
   let increment/5 =
     pack_closure[inherent#closure_env_increment_0#closure_env_increment_0#apply](
       closure_env_increment_0 { captured_0: captured/4 }
     ) in
-  let _wild429 = increment/5() in
-  let _wild430 = println__T_isize(@intrinsic(ref.get)(captured/4)) in
-  let _wild436 =
-    let mtmp431 = Option__isize::Some(4) in
-    match mtmp431 {
+  let _wild814 = increment/5() in
+  let _wild815 = println__T_isize(@intrinsic(ref.get)(captured/4)) in
+  let _wild821 =
+    let mtmp816 = Option__isize::Some(4) in
+    match mtmp816 {
       Option__isize::None => {
         ()
       },
-      Option__isize::Some(x432) => {
-        let x432 = Option__isize::Some._0(mtmp431) in
-        let count/6 = x432 in
-        let _wild435 =
-          let compound_old433 = count/6 in
-          let compound_value434 = 1 in
-          count/6 = (compound_old433 + compound_value434) in
+      Option__isize::Some(x817) => {
+        let x817 = Option__isize::Some._0(mtmp816) in
+        let count/6 = x817 in
+        let _wild820 =
+          let compound_old818 = count/6 in
+          let compound_value819 = 1 in
+          count/6 = (compound_old818 + compound_value819) in
         println__T_isize(count/6)
       },
     } in
   let values/7 = inherent#Vec#Vec[T]#new__T_isize() in
-  let _wild437 = inherent#Vec#Vec[T]#push__T_isize(values/7, 6) in
-  let _wild446 =
-    let for_source438 = values/7 in
-    let for_limit439 = @intrinsic(vec.len)(for_source438) in
-    let for_index440 = 0 in
-    while (for_index440 < for_limit439) {
-        let for_item441 = @intrinsic(vec.get)(for_source438, for_index440) in
-        let _wild442 = for_index440 = (for_index440 + 1) in
-        let item/8 = for_item441 in
-        let _wild445 =
-          let compound_old443 = item/8 in
-          let compound_value444 = 1 in
-          item/8 = (compound_old443 + compound_value444) in
+  let _wild822 = inherent#Vec#Vec[T]#push__T_isize(values/7, 6) in
+  let _wild831 =
+    let for_source823 = values/7 in
+    let for_limit824 = @intrinsic(vec.len)(for_source823) in
+    let for_index825 = 0 in
+    while (for_index825 < for_limit824) {
+        let for_item826 = @intrinsic(vec.get)(for_source823, for_index825) in
+        let _wild827 = for_index825 = (for_index825 + 1) in
+        let item/8 = for_item826 in
+        let _wild830 =
+          let compound_old828 = item/8 in
+          let compound_value829 = 1 in
+          item/8 = (compound_old828 + compound_value829) in
         println__T_isize(item/8)
     } in
   let legacy/9 = (8, 9) in
-  let _wild450 =
-    let place_root447 = legacy/9 in
-    let place448 = place_root447.0 in
-    let value449 = 1 in
-    legacy/9 = ((place448 + value449), place_root447.1) in
-  let _wild454 =
-    let place_root451 = legacy/9 in
-    let place452 = place_root451.1 in
-    let value453 = 1 in
-    legacy/9 = (place_root451.0, (place452 + value453)) in
-  let _wild455 = println__T_isize((legacy/9.0 + legacy/9.1)) in
+  let _wild835 =
+    let place_root832 = legacy/9 in
+    let place833 = place_root832.0 in
+    let value834 = 1 in
+    legacy/9 = ((place833 + value834), place_root832.1) in
+  let _wild839 =
+    let place_root836 = legacy/9 in
+    let place837 = place_root836.1 in
+    let value838 = 1 in
+    legacy/9 = (place_root836.0, (place837 + value838)) in
+  let _wild840 = println__T_isize((legacy/9.0 + legacy/9.1)) in
   let steps/10 = 0 in
-  let _wild460 =
+  let _wild845 =
     while (steps/10 < 3) {
-        let _wild458 =
-          let compound_old456 = steps/10 in
-          let compound_value457 = 1 in
-          steps/10 = (compound_old456 + compound_value457) in
-        loop let _wild459 = continue@1 in
+        let _wild843 =
+          let compound_old841 = steps/10 in
+          let compound_value842 = 1 in
+          steps/10 = (compound_old841 + compound_value842) in
+        loop let _wild844 = continue@1 in
         ()
     } in
-  let _wild461 = println__T_isize(steps/10) in
+  let _wild846 = println__T_isize(steps/10) in
   let seen/11 = inherent#Ref#Ref[T]#new__T_isize(0) in
-  let _wild472 =
-    let for_index462 = 0 in
-    let for_limit463 = 3 in
-    while (for_index462 < for_limit463) {
-        let for_item464 = for_index462 in
-        let _wild465 = for_index462 = (for_index462 + 1) in
-        let row/12 = for_item464 in
-        let for_index466 = 0 in
-        let for_limit467 = 3 in
-        while (for_index466 < for_limit467) {
-            let for_item468 = for_index466 in
-            let _wild469 = for_index466 = (for_index466 + 1) in
-            let column/13 = for_item468 in
-            let _wild470 =
+  let _wild857 =
+    let for_index847 = 0 in
+    let for_limit848 = 3 in
+    while (for_index847 < for_limit848) {
+        let for_item849 = for_index847 in
+        let _wild850 = for_index847 = (for_index847 + 1) in
+        let row/12 = for_item849 in
+        let for_index851 = 0 in
+        let for_limit852 = 3 in
+        while (for_index851 < for_limit852) {
+            let for_item853 = for_index851 in
+            let _wild854 = for_index851 = (for_index851 + 1) in
+            let column/13 = for_item853 in
+            let _wild855 =
               inherent#Ref#Ref[T]#set__T_isize(
                 seen/11,
                 (inherent#Ref#Ref[T]#get__T_isize(seen/11) + 1)
@@ -115,18 +115,18 @@ fn main() -> unit {
             } else {
                 false
             } {
-                let _wild471 = break@1 in
+                let _wild856 = break@1 in
                 ()
             } else {
                 ()
             }
         }
     } in
-  let _wild473 = println__T_isize(inherent#Ref#Ref[T]#get__T_isize(seen/11)) in
+  let _wild858 = println__T_isize(inherent#Ref#Ref[T]#get__T_isize(seen/11)) in
   let answer/14 =
-    loop loop let _wild474 = break@1 42 in
+    loop loop let _wild859 = break@1 42 in
     () in
-  let _wild475 = println__T_isize(answer/14) in
+  let _wild860 = println__T_isize(answer/14) in
   labeled_cleanup()
 }
 
@@ -142,45 +142,108 @@ fn inherent#Vec#Vec[T]#new__T_isize() -> Vec[isize] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_isize(self/258: Vec[isize], elem/259: isize) -> unit {
-  @intrinsic(vec.push)(self/258, elem/259)
+fn inherent#Vec#Vec[T]#push__T_isize(self/511: Vec[isize], elem/512: isize) -> unit {
+  @intrinsic(vec.push)(self/511, elem/512)
 }
 
-fn inherent#Ref#Ref[T]#new__T_isize(value/431: isize) -> Ref[isize] {
-  @intrinsic(ref.new)(value/431)
+fn inherent#Ref#Ref[T]#new__T_isize(value/684: isize) -> Ref[isize] {
+  @intrinsic(ref.new)(value/684)
 }
 
-fn inherent#Ref#Ref[T]#get__T_isize(self/432: Ref[isize]) -> isize {
-  @intrinsic(ref.get)(self/432)
+fn inherent#Ref#Ref[T]#get__T_isize(self/685: Ref[isize]) -> isize {
+  @intrinsic(ref.get)(self/685)
 }
 
-fn inherent#Ref#Ref[T]#set__T_isize(self/433: Ref[isize], value/434: isize) -> unit {
-  @intrinsic(ref.set)(self/433, value/434)
+fn inherent#Ref#Ref[T]#set__T_isize(self/686: Ref[isize], value/687: isize) -> unit {
+  @intrinsic(ref.set)(self/686, value/687)
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
 }
 
-fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
-  @runtime(core.int_to_string)(self/151)
+fn trait_impl#ToString#isize#to_string(self/404: isize) -> string {
+  __goml_builtin_int_to_string(self/404)
 }
 
-fn trait_impl#PartialEq#isize#eq(self/185: isize, other/186: isize) -> bool {
-  (self/185 == other/186)
+fn __goml_builtin_int_to_string(value/222: isize) -> string {
+  signed_decimal_string((value/222 as i64))
 }
 
-fn trait_impl#Hash#isize#hash(self/211: isize) -> u64 {
-  @runtime(core.int_hash)(self/211)
+fn signed_decimal_string(value/214: i64) -> string {
+  if (value/214 < 0) {
+      ("-" + decimal_string((0 - (value/214 as u64))))
+  } else {
+      decimal_string((value/214 as u64))
+  }
+}
+
+fn decimal_string(value/208: u64) -> string {
+  let _wild351 =
+    if (value/208 == 0) {
+        return "0"
+    } else {
+        ()
+    } in
+  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/210 = value/208 in
+  let _wild356 =
+    while (remaining/210 > 0) {
+        let _wild352 =
+          inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
+        let _wild355 =
+          let compound_old353 = remaining/210 in
+          let compound_value354 = 10 in
+          remaining/210 = (compound_old353 / compound_value354) in
+        ()
+    } in
+  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
+  let offset/212 = 0 in
+  let _wild361 =
+    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
+        let _wild357 =
+          inherent#Vec#Vec[T]#push__T_u8(
+            bytes/211,
+            @intrinsic(vec.get)(
+              reversed/209,
+              ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+            )
+          ) in
+        let _wild360 =
+          let compound_old358 = offset/212 in
+          let compound_value359 = 1 in
+          offset/212 = (compound_old358 + compound_value359) in
+        ()
+    } in
+  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  let x364 = mtmp362.1 in
+  let result/213 = x364 in
+  result/213
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  @intrinsic(vec.push)(self/511, elem/512)
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/526)
+}
+
+fn trait_impl#PartialEq#isize#eq(self/438: isize, other/439: isize) -> bool {
+  (self/438 == other/439)
+}
+
+fn trait_impl#Hash#isize#hash(self/464: isize) -> u64 {
+  @runtime(core.int_hash)(self/464)
 }
 
 fn inherent#closure_env_increment_0#closure_env_increment_0#apply(
-  env476: closure_env_increment_0
+  env861: closure_env_increment_0
 ) -> unit {
-  let captured/4 = closure_env_increment_0.captured_0(env476) in
-  let _wild428 =
-    let compound_old426 = @intrinsic(ref.get)(captured/4) in
-    let compound_value427 = 1 in
-    @intrinsic(ref.set)(captured/4, (compound_old426 + compound_value427)) in
+  let captured/4 = closure_env_increment_0.captured_0(env861) in
+  let _wild813 =
+    let compound_old811 = @intrinsic(ref.get)(captured/4) in
+    let compound_value812 = 1 in
+    @intrinsic(ref.set)(captured/4, (compound_old811 + compound_value812)) in
   ()
 }

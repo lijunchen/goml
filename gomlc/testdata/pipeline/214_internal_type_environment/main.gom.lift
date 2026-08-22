@@ -12,14 +12,14 @@ fn inherent#Point#Point#origin() -> Point {
 
 fn shape_value(value/7: Shape__i32) -> i32 {
   match value/7 {
-    Shape__i32::Dot(x411) => {
-      let x411 = Shape__i32::Dot._0(value/7) in
-      let point/8 = x411 in
+    Shape__i32::Dot(x796) => {
+      let x796 = Shape__i32::Dot._0(value/7) in
+      let point/8 = x796 in
       (Point.x(point/8) + Point.y(point/8))
     },
-    Shape__i32::Wrapped(x412) => {
-      let x412 = Shape__i32::Wrapped._0(value/7) in
-      let wrapper/9 = x412 in
+    Shape__i32::Wrapped(x797) => {
+      let x797 = Shape__i32::Wrapped._0(value/7) in
+      let wrapper/9 = x797 in
       Wrapper__i32.value(wrapper/9)
     },
     Shape__i32::Origin => {
@@ -30,9 +30,9 @@ fn shape_value(value/7: Shape__i32) -> i32 {
 
 fn list_value(value/10: List) -> i32 {
   match value/10 {
-    List::Cons(x413) => {
-      let x413 = List::Cons._0(value/10) in
-      let node/11 = x413 in
+    List::Cons(x798) => {
+      let x798 = List::Cons._0(value/10) in
+      let node/11 = x798 in
       (Node.value(node/11) + list_value(Node.next(node/11)))
     },
     List::Nil => {
@@ -68,22 +68,85 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#i32#i32#to_string(self/33: i32) -> string {
-  @runtime(core.int32_to_string)(self/33)
+fn inherent#i32#i32#to_string(self/286: i32) -> string {
+  __goml_builtin_int32_to_string(self/286)
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
+}
+
+fn __goml_builtin_int32_to_string(value/225: i32) -> string {
+  signed_decimal_string((value/225 as i64))
+}
+
+fn signed_decimal_string(value/214: i64) -> string {
+  if (value/214 < 0) {
+      ("-" + decimal_string((0 - (value/214 as u64))))
+  } else {
+      decimal_string((value/214 as u64))
+  }
+}
+
+fn decimal_string(value/208: u64) -> string {
+  let _wild351 =
+    if (value/208 == 0) {
+        return "0"
+    } else {
+        ()
+    } in
+  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/210 = value/208 in
+  let _wild356 =
+    while (remaining/210 > 0) {
+        let _wild352 =
+          inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
+        let _wild355 =
+          let compound_old353 = remaining/210 in
+          let compound_value354 = 10 in
+          remaining/210 = (compound_old353 / compound_value354) in
+        ()
+    } in
+  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
+  let offset/212 = 0 in
+  let _wild361 =
+    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
+        let _wild357 =
+          inherent#Vec#Vec[T]#push__T_u8(
+            bytes/211,
+            @intrinsic(vec.get)(
+              reversed/209,
+              ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+            )
+          ) in
+        let _wild360 =
+          let compound_old358 = offset/212 in
+          let compound_value359 = 1 in
+          offset/212 = (compound_old358 + compound_value359) in
+        ()
+    } in
+  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  let x364 = mtmp362.1 in
+  let result/213 = x364 in
+  result/213
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  @intrinsic(vec.push)(self/511, elem/512)
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/526)
 }
 
 fn inherent#closure_env_add_0#closure_env_add_0#apply(
-  env414: closure_env_add_0,
+  env799: closure_env_add_0,
   value/13: i32
 ) -> i32 {
-  let offset/12 = closure_env_add_0.offset_0(env414) in
+  let offset/12 = closure_env_add_0.offset_0(env799) in
   (value/13 + offset/12)
 }
 
-fn inherent#closure_env_id_1#closure_env_id_1#apply(env415: closure_env_id_1, item/5: i32) -> i32 {
+fn inherent#closure_env_id_1#closure_env_id_1#apply(env800: closure_env_id_1, item/5: i32) -> i32 {
   item/5
 }

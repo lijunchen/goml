@@ -1,23 +1,42 @@
 package main
 
 import (
-    _goml_fmt "fmt"
+    _goml_os "os"
 )
 
 func _goml_runtime_core_string_println(s string) struct{} {
-    _goml_fmt.Println(s)
+    _goml_os.Stdout.WriteString(s + "\n")
     return struct{}{}
+}
+
+type _goml_vec_uint32 struct {
+    items []uint32
+}
+
+type FloatNatural struct {
+    words *_goml_vec_uint32
+}
+
+type ParsedFloat struct {
+    valid bool
+    negative bool
+    special int
+    numerator FloatNatural
+    decimal_exponent int
+    binary_exponent int
+    hexadecimal bool
+    significant_digits int
 }
 
 type Ordering int32
 
 func classify(x__0 int32) string {
-    var t421 bool = x__0 < 0
-    if t421 {
+    var t806 bool = x__0 < 0
+    if t806 {
         return "negative"
     } else {
-        var t424 bool = 0 < x__0
-        if t424 {
+        var t809 bool = 0 < x__0
+        if t809 {
             return "positive"
         } else {
             return "zero"
@@ -30,82 +49,82 @@ func main0() struct{} {
     var second__5 string = classify(0)
     var third__6 string = classify(17)
     var shape1__7 string
-    var inline475 int32 = 1
-    var inline476 int32 = 2
-    var inline477 int32 = 3
-    var inline478 bool = inline475 < inline476
-    if inline478 {
-        var inline479 bool = inline476 < inline477
-        if inline479 {
+    var inline860 int32 = 1
+    var inline861 int32 = 2
+    var inline862 int32 = 3
+    var inline863 bool = inline860 < inline861
+    if inline863 {
+        var inline864 bool = inline861 < inline862
+        if inline864 {
             shape1__7 = "ascending"
         } else {
             shape1__7 = "peak"
         }
     } else {
-        var inline480 bool = inline475 < inline477
-        if inline480 {
+        var inline865 bool = inline860 < inline862
+        if inline865 {
             shape1__7 = "valley"
         } else {
             shape1__7 = "flat"
         }
     }
     var shape2__8 string
-    var inline468 int32 = 3
-    var inline469 int32 = 2
-    var inline470 int32 = 1
-    var inline471 bool = inline468 < inline469
-    if inline471 {
-        var inline472 bool = inline469 < inline470
-        if inline472 {
+    var inline853 int32 = 3
+    var inline854 int32 = 2
+    var inline855 int32 = 1
+    var inline856 bool = inline853 < inline854
+    if inline856 {
+        var inline857 bool = inline854 < inline855
+        if inline857 {
             shape2__8 = "ascending"
         } else {
             shape2__8 = "peak"
         }
     } else {
-        var inline473 bool = inline468 < inline470
-        if inline473 {
+        var inline858 bool = inline853 < inline855
+        if inline858 {
             shape2__8 = "valley"
         } else {
             shape2__8 = "flat"
         }
     }
     var shape3__9 string
-    var inline461 int32 = 2
-    var inline462 int32 = 3
-    var inline463 int32 = 2
-    var inline464 bool = inline461 < inline462
-    if inline464 {
-        var inline465 bool = inline462 < inline463
-        if inline465 {
+    var inline846 int32 = 2
+    var inline847 int32 = 3
+    var inline848 int32 = 2
+    var inline849 bool = inline846 < inline847
+    if inline849 {
+        var inline850 bool = inline847 < inline848
+        if inline850 {
             shape3__9 = "ascending"
         } else {
             shape3__9 = "peak"
         }
     } else {
-        var inline466 bool = inline461 < inline463
-        if inline466 {
+        var inline851 bool = inline846 < inline848
+        if inline851 {
             shape3__9 = "valley"
         } else {
             shape3__9 = "flat"
         }
     }
-    var inline458 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(first__4)
-    _goml_runtime_core_string_println(inline458)
-    var inline455 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(second__5)
-    _goml_runtime_core_string_println(inline455)
-    var inline452 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(third__6)
-    _goml_runtime_core_string_println(inline452)
-    var inline449 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(shape1__7)
-    _goml_runtime_core_string_println(inline449)
-    var inline446 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(shape2__8)
-    _goml_runtime_core_string_println(inline446)
-    var inline443 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(shape3__9)
-    _goml_runtime_core_string_println(inline443)
+    var inline843 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(first__4)
+    _goml_runtime_core_string_println(inline843)
+    var inline840 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(second__5)
+    _goml_runtime_core_string_println(inline840)
+    var inline837 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(third__6)
+    _goml_runtime_core_string_println(inline837)
+    var inline834 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(shape1__7)
+    _goml_runtime_core_string_println(inline834)
+    var inline831 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(shape2__8)
+    _goml_runtime_core_string_println(inline831)
+    var inline828 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(shape3__9)
+    _goml_runtime_core_string_println(inline828)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
-    return self__149
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__402 string) string {
+    return self__402
 }
 
 func main() {

@@ -1,0 +1,44 @@
+fn main() -> unit {
+    let single/0: f32 = 1.5;
+    (println : (u32) -> unit)((f32::to_bits : (f32) -> u32)((single/0 : f32)));
+    (println : (string) -> unit)(
+      (ToString::to_string : (f32) -> string)((float32_from_bits : (u32) -> f32)(1069547520))
+    );
+    (println : (u64) -> unit)(
+      (f64::to_bits : (f64) -> u64)((f32::to_f64 : (f32) -> f64)((single/0 : f32)))
+    );
+    (println : (string) -> unit)(
+      (ToString::to_string : (f32) -> string)((f64::to_f32 : (f64) -> f32)(16777217))
+    );
+    (println : (string) -> unit)(
+      (ToString::to_string : (f64) -> string)(
+        (float64_from_bits : (u64) -> f64)(4607182418800017408)
+      )
+    );
+    let (hex_valid/1: bool, hex_value/2: f64) =
+      (string_parse_float64 : (string) -> (bool, f64))("0x1.8p+1");
+    (println : (bool) -> unit)((hex_valid/1 : bool));
+    (println : (f64) -> unit)((hex_value/2 : f64));
+    let (maximum_valid/3: bool, maximum_value/4: f64) =
+      (string_parse_float64 : (string) -> (bool, f64))("1.7976931348623157e308");
+    (println : (bool) -> unit)((maximum_valid/3 : bool));
+    (println : (u64) -> unit)((f64::to_bits : (f64) -> u64)((maximum_value/4 : f64)));
+    let (minimum_valid/5: bool, minimum_value/6: f64) =
+      (string_parse_float64 : (string) -> (bool, f64))("5e-324");
+    (println : (bool) -> unit)((minimum_valid/5 : bool));
+    (println : (u64) -> unit)((f64::to_bits : (f64) -> u64)((minimum_value/6 : f64)));
+    let (single_valid/7: bool, single_value/8: f64) =
+      (string_parse_float32 : (string) -> (bool, f64))("3.4028235e38");
+    (println : (bool) -> unit)((single_valid/7 : bool));
+    (println : (u32) -> unit)(
+      (f32::to_bits : (f32) -> u32)((f64::to_f32 : (f64) -> f32)((single_value/8 : f64)))
+    );
+    let (overflow_valid/9: bool, overflow_value/10: f64) =
+      (string_parse_float64 : (string) -> (bool, f64))("1e309");
+    (println : (bool) -> unit)((overflow_valid/9 : bool));
+    (println : (f64) -> unit)((overflow_value/10 : f64));
+    let (underflow_valid/11: bool, underflow_value/12: f64) =
+      (string_parse_float64 : (string) -> (bool, f64))("1e-400");
+    (println : (bool) -> unit)((underflow_valid/11 : bool));
+    (println : (f64) -> unit)((underflow_value/12 : f64))
+}

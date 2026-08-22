@@ -18,22 +18,22 @@ fn main() -> unit {
   let left/3 = 19 in
   let right/4 = (2 as usize) in
   let result/5 = combine(left/3, right/4) in
-  let _wild411 = println__T_usize(result/5) in
-  let _wild412 = println__T_string(trait_impl#ToString#usize#to_string(result/5)) in
-  let _wild413 = println__T_string(classify(result/5)) in
-  let _wild414 = println__T_bool((result/5 > left/3)) in
-  let _wild415 = println__T_u64(((result/5 & 15) as u64)) in
+  let _wild796 = println__T_usize(result/5) in
+  let _wild797 = println__T_string(trait_impl#ToString#usize#to_string(result/5)) in
+  let _wild798 = println__T_string(classify(result/5)) in
+  let _wild799 = println__T_bool((result/5 > left/3)) in
+  let _wild800 = println__T_u64(((result/5 & 15) as u64)) in
   let values/6 = inherent#HashMap#HashMap[K,V]#new__K_usize__V_string() in
-  let _wild416 =
+  let _wild801 =
     inherent#HashMap#HashMap[K,V]#set__K_usize__V_string(values/6, result/5, "stored") in
-  let mtmp417 = inherent#HashMap#HashMap[K,V]#get__K_usize__V_string(values/6, 42) in
-  match mtmp417 {
+  let mtmp802 = inherent#HashMap#HashMap[K,V]#get__K_usize__V_string(values/6, 42) in
+  match mtmp802 {
     Option__string::None => {
       println__T_string("missing")
     },
-    Option__string::Some(x418) => {
-      let x418 = Option__string::Some._0(mtmp417) in
-      let value/7 = x418 in
+    Option__string::Some(x803) => {
+      let x803 = Option__string::Some._0(mtmp802) in
+      let value/7 = x803 in
       println__T_string(value/7)
     },
   }
@@ -47,8 +47,8 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#usize#to_string(self/451: usize) -> string {
-  @runtime(core.uint_to_string)(self/451)
+fn trait_impl#ToString#usize#to_string(self/704: usize) -> string {
+  __goml_builtin_uint_to_string(self/704)
 }
 
 fn println__T_bool(value/1: bool) -> unit {
@@ -64,36 +64,95 @@ fn inherent#HashMap#HashMap[K,V]#new__K_usize__V_string() -> HashMap[usize, stri
 }
 
 fn inherent#HashMap#HashMap[K,V]#set__K_usize__V_string(
-  self/422: HashMap[usize, string],
-  key/423: usize,
-  value/424: string
+  self/675: HashMap[usize, string],
+  key/676: usize,
+  value/677: string
 ) -> unit {
-  @intrinsic(hashmap.set)(self/422, key/423, value/424)
+  @intrinsic(hashmap.set)(self/675, key/676, value/677)
 }
 
 fn inherent#HashMap#HashMap[K,V]#get__K_usize__V_string(
-  self/420: HashMap[usize, string],
-  key/421: usize
+  self/673: HashMap[usize, string],
+  key/674: usize
 ) -> Option__string {
-  @intrinsic(hashmap.get)(self/420, key/421)
+  @intrinsic(hashmap.get)(self/673, key/674)
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
 }
 
-fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
-  @runtime(core.bool_to_string)(self/148)
+fn __goml_builtin_uint_to_string(value/227: usize) -> string {
+  decimal_string((value/227 as u64))
 }
 
-fn trait_impl#ToString#u64#to_string(self/159: u64) -> string {
-  @runtime(core.uint64_to_string)(self/159)
+fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
+  @runtime(core.bool_to_string)(self/401)
 }
 
-fn trait_impl#PartialEq#usize#eq(self/453: usize, other/454: usize) -> bool {
-  (self/453 == other/454)
+fn trait_impl#ToString#u64#to_string(self/412: u64) -> string {
+  __goml_builtin_uint64_to_string(self/412)
 }
 
-fn trait_impl#Hash#usize#hash(self/455: usize) -> u64 {
-  @runtime(core.uint_hash)(self/455)
+fn decimal_string(value/208: u64) -> string {
+  let _wild351 =
+    if (value/208 == 0) {
+        return "0"
+    } else {
+        ()
+    } in
+  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/210 = value/208 in
+  let _wild356 =
+    while (remaining/210 > 0) {
+        let _wild352 =
+          inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
+        let _wild355 =
+          let compound_old353 = remaining/210 in
+          let compound_value354 = 10 in
+          remaining/210 = (compound_old353 / compound_value354) in
+        ()
+    } in
+  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
+  let offset/212 = 0 in
+  let _wild361 =
+    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
+        let _wild357 =
+          inherent#Vec#Vec[T]#push__T_u8(
+            bytes/211,
+            @intrinsic(vec.get)(
+              reversed/209,
+              ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+            )
+          ) in
+        let _wild360 =
+          let compound_old358 = offset/212 in
+          let compound_value359 = 1 in
+          offset/212 = (compound_old358 + compound_value359) in
+        ()
+    } in
+  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  let x364 = mtmp362.1 in
+  let result/213 = x364 in
+  result/213
+}
+
+fn __goml_builtin_uint64_to_string(value/231: u64) -> string {
+  decimal_string(value/231)
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  @intrinsic(vec.push)(self/511, elem/512)
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/526)
+}
+
+fn trait_impl#PartialEq#usize#eq(self/706: usize, other/707: usize) -> bool {
+  (self/706 == other/707)
+}
+
+fn trait_impl#Hash#usize#hash(self/708: usize) -> u64 {
+  @runtime(core.uint_hash)(self/708)
 }

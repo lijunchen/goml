@@ -1,7 +1,7 @@
 package main
 
 import (
-    _goml_fmt "fmt"
+    _goml_os "os"
 )
 
 func _goml_runtime_core_bool_to_string(x bool) string {
@@ -13,7 +13,7 @@ func _goml_runtime_core_bool_to_string(x bool) string {
 }
 
 func _goml_runtime_core_string_println(s string) struct{} {
-    _goml_fmt.Println(s)
+    _goml_os.Stdout.WriteString(s + "\n")
     return struct{}{}
 }
 
@@ -53,6 +53,25 @@ func vec_len__Vec_4Pair(vec *_goml_vec_Pair) int {
     return int(len(vec.items))
 }
 
+type _goml_vec_uint32 struct {
+    items []uint32
+}
+
+type FloatNatural struct {
+    words *_goml_vec_uint32
+}
+
+type ParsedFloat struct {
+    valid bool
+    negative bool
+    special int
+    numerator FloatNatural
+    decimal_exponent int
+    binary_exponent int
+    hexadecimal bool
+    significant_digits int
+}
+
 type Pair struct {
     left int
     right int
@@ -61,7 +80,7 @@ type Pair struct {
 type Ordering int32
 
 func main0() struct{} {
-    var t429 [3]int = [3]int{1, 2, 3}
+    var t814 [3]int = [3]int{1, 2, 3}
     var values__4 *_goml_vec_int = func(values [3]int) *_goml_vec_int {
         var storage struct {
             vector _goml_vec_int
@@ -70,20 +89,20 @@ func main0() struct{} {
         storage.values = values
         storage.vector.items = storage.values[0:len(storage.values)]
         return &storage.vector
-    }(t429)
-    var t430 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__isize(values__4, 2)
-    var t431 string
-    var inline543 string = _goml_runtime_core_bool_to_string(t430)
-    t431 = inline543
-    var inline540 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t431)
-    _goml_runtime_core_string_println(inline540)
-    var t432 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__isize(values__4, 9)
-    var t433 string
-    var inline538 string = _goml_runtime_core_bool_to_string(t432)
-    t433 = inline538
-    var inline535 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t433)
-    _goml_runtime_core_string_println(inline535)
-    var t434 [2]string = [2]string{"alpha", "beta"}
+    }(t814)
+    var t815 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__isize(values__4, 2)
+    var t816 string
+    var inline928 string = _goml_runtime_core_bool_to_string(t815)
+    t816 = inline928
+    var inline925 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t816)
+    _goml_runtime_core_string_println(inline925)
+    var t817 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__isize(values__4, 9)
+    var t818 string
+    var inline923 string = _goml_runtime_core_bool_to_string(t817)
+    t818 = inline923
+    var inline920 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t818)
+    _goml_runtime_core_string_println(inline920)
+    var t819 [2]string = [2]string{"alpha", "beta"}
     var names__5 *_goml_vec_string = func(values [2]string) *_goml_vec_string {
         var storage struct {
             vector _goml_vec_string
@@ -92,18 +111,18 @@ func main0() struct{} {
         storage.values = values
         storage.vector.items = storage.values[0:len(storage.values)]
         return &storage.vector
-    }(t434)
-    var t435 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__string(names__5, "beta")
-    var t436 string
-    var inline533 string = _goml_runtime_core_bool_to_string(t435)
-    t436 = inline533
-    var inline530 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t436)
-    _goml_runtime_core_string_println(inline530)
-    var t437 Pair = Pair{
+    }(t819)
+    var t820 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__string(names__5, "beta")
+    var t821 string
+    var inline918 string = _goml_runtime_core_bool_to_string(t820)
+    t821 = inline918
+    var inline915 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t821)
+    _goml_runtime_core_string_println(inline915)
+    var t822 Pair = Pair{
         left: 1,
         right: 2,
     }
-    var t438 [1]Pair = [1]Pair{t437}
+    var t823 [1]Pair = [1]Pair{t822}
     var pairs__6 *_goml_vec_Pair = func(values [1]Pair) *_goml_vec_Pair {
         var storage struct {
             vector _goml_vec_Pair
@@ -112,155 +131,155 @@ func main0() struct{} {
         storage.values = values
         storage.vector.items = storage.values[0:len(storage.values)]
         return &storage.vector
-    }(t438)
-    var t439 Pair = Pair{
+    }(t823)
+    var t824 Pair = Pair{
         left: 1,
         right: 2,
     }
-    var t440 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__Pair(pairs__6, t439)
-    var t441 string
-    var inline528 string = _goml_runtime_core_bool_to_string(t440)
-    t441 = inline528
-    var inline525 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t441)
-    _goml_runtime_core_string_println(inline525)
-    var t442 bool
-    var inline522 int = 3
-    var inline523 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__isize(values__4, inline522)
-    t442 = inline523
-    var t443 string
-    var inline520 string = _goml_runtime_core_bool_to_string(t442)
-    t443 = inline520
-    var inline517 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t443)
-    _goml_runtime_core_string_println(inline517)
-    var t444 [0]string = [0]string{}
+    var t825 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__Pair(pairs__6, t824)
+    var t826 string
+    var inline913 string = _goml_runtime_core_bool_to_string(t825)
+    t826 = inline913
+    var inline910 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t826)
+    _goml_runtime_core_string_println(inline910)
+    var t827 bool
+    var inline907 int = 3
+    var inline908 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__isize(values__4, inline907)
+    t827 = inline908
+    var t828 string
+    var inline905 string = _goml_runtime_core_bool_to_string(t827)
+    t828 = inline905
+    var inline902 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t828)
+    _goml_runtime_core_string_println(inline902)
+    var t829 [0]string = [0]string{}
     var empty__7 *_goml_vec_string = func(values [0]string) *_goml_vec_string {
         return &_goml_vec_string{
             items: values[0:len(values)],
         }
-    }(t444)
-    var t445 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__string(empty__7, "x")
-    var t446 string
-    var inline515 string = _goml_runtime_core_bool_to_string(t445)
-    t446 = inline515
-    var inline512 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t446)
-    _goml_runtime_core_string_println(inline512)
+    }(t829)
+    var t830 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__string(empty__7, "x")
+    var t831 string
+    var inline900 string = _goml_runtime_core_bool_to_string(t830)
+    t831 = inline900
+    var inline897 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t831)
+    _goml_runtime_core_string_println(inline897)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_PartialEq_i_isize_i_eq(self__185 int, other__186 int) bool {
-    var t450 bool = self__185 == other__186
-    return t450
+func _goml_m_trait__impl_i_PartialEq_i_isize_i_eq(self__438 int, other__439 int) bool {
+    var t835 bool = self__438 == other__439
+    return t835
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__isize(self__384 *_goml_vec_int, expected__385 int) bool {
-    var index__386 int = 0
-    Loop_loop457:
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__isize(self__637 *_goml_vec_int, expected__638 int) bool {
+    var index__639 int = 0
+    Loop_loop842:
     for {
-        var t458 int
-        var inline548 int = vec_len__Vec_3int(self__384)
-        t458 = inline548
-        var t459 bool = index__386 < t458
-        if t459 {
-            var t463 int = vec_get__Vec_3int(self__384, index__386)
-            var t464 bool
-            var inline546 bool = t463 == expected__385
-            t464 = inline546
-            if t464 {
+        var t843 int
+        var inline933 int = vec_len__Vec_3int(self__637)
+        t843 = inline933
+        var t844 bool = index__639 < t843
+        if t844 {
+            var t848 int = vec_get__Vec_3int(self__637, index__639)
+            var t849 bool
+            var inline931 bool = t848 == expected__638
+            t849 = inline931
+            if t849 {
                 return true
             } else {
-                var compound_old359 int = index__386
-                var compound_value360 int = 1
-                var t461 int = compound_old359 + compound_value360
-                index__386 = t461
+                var compound_old744 int = index__639
+                var compound_value745 int = 1
+                var t846 int = compound_old744 + compound_value745
+                index__639 = t846
                 continue
             }
         } else {
-            break Loop_loop457
+            break Loop_loop842
         }
     }
     return false
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__string(self__384 *_goml_vec_string, expected__385 string) bool {
-    var index__386 int = 0
-    Loop_loop471:
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__string(self__637 *_goml_vec_string, expected__638 string) bool {
+    var index__639 int = 0
+    Loop_loop856:
     for {
-        var t472 int
-        var inline552 int = vec_len__Vec_6string(self__384)
-        t472 = inline552
-        var t473 bool = index__386 < t472
-        if t473 {
-            var t477 string = vec_get__Vec_6string(self__384, index__386)
-            var t478 bool
-            var inline550 bool = t477 == expected__385
-            t478 = inline550
-            if t478 {
+        var t857 int
+        var inline937 int = vec_len__Vec_6string(self__637)
+        t857 = inline937
+        var t858 bool = index__639 < t857
+        if t858 {
+            var t862 string = vec_get__Vec_6string(self__637, index__639)
+            var t863 bool
+            var inline935 bool = t862 == expected__638
+            t863 = inline935
+            if t863 {
                 return true
             } else {
-                var compound_old359 int = index__386
-                var compound_value360 int = 1
-                var t475 int = compound_old359 + compound_value360
-                index__386 = t475
+                var compound_old744 int = index__639
+                var compound_value745 int = 1
+                var t860 int = compound_old744 + compound_value745
+                index__639 = t860
                 continue
             }
         } else {
-            break Loop_loop471
+            break Loop_loop856
         }
     }
     return false
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__Pair(self__384 *_goml_vec_Pair, expected__385 Pair) bool {
-    var index__386 int = 0
-    Loop_loop482:
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__Pair(self__637 *_goml_vec_Pair, expected__638 Pair) bool {
+    var index__639 int = 0
+    Loop_loop867:
     for {
-        var t483 int
-        var inline563 int = vec_len__Vec_4Pair(self__384)
-        t483 = inline563
-        var t484 bool = index__386 < t483
-        if t484 {
-            var t488 Pair = vec_get__Vec_4Pair(self__384, index__386)
-            var t489 bool
-            var inline555 bool
-            var inline559 int = t488.left
-            var inline560 int = expected__385.left
-            var inline561 bool = _goml_m_trait__impl_i_PartialEq_i_isize_i_eq(inline559, inline560)
-            inline555 = inline561
-            if inline555 {
-                var inline556 int = t488.right
-                var inline557 int = expected__385.right
-                var inline558 bool = _goml_m_trait__impl_i_PartialEq_i_isize_i_eq(inline556, inline557)
-                t489 = inline558
-                if t489 {
+        var t868 int
+        var inline948 int = vec_len__Vec_4Pair(self__637)
+        t868 = inline948
+        var t869 bool = index__639 < t868
+        if t869 {
+            var t873 Pair = vec_get__Vec_4Pair(self__637, index__639)
+            var t874 bool
+            var inline940 bool
+            var inline944 int = t873.left
+            var inline945 int = expected__638.left
+            var inline946 bool = _goml_m_trait__impl_i_PartialEq_i_isize_i_eq(inline944, inline945)
+            inline940 = inline946
+            if inline940 {
+                var inline941 int = t873.right
+                var inline942 int = expected__638.right
+                var inline943 bool = _goml_m_trait__impl_i_PartialEq_i_isize_i_eq(inline941, inline942)
+                t874 = inline943
+                if t874 {
                     return true
                 } else {
-                    var compound_old359 int = index__386
-                    var compound_value360 int = 1
-                    var t486 int = compound_old359 + compound_value360
-                    index__386 = t486
+                    var compound_old744 int = index__639
+                    var compound_value745 int = 1
+                    var t871 int = compound_old744 + compound_value745
+                    index__639 = t871
                     continue
                 }
             } else {
-                t489 = false
-                if t489 {
+                t874 = false
+                if t874 {
                     return true
                 } else {
-                    var compound_old359 int = index__386
-                    var compound_value360 int = 1
-                    var t486 int = compound_old359 + compound_value360
-                    index__386 = t486
+                    var compound_old744 int = index__639
+                    var compound_value745 int = 1
+                    var t871 int = compound_old744 + compound_value745
+                    index__639 = t871
                     continue
                 }
             }
         } else {
-            break Loop_loop482
+            break Loop_loop867
         }
     }
     return false
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
-    return self__149
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__402 string) string {
+    return self__402
 }
 
 func main() {

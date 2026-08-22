@@ -1,19 +1,19 @@
 fn point32_to_string(p/0: Point) -> string {
-  let x412 = Point.x(p/0) in
-  let x413 = Point.y(p/0) in
-  join inline_cont469(t424: string) -> string {
-    let t425 = ("Point { x: " + t424) in
-    let t426 = (t425 + ", y: ") in
-    join inline_cont467(t427: string) -> string {
-      let t428 = (t426 + t427) in
-      let t429 = (t428 + " }") in
-      t429
+  let x797 = Point.x(p/0) in
+  let x798 = Point.y(p/0) in
+  join inline_cont897(t809: string) -> string {
+    let t810 = ("Point { x: " + t809) in
+    let t811 = (t810 + ", y: ") in
+    join inline_cont895(t812: string) -> string {
+      let t813 = (t811 + t812) in
+      let t814 = (t813 + " }") in
+      t814
     } in
-    let inline468 = @runtime(core.int32_to_string)(x413) in
-    jump inline_cont467(inline468)
+    let inline896 = __goml_builtin_int32_to_string(x798) in
+    jump inline_cont895(inline896)
   } in
-  let inline470 = @runtime(core.int32_to_string)(x412) in
-  jump inline_cont469(inline470)
+  let inline898 = __goml_builtin_int32_to_string(x797) in
+  jump inline_cont897(inline898)
 }
 
 fn color_to_string(c/3: Color) -> string {
@@ -31,59 +31,59 @@ fn color_to_string(c/3: Color) -> string {
 }
 
 fn line_to_string(l/4: Line) -> string {
-  let x415 = Line.from(l/4) in
-  let x416 = Line.to(l/4) in
-  let x417 = Line.color(l/4) in
-  join inline_cont484(t436: string) -> string {
-    let t437 = ("Line { from: " + t436) in
-    let t438 = (t437 + ", to: ") in
-    join inline_cont472(t439: string) -> string {
-      let t440 = (t438 + t439) in
-      let t441 = (t440 + ", color: ") in
-      join inline_cont471(t442: string) -> string {
-        let t443 = (t441 + t442) in
-        let t444 = (t443 + " }") in
-        t444
+  let x800 = Line.from(l/4) in
+  let x801 = Line.to(l/4) in
+  let x802 = Line.color(l/4) in
+  join inline_cont912(t821: string) -> string {
+    let t822 = ("Line { from: " + t821) in
+    let t823 = (t822 + ", to: ") in
+    join inline_cont900(t824: string) -> string {
+      let t825 = (t823 + t824) in
+      let t826 = (t825 + ", color: ") in
+      join inline_cont899(t827: string) -> string {
+        let t828 = (t826 + t827) in
+        let t829 = (t828 + " }") in
+        t829
       } in
-      match x417 {
+      match x802 {
         Tag_0 => {
-          jump inline_cont471("Red")
+          jump inline_cont899("Red")
         },
         Tag_1 => {
-          jump inline_cont471("Green")
+          jump inline_cont899("Green")
         },
         Tag_2 => {
-          jump inline_cont471("Blue")
+          jump inline_cont899("Blue")
         },
       }
     } in
-    let inline474 = Point.x(x416) in
-    let inline475 = Point.y(x416) in
-    let inline478 = inherent#i32#i32#to_string(inline474) in
-    let inline479 = ("Point { x: " + inline478) in
-    let inline480 = (inline479 + ", y: ") in
-    let inline481 = inherent#i32#i32#to_string(inline475) in
-    let inline482 = (inline480 + inline481) in
-    let inline483 = (inline482 + " }") in
-    jump inline_cont472(inline483)
+    let inline902 = Point.x(x801) in
+    let inline903 = Point.y(x801) in
+    let inline906 = inherent#i32#i32#to_string(inline902) in
+    let inline907 = ("Point { x: " + inline906) in
+    let inline908 = (inline907 + ", y: ") in
+    let inline909 = inherent#i32#i32#to_string(inline903) in
+    let inline910 = (inline908 + inline909) in
+    let inline911 = (inline910 + " }") in
+    jump inline_cont900(inline911)
   } in
-  let inline486 = Point.x(x415) in
-  let inline487 = Point.y(x415) in
-  let inline490 = inherent#i32#i32#to_string(inline486) in
-  let inline491 = ("Point { x: " + inline490) in
-  let inline492 = (inline491 + ", y: ") in
-  let inline493 = inherent#i32#i32#to_string(inline487) in
-  let inline494 = (inline492 + inline493) in
-  let inline495 = (inline494 + " }") in
-  jump inline_cont484(inline495)
+  let inline914 = Point.x(x800) in
+  let inline915 = Point.y(x800) in
+  let inline918 = inherent#i32#i32#to_string(inline914) in
+  let inline919 = ("Point { x: " + inline918) in
+  let inline920 = (inline919 + ", y: ") in
+  let inline921 = inherent#i32#i32#to_string(inline915) in
+  let inline922 = (inline920 + inline921) in
+  let inline923 = (inline922 + " }") in
+  jump inline_cont912(inline923)
 }
 
 fn point_type(p/8: Point) -> string {
-  let x418 = Point.x(p/8) in
-  let x419 = Point.y(p/8) in
-  match x418 {
+  let x803 = Point.x(p/8) in
+  let x804 = Point.y(p/8) in
+  match x803 {
     0 => {
-      match x419 {
+      match x804 {
         0 => {
           "origin"
         },
@@ -91,8 +91,8 @@ fn point_type(p/8: Point) -> string {
           "up"
         },
         _ => {
-          let mtmp420 = (0 < x419) in
-          match mtmp420 {
+          let mtmp805 = (0 < x804) in
+          match mtmp805 {
             true => {
               "above"
             },
@@ -104,7 +104,7 @@ fn point_type(p/8: Point) -> string {
       }
     },
     1 => {
-      match x419 {
+      match x804 {
         0 => {
           "right"
         },
@@ -121,72 +121,192 @@ fn point_type(p/8: Point) -> string {
 
 fn main() -> unit {
   let p0/10 = Point { x: 0, y: 0 } in
-  join inline_cont502(t456: string) -> unit {
-    join inline_cont499(mtmp421: unit) -> unit {
+  join inline_cont930(t841: string) -> unit {
+    join inline_cont927(mtmp806: unit) -> unit {
       let p1/11 = Point { x: 10, y: 10 } in
       let line/12 = Line { from: p0/10, to: p1/11, color: Tag_0 } in
-      let t457 = line_to_string(line/12) in
-      let inline497 = trait_impl#ToString#string#to_string(t457) in
-      let inline498 = @runtime(core.string_println)(inline497) in
+      let t842 = line_to_string(line/12) in
+      let inline925 = trait_impl#ToString#string#to_string(t842) in
+      let inline926 = @runtime(core.string_println)(inline925) in
       ()
     } in
-    let inline500 = trait_impl#ToString#string#to_string(t456) in
-    let inline501 = @runtime(core.string_println)(inline500) in
-    jump inline_cont499(())
+    let inline928 = trait_impl#ToString#string#to_string(t841) in
+    let inline929 = @runtime(core.string_println)(inline928) in
+    jump inline_cont927(())
   } in
-  let inline503 = 0 in
-  let inline504 = 0 in
-  match inline503 {
+  let inline931 = 0 in
+  let inline932 = 0 in
+  match inline931 {
     0 => {
-      match inline504 {
+      match inline932 {
         0 => {
-          jump inline_cont502("origin")
+          jump inline_cont930("origin")
         },
         1 => {
-          jump inline_cont502("up")
+          jump inline_cont930("up")
         },
         _ => {
-          let inline506 = (0 < inline504) in
-          match inline506 {
+          let inline934 = (0 < inline932) in
+          match inline934 {
             true => {
-              jump inline_cont502("above")
+              jump inline_cont930("above")
             },
             false => {
-              jump inline_cont502("below")
+              jump inline_cont930("below")
             },
           }
         },
       }
     },
     1 => {
-      match inline504 {
+      match inline932 {
         0 => {
-          jump inline_cont502("right")
+          jump inline_cont930("right")
         },
         _ => {
-          jump inline_cont502("unknown")
+          jump inline_cont930("unknown")
         },
       }
     },
     _ => {
-      jump inline_cont502("unknown")
+      jump inline_cont930("unknown")
     },
   }
 }
 
-fn inherent#i32#i32#to_string(self/33: i32) -> string {
-  let t461 = @runtime(core.int32_to_string)(self/33) in
-  t461
+fn inherent#i32#i32#to_string(self/286: i32) -> string {
+  let inline936 = (self/286 as i64) in
+  let inline937 = signed_decimal_string(inline936) in
+  inline937
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont507(t463: string) -> unit {
-    let t464 = @runtime(core.string_println)(t463) in
+  join inline_cont938(t848: string) -> unit {
+    let t849 = @runtime(core.string_println)(t848) in
     ()
   } in
-  jump inline_cont507(value/1)
+  jump inline_cont938(value/1)
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn __goml_builtin_int32_to_string(value/225: i32) -> string {
+  let t852 = (value/225 as i64) in
+  let inline940 = (t852 < 0) in
+  if inline940 {
+    let inline941 = (t852 as u64) in
+    let inline942 = (0 - inline941) in
+    let inline943 = decimal_string(inline942) in
+    let inline944 = ("-" + inline943) in
+    inline944
+  } else {
+    let inline945 = (t852 as u64) in
+    let inline946 = decimal_string(inline945) in
+    inline946
+  }
+}
+
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
+}
+
+fn signed_decimal_string(value/214: i64) -> string {
+  let t860 = (value/214 < 0) in
+  if t860 {
+    let t861 = (value/214 as u64) in
+    let t862 = (0 - t861) in
+    let t863 = decimal_string(t862) in
+    let t864 = ("-" + t863) in
+    t864
+  } else {
+    let t865 = (value/214 as u64) in
+    let t866 = decimal_string(t865) in
+    t866
+  }
+}
+
+fn decimal_string(value/208: u64) -> string {
+  let t889 = (value/208 == 0) in
+  join k869() -> string {
+    let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+    let remaining/210 = value/208 in
+    join exit870() -> string {
+      join inline_cont955(t871: isize) -> string {
+        let bytes/211 = @intrinsic(vec.with_capacity)(t871) in
+        let offset/212 = 0 in
+        join exit872() -> string {
+          let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+          let x364 = mtmp362.1 in
+          x364
+        } in
+        joinrec {
+          join loop873() -> string {
+            join inline_cont953(t874: isize) -> string {
+              let t875 = (offset/212 < t874) in
+              if t875 {
+                join inline_cont951(t876: isize) -> string {
+                  let t877 = (t876 - offset/212) in
+                  let t878 = (t877 - 1) in
+                  let t879 = @intrinsic(vec.get)(reversed/209, t878) in
+                  join inline_cont949(_wild357: unit) -> string {
+                    let compound_old358 = offset/212 in
+                    let compound_value359 = 1 in
+                    let t880 = (compound_old358 + compound_value359) in
+                    let t881 = offset/212 = t880 in
+                    jump loop873()
+                  } in
+                  let inline950 = @intrinsic(vec.push)(bytes/211, t879) in
+                  jump inline_cont949(())
+                } in
+                let inline952 = @intrinsic(vec.len)(reversed/209) in
+                jump inline_cont951(inline952)
+              } else {
+                jump exit872()
+              }
+            } in
+            let inline954 = @intrinsic(vec.len)(reversed/209) in
+            jump inline_cont953(inline954)
+          } in
+        } in
+        jump loop873()
+      } in
+      let inline956 = @intrinsic(vec.len)(reversed/209) in
+      jump inline_cont955(inline956)
+    } in
+    joinrec {
+      join loop882() -> string {
+        let t883 = (remaining/210 > 0) in
+        if t883 {
+          let t884 = (remaining/210 % 10) in
+          let t885 = (t884 as u8) in
+          let t886 = (t885 + 48) in
+          join inline_cont947(_wild352: unit) -> string {
+            let compound_old353 = remaining/210 in
+            let compound_value354 = 10 in
+            let t887 = (compound_old353 / compound_value354) in
+            let t888 = remaining/210 = t887 in
+            jump loop882()
+          } in
+          let inline948 = @intrinsic(vec.push)(reversed/209, t886) in
+          jump inline_cont947(())
+        } else {
+          jump exit870()
+        }
+      } in
+    } in
+    jump loop882()
+  } in
+  if t889 {
+    "0"
+  } else {
+    jump k869()
+  }
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  let t891 = @intrinsic(vec.push)(self/511, elem/512) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  let t894 = @intrinsic(vec.len)(self/526) in
+  t894
 }

@@ -1,92 +1,212 @@
 fn main() -> unit {
-  join inline_cont454(int_pairer/2: (string) -> string) -> unit {
-    join inline_cont450(string_pairer/3: (string) -> string) -> unit {
-      let t416 = int_pairer/2("a") in
-      join inline_cont447(_wild411: unit) -> unit {
-        let t417 = string_pairer/3("b") in
-        let inline445 = trait_impl#ToString#string#to_string(t417) in
-        let inline446 = @runtime(core.string_println)(inline445) in
+  join inline_cont882(int_pairer/2: (string) -> string) -> unit {
+    join inline_cont878(string_pairer/3: (string) -> string) -> unit {
+      let t801 = int_pairer/2("a") in
+      join inline_cont875(_wild796: unit) -> unit {
+        let t802 = string_pairer/3("b") in
+        let inline873 = trait_impl#ToString#string#to_string(t802) in
+        let inline874 = @runtime(core.string_println)(inline873) in
         ()
       } in
-      let inline448 = trait_impl#ToString#string#to_string(t416) in
-      let inline449 = @runtime(core.string_println)(inline448) in
-      jump inline_cont447(())
+      let inline876 = trait_impl#ToString#string#to_string(t801) in
+      let inline877 = @runtime(core.string_println)(inline876) in
+      jump inline_cont875(())
     } in
-    let inline451 = "ok" in
-    let inline452 = closure_env_make_pairer_T_string_1 { x_0: inline451 } in
-    let inline453 =
+    let inline879 = "ok" in
+    let inline880 = closure_env_make_pairer_T_string_1 { x_0: inline879 } in
+    let inline881 =
       pack_closure[inherent#closure_env_make_pairer_T_string_1#closure_env_make_pairer_T_string_1#apply](
-        inline452
+        inline880
       ) in
-    jump inline_cont450(inline453)
+    jump inline_cont878(inline881)
   } in
-  let inline455 = 7 in
-  let inline456 = closure_env_make_pairer_T_isize_0 { x_0: inline455 } in
-  let inline457 =
+  let inline883 = 7 in
+  let inline884 = closure_env_make_pairer_T_isize_0 { x_0: inline883 } in
+  let inline885 =
     pack_closure[inherent#closure_env_make_pairer_T_isize_0#closure_env_make_pairer_T_isize_0#apply](
-      inline456
+      inline884
     ) in
-  jump inline_cont454(inline457)
+  jump inline_cont882(inline885)
 }
 
 fn make_pairer__T_isize(x/0: isize) -> (string) -> string {
-  let t420 = closure_env_make_pairer_T_isize_0 { x_0: x/0 } in
-  let t421 =
+  let t805 = closure_env_make_pairer_T_isize_0 { x_0: x/0 } in
+  let t806 =
     pack_closure[inherent#closure_env_make_pairer_T_isize_0#closure_env_make_pairer_T_isize_0#apply](
-      t420
+      t805
     ) in
-  t421
+  t806
 }
 
 fn make_pairer__T_string(x/0: string) -> (string) -> string {
-  let t424 = closure_env_make_pairer_T_string_1 { x_0: x/0 } in
-  let t425 =
+  let t809 = closure_env_make_pairer_T_string_1 { x_0: x/0 } in
+  let t810 =
     pack_closure[inherent#closure_env_make_pairer_T_string_1#closure_env_make_pairer_T_string_1#apply](
-      t424
+      t809
     ) in
-  t425
+  t810
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont458(t427: string) -> unit {
-    let t428 = @runtime(core.string_println)(t427) in
+  join inline_cont886(t812: string) -> unit {
+    let t813 = @runtime(core.string_println)(t812) in
     ()
   } in
-  jump inline_cont458(value/1)
+  jump inline_cont886(value/1)
 }
 
-fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
-  let t431 = @runtime(core.int_to_string)(self/151) in
-  t431
+fn trait_impl#ToString#isize#to_string(self/404: isize) -> string {
+  let inline888 = (self/404 as i64) in
+  let inline889 = signed_decimal_string(inline888) in
+  inline889
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
+}
+
+fn __goml_builtin_int_to_string(value/222: isize) -> string {
+  let t821 = (value/222 as i64) in
+  let inline891 = (t821 < 0) in
+  if inline891 {
+    let inline892 = (t821 as u64) in
+    let inline893 = (0 - inline892) in
+    let inline894 = decimal_string(inline893) in
+    let inline895 = ("-" + inline894) in
+    inline895
+  } else {
+    let inline896 = (t821 as u64) in
+    let inline897 = decimal_string(inline896) in
+    inline897
+  }
+}
+
+fn signed_decimal_string(value/214: i64) -> string {
+  let t827 = (value/214 < 0) in
+  if t827 {
+    let t828 = (value/214 as u64) in
+    let t829 = (0 - t828) in
+    let t830 = decimal_string(t829) in
+    let t831 = ("-" + t830) in
+    t831
+  } else {
+    let t832 = (value/214 as u64) in
+    let t833 = decimal_string(t832) in
+    t833
+  }
+}
+
+fn decimal_string(value/208: u64) -> string {
+  let t856 = (value/208 == 0) in
+  join k836() -> string {
+    let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+    let remaining/210 = value/208 in
+    join exit837() -> string {
+      join inline_cont906(t838: isize) -> string {
+        let bytes/211 = @intrinsic(vec.with_capacity)(t838) in
+        let offset/212 = 0 in
+        join exit839() -> string {
+          let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+          let x364 = mtmp362.1 in
+          x364
+        } in
+        joinrec {
+          join loop840() -> string {
+            join inline_cont904(t841: isize) -> string {
+              let t842 = (offset/212 < t841) in
+              if t842 {
+                join inline_cont902(t843: isize) -> string {
+                  let t844 = (t843 - offset/212) in
+                  let t845 = (t844 - 1) in
+                  let t846 = @intrinsic(vec.get)(reversed/209, t845) in
+                  join inline_cont900(_wild357: unit) -> string {
+                    let compound_old358 = offset/212 in
+                    let compound_value359 = 1 in
+                    let t847 = (compound_old358 + compound_value359) in
+                    let t848 = offset/212 = t847 in
+                    jump loop840()
+                  } in
+                  let inline901 = @intrinsic(vec.push)(bytes/211, t846) in
+                  jump inline_cont900(())
+                } in
+                let inline903 = @intrinsic(vec.len)(reversed/209) in
+                jump inline_cont902(inline903)
+              } else {
+                jump exit839()
+              }
+            } in
+            let inline905 = @intrinsic(vec.len)(reversed/209) in
+            jump inline_cont904(inline905)
+          } in
+        } in
+        jump loop840()
+      } in
+      let inline907 = @intrinsic(vec.len)(reversed/209) in
+      jump inline_cont906(inline907)
+    } in
+    joinrec {
+      join loop849() -> string {
+        let t850 = (remaining/210 > 0) in
+        if t850 {
+          let t851 = (remaining/210 % 10) in
+          let t852 = (t851 as u8) in
+          let t853 = (t852 + 48) in
+          join inline_cont898(_wild352: unit) -> string {
+            let compound_old353 = remaining/210 in
+            let compound_value354 = 10 in
+            let t854 = (compound_old353 / compound_value354) in
+            let t855 = remaining/210 = t854 in
+            jump loop849()
+          } in
+          let inline899 = @intrinsic(vec.push)(reversed/209, t853) in
+          jump inline_cont898(())
+        } else {
+          jump exit837()
+        }
+      } in
+    } in
+    jump loop849()
+  } in
+  if t856 {
+    "0"
+  } else {
+    jump k836()
+  }
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  let t858 = @intrinsic(vec.push)(self/511, elem/512) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  let t861 = @intrinsic(vec.len)(self/526) in
+  t861
 }
 
 fn inherent#closure_env_make_pairer_T_isize_0#closure_env_make_pairer_T_isize_0#apply(
-  env413: closure_env_make_pairer_T_isize_0,
+  env798: closure_env_make_pairer_T_isize_0,
   tag/1: string
 ) -> string {
-  let x/0 = closure_env_make_pairer_T_isize_0.x_0(env413) in
-  let t436 = (tag/1 + ":") in
-  join inline_cont459(t437: string) -> string {
-    let t438 = (t436 + t437) in
-    t438
+  let x/0 = closure_env_make_pairer_T_isize_0.x_0(env798) in
+  let t864 = (tag/1 + ":") in
+  join inline_cont908(t865: string) -> string {
+    let t866 = (t864 + t865) in
+    t866
   } in
-  let inline460 = @runtime(core.int_to_string)(x/0) in
-  jump inline_cont459(inline460)
+  let inline909 = __goml_builtin_int_to_string(x/0) in
+  jump inline_cont908(inline909)
 }
 
 fn inherent#closure_env_make_pairer_T_string_1#closure_env_make_pairer_T_string_1#apply(
-  env414: closure_env_make_pairer_T_string_1,
+  env799: closure_env_make_pairer_T_string_1,
   tag/1: string
 ) -> string {
-  let x/0 = closure_env_make_pairer_T_string_1.x_0(env414) in
-  let t441 = (tag/1 + ":") in
-  join inline_cont461(t442: string) -> string {
-    let t443 = (t441 + t442) in
-    t443
+  let x/0 = closure_env_make_pairer_T_string_1.x_0(env799) in
+  let t869 = (tag/1 + ":") in
+  join inline_cont910(t870: string) -> string {
+    let t871 = (t869 + t870) in
+    t871
   } in
-  jump inline_cont461(x/0)
+  jump inline_cont910(x/0)
 }

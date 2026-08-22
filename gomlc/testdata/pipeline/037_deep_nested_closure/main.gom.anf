@@ -1,75 +1,195 @@
 fn main() -> unit {
   let a/0 = 10 in
-  let t416 = closure_env_f1_3 { a_0: a/0 } in
-  let f1/11 = pack_closure[inherent#closure_env_f1_3#closure_env_f1_3#apply](t416) in
+  let t801 = closure_env_f1_3 { a_0: a/0 } in
+  let f1/11 = pack_closure[inherent#closure_env_f1_3#closure_env_f1_3#apply](t801) in
   let result/12 = f1/11(1) in
-  let inline446 = trait_impl#ToString#i32#to_string(result/12) in
-  let inline447 = @runtime(core.string_println)(inline446) in
+  let inline874 = trait_impl#ToString#i32#to_string(result/12) in
+  let inline875 = @runtime(core.string_println)(inline874) in
   ()
 }
 
 fn println__T_i32(value/1: i32) -> unit {
-  join inline_cont448(t419: string) -> unit {
-    let t420 = @runtime(core.string_println)(t419) in
+  join inline_cont876(t804: string) -> unit {
+    let t805 = @runtime(core.string_println)(t804) in
     ()
   } in
-  let inline449 = @runtime(core.int32_to_string)(value/1) in
-  jump inline_cont448(inline449)
+  let inline877 = __goml_builtin_int32_to_string(value/1) in
+  jump inline_cont876(inline877)
 }
 
-fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
-  let t423 = @runtime(core.int32_to_string)(self/154) in
-  t423
+fn trait_impl#ToString#i32#to_string(self/407: i32) -> string {
+  let inline879 = (self/407 as i64) in
+  let inline880 = signed_decimal_string(inline879) in
+  inline880
 }
 
-fn inherent#closure_env_f4_0#closure_env_f4_0#apply(env411: closure_env_f4_0, w/7: i32) -> i32 {
-  let a/0 = closure_env_f4_0.a_0(env411) in
-  let b/2 = closure_env_f4_0.b_1(env411) in
-  let c/4 = closure_env_f4_0.c_2(env411) in
-  let d/6 = closure_env_f4_0.d_3(env411) in
-  let x/1 = closure_env_f4_0.x_4(env411) in
-  let y/3 = closure_env_f4_0.y_5(env411) in
-  let z/5 = closure_env_f4_0.z_6(env411) in
-  let t426 = (a/0 + b/2) in
-  let t427 = (t426 + c/4) in
-  let t428 = (t427 + d/6) in
-  let t429 = (t428 + x/1) in
-  let t430 = (t429 + y/3) in
-  let t431 = (t430 + z/5) in
-  let t432 = (t431 + w/7) in
-  t432
+fn __goml_builtin_int32_to_string(value/225: i32) -> string {
+  let t811 = (value/225 as i64) in
+  let inline882 = (t811 < 0) in
+  if inline882 {
+    let inline883 = (t811 as u64) in
+    let inline884 = (0 - inline883) in
+    let inline885 = decimal_string(inline884) in
+    let inline886 = ("-" + inline885) in
+    inline886
+  } else {
+    let inline887 = (t811 as u64) in
+    let inline888 = decimal_string(inline887) in
+    inline888
+  }
 }
 
-fn inherent#closure_env_f3_1#closure_env_f3_1#apply(env412: closure_env_f3_1, z/5: i32) -> i32 {
-  let a/0 = closure_env_f3_1.a_0(env412) in
-  let b/2 = closure_env_f3_1.b_1(env412) in
-  let c/4 = closure_env_f3_1.c_2(env412) in
-  let x/1 = closure_env_f3_1.x_3(env412) in
-  let y/3 = closure_env_f3_1.y_4(env412) in
+fn signed_decimal_string(value/214: i64) -> string {
+  let t817 = (value/214 < 0) in
+  if t817 {
+    let t818 = (value/214 as u64) in
+    let t819 = (0 - t818) in
+    let t820 = decimal_string(t819) in
+    let t821 = ("-" + t820) in
+    t821
+  } else {
+    let t822 = (value/214 as u64) in
+    let t823 = decimal_string(t822) in
+    t823
+  }
+}
+
+fn decimal_string(value/208: u64) -> string {
+  let t846 = (value/208 == 0) in
+  join k826() -> string {
+    let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+    let remaining/210 = value/208 in
+    join exit827() -> string {
+      join inline_cont897(t828: isize) -> string {
+        let bytes/211 = @intrinsic(vec.with_capacity)(t828) in
+        let offset/212 = 0 in
+        join exit829() -> string {
+          let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+          let x364 = mtmp362.1 in
+          x364
+        } in
+        joinrec {
+          join loop830() -> string {
+            join inline_cont895(t831: isize) -> string {
+              let t832 = (offset/212 < t831) in
+              if t832 {
+                join inline_cont893(t833: isize) -> string {
+                  let t834 = (t833 - offset/212) in
+                  let t835 = (t834 - 1) in
+                  let t836 = @intrinsic(vec.get)(reversed/209, t835) in
+                  join inline_cont891(_wild357: unit) -> string {
+                    let compound_old358 = offset/212 in
+                    let compound_value359 = 1 in
+                    let t837 = (compound_old358 + compound_value359) in
+                    let t838 = offset/212 = t837 in
+                    jump loop830()
+                  } in
+                  let inline892 = @intrinsic(vec.push)(bytes/211, t836) in
+                  jump inline_cont891(())
+                } in
+                let inline894 = @intrinsic(vec.len)(reversed/209) in
+                jump inline_cont893(inline894)
+              } else {
+                jump exit829()
+              }
+            } in
+            let inline896 = @intrinsic(vec.len)(reversed/209) in
+            jump inline_cont895(inline896)
+          } in
+        } in
+        jump loop830()
+      } in
+      let inline898 = @intrinsic(vec.len)(reversed/209) in
+      jump inline_cont897(inline898)
+    } in
+    joinrec {
+      join loop839() -> string {
+        let t840 = (remaining/210 > 0) in
+        if t840 {
+          let t841 = (remaining/210 % 10) in
+          let t842 = (t841 as u8) in
+          let t843 = (t842 + 48) in
+          join inline_cont889(_wild352: unit) -> string {
+            let compound_old353 = remaining/210 in
+            let compound_value354 = 10 in
+            let t844 = (compound_old353 / compound_value354) in
+            let t845 = remaining/210 = t844 in
+            jump loop839()
+          } in
+          let inline890 = @intrinsic(vec.push)(reversed/209, t843) in
+          jump inline_cont889(())
+        } else {
+          jump exit827()
+        }
+      } in
+    } in
+    jump loop839()
+  } in
+  if t846 {
+    "0"
+  } else {
+    jump k826()
+  }
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  let t848 = @intrinsic(vec.push)(self/511, elem/512) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  let t851 = @intrinsic(vec.len)(self/526) in
+  t851
+}
+
+fn inherent#closure_env_f4_0#closure_env_f4_0#apply(env796: closure_env_f4_0, w/7: i32) -> i32 {
+  let a/0 = closure_env_f4_0.a_0(env796) in
+  let b/2 = closure_env_f4_0.b_1(env796) in
+  let c/4 = closure_env_f4_0.c_2(env796) in
+  let d/6 = closure_env_f4_0.d_3(env796) in
+  let x/1 = closure_env_f4_0.x_4(env796) in
+  let y/3 = closure_env_f4_0.y_5(env796) in
+  let z/5 = closure_env_f4_0.z_6(env796) in
+  let t854 = (a/0 + b/2) in
+  let t855 = (t854 + c/4) in
+  let t856 = (t855 + d/6) in
+  let t857 = (t856 + x/1) in
+  let t858 = (t857 + y/3) in
+  let t859 = (t858 + z/5) in
+  let t860 = (t859 + w/7) in
+  t860
+}
+
+fn inherent#closure_env_f3_1#closure_env_f3_1#apply(env797: closure_env_f3_1, z/5: i32) -> i32 {
+  let a/0 = closure_env_f3_1.a_0(env797) in
+  let b/2 = closure_env_f3_1.b_1(env797) in
+  let c/4 = closure_env_f3_1.c_2(env797) in
+  let x/1 = closure_env_f3_1.x_3(env797) in
+  let y/3 = closure_env_f3_1.y_4(env797) in
   let d/6 = 40 in
-  let t435 =
+  let t863 =
     closure_env_f4_0 { a_0: a/0, b_1: b/2, c_2: c/4, d_3: d/6, x_4: x/1, y_5: y/3, z_6: z/5 } in
-  let f4/8 = pack_closure[inherent#closure_env_f4_0#closure_env_f4_0#apply](t435) in
-  let t436 = f4/8(4) in
-  t436
+  let f4/8 = pack_closure[inherent#closure_env_f4_0#closure_env_f4_0#apply](t863) in
+  let t864 = f4/8(4) in
+  t864
 }
 
-fn inherent#closure_env_f2_2#closure_env_f2_2#apply(env413: closure_env_f2_2, y/3: i32) -> i32 {
-  let a/0 = closure_env_f2_2.a_0(env413) in
-  let b/2 = closure_env_f2_2.b_1(env413) in
-  let x/1 = closure_env_f2_2.x_2(env413) in
+fn inherent#closure_env_f2_2#closure_env_f2_2#apply(env798: closure_env_f2_2, y/3: i32) -> i32 {
+  let a/0 = closure_env_f2_2.a_0(env798) in
+  let b/2 = closure_env_f2_2.b_1(env798) in
+  let x/1 = closure_env_f2_2.x_2(env798) in
   let c/4 = 30 in
-  let t439 = closure_env_f3_1 { a_0: a/0, b_1: b/2, c_2: c/4, x_3: x/1, y_4: y/3 } in
-  let f3/9 = pack_closure[inherent#closure_env_f3_1#closure_env_f3_1#apply](t439) in
-  let t440 = f3/9(3) in
-  t440
+  let t867 = closure_env_f3_1 { a_0: a/0, b_1: b/2, c_2: c/4, x_3: x/1, y_4: y/3 } in
+  let f3/9 = pack_closure[inherent#closure_env_f3_1#closure_env_f3_1#apply](t867) in
+  let t868 = f3/9(3) in
+  t868
 }
 
-fn inherent#closure_env_f1_3#closure_env_f1_3#apply(env414: closure_env_f1_3, x/1: i32) -> i32 {
-  let a/0 = closure_env_f1_3.a_0(env414) in
+fn inherent#closure_env_f1_3#closure_env_f1_3#apply(env799: closure_env_f1_3, x/1: i32) -> i32 {
+  let a/0 = closure_env_f1_3.a_0(env799) in
   let b/2 = 20 in
-  let t443 = closure_env_f2_2 { a_0: a/0, b_1: b/2, x_2: x/1 } in
-  let f2/10 = pack_closure[inherent#closure_env_f2_2#closure_env_f2_2#apply](t443) in
-  let t444 = f2/10(2) in
-  t444
+  let t871 = closure_env_f2_2 { a_0: a/0, b_1: b/2, x_2: x/1 } in
+  let f2/10 = pack_closure[inherent#closure_env_f2_2#closure_env_f2_2#apply](t871) in
+  let t872 = f2/10(2) in
+  t872
 }

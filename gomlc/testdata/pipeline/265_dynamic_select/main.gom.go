@@ -1,16 +1,19 @@
 package main
 
 import (
-    _goml_fmt "fmt"
+    _goml_os "os"
     _goml_reflect "reflect"
 )
 
-func _goml_runtime_core_int_to_string(x int) string {
-    return _goml_fmt.Sprintf("%d", x)
+func _goml_runtime_core_string_from_utf8(bytes *_goml_vec_uint8) Tuple2_4bool_6string {
+    return Tuple2_4bool_6string{
+        _0: true,
+        _1: string(bytes.items),
+    }
 }
 
 func _goml_runtime_core_string_println(s string) struct{} {
-    _goml_fmt.Println(s)
+    _goml_os.Stdout.WriteString(s + "\n")
     return struct{}{}
 }
 
@@ -91,6 +94,33 @@ func vec_len__Vec_11Sender_3int(vec *_goml_vec_Sender_3int) int {
     return int(len(vec.items))
 }
 
+type _goml_vec_uint8 struct {
+    items []uint8
+}
+
+func vec_with_capacity__Vec_5uint8(capacity int) *_goml_vec_uint8 {
+    return &_goml_vec_uint8{
+        items: make([]uint8, 0, capacity),
+    }
+}
+
+func vec_push__Vec_5uint8(vec *_goml_vec_uint8, elem uint8) struct{} {
+    vec.items = append(vec.items, elem)
+    return struct{}{}
+}
+
+func vec_get__Vec_5uint8(vec *_goml_vec_uint8, index int) uint8 {
+    return vec.items[index]
+}
+
+func vec_len__Vec_5uint8(vec *_goml_vec_uint8) int {
+    return int(len(vec.items))
+}
+
+type _goml_vec_uint32 struct {
+    items []uint32
+}
+
 type Tuple4_10Slice_3int_21Slice_13Receiver_3int_19Slice_11Sender_3int_10Slice_3int struct {
     _0 []int
     _1 []<-chan int
@@ -109,6 +139,26 @@ type Tuple5_3int_3int_3int_4bool_4bool struct {
 type Tuple2_3int_4bool struct {
     _0 int
     _1 bool
+}
+
+type Tuple2_4bool_6string struct {
+    _0 bool
+    _1 string
+}
+
+type FloatNatural struct {
+    words *_goml_vec_uint32
+}
+
+type ParsedFloat struct {
+    valid bool
+    negative bool
+    special int
+    numerator FloatNatural
+    decimal_exponent int
+    binary_exponent int
+    hexadecimal bool
+    significant_digits int
 }
 
 type _goml_m_std_p_channel_p_PreparedOperations____isize struct {
@@ -175,28 +225,28 @@ type _goml_m_Result____std_p_channe_h5400d2fb6c865f5b36aaa9b0f9e787f7_l_p_Select
 func print_selection(value__0 _goml_m_std_p_channel_p_Selection____isize) struct{} {
     switch value__0.(type) {
     case Received:
-        var x411 int = value__0.(Received)._0
-        var x412 Option__isize = value__0.(Received)._1
-        var inline636 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(x411)
-        _goml_runtime_core_string_println(inline636)
-        var t442 int
-        var inline632 int = -1
-        switch x412._tag {
+        var x796 int = value__0.(Received)._0
+        var x797 Option__isize = value__0.(Received)._1
+        var inline1064 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(x796)
+        _goml_runtime_core_string_println(inline1064)
+        var t827 int
+        var inline1060 int = -1
+        switch x797._tag {
         case 0:
-            t442 = inline632
+            t827 = inline1060
         case 1:
-            var inline633 int = x412._v1_0
-            t442 = inline633
+            var inline1061 int = x797._v1_0
+            t827 = inline1061
         default:
             panic("non-exhaustive match")
         }
-        var inline629 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t442)
-        _goml_runtime_core_string_println(inline629)
+        var inline1057 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t827)
+        _goml_runtime_core_string_println(inline1057)
         return struct{}{}
     case Sent:
-        var x413 int = value__0.(Sent)._0
-        var inline639 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(x413)
-        _goml_runtime_core_string_println(inline639)
+        var x798 int = value__0.(Sent)._0
+        var inline1067 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(x798)
+        _goml_runtime_core_string_println(inline1067)
         return struct{}{}
     default:
         panic("non-exhaustive match")
@@ -208,17 +258,17 @@ func main0() struct{} {
     var second__5 chan int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__isize(1)
     _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__isize(first__4, 10)
     _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__isize(second__5, 20)
-    var t446 <-chan int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_receiver____T__isize(first__4)
-    var t447 _goml_m_std_p_channel_p_Operation____isize = _goml_m_std_p_channel_p_Operation____isize{
+    var t831 <-chan int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_receiver____T__isize(first__4)
+    var t832 _goml_m_std_p_channel_p_Operation____isize = _goml_m_std_p_channel_p_Operation____isize{
         _tag: 0,
-        _v0_0: t446,
+        _v0_0: t831,
     }
-    var t448 <-chan int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_receiver____T__isize(second__5)
-    var t449 _goml_m_std_p_channel_p_Operation____isize = _goml_m_std_p_channel_p_Operation____isize{
+    var t833 <-chan int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_receiver____T__isize(second__5)
+    var t834 _goml_m_std_p_channel_p_Operation____isize = _goml_m_std_p_channel_p_Operation____isize{
         _tag: 0,
-        _v0_0: t448,
+        _v0_0: t833,
     }
-    var t450 [2]_goml_m_std_p_channel_p_Operation____isize = [2]_goml_m_std_p_channel_p_Operation____isize{t447, t449}
+    var t835 [2]_goml_m_std_p_channel_p_Operation____isize = [2]_goml_m_std_p_channel_p_Operation____isize{t832, t834}
     var operations__6 *_goml_vec__goml_m_std_p_channel_p_Operation____isize = func(values [2]_goml_m_std_p_channel_p_Operation____isize) *_goml_vec__goml_m_std_p_channel_p_Operation____isize {
         var storage struct {
             vector _goml_vec__goml_m_std_p_channel_p_Operation____isize
@@ -227,85 +277,85 @@ func main0() struct{} {
         storage.values = values
         storage.vector.items = storage.values[0:len(storage.values)]
         return &storage.vector
-    }(t450)
-    var t451 int = _goml_m_inherent_i_Vec_i_Vec_l_h6161506801e1e3b7949d66d7b76c6b61_tion_l_isize_r_(operations__6)
-    var t452 []_goml_m_std_p_channel_p_Operation____isize = operations__6.items[0:t451]
-    var mtmp417 _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError = _goml_m_std_p_channel_p_try__select__priority____T__isize(t452)
-    switch mtmp417._tag {
+    }(t835)
+    var t836 int = _goml_m_inherent_i_Vec_i_Vec_l_h6161506801e1e3b7949d66d7b76c6b61_tion_l_isize_r_(operations__6)
+    var t837 []_goml_m_std_p_channel_p_Operation____isize = operations__6.items[0:t836]
+    var mtmp802 _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError = _goml_m_std_p_channel_p_try__select__priority____T__isize(t837)
+    switch mtmp802._tag {
     case 0:
-        var x418 _goml_m_Option____std_p_channel_p_Selection____isize = mtmp417._v0_0
-        switch x418._tag {
+        var x803 _goml_m_Option____std_p_channel_p_Selection____isize = mtmp802._v0_0
+        switch x803._tag {
         case 1:
-            var x420 _goml_m_std_p_channel_p_Selection____isize = x418._v1_0
-            switch x420.(type) {
+            var x805 _goml_m_std_p_channel_p_Selection____isize = x803._v1_0
+            switch x805.(type) {
             case Received:
-                var inline642 int = x420.(Received)._0
-                var inline643 Option__isize = x420.(Received)._1
-                println__T_isize(inline642)
-                var inline647 int = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__isize(inline643, -1)
-                println__T_isize(inline647)
+                var inline1070 int = x805.(Received)._0
+                var inline1071 Option__isize = x805.(Received)._1
+                println__T_isize(inline1070)
+                var inline1075 int = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__isize(inline1071, -1)
+                println__T_isize(inline1075)
             case Sent:
-                var inline649 int = x420.(Sent)._0
-                println__T_isize(inline649)
+                var inline1077 int = x805.(Sent)._0
+                println__T_isize(inline1077)
             default:
                 panic("non-exhaustive match")
             }
         default:
-            var inline653 int = -1
-            var inline654 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(inline653)
-            _goml_runtime_core_string_println(inline654)
+            var inline1081 int = -1
+            var inline1082 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(inline1081)
+            _goml_runtime_core_string_println(inline1082)
         }
     default:
-        var inline657 int = -1
-        var inline658 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(inline657)
-        _goml_runtime_core_string_println(inline658)
+        var inline1085 int = -1
+        var inline1086 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(inline1085)
+        _goml_runtime_core_string_println(inline1086)
     }
-    var t454 int = _goml_m_inherent_i_Vec_i_Vec_l_h6161506801e1e3b7949d66d7b76c6b61_tion_l_isize_r_(operations__6)
-    var t455 []_goml_m_std_p_channel_p_Operation____isize = operations__6.items[0:t454]
-    var mtmp422 _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError = _goml_m_std_p_channel_p_try__select____T__isize(t455)
-    switch mtmp422._tag {
+    var t839 int = _goml_m_inherent_i_Vec_i_Vec_l_h6161506801e1e3b7949d66d7b76c6b61_tion_l_isize_r_(operations__6)
+    var t840 []_goml_m_std_p_channel_p_Operation____isize = operations__6.items[0:t839]
+    var mtmp807 _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError = _goml_m_std_p_channel_p_try__select____T__isize(t840)
+    switch mtmp807._tag {
     case 0:
-        var x423 _goml_m_Option____std_p_channel_p_Selection____isize = mtmp422._v0_0
-        switch x423._tag {
+        var x808 _goml_m_Option____std_p_channel_p_Selection____isize = mtmp807._v0_0
+        switch x808._tag {
         case 1:
-            var x425 _goml_m_std_p_channel_p_Selection____isize = x423._v1_0
-            switch x425.(type) {
+            var x810 _goml_m_std_p_channel_p_Selection____isize = x808._v1_0
+            switch x810.(type) {
             case Received:
-                var inline661 int = x425.(Received)._0
-                var inline662 Option__isize = x425.(Received)._1
-                println__T_isize(inline661)
-                var inline666 int = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__isize(inline662, -1)
-                println__T_isize(inline666)
+                var inline1089 int = x810.(Received)._0
+                var inline1090 Option__isize = x810.(Received)._1
+                println__T_isize(inline1089)
+                var inline1094 int = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__isize(inline1090, -1)
+                println__T_isize(inline1094)
             case Sent:
-                var inline668 int = x425.(Sent)._0
-                println__T_isize(inline668)
+                var inline1096 int = x810.(Sent)._0
+                println__T_isize(inline1096)
             default:
                 panic("non-exhaustive match")
             }
         default:
-            var inline672 int = -2
-            var inline673 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(inline672)
-            _goml_runtime_core_string_println(inline673)
+            var inline1100 int = -2
+            var inline1101 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(inline1100)
+            _goml_runtime_core_string_println(inline1101)
         }
     default:
-        var inline676 int = -2
-        var inline677 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(inline676)
-        _goml_runtime_core_string_println(inline677)
+        var inline1104 int = -2
+        var inline1105 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(inline1104)
+        _goml_runtime_core_string_println(inline1105)
     }
     var empty__9 chan int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__isize(0)
     var target__10 chan int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__isize(1)
-    var t457 <-chan int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_receiver____T__isize(empty__9)
-    var t458 _goml_m_std_p_channel_p_Operation____isize = _goml_m_std_p_channel_p_Operation____isize{
+    var t842 <-chan int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_receiver____T__isize(empty__9)
+    var t843 _goml_m_std_p_channel_p_Operation____isize = _goml_m_std_p_channel_p_Operation____isize{
         _tag: 0,
-        _v0_0: t457,
+        _v0_0: t842,
     }
-    var t459 chan<- int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_sender____T__isize(target__10)
-    var t460 _goml_m_std_p_channel_p_Operation____isize = _goml_m_std_p_channel_p_Operation____isize{
+    var t844 chan<- int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_sender____T__isize(target__10)
+    var t845 _goml_m_std_p_channel_p_Operation____isize = _goml_m_std_p_channel_p_Operation____isize{
         _tag: 1,
-        _v1_0: t459,
+        _v1_0: t844,
         _v1_1: 30,
     }
-    var t461 [2]_goml_m_std_p_channel_p_Operation____isize = [2]_goml_m_std_p_channel_p_Operation____isize{t458, t460}
+    var t846 [2]_goml_m_std_p_channel_p_Operation____isize = [2]_goml_m_std_p_channel_p_Operation____isize{t843, t845}
     var mixed__11 *_goml_vec__goml_m_std_p_channel_p_Operation____isize = func(values [2]_goml_m_std_p_channel_p_Operation____isize) *_goml_vec__goml_m_std_p_channel_p_Operation____isize {
         var storage struct {
             vector _goml_vec__goml_m_std_p_channel_p_Operation____isize
@@ -314,30 +364,30 @@ func main0() struct{} {
         storage.values = values
         storage.vector.items = storage.values[0:len(storage.values)]
         return &storage.vector
-    }(t461)
-    var t462 int = _goml_m_inherent_i_Vec_i_Vec_l_h6161506801e1e3b7949d66d7b76c6b61_tion_l_isize_r_(mixed__11)
-    var t463 []_goml_m_std_p_channel_p_Operation____isize = mixed__11.items[0:t462]
-    var mtmp427 _goml_m_Result____std_p_channe_h5400d2fb6c865f5b36aaa9b0f9e787f7_l_p_SelectError = _goml_m_std_p_channel_p_select____T__isize(t463)
-    switch mtmp427._tag {
+    }(t846)
+    var t847 int = _goml_m_inherent_i_Vec_i_Vec_l_h6161506801e1e3b7949d66d7b76c6b61_tion_l_isize_r_(mixed__11)
+    var t848 []_goml_m_std_p_channel_p_Operation____isize = mixed__11.items[0:t847]
+    var mtmp812 _goml_m_Result____std_p_channe_h5400d2fb6c865f5b36aaa9b0f9e787f7_l_p_SelectError = _goml_m_std_p_channel_p_select____T__isize(t848)
+    switch mtmp812._tag {
     case 0:
-        var x428 _goml_m_std_p_channel_p_Selection____isize = mtmp427._v0_0
-        print_selection(x428)
+        var x813 _goml_m_std_p_channel_p_Selection____isize = mtmp812._v0_0
+        print_selection(x813)
     case 1:
-        var inline680 int = -3
-        var inline681 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(inline680)
-        _goml_runtime_core_string_println(inline681)
+        var inline1108 int = -3
+        var inline1109 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(inline1108)
+        _goml_runtime_core_string_println(inline1109)
     default:
         panic("non-exhaustive match")
     }
-    var t465 Option__isize = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__isize(target__10)
-    var t466 int = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__isize(t465, -4)
-    println__T_isize(t466)
-    var t467 <-chan int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_receiver____T__isize(empty__9)
-    var t468 _goml_m_std_p_channel_p_Operation____isize = _goml_m_std_p_channel_p_Operation____isize{
+    var t850 Option__isize = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__isize(target__10)
+    var t851 int = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__isize(t850, -4)
+    println__T_isize(t851)
+    var t852 <-chan int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_receiver____T__isize(empty__9)
+    var t853 _goml_m_std_p_channel_p_Operation____isize = _goml_m_std_p_channel_p_Operation____isize{
         _tag: 0,
-        _v0_0: t467,
+        _v0_0: t852,
     }
-    var t469 [1]_goml_m_std_p_channel_p_Operation____isize = [1]_goml_m_std_p_channel_p_Operation____isize{t468}
+    var t854 [1]_goml_m_std_p_channel_p_Operation____isize = [1]_goml_m_std_p_channel_p_Operation____isize{t853}
     var none__13 *_goml_vec__goml_m_std_p_channel_p_Operation____isize = func(values [1]_goml_m_std_p_channel_p_Operation____isize) *_goml_vec__goml_m_std_p_channel_p_Operation____isize {
         var storage struct {
             vector _goml_vec__goml_m_std_p_channel_p_Operation____isize
@@ -346,103 +396,103 @@ func main0() struct{} {
         storage.values = values
         storage.vector.items = storage.values[0:len(storage.values)]
         return &storage.vector
-    }(t469)
-    var t470 int = _goml_m_inherent_i_Vec_i_Vec_l_h6161506801e1e3b7949d66d7b76c6b61_tion_l_isize_r_(none__13)
-    var t471 []_goml_m_std_p_channel_p_Operation____isize = none__13.items[0:t470]
-    var mtmp432 _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError = _goml_m_std_p_channel_p_try__select____T__isize(t471)
-    var jp473 int
-    switch mtmp432._tag {
+    }(t854)
+    var t855 int = _goml_m_inherent_i_Vec_i_Vec_l_h6161506801e1e3b7949d66d7b76c6b61_tion_l_isize_r_(none__13)
+    var t856 []_goml_m_std_p_channel_p_Operation____isize = none__13.items[0:t855]
+    var mtmp817 _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError = _goml_m_std_p_channel_p_try__select____T__isize(t856)
+    var jp858 int
+    switch mtmp817._tag {
     case 0:
-        var x433 _goml_m_Option____std_p_channel_p_Selection____isize = mtmp432._v0_0
-        switch x433._tag {
+        var x818 _goml_m_Option____std_p_channel_p_Selection____isize = mtmp817._v0_0
+        switch x818._tag {
         case 0:
-            jp473 = 40
+            jp858 = 40
         default:
-            jp473 = -5
+            jp858 = -5
         }
     default:
-        jp473 = -5
+        jp858 = -5
     }
-    println__T_isize(jp473)
+    println__T_isize(jp858)
     var no_operations__14 *_goml_vec__goml_m_std_p_channel_p_Operation____isize
-    var inline689 *_goml_vec__goml_m_std_p_channel_p_Operation____isize = vec_new___goml_m_Vec__30std_p_channel_p_Operation____isize()
-    no_operations__14 = inline689
-    var t474 int
-    var inline687 int = vec_len___goml_m_Vec__30std_p_channel_p_Operation____isize(no_operations__14)
-    t474 = inline687
-    var t475 []_goml_m_std_p_channel_p_Operation____isize = no_operations__14.items[0:t474]
-    var mtmp437 _goml_m_Result____std_p_channe_h5400d2fb6c865f5b36aaa9b0f9e787f7_l_p_SelectError = _goml_m_std_p_channel_p_select____T__isize(t475)
-    var jp477 int
-    switch mtmp437._tag {
+    var inline1117 *_goml_vec__goml_m_std_p_channel_p_Operation____isize = vec_new___goml_m_Vec__30std_p_channel_p_Operation____isize()
+    no_operations__14 = inline1117
+    var t859 int
+    var inline1115 int = vec_len___goml_m_Vec__30std_p_channel_p_Operation____isize(no_operations__14)
+    t859 = inline1115
+    var t860 []_goml_m_std_p_channel_p_Operation____isize = no_operations__14.items[0:t859]
+    var mtmp822 _goml_m_Result____std_p_channe_h5400d2fb6c865f5b36aaa9b0f9e787f7_l_p_SelectError = _goml_m_std_p_channel_p_select____T__isize(t860)
+    var jp862 int
+    switch mtmp822._tag {
     case 1:
-        var x439 _goml_m_std_p_channel_p_SelectError = mtmp437._v1_0
-        switch x439 {
+        var x824 _goml_m_std_p_channel_p_SelectError = mtmp822._v1_0
+        switch x824 {
         case Empty:
-            jp477 = 50
+            jp862 = 50
         default:
             panic("non-exhaustive match")
         }
     default:
-        jp477 = -6
+        jp862 = -6
     }
-    var inline684 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(jp477)
-    _goml_runtime_core_string_println(inline684)
+    var inline1112 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(jp862)
+    _goml_runtime_core_string_println(inline1112)
     return struct{}{}
 }
 
 func println__T_isize(value__1 int) struct{} {
-    var t494 string
-    var inline691 string = _goml_runtime_core_int_to_string(value__1)
-    t494 = inline691
-    _goml_runtime_core_string_println(t494)
+    var t879 string
+    var inline1119 string = __goml_builtin_int_to_string(value__1)
+    t879 = inline1119
+    _goml_runtime_core_string_println(t879)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__isize(self__467 Option__isize, fallback__468 int) int {
-    switch self__467._tag {
+func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__isize(self__720 Option__isize, fallback__721 int) int {
+    switch self__720._tag {
     case 0:
-        return fallback__468
+        return fallback__721
     case 1:
-        var x390 int = self__467._v1_0
-        return x390
+        var x775 int = self__720._v1_0
+        return x775
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__isize(capacity__435 int) chan int {
-    var t502 chan int = func(p0 int) chan int {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__isize(capacity__688 int) chan int {
+    var t887 chan int = func(p0 int) chan int {
         return make(chan int, p0)
-    }(capacity__435)
-    return t502
+    }(capacity__688)
+    return t887
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__isize(self__436 chan int, value__437 int) struct{} {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__isize(self__689 chan int, value__690 int) struct{} {
     func(p0 chan int, p1 int) struct{} {
         p0 <- p1
         return struct{}{}
-    }(self__436, value__437)
+    }(self__689, value__690)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_receiver____T__isize(self__443 chan int) <-chan int {
-    var t507 <-chan int = func(p0 chan int) <-chan int {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_receiver____T__isize(self__696 chan int) <-chan int {
+    var t892 <-chan int = func(p0 chan int) <-chan int {
         return p0
-    }(self__443)
-    return t507
+    }(self__696)
+    return t892
 }
 
 func _goml_m_std_p_channel_p_try__select__priority____T__isize(operations__35 []_goml_m_std_p_channel_p_Operation____isize) _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError {
-    var t512 int
-    var inline700 int = len(operations__35)
-    t512 = inline700
-    var t513 bool = t512 == 0
-    if t513 {
-        var t514 _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError = _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError{
+    var t897 int
+    var inline1128 int = len(operations__35)
+    t897 = inline1128
+    var t898 bool = t897 == 0
+    if t898 {
+        var t899 _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError = _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError{
             _tag: 1,
             _v1_0: Empty,
         }
-        return t514
+        return t899
     } else {
         var prepared__36 _goml_m_std_p_channel_p_PreparedOperations____isize = _goml_m_std_p_channel_p_prepare____T__isize(operations__35)
         var mtmp34 Tuple4_10Slice_3int_21Slice_13Receiver_3int_19Slice_11Sender_3int_10Slice_3int = _goml_m_std_p_channel_p_prepared__slices____T__isize(prepared__36)
@@ -514,68 +564,68 @@ func _goml_m_std_p_channel_p_try__select__priority____T__isize(operations__35 []
         var x42 int = mtmp39._2
         var x43 bool = mtmp39._3
         var x44 bool = mtmp39._4
-        var jp516 _goml_m_Option____std_p_channel_p_Selection____isize
+        var jp901 _goml_m_Option____std_p_channel_p_Selection____isize
         if x44 {
-            var t518 _goml_m_std_p_channel_p_Selection____isize
-            var inline693 bool = x41 == 0
-            if inline693 {
-                var inline695 Option__isize
+            var t903 _goml_m_std_p_channel_p_Selection____isize
+            var inline1121 bool = x41 == 0
+            if inline1121 {
+                var inline1123 Option__isize
                 if x43 {
-                    var inline697 Option__isize = Option__isize{
+                    var inline1125 Option__isize = Option__isize{
                         _tag: 1,
                         _v1_0: x42,
                     }
-                    inline695 = inline697
+                    inline1123 = inline1125
                 } else {
-                    inline695 = Option__isize{
+                    inline1123 = Option__isize{
                         _tag: 0,
                     }
                 }
-                var inline696 _goml_m_std_p_channel_p_Selection____isize = Received{
+                var inline1124 _goml_m_std_p_channel_p_Selection____isize = Received{
                     _0: x40,
-                    _1: inline695,
+                    _1: inline1123,
                 }
-                t518 = inline696
+                t903 = inline1124
             } else {
-                var inline698 _goml_m_std_p_channel_p_Selection____isize = Sent{
+                var inline1126 _goml_m_std_p_channel_p_Selection____isize = Sent{
                     _0: x40,
                 }
-                t518 = inline698
+                t903 = inline1126
             }
-            var t519 _goml_m_Option____std_p_channel_p_Selection____isize = _goml_m_Option____std_p_channel_p_Selection____isize{
+            var t904 _goml_m_Option____std_p_channel_p_Selection____isize = _goml_m_Option____std_p_channel_p_Selection____isize{
                 _tag: 1,
-                _v1_0: t518,
+                _v1_0: t903,
             }
-            jp516 = t519
+            jp901 = t904
         } else {
-            jp516 = _goml_m_Option____std_p_channel_p_Selection____isize{
+            jp901 = _goml_m_Option____std_p_channel_p_Selection____isize{
                 _tag: 0,
             }
         }
-        var t517 _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError = _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError{
+        var t902 _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError = _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError{
             _tag: 0,
-            _v0_0: jp516,
+            _v0_0: jp901,
         }
-        return t517
+        return t902
     }
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_h6161506801e1e3b7949d66d7b76c6b61_tion_l_isize_r_(self__273 *_goml_vec__goml_m_std_p_channel_p_Operation____isize) int {
-    var t522 int = vec_len___goml_m_Vec__30std_p_channel_p_Operation____isize(self__273)
-    return t522
+func _goml_m_inherent_i_Vec_i_Vec_l_h6161506801e1e3b7949d66d7b76c6b61_tion_l_isize_r_(self__526 *_goml_vec__goml_m_std_p_channel_p_Operation____isize) int {
+    var t907 int = vec_len___goml_m_Vec__30std_p_channel_p_Operation____isize(self__526)
+    return t907
 }
 
 func _goml_m_std_p_channel_p_try__select____T__isize(operations__24 []_goml_m_std_p_channel_p_Operation____isize) _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError {
-    var t527 int
-    var inline709 int = len(operations__24)
-    t527 = inline709
-    var t528 bool = t527 == 0
-    if t528 {
-        var t529 _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError = _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError{
+    var t912 int
+    var inline1137 int = len(operations__24)
+    t912 = inline1137
+    var t913 bool = t912 == 0
+    if t913 {
+        var t914 _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError = _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError{
             _tag: 1,
             _v1_0: Empty,
         }
-        return t529
+        return t914
     } else {
         var prepared__25 _goml_m_std_p_channel_p_PreparedOperations____isize = _goml_m_std_p_channel_p_prepare____T__isize(operations__24)
         var mtmp23 Tuple4_10Slice_3int_21Slice_13Receiver_3int_19Slice_11Sender_3int_10Slice_3int = _goml_m_std_p_channel_p_prepared__slices____T__isize(prepared__25)
@@ -641,70 +691,70 @@ func _goml_m_std_p_channel_p_try__select____T__isize(operations__24 []_goml_m_st
         var x31 int = mtmp28._2
         var x32 bool = mtmp28._3
         var x33 bool = mtmp28._4
-        var jp531 _goml_m_Option____std_p_channel_p_Selection____isize
+        var jp916 _goml_m_Option____std_p_channel_p_Selection____isize
         if x33 {
-            var t533 _goml_m_std_p_channel_p_Selection____isize
-            var inline702 bool = x30 == 0
-            if inline702 {
-                var inline704 Option__isize
+            var t918 _goml_m_std_p_channel_p_Selection____isize
+            var inline1130 bool = x30 == 0
+            if inline1130 {
+                var inline1132 Option__isize
                 if x32 {
-                    var inline706 Option__isize = Option__isize{
+                    var inline1134 Option__isize = Option__isize{
                         _tag: 1,
                         _v1_0: x31,
                     }
-                    inline704 = inline706
+                    inline1132 = inline1134
                 } else {
-                    inline704 = Option__isize{
+                    inline1132 = Option__isize{
                         _tag: 0,
                     }
                 }
-                var inline705 _goml_m_std_p_channel_p_Selection____isize = Received{
+                var inline1133 _goml_m_std_p_channel_p_Selection____isize = Received{
                     _0: x29,
-                    _1: inline704,
+                    _1: inline1132,
                 }
-                t533 = inline705
+                t918 = inline1133
             } else {
-                var inline707 _goml_m_std_p_channel_p_Selection____isize = Sent{
+                var inline1135 _goml_m_std_p_channel_p_Selection____isize = Sent{
                     _0: x29,
                 }
-                t533 = inline707
+                t918 = inline1135
             }
-            var t534 _goml_m_Option____std_p_channel_p_Selection____isize = _goml_m_Option____std_p_channel_p_Selection____isize{
+            var t919 _goml_m_Option____std_p_channel_p_Selection____isize = _goml_m_Option____std_p_channel_p_Selection____isize{
                 _tag: 1,
-                _v1_0: t533,
+                _v1_0: t918,
             }
-            jp531 = t534
+            jp916 = t919
         } else {
-            jp531 = _goml_m_Option____std_p_channel_p_Selection____isize{
+            jp916 = _goml_m_Option____std_p_channel_p_Selection____isize{
                 _tag: 0,
             }
         }
-        var t532 _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError = _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError{
+        var t917 _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError = _goml_m_Result____Option____st_ha315a4af527ac57871bea61a2ab15462_l_p_SelectError{
             _tag: 0,
-            _v0_0: jp531,
+            _v0_0: jp916,
         }
-        return t532
+        return t917
     }
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_sender____T__isize(self__442 chan int) chan<- int {
-    var t537 chan<- int = func(p0 chan int) chan<- int {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_sender____T__isize(self__695 chan int) chan<- int {
+    var t922 chan<- int = func(p0 chan int) chan<- int {
         return p0
-    }(self__442)
-    return t537
+    }(self__695)
+    return t922
 }
 
 func _goml_m_std_p_channel_p_select____T__isize(operations__14 []_goml_m_std_p_channel_p_Operation____isize) _goml_m_Result____std_p_channe_h5400d2fb6c865f5b36aaa9b0f9e787f7_l_p_SelectError {
-    var t542 int
-    var inline718 int = len(operations__14)
-    t542 = inline718
-    var t543 bool = t542 == 0
-    if t543 {
-        var t544 _goml_m_Result____std_p_channe_h5400d2fb6c865f5b36aaa9b0f9e787f7_l_p_SelectError = _goml_m_Result____std_p_channe_h5400d2fb6c865f5b36aaa9b0f9e787f7_l_p_SelectError{
+    var t927 int
+    var inline1146 int = len(operations__14)
+    t927 = inline1146
+    var t928 bool = t927 == 0
+    if t928 {
+        var t929 _goml_m_Result____std_p_channe_h5400d2fb6c865f5b36aaa9b0f9e787f7_l_p_SelectError = _goml_m_Result____std_p_channe_h5400d2fb6c865f5b36aaa9b0f9e787f7_l_p_SelectError{
             _tag: 1,
             _v1_0: Empty,
         }
-        return t544
+        return t929
     } else {
         var prepared__15 _goml_m_std_p_channel_p_PreparedOperations____isize = _goml_m_std_p_channel_p_prepare____T__isize(operations__14)
         var mtmp12 Tuple4_10Slice_3int_21Slice_13Receiver_3int_19Slice_11Sender_3int_10Slice_3int = _goml_m_std_p_channel_p_prepared__slices____T__isize(prepared__15)
@@ -757,42 +807,42 @@ func _goml_m_std_p_channel_p_select____T__isize(operations__14 []_goml_m_std_p_c
         var x19 int = mtmp17._1
         var x20 int = mtmp17._2
         var x21 bool = mtmp17._3
-        var t545 _goml_m_std_p_channel_p_Selection____isize
-        var inline711 bool = x19 == 0
-        if inline711 {
-            var inline713 Option__isize
+        var t930 _goml_m_std_p_channel_p_Selection____isize
+        var inline1139 bool = x19 == 0
+        if inline1139 {
+            var inline1141 Option__isize
             if x21 {
-                var inline715 Option__isize = Option__isize{
+                var inline1143 Option__isize = Option__isize{
                     _tag: 1,
                     _v1_0: x20,
                 }
-                inline713 = inline715
+                inline1141 = inline1143
             } else {
-                inline713 = Option__isize{
+                inline1141 = Option__isize{
                     _tag: 0,
                 }
             }
-            var inline714 _goml_m_std_p_channel_p_Selection____isize = Received{
+            var inline1142 _goml_m_std_p_channel_p_Selection____isize = Received{
                 _0: x18,
-                _1: inline713,
+                _1: inline1141,
             }
-            t545 = inline714
+            t930 = inline1142
         } else {
-            var inline716 _goml_m_std_p_channel_p_Selection____isize = Sent{
+            var inline1144 _goml_m_std_p_channel_p_Selection____isize = Sent{
                 _0: x18,
             }
-            t545 = inline716
+            t930 = inline1144
         }
-        var t546 _goml_m_Result____std_p_channe_h5400d2fb6c865f5b36aaa9b0f9e787f7_l_p_SelectError = _goml_m_Result____std_p_channe_h5400d2fb6c865f5b36aaa9b0f9e787f7_l_p_SelectError{
+        var t931 _goml_m_Result____std_p_channe_h5400d2fb6c865f5b36aaa9b0f9e787f7_l_p_SelectError = _goml_m_Result____std_p_channe_h5400d2fb6c865f5b36aaa9b0f9e787f7_l_p_SelectError{
             _tag: 0,
-            _v0_0: t545,
+            _v0_0: t930,
         }
-        return t546
+        return t931
     }
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__isize(self__438 chan int) Option__isize {
-    var mtmp379 Tuple2_3int_4bool = func(p0 chan int) Tuple2_3int_4bool {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__isize(self__691 chan int) Option__isize {
+    var mtmp764 Tuple2_3int_4bool = func(p0 chan int) Tuple2_3int_4bool {
         var value int
         var ok bool
         value, ok = <-p0
@@ -800,15 +850,15 @@ func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__isize(self__438 ch
             _0: value,
             _1: ok,
         }
-    }(self__438)
-    var x380 int = mtmp379._0
-    var x381 bool = mtmp379._1
-    if x381 {
-        var t551 Option__isize = Option__isize{
+    }(self__691)
+    var x765 int = mtmp764._0
+    var x766 bool = mtmp764._1
+    if x766 {
+        var t936 Option__isize = Option__isize{
             _tag: 1,
-            _v1_0: x380,
+            _v1_0: x765,
         }
-        return t551
+        return t936
     } else {
         return Option__isize{
             _tag: 0,
@@ -816,48 +866,49 @@ func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__isize(self__438 ch
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
-    var t557 string = _goml_runtime_core_int_to_string(self__151)
-    return t557
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__404 int) string {
+    var inline1148 int64 = int64(int(self__404))
+    var inline1149 string = signed_decimal_string(inline1148)
+    return inline1149
 }
 
 func _goml_m_std_p_channel_p_prepare____T__isize(operations__0 []_goml_m_std_p_channel_p_Operation____isize) _goml_m_std_p_channel_p_PreparedOperations____isize {
-    var t563 int
-    var inline740 int = len(operations__0)
-    t563 = inline740
+    var t948 int
+    var inline1171 int = len(operations__0)
+    t948 = inline1171
     var kinds__1 *_goml_vec_int
-    var inline738 *_goml_vec_int = vec_with_capacity__Vec_3int(t563)
-    kinds__1 = inline738
+    var inline1169 *_goml_vec_int = vec_with_capacity__Vec_3int(t948)
+    kinds__1 = inline1169
     var receivers__2 *_goml_vec_Receiver_3int
-    var inline736 *_goml_vec_Receiver_3int = vec_new__Vec_13Receiver_3int()
-    receivers__2 = inline736
+    var inline1167 *_goml_vec_Receiver_3int = vec_new__Vec_13Receiver_3int()
+    receivers__2 = inline1167
     var senders__3 *_goml_vec_Sender_3int
-    var inline734 *_goml_vec_Sender_3int = vec_new__Vec_11Sender_3int()
-    senders__3 = inline734
+    var inline1165 *_goml_vec_Sender_3int = vec_new__Vec_11Sender_3int()
+    senders__3 = inline1165
     var values__4 *_goml_vec_int
-    var inline732 *_goml_vec_int = vec_new__Vec_3int()
-    values__4 = inline732
+    var inline1163 *_goml_vec_int = vec_new__Vec_3int()
+    values__4 = inline1163
     var for_limit1 int = len(operations__0)
     var for_index2 int = 0
-    Loop_loop566:
+    Loop_loop951:
     for {
-        var t567 bool = for_index2 < for_limit1
-        if t567 {
+        var t952 bool = for_index2 < for_limit1
+        if t952 {
             var for_item3 _goml_m_std_p_channel_p_Operation____isize = operations__0[for_index2]
-            var t568 int = for_index2 + 1
-            for_index2 = t568
+            var t953 int = for_index2 + 1
+            for_index2 = t953
             switch for_item3._tag {
             case 0:
                 var x5 <-chan int = for_item3._v0_0
-                var inline722 int = 0
-                vec_push__Vec_3int(kinds__1, inline722)
+                var inline1153 int = 0
+                vec_push__Vec_3int(kinds__1, inline1153)
                 vec_push__Vec_13Receiver_3int(receivers__2, x5)
                 continue
             case 1:
                 var x6 chan<- int = for_item3._v1_0
                 var x7 int = for_item3._v1_1
-                var inline729 int = 1
-                vec_push__Vec_3int(kinds__1, inline729)
+                var inline1160 int = 1
+                vec_push__Vec_3int(kinds__1, inline1160)
                 vec_push__Vec_11Sender_3int(senders__3, x6)
                 vec_push__Vec_3int(values__4, x7)
                 continue
@@ -865,50 +916,140 @@ func _goml_m_std_p_channel_p_prepare____T__isize(operations__0 []_goml_m_std_p_c
                 panic("non-exhaustive match")
             }
         } else {
-            break Loop_loop566
+            break Loop_loop951
         }
     }
-    var t565 _goml_m_std_p_channel_p_PreparedOperations____isize = _goml_m_std_p_channel_p_PreparedOperations____isize{
+    var t950 _goml_m_std_p_channel_p_PreparedOperations____isize = _goml_m_std_p_channel_p_PreparedOperations____isize{
         kinds: kinds__1,
         receivers: receivers__2,
         senders: senders__3,
         values: values__4,
     }
-    return t565
+    return t950
 }
 
 func _goml_m_std_p_channel_p_prepared__slices____T__isize(prepared__9 _goml_m_std_p_channel_p_PreparedOperations____isize) Tuple4_10Slice_3int_21Slice_13Receiver_3int_19Slice_11Sender_3int_10Slice_3int {
-    var t574 *_goml_vec_int = prepared__9.kinds
-    var t575 *_goml_vec_int = prepared__9.kinds
-    var t576 int
-    var inline748 int = vec_len__Vec_3int(t575)
-    t576 = inline748
-    var t577 []int = t574.items[0:t576]
-    var t578 *_goml_vec_Receiver_3int = prepared__9.receivers
-    var t579 *_goml_vec_Receiver_3int = prepared__9.receivers
-    var t580 int
-    var inline746 int = vec_len__Vec_13Receiver_3int(t579)
-    t580 = inline746
-    var t581 []<-chan int = t578.items[0:t580]
-    var t582 *_goml_vec_Sender_3int = prepared__9.senders
-    var t583 *_goml_vec_Sender_3int = prepared__9.senders
-    var t584 int
-    var inline744 int = vec_len__Vec_11Sender_3int(t583)
-    t584 = inline744
-    var t585 []chan<- int = t582.items[0:t584]
-    var t586 *_goml_vec_int = prepared__9.values
-    var t587 *_goml_vec_int = prepared__9.values
-    var t588 int
-    var inline742 int = vec_len__Vec_3int(t587)
-    t588 = inline742
-    var t589 []int = t586.items[0:t588]
-    var t590 Tuple4_10Slice_3int_21Slice_13Receiver_3int_19Slice_11Sender_3int_10Slice_3int = Tuple4_10Slice_3int_21Slice_13Receiver_3int_19Slice_11Sender_3int_10Slice_3int{
-        _0: t577,
-        _1: t581,
-        _2: t585,
-        _3: t589,
+    var t959 *_goml_vec_int = prepared__9.kinds
+    var t960 *_goml_vec_int = prepared__9.kinds
+    var t961 int
+    var inline1179 int = vec_len__Vec_3int(t960)
+    t961 = inline1179
+    var t962 []int = t959.items[0:t961]
+    var t963 *_goml_vec_Receiver_3int = prepared__9.receivers
+    var t964 *_goml_vec_Receiver_3int = prepared__9.receivers
+    var t965 int
+    var inline1177 int = vec_len__Vec_13Receiver_3int(t964)
+    t965 = inline1177
+    var t966 []<-chan int = t963.items[0:t965]
+    var t967 *_goml_vec_Sender_3int = prepared__9.senders
+    var t968 *_goml_vec_Sender_3int = prepared__9.senders
+    var t969 int
+    var inline1175 int = vec_len__Vec_11Sender_3int(t968)
+    t969 = inline1175
+    var t970 []chan<- int = t967.items[0:t969]
+    var t971 *_goml_vec_int = prepared__9.values
+    var t972 *_goml_vec_int = prepared__9.values
+    var t973 int
+    var inline1173 int = vec_len__Vec_3int(t972)
+    t973 = inline1173
+    var t974 []int = t971.items[0:t973]
+    var t975 Tuple4_10Slice_3int_21Slice_13Receiver_3int_19Slice_11Sender_3int_10Slice_3int = Tuple4_10Slice_3int_21Slice_13Receiver_3int_19Slice_11Sender_3int_10Slice_3int{
+        _0: t962,
+        _1: t966,
+        _2: t970,
+        _3: t974,
     }
-    return t590
+    return t975
+}
+
+func __goml_builtin_int_to_string(value__222 int) string {
+    var t988 int64 = int64(int(value__222))
+    var inline1181 bool = t988 < 0
+    if inline1181 {
+        var inline1182 uint64 = uint64(int64(t988))
+        var inline1183 uint64 = 0 - inline1182
+        var inline1184 string = decimal_string(inline1183)
+        var inline1185 string = "-" + inline1184
+        return inline1185
+    } else {
+        var inline1186 uint64 = uint64(int64(t988))
+        var inline1187 string = decimal_string(inline1186)
+        return inline1187
+    }
+}
+
+func signed_decimal_string(value__214 int64) string {
+    var t1021 bool = value__214 < 0
+    if t1021 {
+        var t1022 uint64 = uint64(int64(value__214))
+        var t1023 uint64 = 0 - t1022
+        var t1024 string = decimal_string(t1023)
+        var t1025 string = "-" + t1024
+        return t1025
+    } else {
+        var t1026 uint64 = uint64(int64(value__214))
+        var t1027 string = decimal_string(t1026)
+        return t1027
+    }
+}
+
+func decimal_string(value__208 uint64) string {
+    var t1050 bool = value__208 == 0
+    if t1050 {
+        return "0"
+    } else {
+        var reversed__209 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(20)
+        var remaining__210 uint64 = value__208
+        Loop_loop1043:
+        for {
+            var t1044 bool = remaining__210 > 0
+            if t1044 {
+                var t1045_rhs uint64 = 10
+                var t1045 uint64 = remaining__210 % t1045_rhs
+                var t1046 uint8 = uint8(uint64(t1045))
+                var t1047 uint8 = t1046 + 48
+                vec_push__Vec_5uint8(reversed__209, t1047)
+                var compound_old353 uint64 = remaining__210
+                var compound_value354 uint64 = 10
+                var t1048 uint64 = compound_old353 / compound_value354
+                remaining__210 = t1048
+                continue
+            } else {
+                break Loop_loop1043
+            }
+        }
+        var t1032 int
+        var inline1197 int = vec_len__Vec_5uint8(reversed__209)
+        t1032 = inline1197
+        var bytes__211 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t1032)
+        var offset__212 int = 0
+        Loop_loop1034:
+        for {
+            var t1035 int
+            var inline1195 int = vec_len__Vec_5uint8(reversed__209)
+            t1035 = inline1195
+            var t1036 bool = offset__212 < t1035
+            if t1036 {
+                var t1037 int
+                var inline1193 int = vec_len__Vec_5uint8(reversed__209)
+                t1037 = inline1193
+                var t1038 int = t1037 - offset__212
+                var t1039 int = t1038 - 1
+                var t1040 uint8 = vec_get__Vec_5uint8(reversed__209, t1039)
+                vec_push__Vec_5uint8(bytes__211, t1040)
+                var compound_old358 int = offset__212
+                var compound_value359 int = 1
+                var t1041 int = compound_old358 + compound_value359
+                offset__212 = t1041
+                continue
+            } else {
+                break Loop_loop1034
+            }
+        }
+        var mtmp362 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__211)
+        var x364 string = mtmp362._1
+        return x364
+    }
 }
 
 func main() {

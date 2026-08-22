@@ -11,10 +11,10 @@ fn factorial(value/0: isize) -> isize {
 fn accumulate(limit/1: isize) -> isize {
   let index/2 = 0 in
   let total/3 = 0 in
-  let _wild413 =
+  let _wild798 =
     while (index/2 < limit/1) {
-        let _wild411 = total/3 = (total/3 + index/2) in
-        let _wild412 = index/2 = (index/2 + 1) in
+        let _wild796 = total/3 = (total/3 + index/2) in
+        let _wild797 = index/2 = (index/2 + 1) in
         ()
     } in
   total/3
@@ -56,28 +56,28 @@ fn main() -> unit {
   let values/12 = [6, 10, 4] in
   let pair/13 = Pair { left: 7, right: 8 } in
   let choice/14 = Choice::Value(9) in
-  let _wild414 = println__T_isize(ANSWER) in
-  let _wild415 = println__T_isize(@intrinsic(array.get)(values/12, 0)) in
-  let _wild416 = println__T_isize(@intrinsic(array.get)(values/12, 1)) in
-  let _wild417 = println__T_isize(@intrinsic(array.get)(values/12, 2)) in
-  let _wild418 = println__T_isize((Pair.left(pair/13) + Pair.right(pair/13))) in
-  let _wild420 =
+  let _wild799 = println__T_isize(ANSWER) in
+  let _wild800 = println__T_isize(@intrinsic(array.get)(values/12, 0)) in
+  let _wild801 = println__T_isize(@intrinsic(array.get)(values/12, 1)) in
+  let _wild802 = println__T_isize(@intrinsic(array.get)(values/12, 2)) in
+  let _wild803 = println__T_isize((Pair.left(pair/13) + Pair.right(pair/13))) in
+  let _wild805 =
     match choice/14 {
-      Choice::Value(x419) => {
-        let x419 = Choice::Value._0(choice/14) in
-        let value/15 = x419 in
+      Choice::Value(x804) => {
+        let x804 = Choice::Value._0(choice/14) in
+        let value/15 = x804 in
         println__T_isize(value/15)
       },
       Choice::Empty => {
         println__T_isize(0)
       },
     } in
-  let _wild421 = println__T_bool((factorial(5) == ANSWER)) in
+  let _wild806 = println__T_bool((factorial(5) == ANSWER)) in
   let shadowed/16 = 12 in
-  let _wild422 = println__T_isize(shadowed/16) in
-  let _wild423 = println__T_bool((shadow(3) == shadowed/16)) in
+  let _wild807 = println__T_isize(shadowed/16) in
+  let _wild808 = println__T_bool((shadow(3) == shadowed/16)) in
   let widened/17 = 18446744073709551615 in
-  let _wild424 = println__T_bool((widened/17 == widen_negative(-1))) in
+  let _wild809 = println__T_bool((widened/17 == widen_negative(-1))) in
   println__T_isize(factorial(4))
 }
 
@@ -89,10 +89,73 @@ fn println__T_bool(value/1: bool) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
 }
 
-fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
-  @runtime(core.int_to_string)(self/151)
+fn trait_impl#ToString#isize#to_string(self/404: isize) -> string {
+  __goml_builtin_int_to_string(self/404)
 }
 
-fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
-  @runtime(core.bool_to_string)(self/148)
+fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
+  @runtime(core.bool_to_string)(self/401)
+}
+
+fn __goml_builtin_int_to_string(value/222: isize) -> string {
+  signed_decimal_string((value/222 as i64))
+}
+
+fn signed_decimal_string(value/214: i64) -> string {
+  if (value/214 < 0) {
+      ("-" + decimal_string((0 - (value/214 as u64))))
+  } else {
+      decimal_string((value/214 as u64))
+  }
+}
+
+fn decimal_string(value/208: u64) -> string {
+  let _wild351 =
+    if (value/208 == 0) {
+        return "0"
+    } else {
+        ()
+    } in
+  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/210 = value/208 in
+  let _wild356 =
+    while (remaining/210 > 0) {
+        let _wild352 =
+          inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
+        let _wild355 =
+          let compound_old353 = remaining/210 in
+          let compound_value354 = 10 in
+          remaining/210 = (compound_old353 / compound_value354) in
+        ()
+    } in
+  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
+  let offset/212 = 0 in
+  let _wild361 =
+    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
+        let _wild357 =
+          inherent#Vec#Vec[T]#push__T_u8(
+            bytes/211,
+            @intrinsic(vec.get)(
+              reversed/209,
+              ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+            )
+          ) in
+        let _wild360 =
+          let compound_old358 = offset/212 in
+          let compound_value359 = 1 in
+          offset/212 = (compound_old358 + compound_value359) in
+        ()
+    } in
+  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  let x364 = mtmp362.1 in
+  let result/213 = x364 in
+  result/213
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  @intrinsic(vec.push)(self/511, elem/512)
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/526)
 }

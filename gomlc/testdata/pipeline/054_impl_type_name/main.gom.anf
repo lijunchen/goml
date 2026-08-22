@@ -1,19 +1,19 @@
 fn trait_impl#TypeName#Point#type_name(self/0: Point) -> string {
-  let x412 = Point.x(self/0) in
-  let x413 = Point.y(self/0) in
-  join inline_cont452(t420: string) -> string {
-    let prefix/3 = ("Point(" + t420) in
-    let t421 = (prefix/3 + ", ") in
-    join inline_cont450(t422: string) -> string {
-      let t423 = (t421 + t422) in
-      let t424 = (t423 + ")") in
-      t424
+  let x797 = Point.x(self/0) in
+  let x798 = Point.y(self/0) in
+  join inline_cont880(t805: string) -> string {
+    let prefix/3 = ("Point(" + t805) in
+    let t806 = (prefix/3 + ", ") in
+    join inline_cont878(t807: string) -> string {
+      let t808 = (t806 + t807) in
+      let t809 = (t808 + ")") in
+      t809
     } in
-    let inline451 = @runtime(core.int32_to_string)(x413) in
-    jump inline_cont450(inline451)
+    let inline879 = __goml_builtin_int32_to_string(x798) in
+    jump inline_cont878(inline879)
   } in
-  let inline453 = @runtime(core.int32_to_string)(x412) in
-  jump inline_cont452(inline453)
+  let inline881 = __goml_builtin_int32_to_string(x797) in
+  jump inline_cont880(inline881)
 }
 
 fn trait_impl#TypeName#Shape#type_name(self/4: Shape) -> string {
@@ -22,34 +22,34 @@ fn trait_impl#TypeName#Shape#type_name(self/4: Shape) -> string {
       "Unit"
     },
     Tag_1 => {
-      let x414 = Shape::Location._0(self/4) in
-      join inline_cont454(t429: string) -> string {
-        let t430 = ("Shape::" + t429) in
-        t430
+      let x799 = Shape::Location._0(self/4) in
+      join inline_cont882(t814: string) -> string {
+        let t815 = ("Shape::" + t814) in
+        t815
       } in
-      let inline456 = Point.x(x414) in
-      let inline457 = Point.y(x414) in
-      let inline460 = inherent#i32#i32#to_string(inline456) in
-      let inline461 = ("Point(" + inline460) in
-      let inline462 = (inline461 + ", ") in
-      let inline463 = inherent#i32#i32#to_string(inline457) in
-      let inline464 = (inline462 + inline463) in
-      let inline465 = (inline464 + ")") in
-      jump inline_cont454(inline465)
+      let inline884 = Point.x(x799) in
+      let inline885 = Point.y(x799) in
+      let inline888 = inherent#i32#i32#to_string(inline884) in
+      let inline889 = ("Point(" + inline888) in
+      let inline890 = (inline889 + ", ") in
+      let inline891 = inherent#i32#i32#to_string(inline885) in
+      let inline892 = (inline890 + inline891) in
+      let inline893 = (inline892 + ")") in
+      jump inline_cont882(inline893)
     },
   }
 }
 
 fn show_point(point/6: Point) -> string {
-  let inline468 = Point.x(point/6) in
-  let inline469 = Point.y(point/6) in
-  let inline472 = inherent#i32#i32#to_string(inline468) in
-  let inline473 = ("Point(" + inline472) in
-  let inline474 = (inline473 + ", ") in
-  let inline475 = inherent#i32#i32#to_string(inline469) in
-  let inline476 = (inline474 + inline475) in
-  let inline477 = (inline476 + ")") in
-  inline477
+  let inline896 = Point.x(point/6) in
+  let inline897 = Point.y(point/6) in
+  let inline900 = inherent#i32#i32#to_string(inline896) in
+  let inline901 = ("Point(" + inline900) in
+  let inline902 = (inline901 + ", ") in
+  let inline903 = inherent#i32#i32#to_string(inline897) in
+  let inline904 = (inline902 + inline903) in
+  let inline905 = (inline904 + ")") in
+  inline905
 }
 
 fn show_shape(shape/7: Shape) -> string {
@@ -58,59 +58,179 @@ fn show_shape(shape/7: Shape) -> string {
       "Unit"
     },
     Tag_1 => {
-      let inline479 = Shape::Location._0(shape/7) in
-      let inline481 = trait_impl#TypeName#Point#type_name(inline479) in
-      let inline482 = ("Shape::" + inline481) in
-      inline482
+      let inline907 = Shape::Location._0(shape/7) in
+      let inline909 = trait_impl#TypeName#Point#type_name(inline907) in
+      let inline910 = ("Shape::" + inline909) in
+      inline910
     },
   }
 }
 
 fn main() -> unit {
   let point/8 = Point { x: 7, y: 9 } in
-  join inline_cont496(t438: string) -> unit {
-    join inline_cont493(mtmp415: unit) -> unit {
+  join inline_cont924(t823: string) -> unit {
+    join inline_cont921(mtmp800: unit) -> unit {
       let unit_shape/9 = Tag_0 in
-      join inline_cont491(t439: string) -> unit {
-        join inline_cont488(mtmp416: unit) -> unit {
-          let t440 = Point { x: 1, y: 2 } in
-          let location_shape/10 = Shape::Location(t440) in
-          join inline_cont486(t441: string) -> unit {
-            let inline484 = trait_impl#ToString#string#to_string(t441) in
-            let inline485 = @runtime(core.string_println)(inline484) in
+      join inline_cont919(t824: string) -> unit {
+        join inline_cont916(mtmp801: unit) -> unit {
+          let t825 = Point { x: 1, y: 2 } in
+          let location_shape/10 = Shape::Location(t825) in
+          join inline_cont914(t826: string) -> unit {
+            let inline912 = trait_impl#ToString#string#to_string(t826) in
+            let inline913 = @runtime(core.string_println)(inline912) in
             ()
           } in
-          let inline487 = trait_impl#TypeName#Shape#type_name(location_shape/10) in
-          jump inline_cont486(inline487)
+          let inline915 = trait_impl#TypeName#Shape#type_name(location_shape/10) in
+          jump inline_cont914(inline915)
         } in
-        let inline489 = trait_impl#ToString#string#to_string(t439) in
-        let inline490 = @runtime(core.string_println)(inline489) in
-        jump inline_cont488(())
+        let inline917 = trait_impl#ToString#string#to_string(t824) in
+        let inline918 = @runtime(core.string_println)(inline917) in
+        jump inline_cont916(())
       } in
-      let inline492 = trait_impl#TypeName#Shape#type_name(unit_shape/9) in
-      jump inline_cont491(inline492)
+      let inline920 = trait_impl#TypeName#Shape#type_name(unit_shape/9) in
+      jump inline_cont919(inline920)
     } in
-    let inline494 = trait_impl#ToString#string#to_string(t438) in
-    let inline495 = @runtime(core.string_println)(inline494) in
-    jump inline_cont493(())
+    let inline922 = trait_impl#ToString#string#to_string(t823) in
+    let inline923 = @runtime(core.string_println)(inline922) in
+    jump inline_cont921(())
   } in
-  let inline497 = trait_impl#TypeName#Point#type_name(point/8) in
-  jump inline_cont496(inline497)
+  let inline925 = trait_impl#TypeName#Point#type_name(point/8) in
+  jump inline_cont924(inline925)
 }
 
-fn inherent#i32#i32#to_string(self/33: i32) -> string {
-  let t444 = @runtime(core.int32_to_string)(self/33) in
-  t444
+fn inherent#i32#i32#to_string(self/286: i32) -> string {
+  let inline927 = (self/286 as i64) in
+  let inline928 = signed_decimal_string(inline927) in
+  inline928
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont498(t446: string) -> unit {
-    let t447 = @runtime(core.string_println)(t446) in
+  join inline_cont929(t831: string) -> unit {
+    let t832 = @runtime(core.string_println)(t831) in
     ()
   } in
-  jump inline_cont498(value/1)
+  jump inline_cont929(value/1)
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn __goml_builtin_int32_to_string(value/225: i32) -> string {
+  let t835 = (value/225 as i64) in
+  let inline931 = (t835 < 0) in
+  if inline931 {
+    let inline932 = (t835 as u64) in
+    let inline933 = (0 - inline932) in
+    let inline934 = decimal_string(inline933) in
+    let inline935 = ("-" + inline934) in
+    inline935
+  } else {
+    let inline936 = (t835 as u64) in
+    let inline937 = decimal_string(inline936) in
+    inline937
+  }
+}
+
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
+}
+
+fn signed_decimal_string(value/214: i64) -> string {
+  let t843 = (value/214 < 0) in
+  if t843 {
+    let t844 = (value/214 as u64) in
+    let t845 = (0 - t844) in
+    let t846 = decimal_string(t845) in
+    let t847 = ("-" + t846) in
+    t847
+  } else {
+    let t848 = (value/214 as u64) in
+    let t849 = decimal_string(t848) in
+    t849
+  }
+}
+
+fn decimal_string(value/208: u64) -> string {
+  let t872 = (value/208 == 0) in
+  join k852() -> string {
+    let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+    let remaining/210 = value/208 in
+    join exit853() -> string {
+      join inline_cont946(t854: isize) -> string {
+        let bytes/211 = @intrinsic(vec.with_capacity)(t854) in
+        let offset/212 = 0 in
+        join exit855() -> string {
+          let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+          let x364 = mtmp362.1 in
+          x364
+        } in
+        joinrec {
+          join loop856() -> string {
+            join inline_cont944(t857: isize) -> string {
+              let t858 = (offset/212 < t857) in
+              if t858 {
+                join inline_cont942(t859: isize) -> string {
+                  let t860 = (t859 - offset/212) in
+                  let t861 = (t860 - 1) in
+                  let t862 = @intrinsic(vec.get)(reversed/209, t861) in
+                  join inline_cont940(_wild357: unit) -> string {
+                    let compound_old358 = offset/212 in
+                    let compound_value359 = 1 in
+                    let t863 = (compound_old358 + compound_value359) in
+                    let t864 = offset/212 = t863 in
+                    jump loop856()
+                  } in
+                  let inline941 = @intrinsic(vec.push)(bytes/211, t862) in
+                  jump inline_cont940(())
+                } in
+                let inline943 = @intrinsic(vec.len)(reversed/209) in
+                jump inline_cont942(inline943)
+              } else {
+                jump exit855()
+              }
+            } in
+            let inline945 = @intrinsic(vec.len)(reversed/209) in
+            jump inline_cont944(inline945)
+          } in
+        } in
+        jump loop856()
+      } in
+      let inline947 = @intrinsic(vec.len)(reversed/209) in
+      jump inline_cont946(inline947)
+    } in
+    joinrec {
+      join loop865() -> string {
+        let t866 = (remaining/210 > 0) in
+        if t866 {
+          let t867 = (remaining/210 % 10) in
+          let t868 = (t867 as u8) in
+          let t869 = (t868 + 48) in
+          join inline_cont938(_wild352: unit) -> string {
+            let compound_old353 = remaining/210 in
+            let compound_value354 = 10 in
+            let t870 = (compound_old353 / compound_value354) in
+            let t871 = remaining/210 = t870 in
+            jump loop865()
+          } in
+          let inline939 = @intrinsic(vec.push)(reversed/209, t869) in
+          jump inline_cont938(())
+        } else {
+          jump exit853()
+        }
+      } in
+    } in
+    jump loop865()
+  } in
+  if t872 {
+    "0"
+  } else {
+    jump k852()
+  }
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  let t874 = @intrinsic(vec.push)(self/511, elem/512) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  let t877 = @intrinsic(vec.len)(self/526) in
+  t877
 }

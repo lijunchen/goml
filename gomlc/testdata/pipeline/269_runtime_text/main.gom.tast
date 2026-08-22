@@ -1,0 +1,13 @@
+fn main() -> unit {
+    let minimum/0: i64 = -9223372036854775807 - 1;
+    let maximum/1: i64 = 9223372036854775807;
+    let unsigned/2: u64 = 18446744073709551615;
+    (println : (i64) -> unit)((minimum/0 : i64));
+    (println : (i64) -> unit)((maximum/1 : i64));
+    (println : (u64) -> unit)((unsigned/2 : u64));
+    (println : (string) -> unit)(
+      (string_concat : (Vec[string]) -> string)(
+        (@intrinsic(vec.from_array) : ([string; 3]) -> Vec[string])(["go", "ml", "!"])
+      )
+    )
+}

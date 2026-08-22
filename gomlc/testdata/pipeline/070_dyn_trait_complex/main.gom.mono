@@ -78,7 +78,7 @@ fn trait_impl#Display#Counter#show_with(
 
 fn trait_impl#Display#Counter#tick(self/18: Counter) -> unit {
   let next/19 = (inherent#Ref#Ref[T]#get__T_i32(Counter.cell(self/18)) + 1) in
-  let mtmp411 = inherent#Ref#Ref[T]#set__T_i32(Counter.cell(self/18), next/19) in
+  let mtmp796 = inherent#Ref#Ref[T]#set__T_i32(Counter.cell(self/18), next/19) in
   {
     ()
   }
@@ -86,7 +86,7 @@ fn trait_impl#Display#Counter#tick(self/18: Counter) -> unit {
 
 fn trait_impl#Display#Counter#bump(self/20: Counter, delta/21: i32) -> i32 {
   let next/22 = (inherent#Ref#Ref[T]#get__T_i32(Counter.cell(self/20)) + delta/21) in
-  let mtmp412 = inherent#Ref#Ref[T]#set__T_i32(Counter.cell(self/20), next/22) in
+  let mtmp797 = inherent#Ref#Ref[T]#set__T_i32(Counter.cell(self/20), next/22) in
   {
     next/22
   }
@@ -106,7 +106,7 @@ fn make_renderer(tag/29: string) -> (dyn Display) -> string {
 }
 
 fn bump_and_show(x/31: dyn Display, delta/32: i32) -> string {
-  let mtmp413 = dyn_call[Display::tick](x/31) in
+  let mtmp798 = dyn_call[Display::tick](x/31) in
   {
     ((dyn_call[Display::show_with](x/31, "[", "]") + ":") +
       inherent#i32#i32#to_string(dyn_call[Display::bump](x/31, delta/32)))
@@ -130,9 +130,9 @@ fn main() -> unit {
   let s1/46 = call_via_closure(df2/41, "*") in
   let s2/47 = ((render_star/43(dp1/38) + "|") + render_angle/44(df1/40)) in
   let v/48 = inherent#Vec#Vec[T]#new__T_dynDisplay() in
-  let _wild414 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/48, dp1/38) in
-  let _wild415 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/48, df1/40) in
-  let _wild416 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/48, dc/42) in
+  let _wild799 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/48, dp1/38) in
+  let _wild800 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/48, df1/40) in
+  let _wild801 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/48, dc/42) in
   let vlen/49 = inherent#Vec#Vec[T]#len__T_dynDisplay(v/48) in
   let delta/50 =
     match vlen/49 {
@@ -141,19 +141,19 @@ fn main() -> unit {
       },
       _ => 5,
     } in
-  let mtmp417 = println__T_string(s0/45) in
+  let mtmp802 = println__T_string(s0/45) in
   {
-    let mtmp418 = println__T_string(s1/46) in
+    let mtmp803 = println__T_string(s1/46) in
     {
-      let mtmp419 = println__T_string(s2/47) in
+      let mtmp804 = println__T_string(s2/47) in
       {
         let i/51 = inherent#Ref#Ref[T]#new__T_i32(0) in
-        let mtmp422 =
+        let mtmp807 =
           while (inherent#Ref#Ref[T]#get__T_i32(i/51) < 3) {
               {
                 let line/52 = bump_and_show(dc/42, delta/50) in
-                let _wild420 = println__T_string(line/52) in
-                let mtmp421 =
+                let _wild805 = println__T_string(line/52) in
+                let mtmp806 =
                   inherent#Ref#Ref[T]#set__T_i32(
                     i/51,
                     (inherent#Ref#Ref[T]#get__T_i32(i/51) + 1)
@@ -164,9 +164,9 @@ fn main() -> unit {
               }
           } in
         {
-          let mtmp423 = println__T_string(("len:" + inherent#isize#isize#to_string(vlen/49))) in
+          let mtmp808 = println__T_string(("len:" + inherent#isize#isize#to_string(vlen/49))) in
           {
-            let mtmp424 = println__T_string(("delta:" + inherent#i32#i32#to_string(delta/50))) in
+            let mtmp809 = println__T_string(("delta:" + inherent#i32#i32#to_string(delta/50))) in
             {
               ()
             }
@@ -177,20 +177,20 @@ fn main() -> unit {
   }
 }
 
-fn inherent#i32#i32#to_string(self/33: i32) -> string {
-  @runtime(core.int32_to_string)(self/33)
+fn inherent#i32#i32#to_string(self/286: i32) -> string {
+  __goml_builtin_int32_to_string(self/286)
 }
 
-fn inherent#Ref#Ref[T]#get__T_i32(self/432: Ref[i32]) -> i32 {
-  @intrinsic(ref.get)(self/432)
+fn inherent#Ref#Ref[T]#get__T_i32(self/685: Ref[i32]) -> i32 {
+  @intrinsic(ref.get)(self/685)
 }
 
-fn inherent#Ref#Ref[T]#set__T_i32(self/433: Ref[i32], value/434: i32) -> unit {
-  @intrinsic(ref.set)(self/433, value/434)
+fn inherent#Ref#Ref[T]#set__T_i32(self/686: Ref[i32], value/687: i32) -> unit {
+  @intrinsic(ref.set)(self/686, value/687)
 }
 
-fn inherent#Ref#Ref[T]#new__T_i32(value/431: i32) -> Ref[i32] {
-  @intrinsic(ref.new)(value/431)
+fn inherent#Ref#Ref[T]#new__T_i32(value/684: i32) -> Ref[i32] {
+  @intrinsic(ref.new)(value/684)
 }
 
 fn inherent#Vec#Vec[T]#new__T_dynDisplay() -> Vec[dyn Display] {
@@ -198,32 +198,119 @@ fn inherent#Vec#Vec[T]#new__T_dynDisplay() -> Vec[dyn Display] {
 }
 
 fn inherent#Vec#Vec[T]#push__T_dynDisplay(
-  self/258: Vec[dyn Display],
-  elem/259: dyn Display
+  self/511: Vec[dyn Display],
+  elem/512: dyn Display
 ) -> unit {
-  @intrinsic(vec.push)(self/258, elem/259)
+  @intrinsic(vec.push)(self/511, elem/512)
 }
 
-fn inherent#Vec#Vec[T]#len__T_dynDisplay(self/273: Vec[dyn Display]) -> isize {
-  @intrinsic(vec.len)(self/273)
+fn inherent#Vec#Vec[T]#len__T_dynDisplay(self/526: Vec[dyn Display]) -> isize {
+  @intrinsic(vec.len)(self/526)
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#isize#isize#to_string(self/32: isize) -> string {
-  @runtime(core.int_to_string)(self/32)
+fn inherent#isize#isize#to_string(self/285: isize) -> string {
+  __goml_builtin_int_to_string(self/285)
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn __goml_builtin_int32_to_string(value/225: i32) -> string {
+  signed_decimal_string((value/225 as i64))
 }
 
-fn trait_impl#PartialEq#i32#eq(self/191: i32, other/192: i32) -> bool {
-  (self/191 == other/192)
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
 }
 
-fn trait_impl#Hash#i32#hash(self/214: i32) -> u64 {
-  @runtime(core.int32_hash)(self/214)
+fn __goml_builtin_int_to_string(value/222: isize) -> string {
+  signed_decimal_string((value/222 as i64))
+}
+
+fn signed_decimal_string(value/214: i64) -> string {
+  if (value/214 < 0) {
+      {
+        ("-" + decimal_string((0 - (value/214 as u64))))
+      }
+  } else {
+      {
+        decimal_string((value/214 as u64))
+      }
+  }
+}
+
+fn decimal_string(value/208: u64) -> string {
+  let _wild351 =
+    if (value/208 == 0) {
+        {
+          return "0"
+        }
+    } else {
+        {
+          ()
+        }
+    } in
+  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/210 = value/208 in
+  let _wild356 =
+    while (remaining/210 > 0) {
+        {
+          let _wild352 =
+            inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
+          let _wild355 =
+            {
+              let compound_old353 = remaining/210 in
+              let compound_value354 = 10 in
+              remaining/210 = (compound_old353 / compound_value354)
+            } in
+        }
+    } in
+  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
+  let offset/212 = 0 in
+  let _wild361 =
+    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
+        {
+          let _wild357 =
+            inherent#Vec#Vec[T]#push__T_u8(
+              bytes/211,
+              @intrinsic(vec.get)(
+                reversed/209,
+                ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+              )
+            ) in
+          let _wild360 =
+            {
+              let compound_old358 = offset/212 in
+              let compound_value359 = 1 in
+              offset/212 = (compound_old358 + compound_value359)
+            } in
+        }
+    } in
+  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  {
+    let x364 = mtmp362.1 in
+    {
+      let result/213 = x364 in
+      {
+        result/213
+      }
+    }
+  }
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  @intrinsic(vec.push)(self/511, elem/512)
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/526)
+}
+
+fn trait_impl#PartialEq#i32#eq(self/444: i32, other/445: i32) -> bool {
+  (self/444 == other/445)
+}
+
+fn trait_impl#Hash#i32#hash(self/467: i32) -> u64 {
+  @runtime(core.int32_hash)(self/467)
 }

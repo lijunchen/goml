@@ -1,7 +1,7 @@
 package main
 
 import (
-    _goml_fmt "fmt"
+    _goml_os "os"
 )
 
 func _goml_runtime_core_bool_to_string(x bool) string {
@@ -13,8 +13,27 @@ func _goml_runtime_core_bool_to_string(x bool) string {
 }
 
 func _goml_runtime_core_string_print(s string) struct{} {
-    _goml_fmt.Print(s)
+    _goml_os.Stdout.WriteString(s)
     return struct{}{}
+}
+
+type _goml_vec_uint32 struct {
+    items []uint32
+}
+
+type FloatNatural struct {
+    words *_goml_vec_uint32
+}
+
+type ParsedFloat struct {
+    valid bool
+    negative bool
+    special int
+    numerator FloatNatural
+    decimal_exponent int
+    binary_exponent int
+    hexadecimal bool
+    significant_digits int
 }
 
 type Ordering int32
@@ -28,29 +47,29 @@ const (
 )
 
 func main0() bool {
-    var x411 Color = Blue
-    var x412 Color = Blue
-    switch x412 {
+    var x796 Color = Blue
+    var x797 Color = Blue
+    switch x797 {
     case Red:
-        switch x411 {
+        switch x796 {
         case Red:
             return true
         default:
             return false
         }
     case Green:
-        switch x411 {
+        switch x796 {
         case Red:
             return true
         default:
             return false
         }
     case Blue:
-        switch x411 {
+        switch x796 {
         case Blue:
-            var inline431 bool = true
-            var inline432 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline431)
-            _goml_runtime_core_string_print(inline432)
+            var inline816 bool = true
+            var inline817 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline816)
+            _goml_runtime_core_string_print(inline817)
             return false
         default:
             return false
@@ -60,9 +79,9 @@ func main0() bool {
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__148 bool) string {
-    var t429 string = _goml_runtime_core_bool_to_string(self__148)
-    return t429
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__401 bool) string {
+    var t814 string = _goml_runtime_core_bool_to_string(self__401)
+    return t814
 }
 
 func main() {

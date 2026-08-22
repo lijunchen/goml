@@ -1,5 +1,5 @@
 fn trait_impl#PartialEq#LoggedKey#eq(self/0: LoggedKey, other/1: LoggedKey) -> bool {
-  let _wild411 =
+  let _wild796 =
     inherent#Ref#Ref[T]#set__T_string(
       LoggedKey.log(self/0),
       (inherent#Ref#Ref[T]#get__T_string(LoggedKey.log(self/0)) + "E")
@@ -8,7 +8,7 @@ fn trait_impl#PartialEq#LoggedKey#eq(self/0: LoggedKey, other/1: LoggedKey) -> b
 }
 
 fn trait_impl#Hash#LoggedKey#hash(self/2: LoggedKey) -> u64 {
-  let _wild412 =
+  let _wild797 =
     inherent#Ref#Ref[T]#set__T_string(
       LoggedKey.log(self/2),
       (inherent#Ref#Ref[T]#get__T_string(LoggedKey.log(self/2)) + "H")
@@ -17,7 +17,7 @@ fn trait_impl#Hash#LoggedKey#hash(self/2: LoggedKey) -> u64 {
 }
 
 fn logged_key(log/3: Ref[string], label/4: string, id/5: isize) -> LoggedKey {
-  let _wild413 =
+  let _wild798 =
     inherent#Ref#Ref[T]#set__T_string(
       log/3,
       (inherent#Ref#Ref[T]#get__T_string(log/3) + label/4)
@@ -26,7 +26,7 @@ fn logged_key(log/3: Ref[string], label/4: string, id/5: isize) -> LoggedKey {
 }
 
 fn logged_value(log/6: Ref[string], label/7: string, value/8: isize) -> isize {
-  let _wild414 =
+  let _wild799 =
     inherent#Ref#Ref[T]#set__T_string(
       log/6,
       (inherent#Ref#Ref[T]#get__T_string(log/6) + label/7)
@@ -37,7 +37,7 @@ fn logged_value(log/6: Ref[string], label/7: string, value/8: isize) -> isize {
 fn main() -> unit {
   let make_vec/9 = @intrinsic(vec.from_array) in
   let values/10 = make_vec/9([1, 2, 3]) in
-  let _wild415 =
+  let _wild800 =
     println__T_string(
       ((((("" + inherent#isize#isize#to_string(inherent#Vec#Vec[T]#len__T_isize(values/10))) +
         ":") +
@@ -46,21 +46,21 @@ fn main() -> unit {
         inherent#isize#isize#to_string(@intrinsic(vec.get)(values/10, 2)))
     ) in
   let empty/11 = @intrinsic(vec.from_array)([]) in
-  let _wild416 = println__T_isize(inherent#Vec#Vec[T]#len__T_isize(empty/11)) in
+  let _wild801 = println__T_isize(inherent#Vec#Vec[T]#len__T_isize(empty/11)) in
   let inferred_empty/12 = @intrinsic(vec.from_array)([]) in
-  let _wild417 = println__T_isize(inherent#Vec#Vec[T]#len__T_isize(inferred_empty/12)) in
+  let _wild802 = println__T_isize(inherent#Vec#Vec[T]#len__T_isize(inferred_empty/12)) in
   let source/13 = [inherent#Ref#Ref[T]#new__T_isize(1), inherent#Ref#Ref[T]#new__T_isize(2)] in
   let copied/14 = @intrinsic(vec.from_array)(source/13) in
-  let _wild418 = inherent#Ref#Ref[T]#set__T_isize(@intrinsic(array.get)(source/13, 0), 5) in
-  let _wild423 =
+  let _wild803 = inherent#Ref#Ref[T]#set__T_isize(@intrinsic(array.get)(source/13, 0), 5) in
+  let _wild808 =
     {
-      let place_root419 = source/13 in
-      let index420 = 0 in
-      let place421 = @intrinsic(array.get)(place_root419, index420) in
-      let value422 = inherent#Ref#Ref[T]#new__T_isize(9) in
-      source/13 = @intrinsic(array.set)(place_root419, index420, value422)
+      let place_root804 = source/13 in
+      let index805 = 0 in
+      let place806 = @intrinsic(array.get)(place_root804, index805) in
+      let value807 = inherent#Ref#Ref[T]#new__T_isize(9) in
+      source/13 = @intrinsic(array.set)(place_root804, index805, value807)
     } in
-  let _wild424 =
+  let _wild809 =
     println__T_string(
       ((("" +
         inherent#isize#isize#to_string(
@@ -79,24 +79,24 @@ fn main() -> unit {
         (logged_key(log/15, "B", 1), logged_value(log/15, "b", 20))
       ]
     ) in
-  let _wild425 = println__T_string(inherent#Ref#Ref[T]#get__T_string(log/15)) in
-  let _wild428 =
+  let _wild810 = println__T_string(inherent#Ref#Ref[T]#get__T_string(log/15)) in
+  let _wild813 =
     println__T_isize(
       {
-        let mtmp426 =
+        let mtmp811 =
           inherent#HashMap#HashMap[K,V]#get__K_LoggedKey__V_isize(
             table/16,
             LoggedKey { id: 1, log: log/15 }
           ) in
-        match mtmp426 {
+        match mtmp811 {
           Option__isize::None => {
             0
           },
-          Option__isize::Some(x427) => {
+          Option__isize::Some(x812) => {
             {
-              let x427 = Option__isize::Some._0(mtmp426) in
+              let x812 = Option__isize::Some._0(mtmp811) in
               {
-                let value/17 = x427 in
+                let value/17 = x812 in
                 value/17
               }
             }
@@ -106,12 +106,12 @@ fn main() -> unit {
     ) in
   let make_map/18 = @intrinsic(hashmap.from_array) in
   let words/19 = make_map/18([("a", 1), ("b", 2)]) in
-  let _wild429 = println__T_isize(inherent#HashMap#HashMap[K,V]#len__K_string__V_isize(words/19)) in
+  let _wild814 = println__T_isize(inherent#HashMap#HashMap[K,V]#len__K_string__V_isize(words/19)) in
   let no_words/20 = @intrinsic(hashmap.from_array)([]) in
-  let _wild430 =
+  let _wild815 =
     println__T_isize(inherent#HashMap#HashMap[K,V]#len__K_string__V_isize(no_words/20)) in
   let inferred_no_words/21 = @intrinsic(hashmap.from_array)([]) in
-  let _wild431 =
+  let _wild816 =
     println__T_isize(inherent#HashMap#HashMap[K,V]#len__K_string__V_isize(inferred_no_words/21)) in
   let pairs/22 = @intrinsic(vec.from_array)([(1, "a"), (2, "b")]) in
   let nested/23 =
@@ -122,17 +122,17 @@ fn main() -> unit {
     @intrinsic(hashmap.from_array)([("values", @intrinsic(vec.from_array)([5, 6]))]) in
   let nested_value/26 =
     {
-      let mtmp432 =
+      let mtmp817 =
         inherent#HashMap#HashMap[K,V]#get__K_string__V_Vec[isize](nested_map/24, "values") in
-      match mtmp432 {
+      match mtmp817 {
         Option__Vec[isize]::None => {
           0
         },
-        Option__Vec[isize]::Some(x433) => {
+        Option__Vec[isize]::Some(x818) => {
           {
-            let x433 = Option__Vec[isize]::Some._0(mtmp432) in
+            let x818 = Option__Vec[isize]::Some._0(mtmp817) in
             {
-              let values/25 = x433 in
+              let values/25 = x818 in
               @intrinsic(vec.get)(values/25, 0)
             }
           }
@@ -147,84 +147,167 @@ fn main() -> unit {
   )
 }
 
-fn inherent#Ref#Ref[T]#get__T_string(self/432: Ref[string]) -> string {
-  @intrinsic(ref.get)(self/432)
+fn inherent#Ref#Ref[T]#get__T_string(self/685: Ref[string]) -> string {
+  @intrinsic(ref.get)(self/685)
 }
 
-fn inherent#Ref#Ref[T]#set__T_string(self/433: Ref[string], value/434: string) -> unit {
-  @intrinsic(ref.set)(self/433, value/434)
+fn inherent#Ref#Ref[T]#set__T_string(self/686: Ref[string], value/687: string) -> unit {
+  @intrinsic(ref.set)(self/686, value/687)
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#Vec#Vec[T]#len__T_isize(self/273: Vec[isize]) -> isize {
-  @intrinsic(vec.len)(self/273)
+fn inherent#Vec#Vec[T]#len__T_isize(self/526: Vec[isize]) -> isize {
+  @intrinsic(vec.len)(self/526)
 }
 
-fn inherent#isize#isize#to_string(self/32: isize) -> string {
-  @runtime(core.int_to_string)(self/32)
+fn inherent#isize#isize#to_string(self/285: isize) -> string {
+  __goml_builtin_int_to_string(self/285)
 }
 
 fn println__T_isize(value/1: isize) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/1))
 }
 
-fn inherent#Ref#Ref[T]#new__T_isize(value/431: isize) -> Ref[isize] {
-  @intrinsic(ref.new)(value/431)
+fn inherent#Ref#Ref[T]#new__T_isize(value/684: isize) -> Ref[isize] {
+  @intrinsic(ref.new)(value/684)
 }
 
-fn inherent#Ref#Ref[T]#set__T_isize(self/433: Ref[isize], value/434: isize) -> unit {
-  @intrinsic(ref.set)(self/433, value/434)
+fn inherent#Ref#Ref[T]#set__T_isize(self/686: Ref[isize], value/687: isize) -> unit {
+  @intrinsic(ref.set)(self/686, value/687)
 }
 
-fn inherent#Ref#Ref[T]#get__T_isize(self/432: Ref[isize]) -> isize {
-  @intrinsic(ref.get)(self/432)
+fn inherent#Ref#Ref[T]#get__T_isize(self/685: Ref[isize]) -> isize {
+  @intrinsic(ref.get)(self/685)
 }
 
-fn inherent#Ref#Ref[T]#new__T_string(value/431: string) -> Ref[string] {
-  @intrinsic(ref.new)(value/431)
+fn inherent#Ref#Ref[T]#new__T_string(value/684: string) -> Ref[string] {
+  @intrinsic(ref.new)(value/684)
 }
 
 fn inherent#HashMap#HashMap[K,V]#get__K_LoggedKey__V_isize(
-  self/420: HashMap[LoggedKey, isize],
-  key/421: LoggedKey
+  self/673: HashMap[LoggedKey, isize],
+  key/674: LoggedKey
 ) -> Option__isize {
-  @intrinsic(hashmap.get)(self/420, key/421)
+  @intrinsic(hashmap.get)(self/673, key/674)
 }
 
-fn inherent#HashMap#HashMap[K,V]#len__K_string__V_isize(self/427: HashMap[string, isize]) -> isize {
-  @intrinsic(hashmap.len)(self/427)
+fn inherent#HashMap#HashMap[K,V]#len__K_string__V_isize(self/680: HashMap[string, isize]) -> isize {
+  @intrinsic(hashmap.len)(self/680)
 }
 
 fn inherent#HashMap#HashMap[K,V]#get__K_string__V_Vec[isize](
-  self/420: HashMap[string, Vec[isize]],
-  key/421: string
+  self/673: HashMap[string, Vec[isize]],
+  key/674: string
 ) -> Option__Vec[isize] {
-  @intrinsic(hashmap.get)(self/420, key/421)
+  @intrinsic(hashmap.get)(self/673, key/674)
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
 }
 
-fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
-  @runtime(core.int_to_string)(self/151)
+fn __goml_builtin_int_to_string(value/222: isize) -> string {
+  signed_decimal_string((value/222 as i64))
 }
 
-fn trait_impl#PartialEq#string#eq(self/181: string, other/182: string) -> bool {
-  (self/181 == other/182)
+fn trait_impl#ToString#isize#to_string(self/404: isize) -> string {
+  __goml_builtin_int_to_string(self/404)
 }
 
-fn trait_impl#Hash#string#hash(self/209: string) -> u64 {
-  @runtime(core.string_hash)(self/209)
+fn signed_decimal_string(value/214: i64) -> string {
+  if (value/214 < 0) {
+      {
+        ("-" + decimal_string((0 - (value/214 as u64))))
+      }
+  } else {
+      {
+        decimal_string((value/214 as u64))
+      }
+  }
 }
 
-fn trait_impl#PartialEq#isize#eq(self/185: isize, other/186: isize) -> bool {
-  (self/185 == other/186)
+fn decimal_string(value/208: u64) -> string {
+  let _wild351 =
+    if (value/208 == 0) {
+        {
+          return "0"
+        }
+    } else {
+        {
+          ()
+        }
+    } in
+  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/210 = value/208 in
+  let _wild356 =
+    while (remaining/210 > 0) {
+        {
+          let _wild352 =
+            inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
+          let _wild355 =
+            {
+              let compound_old353 = remaining/210 in
+              let compound_value354 = 10 in
+              remaining/210 = (compound_old353 / compound_value354)
+            } in
+        }
+    } in
+  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
+  let offset/212 = 0 in
+  let _wild361 =
+    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
+        {
+          let _wild357 =
+            inherent#Vec#Vec[T]#push__T_u8(
+              bytes/211,
+              @intrinsic(vec.get)(
+                reversed/209,
+                ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+              )
+            ) in
+          let _wild360 =
+            {
+              let compound_old358 = offset/212 in
+              let compound_value359 = 1 in
+              offset/212 = (compound_old358 + compound_value359)
+            } in
+        }
+    } in
+  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  {
+    let x364 = mtmp362.1 in
+    {
+      let result/213 = x364 in
+      {
+        result/213
+      }
+    }
+  }
 }
 
-fn trait_impl#Hash#isize#hash(self/211: isize) -> u64 {
-  @runtime(core.int_hash)(self/211)
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  @intrinsic(vec.push)(self/511, elem/512)
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/526)
+}
+
+fn trait_impl#PartialEq#string#eq(self/434: string, other/435: string) -> bool {
+  (self/434 == other/435)
+}
+
+fn trait_impl#Hash#string#hash(self/462: string) -> u64 {
+  @runtime(core.string_hash)(self/462)
+}
+
+fn trait_impl#PartialEq#isize#eq(self/438: isize, other/439: isize) -> bool {
+  (self/438 == other/439)
+}
+
+fn trait_impl#Hash#isize#hash(self/464: isize) -> u64 {
+  @runtime(core.int_hash)(self/464)
 }

@@ -1,9 +1,9 @@
 fn match_mixed_pair(pair/0: (i32, string)) -> i32 {
-  let x411 = pair/0.0 in
-  let x412 = pair/0.1 in
-  match x412 {
+  let x796 = pair/0.0 in
+  let x797 = pair/0.1 in
+  match x797 {
     "zero" => {
-      match x411 {
+      match x796 {
         0 => {
           1
         },
@@ -13,7 +13,7 @@ fn match_mixed_pair(pair/0: (i32, string)) -> i32 {
       }
     },
     "one" => {
-      match x411 {
+      match x796 {
         0 => {
           2
         },
@@ -26,7 +26,7 @@ fn match_mixed_pair(pair/0: (i32, string)) -> i32 {
       }
     },
     _ => {
-      match x411 {
+      match x796 {
         0 => {
           2
         },
@@ -41,8 +41,8 @@ fn match_mixed_pair(pair/0: (i32, string)) -> i32 {
 fn match_mixed_enum(value/1: Mixed) -> i32 {
   match value/1 {
     Tag_0 => {
-      let x413 = Mixed::OnlyInt._0(value/1) in
-      match x413 {
+      let x798 = Mixed::OnlyInt._0(value/1) in
+      match x798 {
         0 => {
           6
         },
@@ -52,8 +52,8 @@ fn match_mixed_enum(value/1: Mixed) -> i32 {
       }
     },
     Tag_1 => {
-      let x414 = Mixed::OnlyStr._0(value/1) in
-      match x414 {
+      let x799 = Mixed::OnlyStr._0(value/1) in
+      match x799 {
         "zero" => {
           8
         },
@@ -63,11 +63,11 @@ fn match_mixed_enum(value/1: Mixed) -> i32 {
       }
     },
     Tag_2 => {
-      let x415 = Mixed::Both._0(value/1) in
-      let x416 = Mixed::Both._1(value/1) in
-      match x416 {
+      let x800 = Mixed::Both._0(value/1) in
+      let x801 = Mixed::Both._1(value/1) in
+      match x801 {
         "zero" => {
-          match x415 {
+          match x800 {
             0 => {
               10
             },
@@ -77,7 +77,7 @@ fn match_mixed_enum(value/1: Mixed) -> i32 {
           }
         },
         _ => {
-          match x415 {
+          match x800 {
             0 => {
               11
             },
@@ -92,138 +92,258 @@ fn match_mixed_enum(value/1: Mixed) -> i32 {
 }
 
 fn main() -> unit {
-  let t454 = (0, "zero") in
-  let t455 = match_mixed_pair(t454) in
-  let t456 = inherent#i32#i32#to_string(t455) in
-  let mtmp417 = println__T_string(t456) in
-  let t457 = (0, "other") in
-  let t458 = match_mixed_pair(t457) in
-  let t459 = inherent#i32#i32#to_string(t458) in
-  let mtmp418 = println__T_string(t459) in
-  let t460 = (1, "one") in
-  let t461 = match_mixed_pair(t460) in
-  let t462 = inherent#i32#i32#to_string(t461) in
-  let mtmp419 = println__T_string(t462) in
-  let t463 = (2, "zero") in
-  let t464 = match_mixed_pair(t463) in
-  let t465 = inherent#i32#i32#to_string(t464) in
-  join inline_cont547(mtmp420: unit) -> unit {
-    let t466 = (2, "two") in
-    let t467 = match_mixed_pair(t466) in
-    join inline_cont545(t468: string) -> unit {
-      join inline_cont542(mtmp421: unit) -> unit {
-        let t469 = Mixed::OnlyInt(0) in
-        let t470 = match_mixed_enum(t469) in
-        join inline_cont540(t471: string) -> unit {
-          join inline_cont537(mtmp422: unit) -> unit {
-            let t472 = Mixed::OnlyInt(5) in
-            let t473 = match_mixed_enum(t472) in
-            join inline_cont535(t474: string) -> unit {
-              join inline_cont532(mtmp423: unit) -> unit {
-                let t475 = Mixed::OnlyStr("zero") in
-                let t476 = match_mixed_enum(t475) in
-                join inline_cont530(t477: string) -> unit {
-                  join inline_cont527(mtmp424: unit) -> unit {
-                    let t478 = Mixed::OnlyStr("hello") in
-                    let t479 = match_mixed_enum(t478) in
-                    join inline_cont525(t480: string) -> unit {
-                      join inline_cont522(mtmp425: unit) -> unit {
-                        let t481 = Mixed::Both(0, "zero") in
-                        let t482 = match_mixed_enum(t481) in
-                        join inline_cont520(t483: string) -> unit {
-                          join inline_cont517(mtmp426: unit) -> unit {
-                            let t484 = Mixed::Both(0, "hello") in
-                            let t485 = match_mixed_enum(t484) in
-                            join inline_cont515(t486: string) -> unit {
-                              join inline_cont512(mtmp427: unit) -> unit {
-                                let t487 = Mixed::Both(2, "zero") in
-                                let t488 = match_mixed_enum(t487) in
-                                join inline_cont510(t489: string) -> unit {
-                                  join inline_cont507(mtmp428: unit) -> unit {
-                                    let t490 = Mixed::Both(3, "three") in
-                                    let t491 = match_mixed_enum(t490) in
-                                    join inline_cont505(t492: string) -> unit {
-                                      let inline503 = trait_impl#ToString#string#to_string(t492) in
-                                      let inline504 = @runtime(core.string_println)(inline503) in
+  let t839 = (0, "zero") in
+  let t840 = match_mixed_pair(t839) in
+  let t841 = inherent#i32#i32#to_string(t840) in
+  let mtmp802 = println__T_string(t841) in
+  let t842 = (0, "other") in
+  let t843 = match_mixed_pair(t842) in
+  let t844 = inherent#i32#i32#to_string(t843) in
+  let mtmp803 = println__T_string(t844) in
+  let t845 = (1, "one") in
+  let t846 = match_mixed_pair(t845) in
+  let t847 = inherent#i32#i32#to_string(t846) in
+  let mtmp804 = println__T_string(t847) in
+  let t848 = (2, "zero") in
+  let t849 = match_mixed_pair(t848) in
+  let t850 = inherent#i32#i32#to_string(t849) in
+  join inline_cont975(mtmp805: unit) -> unit {
+    let t851 = (2, "two") in
+    let t852 = match_mixed_pair(t851) in
+    join inline_cont973(t853: string) -> unit {
+      join inline_cont970(mtmp806: unit) -> unit {
+        let t854 = Mixed::OnlyInt(0) in
+        let t855 = match_mixed_enum(t854) in
+        join inline_cont968(t856: string) -> unit {
+          join inline_cont965(mtmp807: unit) -> unit {
+            let t857 = Mixed::OnlyInt(5) in
+            let t858 = match_mixed_enum(t857) in
+            join inline_cont963(t859: string) -> unit {
+              join inline_cont960(mtmp808: unit) -> unit {
+                let t860 = Mixed::OnlyStr("zero") in
+                let t861 = match_mixed_enum(t860) in
+                join inline_cont958(t862: string) -> unit {
+                  join inline_cont955(mtmp809: unit) -> unit {
+                    let t863 = Mixed::OnlyStr("hello") in
+                    let t864 = match_mixed_enum(t863) in
+                    join inline_cont953(t865: string) -> unit {
+                      join inline_cont950(mtmp810: unit) -> unit {
+                        let t866 = Mixed::Both(0, "zero") in
+                        let t867 = match_mixed_enum(t866) in
+                        join inline_cont948(t868: string) -> unit {
+                          join inline_cont945(mtmp811: unit) -> unit {
+                            let t869 = Mixed::Both(0, "hello") in
+                            let t870 = match_mixed_enum(t869) in
+                            join inline_cont943(t871: string) -> unit {
+                              join inline_cont940(mtmp812: unit) -> unit {
+                                let t872 = Mixed::Both(2, "zero") in
+                                let t873 = match_mixed_enum(t872) in
+                                join inline_cont938(t874: string) -> unit {
+                                  join inline_cont935(mtmp813: unit) -> unit {
+                                    let t875 = Mixed::Both(3, "three") in
+                                    let t876 = match_mixed_enum(t875) in
+                                    join inline_cont933(t877: string) -> unit {
+                                      let inline931 = trait_impl#ToString#string#to_string(t877) in
+                                      let inline932 = @runtime(core.string_println)(inline931) in
                                       ()
                                     } in
-                                    let inline506 = @runtime(core.int32_to_string)(t491) in
-                                    jump inline_cont505(inline506)
+                                    let inline934 = __goml_builtin_int32_to_string(t876) in
+                                    jump inline_cont933(inline934)
                                   } in
-                                  let inline508 = trait_impl#ToString#string#to_string(t489) in
-                                  let inline509 = @runtime(core.string_println)(inline508) in
-                                  jump inline_cont507(())
+                                  let inline936 = trait_impl#ToString#string#to_string(t874) in
+                                  let inline937 = @runtime(core.string_println)(inline936) in
+                                  jump inline_cont935(())
                                 } in
-                                let inline511 = @runtime(core.int32_to_string)(t488) in
-                                jump inline_cont510(inline511)
+                                let inline939 = __goml_builtin_int32_to_string(t873) in
+                                jump inline_cont938(inline939)
                               } in
-                              let inline513 = trait_impl#ToString#string#to_string(t486) in
-                              let inline514 = @runtime(core.string_println)(inline513) in
-                              jump inline_cont512(())
+                              let inline941 = trait_impl#ToString#string#to_string(t871) in
+                              let inline942 = @runtime(core.string_println)(inline941) in
+                              jump inline_cont940(())
                             } in
-                            let inline516 = @runtime(core.int32_to_string)(t485) in
-                            jump inline_cont515(inline516)
+                            let inline944 = __goml_builtin_int32_to_string(t870) in
+                            jump inline_cont943(inline944)
                           } in
-                          let inline518 = trait_impl#ToString#string#to_string(t483) in
-                          let inline519 = @runtime(core.string_println)(inline518) in
-                          jump inline_cont517(())
+                          let inline946 = trait_impl#ToString#string#to_string(t868) in
+                          let inline947 = @runtime(core.string_println)(inline946) in
+                          jump inline_cont945(())
                         } in
-                        let inline521 = @runtime(core.int32_to_string)(t482) in
-                        jump inline_cont520(inline521)
+                        let inline949 = __goml_builtin_int32_to_string(t867) in
+                        jump inline_cont948(inline949)
                       } in
-                      let inline523 = trait_impl#ToString#string#to_string(t480) in
-                      let inline524 = @runtime(core.string_println)(inline523) in
-                      jump inline_cont522(())
+                      let inline951 = trait_impl#ToString#string#to_string(t865) in
+                      let inline952 = @runtime(core.string_println)(inline951) in
+                      jump inline_cont950(())
                     } in
-                    let inline526 = @runtime(core.int32_to_string)(t479) in
-                    jump inline_cont525(inline526)
+                    let inline954 = __goml_builtin_int32_to_string(t864) in
+                    jump inline_cont953(inline954)
                   } in
-                  let inline528 = trait_impl#ToString#string#to_string(t477) in
-                  let inline529 = @runtime(core.string_println)(inline528) in
-                  jump inline_cont527(())
+                  let inline956 = trait_impl#ToString#string#to_string(t862) in
+                  let inline957 = @runtime(core.string_println)(inline956) in
+                  jump inline_cont955(())
                 } in
-                let inline531 = @runtime(core.int32_to_string)(t476) in
-                jump inline_cont530(inline531)
+                let inline959 = __goml_builtin_int32_to_string(t861) in
+                jump inline_cont958(inline959)
               } in
-              let inline533 = trait_impl#ToString#string#to_string(t474) in
-              let inline534 = @runtime(core.string_println)(inline533) in
-              jump inline_cont532(())
+              let inline961 = trait_impl#ToString#string#to_string(t859) in
+              let inline962 = @runtime(core.string_println)(inline961) in
+              jump inline_cont960(())
             } in
-            let inline536 = @runtime(core.int32_to_string)(t473) in
-            jump inline_cont535(inline536)
+            let inline964 = __goml_builtin_int32_to_string(t858) in
+            jump inline_cont963(inline964)
           } in
-          let inline538 = trait_impl#ToString#string#to_string(t471) in
-          let inline539 = @runtime(core.string_println)(inline538) in
-          jump inline_cont537(())
+          let inline966 = trait_impl#ToString#string#to_string(t856) in
+          let inline967 = @runtime(core.string_println)(inline966) in
+          jump inline_cont965(())
         } in
-        let inline541 = @runtime(core.int32_to_string)(t470) in
-        jump inline_cont540(inline541)
+        let inline969 = __goml_builtin_int32_to_string(t855) in
+        jump inline_cont968(inline969)
       } in
-      let inline543 = trait_impl#ToString#string#to_string(t468) in
-      let inline544 = @runtime(core.string_println)(inline543) in
-      jump inline_cont542(())
+      let inline971 = trait_impl#ToString#string#to_string(t853) in
+      let inline972 = @runtime(core.string_println)(inline971) in
+      jump inline_cont970(())
     } in
-    let inline546 = @runtime(core.int32_to_string)(t467) in
-    jump inline_cont545(inline546)
+    let inline974 = __goml_builtin_int32_to_string(t852) in
+    jump inline_cont973(inline974)
   } in
-  let inline548 = trait_impl#ToString#string#to_string(t465) in
-  let inline549 = @runtime(core.string_println)(inline548) in
-  jump inline_cont547(())
+  let inline976 = trait_impl#ToString#string#to_string(t850) in
+  let inline977 = @runtime(core.string_println)(inline976) in
+  jump inline_cont975(())
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont550(t495: string) -> unit {
-    let t496 = @runtime(core.string_println)(t495) in
+  join inline_cont978(t880: string) -> unit {
+    let t881 = @runtime(core.string_println)(t880) in
     ()
   } in
-  jump inline_cont550(value/1)
+  jump inline_cont978(value/1)
 }
 
-fn inherent#i32#i32#to_string(self/33: i32) -> string {
-  let t499 = @runtime(core.int32_to_string)(self/33) in
-  t499
+fn inherent#i32#i32#to_string(self/286: i32) -> string {
+  let inline980 = (self/286 as i64) in
+  let inline981 = signed_decimal_string(inline980) in
+  inline981
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
+}
+
+fn __goml_builtin_int32_to_string(value/225: i32) -> string {
+  let t889 = (value/225 as i64) in
+  let inline983 = (t889 < 0) in
+  if inline983 {
+    let inline984 = (t889 as u64) in
+    let inline985 = (0 - inline984) in
+    let inline986 = decimal_string(inline985) in
+    let inline987 = ("-" + inline986) in
+    inline987
+  } else {
+    let inline988 = (t889 as u64) in
+    let inline989 = decimal_string(inline988) in
+    inline989
+  }
+}
+
+fn signed_decimal_string(value/214: i64) -> string {
+  let t895 = (value/214 < 0) in
+  if t895 {
+    let t896 = (value/214 as u64) in
+    let t897 = (0 - t896) in
+    let t898 = decimal_string(t897) in
+    let t899 = ("-" + t898) in
+    t899
+  } else {
+    let t900 = (value/214 as u64) in
+    let t901 = decimal_string(t900) in
+    t901
+  }
+}
+
+fn decimal_string(value/208: u64) -> string {
+  let t924 = (value/208 == 0) in
+  join k904() -> string {
+    let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+    let remaining/210 = value/208 in
+    join exit905() -> string {
+      join inline_cont998(t906: isize) -> string {
+        let bytes/211 = @intrinsic(vec.with_capacity)(t906) in
+        let offset/212 = 0 in
+        join exit907() -> string {
+          let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+          let x364 = mtmp362.1 in
+          x364
+        } in
+        joinrec {
+          join loop908() -> string {
+            join inline_cont996(t909: isize) -> string {
+              let t910 = (offset/212 < t909) in
+              if t910 {
+                join inline_cont994(t911: isize) -> string {
+                  let t912 = (t911 - offset/212) in
+                  let t913 = (t912 - 1) in
+                  let t914 = @intrinsic(vec.get)(reversed/209, t913) in
+                  join inline_cont992(_wild357: unit) -> string {
+                    let compound_old358 = offset/212 in
+                    let compound_value359 = 1 in
+                    let t915 = (compound_old358 + compound_value359) in
+                    let t916 = offset/212 = t915 in
+                    jump loop908()
+                  } in
+                  let inline993 = @intrinsic(vec.push)(bytes/211, t914) in
+                  jump inline_cont992(())
+                } in
+                let inline995 = @intrinsic(vec.len)(reversed/209) in
+                jump inline_cont994(inline995)
+              } else {
+                jump exit907()
+              }
+            } in
+            let inline997 = @intrinsic(vec.len)(reversed/209) in
+            jump inline_cont996(inline997)
+          } in
+        } in
+        jump loop908()
+      } in
+      let inline999 = @intrinsic(vec.len)(reversed/209) in
+      jump inline_cont998(inline999)
+    } in
+    joinrec {
+      join loop917() -> string {
+        let t918 = (remaining/210 > 0) in
+        if t918 {
+          let t919 = (remaining/210 % 10) in
+          let t920 = (t919 as u8) in
+          let t921 = (t920 + 48) in
+          join inline_cont990(_wild352: unit) -> string {
+            let compound_old353 = remaining/210 in
+            let compound_value354 = 10 in
+            let t922 = (compound_old353 / compound_value354) in
+            let t923 = remaining/210 = t922 in
+            jump loop917()
+          } in
+          let inline991 = @intrinsic(vec.push)(reversed/209, t921) in
+          jump inline_cont990(())
+        } else {
+          jump exit905()
+        }
+      } in
+    } in
+    jump loop917()
+  } in
+  if t924 {
+    "0"
+  } else {
+    jump k904()
+  }
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  let t926 = @intrinsic(vec.push)(self/511, elem/512) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  let t929 = @intrinsic(vec.len)(self/526) in
+  t929
 }

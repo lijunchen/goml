@@ -1,16 +1,15 @@
 fn main() -> unit {
-    let (valid/0: bool, value/1: f64) =
-      (@runtime(core.string_parse_float64) : (string) -> (bool, f64))("3.125");
+    let (valid/0: bool, value/1: f64) = (string_parse_float64 : (string) -> (bool, f64))("3.125");
     (println : (string) -> unit)((ToString::to_string : (bool) -> string)((valid/0 : bool)));
     (println : (string) -> unit)((ToString::to_string : (f64) -> string)((value/1 : f64)));
     let (rounded_valid/2: bool, rounded/3: f64) =
-      (@runtime(core.string_parse_float32) : (string) -> (bool, f64))("3.14");
+      (string_parse_float32 : (string) -> (bool, f64))("3.14");
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)((rounded_valid/2 : bool))
     );
     (println : (string) -> unit)((ToString::to_string : (f64) -> string)((rounded/3 : f64)));
     let (invalid/4: bool, fallback/5: f64) =
-      (@runtime(core.string_parse_float64) : (string) -> (bool, f64))("not-a-number");
+      (string_parse_float64 : (string) -> (bool, f64))("not-a-number");
     (println : (string) -> unit)((ToString::to_string : (bool) -> string)((invalid/4 : bool)));
     (println : (string) -> unit)((ToString::to_string : (f64) -> string)((fallback/5 : f64)))
 }

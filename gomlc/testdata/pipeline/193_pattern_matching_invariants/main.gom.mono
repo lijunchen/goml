@@ -20,8 +20,8 @@ fn maybe_never(value/2: MaybeNever) -> i32 {
 
 fn empty_never_vec(value/3: Vec[Never]) -> i32 {
   {
-    let match414 = value/3 in
-    if (@intrinsic(vec.len)(match414) == 0) {
+    let match799 = value/3 in
+    if (@intrinsic(vec.len)(match799) == 0) {
         0
     } else {
         @intrinsic(compiler.missing)("")
@@ -31,19 +31,19 @@ fn empty_never_vec(value/3: Vec[Never]) -> i32 {
 
 fn sequence_coverage(value/4: Vec[bool]) -> i32 {
   {
-    let match415 = value/4 in
-    if (@intrinsic(vec.len)(match415) == 0) {
+    let match800 = value/4 in
+    if (@intrinsic(vec.len)(match800) == 0) {
         0
     } else {
-        if (@intrinsic(vec.len)(match415) == 1) {
+        if (@intrinsic(vec.len)(match800) == 1) {
             1
         } else {
-            if (@intrinsic(vec.len)(match415) >= 2) {
-                if (@intrinsic(vec.get)(match415, 0) == true) {
+            if (@intrinsic(vec.len)(match800) >= 2) {
+                if (@intrinsic(vec.get)(match800, 0) == true) {
                     2
                 } else {
-                    if (@intrinsic(vec.len)(match415) >= 2) {
-                        if (@intrinsic(vec.get)(match415, 0) == false) {
+                    if (@intrinsic(vec.len)(match800) >= 2) {
+                        if (@intrinsic(vec.get)(match800, 0) == false) {
                             3
                         } else {
                             @intrinsic(compiler.missing)("")
@@ -53,8 +53,8 @@ fn sequence_coverage(value/4: Vec[bool]) -> i32 {
                     }
                 }
             } else {
-                if (@intrinsic(vec.len)(match415) >= 2) {
-                    if (@intrinsic(vec.get)(match415, 0) == false) {
+                if (@intrinsic(vec.len)(match800) >= 2) {
+                    if (@intrinsic(vec.get)(match800, 0) == false) {
                         3
                     } else {
                         @intrinsic(compiler.missing)("")
@@ -69,13 +69,13 @@ fn sequence_coverage(value/4: Vec[bool]) -> i32 {
 }
 
 fn unwrap(value/5: Single) -> i32 {
-  let mtmp416 = value/5 in
-  match mtmp416 {
-    Single::Only(x417) => {
+  let mtmp801 = value/5 in
+  match mtmp801 {
+    Single::Only(x802) => {
       {
-        let x417 = Single::Only._0(mtmp416) in
+        let x802 = Single::Only._0(mtmp801) in
         {
-          let inner/6 = x417 in
+          let inner/6 = x802 in
           {
             inner/6
           }
@@ -106,15 +106,15 @@ fn signed_zero(value/8: f64) -> string {
 }
 
 fn main() -> unit {
-  let mtmp418 = (Single::Only(12)) in
+  let mtmp803 = (Single::Only(12)) in
   {
-    let x419 = mtmp418.0 in
+    let x804 = mtmp803.0 in
     {
-      let single/9 = x419 in
+      let single/9 = x804 in
       {
-        let _wild420 = println__T_i32(unwrap(single/9)) in
-        let _wild421 = println__T_i32(decide(true)) in
-        let _wild422 = println__T_string(signed_zero(0)) in
+        let _wild805 = println__T_i32(unwrap(single/9)) in
+        let _wild806 = println__T_i32(decide(true)) in
+        let _wild807 = println__T_string(signed_zero(0)) in
       }
     }
   }
@@ -128,10 +128,93 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
-  @runtime(core.int32_to_string)(self/154)
+fn trait_impl#ToString#i32#to_string(self/407: i32) -> string {
+  __goml_builtin_int32_to_string(self/407)
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
+}
+
+fn __goml_builtin_int32_to_string(value/225: i32) -> string {
+  signed_decimal_string((value/225 as i64))
+}
+
+fn signed_decimal_string(value/214: i64) -> string {
+  if (value/214 < 0) {
+      {
+        ("-" + decimal_string((0 - (value/214 as u64))))
+      }
+  } else {
+      {
+        decimal_string((value/214 as u64))
+      }
+  }
+}
+
+fn decimal_string(value/208: u64) -> string {
+  let _wild351 =
+    if (value/208 == 0) {
+        {
+          return "0"
+        }
+    } else {
+        {
+          ()
+        }
+    } in
+  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/210 = value/208 in
+  let _wild356 =
+    while (remaining/210 > 0) {
+        {
+          let _wild352 =
+            inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
+          let _wild355 =
+            {
+              let compound_old353 = remaining/210 in
+              let compound_value354 = 10 in
+              remaining/210 = (compound_old353 / compound_value354)
+            } in
+        }
+    } in
+  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
+  let offset/212 = 0 in
+  let _wild361 =
+    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
+        {
+          let _wild357 =
+            inherent#Vec#Vec[T]#push__T_u8(
+              bytes/211,
+              @intrinsic(vec.get)(
+                reversed/209,
+                ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+              )
+            ) in
+          let _wild360 =
+            {
+              let compound_old358 = offset/212 in
+              let compound_value359 = 1 in
+              offset/212 = (compound_old358 + compound_value359)
+            } in
+        }
+    } in
+  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  {
+    let x364 = mtmp362.1 in
+    {
+      let result/213 = x364 in
+      {
+        result/213
+      }
+    }
+  }
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  @intrinsic(vec.push)(self/511, elem/512)
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/526)
 }

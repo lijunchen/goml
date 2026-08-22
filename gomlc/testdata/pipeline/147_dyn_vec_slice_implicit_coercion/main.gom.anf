@@ -1,106 +1,226 @@
 fn trait_impl#Display#i32#show(self/0: i32) -> string {
-  let inline448 = @runtime(core.int32_to_string)(self/0) in
-  inline448
+  let inline876 = __goml_builtin_int32_to_string(self/0) in
+  inline876
 }
 
 fn render(x/1: dyn Display) -> string {
-  let t420 = dyn_call[Display::show](x/1) in
-  t420
+  let t805 = dyn_call[Display::show](x/1) in
+  t805
 }
 
 fn main() -> unit {
-  join inline_cont471(v/2: Vec[dyn Display]) -> unit {
+  join inline_cont899(v/2: Vec[dyn Display]) -> unit {
     let first/3 = 10 in
     let second/4 = 20 in
-    let t422 = to_dyn[Display]{i32}(first/3) in
-    join inline_cont469(_wild411: unit) -> unit {
-      let t423 = to_dyn[Display]{i32}(second/4) in
-      join inline_cont467(_wild412: unit) -> unit {
-        join inline_cont463(s/5: Slice[dyn Display]) -> unit {
-          let t424 = @intrinsic(slice.get)(s/5, 0) in
-          join inline_cont461(t425: string) -> unit {
-            join inline_cont458(_wild413: unit) -> unit {
-              join inline_cont454(t/6: Slice[dyn Display]) -> unit {
-                let t426 = @intrinsic(slice.get)(t/6, 0) in
-                join inline_cont452(t427: string) -> unit {
-                  let inline450 = trait_impl#ToString#string#to_string(t427) in
-                  let inline451 = @runtime(core.string_println)(inline450) in
+    let t807 = to_dyn[Display]{i32}(first/3) in
+    join inline_cont897(_wild796: unit) -> unit {
+      let t808 = to_dyn[Display]{i32}(second/4) in
+      join inline_cont895(_wild797: unit) -> unit {
+        join inline_cont891(s/5: Slice[dyn Display]) -> unit {
+          let t809 = @intrinsic(slice.get)(s/5, 0) in
+          join inline_cont889(t810: string) -> unit {
+            join inline_cont886(_wild798: unit) -> unit {
+              join inline_cont882(t/6: Slice[dyn Display]) -> unit {
+                let t811 = @intrinsic(slice.get)(t/6, 0) in
+                join inline_cont880(t812: string) -> unit {
+                  let inline878 = trait_impl#ToString#string#to_string(t812) in
+                  let inline879 = @runtime(core.string_println)(inline878) in
                   ()
                 } in
-                let inline453 = dyn_call[Display::show](t426) in
-                jump inline_cont452(inline453)
+                let inline881 = dyn_call[Display::show](t811) in
+                jump inline_cont880(inline881)
               } in
-              let inline455 = 1 in
-              let inline456 = 2 in
-              let inline457 = @intrinsic(slice.sub)(s/5, inline455, inline456) in
-              jump inline_cont454(inline457)
+              let inline883 = 1 in
+              let inline884 = 2 in
+              let inline885 = @intrinsic(slice.sub)(s/5, inline883, inline884) in
+              jump inline_cont882(inline885)
             } in
-            let inline459 = trait_impl#ToString#string#to_string(t425) in
-            let inline460 = @runtime(core.string_println)(inline459) in
-            jump inline_cont458(())
+            let inline887 = trait_impl#ToString#string#to_string(t810) in
+            let inline888 = @runtime(core.string_println)(inline887) in
+            jump inline_cont886(())
           } in
-          let inline462 = dyn_call[Display::show](t424) in
-          jump inline_cont461(inline462)
+          let inline890 = dyn_call[Display::show](t809) in
+          jump inline_cont889(inline890)
         } in
-        let inline464 = 0 in
-        let inline465 = 2 in
-        let inline466 = @intrinsic(slice.new)(v/2, inline464, inline465) in
-        jump inline_cont463(inline466)
+        let inline892 = 0 in
+        let inline893 = 2 in
+        let inline894 = @intrinsic(slice.new)(v/2, inline892, inline893) in
+        jump inline_cont891(inline894)
       } in
-      let inline468 = @intrinsic(vec.push)(v/2, t423) in
-      jump inline_cont467(())
+      let inline896 = @intrinsic(vec.push)(v/2, t808) in
+      jump inline_cont895(())
     } in
-    let inline470 = @intrinsic(vec.push)(v/2, t422) in
-    jump inline_cont469(())
+    let inline898 = @intrinsic(vec.push)(v/2, t807) in
+    jump inline_cont897(())
   } in
-  let inline472 = @intrinsic(vec.new)() in
-  jump inline_cont471(inline472)
+  let inline900 = @intrinsic(vec.new)() in
+  jump inline_cont899(inline900)
 }
 
-fn inherent#i32#i32#to_string(self/33: i32) -> string {
-  let t430 = @runtime(core.int32_to_string)(self/33) in
-  t430
+fn inherent#i32#i32#to_string(self/286: i32) -> string {
+  let inline902 = (self/286 as i64) in
+  let inline903 = signed_decimal_string(inline902) in
+  inline903
 }
 
 fn inherent#Vec#Vec[T]#new__T_dynDisplay() -> Vec[dyn Display] {
-  let t433 = @intrinsic(vec.new)() in
-  t433
+  let t818 = @intrinsic(vec.new)() in
+  t818
 }
 
 fn inherent#Vec#Vec[T]#push__T_dynDisplay(
-  self/258: Vec[dyn Display],
-  elem/259: dyn Display
+  self/511: Vec[dyn Display],
+  elem/512: dyn Display
 ) -> unit {
-  let t435 = @intrinsic(vec.push)(self/258, elem/259) in
+  let t820 = @intrinsic(vec.push)(self/511, elem/512) in
   ()
 }
 
 fn inherent#Vec#Vec[T]#slice__T_dynDisplay(
-  self/311: Vec[dyn Display],
-  start/312: isize,
-  end/313: isize
+  self/564: Vec[dyn Display],
+  start/565: isize,
+  end/566: isize
 ) -> Slice[dyn Display] {
-  let t438 = @intrinsic(slice.new)(self/311, start/312, end/313) in
-  t438
+  let t823 = @intrinsic(slice.new)(self/564, start/565, end/566) in
+  t823
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont473(t440: string) -> unit {
-    let t441 = @runtime(core.string_println)(t440) in
+  join inline_cont904(t825: string) -> unit {
+    let t826 = @runtime(core.string_println)(t825) in
     ()
   } in
-  jump inline_cont473(value/1)
+  jump inline_cont904(value/1)
 }
 
 fn inherent#Slice#Slice[T]#sub__T_dynDisplay(
-  self/408: Slice[dyn Display],
-  start/409: isize,
-  end/410: isize
+  self/661: Slice[dyn Display],
+  start/662: isize,
+  end/663: isize
 ) -> Slice[dyn Display] {
-  let t444 = @intrinsic(slice.sub)(self/408, start/409, end/410) in
-  t444
+  let t829 = @intrinsic(slice.sub)(self/661, start/662, end/663) in
+  t829
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn __goml_builtin_int32_to_string(value/225: i32) -> string {
+  let t832 = (value/225 as i64) in
+  let inline906 = (t832 < 0) in
+  if inline906 {
+    let inline907 = (t832 as u64) in
+    let inline908 = (0 - inline907) in
+    let inline909 = decimal_string(inline908) in
+    let inline910 = ("-" + inline909) in
+    inline910
+  } else {
+    let inline911 = (t832 as u64) in
+    let inline912 = decimal_string(inline911) in
+    inline912
+  }
+}
+
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
+}
+
+fn signed_decimal_string(value/214: i64) -> string {
+  let t840 = (value/214 < 0) in
+  if t840 {
+    let t841 = (value/214 as u64) in
+    let t842 = (0 - t841) in
+    let t843 = decimal_string(t842) in
+    let t844 = ("-" + t843) in
+    t844
+  } else {
+    let t845 = (value/214 as u64) in
+    let t846 = decimal_string(t845) in
+    t846
+  }
+}
+
+fn decimal_string(value/208: u64) -> string {
+  let t869 = (value/208 == 0) in
+  join k849() -> string {
+    let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+    let remaining/210 = value/208 in
+    join exit850() -> string {
+      join inline_cont921(t851: isize) -> string {
+        let bytes/211 = @intrinsic(vec.with_capacity)(t851) in
+        let offset/212 = 0 in
+        join exit852() -> string {
+          let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+          let x364 = mtmp362.1 in
+          x364
+        } in
+        joinrec {
+          join loop853() -> string {
+            join inline_cont919(t854: isize) -> string {
+              let t855 = (offset/212 < t854) in
+              if t855 {
+                join inline_cont917(t856: isize) -> string {
+                  let t857 = (t856 - offset/212) in
+                  let t858 = (t857 - 1) in
+                  let t859 = @intrinsic(vec.get)(reversed/209, t858) in
+                  join inline_cont915(_wild357: unit) -> string {
+                    let compound_old358 = offset/212 in
+                    let compound_value359 = 1 in
+                    let t860 = (compound_old358 + compound_value359) in
+                    let t861 = offset/212 = t860 in
+                    jump loop853()
+                  } in
+                  let inline916 = @intrinsic(vec.push)(bytes/211, t859) in
+                  jump inline_cont915(())
+                } in
+                let inline918 = @intrinsic(vec.len)(reversed/209) in
+                jump inline_cont917(inline918)
+              } else {
+                jump exit852()
+              }
+            } in
+            let inline920 = @intrinsic(vec.len)(reversed/209) in
+            jump inline_cont919(inline920)
+          } in
+        } in
+        jump loop853()
+      } in
+      let inline922 = @intrinsic(vec.len)(reversed/209) in
+      jump inline_cont921(inline922)
+    } in
+    joinrec {
+      join loop862() -> string {
+        let t863 = (remaining/210 > 0) in
+        if t863 {
+          let t864 = (remaining/210 % 10) in
+          let t865 = (t864 as u8) in
+          let t866 = (t865 + 48) in
+          join inline_cont913(_wild352: unit) -> string {
+            let compound_old353 = remaining/210 in
+            let compound_value354 = 10 in
+            let t867 = (compound_old353 / compound_value354) in
+            let t868 = remaining/210 = t867 in
+            jump loop862()
+          } in
+          let inline914 = @intrinsic(vec.push)(reversed/209, t866) in
+          jump inline_cont913(())
+        } else {
+          jump exit850()
+        }
+      } in
+    } in
+    jump loop862()
+  } in
+  if t869 {
+    "0"
+  } else {
+    jump k849()
+  }
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  let t871 = @intrinsic(vec.push)(self/511, elem/512) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  let t874 = @intrinsic(vec.len)(self/526) in
+  t874
 }

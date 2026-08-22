@@ -1,47 +1,47 @@
 fn summarize(event/0: FloatEvent) -> string {
   match event/0 {
     Tag_0 => {
-      let x411 = FloatEvent::Sample32._0(event/0) in
-      let x412 = FloatEvent::Sample32._1(event/0) in
-      join inline_cont456(t422: string) -> string {
-        let t423 = (x411 + t422) in
-        t423
+      let x796 = FloatEvent::Sample32._0(event/0) in
+      let x797 = FloatEvent::Sample32._1(event/0) in
+      join inline_cont1822(t807: string) -> string {
+        let t808 = (x796 + t807) in
+        t808
       } in
-      let inline457 = @runtime(core.float32_to_string)(x412) in
-      jump inline_cont456(inline457)
+      let inline1823 = __goml_builtin_float32_to_string(x797) in
+      jump inline_cont1822(inline1823)
     },
     Tag_1 => {
-      let x413 = FloatEvent::Sample64._0(event/0) in
-      let x414 = FloatEvent::Sample64._1(event/0) in
-      join inline_cont458(t424: string) -> string {
-        let t425 = (x413 + t424) in
-        t425
+      let x798 = FloatEvent::Sample64._0(event/0) in
+      let x799 = FloatEvent::Sample64._1(event/0) in
+      join inline_cont1824(t809: string) -> string {
+        let t810 = (x798 + t809) in
+        t810
       } in
-      let inline459 = @runtime(core.float64_to_string)(x414) in
-      jump inline_cont458(inline459)
+      let inline1825 = __goml_builtin_float64_to_string(x799) in
+      jump inline_cont1824(inline1825)
     },
   }
 }
 
 fn compare(values/5: (f32, f64)) -> string {
-  let x415 = values/5.0 in
-  let x416 = values/5.1 in
+  let x800 = values/5.0 in
+  let x801 = values/5.1 in
   let limit32/8 = 1 in
   let limit64/9 = 5 in
-  let less_left/10 = (x415 < limit32/8) in
-  let less_right/11 = (x416 < limit64/9) in
-  join inline_cont462(t428: string) -> string {
-    let t429 = ("left<1?=" + t428) in
-    let t430 = (t429 + ",right<5?=") in
-    join inline_cont460(t431: string) -> string {
-      let t432 = (t430 + t431) in
-      t432
+  let less_left/10 = (x800 < limit32/8) in
+  let less_right/11 = (x801 < limit64/9) in
+  join inline_cont1828(t813: string) -> string {
+    let t814 = ("left<1?=" + t813) in
+    let t815 = (t814 + ",right<5?=") in
+    join inline_cont1826(t816: string) -> string {
+      let t817 = (t815 + t816) in
+      t817
     } in
-    let inline461 = @runtime(core.bool_to_string)(less_right/11) in
-    jump inline_cont460(inline461)
+    let inline1827 = @runtime(core.bool_to_string)(less_right/11) in
+    jump inline_cont1826(inline1827)
   } in
-  let inline463 = @runtime(core.bool_to_string)(less_left/10) in
-  jump inline_cont462(inline463)
+  let inline1829 = @runtime(core.bool_to_string)(less_left/10) in
+  jump inline_cont1828(inline1829)
 }
 
 fn main() -> unit {
@@ -50,74 +50,2926 @@ fn main() -> unit {
   let third_value/14 = 9.5 in
   let first/15 = FloatEvent::Sample32("f32=", first_value/12) in
   let second/16 = FloatEvent::Sample32("f32_b=", second_value/13) in
-  let t434 = summarize(first/15) in
-  let t435 = summarize(second/16) in
-  let t436 = (t434 + t435) in
-  join inline_cont495(t437: string) -> unit {
-    let t438 = (t436 + t437) in
-    join inline_cont481(t439: string) -> unit {
-      let t440 = (t438 + t439) in
-      join inline_cont467(t441: string) -> unit {
-        let message/20 = (t440 + t441) in
-        let inline465 = trait_impl#ToString#string#to_string(message/20) in
-        let inline466 = @runtime(core.string_println)(inline465) in
+  let t819 = summarize(first/15) in
+  let t820 = summarize(second/16) in
+  let t821 = (t819 + t820) in
+  join inline_cont1861(t822: string) -> unit {
+    let t823 = (t821 + t822) in
+    join inline_cont1847(t824: string) -> unit {
+      let t825 = (t823 + t824) in
+      join inline_cont1833(t826: string) -> unit {
+        let message/20 = (t825 + t826) in
+        let inline1831 = trait_impl#ToString#string#to_string(message/20) in
+        let inline1832 = @runtime(core.string_println)(inline1831) in
         ()
       } in
-      let inline468 = 1.5 in
-      let inline469 = 7.25 in
-      let inline472 = 1 in
-      let inline473 = 5 in
-      let inline474 = (inline468 < inline472) in
-      let inline475 = (inline469 < inline473) in
-      let inline476 = trait_impl#ToString#bool#to_string(inline474) in
-      let inline477 = ("left<1?=" + inline476) in
-      let inline478 = (inline477 + ",right<5?=") in
-      let inline479 = trait_impl#ToString#bool#to_string(inline475) in
-      let inline480 = (inline478 + inline479) in
-      jump inline_cont467(inline480)
+      let inline1834 = 1.5 in
+      let inline1835 = 7.25 in
+      let inline1838 = 1 in
+      let inline1839 = 5 in
+      let inline1840 = (inline1834 < inline1838) in
+      let inline1841 = (inline1835 < inline1839) in
+      let inline1842 = trait_impl#ToString#bool#to_string(inline1840) in
+      let inline1843 = ("left<1?=" + inline1842) in
+      let inline1844 = (inline1843 + ",right<5?=") in
+      let inline1845 = trait_impl#ToString#bool#to_string(inline1841) in
+      let inline1846 = (inline1844 + inline1845) in
+      jump inline_cont1833(inline1846)
     } in
-    let inline482 = 0.75 in
-    let inline483 = 4 in
-    let inline486 = 1 in
-    let inline487 = 5 in
-    let inline488 = (inline482 < inline486) in
-    let inline489 = (inline483 < inline487) in
-    let inline490 = trait_impl#ToString#bool#to_string(inline488) in
-    let inline491 = ("left<1?=" + inline490) in
-    let inline492 = (inline491 + ",right<5?=") in
-    let inline493 = trait_impl#ToString#bool#to_string(inline489) in
-    let inline494 = (inline492 + inline493) in
-    jump inline_cont481(inline494)
+    let inline1848 = 0.75 in
+    let inline1849 = 4 in
+    let inline1852 = 1 in
+    let inline1853 = 5 in
+    let inline1854 = (inline1848 < inline1852) in
+    let inline1855 = (inline1849 < inline1853) in
+    let inline1856 = trait_impl#ToString#bool#to_string(inline1854) in
+    let inline1857 = ("left<1?=" + inline1856) in
+    let inline1858 = (inline1857 + ",right<5?=") in
+    let inline1859 = trait_impl#ToString#bool#to_string(inline1855) in
+    let inline1860 = (inline1858 + inline1859) in
+    jump inline_cont1847(inline1860)
   } in
-  let inline502 = "f64=" in
-  let inline506 = trait_impl#ToString#f64#to_string(third_value/14) in
-  let inline507 = (inline502 + inline506) in
-  jump inline_cont495(inline507)
+  let inline1868 = "f64=" in
+  let inline1872 = trait_impl#ToString#f64#to_string(third_value/14) in
+  let inline1873 = (inline1868 + inline1872) in
+  jump inline_cont1861(inline1873)
 }
 
-fn trait_impl#ToString#f32#to_string(self/160: f32) -> string {
-  let t444 = @runtime(core.float32_to_string)(self/160) in
-  t444
+fn trait_impl#ToString#f32#to_string(self/413: f32) -> string {
+  let inline1875 = @go_ffi(math, Float32bits)(self/413) in
+  let inline1876 = (inline1875 as u64) in
+  let inline1877 = format_float_bits(inline1876, 23, 8, 127) in
+  inline1877
 }
 
-fn trait_impl#ToString#f64#to_string(self/161: f64) -> string {
-  let t447 = @runtime(core.float64_to_string)(self/161) in
-  t447
+fn trait_impl#ToString#f64#to_string(self/414: f64) -> string {
+  let inline1879 = @go_ffi(math, Float64bits)(self/414) in
+  let inline1880 = format_float_bits(inline1879, 52, 11, 1023) in
+  inline1880
 }
 
-fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
-  let t450 = @runtime(core.bool_to_string)(self/148) in
-  t450
+fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
+  let t835 = @runtime(core.bool_to_string)(self/401) in
+  t835
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont508(t452: string) -> unit {
-    let t453 = @runtime(core.string_println)(t452) in
+  join inline_cont1881(t837: string) -> unit {
+    let t838 = @runtime(core.string_println)(t837) in
     ()
   } in
-  jump inline_cont508(value/1)
+  jump inline_cont1881(value/1)
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn __goml_builtin_float32_to_string(value/194: f32) -> string {
+  let t841 = @go_ffi(math, Float32bits)(value/194) in
+  let t842 = (t841 as u64) in
+  let t843 = format_float_bits(t842, 23, 8, 127) in
+  t843
+}
+
+fn __goml_builtin_float64_to_string(value/195: f64) -> string {
+  let t846 = @go_ffi(math, Float64bits)(value/195) in
+  let t847 = format_float_bits(t846, 52, 11, 1023) in
+  t847
+}
+
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
+}
+
+fn format_float_bits(
+  bits/160: u64,
+  mantissa_bits/161: isize,
+  exponent_bits/162: isize,
+  exponent_bias/163: isize
+) -> string {
+  let t852 = (mantissa_bits/161 + exponent_bits/162) in
+  let sign_mask/164 = (1 << t852) in
+  let t853 = (bits/160 & sign_mask/164) in
+  let negative/165 = (t853 != 0) in
+  let t854 = (1 << exponent_bits/162) in
+  let exponent_mask/166 = (t854 - 1) in
+  let t855 = (bits/160 >> mantissa_bits/161) in
+  let exponent/167 = (t855 & exponent_mask/166) in
+  let t856 = (1 << mantissa_bits/161) in
+  let t857 = (t856 - 1) in
+  let fraction/168 = (bits/160 & t857) in
+  let t921 = (exponent/167 == exponent_mask/166) in
+  join k858() -> string {
+    let t918 = (exponent/167 == 0) in
+    join k859(jp860: u64) -> string {
+      let t912 = (exponent/167 == 0) in
+      join k861(jp862: isize) -> string {
+        let exact_value/171 = float_natural_from_u64(jp860) in
+        let t867 = (jp862 >= 0) in
+        join k863(jp864: isize) -> string {
+          let t865 = float_natural_decimal(exact_value/171) in
+          let t866 = fixed_float_text(t865, jp864, negative/165) in
+          t866
+        } in
+        if t867 {
+          let shifted/172 = float_natural_shift_left(exact_value/171, jp862) in
+          let digits/173 = float_natural_decimal(shifted/172) in
+          let t886 = (mantissa_bits/161 == 23) in
+          join k868(jp869: isize) -> string {
+            join inline_cont1888(t883: isize) -> string {
+              let t884 = (t883 < jp869) in
+              join k870(jp871: isize) -> string {
+                let count/176 = 1 in
+                join exit872() -> string {
+                  let inline1887 = @runtime(core.string_len)(digits/173) in
+                  jump k863(inline1887)
+                } in
+                joinrec {
+                  join loop874() -> string {
+                    let t875 = (count/176 <= jp871) in
+                    if t875 {
+                      let mtmp317 = rounded_float_digits(digits/173, count/176) in
+                      let x318 = mtmp317.0 in
+                      let x319 = mtmp317.1 in
+                      let rounded/179 = trim_float_digits(x318) in
+                      join inline_cont1884(t876: isize) -> string {
+                        join k877(jp878: isize) -> string {
+                          let point/180 = (t876 + jp878) in
+                          let candidate/181 =
+                            fixed_float_text(rounded/179, point/180, negative/165) in
+                          let mtmp320 =
+                            parsed_float_bits(
+                              candidate/181,
+                              mantissa_bits/161,
+                              exponent_bias/163
+                            ) in
+                          let x322 = mtmp320.1 in
+                          let t882 = (x322 == bits/160) in
+                          join k879() -> string {
+                            let compound_old324 = count/176 in
+                            let compound_value325 = 1 in
+                            let t880 = (compound_old324 + compound_value325) in
+                            let t881 = count/176 = t880 in
+                            jump loop874()
+                          } in
+                          if t882 {
+                            candidate/181
+                          } else {
+                            jump k879()
+                          }
+                        } in
+                        if x319 {
+                          jump k877(1)
+                        } else {
+                          jump k877(0)
+                        }
+                      } in
+                      let inline1885 = @runtime(core.string_len)(digits/173) in
+                      jump inline_cont1884(inline1885)
+                    } else {
+                      jump exit872()
+                    }
+                  } in
+                } in
+                jump loop874()
+              } in
+              if t884 {
+                let inline1883 = @runtime(core.string_len)(digits/173) in
+                jump k870(inline1883)
+              } else {
+                jump k870(jp869)
+              }
+            } in
+            let inline1889 = @runtime(core.string_len)(digits/173) in
+            jump inline_cont1888(inline1889)
+          } in
+          if t886 {
+            jump k868(9)
+          } else {
+            jump k868(17)
+          }
+        } else {
+          let count/183 = 0 in
+          join exit887() -> string {
+            let digits/184 = float_natural_decimal(exact_value/171) in
+            join inline_cont1894(t888: isize) -> string {
+              let point/185 = (t888 + jp862) in
+              let t906 = (mantissa_bits/161 == 23) in
+              join k889(jp890: isize) -> string {
+                join inline_cont1892(t903: isize) -> string {
+                  let t904 = (t903 < jp890) in
+                  join k891(jp892: isize) -> string {
+                    let _wild333 = count/183 = 1 in
+                    join exit893() -> string {
+                      jump k863(point/185)
+                    } in
+                    joinrec {
+                      join loop894() -> string {
+                        let t895 = (count/183 <= jp892) in
+                        if t895 {
+                          let mtmp334 = rounded_float_digits(digits/184, count/183) in
+                          let x335 = mtmp334.0 in
+                          let x336 = mtmp334.1 in
+                          let rounded/190 = trim_float_digits(x335) in
+                          join k896(jp897: isize) -> string {
+                            let t898 = (point/185 + jp897) in
+                            let candidate/191 = fixed_float_text(rounded/190, t898, negative/165) in
+                            let mtmp337 =
+                              parsed_float_bits(
+                                candidate/191,
+                                mantissa_bits/161,
+                                exponent_bias/163
+                              ) in
+                            let x339 = mtmp337.1 in
+                            let t902 = (x339 == bits/160) in
+                            join k899() -> string {
+                              let compound_old341 = count/183 in
+                              let compound_value342 = 1 in
+                              let t900 = (compound_old341 + compound_value342) in
+                              let t901 = count/183 = t900 in
+                              jump loop894()
+                            } in
+                            if t902 {
+                              candidate/191
+                            } else {
+                              jump k899()
+                            }
+                          } in
+                          if x336 {
+                            jump k896(1)
+                          } else {
+                            jump k896(0)
+                          }
+                        } else {
+                          jump exit893()
+                        }
+                      } in
+                    } in
+                    jump loop894()
+                  } in
+                  if t904 {
+                    let inline1891 = @runtime(core.string_len)(digits/184) in
+                    jump k891(inline1891)
+                  } else {
+                    jump k891(jp890)
+                  }
+                } in
+                let inline1893 = @runtime(core.string_len)(digits/184) in
+                jump inline_cont1892(inline1893)
+              } in
+              if t906 {
+                jump k889(9)
+              } else {
+                jump k889(17)
+              }
+            } in
+            let inline1895 = @runtime(core.string_len)(digits/184) in
+            jump inline_cont1894(inline1895)
+          } in
+          let t908 = (0 - jp862) in
+          joinrec {
+            join loop907() -> string {
+              let t909 = (count/183 < t908) in
+              if t909 {
+                let _wild328 = float_natural_multiply_small(exact_value/171, 5) in
+                let compound_old329 = count/183 in
+                let compound_value330 = 1 in
+                let t910 = (compound_old329 + compound_value330) in
+                let t911 = count/183 = t910 in
+                jump loop907()
+              } else {
+                jump exit887()
+              }
+            } in
+          } in
+          jump loop907()
+        }
+      } in
+      if t912 {
+        let t913 = (1 - exponent_bias/163) in
+        let t914 = (t913 - mantissa_bits/161) in
+        jump k861(t914)
+      } else {
+        let t915 = (exponent/167 as isize) in
+        let t916 = (t915 - exponent_bias/163) in
+        let t917 = (t916 - mantissa_bits/161) in
+        jump k861(t917)
+      }
+    } in
+    if t918 {
+      jump k859(fraction/168)
+    } else {
+      let t919 = (1 << mantissa_bits/161) in
+      let t920 = (fraction/168 | t919) in
+      jump k859(t920)
+    }
+  } in
+  if t921 {
+    let t923 = (fraction/168 == 0) in
+    if t923 {
+      if negative/165 {
+        "-inf"
+      } else {
+        "inf"
+      }
+    } else {
+      "NaN"
+    }
+  } else {
+    let t929 = (exponent/167 == 0) in
+    join k926(jp927: bool) -> string {
+      if jp927 {
+        if negative/165 {
+          "-0"
+        } else {
+          "0"
+        }
+      } else {
+        jump k858()
+      }
+    } in
+    if t929 {
+      let t930 = (fraction/168 == 0) in
+      jump k926(t930)
+    } else {
+      jump k926(false)
+    }
+  }
+}
+
+fn float_natural_from_u64(value/1: u64) -> FloatNatural {
+  join inline_cont1900(result/2: FloatNatural) -> FloatNatural {
+    let t934 = (value/1 != 0) in
+    join k933() -> FloatNatural {
+      result/2
+    } in
+    if t934 {
+      let t935 = FloatNatural.words(result/2) in
+      let t936 = (value/1 as u32) in
+      join inline_cont1898(_wild1: unit) -> FloatNatural {
+        let t937 = (value/1 >> 32) in
+        let high/3 = (t937 as u32) in
+        let t939 = (high/3 != 0) in
+        if t939 {
+          let t940 = FloatNatural.words(result/2) in
+          let inline1897 = @intrinsic(vec.push)(t940, high/3) in
+          jump k933()
+        } else {
+          jump k933()
+        }
+      } in
+      let inline1899 = @intrinsic(vec.push)(t935, t936) in
+      jump inline_cont1898(())
+    } else {
+      jump k933()
+    }
+  } in
+  let inline1901 = @intrinsic(vec.new)() in
+  let inline1902 = FloatNatural { words: inline1901 } in
+  jump inline_cont1900(inline1902)
+}
+
+fn float_natural_shift_left(value/28: FloatNatural, bits/29: isize) -> FloatNatural {
+  join inline_cont1918(t969: bool) -> FloatNatural {
+    join k944() -> FloatNatural {
+      join inline_cont1915(result/30: FloatNatural) -> FloatNatural {
+        let word_shift/31 = (bits/29 / 32) in
+        let bit_shift/32 = (bits/29 % 32) in
+        let index/33 = 0 in
+        join exit945() -> FloatNatural {
+          let carry/34 = 0 in
+          let _wild56 = index/33 = 0 in
+          join exit946() -> FloatNatural {
+            let t948 = (carry/34 != 0) in
+            join k947() -> FloatNatural {
+              result/30
+            } in
+            if t948 {
+              let t949 = FloatNatural.words(result/30) in
+              let t950 = (carry/34 as u32) in
+              let inline1914 = @intrinsic(vec.push)(t949, t950) in
+              jump k947()
+            } else {
+              jump k947()
+            }
+          } in
+          joinrec {
+            join loop952() -> FloatNatural {
+              let t953 = FloatNatural.words(value/28) in
+              join inline_cont1911(t954: isize) -> FloatNatural {
+                let t955 = (index/33 < t954) in
+                if t955 {
+                  let t956 = FloatNatural.words(value/28) in
+                  let word/35 = @intrinsic(vec.get)(t956, index/33) in
+                  let t957 = (word/35 as u64) in
+                  let t958 = (t957 << bit_shift/32) in
+                  let shifted/36 = (t958 | carry/34) in
+                  let t959 = FloatNatural.words(result/30) in
+                  let t960 = (shifted/36 as u32) in
+                  join inline_cont1909(_wild57: unit) -> FloatNatural {
+                    let t961 = (shifted/36 >> 32) in
+                    let _wild58 = carry/34 = t961 in
+                    let compound_old59 = index/33 in
+                    let compound_value60 = 1 in
+                    let t962 = (compound_old59 + compound_value60) in
+                    let t963 = index/33 = t962 in
+                    jump loop952()
+                  } in
+                  let inline1910 = @intrinsic(vec.push)(t959, t960) in
+                  jump inline_cont1909(())
+                } else {
+                  jump exit946()
+                }
+              } in
+              let inline1912 = @intrinsic(vec.len)(t953) in
+              jump inline_cont1911(inline1912)
+            } in
+          } in
+          jump loop952()
+        } in
+        joinrec {
+          join loop964() -> FloatNatural {
+            let t965 = (index/33 < word_shift/31) in
+            if t965 {
+              let t966 = FloatNatural.words(result/30) in
+              join inline_cont1906(_wild51: unit) -> FloatNatural {
+                let compound_old52 = index/33 in
+                let compound_value53 = 1 in
+                let t967 = (compound_old52 + compound_value53) in
+                let t968 = index/33 = t967 in
+                jump loop964()
+              } in
+              let inline1907 = 0 in
+              let inline1908 = @intrinsic(vec.push)(t966, inline1907) in
+              jump inline_cont1906(())
+            } else {
+              jump exit945()
+            }
+          } in
+        } in
+        jump loop964()
+      } in
+      let inline1916 = @intrinsic(vec.new)() in
+      let inline1917 = FloatNatural { words: inline1916 } in
+      jump inline_cont1915(inline1917)
+    } in
+    if t969 {
+      let inline1904 = @intrinsic(vec.new)() in
+      let inline1905 = FloatNatural { words: inline1904 } in
+      inline1905
+    } else {
+      let t972 = (bits/29 == 0) in
+      if t972 {
+        let t973 = float_natural_copy(value/28) in
+        t973
+      } else {
+        jump k944()
+      }
+    }
+  } in
+  let inline1919 = FloatNatural.words(value/28) in
+  let inline1920 = inherent#Vec#Vec[T]#is_empty__T_u32(inline1919) in
+  jump inline_cont1918(inline1920)
+}
+
+fn float_natural_decimal(value/49: FloatNatural) -> string {
+  join inline_cont1934(t996: bool) -> string {
+    join k976() -> string {
+      let current/50 = float_natural_copy(value/49) in
+      let reversed/51 = @intrinsic(vec.new)() in
+      join exit977() -> string {
+        join inline_cont1932(t978: isize) -> string {
+          let output/52 = @intrinsic(vec.with_capacity)(t978) in
+          let offset/53 = 0 in
+          join exit979() -> string {
+            let mtmp102 = @runtime(core.string_from_utf8)(output/52) in
+            let x104 = mtmp102.1 in
+            x104
+          } in
+          joinrec {
+            join loop980() -> string {
+              join inline_cont1930(t981: isize) -> string {
+                let t982 = (offset/53 < t981) in
+                if t982 {
+                  join inline_cont1928(t983: isize) -> string {
+                    let t984 = (t983 - offset/53) in
+                    let t985 = (t984 - 1) in
+                    let t986 = @intrinsic(vec.get)(reversed/51, t985) in
+                    join inline_cont1926(_wild97: unit) -> string {
+                      let compound_old98 = offset/53 in
+                      let compound_value99 = 1 in
+                      let t987 = (compound_old98 + compound_value99) in
+                      let t988 = offset/53 = t987 in
+                      jump loop980()
+                    } in
+                    let inline1927 = @intrinsic(vec.push)(output/52, t986) in
+                    jump inline_cont1926(())
+                  } in
+                  let inline1929 = @intrinsic(vec.len)(reversed/51) in
+                  jump inline_cont1928(inline1929)
+                } else {
+                  jump exit979()
+                }
+              } in
+              let inline1931 = @intrinsic(vec.len)(reversed/51) in
+              jump inline_cont1930(inline1931)
+            } in
+          } in
+          jump loop980()
+        } in
+        let inline1933 = @intrinsic(vec.len)(reversed/51) in
+        jump inline_cont1932(inline1933)
+      } in
+      joinrec {
+        join loop989() -> string {
+          join inline_cont1923(t990: bool) -> string {
+            let t991 = (!t990) in
+            if t991 {
+              let t992 = float_natural_divide_small(current/50, 10) in
+              let t993 = (t992 as u8) in
+              let t994 = (t993 + 48) in
+              let inline1922 = @intrinsic(vec.push)(reversed/51, t994) in
+              jump loop989()
+            } else {
+              jump exit977()
+            }
+          } in
+          let inline1924 = FloatNatural.words(current/50) in
+          let inline1925 = inherent#Vec#Vec[T]#is_empty__T_u32(inline1924) in
+          jump inline_cont1923(inline1925)
+        } in
+      } in
+      jump loop989()
+    } in
+    if t996 {
+      "0"
+    } else {
+      jump k976()
+    }
+  } in
+  let inline1935 = FloatNatural.words(value/49) in
+  let inline1936 = inherent#Vec#Vec[T]#is_empty__T_u32(inline1935) in
+  jump inline_cont1934(inline1936)
+}
+
+fn inherent#string#string#byte_len(self/289: string) -> isize {
+  let t999 = @runtime(core.string_len)(self/289) in
+  t999
+}
+
+fn rounded_float_digits(exact/145: string, count/146: isize) -> (string, bool) {
+  let t1002 = (count/146 + 1) in
+  let output/147 = @intrinsic(vec.with_capacity)(t1002) in
+  let index/148 = 0 in
+  join exit1003() -> (string, bool) {
+    join inline_cont1960(t1054: isize) -> (string, bool) {
+      let t1055 = (count/146 == t1054) in
+      join k1004() -> (string, bool) {
+        join inline_cont1958(next/150: u8) -> (string, bool) {
+          let trailing/151 = false in
+          let t1005 = (count/146 + 1) in
+          let _wild275 = index/148 = t1005 in
+          join exit1006() -> (string, bool) {
+            let t1034 = (next/150 > 53) in
+            join k1007(jp1008: bool) -> (string, bool) {
+              if jp1008 {
+                join inline_cont1956(index/153: isize) -> (string, bool) {
+                  join exit1011() -> (string, bool) {
+                    join inline_cont1954(t1012: isize) -> (string, bool) {
+                      let t1013 = (t1012 + 1) in
+                      let carried/155 = @intrinsic(vec.with_capacity)(t1013) in
+                      join inline_cont1951(_wild299: unit) -> (string, bool) {
+                        let _wild300 = index/153 = 0 in
+                        join exit1014() -> (string, bool) {
+                          let mtmp306 = @runtime(core.string_from_utf8)(carried/155) in
+                          let x308 = mtmp306.1 in
+                          let t1015 = (x308, true) in
+                          t1015
+                        } in
+                        joinrec {
+                          join loop1016() -> (string, bool) {
+                            join inline_cont1949(t1017: isize) -> (string, bool) {
+                              let t1018 = (index/153 < t1017) in
+                              if t1018 {
+                                let t1019 = @intrinsic(vec.get)(output/147, index/153) in
+                                join inline_cont1947(_wild301: unit) -> (string, bool) {
+                                  let compound_old302 = index/153 in
+                                  let compound_value303 = 1 in
+                                  let t1020 = (compound_old302 + compound_value303) in
+                                  let t1021 = index/153 = t1020 in
+                                  jump loop1016()
+                                } in
+                                let inline1948 = @intrinsic(vec.push)(carried/155, t1019) in
+                                jump inline_cont1947(())
+                              } else {
+                                jump exit1014()
+                              }
+                            } in
+                            let inline1950 = @intrinsic(vec.len)(output/147) in
+                            jump inline_cont1949(inline1950)
+                          } in
+                        } in
+                        jump loop1016()
+                      } in
+                      let inline1952 = 49 in
+                      let inline1953 = @intrinsic(vec.push)(carried/155, inline1952) in
+                      jump inline_cont1951(())
+                    } in
+                    let inline1955 = @intrinsic(vec.len)(output/147) in
+                    jump inline_cont1954(inline1955)
+                  } in
+                  joinrec {
+                    join loop1022() -> (string, bool) {
+                      let t1023 = (index/153 > 0) in
+                      if t1023 {
+                        let compound_old282 = index/153 in
+                        let compound_value283 = 1 in
+                        let t1024 = (compound_old282 - compound_value283) in
+                        let t1025 = index/153 = t1024 in
+                        let t1027 = @intrinsic(vec.get)(output/147, index/153) in
+                        let t1028 = (t1027 < 57) in
+                        if t1028 {
+                          let index286 = index/153 in
+                          let place287 = @intrinsic(vec.get)(output/147, index286) in
+                          let value288 = 1 in
+                          let t1029 = (place287 + value288) in
+                          let t1030 = @intrinsic(vec.set)(output/147, index286, t1029) in
+                          let mtmp290 = @runtime(core.string_from_utf8)(output/147) in
+                          let x292 = mtmp290.1 in
+                          let t1031 = (x292, false) in
+                          t1031
+                        } else {
+                          let index294 = index/153 in
+                          let place295 = @intrinsic(vec.get)(output/147, index294) in
+                          let value296 = 48 in
+                          let t1032 = @intrinsic(vec.set)(output/147, index294, value296) in
+                          jump loop1022()
+                        }
+                      } else {
+                        jump exit1011()
+                      }
+                    } in
+                  } in
+                  jump loop1022()
+                } in
+                let inline1957 = @intrinsic(vec.len)(output/147) in
+                jump inline_cont1956(inline1957)
+              } else {
+                let mtmp309 = @runtime(core.string_from_utf8)(output/147) in
+                let x311 = mtmp309.1 in
+                let t1033 = (x311, false) in
+                t1033
+              }
+            } in
+            if t1034 {
+              jump k1007(true)
+            } else {
+              let t1037 = (next/150 == 53) in
+              if t1037 {
+                if trailing/151 {
+                  jump k1007(true)
+                } else {
+                  join inline_cont1945(t1040: isize) -> (string, bool) {
+                    let t1041 = (t1040 - 1) in
+                    let t1042 = @intrinsic(vec.get)(output/147, t1041) in
+                    let t1043 = (t1042 - 48) in
+                    let t1044 = (t1043 % 2) in
+                    let t1045 = (t1044 == 1) in
+                    jump k1007(t1045)
+                  } in
+                  let inline1946 = @intrinsic(vec.len)(output/147) in
+                  jump inline_cont1945(inline1946)
+                }
+              } else {
+                jump k1007(false)
+              }
+            }
+          } in
+          joinrec {
+            join loop1046() -> (string, bool) {
+              join inline_cont1943(t1047: isize) -> (string, bool) {
+                let t1048 = (index/148 < t1047) in
+                if t1048 {
+                  join inline_cont1941(t1052: u8) -> (string, bool) {
+                    let t1053 = (t1052 != 48) in
+                    join k1049() -> (string, bool) {
+                      let compound_old278 = index/148 in
+                      let compound_value279 = 1 in
+                      let t1050 = (compound_old278 + compound_value279) in
+                      let t1051 = index/148 = t1050 in
+                      jump loop1046()
+                    } in
+                    if t1053 {
+                      let _wild276 = trailing/151 = true in
+                      jump k1049()
+                    } else {
+                      jump k1049()
+                    }
+                  } in
+                  let inline1942 = @runtime(core.string_byte_get)(exact/145, index/148) in
+                  jump inline_cont1941(inline1942)
+                } else {
+                  jump exit1006()
+                }
+              } in
+              let inline1944 = @runtime(core.string_len)(exact/145) in
+              jump inline_cont1943(inline1944)
+            } in
+          } in
+          jump loop1046()
+        } in
+        let inline1959 = @runtime(core.string_byte_get)(exact/145, count/146) in
+        jump inline_cont1958(inline1959)
+      } in
+      if t1055 {
+        let mtmp271 = @runtime(core.string_from_utf8)(output/147) in
+        let x273 = mtmp271.1 in
+        let t1056 = (x273, false) in
+        t1056
+      } else {
+        jump k1004()
+      }
+    } in
+    let inline1961 = @runtime(core.string_len)(exact/145) in
+    jump inline_cont1960(inline1961)
+  } in
+  joinrec {
+    join loop1057() -> (string, bool) {
+      let t1058 = (index/148 < count/146) in
+      if t1058 {
+        join inline_cont1939(t1059: u8) -> (string, bool) {
+          join inline_cont1937(_wild266: unit) -> (string, bool) {
+            let compound_old267 = index/148 in
+            let compound_value268 = 1 in
+            let t1060 = (compound_old267 + compound_value268) in
+            let t1061 = index/148 = t1060 in
+            jump loop1057()
+          } in
+          let inline1938 = @intrinsic(vec.push)(output/147, t1059) in
+          jump inline_cont1937(())
+        } in
+        let inline1940 = @runtime(core.string_byte_get)(exact/145, index/148) in
+        jump inline_cont1939(inline1940)
+      } else {
+        jump exit1003()
+      }
+    } in
+  } in
+  jump loop1057()
+}
+
+fn trim_float_digits(value/158: string) -> string {
+  join inline_cont1967(length/159: isize) -> string {
+    join exit1064() -> string {
+      let inline1965 = 0 in
+      let inline1966 = string_byte_slice(value/158, inline1965, length/159) in
+      inline1966
+    } in
+    joinrec {
+      join loop1066() -> string {
+        let t1071 = (length/159 > 1) in
+        join k1067(jp1068: bool) -> string {
+          if jp1068 {
+            let compound_old312 = length/159 in
+            let compound_value313 = 1 in
+            let t1069 = (compound_old312 - compound_value313) in
+            let t1070 = length/159 = t1069 in
+            jump loop1066()
+          } else {
+            jump exit1064()
+          }
+        } in
+        if t1071 {
+          let t1072 = (length/159 - 1) in
+          join inline_cont1962(t1073: u8) -> string {
+            let t1074 = (t1073 == 48) in
+            jump k1067(t1074)
+          } in
+          let inline1963 = @runtime(core.string_byte_get)(value/158, t1072) in
+          jump inline_cont1962(inline1963)
+        } else {
+          jump k1067(false)
+        }
+      } in
+    } in
+    jump loop1066()
+  } in
+  let inline1968 = @runtime(core.string_len)(value/158) in
+  jump inline_cont1967(inline1968)
+}
+
+fn fixed_float_text(digits/137: string, decimal_point/138: isize, negative/139: bool) -> string {
+  let bytes/140 = @intrinsic(vec.new)() in
+  join k1077() -> string {
+    let t1079 = (decimal_point/138 <= 0) in
+    join k1078() -> string {
+      let mtmp263 = @runtime(core.string_from_utf8)(bytes/140) in
+      let x265 = mtmp263.1 in
+      x265
+    } in
+    if t1079 {
+      join inline_cont1984(_wild231: unit) -> string {
+        join inline_cont1981(_wild232: unit) -> string {
+          let index/141 = 0 in
+          join exit1080() -> string {
+            let _wild238 = index/141 = 0 in
+            join exit1081() -> string {
+              jump k1078()
+            } in
+            joinrec {
+              join loop1082() -> string {
+                join inline_cont1979(t1083: isize) -> string {
+                  let t1084 = (index/141 < t1083) in
+                  if t1084 {
+                    join inline_cont1977(t1085: u8) -> string {
+                      join inline_cont1975(_wild239: unit) -> string {
+                        let compound_old240 = index/141 in
+                        let compound_value241 = 1 in
+                        let t1086 = (compound_old240 + compound_value241) in
+                        let t1087 = index/141 = t1086 in
+                        jump loop1082()
+                      } in
+                      let inline1976 = @intrinsic(vec.push)(bytes/140, t1085) in
+                      jump inline_cont1975(())
+                    } in
+                    let inline1978 = @runtime(core.string_byte_get)(digits/137, index/141) in
+                    jump inline_cont1977(inline1978)
+                  } else {
+                    jump exit1081()
+                  }
+                } in
+                let inline1980 = @runtime(core.string_len)(digits/137) in
+                jump inline_cont1979(inline1980)
+              } in
+            } in
+            jump loop1082()
+          } in
+          let t1089 = (0 - decimal_point/138) in
+          joinrec {
+            join loop1088() -> string {
+              let t1090 = (index/141 < t1089) in
+              if t1090 {
+                join inline_cont1972(_wild233: unit) -> string {
+                  let compound_old234 = index/141 in
+                  let compound_value235 = 1 in
+                  let t1091 = (compound_old234 + compound_value235) in
+                  let t1092 = index/141 = t1091 in
+                  jump loop1088()
+                } in
+                let inline1973 = 48 in
+                let inline1974 = @intrinsic(vec.push)(bytes/140, inline1973) in
+                jump inline_cont1972(())
+              } else {
+                jump exit1080()
+              }
+            } in
+          } in
+          jump loop1088()
+        } in
+        let inline1982 = 46 in
+        let inline1983 = @intrinsic(vec.push)(bytes/140, inline1982) in
+        jump inline_cont1981(())
+      } in
+      let inline1985 = 48 in
+      let inline1986 = @intrinsic(vec.push)(bytes/140, inline1985) in
+      jump inline_cont1984(())
+    } else {
+      join inline_cont2009(t1094: isize) -> string {
+        let t1095 = (decimal_point/138 >= t1094) in
+        if t1095 {
+          let index/142 = 0 in
+          join exit1096() -> string {
+            join exit1097() -> string {
+              jump k1078()
+            } in
+            joinrec {
+              join loop1098() -> string {
+                let t1099 = (index/142 < decimal_point/138) in
+                if t1099 {
+                  join inline_cont1993(_wild248: unit) -> string {
+                    let compound_old249 = index/142 in
+                    let compound_value250 = 1 in
+                    let t1100 = (compound_old249 + compound_value250) in
+                    let t1101 = index/142 = t1100 in
+                    jump loop1098()
+                  } in
+                  let inline1994 = 48 in
+                  let inline1995 = @intrinsic(vec.push)(bytes/140, inline1994) in
+                  jump inline_cont1993(())
+                } else {
+                  jump exit1097()
+                }
+              } in
+            } in
+            jump loop1098()
+          } in
+          joinrec {
+            join loop1102() -> string {
+              join inline_cont1991(t1103: isize) -> string {
+                let t1104 = (index/142 < t1103) in
+                if t1104 {
+                  join inline_cont1989(t1105: u8) -> string {
+                    join inline_cont1987(_wild243: unit) -> string {
+                      let compound_old244 = index/142 in
+                      let compound_value245 = 1 in
+                      let t1106 = (compound_old244 + compound_value245) in
+                      let t1107 = index/142 = t1106 in
+                      jump loop1102()
+                    } in
+                    let inline1988 = @intrinsic(vec.push)(bytes/140, t1105) in
+                    jump inline_cont1987(())
+                  } in
+                  let inline1990 = @runtime(core.string_byte_get)(digits/137, index/142) in
+                  jump inline_cont1989(inline1990)
+                } else {
+                  jump exit1096()
+                }
+              } in
+              let inline1992 = @runtime(core.string_len)(digits/137) in
+              jump inline_cont1991(inline1992)
+            } in
+          } in
+          jump loop1102()
+        } else {
+          let index/143 = 0 in
+          join exit1108() -> string {
+            join inline_cont2006(_wild257: unit) -> string {
+              join exit1109() -> string {
+                jump k1078()
+              } in
+              joinrec {
+                join loop1110() -> string {
+                  join inline_cont2004(t1111: isize) -> string {
+                    let t1112 = (index/143 < t1111) in
+                    if t1112 {
+                      join inline_cont2002(t1113: u8) -> string {
+                        join inline_cont2000(_wild258: unit) -> string {
+                          let compound_old259 = index/143 in
+                          let compound_value260 = 1 in
+                          let t1114 = (compound_old259 + compound_value260) in
+                          let t1115 = index/143 = t1114 in
+                          jump loop1110()
+                        } in
+                        let inline2001 = @intrinsic(vec.push)(bytes/140, t1113) in
+                        jump inline_cont2000(())
+                      } in
+                      let inline2003 = @runtime(core.string_byte_get)(digits/137, index/143) in
+                      jump inline_cont2002(inline2003)
+                    } else {
+                      jump exit1109()
+                    }
+                  } in
+                  let inline2005 = @runtime(core.string_len)(digits/137) in
+                  jump inline_cont2004(inline2005)
+                } in
+              } in
+              jump loop1110()
+            } in
+            let inline2007 = 46 in
+            let inline2008 = @intrinsic(vec.push)(bytes/140, inline2007) in
+            jump inline_cont2006(())
+          } in
+          joinrec {
+            join loop1116() -> string {
+              let t1117 = (index/143 < decimal_point/138) in
+              if t1117 {
+                join inline_cont1998(t1118: u8) -> string {
+                  join inline_cont1996(_wild252: unit) -> string {
+                    let compound_old253 = index/143 in
+                    let compound_value254 = 1 in
+                    let t1119 = (compound_old253 + compound_value254) in
+                    let t1120 = index/143 = t1119 in
+                    jump loop1116()
+                  } in
+                  let inline1997 = @intrinsic(vec.push)(bytes/140, t1118) in
+                  jump inline_cont1996(())
+                } in
+                let inline1999 = @runtime(core.string_byte_get)(digits/137, index/143) in
+                jump inline_cont1998(inline1999)
+              } else {
+                jump exit1108()
+              }
+            } in
+          } in
+          jump loop1116()
+        }
+      } in
+      let inline2010 = @runtime(core.string_len)(digits/137) in
+      jump inline_cont2009(inline2010)
+    }
+  } in
+  if negative/139 {
+    let inline1970 = 45 in
+    let inline1971 = @intrinsic(vec.push)(bytes/140, inline1970) in
+    jump k1077()
+  } else {
+    jump k1077()
+  }
+}
+
+fn parsed_float_bits(value/107: string, mantissa_bits/108: isize, exponent_bias/109: isize) -> (
+  bool,
+  u64
+) {
+  let parsed/110 = parse_float_text(value/107) in
+  let t1215 = ParsedFloat.valid(parsed/110) in
+  let t1216 = (!t1215) in
+  join k1124() -> (bool, u64) {
+    let t1209 = ParsedFloat.negative(parsed/110) in
+    join k1125(jp1126: u64) -> (bool, u64) {
+      let t1208 = (mantissa_bits/108 == 23) in
+      join k1127(jp1128: isize) -> (bool, u64) {
+        let t1129 = (1 << jp1128) in
+        let t1130 = (t1129 - 1) in
+        let exponent_mask/112 = (t1130 << mantissa_bits/108) in
+        let t1186 = ParsedFloat.special(parsed/110) in
+        let t1187 = (t1186 == 1) in
+        join k1131() -> (bool, u64) {
+          let t1169 = ParsedFloat.hexadecimal(parsed/110) in
+          let t1170 = (!t1169) in
+          join k1132() -> (bool, u64) {
+            let t1165 = ParsedFloat.hexadecimal(parsed/110) in
+            let t1166 = (!t1165) in
+            join k1159(jp1160: bool) -> (bool, u64) {
+              join k1133(jp1134: FloatNatural) -> (bool, u64) {
+                let t1155 = ParsedFloat.hexadecimal(parsed/110) in
+                let t1156 = (!t1155) in
+                join k1145(jp1146: bool) -> (bool, u64) {
+                  join k1135(jp1136: FloatNatural) -> (bool, u64) {
+                    let t1142 = ParsedFloat.hexadecimal(parsed/110) in
+                    join k1137(jp1138: isize) -> (bool, u64) {
+                      let mtmp217 =
+                        float_rational_bits(
+                          jp1136,
+                          jp1134,
+                          jp1138,
+                          mantissa_bits/108,
+                          exponent_bias/109
+                        ) in
+                      let x218 = mtmp217.0 in
+                      let x219 = mtmp217.1 in
+                      let t1139 = (!x219) in
+                      let t1140 = (jp1126 | x218) in
+                      let t1141 = (t1139, t1140) in
+                      t1141
+                    } in
+                    if t1142 {
+                      let t1143 = ParsedFloat.binary_exponent(parsed/110) in
+                      jump k1137(t1143)
+                    } else {
+                      let t1144 = ParsedFloat.decimal_exponent(parsed/110) in
+                      jump k1137(t1144)
+                    }
+                  } in
+                  if jp1146 {
+                    let t1147 = ParsedFloat.numerator(parsed/110) in
+                    let result/117 = float_natural_copy(t1147) in
+                    let count/118 = 0 in
+                    join exit1148() -> (bool, u64) {
+                      jump k1135(result/117)
+                    } in
+                    joinrec {
+                      join loop1149() -> (bool, u64) {
+                        let t1150 = ParsedFloat.decimal_exponent(parsed/110) in
+                        let t1151 = (count/118 < t1150) in
+                        if t1151 {
+                          let _wild212 = float_natural_multiply_small(result/117, 5) in
+                          let compound_old213 = count/118 in
+                          let compound_value214 = 1 in
+                          let t1152 = (compound_old213 + compound_value214) in
+                          let t1153 = count/118 = t1152 in
+                          jump loop1149()
+                        } else {
+                          jump exit1148()
+                        }
+                      } in
+                    } in
+                    jump loop1149()
+                  } else {
+                    let t1154 = ParsedFloat.numerator(parsed/110) in
+                    jump k1135(t1154)
+                  }
+                } in
+                if t1156 {
+                  let t1157 = ParsedFloat.decimal_exponent(parsed/110) in
+                  let t1158 = (t1157 > 0) in
+                  jump k1145(t1158)
+                } else {
+                  jump k1145(false)
+                }
+              } in
+              if jp1160 {
+                let t1161 = ParsedFloat.decimal_exponent(parsed/110) in
+                let t1162 = (0 - t1161) in
+                let t1163 = float_natural_power5(t1162) in
+                jump k1133(t1163)
+              } else {
+                let inline2015 = @intrinsic(vec.new)() in
+                let inline2016 = @intrinsic(vec.push)(inline2015, 1) in
+                let inline2017 = FloatNatural { words: inline2015 } in
+                jump k1133(inline2017)
+              }
+            } in
+            if t1166 {
+              let t1167 = ParsedFloat.decimal_exponent(parsed/110) in
+              let t1168 = (t1167 < 0) in
+              jump k1159(t1168)
+            } else {
+              jump k1159(false)
+            }
+          } in
+          if t1170 {
+            let t1171 = ParsedFloat.significant_digits(parsed/110) in
+            let t1172 = ParsedFloat.decimal_exponent(parsed/110) in
+            let decimal_position/113 = (t1171 + t1172) in
+            let t1185 = (mantissa_bits/108 == 23) in
+            join k1173(jp1174: isize) -> (bool, u64) {
+              let t1184 = (mantissa_bits/108 == 23) in
+              join k1175(jp1176: isize) -> (bool, u64) {
+                let t1178 = (decimal_position/113 > jp1174) in
+                if t1178 {
+                  let t1179 = (jp1126 | exponent_mask/112) in
+                  let t1180 = (false, t1179) in
+                  t1180
+                } else {
+                  let t1182 = (decimal_position/113 < jp1176) in
+                  if t1182 {
+                    let t1183 = (true, jp1126) in
+                    t1183
+                  } else {
+                    jump k1132()
+                  }
+                }
+              } in
+              if t1184 {
+                jump k1175(-46)
+              } else {
+                jump k1175(-325)
+              }
+            } in
+            if t1185 {
+              jump k1173(40)
+            } else {
+              jump k1173(310)
+            }
+          } else {
+            jump k1132()
+          }
+        } in
+        if t1187 {
+          let t1188 = (jp1126 | exponent_mask/112) in
+          let t1189 = (true, t1188) in
+          t1189
+        } else {
+          let t1191 = ParsedFloat.special(parsed/110) in
+          let t1192 = (t1191 == 2) in
+          if t1192 {
+            let t1196 = (mantissa_bits/108 - 1) in
+            let t1197 = (1 << t1196) in
+            let t1198 = (exponent_mask/112 | t1197) in
+            let t1203 = (mantissa_bits/108 == 52) in
+            join k1199(jp1200: u64) -> (bool, u64) {
+              let t1201 = (t1198 | jp1200) in
+              let t1202 = (true, t1201) in
+              t1202
+            } in
+            if t1203 {
+              jump k1199(1)
+            } else {
+              jump k1199(0)
+            }
+          } else {
+            let t1205 = ParsedFloat.numerator(parsed/110) in
+            join inline_cont2011(t1206: bool) -> (bool, u64) {
+              if t1206 {
+                let t1207 = (true, jp1126) in
+                t1207
+              } else {
+                jump k1131()
+              }
+            } in
+            let inline2012 = FloatNatural.words(t1205) in
+            let inline2013 = inherent#Vec#Vec[T]#is_empty__T_u32(inline2012) in
+            jump inline_cont2011(inline2013)
+          }
+        }
+      } in
+      if t1208 {
+        jump k1127(8)
+      } else {
+        jump k1127(11)
+      }
+    } in
+    if t1209 {
+      let t1214 = (mantissa_bits/108 == 23) in
+      join k1210(jp1211: isize) -> (bool, u64) {
+        let t1212 = (mantissa_bits/108 + jp1211) in
+        let t1213 = (1 << t1212) in
+        jump k1125(t1213)
+      } in
+      if t1214 {
+        jump k1210(8)
+      } else {
+        jump k1210(11)
+      }
+    } else {
+      jump k1125(0)
+    }
+  } in
+  if t1216 {
+    let t1217 = (false, 0) in
+    t1217
+  } else {
+    jump k1124()
+  }
+}
+
+fn float_natural_multiply_small(value/15: FloatNatural, factor/16: u32) -> unit {
+  let t1239 = (factor/16 == 0) in
+  join k1219() -> unit {
+    let carry/17 = 0 in
+    let index/18 = 0 in
+    join exit1220() -> unit {
+      let t1222 = (carry/17 != 0) in
+      if t1222 {
+        let t1223 = FloatNatural.words(value/15) in
+        let t1224 = (carry/17 as u32) in
+        let inline2023 = @intrinsic(vec.push)(t1223, t1224) in
+        ()
+      } else {
+        ()
+      }
+    } in
+    let t1233 = (factor/16 as u64) in
+    joinrec {
+      join loop1226() -> unit {
+        let t1227 = FloatNatural.words(value/15) in
+        join inline_cont2020(t1228: isize) -> unit {
+          let t1229 = (index/18 < t1228) in
+          if t1229 {
+            let t1230 = FloatNatural.words(value/15) in
+            let t1231 = @intrinsic(vec.get)(t1230, index/18) in
+            let t1232 = (t1231 as u64) in
+            let t1234 = (t1232 * t1233) in
+            let product/19 = (t1234 + carry/17) in
+            let place24 = FloatNatural.words(value/15) in
+            let index25 = index/18 in
+            let place26 = @intrinsic(vec.get)(place24, index25) in
+            let value27 = (product/19 as u32) in
+            let t1235 = @intrinsic(vec.set)(place24, index25, value27) in
+            let t1236 = (product/19 >> 32) in
+            let _wild29 = carry/17 = t1236 in
+            let compound_old30 = index/18 in
+            let compound_value31 = 1 in
+            let t1237 = (compound_old30 + compound_value31) in
+            let t1238 = index/18 = t1237 in
+            jump loop1226()
+          } else {
+            jump exit1220()
+          }
+        } in
+        let inline2021 = @intrinsic(vec.len)(t1227) in
+        jump inline_cont2020(inline2021)
+      } in
+    } in
+    jump loop1226()
+  } in
+  if t1239 {
+    let t1240 = FloatNatural.words(value/15) in
+    let inline2019 = inherent#Vec#Vec[T]#truncate__T_u32(t1240, 0) in
+    ()
+  } else {
+    jump k1219()
+  }
+}
+
+fn float_natural_zero() -> FloatNatural {
+  let t1243 = @intrinsic(vec.new)() in
+  let t1244 = FloatNatural { words: t1243 } in
+  t1244
+}
+
+fn inherent#Vec#Vec[T]#push__T_u32(self/511: Vec[u32], elem/512: u32) -> unit {
+  let t1246 = @intrinsic(vec.push)(self/511, elem/512) in
+  ()
+}
+
+fn float_natural_is_zero(value/8: FloatNatural) -> bool {
+  let t1249 = FloatNatural.words(value/8) in
+  let inline2025 = @intrinsic(vec.len)(t1249) in
+  let inline2026 = (inline2025 == 0) in
+  inline2026
+}
+
+fn float_natural_copy(value/4: FloatNatural) -> FloatNatural {
+  join inline_cont2031(result/5: FloatNatural) -> FloatNatural {
+    let index/6 = 0 in
+    join exit1253() -> FloatNatural {
+      result/5
+    } in
+    joinrec {
+      join loop1254() -> FloatNatural {
+        let t1255 = FloatNatural.words(value/4) in
+        join inline_cont2029(t1256: isize) -> FloatNatural {
+          let t1257 = (index/6 < t1256) in
+          if t1257 {
+            let t1258 = FloatNatural.words(result/5) in
+            let t1259 = FloatNatural.words(value/4) in
+            let t1260 = @intrinsic(vec.get)(t1259, index/6) in
+            join inline_cont2027(_wild3: unit) -> FloatNatural {
+              let compound_old4 = index/6 in
+              let compound_value5 = 1 in
+              let t1261 = (compound_old4 + compound_value5) in
+              let t1262 = index/6 = t1261 in
+              jump loop1254()
+            } in
+            let inline2028 = @intrinsic(vec.push)(t1258, t1260) in
+            jump inline_cont2027(())
+          } else {
+            jump exit1253()
+          }
+        } in
+        let inline2030 = @intrinsic(vec.len)(t1255) in
+        jump inline_cont2029(inline2030)
+      } in
+    } in
+    jump loop1254()
+  } in
+  let inline2032 = @intrinsic(vec.new)() in
+  let inline2033 = FloatNatural { words: inline2032 } in
+  jump inline_cont2031(inline2033)
+}
+
+fn inherent#Vec#Vec[T]#len__T_u32(self/526: Vec[u32]) -> isize {
+  let t1265 = @intrinsic(vec.len)(self/526) in
+  t1265
+}
+
+fn float_natural_divide_small(value/44: FloatNatural, divisor/45: u32) -> u32 {
+  let remainder/46 = 0 in
+  let t1268 = FloatNatural.words(value/44) in
+  join inline_cont2034(index/47: isize) -> u32 {
+    join exit1269() -> u32 {
+      let _wild94 = float_natural_trim(value/44) in
+      let t1270 = (remainder/46 as u32) in
+      t1270
+    } in
+    let t1279 = (divisor/45 as u64) in
+    let t1282 = (divisor/45 as u64) in
+    joinrec {
+      join loop1271() -> u32 {
+        let t1272 = (index/47 > 0) in
+        if t1272 {
+          let compound_old83 = index/47 in
+          let compound_value84 = 1 in
+          let t1273 = (compound_old83 - compound_value84) in
+          let t1274 = index/47 = t1273 in
+          let t1275 = (remainder/46 << 32) in
+          let t1276 = FloatNatural.words(value/44) in
+          let t1277 = @intrinsic(vec.get)(t1276, index/47) in
+          let t1278 = (t1277 as u64) in
+          let current/48 = (t1275 | t1278) in
+          let place87 = FloatNatural.words(value/44) in
+          let index88 = index/47 in
+          let place89 = @intrinsic(vec.get)(place87, index88) in
+          let t1280 = (current/48 / t1279) in
+          let value90 = (t1280 as u32) in
+          let t1281 = @intrinsic(vec.set)(place87, index88, value90) in
+          let t1283 = (current/48 % t1282) in
+          let _wild92 = remainder/46 = t1283 in
+          jump loop1271()
+        } else {
+          jump exit1269()
+        }
+      } in
+    } in
+    jump loop1271()
+  } in
+  let inline2035 = @intrinsic(vec.len)(t1268) in
+  jump inline_cont2034(inline2035)
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  let t1285 = @intrinsic(vec.push)(self/511, elem/512) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  let t1288 = @intrinsic(vec.len)(self/526) in
+  t1288
+}
+
+fn inherent#string#string#byte_get(self/292: string, index/293: isize) -> u8 {
+  let t1291 = @runtime(core.string_byte_get)(self/292, index/293) in
+  t1291
+}
+
+fn inherent#string#string#byte_slice(self/294: string, start/295: isize, end/296: isize) -> string {
+  let inline2037 = string_is_char_boundary(self/294, start/295) in
+  join inline_join2038(inline2039: bool) -> string {
+    if inline2039 {
+      let inline2040 = @runtime(core.string_byte_slice)(self/294, start/295, end/296) in
+      inline2040
+    } else {
+      let inline2041 = @runtime(core.string_byte_slice)(self/294, -1, -1) in
+      inline2041
+    }
+  } in
+  if inline2037 {
+    let inline2042 = string_is_char_boundary(self/294, end/296) in
+    jump inline_join2038(inline2042)
+  } else {
+    jump inline_join2038(false)
+  }
+}
+
+fn parse_float_text(value/84: string) -> ParsedFloat {
+  let t1479 = string_equals_ascii_case(value/84, "nan") in
+  join k1297() -> ParsedFloat {
+    let index/85 = 0 in
+    let negative/86 = false in
+    let t1471 = inherent#string#string#byte_len(value/84) in
+    let t1472 = (index/85 < t1471) in
+    join k1465(jp1466: bool) -> ParsedFloat {
+      join k1298() -> ParsedFloat {
+        let t1299 = inherent#string#string#byte_len(value/84) in
+        let special_text/87 = inherent#string#string#byte_slice(value/84, index/85, t1299) in
+        let t1463 = string_equals_ascii_case(special_text/87, "inf") in
+        join k1459(jp1460: bool) -> ParsedFloat {
+          join k1300() -> ParsedFloat {
+            let t1454 = (index/85 + 2) in
+            let t1455 = inherent#string#string#byte_len(value/84) in
+            let t1456 = (t1454 <= t1455) in
+            join k1448(jp1449: bool) -> ParsedFloat {
+              join k1301(jp1302: bool) -> ParsedFloat {
+                join k1303() -> ParsedFloat {
+                  let mantissa_start/89 = index/85 in
+                  join k1304(jp1305: isize) -> ParsedFloat {
+                    let numerator/91 = float_natural_zero() in
+                    let saw_digit/92 = false in
+                    let saw_dot/93 = false in
+                    let fraction_digits/94 = 0 in
+                    let significant_digits/95 = 0 in
+                    let previous_digit/96 = false in
+                    join exit1306() -> ParsedFloat {
+                      let t1393 = (!saw_digit/92) in
+                      join k1307() -> ParsedFloat {
+                        join k1308(jp1309: u8) -> ParsedFloat {
+                          let exponent/103 = 0 in
+                          let exponent_negative/104 = false in
+                          let t1388 = inherent#string#string#byte_len(value/84) in
+                          let t1389 = (index/85 < t1388) in
+                          join k1325(jp1326: bool) -> ParsedFloat {
+                            join k1310() -> ParsedFloat {
+                              let t1322 = inherent#string#string#byte_len(value/84) in
+                              let t1323 = (index/85 != t1322) in
+                              join k1311() -> ParsedFloat {
+                                join k1312() -> ParsedFloat {
+                                  join k1313(jp1314: isize) -> ParsedFloat {
+                                    join k1315(jp1316: isize) -> ParsedFloat {
+                                      let t1317 =
+                                        ParsedFloat {
+                                          valid: true,
+                                          negative: negative/86,
+                                          special: 0,
+                                          numerator: numerator/91,
+                                          decimal_exponent: jp1314,
+                                          binary_exponent: jp1316,
+                                          hexadecimal: jp1302,
+                                          significant_digits: significant_digits/95
+                                        } in
+                                      t1317
+                                    } in
+                                    if jp1302 {
+                                      let t1318 = (fraction_digits/94 * 4) in
+                                      let t1319 = (exponent/103 - t1318) in
+                                      jump k1315(t1319)
+                                    } else {
+                                      jump k1315(0)
+                                    }
+                                  } in
+                                  if jp1302 {
+                                    jump k1313(0)
+                                  } else {
+                                    let t1320 = (exponent/103 - fraction_digits/94) in
+                                    jump k1313(t1320)
+                                  }
+                                } in
+                                if exponent_negative/104 {
+                                  let t1321 = (0 - exponent/103) in
+                                  let _wild207 = exponent/103 = t1321 in
+                                  jump k1312()
+                                } else {
+                                  jump k1312()
+                                }
+                              } in
+                              if t1323 {
+                                let t1324 = invalid_parsed_float() in
+                                t1324
+                              } else {
+                                jump k1311()
+                              }
+                            } in
+                            if jp1326 {
+                              let compound_old183 = index/85 in
+                              let compound_value184 = 1 in
+                              let t1327 = (compound_old183 + compound_value184) in
+                              let t1328 = index/85 = t1327 in
+                              let t1378 = inherent#string#string#byte_len(value/84) in
+                              let t1379 = (index/85 < t1378) in
+                              join k1372(jp1373: bool) -> ParsedFloat {
+                                join k1329() -> ParsedFloat {
+                                  let exponent_digits/105 = false in
+                                  let _wild191 = previous_digit/96 = false in
+                                  join exit1330() -> ParsedFloat {
+                                    let t1332 = (!exponent_digits/105) in
+                                    if t1332 {
+                                      let t1333 = invalid_parsed_float() in
+                                      t1333
+                                    } else {
+                                      jump k1310()
+                                    }
+                                  } in
+                                  joinrec {
+                                    join loop1334() -> ParsedFloat {
+                                      let t1335 = inherent#string#string#byte_len(value/84) in
+                                      let t1336 = (index/85 < t1335) in
+                                      if t1336 {
+                                        let current/106 =
+                                          inherent#string#string#byte_get(value/84, index/85) in
+                                        let t1370 = (current/106 >= 48) in
+                                        join k1338(jp1339: bool) -> ParsedFloat {
+                                          if jp1339 {
+                                            let _wild192 = exponent_digits/105 = true in
+                                            let _wild193 = previous_digit/96 = true in
+                                            let t1343 = (exponent/103 < 1000000) in
+                                            join k1340() -> ParsedFloat {
+                                              let compound_old196 = index/85 in
+                                              let compound_value197 = 1 in
+                                              let t1341 = (compound_old196 + compound_value197) in
+                                              let t1342 = index/85 = t1341 in
+                                              jump loop1334()
+                                            } in
+                                            if t1343 {
+                                              let t1344 = (exponent/103 * 10) in
+                                              let t1345 = (current/106 - 48) in
+                                              let t1346 = (t1345 as isize) in
+                                              let t1347 = (t1344 + t1346) in
+                                              let _wild194 = exponent/103 = t1347 in
+                                              jump k1340()
+                                            } else {
+                                              jump k1340()
+                                            }
+                                          } else {
+                                            let t1349 = (current/106 == 95) in
+                                            if t1349 {
+                                              let t1366 = (!previous_digit/96) in
+                                              join k1361(jp1362: bool) -> ParsedFloat {
+                                                join k1356(jp1357: bool) -> ParsedFloat {
+                                                  join k1353(jp1354: bool) -> ParsedFloat {
+                                                    join k1350() -> ParsedFloat {
+                                                      let _wild200 = previous_digit/96 = false in
+                                                      let compound_old201 = index/85 in
+                                                      let compound_value202 = 1 in
+                                                      let t1351 =
+                                                        (compound_old201 + compound_value202) in
+                                                      let t1352 = index/85 = t1351 in
+                                                      jump loop1334()
+                                                    } in
+                                                    if jp1354 {
+                                                      let t1355 = invalid_parsed_float() in
+                                                      t1355
+                                                    } else {
+                                                      jump k1350()
+                                                    }
+                                                  } in
+                                                  if jp1357 {
+                                                    jump k1353(true)
+                                                  } else {
+                                                    let t1358 = (index/85 + 1) in
+                                                    let t1359 =
+                                                      inherent#string#string#byte_get(
+                                                        value/84,
+                                                        t1358
+                                                      ) in
+                                                    let t1360 = (t1359 > 57) in
+                                                    jump k1353(t1360)
+                                                  }
+                                                } in
+                                                if jp1362 {
+                                                  jump k1356(true)
+                                                } else {
+                                                  let t1363 = (index/85 + 1) in
+                                                  let t1364 =
+                                                    inherent#string#string#byte_get(
+                                                      value/84,
+                                                      t1363
+                                                    ) in
+                                                  let t1365 = (t1364 < 48) in
+                                                  jump k1356(t1365)
+                                                }
+                                              } in
+                                              if t1366 {
+                                                jump k1361(true)
+                                              } else {
+                                                let t1367 = (index/85 + 1) in
+                                                let t1368 =
+                                                  inherent#string#string#byte_len(value/84) in
+                                                let t1369 = (t1367 >= t1368) in
+                                                jump k1361(t1369)
+                                              }
+                                            } else {
+                                              jump exit1330()
+                                            }
+                                          }
+                                        } in
+                                        if t1370 {
+                                          let t1371 = (current/106 <= 57) in
+                                          jump k1338(t1371)
+                                        } else {
+                                          jump k1338(false)
+                                        }
+                                      } else {
+                                        jump exit1330()
+                                      }
+                                    } in
+                                  } in
+                                  jump loop1334()
+                                } in
+                                if jp1373 {
+                                  let t1374 = inherent#string#string#byte_get(value/84, index/85) in
+                                  let t1375 = (t1374 == 45) in
+                                  let _wild186 = exponent_negative/104 = t1375 in
+                                  let compound_old187 = index/85 in
+                                  let compound_value188 = 1 in
+                                  let t1376 = (compound_old187 + compound_value188) in
+                                  let t1377 = index/85 = t1376 in
+                                  jump k1329()
+                                } else {
+                                  jump k1329()
+                                }
+                              } in
+                              if t1379 {
+                                let t1382 = inherent#string#string#byte_get(value/84, index/85) in
+                                let t1383 = (t1382 == 43) in
+                                if t1383 {
+                                  jump k1372(true)
+                                } else {
+                                  join inline_cont2085(t1384: u8) -> ParsedFloat {
+                                    let t1385 = (t1384 == 45) in
+                                    jump k1372(t1385)
+                                  } in
+                                  let inline2086 =
+                                    @runtime(core.string_byte_get)(value/84, index/85) in
+                                  jump inline_cont2085(inline2086)
+                                }
+                              } else {
+                                jump k1372(false)
+                              }
+                            } else {
+                              if jp1302 {
+                                let t1387 = invalid_parsed_float() in
+                                t1387
+                              } else {
+                                jump k1310()
+                              }
+                            }
+                          } in
+                          if t1389 {
+                            join inline_cont2083(t1390: u8) -> ParsedFloat {
+                              let t1391 = ascii_lower(t1390) in
+                              let t1392 = (t1391 == jp1309) in
+                              jump k1325(t1392)
+                            } in
+                            let inline2084 = @runtime(core.string_byte_get)(value/84, index/85) in
+                            jump inline_cont2083(inline2084)
+                          } else {
+                            jump k1325(false)
+                          }
+                        } in
+                        if jp1302 {
+                          jump k1308(112)
+                        } else {
+                          jump k1308(101)
+                        }
+                      } in
+                      if t1393 {
+                        let inline2081 = float_natural_zero() in
+                        let inline2082 =
+                          ParsedFloat {
+                            valid: false,
+                            negative: false,
+                            special: 0,
+                            numerator: inline2081,
+                            decimal_exponent: 0,
+                            binary_exponent: 0,
+                            hexadecimal: false,
+                            significant_digits: 0
+                          } in
+                        inline2082
+                      } else {
+                        jump k1307()
+                      }
+                    } in
+                    let t1399 = (jp1305 as u32) in
+                    joinrec {
+                      join loop1395() -> ParsedFloat {
+                        join inline_cont2078(t1396: isize) -> ParsedFloat {
+                          let t1397 = (index/85 < t1396) in
+                          if t1397 {
+                            join inline_cont2076(current/97: u8) -> ParsedFloat {
+                              let mtmp149 = float_digit(current/97, jp1305) in
+                              let x150 = mtmp149.0 in
+                              let x151 = mtmp149.1 in
+                              if x150 {
+                                let _wild152 = float_natural_multiply_small(numerator/91, t1399) in
+                                let t1400 = (x151 as u32) in
+                                let _wild153 = float_natural_add_small(numerator/91, t1400) in
+                                let _wild154 = saw_digit/92 = true in
+                                let _wild155 = previous_digit/96 = true in
+                                join k1401() -> ParsedFloat {
+                                  let t1409 = (significant_digits/95 > 0) in
+                                  join k1405(jp1406: bool) -> ParsedFloat {
+                                    join k1402() -> ParsedFloat {
+                                      let compound_old164 = index/85 in
+                                      let compound_value165 = 1 in
+                                      let t1403 = (compound_old164 + compound_value165) in
+                                      let t1404 = index/85 = t1403 in
+                                      jump loop1395()
+                                    } in
+                                    if jp1406 {
+                                      let compound_old160 = significant_digits/95 in
+                                      let compound_value161 = 1 in
+                                      let t1407 = (compound_old160 + compound_value161) in
+                                      let t1408 = significant_digits/95 = t1407 in
+                                      jump k1402()
+                                    } else {
+                                      jump k1402()
+                                    }
+                                  } in
+                                  if t1409 {
+                                    jump k1405(true)
+                                  } else {
+                                    let t1410 = (x151 != 0) in
+                                    jump k1405(t1410)
+                                  }
+                                } in
+                                if saw_dot/93 {
+                                  let compound_old156 = fraction_digits/94 in
+                                  let compound_value157 = 1 in
+                                  let t1411 = (compound_old156 + compound_value157) in
+                                  let t1412 = fraction_digits/94 = t1411 in
+                                  jump k1401()
+                                } else {
+                                  jump k1401()
+                                }
+                              } else {
+                                let t1414 = (current/97 == 95) in
+                                if t1414 {
+                                  let t1435 = (index/85 + 1) in
+                                  join inline_cont2074(t1436: isize) -> ParsedFloat {
+                                    let t1437 = (t1435 >= t1436) in
+                                    join k1415() -> ParsedFloat {
+                                      let t1416 = (index/85 + 1) in
+                                      join inline_cont2072(t1417: u8) -> ParsedFloat {
+                                        let mtmp168 = float_digit(t1417, jp1305) in
+                                        let x169 = mtmp168.0 in
+                                        join k1431(jp1432: bool) -> ParsedFloat {
+                                          join k1418(jp1419: bool) -> ParsedFloat {
+                                            let t1429 = (!previous_digit/96) in
+                                            join k1426(jp1427: bool) -> ParsedFloat {
+                                              join k1423(jp1424: bool) -> ParsedFloat {
+                                                join k1420() -> ParsedFloat {
+                                                  let _wild172 = previous_digit/96 = false in
+                                                  let compound_old173 = index/85 in
+                                                  let compound_value174 = 1 in
+                                                  let t1421 =
+                                                    (compound_old173 + compound_value174) in
+                                                  let t1422 = index/85 = t1421 in
+                                                  jump loop1395()
+                                                } in
+                                                if jp1424 {
+                                                  let inline2070 = float_natural_zero() in
+                                                  let inline2071 =
+                                                    ParsedFloat {
+                                                      valid: false,
+                                                      negative: false,
+                                                      special: 0,
+                                                      numerator: inline2070,
+                                                      decimal_exponent: 0,
+                                                      binary_exponent: 0,
+                                                      hexadecimal: false,
+                                                      significant_digits: 0
+                                                    } in
+                                                  inline2071
+                                                } else {
+                                                  jump k1420()
+                                                }
+                                              } in
+                                              if jp1427 {
+                                                jump k1423(true)
+                                              } else {
+                                                let t1428 = (!x169) in
+                                                jump k1423(t1428)
+                                              }
+                                            } in
+                                            if t1429 {
+                                              let t1430 = (!jp1419) in
+                                              jump k1426(t1430)
+                                            } else {
+                                              jump k1426(false)
+                                            }
+                                          } in
+                                          if jp1432 {
+                                            let t1433 = (index/85 == mantissa_start/89) in
+                                            jump k1418(t1433)
+                                          } else {
+                                            jump k1418(false)
+                                          }
+                                        } in
+                                        if jp1302 {
+                                          let t1434 = (!saw_digit/92) in
+                                          jump k1431(t1434)
+                                        } else {
+                                          jump k1431(false)
+                                        }
+                                      } in
+                                      let inline2073 =
+                                        @runtime(core.string_byte_get)(value/84, t1416) in
+                                      jump inline_cont2072(inline2073)
+                                    } in
+                                    if t1437 {
+                                      let inline2067 = float_natural_zero() in
+                                      let inline2068 =
+                                        ParsedFloat {
+                                          valid: false,
+                                          negative: false,
+                                          special: 0,
+                                          numerator: inline2067,
+                                          decimal_exponent: 0,
+                                          binary_exponent: 0,
+                                          hexadecimal: false,
+                                          significant_digits: 0
+                                        } in
+                                      inline2068
+                                    } else {
+                                      jump k1415()
+                                    }
+                                  } in
+                                  let inline2075 = @runtime(core.string_len)(value/84) in
+                                  jump inline_cont2074(inline2075)
+                                } else {
+                                  let t1444 = (current/97 == 46) in
+                                  join k1440(jp1441: bool) -> ParsedFloat {
+                                    if jp1441 {
+                                      let _wild176 = saw_dot/93 = true in
+                                      let _wild177 = previous_digit/96 = false in
+                                      let compound_old178 = index/85 in
+                                      let compound_value179 = 1 in
+                                      let t1442 = (compound_old178 + compound_value179) in
+                                      let t1443 = index/85 = t1442 in
+                                      jump loop1395()
+                                    } else {
+                                      jump exit1306()
+                                    }
+                                  } in
+                                  if t1444 {
+                                    let t1445 = (!saw_dot/93) in
+                                    jump k1440(t1445)
+                                  } else {
+                                    jump k1440(false)
+                                  }
+                                }
+                              }
+                            } in
+                            let inline2077 = @runtime(core.string_byte_get)(value/84, index/85) in
+                            jump inline_cont2076(inline2077)
+                          } else {
+                            jump exit1306()
+                          }
+                        } in
+                        let inline2079 = @runtime(core.string_len)(value/84) in
+                        jump inline_cont2078(inline2079)
+                      } in
+                    } in
+                    jump loop1395()
+                  } in
+                  if jp1302 {
+                    jump k1304(16)
+                  } else {
+                    jump k1304(10)
+                  }
+                } in
+                if jp1302 {
+                  let compound_old145 = index/85 in
+                  let compound_value146 = 2 in
+                  let t1446 = (compound_old145 + compound_value146) in
+                  let t1447 = index/85 = t1446 in
+                  jump k1303()
+                } else {
+                  jump k1303()
+                }
+              } in
+              if jp1449 {
+                let t1450 = (index/85 + 1) in
+                join inline_cont2064(t1451: u8) -> ParsedFloat {
+                  join inline_cont2057(t1452: u8) -> ParsedFloat {
+                    let t1453 = (t1452 == 120) in
+                    jump k1301(t1453)
+                  } in
+                  let inline2058 = (t1451 >= 65) in
+                  join inline_join2059(inline2060: bool) -> ParsedFloat {
+                    if inline2060 {
+                      let inline2061 = (97 - 65) in
+                      let inline2062 = (t1451 + inline2061) in
+                      jump inline_cont2057(inline2062)
+                    } else {
+                      jump inline_cont2057(t1451)
+                    }
+                  } in
+                  if inline2058 {
+                    let inline2063 = (t1451 <= 90) in
+                    jump inline_join2059(inline2063)
+                  } else {
+                    jump inline_join2059(false)
+                  }
+                } in
+                let inline2065 = @runtime(core.string_byte_get)(value/84, t1450) in
+                jump inline_cont2064(inline2065)
+              } else {
+                jump k1301(false)
+              }
+            } in
+            if t1456 {
+              join inline_cont2055(t1457: u8) -> ParsedFloat {
+                let t1458 = (t1457 == 48) in
+                jump k1448(t1458)
+              } in
+              let inline2056 = @runtime(core.string_byte_get)(value/84, index/85) in
+              jump inline_cont2055(inline2056)
+            } else {
+              jump k1448(false)
+            }
+          } in
+          if jp1460 {
+            join inline_cont2052(t1461: FloatNatural) -> ParsedFloat {
+              let t1462 =
+                ParsedFloat {
+                  valid: true,
+                  negative: negative/86,
+                  special: 1,
+                  numerator: t1461,
+                  decimal_exponent: 0,
+                  binary_exponent: 0,
+                  hexadecimal: false,
+                  significant_digits: 0
+                } in
+              t1462
+            } in
+            let inline2053 = @intrinsic(vec.new)() in
+            let inline2054 = FloatNatural { words: inline2053 } in
+            jump inline_cont2052(inline2054)
+          } else {
+            jump k1300()
+          }
+        } in
+        if t1463 {
+          jump k1459(true)
+        } else {
+          let t1464 = string_equals_ascii_case(special_text/87, "infinity") in
+          jump k1459(t1464)
+        }
+      } in
+      if jp1466 {
+        join inline_cont2050(t1467: u8) -> ParsedFloat {
+          let t1468 = (t1467 == 45) in
+          let _wild139 = negative/86 = t1468 in
+          let compound_old140 = index/85 in
+          let compound_value141 = 1 in
+          let t1469 = (compound_old140 + compound_value141) in
+          let t1470 = index/85 = t1469 in
+          jump k1298()
+        } in
+        let inline2051 = @runtime(core.string_byte_get)(value/84, index/85) in
+        jump inline_cont2050(inline2051)
+      } else {
+        jump k1298()
+      }
+    } in
+    if t1472 {
+      join inline_cont2048(t1475: u8) -> ParsedFloat {
+        let t1476 = (t1475 == 43) in
+        if t1476 {
+          jump k1465(true)
+        } else {
+          join inline_cont2046(t1477: u8) -> ParsedFloat {
+            let t1478 = (t1477 == 45) in
+            jump k1465(t1478)
+          } in
+          let inline2047 = @runtime(core.string_byte_get)(value/84, index/85) in
+          jump inline_cont2046(inline2047)
+        }
+      } in
+      let inline2049 = @runtime(core.string_byte_get)(value/84, index/85) in
+      jump inline_cont2048(inline2049)
+    } else {
+      jump k1465(false)
+    }
+  } in
+  if t1479 {
+    join inline_cont2043(t1480: FloatNatural) -> ParsedFloat {
+      let t1481 =
+        ParsedFloat {
+          valid: true,
+          negative: false,
+          special: 2,
+          numerator: t1480,
+          decimal_exponent: 0,
+          binary_exponent: 0,
+          hexadecimal: false,
+          significant_digits: 0
+        } in
+      t1481
+    } in
+    let inline2044 = @intrinsic(vec.new)() in
+    let inline2045 = FloatNatural { words: inline2044 } in
+    jump inline_cont2043(inline2045)
+  } else {
+    jump k1297()
+  }
+}
+
+fn float_natural_power5(exponent/25: isize) -> FloatNatural {
+  join inline_cont2087(result/26: FloatNatural) -> FloatNatural {
+    let count/27 = 0 in
+    join exit1484() -> FloatNatural {
+      result/26
+    } in
+    joinrec {
+      join loop1485() -> FloatNatural {
+        let t1486 = (count/27 < exponent/25) in
+        if t1486 {
+          let _wild45 = float_natural_multiply_small(result/26, 5) in
+          let compound_old46 = count/27 in
+          let compound_value47 = 1 in
+          let t1487 = (compound_old46 + compound_value47) in
+          let t1488 = count/27 = t1487 in
+          jump loop1485()
+        } else {
+          jump exit1484()
+        }
+      } in
+    } in
+    jump loop1485()
+  } in
+  let inline2088 = @intrinsic(vec.new)() in
+  let inline2089 = @intrinsic(vec.push)(inline2088, 1) in
+  let inline2090 = FloatNatural { words: inline2088 } in
+  jump inline_cont2087(inline2090)
+}
+
+fn float_natural_one() -> FloatNatural {
+  let words/0 = @intrinsic(vec.new)() in
+  let _wild0 = @intrinsic(vec.push)(words/0, 1) in
+  let t1491 = FloatNatural { words: words/0 } in
+  t1491
+}
+
+fn float_rational_bits(
+  numerator/65: FloatNatural,
+  denominator/66: FloatNatural,
+  binary_shift/67: isize,
+  mantissa_bits/68: isize,
+  exponent_bias/69: isize
+) -> (u64, bool) {
+  join inline_cont2091(t1574: bool) -> (u64, bool) {
+    join k1494() -> (u64, bool) {
+      let t1571 = (binary_shift/67 >= 0) in
+      join k1495(jp1496: FloatNatural) -> (u64, bool) {
+        let t1567 = (binary_shift/67 >= 0) in
+        join k1497(jp1498: FloatNatural) -> (u64, bool) {
+          let t1499 = float_natural_bit_length(jp1496) in
+          let t1500 = float_natural_bit_length(jp1498) in
+          let exponent/72 = (t1499 - t1500) in
+          let t1561 = (exponent/72 >= 0) in
+          join k1501(jp1502: isize) -> (u64, bool) {
+            let t1558 = (jp1502 < 0) in
+            join k1503() -> (u64, bool) {
+              let minimum_exponent/74 = (1 - exponent_bias/69) in
+              let t1552 = (exponent/72 > exponent_bias/69) in
+              join k1504() -> (u64, bool) {
+                let t1547 = (exponent/72 < minimum_exponent/74) in
+                join k1505(jp1506: u64) -> (u64, bool) {
+                  let mantissa/76 = jp1506 in
+                  let t1509 = (exponent/72 < minimum_exponent/74) in
+                  if t1509 {
+                    let t1512 = (mantissa/76 == 0) in
+                    if t1512 {
+                      let t1513 = (0, false) in
+                      t1513
+                    } else {
+                      let t1516 = (1 << mantissa_bits/68) in
+                      let t1517 = (mantissa/76 >= t1516) in
+                      if t1517 {
+                        let t1518 = (1 << mantissa_bits/68) in
+                        let t1519 = (1 << mantissa_bits/68) in
+                        let t1520 = (mantissa/76 - t1519) in
+                        let t1521 = (t1518 | t1520) in
+                        let t1522 = (t1521, false) in
+                        t1522
+                      } else {
+                        let t1523 = (mantissa/76, false) in
+                        t1523
+                      }
+                    }
+                  } else {
+                    let t1540 = (mantissa_bits/68 + 1) in
+                    let t1541 = (1 << t1540) in
+                    let t1542 = (mantissa/76 >= t1541) in
+                    join k1524() -> (u64, bool) {
+                      let t1527 = (exponent/72 > exponent_bias/69) in
+                      if t1527 {
+                        let t1528 = (exponent_bias/69 + exponent_bias/69) in
+                        let t1529 = (t1528 + 1) in
+                        let t1530 = (t1529 as u64) in
+                        let t1531 = (t1530 << mantissa_bits/68) in
+                        let t1532 = (t1531, true) in
+                        t1532
+                      } else {
+                        let t1533 = (exponent/72 + exponent_bias/69) in
+                        let t1534 = (t1533 as u64) in
+                        let t1535 = (t1534 << mantissa_bits/68) in
+                        let t1536 = (1 << mantissa_bits/68) in
+                        let t1537 = (mantissa/76 - t1536) in
+                        let t1538 = (t1535 | t1537) in
+                        let t1539 = (t1538, false) in
+                        t1539
+                      }
+                    } in
+                    if t1542 {
+                      let compound_old125 = mantissa/76 in
+                      let compound_value126 = 1 in
+                      let t1543 = (compound_old125 >> compound_value126) in
+                      let t1544 = mantissa/76 = t1543 in
+                      let compound_old128 = exponent/72 in
+                      let compound_value129 = 1 in
+                      let t1545 = (compound_old128 + compound_value129) in
+                      let t1546 = exponent/72 = t1545 in
+                      jump k1524()
+                    } else {
+                      jump k1524()
+                    }
+                  }
+                } in
+                if t1547 {
+                  let t1548 = (mantissa_bits/68 - minimum_exponent/74) in
+                  let t1549 = float_rational_quotient(jp1496, jp1498, t1548) in
+                  jump k1505(t1549)
+                } else {
+                  let t1550 = (mantissa_bits/68 - exponent/72) in
+                  let t1551 = float_rational_quotient(jp1496, jp1498, t1550) in
+                  jump k1505(t1551)
+                }
+              } in
+              if t1552 {
+                let t1553 = (exponent_bias/69 + exponent_bias/69) in
+                let t1554 = (t1553 + 1) in
+                let t1555 = (t1554 as u64) in
+                let t1556 = (t1555 << mantissa_bits/68) in
+                let t1557 = (t1556, true) in
+                t1557
+              } else {
+                jump k1504()
+              }
+            } in
+            if t1558 {
+              let compound_old120 = exponent/72 in
+              let compound_value121 = 1 in
+              let t1559 = (compound_old120 - compound_value121) in
+              let t1560 = exponent/72 = t1559 in
+              jump k1503()
+            } else {
+              jump k1503()
+            }
+          } in
+          if t1561 {
+            let t1562 = float_natural_shift_left(jp1498, exponent/72) in
+            let t1563 = float_natural_compare(jp1496, t1562) in
+            jump k1501(t1563)
+          } else {
+            let t1564 = (0 - exponent/72) in
+            let t1565 = float_natural_shift_left(jp1496, t1564) in
+            let t1566 = float_natural_compare(t1565, jp1498) in
+            jump k1501(t1566)
+          }
+        } in
+        if t1567 {
+          let t1568 = float_natural_copy(denominator/66) in
+          jump k1497(t1568)
+        } else {
+          let t1569 = (0 - binary_shift/67) in
+          let t1570 = float_natural_shift_left(denominator/66, t1569) in
+          jump k1497(t1570)
+        }
+      } in
+      if t1571 {
+        let t1572 = float_natural_shift_left(numerator/65, binary_shift/67) in
+        jump k1495(t1572)
+      } else {
+        let t1573 = float_natural_copy(numerator/65) in
+        jump k1495(t1573)
+      }
+    } in
+    if t1574 {
+      let t1575 = (0, false) in
+      t1575
+    } else {
+      jump k1494()
+    }
+  } in
+  let inline2092 = FloatNatural.words(numerator/65) in
+  let inline2093 = inherent#Vec#Vec[T]#is_empty__T_u32(inline2092) in
+  jump inline_cont2091(inline2093)
+}
+
+fn inherent#Vec#Vec[T]#clear__T_u32(self/533: Vec[u32]) -> unit {
+  let inline2095 = 0 in
+  let inline2096 = @intrinsic(vec.truncate)(self/533, inline2095) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#is_empty__T_u32(self/528: Vec[u32]) -> bool {
+  let t1580 = @intrinsic(vec.len)(self/528) in
+  let t1581 = (t1580 == 0) in
+  t1581
+}
+
+fn float_natural_trim(value/7: FloatNatural) -> unit {
+  join exit1583() -> unit {
+    ()
+  } in
+  joinrec {
+    join loop1584() -> unit {
+      let t1592 = FloatNatural.words(value/7) in
+      join inline_cont2103(t1593: bool) -> unit {
+        let t1594 = (!t1593) in
+        join k1585(jp1586: bool) -> unit {
+          if jp1586 {
+            let t1587 = FloatNatural.words(value/7) in
+            let t1588 = FloatNatural.words(value/7) in
+            join inline_cont2101(t1589: isize) -> unit {
+              let t1590 = (t1589 - 1) in
+              let inline2100 = @intrinsic(vec.truncate)(t1587, t1590) in
+              jump loop1584()
+            } in
+            let inline2102 = @intrinsic(vec.len)(t1588) in
+            jump inline_cont2101(inline2102)
+          } else {
+            jump exit1583()
+          }
+        } in
+        if t1594 {
+          let t1595 = FloatNatural.words(value/7) in
+          let t1596 = FloatNatural.words(value/7) in
+          join inline_cont2097(t1597: isize) -> unit {
+            let t1598 = (t1597 - 1) in
+            let t1599 = @intrinsic(vec.get)(t1595, t1598) in
+            let t1600 = (t1599 == 0) in
+            jump k1585(t1600)
+          } in
+          let inline2098 = @intrinsic(vec.len)(t1596) in
+          jump inline_cont2097(inline2098)
+        } else {
+          jump k1585(false)
+        }
+      } in
+      let inline2104 = @intrinsic(vec.len)(t1592) in
+      let inline2105 = (inline2104 == 0) in
+      jump inline_cont2103(inline2105)
+    } in
+  } in
+  jump loop1584()
+}
+
+fn string_byte_slice(value/274: string, start/275: isize, end/276: isize) -> string {
+  let t1609 = string_is_char_boundary(value/274, start/275) in
+  join k1605(jp1606: bool) -> string {
+    if jp1606 {
+      let t1607 = @runtime(core.string_byte_slice)(value/274, start/275, end/276) in
+      t1607
+    } else {
+      let t1608 = @runtime(core.string_byte_slice)(value/274, -1, -1) in
+      t1608
+    }
+  } in
+  if t1609 {
+    let t1610 = string_is_char_boundary(value/274, end/276) in
+    jump k1605(t1610)
+  } else {
+    jump k1605(false)
+  }
+}
+
+fn string_equals_ascii_case(value/78: string, expected/79: string) -> bool {
+  join inline_cont2121(t1625: isize) -> bool {
+    join inline_cont2119(t1626: isize) -> bool {
+      let t1627 = (t1625 != t1626) in
+      join k1613() -> bool {
+        let index/80 = 0 in
+        join exit1614() -> bool {
+          true
+        } in
+        let inline2112 = (97 - 65) in
+        joinrec {
+          join loop1615() -> bool {
+            join inline_cont2117(t1616: isize) -> bool {
+              let t1617 = (index/80 < t1616) in
+              if t1617 {
+                join inline_cont2115(t1621: u8) -> bool {
+                  join inline_cont2108(t1622: u8) -> bool {
+                    join inline_cont2106(t1623: u8) -> bool {
+                      let t1624 = (t1622 != t1623) in
+                      join k1618() -> bool {
+                        let compound_old134 = index/80 in
+                        let compound_value135 = 1 in
+                        let t1619 = (compound_old134 + compound_value135) in
+                        let t1620 = index/80 = t1619 in
+                        jump loop1615()
+                      } in
+                      if t1624 {
+                        false
+                      } else {
+                        jump k1618()
+                      }
+                    } in
+                    let inline2107 = @runtime(core.string_byte_get)(expected/79, index/80) in
+                    jump inline_cont2106(inline2107)
+                  } in
+                  let inline2109 = (t1621 >= 65) in
+                  join inline_join2110(inline2111: bool) -> bool {
+                    if inline2111 {
+                      let inline2113 = (t1621 + inline2112) in
+                      jump inline_cont2108(inline2113)
+                    } else {
+                      jump inline_cont2108(t1621)
+                    }
+                  } in
+                  if inline2109 {
+                    let inline2114 = (t1621 <= 90) in
+                    jump inline_join2110(inline2114)
+                  } else {
+                    jump inline_join2110(false)
+                  }
+                } in
+                let inline2116 = @runtime(core.string_byte_get)(value/78, index/80) in
+                jump inline_cont2115(inline2116)
+              } else {
+                jump exit1614()
+              }
+            } in
+            let inline2118 = @runtime(core.string_len)(value/78) in
+            jump inline_cont2117(inline2118)
+          } in
+        } in
+        jump loop1615()
+      } in
+      if t1627 {
+        false
+      } else {
+        jump k1613()
+      }
+    } in
+    let inline2120 = @runtime(core.string_len)(expected/79) in
+    jump inline_cont2119(inline2120)
+  } in
+  let inline2122 = @runtime(core.string_len)(value/78) in
+  jump inline_cont2121(inline2122)
+}
+
+fn ascii_lower(value/77: u8) -> u8 {
+  let t1636 = (value/77 >= 65) in
+  join k1632(jp1633: bool) -> u8 {
+    if jp1633 {
+      let t1634 = (97 - 65) in
+      let t1635 = (value/77 + t1634) in
+      t1635
+    } else {
+      value/77
+    }
+  } in
+  if t1636 {
+    let t1637 = (value/77 <= 90) in
+    jump k1632(t1637)
+  } else {
+    jump k1632(false)
+  }
+}
+
+fn float_digit(value/81: u8, base/82: isize) -> (bool, isize) {
+  let t1664 = (value/81 >= 48) in
+  join k1647(jp1648: bool) -> (bool, isize) {
+    join k1640(jp1641: isize) -> (bool, isize) {
+      let t1644 = (jp1641 < base/82) in
+      if t1644 {
+        let t1645 = (true, jp1641) in
+        t1645
+      } else {
+        let t1646 = (false, 0) in
+        t1646
+      }
+    } in
+    if jp1648 {
+      let t1649 = (value/81 - 48) in
+      let t1650 = (t1649 as isize) in
+      jump k1640(t1650)
+    } else {
+      join inline_cont2137(t1660: u8) -> (bool, isize) {
+        let t1661 = (t1660 >= 97) in
+        join k1653(jp1654: bool) -> (bool, isize) {
+          if jp1654 {
+            join inline_cont2130(t1655: u8) -> (bool, isize) {
+              let t1656 = (t1655 - 97) in
+              let t1657 = (t1656 + 10) in
+              let t1658 = (t1657 as isize) in
+              jump k1640(t1658)
+            } in
+            let inline2131 = (value/81 >= 65) in
+            join inline_join2132(inline2133: bool) -> (bool, isize) {
+              if inline2133 {
+                let inline2134 = (97 - 65) in
+                let inline2135 = (value/81 + inline2134) in
+                jump inline_cont2130(inline2135)
+              } else {
+                jump inline_cont2130(value/81)
+              }
+            } in
+            if inline2131 {
+              let inline2136 = (value/81 <= 90) in
+              jump inline_join2132(inline2136)
+            } else {
+              jump inline_join2132(false)
+            }
+          } else {
+            let t1659 = (false, 0) in
+            t1659
+          }
+        } in
+        if t1661 {
+          join inline_cont2123(t1662: u8) -> (bool, isize) {
+            let t1663 = (t1662 <= 102) in
+            jump k1653(t1663)
+          } in
+          let inline2124 = (value/81 >= 65) in
+          join inline_join2125(inline2126: bool) -> (bool, isize) {
+            if inline2126 {
+              let inline2127 = (97 - 65) in
+              let inline2128 = (value/81 + inline2127) in
+              jump inline_cont2123(inline2128)
+            } else {
+              jump inline_cont2123(value/81)
+            }
+          } in
+          if inline2124 {
+            let inline2129 = (value/81 <= 90) in
+            jump inline_join2125(inline2129)
+          } else {
+            jump inline_join2125(false)
+          }
+        } else {
+          jump k1653(false)
+        }
+      } in
+      let inline2138 = (value/81 >= 65) in
+      join inline_join2139(inline2140: bool) -> (bool, isize) {
+        if inline2140 {
+          let inline2141 = (97 - 65) in
+          let inline2142 = (value/81 + inline2141) in
+          jump inline_cont2137(inline2142)
+        } else {
+          jump inline_cont2137(value/81)
+        }
+      } in
+      if inline2138 {
+        let inline2143 = (value/81 <= 90) in
+        jump inline_join2139(inline2143)
+      } else {
+        jump inline_join2139(false)
+      }
+    }
+  } in
+  if t1664 {
+    let t1665 = (value/81 <= 57) in
+    jump k1647(t1665)
+  } else {
+    jump k1647(false)
+  }
+}
+
+fn float_natural_add_small(value/20: FloatNatural, addition/21: u32) -> unit {
+  let carry/22 = (addition/21 as u64) in
+  let index/23 = 0 in
+  join exit1667() -> unit {
+    ()
+  } in
+  joinrec {
+    join loop1668() -> unit {
+      let t1669 = (carry/22 != 0) in
+      if t1669 {
+        let t1678 = FloatNatural.words(value/20) in
+        join inline_cont2147(t1679: isize) -> unit {
+          let t1680 = (index/23 == t1679) in
+          join k1670() -> unit {
+            let t1671 = FloatNatural.words(value/20) in
+            let t1672 = @intrinsic(vec.get)(t1671, index/23) in
+            let t1673 = (t1672 as u64) in
+            let sum/24 = (t1673 + carry/22) in
+            let place36 = FloatNatural.words(value/20) in
+            let index37 = index/23 in
+            let place38 = @intrinsic(vec.get)(place36, index37) in
+            let value39 = (sum/24 as u32) in
+            let t1674 = @intrinsic(vec.set)(place36, index37, value39) in
+            let t1675 = (sum/24 >> 32) in
+            let _wild41 = carry/22 = t1675 in
+            let compound_old42 = index/23 in
+            let compound_value43 = 1 in
+            let t1676 = (compound_old42 + compound_value43) in
+            let t1677 = index/23 = t1676 in
+            jump loop1668()
+          } in
+          if t1680 {
+            let t1681 = FloatNatural.words(value/20) in
+            let inline2145 = 0 in
+            let inline2146 = @intrinsic(vec.push)(t1681, inline2145) in
+            jump k1670()
+          } else {
+            jump k1670()
+          }
+        } in
+        let inline2148 = @intrinsic(vec.len)(t1678) in
+        jump inline_cont2147(inline2148)
+      } else {
+        jump exit1667()
+      }
+    } in
+  } in
+  jump loop1668()
+}
+
+fn invalid_parsed_float() -> ParsedFloat {
+  join inline_cont2149(t1685: FloatNatural) -> ParsedFloat {
+    let t1686 =
+      ParsedFloat {
+        valid: false,
+        negative: false,
+        special: 0,
+        numerator: t1685,
+        decimal_exponent: 0,
+        binary_exponent: 0,
+        hexadecimal: false,
+        significant_digits: 0
+      } in
+    t1686
+  } in
+  let inline2150 = @intrinsic(vec.new)() in
+  let inline2151 = FloatNatural { words: inline2150 } in
+  jump inline_cont2149(inline2151)
+}
+
+fn float_natural_bit_length(value/9: FloatNatural) -> isize {
+  let t1706 = FloatNatural.words(value/9) in
+  join inline_cont2156(t1707: bool) -> isize {
+    join k1689() -> isize {
+      let t1690 = FloatNatural.words(value/9) in
+      let t1691 = FloatNatural.words(value/9) in
+      join inline_cont2154(t1692: isize) -> isize {
+        let t1693 = (t1692 - 1) in
+        let high/10 = @intrinsic(vec.get)(t1690, t1693) in
+        let bits/11 = 0 in
+        join exit1694() -> isize {
+          let t1695 = FloatNatural.words(value/9) in
+          join inline_cont2152(t1696: isize) -> isize {
+            let t1697 = (t1696 - 1) in
+            let t1698 = (t1697 * 32) in
+            let t1699 = (t1698 + bits/11) in
+            t1699
+          } in
+          let inline2153 = @intrinsic(vec.len)(t1695) in
+          jump inline_cont2152(inline2153)
+        } in
+        joinrec {
+          join loop1700() -> isize {
+            let t1701 = (high/10 != 0) in
+            if t1701 {
+              let compound_old9 = high/10 in
+              let compound_value10 = 1 in
+              let t1702 = (compound_old9 >> compound_value10) in
+              let t1703 = high/10 = t1702 in
+              let compound_old12 = bits/11 in
+              let compound_value13 = 1 in
+              let t1704 = (compound_old12 + compound_value13) in
+              let t1705 = bits/11 = t1704 in
+              jump loop1700()
+            } else {
+              jump exit1694()
+            }
+          } in
+        } in
+        jump loop1700()
+      } in
+      let inline2155 = @intrinsic(vec.len)(t1691) in
+      jump inline_cont2154(inline2155)
+    } in
+    if t1707 {
+      0
+    } else {
+      jump k1689()
+    }
+  } in
+  let inline2157 = @intrinsic(vec.len)(t1706) in
+  let inline2158 = (inline2157 == 0) in
+  jump inline_cont2156(inline2158)
+}
+
+fn float_natural_compare(left/12: FloatNatural, right/13: FloatNatural) -> isize {
+  let t1729 = FloatNatural.words(left/12) in
+  join inline_cont2167(t1730: isize) -> isize {
+    let t1731 = FloatNatural.words(right/13) in
+    join inline_cont2165(t1732: isize) -> isize {
+      let t1733 = (t1730 < t1732) in
+      join k1710() -> isize {
+        let t1711 = FloatNatural.words(left/12) in
+        join inline_cont2163(index/14: isize) -> isize {
+          join exit1712() -> isize {
+            0
+          } in
+          joinrec {
+            join loop1713() -> isize {
+              let t1714 = (index/14 > 0) in
+              if t1714 {
+                let compound_old17 = index/14 in
+                let compound_value18 = 1 in
+                let t1715 = (compound_old17 - compound_value18) in
+                let t1716 = index/14 = t1715 in
+                let t1718 = FloatNatural.words(left/12) in
+                let t1719 = @intrinsic(vec.get)(t1718, index/14) in
+                let t1720 = FloatNatural.words(right/13) in
+                let t1721 = @intrinsic(vec.get)(t1720, index/14) in
+                let t1722 = (t1719 < t1721) in
+                if t1722 {
+                  -1
+                } else {
+                  let t1724 = FloatNatural.words(left/12) in
+                  let t1725 = @intrinsic(vec.get)(t1724, index/14) in
+                  let t1726 = FloatNatural.words(right/13) in
+                  let t1727 = @intrinsic(vec.get)(t1726, index/14) in
+                  let t1728 = (t1725 > t1727) in
+                  if t1728 {
+                    1
+                  } else {
+                    jump loop1713()
+                  }
+                }
+              } else {
+                jump exit1712()
+              }
+            } in
+          } in
+          jump loop1713()
+        } in
+        let inline2164 = @intrinsic(vec.len)(t1711) in
+        jump inline_cont2163(inline2164)
+      } in
+      if t1733 {
+        -1
+      } else {
+        let t1735 = FloatNatural.words(left/12) in
+        join inline_cont2161(t1736: isize) -> isize {
+          let t1737 = FloatNatural.words(right/13) in
+          join inline_cont2159(t1738: isize) -> isize {
+            let t1739 = (t1736 > t1738) in
+            if t1739 {
+              1
+            } else {
+              jump k1710()
+            }
+          } in
+          let inline2160 = @intrinsic(vec.len)(t1737) in
+          jump inline_cont2159(inline2160)
+        } in
+        let inline2162 = @intrinsic(vec.len)(t1735) in
+        jump inline_cont2161(inline2162)
+      }
+    } in
+    let inline2166 = @intrinsic(vec.len)(t1731) in
+    jump inline_cont2165(inline2166)
+  } in
+  let inline2168 = @intrinsic(vec.len)(t1729) in
+  jump inline_cont2167(inline2168)
+}
+
+fn float_rational_quotient(
+  numerator/55: FloatNatural,
+  denominator/56: FloatNatural,
+  shift/57: isize
+) -> u64 {
+  let t1775 = (shift/57 >= 0) in
+  join k1742(jp1743: FloatNatural) -> u64 {
+    let t1771 = (shift/57 >= 0) in
+    join k1744(jp1745: FloatNatural) -> u64 {
+      let quotient/60 = 0 in
+      join exit1746() -> u64 {
+        let doubled/63 = float_natural_shift_left(jp1743, 1) in
+        let rounding/64 = float_natural_compare(doubled/63, jp1745) in
+        let t1752 = (rounding/64 > 0) in
+        join k1748(jp1749: bool) -> u64 {
+          join k1747() -> u64 {
+            quotient/60
+          } in
+          if jp1749 {
+            let compound_old115 = quotient/60 in
+            let compound_value116 = 1 in
+            let t1750 = (compound_old115 + compound_value116) in
+            let t1751 = quotient/60 = t1750 in
+            jump k1747()
+          } else {
+            jump k1747()
+          }
+        } in
+        if t1752 {
+          jump k1748(true)
+        } else {
+          let t1755 = (rounding/64 == 0) in
+          if t1755 {
+            let t1756 = (quotient/60 & 1) in
+            let t1757 = (t1756 == 1) in
+            jump k1748(t1757)
+          } else {
+            jump k1748(false)
+          }
+        }
+      } in
+      joinrec {
+        join loop1758() -> u64 {
+          let t1759 = float_natural_compare(jp1743, jp1745) in
+          let t1760 = (t1759 >= 0) in
+          if t1760 {
+            let t1761 = float_natural_bit_length(jp1743) in
+            let t1762 = float_natural_bit_length(jp1745) in
+            let offset/61 = (t1761 - t1762) in
+            let part/62 = float_natural_shift_left(jp1745, offset/61) in
+            let t1766 = float_natural_compare(jp1743, part/62) in
+            let t1767 = (t1766 < 0) in
+            join k1763() -> u64 {
+              let _wild110 = float_natural_subtract(jp1743, part/62) in
+              let compound_old111 = quotient/60 in
+              let compound_value112 = (1 << offset/61) in
+              let t1764 = (compound_old111 | compound_value112) in
+              let t1765 = quotient/60 = t1764 in
+              jump loop1758()
+            } in
+            if t1767 {
+              let compound_old105 = offset/61 in
+              let compound_value106 = 1 in
+              let t1768 = (compound_old105 - compound_value106) in
+              let t1769 = offset/61 = t1768 in
+              let t1770 = float_natural_shift_left(jp1745, offset/61) in
+              let _wild108 = part/62 = t1770 in
+              jump k1763()
+            } else {
+              jump k1763()
+            }
+          } else {
+            jump exit1746()
+          }
+        } in
+      } in
+      jump loop1758()
+    } in
+    if t1771 {
+      let t1772 = float_natural_copy(denominator/56) in
+      jump k1744(t1772)
+    } else {
+      let t1773 = (0 - shift/57) in
+      let t1774 = float_natural_shift_left(denominator/56, t1773) in
+      jump k1744(t1774)
+    }
+  } in
+  if t1775 {
+    let t1776 = float_natural_shift_left(numerator/55, shift/57) in
+    jump k1742(t1776)
+  } else {
+    let t1777 = float_natural_copy(numerator/55) in
+    jump k1742(t1777)
+  }
+}
+
+fn inherent#Vec#Vec[T]#truncate__T_u32(self/531: Vec[u32], len/532: isize) -> unit {
+  let t1779 = @intrinsic(vec.truncate)(self/531, len/532) in
+  ()
+}
+
+fn string_is_char_boundary(value/268: string, index/269: isize) -> bool {
+  let t1793 = (index/269 < 0) in
+  join k1784(jp1785: bool) -> bool {
+    if jp1785 {
+      false
+    } else {
+      join inline_cont2173(t1788: isize) -> bool {
+        let t1789 = (index/269 == t1788) in
+        if t1789 {
+          true
+        } else {
+          join inline_cont2171(t1790: u8) -> bool {
+            let t1791 = (t1790 & 192) in
+            let t1792 = (t1791 != 128) in
+            t1792
+          } in
+          let inline2172 = @runtime(core.string_byte_get)(value/268, index/269) in
+          jump inline_cont2171(inline2172)
+        }
+      } in
+      let inline2174 = @runtime(core.string_len)(value/268) in
+      jump inline_cont2173(inline2174)
+    }
+  } in
+  if t1793 {
+    jump k1784(true)
+  } else {
+    join inline_cont2169(t1794: isize) -> bool {
+      let t1795 = (index/269 > t1794) in
+      jump k1784(t1795)
+    } in
+    let inline2170 = @runtime(core.string_len)(value/268) in
+    jump inline_cont2169(inline2170)
+  }
+}
+
+fn float_natural_subtract(value/37: FloatNatural, other/38: FloatNatural) -> unit {
+  let base/39 = 4294967296 in
+  let borrow/40 = 0 in
+  let index/41 = 0 in
+  join exit1797() -> unit {
+    let t1798 = float_natural_trim(value/37) in
+    ()
+  } in
+  joinrec {
+    join loop1799() -> unit {
+      let t1800 = FloatNatural.words(value/37) in
+      join inline_cont2177(t1801: isize) -> unit {
+        let t1802 = (index/41 < t1801) in
+        if t1802 {
+          let t1816 = FloatNatural.words(other/38) in
+          join inline_cont2175(t1817: isize) -> unit {
+            let t1818 = (index/41 < t1817) in
+            join k1803(jp1804: u64) -> unit {
+              let right/42 = (jp1804 + borrow/40) in
+              let t1805 = FloatNatural.words(value/37) in
+              let t1806 = @intrinsic(vec.get)(t1805, index/41) in
+              let left/43 = (t1806 as u64) in
+              let t1810 = (left/43 >= right/42) in
+              join k1807() -> unit {
+                let compound_old79 = index/41 in
+                let compound_value80 = 1 in
+                let t1808 = (compound_old79 + compound_value80) in
+                let t1809 = index/41 = t1808 in
+                jump loop1799()
+              } in
+              if t1810 {
+                let place65 = FloatNatural.words(value/37) in
+                let index66 = index/41 in
+                let place67 = @intrinsic(vec.get)(place65, index66) in
+                let t1811 = (left/43 - right/42) in
+                let value68 = (t1811 as u32) in
+                let t1812 = @intrinsic(vec.set)(place65, index66, value68) in
+                let _wild70 = borrow/40 = 0 in
+                jump k1807()
+              } else {
+                let place72 = FloatNatural.words(value/37) in
+                let index73 = index/41 in
+                let place74 = @intrinsic(vec.get)(place72, index73) in
+                let t1813 = (base/39 + left/43) in
+                let t1814 = (t1813 - right/42) in
+                let value75 = (t1814 as u32) in
+                let t1815 = @intrinsic(vec.set)(place72, index73, value75) in
+                let _wild77 = borrow/40 = 1 in
+                jump k1807()
+              }
+            } in
+            if t1818 {
+              let t1819 = FloatNatural.words(other/38) in
+              let t1820 = @intrinsic(vec.get)(t1819, index/41) in
+              let t1821 = (t1820 as u64) in
+              jump k1803(t1821)
+            } else {
+              jump k1803(0)
+            }
+          } in
+          let inline2176 = @intrinsic(vec.len)(t1816) in
+          jump inline_cont2175(inline2176)
+        } else {
+          jump exit1797()
+        }
+      } in
+      let inline2178 = @intrinsic(vec.len)(t1800) in
+      jump inline_cont2177(inline2178)
+    } in
+  } in
+  jump loop1799()
 }

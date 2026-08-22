@@ -1,16 +1,66 @@
 package main
 
 import (
-    _goml_fmt "fmt"
+    _goml_os "os"
 )
 
-func _goml_runtime_core_int32_to_string(x int32) string {
-    return _goml_fmt.Sprintf("%d", x)
+func _goml_runtime_core_string_from_utf8(bytes *_goml_vec_uint8) Tuple2_4bool_6string {
+    return Tuple2_4bool_6string{
+        _0: true,
+        _1: string(bytes.items),
+    }
 }
 
 func _goml_runtime_core_string_println(s string) struct{} {
-    _goml_fmt.Println(s)
+    _goml_os.Stdout.WriteString(s + "\n")
     return struct{}{}
+}
+
+type _goml_vec_uint8 struct {
+    items []uint8
+}
+
+func vec_with_capacity__Vec_5uint8(capacity int) *_goml_vec_uint8 {
+    return &_goml_vec_uint8{
+        items: make([]uint8, 0, capacity),
+    }
+}
+
+func vec_push__Vec_5uint8(vec *_goml_vec_uint8, elem uint8) struct{} {
+    vec.items = append(vec.items, elem)
+    return struct{}{}
+}
+
+func vec_get__Vec_5uint8(vec *_goml_vec_uint8, index int) uint8 {
+    return vec.items[index]
+}
+
+func vec_len__Vec_5uint8(vec *_goml_vec_uint8) int {
+    return int(len(vec.items))
+}
+
+type _goml_vec_uint32 struct {
+    items []uint32
+}
+
+type Tuple2_4bool_6string struct {
+    _0 bool
+    _1 string
+}
+
+type FloatNatural struct {
+    words *_goml_vec_uint32
+}
+
+type ParsedFloat struct {
+    valid bool
+    negative bool
+    special int
+    numerator FloatNatural
+    decimal_exponent int
+    binary_exponent int
+    hexadecimal bool
+    significant_digits int
 }
 
 type Point struct {
@@ -51,65 +101,65 @@ type Cons struct {
 func (_ Cons) isLineList() {}
 
 func _goml_m_trait__impl_i_ToString_i_Point_i_to__string(self__1 Point) string {
-    var x412 int32 = self__1.x
-    var x413 int32 = self__1.y
-    var x414 Color = self__1.color
-    var t428 string = "Point { " + "x: "
-    var t429 string
-    var inline484 string = _goml_runtime_core_int32_to_string(x412)
-    t429 = inline484
-    var t430 string = t428 + t429
-    var t431 string = t430 + ", "
-    var t432 string = t431 + "y: "
-    var t433 string
-    var inline482 string = _goml_runtime_core_int32_to_string(x413)
-    t433 = inline482
-    var t434 string = t432 + t433
-    var t435 string = t434 + ", "
-    var t436 string = t435 + "color: "
-    var t437 string
-    switch x414 {
+    var x797 int32 = self__1.x
+    var x798 int32 = self__1.y
+    var x799 Color = self__1.color
+    var t813 string = "Point { " + "x: "
+    var t814 string
+    var inline912 string = __goml_builtin_int32_to_string(x797)
+    t814 = inline912
+    var t815 string = t813 + t814
+    var t816 string = t815 + ", "
+    var t817 string = t816 + "y: "
+    var t818 string
+    var inline910 string = __goml_builtin_int32_to_string(x798)
+    t818 = inline910
+    var t819 string = t817 + t818
+    var t820 string = t819 + ", "
+    var t821 string = t820 + "color: "
+    var t822 string
+    switch x799 {
     case Red:
-        t437 = "Color::Red"
+        t822 = "Color::Red"
     case Green:
-        t437 = "Color::Green"
+        t822 = "Color::Green"
     case Blue:
-        t437 = "Color::Blue"
+        t822 = "Color::Blue"
     default:
         panic("non-exhaustive match")
     }
-    var t438 string = t436 + t437
-    var t439 string = t438 + " }"
-    return t439
+    var t823 string = t821 + t822
+    var t824 string = t823 + " }"
+    return t824
 }
 
 func _goml_m_trait__impl_i_ToString_i_Line_i_to__string(self__8 Line) string {
-    var x416 Point = self__8.from
-    var x417 Point = self__8.to
-    var x418 Color = self__8.color
-    var t445 string = "Line { " + "from: "
-    var t446 string = _goml_m_trait__impl_i_ToString_i_Point_i_to__string(x416)
-    var t447 string = t445 + t446
-    var t448 string = t447 + ", "
-    var t449 string = t448 + "to: "
-    var t450 string = _goml_m_trait__impl_i_ToString_i_Point_i_to__string(x417)
-    var t451 string = t449 + t450
-    var t452 string = t451 + ", "
-    var t453 string = t452 + "color: "
-    var t454 string
-    switch x418 {
+    var x801 Point = self__8.from
+    var x802 Point = self__8.to
+    var x803 Color = self__8.color
+    var t830 string = "Line { " + "from: "
+    var t831 string = _goml_m_trait__impl_i_ToString_i_Point_i_to__string(x801)
+    var t832 string = t830 + t831
+    var t833 string = t832 + ", "
+    var t834 string = t833 + "to: "
+    var t835 string = _goml_m_trait__impl_i_ToString_i_Point_i_to__string(x802)
+    var t836 string = t834 + t835
+    var t837 string = t836 + ", "
+    var t838 string = t837 + "color: "
+    var t839 string
+    switch x803 {
     case Red:
-        t454 = "Color::Red"
+        t839 = "Color::Red"
     case Green:
-        t454 = "Color::Green"
+        t839 = "Color::Green"
     case Blue:
-        t454 = "Color::Blue"
+        t839 = "Color::Blue"
     default:
         panic("non-exhaustive match")
     }
-    var t455 string = t453 + t454
-    var t456 string = t455 + " }"
-    return t456
+    var t840 string = t838 + t839
+    var t841 string = t840 + " }"
+    return t841
 }
 
 func _goml_m_trait__impl_i_ToString_i_LineList_i_to__string(self__15 LineList) string {
@@ -117,15 +167,15 @@ func _goml_m_trait__impl_i_ToString_i_LineList_i_to__string(self__15 LineList) s
     case Nil:
         return "LineList::Nil"
     case Cons:
-        var x419 Line = self__15.(Cons)._0
-        var x420 LineList = self__15.(Cons)._1
-        var t464 string = _goml_m_trait__impl_i_ToString_i_Line_i_to__string(x419)
-        var t465 string = "LineList::Cons(" + t464
-        var t466 string = t465 + ", "
-        var t467 string = _goml_m_trait__impl_i_ToString_i_LineList_i_to__string(x420)
-        var t468 string = t466 + t467
-        var t469 string = t468 + ")"
-        return t469
+        var x804 Line = self__15.(Cons)._0
+        var x805 LineList = self__15.(Cons)._1
+        var t849 string = _goml_m_trait__impl_i_ToString_i_Line_i_to__string(x804)
+        var t850 string = "LineList::Cons(" + t849
+        var t851 string = t850 + ", "
+        var t852 string = _goml_m_trait__impl_i_ToString_i_LineList_i_to__string(x805)
+        var t853 string = t851 + t852
+        var t854 string = t853 + ")"
+        return t854
     default:
         panic("non-exhaustive match")
     }
@@ -133,42 +183,117 @@ func _goml_m_trait__impl_i_ToString_i_LineList_i_to__string(self__15 LineList) s
 
 func main0() struct{} {
     var from__18 Point
-    var inline496 int32 = 10
-    var inline497 int32 = 20
-    var inline498 Point = Point{
-        x: inline496,
-        y: inline497,
+    var inline924 int32 = 10
+    var inline925 int32 = 20
+    var inline926 Point = Point{
+        x: inline924,
+        y: inline925,
         color: Red,
     }
-    from__18 = inline498
+    from__18 = inline926
     var to__19 Point
-    var inline492 int32 = 30
-    var inline493 int32 = 40
-    var inline494 Point = Point{
-        x: inline492,
-        y: inline493,
+    var inline920 int32 = 30
+    var inline921 int32 = 40
+    var inline922 Point = Point{
+        x: inline920,
+        y: inline921,
         color: Green,
     }
-    to__19 = inline494
+    to__19 = inline922
     var line__20 Line
-    var inline490 Line = Line{
+    var inline918 Line = Line{
         from: from__18,
         to: to__19,
         color: Blue,
     }
-    line__20 = inline490
+    line__20 = inline918
     var lines__21 LineList = Cons{
         _0: line__20,
         _1: Nil{},
     }
-    var t471 string = _goml_m_trait__impl_i_ToString_i_LineList_i_to__string(lines__21)
-    var inline487 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t471)
-    _goml_runtime_core_string_println(inline487)
+    var t856 string = _goml_m_trait__impl_i_ToString_i_LineList_i_to__string(lines__21)
+    var inline915 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t856)
+    _goml_runtime_core_string_println(inline915)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
-    return self__149
+func __goml_builtin_int32_to_string(value__225 int32) string {
+    var t865 int64 = int64(int32(value__225))
+    var inline932 bool = t865 < 0
+    if inline932 {
+        var inline933 uint64 = uint64(int64(t865))
+        var inline934 uint64 = 0 - inline933
+        var inline935 string = decimal_string(inline934)
+        var inline936 string = "-" + inline935
+        return inline936
+    } else {
+        var inline937 uint64 = uint64(int64(t865))
+        var inline938 string = decimal_string(inline937)
+        return inline938
+    }
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__402 string) string {
+    return self__402
+}
+
+func decimal_string(value__208 uint64) string {
+    var t902 bool = value__208 == 0
+    if t902 {
+        return "0"
+    } else {
+        var reversed__209 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(20)
+        var remaining__210 uint64 = value__208
+        Loop_loop895:
+        for {
+            var t896 bool = remaining__210 > 0
+            if t896 {
+                var t897_rhs uint64 = 10
+                var t897 uint64 = remaining__210 % t897_rhs
+                var t898 uint8 = uint8(uint64(t897))
+                var t899 uint8 = t898 + 48
+                vec_push__Vec_5uint8(reversed__209, t899)
+                var compound_old353 uint64 = remaining__210
+                var compound_value354 uint64 = 10
+                var t900 uint64 = compound_old353 / compound_value354
+                remaining__210 = t900
+                continue
+            } else {
+                break Loop_loop895
+            }
+        }
+        var t884 int
+        var inline948 int = vec_len__Vec_5uint8(reversed__209)
+        t884 = inline948
+        var bytes__211 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t884)
+        var offset__212 int = 0
+        Loop_loop886:
+        for {
+            var t887 int
+            var inline946 int = vec_len__Vec_5uint8(reversed__209)
+            t887 = inline946
+            var t888 bool = offset__212 < t887
+            if t888 {
+                var t889 int
+                var inline944 int = vec_len__Vec_5uint8(reversed__209)
+                t889 = inline944
+                var t890 int = t889 - offset__212
+                var t891 int = t890 - 1
+                var t892 uint8 = vec_get__Vec_5uint8(reversed__209, t891)
+                vec_push__Vec_5uint8(bytes__211, t892)
+                var compound_old358 int = offset__212
+                var compound_value359 int = 1
+                var t893 int = compound_old358 + compound_value359
+                offset__212 = t893
+                continue
+            } else {
+                break Loop_loop886
+            }
+        }
+        var mtmp362 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__211)
+        var x364 string = mtmp362._1
+        return x364
+    }
 }
 
 func main() {

@@ -1,137 +1,257 @@
 fn make_counter() -> (() -> i32, () -> unit) {
-  join inline_cont462(cell/0: Ref[i32]) -> (() -> i32, () -> unit) {
-    let t428 = closure_env_next_0 { cell_0: cell/0 } in
-    let next/2 = pack_closure[inherent#closure_env_next_0#closure_env_next_0#apply](t428) in
-    let t429 = closure_env_reset_1 { cell_0: cell/0 } in
-    let reset/3 = pack_closure[inherent#closure_env_reset_1#closure_env_reset_1#apply](t429) in
-    let t430 = (next/2, reset/3) in
-    t430
+  join inline_cont890(cell/0: Ref[i32]) -> (() -> i32, () -> unit) {
+    let t813 = closure_env_next_0 { cell_0: cell/0 } in
+    let next/2 = pack_closure[inherent#closure_env_next_0#closure_env_next_0#apply](t813) in
+    let t814 = closure_env_reset_1 { cell_0: cell/0 } in
+    let reset/3 = pack_closure[inherent#closure_env_reset_1#closure_env_reset_1#apply](t814) in
+    let t815 = (next/2, reset/3) in
+    t815
   } in
-  let inline463 = 0 in
-  let inline464 = @intrinsic(ref.new)(inline463) in
-  jump inline_cont462(inline464)
+  let inline891 = 0 in
+  let inline892 = @intrinsic(ref.new)(inline891) in
+  jump inline_cont890(inline892)
 }
 
 fn main() -> unit {
-  join inline_cont492(counter/4: (() -> i32, () -> unit)) -> unit {
-    let x414 = counter/4.0 in
-    let x415 = counter/4.1 in
-    let first/7 = x414() in
-    let second/8 = x414() in
-    let mtmp416 = x415() in
-    let third/9 = x414() in
-    join inline_cont485(new_counter/10: (() -> i32, () -> unit)) -> unit {
-      let x418 = new_counter/10.0 in
-      let fourth/12 = x418() in
-      join inline_cont483(t432: string) -> unit {
-        join inline_cont480(mtmp420: unit) -> unit {
-          join inline_cont478(t433: string) -> unit {
-            join inline_cont475(mtmp421: unit) -> unit {
-              join inline_cont473(t434: string) -> unit {
-                join inline_cont470(mtmp422: unit) -> unit {
-                  join inline_cont468(t435: string) -> unit {
-                    let inline466 = trait_impl#ToString#string#to_string(t435) in
-                    let inline467 = @runtime(core.string_println)(inline466) in
+  join inline_cont920(counter/4: (() -> i32, () -> unit)) -> unit {
+    let x799 = counter/4.0 in
+    let x800 = counter/4.1 in
+    let first/7 = x799() in
+    let second/8 = x799() in
+    let mtmp801 = x800() in
+    let third/9 = x799() in
+    join inline_cont913(new_counter/10: (() -> i32, () -> unit)) -> unit {
+      let x803 = new_counter/10.0 in
+      let fourth/12 = x803() in
+      join inline_cont911(t817: string) -> unit {
+        join inline_cont908(mtmp805: unit) -> unit {
+          join inline_cont906(t818: string) -> unit {
+            join inline_cont903(mtmp806: unit) -> unit {
+              join inline_cont901(t819: string) -> unit {
+                join inline_cont898(mtmp807: unit) -> unit {
+                  join inline_cont896(t820: string) -> unit {
+                    let inline894 = trait_impl#ToString#string#to_string(t820) in
+                    let inline895 = @runtime(core.string_println)(inline894) in
                     ()
                   } in
-                  let inline469 = @runtime(core.int32_to_string)(fourth/12) in
-                  jump inline_cont468(inline469)
+                  let inline897 = __goml_builtin_int32_to_string(fourth/12) in
+                  jump inline_cont896(inline897)
                 } in
-                let inline471 = trait_impl#ToString#string#to_string(t434) in
-                let inline472 = @runtime(core.string_println)(inline471) in
-                jump inline_cont470(())
+                let inline899 = trait_impl#ToString#string#to_string(t819) in
+                let inline900 = @runtime(core.string_println)(inline899) in
+                jump inline_cont898(())
               } in
-              let inline474 = @runtime(core.int32_to_string)(third/9) in
-              jump inline_cont473(inline474)
+              let inline902 = __goml_builtin_int32_to_string(third/9) in
+              jump inline_cont901(inline902)
             } in
-            let inline476 = trait_impl#ToString#string#to_string(t433) in
-            let inline477 = @runtime(core.string_println)(inline476) in
-            jump inline_cont475(())
+            let inline904 = trait_impl#ToString#string#to_string(t818) in
+            let inline905 = @runtime(core.string_println)(inline904) in
+            jump inline_cont903(())
           } in
-          let inline479 = @runtime(core.int32_to_string)(second/8) in
-          jump inline_cont478(inline479)
+          let inline907 = __goml_builtin_int32_to_string(second/8) in
+          jump inline_cont906(inline907)
         } in
-        let inline481 = trait_impl#ToString#string#to_string(t432) in
-        let inline482 = @runtime(core.string_println)(inline481) in
-        jump inline_cont480(())
+        let inline909 = trait_impl#ToString#string#to_string(t817) in
+        let inline910 = @runtime(core.string_println)(inline909) in
+        jump inline_cont908(())
       } in
-      let inline484 = @runtime(core.int32_to_string)(first/7) in
-      jump inline_cont483(inline484)
+      let inline912 = __goml_builtin_int32_to_string(first/7) in
+      jump inline_cont911(inline912)
     } in
-    let inline486 = inherent#Ref#Ref[T]#new__T_i32(0) in
-    let inline487 = closure_env_next_0 { cell_0: inline486 } in
-    let inline488 = pack_closure[inherent#closure_env_next_0#closure_env_next_0#apply](inline487) in
-    let inline489 = closure_env_reset_1 { cell_0: inline486 } in
-    let inline490 =
-      pack_closure[inherent#closure_env_reset_1#closure_env_reset_1#apply](inline489) in
-    let inline491 = (inline488, inline490) in
-    jump inline_cont485(inline491)
+    let inline914 = inherent#Ref#Ref[T]#new__T_i32(0) in
+    let inline915 = closure_env_next_0 { cell_0: inline914 } in
+    let inline916 = pack_closure[inherent#closure_env_next_0#closure_env_next_0#apply](inline915) in
+    let inline917 = closure_env_reset_1 { cell_0: inline914 } in
+    let inline918 =
+      pack_closure[inherent#closure_env_reset_1#closure_env_reset_1#apply](inline917) in
+    let inline919 = (inline916, inline918) in
+    jump inline_cont913(inline919)
   } in
-  let inline493 = inherent#Ref#Ref[T]#new__T_i32(0) in
-  let inline494 = closure_env_next_0 { cell_0: inline493 } in
-  let inline495 = pack_closure[inherent#closure_env_next_0#closure_env_next_0#apply](inline494) in
-  let inline496 = closure_env_reset_1 { cell_0: inline493 } in
-  let inline497 = pack_closure[inherent#closure_env_reset_1#closure_env_reset_1#apply](inline496) in
-  let inline498 = (inline495, inline497) in
-  jump inline_cont492(inline498)
+  let inline921 = inherent#Ref#Ref[T]#new__T_i32(0) in
+  let inline922 = closure_env_next_0 { cell_0: inline921 } in
+  let inline923 = pack_closure[inherent#closure_env_next_0#closure_env_next_0#apply](inline922) in
+  let inline924 = closure_env_reset_1 { cell_0: inline921 } in
+  let inline925 = pack_closure[inherent#closure_env_reset_1#closure_env_reset_1#apply](inline924) in
+  let inline926 = (inline923, inline925) in
+  jump inline_cont920(inline926)
 }
 
-fn inherent#Ref#Ref[T]#new__T_i32(value/431: i32) -> Ref[i32] {
-  let t438 = @intrinsic(ref.new)(value/431) in
-  t438
+fn inherent#Ref#Ref[T]#new__T_i32(value/684: i32) -> Ref[i32] {
+  let t823 = @intrinsic(ref.new)(value/684) in
+  t823
 }
 
-fn inherent#Ref#Ref[T]#get__T_i32(self/432: Ref[i32]) -> i32 {
-  let t441 = @intrinsic(ref.get)(self/432) in
-  t441
+fn inherent#Ref#Ref[T]#get__T_i32(self/685: Ref[i32]) -> i32 {
+  let t826 = @intrinsic(ref.get)(self/685) in
+  t826
 }
 
-fn inherent#Ref#Ref[T]#set__T_i32(self/433: Ref[i32], value/434: i32) -> unit {
-  let t443 = @intrinsic(ref.set)(self/433, value/434) in
+fn inherent#Ref#Ref[T]#set__T_i32(self/686: Ref[i32], value/687: i32) -> unit {
+  let t828 = @intrinsic(ref.set)(self/686, value/687) in
   ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join inline_cont499(t445: string) -> unit {
-    let t446 = @runtime(core.string_println)(t445) in
+  join inline_cont927(t830: string) -> unit {
+    let t831 = @runtime(core.string_println)(t830) in
     ()
   } in
-  jump inline_cont499(value/1)
+  jump inline_cont927(value/1)
 }
 
-fn inherent#i32#i32#to_string(self/33: i32) -> string {
-  let t449 = @runtime(core.int32_to_string)(self/33) in
-  t449
+fn inherent#i32#i32#to_string(self/286: i32) -> string {
+  let inline929 = (self/286 as i64) in
+  let inline930 = signed_decimal_string(inline929) in
+  inline930
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
 }
 
-fn trait_impl#PartialEq#i32#eq(self/191: i32, other/192: i32) -> bool {
-  let t454 = (self/191 == other/192) in
-  t454
+fn __goml_builtin_int32_to_string(value/225: i32) -> string {
+  let t839 = (value/225 as i64) in
+  let inline932 = (t839 < 0) in
+  if inline932 {
+    let inline933 = (t839 as u64) in
+    let inline934 = (0 - inline933) in
+    let inline935 = decimal_string(inline934) in
+    let inline936 = ("-" + inline935) in
+    inline936
+  } else {
+    let inline937 = (t839 as u64) in
+    let inline938 = decimal_string(inline937) in
+    inline938
+  }
 }
 
-fn trait_impl#Hash#i32#hash(self/214: i32) -> u64 {
-  let t457 = @runtime(core.int32_hash)(self/214) in
-  t457
+fn signed_decimal_string(value/214: i64) -> string {
+  let t845 = (value/214 < 0) in
+  if t845 {
+    let t846 = (value/214 as u64) in
+    let t847 = (0 - t846) in
+    let t848 = decimal_string(t847) in
+    let t849 = ("-" + t848) in
+    t849
+  } else {
+    let t850 = (value/214 as u64) in
+    let t851 = decimal_string(t850) in
+    t851
+  }
 }
 
-fn inherent#closure_env_next_0#closure_env_next_0#apply(env424: closure_env_next_0) -> i32 {
-  let cell/0 = closure_env_next_0.cell_0(env424) in
-  join inline_cont502(t460: i32) -> i32 {
-    let next/1 = (t460 + 1) in
-    let inline501 = @intrinsic(ref.set)(cell/0, next/1) in
+fn decimal_string(value/208: u64) -> string {
+  let t874 = (value/208 == 0) in
+  join k854() -> string {
+    let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+    let remaining/210 = value/208 in
+    join exit855() -> string {
+      join inline_cont947(t856: isize) -> string {
+        let bytes/211 = @intrinsic(vec.with_capacity)(t856) in
+        let offset/212 = 0 in
+        join exit857() -> string {
+          let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+          let x364 = mtmp362.1 in
+          x364
+        } in
+        joinrec {
+          join loop858() -> string {
+            join inline_cont945(t859: isize) -> string {
+              let t860 = (offset/212 < t859) in
+              if t860 {
+                join inline_cont943(t861: isize) -> string {
+                  let t862 = (t861 - offset/212) in
+                  let t863 = (t862 - 1) in
+                  let t864 = @intrinsic(vec.get)(reversed/209, t863) in
+                  join inline_cont941(_wild357: unit) -> string {
+                    let compound_old358 = offset/212 in
+                    let compound_value359 = 1 in
+                    let t865 = (compound_old358 + compound_value359) in
+                    let t866 = offset/212 = t865 in
+                    jump loop858()
+                  } in
+                  let inline942 = @intrinsic(vec.push)(bytes/211, t864) in
+                  jump inline_cont941(())
+                } in
+                let inline944 = @intrinsic(vec.len)(reversed/209) in
+                jump inline_cont943(inline944)
+              } else {
+                jump exit857()
+              }
+            } in
+            let inline946 = @intrinsic(vec.len)(reversed/209) in
+            jump inline_cont945(inline946)
+          } in
+        } in
+        jump loop858()
+      } in
+      let inline948 = @intrinsic(vec.len)(reversed/209) in
+      jump inline_cont947(inline948)
+    } in
+    joinrec {
+      join loop867() -> string {
+        let t868 = (remaining/210 > 0) in
+        if t868 {
+          let t869 = (remaining/210 % 10) in
+          let t870 = (t869 as u8) in
+          let t871 = (t870 + 48) in
+          join inline_cont939(_wild352: unit) -> string {
+            let compound_old353 = remaining/210 in
+            let compound_value354 = 10 in
+            let t872 = (compound_old353 / compound_value354) in
+            let t873 = remaining/210 = t872 in
+            jump loop867()
+          } in
+          let inline940 = @intrinsic(vec.push)(reversed/209, t871) in
+          jump inline_cont939(())
+        } else {
+          jump exit855()
+        }
+      } in
+    } in
+    jump loop867()
+  } in
+  if t874 {
+    "0"
+  } else {
+    jump k854()
+  }
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  let t876 = @intrinsic(vec.push)(self/511, elem/512) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  let t879 = @intrinsic(vec.len)(self/526) in
+  t879
+}
+
+fn trait_impl#PartialEq#i32#eq(self/444: i32, other/445: i32) -> bool {
+  let t882 = (self/444 == other/445) in
+  t882
+}
+
+fn trait_impl#Hash#i32#hash(self/467: i32) -> u64 {
+  let t885 = @runtime(core.int32_hash)(self/467) in
+  t885
+}
+
+fn inherent#closure_env_next_0#closure_env_next_0#apply(env809: closure_env_next_0) -> i32 {
+  let cell/0 = closure_env_next_0.cell_0(env809) in
+  join inline_cont951(t888: i32) -> i32 {
+    let next/1 = (t888 + 1) in
+    let inline950 = @intrinsic(ref.set)(cell/0, next/1) in
     next/1
   } in
-  let inline503 = @intrinsic(ref.get)(cell/0) in
-  jump inline_cont502(inline503)
+  let inline952 = @intrinsic(ref.get)(cell/0) in
+  jump inline_cont951(inline952)
 }
 
-fn inherent#closure_env_reset_1#closure_env_reset_1#apply(env425: closure_env_reset_1) -> unit {
-  let cell/0 = closure_env_reset_1.cell_0(env425) in
-  let inline505 = 0 in
-  let inline506 = @intrinsic(ref.set)(cell/0, inline505) in
+fn inherent#closure_env_reset_1#closure_env_reset_1#apply(env810: closure_env_reset_1) -> unit {
+  let cell/0 = closure_env_reset_1.cell_0(env810) in
+  let inline954 = 0 in
+  let inline955 = @intrinsic(ref.set)(cell/0, inline954) in
   ()
 }

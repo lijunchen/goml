@@ -10,12 +10,12 @@ fn values() -> FrozenVec__isize {
 fn main() -> unit {
   let frozen/0 = values() in
   let copy/1 = inherent#FrozenVec#FrozenVec[T]#to_vec__T_isize(frozen/0) in
-  let _wild411 = inherent#Vec#Vec[T]#set__T_isize(copy/1, 0, 9) in
-  let _wild412 =
+  let _wild796 = inherent#Vec#Vec[T]#set__T_isize(copy/1, 0, 9) in
+  let _wild797 =
     println__T_string(
       inherent#isize#isize#to_string(inherent#FrozenVec#FrozenVec[T]#get__T_isize(frozen/0, 0))
     ) in
-  let _wild413 =
+  let _wild798 =
     println__T_string(
       inherent#isize#isize#to_string(inherent#Vec#Vec[T]#get__T_isize(copy/1, 0))
     ) in
@@ -24,27 +24,27 @@ fn main() -> unit {
   )
 }
 
-fn inherent#Vec#Vec[T]#freeze__T_isize(self/267: Vec[isize]) -> FrozenVec__isize {
-  FrozenVec__isize { values: inherent#Vec#Vec[T]#copy__T_isize(self/267) }
+fn inherent#Vec#Vec[T]#freeze__T_isize(self/520: Vec[isize]) -> FrozenVec__isize {
+  FrozenVec__isize { values: inherent#Vec#Vec[T]#copy__T_isize(self/520) }
 }
 
 fn inherent#OnceCell#OnceCell[T]#get_or_init__T_FrozenVec[isize](
-  self/402: OnceCell__FrozenVec__isize,
-  init/403: () -> FrozenVec__isize
+  self/655: OnceCell__FrozenVec__isize,
+  init/656: () -> FrozenVec__isize
 ) -> FrozenVec__isize {
-  @intrinsic(once_cell.get_or_init)(self/402, init/403)
+  @intrinsic(once_cell.get_or_init)(self/655, init/656)
 }
 
-fn inherent#FrozenVec#FrozenVec[T]#to_vec__T_isize(self/400: FrozenVec__isize) -> Vec[isize] {
-  inherent#Vec#Vec[T]#copy__T_isize(FrozenVec__isize.values(self/400))
+fn inherent#FrozenVec#FrozenVec[T]#to_vec__T_isize(self/653: FrozenVec__isize) -> Vec[isize] {
+  inherent#Vec#Vec[T]#copy__T_isize(FrozenVec__isize.values(self/653))
 }
 
 fn inherent#Vec#Vec[T]#set__T_isize(
-  self/270: Vec[isize],
-  index/271: isize,
-  elem/272: isize
+  self/523: Vec[isize],
+  index/524: isize,
+  elem/525: isize
 ) -> unit {
-  @intrinsic(vec.set)(self/270, index/271, elem/272)
+  @intrinsic(vec.set)(self/523, index/524, elem/525)
 }
 
 fn println__T_string(value/1: string) -> unit {
@@ -52,55 +52,138 @@ fn println__T_string(value/1: string) -> unit {
 }
 
 fn inherent#FrozenVec#FrozenVec[T]#get__T_isize(
-  self/398: FrozenVec__isize,
-  index/399: isize
+  self/651: FrozenVec__isize,
+  index/652: isize
 ) -> isize {
-  @intrinsic(vec.get)(FrozenVec__isize.values(self/398), index/399)
+  @intrinsic(vec.get)(FrozenVec__isize.values(self/651), index/652)
 }
 
-fn inherent#isize#isize#to_string(self/32: isize) -> string {
-  @runtime(core.int_to_string)(self/32)
+fn inherent#isize#isize#to_string(self/285: isize) -> string {
+  __goml_builtin_int_to_string(self/285)
 }
 
-fn inherent#Vec#Vec[T]#get__T_isize(self/268: Vec[isize], index/269: isize) -> isize {
-  @intrinsic(vec.get)(self/268, index/269)
+fn inherent#Vec#Vec[T]#get__T_isize(self/521: Vec[isize], index/522: isize) -> isize {
+  @intrinsic(vec.get)(self/521, index/522)
 }
 
-fn inherent#Vec#Vec[T]#copy__T_isize(self/264: Vec[isize]) -> Vec[isize] {
-  let result/265 =
-    inherent#Vec#Vec[T]#with_capacity__T_isize(inherent#Vec#Vec[T]#len__T_isize(self/264)) in
-  let index/266 = 0 in
-  let _wild199 =
-    while (index/266 < inherent#Vec#Vec[T]#len__T_isize(self/264)) {
+fn inherent#Vec#Vec[T]#copy__T_isize(self/517: Vec[isize]) -> Vec[isize] {
+  let result/518 =
+    inherent#Vec#Vec[T]#with_capacity__T_isize(inherent#Vec#Vec[T]#len__T_isize(self/517)) in
+  let index/519 = 0 in
+  let _wild584 =
+    while (index/519 < inherent#Vec#Vec[T]#len__T_isize(self/517)) {
         {
-          let _wild195 =
+          let _wild580 =
             inherent#Vec#Vec[T]#push__T_isize(
-              result/265,
-              @intrinsic(vec.get)(self/264, index/266)
+              result/518,
+              @intrinsic(vec.get)(self/517, index/519)
             ) in
-          let _wild198 =
+          let _wild583 =
             {
-              let compound_old196 = index/266 in
-              let compound_value197 = 1 in
-              index/266 = (compound_old196 + compound_value197)
+              let compound_old581 = index/519 in
+              let compound_value582 = 1 in
+              index/519 = (compound_old581 + compound_value582)
             } in
         }
     } in
-  result/265
+  result/518
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
 }
 
-fn inherent#Vec#Vec[T]#len__T_isize(self/273: Vec[isize]) -> isize {
-  @intrinsic(vec.len)(self/273)
+fn __goml_builtin_int_to_string(value/222: isize) -> string {
+  signed_decimal_string((value/222 as i64))
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_isize(capacity/257: isize) -> Vec[isize] {
-  @intrinsic(vec.with_capacity)(capacity/257)
+fn inherent#Vec#Vec[T]#len__T_isize(self/526: Vec[isize]) -> isize {
+  @intrinsic(vec.len)(self/526)
 }
 
-fn inherent#Vec#Vec[T]#push__T_isize(self/258: Vec[isize], elem/259: isize) -> unit {
-  @intrinsic(vec.push)(self/258, elem/259)
+fn inherent#Vec#Vec[T]#with_capacity__T_isize(capacity/510: isize) -> Vec[isize] {
+  @intrinsic(vec.with_capacity)(capacity/510)
+}
+
+fn inherent#Vec#Vec[T]#push__T_isize(self/511: Vec[isize], elem/512: isize) -> unit {
+  @intrinsic(vec.push)(self/511, elem/512)
+}
+
+fn signed_decimal_string(value/214: i64) -> string {
+  if (value/214 < 0) {
+      {
+        ("-" + decimal_string((0 - (value/214 as u64))))
+      }
+  } else {
+      {
+        decimal_string((value/214 as u64))
+      }
+  }
+}
+
+fn decimal_string(value/208: u64) -> string {
+  let _wild351 =
+    if (value/208 == 0) {
+        {
+          return "0"
+        }
+    } else {
+        {
+          ()
+        }
+    } in
+  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/210 = value/208 in
+  let _wild356 =
+    while (remaining/210 > 0) {
+        {
+          let _wild352 =
+            inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
+          let _wild355 =
+            {
+              let compound_old353 = remaining/210 in
+              let compound_value354 = 10 in
+              remaining/210 = (compound_old353 / compound_value354)
+            } in
+        }
+    } in
+  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
+  let offset/212 = 0 in
+  let _wild361 =
+    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
+        {
+          let _wild357 =
+            inherent#Vec#Vec[T]#push__T_u8(
+              bytes/211,
+              @intrinsic(vec.get)(
+                reversed/209,
+                ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+              )
+            ) in
+          let _wild360 =
+            {
+              let compound_old358 = offset/212 in
+              let compound_value359 = 1 in
+              offset/212 = (compound_old358 + compound_value359)
+            } in
+        }
+    } in
+  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  {
+    let x364 = mtmp362.1 in
+    {
+      let result/213 = x364 in
+      {
+        result/213
+      }
+    }
+  }
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  @intrinsic(vec.push)(self/511, elem/512)
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/526)
 }

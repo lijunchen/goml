@@ -47,11 +47,11 @@ fn is_flag64(value/3: u64) -> bool {
 }
 
 fn match_struct(counter/4: Counter) -> bool {
-  let x411 = Counter.start(counter/4) in
-  let x412 = Counter.end(counter/4) in
-  match x412 {
+  let x796 = Counter.start(counter/4) in
+  let x797 = Counter.end(counter/4) in
+  match x797 {
     900000000 => {
-      match x411 {
+      match x796 {
         4000000000 => {
           true
         },
@@ -82,18 +82,18 @@ fn main() -> unit {
       report(",u64_miss=", is_flag64(700000000))) +
       report(",struct_first=", match_struct(counter/7))) +
       report(",struct_second=", match_struct(alt_counter/8))) in
-  let mtmp413 = println__T_string(message/9) in
+  let mtmp798 = println__T_string(message/9) in
   ()
 }
 
-fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
-  @runtime(core.bool_to_string)(self/148)
+fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
+  @runtime(core.bool_to_string)(self/401)
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
 }

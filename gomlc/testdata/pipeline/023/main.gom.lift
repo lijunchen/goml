@@ -1,9 +1,9 @@
 fn match_mixed_pair(pair/0: (i32, string)) -> i32 {
-  let x411 = pair/0.0 in
-  let x412 = pair/0.1 in
-  match x412 {
+  let x796 = pair/0.0 in
+  let x797 = pair/0.1 in
+  match x797 {
     "zero" => {
-      match x411 {
+      match x796 {
         0 => {
           1
         },
@@ -11,7 +11,7 @@ fn match_mixed_pair(pair/0: (i32, string)) -> i32 {
       }
     },
     "one" => {
-      match x411 {
+      match x796 {
         0 => {
           2
         },
@@ -22,7 +22,7 @@ fn match_mixed_pair(pair/0: (i32, string)) -> i32 {
       }
     },
     _ =>
-      match x411 {
+      match x796 {
         0 => {
           2
         },
@@ -33,30 +33,30 @@ fn match_mixed_pair(pair/0: (i32, string)) -> i32 {
 
 fn match_mixed_enum(value/1: Mixed) -> i32 {
   match value/1 {
-    Mixed::OnlyInt(x413) => {
-      let x413 = Mixed::OnlyInt._0(value/1) in
-      match x413 {
+    Mixed::OnlyInt(x798) => {
+      let x798 = Mixed::OnlyInt._0(value/1) in
+      match x798 {
         0 => {
           6
         },
         _ => 7,
       }
     },
-    Mixed::OnlyStr(x414) => {
-      let x414 = Mixed::OnlyStr._0(value/1) in
-      match x414 {
+    Mixed::OnlyStr(x799) => {
+      let x799 = Mixed::OnlyStr._0(value/1) in
+      match x799 {
         "zero" => {
           8
         },
         _ => 9,
       }
     },
-    Mixed::Both(x415, x416) => {
-      let x415 = Mixed::Both._0(value/1) in
-      let x416 = Mixed::Both._1(value/1) in
-      match x416 {
+    Mixed::Both(x800, x801) => {
+      let x800 = Mixed::Both._0(value/1) in
+      let x801 = Mixed::Both._1(value/1) in
+      match x801 {
         "zero" => {
-          match x415 {
+          match x800 {
             0 => {
               10
             },
@@ -64,7 +64,7 @@ fn match_mixed_enum(value/1: Mixed) -> i32 {
           }
         },
         _ =>
-          match x415 {
+          match x800 {
             0 => {
               11
             },
@@ -76,24 +76,24 @@ fn match_mixed_enum(value/1: Mixed) -> i32 {
 }
 
 fn main() -> unit {
-  let mtmp417 = println__T_string(inherent#i32#i32#to_string(match_mixed_pair((0, "zero")))) in
-  let mtmp418 = println__T_string(inherent#i32#i32#to_string(match_mixed_pair((0, "other")))) in
-  let mtmp419 = println__T_string(inherent#i32#i32#to_string(match_mixed_pair((1, "one")))) in
-  let mtmp420 = println__T_string(inherent#i32#i32#to_string(match_mixed_pair((2, "zero")))) in
-  let mtmp421 = println__T_string(inherent#i32#i32#to_string(match_mixed_pair((2, "two")))) in
-  let mtmp422 =
+  let mtmp802 = println__T_string(inherent#i32#i32#to_string(match_mixed_pair((0, "zero")))) in
+  let mtmp803 = println__T_string(inherent#i32#i32#to_string(match_mixed_pair((0, "other")))) in
+  let mtmp804 = println__T_string(inherent#i32#i32#to_string(match_mixed_pair((1, "one")))) in
+  let mtmp805 = println__T_string(inherent#i32#i32#to_string(match_mixed_pair((2, "zero")))) in
+  let mtmp806 = println__T_string(inherent#i32#i32#to_string(match_mixed_pair((2, "two")))) in
+  let mtmp807 =
     println__T_string(inherent#i32#i32#to_string(match_mixed_enum(Mixed::OnlyInt(0)))) in
-  let mtmp423 =
+  let mtmp808 =
     println__T_string(inherent#i32#i32#to_string(match_mixed_enum(Mixed::OnlyInt(5)))) in
-  let mtmp424 =
+  let mtmp809 =
     println__T_string(inherent#i32#i32#to_string(match_mixed_enum(Mixed::OnlyStr("zero")))) in
-  let mtmp425 =
+  let mtmp810 =
     println__T_string(inherent#i32#i32#to_string(match_mixed_enum(Mixed::OnlyStr("hello")))) in
-  let mtmp426 =
+  let mtmp811 =
     println__T_string(inherent#i32#i32#to_string(match_mixed_enum(Mixed::Both(0, "zero")))) in
-  let mtmp427 =
+  let mtmp812 =
     println__T_string(inherent#i32#i32#to_string(match_mixed_enum(Mixed::Both(0, "hello")))) in
-  let mtmp428 =
+  let mtmp813 =
     println__T_string(inherent#i32#i32#to_string(match_mixed_enum(Mixed::Both(2, "zero")))) in
   println__T_string(inherent#i32#i32#to_string(match_mixed_enum(Mixed::Both(3, "three"))))
 }
@@ -102,10 +102,73 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#i32#i32#to_string(self/33: i32) -> string {
-  @runtime(core.int32_to_string)(self/33)
+fn inherent#i32#i32#to_string(self/286: i32) -> string {
+  __goml_builtin_int32_to_string(self/286)
 }
 
-fn trait_impl#ToString#string#to_string(self/149: string) -> string {
-  self/149
+fn trait_impl#ToString#string#to_string(self/402: string) -> string {
+  self/402
+}
+
+fn __goml_builtin_int32_to_string(value/225: i32) -> string {
+  signed_decimal_string((value/225 as i64))
+}
+
+fn signed_decimal_string(value/214: i64) -> string {
+  if (value/214 < 0) {
+      ("-" + decimal_string((0 - (value/214 as u64))))
+  } else {
+      decimal_string((value/214 as u64))
+  }
+}
+
+fn decimal_string(value/208: u64) -> string {
+  let _wild351 =
+    if (value/208 == 0) {
+        return "0"
+    } else {
+        ()
+    } in
+  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/210 = value/208 in
+  let _wild356 =
+    while (remaining/210 > 0) {
+        let _wild352 =
+          inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
+        let _wild355 =
+          let compound_old353 = remaining/210 in
+          let compound_value354 = 10 in
+          remaining/210 = (compound_old353 / compound_value354) in
+        ()
+    } in
+  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
+  let offset/212 = 0 in
+  let _wild361 =
+    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
+        let _wild357 =
+          inherent#Vec#Vec[T]#push__T_u8(
+            bytes/211,
+            @intrinsic(vec.get)(
+              reversed/209,
+              ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+            )
+          ) in
+        let _wild360 =
+          let compound_old358 = offset/212 in
+          let compound_value359 = 1 in
+          offset/212 = (compound_old358 + compound_value359) in
+        ()
+    } in
+  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  let x364 = mtmp362.1 in
+  let result/213 = x364 in
+  result/213
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  @intrinsic(vec.push)(self/511, elem/512)
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/526)
 }

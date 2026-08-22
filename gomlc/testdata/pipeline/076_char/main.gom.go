@@ -1,7 +1,7 @@
 package main
 
 import (
-    _goml_fmt "fmt"
+    _goml_os "os"
 )
 
 func _goml_runtime_core_string_get(s string, i int) rune {
@@ -13,59 +13,78 @@ func _goml_runtime_core_char_to_string(x rune) string {
 }
 
 func _goml_runtime_core_string_println(s string) struct{} {
-    _goml_fmt.Println(s)
+    _goml_os.Stdout.WriteString(s + "\n")
     return struct{}{}
+}
+
+type _goml_vec_uint32 struct {
+    items []uint32
+}
+
+type FloatNatural struct {
+    words *_goml_vec_uint32
+}
+
+type ParsedFloat struct {
+    valid bool
+    negative bool
+    special int
+    numerator FloatNatural
+    decimal_exponent int
+    binary_exponent int
+    hexadecimal bool
+    significant_digits int
 }
 
 type Ordering int32
 
 func main0() struct{} {
     var c__0 rune = 65
-    var t414 string
-    var inline449 string = char_to_string(c__0)
-    t414 = inline449
-    var inline446 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t414)
-    _goml_runtime_core_string_println(inline446)
+    var t799 string
+    var inline834 string = char_to_string(c__0)
+    t799 = inline834
+    var inline831 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t799)
+    _goml_runtime_core_string_println(inline831)
     var d__1 rune = 98
-    var jp416 string
+    var jp801 string
     switch d__1 {
     case 97:
-        jp416 = "A"
+        jp801 = "A"
     case 98:
-        jp416 = "B"
+        jp801 = "B"
     default:
-        jp416 = "?"
+        jp801 = "?"
     }
-    var inline443 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp416)
-    _goml_runtime_core_string_println(inline443)
+    var inline828 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp801)
+    _goml_runtime_core_string_println(inline828)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
-    return self__149
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__402 string) string {
+    return self__402
 }
 
-func char_to_string(value__29 rune) string {
-    var t429 uint32 = uint32(rune(value__29))
-    var t430 bool
-    var inline457 bool = t429 <= 1114111
-    if inline457 {
-        var inline458 bool = t429 >= 55296
-        var inline460 bool
-        if inline458 {
-            var inline462 bool = t429 <= 57343
-            inline460 = inline462
+func char_to_string(value__282 rune) string {
+    var t814 uint32 = uint32(rune(value__282))
+    var t815 bool
+    var inline842 bool = t814 <= 1114111
+    if inline842 {
+        var inline843 bool = t814 >= 55296
+        var inline845 bool
+        if inline843 {
+            var inline847 bool = t814 <= 57343
+            inline845 = inline847
         } else {
-            inline460 = false
+            inline845 = false
         }
-        var inline461 bool = !inline460
-        t430 = inline461
+        var inline846 bool = !inline845
+        t815 = inline846
     } else {
-        t430 = false
+        t815 = false
     }
-    if t430 {
-        var t431 string = _goml_runtime_core_char_to_string(value__29)
-        return t431
+    if t815 {
+        var t816 string = _goml_runtime_core_char_to_string(value__282)
+        return t816
     } else {
         _goml_runtime_core_string_get("", -1)
         return ""

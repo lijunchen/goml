@@ -1,7 +1,7 @@
 package main
 
 import (
-    _goml_fmt "fmt"
+    _goml_os "os"
 )
 
 func _goml_runtime_core_bool_to_string(x bool) string {
@@ -13,12 +13,31 @@ func _goml_runtime_core_bool_to_string(x bool) string {
 }
 
 func _goml_runtime_core_string_println(s string) struct{} {
-    _goml_fmt.Println(s)
+    _goml_os.Stdout.WriteString(s + "\n")
     return struct{}{}
 }
 
 func array_get__Array_2_15AlwaysDifferent(arr [2]AlwaysDifferent, index int) AlwaysDifferent {
     return arr[index]
+}
+
+type _goml_vec_uint32 struct {
+    items []uint32
+}
+
+type FloatNatural struct {
+    words *_goml_vec_uint32
+}
+
+type ParsedFloat struct {
+    valid bool
+    negative bool
+    special int
+    numerator FloatNatural
+    decimal_exponent int
+    binary_exponent int
+    hexadecimal bool
+    significant_digits int
 }
 
 type AlwaysDifferent struct {
@@ -28,62 +47,62 @@ type AlwaysDifferent struct {
 type Ordering int32
 
 func main0() struct{} {
-    var t422 bool
-    t422 = false
-    var inline472 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t422)
-    _goml_runtime_core_string_println(inline472)
-    var t423 bool
-    t423 = false
-    var t424 bool = !t423
-    var inline468 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t424)
-    _goml_runtime_core_string_println(inline468)
-    var t443 bool
-    t443 = false
-    var jp428 bool
-    if t443 {
-        var t444 int = 2
-        var t445 int = 2
-        var inline457 bool = t444 == t445
-        jp428 = inline457
+    var t807 bool
+    t807 = false
+    var inline857 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t807)
+    _goml_runtime_core_string_println(inline857)
+    var t808 bool
+    t808 = false
+    var t809 bool = !t808
+    var inline853 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t809)
+    _goml_runtime_core_string_println(inline853)
+    var t828 bool
+    t828 = false
+    var jp813 bool
+    if t828 {
+        var t829 int = 2
+        var t830 int = 2
+        var inline842 bool = t829 == t830
+        jp813 = inline842
     } else {
-        jp428 = false
+        jp813 = false
     }
-    var inline464 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(jp428)
-    _goml_runtime_core_string_println(inline464)
-    var t429 AlwaysDifferent = AlwaysDifferent{
+    var inline849 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(jp813)
+    _goml_runtime_core_string_println(inline849)
+    var t814 AlwaysDifferent = AlwaysDifferent{
         value: 1,
     }
-    var t430 AlwaysDifferent = AlwaysDifferent{
+    var t815 AlwaysDifferent = AlwaysDifferent{
         value: 2,
     }
-    var left_array__6 [2]AlwaysDifferent = [2]AlwaysDifferent{t429, t430}
-    var t431 AlwaysDifferent = AlwaysDifferent{
+    var left_array__6 [2]AlwaysDifferent = [2]AlwaysDifferent{t814, t815}
+    var t816 AlwaysDifferent = AlwaysDifferent{
         value: 1,
     }
-    var t432 AlwaysDifferent = AlwaysDifferent{
+    var t817 AlwaysDifferent = AlwaysDifferent{
         value: 2,
     }
-    var right_array__7 [2]AlwaysDifferent = [2]AlwaysDifferent{t431, t432}
+    var right_array__7 [2]AlwaysDifferent = [2]AlwaysDifferent{t816, t817}
     array_get__Array_2_15AlwaysDifferent(left_array__6, 0)
     array_get__Array_2_15AlwaysDifferent(right_array__7, 0)
-    var t437 bool
-    t437 = false
-    var jp434 bool
-    if t437 {
+    var t822 bool
+    t822 = false
+    var jp819 bool
+    if t822 {
         array_get__Array_2_15AlwaysDifferent(left_array__6, 1)
         array_get__Array_2_15AlwaysDifferent(right_array__7, 1)
-        jp434 = false
+        jp819 = false
     } else {
-        jp434 = false
+        jp819 = false
     }
-    var inline460 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(jp434)
-    _goml_runtime_core_string_println(inline460)
+    var inline845 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(jp819)
+    _goml_runtime_core_string_println(inline845)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__148 bool) string {
-    var t455 string = _goml_runtime_core_bool_to_string(self__148)
-    return t455
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__401 bool) string {
+    var t840 string = _goml_runtime_core_bool_to_string(self__401)
+    return t840
 }
 
 func main() {

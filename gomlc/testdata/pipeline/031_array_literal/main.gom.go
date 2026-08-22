@@ -1,25 +1,44 @@
 package main
 
 import (
-    _goml_fmt "fmt"
+    _goml_os "os"
 )
 
 func _goml_runtime_core_string_print(s string) struct{} {
-    _goml_fmt.Print(s)
+    _goml_os.Stdout.WriteString(s)
     return struct{}{}
+}
+
+type _goml_vec_uint32 struct {
+    items []uint32
+}
+
+type FloatNatural struct {
+    words *_goml_vec_uint32
+}
+
+type ParsedFloat struct {
+    valid bool
+    negative bool
+    special int
+    numerator FloatNatural
+    decimal_exponent int
+    binary_exponent int
+    hexadecimal bool
+    significant_digits int
 }
 
 type Ordering int32
 
 func main0() struct{} {
-    var inline424 string = "array literal"
-    var inline425 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline424)
-    _goml_runtime_core_string_print(inline425)
+    var inline809 string = "array literal"
+    var inline810 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline809)
+    _goml_runtime_core_string_print(inline810)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) string {
-    return self__149
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__402 string) string {
+    return self__402
 }
 
 func main() {

@@ -208,7 +208,7 @@ fn main() -> unit {
           inherent#std::task::Scope#std::task::Scope#spawn__T_isize(scope/1, |_cancel/2| 20) in
         let right/5 =
           inherent#std::task::Scope#std::task::Scope#spawn__T_isize(scope/1, |_cancel/4| 22) in
-        let mtmp411 =
+        let mtmp796 =
           inherent#std::task::Scope#std::task::Scope#spawn__T_unit(
             scope/1,
             |_cancel/6| inherent#Ref#Ref[T]#set__T_bool(completed/0, true)
@@ -219,8 +219,8 @@ fn main() -> unit {
         }
       }
     ) in
-  let _wild412 = println__T_isize(total/7) in
-  let _wild413 = println__T_bool(inherent#Ref#Ref[T]#get__T_bool(completed/0)) in
+  let _wild797 = println__T_isize(total/7) in
+  let _wild798 = println__T_bool(inherent#Ref#Ref[T]#get__T_bool(completed/0)) in
   let nested/12 =
     std::task::scope__T_isize(
       |scope/8| {
@@ -234,22 +234,22 @@ fn main() -> unit {
         )
       }
     ) in
-  let _wild414 = println__T_isize(nested/12) in
+  let _wild799 = println__T_isize(nested/12) in
   let scope/13 = 3 in
   let spawn/15 = |value/14| (value/14 + 1) in
   println__T_isize(spawn/15(scope/13))
 }
 
-fn inherent#Channel#Channel[T]#new__T_unit(capacity/435: isize) -> Channel[unit] {
-  @intrinsic(channel.new)(capacity/435)
+fn inherent#Channel#Channel[T]#new__T_unit(capacity/688: isize) -> Channel[unit] {
+  @intrinsic(channel.new)(capacity/688)
 }
 
-fn inherent#Channel#Channel[T]#send__T_unit(self/436: Channel[unit], value/437: unit) -> unit {
-  @intrinsic(channel.send)(self/436, value/437)
+fn inherent#Channel#Channel[T]#send__T_unit(self/689: Channel[unit], value/690: unit) -> unit {
+  @intrinsic(channel.send)(self/689, value/690)
 }
 
-fn inherent#Ref#Ref[T]#new__T_bool(value/431: bool) -> Ref[bool] {
-  @intrinsic(ref.new)(value/431)
+fn inherent#Ref#Ref[T]#new__T_bool(value/684: bool) -> Ref[bool] {
+  @intrinsic(ref.new)(value/684)
 }
 
 fn std::task::scope__T_isize(body/9: (std::task::Scope) -> isize) -> isize {
@@ -291,8 +291,8 @@ fn inherent#std::task::Scope#std::task::Scope#spawn__T_isize(
   std::task::Task__isize { result: result/27, ready: ready/28 }
 }
 
-fn inherent#Ref#Ref[T]#set__T_bool(self/433: Ref[bool], value/434: bool) -> unit {
-  @intrinsic(ref.set)(self/433, value/434)
+fn inherent#Ref#Ref[T]#set__T_bool(self/686: Ref[bool], value/687: bool) -> unit {
+  @intrinsic(ref.set)(self/686, value/687)
 }
 
 fn inherent#std::task::Scope#std::task::Scope#spawn__T_unit(
@@ -358,8 +358,8 @@ fn println__T_bool(value/1: bool) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
 }
 
-fn inherent#Ref#Ref[T]#get__T_bool(self/432: Ref[bool]) -> bool {
-  @intrinsic(ref.get)(self/432)
+fn inherent#Ref#Ref[T]#get__T_bool(self/685: Ref[bool]) -> bool {
+  @intrinsic(ref.get)(self/685)
 }
 
 fn std::task::scope_with__T_isize(
@@ -379,15 +379,15 @@ fn std::task::scope_with__T_isize(
   std::task::completed_scope_value__T_isize(result/15)
 }
 
-fn inherent#Ref#Ref[T]#new__T_Option[isize](value/431: Option__isize) -> Ref[Option__isize] {
-  @intrinsic(ref.new)(value/431)
+fn inherent#Ref#Ref[T]#new__T_Option[isize](value/684: Option__isize) -> Ref[Option__isize] {
+  @intrinsic(ref.new)(value/684)
 }
 
 fn inherent#Ref#Ref[T]#set__T_Option[isize](
-  self/433: Ref[Option__isize],
-  value/434: Option__isize
+  self/686: Ref[Option__isize],
+  value/687: Option__isize
 ) -> unit {
-  @intrinsic(ref.set)(self/433, value/434)
+  @intrinsic(ref.set)(self/686, value/687)
 }
 
 fn std::task::completed_scope_value__T_isize(result/0: Ref[Option__isize]) -> isize {
@@ -412,34 +412,34 @@ fn std::task::completed_scope_value__T_isize(result/0: Ref[Option__isize]) -> is
   }
 }
 
-fn inherent#Channel#Channel[T]#close__T_unit(self/441: Channel[unit]) -> unit {
-  @intrinsic(channel.close)(self/441)
+fn inherent#Channel#Channel[T]#close__T_unit(self/694: Channel[unit]) -> unit {
+  @intrinsic(channel.close)(self/694)
 }
 
-fn inherent#Ref#Ref[T]#new__T_Option[unit](value/431: Option__unit) -> Ref[Option__unit] {
-  @intrinsic(ref.new)(value/431)
+fn inherent#Ref#Ref[T]#new__T_Option[unit](value/684: Option__unit) -> Ref[Option__unit] {
+  @intrinsic(ref.new)(value/684)
 }
 
 fn inherent#Ref#Ref[T]#set__T_Option[unit](
-  self/433: Ref[Option__unit],
-  value/434: Option__unit
+  self/686: Ref[Option__unit],
+  value/687: Option__unit
 ) -> unit {
-  @intrinsic(ref.set)(self/433, value/434)
+  @intrinsic(ref.set)(self/686, value/687)
 }
 
-fn inherent#Channel#Channel[T]#recv__T_unit(self/438: Channel[unit]) -> Option__unit {
-  let mtmp379 = @intrinsic(channel.recv)(self/438) in
+fn inherent#Channel#Channel[T]#recv__T_unit(self/691: Channel[unit]) -> Option__unit {
+  let mtmp764 = @intrinsic(channel.recv)(self/691) in
   {
-    let x380 = mtmp379.0 in
-    let x381 = mtmp379.1 in
+    let x765 = mtmp764.0 in
+    let x766 = mtmp764.1 in
     {
-      let ok/440 = x381 in
+      let ok/693 = x766 in
       {
-        let value/439 = x380 in
+        let value/692 = x765 in
         {
-          if ok/440 {
+          if ok/693 {
               {
-                Option__unit::Some(value/439)
+                Option__unit::Some(value/692)
               }
           } else {
               {
@@ -452,24 +452,107 @@ fn inherent#Channel#Channel[T]#recv__T_unit(self/438: Channel[unit]) -> Option__
   }
 }
 
-fn inherent#Ref#Ref[T]#get__T_Option[isize](self/432: Ref[Option__isize]) -> Option__isize {
-  @intrinsic(ref.get)(self/432)
+fn inherent#Ref#Ref[T]#get__T_Option[isize](self/685: Ref[Option__isize]) -> Option__isize {
+  @intrinsic(ref.get)(self/685)
 }
 
-fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
-  @runtime(core.int_to_string)(self/151)
+fn trait_impl#ToString#isize#to_string(self/404: isize) -> string {
+  __goml_builtin_int_to_string(self/404)
 }
 
-fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
-  @runtime(core.bool_to_string)(self/148)
+fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
+  @runtime(core.bool_to_string)(self/401)
 }
 
-fn trait_impl#PartialEq#bool#eq(self/179: bool, other/180: bool) -> bool {
-  (self/179 == other/180)
+fn __goml_builtin_int_to_string(value/222: isize) -> string {
+  signed_decimal_string((value/222 as i64))
 }
 
-fn trait_impl#Hash#bool#hash(self/208: bool) -> u64 {
-  if self/208 {
+fn signed_decimal_string(value/214: i64) -> string {
+  if (value/214 < 0) {
+      {
+        ("-" + decimal_string((0 - (value/214 as u64))))
+      }
+  } else {
+      {
+        decimal_string((value/214 as u64))
+      }
+  }
+}
+
+fn decimal_string(value/208: u64) -> string {
+  let _wild351 =
+    if (value/208 == 0) {
+        {
+          return "0"
+        }
+    } else {
+        {
+          ()
+        }
+    } in
+  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/210 = value/208 in
+  let _wild356 =
+    while (remaining/210 > 0) {
+        {
+          let _wild352 =
+            inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
+          let _wild355 =
+            {
+              let compound_old353 = remaining/210 in
+              let compound_value354 = 10 in
+              remaining/210 = (compound_old353 / compound_value354)
+            } in
+        }
+    } in
+  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
+  let offset/212 = 0 in
+  let _wild361 =
+    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
+        {
+          let _wild357 =
+            inherent#Vec#Vec[T]#push__T_u8(
+              bytes/211,
+              @intrinsic(vec.get)(
+                reversed/209,
+                ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+              )
+            ) in
+          let _wild360 =
+            {
+              let compound_old358 = offset/212 in
+              let compound_value359 = 1 in
+              offset/212 = (compound_old358 + compound_value359)
+            } in
+        }
+    } in
+  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  {
+    let x364 = mtmp362.1 in
+    {
+      let result/213 = x364 in
+      {
+        result/213
+      }
+    }
+  }
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
+  @intrinsic(vec.push)(self/511, elem/512)
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/526)
+}
+
+fn trait_impl#PartialEq#bool#eq(self/432: bool, other/433: bool) -> bool {
+  (self/432 == other/433)
+}
+
+fn trait_impl#Hash#bool#hash(self/461: bool) -> u64 {
+  if self/461 {
       {
         1
       }
@@ -481,35 +564,35 @@ fn trait_impl#Hash#bool#hash(self/208: bool) -> u64 {
 }
 
 fn trait_impl#PartialEq#Option__isize#eq(
-  self/235: Option__isize,
-  other/236: Option__isize
+  self/488: Option__isize,
+  other/489: Option__isize
 ) -> bool {
   {
-    let mtmp171 = (self/235, other/236) in
+    let mtmp556 = (self/488, other/489) in
     {
-      let x172 = mtmp171.0 in
-      let x173 = mtmp171.1 in
-      match x173 {
+      let x557 = mtmp556.0 in
+      let x558 = mtmp556.1 in
+      match x558 {
         Option__isize::None => {
-          match x172 {
+          match x557 {
             Option__isize::None => {
               true
             },
             _ => false,
           }
         },
-        Option__isize::Some(x174) => {
+        Option__isize::Some(x559) => {
           {
-            let x174 = Option__isize::Some._0(x173) in
-            match x172 {
-              Option__isize::Some(x176) => {
+            let x559 = Option__isize::Some._0(x558) in
+            match x557 {
+              Option__isize::Some(x561) => {
                 {
-                  let x176 = Option__isize::Some._0(x172) in
+                  let x561 = Option__isize::Some._0(x557) in
                   {
-                    let left/237 = x176 in
+                    let left/490 = x561 in
                     {
-                      let right/238 = x174 in
-                      trait_impl#PartialEq#isize#eq(left/237, right/238)
+                      let right/491 = x559 in
+                      trait_impl#PartialEq#isize#eq(left/490, right/491)
                     }
                   }
                 }
@@ -523,50 +606,50 @@ fn trait_impl#PartialEq#Option__isize#eq(
   }
 }
 
-fn trait_impl#Hash#Option__isize#hash(self/239: Option__isize) -> u64 {
-  match self/239 {
+fn trait_impl#Hash#Option__isize#hash(self/492: Option__isize) -> u64 {
+  match self/492 {
     Option__isize::None => {
       14695981039346656038
     },
-    Option__isize::Some(x177) => {
+    Option__isize::Some(x562) => {
       {
-        let x177 = Option__isize::Some._0(self/239) in
+        let x562 = Option__isize::Some._0(self/492) in
         {
-          let value/240 = x177 in
-          (14695981039346656039 + trait_impl#Hash#isize#hash(value/240))
+          let value/493 = x562 in
+          (14695981039346656039 + trait_impl#Hash#isize#hash(value/493))
         }
       }
     },
   }
 }
 
-fn trait_impl#PartialEq#Option__unit#eq(self/235: Option__unit, other/236: Option__unit) -> bool {
+fn trait_impl#PartialEq#Option__unit#eq(self/488: Option__unit, other/489: Option__unit) -> bool {
   {
-    let mtmp171 = (self/235, other/236) in
+    let mtmp556 = (self/488, other/489) in
     {
-      let x172 = mtmp171.0 in
-      let x173 = mtmp171.1 in
-      match x173 {
+      let x557 = mtmp556.0 in
+      let x558 = mtmp556.1 in
+      match x558 {
         Option__unit::None => {
-          match x172 {
+          match x557 {
             Option__unit::None => {
               true
             },
             _ => false,
           }
         },
-        Option__unit::Some(x174) => {
+        Option__unit::Some(x559) => {
           {
-            let x174 = Option__unit::Some._0(x173) in
-            match x172 {
-              Option__unit::Some(x176) => {
+            let x559 = Option__unit::Some._0(x558) in
+            match x557 {
+              Option__unit::Some(x561) => {
                 {
-                  let x176 = Option__unit::Some._0(x172) in
+                  let x561 = Option__unit::Some._0(x557) in
                   {
-                    let left/237 = x176 in
+                    let left/490 = x561 in
                     {
-                      let right/238 = x174 in
-                      trait_impl#PartialEq#unit#eq(left/237, right/238)
+                      let right/491 = x559 in
+                      trait_impl#PartialEq#unit#eq(left/490, right/491)
                     }
                   }
                 }
@@ -580,35 +663,35 @@ fn trait_impl#PartialEq#Option__unit#eq(self/235: Option__unit, other/236: Optio
   }
 }
 
-fn trait_impl#Hash#Option__unit#hash(self/239: Option__unit) -> u64 {
-  match self/239 {
+fn trait_impl#Hash#Option__unit#hash(self/492: Option__unit) -> u64 {
+  match self/492 {
     Option__unit::None => {
       14695981039346656038
     },
-    Option__unit::Some(x177) => {
+    Option__unit::Some(x562) => {
       {
-        let x177 = Option__unit::Some._0(self/239) in
+        let x562 = Option__unit::Some._0(self/492) in
         {
-          let value/240 = x177 in
-          (14695981039346656039 + trait_impl#Hash#unit#hash(value/240))
+          let value/493 = x562 in
+          (14695981039346656039 + trait_impl#Hash#unit#hash(value/493))
         }
       }
     },
   }
 }
 
-fn trait_impl#PartialEq#isize#eq(self/185: isize, other/186: isize) -> bool {
-  (self/185 == other/186)
+fn trait_impl#PartialEq#isize#eq(self/438: isize, other/439: isize) -> bool {
+  (self/438 == other/439)
 }
 
-fn trait_impl#Hash#isize#hash(self/211: isize) -> u64 {
-  @runtime(core.int_hash)(self/211)
+fn trait_impl#Hash#isize#hash(self/464: isize) -> u64 {
+  @runtime(core.int_hash)(self/464)
 }
 
-fn trait_impl#PartialEq#unit#eq(self/177: unit, other/178: unit) -> bool {
+fn trait_impl#PartialEq#unit#eq(self/430: unit, other/431: unit) -> bool {
   true
 }
 
-fn trait_impl#Hash#unit#hash(self/207: unit) -> u64 {
+fn trait_impl#Hash#unit#hash(self/460: unit) -> u64 {
   0
 }
