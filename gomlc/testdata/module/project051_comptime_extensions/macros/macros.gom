@@ -286,7 +286,7 @@ pub fn derive_inspect(input: DeriveInput) -> DeriveOutput {
     } else {};
     let array_type = derive_field_type(input, 3);
     if meta_type_kind(array_type) != "array" || meta_type_array_length(array_type) != 3
-        || meta_type_name(meta_type_array_element(array_type)) != "uint8" {
+        || meta_type_name(meta_type_array_element(array_type)) != "u8" {
         compile_error("array type reflection failed")
     } else {};
     let function_type = derive_field_type(input, 4);

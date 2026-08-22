@@ -1,0 +1,18 @@
+fn signed_sum(first: i8, second: i16, third: i32, fourth: i64, fifth: isize) -> isize {
+    first.to_isize() + second.to_isize() + third.to_isize() + fourth.to_isize() + fifth
+}
+
+fn unsigned_sum(first: u8, second: u16, third: u32, fourth: u64, fifth: usize) -> usize {
+    first.to_usize() + second.to_usize() + third.to_usize() + fourth.to_usize() + fifth
+}
+
+fn main() -> unit {
+    let small: f32 = 1.5;
+    let large: f64 = 2.25;
+    let value: byte = b'A';
+    println(signed_sum(-1, 2, 3, 4, 5));
+    println(unsigned_sum(1, 2, 3, 4, 5));
+    println(small.to_string() + "," + large.to_string());
+    println(value.to_u16());
+    println(char_from_u32(65).unwrap_or('?'))
+}
