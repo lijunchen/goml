@@ -533,6 +533,69 @@ fn eliminates_dead_locals_without_dropping_effects() -> unit {
     testing::assert(string_contains(output, "let quotient/"))
 }
 
+fn core_with_only_named_root(value: File, root_name: string) -> File {
+    let functions: Vec[Function] = Vec::from_array([]);
+    for function in value.functions {
+        functions.push(
+            Function {
+                name: function.name,
+                origin: function.origin,
+                root: function.name == root_name,
+                generics: function.generics,
+                predicates: function.predicates,
+                trait_impl: function.trait_impl,
+                params: function.params,
+                ret_ty: function.ret_ty,
+                body: function.body,
+            },
+        )
+    }
+    File {
+        functions,
+        enums: value.enums,
+        structs: value.structs,
+        type_instances: value.type_instances,
+        constants: value.constants,
+        statics: value.statics,
+    }
+}
+
+#[test]
+fn eliminates_unreachable_functions_transitively() -> unit {
+    let source = "fn helper() -> i32 { 7 } fn id[T](value: T) -> T { value } fn live() -> i32 { id(helper()) } fn dead() -> i32 { 9 } fn main() -> i32 { live() }";
+    let value = eliminate_unreachable_functions(
+        core_with_only_named_root(eliminate_dead_locals(lower_source(source)), "main"),
+    );
+    let output = encode(value);
+    testing::assert(string_contains(output, "fn helper("));
+    testing::assert(string_contains(output, "fn id("));
+    testing::assert(string_contains(output, "fn live("));
+    testing::assert(string_contains(output, "fn main("));
+    testing::assert(!string_contains(output, "fn dead("))
+}
+
+#[test]
+fn retains_reachable_inherent_method_candidates() -> unit {
+    let source = "struct Shape {} impl Shape { fn name(self: Self) -> string { \"Shape\" } fn unused(self: Self) -> string { \"unused\" } } fn main() -> string { Shape {}.name() }";
+    let value = eliminate_unreachable_functions(
+        core_with_only_named_root(eliminate_dead_locals(lower_source(source)), "main"),
+    );
+    let output = encode(value);
+    testing::assert(string_contains(output, "#name("));
+    testing::assert(!string_contains(output, "#unused("))
+}
+
+#[test]
+fn retains_reachable_trait_method_candidates() -> unit {
+    let source = "struct Value {} trait Render { fn render(self: Self) -> string; } impl Render for Value { fn render(self: Value) -> string { \"value\" } } trait Unused { fn unused(self: Self) -> string; } impl Unused for Value { fn unused(self: Value) -> string { \"unused\" } } fn main() -> string { Render::render(Value {}) }";
+    let value = eliminate_unreachable_functions(
+        core_with_only_named_root(eliminate_dead_locals(lower_source(source)), "main"),
+    );
+    let output = encode(value);
+    testing::assert(string_contains(output, "trait_impl#Render#Value#render"));
+    testing::assert(!string_contains(output, "trait_impl#Unused#Value#unused"))
+}
+
 #[test]
 fn validates_core_binding_types() -> unit {
     let file = lower_source("fn main() -> unit { let value = 1; () }");
