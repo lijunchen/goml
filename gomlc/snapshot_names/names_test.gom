@@ -1,0 +1,14 @@
+package snapshot_names;
+
+use std::testing;
+
+#[test]
+fn canonicalizes_ids_by_prefix() -> unit {
+    let values = names();
+    testing::assert_eq(canonical(values, "self/401"), "self/0");
+    testing::assert_eq(canonical(values, "self/812"), "self/1");
+    testing::assert_eq(canonical(values, "mtmp802"), "mtmp0");
+    testing::assert_eq(canonical(values, "_wild803"), "_wild0");
+    testing::assert_eq(canonical(values, "mtmp802"), "mtmp0");
+    testing::assert_eq(canonical(values, "stable"), "stable")
+}

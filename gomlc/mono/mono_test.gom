@@ -65,6 +65,15 @@ fn lower_checked_source(source: string) -> LowerResult {
     )
 }
 
+#[test]
+fn snapshot_names_restart_for_each_function() -> unit {
+    let output = encode_snapshot(
+        lower_source("fn first(value: i32) -> i32 { value } fn second(value: i32) -> i32 { value }"),
+    );
+    testing::assert(output.contains("fn first(value/0: i32)"));
+    testing::assert(output.contains("fn second(value/0: i32)"))
+}
+
 fn core_file_with_residual_type(ty: core::Type) -> core::File {
     let file = core::lower(
         tast::check(hir::lower(ast::lower(parser::parse("fn main() -> unit { () }")), "main.gom")),

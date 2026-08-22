@@ -32,6 +32,15 @@ fn lower_source(source: string) -> File {
 }
 
 #[test]
+fn snapshot_names_restart_for_each_function() -> unit {
+    let output = encode_snapshot(
+        lower_source("fn first(value: i32) -> i32 { value } fn second(value: i32) -> i32 { value }"),
+    );
+    testing::assert(output.contains("fn first(value/0: i32)"));
+    testing::assert(output.contains("fn second(value/0: i32)"))
+}
+
+#[test]
 fn consumes_shared_names_for_lifted_parameters() -> unit {
     let value = mono::lower(
         core::lower(
