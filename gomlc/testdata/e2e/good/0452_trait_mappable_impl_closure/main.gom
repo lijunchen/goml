@@ -1,16 +1,16 @@
 trait Mappable {
-    fn map_val(self: Self, arg1: (int32) -> int32) -> Self;
+    fn map_val(self: Self, arg1: (i32) -> i32) -> Self;
 }
 
-struct Pair { a: int32, b: int32 }
+struct Pair { a: i32, b: i32 }
 
 impl Mappable for Pair {
-    fn map_val(self: Pair, f: (int32) -> int32) -> Pair {
+    fn map_val(self: Pair, f: (i32) -> i32) -> Pair {
         Pair { a: f(self.a), b: f(self.b) }
     }
 }
 
-fn double(x: int32) -> int32 { x * 2 }
+fn double(x: i32) -> i32 { x * 2 }
 
 fn main() {
     let p = Pair { a: 3, b: 7 };

@@ -1,17 +1,17 @@
 trait Callable {
-    fn call(self: Self, arg1: int32) -> int32;
+    fn call(self: Self, arg1: i32) -> i32;
 }
 
-impl Callable for (int32) -> int32 {
-    fn call(self: (int32) -> int32, x: int32) -> int32 {
+impl Callable for (i32) -> i32 {
+    fn call(self: (i32) -> i32, x: i32) -> i32 {
         self(x)
     }
 }
 
-fn build() -> (int32) -> int32 {
-    let m: HashMap[int32, dyn Callable] = HashMap::new();
-    m.set(1, return |x: int32| x + 1);
-    |x: int32| x
+fn build() -> (i32) -> i32 {
+    let m: HashMap[i32, dyn Callable] = HashMap::new();
+    m.set(1, return |x: i32| x + 1);
+    |x: i32| x
 }
 
 fn main() -> unit {

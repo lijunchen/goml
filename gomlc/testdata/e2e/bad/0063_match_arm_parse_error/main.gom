@@ -1,9 +1,9 @@
 enum List {
     Nil,
-    Cons(int32, Box[List]),
+    Cons(i32, Box[List]),
 }
 
-fn sum(list: List) -> int32 {
+fn sum(list: List) -> i32 {
     match list {
         List::Nil => 0,
         List::Cons(head, tail) => head + sum(*tail),

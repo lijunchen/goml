@@ -1,28 +1,28 @@
 trait Container {
-    fn size(self: Self) -> int32;
+    fn size(self: Self) -> i32;
 }
 
 struct Bag {
-    items: int32,
+    items: i32,
 }
 
 impl Container for Bag {
-    fn size(self: Bag) -> int32 {
+    fn size(self: Bag) -> i32 {
         self.items
     }
 }
 
 struct Box_ {
-    items: int32,
+    items: i32,
 }
 
 impl Container for Box_ {
-    fn size(self: Box_) -> int32 {
+    fn size(self: Box_) -> i32 {
         self.items * 2
     }
 }
 
-fn total_size(a: dyn Container, b: dyn Container) -> int32 {
+fn total_size(a: dyn Container, b: dyn Container) -> i32 {
     Container::size(a) + Container::size(b)
 }
 

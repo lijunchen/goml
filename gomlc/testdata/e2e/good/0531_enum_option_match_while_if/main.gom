@@ -3,9 +3,9 @@ enum Option[T] {
     None,
 }
 
-fn find_first(items: [int32; 5], pred: (int32) -> bool) -> Option[int32] {
+fn find_first(items: [i32; 5], pred: (i32) -> bool) -> Option[i32] {
     let i = Ref::new(0);
-    let result: Ref[Option[int32]] = Ref::new(Option::None);
+    let result: Ref[Option[i32]] = Ref::new(Option::None);
     while i.get() < 5 {
         let item = items[i.get()];
         match result.get() {

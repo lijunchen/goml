@@ -1,4 +1,4 @@
-fn touch(counter: Ref[int]) -> int {
+fn touch(counter: Ref[isize]) -> isize {
     let next = counter.get() + 1;
     counter.set(next);
     next
@@ -16,7 +16,7 @@ fn main() -> unit {
         true => 5,
         false => 6,
     };
-    let dead_closure = |value: int| value + dead;
+    let dead_closure = |value: isize| value + dead;
     let counter = Ref::new(0);
     let ignored = touch(counter);
     let divisor = 2;

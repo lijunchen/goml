@@ -1,22 +1,22 @@
 trait Callable {
-    fn call(self: Self, arg1: int32) -> int32;
+    fn call(self: Self, arg1: i32) -> i32;
 }
 
-impl Callable for (int32) -> int32 {
-    fn call(self: (int32) -> int32, x: int32) -> int32 {
+impl Callable for (i32) -> i32 {
+    fn call(self: (i32) -> i32, x: i32) -> i32 {
         self(x)
     }
 }
 
 struct Holder[T] {
-    value: (T, int32),
+    value: (T, i32),
 }
 
-fn build() -> (int32) -> int32 {
+fn build() -> (i32) -> i32 {
     let _: Holder[dyn Callable] = Holder {
-        value: (return |x: int32| x + 1, 0),
+        value: (return |x: i32| x + 1, 0),
     };
-    |x: int32| x
+    |x: i32| x
 }
 
 fn main() -> unit {

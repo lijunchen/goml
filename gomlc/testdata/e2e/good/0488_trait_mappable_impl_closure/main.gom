@@ -1,18 +1,18 @@
 trait Mappable {
-    fn map_val(self: Self, arg1: (int32) -> int32) -> Self;
+    fn map_val(self: Self, arg1: (i32) -> i32) -> Self;
 }
 
 struct Box {
-    value: int32,
+    value: i32,
 }
 
 impl Mappable for Box {
-    fn map_val(self: Box, f: (int32) -> int32) -> Box {
+    fn map_val(self: Box, f: (i32) -> i32) -> Box {
         Box { value: f(self.value) }
     }
 }
 
-fn apply_twice[T: Mappable](x: T, f: (int32) -> int32) -> T {
+fn apply_twice[T: Mappable](x: T, f: (i32) -> i32) -> T {
     let once = Mappable::map_val(x, f);
     Mappable::map_val(once, f)
 }

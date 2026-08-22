@@ -1,21 +1,21 @@
 trait Processor {
-    fn process(self: Self, arg1: int32) -> int32;
+    fn process(self: Self, arg1: i32) -> i32;
 }
 
 struct Doubler {}
 
 struct Adder {
-    amount: int32,
+    amount: i32,
 }
 
 impl Processor for Doubler {
-    fn process(self: Doubler, x: int32) -> int32 {
+    fn process(self: Doubler, x: i32) -> i32 {
         x * 2
     }
 }
 
 impl Processor for Adder {
-    fn process(self: Adder, x: int32) -> int32 {
+    fn process(self: Adder, x: i32) -> i32 {
         x + self.amount
     }
 }
@@ -24,7 +24,7 @@ struct Pipeline {
     steps: [dyn Processor; 3],
 }
 
-fn run_pipeline(p: Pipeline, input: int32) -> int32 {
+fn run_pipeline(p: Pipeline, input: i32) -> i32 {
     let val = Ref::new(input);
     let i = Ref::new(0);
     while i.get() < 3 {

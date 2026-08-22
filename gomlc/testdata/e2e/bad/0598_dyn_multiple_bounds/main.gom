@@ -1,12 +1,12 @@
 trait Read {
-    fn read(self: Self) -> int;
+    fn read(self: Self) -> isize;
 }
 
 trait Close {
     fn close(self: Self) -> unit;
 }
 
-fn consume(value: dyn Read + Close) -> int {
+fn consume(value: dyn Read + Close) -> isize {
     value.read()
 }
 

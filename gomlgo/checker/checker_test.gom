@@ -2221,8 +2221,8 @@ fn type_fact_source_index_handles_collisions_and_duplicates() -> unit {
     for value in 1..256 {
         let candidate = TypeFactSourceKey {
             file: 0,
-            start: value.to_int32(),
-            end: (value + 1).to_int32(),
+            start: value.to_i32(),
+            end: (value + 1).to_i32(),
         };
         if collision == first && candidate.hash() & index.mask == first_slot {
             collision = candidate;

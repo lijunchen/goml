@@ -6,8 +6,8 @@ struct Wrapper[T] {
     inner: T,
 }
 
-impl Show for Wrapper[int32] {
-    fn show(self: Wrapper[int32]) -> string {
+impl Show for Wrapper[i32] {
+    fn show(self: Wrapper[i32]) -> string {
         "Wrapper(" + self.inner.to_string() + ")"
     }
 }
@@ -18,7 +18,7 @@ impl Show for Wrapper[string] {
     }
 }
 
-fn wrap_int(n: int32) -> dyn Show {
+fn wrap_int(n: i32) -> dyn Show {
     Wrapper { inner: n } as dyn Show
 }
 

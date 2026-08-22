@@ -6,9 +6,9 @@ fn flatten[T](opt: Option[Option[T]]) -> Option[T] {
 }
 
 fn main() {
-    let a: Option[Option[int32]] = Option::Some(Option::Some(42));
-    let b: Option[Option[int32]] = Option::Some(Option::None);
-    let c: Option[Option[int32]] = Option::None;
+    let a: Option[Option[i32]] = Option::Some(Option::Some(42));
+    let b: Option[Option[i32]] = Option::Some(Option::None);
+    let c: Option[Option[i32]] = Option::None;
 
     match flatten(a) {
         Option::Some(v) => println(v.to_string()),

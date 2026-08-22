@@ -1,30 +1,30 @@
 trait A {
-    fn pick(self: Self) -> int32;
+    fn pick(self: Self) -> i32;
 }
 
 trait B {
-    fn pick(self: Self) -> int32;
+    fn pick(self: Self) -> i32;
 }
 
 struct S {}
 
 impl A for S {
-    fn pick(self: S) -> int32 {
+    fn pick(self: S) -> i32 {
         10
     }
 }
 
 impl B for S {
-    fn pick(self: S) -> int32 {
+    fn pick(self: S) -> i32 {
         20
     }
 }
 
-fn pick_a[T: A + B](x: T) -> int32 {
+fn pick_a[T: A + B](x: T) -> i32 {
     A::pick(x)
 }
 
-fn pick_b[T: A + B](x: T) -> int32 {
+fn pick_b[T: A + B](x: T) -> i32 {
     B::pick(x)
 }
 

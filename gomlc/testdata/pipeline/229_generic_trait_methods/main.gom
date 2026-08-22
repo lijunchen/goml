@@ -13,7 +13,7 @@ impl RenderValue for Prefix {
 }
 
 fn render_generic[T: RenderValue](renderer: T) -> string {
-    renderer.render::[int](11)
+    renderer.render::[isize](11)
 }
 
 fn main() {
@@ -21,6 +21,6 @@ fn main() {
     println(direct);
     let generic = render_generic(Prefix { value: "generic:" });
     println(generic);
-    let ufcs = RenderValue::render::[int](Prefix { value: "ufcs:" }, 12);
+    let ufcs = RenderValue::render::[isize](Prefix { value: "ufcs:" }, 12);
     println(ufcs);
 }

@@ -8,14 +8,14 @@ enum First[T] {
 }
 
 enum Second {
-    Shared(int),
+    Shared(isize),
 }
 
 enum Boxed[T] {
     Value(T),
 }
 
-type FirstInt = First[int];
+type FirstInt = First[isize];
 
 fn classify(value: FirstInt) -> string {
     match value {
@@ -25,7 +25,7 @@ fn classify(value: FirstInt) -> string {
     }
 }
 
-fn nested(value: Option[Result[int, string]]) -> string {
+fn nested(value: Option[Result[isize, string]]) -> string {
     match value {
         Some(Ok(number)) => "ok:" + number.to_string(),
         Some(Err(message)) => "err:" + message,
@@ -33,7 +33,7 @@ fn nested(value: Option[Result[int, string]]) -> string {
     }
 }
 
-fn optional_number(value: Option[int]) -> int {
+fn optional_number(value: Option[isize]) -> isize {
     if let Some(number) = value {
         number
     } else {
@@ -48,7 +48,7 @@ fn is_non_shared(value: FirstInt) -> bool {
     }
 }
 
-fn take_once(value: Option[int]) -> int {
+fn take_once(value: Option[isize]) -> isize {
     let current = Ref::new(value);
     let result = Ref::new(0);
     while let Some(number) = current.get() {
@@ -58,12 +58,12 @@ fn take_once(value: Option[int]) -> int {
     result.get()
 }
 
-fn unbox(value: Boxed[int]) -> int {
+fn unbox(value: Boxed[isize]) -> isize {
     let Value(number) = value;
     number
 }
 
-fn sum_boxed(values: Vec[Boxed[int]]) -> int {
+fn sum_boxed(values: Vec[Boxed[isize]]) -> isize {
     let result = Ref::new(0);
     for Value(number) in values {
         result.set(result.get() + number);
@@ -72,7 +72,7 @@ fn sum_boxed(values: Vec[Boxed[int]]) -> int {
 }
 
 fn main() -> unit {
-    let boxed: Vec[Boxed[int]] = Vec::from_array([Boxed::Value(19), Boxed::Value(23)]);
+    let boxed: Vec[Boxed[isize]] = Vec::from_array([Boxed::Value(19), Boxed::Value(23)]);
     println(classify(First::Shared(7)));
     println(classify(First::Idle));
     println(classify(First::Data { value: 9, label: "data" }));

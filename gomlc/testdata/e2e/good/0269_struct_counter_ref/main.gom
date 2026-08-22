@@ -1,12 +1,12 @@
 struct Counter {
-    count: Ref[int32],
+    count: Ref[i32],
 }
 
 fn new_counter() -> Counter {
     Counter { count: Ref::new(0) }
 }
 
-fn increment(c: Counter) -> int32 {
+fn increment(c: Counter) -> i32 {
     let v = c.count.get() + 1;
     c.count.set(v);
     v

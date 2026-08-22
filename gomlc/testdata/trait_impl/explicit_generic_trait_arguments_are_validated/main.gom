@@ -4,11 +4,11 @@ trait Convert[T] {
 
 struct Token {}
 
-impl Convert[int32] for Token {
-    fn convert(self: Token) -> int32 { 7 }
+impl Convert[i32] for Token {
+    fn convert(self: Token) -> i32 { 7 }
 }
 
 fn main() -> unit {
-    let _ = Convert::[int32, string]::convert(Token {});
+    let _ = Convert::[i32, string]::convert(Token {});
     let _ = Convert::[Missing]::convert(Token {});
 }

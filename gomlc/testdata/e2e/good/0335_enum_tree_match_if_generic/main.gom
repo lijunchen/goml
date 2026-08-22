@@ -3,7 +3,7 @@ enum Tree[T] {
     Node(Tree[T], Tree[T]),
 }
 
-fn depth[T](tree: Tree[T]) -> int32 {
+fn depth[T](tree: Tree[T]) -> i32 {
     match tree {
         Tree::Leaf(_) => 1,
         Tree::Node(left, right) => {
@@ -15,7 +15,7 @@ fn depth[T](tree: Tree[T]) -> int32 {
 }
 
 fn main() {
-    let tree: Tree[int32] = Tree::Node(
+    let tree: Tree[i32] = Tree::Node(
         Tree::Leaf(1),
         Tree::Node(Tree::Leaf(2), Tree::Leaf(3))
     );

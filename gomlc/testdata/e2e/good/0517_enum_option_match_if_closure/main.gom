@@ -18,7 +18,7 @@ fn flat_map[A, B](opt: Option[A], f: (A) -> Option[B]) -> Option[B] {
 }
 
 fn main() {
-    let x: Option[int32] = Option::Some(42);
+    let x: Option[i32] = Option::Some(42);
     let y = map_option(x, |v| v + 1);
     let z = flat_map(y, |v| {
         if v > 40 {

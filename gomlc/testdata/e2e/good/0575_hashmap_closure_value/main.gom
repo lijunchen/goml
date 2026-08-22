@@ -1,9 +1,9 @@
-fn make(a: int32) -> (int32) -> int32 {
-    |x: int32| x + a
+fn make(a: i32) -> (i32) -> i32 {
+    |x: i32| x + a
 }
 
 fn main() -> unit {
-    let m: HashMap[int32, (int32) -> int32] = HashMap::new();
+    let m: HashMap[i32, (i32) -> i32] = HashMap::new();
     m.set(0, make(2));
     match m.get(0) {
         Option::Some(f) => println(f(40).to_string()),

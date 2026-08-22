@@ -2,11 +2,11 @@ use std::cmp;
 
 #[derive(PartialEq, Eq, Hash)]
 struct LegacyKey {
-    value: int,
+    value: isize,
 }
 
 struct ModernKey {
-    value: int,
+    value: isize,
 }
 
 impl PartialEq for ModernKey {
@@ -18,13 +18,13 @@ impl PartialEq for ModernKey {
 impl Eq for ModernKey {}
 
 impl Hash for ModernKey {
-    fn hash(self: ModernKey) -> uint64 {
-        (self.value % 10).to_uint64()
+    fn hash(self: ModernKey) -> u64 {
+        (self.value % 10).to_u64()
     }
 }
 
 struct Rank {
-    value: int,
+    value: isize,
 }
 
 impl PartialEq for Rank {

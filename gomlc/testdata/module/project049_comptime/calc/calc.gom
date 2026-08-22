@@ -1,36 +1,36 @@
 package calc;
 
-pub const PUBLISHED: int = 7;
+pub const PUBLISHED: isize = 7;
 
-const PRIVATE_BIAS: int = 5;
+const PRIVATE_BIAS: isize = 5;
 
 #[comptime]
-fn twice(value: int) -> int {
+fn twice(value: isize) -> isize {
     value * 2
 }
 
 #[comptime]
-pub fn calculate(value: int) -> int {
+pub fn calculate(value: isize) -> isize {
     twice(value) + PRIVATE_BIAS + PUBLISHED
 }
 
 pub struct Pair {
-    pub left: int,
-    pub right: int,
+    pub left: isize,
+    pub right: isize,
 }
 
 #[comptime]
-pub fn make_pair(value: int) -> Pair {
+pub fn make_pair(value: isize) -> Pair {
     Pair { left: value, right: value + 1 }
 }
 
 pub enum Choice {
-    Value(int),
+    Value(isize),
     Empty,
 }
 
 #[comptime]
-pub fn make_choice(value: int) -> Choice {
+pub fn make_choice(value: isize) -> Choice {
     if value > 0 {
         Choice::Value(value)
     } else {

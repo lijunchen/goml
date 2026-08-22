@@ -2,7 +2,7 @@ package main;
 
 use test::project031::iterables;
 
-fn total[S: IntoIterator](source: S) -> int32 where S::Item = int32 {
+fn total[S: IntoIterator](source: S) -> i32 where S::Item = i32 {
     let result = Ref::new(0);
     for value in source {
         result.set(result.get() + value);

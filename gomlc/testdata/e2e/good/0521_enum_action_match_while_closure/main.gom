@@ -1,10 +1,10 @@
 enum Action {
-    SetValue(int32),
-    Transform((int32) -> int32),
+    SetValue(i32),
+    Transform((i32) -> i32),
     Reset,
 }
 
-fn apply_action(action: Action, current: int32) -> int32 {
+fn apply_action(action: Action, current: i32) -> i32 {
     match action {
         Action::SetValue(v) => v,
         Action::Transform(f) => f(current),

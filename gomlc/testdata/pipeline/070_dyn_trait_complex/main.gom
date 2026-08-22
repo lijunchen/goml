@@ -1,6 +1,6 @@
 struct Point {
-    x: int32,
-    y: int32,
+    x: i32,
+    y: i32,
 }
 
 struct Flag {
@@ -8,14 +8,14 @@ struct Flag {
 }
 
 struct Counter {
-    cell: Ref[int32],
+    cell: Ref[i32],
 }
 
 trait Display {
     fn show(self: Self) -> string;
     fn show_with(self: Self, arg1: string, arg2: string) -> string;
     fn tick(self: Self) -> unit;
-    fn bump(self: Self, arg1: int32) -> int32;
+    fn bump(self: Self, arg1: i32) -> i32;
 }
 
 impl Display for Point {
@@ -29,7 +29,7 @@ impl Display for Point {
 
     fn tick(self: Point) -> unit {}
 
-    fn bump(self: Point, delta: int32) -> int32 {
+    fn bump(self: Point, delta: i32) -> i32 {
         self.x + self.y + delta
     }
 }
@@ -53,7 +53,7 @@ impl Display for Flag {
 
     fn tick(self: Flag) -> unit {}
 
-    fn bump(self: Flag, delta: int32) -> int32 {
+    fn bump(self: Flag, delta: i32) -> i32 {
         if self.value {
             delta
         } else {
@@ -76,7 +76,7 @@ impl Display for Counter {
         let _ = self.cell.set(next);
     }
 
-    fn bump(self: Counter, delta: int32) -> int32 {
+    fn bump(self: Counter, delta: i32) -> i32 {
         let next = self.cell.get() + delta;
         let _ = self.cell.set(next);
         next
@@ -96,7 +96,7 @@ fn make_renderer(tag: string) -> (dyn Display) -> string {
     |x: dyn Display| Display::show_with(x, tag, tag)
 }
 
-fn bump_and_show(x: dyn Display, delta: int32) -> string {
+fn bump_and_show(x: dyn Display, delta: i32) -> string {
     let _ = Display::tick(x);
     Display::show_with(x, "[", "]") + ":" + Display::bump(x, delta).to_string()
 }
@@ -129,7 +129,7 @@ fn main() -> unit {
     let _ = println(s0);
     let _ = println(s1);
     let _ = println(s2);
-    let i: Ref[int32] = Ref::new(0);
+    let i: Ref[i32] = Ref::new(0);
     let _ = while i.get() < 3 {
         let line = bump_and_show(dc, delta);
         println(line);

@@ -1,19 +1,19 @@
 trait Mappable {
-    fn map_val(self: Self, arg1: (int32) -> int32) -> Self;
+    fn map_val(self: Self, arg1: (i32) -> i32) -> Self;
 }
 
 struct Wrapper {
-    val: int32,
+    val: i32,
 }
 
 impl Mappable for Wrapper {
-    fn map_val(self: Wrapper, f: (int32) -> int32) -> Wrapper {
+    fn map_val(self: Wrapper, f: (i32) -> i32) -> Wrapper {
         Wrapper { val: f(self.val) }
     }
 }
 
 fn main() {
     let w = Wrapper { val: 10 };
-    let w2 = Mappable::map_val(w, |x: int32| x * 2);
+    let w2 = Mappable::map_val(w, |x: i32| x * 2);
     println(w2.val.to_string());
 }

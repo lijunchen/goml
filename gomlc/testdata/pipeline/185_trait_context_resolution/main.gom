@@ -4,8 +4,8 @@ trait Put[T] {
 
 struct Target {}
 
-impl Put[int32]for Target {
-    fn put(self: Target, value: int32) -> string {
+impl Put[i32]for Target {
+    fn put(self: Target, value: i32) -> string {
         "number:" + value.to_string()
     }
 }
@@ -23,7 +23,7 @@ trait Convert[T] {
 
 struct Convertible {}
 
-impl Convert[int32]for Convertible {
+impl Convert[i32]for Convertible {
     type Output = string;
 
     fn convert(self: Convertible) -> string {
@@ -32,9 +32,9 @@ impl Convert[int32]for Convertible {
 }
 
 impl Convert[string]for Convertible {
-    type Output = int32;
+    type Output = i32;
 
-    fn convert(self: Convertible) -> int32 {
+    fn convert(self: Convertible) -> i32 {
         7
     }
 }
@@ -45,13 +45,13 @@ trait Source[T] where Self::Item = T {
 }
 
 struct Number {
-    value: int32,
+    value: i32,
 }
 
-impl Source[int32]for Number {
-    type Item = int32;
+impl Source[i32]for Number {
+    type Item = i32;
 
-    fn get(self: Number) -> int32 {
+    fn get(self: Number) -> i32 {
         self.value
     }
 }
@@ -76,13 +76,13 @@ impl[S: ItemSource, T] Select[T]for S where S::Item = T  {
 }
 
 struct Selected {
-    value: int32,
+    value: i32,
 }
 
 impl ItemSource for Selected {
-    type Item = int32;
+    type Item = i32;
 
-    fn item(self: Selected) -> int32 {
+    fn item(self: Selected) -> i32 {
         self.value
     }
 }
@@ -99,7 +99,7 @@ fn main() -> unit {
     println((Target {}).put(3));
     println((Target {}).put("goml"));
     let text: string = (Convertible {}).convert();
-    let number: int32 = (Convertible {}).convert();
+    let number: i32 = (Convertible {}).convert();
     println(text);
     println(number);
     println(read(Number { value: 8 }));

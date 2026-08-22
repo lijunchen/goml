@@ -2,7 +2,7 @@ enum Token {
     LParen,
     RParen,
     Sym(string),
-    Int(int32),
+    Int(i32),
     Bool(bool),
 }
 
@@ -19,14 +19,14 @@ struct Lambda {
 }
 
 enum Value {
-    Int(int32),
+    Int(i32),
     Bool(bool),
     Func(Lambda),
     Nil,
 }
 
 enum SExpr {
-    Int(int32),
+    Int(i32),
     Bool(bool),
     Sym(string),
     List(Vec[SExpr]),
@@ -36,7 +36,7 @@ fn is_digit(ch: char) -> bool {
     ch >= '0' && ch <= '9'
 }
 
-fn digit_value(ch: char) -> int32 {
+fn digit_value(ch: char) -> i32 {
     match ch {
         '0' => 0,
         '1' => 1,
@@ -78,7 +78,7 @@ fn is_int_text(text: string) -> bool {
     }
 }
 
-fn parse_int32(text: string) -> int32 {
+fn parse_int32(text: string) -> i32 {
     let len = text.len();
     let i = Ref::new(0);
     let negative = Ref::new(false);
@@ -108,7 +108,7 @@ fn is_delim(ch: char) -> bool {
     ch == '(' || ch == ')' || ch == ' '
 }
 
-fn lex_atom(source: string, start: int) -> (Token, int) {
+fn lex_atom(source: string, start: isize) -> (Token, isize) {
     let len = source.len();
     let text = Ref::new("");
     let i = Ref::new(start);
@@ -182,7 +182,7 @@ fn lookup(local: Vec[Binding], global: Vec[Binding], name: string) -> Value {
     }
 }
 
-fn parse_list(tokens: Vec[Token], start: int) -> (Vec[SExpr], int) {
+fn parse_list(tokens: Vec[Token], start: isize) -> (Vec[SExpr], isize) {
     let acc: Vec[SExpr] = Vec::new();
     let exprs = Ref::new(acc);
     let i = Ref::new(start);
@@ -203,7 +203,7 @@ fn parse_list(tokens: Vec[Token], start: int) -> (Vec[SExpr], int) {
     (exprs.get(), i.get())
 }
 
-fn parse_expr(tokens: Vec[Token], start: int) -> (SExpr, int) {
+fn parse_expr(tokens: Vec[Token], start: isize) -> (SExpr, isize) {
     match tokens[start] {
         Token::LParen => {
             let (items, next) = parse_list(tokens, start + 1);
@@ -331,7 +331,7 @@ fn eval_list_sym(name: string, items: Vec[SExpr], local: Vec[Binding], global: R
     }
 }
 
-fn eval_begin(items: Vec[SExpr], start: int, local: Vec[Binding], global: Ref[Vec[Binding]]) -> Value {
+fn eval_begin(items: Vec[SExpr], start: isize, local: Vec[Binding], global: Ref[Vec[Binding]]) -> Value {
     let i = Ref::new(start);
     let last = Ref::new(Value::Nil);
     let _ = (while i.get() < items.len() {
@@ -358,7 +358,7 @@ fn params_from_sexprs(items: Vec[SExpr]) -> Vec[string] {
     params.get()
 }
 
-fn eval_args(items: Vec[SExpr], start: int, local: Vec[Binding], global: Ref[Vec[Binding]]) -> Vec[
+fn eval_args(items: Vec[SExpr], start: isize, local: Vec[Binding], global: Ref[Vec[Binding]]) -> Vec[
     Value,
 ] {
     let i = Ref::new(start);

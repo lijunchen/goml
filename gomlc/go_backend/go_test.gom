@@ -14,7 +14,7 @@ use module::tast;
 use std::text;
 use std::testing;
 
-fn test_builtins(counter: Ref[int]) -> core::File {
+fn test_builtins(counter: Ref[isize]) -> core::File {
     match core::lower_builtins(counter) {
         Ok(value) => value,
         Err(error) => {
@@ -31,7 +31,7 @@ fn test_builtins(counter: Ref[int]) -> core::File {
     }
 }
 
-fn test_prelude(builtins: core::File, counter: Ref[int]) -> core::File {
+fn test_prelude(builtins: core::File, counter: Ref[isize]) -> core::File {
     match core::lower_prelude(builtins, counter) {
         Ok(value) => value,
         Err(error) => {
@@ -118,7 +118,7 @@ fn string_contains(value: string, expected: string) -> bool {
     value.contains(expected)
 }
 
-fn required_text_position(value: string, expected: string) -> int {
+fn required_text_position(value: string, expected: string) -> isize {
     match text::find(value, expected) {
         Some(position) => position,
         None => {
@@ -137,14 +137,14 @@ fn large_struct_source(body: string) -> string {
     let mut values = "";
     for index in 0..64 {
         let name = "field" + index.to_string();
-        fields += name + ": int32,";
+        fields += name + ": i32,";
         values += name + ": " + index.to_string() + ",";
     }
     "struct Large {" + fields + "} " + body + " fn main() -> unit { let value = Large {" + values
         + "}; println(run(value, 1)); }"
 }
 
-fn string_struct_source(field_count: int, body: string) -> string {
+fn string_struct_source(field_count: isize, body: string) -> string {
     let mut fields = "";
     let mut values = "";
     for index in 0..field_count {
@@ -162,7 +162,7 @@ fn passes_physically_large_struct_parameters_by_pointer() -> unit {
         lower_source(
             string_struct_source(
                 8,
-                "fn run(value: Wide, depth: int32) -> int32 { if depth == 0 { value.field0.len() as int32 } else { run(value, depth - 1) } }",
+                "fn run(value: Wide, depth: i32) -> i32 { if depth == 0 { value.field0.len() as i32 } else { run(value, depth - 1) } }",
             ),
         ),
     );
@@ -175,7 +175,7 @@ fn keeps_physically_small_struct_parameters_value_typed() -> unit {
         lower_source(
             string_struct_source(
                 7,
-                "fn run(value: Wide, depth: int32) -> int32 { if depth == 0 { value.field0.len() as int32 } else { run(value, depth - 1) } }",
+                "fn run(value: Wide, depth: i32) -> i32 { if depth == 0 { value.field0.len() as i32 } else { run(value, depth - 1) } }",
             ),
         ),
     );
@@ -187,7 +187,7 @@ fn passes_read_only_large_struct_parameters_by_pointer() -> unit {
     let output = encode(
         lower_source(
             large_struct_source(
-                "fn run(value: Large, depth: int32) -> int32 { if depth == 0 { value.field0 } else { run(value, depth - 1) } }",
+                "fn run(value: Large, depth: i32) -> i32 { if depth == 0 { value.field0 } else { run(value, depth - 1) } }",
             ),
         ),
     );
@@ -201,7 +201,7 @@ fn copies_mutated_large_struct_parameters_locally() -> unit {
     let output = encode(
         lower_source(
             large_struct_source(
-                "fn run(value: Large, depth: int32) -> int32 { value.field0 = depth; if depth == 0 { value.field0 } else { run(value, depth - 1) } }",
+                "fn run(value: Large, depth: i32) -> i32 { value.field0 = depth; if depth == 0 { value.field0 } else { run(value, depth - 1) } }",
             ),
         ),
     );
@@ -215,7 +215,7 @@ fn keeps_escaped_large_struct_functions_value_typed() -> unit {
     let output = encode(
         lower_source(
             large_struct_source(
-                "fn read(value: Large, depth: int32) -> int32 { if depth == 0 { value.field0 } else { read(value, depth - 1) } } fn apply(function: (Large, int32) -> int32, value: Large, depth: int32) -> int32 { function(value, depth) } fn run(value: Large, depth: int32) -> int32 { apply(read, value, depth) }",
+                "fn read(value: Large, depth: i32) -> i32 { if depth == 0 { value.field0 } else { read(value, depth - 1) } } fn apply(function: (Large, i32) -> i32, value: Large, depth: i32) -> i32 { function(value, depth) } fn run(value: Large, depth: i32) -> i32 { apply(read, value, depth) }",
             ),
         ),
     );
@@ -283,7 +283,7 @@ fn emits_parameterized_test_arguments() -> unit {
 
 #[test]
 fn emits_if_continuations() -> unit {
-    let source = "fn choose(flag: bool, x: int32, y: int32) -> int32 { if flag { x } else { y } } fn main() { let yes = choose(true, 10, 99); let no = choose(false, 10, 99); let _ = println(\"yes=\" + yes.to_string()); let _ = println(\"no=\" + no.to_string()); () }";
+    let source = "fn choose(flag: bool, x: i32, y: i32) -> i32 { if flag { x } else { y } } fn main() { let yes = choose(true, 10, 99); let no = choose(false, 10, 99); let _ = println(\"yes=\" + yes.to_string()); let _ = println(\"no=\" + no.to_string()); () }";
     testing::assert_eq(
         encode(lower_source(source)),
         "package main\n\nfunc main0() struct{} {\n    var yes__3 int32\n    var inline16 bool = true\n    var inline17 int32 = 10\n    var inline18 int32 = 99\n    if inline16 {\n        yes__3 = inline17\n    } else {\n        yes__3 = inline18\n    }\n    var no__4 int32\n    var inline12 bool = false\n    var inline13 int32 = 10\n    var inline14 int32 = 99\n    if inline12 {\n        no__4 = inline13\n    } else {\n        no__4 = inline14\n    }\n    var t7 string = _goml_m_inherent_i_i32_i_i32_i_to__string(yes__3)\n    var t8 string = \"yes=\" + t7\n    _goml_m_println(t8)\n    var t9 string = _goml_m_inherent_i_i32_i_i32_i_to__string(no__4)\n    var t10 string = \"no=\" + t9\n    _goml_m_println(t10)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
@@ -467,7 +467,7 @@ fn imports_intrinsic_runtime_dependencies() -> unit {
 fn prunes_imports_used_only_by_dead_helpers() -> unit {
     let output = encode(
         lower_linked_source(
-            "fn main() -> unit { let cell = Ref::new(1); cell.set(cell.get() + 1); let values: Vec[int32] = Vec::new(); values.push(cell.get()); println(values.len()); }",
+            "fn main() -> unit { let cell = Ref::new(1); cell.set(cell.get() + 1); let values: Vec[i32] = Vec::new(); values.push(cell.get()); println(values.len()); }",
         ),
     );
     testing::assert(!string_contains(output, "_goml_reflect \"reflect\""))
@@ -530,7 +530,7 @@ fn emits_complete_vec_runtime_helpers() -> unit {
 fn stores_vec_from_array_header_and_items_together() -> unit {
     let output = encode(
         lower_linked_source(
-            "fn main() -> unit { let values = Vec::from_array([1, 2]); let empty: Vec[int] = Vec::from_array([]); println(values.len() + empty.len()) }",
+            "fn main() -> unit { let values = Vec::from_array([1, 2]); let empty: Vec[isize] = Vec::from_array([]); println(values.len() + empty.len()) }",
         ),
     );
     testing::assert(string_contains(output, "var storage struct {"));
@@ -602,7 +602,7 @@ fn emits_tuple_types_and_prunes_dead_bindings() -> unit {
 
 #[test]
 fn preserves_nested_tuple_discovery_order() -> unit {
-    let source = "fn classify(p: ((int32, int32), string)) -> string { p.1 } fn main() -> unit { println(classify(((1, 2), \"value\"))); }";
+    let source = "fn classify(p: ((i32, i32), string)) -> string { p.1 } fn main() -> unit { println(classify(((1, 2), \"value\"))); }";
     testing::assert(
         string_contains(
             encode(lower_source(source)),
@@ -613,7 +613,7 @@ fn preserves_nested_tuple_discovery_order() -> unit {
 
 #[test]
 fn emits_primitive_matches() -> unit {
-    let source = "fn main() { let x: uint8 = 5; let y: string = match x { 0 => \"zero\", 1 => \"one\", _ => \"other\", }; println(y); }";
+    let source = "fn main() { let x: u8 = 5; let y: string = match x { 0 => \"zero\", 1 => \"one\", _ => \"other\", }; println(y); }";
     testing::assert_eq(
         encode(lower_source(source)),
         "package main\n\nfunc main0() struct{} {\n    var x__0 uint8 = 5\n    var jp3 string\n    switch x__0 {\n    case 0:\n        jp3 = \"zero\"\n    case 1:\n        jp3 = \"one\"\n    default:\n        jp3 = \"other\"\n    }\n    _goml_m_println(jp3)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
@@ -631,7 +631,7 @@ fn emits_breaking_while_loops() -> unit {
 
 #[test]
 fn emits_value_and_infinite_loops_without_expanding_continuations() -> unit {
-    let source = "fn choose(flag: bool) -> int { loop { if flag { break 7; } else { continue; }; } } fn spin() -> int { loop {} } fn main() -> unit { let flag = Ref::new(false); println(choose(!flag.get())); if flag.get() { println(spin()); }; }";
+    let source = "fn choose(flag: bool) -> isize { loop { if flag { break 7; } else { continue; }; } } fn spin() -> isize { loop {} } fn main() -> unit { let flag = Ref::new(false); println(choose(!flag.get())); if flag.get() { println(spin()); }; }";
     let output = encode(lower_source(source));
     testing::assert(string_contains(output, "func choose(flag__0 bool) int {"));
     testing::assert(string_contains(output, "Loop_loop_expr"));
@@ -864,7 +864,7 @@ fn preserves_reused_loop_labels() -> unit {
 
 #[test]
 fn emits_vec_runtime_structs() -> unit {
-    let source = "fn one() -> Vec[int32] { let v: Vec[int32] = Vec::new(); v.push(1); v } fn main() -> unit { let xs: Vec[int32] = one(); xs.push(2); println(xs.len()); }";
+    let source = "fn one() -> Vec[i32] { let v: Vec[i32] = Vec::new(); v.push(1); v } fn main() -> unit { let xs: Vec[i32] = one(); xs.push(2); println(xs.len()); }";
     testing::assert_eq(
         encode(lower_source(source)),
         "package main\n\ntype _goml_vec_int32 struct {\n    items []int32\n}\n\nfunc main0() struct{} {\n    var xs__1 *_goml_vec_int32\n    var inline8 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_i32_r__i_new()\n    _goml_m_inherent_i_Vec_i_Vec_l_i32_r__i_push(inline8, 1)\n    xs__1 = inline8\n    _goml_m_inherent_i_Vec_i_Vec_l_i32_r__i_push(xs__1, 2)\n    var t6 int = _goml_m_inherent_i_Vec_i_Vec_l_i32_r__i_len(xs__1)\n    _goml_m_println(t6)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
@@ -937,7 +937,7 @@ fn emits_generic_enum_instances_and_type_switches() -> unit {
 
 #[test]
 fn dispatches_trait_objects_for_enum_receivers() -> unit {
-    let source = "trait Area { fn area(self: Self) -> int32; } enum Shape { Circle(int32), } impl Area for Shape { fn area(self: Shape) -> int32 { match self { Shape::Circle(radius) => radius * radius, } } } fn main() -> unit { let shape: dyn Area = Shape::Circle(3) as dyn Area; println(Area::area(shape)); }";
+    let source = "trait Area { fn area(self: Self) -> i32; } enum Shape { Circle(i32), } impl Area for Shape { fn area(self: Shape) -> i32 { match self { Shape::Circle(radius) => radius * radius, } } } fn main() -> unit { let shape: dyn Area = Shape::Circle(3) as dyn Area; println(Area::area(shape)); }";
     testing::assert(
         string_contains(
             encode(lower_source(source)),
@@ -948,7 +948,7 @@ fn dispatches_trait_objects_for_enum_receivers() -> unit {
 
 #[test]
 fn adapts_closures_for_dynamic_call_function_parameters() -> unit {
-    let source = "trait Mapper { fn map(self: Self, arg1: (int32) -> int32) -> int32; } struct Boxed { value: int32, } impl Mapper for Boxed { fn map(self: Boxed, f: (int32) -> int32) -> int32 { f(self.value) } } fn main() -> unit { let x: dyn Mapper = (Boxed { value: 1 }) as dyn Mapper; println(Mapper::map(x, |n| n + 1)); }";
+    let source = "trait Mapper { fn map(self: Self, arg1: (i32) -> i32) -> i32; } struct Boxed { value: i32, } impl Mapper for Boxed { fn map(self: Boxed, f: (i32) -> i32) -> i32 { f(self.value) } } fn main() -> unit { let x: dyn Mapper = (Boxed { value: 1 }) as dyn Mapper; println(Mapper::map(x, |n| n + 1)); }";
     let output = encode(lower_source(source));
     testing::assert(string_contains(output, "var t9 func(int32) int32 = func(p0 int32) int32 {"));
     testing::assert(string_contains(output, "vtable._goml_m_map(x__2.data, t9)"));
@@ -968,7 +968,7 @@ fn adapts_closures_for_dynamic_call_function_parameters() -> unit {
 
 #[test]
 fn emits_user_trait_objects_without_name_collisions() -> unit {
-    let source = "trait Display { fn display(self: Self) -> string; } fn dyn__Display() -> int32 { 1 } struct Box { text: string, } impl Display for Box { fn display(self: Self) -> string { self.text } } fn main() -> unit { let d: dyn Display = (Box { text: \"ok\" }) as dyn Display; println(Display::display(d) + dyn__Display().to_string()); }";
+    let source = "trait Display { fn display(self: Self) -> string; } fn dyn__Display() -> i32 { 1 } struct Box { text: string, } impl Display for Box { fn display(self: Self) -> string { self.text } } fn main() -> unit { let d: dyn Display = (Box { text: \"ok\" }) as dyn Display; println(Display::display(d) + dyn__Display().to_string()); }";
     testing::assert_eq(
         encode(lower_source(source)),
         "package main\n\ntype Box struct {\n    text string\n}\n\ntype dyn__Display_vtable struct {\n    display func(any) string\n}\n\ntype dyn__Display struct {\n    data any\n    vtable *dyn__Display_vtable\n}\n\nfunc dyn__Display__wrap__Box__display(self any) string {\n    return _goml_m_trait__impl_i_Display_i_Box_i_display(self.(Box))\n}\n\nfunc dyn__Display__vtable__Box() *dyn__Display_vtable {\n    return &dyn__Display_vtable{\n        display: dyn__Display__wrap__Box__display,\n    }\n}\n\nfunc _goml_m_trait__impl_i_Display_i_Box_i_display(self__0 Box) string {\n    var t5 string = self__0.text\n    return t5\n}\n\nfunc main0() struct{} {\n    var t7 Box = Box{\n        text: \"ok\",\n    }\n    var d__1 dyn__Display = dyn__Display{\n        data: t7,\n        vtable: dyn__Display__vtable__Box(),\n    }\n    var t8 string = d__1.vtable.display(d__1.data)\n    var t9 int32\n    t9 = 1\n    var t10 string = _goml_m_inherent_i_i32_i_i32_i_to__string(t9)\n    var t11 string = t8 + t10\n    _goml_m_println(t11)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
@@ -977,7 +977,7 @@ fn emits_user_trait_objects_without_name_collisions() -> unit {
 
 #[test]
 fn emits_non_repeating_joinrec_as_straight_line_control_flow() -> unit {
-    let source = "fn f(flag: int32) -> int32 { while true { if flag == 0 { return 1 } else { break }; }; 2 } fn main() -> unit { println(f(0).to_string()); println(f(1).to_string()); }";
+    let source = "fn f(flag: i32) -> i32 { while true { if flag == 0 { return 1 } else { break }; }; 2 } fn main() -> unit { println(f(0).to_string()); println(f(1).to_string()); }";
     testing::assert_eq(
         encode(lower_source(source)),
         "package main\n\nfunc f(flag__0 int32) int32 {\n    var t9 bool = flag__0 == 0\n    if t9 {\n        return 1\n    } else {\n        return 2\n    }\n}\n\nfunc main0() struct{} {\n    var t11 int32 = f(0)\n    var t12 string = _goml_m_inherent_i_i32_i_i32_i_to__string(t11)\n    _goml_m_println(t12)\n    var t13 int32 = f(1)\n    var t14 string = _goml_m_inherent_i_i32_i_i32_i_to__string(t13)\n    _goml_m_println(t14)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
@@ -986,7 +986,7 @@ fn emits_non_repeating_joinrec_as_straight_line_control_flow() -> unit {
 
 #[test]
 fn emits_closures_inside_enum_payloads() -> unit {
-    let source = "enum MaybeFn { Some((int32) -> int32), None, } fn next(flag: bool) -> MaybeFn { if flag { MaybeFn::Some(|x| x + 1) } else { MaybeFn::None } } fn main() -> unit { match next(true) { MaybeFn::Some(f) => println(f(41).to_string()), MaybeFn::None => println(\"none\"), } }";
+    let source = "enum MaybeFn { Some((i32) -> i32), None, } fn next(flag: bool) -> MaybeFn { if flag { MaybeFn::Some(|x| x + 1) } else { MaybeFn::None } } fn main() -> unit { match next(true) { MaybeFn::Some(f) => println(f(41).to_string()), MaybeFn::None => println(\"none\"), } }";
     let output = encode(lower_source(source));
     testing::assert(string_contains(output, "type MaybeFn interface"));
     testing::assert(string_contains(output, "_0 func(int32) int32"));
@@ -1002,7 +1002,7 @@ fn emits_closures_inside_enum_payloads() -> unit {
 
 #[test]
 fn contextualizes_closures_in_generic_struct_fields() -> unit {
-    let source = "struct Wrapper[T] { value: T, transform: (T) -> string, } fn show_wrapper[T](wrapper: Wrapper[T]) -> string { wrapper.transform(wrapper.value) } fn main() -> unit { let wrapper = if true { Wrapper { value: 42, transform: |value: int32| value.to_string() } } else { Wrapper { value: 0, transform: |value: int32| \"zero\" } }; println(show_wrapper(wrapper)); }";
+    let source = "struct Wrapper[T] { value: T, transform: (T) -> string, } fn show_wrapper[T](wrapper: Wrapper[T]) -> string { wrapper.transform(wrapper.value) } fn main() -> unit { let wrapper = if true { Wrapper { value: 42, transform: |value: i32| value.to_string() } } else { Wrapper { value: 0, transform: |value: i32| \"zero\" } }; println(show_wrapper(wrapper)); }";
     let output = encode(lower_source(source));
     testing::assert(string_contains(output, "var t8 func(int32) string = func(p0 int32) string {"));
     testing::assert(string_contains(output, "transform: t8"));
@@ -1017,7 +1017,7 @@ fn contextualizes_closures_in_generic_struct_fields() -> unit {
 
 #[test]
 fn protects_user_types_from_ref_runtime_names() -> unit {
-    let source = "struct RefInt32X { value: int32, } fn main() -> unit { let c = RefInt32X { value: 2 }; let r = Ref::new(3); println(c.value + r.get()); }";
+    let source = "struct RefInt32X { value: i32, } fn main() -> unit { let c = RefInt32X { value: 2 }; let r = Ref::new(3); println(c.value + r.get()); }";
     testing::assert_eq(
         encode(lower_source(source)),
         "package main\n\ntype ref_int32_x struct {\n    value int32\n}\n\ntype RefInt32X struct {\n    value int32\n}\n\nfunc main0() struct{} {\n    var r__1 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_i32_r__i_new(3)\n    var t2 int32 = 2\n    var t3 int32 = _goml_m_inherent_i_Ref_i_Ref_l_i32_r__i_get(r__1)\n    var t4 int32 = t2 + t3\n    _goml_m_println(t4)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
@@ -1026,7 +1026,7 @@ fn protects_user_types_from_ref_runtime_names() -> unit {
 
 #[test]
 fn emits_runtime_types_nested_in_enum_fields() -> unit {
-    let source = "trait Display { fn show(self: Self) -> string; } impl Display for int32 { fn show(self: int32) -> string { self.to_string() } } enum Boxed[T] { One((T, int32)), } fn build() -> int32 { let _: Boxed[dyn Display] = Boxed::One((return 7, 0)); 0 } fn main() -> unit { println(build().to_string()) }";
+    let source = "trait Display { fn show(self: Self) -> string; } impl Display for i32 { fn show(self: i32) -> string { self.to_string() } } enum Boxed[T] { One((T, i32)), } fn build() -> i32 { let _: Boxed[dyn Display] = Boxed::One((return 7, 0)); 0 } fn main() -> unit { println(build().to_string()) }";
     testing::assert_eq(
         encode(lower_source(source)),
         "package main\n\ntype Tuple2_12dyn__Display_5int32 struct {\n    _0 dyn__Display\n    _1 int32\n}\n\ntype Boxed__dynDisplay interface {\n    isBoxed__dynDisplay()\n}\n\ntype One struct {\n    _0 Tuple2_12dyn__Display_5int32\n}\n\nfunc (_ One) isBoxed__dynDisplay() {}\n\ntype dyn__Display_vtable struct {\n    show func(any) string\n}\n\ntype dyn__Display struct {\n    data any\n    vtable *dyn__Display_vtable\n}\n\nfunc main0() struct{} {\n    var t7 int32\n    t7 = 7\n    var t8 string = _goml_m_inherent_i_i32_i_i32_i_to__string(t7)\n    _goml_m_println(t8)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
@@ -1058,7 +1058,7 @@ fn resolves_runtime_types_in_recursive_struct_fields() -> unit {
 
 #[test]
 fn compacts_dyn_names_in_synthetic_options() -> unit {
-    let source = "trait Display { fn show(self: Self) -> string; } impl Display for int { fn show(self: int) -> string { self.to_string() } } fn build() -> int32 { let m: HashMap[int32, dyn Display] = HashMap::new(); m.set(1, if true { return 7 } else { 1 as dyn Display }); 0 } fn main() -> unit { println(build().to_string()) }";
+    let source = "trait Display { fn show(self: Self) -> string; } impl Display for isize { fn show(self: isize) -> string { self.to_string() } } fn build() -> i32 { let m: HashMap[i32, dyn Display] = HashMap::new(); m.set(1, if true { return 7 } else { 1 as dyn Display }); 0 } fn main() -> unit { println(build().to_string()) }";
     testing::assert_eq(
         encode(lower_source(source)),
         "package main\n\ntype hashmap_int32_Dyn_Display_x_entry struct {\n    active bool\n    key int32\n    value dyn__Display\n}\n\ntype hashmap_int32_Dyn_Display_x struct {\n    indices map[int32]int\n    entries []hashmap_int32_Dyn_Display_x_entry\n    len int\n}\n\ntype _goml_synthetic__goml_option__dynDisplay interface {\n    is_goml_synthetic__goml_option__dynDisplay()\n}\n\ntype _goml_synthetic__goml_option__dynDisplay_Some struct {\n    _0 dyn__Display\n}\n\nfunc (_ _goml_synthetic__goml_option__dynDisplay_Some) is_goml_synthetic__goml_option__dynDisplay() {}\n\ntype _goml_synthetic__goml_option__dynDisplay_None struct {}\n\nfunc (_ _goml_synthetic__goml_option__dynDisplay_None) is_goml_synthetic__goml_option__dynDisplay() {}\n\ntype dyn__Display_vtable struct {\n    show func(any) string\n}\n\ntype dyn__Display struct {\n    data any\n    vtable *dyn__Display_vtable\n}\n\nfunc main0() struct{} {\n    var t10 int32\n    _goml_m_inherent_i_HashMap_i_HashMap_l_i32_c_dynDisplay_r__i_new()\n    t10 = 7\n    var t11 string = _goml_m_inherent_i_i32_i_i32_i_to__string(t10)\n    _goml_m_println(t11)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
@@ -1067,7 +1067,7 @@ fn compacts_dyn_names_in_synthetic_options() -> unit {
 
 #[test]
 fn preserves_user_struct_order_before_closure_environments() -> unit {
-    let source = "struct GomlInherentClosureEnvF0ClosureEnvF0Apply { value: int32, } fn main() -> unit { let y = 1; let f = |x: int32| x + y; let c = GomlInherentClosureEnvF0ClosureEnvF0Apply { value: 2 }; println((f(3) + c.value).to_string()) }";
+    let source = "struct GomlInherentClosureEnvF0ClosureEnvF0Apply { value: i32, } fn main() -> unit { let y = 1; let f = |x: i32| x + y; let c = GomlInherentClosureEnvF0ClosureEnvF0Apply { value: 2 }; println((f(3) + c.value).to_string()) }";
     let output = encode(lower_source(source));
     assert_appears_before(
         output,
@@ -1120,7 +1120,7 @@ fn emits_structs_before_generic_enums() -> unit {
 fn preserves_enums_before_field_instances() -> unit {
     let output = encode(
         lower_source(
-            "enum Expr { Num(int32), Add(Option[Expr]), } fn main() -> unit { let value: Option[Expr] = Option::None; match value { Option::Some(_) => (), Option::None => (), }; }",
+            "enum Expr { Num(i32), Add(Option[Expr]), } fn main() -> unit { let value: Option[Expr] = Option::None; match value { Option::Some(_) => (), Option::None => (), }; }",
         ),
     );
     let prefix = "package main\n\ntype Expr interface {\n    isExpr()\n}";
@@ -1131,7 +1131,7 @@ fn preserves_enums_before_field_instances() -> unit {
 
 #[test]
 fn protects_dyn_object_names_from_vtable_collisions() -> unit {
-    let source = "trait A { fn f(self: Self) -> int32; } trait A_vtable { fn g(self: Self) -> int32; } struct S {} impl A for S { fn f(self: S) -> int32 { 3 } } impl A_vtable for S { fn g(self: S) -> int32 { 4 } } fn main() -> unit { let left: dyn A = (S {}) as dyn A; let right: dyn A_vtable = (S {}) as dyn A_vtable; println(A::f(left) + A_vtable::g(right)); }";
+    let source = "trait A { fn f(self: Self) -> i32; } trait A_vtable { fn g(self: Self) -> i32; } struct S {} impl A for S { fn f(self: S) -> i32 { 3 } } impl A_vtable for S { fn g(self: S) -> i32 { 4 } } fn main() -> unit { let left: dyn A = (S {}) as dyn A; let right: dyn A_vtable = (S {}) as dyn A_vtable; println(A::f(left) + A_vtable::g(right)); }";
     testing::assert_eq(
         encode(lower_source(source)),
         "package main\n\ntype S struct {}\n\ntype dyn__A_vtable struct {\n    f func(any) int32\n}\n\ntype dyn__A struct {\n    data any\n    vtable *dyn__A_vtable\n}\n\ntype dyn__A_vtable_vtable struct {\n    g func(any) int32\n}\n\ntype _goml_dyn_object_A_vtable struct {\n    data any\n    vtable *dyn__A_vtable_vtable\n}\n\nfunc dyn__A__wrap__S__f(self any) int32 {\n    return _goml_m_trait__impl_i_A_i_S_i_f(self.(S))\n}\n\nfunc dyn__A__vtable__S() *dyn__A_vtable {\n    return &dyn__A_vtable{\n        f: dyn__A__wrap__S__f,\n    }\n}\n\nfunc dyn__A_vtable__wrap__S__g(self any) int32 {\n    return _goml_m_trait__impl_i_A__vtable_i_S_i_g(self.(S))\n}\n\nfunc dyn__A_vtable__vtable__S() *dyn__A_vtable_vtable {\n    return &dyn__A_vtable_vtable{\n        g: dyn__A_vtable__wrap__S__g,\n    }\n}\n\nfunc _goml_m_trait__impl_i_A_i_S_i_f(self__0 S) int32 {\n    return 3\n}\n\nfunc _goml_m_trait__impl_i_A__vtable_i_S_i_g(self__1 S) int32 {\n    return 4\n}\n\nfunc main0() struct{} {\n    var t6 S = S{}\n    var left__2 dyn__A = dyn__A{\n        data: t6,\n        vtable: dyn__A__vtable__S(),\n    }\n    var t7 S = S{}\n    var right__3 _goml_dyn_object_A_vtable = _goml_dyn_object_A_vtable{\n        data: t7,\n        vtable: dyn__A_vtable__vtable__S(),\n    }\n    var t8 int32 = left__2.vtable.f(left__2.data)\n    var t9 int32 = right__3.vtable.g(right__3.data)\n    var t10 int32 = t8 + t9\n    _goml_m_println(t10)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
@@ -1140,7 +1140,7 @@ fn protects_dyn_object_names_from_vtable_collisions() -> unit {
 
 #[test]
 fn emits_pointer_equality_helpers() -> unit {
-    let source = "fn main() -> unit { let a: Ref[int32] = Ref::new(1); let b = a; let c = Ref::new(1); println(ptr_eq(a, b)); println(ptr_eq(a, c)); }";
+    let source = "fn main() -> unit { let a: Ref[i32] = Ref::new(1); let b = a; let c = Ref::new(1); println(ptr_eq(a, b)); println(ptr_eq(a, c)); }";
     testing::assert_eq(
         encode(lower_source(source)),
         "package main\n\ntype ref_int32_x struct {\n    value int32\n}\n\nfunc ptr_eq__Ref_5int32(a *ref_int32_x, b *ref_int32_x) bool {\n    return a == b\n}\n\nfunc main0() struct{} {\n    var a__0 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_i32_r__i_new(1)\n    var c__2 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_i32_r__i_new(1)\n    var t3 bool = ptr_eq__Ref_5int32(a__0, a__0)\n    _goml_m_println(t3)\n    var t4 bool = ptr_eq__Ref_5int32(a__0, c__2)\n    _goml_m_println(t4)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
@@ -1149,7 +1149,7 @@ fn emits_pointer_equality_helpers() -> unit {
 
 #[test]
 fn emits_missing_runtime_helpers() -> unit {
-    let source = "enum Never {} fn never() -> Never { never() } fn missing_int(value: Never) -> int32 { match value {} } fn missing_string(value: Never) -> string { match value {} } fn main() -> unit { println(missing_int(never())); println(missing_string(never())); }";
+    let source = "enum Never {} fn never() -> Never { never() } fn missing_int(value: Never) -> i32 { match value {} } fn missing_string(value: Never) -> string { match value {} } fn main() -> unit { println(missing_int(never())); println(missing_string(never())); }";
     let output = encode(lower_source(source));
     testing::assert(
         string_contains(
@@ -1173,7 +1173,7 @@ fn emits_missing_runtime_helpers() -> unit {
 
 #[test]
 fn emits_hidden_ref_intrinsic_helpers() -> unit {
-    let source = "fn ref(x: int32) -> Ref[int32] { println(\"user ref \" + x.to_string()); Ref::new(x + 10) } fn ref_get(r: Ref[int32]) -> int32 { println(\"user get\"); 100 } fn ref_set(r: Ref[int32], x: int32) -> unit { println(\"user set \" + x.to_string()); } fn main() -> unit { let mut x: int32 = 0; let inc = || { x = x + 1; x }; println(inc().to_string()); println(x.to_string()); }";
+    let source = "fn ref(x: i32) -> Ref[i32] { println(\"user ref \" + x.to_string()); Ref::new(x + 10) } fn ref_get(r: Ref[i32]) -> i32 { println(\"user get\"); 100 } fn ref_set(r: Ref[i32], x: i32) -> unit { println(\"user set \" + x.to_string()); } fn main() -> unit { let mut x: i32 = 0; let inc = || { x = x + 1; x }; println(inc().to_string()); println(x.to_string()); }";
     let output = encode(lower_source(source));
     testing::assert(string_contains(output, "func ref__Ref_5int32(value int32) *ref_int32_x"));
     testing::assert(
@@ -1197,7 +1197,7 @@ fn emits_hidden_ref_intrinsic_helpers() -> unit {
 
 #[test]
 fn protects_go_init_from_user_functions() -> unit {
-    let source = "fn init(x: int32) -> int32 { x + 1 } fn main() -> unit { println(init(4)); }";
+    let source = "fn init(x: i32) -> i32 { x + 1 } fn main() -> unit { println(init(4)); }";
     testing::assert_eq(
         encode(lower_source(source)),
         "package main\n\nfunc main0() struct{} {\n    var t5 int32\n    var inline7 int32 = 4\n    var inline8 int32 = inline7 + 1\n    t5 = inline8\n    _goml_m_println(t5)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
@@ -1215,7 +1215,7 @@ fn protects_entry_wrapper_from_user_main0() -> unit {
 
 #[test]
 fn emits_while_conditions_with_try_matches() -> unit {
-    let source = "fn step(i: int32) -> Option[bool] { match i { 0 => Option::Some(true), 1 => Option::Some(true), 2 => Option::Some(false), _ => Option::None, } } fn main() -> Option[unit] { let i = Ref::new(0); while match step(i.get())? { true => { i.set(i.get() + 1); true }, false => false, } { () }; Option::Some(()) }";
+    let source = "fn step(i: i32) -> Option[bool] { match i { 0 => Option::Some(true), 1 => Option::Some(true), 2 => Option::Some(false), _ => Option::None, } } fn main() -> Option[unit] { let i = Ref::new(0); while match step(i.get())? { true => { i.set(i.get() + 1); true }, false => false, } { () }; Option::Some(()) }";
     let output = encode(lower_source(source));
     testing::assert(
         string_contains(output, "type Option__bool struct {\n    _tag int32\n    _v1_0 bool\n}"),
@@ -1238,7 +1238,7 @@ fn emits_entry_wrapper_without_main() -> unit {
 
 #[test]
 fn protects_functions_from_closure_environment_types() -> unit {
-    let source = "fn closure_env_add_0() -> int32 { 35 } fn main() -> unit { let add = |x: int32| x + 1; println(add(1) + closure_env_add_0()); }";
+    let source = "fn closure_env_add_0() -> i32 { 35 } fn main() -> unit { let add = |x: i32| x + 1; println(add(1) + closure_env_add_0()); }";
     let output = encode(lower_source(source));
     testing::assert(string_contains(output, "type closure_env_add_0 struct"));
     testing::assert(!string_contains(output, "func closure_env_add_0("));
@@ -1253,7 +1253,7 @@ fn protects_functions_from_closure_environment_types() -> unit {
 
 #[test]
 fn protects_functions_from_tuple_type_names() -> unit {
-    let source = "fn tuple2_int32_int32() -> int32 { 26 } fn main() -> unit { let t = (1, 2); println(t.0 + t.1 + tuple2_int32_int32()); }";
+    let source = "fn tuple2_int32_int32() -> i32 { 26 } fn main() -> unit { let t = (1, 2); println(t.0 + t.1 + tuple2_int32_int32()); }";
     testing::assert_eq(
         encode(lower_source(source)),
         "package main\n\ntype Tuple2_5int32_5int32 struct {\n    _0 int32\n    _1 int32\n}\n\nfunc main0() struct{} {\n    var t4 int32 = 1\n    var t5 int32 = 2\n    var t6 int32 = t4 + t5\n    var t7 int32\n    t7 = 26\n    var t8 int32 = t6 + t7\n    _goml_m_println(t8)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
@@ -1271,7 +1271,7 @@ fn sorts_dyn_helpers_and_compacts_builtin_impl_names() -> unit {
 
 #[test]
 fn uses_synthetic_hashmap_options_when_unmaterialized() -> unit {
-    let source = "fn main() -> unit { let map: HashMap[int32, string] = HashMap::new(); map[1] = \"ok\"; println(\"ok\"); }";
+    let source = "fn main() -> unit { let map: HashMap[i32, string] = HashMap::new(); map[1] = \"ok\"; println(\"ok\"); }";
     let output = encode(lower_source(source));
     testing::assert(string_contains(output, "type _goml_synthetic__goml_option__string interface"));
     testing::assert(
@@ -1335,7 +1335,7 @@ fn lowers_tag_only_enums_as_constants() -> unit {
 
 #[test]
 fn preserves_user_structs_before_mono_instances() -> unit {
-    let source = "struct Box[T] { value: T, } struct Box__i32 { value: int32, } fn main() -> unit { let a = Box { value: 10 }; let b = Box__i32 { value: 20 }; println(a.value + b.value) }";
+    let source = "struct Box[T] { value: T, } struct Box__i32 { value: i32, } fn main() -> unit { let a = Box { value: 10 }; let b = Box__i32 { value: 20 }; println(a.value + b.value) }";
     testing::assert_eq(
         encode(lower_source(source)),
         "package main\n\ntype Box__i32 struct {\n    value int32\n}\n\ntype Box__i32__mono1 struct {\n    value int32\n}\n\nfunc main0() struct{} {\n    var t1 int32 = 10\n    var t2 int32 = 20\n    var t3 int32 = t1 + t2\n    _goml_m_println(t3)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
@@ -1387,7 +1387,7 @@ fn emits_compact_builtin_sums_around_interface_payloads() -> unit {
 
 #[test]
 fn materializes_numeric_runtime_operands() -> unit {
-    let source = "fn main() -> unit { let a: uint8 = 13 % 5; let b: uint8 = 1 << 7; let c: uint8 = ~0; let d: uint8 = 511.to_uint8(); println(a); println(b); println(c); println(d); }";
+    let source = "fn main() -> unit { let a: u8 = 13 % 5; let b: u8 = 1 << 7; let c: u8 = ~0; let d: u8 = 511.to_u8(); println(a); println(b); println(c); println(d); }";
     testing::assert_eq(
         encode(lower_source(source)),
         "package main\n\nfunc main0() struct{} {\n    var a__0_lhs uint8 = 13\n    var a__0_rhs uint8 = 5\n    var a__0 uint8 = a__0_lhs % a__0_rhs\n    var b__1_lhs uint8 = 1\n    var b__1_rhs int = 7\n    var b__1 uint8 = b__1_lhs << b__1_rhs\n    var c__2_operand uint8 = 0\n    var c__2 uint8 = ^c__2_operand\n    var d__3_source int = 511\n    var d__3 uint8 = uint8(int(d__3_source))\n    _goml_m_println(a__0)\n    _goml_m_println(b__1)\n    _goml_m_println(c__2)\n    _goml_m_println(d__3)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
@@ -1398,7 +1398,7 @@ fn materializes_numeric_runtime_operands() -> unit {
 fn lowers_uint_and_runtime_traits() -> unit {
     let output = encode(
         lower_linked_source(
-            "fn main() -> unit { let value: uint = 40 + 2; println(value.to_string()); let values: HashMap[uint, string] = HashMap::new(); values.set(value, \"stored\"); match values.get(42) { Option::Some(item) => println(item), Option::None => println(\"missing\"), }; }",
+            "fn main() -> unit { let value: usize = 40 + 2; println(value.to_string()); let values: HashMap[usize, string] = HashMap::new(); values.set(value, \"stored\"); match values.get(42) { Option::Some(item) => println(item), Option::None => println(\"missing\"), }; }",
         ),
     );
     testing::assert(string_contains(output, "var value__0 uint"));
@@ -1408,20 +1408,20 @@ fn lowers_uint_and_runtime_traits() -> unit {
 
 #[test]
 fn emits_rounded_float32_literals() -> unit {
-    let source = "fn identity[T](x: T) -> T { x } fn main() -> unit { let value: float32 = identity(3.14); println(value.to_string()) }";
+    let source = "fn identity[T](x: T) -> T { x } fn main() -> unit { let value: f32 = identity(3.14); println(value.to_string()) }";
     let output = encode(lower_source(source));
     testing::assert(string_contains(output, "3.140000104904175"))
 }
 
 #[test]
 fn canonicalizes_float64_literals() -> unit {
-    let source = "fn main() -> unit { let value: float64 = 0.0; println(value.to_string()) }";
+    let source = "fn main() -> unit { let value: f64 = 0.0; println(value.to_string()) }";
     testing::assert(string_contains(encode(lower_source(source)), "var value__0 float64 = 0\n"))
 }
 
 #[test]
 fn disambiguates_dyn_helper_names() -> unit {
-    let source = "trait A { fn foo(self: Self) -> int32; fn b__foo(self: Self) -> int32; } struct C {} struct C__B {} impl A for C { fn foo(self: C) -> int32 { 1 } fn b__foo(self: C) -> int32 { 2 } } impl A for C__B { fn foo(self: C__B) -> int32 { 10 } fn b__foo(self: C__B) -> int32 { 20 } } fn main() -> unit { let left: dyn A = (C {}) as dyn A; let right: dyn A = (C__B {}) as dyn A; println(A::b__foo(left)); println(A::foo(right)); }";
+    let source = "trait A { fn foo(self: Self) -> i32; fn b__foo(self: Self) -> i32; } struct C {} struct C__B {} impl A for C { fn foo(self: C) -> i32 { 1 } fn b__foo(self: C) -> i32 { 2 } } impl A for C__B { fn foo(self: C__B) -> i32 { 10 } fn b__foo(self: C__B) -> i32 { 20 } } fn main() -> unit { let left: dyn A = (C {}) as dyn A; let right: dyn A = (C__B {}) as dyn A; println(A::b__foo(left)); println(A::foo(right)); }";
     testing::assert_eq(
         encode(lower_source(source)),
         "package main\n\ntype C struct {}\n\ntype C__B struct {}\n\ntype dyn__A_vtable struct {\n    foo func(any) int32\n    b__foo func(any) int32\n}\n\ntype dyn__A struct {\n    data any\n    vtable *dyn__A_vtable\n}\n\nfunc dyn__A__wrap__C__foo(self any) int32 {\n    return _goml_m_trait__impl_i_A_i_C_i_foo(self.(C))\n}\n\nfunc dyn__A__wrap__C__b__foo(self any) int32 {\n    return _goml_m_trait__impl_i_A_i_C_i_b____foo(self.(C))\n}\n\nfunc dyn__A__vtable__C() *dyn__A_vtable {\n    return &dyn__A_vtable{\n        foo: dyn__A__wrap__C__foo,\n        b__foo: dyn__A__wrap__C__b__foo,\n    }\n}\n\nfunc dyn__A__wrap__C__B__foo(self any) int32 {\n    return _goml_m_trait__impl_i_A_i_C____B_i_foo(self.(C__B))\n}\n\nfunc dyn__A__wrap__C__B__b__foo(self any) int32 {\n    return _goml_m_trait__impl_i_A_i_C____B_i_b____foo(self.(C__B))\n}\n\nfunc dyn__A__vtable__C__B() *dyn__A_vtable {\n    return &dyn__A_vtable{\n        foo: dyn__A__wrap__C__B__foo,\n        b__foo: dyn__A__wrap__C__B__b__foo,\n    }\n}\n\nfunc _goml_m_trait__impl_i_A_i_C_i_foo(self__0 C) int32 {\n    return 1\n}\n\nfunc _goml_m_trait__impl_i_A_i_C_i_b____foo(self__1 C) int32 {\n    return 2\n}\n\nfunc _goml_m_trait__impl_i_A_i_C____B_i_foo(self__2 C__B) int32 {\n    return 10\n}\n\nfunc _goml_m_trait__impl_i_A_i_C____B_i_b____foo(self__3 C__B) int32 {\n    return 20\n}\n\nfunc main0() struct{} {\n    var t11 C = C{}\n    var left__4 dyn__A = dyn__A{\n        data: t11,\n        vtable: dyn__A__vtable__C(),\n    }\n    var t12 C__B = C__B{}\n    var right__5 dyn__A = dyn__A{\n        data: t12,\n        vtable: dyn__A__vtable__C__B(),\n    }\n    var t13 int32 = left__4.vtable.b__foo(left__4.data)\n    _goml_m_println(t13)\n    var t14 int32 = right__5.vtable.foo(right__5.data)\n    _goml_m_println(t14)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
@@ -1436,7 +1436,7 @@ fn emits_blank_assignment_for_discarded_non_call_side_effects() -> unit {
 
 #[test]
 fn protects_index_intrinsics_from_user_functions() -> unit {
-    let source = "fn array_get(arr: [int32; 2], index: int32) -> int32 { 90 + index } fn array_set(arr: [int32; 2], index: int32, value: int32) -> [int32; 2] { [77, 88] } fn vec_get(v: Vec[int32], index: int32) -> int32 { 70 + index } fn vec_set(v: Vec[int32], index: int32, value: int32) -> unit { () } fn slice_get(s: Slice[int32], index: int32) -> int32 { 60 + index } fn hashmap_get(m: HashMap[string, int32], key: string) -> Option[int32] { Option::Some(55) } fn hashmap_set(m: HashMap[string, int32], key: string, value: int32) -> unit { () } fn main() -> unit { let a = [4, 5]; println(array_get(a, 1)); println(a[1]); let c: [int32; 2] = array_set(a, 0, 9); println(c[0]); let mut b = [1, 2]; b[0] = 9; println(array_get(b, 0)); println(b[0]); let v: Vec[int32] = Vec::new().pushed(8).pushed(9); println(vec_get(v, 1)); println(v[1]); let mut v2: Vec[int32] = Vec::new().pushed(1).pushed(2); vec_set(v2, 0, 99); println(v2[0]); v2[1] = 99; println(v2[1]); let s = v.slice(0, 2); println(slice_get(s, 1)); println(s[1]); let text = \"ab\"; println(string_get(text, 0)); println(text[1]); let m: HashMap[string, int32] = HashMap::new(); hashmap_set(m, \"b\", 11); match m[\"b\"] { Option::Some(x) => println(x), Option::None => println(0), }; m[\"a\"] = 42; match hashmap_get(m, \"a\") { Option::Some(x) => println(x), Option::None => println(0), }; match m[\"a\"] { Option::Some(x) => println(x), Option::None => println(0), }; } fn string_get(s: string, index: int32) -> char { 'x' }";
+    let source = "fn array_get(arr: [i32; 2], index: i32) -> i32 { 90 + index } fn array_set(arr: [i32; 2], index: i32, value: i32) -> [i32; 2] { [77, 88] } fn vec_get(v: Vec[i32], index: i32) -> i32 { 70 + index } fn vec_set(v: Vec[i32], index: i32, value: i32) -> unit { () } fn slice_get(s: Slice[i32], index: i32) -> i32 { 60 + index } fn hashmap_get(m: HashMap[string, i32], key: string) -> Option[i32] { Option::Some(55) } fn hashmap_set(m: HashMap[string, i32], key: string, value: i32) -> unit { () } fn main() -> unit { let a = [4, 5]; println(array_get(a, 1)); println(a[1]); let c: [i32; 2] = array_set(a, 0, 9); println(c[0]); let mut b = [1, 2]; b[0] = 9; println(array_get(b, 0)); println(b[0]); let v: Vec[i32] = Vec::new().pushed(8).pushed(9); println(vec_get(v, 1)); println(v[1]); let mut v2: Vec[i32] = Vec::new().pushed(1).pushed(2); vec_set(v2, 0, 99); println(v2[0]); v2[1] = 99; println(v2[1]); let s = v.slice(0, 2); println(slice_get(s, 1)); println(s[1]); let text = \"ab\"; println(string_get(text, 0)); println(text[1]); let m: HashMap[string, i32] = HashMap::new(); hashmap_set(m, \"b\", 11); match m[\"b\"] { Option::Some(x) => println(x), Option::None => println(0), }; m[\"a\"] = 42; match hashmap_get(m, \"a\") { Option::Some(x) => println(x), Option::None => println(0), }; match m[\"a\"] { Option::Some(x) => println(x), Option::None => println(0), }; } fn string_get(s: string, index: i32) -> char { 'x' }";
     let output = encode(lower_source(source));
     testing::assert(string_contains(output, "func array_get__Array_2_5int32("));
     testing::assert(string_contains(output, "func array_set__Array_2_5int32("));
@@ -1461,14 +1461,14 @@ fn protects_index_intrinsics_from_user_functions() -> unit {
 #[test]
 fn emits_unused_non_generic_enums() -> unit {
     testing::assert_eq(
-        encode(lower_source("enum Status { Idle, Busy(int32), }")),
+        encode(lower_source("enum Status { Idle, Busy(i32), }")),
         "package main\n\ntype Status struct {\n    _tag int32\n    _v1_0 int32\n}\n\nfunc main() {\n    main0()\n}\n",
     )
 }
 
 #[test]
 fn orders_runtime_types_before_tuples() -> unit {
-    let source = "fn make_counter() -> (() -> int32, () -> unit) { let cell = Ref::new(0); let next = || cell.get(); let reset = || cell.set(0); (next, reset) } fn main() -> unit { let _ = make_counter(); }";
+    let source = "fn make_counter() -> (() -> i32, () -> unit) { let cell = Ref::new(0); let next = || cell.get(); let reset = || cell.set(0); (next, reset) } fn main() -> unit { let _ = make_counter(); }";
     testing::assert(
         string_contains(
             encode(lower_source(source)),
@@ -1479,7 +1479,7 @@ fn orders_runtime_types_before_tuples() -> unit {
 
 #[test]
 fn lowers_callable_intrinsics() -> unit {
-    let source = "fn main() -> unit { let to_text: (int32) -> string = int32_to_string; println(to_text(7)); let get: (Vec[int32], int) -> int32 = vec_get; let push: (Vec[int32], int32) -> unit = vec_push; let values: Vec[int32] = Vec::new(); push(values, 11); push(values, 22); println(get(values, 1)); let make_slice: (Vec[int32], int, int) -> Slice[int32] = slice; let slice_get_value: (Slice[int32], int) -> int32 = slice_get; let view = make_slice(values, 0, 2); println(slice_get_value(view, 0)); }";
+    let source = "fn main() -> unit { let to_text: (i32) -> string = int32_to_string; println(to_text(7)); let get: (Vec[i32], isize) -> i32 = vec_get; let push: (Vec[i32], i32) -> unit = vec_push; let values: Vec[i32] = Vec::new(); push(values, 11); push(values, 22); println(get(values, 1)); let make_slice: (Vec[i32], isize, isize) -> Slice[i32] = slice; let slice_get_value: (Slice[i32], isize) -> i32 = slice_get; let view = make_slice(values, 0, 2); println(slice_get_value(view, 0)); }";
     testing::assert_eq(
         encode(lower_source(source)),
         "package main\n\nimport (\n    _goml_fmt \"fmt\"\n)\n\nfunc _goml_runtime_core_int32_to_string(x int32) string {\n    return _goml_fmt.Sprintf(\"%d\", x)\n}\n\ntype _goml_vec_int32 struct {\n    items []int32\n}\n\nfunc vec_push__Vec_5int32(vec *_goml_vec_int32, elem int32) struct{} {\n    vec.items = append(vec.items, elem)\n    return struct{}{}\n}\n\nfunc vec_get__Vec_5int32(vec *_goml_vec_int32, index int) int32 {\n    return vec.items[index]\n}\n\nfunc main0() struct{} {\n    var to_text__0 func(int32) string = _goml_runtime_core_int32_to_string\n    var t6 string = to_text__0(7)\n    _goml_m_println(t6)\n    var get__1 func(*_goml_vec_int32, int) int32 = vec_get__Vec_5int32\n    var push__2 func(*_goml_vec_int32, int32) struct{} = vec_push__Vec_5int32\n    var values__3 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_i32_r__i_new()\n    push__2(values__3, 11)\n    push__2(values__3, 22)\n    var t7 int32 = get__1(values__3, 1)\n    _goml_m_println(t7)\n    var make_slice__4 func(*_goml_vec_int32, int, int) []int32 = func(p0 *_goml_vec_int32, p1 int, p2 int) []int32 {\n        return p0.items[p1:p2]\n    }\n    var slice_get_value__5 func([]int32, int) int32 = func(p0 []int32, p1 int) int32 {\n        return p0[p1]\n    }\n    var view__6 []int32 = make_slice__4(values__3, 0, 2)\n    var t8 int32 = slice_get_value__5(view__6, 0)\n    _goml_m_println(t8)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
@@ -1504,7 +1504,7 @@ fn hoists_continuations_through_nested_matches() -> unit {
 
 #[test]
 fn keeps_mixed_match_continuations_in_branches() -> unit {
-    let source = "enum Choice { Early, Keep(int32), } fn choose(choice: Choice) -> int32 { let value = match choice { Choice::Early => return 1, Choice::Keep(value) => value, }; value + 1 } fn main() -> unit { println(choose(Choice::Keep(2))); }";
+    let source = "enum Choice { Early, Keep(i32), } fn choose(choice: Choice) -> i32 { let value = match choice { Choice::Early => return 1, Choice::Keep(value) => value, }; value + 1 } fn main() -> unit { println(choose(Choice::Keep(2))); }";
     let output = encode(lower_source(source));
     testing::assert(
         string_contains(output, "type Choice struct {\n    _tag int32\n    _v1_0 int32\n}"),
@@ -1516,7 +1516,7 @@ fn keeps_mixed_match_continuations_in_branches() -> unit {
 
 #[test]
 fn emits_string_hooks_and_vec_new_helpers() -> unit {
-    let source = "fn main() -> unit { let values: Vec[int32] = vec_new(); string_print(values.len().to_string()); string_println(\"!\"); let bytes: Vec[uint8] = Vec::new(); let (_, text) = string_from_utf8(bytes); string_print(text); let parts: Vec[string] = Vec::new(); string_println(string_concat(parts)); }";
+    let source = "fn main() -> unit { let values: Vec[i32] = vec_new(); string_print(values.len().to_string()); string_println(\"!\"); let bytes: Vec[u8] = Vec::new(); let (_, text) = string_from_utf8(bytes); string_print(text); let parts: Vec[string] = Vec::new(); string_println(string_concat(parts)); }";
     let output = encode(lower_linked_source(source));
     testing::assert(
         string_contains(output, "import (\n    _goml_fmt \"fmt\"\n    _goml_strings \"strings\"\n)"),

@@ -5,18 +5,18 @@ trait Convert[T] {
 
 struct Value {}
 
-impl Convert[int32] for Value {
+impl Convert[i32] for Value {
     type Output = string;
-    fn convert(self: Value) -> string { "int" }
+    fn convert(self: Value) -> string { "isize" }
 }
 
 impl Convert[string] for Value {
-    type Output = int32;
-    fn convert(self: Value) -> int32 { 7 }
+    type Output = i32;
+    fn convert(self: Value) -> i32 { 7 }
 }
 
 fn main() -> unit {
-    let text: string = Convert::[int32]::convert(Value {});
-    let number: int32 = Convert::[string]::convert(Value {});
+    let text: string = Convert::[i32]::convert(Value {});
+    let number: i32 = Convert::[string]::convert(Value {});
     let _ = (text, number);
 }

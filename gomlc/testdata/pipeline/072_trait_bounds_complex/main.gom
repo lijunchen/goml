@@ -11,7 +11,7 @@ trait MyEq {
 }
 
 trait MyHash {
-    fn hash(self: Self) -> int32;
+    fn hash(self: Self) -> i32;
 }
 
 trait Add {
@@ -19,7 +19,7 @@ trait Add {
 }
 
 trait Scale {
-    fn scale(self: Self, arg1: int32) -> Self;
+    fn scale(self: Self, arg1: i32) -> Self;
 }
 
 trait Inspect {
@@ -27,47 +27,47 @@ trait Inspect {
 }
 
 struct Boxed {
-    value: int32,
+    value: i32,
 }
 
-impl Display for int32 {
-    fn show(self: int32) -> string {
+impl Display for i32 {
+    fn show(self: i32) -> string {
         self.to_string()
     }
 }
 
-impl Debug for int32 {
-    fn show(self: int32) -> string {
+impl Debug for i32 {
+    fn show(self: i32) -> string {
         "i32(" + self.to_string() + ")"
     }
 }
 
-impl MyEq for int32 {
-    fn eq(self: int32, other: int32) -> bool {
+impl MyEq for i32 {
+    fn eq(self: i32, other: i32) -> bool {
         self == other
     }
 }
 
-impl MyHash for int32 {
-    fn hash(self: int32) -> int32 {
+impl MyHash for i32 {
+    fn hash(self: i32) -> i32 {
         (self * 16777619) + 216613626
     }
 }
 
-impl Add for int32 {
-    fn add(self: int32, other: int32) -> int32 {
+impl Add for i32 {
+    fn add(self: i32, other: i32) -> i32 {
         self + other
     }
 }
 
-impl Scale for int32 {
-    fn scale(self: int32, factor: int32) -> int32 {
+impl Scale for i32 {
+    fn scale(self: i32, factor: i32) -> i32 {
         self * factor
     }
 }
 
-impl Inspect for int32 {
-    fn inspect(self: int32) -> string {
+impl Inspect for i32 {
+    fn inspect(self: i32) -> string {
         "<" + self.to_string() + ">"
     }
 }
@@ -91,7 +91,7 @@ impl MyEq for Boxed {
 }
 
 impl MyHash for Boxed {
-    fn hash(self: Boxed) -> int32 {
+    fn hash(self: Boxed) -> i32 {
         ((self.value * 31) + 7) * 1315423911
     }
 }
@@ -103,7 +103,7 @@ impl Add for Boxed {
 }
 
 impl Scale for Boxed {
-    fn scale(self: Boxed, factor: int32) -> Boxed {
+    fn scale(self: Boxed, factor: i32) -> Boxed {
         Boxed { value: self.value * factor }
     }
 }
@@ -130,7 +130,7 @@ fn tag_text[Q: Debug + MyHash](tag: Q) -> string {
     (Debug::show(tag) + "#") + tag.hash().to_string()
 }
 
-fn combine_scaled[T: Add + Scale](a: T, b: T, factor: int32) -> T {
+fn combine_scaled[T: Add + Scale](a: T, b: T, factor: i32) -> T {
     a.add(b).scale(factor)
 }
 
@@ -164,13 +164,13 @@ fn sum_and_tag[T: Add + MyHash + Inspect, Q: Debug + MyHash](tag: Q, x: T, y: T,
 }
 
 fn main() {
-    let tag: int32 = 7;
-    let left: int32 = 10;
-    let right: int32 = 32;
-    let sum_tag: int32 = 0;
-    let first: int32 = 1;
-    let second: int32 = 2;
-    let third: int32 = 3;
+    let tag: i32 = 7;
+    let left: i32 = 10;
+    let right: i32 = 32;
+    let sum_tag: i32 = 0;
+    let first: i32 = 1;
+    let second: i32 = 2;
+    let third: i32 = 3;
     let _ = println(full_report(tag, left, right));
     let _ = println(full_report(Boxed { value: 99 }, Boxed { value: 3 }, Boxed { value: 4 }));
     let _ = println(sum_and_tag(sum_tag, first, second, third));

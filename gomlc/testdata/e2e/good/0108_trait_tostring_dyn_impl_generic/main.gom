@@ -6,8 +6,8 @@ struct Wrapper[T] {
     inner: T,
 }
 
-impl ToString for Wrapper[int32] {
-    fn to_string(self: Wrapper[int32]) -> string {
+impl ToString for Wrapper[i32] {
+    fn to_string(self: Wrapper[i32]) -> string {
         "Wrapper(" + self.inner.to_string() + ")"
     }
 }
@@ -23,7 +23,7 @@ fn print_it(x: dyn ToString) {
 }
 
 fn main() {
-    let a: Wrapper[int32] = Wrapper { inner: 42 };
+    let a: Wrapper[i32] = Wrapper { inner: 42 };
     let b = Wrapper { inner: "hello" };
     print_it(a as dyn ToString);
     print_it(b as dyn ToString);

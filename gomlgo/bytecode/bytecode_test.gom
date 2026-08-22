@@ -559,7 +559,7 @@ fn lowers_gomlc_lexical_task_scope_product_with_native_methods() -> unit {
     } else {}
 }
 
-fn native_call_instruction_count(program: BytecodeProgram) -> int {
+fn native_call_instruction_count(program: BytecodeProgram) -> isize {
     let count = Ref::new(0);
     for function in program.functions {
         for block in function.blocks {
@@ -620,10 +620,10 @@ fn links_used_standard_library_functions_to_a_deterministic_manifest() -> unit {
     }
     let manifest = testing::expect_ok(native_manifest(program), "native manifest failed");
     testing::assert_eq(manifest.calls.len(), 4);
-    testing::assert_eq(manifest.calls[0].call_id, 0.to_uint32());
-    testing::assert_eq(manifest.calls[1].call_id, 1.to_uint32());
-    testing::assert_eq(manifest.calls[2].call_id, 2.to_uint32());
-    testing::assert_eq(manifest.calls[3].call_id, 3.to_uint32())
+    testing::assert_eq(manifest.calls[0].call_id, 0.to_u32());
+    testing::assert_eq(manifest.calls[1].call_id, 1.to_u32());
+    testing::assert_eq(manifest.calls[2].call_id, 2.to_u32());
+    testing::assert_eq(manifest.calls[3].call_id, 3.to_u32())
 }
 
 #[test]

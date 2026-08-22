@@ -1,12 +1,12 @@
 struct EventHandler {
-    on_click: (int32, int32) -> unit,
+    on_click: (i32, i32) -> unit,
     on_key: (char) -> unit,
 }
 
 fn make_handler() -> EventHandler {
     let log = Ref::new(Vec::new());
     EventHandler {
-        on_click: |x: int32, y: int32| {
+        on_click: |x: i32, y: i32| {
             log.set(log.get().pushed("click:" + x.to_string() + "," + y.to_string()));
         },
         on_key: |c: char| {

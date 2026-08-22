@@ -1,4 +1,4 @@
-fn parse(flag: bool) -> Result[int32, string] {
+fn parse(flag: bool) -> Result[i32, string] {
     if flag {
         Result::Ok(5)
     } else {
@@ -6,7 +6,7 @@ fn parse(flag: bool) -> Result[int32, string] {
     }
 }
 
-fn bump(flag: bool, fallback: bool) -> Result[int32, string] {
+fn bump(flag: bool, fallback: bool) -> Result[i32, string] {
     let value = if flag {
         parse(fallback)?
     } else {
@@ -15,7 +15,7 @@ fn bump(flag: bool, fallback: bool) -> Result[int32, string] {
     Result::Ok(value + 1)
 }
 
-fn show(res: Result[int32, string]) -> string {
+fn show(res: Result[i32, string]) -> string {
     match res {
         Result::Ok(value) => "ok=" + value.to_string(),
         Result::Err(err) => "err=" + err,

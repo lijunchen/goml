@@ -1,13 +1,13 @@
 struct Matrix {
-    data: [[int32; 2]; 2],
+    data: [[i32; 2]; 2],
 }
 
 impl Matrix {
-    fn get(self: Matrix, row: int32, col: int32) -> int32 {
+    fn get(self: Matrix, row: i32, col: i32) -> i32 {
         self.data[row][col]
     }
     
-    fn trace(self: Matrix) -> int32 {
+    fn trace(self: Matrix) -> i32 {
         Matrix::get(self, 0, 0) + Matrix::get(self, 1, 1)
     }
 }

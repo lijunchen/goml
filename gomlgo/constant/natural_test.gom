@@ -3,7 +3,7 @@ package constant;
 use std::testing;
 
 fn parse_natural(value: string) -> Natural {
-    testing::expect_ok(natural_parse_digits(value, 10.to_uint32()), "failed to parse natural")
+    testing::expect_ok(natural_parse_digits(value, 10.to_u32()), "failed to parse natural")
 }
 
 #[test]
@@ -58,7 +58,7 @@ fn parses_binary_octal_and_hexadecimal_digits() -> unit {
     testing::assert_eq(
         natural_to_string(
             testing::expect_ok(
-                natural_parse_digits("ffff_ffff_ffff_ffff", 16.to_uint32()),
+                natural_parse_digits("ffff_ffff_ffff_ffff", 16.to_u32()),
                 "hex parse failed",
             ),
         ),
@@ -66,13 +66,13 @@ fn parses_binary_octal_and_hexadecimal_digits() -> unit {
     );
     testing::assert_eq(
         natural_to_string(
-            testing::expect_ok(natural_parse_digits("111111", 2.to_uint32()), "binary parse failed"),
+            testing::expect_ok(natural_parse_digits("111111", 2.to_u32()), "binary parse failed"),
         ),
         "63",
     );
     testing::assert_eq(
         natural_to_string(
-            testing::expect_ok(natural_parse_digits("777", 8.to_uint32()), "octal parse failed"),
+            testing::expect_ok(natural_parse_digits("777", 8.to_u32()), "octal parse failed"),
         ),
         "511",
     )

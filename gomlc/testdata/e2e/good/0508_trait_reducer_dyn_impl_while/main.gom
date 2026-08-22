@@ -1,5 +1,5 @@
 trait Reducer {
-    fn reduce(self: Self, arg1: int32, arg2: int32) -> int32;
+    fn reduce(self: Self, arg1: i32, arg2: i32) -> i32;
 }
 
 struct SumReducer {}
@@ -7,13 +7,13 @@ struct SumReducer {}
 struct MaxReducer {}
 
 impl Reducer for SumReducer {
-    fn reduce(self: SumReducer, acc: int32, x: int32) -> int32 {
+    fn reduce(self: SumReducer, acc: i32, x: i32) -> i32 {
         acc + x
     }
 }
 
 impl Reducer for MaxReducer {
-    fn reduce(self: MaxReducer, acc: int32, x: int32) -> int32 {
+    fn reduce(self: MaxReducer, acc: i32, x: i32) -> i32 {
         if x > acc {
             x
         } else {
@@ -22,7 +22,7 @@ impl Reducer for MaxReducer {
     }
 }
 
-fn fold_array(r: dyn Reducer, items: [int32; 5], init: int32) -> int32 {
+fn fold_array(r: dyn Reducer, items: [i32; 5], init: i32) -> i32 {
     let acc = Ref::new(init);
     let i = Ref::new(0);
     while i.get() < 5 {

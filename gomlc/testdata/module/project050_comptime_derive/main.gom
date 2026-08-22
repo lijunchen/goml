@@ -19,31 +19,31 @@ enum State {
     #[variant_label]
     Ready(
         #[payload_label]
-        int,
+        isize,
     ),
 }
 
 #[derive(RenamedLabel)]
 struct Alias {
-    value: int,
+    value: isize,
 }
 
 #[derive(FacadeLabel)]
 struct Facade {
-    value: int,
+    value: isize,
 }
 
 #[derive(Serialize)]
 struct Record {
-    value: int,
+    value: isize,
     label: string,
 }
 
 #[derive(Serialize)]
 enum Event {
     Ready,
-    Tuple(int, bool),
-    Named { value: int },
+    Tuple(isize, bool),
+    Named { value: isize },
 }
 
 #[derive(Serialize)]

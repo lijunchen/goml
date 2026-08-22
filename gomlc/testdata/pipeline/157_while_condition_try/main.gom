@@ -1,4 +1,4 @@
-fn step_some(i: int32) -> Option[bool] {
+fn step_some(i: i32) -> Option[bool] {
     if i < 3 {
         Option::Some(true)
     } else {
@@ -6,7 +6,7 @@ fn step_some(i: int32) -> Option[bool] {
     }
 }
 
-fn step_none(i: int32) -> Option[bool] {
+fn step_none(i: i32) -> Option[bool] {
     if i < 2 {
         Option::Some(true)
     } else {
@@ -14,7 +14,7 @@ fn step_none(i: int32) -> Option[bool] {
     }
 }
 
-fn run_some() -> Option[int32] {
+fn run_some() -> Option[i32] {
     let i = Ref::new(0);
     let total = Ref::new(0);
     while step_some(i.get())? {
@@ -24,7 +24,7 @@ fn run_some() -> Option[int32] {
     Option::Some(total.get())
 }
 
-fn run_none() -> Option[int32] {
+fn run_none() -> Option[i32] {
     let i = Ref::new(0);
     let total = Ref::new(0);
     while step_none(i.get())? {
@@ -34,7 +34,7 @@ fn run_none() -> Option[int32] {
     Option::Some(total.get())
 }
 
-fn show(x: Option[int32]) -> string {
+fn show(x: Option[i32]) -> string {
     match x {
         Option::Some(v) => "some=" + v.to_string(),
         Option::None => "none",

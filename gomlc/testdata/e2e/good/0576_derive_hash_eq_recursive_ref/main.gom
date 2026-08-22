@@ -5,7 +5,7 @@ enum Maybe[T] {
 
 #[derive(Hash, PartialEq, Eq)]
 struct Node {
-    value: int32,
+    value: i32,
     next: Ref[Maybe[Node]],
 }
 
@@ -22,7 +22,7 @@ impl PartialEq for Maybe[Node] {
 impl Eq for Maybe[Node] {}
 
 impl Hash for Maybe[Node] {
-    fn hash(self: Maybe[Node]) -> uint64 {
+    fn hash(self: Maybe[Node]) -> u64 {
         match self {
             Maybe::None => 0,
             Maybe::Some(node) => Hash::hash(node),

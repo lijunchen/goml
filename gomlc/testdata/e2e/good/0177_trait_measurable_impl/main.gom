@@ -1,23 +1,23 @@
 trait Measurable {
-    fn measure(self: Self) -> int32;
+    fn measure(self: Self) -> i32;
 }
 
 struct Rect {
-    w: int32,
-    h: int32,
+    w: i32,
+    h: i32,
 }
 
 impl Rect {
-    fn area(self: Rect) -> int32 {
+    fn area(self: Rect) -> i32 {
         self.w * self.h
     }
-    fn perimeter(self: Rect) -> int32 {
+    fn perimeter(self: Rect) -> i32 {
         2 * (self.w + self.h)
     }
 }
 
 impl Measurable for Rect {
-    fn measure(self: Rect) -> int32 {
+    fn measure(self: Rect) -> i32 {
         Rect::area(self)
     }
 }

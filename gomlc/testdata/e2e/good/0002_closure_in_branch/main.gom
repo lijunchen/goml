@@ -1,13 +1,13 @@
 fn main() {
     let cond = true;
-    let f: (int32) -> int32 = if cond { |x: int32| x + 1 } else { |x: int32| x * 2 };
+    let f: (i32) -> i32 = if cond { |x: i32| x + 1 } else { |x: i32| x * 2 };
     println(f(10).to_string());
 
-    let x: int32 = 1;
-    let g: (int32) -> int32 = match x {
-        1 => |n: int32| n + 10,
-        2 => |n: int32| n * 10,
-        _ => |n: int32| n,
+    let x: i32 = 1;
+    let g: (i32) -> i32 = match x {
+        1 => |n: i32| n + 10,
+        2 => |n: i32| n * 10,
+        _ => |n: i32| n,
     };
     println(g(5).to_string());
 }

@@ -1,6 +1,6 @@
 struct Point {
-    x: int32,
-    y: int32,
+    x: i32,
+    y: i32,
 }
 
 struct Wrapper[T] {
@@ -8,7 +8,7 @@ struct Wrapper[T] {
 }
 
 struct Node {
-    value: int32,
+    value: i32,
     next: List,
 }
 
@@ -24,7 +24,7 @@ enum Shape[T] {
 }
 
 impl Point {
-    fn new(x: int32, y: int32) -> Self {
+    fn new(x: i32, y: i32) -> Self {
         Point { x, y }
     }
 
@@ -42,7 +42,7 @@ fn wrap[T](value: T) -> T {
     id(value)
 }
 
-fn shape_value(value: Shape[int32]) -> int32 {
+fn shape_value(value: Shape[i32]) -> i32 {
     match value {
         Shape::Dot(point) => point.x + point.y,
         Shape::Wrapped(wrapper) => wrapper.value,
@@ -50,7 +50,7 @@ fn shape_value(value: Shape[int32]) -> int32 {
     }
 }
 
-fn list_value(value: List) -> int32 {
+fn list_value(value: List) -> i32 {
     match value {
         List::Cons(node) => node.value + list_value(node.next),
         List::Nil => 0,

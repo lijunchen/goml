@@ -1,9 +1,9 @@
 enum Action {
-    Run((int32) -> int32),
+    Run((i32) -> i32),
     Stop,
 }
 
-fn execute(a: Action, x: int32) -> int32 {
+fn execute(a: Action, x: i32) -> i32 {
     match a {
         Action::Run(f) => f(x),
         Action::Stop => 0,

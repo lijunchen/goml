@@ -1,4 +1,4 @@
-fn maybe_value(flag: bool) -> Option[int32] {
+fn maybe_value(flag: bool) -> Option[i32] {
     if flag {
         Option::Some(4)
     } else {
@@ -6,7 +6,7 @@ fn maybe_value(flag: bool) -> Option[int32] {
     }
 }
 
-fn with_base(base: int32, flag: bool) -> Option[int32] {
+fn with_base(base: i32, flag: bool) -> Option[i32] {
     let run = || {
         let value = maybe_value(flag)?;
         Option::Some(value + base)
@@ -14,7 +14,7 @@ fn with_base(base: int32, flag: bool) -> Option[int32] {
     run()
 }
 
-fn show(opt: Option[int32]) -> string {
+fn show(opt: Option[i32]) -> string {
     match opt {
         Option::Some(value) => "some=" + value.to_string(),
         Option::None => "none",

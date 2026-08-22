@@ -1,9 +1,9 @@
 struct Rule {
-    condition: (int32) -> bool,
-    action: (int32) -> string,
+    condition: (i32) -> bool,
+    action: (i32) -> string,
 }
 
-fn check_rules(rules: [Rule; 3], value: int32) -> string {
+fn check_rules(rules: [Rule; 3], value: i32) -> string {
     let i = Ref::new(0);
     let result = Ref::new("no match");
     while i.get() < 3 {

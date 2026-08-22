@@ -2,8 +2,8 @@ struct Wrapper[T] {
     inner: T,
 }
 
-impl Wrapper[int32] {
-    fn double(self: Self) -> int32 {
+impl Wrapper[i32] {
+    fn double(self: Self) -> i32 {
         self.inner * 2
     }
 }
@@ -13,6 +13,6 @@ fn make_wrapper[T](val: T) -> Wrapper[T] {
 }
 
 fn main() {
-    let w: Wrapper[int32] = make_wrapper(21);
+    let w: Wrapper[i32] = make_wrapper(21);
     println(w.double().to_string());
 }

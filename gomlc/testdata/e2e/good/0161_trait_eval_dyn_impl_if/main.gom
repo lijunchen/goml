@@ -1,28 +1,28 @@
 trait Eval {
-    fn eval(self: Self) -> int32;
+    fn eval(self: Self) -> i32;
 }
 
 struct Lit {
-    val: int32,
+    val: i32,
 }
 
 struct Neg {
-    val: int32,
+    val: i32,
 }
 
 impl Eval for Lit {
-    fn eval(self: Lit) -> int32 {
+    fn eval(self: Lit) -> i32 {
         self.val
     }
 }
 
 impl Eval for Neg {
-    fn eval(self: Neg) -> int32 {
+    fn eval(self: Neg) -> i32 {
         0 - self.val
     }
 }
 
-fn make_expr(positive: bool, n: int32) -> dyn Eval {
+fn make_expr(positive: bool, n: i32) -> dyn Eval {
     if positive {
         Lit { val: n } as dyn Eval
     } else {

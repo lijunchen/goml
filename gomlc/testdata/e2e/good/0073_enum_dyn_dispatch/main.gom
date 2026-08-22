@@ -1,14 +1,14 @@
 trait Area {
-    fn area(self: Self) -> int32;
+    fn area(self: Self) -> i32;
 }
 
 enum Shape {
-    Circle(int32),
-    Rect(int32, int32),
+    Circle(i32),
+    Rect(i32, i32),
 }
 
 impl Area for Shape {
-    fn area(self: Shape) -> int32 {
+    fn area(self: Shape) -> i32 {
         match self {
             Shape::Circle(r) => 3 * r * r,
             Shape::Rect(w, h) => w * h,

@@ -4,7 +4,7 @@ use std::collections;
 use std::testing;
 
 struct CollisionKey {
-    value: int,
+    value: isize,
 }
 
 impl PartialEq for CollisionKey {
@@ -16,17 +16,17 @@ impl PartialEq for CollisionKey {
 impl Eq for CollisionKey {}
 
 impl Hash for CollisionKey {
-    fn hash(self: CollisionKey) -> uint64 {
+    fn hash(self: CollisionKey) -> u64 {
         1
     }
 }
 
-fn key(value: int) -> CollisionKey {
+fn key(value: isize) -> CollisionKey {
     CollisionKey { value }
 }
 
 fn assert_basic_operations() -> unit {
-    let map: collections::IndexMap[string, int] = collections::IndexMap::with_capacity(-1);
+    let map: collections::IndexMap[string, isize] = collections::IndexMap::with_capacity(-1);
     testing::assert(map.is_empty());
     testing::assert_eq(map.len(), 0);
     testing::assert(map.insert("first", 1).is_none());
@@ -72,7 +72,7 @@ fn assert_basic_operations() -> unit {
 }
 
 fn assert_collision_growth_and_compaction() -> unit {
-    let map: collections::IndexMap[CollisionKey, int] = collections::IndexMap::with_capacity(1);
+    let map: collections::IndexMap[CollisionKey, isize] = collections::IndexMap::with_capacity(1);
     let index = Ref::new(0);
     while index.get() < 256 {
         testing::assert(map.insert(key(index.get()), index.get() * 10).is_none());

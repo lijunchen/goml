@@ -7,8 +7,8 @@ trait Container {
     fn contents(self: Self) -> string;
 }
 
-impl Container for Pair[int32, string] {
-    fn contents(self: Pair[int32, string]) -> string {
+impl Container for Pair[i32, string] {
+    fn contents(self: Pair[i32, string]) -> string {
         self.second
     }
 }
@@ -18,6 +18,6 @@ fn show_container(c: dyn Container) -> string {
 }
 
 fn main() {
-    let p: Pair[int32, string] = Pair { first: 1, second: "hello" };
+    let p: Pair[i32, string] = Pair { first: 1, second: "hello" };
     println(show_container(p as dyn Container));
 }

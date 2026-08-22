@@ -1,7 +1,7 @@
 package cache;
 
-pub static VALUE: OnceCell[FrozenVec[int]] = OnceCell::new();
+pub static VALUE: OnceCell[FrozenVec[isize]] = OnceCell::new();
 
-pub fn value() -> FrozenVec[int] {
+pub fn value() -> FrozenVec[isize] {
     VALUE.get_or_init(|| Vec::from_array([4, 5]).freeze())
 }

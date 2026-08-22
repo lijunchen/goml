@@ -1,10 +1,10 @@
 struct EventHandler {
     on_start: () -> unit,
-    on_data: (int32) -> unit,
+    on_data: (i32) -> unit,
     on_end: () -> unit,
 }
 
-fn run_pipeline(handler: EventHandler, data: [int32; 3]) {
+fn run_pipeline(handler: EventHandler, data: [i32; 3]) {
     handler.on_start();
     let i = Ref::new(0);
     while i.get() < 3 {

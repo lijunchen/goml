@@ -4,20 +4,20 @@ use generic_methods::api;
 use api::Render;
 
 fn render_generic[T: api::Render](value: T) -> string {
-    value.render::[int](11)
+    value.render::[isize](11)
 }
 
 fn main() {
     let value = api::Box { value: 7 };
-    let mapped = value.map(|item: int| item.to_string());
+    let mapped = value.map(|item: isize| item.to_string());
     println(mapped.value);
-    let explicit = api::Box::[int]::map::[string](
+    let explicit = api::Box::[isize]::map::[string](
         api::Box { value: 8 },
-        |item: int| item.to_string(),
+        |item: isize| item.to_string(),
     );
     println(explicit.value);
     let prefix = api::Prefix { value: "dot:" };
     println(prefix.render("ok"));
     println(render_generic(api::Prefix { value: "generic:" }));
-    println(api::Render::render::[int](api::Prefix { value: "ufcs:" }, 12));
+    println(api::Render::render::[isize](api::Prefix { value: "ufcs:" }, 12));
 }

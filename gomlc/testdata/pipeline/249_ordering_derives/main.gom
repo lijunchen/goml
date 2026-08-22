@@ -2,23 +2,23 @@ use std::cmp;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug)]
 struct Version {
-    major: int,
-    minor: int,
+    major: isize,
+    minor: isize,
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug)]
 enum Level {
     Low,
-    Medium(int, int),
+    Medium(isize, isize),
     High {
-        rank: int,
-        detail: int,
+        rank: isize,
+        detail: isize,
     },
 }
 
 #[derive(PartialEq, PartialOrd)]
 struct MaybeNumber {
-    value: float64,
+    value: f64,
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug)]
@@ -38,7 +38,7 @@ enum Phantom[T] {
 
 #[derive(PartialEq, PartialOrd)]
 enum PartialLevel {
-    Value(float64),
+    Value(f64),
     Empty,
 }
 
@@ -74,29 +74,29 @@ fn main() -> unit {
     println((phantom_first < phantom_second).to_string());
     let partial_nan = PartialLevel::Value(zero / zero);
     println(cmp::PartialOrd::partial_cmp(partial_nan, partial_nan).is_none().to_string());
-    let first_values: Vec[int] = Vec::from_array([1, 2]);
-    let second_values: Vec[int] = Vec::from_array([1, 3]);
+    let first_values: Vec[isize] = Vec::from_array([1, 2]);
+    let second_values: Vec[isize] = Vec::from_array([1, 3]);
     println((first_values < second_values).to_string());
     println((Option::Some(2) < Option::Some(3)).to_string());
-    let ok: Result[int, string] = Result::Ok(1);
-    let error: Result[int, string] = Result::Err("error");
+    let ok: Result[isize, string] = Result::Ok(1);
+    let error: Result[isize, string] = Result::Err("error");
     println((ok < error).to_string());
     println((first_values.slice(0, 2) < second_values.slice(0, 2)).to_string());
-    let values: HashMap[Vec[int], string] = HashMap::new();
+    let values: HashMap[Vec[isize], string] = HashMap::new();
     values.set(first_values, "vector");
     println(values.get(Vec::from_array([1, 2])).unwrap_or("missing"));
-    let default_tuple: (int, string) = Default::default();
+    let default_tuple: (isize, string) = Default::default();
     println((default_tuple == (0, "")).to_string());
-    let default_array: [int; 3] = Default::default();
+    let default_array: [isize; 3] = Default::default();
     println((default_array == [0, 0, 0]).to_string());
     println(((1, 2) < (1, 3)).to_string());
     println(ordering_name(cmp::Ord::cmp([1, 2], [1, 3])));
     let tuple_nan = (0.0, zero / zero);
     println(cmp::PartialOrd::partial_cmp(tuple_nan, tuple_nan).is_none().to_string());
-    let tuple_values: HashMap[(int, string), string] = HashMap::new();
+    let tuple_values: HashMap[(isize, string), string] = HashMap::new();
     tuple_values.set((1, "one"), "tuple");
     println(tuple_values.get((1, "one")).unwrap_or("missing"));
-    let array_values: HashMap[[int; 2], string] = HashMap::new();
+    let array_values: HashMap[[isize; 2], string] = HashMap::new();
     array_values.set([1, 2], "array");
     println(array_values.get([1, 2]).unwrap_or("missing"))
 }

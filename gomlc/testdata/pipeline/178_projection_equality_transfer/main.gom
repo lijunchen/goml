@@ -8,31 +8,31 @@ trait Source {
 }
 
 struct LeftSource {
-    value: int32,
+    value: i32,
 }
 
 struct RightSource {
-    value: int32,
+    value: i32,
 }
 
-impl Mark for int32 {
-    fn marked(self: int32) -> string {
+impl Mark for i32 {
+    fn marked(self: i32) -> string {
         "m" + self.to_string()
     }
 }
 
 impl Source for LeftSource {
-    type Item = int32;
+    type Item = i32;
 
-    fn get(self: LeftSource) -> int32 {
+    fn get(self: LeftSource) -> i32 {
         self.value
     }
 }
 
 impl Source for RightSource {
-    type Item = int32;
+    type Item = i32;
 
-    fn get(self: RightSource) -> int32 {
+    fn get(self: RightSource) -> i32 {
         self.value
     }
 }

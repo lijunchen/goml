@@ -10,19 +10,19 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 struct Item {
     #[serde(rename = "item_name")]
     name: string,
-    values: Vec[Option[int32]],
+    values: Vec[Option[i32]],
 }
 
 #[derive(Serialize, Deserialize)]
 enum Choice {
     None,
     #[serde(rename = "renamed_pair")]
-    Pair(int16, string),
+    Pair(i16, string),
     Named { enabled: bool },
 }
 
 struct StringIntMap {
-    entries: Vec[(string, int32)],
+    entries: Vec[(string, i32)],
 }
 
 struct InvalidSequence {}
@@ -65,25 +65,25 @@ impl Deserialize for SkippedSequence {
 struct Primitives {
     nothing: unit,
     flag: bool,
-    signed: int,
-    signed8: int8,
-    signed16: int16,
-    signed32: int32,
-    signed64: int64,
-    unsigned: uint,
-    unsigned8: uint8,
-    unsigned16: uint16,
-    unsigned32: uint32,
-    unsigned64: uint64,
-    float32_value: float32,
-    float64_value: float64,
+    signed: isize,
+    signed8: i8,
+    signed16: i16,
+    signed32: i32,
+    signed64: i64,
+    unsigned: usize,
+    unsigned8: u8,
+    unsigned16: u16,
+    unsigned32: u32,
+    unsigned64: u64,
+    float32_value: f32,
+    float64_value: f64,
     text: string,
     letter: char,
 }
 
 #[derive(Serialize, Deserialize)]
 struct Numeric {
-    value: int32,
+    value: i32,
 }
 
 struct ByteBuffer {
@@ -157,12 +157,12 @@ impl Serialize for StringIntMap {
 impl Deserialize for StringIntMap {
     fn deserialize[D: Deserializer](deserializer: D) -> Result[StringIntMap, string] {
         let _ = deserializer.begin_map()?;
-        let entries: Vec[(string, int32)] = Vec::from_array([]);
+        let entries: Vec[(string, i32)] = Vec::from_array([]);
         while deserializer.next_map_entry()? {
             deserializer.begin_map_key()?;
             let key: string = Deserialize::deserialize(deserializer)?;
             deserializer.begin_map_value()?;
-            let value: int32 = Deserialize::deserialize(deserializer)?;
+            let value: i32 = Deserialize::deserialize(deserializer)?;
             entries.push((key, value))
         }
         deserializer.end_map()?;
@@ -319,7 +319,7 @@ fn main() -> unit {
             Vec::from_array([])
         },
     };
-    let legacy_from_bytes: Result[(legacy::Legacy, int), string] = bincode::decode_from_slice(
+    let legacy_from_bytes: Result[(legacy::Legacy, isize), string] = bincode::decode_from_slice(
         legacy_bytes.slice(0, legacy_bytes.len()),
         bincode::standard(),
     );
@@ -328,7 +328,7 @@ fn main() -> unit {
         Err(error) => println(error),
     };
     let string_map = StringIntMap {
-        entries: Vec::from_array([("one", 1.to_int32()), ("two", 2.to_int32())]),
+        entries: Vec::from_array([("one", 1.to_i32()), ("two", 2.to_i32())]),
     };
     let string_map_json: string = json::to_string(string_map);
     println(string_map_json);
@@ -352,7 +352,7 @@ fn main() -> unit {
             Vec::from_array([])
         },
     };
-    let string_map_from_bytes: Result[(StringIntMap, int), string] = bincode::decode_from_slice(
+    let string_map_from_bytes: Result[(StringIntMap, isize), string] = bincode::decode_from_slice(
         string_map_bytes.slice(0, string_map_bytes.len()),
         bincode::standard(),
     );
@@ -377,7 +377,7 @@ fn main() -> unit {
         Err(error) => println(error),
     };
     let sequence_bytes: Vec[byte] = match bincode::encode_to_vec(
-        Vec::from_array([1.to_int32(), 2.to_int32()]),
+        Vec::from_array([1.to_i32(), 2.to_i32()]),
         bincode::standard(),
     ) {
         Ok(value) => value,
@@ -386,7 +386,7 @@ fn main() -> unit {
             Vec::from_array([])
         },
     };
-    let skipped: Result[(SkippedSequence, int), string] = bincode::decode_from_slice(
+    let skipped: Result[(SkippedSequence, isize), string] = bincode::decode_from_slice(
         sequence_bytes.slice(0, sequence_bytes.len()),
         bincode::standard(),
     );
@@ -412,7 +412,7 @@ fn main() -> unit {
             Vec::from_array([])
         },
     };
-    let primitive_from_bytes: Result[(Primitives, int), string] = bincode::decode_from_slice(
+    let primitive_from_bytes: Result[(Primitives, isize), string] = bincode::decode_from_slice(
         primitive_bytes.slice(0, primitive_bytes.len()),
         bincode::standard(),
     );
@@ -422,7 +422,7 @@ fn main() -> unit {
         ),
         Err(error) => println(error),
     };
-    let bytes = ByteBuffer { values: Vec::from_array([0.to_uint8(), 1.to_uint8(), 255.to_uint8()]) };
+    let bytes = ByteBuffer { values: Vec::from_array([0.to_u8(), 1.to_u8(), 255.to_u8()]) };
     let bytes_json = json::to_string(bytes);
     println(bytes_json);
     let bytes_from_json: Result[ByteBuffer, string] = json::from_string(bytes_json);
@@ -437,7 +437,7 @@ fn main() -> unit {
             Vec::from_array([])
         },
     };
-    let decoded_bytes: Result[(ByteBuffer, int), string] = bincode::decode_from_slice(
+    let decoded_bytes: Result[(ByteBuffer, isize), string] = bincode::decode_from_slice(
         encoded_bytes.slice(0, encoded_bytes.len()),
         bincode::standard(),
     );
@@ -562,7 +562,7 @@ fn main() -> unit {
         Ok(_) => println("wrong JSON string"),
         Err(error) => println(error),
     };
-    let truncated: Result[(Item, int), string] = bincode::decode_from_slice(
+    let truncated: Result[(Item, isize), string] = bincode::decode_from_slice(
         direct_standard.slice(0, direct_standard.len() - 1),
         standard,
     );

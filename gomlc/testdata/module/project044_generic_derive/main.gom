@@ -5,13 +5,13 @@ use tests::generic_derive::api;
 struct Marker {}
 
 fn main() -> unit {
-    let first: api::Box[int, Marker] = api::Box { value: 3 };
-    let second: api::Box[int, Marker] = api::Box { value: 3 };
+    let first: api::Box[isize, Marker] = api::Box { value: 3 };
+    let second: api::Box[isize, Marker] = api::Box { value: 3 };
     println(first.to_string());
     println(first == second);
     println(first.hash() == second.hash());
-    let none: api::Maybe[int, Marker] = api::Maybe::None;
-    let some: api::Maybe[int, Marker] = api::Maybe::Some(5);
+    let none: api::Maybe[isize, Marker] = api::Maybe::None;
+    let some: api::Maybe[isize, Marker] = api::Maybe::Some(5);
     println(none.to_string());
     println(some.to_string());
     println(none != some)

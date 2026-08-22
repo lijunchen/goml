@@ -11,8 +11,8 @@ fn force[T](lazy: Lazy[T]) -> T {
 }
 
 fn main() {
-    let x: Lazy[int32] = Lazy::Computed(42);
-    let y: Lazy[int32] = Lazy::Pending(|| 7 * 6);
+    let x: Lazy[i32] = Lazy::Computed(42);
+    let y: Lazy[i32] = Lazy::Pending(|| 7 * 6);
     println(force(x).to_string());
     println(force(y).to_string());
 }

@@ -1,8 +1,8 @@
 package math;
 
 pub struct Pair {
-    pub a: int32,
-    pub b: int32,
+    pub a: i32,
+    pub b: i32,
 }
 
 pub enum Op {
@@ -10,13 +10,13 @@ pub enum Op {
     Sub,
 }
 
-pub fn apply(op: Op, a: int32, b: int32) -> int32 {
+pub fn apply(op: Op, a: i32, b: i32) -> i32 {
     match op {
         Op::Add => a + b,
         Op::Sub => a - b,
     }
 }
 
-pub fn apply_pair(op: Op, p: Pair) -> int32 {
+pub fn apply_pair(op: Op, p: Pair) -> i32 {
     apply(op, p.a, p.b)
 }

@@ -1,18 +1,18 @@
 trait Functor {
-    fn fmap(self: Self, arg1: (int32) -> int32) -> Self;
+    fn fmap(self: Self, arg1: (i32) -> i32) -> Self;
 }
 
 struct Box {
-    value: int32,
+    value: i32,
 }
 
 impl Functor for Box {
-    fn fmap(self: Box, f: (int32) -> int32) -> Box {
+    fn fmap(self: Box, f: (i32) -> i32) -> Box {
         Box { value: f(self.value) }
     }
 }
 
-fn apply_twice[T: Functor](x: T, f: (int32) -> int32) -> T {
+fn apply_twice[T: Functor](x: T, f: (i32) -> i32) -> T {
     let y = Functor::fmap(x, f);
     Functor::fmap(y, f)
 }

@@ -1,26 +1,26 @@
 trait Reducer {
-    fn reduce(self: Self, arg1: int32) -> int32;
+    fn reduce(self: Self, arg1: i32) -> i32;
 }
 
 struct Summer {}
 
 struct Multiplier {
-    factor: int32,
+    factor: i32,
 }
 
 impl Reducer for Summer {
-    fn reduce(self: Summer, acc: int32) -> int32 {
+    fn reduce(self: Summer, acc: i32) -> i32 {
         acc + 1
     }
 }
 
 impl Reducer for Multiplier {
-    fn reduce(self: Multiplier, acc: int32) -> int32 {
+    fn reduce(self: Multiplier, acc: i32) -> i32 {
         acc * self.factor
     }
 }
 
-fn apply_reducer(r: dyn Reducer, init: int32, n: int32) -> int32 {
+fn apply_reducer(r: dyn Reducer, init: i32, n: i32) -> i32 {
     let acc = Ref::new(init);
     let i = Ref::new(0);
     while i.get() < n {

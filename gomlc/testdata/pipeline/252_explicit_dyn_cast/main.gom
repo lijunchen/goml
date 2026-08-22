@@ -8,7 +8,7 @@ trait Source {
 }
 
 struct Number {
-    value: int,
+    value: isize,
 }
 
 impl Display for Number {
@@ -18,9 +18,9 @@ impl Display for Number {
 }
 
 impl Source for Number {
-    type Item = int;
+    type Item = isize;
 
-    fn get(self: Number) -> int {
+    fn get(self: Number) -> isize {
         self.value
     }
 }
@@ -34,7 +34,7 @@ fn main() -> unit {
     println(display.display());
     let erased = erase(Number { value: 7 });
     println(erased.display());
-    let source = Number { value: 11 } as dyn Source[Item = int];
+    let source = Number { value: 11 } as dyn Source[Item = isize];
     println(source.get());
     let same = (Number { value: 13 } as dyn Display) as dyn Display;
     println(same.display())

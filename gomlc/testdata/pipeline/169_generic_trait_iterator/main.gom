@@ -6,8 +6,8 @@ trait Convert[T] {
 
 struct Token {}
 
-impl Convert[int32]for Token {
-    fn convert(self: Token) -> int32 {
+impl Convert[i32]for Token {
+    fn convert(self: Token) -> i32 {
         7
     }
 }
@@ -35,20 +35,20 @@ impl[T] Marker[T]for Any {
 }
 
 struct Counter {
-    current: Ref[int32],
-    end: int32,
+    current: Ref[i32],
+    end: i32,
 }
 
 impl Counter {
-    fn new(start: int32, end: int32) -> Self {
+    fn new(start: i32, end: i32) -> Self {
         Counter { current: Ref::new(start), end }
     }
 }
 
 impl Iterator for Counter {
-    type Item = int32;
+    type Item = i32;
 
-    fn next(self: Self) -> Option[int32] {
+    fn next(self: Self) -> Option[i32] {
         let current = self.current.get();
         if current < self.end {
             self.current.set(current + 1);
@@ -60,15 +60,15 @@ impl Iterator for Counter {
 }
 
 fn main() -> unit {
-    println(Convert::[int32]::convert(Token {}));
+    println(Convert::[i32]::convert(Token {}));
     println(Convert::[string]::convert(Token {}));
-    let converted: int32 = convert_to(Token {});
+    let converted: i32 = convert_to(Token {});
     println(converted);
-    println(Marker::[int32]::marker(Any {}));
+    println(Marker::[i32]::marker(Any {}));
     println(Marker::[string]::marker(Any {}));
-    println(Marker::[Vec[int32]]::marker(Any {}));
-    let mapped = iter::map(Counter::new(0, 8), |value: int32| value * 2);
-    let filtered = iter::filter(mapped, |value: int32| value > 4);
+    println(Marker::[Vec[i32]]::marker(Any {}));
+    let mapped = iter::map(Counter::new(0, 8), |value: i32| value * 2);
+    let filtered = iter::filter(mapped, |value: i32| value > 4);
     let limited = iter::take(filtered, 3);
     for value in limited {
         println(value);
@@ -76,13 +76,13 @@ fn main() -> unit {
     let sum = iter::fold(
         range(1, 5),
         0,
-        |total: int, value: int| {
+        |total: isize, value: isize| {
             total + value
         },
     );
     println(sum);
     let texts: Vec[string] = iter::collect(
-        iter::map(range(1, 4), |value: int| "v" + value.to_string()),
+        iter::map(range(1, 4), |value: isize| "v" + value.to_string()),
     );
     for text in texts {
         println(text);

@@ -3,11 +3,11 @@ enum Attempt[T, E] {
     Err(E),
 }
 
-fn attempt() -> Attempt[int32, string] {
+fn attempt() -> Attempt[i32, string] {
     Attempt::Ok(1)
 }
 
-fn bad() -> Attempt[int32, string] {
+fn bad() -> Attempt[i32, string] {
     let value = attempt()?;
     Attempt::Ok(value)
 }

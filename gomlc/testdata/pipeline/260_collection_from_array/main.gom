@@ -1,5 +1,5 @@
 struct LoggedKey {
-    id: int,
+    id: isize,
     log: Ref[string],
 }
 
@@ -13,29 +13,29 @@ impl PartialEq for LoggedKey {
 impl Eq for LoggedKey {}
 
 impl Hash for LoggedKey {
-    fn hash(self: LoggedKey) -> uint64 {
+    fn hash(self: LoggedKey) -> u64 {
         self.log.set(self.log.get() + "H");
-        self.id.to_uint64()
+        self.id.to_u64()
     }
 }
 
-fn logged_key(log: Ref[string], label: string, id: int) -> LoggedKey {
+fn logged_key(log: Ref[string], label: string, id: isize) -> LoggedKey {
     log.set(log.get() + label);
     LoggedKey { id, log }
 }
 
-fn logged_value(log: Ref[string], label: string, value: int) -> int {
+fn logged_value(log: Ref[string], label: string, value: isize) -> isize {
     log.set(log.get() + label);
     value
 }
 
 fn main() -> unit {
-    let make_vec: ([int; 3]) -> Vec[int] = Vec::from_array;
+    let make_vec: ([isize; 3]) -> Vec[isize] = Vec::from_array;
     let values = make_vec([1, 2, 3]);
     println(f"{values.len()}:{values[0]}:{values[2]}");
-    let empty: Vec[int] = Vec::[int]::from_array([]);
+    let empty: Vec[isize] = Vec::[isize]::from_array([]);
     println(empty.len());
-    let inferred_empty: Vec[int] = Vec::from_array([]);
+    let inferred_empty: Vec[isize] = Vec::from_array([]);
     println(inferred_empty.len());
     let mut source = [Ref::new(1), Ref::new(2)];
     let copied = Vec::from_array(source);
@@ -56,12 +56,12 @@ fn main() -> unit {
             None => 0,
         },
     );
-    let make_map: ([(string, int); 2]) -> HashMap[string, int] = HashMap::from_array;
+    let make_map: ([(string, isize); 2]) -> HashMap[string, isize] = HashMap::from_array;
     let words = make_map([("a", 1), ("b", 2)]);
     println(words.len());
-    let no_words = HashMap::[string, int]::from_array([]);
+    let no_words = HashMap::[string, isize]::from_array([]);
     println(no_words.len());
-    let inferred_no_words: HashMap[string, int] = HashMap::from_array([]);
+    let inferred_no_words: HashMap[string, isize] = HashMap::from_array([]);
     println(inferred_no_words.len());
     let pairs = Vec::from_array([(1, "a"), (2, "b")]);
     let nested = Vec::from_array([Vec::from_array([1, 2]), Vec::from_array([3, 4])]);

@@ -1,29 +1,29 @@
 struct Numbers {
-    values: Vec[int32],
-    conversions: Ref[int32],
+    values: Vec[i32],
+    conversions: Ref[i32],
 }
 
 impl IntoIterator for Numbers {
-    type Item = int32;
+    type Item = i32;
 
-    type IntoIter = FnIterator[int32];
+    type IntoIter = FnIterator[i32];
 
-    fn into_iter(self: Numbers) -> FnIterator[int32] {
+    fn into_iter(self: Numbers) -> FnIterator[i32] {
         self.conversions.set(self.conversions.get() + 1);
         self.values.iter()
     }
 }
 
-fn make_numbers(builds: Ref[int32], conversions: Ref[int32]) -> Numbers {
+fn make_numbers(builds: Ref[i32], conversions: Ref[i32]) -> Numbers {
     builds.set(builds.get() + 1);
-    let values: Vec[int32] = Vec::new();
+    let values: Vec[i32] = Vec::new();
     values.push(1);
     values.push(2);
     values.push(3);
     Numbers { values, conversions }
 }
 
-fn sum[S: IntoIterator](source: S) -> int32 where S::Item = int32 {
+fn sum[S: IntoIterator](source: S) -> i32 where S::Item = i32 {
     let total = Ref::new(0);
     for value in source {
         total.set(total.get() + value);
@@ -37,7 +37,7 @@ fn main() -> unit {
     println(sum(make_numbers(builds, conversions)));
     println(builds.get());
     println(conversions.get());
-    let values: Vec[int32] = Vec::new();
+    let values: Vec[i32] = Vec::new();
     values.push(10);
     values.push(20);
     values.push(30);

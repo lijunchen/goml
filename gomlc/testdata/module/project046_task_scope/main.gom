@@ -4,15 +4,15 @@ use std::task;
 use std::process;
 use std::time;
 
-fn first_error(_token: task::CancelToken) -> Result[int, string] {
+fn first_error(_token: task::CancelToken) -> Result[isize, string] {
     Result::Err("first")
 }
 
-fn middle_value(_token: task::CancelToken) -> Result[int, string] {
+fn middle_value(_token: task::CancelToken) -> Result[isize, string] {
     Result::Ok(2)
 }
 
-fn third_error(_token: task::CancelToken) -> Result[int, string] {
+fn third_error(_token: task::CancelToken) -> Result[isize, string] {
     Result::Err("third")
 }
 
@@ -81,7 +81,7 @@ fn main() -> unit {
     println(spawn_try_cancelled);
     let errors = task::scope(
         |scope: task::Scope| {
-            let values: Vec[task::Task[Result[int, string]]] = Vec::from_array(
+            let values: Vec[task::Task[Result[isize, string]]] = Vec::from_array(
                 [scope.spawn(first_error), scope.spawn(middle_value), scope.spawn(third_error)],
             );
             task::join_all_results(values)
@@ -95,7 +95,7 @@ fn main() -> unit {
         },
     };
     let recv_cancelled = Ref::new(false);
-    let recv_channel: Channel[int] = Channel::new(0);
+    let recv_channel: Channel[isize] = Channel::new(0);
     let _: Result[unit, string] = task::try_scope(
         |scope: task::Scope| {
             let _ = scope.spawn(
@@ -111,7 +111,7 @@ fn main() -> unit {
     );
     println(recv_cancelled.get());
     let send_cancelled = Ref::new(false);
-    let send_channel: Channel[int] = Channel::new(0);
+    let send_channel: Channel[isize] = Channel::new(0);
     let _: Result[unit, string] = task::try_scope(
         |scope: task::Scope| {
             let _ = scope.spawn(
@@ -185,7 +185,7 @@ fn main() -> unit {
     let concurrent = task::for_each_concurrent(
         2,
         Vec::from_array([0, 1, 2, 3]),
-        |_: task::CancelToken, value: int| if value % 2 == 0 {
+        |_: task::CancelToken, value: isize| if value % 2 == 0 {
             if value == 0 {
                 time::sleep(time::Duration::from_milliseconds(20))
             } else {};

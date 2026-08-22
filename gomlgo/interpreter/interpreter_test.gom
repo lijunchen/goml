@@ -52,7 +52,7 @@ fn test_instruction(kind: bytecode::InstructionKind) -> bytecode::Instruction {
     }
 }
 
-fn test_function(local_count: int, place_count: int, instructions: Vec[bytecode::Instruction]) -> bytecode::BytecodeFunction {
+fn test_function(local_count: isize, place_count: isize, instructions: Vec[bytecode::Instruction]) -> bytecode::BytecodeFunction {
     let locals: Vec[bytecode::Local] = Vec::with_capacity(local_count);
     for index in 0..local_count {
         locals.push(
@@ -197,7 +197,7 @@ fn executes_functions_assignments_loops_and_switches() -> unit {
     testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
     testing::assert_eq(result.stderr.to_string().unwrap_or(""), "6\n");
     testing::assert(result.error.is_none());
-    testing::assert(result.steps > 0.to_int64())
+    testing::assert(result.steps > 0.to_i64())
 }
 
 #[test]
@@ -470,7 +470,7 @@ fn executes_channel_select_and_labeled_breaks() -> unit {
 #[test]
 fn selects_ready_cases_from_the_configured_seed() -> unit {
     let first_config = default_config();
-    first_config.select_seed = 1.to_uint64();
+    first_config.select_seed = 1.to_u64();
     let first = run(load_bytecode("select_seed"), first_config);
     let repeated = run(load_bytecode("select_seed"), first_config);
     testing::assert_eq(first.exit_code, 0);
@@ -480,7 +480,7 @@ fn selects_ready_cases_from_the_configured_seed() -> unit {
         first.stderr.to_string().unwrap_or(""),
     );
     let second_config = default_config();
-    second_config.select_seed = 2.to_uint64();
+    second_config.select_seed = 2.to_u64();
     let second = run(load_bytecode("select_seed"), second_config);
     testing::assert_eq(second.exit_code, 0);
     testing::assert_eq(second.stderr.to_string().unwrap_or(""), "second 2\nblocked-first\n")
@@ -631,7 +631,7 @@ fn matches_go126_for_generic_instances() -> unit {
 #[test]
 fn stops_execution_when_instruction_fuel_is_exhausted() -> unit {
     let config = default_config();
-    config.max_steps = 3.to_int64();
+    config.max_steps = 3.to_i64();
     let result = run(load_bytecode("control"), config);
     testing::assert_eq(result.exit_code, 1);
     testing::assert(result.error.is_some());
@@ -644,7 +644,7 @@ fn copies_aggregate_values_and_preserves_pointer_identity() -> unit {
     let int_type = testing::expect_some(go_types::basic_type(world, "int"), "missing int type");
     let array_type = go_types::add_type(
         world,
-        go_types::TypeKind::Array { length: 2.to_int64(), element: int_type },
+        go_types::TypeKind::Array { length: 2.to_i64(), element: int_type },
     );
     let memory = new_memory();
     let initial = testing::expect_ok(zero_value(world, array_type), "zero array failed");

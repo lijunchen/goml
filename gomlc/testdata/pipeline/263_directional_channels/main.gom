@@ -1,14 +1,14 @@
 fn main() -> unit {
-    let channel: Channel[int] = Channel::new(2);
+    let channel: Channel[isize] = Channel::new(2);
     let (sender, receiver) = channel.split();
     sender.send(7);
     select priority {
         recv(receiver) as value => println(value.unwrap_or(0)),
         default => println(1),
     };
-    let channel: Channel[int] = Channel::new(1);
-    let sender: Sender[int] = channel.sender();
-    let receiver: Receiver[int] = channel.receiver();
+    let channel: Channel[isize] = Channel::new(1);
+    let sender: Sender[isize] = channel.sender();
+    let receiver: Receiver[isize] = channel.receiver();
     select priority {
         send(sender, 9) => println(receiver.recv().unwrap_or(0)),
         default => println(2),

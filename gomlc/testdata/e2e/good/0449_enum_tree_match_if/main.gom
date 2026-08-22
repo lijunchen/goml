@@ -1,16 +1,16 @@
 enum Tree {
-    Leaf(int32),
+    Leaf(i32),
     Node(Tree, Tree),
 }
 
-fn sum(t: Tree) -> int32 {
+fn sum(t: Tree) -> i32 {
     match t {
         Tree::Leaf(n) => n,
         Tree::Node(left, right) => sum(left) + sum(right),
     }
 }
 
-fn depth(t: Tree) -> int32 {
+fn depth(t: Tree) -> i32 {
     match t {
         Tree::Leaf(_) => 1,
         Tree::Node(left, right) => {

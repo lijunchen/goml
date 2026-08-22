@@ -11,8 +11,8 @@ fn flat_map[A, B](opt: Opt[A], f: (A) -> Opt[B]) -> Opt[B] {
 }
 
 fn main() {
-    let a: Opt[int32] = Opt::Some(10);
-    let b = flat_map(a, |x: int32| {
+    let a: Opt[i32] = Opt::Some(10);
+    let b = flat_map(a, |x: i32| {
         if x > 5 {
             Opt::Some(x.to_string())
         } else {

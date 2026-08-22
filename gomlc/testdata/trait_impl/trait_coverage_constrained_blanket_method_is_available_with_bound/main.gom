@@ -3,19 +3,19 @@ trait Mark {
 }
 
 trait Extra {
-    fn extra(self: Self) -> int32;
+    fn extra(self: Self) -> i32;
 }
 
-impl Mark for int32 {
-    fn mark(self: int32) -> unit { () }
+impl Mark for i32 {
+    fn mark(self: i32) -> unit { () }
 }
 
 impl[T: Mark] Extra for T {
-    fn extra(self: T) -> int32 { 1 }
+    fn extra(self: T) -> i32 { 1 }
 }
 
 fn main() -> unit {
-    let source: int32 = 1;
-    let value: int32 = source.extra();
+    let source: i32 = 1;
+    let value: i32 = source.extra();
     let _ = value;
 }

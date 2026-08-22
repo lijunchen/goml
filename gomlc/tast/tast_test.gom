@@ -295,7 +295,7 @@ fn checks_value_break_types_across_loop_paths() -> unit {
 #[test]
 fn checks_block_and_byte_string_types() -> unit {
     let valid = checked_diagnostics(
-        "fn answer() -> isize { { let base = 40; base + 2 } } fn main() -> unit { let empty = b\"\"; let bytes: Vec[byte] = br#\"raw\"#; let fixed: [byte; 3] = b\"raw\"; let _ = empty.len() + bytes.len() + fixed[0].to_int(); }",
+        "fn answer() -> isize { { let base = 40; base + 2 } } fn main() -> unit { let empty = b\"\"; let bytes: Vec[byte] = br#\"raw\"#; let fixed: [byte; 3] = b\"raw\"; let _ = empty.len() + bytes.len() + fixed[0].to_isize(); }",
     );
     testing::assert_eq(valid.len(), 0);
     let invalid = checked_diagnostics("fn wrong() -> Vec[isize] { b\"value\" }");
@@ -1613,6 +1613,14 @@ fn validates_declared_types_and_tostring_requirements() -> unit {
 }
 
 #[test]
+fn rejects_removed_numeric_conversion_methods() -> unit {
+    let diagnostics = checked_diagnostics(
+        "fn main() -> unit { let value: i32 = 1; let _: i64 = value.to_int64(); }",
+    );
+    testing::assert(has_diagnostic(diagnostics, "Method to_int64 not found for type i32"))
+}
+
+#[test]
 fn reports_unimported_package_members_canonically() -> unit {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(
@@ -2297,8 +2305,8 @@ fn specializes_array_builtin_lengths() -> unit {
 }
 
 #[test]
-fn checks_char_from_uint32_builtin() -> unit {
-    let file = checked_file("fn decode(value: u32) -> Option[char] { char_from_uint32(value) }");
+fn checks_char_from_u32_builtin() -> unit {
+    let file = checked_file("fn decode(value: u32) -> Option[char] { char_from_u32(value) }");
     match file.items.get(0) {
         Function(value) => match value.body.tail {
             Some(Call {
@@ -2306,7 +2314,7 @@ fn checks_char_from_uint32_builtin() -> unit {
                 args: _,
                 ty: App { ty: Con { name: option }, args },
             }) => {
-                testing::assert_eq(name, "char_from_uint32");
+                testing::assert_eq(name, "char_from_u32");
                 testing::assert_eq(option, "Option");
                 match args.get(0) {
                     Char => (),
@@ -3221,7 +3229,7 @@ fn qualified_struct_variants_win_over_same_named_structs() -> unit {
 
 #[test]
 fn accepts_transparent_aliases_bytes_and_forward_constants() -> unit {
-    let source = "type Pair[T] = (T, T); type Marker = byte; type Label = string; struct Entry { marker: Marker, label: Label } enum Event { Mark(Marker), Pair(Pair[i32]) } trait Read { fn read(self: Self) -> Marker; } impl Read for Entry { fn read(self: Entry) -> Marker { self.marker } } const next: i32 = base + 2; const base: i32 = 0x28; const marker: Marker = b'\\xFF'; fn sum(value: Pair[i32]) -> i32 { value.0 + value.1 } fn main() -> unit { let entry = Entry { marker, label: \"ok\" }; let raw: u8 = entry.read(); let pair: Pair[i32] = (next, 0b10); let _ = Event::Mark(raw); let _ = Event::Pair(pair); let _ = sum(pair) + raw.to_int32(); }";
+    let source = "type Pair[T] = (T, T); type Marker = byte; type Label = string; struct Entry { marker: Marker, label: Label } enum Event { Mark(Marker), Pair(Pair[i32]) } trait Read { fn read(self: Self) -> Marker; } impl Read for Entry { fn read(self: Entry) -> Marker { self.marker } } const next: i32 = base + 2; const base: i32 = 0x28; const marker: Marker = b'\\xFF'; fn sum(value: Pair[i32]) -> i32 { value.0 + value.1 } fn main() -> unit { let entry = Entry { marker, label: \"ok\" }; let raw: u8 = entry.read(); let pair: Pair[i32] = (next, 0b10); let _ = Event::Mark(raw); let _ = Event::Pair(pair); let _ = sum(pair) + raw.to_i32(); }";
     let file = checked_file(source);
     testing::assert_eq(file.constants.len(), 3)
 }

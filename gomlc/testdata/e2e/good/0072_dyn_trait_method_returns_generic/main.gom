@@ -1,13 +1,13 @@
 trait TryConvert {
-    fn try_to_int(self: Self) -> Option[int32];
+    fn try_to_int(self: Self) -> Option[i32];
 }
 
 struct IntValue {
-    n: int32,
+    n: i32,
 }
 
 impl TryConvert for IntValue {
-    fn try_to_int(self: IntValue) -> Option[int32] {
+    fn try_to_int(self: IntValue) -> Option[i32] {
         Option::Some(self.n)
     }
 }
@@ -17,13 +17,13 @@ struct StringValue {
 }
 
 impl TryConvert for StringValue {
-    fn try_to_int(self: StringValue) -> Option[int32] {
+    fn try_to_int(self: StringValue) -> Option[i32] {
         let _ = self;
         Option::None
     }
 }
 
-fn sum_convertible(items: Vec[dyn TryConvert]) -> int32 {
+fn sum_convertible(items: Vec[dyn TryConvert]) -> i32 {
     let sum = Ref::new(0);
     let i = Ref::new(0);
     while i.get() < items.len() {

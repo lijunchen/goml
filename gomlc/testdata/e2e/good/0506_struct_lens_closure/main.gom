@@ -5,7 +5,7 @@ struct Lens[S, A] {
 
 struct Person {
     name: string,
-    age: int32,
+    age: i32,
 }
 
 fn name_lens() -> Lens[Person, string] {
@@ -15,10 +15,10 @@ fn name_lens() -> Lens[Person, string] {
     }
 }
 
-fn age_lens() -> Lens[Person, int32] {
+fn age_lens() -> Lens[Person, i32] {
     Lens {
         get: |p: Person| p.age,
-        set: |p: Person, a: int32| Person { name: p.name, age: a },
+        set: |p: Person, a: i32| Person { name: p.name, age: a },
     }
 }
 

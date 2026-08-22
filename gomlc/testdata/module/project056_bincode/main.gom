@@ -6,17 +6,17 @@ use bincode::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 enum Event {
     Idle,
-    Pair(int8, uint64),
-    Named { code: uint16 },
+    Pair(i8, u64),
+    Named { code: u16 },
 }
 
 #[derive(Serialize, Deserialize)]
 struct Wire {
-    small: uint8,
-    signed: int16,
+    small: u8,
+    signed: i16,
     text: string,
-    absent: Option[uint32],
-    pair: (uint8, uint16),
+    absent: Option[u32],
+    pair: (u8, u16),
     event: Event,
 }
 
@@ -24,9 +24,9 @@ struct Wire {
 struct Packet {
     flag: bool,
     letter: char,
-    ratio: float32,
-    values: Vec[uint16],
-    optional: Option[int32],
+    ratio: f32,
+    values: Vec[u16],
+    optional: Option[i32],
     event: Event,
 }
 
@@ -57,7 +57,7 @@ fn bytes_equal(actual: Vec[byte], expected: Vec[byte]) -> bool {
 }
 
 fn print_wire_result(encoded: Vec[byte], config: bincode::Config) -> unit {
-    let decoded: Result[(Wire, int), string] = bincode::decode_from_slice(
+    let decoded: Result[(Wire, isize), string] = bincode::decode_from_slice(
         encoded.slice(0, encoded.len()),
         config,
     );
@@ -137,7 +137,7 @@ fn main() -> unit {
             Vec::from_array([])
         },
     };
-    let packet_decoded: Result[(Packet, int), string] = bincode::decode_from_slice(
+    let packet_decoded: Result[(Packet, isize), string] = bincode::decode_from_slice(
         packet_encoded.slice(0, packet_encoded.len()),
         bincode::standard(),
     );
@@ -156,7 +156,7 @@ fn main() -> unit {
         Err(error) => println(error),
     };
     let invalid: Vec[byte] = Vec::from_array([2]);
-    let invalid_bool: Result[(bool, int), string] = bincode::decode_from_slice(
+    let invalid_bool: Result[(bool, isize), string] = bincode::decode_from_slice(
         invalid.slice(0, invalid.len()),
         bincode::standard(),
     );

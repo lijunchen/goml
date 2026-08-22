@@ -9,7 +9,7 @@ use std::testing;
 use std::text;
 use std::time;
 
-fn compare_int(left: int, right: int) -> int {
+fn compare_int(left: isize, right: isize) -> isize {
     if left < right {
         -1
     } else if left > right {
@@ -19,7 +19,7 @@ fn compare_int(left: int, right: int) -> int {
     }
 }
 
-fn unwrap_int(value: Result[int, string]) -> int {
+fn unwrap_int(value: Result[isize, string]) -> isize {
     match value {
         Result::Ok(value) => value,
         Result::Err(error) => {
@@ -29,7 +29,7 @@ fn unwrap_int(value: Result[int, string]) -> int {
     }
 }
 
-fn unwrap_uint(value: Result[uint, string]) -> uint {
+fn unwrap_uint(value: Result[usize, string]) -> usize {
     match value {
         Result::Ok(value) => value,
         Result::Err(error) => {
@@ -39,7 +39,7 @@ fn unwrap_uint(value: Result[uint, string]) -> uint {
     }
 }
 
-fn unwrap_float32(value: Result[float32, string]) -> float32 {
+fn unwrap_float32(value: Result[f32, string]) -> f32 {
     match value {
         Result::Ok(value) => value,
         Result::Err(error) => {
@@ -49,7 +49,7 @@ fn unwrap_float32(value: Result[float32, string]) -> float32 {
     }
 }
 
-fn unwrap_float64(value: Result[float64, string]) -> float64 {
+fn unwrap_float64(value: Result[f64, string]) -> f64 {
     match value {
         Result::Ok(value) => value,
         Result::Err(error) => {
@@ -144,21 +144,21 @@ fn assert_num() -> unit {
 }
 
 fn assert_option_result() -> unit {
-    let some: Option[int] = Option::Some(3);
-    let none: Option[int] = Option::None;
+    let some: Option[isize] = Option::Some(3);
+    let none: Option[isize] = Option::None;
     testing::assert(some.is_some());
     testing::assert(none.is_none());
     testing::assert_eq(some.unwrap_or(0), 3);
     testing::assert_eq(none.unwrap_or_else(|| 7), 7);
-    testing::assert_eq(some.map(|value: int| value + 1).unwrap_or(0), 4);
-    testing::assert_eq(some.and_then(|value: int| Option::Some(value * 2)).unwrap_or(0), 6);
-    let converted: Result[int, string] = none.ok_or("missing");
+    testing::assert_eq(some.map(|value: isize| value + 1).unwrap_or(0), 4);
+    testing::assert_eq(some.and_then(|value: isize| Option::Some(value * 2)).unwrap_or(0), 6);
+    let converted: Result[isize, string] = none.ok_or("missing");
     testing::assert(converted.is_err());
-    let ok: Result[int, string] = Result::Ok(5);
+    let ok: Result[isize, string] = Result::Ok(5);
     testing::assert(ok.is_ok());
     testing::assert_eq(ok.unwrap_or(0), 5);
-    testing::assert_eq(ok.map(|value: int| value + 2).unwrap_or(0), 7);
-    let failed: Result[int, string] = Result::Err("bad");
+    testing::assert_eq(ok.map(|value: isize| value + 2).unwrap_or(0), 7);
+    let failed: Result[isize, string] = Result::Err("bad");
     testing::assert_eq(
         failed.map_err(|error: string| error + "!").unwrap_or_else(
             |error: string| if error == "bad!" {
@@ -169,12 +169,12 @@ fn assert_option_result() -> unit {
         ),
         9,
     );
-    testing::assert_eq(ok.and_then(|value: int| Result::Ok(value * 3)).unwrap_or(0), 15)
+    testing::assert_eq(ok.and_then(|value: isize| Result::Ok(value * 3)).unwrap_or(0), 15)
 }
 
 fn assert_iterators() -> unit {
     let values = Vec::from_array([10, 20, 30, 40]);
-    let empty_values: FnIterator[int] = iter::empty();
+    let empty_values: FnIterator[isize] = iter::empty();
     testing::assert(Iterator::next(empty_values).is_none());
     let once_value = iter::once(7);
     testing::assert_eq(Iterator::next(once_value).unwrap_or(0), 7);
@@ -192,25 +192,25 @@ fn assert_iterators() -> unit {
         },
     );
     testing::assert_eq(iter::collect(generated).get(1), 6);
-    let mapped = iter::map(values.iter(), |value: int| value + 1);
-    let filtered = iter::filter(mapped, |value: int| value > 20);
+    let mapped = iter::map(values.iter(), |value: isize| value + 1);
+    let filtered = iter::filter(mapped, |value: isize| value > 20);
     let limited = iter::take(filtered, 2);
-    let collected: Vec[int] = iter::collect(limited);
+    let collected: Vec[isize] = iter::collect(limited);
     testing::assert_eq(collected.len(), 2);
     testing::assert_eq(collected.get(0), 21);
     testing::assert_eq(collected.get(1), 31);
     let filtered_mapped = iter::filter_map(
         values.iter(),
-        |value: int| if value >= 30 {
+        |value: isize| if value >= 30 {
             Option::Some(value / 10)
         } else {
             Option::None
         },
     );
     testing::assert_eq(iter::collect(filtered_mapped).get(0), 3);
-    let taken: Vec[int] = iter::collect(iter::take_while(values.iter(), |value: int| value < 30));
+    let taken: Vec[isize] = iter::collect(iter::take_while(values.iter(), |value: isize| value < 30));
     testing::assert_eq(taken.len(), 2);
-    let skipped: Vec[int] = iter::collect(iter::skip_while(values.iter(), |value: int| value < 30));
+    let skipped: Vec[isize] = iter::collect(iter::skip_while(values.iter(), |value: isize| value < 30));
     testing::assert_eq(skipped.get(0), 30);
     testing::assert_eq(Iterator::next(iter::skip(values.iter(), 2)).unwrap_or(0), 30);
     let enumerated = iter::enumerate(values.iter());
@@ -229,16 +229,16 @@ fn assert_iterators() -> unit {
         },
         Option::None => testing::fail("zip failed"),
     };
-    let chained: Vec[int] = iter::collect(
+    let chained: Vec[isize] = iter::collect(
         iter::chain(Vec::from_array([1, 2]).iter(), Vec::from_array([3, 4]).iter()),
     );
     testing::assert_eq(chained.len(), 4);
     testing::assert_eq(chained.get(3), 4);
-    testing::assert_eq(iter::find(values.iter(), |value: int| value > 20).unwrap_or(0), 30);
+    testing::assert_eq(iter::find(values.iter(), |value: isize| value > 20).unwrap_or(0), 30);
     testing::assert_eq(
         iter::find_map(
             values.iter(),
-            |value: int| if value == 20 {
+            |value: isize| if value == 20 {
                 Option::Some("found")
             } else {
                 Option::None
@@ -246,32 +246,32 @@ fn assert_iterators() -> unit {
         ).unwrap_or(""),
         "found",
     );
-    testing::assert(iter::any(values.iter(), |value: int| value == 20));
-    testing::assert(iter::all(values.iter(), |value: int| value >= 10));
+    testing::assert(iter::any(values.iter(), |value: isize| value == 20));
+    testing::assert(iter::all(values.iter(), |value: isize| value >= 10));
     testing::assert_eq(iter::count(values.iter()), 4);
-    testing::assert_eq(iter::fold(values.iter(), 0, |sum: int, value: int| sum + value), 100);
-    testing::assert_eq(iter::position(values.iter(), |value: int| value == 30).unwrap_or(-1), 2);
+    testing::assert_eq(iter::fold(values.iter(), 0, |sum: isize, value: isize| sum + value), 100);
+    testing::assert_eq(iter::position(values.iter(), |value: isize| value == 30).unwrap_or(-1), 2);
     testing::assert_eq(iter::nth(values.iter(), 2).unwrap_or(0), 30);
     testing::assert(iter::nth(values.iter(), -1).is_none());
     testing::assert_eq(iter::last(values.iter()).unwrap_or(0), 40);
     testing::assert_eq(
-        iter::reduce(values.iter(), |left: int, right: int| left + right).unwrap_or(0),
+        iter::reduce(values.iter(), |left: isize, right: isize| left + right).unwrap_or(0),
         100,
     );
     let inspected_sum = Ref::new(0);
     let inspected = iter::inspect(
         values.iter(),
-        |value: int| inspected_sum.set(inspected_sum.get() + value),
+        |value: isize| inspected_sum.set(inspected_sum.get() + value),
     );
     testing::assert_eq(iter::count(inspected), 4);
     testing::assert_eq(inspected_sum.get(), 100);
     let each_sum = Ref::new(0);
-    iter::for_each(values.iter(), |value: int| each_sum.set(each_sum.get() + value));
+    iter::for_each(values.iter(), |value: isize| each_sum.set(each_sum.get() + value));
     testing::assert_eq(each_sum.get(), 100);
-    let while_mapped: Vec[int] = iter::collect(
+    let while_mapped: Vec[isize] = iter::collect(
         iter::map_while(
             values.iter(),
-            |value: int| if value < 30 {
+            |value: isize| if value < 30 {
                 Option::Some(value / 10)
             } else {
                 Option::None
@@ -287,12 +287,12 @@ fn assert_collections() -> unit {
     collections::stable_sort_by(values, compare_int);
     testing::assert_eq(values.get(0), 1);
     testing::assert_eq(values.get(4), 4);
-    match collections::binary_search_by(values, |value: int| compare_int(value, 3)) {
+    match collections::binary_search_by(values, |value: isize| compare_int(value, 3)) {
         Option::Some(index) => testing::assert_eq(values.get(index), 3),
         Option::None => testing::fail("binary search failed"),
     };
     testing::assert(values.contains(4));
-    testing::assert_eq(collections::position_by(values, |value: int| value == 2).unwrap_or(-1), 1);
+    testing::assert_eq(collections::position_by(values, |value: isize| value == 2).unwrap_or(-1), 1);
     testing::assert_eq(collections::min_by(values, compare_int).unwrap_or(0), 1);
     testing::assert_eq(collections::max_by(values, compare_int).unwrap_or(0), 4);
     collections::dedup(values);
@@ -305,7 +305,7 @@ fn assert_comparison() -> unit {
     testing::assert(cmp::compare(1, 2).is_lt());
     testing::assert(cmp::compare("same", "same").is_eq());
     testing::assert(cmp::compare(true, false).is_gt());
-    testing::assert_eq(cmp::Ordering::from_int(-9).to_int(), -1);
+    testing::assert_eq(cmp::Ordering::from_int(-9).to_isize(), -1);
     testing::assert(cmp::Ordering::Less.reverse().is_gt());
     testing::assert(cmp::Ordering::Equal.then(cmp::Ordering::Greater).is_gt());
     testing::assert(cmp::Ordering::Equal.then_with(|| cmp::Ordering::Less).is_lt());
@@ -325,7 +325,7 @@ fn assert_comparison() -> unit {
     testing::assert_eq(collections::binary_search(values, 3).unwrap_or(-1), 3);
     testing::assert_eq(collections::min(values).unwrap_or(0), 1);
     testing::assert_eq(collections::max(values).unwrap_or(0), 4);
-    collections::sort_by_ordering(values, |left: int, right: int| cmp::compare(right, left));
+    collections::sort_by_ordering(values, |left: isize, right: isize| cmp::compare(right, left));
     testing::assert_eq(values[0], 4);
     testing::assert_eq(values[4], 1)
 }

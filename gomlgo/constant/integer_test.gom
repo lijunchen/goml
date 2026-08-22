@@ -19,7 +19,7 @@ fn parses_and_formats_integer_literal_radices() -> unit {
 #[test]
 fn integer_arithmetic_exceeds_machine_width() -> unit {
     let shifted = integer_shift_left(integer_one(), 100);
-    let value = integer_add(shifted, integer_from_int64(3.to_int64()));
+    let value = integer_add(shifted, integer_from_int64(3.to_i64()));
     testing::assert_eq(integer_to_string(value), "1267650600228229401496703205379");
     testing::assert_eq(
         integer_to_string(integer_mul(value, parse_integer("4294967297"))),

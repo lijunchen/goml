@@ -1,4 +1,4 @@
-fn early_return() -> int {
+fn early_return() -> isize {
     defer println("return:outer");
     {
         defer println("return:inner");
@@ -7,7 +7,7 @@ fn early_return() -> int {
     0
 }
 
-fn maybe(value: Option[int]) -> Option[int] {
+fn maybe(value: Option[isize]) -> Option[isize] {
     defer println("try:cleanup");
     let number = value?;
     Option::Some(number)
@@ -33,7 +33,7 @@ fn observed_at_exit() -> unit {
     value.set("after")
 }
 
-fn pattern_cleanup(value: Option[int]) -> int {
+fn pattern_cleanup(value: Option[isize]) -> isize {
     defer println("pattern:cleanup");
     let Option::Some(number) = value else {
         return 0;

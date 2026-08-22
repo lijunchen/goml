@@ -1,28 +1,28 @@
 trait Transform {
-    fn apply(self: Self, arg1: int32) -> int32;
+    fn apply(self: Self, arg1: i32) -> i32;
 }
 
 struct Adder {
-    amount: int32,
+    amount: i32,
 }
 
 struct Multiplier {
-    factor: int32,
+    factor: i32,
 }
 
 impl Transform for Adder {
-    fn apply(self: Adder, x: int32) -> int32 {
+    fn apply(self: Adder, x: i32) -> i32 {
         x + self.amount
     }
 }
 
 impl Transform for Multiplier {
-    fn apply(self: Multiplier, x: int32) -> int32 {
+    fn apply(self: Multiplier, x: i32) -> i32 {
         x * self.factor
     }
 }
 
-fn apply_all(transforms: Vec[dyn Transform], x: int32) -> int32 {
+fn apply_all(transforms: Vec[dyn Transform], x: i32) -> i32 {
     let result = Ref::new(x);
     let i = Ref::new(0);
     while i.get() < transforms.len() {

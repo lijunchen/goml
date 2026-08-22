@@ -3,7 +3,7 @@ package collection_checks;
 use std::collections;
 
 pub struct CollisionKey {
-    value: int32,
+    value: i32,
 }
 
 impl PartialEq for CollisionKey {
@@ -15,7 +15,7 @@ impl PartialEq for CollisionKey {
 impl Eq for CollisionKey {}
 
 impl Hash for CollisionKey {
-    fn hash(self: CollisionKey) -> uint64 {
+    fn hash(self: CollisionKey) -> u64 {
         1
     }
 }
@@ -111,7 +111,7 @@ fn verify_interner() -> bool {
 
 fn verify_deque() -> bool {
     let ok = Ref::new(true);
-    let deque: collections::Deque[int32] = collections::Deque::with_capacity(3);
+    let deque: collections::Deque[i32] = collections::Deque::with_capacity(3);
     deque.push_back(1);
     deque.push_back(2);
     deque.push_back(3);
@@ -187,7 +187,7 @@ fn verify_index_vec_and_stack() -> bool {
     check(ok, values.get(root) == "root");
     values.set(root, "updated");
     check(ok, values.get(root) == "updated");
-    let stack: collections::Stack[int32] = collections::Stack::new();
+    let stack: collections::Stack[i32] = collections::Stack::new();
     stack.push(1);
     stack.push(2);
     match stack.peek() {

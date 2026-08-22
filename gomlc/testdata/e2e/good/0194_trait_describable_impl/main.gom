@@ -7,13 +7,13 @@ struct Pair[A, B] {
     second: B,
 }
 
-impl Describable for Pair[int32, string] {
-    fn describe(self: Pair[int32, string]) -> string {
+impl Describable for Pair[i32, string] {
+    fn describe(self: Pair[i32, string]) -> string {
         "pair(" + self.first.to_string() + ", " + self.second + ")"
     }
 }
 
 fn main() {
-    let p: Pair[int32, string] = Pair { first: 42, second: "hello" };
+    let p: Pair[i32, string] = Pair { first: 42, second: "hello" };
     println(Describable::describe(p));
 }

@@ -1,10 +1,10 @@
 struct Reducer {
-    init: int32,
-    step: (int32, int32) -> int32,
-    finalize: (int32) -> string,
+    init: i32,
+    step: (i32, i32) -> i32,
+    finalize: (i32) -> string,
 }
 
-fn run_reducer(r: Reducer, a: int32, b: int32, c: int32) -> string {
+fn run_reducer(r: Reducer, a: i32, b: i32, c: i32) -> string {
     let acc = r.step(r.init, a);
     let acc = r.step(acc, b);
     let acc = r.step(acc, c);

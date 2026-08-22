@@ -11,14 +11,14 @@ impl[S: Source] Pick[S::Item] for S {
     fn pick(self: S) -> S::Item { Source::get(self) }
 }
 
-struct Value { value: int32 }
+struct Value { value: i32 }
 
 impl Source for Value {
-    type Item = int32;
-    fn get(self: Value) -> int32 { self.value }
+    type Item = i32;
+    fn get(self: Value) -> i32 { self.value }
 }
 
 fn main() -> unit {
-    let value: int32 = (Value { value: 1 }).pick();
+    let value: i32 = (Value { value: 1 }).pick();
     let _ = value;
 }

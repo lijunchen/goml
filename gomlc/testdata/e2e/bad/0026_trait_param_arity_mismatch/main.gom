@@ -1,13 +1,13 @@
 trait Transformer {
-  fn transform(self: Self, arg1: int32, arg2: int32) -> int32;
+  fn transform(self: Self, arg1: i32, arg2: i32) -> i32;
 }
 
 struct Scaler {
-  factor: int32,
+  factor: i32,
 }
 
 impl Transformer for Scaler {
-  fn transform(self: Scaler, n: int32) -> int32 {
+  fn transform(self: Scaler, n: i32) -> i32 {
     n * self.factor
   }
 }

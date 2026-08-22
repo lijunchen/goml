@@ -1,13 +1,13 @@
 struct Mapper {
-    transform: (int32) -> int32,
+    transform: (i32) -> i32,
 }
 
-fn use_mapper(m: Mapper, x: int32) -> int32 {
+fn use_mapper(m: Mapper, x: i32) -> i32 {
     let f = m.transform;
     f(x)
 }
 
-fn double(x: int32) -> int32 { x * 2 }
+fn double(x: i32) -> i32 { x * 2 }
 
 fn main() {
     let m1 = Mapper { transform: double };

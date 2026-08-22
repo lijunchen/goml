@@ -1,15 +1,15 @@
 struct Pair {
-    left: int,
-    right: int,
+    left: isize,
+    right: isize,
 }
 
 enum Choice {
-    Value(int),
+    Value(isize),
     Empty,
 }
 
 #[comptime]
-fn factorial(value: int) -> int {
+fn factorial(value: isize) -> isize {
     if value < 2 {
         1
     } else {
@@ -18,7 +18,7 @@ fn factorial(value: int) -> int {
 }
 
 #[comptime]
-fn accumulate(limit: int) -> int {
+fn accumulate(limit: isize) -> isize {
     let mut index = 0;
     let mut total = 0;
     while index < limit {
@@ -29,12 +29,12 @@ fn accumulate(limit: int) -> int {
 }
 
 #[comptime]
-fn make_pair(value: int) -> Pair {
+fn make_pair(value: isize) -> Pair {
     Pair { left: value, right: value + 1 }
 }
 
 #[comptime]
-fn choose(value: int) -> Choice {
+fn choose(value: isize) -> Choice {
     if value > 0 {
         Choice::Value(value)
     } else {
@@ -43,7 +43,7 @@ fn choose(value: int) -> Choice {
 }
 
 #[comptime]
-fn nonnegative(value: int) -> int {
+fn nonnegative(value: isize) -> isize {
     if value < 0 {
         compile_error("value must be non-negative")
     } else {
@@ -52,7 +52,7 @@ fn nonnegative(value: int) -> int {
 }
 
 #[comptime]
-fn shadow(value: int) -> int {
+fn shadow(value: isize) -> isize {
     let base = value;
     let nested = {
         let base = base + 1;
@@ -62,11 +62,11 @@ fn shadow(value: int) -> int {
 }
 
 #[comptime]
-fn widen_negative(value: int8) -> uint64 {
-    value.to_uint64()
+fn widen_negative(value: i8) -> u64 {
+    value.to_u64()
 }
 
-const ANSWER: int = factorial(5);
+const ANSWER: isize = factorial(5);
 
 fn main() -> unit {
     let values = comptime {

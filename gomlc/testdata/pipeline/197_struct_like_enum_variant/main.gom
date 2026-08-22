@@ -2,8 +2,8 @@ enum Message[T] {
     Quit,
     Write(T),
     Move {
-        x: int32,
-        y: int32,
+        x: i32,
+        y: i32,
         label: T,
     },
 }
@@ -12,12 +12,12 @@ enum Message[T] {
 enum Key {
     Empty,
     Point {
-        x: int32,
-        y: int32,
+        x: i32,
+        y: i32,
     },
 }
 
-fn score(value: Message[string]) -> int32 {
+fn score(value: Message[string]) -> i32 {
     match value {
         Message::Quit => 0,
         Message::Write(_) => 1,

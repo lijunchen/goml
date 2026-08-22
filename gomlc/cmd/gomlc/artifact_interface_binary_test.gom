@@ -44,11 +44,7 @@ fn binary_comptime_module(value: isize, source_path: string) -> ctir::CtModule {
                 tail: Option::Some(
                     ctir::CtExpr {
                         kind: ctir::CtExprKind::Value(
-                            ctir::CtValue::Integer {
-                                signed: true,
-                                width: 64,
-                                bits: value.to_uint64(),
-                            },
+                            ctir::CtValue::Integer { signed: true, width: 64, bits: value.to_u64() },
                         ),
                         ty,
                         origin: 0,

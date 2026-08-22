@@ -1,16 +1,16 @@
 struct Processor {
-    transform: (int32) -> int32,
-    format: (int32) -> string,
+    transform: (i32) -> i32,
+    format: (i32) -> string,
 }
 
-fn make_processor(multiplier: int32, prefix: string) -> Processor {
+fn make_processor(multiplier: i32, prefix: string) -> Processor {
     Processor {
         transform: |x| x * multiplier,
         format: |x| prefix + x.to_string(),
     }
 }
 
-fn run(p: Processor, x: int32) -> string {
+fn run(p: Processor, x: i32) -> string {
     p.format(p.transform(x))
 }
 

@@ -1,10 +1,10 @@
 enum Action {
-    Add(int32),
-    Mul(int32),
+    Add(i32),
+    Mul(i32),
     Reset,
 }
 
-fn to_fn(action: Action) -> (int32) -> int32 {
+fn to_fn(action: Action) -> (i32) -> i32 {
     match action {
         Action::Add(n) => |x| x + n,
         Action::Mul(n) => |x| x * n,

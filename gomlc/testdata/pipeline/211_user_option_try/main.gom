@@ -3,7 +3,7 @@ enum Option[T] {
     None,
 }
 
-fn maybe_value(flag: bool) -> Option[int32] {
+fn maybe_value(flag: bool) -> Option[i32] {
     if flag {
         Option::Some(41)
     } else {
@@ -11,12 +11,12 @@ fn maybe_value(flag: bool) -> Option[int32] {
     }
 }
 
-fn compute(flag: bool) -> Option[int32] {
+fn compute(flag: bool) -> Option[i32] {
     let value = maybe_value(flag)?;
     Option::Some(value + 1)
 }
 
-fn show(value: Option[int32]) -> string {
+fn show(value: Option[i32]) -> string {
     match value {
         Option::Some(value) => value.to_string(),
         Option::None => "none",

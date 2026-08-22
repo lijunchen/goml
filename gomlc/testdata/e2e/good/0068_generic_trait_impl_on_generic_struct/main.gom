@@ -1,14 +1,14 @@
 trait Container {
-    fn size(self: Self) -> int32;
+    fn size(self: Self) -> i32;
 }
 
 struct Wrapper[T] { value: T }
 
 impl[T] Container for Wrapper[T] {
-    fn size(self: Wrapper[T]) -> int32 { let _ = self; 1 }
+    fn size(self: Wrapper[T]) -> i32 { let _ = self; 1 }
 }
 
-fn show_size[T: Container](c: T) -> int32 {
+fn show_size[T: Container](c: T) -> i32 {
     Container::size(c)
 }
 

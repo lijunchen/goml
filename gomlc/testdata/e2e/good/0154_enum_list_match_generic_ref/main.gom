@@ -3,7 +3,7 @@ enum List[T] {
     Nil,
 }
 
-fn len[T](list: List[T]) -> int32 {
+fn len[T](list: List[T]) -> i32 {
     match list {
         List::Cons(_, rest) => 1 + len(rest.get()),
         List::Nil => 0,
@@ -11,6 +11,6 @@ fn len[T](list: List[T]) -> int32 {
 }
 
 fn main() {
-    let list: List[int32] = List::Cons(1, Ref::new(List::Cons(2, Ref::new(List::Cons(3, Ref::new(List::Nil))))));
+    let list: List[i32] = List::Cons(1, Ref::new(List::Cons(2, Ref::new(List::Cons(3, Ref::new(List::Nil))))));
     println(len(list).to_string());
 }

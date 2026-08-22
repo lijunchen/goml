@@ -82,8 +82,8 @@ fn parses_interpreted_and_raw_strings() -> unit {
     match testing::expect_ok(parse_string_literal("\"\\xff\\x00\""), "byte string failed") {
         ConstValue::String(value) => {
             testing::assert_eq(value.byte_len(), 2);
-            testing::assert_eq(value.byte_get(0), 255.to_uint8());
-            testing::assert_eq(value.byte_get(1), 0.to_uint8());
+            testing::assert_eq(value.byte_get(0), 255.to_u8());
+            testing::assert_eq(value.byte_get(1), 0.to_u8());
         },
         _ => testing::fail("expected string constant"),
     };

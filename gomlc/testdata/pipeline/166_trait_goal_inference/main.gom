@@ -1,14 +1,14 @@
 trait Measure {
-    fn measure(self: Self) -> int;
+    fn measure(self: Self) -> isize;
 }
 
-impl Measure for Vec[int32] {
-    fn measure(self: Vec[int32]) -> int {
+impl Measure for Vec[i32] {
+    fn measure(self: Vec[i32]) -> isize {
         self.len()
     }
 }
 
-fn read_measure[T: Measure](value: T) -> int {
+fn read_measure[T: Measure](value: T) -> isize {
     Measure::measure(value)
 }
 

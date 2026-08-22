@@ -8,7 +8,7 @@ fn run_handler[T](h: Handler[T], input: T) -> string {
 }
 
 fn main() {
-    let h1 = Handler { name: "int_handler", process: |x: int32| x.to_string() };
+    let h1 = Handler { name: "int_handler", process: |x: i32| x.to_string() };
     let h2 = Handler { name: "str_handler", process: |x: string| "got: " + x };
     println(run_handler(h1, 42));
     println(run_handler(h2, "hello"));

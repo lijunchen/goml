@@ -3,7 +3,7 @@ package main;
 use test::const_patterns::values;
 use test::const_patterns::values::{helper};
 
-fn classify(value: int) -> string {
+fn classify(value: isize) -> string {
     match value {
         values::ANSWER | values::ALTERNATE => "known",
         _ => "other",
@@ -17,11 +17,11 @@ fn classify_bool(value: bool) -> string {
     }
 }
 
-fn exported_answer() -> int {
+fn exported_answer() -> isize {
     values::ANSWER
 }
 
-fn imported_name_binding(value: int) -> int {
+fn imported_name_binding(value: isize) -> isize {
     match value {
         helper => helper,
     }

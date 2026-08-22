@@ -6,5 +6,5 @@ enum Choice[T]{One,Two(T),Named{value:T}}
 trait Render{fn render(self:Self)->string;}
 impl[T] Pair[T]{pub fn swap(self:Pair[T])->Pair[T]{Pair{first:self.second,second:self.first}}}
 type Callback[T]=(T,Vec[T])->Result[T,string];
-const ANSWER:int32=42;
+const ANSWER:i32=42;
 fn choose[T:Render,U:Render](first:T,second:U,fallback:(T,U))->T where Vec[T]:Render,Vec[U]:Render{let _=second;let _=fallback;first}

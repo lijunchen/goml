@@ -4,7 +4,7 @@ use std::serde;
 use serde::{Deserialize, Serialize};
 
 pub struct Legacy {
-    pub value: int32,
+    pub value: i32,
 }
 
 impl Serialize for Legacy {
@@ -19,7 +19,7 @@ impl Serialize for Legacy {
 impl Deserialize for Legacy {
     fn deserialize[D: serde::Deserializer](deserializer: D) -> Result[Legacy, string] {
         deserializer.begin_struct("Legacy", 1)?;
-        let mut value: Option[int32] = Option::None;
+        let mut value: Option[i32] = Option::None;
         let mut field = deserializer.next_struct_field()?;
         while field.is_some() {
             match field {

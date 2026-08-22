@@ -17,7 +17,7 @@ fn assert_no_diagnostics(value: Analysis) -> unit {
     } else {}
 }
 
-fn last_substring(value: string, expected: string) -> Option[int] {
+fn last_substring(value: string, expected: string) -> Option[isize] {
     let result = Ref::new(Option::None);
     let index = Ref::new(0);
     while index.get() + expected.byte_len() <= value.byte_len() {
@@ -159,7 +159,7 @@ fn expands_builtin_derives_from_toolchain_source_handlers() -> unit {
 #[test]
 fn builtin_derives_require_builtin_source_exports() -> unit {
     let expanded = hir::expand_derives_with_environment(
-        ast::lower(parser::parse("#[derive(Eq)] struct Key { value: int }")),
+        ast::lower(parser::parse("#[derive(Eq)] struct Key { value: isize }")),
         hir::DeriveEnvironment {
             builtin: Option::None,
             dependencies: Vec::from_array([]),
@@ -191,10 +191,10 @@ fn analyzes_package_files_with_unsaved_overrides() -> unit {
     let root = "../gomlc/testdata/module/project033_cross_file_pattern_constructor";
     let main_path = root + "/main.gom";
     let types_path = root + "/types.gom";
-    let source = "package main; fn answer() -> int32 { helper() }";
+    let source = "package main; fn answer() -> i32 { helper() }";
     let overrides = Vec::new();
     overrides.push(
-        SourceOverride { path: types_path, source: "package main; fn helper() -> int32 { 42 }" },
+        SourceOverride { path: types_path, source: "package main; fn helper() -> i32 { 42 }" },
     );
     let analysis = analyze_with_overrides(main_path, source, overrides);
     testing::assert_eq(analysis.package_name, "test::cross_file_pattern_constructor");
@@ -364,7 +364,7 @@ fn analyzes_toolchain_standard_library_dependencies() -> unit {
 fn resolves_qualified_type_without_short_name_collision() -> unit {
     let root = "../gomlc/testdata/module/project011_complex_dependency_graph";
     let main_path = root + "/main.gom";
-    let source = "package main; use project011_complex_dependency_graph::core; fn inspect(value: core::Task[int]) -> unit { () } fn main() -> unit { () }";
+    let source = "package main; use project011_complex_dependency_graph::core; fn inspect(value: core::Task[isize]) -> unit { () } fn main() -> unit { () }";
     let overrides = Vec::from_array(
         [
             SourceOverride {
@@ -383,7 +383,7 @@ fn resolves_qualified_type_without_short_name_collision() -> unit {
 
 #[test]
 fn resolves_local_and_function_definitions() -> unit {
-    let local_source = "fn main() -> int32 { let value = 42; value }";
+    let local_source = "fn main() -> i32 { let value = 42; value }";
     let local_analysis = analyze("main.gom", local_source);
     match goto_definition(local_analysis, local_source.byte_len() - 3) {
         Some(definition) => testing::assert_eq(
@@ -392,7 +392,7 @@ fn resolves_local_and_function_definitions() -> unit {
         ),
         None => testing::fail("expected local definition"),
     };
-    let function_source = "fn helper() -> int32 { 42 } fn main() -> int32 { helper() }";
+    let function_source = "fn helper() -> i32 { 42 } fn main() -> i32 { helper() }";
     let function_analysis = analyze("main.gom", function_source);
     match last_substring(function_source, "helper") {
         Some(offset) => match goto_definition(function_analysis, offset) {
@@ -605,7 +605,7 @@ fn resolves_builtin_method_definitions() -> unit {
         },
         None => testing::fail("expected numeric builtin method"),
     };
-    let static_source = "fn main() -> Vec[int32] { Vec::new() }";
+    let static_source = "fn main() -> Vec[i32] { Vec::new() }";
     match last_substring(static_source, "new") {
         Some(offset) => {
             let analysis = analyze("main.gom", static_source);
@@ -627,7 +627,7 @@ fn resolves_builtin_method_definitions() -> unit {
         },
         None => testing::fail("expected builtin static method"),
     };
-    let ref_source = "fn main() -> int32 { let value = Ref::new(1.to_int32()); value.get() }";
+    let ref_source = "fn main() -> i32 { let value = Ref::new(1.to_i32()); value.get() }";
     match last_substring(ref_source, "get") {
         Some(offset) => {
             let analysis = analyze("main.gom", ref_source);
@@ -653,7 +653,7 @@ fn resolves_builtin_method_definitions() -> unit {
 
 #[test]
 fn resolves_collection_from_array_definitions() -> unit {
-    let source = "fn main() -> Vec[int] { Vec::from_array([1, 2]) }";
+    let source = "fn main() -> Vec[isize] { Vec::from_array([1, 2]) }";
     let analysis = analyze("main.gom", source);
     assert_no_diagnostics(analysis);
     match last_substring(source, "from_array") {
@@ -676,7 +676,7 @@ fn resolves_collection_from_array_definitions() -> unit {
         },
         None => testing::fail("expected Vec from_array call"),
     };
-    let map_source = "fn main() -> HashMap[string, int] { HashMap::from_array([(\"a\", 1)]) }";
+    let map_source = "fn main() -> HashMap[string, isize] { HashMap::from_array([(\"a\", 1)]) }";
     let map_analysis = analyze("main.gom", map_source);
     assert_no_diagnostics(map_analysis);
     match last_substring(map_source, "from_array") {
@@ -754,7 +754,7 @@ fn resolves_qualified_standard_library_definitions() -> unit {
 
 #[test]
 fn resolves_index_map_standard_library_definitions() -> unit {
-    let source = "use std::collections; fn main() -> unit { let values: collections::IndexMap[string, int] = collections::IndexMap::new(); values.insert(\"key\", 1); }";
+    let source = "use std::collections; fn main() -> unit { let values: collections::IndexMap[string, isize] = collections::IndexMap::new(); values.insert(\"key\", 1); }";
     match last_substring(source, "insert") {
         Some(offset) => {
             let analysis = analyze("/tmp/index-map-std.gom", source);
@@ -781,7 +781,7 @@ fn resolves_index_map_standard_library_definitions() -> unit {
 
 #[test]
 fn returns_signature_help_for_active_arguments() -> unit {
-    let source = "fn combine(left: int32, right: string) -> bool { true } fn main() -> bool { combine(1, \"x\") }";
+    let source = "fn combine(left: i32, right: string) -> bool { true } fn main() -> bool { combine(1, \"x\") }";
     let analysis = analyze("main.gom", source);
     match last_substring(source, "\"x\"") {
         Some(offset) => match signature_help(analysis, offset + 1) {
@@ -816,7 +816,7 @@ fn hides_method_receivers_in_signature_help() -> unit {
 
 #[test]
 fn shows_collection_from_array_signature_help() -> unit {
-    let source = "fn main() -> Vec[int] { Vec::from_array([1, 2]) }";
+    let source = "fn main() -> Vec[isize] { Vec::from_array([1, 2]) }";
     let analysis = analyze("main.gom", source);
     assert_no_diagnostics(analysis);
     match last_substring(source, "from_array(") {
@@ -842,7 +842,7 @@ fn shows_collection_from_array_signature_help() -> unit {
 
 #[test]
 fn returns_inlay_hints_for_unannotated_let_bindings() -> unit {
-    let source = "fn main() -> int { let value = 42; let named: int = value; named }";
+    let source = "fn main() -> isize { let value = 42; let named: isize = value; named }";
     let analysis = analyze("main.gom", source);
     let hints = inlay_hints(analysis);
     testing::assert_eq(hints.len(), 1);
@@ -881,12 +881,12 @@ fn returns_inlay_hints_for_closure_parameters() -> unit {
 
 #[test]
 fn completes_scope_and_struct_members() -> unit {
-    let scope_source = "fn main() -> int32 { let value = 42; value }";
+    let scope_source = "fn main() -> i32 { let value = 42; value }";
     let scope_analysis = analyze("main.gom", scope_source);
     testing::assert(
         has_completion(completions(scope_analysis, scope_source.byte_len() - 3), "value"),
     );
-    let member_source = "struct Point { x: int32, y: int32 } fn main() -> int32 { let point = Point { x: 1, y: 2 }; point.x }";
+    let member_source = "struct Point { x: i32, y: i32 } fn main() -> i32 { let point = Point { x: 1, y: 2 }; point.x }";
     let member_analysis = analyze("main.gom", member_source);
     match last_substring(member_source, "point.x") {
         Some(offset) => testing::assert(
@@ -898,7 +898,7 @@ fn completes_scope_and_struct_members() -> unit {
 
 #[test]
 fn completes_incomplete_member_and_enum_paths() -> unit {
-    let member_source = "struct Point { x: int32 } fn main() -> unit { let point = Point { x: 1 }; let _ = point.; () }";
+    let member_source = "struct Point { x: i32 } fn main() -> unit { let point = Point { x: 1 }; let _ = point.; () }";
     testing::assert(
         has_completion(
             completions(analyze("main.gom", member_source), member_source.byte_len() - 6),
@@ -914,7 +914,7 @@ fn completes_incomplete_member_and_enum_paths() -> unit {
         },
         None => testing::fail("expected enum path"),
     };
-    let argument_source = "struct Point { x: int32 } fn consume(value: int32) -> unit { () } fn main() -> unit { let point = Point { x: 1 }; consume(point.); () }";
+    let argument_source = "struct Point { x: i32 } fn consume(value: i32) -> unit { () } fn main() -> unit { let point = Point { x: 1 }; consume(point.); () }";
     match last_substring(argument_source, "point.") {
         Some(offset) => testing::assert(
             has_completion(
@@ -988,7 +988,7 @@ fn completes_builtin_and_dyn_trait_members() -> unit {
         Some(offset) => {
             let values = completions(analyze("main.gom", int_source), offset + 3);
             if has_completion(values, "to_string") {} else {
-                testing::fail("expected int to_string completion")
+                testing::fail("expected isize to_string completion")
             };
             if has_completion(values, "to_u8") {} else {
                 testing::fail("expected isize to_u8 completion")
@@ -997,7 +997,7 @@ fn completes_builtin_and_dyn_trait_members() -> unit {
                 testing::fail("unexpected isize identity conversion completion")
             } else {}
         },
-        None => testing::fail("expected int member"),
+        None => testing::fail("expected isize member"),
     };
     let string_source = "fn main(value: string) -> unit { value.con }";
     match last_substring(string_source, "value.con") {
@@ -1009,7 +1009,7 @@ fn completes_builtin_and_dyn_trait_members() -> unit {
         },
         None => testing::fail("expected string member"),
     };
-    let vec_source = "fn main() -> unit { let values: Vec[int32] = Vec::new(); values.p }";
+    let vec_source = "fn main() -> unit { let values: Vec[i32] = Vec::new(); values.p }";
     match last_substring(vec_source, "values.p") {
         Some(offset) => if has_completion(
             completions(analyze("main.gom", vec_source), offset + "values.p".byte_len()),
@@ -1091,7 +1091,7 @@ fn completes_imported_package_namespaces() -> unit {
 
 #[test]
 fn filters_completion_scope_and_suggests_keywords() -> unit {
-    let source = "fn first() -> int32 { let hidden = 1; hidden }\nfn second() -> int32 { let visible = 2; vis }";
+    let source = "fn first() -> i32 { let hidden = 1; hidden }\nfn second() -> i32 { let visible = 2; vis }";
     match last_substring(source, "vis") {
         Some(offset) => {
             let items = completions(analyze("main.gom", source), offset + 3);
@@ -1114,7 +1114,7 @@ fn filters_completion_scope_and_suggests_keywords() -> unit {
         ),
         None => testing::fail("expected loop keyword prefix"),
     };
-    let call_source = "fn use_value(value: int32) -> unit { () } fn main() -> unit { use_value( }";
+    let call_source = "fn use_value(value: i32) -> unit { () } fn main() -> unit { use_value( }";
     match last_substring(call_source, "use_value(") {
         Some(offset) => testing::assert_eq(
             completions(analyze("main.gom", call_source), offset + "use_value(".byte_len()).len(),
@@ -1141,13 +1141,13 @@ fn completes_select_syntax_contextually() -> unit {
     testing::assert(
         has_completion(completions(analyze("main.gom", receive), receive_offset), "recv"),
     );
-    let guard = "fn main() -> unit { let channel: Channel[int] = Channel::new(0); select { recv(channel) wh } }";
+    let guard = "fn main() -> unit { let channel: Channel[isize] = Channel::new(0); select { recv(channel) wh } }";
     let guard_offset = last_substring(guard, "wh").unwrap_or(0) + 2;
     testing::assert(has_completion(completions(analyze("main.gom", guard), guard_offset), "when"));
-    let binding = "fn main() -> unit { let channel: Channel[int] = Channel::new(0); select { recv(channel) a } }";
+    let binding = "fn main() -> unit { let channel: Channel[isize] = Channel::new(0); select { recv(channel) a } }";
     let binding_offset = last_substring(binding, " a").unwrap_or(0) + 2;
     testing::assert(has_completion(completions(analyze("main.gom", binding), binding_offset), "as"));
-    let matching = "fn main() -> unit { let channel: Channel[int] = Channel::new(0); select { recv(channel) m } }";
+    let matching = "fn main() -> unit { let channel: Channel[isize] = Channel::new(0); select { recv(channel) m } }";
     let matching_offset = last_substring(matching, " m").unwrap_or(0) + 2;
     testing::assert(
         has_completion(completions(analyze("main.gom", matching), matching_offset), "match"),
@@ -1156,7 +1156,7 @@ fn completes_select_syntax_contextually() -> unit {
 
 #[test]
 fn indexes_syntax_with_absolute_ranges_and_parents() -> unit {
-    let analysis = analyze("main.gom", "fn main() -> int32 { let value = 42; value }");
+    let analysis = analyze("main.gom", "fn main() -> i32 { let value = 42; value }");
     testing::assert(analysis.syntax.nodes.len() > 1);
     testing::assert(analysis.syntax.tokens.len() > 1);
     match token_at(analysis.syntax, 3) {
@@ -1180,7 +1180,7 @@ fn indexes_syntax_with_absolute_ranges_and_parents() -> unit {
 
 #[test]
 fn indexes_attributed_declarations_by_declared_names() -> unit {
-    let source = "#[test] fn works() -> unit { () } #[derive(Eq)] struct Key { value: int }";
+    let source = "#[test] fn works() -> unit { () } #[derive(Eq)] struct Key { value: isize }";
     let index = build_symbol_index(analyze("main.gom", source));
     let works = Ref::new(false);
     let key = Ref::new(false);
@@ -1199,7 +1199,7 @@ fn indexes_attributed_declarations_by_declared_names() -> unit {
 
 #[test]
 fn navigates_bindings_across_pattern_and_closure_syntax() -> unit {
-    let source = "struct Pair { left: int, right: int } enum Maybe { Some(Pair), None } fn main() -> int { let Pair { left: left_value, right: right_value } = Pair { left: 1, right: 2 }; let if_result = if let Some(Pair { left: if_value, right: _ }) = Some(Pair { left: 3, right: 4 }) { if_value } else { 0 }; let match_result = match Some(Pair { left: 5, right: 6 }) { Some(Pair { left: match_value, right: _ }) => match_value, None => 0 }; let total = Ref::new(0); for (for_left, for_right) in Vec::from_array([(7, 8)]) { total.set(total.get() + for_left + for_right) }; let closure = |closure_value: int| closure_value + left_value; closure(right_value) + if_result + match_result + total.get() }";
+    let source = "struct Pair { left: isize, right: isize } enum Maybe { Some(Pair), None } fn main() -> isize { let Pair { left: left_value, right: right_value } = Pair { left: 1, right: 2 }; let if_result = if let Some(Pair { left: if_value, right: _ }) = Some(Pair { left: 3, right: 4 }) { if_value } else { 0 }; let match_result = match Some(Pair { left: 5, right: 6 }) { Some(Pair { left: match_value, right: _ }) => match_value, None => 0 }; let total = Ref::new(0); for (for_left, for_right) in Vec::from_array([(7, 8)]) { total.set(total.get() + for_left + for_right) }; let closure = |closure_value: isize| closure_value + left_value; closure(right_value) + if_result + match_result + total.get() }";
     let analysis = analyze("main.gom", source);
     assert_no_diagnostics(analysis);
     for name in Vec::from_array(
@@ -1219,7 +1219,7 @@ fn navigates_bindings_across_pattern_and_closure_syntax() -> unit {
 
 #[test]
 fn returns_hover_from_typecheck_facts() -> unit {
-    let source = "fn main() -> int32 { let value = 42; value }";
+    let source = "fn main() -> i32 { let value = 42; value }";
     let analysis = analyze("main.gom", source);
     testing::assert_eq(analysis.checked.diagnostics.len(), 0);
     match hover(analysis, source.byte_len() - 3) {
@@ -1233,7 +1233,7 @@ fn returns_hover_from_typecheck_facts() -> unit {
 
 #[test]
 fn returns_function_hover_on_declarations_and_calls() -> unit {
-    let source = "fn add(x: int32, y: int32) -> int32 { x + y }\nfn main() -> int32 { add(1, 2) }";
+    let source = "fn add(x: i32, y: i32) -> i32 { x + y }\nfn main() -> i32 { add(1, 2) }";
     match hover(analyze("main.gom", source), 3) {
         Some(result) => {
             testing::assert_eq(result.contents, "(i32, i32) -> i32")
@@ -1251,7 +1251,7 @@ fn returns_function_hover_on_declarations_and_calls() -> unit {
 
 #[test]
 fn shows_comptime_capability_in_function_hover() -> unit {
-    let source = "#[comptime] fn value() -> int { 42 } fn main() -> int { value() }";
+    let source = "#[comptime] fn value() -> isize { 42 } fn main() -> isize { value() }";
     let analysis = analyze("main.gom", source);
     assert_no_diagnostics(analysis);
     match last_substring(source, "value") {
@@ -1265,7 +1265,7 @@ fn shows_comptime_capability_in_function_hover() -> unit {
 
 #[test]
 fn reports_comptime_evaluation_failures_during_analysis() -> unit {
-    let source = "#[comptime] fn fail() -> int { compile_error(\"query failure\") } fn main() -> int { comptime { fail() } }";
+    let source = "#[comptime] fn fail() -> isize { compile_error(\"query failure\") } fn main() -> isize { comptime { fail() } }";
     let analysis = analyze("main.gom", source);
     let found = Ref::new(false);
     for diagnostic in analysis.checked.diagnostics {
@@ -1279,7 +1279,7 @@ fn reports_comptime_evaluation_failures_during_analysis() -> unit {
 
 #[test]
 fn navigates_calls_inside_comptime_blocks() -> unit {
-    let source = "#[comptime] fn answer() -> int { 42 } fn main() -> int { comptime { answer() } }";
+    let source = "#[comptime] fn answer() -> isize { 42 } fn main() -> isize { comptime { answer() } }";
     let analysis = analyze("main.gom", source);
     assert_no_diagnostics(analysis);
     match last_substring(source, "answer") {
@@ -1301,7 +1301,7 @@ fn navigates_calls_inside_comptime_blocks() -> unit {
 
 #[test]
 fn shows_generic_method_parameters_in_hover_and_concrete_signature_help() -> unit {
-    let source = "struct Box[T] { value: T } impl[T] Box[T] { fn map[U](self: Box[T], convert: (T) -> U) -> Box[U] { Box { value: convert(self.value) } } } struct Other {} impl Other { fn map[V](self: Other, value: V) -> V { let _ = self; value } } fn main() -> Box[string] { let value = Box { value: 1 }; value.map(|item: int| item.to_string()) }";
+    let source = "struct Box[T] { value: T } impl[T] Box[T] { fn map[U](self: Box[T], convert: (T) -> U) -> Box[U] { Box { value: convert(self.value) } } } struct Other {} impl Other { fn map[V](self: Other, value: V) -> V { let _ = self; value } } fn main() -> Box[string] { let value = Box { value: 1 }; value.map(|item: isize| item.to_string()) }";
     let analysis = analyze("main.gom", source);
     assert_no_diagnostics(analysis);
     match last_substring(source, "map[U]") {
@@ -1328,7 +1328,7 @@ fn shows_generic_method_parameters_in_hover_and_concrete_signature_help() -> uni
 
 #[test]
 fn indexes_completes_and_hovers_type_aliases_and_constants() -> unit {
-    let source = "type Count = int32; const answer: Count = 42; fn main() -> int32 { answer }";
+    let source = "type Count = i32; const answer: Count = 42; fn main() -> i32 { answer }";
     let analysis = analyze("main.gom", source);
     assert_no_diagnostics(analysis);
     let alias_found = Ref::new(false);
@@ -1408,17 +1408,11 @@ fn resolves_external_registry_packages_with_mvs() -> unit {
         http + "/goml.toml",
         "[module]\npath = \"alice::http\"\n\n[dependencies]\n\"alice::shared\" = \"2.0.0\"\n",
     );
-    write_query_fixture(http + "/http.gom", "package http; pub fn status() -> int32 { 200 }");
+    write_query_fixture(http + "/http.gom", "package http; pub fn status() -> i32 { 200 }");
     write_query_fixture(shared_one + "/goml.toml", "[module]\npath = \"alice::shared\"\n");
     write_query_fixture(shared_two + "/goml.toml", "[module]\npath = \"alice::shared\"\n");
-    write_query_fixture(
-        shared_one + "/shared.gom",
-        "package shared; pub fn version() -> int32 { 1 }",
-    );
-    write_query_fixture(
-        shared_two + "/shared.gom",
-        "package shared; pub fn version() -> int32 { 2 }",
-    );
+    write_query_fixture(shared_one + "/shared.gom", "package shared; pub fn version() -> i32 { 1 }");
+    write_query_fixture(shared_two + "/shared.gom", "package shared; pub fn version() -> i32 { 2 }");
     match external_package_sources_at(registry, project, "alice::http", Vec::new()) {
         Ok(files) => {
             testing::assert_eq(files.len(), 1);

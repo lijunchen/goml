@@ -1,26 +1,26 @@
 trait Transform {
-    fn apply(self: Self, arg1: int32) -> int32;
+    fn apply(self: Self, arg1: i32) -> i32;
 }
 
 struct Doubler {}
 
 struct Adder {
-    amount: int32,
+    amount: i32,
 }
 
 impl Transform for Doubler {
-    fn apply(self: Doubler, x: int32) -> int32 {
+    fn apply(self: Doubler, x: i32) -> i32 {
         x * 2
     }
 }
 
 impl Transform for Adder {
-    fn apply(self: Adder, x: int32) -> int32 {
+    fn apply(self: Adder, x: i32) -> i32 {
         x + self.amount
     }
 }
 
-fn apply_chain(transforms: [dyn Transform; 3], input: int32) -> int32 {
+fn apply_chain(transforms: [dyn Transform; 3], input: i32) -> i32 {
     let result = Ref::new(input);
     let i = Ref::new(0);
     while i.get() < 3 {

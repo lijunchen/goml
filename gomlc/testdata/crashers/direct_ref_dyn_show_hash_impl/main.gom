@@ -2,14 +2,14 @@ trait Show {
     fn show(self: Self) -> string;
 }
 
-impl Show for int32 {
-    fn show(self: int32) -> string {
+impl Show for i32 {
+    fn show(self: i32) -> string {
         self.to_string()
     }
 }
 
 impl Hash for Ref[dyn Show] {
-    fn hash(self: Ref[dyn Show]) -> uint64 {
+    fn hash(self: Ref[dyn Show]) -> u64 {
         string_hash(Show::show(self.get()))
     }
 }

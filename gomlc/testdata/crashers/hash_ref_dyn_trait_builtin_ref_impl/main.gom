@@ -2,25 +2,25 @@ trait Display {
     fn show(self: Self) -> string;
 }
 
-impl Display for int32 {
-    fn show(self: int32) -> string {
+impl Display for i32 {
+    fn show(self: i32) -> string {
         self.to_string()
     }
 }
 
 impl Hash for dyn Display {
-    fn hash(self: dyn Display) -> uint64 {
+    fn hash(self: dyn Display) -> u64 {
         string_hash(Display::show(self))
     }
 }
 
 fn main() -> unit {
-    let first: int32 = 1;
+    let first: i32 = 1;
     let inner: dyn Display = first as dyn Display;
     let r = Ref::new(inner);
     let alias = r;
     let before = Hash::hash(r);
-    let second: int32 = 2;
+    let second: i32 = 2;
     let replacement: dyn Display = second as dyn Display;
     r.set(replacement);
     println((before == Hash::hash(alias)).to_string());

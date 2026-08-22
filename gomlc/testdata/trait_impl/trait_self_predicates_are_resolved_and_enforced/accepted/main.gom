@@ -3,11 +3,11 @@ trait Source[T] where Self::Item = T {
     fn get(self: Self) -> Self::Item;
 }
 
-struct Value { value: int32 }
+struct Value { value: i32 }
 
-impl Source[int32] for Value {
-    type Item = int32;
-    fn get(self: Value) -> int32 { self.value }
+impl Source[i32] for Value {
+    type Item = i32;
+    fn get(self: Value) -> i32 { self.value }
 }
 
 fn read[T, S: Source[T]](source: S) -> T {

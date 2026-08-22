@@ -1,4 +1,4 @@
-fn bump(cell: Ref[int32]) -> int32 {
+fn bump(cell: Ref[i32]) -> i32 {
     let _ = cell.set(cell.get() + 1);
     cell.get()
 }
@@ -9,27 +9,27 @@ fn flip(flag: Ref[bool]) -> bool {
     flag.get()
 }
 
-fn nested_total(cell: Ref[Ref[int32]]) -> int32 {
+fn nested_total(cell: Ref[Ref[i32]]) -> i32 {
     let inner = cell.get();
     let before = inner.get();
     let _ = inner.set(before + 2);
     before + inner.get()
 }
 
-fn alias_bump(cell: Ref[int32]) -> int32 {
+fn alias_bump(cell: Ref[i32]) -> i32 {
     let alias = cell;
     let _ = alias.set(alias.get() + 5);
     alias.get()
 }
 
-fn pair_sum() -> int32 {
+fn pair_sum() -> i32 {
     let first = Ref::new(4);
     let second = Ref::new(6);
     let _ = first.set(first.get() + second.get());
     first.get() + second.get()
 }
 
-fn reassign_nested(nested: Ref[Ref[int32]]) -> int32 {
+fn reassign_nested(nested: Ref[Ref[i32]]) -> i32 {
     let inner = nested.get();
     let _ = inner.set(inner.get() + 7);
     inner.get()

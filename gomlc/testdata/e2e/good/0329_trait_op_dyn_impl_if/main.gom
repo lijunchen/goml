@@ -1,28 +1,28 @@
 struct Adder {
-    n: int32,
+    n: i32,
 }
 
 struct Multiplier {
-    n: int32,
+    n: i32,
 }
 
 trait Op {
-    fn apply(self: Self, arg1: int32) -> int32;
+    fn apply(self: Self, arg1: i32) -> i32;
 }
 
 impl Op for Adder {
-    fn apply(self: Adder, x: int32) -> int32 {
+    fn apply(self: Adder, x: i32) -> i32 {
         x + self.n
     }
 }
 
 impl Op for Multiplier {
-    fn apply(self: Multiplier, x: int32) -> int32 {
+    fn apply(self: Multiplier, x: i32) -> i32 {
         x * self.n
     }
 }
 
-fn make_op(kind: int32) -> dyn Op {
+fn make_op(kind: i32) -> dyn Op {
     if kind == 1 {
         Adder { n: 5 } as dyn Op
     } else {

@@ -6,7 +6,7 @@ use toml::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 struct Database {
     host: string,
-    port: uint16,
+    port: u16,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -19,7 +19,7 @@ enum Mode {
 struct Config {
     title: string,
     enabled: bool,
-    ports: Vec[uint16],
+    ports: Vec[u16],
     database: Database,
     mode: Mode,
 }
@@ -32,7 +32,7 @@ fn config() -> Config {
     Config {
         title: "GoML",
         enabled: true,
-        ports: Vec::from_array([8000.to_uint16(), 8001.to_uint16()]),
+        ports: Vec::from_array([8000.to_u16(), 8001.to_u16()]),
         database: Database { host: "localhost", port: 5432 },
         mode: Mode::Development,
     }

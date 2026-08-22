@@ -1,21 +1,21 @@
 package iterables;
 
 pub struct Numbers {
-    values: Vec[int32],
+    values: Vec[i32],
 }
 
 impl IntoIterator for Numbers {
-    type Item = int32;
+    type Item = i32;
 
-    type IntoIter = FnIterator[int32];
+    type IntoIter = FnIterator[i32];
 
-    fn into_iter(self: Numbers) -> FnIterator[int32] {
+    fn into_iter(self: Numbers) -> FnIterator[i32] {
         self.values.iter()
     }
 }
 
 pub fn numbers() -> Numbers {
-    let values: Vec[int32] = Vec::new();
+    let values: Vec[i32] = Vec::new();
     values.push(1);
     values.push(2);
     values.push(3);

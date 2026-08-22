@@ -2049,7 +2049,7 @@ fn world_with_test_metadata(value: bytes::Bytes, metadata: WorldMetadata) -> byt
     let sections: Vec[wire::ArtifactBinarySection] = Vec::from_array([]);
     for section in container.sections {
         sections.push(
-            if section.id == 1.to_uint16() {
+            if section.id == 1.to_u16() {
                 wire::ArtifactBinarySection {
                     id: section.id,
                     version: section.version,
@@ -2200,7 +2200,7 @@ fn world_test_package_section_id(value: bytes::Bytes, package_name: string) -> u
         index = index + 2;
     }
     testing::fail("missing world test package " + package_name);
-    0.to_uint16()
+    0.to_u16()
 }
 
 #[test]
@@ -2340,7 +2340,7 @@ fn compiler_world_artifact_validates_metadata_identity() -> unit {
         },
     };
     let metadata = match world_decode_metadata_v2(
-        test_world_section(test_world_container(encoded), 1.to_uint16()).data,
+        test_world_section(test_world_container(encoded), 1.to_u16()).data,
     ) {
         Ok(value) => value,
         Err(error) => {
@@ -2468,7 +2468,7 @@ fn compiler_world_artifact_validates_prelude_sections_and_hash_chain() -> unit {
         "package section count does not match",
     );
     assert_world_decode_error(
-        world_with_test_section_version(encoded, prelude_section, 2.to_uint16()),
+        world_with_test_section_version(encoded, prelude_section, 2.to_u16()),
         "invalid world artifact section",
     );
     assert_world_decode_error(

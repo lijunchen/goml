@@ -1,15 +1,15 @@
-fn mark_channel(log: Ref[string], mark: string, channel: Channel[int]) -> Channel[int] {
+fn mark_channel(log: Ref[string], mark: string, channel: Channel[isize]) -> Channel[isize] {
     log.set(log.get() + mark);
     channel
 }
 
-fn mark_value(log: Ref[string], mark: string, value: int) -> int {
+fn mark_value(log: Ref[string], mark: string, value: isize) -> isize {
     log.set(log.get() + mark);
     value
 }
 
 fn main() -> unit {
-    let received = Channel::[int]::new(1);
+    let received = Channel::[isize]::new(1);
     received.send(7);
     let first = select {
         recv(received) as value => {
@@ -28,7 +28,7 @@ fn main() -> unit {
     println(branch);
     println(sent.recv().unwrap_or("missing"));
 
-    let empty = Channel::[int]::new(0);
+    let empty = Channel::[isize]::new(0);
     let fallback = select {
         recv(empty) as _ => -1,
         default => 42,
@@ -36,8 +36,8 @@ fn main() -> unit {
     println(fallback);
 
     let log = Ref::new("");
-    let left = Channel::[int]::new(0);
-    let right = Channel::[int]::new(0);
+    let left = Channel::[isize]::new(0);
+    let right = Channel::[isize]::new(0);
     select {
         send(mark_channel(log, "a", left), mark_value(log, "1", 1)) => (),
         send(mark_channel(log, "b", right), mark_value(log, "2", 2)) => (),

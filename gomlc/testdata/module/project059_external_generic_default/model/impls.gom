@@ -3,13 +3,13 @@ package model;
 use tests::external_generic_default::api;
 
 impl api::Pick for Value {
-    fn number(self: Self) -> int {
+    fn number(self: Self) -> isize {
         self.number
     }
 }
 
 impl api::Decode for Value {
-    fn decode(value: int) -> Result[Value, string] {
+    fn decode(value: isize) -> Result[Value, string] {
         Result::Ok(Value { number: value })
     }
 }

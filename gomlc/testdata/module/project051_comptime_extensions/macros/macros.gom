@@ -10,11 +10,11 @@ pub trait Inspect {
     fn accepted(self: Self) -> bool;
     fn report(self: Self) -> Report;
     fn initial(self: Self) -> char;
-    fn patterns(self: Self) -> int;
-    fn maybe(self: Self) -> Option[int];
-    fn large(self: Self) -> uint64;
+    fn patterns(self: Self) -> isize;
+    fn maybe(self: Self) -> Option[isize];
+    fn large(self: Self) -> u64;
     fn generic[A: Adapter](self: Self, adapter: A) -> Result[A::Output, string];
-    fn counted(self: Self) -> int;
+    fn counted(self: Self) -> isize;
 }
 
 pub trait Render {
@@ -131,7 +131,7 @@ fn patterns_method(input: DeriveInput) -> MetaMethod {
     meta_method(
         "patterns",
         params,
-        meta_type_call_site("int"),
+        meta_type_call_site("isize"),
         meta_expr_match(meta_expr_tuple(tuple_values), arms),
     )
 }
@@ -143,7 +143,7 @@ fn maybe_method(input: DeriveInput) -> MetaMethod {
     let params = meta_param_list_new();
     meta_param_list_push(params, "self", derive_target_type(input));
     let type_args = meta_type_list_new();
-    meta_type_list_push(type_args, meta_type_call_site("int"));
+    meta_type_list_push(type_args, meta_type_call_site("isize"));
     meta_method(
         "maybe",
         params,
@@ -159,8 +159,8 @@ fn large_method(input: DeriveInput) -> MetaMethod {
     meta_method(
         "large",
         params,
-        meta_type_call_site("uint64"),
-        meta_expr_integer("14695981039346656037", meta_type_call_site("uint64")),
+        meta_type_call_site("u64"),
+        meta_expr_integer("14695981039346656037", meta_type_call_site("u64")),
     )
 }
 
@@ -202,7 +202,7 @@ fn generic_method(input: DeriveInput) -> MetaMethod {
 #[comptime_derive]
 fn counted_method(input: DeriveInput) -> MetaMethod {
     let block = meta_block_new();
-    meta_block_let_mut_typed(block, "count", meta_type_call_site("int"), meta_expr_int(0));
+    meta_block_let_mut_typed(block, "count", meta_type_call_site("isize"), meta_expr_int(0));
     let loop_block = meta_block_new();
     meta_block_assign(
         loop_block,
@@ -221,7 +221,7 @@ fn counted_method(input: DeriveInput) -> MetaMethod {
     meta_method(
         "counted",
         params,
-        meta_type_call_site("int"),
+        meta_type_call_site("isize"),
         meta_block_finish(block, meta_expr_var("count")),
     )
 }

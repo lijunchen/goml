@@ -1,13 +1,13 @@
 trait Mapper {
-    fn map(self: Self, arg1: (int32) -> int32) -> int32;
+    fn map(self: Self, arg1: (i32) -> i32) -> i32;
 }
 
 struct Boxed {
-    value: int32,
+    value: i32,
 }
 
 impl Mapper for Boxed {
-    fn map(self: Boxed, f: (int32) -> int32) -> int32 {
+    fn map(self: Boxed, f: (i32) -> i32) -> i32 {
         f(self.value)
     }
 }

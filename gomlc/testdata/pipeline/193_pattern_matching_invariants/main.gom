@@ -10,30 +10,30 @@ enum MaybeNever {
 }
 
 enum Single {
-    Only(int32),
+    Only(i32),
 }
 
-fn absurd(value: Never) -> int32 {
+fn absurd(value: Never) -> i32 {
     match value {}
 }
 
-fn absurd_loop(value: Loop) -> int32 {
+fn absurd_loop(value: Loop) -> i32 {
     match value {}
 }
 
-fn maybe_never(value: MaybeNever) -> int32 {
+fn maybe_never(value: MaybeNever) -> i32 {
     match value {
         MaybeNever::Empty => 0,
     }
 }
 
-fn empty_never_vec(value: Vec[Never]) -> int32 {
+fn empty_never_vec(value: Vec[Never]) -> i32 {
     match value {
         [] => 0,
     }
 }
 
-fn sequence_coverage(value: Vec[bool]) -> int32 {
+fn sequence_coverage(value: Vec[bool]) -> i32 {
     match value {
         [] => 0,
         [_] => 1,
@@ -42,19 +42,19 @@ fn sequence_coverage(value: Vec[bool]) -> int32 {
     }
 }
 
-fn unwrap(value: Single) -> int32 {
+fn unwrap(value: Single) -> i32 {
     let (Single::Only(inner)) = value;
     inner
 }
 
-fn decide(flag: bool) -> int32 {
+fn decide(flag: bool) -> i32 {
     match flag {
         true => return 1,
         false => return 2,
     }
 }
 
-fn signed_zero(value: float64) -> string {
+fn signed_zero(value: f64) -> string {
     match value {
         - 0.0 => "zero",
         _ => "other",

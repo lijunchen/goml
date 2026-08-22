@@ -12,7 +12,7 @@ fn int_type() -> ctir::CtType {
 }
 
 fn int_value(value: isize) -> ctir::CtValue {
-    ctir::CtValue::Integer { signed: true, width: 64, bits: value.to_uint64() }
+    ctir::CtValue::Integer { signed: true, width: 64, bits: value.to_u64() }
 }
 
 fn int_expr(value: isize) -> ctir::CtExpr {
@@ -144,7 +144,7 @@ fn factorial_module() -> ctir::CtModule {
 
 fn expect_int(result: Result[ctir::CtValue, CtError]) -> isize {
     match result {
-        Ok(ctir::CtValue::Integer { signed: true, width: 64, bits }) => bits.to_int(),
+        Ok(ctir::CtValue::Integer { signed: true, width: 64, bits }) => bits.to_isize(),
         Ok(_) => {
             testing::fail("expected comptime integer");
             0
@@ -819,7 +819,7 @@ fn applies_integer_casts_and_reports_numeric_failures() -> unit {
         Ok(ctir::CtValue::Integer { signed, width, bits }) => {
             testing::assert(!signed);
             testing::assert_eq(width, 64);
-            testing::assert_eq(bits, ~(0.to_uint64()))
+            testing::assert_eq(bits, ~(0.to_u64()))
         },
         Ok(_) => testing::fail("expected widened integer"),
         Err(error) => testing::fail(error.message),
@@ -847,7 +847,7 @@ fn applies_integer_casts_and_reports_numeric_failures() -> unit {
     let shift = binary_expr(
         ctir::CtBinaryOp::Shl,
         narrow_int_expr(false, 8, 1),
-        narrow_int_expr(true, 64, ~(0.to_uint64())),
+        narrow_int_expr(true, 64, ~(0.to_u64())),
         narrow_int_type(false, 8),
     );
     match evaluate_expression(shift, Vec::from_array([]), default_limits()) {

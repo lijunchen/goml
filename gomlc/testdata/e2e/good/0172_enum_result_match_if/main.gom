@@ -3,7 +3,7 @@ enum Result[T, E] {
     Err(E),
 }
 
-fn div(a: int32, b: int32) -> Result[int32, string] {
+fn div(a: i32, b: i32) -> Result[i32, string] {
     if b == 0 {
         Result::Err("division by zero")
     } else {
@@ -11,7 +11,7 @@ fn div(a: int32, b: int32) -> Result[int32, string] {
     }
 }
 
-fn show_result(r: Result[int32, string]) -> string {
+fn show_result(r: Result[i32, string]) -> string {
     match r {
         Result::Ok(v) => "Ok(" + v.to_string() + ")",
         Result::Err(e) => "Err(" + e + ")",

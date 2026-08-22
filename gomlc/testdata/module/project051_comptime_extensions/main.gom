@@ -8,8 +8,8 @@ struct Entry[T] {
     #[metadata(field_name, owner::value, "suffix", rename = "entry", with = owner::codec)]
     name: string,
     value: Vec[T],
-    pair: (T, int),
-    bytes: [uint8; 3],
+    pair: (T, isize),
+    bytes: [u8; 3],
     callback: (T) -> string,
 }
 
@@ -33,7 +33,7 @@ fn compile_text() -> string {
     result
 }
 
-fn render(value: int) -> string {
+fn render(value: isize) -> string {
     value.to_string()
 }
 

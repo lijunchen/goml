@@ -15,13 +15,13 @@ impl[T] Box[T] {
 
 fn main() {
     let first = Box { value: 42 };
-    let text = first.map(|value: int| value.to_string());
+    let text = first.map(|value: isize| value.to_string());
     println(text.value);
     let second = Box { value: 7 };
-    let explicit = second.map::[string](|value: int| value.to_string());
+    let explicit = second.map::[string](|value: isize| value.to_string());
     println(explicit.value);
     let third = Box { value: 9 };
-    let static_call = Box::[int]::map::[string](third, |value: int| value.to_string());
+    let static_call = Box::[isize]::map::[string](third, |value: isize| value.to_string());
     println(static_call.value);
     let rendered = Box { value: "value" }.render(5);
     println(rendered);

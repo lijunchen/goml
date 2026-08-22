@@ -3,12 +3,12 @@ trait Describable {
 }
 
 trait Sizable {
-    fn size(self: Self) -> int32;
+    fn size(self: Self) -> i32;
 }
 
 struct Item {
     name: string,
-    weight: int32,
+    weight: i32,
 }
 
 impl Describable for Item {
@@ -16,7 +16,7 @@ impl Describable for Item {
 }
 
 impl Sizable for Item {
-    fn size(self: Item) -> int32 { self.weight }
+    fn size(self: Item) -> i32 { self.weight }
 }
 
 fn print_info[T: Describable + Sizable](item: T) -> unit {

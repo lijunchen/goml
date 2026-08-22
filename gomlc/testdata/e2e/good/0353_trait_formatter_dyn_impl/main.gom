@@ -1,5 +1,5 @@
 trait Formatter {
-    fn format(self: Self, arg1: int32) -> string;
+    fn format(self: Self, arg1: i32) -> string;
 }
 
 struct DecFormatter {}
@@ -7,13 +7,13 @@ struct DecFormatter {}
 struct HexFormatter {}
 
 impl Formatter for DecFormatter {
-    fn format(self: DecFormatter, n: int32) -> string {
+    fn format(self: DecFormatter, n: i32) -> string {
         n.to_string()
     }
 }
 
 impl Formatter for HexFormatter {
-    fn format(self: HexFormatter, n: int32) -> string {
+    fn format(self: HexFormatter, n: i32) -> string {
         "0x" + n.to_string()
     }
 }
@@ -22,7 +22,7 @@ struct Printer {
     fmt: dyn Formatter,
 }
 
-fn print_num(p: Printer, n: int32) -> unit {
+fn print_num(p: Printer, n: i32) -> unit {
     println(Formatter::format(p.fmt, n));
 }
 

@@ -2,8 +2,8 @@ trait Mark {
     fn mark(self: Self) -> unit;
 }
 
-impl Mark for Vec[int32] {
-    fn mark(self: Vec[int32]) -> unit { () }
+impl Mark for Vec[i32] {
+    fn mark(self: Vec[i32]) -> unit { () }
 }
 
 fn require_mark[T: Mark](value: T) -> unit {

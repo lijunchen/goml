@@ -3,12 +3,12 @@ trait Named {
 }
 
 trait Aged {
-    fn age(self: Self) -> int32;
+    fn age(self: Self) -> i32;
 }
 
 struct Person {
     person_name: string,
-    person_age: int32,
+    person_age: i32,
 }
 
 impl Named for Person {
@@ -16,7 +16,7 @@ impl Named for Person {
 }
 
 impl Aged for Person {
-    fn age(self: Person) -> int32 { self.person_age }
+    fn age(self: Person) -> i32 { self.person_age }
 }
 
 fn describe[T: Named + Aged](x: T) -> string {

@@ -4,8 +4,8 @@ trait Convert[T] {
 
 struct Token {}
 
-impl Convert[int32] for Token {
-    fn convert(self: Token) -> int32 { 7 }
+impl Convert[i32] for Token {
+    fn convert(self: Token) -> i32 { 7 }
 }
 
 impl Convert[string] for Token {
@@ -17,7 +17,7 @@ fn convert_to[T, V: Convert[T]](value: V) -> T {
 }
 
 fn main() -> unit {
-    let number: int32 = convert_to(Token {});
+    let number: i32 = convert_to(Token {});
     let text: string = convert_to(Token {});
     ()
 }

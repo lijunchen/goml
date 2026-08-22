@@ -9,7 +9,7 @@ use json::{Deserialize, Serialize};
 struct User {
     #[serde(rename = "display_name")]
     name: string,
-    age: uint8,
+    age: u8,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -18,7 +18,7 @@ struct Empty {}
 #[derive(Serialize, Deserialize)]
 enum Event {
     Idle,
-    Login(string, uint32),
+    Login(string, u32),
     State { active: bool },
 }
 

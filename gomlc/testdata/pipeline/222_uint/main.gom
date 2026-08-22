@@ -1,8 +1,8 @@
-fn combine(left: uint, right: uint) -> uint {
+fn combine(left: usize, right: usize) -> usize {
     (left + right) * 2
 }
 
-fn classify(value: uint) -> string {
+fn classify(value: usize) -> string {
     match value {
         0 => "zero",
         42 => "answer",
@@ -11,15 +11,15 @@ fn classify(value: uint) -> string {
 }
 
 fn main() -> unit {
-    let left: uint = 19;
-    let right = 2.to_uint();
+    let left: usize = 19;
+    let right = 2.to_usize();
     let result = combine(left, right);
     println(result);
     println(result.to_string());
     println(classify(result));
     println(result > left);
-    println((result & 15).to_uint64());
-    let values: HashMap[uint, string] = HashMap::new();
+    println((result & 15).to_u64());
+    let values: HashMap[usize, string] = HashMap::new();
     values.set(result, "stored");
     match values.get(42) {
         Option::Some(value) => println(value),

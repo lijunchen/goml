@@ -7,8 +7,8 @@ fn compose[A, B, C](f: (B) -> C, g: (A) -> B) -> (A) -> C {
 }
 
 fn main() {
-    let double = |x: int32| x * 2;
-    let add_one = |x: int32| x + 1;
+    let double = |x: i32| x * 2;
+    let add_one = |x: i32| x + 1;
     let double_then_add = compose(add_one, double);
     let result = apply(double_then_add, 5);
     println(result.to_string());

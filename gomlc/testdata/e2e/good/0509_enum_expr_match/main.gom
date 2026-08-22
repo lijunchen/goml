@@ -1,11 +1,11 @@
 enum Expr {
-    Lit(int32),
+    Lit(i32),
     Add(Expr, Expr),
     Mul(Expr, Expr),
     Neg(Expr),
 }
 
-fn eval(e: Expr) -> int32 {
+fn eval(e: Expr) -> i32 {
     match e {
         Expr::Lit(n) => n,
         Expr::Add(a, b) => eval(a) + eval(b),

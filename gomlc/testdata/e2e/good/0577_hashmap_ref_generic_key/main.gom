@@ -11,13 +11,13 @@ impl[T: PartialEq] PartialEq for Wrap[T] {
 impl[T: Eq] Eq for Wrap[T] {}
 
 impl[T: Hash] Hash for Wrap[T] {
-    fn hash(self: Wrap[T]) -> uint64 {
+    fn hash(self: Wrap[T]) -> u64 {
         Hash::hash(self.value)
     }
 }
 
 fn main() -> unit {
-    let map: HashMap[Ref[Wrap[int32]], string] = HashMap::new();
+    let map: HashMap[Ref[Wrap[i32]], string] = HashMap::new();
     let key = Ref::new(Wrap { value: 42 });
     let alias = key;
     map.set(key, "ok");

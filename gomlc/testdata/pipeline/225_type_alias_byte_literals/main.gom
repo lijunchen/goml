@@ -1,8 +1,8 @@
-type UserId = uint64;
+type UserId = u64;
 
 type Pair[T] = (T, T);
 
-fn sum_pair(value: Pair[int32]) -> int32 {
+fn sum_pair(value: Pair[i32]) -> i32 {
     value.0 + value.1
 }
 
@@ -16,7 +16,7 @@ fn classify(value: byte) -> string {
 
 fn main() -> unit {
     let user: UserId = 0xff;
-    let pair: Pair[int32] = (0b1010, 0o12);
+    let pair: Pair[i32] = (0b1010, 0o12);
     let marker: byte = b'\x41';
     println(user);
     println(sum_pair(pair));
